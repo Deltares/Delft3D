@@ -33,6 +33,7 @@
 !>  network field rotate
 !!     It is assumed that there is a backup copy of the grid.
 subroutine netrotfld(xp, yp, kp)
+   use m_confrm
    use m_netw
    use m_grid
    use m_alloc

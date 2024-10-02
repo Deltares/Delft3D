@@ -29,22 +29,28 @@
 
 !
 !
+module m_grow_layer
+   use m_halt3
+   use m_comp_vel
+   use m_comp_tmax_self
+   use m_comp_tmax_other
 
+   implicit none
+contains
 !> grow a gridlayer
 subroutine growlayer(mc, nc, mmax, nmax, idir, j, edgevel, dt, xc, yc, ifront, istop)
 
-   use m_alloc
-   use m_missing
-   use unstruc_colors, only: ncolrg, ncolln
-   use unstruc_display
-   use M_SAMPLES
-   use m_sferic
+   use m_missing, only: dmiss, dxymis
+   use unstruc_display, only: ncolrg
+   use m_sferic, only: jasfer3d, jsferic
    use m_spline2curvi, only: jaCheckFrontCollision, dtolLR
    use geometry_module, only: dbdistance, dcosphi
    use m_drawthis
    use m_qnerror
-
-   implicit none
+   use m_get_lr
+   use m_set_col
+   use m_movabs
+   use m_lnabs
 
    integer, intent(in) :: mc !< number of grid points
    integer, intent(in) :: nc !< number of grid layers
@@ -340,3 +346,4 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, j, edgevel, dt, xc, yc, ifront, i
 
    return
 end subroutine growlayer
+end module m_grow_layer

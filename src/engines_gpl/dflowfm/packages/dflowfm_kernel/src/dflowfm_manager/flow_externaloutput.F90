@@ -43,7 +43,7 @@
     use m_xbeach_netcdf
     use waq
     use m_timer
-    use m_partitioninfo, only: ndomains, jampi, my_rank
+    use m_partitioninfo, only: jampi, my_rank
     use m_flowparameters, only: jashp_crs, jashp_obs, jashp_weir, jashp_thd, jashp_gate, jashp_emb, jashp_fxw, jashp_src
     use m_flowgeom, only: ndx2d, ndxi, lnx1d
     use unstruc_channel_flow, only: network
@@ -54,6 +54,10 @@
     use system_utils, only: makedir
     use fm_statistical_output, only: out_variable_set_his
     use m_statistical_output, only: reset_statistical_output, finalize_average
+    use m_wrimap
+    use m_wribal
+    use m_wrihistek
+    use m_unc_write_his, only: unc_write_his
 
 #ifdef _OPENMP
     use omp_lib

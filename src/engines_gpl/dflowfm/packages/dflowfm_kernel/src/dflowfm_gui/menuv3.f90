@@ -30,14 +30,20 @@
 !
 !
 
+module m_menuv3
+
+implicit none
+
+contains
+
       subroutine MENUV3(NWHAT, OPTION, MAXOPT)
-         use unstruc_files
-         use m_devices
+         use unstruc_files, only: msgbuf, msg_flush
+         use m_devices, only: nopsys
          use m_helpnow
          use m_timlin
          use m_fkeys
          use m_botlin
-         implicit none
+
          integer :: imenuvertic, IXP, IYP
          integer :: infoinput
          integer :: infocursor
@@ -98,3 +104,5 @@
          goto 10
 !
       end
+
+end module m_menuv3

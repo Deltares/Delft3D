@@ -131,25 +131,6 @@ function(configure_visual_studio_user_file executable_name)
     endif()
 endfunction()
 
-# oss_include_libraries
-# Adds oss dependencies to the specified library.
-#
-# Note that it is assumed that the dependency is located in the PROJECT_BINARY_DIR in a subdirectory with the same dependency name.
-#
-# Argument
-# library_name : The name of the library where dependencies should be added.
-# dependencies : A list of dependencies to set for the library_name.
-function(oss_include_libraries library_name dependencies)
-
-    foreach(dependency IN LISTS ${dependencies})
-        add_dependencies(${library_name} ${dependency})
-
-        if (NOT CMAKE_GENERATOR MATCHES "Visual Studio")
-            include_directories( ${PROJECT_BINARY_DIR}/${dependency} )
-        endif()
-    endforeach()
-
-endfunction()
 
 
 

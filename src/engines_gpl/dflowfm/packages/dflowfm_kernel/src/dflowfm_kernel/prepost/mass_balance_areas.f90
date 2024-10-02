@@ -717,9 +717,8 @@ contains
    subroutine comp_horflowmba()
       use m_flow, only: Lbot, Ltop, q1
       use m_flowtimes, only: dts
-      use fm_external_forcings_data, only: numsrc, ksrc, qsrc
+      use fm_external_forcings_data, only: numsrc, qsrc
       use m_mass_balance_areas
-      use m_partitioninfo, only: jampi, idomain, my_rank
       use timers
 
       integer :: LL, L, Lb, Lt, k1, k2, i, n
@@ -855,6 +854,7 @@ contains
       use m_sediment, only: stm_included
       use m_fm_erosed, only: lsed, lsedtot, stmpar
       use m_transport, only: ised1, isedn
+      use m_datum
 
       integer :: lunbal ! logical unit
 

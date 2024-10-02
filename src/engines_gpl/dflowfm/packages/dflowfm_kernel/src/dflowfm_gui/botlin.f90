@@ -34,7 +34,7 @@ module m_botlin
 contains
       subroutine BOTLIN(JA, NUMB, KEY)
          use m_devices
-         use unstruc_display
+         use unstruc_display_data, only: jafullbottomline
          use m_helpnow
          use m_ktext
          use m_timlin

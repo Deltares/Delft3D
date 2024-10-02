@@ -34,7 +34,9 @@ module m_osc
 contains
    subroutine OSC(KEY)
       use m_devices
-      use unstruc_messages
+      use messagehandling, only: msgbuf, msg_flush
+      use m_help
+
       integer :: infoinput
       integer :: ixp
       integer :: iyp

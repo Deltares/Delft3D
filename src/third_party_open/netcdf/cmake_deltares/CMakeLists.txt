@@ -55,7 +55,7 @@ target_compile_options(${netcdf_library_name} PRIVATE "$<$<CONFIG:Debug>:${float
 
 # Set dependencies
 set(oss_dependencies netcdf4)
-oss_include_libraries(${netcdf_library_name} oss_dependencies)
+target_link_libraries(${netcdf_library_name} PRIVATE ${oss_dependencies})
 
 if (WIN32)
    target_compile_options(${netcdf_library_name} PRIVATE "${heap_arrays_100_flag}")
@@ -63,7 +63,6 @@ endif(WIN32)
 
 if(UNIX)
     target_compile_options(${netcdf_library_name} PRIVATE ${c_compiler_flags})
-    target_link_libraries(${netcdf_library_name} PRIVATE ${oss_dependencies})
     set(Fortran_MODULE_DIRECTORY ${LIBRARY_OUTPUT_DIRECTORY}) 
 endif()
 

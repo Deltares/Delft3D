@@ -32,6 +32,7 @@
 
 ! compose an orthogonal dual mesh (cell centers), while keeping the primary mesh (net nodes) fixed
 subroutine make_orthocenters(dmaxnonortho, maxiter)
+   use m_halt3
    use m_netw
    use m_flowgeom, only: xz, yz
    use unstruc_display, only: ncolhl
@@ -41,6 +42,7 @@ subroutine make_orthocenters(dmaxnonortho, maxiter)
    use gridoperations
    use m_readyy
    use m_qnerror
+   use m_cirr
 
    implicit none
 

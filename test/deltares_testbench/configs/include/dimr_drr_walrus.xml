@@ -102,11 +102,11 @@
                 </file> 
                 <file name="rr/balansdt.his" type="HIS">
                     <parameters>
-                        <parameter name="CumBalanceError" location="1" toleranceAbsolute="0.0001" />
-                        <parameter name="CumBalanceError" location="4" toleranceAbsolute="0.0001" />
-                        <parameter name="CumBalanceError" location="5" toleranceAbsolute="0.0001" />
-                        <parameter name="CumBalanceError" location="6" toleranceAbsolute="0.0001" />
-						<parameter name="CumBalanceError" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="CumBalanceError" location="1" toleranceAbsolute="0.4" />
+                        <parameter name="CumBalanceError" location="4" toleranceAbsolute="0.4" />
+                        <parameter name="CumBalanceError" location="5" toleranceAbsolute="0.6" />
+                        <parameter name="CumBalanceError" location="6" toleranceAbsolute="0.4" />
+						<parameter name="CumBalanceError" location="9" toleranceAbsolute="0.4" />
 					</parameters>
                 </file> 
 

@@ -30,6 +30,12 @@
 !
 !
 
+module m_plot
+
+implicit none
+
+contains
+
       !> Plot for hardcopy needs to be called twice: one to open hardcopy
       !! driver (file), then perform actual plotting, and second call to
       !! plot() closes the driver/file again. Steered by nopen argument.
@@ -38,13 +44,12 @@
       subroutine PLOT(NOPEN)
          use string_module
          use unstruc_colors
-         use unstruc_display
-         use unstruc_messages
+         use unstruc_messages, only: msgbuf, msg_flush
          use unstruc_model, only: md_ident, md_snapshotdir, md_snapshot_seqnr
          use unstruc_opengl, only: jaopengl
          use m_hardcopy
          use m_plotfil
-         implicit none
+
          integer :: i
          integer :: l
          integer :: nopen, mout
@@ -154,3 +159,5 @@
          end if
          return
       end
+
+end module m_plot

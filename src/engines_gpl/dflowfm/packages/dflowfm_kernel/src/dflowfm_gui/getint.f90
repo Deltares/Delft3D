@@ -33,8 +33,8 @@ module m_getint
    implicit none
 contains
    subroutine GETINT(TEXT, IVAL)
-      use m_devices
-      use M_MISSING
+      use m_devices, only: iws, ihs
+      use m_missing, only: dmiss
       use m_helpnow
       use m_timlin
       use m_fkeys

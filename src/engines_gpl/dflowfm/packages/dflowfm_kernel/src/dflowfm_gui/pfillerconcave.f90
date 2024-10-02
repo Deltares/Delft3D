@@ -30,11 +30,19 @@
 !
 !
 
+module m_pfillerconcave
+
+implicit none
+
+contains
+
     subroutine PFILLERconcave(X, Y, N_, NCOL, NCLR)
        use unstruc_opengl
        use m_colnow
        use m_drawthis
-       implicit none
+       use m_set_col
+       use m_realpolygon
+
        integer :: N_
        integer :: nclr
        integer :: ncol
@@ -59,3 +67,5 @@
 
        return
     end
+
+end module m_pfillerconcave

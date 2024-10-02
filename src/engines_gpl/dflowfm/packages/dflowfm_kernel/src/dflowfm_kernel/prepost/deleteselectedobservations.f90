@@ -31,6 +31,7 @@
 !
 
    subroutine deleteSelectedObservations()
+      use m_confrm
       use m_observations
       use M_SAMPLES
       use M_POLYGON

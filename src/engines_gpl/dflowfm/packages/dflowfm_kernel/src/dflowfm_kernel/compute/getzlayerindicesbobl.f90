@@ -29,12 +29,11 @@
 
 !
 !
-
+module m_get_zlayer_indices_bobL
+   implicit none
+contains
  subroutine getzlayerindicesbobL(n, nlayb, nrlay, bobL)
-    use m_flowgeom
     use m_flow
-    use m_missing
-    implicit none
 
     integer :: n, nlayb, nrlay
     integer :: k, Ltn, mx ! layerdistribution indexes
@@ -52,3 +51,4 @@
     end do
 
  end subroutine getzlayerindicesbobL
+end module m_get_zlayer_indices_bobL

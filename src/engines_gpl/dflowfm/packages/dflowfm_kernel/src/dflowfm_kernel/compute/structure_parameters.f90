@@ -29,7 +29,11 @@
 
 !
 !
-
+module m_structure_parameters
+   implicit none
+   private
+   public :: structure_parameters
+contains
 ! =================================================================================================
 ! =================================================================================================
    subroutine structure_parameters
@@ -45,7 +49,7 @@
       use m_compound
       use m_GlobalParameters
       use m_longculverts, only: nlongculverts, longculverts, newculverts
-      implicit none
+
       integer :: i, n, L, Lf, La, ierr, k, ku, kd, istru, nlinks
       double precision :: dir
       integer :: jaghost, idmn_ghost, jaghostexist
@@ -675,7 +679,7 @@
       ! === Long culvert
       if (nlongculverts > 0 .and. allocated(vallongculvert)) then
          if (jampi > 0) then
-            call subsitute_reduce_buffer(vallongculvert, nlongculverts * NUMVALS_LONGCULVERT)
+            call substitute_reduce_buffer(vallongculvert, nlongculverts * NUMVALS_LONGCULVERT)
          end if
          do n = 1, nlongculverts
             call average_valstruct(vallongculvert(:, n), ST_LONGCULVERT, n)
@@ -684,7 +688,7 @@
       ! === Compound structure
       if (network%cmps%count > 0 .and. allocated(valcmpstru)) then
          if (jampi > 0) then
-            call subsitute_reduce_buffer(valcmpstru, network%cmps%count * NUMVALS_CMPSTRU)
+            call substitute_reduce_buffer(valcmpstru, network%cmps%count * NUMVALS_CMPSTRU)
          end if
          do n = 1, network%cmps%count
             pcmp => network%cmps%compound(n)
@@ -696,7 +700,7 @@
       ! === Bridge
       if (network%sts%numBridges > 0 .and. allocated(valbridge)) then
          if (jampi > 0) then
-            call subsitute_reduce_buffer(valbridge, network%sts%numBridges * NUMVALS_BRIDGE)
+            call substitute_reduce_buffer(valbridge, network%sts%numBridges * NUMVALS_BRIDGE)
          end if
          do n = 1, network%sts%numBridges
             istru = network%sts%bridgeIndices(n)
@@ -708,7 +712,7 @@
       ! === Culvert
       if (network%sts%numCulverts > 0 .and. allocated(valculvert)) then
          if (jampi > 0) then
-            call subsitute_reduce_buffer(valculvert, network%sts%numCulverts * NUMVALS_CULVERT)
+            call substitute_reduce_buffer(valculvert, network%sts%numCulverts * NUMVALS_CULVERT)
          end if
          do n = 1, network%sts%numCulverts
             istru = network%sts%culvertIndices(n)
@@ -720,7 +724,7 @@
       ! === Orifice
       if (network%sts%numOrifices > 0 .and. allocated(valorifgen)) then
          if (jampi > 0) then
-            call subsitute_reduce_buffer(valorifgen, network%sts%numOrifices * NUMVALS_ORIFGEN)
+            call substitute_reduce_buffer(valorifgen, network%sts%numOrifices * NUMVALS_ORIFGEN)
          end if
          do n = 1, network%sts%numOrifices
             istru = network%sts%orificeIndices(n)
@@ -732,7 +736,7 @@
       ! === Universal weir
       if (network%sts%numUniWeirs > 0 .and. allocated(valuniweir)) then
          if (jampi > 0) then
-            call subsitute_reduce_buffer(valuniweir, network%sts%numUniWeirs * NUMVALS_UNIWEIR)
+            call substitute_reduce_buffer(valuniweir, network%sts%numUniWeirs * NUMVALS_UNIWEIR)
          end if
          do n = 1, network%sts%numUniWeirs
             istru = network%sts%uniweirIndices(n)
@@ -748,14 +752,14 @@
       ! === Dambreak
       if (jampi > 0 .and. ti_his > 0) then
          if (ndambreaksignals > 0 .and. allocated(valdambreak)) then
-            call subsitute_reduce_buffer(valdambreak, ndambreaksignals * NUMVALS_DAMBREAK)
+            call substitute_reduce_buffer(valdambreak, ndambreaksignals * NUMVALS_DAMBREAK)
          end if
       end if
 
       ! === General structure
       if (ngenstru > 0 .and. allocated(valgenstru)) then
          if (jampi > 0) then
-            call subsitute_reduce_buffer(valgenstru, ngenstru * NUMVALS_GENSTRU)
+            call substitute_reduce_buffer(valgenstru, ngenstru * NUMVALS_GENSTRU)
          end if
 
          if (network%sts%numGeneralStructures > 0) then ! new general structure
@@ -781,7 +785,7 @@
 
       if (nweirgen > 0 .and. allocated(valweirgen)) then
          if (jampi > 0) then
-            call subsitute_reduce_buffer(valweirgen, nweirgen * NUMVALS_WEIRGEN)
+            call substitute_reduce_buffer(valweirgen, nweirgen * NUMVALS_WEIRGEN)
          end if
 
          if (network%sts%numWeirs > 0) then ! new weir
@@ -806,7 +810,7 @@
 
       if (jampi > 0 .and. ti_his > 0) then
          if (ngategen > 0 .and. allocated(valgategen)) then
-            call subsitute_reduce_buffer(valgategen, ngategen * NUMVALS_GATEGEN)
+            call substitute_reduce_buffer(valgategen, ngategen * NUMVALS_GATEGEN)
             do n = 1, ngategen
                if (valgategen(IVAL_WIDTHUP, n) > 0) then
                   valgategen(IVAL_S1UP, n) = valgategen(IVAL_S1UP, n) / valgategen(IVAL_WIDTHUP, n)
@@ -840,7 +844,7 @@
          end if
 
          if (ncgensg > 0 .and. allocated(valcgen)) then
-            call subsitute_reduce_buffer(valcgen, ncgensg * NUMVALS_CGEN)
+            call substitute_reduce_buffer(valcgen, ncgensg * NUMVALS_CGEN)
             do n = 1, ncgensg
                if (valcgen(1, n) == 0d0) then
                   valcgen(2, n) = dmiss
@@ -854,7 +858,7 @@
          end if
 
          if (ncdamsg > 0 .and. allocated(valcdam)) then
-            call subsitute_reduce_buffer(valcdam, ncdamsg * NUMVALS_CDAM)
+            call substitute_reduce_buffer(valcdam, ncdamsg * NUMVALS_CDAM)
             do n = 1, ncdamsg
                if (valcdam(1, n) == 0d0) then
                   valcdam(2, n) = dmiss
@@ -868,7 +872,7 @@
          end if
 
          if (ngatesg > 0 .and. allocated(valgate)) then
-            call subsitute_reduce_buffer(valgate, ngatesg * NUMVALS_GATE)
+            call substitute_reduce_buffer(valgate, ngatesg * NUMVALS_GATE)
             do n = 1, ngatesg
                if (valgate(1, n) == 0d0) then
                   valgate(2, n) = dmiss
@@ -884,7 +888,7 @@
 
       if (npumpsg > 0 .and. allocated(valpump)) then
          if (jampi > 0) then
-            call subsitute_reduce_buffer(valpump, npumpsg * NUMVALS_PUMP)
+            call substitute_reduce_buffer(valpump, npumpsg * NUMVALS_PUMP)
          end if
          do n = 1, npumpsg
             call average_valstruct(valpump(:, n), ST_UNSET, 0)
@@ -943,3 +947,41 @@
       timprev = time1
 
    end subroutine structure_parameters
+   
+   ! =================================================================================================
+! =================================================================================================
+subroutine substitute_reduce_buffer(vals, nvals)
+   use m_partitioninfo
+   implicit none
+   integer :: i
+   integer, intent(in) :: nvals
+   double precision, dimension(1:nvals) :: vals
+
+   nreducebuf = nreducebuf - nvals
+   do i = 1, nvals
+      vals(i) = reducebuf(nreducebuf + i)
+   end do
+
+end subroutine substitute_reduce_buffer
+
+! =================================================================================================
+! =================================================================================================
+subroutine fill_reduce_buffer(vals, nvals)
+   use m_partitioninfo
+   implicit none
+   integer :: i
+   integer, intent(in) :: nvals
+   double precision, dimension(1:nvals) :: vals
+
+   if (jampi == 0) then
+      return
+   end if
+
+   do i = 1, nvals
+      reducebuf(nreducebuf + i) = vals(i)
+   end do
+   nreducebuf = nreducebuf + nvals
+
+end subroutine fill_reduce_buffer
+
+end module m_structure_parameters

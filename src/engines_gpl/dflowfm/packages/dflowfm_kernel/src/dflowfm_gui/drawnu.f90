@@ -29,16 +29,32 @@
 
 !
 !
+module m_draw_nu
+   use m_plot
+   use m_netnodevals
+   use m_netlinkvals
+   use m_minmxnetnods
+   use m_minmxnetlins
+   use m_isoscale2
+   use m_isoscale
+   use m_highlight_nodesnlinks
+   use m_fullscreen
+   use m_cls1
+   use m_axes
+   use m_anchorcls
 
+   implicit none
+contains
    subroutine DRAWNU(KEY)
-      use m_netw
-      use M_SAMPLES
+      use M_SAMPLES, only: ns
       use m_arcinfo
       use unstruc_display
       use unstruc_opengl
       use m_drawthis
       use m_dispos
-      implicit none
+      use m_plot_dots
+      use m_disln
+      use m_tek_grid
 
       integer :: metdraw
       integer :: KEY, nsiz
@@ -170,3 +186,4 @@
 
       return
    end subroutine DRAWNU
+end module m_draw_nu

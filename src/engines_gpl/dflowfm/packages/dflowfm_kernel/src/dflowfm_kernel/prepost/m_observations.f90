@@ -150,6 +150,7 @@ module m_observations
    integer :: IVAL_BRUV
    integer :: IVAL_TKIN
    integer :: IVAL_TEPS
+   integer :: IVAL_VIU
    integer :: IVAL_VICWWS
    integer :: IVAL_VICWWU
    integer :: IVAL_WS1
@@ -255,6 +256,7 @@ module m_observations
    integer :: IPNT_BRUV
    integer :: IPNT_TKIN
    integer :: IPNT_TEPS
+   integer :: IPNT_VIU
    integer :: IPNT_VICWWS
    integer :: IPNT_VICWWU
    integer :: IPNT_WS1
@@ -393,6 +395,7 @@ contains
       IVAL_BRUV = 0
       IVAL_TKIN = 0
       IVAL_TEPS = 0
+      IVAL_VIU = 0
       IVAL_VICWWS = 0
       IVAL_VICWWU = 0
       IVAL_RICH = 0
@@ -619,6 +622,9 @@ contains
             i = i + 1; IVAL_RHO = i
          end if
       end if
+      if (jahistur > 0) then
+         i = i + 1; IVAL_VIU = i
+      end if
       MAXNUMVALOBS3D = i - i0
 
 !  3D, layer interfaces
@@ -627,7 +633,7 @@ contains
          i = i + 1; IVAL_ZWS = i
          i = i + 1; IVAL_ZWU = i
          i = i + 1; IVAL_BRUV = i
-         if (iturbulencemodel > 0) then
+         if (iturbulencemodel > 0 .and. jahistur > 0) then
             i = i + 1; IVAL_TKIN = i
             i = i + 1; IVAL_TEPS = i
             i = i + 1; IVAL_VICWWS = i
@@ -703,6 +709,7 @@ contains
       IPNT_BRUV = ivalpoint(IVAL_BRUV, kmx, nlyrs)
       IPNT_TKIN = ivalpoint(IVAL_TKIN, kmx, nlyrs)
       IPNT_TEPS = ivalpoint(IVAL_TEPS, kmx, nlyrs)
+      IPNT_VIU = ivalpoint(IVAL_VIU, kmx, nlyrs)
       IPNT_VICWWS = ivalpoint(IVAL_VICWWS, kmx, nlyrs)
       IPNT_VICWWU = ivalpoint(IVAL_VICWWU, kmx, nlyrs)
       IPNT_RICH = ivalpoint(IVAL_RICH, kmx, nlyrs)

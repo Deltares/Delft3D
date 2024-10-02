@@ -33,6 +33,8 @@
       subroutine GETSPL2(X, XI2, XJ2, MC, NC, MMAX, NMAX)
          use M_MISSING
          use m_spline
+         use m_put_ij
+         use m_get_ij
          implicit none
          integer :: i
          integer :: iff

@@ -308,6 +308,10 @@ if FI.NumDomains>1
             hasTimeDim = true;
             tDim = {':'};
         end
+        hasStationDim = Props.DimFlag(ST_) > 0;
+        if hasStationDim
+            tDim = cat(2,tDim,{':'});
+        end
 
         % z values
         if ZRead && isfield(partData, 'Z')
@@ -316,7 +320,7 @@ if FI.NumDomains>1
             else
                 zLoc = valLoc;
             end
-            Data = mergePartData(Data, partData, FI, zLoc,{'Z'}, hasTimeDim, tDim);
+            Data = mergePartData(Data, partData, FI, zLoc,{'Z'}, hasTimeDim, hasStationDim, tDim);
             Data.ZLocation = zLoc;
         end
         
@@ -330,7 +334,7 @@ if FI.NumDomains>1
             Data.ClassVal = partData(1).ClassVal;
         end
         valFields = {'Val','XComp','YComp','NormalComp','TangentialComp'};
-        Data = mergePartData(Data, partData, FI, valLoc, valFields, hasTimeDim, tDim);
+        Data = mergePartData(Data, partData, FI, valLoc, valFields, hasTimeDim, hasStationDim, tDim);
         %
         if iscell(field.varid)
             if strcmp(field.varid{1},'stream_function') % note field is the original copy of Props
@@ -3339,7 +3343,7 @@ if ~isempty(connect)
 end
 
 
-function Data = mergePartData(Data,partData,FI,valLoc,valFields,hasTimeDim,tDim)
+function Data = mergePartData(Data,partData,FI,valLoc,valFields,hasTimeDim,hasStationDim,tDim)
 switch valLoc
     case 'NODE'
         nloc = FI.MergedPartitions.nNodes;
@@ -3358,7 +3362,7 @@ for v = valFields
     fld = v{1};
     if isfield(partData,fld)
         sz = size(partData(1).(fld));
-        sz(hasTimeDim+1) = nloc;
+        sz(hasTimeDim+hasStationDim+1) = nloc;
         Data.(fld) = NaN(sz);
         for p = 1:length(partData)
             masked = domainMask{p};

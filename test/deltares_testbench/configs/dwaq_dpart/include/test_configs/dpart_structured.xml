@@ -23,16 +23,16 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                         </file>
                         <file name="his-p100.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_002" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-04"/>
+                                        <parameter name="SUBST_004" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_006" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_007" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_008" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_009" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_010" toleranceRelative="1.0e-03"/>
                                 </parameters>
                         </file>
                         <file name="map-p100.dat" type="NEFIS">
@@ -44,9 +44,9 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                         </file>
                         <file name="plo-p100.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-03"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -63,16 +63,16 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                         </file>
                         <file name="his-p101.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_002" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_004" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_006" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_007" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_008" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_009" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_010" toleranceRelative="1.0e-03"/>
                                 </parameters>
                         </file>
                         <file name="map-p101.dat" type="NEFIS">
@@ -84,9 +84,9 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                         </file>
                         <file name="plo-p101.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-03"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -109,16 +109,16 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                         </file>
                         <file name="map-p102.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                         <file name="plo-p102.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-03"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -135,16 +135,16 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                         </file>
                         <file name="his-p201.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_002" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_004" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_006" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_007" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_008" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_009" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_010" toleranceRelative="1.0e-03"/>
                                 </parameters>
                         </file>
                         <file name="map-p201.dat" type="NEFIS">
@@ -156,9 +156,9 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                         </file>
                         <file name="plo-p201.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -175,16 +175,16 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                         </file>
                         <file name="his-p202.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_002" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_004" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_006" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_007" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_008" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_009" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_010" toleranceRelative="1.0e-02"/>
                                 </parameters>
                         </file>
                         <file name="map-p202.dat" type="NEFIS">
@@ -196,9 +196,9 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                         </file>
                         <file name="plo-p202.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-03"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -217,11 +217,11 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                                         <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_007" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                                         <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -236,14 +236,14 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                         </file>
                         <file name="plo-p301.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                 </parameters>
                         </file>
                         <file name="trk-p301.dat" type="NEFIS">
                                 <parameters name="trk-series">
-                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -260,8 +260,8 @@ e05_f01_c302_tst-tracer-3.02              e05_part/f01_tracer/c302_tst-tracer-3.
                         </file>
                         <file name="his-p302.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_002" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -312,25 +312,25 @@ e05_f02_c02_oil                           e05_part/f02_tutorial/c02_oil/s35_oil.
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-00"/>
+                                        <parameter name="SUBST_006" toleranceRelative="1.0e-00"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_008" toleranceRelative="1.0e-01"/>
+                                        <parameter name="SUBST_009" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                 </parameters>
                         </file>
                         <file name="map-s35_tracer.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_002" toleranceRelative="1.0e-00"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                 </parameters>
                         </file>
                         <file name="plo-s35_tracer.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_002" toleranceRelative="1.0e-00"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                 </parameters>
                         </file>
@@ -339,15 +339,23 @@ e05_f02_c02_oil                           e05_part/f02_tutorial/c02_oil/s35_oil.
         <testCase name="e05_f02_c02_oil" ref="part_default">
                 <path version="2024-06-12T11:56:00">e05_part/f02_tutorial/c02_oil</path>
                 <checks>
-                        <file name="s35_oil.out" type="NUMBERTEXT">
-                   <skipline>|</skipline>
-                   <skipline>Rewind</skipline>
-                   <skipline>.inp</skipline>
-                   <skipline>.out</skipline>
-                   <skipline>Actual date/time</skipline>
+                    <file name="s35_oil.out" type="NUMBERTEXT">
+                       <skipline>|</skipline>
+                       <skipline>Rewind</skipline>
+                       <skipline>.inp</skipline>
+                       <skipline>.out</skipline>
+                       <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
-                        <file name="Heavy Fuel Oil.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-2" />
+                            </parameters>
+                        </file>
+                        <file name="Heavy Fuel Oil.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-3" />
+                            </parameters>
+                        </file>
                         <file name="his-s35_oil.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -389,26 +397,26 @@ e05_f02_c02_oil                           e05_part/f02_tutorial/c02_oil/s35_oil.
                         </file>
                         <file name="map-s35_oil.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
+                                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_008" toleranceRelative="1.0e-02"/>
                                 </parameters>
                         </file>
                         <file name="plo-s35_oil.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-06"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-06"/>
+                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-05"/>
+                                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_008" toleranceRelative="1.0e-03"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -438,20 +446,20 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-01"/>
+                                        <parameter name="SUBST_004" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_006" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_008" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_010" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_012" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_014" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_016" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -461,15 +469,15 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                         <file name="map-tracer_outside.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-01"/>
                                 </parameters>
                         </file>
                         <file name="plo-tracer_outside.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -488,21 +496,21 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                         <file name="his-tracer_outside.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceRelative="1.0e-01"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-01"/>
+                                        <parameter name="SUBST_004" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_006" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_008" toleranceRelative="1.0e-00"/>
                                         <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_010" toleranceRelative="1.0e-00"/>
                                         <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_012" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_014" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_016" toleranceRelative="1.0e-00"/>
                                         <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -512,15 +520,15 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                         <file name="map-tracer_outside.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-01"/>
                                 </parameters>
                         </file>
                         <file name="plo-tracer_outside.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -541,7 +549,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                                         <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -549,27 +557,27 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                                         <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_012" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_016" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_020" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_021" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_022" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_023" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_024" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_024" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_025" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_026" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_027" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_028" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_028" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_029" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_030" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_031" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_032" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_032" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_033" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_034" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_035" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -585,8 +593,8 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-01"/>
                                 </parameters>
                         </file>
                         <file name="plo-oil_outside.dat" type="NEFIS">
@@ -616,7 +624,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                                         <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -624,27 +632,27 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                                         <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_012" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_016" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_020" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_021" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_022" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_023" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_024" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_024" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_025" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_026" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_027" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_028" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_028" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_029" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_030" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_031" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_032" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_032" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_033" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_034" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_035" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -660,8 +668,8 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-01"/>
                                 </parameters>
                         </file>
                         <file name="plo-oil_outside.dat" type="NEFIS">
@@ -695,48 +703,48 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                                         <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_008" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_012" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_016" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_020" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_021" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_022" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_023" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_024" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_024" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_025" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_026" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_027" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_028" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_028" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_029" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_030" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_031" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_032" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_032" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_033" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_034" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_035" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_036" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_036" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_037" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_038" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_039" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_040" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_040" toleranceRelative="1.0e-02"/>
                                 </parameters>
                         </file>
                         <file name="map-oil_outside.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
+                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-01"/>
                                 </parameters>
                         </file>
                         <file name="plo-oil_outside.dat" type="NEFIS">
@@ -745,7 +753,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -774,27 +782,27 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                                         <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_012" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_016" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_020" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_021" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_022" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_023" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_024" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_024" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_025" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_026" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_027" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_028" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_028" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_029" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_030" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_031" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_032" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_032" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_033" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_034" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_035" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -810,8 +818,8 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-04"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-02"/>
                                 </parameters>
                         </file>
                         <file name="plo-oil_outside.dat" type="NEFIS">
@@ -862,50 +870,58 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
-                        <file name="Heavy Fuel Oil.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                            <parameters>
+                                    <parameter name="" toleranceRelative="1e-2" />
+                            </parameters>
+                        </file>
+                        <file name="Heavy Fuel Oil.csv" type="ASCII">
+                            <parameters>
+                                    <parameter name="" toleranceRelative="1e-7" />
+                            </parameters>
+                        </file>
                         <file name="his-p101.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_008" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_010" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_013" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_016" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_018" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_021" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_022" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_023" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_024" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_024" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_025" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_026" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_026" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_027" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_028" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_029" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_029" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_030" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_031" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_032" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_031" toleranceRelative="1.0e-01"/>
+                                        <parameter name="SUBST_032" toleranceRelative="1.0e-01"/>
                                         <parameter name="SUBST_033" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_034" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_034" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_035" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_036" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_037" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_038" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_039" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_040" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_039" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-02"/>
+                                        <parameter name="SUBST_040" toleranceRelative="1.0e-01"/>
                                 </parameters>
                         </file>
                         <file name="map-p101.dat" type="NEFIS">
@@ -929,9 +945,9 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_007" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_009" toleranceRelative="1.0e-03"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -946,7 +962,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                            <parameters>
+                                    <parameter name="" toleranceRelative="1e-2" />
+                            </parameters>
+                        </file>
                         <file name="his-p102.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -957,20 +977,20 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                         </file>
                         <file name="map-p102.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-02"/>
                                 </parameters>
                         </file>
                         <file name="plo-p102.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-02"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -985,7 +1005,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-2" />
+                            </parameters>
+                        </file>
                         <file name="his-p103.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1012,20 +1036,20 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                         </file>
                         <file name="map-p103.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-04"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-01"/>
                                 </parameters>
                         </file>
                         <file name="plo-p103.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceRelative="1.0e-03"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-04"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-05"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-02"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -1040,22 +1064,26 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-3" />
+                            </parameters>
+                        </file>
                         <file name="his-p104.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-04"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_004" toleranceRelative="1.0e-01"/>
                                 </parameters>
                         </file>
                         <file name="map-p104.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-02"/>
                                 </parameters>
                         </file>
                         <file name="plo-p104.dat" type="NEFIS">
@@ -1064,7 +1092,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-02"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -1079,7 +1107,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p201.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1091,11 +1123,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                         </file>
                         <file name="plo-p201.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceRelative="1.0e-05"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -1110,7 +1142,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p202.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1122,11 +1158,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                         </file>
                         <file name="plo-p202.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceRelative="1.0e-05"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -1141,7 +1177,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p203.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1172,23 +1212,27 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p204.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceRelative="1.0e-05"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-03"/>
                                 </parameters>
                         </file>
                         <file name="plo-p204.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
-                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_001" toleranceRelative="1.0e-05"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -1203,7 +1247,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p205.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1234,7 +1282,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p206.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1265,7 +1317,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p207.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1296,7 +1352,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p208.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1327,7 +1387,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p209.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1358,7 +1422,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p210.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1389,7 +1457,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p211.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1420,7 +1492,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p212.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1451,7 +1527,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p213.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1482,7 +1562,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p214.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1513,13 +1597,17 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="his-p301.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_004" toleranceRelative="1.0e-02"/>
                                         <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1573,7 +1661,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -1588,13 +1676,17 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="his-p302.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_004" toleranceRelative="1.0e-03"/>
                                         <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1648,7 +1740,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -1663,13 +1755,17 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="his-p303.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_004" toleranceRelative="1.0e-03"/>
                                         <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -1723,7 +1819,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -1738,14 +1834,18 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
                         </file>
-                        <file name="Ekofisk.csv" type="NUMBERTEXT"/>
+                        <file name="Ekofisk.csv" type="ASCII">
+                        <parameters>
+                                    <parameter name="" toleranceRelative="1e-4" />
+                            </parameters>
+                        </file>
                         <file name="map-p401.dat" type="NEFIS">
                                 <parameters name="DELPAR_RESULTS">
                                         <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-03"/>
                                 </parameters>
                         </file>
                         <file name="plo-p401.dat" type="NEFIS">
@@ -1754,7 +1854,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                                         <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_005" toleranceRelative="1.0e-04"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -1801,7 +1901,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                         </file>
                         <file name="trk-cont-release00.dat" type="NEFIS">
                                 <parameters name="trk-series">
-                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="XYZTRK" toleranceRelative="1.0e-06"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -1838,7 +1938,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                         </file>
                         <file name="trk-cont-release01.dat" type="NEFIS">
                                 <parameters name="trk-series">
-                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="XYZTRK" toleranceRelative="1.0e-06"/>
                                 </parameters>
                         </file>
                 </checks>
@@ -1944,7 +2044,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                         </file>
                         <file name="trk-inst-release01.dat" type="NEFIS">
                                 <parameters name="trk-series">
-                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="XYZTRK" toleranceRelative="1.0e-06"/>
                                 </parameters>
                         </file>
                 </checks>

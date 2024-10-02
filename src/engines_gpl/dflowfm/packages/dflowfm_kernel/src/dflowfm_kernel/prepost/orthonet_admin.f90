@@ -29,17 +29,15 @@
 
 !
 !
-
+module m_orthonet_admin
+   implicit none
+contains
 !> perform the adminstration:
 !!   determine the netcells and nodes in the stencil
 subroutine orthonet_admin(k0, adm, ierror)
    use m_netw
-   use m_missing
-   use m_alloc
    use m_inverse_map
    use m_qnerror
-
-   implicit none
 
    integer, intent(in) :: k0 !< center node
    type(tadm), intent(inout) :: adm !< structure with administration
@@ -191,3 +189,4 @@ subroutine orthonet_admin(k0, adm, ierror)
    ierror = 0
 
 end subroutine orthonet_admin
+end module m_orthonet_admin

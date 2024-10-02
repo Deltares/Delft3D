@@ -28,12 +28,10 @@ if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
 
-    oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies})
 endif(UNIX)
 
 if (WIN32)
-    oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 

@@ -41,6 +41,7 @@ contains
       use m_polygon ! , only : zpl, DZL, DZR, jakol45
       use gridoperations
       use m_readyy
+      use m_inview
 
       integer, intent(inout) :: mpol !< Open file pointer where to write to.
       double precision, intent(in) :: XSH(NSH), YSH(NSH) !< Coordinates, polylines can be separated by dmiss value.
@@ -61,7 +62,6 @@ contains
       character(len=1) :: cdigits
       character(len=40) :: rec
       logical :: jaNCLAN, jaZSH
-      logical :: inview
 
       ! Only include third column when size is equal to XSH array (or larger).
       jaNCLAN = nNCLAN >= NSH

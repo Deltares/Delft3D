@@ -32,7 +32,8 @@
 
   subroutine REFINELINK2(L12, K12)
      use m_netw
-     use gridoperations
+     use gridoperations, only: dsetnewpoint
+     use m_new_link
      implicit none
      integer :: L12, K12
 

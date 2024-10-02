@@ -29,15 +29,15 @@
 
 !
 !
-
+module m_wribal
+   implicit none
+contains
 !> Writes the current water balance quantities to file.
 !! File format is ascii, one time per line, all quantities in columns.
 subroutine wribal()
    use m_flowtimes
    use m_flow
    use unstruc_files, only: defaultFilename
-
-   implicit none
 
    ! locals
    integer, save :: ibal = 0
@@ -83,3 +83,4 @@ subroutine wribal()
       qinrain, qouteva, qinbnd, qoutbnd, qingrw, qoutgrw
 
 end subroutine wribal
+end module m_wribal

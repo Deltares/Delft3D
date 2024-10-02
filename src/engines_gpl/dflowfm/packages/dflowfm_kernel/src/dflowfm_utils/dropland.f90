@@ -29,7 +29,11 @@
 
 !
 !
+module m_dropland
+use m_isocol
 
+   implicit none
+contains
  !> Drop land *during* flow computation.
  !!
  !! Use idir=1 for adding land, -1 for lowering it.
@@ -37,17 +41,20 @@
  !! With a polygon active: all masked net nodes,
  !! without polygon: all corner points of flow cell underneath mouse pointer.
  subroutine dropland(xp, yp, idir)
-    use network_data
-    use m_missing
-    use m_polygon
-    use m_flowgeom
+    use network_data, only: numk, xk, yk, zk
+    use m_polygon, only: npl, xpl, ypl, zpl
+    use m_flowgeom, only: ndx, ndxi, nd, bl
     use m_flow
-    use unstruc_display
-    use m_sediment
+    use unstruc_display, only: rcir
+    use m_sediment, only: jaceneqtr, mxgr, grainlay
     use geometry_module, only: pinpok, dbpinpol
     use m_set_kbot_ktop
+    use m_volsur
+    use m_flow_f0isf1
+    use m_set_bobs
+    use m_hlcir2
+    use m_movabs
 
-    implicit none
     double precision, intent(in) :: xp, yp !< Clicked point, which flow node to drop. If a polygon is active, drop all contained points, independent of xp, yp.
     integer, intent(in) :: idir !< direction (1 for up, -1 for down)
 
@@ -112,3 +119,4 @@
 
     ! NOTE: vol1tot cumulation now contains an error: new bl's have not been accounted for...
  end subroutine dropland
+end module m_dropland

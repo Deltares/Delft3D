@@ -30,8 +30,6 @@ if (UNIX)
                          netcdf4
                          netcdff)
 
-    oss_include_libraries(${executable_name} oss_dependencies)
-
     target_link_libraries(${executable_name}
                           ${oss_dependencies})
 endif(UNIX)
@@ -45,7 +43,6 @@ if (WIN32)
                          netcdf4
                          netcdff)
 
-    oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 

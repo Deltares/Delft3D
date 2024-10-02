@@ -152,14 +152,14 @@ if nargin==0
 end
 %
 fprintf(1,'Parsing input file ...\n');
-ini_info       = inifile('open',ini_file);
+ini_info       = inifile('open',portpath(ini_file));
 %
-raster_reffile = inifile('get',ini_info,'general','raster');
-gridfile       = inifile('get',ini_info,'general','grid');
-waqfile        = inifile('get',ini_info,'general','data');
-flwfile        = inifile('get',ini_info,'general','flow',gridfile);
+raster_reffile = portpath(inifile('get',ini_info,'general','raster'));
+gridfile       = portpath(inifile('get',ini_info,'general','grid'));
+waqfile        = portpath(inifile('get',ini_info,'general','data'));
+flwfile        = portpath(inifile('get',ini_info,'general','flow',gridfile));
 method         = inifile('get',ini_info,'general','method');
-outdir         = inifile('get',ini_info,'general','outdir');
+outdir         = portpath(inifile('get',ini_info,'general','outdir'));
 %
 fprintf(1,'Reading template raster file(s) ...\n');
 raster_info    = qpfopen(raster_reffile);

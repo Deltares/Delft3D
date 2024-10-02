@@ -41,6 +41,8 @@ subroutine runupgauges_on_flowgeom()
    use m_alloc
    use m_readyy
    use m_wall_clock_time
+   use m_find_crossed_links_kdtree2
+   use m_crspath_on_flowgeom
    implicit none
 
    integer :: ic, icmod

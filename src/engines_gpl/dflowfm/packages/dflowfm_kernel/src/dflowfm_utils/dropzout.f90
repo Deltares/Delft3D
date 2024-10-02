@@ -31,6 +31,7 @@
 !
 
  subroutine dropzout(idir)
+    use m_isocol
     use m_polygon
     use m_flowgeom
     use m_flow
@@ -39,6 +40,7 @@
     use geometry_module, only: dbpinpol
     use m_get_kbot_ktop
     use m_set_kbot_ktop
+    use m_pfiller
     implicit none
     integer, intent(in) :: idir !< direction (1 for up, -1 for down)
 

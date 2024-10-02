@@ -32,8 +32,8 @@
 
   subroutine DELNODE(KP)
      use m_netw
-     use m_missing
-     use m_cconstants
+     use m_missing, only: dmiss
+     use m_del_elem
      implicit none
      integer :: KP
      integer :: k1

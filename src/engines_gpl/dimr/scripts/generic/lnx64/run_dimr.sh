@@ -157,7 +157,7 @@ export PROC_DEF_DIR
 # On Deltares systems only:
 if [ -f "/opt/apps/deltares/.nl" ]; then
     # Try the following module load
-    module load intelmpi/21.2.0 &>/dev/null
+    module load intelmpi
 
     # If not defined yet: Define I_MPI_FABRICS and FI_PROVIDER with proper values for Deltares systems
     [ ! -z "$I_MPI_FABRICS" ] && echo "I_MPI_FABRICS is already defined" || export I_MPI_FABRICS=shm
@@ -173,7 +173,9 @@ echo "    Working directory: $workdir"
 echo "    Number of nodes  : $NNODES"
 echo "    Number of slots  : $NSLOTS"
 echo "    OMP_NUM_THREADS  : $OMP_NUM_THREADS"
-echo "    `type mpiexec`"
+if [ $NSLOTS -ne 1 ]; then
+    echo "    `type mpiexec`"
+fi
 echo "    FI_PROVIDER      : $FI_PROVIDER"
 echo "    I_MPI_FABRICS    : $I_MPI_FABRICS"
 echo

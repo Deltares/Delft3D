@@ -46,8 +46,14 @@
 !>
 !> 0 and 1 are sample points
 !> L and R are interpolated at sample cell centers
+module m_comp_grad
+
+implicit none
+
+contains
+
    subroutine comp_grad(zss, ip0, ip1, ip0L, ip0R, ip1L, ip1R, gradx, grady, Sx, Sy, DareaL, DareaR)
-      use m_samples, only: Ns, MXSAM, MYSAM, xs, ys
+      use m_samples, only: MXSAM, MYSAM, xs, ys
       use m_samples_refine, only: NDIM
       use m_missing
       use m_sferic
@@ -123,3 +129,5 @@
 
       return
    end subroutine comp_grad
+
+end module m_comp_grad

@@ -30,6 +30,7 @@
 !
 !
  subroutine poshcheck(key)
+    use m_rcirc
     use m_flow
     use m_flowgeom
     use m_flowtimes
@@ -37,6 +38,7 @@
     use m_timer
     use m_gui
     use m_okay
+    use m_set_col
 
     implicit none
 

@@ -40,6 +40,7 @@ contains
       use m_flow, only: czs, taus
       use m_alloc
       use m_flowparameters, only: flowWithoutWaves, jawaveswartdelwaq
+      use m_get_tau
       !
       !
       ! Parameters
@@ -73,7 +74,7 @@ contains
       end if
 
       do n = 1, ndxi
-         call gettau(n, taucurc, czc, jawaveswartdelwaq_local)
+         call get_tau(n, taucurc, czc, jawaveswartdelwaq_local)
          czs(n) = czc
          if (typout == 1) then
             taus(n) = taucurc

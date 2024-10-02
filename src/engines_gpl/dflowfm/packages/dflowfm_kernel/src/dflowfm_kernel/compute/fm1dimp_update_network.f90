@@ -40,7 +40,6 @@ contains
       use unstruc_channel_flow, only: network
       use m_CrossSections, only: createTablesForTabulatedProfile
       use m_fm_erosed, only: lnx_mor
-      use m_oned_functions, only: gridpoint2cross
       use m_flow, only: hu
       use m_flowgeom, only: lnx
 !

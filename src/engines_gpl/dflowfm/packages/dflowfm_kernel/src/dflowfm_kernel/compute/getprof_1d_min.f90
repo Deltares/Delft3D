@@ -29,16 +29,13 @@
 
 !
 !
-
+module m_get_prof_1D_min
+   implicit none
+contains
 subroutine getprof_1D_min(L, hpr, area, width) ! pressurepipe
-   use m_profiles
-   use m_flow
    use m_flowgeom
    use unstruc_channel_flow
-   use m_crosssections
-   use m_cross_helper
 
-   implicit none
    integer :: L
    double precision :: hpr ! hoogte in profiel
    double precision :: area ! wet cross sectional area
@@ -104,3 +101,4 @@ subroutine getprof_1D_min(L, hpr, area, width) ! pressurepipe
       width = (1d0 - alfa) * width + alfa * width2
    end if
 end subroutine getprof_1D_min
+end module m_get_prof_1D_min

@@ -52,26 +52,24 @@ if ~strcmp(Id(2:end-1),'Id')
         switch iter
             case 1
                 if strncmp(computer,'PCWIN',5)
-                    svnVersion = '../../../../third_party_open/subversion/bin/win32/svnversion.exe';
+                    thisfile = mfilename('fullpath');
+                    tools = strfind(thisfile,'tools_lgpl');
+                    svnVersion = [thisfile(1:tools-1),'third_party_open/subversion/bin/win32/svnversion.exe'];
                 else
                     svnVersion = '/usr/bin/svnversion';
                 end
             case 2
-                if strncmp(svnVersion,'../',3)
-                    svnVersion = svnVersion(4:end); % one level less deep
-                end
-            case 3
                 svnPath = getenv('SVN_BIN_PATH');
                 svnVersion = [svnPath filesep 'svnversion.exe'];
-            case 4
+            case 3
                 svnPath = 'c:\Program Files\Subversion\bin';
                 svnVersion = [svnPath filesep 'svnversion.exe'];
-            case 5
+            case 4
                 [s,svnVersion] = system_plain('which svnversion');
                 if s~=0
                     svnVersion = 'The WHICH command failed';
                 end
-            case 6
+            case 5
                 svnVersion = '';
                 break
         end
@@ -120,6 +118,8 @@ else
     % Use Git
 
     % get hash
+    cwd = pwd;
+    cd(dirname)
     [a,b] = system_plain('git -P log -n 1 -v --decorate');
     if a ~= 0
         revString = 'unknown';
@@ -164,6 +164,7 @@ else
             revString = [revString ' (changed)'];
         end
     end
+    cd(cwd)
 end
 
 function needsCheck = check_and_list_files(b,checkString,printString)

@@ -35,6 +35,7 @@
 subroutine copyFixedWeirsToPol()
    use m_fixedweirs
    use m_polygon
+   use m_append_crspath_to_pol
    implicit none
    integer :: i
 

@@ -30,12 +30,19 @@
 !
 !
 
+module m_inifcori
+
+implicit none
+
+contains
+
 subroutine inifcori()
    use m_flowgeom
    use m_flow
    use m_sferic
-   use network_data
-   use messagehandling
+   use network_data, only: ykmin, ykmax
+   use messagehandling, only: LEVEL_INFO, mess
+   use m_dbdistance_hk
    implicit none
    integer :: ierr, L, k, i, LL, LLL, LLLL, k1, k2, k3, n, j, mout
    double precision :: beta, y0, dy, fcormin, fcormax, xx, yy
@@ -252,3 +259,5 @@ subroutine orginifcori()
    end if
 
 end subroutine orginifcori
+
+end module m_inifcori

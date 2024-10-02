@@ -50,7 +50,8 @@ else
      module load cmake/3.30.0_intel2024.0.0
      module load intel/2023.1.0
      module load intelmpi/2021.10.0
-     module load netcdf/4.9.2_4.6.1_intel2023.1.0
+     #module load netcdf/4.9.2_4.6.1_intel2023.1.0 # gives problems with NetCDF4 exports
+     module load netcdf/v4.7.4_v4.5.3_intel2023.1.0
      module load gdal/3.6.3_intel2023.1.0
      module load patchelf/0.17.2_intel2023.1.0
      module load ninja/1.11.1_native

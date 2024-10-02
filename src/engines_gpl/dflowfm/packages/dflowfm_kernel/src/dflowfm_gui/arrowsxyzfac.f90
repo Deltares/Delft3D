@@ -30,7 +30,15 @@
 !
 !
 
+module m_arrowsxyzfac
+
+implicit none
+
+contains
+
       subroutine ARROWSXYzfac(X0, Y0, UX, UY, VFAC, zfac)
+         use m_movabs
+         use m_lnabs
          implicit none
          double precision :: X0, Y0, UX, UY, VFAC, zfac
 
@@ -42,3 +50,5 @@
          call LNABS(x0 + ux * vfac, y0 + uy * vfac * zfac)
          return
       end
+
+end module m_arrowsxyzfac

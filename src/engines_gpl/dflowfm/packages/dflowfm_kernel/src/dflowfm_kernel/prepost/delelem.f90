@@ -29,11 +29,12 @@
 
 !
 !
-
+module m_del_elem
+   implicit none
+contains
     subroutine DELELEM(K1, K2, LNU)
        use m_netw
-       use m_cconstants
-       implicit none
+
        integer :: K1, K2, LNU
        integer :: l1
        integer :: l2
@@ -90,3 +91,4 @@
 
        return
     end subroutine DELELEM
+end module m_del_elem

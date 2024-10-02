@@ -35,9 +35,10 @@ subroutine linkcrossedbyland(L, jstart, jend, jland, jacross)
 
    use m_netw
    use m_landboundary
-   use m_missing
+   use m_missing, only: dmiss
    use geometry_module, only: dbdistance
    use m_sferic, only: jsferic, jasfer3D
+   use m_d_line_dis3
 
    implicit none
 

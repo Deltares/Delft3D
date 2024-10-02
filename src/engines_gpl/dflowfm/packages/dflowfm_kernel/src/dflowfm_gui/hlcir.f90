@@ -29,13 +29,17 @@
 
 !
 !
-
+module m_hlcir
+   implicit none
+contains
       !> Draw a highlighted circle at current position.
       !! Highlighted means: blank center, coloured outline.
       subroutine HLCIR(R, icol)
-         implicit none
+         use m_hlcir2
+
          double precision, intent(in) :: R !< Radius in world coords.
          integer, intent(in) :: icol !< Colour number
 
          call HLCIR2(R, 0, icol)
       end subroutine HLCIR
+end module m_hlcir

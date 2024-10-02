@@ -31,17 +31,25 @@
 !
 
  subroutine tekflownodes(ja)
+    use m_isosmoothflownode
+    use m_isocol
+    use m_halt
+    use m_drcirc
+    use m_dhtext
+    use m_dhitext
+    use m_copyznodtornod
     use unstruc_display
     use m_flowgeom
     use m_flow
     use m_missing
     use m_transport
     use m_drawthis
+    use m_pfiller
+    use m_inview
     implicit none
     integer :: nodemode, nodewhat
     integer :: k, ja, ja2, nn, ncol
     double precision :: znod, zn
-    logical inview
 
     nodemode = ndraw(19)
     nodewhat = ndraw(28)

@@ -28,11 +28,8 @@ add_library(${library_name} ${source_files}
 set(oss_dependencies    deltares_common
                         deltares_common_c
                         nefis) 
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif()
+target_link_libraries(${library_name} ${oss_dependencies})
 
 target_include_directories(${library_name}  PRIVATE ${version_include_dir})
 

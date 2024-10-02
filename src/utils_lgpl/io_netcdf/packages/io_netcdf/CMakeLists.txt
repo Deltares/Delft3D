@@ -39,7 +39,6 @@ if(UNIX)
                          fortrangis
                          netcdff)
     target_compile_definitions(${library_name} PRIVATE LINUX64)
-    oss_include_libraries(${library_name} oss_dependencies)
     target_link_libraries(${library_name} ${oss_dependencies}
          PkgConfig::NETCDF)
     include_directories(${CMAKE_BINARY_DIR}/netcdff)
@@ -57,7 +56,6 @@ if (WIN32)
                         netcdf4
                         netcdff)
     target_compile_definitions(${library_name} PRIVATE WIN64)
-    oss_include_libraries(${library_name} oss_dependencies)
 
     target_link_libraries(${library_name} ${oss_dependencies}
                                           netcdf)
@@ -93,7 +91,6 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     include_directories(${version_include_dir})
 
     set(oss_dependencies io_netcdf)
-    oss_include_libraries(${library_name} oss_dependencies)
     target_link_libraries(${library_name} ${oss_dependencies})
 
     # Set additional compilation properties, specific for Debug mode

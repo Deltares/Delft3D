@@ -31,9 +31,16 @@
 !
 
 !
+module m_lnrel
+
+implicit none
+
+contains
+
       subroutine LNREL(X, Y)
-         implicit none
          double precision :: x
          double precision :: y
          call IGRLINETOREL(real(X), real(Y))
       end
+
+end module m_lnrel

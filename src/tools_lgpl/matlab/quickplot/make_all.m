@@ -38,17 +38,18 @@ function make_all(release)
 %   $Id$
 
 if ~license('checkout','compiler')
-    if matlabversionnumber >= 9.06 && batchStartupOptionUsed
-        fprintf('##teamcity[buildStop comment=''Compiler license currently not available.'' readdToQueue=''true'']\n');
-        return
-    else
-        error('Compiler license currently not available.')
+    try
+        if batchStartupOptionUsed
+            fprintf('##teamcity[buildStop comment=''Compiler license currently not available.'' readdToQueue=''true'']\n');
+            return
+        end
     end
+    error('Compiler license currently not available.')
 end
 curdir = pwd;
 sourcedir = [curdir,filesep,'progsrc'];
 
-[qpversion,hash,repo_url] = read_identification(sourcedir,'d3d_qp.m');
+[qpversion,hash,repo_url] = get_qpversion(sourcedir,'d3d_qp.m');
 T = now;
 
 if nargin == 0

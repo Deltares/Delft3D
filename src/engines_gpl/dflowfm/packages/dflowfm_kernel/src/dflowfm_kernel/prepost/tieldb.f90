@@ -36,7 +36,7 @@
          use m_missing
          use geometry_module, only: dpinpok, cross
          use m_sferic, only: jsferic
-         use gridoperations
+         use m_three_two
 
          implicit none
          double precision :: crp

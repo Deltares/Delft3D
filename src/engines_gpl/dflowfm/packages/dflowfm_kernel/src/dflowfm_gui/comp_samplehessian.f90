@@ -31,7 +31,14 @@
 !
 
 !> compute sample Hessians
+module m_comp_samplehessian
+
+implicit none
+
+contains
+
 subroutine comp_sampleHessian(ierror)
+   use m_comp_samplegradi
    use m_samples
    use m_samples_refine
    use m_missing
@@ -182,3 +189,5 @@ subroutine comp_sampleHessian(ierror)
 
    return
 end subroutine comp_sampleHessian
+
+end module m_comp_samplehessian

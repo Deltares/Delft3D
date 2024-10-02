@@ -29,12 +29,15 @@
 
 !
 !
-
+module m_new_link
+   implicit none
+contains
   subroutine NEWLINK(K1, K2, LNU) ! no checks
      use m_netw
-     use unstruc_colors
-     use gridoperations
-     implicit none
+     use unstruc_colors, only: ncoldn
+     use gridoperations, only: increasenetw
+     use m_tek_link
+
      integer :: K1, K2, LNU
 
      NUML = NUML + 1
@@ -50,3 +53,4 @@
      call TEKLINK(NUML, NCOLDN)
 
   end subroutine NEWLINK
+end module m_new_link

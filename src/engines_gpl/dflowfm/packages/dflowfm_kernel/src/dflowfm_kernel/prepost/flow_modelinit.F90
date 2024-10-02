@@ -33,6 +33,7 @@
  !> Initializes the entire current model (geometry, boundaries, initial state)
  !! @return Error status: error (/=0) or not (0)
  integer function flow_modelinit() result(iresult) ! initialise flowmodel
+    use m_d3dflow_dimensioninit
     use timers
     use m_flowgeom, only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
     use waq, only: reset_waq
@@ -69,7 +70,6 @@
     use m_sedtrails_netcdf, only: sedtrails_loadNetwork
     use m_sedtrails_stats, only: default_sedtrails_stats, alloc_sedtrails_stats
     use fm_statistical_output
-    use unstruc_display, only: ntek
     use m_gui
     use m_debug
     use m_flow_flowinit
@@ -86,6 +86,9 @@
     use m_laterals, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
                          get_lateral_volume_per_layer, lateral_volume_per_layer
     use m_initialize_flow1d_implicit, only: initialize_flow1d_implicit
+    use m_structure_parameters
+    use m_set_frcu_mor
+    use m_flow_obsinit
     !
     ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
     ! Activate the following line (See also statements below)

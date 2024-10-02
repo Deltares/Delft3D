@@ -59,6 +59,15 @@
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
             </environments>
         </program>
+        <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true">
+            <location ref="local" type="check">
+                <from>teamcity_artifacts</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
+            </location>
+            <path>execute_singularity_tc.sh run_dflowfm.sh</path>
+            <environments>
+                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+            </environments>
+        </program>
     </programs>
     <!--
     default testCases

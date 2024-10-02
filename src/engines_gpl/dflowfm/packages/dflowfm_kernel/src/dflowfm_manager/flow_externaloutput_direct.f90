@@ -40,6 +40,8 @@ subroutine flow_externaloutput_direct()
    use unstruc_messages
    use time_module, only: datetime_to_string
    use m_date_time_from_ref_date, only: date_time_from_ref_date
+   use m_wrimap
+   use m_unc_write_his, only: unc_write_his
    implicit none
    integer :: iyear, imonth, iday, ihour, imin, isec
 

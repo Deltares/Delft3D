@@ -32,6 +32,8 @@
 
       subroutine TEKTXT()
          use m_wearelt
+         use m_set_col
+         use m_draw_text
          implicit none
          integer :: ia
          integer, save :: ini = 0

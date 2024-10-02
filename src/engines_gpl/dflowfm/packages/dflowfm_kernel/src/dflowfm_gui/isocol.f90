@@ -30,9 +30,16 @@
 !
 !
 
+module m_isocol
+
+implicit none
+
+contains
+
      subroutine ISOCOL(VALC, NCOL)
         use m_depmax
-        implicit none
+        use m_set_col
+
         integer :: i, ncol
         double precision :: valc
 
@@ -48,3 +55,5 @@
         call SETCOL(NCOL)
         return
      end
+
+end module m_isocol

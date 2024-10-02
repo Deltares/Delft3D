@@ -12,7 +12,6 @@ set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/io_netcdf)
 set(oss_dependencies deltares_common)
 
 target_link_libraries(${library_name} ${oss_dependencies})
-oss_include_libraries(${library_name} oss_dependencies)
 
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")

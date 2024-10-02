@@ -30,14 +30,18 @@
 !
 !
 
- subroutine copywaterlevelstosamples()
-    use m_samples
-    use m_flowgeom
-    use m_flow
-    use unstruc_display, only: wetplot
+module m_copywaterlevelstosamples
 
-    use M_MISSING
-    implicit none
+implicit none
+
+contains
+
+ subroutine copywaterlevelstosamples()
+    use m_samples, only: ns, xs, ys, zs, increasesam
+    use m_flowgeom, only: ndx, xz, yz
+    use m_flow, only: hs
+    use unstruc_display_data, only: wetplot
+
     integer :: k, n
     double precision, external :: znod
 
@@ -51,3 +55,5 @@
     end do
     ns = k
  end subroutine copywaterlevelstosamples
+
+end module m_copywaterlevelstosamples

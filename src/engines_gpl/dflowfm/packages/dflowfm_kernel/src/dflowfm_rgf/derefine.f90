@@ -29,19 +29,19 @@
 
 !
 !
-
+module m_derefine
+   implicit none
+contains
 !***************7***  INTERPOLATION ************************************
       subroutine DEREFINE(M1, N1, M2, N2, NUM)
-         use m_grid
-         use m_gridsettings
-         use unstruc_messages
-         use m_missing
+         use m_grid, only: nc, mc, mmax, nmax, xc, yc
+         use m_gridsettings, only: mfac, nfac
+         use messagehandling, only: LEVEL_DEBUG, mess
+         use m_missing, only: dmiss
          use m_readyy
          use m_qnerror
-         implicit none
 
          integer :: m1, n1, m2, n2, num
-
          integer :: I, J, IR, INOW, JR, JNOW, MFA, NFA, MFAA, NFAA, MD, ND
          double precision, allocatable :: XR(:, :), YR(:, :)
          allocate (xr(mmax, nmax), yr(mmax, nmax))
@@ -111,3 +111,4 @@
          deallocate (XR, YR)
          return
       end subroutine derefine
+end module m_derefine

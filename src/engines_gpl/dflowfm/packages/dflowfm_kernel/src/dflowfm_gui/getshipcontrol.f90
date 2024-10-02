@@ -30,6 +30,12 @@
 !
 !
 
+module m_getshipcontrol
+
+implicit none
+
+contains
+
  subroutine GETSHIPCONTROL()
     use m_ship
     use m_drawthis
@@ -83,3 +89,5 @@
     end if
 
  end subroutine getshipcontrol
+
+end module m_getshipcontrol

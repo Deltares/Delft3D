@@ -37,6 +37,9 @@
 
     use m_flowgeom, only: xz, bl, dxi, ln
     use m_flow, only: s1, iadvec
+    use m_get_cz
+    use m_movabs
+    use m_lnabs
 
     implicit none
     double precision :: chezy, cf, h0, h1, x0, x1, q, constant, bot, a, x, hav, slope, h, h3, hc, hc3, he3

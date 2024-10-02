@@ -37,6 +37,7 @@ subroutine makecurvgrid(ic, jc)
    use m_grid
    use m_missing
    use m_alloc
+   use m_increase_grid
 
    implicit none
 

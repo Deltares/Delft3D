@@ -32,6 +32,7 @@
 
      subroutine delgrd(KEY, JASAVE, jadelpol)
 !    delete grid
+        use m_confrm
         use m_grid
         use m_missing
         use m_polygon, only: NPL, xpl, ypl, zpl

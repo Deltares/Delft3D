@@ -31,12 +31,18 @@
 !
 
   subroutine TEKLAN(NCOL)
+     use m_linewidth
+     use m_disp3c
+     use m_dhitext
      use M_LANDBOUNDARY
      use m_wearelt
      use unstruc_colors
      use unstruc_display
      use m_drawthis
      use m_fbox
+     use m_pfiller
+     use m_set_col
+     use m_inview
 
      implicit none
      integer :: NCOL
@@ -45,7 +51,6 @@
      integer :: ncl
      integer :: ncold
      double precision :: rh
-     logical inview
 
      if (NDRAW(3) == 0) return
 

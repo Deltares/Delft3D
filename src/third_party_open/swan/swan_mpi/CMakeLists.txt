@@ -34,7 +34,6 @@ if (WIN32)
     set(exe_dependencies netcdf4
                          netcdff)
 
-    oss_include_libraries(${executable_name} exe_dependencies)
     target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"

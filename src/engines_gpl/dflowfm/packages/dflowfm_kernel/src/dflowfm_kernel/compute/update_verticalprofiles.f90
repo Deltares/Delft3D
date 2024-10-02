@@ -54,6 +54,7 @@ subroutine update_verticalprofiles()
    use m_missing
    use m_get_kbot_ktop
    use m_get_Lbot_Ltop
+   use m_links_to_centers, only: links_to_centers
 
    implicit none
 
@@ -203,7 +204,7 @@ subroutine update_verticalprofiles()
 
       if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
 
-         call linkstocenterstwodoubles2(turkinepsws, turkin1, tureps1)
+         call links_to_centers(turkinepsws, turkin1, tureps1)
 
          if (numsrc > 0 .and. addksources > 0d0) then
             call doaddksources()
@@ -229,7 +230,7 @@ subroutine update_verticalprofiles()
                end do
             end if
 
-            call linkstocenterstwodoubles(tttc, tttu)
+            call links_to_centers(tttc, tttu)
             tttctot = 0d0
             do n = 1, ndxi
                call getkbotktop(n, kb, kt)
@@ -1062,6 +1063,6 @@ subroutine update_verticalprofiles()
    !   call update_ghosts(ITYPE_U3DW, 1, Ndkx, tureps1, ierror)
    !end if
 
-   call linkstocenterstwodoubles(vicwws, vicwwu)
+   call links_to_centers(vicwws, vicwwu)
 
 end subroutine update_verticalprofiles

@@ -41,6 +41,7 @@ module m_flow ! flow arrays-999
    use m_alloc
    use m_vegetation
    use m_ship
+   use precision, only: sp
 
    implicit none
 
@@ -351,8 +352,8 @@ module m_flow ! flow arrays-999
    double precision, allocatable :: wavmubnd(:) !< wave-induced mass flux (on open boundaries)
    integer :: number_steps_limited_visc_flux_links = 0 !< number of steps with limited viscosity/flux on links
    integer, parameter :: MAX_PRINTS_LIMITED_VISC_FLUX_LINKS = 10 !< number of messages in dia file on limited viscosity/flux links
-   real, allocatable :: vicLu(:) !< horizontal eddy viscosity coefficient at u point (m2/s)  (limited only if ja_timestep_auto_visc==0)
-   real, allocatable :: viu(:) !< horizontal eddy viscosity coefficient at u point (m2/s), modeled part of viscosity = vicLu - viusp
+   real(kind=sp), allocatable :: vicLu(:) !< horizontal eddy viscosity coefficient at u point (m2/s)  (limited only if ja_timestep_auto_visc==0)
+   real(kind=sp), allocatable :: viu(:) !< horizontal eddy viscosity coefficient at u point (m2/s), modeled part of viscosity = vicLu - viusp
    double precision, allocatable, target :: viusp(:) !< [m2/s] user defined spatial eddy viscosity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
    double precision, allocatable, target :: diusp(:) !< [m2/s] user defined spatial eddy diffusivity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
    !< so in transport, total diffusivity = viu*sigdifi + diusp

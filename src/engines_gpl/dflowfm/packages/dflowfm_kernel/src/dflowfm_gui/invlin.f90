@@ -30,16 +30,24 @@
 !
 !
 
+module m_invlin
+
+implicit none
+
+contains
+
       logical function INVLIN(L)
          use m_netw
-         implicit none
+         use m_inview
+
          integer :: k1
          integer :: k2
          integer :: l
-         logical inview
 
          K1 = KN(1, L)
          K2 = KN(2, L)
          INVLIN = INVIEW(XK(K1), YK(K1)) .or. INVIEW(XK(K2), YK(K2))
          return
       end
+
+end module m_invlin

@@ -32,6 +32,7 @@
 
 !>    read Arcinfo data and average it into a smaller array
       subroutine ReadLargeArcInfoBlock(MINP, Mfile, Nfile, istart, iend, jstart, jend, Marray, Narray, RMIS, istep, jstep, D)
+         use m_halt3
          use m_missing
          use m_readyy
          implicit none

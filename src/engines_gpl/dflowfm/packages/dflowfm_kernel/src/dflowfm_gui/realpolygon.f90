@@ -29,10 +29,15 @@
 
 !
 !
-
+module m_realpolygon
+   implicit none
+contains
       subroutine realPOLYGON(X, Y, N, NCOL)
          use m_colnow
-         implicit none
+         use m_set_col
+         use m_lnabs
+         use m_ptabs
+
          integer :: i
          integer :: n
          integer :: ncol
@@ -46,3 +51,4 @@
          call LNABS(dble(X(1)), dble(Y(1)))
          return
       end
+end module m_realpolygon

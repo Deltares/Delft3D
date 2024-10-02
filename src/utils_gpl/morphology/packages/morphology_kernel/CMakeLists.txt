@@ -8,11 +8,8 @@ set(oss_dependencies    deltares_common
                         deltares_common_mpi
                         morphology_data
                         morphology_plugins_c)
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(UNIX)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../include")
 

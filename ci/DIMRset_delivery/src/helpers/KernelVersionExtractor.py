@@ -74,7 +74,7 @@ class KernelVersionExtractor(object):
         for KERNEL in KERNELS:
             kernel_versions[KERNEL.name_for_extracting_revision] = None
 
-        for kernel in build_info["properties"]["property"]:
+        for kernel in build_info["resultingProperties"]["property"]:
             if any(KERNEL.name_for_extracting_revision == kernel["name"] for KERNEL in KERNELS):
                 kernel_versions[kernel["name"]] = kernel["value"]
 

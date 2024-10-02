@@ -113,12 +113,12 @@ contains
       use m_flowgeom, only: ln, lnx, ndx
       use precision_basics
       use m_flowparameters, only: eps10
+      use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
 
       double precision, intent(in) :: time_in_seconds !< Current time when setting wind data
       integer, intent(out) :: iresult !< Error indicator
 
-      double precision, parameter :: SEA_LEVEL_PRESSURE = 101325d0
       integer :: ec_item_id, first, last, link, i, k
       logical :: first_time_wind
 
@@ -225,7 +225,7 @@ contains
       if (item_atmosphericpressure /= ec_undef_int) then
          do k = 1, ndx
             if (comparereal(patm(k), dmiss, eps10) == 0) then
-               patm(k) = SEA_LEVEL_PRESSURE
+               patm(k) = BACKGROUND_AIR_PRESSURE
             end if
          end do
       end if
@@ -585,7 +585,7 @@ contains
       if (ext_force_bnd_used) then
          ! first read the bc file (new file format for boundary conditions)
          call read_location_files_from_boundary_blocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
-                                                  numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+                                                       numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       end if
 
       do while (ja_ext_force == 1) ! read *.ext file
@@ -621,7 +621,7 @@ contains
    end subroutine findexternalboundarypoints
 
    subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
-                                                  numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+                                                       numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       use properties
       use timespace
       use tree_data_types
@@ -709,7 +709,7 @@ contains
             ! todo: read multiple quantities
             call prop_get(node_ptr, '', 'quantity', quantity, property_ok)
             if (.not. property_ok) then
-               call qnerror('Expected property', 'quantity', ' for boundary definition')
+               call qnerror('Expected property', 'quantity', 'for boundary definition')
             end if
 
             group_ok = group_ok .and. property_ok
@@ -725,7 +725,7 @@ contains
             if (property_ok) then
                call resolvePath(location_file, basedir)
             else
-               call qnerror('Expected property', 'locationFile', ' for boundary definition')
+               call qnerror('Expected property', 'locationFile', 'for boundary definition')
             end if
 
             group_ok = group_ok .and. property_ok
@@ -734,7 +734,7 @@ contains
             if (property_ok) then
                call resolvePath(forcing_file, basedir)
             else
-               call qnerror('Expected property', 'forcingFile', ' for boundary definition')
+               call qnerror('Expected property', 'forcingFile', 'for boundary definition')
             end if
 
             group_ok = group_ok .and. property_ok
@@ -1294,12 +1294,14 @@ contains
             valuestring = location_file(1:L)//'.tim'
             inquire (file=valuestring, exist=file_exists)
             if (.not. file_exists) then
-               call mess(LEVEL_WARN, 'Files '''//trim(valuestring)//''' and file '''//trim(location_file(1:L)//'_0001.tim')//''' do not exist.')
+               call mess(LEVEL_ERROR, 'Files '''//trim(valuestring)//''' and file '''//trim(location_file(1:L)//'_0001.tim')//''' do not exist.')
+               success = .false.
+               return
             end if
          end if
 
       else
-         ! TODO: AvD: error msg?
+         call mess(LEVEL_ERROR, trim(objtype)//' '''//trim(objid)//''', '//paramname//' could not be read.')
          success = .false.
       end if
 
@@ -1320,7 +1322,7 @@ contains
             else
                success = .false.
                write (msgbuf, '(a)') 'Unknown quantity '''//trim(qid)//'''.'
-               call warn_flush()
+               call err_flush()
                return
             end if
 
@@ -2311,6 +2313,7 @@ contains
       use m_structures, only: check_model_has_structures_across_partitions
       use m_laterals, only: initialize_lateraldata
       use m_get_kbot_ktop
+      use m_get_prof_1D
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2380,8 +2383,9 @@ contains
       end if
 
       if (ja_computed_airdensity == 1) then
-         if (.not. ((japatm == 1) .and. tair_available .and. dewpoint_available)) then
-            call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected in ext-file in combination with keyword computedAirdensity in mdu-file.')
+         if ( (japatm /= 1) .or. .not. tair_available .or. .not. dewpoint_available .or. &
+            (item_atmosphericpressure == ec_undef_int) .or. (item_airtemperature == ec_undef_int) .or. (item_humidity == ec_undef_int) ) then
+            call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected, as separate quantities (e.g., QUANTITY = airpressure), in ext-file in combination with keyword computedAirdensity in mdu-file.')
          else
             if (ja_airdensity == 1) then
                call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword computedAirdensity = 1 in mdu-file.')

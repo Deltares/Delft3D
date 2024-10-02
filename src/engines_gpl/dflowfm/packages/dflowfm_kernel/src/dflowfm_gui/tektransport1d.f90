@@ -36,6 +36,8 @@
     use m_flowgeom
     use m_flow
     use m_transport
+    use m_movabs
+    use m_lnabs
     implicit none
     double precision :: tim
     double precision :: cwave, period, omeg, wlen, rk, phi, xx, yy, dif

@@ -1,6 +1,6 @@
 function make_d3dmatlab(basedir,varargin)
-%MAKE_D3DMATLAB Pre-compile Delft3D-MATLAB toolbox
-%   Pre-compile MATLAB m-code to p-code for distribution as Delft3D-MATLAB toolbox.
+%MAKE_D3DMATLAB Prepare Delft3D-MATLAB toolbox for distribution
+%   Prepare the files for distribution as Delft3D-MATLAB toolbox.
 %
 %   MAKE_D3DMATLAB(BASEDIR)
 %   Use specified directory instead of current directory as base directory
@@ -68,7 +68,7 @@ end
 sourcedir=[pwd,filesep,'progsrc'];
 
 % set defaults
-[qpversion,hash,repo_url] = read_identification(sourcedir, 'd3d_qp.m');
+[qpversion,hash,repo_url] = get_qpversion(sourcedir, 'd3d_qp.m');
 T = now;
 
 % overrule using input arguments
@@ -118,7 +118,7 @@ if ~exist('netcdf/snctools','dir')
     exportsrc('../../../../third_party_open/netcdf/matlab/snctools', 'netcdf/snctools')
 end
 
-% strip off the 32/64 bit flag (the toolbox is platform independent)
+% strip off the platform flag (binaries for Windows and Linux are included)
 qpversion = deblank(sscanf(qpversion,'%[^(]'));
 % for the progress statement add the platform statement
 qpversion_ = [qpversion, ' (all platforms)'];

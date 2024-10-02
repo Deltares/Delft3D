@@ -32,6 +32,7 @@
 
 !> split a link, make new cells and update administration
 subroutine splitlink(xp, yp, L_, dcosmin, jatek, ierror)
+   use m_dcirr
    use m_netw
    use network_data, only: xzw, yzw
    use m_flowgeom, only: xz, yz, ba
@@ -42,6 +43,8 @@ subroutine splitlink(xp, yp, L_, dcosmin, jatek, ierror)
    use gridoperations
    use m_alloc
    use m_qnerror
+   use m_tek_link
+   use m_is_link
 
    implicit none
 

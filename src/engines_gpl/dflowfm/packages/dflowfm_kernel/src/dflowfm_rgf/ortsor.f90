@@ -40,6 +40,7 @@
          use m_orthosettings
          use m_drawthis
          use m_readyy
+         use m_tek_grd
          implicit none
          integer :: i
          integer :: key

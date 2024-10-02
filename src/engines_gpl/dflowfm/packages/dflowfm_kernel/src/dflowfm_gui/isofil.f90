@@ -30,13 +30,21 @@
 !
 !
 
+module m_isofil
+
+implicit none
+
+contains
+
       subroutine ISOFIL(X, Y, Z, n4, NCOLR)
          use m_isofil_color
          use m_depmax
-         implicit none
+
          integer :: n4, ncolr
          double precision :: X(n4), Y(n4), Z(n4)
 
          call isofil_color(X, Y, Z, n4, NCOLR, VAL, NCOLS, NV)
 
       end subroutine isofil
+
+end module m_isofil

@@ -30,19 +30,24 @@
 !
 !
 
+module m_minmxsam
+
+implicit none
+
+contains
+
  subroutine minmxsam()
 
-    use m_samples
-    use m_missing
+    use m_samples, only: ns, xs, ys, zs
+    use m_missing, only: dmiss
     use m_isoscaleunit
     use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, dv=>dv2, val=>val2, nv=>nv2, jaauto=>jaauto2
-
-    implicit none
+    use m_paramtext
+    use m_inview
 
     double precision :: rmin, rmax
     character(len=256) :: buffer
     integer :: k, i
-    logical inview
 
     if (jaauto > 0) then
        rmin = 1d30
@@ -79,13 +84,14 @@
     use m_missing
     use m_isoscaleunit
     use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, dv=>dv2, val=>val2, nv=>nv2, jaauto=>jaauto2
+    use m_paramtext
+    use m_inview
 
     implicit none
 
     double precision :: rmin, rmax, x, y, z
     character(len=256) :: buffer
     integer :: m, n, i
-    logical inview
 
     if (jaauto > 0) then
        rmin = 1d30
@@ -120,3 +126,5 @@
     call PARAMTEXT(buffer, 2)
 
  end subroutine minmxarc
+
+end module m_minmxsam

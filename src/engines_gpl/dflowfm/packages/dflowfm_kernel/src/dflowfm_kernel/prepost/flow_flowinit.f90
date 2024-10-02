@@ -30,6 +30,10 @@
 !
 !
 module m_flow_flowinit
+   use m_inifcori
+   use m_inidensconstants
+   use m_alloc_jacobi
+
 
    implicit none
 
@@ -68,7 +72,6 @@ contains
       use timers, only: timstrt, timstop
       use m_sethu
       use fm_external_forcings
-      use m_1d2d_fixedweirs, only: n_1d2d_fixedweirs, realloc_1d2d_fixedweirs, initialise_1d2d_fixedweirs
       use m_fm_icecover, only: ice_apply_pressure, ice_p, fm_ice_update_press
       use fm_manhole_losses, only: init_manhole_losses
       use unstruc_channel_flow, only: network
@@ -78,6 +81,8 @@ contains
       use string_module, only: str_lower
       use m_delpol
       use m_set_kbot_ktop
+      use m_ini_sferic
+      use m_volsur
 
       implicit none
 
@@ -773,6 +778,8 @@ contains
       use iso_varying_string, only: len_trim, index
       use m_setucxcuy_leastsquare, only: reconst2nd
       use dfm_error
+      use m_set_bobs
+      use m_flow_obsinit
 
       implicit none
 
@@ -1585,6 +1592,9 @@ contains
       use m_get_kbot_ktop
       use m_wripol
       use m_set_kbot_ktop
+      use m_ini_sferic
+      use m_set_bobs
+      use m_get_czz0
 
       implicit none
 

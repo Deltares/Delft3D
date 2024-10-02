@@ -58,12 +58,12 @@ contains
 !! IFS documentation, part IV, section 12.6
    subroutine get_airdensity(p, T, T_dewpoint, air_density, ierror)
       use m_alloc, only: aerr
-      use MessageHandling, only: mess, LEVEL_WARN
+      use MessageHandling, only: mess, LEVEL_ERROR
 
       real(kind=hp), intent(in) :: p(:) !< total atmospheric pressure (Pa)
       real(kind=hp), intent(in) :: T(:) !< temperature [degrees_Celsius]
       real(kind=hp), intent(in) :: T_dewpoint(:) !< dewpoint [degrees_Celsius]
-      real(kind=hp), intent(out) :: air_density(:) !< air density [kg m-1]
+      real(kind=hp), intent(inout) :: air_density(:) !< air density [kg m-3]
       integer, intent(out) :: ierror !< error (1) or not (0)
 
       real(kind=hp), allocatable :: e_sat(:) !< water vapour saturation pressure
@@ -75,10 +75,9 @@ contains
       integer :: nelem !< number of elements in array
       integer :: ierr !< error code
 
-      ierror = 0
       nelem = size(air_density)
       if (nelem /= size(p) .or. nelem /= size(T)) then
-         call mess(LEVEL_WARN, 'Size of arrays do no match, computation of airdensity is not possible.')
+         call mess(LEVEL_ERROR, 'Programming error, please report: Size of arrays in m_airdensity::get_airdensity do no match, computation of air density is not possible.')
          ierror = 1
          return
       end if
@@ -108,6 +107,8 @@ contains
       deallocate (T_virtual)
       deallocate (T_kelvin)
       deallocate (Td_kelvin)
+
+      ierror = 0
 
    contains
 

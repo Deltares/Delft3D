@@ -29,11 +29,13 @@
 
 !
 !
-
+module m_get_cz
+   implicit none
+contains
  subroutine getcz(h1, frcn, ifrctyp, cz, L) ! basic get chezy coefficient,  this routine is not safe for frcn == 0
     use m_physcoef, only: sag, vonkar, ee
     use m_flow, only: u1, v
-    implicit none
+
     integer, intent(in) :: ifrctyp, L !< friction type
     double precision :: h0, h1 !< hydraulic radius
     double precision, intent(in) :: frcn !< friction coeff
@@ -65,3 +67,4 @@
        end if
     end if
  end subroutine getcz
+end module m_get_cz

@@ -33,7 +33,6 @@ if (WIN32)
                             swan
                             ) 
 
-    oss_include_libraries(${executable_name} exe_dependencies)
     target_link_libraries(${executable_name} ${exe_dependencies})
 
 endif(WIN32)
@@ -63,8 +62,6 @@ if(UNIX)
                             esmfsm
                             netcdff
                             )
-    
-    oss_include_libraries(${executable_name} exe_dependencies)
 
     target_link_libraries(${executable_name}
          ${exe_dependencies}

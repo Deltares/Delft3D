@@ -31,16 +31,19 @@
 !
 
  subroutine tekbathy(ja)
+    use m_isocol2
+    use m_halt
     use unstruc_display
     use m_flowgeom
     use m_flow
     use gridoperations
     use m_drawthis
+    use m_pfiller
+    use m_inview
     implicit none
     integer :: nodewhat
     integer :: k, ja, nn, ncol
     double precision :: znod, zn
-    logical inview
 
     if (ndraw(39) == 0) return
 

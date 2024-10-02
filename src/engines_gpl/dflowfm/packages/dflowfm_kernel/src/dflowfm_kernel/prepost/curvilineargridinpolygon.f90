@@ -37,6 +37,7 @@
       !
       !END SUBROUTINE SPLINESFROMLANDBOUNDARY
       subroutine curvilinearGRIDinpolygon()
+         use m_rcirc
          use M_POLYGON
          use M_SAMPLES
          use M_GRID
@@ -48,6 +49,7 @@
          use geometry_module, only: dcosphi
          use m_drawthis
          use m_qnerror
+         use m_increase_grid
          implicit none
 
          double precision :: atpfo

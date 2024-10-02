@@ -1,5 +1,5 @@
-function x=matlabversionnumber
-%MATLABVERSIONNUMBER Obtain the MATLAB version number.
+function [version,hash,repo_url] = get_qpversion(sourcedir,file)
+%GET_QPVERSION retrieve version number from quickplot
 
 %----- LGPL --------------------------------------------------------------------
 %
@@ -31,8 +31,12 @@ function x=matlabversionnumber
 %   $HeadURL$
 %   $Id$
 
-persistent y
-if isempty(y)
-   y = [1 0.01]*sscanf(version,'%d.%d',2);
-end
-x = y;
+thisfile = mfilename('fullpath');
+thisdir = fileparts(thisfile);
+
+search_path = path;
+addpath([thisdir,filesep,'progsrc',filesep],'-begin')
+[version,hash,repo_url] = d3d_qp('version');
+path(search_path);
+
+version = version(13:end); % strip "source code "

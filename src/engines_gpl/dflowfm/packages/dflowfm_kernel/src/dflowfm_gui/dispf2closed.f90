@@ -30,8 +30,17 @@
 !
 !
 
+module m_dispf2closed
+
+implicit none
+
+contains
+
       subroutine DISPF2closed(X, Y, N, NMAX, NCOL)
-         implicit none
+         use m_set_col
+         use m_movabs
+         use m_lnabs
+
          integer :: i
          integer :: n
          integer :: ncol
@@ -46,3 +55,5 @@
          call lnABS(X(1), Y(1))
          return
       end
+
+end module m_dispf2closed

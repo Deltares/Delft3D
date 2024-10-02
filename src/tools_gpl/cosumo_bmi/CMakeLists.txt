@@ -25,7 +25,6 @@ if (WIN32)
                                 netcdff
                                 )
 
-    oss_include_libraries(${library_name} library_dependencies)
     target_link_libraries(${library_name} ${library_dependencies})
 
     # Set linker properties
@@ -45,7 +44,6 @@ if(UNIX)
                                 io_netcdf_data
                                 )
 
-    oss_include_libraries(${library_name} library_dependencies)
     target_link_libraries(${library_name} ${library_dependencies})
 
 

@@ -29,19 +29,18 @@
 
 !
 !
-
+module m_flow_f0isf1
+   implicit none
+contains
  subroutine flow_f0isf1() ! Todo: make pointer stucture and reset pointers
-    use m_flowgeom
+    use m_flowgeom, only: ndxi
     use m_flow
-    use m_flowtimes
+    use m_flowtimes, only: dts
     use m_partitioninfo
-    use m_sediment
-    use m_strucs
+    use m_sediment, only: jamorf, stm_included
     use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
     use m_drawthis
     use m_get_kbot_ktop
-
-    implicit none
 
     integer :: k, kk, kb, kt, Lf, i, k1, k2
 
@@ -230,3 +229,4 @@
     a0tot = a1tot
 
  end subroutine flow_f0isf1
+end module m_flow_f0isf1

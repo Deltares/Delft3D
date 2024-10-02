@@ -31,6 +31,12 @@
 !
 
 !> compute maximum allowable grid layer growth time; self crossings
+module m_comp_tmax_self
+
+implicit none
+
+contains
+
 subroutine comp_tmax_self(mc, xc, yc, vel, tmax)
 
    use m_missing
@@ -83,3 +89,5 @@ subroutine comp_tmax_self(mc, xc, yc, vel, tmax)
 
    return
 end subroutine comp_tmax_self
+
+end module m_comp_tmax_self

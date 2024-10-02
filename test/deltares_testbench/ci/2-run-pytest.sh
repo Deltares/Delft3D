@@ -12,7 +12,7 @@ IMAGE=$2
 docker run --rm -v="./logs:/data/logs" -t "$IMAGE"
 
 # Run auto-formatting check.
-docker run --rm "$IMAGE" ruff format -q .
+docker run --rm "$IMAGE" ruff format --check -q .
 
 # Run auto linter with basic pyflakes rules, warnings and import sort order
 docker run --rm -v="./logs:/data/logs" -t "$IMAGE" ruff check -q \

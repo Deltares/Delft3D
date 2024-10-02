@@ -36,6 +36,7 @@
        use m_flow
        use m_sferic
        use unstruc_display
+       use m_ini_sferic
        implicit none
 
        integer :: k, L, k1, k2
@@ -90,9 +91,10 @@
        use m_netw
        use m_flowgeom
        use m_flow
-       use m_sferic
-       use unstruc_display
+       use m_sferic, only: fcorio
        use m_set_kbot_ktop
+       use m_ini_sferic
+       use m_dbdistance_hk
        implicit none
 
        integer :: k, L, k1, k2, LL, i, j, imx, jmx

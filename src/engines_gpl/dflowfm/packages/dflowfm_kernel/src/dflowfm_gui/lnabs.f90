@@ -29,11 +29,13 @@
 
 !
 !
-
+module m_lnabs
+   implicit none
+contains
       subroutine LNABS(X, Y)
-         use unstruc_opengl
+         use unstruc_opengl, only: InOpenGLRendering, LineTo
          use m_dproject
-         implicit none
+
          double precision :: x, y, xx, yy
 
          call DPROJECT(X, Y, XX, YY, 1)
@@ -43,3 +45,4 @@
             call IGRLINETO(real(XX), real(yy))
          end if
       end
+end module m_lnabs

@@ -29,12 +29,15 @@
 
 !
 !
-
+module m_ecrrea
+   implicit none
+contains
       !> read from rfg grid file
       subroutine ECRREA(X, MMAX, NMAX, MC, NC, MRGF, HALF)
-         use m_missing
          use m_readyy
-         implicit none
+         use m_qn_read_error
+         use m_qn_eof_error
+
          character dummy * 10, REC * 132
 !     LEES RGF
          integer, intent(in) :: MMAX, NMAX !< array sizes
@@ -79,3 +82,4 @@
          call QNEOFERROR(MRGF)
          return
       end subroutine ECRREA
+end module m_ecrrea

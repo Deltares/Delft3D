@@ -34,6 +34,7 @@
       use m_netw
       use m_missing, only: dmiss, jins
       use geometry_module, only: pinpok
+      use m_min_max_pol
       implicit none
 
       integer :: in

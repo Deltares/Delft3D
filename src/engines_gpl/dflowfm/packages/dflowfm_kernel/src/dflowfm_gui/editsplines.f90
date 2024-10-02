@@ -30,7 +30,15 @@
 !
 !
 
+module m_editsplines
+
+implicit none
+
+contains
+
       subroutine EDITSPLINES(MODE, KEY)
+         use m_cir
+         use m_choices
          use unstruc_colors
          use M_SPLINES
          use unstruc_display, only: plotSplines
@@ -41,7 +49,10 @@
          use m_okay
          use m_botlin
          use m_dispnode2
-         implicit none
+         use m_draw_nu
+         use m_set_col
+         use m_movabs
+
          integer, intent(inout) :: mode, key
          integer :: newmode
 
@@ -237,3 +248,5 @@
          goto 10
 !
       end subroutine editSplines
+
+end module m_editsplines

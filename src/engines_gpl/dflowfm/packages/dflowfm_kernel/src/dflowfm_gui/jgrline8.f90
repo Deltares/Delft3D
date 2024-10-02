@@ -30,6 +30,8 @@
 !
 !
 module m_jgrline8
+use m_polyline
+
       implicit none
 contains
    subroutine JGRLINE8(X, Y, N) ! TEKEN LIJN, INCL XYMISSEN, GEBRUIK VAN INVIEW EN PROJECTIE

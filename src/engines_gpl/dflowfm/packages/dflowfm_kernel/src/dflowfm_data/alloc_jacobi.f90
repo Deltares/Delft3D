@@ -30,6 +30,12 @@
 !
 !
 
+module m_alloc_jacobi
+
+implicit none
+
+contains
+
  subroutine alloc_jacobi(ndx, lnx)
     use m_jacobi
     use m_alloc
@@ -49,3 +55,5 @@
     call aerr('rr   (ndx)', ierr, ndx); rr = 0
 
  end subroutine alloc_jacobi
+
+end module m_alloc_jacobi

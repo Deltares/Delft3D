@@ -790,7 +790,7 @@ contains
 
       use m_f1dimp
       use m_flowgeom, only: ndx, bai_mor, ba, bl, dx, lnx, dxi, acl, wu, snu, csu, wu_mor, wcx1, wcx2, wcy1, wcy2, kcu, wcl, lnxi, griddim
-      use m_flow, only: s0, s1, u1, au, hu, qa, frcu_mor, frcu, z0urou, ifrcutp, taubxu, ucx_mor, ucy_mor, ustb
+      use m_flow, only: s0, s1, u1, au, hu, qa, frcu_mor, frcu, z0urou, ifrcutp, taubxu, ucx_mor, ucy_mor, ustb, z0ucur
       use m_sediment, only: stmpar, jased, stm_included, kcsmor
       use m_fm_erosed, only: ndx_mor, lsedtot, lnx_mor, pmcrit, link1, ln_mor, hs_mor, ucxq_mor, ucyq_mor, uau
       use m_turbulence, only: rhowat
@@ -964,6 +964,7 @@ contains
       call reallocate_fill(csu, grd_ghost_link_closest, lnx, lnx_mor)
       call reallocate_fill(wu_mor, grd_ghost_link_closest, lnx, lnx_mor)
       call reallocate_fill(z0urou, grd_ghost_link_closest, lnx, lnx_mor)
+      call reallocate_fill(z0ucur, grd_ghost_link_closest, lnx, lnx_mor)
       call reallocate_fill(taubxu, grd_ghost_link_closest, lnx, lnx_mor)
       call reallocate_fill(wcx1, grd_ghost_link_closest, lnx, lnx_mor)
       call reallocate_fill(wcx2, grd_ghost_link_closest, lnx, lnx_mor)

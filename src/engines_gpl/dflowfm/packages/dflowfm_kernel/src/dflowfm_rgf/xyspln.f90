@@ -40,6 +40,7 @@
          use m_missing
          use m_splint
          use m_readyy
+         use m_get_ij
          implicit none
 
          integer :: mmax, nmax, imax, m1, n1, m2, n2, mc, nc, mfac, nfac

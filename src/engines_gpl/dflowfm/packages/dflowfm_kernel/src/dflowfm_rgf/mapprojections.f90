@@ -31,6 +31,7 @@
 !
 
       subroutine MAPPROJECTIONS(IT, JA)
+         use m_converparameters
          use M_MAPPROPARAMETERS
          use M_SFERIC
          use M_MISSING

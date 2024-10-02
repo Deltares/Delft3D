@@ -96,12 +96,11 @@ contains
 
    !> Retrieve optional additional information for a keyword.
    subroutine print_additional_keyword_information(chapter, key, set, prefix)
-      use unstruc_messages, only: LEVEL_INFO, mess
+      use messagehandling, only: LEVEL_INFO, mess
       character(len=*), intent(in) :: chapter !< chapter name
       character(len=*), intent(in) :: key !< keyword name
       character(len=*), intent(in) :: prefix !< Message string prefix
       type(deprecated_keyword_set), intent(in) :: set !< keyword set in which to check whether it is deprecated or not
-      character(len=255) :: res !< additional information for the keyword
 
       type(deprecated_keyword) :: keyword
 

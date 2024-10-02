@@ -31,6 +31,14 @@
 !
 
 !
+module m_aspect
+use m_inqasp
+
+
+implicit none
+
+contains
+
       subroutine ASPECT(X1D, Y1D, X2D, Y2D)
          use m_devices
          implicit none
@@ -44,3 +52,5 @@
          Y2D = Y1D + (X2D - X1D) * ASP
          return
       end
+
+end module m_aspect

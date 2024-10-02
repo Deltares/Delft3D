@@ -1852,8 +1852,9 @@ contains
 
       n_links = network%cmps%compound(i_cmpnd)%numlinks
       allocate (links(n_links), source=-999)
-      links = network%cmps%compound(i_cmpnd)%linknumbers
-
+      if (n_links > 0) then
+         links = network%cmps%compound(i_cmpnd)%linknumbers
+      end if
    end subroutine retrieve_set_of_flowlinks_compound_structure
 
 !> Calculate the x,y-coordinates of the midpoint of a set of flowlinks

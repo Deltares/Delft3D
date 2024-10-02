@@ -30,11 +30,17 @@
 !
 !
 
+module m_isosmoothflownode2
+
+implicit none
+
+contains
+
 subroutine isosmoothflownode2(k) ! smooth isolines in flow cells use depmax2
+   use m_isofilb
    use m_flowgeom
-   use m_flow
-   use m_netw
-   implicit none
+   use m_netw, only: rnod
+
    integer :: k
 
    integer :: nn4, n
@@ -47,3 +53,5 @@ subroutine isosmoothflownode2(k) ! smooth isolines in flow cells use depmax2
    nn4 = min(nn4, size(nd(k)%x))
    call isofilb(nd(k)%x, nd(k)%y, zz, nn4, 0)
 end subroutine isosmoothflownode2
+
+end module m_isosmoothflownode2

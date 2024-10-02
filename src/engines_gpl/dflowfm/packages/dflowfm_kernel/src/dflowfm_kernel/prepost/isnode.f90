@@ -33,10 +33,12 @@
   subroutine ISNODE(KP, XP, YP, ZP)
 
      use m_netw
-     use m_wearelt
-     use m_missing
+     use m_wearelt, only: cr, rcir
+     use m_missing, only: dmiss
      use m_sferic
      use m_sferzoom
+     use m_dispnode
+     use m_dbdistance_hk
 
      implicit none
 

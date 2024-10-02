@@ -7,13 +7,13 @@
     rem     In this command box:
     rem         cd ...\x64\bin
     rem         smpd -install
-    rem     When there is an smpd already running on the machine, it must be ended first, using the Microsoft Task Manager, 
+    rem     When there is an smpd already running on the machine, it must be ended first, using the Microsoft Task Manager,
     rem     or in the command  box: smpd -uninstall
 
 set dimrdir=\\directory.intra\PROJECT\d-hydro\dimrset\latest
 
 cd dflowfm
-set PATH=%dimrdir%\x64\bin;%PATH%
+set PATH=%dimrdir%\x64\lib;%PATH%
 call %dimrdir%\x64\bin\dflowfm-cli.exe --partition:ndomains=3:icgsolver=6 f34_BLOOM.mdu
 cd ..
 

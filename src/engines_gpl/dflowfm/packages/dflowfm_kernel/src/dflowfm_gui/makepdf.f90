@@ -30,8 +30,15 @@
 !
 !
 
+module m_makepdf
+
+implicit none
+
+contains
+
   subroutine makepdf(r, n)
      use m_statistics
+     
      integer :: n
      real :: r(n), s
      integer :: k, L
@@ -56,3 +63,5 @@
         xpdf(k) = xpdf(k) + xpdf(k - 1)
      end do
   end subroutine makepdf
+
+end module m_makepdf

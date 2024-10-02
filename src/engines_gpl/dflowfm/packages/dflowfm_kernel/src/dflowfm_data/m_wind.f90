@@ -93,7 +93,6 @@ double precision                  :: wsy
 double precision                  :: rhoair          !< (kg/m3)
 double precision                  :: PavBnd          !< average ambient pressure (N/m2) for correction on open boundaries
 double precision                  :: PavIni          !< average ambient pressure (N/m2) for initial waterlevel correction
-double precision                  :: paver           !< Average ambient pressure (N/m2)
 double precision                  :: patmfac         !< 100 if Mbar, 1 if Pascal
 
 double precision                  :: cdb(3)          !< breakpoints cd function cd coefficient
@@ -111,7 +110,6 @@ subroutine default_wind()
     winddir = 90d0        !< deg from north sailor
     rainuni = 0d0
     rhoair  = 1.2d0
-    paver   = 101325.0
     Pavini  = 0d0
     PavBnd  = 0d0         !< default: no pressure correction on open boundaries.
                           !< choose ambient pressure on boundaries equal to overall standard ambient pressure

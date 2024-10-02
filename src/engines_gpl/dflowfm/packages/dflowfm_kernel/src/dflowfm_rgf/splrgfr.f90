@@ -37,7 +37,7 @@
 !                          X1,Y1,X2,Y2,X3,Y3,X4,Y4)
     subroutine SPLRGFR()
        use M_SPLINES
-       use m_missing
+       use m_missing, only: xymis
        use m_grid
        use M_GRIDSETTINGS
        use m_netw, only: zkUNI
@@ -46,6 +46,9 @@
        use m_qnerror
        use m_numpold
        use m_makespl
+       use m_increase_grid
+       use m_restore_grd
+       use m_get_ij
        implicit none
 
        double precision, allocatable, dimension(:, :) :: xspc, yspc, xh, yh, tij

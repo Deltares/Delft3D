@@ -158,9 +158,16 @@ NCrashed=0;
 NSlower=0;
 TotTimeRef=0;
 TotTime=0;
-fs=filesep;
+fs='/'; % always use forward slash here instead of filesep because the backward slash on Windows gives problems in LaTeX ...
 sdata=['..',fs,'data',fs];
 sref=['..',fs,'reference',fs];
+% some file are platform specific, use a prefix to separate them.
+if strcmp(computer,'PCWIN64')
+    % no prefix on Windows for backward compatibility
+    sref_platform_prefix='';
+else
+    sref_platform_prefix=[lower(computer),'_'];
+end
 swrk=['..',fs,'work',fs];
 slog=['..',fs,'logfiles',fs];
 T_=1; ST_=2; M_=3; N_=4; K_=5;
@@ -361,10 +368,14 @@ try
                 delete('*')
                 FileName=inifile('getstring',CaseInfo,'','FileName','');
                 FileName2=inifile('getstring',CaseInfo,'','FileName2','');
+                if length(FileName)<7 || ~isequal(lower(FileName(1:7)),'http://')
+                    FileName = portpath(FileName);
+                end
                 if isempty(FileName2)
                     FileName2={};
                     write_section(logid2,'Opening ''%s''',protected(FileName));
                 else
+                    FileName2=portpath(FileName2);
                     write_section(logid2,'Opening ''%s'' with ''%s''',protected(FileName),protected(FileName2));
                     FileName2={[sdata,FileName2]};
                 end
@@ -764,6 +775,7 @@ try
                                 write_log1(logid2,'Checking File ''%s'': ',protected(checkf));
                                 showfig=0;
                                 [~,~,ext]=fileparts(checkf);
+                                % reference files are generic by default
                                 reffile=[sref,checkf];
                                 args={};
                                 switch lower(ext)
@@ -771,6 +783,8 @@ try
                                         % matching DPI for default size: 53, 54, 56, 57 61, 62, 64, 65, 66, 69
                                         args={'skip',256};
                                         showfig=1;
+                                        % figures are platform specific
+                                        reffile=[sref,sref_platform_prefix,checkf];
                                     case '.asc'
                                         args={'skip',71};
                                     case '.mat'
@@ -786,7 +800,7 @@ try
                                         lgresult=CREATED;
                                     end
                                     if showfig
-                                        include_figure(logid2,['reference/' checkf]);
+                                        include_figure(logid2,reffile(4:end));
                                     end
                                 else
                                     [Eql,Msg]=filesequal(checkf,reffile,args{:});
@@ -817,11 +831,11 @@ try
                                     write_log(logid2,[sc{1+Eql},Msg]);
                                     if Eql
                                         if showfig
-                                            include_figure(logid2,['reference/' checkf]);
+                                            include_figure(logid2,reffile(4:end));
                                         end
                                     else
                                         if showfig
-                                            include_diff_figures(logid2,{['reference/' checkf],['work/' checkf],diffimg{:}},Color);
+                                            include_diff_figures(logid2,{reffile(4:end),['work/' checkf],diffimg{:}},Color);
                                         end
                                         lgcolor=Color.Failed;
                                         lgresult=[FAILED ': Log file results differ.'];
@@ -1058,7 +1072,7 @@ if isstandalone
     stalone=' (standalone)';
 end
 c = clock;
-versionstr = d3d_qp('version'); % returns "source code version" or "vA.B.hash (64bit)"
+versionstr = d3d_qp('version'); % returns "source code version" or "vA.B.hash (platform)"
 if versionstr(1) == 'v'
     % remove the leading v
     versionstr = versionstr(2:end);
@@ -1766,7 +1780,7 @@ sep = strfind(casename,' - ');
 if isempty(sep)
     type = casename;
 else
-    type = casename(1:sep-1);
+    type = casename(1:sep(1)-1);
 end
 if isequal(type,previous_type)
     type = '';

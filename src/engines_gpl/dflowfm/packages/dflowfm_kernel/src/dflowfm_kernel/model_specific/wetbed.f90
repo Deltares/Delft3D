@@ -33,6 +33,8 @@
  subroutine wetbed(time)
 
     use m_flowparameters, only: hwetbed
+    use m_movabs
+    use m_lnabs
     implicit none
 
     integer, parameter :: mmax = 601 !  3000

@@ -33,6 +33,8 @@
 !> flip links in quads, when appropriate
 !>   note: we look for a local optimum, which is not necessarily the global one
 subroutine fliplinks()
+   use m_confrm
+   use m_comp_ntopo
    use m_netw
    use m_alloc
    use unstruc_colors, only: ncolhl
@@ -43,6 +45,7 @@ subroutine fliplinks()
    use gridoperations
    use m_qnerror
    use m_makenetnodescoding
+   use m_tek_link
 
    implicit none
 

@@ -32,6 +32,7 @@
 
   subroutine TEKHEATS(TIMNOW)
      use m_heatfluxes
+     use m_gtext
      implicit none
      double precision :: TIMNOW, tday
 

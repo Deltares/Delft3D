@@ -253,14 +253,15 @@ module geometry_module
       !
       ! PINPOK
       !
-      subroutine pinpok(XL, YL, N, X, Y, INSIDE, jins, dmiss) ! basic subroutine
+      pure subroutine pinpok(XL, YL, N, X, Y, INSIDE, jins, dmiss) ! basic subroutine
       
       implicit none
       
-      integer                      :: N, INSIDE
+      integer, intent(in)          :: N
+      integer, intent(out)         :: INSIDE
       integer, intent(in)          :: jins
       double precision, intent(in) :: dmiss
-      double precision             :: X(N), Y(N), XL, YL
+      double precision, intent(in) :: X(N), Y(N), XL, YL
 
       integer          :: i, i1, i2, np
       double precision :: rechts, x1, x2, y1, y2, rm, rl

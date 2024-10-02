@@ -35,6 +35,7 @@ contains
    subroutine FKEYS(KEY)
       use m_helpnow
       use m_osc
+      use m_help
 
       integer :: key
 

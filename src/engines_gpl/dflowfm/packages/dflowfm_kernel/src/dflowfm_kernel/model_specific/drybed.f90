@@ -31,6 +31,8 @@
 !
 
  subroutine drybed(time)
+    use m_movabs
+    use m_lnabs
     implicit none
     double precision :: time, xm, xmx, h0, dxw
     integer, parameter :: mmax = 601 !  3000

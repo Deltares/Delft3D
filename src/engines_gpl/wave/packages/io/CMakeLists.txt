@@ -9,22 +9,13 @@ set(library_name wave_io)
 add_library(${library_name} ${source_files})
 
 # Set dependencies
-if (WIN32)
-    set(oss_dependencies    wave_data
-                            deltares_common
-                            netcdf4
-                            netcdff) 
-    oss_include_libraries(${library_name} oss_dependencies)
-endif(WIN32)
+set(oss_dependencies    wave_data
+                        deltares_common
+                        netcdf4
+                        netcdff) 
 
-if (UNIX)
-    set(oss_dependencies    wave_data
-                            deltares_common
-                            netcdf4
-                            netcdff) 
-    oss_include_libraries(${library_name} oss_dependencies)
-    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
-endif(UNIX)
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_link_libraries(${library_name} ${oss_dependencies})
 
 
 # Define how the files should be structured within Visual Studio

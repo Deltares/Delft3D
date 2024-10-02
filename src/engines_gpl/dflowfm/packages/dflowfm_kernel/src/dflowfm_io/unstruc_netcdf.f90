@@ -5259,6 +5259,7 @@ contains
       use m_reconstruct_ucz
       use m_reconstruct_sed_transports
       use m_get_ucx_ucy_eul_mag
+      use m_get_cz
 
       implicit none
 
@@ -5287,7 +5288,7 @@ contains
 
       double precision, dimension(:), allocatable :: numlimdtdbl
       double precision, dimension(:), allocatable :: work1d, work1d2
-      double precision :: vicc, dicc
+      double precision :: dicc
 
       double precision, dimension(:), pointer :: dens
 
@@ -6678,21 +6679,7 @@ contains
 
       if (kmx > 0) then
          if (jamapviu > 0) then
-            ! For all flowlinks and layers add user defined part (viusp(LL) or vicouv) to modeled part (viu(LL)).
-            ! Values for inactive layers are set to missing in function unc_put_var_map.
-            call realloc(work1d, lnkx, keepExisting=.false.)
-            do LL = 1, lnx
-               if (javiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
-                  vicc = viusp(LL)
-               else
-                  vicc = vicouv
-               end if
-               call getLbotLtopmax(LL, Lb, Lt)
-               do L = Lb, Lt
-                  work1d(L) = viu(L) + vicc
-               end do
-            end do
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_viu, iLocU, work1d, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_viu, iLocU, vicLu, jabndnd=jabndnd_)
          end if
 
          if (jamapdiu > 0) then
@@ -6700,7 +6687,7 @@ contains
             ! Values for inactive layers are set to missing in function unc_put_var_map.
             call realloc(work1d, lnkx, keepExisting=.false.)
             do LL = 1, lnx
-               if (jadiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
+               if (jadiusp == 1) then ! If horizontal eddy diffusivity is spatially varying.
                   dicc = diusp(LL)
                else
                   dicc = dicouv
@@ -6716,24 +6703,14 @@ contains
 
       if (kmx == 0) then
          if (jamapviu > 0) then
-            ! For all flowlinks add user defined part (viusp(LL) or vicouv) to modeled part (viu(LL)).
-            call realloc(work1d, lnx, keepExisting=.false.)
-            do LL = 1, lnx
-               if (javiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
-                  vicc = viusp(LL)
-               else
-                  vicc = vicouv
-               end if
-               work1d(LL) = viu(LL) + vicc
-            end do
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_viu, iLocU, work1d, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_viu, iLocU, vicLu, jabndnd=jabndnd_)
          end if
 
          if (jamapdiu > 0) then
             ! For all flowlinks add user defined part (diusp(LL) or dicouv) to modeled part (viu(LL)/0.7).
             call realloc(work1d, lnx, keepExisting=.false.)
             do LL = 1, lnx
-               if (jadiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
+               if (jadiusp == 1) then ! If horizontal eddy diffusivity is spatially varying.
                   dicc = diusp(LL)
                else
                   dicc = dicouv
@@ -8089,6 +8066,7 @@ contains
       use m_reconstruct_ucz
       use m_reconstruct_sed_transports
       use m_get_ucx_ucy_eul_mag
+      use m_get_cz
 
       implicit none
 
@@ -10036,13 +10014,8 @@ contains
                   work1(:, LL) = dmiss ! For proper fill values in z-model runs.
                   call getLbotLtopmax(LL, Lb, Ltx)
                   call getlayerindicesLmax(LL, nlaybL, nrlayLx)
-                  if (javiusp == 1) then ! user specified part
-                     vicc = viusp(LL)
-                  else
-                     vicc = vicouv
-                  end if
                   do L = Lb, Ltx
-                     work1(L - Lb + nlaybL, LL) = viu(L) + vicc
+                     work1(L - Lb + nlaybL, LL) = vicLu(L)
                   end do
                end do
                ierr = nf90_put_var(imapfile, id_viu(iid), work1(1:kmx, 1:lnx), start=(/1, 1, itim/), count=(/kmx, lnx, 1/))
@@ -11547,6 +11520,7 @@ contains
       use m_save_ugrid_state
       use gridoperations
       use fm_location_types
+      use m_find1dcells, only: find1dcells
       use m_set_nod_adm
 
       implicit none
@@ -11568,11 +11542,9 @@ contains
       integer :: i, k, k1, k2, numl2d, numk1d, numk2d, nump1d, L, Lnew, nv, n1, n2, n
       integer :: jaInDefine
       integer :: id_zf
-
       real(kind=hp), allocatable :: xn(:), yn(:), zn(:), xe(:), ye(:), zf(:)
-
       integer :: n1dedges, n1d2dcontacts, start_index
-      integer, allocatable :: contacttype(:), idomain1d(:), iglobal_s1d(:)
+      integer, dimension(:), allocatable :: contacttype, idomain1d, iglobal_s1d
 
       call readyy('Writing net data', 0d0)
 
@@ -11701,14 +11673,16 @@ contains
          KC(:) = 0
          nump1d = nump1d2d - nump
          if (janetcell_ == 1 .and. nump1d > 0) then
+
             ! Determine 1D net nodes directly from 1D net cells
-            do N1 = nump + 1, nump1d2d
+            do N1 = 1 + nump, nump1d2d
                k1 = netcell(N1)%nod(1)
 
                numk1d = numk1d + 1
                xn(numk1d) = xk(k1)
                yn(numk1d) = yk(k1)
                zn(numk1d) = zk(k1)
+
                kc(k1) = -numk1d ! Remember new node number
             end do
 
@@ -11730,19 +11704,20 @@ contains
 
                   N1 = abs(lne(1, L))
                   N2 = abs(lne(2, L))
+                  K1 = netcell(N1)%nod(1)
+                  K2 = netcell(N2)%nod(1)
 
                   n1d2dcontacts = n1d2dcontacts + 1
                   if (N1 > nump .and. N2 <= nump) then ! First point of 1D link is 1D cell
-                     contacts(1, n1d2dcontacts) = abs(KC(netcell(N1)%nod(1))) ! cell -> orig node -> new node
+                     contacts(1, n1d2dcontacts) = abs(KC(K1)) ! cell -> orig node -> new node
                      contacts(2, n1d2dcontacts) = N2 ! 2D cell number in network_data is the same in UGRID mesh2d numbering (see below).
                   else if (N2 > nump .and. N1 <= nump) then ! First point of 1D link is 1D cell
-                     contacts(1, n1d2dcontacts) = abs(KC(netcell(N2)%nod(1))) ! cell -> orig node -> new node
+                     contacts(1, n1d2dcontacts) = abs(KC(K2)) ! cell -> orig node -> new node
                      contacts(2, n1d2dcontacts) = N1 ! 2D cell number in network_data is the same in UGRID mesh2d numbering (see below).
                   else
                      n1d2dcontacts = n1d2dcontacts - 1
                      cycle
                   end if
-
                   contacttype(n1d2dcontacts) = kn(3, L)
                end if
             end do
@@ -11855,56 +11830,6 @@ contains
                                         crs, -999, dmiss, start_index)
          end if
 
-      !! TODO: AvD: hier verder
-      !! Determine max nr of vertices and contour points
-         !
-      !! NOTE: numk2d = numk - numk1d does not necessarily hold, if input grid illegally connected a 2D net link and 1D netlink to one and the same net node.
-      !! Count 2D net nodes
-         !numNodes   = ndx1d
-         !numContPts = 0
-         !do i=1,ndx1d
-         !   numNodes   = max(numNodes,   size(netcell(ndx2d + i)%NOD))
-         !   numContPts = max(numContPts, size(netcell(ndx2d + i)%NOD))
-         !enddo
-         !
-         !if ( allocated(work2) ) deallocate( work2 )
-         !allocate( work2(numContPts,ndx1d) ) ; work2 = dmiss
-         !
-         !ierr = nf90_def_dim(mapids%ncid, 'nmesh1d_FlowElemContourPts', numContPts,    id_flowelemcontourptsdim)
-         !
-      !! Flow elem contours (plot help)
-      !! Todo: generalize x/y's to 2/3-D coords everywhere else [Avd]
-         !ierr = nf90_def_var(mapids%ncid, 'mesh1d_FlowElemContour_x', nf90_double, (/ id_flowelemcontourptsdim, mapids%id_tsp%meshids1d%dimids(mdim_node) /), id_flowelemcontourx)
-         !ierr = nf90_def_var(mapids%ncid, 'mesh1d_FlowElemContour_y', nf90_double, (/ id_flowelemcontourptsdim, mapids%id_tsp%meshids1d%dimids(mdim_node) /), id_flowelemcontoury)
-         !ierr = unc_addcoordatts(mapids%ncid, id_flowelemcontourx, id_flowelemcontoury, jsferic)
-         !ierr = nf90_put_att(mapids%ncid, id_flowelemcontourx, 'long_name',     'list of x-coordinates forming flow element')
-         !ierr = nf90_put_att(mapids%ncid, id_flowelemcontoury, 'long_name',     'list of y-coordinafltes forming flow element')
-         !ierr = nf90_put_att(mapids%ncid, id_flowelemcontourx, '_FillValue', dmiss)
-         !ierr = nf90_put_att(mapids%ncid, id_flowelemcontoury, '_FillValue', dmiss)
-         !
-         !ierr = nf90_put_att(mapids%ncid, mapids%id_tsp%meshids1d%varids(mid_nodex), 'bounds', 'mesh1d_FlowElemContour_x')
-         !ierr = nf90_put_att(mapids%ncid, mapids%id_tsp%meshids1d%varids(mid_nodey), 'bounds', 'mesh1d_FlowElemContour_y')
-         !
-         !ierr = nf90_enddef(mapids%ncid)
-         !
-         !do i=1,ndx1d
-         !   nn = size(nd(ndx2d + i)%x)
-         !   do n = 1,nn
-         !      work2(n,i)=nd(ndx2d + i)%x(n)
-         !   enddo
-         !enddo
-         !ierr = nf90_put_var(mapids%ncid, id_flowelemcontourx, work2(1:numContPts,1:ndx1d), (/ 1, 1 /), (/ numContPts, ndx1d /) )
-         !
-         !do i=1,ndx1d
-         !   nn = size(nd(ndx2d + i)%x)
-         !   do n = 1,nn
-         !      work2(n,i)=nd(ndx2d + i)%y(n)
-         !   enddo
-         !enddo
-         !ierr = nf90_put_var(mapids%ncid, id_flowelemcontoury, work2(1:numContPts,1:ndx1d), (/ 1, 1 /), (/ numContPts, ndx1d /) )
-         !ierr = nf90_redef(mapids%ncid)
-         !
-         !deallocate( work2 )
          !
          ! Add edge type variable (edge-flowlink relation)
          call write_edge_type_variable(ncid, id_tsp%meshids1d, mesh1dname, edge_type)
@@ -12031,7 +11956,7 @@ contains
          end if
 
          ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
-
+         
          !define 1d2dcontacts only after mesh2d is completly defined
          if (n1d2dcontacts > 0) then
             ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts, trim(contactname), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
@@ -12873,13 +12798,11 @@ contains
    end subroutine md5_net_file
 
 !> Assigns the information, that has been read from a restart file and stored in array1, to a 2D array2.
-   subroutine assign_restart_data_to_local_array(array1, array2, iloc, kmx, loccount, jamergedmap, iloc_own, write_only_bottom_layer, target_shift)
+   subroutine assign_restart_data_to_local_array(array1, array2, iloc, loccount, jamergedmap, iloc_own, write_only_bottom_layer, target_shift)
       use m_get_kbot_ktop
-
       double precision, allocatable, intent(in) :: array1(:) !< Array that contains information read from a restart file
       double precision, allocatable, intent(inout) :: array2(:, :) !< Target 2D array
       integer, intent(in) :: iloc !< Index of one dimension of the 2D array
-      integer, intent(in) :: kmx !< Number of layers
       integer, intent(in) :: loccount !< Spatial count in file to read (e.g. ndxi_own)
       integer, intent(in) :: jamergedmap !< Whether input is from a merged map file (i.e. needs shifting or not) (1/0)
       integer, intent(in) :: iloc_own(:) !< Mapping array from the unique own (i.e. non-ghost) nodes/links to the actual ndxi/lnx numbering. Should be filled from index 1:loccount (e.g. 1:ndxi_own).
@@ -13798,7 +13721,7 @@ contains
          if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable sa1 from the specified restart file. Skip reading this variable.')
          else
-            call assign_restart_data_to_local_array(sa1, constituents, isalt, kmx, um%ndxi_own, um%jamergedmap, um%inode_own)
+            call assign_restart_data_to_local_array(sa1, constituents, isalt, um%ndxi_own, um%jamergedmap, um%inode_own)
          end if
       end if
 
@@ -13816,7 +13739,7 @@ contains
          if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable tem1 from the specified restart file. Skip reading this variable.')
          else
-            call assign_restart_data_to_local_array(tem1, constituents, itemp, kmx, um%ndxi_own, um%jamergedmap, um%inode_own)
+            call assign_restart_data_to_local_array(tem1, constituents, itemp, um%ndxi_own, um%jamergedmap, um%inode_own)
          end if
       end if
 
@@ -13840,7 +13763,7 @@ contains
             if (ierr /= nf90_noerr) then
                call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//''' from the specified restart file. Skip reading this variable.')
             else
-               call assign_restart_data_to_local_array(tmpvar1D, constituents, iconst, kmx, um%ndxi_own, um%jamergedmap, um%inode_own)
+               call assign_restart_data_to_local_array(tmpvar1D, constituents, iconst, um%ndxi_own, um%jamergedmap, um%inode_own)
             end if !ierr
          end do !iconst
       end if !ITRA1
@@ -13866,7 +13789,7 @@ contains
             if (ierr /= nf90_noerr) then
                call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr1)//''' from the specified restart file. Skip reading this variable.')
             else
-               call assign_restart_data_to_local_array(tmpvar1D, wqbot, iwqbot, kmx, um%ndxi_own, um%jamergedmap, um%inode_own,.not. is_wq_bot_3d)
+               call assign_restart_data_to_local_array(tmpvar1D, wqbot, iwqbot, um%ndxi_own, um%jamergedmap, um%inode_own,.not. is_wq_bot_3d)
             end if
          end do
       end if
@@ -18397,7 +18320,7 @@ contains
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//trim(stradd)//''' from the specified restart file. Skip reading this variable.')
             call check_error(ierr, const_names(i), LEVEL_WARN)
          else
-            call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, kcount, um%jamergedmap, um%inode_own, .false., target_shift)
+            call assign_restart_data_to_local_array(tmpvar1D, var, i, kcount, um%jamergedmap, um%inode_own, .false., target_shift)
          end if
       end do
 

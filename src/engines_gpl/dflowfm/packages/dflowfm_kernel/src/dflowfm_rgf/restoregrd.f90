@@ -29,10 +29,13 @@
 
 !
 !
-
+module m_restore_grd
+   implicit none
+contains
      subroutine restoregrd()
         use m_grid
-        implicit none
+        use m_increase_grid
+
         if (allocated(xch)) then
            call increasegrid(mch, nch)
            xc = xch
@@ -42,3 +45,4 @@
            nc = nch
         end if
      end subroutine restoregrd
+end module m_restore_grd

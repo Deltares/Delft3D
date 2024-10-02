@@ -35,9 +35,10 @@
 subroutine regularise_spline2curvigrid()
    use m_grid
    use m_spline2curvi, only: dtolLR
-   use m_missing
+   use m_missing, only: dmiss
    use geometry_module, only: dbdistance
    use m_sferic, only: jsferic, jasfer3D
+   use m_get_lr
 
    implicit none
 

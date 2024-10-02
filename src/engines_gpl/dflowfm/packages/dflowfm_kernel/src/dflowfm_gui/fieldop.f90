@@ -30,10 +30,17 @@
 !
 !
 
+module m_fieldop
+
+implicit none
+
+contains
+
       function FIELDOP(NUM)
-         implicit none
+
          integer :: num
          character(len=40) FIELDOP
+         
          if (NUM == 1) then
             FIELDOP = 'Point Mode                              '
          else if (NUM == 2) then
@@ -81,3 +88,5 @@
          end if
          return
       end function fieldop
+
+end module m_fieldop

@@ -59,6 +59,12 @@
             </location>
             <path>create_and_execute_run_docker.sh</path>
         </program>
+        <program name="dflowfm" logOutputToFile="true">
+            <location ref="tools" type="check">
+                <from>.</from>
+            </location>
+            <path>create_and_execute_run_dflowfm_inside_docker.sh</path>
+        </program>
     </programs>
     <!--
     default testCases

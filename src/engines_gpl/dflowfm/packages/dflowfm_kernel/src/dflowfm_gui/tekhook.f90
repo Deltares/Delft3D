@@ -33,6 +33,8 @@
       subroutine TEKHOOK(XP, YP)
          use m_sferic
          use m_locatora
+         use m_movabs
+         use m_lnabs
 
          implicit none
          double precision :: dx

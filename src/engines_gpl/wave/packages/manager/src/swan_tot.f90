@@ -1,32 +1,32 @@
-subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
+subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -46,40 +46,42 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
 !
 ! Global variables
 !
-   integer, intent(in)  :: n_flow_grids
-   integer, intent(in)  :: n_swan_grids
+   integer, intent(in) :: n_flow_grids
+   integer, intent(in) :: n_swan_grids
    type(wave_data_type) :: wavedata
-   integer, intent(in)  :: selectedtime  ! <=0: no time selected, >0: only compute for swan_run%timwav(selectedtime)
+   integer, intent(in) :: selectedtime ! <=0: no time selected, >0: only compute for swan_run%timwav(selectedtime)
 !
 ! Local variables
 !
-   integer                                       :: count
-   integer                                       :: i_flow
-   integer                                       :: i_swan
-   integer                                       :: istat
-   integer                                       :: itide
-   integer                                       :: itidewrite
-   integer                                       :: lunhot
-   integer                                       :: offset
-   real(fp)                                      :: wave_timezone
-   real(fp)                                      :: wave_timmin
-   real(fp)        , dimension(:,:), pointer     :: patm_fp
-   real(fp)        , dimension(:,:), pointer     :: windu_fp
-   real(fp)        , dimension(:,:), pointer     :: windv_fp
-   logical                                       :: DataFromPreviousTimestep
-   logical                                       :: DeleteSWANFile
-   real(fp)        , dimension(:,:), pointer     :: ice_frac_fp
-   real(fp)        , dimension(:,:), pointer     :: floe_dia_fp
-   logical                                       :: extr_var1
-   logical                                       :: extr_var2
-   logical                                       :: sumvars
-   logical                                       :: success
-   logical                                       :: exists
-   character(256)                                :: fname
-   character(15), external                       :: datetime_to_string
-   character(15)                                 :: refdstr
-   character(500)                                :: message
-   type(swan_dom), pointer                       :: dom
+   integer :: count
+   integer :: i_flow
+   integer :: i_swan
+   integer :: istat
+   integer :: itide
+   integer :: itidewrite
+   integer :: lunhot
+   integer :: offset
+   real(fp) :: wave_timezone
+   real(fp) :: wave_timmin
+   real :: mult
+   real(fp), dimension(:, :), pointer :: patm_fp
+   real(fp), dimension(:, :), pointer :: windu_fp
+   real(fp), dimension(:, :), pointer :: windv_fp
+   logical :: DataFromPreviousTimestep
+   logical :: DeleteSWANFile
+   real(fp), dimension(:, :), pointer :: ice_frac_fp
+   real(fp), dimension(:, :), pointer :: floe_dia_fp
+   real(sp), dimension(:,:), allocatable :: tempveg
+   logical :: extr_var1
+   logical :: extr_var2
+   logical :: sumvars
+   logical :: success
+   logical :: exists
+   character(256) :: fname
+   character(15), external :: datetime_to_string
+   character(15) :: refdstr
+   character(500) :: message
+   type(swan_dom), pointer :: dom
 !
 !! executable statements -------------------------------------------------------
 !
@@ -91,23 +93,23 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
    else
       if (wavedata%time%timsec >= wavedata%output%nexttim) then
          call setwrite_wavm(wavedata%output, .true.)
-         call setnexttim   (wavedata%output, wavedata%time%timsec + swan_run%wavm_write_interval * 60.0)
+         call setnexttim(wavedata%output, wavedata%time%timsec + swan_run%wavm_write_interval * 60.0)
       else
          call setwrite_wavm(wavedata%output, .false.)
-      endif
+      end if
       !
       ! Keep the hotfile when:
       !   current time >= nextint
       !   int2keephotfile is specified
       !
-   endif
+   end if
    do itide = 1, swan_run%nttide
-      if (selectedtime>0 .and. itide/=selectedtime) cycle
+      if (selectedtime > 0 .and. itide /= selectedtime) cycle
       !
       call setcalculationcount(wavedata%time, wavedata%time%calccount + 1)
       if (wavedata%output%write_wavm) then
          call setoutputcount(wavedata%output, wavedata%output%count + 1)
-      endif
+      end if
       if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == '') then
          !
          ! SWANFile is going to contain two datasets: from tstart and tend
@@ -118,11 +120,11 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
          ! This is necessary, because the increase of output%count must be done outside the "do i_swan"-loop
          !
          call setoutputcount(wavedata%output, wavedata%output%count + 1)
-      endif          
+      end if
       !
       ! Set time in case of standalone run
       !
-      if (wavedata%mode == stand_alone) call settimmin(wavedata%time, real(swan_run%timwav(itide),hp), swan_run%modsim, swan_run%nonstat_interval)
+      if (wavedata%mode == stand_alone) call settimmin(wavedata%time, real(swan_run%timwav(itide), hp), swan_run%modsim, swan_run%nonstat_interval)
       !
       ! Update wave and wind conditions
       !
@@ -131,34 +133,38 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
       ! Start loop over SWAN grids
       !
       refdstr = datetime_to_string(wavedata%time%refdate, 0.0_hp)
-      write(*,'(a,f15.3,a,a)') '  Start loop over SWAN grids, time = ',wavedata%time%timmin, ' minutes since ', trim(refdstr)
+      write (*, '(a,f15.3,a,a)') '  Start loop over SWAN grids, time = ', wavedata%time%timmin, ' minutes since ', trim(refdstr)
       do i_swan = 1, n_swan_grids
          dom => swan_run%dom(i_swan)
 
-         write(*,'(a)') '  Allocate input fields'
-         call alloc_input_fields (swan_grids(i_swan), swan_input_fields, wavedata%mode, dom%ice)
-         call init_input_fields  (swan_input_fields, swan_run, itide)
+         write (*, '(a)') '  Allocate input fields'
+         call alloc_input_fields(swan_grids(i_swan), swan_input_fields, wavedata%mode, dom%ice)
+         call init_input_fields(swan_input_fields, swan_run, itide)
 
-         if (dom%curvibot==1) then
-            write(*,'(a)') '  Allocate and read SWAN depth'
-            call get_swan_depth (swan_input_fields,dom%botfil)
-         endif
+         if (dom%curvibot == 1) then
+            write (*, '(a)') '  Allocate and read SWAN depth'
+            call get_swan_depth(swan_input_fields, dom%botfil)
+         end if
          !
          ! Vegetation map
          if (dom%vegetation == 1) then
-            write(*,'(a)') '  Allocate and read vegetation map'
-            call get_vegi_map (swan_input_fields,dom%vegfil)
-         endif
+            if (dom%vegfil /= '') then
+               write (*, '(a)') '  Allocate and read vegetation map'
+               call get_vegi_map(swan_input_fields, dom%vegfil)
+            else
+               swan_input_fields%veg = dom%veg_nstems
+            end if
+         end if
          ! If flow results are used
          !
          if (swan_run%useflowdata) then
             do i_flow = 1, n_flow_grids
-               write(*,'(a,i0,a)') '  Get flow fields, domain ',i_flow,' :'
-               call get_flow_fields (i_flow, i_swan, swan_input_fields, flow_grids(i_flow), swan_grids(i_swan), &
-                                   & flow2swan_maps(i_swan,i_flow), wavedata, &
+               write (*, '(a,i0,a)') '  Get flow fields, domain ', i_flow, ' :'
+               call get_flow_fields(i_flow, i_swan, swan_input_fields, flow_grids(i_flow), swan_grids(i_swan), &
+                                   & flow2swan_maps(i_swan, i_flow), wavedata, &
                                    & swan_run, dom%flowVelocityType)
-            enddo
-         endif
+            end do
+         end if
          !
          ! Get meteo data from file?
          ! Only when using space varying meteo data and
@@ -166,50 +172,50 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
          !
          if (dom%n_extforces > 0) then
             wave_timezone = real(swan_run%tzone, fp)
-            wave_timmin   = real(wavedata%time%timmin, fp)
-            success       = meteoupdate(swan_grids(i_swan)%grid_name, wavedata%time%refdate, wave_timezone, wave_timmin)
+            wave_timmin = real(wavedata%time%timmin, fp)
+            success = meteoupdate(swan_grids(i_swan)%grid_name, wavedata%time%refdate, wave_timezone, wave_timmin)
             call checkmeteoresult_wave(success)
             if (dom%qextnd(q_wind) == 0) then
-            !
-            ! update windu array
-            !
-            call get_buffer(windu_fp, swan_input_fields%mmax, swan_input_fields%nmax)
-            success = getmeteoval(swan_grids(i_swan)%grid_name, 'windu'     , wave_timmin, &
-                                & 1,1, 1, swan_input_fields%nmax   , &
-                                &      1, swan_input_fields%mmax   , &
-                                & windu_fp    , 0   )
-            call checkmeteoresult_wave(success)
-            swan_input_fields%windu = real(windu_fp, sp)
-            !
-            ! update windv array
-            !
-            call get_buffer(windv_fp, swan_input_fields%mmax, swan_input_fields%nmax)
-            success = getmeteoval(swan_grids(i_swan)%grid_name, 'windv'     , wave_timmin, &
-                                & 1, 1,  1, swan_input_fields%nmax   , &
-                                &        1, swan_input_fields%mmax   , &
-                                & windv_fp     , 0  )
-            call checkmeteoresult_wave(success)
-            swan_input_fields%windv = real(windv_fp, sp)
-            !
-            ! update patm array
-            !
-            !call get_buffer(patm_fp, swan_input_fields%mmax, swan_input_fields%nmax)
-            !success = getmeteoval(swan_grids(i_swan)%grid_name, 'patm'      , wave_timmin, &
-            !                    & 1, 1, 1, swan_input_fields%nmax   , &
-            !                    &       1, swan_input_fields%mmax   , &
-            !                    & patm_fp   , 0     )
-            !call checkmeteoresult_wave(success)
-            !swan_input_fields%patm = real(patm_fp, sp)
-            endif
+               !
+               ! update windu array
+               !
+               call get_buffer(windu_fp, swan_input_fields%mmax, swan_input_fields%nmax)
+               success = getmeteoval(swan_grids(i_swan)%grid_name, 'windu', wave_timmin, &
+                                   & 1, 1, 1, swan_input_fields%nmax, &
+                                   &      1, swan_input_fields%mmax, &
+                                   & windu_fp, 0)
+               call checkmeteoresult_wave(success)
+               swan_input_fields%windu = real(windu_fp, sp)
+               !
+               ! update windv array
+               !
+               call get_buffer(windv_fp, swan_input_fields%mmax, swan_input_fields%nmax)
+               success = getmeteoval(swan_grids(i_swan)%grid_name, 'windv', wave_timmin, &
+                                   & 1, 1, 1, swan_input_fields%nmax, &
+                                   &        1, swan_input_fields%mmax, &
+                                   & windv_fp, 0)
+               call checkmeteoresult_wave(success)
+               swan_input_fields%windv = real(windv_fp, sp)
+               !
+               ! update patm array
+               !
+               !call get_buffer(patm_fp, swan_input_fields%mmax, swan_input_fields%nmax)
+               !success = getmeteoval(swan_grids(i_swan)%grid_name, 'patm'      , wave_timmin, &
+               !                    & 1, 1, 1, swan_input_fields%nmax   , &
+               !                    &       1, swan_input_fields%mmax   , &
+               !                    & patm_fp   , 0     )
+               !call checkmeteoresult_wave(success)
+               !swan_input_fields%patm = real(patm_fp, sp)
+            end if
             if (dom%ice > 0) then
-            !
+               !
                ! update ice_frac array
                !
                call get_buffer(ice_frac_fp, swan_input_fields%mmax, swan_input_fields%nmax)
                success = getmeteoval(swan_grids(i_swan)%grid_name, 'sea_ice_area_fraction', wave_timmin, &
-                                   & 1,1, 1, swan_input_fields%nmax   , &
-                                   &      1, swan_input_fields%mmax   , &
-                                   & ice_frac_fp    , 0   )
+                                   & 1, 1, 1, swan_input_fields%nmax, &
+                                   &      1, swan_input_fields%mmax, &
+                                   & ice_frac_fp, 0)
                call checkmeteoresult_wave(success)
                swan_input_fields%ice_frac = real(ice_frac_fp, sp)
                !
@@ -217,17 +223,17 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
                !
                call get_buffer(floe_dia_fp, swan_input_fields%mmax, swan_input_fields%nmax)
                success = getmeteoval(swan_grids(i_swan)%grid_name, 'floe_diameter', wave_timmin, &
-                                   & 1,1, 1, swan_input_fields%nmax   , &
-                                   &      1, swan_input_fields%mmax   , &
-                                   & floe_dia_fp    , 0   )
+                                   & 1, 1, 1, swan_input_fields%nmax, &
+                                   &      1, swan_input_fields%mmax, &
+                                   & floe_dia_fp, 0)
                call checkmeteoresult_wave(success)
                swan_input_fields%floe_dia = real(floe_dia_fp, sp)
-            endif
+            end if
             !
             ! Deallocate buffer
             !
             call dealloc_buffer()
-         endif
+         end if
          !
          ! Extend FLOW data on this SWAN grid?
          !
@@ -235,103 +241,107 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
             !
             ! Write SWAN depth file
             !
-            write(*,'(a)') '  Write SWAN depth file'
-            sumvars      = .true.
+            write (*, '(a)') '  Write SWAN depth file'
+            sumvars = .true.
             extr_var1 = dom%qextnd(q_bath) == 2
-            extr_var2 = dom%qextnd(q_wl)   == 2
-            call write_swan_file (swan_input_fields%dps         , &
-                                & swan_input_fields%s1          , &
-                                & swan_input_fields%mmax        , &
-                                & swan_input_fields%nmax        , &
-                                & swan_grids(i_swan)%covered    , &
+            extr_var2 = dom%qextnd(q_wl) == 2
+            call write_swan_file(swan_input_fields%dps, &
+                                & swan_input_fields%s1, &
+                                & swan_input_fields%mmax, &
+                                & swan_input_fields%nmax, &
+                                & swan_grids(i_swan)%covered, &
                                 & 'BOTNOW', extr_var1, extr_var2, &
-                                & sumvars , swan_run%depmin)
-         endif
-         if (dom%qextnd(q_cur)>0 .or. swan_run%swuvi) then
+                                & sumvars, swan_run%depmin)
+         end if
+         if (dom%qextnd(q_cur) > 0 .or. swan_run%swuvi) then
             !
             ! Write SWAN velocity file
             !
-            write(*,'(a)') '  Write SWAN velocity file'
-            sumvars      = .false.
-            extr_var1 = dom%qextnd(q_cur)  == 2
-            extr_var2 = dom%qextnd(q_cur)  == 2
-            call write_swan_file (swan_input_fields%u1          , &
-                                & swan_input_fields%v1          , &
-                                & swan_input_fields%mmax        , &
-                                & swan_input_fields%nmax        , &
-                                & swan_grids(i_swan)%covered    , &
+            write (*, '(a)') '  Write SWAN velocity file'
+            sumvars = .false.
+            extr_var1 = dom%qextnd(q_cur) == 2
+            extr_var2 = dom%qextnd(q_cur) == 2
+            call write_swan_file(swan_input_fields%u1, &
+                                & swan_input_fields%v1, &
+                                & swan_input_fields%mmax, &
+                                & swan_input_fields%nmax, &
+                                & swan_grids(i_swan)%covered, &
                                 & 'CURNOW', extr_var1, extr_var2, &
-                                & sumvars )
-         endif
-         if (dom%qextnd(q_wind)>0 .or. dom%n_extforces > 0) then
+                                & sumvars)
+         end if
+         if (dom%qextnd(q_wind) > 0 .or. dom%n_extforces > 0) then
             !
             ! Write SWAN wind file
             !
-            write(*,'(a)') '  Write SWAN wind file'
-            sumvars      = .false.
+            write (*, '(a)') '  Write SWAN wind file'
+            sumvars = .false.
             extr_var1 = dom%qextnd(q_wind) == 2
             extr_var2 = dom%qextnd(q_wind) == 2
-            call write_swan_file (swan_input_fields%windu       , &
-                                & swan_input_fields%windv       , &
-                                & swan_input_fields%mmax        , &
-                                & swan_input_fields%nmax        , &
-                                & swan_grids(i_swan)%covered    , &
+            call write_swan_file(swan_input_fields%windu, &
+                                & swan_input_fields%windv, &
+                                & swan_input_fields%mmax, &
+                                & swan_input_fields%nmax, &
+                                & swan_grids(i_swan)%covered, &
                                 & 'WNDNOW', extr_var1, extr_var2, &
-                                & sumvars )
-         endif
+                                & sumvars)
+         end if
          if (wavedata%mode == flow_mud_online) then
             !
             ! Write SWAN mud file
             ! Never extend!
             !
-            write(*,'(a)') '  Write SWAN mud file'
-            sumvars      = .true.
-            extr_var1    = .false.
-            extr_var2    = .false.
-            call write_swan_file (swan_input_fields%dpsmud      , &
-                                & swan_input_fields%s1mud       , &
-                                & swan_input_fields%mmax        , &
-                                & swan_input_fields%nmax        , &
-                                & swan_grids(i_swan)%covered    , &
+            write (*, '(a)') '  Write SWAN mud file'
+            sumvars = .true.
+            extr_var1 = .false.
+            extr_var2 = .false.
+            call write_swan_file(swan_input_fields%dpsmud, &
+                                & swan_input_fields%s1mud, &
+                                & swan_input_fields%mmax, &
+                                & swan_input_fields%nmax, &
+                                & swan_grids(i_swan)%covered, &
                                 & 'MUDNOW', extr_var1, extr_var2, &
-                                & sumvars , 0.0)
-         endif
-         if (dom%vegetation == 2) then
+                                & sumvars, 0.0)
+         end if
+         mult = 1.0
+         if (dom%vegetation == 2 .or. (dom%vegetation == 1 .and. dom%vegfil /= '')) then
             !
             ! Write Vegetation map file
             !
-            write(*,'(a)') '  Write Vegetation map file'
-            sumvars      = .true.
+            write (*, '(a)') '  Write Vegetation map file'
+            !
+            ! mult needed for writing correct stem density to output
+            ! in SWAN, the applied density is veg*nstems
+            if (dom%vegetation == 1) then
+               mult = dom%veg_nstems
+            end if
+            !
             extr_var1 = .false.
-            extr_var2 = .false.
-            call write_swan_file (swan_input_fields%veg         , &
-                                & swan_input_fields%s1veg       , &
-                                & swan_input_fields%mmax        , &
-                                & swan_input_fields%nmax        , &
-                                & swan_grids(i_swan)%covered    , &
-                                & 'VEGNOW', extr_var1, extr_var2, &
-                                & sumvars )
-         endif
+            call write_swan_file(swan_input_fields%veg, &
+                                & swan_input_fields%mmax, &
+                                & swan_input_fields%nmax, &
+                                & swan_grids(i_swan)%covered, &
+                                & 'VEGNOW', extr_var1)
+         end if
          if (swan_run%icedamp == 2 .and. dom%ice == 1) then
             !
             ! Write ice fraction map file
             !
-            write(*,'(a)') '  Write SWAN ice fraction map file'
+            write (*, '(a)') '  Write SWAN ice fraction map file'
             extr_var1 = .false. ! dom%qextnd(q_ice) == 2
-            call write_swan_file (swan_input_fields%ice_frac    , &
-                                & swan_input_fields%mmax        , &
-                                & swan_input_fields%nmax        , &
-                                & swan_grids(i_swan)%covered    , &
+            call write_swan_file(swan_input_fields%ice_frac, &
+                                & swan_input_fields%mmax, &
+                                & swan_input_fields%nmax, &
+                                & swan_grids(i_swan)%covered, &
                                 & 'AICENOW', extr_var1, 0.0)
-         endif
+         end if
 
          ! Update SWAN wind and wave conditions in SWAN input file based on wavecon time-series file
 
          ! Write SWAN input
-         write(*,'(a)') '  Write SWAN input'
+         write (*, '(a)') '  Write SWAN input'
          dom%curlif = swan_grids(i_swan)%tmp_name
 
-         call write_swan_input (swan_run, itide, wavedata%time%calccount, i_swan, swan_grids(i_swan)%xymiss, wavedata)
+         call write_swan_input(swan_run, itide, wavedata%time%calccount, i_swan, swan_grids(i_swan)%xymiss, wavedata)
 
          ! The following commented code was used for a special version
          ! - to be implemented in a more constructive way
@@ -340,24 +350,24 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
          !call cp_file(sfile,'partmiod.txt','copy',nuerr)
 
          ! Run SWAN
-         write(*,'(a)') '<<Run SWAN...'
-         call run_swan (swan_run%casl)
+         write (*, '(a)') '<<Run SWAN...'
+         call run_swan(swan_run%casl)
 
          ! Allocate swan output fields
-         write(*,'(a)') '  Allocate output fields'
+         write (*, '(a)') '  Allocate output fields'
          if (allocated(swan_run%add_out_names)) then
             swan_output_fields%n_outpars = size(swan_run%add_out_names)
          else
             swan_output_fields%n_outpars = 0
-         endif
-         call alloc_output_fields (swan_grids(i_swan), swan_output_fields)
+         end if
+         call alloc_output_fields(swan_grids(i_swan), swan_output_fields)
          if (allocated(swan_run%add_out_names)) then
             swan_output_fields%add_out_names = swan_run%add_out_names
-         endif
+         end if
          !
          ! Read SWAN output
          !
-         write(*,'(a)') '  Read SWAN output'
+         write (*, '(a)') '  Read SWAN output'
          offset = 0
          if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == '') then
             ! SWANFile contains two datasets: from tstart and tend
@@ -371,29 +381,32 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
                !
                ! Write output to WAVE map file
                !
-               write(*,'(a,i10,a,f15.3)') '  Write WAVE map file, nest ',i_swan,' time ',wavedata%time%timmin
+               write (*, '(a,i10,a,f15.3)') '  Write WAVE map file, nest ', i_swan, ' time ', wavedata%time%timmin
                DataFromPreviousTimestep = .true.
-               call write_wave_map (swan_grids(i_swan), swan_output_fields, swan_input_fields,&
+               call write_wave_map(swan_grids(i_swan), swan_output_fields, swan_input_fields,&
                                   & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
                                   & swan_run%gamma0, swan_run%output_ice)
                if (swan_run%swmapwritenetcdf) then
-                  write(*,'(a,i10,a,f10.3)') '  Write WAVE NetCDF map file, nest ',i_swan,' time ',wavedata%time%timmin
-                  call write_wave_map_netcdf (swan_grids(i_swan), swan_output_fields, swan_input_fields, &
+                  if (allocated(tempveg)) deallocate(tempveg)
+                  allocate(tempveg(swan_input_fields%mmax, swan_input_fields%nmax))
+                  tempveg = swan_input_fields%veg * mult
+                  write (*, '(a,i10,a,f10.3)') '  Write WAVE NetCDF map file, nest ', i_swan, ' time ', wavedata%time%timmin
+                  call write_wave_map_netcdf(swan_grids(i_swan), swan_output_fields, swan_input_fields, &
                                      & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
-                                     & swan_run%netcdf_sp, swan_input_fields%mmax,swan_input_fields%nmax, swan_input_fields%veg, swan_run%output_ice)
-               endif
+                                     & swan_run%netcdf_sp, swan_input_fields%mmax, swan_input_fields%nmax, tempveg, swan_run%output_ice, swan_run%output_veg)
+               end if
                call setoutputcount(wavedata%output, wavedata%output%count + 1)
-            endif
+            end if
             offset = 1
-         endif
+         end if
          DeleteSWANFile = .true.
          call read_swan_output(swan_output_fields, swan_run, offset, DeleteSWANFile)
          !
          if (swan_run%icedamp == 1 .and. dom%ice > 0) then
-            call postprocess_ice(swan_input_fields%mmax    , swan_input_fields%nmax    , &
+            call postprocess_ice(swan_input_fields%mmax, swan_input_fields%nmax, &
                                & swan_input_fields%ice_frac, swan_input_fields%floe_dia, &
-                               & swan_output_fields%hs     )
-         endif
+                               & swan_output_fields%hs)
+         end if
          !
          if (swan_run%swwav) then
             !
@@ -403,48 +416,51 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
                !
                ! Map WAVE parameters to FLOW grid
                !
-               write(*,'(a,i10)') '  Map WAVE parameters to FLOW grid ', i_flow
+               write (*, '(a,i10)') '  Map WAVE parameters to FLOW grid ', i_flow
                call map_swan_output(swan_output_fields,            &
                            &        flow_output_fields(i_flow),    &
-                           &        swan2flow_maps(i_swan,i_flow), &
-                           &        flow_grids(i_flow)            )
-            enddo
-         endif
+                           &        swan2flow_maps(i_swan, i_flow), &
+                           &        flow_grids(i_flow))
+            end do
+         end if
          if (dom%cgnum .and. wavedata%output%write_wavm) then
             !
             ! Write output to WAVE map file
             !
-            write(*,'(a,i10,a,f15.3)') '  Write WAVE map file, nest ',i_swan,' time ',wavedata%time%timmin
+            write (*, '(a,i10,a,f15.3)') '  Write WAVE map file, nest ', i_swan, ' time ', wavedata%time%timmin
             DataFromPreviousTimestep = .false.
-            call write_wave_map (swan_grids(i_swan), swan_output_fields, swan_input_fields, &
+            call write_wave_map(swan_grids(i_swan), swan_output_fields, swan_input_fields, &
                                & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
                                & swan_run%gamma0, swan_run%output_ice)
             if (swan_run%swmapwritenetcdf) then
-               write(*,'(a,i10,a,f10.3)') '  Write WAVE NetCDF map file, nest ',i_swan,' time ',wavedata%time%timmin
-               call write_wave_map_netcdf (swan_grids(i_swan), swan_output_fields, swan_input_fields, &
+               if (allocated(tempveg)) deallocate(tempveg)
+               allocate(tempveg(swan_input_fields%mmax, swan_input_fields%nmax))
+               tempveg = swan_input_fields%veg * mult
+               write (*, '(a,i10,a,f10.3)') '  Write WAVE NetCDF map file, nest ', i_swan, ' time ', wavedata%time%timmin
+               call write_wave_map_netcdf(swan_grids(i_swan), swan_output_fields, swan_input_fields, &
                                   & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
-                                  & swan_run%netcdf_sp, swan_input_fields%mmax,swan_input_fields%nmax, swan_input_fields%veg, swan_run%output_ice)
-            endif
-         endif
+                                  & swan_run%netcdf_sp, swan_input_fields%mmax, swan_input_fields%nmax, tempveg, swan_run%output_ice, swan_run%output_veg)
+            end if
+         end if
          if (swan_run%output_points .and. swan_run%output_table) then
-            write(*,'(a,i10,a,f10.3)') '  Write WAVE NetCDF his file, nest ',i_swan,' time ',wavedata%time%timmin
-            call write_wave_his_netcdf (swan_grids(i_swan), swan_output_fields, n_swan_grids, i_swan, &
+            write (*, '(a,i10,a,f10.3)') '  Write WAVE NetCDF his file, nest ', i_swan, ' time ', wavedata%time%timmin
+            call write_wave_his_netcdf(swan_grids(i_swan), swan_output_fields, n_swan_grids, i_swan, &
                                & wavedata)
-         endif
-         
-         call dealloc_input_fields (swan_input_fields, wavedata%mode)
-         call dealloc_output_fields (swan_output_fields)
+         end if
+
+         call dealloc_input_fields(swan_input_fields, wavedata%mode)
+         call dealloc_output_fields(swan_output_fields)
          !
          if (deletehotfile(wavedata)) then
             !
             ! The hotfile related to "usehottime" has been used and can now be deleted
             !
-            write (fname,'(a,i0,5a)') 'hot_', i_swan, '_', trim(swan_run%usehottime(1:8)), '_', trim(swan_run%usehottime(10:15)), '.nc'
-            inquire (file = trim(fname), exist = exists)
+            write (fname, '(a,i0,5a)') 'hot_', i_swan, '_', trim(swan_run%usehottime(1:8)), '_', trim(swan_run%usehottime(10:15)), '.nc'
+            inquire (file=trim(fname), exist=exists)
             if (exists) then
-               open (newunit=lunhot, file = trim(fname))
-               close (lunhot, status = 'delete')
-            endif
+               open (newunit=lunhot, file=trim(fname))
+               close (lunhot, status='delete')
+            end if
             !
             ! When using SWAN-MPI, the names of the hot-files generated are extended with -001, -002 etc
             ! Keep removing them until there is no one left
@@ -452,24 +468,24 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
             count = 0
             do
                count = count + 1
-               write (fname,'(a,i0,5a,i3.3,a)') 'hot_', i_swan, '_', trim(swan_run%usehottime(1:8)), '_', trim(swan_run%usehottime(10:15)), '-', count,'.nc'
-               
-               inquire (file = trim(fname), exist = exists)
+               write (fname, '(a,i0,5a,i3.3,a)') 'hot_', i_swan, '_', trim(swan_run%usehottime(1:8)), '_', trim(swan_run%usehottime(10:15)), '-', count, '.nc'
+
+               inquire (file=trim(fname), exist=exists)
                if (exists) then
-                  open (newunit = lunhot, file = trim(fname))
-                  close (lunhot, status = 'delete')
+                  open (newunit=lunhot, file=trim(fname))
+                  close (lunhot, status='delete')
                else
                   !
                   ! exit do loop
                   !
                   exit
-               endif
-            enddo
-         endif
+               end if
+            end do
+         end if
 
-         write(*,'(a)') '  Deallocate input fields'
-         call dealloc_input_fields (swan_input_fields, wavedata%mode, dom%ice)
-      enddo ! nested swan grids
+         write (*, '(a)') '  Deallocate input fields'
+         call dealloc_input_fields(swan_input_fields, wavedata%mode, dom%ice)
+      end do ! nested swan grids
       !
       ! After all hotfiles are handled correctly for each i_swan:
       ! Next time, use the last written hotfile
@@ -484,24 +500,24 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
                !
                ! Convert vector fields to curvilinear directions
                !
-               write(*,'(a,i10)') '  Convert vector field ', i_flow
-               call wave2flow (flow_output_fields(i_flow), flow_grids(i_flow))
-            endif
+               write (*, '(a,i10)') '  Convert vector field ', i_flow
+               call wave2flow(flow_output_fields(i_flow), flow_grids(i_flow))
+            end if
             !
             ! Convert some parameters to communication parameters
             !
-            write(*,'(a)') '  Convert parameters'
-            call wave2com (flow_output_fields(i_flow), swan_run)
+            write (*, '(a)') '  Convert parameters'
+            call wave2com(flow_output_fields(i_flow), swan_run)
             !
             ! Write to communication file(s)
             !
-            write(*,'(a)') '  Write to com-file'
+            write (*, '(a)') '  Write to com-file'
             itidewrite = itide
             if (swan_run%append_com) itidewrite = -1
-            call put_wave_fields (flow_grids(i_flow), flow_output_fields(i_flow), itidewrite        , &
-                                & wavedata          , swan_run%swflux           , swan_run%flowgridfile, &
+            call put_wave_fields(flow_grids(i_flow), flow_output_fields(i_flow), itidewrite, &
+                                & wavedata, swan_run%swflux, swan_run%flowgridfile, &
                                 & swan_run%netcdf_sp)
-         enddo
+         end do
          ! Initially comcount = 0
          ! After writing the first data set to (all) the comfile(s), comcount must be increased
          ! Always write to field 1, unless append_com is true
@@ -511,10 +527,10 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
                wavedata%output%comcount = 2
             else
                wavedata%output%comcount = wavedata%output%comcount + 1
-            endif
+            end if
          else
             wavedata%output%comcount = 1
-         endif
-      endif
-   enddo   ! time steps
+         end if
+      end if
+   end do ! time steps
 end subroutine swan_tot

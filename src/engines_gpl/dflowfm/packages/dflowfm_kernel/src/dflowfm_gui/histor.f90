@@ -29,12 +29,14 @@
 
 !
 !
-
       subroutine HISTOR()
-         use unstruc_files
-         use unstruc_display
+         use unstruc_files, only: mdia
+         use unstruc_colors
+         use unstruc_display_data, only: npos
+         use m_devices, only: ihs, iws
          use dflowfm_version_module, only: company, product_name
          use m_helpnow
+         use m_help
          implicit none
          integer :: ih
          integer :: infoinput

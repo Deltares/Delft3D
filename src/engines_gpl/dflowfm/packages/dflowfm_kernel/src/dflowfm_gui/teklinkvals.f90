@@ -31,15 +31,25 @@
 !
 
   subroutine TEKLINKVALS(MET)
+     use m_isocol2
+     use m_drcirc
+     use m_dmovabs
+     use m_dlnabs
      use m_missing
      use m_netw
      use unstruc_colors, only: ncolhl
      use geometry_module, only: getdx, getdy, getdxdy
      use m_sferic, only: jsferic
-     use gridoperations
      use m_depmax2, only: vmax=>vmax2, vmin=>vmin2
      use m_howtoview
      use m_halt2
+     use m_three_two
+     use m_cirr
+     use m_pfiller
+     use m_movabs
+     use m_lnabs
+     use m_getrcir
+     use m_invnod
 
      implicit none
      integer :: MET
@@ -51,8 +61,7 @@
      double precision :: rd
      double precision :: vv
      double precision XD, YD, ZD, DX, DY, DZ, XX1, YY1, ZZ1, XX2, YY2, ZZ2, X3, Y3, Z3
-     double precision :: X(4), Y(4), Z(4), GETRCIR
-     logical :: invnod
+     double precision :: X(4), Y(4), Z(4)
 
      D = 0.5d0 * GETRCIR() !
      if (MET >= 3) then

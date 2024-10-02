@@ -31,6 +31,12 @@
 !
 
 !> compute the grid heights at grid edges on the center spline
+module m_comp_gridheights
+
+implicit none
+
+contains
+
 subroutine comp_gridheights(mc, eheight, ierror)
    use m_splines
    use m_gridsettings
@@ -311,3 +317,5 @@ subroutine comp_gridheights(mc, eheight, ierror)
    return
 
 end subroutine comp_gridheights
+
+end module m_comp_gridheights

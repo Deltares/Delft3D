@@ -32,6 +32,8 @@
 
 !> snap spline to nearest land boundary
 subroutine snap_spline(ispline)
+   use m_confrm
+   use m_comp_afinespline
    use m_landboundary
    use m_splines
    use m_alloc

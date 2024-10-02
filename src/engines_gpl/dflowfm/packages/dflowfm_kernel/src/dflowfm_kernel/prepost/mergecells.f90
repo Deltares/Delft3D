@@ -35,6 +35,7 @@ subroutine mergecells(ic1, ic2, jatek)
    use m_netw
    use m_alloc
    use gridoperations
+   use m_tek_link
 
    implicit none
 

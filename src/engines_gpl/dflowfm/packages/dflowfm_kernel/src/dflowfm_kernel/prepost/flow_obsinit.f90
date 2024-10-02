@@ -29,19 +29,19 @@
 
 !
 !
-
+module m_flow_obsinit
+   implicit none
+contains
  !> Initializes all administration encessary for writing output to his-files.
  !! That is: snap observation stations to flow cells, cross sections to flow links.
  !! And bookkeeping for time series output on structures.
  subroutine flow_obsinit()
     use m_observations, only: init_valobs
     use unstruc_model, only: md_delete_observation_points_outside_grid
-    use m_wind
+    use m_wind, only: jawind
     use m_structures
     use fm_external_forcings, only: allocatewindarrays
     use m_obs_on_flowgeom, only: obs_on_flowgeom
-
-    implicit none
 
     call crosssections_on_flowgeom()
     call runupgauges_on_flowgeom()
@@ -90,3 +90,4 @@
     end subroutine delete_static_observation_points_outside_grid
 
  end subroutine flow_obsinit
+end module m_flow_obsinit

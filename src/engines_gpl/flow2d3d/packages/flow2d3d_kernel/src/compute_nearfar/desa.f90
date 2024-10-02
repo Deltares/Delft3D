@@ -255,9 +255,19 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
              enddo
           endif
        enddo
+       
        do lcon = 1, lstsc
           conc_intake(lcon) = conc_intake(lcon) / wght_tot
        enddo
+       
+       !
+       ! Error in case no active intake layers were found,
+       !
+       if (nf_q_intake > 0.0_fp .and. wght_tot==0.0_fp) then
+           write(lundia,'(a)') "ERROR: 'No active intake layers were found. Please check the Z values in the NF2FF file (and X, Y coordinates as well)"           
+           call d3stop(1,gdp)          
+       endif           
+       
        !
        ! Remove intake from disnf, distributed over inside-points
        !

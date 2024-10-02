@@ -29,10 +29,18 @@
 
 !
 !
+module m_jgtext
+use m_getpos
 
+   implicit none
+contains
   subroutine JGTEXT(TEX, X, Y, NCOL, WIC, HIC, JAHOOG) ! grafische tekst, grafische posities, met kleurblokjes ERONDER
      use unstruc_colors
-     implicit none
+     use m_box_nop
+     use m_fbox_nop
+     use m_set_col
+     use m_draw_text
+
      double precision :: hic, WIC
      integer :: jahoog
      integer :: ncol
@@ -67,3 +75,4 @@
      end if
      return
   end
+end module m_jgtext

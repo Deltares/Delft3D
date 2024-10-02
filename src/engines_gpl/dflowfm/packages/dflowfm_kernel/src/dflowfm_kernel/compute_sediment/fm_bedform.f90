@@ -57,6 +57,7 @@ contains
       use m_flowtimes
       use m_waves
       use m_get_kbot_ktop
+      use m_get_cz
       !
       implicit none
       !
@@ -295,7 +296,6 @@ contains
       use m_flowgeom, only: ndxi, lnxi, ndx, lnx, wcx1, wcx2, wcy1, wcy2, ln, wu, nd, ba
       use m_flow, only: hs, hu, u1, v, kmx
       use m_flowparameters, only: epshu, epshs
-      use unstruc_files, only: mdia
       use m_alloc
       use message_module
       use m_get_Lbot_Ltop

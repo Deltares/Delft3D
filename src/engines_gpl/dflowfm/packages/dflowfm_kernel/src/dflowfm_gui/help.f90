@@ -29,12 +29,16 @@
 
 !
 !
-
+module m_help
+   implicit none
+contains
       subroutine HELP(WRDKEY, NLEVEL)
-         use unstruc_display
+         use unstruc_colors
+         use unstruc_display_data, only: npos
+         use m_devices, only: ihs, iws
          use dflowfm_version_module, only: company, product_name
          use m_helpc
-         implicit none
+
          integer :: i
          integer :: ih
          integer :: infowindow
@@ -226,3 +230,4 @@
          call ITEXTCOLOURN(NFORG, NBACK)
          return
       end
+end module m_help

@@ -31,11 +31,16 @@
 !
 
 !
+module m_inqasp
+
+implicit none
+
+contains
+
       subroutine INQASP(ASP)
-         use M_DEVICES
+         use m_devices
          use m_screenarea
 
-         implicit none
          double precision :: asp
          double precision :: dx
          double precision :: dy
@@ -49,3 +54,5 @@
          ASP = (DY * dble(NPY)) / (DX * dble(NPX))
          return
       end
+
+end module m_inqasp

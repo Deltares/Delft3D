@@ -30,6 +30,7 @@
       use m_netw
       use m_flow
       use m_flowgeom
+      use m_get_prof_1D
       implicit none
 
       integer, parameter :: JACSTOT = 0 !< 0 for computing the total area

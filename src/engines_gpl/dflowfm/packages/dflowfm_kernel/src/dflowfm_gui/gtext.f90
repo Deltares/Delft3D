@@ -29,10 +29,14 @@
 
 !
 !
-
+module m_gtext
+   implicit none
+contains
       subroutine GTEXT(TEX, X, Y, NCOL)
          use m_colnow
-         implicit none
+         use m_set_col
+         use m_draw_text
+
          integer :: ncol
          double precision :: x
          double precision :: y
@@ -44,3 +48,4 @@
          end if
          return
       end
+end module m_gtext

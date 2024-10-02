@@ -45,7 +45,6 @@ endif(UNIX)
 if (WIN32)
     set(oss_dependencies    netcdf4
                             netcdff)
-    oss_include_libraries(${library_name} ${oss_dependencies})
     target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${mpi_module_path}

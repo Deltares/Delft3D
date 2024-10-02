@@ -30,13 +30,19 @@
 !
 !
 
+module m_minmxnetlins
+
+implicit none
+
+contains
+
   subroutine MINMXNETLINS()
 
      use m_netw
-     use m_missing
+     use m_missing, only: dmiss
      use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, dv=>dv2, val=>val2, nv=>nv2, jaauto=>jaauto2
+     use m_inview
 
-     implicit none
      integer :: i
      integer :: k1
      integer :: k2
@@ -50,7 +56,6 @@
      double precision :: yp2
      double precision :: zp1
      double precision :: zp2
-     logical inview
 
      if (JAAUTO > 0) then
         RMIN = 1.0d30
@@ -92,3 +97,5 @@
 
      return
   end subroutine MINMXNETLINS
+
+end module m_minmxnetlins

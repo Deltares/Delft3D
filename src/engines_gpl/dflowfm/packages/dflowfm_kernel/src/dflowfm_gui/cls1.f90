@@ -31,10 +31,18 @@
 !
 
 !
+module m_cls1
+
+implicit none
+
+contains
+
       subroutine CLS1()
-         use unstruc_display
+         use unstruc_colors
+         use unstruc_display_data
          use m_drawthis
-         implicit none
+         use m_fbox_nop
+         use m_set_col
 
          call IGRAREACLEAR()
 
@@ -50,3 +58,5 @@
 
          return
       end
+
+end module m_cls1

@@ -30,10 +30,16 @@
 !
 !
 
+module m_dview
+
+implicit none
+
+contains
+
    subroutine DVIEW(XD, YD, ZD, X, Y, Z)
-      use m_missing
+      use m_missing, only: dmiss
       use m_viewmat
-      implicit none
+
       double precision :: ce
       integer :: i
       ! GEEF perspectievische COORDINATEN
@@ -61,3 +67,5 @@
          Y = CE(2) / Z + Y0S
       end if
    end subroutine DVIEW
+
+end module m_dview

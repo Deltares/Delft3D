@@ -29,14 +29,13 @@
 
 !
 !
-
+module m_solve_jacobi
+   implicit none
+contains
  subroutine solve_jacobi(s1, ndx, itsol) ! uses both s0 and s1
     use m_flowgeom, only: ln, kfs, nd
-    use m_flowtimes
-    use m_jacobi
+    use m_jacobi, only: bbi, db, itmxjac
     use m_reduce
-
-    implicit none
 
     double precision :: ds, rrn ! max error
     integer :: L, n, ndx, itsol, nn, La, n1, n2, ni
@@ -114,3 +113,4 @@
 
     end do
  end subroutine solve_jacobi
+end module m_solve_jacobi

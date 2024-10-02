@@ -30,11 +30,16 @@
 !
 !
 
+module m_orglocator
+
+implicit none
+
+contains
+
       subroutine ORGLOCATOR(XL, YL)
          use m_devices
          use m_locatora
 
-         implicit none
          integer :: ml
          integer :: nl
          double precision :: xl
@@ -52,3 +57,5 @@
          call IMOUSECURSORXYG(real(XLC), real(YLC))
          return
       end
+
+end module m_orglocator

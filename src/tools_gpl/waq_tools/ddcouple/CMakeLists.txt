@@ -20,7 +20,6 @@ set(oss_dependencies deltares_common
                      waq_hyd_data
                      waq_utils_f)
 
-oss_include_libraries(${executable_name} oss_dependencies)
 target_link_libraries(${executable_name} ${oss_dependencies})
 
 # Define how the files should be structured within Visual Studio

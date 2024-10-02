@@ -30,6 +30,12 @@
 !
 !
 
+module m_comp_middle_latitude
+
+implicit none
+
+contains
+
  !> divide segment 1-3 (between latitudes y1 and y3) by y2,
  !> such that aspect ratios of the segments 1-2 and 2-3 are equal:
  !>   |y2-y1| / cos((y1+y2)/2) = |y3-y2| / cos((y2+y3)/2)
@@ -91,3 +97,5 @@
 
     return
  end subroutine comp_middle_latitude
+
+end module m_comp_middle_latitude

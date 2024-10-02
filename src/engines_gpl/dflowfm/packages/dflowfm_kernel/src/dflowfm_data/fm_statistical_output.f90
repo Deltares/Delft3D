@@ -93,7 +93,9 @@ contains
 
    subroutine transform_qplat(source_input)
       use m_laterals, only: qplat
-      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "qplat" item.
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Unused
+      associate (source_input => source_input) ! Unused, since qplat is a module variable
+      end associate
       qplat_data = sum(qplat, dim=1)
    end subroutine transform_qplat
 
@@ -358,10 +360,13 @@ contains
       use m_monitoring_crosssections
       use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
       use m_sediment, only: sedtot2sedsus, stmpar, jased, stm_included
-      real(dp), pointer, dimension(:), intent(inout) :: data_pointer !< pointer to constit_crs_obs_data
+      real(dp), pointer, dimension(:), intent(inout) :: data_pointer !< pointer to constit_crs_obs_data, unused
 
       integer :: i, IP, num, l, lsed
       real(dp) :: rhol
+
+      associate (data_pointer => data_pointer) ! Unused, since obscrs_data is a module variable
+      end associate
 
       if (ncrs == 0) then
          return
@@ -1261,17 +1266,21 @@ contains
                              description='Write discharge magnitude to his-file', nc_dim_ids=station_nc_dims_3D_center)
 
       ! Turbulence model
-      call add_output_config(config_set_his, IDX_HIS_TKE, &
-                             'Wrihis_turbulence', 'tke', 'turbulent kinetic energy at nearest velocity point', '', &
-                             'm2 s-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write k, eps and vicww to his-file', &
-                             nc_dim_ids=station_nc_dims_3D_interface_edge)
+      call add_output_config(config_set_his, IDX_HIS_VIU, &
+                             'Wrihis_turbulence', 'viu', 'horizontal eddy viscosity (flowlink-averaged) at pressure point ', '', &
+                             'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWS, &
                              'Wrihis_turbulence', 'vicwws', 'turbulent vertical eddy viscosity at pressure point', '', &
-                             'm2 s-1''', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWU, &
                              'Wrihis_turbulence', 'vicwwu', 'turbulent vertical eddy viscosity at nearest velocity point', '', &
-                             'm2 s-1''', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_3D_interface_edge)
+      call add_output_config(config_set_his, IDX_HIS_TKIN, &
+                             'Wrihis_turbulence', 'tke', 'turbulent kinetic energy at nearest velocity point', '', &
+                             'm2 s-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write k, eps and viscosity to his-file', &
                              nc_dim_ids=station_nc_dims_3D_interface_edge)
       call add_output_config(config_set_his, IDX_HIS_EPS, &
                              'Wrihis_turbulence', 'eps', 'turbulent energy dissipation at nearest velocity point', '', &
@@ -2424,13 +2433,13 @@ contains
          end if
          if (jahisvelvec > 0) then
             if (model_is_3D()) then
-               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UCX:IPNT_UCX + kmx)
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UCX:IPNT_UCX + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_X_VELOCITY), temp_pointer)
 
-               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UCY:IPNT_UCY + kmx)
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UCY:IPNT_UCY + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_Y_VELOCITY), temp_pointer)
 
-               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UCZ:IPNT_UCZ + kmx)
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UCZ:IPNT_UCZ + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_Z_VELOCITY), temp_pointer)
 
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DEPTH_AVERAGED_X_VELOCITY), valobs(:, IPNT_UCXQ))
@@ -2443,14 +2452,14 @@ contains
          if (jahisvelocity > 0) then
             if (jaeulervel == 0) then
                if (model_is_3D()) then
-                  temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UMAG:IPNT_UMAG + kmx)
+                  temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UMAG:IPNT_UMAG + kmx - 1)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VELOCITY_MAGNITUDE), temp_pointer)
                else
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VELOCITY_MAGNITUDE), valobs(:, IPNT_UMAG))
                end if
             else
                if (model_is_3D()) then
-                  temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UMAG:IPNT_UMAG + kmx)
+                  temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UMAG:IPNT_UMAG + kmx - 1)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN), temp_pointer)
                else
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN), valobs(:, IPNT_UMAG))
@@ -2459,42 +2468,53 @@ contains
          end if
          if (jahisdischarge > 0) then
             if (model_is_3D()) then
-               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_QMAG:IPNT_QMAG + kmx)
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_QMAG:IPNT_QMAG + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DISCHARGE_MAGNITUDE), temp_pointer)
             else
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DISCHARGE_MAGNITUDE), valobs(:, IPNT_QMAG))
             end if
          end if
+         
          ! Turbulence model
-         if (model_is_3D()) then
-            if (iturbulencemodel >= 3 .and. jahistur > 0) then
-               temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_TKIN:IPNT_TKIN + kmx)
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TKE), temp_pointer)
-            end if
-            if (iturbulencemodel == 3 .and. jahistur > 0) then
-               temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_TEPS:IPNT_TEPS + kmx)
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EPS), temp_pointer)
-            end if
-            if (iturbulencemodel >= 2) then
-               temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_VICWWS:IPNT_VICWWS + kmx)
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS), temp_pointer)
-               temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_VICWWU:IPNT_VICWWU + kmx)
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWU), temp_pointer)
-            end if
-            if (iturbulencemodel == 4 .and. jahistur > 0) then
-               temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_TEPS:IPNT_TEPS + kmx)
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAU), temp_pointer)
+         if (jahistur > 0) then
+            if (model_is_3D()) then
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_VIU:IPNT_VIU + kmx - 1)
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VIU), temp_pointer)
+            else
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VIU), valobs(:, IPNT_VIU))
             end if
          end if
-         if (idensform > 0 .and. jaRichardsononoutput > 0 .and. model_is_3D()) then
-            temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_RICH:IPNT_RICH + kmx)
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RICH), temp_pointer)
+         if (model_is_3D()) then
+            if (jahistur > 0) then
+               if (iturbulencemodel >= 3) then
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_TKIN:IPNT_TKIN + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TKIN), temp_pointer)
+               end if
+               if (iturbulencemodel == 3) then
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_TEPS:IPNT_TEPS + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EPS), temp_pointer)
+               end if
+               if (iturbulencemodel >= 2) then
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_VICWWS:IPNT_VICWWS + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS), temp_pointer)
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_VICWWU:IPNT_VICWWU + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWU), temp_pointer)
+               end if
+               if (iturbulencemodel == 4) then
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_TEPS:IPNT_TEPS + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAU), temp_pointer)
+               end if
+            end if
+            if (idensform > 0 .and. jaRichardsononoutput > 0) then
+               temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_RICH:IPNT_RICH + kmx)
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RICH), temp_pointer)
+            end if
          end if
 
          ! Gravity + buoyancy
          if (jasal > 0 .and. jahissal > 0) then
             if (model_is_3D()) then
-               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_SA1:IPNT_SA1 + kmx)
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_SA1:IPNT_SA1 + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SALINITY), temp_pointer)
             else
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SALINITY), valobs(:, IPNT_SA1))
@@ -2503,7 +2523,7 @@ contains
 
          if (jatem > 0 .and. jahistem > 0) then
             if (model_is_3D()) then
-               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_TEM1:IPNT_TEM1 + kmx)
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_TEM1:IPNT_TEM1 + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TEMPERATURE), temp_pointer)
             else
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TEMPERATURE), valobs(:, IPNT_TEM1))
@@ -2512,10 +2532,10 @@ contains
 
          if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
             if (model_is_3D()) then
-               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_RHOP:IPNT_RHOP + kmx)
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_RHOP:IPNT_RHOP + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POTENTIAL_DENSITY), temp_pointer)
                if (density_is_pressure_dependent()) then
-                  temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_RHO:IPNT_RHO + kmx)
+                  temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_RHO:IPNT_RHO + kmx - 1)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DENSITY), temp_pointer)
                end if
 
@@ -2539,10 +2559,10 @@ contains
             end if
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UORB), valobs(:, IPNT_WAVEU))
             if (model_is_3D() .and. .not. flowwithoutwaves) then
-               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UCXST:IPNT_UCXST + kmx)
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UCXST:IPNT_UCXST + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), temp_pointer)
 
-               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UCYST:IPNT_UCYST + kmx)
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_UCYST:IPNT_UCYST + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VSTOKES), temp_pointer)
             else
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), valobs(:, IPNT_UCXST))
@@ -2604,7 +2624,7 @@ contains
          ! Sediment model
          if (jased > 0 .and. .not. stm_included) then
             if (model_is_3D()) then
-               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_SED:IPNT_SED + kmx)
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_SED:IPNT_SED + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SED), temp_pointer)
             else
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SED), valobs(:, IPNT_SED))
@@ -2935,19 +2955,19 @@ contains
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_CLS_UCDIR                                                     )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_CLS_UCDIR_EULER                                               )
       !
-      call process_output_quantity_configs(output_config_set)
+      call process_output_quantity_configs(output_set)
       call realloc(output_set, .true.) ! set size to count
       call initialize_statistical_output(output_set%statout)
 
    end subroutine flow_init_statistical_output_his
 
    !> Update output quantity configs with information about the simulation model (e.g., do not write layers when simulation is 2D)
-   subroutine process_output_quantity_configs(output_quantity_config_set)
-      type(t_output_quantity_config_set), intent(inout) :: output_quantity_config_set !< The set of configs for all possible output variables
+   subroutine process_output_quantity_configs(output_set)
+      type(t_output_variable_set), intent(inout) :: output_set
       integer :: i
 
-      do i = 1, output_quantity_config_set%count
-         associate (config => output_quantity_config_set%configs(i))
+      do i = 1, output_set%count
+         associate (config => output_set%statout(i)%output_config)
             if (allocated(config%nc_dim_ids)) then
                call process_nc_dim_ids(config%nc_dim_ids)
             end if

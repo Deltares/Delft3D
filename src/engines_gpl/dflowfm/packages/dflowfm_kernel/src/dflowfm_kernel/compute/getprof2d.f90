@@ -29,10 +29,13 @@
 
 !
 !
-
+module m_get_prof2d
+   implicit none
+contains
  subroutine getprof2D(hpr, wu2, dz, ai, frcn, ifrctyp, wid, ar, aconv, jaconv, beta, deltaa, hyr)
     use m_flow, only: slotw2D
-    implicit none
+    use m_get_cz
+
     double precision, intent(in) :: hpr, wu2, dz, ai, frcn
     double precision, intent(out) :: wid, ar, aconv ! aconv = (a/conv)**2
     integer, intent(in) :: ifrctyp, jaconv
@@ -118,3 +121,4 @@
        end if
     end if
  end subroutine getprof2D
+end module m_get_prof2d

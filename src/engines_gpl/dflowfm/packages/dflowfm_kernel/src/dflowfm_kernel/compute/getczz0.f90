@@ -29,11 +29,12 @@
 
 !
 !
-
+module m_get_czz0
+   implicit none
+contains
 subroutine getczz0(h1, frcn, ifrctyp, cz, z0) ! basic get z0 (m),  this routine is not safe for frcn == 0
    use m_physcoef, only: sag, vonkar, ee
    use m_flowparameters, only: epshu
-   implicit none
 
    double precision, intent(in) :: h1
    integer, intent(in) :: ifrctyp
@@ -68,3 +69,4 @@ subroutine getczz0(h1, frcn, ifrctyp, cz, z0) ! basic get z0 (m),  this routine 
       z0 = h0 * exp(-1d0 - vonkar * cz / sag)
    end if
 end subroutine getczz0
+end module m_get_czz0

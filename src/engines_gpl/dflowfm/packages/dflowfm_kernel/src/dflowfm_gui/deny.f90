@@ -30,9 +30,15 @@
 !
 !
 
+module m_deny
+
+implicit none
+
+contains
+
       subroutine DENY(IXP, IYP)
          use m_toemaar
-         implicit none
+
          integer :: infoattribute
          integer :: ixp
          integer :: iyp
@@ -50,3 +56,5 @@
          call ITEXTCOLOURN(NFORGR, NBCKGR)
          return
       end
+
+end module m_deny

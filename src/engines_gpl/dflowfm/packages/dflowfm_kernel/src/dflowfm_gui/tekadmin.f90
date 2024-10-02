@@ -31,6 +31,7 @@
 !
 
       subroutine TEKADMIN(X, Y, I, J)
+         use m_draw_text
          implicit none
          integer :: i
          integer :: j

@@ -30,6 +30,12 @@
 !
 !
 
+module m_halt3
+
+implicit none
+
+contains
+
       subroutine HALT3(JA)
          ! left   mouse button: 1
          ! middle mouse button: 2
@@ -46,3 +52,5 @@
          end if
          return
       end
+
+end module m_halt3

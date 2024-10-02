@@ -30,8 +30,17 @@
 !
 !
 
+module m_allcolours
+
+implicit none
+
+contains
+
       subroutine ALLCOLOURS()
          use m_wearelt
+         use m_box_nop
+         use m_fbox_nop
+         use m_set_col
          implicit none
          double precision :: dx
          double precision :: dxc
@@ -72,3 +81,5 @@
          end do
          return
       end
+
+end module m_allcolours

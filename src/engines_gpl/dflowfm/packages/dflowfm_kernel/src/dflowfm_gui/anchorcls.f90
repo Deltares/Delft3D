@@ -30,10 +30,17 @@
 !
 !
 
+module m_anchorcls
+
+implicit none
+
+contains
+
       subroutine ANCHORCLS()
          use unstruc_colors
          use m_locatora
          use m_disdis
+         use m_set_col
 
          implicit none
 !     ZET ANCHOR NA CLEARSCREEN
@@ -47,3 +54,5 @@
 
          return
       end
+
+end module m_anchorcls

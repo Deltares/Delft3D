@@ -21,7 +21,6 @@ set(oss_dependencies waq_external_access_layer
 
 if(UNIX)
         target_link_libraries(${executable_name}
-                ${oss_dependencies}
                 uuid)
 endif(UNIX)
 

@@ -34,6 +34,7 @@
 !!
 !! Should be preceded by a flow_run_usertimestep and followed by a flow_finalize_usertimestep.
 subroutine flow_run_usertimestep(key, iresult) ! do computational flowsteps until timeuser
+   use m_get_s_key
    use m_flowtimes
    use unstruc_messages
    use m_partitioninfo

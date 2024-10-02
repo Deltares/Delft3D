@@ -36,32 +36,48 @@ function [version,hash,repo_url] = read_identification(sourcedir,file)
 % Find the "%VERSION = <VERSION>" line in the specified file.
 %
 fid = fopen([sourcedir filesep file],'r');
-str = fgetl(fid);
-while isempty(strmatch('%VERSION =',str))
+if fid > 0
     str = fgetl(fid);
-end
-fclose(fid);
-%
-% Obtain the version number from the string.
-%
-baseversion = deblank(str(11:end));
-%
-% Determine the latest revision.
-%
-[revstring,repo_url,hash] = determine_revision(sourcedir);
-%
-% Combine version and revision to file version string.
-%
-[a,b] = strtok(baseversion);
-version = sprintf('%s.%s%s',a,revstring,b);
-%
-% Append 32 or 64 bit flag
-%
-if strncmp(fliplr(computer),'46',2)
-    version=[version ' (64bit)'];
+    while isempty(strmatch('%VERSION =',str))
+        str = fgetl(fid);
+    end
+    fclose(fid);
+    %
+    % Obtain the version number from the string.
+    %
+    baseversion = deblank(str(11:end));
+    %
+    % Determine the latest revision.
+    %
+    [revstring,repo_url,hash] = determine_revision(sourcedir);
+    %
+    % Combine version and revision to file version string.
+    %
+    [a,b] = strtok(baseversion);
+    version = sprintf('%s.%s%s',a,revstring,b);
 else
-    version=[version ' (32bit)'];
+    version = 'unknown version';
+    repo_url = 'unknown';
+    hash = 'unknown';
 end
+%
+% Append platform identifier
+%
+switch computer
+    case 'PCWIN'
+        platform = 'Windows 32bit';
+    case 'GLNX86'
+        platform = 'Linux 32bit';
+    case 'PCWIN64'
+        platform = 'Windows 64bit';
+    case 'GLNXA64'
+        platform = 'Linux 64bit';
+    case 'MACI64'
+        platform = 'Apple 64bit';
+    otherwise
+        platform = computer;
+end
+version=sprintf('%s (%s)',version,platform);
 %
 % Done.
 %

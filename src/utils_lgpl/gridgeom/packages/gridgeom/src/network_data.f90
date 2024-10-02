@@ -80,6 +80,7 @@ module network_data
     integer, allocatable           :: nod(:)          !< node nrs
     integer, allocatable           :: lin(:)          !< link nrs, kn(1 of 2,netcell(n)%lin(1)) =  netcell(n)%nod(1)
   end type tface
+  
   type (tface), allocatable        :: netcell(:)      !< (nump1d2d) 1D&2D net cells (nodes and links)
   type (tface), allocatable         :: netcell0(:)     ! backup of netcell
   type (tface), allocatable         :: netcell_sav(:)  ! backup of netcell (for increasenetcells)

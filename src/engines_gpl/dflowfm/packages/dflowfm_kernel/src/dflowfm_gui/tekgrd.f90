@@ -29,11 +29,15 @@
 
 !
 !
-
+module m_tek_grd
+   implicit none
+contains
       subroutine TEKgrd(XC, YC, MMAX, NMAX, m1, n1, m2, n2, NCOL, MET, key, MC)
          use m_halt2
          use m_jgrline8
-         implicit none
+         use m_tek_num_netcells
+         use m_set_col
+
          integer :: mmax, nmax, m1, n1, m2, n2, ncol, met, key, mc
          double precision :: XC(MMAX, NMAX), YC(MMAX, NMAX), xlist(nmax), ylist(nmax)
 
@@ -76,3 +80,4 @@
          end if
 
       end subroutine tekgrd
+end module m_tek_grd

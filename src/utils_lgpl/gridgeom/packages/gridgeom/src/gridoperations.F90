@@ -2211,16 +2211,16 @@
       end do
    end subroutine ggeo_construct_netcelllin_from_netcellnod
 
-   SUBROUTINE INCELLS(XA,YA,KIN)
+   ELEMENTAL RECURSIVE SUBROUTINE INCELLS(XA,YA,KIN)
    !use m_netw
    use network_data
    use geometry_module, only: pinpok
    use m_missing, only : jins, dmiss
 
    implicit none
-   double precision :: xa
-   double precision :: ya
-   integer :: kin
+   double precision, intent(in) :: xa
+   double precision, intent(in) :: ya
+   integer, intent(out) :: kin
 
    integer :: in
    integer :: k

@@ -31,25 +31,21 @@
 !
 
  double precision function znod(kk) ! get various values at flow nodes
+    use m_getktoplot
     use m_flow
     use m_flowgeom
-    use m_reduce
     use m_flowtimes ! for volerr
     use m_sediment
     use m_fm_erosed, only: ucxq_mor, ucyq_mor
-    use m_missing
-    use m_partitioninfo
     use m_xbeach_data
     use m_transportdata
-    use m_missing
     use m_observations
-    use bedcomposition_module
-    use precision
-    use m_waves
     use m_flowparameters, only: ispirparopt
     use m_wind, only: jawind
     use unstruc_display, only: grwhydopt
     use m_drawthis
+    use m_get_equilibrium_transport_rates
+    use m_get_tau
 
     implicit none
 
@@ -216,7 +212,7 @@
        else
           jawaveswartdelwaq_local = jawaveswartdelwaq
        end if
-       call gettau(kk, znod, czc, jawaveswartdelwaq_local)
+       call get_tau(kk, znod, czc, jawaveswartdelwaq_local)
 
     else if (nodval == 40) then
 
@@ -306,13 +302,13 @@
           case (4)
              znod = Uorb(kk)
           case (5)
-             call gettau2(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
+             call get_tau(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
              znod = sqrt(ustw2) !ustw
           case (6)
-             call gettau2(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
+             call get_tau(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
              znod = sqrt(taucurc / rhomean) !ustw+c
           case (7)
-             call gettau2(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
+             call get_tau(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
              znod = taucurc ! taus to Delwaq
           case (8)
              znod = dmiss ! Ustokes

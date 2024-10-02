@@ -31,6 +31,7 @@
 !
 
  double precision function zlin(LL) ! get various values at flow links
+    use m_getltoplot
     use m_flow
     use m_flowgeom
     use m_wind
@@ -38,11 +39,12 @@
     use m_sferic
     use m_missing
     use m_drawthis
+    use m_cosphiu
     implicit none
 
     integer, intent(in) :: LL
     integer :: L, linval, k1, k2, n1, n2, lll, ka, kb
-    double precision :: cosphiu, omega1, omega2, zb1, zb2, dum, alfa
+    double precision :: omega1, omega2, zb1, zb2, dum, alfa
 
     zlin = dmiss
     if (LL < 1) then

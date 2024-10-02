@@ -29,26 +29,23 @@
 
 !
 !
-
+module m_interpdivers
+   implicit none
+contains
  subroutine interpdivers(naar)
 
     use m_netw
     use M_FLOWGEOM
     use m_flow
     use m_samples
-    use m_flowparameters
-    use m_ec_interpolationsettings
-    use m_missing
-    use m_grid
+    use m_ec_interpolationsettings, only: interpolationtype, rcel
+    use m_grid, only: mmax, nmax
     use kdtree2Factory
-    use m_polygon, only: NPL, xpl, ypl, zpl
     use m_ec_basic_interpolation, only: triinterp2, averaging2, TerrorInfo
     use m_sferic, only: jsferic, jasfer3D
     use gridoperations
     use m_qnerror
     use m_get_samples_boundingbox
-
-    implicit none
 
     double precision, allocatable :: XX(:, :), YY(:, :)
     double precision, allocatable :: XXX(:), YYY(:)
@@ -234,3 +231,4 @@
     end subroutine checkErrorInfo
 
  end subroutine interpdivers
+end module m_interpdivers

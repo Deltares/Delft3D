@@ -30,8 +30,16 @@
 !
 !
 
+module m_getcolornumber
+
+implicit none
+
+contains
+
       subroutine GETCOLORNUMBER(XP, YP, NUMCOL, N1O, N2O, N3O)
          use m_disvalcolors
+         use m_set_col
+         use m_ptabs
          implicit none
          integer :: i
          integer :: n1
@@ -56,3 +64,5 @@
          end do
          return
       end
+
+end module m_getcolornumber

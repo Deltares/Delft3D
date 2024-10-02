@@ -32,6 +32,7 @@
 
    subroutine TEKSAM(MET)
 
+      use m_minmxsam
       use unstruc_colors
       use m_missing, only: DMISS
       use unstruc_opengl, only: jaopengl
@@ -40,6 +41,7 @@
       use m_arcinfo
       use m_perspx
       use m_halt2
+      use m_set_col
       
       implicit none
       double precision :: RC
@@ -94,10 +96,12 @@
    end subroutine TEKSAM
 
    subroutine TEKarc(MET)
+      use m_minmxsam
       use m_arcinfo
       use unstruc_display
       use m_missing, only: DMISS
       use m_halt2
+      use m_set_col
 
       implicit none
       double precision :: hrc, rc, x, y, z
@@ -130,17 +134,25 @@
    end subroutine TEKarc
 
    subroutine tek1sample(x, y, z, met, hrc, m)
+      use m_isocol2
+      use m_cir
+      use m_box
       use unstruc_colors
       use unstruc_display
       use m_arcinfo
       use m_drawthis
       use m_htext
+      use m_hi_text
+      use m_krec5
+      use m_set_col
+      use m_inview
+      use m_movabs
+      use m_ptabs
 
       implicit none
 
       double precision :: x, y, z, hrc
       integer :: met, m, ncol
-      logical, external :: inview
 
       if (INVIEW(X, Y)) then
          if (NDRAW(9) == 2) then

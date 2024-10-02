@@ -30,11 +30,18 @@
 !
 !
 
+module m_ispoin
+
+implicit none
+
+contains
+
     subroutine ISPOIN(X, Y, mmax, nmax, MC, NC, RD1, &
                       XL, YL, MV, NV)
-       use m_missing
+       use m_disval
+       use m_missing, only: xymis
        use m_wearelt
-       implicit none
+
        integer, intent(in) :: mmax, nmax, mc, nc
        integer, intent(out) :: mv, nv
        double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), RD1(MMAX, NMAX)
@@ -85,3 +92,5 @@
        call DISVAL(0, 0, 0d0)
        return
     end subroutine ispoin
+
+end module m_ispoin

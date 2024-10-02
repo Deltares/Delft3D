@@ -30,9 +30,15 @@
 !
 !
 
+module m_linewidth
+
+implicit none
+
+contains
+
       subroutine LINEWIDTH(iW)
-         use unstruc_opengl
-         implicit none
+         use unstruc_opengl, only: InOpenGLRendering, SetLineWidth
+
          integer :: iw
          if (InOpenGLRendering) then
             call SetLineWidth(iw)
@@ -40,3 +46,5 @@
             call IGRLINEWIDTH(iw, iw)
          end if
       end subroutine
+
+end module m_linewidth

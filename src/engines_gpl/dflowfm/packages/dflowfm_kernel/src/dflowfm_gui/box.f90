@@ -31,7 +31,15 @@
 !
 
 !
+module m_box
+
+implicit none
+
+contains
+
       subroutine BOX(XB1, YB1, XB2, YB2)
+         use m_movabs
+         use m_lnabs
          implicit none
          double precision :: xb1
          double precision :: xb2
@@ -44,3 +52,5 @@
          call LNABS(XB1, YB1)
          return
       end
+
+end module m_box

@@ -39,6 +39,7 @@
       use M_FLOW
       use M_FLOWGEOM
       use m_qnerror
+      use m_qn_eof_error
       implicit none
       integer, intent(inout) :: Mrst !< Input file pointer (should already be open)
       integer, intent(out) :: ja !< Return status (0 = success)

@@ -32,10 +32,15 @@
 
  !> make structured triangular mesh from curvlinear grid
  subroutine maketrigrid()
-    use m_grid
+    use m_confrm
+    use m_cleargrid
+    use m_grid, only: nc, mc, xc, yc
     use m_sferic, only: jsferic, jasfer3D
     use geometry_module, only: half
-    use m_missing
+    use m_missing, only: dmiss
+    use m_increase_grid
+    use m_restore_grd
+    use m_tek_grid
     implicit none
 
     double precision, dimension(:, :), allocatable :: x, y ! original grid coordinates

@@ -230,7 +230,7 @@
                    if (jatem > 1) then
                       heatsrc(kt) = heatsrc(kt) + qin(kt) * tair(k) ! rain has temp of air time varying specified
                    else if (jatem == 1) then
-                      heatsrc(kt) = heatsrc(kt) + qin(kt) * backgroundairtemperature ! or constant
+                      heatsrc(kt) = heatsrc(kt) + qin(kt) * BACKGROUND_AIR_TEMPERATURE ! or constant
                    end if
                 else
                    heatsrc(kt) = heatsrc(kt) + qin(kt) * constituents(itemp, kt) ! extract top layer temp

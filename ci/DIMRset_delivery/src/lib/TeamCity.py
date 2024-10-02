@@ -368,7 +368,7 @@ class TeamCity(object):
 
             Returns None if the request failed.
         """
-        endpoint = f"{self.__rest_uri}builds/id:{build_id}/"
+        endpoint = f"{self.__rest_uri}builds/id:{build_id}?fields=id,artifact-dependencies(build),resultingProperties(property)"
         result = requests.get(
             url=endpoint, headers=self.__default_headers, auth=self.__auth
         )

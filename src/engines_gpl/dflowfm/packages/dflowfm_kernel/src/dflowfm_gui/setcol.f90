@@ -29,11 +29,13 @@
 
 !
 !
-
+module m_set_col
+   implicit none
+contains
       subroutine SETCOL(NCOL)
-         use unstruc_opengl
+         use unstruc_opengl, only: setcolorfromcolornr
          use m_colnow
-         implicit none
+
          integer :: ncol
 
          if (NCOL /= NCOLNOW) then
@@ -43,3 +45,4 @@
          NCOLNOW = NCOL
          return
       end
+end module m_set_col

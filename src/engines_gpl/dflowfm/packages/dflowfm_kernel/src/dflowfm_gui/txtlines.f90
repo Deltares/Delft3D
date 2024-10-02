@@ -31,6 +31,7 @@
 !
 
       subroutine TXTLINES()
+         use m_mtext
          use m_devices
          use m_textlines
          implicit none

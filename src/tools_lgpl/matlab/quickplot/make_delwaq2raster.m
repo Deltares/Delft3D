@@ -37,9 +37,6 @@ function make_delwaq2raster(basedir,varargin)
 
 curdir=pwd;
 addpath(curdir)
-if matlabversionnumber<7.09
-    error('Invalid MATLAB version. Use MATLAB R2009b (7.9) or higher for compiling Delft3D-DELWAQ2RASTER!')
-end
 if ~exist('mcc')
     error('Cannot find MATLAB compiler. Use another MATLAB installation!')
 end
@@ -97,7 +94,7 @@ addpath ../../../../third_party_open/netcdf/matlab/mexnc
 addpath ../../../../third_party_open/netcdf/matlab/snctools
 %
 if nargin<4
-    [qpversion,hash,repo_url] = read_identification(sourcedir,'d3d_qp.m');
+    [qpversion,hash,repo_url] = get_qpversion(sourcedir,'d3d_qp.m');
     T = now;
 end
 fprintf('\nBuilding Delft3D-DELWAQ2RASTER version %s\n\n',qpversion);

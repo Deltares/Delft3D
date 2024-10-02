@@ -30,13 +30,17 @@
 !
 !
 
+module m_menuv1
+
+implicit none
+
+contains
+
    subroutine MENUV1(NUM, NWHAT)
-      use m_netw
       use m_modenow
       use m_menuv2
       use m_fieldopt
 
-      implicit none
       integer :: NUM, NWHAT
       integer :: maxopt
       integer, parameter :: MAXOP = 64
@@ -273,3 +277,5 @@
 
       return
    end subroutine MENUV1
+
+end module m_menuv1

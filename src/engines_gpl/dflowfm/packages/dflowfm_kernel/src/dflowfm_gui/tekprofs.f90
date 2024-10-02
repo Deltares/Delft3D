@@ -31,6 +31,8 @@
 !
 
   subroutine tekprofs() ! and initialise some turb pars
+     use m_getvminmax
+     use m_fullscreen
      use m_flow
      use m_flowgeom
      use m_wearelt
@@ -48,6 +50,7 @@
      use m_drawthis
      use m_depmax2, only: vmax=>vmax2, vmin=>vmin2
      use m_get_kbot_ktop
+     use m_get_czz0
 
      implicit none
 

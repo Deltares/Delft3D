@@ -31,6 +31,8 @@
 !
 
       subroutine WEAREL()
+         use m_minmaxworld
+         use m_inilca
          use m_wearelt
          implicit none
 

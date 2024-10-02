@@ -31,6 +31,8 @@
 !
 
  subroutine carrier(time1)
+    use m_movabs
+    use m_lnabs
     implicit none
     double precision :: time1
 

@@ -29,18 +29,22 @@
 
 !
 !
+module m_update_land_nodes
+use m_isocol
 
+   implicit none
+contains
 ! updates zk value at specified net node index using diven delta
 ! TODO: extend it to multiple indices
 subroutine update_land_nodes(node_index, new_zk)
-   use network_data
-   use m_missing
-   use m_polygon
-   use m_flowgeom
-   use m_flow
-   use unstruc_display
-   use m_sediment
-   implicit none
+   use network_data, only: xk, yk, zk
+   use m_polygon, only: npl
+   use m_flowgeom, only: ndx
+   use unstruc_display, only: rcir
+   use m_sediment, only: jased, jaceneqtr, mxgr, grainlay
+   use m_hlcir2
+   use m_movabs
+
    integer, intent(in) :: node_index
    double precision, intent(in) :: new_zk
 
@@ -80,3 +84,4 @@ subroutine update_land_nodes(node_index, new_zk)
    !       Should be called separately on call-site!
 
 end subroutine update_land_nodes
+end module m_update_land_nodes

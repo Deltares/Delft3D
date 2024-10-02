@@ -378,9 +378,9 @@ contains
       pairs(5)%key = 'AVERAGINGTYPE'
       pairs(5)%value = 4
       pairs(6)%key = 'TRACERFALLVELOCITY'
-      pairs(6)%value = 4
+      pairs(6)%value = 24
       pairs(7)%key = 'TRACERDECAYTIME'
-      pairs(7)%value = 5
+      pairs(7)%value = 25
       pairs(8)%key = 'RELATIVESEARCHCELLSIZE'
       pairs(8)%value = 5
       pairs(9)%key = 'EXTRAPOLTOL'
@@ -7187,7 +7187,7 @@ contains
          continue
       case ('friction_coefficient_Chezy', 'friction_coefficient_Manning', 'friction_coefficient_WalLlawNikuradse', &
             'friction_coefficient_WhiteColebrook', 'friction_coefficient_StricklerNikuradse', &
-            'friction_coefficient_Strickler', 'friction_coefficient_deDosBijkerk')
+            'friction_coefficient_Strickler', 'friction_coefficient_deBosBijkerk')
          itemPtr1 => item_frcutim ! the same for all types (type is stored elsewhere)
       case ('bedrock_surface_elevation')
          itemPtr1 => item_subsiduplift

@@ -30,6 +30,8 @@
 !
 !
 module m_menuh
+use m_menuv1
+
    implicit none
 contains
    subroutine MENUH(JA, NUM, NWHAT)

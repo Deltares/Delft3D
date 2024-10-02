@@ -1012,6 +1012,7 @@ contains
       call reallocP(meshgeom1d%nnodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999d0)
       !allocate(nnodeids(meshgeom1d%nnodes))
       call realloc(nnodeids, meshgeom1d%nnodes, keepexisting=.true.)
+      call reallocP(meshgeom1d%nodeidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nodebranchidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nodeoffsets, meshgeom1d%numnode, keepexisting=.true., fill=-999d0)
       call reallocP(meshgeom1d%edgebranchidx, meshgeom1d%numedge, keepexisting=.true., fill=-999)
@@ -1077,6 +1078,7 @@ contains
             end if
             !node
             meshgeom1d%nodebranchidx(newnodeindex) = currentbranchindex
+            meshgeom1d%nodeidx(newnodeindex) = k2
             pathlength = pathlength + pathdiff
             meshgeom1d%nodeoffsets(newnodeindex) = pathlength
             newnodeindex = newnodeindex + 1
@@ -1173,7 +1175,7 @@ contains
       type(t_network), intent(inout) :: network !< Network structure
       integer, intent(in) :: numcoords !< number of polyline coordinates
       type(t_longculvert), intent(inout) :: longculvert !< A givin long culvert
-      integer :: i, j, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde
+      integer :: i, j, branch_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde
       integer, allocatable :: inode(:), inodeGlob(:), jnode(:)
 
       integer :: ierror
@@ -1190,22 +1192,23 @@ contains
          call realloc(inode, 2, keepExisting=.false., fill=0)
          call realloc(inodeGlob, 2, keepExisting=.false., fill=0)
 
-         i = hashsearch(network%brs%hashlist, longculvert%branchId)
+         branch_idx = hashsearch(network%brs%hashlist, longculvert%branchId)
          !Find the last 1D node of the branch
-         if (i > 0 .and. network%BRS%size >= i) then
-            inode(1) = network%BRS%Branch(i)%FROMNODE%GRIDNUMBER
-            inode(2) = network%BRS%Branch(i)%TONODE%GRIDNUMBER
-
+         if (branch_idx > 0 .and. network%BRS%size >= i) then
+            inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
+            inode(2) = network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
             !find Flownode connected to this node by 1D2D link
             do j = 1, 2
-               do i = 1, nd(inode(j))%lnx
-                  linknum = nd(inode(j))%ln(i)
-                  linkabs = abs(linknum)
-                  if (kcu(linkabs) == 5) then
-                     inode(j) = ln(1, linkabs) + ln(2, linkabs) - inode(j)
-                     exit
-                  end if
-               end do
+               if (inode(j) > 0) then !> node lies on this partition
+                  do i = 1, nd(inode(j))%lnx
+                     linknum = nd(inode(j))%ln(i)
+                     linkabs = abs(linknum)
+                     if (kcu(linkabs) == 5) then
+                        inode(j) = ln(1, linkabs) + ln(2, linkabs) - inode(j)
+                        exit
+                     end if
+                  end do
+               end if
             end do
          end if
 
@@ -1317,7 +1320,7 @@ contains
 
       integer, intent(in) :: j !< polyline index corresponding to long culvert endpoint
       integer, intent(out) :: k !< new node index
-      
+
       integer :: node1d2d
       double precision :: x, y, z
 
@@ -1336,7 +1339,6 @@ contains
 
    !> check whether the end point of of the long culvert polyline coincides exactly with a 2D cell center. If so shift its x-coordinate
    subroutine longculvert_check_polyline(j, yplCulv, xplCulv)
-      use network_data, only: xzw, yzw
       use m_cell_geometry, only: xz, yz
       use m_GlobalParameters, only: flow1d_eps10
       use precision, only: comparereal

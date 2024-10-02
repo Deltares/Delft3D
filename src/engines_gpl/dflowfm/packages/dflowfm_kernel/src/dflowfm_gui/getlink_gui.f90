@@ -31,10 +31,21 @@
 !
 
 !> select link for directional refinement in GUI
+module m_getlink_gui
+
+implicit none
+
+contains
+
    subroutine getlink_GUI(xp, yp, L)
       use m_qnerror
       use m_ktext
       use m_putget_un
+      use m_n_plot_plus_min
+      use m_k_plot_plus_min
+      use m_tek_link
+      use m_is_link
+      use m_draw_nu
       implicit none
 
       double precision, intent(out) :: xp, yp !< coordinates of clicked point
@@ -88,3 +99,5 @@
 
       return
    end subroutine
+
+end module m_getlink_gui

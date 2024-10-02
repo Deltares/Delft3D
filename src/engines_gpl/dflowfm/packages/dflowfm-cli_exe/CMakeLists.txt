@@ -137,11 +137,9 @@ if(WIN32)
     else()
         set(oss_dependencies ${oss_dependencies} interacter_stub)
     endif()
-
-    target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 
-oss_include_libraries(${executable_name} oss_dependencies)
+target_link_libraries(${executable_name} ${oss_dependencies})
 
 if(UNIX)
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")

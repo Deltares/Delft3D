@@ -32,6 +32,7 @@
 
 !>  grow gridlayers from a net boundary
 subroutine netboundtocurvi(kp)
+   use m_change_spline2curvi_param
    use m_polygon
    use m_grid
    use m_gridsettings
@@ -44,6 +45,8 @@ subroutine netboundtocurvi(kp)
    use m_qnerror
    use m_delpol
    use m_dlinedis2
+   use m_increase_grid
+   use m_grow_layer
 
    implicit none
 

@@ -33,7 +33,7 @@
  subroutine bathyupdate()
     use m_flowgeom
     use m_flow
-    use m_netw, only: zk, zk0, zk1, numk
+    use m_netw, only: zk, zk1, numk
     use m_sediment !, only : jamorf
 
     implicit none

@@ -29,9 +29,13 @@
 
 !
 !
-
+module m_local_refine
+   implicit none
+contains
       subroutine LOCALREFINE(num, m1, n1, m2, n2, NOPTION)
-         implicit none
+         use m_refine
+         use m_derefine
+
          integer :: num, m1, m2, n1, n2, NOPTION
 
          if (NOPTION == 1) then
@@ -40,3 +44,4 @@
             call DEREFINE(M1, N1, M2, N2, NUM)
          end if
       end subroutine localrefine
+end module m_local_refine

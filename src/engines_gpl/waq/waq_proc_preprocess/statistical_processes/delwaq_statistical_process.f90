@@ -21,300 +21,268 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq_statistical_process
-    use m_waq_precision, only : int_wp, real_wp
-    use m_string_utils, only : string_equals, index_in_array
-    use m_setqtl
-    use m_setprc
-    use m_setgeo
-    use m_setdsc
-    use m_setdpt
-    use m_setday
-    use m_rdstat
-    use m_error_status
+   use m_waq_precision, only: int_wp, real_wp
+   use m_string_utils, only: string_equals, index_in_array
+   use m_setqtl
+   use m_setprc
+   use m_setgeo
+   use m_setdsc
+   use m_setdpt
+   use m_setday
+   use m_rdstat
+   use m_error_status
 
-    implicit none
+   implicit none
 
 contains
 
+   !> Defines process steering for statistical output processing
+   !! This routine deals with the set up of statistical processes
+   subroutine setup_statistical(lunrep, npos, cchar, ilun, lch, lstack, output_verbose_level, is_date_format, is_yyddhh_format, &
+                                statprocesdef, allitems, status, alone)
 
-    SUBROUTINE setup_statistical(LUNREP, NPOS, &
-            CCHAR, &
-            ILUN, LCH, &
-            LSTACK, output_verbose_level, &
-            is_date_format, is_yyddhh_format, &
-            StatProcesDef, AllItems, &
-            status)
+      use timers
+      use processet
 
-        !! Defines process steering for statistical output processing
-        !! This routine deals with the set up of statistical processes
+      implicit none
 
-        use timers
-        use ProcesSet
+      integer(kind=int_wp), intent(in) :: lunrep !! unit nr of output report file
+      integer(kind=int_wp), intent(in) :: npos !! significant line length of input file
+      character(1), intent(in) :: cchar !! comment character
+      integer(kind=int_wp), intent(inout) :: ilun(*) !! unitnumber include stack
+      character(*), intent(inout) :: lch(*) !! filename include stack for input
+      integer(kind=int_wp), intent(in) :: lstack !! include file stack size
+      integer(kind=int_wp), intent(out) :: output_verbose_level !! flag for more or less output
+      logical, intent(in) :: is_date_format !! 'date'-format 1st timescale
+      logical, intent(in) :: is_yyddhh_format !! 'date'-format (F;ddmmhhss,T;yydddhh)
+      type(procespropcoll) :: statprocesdef !! the statistical proces definition
+      type(itempropcoll) :: allitems !! all items of the proces system
+      type(error_status), intent(inout) :: status !< current error status
+      logical, intent(in) :: alone !< if true, running alone
 
-        implicit none
+      ! local
 
-        !     kind           function         name                Descriptipon
+      type(ProcesProp) :: aProcesProp !! one statistical proces definition
 
-        integer(kind = int_wp), intent(in) :: lunrep            !! unit nr of output report file
-        integer(kind = int_wp), intent(in) :: npos              !! significant line length of input file
-        character(1), intent(in) :: cchar            !! comment character
-        integer(kind = int_wp), intent(inout) :: ilun (*)          !! unitnumber include stack
-        character(*), intent(inout) :: lch  (*)         !! filename include stack for input
-        integer(kind = int_wp), intent(in) :: lstack            !! include file stack size
-        integer(kind = int_wp), intent(out) :: output_verbose_level            !! flag for more or less output
-        logical, intent(in) :: is_date_format           !! 'date'-format 1st timescale
-        logical, intent(in) :: is_yyddhh_format           !! 'date'-format (F;ddmmhhss,T;yydddhh)
-        type(ProcesPropColl) :: StatProcesDef    !! the statistical proces definition
-        type(ItemPropColl) :: AllItems         !! all items of the proces system
+      integer(kind=int_wp), pointer :: sta_no_in(:)
+      integer(kind=int_wp), pointer :: sta_no_out(:)
+      integer(kind=int_wp), pointer :: sta_switr(:)
+      character(len=20), pointer :: sta_in_nam(:)
+      character(len=50), pointer :: sta_in_txt(:)
+      real(kind=real_wp), pointer :: sta_in_def(:)
+      character(len=20), pointer :: sta_out_nam(:)
+      character(len=50), pointer :: sta_out_txt(:)
+      character(len=10), pointer :: sta_modnam(:)
 
-        type(error_status), intent(inout) :: status !< current error status
+      integer(kind=int_wp) :: nkey, input_file_start_position, nsproc
+      character(len=20), pointer :: keynam(:)
+      character(len=20), pointer :: keyval(:)
+      character(len=20), allocatable :: keynam2(:)
+      character(len=20), allocatable :: keyval2(:)
+      integer(kind=int_wp), pointer :: nokey(:)
 
-        ! local
+      integer(kind=int_wp) :: nperiod
+      character(len=20), pointer :: pernam(:)
+      character(len=20), pointer :: persfx(:)
+      integer(kind=int_wp), pointer :: pstart(:)
+      integer(kind=int_wp), pointer :: pstop(:)
 
-        type(ProcesProp) :: aProcesProp !! one statistical proces definition
+      integer(kind=int_wp) :: nsvai, nsvao, iswitr
+      character(len=20), pointer :: vainam(:)
+      character(len=50), pointer :: vaitxt(:)
+      real(kind=real_wp), pointer :: vaidef(:)
+      character(len=20), pointer :: vaonam(:)
+      character(len=50), pointer :: vaotxt(:)
 
-        INTEGER(kind = int_wp), POINTER :: STA_NO_IN(:)
-        INTEGER(kind = int_wp), POINTER :: STA_NO_OUT(:)
-        INTEGER(kind = int_wp), POINTER :: STA_SWITR(:)
-        character(len=20), POINTER :: STA_IN_NAM(:)
-        character(len=50), POINTER :: STA_IN_TXT(:)
-        REAL(kind = real_wp), POINTER :: STA_IN_DEF(:)
-        character(len=20), POINTER :: STA_OUT_NAM(:)
-        character(len=50), POINTER :: STA_OUT_TXT(:)
-        character(len=10), POINTER :: STA_MODNAM(:)
+      integer(kind=int_wp) :: ikstat, istat, ikey, ifound, ierr_alloc, &
+                              nostat, isproc, iperiod, iret, ihulp1, &
+                              ihulp2
+      character(len=20) :: key
+      character(len=4) :: ch4
+      integer(kind=int_wp) :: ithndl = 0
+      if (timon) call timstrt("setup_statistical", ithndl)
 
-        INTEGER(kind = int_wp) :: NKEY, input_file_start_position, NSPROC
-        character(len=20), POINTER :: KEYNAM(:)
-        character(len=20), POINTER :: KEYVAL(:)
-        character(len=20), ALLOCATABLE :: KEYNAM2(:)
-        character(len=20), ALLOCATABLE :: KEYVAL2(:)
-        INTEGER(kind = int_wp), POINTER :: NOKEY(:)
+      write (lunrep, 2000)
+      input_file_start_position = 0
+      call rdstat(lunrep, input_file_start_position, npos, cchar, ilun, lch, lstack, output_verbose_level, &
+                  is_date_format, is_yyddhh_format, status, nostat, nkey, nokey, keynam, keyval, nperiod, pernam, &
+                  persfx, pstart, pstop, alone)
 
-        INTEGER(kind = int_wp) :: NPERIOD
-        character(len=20), POINTER :: PERNAM(:)
-        character(len=20), POINTER :: PERSFX(:)
-        INTEGER(kind = int_wp), POINTER :: PSTART(:)
-        INTEGER(kind = int_wp), POINTER :: PSTOP(:)
+      ! set number of statistical processes (some once , some per period )
 
-        INTEGER(kind = int_wp) :: NSVAI, NSVAO, ISWITR
-        character(len=20), POINTER :: VAINAM(:)
-        character(len=50), POINTER :: VAITXT(:)
-        REAL(kind = real_wp), POINTER :: VAIDEF(:)
-        character(len=20), POINTER :: VAONAM(:)
-        character(len=50), POINTER :: VAOTXT(:)
+      ikstat = 1
+      nsproc = 0
+      do istat = 1, nostat
+         key = 'OUTPUT-OPERATION'
+         ikey = index_in_array(key, keynam(ikstat:ikstat + nokey(istat)))
+         if (ikey > 0) then
+            ikey = ikstat + ikey - 1
+            key = 'STADAY'
+            if (string_equals(key, keyval(ikey))) then
+               nsproc = nsproc + 1
+               goto 10
+            end if
+            key = 'STADPT'
+            if (string_equals(key, keyval(ikey))) then
+               nsproc = nsproc + 1
+               goto 10
+            end if
+            key = 'STADSC'
+            if (string_equals(key, keyval(ikey))) then
+               nsproc = nsproc + nperiod
+               goto 10
+            end if
+            key = 'STAGEO'
+            if (string_equals(key, keyval(ikey))) then
+               nsproc = nsproc + nperiod
+               goto 10
+            end if
+            key = 'STAPRC'
+            if (string_equals(key, keyval(ikey))) then
+               nsproc = nsproc + nperiod
+               goto 10
+            end if
+            key = 'STAQTL'
+            if (string_equals(key, keyval(ikey))) then
+               nsproc = nsproc + nperiod
+               goto 10
+            end if
+10          continue
+         end if
+         ikstat = ikstat + nokey(istat)
+      end do
 
-        INTEGER(kind = int_wp) :: IKSTAT, ISTAT, IKEY, IFOUND, IERR_ALLOC, &
-                NOSTAT, ISPROC, IPERIOD, IRET, IHULP1, &
-                IHULP2
-        character(len=20) :: KEY
-        character(len=4) :: CH4
-        integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("setup_statistical", ithndl)
+      allocate (sta_no_in(nsproc))
+      allocate (sta_no_out(nsproc))
+      allocate (sta_switr(nsproc))
+      allocate (sta_modnam(nsproc))
 
-        WRITE(LUNREP, 2000)
-        input_file_start_position = 0
-        CALL RDSTAT (LUNREP, input_file_start_position, NPOS, CCHAR, &
-                ILUN, LCH, LSTACK, output_verbose_level, is_date_format, &
-                is_yyddhh_format, status, NOSTAT, NKEY, NOKEY, &
-                KEYNAM, KEYVAL, NPERIOD, PERNAM, PERSFX, &
-                PSTART, PSTOP)
+      ! emergency solution
+      allocate (keynam2(nkey), keyval2(nkey))
+      keynam2 = keynam
+      keyval2 = keyval
 
-        ! set number of statistical processes (some once , some per period )
+      ! report on periods
 
-        IKSTAT = 1
-        NSPROC = 0
-        DO ISTAT = 1, NOSTAT
-            KEY = 'OUTPUT-OPERATION'
-            IKEY = index_in_array(KEY, KEYNAM(IKSTAT:IKSTAT + NOKEY(ISTAT)))
-            IF (IKEY > 0) THEN
-                IKEY = IKSTAT + IKEY - 1
-                KEY = 'STADAY'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    NSPROC = NSPROC + 1
-                    GOTO 10
-                ENDIF
-                KEY = 'STADPT'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    NSPROC = NSPROC + 1
-                    GOTO 10
-                ENDIF
-                KEY = 'STADSC'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    NSPROC = NSPROC + NPERIOD
-                    GOTO 10
-                ENDIF
-                KEY = 'STAGEO'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    NSPROC = NSPROC + NPERIOD
-                    GOTO 10
-                ENDIF
-                KEY = 'STAPRC'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    NSPROC = NSPROC + NPERIOD
-                    GOTO 10
-                ENDIF
-                KEY = 'STAQTL'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    NSPROC = NSPROC + NPERIOD
-                    GOTO 10
-                ENDIF
-                10       CONTINUE
-            ENDIF
-            IKSTAT = IKSTAT + NOKEY(ISTAT)
-        ENDDO
+      write (lunrep, '(A,I6)') 'Number of periods defined:', nperiod
+      write (lunrep, *)
+      do iperiod = 1, nperiod
+         write (lunrep, '(3A)') 'PERIOD [', pernam(iperiod), ']'
+         write (lunrep, '(3A)') 'SUFFIX [', persfx(iperiod), ']'
+         if (is_date_format) then
+            ihulp1 = pstart(iperiod)
+            ihulp2 = pstop(iperiod)
+            write (lunrep, 2020) ihulp1 / 31536000, mod(ihulp1, 31536000) / 86400, &
+               mod(ihulp1, 86400) / 3600, mod(ihulp1, 3600) / 60, &
+               mod(ihulp1, 60), &
+               ihulp2 / 31536000, mod(ihulp2, 31536000) / 86400, &
+               mod(ihulp2, 86400) / 3600, mod(ihulp2, 3600) / 60, &
+               mod(ihulp2, 60)
+         else
+            write (lunrep, 2030) pstart(iperiod), pstop(iperiod)
+         end if
+      end do
 
-        ALLOCATE (STA_NO_IN(NSPROC))
-        ALLOCATE(STA_NO_OUT(NSPROC))
-        ALLOCATE(STA_SWITR(NSPROC))
-        ALLOCATE(STA_MODNAM(NSPROC))
+      ! loop over the output operations, setup administration and report
+      ikstat = 1
+      isproc = 0
+      do istat = 1, nostat
+         write (lunrep, *)
+         do ikey = 1, nokey(istat)
+            write (lunrep, '(a,1x,a)') keynam(ikstat + ikey - 1), &
+               keyval(ikstat + ikey - 1)
+         end do
+         key = 'OUTPUT-OPERATION'
+         ikey = index_in_array(key, keynam(ikstat:ikstat + nokey(istat)))
+         if (ikey > 0) then
+            ikey = ikstat + ikey - 1
+            key = 'STADAY'
+            if (string_equals(key, keyval(ikey))) then
+               isproc = isproc + 1
+               call setday(lunrep, nokey(istat), keynam2(ikstat), keyval2(ikstat), is_date_format, is_yyddhh_format, &
+                           isproc, aprocesprop, allitems, status)
+               iret = procespropcolladd(statprocesdef, aprocesprop)
+               goto 100
+            end if
+            key = 'STADPT'
+            if (string_equals(key, keyval(ikey))) then
+               isproc = isproc + 1
+               call setdpt(lunrep, nokey(istat), keynam2(ikstat), keyval2(ikstat), isproc, aprocesprop, allitems, status)
+               iret = procespropcolladd(statprocesdef, aprocesprop)
+               goto 100
+            end if
+            key = 'STADSC'
+            if (string_equals(key, keyval(ikey))) then
+               do iperiod = 1, nperiod
+                  write (lunrep, '(3a)') 'For period [', pernam(iperiod), ']:'
+                  isproc = isproc + 1
+                  call setdsc(lunrep, nokey(istat), keynam2(ikstat), keyval2(ikstat), pernam(iperiod), persfx(iperiod), &
+                              pstart(iperiod), pstop(iperiod), isproc, aprocesprop, allitems, status)
+                  iret = procespropcolladd(statprocesdef, aprocesprop)
+               end do
+               goto 100
+            end if
+            key = 'STAGEO'
+            if (string_equals(key, keyval(ikey))) then
+               do iperiod = 1, nperiod
+                  isproc = isproc + 1
+                  write (lunrep, '(3a)') 'For period [', pernam(iperiod), ']:'
+                  call setgeo(lunrep, nokey(istat), keynam2(ikstat), keyval2(ikstat), pernam(iperiod), persfx(iperiod), &
+                              pstart(iperiod), pstop(iperiod), isproc, aprocesprop, allitems, status)
+                  iret = procespropcolladd(statprocesdef, aprocesprop)
+               end do
+               goto 100
+            end if
+            key = 'STAPRC'
+            if (string_equals(key, keyval(ikey))) then
+               do iperiod = 1, nperiod
+                  isproc = isproc + 1
+                  write (lunrep, '(3a)') 'For period [', pernam(iperiod), ']:'
+                  call setprc(lunrep, nokey(istat), keynam2(ikstat), keyval2(ikstat), pernam(iperiod), persfx(iperiod), &
+                              pstart(iperiod), pstop(iperiod), isproc, aprocesprop, allitems, status)
+                  iret = procespropcolladd(statprocesdef, aprocesprop)
+               end do
+               goto 100
+            end if
+            key = 'STAQTL'
+            if (string_equals(key, keyval(ikey))) then
+               do iperiod = 1, nperiod
+                  isproc = isproc + 1
+                  write (lunrep, '(3a)') 'For period [', pernam(iperiod), ']:'
+                  call setqtl(lunrep, nokey(istat), keynam2(ikstat), keyval2(ikstat), pernam(iperiod), persfx(iperiod), &
+                              pstart(iperiod), pstop(iperiod), isproc, aprocesprop, allitems, status)
+                  iret = procespropcolladd(statprocesdef, aprocesprop)
+               end do
+               goto 100
+            end if
+            write (lunrep, *) 'ERROR unrecognised operation:', keyval(ikey:)
+            call status%increase_error_count()
+100         continue
+         else
+            write (lunrep, *) 'ERROR no operation defined for output-operation'
+            call status%increase_error_count()
+         end if
+         write (lunrep, '(A)') 'END-OUTPUT-OPERATION'
+         ikstat = ikstat + nokey(istat)
+      end do
 
-        ! emergency solution
-        ALLOCATE(KEYNAM2(NKEY), KEYVAL2(NKEY))
-        KEYNAM2 = KEYNAM
-        KEYVAL2 = KEYVAL
+      deallocate (keynam, keyval, nokey, stat=ierr_alloc)
+      deallocate (keynam2, keyval2, stat=ierr_alloc)
+      nsproc = isproc
 
-        ! report on periods
+500   continue
+      if (alone) then
+         write (lunrep, 3000) 10
+      end if
 
-        WRITE(LUNREP, '(A,I6)') 'Number of periods defined:', NPERIOD
-        WRITE(LUNREP, *)
-        DO IPERIOD = 1, NPERIOD
-            WRITE(LUNREP, '(3A)') 'PERIOD [', PERNAM(IPERIOD), ']'
-            WRITE(LUNREP, '(3A)') 'SUFFIX [', PERSFX(IPERIOD), ']'
-            IF (is_date_format) THEN
-                IHULP1 = PSTART(IPERIOD)
-                IHULP2 = PSTOP(IPERIOD)
-                WRITE(LUNREP, 2020)  IHULP1 / 31536000, MOD(IHULP1, 31536000) / 86400, &
-                        MOD(IHULP1, 86400) / 3600, MOD(IHULP1, 3600) / 60, &
-                        MOD(IHULP1, 60), &
-                        IHULP2 / 31536000, MOD(IHULP2, 31536000) / 86400, &
-                        MOD(IHULP2, 86400) / 3600, MOD(IHULP2, 3600) / 60, &
-                        MOD(IHULP2, 60)
-            ELSE
-                WRITE(LUNREP, 2030) PSTART(IPERIOD), PSTOP(IPERIOD)
-            ENDIF
-        ENDDO
-
-        ! loop over the output operations, setup administration and report
-        IKSTAT = 1
-        ISPROC = 0
-        DO ISTAT = 1, NOSTAT
-            WRITE(LUNREP, *)
-            DO IKEY = 1, NOKEY(ISTAT)
-                WRITE(LUNREP, '(A,1X,A)') KEYNAM(IKSTAT + IKEY - 1), &
-                        KEYVAL(IKSTAT + IKEY - 1)
-            ENDDO
-            KEY = 'OUTPUT-OPERATION'
-            IKEY = index_in_array(KEY, KEYNAM(IKSTAT:IKSTAT + NOKEY(ISTAT)))
-            IF (IKEY > 0) THEN
-                IKEY = IKSTAT + IKEY - 1
-                KEY = 'STADAY'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    ISPROC = ISPROC + 1
-                    CALL SETDAY (LUNREP, NOKEY(ISTAT), &
-                            KEYNAM2(IKSTAT), KEYVAL2(IKSTAT), &
-                            is_date_format, is_yyddhh_format, &
-                            ISPROC, aProcesProp, &
-                            AllItems, status)
-
-                    iret = ProcesPropCollAdd(StatProcesDef, aProcesProp)
-                    GOTO 100
-                ENDIF
-                KEY = 'STADPT'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    ISPROC = ISPROC + 1
-                    CALL SETDPT (LUNREP, NOKEY(ISTAT), &
-                            KEYNAM2(IKSTAT), KEYVAL2(IKSTAT), &
-                            ISPROC, aProcesProp, &
-                            AllItems, status)
-                    iret = ProcesPropCollAdd(StatProcesDef, aProcesProp)
-                    GOTO 100
-                ENDIF
-                KEY = 'STADSC'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    DO IPERIOD = 1, NPERIOD
-                        WRITE(LUNREP, '(3A)') 'For period [', PERNAM(IPERIOD), ']:'
-                        ISPROC = ISPROC + 1
-                        CALL SETDSC (LUNREP, NOKEY(ISTAT), &
-                                KEYNAM2(IKSTAT), KEYVAL2(IKSTAT), &
-                                PERNAM(IPERIOD), PERSFX(IPERIOD), &
-                                PSTART(IPERIOD), PSTOP(IPERIOD), &
-                                ISPROC, aProcesProp, &
-                                AllItems, status)
-                        iret = ProcesPropCollAdd(StatProcesDef, aProcesProp)
-                    ENDDO
-                    GOTO 100
-                ENDIF
-                KEY = 'STAGEO'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    DO IPERIOD = 1, NPERIOD
-                        ISPROC = ISPROC + 1
-                        WRITE(LUNREP, '(3A)') 'For period [', PERNAM(IPERIOD), ']:'
-                        CALL SETGEO (LUNREP, NOKEY(ISTAT), &
-                                KEYNAM2(IKSTAT), KEYVAL2(IKSTAT), &
-                                PERNAM(IPERIOD), PERSFX(IPERIOD), &
-                                PSTART(IPERIOD), PSTOP(IPERIOD), &
-                                ISPROC, aProcesProp, &
-                                AllItems, status)
-                        iret = ProcesPropCollAdd(StatProcesDef, aProcesProp)
-                    ENDDO
-                    GOTO 100
-                ENDIF
-                KEY = 'STAPRC'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    DO IPERIOD = 1, NPERIOD
-                        ISPROC = ISPROC + 1
-                        WRITE(LUNREP, '(3A)') 'For period [', PERNAM(IPERIOD), ']:'
-                        CALL SETPRC (LUNREP, NOKEY(ISTAT), &
-                                KEYNAM2(IKSTAT), KEYVAL2(IKSTAT), &
-                                PERNAM(IPERIOD), PERSFX(IPERIOD), &
-                                PSTART(IPERIOD), PSTOP(IPERIOD), &
-                                ISPROC, aProcesProp, &
-                                AllItems, status)
-                        iret = ProcesPropCollAdd(StatProcesDef, aProcesProp)
-                    ENDDO
-                    GOTO 100
-                ENDIF
-                KEY = 'STAQTL'
-                if (string_equals(KEY, KEYVAL(IKEY))) then
-                    DO IPERIOD = 1, NPERIOD
-                        ISPROC = ISPROC + 1
-                        WRITE(LUNREP, '(3A)') 'For period [', PERNAM(IPERIOD), ']:'
-                        CALL SETQTL (LUNREP, NOKEY(ISTAT), &
-                                KEYNAM2(IKSTAT), KEYVAL2(IKSTAT), &
-                                PERNAM(IPERIOD), PERSFX(IPERIOD), &
-                                PSTART(IPERIOD), PSTOP(IPERIOD), &
-                                ISPROC, aProcesProp, &
-                                AllItems, status)
-                        iret = ProcesPropCollAdd(StatProcesDef, aProcesProp)
-                    ENDDO
-                    GOTO 100
-                ENDIF
-                WRITE(LUNREP, *) 'ERROR unrecognised operation:', KEYVAL(IKEY:)
-                call status%increase_error_count()
-                100       CONTINUE
-            ELSE
-                WRITE(LUNREP, *) 'ERROR no operation defined for output-operation'
-                call status%increase_error_count()
-            ENDIF
-            WRITE(LUNREP, '(A)') 'END-OUTPUT-OPERATION'
-            IKSTAT = IKSTAT + NOKEY(ISTAT)
-        ENDDO
-
-        DEALLOCATE (KEYNAM, KEYVAL, NOKEY, STAT = IERR_ALLOC)
-        DEALLOCATE (KEYNAM2, KEYVAL2, STAT = IERR_ALLOC)
-        NSPROC = ISPROC
-
-        500 CONTINUE
-        WRITE (LUNREP, 3000) 10
-
-        if (timon) call timstop(ithndl)
-        RETURN
-        2000 FORMAT (/, ' Output operations')
-        2020 FORMAT (' Start of period :', I2, 'Y-', I3, 'D-', I2, 'H-', I2, &
-                'M-', I2, 'S.', /' End of period   :', I2, 'Y-', I3, 'D-', I2, 'H-', I2, &
-                'M-', I2, 'S.')
-        2030 FORMAT (' Start of period :        ', I10, ' End of period   :        ', I10)
-        3000 FORMAT (/1X, 59('*'), ' B L O C K -', I2, ' ', 5('*')/)
-    END subroutine setup_statistical
+      if (timon) call timstop(ithndl)
+      return
+2000  format(/, ' Output operations')
+2020  format(' Start of period :', I2, 'Y-', I3, 'D-', I2, 'H-', I2, &
+             'M-', I2, 'S.', /' End of period   :', I2, 'Y-', I3, 'D-', I2, 'H-', I2, &
+             'M-', I2, 'S.')
+2030  format(' Start of period :        ', I10, ' End of period   :        ', I10)
+3000  format(/1x, 59('*'), ' B L O C K -', I2, ' ', 5('*')/)
+   end subroutine setup_statistical
 
 end module m_delwaq_statistical_process

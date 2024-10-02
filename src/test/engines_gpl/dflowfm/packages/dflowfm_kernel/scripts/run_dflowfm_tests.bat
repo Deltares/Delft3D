@@ -6,10 +6,10 @@ title run_dflowfm
     rem
     rem When using intelMPI for the first time on a machine:
     rem Execute "hydra_service.exe -install" as administrator:
-    rem     Preparation: Check that your Delft3D installation contains "...\x64\share\bin\hydra_service.exe". Optionally copy it to a local directory (it will run as a service).
+    rem     Preparation: Check that your Delft3D installation contains "...\x64\test\bin\hydra_service.exe". Optionally copy it to a local directory (it will run as a service).
     rem     "Windows Start button" -> type "cmd", right-click "Command Prompt" App, "Run as Administrator"
     rem     In this command box:
-    rem         cd ...\x64\share\bin (or your local copy)
+    rem         cd ...\x64\test\bin (or your local copy)
     rem         hydra_service.exe -install
     rem         mpiexec.exe -register -username <user> -password <password> -noprompt
     rem     When there is an hydra_service/smpd already running on the machine, it must be ended first, using the Microsoft Task Manager,
@@ -58,16 +58,16 @@ echo OMP_NUM_THREADS is already defined
     rem
 set D3D_HOME=%~dp0..
 echo D3D_HOME         : %D3D_HOME%
-set exedir=%D3D_HOME%\bin
-set sharedir=%D3D_HOME%\share
+set exedir=%D3D_HOME%\test
+set testdir=%D3D_HOME%\test
 set libdir=%D3D_HOME%\lib
 
-set workdir=sharedir\test_data
-cd %D3D_HOME%\share\test_data\
+set workdir=testdir\test_data
+cd %D3D_HOME%\test\test_data\
 echo Working directory: %workdir%
 
     rem Run
-set PATH=%sharedir%;%libdir%
+set PATH=%testdir%;%libdir%
 echo executing: "%exedir%\dflowfm_kernel_test.exe" 
 		"%exedir%\dflowfm_kernel_test.exe"
 

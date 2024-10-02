@@ -31,11 +31,20 @@
 !
 
       subroutine TEKFN(NSC, NF, JW, X, Y, N, X1, X2, Y1, Y2, NCOL, TITLE, JAUTO, JP, DAG, kp1)
+         use m_isofil
+         use m_dispf2cir
+         use m_dispf2
+         use m_box
          use m_flow, only: kplotfrombedorsurface
          use unstruc_colors, only: ncolblack
          use m_depmax
          use m_ktext
          use m_fbox
+         use m_gtext
+         use m_set_col
+         use m_movabs
+         use m_lnabs
+         use m_draw_text
          implicit none
          integer, parameter :: MX=366, NX=20
          double precision :: dag

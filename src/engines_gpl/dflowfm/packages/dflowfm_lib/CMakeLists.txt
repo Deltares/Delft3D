@@ -76,8 +76,6 @@ if (UNIX)
                             waq_utils_f
                             dflowfm_kernel)
 
-    oss_include_libraries(${library_name} oss_dependencies)
-
     target_link_libraries(${library_name}
          ${oss_dependencies}
          PkgConfig::PETSC)
@@ -123,8 +121,6 @@ if (WIN32)
                             waq_utils_c
                             waq_utils_f
                             dflowfm_kernel)
-
-    oss_include_libraries(${library_name} oss_dependencies)
 
     target_link_libraries(${library_name} ${oss_dependencies})
 endif(WIN32)

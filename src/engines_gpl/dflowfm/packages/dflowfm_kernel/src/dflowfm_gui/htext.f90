@@ -34,6 +34,7 @@ module m_htext
 contains
    subroutine HTEXT(VAL, X, Y)
       use m_colnow
+      use m_draw_text
 
       double precision :: val
       double precision :: x

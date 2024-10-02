@@ -30,8 +30,16 @@
 !
 !
 
+module m_getrcir
+
+implicit none
+
+contains
+
   double precision function GETRCIR()
      use m_wearelt
-     implicit none
+
      GETRCIR = RCIR
   end function GETRCIR
+
+end module m_getrcir

@@ -30,11 +30,19 @@
 !
 !
 
+module m_dispnodevals
+use m_drcirc
+
+
+implicit none
+
+contains
+
   subroutine DISPNODEVALS(KP)
      use m_netw
-     use M_DEVICES
+     use m_devices, only: iws
      use m_ktext
-     implicit none
+
      integer :: KP
 
      integer :: l
@@ -75,3 +83,5 @@
 
      return
   end subroutine DISPNODEVALS
+
+end module m_dispnodevals

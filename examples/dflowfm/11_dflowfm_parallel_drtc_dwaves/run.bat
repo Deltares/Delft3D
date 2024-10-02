@@ -13,7 +13,7 @@
 set dimrdir=\\directory.intra\PROJECT\d-hydro\dimrset\latest
 
 cd dflowfm
-set PATH=%dimrdir%\x64\bin;%PATH%
+set PATH=%dimrdir%\x64\bin;%dimrdir%\x64\lib;%PATH%
 call %dimrdir%\x64\bin\dflowfm-cli.exe --partition:ndomains=3:icgsolver=6 weirtimeseries.mdu
 cd ..
 

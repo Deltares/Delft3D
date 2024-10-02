@@ -29,18 +29,20 @@
 
 !
 !
-
+module m_refine
+   implicit none
+contains
       subroutine REFINE(M1, N1, M2, N2, NUM)
-         use m_grid ! Use m_grid directly, because isitu does this too (otherwise shadowing of ).
-         use m_gridsettings
-         use unstruc_messages
+         use m_grid, only: ijyes, nc, mc, mmax, mnmax, nmax, xc, yc
+         use m_gridsettings, only: mfac, nfac
+         use messagehandling, only: LEVEL_DEBUG, mess
          use m_readyy
          use m_qnerror
-         implicit none
+         use m_increase_grid
+         use m_isitu
+
          integer :: m1, n1, m2, n2, num
-
          double precision, allocatable :: XI2(:, :), XJ2(:, :), YI2(:, :), YJ2(:, :), XR(:, :), YR(:, :), XRH(:, :), YRH(:, :)
-
          integer :: NRM, NRN, MCR, NCR
 
          call mess(LEVEL_DEBUG, 'INTERPOLATION')
@@ -95,3 +97,4 @@
 
          return
       end subroutine refine
+end module m_refine

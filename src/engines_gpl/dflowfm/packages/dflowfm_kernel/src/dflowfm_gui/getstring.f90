@@ -30,6 +30,12 @@
 !
 !
 
+module m_getstring
+
+implicit none
+
+contains
+
    !> Get a string
    subroutine getstring(text, string)
       use m_devices
@@ -82,3 +88,5 @@
       call itextcolourn(nforgr, nbckgr)
       return
    end subroutine getstring
+
+end module m_getstring

@@ -30,13 +30,25 @@
 !
 !
 
+module m_editcolourtable
+use m_getcolornumber
+
+
+implicit none
+
+contains
+
       subroutine EDITCOLOURTABLE(MODE, KEY)
+         use m_choices
+         use m_changecolor
+         use m_allcolours
          use unstruc_colors
          use m_helpnow
          use m_ktext
          use m_putget_un
          use m_okay
-         implicit none
+         use m_draw_nu
+
          integer :: key
          integer :: mode
          integer :: n1
@@ -108,3 +120,5 @@
          goto 10
 !
       end
+
+end module m_editcolourtable

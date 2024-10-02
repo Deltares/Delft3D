@@ -31,6 +31,7 @@
 !
 
       subroutine TXTTIM()
+         use m_mtext
          use m_devices
          use m_textim
          implicit none

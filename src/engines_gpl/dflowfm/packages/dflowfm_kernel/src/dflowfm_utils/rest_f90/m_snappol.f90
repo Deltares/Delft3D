@@ -44,6 +44,7 @@ contains
       use m_flowgeom
       use network_data, only: xk, yk, kn
       use stdlib_sorting, only: sort_index
+      use m_find_crossed_links_kdtree2
       implicit none
 
       integer, intent(in) :: Nin !< thin-dyke polyline size

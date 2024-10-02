@@ -34,6 +34,12 @@
 !>   connect nodes k1 and k2, and
 !>   are at the same side of the land boundary path through node k, or
 !>   are on the land boundary path
+module m_comp_nnow
+
+implicit none
+
+contains
+
 subroutine comp_nnow(k, k1in, k2in, n)
    use m_netw
    use m_landboundary
@@ -165,3 +171,5 @@ subroutine comp_nnow(k, k1in, k2in, n)
 
    return
 end subroutine comp_nnow
+
+end module m_comp_nnow

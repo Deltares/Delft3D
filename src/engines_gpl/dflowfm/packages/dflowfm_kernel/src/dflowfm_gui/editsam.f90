@@ -30,11 +30,19 @@
 !
 !
 
+module m_editsam
+use m_minmxsam
+use m_kcir
+
+
+implicit none
+
+contains
+
       subroutine EDITSAM(MODE, KEY)
+         use m_choices
+         use m_chadep
          use m_samples
-         use M_MISSING
-         use unstruc_colors
-         use m_partitioninfo
          use m_helpnow
          use m_drawthis
          use m_depmax2
@@ -42,7 +50,9 @@
          use m_putget_un
          use m_okay
          use m_delsam
-         implicit none
+         use m_draw_nu
+         use m_cirr
+
          integer :: MODE, KEY
          integer :: jonce
          integer :: k, L1, L2
@@ -267,3 +277,5 @@
          goto 10
 
       end subroutine EDITSAM
+
+end module m_editsam

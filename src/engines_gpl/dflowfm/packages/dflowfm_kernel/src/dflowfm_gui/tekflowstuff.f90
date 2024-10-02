@@ -34,6 +34,16 @@
 ! subroutines from unstruc.f90
 !----------------------------------------------------------------------
  subroutine tekflowstuff(ja)
+    use m_rcirc
+    use m_minmxnds
+    use m_isocol
+    use m_getktoplot
+    use m_dmovabs
+    use m_dlnabs
+    use m_dhtext
+    use m_dcirr
+    use m_arrowsxy
+    use m_arrowrcir
     use unstruc_display
     use m_netw
     use m_flowgeom
@@ -47,6 +57,12 @@
     use m_vfac
     use m_drawthis
     use m_halt2
+    use m_pfiller
+    use m_gtext
+    use m_set_col
+    use m_inview
+    use m_movabs
+    use m_lnabs
 
     implicit none
 
@@ -62,7 +78,6 @@
     integer :: model24 = 0 ! colourmodel 0/1
     double precision :: uux, uuy
     integer :: n, ja, ja2
-    logical inview
 
     ! ndraw(28)= show what on nodes   ndraw(19)=how to show on nodes , NDRAW(8) = SHOW WHAT ON NETNODES
     ! ndraw(29)= show what on links   ndraw(11)=how to show on links , NDRAW(7) = SHOW WHAT ON NETLINKS

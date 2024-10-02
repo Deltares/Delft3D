@@ -30,6 +30,12 @@
 !
 !
 
+module m_nfiles
+
+implicit none
+
+contains
+
    subroutine NFILES(NUM, NWHAT, KEY)
 !  grid lijst
 !  NUM = 0, GELUKT, NUM = 1, NIET GELUKT
@@ -39,9 +45,8 @@
       use m_monitoring_crosssections
       use m_thindams
       use M_SPLINES, notinusenump => nump
-      use unstruc_model
-      use m_samples
-      use m_flowgeom
+      use m_samples, only: ns, savesam
+      use m_flowgeom, only: lnx, ndx
       use unstruc_display
       use m_flowparameters
       use unstruc_files, only: defaultFilename, close_all_files
@@ -66,8 +71,10 @@
       use m_wripol
       use m_wrisam
       use m_reasam
+      use m_change_kml_parameters
+      use m_filemenu
+      use m_loadbitmap
 
-      implicit none
       integer :: NUM, NWHAT, KEY
       integer :: ja, ierr
       integer :: mlan
@@ -522,15 +529,9 @@
                      call unc_write_net(filnam, janetcell=0, janetbnd=0)
                   end if
                else if (nwhat == 22) then ! _net.nc with extra cell info (for example necessary for Baseline/Bas2FM input)
-                  if (netstat /= NETSTAT_OK) then
-                     call findcells(0)
-                     call find1dcells()
-                  end if
-                  call unc_write_net(filnam, janetcell=1, janetbnd=1) ! wrinet
-!               !call unc_write_net_ugrid2(filnam, janetcell = 0, janetbnd = 0)
-
                   !origial call unc_write_net(filnam, janetcell = 1, janetbnd = 0)
                   call unc_write_net('UG'//filnam, janetcell=1, janetbnd=0, iconventions=UNC_CONV_UGRID)
+                  call unc_write_net(filnam, janetcell=1, janetbnd=1) ! wrinet
                else if (nwhat == 24) then
                   call ini_tecplot()
                   call wrinet_tecplot(filnam)
@@ -835,3 +836,5 @@
       NUM = 0
       return
    end subroutine NFILES
+
+end module m_nfiles

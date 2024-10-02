@@ -47,6 +47,7 @@
     use m_sediment, only: stm_included
     use m_transport, only: maserrsed
     use mass_balance_areas_routines, only: mba_final
+    use m_datum
 #ifdef _OPENMP
     use omp_lib
 #endif

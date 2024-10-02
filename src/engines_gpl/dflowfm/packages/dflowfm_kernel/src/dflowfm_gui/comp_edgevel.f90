@@ -31,12 +31,21 @@
 !
 
 !> compute edge grow velocities, grow factors and number of grid layers in the subintervals
+module m_comp_edgevel
+   use m_comp_gridheights
+
+implicit none
+
+contains
+
 subroutine comp_edgevel(mc, edgevel, dgrow1, nfac1, ierror)
    use m_splines
    use m_gridsettings
    use m_spline2curvi
    use m_alloc
    use m_missing
+   use m_comp_dgrow
+   use m_comp_nfac
 
    implicit none
 
@@ -53,9 +62,6 @@ subroutine comp_edgevel(mc, edgevel, dgrow1, nfac1, ierror)
    integer :: i, is, igL, igR, j, js, mfacmax, nfacmax, ncs, numtruecross
    integer :: NuniL, NuniR, NexpL, NexpR, NsubL, NsubR, ja
    integer :: iother, iter
-
-   integer, external :: comp_nfac
-   double precision, external :: comp_dgrow
 
    ierror = 1
 
@@ -238,3 +244,5 @@ subroutine comp_edgevel(mc, edgevel, dgrow1, nfac1, ierror)
 
    return
 end subroutine comp_edgevel
+
+end module m_comp_edgevel

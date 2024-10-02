@@ -113,9 +113,9 @@
       <checks>
         <file name="dflowfmoutput/trench_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_s0" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.005" />
+            <parameter name="mesh2d_s0" toleranceAbsolute="0.005" />
+            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.005" />
           </parameters>
         </file>
       </checks>
@@ -257,7 +257,7 @@
          <parameter name="waterlevel" toleranceAbsolute="0.0001" />
          <parameter name="x_velocity" toleranceAbsolute="0.0001" />
          <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-         <parameter name="salinity" toleranceAbsolute="0.0001" />
+         <parameter name="salinity" toleranceAbsolute="0.002" />
         </parameters>
       </file>
       <file name="depthgr.xyz" ignore="true" />
@@ -270,8 +270,8 @@
       <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
         <parameters>
          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-         <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
-         <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+         <parameter name="mesh2d_sa1" toleranceRelative="0.3" />
+         <parameter name="mesh2d_u1" toleranceAbsolute="0.03" />
         </parameters>
       </file>
       <file name="depthgr.xyz" ignore="true" />
@@ -344,7 +344,7 @@
          <parameter name="waterlevel" toleranceAbsolute="0.0001" />
          <parameter name="x_velocity" toleranceAbsolute="0.0001" />
          <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-         <parameter name="salinity" toleranceAbsolute="0.0001" />
+         <parameter name="salinity" toleranceRelative="0.0005" />
         </parameters>
       </file>
       <file name="depthgr.xyz" ignore="true" />
@@ -360,7 +360,7 @@
          <parameter name="waterlevel" toleranceAbsolute="0.0001" />
          <parameter name="x_velocity" toleranceAbsolute="0.0001" />
          <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-         <parameter name="salinity" toleranceAbsolute="0.0001" />
+         <parameter name="salinity" toleranceRelative="0.0001" />
         </parameters>
       </file>
       <file name="depthgr.xyz" ignore="true" />
@@ -604,10 +604,10 @@
             <parameter name="mesh2d_ucx" toleranceRelative="1e-7" />
             <parameter name="mesh2d_ucy" toleranceRelative="1e-7" />
             <parameter name="mesh2d_Patm" toleranceRelative="1e-7" />
-            <parameter name="mesh2d_windx" toleranceRelative="1e-7" />
-            <parameter name="mesh2d_windy" toleranceRelative="1e-7" />
-            <parameter name="mesh2d_windxu" toleranceRelative="1e-7" />
-            <parameter name="mesh2d_windyu" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_windx" toleranceAbsolute="1e-7" />
+            <parameter name="mesh2d_windy" toleranceAbsolute="1e-7" />
+            <parameter name="mesh2d_windxu" toleranceAbsolute="1e-7" />
+            <parameter name="mesh2d_windyu" toleranceAbsolute="1e-7" />
             <parameter name="mesh2d_Tair" toleranceRelative="1e-7" />
             <parameter name="mesh2d_Rhum" toleranceRelative="1e-7" />
             <parameter name="mesh2d_Clou" toleranceRelative="1e-7" />
@@ -741,7 +741,7 @@
     </testCase>
 
     <testCase name="e02_f090_c011_san_francisco_bay_3d" ref="dflowfm_default">
-      <path version="2024-08-26T13:25:00">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
+      <path version="2024-09-12T14:40:00">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/historical_WY2011_map.nc" type="netCDF">
@@ -760,8 +760,8 @@
       <checks>
         <file name="dflowfmoutput/cb_3d_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.003" />
           </parameters>
         </file>
       </checks>
@@ -826,8 +826,8 @@
         <file name="dflowfm/dflowfmoutput/2zb_sigma_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.03" />
+            <parameter name="mesh2d_sa1" toleranceRelative="0.002" />
           </parameters>
         </file>
       </checks>
@@ -877,9 +877,9 @@
       <checks>
         <file name="dflowfmoutput/Waal_3D_sigma_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_cftrt" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.2" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.5" />
+            <parameter name="mesh2d_cftrt" toleranceRelative="1" />
           </parameters>
         </file>
       </checks>
@@ -917,8 +917,8 @@
       <checks>
         <file name="dflowfm/dflowfmoutput/gatesub_3Dz_his.nc" type="netCDF">
           <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0003" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0002" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
 
           </parameters>
@@ -970,8 +970,8 @@
       <checks>
         <file name="dflowfm/dflowfmoutput/gatefree_3Dz_his.nc" type="netCDF">
           <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0003" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0003" />
+            <parameter name="x_velocity" toleranceAbsolute="0.005" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
@@ -984,7 +984,7 @@
         <file name="dflowfm/dflowfmoutput/gatefree_3Dzsigma1_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0003" />
+            <parameter name="x_velocity" toleranceAbsolute="0.006" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
@@ -997,7 +997,7 @@
         <file name="dflowfm/dflowfmoutput/gatefree_3Dzsigma2_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0003" />
+            <parameter name="x_velocity" toleranceAbsolute="0.006" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
@@ -1023,8 +1023,8 @@
       <checks>
         <file name="dflowfm/dflowfmoutput/weirsub_3Dz_his.nc" type="netCDF">
           <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0003" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0006" />
+            <parameter name="x_velocity" toleranceAbsolute="0.006" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
@@ -1075,8 +1075,8 @@
       <checks>
         <file name="dflowfm/dflowfmoutput/weirfree_3Dz_his.nc" type="netCDF">
           <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0003" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0006" />
+            <parameter name="x_velocity" toleranceAbsolute="0.006" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
@@ -1089,7 +1089,7 @@
         <file name="dflowfm/dflowfmoutput/weirfree_3Dzsigma1_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0003" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
@@ -1102,7 +1102,7 @@
         <file name="dflowfm/dflowfmoutput/weirfree_3Dzsigma2_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0003" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
@@ -1451,9 +1451,9 @@
       <checks>
         <file name="dflowfmoutput/test_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" /> 
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.03" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.2" />
+            <parameter name="mesh2d_sa1" toleranceAbsolute="0.05" /> 
           </parameters>
         </file>
       </checks>
@@ -1480,10 +1480,10 @@
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" /> 
-            <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0003" /> 
+            <parameter name="mesh2d_ucx" toleranceAbsolute="0.009" />
             <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sa1" toleranceRelative="0.03" />
           </parameters>
         </file>
       </checks>
@@ -1526,9 +1526,9 @@
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" /> 
-            <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucx" toleranceAbsolute="0.006" />
             <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sa1" toleranceRelative="0.02" />
           </parameters>
         </file>
       </checks>

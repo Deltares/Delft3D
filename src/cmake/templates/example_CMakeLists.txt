@@ -138,7 +138,7 @@ set_source_files_properties(${fortran_version_file}
 # Do note that recursive dependencies are not handled automatically by CMake.
 set(oss_dependencies    <OSS Dependency One>
                         <OSS Dependency Two>) # Make a list of dependencies 
-oss_include_libraries(${library_name} oss_dependencies)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # If there's a dependency to a directory, this dependency can be added by:
 include_directories(<Directory to include for compilation>)
