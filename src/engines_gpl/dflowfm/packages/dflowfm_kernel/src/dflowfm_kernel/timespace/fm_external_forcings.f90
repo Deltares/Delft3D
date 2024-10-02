@@ -230,7 +230,7 @@ contains
          end do
       end if
 
-      if (jawave == 1 .or. jawave == 2 .and. .not. flowWithoutWaves) then
+      if ((jawave == 1 .or. jawave == 2) .and. .not. flowWithoutWaves) then
          call tauwavefetch(time_in_seconds)
       end if
 
