@@ -360,5 +360,16 @@
           </parameters>
         </file> 
       </checks>
-    </testCase> 
+    </testCase>
+    <testCase name="e02_f022_c99_duneheight" ref="dflowfm_default">
+      <path version="2024-10-03T13:45:00">e02_dflowfm/f022_morphology_2D/c99_duneheight</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_duneheight" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase>
   </testCases>
