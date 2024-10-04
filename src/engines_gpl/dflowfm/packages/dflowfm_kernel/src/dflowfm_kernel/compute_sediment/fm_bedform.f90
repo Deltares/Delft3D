@@ -1021,7 +1021,7 @@ contains
       integer, intent(in) :: limityp !< limiter type (>0) or upwind (0)
       integer, intent(out) :: ierror !< error (1) or not (0)
 
-      double precision :: dvoli, dumd
+      double precision :: dvoli
       integer :: k1, k2
 
       double precision, dimension(:, :), allocatable :: fluxhorbf ! horizontal fluxes
@@ -1050,7 +1050,6 @@ contains
       integer :: k, L
 
       ierror = 1
-      dumd = 0d0
 
 !  allocate
       call realloc(jabfupdate, ndx, keepExisting=.true., fill=1) !Mask array for the 2D part, true for all.
