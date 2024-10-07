@@ -8,8 +8,24 @@ target_compile_options(all_compiler_warnings INTERFACE
 )
 
 add_library(additional_compiler_warnings INTERFACE)
-set(intel_fortran_windows_extra_warning_flags /warn:declarations /warn:ignore_loc /warn:truncated_source /warn:shape /warn:unused)
-set(intel_fortran_linux_extra_warning_flags "SHELL:-warn declarations" "SHELL:-warn ignore_loc" "SHELL:-warn truncated_source" "SHELL:-warn shape" "SHELL:-warn unused")
+set(intel_fortran_windows_extra_warning_flags
+    /warn:declarations
+    /warn:ignore_loc
+    #/warn:externals
+    /warn:interfaces
+    /warn:shape
+    /warn:truncated_source
+    /warn:unused
+)
+set(intel_fortran_linux_extra_warning_flags
+    "SHELL:-warn declarations"
+    "SHELL:-warn ignore_loc"
+    #"SHELL:-warn externals"
+    "SHELL:-warn interfaces"
+    "SHELL:-warn shape"
+    "SHELL:-warn truncated_source"
+    "SHELL:-warn unused"
+)
 target_compile_options(additional_compiler_warnings INTERFACE
                        "$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<Fortran_COMPILER_ID:Intel,IntelLLVM>>:$<IF:$<BOOL:${WIN32}>,${intel_fortran_windows_extra_warning_flags},${intel_fortran_linux_extra_warning_flags}>>"
 )
