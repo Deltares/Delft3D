@@ -1766,7 +1766,7 @@ sep = strfind(casename,' - ');
 if isempty(sep)
     type = casename;
 else
-    type = casename(1:sep-1);
+    type = casename(1:sep(1)-1);
 end
 if isequal(type,previous_type)
     type = '';
