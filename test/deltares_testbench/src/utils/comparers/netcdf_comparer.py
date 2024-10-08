@@ -169,6 +169,9 @@ class DateTimeDelta:
 class NetcdfComparer(IComparer):
     """Compare two netCDF files, according to the configuration in file_check."""
 
+    def __init__(self, enable_plotting: bool = True) -> None:
+        self._enable_plotting = enable_plotting
+
     def compare(
         self,
         left_path: str,
@@ -251,7 +254,7 @@ class NetcdfComparer(IComparer):
         if result.result == "NOK":
             if nc_var.left.ndim == 1:
                 logger.info(f"Plotting of 1d-array not yet supported, variable name: {variable_name}")
-            if nc_var.left.ndim == 2:
+            if nc_var.left.ndim == 2 and self._enable_plotting:
                 result.error = self._plot_2d_array(
                     logger,
                     plot_data,

@@ -213,6 +213,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "TempMode  ","ModTemp   ",   1,"N","x",1
 "TempMode  ","NatTemp   ",   2,"Y","x",1
 "TempMode  ","SwitchTemp",   3,"Y","x",1
+"TempMode  ","MinTemp   ",   4,"Y","x",1
+"TempMode  ","MaxTemp   ",   5,"Y","x",1
 "Temperatur","ModTemp   ",   1,"N","x",1
 "Temperatur","NatTemp   ",   2,"Y","x",1
 "Temperatur","Depth     ",   3,"N","x",1

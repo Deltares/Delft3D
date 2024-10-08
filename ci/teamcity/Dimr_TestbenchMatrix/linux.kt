@@ -54,6 +54,20 @@ object Linux : BuildType({
         }
     }
 
+    dependencies {
+        dependency(Trigger) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+            }
+
+            artifacts {
+                id = "TRIGGER_1"
+                artifactRules = "this.txt => stuff"
+                cleanDestination = true
+            }
+        }
+    }
+
     requirements {
         equals("teamcity.agent.jvm.os.name", "Linux")
     }
