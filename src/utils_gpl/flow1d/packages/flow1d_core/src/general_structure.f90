@@ -231,7 +231,7 @@ contains
       endif
       
       allowedflowdir = genstr%allowedflowdir
-      if ((max(s1m1,s1m2) <= crest) .or. (allowedflowdir == 3) .or. &
+      if ((allowedflowdir == 3) .or. &
           (direction*flowDir == 1  .and. allowedflowDir == 2) .or. &
           (direction*flowDir == -1 .and. allowedflowDir == 1)) then
         fuL = 0.0d0

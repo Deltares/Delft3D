@@ -154,7 +154,6 @@ contains
           (dir == 1  .and. allowedFlowDir == 2) .or. &
           (dir == -1 .and. allowedFlowDir == 1)) then
          kfum = 0
-         aum = 0.0d0
          fum = 0.0d0
          rum = 0.0d0
          return
@@ -179,7 +178,6 @@ contains
          depth = smax - crestLevel
          if (depth <= 0.0d0) then
             kfum = 0
-            aum = 0.0d0
             fum = 0.0d0
             rum = 0.0d0
             return

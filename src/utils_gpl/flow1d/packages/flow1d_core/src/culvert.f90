@@ -180,7 +180,6 @@ contains
           (dir == 1  .and. allowedFlowDir == 2) .or. &
           (dir == -1 .and. allowedFlowDir == 1)) then
          kfum  = 0
-         aum   = 0.0d0
          fum   = 0.0d0
          rum   = 0.0d0
          u1m   = 0.0d0

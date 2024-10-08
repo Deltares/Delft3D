@@ -140,7 +140,6 @@ subroutine ComputeOrifice(orifice, fum, rum, aum, dadsm, kfum, s1m1, s1m2, qm, q
        kfum = 0
     endif
     if (kfum == 0) then
-       aum  = 0.0d0
        fum   = 0.0d0
        rum   = 0.0d0
        u1m   = 0.0d0
