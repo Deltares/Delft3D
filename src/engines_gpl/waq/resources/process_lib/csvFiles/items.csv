@@ -415,6 +415,8 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "CorrTemp1D","x"," ",    0.00000    ,"(oC)                ","Correction of temperature near discharge 1D       ","volume    ","volume    "," ","                              "
 "TempWref  ","x"," ",    15.0000    ,"(oC)                ","Reference water temperature for wind function     ","volume    ","volume    "," ","                              "
 "SwitchTemp","x"," ",    1.00000    ,"(-)                 ","switch Mod-Nat 0=Tot-Nat 1=Sur-Nat 2=Sur-Tot      ","volume    ","volume    "," ","                              "
+"MinTemp   ","x"," ",    0.00000    ,"(oC)                ","minimum ambient water temperature                 ","volume    ","volume    "," ","                              "
+"MaxTemp   ","x"," ",    100.000    ,"(oC)                ","maximum ambient water temperature                 ","volume    ","volume    "," ","                              "
 "MinDepthT ","x"," ",   0.500000E-01,"(m)                 ","minimal depth for heatflux calculation            ","volume    ","volume    "," ","                              "
 "RadSN     ","x"," ",   -999.000    ,"(W/m2)              ","non refl. (net) short wave rad. reaching wat      ","volume    ","volume    "," ","                              "
 "Cloud     ","x"," ",   -999.000    ,"(%)                 ","Cloud coverage                                    ","volume    ","volume    "," ","                              "

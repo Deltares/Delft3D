@@ -30,5 +30,14 @@ create_test(
     test_files tests_rear.f90
     )
 
+create_test(
+    tests_tmode
+    dependencies ${dependencies}
+    visual_studio_folder tests/unit_test/engines_gpl/waq/waq_process
+    test_list test_tmode
+    labels "test_tmode:fast"
+    test_files tests_tmode.f90
+    )
+
 
 add_subdirectory(debgrz test_debgrz)
