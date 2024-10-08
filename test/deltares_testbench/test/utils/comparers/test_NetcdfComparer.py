@@ -36,7 +36,7 @@ class TestNetcdfComparer:
         fc.name = "str_map.nc"
         fc.type = FileType.NETCDF
         fc.parameters = {"par1": [pm]}
-        comparer = nccmp.NetcdfComparer()
+        comparer = nccmp.NetcdfComparer(enable_plotting=False)
         logger = TestLogger()
         path = os.path.join("test")
         results = comparer.compare(self.lp, self.rp, fc, path, logger)
@@ -59,7 +59,7 @@ class TestNetcdfComparer:
         fc.name = "str_map.nc"
         fc.type = FileType.NETCDF
         fc.parameters = {"par1": [pm]}
-        comparer = nccmp.NetcdfComparer()
+        comparer = nccmp.NetcdfComparer(enable_plotting=False)
         logger = TestLogger()
         path = os.path.join("test")
         results = comparer.compare(self.lp, self.rp, fc, path, logger)
