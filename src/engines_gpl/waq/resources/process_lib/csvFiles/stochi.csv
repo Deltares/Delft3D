@@ -889,9 +889,9 @@ stocfl,stocsu,stocsc
 "dSedPOP3  ","S1_PP2    ",   1.00000
 "dSedPOS3  ","POS3      ",  -1.00000
 "dSedPON3S2","PON3      ",  -1.00000
-"dSedPON3S2","OONS3     ",   1.00000
+"dSedPON3S2","OONS2     ",   1.00000
 "dSedPOP3S2","POP3      ",  -1.00000
-"dSedPOP3S2","OOPS3     ",   1.00000
+"dSedPOP3S2","OOPS2     ",   1.00000
 "dSedPOS3S2","POS3      ",  -1.00000
 "dSedPON4  ","PON4      ",  -1.00000
 "dSedPON4  ","S1_PN2    ",   1.00000
@@ -3237,6 +3237,7 @@ stocfl,stocsu,stocsc
 "dSedTAgg42","TAggSed42 ",   1.00000
 "dSedTAgg43","TyreAgg43 ",  -1.00000
 "dSedTAgg43","TAggSed43 ",   1.00000
+"dDumSTRWP ","Tyre1     ",   0.00000
 "dNH4up_D1 ","NH4       ",  -1.00000
 "dNH4up_D1 ","diatN_1   ",   1.00000
 "dNH4up_D1 ","ALKA      ",  -4.35700
