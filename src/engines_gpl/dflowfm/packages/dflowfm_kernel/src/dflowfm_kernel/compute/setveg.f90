@@ -118,9 +118,14 @@
 
              if (kmx > 0) then
                 do k = kbot(kk), ktop(kk)
-                   h1 = zws(k) - zws(kbot(kk) - 1)
-                   h0 = zws(k - 1) - zws(kbot(kk) - 1)
-                   if (h1 < stemh) then
+                   if (stemheight_convention == 2) then
+                      h0 = zws(ktop(kk)) - zws(k) 
+                      h1 = zws(ktop(kk)) - zws(k - 1) 
+                   else
+                      h1 = zws(k) - zws(kbot(kk) - 1)
+                      h0 = zws(k - 1) - zws(kbot(kk) - 1)
+                   end if
+                   if (h1 <= stemh) then
                       diaveg(k) = diaveg(kk)
                       rnveg(k) = rnveg(kk)
                    else if (h0 < stemh .and. h1 > stemh) then

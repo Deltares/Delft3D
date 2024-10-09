@@ -1430,6 +1430,7 @@ contains
       call prop_get(md_ptr, 'veg', 'Cbveg', Cbveg)
       call prop_get(md_ptr, 'veg', 'Rhoveg', Rhoveg)
       call prop_get(md_ptr, 'veg', 'Stemheightstd', Stemheightstd)
+      call prop_get(md_ptr, 'veg', 'StemheightConvention', Stemheight_convention)
       call prop_get(md_ptr, 'veg', 'Densvegminbap', Densvegminbap)
 
       call prop_get(md_ptr, 'veg', 'Expchistem', expchistem)
@@ -3457,6 +3458,9 @@ contains
          call prop_set(prop_ptr, 'veg', 'Cbveg', Cbveg, 'Stem stiffness coefficient , default 0.0 ()')
          call prop_set(prop_ptr, 'veg', 'Rhoveg', Rhoveg, 'Stem Rho, if > 0, -> bouyant stick procedure, default 0.0 (kg/m3)')
          call prop_set(prop_ptr, 'veg', 'Stemheightstd', Stemheightstd, 'Stem height standard deviation fraction, e.g. 0.1  ()')
+         if (Stemheight_convention /= 1) then
+            call prop_set(prop_ptr, 'veg', 'StemheightConvention', stemheight_convention, 'Stem height convention (1: Upward from the bed level, 2: Downward from the water surface)')
+         end if 
          if (kmx == 0) then
             call prop_set(prop_ptr, 'veg', 'Densvegminbap', Densvegminbap, 'Minimum vegetation density in Baptist formula  (1/m2)')
          end if
