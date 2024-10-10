@@ -35,6 +35,7 @@
     use m_flowgeom
     use m_sferic
     use m_flowtimes
+    use MessageHandling, only: mess, LEVEL_ERROR
     implicit none
 
     double precision :: h1, h0, stemcos, stemsin, stemh, PL, Pv, Pm, Pmi, Bp
@@ -43,8 +44,6 @@
 
     if (kmx == 0 .and. growthunidicouv > 0.0) then
 
-       !stemheight = 0.55d0
-       !diaveg     = 0.05d0
        if (.not. allocated(supq)) allocate (supq(ndx))
        supq = 0d0
        do L = 1, lnxi
@@ -71,9 +70,13 @@
 
        if (diaveg(kk) > 0d0) then
 
-          phi = phiv(kk) ! 0d0                                                                ! 1/s   stemphi
-          phit = phivt(kk) ! 0d0                                                                ! 1/s2  stemomega
-          Pl = stemheight(kk) ! m       plantlength
+          if ((pi * (diaveg(kk) / 2)**2) > (1 / rnveg(kk))) then
+             call mess(LEVEL_ERROR, 'The area covered by a plant or pile (based on the quantity "stemdiameter") is larger than the typical area of it (calculated as the reciprocal of the quantity "stemdensity").')
+          end if
+
+          phi = phiv(kk) ! stemphi [1/s]
+          phit = phivt(kk) ! stemomega [1/s2]
+          Pl = stemheight(kk) ! plantlength [m]
           Pl = min(hs(kk), Pl)
 
           do i = 1, num
@@ -82,9 +85,9 @@
 
              if (rhoveg > 0d0) then
 
-                Pv = Pl * diaveg(kk) * diaveg(kk) * 0.25d0 * pi ! m3      plantvolume
-                Pm = rhoveg * Pv ! kg      plantmass
-                Pmi = (1d0 / 6d0) * Pm * Pl * Pl ! kg.m2   plant inertia moment
+                Pv = Pl * diaveg(kk) * diaveg(kk) * 0.25d0 * pi ! plant volume [m3]
+                Pm = rhoveg * Pv ! plant mass [kg]
+                Pmi = (1d0 / 6d0) * Pm * Pl * Pl !  plant inertia moment [kg.m2]
                 Tdti = 2d0 * Pmi / dts ! kg.m2/s
 
                 Bendm = 0d0
@@ -119,8 +122,8 @@
              if (kmx > 0) then
                 do k = kbot(kk), ktop(kk)
                    if (stemheight_convention == 2) then
-                      h0 = zws(ktop(kk)) - zws(k) 
-                      h1 = zws(ktop(kk)) - zws(k - 1) 
+                      h0 = zws(ktop(kk)) - zws(k)
+                      h1 = zws(ktop(kk)) - zws(k - 1)
                    else
                       h1 = zws(k) - zws(kbot(kk) - 1)
                       h0 = zws(k - 1) - zws(kbot(kk) - 1)
