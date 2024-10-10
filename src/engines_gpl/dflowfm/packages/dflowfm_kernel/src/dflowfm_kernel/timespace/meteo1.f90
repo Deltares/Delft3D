@@ -7126,43 +7126,33 @@ contains
       case ('fx', 'xwaveforce')
          itemPtr1 => item_fx
          dataPtr1 => sxwav
-         jamapwav_sxwav = 1
       case ('fy', 'ywaveforce')
          itemPtr1 => item_fy
          dataPtr1 => sywav
-         jamapwav_sywav = 1
       case ('wsbu')
          itemPtr1 => item_wsbu
          dataPtr1 => sbxwav
-         jamapwav_sbxwav = 1
       case ('wsbv')
          itemPtr1 => item_wsbv
          dataPtr1 => sbywav
-         jamapwav_sbywav = 1
       case ('mx')
          itemPtr1 => item_mx
          dataPtr1 => mxwav
-         jamapwav_mxwav = 1
       case ('my')
          itemPtr1 => item_my
          dataPtr1 => mywav
-         jamapwav_mywav = 1
       case ('dissurf', 'wavebreakerdissipation')
          itemPtr1 => item_dissurf
          dataPtr1 => dsurf
-         jamapwav_dsurf = 1
       case ('diswcap', 'whitecappingdissipation')
          itemPtr1 => item_diswcap
          dataPtr1 => dwcap
-         jamapwav_dwcap = 1
       case ('totalwaveenergydissipation')
          itemPtr1 => item_distot
          dataPtr1 => distot
-         jamapwav_distot = 1
       case ('ubot')
          itemPtr1 => item_ubot
          dataPtr1 => uorbwav
-         jamapwav_uorb = 1
       case ('tracerbnd')
          ! get tracer (boundary) number
          itrac = findname(numtracers, trnames, trname)
