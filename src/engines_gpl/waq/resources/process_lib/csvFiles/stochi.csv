@@ -2914,51 +2914,51 @@ stocfl,stocsu,stocsc
 "SF_dNitrif","S1_NH4    ",  -1.00000
 "SF_dNitrif","S1_NO3    ",   1.00000
 "SF_dNitrif","S1_OXY    ",  -4.57100
-"SF_dCPPOC1","S1_PC1    ",  -1.00000
-"SF_dCPPOC1","S1_PC2    ",   1.00000
-"SF_dCPPON1","S1_PN1    ",  -1.00000
-"SF_dCPPON1","S1_PN2    ",   1.00000
-"SF_dCPPOP1","S1_PP1    ",  -1.00000
-"SF_dCPPOP1","S1_PP2    ",   1.00000
+"SF_dCPPOC1","DetCS1    ",  -1.00000
+"SF_dCPPOC1","OOCS1     ",   1.00000
+"SF_dCPPON1","DetNS1    ",  -1.00000
+"SF_dCPPON1","OONS1     ",   1.00000
+"SF_dCPPOP1","DetPS1    ",  -1.00000
+"SF_dCPPOP1","OOPS1     ",   1.00000
 "SF_dCPPOS1","S1_PS1    ",  -1.00000
-"SF_dCPPOS1","S1_PS2    ",   1.00000
-"SF_dCDPOC1","S1_PC1    ",  -1.00000
+"SF_dCPPOS1","OOSiS1    ",   1.00000
+"SF_dCDPOC1","DetCS1    ",  -1.00000
 "SF_dCDPOC1","S1_DOC    ",   1.00000
-"SF_dCDPON1","S1_PN1    ",  -1.00000
+"SF_dCDPON1","DetNS1    ",  -1.00000
 "SF_dCDPON1","S1_DON    ",   1.00000
-"SF_dCDPOP1","S1_PP1    ",  -1.00000
+"SF_dCDPOP1","DetPS1    ",  -1.00000
 "SF_dCDPOP1","S1_DOP    ",   1.00000
 "SF_dCDPOS1","S1_PS1    ",  -1.00000
 "SF_dCDPOS1","S1_DOS    ",   1.00000
-"SF_dMPOC1 ","S1_PC1    ",  -1.00000
-"SF_dMPON1 ","S1_PN1    ",  -1.00000
+"SF_dMPOC1 ","DetCS1    ",  -1.00000
+"SF_dMPON1 ","DetNS1    ",  -1.00000
 "SF_dMPON1 ","S1_NH4    ",   1.00000
-"SF_dMPOP1 ","S1_PP1    ",  -1.00000
+"SF_dMPOP1 ","DetPS1    ",  -1.00000
 "SF_dMPOP1 ","S1_PO4    ",   1.00000
 "SF_dMPOS1 ","S1_PS1    ",  -1.00000
 "SF_dMPOS1 ","S1_SUD    ",   1.00000
-"SF_dCPPOC2","S1_PC2    ",  -1.00000
+"SF_dCPPOC2","OOCS1     ",  -1.00000
 "SF_dCPPOC2","S1_PC3    ",   1.00000
-"SF_dCPPON2","S1_PN2    ",  -1.00000
+"SF_dCPPON2","OONS1     ",  -1.00000
 "SF_dCPPON2","S1_PN3    ",   1.00000
-"SF_dCPPOP2","S1_PP2    ",  -1.00000
+"SF_dCPPOP2","OOPS1     ",  -1.00000
 "SF_dCPPOP2","S1_PP3    ",   1.00000
-"SF_dCPPOS2","S1_PS2    ",  -1.00000
+"SF_dCPPOS2","OOSiS1    ",  -1.00000
 "SF_dCPPOS2","S1_PS3    ",   1.00000
-"SF_dCDPOC2","S1_PC2    ",  -1.00000
+"SF_dCDPOC2","OOCS1     ",  -1.00000
 "SF_dCDPOC2","S1_DOC    ",   1.00000
-"SF_dCDPON2","S1_PN2    ",  -1.00000
+"SF_dCDPON2","OONS1     ",  -1.00000
 "SF_dCDPON2","S1_DON    ",   1.00000
-"SF_dCDPOP2","S1_PP2    ",  -1.00000
+"SF_dCDPOP2","OOPS1     ",  -1.00000
 "SF_dCDPOP2","S1_DOP    ",   1.00000
-"SF_dCDPOS2","S1_PS2    ",  -1.00000
+"SF_dCDPOS2","OOSiS1    ",  -1.00000
 "SF_dCDPOS2","S1_DOS    ",   1.00000
-"SF_dMPOC2 ","S1_PC2    ",  -1.00000
-"SF_dMPON2 ","S1_PN2    ",  -1.00000
+"SF_dMPOC2 ","OOCS1     ",  -1.00000
+"SF_dMPON2 ","OONS1     ",  -1.00000
 "SF_dMPON2 ","S1_NH4    ",   1.00000
-"SF_dMPOP2 ","S1_PP2    ",  -1.00000
+"SF_dMPOP2 ","OOPS1     ",  -1.00000
 "SF_dMPOP2 ","S1_PO4    ",   1.00000
-"SF_dMPOS2 ","S1_PS2    ",  -1.00000
+"SF_dMPOS2 ","OOSiS1    ",  -1.00000
 "SF_dMPOS2 ","S1_SUD    ",   1.00000
 "SF_dCPPOC3","S1_PC3    ",  -1.00000
 "SF_dCPPOC3","S1_PC4    ",   1.00000
@@ -3002,7 +3002,7 @@ stocfl,stocsu,stocsc
 "SF_dDisPO4","S1_PO4    ",   1.00000
 "SF_dDisPO4","S1_VIVP   ",  -1.00000
 "SF_dDisSi ","S1_Si     ",   1.00000
-"SF_dDisSi ","S1_Opal   ",  -1.00000
+"SF_dDisSi ","DetSiS1   ",  -1.00000
 "SF_dOxCon ","S1_OXY    ",  -2.66700
 "SF_dNiDen ","S1_NO3    ",  -0.93300
 "SF_dFeRed ","S1_FeIIIpa", -18.60000
@@ -3033,20 +3033,20 @@ stocfl,stocsu,stocsc
 "SF_dP2VBup","S1_PO4    ",  -1.00000
 "SF_dS1VBup","S1_SO4    ",  -1.00000
 "SF_dS2VBup","S1_SUD    ",  -1.00000
-"SF_dC1VBre","S1_PC1    ",   1.00000
-"SF_dC2VBre","S1_PC2    ",   1.00000
+"SF_dC1VBre","DetCS1    ",   1.00000
+"SF_dC2VBre","OOCS1     ",   1.00000
 "SF_dC3VBre","S1_PC3    ",   1.00000
 "SF_dC4VBre","S1_PC4    ",   1.00000
-"SF_dN1VBre","S1_PN1    ",   1.00000
-"SF_dN2VBre","S1_PN2    ",   1.00000
+"SF_dN1VBre","DetNS1    ",   1.00000
+"SF_dN2VBre","OONS1     ",   1.00000
 "SF_dN3VBre","S1_PN3    ",   1.00000
 "SF_dN4VBre","S1_PN4    ",   1.00000
-"SF_dP1VBre","S1_PP1    ",   1.00000
-"SF_dP2VBre","S1_PP2    ",   1.00000
+"SF_dP1VBre","DetPS1    ",   1.00000
+"SF_dP2VBre","OOPS1     ",   1.00000
 "SF_dP3VBre","S1_PP3    ",   1.00000
 "SF_dP4VBre","S1_PP4    ",   1.00000
 "SF_dS1VBre","S1_PS1    ",   1.00000
-"SF_dS2VBre","S1_PS2    ",   1.00000
+"SF_dS2VBre","OOSiS1    ",   1.00000
 "SF_dS3VBre","S1_PS3    ",   1.00000
 "SF_dS4VBre","S1_PS4    ",   1.00000
 "INIS1_CH4 ","S1_CH4    ",   1.00000
@@ -3064,21 +3064,21 @@ stocfl,stocsu,stocsc
 "INIS1_AAP ","S1_AAP    ",   1.00000
 "INIS1_APAT","S1_APATP  ",   1.00000
 "INIS1_Fe3p","S1_FeIIIpa",   1.00000
-"INIS1_Opal","S1_Opal   ",   1.00000
-"INIS1_POC1","S1_PC1    ",   1.00000
-"INIS1_POC2","S1_PC2    ",   1.00000
+"INIS1_Opal","DetSiS1   ",   1.00000
+"INIS1_POC1","DetCS1    ",   1.00000
+"INIS1_POC2","OOCS1     ",   1.00000
 "INIS1_POC3","S1_PC3    ",   1.00000
 "INIS1_POC4","S1_PC4    ",   1.00000
-"INIS1_PON1","S1_PN1    ",   1.00000
-"INIS1_PON2","S1_PN2    ",   1.00000
+"INIS1_PON1","DetNS1    ",   1.00000
+"INIS1_PON2","OONS1     ",   1.00000
 "INIS1_PON3","S1_PN3    ",   1.00000
 "INIS1_PON4","S1_PN4    ",   1.00000
-"INIS1_POP1","S1_PP1    ",   1.00000
-"INIS1_POP2","S1_PP2    ",   1.00000
+"INIS1_POP1","DetPS1    ",   1.00000
+"INIS1_POP2","OOPS1     ",   1.00000
 "INIS1_POP3","S1_PP3    ",   1.00000
 "INIS1_POP4","S1_PP4    ",   1.00000
 "INIS1_POS1","S1_PS1    ",   1.00000
-"INIS1_POS2","S1_PS2    ",   1.00000
+"INIS1_POS2","OOSiS1    ",   1.00000
 "INIS1_POS3","S1_PS3    ",   1.00000
 "INIS1_POS4","S1_PS4    ",   1.00000
 "INIS1_SUP ","S1_SUP    ",   1.00000
