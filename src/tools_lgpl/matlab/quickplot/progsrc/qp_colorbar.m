@@ -269,9 +269,12 @@ else
         % in case of values outside the color range, add leq and geq signs
         if climauto(1) < clim(1) && climauto(2) > clim(2)
             tickval = get(ax,[X,'tick']);
-            ticklabel = get(ax,[X,'ticklabel']);
-            if ~iscell(ticklabel)
-                ticklabel = cellstr(ticklabel);
+            % The axis ruler may have an exponent. If so, the tick labels
+            % can't be used since when they are set manually, the exponent
+            % will disappear and that invalidates the original tick labels.
+            ticklabel = cell(length(tickval),1);
+            for i = 1:length(tickval)
+                ticklabel{i} = sprintf('%g',tickval(i));
             end
             if matlabversionnumber > 8.02
                 leq = '\leq ';
