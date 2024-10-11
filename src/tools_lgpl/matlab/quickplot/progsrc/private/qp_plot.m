@@ -862,6 +862,7 @@ if Props.NVal==6
     else
         Ops.Thresholds = 1:length(data(1).Classes);
     end
+    Ops.Thresholds(end+1) = inf;
 elseif isfield(Ops,'thresholds') && ~strcmp(Ops.thresholds,'none')
     if isfield(Ops,'colourlimits') && isequal(size(Ops.colourlimits),[1 2])
         minmax = Ops.colourlimits;
@@ -879,6 +880,10 @@ elseif isfield(Ops,'thresholds') && ~strcmp(Ops.thresholds,'none')
         minmax = [miv mv];
     end
     [Ops.Thresholds,Ops.PlotClass] = compthresholds(Ops,minmax,classes_between_thresholds);
+    if Ops.Thresholds(2) == 0
+        Ops.Thresholds(1) = [];
+        Ops.PlotClass(1) = [];
+    end
 else
     Ops.Thresholds = 'none';
     if isfield(Ops,'climclipping') && Ops.climclipping
@@ -1255,10 +1260,14 @@ else
             case {'UGRID1D_NETWORK-NODE','UGRID1D_NETWORK-EDGE','UGRID1D-NODE','UGRID1D-EDGE','UGRID2D-NODE','UGRID2D-EDGE','UGRID2D-FACE'}
                 [hNew{d},Param]=qp_plot_ugrid(plotargs{:});
             otherwise
-                switch Ops.presentationtype
-                    case {'coloured contour lines','contour patches','contour patches with lines'}
-                        Ops.climclipping = 0;
-                        Ops.PlotClass(:) = true;
+                if ~isfield(data,'TRI')
+                    % default structured mesh contourf function is not yet
+                    % suitable for PlotClass.
+                    switch Ops.presentationtype
+                        case {'coloured contour lines','contour patches','contour patches with lines'}
+                            Ops.climclipping = 0;
+                            Ops.PlotClass(:) = true;
+                    end
                 end
                 [hNew{d},Param,Parent]=qp_plot_default(plotargs{:});
                 PlotState.Parent=Parent;
@@ -1444,9 +1453,12 @@ if isfield(Ops,'colourbar') && ~strcmp(Ops.colourbar,'none')
         end
         if ~strcmp(Ops.Thresholds,'none')
             Thresholds = Ops.Thresholds;
+            PlotClass = Ops.PlotClass;
             Classes = {};
             LineParams = {};
             if Props.NVal==6
+                Thresholds = Thresholds(1:end-1);
+                PlotClass = PlotClass(1:end-1);
                 LabelStyle = {'labelcolor'};
                 Classes = {data(1).Classes};
             elseif classes_between_thresholds
@@ -1459,7 +1471,7 @@ if isfield(Ops,'colourbar') && ~strcmp(Ops.colourbar,'none')
             else
                 LabelStyle = {'labelcolor'};
             end
-            classbar(h,1:length(Thresholds),LabelStyle{:},'label',Thresholds,Classes{:},'plotselect',Ops.PlotClass,'climmode','new',LineParams{:})
+            classbar(h,1:length(Thresholds),LabelStyle{:},'label',Thresholds,Classes{:},'plotselect',PlotClass,'climmode','new',LineParams{:})
         end
     end
 end

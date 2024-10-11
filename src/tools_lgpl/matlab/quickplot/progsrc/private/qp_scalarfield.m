@@ -197,8 +197,18 @@ switch presentationtype
                 set(hNew,Ops.LineParams{:})
             case 'contour patches'
                 hNew=tricontourf(TRI,XYZ(:,1),XYZ(:,2),Val(:),Ops.Thresholds,'clevel','index0','zplane',0);
+                for i = 1:length(hNew)
+                    if ~Ops.PlotClass(i)
+                        set(hNew(i),'Visible','off')
+                    end
+                end
             case 'contour patches with lines'
                 hNew1=tricontourf(TRI,XYZ(:,1),XYZ(:,2),Val(:),Ops.Thresholds,'clevel','index0','zplane',0);
+                for i = 1:length(hNew)
+                    if ~Ops.PlotClass(i)
+                        set(hNew(i),'Visible','off')
+                    end
+                end
                 hNew2=tricontour(TRI,XYZ(:,1),XYZ(:,2),Val(:),Ops.Thresholds,'k');
                 set(hNew2,'color',Ops.colour,'linestyle',Ops.linestyle,'marker',Ops.marker,'markeredgecolor',Ops.markercolour,'markerfacecolor',Ops.markerfillcolour)
                 hNew = [hNew1 hNew2];
