@@ -4,30 +4,29 @@ import sys
 from minio import Minio
 from minio.error import S3Error
 
+from src.utils.handlers.credential_handler import CredentialHandler
+
 if __name__ == "__main__":
     # Check command-line arguments
-    if len(sys.argv) < 4:
-        print("Usage: download_folder.py <access_key> <secret_key> <bucket_name>")
+    if len(sys.argv) < 2:
+        print("Usage: download_folder.py <bucket_name>")
         sys.exit(1)
 
     # MinIO server details
     minio_url = "s3.deltares.nl"
-    access_key = sys.argv[1]
-    secret_key = sys.argv[2]
-    bucket_name = sys.argv[3]
+    bucket_name = sys.argv[1]
     remote_folder_path = "TeamcityMinioStorage/h7_results"
     local_folder_path = "data/cases"
 
     # Initialize MinIO client
     client = Minio(
-        minio_url,
-        access_key=access_key,
-        secret_key=secret_key,
+        endpoint=minio_url,
+        credentials=CredentialHandler().get_credentials(),
         secure=True,  # Set to False if not using HTTPS
     )
 
-    # Function to download files
-    def download_folder(client: Minio, bucket_name: str, remote_folder_path: str, local_folder_path: str):
+    def download_folder(client: Minio, bucket_name: str, remote_folder_path: str, local_folder_path: str) -> None:
+        """Download a folder from MinIO."""
         objects = client.list_objects(bucket_name, prefix=remote_folder_path, recursive=True)
         for obj in objects:
             remote_file_path = obj.object_name

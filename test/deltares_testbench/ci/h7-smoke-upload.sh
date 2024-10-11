@@ -9,10 +9,20 @@
 #SBATCH --time 00:10:00         # Set a limit on the total run time of the job allocation.
 #SBATCH --partition=1vcpu       # Request a specific partition for the resource allocation.
 
-container="replace_this"
-teamcity_config="teamcity_config_id"
-docker login --username="robot\$delft3d+h7" --password="$1" containers.deltares.nl
-docker pull $container
-docker run --rm -v .:/data/upload/TeamcityMinioStorage/h7_results "$container" python3.9 tools/h7/upload_folder_to_minio.py "$2" "$3" testbench-workshop
+container="$1"
+teamcity_config="$2"
+harbor_password="$3"
+tc_account="$4"
+tc_password="$5"
 container_id=${container#*-}
-docker run --rm $container python3.9 tools/h7/start_tc_build.py "$teamcity_config" container_id:"$container_id" "$4" "$5"
+
+docker login --username="robot\$delft3d+h7" --password="$harbor_password" containers.deltares.nl
+docker pull "$container"
+docker run --rm \
+           -v .:/data/upload/TeamcityMinioStorage/h7_results \
+           -v=$HOME/.aws:/root/.aws:ro \
+           "$container" python3.9 -m tools.h7.upload_folder_to_minio devops-teamcity-artifacts
+
+docker run --rm \
+           -v=$HOME/.aws:/root/.aws:ro \
+           "$container" python3.9 tools/h7/start_tc_build.py "$teamcity_config" container_id:"$container_id" "$tc_account" "$tc_password"
