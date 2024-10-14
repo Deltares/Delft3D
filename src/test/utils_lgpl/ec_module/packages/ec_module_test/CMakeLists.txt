@@ -77,6 +77,7 @@ configure_visual_studio_user_file(${executable_name})
 if(WIN32)
 install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION test)
 endif()
-install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION test PATTERN "src" EXCLUDE PATTERN "CMakeLists.txt" EXCLUDE PATTERN "Scripts" EXCLUDE)
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests DESTINATION test)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/. DESTINATION test FILES_MATCHING PATTERN "*.py" PATTERN "src" EXCLUDE PATTERN "scripts" EXCLUDE PATTERN "tests" EXCLUDE)
 install(TARGETS ${executable_name} RUNTIME  DESTINATION test)
 
