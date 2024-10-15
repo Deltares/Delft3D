@@ -329,7 +329,6 @@ function(create_test test_name)
     set(TEST_DATA_PATH ${CMAKE_CURRENT_BINARY_DIR}/test_data)
     if(DEFINED op_include_dir)
         # Copy an entire directory
-        # ${CMAKE_BINARY_DIR}/test_data/${test_name}
         file(COPY ${op_include_dir} DESTINATION ${TEST_DATA_PATH})
 
         if(DEFINED op_test_list)
