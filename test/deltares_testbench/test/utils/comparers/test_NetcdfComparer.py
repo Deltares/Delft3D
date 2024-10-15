@@ -8,7 +8,6 @@ import os
 
 import netCDF4 as nc
 import pytest
-from netCDF4 import chartostring
 
 import src.utils.comparers.netcdf_comparer as nccmp
 from src.config.file_check import FileCheck
