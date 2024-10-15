@@ -1933,7 +1933,7 @@ contains
       character(len=MAXSTRLEN) :: field_name
       ! Store the name
       var_name = str_tolower(char_array_to_string(c_var_name))
-      item_name = str_tolower(char_array_to_string(c_item_name))
+      item_name = char_array_to_string(c_item_name)
       field_name = str_tolower(char_array_to_string(c_field_name))
 
       select case (var_name)
@@ -2012,7 +2012,7 @@ contains
          case ("gateopeningwidth")
             x = c_loc(zcgen((item_index - 1) * 3 + 3))
             return
-         case ("horizontal_opening_direction", "GateOpeningHorizontalDirection")
+         case ("horizontal_opening_direction", "gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
             return
          end select
@@ -2054,7 +2054,7 @@ contains
                x = c_loc(zcgen((item_index - 1) * 3 + 3))
             end if
             return
-         case ("GateOpeningHorizontalDirection", "gateOpeningHorizontalDirection")
+         case ("gateopeninghorizontaldirection", "gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
             return
          end select

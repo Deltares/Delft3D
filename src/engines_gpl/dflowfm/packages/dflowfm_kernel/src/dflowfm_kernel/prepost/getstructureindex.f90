@@ -40,7 +40,6 @@ subroutine getStructureIndex(strtypename, strname, index, is_in_network)
    use m_hash_search, only: hashsearch
    use unstruc_channel_flow, only: network
    use m_longculverts
-   use string_module, only: strcmpi
 
    implicit none
    character(len=*), intent(in) :: strtypename !< the type of the structure: 'pumps', 'weirs', 'gates', ...
@@ -67,7 +66,7 @@ subroutine getStructureIndex(strtypename, strname, index, is_in_network)
 
    if (trim(strtypename) == 'pumps') then
       do i = 1, npumpsg
-         if (strcmpi(pump_ids(i), strname)) then
+         if (trim(pump_ids(i)) == trim(strname)) then
             if (L2pumpsg(i) - L1pumpsg(i) >= 0) then
                ! Only return this pump index if pump is active in flowgeom (i.e., at least 1 flow link associated)
                index = i
@@ -77,14 +76,14 @@ subroutine getStructureIndex(strtypename, strname, index, is_in_network)
       end do
    else if (trim(strtypename) == 'sourcesinks') then
       do i = 1, numsrc
-         if (strcmpi(srcname(i), strname)) then
+         if (trim(srcname(i)) == trim(strname)) then
             index = i
             exit
          end if
       end do
    else if (trim(strtypename) == 'dambreak') then
       do i = 1, ndambreaksignals
-         if (strcmpi(dambreak_ids(i), strname)) then
+         if (trim(dambreak_ids(i)) == trim(strname)) then
             if (L2dambreaksg(i) - L1dambreaksg(i) >= 0) then
                ! Only return this dambreak index if dambreak is active in flowgeom (i.e., at least 1 flow link associated)
                index = i
@@ -94,7 +93,7 @@ subroutine getStructureIndex(strtypename, strname, index, is_in_network)
       end do
    else if (trim(strtypename) == 'longculverts') then
       do i = 1, nlongculverts
-         if (strcmpi(longculverts(i)%id, strname)) then
+         if (trim(longculverts(i)%id) == trim(strname)) then
             index = i
             exit
          end if
@@ -116,7 +115,7 @@ subroutine getStructureIndex(strtypename, strname, index, is_in_network)
 
       do i = 1, nstr
          icgen = cgen_mapping(i)
-         if (strcmpi(cgen_ids(icgen), strname)) then
+         if (trim(cgen_ids(icgen)) == trim(strname)) then
             if (L2cgensg(icgen) - L1cgensg(icgen) >= 0) then
                ! Only return this structure index if structure is active in flowgeom (i.e., at least 1 flow link associated)
                index = icgen
