@@ -29,10 +29,9 @@
 
 !
 !
+
 !> find index of string in array of strings
 integer function findname(N, snames, sname)
-   use string_module, only: strcmpi
-
    implicit none
 
    integer, intent(in) :: N
@@ -44,7 +43,7 @@ integer function findname(N, snames, sname)
    findname = 0
 
    do i = 1, N
-      if (strcmpi(sname,snames(i))) then
+      if (trim(sname) == trim(snames(i))) then
          findname = i
          return
       end if
