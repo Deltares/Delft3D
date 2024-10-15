@@ -6178,7 +6178,7 @@ contains
                if (jamapwav_phiwav > 0 .and. allocated(phiwav)) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'deg from N')
                end if
-            else ! flow With Waves
+            else ! flow with waves
                !
                ! First def all common quantities
                if (jamapsigwav == 0) then
