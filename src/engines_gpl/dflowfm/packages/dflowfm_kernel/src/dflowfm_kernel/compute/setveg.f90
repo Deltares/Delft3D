@@ -147,16 +147,18 @@
  contains
 
     ! Function to calculate plant mass from plant length, diameter and density
-    function calculate_plant_mass(plant_length, diameter, density) result(mass)
-       double precision :: plant_length, diameter, density
+    pure function calculate_plant_mass(plant_length, diameter, density) result(mass)
+       use precision, only: dp
+
+       double precision, intent(in) :: plant_length, diameter, density
        double precision :: volume, mass
-       volume = plant_length * (diameter / 2.0d0)**2 * pi ! Volume = L * (r^2) * pi
+       volume = plant_length * (diameter / 2.0_dp)**2 * pi ! Volume = L * (r^2) * pi
        mass = density * volume ! Mass = Density * Volume
     end function calculate_plant_mass
 
     ! Function to calculate plant inertia moment
-    function calculate_plant_inertia_moment(mass, plant_length) result(inertia_moment)
-       double precision :: mass, plant_length
+    pure function calculate_plant_inertia_moment(mass, plant_length) result(inertia_moment)
+       double precision, intent(in) :: mass, plant_length
        double precision :: inertia_moment
        inertia_moment = (1.0d0 / 6.0d0) * mass * plant_length**2 ! Moment of inertia = (1/6) * m * L^2
     end function calculate_plant_inertia_moment

@@ -1430,7 +1430,16 @@ contains
       call prop_get(md_ptr, 'veg', 'Cbveg', Cbveg)
       call prop_get(md_ptr, 'veg', 'Rhoveg', Rhoveg)
       call prop_get(md_ptr, 'veg', 'Stemheightstd', Stemheightstd)
-      call prop_get(md_ptr, 'veg', 'StemheightConvention', stemheight_convention)
+      call prop_get(md_ptr, 'veg', 'StemheightConvention', StemheightConvention)
+      select case (trim(str_tolower(StemheightConvention)))
+      case ('upward_from_bed')
+         stemheight_convention = UPWARD_FROM_BED
+      case ('downward_from_surface')
+         stemheight_convention = DOWNWARD_FROM_SURFACE
+      case default
+         call mess(LEVEL_ERROR, "Invalid value for [veg] StemheightConvention. Use 'upward_from_bed' or 'downward_from_surface'.")
+      end select
+
       call prop_get(md_ptr, 'veg', 'Densvegminbap', Densvegminbap)
 
       call prop_get(md_ptr, 'veg', 'Expchistem', expchistem)
@@ -3459,7 +3468,7 @@ contains
          call prop_set(prop_ptr, 'veg', 'Rhoveg', Rhoveg, 'Stem Rho, if > 0, -> bouyant stick procedure, default 0.0 (kg/m3)')
          call prop_set(prop_ptr, 'veg', 'Stemheightstd', Stemheightstd, 'Stem height standard deviation fraction, e.g. 0.1  ()')
          if (stemheight_convention /= UPWARD_FROM_BED) then ! research keyword - only write to .dia if the research keyword is not set to the default value.
-            call prop_set(prop_ptr, 'veg', 'StemheightConvention', stemheight_convention, 'Stem height convention (1: Upward from the bed level, 2: Downward from the water surface)')
+            call prop_set(prop_ptr, 'veg', 'StemheightConvention', trim(StemheightConvention), 'Stem height convention: ''upward_from_bed'' or ''downward_from_surface''.')
          end if
          if (kmx == 0) then
             call prop_set(prop_ptr, 'veg', 'Densvegminbap', Densvegminbap, 'Minimum vegetation density in Baptist formula  (1/m2)')

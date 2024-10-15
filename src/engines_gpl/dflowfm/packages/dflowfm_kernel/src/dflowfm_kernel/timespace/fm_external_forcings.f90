@@ -2472,7 +2472,7 @@ contains
          if (allocated(stemdiam) .and. allocated(stemdens)) then
             do k = 1, ndx
                if (stemdens(k) > 0d0) then
-                  if ((pi * (stemdiam(k) / 2)**2) > (1 / stemdens(k))) then
+                  if ((pi * (stemdiam(k) / 2)**2 * stemdens(k)) > 1.0_dp) then
                      call mess(LEVEL_ERROR, 'The area covered by a plant or pile (based on the quantity "stemdiameter") is larger than the typical area of it (calculated as the reciprocal of the quantity "stemdensity").')
                   end if
                   rnveg(k) = stemdens(k)

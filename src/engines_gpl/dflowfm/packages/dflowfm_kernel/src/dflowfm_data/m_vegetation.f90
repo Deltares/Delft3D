@@ -54,9 +54,10 @@ module m_vegetation
    double precision :: Cbveg = 0.0d0 ! Bend stiffness coefficient (kg.m2/s2) Moment=Cbveg.phiv
    double precision :: Rhoveg = 0d0 ! if > 0d0 then floatmodel
    double precision :: Stemheightstd = 0d0 ! stemheight standard deviation
+   character(len=128) :: stemheightConvention = 'upward_from_bed' ! User/MDU-setting. Stem height convention: 'upward_from_bed' or 'downward_from_surface'
    integer, parameter :: UPWARD_FROM_BED = 1
    integer, parameter :: DOWNWARD_FROM_SURFACE = 2
-   integer :: stemheight_convention = UPWARD_FROM_BED ! Stem height convention (1: Upward from the bed level, 2: Downward from the water surface)
+   integer :: stemheight_convention = UPWARD_FROM_BED
    double precision :: r3 = .333333d0 !
    double precision :: growthunidicouv ! uniform values in veg growth model diffusion coef
    double precision :: growthunidiam ! uniform values in veg growth model diam
