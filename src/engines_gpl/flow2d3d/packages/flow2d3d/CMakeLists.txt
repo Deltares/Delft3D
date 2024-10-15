@@ -143,7 +143,6 @@ if (WIN32)
 
     target_link_libraries(${library_name} ${oss_dependencies})
 endif(WIN32)
-oss_include_libraries(${library_name} oss_dependencies)
 
 if (WIN32)
     # Set linker properties

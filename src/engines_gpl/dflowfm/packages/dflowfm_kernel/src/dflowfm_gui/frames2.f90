@@ -30,11 +30,20 @@
 !
 !
 
+module m_frames2
+
+implicit none
+
+contains
+
       subroutine FRAMES2(NCOL)
          use M_DEVICES
+         use m_set_col
          implicit none
          integer :: ncol
          call SETCOL(NCOL)
          call IGRBORDER()
          return
       end
+
+end module m_frames2

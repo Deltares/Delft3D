@@ -32,6 +32,8 @@
 
 !> refine cells by splitting links
 subroutine refinecellsandfaces2()
+   use m_confrm
+   use m_change_samples_refine_param
    use m_netw
    use m_samples
    use m_samples_refine
@@ -39,13 +41,15 @@ subroutine refinecellsandfaces2()
    use m_missing
    use m_alloc
    use unstruc_messages
-   use unstruc_display, only: jaGUI
+   use m_gui
    use kdtree2Factory
    use m_sferic
    use gridoperations
    use timespace
    use m_polygon
    use m_arcinfo
+   use m_qnerror
+   use m_get_samples_boundingbox
 
    implicit none
 
@@ -216,7 +220,7 @@ subroutine refinecellsandfaces2()
 
 !     perform the actual refinement
       nump_virtual = nump_virtual * 4
-      call refine_cells(jarefine, jalink, linkbrother, 1, ierror)
+      call refine_cells(jarefine, jalink, linkbrother, ierror)
       netstat = netstat_cells_dirty
 
 !     rearrange worldmesh
@@ -429,7 +433,6 @@ contains
       use m_netw
       use m_samples
       use m_ec_interpolationsettings
-      use m_physcoef, only: ag
       use m_missing
 
       implicit none
@@ -932,21 +935,18 @@ contains
    end subroutine smooth_jarefine
 
 !> refine the cells, based on a cell and link refinement mask
-   subroutine refine_cells(jarefine, jalink, linkbrother, jahang, ierror)
+   subroutine refine_cells(jarefine, jalink, linkbrother, ierror)
 
-      use m_netw
-      use m_alloc
-      use network_data, only: dcenterinside
-      use m_sferic, only: jsferic
-      use geometry_module, only: dbdistance, getcircumcenter
-      use m_missing, only: dmiss, dxymis
+      use m_comp_middle_latitude
+      use geometry_module, only: getcircumcenter
+      use m_find_common_node
+      use m_new_link
 
       implicit none
 
       integer, dimension(:), intent(inout) :: jarefine !< refine cell (>0) or not (0), dim(nump)
       integer, dimension(:), intent(inout) :: jalink !< refine link (>0) or not (0), dim(numL)
       integer, allocatable, dimension(:), intent(inout) :: linkbrother !< brotherlink, that shares a (hanging) node
-      integer, intent(in) :: jahang !< allow hanging nodes (1) or not (0)
       integer, intent(out) :: ierror !< error (1) or not (0)
 
       double precision :: xnew, ynew
@@ -1355,10 +1355,12 @@ contains
 !> find the brother links
 !>    hanging nodes are assumed to have two consecutive brother links
    subroutine find_linkbrothers(linkbrother)
+      use m_comp_middle_latitude
       use m_netw
       use m_sferic
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
+      use m_tek_link
 
       implicit none
 
@@ -1462,6 +1464,7 @@ contains
       use m_netw
       use m_plotdots
       use messagehandling
+      use m_plot_dots
       implicit none
 
       integer, dimension(:), intent(inout) :: jarefine !< refine cell (>0), or not
@@ -1611,6 +1614,7 @@ contains
 
    subroutine find_hangingnodes(ic, linkmask, linkbrother, numhang, Lhang, numhangnod, ishangingnod, numrefine)
       use m_netw
+      use m_find_common_node
       implicit none
 
       integer, parameter :: MMAX = 6 ! maximum number of nodes and links per netcell

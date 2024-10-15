@@ -1,31 +1,31 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
- ! Last changed
+! Last changed
 ! by:               $Author:: Schrier           $
 ! at:               $Modtime:: 15-08-97 4:11p   $
 !
@@ -67,7 +67,7 @@ contains
     write(ISCREN, *)
     write(ISCREN, *)
     write(ISCREN, *) spaties // '    Copyright (c) 2023              DELTARES        '
-    write(ISCREN, *) spaties // "    Rainfall-Runoff Module          Version 3.216.65"
+    write(ISCREN, *) spaties // "    Rainfall-Runoff Module          Version 3.216.69"
     write(ISCREN, *)
 
     write(ISCREN, *)
@@ -931,6 +931,18 @@ contains
       MESSG = CONSTR (STRING, 3)
       call SetMessage(LEVEL_FATAL, Messg)
     ENDIF
+! request KJ March 2024 to add message also to return code file
+    if (Icode .ne. 909 .and. &
+         Icode .ne. 914 .and. ICode .ne. 9141 .and. iCode .ne. 9142 .and.  &
+          Icode .ne. 917 .and. Icode .ne. 919 .and. &
+          icode .ne. 920 .and. icode .ne. 927 .and. &
+           icode .ne. 936 .and. icode .ne. 937 .and. &
+            icode .ne. 969 .and.  &
+             icode .ne. 974 .and. icode .ne. 975 .and. icode .ne. 977 .and. &
+              icode .ne. 978 .and. icode .ne. 979 .and. icode .ne. 982 .and. &
+               icode .ne. 994 .and. icode .ne. 995) then
+         write(iflrtn,'(A)') Messg
+    endif
 999 Continue
 
   END subroutine ErrMsgStandard

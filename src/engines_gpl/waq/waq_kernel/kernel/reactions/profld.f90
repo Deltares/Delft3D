@@ -72,21 +72,21 @@ contains
                 FLXDMP(NOFLUX, *)
 
         !     local
-        integer(kind = int_wp) :: iseg, iseg2, ips, iflux
+        integer(kind = int_wp) :: cell_i, iseg2, ips, iflux
         real(kind = real_wp) :: vol
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("profld", ithandl)
         !
         !     We construeren nu de FLUXDUMPEN
         !
-        DO ISEG = 1, num_cells
-            IF (ISDMP(ISEG) > 0) THEN
-                VOL = VOLUME(ISEG)
-                IPS = ISDMP(ISEG)
+        DO cell_i = 1, num_cells
+            IF (ISDMP(cell_i) > 0) THEN
+                VOL = VOLUME(cell_i)
+                IPS = ISDMP(cell_i)
                 IF (IGRID /= 1) THEN
-                    ISEG2 = GRDSEG(ISEG, IGRID)
+                    ISEG2 = GRDSEG(cell_i, IGRID)
                 ELSE
-                    ISEG2 = ISEG
+                    ISEG2 = cell_i
                 ENDIF
                 DO IFLUX = NFLUX1, NFLUX1 + NFLUXP - 1
                     FLXDMP(IFLUX, IPS) = FLUX(IFLUX, ISEG2) * VOL * NDT

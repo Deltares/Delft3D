@@ -191,7 +191,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     ! 'Filgrd': grid enclosure file
     !
     filgrd = fildef
-    call prop_get_string(gdp%mdfile_ptr,'*','Filgrd',filgrd)
+    call prop_get(gdp%mdfile_ptr,'*','Filgrd',filgrd)
     if (filgrd /= fildef) then
        !
        ! Grid enclosure in file
@@ -430,7 +430,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     ! locate 'Filtd ' record for thin dams in extra input file
     !
     filtd = fildef
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filtd', filtd)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filtd', filtd)
     !
     ! thin dams in file? <YES>
     !

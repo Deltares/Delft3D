@@ -30,8 +30,17 @@
 !
 !
 
+module m_htext_rai
+
+implicit none
+
+contains
+
  subroutine htext_rai(val, x, y, xx, zz, ihv)
     use m_raaitek
+    use m_htext
+    use m_movabs
+    use m_lnabs
     implicit none
     double precision :: val, x, y, xx, zz
     double precision :: fx, fy, xa, ya
@@ -56,3 +65,5 @@
     end if
     call htext(val, xa, ya)
  end subroutine htext_rai
+
+end module m_htext_rai

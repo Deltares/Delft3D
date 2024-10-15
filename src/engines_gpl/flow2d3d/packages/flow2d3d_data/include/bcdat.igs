@@ -30,6 +30,8 @@
 type gd_bcdat
    real(fp)                                :: timtap
    real(fp)                                :: depbnd
+   integer                                 :: global_num_qh_bnd   ! global number of QH boundaries
+   integer                                 :: global_num_qtot_bnd ! global number of total discharge boundaries
    integer                                 :: gntoftoq        ! ntof+ntoq in the original, global numbering, before boundaries are removed due to
                                                               ! parallel computation (and outside this partition)
    integer                                 :: nmskf

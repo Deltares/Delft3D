@@ -29,16 +29,17 @@
 
 !
 !
-
+module m_restore_keys
+   implicit none
+contains
       subroutine RESTOREKEYS()
-         implicit none
+         use m_keycodes
+
          integer :: i
-         integer :: keycod
-         integer :: maxkey
-         parameter(MAXKEY=50)
-         common / KEYCODES / KEYCOD(MAXKEY)
+
          do I = 1, MAXKEY
             call INCONTROLKEY(I, KEYCOD(I))
          end do
          return
       end
+end module m_restore_keys

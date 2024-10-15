@@ -38,6 +38,9 @@
     use m_missing
     use stdlib_sorting, only: sort_index
     use gridoperations
+    use m_makenetnodescoding
+    use m_cosphiunet
+
     implicit none
 
     double precision, dimension(2) :: xz_st, yz_st
@@ -57,9 +60,6 @@
     integer :: i, num, numnew
 
     integer :: jatek
-
-    double precision, external :: cosphiunet
-
     integer, parameter :: P = 2
 
     jatek = 1

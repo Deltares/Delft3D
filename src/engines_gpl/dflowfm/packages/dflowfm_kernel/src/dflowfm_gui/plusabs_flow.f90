@@ -31,12 +31,20 @@
 !
 
 !
+module m_plusabs_flow
+
+implicit none
+
+contains
+
  subroutine plusabs_flow(numchoice)
+    use m_plusabsd
     use m_flow
     use m_flowgeom
     use m_transport, only: ISALT, constituents
-
-    implicit none
+    use m_qnerror
+    use m_get_kbot_ktop
+    use m_set_bobs
 
     integer :: numchoice, k, kk, kb, kt
 
@@ -82,3 +90,5 @@
        s1 = max(s1, bl)
     end if
  end subroutine plusabs_flow
+
+end module m_plusabs_flow

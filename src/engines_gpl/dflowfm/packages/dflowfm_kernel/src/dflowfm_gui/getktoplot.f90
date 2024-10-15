@@ -30,10 +30,16 @@
 !
 !
 
+module m_getktoplot
+
+implicit none
+
+contains
+
 subroutine getktoplot(kk, k)
    use m_flowgeom
    use m_flow
-   implicit none
+
    integer, intent(in) :: kk
    integer, intent(out) :: k
    if (kplotfrombedorsurface == 1) then
@@ -45,3 +51,5 @@ subroutine getktoplot(kk, k)
       if (k < kbot(kk)) k = -1 ! no plot
    end if
 end subroutine getktoplot
+
+end module m_getktoplot

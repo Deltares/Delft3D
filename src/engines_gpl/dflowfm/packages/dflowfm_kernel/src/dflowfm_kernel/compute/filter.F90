@@ -34,7 +34,7 @@
 !> initialize filter
 subroutine ini_filter(jafilter, filterorder, jacheckmonitor, ierr)
    use m_flowgeom, only: Lnx, ln, ln2lne, nd, lne2ln, dx, wu, ba, ban, lncn, xu, yu, csu, snu
-   use network_data, only: lne, nmk, kn, nod, nb, kc
+   use network_data, only: nmk, kn, nod, nb, kc
    use m_flow, only: Lnkx, kmx
    use m_filter
    use m_solver
@@ -44,6 +44,9 @@ subroutine ini_filter(jafilter, filterorder, jacheckmonitor, ierr)
    use dfm_error
    use m_alloc
    use m_partitioninfo, only: jampi
+   use m_qnerror
+   use m_writematrix
+   use m_makenetnodescoding
    implicit none
 
    integer, intent(in) :: jafilter !< explicit (1), implicit (2), or no filter (0)
@@ -460,11 +463,12 @@ subroutine comp_filter_predictor()
    use m_flowgeom, only: Lnx
    use m_flow, only: kmx, u0, plotlin, adve
    use m_flowtimes, only: Dts
-   use m_physcoef, only: ag
    use unstruc_messages
    use m_saad, only: jasafe ! for amux
-   use m_partitioninfo, only: jampi, update_ghosts, ITYPE_U, reduce_int1_max, my_rank
+   use m_partitioninfo, only: jampi, update_ghosts, ITYPE_U, reduce_int1_max
    use m_timer
+   use m_get_Lbot_Ltop
+   use m_writematrix
    implicit none
 
    double precision :: fac, dsign
@@ -793,6 +797,7 @@ subroutine comp_checkmonitor()
    use m_turbulence, only: ln0
    use m_filter
    use m_partitioninfo
+   use m_get_Lbot_Ltop
    implicit none
 
    double precision :: area
@@ -853,6 +858,7 @@ subroutine get_filter_coeff()
    use m_flowgeom, only: Lnx, ln, nd, acL, wcx1, wcx2, wcy1, wcy2, csu, snu
    use m_flow, only: qa, vol1, kmx, vicLu, hu, Lbot, Ltop
    use m_filter, only: iLvec, jLvec, ALvec, eps, order, Deltax
+   use m_get_Lbot_Ltop
 
    double precision, dimension(kmx) :: eps1 ! first-order filter coefficient
    double precision :: eps2 ! second-order filter coefficient

@@ -55,7 +55,6 @@ if (UNIX)
          ${oss_dependencies}
          PkgConfig::NETCDF
          )
-    
 endif(UNIX)
 
 if (WIN32)
@@ -63,7 +62,6 @@ if (WIN32)
                                             netcdf4
                                             netcdff)
 endif(WIN32)
-oss_include_libraries(${library_name} oss_dependencies)
 
 
 # Define how the files should be structured within Visual Studio

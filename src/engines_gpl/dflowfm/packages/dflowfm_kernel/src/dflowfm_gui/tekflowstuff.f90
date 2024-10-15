@@ -34,6 +34,16 @@
 ! subroutines from unstruc.f90
 !----------------------------------------------------------------------
  subroutine tekflowstuff(ja)
+    use m_rcirc
+    use m_minmxnds
+    use m_isocol
+    use m_getktoplot
+    use m_dmovabs
+    use m_dlnabs
+    use m_dhtext
+    use m_dcirr
+    use m_arrowsxy
+    use m_arrowrcir
     use unstruc_display
     use m_netw
     use m_flowgeom
@@ -43,15 +53,18 @@
     use geometry_module, only: getdx, getdy, getdxdy
     use gridoperations
 
-    use m_observations
+    use m_observations_data
+    use m_vfac
+    use m_drawthis
+    use m_halt2
+    use m_pfiller
+    use m_gtext
+    use m_set_col
+    use m_inview
+    use m_movabs
+    use m_lnabs
 
     implicit none
-
-    integer :: ndraw
-    double precision :: vfac, vfacforce
-    integer :: nvec
-    common / drawthis / ndraw(50)
-    common / VFAC / VFAC, VFACFORCE, NVEC
 
     !locals
     integer :: k, kk, L, LL, k1, k2, ncol, nn, k3, k4
@@ -65,7 +78,6 @@
     integer :: model24 = 0 ! colourmodel 0/1
     double precision :: uux, uuy
     integer :: n, ja, ja2
-    logical inview
 
     ! ndraw(28)= show what on nodes   ndraw(19)=how to show on nodes , NDRAW(8) = SHOW WHAT ON NETNODES
     ! ndraw(29)= show what on links   ndraw(11)=how to show on links , NDRAW(7) = SHOW WHAT ON NETLINKS
@@ -281,7 +293,7 @@
        call tekarcuv(vfac, ndraw(13))
     else if (ndraw(13) == 8) then ! show arc wind
        call setcol(221)
-       call tekspw(vfac, ndraw(13))
+       call tekspw(vfac)
     else if (ndraw(13) == 9) then ! show primitive velocity u1
        call setcol(2)
        do LL = 1, lnx

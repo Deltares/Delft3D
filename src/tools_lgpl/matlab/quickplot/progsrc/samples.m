@@ -487,7 +487,7 @@ if strcmp(filename,'?')
     end
     filename=[fp fn];
 end
-fid=fopen(filename,'wt','n','US-ASCII');
+fid=fopen(filename,'w','n','US-ASCII');
 if fid<0
     error(['Could not create or open: ',filename])
 end

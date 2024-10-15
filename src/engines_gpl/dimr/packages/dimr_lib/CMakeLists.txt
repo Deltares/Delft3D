@@ -38,7 +38,6 @@ add_library(${library_name} SHARED  ${source}
 if(UNIX)
     set(oss_dependencies    deltares_common_c
                             expat)
-    oss_include_libraries(${library_name} oss_dependencies)
 
     target_compile_definitions(${library_name} PRIVATE LINUX64)
 
@@ -54,7 +53,6 @@ endif()
 
 if(WIN32)
     set(oss_dependencies deltares_common_c) 
-    oss_include_libraries(${library_name} oss_dependencies)
 
     # Define output name
     set_target_properties(${library_name} 

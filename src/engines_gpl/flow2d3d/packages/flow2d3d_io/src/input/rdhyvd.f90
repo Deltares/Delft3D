@@ -220,14 +220,14 @@ subroutine rdhyvd(error     ,nrrec     ,mdfrec    ,filedy    ,fmtedy    , &
     ! diffusivity coefficients in extra input file
     !
     filedy = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filedy', filedy)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filedy', filedy)
     if (filedy /= ' ') then
        !
        ! eddy viscosity and diffusifity values in file
        ! locate 'Fmtedy' record for format definition of input file
        !
        fmtedy = 'FR'
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Fmtedy', fmtedy)
+       call prop_get(gdp%mdfile_ptr, '*', 'Fmtedy', fmtedy)
        fmttmp = fmtedy
        call filfmt(lundia    ,'Fmtedy'  ,fmttmp    ,lerror    ,gdp       )
        call edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
@@ -280,7 +280,7 @@ subroutine rdhyvd(error     ,nrrec     ,mdfrec    ,filedy    ,fmtedy    , &
     !
     if (kmax > 1) then
        tkemod = ' '
-       call prop_get_string(gdp%mdfile_ptr,'*','Tkemod',tkemod)
+       call prop_get(gdp%mdfile_ptr,'*','Tkemod',tkemod)
        if (tkemod == ' ') then
           tkemod = 'Algebraic   '
        endif

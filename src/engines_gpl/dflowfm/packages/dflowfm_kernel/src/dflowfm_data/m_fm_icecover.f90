@@ -290,7 +290,7 @@ contains
 
 !> preprocessing for ice cover, because in subroutine HEATUN some ice cover quantities have to be computed
 !! this subroutine is comparable with subroutine HEA_ICE.F90 of the Delft3D-FLOW ice module
-   subroutine preprocess_icecover(n, Qlong_ice, tempwat, saltcon, wind, timhr)
+   subroutine preprocess_icecover(n, Qlong_ice, tempwat, saltcon, wind)
 !!--declarations----------------------------------------------------------------
       use MessageHandling
       use m_flow ! test om tair(.) te gebruiken
@@ -308,7 +308,6 @@ contains
       real(fp), intent(in) :: tempwat !< temperature of water at top layer [degC]
       real(fp), intent(in) :: saltcon !< salinity of water at top layer [degC]
       real(fp), intent(in) :: wind !< wind speed [m/s]
-      real(fp), intent(in) :: timhr !< time [h]
       !
       ! Local variables
       !
@@ -450,12 +449,6 @@ contains
          ! Calculate heat flux out of the ocean
          !
          qh_ice2wat(n) = rhow * cpw * c_tz * min(-0.01_fp, max(0.0_fp, tempwat - t_freeze))
-         !
-         ! extra output for ice testbasin
-         !if (n==25) then
-         !    write (msgbuf,'(a,3f10.3,a,4f10.3,a,3f10.3)') 'ice fluxes:',timhr/24,qh_air2ice(n), qh_ice2wat(n), ' ice/snow h/t:', ice_h(n), ice_t(n), snow_h(n), snow_t(n), &
-         !                                    ' rest:',tempwat, tair(n), tsi; call msg_flush()
-         !endif
          !
          ! adaptation of QH_ICE2WAT conform KNMI approach (QH_ICE2WAT = 2.4 W/m2)
          !

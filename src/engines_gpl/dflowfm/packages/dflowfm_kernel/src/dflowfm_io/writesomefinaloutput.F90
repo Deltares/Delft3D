@@ -42,11 +42,12 @@
     use m_netw
     use m_partitioninfo
     use m_monitoring_crosssections
-    use m_observations, only: mxls
+    use m_observations_data, only: mxls
     use unstruc_files, only: defaultFilename
     use m_sediment, only: stm_included
     use m_transport, only: maserrsed
     use mass_balance_areas_routines, only: mba_final
+    use m_datum
 #ifdef _OPENMP
     use omp_lib
 #endif

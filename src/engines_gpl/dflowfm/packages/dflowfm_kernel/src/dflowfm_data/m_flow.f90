@@ -41,6 +41,7 @@ module m_flow ! flow arrays-999
    use m_alloc
    use m_vegetation
    use m_ship
+   use precision, only: sp
 
    implicit none
 
@@ -328,12 +329,12 @@ module m_flow ! flow arrays-999
    double precision, allocatable :: frcu_bkp(:) !< Backup of friction coefficient set by initial fields {"location": "edge", "shape": ["lnx"]}
    double precision, allocatable :: cfclval(:) !< array for calibration factor for friction coefficients
    double precision, allocatable :: cftrt(:, :) !< array for friction coefficients due to trachytopes
-   double precision, allocatable :: cftrtfac(:) !< array for optional multiplication factor for trachytopes's returned roughness values
+   double precision, allocatable, target :: cftrtfac(:) !< array for optional multiplication factor for trachytopes's returned roughness values
    integer :: jacftrtfac !< Whether or not (1/0) a multiplication factor field was specified for trachytopes's Chezy roughness values.
    double precision, allocatable :: czu(:) !< array for chezy friction at flow links {"location": "edge", "shape": ["lnx"]}
-   double precision, allocatable :: frculin(:) !< friction coefficient set by initial fields ( todo mag later ook single real worden)
+   double precision, allocatable, target :: frculin(:) !< friction coefficient set by initial fields ( todo mag later ook single real worden)
    integer, allocatable :: ifrcutp(:) !< friction coefficient type   initial fields ( todo mag later ook single real worden)
-   double precision, allocatable :: Cdwusp(:) !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
+   double precision, allocatable, target :: Cdwusp(:) !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
    double precision, allocatable :: wind_speed_factor(:) !< wind speed multiplication factor
    double precision, allocatable :: solar_radiation_factor(:) !< solar radiation multiplication factor
    double precision, allocatable :: z0ucur(:) !< current related roughness, moved from waves, always needed
@@ -341,7 +342,7 @@ module m_flow ! flow arrays-999
 
    double precision, allocatable :: frcuroofs(:) !< temp
 
-   double precision, allocatable :: frcInternalTides2D(:) !< internal tides friction coefficient gamma, tau/rho = - gamma u.grad h grad h
+   double precision, allocatable, target :: frcInternalTides2D(:) !< internal tides friction coefficient gamma, tau/rho = - gamma u.grad h grad h
 
    double precision, allocatable :: wavfu(:) !< wave force u point
    double precision, allocatable :: wavfv(:) !< wave force u point
@@ -351,8 +352,8 @@ module m_flow ! flow arrays-999
    double precision, allocatable :: wavmubnd(:) !< wave-induced mass flux (on open boundaries)
    integer :: number_steps_limited_visc_flux_links = 0 !< number of steps with limited viscosity/flux on links
    integer, parameter :: MAX_PRINTS_LIMITED_VISC_FLUX_LINKS = 10 !< number of messages in dia file on limited viscosity/flux links
-   real, allocatable :: vicLu(:) !< horizontal eddy viscosity coefficient at u point (m2/s)  (limited only if ja_timestep_auto_visc==0)
-   real, allocatable :: viu(:) !< horizontal eddy viscosity coefficient at u point (m2/s), modeled part of viscosity = vicLu - viusp
+   real(kind=sp), allocatable :: vicLu(:) !< horizontal eddy viscosity coefficient at u point (m2/s)  (limited only if ja_timestep_auto_visc==0)
+   real(kind=sp), allocatable :: viu(:) !< horizontal eddy viscosity coefficient at u point (m2/s), modeled part of viscosity = vicLu - viusp
    double precision, allocatable, target :: viusp(:) !< [m2/s] user defined spatial eddy viscosity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
    double precision, allocatable, target :: diusp(:) !< [m2/s] user defined spatial eddy diffusivity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
    !< so in transport, total diffusivity = viu*sigdifi + diusp
@@ -622,7 +623,7 @@ contains
       vinrainground = 0 ! Total volume of rain falling onto the ground (in the last time step) (m3)
       vouteva = 0 ! total volume out evaporation            (m3)
       voutevaicept = 0 ! total volume out evaporation from interception layer (m3)
-      vinlat(1:2) = 0 ! total volume in  diffuse laterals       (m3)
+      vinlat(1:2) = 0 ! total volume in diffuse laterals       (m3)
       voutlat(1:2) = 0 ! total volume out diffuse laterals       (m3)
       vingrw = 0 ! total volume in  groundwater            (m3)
       voutgrw = 0 ! total volume out groundwater            (m3)

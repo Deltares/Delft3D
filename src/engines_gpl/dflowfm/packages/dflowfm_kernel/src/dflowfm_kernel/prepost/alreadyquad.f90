@@ -32,6 +32,7 @@
 
   subroutine ALREADYQUAD(K1, K2, K3, K4, JA)
      use m_netw
+     use m_qnerror
      implicit none
      integer :: K1, K2, K3, K4, JA
 

@@ -255,7 +255,7 @@ c
 c     mozart dummy declarations
       integer      nstmoz 
       logical      lmozad
-      character*40 qlatidd(1)
+      character(len=40) qlatidd(1)
 c
 c     External functions
 c

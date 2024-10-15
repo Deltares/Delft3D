@@ -31,20 +31,30 @@
 !
 
   subroutine TEKNODEVALS(MET)
+     use m_isosmoothnet
+     use m_isocol
+     use m_drcirc
+     use m_dmovabs
+     use m_dlnabs
      use m_missing
      use m_netw
      use geometry_module, only: getdxdy, getdx, getdy
      use m_sferic, only: jsferic
      use unstruc_colors ! , ONLY :NCOLWARN1, ncolhl
-     use unstruc_display
      use gridoperations
-
+     use m_depmax
+     use m_howtoview
+     use m_halt2
+     use m_three_two
+     use m_cirr
+     use m_pfiller
+     use m_inview
+     use m_getrcir
+     use m_invnod
+     
      implicit none
      integer :: MET
-
      double precision :: d
-     integer :: jav
-     integer :: jview
      integer :: k1, k
      integer :: k2
      integer :: key
@@ -53,18 +63,8 @@
      integer :: ncol
      double precision :: rd
      double precision :: vv
-     double precision :: xyz
-
      double precision XD, YD, ZD, DX, DY, DZ, XX1, YY1, ZZ1, XX2, YY2, ZZ2, H
      double precision :: X(4), Y(4), Z(4)
-     double precision :: getrcir
-     logical INVNOD, inview
-
-     common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
-
-     integer :: NCOLS, NV, NIS, NIE, JAAUTO
-     double precision :: VMAX, VMIN, DV, VAL
-     common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
 
      KMOD = max(1, NUMK / 100)
 

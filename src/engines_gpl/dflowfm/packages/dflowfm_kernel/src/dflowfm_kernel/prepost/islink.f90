@@ -29,35 +29,33 @@
 
 !
 !
-
+module m_is_link
+   implicit none
+contains
   !> Tries to find the number of the netlink close to a point.
   !! The provided point should lie within a rhombus with the netlink
   !! as a diagonal and another diagonal with length searchradius rcir.
   !! The returned zp value is the z-coordinate of the link's center.
   subroutine ISLINK(LL, XP, YP, ZP)
 
-     use m_netw
-     use m_wearelt
+     use m_netw, only: numl, kn, zk, yk, xk
+     use m_wearelt, only: rcir
      use m_missing, only: jins, dmiss, dxymis
      use geometry_module, only: pinpok, normalout
      use m_sferic, only: jsferic, jasfer3D
-     use gridoperations
+     use m_howtoview
+     use m_three_two
+     use m_dispnode
 
-     implicit none
      integer, intent(out) :: LL !< Number of first netlink found, 0 if none.
      double precision, intent(in) :: XP, YP !< Coordinates of input point.
      double precision, intent(out) :: ZP !< Z-coordinate of netlink's center.
-
-     integer :: jav, jview
      integer :: k1, k2, l, in, jins_old
      double precision :: xkk
-     double precision :: xyz
      double precision :: ykk
      double precision :: zkk
      double precision :: xprange(4), yprange(4)
      double precision :: xk1p, yk1p, xk2p, yk2p, rx, ry
-
-     common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
      double precision :: H = 0.5d0
 
 ! store
@@ -107,3 +105,4 @@
 
      return
   end subroutine ISLINK
+end module m_is_link

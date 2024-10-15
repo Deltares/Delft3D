@@ -286,6 +286,8 @@ contains
       use m_flow
       use m_flowgeom
       use m_netw
+      use m_get_Lbot_Ltop
+      use m_links_to_centers, only: links_to_centers
 
       implicit none
       integer :: i, j, k1, k2, L, L1, L2, L3, m
@@ -517,8 +519,8 @@ contains
 
       ucx = 0d0
       ucy = 0d0
-      call linkstocenterstwodoubles(ucx, uxu)
-      call linkstocenterstwodoubles(ucy, uyu)
+      call links_to_centers(ucx, uxu)
+      call links_to_centers(ucy, uyu)
 
       do L = 1, lnxi
          if (hu(L) < epshu) then
@@ -567,6 +569,8 @@ contains
    subroutine perotnode3d(kk, k)
       use m_flow
       use m_flowgeom
+      use m_get_kbot_ktop
+      use m_get_Lbot_Ltop
 
       implicit none
       integer, intent(in) :: kk, k

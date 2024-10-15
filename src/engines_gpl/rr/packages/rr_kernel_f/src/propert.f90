@@ -109,11 +109,10 @@
 !
       subroutine prop_file( filename )
 
-      character*(*) filename
+      character(len=*) filename
 
       integer lu, k, eof
-      character*(max_length) line
-      logical opend
+      character(len=max_length) line
 
       no_props = 0
       
@@ -185,9 +184,7 @@
 !
       subroutine prop_get_string( chapter, key, value )
 
-      character*(*) chapter, key, value
-      character(len=255) prop_value
-
+      character(len=*) chapter, key, value
       integer ip, k, istart, kend, length
       logical ignore
 !
@@ -255,7 +252,7 @@
 !
       subroutine prop_get_integer( chapter, key, value )
 
-      character*(*) chapter, key
+      character(len=*) chapter, key
       integer       value
 
       character(len=255) prop_value
@@ -293,7 +290,7 @@
 !
       subroutine prop_get_real( chapter, key, value )
 
-      character*(*) chapter, key
+      character(len=*) chapter, key
       real          value
 
       character(len=255) prop_value
@@ -331,11 +328,10 @@
 !
       subroutine prop_get_logical( chapter, key, value )
 
-      character*(*) chapter, key
+      character(len=*) chapter, key
       logical       value
 
       character(len=255) prop_value
-      character(len=20)  format
       integer            k1, k2
 
       character(len=100) truth, falsity

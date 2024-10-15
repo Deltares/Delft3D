@@ -31,11 +31,17 @@
 !
 
 !> Copy curvilinear grid to samples
+module m_copygridtosam
+
+implicit none
+
+contains
+
  subroutine copygridtosam()
     use m_samples
-    use m_grid
-    use M_MISSING
-    implicit none
+    use m_grid, only: mc, nc, xc, yc, zc
+    use m_missing, only: dmiss
+
     integer :: in, k, m, n
     in = -1
     k = MC * NC
@@ -62,3 +68,5 @@
     ns = k
 
  end subroutine copygridtosam
+
+end module m_copygridtosam

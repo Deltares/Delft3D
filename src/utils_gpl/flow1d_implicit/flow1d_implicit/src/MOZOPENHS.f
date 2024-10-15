@@ -5,7 +5,7 @@ C *** if IOPT=1 then as Sequentiall formatted file, if IOPT=2 as Binary file.
 C **********************************************************************
 
       INTEGER       IN, IOPT
-      CHARACTER*(*)  NAME
+      character(len=*)  NAME
 
       IF (IOPT .EQ. 1) THEN
 

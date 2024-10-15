@@ -42,7 +42,7 @@ contains
         real(kind = real_wp), intent(out) :: delpar_flow(:)             !< Flow for DELPAR - some aggregation or reshuffling may need to be done
 
         real(kind = real_wp) :: min_volume, min_depth
-        integer(kind = int_wp) :: iseg, iq, idcell, idsurf
+        integer(kind = int_wp) :: cell_i, iq, idcell, idsurf
 
         !
         ! Copy the volume only when the cell is active (volume larger than min_volume)
@@ -58,12 +58,12 @@ contains
 
         min_depth = max(0.001, (0.05 * nmaxp * mmaxp) / mnmaxk)
 
-        do iseg = 1, nosegp
-            idcell = cellpntp(iseg)
+        do cell_i = 1, nosegp
+            idcell = cellpntp(cell_i)
             idsurf = 1 + mod(idcell - 1, nmaxp * mmaxp)
 
-            if (delwaq_volume(iseg) > min_volume) then
-                delpar_volume(idcell) = max(delwaq_volume(iseg), min_depth * ground_surface_area(idsurf))
+            if (delwaq_volume(cell_i) > min_volume) then
+                delpar_volume(idcell) = max(delwaq_volume(cell_i), min_depth * ground_surface_area(idsurf))
             else
                 delpar_volume(idcell) = 0.0
             endif

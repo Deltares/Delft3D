@@ -31,8 +31,8 @@
 !
 
 !> compose right-hand side
-subroutine make_rhs(NUMCONST, thetavert, Ndkx, Lnkx, kmx, vol1, kbot, ktop, Lbot, Ltop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
-   use m_flowgeom, only: Ndxi, Ndx, Lnx, ba ! static mesh information
+subroutine make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
+   use m_flowgeom, only: Ndxi, Ndx, ba ! static mesh information
    use m_flowtimes, only: dts
    use m_flowparameters, only: epshu, testdryflood
    use timers
@@ -42,14 +42,11 @@ subroutine make_rhs(NUMCONST, thetavert, Ndkx, Lnkx, kmx, vol1, kbot, ktop, Lbot
    integer, intent(in) :: NUMCONST !< number of transported quantities
    double precision, dimension(NUMCONST), intent(in) :: thetavert !< vertical advection explicit (0) or implicit (1)
    integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
-   integer, intent(in) :: Lnkx !< total number of flowlinks (dynamically changing)
    integer, intent(in) :: kmx !< maximum number of layers
 !   double precision, dimension(Ndkx),      intent(in)    :: sq       !< flux balance (inward positive)
    double precision, dimension(Ndkx), intent(in) :: vol1 !< volumes
    integer, dimension(Ndx), intent(in) :: kbot !< flow-node based layer administration
    integer, dimension(Ndx), intent(in) :: ktop !< flow-node based layer administration
-   integer, dimension(Lnx), intent(in) :: Lbot !< flow-link based layer administration
-   integer, dimension(Lnx), intent(in) :: Ltop !< flow-link based layer administration
    double precision, dimension(NUMCONST, Ndkx), intent(inout) :: sumhorflux !< sum of horizontal fluxes
    double precision, dimension(NUMCONST, Ndkx), intent(in) :: fluxver !< vertical fluxes
    double precision, dimension(NUMCONST, Ndkx), intent(in) :: source !< sources
@@ -62,7 +59,6 @@ subroutine make_rhs(NUMCONST, thetavert, Ndkx, Lnkx, kmx, vol1, kbot, ktop, Lbot
    double precision :: dvoli
    double precision :: dt_loc
 
-   integer :: LL, L, Lb
    integer :: kk, k, kb, kt
    integer :: j
 

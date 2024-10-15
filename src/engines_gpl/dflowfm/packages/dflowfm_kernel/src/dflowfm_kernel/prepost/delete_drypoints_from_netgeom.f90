@@ -33,12 +33,18 @@
 !> read drypoints files and delete dry points from net geometry (netcells)
 !! Grid enclosures are handled via the jinside=-1 option.
 subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
+   use m_confrm
    use unstruc_messages
    use m_sferic, only: jsferic
    use string_module
    use m_polygon, only: NPL, ZPL, savepol, restorepol
    use m_tpoly
    use m_samples
+   use m_wall_clock_time
+   use m_delpol
+   use m_reapol
+   use m_delsam
+   use m_reasam
    implicit none
 
    character(*), intent(inout) :: dryptsfilelist !< List of file names to process for deleting dry parts. (Supported formats: .xyz, .pol)
@@ -87,7 +93,7 @@ subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
 
    call mess(LEVEL_INFO, 'removing dry cells...')
 
-   call klok(t0)
+   call wall_clock_time(t0)
 
    do ifil = 1, size(fnames)
 
@@ -116,7 +122,7 @@ subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
             end if
 
             if (ext(1:4) == '.lst') then
-               call cutcell_list(6, 'dum', 3, 0)
+               call cutcell_list(6, 0)
                ierror = 0
             else if (ext(1:4) == '.pol' .or. ext(1:4) == '.POL') then
                call oldfil(minp, dryptsfile)
@@ -158,7 +164,7 @@ subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
       end if
    end do
 
-   call klok(t1)
+   call wall_clock_time(t1)
 
    write (mesg, "('done in ', F12.5, ' sec.')") t1 - t0
    call mess(LEVEL_INFO, trim(mesg))

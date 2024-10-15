@@ -34,6 +34,7 @@
     use m_ship
     use m_flowgeom
     use m_flow
+    use m_get_link_area_wid2D
     implicit none
 
     integer :: L, k1, k2, k3, k4
@@ -53,7 +54,7 @@
 
           hpr1 = 0d0 - BL1
           if (hpr1 > 0d0) then
-             call getlinkareawid2D(L, wu2, b21, ai, hpr1, ar1, wid1)
+             call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
              dx1 = 0.5d0 * dx(L) * acl(L)
              dx2 = 0.5d0 * dx(L) * (1d0 - acl(L))
 

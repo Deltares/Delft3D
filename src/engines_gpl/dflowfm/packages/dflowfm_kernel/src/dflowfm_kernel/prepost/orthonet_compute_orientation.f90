@@ -35,7 +35,7 @@ subroutine orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, i)
    use m_netw
    use m_sferic
    use m_alloc
-   !  use m_flow     ! for visualisation only
+   use m_qnerror
 
    implicit none
 

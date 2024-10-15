@@ -30,14 +30,18 @@
 !
 !
 
+module m_dview
+
+implicit none
+
+contains
+
    subroutine DVIEW(XD, YD, ZD, X, Y, Z)
-      use m_missing
-      implicit none
+      use m_missing, only: dmiss
+      use m_viewmat
+
       double precision :: ce
       integer :: i
-      double precision :: vs
-      double precision :: x0s
-      double precision :: y0s
       ! GEEF perspectievische COORDINATEN
       ! xD,yD,zD                             :coordinaten te tekenen punt
       ! x0s,y0s                              :waar op scherm ligt kijklijn
@@ -45,7 +49,6 @@
       ! Vs                                   :viewing matrix na viema
 
       double precision XD, YD, ZD, X, Y, Z
-      common / VIEWMAT / VS(4, 4), X0S, Y0S
       dimension CE(4)
       ! use z as zd temporarily (zet to zero when zd==dmiss)
       if (zd == dmiss) then
@@ -64,3 +67,5 @@
          Y = CE(2) / Z + Y0S
       end if
    end subroutine DVIEW
+
+end module m_dview

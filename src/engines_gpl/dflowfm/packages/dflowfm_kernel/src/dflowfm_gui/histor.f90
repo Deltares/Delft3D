@@ -29,11 +29,14 @@
 
 !
 !
-
       subroutine HISTOR()
-         use unstruc_files
-         use unstruc_display
+         use unstruc_files, only: mdia
+         use unstruc_colors
+         use unstruc_display_data, only: npos
+         use m_devices, only: ihs, iws
          use dflowfm_version_module, only: company, product_name
+         use m_helpnow
+         use m_help
          implicit none
          integer :: ih
          integer :: infoinput
@@ -49,15 +52,13 @@
          integer :: key
          integer :: kstart
          integer :: maxtxt
-         integer :: nlevel
          integer :: numchc
          integer :: numtop
          integer :: numtxt
          integer :: numwnh
 
          parameter(MAXTXT=400)
-         character DIATXT(MAXTXT) * 70, WRDKEY * 40
-         common / HELPNOW / WRDKEY, NLEVEL
+         character DIATXT(MAXTXT) * 70
 !
          rewind (MDIA)
          K = 0

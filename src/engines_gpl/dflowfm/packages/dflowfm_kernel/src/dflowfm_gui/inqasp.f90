@@ -31,18 +31,22 @@
 !
 
 !
+module m_inqasp
+
+implicit none
+
+contains
+
       subroutine INQASP(ASP)
-         use M_DEVICES
-         implicit none
+         use m_devices
+         use m_screenarea
+
          double precision :: asp
          double precision :: dx
          double precision :: dy
-         integer :: jaxis
-         double precision :: xleft
          double precision :: xright
-         double precision :: ybot
          double precision :: ytop
-         common / SCREENAREA / XLEFT, YBOT, JAXIS
+
          YTOP = max(0.95d0, 1 - YBOT)
          XRIGHT = max(0.90d0, 1 - XLEFT)
          DX = XRIGHT - XLEFT
@@ -50,3 +54,5 @@
          ASP = (DY * dble(NPY)) / (DX * dble(NPX))
          return
       end
+
+end module m_inqasp

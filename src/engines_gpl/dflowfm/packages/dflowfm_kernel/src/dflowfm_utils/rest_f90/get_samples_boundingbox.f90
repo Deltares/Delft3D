@@ -29,12 +29,13 @@
 
 !
 !
-
+module m_get_samples_boundingbox
+         implicit none
+contains
 !>    determine sample bounding box
       subroutine get_samples_boundingbox()
          use m_samples
          use m_missing
-         implicit none
 
          integer :: i
 
@@ -54,3 +55,4 @@
 
          return
       end subroutine get_samples_boundingbox
+end module m_get_samples_boundingbox

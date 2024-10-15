@@ -68,10 +68,10 @@
       INTEGER       NO_OUTF     , LUNREP     , & 
                    IERROR
       INTEGER       DEFFDS
-      CHARACTER*10  R5_PID      (NO_OUTF)
-      CHARACTER*10  R5_IID      (NO_OUTF)
+      CHARACTER(len=10)  R5_PID      (NO_OUTF)
+      CHARACTER(len=10)  R5_IID      (NO_OUTF)
       INTEGER       R5_NUMB(NO_OUTF)
-      CHARACTER*1   R5_DOC (NO_OUTF)
+      CHARACTER(len=1)   R5_DOC (NO_OUTF)
 !     
 !          Local variables
 !     
@@ -88,9 +88,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

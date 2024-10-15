@@ -33,6 +33,9 @@
 !> make inner links in a cell with hanging nodes
 subroutine connect_hanging_nodes(linkbrother)
    use m_netw
+   use m_qnerror
+   use m_find_common_node
+   use m_new_link
 
    implicit none
 

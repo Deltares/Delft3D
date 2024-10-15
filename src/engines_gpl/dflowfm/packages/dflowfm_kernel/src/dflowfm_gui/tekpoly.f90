@@ -31,6 +31,9 @@
 !
 
       subroutine tekpoly(n, x, y, ncol)
+         use m_set_col
+         use m_movabs
+         use m_lnabs
          implicit none
          integer, intent(in) :: N !< polygon dimension
          double precision, dimension(n), intent(in) :: x, y !< polygon coordinates

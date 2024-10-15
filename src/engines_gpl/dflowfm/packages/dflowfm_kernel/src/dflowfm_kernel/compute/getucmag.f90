@@ -35,6 +35,7 @@
 subroutine getucmag(N, ucxi, ucyi, ucmago)
    use m_flowgeom, only: ndx
    use m_flow, only: kmx
+   use m_get_kbot_ktop
 
    implicit none
    integer, intent(in) :: N !< Length of cell arrays (probably ndkx)

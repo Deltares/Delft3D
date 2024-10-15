@@ -36,6 +36,8 @@
       use m_missing, only: jins, dmiss
       use geometry_module, only: pinpok
       use gridoperations
+      use m_qnerror
+      use m_makenetnodescoding
 
       implicit none
 

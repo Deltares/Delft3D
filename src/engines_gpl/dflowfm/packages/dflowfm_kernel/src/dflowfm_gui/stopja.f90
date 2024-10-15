@@ -33,6 +33,7 @@
       subroutine STOPJA(JA)
          use unstruc_files
          use m_devices
+         use m_okay
          implicit none
          integer :: imenutwo
          integer :: infocursor

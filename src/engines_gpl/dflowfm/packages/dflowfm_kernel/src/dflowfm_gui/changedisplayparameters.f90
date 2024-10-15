@@ -30,23 +30,38 @@
 !
 !
 
+module m_changedisplayparameters
+
+implicit none
+
+contains
+
    subroutine CHANGEDISPLAYPARAMETERS()
       use M_RAAITEK
-      use M_MISSING
-      use unstruc_display
+      use m_missing, only: dmiss
+      use unstruc_colors
+      use unstruc_display_data
       use m_sediment
       use m_flow, only: kplotfrombedorsurface, kplotordepthaveraged
 
       use dflowfm_version_module, only: company, product_name
       use unstruc_opengl, only: jaOpenGL
-
+      use m_depmax
+      use m_screenarea
+      use m_helpnow
+      use m_textsize
+      use m_hardcopy
+      use m_scalepos
+      use m_vfac
+      use m_drawthis
+      use m_help
+      use m_highlight_form_line
+      
       implicit none
-      double precision :: dv
       integer :: i
       integer :: ifexit
       integer :: ifinit
       integer :: ih
-      integer :: ihcopts
       integer :: il
       integer :: imp
       integer :: inp
@@ -54,48 +69,17 @@
       integer :: iw
       integer :: ixp
       integer :: iyp
-      integer :: jaauto
       integer :: jaeps
       integer :: jaland
-      integer :: jaxis
       integer :: key
       integer :: nbut
-      integer :: ncols
-      integer :: ndec
-      integer :: ndraw
-      integer :: nhcdev
-      integer :: nie
-      integer :: nis
-      integer :: nlevel
       integer :: numfldactual
-      integer :: numhcopts
       integer :: numparactual
-      integer :: nv
-      integer :: nvec
-      double precision :: val, vfac, vfacforce, vmax, vmin
-      double precision :: xleft
-      double precision :: xsc
-      double precision :: ybot
-      double precision :: ysc
-      double precision :: scalesize
-      double precision :: tsize
-      integer :: JQN
-
       integer, parameter :: NUMPAR = 33, NUMFLD = 2 * NUMPAR
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-      character WRDKEY * 40, OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
-      common / HELPNOW / WRDKEY, NLEVEL
-      common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-      common / TEXTSIZE / TSIZE
-      common / SCREENAREA / XLEFT, YBOT, JAXIS
+      character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
 
-      common / HARDCOPY / NHCDEV, NUMHCOPTS, IHCOPTS(2, 20)
-      common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
-      common / VFAC / VFAC, VFACFORCE, NVEC
-      common / DRAWTHIS / ndraw(50)
-      common / QNRGF / JQN
       integer, external :: infoinput
-      external :: highlight_form_line
 !
       NLEVEL = 3
       OPTION(1) = 'HARDCOPY DRIVER NUMBER                  '; IT(2 * 1) = 2
@@ -374,3 +358,5 @@
       goto 30
 
    end subroutine CHANGEDISPLAYPARAMETERS
+
+end module m_changedisplayparameters

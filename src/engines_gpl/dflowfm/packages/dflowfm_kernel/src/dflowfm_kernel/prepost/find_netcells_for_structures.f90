@@ -47,6 +47,7 @@ subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
    use timespace, only: read1polylin
    use kdtree2Factory
    use m_alloc
+   use m_find_crossed_links_kdtree2
    implicit none
 
    integer, intent(in) :: size_istrucells !< size of istrucells array
@@ -103,7 +104,7 @@ subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
       nstru_read1 = nstru_read1 + 1
 
       strid = ' '
-      call prop_get_string(str_ptr, '', 'id', strid, success)
+      call prop_get(str_ptr, '', 'id', strid, success)
       if (.not. success .or. len_trim(strid) == 0) then
          write (msgbuf, '(a,i0,a)') 'Required field ''id'' missing in structure #', i, '.'
          call msg_flush()

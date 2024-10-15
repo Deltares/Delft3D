@@ -43,6 +43,7 @@
 
 !> Print model-specific text strings on screen, based on current solution state.
 subroutine textflowspecific()
+   use m_ictext
    use unstruc_model, only: md_ident
    use m_flowgeom
    use network_data
@@ -233,6 +234,8 @@ subroutine equatorial(t)
    use geometry_module, only: dbdistance
    use m_missing, only: dmiss
    use m_sferic, only: jsferic, jasfer3D
+   use m_movabs
+   use m_lnabs
 
    implicit none
 
@@ -373,6 +376,7 @@ subroutine equatorialexact(t, xz, uexa, zexa, nx, deltax)
 end subroutine equatorialexact
 
 subroutine riverfloodwave()
+   use m_ictext
    use m_flow
    use m_flowgeom
    use unstruc_colors
@@ -420,11 +424,12 @@ subroutine riverfloodwave()
 end subroutine riverfloodwave
 
 subroutine weirtheo(j12)
+   use m_ictext
    use time_module, only: seconds_to_datetimestring
    use m_flow
    use m_flowgeom
    use unstruc_colors
-   use m_observations
+   use m_observations_data
    use m_monitoring_crosssections
    use m_flowtimes
    use unstruc_model, only: getoutputdir
@@ -535,7 +540,7 @@ subroutine weirtheo(j12)
       gateheight = 9d9
 
       call weirtheory(zupstream, zdownstream, crestheight, zcrestperfect, zminsub, zcrest, &
-                      qweirana, uupstream, ucrest, udownstream, regime, qfree, gateheight)
+                      qweirana, uupstream, ucrest, udownstream, regime, qfree)
 
       qrajaratnam = zdownstream * sqrt(2d0 * ag * (max(0d0, zupstream - zdownstream)))
 
@@ -630,6 +635,7 @@ subroutine weirtheo(j12)
 end subroutine weirtheo
 
 subroutine gatetheo()
+   use m_ictext
    use m_flowgeom
    use m_flow
 
@@ -659,6 +665,7 @@ subroutine gatetheo()
 end subroutine gatetheo
 
 subroutine poiseuille(init)
+   use m_rcirc
    use m_netw
    use m_flowgeom
    use m_flow
@@ -671,6 +678,9 @@ subroutine poiseuille(init)
    use geometry_module, only: dbdistance
    use m_missing, only: dmiss
    use m_sferic, only: jsferic, jasfer3D
+   use m_drawthis
+   use m_movabs
+   use m_lnabs
 
    implicit none
 
@@ -701,10 +711,6 @@ subroutine poiseuille(init)
 
    character(len=40) :: tex
    double precision :: sumba
-
-   integer :: ndraw
-
-   common / drawthis / ndraw(50)
 
    if (abs(bedslope) < 1d-8) bedslope = -0d-5 ! SPvdP: now old mdu-files still work
 

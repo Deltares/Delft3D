@@ -44,6 +44,7 @@
       use m_fm_erosed, only: ln => ln_mor
       use m_sediment, only: bermslopeindexbed, bermslopeindexsus
       use m_alloc
+      use m_get_Lbot_Ltop
 
       implicit none
 

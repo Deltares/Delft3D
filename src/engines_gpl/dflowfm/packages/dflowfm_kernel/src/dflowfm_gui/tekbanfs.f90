@@ -31,15 +31,18 @@
 !
 
 subroutine tekbanfs()
+   use m_isocol
+   use m_dhtext
    use m_netw
    use m_flowgeom
    use m_flow, only: kbot
    use m_sediment
+   use m_drawthis
+   use m_get_equilibrium_transport_rates
+   use m_set_col
    implicit none
    double precision :: x, y, z, v, hsk
-   integer :: kk, n, k, ncol, ndraw
-   common / DRAWTHIS / ndraw(50)
-
+   integer :: kk, n, k, ncol
    double precision :: seq(mxgr) !< sed equilibrium transport rate (kg/m/s) , dimension = mxgr
    double precision :: wse(mxgr) !< effective fall velocity (m/s)           , dimension = mxgr, ws*crefa=wse*seq
 

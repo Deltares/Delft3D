@@ -29,26 +29,35 @@
 
 !
 !
+module m_draw_nu
+   use m_plot
+   use m_netnodevals
+   use m_netlinkvals
+   use m_minmxnetnods
+   use m_minmxnetlins
+   use m_isoscale2
+   use m_isoscale
+   use m_highlight_nodesnlinks
+   use m_fullscreen
+   use m_cls1
+   use m_axes
+   use m_anchorcls
 
+   implicit none
+contains
    subroutine DRAWNU(KEY)
-      use m_netw
-      use M_SAMPLES
+      use M_SAMPLES, only: ns
       use m_arcinfo
       use unstruc_display
       use unstruc_opengl
-      implicit none
+      use m_drawthis
+      use m_dispos
+      use m_plot_dots
+      use m_disln
+      use m_tek_grid
 
-      double precision :: epsgs
-      integer :: itgs
-      integer :: maxitgs
       integer :: metdraw
-      integer :: ndraw
-
-      integer :: KEY, ja, nsiz
-
-      common / DRAWTHIS / ndraw(50)
-
-      common / SOLVER / EPSGS, MAXITGS, ITGS
+      integer :: KEY, nsiz
 
 !
       if (KEY /= 3) return
@@ -77,7 +86,7 @@
       if (ndraw(3) > 4) call TEKLAN(NCOLLN)
 
       if (NDRAW(7) >= 2) then
-         call NETLINKVALS(NDRAW(7), NCOLLN)
+         call NETLINKVALS(NDRAW(7))
          call MINMXNETLINS()
       end if
 
@@ -107,7 +116,7 @@
          end if
 
          if (ndraw(2) == 6) then
-            call TEKNET(NCOLDN, key) ! network on top
+            call TEKNET(key) ! network on top
          end if
 
          if (ndraw(3) <= 4) call TEKLAN(NCOLLN)
@@ -121,7 +130,7 @@
          ! obs plotting used to be here [AvD]
          if (NDRAW(18) > 1) then
             nsiz = ndraw(18) - 1
-            call tekrai(nsiz, ja)
+            call tekrai(nsiz)
          end if
 
          call tekprofs() ! and initialise some turb parstm.amp
@@ -177,3 +186,4 @@
 
       return
    end subroutine DRAWNU
+end module m_draw_nu

@@ -30,8 +30,17 @@
 !
 !
 
+module m_dispf1
+
+implicit none
+
+contains
+
       subroutine DISPF1(Y, DX, N, NCOL)
-         implicit none
+         use m_set_col
+         use m_movabs
+         use m_lnabs
+
          double precision :: dx
          integer :: i
          integer :: n
@@ -48,3 +57,5 @@
          end do
          return
       end
+
+end module m_dispf1

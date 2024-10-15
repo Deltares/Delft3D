@@ -9,11 +9,8 @@ set(oss_dependencies    deltares_common
                         ec_module
                         morphology_data
                         morphology_kernel)
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(UNIX)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 include_directories(${checkout_src_root}
                    "${CMAKE_CURRENT_SOURCE_DIR}/../../include")

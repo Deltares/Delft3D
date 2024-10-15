@@ -86,7 +86,10 @@ class TestSetRunner(ABC):
         log_separator(self.__logger, char="-", with_new_line=True)
 
         if results:
-            self.show_summary(results, self.__logger)
+            if not self.__settings.skip_post_processing:
+                self.show_summary(results, self.__logger)
+            else:
+                self.__logger.info("No summary, because postprocessing is skipped due to argument.")
         elif len(self.settings.configs_from_xml) == 0:
             self.__logger.warning("No testcases were loaded from the xml.")
         elif len(self.settings.configs_to_run) == 0 and self.settings.filter:
@@ -349,6 +352,9 @@ class TestSetRunner(ABC):
             if config.ignore:
                 skip_testcase = True
                 skip_postprocessing = True
+
+        if self.settings.skip_post_processing:
+            skip_postprocessing = True
 
         return skip_testcase, skip_postprocessing
 

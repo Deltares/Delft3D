@@ -35,6 +35,7 @@
      use M_GRIDSETTINGS
      use m_missing, only: dmiss, jins
      use geometry_module, only: pinpok
+     use m_del_elem
      implicit none
 
      integer :: INL
@@ -42,7 +43,7 @@
      integer :: k2
      integer :: l
      integer :: lnu
-     double precision :: a0, r0, XX, YY, ZZ
+     double precision :: r0, XX, YY, ZZ
 
      if (MFAC <= 1) return
 
@@ -57,7 +58,7 @@
         if (INL == 1) then
 
            call DELELEM(K1, K2, LNU)
-           call CONNECT(K1, K2, mFAC, A0, R0)
+           call CONNECT(K1, K2, mFAC, R0)
 
         end if
 

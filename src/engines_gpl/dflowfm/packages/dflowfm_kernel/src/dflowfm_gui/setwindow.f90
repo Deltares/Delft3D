@@ -31,22 +31,18 @@
 !
 
       subroutine SETWINDOW(NSC, X1, Y1, X2, Y2, DXH, DYH)
+         use m_dscreens
+         use m_view_port
          implicit none
          double precision :: dx
          double precision :: dxh
          double precision :: dy
          double precision :: dyh
          integer :: nsc
-         integer :: numsc
          double precision :: x1
-         double precision :: x1sc
          double precision :: x2
-         double precision :: x2sc
          double precision :: y1
-         double precision :: y1sc
          double precision :: y2
-         double precision :: y2sc
-         common / GSCREENS / X1SC(100), Y1SC(100), X2SC(100), Y2SC(100), NUMSC
 
          call viewport(real(X1SC(NSC)), real(Y1SC(NSC)), real(X2SC(NSC)), real(Y2SC(NSC)))
          DX = (X2 - X1) * 0.1d0

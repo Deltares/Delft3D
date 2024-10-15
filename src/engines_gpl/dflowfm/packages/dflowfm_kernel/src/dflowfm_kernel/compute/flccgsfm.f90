@@ -36,6 +36,7 @@ subroutine flccgsfm(dg, dsc, cgd, cgf, cw, mugf, cgda, cgfa, mugfa)
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
+   use m_dpsequfm
    implicit none
 !
 ! Global variables
@@ -49,12 +50,6 @@ subroutine flccgsfm(dg, dsc, cgd, cgf, cw, mugf, cgda, cgfa, mugfa)
    double precision :: dsc
    double precision, intent(in) :: mugf
    double precision, intent(out) :: mugfa
-!
-!
-! Local variables
-!
-   logical :: dpsequfm
-!
 !
 !! executable statements -------------------------------------------------------
 !

@@ -30,12 +30,23 @@
 !
 !
 
+module m_changeorthoparameters
+
+implicit none
+
+contains
+
    subroutine changeorthoPARAMETERS()
       use m_orthosettings
-      use unstruc_display
-      use m_missing
+      use unstruc_colors
+      use unstruc_display_data
       use m_netw
       use dflowfm_version_module, only: company, product_name
+      use m_helpnow
+      use m_save_keys
+      use m_restore_keys
+      use m_help
+      use m_highlight_form_line
 
       implicit none
       integer :: i
@@ -51,16 +62,13 @@
       integer :: iyp
       integer :: key
       integer :: nbut
-      integer :: nlevel
       integer :: numfldactual
       integer :: numparactual
 
       integer, parameter :: NUMPAR = 15, NUMFLD = 2 * NUMPAR
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-      character WRDKEY * 40, OPTION(NUMPAR) * 82, HELPM(NUMPAR) * 102
-      common / HELPNOW / WRDKEY, NLEVEL
+      character OPTION(NUMPAR) * 82, HELPM(NUMPAR) * 102
       integer, external :: infoinput
-      external :: highlight_form_line
 
       NLEVEL = 4
       OPTION(1) = 'ITERATIONS ORTHOGONALISE, ATTRACT. PARAM'; IT(1 * 2) = 2
@@ -250,3 +258,5 @@
       goto 30
 
    end subroutine changeorthoPARAMETERS
+
+end module m_changeorthoparameters

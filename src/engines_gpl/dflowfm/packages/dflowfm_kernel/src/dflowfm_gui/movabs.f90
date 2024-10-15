@@ -29,11 +29,14 @@
 
 !
 !
-
+module m_movabs
+   implicit none
+contains
 !
       subroutine MOVABS(X, Y)
-         use unstruc_opengl
-         implicit none
+         use unstruc_opengl, only: InOpenGLRendering, MoveTo
+         use m_dproject
+
          double precision :: x, y, xx, yy
 
          call DPROJECT(X, Y, XX, YY, 1)
@@ -43,3 +46,4 @@
             call IGRMOVETO(real(XX), real(YY))
          end if
       end
+end module m_movabs

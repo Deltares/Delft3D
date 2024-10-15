@@ -35,7 +35,14 @@
 !>   yf = A y,
 !>   where x and y are the spline control-point coordinates and
 !>   xf and yf are the sample point coordinates
+module m_comp_afinespline
+
+implicit none
+
+contains
+
 subroutine comp_Afinespline(N, numref, Nr, A, ierror)
+   use m_sample_spline
    implicit none
 
    integer, intent(in) :: N !< number of spline control points
@@ -88,3 +95,5 @@ subroutine comp_Afinespline(N, numref, Nr, A, ierror)
    if (allocated(yf)) deallocate (yf)
    return
 end subroutine comp_Afinespline
+
+end module m_comp_afinespline

@@ -367,6 +367,7 @@ contains
       use m_alloc
       use m_flow, only: zws
       use m_find_flownode, only: find_nearest_flownodes
+      use m_get_kbot_ktop
       !
       ! Arguments
       integer, intent(in) :: idif !< Diffuser id
@@ -630,6 +631,7 @@ contains
       use m_alloc
       use m_physcoef, only: NFEntrainmentMomentum
       use m_flow, only: zws
+      use m_get_kbot_ktop
       !
       ! Arguments
       integer, intent(in) :: idif !< Diffuser id

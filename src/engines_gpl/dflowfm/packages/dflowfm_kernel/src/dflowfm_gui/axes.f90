@@ -30,13 +30,19 @@
 !
 !
 
+module m_axes
+
+implicit none
+
+contains
+
       subroutine AXES()
          use unstruc_colors
+         use m_screenarea
+         use m_set_col
+         use m_view_port
          implicit none
-         integer :: jaxis
-         double precision :: xleft
-         double precision :: ybot
-         common / SCREENAREA / XLEFT, YBOT, JAXIS
+
          if (JAXIS == 1) then
             call SETCOL(KLAXS)
             call viewport(0.0, 0.0, 1.0, 1.0)
@@ -51,3 +57,5 @@
          end if
          return
       end
+
+end module m_axes

@@ -35,6 +35,10 @@
 subroutine land_change_callback()
    use m_flowgeom
    use m_flow
+   use m_set_kbot_ktop
+   use m_volsur
+   use m_flow_f0isf1
+   use m_set_bobs
    implicit none
 
    hs = s1 - bl

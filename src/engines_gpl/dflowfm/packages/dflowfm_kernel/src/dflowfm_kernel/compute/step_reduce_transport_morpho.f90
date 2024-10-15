@@ -30,7 +30,7 @@
 !
 !
 
- subroutine step_reduce_transport_morpho(key)
+ subroutine step_reduce_transport_morpho()
     use m_flow
     use m_flowgeom
     use m_sediment, only: stm_included
@@ -53,13 +53,11 @@
     use m_curvature, only: get_curvature
     use m_xbeach_netcdf, only: xbeach_mombalance
     use mass_balance_areas_routines, only: comp_bedload_fluxmba
+    use m_set_kbot_ktop
+    use m_volsur
+    use m_set_bobs
 
     implicit none
-
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
-
-    integer :: key
 
     numnodneg = 0
     if (wrwaqon .and. allocated(qsrcwaq)) then

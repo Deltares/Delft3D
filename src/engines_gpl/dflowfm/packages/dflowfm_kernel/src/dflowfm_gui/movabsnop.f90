@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_movabs_nop
+   implicit none
+contains
       subroutine MOVABSnop(X, Y)
-         use unstruc_opengl
-         implicit none
+         use unstruc_opengl, only: InOpenGLRendering, MoveTo
+
          double precision :: x, y
 
          if (InOpenGLRendering) then
@@ -40,4 +42,5 @@
          else
             call IGRMOVETO(real(X), real(Y))
          end if
-      end
+      end subroutine MOVABSnop
+end module m_movabs_nop

@@ -31,6 +31,7 @@
 !
 
  subroutine setship()
+    use m_getshipcontrol
     use m_netw
     use m_flowgeom
     use m_flow
@@ -41,12 +42,13 @@
     use m_physcoef
     use m_arcinfo
     use geometry_module, only: dbdistance
+    use m_drawthis
 
     implicit none
     integer :: L, k, k1, k2, k3, k4, kk, n, ierr, i0, i1, j0, j1, m, nn
-    integer :: mmx, mm, ndraw, Lt, k1t, k2t
+    integer :: mmx, mm, Lt, k1t, k2t
     double precision :: alf, alfy
-    double precision :: rela, dpx, dpy, fxx, fyy, yf, yf2, dvL, dp
+    double precision :: rela, dpx, dpy, fxx, fyy, yf, yf2, dvL, dp_length
     double precision :: sxr, syr, sxr2, syr2, css, sns, dss, prp, prop, volprop, prptot, volu, frb, a
     double precision :: frc, uxsh, uysh, uxw, uyw, uxd, uyd, umods, uud, uush, uushd, friL, frix, friy, frim, phi
     double precision :: FX, FY, XM, YM, armx, army, shvol, roeri, stuwc, stuwn, frixi, friyi, frimi, frcL, dzz
@@ -54,8 +56,6 @@
     double precision :: xx, yy, dxx, dyy, dxsa, dysa, df, ai, bi, qz, qza, arm
     double precision, allocatable :: zsp2(:)
     double precision :: xxm, delx, Cf, Cf2, Rex, h1, h2, clear, vnu, Ar, aav, aa, fac, yyk, xxk, dxxx, zspk, exx, eyy
-
-    common / DRAWTHIS / ndraw(50)
 
     if (nshiptxy == 0) return
 
@@ -197,20 +197,20 @@
              k1 = ln(1, L); k2 = ln(2, L)
              if (zsp(k1) /= 0d0 .or. zsp(k2) /= 0d0) then
 
-                !dp  = -rhog* ( s1(k2) -  s1(k1) )                                    !       /dx(L)    !
+                !dp_length  = -rhog* ( s1(k2) -  s1(k1) )                                    !       /dx(L)    !
                 !dvL =  0.5d0*(zsp(k1) + zsp(k2) )*wu(L)                              !       *dx(L)    !
-                !dpx = dp*csu(L)
+                !dpx = dp_length*csu(L)
                 !fxx = dpx*dvl
 
-                dp = -rhog * (s1(k2) - zsp(k2) - s1(k1) + zsp(k2)) / dx(L)
+                dp_length = -rhog * (s1(k2) - zsp(k2) - s1(k1) + zsp(k2)) / dx(L)
                 dvL = 0.5d0 * (v1ship(k1) + v1ship(k2))
-                dpx = dp * csu(L)
+                dpx = dp_length * csu(L)
                 fxx = dpx * dvl
 
                 fx = fx + fxx
                 xm = xm - fxx * (yu(L) - shy(n))
 
-                dpy = dp * snu(L)
+                dpy = dp_length * snu(L)
                 fyy = dpy * dvl
                 fy = fy + fyy
                 ym = ym + fyy * (xu(L) - (shx(n) + dxcog(n)))

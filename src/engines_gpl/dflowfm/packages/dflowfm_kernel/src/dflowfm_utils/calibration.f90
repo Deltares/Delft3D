@@ -118,7 +118,7 @@ contains
       use unstruc_files, only: mdia
       use system_utils, only: exifil
       use m_monitoring_crosssections, only: crs, ncrs
-      use m_observations, only: namobs, numobs
+      use m_observations_data, only: namobs, numobs
 
       character(len=*), intent(in) :: md_cldfile
       integer, intent(in) :: phase
@@ -436,12 +436,12 @@ contains
          error = .true.
          goto 9999
       elseif (nrflds == -2) then
-         write (errmsg, '(A,i4,A,A)'), 'More than ', CLD_MAXFLD, ' fields in rd_cldfile() on line: ', rec132
+         write (errmsg, '(A,i4,A,A)') 'More than ', CLD_MAXFLD, ' fields in rd_cldfile() on line: ', rec132
          call mess(LEVEL_ERROR, errmsg)
          error = .true.
          goto 9999
       elseif (nrflds == -3) then
-         write (errmsg, '(A,i4,A,A)'), 'Character string longer than ', CLD_MAXCHR, ' characters in rd_cldfile() on line: ', rec132
+         write (errmsg, '(A,i4,A,A)') 'Character string longer than ', CLD_MAXCHR, ' characters in rd_cldfile() on line: ', rec132
          call mess(LEVEL_ERROR, errmsg)
          error = .true.
          goto 9999
@@ -471,8 +471,6 @@ contains
       use m_missing, only: intmiss
       use unstruc_files, only: mdia
       use system_utils, only: exifil
-      use m_monitoring_crosssections, only: crs
-      use m_observations, only: namobs
       use network_data, only: lnn, numl
       use kdtree2Factory
       use m_sferic, only: jsferic
@@ -749,7 +747,7 @@ contains
    subroutine update_clddata()
       use unstruc_messages
       use m_monitoring_crosssections
-      use m_observations, only: valobs, IPNT_S1
+      use m_observations_data, only: valobs, IPNT_S1
 
       !integer, intent(in) :: update_mode
       double precision :: zs

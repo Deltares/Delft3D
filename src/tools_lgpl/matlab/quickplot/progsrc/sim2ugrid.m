@@ -5,10 +5,16 @@ function outfile = sim2ugrid(varargin)
 %   a netCDF UGRID file. Two file types are currently supported:
 %     * Delft3D-FLOW trim-files
 %     * WAQUA SDS-files
-%   If N is not specified, only the last time step will be transferred.
-%   The name of the netCDF file is constructed by appending _map.nc to the
-%   original file name. The optional return argument NCFILENAME contains
-%   the name of the file created.
+%   If N is not specified, only the last time step will be transferred. Use
+%   ':' to transfer all time steps. The name of the netCDF file is
+%   constructed by appending _map.nc to the original file name. The
+%   optional return argument NCFILENAME contains the name of the file
+%   created.
+%
+%   NCFILENAME = SIM2UGRID(FILENAME01, FILENAME02, ..., FILENAMEnn, N)
+%   transfers the results of the last N time steps of all specified files
+%   to one merged netCDF UGRID file. The name of the output file is based
+%   on the name of the first file.
 %
 %   The function copies only the data relevant for D-FAST Morphological
 %   Impact and D-FAST Bank Erosion, being water levels, bed levels, water
@@ -102,7 +108,11 @@ if ~has_chezy
 end
 zb_locs = unique(cellfun(@(x)x.zb_loc,simData,'uniformoutput',false));
 if length(zb_locs)>1
-    error('Inconsistent bed level locations across files.')
+    list = '';
+    for i = 1:nFiles
+        list = cat(2,list,filenames{i},' ',simData{i}.zb_loc,char(10));
+    end
+    error(['Inconsistent bed level locations across files:',char(10),list])
 end
 zb_loc = zb_locs{1};
 if ~strcmp(zb_loc,'node')
@@ -113,7 +123,11 @@ end
 fprintf(1, 'Checking available time steps ...\n');
 ntimes = unique(cellfun(@(x)x.ntimes,simData));
 if length(ntimes)>1
-    error('Inconsistent number of times across files.')
+    list = '';
+    for i = 1:nFiles
+        list = cat(2,list,filenames{i},sprintf(' %i\n',simData{i}.ntimes));
+    end
+    error(['Inconsistent number of times across files:',char(10),list])
 end
 if ischar(ntimesReq) && strcmp(ntimesReq, ':')
     time_steps = 1:ntimes;
@@ -124,7 +138,11 @@ else
 end
 tunits = unique(cellfun(@(x)x.tunits,simData,'uniformoutput',false));
 if length(tunits)>1
-    error('Inconsistent time units across files')
+    list = '';
+    for i = 1:nFiles
+        list = cat(2,list,filenames{i},' ',simData{i}.tunits,char(10));
+    end
+    error(['Inconsistent time units across files:',char(10),list])
 else
     tunits = tunits{1};
 end

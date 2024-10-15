@@ -31,6 +31,7 @@
 !
 
    subroutine deleteSelectedSplines()
+      use m_confrm
       use M_SPLINES
       use M_POLYGON
       use M_MISSING

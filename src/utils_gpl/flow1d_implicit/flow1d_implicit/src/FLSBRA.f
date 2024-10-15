@@ -53,7 +53,7 @@ c
       real    qlat(nqlat,9), qltpar(9,nqlat), strhis(13,nstru)
       double precision h1(ngrid), h2(ngrid), dt1
 
-      character*40 qlatnm(*)
+      character(len=40) qlatnm(*)
 
 c
 c declaration of local variables:

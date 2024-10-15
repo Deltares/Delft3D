@@ -1384,7 +1384,7 @@
       END
 !***********************************************************************
 !                                                                      *
-      CHARACTER *8 FUNCTION SUHEAD (QUNIT)
+      CHARACTER(len=8) FUNCTION SUHEAD (QUNIT)
 !                                                                      *
 !***********************************************************************
 !
@@ -2607,7 +2607,7 @@
 !
       INTEGER       MROWS, NCOLS, IDLA, IOUTMA, IREC
       REAL          RDATA(*), DUMVAL
-      CHARACTER*(*) MATNAM
+      CHARACTER(len=*) MATNAM
 !
 !  5. Parameter variables
 !
@@ -2652,7 +2652,7 @@
       INTEGER I, J, IENT, IOS, M, N, NTOT
       INTEGER NAMLEN, NANVAL
       INTEGER, SAVE :: IRECS
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=80) MSGSTR
       CHARACTER(LEN=HeaderSize) HEADER
       CHARACTER(LEN=BlockSize) CTMP
 

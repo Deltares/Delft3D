@@ -31,6 +31,7 @@
 !
 
       subroutine RE0RCINFODIMENSIONS(MINP, MMAX, NMAX, DX, X0, Y0)
+         use m_readarcinfoheader
          implicit none
          double precision :: dx
          integer :: ja

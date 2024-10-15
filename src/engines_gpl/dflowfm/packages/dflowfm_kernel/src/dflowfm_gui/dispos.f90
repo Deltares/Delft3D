@@ -29,18 +29,18 @@
 
 !
 !
-
+module m_dispos
+   implicit none
+contains
       subroutine DISPOS()
          use m_devices
          use m_sferic
-         implicit none
-         integer :: jashow, jav, jmouse, jview, ixmax, ixmin, ixy, ndec, nxy
-         double precision :: xa, ya, xlc, ylc
-         double precision :: xyz
-         common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
-         common / dispfor / xyform, zform, disform
-         character * 7 xyform, zform, disform
+         use m_locatora
+         use m_disfor
+         use m_howtoview
+         use m_ktext
+         
+         integer :: ixmax, ixmin, ixy, ndec, nxy
          character POSITI * 25
 
          POSITI = 'X,Y:         ,         '
@@ -71,3 +71,4 @@
 
          return
       end
+end module m_dispos

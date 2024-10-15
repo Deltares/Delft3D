@@ -28,11 +28,11 @@ set(oss_dependencies    deltares_common
                         esmfsm
                         esmfsm_c
                         esmfsm_version_number)
-oss_include_libraries(${executable_name} oss_dependencies)
 if(UNIX)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
-    target_link_libraries(${executable_name} Threads::Threads)
+    target_link_libraries(${executable_name} ${oss_dependencies}
+                                             Threads::Threads)
     target_include_directories(${executable_name} 
                                PRIVATE  
                                ${esmfsm_include_path})

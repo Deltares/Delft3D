@@ -32,6 +32,7 @@
 
 !>  grow gridlayers from a net boundary
 subroutine netboundtocurvi(kp)
+   use m_change_spline2curvi_param
    use m_polygon
    use m_grid
    use m_gridsettings
@@ -41,6 +42,11 @@ subroutine netboundtocurvi(kp)
    use geometry_module, only: dbdistance, dprodout
    use m_sferic, only: jsferic, jasfer3D
    use gridoperations
+   use m_qnerror
+   use m_delpol
+   use m_dlinedis2
+   use m_increase_grid
+   use m_grow_layer
 
    implicit none
 
@@ -220,7 +226,7 @@ subroutine netboundtocurvi(kp)
    do j = jc + 1, nc
 !      idum = 1
 !      call plot(idum)
-      call growlayer(mc, nc, mmax, nmax, 1, maxaspect, j, edgevel, dt, xc, yc, ifront, istop)
+      call growlayer(mc, nc, mmax, nmax, 1, j, edgevel, dt, xc, yc, ifront, istop)
 
 !     update edge velocity
       do i = 1, mc - 1

@@ -111,8 +111,8 @@
 !     MSGSTR:     string to pass message to call MSGERR
 !
       INTEGER      IERR, IF1, IF2, IL1, IL2
-      CHARACTER*20 INTSTR, CHARS(2)
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=20) INTSTR, CHARS(2)
+      CHARACTER(len=80) MSGSTR
 !
 !  8. Subroutines used
 !
@@ -462,8 +462,8 @@
 !     MSGSTR:     string to pass message to call MSGERR
 !
       INTEGER      IENT, IERR, IF1, IF2, IL1, IL2
-      CHARACTER*20 INTSTR, CHARS(2)
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=20) INTSTR, CHARS(2)
+      CHARACTER(len=80) MSGSTR
 !
 !  8. Subroutines used
 !
@@ -606,8 +606,8 @@
 !     MSGSTR:     string to pass message to call MSGERR
 !
       INTEGER      IENT, IERR, IF1, IF2, IL1, IL2
-      CHARACTER*20 INTSTR, CHARS(2)
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=20) INTSTR, CHARS(2)
+      CHARACTER(len=80) MSGSTR
 !
 !  8. Subroutines used
 !
@@ -758,8 +758,8 @@
 #ifdef USE_MPI
       INTEGER      ISTAT(MPI_STATUS_SIZE)
 #endif
-      CHARACTER*20 INTSTR, CHARS(2)
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=20) INTSTR, CHARS(2)
+      CHARACTER(len=80) MSGSTR
 !
 !  8. Subroutines used
 !
@@ -904,8 +904,8 @@
 !     MSGSTR:     string to pass message to call MSGERR
 !
       INTEGER      IENT, IERR, IF, IL
-      CHARACTER*20 INTSTR, CHARS
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=20) INTSTR, CHARS
+      CHARACTER(len=80) MSGSTR
 !
 !  8. Subroutines used
 !
@@ -1059,8 +1059,8 @@
 !
       INTEGER                 I, IENT, IERR, IF, IL
       INTEGER, ALLOCATABLE :: ICOUNT(:), IDSPLC(:)
-      CHARACTER*20            INTSTR, CHARS
-      CHARACTER*80            MSGSTR
+      CHARACTER(len=20)            INTSTR, CHARS
+      CHARACTER(len=80)            MSGSTR
 !
 !  8. Subroutines used
 !
@@ -1374,8 +1374,8 @@
 !     MSGSTR:     string to pass message to call MSGERR
 !
       INTEGER      IENT, IERR, IF, IL
-      CHARACTER*20 INTSTR, CHARS
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=20) INTSTR, CHARS
+      CHARACTER(len=80) MSGSTR
 
       INTEGER, ALLOCATABLE :: ITEMP(:)
 !
@@ -1523,8 +1523,8 @@
 !     TEMP  :     temporary array to store collected data
 !
       INTEGER      IENT, IERR, IF, IL
-      CHARACTER*20 INTSTR, CHARS
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=20) INTSTR, CHARS
+      CHARACTER(len=80) MSGSTR
 
       REAL, ALLOCATABLE :: TEMP(:)
 !
@@ -2586,8 +2586,8 @@
       INTEGER      IWORK(3,NPROC),
      &             ICRECV(NPROC,MAX(MXC,MYC)),
      &             ICSEND(NPROC,MAX(MXC,MYC))
-      CHARACTER*20 INTSTR, CHARS
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=20) INTSTR, CHARS
+      CHARACTER(len=80) MSGSTR
 !
 !  8. Subroutines used
 !
@@ -4568,9 +4568,9 @@
      &              IUT, IVTYPE, IXK, IYK, JVAR, LFIELD, NLINES,
      &              NREF, NUMDEC, NVAR
       LOGICAL       EXIST, OPENED
-      CHARACTER*80  MSGSTR
-      CHARACTER*18  FSTR
-      CHARACTER*512 OUTLIN
+      CHARACTER(len=80)  MSGSTR
+      CHARACTER(len=18)  FSTR
+      CHARACTER(len=512) OUTLIN
 !
 !  8. Subroutines used
 !
@@ -4911,8 +4911,8 @@
      &              IUNIT, IUT, IXK, IYK, NLINES, NREF, OTYPE
       LOGICAL       EMPTY, EXIST, OPENED
       LOGICAL, SAVE :: NCF = .FALSE.                                      41.40
-      CHARACTER*80  MSGSTR
-      CHARACTER (LEN=LENSPO) OUTLIN
+      CHARACTER(len=80)  MSGSTR
+      CHARACTER(LEN=LENSPO) OUTLIN
 !PUN      CHARACTER (LEN=8) :: CRFORM = '(2F14.4)'
 !
 !  8. Subroutines used
@@ -5309,7 +5309,7 @@
       LOGICAL, SAVE :: MATLAB=.FALSE.                                     40.41
       LOGICAL, SAVE :: NCF   =.FALSE.                                     41.40
       LOGICAL, SAVE :: RAWPRT=.FALSE.                                     41.62
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=80) MSGSTR
       CHARACTER (LEN=20) :: CTIM                                          40.41
       CHARACTER (LEN=30) :: NAMVAR                                        40.41
       CHARACTER (LEN=80) :: HTXT(3)                                       41.62

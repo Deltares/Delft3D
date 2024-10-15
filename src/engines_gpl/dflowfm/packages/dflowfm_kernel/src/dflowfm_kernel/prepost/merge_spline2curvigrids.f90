@@ -37,6 +37,7 @@ subroutine merge_spline2curvigrids()
    use m_missing
    use geometry_module, only: dbdistance, get_startend
    use m_sferic, only: jsferic, jasfer3D
+   use m_increase_grid
 
    implicit none
 

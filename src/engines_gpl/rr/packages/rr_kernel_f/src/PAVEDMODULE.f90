@@ -253,7 +253,7 @@ contains
   Logical Success
 !
   integer       ileft, iright, ipoint, NrQHPoints, idum1
-  Character*1   Klteken
+  Character(len=1) Klteken
   REAL          qhrelation_q(MaxQHPoints),qhrelation_h(MaxQHPoints)
   REAL          SaltConcentrationDWF
 
@@ -867,7 +867,7 @@ contains
   Integer      RetVal
 
   Integer       inod
-  Integer       ipoint, ivhg, iecode
+  Integer       ivhg, iecode
   Character(Len=1000) String
   Integer        Nhlp
   Parameter     (Nhlp = 32)
@@ -954,7 +954,7 @@ contains
   integer      Infile1, idebug
 
   Integer       inode, ivhg
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   Rewind(infile1)
@@ -2394,7 +2394,7 @@ contains
 
     Integer      INODE, IVhg, Iout2, Ievent
     Real         Bergng, QOver, QMaal, QTotl, QRain
-    CHARACTER*3 MONTH(12)
+    CHARACTER(len=3) MONTH(12)
 
       if (.not. associated(VHMBPC)) return    ! If there is nothing, do nothing
 

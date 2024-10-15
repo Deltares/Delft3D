@@ -33,6 +33,9 @@
       subroutine REAcrs(MMDD, JA)
          use M_GRID
          use m_missing
+         use m_readyy
+         use m_qn_read_error
+         use m_qn_eof_error
 
          implicit none
 

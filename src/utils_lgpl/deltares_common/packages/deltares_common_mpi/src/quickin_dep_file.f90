@@ -72,7 +72,6 @@ subroutine read_qndep_single(lundia    ,error     ,fildep    ,fmttmp    ,array  
 ! 
 ! Local variables 
 ! 
-    integer                               :: ierr
     integer                               :: luntmp ! Unit number for attribute file  
     integer                               :: m 
     integer                               :: n 
@@ -193,7 +192,6 @@ subroutine read_qndep_double(lundia    ,error     ,fildep    ,fmttmp    ,array  
 ! 
 ! Local variables 
 ! 
-    integer                               :: ierr
     integer                               :: luntmp ! Unit number for attribute file  
     integer                               :: m 
     integer                               :: n 

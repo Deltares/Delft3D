@@ -29,14 +29,14 @@
 
 !
 !
-
+module m_find_common_node
+   implicit none
+contains
 !> return common node of links L1 and L2
 subroutine find_common_node(L1, L2, node)
 
-   use m_netw
-   use m_missing
-
-   implicit none
+   use m_netw, only: kn
+   use m_missing, only: imiss
 
    integer, intent(in) :: L1, L2 !< links
    integer, intent(out) :: node !< common node
@@ -60,3 +60,4 @@ subroutine find_common_node(L1, L2, node)
    end do
 
 end subroutine find_common_node
+end module m_find_common_node

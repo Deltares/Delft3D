@@ -681,9 +681,9 @@ contains
         3005 format (/, '          - this is inconsistent' &
                 , /, '          Note that the program will now assume one', &
                 ' (1) layer!' &
-                , //, '          You can specify the number of layers via' &
-                , /, '          these keywords:' &
-                , //, '          MULTIGRID ZMODEL num_layers ... END_MULTIGRID')
+                , //, '          You can specify the number of layers via these' &
+                , /, '          keywords in block #3, just after the number of segments:' &
+                , //, '          MULTIGRID ZMODEL NOLAY <num_layers> ... END_MULTIGRID')
         3010 format (//, ' Number of layers in the model:', I5)
 
     end subroutine read_block_4_flow_dims_pointers

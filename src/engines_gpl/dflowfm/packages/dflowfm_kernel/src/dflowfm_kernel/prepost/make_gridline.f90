@@ -37,6 +37,7 @@ subroutine make_gridline(num, xsp, ysp, dwidth, mfacmax, mfac, hmax, xg, yg, sc,
    use m_alloc
    use geometry_module, only: dbdistance
    use m_sferic, only: jsferic, jasfer3D
+   use m_spline
 
    implicit none
 
@@ -86,9 +87,9 @@ subroutine make_gridline(num, xsp, ysp, dwidth, mfacmax, mfac, hmax, xg, yg, sc,
    do while (dmaxwidth > dwidth)
 !     make the gridline
       if (jacurv == 1) then
-         call spline2gridline(mfac + 1, num, xsp, ysp, xsp2, ysp2, xg, yg, sc, hmax)
+         call spline2gridline(mfac + 1, num, xsp, ysp, xg, yg, sc, hmax)
       else
-         call spline2gridline(mfac + 1, num, xsp, ysp, xsp2, ysp2, xg, yg, sc, -hmax)
+         call spline2gridline(mfac + 1, num, xsp, ysp, xg, yg, sc, -hmax)
       end if
 
 !     determine maximum mesh width

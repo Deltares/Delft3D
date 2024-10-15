@@ -30,20 +30,24 @@
 !
 !
 
+module m_pfillerconcave
+
+implicit none
+
+contains
+
     subroutine PFILLERconcave(X, Y, N_, NCOL, NCLR)
        use unstruc_opengl
-       implicit none
+       use m_colnow
+       use m_drawthis
+       use m_set_col
+       use m_realpolygon
+
        integer :: N_
        integer :: nclr
        integer :: ncol
-       integer :: ncolnow
-       integer :: ndraw
        double precision :: X(N_), Y(N_)
-       common / DRAWTHIS / ndraw(50)
-       common / COLNOW / NCOLNOW
-
        integer :: N
-
        integer, parameter :: NMAX = 128
        real xr(NMAX), yr(NMAX)
 
@@ -63,3 +67,5 @@
 
        return
     end
+
+end module m_pfillerconcave

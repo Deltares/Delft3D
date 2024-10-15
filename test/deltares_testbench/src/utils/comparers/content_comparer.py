@@ -42,8 +42,8 @@ class ContentComparer(IComparer):
                 comparison_result.result = "OK"
             else:
                 comparison_result.passed = False
-                comparison_result.maxAbsDiff = 1.0
-                comparison_result.maxRelDiff = 1.0
+                comparison_result.max_abs_diff = 1.0
+                comparison_result.max_rel_diff = 1.0
                 comparison_result.result = "NOK"
         except Exception:
             comparison_result.passed = False

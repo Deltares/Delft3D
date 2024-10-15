@@ -32,6 +32,7 @@
 
    subroutine ORTHOGONISENET_old()
 
+      use m_clnabs
       use m_netw
       use M_FLOWGEOM
       use M_POLYGON
@@ -40,6 +41,9 @@
       use m_missing
       use geometry_module, only: dbdistance, cross, normaloutchk, GETCIRCUMCENTER, dlinedis
       use gridoperations
+      use m_readyy
+      use m_makenetnodescoding
+      use m_movabs
 
       implicit none
 

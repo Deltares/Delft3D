@@ -31,6 +31,9 @@
 !
 
       subroutine REAMDD(MMDD, RD1, MC, NC, JA)
+         use m_readyy
+         use m_qn_read_error
+         use m_qn_eof_error
          implicit none
 
          integer :: mmdd, mc, nc, ja

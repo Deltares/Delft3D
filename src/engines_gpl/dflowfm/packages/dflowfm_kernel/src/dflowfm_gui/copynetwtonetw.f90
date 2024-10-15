@@ -30,10 +30,17 @@
 !
 !
 
+module m_copynetwtonetw
+
+implicit none
+
+contains
+
  subroutine copynetwtonetw()
-    use M_MAPPROPARAMETERS
-    use m_netw
-    use m_missing
+    use m_converparameters
+    use m_mapproparameters, only: deltx, delty
+    use m_netw, only: kc, kn, numk, numl, xk, yk, zk
+    use m_missing, only: dmiss, jins
     use m_polygon, only: NPL, xpl, ypl, zpl
     use geometry_module, only: dbpinpol
     use gridoperations
@@ -96,3 +103,5 @@
     numk = K0 + NUMKN
 
  end subroutine copynetwtonetw
+
+end module m_copynetwtonetw

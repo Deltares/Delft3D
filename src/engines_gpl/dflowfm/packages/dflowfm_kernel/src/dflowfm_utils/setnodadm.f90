@@ -29,7 +29,9 @@
 
 !
 !
-
+module m_set_nod_adm
+   implicit none
+contains
 !> Toplevel setnodadm routine wraps:
 !! * original setnodadm(), for network_data administration.
 !! * update_flow1d_admin(), to remove any net links from
@@ -39,9 +41,10 @@ subroutine setnodadm(jacrosscheck_)
    use gridoperations
    use m_network
    use m_save_ugrid_state, only: contactnlinks, contactnetlinks, netlink2contact, hashlist_contactids
-   use network_data
-   use unstruc_channel_flow
+   use unstruc_channel_flow, only: network
+   use network_data, only: lc, numl1d, Lperminv, nlinkremoved
    use m_alloc
+   use messagehandling, only: msgbuf
 
    integer, intent(in) :: jacrosscheck_ !< Whether or not to remove any crossing netlinks.
 
@@ -82,3 +85,4 @@ subroutine setnodadm(jacrosscheck_)
    end if
 
 end subroutine setnodadm
+end module m_set_nod_adm

@@ -5,7 +5,7 @@ c           * Find Sobek lateral node id                 *
 c           **********************************************
       integer      nqlat
       real         qltpar(9,*)
-      character*40 qlatid(*), cNodeId
+      character(len=40) qlatid(*), cNodeId
       
       integer      istat ,iopt
 c

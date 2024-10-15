@@ -39,6 +39,11 @@ subroutine thindams_on_netgeom()
    use unstruc_messages
    use m_alloc
    use kdtree2Factory
+   use m_wall_clock_time
+   use m_delpol
+   use m_find_crossed_links_kdtree2
+   use m_get_link_neighboring_cell_coords
+   use m_append_crspath_to_pol
    implicit none
 
    double precision, dimension(:), allocatable :: dSL
@@ -65,7 +70,7 @@ subroutine thindams_on_netgeom()
    ierror = 1
 
    if (jakdtree == 1) then
-      call klok(t0)
+      call wall_clock_time(t0)
 
 !         determine set of links that are connected by a path
       allocate (iLink(numL))
@@ -121,13 +126,13 @@ subroutine thindams_on_netgeom()
          end do ! do iL=1,numcrossedlinks
       end if
 
-      call klok(t1)
+      call wall_clock_time(t1)
       write (mesg, "('thin dams with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
       call mess(LEVEL_INFO, trim(mesg))
    end if
 
    if (jakdtree == 0) then ! no kdtree, or kdtree gave error
-      call klok(t0)
+      call wall_clock_time(t0)
       do ic = 1, nthd
          call crspath_on_netgeom(thd(ic))
          do L = 1, thd(ic)%lnx
@@ -137,7 +142,7 @@ subroutine thindams_on_netgeom()
             end if
          end do
       end do
-      call klok(t1)
+      call wall_clock_time(t1)
       write (mesg, "('thin dams without kdtree2, elapsed time: ', G15.5)") t1 - t0
       call mess(LEVEL_INFO, trim(mesg))
    end if ! if ( jakdtree.eq.1 ) then

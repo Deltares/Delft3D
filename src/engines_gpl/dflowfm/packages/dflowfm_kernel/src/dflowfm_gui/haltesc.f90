@@ -30,6 +30,12 @@
 !
 !
 
+module m_haltesc
+
+implicit none
+
+contains
+
       subroutine HALTESC()
          implicit none
          integer :: numkey
@@ -38,3 +44,5 @@
             call INKEYEVENTIMM(NUMKEY)
          end do
       end
+
+end module m_haltesc

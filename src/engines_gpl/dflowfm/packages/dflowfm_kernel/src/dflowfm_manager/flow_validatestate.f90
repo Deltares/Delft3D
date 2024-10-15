@@ -43,6 +43,7 @@ subroutine flow_validatestate(iresult)
    use m_flowtimes
    use m_transport
    use dfm_error
+   use m_get_ucx_ucy_eul_mag
    implicit none
    integer, intent(out) :: iresult ! validation result status
    double precision :: dtavgwindow

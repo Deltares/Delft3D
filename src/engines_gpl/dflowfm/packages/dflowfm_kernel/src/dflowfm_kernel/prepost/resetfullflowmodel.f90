@@ -47,11 +47,10 @@
     use unstruc_netcdf
     use unstruc_model
     use unstruc_display
-    use m_observations
+    use m_observations, only: deleteobservations
     use m_monitoring_crosssections
     use m_thindams
     use m_fixedweirs
-    use m_sediment
     use m_trachy
     use m_hydrology_data
     use m_kml_parameters
@@ -70,7 +69,7 @@
     use m_subsidence
     use m_sferic, only: default_sferic
     use m_1d2d_fixedweirs, only: default_1d2d_fixedweirs
-    use m_lateral, only: default_lateral
+    use m_laterals, only: default_lateral
     use m_f1dimp
     use fm_statistical_output
     use fm_deprecated_keywords, only: default_fm_deprecated_keywords

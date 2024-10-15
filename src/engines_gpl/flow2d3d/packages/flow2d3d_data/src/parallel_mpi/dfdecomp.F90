@@ -54,6 +54,7 @@ subroutine dfdecomp ( lunmd, lundia, error, runid, gdp )
 !
 !!--declarations----------------------------------------------------------------
     use dfparall
+    use m_dfparall, only: dfpartit
     use globaldata
     !
     implicit none

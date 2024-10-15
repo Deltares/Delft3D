@@ -38,6 +38,7 @@ subroutine fill_rho()
    use m_transport
    use m_sferic
    use timers
+   use m_get_kbot_ktop
 
    implicit none
 

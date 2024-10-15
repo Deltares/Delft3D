@@ -32,6 +32,7 @@
 
 ! compose an orthogonal dual mesh (cell centers), while keeping the primary mesh (net nodes) fixed
 subroutine make_orthocenters(dmaxnonortho, maxiter)
+   use m_halt3
    use m_netw
    use m_flowgeom, only: xz, yz
    use unstruc_display, only: ncolhl
@@ -39,6 +40,9 @@ subroutine make_orthocenters(dmaxnonortho, maxiter)
    use m_sferic, only: jsferic, jasfer3D
    use m_missing, only: dxymis
    use gridoperations
+   use m_readyy
+   use m_qnerror
+   use m_cirr
 
    implicit none
 
@@ -133,7 +137,7 @@ subroutine make_orthocenters(dmaxnonortho, maxiter)
 !     output information
       af = dble(iter) / dble(MAXITER)
       call readyy('Computing orthocenters (press right mouse button to cancel)', af)
-      write (6, '("+iter: ", I5, " max ortho: ", E10.4, " rms ortho: ", E10.4)') iter, dmaxabscosphi, drmsabscosphi
+      write (6, '("+iter: ", I5, " max ortho: ", E11.4, " rms ortho: ", E11.4)') iter, dmaxabscosphi, drmsabscosphi
 
 !     check for right mouse button
       call halt3(ja3)

@@ -31,6 +31,8 @@
 !
 
  subroutine drybed(time)
+    use m_movabs
+    use m_lnabs
     implicit none
     double precision :: time, xm, xmx, h0, dxw
     integer, parameter :: mmax = 601 !  3000
@@ -71,5 +73,5 @@
     call movabs(xmx, 0.1d0 * h0)
     call lnabs(xmx, 0.2d0 * h0)
 
-    call compareanalytic(s, u, xx, mmax)
+    call compareanalytic(s, xx, mmax)
  end subroutine drybed

@@ -29,13 +29,15 @@
 
 !
 !
-
+module m_plot_dots
+   implicit none
+contains
 !>    plot dots
       subroutine plotdots()
          use m_plotdots
-         use unstruc_colors, only: ncolhl
-         use unstruc_display
-         implicit none
+         use unstruc_display, only: ndrawdots
+         use m_cirr
+
          integer :: i
 
          if (Ndrawdots /= 2) return
@@ -46,3 +48,4 @@
 
          return
       end subroutine
+end module m_plot_dots

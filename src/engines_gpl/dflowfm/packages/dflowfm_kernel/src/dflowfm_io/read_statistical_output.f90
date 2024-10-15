@@ -143,7 +143,7 @@ contains
    !! Valid strings such as 'current','average', etc. will return a value of 1.
    subroutine read_output_parameter_toggle(tree, chapter, key, value, success, alternative_key)
       use tree_structures, only: tree_data
-      use properties, only: prop_get_string, prop_set
+      use properties, only: prop_get, prop_set
       implicit none
       type(tree_data), pointer, intent(in) :: tree !< The property tree
       character(*), intent(in) :: chapter !< Name of the chapter (case-insensitive) or "*" to get any key
@@ -154,9 +154,9 @@ contains
 
       character(len=255) :: value_string
 
-      call prop_get_string(tree, chapter, key, value_string, success)
+      call prop_get(tree, chapter, key, value_string, success)
       if (.not. success .and. present(alternative_key)) then
-         call prop_get_string(tree, chapter, alternative_key, value_string, success)
+         call prop_get(tree, chapter, alternative_key, value_string, success)
       end if
       if (success) then
          value = merge(1, 0, is_output_requested_in_value_string(value_string))

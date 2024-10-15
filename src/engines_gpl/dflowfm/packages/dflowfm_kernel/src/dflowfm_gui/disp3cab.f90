@@ -30,8 +30,20 @@
 !
 !
 
+module m_disp3cab
+use m_dmovabs
+use m_dlnabs
+
+
+implicit none
+
+contains
+
       subroutine DISP3CAB(X, Y, Z, NCL, N, RCIR, NCOL, A, B)
+         use m_cir
          use M_MISSING
+         use m_halt2
+         use m_set_col
          implicit none
          double precision :: a
          double precision :: b
@@ -68,3 +80,5 @@
          end do
          return
       end
+
+end module m_disp3cab

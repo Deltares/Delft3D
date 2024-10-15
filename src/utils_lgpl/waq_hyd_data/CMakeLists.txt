@@ -7,5 +7,4 @@ set(oss_dependencies deltares_common
         io_netcdf_data)
 
 target_link_libraries(${library_name} ${oss_dependencies})
-oss_include_libraries(${library_name} oss_dependencies)
 set_target_properties(${library_name} PROPERTIES FOLDER utils_lgpl/waq_hyd_data)

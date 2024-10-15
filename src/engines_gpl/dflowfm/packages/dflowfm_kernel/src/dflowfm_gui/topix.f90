@@ -29,8 +29,9 @@
 
 !
 !
-
-!
+module m_topix
+    contains
+    
       subroutine TOPIX(X, Y, NX, NY)
          implicit none
          integer :: nx
@@ -41,3 +42,4 @@
          call IGRUNITSTOPIXELS(real(X), real(Y), NX, NY)
          return
       end
+end module m_topix

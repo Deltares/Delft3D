@@ -31,32 +31,26 @@
 !
 
 subroutine SETCOLTABFILE(FILNAM, JASECOND)
+   use m_qnmessage
+   use m_filemenu
    use unstruc_colors
+   use m_depmax
+   use m_depmax2
    implicit none
-   double precision :: dv, dv2
    integer :: ierror
    integer :: iblue
    integer :: igreen
    integer :: ihue
    integer :: ired
    integer :: isat
-   integer :: jaauto, jaauto2
    integer :: jahls
    integer :: jasecond
    integer :: k
    integer :: light
    integer :: minp
-   integer :: ncols, ncols2
-   integer :: nie, nie2
-   integer :: nis, nis2
-   integer :: nv, nv2
-   double precision :: val, val2
-   double precision :: vmax, vmax2
-   double precision :: vmin, vmin2
    integer, parameter :: mxq = 1, mxclass = 1
-   common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-   common / DEPMAX2 / VMAX2, VMIN2, DV2, VAL2(256), NCOLS2(256), NV2, NIS2, NIE2, JAAUTO2
    character FILNAM * (*), FOLNAM * 86
+   
    FOLNAM = FILNAM
    if (FILNAM(1:5) == '*.hls') then
       MINP = 0

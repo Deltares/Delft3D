@@ -228,7 +228,7 @@ contains
                        waveSpectrumAdministration(ibnd)%Tbc, ' s')
 
          if (waveboundaryParameters(ibnd)%singledir > 0) then
-            call set_stationary_spectrum(ibnd, wp, combspec)
+            call set_stationary_spectrum(ibnd, combspec)
          end if
          ! Wave trains that are used by XBeach. The number of wave trains, their frequencies and directions
          ! are based on the combined spectra of all the locations to ensure all wave conditions are
@@ -2976,7 +2976,7 @@ contains
 
    end subroutine generate_nhtimeseries_file
 
-   subroutine set_stationary_spectrum(ibnd, wp, combspec)
+   subroutine set_stationary_spectrum(ibnd, combspec)
       use m_sferic
       use m_physcoef
       use interp
@@ -2985,7 +2985,6 @@ contains
 
       integer, intent(in) :: ibnd
       type(spectrum), intent(in) :: combspec
-      type(waveparamsnew), intent(in) :: wp
 
       double precision :: xcycle
       double precision, dimension(:), allocatable :: angcart, Sdcart, eet

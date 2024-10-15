@@ -41,7 +41,7 @@ contains
 !! Results are stored in `m_observations` state arrays.
    subroutine obs_on_flowgeom(iobstype)
 
-      use m_observations, only: numobs, nummovobs, kobs, namobs
+      use m_observations_data, only: numobs, nummovobs, kobs, namobs
       use unstruc_messages, only: loglevel_StdOut, LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
       use m_flowgeom, only: ndx2D, ndxi
       use unstruc_caching, only: cacheRetrieved, copyCachedObservations
@@ -107,7 +107,7 @@ contains
       use MessageHandling
       use m_network
       use m_ObservationPoints
-      use m_observations
+      use m_observations_data
       use unstruc_channel_flow
       use m_inquire_flowgeom
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL

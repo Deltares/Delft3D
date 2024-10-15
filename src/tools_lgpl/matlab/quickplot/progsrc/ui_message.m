@@ -327,7 +327,7 @@ else
             if isempty(e)
                 pf=[pf '.txt'];
             end
-            fid=fopen(pf,'wt');
+            fid=fopen(pf,'w');
             if fid<0
                 ui_message('error',['Cannot open output file: ',pf]);
                 return

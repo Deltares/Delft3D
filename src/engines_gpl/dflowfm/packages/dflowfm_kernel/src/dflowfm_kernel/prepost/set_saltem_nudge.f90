@@ -37,6 +37,7 @@
       use m_transport
       use m_nudge
       use m_missing
+      use m_get_kbot_ktop
       implicit none
 
       integer :: k, kk, KB, KT

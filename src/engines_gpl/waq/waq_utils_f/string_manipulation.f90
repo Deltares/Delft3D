@@ -22,9 +22,12 @@
 !!  rights reserved.
 module m_string_manipulation
     use m_waq_precision
+    use timers
     implicit none
+
     private
-    public :: upper_case, shift_char_subarray, get_trimmed_length, replace_space_by_underscore
+    public :: upper_case, shift_char_subarray, get_trimmed_length, replace_space_by_underscore, is_same_letter
+
 contains
 
     subroutine upper_case(input_string, output_string, string_length)
@@ -101,5 +104,59 @@ contains
         enddo
 
     end function replace_space_by_underscore
+
+    !! is_same_letter returns .TRUE. if CA is the same letter as CB regardless of case.
+    logical function is_same_letter(ca, cb)
+
+        character ca, cb ! CA& CB (input) character(len=1)
+        intrinsic ichar
+        integer            inta, intb, zcode
+        integer(4) :: ithandl = 0
+        if (timon) call timstrt ("is_same_letter", ithandl)
+        ! Test if the characters are equal
+        is_same_letter = ca==cb
+        if(is_same_letter) &
+                goto 9999  !   RETURN
+        !
+        !          Now test for equivalence if both characters are alphabetic.
+        !
+        ZCODE = ICHAR('Z')
+        !
+        !          Use 'Z' rather than 'A' so that ASCII can be detected on Prime
+        !          machines, on which ICHAR returns a value with bit 8 set.
+        !          ICHAR('A') on Prime machines returns 193 which is the same as
+        !          ICHAR('A') on an EBCDIC machine.
+        !
+        INTA = ICHAR(CA)
+        INTB = ICHAR(CB)
+        !
+        IF(ZCODE==90 .OR. ZCODE==122) THEN
+            !
+            !             ASCII is assumed - ZCODE is the ASCII code of either lower or
+            !             upper case 'Z'.
+            !
+            IF(INTA>=97 .AND. INTA<=122) INTA = INTA - 32
+            IF(INTB>=97 .AND. INTB<=122) INTB = INTB - 32
+
+        ELSE IF(ZCODE==233 .OR. ZCODE==169) THEN
+            ! EBCDIC is assumed - ZCODE is the EBCDIC code of either lower or upper case 'Z'.
+            if(inta>=129 .and. inta<=137 .or. &
+                    inta>=145 .and. inta<=153 .or. &
+                    inta>=162 .and. inta<=169) inta = inta + 64
+            if(intb>=129 .and. intb<=137 .or. &
+                    intb>=145 .and. intb<=153 .or. &
+                    intb>=162 .and. intb<=169) intb = intb + 64
+
+        else if(zcode==218 .or. zcode==250) then
+
+            ! ASCII is assumed, on Prime machines - ZCODE is the ASCII code
+            ! plus 128 of either lower or upper case 'Z'.
+            if(inta>=225 .and. inta<=250) inta = inta - 32
+            if(intb>=225 .and. intb<=250) intb = intb - 32
+        end if
+        is_same_letter = inta==intb
+
+        9999 if (timon) call timstop (ithandl)
+    end function
 
 end module m_string_manipulation

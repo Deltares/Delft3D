@@ -31,36 +31,41 @@
 !
 
    subroutine teknetcells(netwhat, jahalt, jacol)
+      use m_minmxnetcells
+      use m_isosmoothnet
+      use m_isocol
+      use m_copynetcellstonetnodes
+      use m_drcirc
+      use m_dhtext
+      use m_dhitext
+      use m_arrowsxy
       use m_netw
       use m_flowgeom
       use unstruc_display
       use m_missing
       use m_partitioninfo
       use m_alloc
-      use unstruc_model, only: md_netfile
       use unstruc_messages
       use m_sferic, only: jsferic, dg2rd
       use gridoperations
+      use m_vfac
+      use m_drawthis
+      use m_halt2
+      use m_makenetnodescoding
+      use m_set_nod_adm
+      use m_pfiller
+      use m_set_col
+      use m_inview
 
       implicit none
 
       integer, intent(in) :: netwhat, jahalt, jacol
-
-      double precision :: xx(6), yy(6), aspect, uu1, vv1, uu2, vv2, VFAC, VFACFORCE
-
+      double precision :: xx(6), yy(6), aspect, uu1, vv1, uu2, vv2
       double precision :: xfac
-
-      integer :: k, kk, ja, ncol, nodemode, nn, nvec
-
+      integer :: k, kk, ja, ncol, nodemode, nn
       integer :: ntopology, numcellstoplot
-
       double precision, external :: znetcell
       double precision, external :: coarsening_info
-
-      common / VFAC / VFAC, VFACFORCE, NVEC
-      common / DRAWTHIS / ndraw(50)
-      integer :: ndraw !, ierr, jaidomain
-      logical inview
 
       if (netwhat <= 1) return
 
@@ -175,7 +180,7 @@
                    nodemode == 7 .or. nodemode == 8) then ! numbers
                   call setcol(1)
                   if (netwhat == 2 .or. netwhat == 15) then ! cell numbers or domain numbers
-                     call dhitext(int(rlin(k)), xzw(k) + RCIR, yzw(k) - RCIR, yzw(k))
+                     call dhitext(int(rlin(k)), xzw(k) + RCIR, yzw(k) - RCIR)
                   else
                      call dhtext(dble(rlin(k)), xzw(k) + RCIR, yzw(k) - RCIR, yzw(k))
                   end if

@@ -33,6 +33,7 @@
 !> TODO: update setfixedweirs to use fxw
 subroutine fixedweirs_on_flowgeom()
    use m_fixedweirs
+   use m_crspath_on_flowgeom
    implicit none
 
    integer, dimension(:), allocatable :: idum

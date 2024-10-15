@@ -31,15 +31,17 @@
 !
 
       subroutine MODLN2(X, Y, Z, MMAX, NUMPI, MP, XP, YP, NPUT)
-         use M_MISSING
+         use m_missing, only: dmiss
+         use m_okay
+         use m_dispnode
          implicit none
 !     WIJZIG AANTAL PUNTEN OP EEN ENKELE LIJN
 !     DELETE , NPUT = -2
 !     OF INSERT, NPUT = -1
 !     DELETE ENTIRE LINE, -3
 !     DELETE ALL EXCEPT SELECTED LINE, -4
-         double precision :: X(MMAX), Y(MMAX), Z(MMAX)
          integer :: MMAX, NUMPI, MP, nput
+         double precision :: X(MMAX), Y(MMAX), Z(MMAX)
          double precision :: XP, YP, ZP
          integer :: i
          integer :: istart

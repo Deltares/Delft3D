@@ -44,22 +44,19 @@ function odu_get_xy_coordinates(branchids, branchoffsets, geopointsX, geopointsY
 
    use geometry_module, only: sphertocart3D, cart3Dtospher
    use stdlib_sorting, only: sort_index
-   use m_missing, only : dmiss
    
    integer, intent(in)               :: branchids(:), nbranchgeometrynodes(:)
    double precision, intent(in)      :: branchoffsets(:), geopointsX(:), geopointsY(:), branchlengths(:)
    double precision, intent(inout)   :: meshXCoords(:), meshYCoords(:)
    integer, intent(in)               :: jsferic
 
-   integer                           :: angle, i, iin, k, ierr, ind, branchid, nsegments
+   integer                           :: i, iin, k, ierr, ind
    double precision, allocatable     :: branchSegmentLengths(:)
    double precision, allocatable     :: sorted_branch_offsets(:)
    double precision, allocatable     :: xincrement(:), yincrement(:), zincrement(:)
    double precision, allocatable     :: deltaX(:), deltaY(:), deltaZ(:)
    double precision, allocatable     :: cartMeshXCoords(:), cartMeshYCoords(:), cartMeshZCoords(:)
    double precision, allocatable     :: cartGeopointsX(:), cartGeopointsY(:), cartGeopointsZ(:)
-   double precision, allocatable     :: meshZCoords(:)
-   double precision, allocatable     :: geopointsZ(:)  !returned by sphertocart3D 
    double precision                  :: totalLength, afac, fractionbranchlength, maxlat, previousLength
    integer                           :: nBranchSegments, nbranches, br
    integer                           :: startGeometryNode, endGeometryNode, nGeometrySegments

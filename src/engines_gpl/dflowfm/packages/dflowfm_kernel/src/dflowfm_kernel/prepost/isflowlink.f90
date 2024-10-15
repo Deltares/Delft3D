@@ -31,9 +31,10 @@
 !
 
 subroutine ISflowlink(XP, YP, LL) ! IS THIS A flow NODE OR A flow LINK ?
-   use m_netw
+   use m_netw, only: xk, yk
    use m_flowgeom
    use m_wearelt
+   use m_disln
    implicit none
    double precision :: XP, YP
    integer :: LL

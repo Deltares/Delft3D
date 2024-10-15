@@ -30,9 +30,18 @@
 !
 !
 
+module m_getstring
+
+implicit none
+
+contains
+
    !> Get a string
    subroutine getstring(text, string)
       use m_devices
+      use m_helpnow
+      use m_timlin
+      use m_fkeys
       implicit none
       character(len=*), intent(in) :: text
       character(len=*), intent(out) :: string
@@ -44,11 +53,8 @@
       integer :: key
       integer :: nbckgr
       integer :: nforgr
-      integer :: nlevel
       integer :: lstring
       character string_tmp * 40
-      character wrdkey * 40
-      common / helpnow / wrdkey, nlevel
 
       ixp = iws / 2
       iyp = ihs / 2
@@ -82,3 +88,5 @@
       call itextcolourn(nforgr, nbckgr)
       return
    end subroutine getstring
+
+end module m_getstring

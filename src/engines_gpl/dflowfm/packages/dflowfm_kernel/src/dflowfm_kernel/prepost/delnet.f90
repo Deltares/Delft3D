@@ -31,12 +31,15 @@
 !
 
   subroutine DELNET(KEY, jacheckcells, JASAVE)
+     use m_confrm
      use m_netw
      use m_missing
      use m_sferic, only: jsferic, jasfer3D
      use m_polygon, only: NPL, xpl, ypl, zpl
      use geometry_module, only: dbpinpol, half
      use gridoperations
+     use m_delpol
+     use m_set_nod_adm
 
      implicit none
      integer :: KEY, jacheckcells, JASAVE

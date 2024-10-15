@@ -32,6 +32,7 @@
 
   subroutine DELLINK(LL)
      use m_netw
+     use m_del_elem
      implicit none
      integer :: LL
 

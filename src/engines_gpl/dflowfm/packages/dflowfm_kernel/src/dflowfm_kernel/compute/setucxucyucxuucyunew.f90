@@ -39,6 +39,7 @@
     use m_missing
     use m_flowparameters, only: jabarrieradvection
     use m_sferic
+    use m_get_Lbot_Ltop
     implicit none
 
     logical :: make2dh

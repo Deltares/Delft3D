@@ -56,7 +56,7 @@ contains
         !     local decalarations
 
         integer(kind = int_wp) :: lunrep
-
+        real(kind = real_wp) :: effi_tmp
         real(kind = dp) :: temp       ! temperature
         real(kind = dp) :: csol       ! radiation
         real(kind = dp) :: dsol       ! radiation
@@ -122,7 +122,8 @@ contains
                         call ebcalc(phi_s, fun_s, der_s, igroup)
                         phi_d = exttot * dep - log(surf_typ)
                         call ebcalc(phi_d, fun_d, der_d, igroup)
-                        effi(igroup) = max(effi(igroup), (fun_d - fun_s) / exttot / dep)
+                        effi_tmp = (fun_d - fun_s) / exttot / dep
+                        effi(igroup) = max(effi(igroup), effi_tmp)
                     else
                         effi(igroup) = 0.0
                     endif
@@ -139,7 +140,8 @@ contains
                         radtop = (radiat / 0.0168d0) * dexp (- exttot * abs(sdmixn(itype)) * dep)
                     endif
                     call lookupeffi(tcorr * radtop, effitop, igroup)
-                    effi(igroup) = max(effi(igroup), effitop)
+                    effi_tmp = effitop
+                    effi(igroup) = max(effi(igroup), effi_tmp)
                 enddo
             enddo
         elseif (SWEff == 3) then
@@ -155,7 +157,8 @@ contains
                     radbot = radtop * dexp (- exttot * abs(sdmix(itype)) * dep)
                     call lookupeffi(tcorr * radtop, effitop, igroup)
                     call lookupeffi(tcorr * radbot, effibot, igroup)
-                    effi(igroup) = max(effi(igroup), (effitop + effibot) / 2.0)
+                    effi_tmp = (effitop + effibot) / 2.0
+                    effi(igroup) = max(effi(igroup), effi_tmp) 
                 enddo
             enddo
         elseif (SWEff == 4) then
@@ -173,7 +176,8 @@ contains
                     call lookupeffi(tcorr * radtop, effitop, igroup)
                     call lookupeffi(tcorr * radmid, effimid, igroup)
                     call lookupeffi(tcorr * radbot, effibot, igroup)
-                    effi(igroup) = max(effi(igroup), (effitop + effimid + effimid + effibot) / 4.0)
+                    effi_tmp = (effitop + effimid + effimid + effibot) / 4.0
+                    effi(igroup) = max(effi(igroup), effi_tmp) 
                 enddo
             enddo
         elseif (SWEff < 0) then
@@ -197,7 +201,8 @@ contains
                     radlay = radtop * dexp (- exttot * (1.0d0 / real(neffilay, 8)) * abs(sdmix(itype)) * dep)
                     call lookupeffi(tcorr * radlay, effilay, igroup)
                     effitot = effitot + effilay
-                    effi(igroup) = max(effi(igroup), (effitot / real(neffilay * 2, 8)) / dayl)
+                    effi_tmp = (effitot / real(neffilay * 2, 8)) / dayl
+                    effi(igroup) = max(effi(igroup), effi_tmp) 
                 enddo
             enddo
 

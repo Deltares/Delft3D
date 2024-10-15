@@ -32,16 +32,13 @@
 
       subroutine SETWYnew(X, Y, DY)
 !     Set zoomwindow limits at proper aspect ratio
+         use m_inqasp
          use m_wearelt
          use m_sferic
          use m_sferzoom
          use unstruc_display
-         !COMMON /WEARELT/  XMIN,YMIN,XMAX,YMAX,X1,Y1,X2,Y2,RCIR,CR,DSIX
-         !COMMON /SFERIC/   JSFERIC, JSFERTEK
-         !COMMON /SFERZOOM/ X0,Y0,FAC,X1W,Y1W,X2W,Y2W  ! GRADEN
-         !COMMON /MFILES/   MDIA,MINI,MFRM,MRRR,MHLP
-         !real(dp) X0,Y0,FAC,X1W,Y1W,X2W,Y2W
-         ! X1W = Links, X2W = Rechts, Y1W = Onder, Y2W = Boven v/h Scherm
+         use m_dproject
+
          implicit none
          double precision :: asp, x, y, dy, dx, XA, Y1A, y2a
 

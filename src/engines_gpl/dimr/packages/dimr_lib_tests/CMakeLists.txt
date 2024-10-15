@@ -15,9 +15,6 @@ add_executable(${executable_name} ${source_files} ${dimr_lib_sources})
 set(oss_dependencies deltares_common_c dimr_lib) 
 
 if(UNIX)
-
-   oss_include_libraries(${executable_name} oss_dependencies) 
-   
    target_compile_definitions(${executable_name} PRIVATE LINUX64)
    target_include_directories(${executable_name} 
                                PRIVATE
@@ -36,9 +33,6 @@ endif(UNIX)
 
 
 if (WIN32)
-    
-    oss_include_libraries(${executable_name} oss_dependencies) 
-
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
     target_compile_definitions(${executable_name} PRIVATE $<$<CONFIG:DEBUG>:_DEBUG>)

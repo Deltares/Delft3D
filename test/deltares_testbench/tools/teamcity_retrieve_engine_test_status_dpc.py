@@ -530,6 +530,7 @@ def get_tree_entire_engine_test_results(
             engine_results.append(EngineTestResult(engine.name, test_results, sub_test_result))
     return TreeResult(tree_name, engine_results)
 
+
 def project_is_archived(project: ET.Element) -> bool:
     """Determine if project is archived."""
     return bool(project.attrib.get("archived", False))

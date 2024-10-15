@@ -29,20 +29,21 @@
 
 !
 !
+module m_getkey2
+   implicit none
+contains
+   subroutine GETKEY2(KEY)
+      use m_nkeys
 
-      subroutine GETKEY2(KEY)
-         implicit none
-         integer :: i
-         integer :: key
-         integer :: keynum
-         integer :: nkey
-         integer :: numc
-         integer :: numkeys
-         common / NKEYS / NUMKEYS, NKEY(20), NUMC(20)
-         KEYNUM = -999
-         do I = 1, NUMKEYS
-            if (KEY == NKEY(I)) KEYNUM = I
-         end do
-         if (KEYNUM /= -999) KEY = NUMC(KEYNUM)
-         return
-      end
+      integer :: i
+      integer :: key
+      integer :: keynum
+
+      KEYNUM = -999
+      do I = 1, NUMKEYS
+         if (KEY == NKEY(I)) KEYNUM = I
+      end do
+      if (KEYNUM /= -999) KEY = NUMC(KEYNUM)
+      return
+   end
+end module m_getkey2

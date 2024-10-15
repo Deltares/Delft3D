@@ -35,6 +35,7 @@
      use m_netw
      use M_MISSING
      use gridoperations
+     use m_set_nod_adm
 
      implicit none
      integer :: k, kk, L, k2, jaweg

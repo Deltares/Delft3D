@@ -63,7 +63,7 @@
 !
       INTEGER       IN
       LOGICAL       ENDFIL
-      CHARACTER*(*) STRING
+      CHARACTER(len=*) STRING
       Integer iDebug
 !
       iDebug = ConfFil_get_iDebug()

@@ -174,7 +174,7 @@ end function create_dummy_tree
 !! and test that is is set into the tree if the default value is 1
 subroutine generic_test_read_output_parameter_toggle_default(default_value)
    use tree_structures, only: tree_data
-   use properties, only: prop_get_integer
+   use properties, only: prop_get
 
    integer, intent(in) :: default_value !< The value if the property is not set in the tree, either 0 or 1
    type(tree_data), pointer :: my_tree
@@ -192,7 +192,7 @@ subroutine generic_test_read_output_parameter_toggle_default(default_value)
    call assert_equal(value, default_value, '')
 
    ! Since the default is zero, it is not set into the tree to prevent the variable to end up in the dia file
-   call prop_get_integer(my_tree, chapter_name, variable_name, value, success)
+   call prop_get(my_tree, chapter_name, variable_name, value, success)
    call assert_equal(success, default_value == 1, '')
    call assert_equal(value, default_value, '')
 end subroutine generic_test_read_output_parameter_toggle_default
@@ -207,7 +207,7 @@ end subroutine test_read_output_parameter_toggle_default_one
 
 subroutine test_read_output_parameter_toggle_from_tree()
    use tree_structures, only: tree_data
-   use properties, only: prop_set_integer
+   use properties, only: prop_set
 
    type(tree_data), pointer :: my_tree
    integer :: value, default_value, actual_value
@@ -220,7 +220,7 @@ subroutine test_read_output_parameter_toggle_from_tree()
    actual_value = 1
    value = default_value
    my_tree => create_dummy_tree()
-   call prop_set_integer(my_tree, chapter_name, variable_name, actual_value, success = success)
+   call prop_set(my_tree, chapter_name, variable_name, actual_value, success = success)
    call assert_equal(success, .true., '')
 
    call read_output_parameter_toggle(my_tree, chapter_name, variable_name, value, success)
@@ -230,7 +230,7 @@ end subroutine test_read_output_parameter_toggle_from_tree
 
 subroutine test_read_output_parameter_toggle_from_alternative_key()
    use tree_structures, only: tree_data
-   use properties, only: prop_get_integer, prop_set_integer
+   use properties, only: prop_get, prop_set
 
    type(tree_data), pointer :: my_tree
    integer :: value, default_value, actual_value
@@ -244,7 +244,7 @@ subroutine test_read_output_parameter_toggle_from_alternative_key()
    actual_value = 1
    value = default_value
    my_tree => create_dummy_tree()
-   call prop_set_integer(my_tree, chapter_name, alternative_variable_name, actual_value, success = success)
+   call prop_set(my_tree, chapter_name, alternative_variable_name, actual_value, success = success)
    call assert_equal(success, .true., '')
 
    call read_output_parameter_toggle(my_tree, chapter_name, variable_name, value, success, alternative_key = alternative_variable_name)
@@ -252,7 +252,7 @@ subroutine test_read_output_parameter_toggle_from_alternative_key()
    call assert_equal(value, actual_value, '')
 
    ! Ensure that the variable_name is not added to the tree
-   call prop_get_integer(my_tree, chapter_name, variable_name, value, success)
+   call prop_get(my_tree, chapter_name, variable_name, value, success)
    call assert_equal(success, .false., '')
 end subroutine test_read_output_parameter_toggle_from_alternative_key
 end module test_read_statistical_output

@@ -33,13 +33,12 @@
   !
   !
   subroutine viemat(the, phi)
+     use m_viewmat
+     use m_perspx
+     use m_matm4
      implicit none
      double precision :: cp
      double precision :: ct
-     double precision :: deltx
-     double precision :: delty
-     double precision :: deltz
-     double precision :: dscr
      double precision :: r
      double precision :: sp
      double precision :: st
@@ -47,16 +46,8 @@
      double precision :: t2
      double precision :: t3
      double precision :: t4
-     double precision :: vs
-     double precision :: wpqr
-     double precision :: x0s
-     double precision :: y0s
      double precision :: z
-     double precision :: zfac
-     double precision :: zupw
      double precision :: the, phi
-     common / viewmat / vs(4, 4), x0s, y0s
-     common / PERSPX / WPQR, DELTX, DELTY, DELTZ, ZFAC, DSCR, ZUPW
 
      ! Maak viewing matrix Vs
      ! phi (0 -- pi) en the (-pi/2 -- pi/2) : kijkhoekjes

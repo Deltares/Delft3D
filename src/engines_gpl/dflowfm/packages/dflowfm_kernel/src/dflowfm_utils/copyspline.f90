@@ -36,6 +36,9 @@
          use m_sferic
          use geometry_module, only: dbdistance, dcosphi
          use m_missing, only: dmiss
+         use m_splint
+         use m_spline
+         use m_comp_curv
 
          implicit none
 

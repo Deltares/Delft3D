@@ -41,13 +41,14 @@ subroutine flow_trachyupdate()
    use m_flowparameters, only: eps8, epshs, jacali, jawave, flowwithoutwaves
    use network_data, only: numl, lne
    use m_monitoring_crosssections
-   use m_observations, only: valobs, IPNT_S1
+   use m_observations_data, only: valobs, IPNT_S1
    use m_calibration, only: calibration_backup_frcu
    use m_sediment
    use m_bedform, only: bfmpar
    use m_alloc
    use m_vegetation, only: alfav
    use m_waves, only: ustokes
+   use m_get_kbot_ktop
    !
    implicit none
    !

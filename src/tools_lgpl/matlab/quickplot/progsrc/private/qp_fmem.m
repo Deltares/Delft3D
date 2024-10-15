@@ -1280,37 +1280,47 @@ end
 function FI = detect_partitions(FI)
 FileName = [FI.FileName FI.DatExt];
 Opt = get_matching_names(FileName,'-',-1);
-if ~isempty(Opt)
-    FI.Partitions = Opt;
-    nParts = Opt{1};
-    for d = nParts:-1:1
-        FN = FileName;
-        FN(Opt{2}+(1:Opt{3})) = sprintf('%3.3i',d);
-        FI.NEFIS(d) = vs_use(FN,'quiet');
-    end
-    FI.Merge.Length = 0;
-    FI.Merge.Indices = cell(1,nParts);
-    for d = 1:nParts
-        switch FI.SubType
-            case 'Delft3D-trim'
-                KCS = vs_get(FI.NEFIS(d),'map-const','KCS','quiet');
-            case 'Delft3D-com'
-                KCS = vs_get(FI.NEFIS(d),'KENMCNST','KCS','quiet');
+if ~isempty(Opt) && Opt{1}>1
+    try
+        FI2 = FI;
+        FI2.Partitions = Opt;
+        nParts = Opt{1};
+        nrFormat = sprintf('%%%i.%ii',Opt{3},Opt{3});
+        for d = nParts:-1:1
+            FN = FileName;
+            FN(Opt{2}+(1:Opt{3})) = sprintf(nrFormat,d);
+            FI2.NEFIS(d) = vs_use(FN,'quiet');
         end
-        if d == 1
-            if KCS(end,2) == -1
-                FI.Merge.Dimension = 'N';
-            else
-                FI.Merge.Dimension = 'M';
+        FI2.Merge.Length = 0;
+        FI2.Merge.Indices = cell(1,nParts);
+        for d = 1:nParts
+            switch FI2.SubType
+                case 'Delft3D-trim'
+                    KCS = vs_get(FI2.NEFIS(d),'map-const','KCS','quiet');
+                case 'Delft3D-com'
+                    KCS = vs_get(FI2.NEFIS(d),'KENMCNST','KCS','quiet');
             end
+            if d == 1
+                if KCS(end,2) == -1
+                    FI2.Merge.Dimension = 'N';
+                elseif KCS(2,end) == -1
+                    FI2.Merge.Dimension = 'M';
+                else
+                    % actually not parallel simulation output
+                    return
+                end
+            end
+            switch FI2.Merge.Dimension
+                case 'M'
+                    IPart = sum(not(any(KCS==-1,1)));
+                case 'N'
+                    IPart = sum(not(any(KCS==-1,2)));
+            end
+            FI2.Merge.Indices{d} = FI2.Merge.Length + (1:IPart);
+            FI2.Merge.Length = FI2.Merge.Length + IPart;
         end
-        switch FI.Merge.Dimension
-            case 'M'
-                IPart = sum(not(any(KCS==-1,1)));
-            case 'N'
-                IPart = sum(not(any(KCS==-1,2)));
-        end
-        FI.Merge.Indices{d} = FI.Merge.Length + (1:IPart);
-        FI.Merge.Length = FI.Merge.Length + IPart;
+        FI=FI2;
+    catch
+        % fall back to processing a single file ...
     end
 end

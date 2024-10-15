@@ -29,10 +29,11 @@
 
 !
 !
-
+module m_writematrix
+      implicit none
+contains
    !> output matrix in CRS format to file
    subroutine writeMatrix(FNAM, N, ia, ja, a, VARNAM, jaappend)
-      implicit none
 
       character(len=*), intent(in) :: FNAM !< filename
 
@@ -76,3 +77,4 @@
 
       close (lunfil)
    end subroutine writeMatrix
+end module m_writematrix

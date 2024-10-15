@@ -33,14 +33,15 @@
 subroutine heatun(n, timhr, qsno)
 use m_flow
 use m_flowgeom
-use m_sferic
-use m_itdate
-use unstruc_model
-use m_flowtimes
+use m_sferic, only: jsferic
+use precision, only: comparereal, fp
+use m_flowtimes, only: dts
 use m_heatfluxes
 use m_transport, only: constituents, itemp, isalt
 use m_fm_icecover, only: ja_icecover, ice_af, ice_albedo, ice_h, ice_t, snow_albedo, snow_h, snow_t, qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
 use m_physcoef, only: backgroundsalinity
+use m_get_kbot_ktop
+use m_get_link1
 
 implicit none
 
@@ -75,9 +76,9 @@ else
     afrac = 1d0
 endif
 
-presn   = 1d-2*paver                 ! Air pressure (mbar)
-rhumn   = 1d-2*backgroundhumidity    ! ( )
-cloun   = 1d-2*backgroundcloudiness  ! ( )
+presn   = 1d-2*BACKGROUND_AIR_PRESSURE ! Air pressure (mbar)
+rhumn   = 1d-2*BACKGROUND_HUMIDITY    ! ( )
+cloun   = 1d-2*BACKGROUND_CLOUDINESS  ! ( )
 ce      = Dalton                     ! Dalton  number = 1.50e-3 (Gill, 1982)           evaporative flux
 ch      = Stanton                    ! Stanton number = 1.45e-3 (Friehe&Schmitt, 1976) convective heat flux
 qsun    = 0d0
@@ -333,7 +334,7 @@ else if (jatem == 5) then
           else  
              salinity = backgroundsalinity
           endif    
-          call preprocess_icecover(n, Qlong_ice, twatn, salinity, windn, timhr)
+          call preprocess_icecover(n, Qlong_ice, twatn, salinity, windn)
        endif
        !
        if (ice_h(n) > MIN_THICK) then

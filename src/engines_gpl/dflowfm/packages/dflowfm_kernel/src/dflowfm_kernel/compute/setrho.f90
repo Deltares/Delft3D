@@ -32,6 +32,7 @@
 
 subroutine setrhokk(kk) ! fill rho of one column
    use m_flow, only: rho, density_is_pressure_dependent, kmxn
+   use m_get_kbot_ktop
    implicit none
    integer :: kk
    integer :: kb, kt, k

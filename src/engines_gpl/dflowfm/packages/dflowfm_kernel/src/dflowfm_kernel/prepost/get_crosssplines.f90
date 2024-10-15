@@ -83,7 +83,7 @@ subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
       xlist(1:numj) = xsp(js, 1:numj)
       ylist(1:numj) = ysp(js, 1:numj)
       call sect3r(xs1, ys1, xlist, ylist, &
-                  1, 1, max(num, numj), crp, num, numj, numcro, tt, tj, xp, yp)
+                  max(num, numj), crp, num, numj, numcro, tt, tj, xp, yp)
 
       if (abs(crp) < dtolcos) then
          numcro = 0d0

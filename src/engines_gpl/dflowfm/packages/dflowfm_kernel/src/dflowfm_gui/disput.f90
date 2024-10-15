@@ -29,20 +29,20 @@
 
 !
 !
-
+module m_disput
+   implicit none
+contains
    subroutine DISPUT(NPUT)
       use M_SFERIC
       use M_DEVICES
       use network_data, only: kn3typ
       use m_missing, only: JINS
-      implicit none
-      integer :: jav
-      integer :: jview
-      double precision :: xyz
-      integer :: NPUT
+      use m_howtoview
+      use m_ktext
 
-      common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
+      integer :: NPUT
       character TEX * 32
+
       if (NPUT == 0) then
          TEX = ' GET A POINT                    '
       else if (NPUT == 1) then
@@ -217,3 +217,4 @@
 
       return
    end subroutine DISPUT
+end module m_disput

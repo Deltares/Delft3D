@@ -177,6 +177,7 @@ contains
    subroutine readprovider(minp, qid, filename, filetype, method, operand, transformcoef, ja, varname, smask, maxSearchRadius)
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use MessageHandling, only: LEVEL_WARN, LEVEL_INFO, mess
+      use m_qnerror
       ! globals
       integer, intent(in) :: minp !< File handle to already opened input file.
       integer, intent(out) :: filetype !< File type of current quantity.
@@ -377,9 +378,9 @@ contains
       pairs(5)%key = 'AVERAGINGTYPE'
       pairs(5)%value = 4
       pairs(6)%key = 'TRACERFALLVELOCITY'
-      pairs(6)%value = 4
+      pairs(6)%value = 24
       pairs(7)%key = 'TRACERDECAYTIME'
-      pairs(7)%value = 5
+      pairs(7)%value = 25
       pairs(8)%key = 'RELATIVESEARCHCELLSIZE'
       pairs(8)%value = 5
       pairs(9)%key = 'EXTRAPOLTOL'
@@ -777,6 +778,7 @@ contains
       use kdtree2Factory
       use unstruc_messages
       use m_find_flownode, only: find_nearest_flownodes_kdtree
+      use m_wall_clock_time
 
       implicit none
 
@@ -805,7 +807,7 @@ contains
       Nj = j2 - j1 + 1
 
       if (ini == 0) then
-         call klok(t0)
+         call wall_clock_time(t0)
 
          allocate (jasea(i1:i2, j1:j2), stat=ierr)
 
@@ -900,7 +902,7 @@ contains
             end do
          end if
 
-         call klok(t1)
+         call wall_clock_time(t1)
          write (str, "('SAL/aggregate waterlevels, elapsed time: ', G15.5, 's.')") t1 - t0
          call mess(LEVEL_INFO, trim(str))
 
@@ -1073,6 +1075,8 @@ contains
    end subroutine findleftright
 
    subroutine selfattraction(avhs, self, i1, i2, j1, j2, jaselfal)
+      use m_shaec
+      use m_shsec
       implicit none
 
       ! Input\Output parameter
@@ -3382,7 +3386,7 @@ contains
          dtab, rlslat, rlslon, rlat, rlong, potent
       double precision :: elmnts(6), can(maxdat), san(maxdat)
       double precision :: cansum(0:3, 2:3), sansum(0:3, 2:3)
-      character * 80 record
+      character(len=80) record
       logical permnt
       double precision, save :: FACTORIAL(0:6)
 
@@ -5261,7 +5265,7 @@ contains
    ! ==========================================================================
    !>
    subroutine xxpolyint(xs, ys, zs, kcs, ns, & ! interpolate in a polyline like way
-                        x, y, z, kc, kx, mnx, jintp, xyen, indxn, wfn)
+                        x, y, z, kx, mnx, jintp, xyen, indxn, wfn)
 
       implicit none
 
@@ -5277,7 +5281,6 @@ contains
       double precision, dimension(:), intent(in) :: x !< Grid points (where to interpolate to)
       double precision, dimension(:), intent(in) :: y
       double precision, dimension(kx*mnx), intent(out) :: z !< Output array for interpolated values. Dimension: mnx*kx
-      integer, dimension(:), intent(in) :: kc !< Target (grid) points mask
       integer, intent(in) :: jintp !< (Re-)interpolate if 1 (otherwise use index weights)
 
       double precision, dimension(:, :), intent(in) :: xyen !< cellsize / tol
@@ -5679,7 +5682,7 @@ contains
 
          deallocate (xs, ys, kcs)
 
-      elseif (filetype == node_id) then
+      elseif (filetype == NODE_ID) then
 
          ierr = findlink_by_nodeid(filename, m)
          if (m <= 0) then
@@ -5721,7 +5724,7 @@ contains
    !! * branchid+chainage: the one flow link on this location is selected.
    !! * contactid: the one flow link on this mesh contact is selected.
    !! Only one of these methods is tried, based on loc_spec_type input.
-   subroutine selectelset_internal_links(xz, yz, nx, ln, lnx, keg, numg, &
+   subroutine selectelset_internal_links(lnx, keg, numg, &
                                          loc_spec_type, loc_file, nump, xpin, ypin, branchindex, chainage, contactId, linktype, &
                                          xps, yps, nps, lftopol, sortLinks)
       use m_inquire_flowgeom
@@ -5729,14 +5732,11 @@ contains
       use dfm_error
       use messageHandling
       use m_polygon
+      use m_reapol
 
       implicit none
 
       !inputs
-      double precision, intent(in) :: xz(:) !< Flow nodes center x-coordinates. (Currently unused).
-      double precision, intent(in) :: yz(:) !< Flow nodes center y-coordinates. (Currently unused).
-      integer, intent(in) :: nx !< Number of flow nodes in input. (Currently unused).
-      integer, intent(in) :: ln(:, :) !< Flow link table. (Currently unused).
       integer, intent(in) :: lnx !< Number of flow links in input. (Currently unused).
       integer, intent(out) :: keg(:) !< Output array containing the flow link numbers that were selected.
       !< Size of array is responsability of call site, and filling starts at index 1 upon each call.
@@ -5908,6 +5908,8 @@ contains
       use m_missing
       use dfm_error
       use unstruc_messages
+      use m_delpol
+      use m_reapol
 
       implicit none
 
@@ -5936,6 +5938,8 @@ contains
 
       select case (loc_spec_type)
       case (LOCTP_POLYGON_FILE)
+         call savepol() ! save state
+         call delpol() ! clear state
          ! Fill npl, xpl, ypl from file
          call oldfil(minp, loc_file)
          call reapol(minp, 0)
@@ -5989,6 +5993,9 @@ contains
                end if
             end if
          end do
+      end if
+      if (loc_spec_type == LOCTP_POLYGON_FILE) then
+         call restorepol() ! restore state
       end if
    end subroutine selectelset_internal_nodes
 
@@ -6047,6 +6054,10 @@ contains
       use unstruc_model, only: getoutputdir
       use system_utils, only: FILESEP
       use m_arcinfo
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+      use m_reapol
+      use m_delsam
+      use m_reasam
 
       implicit none
 
@@ -6056,7 +6067,6 @@ contains
       double precision, intent(in) :: xu(nx)
       double precision, intent(in) :: yu(nx)
       double precision, intent(out) :: zu(nx)
-      integer, intent(in), optional :: kcc(nx)
 
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
@@ -6071,6 +6081,7 @@ contains
       double precision, intent(in) :: transformcoef(:) !< Transformation coefficients
       integer, intent(in) :: iprimpos ! only needed for averaging, position of primitive variables in network
       ! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
+      integer, intent(in), optional :: kcc(nx)
 
       double precision, allocatable :: zh(:)
       integer :: ierr
@@ -6190,7 +6201,7 @@ contains
                nummin = int(transformcoef(8))
             end if
 
-            if (iprimpos == 1) then ! primitime position = velocitypoint, cellfacemid
+            if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
                n6 = 4
                allocate (xx(n6, lnx), yy(n6, lnx), nnn(lnx))
                do L = 1, lnx
@@ -6205,7 +6216,7 @@ contains
                   yy(4, L) = yk(kn(2, Lk))
                end do
                nnn = 4 ! array nnn
-            else if (iprimpos == 2) then ! primitime position = waterlevelpoint, cell centre
+            else if (iprimpos == UNC_LOC_S) then ! primitime position = waterlevelpoint, cell centre
                n6 = maxval(netcell%n)
                if (jsferic == 1) then
                   n6 = n6 + 2 ! safety at poles
@@ -6219,12 +6230,12 @@ contains
                   call get_cellpolygon(n, n6, nnn(n), rcel, xx(1, n), yy(1, n), LnnL, Lorg, zz)
                end do
                deallocate (LnnL, Lorg)
-            else if (iprimpos == 3) then ! primitime position = netnode, cell corner
+            else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
 
                n6 = 3 * maxval(nmk) ! 2: safe upper bound , 3 : even safer!
                allocate (xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
                do k = 1, numk
-                  if (jakc == 0) then
+                  if (jakc == 1) then
                      if (kcc(k) /= 1) then
                         cycle
                      end if
@@ -6406,10 +6417,11 @@ contains
    !
    ! ==========================================================================
    !>
-   function timespaceinitialfield_int(xz, yz, zz, nx, filename, filetype, method, operand, transformcoef) result(success) ! deze subroutine moet veralgemeniseerd en naar meteo module
+   function timespaceinitialfield_int(xz, yz, zz, nx, filename, filetype, operand, transformcoef) result(success) ! deze subroutine moet veralgemeniseerd en naar meteo module
       use m_missing
       use m_polygon
       use geometry_module, only: dbpinpol
+      use m_reapol
       implicit none
 
       logical :: success
@@ -6420,7 +6432,6 @@ contains
       integer, intent(out) :: zz(nx)
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
-      integer, intent(in) :: method ! time/space interpolation method
       character(1), intent(in) :: operand ! file name for meteo data file
       double precision, intent(in) :: transformcoef(:) !< Transformation coefficients
       integer :: minp0, inside, k
@@ -6470,7 +6481,7 @@ module m_meteo
    use fm_external_forcings_data
    use processes_input, only: num_time_functions, funame, funinp, nosfunext, sfunname, sfuninp
    use unstruc_messages
-   use m_observations
+   use m_observations_data
    use string_module
    use m_sediment, only: stm_included, stmpar
    use m_subsidence
@@ -6730,33 +6741,33 @@ contains
       integer, intent(out) :: ec_filetype
       !
       select case (filetype)
-      case (uniform) ! 1
+      case (UNIFORM) ! 1
          ec_filetype = provFile_uniform
-      case (unimagdir) ! 2
+      case (UNIMAGDIR) ! 2
          ec_filetype = provFile_unimagdir
-      case (svwp) ! 3
+      case (SVWP) ! 3
          ec_filetype = provFile_svwp
-      case (arcinfo) ! 4
+      case (ARCINFO) ! 4
          ec_filetype = provFile_arcinfo
-      case (spiderweb) ! 5
+      case (SPIDERWEB) ! 5
          ec_filetype = provFile_spiderweb
-      case (curvi) ! 6
+      case (CURVI) ! 6
          ec_filetype = provFile_curvi
-      case (triangulation) ! 7
+      case (TRIANGULATION) ! 7
          ec_filetype = provFile_samples
-      case (triangulationmagdir) ! 8
+      case (TRIANGULATIONMAGDIR) ! 8
          ec_filetype = provFile_triangulationmagdir
-      case (poly_tim) ! 9
+      case (POLY_TIM) ! 9
          ec_filetype = provFile_poly_tim
-      case (ncgrid, ncwave) ! 11, 14
+      case (NCGRID, NCWAVE) ! 11, 14
          ec_filetype = provFile_netcdf
-      case (ncflow) ! 12
+      case (NCFLOW) ! 12
          ec_filetype = provFile_undefined ! only used for timespaceinitialfield, no EC yet.
-      case (bcascii) ! 17
+      case (BCASCII) ! 17
          ec_filetype = provFile_bc
-      case (node_id) ! -1
+      case (NODE_ID) ! 20
          ec_filetype = provFile_bc
-      case (fourier) ! 101
+      case (FOURIER) ! 101
          ec_filetype = provFile_fourier
       case default
          ec_filetype = provFile_undefined
@@ -7103,12 +7114,15 @@ contains
          jamapwav_hwav = 1
       case ('tp', 'tps', 'rtp', 'waveperiod')
          itemPtr1 => item_tp
-         dataPtr1 => twav
+         dataPtr1 => twavcom
          jamapwav_twav = 1
       case ('dir', 'wavedirection')
          itemPtr1 => item_dir
          dataPtr1 => phiwav
          jamapwav_phiwav = 1
+         ! wave height needed as the weighting factor for direction interpolation
+         itemPtr2 => item_hrms
+         dataPtr2 => hwavcom
       case ('fx', 'xwaveforce')
          itemPtr1 => item_fx
          dataPtr1 => sxwav
@@ -7120,11 +7134,11 @@ contains
       case ('wsbu')
          itemPtr1 => item_wsbu
          dataPtr1 => sbxwav
-         jamapwav_sxbwav = 1
+         jamapwav_sbxwav = 1
       case ('wsbv')
          itemPtr1 => item_wsbv
          dataPtr1 => sbywav
-         jamapwav_sybwav = 1
+         jamapwav_sbywav = 1
       case ('mx')
          itemPtr1 => item_mx
          dataPtr1 => mxwav
@@ -7133,7 +7147,7 @@ contains
          itemPtr1 => item_my
          dataPtr1 => mywav
          jamapwav_mywav = 1
-      case ('dissurf', 'freesurfacedissipation')
+      case ('dissurf', 'wavebreakerdissipation')
          itemPtr1 => item_dissurf
          dataPtr1 => dsurf
          jamapwav_dsurf = 1
@@ -7173,7 +7187,7 @@ contains
          continue
       case ('friction_coefficient_Chezy', 'friction_coefficient_Manning', 'friction_coefficient_WalLlawNikuradse', &
             'friction_coefficient_WhiteColebrook', 'friction_coefficient_StricklerNikuradse', &
-            'friction_coefficient_Strickler', 'friction_coefficient_deDosBijkerk')
+            'friction_coefficient_Strickler', 'friction_coefficient_deBosBijkerk')
          itemPtr1 => item_frcutim ! the same for all types (type is stored elsewhere)
       case ('bedrock_surface_elevation')
          itemPtr1 => item_subsiduplift
@@ -7296,7 +7310,7 @@ contains
    !> Replacement function for FM's meteo1 'addtimespacerelation' function.
    logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
                                             xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                            dtnodal, quiet, varname, maxSearchRadius, targetMaskSelect, &
+                                            dtnodal, quiet, varname, varname2, targetMaskSelect, &
                                             tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                             tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
                                             multuni1, multuni2, multuni3, multuni4)
@@ -7332,7 +7346,7 @@ contains
       real(hp), optional, intent(in) :: dtnodal !< update interval for nodal factors
       logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
       character(len=*), optional, intent(in) :: varname !< variable name within filename
-      real(hp), optional, intent(in) :: maxSearchRadius !< max search radius in case method==11
+      character(len=*), optional, intent(in) :: varname2 !< variable name within filename
       character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
       real(hp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
       real(hp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
@@ -7502,7 +7516,11 @@ contains
                   if (present(dtnodal)) then
                      success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.d0, varname=varname)
                   else
-                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname)
+                     if (present(varname2)) then
+                        success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname, varname2=varname2)
+                     else
+                        success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname)
+                     end if
                   end if
                   if (.not. success) then
                      ! message = ecGetMessage()
@@ -7746,7 +7764,7 @@ contains
                srcmask%msk = 1
             end if
 
-            success = timespaceinitialfield_int(x, y, srcmask%msk, ndx, srcmaskfile, inside_polygon, ec_method, operand, transformcoef) ! zie meteo module
+            success = timespaceinitialfield_int(x, y, srcmask%msk, ndx, srcmaskfile, inside_polygon, operand, transformcoef) ! zie meteo module
             if (.not. success) then
                write (msgbuf, '(3a)') 'Error while reading mask file ''', trim(srcmaskfile), '''.'
                call err_flush()
@@ -7919,9 +7937,9 @@ contains
             ! wave data is read from a com.nc file produced by D-Waves which contains one time field only
             fileReaderPtr%one_time_field = .true.
          end if
-      case ('wavesignificantheight', 'waveperiod', 'wavedirection', 'xwaveforce', 'ywaveforce', &
-            'freesurfacedissipation', 'whitecappingdissipation', 'totalwaveenergydissipation')
-         ! the name of the source item created by the file reader will be the same as the ext.force. quant name
+      case ('wavesignificantheight', 'waveperiod', 'xwaveforce', 'ywaveforce', &
+            'wavebreakerdissipation', 'whitecappingdissipation', 'totalwaveenergydissipation')
+         ! the name of the source item created by the file reader will be the same as the ext.force. var name
          sourceItemName = varname
       case ('airpressure', 'atmosphericpressure')
          if (ec_filetype == provFile_arcinfo) then
@@ -8386,7 +8404,6 @@ contains
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported quantity specified in ext-file (connect source and target): '//trim(target_name)//'.')
          end if
-         return
       end select
 
       if (sourceItemName /= ' ') then
@@ -8565,6 +8582,9 @@ contains
       end if
       if (trim(group_name) == 'bedrock_surface_elevation') then
          if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_subsiduplift, irefdate, tzone, tunit, timesteps)) return
+      end if
+      if (index(group_name, 'wavedirection') == 1) then
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dir, irefdate, tzone, tunit, timesteps)) return
       end if
       success = .true.
    end function ec_gettimespacevalue_by_name

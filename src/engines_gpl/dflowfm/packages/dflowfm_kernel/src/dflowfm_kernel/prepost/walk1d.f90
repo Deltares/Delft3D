@@ -46,7 +46,7 @@
         if (LC(L) == 0 .and. KN(3, L) == KN316) then
 
            call OTHERNODE(K1, L, K2)
-           call GAANWESTOPPEN(K2, KN316, JASTOP, L)
+           call GAANWESTOPPEN(K2, KN316, JASTOP)
 
            LC(L) = IBR; NRL = NRL + 1
            LIB(NRL) = L; K1BR(NRL) = K1; IBN(NRL) = IBR; NRLB(L) = NRL

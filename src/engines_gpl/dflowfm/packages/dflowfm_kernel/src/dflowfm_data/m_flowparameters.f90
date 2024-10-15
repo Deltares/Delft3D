@@ -134,6 +134,8 @@ module m_flowparameters
 
    integer :: jawaveStokes !< Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
 
+   integer :: jawavebreakerturbulence !< Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+
    integer :: jawavedelta = 1 !< Wave boundary layer formulation: 1=Sana 2007
 
    integer :: jawaveforces !< Apply wave forces to model (1, default), or not (0)
@@ -487,7 +489,8 @@ module m_flowparameters
    integer :: jahisvelocity !< Write velocity magnitude to his file, 0: no, 1: yes
    integer :: jahisdischarge !< Write discharge magnitude to his file, 0: no, 1: yes
    integer :: jahisrunupgauge !< Write runupgauge       to his file, 0: no, 1: yes
-   integer :: jahiswaqbot !< Write wqbot            to his file, 0: no, 1: yes
+   integer :: jahiswqbot !< Write wqbot to his file, 0: no, 1: yes
+   integer :: jahiswqbot3d !< Write wqbot3d to his file, 0: no, 1: yes
    integer :: jahistracers !< Write tracers          to his file, 0: no, 1: yes
    integer :: jahiscrs_flow !< Write crs_flow         to his file, 0: no, 1: yes
    integer :: jahiscrs_constituents !< Write crs_constituents to his file, 0: no, 1: yes
@@ -559,8 +562,8 @@ module m_flowparameters
    integer :: jamapwav_phiwav !< output waves to map file for variable phiwav, 0: no, 1: yes
    integer :: jamapwav_sxwav !< output waves to map file for variable sxwav,  0: no, 1: yes
    integer :: jamapwav_sywav !< output waves to map file for variable sywav,  0: no, 1: yes
-   integer :: jamapwav_sxbwav !< output waves to map file for variable sxbwav, 0: no, 1: yes
-   integer :: jamapwav_sybwav !< output waves to map file for variable sybwav, 0: no, 1: yes
+   integer :: jamapwav_sbxwav !< output waves to map file for variable sxbwav, 0: no, 1: yes
+   integer :: jamapwav_sbywav !< output waves to map file for variable sybwav, 0: no, 1: yes
    integer :: jamapwav_mxwav !< output waves to map file for variable mxwav,  0: no, 1: yes
    integer :: jamapwav_mywav !< output waves to map file for variable mywav,  0: no, 1: yes
    integer :: jamapwav_dsurf !< output waves to map file for variable dsurf,  0: no, 1: yes
@@ -587,6 +590,7 @@ module m_flowparameters
    integer :: jamapFlowAnalysis !< Write flow analysis output to map file
    integer :: jamapNearField !< Nearfield related output
    integer :: jamapice !< Ice cover related output
+   integer :: jamapwqbot3d !< Write wqbot3d to map file, 0: no, 1: yes
 
 ! read from restart
    integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
@@ -761,6 +765,8 @@ contains
       jawavestreaming = 0 ! Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
 
       jawavestokes = 1 ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
+
+      jawavebreakerturbulence = 1 ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 
       jawavedelta = 1 ! Wave boundary layer formulation: 1=Sana; 2=Nguyen
 
@@ -991,7 +997,8 @@ contains
       jahisvelocity = 1
       jahisdischarge = 1
       jahisrunupgauge = 1
-      jahiswaqbot = 1
+      jahiswqbot = 1
+      jahiswqbot3d = 0
       jahistracers = 1
       jahiscrs_flow = 1
       jahiscrs_constituents = 1
@@ -1054,6 +1061,7 @@ contains
       jamapFlowAnalysis = 0
       jamapNearField = 0
       jamapice = 0
+      jamapwqbot3d = 0
 
       jarstignorebl = 0
 

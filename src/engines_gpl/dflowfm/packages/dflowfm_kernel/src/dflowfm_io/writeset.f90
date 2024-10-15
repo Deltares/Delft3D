@@ -34,7 +34,7 @@
     implicit none
     integer :: kk, nr
     character(len=132) :: a(100)
-    character * (*) fnam
+    character(len=*) fnam
     integer :: l, mout, k
 
     L = index(fnam, '_')

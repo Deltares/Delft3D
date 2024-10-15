@@ -30,6 +30,9 @@
 !
 !
 module m_flow_flowinit
+   use m_inifcori
+   use m_inidensconstants
+   use m_alloc_jacobi
 
    implicit none
 
@@ -68,12 +71,17 @@ contains
       use timers, only: timstrt, timstop
       use m_sethu
       use fm_external_forcings
-      use m_1d2d_fixedweirs, only: n_1d2d_fixedweirs, realloc_1d2d_fixedweirs, initialise_1d2d_fixedweirs
       use m_fm_icecover, only: ice_apply_pressure, ice_p, fm_ice_update_press
       use fm_manhole_losses, only: init_manhole_losses
       use unstruc_channel_flow, only: network
       use m_fixedweirs, only: weirdte, nfxw
       use m_setup_structures_and_weirs_list, only: build_structures_and_weirs_list
+      use m_qnerror
+      use string_module, only: str_lower
+      use m_delpol
+      use m_set_kbot_ktop
+      use m_ini_sferic
+      use m_volsur
 
       implicit none
 
@@ -329,7 +337,7 @@ contains
       end if
 
       if (jaFlowNetChanged == ON .or. nodtot /= ndx .or. lintot /= lnx) then
-         call reducept(Ndx, Ndxi, Lnx) ! also alloc arrays for reduce
+         call reducept(Ndx, Lnx) ! also alloc arrays for reduce
          if (icgsolver == 10) then
             call alloc_jacobi(ndx, lnx)
          end if
@@ -374,6 +382,7 @@ contains
       use dfm_error
       use m_partitioninfo, only: jampi, reduce_int1_max
       use m_cell_geometry, only: ndx
+      use m_qnerror
 
       implicit none
 
@@ -606,6 +615,7 @@ contains
       use iso_varying_string, only: len_trim
       use m_samples, only: NS, restoresam, savesam
       use MessageHandling, only: LEVEL_WARN, mess
+      use m_reasam
 
       implicit none
 
@@ -767,6 +777,8 @@ contains
       use iso_varying_string, only: len_trim, index
       use m_setucxcuy_leastsquare, only: reconst2nd
       use dfm_error
+      use m_set_bobs
+      use m_flow_obsinit
 
       implicit none
 
@@ -842,6 +854,7 @@ contains
    subroutine initialize_values_at_normal_velocity_boundaries()
       use fm_external_forcings_data, only: nbndn, kbndn, zbndn
       use m_flow, only: u1
+      use m_get_Lbot_Ltop
 
       implicit none
 
@@ -1051,6 +1064,7 @@ contains
       use m_flowparameters, only: jasal
       use m_flow, only: kmx, ndkx, sa1
       use fm_external_forcings_data, only: success
+      use m_set_kbot_ktop
 
       implicit none
 
@@ -1193,6 +1207,7 @@ contains
       use m_flow, only: kmx, u1
       use m_flowparameters, only: inivel
       use m_flowgeom, only: lnx
+      use m_get_Lbot_Ltop
 
       implicit none
 
@@ -1211,22 +1226,24 @@ contains
 
 !> set wave modelling
    subroutine set_wave_modelling()
-      use m_flowparameters, only: jawave, flowWithoutWaves
+      use m_flowparameters, only: jawave, flowWithoutWaves, waveforcing, jawavestokes
       use m_flow, only: hs, hu, kmx
       use mathconsts, only: sqrt2_hp
-      use m_waves, only: hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
-      use m_flowgeom, only: lnx, ln, csu, snu
-      use m_sferic, only: dg2rd
+      use m_waves !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
+      use m_flowgeom, only: lnx, ln, csu, snu, ndx
+      use m_physcoef, only: ag
+      use m_transform_wave_physics
 
       implicit none
 
       integer, parameter :: SWAN = 3
       integer, parameter :: CONST = 5
-      integer, parameter :: SWAN_NetCDF = 6
+      integer, parameter :: SWAN_NETCDF = 6
 
       integer :: link
       integer :: left_node
       integer :: right_node
+      integer :: ierror
 
       double precision :: hw
       double precision :: tw
@@ -1237,16 +1254,25 @@ contains
       double precision :: ustt
       double precision :: hh
 
-      if ((jawave == SWAN .or. jawave == SWAN_NetCDF) .and. .not. flowWithoutWaves) then
+      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flowWithoutWaves) then
          ! Normal situation: use wave info in FLOW
          hs = max(hs, 0d0)
-         if (jawave == SWAN_NetCDF) then
+         if (jawave >= SWAN_NETCDF) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
             hwav = hwavcom
          end if
          hwav = min(hwav, gammax * hs)
+         !
+         if (jawave == 7) then
+            call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
+                               & sxwav, sywav, mxwav, mywav, &
+                               & distot, dsurf, dwcap, &
+                               & ndx, 1, hwav, twav, &
+                               & ag, .true., waveforcing, &
+                               & JONSWAPgamma0, sbxwav, sbywav, ierror)
+         end if
          !
          call wave_uorbrlabda()
          if (kmx == 0) then
@@ -1257,11 +1283,11 @@ contains
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave == SWAN_NetCDF) .and. flowWithoutWaves) then
+      if ((jawave == SWAN .or. jawave == SWAN_NETCDF) .and. flowWithoutWaves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
-         if (jawave == SWAN_NetCDF) then
+         if (jawave == SWAN_NETCDF) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
@@ -1276,18 +1302,21 @@ contains
          hwav = min(hwavcom, gammax * hs)
          call wave_uorbrlabda()
          if (kmx == 0) then
-            do link = 1, lnx
-               left_node = ln(1, link)
-               right_node = ln(2, link)
-               hh = hu(link)
-               hw = 0.5d0 * (hwav(left_node) + hwav(right_node))
-               tw = 0.5d0 * (twav(left_node) + twav(right_node))
-               csw = 0.5 * (cos(phiwav(left_node) * dg2rd) + cos(phiwav(right_node) * dg2rd))
-               snw = 0.5 * (sin(phiwav(left_node) * dg2rd) + sin(phiwav(right_node) * dg2rd))
-               call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
-               ustokes(link) = ustt * (csu(link) * csw + snu(link) * snw)
-               vstokes(link) = ustt * (-snu(link) * csw + csu(link) * snw)
-            end do
+            if (jawavestokes > 0) then
+               do link = 1, lnx
+                  left_node = ln(1, link)
+                  right_node = ln(2, link)
+                  hh = hu(link)
+                  hw = 0.5d0 * (hwav(left_node) + hwav(right_node))
+                  tw = 0.5d0 * (twav(left_node) + twav(right_node))
+                  csw = 0.5 * (cosd(phiwav(left_node)) + cosd(phiwav(right_node)))
+                  snw = 0.5 * (sind(phiwav(left_node)) + sind(phiwav(right_node)))
+                  call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
+                  ustokes(link) = ustt * (csu(link) * csw + snu(link) * snw)
+                  vstokes(link) = ustt * (-snu(link) * csw + csu(link) * snw)
+               end do
+            end if
+            !
             call tauwave()
          end if
       end if
@@ -1301,6 +1330,7 @@ contains
       use m_cell_geometry, only: ndx
       use m_flowtimes, only: jarestart
       use m_missing, only: dmiss
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -1378,6 +1408,7 @@ contains
       use m_flow, only: kmx, tem1
       use m_flowparameters, only: initem2D
       use m_cell_geometry, only: ndx
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -1404,6 +1435,7 @@ contains
       use m_cell_geometry, only: ndx
       use m_sediment, only: mxgr, sed, sedh
       use m_missing, only: dmiss
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -1432,6 +1464,7 @@ contains
       use m_flowparameters, only: jasal, jatem
       use m_flowgeom, only: ln, lnx, lnxi
       use m_flow, only: sa1, q1, tem1
+      use m_get_Lbot_Ltop
 
       implicit none
 
@@ -1521,6 +1554,7 @@ contains
       use m_cell_geometry, only: ndx
       use m_sediment, only: stm_included
       use m_turbulence, only: rhowat
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -1556,6 +1590,13 @@ contains
       use m_partitioninfo
       use geometry_module, only: dbdistance, half, normalout
       use m_sethu
+      use m_dminmax
+      use m_get_kbot_ktop
+      use m_wripol
+      use m_set_kbot_ktop
+      use m_ini_sferic
+      use m_set_bobs
+      use m_get_czz0
 
       implicit none
 

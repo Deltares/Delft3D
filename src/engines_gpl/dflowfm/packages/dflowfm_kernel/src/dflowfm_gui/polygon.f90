@@ -29,20 +29,26 @@
 
 !
 !
+module m_sub_polygon
+   implicit none
+contains
+   subroutine POLYGON(X, Y, N, NCOL)
+      use m_colnow
+      use m_set_col
+      use m_lnabs
+      use m_ptabs
 
-    subroutine POLYGON(X, Y, N, NCOL)
-       implicit none
-       integer :: i
-       integer :: n
-       integer :: ncol
-       integer :: ncolnow
-       double precision :: X(N), Y(N)
-       common / COLNOW / NCOLNOW
-       call SETCOL(NCOL)
-       call PTABS(X(1), Y(1))
-       do I = 2, N
-          call LNABS(X(I), Y(I))
-       end do
-       call LNABS(X(1), Y(1))
-       return
-    end
+      integer :: i
+      integer :: n
+      integer :: ncol
+      double precision :: X(N), Y(N)
+
+      call SETCOL(NCOL)
+      call PTABS(X(1), Y(1))
+      do I = 2, N
+         call LNABS(X(I), Y(I))
+      end do
+      call LNABS(X(1), Y(1))
+      return
+   end
+end module m_sub_polygon

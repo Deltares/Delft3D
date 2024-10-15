@@ -48,6 +48,7 @@
       use message_module, only: write_warning
       use m_flowgeom
       use m_fm_erosed
+      use m_get_kbot_ktop
       !
       implicit none
       !
@@ -100,7 +101,7 @@
                         !
                         reducmesscount = reducmesscount + 1
                         if (reducmesscount <= reducmessmax) then
-                           write (message, '(a,i0,a,f12.2,a,i0,a,2(f12.0,a),a,i0,a)') &
+                           write (message, '(a,i0,a,f12.2,a,i0,a,2(f12.0,a),i0,a)') &
                               & 'Source and sink term sediment ', l, ' reduced with factor', &
                               & 1 / reducfac, ' node number=(', nm, ') at x=', xz(nm), ', y=', yz(nm), ', after ', int(dnt), ' timesteps.'
                            call write_warning(message, unit=mdia)

@@ -29,10 +29,13 @@
 
 !
 !
-
+module m_ptabs
+   implicit none
+contains
       subroutine PTABS(X, Y)
-         use unstruc_opengl
-         implicit none
+         use unstruc_opengl, only: InOpenGLRendering, DrawPoint
+         use m_dproject
+
          double precision :: x, y, xx, yy
          call DPROJECT(X, Y, XX, YY, 1)
          if (InOpenGLRendering) then
@@ -40,4 +43,5 @@
          else
             call IGRPOINT(real(XX), real(YY))
          end if
-      end
+      end subroutine PTABS
+end module m_ptabs

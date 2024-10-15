@@ -29,14 +29,19 @@
 
 !
 !
-
+module m_fieldopt
+         implicit none
+contains
       subroutine FIELDOPT(NFLD)
          use M_GRID
-         implicit none
+         use m_menuv2
+         use m_local_refine
+         use m_fieldop
+
          integer :: nfld
          integer, parameter :: MAXOP = 64
-         integer :: nwhat2, maxexp, maxopt, i
-         character * 40 OPTION(MAXOP), exp(MAXOP), FIELDOP
+         integer :: nwhat2, maxopt, i
+         character(len=40) OPTION(MAXOP), exp(MAXOP)
          exp(1) = 'MENU 10                                 '
          exp(2) = 'GRID EDIT OPTIONS                       '
          MAXOPT = 22
@@ -44,7 +49,7 @@
             OPTION(I) = FIELDOP(I)
          end do
          NWHAT2 = NFLD
-         call MENUV2(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV2(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
             if (NWHAT2 == 19) then
                call ORTHOGRID(1, 1, MC, NC)
@@ -58,3 +63,4 @@
          end if
          return
       end subroutine fieldopt
+end module m_fieldopt

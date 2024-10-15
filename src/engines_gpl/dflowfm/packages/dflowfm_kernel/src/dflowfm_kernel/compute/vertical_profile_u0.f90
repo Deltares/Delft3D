@@ -41,8 +41,8 @@
     use m_sferic
     use m_filter, only: ustar, itype
     implicit none
-    double precision :: a(kmxx), b(kmxx), c(kmxx), d(kmxx), e(kmxx), dzu(kxL), womegu(kxL - 1), dzv(kmxx)
     integer :: Lb, Lt, kxL, LL
+    double precision :: a(kmxx), b(kmxx), c(kmxx), d(kmxx), e(kmxx), dzu(kxL), womegu(kxL - 1), dzv(kmxx)
 
     integer :: L, k, k1, k2
     double precision :: dzLw, vstress, adv, adv1, tt, ustv, st2, agp, dzurho

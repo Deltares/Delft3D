@@ -39,6 +39,8 @@ subroutine orthonet_smooth_aspect(aspect, iexit)
    use geometry_module, only: dcosphi
    use m_sferic, only: jsferic, jasfer3D
    use m_missing, only: dxymis
+   use m_qnerror
+   use m_ktext
 
    implicit none
 

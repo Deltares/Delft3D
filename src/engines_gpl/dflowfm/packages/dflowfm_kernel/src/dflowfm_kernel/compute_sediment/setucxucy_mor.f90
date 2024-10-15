@@ -41,6 +41,7 @@
       use m_missing
       use m_flowparameters, only: jabarrieradvection, flow_solver
       use m_sferic
+      use m_get_Lbot_Ltop
       implicit none
       double precision, dimension(lnkx), intent(in) :: u1_loc
 

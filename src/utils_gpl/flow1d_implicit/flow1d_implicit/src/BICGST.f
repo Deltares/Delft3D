@@ -197,6 +197,7 @@ c***********************************************************************
 *     .. Parameters ..
       DOUBLE PRECISION   ZERO, ONE
       PARAMETER        ( ZERO = 0.0D+0, ONE = 1.0D+0 )
+      PARAMETER          BREAKTOL=1.0D-32
 *     ..
 *     .. Local Scalars ..
       INTEGER            R, RTLD, P, PHAT, V, S, SHAT, T, MAXIT
@@ -208,7 +209,7 @@ c***********************************************************************
       double precision   resida(irmax)
 *     ..
 *     .. External Functions ..
-      EXTERNAL           GETBRK, DAXPY, DCOPY, DDOT, DNRM2, DSCAL
+      EXTERNAL           DAXPY, DCOPY, DDOT, DNRM2, DSCAL
 *     ..
 *     .. Intrinsic Functions ..
       INTRINSIC          ABS, MAX
@@ -244,9 +245,12 @@ c***********************************************************************
 *
 *     Set parameter tolerances.
 *
-      RHOTOL = GETBRK()
+*     Both `RHOTOL` and `OMEGATOL` used to be set
+*     by GETBRK(). This caused IFX in release to fail.
+*     See UNST-8316      
+      RHOTOL = BREAKTOL
       RHOTLE = SQRT(RHOTOL)*2.D0
-      OMEGATOL = GETBRK()
+      OMEGATOL = BREAKTOL
 cjk
 cjk   After 15 iterations the iteration will be started again
       ITER = 0

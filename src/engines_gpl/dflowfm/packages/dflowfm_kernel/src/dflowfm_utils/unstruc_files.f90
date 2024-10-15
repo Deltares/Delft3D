@@ -33,7 +33,7 @@
 module unstruc_files
 !! Centralizes unstruc file management (formerly in REST.F90)
 
-   use unstruc_messages
+   use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess, msgbuf, msg_flush
    use dflowfm_version_module
    use time_module, only: seconds_to_datetimestring
 
@@ -446,17 +446,6 @@ contains
 
       return
    end subroutine SYSFIL
-
-!> Constructs the full path to a file in the system directory.
-   function getfilename(ftype, success)
-      character(len=255) :: getfilename
-      character(len=*), intent(in) :: ftype
-      logical, optional, intent(out) :: success
-
-!    fullpath = trim(pathdi)//trim(filename)
-      getfilename = 'todo'
-      success = .true.
-   end function getfilename
 
 !> Gets the basename of a file. By default this is the filename without its extension.
 !! Optionally, a file category may be specified, such that e.g., '_net.nc'

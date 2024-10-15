@@ -62,10 +62,10 @@
       integer       i
       integer       irlen
       integer       plform
-      character*256 filnam
+      character(len=256) filnam
       integer       filtyp
       integer       filsta
-      character*6   binary
+      character(len=6) binary
       binary = 'BINARY'
       plform = PL_DOS
 !

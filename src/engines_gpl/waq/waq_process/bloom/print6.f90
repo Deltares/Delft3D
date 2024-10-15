@@ -82,8 +82,20 @@ contains
         if (idump == 0) go to 170
         50 npause = npause + 5
         write (outdbg, 60) jnow
-        60 format ('  Error message issued for interval ', I2, ':')
-        go to (70, 90, 110, 130, 150), irs(2)
+60      format ('  Error message issued for interval ', I2, ':')
+
+        if ( irs(2) == 1 ) then
+           goto 70
+        else if ( irs(2) == 2 ) then
+           goto 90
+        else if ( irs(2) == 3 ) then
+           goto 110
+        else if ( irs(2) == 4 ) then
+           goto 130
+        else if ( irs(2) == 5 ) then
+           goto 150
+        end if
+   
         70 write (outdbg, 80)
         80 format('  Solution is feasible, but not yet optimal')
         go to 170

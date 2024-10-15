@@ -34,6 +34,7 @@
      use m_polygon
      use M_LANDBOUNDARY
      use M_MISSING
+     use m_delpol
      implicit none
 
      integer :: k

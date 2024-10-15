@@ -61,7 +61,7 @@
          write(*,'(a,a)') '*** Error message: ', trim(error_message)
 
       endif
-      call prop_get_string(mdu_ptr, 'output', 'WAQOutputDir', waq_output_dir,waq_output_dir_found)
+      call prop_get(mdu_ptr, 'output', 'WAQOutputDir', waq_output_dir,waq_output_dir_found)
 
 
 

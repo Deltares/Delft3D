@@ -31,7 +31,6 @@ if (WIN32)
                                 swan
                                 ) 
 
-    oss_include_libraries(${library_name} library_dependencies)
     target_link_libraries(${library_name} ${library_dependencies})
 
     # Set linker properties
@@ -77,8 +76,6 @@ if(UNIX)
                                 esmfsm
                                 netcdff
                                 )
-                                
-    oss_include_libraries(${library_name} library_dependencies)
 
     target_link_libraries(${library_name}
          ${library_dependencies}

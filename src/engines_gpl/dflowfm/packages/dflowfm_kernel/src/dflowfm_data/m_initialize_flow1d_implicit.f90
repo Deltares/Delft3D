@@ -300,7 +300,7 @@ contains
 !FM1DIMP2DO: I am now adapting the input for using the morphodynamic implementation of Pure 1D. However,
 !I amnot sure it is the best. This should be revisited with Bert :).
       if (jased > 0 .and. stm_included) then !passing if no morphpdynamics
-         stmpar%morpar%mornum%pure1d = 1
+         stmpar%morpar%mornum%pure1d = .true.
          call init_1dinfo() !<initialize_flow1d_implicit> is called before <init_1dinfo>. We have to call it here and it will not be called again because it will be allocated.
       end if
 
@@ -790,7 +790,7 @@ contains
 
       use m_f1dimp
       use m_flowgeom, only: ndx, bai_mor, ba, bl, dx, lnx, dxi, acl, wu, snu, csu, wu_mor, wcx1, wcx2, wcy1, wcy2, kcu, wcl, lnxi, griddim
-      use m_flow, only: s0, s1, u1, au, hu, qa, frcu_mor, frcu, z0urou, ifrcutp, taubxu, ucx_mor, ucy_mor, ustb
+      use m_flow, only: s0, s1, u1, au, hu, qa, frcu_mor, frcu, z0urou, ifrcutp, taubxu, ucx_mor, ucy_mor, ustb, z0ucur
       use m_sediment, only: stmpar, jased, stm_included, kcsmor
       use m_fm_erosed, only: ndx_mor, lsedtot, lnx_mor, pmcrit, link1, ln_mor, hs_mor, ucxq_mor, ucyq_mor, uau
       use m_turbulence, only: rhowat
@@ -964,6 +964,7 @@ contains
       call reallocate_fill(csu, grd_ghost_link_closest, lnx, lnx_mor)
       call reallocate_fill(wu_mor, grd_ghost_link_closest, lnx, lnx_mor)
       call reallocate_fill(z0urou, grd_ghost_link_closest, lnx, lnx_mor)
+      call reallocate_fill(z0ucur, grd_ghost_link_closest, lnx, lnx_mor)
       call reallocate_fill(taubxu, grd_ghost_link_closest, lnx, lnx_mor)
       call reallocate_fill(wcx1, grd_ghost_link_closest, lnx, lnx_mor)
       call reallocate_fill(wcx2, grd_ghost_link_closest, lnx, lnx_mor)
@@ -1001,7 +1002,7 @@ contains
          call flow_sedmorinit()
          griddim%nmub = ndx !restore to the original size because it is used for exporting data
 
-         stmpar%morpar%mornum%pure1d = 1 !we have set it for reading <init_1dinfo> but we have to set it again because it is overwritten in <flow_sedmorinit>
+         stmpar%morpar%mornum%pure1d = .true. !we have set it for reading <init_1dinfo> but we have to set it again because it is overwritten in <flow_sedmorinit>
 
 !FM1DIMP2DO: We could do the same trick and call <lnx_mor> in <flow_waveinit>, but some variables have been moved to another module after JR merge. Hence, we reallocate in this routine.
 !call flow_waveinit()

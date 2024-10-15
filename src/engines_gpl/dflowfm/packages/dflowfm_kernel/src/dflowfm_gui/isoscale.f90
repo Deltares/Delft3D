@@ -30,44 +30,44 @@
 !
 !
 
+module m_isoscale
+
+implicit none
+
+contains
+
   subroutine ISOSCALE() !   COPY OF ISOSCALE, DIRTY BUT QUICK
      use unstruc_colors
-     use M_isoscaleunit
+     use m_isoscaleunit
      use m_flowgeom, only: ndx
      use m_netw, only: nump, numk
      use m_polygon, only: npl
-     use unstruc_display
+     use unstruc_display, only: ndrawpol
+     use m_depmax
+     use m_hardcopy
+     use m_scalepos
+     use m_vfac
+     use m_drawthis
+     use m_gtext
+     use m_jgtext
+     use m_dispform_scale
+     use m_box_nop
+     use m_fbox_nop
+     use m_set_col
 
-     implicit none
-     double precision :: dv
      double precision :: hic
-     integer :: i, j, ihcopts, jaauto, ncols, ndec, ndraw, nhcdev, nie, nis, numhcopts, nv, nvec
+     integer :: i, j
      integer :: INC
-
-     double precision :: scalesize
-     double precision :: val
-     double precision :: vfac
-     double precision :: vfacforce
-     double precision :: vmax
-     double precision :: vmin
      double precision :: wi
      double precision :: wic
      double precision :: xleg
-     double precision :: xsc
      double precision :: xsc0
      double precision :: xsc1
      double precision :: xsc2
      double precision :: yleg
-
-     double precision :: ysc
      double precision :: ysc1
      double precision :: ysc2
 
-     common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-     common / HARDCOPY / NHCDEV, NUMHCOPTS, IHCOPTS(2, 20)
-     common / DRAWTHIS / ndraw(50)
-     common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
-     common / VFAC / VFAC, VFACFORCE, NVEC
      character TEXT2 * 10, FMT * 7
      character(LEN=17) :: MINTEX, MAXTEX
      real INFOGRAPHICS
@@ -141,3 +141,5 @@
 
      return
   end
+
+end module m_isoscale

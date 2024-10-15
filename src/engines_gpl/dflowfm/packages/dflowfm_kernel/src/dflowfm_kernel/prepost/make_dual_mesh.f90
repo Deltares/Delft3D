@@ -37,6 +37,9 @@ subroutine make_dual_mesh()
    use network_data
    use m_flowgeom, only: xz, yz
    use gridoperations
+   use m_zeronet
+   use m_makenetnodescoding
+   use m_set_nod_adm
 
    implicit none
 

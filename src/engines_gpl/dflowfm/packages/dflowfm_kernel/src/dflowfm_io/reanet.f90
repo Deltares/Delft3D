@@ -33,6 +33,9 @@
       subroutine REANET(filename, k0, L0, NUMKN, NUMLN, istat)
          use m_netw
          use gridoperations
+         use m_readyy
+         use m_qn_read_error
+         use m_qn_eof_error
          implicit none
 
          character(len=*), intent(in) :: filename !< inderdaad, filename

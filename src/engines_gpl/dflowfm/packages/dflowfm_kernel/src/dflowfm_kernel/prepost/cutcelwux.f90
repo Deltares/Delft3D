@@ -37,6 +37,7 @@
      use m_polygon, only: NPL, xpl, ypl, zpl
      use geometry_module, only: dbpinpol, dbdistance
      use m_sferic, only: jsferic, jasfer3D
+     use m_readyy
 
      implicit none
      integer :: N12

@@ -2,21 +2,11 @@
 enable_language (Fortran)
 set(src_root_dir ${CMAKE_SOURCE_DIR}/..)
 
-add_library(strict_compiler_warnings INTERFACE)
-# Disable warning 5268, allow text longer than 132 characters
-set(windows_extra_warning_flags /warn:errors /warn:all /warn:stderrors /Qdiag-disable:5268)
-set(linux_extra_warning_flags "SHELL:-warn errors" "SHELL:-warn all" "SHELL:-warn stderrors" "SHELL:-diag-disable 5268")
-target_compile_options(strict_compiler_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_extra_warning_flags},${linux_extra_warning_flags}>>")
-
-add_library(no_warnings INTERFACE)
-set(windows_no_warning_flags /warn:none)
-set(linux_no_warning_flags "SHELL:-warn none")
-target_compile_options(no_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_no_warning_flags},${linux_no_warning_flags}>>")
-
 if (WIN32)
     # Set global Fortran compiler flags that apply for each Fortran project
+    # Disable diagnostic indicating that ifort is deprecated (10448)
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
-    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP")
+    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP /Qdiag-disable:10448")
 
     # Set global C/C++ compiler flags that apply for each C/C++ project
     string(APPEND CMAKE_C_FLAGS " /MP")
@@ -70,12 +60,19 @@ if (UNIX)
     message(STATUS "Setting Fortran compiler flags in Unix")
     # On Linux preprocessing is on by default, but the flag is inserted for
     # at least one C file as well (netCDF). Use a neutral flag to avoid problems
-    set(CMAKE_CXX_FLAGS_RELEASE                  "-O2 -fPIC")
-    set(CMAKE_C_FLAGS_RELEASE                    "-O2 -fPIC")
-    set(CMAKE_CXX_FLAGS_DEBUG                    "-g -O0 -fPIC")
-    set(CMAKE_C_FLAGS_DEBUG                      "-g -O0 -fPIC")
-    set(CMAKE_Fortran_FLAGS_RELEASE              "-O2 -fPIC")
-    set(CMAKE_Fortran_FLAGS_DEBUG                "-g -O0 -fPIC")
+    # Disable diagnostic indicating that ifort is deprecated (10448)
+    set(CMAKE_CXX_FLAGS                          "-fPIC")
+    set(CMAKE_CXX_FLAGS_DEBUG                    "-g -O0")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO           "-g -O2")
+    set(CMAKE_CXX_FLAGS_RELEASE                  "-O2")
+    set(CMAKE_C_FLAGS                            "-fPIC")
+    set(CMAKE_C_FLAGS_DEBUG                      "-g -O0")
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO             "-g -O2")
+    set(CMAKE_C_FLAGS_RELEASE                    "-O2")
+    set(CMAKE_Fortran_FLAGS                      "-fPIC -diag-disable 10448")
+    set(CMAKE_Fortran_FLAGS_RELEASE              "-O2")
+    set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO       "-g -O2")
+    set(CMAKE_Fortran_FLAGS_DEBUG                "-g -O0")
     set(fortran_standard_flag                    "-std")
 
     set(cpp_compiler_flags                       "-std=c++17")

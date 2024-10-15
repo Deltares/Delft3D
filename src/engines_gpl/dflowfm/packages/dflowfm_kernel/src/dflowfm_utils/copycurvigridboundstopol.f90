@@ -32,10 +32,10 @@
 
 !> copy curvigrid boundaries to polygon(s)
 subroutine copycurvigridboundstopol()
-   use network_data
-   use m_grid
-   use m_polygon
    use gridoperations
+   use m_copynetboundstopol
+   use m_zeronet
+   use m_restore_grd
 
    implicit none
 

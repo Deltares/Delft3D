@@ -47,6 +47,7 @@
       use m_flowparameters, only: epshs
       use m_transport, only: constituents, ised1
       use m_fm_erosed, only: floclist, flocmod, nflocpop, nflocsizes, tbreakup, tfloc
+      use m_get_kbot_ktop
       implicit none
 
       !

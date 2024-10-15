@@ -32,6 +32,7 @@
 
 !> get the grid heights from the cross spline information
 subroutine get_heights()
+   use m_comp_subheights
    use m_splines
    use m_spline2curvi
    use m_missing
@@ -103,7 +104,7 @@ subroutine get_heights()
          ylist(1:numj) = ysp(js, 1:numj)
 
          call comp_subheights(is, Lorient, numj, xlist, ylist, &
-                              splineprops(js)%ncs, splineprops(js)%ics, splineprops(js)%t, splineprops(js)%cosphi, &
+                              splineprops(js)%ncs, splineprops(js)%ics, splineprops(js)%t, &
                               splineprops(is)%NsubL(j), splineprops(is)%NsubR(j), splineprops(is)%hL(:, j), splineprops(is)%hR(:, j))
       end do
    end do

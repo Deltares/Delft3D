@@ -37,6 +37,8 @@
       use gridoperations
       use m_polygon
       use gridoperations
+      use m_readyy
+      use m_set_nod_adm
 
       use m_ec_basic_interpolation, only: dlaun
 

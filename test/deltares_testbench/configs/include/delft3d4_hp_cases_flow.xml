@@ -4990,6 +4990,24 @@
 				</file>
 			</checks>
 		</testCase>
+		<testCase name="e01_f11_c12-qtot-wide" ref="flow2d3d_default">
+			<path version="2024-08-21T17:00:00">e01_d3dflow/f11_qhqtot/c12-qtot-wide</path>
+			<maxRunTime>20.0</maxRunTime>
+			<checks>
+				<file name="trih-20x40.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="CTR" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+				<file name="trim-20x40.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
 		<testCase name="e01_f12_c01-c31" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f12_restart/c01-c31</path>
 			<maxRunTime>20.4060001373</maxRunTime>

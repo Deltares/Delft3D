@@ -31,6 +31,8 @@
 !
 
  subroutine slnabs(n, sx1, sy1)
+    use m_shipcoor
+    use m_lnabs
     implicit none
     integer :: n
     double precision :: sx1, sx2, sy1, sy2

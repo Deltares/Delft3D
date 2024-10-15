@@ -6,6 +6,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlparse
 
 from minio import Minio
 from minio.commonconfig import Tags
@@ -15,22 +16,27 @@ from src.config.types.path_type import PathType
 from src.utils.handlers.credential_handler import CredentialHandler
 from src.utils.minio_rewinder import Rewinder
 from tools.minio import config, prompt
+from tools.minio.config import TestBenchConfigWriter
 from tools.minio.minio_tool import ErrorCode, MinioTool, MinioToolError
 
-HELP_CONFIG = "Path to test bench config file"
+HELP_CONFIG = "Path to test bench config file."
+HELP_TEST_CASE_FILE = "Relative path from the testbench root folder, contains a list of testcases to update."
 HELP_TEST_CASE_NAME = (
     "Name of a test case in the config file. This can be a substring, but it should match exactly one test case."
 )
-HELP_COLOR = "Use color in the output"
-HELP_NO_COLOR = "Don't use color in the output"
-HELP_INTERACTIVE = "Use the interactive prompt to allow users to make decisions"
-HELP_BATCH = "Turn on (non-interactive) batch mode. Makes the default decision"
-HELP_FORCE = "Only in combination with batch mode: Ignore conflicts and always proceed"
-HELP_LOCAL_PATH = "Path to local directory"
+HELP_COLOR = "Use color in the output."
+HELP_NO_COLOR = "Don't use color in the output."
+HELP_INTERACTIVE = "Use the interactive prompt to allow users to make decisions."
+HELP_BATCH = "Turn on (non-interactive) batch mode. Makes the default decision."
+HELP_FORCE = "Only in combination with batch mode: Ignore conflicts and always proceed."
+HELP_LOCAL_PATH = "Path to local directory."
 HELP_ALLOW_CREATE_AND_DELETE = "Create new files or remove files from MinIO."
 HELP_ISSUE_ID = "Identifier for the JIRA issue related to this change. Format: '[A-Z]+-[0-9]+'"
-HELP_TIMESTAMP = "Get past version of the objects in MinIO"
-HELP_LATEST = "Get the latest version of the objects in MinIO"
+HELP_TIMESTAMP = "Get past version of the objects in MinIO."
+HELP_LATEST = "Get the latest version of the objects in MinIO."
+HELP_BUCKET = "The name of the MinIO bucket to upload or download test case data."
+HELP_PROFILE = "The name of the profile to load the credentials from in the credentials file."
+HELP_ENDPOINT_URL = "The endpoint url to an S3-compatible service."
 
 
 def make_argument_parser() -> argparse.ArgumentParser:
@@ -40,8 +46,10 @@ def make_argument_parser() -> argparse.ArgumentParser:
 
     # Add common arguments.
     common_parser = argparse.ArgumentParser(add_help=False)
-    common_parser.add_argument("-c", "--config", required=True, help=HELP_CONFIG)
-    common_parser.add_argument("-n", "--test-case-name", required=True, help=HELP_TEST_CASE_NAME)
+    common_parser.add_argument("-c", "--config", help=HELP_CONFIG)
+    test_case_input_group = common_parser.add_mutually_exclusive_group(required=True)
+    test_case_input_group.add_argument("-n", "--test-case-name", help=HELP_TEST_CASE_NAME)
+    test_case_input_group.add_argument("-r", "--test-case-file", help=HELP_TEST_CASE_FILE)
     common_parser.add_argument("--color", dest="color_output", action="store_true", help=HELP_COLOR)
     common_parser.add_argument("--no-color", dest="color_output", action="store_false", help=HELP_NO_COLOR)
     common_parser.add_argument("-i", "--interactive", dest="interactive", action="store_true", help=HELP_INTERACTIVE)
@@ -49,7 +57,18 @@ def make_argument_parser() -> argparse.ArgumentParser:
     common_parser.add_argument("-f", "--force", action="store_true", help=HELP_FORCE)
     common_parser.add_argument("-p", "--local-path", required=False, help=HELP_LOCAL_PATH)
     common_parser.add_argument("--log-level", required=False, choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"])
-    common_parser.set_defaults(color_output=True, interactive=True, force=False)
+    common_parser.add_argument("--bucket", required=False, help=HELP_BUCKET)
+    common_parser.add_argument("--profile", required=False, help=HELP_PROFILE)
+    common_parser.add_argument("--endpoint-url", required=False, help=HELP_ENDPOINT_URL)
+    common_parser.set_defaults(
+        endpoint_url=os.environ.get("AWS_ENDPOINT_URL", "https://s3.deltares.nl"),
+        profile=os.environ.get("AWS_PROFILE"),
+        bucket="dsc-testbench",
+        log_level="INFO",
+        color_output=True,
+        interactive=True,
+        force=False,
+    )
 
     # Add subparsers for each 'command'.
     subparsers = parser.add_subparsers()
@@ -84,7 +103,24 @@ def make_argument_parser() -> argparse.ArgumentParser:
 
 def make_minio_tool(namespace: argparse.Namespace) -> MinioTool:
     """Make an instance of `MinioTool` based on the parsed command line arguments."""
-    config_path: Path = Path(namespace.config)
+    if namespace.config and namespace.test_case_file:
+        raise MinioToolError(
+            "Argument [--config] provided with [--test-case-file]. These arguments are not compatible."
+            + "Write your config filter with the testcase name(s) in the test case file, using a `,` seperator."
+        )
+
+    # Configure logging
+    logger = logging.getLogger("minio")
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger.setLevel(namespace.log_level or os.environ.get("LOG_LEVEL", "INFO"))
+
+    if namespace.config is None:
+        logger.info("Indexing configs in directory `configs`. Parsing testcases and creating a Dict for processing.")
+        indexer = config.ConfigIndexer(logger=logger, bucket=namespace.bucket)
+    else:
+        logger.info(f"Reading test cases from file: {namespace.config}")
+        indexer = config.ConfigIndexer(configs=[Path(namespace.config)], bucket=namespace.bucket, logger=logger)
+
     prompter: prompt.Prompt = (
         prompt.InteractivePrompt() if namespace.interactive else prompt.DefaultPrompt(force_yes=namespace.force)
     )
@@ -97,19 +133,21 @@ def make_minio_tool(namespace: argparse.Namespace) -> MinioTool:
         tags["jira-issue-id"] = issue_id
     color_output: bool = namespace.color_output
 
-    # Configure logging
-    logger = logging.getLogger("minio")
-    logger.addHandler(logging.StreamHandler(sys.stdout))
-    logger.setLevel(namespace.log_level or os.environ.get("LOG_LEVEL", "INFO"))
+    url = urlparse(namespace.endpoint_url)
+    if not url.scheme:
+        raise ValueError(
+            f"Invalid endpoint url '{namespace.endpoint_url}': Url must start with a scheme "
+            "(e.g. 'https://<hostname>' or 'http://<hostname>')"
+        )
 
     minio_client = Minio(
-        endpoint="s3.deltares.nl",
-        credentials=CredentialHandler().get_credentials(),
+        endpoint=str(url.netloc),
+        credentials=CredentialHandler(profile=namespace.profile).get_credentials(),
     )
     return MinioTool(
         rewinder=Rewinder(minio_client, logger),  # type: ignore
-        test_case_loader=config.TestBenchConfigLoader(config_path),
-        test_case_writer=config.TestBenchConfigWriter(config_path),
+        test_case_writer=TestBenchConfigWriter(),
+        indexed_configs=indexer.index_configs(),
         prompt=prompter,
         tags=tags,
         color=color_output,
@@ -122,8 +160,16 @@ def push_tool(args: argparse.Namespace) -> None:
     path_type: PathType = args.path_type
     local_path = Path(args.local_path) if args.local_path else None
 
+    cases: dict[str, list[str]] = {}
+    if args.test_case_name:
+        cases[args.test_case_name] = [args.config]
+    elif args.test_case_file:
+        cases = config.CaseListReader().read_cases_from_file(Path(args.test_case_file))
+
     try:
-        tool.push(args.test_case_name, path_type, local_path, args.allow_create_and_delete)
+        for case, config_globs in cases.items():
+            for config_glob in config_globs:
+                tool.push(case, path_type, config_glob, local_path, args.allow_create_and_delete)
     except S3Error as exc:
         raise MinioToolError(f"{exc.code}: {exc.message}", ErrorCode.AUTH) from exc
     except MinioException as exc:
@@ -132,6 +178,7 @@ def push_tool(args: argparse.Namespace) -> None:
 
 def pull_tool(args: argparse.Namespace) -> None:
     """Parse command line arguments and call the pull command on the MinioTool."""
+    tool = make_minio_tool(args)
     path_type: PathType = args.path_type
     local_path = Path(args.local_path) if args.local_path else None
     latest: bool = args.latest
@@ -139,9 +186,16 @@ def pull_tool(args: argparse.Namespace) -> None:
     if args.timestamp and not latest:
         timestamp = datetime.fromisoformat(args.timestamp).replace(tzinfo=timezone.utc)
 
-    tool = make_minio_tool(args)
+    cases: dict[str, list[str]] = {}
+    if args.test_case_name:
+        cases[args.test_case_name] = [args.config]
+    elif args.test_case_file:
+        cases = config.CaseListReader().read_cases_from_file(Path(args.test_case_file))
+
     try:
-        tool.pull(args.test_case_name, path_type, local_path, timestamp, latest)
+        for case, config_globs in cases.items():
+            for config_glob in config_globs:
+                tool.pull(case, path_type, config_glob, local_path, timestamp, latest)
     except S3Error as exc:
         raise MinioToolError(f"{exc.code}: {exc.message}", ErrorCode.AUTH) from exc
     except MinioException as exc:
@@ -151,11 +205,18 @@ def pull_tool(args: argparse.Namespace) -> None:
 def update_references_tool(args: argparse.Namespace) -> None:
     """Parse command line arguments and call the update_references command on the MinioTool."""
     tool = make_minio_tool(args)
-    test_case_name: str = args.test_case_name
     local_path = Path(args.local_path) if args.local_path else None
 
+    cases: dict[str, list[str]] = {}
+    if args.test_case_name:
+        cases[args.test_case_name] = [args.config]
+    elif args.test_case_file:
+        cases = config.CaseListReader().read_cases_from_file(Path(args.test_case_file))
+
     try:
-        tool.update_references(test_case_name, local_path)
+        for case, config_globs in cases.items():
+            for config_glob in config_globs:
+                tool.update_references(case, config_glob, local_path)
     except S3Error as exc:
         raise MinioToolError(f"{exc.code}: {exc.message}", ErrorCode.AUTH) from exc
     except MinioException as exc:

@@ -30,13 +30,21 @@
 !
 !
 
+module m_disarean
+
+implicit none
+
+contains
+
       subroutine DISAREAN(AREAN)
-         use m_devices
-         implicit none
+         use m_devices, only: iws
+         use m_ktext
+
          double precision :: arean
-         character DISTAN * 23
-         DISTAN = 'CR. AR. N            M2'
-         write (DISTAN(11:20), '(E10.4)') AREAN
+         character(len=32) :: DISTAN
+         write (DISTAN, '("CR. AR. N ", E11.4, " M2")') AREAN
          call KTEXT(DISTAN, IWS - 22, 5, 15)
          return
       end
+
+end module m_disarean

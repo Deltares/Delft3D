@@ -1,15 +1,15 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
-  <testCase name="e02_f014_c001_trench_EH_par_crs" ref="sif_dimr">    <!-- dflowfm multiple partitions -->
+  <testCase name="e02_f014_c001_trench_EH_par_crs" ref="container_postproc">    <!-- dflowfm multiple partitions -->
     <path version="2024-01-11T13:10:00">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
     <programs>
-      <program ref="execute_singularity" seq="1">
+      <program ref="execute_container" seq="1">
         <arguments>
           <argument>run_dflowfm.sh</argument>
           <argument>--partition:ndomains=4:icgsolver=6</argument>
           <argument>t01.mdu</argument>
         </arguments>
       </program>
-      <program ref="execute_singularity" seq="2">
+      <program ref="execute_container" seq="2">
         <arguments>
           <argument>run_dimr.sh</argument>
           <argument>-c</argument>
@@ -30,10 +30,10 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f012_c0323_mapmerge" ref="sif_postproc">    <!-- dflowfm mapmerge -->
+  <testCase name="e02_f012_c0323_mapmerge" ref="container_postproc">    <!-- dflowfm mapmerge -->
       <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0323_alloutrealistic_f12_e02_mapmerge</path>
       <programs>
-        <program ref="execute_singularity">
+        <program ref="execute_container">
           <arguments>
             <argument>run_dfmoutput.sh</argument>
             <argument>--</argument>
@@ -110,7 +110,7 @@
           <argument>DFM_DELWAQ_westernscheldt/westernscheldt.hyd</argument>
         </arguments>
       </program>
-      <program ref="execute_singularity" seq="3">
+      <program ref="execute_container" seq="3">
         <arguments>
           <argument>run_maptonetcdf.sh</argument>
           <argument>DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum.map</argument>
@@ -118,7 +118,7 @@
           <argument>1</argument>
         </arguments>
       </program>
-      <program ref="execute_singularity" seq="4">
+      <program ref="execute_container" seq="4">
         <arguments>
           <argument>run_maptonetcdf.sh</argument>
           <argument>DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-err.map</argument>

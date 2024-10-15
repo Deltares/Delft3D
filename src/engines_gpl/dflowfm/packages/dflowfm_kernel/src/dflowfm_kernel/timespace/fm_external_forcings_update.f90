@@ -43,7 +43,8 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_nearfield, only: nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
    use m_airdensity, only: get_airdensity
    use dfm_error
-   use m_lateral, only: numlatsg
+   use m_laterals, only: numlatsg
+   use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    implicit none
 
    integer, parameter :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS = 1
@@ -67,6 +68,8 @@ contains
 
    !> set field oriented boundary conditions
    module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
+      use m_set_frcu_mor
+      use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       double precision, intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
@@ -76,9 +79,14 @@ contains
       success = .true.
 
       if (allocated(patm)) then
-         ! To prevent any pressure jumps at the boundary, set (initial) patm in interior to PavBnd.
-         ! May of course be overridden later by spatially varying patm values.
-         patm = PavBnd
+         ! Set the initial value to PavBnd (if provided by user) or BACKGROUND_AIR_PRESSURE with each update.
+         ! An initial/reference value is required since .spw files may contain pressure drops/differences.
+         ! patm may later be overridden by spatially varying air pressure values.
+         if (PavBnd > 0) then
+            patm(:) = PavBnd
+         else
+            patm(:) = BACKGROUND_AIR_PRESSURE
+         end if
       end if
 
       call retrieve_icecover(time_in_seconds)
@@ -90,7 +98,7 @@ contains
          call get_timespace_value_by_item_array_consider_success_value(item_atmosphericpressure, patm, time_in_seconds)
          call get_timespace_value_by_item_array_consider_success_value(item_airtemperature, tair, time_in_seconds)
          call get_timespace_value_by_item_array_consider_success_value(item_humidity, rhum, time_in_seconds)
-         call get_airdensity(patm, tair, rhum, airdensity, ierr)
+         call get_airdensity(patm, tair, rhum, airdensity, iresult)
       end if
 
       if (update_wind_stress_each_time_step == 0) then ! Update wind in set_external_forcing (each user timestep)
@@ -331,6 +339,8 @@ contains
 
       logical :: all_wave_variables !< flag indicating whether _all_ wave variables should be mirrored at the boundary
 
+      integer :: k
+
       if (jawave == 3 .or. jawave == 6 .or. jawave == 7) then
 
          if (.not. initialization) then
@@ -349,25 +359,49 @@ contains
             else
                !
                call set_all_wave_parameters()
+
+               ! NB: choose whether to keep if(.not. initialization) hidden in initialize_wave_parameters or in set_wave_parameters
+
+               if (.not. success) then
+                  !
+                  ! success = .false. : Most commonly, WAVE data has not been written to the com-file yet:
+                  ! - Print a warning
+                  ! - Continue with the calculation
+                  ! - Just try it the next timestep again
+                  ! - success must be set to .true., otherwise the calculation is aborted
+                  !
+                  message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+                  success = .true.
+               end if
             end if
-            !
          end if
-
-         ! NB: choose whether to keep if(.not. initialization) hidden in initialize_wave_parameters or in set_wave_parameters
-
+         !
+         ! Now do the check on success for non-com file situations, and error when variable is missing
+         !
          if (.not. success) then
-            !
-            ! success = .false. : Most commonly, WAVE data has not been written to the com-file yet:
-            ! - Print a warning
-            ! - Continue with the calculation
-            ! - Just try it the next timestep again
-            ! - success must be set to .true., otherwise the calculation is aborted
-            !
-            message = dumpECMessageStack(LEVEL_WARN, callback_msg)
-            success = .true.
+            write (msgbuf, '(a,i0,a)') 'set_external_forcings:: Offline wave coupling with waveforcing=', waveforcing, '. &
+               & Error reading data from nc file.'
+            call warn_flush() ! ECMessage stack is not very informative
+            message = dumpECMessageStack(LEVEL_ERROR, callback_msg)
          end if
 
          if (jawave == 7) then
+            ! If wave model and flow model do not cover each other exactly, NaN values can propagate in the flow model.
+            ! Correct for this by setting values to zero
+            do k = 1, ndx
+               if (isnan(hwavcom(k))) then ! one check should be enough, everything is collocated
+                  hwavcom = 0d0
+                  twavcom = 0d0
+                  sxwav = 0d0
+                  sywav = 0d0
+                  sbxwav = 0d0
+                  sbywav = 0d0
+                  dsurf = 0d0
+                  dwcap = 0d0
+                  mxwav = 0d0
+                  mywav = 0d0
+               end if
+            end do
             phiwav = convert_wave_direction_from_nautical_to_cartesian(phiwav)
          end if
 
@@ -404,16 +438,24 @@ contains
             ! In MPI case, partition ghost cells are filled properly already, open boundaries are not
             !
             ! velocity boundaries
-            call fill_open_boundary_cells_with_inner_values(nbndu, kbndu)
+            if (nbndu > 0) then
+               call fill_open_boundary_cells_with_inner_values(nbndu, kbndu)
+            end if
             !
             ! waterlevel boundaries
-            call fill_open_boundary_cells_with_inner_values(nbndz, kbndz)
+            if (nbndz > 0) then
+               call fill_open_boundary_cells_with_inner_values(nbndz, kbndz)
+            end if
             !
             !  normal-velocity boundaries
-            call fill_open_boundary_cells_with_inner_values(nbndn, kbndn)
+            if (nbndn > 0) then
+               call fill_open_boundary_cells_with_inner_values(nbndn, kbndn)
+            end if
             !
             !  tangential-velocity boundaries
-            call fill_open_boundary_cells_with_inner_values(nbndt, kbndt)
+            if (nbndt > 0) then
+               call fill_open_boundary_cells_with_inner_values(nbndt, kbndt)
+            end if
          end if
 
          if (jawave > 0) then
@@ -447,7 +489,7 @@ contains
       if (allocated(hwavcom)) then
          success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
       end if
-      if (allocated(twav)) then
+      if (allocated(twavcom)) then
          success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
       end if
       if (allocated(phiwav)) then
@@ -486,21 +528,22 @@ contains
 !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 1 (wave forces via radiation stress)
    subroutine set_parameters_for_radiation_stress_driven_forces()
 
+      twav(:) = 0d0
+      success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
       success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
       success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
       success = success .and. ecGetValues(ecInstancePtr, item_fx, ecTime)
       success = success .and. ecGetValues(ecInstancePtr, item_fy, ecTime)
       mxwav(:) = 0d0
       mywav(:) = 0d0
       uorbwav(:) = 0d0
 
-      call mess(LEVEL_WARN, 'Incomplete functionality. Wave forces set to zero when Wavemodelnr = 7.')
-
    end subroutine set_parameters_for_radiation_stress_driven_forces
-!> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 2 (wave forces via averaged dissipation)
+   !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 2 (wave forces via total dissipation)
    subroutine set_parameters_for_dissipation_driven_forces()
 
+      twav(:) = 0d0
+      success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
       success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
       success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
       success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
@@ -511,16 +554,15 @@ contains
       mywav(:) = 0d0
       uorbwav(:) = 0d0
 
-      call mess(LEVEL_WARN, 'Incomplete functionality. Wave forces set to zero when Wavemodelnr = 7.')
-
    end subroutine set_parameters_for_dissipation_driven_forces
 
-!> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 3 (wave forces via 3D dissipation)
+   !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 3 (wave forces via 3D dissipation distribution)
    subroutine set_parameters_for_3d_dissipation_driven_forces()
 
-      success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
+      twav(:) = 0d0
       success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
       success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
+      success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
       success = success .and. ecGetValues(ecInstancePtr, item_fx, ecTime)
       success = success .and. ecGetValues(ecInstancePtr, item_fy, ecTime)
       success = success .and. ecGetValues(ecInstancePtr, item_dissurf, ecTime)
@@ -530,8 +572,6 @@ contains
       mxwav(:) = 0d0
       mywav(:) = 0d0
       uorbwav(:) = 0d0
-
-      call mess(LEVEL_WARN, 'Incomplete functionality. Wave forces set to zero when Wavemodelnr = 7.')
 
    end subroutine set_parameters_for_3d_dissipation_driven_forces
 

@@ -31,11 +31,14 @@
 !
 
      subroutine gridtonet()
+        use m_confrm
         use m_netw
         use m_grid
         use m_missing
         use gridoperations
         use m_mergenodes
+        use m_readyy
+        use m_set_nod_adm
         implicit none
         double precision :: af
 

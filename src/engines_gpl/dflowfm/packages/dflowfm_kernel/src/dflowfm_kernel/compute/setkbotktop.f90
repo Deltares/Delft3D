@@ -28,16 +28,19 @@
 !-------------------------------------------------------------------------------
 
 !
-!
-
- subroutine setkbotktop(jazws0) ! initialise vertical coordinates
-    use m_netw
-    use m_flowgeom
-    use m_flow
-    use m_flowtimes
-    use m_transport, only: Constituents, ISALT, ITEMP
-
+module m_set_kbot_ktop
     implicit none
+contains
+!
+!> initialise vertical coordinates
+ subroutine setkbotktop(jazws0) 
+    use m_flowgeom, only: ndx, ba, bl, ln, lnx, nd
+    use m_flow
+    use m_flowtimes, only: dts, ti_waq
+    use m_transport, only: Constituents, ISALT, ITEMP
+    use m_get_kbot_ktop
+    use m_get_Lbot_Ltop
+    use m_get_zlayer_indices
 
     integer :: jazws0
 
@@ -422,3 +425,4 @@
     end if
 
  end subroutine setkbotktop
+end module m_set_kbot_ktop

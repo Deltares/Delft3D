@@ -34,6 +34,7 @@
     use m_netw
     use m_flowgeom
     use m_sediment
+    use m_get_equilibrium_transport_rates
     implicit none
     integer :: L, kb1, kb2, mx, jamin ! Linknr, left and right ban nr, mxgr,
     double precision :: seq(mx), seq2(mx) ! seq(kg/m3)

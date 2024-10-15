@@ -29,27 +29,31 @@
 
 !
 !
+module m_disvalcolors
+   implicit none
+contains
+   subroutine DISVALCOLORS(NUMCOL, N1, N2, N3, IC)
+      use M_DEVICES
+      use m_ktext
 
-      subroutine DISVALCOLORS(NUMCOL, N1, N2, N3, IC)
-         use M_DEVICES
-         implicit none
-         integer :: ic
-         integer :: n1
-         integer :: n2
-         integer :: n3
-         integer :: numcol
-         character TEXT * 47
-         if (IC == 1) then
-            TEXT = 'COLOR NUMBER:     RED:     g    :     b   :    '
-         else if (IC == 2) then
-            TEXT = 'COLOR NUMBER:     r  :     GREEN:     b   :    '
-         else
-            TEXT = 'COLOR NUMBER:     r  :     g    :     BLUE:    '
-         end if
-         write (TEXT(15:17), '(I3)') NUMCOL
-         write (TEXT(23:25), '(I3)') N1
-         write (TEXT(34:36), '(I3)') N2
-         write (TEXT(44:46), '(I3)') N3
-         call KTEXT(TEXT, IWS - 46, 4, 15)
-         return
-      end
+      integer :: ic
+      integer :: n1
+      integer :: n2
+      integer :: n3
+      integer :: numcol
+      character TEXT * 47
+      if (IC == 1) then
+         TEXT = 'COLOR NUMBER:     RED:     g    :     b   :    '
+      else if (IC == 2) then
+         TEXT = 'COLOR NUMBER:     r  :     GREEN:     b   :    '
+      else
+         TEXT = 'COLOR NUMBER:     r  :     g    :     BLUE:    '
+      end if
+      write (TEXT(15:17), '(I3)') NUMCOL
+      write (TEXT(23:25), '(I3)') N1
+      write (TEXT(34:36), '(I3)') N2
+      write (TEXT(44:46), '(I3)') N3
+      call KTEXT(TEXT, IWS - 46, 4, 15)
+      return
+   end
+end module m_disvalcolors

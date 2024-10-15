@@ -43,6 +43,7 @@
 * FILETYPE=11 : ncgrid               kx = 1 field                    2 dim array      triangulation (should have proper standard_name in var, e.g., 'precipitation')
 * FILETYPE=12 : ncflow (map file)    kx = 1 or 2 field               1 dim array      triangulation
 * FILETYPE=14 : ncwave (com file)    kx = 1 field                    1 dim array      triangulation
+* FILETYPE=20 : ncwave_weighted      kx = 2 fields                   2 dim array      triangulation (introduced for cyclic interpolation of wave direction)
 *
 * METHOD  =0  : provider just updates, another provider that pointers to this one does the actual interpolation
 *         =1  : intp space and time (getval) keep  2 meteofields in memory

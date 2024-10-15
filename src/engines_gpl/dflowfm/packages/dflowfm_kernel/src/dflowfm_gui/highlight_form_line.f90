@@ -34,10 +34,15 @@
 !! Input fields are highlighted automatically, but the string label isn't.
 !! This assumes that string field number is always input field number minus 1.
 !! Only use this subroutine as the FMUSER argument to IFormEditUser(.., .., FMUSER).
-subroutine highlight_form_line(ifield, iexitk)
-   implicit none
+module m_highlight_form_line
+
+implicit none
+
+contains
+
+subroutine highlight_form_line(ifield)
    integer, intent(in) :: ifield !< Form field number that lost focus (infoform(3) contains 'next' field).
-   integer, intent(in) :: iexitk !< 'Exit' key that was used to leave this form field.
+   !integer, intent(in) :: iexitk !< 'Exit' key that was used to leave this form field. not used any longer
 
    integer :: ifieldnext
    integer, external :: InfoForm
@@ -55,3 +60,5 @@ subroutine highlight_form_line(ifield, iexitk)
    end if
 
 end subroutine highlight_form_line
+
+end module m_highlight_form_line

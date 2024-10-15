@@ -1,10 +1,12 @@
 import abc
 import io
+import logging
 import re
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import ClassVar, Dict, Iterable, Mapping, Optional, TextIO, Tuple
+from typing import ClassVar, Dict, Iterable, List, Mapping, Optional, TextIO, Tuple
 
 from s3_path_wrangler.paths import S3Path
 
@@ -82,7 +84,55 @@ class TestCaseData:
         return S3Path.from_bucket(abs_path.bucket) / utils.resolve_relative(abs_path.key)
 
 
+class ConfigIndexer:
+    """Index the configuration specified or the config folders xml files."""
+
+    def __init__(
+        self,
+        configs: Optional[Iterable[Path]] = None,
+        bucket: str = "dsc-testbench",
+        logger: Optional[logging.Logger] = None,
+    ) -> None:
+        self._configs = configs or Path("configs").rglob("*.xml")
+        self._bucket = bucket
+        self._logger = logger or logging.getLogger(__name__)
+
+    def index_configs(self) -> Dict[Path, List[TestCaseData]]:
+        """Return an index of the test cases.
+
+        The test cases are indexed by config file.
+
+        Returns
+        -------
+        dict[Path, list[TestCaseData]]
+            The computed index. Only contains configs that include test cases.
+        """
+        result: dict[Path, list[TestCaseData]] = {}
+        for xml in self._configs:
+            test_cases = list(self._extract_test_cases_from_xml(xml))
+            if test_cases:
+                result[xml] = test_cases
+
+        return result
+
+    def _extract_test_cases_from_xml(self, xml: Path) -> Iterable[TestCaseData]:
+        """Return test case data defined within the provided XML file."""
+        # Crude check to see if the XML file is a deltares testbench config.
+        with open(xml, "r") as file:
+            if not any(re.search(r"<deltaresTestbench_v3", line) for line in file):
+                return []  # Not a test bench config.
+
+        try:
+            config_loader = TestBenchConfigLoader(xml, server_base_url=f"s3://{self._bucket}")
+            return config_loader.get_test_cases()
+        except Exception:
+            self._logger.exception(f"Skip xml: {xml} due to error in parsing.")
+            return []
+
+
 class TestCaseLoader(abc.ABC):
+    """Loads test cases."""
+
     __test__: ClassVar[bool] = False
 
     @abc.abstractmethod
@@ -108,7 +158,7 @@ class TestCaseWriter(abc.ABC):
     __test__: ClassVar[bool] = False
 
     @abc.abstractmethod
-    def config_updates(self, updates: Mapping[str, datetime]) -> Mapping[Path, TextIO]:
+    def config_updates(self, updates: Mapping[str, datetime], configs: List[Path]) -> Mapping[Path, TextIO]:
         """Generate new config files based on updates test cases.
 
         Parameters
@@ -119,6 +169,9 @@ class TestCaseWriter(abc.ABC):
             have the `version` attribute in their path elements updated
             in the config files. Several config files may be updated in
             the process because config files can 'include' other config files.
+        configs : List[Path]
+            List of Path objects that link to the xml configurations
+            that need to be updated with the new `version` timestamp.
 
         Returns
         -------
@@ -191,11 +244,11 @@ class TestBenchConfigWriter(TestCaseWriter):
         re.VERBOSE,
     )
 
-    def __init__(self, path: Path) -> None:
-        self._path = path
-
-    def config_updates(self, updates: Mapping[str, datetime]) -> Mapping[Path, TextIO]:
-        return self.__update_config(self._path, updates)
+    def config_updates(self, updates: Mapping[str, datetime], configs: List[Path]) -> Mapping[Path, TextIO]:
+        result: Dict[Path, TextIO] = {}
+        for file_path in configs:
+            result.update(self.__update_config(file_path, updates))
+        return result
 
     def __update_config(self, config_path: Path, updates: Mapping[str, datetime]) -> Mapping[Path, TextIO]:
         result: Dict[Path, TextIO] = {}
@@ -203,7 +256,7 @@ class TestBenchConfigWriter(TestCaseWriter):
         with open(config_path, "r") as config_handle:
             for line in config_handle:
                 out_handle.write(line)  # Copy line
-                if re.search(r"<testCases>", line):
+                if re.search(r'<testCases(\s+xmlns="http://schemas\.deltares\.nl/deltaresTestbench_v3")?>', line):
                     self.__update_test_cases(config_handle, out_handle, updates)
                 elif mo := re.search(r"<xi:include\s+href=\"(?P<path>[-./\\:\s\w]+)\"\s*/>", line):
                     include_path = config_path.parent / mo.group("path")
@@ -254,3 +307,40 @@ class TestBenchConfigWriter(TestCaseWriter):
                 out_handle.write(f'{space}<path version="{new_version}">{path}</path>\n')
             else:
                 out_handle.write(line)
+
+
+class CaseListReader:
+    def read_cases_from_file(self, path: Path) -> defaultdict[str, list[str]]:
+        """Parse test cases from a text file.
+
+        Reads a csv file in the format `testcase, config`
+        Both values are used as filter testcase must only match one testcase
+        and config is matched against a part of the path.
+
+        Parameters
+        ----------
+        path: str
+            Path to the csv file to parse a testcase name from
+            and the optional configuration filter.
+
+        Returns
+        -------
+        defaultdict[str, List[str]]
+            A dictionary that couples a testcase string to one
+            or multiple configurations filters.
+            example: {e02_f01_c001_example_case: [*_lnx64.xml, *_win64.xml]}
+        """
+        parsed_file_cases: defaultdict[str, list[str]] = defaultdict(list)
+
+        with open(path, "r") as file:
+            for line in file:
+                if self.__line_is_comment(line):
+                    continue
+                case_filter, *xml_globs = (s.strip() for s in line.split(","))
+                # If glob is missing or empty (in case of trailing comma on line): Match all configs.
+                xml_glob = (xml_globs[0] or "*") if xml_globs else "*"
+                parsed_file_cases[case_filter].append(xml_glob)
+        return parsed_file_cases
+
+    def __line_is_comment(self, line: str) -> bool:
+        return line.startswith("#")

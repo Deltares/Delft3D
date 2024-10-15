@@ -61,7 +61,7 @@ c     Declaration of local variables:
      +               sshh     ,stastep  ,i      ,dattimsim(2)
       real           dtsim    ,estimper ,perstep
       logical        ana
-      character*256  flownamhis ,saltnamhis ,gaviewnam(4)
+      character(len=256) flownamhis ,saltnamhis ,gaviewnam(4)
       
 c  
 c     Get start timestep for tidal analysis

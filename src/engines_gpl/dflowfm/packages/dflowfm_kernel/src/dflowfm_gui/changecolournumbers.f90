@@ -30,28 +30,30 @@
 !
 !
 
+module m_changecolournumbers
+
+implicit none
+
+contains
+
  subroutine CHANGEcolournumbers()
-    use m_netw
-    use M_FLOW
-    use m_flowgeom
-    use m_sferic
-    use m_wind
-    use unstruc_display
-    use m_reduce
+    use unstruc_display_data, only: npos
+    use unstruc_colors
     use dflowfm_version_module, only: company, product_name
-    use unstruc_messages
-    use m_fixedweirs
-    use m_observations
+    use m_observations_data, only: jafahrenheit
+    use m_helpnow
+    use m_save_keys
+    use m_restore_keys
+    use m_help
+    use m_highlight_form_line
+
     implicit none
 
     integer :: numpar, numfld, numparactual, numfldactual
     parameter(NUMPAR=34, NUMFLD=2 * NUMPAR)
     integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-    character WRDKEY * 40, OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
-    integer :: nlevel
-    common / HELPNOW / WRDKEY, NLEVEL
+    character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
     integer, external :: infoinput
-    external :: highlight_form_line
 !
     integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key
     integer :: nbut, imp, inp
@@ -312,3 +314,5 @@
     goto 30
 
  end subroutine CHANGEcolournumbers
+
+end module m_changecolournumbers

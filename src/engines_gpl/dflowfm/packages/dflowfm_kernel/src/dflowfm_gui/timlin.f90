@@ -29,9 +29,10 @@
 
 !
 !
-
-      subroutine TIMLIN()
-         implicit none
+module m_timlin
+   implicit none
+contains
+   subroutine TIMLIN()
 !         character TIME * 5
 !     CALL IOsTime(IH,IM,IS)
 !     WRITE (TIME,'(I2,1A,I2)') IH,':',IM
@@ -40,5 +41,6 @@
 !     IYP = INFOSCREEN(3) - 1
 !     CALL ITEXTCOLOUR('BRED','CYAN')
 !     CALL IOutStringXY(IXP,IYP,TIME)
-         return
-      end
+      return
+   end
+end module m_timlin

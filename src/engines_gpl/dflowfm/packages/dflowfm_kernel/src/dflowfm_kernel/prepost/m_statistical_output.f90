@@ -177,7 +177,7 @@ contains
       use MessageHandling, only: mess, LEVEL_WARN
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
-      type(t_output_quantity_config), target, intent(in) :: output_config !< Output quantity config linked to this output item, a pointer to it will be stored in the new output item.
+      type(t_output_quantity_config), intent(in) :: output_config !< Output quantity config linked to this output item, a copy will be stored in the new output item
       double precision, pointer, dimension(:), intent(in) :: data_pointer !< Pointer to output quantity data ("source input")
       procedure(process_data_interface_double), optional, pointer, intent(in) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
 
@@ -208,7 +208,7 @@ contains
                call reallocate_output_set(output_set)
             end if
 
-            item%output_config => output_config
+            item%output_config = output_config
             item%source_input => data_pointer
             if (present(source_input_function_pointer)) then
                if (associated(source_input_function_pointer)) then
@@ -247,7 +247,7 @@ contains
                               model_has_compound_structures_across_partitions
       use m_dad, only: model_has_dredge_links_across_partitions
       use m_partitioninfo, only: model_has_crosssections_across_partitions
-      use m_lateral, only: model_has_laterals_across_partitions
+      use m_laterals, only: model_has_laterals_across_partitions
       integer, intent(in) :: location_specifier !< The location specifier indicating the type of structure (UNC_LOC_XXX)
       logical :: res !< Whether or not any structures of this type lie across multiple partitions
 

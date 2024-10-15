@@ -29,7 +29,9 @@
 
 !
 !
-
+module m_makenetnodescoding
+      implicit none
+contains
    !> Make a coding of all net nodes for later use in net orthogonalisation,
    !! net coupling and 'poltoland' functionality.
    !! network_data::NB values: 1=INTERN, 2=RAND, 3=HOEK, 0/-1=DOET NIET MEE OF 1D
@@ -40,8 +42,6 @@
       use m_missing, only: dxymis
       use geometry_module, only: dcosphi
       use gridoperations
-
-      implicit none
 
       integer :: k
       integer :: k1
@@ -113,3 +113,4 @@
          if (nmk(k) < 2) nb(k) = -1 ! hanging node
       end do
    end subroutine MAKENETNODESCODING
+end module m_makenetnodescoding

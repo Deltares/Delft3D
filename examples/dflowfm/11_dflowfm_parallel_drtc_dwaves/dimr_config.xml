@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<dimrConfig xmlns="http://schemas.deltares.nl/dimrConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.deltares.nl/dimrConfig http://content.oss.deltares.nl/schemas/d_hydro-1.00.xsd">
+    <documentation>
+        <fileVersion>1.00</fileVersion>
+        <createdBy>Deltares, Coupling team</createdBy>
+        <creationDate>2015-05-20T07:56:32+01:00</creationDate>
+    </documentation>
+
+<!--    <waitFile>debug.txt</waitFile>  -->
+
+    <control>
+        <parallel>
+            <startGroup>
+                <time>0.0 60.0 99999999.0</time>
+                <coupler name="flow2rtc"/>
+                <start name="myNameRTC"/>
+                <coupler name="rtc2flow"/>
+            </startGroup>
+            <startGroup>
+                <time>0.0 3600.0 99999999.0</time>
+                <start name="myNameWave"/>
+            </startGroup>
+            <start name="myNameDFlowFM"/>
+        </parallel>
+    </control>
+
+    <component name="myNameDFlowFM">
+        <library>dflowfm</library>
+        <process>0 1 2</process>
+        <mpiCommunicator>DFM_COMM_DFMWORLD</mpiCommunicator>
+        <workingDir>dflowfm</workingDir>
+        <inputFile>weirtimeseries.mdu</inputFile>
+    </component>
+    <component name="myNameWave">
+        <library>wave</library>
+        <workingDir>dwaves</workingDir>
+        <!-- component specific -->
+        <inputFile>weir.mdw</inputFile>
+    </component>
+    <component name="myNameRTC">
+        <library>FBCTools_BMI</library>
+        <workingDir>drtc</workingDir>
+        <!-- component specific -->
+        <inputFile>.</inputFile>
+    </component>
+
+    <coupler name="flow2rtc">
+        <sourceComponent>myNameDFlowFM</sourceComponent>
+        <targetComponent>myNameRTC</targetComponent>
+        <item>
+            <sourceName>observations/Upstream/water_level</sourceName>
+            <targetName>input_ObservationPoint01_water_level</targetName>
+        </item>
+    </coupler>
+    <coupler name="rtc2flow">
+        <sourceComponent>myNameRTC</sourceComponent>
+        <targetComponent>myNameDFlowFM</targetComponent>
+        <item>
+            <sourceName>output_weir_crest_level</sourceName>
+            <targetName>weirs/weir01/crest_level</targetName>
+        </item>
+    </coupler>
+</dimrConfig>

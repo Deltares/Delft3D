@@ -17,7 +17,7 @@ title run_dimr_parallel
     rem
     rem Usage example:
     rem Execute in the working directory:
-    rem path\to\delft3d\installation\x64\dimr\scripts\run_dimr_parallel.bat
+    rem path\to\delft3d\installation\x64\bin\run_dimr_parallel.bat
     rem More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
 
 setlocal enabledelayedexpansion
@@ -35,6 +35,15 @@ if [%1] EQU [] (
 
     rem --help:
 if [%1] EQU [--help] ( goto usage )
+
+if [%1] EQU [-c] (
+    set numpar=%2
+)
+
+if [%3] EQU [-m] (
+    set argfile=%4
+    goto readyreading
+)
 
     rem number of partitions:
 set numpar=%1
@@ -96,6 +105,7 @@ echo D3D_HOME         : %D3D_HOME%
 set exedir=%D3D_HOME%\bin
 set sharedir=%D3D_HOME%\share
 set libdir=%D3D_HOME%\lib
+set proc_def_dir=%sharedir%\delft3d
 
     rem
     rem No adaptions needed below

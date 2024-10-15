@@ -30,8 +30,21 @@
 !
 !
 
+module m_disp3c
+use m_dmovabs
+use m_dlnabs
+
+
+implicit none
+
+contains
+
       subroutine DISP3C(X, Y, Z, NCL, N, RCIR, NCOL)
+         use m_cir
          use M_MISSING
+         use m_halt2
+         use m_jgrline8
+         use m_set_col
          implicit none
          integer :: i
          integer :: istart
@@ -84,3 +97,5 @@
 
          return
       end
+
+end module m_disp3c

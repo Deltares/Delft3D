@@ -9,11 +9,8 @@ add_library(${library_name} ${source_files})
 
 # Specify dependencies
 set(oss_dependencies)
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif()
+target_link_libraries(${library_name} ${oss_dependencies})
 
 set_source_files_properties(
                    src/GPSLEEP.F90

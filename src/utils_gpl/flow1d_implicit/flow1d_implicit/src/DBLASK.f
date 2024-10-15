@@ -187,7 +187,7 @@ c
       SUBROUTINE DGEMM ( TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB,
      $                   BETA, C, LDC )
 *     .. Scalar Arguments ..
-      CHARACTER*1        TRANSA, TRANSB
+      character(len=1)   TRANSA, TRANSB
       INTEGER            M, N, K, LDA, LDB, LDC
       DOUBLE PRECISION   ALPHA, BETA
 *     .. Array Arguments ..
@@ -211,7 +211,7 @@ c
 *  Parameters
 *  ==========
 *
-*  TRANSA - CHARACTER*1.
+*  TRANSA - character(len=1.
 *           On entry, TRANSA specifies the form of op( A ) to be used in
 *           the matrix multiplication as follows:
 *
@@ -223,7 +223,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  TRANSB - CHARACTER*1.
+*  TRANSB - character(len=1.
 *           On entry, TRANSB specifies the form of op( B ) to be used in
 *           the matrix multiplication as follows:
 *
@@ -502,7 +502,7 @@ c
 *     .. Scalar Arguments ..
       DOUBLE PRECISION   ALPHA, BETA
       INTEGER            INCX, INCY, LDA, M, N
-      CHARACTER*1        TRANS
+      character(len=1)   TRANS
 *     .. Array Arguments ..
       DOUBLE PRECISION   A( LDA, * ), X( * ), Y( * )
 *     ..
@@ -520,7 +520,7 @@ c
 *  Parameters
 *  ==========
 *
-*  TRANS  - CHARACTER*1.
+*  TRANS  - character(len=1.
 *           On entry, TRANS specifies the operation to be performed as
 *           follows:
 *
@@ -1208,7 +1208,7 @@ c
 *     .. Scalar Arguments ..
       DOUBLE PRECISION   ALPHA, BETA
       INTEGER            INCX, INCY, LDA, N
-      CHARACTER*1        UPLO
+      character(len=1)   UPLO
 *     .. Array Arguments ..
       DOUBLE PRECISION   A( LDA, * ), X( * ), Y( * )
 *     ..
@@ -1226,7 +1226,7 @@ c
 *  Parameters
 *  ==========
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On entry, UPLO specifies whether the upper or lower
 *           triangular part of the array A is to be referenced as
 *           follows:
@@ -1469,7 +1469,7 @@ c
 *     .. Scalar Arguments ..
       DOUBLE PRECISION   ALPHA
       INTEGER            INCX, INCY, LDA, N
-      CHARACTER*1        UPLO
+      character(len=1)   UPLO
 *     .. Array Arguments ..
       DOUBLE PRECISION   A( LDA, * ), X( * ), Y( * )
 *     ..
@@ -1487,7 +1487,7 @@ c
 *  Parameters
 *  ==========
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On entry, UPLO specifies whether the upper or lower
 *           triangular part of the array A is to be referenced as
 *           follows:
@@ -1698,7 +1698,7 @@ c
       SUBROUTINE DSYR2K( UPLO, TRANS, N, K, ALPHA, A, LDA, B, LDB,
      $                   BETA, C, LDC )
 *     .. Scalar Arguments ..
-      CHARACTER*1        UPLO, TRANS
+      character(len=1)   UPLO, TRANS
       INTEGER            N, K, LDA, LDB, LDC
       DOUBLE PRECISION   ALPHA, BETA
 *     .. Array Arguments ..
@@ -1723,7 +1723,7 @@ c
 *  Parameters
 *  ==========
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On  entry,   UPLO  specifies  whether  the  upper  or  lower
 *           triangular  part  of the  array  C  is to be  referenced  as
 *           follows:
@@ -1736,7 +1736,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  TRANS  - CHARACTER*1.
+*  TRANS  - character(len=1.
 *           On entry,  TRANS  specifies the operation to be performed as
 *           follows:
 *
@@ -2025,7 +2025,7 @@ c
       SUBROUTINE DTRMM ( SIDE, UPLO, TRANSA, DIAG, M, N, ALPHA, A, LDA,
      $                   B, LDB )
 *     .. Scalar Arguments ..
-      CHARACTER*1        SIDE, UPLO, TRANSA, DIAG
+      character(len=1)   SIDE, UPLO, TRANSA, DIAG
       INTEGER            M, N, LDA, LDB
       DOUBLE PRECISION   ALPHA
 *     .. Array Arguments ..
@@ -2047,7 +2047,7 @@ c
 *  Parameters
 *  ==========
 *
-*  SIDE   - CHARACTER*1.
+*  SIDE   - character(len=1.
 *           On entry,  SIDE specifies whether  op( A ) multiplies B from
 *           the left or right as follows:
 *
@@ -2057,7 +2057,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On entry, UPLO specifies whether the matrix A is an upper or
 *           lower triangular matrix as follows:
 *
@@ -2067,7 +2067,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  TRANSA - CHARACTER*1.
+*  TRANSA - character(len=1.
 *           On entry, TRANSA specifies the form of op( A ) to be used in
 *           the matrix multiplication as follows:
 *
@@ -2079,7 +2079,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  DIAG   - CHARACTER*1.
+*  DIAG   - character(len=1.
 *           On entry, DIAG specifies whether or not A is unit triangular
 *           as follows:
 *
@@ -2380,7 +2380,7 @@ c
       SUBROUTINE DTRMV ( UPLO, TRANS, DIAG, N, A, LDA, X, INCX )
 *     .. Scalar Arguments ..
       INTEGER            INCX, LDA, N
-      CHARACTER*1        DIAG, TRANS, UPLO
+      character(len=1)   DIAG, TRANS, UPLO
 *     .. Array Arguments ..
       DOUBLE PRECISION   A( LDA, * ), X( * )
 *     ..
@@ -2398,7 +2398,7 @@ c
 *  Parameters
 *  ==========
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On entry, UPLO specifies whether the matrix is an upper or
 *           lower triangular matrix as follows:
 *
@@ -2408,7 +2408,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  TRANS  - CHARACTER*1.
+*  TRANS  - character(len=1.
 *           On entry, TRANS specifies the operation to be performed as
 *           follows:
 *
@@ -2420,7 +2420,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  DIAG   - CHARACTER*1.
+*  DIAG   - character(len=1.
 *           On entry, DIAG specifies whether or not A is unit
 *           triangular as follows:
 *
@@ -2666,7 +2666,7 @@ c
       SUBROUTINE DTRSV ( UPLO, TRANS, DIAG, N, A, LDA, X, INCX )
 *     .. Scalar Arguments ..
       INTEGER            INCX, LDA, N
-      CHARACTER*1        DIAG, TRANS, UPLO
+      character(len=1)   DIAG, TRANS, UPLO
 *     .. Array Arguments ..
       DOUBLE PRECISION   A( LDA, * ), X( * )
 *     ..
@@ -2687,7 +2687,7 @@ c
 *  Parameters
 *  ==========
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On entry, UPLO specifies whether the matrix is an upper or
 *           lower triangular matrix as follows:
 *
@@ -2697,7 +2697,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  TRANS  - CHARACTER*1.
+*  TRANS  - character(len=1.
 *           On entry, TRANS specifies the equations to be solved as
 *           follows:
 *
@@ -2709,7 +2709,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  DIAG   - CHARACTER*1.
+*  DIAG   - character(len=1.
 *           On entry, DIAG specifies whether or not A is unit
 *           triangular as follows:
 *

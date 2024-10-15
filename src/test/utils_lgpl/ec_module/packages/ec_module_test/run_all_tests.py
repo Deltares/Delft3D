@@ -33,9 +33,9 @@ executable = ""
 # The location of the executable is probably different as well. 
 
 if os.name == 'posix':
-    executable = "../lnx64/bin/ec_module_test"
+    executable = "ec_module_test"
 if os.name == 'nt':
-    executable = "../x64/test/ec_module_test.exe"
+    executable = "ec_module_test.exe"
 
 if (executable == ""):
     sys.stderr.write("Invalid OS = "+os.name)

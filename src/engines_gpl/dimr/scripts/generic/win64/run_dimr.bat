@@ -6,7 +6,7 @@ title run_dimr
     rem
     rem Usage example:
     rem Execute in the working directory:
-    rem path\to\delft3d\installation\x64\dimr\scripts\run_dimr.bat
+    rem path\to\delft3d\installation\x64\bin\run_dimr.bat
     rem More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
 
 setlocal enabledelayedexpansion

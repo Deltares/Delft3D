@@ -30,14 +30,22 @@
 !
 !
 
+module m_isoceltri
+
+implicit none
+
+contains
+
       subroutine ISOCELTRI(X, Y, P, NCOLR)
-         implicit none
-         integer :: i, ih, ja, jaauto, ncolr, ncols, nh, nie, nis, nplus, nv
-         double precision :: dv, p, p1, p2, val, vmax, vmin, vn, x, x1, x2, xh, xhit, y, y1, y2, yh, yhit
+         use m_hitlin
+         use m_dispf2
+         use m_depmax
+
+         integer :: i, ih, ja, ncolr, nh, nplus
+         double precision :: p, p1, p2, vn, x, x1, x2, xh, xhit, y, y1, y2, yh, yhit
 
 !     TEKENT ALLE NV ISOLIJNEN IN EEN CEL TEKAL-METHODE
          dimension P(3), X(3), Y(3), XH(3), YH(3)
-         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
 
          do I = 1, NV
             NPLUS = 1
@@ -66,3 +74,5 @@
 
          return
       end
+
+end module m_isoceltri

@@ -37,7 +37,7 @@ program test_read_boundary_concentrations
 
     implicit none
     character(len = 200) :: cmd_arg
-    integer :: iargc, getarg
+    integer :: iargc
 
     type :: bc_fixture
         integer(kind = int_wp) :: num_substances_transported, num_boundary_conditions, num_boundary_types, output_verbose_level, ierr2

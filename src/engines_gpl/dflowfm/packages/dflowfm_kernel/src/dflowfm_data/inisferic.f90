@@ -29,12 +29,14 @@
 
 !
 !
-
+module m_ini_sferic
+   implicit none
+contains
  !> initialize sferical coordinate frame
  subroutine inisferic()
     use m_sferic
     use m_physcoef
-    implicit none
+
     double precision :: sidereal
     pi = acos(-1d0)
     twopi = 2d0 * pi
@@ -45,3 +47,4 @@
     fcorio = 2d0 * omega * sin(anglat * dg2rd)
     dy2dg = rd2dg / ra
  end subroutine inisferic
+end module m_ini_sferic

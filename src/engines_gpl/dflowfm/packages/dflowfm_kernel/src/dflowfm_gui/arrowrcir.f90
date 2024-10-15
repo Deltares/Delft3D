@@ -30,8 +30,16 @@
 !
 !
 
+module m_arrowrcir
+
+implicit none
+
+contains
+
       subroutine ARROWrcir(X0, Y0, cs, sn)
          use M_WEARELT
+         use m_movabs
+         use m_lnabs
          implicit none
          double precision :: cs
          integer :: i
@@ -55,3 +63,5 @@
          call LNABS(XR(3), YR(3))
          return
       end
+
+end module m_arrowrcir

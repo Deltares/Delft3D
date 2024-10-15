@@ -32,6 +32,7 @@
 
       subroutine RECTANGLE(x1, y1, x2, y2)
          use unstruc_opengl
+         use m_pfiller_core
          implicit none
          real x1, y1, x2, y2
          real x(4), y(4)

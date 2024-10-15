@@ -29,10 +29,11 @@
 
 !
 !
-
+module m_dens_eck
+   implicit none
+contains
  subroutine dens_eck(temp, sal, rholoc, rhods, rhodt)
 
-    implicit none
     double precision, intent(in) :: temp, sal
     double precision, intent(out) :: rholoc, rhods, rhodt
     double precision :: cp0, clam, clam0, cp1, clam1, alph0, cp1ds, cp1dt, cladt, rhom, den
@@ -61,3 +62,4 @@
     rhodt = 1000.0d0 * (cp1dt * clam1 - cp1 * cladt) / den
 
  end subroutine dens_eck
+end module m_dens_eck

@@ -62,13 +62,9 @@ if (WIN32)
                         netcdf4
                         netcdff)
 
-    target_link_libraries(${library_name} ${oss_dependencies})
 endif(WIN32)
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif()
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})

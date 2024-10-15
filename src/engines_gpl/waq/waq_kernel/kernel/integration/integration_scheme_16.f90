@@ -22,17 +22,30 @@
 !!  rights reserved.
 module m_integration_scheme_16
     use m_waq_precision
-    use m_zlayer
-    use m_zercum
-    use m_sgmres
-    use m_setset
-    use m_integrate_areas_fluxes
-    use m_proces
-    use m_hsurf
-    use m_dlwqtr
-    use time_dependent_variables, only: initialize_time_dependent_variables
-    use m_write_output
+    use timers
+    use delwaq2_data
+    use m_grid_utils_external
+    use m_waq_openda_exchange_items, only: get_openda_buffer
+    use variable_declaration             ! Global memory with allocatable GMRES arrays
+    use m_actions
+    use m_waq_memory_dimensions          ! System characteristics
+    use m_timer_variables                ! Timer characteristics
+    use m_real_array_indices             ! Pointers in real array workspace
+    use m_integer_array_indices          ! Pointers in integer array workspace
+    use m_character_array_indices        ! Pointers in character array workspace
+    use m_dlwqdata_save_restore
+    use m_write_output, only: write_output
+    use m_initialize_variables, only: initialize_variables
+    use m_process_calculation, only: calculate_processes
+    use m_time_dependent_variables, only: update_time_dependent_external_forcing
+    use m_set_horizontal_surface_area, only: set_horizontal_surface_area
+    use m_set_vertical_dispersion_length, only: set_vertical_dispersion_length
     use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes, identify_wet_cells
+    use data_processing, only: close_files
+
+    use m_zero_cumulative_arrays, only: set_cumulative_arrays_zero
+    use m_integrate_areas_fluxes, only: integrate_fluxes_for_dump_areas
+
 
     implicit none
 
@@ -45,56 +58,45 @@ contains
     !! iterative solver with Krilov sub-spaces.\n
     !! Forester filter is optional to ensure monotoneous behaviour
     !! in the vertical.
-    subroutine integration_scheme_16(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+    subroutine scheme_16_time_implicit_hz_upwind_vl_central(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
-        use m_dlwqg3
-        use m_dlwqf8
-        use m_dlwqf6
-        use m_dlwqf5
-        use m_dlwqf4
-        use m_dlwqf2
-        use m_dlwqf1
-        use m_dlwqd2
-        use m_dlwqce
-        use m_dlwqb8
-        use m_dlwqb5
-        use m_dlwqb4
-        use m_dlwqb3
-        use m_dlwq41
-        use m_dlwq17
-        use m_dlwq15
-        use m_dlwq14
-        use m_write_restart_map_file
-        use m_delpar01
-        use m_array_manipulation, only : copy_real_array_elements
-        use data_processing, only : close_files
-        use m_grid_utils_external
-        use timers
-        use variable_declaration                         ! Global memory with allocatable GMRES arrays
-        use delwaq2_data
-        use m_waq_openda_exchange_items, only : get_openda_buffer
-        use m_actions
-        use m_waq_memory_dimensions          ! System characteristics
-        use m_timer_variables          ! Timer characteristics
-        use m_real_array_indices          ! Pointers in real array workspace
-        use m_integer_array_indices          ! Pointers in integer array workspace
-        use m_character_array_indices          ! Pointers in character array workspace
-        use m_dlwqdata_save_restore
+        use m_gmres_utils, only: fill_matrix_hz_backward_diff_vl_central_diff
+        use m_calculate_new_volumes, only: calculate_new_volumes
+        use m_scheme_16_utils, only: tranfer_solution_from_rhs_into_conc
+        use m_gmres_utils, only: fill_rhs_for_gmres_solver
+        use m_scheme_16_utils, only: Initialize_diagonal_for_gmres
+        use m_initialize_pointer_matrices_fast_solver, only: initialize_pointer_matrices_fast_solver
+        use m_vertical_forester_filter, only: vertical_forester_filter
+        use m_closure_error_correction, only: calculate_closure_error_correction
+        use m_concentration_calculations, only: calculate_concentrations_from_mass
+        use m_mass_balance_calculation, only: calculate_mass_balance_implicit_schemes
+        use m_mass_calculation, only: calculate_mass_for_transported_substances
+        use m_make_new_volumes, only: make_new_volumes
+        use m_time_dependent_variables
+        use m_thatcher_harleman_bc, only: thatcher_harleman_bc
+        use m_add_waste_loads, only: add_waste_loads
+        use m_scale_derivatives_steady_state, only: scale_processes_derivs_and_update_balances
+        use m_write_restart_map_file, only: write_restart_map_file
+        use m_delpar01, only: delpar01
+        use m_array_manipulation, only: copy_real_array_elements
+
+        use m_zlayer, only: zflows
+        use m_sgmres, only: sgmres, initialize_gmres
         use omp_lib
 
-        type(waq_data_buffer), target         :: buffer              !< System total array space
+        type(waq_data_buffer), target :: buffer              !< System total array space
         integer(kind = int_wp), intent(inout) :: file_unit_list  (*) !< Array with logical unit numbers
-        character(len=*),       intent(in)    :: file_name_list(*)   !< Array with file names
-        integer(kind = int_wp), intent(in)    :: action              !< Span of the run or type of action to perform
-                                                                     !< (run_span = {initialise, time_step, finalise, whole_computation})
-        type(delwaq_data),      target        :: dlwqd               !< DELWAQ data structure
-        type(GridPointerColl)                 :: gridps              !< Collection of all grid definitions
+        character(len = *), intent(in) :: file_name_list(*)   !< Array with file names
+        integer(kind = int_wp), intent(in) :: action              !< Span of the run or type of action to perform
+        !< (run_span = {initialise, time_step, finalise, whole_computation})
+        type(delwaq_data), target :: dlwqd               !< DELWAQ data structure
+        type(GridPointerColl) :: gridps              !< Collection of all grid definitions
 
         real(kind = real_wp) :: rdummy(1)
         logical :: imflag, idflag, ihflag
         logical :: update, lrewin
         logical :: timon_old
-        integer(kind = int_wp) :: isys
+        integer(kind = int_wp) :: substance_i
         integer(kind = int_wp) :: nstep
 
         integer(kind = int_wp), save :: ithand1 = 0 ! Make this one "global"
@@ -110,7 +112,7 @@ contains
         integer(kind = int_wp), save :: iter
         integer(kind = int_wp), save :: iscale
 
-        integer(kind=int_wp), pointer :: p_iknmkv(:)
+        integer(kind = int_wp), pointer :: p_iknmkv(:)
         p_iknmkv(1:size(iknmkv)) => iknmkv
 
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
@@ -151,7 +153,7 @@ contains
             !     - Integrate processes in an implicit way as well. Enables users to
             !       potentially take larger time steps (better stability properties)
             !       or even compute steady states in "one time step" (the latter subject
-            !       to constraint that proces formulation is time independent).
+            !       to constraint that calculate_processes formulation is time independent).
             !       Implicit time integration of processes requires the Inexact Newton
             !       solution method described in:
             !
@@ -161,7 +163,7 @@ contains
 
             if (action == ACTION_FINALISATION) then
                 call dlwqdata_restore(dlwqd)
-                if (timon) call timstrt("integration_scheme_16", ithandl)
+                if (timon) call timstrt("scheme_16_time_implicit_hz_upwind_vl_central", ithandl)
                 goto 50
             endif
 
@@ -214,7 +216,7 @@ contains
             ! Note: the handle to the timer (ithandl) needs to be
             ! properly initialised and restored
             IF (ACTION == ACTION_INITIALISATION) THEN
-                if (timon) call timstrt("integration_scheme_16", ithandl)
+                if (timon) call timstrt("scheme_16_time_implicit_hz_upwind_vl_central", ithandl)
                 call dlwqdata_save(dlwqd)
                 if (timon) call timstop(ithandl)
                 RETURN
@@ -224,7 +226,7 @@ contains
                 call dlwqdata_restore(dlwqd)
             ENDIF
 
-            if (timon) call timstrt("integration_scheme_16", ithandl)
+            if (timon) call timstrt("scheme_16_time_implicit_hz_upwind_vl_central", ithandl)
 
             iexseg = 1     !  There is nothing to mask.
 
@@ -232,7 +234,7 @@ contains
             10 continue
 
             ! Determine the volumes and areas that ran dry at start of time step
-            call hsurf(num_cells, num_spatial_parameters, c(ipnam:), a(iparm:), num_spatial_time_fuctions, &
+            call set_horizontal_surface_area(num_cells, num_spatial_parameters, c(ipnam:), a(iparm:), num_spatial_time_fuctions, &
                     c(isfna:), a(isfun:), surface, file_unit_list(19))
             call set_dry_cells_to_zero_and_update_volumes(num_cells, nosss, num_layers, a(ivol:), num_exchanges_u_dir + num_exchanges_v_dir, &
                     a(iarea:), num_constants, c(icnam:), a(icons:), surface, &
@@ -240,16 +242,16 @@ contains
 
             ! user transport processes
             update = updatr
-            call dlwqtr(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
-                num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
-                j(ixpnt:), a(ivol:), &
-                a(ileng:), a(iparm:), &
-                c(ipnam:), ilflag)
+            call set_vertical_dispersion_length(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
+                    num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
+                    j(ixpnt:), a(ivol:), &
+                    a(ileng:), a(iparm:), &
+                    c(ipnam:), ilflag)
 
             if (update) updatr = .true.
 
             ! Temporary ? set the variables grid-setting for the DELWAQ variables
-            call setset(file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+            call initialize_variables(file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
                     num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
                     num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
                     nopred, num_vars, num_grids, j(ivset:))
@@ -263,8 +265,8 @@ contains
                     iaflag, intopt, num_monitoring_cells, j(isdmp:), a(idmps:), &
                     a(imas2:))
 
-            ! call PROCES subsystem
-            call proces(num_substances_total, nosss, a(iconc:), a(ivol:), itime, &
+            ! call calculate_processes subsystem
+            call calculate_processes(num_substances_total, nosss, a(iconc:), a(ivol:), itime, &
                     idt, a(iderv:), ndmpar, num_processes_activated, num_fluxes, &
                     j(iipms:), j(insva:), j(iimod:), j(iiflu:), j(iipss:), &
                     a(iflux:), a(iflxd:), a(istoc:), ibflag, bloom_status_ind, &
@@ -289,9 +291,9 @@ contains
                 ! first: adjust boundaries by OpenDA
                 if (dlwqd%inopenda) then
                     do ibnd = 1, num_boundary_conditions
-                        do isys = 1, num_substances_transported
-                            call get_openda_buffer(isys, ibnd, 1, 1, &
-                                    A(ibset:+(ibnd - 1) * num_substances_transported + isys - 1))
+                        do substance_i = 1, num_substances_transported
+                            call get_openda_buffer(substance_i, ibnd, 1, 1, &
+                                    A(ibset:+(ibnd - 1) * num_substances_transported + substance_i - 1))
                         enddo
                     enddo
                 endif
@@ -337,7 +339,7 @@ contains
             if (itime >= itstop) goto 50
 
             ! restore conc-array from mass array
-            call dlwqb8(num_substances_transported, num_substances_total, num_substances_part, num_cells, a(ivol:), &
+            call calculate_concentrations_from_mass(num_substances_transported, num_substances_total, num_substances_part, num_cells, a(ivol:), &
                     surface, a(imass:), a(iconc:))
 
             ! add processes
@@ -351,24 +353,24 @@ contains
             select case (ivflag)
             case (1) !     computation of volumes for computed volumes only
                 call copy_real_array_elements(a(ivol:), a(ivol2:), num_cells)
-                call dlwqb3(a(iarea:), a(iflow:), a(ivnew:), j(ixpnt:), num_substances_total, &
+                call make_new_volumes(a(iarea:), a(iflow:), a(ivnew:), j(ixpnt:), num_substances_total, &
                         num_exchanges, nvdim, j(ivpnw:), a(ivol2:), intopt, &
                         a(imas2:), idt, iaflag, num_substances_transported, a(idmpq:), &
                         ndmpq, j(iqdmp:))
                 updatr = .true.
             case (2) !     the fraudulent computation option
-                call dlwq41(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
+                call update_volumes_and_time_step(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
                         j(inrha:), j(inrh2:), j(inrft:), num_cells, a(ivoll:), &
                         j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                         updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
                         lstrec, lrewin, a(ivol2:), dlwqd)
-                call dlwqf8(num_cells, num_exchanges, j(ixpnt:), idt, iknmkv, &
+                call calculate_new_volumes(num_cells, num_exchanges, j(ixpnt:), idt, iknmkv, &
                         a(ivol:), a(iflow:), a(ivoll:), a(ivol2:))
                 updatr = .true.
                 lrewin = .true.
                 lstrec = .true.
             case default               !     read new volumes from files
-                call dlwq41(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
+                call update_volumes_and_time_step(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
                         j(inrha:), j(inrh2:), j(inrft:), num_cells, a(ivol2:), &
                         j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                         updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
@@ -382,12 +384,12 @@ contains
             call zflows(num_exchanges, noqt, num_layers, num_constants, c(icnam:), &
                     a(iflow:), j(ixpnt:))
             ! Initialize pointer matices for fast solvers
-            call dlwqf1(num_cells, num_boundary_conditions, num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, &
+            call initialize_pointer_matrices_fast_solver(num_cells, num_boundary_conditions, num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, &
                     fast_solver_arr_size, j(ixpnt:), j(iwrk:), j(imat:), rowpnt, &
                     fmat, tmat)
 
             ! add the waste loads
-            call dlwq15(num_substances_transported, num_substances_total, num_cells, num_exchanges, num_waste_loads, &
+            call add_waste_loads(num_substances_transported, num_substances_total, num_cells, num_exchanges, num_waste_loads, &
                     num_waste_load_types, num_monitoring_cells, intopt, idt, itime, &
                     iaflag, c(isnam:), a(iconc:), a(ivol:), a(ivol2:), &
                     a(iflow:), j(ixpnt:), c(iwsid:), c(iwnam:), c(iwtyp:), &
@@ -401,9 +403,9 @@ contains
             ! additional VELO and DISPER array. (JvG, April 24, 1993).
             ! In solving equations with multiple rhs, the *FULL* fast (or should
             ! I say slow?) solver algorithm needs to be applied to each rhs vector
-            ! So DELMAT may outperform FS when we deal with a large number of
+            ! So solve_linear_equations_lu_decomposition may outperform FS when we deal with a large number of
             ! substances with the same additional velocity and dispersion field
-            ! In future we need a smart switch between DELMAT and FS at this place
+            ! In future we need a smart switch between solve_linear_equations_lu_decomposition and FS at this place
             ! For now always do FS!
             if (timon) call timstrt("ADE solver", ithand1)
             timon_old = timon
@@ -414,23 +416,23 @@ contains
             !$OMP DO PRIVATE(ith) SCHEDULE(DYNAMIC)
             ! start of loop over substances
 
-            do isys = 1, num_substances_transported
+            do substance_i = 1, num_substances_transported
                 ! number of threads for parallel processing
                 ith = OMP_GET_THREAD_NUM() + 1
 
                 ! initialize diagonal
-                call dlwqf2(num_cells, num_boundary_conditions, idt, a(ivol2:), gm_diag(1, ith))
+                call Initialize_diagonal_for_gmres(num_cells, num_boundary_conditions, idt, a(ivol2:), gm_diag(1, ith))
 
                 ! do the transport itself, fill matrix, scale diagonal
-                call dlwqg3(num_cells, num_boundary_conditions, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, &
+                call fill_matrix_hz_backward_diff_vl_central_diff(num_cells, num_boundary_conditions, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, &
                         j(ixpnt:), nddim, nvdim, j(idpnw:), j(ivpnw:), &
                         a(iarea:), a(iflow:), a(ileng:), a(idisp:), a(idnew:), &
-                        a(ivnew:), isys, intopt, ilflag, fast_solver_arr_size, &
+                        a(ivnew:), substance_i, intopt, ilflag, fast_solver_arr_size, &
                         gm_amat(1, ith), j(imat:), rowpnt, gm_diag(1, ith), gm_diac(1:, ith), &
                         iscale, fmat, tmat, iknmkv)
 
                 ! compute RHS (substance after substance)
-                call dlwqf4(num_cells, num_boundary_conditions, num_substances_transported, num_substances_total, isys, &
+                call fill_rhs_for_gmres_solver(num_cells, num_boundary_conditions, num_substances_transported, num_substances_total, substance_i, &
                         idt, a(iconc:), a(iderv:), a(ivol:), a(iboun:), &
                         gm_rhs(1, ith), gm_diac(1:, ith), gm_sol(1, ith))
 
@@ -442,7 +444,7 @@ contains
                         file_unit_list(19), litrep)
 
                 ! copy solution for this substance into concentration array
-                call dlwqf6(num_cells, num_substances_total, isys, 1, gm_sol(1, ith), &
+                call tranfer_solution_from_rhs_into_conc(num_cells, num_substances_total, substance_i, 1, gm_sol(1, ith), &
                         a(iconc:), iknmkv)
 
                 ! end loop over the substances
@@ -456,25 +458,25 @@ contains
             if (timon) call timstop(ithand1)
 
             ! mass balance of transport
-            call dlwqb5(a(idisp:), a(idnew:), a(iarea:), a(iflow:), a(ileng:), &
+            call calculate_mass_balance_implicit_schemes(a(idisp:), a(idnew:), a(iarea:), a(iflow:), a(ileng:), &
                     a(ivnew:), a(iconc:), a(iboun:), j(ixpnt:), num_substances_transported, &
                     num_substances_total, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, nddim, &
                     nvdim, j(idpnw:), j(ivpnw:), intopt, a(imas2:), &
                     ilflag, a(idmpq:), ndmpq, idt, j(iqdmp:))
 
             ! update mass array, explicit step for passive substances
-            call dlwqb4(num_substances_transported, num_substances_total, num_substances_part, num_cells, a(ivol2:), &
+            call calculate_mass_for_transported_substances(num_substances_transported, num_substances_total, num_substances_part, num_cells, a(ivol2:), &
                     surface, a(imass:), a(iconc:), a(iderv:), idt)
 
             ! Forester filter on the vertical
             if (forester) then
-                call dlwqd2(file_unit_list(19), num_substances_transported, num_substances_total, num_cells, num_exchanges_z_dir, &
+                call vertical_forester_filter(file_unit_list(19), num_substances_transported, num_substances_total, num_cells, num_exchanges_z_dir, &
                         num_layers_grid, a(iconc:), a(lleng:), nowarn)
             endif
 
             ! calculate closure error
             if (lrewin .and. lstrec) then
-                call dlwqce(a(imass:), a(ivoll:), a(ivol2:), num_substances_transported, num_substances_total, &
+                call calculate_closure_error_correction(a(imass:), a(ivoll:), a(ivol2:), num_substances_transported, num_substances_total, &
                         num_cells, file_unit_list(19))
                 call copy_real_array_elements(a(ivoll:), a(ivol:), num_cells)    !  replace old by new volumes
             else
@@ -488,7 +490,7 @@ contains
             endif
 
             ! new time values, volumes excluded
-            call initialize_time_dependent_variables(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
+            call update_time_dependent_external_forcing(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
                     j(inrha:), j(inrh2:), j(inrft:), idt, a(ivol:), &
                     a(idiff:), a(iarea:), a(iflow:), a(ivelo:), a(ileng:), &
                     a(iwste:), a(ibset:), a(icons:), a(iparm:), a(ifunc:), &
@@ -522,5 +524,5 @@ contains
 
         dlwqd%iaflag = iaflag
         dlwqd%itime = itime
-    end subroutine integration_scheme_16
+    end subroutine scheme_16_time_implicit_hz_upwind_vl_central
 end module m_integration_scheme_16

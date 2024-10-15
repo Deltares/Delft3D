@@ -29,31 +29,35 @@
 
 !
 !
+module m_htext
+   implicit none
+contains
+   subroutine HTEXT(VAL, X, Y)
+      use m_colnow
+      use m_draw_text
 
-      subroutine HTEXT(VAL, X, Y)
-         implicit none
-         integer :: ncolnow
-         double precision :: val
-         double precision :: x
-         double precision :: y
+      double precision :: val
+      double precision :: x
+      double precision :: y
 !     getal value op grafisch scherm in current color
-         character TEXT * 6, TEXT2 * 10
-         common / COLNOW / NCOLNOW
-         if (NCOLNOW >= 0) then
-            if (-1.000d0 < VAL .and. VAL < 10.000d0) then
-               write (TEXT(1:6), '(F6.3)') VAL
-               call DRAWTEXT(real(X), real(Y), TEXT)
-            else if (-10.000d0 < VAL .and. VAL < 100.000d0) then
-               write (TEXT(1:6), '(F6.2)') VAL
-               call DRAWTEXT(real(X), real(Y), TEXT)
-            else if (-100.000d0 < VAL .and. VAL < 1000.000d0) then
-               write (TEXT(1:6), '(F6.1)') VAL
-               call DRAWTEXT(real(X), real(Y), TEXT)
-            else
-               write (TEXT2, '(e10.3)') VAL
-               call DRAWTEXT(real(X), real(Y), TEXT2)
-            end if
-         end if
+      character TEXT * 6, TEXT2 * 10
 
-         return
-      end
+      if (NCOLNOW >= 0) then
+         if (-1.000d0 < VAL .and. VAL < 10.000d0) then
+            write (TEXT(1:6), '(F6.3)') VAL
+            call DRAWTEXT(real(X), real(Y), TEXT)
+         else if (-10.000d0 < VAL .and. VAL < 100.000d0) then
+            write (TEXT(1:6), '(F6.2)') VAL
+            call DRAWTEXT(real(X), real(Y), TEXT)
+         else if (-100.000d0 < VAL .and. VAL < 1000.000d0) then
+            write (TEXT(1:6), '(F6.1)') VAL
+            call DRAWTEXT(real(X), real(Y), TEXT)
+         else
+            write (TEXT2, '(e10.3)') VAL
+            call DRAWTEXT(real(X), real(Y), TEXT2)
+         end if
+      end if
+
+      return
+   end
+end module m_htext

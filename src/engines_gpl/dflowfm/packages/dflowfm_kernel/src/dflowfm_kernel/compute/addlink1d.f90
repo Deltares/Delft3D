@@ -37,6 +37,8 @@
     use m_flowparameters
     use unstruc_channel_flow
     use precision_basics
+    use m_get_prof_1D
+    use m_get_prof_1D_min
 
     implicit none
 
@@ -141,7 +143,6 @@
        calcConv = 1
 
        if (hu(L) > 0) then
-          !DIR$ INLINE
           hpr = get_hpr_nostruc(L)
           ! getprof1D sets cfu
           call getprof_1D(L, hpr, au(L), widu, japerim, calcConv, perim) ! memory closeness of profiles causes this statement here instead of in setau

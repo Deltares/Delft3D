@@ -29,13 +29,15 @@
 
 !
 !
-
+module m_reconstruct_ucz
+   implicit none
+contains
 subroutine reconstructucz(k)
    ! Perot reconstruction of the vertical velocity, by Willem
    use m_flow
    use m_flowgeom
-   use m_flowtimes
-   implicit none
+   use m_flowtimes, only: dts
+   use m_get_kbot_ktop
 
    integer, intent(in) :: k
 
@@ -195,3 +197,4 @@ subroutine reconstructucz(k)
    end if
 
 end subroutine reconstructucz
+end module m_reconstruct_ucz

@@ -31,6 +31,7 @@
 !
 
    subroutine deleteSelectedCrossSections()
+      use m_confrm
       use m_monitoring_crosssections
       use M_POLYGON
       use M_MISSING

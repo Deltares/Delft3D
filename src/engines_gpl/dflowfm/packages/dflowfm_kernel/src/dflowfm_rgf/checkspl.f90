@@ -35,9 +35,10 @@
      !! All splines with <=1 point are reset and moved to the back.
      subroutine CHECKSPL(X, Y, mmax, nmax, MCS, NCS)
         use m_missing
+        use m_numpold
         implicit none
-        double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
         integer :: mmax, nmax, mcs, ncs
+        double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
 
         integer :: numspl, numpx, numpi, numpj, i, j, k
 

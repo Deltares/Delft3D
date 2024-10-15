@@ -32,6 +32,7 @@
 
       subroutine TIDYSAMPLES(XS, YS, ZS, IPSAM, NS, MXSAM, MYSAM)
          use stdlib_sorting, only: sort_index
+         use m_readyy
          implicit none
          integer :: ns
          double precision :: XS(NS), YS(NS), ZS(NS) !< sample coordinates

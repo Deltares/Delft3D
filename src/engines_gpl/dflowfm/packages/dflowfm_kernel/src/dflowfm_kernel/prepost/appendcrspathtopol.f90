@@ -29,16 +29,17 @@
 
 !
 !
-
+module m_append_crspath_to_pol
+   implicit none
+contains
 !> Appends the polyline of a cross section path to the current global
 !! polyline. Useful for converting cross sections, thin dams or thin
 !! dykes back to editable polylines.
 subroutine appendCRSPathToPol(path)
-   use m_crspath
-   use m_polygon
-   use m_alloc
-   use m_missing
-   implicit none
+   use m_crspath, only: tcrspath, path
+   use m_polygon, only: npl, xpl, ypl, zpl, increasepol
+   use m_missing, only: dmiss
+
    type(tcrspath), intent(in) :: path
 
    integer :: ip
@@ -60,3 +61,4 @@ subroutine appendCRSPathToPol(path)
       zpl(npl) = path%zp(ip)
    end do
 end subroutine appendCRSPathToPol
+end module m_append_crspath_to_pol

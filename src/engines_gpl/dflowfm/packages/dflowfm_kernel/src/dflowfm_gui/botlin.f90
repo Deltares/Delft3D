@@ -29,11 +29,17 @@
 
 !
 !
-
+module m_botlin
+         implicit none
+contains
       subroutine BOTLIN(JA, NUMB, KEY)
          use m_devices
-         use unstruc_display
-         implicit none
+         use unstruc_display_data, only: jafullbottomline
+         use m_helpnow
+         use m_ktext
+         use m_timlin
+         use m_fkeys
+
          integer :: imenuhoriz
          integer :: infoinput
          integer :: iw
@@ -42,14 +48,11 @@
          integer :: li
          integer :: maxop
          integer :: maxopt
-         integer :: nlevel
          integer :: nput
          integer :: numb
          integer :: nwhat
          parameter(MAXOP=64)
-         character * 14 OPTION(MAXOP), TEX * 14
-         character WRDKEY * 40
-         common / HELPNOW / WRDKEY, NLEVEL
+         character(len=14) :: OPTION(MAXOP), TEX
          integer, save :: lastmenuheight = 1
 
 10       continue
@@ -332,3 +335,4 @@
          end if
 
       end
+end module m_botlin

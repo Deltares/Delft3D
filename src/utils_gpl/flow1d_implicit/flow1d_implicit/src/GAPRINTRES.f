@@ -40,7 +40,7 @@ c
      +            index  ,i
       real        tbegin ,tend  ,tduur ,gem    ,tslag   ,tmin   ,tmax  ,
      +            minimum,maximum      ,vloedv ,ebv     
-      character*3 head(3),txt 
+      character(len=3) head(3),txt 
 c      
       data       head/'Con','SAL','CHL'/
 c

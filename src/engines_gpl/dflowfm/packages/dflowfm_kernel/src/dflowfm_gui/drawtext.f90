@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_draw_text
+   implicit none
+contains
     subroutine DRAWTEXT(X, Y, TEX)
-       use unstruc_opengl
-       implicit none
+       use unstruc_opengl, only: InOpenGLRendering, RenderText
+
        real :: x, y
        character TEX * (*)
 
@@ -41,4 +43,5 @@
        else
           call IGRCHAROUT(X, Y, TEX)
        end if
-    end subroutine
+    end subroutine DRAWTEXT
+end module m_draw_text

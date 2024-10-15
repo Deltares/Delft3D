@@ -36,6 +36,7 @@
 subroutine inctime_split(tim)
    use m_flowtimes
    use unstruc_messages
+   use m_date_time_from_ref_date, only: date_time_from_ref_date
    implicit none
    double precision, intent(in) :: tim !< Current time, used to checked whether an increment is necessary at all.
 
@@ -55,7 +56,7 @@ subroutine inctime_split(tim)
 
    do ! increment time_split until tim <= time_split
       ! First, get y/M/d/h/m/s values for current time_split since refdat:
-      call datetime_from_refdat(time_split, refdat, iyear, imonth, iday, ihour, imin, isec)
+      call date_time_from_ref_date(time_split, refdat, iyear, imonth, iday, ihour, imin, isec)
 
       ! Second, add the ti_split increment to them, based on ti_split_unit
       add_seconds = 0

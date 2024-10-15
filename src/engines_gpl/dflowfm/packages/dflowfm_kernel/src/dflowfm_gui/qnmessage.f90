@@ -30,10 +30,18 @@
 !
 !
 
+module m_qnmessage
+
+implicit none
+
+contains
+
       subroutine QNMESSAGE(TEX)
-         use unstruc_display
-         use unstruc_messages
-         implicit none
+         use unstruc_display_data, only: npos
+         use unstruc_colors
+         use m_devices, only: iws, ihs
+         use unstruc_messages, only: msgbuf, msg_flush
+
          integer :: ih
          integer :: iw
          integer :: ixp
@@ -58,3 +66,5 @@
 
          return
       end
+
+end module m_qnmessage

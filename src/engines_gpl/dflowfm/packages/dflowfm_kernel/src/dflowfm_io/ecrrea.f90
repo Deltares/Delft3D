@@ -29,11 +29,15 @@
 
 !
 !
-
+module m_ecrrea
+   implicit none
+contains
       !> read from rfg grid file
       subroutine ECRREA(X, MMAX, NMAX, MC, NC, MRGF, HALF)
-         use m_missing
-         implicit none
+         use m_readyy
+         use m_qn_read_error
+         use m_qn_eof_error
+
          character dummy * 10, REC * 132
 !     LEES RGF
          integer, intent(in) :: MMAX, NMAX !< array sizes
@@ -61,7 +65,7 @@
                AF = HALF + 0.5d0 * dble(J) / dble(NC)
                call READYY('Reading Grid File', AF)
             end if
-            read (MRGF, '(10X5F12.0)', err=888, end=999) (X(I, J), I=1, MC)
+            read (MRGF, '(10X,5F12.0)', err=888, end=999) (X(I, J), I=1, MC)
          end do
 
          ! where (x == 0d0) x = dxymis
@@ -78,3 +82,4 @@
          call QNEOFERROR(MRGF)
          return
       end subroutine ECRREA
+end module m_ecrrea

@@ -53,7 +53,7 @@
       use globals
 
       INTEGER        iunit, IForm, iCheck
-      CHARACTER*(*)  NAME
+      CHARACTER(len=*) NAME
       LOGICAL        FNMEXT
 !
       INQUIRE (FILE = NAME, EXIST = FNMEXT)

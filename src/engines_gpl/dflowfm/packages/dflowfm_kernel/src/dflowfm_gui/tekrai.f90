@@ -30,9 +30,16 @@
 !
 !
 
- subroutine tekrai(nsiz, ja)
+ subroutine tekrai(nsiz)
 
-    use unstruc_colors
+    use m_linewidth
+    use m_isofil
+    use m_isocol2
+    use m_isocol
+    use m_htext_rai
+    use m_getktoplot
+    use m_dhtext
+    use m_arrowsxyzfac
     use m_netw
     use m_flow
     use m_flowgeom
@@ -45,27 +52,31 @@
     use m_strucs
     use fm_external_forcings_data
     use kdtree2Factory
+    use m_depmax
+    use m_vfac
+    use m_drawthis
+    use m_fbox
+    use m_get_Lbot_Ltop
+    use m_find_crossed_links_kdtree2
+    use m_cirr
+    use m_pfiller
+    use m_set_col
+    use m_inview
+    use m_view_port
+    use m_movabs
+    use m_lnabs
 
     implicit none
 
-    integer :: nsiz, ja
+    integer :: nsiz
 
     double precision :: xx2, zz
     integer :: k1, k2, n1, n2
     double precision :: uu, ww
     double precision :: zfac, zgaten
     integer :: l, k, kk, j, kplotorg, n, ncol
-
-    double precision :: VMAX, VMIN, DV, VAL(256)
-    integer :: NCOLS(256), NIS, NIE, nv, JAAUTO
-    double precision :: vfac, vfacforce, doorh
-    integer :: nvec, ng
-
-    common / depmax / vmax, vmin, dv, val, ncols, nv, nis, nie, jaauto
-    common / VFAC / VFAC, VFACFORCE, NVEC
-    common / drawthis / ndraw(50)
-    integer :: ndraw
-
+    double precision :: doorh
+    integer :: ng
     double precision :: zz1, zz2, xz1, xz2
     double precision :: xmn, xmx, ymx, zmx, zmx2, bot, top, xx, yy, bup, xxu, zzu
     double precision :: xp(4), yp(4), zp(4), xxmn, xxmx, zn, dlay, dl, xp1, yp1, qsrck
@@ -77,8 +88,6 @@
 
     integer, allocatable :: iLink(:), iPol(:)
     double precision, allocatable :: dSL(:)
-
-    logical inview
 
     if (ndx < 1) return
 
@@ -479,7 +488,7 @@
                 uu = ucx(k)
                 ww = 0.5d0 * (ww1(k) + ww1(k - 1))
                 yp(1) = 0.5d0 * (zws(k) + zws(k - 1))
-                call arrowsxyzfac(xp(1), yp(1), uu, ww, VFAC, 0, zfac)
+                call arrowsxyzfac(xp(1), yp(1), uu, ww, VFAC, zfac)
 
              end do
 
@@ -491,12 +500,12 @@
     end if
 
     if (NDRAW(2) >= 1) then
-       call tekrailinesbathy(31, 0, 1) ! bl
+       call tekrailinesbathy(31, 1) ! bl
     end if
 
     if (jased > 0 .and. jased < 4) then
        do j = 1, mxgr
-          call tekrailinesbathy(15, 0, 1 + j) ! grainlay 1,2 etc
+          call tekrailinesbathy(15, 1 + j) ! grainlay 1,2 etc
        end do
     end if
 
@@ -547,7 +556,7 @@
        call lnabs(xmx, 0d0)
        !call htext( 1d0, xmx, 1d0)
     else if (md_IDENT == 'carrier') then
-       call carrier(ndx, time1 - tstart_user)
+       call carrier(time1 - tstart_user)
     else if (md_IDENT(1:6) == 'drybed') then
        call drybed(time1 - tstart_user)
     else if (md_IDENT(1:6) == 'wetbed') then

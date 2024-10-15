@@ -31,7 +31,16 @@
 !
 
 !
+module m_disp2p
+
+implicit none
+
+contains
+
       subroutine DISP2P(X, Y, MMAX, MC, NC, NCOL)
+         use m_cir
+         use m_set_col
+         use m_movabs
          implicit none
          integer :: i
          integer :: j
@@ -52,3 +61,5 @@
          end do
          return
       end
+
+end module m_disp2p

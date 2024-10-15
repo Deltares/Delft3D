@@ -31,6 +31,12 @@
 !
 
 !> compute sample mesh width
+module m_comp_sampledh
+
+implicit none
+
+contains
+
 double precision function comp_sampleDh(i, j)
    use m_samples
    use geometry_module, only: dbdistance
@@ -67,3 +73,5 @@ double precision function comp_sampleDh(i, j)
 
    return
 end function comp_sampleDh
+
+end module m_comp_sampledh

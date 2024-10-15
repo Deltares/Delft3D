@@ -30,22 +30,35 @@
 !
 !
 
+module m_editgridblok
+use m_ispoin
+
+
+implicit none
+
+contains
+
       subroutine EDITGRIDBLOK(MODE, NFLD, KEY)
+         use m_choices
          use m_grid
-         use unstruc_colors
-         implicit none
+         use unstruc_colors, only: ncolln, ncoldg, ncolrg
+         use m_helpnow
+         use m_drawthis
+         use m_grid_block
+         use m_qnerror
+         use m_ktext
+         use m_putget_un
+         use m_botlin
+         use m_draw_nu
+         use m_cirr
+         use m_restore_grd
+         use m_tek_grd
+         use m_fieldop
 
          integer :: mode, nfld, key
          integer :: newmode
-
-         integer :: ndraw, nlevel, num, nwhat, numb, mp, np
-         common / DRAWTHIS / ndraw(50)
-         common / HELPNOW / WRDKEY, NLEVEL
-
-         integer :: MB, NB, MB2, NB2, NPT, NPT2, NPUTO, ITYPE
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
-
-         character TEX * 20, WRDKEY * 40, FIELDOP * 40
+         integer :: num, nwhat, numb, mp, np
+         character TEX * 20
          integer :: m1b, n1b, m2b, n2b, ipt, ja, jonce, m, n, nput
          double precision :: xp, yp
 
@@ -80,7 +93,7 @@
                call TEKB(Xc, Yc, MMAX, NMAX, 0)
                return
             else
-               call CHOICES(MODE, NUM, NWHAT, KEY)
+               call CHOICES(NUM, NWHAT, KEY)
             end if
          else if (KEY >= 577) then ! Alt+letter switches edit mode.
             call selecteditmode(newmode, key)
@@ -199,3 +212,5 @@
          goto 10
 !
       end subroutine editgridblok
+
+end module m_editgridblok

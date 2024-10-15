@@ -37,7 +37,7 @@
 !> Manages the caching file - store and retrieve the grid-based information.
 module unstruc_caching
    use precision
-   use m_observations, only: numobs, xobs, yobs, locTpObs, kobs, lobs
+   use m_observations_data, only: numobs, xobs, yobs, locTpObs, kobs, lobs
    use m_monitoring_crosssections, only: crs, tcrs, deallocCrossSections
    !use m_crspath, only: tcrspath
    use md5_checksum

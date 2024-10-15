@@ -30,24 +30,31 @@
 !
 !
 
-      subroutine MENUV3(NWHAT, OPTION, MAXOPT, EXP, MAXEXP)
-         use unstruc_files
-         use m_devices
-         implicit none
+module m_menuv3
+
+implicit none
+
+contains
+
+      subroutine MENUV3(NWHAT, OPTION, MAXOPT)
+         use unstruc_files, only: msgbuf, msg_flush
+         use m_devices, only: nopsys
+         use m_helpnow
+         use m_timlin
+         use m_fkeys
+         use m_botlin
+
          integer :: imenuvertic, IXP, IYP
          integer :: infoinput
          integer :: infocursor
          integer :: ja
          integer :: key
-         integer :: maxexp
          integer :: maxop
          integer :: maxopt
-         integer :: nlevel
          integer :: nstart
          integer :: nwhat
          parameter(MAXOP=64)
-         character * 40 OPTION(MAXOP), exp(MAXOP), WRDKEY
-         common / HELPNOW / WRDKEY, NLEVEL
+         character(len=40) OPTION(MAXOP)
 !     Keuzemenu verticaal
 !
          NSTART = NWHAT
@@ -97,3 +104,5 @@
          goto 10
 !
       end
+
+end module m_menuv3

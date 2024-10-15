@@ -34,8 +34,8 @@
 !     VERWISSEL RIJ I1 EN I2
 !      USE DIMENS
          implicit none
-         double precision :: X(MMAX, NMAX)
          integer :: mmax, nmax, i1, i2, numspl
+         double precision :: X(MMAX, NMAX)
          integer :: j
          double precision :: xh
 

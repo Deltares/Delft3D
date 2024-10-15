@@ -31,6 +31,12 @@
 !
 
 !> compute total grid height for a given grow factor, first grid layer height and number of grid layers
+module m_comp_h
+
+implicit none
+
+contains
+
 double precision function comp_h(dgrow, dheight0, nfac)
    implicit none
 
@@ -46,3 +52,5 @@ double precision function comp_h(dgrow, dheight0, nfac)
 
    return
 end function comp_h
+
+end module m_comp_h

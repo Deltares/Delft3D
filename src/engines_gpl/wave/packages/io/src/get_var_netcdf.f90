@@ -265,7 +265,7 @@ subroutine get_var_netcdf(i_flow, wavetime, varname, vararr, mmax, nmax, basenam
          !
          if (veltyp == FVT_DEPTH_AVERAGED) then
             do nm=1,mmax
-               depth = max(flzw(kmax_,nm) - flzw(1,nm), 1d-4) ! avoid nans on dry cells
+               depth = max(flzw(kmax_,nm) - flzw(1,nm), 1e-4) ! avoid nans on dry cells
                vararr(nm,1) = 0d0
                do i=1,kmax_
                   vararr(nm,1) = vararr(nm,1) + (flzw(i+1,nm)-flzw(i,nm))/depth*vararr3d(i,nm)
@@ -281,7 +281,7 @@ subroutine get_var_netcdf(i_flow, wavetime, varname, vararr, mmax, nmax, basenam
                write(*,'(a)')  '             This is normal at first WAVE calculation'
                write(*,'(a)')  '             Using depth-averaged FLOW velocity in this iteration'
                do nm=1,mmax
-                  depth = max(flzw(kmax_,nm) - flzw(1,nm), 1d-4)
+                  depth = max(flzw(kmax_,nm) - flzw(1,nm), 1e-4)
                   vararr(nm,1) = 0d0
                   do i=1,kmax_
                      vararr(nm,1) = vararr(nm,1) + (flzw(i+1,nm)-flzw(i,nm))/depth*vararr3d(i,nm)

@@ -80,12 +80,12 @@ subroutine fbcorr(lundia, nto, nambnd, typbnd, gdp)
     ! Corrective boundary conditions
     !
     fbcrfilnam = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filbc0', fbcrfilnam)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filbc0', fbcrfilnam)
     if (fbcrfilnam == ' ') then
        !
        ! No file specified, try old keyword Corbnd
        !
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Corbnd', fbcrfilnam)
+       call prop_get(gdp%mdfile_ptr, '*', 'Corbnd', fbcrfilnam)
     endif
     if (fbcrfilnam == ' ') then
        !

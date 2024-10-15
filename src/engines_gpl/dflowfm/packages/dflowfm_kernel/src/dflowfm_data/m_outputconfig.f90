@@ -211,9 +211,10 @@ module m_output_config
    integer, public :: IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN
    integer, public :: IDX_HIS_DISCHARGE_MAGNITUDE
 
-   integer, public :: IDX_HIS_TKE
+   integer, public :: IDX_HIS_VIU
    integer, public :: IDX_HIS_VICWWS
    integer, public :: IDX_HIS_VICWWU
+   integer, public :: IDX_HIS_TKIN
    integer, public :: IDX_HIS_EPS
    integer, public :: IDX_HIS_TAU
    integer, public :: IDX_HIS_RICH
@@ -656,7 +657,7 @@ contains
       integer :: i
 
       do i = 1, config_set%count
-         call prop_get_string(tree, paragraph, config_set%configs(i)%key, config_set%configs(i)%input_value)
+         call prop_get(tree, paragraph, config_set%configs(i)%key, config_set%configs(i)%input_value)
       end do
 
    end subroutine scan_input_tree

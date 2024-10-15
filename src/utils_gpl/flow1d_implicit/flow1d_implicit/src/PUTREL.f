@@ -58,7 +58,7 @@ c
       integer       putrel
       integer       fd_nefis, uindex(*) ,usrord(*)
       real          buffer(*)
-      character*(*) grpnam    ,elmnam
+      character(len=*) grpnam    ,elmnam
 c
 c     Declaration of external functions
 c

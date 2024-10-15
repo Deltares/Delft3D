@@ -452,7 +452,7 @@ module string_module
       !!
       !! When input string is longer than length, result is identical to normal string.
       !! When input string is shorter than length, result is filled with spaces on the right.
-      function trimexact(string, length) result(trimmed)
+      elemental function trimexact(string, length) result(trimmed)
          character(len=*), intent(in) :: string  !< Input string.
          integer,          intent(in) :: length  !< Exact length for the returned string.
          character(len=length)        :: trimmed !< Resulting string.

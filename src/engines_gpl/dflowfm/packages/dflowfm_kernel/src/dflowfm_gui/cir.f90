@@ -30,12 +30,18 @@
 !
 !
 
+module m_cir
+
+implicit none
+
+contains
+
       subroutine CIR(R)
          use unstruc_opengl
+         use m_colnow
+         use m_krec5
          implicit none
-         integer :: ncolnow
          double precision :: r, Hr
-         common / COLNOW / NCOLNOW
 
          if (r == 0d0) return
          if (InOpenGLRendering) then
@@ -48,3 +54,5 @@
             call IGrCircleRel(real(R))
          end if
       end
+
+end module m_cir

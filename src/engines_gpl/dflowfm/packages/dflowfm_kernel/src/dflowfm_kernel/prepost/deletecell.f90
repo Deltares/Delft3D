@@ -32,6 +32,7 @@
 
 !> delete cell and update administration (no direct need for findcells afterwards)
 subroutine deletecell(k, ndirect, nindirect, kdirect, kindirect, kne, Lprompt_nogo, jadeleted)
+   use m_confrm
    use m_netw
    use m_missing
    use m_netstore
@@ -39,6 +40,8 @@ subroutine deletecell(k, ndirect, nindirect, kdirect, kindirect, kne, Lprompt_no
    use geometry_module, only: dbpinpol
    use gridoperations
    use m_mergenodes
+   use m_qnerror
+   use m_find_common_node
 
    implicit none
 

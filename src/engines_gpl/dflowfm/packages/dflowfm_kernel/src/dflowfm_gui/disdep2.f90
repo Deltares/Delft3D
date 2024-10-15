@@ -30,9 +30,16 @@
 !
 !
 
+module m_disdep2
+
+implicit none
+
+contains
+
       subroutine DISDEP2(DEP)
-         use m_devices
-         implicit none
+         use m_devices, only: iws
+         use m_ktext
+
          double precision :: dep
          character DISTAN * 23
 
@@ -42,3 +49,5 @@
 
          return
       end
+
+end module m_disdep2

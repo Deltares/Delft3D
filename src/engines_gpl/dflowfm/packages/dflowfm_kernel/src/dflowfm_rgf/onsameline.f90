@@ -31,12 +31,11 @@
 !
 
       subroutine ONSAMELINE(IPT, MP, NP, JA)
+         use m_grid_block
          implicit none
          integer :: mp, np, ja, ipt
-         integer :: mb, nb, mb2, nb2, npt, npt2, nputo, itype
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
-
          integer :: md, nd
+
          JA = 1
          if (ITYPE == 1) then
             if (IPT == 1 .and. MB(2) /= 0) then

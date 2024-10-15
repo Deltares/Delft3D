@@ -31,6 +31,7 @@
 !
 
       subroutine MAPPROJECTIONS(IT, JA)
+         use m_converparameters
          use M_MAPPROPARAMETERS
          use M_SFERIC
          use M_MISSING
@@ -41,6 +42,7 @@
          use M_XYTEXTS
          use M_SAMPLES
          use M_SPLINES
+         use m_qnerror
          implicit none
          integer :: i
          integer :: ini

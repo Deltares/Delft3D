@@ -47,6 +47,10 @@ subroutine setumod(jazws0) ! set cell center Perot velocities at nodes
    use unstruc_model, only: md_restartfile
    use m_setucxcuy_leastsquare, only: reconst2nd
    use MessageHandling
+   use m_drawthis
+   use m_get_kbot_ktop
+   use m_get_Lbot_Ltop
+   use m_get_cz
 
    implicit none
 
@@ -72,9 +76,6 @@ subroutine setumod(jazws0) ! set cell center Perot velocities at nodes
    double precision :: DRL, nuhroller
 
    double precision :: dxiAu, vicc, vlban, fcLL
-
-   integer :: ndraw
-   common / DRAWTHIS / ndraw(50)
 
    double precision, external :: nod2linx, nod2liny, lin2nodx, lin2nody, cor2linx, cor2liny
    double precision, external :: nod2wallx, nod2wally, wall2linx, wall2liny

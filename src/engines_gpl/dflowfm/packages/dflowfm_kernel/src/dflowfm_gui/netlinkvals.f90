@@ -30,10 +30,18 @@
 !
 !
 
-  subroutine NETLINKVALS(MET, NCOL)
+module m_netlinkvals
 
+implicit none
+
+contains
+
+  subroutine NETLINKVALS(MET)
+
+     use m_makepdf
+     use m_dhitext
      use m_flowgeom, only: XZ, YZ, lne2ln
-     use m_missing
+     use m_missing, only: dmiss, dxymis
      use network_data
      use m_alloc
      use m_flow, only: cftrt
@@ -41,40 +49,25 @@
      use m_sferic, only: jsferic, jasfer3D
      use gridoperations
      use m_statistics
-
-     implicit none
-
-     integer :: MET, NCOL
+     use m_depmax
+     use m_cconstants
+     use m_makenetnodescoding
+     use m_find1dcells, only: find1dcells
+     
+     integer :: MET
      integer :: jacftrt
-     double precision :: ag
-     double precision :: cfl
-     double precision :: dv
-     double precision :: e0
-     double precision :: eps
      double precision :: fsp
-     integer :: jaauto
      integer :: k1, k2, L, jaxz, kL, kR
-     integer :: ncols
-     integer :: nie, nis, nv, i
-     double precision :: pi
+     integer :: i
      double precision :: rd
      double precision :: rek
-     double precision :: rho
-     double precision :: rhow
      double precision :: sp
      double precision :: v
-     double precision :: val
-     double precision :: vmax
-     double precision :: vmin
      double precision :: X3, Y3, X4, Y4
      double precision :: xd, YD, ZD
      double precision :: areaL, areaR, xc, yc, aa
-
      double precision, external :: topo_info
 
-     common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
-
-     common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
      if (MET == 1) return
 
      jaxz = 0
@@ -110,8 +103,8 @@
            if (MET == 2) then
               V = L
            else if (MET == 3) then
-              call DHITEXT(K1, XK(K1), YK(K1), ZK(K1))
-              call DHITEXT(K2, XK(K2), YK(K2), ZK(K2))
+              call DHITEXT(K1, XK(K1), YK(K1))
+              call DHITEXT(K2, XK(K2), YK(K2))
            else if (MET == 4) then
               if (NUMP > 0 .and. jaxz == 1 .and. L <= size(LNN)) then
                  if (LNN(L) == 2) then
@@ -216,3 +209,5 @@
 
      return
   end subroutine NETLINKVALS
+
+end module m_netlinkvals

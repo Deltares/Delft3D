@@ -31,6 +31,8 @@
 !
 
  subroutine flow_geominit(iphase) ! initialise flow geometry
+    use m_allocateandset2dnodexyarrays
+    use m_allocateandset1dnodexyarrays
     use m_netw
     use m_flowgeom
     use m_GlobalParameters, only: INDTP_2D
@@ -51,7 +53,7 @@
     use dfm_error
     use m_ship
     use kdtree2Factory
-    use unstruc_display, only: jagui
+    use m_gui
     use unstruc_messages
     use string_module
     use m_plotdots
@@ -68,6 +70,13 @@
     use m_structures
     use unstruc_messages
     use m_find_flownode, only: find_nearest_flownodes_kdtree
+    use m_turbulence, only: ln0
+    use m_drawthis
+    use m_readyy
+    use m_qnerror
+    use m_dlinedis2
+    use m_ini_sferic
+    use m_set_bobs
 
     implicit none
 
@@ -118,8 +127,6 @@
     integer :: numl2D
 
     double precision, external :: cosphiu
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
 
     numl2D = numl - numl1D
 
@@ -216,7 +223,7 @@
     call delete_dry_points_and_areas()
 
 ! also disabled isolated cells due to cutcells and store masks
-    call cutcell_list(6, 'dum', 3, 1)
+    call cutcell_list(6, 1)
 
     if (strip_mesh > 0) then
        if (numl1d > 0) then
@@ -495,6 +502,7 @@
     call aerr('ibot   (lnx)', ierr, lnx)
     ibot = 0
 
+    call realloc(ln0, [2, lnx])
     call realloc(onlyWetLinks, lnx, keepExisting=.false., fill=0)
 
     if (allocated(xu)) deallocate (xu, yu, blu)
@@ -605,6 +613,8 @@
     end if
 
     call addexternalboundarypoints() ! add links due to open boundaries
+
+    ln0 = ln
 
     numswap = 0
     do L = 1, lnx ! for all 2d links, check positivity
@@ -1017,7 +1027,7 @@
     fnam = '*.cut'
     n12 = 4
     allocate (kfs(ndx)); kfs = 0
-    call cutcell_list(n12, '*.cut', 5, 2) ! trim(fnam))        ! CUT CELLS, N12 = 4, flag cells to be cut in kfs, prior to setlinktocenter/CORNERweights calls below
+    call cutcell_list(n12, 2) ! CUT CELLS, N12 = 4, flag cells to be cut in kfs, prior to setlinktocenter/CORNERweights calls below
 
     call setcentertolinkorientations()
 
@@ -1058,7 +1068,7 @@
     if (numlimdt_baorg > 0) then ! if prev_numlimdt(k) > numlimdt_baorg then ba(k) = baorg(k) in cutcell
        call reanumlimdt()
     end if
-    call cutcell_list(n12, '*.cut', 5, 3) ! trim(fnam))       ! CUT CELLS, N12 = 5, WU AND BA ADAPTATION
+    call cutcell_list(n12, 3)  ! CUT CELLS, N12 = 5, WU AND BA ADAPTATION
     numlimdt = 0
 ! deallocate(kfs) ; allocate(kfs(ndx)) ! SPvdP: removed, since (1) uninitialized and (2) kfs needed in "setlinktocenterweights" later
 

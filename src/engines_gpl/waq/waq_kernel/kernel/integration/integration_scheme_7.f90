@@ -22,10 +22,22 @@
 !!  rights reserved.
 module m_integration_scheme_7
     use m_waq_precision
-    use m_hsurf
-    use m_dlwqtr
-    use m_write_output
+    use timers
+    use delwaq2_data
+    use variable_declaration          ! module with the more recently added arrays
+    use m_actions
+    use m_waq_memory_dimensions          ! System characteristics
+    use m_timer_variables          ! Timer characteristics
+    use m_real_array_indices          ! Pointers in real array workspace
+    use m_integer_array_indices          ! Pointers in integer array workspace
+    use m_character_array_indices          ! Pointers in character array workspace
+    use m_grid_utils_external
+    use m_waq_openda_exchange_items, only: get_openda_buffer
+    use m_set_horizontal_surface_area, only: set_horizontal_surface_area
+    use m_set_vertical_dispersion_length, only: set_vertical_dispersion_length
+    use m_write_output, only: write_output
     use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes
+    use data_processing, only: close_files
 
     implicit none
 
@@ -38,42 +50,30 @@ contains
     !! Matrices become very large in 3D and method unworkable. In 2D
     !! the method can be used. In 1D the method outperforms the
     !! iterative methods.
-    subroutine integration_scheme_7(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+    subroutine scheme_7_steady_state_hz_upwind_vl_central(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
-        use m_dlwq71
-        use m_dlwq70
-        use m_dlwq67
-        use m_dlwq66
-        use m_dlwq65
-        use m_dlwq63
-        use m_dlwq61
-        use m_dlwq60
-        use m_dlwq41
-        use m_dlwq15
+        use m_mass_balance_calculation, only: calculate_mass_balance_space_central_difference
+        use m_gmres_utils, only: fill_matrix_central_difference_space
+        use m_scheme_6_and_7_utils, only: update_diagonal
+        use m_mass_calculation, only: calculate_mass_from_concentration
+        use m_closure_error_correction, only: calculate_closure_error_correction_steady_state
+        use m_concentration_calculations, only: calculate_concentrations_from_derivatives
+        use m_solver_utils, only: prepare_matrix_for_solver
+        use m_scale_derivatives_steady_state, only: scale_derivatives_steady_state
+        use m_time_dependent_variables
+        use m_add_waste_loads, only: add_waste_loads
         use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes, identify_wet_cells
-        use m_write_restart_map_file
-        use m_delmat
-        use m_array_manipulation, only : initialize_real_array
-        use data_processing, only : close_files
-        use m_grid_utils_external
-        use timers
-        use delwaq2_data
-        use m_waq_openda_exchange_items, only : get_openda_buffer
-        use variable_declaration          ! module with the more recently added arrays
-        use m_actions
-        use m_waq_memory_dimensions          ! System characteristics
-        use m_timer_variables          ! Timer characteristics
-        use m_real_array_indices          ! Pointers in real array workspace
-        use m_integer_array_indices          ! Pointers in integer array workspace
-        use m_character_array_indices          ! Pointers in character array workspace
+        use m_write_restart_map_file, only: write_restart_map_file
+        use m_solver_utils, only: solve_linear_equations_lu_decomposition
+        use m_array_manipulation, only: initialize_real_array
 
-        type(waq_data_buffer), target         :: buffer              !< System total array space
+        type(waq_data_buffer), target :: buffer              !< System total array space
         integer(kind = int_wp), intent(inout) :: file_unit_list  (*) !< Array with logical unit numbers
-        character(len=*),       intent(in)    :: file_name_list(*)   !< Array with file names
-        integer(kind = int_wp), intent(in)    :: action              !< Span of the run or type of action to perform
-                                                                     !< (run_span = {initialise, time_step, finalise, whole_computation})
-        type(delwaq_data),      target        :: dlwqd               !< DELWAQ data structure
-        type(GridPointerColl)                 :: gridps              !< Collection of all grid definitions
+        character(len = *), intent(in) :: file_name_list(*)   !< Array with file names
+        integer(kind = int_wp), intent(in) :: action              !< Span of the run or type of action to perform
+        !< (run_span = {initialise, time_step, finalise, whole_computation})
+        type(delwaq_data), target :: dlwqd               !< DELWAQ data structure
+        type(GridPointerColl) :: gridps              !< Collection of all grid definitions
 
         ! Local variables
         logical         imflag, idflag, ihflag
@@ -83,7 +83,7 @@ contains
         integer(kind = int_wp) :: itimel
         integer(kind = int_wp) :: iaflag
         integer(kind = int_wp) :: ibflag
-        integer(kind = int_wp) :: isys
+        integer(kind = int_wp) :: substance_i
         integer(kind = int_wp) :: icsys
         integer(kind = int_wp) :: nsys
         integer(kind = int_wp) :: inwtyp
@@ -93,7 +93,7 @@ contains
 
         integer(kind = int_wp) :: ithandl
 
-        integer(kind=int_wp), pointer :: p_iknmkv(:)
+        integer(kind = int_wp), pointer :: p_iknmkv(:)
         p_iknmkv(1:size(iknmkv)) => iknmkv
 
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
@@ -108,7 +108,7 @@ contains
 
             ! some initialisation
             ithandl = 0
-            if (timon) call timstrt("integration_scheme_7", ithandl)
+            if (timon) call timstrt("scheme_7_steady_state_hz_upwind_vl_central", ithandl)
 
             ITIMEL = ITSTRT
             ITIME = ITSTRT + IDT
@@ -124,7 +124,7 @@ contains
             ! Determine the volumes and areas that ran dry,
             ! They cannot have explicit processes during this time step
 
-            call hsurf(num_cells, num_spatial_parameters, c(ipnam:), a(iparm:), num_spatial_time_fuctions, &
+            call set_horizontal_surface_area(num_cells, num_spatial_parameters, c(ipnam:), a(iparm:), num_spatial_time_fuctions, &
                     c(isfna:), a(isfun:), surface, file_unit_list(19))
             call set_dry_cells_to_zero_and_update_volumes(num_cells, nosss, num_layers, a(ivol:), num_exchanges_u_dir + num_exchanges_v_dir, &
                     a(iarea:), num_constants, c(icnam:), a(icons:), surface, &
@@ -134,12 +134,12 @@ contains
             IF (IDT==0) THEN
                 call initialize_real_array(A(IVOL2:), num_cells)
             ELSE IF (J(INRH2 + 1)>=0 .AND. IVFLAG==0) THEN
-                CALL DLWQ41(file_unit_list, ITIME, ITIMEL, A(IHARM:), A(IFARR:), &
+                CALL update_volumes_and_time_step(file_unit_list, ITIME, ITIMEL, A(IHARM:), A(IFARR:), &
                         J(INRHA:), J(INRH2:), J(INRFT:), num_cells, A(IVOL2:), &
                         J(IBULK:), file_name_list, ftype, ISFLAG, IVFLAG, &
                         LDUMMY, J(INISP:), A(INRSP:), J(INTYP:), J(IWORK:), &
                         LSTREC, LREWIN, A(IVOLL:), dlwqd)
-                CALL DLWQ65(A(IVOL2:), A(IVOL:), IDT, num_cells)
+                CALL calculate_closure_error_correction_steady_state(A(IVOL2:), A(IVOL:), IDT, num_cells)
             ELSE
                 call initialize_real_array(A(IVOL2:), num_cells)
                 WRITE(file_unit_list(19), 1000)
@@ -148,57 +148,57 @@ contains
             ! loop over the systems
             NSYS = 1
             IAFLAG = 1
-            DO ISYS = 1, num_substances_transported
-                IF (ISYS == num_substances_transported) NSYS = 1 + num_substances_total - num_substances_transported
+            DO substance_i = 1, num_substances_transported
+                IF (substance_i == num_substances_transported) NSYS = 1 + num_substances_total - num_substances_transported
 
                 ! do the user transport processes
-                ICSYS = ISYS
-                call dlwqtr(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
-                            num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
-                            j(ixpnt:), a(ivol:), &
-                            a(ileng:), a(iparm:), &
-                            c(ipnam:), ilflag)
+                ICSYS = substance_i
+                call set_vertical_dispersion_length(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
+                        num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
+                        j(ixpnt:), a(ivol:), &
+                        a(ileng:), a(iparm:), &
+                        c(ipnam:), ilflag)
 
                 ! do the user water quality processes
-                CALL DLWQ60(A(IDERV:), A(ICONC:), num_substances_total, num_cells, ITFACT, &
-                        A(IMAS2:), ISYS, NSYS, A(IDMPS:), INTOPT, &
+                CALL scale_derivatives_steady_state(A(IDERV:), A(ICONC:), num_substances_total, num_cells, ITFACT, &
+                        A(IMAS2:), substance_i, NSYS, A(IDMPS:), INTOPT, &
                         J(ISDMP:))
 
                 ! add the waste loads
-                call dlwq15(num_substances_transported, num_substances_total, num_cells, num_exchanges, num_waste_loads, &
+                call add_waste_loads(num_substances_transported, num_substances_total, num_cells, num_exchanges, num_waste_loads, &
                         num_waste_load_types, num_monitoring_cells, intopt, 1, itime, &
                         iaflag, c(isnam:), a(iconc:), a(ivol:), a(ivol2:), &
                         a(iflow:), j(ixpnt:), c(iwsid:), c(iwnam:), c(iwtyp:), &
                         j(inwtyp:), j(iwast:), iwstkind, a(iwste:), a(iderv:), &
                         iknmkv, num_spatial_parameters, c(ipnam:), a(iparm:), num_spatial_time_fuctions, &
                         c(isfna:), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
-                        a(iwdmp:), isys, nsys)
+                        a(iwdmp:), substance_i, nsys)
 
                 ! fill the matrix
-                CALL DLWQ61(A(ICONC:), A(IDERV:), A(IVOL2:), A(ITIMR:), num_cells, &
-                        num_substances_total, ISYS, NSYS, num_codiagonals)
-                CALL DLWQ70(A(IDISP:), A(IDIFF:), A(IAREA:), A(IFLOW:), A(ILENG:), &
-                        A(IVELO:), A(IBOUN:), J(IXPNT:), num_substances_total, ISYS, &
+                CALL prepare_matrix_for_solver(A(ICONC:), A(IDERV:), A(IVOL2:), A(ITIMR:), num_cells, &
+                        num_substances_total, substance_i, NSYS, num_codiagonals)
+                CALL fill_matrix_central_difference_space(A(IDISP:), A(IDIFF:), A(IAREA:), A(IFLOW:), A(ILENG:), &
+                        A(IVELO:), A(IBOUN:), J(IXPNT:), num_substances_total, substance_i, &
                         NSYS, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, num_dispersion_arrays, &
                         num_velocity_arrays, J(IDPNT:), J(IVPNT:), A(IDERV:), A(ITIMR:), &
                         num_codiagonals, INTOPT, ILFLAG)
-                CALL DLWQ67(A(ITIMR:), num_cells, num_codiagonals)
+                CALL update_diagonal(A(ITIMR:), num_cells, num_codiagonals)
 
                 ! invert the matrix and store the results
-                CALL DELMAT(num_cells, num_codiagonals, num_codiagonals, NSYS, A(ITIMR:), &
+                CALL solve_linear_equations_lu_decomposition(num_cells, num_codiagonals, num_codiagonals, NSYS, A(ITIMR:), &
                         A(IDERV:), 0)
-                CALL DLWQ63(A(ICONC:), A(IDERV:), A(IMAS2:), num_cells, num_substances_total, &
-                        ISYS, NSYS, A(IDMPS:), INTOPT, J(ISDMP:))
+                CALL calculate_concentrations_from_derivatives(A(ICONC:), A(IDERV:), A(IMAS2:), num_cells, num_substances_total, &
+                        substance_i, NSYS, A(IDMPS:), INTOPT, J(ISDMP:))
             end do
 
             ! mass balance
             IAFLAG = 1
-            CALL DLWQ71(A(IDISP:), A(IDIFF:), A(IAREA:), A(IFLOW:), A(ILENG:), &
+            CALL calculate_mass_balance_space_central_difference(A(IDISP:), A(IDIFF:), A(IAREA:), A(IFLOW:), A(ILENG:), &
                     A(IVELO:), A(ICONC:), A(IBOUN:), J(IXPNT:), num_substances_transported, &
                     num_substances_total, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, num_dispersion_arrays, &
                     num_velocity_arrays, J(IDPNT:), J(IVPNT:), INTOPT, A(IMAS2:), &
                     ILFLAG, A(IDMPQ:), NDMPQ, J(IQDMP:))
-            CALL DLWQ66(A(IDERV:), A(IVOL:), A(ICONC:), num_substances_total, num_cells)
+            CALL calculate_mass_from_concentration(A(IDERV:), A(IVOL:), A(ICONC:), num_substances_total, num_cells)
 
             ! Call OUTPUT system
             CALL write_output(num_substances_total, num_cells, num_spatial_parameters, num_spatial_time_fuctions, ITSTRT, &
@@ -240,5 +240,5 @@ contains
         end associate
         if (timon) call timstop (ithandl)
         RETURN
-    end subroutine integration_scheme_7
+    end subroutine scheme_7_steady_state_hz_upwind_vl_central
 end module m_integration_scheme_7

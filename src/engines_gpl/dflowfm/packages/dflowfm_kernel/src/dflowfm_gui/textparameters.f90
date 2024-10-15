@@ -33,7 +33,13 @@
       subroutine TEXTPARAMETERS()
          use unstruc_display
          use dflowfm_version_module, only: company, product_name
-
+         use m_helpnow
+         use m_textim
+         use m_save_keys
+         use m_restore_keys
+         use m_help
+         use m_highlight_form_line
+         
          implicit none
          integer :: i
          integer :: ifexit
@@ -48,22 +54,13 @@
          integer :: iyp
          integer :: key
          integer :: nbut
-         integer :: nlevel
          integer :: numfld
          integer :: numpar
-         double precision :: txtimsize
-         double precision :: txtimx
-         double precision :: txtimy
          integer, external :: infoinput
-         external :: highlight_form_line
 
          parameter(NUMPAR=9, NUMFLD=2 * NUMPAR)
          integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-         character WRDKEY * 40, OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
-         character TXTIM * 60
-
-         common / HELPNOW / WRDKEY, NLEVEL
-         common / TEXTIM / TXTIMSIZE, TXTIMX, TXTIMY, TXTIM
+         character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
 !
          NLEVEL = 3
          OPTION(1) = 'LINE 1:'

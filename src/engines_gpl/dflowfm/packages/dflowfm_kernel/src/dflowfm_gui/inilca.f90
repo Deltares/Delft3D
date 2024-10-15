@@ -30,17 +30,22 @@
 !
 !
 
+module m_inilca
+
+implicit none
+
+contains
+
       subroutine INILCA()
          use m_wearelt
-         implicit none
-         integer :: jashow
-         integer :: jmouse
-         double precision :: XLC, YLC, XA, YA
+         use m_anchor
+
          double precision :: xla, yla
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
          !CALL ORGLOCATOR(XLA,XLB)
          XLA = 0.05 * xmax + 0.95 * xmin
          yLA = 0.05 * ymax + 0.95 * ymin
          call ANCHOR(XLA, yla)
          return
       end
+
+end module m_inilca

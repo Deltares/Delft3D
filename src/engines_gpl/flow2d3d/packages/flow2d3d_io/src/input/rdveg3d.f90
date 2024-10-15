@@ -180,7 +180,7 @@ subroutine rdveg3d(mmax      ,nmax      ,nmaxus    , &
     !
     ! Check version number of 3D vegetation input file
     !
-    call prop_get_string(vg3d_ptr,'VegetationFileInformation','FileVersion',versionnrinput)
+    call prop_get(vg3d_ptr,'VegetationFileInformation','FileVersion',versionnrinput)
     read(versionnrinput,fmt=*,iostat=istat) versionnr
     if (istat /= 0) then
        call prterr(lundia, 'U021', 'Unable to read version number from 3D vegetation input file')
@@ -196,7 +196,7 @@ subroutine rdveg3d(mmax      ,nmax      ,nmaxus    , &
     ! Read ItPlant
     !
     itplant = imiss
-    call prop_get_integer(vg3d_ptr,'General','ItPlant',itplant)
+    call prop_get(vg3d_ptr,'General','ItPlant',itplant)
     if (itplant == imiss) then
        write (message,'(a,a)') 'Parameter ItPlant not found in file',trim(filvg3d)
        call prterr(lundia, 'U021', trim(message))
@@ -330,7 +330,7 @@ subroutine rdveg3d(mmax      ,nmax      ,nmaxus    , &
              ! set vegetation type
              !
              inputstring = ' '
-             call prop_get_string(link_ptr, '*', 'Type', inputstring)
+             call prop_get(link_ptr, '*', 'Type', inputstring)
              inputstring = adjustl(inputstring)
              strlen = len(vegs(cntveg)%typename)
              vegs(cntveg)%typename = inputstring(:strlen)
@@ -339,7 +339,7 @@ subroutine rdveg3d(mmax      ,nmax      ,nmaxus    , &
              ! read nvps, added to the tree during dimension reading
              !
              nvps = imiss
-             call prop_get_integer(link_ptr, '*', 'nvps', nvps)
+             call prop_get(link_ptr, '*', 'nvps', nvps)
              if (nvps == imiss) then
                 write(message,'(a,i0)') 'errordetecting number of vps-lines in vegetation ',cntveg
                 call prterr(lundia, 'U021', message)
@@ -413,7 +413,7 @@ subroutine rdveg3d(mmax      ,nmax      ,nmaxus    , &
              ! Vegetation Type
              !
              inputstring = ' '
-             call prop_get_string(link_ptr, '*', 'VegetationType', inputstring)
+             call prop_get(link_ptr, '*', 'VegetationType', inputstring)
              inputstring = adjustl(inputstring)
              vegmatch = 0
              do j = 1,nveg
@@ -434,7 +434,7 @@ subroutine rdveg3d(mmax      ,nmax      ,nmaxus    , &
              ! Polygon or dep-file?
              !
              inputstring = ' '
-             call prop_get_string(link_ptr, '*', 'Polygon', inputstring)
+             call prop_get(link_ptr, '*', 'Polygon', inputstring)
              inputstring = adjustl(inputstring)
              if (inputstring /= ' ') then
                 !
@@ -519,7 +519,7 @@ subroutine rdveg3d(mmax      ,nmax      ,nmaxus    , &
                 ! Dep-format file used for nplants specification
                 !
                 inputstring = ' '
-                call prop_get_string(link_ptr, '*', 'NPlantsFile', inputstring)
+                call prop_get(link_ptr, '*', 'NPlantsFile', inputstring)
                 inputstring = adjustl(inputstring)
                 if (inputstring /= ' ') then
                    nplantdep = 0.0

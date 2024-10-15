@@ -35,7 +35,7 @@
 				<argument>-c</argument>
 			</arguments>
 		</program>
-		<program name="execute_singularity" logOutputToFile="true" programStringRemoveQuotes="true">
+		<program name="execute_container" logOutputToFile="true" programStringRemoveQuotes="true">
 			<location ref="local" type="check">
 				<from>teamcity_artifacts</from>				<!-- just the first part of the directory structure, will be filled by TeamCity -->
 			</location>
@@ -91,7 +91,7 @@
 	<defaultTestCases>
 		<testCase name="dimr_trunk_lnx64">
 			<programs>
-				<program ref="execute_singularity">
+				<program ref="execute_container">
 					<arguments>
 						<argument>run_dimr.sh</argument>
 						<argument>-m</argument>
@@ -109,7 +109,7 @@
 		</testCase>
 		<testCase name="dimr_trunk_win64">
 			<programs>
-				<program ref="execute_singularity">
+				<program ref="execute_container">
 					<arguments>
 						<argument>run_dimr.sh</argument>
 						<argument>-m</argument>
@@ -134,7 +134,7 @@
 			</location>
 			<maxRunTime>3600.0</maxRunTime>
 		</testCase>
-        <testCase name="sif_dimr">
+        <testCase name="container_dimr">
             <location ref="reference_results" type="reference">
                 <from>lnx64</from>
             </location>
@@ -143,7 +143,7 @@
             </location>
             <maxRunTime>60.0</maxRunTime>
         </testCase>
-        <testCase name="sif_postproc">
+        <testCase name="container_postproc">
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>

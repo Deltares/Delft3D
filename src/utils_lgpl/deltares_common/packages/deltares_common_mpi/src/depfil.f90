@@ -67,7 +67,6 @@ subroutine depfil(lundia    ,error     ,fildep    ,fmttmp    ,array     , &
 ! Local variables 
 ! 
     integer                               :: iocond ! Help variable for iostat condition  
-    integer                               :: luntmp ! Unit number for attribute file  
     integer                               :: m 
     integer                               :: n 
     real(fp), dimension(:,:), allocatable :: dtmp   ! Temporary array containing values of entire domain 

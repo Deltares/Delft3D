@@ -30,37 +30,32 @@
 !
 !
 
+module m_minmxnetlins
+
+implicit none
+
+contains
+
   subroutine MINMXNETLINS()
 
      use m_netw
-     use m_missing
+     use m_missing, only: dmiss
+     use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, dv=>dv2, val=>val2, nv=>nv2, jaauto=>jaauto2
+     use m_inview
 
-     implicit none
-     double precision :: dv
      integer :: i
-     integer :: jaauto
      integer :: k1
      integer :: k2
      integer :: l
-     integer :: ncols
-     integer :: nie
-     integer :: nis
-     integer :: nv
      double precision :: rd
      double precision :: rmax
      double precision :: rmin
-     double precision :: val
-     double precision :: vmax
-     double precision :: vmin
      double precision :: xp1
      double precision :: xp2
      double precision :: yp1
      double precision :: yp2
      double precision :: zp1
      double precision :: zp2
-     logical inview
-     ! BEPAAL MINIMUM EN MAXIMUM VAN WAARDES BINNEN VIEWING AREA
-     common / DEPMAX2 / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
 
      if (JAAUTO > 0) then
         RMIN = 1.0d30
@@ -102,3 +97,5 @@
 
      return
   end subroutine MINMXNETLINS
+
+end module m_minmxnetlins

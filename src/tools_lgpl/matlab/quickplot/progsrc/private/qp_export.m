@@ -416,7 +416,7 @@ for f=1:ntim
         case {'csv file'}
             TIMEFORMAT = '%04d-%02d-%02d %02d:%02d:%02d';
             if f==1
-                fid=fopen(filename,'wt');
+                fid=fopen(filename,'w');
                 if fid<0
                     error(['Could not create or open: ',filename])
                 end
@@ -551,7 +551,7 @@ for f=1:ntim
             nVar = nCrd+NLoc*nVal;
             switch expType
                 case 'csv file (time series)'
-                    fid=fopen(filename,'wt');
+                    fid=fopen(filename,'w');
                     if fid<0
                         error(['Could not create or open: ',filename])
                     end
@@ -1155,7 +1155,7 @@ for f=1:ntim
             end
             excludePoints = any(isnan(expdata),1);
             expdata(:,excludePoints) = [];
-            fid=fopen(filename,'wt');
+            fid=fopen(filename,'w');
             if fid<0
                 error(['Could not create or open: ',filename])
             end

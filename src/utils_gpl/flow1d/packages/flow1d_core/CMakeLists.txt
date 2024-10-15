@@ -17,11 +17,8 @@ set_source_files_properties(
 
 # Specify dependencies
 set(oss_dependencies    deltares_common         gridgeom) 
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif()
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")

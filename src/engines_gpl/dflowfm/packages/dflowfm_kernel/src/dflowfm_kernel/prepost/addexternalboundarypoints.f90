@@ -41,6 +41,7 @@
     use m_sobekdfm
     use m_sferic, only: jsferic, jasfer3D
     use geometry_module, only: half
+    use m_reapol
 
     implicit none
 

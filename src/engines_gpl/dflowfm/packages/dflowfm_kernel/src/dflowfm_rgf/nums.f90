@@ -33,9 +33,10 @@
       subroutine NUMS(X, mmax, nmax, MC, NC)
 !     GEEF AANTAL SPLINES MC EN MAXIMUM AANTAL PUNTEN OP SPLINE NC
 !      USE DIMENS
+         use m_numpold
          implicit none
-         double precision :: X(MMAX, NMAX)
          integer :: mc, nc, mmax, nmax
+         double precision :: X(MMAX, NMAX)
          integer :: i, numpi
          MC = 0
          NC = 0

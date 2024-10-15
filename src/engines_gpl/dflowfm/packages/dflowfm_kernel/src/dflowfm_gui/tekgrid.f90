@@ -29,14 +29,17 @@
 
 !
 !
-
+module m_tek_grid
+   implicit none
+contains
       subroutine TEKgrid(key)
-         use m_grid
-         use unstruc_colors
-         implicit none
+         use m_grid, only: mc, nc, mmax, nmax, xc, yc
+         use unstruc_colors, only: NCOLDG
+         use m_drawthis
+         use m_tek_grd
          integer :: key
-         integer :: ndraw
-         common / DRAWTHIS / ndraw(50)
+
          call tekgrd(XC, YC, MMAX, NMAX, 1, 1, mc, nc, NCOLDG, ndraw(38), key, MC)
 
       end subroutine TEKgrid
+end module m_tek_grid

@@ -30,21 +30,37 @@
 !
 !
 
+module m_editgrid
+use m_ispoin
+
+
+implicit none
+
+contains
+
       subroutine EDITGRID(MODE, NFLD, KEY)
-         use unstruc_colors
+         use m_choices
+         use unstruc_colors, only: ncolrg, ncoldg
          use m_grid
-         implicit none
+         use m_modfld
+         use m_helpnow
+         use m_drawthis
+         use m_ktext
+         use m_putget_un
+         use m_okay
+         use m_botlin
+         use m_draw_nu
+         use m_tek_num_netcells
+         use m_restore_grd
+         use m_tek_grd
+         use m_fieldop
+
          integer :: mode, nfld, key
 
-         integer :: L, NLEVEL, JA, NUM, NWHAT, NPUT, NUMB, MP, NP, MD, ND, &
-                    ML, NL, MH, NH, NUMP, NLOC, IN, JN, INSIDE, ndraw, NCOL
+         integer :: L, JA, NUM, NWHAT, NPUT, NUMB, MP, NP, MD, ND, &
+                    ML, NL, MH, NH, NUMP, NLOC, IN, JN, INSIDE, NCOL
          integer :: newmode
-
-         common / HELPNOW / WRDKEY, NLEVEL
-         common / DRAWTHIS / ndraw(50)
-
-         character TEX * 20, WRDKEY * 40, FIELDOP * 40
-
+         character TEX * 20
          double precision :: xp, yp, wf(4)
 
          TEX = ' '//FIELDOP(NFLD)
@@ -74,7 +90,7 @@
                MODE = NWHAT
                return
             else
-               call CHOICES(MODE, NUM, NWHAT, KEY)
+               call CHOICES(NUM, NWHAT, KEY)
             end if
          else if (KEY >= 577) then ! Alt+letter switches edit mode.
             call selecteditmode(newmode, key)
@@ -183,3 +199,5 @@
          goto 10
 !
       end subroutine editgrid
+
+end module m_editgrid

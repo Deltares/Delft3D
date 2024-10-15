@@ -51,8 +51,6 @@ if(UNIX)
                             waq_utils_f
                             dflowfm_kernel)
 
-    oss_include_libraries(${executable_name} oss_dependencies)
-
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
 
@@ -112,7 +110,6 @@ target_link_directories(${executable_name} PRIVATE
                         "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                         "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
-oss_include_libraries(${executable_name}   oss_dependencies)
 target_link_libraries(${executable_name} ${oss_dependencies}
                           "comctl32.lib"
                           "wsock32.lib"
@@ -143,8 +140,10 @@ target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER tests/engines_gpl/dflowfm)
 
-install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../test_dflowfm/test_data DESTINATION share)
+configure_visual_studio_user_file(${executable_name})
+
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../test_dflowfm/test_data DESTINATION test)
 if (WIN32)
-	install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+	install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION test)
 endif()
-install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install(TARGETS ${executable_name} RUNTIME  DESTINATION test)

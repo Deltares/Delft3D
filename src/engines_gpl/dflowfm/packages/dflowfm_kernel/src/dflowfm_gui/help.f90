@@ -29,11 +29,16 @@
 
 !
 !
-
+module m_help
+   implicit none
+contains
       subroutine HELP(WRDKEY, NLEVEL)
-         use unstruc_display
+         use unstruc_colors
+         use unstruc_display_data, only: npos
+         use m_devices, only: ihs, iws
          use dflowfm_version_module, only: company, product_name
-         implicit none
+         use m_helpc
+
          integer :: i
          integer :: ih
          integer :: infowindow
@@ -47,7 +52,6 @@
          integer :: jofnd
          integer :: len
          integer :: line
-         integer :: maxhlp
          integer :: maxkwd
          integer :: nahead
          integer :: nback
@@ -58,16 +62,14 @@
          integer :: numpag
          integer :: numpgk
          integer :: numtop
-         integer :: numtxt
          integer :: numwnb
          integer :: numwnh
          integer :: numwnk
          integer :: numwnt
 !     Gives helptext starting from wrdkey in screen with dimensions npos
-         parameter(MAXHLP=2000, MAXKWD=400)
+         parameter(MAXKWD=400)
          integer NHTONK(MAXHLP), NKTONH(MAXKWD)
-         character HLPTXT(MAXHLP) * 80, WRDKEY * 40, KEYWRD(MAXKWD) * 40, LOOKUP * 20, TEXLIN * 80
-         common / HELPC / HLPTXT, NUMTXT
+         character WRDKEY * 40, KEYWRD(MAXKWD) * 40, LOOKUP * 20, TEXLIN * 80
 !
 !     Initialise
          call IWinWordWrap('OFF')
@@ -172,9 +174,9 @@
             IYS = NPOS(2) + IH + 6
             call InStringXYDef(IXS, IYS, ' => ', 0, LOOKUP, LEN)
             if (JATAB == 0) then
-               call SEARC2(NAHEAD, NLEVEL, HLPTXT, NUMTXT, LOOKUP, NUMCHC, JOFND)
+               call SEARC2(NAHEAD, HLPTXT, NUMTXT, LOOKUP, NUMCHC, JOFND)
             else
-               call SEARC2(NAHEAD, NLEVEL, KEYWRD, NUMKEY, LOOKUP, NUMCHC, JOFND)
+               call SEARC2(NAHEAD, KEYWRD, NUMKEY, LOOKUP, NUMCHC, JOFND)
             end if
             call IWinSelect(NUMWNB)
             call ITEXTCOLOURN(HLPFOR, HLPBCK)
@@ -228,3 +230,4 @@
          call ITEXTCOLOURN(NFORG, NBACK)
          return
       end
+end module m_help

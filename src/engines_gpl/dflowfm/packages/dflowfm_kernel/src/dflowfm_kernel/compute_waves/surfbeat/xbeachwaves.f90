@@ -404,6 +404,7 @@ subroutine xbeach_wave_init()
    use network_data
    use m_flow, only: hs, ucx, ucy
    use m_waves, only: rlabda
+   use m_makenetnodescoding
 
    implicit none
 
@@ -1084,7 +1085,7 @@ subroutine xbeach_wave_instationary()
 
    !   Breaker dissipation
    !call xbeach_wave_breaker_dissipation(dts, break, DeltaH, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, QB, alpha, Trep, cwav, thetamean, E, D, sigmwav, wci, 0)
-   call xbeach_wave_breaker_dissipation(dts, break, DeltaH, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, QB, alpha, Trep, cwav, thetamean, H, D, sigmwav, wci, 0)
+   call xbeach_wave_breaker_dissipation(dts, break, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, QB, alpha, Trep, cwav, thetamean, H, D, sigmwav, wci, 0)
 
    !   Dissipation by bed friction
    dfac = 2.d0 * fw * rhomean / (3.d0 * pi)
@@ -1760,11 +1761,8 @@ subroutine xbeach_wave_bc()
 
          call realloc(ees, (/ntheta_s, LL2 - LL1 + 1/), keepExisting=.false., fill=0d0)
 
-         call create_incident_waves_surfbeat(LL2 - LL1 + 1, n, xbndw(LL1:LL2), ybndw(LL1:LL2), &
-                                             waveBoundaryParameters(n)%ntheta, waveBoundaryParameters(n)%dtheta, waveBoundaryParameters(n)%theta, time0, &
-                                             bctype, bcfile, &
-                                             waveBoundaryParameters(n)%x0, waveBoundaryParameters(n)%y0, waveBoundaryParameters(n)%hboundary, &
-                                             waveBoundaryParameters(n)%randomseed, &
+         call create_incident_waves_surfbeat(LL2 - LL1 + 1, n, &
+                                             waveBoundaryParameters(n)%ntheta, time0, &
                                              eeout(LL1:LL2, :), qxbc(LL1:LL2), qybc(LL1:LL2), &
                                              Hbc, Tbc, Dbc, isRecomputed, single_dir, ntheta_s, thetabin_s, ees, &
                                              nspr=nspr, sprdthr=sprdthr, &
@@ -2181,7 +2179,7 @@ subroutine xbeach_apply_wave_bc()
 
 end subroutine xbeach_apply_wave_bc
 
-subroutine xbeach_wave_breaker_dissipation(dtmaxwav, break, deltaH, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, &
+subroutine xbeach_wave_breaker_dissipation(dtmaxwav, break, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, &
                                            & QB, alpha, Trep, cwav, thetamean, hwav, D, sigmwav, wci, windmodel)
    use m_flow
    use m_flowgeom
@@ -2195,7 +2193,6 @@ subroutine xbeach_wave_breaker_dissipation(dtmaxwav, break, deltaH, waveps, hhw,
 
    double precision, intent(in) :: dtmaxwav
    character(len=slen), intent(inout) :: break
-   double precision, intent(inout) :: deltaH
    double precision, intent(inout) :: waveps
    double precision, dimension(Ndx), intent(in) :: hhw
    double precision, dimension(Ndx), intent(in) :: kwav
@@ -2355,7 +2352,9 @@ subroutine advec_horz(dtmaxwav, snx, csx, limtypw, quant, veloc, advec)
    use m_physcoef
    use m_flowgeom
    use m_flowparameters, only: eps10
-
+   use m_dlimiter_nonequi
+   use m_dslim
+   
    implicit none
 
    double precision, intent(in) :: dtmaxwav
@@ -2364,8 +2363,6 @@ subroutine advec_horz(dtmaxwav, snx, csx, limtypw, quant, veloc, advec)
    double precision, intent(in), dimension(ndx) :: veloc
    double precision, intent(in), dimension(ntheta, ndx) :: quant
    double precision, intent(out), dimension(ntheta, ndx) :: advec
-   double precision, external :: dslim
-   double precision, external :: dlimiter_nonequi
 
    integer :: L, k, k1, k2, itheta, ku, kl2s, kl2, kl1, kd, is, ip
    double precision :: velocL, qds, qst, half, fluxvel1, waku, sl1, sl2, sl3
@@ -2612,6 +2609,7 @@ subroutine advec_horzho_bulk(thetamean, quant, veloc, advec)
    use m_flowgeom
    use m_flow
    use m_flowtimes
+   use m_dslim
 
    implicit none
 
@@ -2622,7 +2620,6 @@ subroutine advec_horzho_bulk(thetamean, quant, veloc, advec)
    double precision, intent(in), dimension(ndx) :: quant
    double precision, intent(in), dimension(ndx) :: thetamean
    double precision, intent(out), dimension(ndx) :: advec
-   double precision, external :: dslim
 
    advec = 0d0
    do L = 1, lnx ! upwind (supq) + limited high order (dsq), loop over link
@@ -2744,7 +2741,7 @@ subroutine xbeach_spectral_wave_init()
    use m_flowgeom
    use m_xbeach_errorhandling
    use m_polygon
-   use m_missing
+   use m_missing, only: dmiss
    use m_sferic, only: twopi, jsferic, jasfer3D
    use timespace_triangle
    use m_flowtimes, only: time0
@@ -2752,6 +2749,9 @@ subroutine xbeach_spectral_wave_init()
    use m_alloc
    use stdlib_sorting, only: sort_index
    use geometry_module, only: dbdistance
+   use m_delpol
+   use m_reapol
+   use m_d_line_dis3
 
    implicit none
 
@@ -5204,8 +5204,8 @@ subroutine fm_surrounding_points(no_nodes, connected_nodes, no_connected_nodes, 
 
    integer, intent(in) :: no_nodes ! number of network nodes
    integer, intent(in) :: no_connected_nodes ! max node numbers connected to each cell
-   integer, dimension(no_cells, no_connected_nodes), intent(in) :: connected_nodes ! node numbers connected to each cell
    integer, intent(in) :: no_cells ! number of cells
+   integer, dimension(no_cells, no_connected_nodes), intent(in) :: connected_nodes ! node numbers connected to each cell
    integer, dimension(12, no_nodes), intent(out) :: kp ! sorted surrounding node numbers for each node
    integer, intent(out) :: ierr
 

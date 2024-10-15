@@ -142,7 +142,7 @@
 
       Integer     iFile, lengte, ipos1, ipos2, idum, imap
 !      Integer     iDebug
-      Character*1 SLASH
+      Character(len=1) SLASH
 #if (defined(HAVE_CONFIG_H))
       SLASH='/'
 #else

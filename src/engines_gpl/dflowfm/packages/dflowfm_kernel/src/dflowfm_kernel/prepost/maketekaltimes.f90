@@ -38,7 +38,7 @@
       integer :: minp, mout, i, k
       double precision :: tim, a(30)
 
-      character * 20 dateandtime
+      character(len=20) dateandtime
 
       inquire (file='102023.DAT', exist=jawel)
       if (jawel) then

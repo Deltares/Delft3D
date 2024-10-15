@@ -29,29 +29,23 @@
 
 !
 !
-
+module m_disdis
+   implicit none
+contains
       subroutine DISDIS()
 
          use m_devices
          use geometry_module, only: dbdistance
          use m_missing, only: dmiss
          use m_sferic, only: jsferic, jasfer3D
-
-         implicit none
-
+         use m_locatora
+         use m_disfor
+         use m_ktext
+         
          double precision :: dis
-         integer :: jashow
-         integer :: jmouse
-         double precision :: xa
-         double precision :: xlc
-         double precision :: ya
-         double precision :: ylc
 !     -------------------------------
 !     write distance
 !     -------------------------------
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
-         common / dispfor / xyform, zform, disform
-         character * 7 xyform, zform, disform
          character DISTAN * 25
 
          DISTAN = 'DIS:'
@@ -63,3 +57,4 @@
 
          return
       end
+end module m_disdis

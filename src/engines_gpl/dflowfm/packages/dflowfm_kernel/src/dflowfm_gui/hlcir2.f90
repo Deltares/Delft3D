@@ -29,11 +29,16 @@
 
 !
 !
+module m_hlcir2
+   use m_cir
 
+   implicit none
+contains
       !> Draw a filled circle at current position.
       !! Filled means: one colour for inside, one colour for edge.
       subroutine HLCIR2(R, icolfill, icoledge)
-         implicit none
+         use m_set_col
+
          double precision, intent(in) :: R !< Radius in world coords.
          integer, intent(in) :: icolfill !< Colour number for inner fill
          integer, intent(in) :: icoledge !< Colour number for edge
@@ -46,3 +51,4 @@
          call CIR(R)
          call IGRFILLPATTERN(4, 0, 0)
       end subroutine HLCIR2
+end module m_hlcir2

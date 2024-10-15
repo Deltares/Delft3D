@@ -30,7 +30,6 @@
 !
 !
 
-!     PLUS QNRGF
       subroutine NUL2(N1, NSMAX)
          implicit none
          integer :: i

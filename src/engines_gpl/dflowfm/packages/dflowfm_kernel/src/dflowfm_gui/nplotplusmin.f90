@@ -29,11 +29,13 @@
 
 !
 !
-
+module m_n_plot_plus_min
+   implicit none
+contains
      subroutine nPLOTPLUSMIN(IPM)
-        use M_FLOW
-        use M_flowgeom
-        implicit none
+        use M_FLOW, only: nplot, kmx, ktop, kbot, kplot
+        use m_cell_geometry, only: ndx
+
         integer :: IPM, NRLAY
 
         if (IPM == 1) then
@@ -53,3 +55,4 @@
         end if
         call TEXTFLOW()
      end subroutine nPLOTPLUSMIN
+end module m_n_plot_plus_min

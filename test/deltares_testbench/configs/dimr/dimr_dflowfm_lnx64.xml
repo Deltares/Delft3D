@@ -65,6 +65,15 @@
                 <!-- <environment name="LD_PRELOAD" type="path">[programpath(dimr)]/../lib/libmkl_core.so</environment> -->
             </environments>
         </program>
+        <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true">
+            <location ref="reference_engines" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
+            </location>
+            <path>bin/run_dflowfm.sh</path>
+        </program>
     </programs>
     <!--
     default testCases

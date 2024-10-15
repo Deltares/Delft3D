@@ -31,25 +31,23 @@
 !
 
  subroutine TEXTFLOW()
+    use m_ictext
     use time_module, only: seconds_to_datetimestring
-    use m_flowgeom
+    use m_flowgeom, only: ndx, lnx
     use Timers
-    !USE M_NETW
-    use M_FLOW
-    use M_FLOWTIMES
+    use m_flow
+    use m_flowtimes
     use m_reduce, only: nocg, nogauss
-    use M_RAAITEK
-    use m_statistics
-    use UNSTRUC_MODEL, only: md_ident
-    use unstruc_colors
+    use m_raaitek
+    use unstruc_model, only: md_ident
     use m_transport, only: nsubsteps, numnonglobal
-! use m_equatorial, only : ampliforced, amplifreeL, amplitotal, ndxforced, ndxfreeL, ndtforced, ndtfreeL, cflforced, cflfreeL, tforce, tfreeL, amplicomp
+    use m_drawthis
+    use m_get_link1
     implicit none
     double precision, external :: znod, zlin
     double precision :: cpuperstep, solrest, znn, dtav
     double precision :: tsteps, tsol, tstepinc
     integer :: nn, LL, nl
-
     character TEX * 210
     character, save :: TEX1 * 210 = '@'
     character, save :: TEX2 * 210 = ''
@@ -57,9 +55,6 @@
     character(len=4) :: c_nsubsteps
     character(len=7) :: c_numnonglobal
     character(len=15) :: c_lts
-
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
 
     if (jtextflow < 1) return
 
@@ -89,9 +84,9 @@
 
     dtav = (time1 - tstart_user) / max(1d0, dnt)
 
-    write (TEX(18:), '( A4,F8.3, A8,F7.3, A10,F7.3, A5,F8.1, A,E8.2, A8,E14.8,  A8,E14.8)') &
-       'dt: ', dts, ' Avg.dt: ', dtav, &
-       ' CPU/step: ', cpuperstep, ' Tot: ', tsteps, ' Sol/Rest:', solrest, ' Samer: ', samerr, ' Samtot: ', sam1tot ! sam1tot ! samerr
+    write (TEX(18:), '( A4, F8.3, A8, F7.3, A10, F7.3, A5, F8.1, A, E9.2, A8, E15.8, A8, E15.8)') &
+       'dt: ', dts, ' Avg.dt: ', dtav, ' CPU/step: ', cpuperstep, ' Tot: ', tsteps, &
+        ' Sol/Rest:', solrest, ' Samer: ', samerr, ' Samtot: ', sam1tot
     call ICTEXT(trim(TEX), 13, 2, 221)
     TEX1 = TEX
 
@@ -99,13 +94,13 @@
     TEX = ' '
     if (ndraw(29) < 2) then
        znn = znod(nn)
-       write (TEX, '(A,I3,I6,A,e14.8,A,e14.8,A,e14.8,A,I6,A,I10,A,I10)') &
+       write (TEX, '( A, I3, I6, A, e15.8, A, e15.8, A, e15.8, A, I6, A, I10, A, I10)') &
           'k/nplot: ', KPLOT, nplot, ' znod(nn): ', znn, ' Vol1: ', vol1tot, ' Vler: ', volerrcum, &
           ' #setb: ', int(dsetb), ' #dt: ', int(dnt), ' #itsol: ', itsol
     else
        call getlink1(nn, nl)
        znn = zlin(nl)
-       write (TEX, '(A9,I3,1X,I6,1X,A,e14.8,1X,A10,e14.8,1X,A8,e14.8,1X,A7,I6,1X,A5,I10,1X,A8,I5)') &
+       write (TEX, '(A9,I3,1X,I6,1X,A,e15.8,1X,A10,e15.8,1X,A8,e15.8,1X,A7,I6,1X,A5,I10,1X,A8,I5)') &
           'k/nplot: ', KPLOT, nplot, 'zlin(nn): ', znn, 'Vol1: ', vol1tot, 'Vler: ', volerrcum, &
           '#setb: ', int(dsetb), '#dt: ', int(dnt), '#itsol: ', itsol
     end if

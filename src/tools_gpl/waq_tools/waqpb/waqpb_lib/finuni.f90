@@ -28,7 +28,7 @@
 !  
 
       subroutine finuni ( itemd, ihulp )
-      character*50 itemd
+      character(len=50) itemd
       integer      ihulp , j     , nhaak
       logical      unit
 

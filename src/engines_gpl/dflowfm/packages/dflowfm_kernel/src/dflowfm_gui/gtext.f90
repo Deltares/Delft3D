@@ -29,14 +29,17 @@
 
 !
 !
-
+module m_gtext
+   implicit none
+contains
       subroutine GTEXT(TEX, X, Y, NCOL)
-         implicit none
+         use m_colnow
+         use m_set_col
+         use m_draw_text
+
          integer :: ncol
-         integer :: ncolnow
          double precision :: x
          double precision :: y
-         common / COLNOW / NCOLNOW
 !     grafische text op grafische posities
          character TEX * (*)
          call SETCOL(NCOL)
@@ -45,3 +48,4 @@
          end if
          return
       end
+end module m_gtext

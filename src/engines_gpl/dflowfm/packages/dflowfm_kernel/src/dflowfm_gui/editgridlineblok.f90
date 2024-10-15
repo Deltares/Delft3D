@@ -30,22 +30,39 @@
 !
 !
 
+module m_editgridlineblok
+use m_ispoin
+use m_editgridlineshift
+
+
+implicit none
+
+contains
+
       subroutine EDITGRIDLINEBLOK(MODE, NFLD, KEY)
-         use unstruc_colors
+         use m_choices
+         use unstruc_colors, only: ncolln, ncolrg, ncoldg
          use m_grid
-         implicit none
+         use m_helpnow
+         use m_drawthis
+         use m_grid_block
+         use m_qnerror
+         use m_ktext
+         use m_putget_un
+         use m_botlin
+         use m_draw_nu
+         use m_cirr
+         use m_restore_grd
+         use m_local_refine
+         use m_tek_grd
+         use m_fieldop
 
          integer :: mode, nfld, key
          integer :: newmode
-         integer :: ndraw, nlevel, nb, mb2, nb2, npt, npt2, nputo, itype, NCOL
+         integer :: NCOL
          integer :: jonce
-
-         common / DRAWTHIS / ndraw(50)
-         common / HELPNOW / WRDKEY, NLEVEL
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
-
-         character TEX * 20, WRDKEY * 40, FIELDOP * 40
-         integer :: num, nwhat, numb, nump, mp, np, ipt, ja, mb, m1b, n1b, m2b, n2b, m1, n1, m2, n2, m, n
+         character TEX * 20
+         integer :: num, nwhat, numb, nump, mp, np, ipt, ja, m1b, n1b, m2b, n2b, m1, n1, m2, n2, m, n
          integer :: nput
          double precision :: xp, yp
 
@@ -85,7 +102,7 @@
                call TEKB(Xc, Yc, MMAX, NMAX, 0)
                return
             else
-               call CHOICES(MODE, NUM, NWHAT, KEY)
+               call CHOICES(NUM, NWHAT, KEY)
             end if
          else if (KEY >= 577) then ! Alt+letter switches edit mode.
             call selecteditmode(newmode, key)
@@ -231,3 +248,5 @@
          goto 10
 !
       end subroutine editgridlineblok
+
+end module m_editgridlineblok

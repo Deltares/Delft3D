@@ -56,7 +56,6 @@ if (WIN32)
                                             netcdf4
                                             netcdff)
 endif(WIN32)
-oss_include_libraries(${library_name} oss_dependencies)
 
 
 # Define how the files should be structured within Visual Studio

@@ -223,4 +223,153 @@
         </file>        
       </checks>
     </testCase>    
+    <testCase name="e02_f039_c01_sedimentationtest" ref="dflowfm_default">
+      <path version="2024-09-25T07:09:00">e02_dflowfm/f039_morphology_3d/c01_sedimentationtest</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/massbal_1frac_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_sedfrac_concentration" toleranceAbsolute="0.0001"/>
+          </parameters>
+        </file>    
+        <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="velocity_magnitude" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase> 
+    <testCase name="e02_f039_c03_concentration_buildup_channel_algebraic_10lyrs" ref="dflowfm_default">
+      <path version="2024-09-25T16:30:00">e02_dflowfm/f039_morphology_3d/c03_concentration_buildup_channel_algebraic_10lyrs</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/slope_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="velocity_magnitude" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase> 
+    <testCase name="e02_f039_c04_sediment_bc_3d_t3d_varying" ref="dflowfm_default">
+      <path version="2024-09-26T07:54:00">e02_dflowfm/f039_morphology_3d/c04_sediment_bc_3d_t3d_varying</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/channel_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="velocity_magnitude" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase> 
+    <testCase name="e02_f039_c05_sediment_bc_3d_t3d_step_constant" ref="dflowfm_default">
+      <path version="2024-09-26T07:54:00">e02_dflowfm/f039_morphology_3d/c05_sediment_bc_3d_t3d_step_constant</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/channel_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="velocity_magnitude" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase> 
+    <testCase name="e02_f039_c06_sediment_bc_3d_bc_varying" ref="dflowfm_default">
+      <path version="2024-09-25T07:10:00">e02_dflowfm/f039_morphology_3d/c06_sediment_bc_3d_bc_varying</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/channel_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="velocity_magnitude" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase> 
+    <testCase name="e02_f039_c07_sediment_ini_3d_uniform_polygon" ref="dflowfm_default">
+      <path version="2024-09-25T07:10:00">e02_dflowfm/f039_morphology_3d/c07_sediment_ini_3d_uniform_polygon</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks> 
+        <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="velocity_magnitude" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase> 
+    <testCase name="e02_f039_c08_sediment_ini_3d_uniform_samples" ref="dflowfm_default">
+      <path version="2024-09-25T07:11:00">e02_dflowfm/f039_morphology_3d/c08_sediment_ini_3d_uniform_samples</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="velocity_magnitude" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase> 
+    <testCase name="e02_f039_c09_sediment_ini_3d_verticalprofile" ref="dflowfm_default">
+      <path version="2024-09-25T07:12:00">e02_dflowfm/f039_morphology_3d/c09_sediment_ini_3d_verticalprofile</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="velocity_magnitude" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase> 
+    <testCase name="e02_f039_c10_sediment_ini_3d_verticalsigmaprofile" ref="dflowfm_default">
+      <path version="2024-09-25T07:12:00">e02_dflowfm/f039_morphology_3d/c10_sediment_ini_3d_verticalsigmaprofile</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="velocity_magnitude" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase> 
+    <testCase name="e02_f039_c11_rouse_algebraic_30lyrs" ref="dflowfm_default">
+      <path version="2024-09-25T07:13:00">e02_dflowfm/f039_morphology_3d/c11_rouse_algebraic_30lyrs</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/rouse_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="velocity_magnitude" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase>
+    <testCase name="e02_f022_c99_duneheight" ref="dflowfm_default">
+      <path version="2024-10-03T13:45:00">e02_dflowfm/f022_morphology_2D/c99_duneheight</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_duneheight" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase>
   </testCases>

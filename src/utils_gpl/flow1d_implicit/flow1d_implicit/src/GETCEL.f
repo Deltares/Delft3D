@@ -64,8 +64,8 @@ c     Declaration of parameters
 c
       integer       getcel
       integer       fd_nefis, uindex(*) ,usrord(*) ,buflen
-      character*(*) buffer(*)
-      character*(*) grpnam    ,elmnam
+      character(len=*) buffer(*)
+      character(len=*) grpnam    ,elmnam
 c
 c     Declaration of external functions
 c

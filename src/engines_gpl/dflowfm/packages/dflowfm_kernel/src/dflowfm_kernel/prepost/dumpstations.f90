@@ -31,7 +31,7 @@
 !
 
    subroutine dumpstations(name)
-      use m_observations
+      use m_observations_data
       use m_flow
       use m_flowgeom
 

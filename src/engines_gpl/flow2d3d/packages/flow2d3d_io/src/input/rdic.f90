@@ -212,7 +212,7 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
           write (keyw(5:6), '(i2)') l
        endif
        namcon(lnconc) = cdef
-       call prop_get_string(gdp%mdfile_ptr,'*',trim(keyw),namcon(lnconc))
+       call prop_get(gdp%mdfile_ptr,'*',trim(keyw),namcon(lnconc))
        !
        ! test for namcon = ' ', which is per definition not possible
        ! because lconc is defined by namcon values <> ' '
@@ -256,7 +256,7 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     !
     restid = ' '
     call prop_get(gdp%mdfile_ptr, '*', 'Restid_timeindex', i_restart)
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Restid', restid)
+    call prop_get(gdp%mdfile_ptr, '*', 'Restid', restid)
     if (restid /= ' ') then
        !
        ! restart from file
@@ -284,14 +284,14 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! locate 'Filic' record for initial cond. in extra input file
     !
     filic = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filic', filic)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filic', filic)
     if (filic /= ' ' .and. restid == ' ') then
        !
        ! initial conditions in file
        ! locate 'Fmtic ' record for format definition of input file
        !
        fmtic = 'FR'
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Fmtic', fmtic)
+       call prop_get(gdp%mdfile_ptr, '*', 'Fmtic', fmtic)
        fmttmp = fmtic
        call filfmt(lundia    ,'Fmtic'      ,fmttmp    ,lerror    ,gdp       )
        call icfil(lundia    ,error     ,filic     ,fmttmp    ,mmax      , &
@@ -318,7 +318,7 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
           !
           wrkini = 0.0_fp
           chulp  = ' '
-          call prop_get_string(gdp%mdfile_ptr,'*','U0',chulp)
+          call prop_get(gdp%mdfile_ptr,'*','U0',chulp)
           if (chulp /= ' ') then
              rval  = misval
              keyw  = 'U0    '
@@ -367,7 +367,7 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
           !
           wrkini = 0.0_fp
           chulp  = ' '
-          call prop_get_string(gdp%mdfile_ptr,'*','V0',chulp)
+          call prop_get(gdp%mdfile_ptr,'*','V0',chulp)
           if (chulp /= ' ') then
              rval  = misval
              keyw  = 'V0    '
@@ -428,7 +428,7 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
              !
              wrkini = 0.0_fp
              chulp  = ' '
-             call prop_get_string(gdp%mdfile_ptr,'*','S0',chulp)
+             call prop_get(gdp%mdfile_ptr,'*','S0',chulp)
              if (chulp /= ' ') then
                 rval  = misval
                 keyw  = 'S0    '
@@ -553,7 +553,7 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                    write (keyw(3:4), '(i2)') l
                 endif
                 chulp = ' '
-                call prop_get_string(gdp%mdfile_ptr,'*',trim(keyw),chulp)
+                call prop_get(gdp%mdfile_ptr,'*',trim(keyw),chulp)
                 if (chulp /= ' ') then
                    rval  = misval
                    ntrec = nrrec

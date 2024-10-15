@@ -29,14 +29,18 @@
 
 !
 !
-
+module m_frames
+   implicit none
+contains
 !
-      subroutine FRAMES(NCOL)
-         use M_DEVICES
-         implicit none
-         integer :: ncol
-         if (NOPSYS >= 2) return
-         call SETCOL(NCOL)
-         call IGRBORDER()
-         return
-      end
+   subroutine FRAMES(NCOL)
+      use M_DEVICES
+      use m_set_col
+
+      integer :: ncol
+      if (NOPSYS >= 2) return
+      call SETCOL(NCOL)
+      call IGRBORDER()
+      return
+   end
+end module m_frames

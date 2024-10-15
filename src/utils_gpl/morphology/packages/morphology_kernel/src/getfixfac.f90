@@ -54,7 +54,6 @@ subroutine getfixfac(bedcomp   ,nmlb      ,nmub      ,nval      ,nmmax     , &
 !
     integer  :: l
     integer  :: nm
-    real(fp) :: ffac
     real(fp) :: thresh
 !
 !! executable statements -------------------------------------------------------

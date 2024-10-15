@@ -32,6 +32,7 @@
 
 !> prepare the sample Hessians
 subroutine prepare_sampleHessian(ierror)
+   use m_comp_samplehessian
    use m_samples
    use m_samples_refine
 

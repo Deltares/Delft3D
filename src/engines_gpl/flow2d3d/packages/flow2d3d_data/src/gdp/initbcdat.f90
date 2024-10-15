@@ -50,6 +50,8 @@ gdp%gdbcdat%mmskf    = -999
 gdp%gdbcdat%mmskl    = -999
 gdp%gdbcdat%ncomp    = -999
 gdp%gdbcdat%nsplit   = -999
+gdp%gdbcdat%global_num_qtot_bnd = -999
+gdp%gdbcdat%global_num_qh_bnd   = -999
 gdp%gdbcdat%gntoftoq = -999
 nullify(gdp%gdbcdat%pindex)
 nullify(gdp%gdbcdat%bct_order)

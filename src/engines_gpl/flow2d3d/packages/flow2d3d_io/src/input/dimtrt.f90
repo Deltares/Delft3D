@@ -106,7 +106,7 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
     ! Read value of Trtrou, default NO
     !
     chulp = 'N'
-    call prop_get_string(gdp%mdfile_ptr,'*','Trtrou',chulp)
+    call prop_get(gdp%mdfile_ptr,'*','Trtrou',chulp)
     !
     ! set LFTRTO to TRUE if CHULP = Y/y
     !
@@ -122,7 +122,7 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
     !
     filtmp = ' '
     keyw   = 'Trtdef'
-    call prop_get_string(gdp%mdfile_ptr,'*',keyw,filtmp)
+    call prop_get(gdp%mdfile_ptr,'*',keyw,filtmp)
     !
     ! keyword not found ?
     !
@@ -189,7 +189,7 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
        !
        filtmp = ' '
        keyw = 'Trtu'
-       call prop_get_string(gdp%mdfile_ptr,'*',keyw,filtmp)
+       call prop_get(gdp%mdfile_ptr,'*',keyw,filtmp)
        !
        ! keyword not found ?
        !
@@ -215,7 +215,7 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
        !
        filtmp = ' '
        keyw = 'Trtv'
-       call prop_get_string(gdp%mdfile_ptr,'*',keyw,filtmp)
+       call prop_get(gdp%mdfile_ptr,'*',keyw,filtmp)
        !
        ! keyword not found ?
        !

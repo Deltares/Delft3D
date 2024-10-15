@@ -33,31 +33,35 @@
 !----------------------------------------------------------------------
 ! subroutines from rest.F90
 !----------------------------------------------------------------------
+module m_changecolor
+use m_orglocator
+use m_getcolornumber
+
+
+implicit none
+
+contains
+
       subroutine CHANGECOLOR(XP, YP)
+         use m_allcolours
          use unstruc_colors
+         use m_depmax
+         use m_helpnow
+         use m_disvalcolors
+         use m_disput
+         use m_set_col
+         use m_help
+         
          implicit none
-         double precision :: dv
          integer :: ic
-         integer :: jaauto
          integer :: key
          integer :: n1
          integer :: n2
          integer :: n3
-         integer :: ncols
-         integer :: nie
-         integer :: nis
-         integer :: nlevel
          integer :: numcol
-         integer :: nv
-         double precision :: val
-         double precision :: vmax
-         double precision :: vmin
+
          double precision :: xp
          double precision :: yp
-         character :: WRDKEY * 40
-
-         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-         common / HELPNOW / WRDKEY, NLEVEL
 
          integer NCL(3)
 
@@ -109,3 +113,5 @@
 
          goto 20
       end
+
+end module m_changecolor

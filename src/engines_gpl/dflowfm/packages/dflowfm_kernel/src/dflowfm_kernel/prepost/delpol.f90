@@ -29,17 +29,19 @@
 
 !
 !
+module m_delpol
+   implicit none
+contains
+   subroutine DELPOL()
+      use M_POLYGON
+      use M_MISSING
 
-      subroutine DELPOL()
-         use M_POLYGON
-         use M_MISSING
-         implicit none
+      if (allocated(xpl)) XPL = XYMIS
+      if (allocated(ypl)) YPL = XYMIS
+      NPL = 0
 
-         if (allocated(xpl)) XPL = XYMIS
-         if (allocated(ypl)) YPL = XYMIS
-         NPL = 0
-
-         MP = 0
-         MPS = 0
-         return
-      end subroutine DELPOL
+      MP = 0
+      MPS = 0
+      return
+   end subroutine DELPOL
+end module m_delpol

@@ -30,9 +30,15 @@
 !
 !
 
+module m_onetopix
+
+implicit none
+
+contains
+
       subroutine ONETOPIX(X, Y, NX, NY)
          use m_devices
-         implicit none
+
          integer :: nx
          integer :: ny
          double precision :: x
@@ -41,3 +47,5 @@
          NY = Y * NPY
          return
       end
+
+end module m_onetopix

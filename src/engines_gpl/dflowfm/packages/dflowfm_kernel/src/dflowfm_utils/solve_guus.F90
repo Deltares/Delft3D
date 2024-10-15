@@ -41,6 +41,7 @@
     use m_flowparameters, only: icgsolver, ipre
     use m_alloc
     use system_utils, only: ARCH
+    use m_qnerror
 
     ! subroutine to intialise the following variables:
     ! noactive
@@ -491,11 +492,12 @@
 
  subroutine solve_matrix(s1, ndx, itsol)
     use Timers
-    use m_flowparameters
+    use m_flowparameters, only: noderivedtypes, icgsolver, ipre
     use m_reduce
-    use m_flowtimes
-    use m_partitioninfo, only: my_rank, ndomains
+    use m_flowtimes, only: handle_sol
     use m_timer
+    use m_qnerror
+    use m_solve_jacobi
 
 #ifdef HAVE_PETSC
     use m_petsc
@@ -619,10 +621,11 @@
     use m_flowgeom, only: kfs
     use MessageHandling
     use m_flowparameters, only: Noderivedtypes
-    use m_partitioninfo, only: my_rank
     use m_netw, only: xzw, yzw
     use unstruc_model, only: md_ident
-
+    use m_qnerror
+    use m_calls_saad
+    
     implicit none
     integer :: ndx, its
     double precision :: s1(ndx)
@@ -1657,16 +1660,18 @@
     return
  end
 
- subroutine reducept(Ndx, Ndxi, Lnx)
+ subroutine reducept(Ndx, Lnx)
     ! this subroutine finds an elimination order for Gaussian elimination based upon minimum degree algorithm
     use m_reduce
     use unstruc_messages
     use m_flowparameters, only: icgsolver, ipre, Noderivedtypes
     use m_partitioninfo
-
+    use m_readyy
+    use m_calls_saad
+    
     implicit none
 
-    integer :: Ndx, Ndxi, Lnx
+    integer :: Ndx, Lnx
 
     integer :: nn ! integers used for counting
     integer :: minold ! minimum degree values
@@ -1753,12 +1758,12 @@
        end if
     else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
-       call ini_petsc(Ndx, Ndxi, ierror)
+       call ini_petsc(Ndx, ierror)
        call preparePETSCsolver(0)
 #endif
     else if (icgsolver == 10) then
 #ifdef HAVE_PETSC
-       call ini_petsc(Ndx, Ndxi, ierror)
+       call ini_petsc(Ndx, ierror)
        call preparePETSCsolver(1)
 #endif
     else if (icgsolver == 8) then
@@ -2236,9 +2241,9 @@
     use m_reduce
     use m_flowgeom, only: Ndx, Lnx, ln, xu, yu, xz, yz
     use m_partitioninfo
-    use m_alloc
-    use unstruc_messages
+    use messagehandling, only: mess, LEVEL_ERROR
     use m_plotdots
+    use m_calls_saad
     implicit none
 
     integer, dimension(:), allocatable :: imask
@@ -2374,9 +2379,9 @@
     use m_flowgeom, only: kfs
     use unstruc_messages
     use m_timer
-    use network_data, only: xzw
     use m_flowparameters, only: jalogsolverconvergence
     use mpi
+    use m_calls_saad
     implicit none
 
     integer, intent(in) :: ndx

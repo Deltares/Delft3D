@@ -33,15 +33,23 @@
 !> generate curvilinear grid from spline
 subroutine spline2curvi()
 
+   use m_confrm
+   use m_comp_edgevel
+   use m_change_spline2curvi_param
    use m_grid
    use m_splines
    use m_gridsettings
-   use m_alloc
-   use m_missing
+   use m_missing, only: dmiss, jins
    use m_spline2curvi
    use m_sferic
    use m_polygon
    use geometry_module, only: pinpok, normalout
+   use m_readyy
+   use m_increase_grid
+   use m_restore_grd
+   use m_deallocate_spline_props
+   use m_postgrid
+   use m_grow_layer
 
    implicit none
 
@@ -224,7 +232,7 @@ subroutine spline2curvi()
    do j = jc + 1, nc
 !      idum = 1
 !      call plot(idum)
-      call growlayer(mc, nc, mmax, nmax, 1, maxaspect, j, edgevel, dt, xc, yc, ifront, istop)
+      call growlayer(mc, nc, mmax, nmax, 1, j, edgevel, dt, xc, yc, ifront, istop)
 
 !     update edge velocity
       nlist(:) = nfac1(:, 1)

@@ -29,11 +29,13 @@
 
 !
 !
-
+module m_dispnode
+   implicit none
+contains
       subroutine DISPNODE(MP)
-         use m_devices
-         use m_netw, only: zk
-         implicit none
+         use m_devices, only: iws
+         use m_ktext
+
          integer :: mp
          character TEX * 23
 
@@ -52,3 +54,4 @@
 
          return
       end
+end module m_dispnode

@@ -924,7 +924,7 @@ if isequal(Program,UNSPECIFIED)
                 MFile.Domains(:,1) = typeModel;
                 MFile.Domains(:,2) = nameModel;
                 for i = 1:length(typeModel)
-                    fName = relpath(master_path,[dirModel{i} filesep mdfModel{i}]);
+                    fName = relpath(master_path,[portpath(dirModel{i}) filesep mdfModel{i}]);
                     MFile.Domains{i,3} = masterread(fName);
                 end
                 %
@@ -2151,7 +2151,7 @@ switch lower(cmd)
 end
 
 function writebch(filename,S)
-fid = fopen(filename,'wt','n','US-ASCII');
+fid = fopen(filename,'w','n','US-ASCII');
 Format = [repmat(' %15.7e',1,length(S.Freq)) '\n'];
 fprintf(fid,Format,S.Freq);
 fprintf(fid,'\n');

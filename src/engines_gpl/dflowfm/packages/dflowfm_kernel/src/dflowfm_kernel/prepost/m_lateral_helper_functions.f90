@@ -7,7 +7,7 @@ contains
    !> Prepare the 'kclat' mask array for a specific type of lateral.
    subroutine prepare_lateral_mask(kc, ilattype)
       use m_flowgeom
-      use m_lateral, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       implicit none
 
       integer, intent(inout) :: kc(:) !< (ndx) The mask array that is to be filled.

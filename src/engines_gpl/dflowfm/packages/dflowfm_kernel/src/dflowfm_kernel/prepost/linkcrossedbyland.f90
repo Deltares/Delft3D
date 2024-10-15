@@ -31,19 +31,19 @@
 !
 
 !> check if a link is close to a land boundary segment
-subroutine linkcrossedbyland(L, jstart, jend, netboundonly, jland, jacross)
+subroutine linkcrossedbyland(L, jstart, jend, jland, jacross)
 
    use m_netw
    use m_landboundary
-   use m_missing
+   use m_missing, only: dmiss
    use geometry_module, only: dbdistance
    use m_sferic, only: jsferic, jasfer3D
+   use m_d_line_dis3
 
    implicit none
 
    integer, intent(in) :: L !< link number
    integer, intent(in) :: jstart, jend !< start and end point of land boundary segment respectively
-   integer, intent(in) :: netboundonly !< consider only the net boundary (1) or not (0)
    integer, intent(inout) :: jland !< point in land boundary that is (in:) visited first (out:) found
 
    integer, intent(out) :: jacross !< crossed (1) or not (0)

@@ -29,17 +29,18 @@
 
 !
 !
-
+module m_save_keys
+   implicit none
+contains
       subroutine SAVEKEYS()
-         implicit none
+         use m_keycodes
+         
          integer :: i
          integer :: infoinput
-         integer :: keycod
-         integer :: maxkey
-         parameter(MAXKEY=50)
-         common / KEYCODES / KEYCOD(MAXKEY)
+
          do I = 1, MAXKEY
             KEYCOD(I) = INFOINPUT(I)
          end do
          return
       end
+end module m_save_keys

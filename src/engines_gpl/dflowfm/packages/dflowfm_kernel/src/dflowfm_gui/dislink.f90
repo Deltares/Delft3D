@@ -30,9 +30,16 @@
 !
 !
 
+module m_dislink
+
+implicit none
+
+contains
+
       subroutine DISLINK(MP)
-         use m_devices
-         implicit none
+         use m_devices, only: iws
+         use m_ktext
+
          integer :: mp
          character TEX * 23
 
@@ -46,3 +53,5 @@
 
          return
       end
+
+end module m_dislink

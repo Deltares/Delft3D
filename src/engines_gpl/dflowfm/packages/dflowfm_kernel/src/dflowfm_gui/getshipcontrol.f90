@@ -30,12 +30,16 @@
 !
 !
 
+module m_getshipcontrol
+
+implicit none
+
+contains
+
  subroutine GETSHIPCONTROL()
     use m_ship
+    use m_drawthis
     implicit none
-
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
 
     integer :: key, n
 
@@ -85,3 +89,5 @@
     end if
 
  end subroutine getshipcontrol
+
+end module m_getshipcontrol

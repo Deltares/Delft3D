@@ -68,7 +68,38 @@
 !----------------------------------------------------------------------
 ! subroutines from net.F90
 !----------------------------------------------------------------------
-   subroutine CHOICES(MODE, NUM, NWHAT, KEY)
+module m_choices
+use m_plusabs_flow
+use m_plusabsi
+use m_plusabsd
+use m_nfiles
+use m_ndisplay
+use m_menuv3
+use m_copywaterlevelstosamples
+use m_copynetwtonetw
+use m_copynetnodestosam
+use m_copynetlinkstosam
+use m_copygridtosam
+use m_copyzlintosamples
+
+
+implicit none
+
+contains
+
+   subroutine CHOICES(NUM, NWHAT, KEY)
+      use m_changetimeparameters
+      use m_changephysicalparameters
+      use m_changeorthoparameters
+      use m_changenumericalparameters4
+      use m_changenumericalparameters3
+      use m_changenumericalparameters2
+      use m_changenumericalparameters
+      use m_changenetworkparameters
+      use m_changeinterpolationparameters
+      use m_changegridparameters
+      use m_changegeometryparameters
+      use m_changecolournumbers
       use m_netw
       use m_samples
       use m_grid
@@ -80,17 +111,20 @@
       use gridoperations
       use m_oned_functions, only: convert_cross_to_prof
       use unstruc_model, only: md_ident
+      use m_drawthis
+      use m_delpol
+      use m_delsam
+      use m_copynetboundstopol
+      use m_makenetnodescoding
+      use m_set_nod_adm
+      use m_draw_nu
+      use m_set_bobs
+      use m_interpdivers
 
       implicit none
       integer :: ja, n12, ikey, mnx
-      integer :: ndraw
-      integer :: MODE, NUM, NWHAT, KEY, nwhat2
-      integer :: JDEMO
+      integer :: NUM, NWHAT, KEY, nwhat2
       integer :: irerun ! orthogonalisenet: rerun
-
-      common / DRAWTHIS / ndraw(50)
-      common / DEMO / JDEMO
-      integer :: maxexp
       integer :: maxopt, ierr
       integer, parameter :: MAXOP = 64
       character * 40 OPTION(MAXOP), exp(MAXOP)
@@ -100,7 +134,7 @@
 
       if (NUM == 1) then
          !     load en save files
-         call NFILES(MODE, NUM, NWHAT, KEY)
+         call NFILES(NUM, NWHAT, KEY)
       else if (NUM == 2) then
          !     operations
 !      if ( jins.ne.1 ) then  ! SPvdP: temporarily disabled
@@ -310,7 +344,7 @@
 
             MAXOPT = 11
             NWHAT2 = 0
-            call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+            call MENUV3(NWHAT2, OPTION, MAXOPT)
             if (nwhat2 == 1) then
                call COPYLDBTOPOL()
             else if (nwhat2 == 2) then
@@ -345,7 +379,7 @@
             OPTION(5) = 'Copy polygon to 1D network              '
             MAXOPT = 5
             NWHAT2 = 0
-            call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+            call MENUV3(NWHAT2, OPTION, MAXOPT)
             if (nwhat2 == 1) then
                call COPYPOLTOLDB()
             else if (nwhat2 == 2) then
@@ -376,7 +410,7 @@
 
             MAXOPT = 12
             NWHAT2 = 0
-            call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+            call MENUV3(NWHAT2, OPTION, MAXOPT)
             if (nwhat2 == 1) then
                call copypolygontosamples()
             else if (nwhat2 == 2) then
@@ -408,11 +442,11 @@
             call copynetwtonetw()
          else if (NWHAT == 28) then
             n12 = 1
-            call cutcell_list(n12, '*.POL', 5, 0)
+            call cutcell_list(n12, 0)
          else if (NWHAT == 29) then
             n12 = 3
             call findcells(0)
-            call cutcell_list(n12, '*.cut', 5, 0)
+            call cutcell_list(n12, 0)
          else if (NWHAT == 30) then
 !        intentionally left empty
          else if (NWHAT == 31) then
@@ -480,3 +514,5 @@
 
       return
    end subroutine CHOICES
+
+end module m_choices

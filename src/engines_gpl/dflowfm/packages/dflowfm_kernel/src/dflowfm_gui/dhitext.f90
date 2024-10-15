@@ -30,15 +30,24 @@
 !
 !
 
-      subroutine DHITEXT(IVAL, XD, YD, ZD)
-         use gridoperations
-         implicit none
+module m_dhitext
+
+implicit none
+
+contains
+
+      subroutine DHITEXT(IVAL, XD, YD)
+         use m_dproject
+         use m_hi_text
+
          integer :: ival
          double precision :: x
          double precision :: y
-         double precision XD, YD, ZD
+         double precision XD, YD
          !CALL DRIETWEE(XD,YD,ZD,X,Y,Z)
          call DPROJECT(Xd, Yd, X, Y, 1)
          call HITEXT(IVAL, X, Y)
          return
       end
+
+end module m_dhitext

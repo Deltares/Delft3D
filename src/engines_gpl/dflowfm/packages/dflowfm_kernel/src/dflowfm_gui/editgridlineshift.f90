@@ -30,16 +30,33 @@
 !
 !
 
+module m_editgridlineshift
+use m_ispoin
+
+
+implicit none
+
+contains
+
       subroutine EDITGRIDLINESHIFT(MODE, NFLD, KEY, M1, N1, M2, N2)
          use m_grid
-         use unstruc_colors
-         implicit none
+         use unstruc_colors, only: ncolrg
+         use m_helpnow
+         use m_qnerror
+         use m_ktext
+         use m_putget_un
+         use m_okay
+         use m_botlin
+         use m_draw_nu
+         use m_restore_grd
+         use m_tekln2
+         use m_fieldop
+
          integer :: MODE, NFLD, KEY, M1, N1, M2, N2
          integer :: newmode
-         common / HELPNOW / WRDKEY, NLEVEL
-         character TEX * 20, WRDKEY * 40, FIELDOP * 40
+         character TEX * 20
 
-         integer :: NLEVEL, JA, NUM, NWHAT, NPUT, NUMB, JONCE, mp, np, m, n, NCOL
+         integer :: JA, NUM, NWHAT, NPUT, NUMB, JONCE, mp, np, m, n, NCOL
          double precision :: xp, yp
          TEX = ' '//FIELDOP(NFLD)
          WRDKEY = FIELDOP(NFLD)
@@ -151,3 +168,5 @@
          goto 10
 !                           7
       end subroutine editgridlineshift
+
+end module m_editgridlineshift

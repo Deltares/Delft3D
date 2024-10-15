@@ -215,7 +215,7 @@ subroutine inittrachy(gdtrachy, nodir, istat)
     type(trachy_type), intent(inout) :: gdtrachy
     integer                          :: nodir
     integer                          :: istat    
-    integer                          :: j, k
+    integer                          :: j
 !
 ! Global variables
 !

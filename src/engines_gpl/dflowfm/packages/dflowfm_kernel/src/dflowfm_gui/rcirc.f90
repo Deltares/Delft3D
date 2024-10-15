@@ -30,12 +30,22 @@
 !
 !
 
+module m_rcirc
+
+implicit none
+
+contains
+
       subroutine RCIRC(X, Y)
+         use m_cir
          use m_wearelt
-         implicit none
+         use m_movabs
+
          double precision :: x
          double precision :: y
          call MOVABS(X, Y)
          call CIR(RCIR)
          return
       end
+
+end module m_rcirc

@@ -29,25 +29,27 @@
 
 !
 !
-
-      subroutine NEXT(NAHEAD, NLEVEL, NUMCHC, HLPTXT, NUMTXT)
-         implicit none
-         integer :: nahead
-         integer :: nlevel
-         integer :: numchc
-         integer :: numtxt
+module m_next
+   implicit none
+contains
+   subroutine NEXT(NAHEAD, NLEVEL, NUMCHC, HLPTXT, NUMTXT)
+      integer :: nahead
+      integer :: nlevel
+      integer :: numchc
+      integer :: numtxt
 !     Searches for previous or next keyword at level nlevel
-         character HLPTXT(NUMTXT) * (*)
-10       continue
+      character HLPTXT(NUMTXT) * (*)
+10    continue
 
-         NUMCHC = NUMCHC + NAHEAD
-         if (NUMCHC <= 1) then
-            NUMCHC = 1
-         else if (NUMCHC >= NUMTXT) then
-            NUMCHC = NUMTXT
-         else if (HLPTXT(NUMCHC) (1:NLEVEL) == '   ') then
-            goto 10
-         end if
+      NUMCHC = NUMCHC + NAHEAD
+      if (NUMCHC <= 1) then
+         NUMCHC = 1
+      else if (NUMCHC >= NUMTXT) then
+         NUMCHC = NUMTXT
+      else if (HLPTXT(NUMCHC) (1:NLEVEL) == '   ') then
+         goto 10
+      end if
 
-         return
-      end
+      return
+   end
+end module m_next

@@ -30,11 +30,17 @@
 !
 !
 
+module m_dlnabs
+
+implicit none
+
+contains
+
       subroutine DLNABS(XD, YD, ZD)
-         use m_oldz
-         use m_missing
-         use gridoperations
-         implicit none
+         use m_oldz, only: oz
+         use m_three_two
+         use m_lnabs
+
          double precision :: x
          double precision :: y
          double precision :: z
@@ -45,3 +51,5 @@
          !ENDIF
          OZ = Z
       end
+
+end module m_dlnabs

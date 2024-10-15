@@ -21,7 +21,6 @@ if (WIN32)
     target_link_directories(${executable_name} PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
 
-    oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies} "netcdf.lib")
 endif(WIN32)
 
@@ -33,4 +32,4 @@ target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER tests/utils_lgpl/io_netcdf)
 
-install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
+install(TARGETS ${executable_name} RUNTIME DESTINATION test)

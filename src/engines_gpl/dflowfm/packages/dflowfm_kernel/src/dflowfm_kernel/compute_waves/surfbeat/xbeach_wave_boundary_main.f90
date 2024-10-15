@@ -79,10 +79,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 !
-   subroutine create_incident_waves_surfbeat(np, ibnd, xb, yb, ntheta, dtheta, theta, t, &
-                                             bctype, bcfile, &
-                                             x0, y0, hboundary, &
-                                             randomseed, &
+   subroutine create_incident_waves_surfbeat(np, ibnd, ntheta, t, &
                                              eebc, qxbc, qybc, &
                                              Hbc, Tbc, Dbc, isRecomputed, singledir, ntheta_s, theta_s, ee_s, &
                                              nonhspectrum, &
@@ -164,15 +161,11 @@ contains
       implicit none
       !
       ! Input variables
-      integer, intent(in) :: np, ibnd, ntheta, bctype
-      real(dp), intent(in) :: t, x0, y0, hboundary, dtheta
-      character(len=*), intent(in) :: bcfile
-      real(dp), dimension(np), intent(in) :: xb, yb
-      real(dp), dimension(ntheta), intent(in) :: theta
-      real(dp), dimension(ntheta_s), intent(in) :: theta_s
-      integer, intent(in) :: randomseed
-      integer, intent(in) :: singledir
+      integer, intent(in) :: np, ibnd, ntheta
       integer, intent(in) :: ntheta_s
+      real(dp), intent(in) :: t
+      real(dp), dimension(ntheta_s), intent(in) :: theta_s
+      integer, intent(in) :: singledir
 
       ! output variables
       real(dp), intent(out) :: Hbc, Tbc, Dbc

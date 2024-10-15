@@ -76,6 +76,8 @@ contains
       use gridoperations
       use m_network, only: admin_network
       use unstruc_channel_flow, only: network
+      use m_qnerror
+      use m_set_nod_adm
 
       implicit none
 

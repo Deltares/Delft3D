@@ -45,7 +45,7 @@ contains
         USE HydroSet           ! for composed hydrodynamics
 
         integer(kind = int_wp), intent(inout) :: file_unit_list(*)          ! logical unitnumbers of files
-        character*(*), intent(in) :: luntxt(*)       ! file names
+        character(len=*), intent(in) :: luntxt(*)       ! file names
         integer(kind = int_wp), intent(in) :: ftype(*)        ! type of the files
         integer(kind = int_wp), intent(in) :: lunout          ! unit number monitor file
         integer(kind = int_wp), intent(in) :: ilun            ! entry in file_unit_list/LUNTXT for this item
@@ -97,11 +97,11 @@ contains
         character(255) sfile                             ! help variable for file names
         logical        updat2                            ! help variable to determine updated record
         logical        lre3                              ! help variable to determine rewind
-        integer(kind = int_wp), save :: islun                         ! base unit number for work files
-        integer(kind = int_wp) :: filtype                           ! type of file
+        integer(kind = int_wp), save :: islun            ! base unit number for work files
+        integer(kind = int_wp) :: filtype                ! type of file
         real(kind = real_wp), pointer :: array1(:), array2(:), array3(:) ! help arrays for interpolation
-        logical        first  / .true. /                 ! construct for initialisation
-        integer(kind = int_wp) :: ithandl = 0                       ! performance timer construct
+        logical                :: first = .true.         ! construct for initialisation
+        integer(kind = int_wp) :: ithandl = 0            ! performance timer construct
         if (timon) call timstrt ("dlwqt4", ithandl)
 
         lrewin = .false.
@@ -326,12 +326,12 @@ contains
         9999 if (timon) call timstop (ithandl)
         return
 
-        2000 FORMAT (/, A20, ' UNIT: ', I3, ', READING: ', A, / &
+        2000 FORMAT (/, A24, ' UNIT: ', I3, ', READING: ', A, / &
                 ' AT SIMULATION TIME:', I10)
-        2010 FORMAT (/, A20, ' UNIT: ', I3, ', READING: ', A, / &
+        2010 FORMAT (/, A24, ' UNIT: ', I3, ', READING: ', A, / &
                 ' AT SIMULATION TIME:', I5, 'D ', I2, 'H ', I2, 'M ', I2, 'S !', / &
                 ' TIME IN FILE:      ', I5, 'D ', I2, 'H ', I2, 'M ', I2, 'S !')
-        2020 FORMAT (/, A20, ' UNIT:', I10, ', READING: ', A, / &
+        2020 FORMAT (/, A24, ' UNIT:', I10, ', READING: ', A, / &
                 ' SIMULATION TIME :', I2, 'Y ', I3, 'D ', I2, 'H ', I2, 'M ', I2, 'S .', / &
                 ' TIME IN FILE    :', I2, 'Y ', I3, 'D ', I2, 'H ', I2, 'M ', I2, 'S .')
 

@@ -33,8 +33,52 @@ module m_string_utils
     private
     public :: join_strings, contains_any, contains_only_valid_chars, starts_with_valid_char
     public :: starts_with, index_in_array, remove_duplicates, string_equals, centre_text
+    public :: split_string
 
 contains
+    !> Splits a string into multiple parts using the delimiter
+    function split_string(input_string, delimiter) result(substrings)
+        character(len=*), intent(in) :: input_string !< input string to split
+        character(len=*), intent(in) :: delimiter    !< delimiter to use for splitting
+        character(:), dimension(:), allocatable :: substrings !< resulting sub strings
+
+        ! local
+        character(:), allocatable :: substring
+        integer :: i
+        integer :: number_of_parts
+        integer :: start_pos
+        integer :: end_pos
+        integer :: max_length
+
+        number_of_parts = 1
+        start_pos = 1
+        max_length = 0
+        do
+            end_pos = index(input_string(start_pos:), delimiter)
+            if (end_pos == 0) then
+                max_length = max(max_length, len_trim(input_string(start_pos:)))
+                exit
+            end if
+            number_of_parts = number_of_parts + 1
+            max_length = max(max_length, end_pos - 1)
+            start_pos = start_pos + end_pos
+        end do
+
+        allocate (character(len=max_length) :: substring)
+        allocate (character(len=max_length) :: substrings(number_of_parts))
+
+        start_pos = 1
+        do i = 1, number_of_parts
+            end_pos = index(input_string(start_pos:), delimiter)
+            if (end_pos > 0) then
+                substring = input_string(start_pos:start_pos + end_pos - 2)
+                start_pos = start_pos + end_pos
+            else
+                substring = input_string(start_pos:)
+            end if
+            substrings(i) = trim(substring)
+        end do
+    end function split_string
 
     !>  creates a string (of width length) with the provided text in the centre
     function centre_text(text, width) result(centred_text)
@@ -317,18 +361,18 @@ contains
     !! into lowercase.
     function convert_to_lower_case(string) result(string_out)
         character(len=*), intent(in) :: string !< String to be converted.
-        character(len=len(string))   :: string_out
+        character(len=len(string)) :: string_out
 
-        integer                      :: i, j
+        integer :: i, j
 
         string_out = string
         do i = 1, len(string)
-           j = iachar(string(i:i))
-           if ( j > 64 .and. j < 91 ) then
-              j = j + 32
-              string_out(i:i) = achar(j)
-           endif
-        enddo
+            j = iachar(string(i:i))
+            if (j > 64 .and. j < 91) then
+                j = j + 32
+                string_out(i:i) = achar(j)
+            end if
+        end do
     end function convert_to_lower_case
 
 end module m_string_utils

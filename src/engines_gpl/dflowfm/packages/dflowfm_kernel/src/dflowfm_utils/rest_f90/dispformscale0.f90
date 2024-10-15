@@ -31,16 +31,12 @@
 !
 
       subroutine DISPFORMscale0(value, fmt)
+         use m_scalepos
          implicit none
          integer :: n1
          integer :: n2
-         integer :: ndec
-         double precision :: scalesize
          double precision :: value
-         double precision :: xsc
-         double precision :: ysc
          character fmt * (*)
-         common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
 
          fmt = '(f9.3)'
 

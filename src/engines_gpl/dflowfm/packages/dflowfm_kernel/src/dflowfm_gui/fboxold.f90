@@ -29,16 +29,18 @@
 
 !
 !
-
+module m_fboxold
+    implicit none
+contains
+    
       subroutine FBOXOLD(XB1, YB1, XB2, YB2)
-         implicit none
+         use m_colnow
+         use m_pfiller_core
          integer :: n
-         integer :: ncolnow
          double precision :: xb1
          double precision :: xb2
          double precision :: yb1
          double precision :: yb2
-         common / COLNOW / NCOLNOW
          real X(4), Y(4)
          N = 4
          X(1) = real(XB1)
@@ -52,3 +54,5 @@
          if (NCOLNOW >= 0) call PFILLERCORE(X, Y, N)
          return
       end
+
+end module m_fboxold

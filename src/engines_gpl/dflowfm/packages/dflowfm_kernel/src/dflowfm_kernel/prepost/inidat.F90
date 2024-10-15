@@ -79,45 +79,24 @@
       use dfm_signals
       use gridoperations
       use m_monitoring_crosssections, only: increaseCrossSections
+      use m_helpnow
+      use m_settings
+      use m_drawthis
+      use m_howtoview
+      use m_cconstants
+      use m_plotfil
+      use m_perspx
+      use m_zeronet
+      use m_paramtext
+      use m_increase_grid
+      use m_ini_sferic
       implicit none
 
-      double precision :: ag, cdflow, cfl, cfric, deltx, delty, deltz, dscr, dx, e0, eps, epsgs, fbouy, fdyn, gx, gy, gz
-      integer :: itgs
-      integer :: janet, jav
-      integer :: jqn
-      integer :: jview
+      double precision :: dx
       integer :: k
-      integer :: maxitgs
-      integer :: moments
-      integer :: ndraw
-      integer :: nlevel
-      double precision :: pi
-      double precision :: rho
-      double precision :: rhow
       double precision :: rk
       double precision :: rmiss
-      double precision :: splfac
-      double precision :: splfac2
-      double precision :: wpqr
-      double precision :: xyz
-      double precision :: zfac
-      double precision :: zupw
       integer, save :: jaSkipCmdLineArgs = 0 !< Later set to 1, to read cmdline args just once.
-
-      common / DRAWTHIS / ndraw(50)
-      common / HELPNOW / WRDKEY, NLEVEL
-      common / SPLINEFAC / SPLFAC, SPLFAC2
-      common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
-      common / SETTINGS / FDYN, FBOUY, CDFLOW, CFRIC, MOMENTS, JANET
-      common / QNRGF / JQN
-
-      common / PERSPX / WPQR, DELTX, DELTY, DELTZ, ZFAC, DSCR, ZUPW
-      common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
-      common / GRAVITY / GX, GY, GZ
-      common / SOLVER / EPSGS, MAXITGS, ITGS
-      common / PLOTFIL / PLOTJE
-      character PLOTJE * 255
-      character WRDKEY * 40
 
       !  1=CLS
       !  2=GRID/NET    1=RECHT   2=SPLINE
@@ -145,7 +124,6 @@
 
       call maketekaltimes()
 
-      JQN = 2
       NDRAW(1) = 1 ! clear screen yes/no
       NDRAW(2) = 1 ! display network
       NDRAW(3) = 1 ! display landboundary
@@ -190,7 +168,6 @@
 
       JVIEW = 1
       JAV = 3
-      ITGS = 0
 
       NUML = 0
       NUMK = 0
@@ -326,6 +303,9 @@
       use dfm_signals
       use gridoperations
       use m_monitoring_crosssections, only: increaseCrossSections
+      use m_reapol
+      use m_reasam
+      use m_loadbitmap
 
       implicit none
       character inarg * (*), EXT * 4
@@ -405,6 +385,8 @@
       use gridoperations
       use m_monitoring_crosssections, only: increaseCrossSections
       use unstruc_netcdf, only: unc_write_net
+      use m_wripol
+      use m_wrisam
 
       implicit none
       character inarg * (*), EXT * 4

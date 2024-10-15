@@ -309,7 +309,7 @@ end
 function FI = writefile(filename,FI,formatStyle)
 FI.FileName = filename;
 S = FI.Data;
-fid = fopen(filename,'wt');
+fid = fopen(filename,'w');
 if fid<0
     error('Error opening %s.',filename)
 end

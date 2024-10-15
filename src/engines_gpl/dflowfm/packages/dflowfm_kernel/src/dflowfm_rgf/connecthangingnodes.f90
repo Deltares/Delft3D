@@ -81,6 +81,7 @@ end subroutine connecthangingnodes
 subroutine removelinksofhangingnodes()
    use m_netw
    use m_flowgeom
+   use m_set_nod_adm
 
    implicit none
 
@@ -100,6 +101,9 @@ subroutine makeZKbedlevels()
    use m_netw
    use m_sferic
    use m_flow
+   use m_set_nod_adm
+   use m_dlinedis2
+   use m_dbdistance_hk
 
    implicit none
 

@@ -35,6 +35,7 @@
     use m_flowgeom
     use m_flow
     use m_sediment, only: stm_included
+    use m_get_kbot_ktop
     implicit none
 
     integer :: i, k, ki, kb, kt, itrac, isf

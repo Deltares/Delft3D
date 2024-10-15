@@ -31,7 +31,14 @@
 !
 
 !> compute change in topology functional and get the nodes and cells involved
+module m_comp_ntopo
+
+implicit none
+
+contains
+
 subroutine comp_ntopo(L, jalandbound, k1, k2, kL, kR, icellL, icellR, ntopo)
+   use m_comp_nnow
    use m_netw
    use m_alloc
    use m_missing
@@ -135,3 +142,5 @@ subroutine comp_ntopo(L, jalandbound, k1, k2, kL, kR, icellL, icellR, ntopo)
 
    return
 end subroutine comp_ntopo
+
+end module m_comp_ntopo

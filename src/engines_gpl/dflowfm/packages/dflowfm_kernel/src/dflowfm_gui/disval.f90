@@ -30,14 +30,20 @@
 !
 !
 
+module m_disval
+
+implicit none
+
+contains
+
       subroutine DISVAL(M, N, DEP)
-         use m_devices
-         implicit none
+         use m_devices, only: iws
+         use m_drawthis
+         use m_ktext
+
          double precision :: dep
          integer :: m
          integer :: n
-         integer :: ndraw
-         common / DRAWTHIS / ndraw(50)
          character DISTAN * 23
          if (NDRAW(14) <= 1) then
             DISTAN = 'M:     N:              '
@@ -89,3 +95,5 @@
 
          return
       end
+
+end module m_disval

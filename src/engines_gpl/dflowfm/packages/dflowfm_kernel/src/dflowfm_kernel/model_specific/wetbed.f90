@@ -33,6 +33,8 @@
  subroutine wetbed(time)
 
     use m_flowparameters, only: hwetbed
+    use m_movabs
+    use m_lnabs
     implicit none
 
     integer, parameter :: mmax = 601 !  3000
@@ -170,6 +172,6 @@
     ! call htext(dble(h2), dble(xu+xc), dble(h2) )
 
     x = x + xc
-    call compareanalytic(s, u, x, mmax)
+    call compareanalytic(s, x, mmax)
 
  end subroutine wetbed

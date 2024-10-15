@@ -263,7 +263,7 @@
                 do_scale = Escale
             end if
 
-            write(history,'(A,F4.1)'), 'Created with agioncmd version', AGIONCMD_VERSION
+            write(history,'(A,F4.1)') 'Created with agioncmd version', AGIONCMD_VERSION
             call nccheck ( nf90_create( ncfile, NF90_NOCLOBBER + NF90_64BIT_OFFSET, ncid) )
             if ( recordaxe%nstatm ) then
                 call nccheck ( nf90_def_dim( ncid, 'time', NF90_UNLIMITED, recordaxe%dimid ) );

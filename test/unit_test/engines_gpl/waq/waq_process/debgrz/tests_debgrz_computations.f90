@@ -48,7 +48,7 @@ program tests_debgrz_computations
 
     implicit none
     character(len=200) :: cmd_arg
-    integer :: iargc, getarg
+    integer :: iargc
     real(kind=real_wp), parameter :: tolerance = 0.00001
 
     ! Determine the number of command line arguments

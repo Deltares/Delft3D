@@ -6570,7 +6570,6 @@ subroutine cauchy_cdf ( x, a, b, cdf )
   real ( kind = 8 ) cdf
   real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
   real ( kind = 8 ) x
-  real ( kind = 8 ) y
 
   cdf = 0.5D+00 + atan2 ( x - a, b ) / PI
 
@@ -9398,7 +9397,6 @@ subroutine coupon_mean ( j, type_num, mean )
 
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
-  integer ( kind = 4 ) n
   real ( kind = 8 ) mean
   integer ( kind = 4 ) type_num
 
@@ -20877,7 +20875,6 @@ function i4_huge ( )
   
   implicit none
 
-  integer ( kind = 4 ) i4
   integer ( kind = 4 ) i4_huge
 
   i4_huge = 2147483647
@@ -24941,7 +24938,6 @@ subroutine multinomial_coef1 ( nfactor, factor, ncomb )
   integer ( kind = 4 ) factor(nfactor)
   real ( kind = 8 ) factorial_log
   integer ( kind = 4 ) i
-  integer ( kind = 4 ) i4_huge
   logical              multicoef_check
   integer ( kind = 4 ) n
   integer ( kind = 4 ) ncomb
@@ -25018,7 +25014,6 @@ subroutine multinomial_coef2 ( nfactor, factor, ncomb )
   logical              check
   integer ( kind = 4 ) factor(nfactor)
   integer ( kind = 4 ) i
-  integer ( kind = 4 ) i4_huge
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
   logical              multicoef_check
@@ -30592,7 +30587,6 @@ function r8_is_int ( r )
   
   implicit none
 
-  integer ( kind = 4 ) i
   integer ( kind = 4 ) i4_huge
   real ( kind = 8 ) r
   logical r8_is_int

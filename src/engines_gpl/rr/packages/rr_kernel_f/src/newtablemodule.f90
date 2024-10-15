@@ -134,7 +134,7 @@ implicit none
       logical            eof
       character(Len=bufmax) buffer
       character(Len=MaxKeyLength)   keyact
-      character*40       column_names(colmax), column_ids(colmax)
+      character(len=40) column_names(colmax), column_ids(colmax)
 
   type T_SobekTimeTableStore
      type (SobekTimeTableStore), pointer, dimension(:) :: SbkTables
@@ -407,7 +407,7 @@ end function newTablesModelFind_ByHandle
 
       Logical Function GetStringFromBuffer(String)
       ! put buffer in String for external use
-      character*(*) String
+      character(len=*) String
 
       String = ' '
       String = Buffer(1:nbuf)
@@ -451,9 +451,9 @@ end function newTablesModelFind_ByHandle
 
       character(Len=MaxKeyLength)       keyupp, keylow
       character(Len=MaxKeyLengthPlus1)  space_keylow
-      integer            linlen, iposl, iposr, iposr2, toklen, ios, nrecr, actlen, StartPos
+      integer            linlen, iposl, iposr, toklen, ios, nrecr, actlen, StartPos
       parameter         (linlen=2048)
-      character*(linlen) line
+      character(len=linlen) line
       logical            start , stopr
 
 ! Additional variables for ParseToken
@@ -621,12 +621,12 @@ end function newTablesModelFind_ByHandle
 !   if the calling program only supports table names up to 32 characters, the first 32 will be used
 
       Logical   TabYesNo
-      Character*(*) TableName
+      Character(len=*) TableName
       character(Len=MaxKeyLength) keywrd
 
       Integer       idum, iout1
       Real          rdum
-      Character*128 cdum            ! was 256, Taiwan Oct 2007
+      Character(len=128) cdum            ! was 256, Taiwan Oct 2007
       Logical       allow, found
 
       Allow = .false.
@@ -654,7 +654,7 @@ end function newTablesModelFind_ByHandle
 ! Use full Buffer
 ! Put result in Table arrays; table number = TableNr
 
-      Character*(*) TableName
+      Character(len=*) TableName
       Integer, intent(in)  :: ModelHandle, idebug, Iout1
       Integer      TableNr
       Integer      NrColumns
@@ -676,7 +676,7 @@ end function newTablesModelFind_ByHandle
       type (SobekTimeTableStore) , pointer    :: model
 
       Logical      TabYesNo
-      Character*(*) TableName
+      Character(len=*) TableName
       Integer, intent(in)  :: ModelHandle, idebug, Iout1
       Integer      TableNr
       Integer      NrColumns
@@ -687,7 +687,7 @@ end function newTablesModelFind_ByHandle
       Integer      iyear, imonth, iday, ihour, iminute, isecond
       Integer      i,j,k, idum, idum1, idum2, ileft, iright, ipos, NrData, indexj, NrDays, NrHours, NrMinutes
       Integer      itest, itest2
-      Character*1  quote, klteken, slash, puntkomma, dubbelpunt, teken
+      Character(len=1) quote, klteken, slash, puntkomma, dubbelpunt, teken
       Logical      lstop, rderror, PeriodError
 
       Integer IDate1, IDate2, ITime1, ITime2, icount, Allocation_Error
@@ -696,7 +696,7 @@ end function newTablesModelFind_ByHandle
 ! May 2002; Additional variables for ParseToken
       Integer           NumberOfTokens
       Type (TokenArray) TempData
-      Character*1000    String
+      Character(len=1000) String
 
 
       GetTableFromBuffer = .false.
@@ -1820,7 +1820,7 @@ end function newTablesModelFind_ByHandle
 !
 !***********************************************************************
 
-      character*(*) messag, id    , nm
+      character(len=*) messag, id    , nm
       integer       errtyp, iout1
 
       logical stopflag
@@ -1869,7 +1869,7 @@ end function newTablesModelFind_ByHandle
 
 !     new method: not hard-coded ASCII codes, but using relative position of a, z,A,Z
 
-      character*(*) keywrd, keyupp
+      character(len=*) keywrd, keyupp
       integer len, i, j, smalla, smallz, biga, offset
 
       smalla = ICHAR('a')
@@ -1910,7 +1910,7 @@ end function newTablesModelFind_ByHandle
 
 !     new method: not hard-coded ASCII codes, but using relative position of a, z,A,Z
 
-      character*(*) keywrd, keylow
+      character(len=*) keywrd, keylow
       integer len, i, j, biga, bigz, smalla, offset
 
       biga   = ICHAR('A')

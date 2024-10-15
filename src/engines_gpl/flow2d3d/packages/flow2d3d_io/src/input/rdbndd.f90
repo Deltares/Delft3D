@@ -68,6 +68,8 @@ subroutine rdbndd(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer              , pointer :: mmaxgl
     integer              , pointer :: nmaxgl
     integer, dimension(:), pointer :: bct_order
+    integer              , pointer :: global_num_qh_bnd
+    integer              , pointer :: global_num_qtot_bnd
     integer              , pointer :: gntoftoq
 !
 ! Global variables
@@ -163,6 +165,8 @@ subroutine rdbndd(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     nmaxgl    => gdp%gdparall%nmaxgl
     mmaxgl    => gdp%gdparall%mmaxgl
     bct_order => gdp%gdbcdat%bct_order
+    global_num_qh_bnd => gdp%gdbcdat%global_num_qh_bnd
+    global_num_qtot_bnd => gdp%gdbcdat%global_num_qtot_bnd
     gntoftoq  => gdp%gdbcdat%gntoftoq
     !
     ! initialize local parameters
@@ -201,7 +205,7 @@ subroutine rdbndd(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! locate 'Filbnd' record for boundary definition in extra input file
     !
     filbnd = fildef
-    call prop_get_string(gdp%mdfile_ptr,'*','Filbnd',filbnd)
+    call prop_get(gdp%mdfile_ptr,'*','Filbnd',filbnd)
     !
     ! open boundary definition in file? <YES>
     !
@@ -518,6 +522,13 @@ subroutine rdbndd(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! See big comment block below
     !
     gntoftoq = ntof + ntoq
+    global_num_qh_bnd = ntoq
+    global_num_qtot_bnd = 0
+    do n = 1, nto
+       if (typbnd(n) == 'T') then
+          global_num_qtot_bnd = global_num_qtot_bnd + 1
+       endif
+    enddo
     if (parll .and. .not.yestdd) then
        !      
        ! bct_order must have the dimension of the global number of boundary conditions (mxdnto).

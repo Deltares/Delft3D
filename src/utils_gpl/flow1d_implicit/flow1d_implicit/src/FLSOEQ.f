@@ -228,7 +228,7 @@ c
       integer nqlat
       real    qlat(nqlat,9), qltpar(9,nqlat), relstr, strhis(13,nstru)
       double precision dt1
-      character*40 qlatnm(*)
+      character(len=40) qlatnm(*)
 
 c
 c     Declaration of local variables:

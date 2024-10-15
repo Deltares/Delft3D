@@ -31,8 +31,17 @@
 !
 
 !
+module m_dispfp
+
+implicit none
+
+contains
+
       subroutine DISPFP(X, Y, N, NCOL)
-         implicit none
+         use m_cir
+         use m_set_col
+         use m_movabs
+
          integer :: i
          integer :: n
          integer :: ncol
@@ -45,3 +54,5 @@
          end do
          return
       end
+
+end module m_dispfp

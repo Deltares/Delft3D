@@ -37,6 +37,7 @@
       !
       !END SUBROUTINE SPLINESFROMLANDBOUNDARY
       subroutine curvilinearGRIDinpolygon()
+         use m_rcirc
          use M_POLYGON
          use M_SAMPLES
          use M_GRID
@@ -46,6 +47,9 @@
          use m_netw
          use m_sferic, only: jsferic, jasfer3D
          use geometry_module, only: dcosphi
+         use m_drawthis
+         use m_qnerror
+         use m_increase_grid
          implicit none
 
          double precision :: atpfo
@@ -64,12 +68,10 @@
          integer :: n
          integer :: n1
          integer :: n2
-         integer :: ndraw
          integer :: ndraw8org
          integer :: nfo
          integer :: npo
          integer :: nr
-         common / drawthis / ndraw(50)
 
          double precision, allocatable :: XH(:, :), YH(:, :)
 

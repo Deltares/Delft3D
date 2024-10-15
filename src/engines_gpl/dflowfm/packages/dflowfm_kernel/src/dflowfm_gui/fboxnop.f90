@@ -29,13 +29,15 @@
 
 !
 !
-
+module m_fbox_nop
+   implicit none
+contains
       subroutine FBOXNOP(XB1, YB1, XB2, YB2)
-         implicit none
-         integer :: ndraw
+         use m_fboxold
+         use m_drawthis
+
          double precision :: xb1, xb2, yb1, yb2
 
-         common / DRAWTHIS / ndraw(50)
          if (ndraw(10) == 0) then
             call RECTANGLE(real(XB1), real(YB1), real(XB2), real(YB2))
          else
@@ -43,3 +45,4 @@
          end if
          return
       end
+end module m_fbox_nop

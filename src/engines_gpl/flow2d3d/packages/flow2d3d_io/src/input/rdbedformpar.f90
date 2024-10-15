@@ -154,8 +154,8 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     ! Read Bedform sediment diameter
     !
     if (.not.sedim) then
-       call prop_get_string(gdp%mdfile_ptr, '*', 'BdfD50', flnmD50, successD50)
-       call prop_get_string(gdp%mdfile_ptr, '*', 'BdfD90', flnmD90, successD90)
+       call prop_get(gdp%mdfile_ptr, '*', 'BdfD50', flnmD50, successD50)
+       call prop_get(gdp%mdfile_ptr, '*', 'BdfD90', flnmD90, successD90)
        !
        ! check if D50 or D90 is spatial varying; if only one is given, both are treated so.
        !
@@ -353,7 +353,7 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     ! Reading choice for Bedform height
     !
     ctemp = ''
-    call prop_get_string(gdp%mdfile_ptr,'*','BdfH',ctemp)
+    call prop_get(gdp%mdfile_ptr,'*','BdfH',ctemp)
     call small(ctemp     ,20         )
     select case( ctemp )
     case ('vanrijn84') 
@@ -413,7 +413,7 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     ! Reading choice for Bedform relaxation
     !
     ctemp = ''
-    call prop_get_string(gdp%mdfile_ptr,'*','BdfRlx',ctemp)
+    call prop_get(gdp%mdfile_ptr,'*','BdfRlx',ctemp)
     call small(ctemp     ,20         )
     select case( ctemp )
     case ('thconst') 
@@ -534,7 +534,7 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     ! Reading choice for Bedform length
     !
     ctemp = ''
-    call prop_get_string(gdp%mdfile_ptr,'*','BdfL',ctemp)
+    call prop_get(gdp%mdfile_ptr,'*','BdfL',ctemp)
     call small(ctemp     ,20         )
     select case( ctemp )
     case ('vanrijn84') 
@@ -570,7 +570,7 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     ! Reading choice for Bedform roughness predictor
     !
     ctemp = ''
-    call prop_get_string(gdp%mdfile_ptr,'*','BdfRou',ctemp)
+    call prop_get(gdp%mdfile_ptr,'*','BdfRou',ctemp)
     call small(ctemp     ,20         )
     select case( ctemp )
     case ('vanrijn07')
@@ -660,7 +660,7 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
        ! First assume that 'BdfUni' contains a filename
        ! If the file does not exist, assume that 'BdfUni' contains a uniform value (real)
        !
-       call prop_get_string(gdp%mdfile_ptr,'*','BdfUni', flbdfh)
+       call prop_get(gdp%mdfile_ptr,'*','BdfUni', flbdfh)
        !
        ! Intel 7.0 crashes on an inquire statement when file = ' '
        !

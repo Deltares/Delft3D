@@ -36,6 +36,7 @@ subroutine write_illegal_cells_to_pol(jausekc)
    use m_polygon
    use m_missing
    use gridoperations
+   use m_wripol
 
    implicit none
 

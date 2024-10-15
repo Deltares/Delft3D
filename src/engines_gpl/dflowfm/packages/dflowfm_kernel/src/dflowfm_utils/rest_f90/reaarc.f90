@@ -31,10 +31,13 @@
 !
 
       subroutine REAARC(MINP, japrompt)
+         use m_getreal
          use M_ARCINFO
          use m_polygon
          use m_missing
          use m_alloc
+         use m_qnerror
+         use m_readarcinfoheader
 
          implicit none
 

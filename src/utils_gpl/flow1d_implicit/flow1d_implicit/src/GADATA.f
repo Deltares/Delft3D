@@ -11,9 +11,9 @@ c     arrays with length lrenbuf
 c     arrays with length nvar*nloc
       real         ,allocatable, save :: buffer(:)   
 c     arrays with length nvar
-      character*20 ,allocatable, save :: parnam(:)
+      character(len=20) ,allocatable, save :: parnam(:)
 c     arrays with length nloc
-      character*20 ,allocatable, save :: locnam(:)
+      character(len=20) ,allocatable, save :: locnam(:)
       integer, parameter :: hreeks=1 ,qreeks=2 ,vreeks=3 ,creeks=4 ,
      +                      sreeks=5 ,greeks=6
       

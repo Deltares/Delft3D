@@ -30,13 +30,12 @@
 !
 !
 
-subroutine findfn(cz, zn, fn)
+subroutine findfn(zn, fn)
 
    implicit none
    integer :: i
    double precision :: acof, bcof
    double precision, intent(in) :: zn
-   double precision, intent(in) :: cz
    double precision, intent(out) :: fn
    integer, parameter :: itab = 100, jtab = 1
    double precision, dimension(0:itab) :: fnarray

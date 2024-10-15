@@ -30,12 +30,18 @@
 !
 !
 
+module m_plotnu
+
+implicit none
+
+contains
+
    subroutine plotnu(fnam)
-      implicit none
-      common / DRAWTHIS / ndraw(50)
-      common / PLOTFIL / PLOTJE
-      integer :: key, ndraw
-      character PLOTJE * 255
+      use m_drawthis
+      use m_plotfil
+      use m_draw_nu
+
+      integer :: key
       character(len=*) fnam
 
       plotje = trim(fnam)
@@ -43,3 +49,5 @@
       call drawnu(key)
 
    end subroutine plotnu
+
+end module m_plotnu

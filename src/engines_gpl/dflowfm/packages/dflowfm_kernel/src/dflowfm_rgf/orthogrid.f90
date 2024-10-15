@@ -36,6 +36,10 @@
          use M_SFERIC
          use M_GRIDSETTINGS
          use m_orthosettings
+         use m_readyy
+         use m_drawthis
+         use m_qnerror
+         use m_isitu
          implicit none
          integer :: in
          integer :: it
@@ -47,7 +51,6 @@
          integer :: na1
          integer :: na2
          integer :: ncr
-         integer :: ndraw
          integer :: num
          integer :: nx
          double precision :: rjac
@@ -56,8 +59,6 @@
             A, B, C, D, E, ATP, XO, YO
 
          integer :: M1, N1, M2, N2
-
-         common / DRAWTHIS / ndraw(50)
 
          if (MC == 0) then
             call QNERROR('First Create or Load a Grid', ' ', ' ')
@@ -104,7 +105,7 @@
             MA2 = min(MC - 1, M2)
             NA2 = min(NC - 1, N2)
 
-            call ATPPAR(XR, YR, MA1, NA1, MA2, NA2, ATP, A, B, C, D, E, JDLA)
+            call ATPPAR(XR, YR, MA1, NA1, MA2, NA2, ATP, A, B, C, D, E)
 
 !        JAMMER IN DEZE LOOP, IJC WORDT EERST VERKLOOT IN SOMDIST
 !        CALL SETINTERNALBOUNDARIES(IJC)

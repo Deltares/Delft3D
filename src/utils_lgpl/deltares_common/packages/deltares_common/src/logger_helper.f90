@@ -58,7 +58,7 @@ contains
     subroutine write_error_message(message)
 
         integer :: file_unit
-        character*(*) message
+        character(len=*) message
 
         call get_log_unit_number(file_unit)
         if (file_unit /= 0) then

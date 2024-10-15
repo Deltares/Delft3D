@@ -31,6 +31,10 @@
 !
 
 subroutine findqorifice(gateheight, crestheight, h1, h3, q, h2, hg, regime, num, qcrit) ! bepaal q en hoogte h2 achter schuif, waterstand links = h1, rechts= h4, schuif = a, alles tov bodem
+   use m_qorifdif
+   use m_getq1
+   use m_getq2
+   use m_getq3
    implicit none
    double precision :: gateheight ! gate height above crest
    double precision :: crestheight ! crest height above bed
@@ -102,8 +106,8 @@ subroutine findqorifice(gateheight, crestheight, h1, h3, q, h2, hg, regime, num,
 
       h2 = hc
       call getq1(hg, d, h1, h2, qa)
-      call getq2(hg, d, h2, h3, qb)
-      call getq3(hg, d, a, h1, h2, qc)
+      call getq2(hg, h2, h3, qb)
+      call getq3(hg, a, h1, h2, qc)
       q = 0.5d0 * (qa + qb)
       qer = abs(q - qc)
       if (qer < qermin) then

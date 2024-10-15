@@ -100,16 +100,16 @@ c     Declaration of parameters
 c
       integer       kodes     ,ncelm     ,ncelh   ,neferr
       integer       fd_nefis_res ,rtim(*)
-      character*(*) grnamd    ,modnam
+      character(len=*) grnamd    ,modnam
       logical       writim
 c
 c     Declaration of local variables
 c
       integer       error     ,i
       integer       dimn(1)   ,uindex(3) ,ord(1) ,buf(1)
-      character*16  celnam
-      character*16  namdes(4) ,names(4)
-      character*64  desdes(4)
+      character(len=16)  celnam
+      character(len=16)  namdes(4) ,names(4)
+      character(len=64)  desdes(4)
 c
 c     Declaration of external functions
 c

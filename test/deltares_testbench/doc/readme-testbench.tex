@@ -150,9 +150,10 @@ In this manual we will have 2 different sections depending on the use case. As a
 
 \subsection{python}
 \label{ssec:python}
-The testbench for D-Hydro is written for python. The new testbench can be run with python and the necessary requirements installed within the requirements.txt.
-The first thing to do is install python 3 which can be found here: \url{https://www.python.org/downloads/} or within the windows app store by searching python 3.
-Installing the required python packages will be discussed under the Installation section \autoref{ssec:userinstall}
+The testbench for D-Hydro is written for python. You need to have python 3 installed and go through the installation steps for the Testbench. The installation steps
+may be subject to change, but are kept up-to-date in the testbench README of the delft3d git repository where the source code for the Testbench is hosted.
+The README can be found here: \url{https://git.deltares.nl/oss/delft3d/-/blob/main/test/deltares_testbench/README.md}.
+It is best to install a recent version of python 3 which can be found here: \url{https://www.python.org/downloads/} or within the windows app store by searching python 3.
 
 \subsection{General concepts}
 
@@ -201,26 +202,6 @@ Running the testbench will usually follow these steps, arguments to overwrite th
 
 \newpage
 \section{Users}
-\subsection{Installation}
-\label{ssec:userinstall}
-The testbench requires python 3 to be installed. More information can be found here: \autoref{ssec:python}
-
-The first step to using the testbench is to checkout the delft3d repo. The testbench folder is located under:
-\dirtree{%
-	.1 root.
-	.2 test.
-	.3 deltares\_testbench.
-}
-Open this folder with visual studio code and go to extensions (ctrl + shift + x) and install the python extension.
-
-The next step is to setup a python virtual environment. Using a virtual environment allows us to install the necessary requirements without doing it for all apps that use python. The venv can be installed anywhere. This guide will install it under the user folder: \dir{c:/users/<username>/virtualenvs/} open a command prompt and locate the folder you want to install the venv under. This is our example: \command{cd c:/users/<username>/virtualenvs/}. Run the command: \command{python -m venv .testbenchenv} within the specified folder. 
-
-Once this is successfully completed we go to visual studio code and open the commands (ctrl + shift + p). Now select the python venv executable in the list that appears after you execute the command: \command{> Python: Select Interpreter} If it doesn't appear in the list you can manually set the path to the python.exe within the virtual enviroment you created: \dir{c:/users/<username>/virtualenvs/testbenchenv/Scripts/python.exe}.
-
-\Note A common issue is: "Activate.ps1 cannot be loaded because the execution of scripts is disabled on this system." For troubleshooting steps, refer to \autoref{sec:troubleshooting}
-
-Now we need to fill this virtual environment with the required python packages. If the venv is successfully activated your terminal within vscode will show (venv) in front of the terminal. If the venv is successfully activated you can run the command \command{pip install -r requirements.txt} from within the deltares\_testbench folder.
-\newpage
 \subsection{Run testcase}
 Once the installation steps are done you can now use the testbench. To run tests we need engines. They can be build locally or you can get them from TeamCity for windows here: \url{https://dpcbuild.deltares.nl/buildConfiguration/Dimr\_DimrCollectors\_1aDimrCollectorDailyWin64}.
 

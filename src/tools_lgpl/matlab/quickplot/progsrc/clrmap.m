@@ -313,7 +313,7 @@ if isfield(S,'Index')
 end
 
 function writeclrmap(filename,S)
-fid=fopen(filename,'wt','n','UTF-8');
+fid=fopen(filename,'w','n','UTF-8');
 if fid<0
     error('Error opening output file.')
 end

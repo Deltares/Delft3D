@@ -30,7 +30,15 @@
 !
 !
 
+module m_arrowsxy
+
+implicit none
+
+contains
+
       subroutine ARROWSxy(X0, Y0, UR, VR, VFAC)
+         use m_movabs
+         use m_lnabs
          implicit none
          integer :: i
          double precision :: ur
@@ -57,3 +65,5 @@
          call LNABS(XR(3), YR(3))
          return
       end
+
+end module m_arrowsxy

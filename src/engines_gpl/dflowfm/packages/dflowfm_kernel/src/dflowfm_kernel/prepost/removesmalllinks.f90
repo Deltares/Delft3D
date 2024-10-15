@@ -40,6 +40,7 @@
       use m_sferic, only: jsferic, jasfer3D, dtol_pole
       use gridoperations
       use m_mergenodes
+      use m_set_nod_adm
       implicit none
 
       double precision :: R01, R02, AN1, AN2, XL, YL, XR, YR, XZWr, YZWr, ZZZ

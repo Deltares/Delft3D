@@ -66,6 +66,7 @@ contains
       use m_sferic
       use m_kml_parameters
       use gridoperations
+      use m_readyy
 
       character(len=*), intent(in) :: filename
 
@@ -551,6 +552,7 @@ contains
 !> Write D-Flow FM info+version as an OpenFOAM header into an ASCII file.
    subroutine foam_write_dflowfminfo(mout)
       use dflowfm_version_module
+      use m_datum
       integer, intent(in) :: mout !< File unit nr for output.
 
       character(len=20) :: rundat
@@ -629,6 +631,9 @@ contains
       logical :: success
       integer :: level
 
+      ! stop is not used in this subroutine and associate is introduced to avoid the warning
+      associate( stop => stop ); end associate 
+          
       inputdata = transfer(data, inputdata)
       mout = inputdata(1) !< File pointer
       maxkeylength = inputdata(2)

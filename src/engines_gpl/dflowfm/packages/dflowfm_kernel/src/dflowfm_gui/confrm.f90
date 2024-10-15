@@ -30,8 +30,19 @@
 !
 !
 
+module m_confrm
+
+implicit none
+
+contains
+
       subroutine CONFRM(TEXT, JAZEKR)
-         use unstruc_display
+         use unstruc_display_data, only: npos
+         use m_devices, only: iws
+         use m_gui
+         use m_helpnow
+         use m_timlin
+         use m_fkeys
          implicit none
 
          character TEXT * (*)
@@ -47,9 +58,6 @@
          integer :: key
          integer :: nbckgr
          integer :: nforgr
-         integer :: nlevel
-         character WRDKEY * 40
-         common / HELPNOW / WRDKEY, NLEVEL
 
          if (jaGUI /= 1) then
             if (jazekr /= 1) then
@@ -104,3 +112,5 @@
 
          return
       end
+
+end module m_confrm

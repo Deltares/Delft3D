@@ -118,7 +118,7 @@ subroutine dimbnd(lunmd     ,lundia    ,error     ,nrrec     ,filtmp    , &
     ! locate 'Filbnd' record in case boundary definition is written in a extra input file
     !
     filtmp = fildef
-    call prop_get_string(gdp%mdfile_ptr,'*','Filbnd',filtmp)
+    call prop_get(gdp%mdfile_ptr,'*','Filbnd',filtmp)
     if (filtmp/=fildef) then
        !
        ! open boundary definition in file? <YES>

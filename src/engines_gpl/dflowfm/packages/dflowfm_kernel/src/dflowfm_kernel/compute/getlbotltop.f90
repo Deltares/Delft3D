@@ -29,20 +29,21 @@
 
 !
 !
-
- subroutine getLbotLtop(LL, Lb, Lt)
-    use m_flow
-    use m_flowgeom
-    implicit none
-    integer :: LL, Lb, Lt
-    if (kmx == 0) then
-       Lb = LL
-       if (hu(LL) > 0) then
-          Lt = LL
-       else
-          Lt = 0
-       end if
-    else
-       Lb = Lbot(LL); Lt = Ltop(LL)
-    end if
- end subroutine getLbotLtop
+module m_get_Lbot_Ltop
+   implicit none
+contains
+   subroutine getLbotLtop(LL, Lb, Lt)
+      use m_flow, only: kmx, hu, ltop, lbot
+      integer :: LL, Lb, Lt
+      if (kmx == 0) then
+         Lb = LL
+         if (hu(LL) > 0) then
+            Lt = LL
+         else
+            Lt = 0
+         end if
+      else
+         Lb = Lbot(LL); Lt = Ltop(LL)
+      end if
+   end subroutine getLbotLtop
+end module m_get_Lbot_Ltop

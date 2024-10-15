@@ -34,10 +34,15 @@
 !>      7 8 9
 !>      4 5 6
 !>      1 2 3
+module m_moveprobe
+
+implicit none
+
+contains
+
       subroutine moveprobe(idir, kk, xp, yp)
-         use m_flowgeom
+         use m_flowgeom, only: ln, nd, csu, snu
          use network_data, only: xzw, yzw
-         implicit none
 
          integer, intent(in) :: idir !< direction (see keys on keypad)
          integer, intent(inout) :: kk !< probed flownode number
@@ -112,3 +117,5 @@
 
          return
       end subroutine moveprobe
+
+end module m_moveprobe

@@ -96,7 +96,6 @@
    double precision :: hmx
    double precision :: hmn
    double precision :: deltaLevel
-   double precision :: deltaWidth
    double precision :: breachWidth
    double precision :: actualMaximumWidth
    double precision :: timeFromBreaching

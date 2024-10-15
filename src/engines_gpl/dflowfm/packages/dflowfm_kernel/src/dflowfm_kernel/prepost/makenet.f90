@@ -32,16 +32,20 @@
 
    subroutine MAKENET(japaramscreen)
 
+      use m_makenetparameters
       use m_netw
       use m_makenet ! NTYP ANGLE SIZE THICK NRX NRY
-      use m_polygon
-      use m_grid
-      use m_missing
+      use m_grid, only:nc, mc, xc, yc
+      use m_missing, only: dmiss, jins
       use m_sferic
       use geometry_module, only: pinpok
-      use gridoperations
+      use gridoperations, only: increasenetw
       use m_flowparameters, only: bedslope
       use m_mergenodes
+      use m_readyy
+      use m_set_nod_adm
+      use m_increase_grid
+      use m_dbdistance_hk
 
       implicit none
 
@@ -54,7 +58,6 @@
 
       double precision :: X(8), Y(8), Z(8), XD, YD
       character(len=20) :: fnam
-!   COMMON /CONSTANTS/ E0, RHO, RHOW, CFL, EPS, AG, PI
 
       if (japaramscreen == 1) then
          !ntyp = 7 ; nrx = 32 ; bedslope = 1d-4

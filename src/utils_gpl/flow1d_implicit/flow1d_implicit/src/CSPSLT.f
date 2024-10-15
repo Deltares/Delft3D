@@ -313,7 +313,7 @@ c
 
       double precision wght, z0br, q
 
-      character*40  branam
+      character(len=40) branam
 c
 c     Include sobek error code file
 c

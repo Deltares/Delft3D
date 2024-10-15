@@ -32,11 +32,10 @@
 
       subroutine X0ISX1(X0, Y0, Z0, X1, Y1, Z1, KMAX)
          implicit none
+         integer :: KMAX
          double precision :: X0(KMAX), X1(KMAX), &
             Y0(KMAX), Y1(KMAX), &
             Z0(KMAX), Z1(KMAX)
-         integer :: KMAX
-
          integer :: K
 
          do K = 1, KMAX

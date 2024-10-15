@@ -41,6 +41,7 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
    use geometry_module, only: dbpinpol, dbdistance
    use m_sferic, only: jsferic, jasfer3D
    use m_flow, only: numlimdt, numlimdt_baorg, baorgfracmin
+   use m_readyy
 
    implicit none
    integer, intent(in) :: N12 ! 3: only mask nodes, 4: preparation for cut cells (set kfs), 5: actual cut cells (change wu, nd), 6: dry cells

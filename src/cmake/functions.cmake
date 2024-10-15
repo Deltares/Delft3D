@@ -131,25 +131,6 @@ function(configure_visual_studio_user_file executable_name)
     endif()
 endfunction()
 
-# oss_include_libraries
-# Adds oss dependencies to the specified library.
-#
-# Note that it is assumed that the dependency is located in the PROJECT_BINARY_DIR in a subdirectory with the same dependency name.
-#
-# Argument
-# library_name : The name of the library where dependencies should be added.
-# dependencies : A list of dependencies to set for the library_name.
-function(oss_include_libraries library_name dependencies)
-
-    foreach(dependency IN LISTS ${dependencies})
-        add_dependencies(${library_name} ${dependency})
-
-        if (NOT CMAKE_GENERATOR MATCHES "Visual Studio")
-            include_directories( ${PROJECT_BINARY_DIR}/${dependency} )
-        endif()
-    endforeach()
-
-endfunction()
 
 
 
@@ -332,16 +313,18 @@ function(create_test test_name)
     endif(WIN32)
     set_target_properties(${test_name} PROPERTIES FOLDER ${op_visual_studio_folder})
 
-    if (DEFINED op_test_list)
+    
+    set(fail_reg_ex "Condition.*failed;Values not comparable;[A|a]ssertion.*failed")
+
+    if(DEFINED op_test_list)
         foreach(test_i IN LISTS op_test_list)
             add_test(NAME ${test_i} COMMAND ${test_name} ${test_i})
-            set_property (TEST ${test_i} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")
+            set_property(TEST ${test_i} PROPERTY FAIL_REGULAR_EXPRESSION ${fail_reg_ex})
         endforeach()
     else()
         add_test(NAME ${test_name} COMMAND ${test_name})
-        set_property (TEST ${test_name} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")
+        set_property(TEST ${test_name} PROPERTY FAIL_REGULAR_EXPRESSION ${fail_reg_ex})
     endif()
-
 
     if (DEFINED op_include_dir)
         # Copy an entire directory
@@ -421,15 +404,19 @@ endfunction()
 
 # Function to return ifort version number
 function(get_intel_version)
-    if (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\\.(1|2|3|4)\\.[\\.0-9]*")
-        set(intel_version 21 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\\.(5|6|7)\\.[\\.0-9]*|2022[\\.0-9]*")
-        set(intel_version 22 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\\.(8|9|10)\\.[\\.0-9]*|2023[\\.0-9]*")
-        set(intel_version 23 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\\.0\\.0\\.(20231010|20240222|20240602)|2024[\\.0-9]*")
+    # Intel OneAPI versions have different version numbers for their compilers.
+    # Furthermore, the compiler versions reported through CMAKE_Fortran_COMPILER_VERSION do not always match the official compiler version string.
+    # Before OneAPI 2021, the compiler version matches the ifort version (e.g., 2020.2)
+    # After OneAPI 2024, the compiler version matches the ifx version (e.g., 2025.1)
+    # In between, the ifx version does match the OneAPI version, but the ifort version is always reported as 2021.x(x).x.xxxxxxxx.
+    # Up to and including version 2023, the 2021.x version kept increasing, but in OneAPI 2024 the version reported in CMake goes back to 2021.0 or 2021.1.
+    if (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.[0-9]\\.[0-9]\\.(20231010|202[4-9][0-9][0-9][0-9][0-9])|^2024[\\.0-9]*")
         set(intel_version 24 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "20([0-9][0-9])[\\.0-9]*")
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.(8|9|10)\\.[\\.0-9]*|^2023[\\.0-9]*")
+        set(intel_version 23 PARENT_SCOPE)
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.(5|6|7)\\.[\\.0-9]*|^2022[\\.0-9]*")
+        set(intel_version 22 PARENT_SCOPE)
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^20([0-9][0-9])[\\.0-9]*")
         set(intel_version ${CMAKE_MATCH_1} PARENT_SCOPE) # Set to the result of the first capture group in parentheses (the last two year numbers, for example 25)
     else()
         message(FATAL_ERROR "Intel version ${CMAKE_Fortran_COMPILER_VERSION} is not recognized.")

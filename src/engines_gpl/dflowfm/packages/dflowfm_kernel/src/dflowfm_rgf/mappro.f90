@@ -73,7 +73,7 @@
 !            xg = xp(1)*RAD_TO_DEG
 !            yg = yp(1)*RAD_TO_DEG
                !CALL UTMGEO(XX,YY,XG,YG,IZONE,IERR) ! IZONE = input !TMP disable
-               call UTMGEO2(XX, YY, XG, YG, IZONE, IHEM, IERR) ! IZONE = input !TMP disable
+               call UTMGEO2(XX, YY, XG, YG, IZONE, IHEM) ! IZONE = input !TMP disable
             else if (ITYPE == 2) then ! Amersfoorts
                call RDGEO(XX, YY, XG, YG, 0)
             else if (ITYPE == 3) then ! RD (Ofwel Parijs)

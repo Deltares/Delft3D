@@ -43,6 +43,7 @@ contains
         use protist_types
         use protist_food_functions
         use protist_constants
+        use m_protistlog
         use ieee_arithmetic
 
         IMPLICIT NONE
@@ -365,11 +366,11 @@ contains
                     fl (spInc + 14) = dAutP
                     fl (spInc + 15) = dDetP
 
-                    if (ieee_is_nan(protC)) write (*, *) 'ERROR: in ProtistZoo, NaN in protC in segment:', iseg
-                    if (ieee_is_nan(ingC))  write (*, *) 'ERROR: in ProtistZoo, NaN in ingC in segment:', iseg
-                    if (ieee_is_nan(assC))  write (*, *) 'ERROR: in ProtistZoo, NaN in assC in segment:', iseg
-                    if (ieee_is_nan(totR))  write (*, *) 'ERROR: in ProtistZoo, NaN in totR in segment:', iseg
-                    if (ieee_is_nan(mrt))   write (*, *) 'ERROR: in ProtistZoo, NaN in mrt in segment:', iseg
+                    if (.not. ieee_is_finite(protC)) call write_warning('ERROR: in ProtistZoo, NaN/Inf in protC in segment:', iseg)
+                    if (.not. ieee_is_finite(ingC))  call write_warning('ERROR: in ProtistZoo, NaN/Inf in ingC in segment:', iseg)
+                    if (.not. ieee_is_finite(assC))  call write_warning('ERROR: in ProtistZoo, NaN/Inf in assC in segment:', iseg)
+                    if (.not. ieee_is_finite(totR))  call write_warning('ERROR: in ProtistZoo, NaN/Inf in totR in segment:', iseg)
+                    if (.not. ieee_is_finite(mrt))   call write_warning('ERROR: in ProtistZoo, NaN/Inf in mrt in segment:', iseg)
 
                     ! Prey losses through pred ing. ----------------------------------------------------
 

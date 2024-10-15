@@ -32,10 +32,11 @@
 
       subroutine TEKFACES()
 
-         use unstruc_colors
+         use unstruc_colors, only: ncolln
          use m_netw
          use stdlib_sorting, only: sort_index
-         use gridoperations
+         use m_three_two
+         use m_pfiller
 
          implicit none
          integer :: ierr

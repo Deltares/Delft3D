@@ -245,11 +245,7 @@ real(kind=dp), intent(in)           :: val1
 real(kind=dp), intent(in)           :: val2
 logical,       intent(in)           :: check_finite
 real(kind=dp), optional, intent(in) :: eps
-!
-! Local variables
-!
-real(kind=dp) :: value
-!
+
 !! executable statements -------------------------------------------------------
 !
 if (.not. check_finite) then
@@ -301,11 +297,7 @@ real(kind=sp), intent(in)           :: val1
 real(kind=sp), intent(in)           :: val2
 logical,       intent(in)           :: check_finite
 real(kind=sp), optional, intent(in) :: eps
-!
-! Local variables
-!
-real(kind=sp) :: value
-!
+
 !! executable statements -------------------------------------------------------
 !
 if (.not. check_finite) then

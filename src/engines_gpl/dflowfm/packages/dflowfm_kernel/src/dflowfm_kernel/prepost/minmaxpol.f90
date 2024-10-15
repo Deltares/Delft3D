@@ -29,10 +29,11 @@
 
 !
 !
-
+module m_min_max_pol
+contains
    subroutine MINMAXPOL(XMIN, YMIN, XMAX, YMAX)
       use M_POLYGON
-      use M_MISSING
+      use M_MISSING, only: xymis
       implicit none
       double precision :: XMIN, YMIN, XMAX, YMAX
 
@@ -48,3 +49,4 @@
          end if
       end do
    end subroutine MINMAXPOL
+end module m_min_max_pol

@@ -21,7 +21,7 @@ title run_dflowfm
     rem
     rem Usage example:
     rem Execute in the working directory:
-    rem path\to\delft3d\installation\x64\dimr\scripts\run_dimr_parallel.bat
+    rem path\to\delft3d\installation\x64\bin\run_dimr_parallel.bat
     rem More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
 
 
@@ -58,12 +58,12 @@ echo OMP_NUM_THREADS is already defined
     rem
 set D3D_HOME=%~dp0..
 echo D3D_HOME         : %D3D_HOME%
-set exedir=%D3D_HOME%\bin
-set sharedir=%D3D_HOME%\share
+set exedir=%D3D_HOME%\test
+set testdir=%D3D_HOME%\test
 set libdir=%D3D_HOME%\lib
 
-set workdir=sharedir\ec_module_test\
-cd %D3D_HOME%\share\ec_module_test\
+set workdir=testdir\ec_module_test\
+cd %D3D_HOME%\test\ec_module_test\
 echo Working directory: %workdir%
 
     rem Run

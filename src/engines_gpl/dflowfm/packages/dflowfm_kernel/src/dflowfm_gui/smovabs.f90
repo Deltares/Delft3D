@@ -31,6 +31,8 @@
 !
 
  subroutine smovabs(n, sx1, sy1)
+    use m_shipcoor
+    use m_movabs
     implicit none
     integer :: n
     double precision :: sx1, sx2, sy1, sy2

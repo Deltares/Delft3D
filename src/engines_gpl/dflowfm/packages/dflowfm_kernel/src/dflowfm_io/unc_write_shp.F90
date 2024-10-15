@@ -36,7 +36,7 @@ subroutine unc_write_shp()
    use m_flowparameters, only: jashp_crs, jashp_obs, jashp_weir, jashp_thd, jashp_gate, jashp_emb, jashp_fxw, jashp_src, jashp_pump, jashp_dry, jashp_genstruc, jashp_dambreak
    use unstruc_shapefile
    use m_monitoring_crosssections, only: ncrs, crs
-   use m_observations, only: numobs, kobs
+   use m_observations_data, only: numobs, kobs
    use fm_external_forcings_data, only: nweirgen, ngategen, numsrc, ksrc, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen, ndambreaksignals, L1dambreaksg, L2dambreaksg
    use m_thindams
    use m_sobekdfm, only: nbnd1d2d

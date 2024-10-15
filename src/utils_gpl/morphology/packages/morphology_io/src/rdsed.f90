@@ -152,15 +152,12 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
 ! Local variables
 !
     integer                     :: i
-    integer                     :: iocond
     integer                     :: isize
     integer                     :: istat
     integer(pntrsize)           :: istat_ptr
     integer                     :: j
     integer                     :: l
-    integer                     :: lbl                 !< bedload fraction number: lbl = l - lsed
     integer                     :: lenc                !< Help var. (length of character var.) 
-    integer                     :: lfile
     integer                     :: luninp
     integer                     :: n                   !< Temporary storage for nseddia(l)
     integer                     :: nclayfrac           ! Number of clay fractions
@@ -177,11 +174,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     character(20)               :: sedname
     character(256)              :: filtrn
     character(256)              :: rec
-    character(300)              :: message
     character(80)               :: parname
     character(20)               :: sc_type
-    character(20)               :: sedtype             !< Local variable for sediment type
-    character(78)               :: string
     character(10)               :: versionstring
     character(6)                :: seddxxstring
     character(256)              :: errmsg
@@ -407,7 +401,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Check version number of sed input file
     !
     versionstring = ' '
-    call prop_get_string(sed_ptr, 'SedimentFileInformation', 'FileVersion', versionstring)
+    call prop_get(sed_ptr, 'SedimentFileInformation', 'FileVersion', versionstring)
     if (versionstring == '02.00' .or. versionstring == '03.00') then
        if (versionstring == '03.00') sedpar%version = 3.0_fp
        error  = .false.
@@ -429,12 +423,12 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        enddo
        !
        iopsus = 0
-       call prop_get_integer(sed_ptr, 'SedimentOverall', 'IopSus', iopsus)
+       call prop_get(sed_ptr, 'SedimentOverall', 'IopSus', iopsus)
        !
-       call prop_get_string(sed_ptr, 'SedimentOverall', 'MudCnt', flsmdc)
+       call prop_get(sed_ptr, 'SedimentOverall', 'MudCnt', flsmdc)
        !
        floc_str = 'none'
-       call prop_get_string(sed_ptr, 'SedimentOverall', 'FlocModel', floc_str)
+       call prop_get(sed_ptr, 'SedimentOverall', 'FlocModel', floc_str)
        call str_lower(floc_str)
        select case (floc_str)
        case ('none')
@@ -456,7 +450,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
            return
        end select
        !
-       call prop_get_integer(sed_ptr, 'SedimentOverall', 'NFlocSizes', nflocsizes)
+       call prop_get(sed_ptr, 'SedimentOverall', 'NFlocSizes', nflocsizes)
        select case (flocmod)
        case (FLOC_MANNING_DYER, FLOC_CHASSAGNE_SAFAR)
           if (nflocsizes /= 1 .and. nflocsizes /= 2) then
@@ -502,7 +496,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        endif
        !
        sedpar%flnrd(0) = ' '
-       call prop_get_string(sed_ptr, 'SedimentOverall', 'NodeRelations', sedpar%flnrd(0))
+       call prop_get(sed_ptr, 'SedimentOverall', 'NodeRelations', sedpar%flnrd(0))
        if (sedpar%flnrd(0) .ne. ' ') then
           call combinepaths(filsed, sedpar%flnrd(0))
        endif
@@ -549,7 +543,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        !
        ! Sand-mud interaction parameters
        !
-       call prop_get_string(sed_ptr, 'SedimentOverall', 'PmCrit', flspmc)
+       call prop_get(sed_ptr, 'SedimentOverall', 'PmCrit', flspmc)
        !
        ! Intel 7.0 crashes on an inquire statement when file = ' '
        !
@@ -584,7 +578,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        ! Get bed shear skin stress parameters
        !
        bsskin = .false.
-       call prop_get_logical(sed_ptr, 'SedimentOverall', 'BsSkin', bsskin)
+       call prop_get(sed_ptr, 'SedimentOverall', 'BsSkin', bsskin)
        if (bsskin) then
           call prop_get(sed_ptr, 'SedimentOverall', 'KsSilt', kssilt)
           call prop_get(sed_ptr, 'SedimentOverall', 'KsSand', kssand)
@@ -638,13 +632,13 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
              if ( trim(parname) /= 'sediment') cycle
              !
              parname = ' '
-             call prop_get_string(sedblock_ptr, '*', 'Name', parname)
+             call prop_get(sedblock_ptr, '*', 'Name', parname)
              if (.not. strcmpi(parname, sedname)) cycle
              !
              ! sediment fraction found
              !
              sedpar%flnrd(l) = ' '
-             call prop_get_string(sedblock_ptr, '*', 'NodeRelations', sedpar%flnrd(l))
+             call prop_get(sedblock_ptr, '*', 'NodeRelations', sedpar%flnrd(l))
              if (sedpar%flnrd(l) .ne. ' ') then
                 call combinepaths(filsed, sedpar%flnrd(l))
              endif
@@ -690,12 +684,12 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           ! varying grain size.
           !
           if (lsedtot == 1) then
-             call prop_get_string(sedblock_ptr, '*', 'SedD50', flsdia)
+             call prop_get(sedblock_ptr, '*', 'SedD50', flsdia)
              if (flsdia == ' ') then
                 !
                 ! Alternative for SedD50 is SedDia (backward compatibility)
                 !
-                call prop_get_string(sedblock_ptr, '*', 'SedDia', flsdia)
+                call prop_get(sedblock_ptr, '*', 'SedDia', flsdia)
              endif
              !
              ! Intel 7.0 crashes on an inquire statement when file = ' '
@@ -820,8 +814,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                    return
                 endif
                 !
-                call prop_get_string(sedblock_ptr, '*', 'SettleFunction', dll_function_settle(l))
-                call prop_get_string(sedblock_ptr, '*', 'SettleInput'   , dll_usrfil_settle(l))
+                call prop_get(sedblock_ptr, '*', 'SettleFunction', dll_function_settle(l))
+                call prop_get(sedblock_ptr, '*', 'SettleInput'   , dll_usrfil_settle(l))
                 iform_settle(l) = WS_FORM_USER_ROUTINE
              else
                 settle_str = ' '
@@ -882,12 +876,12 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           ! First assume that 'IniSedThick'/'SdBUni' contains a filename
           ! If the file does not exist, assume that 'SdBUni' contains a uniform value (real)
           !
-          call prop_get_string(sedblock_ptr, '*', 'IniSedThick', flsdbd(l))
+          call prop_get(sedblock_ptr, '*', 'IniSedThick', flsdbd(l))
           if (flsdbd(l) /= ' ') then
              inisedunit(l) = 'm'
           else
              inisedunit(l) = 'kg/m2'
-             call prop_get_string(sedblock_ptr, '*', 'SdBUni', flsdbd(l))
+             call prop_get(sedblock_ptr, '*', 'SdBUni', flsdbd(l))
           endif
           !
           ! Intel 7.0 crashes on an inquire statement when file = ' '
@@ -1345,7 +1339,6 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     real(fp)                  :: xxinv               !< Help var. [1/xx or 1/(1-xx) in log unif distrib.]
     real(fp)                  :: xm
     logical                   :: cmpupdall           !< flag indicating whether bed composition is updated for all fractions
-    logical        , external :: stringsequalinsens
     character(45)             :: txtput1
     character(12)             :: txtput2
     character(100)            :: txtput3
@@ -2093,7 +2086,7 @@ subroutine count_sed(lundia    ,error     ,lsed      ,lsedtot   , &
     ! Check version number of sed input file
     !
     versionstring = ' '
-    call prop_get_string(sed_ptr, 'SedimentFileInformation', 'FileVersion', versionstring)
+    call prop_get(sed_ptr, 'SedimentFileInformation', 'FileVersion', versionstring)
     if (trim(versionstring) == '02.00') then
        !
        ! allocate temporary arrays with length equal to the number of data blocks in the file
@@ -2114,7 +2107,7 @@ subroutine count_sed(lundia    ,error     ,lsed      ,lsedtot   , &
           parname = tree_get_name( asedblock_ptr )
           if (parname == 'sediment') then
              parname = ' '
-             call prop_get_string(asedblock_ptr, '*', 'Name', parname)
+             call prop_get(asedblock_ptr, '*', 'Name', parname)
              !
              ! Check if the same sediment name was used before
              !
@@ -2136,7 +2129,7 @@ subroutine count_sed(lundia    ,error     ,lsed      ,lsedtot   , &
              !
              tratypnr = TRA_COMBINE
              sedtyptmp = ' '
-             call prop_get_string(asedblock_ptr, '*', 'SedTyp', sedtyptmp)
+             call prop_get(asedblock_ptr, '*', 'SedTyp', sedtyptmp)
              call small(sedtyptmp, 999)
              !
              if (index(sedtyptmp, 'clay') == 1) then
@@ -2165,7 +2158,7 @@ subroutine count_sed(lundia    ,error     ,lsed      ,lsedtot   , &
              ! Determine sediment type
              !
              totalload = .false.
-             call prop_get_logical(asedblock_ptr, '*', 'TotalLoad', totalload)
+             call prop_get(asedblock_ptr, '*', 'TotalLoad', totalload)
              if (totalload) tratypnr = TRA_BEDLOAD
              !
              if (tratypnr == TRA_BEDLOAD) then

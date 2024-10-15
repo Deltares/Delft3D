@@ -212,7 +212,7 @@ contains
   Integer  OutputEventStartDateTime (NrOutputPeriods,7), OutputEventDuration(NrOutputPeriods,6)
 
   Integer       teller, TmSize, IYear, Imo, Iday, Ihour, IMin, ISec
-  Character*160 String
+  Character(len=160) String
 ! DIO
   Character(Len=DioMaxStreamLen)  :: outName   ! name of out dataset
   character(len=HisRunIdSize), dimension(HisRunIdDim) :: runId         ! (HIS) runid

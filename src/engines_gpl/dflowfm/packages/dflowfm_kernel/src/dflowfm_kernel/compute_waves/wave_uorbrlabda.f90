@@ -65,7 +65,7 @@
          end if
          if (rk * hss < 80d0) then ! if not very deep water
             if (jauorbfromswan == 1) then
-               Uorb(k) = uorbwav(k)
+               uorb(k) = uorbwav(k)
             else
                uorb(k) = 0.5d0 * hwav(k) * omeg / sinh(rk * hss)
                if (jauorb == 0) then ! old d3d convention
@@ -73,7 +73,7 @@
                end if
             end if
          else
-            Uorb(k) = 0d0
+            uorb(k) = 0d0
          end if
       end do
 

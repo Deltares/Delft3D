@@ -71,11 +71,11 @@
       INTEGER       NO_INPU     , LUNREP     , & 
                    IERROR
       INTEGER       DEFFDS
-      CHARACTER*10  R3_PID      (NO_INPU)
-      CHARACTER*10  R3_IID      (NO_INPU)
+      CHARACTER(len=10)  R3_PID      (NO_INPU)
+      CHARACTER(len=10)  R3_IID      (NO_INPU)
       INTEGER       R3_NUMB(NO_INPU)
-      CHARACTER*1   R3_DEFY(NO_INPU)
-      CHARACTER*1   R3_DOC (NO_INPU)
+      CHARACTER(len=1)   R3_DEFY(NO_INPU)
+      CHARACTER(len=1)   R3_DOC (NO_INPU)
       INTEGER       R3_SEX (NO_INPU)
 !     
 !          Local variables
@@ -93,9 +93,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

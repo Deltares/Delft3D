@@ -31,23 +31,23 @@
 !
 
       subroutine ATPPAR(X, Y, M1, N1, M2, N2, &
-                        ATP, A, B, C, D, E, JDLA)
+                        ATP, A, B, C, D, E)
          use m_grid, not1 => xc, not2 => yc
          use M_GRIDSETTINGS
          use m_orthosettings
          use M_MISSING
+         use m_drawthis
+         use m_planedistance
          implicit none
          double precision :: af
          double precision :: cy
          double precision :: dg2rd
          integer :: i
          integer :: j
-         integer :: jdla
          integer :: m1
          integer :: m2
          integer :: n1
          integer :: n2
-         integer :: ndraw
          integer :: ndraw8
          double precision :: ym
 !     STUURPARAMETERS (1,MC-1)
@@ -60,9 +60,6 @@
             D(MMAX, NMAX), E(MMAX, NMAX)
 
          double precision :: X1, Y1, X2, Y2, D12, X3, Y3, X4, Y4, D34, D14, D23
-
-         common / DRAWTHIS / ndraw(50)
-
          save NDRAW8
 
          A = DXYMIS; B = DXYMIS; C = DXYMIS; D = DXYMIS; E = DXYMIS; ATP = DXYMIS
@@ -113,7 +110,7 @@
          end do
 
 !     sommmen
-         call SOMDIST(X, Y, A, B, C, D, M1, N1, M2, N2)
+         call SOMDIST(A, B, C, D, M1, N1, M2, N2)
 
 !     normeren
 

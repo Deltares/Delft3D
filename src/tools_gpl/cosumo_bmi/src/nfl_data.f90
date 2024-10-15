@@ -157,8 +157,6 @@ subroutine nfl_data_init()
     use system_utils, only: FILESEP
     !
     ! Locals
-    integer        :: i
-    real(fp)       :: dummy
     character(300) :: cdummy
     !
     ! Body

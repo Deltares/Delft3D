@@ -29,9 +29,10 @@
 
 !
 !
-
+module m_get_ij
+   implicit none
+contains
       subroutine GETIJ(X, XH, MMAX, NMAX, MNMAX, I1, I2, J1, J2)
-         implicit none
          integer :: i
          integer :: i1
          integer :: i2
@@ -53,3 +54,4 @@
          end do
          return
       end subroutine GETIJ
+end module m_get_ij

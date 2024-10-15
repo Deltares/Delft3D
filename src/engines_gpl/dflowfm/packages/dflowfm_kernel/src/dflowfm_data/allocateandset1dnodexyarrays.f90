@@ -30,6 +30,12 @@
 !
 !
 
+module m_allocateandset1dnodexyarrays
+
+implicit none
+
+contains
+
  subroutine allocateandset1Dnodexyarrays(n) ! only for plotting ....
     use m_netw
     use m_flowgeom
@@ -213,3 +219,5 @@
     !------------------------------------------------------
 
  end subroutine allocateandset1Dnodexyarrays
+
+end module m_allocateandset1dnodexyarrays

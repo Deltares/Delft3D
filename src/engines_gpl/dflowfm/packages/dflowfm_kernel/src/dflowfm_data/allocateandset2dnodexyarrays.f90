@@ -30,6 +30,12 @@
 !
 !
 
+module m_allocateandset2dnodexyarrays
+
+implicit none
+
+contains
+
  subroutine allocateandset2Dnodexyarrays(n)
     use m_netw
     use m_flowgeom
@@ -71,3 +77,5 @@
     end if
 
  end subroutine allocateandset2Dnodexyarrays
+
+end module m_allocateandset2dnodexyarrays

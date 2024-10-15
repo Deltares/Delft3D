@@ -30,9 +30,16 @@
 !
 !
 
+module m_disval1
+
+implicit none
+
+contains
+
       subroutine DISVAL1(DEP)
          use unstruc_colors
-         implicit none
+         use m_ktext
+
          double precision :: DEP
          character TEX * 8
          if (abs(DEP) < 10) then
@@ -51,3 +58,5 @@
          call KTEXT(TEX, IWS - 7, 4, 15)
          return
       end subroutine DISVAL1
+
+end module m_disval1

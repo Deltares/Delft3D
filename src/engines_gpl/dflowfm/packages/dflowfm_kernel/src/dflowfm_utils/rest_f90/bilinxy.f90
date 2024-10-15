@@ -29,9 +29,13 @@
 
 !
 !
-
+module m_bilinxy
+   implicit none
+contains
       subroutine BILINXY(X, Y, XZ, YZ, XP, YP, XP2, YP2, INI)
-         implicit none
+         use m_qnerror
+         use m_lubksb
+
          double precision :: c
          integer :: i
          integer :: ini
@@ -63,3 +67,4 @@
          YP2 = (XP - X(1)) * BY(1) + (YP - Y(1)) * BY(2) + (XP - X(1)) * (YP - Y(1)) * BY(3) + BY(4)
          return
       end
+end module m_bilinxy

@@ -39,6 +39,7 @@ subroutine preparecells(md_netfile, jaidomain, jaiglobal_s, ierr)
    use gridoperations
    use m_save_ugrid_state, only: contactnlinks, netlink2contact, contact1d2didx
    use unstruc_messages
+   use m_qnerror
 
    implicit none
    character(len=*), intent(in) :: md_netfile !< net filename

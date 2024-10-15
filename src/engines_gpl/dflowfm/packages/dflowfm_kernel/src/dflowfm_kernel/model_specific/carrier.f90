@@ -30,17 +30,18 @@
 !
 !
 
- subroutine carrier(ndx, time1)
+ subroutine carrier(time1)
+    use m_movabs
+    use m_lnabs
     implicit none
     double precision :: time1
-    integer :: ndx
+
     double precision :: J0(100), J1(100), A1(100), A3(100), ahh
     double precision :: h0, T0, s, etinbr, dc, tol, etabr, etain, a, a2
     double precision :: omega, sg, osg, osg2, rl0, c, dt, t, uold, u, x, xster, hh, uu, xx
     double precision :: pi, g
     integer :: ic1, ic2, nt, ic, iter, it
     double precision :: bessj0, bessj1
-    common / signal / ahh
 
     !open(1,file='carrier.inp')
     !open(2,file='carrier.out')

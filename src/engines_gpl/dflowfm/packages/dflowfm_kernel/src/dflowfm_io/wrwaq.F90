@@ -431,6 +431,7 @@ contains
       use m_flowgeom
       use unstruc_model
       use time_module, only: ymd2jul
+      use m_dateandtimenow
 
       implicit none
       !
@@ -717,6 +718,7 @@ contains
       use unstruc_netcdf
       use m_partitioninfo, only: jampi, idomain, iglobal_s
       use m_alloc
+      use m_wall_clock_time
 
       implicit none
 
@@ -752,9 +754,9 @@ contains
             call check_error(ierr)
 
             ! Aggregate.
-            call klok(startTime)
+            call wall_clock_time(startTime)
             success = aggregate_ugrid_geometry(meshgeom, aggregated_meshgeom, edge_type, aggregated_edge_type, waqpar%iapnt)
-            call klok(endTime)
+            call wall_clock_time(endTime)
             if (success) then ! If no errors occurred.
                write (message, "('Aggregated grid for waq geometry file, elapsed time: ', F10.3, ' s.')") endTime - startTime
                call mess(LEVEL_INFO, trim(message))
@@ -888,7 +890,7 @@ contains
       use m_flow
       use io_ugrid
       use m_flowgeom, only: ndx2d
-      use unstruc_netcdf, only: crs, check_error, get_2d_edge_data
+      use unstruc_netcdf, only: check_error, get_2d_edge_data
       use m_missing
       use m_alloc
 
@@ -1564,7 +1566,7 @@ contains
       use network_data
       use m_partitioninfo, only: is_ghost_node
       use fm_external_forcings_data
-      use m_lateral, only: numlatsg, n1latsg, n2latsg, nnlat, lat_ids
+      use m_laterals, only: numlatsg, n1latsg, n2latsg, nnlat, lat_ids
       use unstruc_files
       use m_sferic, only: jsferic, jasfer3D
       use m_missing, only: dmiss, dxymis
@@ -1729,7 +1731,7 @@ contains
       call waq_wri_len(lnx, dx, acl, defaultFilename('len'))
 
       ! Surface file (horizontal surfaces)
-      call waq_wri_srf(ndx2D, ndxi, ndx, ba, defaultFilename('srf'))
+      call waq_wri_srf(ndxi, ndx, ba, defaultFilename('srf'))
 
       ! Attributes file
       call waq_wri_atr(defaultFilename('atr'))
@@ -1745,13 +1747,15 @@ contains
 !! time. Thereafter, accumulated flux is associated with previous
 !! timestep. At the last time a dummy record is written in .are and .flo.
    subroutine waq_wri_couple_files(time)
-      use m_lateral, only: numlatsg
+      use m_laterals, only: numlatsg
       use m_flowtimes
       use m_flowgeom
       use m_flow
       use fm_external_forcings_data
       use m_waves
       use unstruc_files, only: defaultFilename
+      use m_gettaus
+      use m_gettauswave
       implicit none
       !
       !           Global variables
@@ -2097,6 +2101,7 @@ contains
       use m_flowgeom
       use m_flow
       use wrwaq
+      use m_get_Lbot_Ltop_max
 
       implicit none
 
@@ -2331,7 +2336,7 @@ contains
       use m_flowgeom
       use m_flow
       use fm_external_forcings_data
-      use m_lateral, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
+      use m_laterals, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
       use m_alloc
       implicit none
 
@@ -2486,14 +2491,13 @@ contains
 
 !> Write WAQ srf file.
 !! (contains horizontal surface areas of computational cells)
-   subroutine waq_wri_srf(ndx2D, ndxi, ndx, ba, filename)
+   subroutine waq_wri_srf(ndxi, ndx, ba, filename)
       use m_alloc
       use wrwaq
       implicit none
       !
       !           Global variables
       !
-      integer, intent(in) :: ndx2D !< nr of 2D flow cells
       integer, intent(in) :: ndxi !< nr of internal flowcells (internal = 2D + 1D)
       integer, intent(in) :: ndx !< nr of flow nodes (internal + boundary)
       double precision, intent(in) :: ba(ndx) !< bottom area (m2), if < 0 use table in node type
@@ -2556,6 +2560,7 @@ contains
       use m_flowgeom
       use m_flow
       use wrwaq
+      use m_get_Lbot_Ltop_max
       implicit none
       !
       !           Global variables
@@ -2656,6 +2661,7 @@ contains
       use m_flowgeom
       use m_flow
       use wrwaq
+      use m_get_ucx_ucy_eul_mag
       implicit none
       !
       !           Global variables
@@ -2973,6 +2979,7 @@ contains
       use m_flowgeom
       use m_flow
       use wrwaq
+      use m_get_Lbot_Ltop_max
       implicit none
       !
       !           Global variables
@@ -3041,6 +3048,7 @@ contains
       use m_flowgeom
       use m_flow
       use wrwaq
+      use m_get_Lbot_Ltop_max
       implicit none
       !
       !           Global variables
@@ -3217,8 +3225,8 @@ contains
       integer :: ierrint
       integer :: ierrreel
 
-      read (id, '(i)', iostat=ierrint) int
-      read (id, '(g)', iostat=ierrreel) reel
+      read (id, '(i100)', iostat=ierrint) int
+      read (id, '(g100.50)', iostat=ierrreel) reel
 
       if (ierrint == 0 .or. ierrreel == 0) then
          ! id could be read as an integer or real, add prefix

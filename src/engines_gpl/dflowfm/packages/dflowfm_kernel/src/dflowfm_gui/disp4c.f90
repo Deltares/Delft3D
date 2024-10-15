@@ -30,8 +30,19 @@
 !
 !
 
+module m_disp4c
+use m_rcirc
+
+
+implicit none
+
+contains
+
       subroutine DISP4C(X, Y, N)
          use M_MISSING
+         use m_halt2
+         use m_movabs
+         use m_lnabs
          implicit none
          integer :: i
          integer :: istart
@@ -61,3 +72,5 @@
          end do
          return
       end
+
+end module m_disp4c

@@ -29,8 +29,8 @@ c
 c     Declaration of local variables:
 c
       integer       isec1 ,i
-      character*6   ctxt
-      character*12  sectxt(3)
+      character(len=6)   ctxt
+      character(len=12)  sectxt(3)
       data         (sectxt(i),i=1,3)/'main channel',
      +                               'floodplain 1', 
      +                               'floodplain 2'/ 

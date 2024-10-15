@@ -30,11 +30,23 @@
 !
 !
 
+module m_mergenetparameters
+
+implicit none
+
+contains
+
    subroutine MERGENETPARAMETERS()
-      use M_MERGENET
-      use unstruc_display
+      use m_mergenet
+      use unstruc_colors
+      use unstruc_display_data, only: npos
       use dflowfm_version_module, only: company, product_name
-      implicit none
+      use m_helpnow
+      use m_save_keys
+      use m_restore_keys
+      use m_help
+      use m_highlight_form_line
+
       integer :: i
       integer :: ifexit
       integer :: ifinit
@@ -48,16 +60,13 @@
       integer :: iyp
       integer :: key
       integer :: nbut
-      integer :: nlevel
       integer :: numfldactual
       integer :: numparactual
 
       integer, parameter :: NUMPAR = 2, NUMFLD = 2 * NUMPAR
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-      character WRDKEY * 40, OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
-      common / HELPNOW / WRDKEY, NLEVEL
+      character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
-      external :: highlight_form_line
 
       NLEVEL = 4
       OPTION(1) = 'MAXIMUM NR OF LINKS OF A MERGING NODE( )'; IT(1 * 2) = 2
@@ -180,3 +189,5 @@
       goto 30
 
    end subroutine MERGENETPARAMETERS
+
+end module m_mergenetparameters

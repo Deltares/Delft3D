@@ -30,32 +30,53 @@
 !
 !
 
+module m_editpol
+use m_plotnu
+use m_kcir
+
+
+implicit none
+
+contains
+
    subroutine EDITPOL(MODE, KEY, NETFLOW)
-      use m_sferic
-      use M_POLYGON
+      use m_confrm
+      use m_cir
+      use m_choices
+      use m_sferic, only: jsfertek
+      use m_polygon
       use network_data, only: netstat, NETSTAT_CELLS_DIRTY
-      use M_MISSING
-      use m_partitioninfo
-      use unstruc_colors
+      use m_missing, only: dmiss
+      use m_partitioninfo, only: jampi, my_rank
       use unstruc_model
-      use unstruc_display
+      use unstruc_display, only: numzoomshift, ndrawpol, rcir, ncoltx
       use m_flow, only: kmx, jasal, iturbulencemodel
       use unstruc_api
       use dfm_error
       use unstruc_messages
-      implicit none
-      double precision :: cdflow
-      double precision :: cfric
-      double precision :: fbouy
-      double precision :: fdyn
-      integer :: janet
+      use m_helpnow
+      use m_qnrgf
+      use m_settings
+      use m_qnerror
+      use m_ktext
+      use m_putget_un
+      use m_halt2
+      use m_delpol
+      use m_wripol
+      use m_n_plot_plus_min
+      use m_k_plot_plus_min
+      use m_draw_nu
+      use m_disp2c
+      use m_set_col
+      use m_hlcir
+      use m_dropland
+      use m_movabs
+
       integer :: jaquit, jazoomshift, nshift
       integer :: k
       integer :: l1
       integer :: l2
       integer :: l3
-      integer :: moments
-      integer :: nlevel
       integer :: nput
       integer :: num
       integer :: numb
@@ -64,16 +85,10 @@
       integer :: MODE, KEY, NETFLOW
       integer :: newmode, mout
       double precision :: xp, yp, RD
-      integer :: JQN
       integer :: iresult
       integer :: ja4
       logical, external :: ispolystartend
-
-      common / HELPNOW / WRDKEY, NLEVEL
-      common / QNRGF / JQN
-      common / SETTINGS / FDYN, FBOUY, CDFLOW, CFRIC, MOMENTS, JANET
-
-      character TEX * 26, WRDKEY * 40, fnam * 255
+      character TEX * 26, fnam * 255
 
       if (jampi == 1) then
          write (tex, "(' EDITPOL:', I5)") my_rank
@@ -111,7 +126,7 @@
                MP = 0
             end if
          end if
-         call CHOICES(MODE, NUM, NWHAT, KEY)
+         call CHOICES(NUM, NWHAT, KEY)
       else if (KEY >= 577) then ! Alt+letter switches edit mode.
          call selecteditmode(newmode, key)
          if (newmode > 0 .and. newmode /= mode) then
@@ -197,7 +212,7 @@
          else if (NPUT == 44 .or. NPUT == 45) then
 !           Merge two polylines, click two end points.
             call ISPOI1(XPL, YPL, NPL, XP, YP, MP)
-            if (mp /= 0 .and. .not. ispolystartend(xpl, ypl, npl, maxpol, mp)) then
+            if (mp /= 0 .and. .not. ispolystartend(xpl, npl, maxpol, mp)) then
                ! Clicked point was not an end point, discard it.
                mp = 0
             end if
@@ -467,7 +482,7 @@
 
       else if (kmx > 0 .and. iturbulencemodel == 3 .and. KEY == 75 + 32) then ! k for kinetic + 0.01
 
-         call DROPk(XP, YP, 1)
+         call DROPk(XP, YP)
          key = 3
 
       else if (KEY == 84 + 32) then ! t add (to) tracer
@@ -544,3 +559,5 @@
       goto 10
 !
    end subroutine EDITPOL
+
+end module m_editpol

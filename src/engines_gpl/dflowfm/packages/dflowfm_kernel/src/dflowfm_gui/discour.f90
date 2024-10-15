@@ -30,9 +30,16 @@
 !
 !
 
+module m_discour
+
+implicit none
+
+contains
+
       subroutine DISCOUR(M, N, DEP)
-         use m_devices
-         implicit none
+         use m_devices, only: iws
+         use m_ktext
+
          double precision :: dep
          integer :: m
          integer :: n
@@ -46,3 +53,5 @@
 
          return
       end
+
+end module m_discour

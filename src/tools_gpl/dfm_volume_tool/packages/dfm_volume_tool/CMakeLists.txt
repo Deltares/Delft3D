@@ -33,8 +33,6 @@ if (UNIX)
                          netcdff
                          dfm_api_access)
 
-    oss_include_libraries(${executable_name} oss_dependencies)
-
     target_link_libraries(${executable_name}
          ${oss_dependencies})
 endif(UNIX)
@@ -52,7 +50,6 @@ if (WIN32)
                          netcdff
                          dfm_api_access)
 
-    oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 

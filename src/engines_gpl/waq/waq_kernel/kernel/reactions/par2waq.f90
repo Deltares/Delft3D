@@ -100,12 +100,12 @@ contains
         integer(kind = int_wp), allocatable, save :: iwaqsub(:)        ! pointer from part substance to waq substance
         character(20)                 partsub           ! this particle substance
         integer(kind = int_wp) :: isub, ipart       ! loop variables
-        integer(kind = int_wp) :: ic, iseg, ilay ! help variable for segment location
+        integer(kind = int_wp) :: ic, cell_i, ilay ! help variable for segment location
         integer(kind = int_wp) :: ioff              ! help variable start of delpar substances in delwaq
         integer(kind = int_wp) :: nosegl            ! number of cells per layer
         logical                       fluxes            ! set .true. if intopt > 7
         logical                       massbal           ! set .true. if iaflag eq 1
-        integer(kind = int_wp) :: ipb, isys         ! help variables
+        integer(kind = int_wp) :: ipb, substance_i         ! help variables
 
         integer(kind = int_wp) :: ithandl = 0
 
@@ -136,24 +136,24 @@ contains
             ic = lgrida(npart(ipart), mpart(ipart))
             if (ic >  0) then
                 ilay = kpart(ipart)
-                iseg = (ilay - 1) * nosegl + ic
-                ipb = isdmp(iseg)
+                cell_i = (ilay - 1) * nosegl + ic
+                ipb = isdmp(cell_i)
                 do isub = 1, nosubs
-                    isys = iwaqsub(isub)
-                    if (isys == 0) cycle
-                    if (isys < 0) then
-                        isys = abs(isys)
-                        amass(isys, iseg) = amass(isys, iseg) + wpart(isub, ipart)
-                        conc (isys, iseg) = amass(isys, iseg) / surface(iseg)
+                    substance_i = iwaqsub(isub)
+                    if (substance_i == 0) cycle
+                    if (substance_i < 0) then
+                        substance_i = abs(substance_i)
+                        amass(substance_i, cell_i) = amass(substance_i, cell_i) + wpart(isub, ipart)
+                        conc (substance_i, cell_i) = amass(substance_i, cell_i) / surface(cell_i)
                     else
-                        amass(isys, iseg) = amass(isys, iseg) + wpart(isub, ipart)
-                        conc (isys, iseg) = amass(isys, iseg) / volume (iseg)
+                        amass(substance_i, cell_i) = amass(substance_i, cell_i) + wpart(isub, ipart)
+                        conc (substance_i, cell_i) = amass(substance_i, cell_i) / volume (cell_i)
                     endif
                     if (massbal) then
-                        amass2(isys, 3) = amass2(isys, 3) + wpart(isub, ipart)
+                        amass2(substance_i, 3) = amass2(substance_i, 3) + wpart(isub, ipart)
                     end if
                     if (ipb > 0 .and. fluxes) then
-                        dmps(isys, ipb, 2) = dmps(isys, ipb, 2) + wpart(isub, ipart)
+                        dmps(substance_i, ipb, 2) = dmps(substance_i, ipb, 2) + wpart(isub, ipart)
                     end if
                     npart (ipart) = 1
                     mpart (ipart) = 1

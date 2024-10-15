@@ -21,8 +21,6 @@ if (UNIX)
 
     set(oss_dependencies ${oss_dependencies_general})
 
-    oss_include_libraries(${executable_name} oss_dependencies)
-
     target_link_libraries(${executable_name}
          ${oss_dependencies}
          PkgConfig::NETCDF
@@ -35,7 +33,6 @@ if (WIN32)
                          netcdf4
                          netcdff)
 
-    oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 

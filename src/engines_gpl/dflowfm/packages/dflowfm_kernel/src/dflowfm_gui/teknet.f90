@@ -30,30 +30,36 @@
 !
 !
 
-      subroutine TEKNET(NCOL, ja)
+      subroutine TEKNET(ja)
 
+         use m_cir
          use m_netw
-         use unstruc_colors
          use geometry_module, only: dbdistance
          use unstruc_display
+         use m_drawthis
+         use m_halt2
+         use m_fbox
+         use m_tek_link
+         use m_cirr
+         use m_set_col
+         use m_inview
+         use m_movabs
+         use m_lnabs
+         use m_ptabs
 
          implicit none
-         integer :: ncol, ja
+         integer :: ja
 
          integer :: k, LMOD
          integer :: k1
          integer :: k2
          integer :: k3
          integer :: L, LL
-         integer :: ndraw
          double precision :: d1, d2, x, y
-         logical inview
-
-         common / DRAWTHIS / ndraw(50)
 
          if (NDRAW(2) <= 0 .or. NUML == 0) return
 
-!      call klok(t0)
+!      call wall_clock_time(t0)
 
          if (ndraw(2) /= 3) then ! net zelf
 
@@ -208,7 +214,7 @@
             end do
          end if
 
-!      call klok(t1)
+!      call wall_clock_time(t1)
 
 !      write(6,"('time elapsed in teknet: ', F15.5, 'seconds')") t1-t0
 

@@ -72,6 +72,9 @@ module m_partitioninfo
    use precision_basics, only: hp
    use meshdata, only: ug_idsLen, ug_idsLongNamesLen
    use gridoperations, only: dlinkangle
+   use m_qnerror
+   use m_delpol
+   use m_find1dcells, only: find1dcells
 
 #ifdef HAVE_MPI
    use mpi, only: NAMECLASH_MPI_COMM_WORLD => MPI_COMM_WORLD ! Apparently PETSc causes a name clash, see commit #28532.
@@ -230,28 +233,6 @@ module m_partitioninfo
    double precision, allocatable :: reducebuf(:) !< work array for mpi-reduce
    integer :: nreducebuf !< size of work array 'reducebuf'
 
-!! we need interfaces to getkbotktop and getLbotLtop for the function pointers
-! interface
-!    subroutine getkbotktop(n,kb,kt)
-!      integer :: n, kb, kt
-!    end subroutine getkbotktop
-! end interface
-!
-! interface
-!    subroutine getLbotLtop(n,Lb,Lt)
-!      integer :: n, Lb, Lt
-!    end subroutine getLbotLtop
-! end interface
-!
-!   abstract interface
-!!>    get bottom and top layer indices (pointer to getkbotktop or getLbotLtop)
-!      subroutine p_getbottop(n,kb,kt)
-!         integer :: n   !< flow-node or link
-!         integer :: kb  !< index of bottom layer
-!         integer :: kt  !< index of top layer
-!      end subroutine
-!   end interface
-
 !   for test solver:  Schwarz method with Robin-Robin coupling
    integer :: nbndint ! number of interface links
    integer, allocatable :: kbndint(:, :) ! interface administration, similar to kbndz, etc., dim(3,nbndint)
@@ -295,7 +276,7 @@ contains
       use m_missing
       use m_alloc
       use gridoperations
-
+      
       implicit none
 
       integer, intent(in) :: janet !< for network (1) or flow geom (0) or add 1D net (2)
@@ -1391,6 +1372,7 @@ contains
       use m_flowgeom, only: xu, yu
       use m_alloc
       use m_missing
+      use m_wrildb
 
       implicit none
 
@@ -1770,6 +1752,7 @@ contains
    subroutine partition_make_sendlists(idmn, fnam, ierror)
       use m_polygon
       use m_alloc
+      use m_reapol
 
       implicit none
 
@@ -2213,6 +2196,7 @@ contains
       use m_samples
       use network_data, only: xzw, yzw
       use m_flowgeom, only: xu, yu
+      use m_delsam
 
       implicit none
 
@@ -2266,10 +2250,10 @@ contains
 !> derive 3d ghost- and sendlists from 2d counterparts and 3d layer information
 !>    only nghostlist_XXX_3d will be generated, actual ghost flow node/link numbers
 !>       can be derived from 2d ighostlist/isendlist and layer information
-!>    it is assumed that 3d layer information (kbot, Lbot, kmxn, kmxL) is available
+!>    it is assumed that 3d layer information (kmxn, kmxL) is available
    subroutine partition_make_ghostsendlists_3d(ierror)
       use m_flowgeom, only: Ndx, Lnx
-      use m_flow, only: kmx, kbot, Lbot, kmxn, kmxL
+      use m_flow, only: kmx, kmxn, kmxL
       implicit none
 
       integer, intent(out) :: ierror
@@ -2303,19 +2287,19 @@ contains
       allocate (nghostlist_u_3dw(-1:ndomains - 1))
       allocate (nsendlist_u_3dw(-1:ndomains - 1))
 
-      call partition_fill_ghostsendlist_3d(nghostlist_sall(ndomains - 1), ighostlist_sall, nghostlist_sall, Ndx, kbot, kmxn, nghostlist_sall_3d)
-      call partition_fill_ghostsendlist_3d(nsendlist_sall(ndomains - 1), isendlist_sall, nsendlist_sall, Ndx, kbot, kmxn, nsendlist_sall_3d)
+      call partition_fill_ghostsendlist_3d(nghostlist_sall(ndomains - 1), ighostlist_sall, nghostlist_sall, Ndx, kmxn, nghostlist_sall_3d)
+      call partition_fill_ghostsendlist_3d(nsendlist_sall(ndomains - 1), isendlist_sall, nsendlist_sall, Ndx, kmxn, nsendlist_sall_3d)
 
-      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, Lbot, kmxL, nghostlist_u_3d)
-      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, Lbot, kmxL, nsendlist_u_3d)
+      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, kmxL, nghostlist_u_3d)
+      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, kmxL, nsendlist_u_3d)
 
       if (allocated(kmxL1)) deallocate (kmxL1)
       allocate (kmxL1(lnx))
       do L = 1, lnx
          kmxL1(L) = kmxL(L) + 1
       end do
-      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, Lbot, kmxL1, nghostlist_u_3dw)
-      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, Lbot, kmxL1, nsendlist_u_3dw)
+      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, kmxL1, nghostlist_u_3dw)
+      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, kmxL1, nsendlist_u_3dw)
       deallocate (kmxL1)
 
       ierror = 0
@@ -2325,14 +2309,13 @@ contains
    end subroutine partition_make_ghostsendlists_3d
 
 !> fill 3d ghost/send flow node/link list
-   subroutine partition_fill_ghostsendlist_3d(Nghost, ilist2d, nlist2d, N, kbot, kmxn, nlist3d)
+   subroutine partition_fill_ghostsendlist_3d(Nghost, ilist2d, nlist2d, N, kmxn, nlist3d)
       implicit none
 
       integer, intent(in) :: Nghost !< number of ghost/send flow nodes/links
       integer, dimension(Nghost), intent(in) :: ilist2d !< 2d ghost/send list
       integer, dimension(-1:ndomains - 1), intent(in) :: nlist2d !< cumulative number of flow nodes/links in 2d ghost/send list
       integer, intent(in) :: N !< number of flow nodes/links
-      integer, dimension(N), intent(in) :: kbot !< bottom layer indices
       integer, dimension(N), intent(in) :: kmxn !< number of layers
       integer, dimension(-1:ndomains - 1), intent(out) :: nlist3d !< 3d ghost/send list
 
@@ -4702,6 +4685,7 @@ contains
       use m_sferic
       use unstruc_messages
       use gridoperations
+      use m_copynetboundstopol
       implicit none
 
       integer, intent(out) :: ierror
@@ -5137,7 +5121,7 @@ contains
 
 !> get ghost corners
    subroutine get_ghost_corners(domain_number, min_ghost_level, max_ghost_level, ghost_type, ghost_list)
-      use network_data, only: kn, numk, nmk, nod
+      use network_data, only: numk, nmk, nod
       use m_alloc
 
       implicit none
@@ -6064,6 +6048,7 @@ subroutine partition_to_idomain()
    use m_partitioninfo
    use MessageHandling
    use gridoperations
+   use m_getint
 
    implicit none
 
@@ -6267,6 +6252,7 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
    use geometry_module, only: dbdistance
    use m_missing, only: dmiss
    use m_sferic, only: jsferic, jasfer3D
+   use m_wall_clock_time
 
 #ifdef HAVE_MPI
    use mpi
@@ -6311,7 +6297,7 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
 
    double precision, parameter :: dtol = 1d-4
 
-   call klok(t0)
+   call wall_clock_time(t0)
 
    ierror = 1
 
@@ -6413,7 +6399,7 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
 !        realloc
       call realloc(jafound, num, keepExisting=.false., fill=0)
       numfound = 0
-      call klok(t2)
+      call wall_clock_time(t2)
       Lloop: do L = 1, numL
          if (kce(L) /= 1) cycle ! boundary links only
          if (idomain(ke(L)) /= my_rank) cycle ! in own domain only
@@ -6439,7 +6425,7 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
             end if
          end do
       end do Lloop
-      call klok(t3)
+      call wall_clock_time(t3)
       timefind2 = timefind2 + t3 - t2
 
 !!        BEGIN DEBUG
@@ -6521,7 +6507,7 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
       call mess(LEVEL_INFO, trim(str))
    end if
 
-   call klok(t1)
+   call wall_clock_time(t1)
 
    write (str, "('partition_reduce_mirrorcells, elapsed time: ', G15.5, 's.')") t1 - t0
    call mess(LEVEL_INFO, trim(str))
@@ -6684,42 +6670,6 @@ subroutine update_ghostboundvals(itype, NDIM, N, var, jacheck, ierror)
 
    return
 end subroutine update_ghostboundvals
-
-! =================================================================================================
-! =================================================================================================
-subroutine fill_reduce_buffer(vals, nvals)
-   use m_partitioninfo
-   implicit none
-   integer :: i
-   integer, intent(in) :: nvals
-   double precision, dimension(1:nvals) :: vals
-
-   if (jampi == 0) then
-      return
-   end if
-
-   do i = 1, nvals
-      reducebuf(nreducebuf + i) = vals(i)
-   end do
-   nreducebuf = nreducebuf + nvals
-
-end subroutine fill_reduce_buffer
-
-! =================================================================================================
-! =================================================================================================
-subroutine subsitute_reduce_buffer(vals, nvals)
-   use m_partitioninfo
-   implicit none
-   integer :: i
-   integer, intent(in) :: nvals
-   double precision, dimension(1:nvals) :: vals
-
-   nreducebuf = nreducebuf - nvals
-   do i = 1, nvals
-      vals(i) = reducebuf(nreducebuf + i)
-   end do
-
-end subroutine subsitute_reduce_buffer
 
 ! =================================================================================================
 ! =================================================================================================

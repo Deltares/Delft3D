@@ -29,13 +29,14 @@
 
 !
 !
-
+module m_d_line_dis3
+   implicit none
+contains
       subroutine dLINEDIS3(X3, Y3, X1, Y1, X2, Y2, JA, DIS, XN, YN, RLOUT) ! 3: SORRY
          use geometry_module, only: getdx, getdy, dbdistance, sphertocart3D, Cart3Dtospher
          use m_missing, only: dmiss
          use m_sferic, only: jsferic, jasfer3D
 
-         implicit none
          integer :: ja
          double precision :: X1, Y1, X2, Y2, X3, Y3, DIS, XN, YN
          double precision :: xx1, xx2, xx3, yy1, yy2, yy3, zz1, zz2, zz3, xxn, yyn, zzn
@@ -96,3 +97,4 @@
          end if
          return
       end subroutine DLINEDIS3
+end module m_d_line_dis3

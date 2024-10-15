@@ -2184,7 +2184,7 @@
 !
 !     CHARST : a character string
 !
-      CHARACTER*(*) CHARST                                                40.31
+      CHARACTER(len=*) CHARST                                                40.31
 !
 !  5. PARAMETER VARIABLES
 !

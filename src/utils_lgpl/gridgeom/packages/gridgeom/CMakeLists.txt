@@ -10,8 +10,6 @@ set(oss_dependencies    deltares_common
                         kdtree2
                         triangle_c)
 
-oss_include_libraries(${library_name} oss_dependencies)
-
 target_include_directories(${library_name}  PRIVATE ${version_include_dir} ${rc_dir})
 
 if (UNIX)
@@ -20,7 +18,8 @@ if (UNIX)
 endif(UNIX)
 
 if (WIN32)
-    target_link_libraries(${library_name} kdtree2
+    target_link_libraries(${library_name} ${oss_dependencies}
+                                          kdtree2
                                           triangle_c)
 
     # Set additional compilation properties

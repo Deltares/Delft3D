@@ -30,14 +30,19 @@
 !
 !
 
+module m_copynetlinkstosam
+
+implicit none
+
+contains
+
 subroutine copynetlinkstosam()
-   use m_samples
-   use m_netw
-   use m_missing
+   use m_samples, only: ns, xs, ys, zs, increasesam
+   use m_netw, only: kn, numl, rlin, xe, ye, xk, yk, lc
+   use m_missing, only: dmiss, jins
    use m_polygon, only: NPL, xpl, ypl, zpl
    use geometry_module, only: dbpinpol
 
-   implicit none
    integer :: in, k, l, K1, K2
    in = -1
    k = ns
@@ -79,3 +84,5 @@ subroutine copynetlinkstosam()
    ns = k
 
 end subroutine copynetlinkstosam
+
+end module m_copynetlinkstosam

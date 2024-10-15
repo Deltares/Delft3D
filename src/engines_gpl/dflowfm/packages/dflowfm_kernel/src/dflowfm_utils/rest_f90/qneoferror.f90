@@ -29,10 +29,14 @@
 
 !
 !
-
+module m_qn_eof_error
+   implicit none
+contains
       subroutine QNEOFERROR(MINP)
-         use unstruc_files
-         implicit none
+         use unstruc_files, only: filenames
+         use m_qnerror
+
          integer :: minp
          call QNERROR('UNEXPECTED END OF FILE IN ', FILENAMES(MINP), ' ')
       end
+end module m_qn_eof_error

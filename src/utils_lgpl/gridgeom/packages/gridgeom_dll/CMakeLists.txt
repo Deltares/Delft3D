@@ -30,17 +30,10 @@ set(oss_dependencies    deltares_common
                         triangle_c
                         gridgeom)
 
-oss_include_libraries(${library_name} oss_dependencies)
 
-if (UNIX)
-    message(STATUS "Setting oss_target_link_libraries in Unix")
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(UNIX)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 if (WIN32)
-    target_link_libraries(${library_name} ${oss_dependencies}
-                                          triangle_c)
-
     # Set additional compilation properties
     target_compile_options(${library_name} PRIVATE "${heap_arrays_one_flag}")
 endif(WIN32)

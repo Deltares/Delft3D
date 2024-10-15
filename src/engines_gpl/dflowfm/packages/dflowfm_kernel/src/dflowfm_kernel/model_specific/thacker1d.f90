@@ -35,13 +35,16 @@
     use m_sferic
     use m_physcoef
     use m_flowparameters
+    use m_set_bobs
+    use m_inview
+    use m_movabs
+    use m_lnabs
 
     implicit none
     integer :: ndx, ini
     double precision :: dep, xz(ndx), yz(ndx), s1(ndx), bl(ndx), t
     integer :: is, k
     double precision :: omeg, r, r0, rr0, psi, samp, st, ct, ux, uy, s1k, dif, xx, yy, period
-    logical inview
 
     dep = 10d0
     fcorio = 0d0

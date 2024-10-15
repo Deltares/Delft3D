@@ -29,22 +29,26 @@
 
 !
 !
+module m_fkeys
+   implicit none
+contains
+   subroutine FKEYS(KEY)
+      use m_helpnow
+      use m_osc
+      use m_help
 
-      subroutine FKEYS(KEY)
-         implicit none
-         integer :: key
-         integer :: nlevel
-         character WRDKEY * 40
-         common / HELPNOW / WRDKEY, NLEVEL
-         if (KEY == 24) then
+      integer :: key
+
+      if (KEY == 24) then
 !        F1
-            call HELP(WRDKEY, NLEVEL)
-         else if (KEY == 25) then
+         call HELP(WRDKEY, NLEVEL)
+      else if (KEY == 25) then
 !        F2
-            call HISTOR()
-         else if (KEY == 26) then
+         call HISTOR()
+      else if (KEY == 26) then
 !        F3
-            call OSC(KEY)
-         end if
-         return
-      end
+         call OSC(KEY)
+      end if
+      return
+   end
+end module m_fkeys

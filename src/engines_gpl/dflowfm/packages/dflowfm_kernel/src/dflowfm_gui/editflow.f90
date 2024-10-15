@@ -30,12 +30,23 @@
 !
 !
 
+module m_editflow
+use m_plotklnup
+use m_moveprobe
+use m_minmxnds
+use m_highlight_nodesnlinks
+use m_getstring
+
+
+implicit none
+
+contains
+
      subroutine EDITflow(MODE, KEY, NL)
+        use m_disnd
         use m_netw
-        use m_flowgeom, only: iadv, kcu
         use m_flow
         use unstruc_colors
-        use M_MISSING
         use unstruc_api
         use m_snappol
         use dfm_error
@@ -44,30 +55,33 @@
         use unstruc_display, only: idisLink, dis_info_1d_link, nhlFlowLink
         use m_inquire_flowgeom
         use m_transport, only: ISALT, constituents
+        use m_depmax
+        use m_helpnow
+        use m_qnerror
+        use m_ktext
+        use m_putget_un
+        use m_botlin
+        use m_getint
+        use m_get_kbot_ktop
+        use m_n_plot_plus_min
+        use m_k_plot_plus_min
+        use m_draw_nu
+        use m_set_col
 
-        implicit none
         integer :: MODE, KEY, kb, kt, k, NL
         integer :: newmode
         integer :: ncol, nput
-        integer :: nlevel
         integer :: KK = 0, LL, L
         integer :: num
         integer :: numb
         integer :: nwhat
         double precision :: xp, yp, zp, ZNOD
 
-        double precision :: vmax, vmin, dv, val
-        integer :: ncols, nv, nis, nie, jaauto
-
         integer :: i, Nin, Nout, ierror
         double precision, dimension(:), allocatable :: xin, yin, xout, yout ! testing, for snappol
         integer, dimension(:), allocatable :: ipoLout ! testing, for snappol
 
-        common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-
-        common / HELPNOW / WRDKEY, NLEVEL
-
-        character TEX * 26, WRDKEY * 40
+        character TEX * 26
         character(len=IdLen) :: strucid
         integer :: iresult
 
@@ -97,7 +111,7 @@
               MODE = NWHAT
               return
            else
-              call CHOICES(MODE, NUM, NWHAT, KEY)
+              call CHOICES(NUM, NWHAT, KEY)
            end if
         else if (KEY >= 577) then ! Alt+letter switches edit mode.
            call selecteditmode(newmode, key)
@@ -271,3 +285,5 @@
         goto 10
 !
      end subroutine EDITflow
+
+end module m_editflow

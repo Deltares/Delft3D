@@ -66,7 +66,7 @@ contains
                 FLUX(NOFLUX, num_cells), VOLUME(num_cells)
 
         !     loclal
-        integer(kind = int_wp) :: fdt, isys, iflux, iseg
+        integer(kind = int_wp) :: fdt, substance_i, iflux, cell_i
         real(kind = real_wp) :: st, fact
 
         integer(kind = int_wp) :: ithandl = 0
@@ -75,20 +75,20 @@ contains
         !     We construeren nu de DERIV's
         !
         FDT = NDT
-        DO ISYS = 1, num_substances_total
+        DO substance_i = 1, num_substances_total
             DO IFLUX = NFLUX1, NFLUX1 + NFLUXP - 1
-                ST = STOCHI(ISYS, IFLUX)
+                ST = STOCHI(substance_i, IFLUX)
                 IF (ST /= 0.0) THEN
                     FACT = FDT * ST
                     IF (ABS(FACT - 1.0) < 1.E-10) THEN
-                        DO ISEG = 1, num_cells
-                            DERIV(ISYS, ISEG) = DERIV(ISYS, ISEG) + &
-                                    FLUX(IFLUX, ISEG) * VOLUME(ISEG)
+                        DO cell_i = 1, num_cells
+                            DERIV(substance_i, cell_i) = DERIV(substance_i, cell_i) + &
+                                    FLUX(IFLUX, cell_i) * VOLUME(cell_i)
                         ENDDO
                     ELSE
-                        DO ISEG = 1, num_cells
-                            DERIV(ISYS, ISEG) = DERIV(ISYS, ISEG) + &
-                                    FLUX(IFLUX, ISEG) * VOLUME(ISEG) * FACT
+                        DO cell_i = 1, num_cells
+                            DERIV(substance_i, cell_i) = DERIV(substance_i, cell_i) + &
+                                    FLUX(IFLUX, cell_i) * VOLUME(cell_i) * FACT
                         ENDDO
                     ENDIF
                 ENDIF

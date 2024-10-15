@@ -32,11 +32,15 @@
 
 !> coarsen the net
 subroutine coarsen_mesh()
+   use m_halt3
    use m_netw
    use unstruc_colors, only: ncolhl
    use stdlib_sorting, only: sort_index
    use m_sferic, only: dtol_pole
    use gridoperations
+   use m_readlocator
+   use m_makenetnodescoding
+   use m_cirr
 
    implicit none
 

@@ -32,7 +32,7 @@ c
       use            gadata
 c      
       integer        request 
-      character*256  gaviewnam(4)
+      character(len=256) gaviewnam(4)
       integer        dattimsim(2)     
 c
 c     Declaration of local variables:
@@ -43,7 +43,7 @@ c
       real         tbegin ,tduur ,gem    ,tslag  ,tmin   ,tmax ,
      +             minimum,maximum      ,vloedv ,ebv     
       logical      open
-      character*25 head(6),txt*20 
+      character(len=25) head(6),txt*20 
 c      
       integer,     parameter :: luview = 152
 

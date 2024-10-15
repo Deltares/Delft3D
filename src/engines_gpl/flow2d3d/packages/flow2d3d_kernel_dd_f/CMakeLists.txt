@@ -17,11 +17,8 @@ add_library(${library_name} ${source_files})
 set(oss_dependencies    deltares_common
                         flow2d3d_data
                         flow2d3d_io) 
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(UNIX)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})

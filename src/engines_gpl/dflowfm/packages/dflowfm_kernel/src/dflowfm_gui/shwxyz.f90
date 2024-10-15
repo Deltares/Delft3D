@@ -32,18 +32,23 @@
 
       ! NOTE: japes is disabled [AvD]
       subroutine SHWXYZ(X, Y, RD1, mmax, nmax, MC, NC, JAPERS, KEY, M, N)
+         use m_orglocator
+         use m_dispos2
+         use m_disdep
+         use m_cir
          use m_missing
          use unstruc_colors
+         use m_locatora
+         use m_helpnow
+         use m_set_col
+         use m_movabs
+         use m_help
+
          implicit none
 
          integer :: mmax, nmax, mc, nc, japers, key, m, n
          double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), RD1(MMAX, NMAX)
-         character WRDKEY * 40, OLDKEY * 40
-         double precision :: XLC, YLC, XA, YA
-         integer :: JMOUSE, JASHOW
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
-         integer :: nlevel
-         common / HELPNOW / WRDKEY, NLEVEL
+         character(len=40) :: OLDKEY
 
          integer :: jadraw, jonce, jplus, nlevo
          double precision :: XL, YL, RDOL, FAC

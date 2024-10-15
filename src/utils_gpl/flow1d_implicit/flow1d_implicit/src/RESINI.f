@@ -89,9 +89,9 @@ c
      &              ncelm     ,ncelh     ,lastcod     ,neferr
       integer       fd_nefis_res, rmap(nrmap) ,rtim(nrtim) ,
      &              codpre(*) ,itim  (2)
-      character*(*) grnamd         ,grnamm          ,grnamh        ,
+      character(len=*) grnamd         ,grnamm          ,grnamh        ,
      &              modnam
-      character*(*) nameel(nentri) ,quanel(nentri)  ,unitel(nentri),
+      character(len=*) nameel(nentri) ,quanel(nentri)  ,unitel(nentri),
      &              nameac(*)      ,
      &              descel(nentri)
 c

@@ -32,6 +32,8 @@
 
       subroutine TEKTXT()
          use m_wearelt
+         use m_set_col
+         use m_draw_text
          implicit none
          integer :: ia
          integer, save :: ini = 0
@@ -42,8 +44,6 @@
 !     tekenen van de strings die in een file staan en ingelezen zijn met
 !     REATXT
 !     ------------------------------------------------------------------
-         common / XYTEXT / xtxt, ytxt, coltxt, symtxt, heitxt, ntxt
-         common / TEXTSS / xytexts
          parameter(maxtxt=2000)
          double precision :: xtxt(maxtxt), ytxt(maxtxt), heitxt(maxtxt)
          integer symtxt(maxtxt), coltxt(maxtxt)

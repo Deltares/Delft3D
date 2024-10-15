@@ -29,18 +29,19 @@
 
 !
 !
+!>    reads info from a help file and puts it into HELPTEXT
+module m_helpin
+
+implicit none
+
+contains
 
       subroutine HELPIN()
          use unstruc_files
+         use m_helpc
          implicit none
          integer :: k
-         integer :: maxhlp
-         integer :: numtxt
-!     reads NUMTXT lines of HELPTEXT
-         parameter(MAXHLP=2000)
-         character HLPTXT(MAXHLP) * 80
-         common / HELPC / HLPTXT, NUMTXT
-
+         
          NUMTXT = 0
          if (MHLP == 0) return
 
@@ -57,3 +58,5 @@
 
          return
       end
+
+end module m_helpin

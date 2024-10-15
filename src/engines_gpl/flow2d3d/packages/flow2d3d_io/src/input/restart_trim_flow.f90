@@ -38,7 +38,7 @@ subroutine restart_trim_flow(lundia    ,error     ,restid1   ,lturi     ,mmax   
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use properties, only: prop_get_logical
+    use properties, only: prop_get
     use time_module, only: ymd2jul, datetime_to_string, parse_ud_timeunit, date2mjd, jul2mjd
     use globaldata
     use string_module, only: remove_leading_spaces
@@ -244,7 +244,7 @@ subroutine restart_trim_flow(lundia    ,error     ,restid1   ,lturi     ,mmax   
     !
     ! dp_from_map_file=false: do not read depth from map file
     !
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'dp_from_map_file', dp_from_map_file)
+    call prop_get(gdp%mdfile_ptr, '*', 'dp_from_map_file', dp_from_map_file)
     restid       = restid1
     error        = .false.
     error_string = ' '

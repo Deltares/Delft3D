@@ -30,6 +30,12 @@
 !
 !
 
+module m_geduld2
+
+implicit none
+
+contains
+
       subroutine GEDULD2(JAKNOP)
          implicit none
          integer :: i
@@ -45,3 +51,5 @@
          end do
          return
       end
+
+end module m_geduld2

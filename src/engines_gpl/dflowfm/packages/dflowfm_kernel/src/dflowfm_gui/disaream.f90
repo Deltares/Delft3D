@@ -30,13 +30,21 @@
 !
 !
 
+module m_disaream
+
+implicit none
+
+contains
+
       subroutine DISAREAM(AREAM)
-         use m_devices
-         implicit none
+         use m_devices, only: iws
+         use m_ktext
+
          double precision :: aream
-         character DISTAN * 23
-         DISTAN = 'CR. AR. M            M2'
-         write (DISTAN(11:20), '(E10.4)') AREAM
+         character(len=32) :: DISTAN
+         write (DISTAN, '("CR. AR. M ", E11.4, " M2")') AREAM
          call KTEXT(DISTAN, IWS - 22, 6, 15)
          return
       end
+
+end module m_disaream

@@ -347,6 +347,7 @@ contains
 
    subroutine morstats_full(dbodsd, hs_mor, ucxq_mor, ucyq_mor, sbcx, sbcy, sbwx, sbwy, sscx, sscy, sswx, sswy)
       use morphology_data_module, only: MOR_STAT_BODS
+      use m_get_kbot_ktop
       !
       implicit none
       !

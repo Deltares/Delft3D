@@ -69,14 +69,14 @@
       integer               itime , notim , num_exchanges_u_dir  , num_exchanges_v_dir  , &
                     num_exchanges_z_dir  , noval , nosca , flagsf, funtyp
       real          ardata(*)
-      character*20  valnam(*)
+      character(len=20) valnam(*)
 !
 !     local declarations
 !
       integer       ioerr , lun   , num_local_vars , nodata, filtyp, &
                     plform, i     , il    , itime2, &
                     irlen
-      character*256 filnam
+      character(len=256) filnam
 
       plform = which_operating_system()
 !

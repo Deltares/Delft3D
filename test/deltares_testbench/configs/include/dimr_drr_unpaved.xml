@@ -189,7 +189,7 @@
                         <parameter name="Percolation" location="2" toleranceAbsolute="0.004" />
                         <parameter name="Capill.Rise" location="2" toleranceAbsolute="0.004" />
                         <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
-                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="Groundw.Volume" location="2" toleranceRelative="1e-4" />
                         <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.001" />
                     </parameters>
                 </file>

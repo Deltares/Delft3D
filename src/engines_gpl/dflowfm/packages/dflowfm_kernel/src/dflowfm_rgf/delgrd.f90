@@ -32,10 +32,12 @@
 
      subroutine delgrd(KEY, JASAVE, jadelpol)
 !    delete grid
+        use m_confrm
         use m_grid
         use m_missing
         use m_polygon, only: NPL, xpl, ypl, zpl
         use geometry_module, only: dbpinpol
+        use m_delpol
 
         implicit none
         integer :: inhul, ja, i, j

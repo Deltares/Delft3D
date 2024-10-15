@@ -153,7 +153,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     enddo
     !
     filrgf = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filcco', filrgf)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filcco', filrgf)
     if (filrgf /= fildef) then
        !
        ! Grid specified in a file
@@ -216,7 +216,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
           call prterr(lundia, 'P004', 'No grid file defined')
        else
           cdef = ' '
-          call prop_get_string(gdp%mdfile_ptr,'*','Sphere',cdef)
+          call prop_get(gdp%mdfile_ptr,'*','Sphere',cdef)
           if (cdef /= 'y' .and. cdef /= 'Y') then
              if (parll) then
                 call prterr(lundia, 'P004', 'The combination of constant dx and dy and parallel is not available')
@@ -254,7 +254,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Z definition
     !
     cval = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'laydis', cval)
+    call prop_get(gdp%mdfile_ptr, '*', 'laydis', cval)
     if (cval == ' ') then
        !
        ! locate and read 'Thick' record

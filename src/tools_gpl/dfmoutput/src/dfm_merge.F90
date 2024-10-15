@@ -208,9 +208,9 @@ contains
       logical :: isfound, needshift, exist
       integer :: size_btmp
       character(len=1) :: answer
-      character*8 :: cdate
-      character*10 :: ctime
-      character*5 :: czone
+      character(len=8) :: cdate
+      character(len=10) :: ctime
+      character(len=5) :: czone
       integer :: nMaxMeshes, nMeshOld, ifileScan, ivScan, jaTopLevel, maxnvars, nvarsScan
       integer, allocatable :: ifile(:), nvars(:, :), max_nvars(:), varids_itopo(:)
       integer :: isOnMesh

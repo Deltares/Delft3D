@@ -41,6 +41,7 @@
 subroutine crspath_on_netgeom(path)
    use m_crspath
    use network_data
+   use m_get_link_neighboring_cell_coords
    implicit none
    type(tcrspath), intent(inout) :: path !< Cross section path that must be imposed on network geometry.
 

@@ -305,7 +305,7 @@ module Unpaved
 !
       integer debug_unit, CapsimDebug_unit
       integer message_unit
-      character*132 CapsimDbgfile, CapsimMsgFile
+      character(len=132) CapsimDbgfile, CapsimMsgFile
       integer file_unit
       Double precision    dprz(nxspun, nxte)
       integer NUDPUN(nxspun, nxrz)
@@ -741,7 +741,7 @@ contains
     Double precision          ScurvePercentage(999), SCurveLevel(999), bmaxoldum, binioldum
     real                      c1dum
     Character(Len=CharIdLength), pointer :: STODEF(:), ALFDEF(:), ERNSTDef(:),SEPDEF(:), INFDEF(:), INIDEF(:), SCUDEF(:), H0Def(:), SaltConcDef(:)
-    Character*1   Klteken
+    Character(len=1)   Klteken
 
     Logical, pointer :: AlreadyRead(:)
     Integer, pointer :: ReferenceToDefinition(:)
@@ -1083,7 +1083,7 @@ contains
             IrrigationpFTarget(iUnp) = RDum(1)
             If (Rdum(1) .lt. 0 .or. rDum(1) .gt. 4.2 .or. IrrigationpFTarget(iunp) .lt. IrrigationpFCrit(iunp) )  then
                call ErrMsgStandard(977, 0, ' Specified irrigation pF target input not correct; default will be used; node-id=', Id_Nod(Inod))
-               IrrigationpFTarget(iUnp) = min (IrrigationpFCrit(iunp), 2.4)
+               IrrigationpFTarget(iUnp) = min (IrrigationpFCrit(iunp), 2.4d0)
             Endif
         Endif
 ! irrigation max supply
@@ -1105,7 +1105,7 @@ contains
             IrrigationInitSupply(iUnp) = RDum(1)
             If (Rdum(1) .lt. 0 .or. IrrigationMaxSupply(iunp) .lt. IrrigationInitSupply(iunp) )  then
                call ErrMsgStandard(977, 0, ' Specified irrigation initial supply not correct; default will be used; node-id=', Id_Nod(Inod))
-               IrrigationInitSupply(iUnp) = min (IrrigationMaxSupply(iunp), 2.5)
+               IrrigationInitSupply(iUnp) = min (IrrigationMaxSupply(iunp), 2.5d0)
             Endif
         Endif
 ! irrigation initial supply duration
@@ -1547,7 +1547,7 @@ contains
                 kwel(iUnp) = 0.0
               endif
               SeepageCompOption(iUnp) = DummyCompOption
-              CValue(iUnp) = max (0.001, DummyCValue)
+              CValue(iUnp) = max (0.001d0, DummyCValue)
               H0Def (iUnp) = DummyH0Table
               SaltConcDef(iUnp)= DummyConcTable
             endif
@@ -1919,9 +1919,9 @@ contains
 
 !     Aanpassing alfa-factors en nivo's van drains
       do teller2 = 1, 3
-        alfaOh(iUnp, teller2) = max(0.000001, alfaOh(iUnp, teller2))
+        alfaOh(iUnp, teller2) = max(0.000001d0, alfaOh(iUnp, teller2))
         alfaOh(iUnp, teller2) = alfaOh(iUnp, teller2) / nrsDay
-        alfa2(iUnp, teller2) = max(0.000001, alfa2(iUnp, teller2))
+        alfa2(iUnp, teller2) = max(0.000001d0, alfa2(iUnp, teller2))
         alfa2(iUnp, teller2) = alfa2(iUnp, teller2) / nrsDay
         lvlDrn(iUnp, teller2) = lvlOh(iUnp) - lvlDrn(iUnp, teller2)
         ErnstLevelDrains(iUnp, teller2) = lvlOh(iUnp) - ErnstLevelDrains(iUnp, teller2)
@@ -2281,7 +2281,7 @@ contains
                    Gwl1 = (LvlOhMx(iovh) - Gwl0(iovh))
                    VinToDo = V_In
                    if (UnsatZoneOption .eq. 0) then
-                       AREA = MAX (AreaGwComp(IOVH), 0.0001)
+                       AREA = MAX (AreaGwComp(IOVH), 0.0001d0)
                        GWL(IOVH) = GWL0(IOVH) + 1/BERGC(IOVH) * V_IN / AREA
                    else
                        Call FindNewGroundwaterLevel (Idebug, iovh, VinToDo, Gwl1)  ! GWL(iovh) is gezet
@@ -2363,7 +2363,7 @@ contains
 
 
   Integer       inode, iovh
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()
@@ -2766,7 +2766,7 @@ contains
   ! for Hellinga de Zeeuw,  or Ernst:  Groundwater >= surface level checken
   ! *********************************************************************
 
-    AREA = MAX (AreaGwComp(IOVH), 0.0001)
+    AREA = MAX (AreaGwComp(IOVH), 0.0001d0)
     GWL(IOVH) = GWL0(IOVH) + 1/BERGC(IOVH) * V_IN / AREA
     BOBD(IOVH) = BOBD0(IOVH) + V_IN
     if (idebug .ne. 0) Write(IDEBUG,*) ' recalc GWL: GWL0 and GWL ',GWL0(iovh), GWL(iovh)
@@ -2869,7 +2869,7 @@ contains
          NrInfMessages = NrInfMessages + 1
          if (NrInfMessages .lt. 10) call SetMessage(LEVEL_WARN, 'Infiltration reduction due to limited UnsatZone capacity')
          IN0 = INO(IOVH)
-         INO(iovh) = MAX (0.0, INO(iovh) - ReduceSurfaceInfiltration)   ! in m3
+         INO(iovh) = MAX (0.0d0, INO(iovh) - ReduceSurfaceInfiltration)   ! in m3
          BOLND(IOVH) = BOLND(IOVH) - INO(IOVH) + IN0
          RMAXIN = INO(IOVH)
          if (idebug .ne. 0)  WRITE(IDEBUG,*) ' Nieuwe RMAXIN=',RMAXIN
@@ -2878,7 +2878,7 @@ contains
          NrInfMessages = NrInfMessages + 1
          if (NrInfMessages .lt. 10) call SetMessage(LEVEL_WARN, 'Infiltration reduction due to limited UnsatZone capacity')
          IN0 = INO(IOVH)
-         INO(iovh) = MAX (0.0, INO(iovh) - TotalInfReduction)   ! in m3
+         INO(iovh) = MAX (0.0d0, INO(iovh) - TotalInfReduction)   ! in m3
          BOLND(IOVH) = BOLND(IOVH) - INO(IOVH) + IN0
          RMAXIN = INO(IOVH)
          if (idebug .ne. 0)  WRITE(IDEBUG,*) ' Nieuwe RMAXIN=',RMAXIN
@@ -2910,10 +2910,10 @@ contains
         IN0 = INO(IOVH)
         If (UnSatZoneOption .ge. 1 )  then     ! Sobek-Capsim  bergcoef=0.01 vanaf wortelzone hier hard in code
            if (idebug .ne. 0) WRITE(IDEBUG,*) ' UnsatZoneOption>=1'
-           INO(IOVH) = MAX (0.0, INO(IOVH) - AreaGwComp(IOVH) * &
-                              (GWL(IOVH)-LVLOHMx(IOVH)) * 0.01 - max(0.0, VinToDo) )
+           INO(IOVH) = MAX (0.0d0, INO(IOVH) - AreaGwComp(IOVH) * &
+                              (GWL(IOVH)-LVLOHMx(IOVH)) * 0.01 - max(0.0d0, VinToDo) )
         Else
-           INO(IOVH) = MAX (0.0, INO(IOVH) - AreaGwComp(IOVH) * &
+           INO(IOVH) = MAX (0.0d0, INO(IOVH) - AreaGwComp(IOVH) * &
                              (GWL(IOVH)-LVLOHMx(IOVH)) * BERGC(IOVH) )
         Endif
 ! Bijstellen balans onverzadigde zone
@@ -2993,10 +2993,10 @@ contains
         If (GWL0(iovh) .gt. LvlOhMx(iovh)) then
            RestVol = V_IN
         else
-          AREA = MAX (AreaGwComp(IOVH), 0.0001)
+          AREA = MAX (AreaGwComp(IOVH), 0.0001d0)
           If (UnSatZoneOption .ge. 1 )  then     ! Sobek-Capsim bergcoef=0.01 vanaf wortelzone hier hard in code
 !           RestVol = V_In -  ( (LvlOhMx(iovh)-Gwl0(iovh))* 0.01 *Area )
-            RestVol =  (Gwl(iovh)-LvlOhMx(iovh)) * 0.01 *Area + Max (0.0, VInToDo)
+            RestVol =  (Gwl(iovh)-LvlOhMx(iovh)) * 0.01 *Area + Max (0.0d0, VInToDo)
           Else
             RestVol = V_In -  ( (LvlOhMx(iovh)-Gwl0(iovh))*BergC(iovh)*Area )
           Endif
@@ -3120,7 +3120,7 @@ contains
               if (idebug .ne. 0) write(Idebug,*) ' Peil',Peil
               TotalScurveSurfaceOutflow = min (TotalScurveSurfaceOutflow, (Gwl0(iovh) - Peil)* BndPar(Ibnd,5) * &
                                               UnpVolumeCheckFactorToCF / TimeSettings%TimestepSize)
-              TotalScurveSurfaceOutflow = max (TotalScurveSurfaceOutflow, 0.0)
+              TotalScurveSurfaceOutflow = max (TotalScurveSurfaceOutflow, 0.0d0)
               Q1O(iovh) = Q1O(iovh) + TotalScurveSurfaceOutflow
             endif
             if (idebug .ne. 0) Write(IDEBUG,*) ' Na VolumeCheck Berekende surface runoff ', Q1O(IOVH)
@@ -3142,7 +3142,7 @@ contains
                                             UnpVolumeCheckFactorToCF / TimeSettings%TimestepSize)
             if (idebug .ne. 0) WRITE(IDEBUG,*) ' tmpAreaOw, ovhlevel, owlevel',tmpAreaOw, LVLOHMx(iovh), LVLOW0(iow)
             if (idebug .ne. 0) write(idebug,*) ' Q1O ', Q1O(iovh)
-            Q1O(iovh) = max (Q1O(iovh), 0.0)
+            Q1O(iovh) = max (Q1O(iovh), 0.0d0)
             if (idebug .ne. 0) Write(IDEBUG,*) ' Na VolumeCheck Berekende surface runoff ', Q1O(IOVH)
             Call UnpavedVolumeCheckActive (OldQ1O, Q1O(iovh), Inode, ibnd, iow)
             TotalScurveSurfaceOutflowMax = Q1O(iovh)
@@ -3727,7 +3727,7 @@ contains
       Double precision    XX (50)
 
 
-      DpIn = Max (0.0, DpInIn)        !DpIn is lokale kopie van DpIn mits positief.
+      DpIn = Max (0.0d0, DpInIn)        !DpIn is lokale kopie van DpIn mits positief.
 
       iDebug = ConfFil_get_iDebug()
       iOut1 = ConfFil_get_iOut1()
@@ -3915,7 +3915,7 @@ contains
       if (TotalGewicht .le. 0)  NewStorageCoefficient = (mu(1) + mu(2) + mu(3) + mu(4)) / 4.
 
 ! Overrulen als de NewStorageCoefficient nul is
-      NewStorageCoefficient = max (NewStorageCoefficient, 0.01)
+      NewStorageCoefficient = max (NewStorageCoefficient, 0.01d0)
 
       if (idebug .ne. 0) then
          write(idebug,*) ' DpRootZ incm  DpIn in m ', DpRootZ, DpIn
@@ -4699,7 +4699,7 @@ contains
          Do IPoint=1,UseUnpavedSCurve
             IStatus = 0
             ! Depth of groundwater layer; 1 fixed groundwaterlevel, but different surface levels
-            DpIn   = max (0.0, AreaScurve(iovh,ipoint)%Level - GWL0 (iovh) )
+            DpIn   = max (0.0d0, AreaScurve(iovh,ipoint)%Level - GWL0 (iovh) )
             ! Initial unsat. soil moisture content in m
             VmRzIn = AreaScurve(iovh,ipoint)%InitialSoilStorage / AreaScurve(iovh,ipoint)%Area
 
@@ -4889,7 +4889,7 @@ contains
          Do IPoint=1,UseUnpavedSCurve
             IStatus = 0
             ! Depth of groundwater layer; 1 fixed groundwaterlevel, but different surface levels
-            DpIn   = max (0.0, AreaScurve(iovh,ipoint)%Level - GWL0 (iovh) )
+            DpIn   = max (0.0d0, AreaScurve(iovh,ipoint)%Level - GWL0 (iovh) )
             ! Initial unsat. soil moisture content in m
             VmRzIn = AreaScurvePerCrop(iovh,icrop,ipoint)%InitialSoilStorage / AreaScurve(iovh,ipoint)%Area / PercentArea
             ! call Sobek-Capsim-Simgro routine
@@ -5099,8 +5099,8 @@ contains
          Do IPoint=1,UseUnpavedSCurve
             IStatus = 0
             ! Depth of groundwater layer; 1 fixed groundwaterlevel, but different surface levels
-            DpIn   = max (0.0, AreaScurve(iovh,ipoint)%Level - GWL0 (iovh) )
-            DpIn1  = max (0.0, AreaScurve(iovh,ipoint)%Level - GWL  (iovh) )
+            DpIn   = max (0.0d0, AreaScurve(iovh,ipoint)%Level - GWL0 (iovh) )
+            DpIn1  = max (0.0d0, AreaScurve(iovh,ipoint)%Level - GWL  (iovh) )
             ! Initial unsat. soil moisture content in m
             VmRzIn = AreaScurve(iovh,ipoint)%InitialSoilStorage / AreaScurve(iovh,ipoint)%Area
             VmRzIn1 = AreaScurve(iovh,ipoint)%ActualSoilStorage / AreaScurve(iovh,ipoint)%Area
@@ -5223,8 +5223,8 @@ contains
          Do IPoint=1,UseUnpavedSCurve
             IStatus = 0
             ! Depth of groundwater layer; 1 fixed groundwaterlevel, but different surface levels
-            DpIn   = max (0.0, AreaScurve(iovh,ipoint)%Level - GWL0 (iovh) )
-            DpIn1  = max (0.0, AreaScurve(iovh,ipoint)%Level - GWL  (iovh) )
+            DpIn   = max (0.0d0, AreaScurve(iovh,ipoint)%Level - GWL0 (iovh) )
+            DpIn1  = max (0.0d0, AreaScurve(iovh,ipoint)%Level - GWL  (iovh) )
             ! Initial unsat. soil moisture content in m
             VmRzIn = AreaScurvePerCrop(iovh,icrop,ipoint)%InitialSoilStorage / AreaScurve(iovh,ipoint)%Area / PercentArea
             VmRzIn1= AreaScurvePerCrop(iovh,icrop,ipoint)%ActualSoilStorage / AreaScurve(iovh,ipoint)%Area / PercentArea
@@ -5724,7 +5724,7 @@ contains
                                           DH5, DQ5, timeSettings%timestepSize)
 ! ARS 5599: Q5 surface runoff Scurve >=0
 ! door correctie van de DH5 blijkt hij soms -0.001 te worden; dit moet voorkomen worden
-             Q5 = max (0.0, Q5)
+             Q5 = max (0.0d0, Q5)
            else
              Q5 = 0.0
            endif
@@ -5838,7 +5838,7 @@ contains
             If (FixArs8842) then
               OldQ2O = Q2O(iovh)
               Q2O(iovh) = min (Q2O(iovh), tmpAreaOw * (GWL0(iovh)-lvlOw0(iOW)) / TimeSettings%timestepSize  )
-              Q2O(iovh) = max (Q2O(iovh), 0.0)
+              Q2O(iovh) = max (Q2O(iovh), 0.0d0)
               if (idebug .ne. 0) Write(IDEBUG,*) ' Na VolumeCheck Berekende drainage ', Q2O(IOVH)
               Call UnpavedVolumeCheckActive (OldQ2O, Q2O(iovh), Inode, ibnd, iow)
             Endif
@@ -5858,7 +5858,7 @@ contains
               if (idebug .ne. 0) write(Idebug,*) ' Peil  ',Peil
               Q2O(iovh) = min (Q2O(iovh), (Gwl0(iovh) - Peil)*BergC(iovh) * BndPar(Ibnd,5) * &
                                               UnpVolumeCheckFactorToCF / TimeSettings%TimestepSize)
-              Q2O(iovh) = max (Q2O(iovh), 0.0)
+              Q2O(iovh) = max (Q2O(iovh), 0.0d0)
            endif
            if (idebug .ne. 0) Write(IDEBUG,*) ' Na VolumeCheck Berekende drainage ', Q2O(IOVH)
            Call UnpavedVolumeCheckActive (OldQ2O, Q2O(iovh), Inode, ibnd, iow)
@@ -5907,8 +5907,8 @@ contains
       Q1O(IOVH) = 0.0
       If ( (BOLND(IOVH) .GT. BMAXOL(IOVH) .or. BOLND0(iovh) .gt. BMAXOL(iovh)) .AND. PEIL .LE. LVLOHMx(IOVH)+BergingLand) Then
       ! boven max.berging op land ook met alfa-factor
-         QIN  = MAX (0.0, BOLND(IOVH) - BMAXOL(IOVH)) / timeSettings%timestepSize
-         Q0IN = MAX (0.0, BOLND0(IOVH) - BMAXOL(IOVH)) / timeSettings%timestepSize
+         QIN  = MAX (0.0d0, BOLND(IOVH) - BMAXOL(IOVH)) / timeSettings%timestepSize
+         Q0IN = MAX (0.0d0, BOLND0(IOVH) - BMAXOL(IOVH)) / timeSettings%timestepSize
 !
 !        QINNU= MAX (0.0, QIN-Q0IN)
 !        negatieve QinNu moet ook meegenomen worden (nav test 30 jaar HKV, waar negatieve berging werd berekend)
@@ -5960,7 +5960,7 @@ contains
             ! no volumecheck added
          ENDIF
 ! Afstroming oppervlak positief en in m3/s; nieuwe berging op land
-         Q1O(iovh) = max (Q1O(iovh), 0.0)
+         Q1O(iovh) = max (Q1O(iovh), 0.0d0)
          Q1O(IOVH) = Q1O(IOVH) / timeSettings%timestepSize
          BOLND(IOVH) = BOLND0(IOVH) - Q1O(IOVH) * timeSettings%timestepSize &
                       - VO(IOVH) + RO (IOVH) - INO(IOVH) + IrrigationSupply(iovh) * TimeSettings%TimestepSize
@@ -6247,7 +6247,7 @@ contains
            If (Dh5 .gt. 0) then
              Call ErnstFormule (Q5, AreaScurve(iovh,ipoint)%Area, ErnstResistance(iovh,1), &
                                                            DH5, timeSettings%timestepSize, idebug)
-             Q5 = max (0.0, Q5)
+             Q5 = max (0.0d0, Q5)
            else
              Q5 = 0.0
            endif
@@ -6346,7 +6346,7 @@ contains
               WRITE(IDEBUG,*) ' tmpAreaOw, gwlevel, owlevel',tmpAreaOw, GWL0(iovh), LVLOW0(iow)
             ENDIF
             Q2O(iovh) = min (Q2O(iovh), tmpAreaOw * (GWL0(iovh)-lvlOw0(iOW)) / TimeSettings%timestepSize  )
-            Q2O(iovh) = max (Q2O(iovh), 0.0)
+            Q2O(iovh) = max (Q2O(iovh), 0.0d0)
             if (idebug .ne. 0) Write(IDEBUG,*) ' Na VolumeCheck Berekende drainage ', Q2O(IOVH)
             Call UnpavedVolumeCheckActive (OldQ2O, Q2O(iovh), Inode, ibnd, iow)
 ! end n.a.v. ARS 8842
@@ -6365,7 +6365,7 @@ contains
               if (idebug .ne. 0) write(Idebug,*) ' Peil  ',Peil
               Q2O(iovh) = min (Q2O(iovh), (Gwl0(iovh) - Peil)*BergC(iovh) * BndPar(Ibnd,5) * &
                                               UnpVolumeCheckFactorToCF / TimeSettings%TimestepSize)
-              Q2O(iovh) = max (Q2O(iovh), 0.0)
+              Q2O(iovh) = max (Q2O(iovh), 0.0d0)
            endif
            if (idebug .ne. 0) Write(IDEBUG,*) ' Na VolumeCheck Berekende drainage ', Q2O(IOVH)
            Call UnpavedVolumeCheckActive (OldQ2O, Q2O(iovh), Inode, ibnd, iow)
@@ -6421,8 +6421,8 @@ contains
       Q1O(IOVH) = 0.0
       If ( (BOLND(IOVH) .GT. BMAXOL(IOVH) .or. BOLND0(iovh) .gt. BMAXOL(iovh)) .AND. PEIL .LE. LVLOHMx(IOVH)+BergingLand) Then
       ! boven max.berging op land ook met Ernst-weerstand
-         QIN  = MAX (0.0, BOLND(IOVH) - BMAXOL(IOVH)) / timeSettings%timestepSize
-         Q0IN = MAX (0.0, BOLND0(IOVH) - BMAXOL(IOVH)) / timeSettings%timestepSize
+         QIN  = MAX (0.0d0, BOLND(IOVH) - BMAXOL(IOVH)) / timeSettings%timestepSize
+         Q0IN = MAX (0.0d0, BOLND0(IOVH) - BMAXOL(IOVH)) / timeSettings%timestepSize
          if (idebug .ne. 0) then
             WRITE(IDEBUG,*) ' Qin     ', Qin
             WRITE(IDEBUG,*) ' Q0IN    ', Q0In
@@ -6467,7 +6467,7 @@ contains
             ! no vlolume check added
          ENDIF
 ! Afstroming oppervlak positief en in m3/s; nieuwe berging op land
-         Q1O(iovh) = max (Q1O(iovh), 0.0)
+         Q1O(iovh) = max (Q1O(iovh), 0.0d0)
          Q1O(IOVH) = Q1O(IOVH) / timeSettings%timestepSize
          BOLND(IOVH) = BOLND0(IOVH) - Q1O(IOVH) * timeSettings%timestepSize &
                       - VO(IOVH) + RO (IOVH) - INO(IOVH) + IrrigationSupply(iovh) * TimeSettings%TimestepSize
@@ -6535,18 +6535,18 @@ contains
       DH1 = GwLevel - PEIL
       DQ1 = QIN
      ELSEIF (GwLevel .LT. LVLDRN(IOVH,2)) THEN
-      DH1 = MAX (0.0, LVLDRN(IOVH,1) - PEIL)
+      DH1 = MAX (0.0d0, LVLDRN(IOVH,1) - PEIL)
       DH2 = GwLevel - MAX (LVLDRN(IOVH,1), PEIL)
       DQ2 = QIN
      ELSEIF (GwLevel .LT. LVLDRN(IOVH,3)) THEN
-      DH1 = MAX (0.0, LVLDRN(IOVH,1) - PEIL)
-      DH2 = MAX (0.0, LVLDRN(IOVH,2) - MAX(LVLDRN(IOVH,1),PEIL) )
+      DH1 = MAX (0.0d0, LVLDRN(IOVH,1) - PEIL)
+      DH2 = MAX (0.0d0, LVLDRN(IOVH,2) - MAX(LVLDRN(IOVH,1),PEIL) )
       DH3 = GwLevel - MAX (LVLDRN(IOVH,2), PEIL)
       DQ3 = QIN
      ELSE
-      DH1 = MAX (0.0, LVLDRN(IOVH,1) - PEIL)
-      DH2 = MAX (0.0, LVLDRN(IOVH,2) - MAX(LVLDRN(IOVH,1),PEIL) )
-      DH3 = MAX (0.0, LVLDRN(IOVH,3) - MAX(LVLDRN(IOVH,2),PEIL) )
+      DH1 = MAX (0.0d0, LVLDRN(IOVH,1) - PEIL)
+      DH2 = MAX (0.0d0, LVLDRN(IOVH,2) - MAX(LVLDRN(IOVH,1),PEIL) )
+      DH3 = MAX (0.0d0, LVLDRN(IOVH,3) - MAX(LVLDRN(IOVH,2),PEIL) )
       DH4 = GwLevel - MAX (LVLDRN(IOVH,3), PEIL)
       DQ4 = QIN
      ENDIF
@@ -6628,33 +6628,33 @@ contains
        DH1 = GwLevel - PEIL
        DQ1 = QIN2
      ELSEIF (GwLevel .LT. AreaScurve(iovh,ipoint)%AlfaLevels(2) .and. GwLevel .LT. AreaScurve(iovh,ipoint)%Level ) Then
-       DH1 = MAX (0.0, AreaScurve(iovh,ipoint)%AlfaLevels(1) - PEIL)
+       DH1 = MAX (0.0d0, AreaScurve(iovh,ipoint)%AlfaLevels(1) - PEIL)
        DH2 = GwLevel - MAX (AreaScurve(iovh,ipoint)%AlfaLevels(1), PEIL)
        DQ2 = QIN2
      ELSEIF (GwLevel .LT. AreaScurve(iovh,ipoint)%AlfaLevels(3) .and. GwLevel .LT. AreaScurve(iovh,ipoint)%Level ) Then
-       DH1 = MAX (0.0, AreaScurve(iovh,ipoint)%AlfaLevels(1) - PEIL)
-       DH2 = MAX (0.0, AreaScurve(iovh,ipoint)%AlfaLevels(2) - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(1),PEIL) )
+       DH1 = MAX (0.0d0, AreaScurve(iovh,ipoint)%AlfaLevels(1) - PEIL)
+       DH2 = MAX (0.0d0, AreaScurve(iovh,ipoint)%AlfaLevels(2) - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(1),PEIL) )
        DH3 = GwLevel - MAX (AreaScurve(iovh,ipoint)%AlfaLevels(2), PEIL)
        DQ3 = QIN2
      ELSEIF (GwLevel .LT. AreaScurve(iovh,ipoint)%Level ) Then
-       DH1 = MAX (0.0, AreaScurve(iovh,ipoint)%AlfaLevels(1) - PEIL)
-       DH2 = MAX (0.0, AreaScurve(iovh,ipoint)%AlfaLevels(2) - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(1),PEIL) )
-       DH3 = MAX (0.0, AreaScurve(iovh,ipoint)%AlfaLevels(3) - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(2),PEIL) )
+       DH1 = MAX (0.0d0, AreaScurve(iovh,ipoint)%AlfaLevels(1) - PEIL)
+       DH2 = MAX (0.0d0, AreaScurve(iovh,ipoint)%AlfaLevels(2) - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(1),PEIL) )
+       DH3 = MAX (0.0d0, AreaScurve(iovh,ipoint)%AlfaLevels(3) - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(2),PEIL) )
        DH4 = GwLevel - MAX (AreaScurve(iovh,ipoint)%AlfaLevels(3), PEIL)
        DQ4 = QIN2
      ELSE
 ! GWL0 staat al boven maaiveld nivo van dit deel van de Scurve; gebruik Dh5 en Dq5
 ! LET OP: bij Dh5 corrigeren voor BergC = de bergingscoefficient waarmee gwl wijziging bepaald wordt
-       DH1 = MAX (0.0, AreaScurve(iovh,ipoint)%AlfaLevels(1) - PEIL)
-       DH2 = MAX (0.0, AreaScurve(iovh,ipoint)%AlfaLevels(2) - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(1),PEIL) )
-       DH3 = MAX (0.0, AreaScurve(iovh,ipoint)%AlfaLevels(3) - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(2),PEIL) )
-       DH4 = MAX (0.0, AreaScurve(iovh,ipoint)%Level - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(3),PEIL) )
+       DH1 = MAX (0.0d0, AreaScurve(iovh,ipoint)%AlfaLevels(1) - PEIL)
+       DH2 = MAX (0.0d0, AreaScurve(iovh,ipoint)%AlfaLevels(2) - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(1),PEIL) )
+       DH3 = MAX (0.0d0, AreaScurve(iovh,ipoint)%AlfaLevels(3) - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(2),PEIL) )
+       DH4 = MAX (0.0d0, AreaScurve(iovh,ipoint)%Level - MAX(AreaScurve(iovh,ipoint)%AlfaLevels(3),PEIL) )
 !      DH5 nog steeds met GWL0, niet met GwLevel, want het gaat hier om de surface runoff
        DH5 = GWL0(iovh) - MAX (AreaScurve(iovh,ipoint)%Level, PEIL)
        DH5 = DH5 * BergC(Iovh)
        if (idebug .ne. 0) write(idebug,*) ' Dh5 etc ', Dh5, gwl0(iovh), AreaScurve(Iovh,ipoint)%Level, peil
 ! ARS 5599: houdt voor de 5e term (gwl boven oppervlak) ook rekening met berging op oppervlak
-       DH5 = max (0.0, DH5 - MaxMm + ActMm)
+       DH5 = max (0.0d0, DH5 - MaxMm + ActMm)
        DQ5 = QIN2
        if (idebug .ne. 0) write(idebug,*) ' Dh5 Dq5 ', Dh5, Dq5
      ENDIF
@@ -6687,7 +6687,7 @@ contains
        DH5 = DH5 * BergC(Iovh)
        if (idebug .ne. 0) write(idebug,*) ' Dh5 etc ', Dh5, gwl0(iovh), AreaScurve(Iovh,ipoint)%Level, peil
 ! ARS 5599: houdt voor de 5e term (gwl boven oppervlak) ook rekening met berging op oppervlak
-       DH5 = max (0.0, DH5 - MaxMm + ActMm)
+       DH5 = max (0.0d0, DH5 - MaxMm + ActMm)
        DQ5 = QIN2
        if (idebug .ne. 0) write(idebug,*) ' Dh5 Dq5 ', Dh5, Dq5
      Endif
@@ -7137,7 +7137,7 @@ contains
              if (UseRestartIn) then
 !               do nothing; use OnvZone()%Init_mm as determined from restart file
              else
-                OnvZone(iovh)%Init_mm = max (10.0, Dpin * BergC(iovh) / mm2m )
+                OnvZone(iovh)%Init_mm = max (10.0d0, Dpin * BergC(iovh) / mm2m )
              endif
 ! ARS 12450
              VmRzIn                = OnvZone(Iovh)%Init_mm * mm2m
@@ -7213,7 +7213,7 @@ contains
 ! Initialiseer Capsim, met S curve maaiveld
                   OnvZone(iovh)%Init_Volume = 0 ! OnvZone(iovh)%Init_mm * AreaOh(iovh) * mm2m
                   Do Ipoint=1,UseUnpavedSCurve
-                    DpIn   = max ( 0.0, AreaScurve(iovh,ipoint)%Level - GWL(iovh) )
+                    DpIn   = max ( 0.0d0, AreaScurve(iovh,ipoint)%Level - GWL(iovh) )
                     call SIMGRO_OVZ(Debug_unit, CapSimDbgFile, Message_Unit, CapsimMsgFile, Istatus, &
                              NXSPUN, NXTE, NXRZ, NXDPUN, NXFRSW, &
                              ISoil, CapsimCrop(iovh), DpIn, CapsimDpRootz(iovh), DtCapsim, Pn, VmRzIn, FmEvPt, &
@@ -7294,7 +7294,7 @@ contains
 ! Initialiseer Capsim, met S curve maaiveld
                   CropOnvZone(iovh,icrop)%Init_Volume = 0
                   Do Ipoint=1,UseUnpavedSCurve
-                    DpIn   = max ( 0.0, AreaScurve(iovh,ipoint)%Level - GWL(iovh) )
+                    DpIn   = max ( 0.0d0, AreaScurve(iovh,ipoint)%Level - GWL(iovh) )
                     call SIMGRO_OVZ(Debug_unit, CapSimDbgFile, Message_Unit, CapsimMsgFile, Istatus, &
                              NXSPUN, NXTE, NXRZ, NXDPUN, NXFRSW, &
                              ISoil, ICrop, DpIn, DpRz(isoil,icrop), DtCapsim, Pn, VmRzIn, FmEvPt, &
@@ -7507,7 +7507,7 @@ contains
   double precision  DeltaVolume, NewStorageCoefficient, DpIn, Area
 
   IFlag = 1
-  Area = MAX (AreaGwComp(IOVH), 0.0001)
+  Area = MAX (AreaGwComp(IOVH), 0.0001d0)
 
   ! all initial values are zero (incl. the values for idum=1)
   Do idum=2,MaxGwDepth
@@ -8028,7 +8028,7 @@ contains
     Integer      ExcDur
     Double precision         ExcCumGwl
     Double precision         GWL, QOpper, QBodem, QRain, GWLMX
-    CHARACTER*3  MONTH(12)
+    CHARACTER(len=3) MONTH(12)
 
         if (.not. associated(OVMGWS)) return    ! If there is nothing, do nothing
 

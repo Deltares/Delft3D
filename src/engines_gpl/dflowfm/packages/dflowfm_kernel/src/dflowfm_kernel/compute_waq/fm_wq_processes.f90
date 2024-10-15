@@ -66,11 +66,6 @@ subroutine fm_wq_processes_ini_sub()
    jawriteDetailedTimers = 1
    if (timon) call timstrt("fm_wq_processes_ini_sub", ithndl)
 
-   if (kmx > 0) then
-      wqbot3D_output = md_wqbot3D_output
-   else
-      wqbot3D_output = 0
-   end if
    ibflag = 0
 
    substance_file = md_subfile
@@ -410,27 +405,27 @@ subroutine fm_wq_processes_ini_proc()
 
    integer(4), save :: ithndl = 0
 
-   character*20, parameter :: ctauflow = 'tauflow'
-   character*20, parameter :: ctau = 'tau'
-   character*20, parameter :: cvelocity = 'velocity'
-   character*20, parameter :: csalinity = 'salinity'
-   character*20, parameter :: ctemperatureflow = 'tempflow'
-   character*20, parameter :: ctemperature = 'temp'
-   character*20, parameter :: cwind = 'vwind'
-   character*20, parameter :: cwinddir = 'winddir'
-   character*20, parameter :: cfetchl = 'fetch'
-   character*20, parameter :: cfetchd = 'initdepth'
-   character*20, parameter :: cirradiation = 'radsurf'
-   character*20, parameter :: crain = 'rain'
-   character*20, parameter :: cvtrans = 'ACTIVE_vtrans'
-   character*20, parameter :: cvertdisp = 'ACTIVE_vertdisp'
-   character*10, parameter :: cbloom = 'd40blo'
-   character*20, parameter :: cdoprocesses = 'DoProcesses'
-   character*20, parameter :: cprocessesinactive = 'ProcessesInactive'
+   character(len=20), parameter :: ctauflow = 'tauflow'
+   character(len=20), parameter :: ctau = 'tau'
+   character(len=20), parameter :: cvelocity = 'velocity'
+   character(len=20), parameter :: csalinity = 'salinity'
+   character(len=20), parameter :: ctemperatureflow = 'tempflow'
+   character(len=20), parameter :: ctemperature = 'temp'
+   character(len=20), parameter :: cwind = 'vwind'
+   character(len=20), parameter :: cwinddir = 'winddir'
+   character(len=20), parameter :: cfetchl = 'fetch'
+   character(len=20), parameter :: cfetchd = 'initdepth'
+   character(len=20), parameter :: cirradiation = 'radsurf'
+   character(len=20), parameter :: crain = 'rain'
+   character(len=20), parameter :: cvtrans = 'ACTIVE_vtrans'
+   character(len=20), parameter :: cvertdisp = 'ACTIVE_vertdisp'
+   character(len=10), parameter :: cbloom = 'd40blo'
+   character(len=20), parameter :: cdoprocesses = 'DoProcesses'
+   character(len=20), parameter :: cprocessesinactive = 'ProcessesInactive'
 
-   character*20, parameter :: cWaveH = 'WaveHeight'
-   character*20, parameter :: cWaveL = 'WaveLength'
-   character*20, parameter :: cWaveT = 'WavePeriod'
+   character(len=20), parameter :: cWaveH = 'WaveHeight'
+   character(len=20), parameter :: cWaveL = 'WaveLength'
+   character(len=20), parameter :: cWaveT = 'WavePeriod'
 
    if (timon) call timstrt("fm_wq_processes_ini_proc", ithndl)
 
@@ -917,6 +912,9 @@ subroutine dfm_waq_initexternalforcings(iresult)
    use m_fm_wq_processes
    use timers
    use unstruc_files, only: resolvePath
+   use fm_location_types, only: UNC_LOC_S
+   use m_delpol
+   use m_get_kbot_ktop
 
    implicit none
    integer, intent(out) :: iresult
@@ -996,7 +994,7 @@ subroutine dfm_waq_initexternalforcings(iresult)
                end do
 
                ! will only fill 2D part of viuh
-               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, 2)
+               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
 
                if (success) then
                   do kk = 1, Ndxi
@@ -1032,7 +1030,7 @@ subroutine dfm_waq_initexternalforcings(iresult)
                end do
 
                ! will only fill 2D part of viuh
-               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, 2)
+               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
 
                if (success) then
                   do kk = 1, Ndxi
@@ -1095,7 +1093,7 @@ subroutine dfm_waq_initexternalforcings(iresult)
                call realloc(viuh, Ndkx, keepExisting=.false., fill=dmiss)
 
                ! will only fill 2D part of viuh
-               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, 2)
+               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
 
                if (success) then
                   do kk = 1, Ndxi
@@ -1368,11 +1366,11 @@ subroutine copy_data_from_fm_to_wq_processes(time)
    use m_fm_wq_processes
    use m_transport, only: constituents, itemp, isalt
    use m_sferic, only: twopi, rd2dg
-   use m_wind
    use m_meteo
-   use processes_input
-   use m_waves, only: fetch, nwf, hwav, rlabda, twav
-   use unstruc_messages
+   use m_gettaus
+   use m_gettauswave
+   use m_get_kbot_ktop
+   use m_get_link1
    implicit none
 
    double precision, intent(in) :: time !< time     for waq in seconds

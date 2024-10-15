@@ -29,150 +29,26 @@
 
 !
 !
-
-! m_WEARELT movet to gridgeom
-
-module M_DEVICES
-   integer :: NPX, NPY, NCOLR, NDEV, NOPSYS, IWS, IHS
-end module M_DEVICES
-
-module m_textlines
-   double precision :: txsize
-   double precision :: txxpos
-   double precision :: txypos
-   character(len=60) :: txlin(3)
-end module m_textlines
-
-module unstruc_colors
-
-   use m_WEARELT
-   use M_DEVICES
-   use m_textlines
-!! Centralizes color definitions for unstruc.
-!! Color specifications are based on Interactor.
-
-   implicit none
-
-   integer :: klvec = 4, klaxs = 30, klscl = 221, kltex = 3, klfra = 31, klobs = 227, klsam = 33, klzm = 31, klank = 31, klprof = 222, KLSRC = 233
-
-   ! Color numbers for standard colors.
-   integer :: ncolgray = 255
-   integer :: ncolred = 252
-   integer :: ncolyellow = 251
-   integer :: ncolgreen = 250
-   integer :: ncolcyan = 249
-   integer :: ncolblue = 248
-   integer :: ncolmagenta = 247
-   integer :: ncolmaroon = 246
-   integer :: ncoldarkgreen = 245
-   integer :: ncolteal = 244
-   integer :: ncolpink = 243
-   integer :: ncolorange = 242
-   integer :: ncollavender = 241
-   integer :: ncolbrown = 240
-
-   integer :: ncoldn = 3 !< Design net
-   integer :: ncolrn = 211 !< Previous state net
-   integer :: ncolnn = 89 ! 203 !< Net node dots
-   integer :: ncoldg = 31 !< Design grid
-   integer :: ncolrg = 212 !< Previous state grid
-   integer :: ncolln = 120 !< Land boundary
-   integer :: ncolsp = 204 !< Splines
-   integer :: ncoltx = 210 !< Some textlines
-   integer :: ncolpl = 221 !< Polygons
-   integer :: ncolcrs = 230 !< Cross sections
-   integer :: ncolthd = 231 !< Thin dams
-   integer :: ncolfxw = 232 !< Fixed weirs
-   integer :: ncolmh = 191 !< Fixed weirs
-   integer :: ncolwarn1 = 191 ! warning1
-   integer :: ncolwarn2 = 31 ! warning2
-   integer :: ncolwarn3 = 22 ! warning3
-   integer :: ncolhl = 31 ! Highlight nodes/links
-   integer :: ncolANA = 63 ! 180! ANALYTIC SOLOUTIONS
-
-   integer :: ncolblack = 254
-   integer :: ncolwhite = 253
-
-   ! colors in text screens
-   ! 0 : Black       4 : Cyan
-   ! 1 : Red         5 : Blue
-   ! 2 : Yellow      6 : Magenta
-   ! 3 : Green       7 : White
-
-   integer :: STDFOR = 0, STDBCK = 5, & !   std
-              MNUFOR = 0, MNUBCK = 4, & !   choice menu's
-              INPFOR = 0, INPBCK = 4, & !   input menu's
-              ERRFOR = 1, ERRBCK = 7, & !   error messages
-              LBLFOR = 7, LBLBCK = 5, & !   menu names
-              LINFOR = 0, LINBCK = 4, & !   lines
-              TOPFOR = 1, TOPBCK = 7, & !   top line
-              HLPFOR = 7, HLPBCK = 5, & !   help window
-              BOTFOR = 7, BOTBCK = 5, & !   page indication
-              KEYFOR = 1, KEYBCK = 4, & !   key indication
-              WNDFOR = 0, WNDBCK = 4, & !   menu indication, POPUP WINDOW HELP
-              SHAFOR = 7, SHABCK = 0 !   menu indication, shadow behind input forms
-
-   integer :: nbluep
-   integer :: nblues
-   integer :: ngreenp
-   integer :: ngreens
-   integer :: nredp
-   integer :: nreds
-
-   character(len=255) :: coltabfile = ' '
-   character(len=255) :: coltabfile2 = ' '
-
-end module unstruc_colors
-
 module unstruc_display
 !! Handles all display settings and screen plotting for Unstruc
 !! (Not yet, a lot is still in REST.F90 [AvD])
 
 !
-
+   use m_plotdiamond
+   use m_plotcross
+   use m_minmaxworld
+   use m_linewidth
+   use m_isocol
+   use m_inqasp
+   use m_cir
+   use m_arrowsxy
    use unstruc_colors
+   use m_gui
+   use unstruc_display_data
+   use m_set_col
+   use m_movabs
+   use m_lnabs
    implicit none
-#ifndef HAVE_DISPLAY
-#define HAVE_DISPLAY 1
-#endif
-#if HAVE_DISPLAY==1
-   integer :: jaGUI = 1 !< GUI (1) or not (0)
-#else
-   integer :: jaGUI = 0 !< GUI (1) or not (0)
-#endif
-
-   integer :: ntek = 0
-   integer :: plottofile = 0
-   integer :: jadatetime = 0
-   integer :: jareinitialize = 0
-
-   ! Highlight certain net/flow node/link numbers
-   integer :: nhlNetNode = 0 !< Number of netnode  to be highlighted
-   integer :: nhlNetLink = 0 !< Number of netlink  to be highlighted
-   integer :: nhlFlowNode = 0 !< Number of flownode to be highlighted
-   integer :: nhlFlowLink = 0 !< Number of flowlink to be highlighted
-   integer :: NPOS(4) !< Size + position of HELP text screen
-   integer :: jaHighlight = 0 !< Completely enable/disable highlighting.
-
-   integer :: ndrawPol = 2 !< Polygon, 1=No, 2=Regular, 3=plus numbers ZPL, 4=plus isocolour ZPL
-   integer :: ndrawObs = 2 !< Observationstation : 1='NO, 2=Cross, 3=Cross + name4=Polyfil,5='Polyfil + name,6=Cross+waterlevel,7=Cross+velocity magnitudes
-   integer :: ndrawCrossSections = 5 !< how draw cross sections
-   integer :: ndrawThinDams = 2 !< show thin dams  0=no, 1=polylines, 2=net links
-   integer :: ndrawFixedWeirs = 1 !< show fixed weirs 0=no, 1=polylines, 2=flow links
-   integer :: ndrawPart = 2 !< Particles, 1=No, 2=Yes
-   integer :: ndrawDots = 2 !< dots, 1=No, 2=Yes
-   integer :: ndrawStructures = 1 !< structures, 1=No, 2=Yes (only symbols), 3=Yes (symbols and IDs)
-   integer :: idisLink = 0 !< Index of flowlink which is to be displayed with more information
-
-   integer :: grwhydopt = 1 !< Groundwater & Hydrology display menu item
-
-   integer :: numzoomshift = 250 !< nr of steps in zoomshift
-   double precision :: wetplot = 0.001 !< only show wet waterlevel points if (hs>wetplot)
-   double precision :: yfac = 0.0 !< cheap perspective
-   integer :: jafullbottomline = 0 !<larger bottomline with more complete description in screen
-   double precision :: profmax(20) = -999d0 !< minmax axes of tekprofiles
-   double precision :: profmin(20) = -999d0
-   double precision :: ymn, zmn ! for tekrailines
 
    public dis_info_1d_link
    public plotStructures
@@ -194,9 +70,16 @@ contains
       use M_isoscaleunit
       use m_transport, only: iconst_cur
       use M_FLOW, only: kplot, nplot, kplotfrombedorsurface, kplotordepthaveraged
-      use m_observations, only: jafahrenheit
+      use m_observations_data, only: jafahrenheit
       use m_sferic
-!   use unstruc_opengl    ! circular dependency
+      use m_depmax
+      use m_screenarea
+      use m_textsize
+      use m_hardcopy
+      use m_scalepos
+      use m_vfac
+      use m_drawthis
+      use m_depmax2
 
       character(len=*), intent(in) :: filename
 
@@ -205,36 +88,7 @@ contains
       integer :: istat, numdraw, i
       logical :: success, jawel
       integer :: jaeps, jaland
-
-      integer :: ndraw
-      common / DRAWTHIS / ndraw(50)
-
-      integer :: ncols, nv, nis, nie, jaAUTO, KRGB(4)
-      double precision :: VMAX, VMIN, DV, VAL
-      common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-
-      integer :: ncols2, nv2, nis2, nie2, jaAUTO2
-      double precision :: VMAX2, VMIN2, DV2, VAL2
-      common / DEPMAX2 / VMAX2, VMIN2, DV2, VAL2(256), NCOLS2(256), NV2, NIS2, NIE2, JAAUTO2
-
-      integer :: nvec
-      double precision :: vfac, vfacforce
-      common / VFAC / VFAC, VFACFORCE, NVEC
-
-      integer :: jaxis
-      double precision :: xleft, ybot
-      common / SCREENAREA / XLEFT, YBOT, JAXIS
-
-      integer :: ndec
-      double precision :: xsc, ysc, scalesize
-      common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
-
-      integer :: NHCDEV, NUMHCOPTS, IHCOPTS
-      common / HARDCOPY / NHCDEV, NUMHCOPTS, IHCOPTS(2, 20)
-
-      double precision :: tsize
-      common / TEXTSIZE / TSIZE
-
+      integer :: KRGB(4)
       integer :: jaopengl_loc
       double precision :: x, y, dy, asp
 
@@ -251,79 +105,79 @@ contains
       numdraw = 41
       do i = 1, numdraw
          write (nrstring, '(I2)') i
-         call prop_get_integer(dis_ptr, '*', 'ndraw('//trim(adjustl(nrstring))//')', ndraw(i), success)
+         call prop_get(dis_ptr, '*', 'ndraw('//trim(adjustl(nrstring))//')', ndraw(i), success)
       end do
 
-      call prop_get_integer(dis_ptr, '*', 'grwhydopt', grwhydopt, success)
+      call prop_get(dis_ptr, '*', 'grwhydopt', grwhydopt, success)
 
 !   load active constituent number
-      call prop_get_integer(dis_ptr, '*', 'ICONST', iconst_cur, success)
+      call prop_get(dis_ptr, '*', 'ICONST', iconst_cur, success)
 
-      call prop_Get_integer(dis_ptr, '*', 'ndrawpol           ', ndrawpol, success)
-      call prop_Get_integer(dis_ptr, '*', 'ndrawobs           ', ndrawobs, success)
-      call prop_Get_integer(dis_ptr, '*', 'ndrawcrosssections ', ndrawcrosssections, success)
+      call prop_get(dis_ptr, '*', 'ndrawpol           ', ndrawpol, success)
+      call prop_get(dis_ptr, '*', 'ndrawobs           ', ndrawobs, success)
+      call prop_get(dis_ptr, '*', 'ndrawcrosssections ', ndrawcrosssections, success)
 
-      call prop_Get_integer(dis_ptr, '*', 'NHCDEV       ', NHCDEV, success)
-      call prop_Get_integer(dis_ptr, '*', 'JAEPS        ', JAEPS, success)
-      call prop_Get_integer(dis_ptr, '*', 'JALAND       ', JALAND, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'CR           ', CR, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'TSIZE        ', TSIZE, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'dmiss        ', dmiss, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'XLEFT        ', XLEFT, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'YBOT         ', YBOT, success)
-      call prop_Get_integer(dis_ptr, '*', 'JAXIS        ', JAXIS, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'VFAC         ', VFAC, success)
-      call prop_Get_integer(dis_ptr, '*', 'nvec         ', nvec, success)
-      call prop_Get_integer(dis_ptr, '*', 'NTEK         ', NTEK, success)
-      call prop_Get_integer(dis_ptr, '*', 'PLOTTOFILE   ', PLOTTOFILE, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'ZMINrai      ', ZMINrai, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'ZMAXrai      ', ZMAXrai, success)
-      call prop_Get_integer(dis_ptr, '*', 'jtextflow    ', jtextflow, success)
-      call prop_Get_integer(dis_ptr, '*', 'numzoomshift ', numzoomshift, success)
-      call prop_Get_integer(dis_ptr, '*', 'jaHighlight  ', jaHighlight, success)
-      call prop_Get_integer(dis_ptr, '*', 'nhlNetNode   ', nhlNetNode, success)
-      call prop_Get_integer(dis_ptr, '*', 'nhlNetLink   ', nhlNetLink, success)
-      call prop_Get_integer(dis_ptr, '*', 'nhlFlowNode  ', nhlFlowNode, success)
-      call prop_Get_integer(dis_ptr, '*', 'nhlFlowLink  ', nhlFlowLink, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'wetplot      ', wetplot, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'yfac         ', yfac, success)
+      call prop_get(dis_ptr, '*', 'NHCDEV       ', NHCDEV, success)
+      call prop_get(dis_ptr, '*', 'JAEPS        ', JAEPS, success)
+      call prop_get(dis_ptr, '*', 'JALAND       ', JALAND, success)
+      call prop_get(dis_ptr, '*', 'CR           ', CR, success)
+      call prop_get(dis_ptr, '*', 'TSIZE        ', TSIZE, success)
+      call prop_get(dis_ptr, '*', 'dmiss        ', dmiss, success)
+      call prop_get(dis_ptr, '*', 'XLEFT        ', XLEFT, success)
+      call prop_get(dis_ptr, '*', 'YBOT         ', YBOT, success)
+      call prop_get(dis_ptr, '*', 'JAXIS        ', JAXIS, success)
+      call prop_get(dis_ptr, '*', 'VFAC         ', VFAC, success)
+      call prop_get(dis_ptr, '*', 'nvec         ', nvec, success)
+      call prop_get(dis_ptr, '*', 'NTEK         ', NTEK, success)
+      call prop_get(dis_ptr, '*', 'PLOTTOFILE   ', PLOTTOFILE, success)
+      call prop_get(dis_ptr, '*', 'ZMINrai      ', ZMINrai, success)
+      call prop_get(dis_ptr, '*', 'ZMAXrai      ', ZMAXrai, success)
+      call prop_get(dis_ptr, '*', 'jtextflow    ', jtextflow, success)
+      call prop_get(dis_ptr, '*', 'numzoomshift ', numzoomshift, success)
+      call prop_get(dis_ptr, '*', 'jaHighlight  ', jaHighlight, success)
+      call prop_get(dis_ptr, '*', 'nhlNetNode   ', nhlNetNode, success)
+      call prop_get(dis_ptr, '*', 'nhlNetLink   ', nhlNetLink, success)
+      call prop_get(dis_ptr, '*', 'nhlFlowNode  ', nhlFlowNode, success)
+      call prop_get(dis_ptr, '*', 'nhlFlowLink  ', nhlFlowLink, success)
+      call prop_get(dis_ptr, '*', 'wetplot      ', wetplot, success)
+      call prop_get(dis_ptr, '*', 'yfac         ', yfac, success)
 
-      call prop_Get_integer(dis_ptr, '*', 'JAAUTO       ', JAAUTO, success)
-      call prop_Get_integer(dis_ptr, '*', 'NV           ', NV, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'VMIN,        ', VMIN, success) ! remove muuuchch later
-      call prop_Get_DOUBLE(dis_ptr, '*', 'VMIN         ', VMIN, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'VMAX         ', VMAX, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'DV           ', DV, success)
+      call prop_get(dis_ptr, '*', 'JAAUTO       ', JAAUTO, success)
+      call prop_get(dis_ptr, '*', 'NV           ', NV, success)
+      call prop_get(dis_ptr, '*', 'VMIN,        ', VMIN, success) ! remove muuuchch later
+      call prop_get(dis_ptr, '*', 'VMIN         ', VMIN, success)
+      call prop_get(dis_ptr, '*', 'VMAX         ', VMAX, success)
+      call prop_get(dis_ptr, '*', 'DV           ', DV, success)
       do I = 1, NV
          VAL(I) = VMIN + (I - 1) * DV / (NV - 1)
       end do
 
-      call prop_Get_integer(dis_ptr, '*', 'JAAUTO2      ', JAAUTO2, success)
-      call prop_Get_integer(dis_ptr, '*', 'NV2          ', NV2, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'VMIN2        ', VMIN2, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'VMAX2        ', VMAX2, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'DV2          ', DV2, success)
+      call prop_get(dis_ptr, '*', 'JAAUTO2      ', JAAUTO2, success)
+      call prop_get(dis_ptr, '*', 'NV2          ', NV2, success)
+      call prop_get(dis_ptr, '*', 'VMIN2        ', VMIN2, success)
+      call prop_get(dis_ptr, '*', 'VMAX2        ', VMAX2, success)
+      call prop_get(dis_ptr, '*', 'DV2          ', DV2, success)
       do I = 1, NV2
          VAL2(I) = VMIN2 + (I - 1) * DV2 / (NV2 - 1)
       end do
 
-      call prop_Get_DOUBLE(dis_ptr, '*', 'XSC          ', XSC, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'YSC          ', YSC, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'SCALESIZE    ', SCALESIZE, success)
-      call prop_Get_INTEGER(dis_ptr, '*', 'NDEC         ', NDEC, success)
+      call prop_get(dis_ptr, '*', 'XSC          ', XSC, success)
+      call prop_get(dis_ptr, '*', 'YSC          ', YSC, success)
+      call prop_get(dis_ptr, '*', 'SCALESIZE    ', SCALESIZE, success)
+      call prop_get(dis_ptr, '*', 'NDEC         ', NDEC, success)
 
-      call prop_Get_string(dis_ptr, '*', 'UNIT(1)      ', UNIT(1), success)
-      call prop_Get_string(dis_ptr, '*', 'PARAMTEX(1)  ', PARAMTEX(1), success)
-      call prop_Get_string(dis_ptr, '*', 'UNIT(2)      ', UNIT(2), success)
-      call prop_Get_string(dis_ptr, '*', 'PARAMTEX(2)  ', PARAMTEX(2), success)
+      call prop_get(dis_ptr, '*', 'UNIT(1)      ', UNIT(1), success)
+      call prop_get(dis_ptr, '*', 'PARAMTEX(1)  ', PARAMTEX(1), success)
+      call prop_get(dis_ptr, '*', 'UNIT(2)      ', UNIT(2), success)
+      call prop_get(dis_ptr, '*', 'PARAMTEX(2)  ', PARAMTEX(2), success)
 
-      call prop_Get_DOUBLE(dis_ptr, '*', 'X1           ', X1, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'Y1           ', Y1, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'X2           ', X2, success)
+      call prop_get(dis_ptr, '*', 'X1           ', X1, success)
+      call prop_get(dis_ptr, '*', 'Y1           ', Y1, success)
+      call prop_get(dis_ptr, '*', 'X2           ', X2, success)
 
-      call prop_Get_DOUBLE(dis_ptr, '*', 'X0           ', X, success) ! should override previous set
-      call prop_Get_DOUBLE(dis_ptr, '*', 'Y0           ', Y, success)
-      call prop_Get_DOUBLE(dis_ptr, '*', 'DYH          ', DY, success)
+      call prop_get(dis_ptr, '*', 'X0           ', X, success) ! should override previous set
+      call prop_get(dis_ptr, '*', 'Y0           ', Y, success)
+      call prop_get(dis_ptr, '*', 'DYH          ', DY, success)
       if (.not. success) then ! to also use old cfg files
          x = 0.5d0 * (x1 + x2)
          call inqasp(asp)
@@ -331,68 +185,68 @@ contains
          y = y1 + 0.5d0 * dy
       end if
 
-      call prop_Get_integer(dis_ptr, '*', 'SFERTEK      ', JSFERTEK, success)
+      call prop_get(dis_ptr, '*', 'SFERTEK      ', JSFERTEK, success)
       call setwynew(x, y, dy)
 
       ! Color scheme isolines
-      call prop_get_string(dis_ptr, 'isocol', 'COLTABFILE', coltabfile)
+      call prop_get(dis_ptr, 'isocol', 'COLTABFILE', coltabfile)
       inquire (file=trim(coltabfile), exist=jawel)
       if (jawel) then
          call SETCOLTABFILE(coltabfile, 0)
       end if
 
-      call prop_get_string(dis_ptr, 'isocol2', 'COLTABFILE2', coltabfile2)
+      call prop_get(dis_ptr, 'isocol2', 'COLTABFILE2', coltabfile2)
       inquire (file=trim(coltabfile2), exist=jawel)
       if (jawel) then
          call SETCOLTABFILE(coltabfile2, 1)
       end if
 
       jaopengl_loc = -1
-      call prop_Get_integer(dis_ptr, '*', 'jaopengl', jaopengl_loc, success)
+      call prop_get(dis_ptr, '*', 'jaopengl', jaopengl_loc, success)
       if (jaopengl_loc /= -1) then
          jaopengl_loc = 1
          call iset_jaopengl(jaopengl_loc)
       end if
 
-      call prop_get_integers(dis_ptr, '*', 'NCOLDG ', KRGB, 4, success); if (success) NCOLDG = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLRG ', KRGB, 4, success); if (success) NCOLRG = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLDN ', KRGB, 4, success); if (success) NCOLDN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLRN ', KRGB, 4, success); if (success) NCOLRN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLNN ', KRGB, 4, success); if (success) NCOLNN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLSP ', KRGB, 4, success); if (success) NCOLSP = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLLN ', KRGB, 4, success); if (success) NCOLLN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLTX ', KRGB, 4, success); if (success) NCOLTX = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLPL ', KRGB, 4, success); if (success) NCOLPL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLCRS', KRGB, 4, success); if (success) NCOLCRS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLTHD', KRGB, 4, success); if (success) NCOLTHD = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLFXW', KRGB, 4, success); if (success) NCOLFXW = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'NCOLHL ', KRGB, 4, success); if (success) NCOLHL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'KLVEC  ', KRGB, 4, success); if (success) KLVEC = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'KLAXS  ', KRGB, 4, success); if (success) KLAXS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'KLSCL  ', KRGB, 4, success); if (success) KLSCL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'KLTEX  ', KRGB, 4, success); if (success) KLTEX = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'KLOBS  ', KRGB, 4, success); if (success) KLOBS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'KLPROF ', KRGB, 4, success); if (success) KLPROF = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get_integers(dis_ptr, '*', 'KLSRC  ', KRGB, 4, success); if (success) KLSRC = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLDG ', KRGB, 4, success); if (success) NCOLDG = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLRG ', KRGB, 4, success); if (success) NCOLRG = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLDN ', KRGB, 4, success); if (success) NCOLDN = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLRN ', KRGB, 4, success); if (success) NCOLRN = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLNN ', KRGB, 4, success); if (success) NCOLNN = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLSP ', KRGB, 4, success); if (success) NCOLSP = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLLN ', KRGB, 4, success); if (success) NCOLLN = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLTX ', KRGB, 4, success); if (success) NCOLTX = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLPL ', KRGB, 4, success); if (success) NCOLPL = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLCRS', KRGB, 4, success); if (success) NCOLCRS = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLTHD', KRGB, 4, success); if (success) NCOLTHD = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLFXW', KRGB, 4, success); if (success) NCOLFXW = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLHL ', KRGB, 4, success); if (success) NCOLHL = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLVEC  ', KRGB, 4, success); if (success) KLVEC = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLAXS  ', KRGB, 4, success); if (success) KLAXS = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLSCL  ', KRGB, 4, success); if (success) KLSCL = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLTEX  ', KRGB, 4, success); if (success) KLTEX = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLOBS  ', KRGB, 4, success); if (success) KLOBS = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLPROF ', KRGB, 4, success); if (success) KLPROF = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLSRC  ', KRGB, 4, success); if (success) KLSRC = KRGB(1); if (success) call SETINTRGB(KRGB)
 
-      call prop_get_integer(dis_ptr, '*', 'NREDS  ', NREDS, success)
-      call prop_get_integer(dis_ptr, '*', 'NGREENS', NGREENS, success)
-      call prop_get_integer(dis_ptr, '*', 'NBLUES ', NBLUES, success)
-      call prop_get_integer(dis_ptr, '*', 'NREDP  ', NREDP, success)
-      call prop_get_integer(dis_ptr, '*', 'NGREENP', NGREENP, success)
-      call prop_get_integer(dis_ptr, '*', 'NBLUEP ', NBLUEP, success)
+      call prop_get(dis_ptr, '*', 'NREDS  ', NREDS, success)
+      call prop_get(dis_ptr, '*', 'NGREENS', NGREENS, success)
+      call prop_get(dis_ptr, '*', 'NBLUES ', NBLUES, success)
+      call prop_get(dis_ptr, '*', 'NREDP  ', NREDP, success)
+      call prop_get(dis_ptr, '*', 'NGREENP', NGREENP, success)
+      call prop_get(dis_ptr, '*', 'NBLUEP ', NBLUEP, success)
 
-      call prop_get_integer(dis_ptr, '*', 'kplotbedsur', kplotfrombedorsurface, success)
-      call prop_get_integer(dis_ptr, '*', 'kplotordepthaveraged', kplotordepthaveraged, success)
-      call prop_get_integer(dis_ptr, '*', 'kplot', kplot, success)
-      call prop_get_integer(dis_ptr, '*', 'nplot', nplot, success)
+      call prop_get(dis_ptr, '*', 'kplotbedsur', kplotfrombedorsurface, success)
+      call prop_get(dis_ptr, '*', 'kplotordepthaveraged', kplotordepthaveraged, success)
+      call prop_get(dis_ptr, '*', 'kplot', kplot, success)
+      call prop_get(dis_ptr, '*', 'nplot', nplot, success)
 
-      call prop_get_integer(dis_ptr, '*', 'jaFahrenheit', jaFahrenheit, success)
+      call prop_get(dis_ptr, '*', 'jaFahrenheit', jaFahrenheit, success)
 
-      call prop_get_double(dis_ptr, '*', 'profmax(1)', profmax(1), success)
-      call prop_get_double(dis_ptr, '*', 'profmin(1)', profmin(1), success)
-      call prop_get_double(dis_ptr, '*', 'profmax(2)', profmax(2), success)
-      call prop_get_double(dis_ptr, '*', 'profmin(2)', profmin(2), success)
+      call prop_get(dis_ptr, '*', 'profmax(1)', profmax(1), success)
+      call prop_get(dis_ptr, '*', 'profmin(1)', profmin(1), success)
+      call prop_get(dis_ptr, '*', 'profmax(2)', profmax(2), success)
+      call prop_get(dis_ptr, '*', 'profmin(2)', profmin(2), success)
 
       RCIR = CR * (X2 - X1)
       VFAC = max(0d0, VFAC)
@@ -427,47 +281,24 @@ contains
       use M_isoscaleunit
       use m_transport, only: iconst_cur
       use m_flow
-      use m_observations
+      use m_observations_data
       use m_sferic
-!   use unstruc_opengl    ! circular dependency
+      use m_depmax
+      use m_screenarea
+      use m_textsize
+      use m_hardcopy
+      use m_scalepos
+      use m_vfac
+      use m_drawthis
+      use m_depmax2
+      use m_datum
 
       character(len=*), intent(in) :: filename
 
       type(tree_data), pointer :: dis_ptr
       character(len=20) :: rundat
       integer :: mfil, istat, i, KRGB(4)
-
-      integer :: ndraw
-      common / DRAWTHIS / ndraw(50)
-
-      integer :: ncols, nv, nis, nie, jaAUTO
-      double precision :: VMAX, VMIN, DV, VAL
-      common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-
-      integer :: ncols2, nv2, nis2, nie2, jaAUTO2
-      double precision :: VMAX2, VMIN2, DV2, VAL2
-      common / DEPMAX2 / VMAX2, VMIN2, DV2, VAL2(256), NCOLS2(256), NV2, NIS2, NIE2, JAAUTO2
-
-      integer :: nvec
-      double precision :: vfac, vfacforce
-      common / VFAC / VFAC, VFACFORCE, NVEC
-
-      integer :: jaxis
-      double precision :: xleft, ybot
-      common / SCREENAREA / XLEFT, YBOT, JAXIS
-
-      integer :: ndec
-      double precision :: xsc, ysc, scalesize
-      common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
-
-      integer :: NHCDEV, NUMHCOPTS, IHCOPTS
-      common / HARDCOPY / NHCDEV, NUMHCOPTS, IHCOPTS(2, 20)
-
-      double precision :: tsize
-      common / TEXTSIZE / TSIZE
-
       integer :: jaeps, jaland
-
       integer, external :: iget_jaopengl
 
       call newfil(mfil, filename)
@@ -521,7 +352,7 @@ contains
       call prop_set(dis_ptr, '*', 'ndrawcrosssections', ndrawcrosssections, ' ! 1=NO, etc                                                                                      ')
 
 !   save active constituent number
-      call prop_set_integer(dis_ptr, '*', 'ICONST', iconst_cur, ' ! active constituent number')
+      call prop_set(dis_ptr, '*', 'ICONST', iconst_cur, ' ! active constituent number')
 
       do I = 1, NUMHCOPTs
          if (IHCOPTS(1, I) == 22) JAEPS = IHCOPTS(2, I)
@@ -584,8 +415,8 @@ contains
       call prop_set(dis_ptr, '*', 'DYH          ', DYH)
       call prop_set(dis_ptr, '*', 'SFERTEK      ', JSFERTEK)
 
-      call prop_set_string(dis_ptr, '*', 'COLTABFILE', coltabfile)
-      call prop_set_string(dis_ptr, '*', 'COLTABFILE2', coltabfile2)
+      call prop_set(dis_ptr, '*', 'COLTABFILE', coltabfile)
+      call prop_set(dis_ptr, '*', 'COLTABFILE2', coltabfile2)
 
       call prop_set(dis_ptr, '*', 'jaopengl', iget_jaopengl())
 
@@ -640,15 +471,18 @@ contains
 !> Plots all observation points in the current viewport
    subroutine plotObservations() ! TEKOBS
 
-      use m_observations
+      use m_observations_data
       use M_FLOWGEOM
       use m_flow
       use m_transport, only: itemp, constituents
+      use m_get_kbot_ktop
+      use m_pfiller
+      use m_gtext
+      use m_inview
 
       integer :: n, NN, K, kb, kt
-      character*40 :: tex
+      character(len=40) :: tex
       double precision :: znod, temb, temt
-      logical inview
 
       if (ndrawobs == 1) return
 
@@ -782,17 +616,20 @@ contains
 
    subroutine plotSpline(xh, yh, numpi, ncol)
       use m_wearelt
-      double precision, dimension(numpi), intent(in) :: xh, yh
+      use m_splint
+      use m_drawthis
+      use m_spline
+
+      implicit none
+
       integer, intent(in) :: numpi
+      double precision, dimension(numpi), intent(in) :: xh, yh
       integer, intent(in) :: ncol
 
       !integer :: imax = 500 ! TODO: uit DIMENS [AvD]
 !    double precision :: XH2(1000), YH2(1000)
       double precision, allocatable, dimension(:) :: xh2, yh2
       double precision :: xk, yk, tn
-
-      integer :: ndraw
-      common / DRAWTHIS / ndraw(50)
       integer :: i, met, k, numk
       MET = NDRAW(15)
 
@@ -929,6 +766,7 @@ contains
       use m_flowgeom, only: lnx, lncn, bob
       use m_flow, only: hu, isimplefixedweirs
       use m_netw, only: xk, yk
+      use m_htext
 
       integer :: i, L, k3, k4, ncol
       double precision :: xu, yu
@@ -1001,13 +839,14 @@ contains
       use m_missing, only: dmiss, dxymis
       use m_sferic, only: jsferic, jasfer3D
       use gridoperations
+      use m_gtext
+      use m_inview
 
       type(tcrspath), intent(in) :: path !< Path definition
       integer, intent(in) :: met !< Method: 1=plot polyline, 2=plot crossed net/flow links (as stored in path%xk)
       integer, intent(in) :: ncol !< Drawing color
       character(len=*), intent(in) :: label !< Text label to be displayed.
       integer, intent(in) :: jaArrow !< Whether or not (1/0) to draw an outgoing arrow.
-      logical inview
 
       integer :: j, jj, jmin, jmax
       double precision :: xt, yt, rn, rt, xx1, yy1, xx2, yy2, xx, yy
@@ -1102,14 +941,15 @@ contains
       use m_arcinfo
       use M_grid
       use M_SPLINES
+      use m_dminmax
+      use m_drawthis
       implicit none
       double precision :: aspect
       integer :: n
-      integer :: ndraw
       double precision :: xcmax, xcmin, xlmax, xlmin, xplmax, xplmin, xsmax, xsmin, xspmax, xspmin
       double precision :: ycmax, ycmin, ylmax, ylmin, yplmax, yplmin, ysmax, ysmin, yspmax, yspmin
       double precision :: XH(10), YH(10)
-      common / DRAWTHIS / ndraw(50)
+
       call DMINMAX(XLAN, MXLAN, XLMIN, XLMAX, MAXLAN)
       call DMINMAX(YLAN, MXLAN, YLMIN, YLMAX, MAXLAN)
 
@@ -1226,12 +1066,14 @@ contains
       use m_flowparameters, only: epshu
       use m_flow, only: hu
       use m_wearelt, only: rcir
+      use m_gtext
+      use m_inview
       implicit none
 
       integer :: is, link
       double precision :: icon_rw_size !< Size of plotted icons in real-world coordinates.
       double precision :: x, y
-      logical :: active, inview
+      logical :: active
 
       if (ndrawStructures <= 1) then
          return
@@ -1593,11 +1435,10 @@ subroutine zoomshift(nshift) ! based on polygon
    use unstruc_display
    use m_flowtimes
    use m_polygon
+   use m_drawthis
    implicit none
-   integer :: nshift, ndraw, i1
+   integer :: nshift, i1
    double precision :: dr, x00, y00, dxw, dyw, rshift
-
-   common / DRAWTHIS / ndraw(50)
 
    nshift = nshift + 1
    rshift = dble(nshift) / dble(numzoomshift)
@@ -1618,6 +1459,9 @@ end subroutine zoomshift
 
 subroutine tekship()
    use m_ship
+   use m_set_col
+   use m_movabs
+   use m_lnabs
    implicit none
    double precision :: sx2, sy2, css, sns, rr, cr, sr, snum
    integer :: n
@@ -1694,10 +1538,10 @@ subroutine tekwindvector()
    use m_missing
    use m_statistics
    use messagehandling
+   use m_drawthis
+   use m_gtext
 
    implicit none
-   common / DRAWTHIS / ndraw(50)
-   integer :: ndraw
    double precision :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa
    character tex * 60
    integer :: ncol, k, kk, vlatin, vlatout, i, mout
@@ -1843,33 +1687,33 @@ subroutine tekwindvector()
 
       yp = yp - dyp
       tex = 'Areatot:               (m)'
-      write (tex(10:20), '(E11.5)') a1ini
+      write (tex(10:21), '(E12.5)') a1ini
       call GTEXT(tex, xp, yp, ncol)
 
       if (jatem == 5) then
          yp = yp - 2 * dyp
-         tex = 'QSUNav :             (W/m2)'
-         write (tex(10:20), '(E11.5)') Qsunav
+         tex = 'QSUNav :              (W/m2)'
+         write (tex(10:21), '(E12.5)') Qsunav
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp
-         tex = 'QEVAav :             (W/m2)'
-         write (tex(10:20), '(E11.5)') Qevaav
+         tex = 'QEVAav :              (W/m2)'
+         write (tex(10:21), '(E12.5)') Qevaav
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp
-         tex = 'QCONav :             (W/m2)'
-         write (tex(10:20), '(E11.5)') QCONav
+         tex = 'QCONav :              (W/m2)'
+         write (tex(10:21), '(E12.5)') QCONav
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp
-         tex = 'QLongav:             (W/m2)'
-         write (tex(10:20), '(E11.5)') QLongav
+         tex = 'QLongav:              (W/m2)'
+         write (tex(10:21), '(E12.5)') QLongav
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp
-         tex = 'Qfreeav:             (W/m2)'
-         write (tex(10:20), '(E11.5)') Qfreeav
+         tex = 'Qfreeav:              (W/m2)'
+         write (tex(10:21), '(E12.5)') Qfreeav
          call GTEXT(tex, xp, yp, ncol)
 
       end if

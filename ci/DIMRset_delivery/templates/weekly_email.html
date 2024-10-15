@@ -1,0 +1,58 @@
+<html>
+<head>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding-left: 5px;
+            padding-right: 5px;
+            text-align: left;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .success {
+            background-color: #7CFC00;
+        }
+
+        .fail {
+            background-color: #FF4500;
+        }
+    </style>
+</head>
+<body>
+<table>
+    <thead>
+    <tr>
+        <th>DIMRset @@@DIMR_VERSION@@@</th>
+        <th></th>
+        <th>@@@LINK_TO_PUBLIC_WIKI@@@</th>
+    </tr>
+    </thead>
+    <tbody>
+        @@@SUMMARY_TABLE_BODY@@@
+    </tbody>
+</table>
+
+<p>Crashing testcases:</p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Group</th>
+        <th># crashes/missing</th>
+        <th>Remark (Problem owner)</th>
+    </tr>
+    </thead>
+    <tbody>
+        @@@CRASHING_TESTCASES_TABLE_BODY@@@
+    </tbody>
+</table>
+</body>
+</html>

@@ -30,14 +30,19 @@
 !
 !
 
+module m_isocol
+
+implicit none
+
+contains
+
      subroutine ISOCOL(VALC, NCOL)
-        implicit none
+        use m_depmax
+        use m_set_col
+
         integer :: i, ncol
         double precision :: valc
 
-        integer :: NCOLS, NV, NIS, NIE, JAAUTO
-        double precision :: VMAX, VMIN, DV, VAL
-        common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
         do I = NV, 1, -1
            if (VALC >= VAL(I)) then
               NCOL = I + 1
@@ -50,3 +55,5 @@
         call SETCOL(NCOL)
         return
      end
+
+end module m_isocol

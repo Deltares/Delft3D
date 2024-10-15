@@ -30,7 +30,20 @@
 !
 !
 
+module m_editnetw
+use m_kcir
+use m_highlight_nodesnlinks
+
+
+implicit none
+
+contains
+
       subroutine EDITNETW(MODE, KEY)
+         use m_dispnodevals
+         use m_disnd
+         use m_dcirr
+         use m_choices
          use m_netw
          use unstruc_colors
          use M_MISSING
@@ -40,13 +53,19 @@
          use gridoperations
          use m_mergenodes
          use unstruc_display, only: nhlNetNode
-         implicit none
-         integer :: MODE, KEY
+         use m_helpnow
+         use m_cconstants
+         use m_qnerror
+         use m_ktext
+         use m_putget_un
+         use m_okay
+         use m_botlin
+         use m_tek_link
+         use m_is_link
+         use m_draw_nu
+         use m_set_col
 
-         double precision :: ag
-         double precision :: cfl
-         double precision :: e0
-         double precision :: eps
+         integer :: MODE, KEY
          integer :: newmode
          integer :: ja
          integer :: jadd
@@ -59,26 +78,16 @@
          integer :: ncol
          integer :: nl1
          integer :: nl2
-         integer :: nlevel
          integer :: nput
          integer :: num
          integer :: numb
          integer :: nwhat
          integer :: ierror
-         double precision :: pi
-         double precision :: rho
-         double precision :: rhow
          double precision :: xp1
          double precision :: yp1
          double precision :: zp1
-
          double precision :: xp, yp, zp, ZPP
-
-         common / HELPNOW / WRDKEY, NLEVEL
-
-         common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
-
-         character TEX * 26, WRDKEY * 40
+         character TEX * 26
          integer :: iresult
 
          TEX = ' Edit Network             '
@@ -146,7 +155,7 @@
                MODE = NWHAT
                return
             else
-               call CHOICES(MODE, NUM, NWHAT, KEY)
+               call CHOICES(NUM, NWHAT, KEY)
             end if
          else if (KEY >= 577) then ! Alt+letter switches edit mode.
             call selecteditmode(newmode, key)
@@ -307,7 +316,7 @@
                else if (KPP /= 0) then
                   call SAVENET()
                   call TEKNODE(KPP, NCOLDN)
-                  call netmodfld(xp, yp, zpp, kpp)
+                  call netmodfld(xp, yp, kpp)
                   NPUT = 0
                   kpp = 0
                   KEY = 3
@@ -321,7 +330,7 @@
                else if (KPP /= 0) then
                   call SAVENET()
                   call TEKNODE(KPP, NCOLDN)
-                  call netrotfld(xp, yp, zpp, kpp)
+                  call netrotfld(xp, yp, kpp)
                   NPUT = 0
                   kpp = 0
                   KEY = 3
@@ -491,7 +500,7 @@
             JADD = 4
             if (KP /= 0) then
                call TEKNODE(KP, 0)
-               call ONELINE(KP, 99999d0)
+               call ONELINE(KP)
             end if
          else if (KEY == 84 .or. KEY == 84 + 32) then ! T-key
 !        thin dam mode
@@ -549,3 +558,5 @@
          goto 10
 !
       end subroutine EDITNETW
+
+end module m_editnetw

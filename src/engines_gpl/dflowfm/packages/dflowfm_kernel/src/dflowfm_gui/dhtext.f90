@@ -30,9 +30,16 @@
 !
 !
 
+module m_dhtext
+
+implicit none
+
+contains
+
     subroutine DHTEXT(VAL, XD, YD, ZD)
-       use gridoperations
-       implicit none
+       use m_htext
+       use m_three_two
+
        double precision :: val
        double precision :: x
        double precision :: y
@@ -42,3 +49,5 @@
        call HTEXT(VAL, X, Y)
        return
     end
+
+end module m_dhtext

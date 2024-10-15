@@ -52,6 +52,9 @@ subroutine update_verticalprofiles()
    use m_ship
    use m_sferic
    use m_missing
+   use m_get_kbot_ktop
+   use m_get_Lbot_Ltop
+   use m_links_to_centers, only: links_to_centers
 
    implicit none
 
@@ -201,7 +204,7 @@ subroutine update_verticalprofiles()
 
       if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
 
-         call linkstocenterstwodoubles2(turkinepsws, turkin1, tureps1)
+         call links_to_centers(turkinepsws, turkin1, tureps1)
 
          if (numsrc > 0 .and. addksources > 0d0) then
             call doaddksources()
@@ -227,7 +230,7 @@ subroutine update_verticalprofiles()
                end do
             end if
 
-            call linkstocenterstwodoubles(tttc, tttu)
+            call links_to_centers(tttc, tttu)
             tttctot = 0d0
             do n = 1, ndxi
                call getkbotktop(n, kb, kt)
@@ -364,32 +367,30 @@ subroutine update_verticalprofiles()
 
             ! Calculate turkin source from wave dissipation: preparation
             if (jawave > 0) then
-
-               !JRE with HK move out of subroutine getustb
-               if (jawaveStokes >= 1 .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
+               if (jawaveStokes > 0 .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
 
-               k1 = ln(1, LL); k2 = ln(2, LL)
-               ac1 = acl(LL); ac2 = 1d0 - ac1
-               hrmsLL = min(max(ac1 * hwav(k1) + ac2 * hwav(k2), 1d-2), gammax * hu(LL))
-               if (hrmsLL > 0.0) then
-                  call wave_fillsurdis(k1, dis1)
-                  call wave_fillsurdis(k2, dis2)
-                  surdisLL = ac1 * dis1 + ac2 * dis2
-                  if (surdisLL < 1d-2) surdisLL = 0d0
-                  rhoLL = rhomean
-                  !
-                  pkwmag = fbreak * 2d0 * surdisLL / (rhoLL * fwavpendep * hrmsLL)
-                  !
-                  ! tke dirichlet boundary condition at surface
-                  tkesur = tkesur + (pkwmag * vonkar * fwavpendep * hrmsLL / (30.d0 * cde))**(2d0 / 3d0)
-               else
-                  pkwmag = 0d0
+               if (jawave > 0 .and. jawavebreakerturbulence > 0) then
+                  k1 = ln(1, LL); k2 = ln(2, LL)
+                  ac1 = acl(LL); ac2 = 1d0 - ac1
+                  hrmsLL = min(max(ac1 * hwav(k1) + ac2 * hwav(k2), 1d-2), gammax * hu(LL))
+                  if (hrmsLL > 0.0) then
+                     call wave_fillsurdis(k1, dis1)
+                     call wave_fillsurdis(k2, dis2)
+                     surdisLL = ac1 * dis1 + ac2 * dis2
+                     if (surdisLL < 1d-2) surdisLL = 0d0
+                     rhoLL = rhomean
+                     pkwmag = fbreak * 2d0 * surdisLL / (rhoLL * fwavpendep * hrmsLL)
+                     ! tke dirichlet boundary condition at surface
+                     tkesur = tkesur + (pkwmag * vonkar * fwavpendep * hrmsLL / (30.d0 * cde))**(2d0 / 3d0)
+                  else
+                     pkwmag = 0d0
+                  end if
+                  pkwav = 0d0
+                  wdep = hu(LL) - fwavpendep * hrmsLL
+                  whit = 0
                end if
-               pkwav = 0d0
-               wdep = hu(LL) - fwavpendep * hrmsLL
-               whit = 0
             end if
 
             do L = Lb, Lt - 1 ! Loop over layer interfaces. Doesn't work for kmx==1
@@ -549,7 +550,7 @@ subroutine update_verticalprofiles()
 
             end do ! Lb, Lt-1
 
-            if (jawave > 0) then
+            if (jawave > 0 .and. jawavebreakerturbulence > 0) then
                ! check if first layer is thicker than fwavpendep*wave height
                ! Then use JvK solution
                if (hu(LL) - hu(Lt - 1) >= fwavpendep * hrmsLL) then
@@ -784,7 +785,7 @@ subroutine update_verticalprofiles()
                   sourtu = c1e * cmukep * turkin0(L) * dijdij(k)
                   !
                   ! Add wave dissipation production term
-                  if (jawave > 0) then
+                  if (jawave > 0 .and. jawavebreakerturbulence > 0) then
                      sourtu = sourtu + pkwav(k) * c1e * tureps0(L) / max(turkin0(L), 1d-7)
                      !sourtu = sourtu + c1e*cmukep*turkin0(L)/max(vicwwu(L),vicwminb)*pkwav(k)
                   end if
@@ -850,7 +851,7 @@ subroutine update_verticalprofiles()
                bk(kxL) = 1.d0
                ck(kxL) = 0.d0
                dk(kxL) = 4d0 * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
-               if (jawave > 0) then ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
+               if (jawave > 0 .and. jawavebreakerturbulence > 0) then ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
                   dk(kxL) = dk(kxL) + dzu(Lt - Lb + 1) * pkwmag / (fwavpendep * hrmsLL)
                end if
 
@@ -1008,7 +1009,7 @@ subroutine update_verticalprofiles()
                   end do
                   epsbot = tureps1(Lb) + dzu(1) * abs(ustb(LL))**3 / (vonkar * hdzb * hdzb)
                   epssur = tureps1(Lt - 1) - 4d0 * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
-                  if (jawave > 0) then
+                  if (jawave > 0 .and. jawavebreakerturbulence > 0) then
                      epssur = epssur - dzu(Lt - Lb + 1) * fwavpendep * pkwmag / hrmsLL
                   end if
                   epsbot = max(epsbot, epseps)
@@ -1060,6 +1061,6 @@ subroutine update_verticalprofiles()
    !   call update_ghosts(ITYPE_U3DW, 1, Ndkx, tureps1, ierror)
    !end if
 
-   call linkstocenterstwodoubles(vicwws, vicwwu)
+   call links_to_centers(vicwws, vicwwu)
 
 end subroutine update_verticalprofiles

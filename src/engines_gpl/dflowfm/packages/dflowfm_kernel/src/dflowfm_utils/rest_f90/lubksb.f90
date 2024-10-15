@@ -29,42 +29,44 @@
 
 !
 !
-
-      subroutine LUBKSB(A, N, NP, INDX, B)
-         implicit none
-         double precision :: a
-         double precision :: b
-         integer :: i
-         integer :: ii
-         integer :: indx
-         integer :: j
-         integer :: ll
-         integer :: n
-         integer :: np
-         double precision :: sum
-         dimension A(NP, NP), INDX(N), B(N)
-         II = 0
-         do I = 1, N
-            LL = INDX(I)
-            SUM = B(LL)
-            B(LL) = B(I)
-            if (II /= 0) then
-               do J = II, I - 1
-                  SUM = SUM - A(I, J) * B(J)
-               end do
-            else if (SUM /= 0d0) then
-               II = I
-            end if
-            B(I) = SUM
-         end do
-         do I = N, 1, -1
-            SUM = B(I)
-            if (I < N) then
-               do J = I + 1, N
-                  SUM = SUM - A(I, J) * B(J)
-               end do
-            end if
-            B(I) = SUM / A(I, I)
-         end do
-         return
-      end
+module m_lubksb
+   implicit none
+contains
+   subroutine LUBKSB(A, N, NP, INDX, B)
+      double precision :: a
+      double precision :: b
+      integer :: i
+      integer :: ii
+      integer :: indx
+      integer :: j
+      integer :: ll
+      integer :: n
+      integer :: np
+      double precision :: sum
+      dimension A(NP, NP), INDX(N), B(N)
+      II = 0
+      do I = 1, N
+         LL = INDX(I)
+         SUM = B(LL)
+         B(LL) = B(I)
+         if (II /= 0) then
+            do J = II, I - 1
+               SUM = SUM - A(I, J) * B(J)
+            end do
+         else if (SUM /= 0d0) then
+            II = I
+         end if
+         B(I) = SUM
+      end do
+      do I = N, 1, -1
+         SUM = B(I)
+         if (I < N) then
+            do J = I + 1, N
+               SUM = SUM - A(I, J) * B(J)
+            end do
+         end if
+         B(I) = SUM / A(I, I)
+      end do
+      return
+   end
+end module m_lubksb

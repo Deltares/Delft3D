@@ -117,6 +117,7 @@ contains
 
 !> start the timer
    subroutine starttimer(itvar)
+      use m_wall_clock_time
       implicit none
 
       integer, intent(in) :: itvar !< timer number
@@ -128,7 +129,7 @@ contains
          write (6, '("starttimer: status error for timer ", I0)') itvar
       end if
 
-      call klok(tloc)
+      call wall_clock_time(tloc)
       t(1, itvar) = tloc
 
       call cpu_time(tcpu(1, itvar))
@@ -142,6 +143,7 @@ contains
 !> stop the timer
    subroutine stoptimer(itvar)
       use MessageHandling
+      use m_wall_clock_time
 
       implicit none
       integer, intent(in) :: itvar !< timer number
@@ -153,7 +155,7 @@ contains
       if (itstat(itvar) /= 1) then
          write (6, '("stoptimer: status error for timer ", I0)') itvar
       else
-         call klok(tloc)
+         call wall_clock_time(tloc)
          t(2, itvar) = tloc
          t(3, itvar) = t(3, itvar) + tloc - t(1, itvar)
 

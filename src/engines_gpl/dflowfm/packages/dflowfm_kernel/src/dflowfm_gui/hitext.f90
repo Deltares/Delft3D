@@ -29,17 +29,20 @@
 
 !
 !
-
+module m_hi_text
+   implicit none
+contains
       subroutine HITEXT(IVAL, X, Y)
-         implicit none
+         use m_colnow
+         use m_draw_text
+
          integer :: ival
          integer :: l
-         integer :: ncolnow
          double precision :: x
          double precision :: y
 !     INTEGER grafisch scherm in current color
          character TEX * 8
-         common / COLNOW / NCOLNOW
+
          if (NCOLNOW >= 0) then
             if (abs(IVAL) < 100) then
                write (TEX, '(I3)') IVAL
@@ -53,3 +56,4 @@
          end if
          return
       end
+end module m_hi_text

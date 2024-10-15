@@ -36,6 +36,7 @@
     use m_missing
     use unstruc_channel_flow
     use precision_basics
+    use m_get_prof_1D
 
     implicit none
 
@@ -68,7 +69,6 @@
 
     else
        if (hu(L) > 0) then
-          !DIR$ INLINE
           hpr = get_hpr_nostruc(L)
           calcConv = 1
           call getprof_1D(L, hpr, au(L), widu, japerim, calcConv, perim)

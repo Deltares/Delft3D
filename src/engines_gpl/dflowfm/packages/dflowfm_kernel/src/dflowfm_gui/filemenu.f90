@@ -30,27 +30,37 @@
 !
 !
 
+module m_filemenu
+
+implicit none
+
+contains
+
       subroutine FILEMENU(mrgf, filnam, ierror)
+         use m_deny
+         use m_confrm
          use unstruc_display
          use dflowfm_version_module, only: company, product_name
          use unstruc_files, only: filnammenu
-         implicit none
+         use m_helpc
+         use m_startdir
+         use m_qnerror
+         use m_timlin
+         use m_help
+
          integer, intent(inout) :: mrgf !<  call with mrgf = 0 means LOAD, mrgf = 1  means SAVE, mrgf = 2 means get filename only
          character(len=*), intent(inout) :: filnam
          integer, intent(out) :: ierror !<  return value -1 = ESC
-         integer :: ih, ihl, imenuscroll, imp, infoinput, inp, iw, ixp, iyp, jatab, jazekr, keepstartdir, key, l, len
-         integer :: maxfil, maxhlp, nahead, nbut, nlevel, numdir, numf, numfil, numtop, numtxi, numtxt
+         integer :: ih, ihl, imenuscroll, imp, infoinput, inp, iw, ixp, iyp, jatab, jazekr, key, l, len
+         integer :: maxfil, nahead, nbut, nlevel, numdir, numf, numfil, numtop, numtxi
 
 !     Gives menu with files filnam
 
-         parameter(MAXHLP=2000, MAXFIL=2000)
+         parameter(MAXFIL=2000)
          integer IFDATE(MAXFIL), IFSIZE(MAXFIL)
-         character HLPTXT(MAXHLP) * 80, FILIST(MAXFIL) * 86, WRDKEY * 40
+         character FILIST(MAXFIL) * 86, WRDKEY * 40
          character DIR * 86, CURDIR * 86, DIR2 * 86, FILNAM2 * 86
          logical JA
-         common / HELPC / HLPTXT, NUMTXT
-         common / STARTDIR / KEEPSTARTDIR
-
          integer jaopen ! open file (1) or not (0)
 
          ierror = 0 ! Default: no error
@@ -267,3 +277,5 @@
          filnammenu = filnam
          return
       end
+
+end module m_filemenu

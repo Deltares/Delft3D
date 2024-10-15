@@ -32,11 +32,13 @@
 
 !> detect ridges and reduce structured sample set
 subroutine detect_ridges(jadeleteHessians)
+   use m_plot_ridges
    use m_samples
    use m_samples_refine
    use m_missing
    use geometry_module, only: dbdistance
    use m_sferic, only: jsferic, jasfer3D
+   use m_comp_sampleDh
 
    implicit none
 
@@ -46,8 +48,6 @@ subroutine detect_ridges(jadeleteHessians)
    integer :: ierror, Nsamplesmooth_bak
 
    double precision :: Dh
-
-   double precision, external :: comp_sampleDh
 
    ierror = 1
 

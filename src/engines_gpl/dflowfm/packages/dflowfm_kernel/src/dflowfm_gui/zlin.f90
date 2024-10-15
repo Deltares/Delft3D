@@ -31,20 +31,20 @@
 !
 
  double precision function zlin(LL) ! get various values at flow links
+    use m_getltoplot
     use m_flow
     use m_flowgeom
     use m_wind
     use m_sediment
     use m_sferic
     use m_missing
+    use m_drawthis
+    use m_cosphiu
     implicit none
-
-    common / drawthis / ndraw(50)
-    integer :: ndraw
 
     integer, intent(in) :: LL
     integer :: L, linval, k1, k2, n1, n2, lll, ka, kb
-    double precision :: cosphiu, omega1, omega2, zb1, zb2, dum, alfa
+    double precision :: omega1, omega2, zb1, zb2, dum, alfa
 
     zlin = dmiss
     if (LL < 1) then
@@ -269,7 +269,7 @@
           end do
           zlin = dum
        case (7)
-          zlin = bermslopeindex(LL)
+          zlin = merge(1.0d0, 0.0d0, bermslopeindex(LL))
        end select
     else if (linval == 49) then
        zlin = Ltop(LL) - Lbot(LL) + 1; zlin = max(zlin, 0d0)

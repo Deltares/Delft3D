@@ -92,7 +92,6 @@ subroutine core_function()
 !
 ! Local variables for input parameters
 !
-integer            :: i
 integer            :: l
 integer            :: m
 integer            :: n, nm

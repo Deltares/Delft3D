@@ -31,7 +31,7 @@
 !
 
 !> compose right-hand side
-subroutine solve_2D(NUMCONST, Ndkx, Lnkx, vol1, kbot, ktop, Lbot, Ltop, sumhorflux, fluxver, source, sink, nsubsteps, jaupdate, ndeltasteps, sed, rhs)
+subroutine solve_2D(NUMCONST, Ndkx, vol1, kbot, ktop, sumhorflux, fluxver, source, sink, nsubsteps, jaupdate, ndeltasteps, sed, rhs)
    use m_flowgeom, only: Ndxi, Ndx! static mesh information
    use m_flowtimes, only: dts
    use timers
@@ -40,13 +40,9 @@ subroutine solve_2D(NUMCONST, Ndkx, Lnkx, vol1, kbot, ktop, Lbot, Ltop, sumhorfl
 
    integer, intent(in) :: NUMCONST !< number of transported quantities
    integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
-   integer, intent(in) :: Lnkx !< total number of flowlinks (dynamically changing)
-!   double precision, dimension(Ndkx),      intent(in)    :: sq       !< flux balance (inward positive)
    double precision, dimension(Ndkx), intent(in) :: vol1 !< volumes
    integer, dimension(Ndkx), intent(in) :: kbot !< flow-node based layer administration
    integer, dimension(Ndkx), intent(in) :: ktop !< flow-node based layer administration
-   integer, dimension(Lnkx), intent(in) :: Lbot !< flow-link based layer administration
-   integer, dimension(Lnkx), intent(in) :: Ltop !< flow-link based layer administration
    double precision, dimension(NUMCONST, Ndkx), intent(inout) :: sumhorflux !< sum of horizontal fluxes
    double precision, dimension(NUMCONST, Ndkx), intent(in) :: fluxver !< vertical fluxes
    double precision, dimension(NUMCONST, Ndkx), intent(in) :: source !< sources
@@ -71,7 +67,7 @@ subroutine solve_2D(NUMCONST, Ndkx, Lnkx, vol1, kbot, ktop, Lbot, Ltop, sumhorfl
 
    dt_loc = dts
 
-   call make_rhs(NUMCONST, thetavert, Ndkx, Lnkx, 0, vol1, kbot, ktop, Lbot, Ltop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
+   call make_rhs(NUMCONST, thetavert, Ndkx, 0, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
 
    !$OMP PARALLEL DO         &
    !$OMP PRIVATE(k,j)        &

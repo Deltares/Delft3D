@@ -11,12 +11,12 @@ set(fortran_sources ${source_path}/mod_precision.f90
 set (solvesaphe_library_name solvesaphe)
 add_library(${solvesaphe_library_name} ${fortran_sources})
 
+target_link_libraries(${solvesaphe_library_name} PRIVATE no_compiler_warnings)
 
 # Set dependencies
 set(oss_dependencies    deltares_common)
 
-oss_include_libraries(${solvesaphe_library_name} oss_dependencies)
-target_link_libraries(${solvesaphe_library_name} ${oss_dependencies})
+target_link_libraries(${solvesaphe_library_name} PRIVATE ${oss_dependencies})
 
 # Set additional compilation properties
 target_compile_options(${solvesaphe_library_name} PRIVATE "${qauto_threaded_flags}")

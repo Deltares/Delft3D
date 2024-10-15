@@ -364,6 +364,9 @@ module m_ec_typedefs
                                                                                      ! ignored if below zero or file is not an ensemble
       integer, dimension(:), pointer                :: dim_varids => null()          !<For each dimension in NetCDF: id of the associated variable                               
       integer, dimension(:), pointer                :: dim_length => null()          !<For each dimension in NetCDF: length
+      integer                                       :: time_id
+      integer                                       :: lonx_id
+      integer                                       :: laty_id
       logical                                       :: one_time_field = .false.      !< TRUE: input file contains single time field
    end type tEcFileReader
 

@@ -16,13 +16,11 @@ rem set the directories containing the binaries, proc_def and bloom.spe and set 
 set bindir=%~dp0
 set libdir=%bindir%..\lib
 set sharedir=%bindir%..\share\delft3d
-set d_emissionsdir=%D3D_HOME%\share\d-emissions
-set PATH=%libdir%;%d_emissionsdir%;%bindir%;%PATH%
+set PATH=%libdir%;%bindir%;%PATH%
 
 rem set some defaults
 set userprocfile=none
 set eco=false
-set dem=false
 set noprocesses=false
 set userspefile=none
 set switches=
@@ -46,8 +44,6 @@ if [%argument%] EQU [-p] (
     shift
 ) else if [%argument%] EQU [-np] (
     set noprocesses=true
-) else if [%argument%] EQU [-dem] (
-    set userprocfile=%d_emissionsdir%\em_proc_def
 ) else (
     rem always copy all additional arguments to delwaq
     set switches=%switches% %argument%)
@@ -83,7 +79,6 @@ echo     ^<inp-file^>         : Name of the Delwaq input file (mandatory)
 echo     -p ^<proc_def^>      : use an alternative process library file instead of $D3D_HOME/share/delft3d/proc_def
 echo     -openbp ^<dll-file^> : provide a dll with extra subroutines for user defined processes
 echo     -np                : do not use any Delwaq processes (all substances will be seen as tracers)
-echo     -dem               : use the D-Emissions proc_def file $D3D_HOME/share/d-emissions/em_proc_def
 echo     -eco [^<spe-file^>]  : use BLOOM, optionally using an alternative algea database for the default
 echo                          $D3D_HOME/share/delft3d/bloom.spe
 echo     ...                : any other options are passed through to Delwaq

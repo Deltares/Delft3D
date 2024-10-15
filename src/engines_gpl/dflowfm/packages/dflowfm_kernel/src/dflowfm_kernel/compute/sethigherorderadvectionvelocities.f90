@@ -36,13 +36,14 @@ subroutine sethigherorderadvectionvelocities()
    use m_sferic
    use m_flowtimes
    use unstruc_messages
+   use m_dslim
+   use m_get_Lbot_Ltop
 
    implicit none
 
    integer :: L, LL, k1, k2, k, ku, kd, kku, ku2, is, ip, Lb, Lt, kkua, kkub
    integer :: n12, ib
    double precision :: half, sl1, sl2, sl3, cf, ucxku, ucyku, ds, ql, qds, ds1x, ds1y, ds2x, ds2y
-   double precision, external :: dslim
    double precision :: dsx, dsy
 
    double precision, external :: nod2linx, nod2liny

@@ -14,37 +14,37 @@ from s3_path_wrangler.paths import S3Path
 
 from src.config.types.path_type import PathType
 from src.utils.minio_rewinder import Plan, PlanItem, Rewinder, VersionPair
-from tools.minio.config import TestCaseData, TestCaseLoader, TestCaseWriter
+from tools.minio.config import TestCaseData, TestCaseWriter
 from tools.minio.minio_tool import MinioTool, MinioToolError
 from tools.minio.prompt import Prompt
 
 
-@pytest.fixture()
+@pytest.fixture
 def rewinder(mocker: MockerFixture) -> Mock:
     return mocker.Mock(spec=Rewinder)  # type: ignore[no-any-return]
 
 
-@pytest.fixture()
-def test_case_loader(mocker: MockerFixture) -> Mock:
-    return mocker.Mock(spec=TestCaseLoader)  # type: ignore[no-any-return]
+@pytest.fixture
+def indexed_configs(mocker: MockerFixture) -> Mock:
+    return mocker.Mock(spec=Dict)  # type: ignore[no-any-return]
 
 
-@pytest.fixture()
+@pytest.fixture
 def test_case_writer(mocker: MockerFixture) -> Mock:
     return mocker.Mock(spec=TestCaseWriter)  # type: ignore[no-any-return]
 
 
-@pytest.fixture()
+@pytest.fixture
 def prompt(mocker: MockerFixture) -> Mock:
     return mocker.Mock(spec=Prompt)  # type: ignore[no-any-return]
 
 
-@pytest.fixture()
+@pytest.fixture
 def minio_tool(
     request: pytest.FixtureRequest,
     rewinder: Mock,
-    test_case_loader: Mock,
     test_case_writer: Mock,
+    indexed_configs: Mock,
     prompt: Mock,
 ) -> MinioTool:
     """Provide MinioTool with mocked rewinder, loader, etc."""
@@ -56,8 +56,8 @@ def minio_tool(
 
     return MinioTool(
         rewinder=rewinder,
-        test_case_loader=test_case_loader,
         test_case_writer=test_case_writer,
+        indexed_configs=indexed_configs,
         prompt=prompt,
         tags=tags,
         color=color,
@@ -118,10 +118,9 @@ class TestMinioTool:
     def test_push__non_existent_test_case__raise_error(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
     ) -> None:
         # Arrange
-        test_case_loader.get_test_cases.return_value = []
+        minio_tool._indexed_configs = {}
 
         # Act
         with pytest.raises(MinioToolError, match="does not match"):
@@ -130,25 +129,20 @@ class TestMinioTool:
     def test_push__multiple_matching_test_cases__raise_error(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
     ) -> None:
         # Arrange
-        test_case_loader.get_test_cases.return_value = [
-            make_test_case("foo"),
-            make_test_case("foobar"),
-        ]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [make_test_case("foo"), make_test_case("foobar")]}
 
         # Act
         with pytest.raises(MinioToolError, match="matches multiple"):
-            minio_tool.push("foo", PathType.INPUT, Path("local"))
+            minio_tool.push("foo", PathType.INPUT, local_dir=Path("local"))
 
     def test_push__unsupported_path_type__raise_error(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
     ) -> None:
         # Arrange
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [make_test_case("foo")]}
 
         # Act
         with pytest.raises(ValueError, match="Unsupported path type"):
@@ -157,11 +151,12 @@ class TestMinioTool:
     def test_push__test_case_has_version_timestamp_from_future__raise_error(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo", version=now + timedelta(seconds=43))]
+        minio_tool._indexed_configs = {
+            Path("configs/foo.xml"): [make_test_case("foo", version=now + timedelta(seconds=43))]
+        }
 
         # Act
         with pytest.raises(MinioToolError, match="future"):
@@ -171,12 +166,11 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
     ) -> None:
         # Arrange
         local_dir = Path("local")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [make_test_case("foo")]}
         rewinder.build_plan.return_value = Plan(
             local_dir=Path("local"),
             minio_prefix=S3Path.from_bucket("my-bucket") / "references",
@@ -184,7 +178,7 @@ class TestMinioTool:
         )
 
         # Act
-        minio_tool.push("foo", PathType.REFERENCE, local_dir)
+        minio_tool.push("foo", PathType.REFERENCE, local_dir=local_dir)
 
         # Assert
         cap = capsys.readouterr()
@@ -194,7 +188,6 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
@@ -203,7 +196,7 @@ class TestMinioTool:
         local_dir = Path("local")
         fs.create_file(local_dir / "foo.txt", contents="foo")
         bucket = S3Path.from_bucket("my-bucket")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [make_test_case("foo")]}
         rewinder.build_plan.return_value = Plan(
             local_dir=Path("local"),
             minio_prefix=bucket / "references",
@@ -212,7 +205,7 @@ class TestMinioTool:
         prompt.yes_no.return_value = False  # No, don't apply these changes.
 
         # Act
-        minio_tool.push("foo", PathType.REFERENCE, local_dir)
+        minio_tool.push("foo", PathType.REFERENCE, local_dir=local_dir)
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
@@ -232,7 +225,6 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
@@ -241,7 +233,7 @@ class TestMinioTool:
         local_dir = Path("local")
         fs.create_file(local_dir / "foo.txt", contents="foo")
         bucket = S3Path.from_bucket("my-bucket")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [make_test_case("foo")]}
         rewinder.build_plan.return_value = Plan(
             local_dir=Path("local"),
             minio_prefix=bucket / "references",
@@ -251,7 +243,7 @@ class TestMinioTool:
         prompt.yes_no.return_value = False  # No, don't apply these changes.
 
         # Act
-        minio_tool.push("foo", PathType.INPUT, local_dir, allow_create_and_delete=True)
+        minio_tool.push("foo", PathType.INPUT, local_dir=local_dir, allow_create_and_delete=True)
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
@@ -269,7 +261,6 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         test_case_writer: Mock,
         rewinder: Mock,
         prompt: Mock,
@@ -282,7 +273,7 @@ class TestMinioTool:
         fs.create_file(local_dir / "foo.txt", contents="foo")
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {config_path: [make_test_case("foo")]}
         plan = Plan(
             local_dir=Path("local"),
             minio_prefix=bucket / "references",
@@ -293,7 +284,7 @@ class TestMinioTool:
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
         # Act
-        minio_tool.push("foo", PathType.REFERENCE, local_dir, allow_create_and_delete=False)
+        minio_tool.push("foo", PathType.REFERENCE, local_dir=local_dir, allow_create_and_delete=False)
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
@@ -303,7 +294,7 @@ class TestMinioTool:
             allow_create_and_delete=False,
         )
         rewinder.execute_plan.assert_called_once_with(plan)
-        test_case_writer.config_updates.assert_called_once_with({"foo": mocker.ANY})
+        test_case_writer.config_updates.assert_called_once_with({"foo": mocker.ANY}, [config_path])
         new_timestamp = test_case_writer.config_updates.call_args.args[0]["foo"]
         now = datetime.now(timezone.utc)
         assert timedelta(seconds=59) <= new_timestamp - now <= timedelta(minutes=2)
@@ -316,7 +307,6 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         test_case_writer: Mock,
         rewinder: Mock,
         prompt: Mock,
@@ -328,7 +318,7 @@ class TestMinioTool:
         fs.create_file(local_dir / "foo.txt", contents="foo")
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {config_path: [make_test_case("foo")]}
         plan = Plan(
             local_dir=local_dir,
             minio_prefix=bucket / "references",
@@ -351,15 +341,16 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         prompt: Mock,
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
-        test_case_loader.get_test_cases.return_value = [
-            make_test_case("foo", version=now - timedelta(days=3)),
-        ]
+        minio_tool._indexed_configs = {
+            Path("configs/foo.xml"): [
+                make_test_case("foo", version=now - timedelta(days=3)),
+            ]
+        }
         rewinder.detect_conflicts.return_value = [
             VersionPair(
                 rewinded_version=None,
@@ -389,7 +380,6 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         test_case_writer: Mock,
         rewinder: Mock,
         prompt: Mock,
@@ -402,7 +392,7 @@ class TestMinioTool:
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
         now = datetime.now(timezone.utc)
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo", version=now - timedelta(days=3))]
+        minio_tool._indexed_configs = {config_path: [make_test_case("foo", version=now - timedelta(days=3))]}
         rewinder.detect_conflicts.return_value = [
             VersionPair(
                 rewinded_version=None,
@@ -421,7 +411,7 @@ class TestMinioTool:
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
         # Act
-        minio_tool.push("foo", PathType.REFERENCE, local_dir)
+        minio_tool.push("foo", PathType.REFERENCE, local_dir=local_dir)
 
         # Assert
         cap = capsys.readouterr()
@@ -432,10 +422,9 @@ class TestMinioTool:
     def test_pull__non_existent_test_case__raise_error(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
     ) -> None:
         # Arrange
-        test_case_loader.get_test_cases.return_value = []
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): []}
 
         # Act
         with pytest.raises(MinioToolError, match="does not match"):
@@ -444,13 +433,14 @@ class TestMinioTool:
     def test_pull__multiple_matching_test_cases__raise_error(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
     ) -> None:
         # Arrange
-        test_case_loader.get_test_cases.return_value = [
-            make_test_case("foo"),
-            make_test_case("foobar"),
-        ]
+        minio_tool._indexed_configs = {
+            Path("configs/foo.xml"): [
+                make_test_case("foo"),
+                make_test_case("foobar"),
+            ]
+        }
 
         # Act
         with pytest.raises(MinioToolError, match="matches multiple"):
@@ -468,7 +458,6 @@ class TestMinioTool:
         path_type: PathType,
         prefix: str,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
@@ -476,10 +465,10 @@ class TestMinioTool:
         # Arrange
         local_dir = Path("local")
         fs.create_dir(local_dir)
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [make_test_case("foo")]}
 
         # Act
-        minio_tool.pull("foo", path_type, local_dir)
+        minio_tool.pull("foo", path_type, local_dir=local_dir)
 
         # Assert
         prompt.yes_no.assert_not_called()
@@ -498,7 +487,6 @@ class TestMinioTool:
         prefix: str,
         rewind: Optional[datetime],
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
@@ -506,11 +494,11 @@ class TestMinioTool:
         # Arrange
         local_dir = Path("local")
         fs.create_file(local_dir / "bar.txt")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [make_test_case("foo")]}
         prompt.yes_no.return_value = True  # Yes, download files.
 
         # Act
-        minio_tool.pull("foo", path_type, local_dir, rewind)
+        minio_tool.pull("foo", path_type, local_dir=local_dir, timestamp=rewind)
 
         # Assert
         prompt.yes_no.assert_called_once()
@@ -519,7 +507,6 @@ class TestMinioTool:
     def test_pull__directory_not_empty_dont_download(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
@@ -527,7 +514,7 @@ class TestMinioTool:
         # Arrange
         test_case = make_test_case("foo")
         fs.create_file(test_case.reference_dir / "foo.txt")
-        test_case_loader.get_test_cases.return_value = [test_case]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [test_case]}
         prompt.yes_no.return_value = False  # No, don't download files.
 
         # Act
@@ -540,10 +527,9 @@ class TestMinioTool:
     def test_pull__unsupported_path_type__raise_error(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
     ) -> None:
         # Arrange
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [make_test_case("foo")]}
 
         # Act
         with pytest.raises(ValueError, match="Unsupported path type"):
@@ -552,12 +538,11 @@ class TestMinioTool:
     def test_pull__not_latest_no_timestamp_no_version__skip_detect_conflicts(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
     ) -> None:
         # Arrange
         test_case = make_test_case("foo")
-        test_case_loader.get_test_cases.return_value = [test_case]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [test_case]}
 
         # Act
         minio_tool.pull("foo", PathType.REFERENCE)
@@ -569,12 +554,12 @@ class TestMinioTool:
         rewinder.download.assert_called_once_with(bucket, key, test_case.reference_dir, None)
 
     def test_pull__not_latest_no_timestamp_with_version__detect_conflicts__no_conflict(
-        self, minio_tool: MinioTool, test_case_loader: Mock, rewinder: Mock, fs: FakeFilesystem
+        self, minio_tool: MinioTool, rewinder: Mock, fs: FakeFilesystem
     ) -> None:
         # Arrange
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
         test_case = make_test_case("foo", version=three_days_ago)
-        test_case_loader.get_test_cases.return_value = [test_case]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [test_case]}
         rewinder.detect_conflicts.return_value = []
 
         # Act
@@ -592,7 +577,6 @@ class TestMinioTool:
     def test_pull__not_latest_no_timestamp_with_version__detect_conflicts__accept(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
@@ -601,7 +585,7 @@ class TestMinioTool:
         # Arrange
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
         test_case = make_test_case("foo", version=three_days_ago)
-        test_case_loader.get_test_cases.return_value = [test_case]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [test_case]}
         conflict = VersionPair(
             rewinded_version=None,
             latest_version=make_object(
@@ -628,7 +612,6 @@ class TestMinioTool:
     def test_pull__not_latest_no_timestamp_with_version__detect_conflicts__decline(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
@@ -637,7 +620,7 @@ class TestMinioTool:
         # Arrange
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
         test_case = make_test_case("foo", version=three_days_ago)
-        test_case_loader.get_test_cases.return_value = [test_case]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [test_case]}
         conflict = VersionPair(
             rewinded_version=None,
             latest_version=make_object(
@@ -662,14 +645,13 @@ class TestMinioTool:
     def test_pull__not_latest_with_timestamp_and_version__timestamp_takes_precedence(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         fs: FakeFilesystem,
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
         test_case = make_test_case("foo", version=now - timedelta(days=3))
-        test_case_loader.get_test_cases.return_value = [test_case]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [test_case]}
 
         # Act
         minio_tool.pull("foo", PathType.INPUT, timestamp=now - timedelta(days=42))
@@ -688,14 +670,13 @@ class TestMinioTool:
     def test_pull__latest_and_version__latest_takes_precedence(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         fs: FakeFilesystem,
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
         test_case = make_test_case("foo", version=now - timedelta(days=3))
-        test_case_loader.get_test_cases.return_value = [test_case]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [test_case]}
 
         # Act
         minio_tool.pull("foo", PathType.INPUT, latest=True)
@@ -714,14 +695,13 @@ class TestMinioTool:
     def test_pull__latest_and_timestamp__latest_takes_precedence(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         fs: FakeFilesystem,
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
         test_case = make_test_case("foo", version=now - timedelta(days=3))
-        test_case_loader.get_test_cases.return_value = [test_case]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [test_case]}
 
         # Act
         minio_tool.pull("foo", PathType.REFERENCE, timestamp=now - timedelta(days=42), latest=True)
@@ -740,10 +720,9 @@ class TestMinioTool:
     def test_update_references__non_existent_test_case__raise_error(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
     ) -> None:
         # Arrange
-        test_case_loader.get_test_cases.return_value = []
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): []}
 
         # Act
         with pytest.raises(MinioToolError, match="does not match"):
@@ -752,26 +731,28 @@ class TestMinioTool:
     def test_update_references__multiple_matching_test_cases__raise_error(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
     ) -> None:
         # Arrange
-        test_case_loader.get_test_cases.return_value = [
-            make_test_case("foo"),
-            make_test_case("foobar"),
-        ]
+        minio_tool._indexed_configs = {
+            Path("configs/foo.xml"): [
+                make_test_case("foo"),
+                make_test_case("foobar"),
+            ]
+        }
 
         # Act
         with pytest.raises(MinioToolError, match="matches multiple"):
-            minio_tool.update_references("foo", Path("local"))
+            minio_tool.update_references("foo", local_dir=Path("local"))
 
     def test_update_references__test_case_has_version_timestamp_from_future__raise_error(
         self,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo", version=now + timedelta(seconds=43))]
+        minio_tool._indexed_configs = {
+            Path("configs/foo.xml"): [make_test_case("foo", version=now + timedelta(seconds=43))]
+        }
 
         # Act
         with pytest.raises(MinioToolError, match="future"):
@@ -781,12 +762,11 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
     ) -> None:
         # Arrange
         local_dir = Path("local")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [make_test_case("foo")]}
         rewinder.build_plan.return_value = Plan(
             local_dir=Path("local"),
             minio_prefix=S3Path.from_bucket("my-bucket") / "references",
@@ -794,7 +774,7 @@ class TestMinioTool:
         )
 
         # Act
-        minio_tool.update_references("foo", local_dir)
+        minio_tool.update_references("foo", local_dir=local_dir)
 
         # Assert
         cap = capsys.readouterr()
@@ -804,7 +784,6 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
@@ -813,7 +792,7 @@ class TestMinioTool:
         local_dir = Path("local")
         fs.create_file(local_dir / "foo.txt", contents="foo")
         bucket = S3Path.from_bucket("my-bucket")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [make_test_case("foo")]}
         rewinder.build_plan.return_value = Plan(
             local_dir=Path("local"),
             minio_prefix=bucket / "references",
@@ -822,7 +801,7 @@ class TestMinioTool:
         prompt.yes_no.return_value = False  # No, don't apply these changes.
 
         # Act
-        minio_tool.update_references("foo", local_dir)
+        minio_tool.update_references("foo", local_dir=local_dir)
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
@@ -842,7 +821,6 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
@@ -850,7 +828,7 @@ class TestMinioTool:
         # Arrange
         test_case = make_test_case("foo")
         fs.create_file(test_case.case_dir / "foo.txt", contents="foo")
-        test_case_loader.get_test_cases.return_value = [test_case]
+        minio_tool._indexed_configs = {Path("configs/foo.xml"): [test_case]}
         rewinder.build_plan.return_value = Plan(
             local_dir=test_case.case_dir,
             minio_prefix=test_case.reference_prefix,
@@ -878,7 +856,6 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         test_case_writer: Mock,
         rewinder: Mock,
         prompt: Mock,
@@ -891,7 +868,7 @@ class TestMinioTool:
         fs.create_file(local_dir / "foo.txt", contents="foo")
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {config_path: [make_test_case("foo")]}
         plan = Plan(
             local_dir=Path("local"),
             minio_prefix=bucket / "references",
@@ -902,7 +879,7 @@ class TestMinioTool:
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
         # Act
-        minio_tool.update_references("foo", local_dir)
+        minio_tool.update_references("foo", local_dir=local_dir)
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
@@ -912,7 +889,7 @@ class TestMinioTool:
             allow_create_and_delete=False,
         )
         rewinder.execute_plan.assert_called_once_with(plan)
-        test_case_writer.config_updates.assert_called_once_with({"foo": mocker.ANY})
+        test_case_writer.config_updates.assert_called_once_with({"foo": mocker.ANY}, [config_path])
         new_timestamp = test_case_writer.config_updates.call_args.args[0]["foo"]
         assert datetime.now(timezone.utc) - new_timestamp < timedelta(seconds=2)
 
@@ -924,7 +901,6 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         test_case_writer: Mock,
         rewinder: Mock,
         prompt: Mock,
@@ -936,7 +912,7 @@ class TestMinioTool:
         fs.create_file(local_dir / "foo.txt", contents="foo")
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        minio_tool._indexed_configs = {config_path: [make_test_case("foo")]}
         plan = Plan(
             local_dir=local_dir,
             minio_prefix=bucket / "references",
@@ -959,15 +935,16 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         rewinder: Mock,
         prompt: Mock,
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
-        test_case_loader.get_test_cases.return_value = [
-            make_test_case("foo", version=now - timedelta(days=3)),
-        ]
+        minio_tool._indexed_configs = {
+            Path("configs/foo.xml"): [
+                make_test_case("foo", version=now - timedelta(days=3)),
+            ]
+        }
         rewinder.detect_conflicts.return_value = [
             VersionPair(
                 rewinded_version=None,
@@ -997,7 +974,6 @@ class TestMinioTool:
         self,
         capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
-        test_case_loader: Mock,
         test_case_writer: Mock,
         rewinder: Mock,
         prompt: Mock,
@@ -1010,7 +986,7 @@ class TestMinioTool:
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
         now = datetime.now(timezone.utc)
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo", version=now - timedelta(days=3))]
+        minio_tool._indexed_configs = {config_path: [make_test_case("foo", version=now - timedelta(days=3))]}
         rewinder.detect_conflicts.return_value = [
             VersionPair(
                 rewinded_version=None,
@@ -1029,7 +1005,7 @@ class TestMinioTool:
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
         # Act
-        minio_tool.update_references("foo", local_dir)
+        minio_tool.update_references("foo", local_dir=local_dir)
 
         # Assert
         cap = capsys.readouterr()

@@ -40,6 +40,7 @@ module m_fm_wq_processes
    use m_waq_data_structure
    use processet
    use results, only: OutputPointers
+   implicit none
 
    character(20), allocatable :: syunit_sub(:) !< substance unit from substance file
    character(20), allocatable :: coname_sub(:) !< constant names from substance file
@@ -70,7 +71,6 @@ module m_fm_wq_processes
    real(hp) :: waq_vol_dry_thr = 1.0d-3 !< minimum volume for processes to be active
    real(hp) :: waq_dep_dry_thr = 1.0d-3 !< minimum depth for processes to be active
    integer :: flux_int !< flux integration by WAQ (1) or by FM (2, not implemented)
-   integer :: wqbot3D_output = 0 !< write 3D wqbot output
    integer :: kbx !< pointer of first segment to D-Flow FM 3D administration
    integer :: ktx !< pointer of last  segment to D-Flow FM 3D administration
 
@@ -138,9 +138,9 @@ module m_fm_wq_processes
    integer :: isfwaveheight !< pointer to wave height     segment function
    integer :: isfwavelength !< pointer to wave length     segment function
    integer :: isfwaveperiod !< pointer to wave period     segment function
-!
-!     Balance output
-!
+   !
+   !     Balance output
+   !
    integer :: ibflag !< if 1 then mass balance output
    real(hp), allocatable, dimension(:, :, :), target :: flxdmp !< Fluxes at dump segments
    real(hp), allocatable, dimension(:, :, :) :: flxdmpreduce !< Fluxes at dump segments

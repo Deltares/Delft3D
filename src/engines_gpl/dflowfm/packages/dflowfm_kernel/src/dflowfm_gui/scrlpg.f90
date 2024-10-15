@@ -32,6 +32,7 @@
 
 !
       subroutine SCRLPG(HLPTXT, NUMTXT, NUMTOP, NUMCHC, IH)
+         use m_page
          implicit none
          integer :: ih
          integer :: numchc

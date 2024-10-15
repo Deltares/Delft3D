@@ -30,23 +30,31 @@
 !
 !
 
+module m_loadbitmap
+
+implicit none
+
+contains
+
       subroutine LOADBITMAP(FILNAM)
-         use M_BITMAP
-         use M_WEARELT
+         use m_bitmap
+         use m_wearelt
          use string_module, only: find_first_letter, find_first_char
-         implicit none
+         use m_drawthis
+         use m_qnerror
+         use m_qn_read_error
+         use m_qn_eof_error
+
          integer :: ierr
          integer :: k
          integer :: k1
          integer :: k2
          integer :: l
          integer :: minp
-         integer :: ndraw
          integer :: num
          integer :: numbersonline
          logical JAWEL
          integer INFO(10)
-         common / DRAWTHIS / ndraw(50)
          character FILNAM * (*), REC * 132
 
          K1 = find_first_char(FILNAM)
@@ -155,3 +163,5 @@
          call doclose(MINP)
          return
       end
+
+end module m_loadbitmap

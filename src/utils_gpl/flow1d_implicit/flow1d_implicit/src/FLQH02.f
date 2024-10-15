@@ -261,8 +261,15 @@ c determine the flowtype
         endif
 c      endif
 
-      goto (1,2,3,4) kflow
-
+      if (kflow == 1 ) then
+         goto 1
+      else if (kflow == 2 ) then
+         goto 2
+      else if (kflow == 3 ) then
+         goto 3
+      else if (kflow == 4 ) then
+         goto 4
+      end if
 c
 c flowtype 1: critical depth at inlet
  1    r1 = beta * (hup - bot)

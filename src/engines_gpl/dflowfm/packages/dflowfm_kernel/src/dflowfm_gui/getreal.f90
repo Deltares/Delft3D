@@ -30,10 +30,19 @@
 !
 !
 
+module m_getreal
+
+implicit none
+
+contains
+
       ! Now a double precision (double precision ::)
       subroutine GETREAL(TEXT, value)
          use m_devices
          use M_MISSING
+         use m_helpnow
+         use m_timlin
+         use m_fkeys
          implicit none
          integer :: infoattribute
          integer :: infoinput
@@ -42,11 +51,9 @@
          integer :: key
          integer :: nbckgr
          integer :: nforgr
-         integer :: nlevel
          double precision :: val
          double precision :: value
-         character WRDKEY * 40, TEXT * (*)
-         common / HELPNOW / WRDKEY, NLEVEL
+         character TEXT * (*)
 
          VAL = value
          IXP = IWS / 2
@@ -81,3 +88,5 @@
          call ITEXTCOLOURN(NFORGR, NBCKGR)
          return
       end
+
+end module m_getreal

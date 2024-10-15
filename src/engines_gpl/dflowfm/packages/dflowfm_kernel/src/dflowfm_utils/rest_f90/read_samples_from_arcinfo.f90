@@ -37,6 +37,9 @@ subroutine read_samples_from_arcinfo(filnam, jadoorladen, japrompt) ! reaasc
    use m_samples
    use m_samples_refine, only: iHesstat, iHesstat_DIRTY
    use m_arcinfo
+   use m_drawthis
+   use m_readyy
+   use m_get_samples_boundingbox
    implicit none
    character(len=*), intent(in) :: filnam !< Name of *.asc file.
    integer, intent(in) :: jadoorladen !< Whether or not (1/0) to keep the existing samples in the global set.
@@ -44,9 +47,6 @@ subroutine read_samples_from_arcinfo(filnam, jadoorladen, japrompt) ! reaasc
 
    integer :: i, j, istep, marc
    character(len=10) :: TEX
-
-   integer :: ndraw
-   common / DRAWTHIS / ndraw(50)
 
    call READYY('Reading arcinfo file', 0d0)
    call oldfil(marc, filnam)

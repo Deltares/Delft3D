@@ -28,7 +28,7 @@ c
 c     Declaration of parameters
 c
       integer    icon , lcntrnm
-      character*(*)     cntrnm
+      character(len=*)     cntrnm
 c
 c     Declaration of local variables
 c
@@ -54,8 +54,8 @@ c
 c     Declaration of parameters
 c
       integer       icon   ,lcntrnm
-      character*40  contrnam(*)
-      character*(*) cntrnm
+      character(len=40) contrnam(*)
+      character(len=*) cntrnm
 c
 c     Declaration of local variables
 c

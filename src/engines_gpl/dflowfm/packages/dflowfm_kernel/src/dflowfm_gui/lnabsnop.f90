@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_lnabs_nop
+   implicit none
+contains
       subroutine LNABSnop(X, Y)
-         use unstruc_opengl
-         implicit none
+         use unstruc_opengl, only: InOpenGLRendering, LineTo
+
          double precision :: x, y
 
          if (InOpenGLRendering) then
@@ -40,4 +42,5 @@
          else
             call IGRLINETO(real(X), real(y))
          end if
-      end
+      end subroutine LNABSnop
+end module m_lnabs_nop

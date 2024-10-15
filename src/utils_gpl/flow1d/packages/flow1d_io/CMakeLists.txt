@@ -15,11 +15,8 @@ create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src)
                             netcdf4
                             netcdff)
 
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(UNIX)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 if (WIN32)
    # Set additional compilation properties

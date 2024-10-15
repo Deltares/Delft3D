@@ -30,34 +30,27 @@
 !
 !
 
+module m_minmxnetcells
+
+implicit none
+
+contains
+
 subroutine MINMXNETCELLS()
 
    use m_netw
-   use m_flowgeom
-   use m_missing
-
-   implicit none
-
-   double precision :: dv
+   use m_flowgeom, only: xz, yz
+   use m_missing, only: dmiss
+   use m_depmax
+   use m_inview
+   
    integer :: i
-   integer :: jaauto
    integer :: k
-   integer :: ncols
-   integer :: nie
-   integer :: nis
-   integer :: nv
    double precision :: rd
    double precision :: rmax
    double precision :: rmin
-   double precision :: val
-   double precision :: vmax
-   double precision :: vmin
 
    double precision, external :: znetcell
-   logical inview
-
-   ! BEPAAL MINIMUM EN MAXIMUM VAN DIEPTES BINNEN VIEWING AREA
-   common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
 
    if (JAAUTO > 0) then
       RMIN = 1.0d30
@@ -90,3 +83,5 @@ subroutine MINMXNETCELLS()
 
    return
 end subroutine MINMXNETCELLS
+
+end module m_minmxnetcells

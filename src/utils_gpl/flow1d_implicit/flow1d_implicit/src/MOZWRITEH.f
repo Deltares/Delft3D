@@ -8,13 +8,13 @@ c
       integer       nqlat, ngrid, itmstp
       real          qltpar(9,nqlat), tempuse(ngrid)
       double precision h(ngrid, 3)
-      character*40  qlatid(nqlat)
+      character(len=40) qlatid(nqlat)
       
       integer       jopt, igr, iout, nfm, i, ii, istat, iopt, 
      +              nloca, nhis, iloc   
-      character*120 name, path
-      character*20  idpara(1), idq
-      character*1   quote, header*160
+      character(len=120) name, path
+      character(len=20)  idpara(1), idq
+      character(len=1)   quote, header*160
         
       quote = char(39)
       idpara(1) = 'Water Level'

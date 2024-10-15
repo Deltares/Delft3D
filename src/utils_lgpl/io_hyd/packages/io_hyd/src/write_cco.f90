@@ -58,7 +58,7 @@
       integer       lun
       integer       filtyp
       integer       plform
-      character*6   binary
+      character(len=6) binary
       binary = 'BINARY'
       plform = PL_DOS
 

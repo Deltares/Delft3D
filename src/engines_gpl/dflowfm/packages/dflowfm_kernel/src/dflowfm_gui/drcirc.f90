@@ -30,9 +30,17 @@
 !
 !
 
+module m_drcirc
+use m_rcirc
+
+
+implicit none
+
+contains
+
       subroutine DRCIRC(XD, YD, ZD)
-         use gridoperations
-         implicit none
+         use m_three_two
+
          double precision :: x
          double precision :: y
          double precision :: z
@@ -41,3 +49,5 @@
          call RCIRC(X, Y)
          return
       end
+
+end module m_drcirc

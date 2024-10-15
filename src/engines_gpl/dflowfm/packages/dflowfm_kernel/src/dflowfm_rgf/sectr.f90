@@ -36,6 +36,12 @@
         use unstruc_colors
         use unstruc_messages
         use unstruc_display
+        use m_splint
+        use m_spline
+        use m_readyy
+        use m_qnerror
+        use m_numpold
+        use m_get_ij
 
         implicit none
         integer :: mmax, nmax, imax
@@ -109,7 +115,7 @@
               call GETIJ(Y, YI, mmax, nmax, imax, I, I, 1, NUMPI)
               call GETIJ(X, XJ, mmax, nmax, imax, J, J, 1, NUMPJ)
               call GETIJ(Y, YJ, mmax, nmax, imax, J, J, 1, NUMPJ)
-              call SECT3r(XI, YI, XJ, YJ, mmax, nmax, imax, CRP, &
+              call SECT3r(XI, YI, XJ, YJ, imax, CRP, &
                           NUMPI, NUMPJ, NUMCRO, TI, TJ, XSPc, YSPc)
               if (NUMCRO == 1) then
                  if (NTYP(I) * NTYP(J) == 1) then

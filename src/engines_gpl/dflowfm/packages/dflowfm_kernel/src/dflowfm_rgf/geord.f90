@@ -31,6 +31,7 @@
 !
 
       subroutine GEORD(xgeo, ygeo, xrd, yrd, JAPARIJS)
+         use m_wgs842bessel
          implicit none
          integer :: japarijs
 

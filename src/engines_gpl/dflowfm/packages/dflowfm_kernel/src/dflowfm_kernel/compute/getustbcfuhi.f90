@@ -38,6 +38,8 @@
       use m_sediment, only: stm_included
       use m_turbulence, only: tkepro
       use m_flowtimes, only: dts
+      use m_get_ustwav
+      use m_get_czz0
 
       implicit none
       integer, intent(in) :: LL, Lb
@@ -74,6 +76,10 @@
       if (hu(LL) < trsh_u1Lb) then
          gsx = ag * (s1(ln(2, LL)) - s1(ln(1, LL))) * dxi(LL)
       end if
+
+      u1Lb = u1(Lb)
+
+10    continue
 
       if (ifrctyp < 10) then
          if (frcn > 0d0) then
@@ -112,17 +118,12 @@
             sqcf = 0d0
          end if
 
-         u1Lb = u1(Lb)
-
-10       continue
-
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
          ! updated ustokes needed before conversion to eulerian velocities
          if (jawave > 0 .and. .not. flowwithoutwaves) then
             ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
-            call getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu)
-            !
-            if (jawaveStokes >= 1) then ! ustokes correction at bed
+            call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu)
+            if (jawaveStokes > 0) then
                umod = sqrt((u1Lb - ustokes(Lb)) * (u1Lb - ustokes(Lb)) + (v(Lb) - vstokes(Lb)) * (v(Lb) - vstokes(Lb)))
             end if
          end if
@@ -173,7 +174,7 @@
                   cphi = csw * csu(LL) + snw * snu(LL)
                   sphi = -csw * snu(LL) + snw * csu(LL)
                   abscos = abs(cphi * uu + sphi * vv) / umod
-                  call getsoulsbywci(modind, z00, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL, taubxuLL)
+                  call getsoulsbywci(modind, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL, taubxuLL)
                   ! ustbLL = sqrt(umod*taubpuLL)
                else if (modind == 9) then ! wave-current interaction van Rijn (2004)
                   call getvanrijnwci(LL, umod, u2dh, taubpuLL, z0urouL)
@@ -218,7 +219,7 @@
                if (stm_included) wblt(LL) = deltau
                !
                ! Streaming below deltau with linear distribution
-               if (jawavestreaming == 1 .and. deltau > 1d-7) then ! Streaming below deltau with linear distribution
+               if (jawavestreaming > 0 .and. deltau > 1d-7) then ! Streaming below deltau with linear distribution
                   Dfu0 = Dfuc ! (m/s2)
                   do L = Lb, Ltop(LL)
                      if (hu(L) <= deltau) then
@@ -258,18 +259,14 @@
             z0urou(LL) = z0ucur(LL) ! morfo, bedforms, trachytopes
          end if
 
-         if (jawave > 0 .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
-            adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
-         end if
-
       else if (ifrctyp == 10) then ! Hydraulically smooth, glass etc
          nit = 0
          u1Lb = u1(Lb)
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
-         if (jawave > 0) then
-            call getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
-            !
-            if (jawaveStokes >= 1) then
+         if (jawave > 0 .and. .not. flowwithoutwaves) then
+            call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
+            ! strictly, not necessary as ust==0 for jawavestokes==0
+            if (jawavestokes > 0) then
                umod = sqrt((u1Lb - ustokes(Lb)) * (u1Lb - ustokes(Lb)) + (v(Lb) - vstokes(Lb)) * (v(Lb) - vstokes(Lb))) ! was ustokes(LL)
             end if
          end if
