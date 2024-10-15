@@ -2089,7 +2089,7 @@ contains
 
          ! SOURCE-SINKS
       case ("sourcesinks")
-         if (item_name == "cosumo") then
+         if (item_name == "COSUMO") then
             select case (field_name)
             case ("nf_q_source")
                if (.not. associated(nf_q_source)) then
