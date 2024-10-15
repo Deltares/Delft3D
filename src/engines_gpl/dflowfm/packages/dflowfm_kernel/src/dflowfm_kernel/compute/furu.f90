@@ -353,7 +353,7 @@
 
     call furusobekstructures()
 
-    if (jawave == 3 .or. jawave == 6 .and. .not. flowWithoutWaves) then
+    if (jawave == 3 .or. jawave >= 6 .and. .not. flowWithoutWaves) then
        if (kmx == 0) then
           !   add wave-induced mass fluxes on boundaries to convert euler input to GLM
           do L = Lnxi + 1, Lnx
