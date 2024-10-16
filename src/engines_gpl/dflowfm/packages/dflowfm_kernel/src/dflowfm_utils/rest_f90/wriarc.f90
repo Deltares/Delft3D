@@ -30,27 +30,29 @@
 !
 !
 
-      subroutine WRIARC(MARC, DP, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
+      subroutine WRIARC(MARC, data_array, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
          use m_writearcinfoheader
+         use precision, only: dp
          implicit none
-         double precision :: dmiss
-         double precision :: dp
-         double precision :: dx, dy
+         real(kind=dp) :: dmiss
+         integer :: mmax
+         integer :: nmax
+         real(kind=dp), dimension(MMAX, NMAX) :: data_array
+         real(kind=dp) :: dx, dy
          integer :: i
          integer :: j
          integer :: marc
          integer :: mc
-         integer :: mmax
+
          integer :: nc
-         integer :: nmax
-         double precision :: x0
-         double precision :: y0
-         dimension DP(MMAX, NMAX)
+
+         real(kind=dp) :: x0
+         real(kind=dp) :: y0
 
          call WRITEARCINFOHEADER(MARC, MC, NC, X0, Y0, DX, DY, dmiss)
 
          do J = NC, 1, -1
-            write (MARC, '(15000F10.2)') (DP(I, J), I=1, MC)
+            write (MARC, '(15000F10.2)') (data_array(I, J), I=1, MC)
          end do
          return
       end

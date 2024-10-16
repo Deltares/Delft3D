@@ -28,7 +28,7 @@
 !-------------------------------------------------------------------------------
 
 module fm_external_forcings
-   use precision_basics, only: hp
+   use precision_basics, only: hp, dp
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname
    implicit none
 
@@ -43,14 +43,14 @@ module fm_external_forcings
 
    interface
       module subroutine set_external_forcings_boundaries(time, iresult)
-         double precision, intent(in) :: time !< current simulation time (s)
+         real(kind=dp), intent(in) :: time !< current simulation time (s)
          integer, intent(out) :: iresult !< Integer error status
       end subroutine set_external_forcings_boundaries
    end interface
 
    interface
       module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
-         double precision, intent(in) :: time_in_seconds !< Time in seconds
+         real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
          logical, intent(in) :: initialization !< initialization phase
          integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
       end subroutine set_external_forcings
@@ -95,7 +95,7 @@ contains
       use MessageHandling, only: LEVEL_WARN, mess
       use unstruc_messages, only: callback_msg
 
-      double precision, intent(in) :: time_in_seconds !< Current time when doing this action
+      real(kind=dp), intent(in) :: time_in_seconds !< Current time when doing this action
 
       character(len=255) :: tmpstr
 
@@ -116,7 +116,7 @@ contains
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
 
-      double precision, intent(in) :: time_in_seconds !< Current time when setting wind data
+      real(kind=dp), intent(in) :: time_in_seconds !< Current time when setting wind data
       integer, intent(out) :: iresult !< Error indicator
 
       integer :: ec_item_id, first, last, link, i, k
@@ -266,7 +266,7 @@ contains
          use m_flowtimes, only: irefdate, tzone, tunit
 
          integer, intent(in) :: item !< Input item
-         double precision, intent(inout) :: array(:) !< Array that stores the obatained values
+         real(kind=dp), intent(inout) :: array(:) !< Array that stores the obatained values
 
          success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
 
@@ -275,8 +275,8 @@ contains
 !> perform_additional_spatial_interpolation, the size of array_x and array_y is lnx.
       subroutine perform_additional_spatial_interpolation(array_x, array_y)
 
-         double precision, intent(inout) :: array_x(:) !< Array of X-components for interpolation
-         double precision, intent(inout) :: array_y(:) !< Array of Y-components for interpolation
+         real(kind=dp), intent(inout) :: array_x(:) !< Array of X-components for interpolation
+         real(kind=dp), intent(inout) :: array_y(:) !< Array of Y-components for interpolation
 
          do link = 1, lnx
             array_x(link) = array_x(link) + 0.5d0 * (ec_pwxwy_x(ln(1, link)) + ec_pwxwy_x(ln(2, link)))
@@ -297,7 +297,7 @@ contains
 !> initialize_array_with_zero
       subroutine initialize_array_with_zero(array)
 
-         double precision, allocatable, intent(inout) :: array(:) !< Array that will be initialized
+         real(kind=dp), allocatable, intent(inout) :: array(:) !< Array that will be initialized
 
          if (allocated(array)) then
             array(:) = 0.d0
@@ -312,7 +312,7 @@ contains
       use m_wind, only: jawind, japatm
       use dfm_error, only: DFM_NOERR
 
-      double precision, intent(in) :: time_in_seconds !< Current time when getting and applying winds
+      real(kind=dp), intent(in) :: time_in_seconds !< Current time when getting and applying winds
       integer, intent(out) :: iresult !< Error indicator
       if (jawind == 1 .or. japatm > 0) then
          call prepare_wind_model_data(time_in_seconds, iresult)
@@ -436,7 +436,7 @@ contains
       integer :: ja_ext_force
       logical :: ext_force_bnd_used
       integer :: ierr, method
-      double precision :: return_time
+      real(kind=dp) :: return_time
       integer :: numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf
       integer :: nx
       integer :: ierror
@@ -655,12 +655,12 @@ contains
       character(len=ini_value_len) :: quantity !
       character(len=ini_value_len) :: location_file !< contains either the name of the polygon file (.pli) or the nodeId
       character(len=ini_value_len) :: forcing_file !
-      double precision :: return_time !
-      double precision :: tr_ws ! Tracer fall velocity
-      double precision :: tr_decay_time ! Tracer decay time
-      double precision :: rrtolb ! Local, optional boundary tolerance value.
-      double precision :: width1D ! Local, optional custom 1D boundary width
-      double precision :: blDepth ! Local, optional custom boundary bed level depth below initial water level
+      real(kind=dp) :: return_time !
+      real(kind=dp) :: tr_ws ! Tracer fall velocity
+      real(kind=dp) :: tr_decay_time ! Tracer decay time
+      real(kind=dp) :: rrtolb ! Local, optional boundary tolerance value.
+      real(kind=dp) :: width1D ! Local, optional custom 1D boundary width
+      real(kind=dp) :: blDepth ! Local, optional custom boundary bed level depth below initial water level
 
       integer :: i
       integer :: num_items_in_file
@@ -789,7 +789,7 @@ contains
 
       character(len=256), intent(in) :: qidfm ! constituent index
       integer, intent(in) :: nbnd ! boundary cell index
-      double precision, intent(in) :: rettime ! return time (h)
+      real(kind=dp), intent(in) :: rettime ! return time (h)
       integer :: thrtlen ! temp array length
 
       if (allocated(thrtt)) then
@@ -843,14 +843,14 @@ contains
       integer, intent(in) :: filetype
       integer, intent(in) :: nx !
       integer, dimension(nx), intent(inout) :: kce !
-      double precision, intent(in) :: return_time
+      real(kind=dp), intent(in) :: return_time
       integer, intent(inout) :: numz, numu, nums, numtm, numsd, & !
                                 numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf !
-      double precision, intent(in) :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
+      real(kind=dp), intent(in) :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
 
-      double precision, dimension(NUMGENERALKEYWRD), optional, intent(in) :: tfc
-      double precision, optional, intent(in) :: width1D !< Optional custom width for boundary flow link.
-      double precision, optional, intent(in) :: blDepth !< Optional custom bed level depths below water level boundaries's initial value for boundary points.
+      real(kind=dp), dimension(NUMGENERALKEYWRD), optional, intent(in) :: tfc
+      real(kind=dp), optional, intent(in) :: width1D !< Optional custom width for boundary flow link.
+      real(kind=dp), optional, intent(in) :: blDepth !< Optional custom bed level depths below water level boundaries's initial value for boundary points.
 
       character(len=256) :: qidfm !
       integer :: itpbn
@@ -1115,7 +1115,7 @@ contains
       character(len=256) :: tracnam, sfnam, qidnam
       integer :: itrac, isf
       integer, external :: findname
-      double precision, dimension(:), pointer :: pzmin, pzmax
+      real(kind=dp), dimension(:), pointer :: pzmin, pzmax
 
       success = .true. ! initialization
 
@@ -1266,15 +1266,15 @@ contains
       integer, intent(in) :: targetindex !< Target index in target value array (typically, the current count of this object type, e.g. numlatsg).
       integer, intent(in) :: vectormax !< The number of values per object ('kx'), typically 1.
       logical :: success !< Return value. Whether relation was added successfully.
-      double precision, intent(inout), target :: targetarray(:) !< The target array in which the value(s) will be stored. Either now with scalar, or later via ec_gettimespacevalue() calls.
+      real(kind=dp), intent(inout), target :: targetarray(:) !< The target array in which the value(s) will be stored. Either now with scalar, or later via ec_gettimespacevalue() calls.
 
       character(len=256) :: valuestring, fnam
-      double precision :: valuedble
-      double precision :: xdum(1), ydum(1)
+      real(kind=dp) :: valuedble
+      real(kind=dp) :: xdum(1), ydum(1)
       integer :: kdum(1)
       integer :: ierr, L
-      double precision, pointer :: targetarrayptr(:)
-      double precision, pointer :: dbleptr(:)
+      real(kind=dp), pointer :: targetarrayptr(:)
+      real(kind=dp), pointer :: dbleptr(:)
       integer :: tgtitem
       integer, pointer :: intptr, multuniptr
       logical :: file_exists
@@ -2314,11 +2314,12 @@ contains
       use m_laterals, only: initialize_lateraldata
       use m_get_kbot_ktop
       use m_get_prof_1D
+      use mathconsts, only: pi
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
       logical :: hyst_dummy(2)
-      double precision :: area, width, hdx
+      real(kind=dp) :: area, width, hdx
       type(t_storage), pointer :: stors(:)
 
       ! Cleanup:
@@ -2383,8 +2384,8 @@ contains
       end if
 
       if (ja_computed_airdensity == 1) then
-         if ( (japatm /= 1) .or. .not. tair_available .or. .not. dewpoint_available .or. &
-            (item_atmosphericpressure == ec_undef_int) .or. (item_airtemperature == ec_undef_int) .or. (item_humidity == ec_undef_int) ) then
+         if ((japatm /= 1) .or. .not. tair_available .or. .not. dewpoint_available .or. &
+             (item_atmosphericpressure == ec_undef_int) .or. (item_airtemperature == ec_undef_int) .or. (item_humidity == ec_undef_int)) then
             call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected, as separate quantities (e.g., QUANTITY = airpressure), in ext-file in combination with keyword computedAirdensity in mdu-file.')
          else
             if (ja_airdensity == 1) then
@@ -2471,6 +2472,9 @@ contains
          if (allocated(stemdiam) .and. allocated(stemdens)) then
             do k = 1, ndx
                if (stemdens(k) > 0d0) then
+                  if ((pi * (stemdiam(k) / 2)**2 * stemdens(k)) > 1.0_dp) then
+                     call mess(LEVEL_ERROR, 'The area covered by a plant or pile (based on the quantity "stemdiameter") is larger than the typical area of it (calculated as the reciprocal of the quantity "stemdensity").')
+                  end if
                   rnveg(k) = stemdens(k)
                   diaveg(k) = stemdiam(k)
                end if

@@ -1914,6 +1914,7 @@ contains
       use unstruc_messages
       use m_transport, only: NUMCONST, constituents, const_names, ISALT, ITEMP, ITRA1
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
+      use string_module, only: str_tolower
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'
       character(kind=c_char), intent(in) :: c_item_name(*) !< Name of a single item's index/location, e.g., 'Pump01'
@@ -1930,10 +1931,10 @@ contains
       character(len=MAXSTRLEN) :: var_name
       character(len=MAXSTRLEN) :: item_name
       character(len=MAXSTRLEN) :: field_name
-      ! Store the name
-      var_name = char_array_to_string(c_var_name)
+      ! Store the name and convert var and field to lowercase to make them case-insensitive.
+      var_name = str_tolower(char_array_to_string(c_var_name))
       item_name = char_array_to_string(c_item_name)
-      field_name = char_array_to_string(c_field_name)
+      field_name = str_tolower(char_array_to_string(c_field_name))
 
       select case (var_name)
          ! PUMPS
@@ -1960,7 +1961,7 @@ contains
          end if
 
          select case (field_name)
-         case ("crest_level", "CrestLevel", "crestLevel")
+         case ("crestlevel")
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
@@ -1980,12 +1981,12 @@ contains
          end if
 
          select case (field_name)
-         case ("gateLowerEdgeLevel")
+         case ("gateloweredgelevel")
             if (is_in_network) then
                x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
             end if
             return
-         case ("crest_level", "CrestLevel", "crestLevel")
+         case ("crestlevel")
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             end if
@@ -1999,19 +2000,19 @@ contains
             return
          end if
          select case (field_name)
-         case ("sill_level", "CrestLevel")
+         case ("crestlevel")
             x = c_loc(zcgen((item_index - 1) * 3 + 1))
             return
-         case ("door_height", "GateHeight")
+         case ("gateheight")
             x = c_loc(generalstruc(item_index)%gatedoorheight)
             return
-         case ("lower_edge_level", "GateLowerEdgeLevel")
+         case ("gateloweredgelevel")
             x = c_loc(zcgen((item_index - 1) * 3 + 2))
             return
-         case ("opening_width", "GateOpeningWidth")
+         case ("gateopeningwidth")
             x = c_loc(zcgen((item_index - 1) * 3 + 3))
             return
-         case ("horizontal_opening_direction", "GateOpeningHorizontalDirection")
+         case ("gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
             return
          end select
@@ -2024,14 +2025,14 @@ contains
          end if
 
          select case (field_name)
-         case ("CrestLevel", "crestLevel")
+         case ("crestlevel")
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
                x = c_loc(zcgen((item_index - 1) * 3 + 1))
             end if
             return
-         case ("GateHeight", "gateHeight")
+         case ("gateheight")
             if (is_in_network) then
                x = get_gate_door_height_c_loc(network%sts%struct(item_index))
             else
@@ -2039,21 +2040,21 @@ contains
             end if
 
             return
-         case ("GateLowerEdgeLevel", "gateLowerEdgeLevel")
+         case ("gateloweredgelevel")
             if (is_in_network) then
                x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
             else
                x = c_loc(zcgen((item_index - 1) * 3 + 2))
             end if
             return
-         case ("GateOpeningWidth", "gateOpeningWidth")
+         case ("gateopeningwidth")
             if (is_in_network) then
                x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
             else
                x = c_loc(zcgen((item_index - 1) * 3 + 3))
             end if
             return
-         case ("GateOpeningHorizontalDirection", "gateOpeningHorizontalDirection")
+         case ("gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
             return
          end select
@@ -2066,7 +2067,7 @@ contains
          end if
 
          select case (field_name)
-         case ("valveOpeningHeight")
+         case ("valveopeningheight")
             if (is_in_network) then
                x = get_valve_opening_height_c_loc(network%sts%struct(item_index))
             end if
@@ -2081,7 +2082,7 @@ contains
          end if
 
          select case (field_name)
-         case ("valveRelativeOpening")
+         case ("valverelativeopening")
             x = get_valve_relative_opening_c_loc(longculverts(item_index))
             return
          end select

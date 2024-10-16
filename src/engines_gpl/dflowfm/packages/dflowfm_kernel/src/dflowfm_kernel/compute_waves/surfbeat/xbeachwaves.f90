@@ -4999,26 +4999,26 @@ subroutine solve_tridiag(a, b, c, d, x, n)
    integer, intent(in) :: n
    double precision, dimension(n), intent(in) :: a, b, c, d
    double precision, dimension(n), intent(out) :: x
-   double precision, dimension(n) :: cp, dp
+   double precision, dimension(n) :: cprime, dprime
    double precision :: m
 
    integer :: i
    integer, parameter :: r8 = kind(1.d0)
 
    ! initialize c-prime and d-prime
-   cp(1) = c(1) / b(1)
-   dp(1) = d(1) / b(1)
+   cprime(1) = c(1) / b(1)
+   dprime(1) = d(1) / b(1)
    ! solve for vectors c-prime and d-prime
    do i = 2, n
-      m = b(i) - cp(i - 1) * a(i)
-      cp(i) = c(i) / m
-      dp(i) = (d(i) - dp(i - 1) * a(i)) / m
+      m = b(i) - cprime(i - 1) * a(i)
+      cprime(i) = c(i) / m
+      dprime(i) = (d(i) - dprime(i - 1) * a(i)) / m
    end do
    ! initialize x
-   x(n) = dp(n)
+   x(n) = dprime(n)
    ! solve for x from the vectors c-prime and d-prime
    do i = n - 1, 1, -1
-      x(i) = dp(i) - cp(i) * x(i + 1)
+      x(i) = dprime(i) - cprime(i) * x(i + 1)
    end do
 
 end subroutine solve_tridiag

@@ -239,7 +239,7 @@ contains
         REAL(kind = real_wp) :: DMINP
         REAL(kind = real_wp) :: DMINS
         REAL(kind = real_wp) :: DN
-        REAL(kind = real_wp) :: DP
+        REAL(kind = real_wp) :: DPO4
         REAL(kind = real_wp) :: DSI
         REAL(kind = real_wp) :: FACTOR_MPB1
         REAL(kind = real_wp) :: FACTOR_MPB2
@@ -448,7 +448,7 @@ contains
                 !                beschikbaarheid nutrienten (g/d)
 
                 DN = (NH4 + NO3) / DELT
-                DP = PO4 / DELT
+                DPO4 = PO4 / DELT
                 DSI = SI / DELT
 
                 !                uptake mag niet groter zijn dan beschikbaarheid
@@ -488,8 +488,8 @@ contains
                     FACTOR_MPB1 = FGP_MPB1 * PCRAT_MPB1 / (FGP_MPB1 * PCRAT_MPB1 + FGP_MPB2 * PCRAT_MPB2)
                     FACTOR_MPB2 = 1. - FACTOR_MPB1
 
-                    FGP_MPB1 = ((FACTOR_MPB1 * DP / PCRAT_MPB1) + MRES_MPB1) / (1. - R_PR_MPB1)
-                    FGP_MPB2 = ((FACTOR_MPB2 * DP / PCRAT_MPB2) + MRES_MPB2) / (1. - R_PR_MPB2)
+                    FGP_MPB1 = ((FACTOR_MPB1 * DPO4 / PCRAT_MPB1) + MRES_MPB1) / (1. - R_PR_MPB1)
+                    FGP_MPB2 = ((FACTOR_MPB2 * DPO4 / PCRAT_MPB2) + MRES_MPB2) / (1. - R_PR_MPB2)
 
                     FRES_MPB1 = MRES_MPB1 + R_PR_MPB1 * FGP_MPB1
                     FRES_MPB2 = MRES_MPB2 + R_PR_MPB2 * FGP_MPB2

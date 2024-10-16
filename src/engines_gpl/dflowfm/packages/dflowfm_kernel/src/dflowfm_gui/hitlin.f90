@@ -32,33 +32,33 @@
 
 module m_hitlin
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine HITLIN(P1, P2, X1, Y1, X2, Y2, V, XHIT, YHIT, JA)
-         implicit none
-         double precision :: dp, dv, dx, dy, frac, p1, p2, v, x1, x2, xhit, y1, y2, yhit
-         integer :: ja
+   subroutine HITLIN(P1, P2, X1, Y1, X2, Y2, V, XHIT, YHIT, JA)
+      use precision, only: dp
+      real(kind=dp) :: delta_P, dv, dx, dy, frac, p1, p2, v, x1, x2, xhit, y1, y2, yhit
+      integer :: ja
 !     SNIJDT EEN ISOLIJN EEN LIJNTJE ?
-         DX = X2 - X1
-         DY = Y2 - Y1
-         DP = P2 - P1
-         DV = V - P1
-         if (DP /= 0) then
-            FRAC = DV / DP
-         else if (V == P2) then
-            FRAC = 1d0
-         else
-            FRAC = 0
-         end if
-         JA = 0
-         if (0d0 < FRAC .and. FRAC <= 1d0) then
-            JA = 1
-            XHIT = X1 + FRAC * DX
-            YHIT = Y1 + FRAC * DY
-         end if
-         return
-      end
+      DX = X2 - X1
+      DY = Y2 - Y1
+      delta_P = P2 - P1
+      DV = V - P1
+      if (delta_P /= 0) then
+         FRAC = DV / delta_P
+      else if (V == P2) then
+         FRAC = 1d0
+      else
+         FRAC = 0
+      end if
+      JA = 0
+      if (0d0 < FRAC .and. FRAC <= 1d0) then
+         JA = 1
+         XHIT = X1 + FRAC * DX
+         YHIT = Y1 + FRAC * DY
+      end if
+      return
+   end
 
 end module m_hitlin
