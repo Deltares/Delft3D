@@ -37,7 +37,7 @@ subroutine fill_valobs()
    use m_transport
    use m_fm_wq_processes, only: kbx, wqbot, waqoutputs
    use m_flowgeom
-   use m_observations
+   use m_observations_data
    use m_sediment
    use m_waves, only: hwav, twav, phiwav, rlabda, uorb, ustokes
    use m_xbeach_data, only: R

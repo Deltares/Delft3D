@@ -137,11 +137,17 @@ else
     szM = sz(M_);
 end
 if isempty(FI.Time)
-    if isequal(idxM,0)
+    if strncmp(Props.Name,'weight of trachytope number',27)
+        dim1 = find(FI.XYZ(:,4) == Props.SubFld);
+        if ~isequal(idxM,0)
+            dim1 = dim1(idxM);
+        end
+        nLoc = length(dim1);
+    elseif isequal(idxM,0)
         dim1 = ':';
     else
         dim1 = idxM;
-        nLoc = length(idxM);
+        nLoc = length(dim1);
     end
 else
     dim1 = ismember(FI.iTime,idx{T_});
@@ -283,7 +289,11 @@ switch Props.NVal
         elseif nLoc==0 % if variable number of locations, then nTim==1
             Ans.Val=FI.XYZ(dim1,Props.SubFld)';
         else
-            Ans.Val=reshape(FI.XYZ(dim1,Props.SubFld),[nTim nLoc]);
+            if strncmp(Props.Name,'weight of trachytope number',27)
+                Ans.Val = reshape(FI.XYZ(dim1,5), [nTim, nLoc]);
+            else
+                Ans.Val=reshape(FI.XYZ(dim1,Props.SubFld),[nTim nLoc]);
+            end
         end
     otherwise
         if nLoc==0 % if variable number of locations, then nTim==1
@@ -310,19 +320,42 @@ varargout={Ans FI};
 
 
 % -----------------------------------------------------------------------------
-function Out=infile(FI,domain)
+function Out = infile(FI, domain)
 
-PropNames={'Name'                       'Units' 'DimFlag' 'DataInCell' 'NVal' 'VecType' 'Loc' 'ReqLoc' 'Geom'  'Coords' 'SubFld'};
-DataProps={'locations'                  ''       [0 0 1 0 0]  0          0     ''        ''    ''      'PNT'   'xy'      []
+PropNames = {'Name'                       'Units' 'DimFlag' 'DataInCell' 'NVal' 'VecType' 'Loc' 'ReqLoc' 'Geom'  'Coords' 'SubFld'};
+DataProps = {'locations'                  ''       [0 0 1 0 0]  0          0     ''        ''    ''      'PNT'   'xy'      []
     'locations as line'                 ''       [0 0 1 0 0]  0          0     ''        ''    ''      'sSEG'  'xy'      []
     'triangulated locations'            ''       [0 0 1 0 0]  0          0     ''        ''    ''      'TRI'   'xy'      []
     '-------'                           ''       [0 0 0 0 0]  0          0     ''        ''    ''      ''      ''        []
     'sample data'                       ''       [0 0 1 0 0]  0          1     ''        ''    ''      'TRI'   'xy'      -999};
 
-Out=cell2struct(DataProps,PropNames,2);
+Out = cell2struct(DataProps, PropNames, 2);
 
+if isnumeric(FI.XYZ) && ... % numeric values
+        size(FI.XYZ,2) == 5 && ... % five data columns
+        all(FI.XYZ(:,4) == round(FI.XYZ(:,4))) && ... % fourth column (should contain integers
+        min(FI.XYZ(:,4)) > 0 && ... % positive integers
+        all(FI.XYZ(:,5) > 0) && ... % fifth column (areas/projected lengths) should be positive
+        all(FI.XYZ(:,3) == 0) % third column all zeros ... for the time being
+    Out = infile_trachytope(FI, Out);
+else
+    Out = infile_default(FI, Out);
+end
+
+
+function Out = infile_trachytope(FI, Out)
+trachytopes = unique(FI.XYZ(:,4));
+Out(5).Geom = 'PNT';
+for i = length(trachytopes):-1:1
+    Out(4+i) = Out(5);
+    Out(4+i).Name = sprintf('weight of trachytope number %i', trachytopes(i));
+    Out(4+i).SubFld = trachytopes(i);
+end
+
+
+function Out = infile_default(FI, Out)
 params = 1:length(FI.Params);
-params = setdiff(params,[FI.X FI.Y FI.Time]);
+params = setdiff(params, [FI.X, FI.Y, FI.Time]);
 if ~isempty(FI.Times)
     if length(FI.nLoc)==1
         f3 = 1;
@@ -443,13 +476,17 @@ function sz=getsize(FI,Props)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 sz=[0 0 0 0 0];
 %======================== SPECIFIC CODE =======================================
-if Props.DimFlag(T_)
-    sz(T_) = length(FI.Times);
-end
-if Props.DimFlag(M_) && length(FI.nLoc)==1
-    sz(M_) = FI.nLoc;
-elseif Props.DimFlag(ST_) && length(FI.nLoc)==1
-    sz(ST_) = FI.nLoc;
+if strncmp(Props.Name,'weight of trachytope number',27)
+    sz(M_) = sum(FI.XYZ(:,4) == Props.SubFld);
+else
+    if Props.DimFlag(T_)
+        sz(T_) = length(FI.Times);
+    end
+    if Props.DimFlag(M_) && length(FI.nLoc)==1
+        sz(M_) = FI.nLoc;
+    elseif Props.DimFlag(ST_) && length(FI.nLoc)==1
+        sz(ST_) = FI.nLoc;
+    end
 end
 % -----------------------------------------------------------------------------
 

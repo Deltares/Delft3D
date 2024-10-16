@@ -390,16 +390,17 @@ contains
             ! Correct for this by setting values to zero
             do k = 1, ndx
                if (isnan(hwavcom(k))) then ! one check should be enough, everything is collocated
-                  hwavcom = 0d0
-                  twavcom = 0d0
-                  sxwav = 0d0
-                  sywav = 0d0
-                  sbxwav = 0d0
-                  sbywav = 0d0
-                  dsurf = 0d0
-                  dwcap = 0d0
-                  mxwav = 0d0
-                  mywav = 0d0
+                  hwavcom(k) = 0d0
+                  twavcom(k) = 0d0
+                  sxwav(k) = 0d0
+                  sywav(k) = 0d0
+                  sbxwav(k) = 0d0
+                  sbywav(k) = 0d0
+                  dsurf(k) = 0d0
+                  dwcap(k) = 0d0
+                  mxwav(k) = 0d0
+                  mywav(k) = 0d0
+                  phiwav(k) = 270d0
                end if
             end do
             phiwav = convert_wave_direction_from_nautical_to_cartesian(phiwav)

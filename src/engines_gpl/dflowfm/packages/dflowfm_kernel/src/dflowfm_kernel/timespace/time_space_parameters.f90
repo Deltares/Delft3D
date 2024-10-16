@@ -104,7 +104,7 @@ contains
       select case (str_tolower(trim(string)))
       case ('1dfield')
          file_type = FIELD1D
-      case ('aaigrid')
+      case ('arcinfo')
          file_type = ARCINFO
       case ('bcascii')
          file_type = BCASCII

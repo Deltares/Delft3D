@@ -404,7 +404,7 @@ contains
       use timers
       use m_readstructures
       use m_netw
-      use m_observations
+      use m_observations, only: loadobservations, deleteobservations
       use m_monitoring_crosssections
       use m_monitoring_runupgauges
       use m_thindams

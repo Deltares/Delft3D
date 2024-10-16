@@ -871,7 +871,7 @@ contains
 
       use m_flowgeom
       use network_data
-      use m_observations, only: numobs, nummovobs, MAXNUMVALOBS2D, MAXNUMVALOBS3D, MAXNUMVALOBS3Dw
+      use m_observations_data, only: numobs, nummovobs, MAXNUMVALOBS2D, MAXNUMVALOBS3D, MAXNUMVALOBS3Dw
       use m_monitoring_crosssections, only: ncrs, maxnval
       use m_laterals, only: num_layers, numlatsg
       use unstruc_channel_flow, only: network

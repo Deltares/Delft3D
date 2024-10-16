@@ -1,4 +1,4 @@
-function [hNew,Thresholds,Param,Parent]=qp_plot_pnt(hNew,Parent,Param,data,Ops,Props)
+function [hNew,Param,Parent]=qp_plot_pnt(hNew,Parent,Param,data,Ops,Props)
 %QP_PLOT_PNT Plot function of QuickPlot for point data sets.
 
 %----- LGPL --------------------------------------------------------------------
@@ -46,9 +46,6 @@ Selected=Param.Selected;
 multiple=Param.multiple;
 NVal=Param.NVal;
 stn=Param.stn;
-
-DimFlag=Props.DimFlag;
-Thresholds=[];
 
 if isfield(data,'XYZ')
     X = data.XYZ(1,:,1)';
@@ -175,7 +172,6 @@ switch NVal
                     
                 case 'markers'
                     hNew = genmarkers(hNew,Ops,Parent,data.Val,X,Y);
-                    Thresholds = Ops.Thresholds;
                     
                 otherwise
                     hNew = qp_plot_line(hNew, Parent, X, Y, Z, data.Val, Ops);
@@ -188,7 +184,7 @@ switch NVal
             end
         end
     case {2,3}
-        [hNew,Thresholds,Param,Parent]=qp_plot_default(hNew,Parent,Param,data,Ops,Props);
+        [hNew,Param,Parent]=qp_plot_default(hNew,Parent,Param,data,Ops,Props);
     case 4
         hNew=gentextfld(hNew,Ops,Parent,data.Val,X,Y);
 end

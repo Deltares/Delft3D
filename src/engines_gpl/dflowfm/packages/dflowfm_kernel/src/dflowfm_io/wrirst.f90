@@ -33,7 +33,7 @@
 subroutine wrirst(tim)
    use m_flow
    use m_flowtimes
-   use m_observations
+   use m_observations_data
    use unstruc_netcdf
    use unstruc_model
    use unstruc_files, only: defaultFilename

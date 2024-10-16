@@ -37,7 +37,7 @@ contains
    !> Convert quantity id (from .ext file) to tracer name (split in generic qidname and specific tracer name).
    !! If the input qid is not tracer, then the same qid is returned (and no tracer name)
    subroutine get_tracername(qid, trname, qidname)
-      use m_transport, only: DEFTRACER
+      use m_transportdata, only: DEFTRACER
       implicit none
 
       character(len=*), intent(in) :: qid      !< Original quantityid, e.g., 'tracerbndfluor'.

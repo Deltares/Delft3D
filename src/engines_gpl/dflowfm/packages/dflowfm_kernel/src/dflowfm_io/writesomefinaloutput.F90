@@ -42,7 +42,7 @@
     use m_netw
     use m_partitioninfo
     use m_monitoring_crosssections
-    use m_observations, only: mxls
+    use m_observations_data, only: mxls
     use unstruc_files, only: defaultFilename
     use m_sediment, only: stm_included
     use m_transport, only: maserrsed

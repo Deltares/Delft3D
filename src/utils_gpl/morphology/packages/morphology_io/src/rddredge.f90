@@ -923,6 +923,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                 write(lundia,'(a,i0,a)')     '  Depth definition            : ',pdredge%depthdef,' (relative to '//trim(stringval)//')'
                 !
                 call prop_get(link_ptr, '*', 'Clearance'    , pdredge%clearance)
+                write(lundia,'(a,es12.3e3,a)') '  Clearance                   : ', pdredge%clearance,' m'
                 call prop_get(link_ptr, '*', 'DredgeWhenDry', pdredge%dredgewhendry)
                 call prop_get(link_ptr, '*', 'DumpLimited'  , pdredge%dumplimited)
                 if (pdredge%maxvolrate < 0.0_fp) then
@@ -1342,7 +1343,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                    write(lundia,'(a,i0,a)') '  Dump distribution           : ', pdredge%dumpdistr,' ('//trim(stringval)//')'
                    !
                    do j = ilink, cntlink
-                      write(lundia,'(2a)') '    Dump at                   : ', trim(dump_areas(link_def(j,2)))
+                      write(lundia,'(2a)') '  Dump at                     : ', trim(dump_areas(link_def(j,2)))
                    enddo
                    !
                    ! To be checked futher down: unique relation and capacity limitation

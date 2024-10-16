@@ -766,7 +766,6 @@ for ivar = 1:nvars
                             cf_role = '';
                         end
                     end
-                    cfLocationIds = {'timeseries_id','profile_id','trajectory_id'};
                     AcceptedStationNames = {'cross_section_name','cross_section_id','station_name','station_id','dredge_area_name','dump_area_name','area_id'};
                     if sicvar>0 % don't use auto detect label dimensions as station ... this will trigger sediment names to be used as station name for map-files
                         Info.Station = [Info.Station sicvar];
@@ -842,19 +841,26 @@ for ivar = 1:nvars
             % autodetected variable without complaint
             iStation = abs(Info.Station(1));
         elseif length(iStation)>1
-            % if multiple explicit coordinates match, then report error
-            Names = {nc.Dataset(iStation).Name};
-            for is = 1:length(Names)
-                isInfo = nc.Dataset(iStation(is));
-                dims = sprintf('%s, ',isInfo.Dimension{:});
-                Names{is} = [isInfo.Datatype ' :: ' Names{is} ' (' dims(1:end-2) ')'];
+            % does the coordinate have an appropriate cf_role
+            checkStation = isStation(nc,iStation);
+            % if there is one match, select that one
+            if sum(checkStation)==1
+                iStation = iStation(checkStation);
+            else
+                % if multiple explicit coordinates match, then report error
+                Names = {nc.Dataset(iStation).Name};
+                for is = 1:length(Names)
+                    isInfo = nc.Dataset(iStation(is));
+                    dims = sprintf('%s, ',isInfo.Dimension{:});
+                    Names{is} = [isInfo.Datatype ' :: ' Names{is} ' (' dims(1:end-2) ')'];
+                end
+                ui_message('error', ...
+                    [{sprintf('Problem detecting station coordinate for "%s".',Info.Name) ...
+                    'Any one of the following variables seems to be valid'} ...
+                    Names ...
+                    {'Using the first one.'}])
+                iStation = iStation(1);
             end
-            ui_message('error', ...
-                [{sprintf('Problem detecting station coordinate for "%s".',Info.Name) ...
-                'Any one of the following variables seems to be valid'} ...
-                Names ...
-                {'Using the first one.'}])
-            iStation = iStation(1);
         end
         Info.Station = iStation;
         statdim = intersect(Info.Dimid,nc.Dataset(Info.Station).Dimid(3-CHARDIM));
@@ -1304,6 +1310,22 @@ for ivar = 1:nvars
     Info.SubFieldDim = [CharSubFieldDims nonCharSubFieldDims];
     %
     nc.Dataset(ivar) = Info;
+end
+
+function s = cfLocationIds
+s = {'timeseries_id','profile_id','trajectory_id'};
+
+function l = isStation(nc,ivar)
+l = false(size(ivar));
+for i = 1:length(ivar)
+    Info = nc.Dataset(ivar(i));
+    for j = 1:length(Info.Attribute)
+        if strcmp(Info.Attribute(j).Name,'cf_role')
+            if ismember(Info.Attribute(j).Value,cfLocationIds)
+                l(i) = true;
+            end
+        end
+    end
 end
 
 function nc = setType(nc,ivar,idim,value)
@@ -2032,7 +2054,13 @@ for mesh = NumMeshes:-1:1
         % may not correspond to the order of the nodes in the source
         % domain. We need to copy the original order to avoid messing up
         % the normal and tangential directions.
-        glbENC(iEdges{p},:) = enc{p};
+        %
+        % Only follow the orientation of the domain to which this edge
+        % belongs. The edge may have a different orientation in the
+        % neighbouring domain if it's located on the outermost edge (far
+        % away from the internal part of the partition).
+        edge_of_p = edgeMask{p};
+        glbENC(iEdges{p}(edge_of_p),:) = enc{p}(edge_of_p,:);
     end
     %
     merged_mesh(mesh).Name = M.Name;

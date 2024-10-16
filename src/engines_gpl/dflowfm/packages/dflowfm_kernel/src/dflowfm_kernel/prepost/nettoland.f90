@@ -36,7 +36,7 @@ subroutine nettoland()
    use m_confrm
    use M_netw
    use M_MISSING
-   use m_observations
+   use m_observations_data
    use gridoperations
    use m_makenetnodescoding
 

@@ -65,6 +65,21 @@ switch cmd
         qp_settings('timezone',tzestr{itze})
         d3d_qp updatetimezone
         
+    case 'ghostscript'
+        h_ghostscript = findobj(gcbf,'tag','ghostscript');
+        filename = get(h_ghostscript,'string');
+        qp_settings('ghostscript',filename)
+
+    case 'ghostscript_browse'
+        h_ghostscript = findobj(gcbf,'tag','ghostscript');
+        filename = get(h_ghostscript,'string');
+        [f,p] = uigetfile('*.exe','Select Ghostscript Executable',filename);
+        if ~isequal(f,0)
+            filename = [p,f];
+            set(h_ghostscript,'string',filename)
+            qp_settings('ghostscript',filename)
+        end
+
     case 'update_showversion'
         sv=get(gcbo,'value');
         if sv

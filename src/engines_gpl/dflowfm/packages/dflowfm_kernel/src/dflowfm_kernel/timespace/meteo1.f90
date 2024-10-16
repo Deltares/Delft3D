@@ -6481,7 +6481,7 @@ module m_meteo
    use fm_external_forcings_data
    use processes_input, only: num_time_functions, funame, funinp, nosfunext, sfunname, sfuninp
    use unstruc_messages
-   use m_observations
+   use m_observations_data
    use string_module
    use m_sediment, only: stm_included, stmpar
    use m_subsidence

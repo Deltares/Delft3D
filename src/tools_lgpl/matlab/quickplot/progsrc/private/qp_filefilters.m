@@ -54,6 +54,7 @@ filtertbl={...
     'bagdpt*.*'                                            'Delft3D-MOR Ascii Dredging Output' 'bagdpt'             0
     '*.am?;*.spw;*.wnd'                                    'Delft3D/SOBEK Meteo Files'         'asciiwind'          0
     'gcmplt.*;gcmtsr.*'                                    'ECOMSED Binary Files'              'ecomsed-binary'     0
+    '*.idf'                                                'iMOD Files'                        'iMOD'               0
     '*.stu;*.pst'                                          'JSPost Files'                      'JSPost'             0
     '*.csv'                                                'CSV Files (Exported from QP)'      'samples'            0
     '*.xyz'                                                'Sample Files'                      'samples'            0

@@ -1,17 +1,21 @@
 function varargout=ui_type(varargin)
 %UI_TYPE Simple selection dialog.
-%   [SelectedType,SelectedNr]=UI_TYPE(Types)
+%   [SelectedType, SelectedNr] = UI_TYPE(Types)
 %   creates a dialog in which the user can select one of the type
 %   strings specified in the cell string array Types. The selected type
 %   string is returned as SelectedType, its number in the list is
 %   returned as SelectedNr.
 %
-%   Default type can be specified as an additional input arguments:
-%   ...=UI_TYPE(Types,DefaultType)
+%   ... = UI_TYPE(Types, DefaultType)
+%   specifies the default type as one additional input argument.
 %
-%   The dialog name/title is by default empty. It can be set by
-%   specifying the keyword WINDOWTITLE and the title:
-%   ...=UI_TYPE(...,'windowtitle',Title)
+%   ... = UI_TYPE(..., 'windowtitle', Title)
+%   set the dialog name/title; it is empty by default.
+%
+%   ... = UI_TYPE(..., 'multiselect')
+%   allow the user to select zero, one, or multiple types. When using this
+%   option, the SelectedType output argument is a cell string instead of a
+%   char array.
 %
 %   See also UI_TYPEANDNAME
 
@@ -45,4 +49,5 @@ function varargout=ui_type(varargin)
 %   $HeadURL$
 %   $Id$
 
-[varargout{1:max(1,nargout)}]=ui_typeandname(varargin{:},'specifyname','off');
+[varargout{1:max(1,nargout)}] = ...
+    ui_typeandname(varargin{:}, 'specifyname', 'off');

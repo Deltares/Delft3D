@@ -56,7 +56,7 @@ subroutine flow_trachyinit()
    use unstruc_messages
    use trachytopes_data_module, only: TRACHY_UNDEFINED, TRACHY_NOT_IN_SUBDOMAIN ! = -99999, -77777
    use m_monitoring_crosssections, only: crs, ncrs
-   use m_observations, only: namobs, numobs
+   use m_observations_data, only: namobs, numobs
    use kdtree2Factory
    use m_missing
    use m_sferic, only: jsferic, jasfer3D

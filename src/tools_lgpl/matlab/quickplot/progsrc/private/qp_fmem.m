@@ -226,6 +226,8 @@ switch cmd
                     try_next='NOOS time series';
                 case {'.wml'}
                     try_next='WaterML2';
+                case {'.idf'}
+                    try_next = 'iMOD';
                 otherwise
                     if strncmp('hot',fn_,3)
                         try_next='SWAN spectral';
@@ -389,6 +391,9 @@ switch cmd
                         asciicheck(isASCII,REASON)
                         FI=waterml2('open',FileName);
                         Tp=FI.FileType;
+                    case 'iMOD'
+                        FI = imod('open',FileName);
+                        Tp = FI.filetype;
                     case 'ecomsed-binary'
                         FI=ecomsed('open',FileName);
                         if ~isempty(FI)

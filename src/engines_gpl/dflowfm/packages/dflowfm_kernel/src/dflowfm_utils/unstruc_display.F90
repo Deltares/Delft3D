@@ -70,7 +70,7 @@ contains
       use M_isoscaleunit
       use m_transport, only: iconst_cur
       use M_FLOW, only: kplot, nplot, kplotfrombedorsurface, kplotordepthaveraged
-      use m_observations, only: jafahrenheit
+      use m_observations_data, only: jafahrenheit
       use m_sferic
       use m_depmax
       use m_screenarea
@@ -281,7 +281,7 @@ contains
       use M_isoscaleunit
       use m_transport, only: iconst_cur
       use m_flow
-      use m_observations
+      use m_observations_data
       use m_sferic
       use m_depmax
       use m_screenarea
@@ -471,7 +471,7 @@ contains
 !> Plots all observation points in the current viewport
    subroutine plotObservations() ! TEKOBS
 
-      use m_observations
+      use m_observations_data
       use M_FLOWGEOM
       use m_flow
       use m_transport, only: itemp, constituents

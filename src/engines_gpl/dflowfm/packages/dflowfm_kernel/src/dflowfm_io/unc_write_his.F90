@@ -86,7 +86,7 @@ contains
       use m_flowtimes
       use m_flow
       use m_flowgeom
-      use m_observations
+      use m_observations_data
       use m_monitoring_crosssections
       use m_monitoring_runupgauges
       use m_missing
@@ -1145,7 +1145,7 @@ contains
 
       !> Write (put) the lat/lon-coordinate variables for the station type.
       function unc_put_his_station_coord_vars_latlon(ihisfile, numobs, nummovobs, id_statlat, id_statlon, it_his) result(ierr)
-         use m_observations, only: xobs, yobs
+         use m_observations_data, only: xobs, yobs
          use dfm_error, only: DFM_NOERR
 
          integer, intent(in) :: ihisfile !< NetCDF id of already open dataset
@@ -1306,7 +1306,7 @@ contains
       !> Write (put) the geometry x/y-coordinate variables for the station type.
       function unc_put_his_station_geom_coord_vars_xy(ihisfile, numobs, it_his, id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
                                                       add_latlon, id_geom_node_coordlon, id_geom_node_coordlat) result(ierr)
-         use m_observations, only: xobs, yobs
+         use m_observations_data, only: xobs, yobs
          use dfm_error, only: DFM_NOERR
 
          integer, intent(in) :: ihisfile !< NetCDF id of already open dataset
@@ -1464,7 +1464,7 @@ contains
       use m_monitoring_crosssections, only: crs, ncrs
       use m_monitoring_runupgauges, only: rug, num_rugs
       use string_module, only: trimexact
-      use m_observations, only: numobs, nummovobs, namobs
+      use m_observations_data, only: numobs, nummovobs, namobs
       integer, intent(in) :: ncid !< NetCDF id of already open dataset
 
       character(len=strlen_netcdf), dimension(:), allocatable :: structure_names

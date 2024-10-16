@@ -47,7 +47,7 @@
     use unstruc_netcdf
     use unstruc_model
     use unstruc_display
-    use m_observations
+    use m_observations, only: deleteobservations
     use m_monitoring_crosssections
     use m_thindams
     use m_fixedweirs

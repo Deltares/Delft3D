@@ -80,27 +80,41 @@ if isempty(PL)
         0  'JPG file'                    all        2     0  0
         1  'EMF file'                    win        2     0  0
         -1 'MATLAB fig file'             all        3     0  0
+        -1 'QUICKPLOT session file'      all        3     1  0
         0  'Bitmap to clipboard'         win        2     0  0
-        1  'Metafile to clipboard'       win        2     0  0
-        1  'Windows printer'             W          2     0  0
-        1  'default Windows printer'     WD         2     0  0
-        1  'other Windows printer'       WD         2     0  0
-        -1 'QUICKPLOT session file'      all        3     1  0};
-    if isdeployed
-        if ispc
+        1  'Metafile to clipboard'       win        2     0  0};
+    if ispc
+        if isdeployed
             code = WD;
         else
-            code = LD;
+            code = W;
         end
     else
-        if ispc
-            code = W;
+        if isdeployed
+            code = LD;
         else
             code = L;
         end
     end
     Remove = ~bitget(cat(1,PL{:,3}),log2(code)+1);
     PL(Remove,:)=[];
+    %
+    if matlabversionnumber < 8.05
+        switch code
+            case W
+                PL = [PL
+                    {1  'Windows printer'             W          2     0  0}];
+            case WD
+                PL = [PL
+                    {1  'default Windows printer'     WD         2     0  0
+                    1  'other Windows printer'       WD         2     0  0}];
+        end
+    else
+        [def_printer,printers] = findprinters;
+        PL_extra = repmat({1 '--' all 2 0 0},length(printers),1);
+        PL_extra(:,2) = printers(:);
+        PL = [PL; PL_extra];
+    end
     %
     if ~exist(qp_settings('ghostscript',''),'file')
         PL(strcmp(PL(:,2),'Multi page PDF file'),:)=[];
@@ -281,7 +295,7 @@ else
             printObj.Append = true;
         otherwise
             printObj.ext='';
-            printObj.dvr='';
+            printObj.dvr=['-P',printObj.Name];
     end
 end
 
@@ -470,10 +484,7 @@ switch printObj.Name
         %
         % do the actual print
         %
-        warnStruct = warning;
-        warning('off', 'MATLAB:print:ExcludesUIInFutureRelease')
-        print(figname, FigHandle, printObj.dvr, printObj.PrtMth{:}, append{:});
-        warning(warnStruct)
+        printNoWarn(figname, FigHandle, printObj.dvr, printObj.PrtMth{:}, append{:})
         %
         % reset the paper position
         %
@@ -525,7 +536,7 @@ switch printObj.Name
             appendto_SES = {};
         end
         printObj.SES = qp_session('extract', fig, appendto_SES{:});
-    case {'Bitmap to clipboard', 'Metafile to clipboard', 'Windows printer', 'default Windows printer', 'other Windows printer'}
+    otherwise
         ccd=cd;
         cd(tempdir);
         ih=get(fig,'inverthardcopy');
@@ -556,17 +567,26 @@ switch printObj.Name
                 if printObj.Color
                     dvr='-dwinc';
                 end
-                print(FigHandle,dvr,printObj.PrtMth{:});
+                printNoWarn(FigHandle,dvr,printObj.PrtMth{:})
             case 'Bitmap to clipboard'
                 set(fig,'inverthardcopy','off');
-                print(FigHandle, '-dbitmap');
+                printNoWarn(FigHandle, '-dbitmap')
             case 'Metafile to clipboard'
-                print(FigHandle, printObj.PrtMth{:}, '-dmeta');
+                printNoWarn(FigHandle, printObj.PrtMth{:}, '-dmeta')
+            otherwise
+                printNoWarn(FigHandle,printObj.dvr,printObj.PrtMth{:})
         end
         set(fig,'inverthardcopy',ih);
         cd(ccd)
 end
 printObj.NextNr = printObj.NextNr + 1;
+
+
+function printNoWarn(varargin)
+warnStruct = warning;
+warning('off', 'MATLAB:print:ExcludesUIInFutureRelease')
+print(varargin{:});
+warning(warnStruct)
 
 
 function printObj = printFinalize(printObj)

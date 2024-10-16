@@ -64,6 +64,7 @@ contains
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
+      use m_observations, only: addobservation
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
@@ -1139,7 +1140,7 @@ contains
 
                rec = ' '
                call basename(filename, rec) ! rec now contains the station name.
-               call addMovingObservation(dmiss, dmiss, rec)
+               call addObservation(dmiss, dmiss, rec, isMoving=.true.)
 
                ! Converter will put 'x' in array(2*nummovobs-1) and 'y' in array(2*nummovobs).
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename, filetype, method, operand, targetIndex=nummovobs)

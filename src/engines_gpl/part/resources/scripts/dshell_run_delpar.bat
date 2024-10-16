@@ -1,15 +1,15 @@
 @echo off
 
-echo .
+echo.
 echo D-Particle Tracking - command line interface
-echo .
+echo.
 echo The path to the "run_delpar" script has been added to
 echo the PATH environment variable for easy access.
-echo .
+echo.
 echo To run D-Particle Tracking:
 echo - change to the directory containing the input file
 echo - type the command: run_delpar name.inp
-echo .
+echo.
 
 cd /d %USERPROFILE%
 

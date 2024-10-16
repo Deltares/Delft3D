@@ -33,7 +33,7 @@
 module unstruc_files
 !! Centralizes unstruc file management (formerly in REST.F90)
 
-   use unstruc_messages
+   use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess, msgbuf, msg_flush
    use dflowfm_version_module
    use time_module, only: seconds_to_datetimestring
 

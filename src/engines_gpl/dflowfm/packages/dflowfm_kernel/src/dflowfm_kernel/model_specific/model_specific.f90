@@ -429,7 +429,7 @@ subroutine weirtheo(j12)
    use m_flow
    use m_flowgeom
    use unstruc_colors
-   use m_observations
+   use m_observations_data
    use m_monitoring_crosssections
    use m_flowtimes
    use unstruc_model, only: getoutputdir

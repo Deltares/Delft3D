@@ -190,8 +190,10 @@ else
     %
     if isfield(Ops,'Thresholds') && ~strcmp(Ops.Thresholds,'none')
         Thresholds = Ops.Thresholds;
+        PlotClass = Ops.PlotClass;
     else
         Thresholds = [];
+        PlotClass = [];
     end
     %
     if any(~ishandle(hOld)) || ~isempty(Thresholds)
@@ -215,12 +217,11 @@ else
                 'edgecolor','none', ...
                 'facecolor','flat');
         else
-            nThresholds = length(Thresholds);
-            Thresholds(end+1) = inf;
+            nThresholds = length(Thresholds)-1;
             hNew=zeros(1,nThresholds);
             for i = 1:nThresholds
                 iclass = cv>=Thresholds(i) & cv<Thresholds(i+1);
-                if any(iclass)
+                if PlotClass(i) && any(iclass)
                     facecolor = 'flat';
                 else
                     facecolor = 'none';

@@ -18,17 +18,19 @@ object Linux : BuildType({
 
     val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
     val lines = File(filePath).readLines()
-    val linuxLines = lines.filter({ line -> line.contains("lnx64")})
+    val linuxLines = lines.filter { line -> line.contains("lnx64")}
     val configs = linuxLines.map { line ->
         line.split(",")[1]
     }
+    val linesForAll = linuxLines.filter { line -> line.split(",")[2] == "TRUE" }
+    val selectedConfigs = linesForAll.map { line -> line.split(",")[1] }
 
     vcs {
         root(DslContext.settingsRoot)
     }
 
     params {
-        select("configfile", configs.joinToString(","),
+        select("configfile", selectedConfigs.joinToString(","),
             allowMultiple = true,
             options = configs,
             display = ParameterDisplay.PROMPT
@@ -58,12 +60,6 @@ object Linux : BuildType({
         dependency(Trigger) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
-            }
-
-            artifacts {
-                id = "TRIGGER_1"
-                artifactRules = "this.txt => stuff"
-                cleanDestination = true
             }
         }
     }

@@ -162,7 +162,7 @@
             !
             if (jawave > 0) then
                if (modind < 9) then
-                  cfwavhi(L) = tauwci / umod / rhoL / huL ! combined w+c friction factor for furu 2d
+                  cfwavhi(L) = tauwci / umod / umod / rhoL / huL ! combined w+c friction factor for furu 2d
                elseif (modind == 9) then
                   uorbhs = sqrt(2.0d0) * uorbu
                   hrmsu = ac1 * hwav(k1) + ac2 * hwav(k2)
@@ -191,7 +191,7 @@
                   ka = ksc * exp(gamma * uratio)
                   ka = min(ka, 10d0 * ksc, 0.2d0 * huL)
                   ca = 18d0 * log10(12d0 * huL / max(ka, waveps))
-                  cfhi_vanrijn(L) = umod / huL * ag / (ca**2)
+                  cfhi_vanrijn(L) = ag / (ca**2) / huL
                   taubu(L) = ag / ca / ca * rhoL * umod * (u1(L) + ustokes(L))
                end if
             end if
@@ -206,7 +206,7 @@
             cwall = 1d0 / (cf**2)
             taubu(L) = cwall * rhoL * umod * (u1(L) + ustokes(L))
             taubxu(L) = cwall * rhoL * umod * umod
-            cfwavhi(L) = cfuhi(L) * umod ! modind = 0 when running waves. Removed modind>0 statement in furu
+            cfwavhi(L) = cfuhi(L)
          else if (modind == 10) then
             umod = sqrt((u1(L) - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16d0 * uorbu * fsqrtt)**2)
             z0urou(L) = huL * exp(-1d0 - vonkar * cz / sag)

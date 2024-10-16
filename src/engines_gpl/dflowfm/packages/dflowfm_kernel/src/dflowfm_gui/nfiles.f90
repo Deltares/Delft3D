@@ -81,7 +81,7 @@ contains
       integer :: midp
       integer :: mtek
       integer :: i, ierror
-   integer :: ipli
+      integer :: ipli
       logical :: jawel
       logical, external :: read_samples_from_geotiff
 

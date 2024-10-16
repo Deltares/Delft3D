@@ -2513,7 +2513,7 @@ switch cmd
             writelog(logfile,logtype,cmd,get(cb,'value'));
         end
         
-    case {'colbarhorz','climsymm','extend2edge','clipnans'}
+    case {'colbarhorz','climsymm','climclip','extend2edge','clipnans'}
         % nothing do
         cb=findobj(UOH,'tag',cmd);
         if ~isempty(cmdargs)
@@ -2581,6 +2581,30 @@ switch cmd
             writelog(logfile,logtype,cmd,c);
         end
         
+    case 'plotclass'
+        cv = findobj(UOH,'tag','thresholds=?');
+        pc = findobj(UOH,'tag','plotclass');
+
+        c = get(cv, 'userdata');
+        % classes = get_classes(c);
+        classes = {'1','2','3'};
+
+        if isempty(cmdargs)
+            iclass = get(pc, 'userdata');
+            if isequal(iclass,0) || isequal(iclass,-1)
+                iclass = 1:length(classes);
+            end
+            [~,iclass] = ui_type(classes, 'multiselect', iclass);
+        else
+            iclass = cmdargs{1};
+        end
+        if ~isequal(iclass,-1)
+            set(pc, 'userdata', iclass)
+            if logfile
+                writelog(logfile,logtype,cmd,iclass);
+            end
+        end
+
     case {'xclipping','yclipping','zclipping','clippingvals'}
         cv=findobj(UOH,'tag',[cmd '=?']);
         if isempty(cmdargs)
@@ -5064,8 +5088,10 @@ switch cmd
         % ------ colour limits ...
         %
         set(findobj(UOH,'tag','climmode=?'),'value',1)
+        set(findobj(UOH,'tag','climsymm'),'value',0)
         set(findobj(UOH,'tag','climmax=?'),'userdata',1,'string','1')
-        set(findobj(UOH,'tag','climmax=?'),'userdata',0,'string','0')
+        set(findobj(UOH,'tag','climmin=?'),'userdata',0,'string','0')
+        set(findobj(UOH,'tag','climclip'),'value',0)
         %
         % ------ colour map ...
         %
@@ -5121,7 +5147,8 @@ switch cmd
             'organizationname','filefilterselection','colorbar_ratio', ...
             'showinactiveopt', 'defaultfigurepos','timezonehandling', ...
             'enforcedtimezone', 'netcdf_use_fillvalue','export_max_ntimes', ...
-            'update_showversion', 'defaultrenderer','defaultsmoothing'}
+            'update_showversion', 'defaultrenderer','defaultsmoothing', ...
+            'ghostscript', 'ghostscript_browse'}
         qp_prefs(UD,mfig,cmd,cmdargs);
         
     case {'deltaresweb','deltaresweboss'}

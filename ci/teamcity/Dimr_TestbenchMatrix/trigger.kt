@@ -73,6 +73,11 @@ object Trigger : BuildType({
         script {
             name = "Start Linux Testbench"
 
+            conditions {
+                doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
+                doesNotEqual("branch_name", "none")
+            }
+
             scriptContent = """
                 curl --fail --silent --show-error \
                      -u %teamcity_user%:%teamcity_pass% \
@@ -104,6 +109,11 @@ object Trigger : BuildType({
         script {
             name = "Start Windows Testbench"
 
+            conditions {
+                doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
+                doesNotEqual("branch_name", "none")
+            }
+            
             scriptContent = """
                 curl --fail --silent --show-error \
                      -u %teamcity_user%:%teamcity_pass% \

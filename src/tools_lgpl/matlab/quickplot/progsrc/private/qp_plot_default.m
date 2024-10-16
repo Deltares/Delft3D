@@ -1,4 +1,4 @@
-function [hNew,Thresholds,Param,Parent]=qp_plot_default(hNew,Parent,Param,data,Ops,Props)
+function [hNew,Param,Parent]=qp_plot_default(hNew,Parent,Param,data,Ops,Props)
 %QP_PLOT_DEFAULT Plot function of QuickPlot for structured data sets.
 
 %----- LGPL --------------------------------------------------------------------
@@ -52,7 +52,6 @@ s=Param.s;
 compat7=Param.compat7;
 
 DimFlag=Props.DimFlag;
-Thresholds=Ops.Thresholds;
 axestype=Ops.basicaxestype;
 
 switch NVal
@@ -186,7 +185,7 @@ switch NVal
                     Ops.presentationtype = 'old grid';
                     data.Val = repmat(NaN,size(data.Z));
                 end
-                hNew = plotslice(hNew,Parent,data,Ops,Props,Thresholds);
+                hNew = plotslice(hNew,Parent,data,Ops,Props,Ops.Thresholds);
                 qp_title(Parent,{PName,TStr},'quantity',Quant,'unit',Units,'time',TStr)
             case {'Val-Z'}
                 z=squeeze(data.Z);
@@ -346,7 +345,7 @@ switch NVal
                             mz=max(c2(:));
                             c1(isnan(c1))=ms;
                             c2(isnan(c2))=mz;
-                            hNew=gencontour(hNew,Ops,Parent,c1,c2,v,Thresholds);
+                            hNew=gencontour(hNew,Ops,Parent,c1,c2,v,Ops.Thresholds);
                             
                     end
                     if FirstFrame
@@ -565,11 +564,11 @@ switch NVal
                     if ~isempty(Ops.vectorcolour)
                         if ~strcmp(Ops.Thresholds,'none')
                             vc = zeros(size(data.Val));
-                            for i=1:length(Thresholds)
-                                vc(data.Val>=Thresholds(i))=i;
+                            for i=1:length(Ops.Thresholds)
+                                vc(data.Val>=Ops.Thresholds(i))=i;
                             end
                             data.Val=vc;
-                            set(Parent,'clim',[1 length(Thresholds)]);
+                            set(Parent,'clim',[1 length(Ops.Thresholds)]);
                         end
                         hNew=colquiver(hNew,data.Val);
                     else
