@@ -1283,7 +1283,7 @@ contains
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave == SWAN_NETCDF) .and. flowWithoutWaves) then
+      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flowWithoutWaves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
