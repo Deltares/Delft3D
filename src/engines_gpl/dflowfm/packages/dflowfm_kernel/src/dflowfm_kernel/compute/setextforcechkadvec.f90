@@ -167,10 +167,8 @@
        end do
     end if
 
-    if ((jawave == 3 .or. jawave == 6) .and. .not. flowWithoutWaves) then
-       ! if a SWAN computation is performed, add wave forces to adve
-       ! This part is mainly based on the wave forces formulation (wsu) of Delft3D (cucnp.f90)
-
+    if ((jawave == 3 .or. jawave >= 6 .or. (jawave == 4 .and. lwave == 1)) .and. .not. flowWithoutWaves) then
+       ! add wave forces to adve
        if (kmx == 0) then ! 2D
           do L = 1, lnx
              wfac = 1d0
@@ -186,36 +184,11 @@
                 wfac = wfac * (1.0d0 - 0.5d0 * (ice_af(ln(1, LL)) + ice_af(ln(2, LL))))
              end if
              call getLbotLtop(LL, Lb, Lt)
+             if (Lt < Lb) cycle
              do L = Lb, Lt
                 adve(L) = adve(L) - wfac * wavfu(L) ! Dimensions [m/s^2]
              end do
           end do
-       end if
-    end if
-
-    if (jawave == 4) then ! wave forcing from XBeach
-       if (lwave == 1) then
-          if (kmx == 0) then
-             do L = 1, Lnx
-                wfac = 1d0
-                if (ice_reduce_waves) then
-                   wfac = wfac * (1.0d0 - 0.5d0 * (ice_af(ln(1, L)) + ice_af(ln(2, L))))
-                end if
-                adve(L) = adve(L) - wfac * wavfu(L)
-             end do
-          else
-             do L = 1, lnx
-                wfac = 1d0
-                if (ice_reduce_waves) then
-                   wfac = wfac * (1.0d0 - 0.5d0 * (ice_af(ln(1, L)) + ice_af(ln(2, L))))
-                end if
-                call getLbotLtop(L, Lb, Lt)
-                if (Lt < Lb) cycle
-                do LL = Lb, Lt
-                   adve(LL) = adve(LL) - wfac * wavfu(LL)
-                end do
-             end do
-          end if
        end if
     end if
 
