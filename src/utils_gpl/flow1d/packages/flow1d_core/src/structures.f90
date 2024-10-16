@@ -537,7 +537,7 @@ end subroutine deallocstructure
       
        select case (struc%type)
           case (ST_UNI_WEIR)
-             get_crest_level = struc%uniweir%crestlevel_actual
+             get_crest_level = struc%uniweir%crestlevel
           case (ST_CULVERT)
              get_crest_level = max(struc%culvert%leftlevel, struc%culvert%rightlevel)
           case (ST_PUMP)

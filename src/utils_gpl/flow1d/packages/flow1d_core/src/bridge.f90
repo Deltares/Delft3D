@@ -150,7 +150,7 @@ contains
       endif
 
       allowedFlowDir = bridge%allowedflowdir
-      if ((allowedFlowDir == 3) .or. &
+      if ((smax <=bobup) .or. (allowedFlowDir == 3) .or. &
           (dir == 1  .and. allowedFlowDir == 2) .or. &
           (dir == -1 .and. allowedFlowDir == 1)) then
          kfum = 0
@@ -176,6 +176,13 @@ contains
          bridge%bedLevel_actual = crestLevel
 
          depth = smax - crestLevel
+         if (depth <= 0.0d0) then
+            kfum = 0
+            fum = 0.0d0
+            rum = 0.0d0
+            return
+         end if
+          
          call GetCSParsFlow(bridge%pcross, depth, aum, wPerimeter, dadsm)   
          if (bridge%pcross%closed .and. smax > getHighest1dLevel(bridge%pcross)) then
             depth = getHighest1dLevel(bridge%pcross) - crestLevel

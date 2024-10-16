@@ -162,6 +162,15 @@ module m_Universal_Weir
       else
          uniweir%crestlevel_actual = uniweir%crestlevel
       endif
+
+      if (smax < uniweir%crestlevel_actual) then
+         kfum = 1
+         fum  = 0.0d0
+         rum  = 0.0d0
+         u1m  = 0.0d0
+         qm   = 0.0d0
+         return
+      end if
       !
       !     Switchfactor is the transition factor between free and
       !     submerged flow (0.667 for a broad crested weir)

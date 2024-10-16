@@ -176,7 +176,7 @@ contains
 
       ! Check on Flow Direction
       allowedFlowDir = culvert%allowedflowdir
-      if ((allowedFlowDir == 3) .or. &
+      if ((smax <= culvertCrest) .or. (allowedFlowDir == 3) .or. &
           (dir == 1  .and. allowedFlowDir == 2) .or. &
           (dir == -1 .and. allowedFlowDir == 1)) then
          kfum  = 0

@@ -133,7 +133,7 @@ subroutine ComputeOrifice(orifice, fum, rum, aum, dadsm, kfum, s1m1, s1m2, qm, q
     smax = max(s1m1, s1m2)
     smin = min(s1m1, s1m2)
     !
-    if ((allowedflowdir==3) .or.                        &
+    if ((smax <= scr) .or. (allowedflowdir==3) .or.                        &
         (s1m1 - s1m2>=0.0 .and. allowedflowdir==2) .or. &
         (s1m1 - s1m2<=0.0 .and. allowedflowdir==1) .or. &
         (sop - scr<=.0)) then
