@@ -164,7 +164,7 @@ subroutine nf_2_flow(filename, error, gdp)
     call prop_get(file_ptr, 'NF2FF/discharge/constituents', line)    
     numconsts_nf2ff = count_words(trim(line))   
     if (numconsts_nf2ff /= lstsc) then
-        write(lundia,'(a)') "ERROR: Wrong number of constituents were specified in NF2FF file"           
+        write(lundia,'(a)') "ERROR: The number of constituents in the NF2FF file does not match the number in the mdf file"           
         call d3stop(1,gdp)          
     endif 
        
