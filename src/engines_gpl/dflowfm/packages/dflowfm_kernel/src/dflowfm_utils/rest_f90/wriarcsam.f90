@@ -30,31 +30,27 @@
 !
 !
 
-      subroutine WRIARCsam(MARC, DP, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
+      subroutine WRIARCsam(MARC, data_array, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
          use m_writearcinfoheader
+         use precision, only: dp
          implicit none
-         double precision :: dmiss
-         double precision :: dp
-         double precision :: dx, dy
+         real(kind=dp) :: dmiss
+         integer :: mmax
+         integer :: nmax
+         real(kind=dp), dimension(MMAX, NMAX) :: data_array
+         real(kind=dp) :: dx, dy
          integer :: i
          integer :: j
          integer :: marc
          integer :: mc
-         integer :: mmax
          integer :: nc
-         integer :: nmax
-         double precision :: x0
-         double precision :: y0
-!      DIMENSION DP  (MMAX,NMAX)
-         dimension DP(NMAX, MMAX) ! SPvdP: j-index is fastest running in sample arrays
+         real(kind=dp) :: x0
+         real(kind=dp) :: y0
 
          call WRITEARCINFOHEADER(MARC, MC, NC, X0, Y0, DX, DY, dmiss)
 
-!      do J = NC,1,-1      ! SPvdP: j-index is already reverse-order in sample arrays
          do J = 1, NC
-!         WRITE(MARC,'(5000F10.2)') ( DP(I,J),I = 1,MC)
-
-            write (MARC, '(99999999F10.2)') (DP(J, I), I=1, MC) ! SPvdP: j-index is fastest running in sample arrays
+            write (MARC, '(99999999F10.2)') (data_array(J, I), I=1, MC) ! SPvdP: j-index is fastest running in sample arrays
          end do
 
          return

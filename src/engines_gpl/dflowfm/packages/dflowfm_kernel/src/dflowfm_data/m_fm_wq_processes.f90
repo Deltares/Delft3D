@@ -41,6 +41,7 @@ module m_fm_wq_processes
    use processet
    use results, only: OutputPointers
    implicit none
+   private :: dp
 
    character(20), allocatable :: syunit_sub(:) !< substance unit from substance file
    character(20), allocatable :: coname_sub(:) !< constant names from substance file

@@ -35,16 +35,16 @@
     use m_flowgeom
     use m_sferic
     use m_flowtimes
+    use precision, only: dp
+    use MessageHandling, only: mess, LEVEL_ERROR
     implicit none
 
-    double precision :: h1, h0, stemcos, stemsin, stemh, PL, Pv, Pm, Pmi, Bp
-    double precision :: rhodif, buoym, bendm, Fbe, Fbu, Tdti, phi, phit, ep, qsa, qds, ds2
+    real(kind=dp) :: h1, h0, stemcos, stemsin, stemh, PL, Pm, Pmi, Bp
+    real(kind=dp) :: rhodif, buoym, bendm, Fbe, Fbu, Tdti, phi, phit, ep, qsa, qds, ds2
     integer :: kk, k, num, i, L, k1, k2
 
     if (kmx == 0 .and. growthunidicouv > 0.0) then
 
-       !stemheight = 0.55d0
-       !diaveg     = 0.05d0
        if (.not. allocated(supq)) allocate (supq(ndx))
        supq = 0d0
        do L = 1, lnxi
@@ -71,9 +71,9 @@
 
        if (diaveg(kk) > 0d0) then
 
-          phi = phiv(kk) ! 0d0                                                                ! 1/s   stemphi
-          phit = phivt(kk) ! 0d0                                                                ! 1/s2  stemomega
-          Pl = stemheight(kk) ! m       plantlength
+          phi = phiv(kk) ! stem phi [1/s]
+          phit = phivt(kk) ! stem omega [1/s2]
+          Pl = stemheight(kk) ! plant length [m]
           Pl = min(hs(kk), Pl)
 
           do i = 1, num
@@ -82,9 +82,8 @@
 
              if (rhoveg > 0d0) then
 
-                Pv = Pl * diaveg(kk) * diaveg(kk) * 0.25d0 * pi ! m3      plantvolume
-                Pm = rhoveg * Pv ! kg      plantmass
-                Pmi = (1d0 / 6d0) * Pm * Pl * Pl ! kg.m2   plant inertia moment
+                Pm = calculate_plant_mass(Pl, diaveg(kk), rhoveg) ! kg
+                Pmi = calculate_plant_inertia_moment(Pm, Pl) ! kg.m2
                 Tdti = 2d0 * Pmi / dts ! kg.m2/s
 
                 Bendm = 0d0
@@ -118,9 +117,16 @@
 
              if (kmx > 0) then
                 do k = kbot(kk), ktop(kk)
-                   h1 = zws(k) - zws(kbot(kk) - 1)
-                   h0 = zws(k - 1) - zws(kbot(kk) - 1)
-                   if (h1 < stemh) then
+                   if (stemheight_convention == DOWNWARD_FROM_SURFACE) then
+                      h0 = zws(ktop(kk)) - zws(k)
+                      h1 = zws(ktop(kk)) - zws(k - 1)
+                   elseif (stemheight_convention == UPWARD_FROM_BED) then
+                      h1 = zws(k) - zws(kbot(kk) - 1)
+                      h0 = zws(k - 1) - zws(kbot(kk) - 1)
+                   else
+                      call mess(LEVEL_ERROR, 'Invalid value for [veg] StemheightConvention. Use either 1 or 2.')
+                   end if
+                   if (h1 <= stemh) then
                       diaveg(k) = diaveg(kk)
                       rnveg(k) = rnveg(kk)
                    else if (h0 < stemh .and. h1 > stemh) then
@@ -138,5 +144,24 @@
        end if
 
     end do
+
+ contains
+
+    ! Function to calculate plant mass from plant length, diameter and density
+    pure function calculate_plant_mass(plant_length, diameter, density) result(mass)
+       use precision, only: dp
+
+       real(kind=dp), intent(in) :: plant_length, diameter, density
+       real(kind=dp) :: volume, mass
+       volume = plant_length * (diameter / 2.0_dp)**2 * pi ! Volume = L * (r^2) * pi
+       mass = density * volume ! Mass = Density * Volume
+    end function calculate_plant_mass
+
+    ! Function to calculate plant inertia moment
+    pure function calculate_plant_inertia_moment(mass, plant_length) result(inertia_moment)
+       real(kind=dp), intent(in) :: mass, plant_length
+       real(kind=dp) :: inertia_moment
+       inertia_moment = (1.0d0 / 6.0d0) * mass * plant_length**2 ! Moment of inertia = (1/6) * m * L^2
+    end function calculate_plant_inertia_moment
 
  end subroutine setveg
