@@ -16,7 +16,7 @@ object StartVerschilanalyse : BuildType({
         param("apptainer_tag", "")
         password("minio_secret_key", "credentialsJSON:9ab48219-5651-48f1-8270-8001a10f6681")
         password("harbor_password", "credentialsJSON:94db07fa-36a6-4d75-be47-4928f5ac11da")
-        param("minio_access_key", "credentialsJSON:7759a7b1-e7a2-402c-8e62-476f29cf8313")
+        password("minio_access_key", "credentialsJSON:7759a7b1-e7a2-402c-8e62-476f29cf8313")
     }
 
     vcs {
