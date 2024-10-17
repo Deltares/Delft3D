@@ -11,12 +11,12 @@ object StartVerschilanalyse : BuildType({
     name = "Start verschilanalyse models"
 
     params {
-        password("smoke_password", "credentialsJSON:c1214cf7-f3ac-40c1-9539-49e4dd3e5028")
+        password("smoke_password", "credentialsJSON:f496d729-b353-4853-8fed-d438292e0790")
         param("smoke_account", "fun_delft3d_smoke")
         param("apptainer_tag", "")
-        password("minio_secret_key", "credentialsJSON:c1214cf7-f3ac-40c1-9539-49e4dd3e5028")
-        password("harbor_password", "credentialsJSON:c1214cf7-f3ac-40c1-9539-49e4dd3e5028")
-        param("minio_access_key", "credentialsJSON:c1214cf7-f3ac-40c1-9539-49e4dd3e5028")
+        password("minio_secret_key", "credentialsJSON:9ab48219-5651-48f1-8270-8001a10f6681")
+        password("harbor_password", "credentialsJSON:94db07fa-36a6-4d75-be47-4928f5ac11da")
+        param("minio_access_key", "credentialsJSON:7759a7b1-e7a2-402c-8e62-476f29cf8313")
     }
 
     vcs {
