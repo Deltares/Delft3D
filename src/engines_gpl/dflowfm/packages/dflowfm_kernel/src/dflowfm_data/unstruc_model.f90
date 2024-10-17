@@ -2079,17 +2079,6 @@ contains
       jamapwav_hwav = 0
       jamapwav_twav = 0
       jamapwav_phiwav = 0
-      jamapwav_sxwav = 0
-      jamapwav_sywav = 0
-      jamapwav_sbxwav = 0
-      jamapwav_sbywav = 0
-      jamapwav_mxwav = 0
-      jamapwav_mywav = 0
-      jamapwav_dsurf = 0
-      jamapwav_dwcap = 0
-      jamapwav_distot = 0
-      jamapwav_uorb = 0
-
       call prop_get(md_ptr, 'output', 'Wrimap_DTcell', jamapdtcell, success)
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       call prop_get(md_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, success)
@@ -2260,9 +2249,14 @@ contains
       end if
 
       call prop_get(md_ptr, 'output', 'EulerVelocities', jaeulervel)
-      if ((jawave < 3 .or. flowWithoutWaves) .and. jaeulervel == 1) then
-         call mess(LEVEL_WARN, '''EulerVelocities'' is not compatible with the selected Wavemodelnr. ''EulerVelocities'' is set to zero.')
-         jaeulervel = 0
+      if (jaeulervel == 1) then
+         if (jawave < 3 .or. flowWithoutWaves) then
+            call mess(LEVEL_WARN, '''EulerVelocities'' is not compatible with the selected Wavemodelnr. ''EulerVelocities'' is set to 0.')
+            jaeulervel = 0
+         else if (jawavestokes == 0) then
+            call mess(LEVEL_WARN, '''EulerVelocities'' is set to 0, because 3Dstokesprofile is set to 0.')
+            jaeulervel = 0
+         end if
       end if
       !
       if (jawave == 4) then ! not for Delta Shell
