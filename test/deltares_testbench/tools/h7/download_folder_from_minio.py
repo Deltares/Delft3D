@@ -1,27 +1,50 @@
+import argparse
 import os
-import sys
 
 from minio import Minio
+from minio.credentials.providers import StaticProvider
 from minio.error import S3Error
 
 from src.utils.handlers.credential_handler import CredentialHandler
 
 if __name__ == "__main__":
-    # Check command-line arguments
-    if len(sys.argv) < 2:
-        print("Usage: download_folder.py <bucket_name>")
-        sys.exit(1)
+    # Create the parser
+    parser = argparse.ArgumentParser(description="Process some paths.")
+
+    # Add arguments
+    parser.add_argument("--bucket", type=str, required=True, help="The name of the bucket")
+    parser.add_argument("--minio-path", type=str, required=True, help="The path to the remote folder")
+    parser.add_argument("--dest", type=str, required=True, help="The path to the local folder")
+    parser.add_argument("-u", dest="username", type=str, help="Your MinIO access key")
+    parser.add_argument("-p", dest="password", type=str, help="Your MinIO secret key")
+
+    # Parse the arguments
+    args = parser.parse_args()
+
+    # Access the arguments
+    bucket_name = args.bucket
+    remote_folder_path = args.minio_path
+    local_folder_path = args.dest
+
+    username = args.username
+    password = args.password
+
+    # Set up provider use credential file if exists.
+    if CredentialHandler().credential_file_exists():
+        provider = CredentialHandler().get_credentials()
+    elif username and password:
+        provider = StaticProvider(username, password)  # type: ignore
+    else:
+        exit(1)
+    print(f"Downloading objects from {bucket_name}/{remote_folder_path} to {local_folder_path}")
 
     # MinIO server details
     minio_url = "s3.deltares.nl"
-    bucket_name = sys.argv[1]
-    remote_folder_path = "TeamcityMinioStorage/h7_results"
-    local_folder_path = "data/cases"
 
     # Initialize MinIO client
     client = Minio(
         endpoint=minio_url,
-        credentials=CredentialHandler().get_credentials(),
+        credentials=provider,
         secure=True,  # Set to False if not using HTTPS
     )
 
