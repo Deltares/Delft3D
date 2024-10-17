@@ -52,56 +52,56 @@
 !
 !***********************************************************************
 !
-      character(len=256) rtncod
-      character(len=256) flwmap, flwhis,                                              &
-     &              fstrhs  , fqlths  ,                                               &
-     &              minmax  ,                                                         &
-     &              fihmap  , fihhis  ,                                               &
-     &              fipmap  , fiphis  ,                                               &
-     &              firmap  , firhis  ,                                               &
-     &              prhmap  , prhhis  ,                                               &
-     &              prpmap  , prphis  ,                                               &
-     &              sltmap  , slthis  ,                                               &
-     &              sdtmap  , sdthis  ,                                               &
-     &              mrpmap  , mrphis  ,                                               &
-     &              gsedmap , gsedhis ,                                               &
-     &              gfrcmap , gfrchis 
-      character(len=256) trainp, traout,                                              &
-     &              griout
-      character(len=256) graout  , gralog  
-      character(len=256) fsgfun, fexare,                                              &
-     &              fexflo  , flenth  ,                                               &
-     &              fvolum  , fpoint  ,                                               &
-     &              fwqino  , fwqinp
-      character(len=256) nefrda, nefrdf,                                              &
-     &              nefnda  , nefndf
-      character(len=256) logfil  , statfl
-      character(len=256) fresid, ffroud,                                              &
-     &              fdmprs  , fdmpst  ,                                               &
-     &              fdmpsl
-      character(len=256) nefmda  , nefmdf
-      character(len=256) nefwda  , nefwdf
-      character(len=256) errtem
-      character(len=256) gaprinam, gawlev,                                            &
-     &              gadisch , gaveloc ,                                               &
-     &              gaconcen
-      common /simfls/                                                                 &
-     &             rtncod  ,                                                          &
-     &             flwmap  , flwhis  , fstrhs  , fqlths  ,                            &
-     &             minmax  ,                                                          & 
-     &             fihmap  , fihhis  , fipmap  , fiphis  ,                            &
-     &             firmap  , firhis  , prhmap  , prhhis  ,                            &
-     &             prpmap  , prphis  , sltmap  , slthis  ,                            &
-     &             sdtmap  , sdthis  , mrpmap  , mrphis  ,                            &
-     &             gsedmap , gsedhis , gfrcmap , gfrchis ,                            &
-     &             graout  , gralog  ,                                                &
-     &             trainp  , traout  , griout  ,                                      &
-     &             fsgfun  , fexare  , fexflo  , flenth  ,                            &
-     &             fvolum  , fpoint  , fwqino  , fwqinp  ,                            &
-     &             logfil  , statfl  , nefrda  , nefrdf  ,                            &
-     &             nefnda  , nefndf  , fresid  , ffroud  ,                            &
-     &             fdmprs  , fdmpst  , fdmpsl  , nefmda  ,                            &
-     &             nefmdf  , nefwda  , nefwdf  ,                                      &
-     &             errtem  ,                                                          &
-     &             gaprinam, gawlev  , gadisch , gaveloc ,                            &
-     &             gaconcen
+character(len=256) rtncod
+character(len=256) flwmap, flwhis,                                              &
+&              fstrhs  , fqlths  ,                                               &
+&              minmax  ,                                                         &
+&              fihmap  , fihhis  ,                                               &
+&              fipmap  , fiphis  ,                                               &
+&              firmap  , firhis  ,                                               &
+&              prhmap  , prhhis  ,                                               &
+&              prpmap  , prphis  ,                                               &
+&              sltmap  , slthis  ,                                               &
+&              sdtmap  , sdthis  ,                                               &
+&              mrpmap  , mrphis  ,                                               &
+&              gsedmap , gsedhis ,                                               &
+&              gfrcmap , gfrchis
+character(len=256) trainp, traout,                                              &
+&              griout
+character(len=256) graout  , gralog
+character(len=256) fsgfun, fexare,                                              &
+&              fexflo  , flenth  ,                                               &
+&              fvolum  , fpoint  ,                                               &
+&              fwqino  , fwqinp
+character(len=256) nefrda, nefrdf,                                              &
+&              nefnda  , nefndf
+character(len=256) logfil  , statfl
+character(len=256) fresid, ffroud,                                              &
+&              fdmprs  , fdmpst  ,                                               &
+&              fdmpsl
+character(len=256) nefmda  , nefmdf
+character(len=256) nefwda  , nefwdf
+character(len=256) errtem
+character(len=256) gaprinam, gawlev,                                            &
+&              gadisch , gaveloc ,                                               &
+&              gaconcen
+common /simfls/                                                                 &
+&             rtncod  ,                                                          &
+&             flwmap  , flwhis  , fstrhs  , fqlths  ,                            &
+&             minmax  ,                                                          &
+&             fihmap  , fihhis  , fipmap  , fiphis  ,                            &
+&             firmap  , firhis  , prhmap  , prhhis  ,                            &
+&             prpmap  , prphis  , sltmap  , slthis  ,                            &
+&             sdtmap  , sdthis  , mrpmap  , mrphis  ,                            &
+&             gsedmap , gsedhis , gfrcmap , gfrchis ,                            &
+&             graout  , gralog  ,                                                &
+&             trainp  , traout  , griout  ,                                      &
+&             fsgfun  , fexare  , fexflo  , flenth  ,                            &
+&             fvolum  , fpoint  , fwqino  , fwqinp  ,                            &
+&             logfil  , statfl  , nefrda  , nefrdf  ,                            &
+&             nefnda  , nefndf  , fresid  , ffroud  ,                            &
+&             fdmprs  , fdmpst  , fdmpsl  , nefmda  ,                            &
+&             nefmdf  , nefwda  , nefwdf  ,                                      &
+&             errtem  ,                                                          &
+&             gaprinam, gawlev  , gadisch , gaveloc ,                            &
+&             gaconcen

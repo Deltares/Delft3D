@@ -69,6 +69,7 @@
       use m_solver
       use m_advec
       use m_writematrix
+      use m_saadf, only: amub
       implicit none
 
       integer, intent(inout) :: ierror
