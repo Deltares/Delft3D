@@ -6173,10 +6173,10 @@ contains
                   end if
                end if
                if (jamapwav_twav > 0 .and. allocated(twav)) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'tp', 'sea_surface_wave_period_at_variance_spectral_density_maximu', 'Peak wave period', 's')
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'tp', 'sea_surface_wave_period_at_variance_spectral_density_maximum', 'Peak wave period', 's')
                end if
                if (jamapwav_phiwav > 0 .and. allocated(phiwav)) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'deg from N')
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'degree')
                end if
             else ! flow with waves
                !
@@ -6186,7 +6186,7 @@ contains
                else
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_significant_height', 'Significant wave height', 'm', jabndnd=jabndnd_)
                end if
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'deg from N', jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'degree', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'twav', 'sea_surface_wave_period_at_variance_spectral_density_maximum', 'Wave peak period', 's') ! we assume working with the peak period in all our formulations
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb, nc_precision, UNC_LOC_S, 'uorb', 'sea_surface_wave_orbital_velocity', 'Wave orbital velocity', 'm s-1', jabndnd=jabndnd_) ! not CF
                !
@@ -6234,7 +6234,7 @@ contains
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_kwav, nc_precision, UNC_LOC_S, 'kwav', 'sea_surface_wave_wavenumber', 'Sea_surface_wave_wavenumber', 'rad m-1', jabndnd=jabndnd_) ! not CF
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_nwav, nc_precision, UNC_LOC_S, 'nwav', 'sea_surface_wave_cg_over_c', 'Sea_surface_wave_ratio_group_phase_speed', '-', jabndnd=jabndnd_) ! not CF
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ctheta, nc_precision, UNC_LOC_S, 'ctheta', 'sea_surface_wave_refraction_celerity', 'Sea_surface_wave_refraction_celerity', 'rad s-1', dimids=(/mapids%id_tsp%id_ntheta, -2, -1/), jabndnd=jabndnd_) ! not CF
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_l1, nc_precision, UNC_LOC_S, 'lwav', 'sea_surface_wave_wavelength', 'Sea_surface_wave_wavelength', 'm', jabndnd=jabndnd_) ! not CF
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_l1, nc_precision, UNC_LOC_S, 'lwav', 'sea_surface_wave_wavelength', 'Wave length', 'm', jabndnd=jabndnd_) ! not CF
                end if
             end if
          end if
@@ -7507,14 +7507,12 @@ contains
             allocate (wa(1:ndx), stat=ierr)
             wa = wavfac * hwav
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, UNC_LOC_S, wa, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb, UNC_LOC_S, uorb, jabndnd=jabndnd_)
-
             wa = modulo(270d0 - phiwav, 360d0)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, UNC_LOC_S, wa, jabndnd=jabndnd_)
-            deallocate (wa)
-
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, UNC_LOC_S, twav)
-
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb, UNC_LOC_S, uorb, jabndnd=jabndnd_)
+            deallocate (wa)
+            !
             if (jawavestokes > 0) then
                call realloc(ust_x, ndkx, keepExisting=.false.)
                call realloc(ust_y, ndkx, keepExisting=.false.)
@@ -7525,27 +7523,6 @@ contains
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vstokes, iLocS, ust_y, jabndnd=jabndnd_)
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ustokeslink, iLocU, ustokes, jabndnd=jabndnd_)
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vstokeslink, iLocU, vstokes, jabndnd=jabndnd_)
-            end if
-
-            if (jawave == 4) then
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_E, UNC_LOC_S, E, jabndnd=jabndnd_)
-               if (roller > 0) then
-                  ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_R, UNC_LOC_S, R, jabndnd=jabndnd_)
-                  ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_DR, UNC_LOC_S, DR, jabndnd=jabndnd_)
-               end if
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_D, UNC_LOC_S, D, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Df, UNC_LOC_S, Df, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Sxx, UNC_LOC_S, Sxx, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Syy, UNC_LOC_S, Syy, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Sxy, UNC_LOC_S, Sxy, jabndnd=jabndnd_)
-
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sigmwav, UNC_LOC_S, sigmwav, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cwav, UNC_LOC_S, cwav, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cgwav, UNC_LOC_S, cgwav, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_kwav, UNC_LOC_S, kwav, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_nwav, UNC_LOC_S, nwav, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_l1, UNC_LOC_S, L1, jabndnd=jabndnd_)
-               ierr = nf90_put_var(mapids%ncid, mapids%id_ctheta(2), ctheta(:, 1:ndxndxi), start=(/1, 1, itim/), count=(/ntheta, ndxndxi, 1/))
             end if
             !
             if ((jawave == 3 .or. jawave == 4 .or. jawave == 7) .and. jawaveforces > 0) then
@@ -7598,6 +7575,28 @@ contains
                   ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbywav, UNC_LOC_S, sbywav, jabndnd=jabndnd_)
                end if
             end if
+            !
+            if (jawave == 4) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_E, UNC_LOC_S, E, jabndnd=jabndnd_)
+               if (roller > 0) then
+                  ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_R, UNC_LOC_S, R, jabndnd=jabndnd_)
+                  ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_DR, UNC_LOC_S, DR, jabndnd=jabndnd_)
+               end if
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_D, UNC_LOC_S, D, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Df, UNC_LOC_S, Df, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Sxx, UNC_LOC_S, Sxx, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Syy, UNC_LOC_S, Syy, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Sxy, UNC_LOC_S, Sxy, jabndnd=jabndnd_)
+
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sigmwav, UNC_LOC_S, sigmwav, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cwav, UNC_LOC_S, cwav, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cgwav, UNC_LOC_S, cgwav, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_kwav, UNC_LOC_S, kwav, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_nwav, UNC_LOC_S, nwav, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_l1, UNC_LOC_S, L1, jabndnd=jabndnd_)
+               ierr = nf90_put_var(mapids%ncid, mapids%id_ctheta(2), ctheta(:, 1:ndxndxi), start=(/1, 1, itim/), count=(/ntheta, ndxndxi, 1/))
+            end if
+            !
          end if
       end if ! flowWithoutWaves
 
