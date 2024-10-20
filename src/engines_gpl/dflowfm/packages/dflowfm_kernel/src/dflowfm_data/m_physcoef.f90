@@ -80,73 +80,76 @@
 ! m_dimens, m_polygon moved to gridgeom
 ! m_save_ugrid_state saves the variable names for saving UGrid format
 module m_physcoef
+   use precision, only: dp
+
    implicit none
-   double precision :: ag !< 10.0   ! 9.81    ! (m/s2)
-   double precision :: sag !< sqrt(ag)
+
+   real(kind=dp) :: ag !< 10.0   ! 9.81    ! (m/s2)
+   real(kind=dp) :: sag !< sqrt(ag)
    integer :: jahelmert = 0 !< 1=use Helmerts equation for agp only
-   double precision :: vonkar !< von Karman constant ()
-   double precision :: vonkarw !< von Karman constant used in wind formulations, on Firmijns request ()
-   double precision :: frcuni !< uniform friction coeff 2D
-   double precision :: frcuni1D !< uniform friction coeff 1D
-   double precision :: frcuni1D2D !< uniform friction coeff 1D2D
-   double precision :: frcunistreetinlet = 0.035
-   double precision :: frcuniroofgutterpipe = 0.035
-   double precision :: frcuniroof = 0.030
-   double precision :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
-   double precision :: frcmax !< max friction coeff in frcu
+   real(kind=dp) :: vonkar !< von Karman constant ()
+   real(kind=dp) :: vonkarw !< von Karman constant used in wind formulations, on Firmijns request ()
+   real(kind=dp) :: frcuni !< uniform friction coeff 2D
+   real(kind=dp) :: frcuni1D !< uniform friction coeff 1D
+   real(kind=dp) :: frcuni1D2D !< uniform friction coeff 1D2D
+   real(kind=dp) :: frcunistreetinlet = 0.035
+   real(kind=dp) :: frcuniroofgutterpipe = 0.035
+   real(kind=dp) :: frcuniroof = 0.030
+   real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
+   real(kind=dp) :: frcmax !< max friction coeff in frcu
 
    integer :: ifrctypuni !< 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D)
-   double precision :: frcunilin !<60.    ! 6      ! 66     ! uniform friction coeff
-   double precision :: umodlin !< linear friction umod , ifrctyp 4,5,6
+   real(kind=dp) :: frcunilin !<60.    ! 6      ! 66     ! uniform friction coeff
+   real(kind=dp) :: umodlin !< linear friction umod , ifrctyp 4,5,6
 
-   double precision :: wall_ks !< vertical wall nIKURADSE ROUGHNESSs (m)
-   double precision :: wall_z0 !< z0 for vertical walls, ~= Ks/30    (m)
+   real(kind=dp) :: wall_ks !< vertical wall nIKURADSE ROUGHNESSs (m)
+   real(kind=dp) :: wall_z0 !< z0 for vertical walls, ~= Ks/30    (m)
                                               !! z0 for bottom follows from ifrctyp==3 and z0=frcuni
-   double precision :: z0 !< z0
-   double precision :: ee !< natural e
-   double precision :: ee9 !< natural e/c9of1
+   real(kind=dp) :: z0 !< z0
+   real(kind=dp) :: ee !< natural e
+   real(kind=dp) :: ee9 !< natural e/c9of1
 
-   double precision :: vicouv !< constant horizontal eddy viscosity   (m2/s) mom
-   double precision :: dicouv !< constant horizontal eddy diffusivity (m2/s) sal, sed
+   real(kind=dp) :: vicouv !< constant horizontal eddy viscosity   (m2/s) mom
+   real(kind=dp) :: dicouv !< constant horizontal eddy diffusivity (m2/s) sal, sed
 
-   double precision :: Elder !< add Elder viscosity
-   double precision :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
-   double precision :: viuchk !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
+   real(kind=dp) :: Elder !< add Elder viscosity
+   real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
+   real(kind=dp) :: viuchk !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
 
-   double precision :: vicoww !< 1D-6   !                 ! user specified constant vertical   eddy viscosity  (m2/s)
-   double precision :: dicoww !< 1D-6   !                 ! user specified constant vertical   eddy diffusivity(m2/s)
+   real(kind=dp) :: vicoww !< 1D-6   !                 ! user specified constant vertical   eddy viscosity  (m2/s)
+   real(kind=dp) :: dicoww !< 1D-6   !                 ! user specified constant vertical   eddy diffusivity(m2/s)
 
-   double precision :: rhomean !< mean ambient rho ! (kg/m3)
-   double precision :: rhog !< rhomean*g
-   double precision :: c9of1 !< vonkar/log(c9of1 + dzb / z0)
+   real(kind=dp) :: rhomean !< mean ambient rho ! (kg/m3)
+   real(kind=dp) :: rhog !< rhomean*g
+   real(kind=dp) :: c9of1 !< vonkar/log(c9of1 + dzb / z0)
 
    !< Molecular diffusivity coefficients (m2/s):
-   double precision :: viskin !< kinematic  viscosity
-   double precision :: vismol !< molecular viscosity (m2/s)
-   double precision :: difmolsal !< molecular diffusivity of salinity
-   double precision :: difmoltem !<           diffusivity of temperature
-   double precision :: difmolsed !<           diffusivity of sediment
-   double precision :: difmoltracer !<         diffusivity of tracers
+   real(kind=dp) :: viskin !< kinematic  viscosity
+   real(kind=dp) :: vismol !< molecular viscosity (m2/s)
+   real(kind=dp) :: difmolsal !< molecular diffusivity of salinity
+   real(kind=dp) :: difmoltem !<           diffusivity of temperature
+   real(kind=dp) :: difmolsed !<           diffusivity of sediment
+   real(kind=dp) :: difmoltracer !<         diffusivity of tracers
 
-   double precision :: vicwminb ! minimum eddy viscosity in production terms shear and buoyancy
-   double precision :: xlozmidov ! Ozmidov length scale (m)
+   real(kind=dp) :: vicwminb ! minimum eddy viscosity in production terms shear and buoyancy
+   real(kind=dp) :: xlozmidov ! Ozmidov length scale (m)
 
-   double precision :: viskinair !< kinematic  viscosity
-   double precision :: backgroundwatertemperature !< background water temp (C)
-   double precision :: backgroundsalinity !< background salinity (ppt)
-   double precision, parameter :: BACKGROUND_AIR_PRESSURE = 101325d0 !< background air pressure (Pa)
-   double precision, parameter :: BACKGROUND_AIR_TEMPERATURE = 20d0 !< background air temperature (degrees Celsius)
-   double precision, parameter :: BACKGROUND_CLOUDINESS = 50d0 !< (%) cloudiness for non-specified points
-   double precision, parameter :: BACKGROUND_HUMIDITY = 50d0 !< (%) relative humidity for non-specified points
-   double precision :: secchidepth !< (m) secchidepth
-   double precision :: secchidepth2 !< (m) secchidepth2
-   double precision :: secchidepth2fraction !< (m) fraction of total absorbed by profile 2
-   double precision :: zab(2), sfr(2) !< help variables
+   real(kind=dp) :: viskinair !< kinematic  viscosity
+   real(kind=dp) :: backgroundwatertemperature !< background water temp (C)
+   real(kind=dp) :: backgroundsalinity !< background salinity (ppt)
+   real(kind=dp), parameter :: BACKGROUND_AIR_PRESSURE = 101325d0 !< background air pressure (Pa)
+   real(kind=dp), parameter :: BACKGROUND_AIR_TEMPERATURE = 20d0 !< background air temperature (degrees Celsius)
+   real(kind=dp), parameter :: BACKGROUND_CLOUDINESS = 50d0 !< (%) cloudiness for non-specified points
+   real(kind=dp), parameter :: BACKGROUND_HUMIDITY = 50d0 !< (%) relative humidity for non-specified points
+   real(kind=dp) :: secchidepth !< (m) secchidepth
+   real(kind=dp) :: secchidepth2 !< (m) secchidepth2
+   real(kind=dp) :: secchidepth2fraction !< (m) fraction of total absorbed by profile 2
+   real(kind=dp) :: zab(2), sfr(2) !< help variables
 
-   double precision :: cp0 !< eckart density parameters
-   double precision :: clam !< eckart density parameters
-   double precision :: clam0 !< eckart density parameters
-   double precision :: alph0 !< eckart density parameters
+   real(kind=dp) :: cp0 !< eckart density parameters
+   real(kind=dp) :: clam !< eckart density parameters
+   real(kind=dp) :: clam0 !< eckart density parameters
+   real(kind=dp) :: alph0 !< eckart density parameters
    integer :: idensform !< 0 = no, 1 = eckart
    integer :: Maxitpresdens = 1 !< max nr of density-pressure iterations
    integer :: Jarhointerfaces = 0 !< rho computed at vertical interfaces, yes=1, 0=cell center
@@ -155,24 +158,24 @@ module m_physcoef
 
    integer :: limiterhordif !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
 
-   double precision :: Stanton !< coeff for convective  heat flux, if negative , take wind Cd
-   double precision :: Dalton !< coeff for evaporative heat flux, if negative , take wind Cd
-   double precision :: Tempmax = -999d0 !< limit
-   double precision :: Tempmin = 0d0 !< limit
+   real(kind=dp) :: Stanton !< coeff for convective  heat flux, if negative , take wind Cd
+   real(kind=dp) :: Dalton !< coeff for evaporative heat flux, if negative , take wind Cd
+   real(kind=dp) :: Tempmax = -999d0 !< limit
+   real(kind=dp) :: Tempmin = 0d0 !< limit
    integer :: Jaallowcoolingbelowzero = 0 !< Allow cooling below 0 degrees C (0=default since 2017)
-   double precision :: Salimax = -999d0 !< limit
-   double precision :: Salimin = 0d0 !< limit
-   double precision :: epshstem = 0.001d0 !< only compute heatflx + evap if depth > trsh
-   double precision :: surftempsmofac = 0.0d0 !< surface temperature smoothing factor 0-1d05
-   double precision :: Soiltempthick = 0.0d0 !< if soil buffer desired make thick > 0, e.g. 0.2 m
+   real(kind=dp) :: Salimax = -999d0 !< limit
+   real(kind=dp) :: Salimin = 0d0 !< limit
+   real(kind=dp) :: epshstem = 0.001d0 !< only compute heatflx + evap if depth > trsh
+   real(kind=dp) :: surftempsmofac = 0.0d0 !< surface temperature smoothing factor 0-1d05
+   real(kind=dp) :: Soiltempthick = 0.0d0 !< if soil buffer desired make thick > 0, e.g. 0.2 m
 
    integer :: Jadelvappos !< only positive forced evaporation fluxes
 
-   double precision :: tetav !< vertical teta transport
-   double precision :: tetavkeps !< vertical teta k-eps
-   double precision :: tetavmom !< vertical teta momentum
+   real(kind=dp) :: tetav !< vertical teta transport
+   real(kind=dp) :: tetavkeps !< vertical teta k-eps
+   real(kind=dp) :: tetavmom !< vertical teta momentum
 
-   double precision :: locsaltlev, locsaltmin, locsaltmax
+   real(kind=dp) :: locsaltlev, locsaltmin, locsaltmax
 
    integer :: NFEntrainmentMomentum = 0 !< 1: switched on: Momentum transfer in NearField related entrainment
 contains

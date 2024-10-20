@@ -51,19 +51,20 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
    use timers, only: timon, timstrt, timstop
    use m_alloc, only: aerr
    use m_get_kbot_ktop
+   use precision, only: dp
 
    implicit none
 
    integer, intent(in) :: jas
 
-   double precision :: dvoli
+   real(kind=dp) :: dvoli
    integer :: iconst, kk, kkk, k, kb, kt, n, kk2, imba, jamba_src
    integer :: jsed ! counter for suspended sediment fractions
    integer :: jtra ! counter for tracers
-   double precision, parameter :: dtol = 1d-8
-   double precision :: spir_ce, spir_be, spir_e, alength_a, time_a, alpha, fcoriocof, qsrck, qsrckk, dzss
+   real(kind=dp), parameter :: dtol = 1d-8
+   real(kind=dp) :: spir_ce, spir_be, spir_e, alength_a, time_a, alpha, fcoriocof, qsrck, qsrckk, dzss
 
-   double precision :: Trefi
+   real(kind=dp) :: Trefi
    integer(4) :: ithndl = 0
 
    if (timon) call timstrt("fill_constituents", ithndl)
@@ -348,12 +349,12 @@ contains
       integer, intent(in) :: i2 !< 1=FROM-point, 2=TO-point
       integer, intent(in) :: n !< source/sink number
       integer, intent(in) :: k !< layer number
-      double precision, intent(in) :: qsrck !< flow
-      double precision, intent(in) :: dvoli !<
+      real(kind=dp), intent(in) :: qsrck !< flow
+      real(kind=dp), intent(in) :: dvoli !<
 
       integer :: iconst !< constituent index, equal to imbs
-      double precision :: flux !< flux
-      double precision :: dt !< applicable time step
+      real(kind=dp) :: flux !< flux
+      real(kind=dp) :: dt !< applicable time step
 
       do iconst = 1, numconst
          if (i1 == i2) then ! on outflow side
