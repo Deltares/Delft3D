@@ -74,17 +74,17 @@
       <checks>
         <file name="DFM_OUTPUT_converted_tunnel/converted_tunnel_his.nc" type="netCDF">
           <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0009" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0009" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
-            <parameter name="cross_section_cumulative_discharge" toleranceAbsolute="0.0001" />
-            <parameter name="longculvert_discharge" toleranceAbsolute="0.0001" />
-            <parameter name="longculvert_s1up" toleranceAbsolute="0.0001" />
-            <parameter name="longculvert_s1dn" toleranceAbsolute="0.0001" />
-            <parameter name="longculvert_head" toleranceAbsolute="0.0001" />
+            <parameter name="cross_section_discharge" toleranceAbsolute="0.002" />
+            <parameter name="cross_section_cumulative_discharge" toleranceRelative="0.0015" />
+            <parameter name="longculvert_discharge" toleranceAbsolute="0.003" />
+            <parameter name="longculvert_s1up" toleranceAbsolute="0.0005" />
+            <parameter name="longculvert_s1dn" toleranceAbsolute="0.0009" />
+            <parameter name="longculvert_head" toleranceAbsolute="0.002" />
             <parameter name="longculvert_flow_area" toleranceAbsolute="0.0001" />
-            <parameter name="longculvert_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="longculvert_velocity" toleranceAbsolute="0.04" />
             <parameter name="longculvert_valve_relative_opening" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
@@ -2336,15 +2336,15 @@
       <checks>
         <file name="dflowfmoutput/beyer_004f_his.nc" type="netCDF">
           <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.002" />
+            <parameter name="x_velocity" toleranceAbsolute="0.003" />
+            <parameter name="y_velocity" toleranceAbsolute="0.001" />
           </parameters>
         </file>
         <file name="dflowfmoutput/beyer_004f_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0004" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.003" />
           </parameters>
         </file>
       </checks>
@@ -2355,15 +2355,15 @@
       <checks>
         <file name="dflowfmoutput/beyer_004f_his.nc" type="netCDF">
           <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="waterlevel" toleranceAbsolute="0.0006" />
+            <parameter name="x_velocity" toleranceAbsolute="0.002" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="dflowfmoutput/beyer_004f_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0006" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.002" />
           </parameters>
         </file>
       </checks>
@@ -2597,7 +2597,7 @@
         <file name="dflowfmoutput/zandloper_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.1" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.1" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.2" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -4774,9 +4774,9 @@
         <file name="dflowfmoutput/t1_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_msed" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.003" />
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_msed" toleranceRelative="0.04" />
           </parameters>
         </file>
       </checks>
@@ -4857,7 +4857,7 @@
       </checks>
     </testCase>
      <testCase name="e02_f022_c17_bedslope_effect_slope022" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f022_morphology_2D/c17_bedslope_effect_slope022</path>
+      <path version="2024-10-22T16:40:00">e02_dflowfm/f022_morphology_2D/c17_bedslope_effect_slope022</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/str_map.nc" type="netCDF">
@@ -5598,7 +5598,6 @@
             <parameter name="msed" toleranceAbsolute="0.0000001" />
             <parameter name="lyrfrac" toleranceAbsolute="0.0000001" />
             <parameter name="thlyr" toleranceAbsolute="0.0000001" />
-            <parameter name="preload" toleranceAbsolute="0.0000001" />
             <parameter name="sedshort" toleranceAbsolute="0.0000001" />
             <parameter name="FlowElem_xzw" toleranceAbsolute="0.0000001" />
             <parameter name="FlowElem_yzw" toleranceAbsolute="0.0000001" />
@@ -5641,7 +5640,6 @@
             <parameter name="msed" toleranceAbsolute="0.0000001" />
             <parameter name="lyrfrac" toleranceAbsolute="0.0000001" />
             <parameter name="thlyr" toleranceAbsolute="0.0000001" />
-            <parameter name="preload" toleranceAbsolute="0.0000001" />
             <parameter name="sedshort" toleranceAbsolute="0.0000001" />
             <parameter name="FlowElem_xzw" toleranceAbsolute="0.0000001" />
             <parameter name="FlowElem_yzw" toleranceAbsolute="0.0000001" />

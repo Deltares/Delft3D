@@ -49,9 +49,9 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
    use m_deprecation, only: check_file_tree_for_deprecated_keywords
    use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
    use m_delpol
+   use m_timespaceinitialfield_mpi
+   
    implicit none
-
-   logical, external :: timespaceinitialfield_mpi
 
    logical :: bl_set_from_zkuni = .false.
    integer :: ja, ja1, ja2, method, iprimpos

@@ -179,6 +179,7 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use fm_deprecated_keywords, only: deprecated_ext_keywords
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
+      use m_timespaceinitialfield_mpi
 
       implicit none
       character(len=*), intent(in) :: inifilename !< name of initial field file
@@ -205,8 +206,7 @@ contains
       logical :: global_value_provided, water_level_global_value_provided
       logical :: time_dependent_array
       integer, allocatable :: kcsini(:) ! node code during initialization
-
-      logical, external :: timespaceinitialfield_mpi
+      
       double precision, pointer, dimension(:) :: target_array, x_loc, y_loc
       integer, pointer, dimension(:) :: target_array_integer
 

@@ -29,7 +29,11 @@
 
 !
 !
+module m_timespaceinitialfield_mpi
 
+implicit none
+
+contains
    !> perform interpolation on rank 0 only (and save some memory with multiple ranks on one node)
    !>   note: only methods "4" (in polygon) and "5" (trangulation) supported, averaging (method "6") not supported
    function timespaceinitialfield_mpi(x, y, z, N, filename, filetype, method, operand, transformcoef, iprimpos, kc) result(success)
@@ -123,3 +127,5 @@
 
       return
    end function timespaceinitialfield_mpi
+
+end module m_timespaceinitialfield_mpi
