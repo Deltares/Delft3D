@@ -96,9 +96,6 @@
       <testCase name="c01_harlingen" ref="dimr_trunk">
          <path version="2024-08-30T13:10:00">e02_dflowfm/f092_tutorial_course_models/c01_harlingen</path>
          <maxRunTime>60.0</maxRunTime> <!-- seconds -->
-         <location ref="reference_results" type="reference">
-            <from>win64</from>
-         </location>
          <checks>
             <file name="dflowfmoutput/001_map.nc" type="NETCDF">
                <parameters>
