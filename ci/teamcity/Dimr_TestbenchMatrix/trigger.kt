@@ -22,51 +22,41 @@ object Trigger : BuildType({
     
         param("teamcity_user", "svc_dimr_trigger")
         password("teamcity_pass", "credentialsJSON:15cc6665-e900-4360-8942-00e654f6acfe")
-    
-        param("matrix_list",         "dummy_value")
-        param("matrix_list_linux",   "dummy_value")
-        param("matrix_list_windows", "dummy_value")
-        param("git_head",            "dummy_value")
+
+        param("matrix_list_lnx64",   "dummy_value")
+        param("matrix_list_win64", "dummy_value")
         param("branch_name",         "dummy_value")
     }
 
     steps {
 
         python {
-            name = "Determine Git head"
+            name = "Determine components by branch"
             command = script {
                 content="""
                 if "merge-request" in "%teamcity.build.branch%":
                     branch_name = parameters["teamcity.pullRequest.source.branch"].split("/")[0]
-                    print("##teamcity[setParameter name='git_head' value='refs/%teamcity.build.branch%/head']")
                     print(f"##teamcity[setParameter name='branch_name' value='{branch_name}']")
                 else:
                     branch_name = "%teamcity.build.branch%".split("/")[0]
-                    print("##teamcity[setParameter name='git_head' value='refs/heads/%teamcity.build.branch%']")
                     print(f"##teamcity[setParameter name='branch_name' value='{branch_name}']")
                 """.trimIndent()
             }
         }
 
         python {
-            name = "Retrieve Testbench XMLs from CSV"
+            name = "Retrieve Linux Testbench XMLs from CSV"
             command = file {
                 filename = "ci/teamcity/scripts/testbench_filter.py"
-                scriptArguments = "%branch_name% %testbench_table% matrix_list"
+                scriptArguments = "-n %branch_name% -f %testbench_table% -v lnx64"
             }
         }
 
         python {
-            name = "Filter Testbench xmls"
-            command = script {
-                content="""
-                    matrix_list = "%matrix_list%".split(',')
-                    matrix_list_linux   = ",".join([xml for xml in matrix_list if "lnx64" in xml])
-                    matrix_list_windows = ",".join([xml for xml in matrix_list if "win64" in xml])
-
-                    print(f"##teamcity[setParameter name='matrix_list_linux' value='{matrix_list_linux}']")
-                    print(f"##teamcity[setParameter name='matrix_list_windows' value='{matrix_list_windows}']")
-                """.trimIndent()
+            name = "Retrieve Windows Testbench XMLs from CSV"
+            command = file {
+                filename = "ci/teamcity/scripts/testbench_filter.py"
+                scriptArguments = "-n %branch_name% -f %testbench_table% -v win64"
             }
         }
 
@@ -86,7 +76,7 @@ object Trigger : BuildType({
                      -d '<build branchName="%teamcity.build.branch%" replace="true">
                             <buildType id="${Linux.id}"/>
                             <revisions>
-                                <revision version="%build.vcs.number%" vcsBranchName="%git_head%">
+                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.vcs.branch.Delft3dGitlab%">
                                     <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
                                 </revision>
                             </revisions>
@@ -122,7 +112,7 @@ object Trigger : BuildType({
                      -d '<build branchName="%teamcity.build.branch%" replace="true">
                             <buildType id="${Windows.id}"/>
                             <revisions>
-                                <revision version="%build.vcs.number%" vcsBranchName="%git_head%">
+                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.vcs.branch.Delft3dGitlab%">
                                     <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
                                 </revision>
                             </revisions>
@@ -136,7 +126,7 @@ object Trigger : BuildType({
                      "%teamcity.serverUrl%/app/rest/buildQueue"
                 if (test $? -ne 0)
                 then
-                    echo Start Linux Testbench through TC API failed.
+                    echo Start Windows Testbench through TC API failed.
                     exit 1
                 fi
             """.trimIndent()

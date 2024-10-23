@@ -40,7 +40,7 @@ object Windows : BuildType({
     features {
         matrix {
             id = "matrix"
-            param("configfile", configs.map { config ->
+            param("configfile", selectedConfigs.map { config ->
                 value(config)
             })
         }
