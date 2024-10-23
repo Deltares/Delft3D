@@ -221,7 +221,7 @@ contains
       integer, allocatable :: kcsini(:) ! node code during initialization
       integer :: ec_item
 
-      logical, external :: timespaceinitialfield_mpi, findname
+      logical, external :: findname
       double precision, pointer, dimension(:) :: target_array, x_loc, y_loc
       double precision, pointer, dimension(:, :) :: target_array_3d
       integer, pointer, dimension(:) :: target_array_integer
