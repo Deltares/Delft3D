@@ -27,18 +27,18 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
-!> Reads a key=value entry from a property block and tries to interpret the value.
-!! The (single!) property block should come from an already-parsed .ini file.
-!! The string value is always returned, if found, and an attempt is also made to
-!! parse it into a scalar double, or alternatively to check whether it is an existing file.
 module m_read_property
    implicit none
    private
+
    public :: read_property
+
 contains
+
+   !> Reads a key=value entry from a property block and tries to interpret the value.
+   !! The (single!) property block should come from an already-parsed .ini file.
+   !! The string value is always returned, if found, and an attempt is also made to
+   !! parse it into a scalar double, or alternatively to check whether it is an existing file.
    subroutine read_property(prop_ptr, key, strvalue, dblvalue, is_double, typeandid, success)
       use properties
       use unstruc_messages
