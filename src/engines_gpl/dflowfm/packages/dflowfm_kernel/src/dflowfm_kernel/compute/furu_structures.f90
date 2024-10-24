@@ -44,7 +44,7 @@
     use m_bridge
     use m_oned_functions
     use unstruc_channel_flow
-    use m_get_cz
+    use m_get_chezy
 
     implicit none
 
@@ -121,7 +121,7 @@
                       as2 = (s1(k2) - bl(k2)) * wu(L)
                       width = wu(L)
                    end if
-                   call getcz(hu(L), frcu(L), ifrcutp(L), Cz, L)
+                   Cz = get_chezy(hu(L), frcu(L), ifrcutp(L), L)
                    au(L) = pstru%au(L0)
                    call computeGeneralStructure(pstru%generalst, direction, L0, width, bob0(:, L), fu(L), ru(L), &
                                                 au(L), as1, as2, width, kfu, s1(k1), s1(k2), q1(L), Cz, dx(L), dts, SkipDimensionChecks)

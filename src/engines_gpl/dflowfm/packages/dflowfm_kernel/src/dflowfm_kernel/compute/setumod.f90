@@ -50,7 +50,7 @@ subroutine setumod(jazws0) ! set cell center Perot velocities at nodes
    use m_drawthis
    use m_get_kbot_ktop
    use m_get_Lbot_Ltop
-   use m_get_cz
+   use m_get_chezy
 
    implicit none
 
@@ -346,7 +346,7 @@ subroutine setumod(jazws0) ! set cell center Perot velocities at nodes
 
                   vicL = 0d0
                   if (Elder > 0d0) then !  add Elder
-                     call getcz(hu(L), frcu(L), ifrcutp(L), Cz, L)
+                     Cz = get_chezy(hu(L), frcu(L), ifrcutp(L), L)
                      vicL = vicL + Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L) * v(L)) ! vonkar*sag/(6*Cz) = 0.009
                   end if
 

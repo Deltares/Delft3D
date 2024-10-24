@@ -34,7 +34,7 @@ module m_get_prof2d
 contains
  subroutine getprof2D(hpr, wu2, dz, ai, frcn, ifrctyp, wid, ar, aconv, jaconv, beta, deltaa, hyr)
     use m_flow, only: slotw2D
-    use m_get_cz
+    use m_get_chezy
 
     double precision, intent(in) :: hpr, wu2, dz, ai, frcn
     double precision, intent(out) :: wid, ar, aconv ! aconv = (a/conv)**2
@@ -76,7 +76,7 @@ contains
        aconv = 0d0; return
     else if (jaconv == 1) then ! hydraulic radius type
 
-       call getcz(hyr, frcn, ifrctyp, Cz, L)
+       Cz = get_chezy(hyr, frcn, ifrctyp, L)
        aconv = 1d0 / (Cz * Cz * hyr)
 
     else if (jaconv >= 2) then ! 1D analytic conveyance type
@@ -90,7 +90,7 @@ contains
           else
              hav = hpr - 0.5d0 * dz
           end if
-          call getcz(hav, frcn, ifrctyp, Cz, L)
+          Cz = get_chezy(hav, frcn, ifrctyp, L)
           cman = hav**d16 / Cz
        end if
 

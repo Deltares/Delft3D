@@ -58,7 +58,7 @@ logical function iterfurufm(m, su, sd, ustru, cu, rhsc, dxdt, lambda)
    use m_strucs
    use m_flow
    use m_flowgeom, only: dx
-   use m_get_cz
+   use m_get_chezy
 
    implicit none
 !
@@ -89,7 +89,7 @@ logical function iterfurufm(m, su, sd, ustru, cu, rhsc, dxdt, lambda)
       if (kmx == 0) then
          dxfrL = dx(m) * cfuhi(m)
       else if (frcu(m) > 0d0) then
-         call getcz(hu(m), frcu(m), ifrcutp(m), Cz, m) ! standard Chezy coeff
+         Cz = get_chezy(hu(m), frcu(m), ifrcutp(m), m) ! standard Chezy coeff
          dxfrl = dx(m) * ag / (Cz * Cz * hu(m))
       end if
    end if

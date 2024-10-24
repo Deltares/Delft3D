@@ -39,7 +39,7 @@ contains
       use m_flowgeom
       use m_sediment, only: sedtra, stm_included
       use m_get_kbot_ktop
-      use m_get_cz
+      use m_get_chezy
 
       ! Input variables
       integer, intent(in) :: waveswartdelwaq
@@ -83,7 +83,7 @@ contains
                LL = abs(nd(k)%ln(nn))
                frcn = frcu(LL)
                if (frcn > 0d0 .and. hu(LL) > 0d0) then
-                  call getcz(hu(LL), frcn, ifrcutp(LL), cz, LL)
+                  cz = get_chezy(hu(LL), frcn, ifrcutp(LL), LL)
                   cf = ag / (cz * cz)
                   ar = au(LL) * dx(LL)
                   wa = wa + ar ! area  weigthed

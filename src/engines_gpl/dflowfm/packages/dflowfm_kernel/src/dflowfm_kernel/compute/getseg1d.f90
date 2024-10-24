@@ -31,7 +31,7 @@
 !
 
 subroutine getseg1D(hpr, wu2, dz, ai, frcn, ifrctyp, wid, ar, conv, perim, jaconv) ! copy of above routine dressed out for 1D
-   use m_get_cz
+   use m_get_chezy
    implicit none
    double precision, intent(in) :: hpr, wu2, dz, ai, frcn
    double precision, intent(out) :: wid, ar, conv, perim !
@@ -81,7 +81,7 @@ subroutine getseg1D(hpr, wu2, dz, ai, frcn, ifrctyp, wid, ar, conv, perim, jacon
          else
             hav = hpr - 0.5d0 * dz
          end if
-         call getcz(hav, frcn, ifrctyp, Cz, L)
+         Cz = get_chezy(hav, frcn, ifrctyp, L)
          cman = hav**d16 / Cz
       end if
 

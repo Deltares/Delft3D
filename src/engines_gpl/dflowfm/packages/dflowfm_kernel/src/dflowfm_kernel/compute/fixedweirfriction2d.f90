@@ -34,7 +34,7 @@
     use m_flowgeom
     use m_flow
     use m_missing
-    use m_get_cz
+    use m_get_chezy
 
     implicit none
 
@@ -49,9 +49,9 @@
     end if
 
     if (fixedweirtopfrictcoef /= dmiss) then ! standard friction on weirtop only
-       call getcz(hu(L), fixedweirtopfrictcoef, ifrcutp(L), Cz, L)
+       Cz = get_chezy(hu(L), fixedweirtopfrictcoef, ifrcutp(L), L)
     else
-       call getcz(hu(L), frcu(L), ifrcutp(L), Cz, L)
+       Cz = get_chezy(hu(L), frcu(L), ifrcutp(L), L)
     end if
 
     umod = sqrt(u1(L) * u1(L) + v(L) * v(L))
@@ -69,14 +69,14 @@
        if (hs(k1) > 0d0) then
           ff = min(1d0, hu(L) / hs(k1))
           umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
+          Cz = get_chezy(hs(k1), frcu(L), ifrcutp(L), L)
           frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
        end if
 
        if (hs(k2) > 0d0) then
           ff = min(1d0, hu(L) / hs(k2))
           umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
+          Cz = get_chezy(hs(k2), frcu(L), ifrcutp(L), L)
           frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
        end if
 
@@ -87,14 +87,14 @@
        if (hs(k1) > 0d0) then
           ff = min(1d0, hu(L) / hs(k1))
           umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
+          Cz = get_chezy(hs(k1), frcu(L), ifrcutp(L), L)
           frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
        end if
 
        if (hs(k2) > 0d0) then
           ff = min(1d0, hu(L) / hs(k2))
           umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
+          Cz = get_chezy(hs(k2), frcu(L), ifrcutp(L), L)
           frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
        end if
 
@@ -108,7 +108,7 @@
              call getucxucynoweirs(k1, ucxk, ucyk)
              umod = sqrt(ucxk * ucxk + ucyk * ucyk)
              uin = abs(ucxk * csu(L) + ucyk * snu(L))
-             call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
+             Cz = get_chezy(hs(k1), frcu(L), ifrcutp(L), L)
              frLk1 = umod * uin * ag / (Cz * Cz * hs(k1) * u1(L))
           end if
 
@@ -116,7 +116,7 @@
              call getucxucynoweirs(k2, ucxk, ucyk)
              umod = sqrt(ucxk * ucxk + ucyk * ucyk)
              uin = abs(ucxk * csu(L) + ucyk * snu(L))
-             call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
+             Cz = get_chezy(hs(k2), frcu(L), ifrcutp(L), L)
              frLk2 = umod * uin * ag / (Cz * Cz * hs(k2) * u1(L))
           end if
 
@@ -132,14 +132,14 @@
        if (hs(k1) > 0d0) then
           ff = min(1d0, hu(L) / hs(k1))
           umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
+          Cz = get_chezy(hs(k1), frcu(L), ifrcutp(L), L)
           frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
        end if
 
        if (hs(k2) > 0d0) then
           ff = min(1d0, hu(L) / hs(k2))
           umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
+          Cz = get_chezy(hs(k2), frcu(L), ifrcutp(L), L)
           frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
        end if
 

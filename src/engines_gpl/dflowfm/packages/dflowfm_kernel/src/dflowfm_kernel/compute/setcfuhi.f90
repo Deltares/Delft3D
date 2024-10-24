@@ -35,7 +35,7 @@
     use m_flow
     use m_flowgeom
     use m_missing
-    use m_get_cz
+    use m_get_chezy
 
     implicit none
 
@@ -67,7 +67,7 @@
                 end if
                 frcn = frcu(L)
                 if (frcn > 0d0) then
-                   call getcz(h0, frcn, ifrcutp(L), cz, L)
+                   cz = get_chezy(h0, frcn, ifrcutp(L), L)
                    cfuhi(L) = ag / (h0 * cz * cz)
                    z0ucur(L) = h0 * exp(-1d0 - vonkar * cz / sag)
                 else

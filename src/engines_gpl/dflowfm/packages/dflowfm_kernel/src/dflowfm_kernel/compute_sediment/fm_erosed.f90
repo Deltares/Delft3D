@@ -99,7 +99,7 @@
       use m_debug
       use m_sand_mud
       use m_get_kbot_ktop
-      use m_get_cz
+      use m_get_chezy
       !
       implicit none
       !
@@ -400,13 +400,13 @@
                   czu = 1d0 / (cfuhi(L) * max(hu(L), epshu))
                   czu = sqrt(czu * ag)
                else
-                  call getcz(hu(L), frcuni, ifrctypuni, czu, L)
+                  czu = get_chezy(hu(L), frcuni, ifrctypuni, L)
                end if
             else
                if (frcu_mor(L) > 0) then
-                  call getcz(hu(L), frcu_mor(L), ifrcutp(L), czu, L)
+                  czu = get_chezy(hu(L), frcu_mor(L), ifrcutp(L), L)
                else
-                  call getcz(hu(L), frcuni, ifrctypuni, czu, L)
+                  czu = get_chezy(hu(L), frcuni, ifrctypuni, L)
                end if
             end if
             !

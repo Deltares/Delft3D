@@ -57,7 +57,7 @@ contains
       use m_flowtimes
       use m_waves
       use m_get_kbot_ktop
-      use m_get_cz
+      use m_get_chezy
       !
       implicit none
       !
@@ -142,7 +142,7 @@ contains
       do L = 1, lnx
          k1 = ln(1, L); k2 = ln(2, L)
          if (frcu(L) > 0) then
-            call getcz(hu(L), frcu(L), ifrcutp(L), czu, L)
+            czu = get_chezy(hu(L), frcu(L), ifrcutp(L), L)
          end if
          czn(k1) = czn(k1) + wcl(1, L) * czu
          czn(k2) = czn(k2) + wcl(2, L) * czu

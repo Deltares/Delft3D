@@ -33,7 +33,7 @@
  subroutine setbaptist()
     use m_flow
     use m_flowgeom
-    use m_get_cz
+    use m_get_chezy
     implicit none
     integer :: L, k1, k2
     double precision :: ap, Cz, Czb, Czr, rnL, diaL, stemhL, gamhg, Cda, areastem, umag, fac, facL, Cdaleaf
@@ -45,7 +45,7 @@
 
        if (hu(L) > 0 .and. rnL > densvegminbap) then ! overwrite cfuhi on veg locations with 2D Baptist
           if (jaBaptist <= 2) then ! compute Baptist on board
-             call getcz(hu(L), frcu(L), ifrcutp(L), Czb, L) ! standard Chezy coeff
+             Czb = get_chezy(hu(L), frcu(L), ifrcutp(L), L) ! standard Chezy coeff
              if (diaveg(k1) > 0 .and. diaveg(k2) > 0) then
                 diaL = 0.5d0 * (diaveg(k1) + diaveg(k2))
              else
