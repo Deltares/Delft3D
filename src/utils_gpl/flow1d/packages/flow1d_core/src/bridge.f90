@@ -61,7 +61,7 @@ module m_Bridge
 
    private
 
-contains
+contains 
 
    subroutine ComputeBridge(bridge, fum, rum, aum, dadsm, kfum, s1m1, s1m2, u1m,              &
                             dxm, dt, as1, as2, bob, changeStructureDimensions)
@@ -86,7 +86,6 @@ contains
       real(kind=dp),        intent(in   )    :: bob(2)    !< BOB's at left and right of the bridge
       logical,                 intent(in   )    :: changeStructureDimensions !< Indicates whether the crest level and the flow area of the bridge
                                                                              !< can be changed.
-      !
       !
       ! Local variables
       !
