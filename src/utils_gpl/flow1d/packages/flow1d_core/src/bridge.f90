@@ -211,7 +211,7 @@ contains
          exitLoss = max(exitLoss, 0.0_dp)
       endif
 
-      if (bridge%pillarwidth > 1.0d-5) then
+      if (bridge%pillarwidth > 1.0_dp-5) then
       
          ! pilllar bridge definition
 
