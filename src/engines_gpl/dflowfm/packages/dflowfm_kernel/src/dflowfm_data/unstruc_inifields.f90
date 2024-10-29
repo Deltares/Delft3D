@@ -1196,7 +1196,6 @@ contains
       use unstruc_files, only: resolvePath
       use unstruc_model, only: md_extfile
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
-      use m_hydrology_data, only: infiltcap, infiltrationmodel
       use string_module, only: str_tolower
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_S3D, UNC_LOC_3DV
 
@@ -1210,7 +1209,7 @@ contains
                                   initem2D, inivel
 
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
-      use m_hydrology_data, only: infiltcap, infiltrationmodel, DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
+      use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
       use m_sediment, only: stm_included, sed, jased, sedh
       use m_transportdata, only: ISED1, const_names, NUMCONST, itrac2const, constituents
@@ -1254,16 +1253,6 @@ contains
       case ('waterdepth')
          target_location_type = UNC_LOC_S
          target_array => hs
-      case ('infiltrationcapacity')
-         if (infiltrationmodel /= DFM_HYD_INFILT_CONST) then
-            write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(qid) &
-               //'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_CONST, ''' in the MDU file (constant).'
-            call warn_flush() ! No error, just warning and continue
-            success = .false.
-            return
-         end if
-         target_location_type = UNC_LOC_S
-         target_array => infiltcap
       case ('initial', 'bedlevel')
          ! Bed level was earlier set in setbedlevelfromextfile()
       case ('initialunsaturedzonethickness')
@@ -1506,6 +1495,7 @@ contains
                                   HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
                                   InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, InterceptHs
+      use m_hydrology_data, only: infiltcap, infiltrationmodel
       use m_wind, only: ICdtyp
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
@@ -1558,6 +1548,17 @@ contains
          target_array => InterceptThickness
          interceptionmodel = DFM_HYD_INTERCEPT_LAYER
          jadhyd = 1
+      case ('infiltrationcapacity')
+         if (infiltrationmodel /= DFM_HYD_INFILT_CONST) then
+            write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(qid) &
+               //'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_CONST, ''' in the MDU file (constant).'
+            call warn_flush() ! No error, just warning and continue
+            success = .false.
+            return
+         end if
+         time_dependent_array = .false.
+         target_location_type = UNC_LOC_S
+         target_array => infiltcap
       case ('potentialevaporation')
          target_location_type = UNC_LOC_S
          call realloc(potEvap, ndx, keepExisting=.true., fill=0d0)
