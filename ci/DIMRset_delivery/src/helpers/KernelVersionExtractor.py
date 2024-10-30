@@ -2,7 +2,7 @@ import re
 from typing import Any, Dict
 
 from lib.TeamCity import TeamCity
-from settings.teamcity_settings import DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID, KERNELS, DIMR_TO_NGHS_BUILD_TYPE_ID
+from settings.teamcity_settings import DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID, KERNELS
 
 
 class KernelVersionExtractor(object):
