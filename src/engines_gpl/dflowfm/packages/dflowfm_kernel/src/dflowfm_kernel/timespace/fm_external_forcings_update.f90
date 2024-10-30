@@ -389,7 +389,17 @@ contains
             ! If wave model and flow model do not cover each other exactly, NaN values can propagate in the flow model.
             ! Correct for this by setting values to zero
             do k = 1, ndx
-               if (isnan(hwavcom(k))) then ! one check should be enough, everything is collocated
+               if (isnan(hwavcom(k)) .or. & 
+                   isnan(phiwav(k)).or. & 
+                   isnan(sxwav(k)).or. & 
+                   isnan(sywav(k)).or. & 
+                   isnan(sbxwav(k)).or. & 
+                   isnan(sbywav(k)).or. & 
+                   isnan(dsurf(k)).or. & 
+                   isnan(dwcap(k)).or. & 
+                   isnan(mxwav(k)).or. & 
+                   isnan(mywav(k)).or. & 
+                   isnan(phiwav(k))) then ! one check should be enough, everything is collocated
                   hwavcom(k) = 0d0
                   twavcom(k) = 0d0
                   sxwav(k) = 0d0
