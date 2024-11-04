@@ -73,8 +73,7 @@ module m_physcoef
    real(kind=dp) :: wall_z0 !< z0 for vertical walls, ~= Ks/30    (m)
                                               !! z0 for bottom follows from ifrctyp==3 and z0=frcuni
    real(kind=dp) :: z0 !< z0
-   real(kind=dp) :: ee !< natural e
-   real(kind=dp) :: ee9 !< natural e/c9of1
+   real(kind=dp), parameter :: ee = exp(1.0_dp) !< natural e
 
    real(kind=dp) :: vicouv !< constant horizontal eddy viscosity   (m2/s) mom
    real(kind=dp) :: dicouv !< constant horizontal eddy diffusivity (m2/s) sal, sed
@@ -152,8 +151,6 @@ contains
       sag = sqrt(ag)
       vonkar = 0.41_dp ! von Karman constant ()
       vonkarw = 0.40_dp ! von Karman constant for wind ()
-      ee = exp(1.0_dp) ! natural e ()
-      ee9 = 9.0_dp * ee !
       frcuni = 0.023_dp ! 60.    ! 6      ! 66     ! uniform friction coeff
       frcuni1D = 0.023_dp ! 60.    ! 6      ! 66     ! uniform friction coeff
       frcuni1D2D = 0.023_dp ! 60.    ! 6      ! 66     ! uniform friction coeff

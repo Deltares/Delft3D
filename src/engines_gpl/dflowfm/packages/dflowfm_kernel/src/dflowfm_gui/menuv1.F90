@@ -44,12 +44,10 @@ contains
       integer :: NUM, NWHAT
       integer :: maxopt
       integer, parameter :: MAXOP = 64
-      character(len=40) OPTION(MAXOP), exp(MAXOP)
+      character(len=40) :: OPTION(MAXOP)
       integer :: NFO
 
       if (NUM == 1) then
-         exp(1) = 'MENU 1                                  '
-         exp(2) = 'FILES                                   '
          OPTION(1) = 'Load MDU-file                    (*.mdu)'
          OPTION(2) = 'Load network      (*.unt/*.net/*_net.nc)'
          OPTION(3) = ' Add network      (*.unt/*.net/*_net.nc)'
@@ -95,8 +93,6 @@ contains
          OPTION(38) = 'Stop program                            '
          MAXOPT = 38
       else if (NUM == 2) then
-         exp(1) = 'MENU 2                                  '
-         exp(2) = 'OPERATIONS                              '
          OPTION(1) = 'Undo net                                '
          OPTION(2) = 'Create uniform curvilinear grid         '
          OPTION(3) = 'Create curvilinear grid from splines    '
@@ -143,8 +139,6 @@ contains
 
          MAXOPT = 41
       else if (NUM == 3) then
-         exp(1) = 'MENU 3                                  '
-         exp(2) = 'DISPLAY                                 '
          OPTION(1) = 'Display presets...                      '
          OPTION(2) = 'Display network                         '
          OPTION(3) = 'Display previous state network          '
@@ -189,8 +183,6 @@ contains
          MAXOPT = 40
 
       else if (NUM == 4) then
-         exp(1) = 'MENU 4                                  '
-         exp(2) = 'Edit data                               '
          OPTION(1) = 'Edit polygon                            '
          OPTION(2) = 'Edit network                            '
          OPTION(3) = 'Edit splines                            '
@@ -200,8 +192,6 @@ contains
          OPTION(7) = 'Show flow links                         '
          MAXOPT = 7
       else if (NUM == 5) then
-         exp(1) = 'MENU 5                                  '
-         exp(2) = 'ADDSUBDEL                               '
          OPTION(1) = 'Delete polygon                          '
          OPTION(2) = 'Delete network                          '
          OPTION(3) = 'Delete network based on cell centers.   '
@@ -243,8 +233,6 @@ contains
 
          MAXOPT = 38
       else if (NUM == 6) then
-         exp(1) = 'MENU 6                                  '
-         exp(2) = 'VARIOUS                                 '
          OPTION(1) = 'Shortstop                               '
          OPTION(2) = 'Actual and maximum data dimensions      '
          OPTION(3) = 'Change network           parameters     '

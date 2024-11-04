@@ -46,7 +46,7 @@ contains
          use m_readyy
 
          integer, parameter :: MAXOP = 64
-         character(len=40) :: OPTION(MAXOP), exp(MAXOP)
+         character(len=40) :: OPTION(MAXOP)
          integer :: NUMK, KEY
          double precision :: XK(NUMK), YK(NUMK), ZK(NUMK), EA(NUMK)
          double precision :: XI, YI, ZI, DA, AF, RD
@@ -55,8 +55,6 @@ contains
          double precision, save :: A = 1d0
 
          JA = 0
-         exp(1) = 'MENU TIG                                '
-         exp(2) = 'HOW TO REPLACE THE VALUES               '
          OPTION(1) = 'FIELD = UNIFORM VALUE, only missings    '
          OPTION(2) = 'FIELD = UNIFORM VALUE, all points       '
          OPTION(3) = 'FIELD = MAX(FIELD,UNIFORM VALUE)        '

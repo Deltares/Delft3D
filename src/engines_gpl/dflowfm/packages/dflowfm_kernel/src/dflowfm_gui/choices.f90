@@ -129,7 +129,7 @@ contains
       integer :: irerun ! orthogonalisenet: rerun
       integer :: maxopt, ierr
       integer, parameter :: MAXOP = 64
-      character * 40 OPTION(MAXOP), exp(MAXOP)
+      character(len=40) :: OPTION(MAXOP)
       integer, external :: flow_modelinit
 
       if (netstat /= NETSTAT_OK) call setnodadm(0)
@@ -330,8 +330,6 @@ contains
          else if (NWHAT == 21) then !****     **
             call PLUSABSI(XK, YK, ZK, KN, NUMK, NUML, KEY, kn3typ)
          else if (NWHAT == 23) then
-            exp(1) = 'MENU                                    '
-            exp(2) = 'COPY ... TO POLYGON                     '
             OPTION(1) = 'Copy land boundary  to polygon          '
             OPTION(2) = 'Copy net bounds     to polygon          '
             OPTION(3) = 'Copy cross sections to polygon          '
@@ -372,8 +370,6 @@ contains
             end if
             KEY = 3
          else if (NWHAT == 24) then
-            exp(1) = 'MENU                                    '
-            exp(2) = 'COPY POLYGON TO ...                     '
             OPTION(1) = 'Copy polygon to land boundary           '
             OPTION(2) = 'Copy polygon to observation points      '
             OPTION(3) = 'Copy polygon to samples                 '
@@ -395,8 +391,6 @@ contains
             end if
             KEY = 3
          else if (NWHAT == 25) then
-            exp(1) = 'MENU                                    '
-            exp(2) = 'COPY ... TO SAMPLES                     '
             OPTION(1) = 'Copy polygon              to samples    '
             OPTION(2) = 'Copy values on network nodes to samples '
             OPTION(3) = 'Copy values on network links to samples '
