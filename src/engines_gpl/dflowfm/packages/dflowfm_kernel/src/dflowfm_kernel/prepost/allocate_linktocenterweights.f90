@@ -39,7 +39,10 @@
 
     integer :: ierr
 
-    if (allocated(wcx1)) deallocate (wcx1, wcy1, wcx2, wcy2)
+    if (allocated(wcx1)) deallocate (wcx1)
+    if (allocated(wcy1)) deallocate (wcy1)
+    if (allocated(wcx2)) deallocate (wcx2)
+    if (allocated(wcy2)) deallocate (wcy2)
     if (allocated(wcL)) deallocate (wcL)
 
     allocate (wcx1(lnx), stat=ierr); 
