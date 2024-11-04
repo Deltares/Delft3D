@@ -30,6 +30,7 @@ module m_Bridge
 !-------------------------------------------------------------------------------
    
    ! Modules
+   use precision_basics, only: dp
    use m_GlobalParameters
    use m_CrossSections
    use m_Roughness
@@ -39,12 +40,12 @@ module m_Bridge
    public ComputeBridge
 
    type, public :: t_bridge
-      double precision              :: bedLevel             !< bedlevel of the standard bridge
-      double precision              :: bedLevel_actual      !< used bedlevel of the bridge
-      double precision              :: flowArea             !< flow area as defined in the cross section of the standard bridge
-      double precision              :: flowArea_actual      !< used flow area of the bridge
-      double precision              :: pillarwidth          !< pillar width
-      double precision              :: formfactor          
+      real(kind=dp)              :: bedLevel             !< bedlevel of the standard bridge
+      real(kind=dp)              :: bedLevel_actual      !< used bedlevel of the bridge
+      real(kind=dp)              :: flowArea             !< flow area as defined in the cross section of the standard bridge
+      real(kind=dp)              :: flowArea_actual      !< used flow area of the bridge
+      real(kind=dp)              :: pillarwidth          !< pillar width
+      real(kind=dp)              :: formfactor          
       integer                       :: allowedflowdir       !< 0 all directions
                                                             !< 1 only positive flow
                                                             !< 2 only negative flow
@@ -53,36 +54,35 @@ module m_Bridge
       type(t_crosssection), pointer :: pcross => null()     
       integer                       :: crosssectionnr     
       integer                       :: bedFrictionType    
-      double precision              :: bedFriction        
-      double precision              :: length             
-      double precision              :: inletlosscoeff     
-      double precision              :: outletlosscoeff    
+      real(kind=dp)              :: bedFriction        
+      real(kind=dp)              :: length             
+      real(kind=dp)              :: inletlosscoeff     
+      real(kind=dp)              :: outletlosscoeff    
    end type
 
    private
 
 contains
 
-   subroutine ComputeBridge(bridge, fum, rum, aum, dadsm, kfum, s1m1, s1m2, u1m,              &
+   subroutine ComputeBridge(bridge, fum, rum, aum, dadsm, s1m1, s1m2, u1m,              &
                             dxm, dt, as1, as2, bob, changeStructureDimensions)
       implicit none
       !
       ! Global variables
       !
       type(t_bridge), pointer, intent(in    )   :: bridge    !< Object, containing bridge specific data
-      double precision,        intent(  out)    :: fum       !< FU
-      double precision,        intent(  out)    :: rum       !< RU
-      double precision,        intent(  out)    :: aum       !< Flow area
-      double precision,        intent(inout)    :: dadsm     !< Flow width
-      integer         ,        intent(inout)    :: kfum      !< Drying flooding flag
-      double precision,        intent(in   )    :: s1m1      !< Waterlevel at left side of culvert
-      double precision,        intent(in   )    :: s1m2      !< Waterlevel at right side of culvert
-      double precision,        intent(in   )    :: u1m       !< Flow velocity
-      double precision,        intent(in   )    :: dxm       !< Delta x
-      double precision,        intent(in   )    :: dt        !< Time step
-      double precision,        intent(in   )    :: as1       !< Left flow area 
-      double precision,        intent(in   )    :: as2       !< Right flow area 
-      double precision,        intent(in   )    :: bob(2)    !< BOB's at left and right of the bridge
+      real(kind=dp),        intent(  out)    :: fum       !< FU
+      real(kind=dp),        intent(  out)    :: rum       !< RU
+      real(kind=dp),        intent(  out)    :: aum       !< Flow area
+      real(kind=dp),        intent(inout)    :: dadsm     !< Flow width
+      real(kind=dp),        intent(in   )    :: s1m1      !< Waterlevel at left side of culvert
+      real(kind=dp),        intent(in   )    :: s1m2      !< Waterlevel at right side of culvert
+      real(kind=dp),        intent(in   )    :: u1m       !< Flow velocity
+      real(kind=dp),        intent(in   )    :: dxm       !< Delta x
+      real(kind=dp),        intent(in   )    :: dt        !< Time step
+      real(kind=dp),        intent(in   )    :: as1       !< Left flow area 
+      real(kind=dp),        intent(in   )    :: as2       !< Right flow area 
+      real(kind=dp),        intent(in   )    :: bob(2)    !< BOB's at left and right of the bridge
       logical,                 intent(in   )    :: changeStructureDimensions !< Indicates whether the crest level and the flow area of the bridge
                                                                              !< can be changed.
       !
@@ -92,45 +92,44 @@ contains
       integer                                   :: dir
       integer                                   :: allowedFlowDir
       
-      double precision                          :: cmus      
-      double precision                          :: bobup      
-      double precision                          :: wetup      
-      double precision                          :: wetdown      
-      double precision                          :: smax
-      double precision                          :: smin
-      double precision                          :: gl_thickness
-      double precision                          :: crestLevel
-      double precision                          :: depth
-      double precision                          :: chezyBridge
-      double precision                          :: wPerimeter
-      double precision                          :: hydrRadius
-      double precision                          :: frictloss
-      double precision                          :: exitLoss
-      double precision                          :: totalLoss
-      double precision                          :: pillarLoss
-      double precision                          :: cu
-      double precision                          :: fr
-      double precision                          :: bu
-      double precision                          :: du
+      real(kind=dp)                          :: cmus      
+      real(kind=dp)                          :: bobup      
+      real(kind=dp)                          :: wetup      
+      real(kind=dp)                          :: wetdown      
+      real(kind=dp)                          :: smax
+      real(kind=dp)                          :: smin
+      real(kind=dp)                          :: gl_thickness
+      real(kind=dp)                          :: crestLevel
+      real(kind=dp)                          :: depth
+      real(kind=dp)                          :: chezyBridge
+      real(kind=dp)                          :: wPerimeter
+      real(kind=dp)                          :: hydrRadius
+      real(kind=dp)                          :: frictloss
+      real(kind=dp)                          :: exitLoss
+      real(kind=dp)                          :: totalLoss
+      real(kind=dp)                          :: pillarLoss
+      real(kind=dp)                          :: cu
+      real(kind=dp)                          :: fr
+      real(kind=dp)                          :: bu
+      real(kind=dp)                          :: du
 
       ! Initializing at declaration is not enough....
-      cmus         = 1.0d0
-      gl_thickness = 0.0d0
-      chezyBridge  = 0.0d0
-      wPerimeter   = 0.0d0
-      hydrRadius   = 0.0d0
-      frictloss    = 0.0d0
-      exitLoss     = 0.0d0
-      pillarLoss   = 0.0d0
-      totalLoss    = 0.0d0
-      cu           = 0.0d0
-      fr           = 0.0d0
-      bu           = 0.0d0
-      du           = 0.0d0
+      cmus         = 1.0_dp
+      gl_thickness = 0.0_dp
+      chezyBridge  = 0.0_dp
+      wPerimeter   = 0.0_dp
+      hydrRadius   = 0.0_dp
+      frictloss    = 0.0_dp
+      exitLoss     = 0.0_dp
+      pillarLoss   = 0.0_dp
+      totalLoss    = 0.0_dp
+      cu           = 0.0_dp
+      fr           = 0.0_dp
+      bu           = 0.0_dp
+      du           = 0.0_dp
       bridge%bedLevel_actual = bridge%bedLevel
 
       ! Initialize with flow
-      kfum = 1
       
       ! Find the flow direction
       if (s1m1 > s1m2) then
@@ -153,9 +152,8 @@ contains
       if ((smax <=bobup) .or. (allowedFlowDir == 3) .or. &
           (dir == 1  .and. allowedFlowDir == 2) .or. &
           (dir == -1 .and. allowedFlowDir == 1)) then
-         kfum = 0
-         fum = 0.0d0
-         rum = 0.0d0
+         fum = 0.0_dp
+         rum = 0.0_dp
          return
       endif
       
@@ -176,10 +174,9 @@ contains
          bridge%bedLevel_actual = crestLevel
 
          depth = smax - crestLevel
-         if (depth <= 0.0d0) then
-            kfum = 0
-            fum = 0.0d0
-            rum = 0.0d0
+         if (depth <= 0.0_dp) then
+            fum = 0.0_dp
+            rum = 0.0_dp
             return
          end if
           
@@ -203,28 +200,28 @@ contains
          
 
          ! Friction Loss
-         chezyBridge = getchezy(bridge%pcross%frictionTypePos(1), bridge%pcross%frictionValuePos(1), aum/wPerimeter, depth, 1d0)
-         frictLoss = 2.0d0 * gravity * bridge%length / (chezyBridge * chezyBridge * hydrRadius)
+         chezyBridge = getchezy(bridge%pcross%frictionTypePos(1), bridge%pcross%frictionValuePos(1), aum/wPerimeter, depth, 1.0_dp)
+         frictLoss = 2.0_dp * gravity * bridge%length / (chezyBridge * chezyBridge * hydrRadius)
 
          ! Exit Loss
-         exitLoss = bridge%outletlosscoeff * ((max((1.0d0 - aum / wetdown), 0.0d0))**2)
-         exitLoss = max(exitLoss, 0.0d0)
+         exitLoss = bridge%outletlosscoeff * ((max((1.0_dp - aum / wetdown), 0.0_dp))**2)
+         exitLoss = max(exitLoss, 0.0_dp)
       endif
 
-      if (bridge%pillarwidth > 1.0d-5) then
+      if (bridge%pillarwidth > 1.0e-5_dp) then
       
          ! pilllar bridge definition
 
          dadsm = dadsm - bridge%pillarwidth   !hk: Only true if pillar length equals link length
-         if (dadsm <= 0.0d0) then
-            kfum = 0
+         if (dadsm <= 0.0_dp) then
+            fum = 0.0
+            rum = 0.0
+            return
          endif
          
          pillarLoss = bridge%formfactor * (bridge%pillarwidth * depth) / aum
          aum = aum - bridge%pillarwidth * depth
-         if (aum <= 0.0d0) kfum = 0
-         
-         if (kfum == 0) then
+         if (aum <= 0.0_dp) then
             fum = 0.0
             rum = 0.0
             return
@@ -233,14 +230,14 @@ contains
       endif
 
       totalLoss = bridge%inletlosscoeff + frictLoss + exitLoss + pillarloss
-      totalLoss = max(totalLoss, 0.01d0)
+      totalLoss = max(totalLoss, 0.01_dp)
       
-      cmus = 1.0d0 / sqrt(totalLoss)
-      cmus = min(cmus, 1.0d0)    ! Limit to maximum of 1.0
+      cmus = 1.0_dp / sqrt(totalLoss)
+      cmus = min(cmus, 1.0_dp)    ! Limit to maximum of 1.0
 
       cu = cmus * cmus * 2  *gravity / dxm
       fr = abs(u1m) / dxm
-      bu = 1.0d0 / dt + fr
+      bu = 1.0_dp / dt + fr
       du = u1m / dt
       fum = cu / bu
       rum = du / bu

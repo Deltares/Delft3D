@@ -3460,7 +3460,7 @@ contains
          call prop_set(prop_ptr, 'veg', 'Cbveg', Cbveg, 'Stem stiffness coefficient , default 0.0 ()')
          call prop_set(prop_ptr, 'veg', 'Rhoveg', Rhoveg, 'Stem Rho, if > 0, -> bouyant stick procedure, default 0.0 (kg/m3)')
          call prop_set(prop_ptr, 'veg', 'Stemheightstd', Stemheightstd, 'Stem height standard deviation fraction, e.g. 0.1  ()')
-         if (writeall .or. stemheight_convention /= UPWARD_FROM_BED) then ! research keyword - only write to .dia if the research keyword is not set to the default value.
+         if (stemheight_convention /= UPWARD_FROM_BED) then ! research keyword - only write to .dia if the research keyword is not set to the default value.
             call prop_set(prop_ptr, 'veg', 'StemheightConvention', trim(StemheightConvention), 'Stem height convention: ''upward_from_bed'' or ''downward_from_surface''.')
          end if
          if (kmx == 0) then

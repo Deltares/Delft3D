@@ -60,6 +60,11 @@ contains
         select case (ierr2)
         case (0)               !   look for end of block
             int_output = gettoken (cdummy, idummy, rdummy, itype, ierr2)
+
+            ! End of block already found?
+            if ( cdummy(1:1) == '#' ) then
+                ierr2 = 2
+            endif
         case (1)               !   with error
             write (file_unit, 2030) iblock
             call status%increase_error_count()

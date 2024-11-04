@@ -1,4 +1,4 @@
-FROM containers.deltares.nl/delft3d-dev/almalinux:8.10
+FROM containers.deltares.nl/base_linux_containers/8-base:latest
 
 ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_NO_CACHE_DIR=1

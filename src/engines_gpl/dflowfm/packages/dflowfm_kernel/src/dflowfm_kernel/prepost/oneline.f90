@@ -38,7 +38,6 @@
      implicit none
      integer :: K
 
-     double precision :: a0
      integer :: ja
      integer :: k1
      integer :: k2
@@ -57,10 +56,9 @@
         call OTHERNODE(K, L1, K1)
         call OTHERNODE(K, L2, K2)
         R0 = 0 !  RL(L1) + RL(L2)
-        A0 = 0 !(EA(L1) + EA(L2)) / 2d0
         LFA = 1
         call DELNODE(K)
-        call CONNECT(K1, K2, LFA, A0, R0)
+        call CONNECT(K1, K2, LFA, R0)
         ! ENDIF
      end if
      return

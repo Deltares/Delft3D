@@ -505,6 +505,7 @@ contains
 
 
         !       Read timings
+        ierr2 = 0
 
         if ((intsrt <  6 .or. intsrt > 9) .and. &
                 (intsrt < 17 .or. intsrt > 18)) then
@@ -516,15 +517,13 @@ contains
 
             call timer  (is_date_format, ihstrt, ihstop, ihstep, 3, is_yyddhh_format, ierr2)
             if (ierr2 > 0) goto 30
+
+            call validate_time_settings(file_unit, status, &
+                    itstrt, itstop, idt, &
+                    imstrt, imstop, imstep, &
+                    idstrt, idstop, idstep, &
+                    ihstrt, ihstop, ihstep)
         endif
-        ierr2 = 0
-
-        call validate_time_settings(file_unit, status, &
-                itstrt, itstop, idt, &
-                imstrt, imstop, imstep, &
-                idstrt, idstop, idstep, &
-                ihstrt, ihstop, ihstep)
-
 
         !        Check number of data in inputfile
 

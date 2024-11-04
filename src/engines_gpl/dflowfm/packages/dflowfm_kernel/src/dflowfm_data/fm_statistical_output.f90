@@ -32,6 +32,8 @@ module fm_statistical_output
    real(dp), dimension(:), allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
    real(dp), dimension(:), allocatable, target :: qplat_data
 
+   logical, public :: apply_statistics_on_output
+
 contains
 
    subroutine close_fm_statistical_output()
@@ -2474,7 +2476,7 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DISCHARGE_MAGNITUDE), valobs(:, IPNT_QMAG))
             end if
          end if
-         
+
          ! Turbulence model
          if (jahistur > 0) then
             if (model_is_3D()) then
@@ -2958,6 +2960,7 @@ contains
       call process_output_quantity_configs(output_set)
       call realloc(output_set, .true.) ! set size to count
       call initialize_statistical_output(output_set%statout)
+      apply_statistics_on_output = any(station_statistics_requested(output_set%statout))
 
    end subroutine flow_init_statistical_output_his
 
@@ -2975,6 +2978,21 @@ contains
       end do
 
    end subroutine process_output_quantity_configs
+
+   !> return whether the output variable item is a station where the requested operation type is a statistical one
+   elemental function station_statistics_requested(item) result(res)
+      use m_statistical_output_types, only: SO_CURRENT, SO_NONE, SO_UNKNOWN
+
+      type(t_output_variable_item), intent(in) :: item !< output variable item to check
+      logical :: res !< Return value
+
+      if (allocated(item%output_config)) then
+         res = (.not. any(item%operation_type == [SO_CURRENT, SO_NONE, SO_UNKNOWN])) .and. item%output_config%location_specifier == UNC_LOC_STATION
+      else
+         res = .false.
+      end if
+
+   end function station_statistics_requested
 
    !> Deactivate invalid dimension IDs depending on model parameters
    subroutine process_nc_dim_ids(nc_dim_ids)

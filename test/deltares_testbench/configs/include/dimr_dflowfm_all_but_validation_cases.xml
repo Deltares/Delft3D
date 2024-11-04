@@ -6648,4 +6648,49 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f044_c01_waveforcing_1" ref="dflowfm_default">
+      <path version="2024-10-22T15:04:00">e02_dflowfm/f044_offline_waves/c01_waveforcing_1</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="output/Borkum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_hwav" toleranceAbsolute="0.01" />
+            <parameter name="mesh2d_uorb" toleranceAbsolute="0.01" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucx" toleranceAbsolute="0.01" />
+            <parameter name="mesh2d_ucy" toleranceAbsolute="0.01" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f044_c02_waveforcing_2" ref="dflowfm_default">
+      <path version="2024-10-23T11:40:00">e02_dflowfm/f044_offline_waves/c02_waveforcing_2</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="output/Borkum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_hwav" toleranceAbsolute="0.01" />
+            <parameter name="mesh2d_uorb" toleranceAbsolute="0.01" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucx" toleranceAbsolute="0.01" />
+            <parameter name="mesh2d_ucy" toleranceAbsolute="0.01" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f044_c03_waveforcing_3" ref="dflowfm_default">
+      <path version="2024-10-23T11:40:00">e02_dflowfm/f044_offline_waves/c03_waveforcing_3</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="output/Borkum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_hwav" toleranceAbsolute="0.01" />
+            <parameter name="mesh2d_uorb" toleranceAbsolute="0.01" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucx" toleranceAbsolute="0.01" />
+            <parameter name="mesh2d_ucy" toleranceAbsolute="0.01" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
   </testCases>

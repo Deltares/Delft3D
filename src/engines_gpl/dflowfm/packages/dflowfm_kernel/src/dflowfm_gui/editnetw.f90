@@ -34,7 +34,6 @@ module m_editnetw
 use m_kcir
 use m_highlight_nodesnlinks
 
-
 implicit none
 
 contains
@@ -64,6 +63,8 @@ contains
          use m_is_link
          use m_draw_nu
          use m_set_col
+         use m_derefine_mesh, only: derefine_mesh
+         use m_kill_cell, only: killcell
 
          integer :: MODE, KEY
          integer :: newmode

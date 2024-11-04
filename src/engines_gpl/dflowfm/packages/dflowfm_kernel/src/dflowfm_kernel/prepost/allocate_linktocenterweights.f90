@@ -29,37 +29,27 @@
 
 !
 !
-module m_read_arc_info_block
-   implicit none
-contains
-   subroutine readarcinfoblock(MINP, D, MC, NC, RMIS)
-      use M_MISSING
-      use precision, only: sp, dp
-      integer :: i
-      integer :: j
-      integer :: mc
-      integer :: minp
-      integer :: nc
-      real(kind=dp) :: rmis
-      real(kind=sp) :: D(MC, NC)
-      character TEX * 16
+ subroutine allocate_linktocenterweights() ! allocate center related linkxy weights
 
-      do J = NC, 1, -1
-         read (MINP, *, ERR=101, end=100) (D(I, J), I=1, MC)
-      end do
-      do i = 1, MC
-         do j = 1, NC
-            if (D(I, J) == RMIS) D(I, J) = dmiss
-         end do
-      end do
-      call doclose(MINP)
-      return
+    use m_flowgeom
+    use m_alloc
 
-100   continue
-      call EOFERROR(MINP)
-101   continue
-      write (TEX, '(2I8)') I, J
-      call READERROR('ERROR READING ARC-INFO BLOCK IN COLNR, ROWNR :', TEX, MINP)
-      return
-   end subroutine readarcinfoblock
-end module m_read_arc_info_block
+    implicit none
+
+    integer :: ierr
+
+    if (allocated(wcx1)) deallocate (wcx1, wcy1, wcx2, wcy2)
+    if (allocated(wcL)) deallocate (wcL)
+
+    allocate (wcx1(lnx), stat=ierr); 
+    call aerr('wcx1(lnx)', ierr, lnx)
+    allocate (wcy1(lnx), stat=ierr); 
+    call aerr('wcy1(lnx)', ierr, lnx)
+    allocate (wcx2(lnx), stat=ierr); 
+    call aerr('wcx2(lnx)', ierr, lnx)
+    allocate (wcy2(lnx), stat=ierr); 
+    call aerr('wcy2(lnx)', ierr, lnx)
+    allocate (wcL(2, Lnx), stat=ierr); 
+    call aerr('wcL  (2,Lnx)', ierr, 2 * Lnx)
+
+ end subroutine allocate_linktocenterweights

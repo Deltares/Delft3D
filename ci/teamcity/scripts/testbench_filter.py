@@ -1,23 +1,25 @@
-import csv
 import argparse
+import csv
+from typing import Dict, List
 
 
-def csv_to_dict(csv_table_path):
+def csv_to_dict(csv_table_path: str) -> Dict[str, List[str]]:
+    """Open csv file and make a dict from the results."""
     with open(csv_table_path, mode="r", newline="") as file:
         reader = csv.reader(file)
-        headers = next(reader)  # Get the first line as headers
-        data_dict = {header: [] for header in headers}  # Initialize dictionary with headers as keys
+        headers = next(reader)
+        data_dict: Dict[str, List[str]] = {header: [] for header in headers}
 
         for row in reader:
             for header, value in zip(headers, row):
-                data_dict[header].append(value)  # Append values to the corresponding key
+                data_dict[header].append(value)
 
         return data_dict
 
 
 # Function to filter values based on the 'this' list
-def filter_config(csv_table_path: str, csv_data, branch_name: str):
-    # Check if the branch name exists in the data
+def filter_config(csv_table_path: str, csv_data: Dict[str, List], branch_name: str) -> List[str]:
+    """Filter the dict with the branch name and return a list of matches."""
     if branch_name not in csv_data:
         raise ValueError(f"Branch name '{branch_name}' does not exist in file {csv_table_path}.")
 
@@ -27,7 +29,10 @@ def filter_config(csv_table_path: str, csv_data, branch_name: str):
 
     # Filtered list based on 'this' values being "TRUE"
 
-    filtered_values = [f"{config}" for name, config, this in zip(config_names, config_values, this_values) if this == "TRUE"]
+    filtered_values = [
+        f"{config}" for name, config, this in zip(config_names, config_values, this_values) if this == "TRUE"
+    ]
+    # Have to research how to pass {name}=>{config} through TeamCity REST API
 
     return filtered_values
 
@@ -38,7 +43,13 @@ if __name__ == "__main__":
     # Add arguments
     parser.add_argument("-n", type=str, dest="component", required=True, help="Components that were hit by the change")
     parser.add_argument("-f", type=str, dest="csv_file_path", required=True, help="Path to the config value file.")
-    parser.add_argument("-v", type=str, dest="value_filter", default="", help="Filter the configurations by wether it contains the filter.")
+    parser.add_argument(
+        "-v",
+        type=str,
+        dest="value_filter",
+        default="",
+        help="Filter the configurations by wether it contains the filter.",
+    )
 
     args = parser.parse_args()
     branch_name = args.component

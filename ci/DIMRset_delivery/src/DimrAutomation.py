@@ -139,7 +139,7 @@ class DimrAutomation(object):
         """Gets a new TestbankResultParser for the latest test bench results."""
         latest_test_bench_build_id = (
             self.__teamcity.get_latest_build_id_for_build_type_id(
-                build_type_id=DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID
+                build_type_id=TEAMCITY_IDS.DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID.value
             )
         )
         artifact = self.__teamcity.get_build_artifact(
@@ -151,12 +151,12 @@ class DimrAutomation(object):
         """Gets a new TestbankResultParser for the previous pinned test bench results."""
         latest_test_bench_build_id = (
             self.__teamcity.get_latest_build_id_for_build_type_id(
-                build_type_id=DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID
+                build_type_id=TEAMCITY_IDS.DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID.value
             )
         )
 
         pinned_test_bench_builds = self.__teamcity.get_builds_for_build_type_id(
-            build_type_id=DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID,
+            build_type_id=TEAMCITY_IDS.DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID.value,
             limit=2,
             include_failed_builds=False,
             pinned="true",

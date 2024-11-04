@@ -81,7 +81,7 @@ object Trigger : BuildType({
                                 </revision>
                             </revisions>
                             <properties>
-                                <property name="configfile" value="%matrix_list_linux%"/>
+                                <property name="configfile" value="%matrix_list_lnx64%"/>
                             </properties>
                             <snapshot-dependencies>
                                 <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
@@ -117,7 +117,7 @@ object Trigger : BuildType({
                                 </revision>
                             </revisions>
                             <properties>
-                                <property name="configfile" value="%matrix_list_windows%"/>
+                                <property name="configfile" value="%matrix_list_win64%"/>
                             </properties>
                             <snapshot-dependencies>
                                 <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>

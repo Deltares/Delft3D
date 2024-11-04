@@ -86,7 +86,7 @@ module m_Universal_Weir
    end subroutine deallocUniWeir
    
    !> Compute the coefficients FU, RU and AU for this universal weir.
-   subroutine ComputeUniversalWeir(uniweir, fum, rum, aum, dadsm, bob0, kfum, s1m1, s1m2, &
+   subroutine ComputeUniversalWeir(uniweir, fum, rum, aum, dadsm, bob0, s1m1, s1m2, &
                                    qm, u1m, dxm, dt, changeStructureDimensions)
       implicit none
       !
@@ -98,7 +98,6 @@ module m_Universal_Weir
       double precision, intent(  out)             :: aum      !< Computed flow area at structure.
       double precision, intent(  out)             :: dadsm    !< Computed flow width at structure.
       double precision, intent(in   )             :: bob0(2)  !< BOB's of the channel
-      integer,          intent(  out)             :: kfum     !< Flag for drying and flooding.
       double precision, intent(in   )             :: s1m2     !< Water level at left side of universal weir.
       double precision, intent(in   )             :: s1m1     !< Water level at right side of universal weir.
       double precision, intent(  out)             :: qm       !< Computed discharge at structure.
@@ -149,7 +148,6 @@ module m_Universal_Weir
       ! ARS 11952 PJvO 20040309
       allowedflowdir = uniweir%allowedflowdir 
       if ((allowedflowdir == 3) .or. (dir == 1 .and. allowedflowdir == 2) .or. (dir == -1 .and. allowedflowdir == 1)) then
-         kfum = 0
          fum  = 0.0d0
          rum  = 0.0d0
          u1m  = 0.0d0
@@ -164,7 +162,6 @@ module m_Universal_Weir
       endif
 
       if (smax < uniweir%crestlevel_actual) then
-         kfum = 1
          fum  = 0.0d0
          rum  = 0.0d0
          u1m  = 0.0d0

@@ -27,7 +27,7 @@
 #--- Load modules (for use within Deltares) ------------------------------------------------------------------
 module purge
 module load apptainer/1.2.5     # Load the Apptainer container system software.
-module load intelmpi/2021.9.0   # Load the  message-passing library for parallel simulations.
+module load intelmpi/2021.11.0   # Load the  message-passing library for parallel simulations.
  
  
 #--- Setup the container ------------------------------------------------------------------------------------

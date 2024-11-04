@@ -32,12 +32,14 @@
 
       subroutine REAARC(MINP, japrompt)
          use m_getreal
-         use M_ARCINFO
+         use m_arcinfo
          use m_polygon
          use m_missing
          use m_alloc
          use m_qnerror
          use m_readarcinfoheader
+         use m_read_arc_info_block
+         use m_read_large_arc_info_block
 
          implicit none
 
