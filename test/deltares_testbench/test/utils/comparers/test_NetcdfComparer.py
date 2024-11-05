@@ -5,15 +5,18 @@
 
 import datetime
 import os
+from typing import AnyStr, List, Tuple
 
 import netCDF4 as nc
 import pytest
+from pytest_mock import MockerFixture
 
 import src.utils.comparers.netcdf_comparer as nccmp
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.config.types.file_type import FileType
-from test.utils.test_logger import TestLogger
+from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.logging.i_logger import ILogger
 
 
 @pytest.fixture
@@ -38,8 +41,9 @@ def test_path() -> str:
 
 
 @pytest.fixture
-def logger() -> TestLogger:
-    return TestLogger()
+def logger(mocker: MockerFixture) -> ILogger:
+    logger = mocker.Mock(spec=ILogger)
+    return logger
 
 
 @pytest.fixture
@@ -50,7 +54,7 @@ def comparer() -> nccmp.NetcdfComparer:
 class TestNetcdfComparer:
     ##################################################
 
-    def test_compare(self, left_path: str, right_path: str, logger: TestLogger) -> None:
+    def test_compare(self, left_path: str, right_path: str, logger: ILogger) -> None:
         fc = FileCheck()
         pm = Parameter()
         pm.name = "mesh2d_s1"
@@ -73,7 +77,7 @@ class TestNetcdfComparer:
         assert resultstruc.max_abs_diff_coordinates == (1, 0)
         assert pytest.approx(resultstruc.max_rel_diff) == 0.21672465466549
 
-    def test_time_independent_compare(self, left_path: str, right_path: str) -> None:
+    def test_time_independent_compare(self, left_path: str, right_path: str, logger: ILogger) -> None:
         fc = FileCheck()
         pm = Parameter()
         pm.name = "mesh2d_node_x"
@@ -83,7 +87,6 @@ class TestNetcdfComparer:
         fc.type = FileType.NETCDF
         fc.parameters = {"par1": [pm]}
         comparer = nccmp.NetcdfComparer(enable_plotting=False)
-        logger = TestLogger()
         path = os.path.join("test")
         results = comparer.compare(left_path, right_path, fc, path, logger)
         resultstruc = results[0][3]
@@ -106,27 +109,22 @@ class TestNetcdfComparer:
         assert datum.date_time == datetime.datetime(2015, 11, 1, 0, 0)
 
     def test_strings_are_equal(
-        self, left_path: str, right_path: str, comparer: nccmp.NetcdfComparer, test_path: str, logger: TestLogger
+        self, left_path: str, right_path: str, comparer: nccmp.NetcdfComparer, test_path: str, logger: ILogger
     ) -> None:
         fc = self.create_netcdf_file_check("pump_name", "same_pump_names.nc")
 
         results = comparer.compare(left_path, right_path, fc, test_path, logger)
 
-        self.assert_comparison_failed()
-        resultstruc = results[0][3]
-        assert resultstruc.passed
-        assert resultstruc.result == "OK"
+        self.assert_comparison_passed(results)
 
     def test_strings_are_not_equal(
-        self, left_path: str, right_path: str, comparer: nccmp.NetcdfComparer, test_path: str, logger: TestLogger
+        self, left_path: str, right_path: str, comparer: nccmp.NetcdfComparer, test_path: str, logger: ILogger
     ) -> None:
         fc = self.create_netcdf_file_check("pump_name", "other_pump_names.nc")
 
         results = comparer.compare(left_path, right_path, fc, test_path, logger)
 
-        resultstruc = results[0][3]
-        assert not resultstruc.passed
-        assert resultstruc.result == "NOK"
+        self.assert_comparison_failed(results)
 
     def create_netcdf_file_check(self, parameter_name: str, file_name: str) -> FileCheck:
         fc = FileCheck()
@@ -138,3 +136,16 @@ class TestNetcdfComparer:
         fc.parameters = {parameter_name: [pm]}
 
         return fc
+
+    def assert_comparison_passed(self, results: List[Tuple[str, FileCheck, Parameter, ComparisonResult]]) -> None:
+        self.assert_comparison_result_equals(results, True, "OK")
+
+    def assert_comparison_failed(self, results: List[Tuple[str, FileCheck, Parameter, ComparisonResult]]) -> None:
+        self.assert_comparison_result_equals(results, False, "NOK")
+
+    def assert_comparison_result_equals(
+        self, results: List[Tuple[str, FileCheck, Parameter, ComparisonResult]], passed: bool, message: AnyStr
+    ) -> None:
+        result = results[0][3]
+        assert result.passed == passed
+        assert result.result == message
