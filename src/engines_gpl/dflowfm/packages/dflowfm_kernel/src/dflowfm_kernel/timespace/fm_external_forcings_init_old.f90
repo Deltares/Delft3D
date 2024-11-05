@@ -66,6 +66,7 @@ contains
       use m_get_kbot_ktop
       use m_observations, only: addobservation
       use unstruc_inifields, only: initialfield2Dto3D
+      use m_find_name, only: find_name
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 

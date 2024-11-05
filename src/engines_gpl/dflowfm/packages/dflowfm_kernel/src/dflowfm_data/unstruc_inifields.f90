@@ -179,7 +179,7 @@ contains
       use m_flowgeom, only: ndx2d, ndxi, ndx, kcs, bl
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
 
-      use fm_external_forcings_data, only: qid, operand, transformcoef, success, numtracers, trnames
+      use fm_external_forcings_data, only: qid, operand, transformcoef, success, trnames
 
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
@@ -193,6 +193,7 @@ contains
       use fm_deprecated_keywords, only: deprecated_ext_keywords
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_timespaceinitialfield_mpi
+      use m_find_name, only: find_name
 
       implicit none
       character(len=*), intent(in) :: inifilename !< name of initial field file
@@ -221,7 +222,6 @@ contains
       integer, allocatable :: kcsini(:) ! node code during initialization
       integer :: ec_item
 
-      logical, external :: findname
       real(kind=dp), pointer, dimension(:) :: target_array, x_loc, y_loc
       real(kind=dp), pointer, dimension(:, :) :: target_array_3d
       integer, pointer, dimension(:) :: target_array_integer
@@ -312,7 +312,7 @@ contains
             if (qid(1:13) == 'initialtracer' .and. method == interpolate_spacetime) then
                call get_tracername(qid, tracnam, qidnam)
                call add_tracer(tracnam, iconst) ! or just gets constituents number if tracer already exists
-               itrac = findname(numtracers, trnames, tracnam)
+               itrac = find_name(trnames, tracnam)
 
                if (itrac == 0) then
                   call mess(LEVEL_WARN, 'flow_initexternalforcings: tracer '//trim(tracnam)//' not found')
@@ -1195,7 +1195,7 @@ contains
       use string_module, only: str_tolower
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_S3D, UNC_LOC_3DV
 
-      use fm_external_forcings_data, only: success, transformcoef, numtracers, trnames, uxini, uyini, inivelx, &
+      use fm_external_forcings_data, only: success, transformcoef, trnames, uxini, uyini, inivelx, &
                                            inively
       use fm_external_forcings_utils, only: split_qid !, copy_3d_arrays_double_indexed_to_single_indexed
 
@@ -1208,8 +1208,9 @@ contains
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
       use m_sediment, only: stm_included, sed, jased, sedh
-      use m_transportdata, only: ISED1, const_names, NUMCONST, itrac2const, constituents
-      use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbot
+      use m_transportdata, only: ISED1, const_names, itrac2const, constituents
+      use m_fm_wq_processes, only: wqbotnames, wqbot
+      use m_find_name, only: find_name
 
       ! use network_data
       ! use dfm_error
@@ -1232,8 +1233,6 @@ contains
       character(len=idlen) :: qid_base, qid_specific
 
       integer :: layer
-
-      integer, external :: findname
 
       target_array => null()
       indx = 1
@@ -1264,12 +1263,14 @@ contains
          end if
 
       case ('initialsalinitytop')
-         !!! TODO: initialsalinitytop and initialsalinitybot cannot be used together. (see inisal2d)
-         !!! what is to be done about this?
          if (jasal > 0) then
             call realloc(satop, ndx, keepexisting=.true., fill=dmiss)
             target_location_type = UNC_LOC_S
             target_array => satop
+            if (inisal2D /= 0 .and. inisal2D /=2) then
+               call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', initialSalinityTop and initialSalinityBot found. Only one of them can be used.')
+               success = .false.
+            end if
             inisal2D = 2
             uniformsalinityabovez = transformcoef(3)
          end if
@@ -1280,6 +1281,10 @@ contains
             call realloc(sabot, ndx, keepexisting=.true., fill=dmiss)
             target_location_type = UNC_LOC_S
             target_array => sabot
+            if (inisal2D /= 0 .and. inisal2D /=3) then
+               call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', initialSalinityTop and initialSalinityBot found. Only one of them can be used.')
+               success = .false.
+            end if
             inisal2D = 3
             uniformsalinitybelowz = transformcoef(4)
          end if
@@ -1288,7 +1293,7 @@ contains
          if (stm_included) then
             iconst = 0
             if (ISED1 > 0 .and. trim(qid_specific) /= '') then
-               iconst = findname(NUMCONST, const_names, qid_specific)
+               iconst = find_name(const_names, qid_specific)
             end if
             if (iconst > 0) then
                target_location_type = UNC_LOC_S3D
@@ -1326,7 +1331,7 @@ contains
          end if
 
          call add_tracer(qid_specific, iconst) ! or just gets constituents number if tracer already exists
-         itrac = findname(numtracers, trnames, qid_specific)
+         itrac = find_name(trnames, qid_specific)
 
          if (itrac == 0) then
             call mess(LEVEL_WARN, 'flow_init initial fields: tracer '//trim(qid_specific)//' not found')
@@ -1377,7 +1382,7 @@ contains
             !call get_sedfracname(qid, qid_specific, qidnam)
             iconst = 0
             if (ISED1 > 0 .and. trim(qid_specific) /= '') then
-               iconst = findname(NUMCONST, const_names, qid_specific)
+               iconst = find_name(const_names, qid_specific)
             end if
             if (iconst > 0) then
                target_array = dmiss
@@ -1396,7 +1401,7 @@ contains
          if (stm_included .and. kmx > 0) then
             iconst = 0
             if (ISED1 > 0 .and. trim(qid_specific) /= '') then
-               iconst = findname(NUMCONST, const_names, qid_specific)
+               iconst = find_name(const_names, qid_specific)
             end if
             if (iconst > 0) then
                allocate (target_array(1:ndkx))
@@ -1408,7 +1413,7 @@ contains
          end if
 
       case ('initialwaqbot')
-         iwqbot = findname(numwqbots, wqbotnames, qid_specific)
+         iwqbot = find_name(wqbotnames, qid_specific)
 
          if (iwqbot == 0) then
             call mess(LEVEL_ERROR, 'flow_initexternalforcings: water quality bottom variable '//trim(qid_specific)//' not found')
@@ -1724,6 +1729,7 @@ contains
       use m_vegetation, only: stemheight, stemheightstd
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use string_module, only: str_tolower
+      use m_find_name, only: find_name
 
       use fm_external_forcings_utils, only: split_qid
       implicit none
@@ -1733,8 +1739,6 @@ contains
       integer :: idum
       real(kind=dp), external :: ran0
       character(len=idlen) :: qid_base, qid_specific
-
-      integer, external :: findname
 
       call split_qid(qid, qid_base, qid_specific)
 
