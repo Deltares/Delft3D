@@ -62,7 +62,7 @@ contains
          chezy = friction_coef
       case (R_MANNING, 4, 5, 6) ! manning, just testing implicitness in furu
          chezy = (floored_radius**sixth) / friction_coef
-      case (R_WALL_LAW_NIKURADSE)
+      case (R_WALL_LAW_NIKURADSE) ! This function does not match the description in the manual exactly
          z0 = min(friction_coef / 30.0_dp, floored_radius * 0.3_dp)
          sqcf = vonkar / log(floored_radius / (ee * z0))
          chezy = sag / sqcf
