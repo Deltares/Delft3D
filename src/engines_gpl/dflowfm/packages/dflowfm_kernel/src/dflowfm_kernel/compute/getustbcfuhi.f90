@@ -34,7 +34,7 @@
       use m_flow
       use m_flowgeom, only: ln, dxi, csu, snu
       use m_flowtimes, only: dti
-      use m_waves, only: ustokes, vstokes, wblt,jawavevellogprof
+      use m_waves, only: ustokes, vstokes, wblt, jawavevellogprof
       use m_sediment, only: stm_included
       use m_turbulence, only: tkepro
       use m_flowtimes, only: dts
@@ -232,7 +232,7 @@
                do L = Lb, Ltop(LL)
                   if (hu(L) <= 3d0 * deltau) then
                      htop = min(hu(L), 3d0 * deltau) ! max height within streaming layer
-                     alin = 1d0 - htop / 3d0 * deltau ! linear from 1 at bed to 0 at 3*deltau
+                     alin = 1d0 - htop / (3d0 * deltau) ! linear from 1 at bed to 0 at 3*deltau
                      Dfu1 = Dfuc * alin
                      adve(L) = adve(L) - 0.5d0 * (Dfu0 + Dfu1)
                      Dfu0 = Dfu1

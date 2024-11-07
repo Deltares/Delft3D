@@ -5377,7 +5377,8 @@
 !
 !     --- calculate fraction of breakers
 !
-      IF ( ETOT .GT. 0. ) THEN
+      QB(KCGRD(1)) = 0.
+      IF ( ETOT .GT. 0. .AND. ISURF.GT.0) THEN
 !
 !       --- calculate Qb when Battjes/Janssen breaking is activated
 !

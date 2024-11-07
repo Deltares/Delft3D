@@ -700,6 +700,10 @@
       DATA IENT /0/
       IF (LTRACE) CALL STRACE (IENT, 'KSCIP1')
 !
+      IF (D < 0.0) THEN
+         RETURN
+      END IF
+      
       ROOTDG = SQRT(D/GRAV)                                               30.81
       WGD    = ROOTDG*GRAV                                                30.81
       DO 200 IS = 1, MMT
