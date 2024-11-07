@@ -148,6 +148,7 @@ module unstruc_model
    character(len=255) :: md_bedformfile = ' ' !< File containing bedform settings (e.g., *.bfm)
    character(len=255) :: md_morphopol = ' ' !< File containing boundaries of morphologic change extent (e.g., *.pol)
    character(len=255) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
+   character(len=255) :: md_dynvegpol = ' ' !< File containing extent of dynymic vegetation application
 
    character(len=1024) :: md_obsfile = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)
    integer :: md_delete_observation_points_outside_grid !< 0 - do not delete, 1 - delete
@@ -331,7 +332,7 @@ contains
       md_bedformfile = ' '
       md_morphopol = ' '
       md_sedtrailsfile = ' '
-
+      md_dynvegpol = ' '
       md_obsfile = ' '
       md_delete_observation_points_outside_grid = 0
       md_crsfile = ' '
@@ -1307,6 +1308,17 @@ contains
          jafrculin = 1
       end if
 
+      ! Additions for dynamic roughness for storm impacts with morphology
+      call prop_get(md_ptr, 'physics', 'DynRoughVeg', dynroughveg)
+      if (dynroughveg > 0 .and. ifrctypuni /= 1) then
+         call mess(LEVEL_WARN, 'Dynamic vegetation roughness only implemented for Manning roughness.')
+         dynroughveg = 0
+      end if
+      call prop_get(md_ptr, 'physics', 'droot', droot) ! default 0.5 [0-100]
+      call prop_get(md_ptr, 'physics', 'dstem', dstem) ! default 0.5 [0-100]
+      call prop_get(md_ptr, 'physics', 'nmanmin', frcumin) ! default 0.023
+      call prop_get(md_ptr, 'physics', 'dynvegpol', md_dynvegpol, success)
+
       call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
       call prop_get(md_ptr, 'physics', 'Vicouv', vicouv)
       call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
@@ -1472,8 +1484,9 @@ contains
       call prop_get(md_ptr, 'sediment', 'MasBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
       call prop_get(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
       call prop_get(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
-      call prop_get(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
-      call prop_get(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
+      call prop_get(md_ptr, 'sediment', 'DiffusionScaling', difparam, success) ! Scaling factor to increase diffusion below reference level
+      call prop_get(md_ptr, 'sediment', 'DiffusionCal', difcal, success) ! Scaling factor to change diffusion for ssc
+
 
       if (jased > 0 .and. .not. stm_included) then
          call prop_get(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)
@@ -1609,7 +1622,7 @@ contains
       call prop_get(md_ptr, 'waves', 'Hwavuni', Hwavuni)
       call prop_get(md_ptr, 'waves', 'Twavuni', Twavuni)
       call prop_get(md_ptr, 'waves', 'Phiwavuni', Phiwavuni)
-
+      call prop_get(md_ptr, 'waves', 'flowWithoutWaves', flowWithoutWaves) ! True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
       call prop_get(md_ptr, 'waves', 'Rouwav', rouwav)
       if (jawave > 0 .and. .not. flowWithoutWaves) then
          call setmodind(rouwav, modind)
@@ -1617,7 +1630,6 @@ contains
       call prop_get(md_ptr, 'waves', 'Gammax', gammax)
       call prop_get(md_ptr, 'waves', 'hminlw', hminlw)
       call prop_get(md_ptr, 'waves', 'uorbfac', jauorb) ! 0=delft3d4, sqrt(pi)/2 included in uorb calculation; >0: FM, factor not included; default: 0
-      call prop_get(md_ptr, 'waves', 'flowWithoutWaves', flowWithoutWaves) ! True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
       ! backward compatibility for hk in tauwavehk:
       if (jawave > 0 .and. jawave < 3 .or. flowWithoutWaves) then
          jauorb = 1
@@ -1628,18 +1640,7 @@ contains
       call prop_get(md_ptr, 'waves', 'fwfac', fwfac) ! factor for adjusting wave boundary layer streaming, default 1.0
       call prop_get(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
       call prop_get(md_ptr, 'waves', 'fbreak', fbreak) ! factor for adjusting wave breaking contribution to tke
-      if (ftauw < 0d0) then
-         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: ftauw<0d0, reset to 0d0. Bed shear stress due to waves switched off.')
-         ftauw = 0d0
-      end if
-      if (fwfac < 0d0) then
-         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fwfac<0d0, reset to 0d0. Wave streaming effect switched off.')
-         fwfac = 0d0
-      end if
-      if (fbreak < 0d0) then
-         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fbreak<0d0, reset to 0d0. Wave breaking contribution to tke switched off.')
-         fbreak = 0d0
-      end if
+      call prop_get(md_ptr, 'waves', 'fforc', fforc) ! factor for adjusting wave forces in momentum equation
 
       if (jawave <= 2) then
          jawaveStokes = 0
@@ -1660,6 +1661,23 @@ contains
       call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta) ! Boundary layer formulation. 1: Sana
       call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces) ! Diagnostic mode: apply wave forces (1) or not (0)
       call prop_get(md_ptr, 'waves', '3Dwaveturbpendepth', fwavpendep) ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+      if (ftauw < 0d0) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: ftauw<0d0, reset to 0d0. Bed shear stress due to waves switched off.')
+         ftauw = 0d0
+      end if
+      if (fwfac < 0d0) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fwfac<0d0, reset to 0d0. Wave streaming effect switched off.')
+         fwfac = 0d0
+      end if
+      if (fbreak < 0d0) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fbreak<0d0, reset to 0d0. Wave breaking contribution to tke switched off.')
+         fbreak = 0d0
+      end if
+      if (fforc < 0d0) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fforc<0d0, reset to 0d0. Wave forcing on momentum balance switched off.')
+         fforc = 0d0
+         jawaveforces = 0
+      end if
       !
       ! safety
       if (fwavpendep < 0d0) then
@@ -3289,6 +3307,12 @@ contains
       if (writeall) then
          call prop_set(prop_ptr, 'physics', 'Umodlin', umodlin, 'Linear friction umod, for ifrctyp=4,5,6')
       end if
+      call prop_set(prop_ptr, 'physics', 'DynRoughVeg', dynroughveg, 'Switch for dynamic vegetation rougness. Default 0.')
+      call prop_set(prop_ptr, 'physics', 'droot', droot, 'Root depth. Default 0.5m') ! default 0.5 [0-100]
+      call prop_set(prop_ptr, 'physics', 'dstem', dstem, 'Stem height. Default 0.5m') ! default 0.5 [0-100]
+      call prop_set(prop_ptr, 'physics', 'nmanmin', frcumin, 'Base friction Manning value. Default 0.023') ! default 0.023
+      call prop_set(prop_ptr, 'physics', 'dynvegpol', md_dynvegpol, 'Area to apply dynamic vegetation roughness. If empty, no roughness update.')
+
       call prop_set(prop_ptr, 'physics', 'Vicouv', vicouv, 'Uniform horizontal eddy viscosity (m2/s)')
       call prop_set(prop_ptr, 'physics', 'Dicouv', dicouv, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then

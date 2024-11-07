@@ -1010,7 +1010,7 @@ subroutine update_verticalprofiles()
                   epsbot = tureps1(Lb) + dzu(1) * abs(ustb(LL))**3 / (vonkar * hdzb * hdzb)
                   epssur = tureps1(Lt - 1) - 4d0 * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
                   if (jawave > 0 .and. jawavebreakerturbulence > 0) then
-                     epssur = epssur - dzu(Lt - Lb + 1) * fwavpendep * pkwmag / hrmsLL
+                     epssur = epssur - dzu(Lt - Lb + 1) * pkwmag / (hrmsLL * fwavpendep)
                   end if
                   epsbot = max(epsbot, epseps)
                   epssur = max(epssur, epseps)
@@ -1036,7 +1036,9 @@ subroutine update_verticalprofiles()
                vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * tureps1(Lb0:Lt))
             end if
 
+            if (jawave==0) then  ! we don't do viscosity reduction at the surface for waves
             vicwwu(Lt) = min(vicwwu(Lt), vicwwu(Lt - 1) * Eddyviscositysurfacmax)
+            endif
             vicwwu(Lb0) = min(vicwwu(Lb0), vicwwu(Lb) * Eddyviscositybedfacmax)
 
             call vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)

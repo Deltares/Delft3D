@@ -302,6 +302,7 @@ subroutine xbeach_all_input()
    waveps = readkey_dbl(md_surfbeatfile, 'waveps', 0.005d0, 0.001d0, 0.1d0)
    oldhmin = readkey_int(md_surfbeatfile, 'oldhmin', 0, 0, 1, strict=.true.)
    deltahmin = readkey_dbl(md_surfbeatfile, 'deltahmin', 0.1d0, 0.05d0, 0.3d0, strict=.true.)
+   DR_minthresh = readkey_dbl(md_surfbeatfile, 'DR_minthresh', 0.0d0, 0.0d0, 2.0d0, strict=.true.)
    !
    !
    ! Windmodel parameters
@@ -1388,6 +1389,15 @@ subroutine xbeach_wave_compute_flowforcing2D()
       Fx_cc(k1) = Fx_cc(k2)
       Fy_cc(k1) = Fy_cc(k2)
    end do
+
+   ! debug for LSTF case, set forcing to zero outside surf zone
+   !if (roller > 0) then
+   !   where (DR < DR_minthresh .and. hs > 0.3)
+   !      Fx_cc = 0d0
+   !      Fy_cc = 0d0
+   !   end where
+   !end if
+   ! \debug for LSTF case
 
    if (jampi == 1) then
       if (jatimer == 1) call starttimer(IXBEACH)
@@ -4475,6 +4485,12 @@ subroutine xbeach_solve_wave_stationary(callType, ierr)
       twav = 2d0 * pi / sigmwav
       phiwav = thetamean * rd2dg
       rlabda = 2d0 * pi / kwav
+      !
+      ! debug LSTF case
+      !where (DR < DR_minthresh .and. hh > 0.3d0)
+      !  DR = 0d0
+      !end where
+      !\debug LSTF case
    end if
    !
    ! this part is for online interacter visualisation
@@ -4863,7 +4879,7 @@ subroutine solve_roller_balance(x, y, mn, prev, hh, c, Dw, thetam, beta, ag, max
    real(dp), dimension(mn), intent(out) :: Dr
 
 ! Local constants
-   real(dp) :: hmin = 0.1d0
+   real(dp) :: hmin = 0.1d0   ! LSTF: 0.01 gives overshoots in horizontal velocity near shoreline
    real(dp) :: thetamean, sinthmean, costhmean
    integer, dimension(4) :: shift
    real(dp), dimension(:), allocatable :: ok
@@ -4942,7 +4958,7 @@ subroutine solve_roller_balance(x, y, mn, prev, hh, c, Dw, thetam, beta, ag, max
                      sinthk = sin(thetam(k))
                      Cfac = x1 * (y2 - yk) + x2 * (yk - y1) + xk * (y1 - y2)
                      Afac = (F(k1) * costh1 * (y2 - yk) + F(k2) * costh2 * (yk - y1) &
-                             - F(k1) * sinth1 * (x2 - xk) - F(k2) * sinth2 * (xk - x1)) / max(Cfac, dtol)
+                             - F(k1) * sinth1 * (x2 - xk) - F(k2) * sinth2 * (xk - x1)) / sign(max(abs(Cfac), dtol), Cfac)
                      Bfac = (costhk * (y1 - y2) - sinthk * (x1 - x2)) / sign(max(abs(Cfac), dtol), Cfac)
                      Drst = 2.d0 * ag * beta / c(k)**2
                      F(k) = (Dw(k) - Afac) / (Bfac + Drst)
@@ -6005,6 +6021,13 @@ subroutine xbeach_wave_compute_flowforcing3D()
 
    ! distribute dissipation
    do k = 1, ndx
+     if (L1(k)<1d-1) then
+         sxwav(k) = 0d0
+         sywav(k) = 0d0
+         sbxwav(k) = 0d0
+         sbywav(k) = 0d0
+         cycle
+      end if
       frc = diss(k) * twav(k) / L1(k)
       !
       dir = degrad * phiwav(k) ! cartesian angle, deg

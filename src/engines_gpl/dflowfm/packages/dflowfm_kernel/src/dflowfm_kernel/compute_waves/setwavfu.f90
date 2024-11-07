@@ -45,13 +45,13 @@
 
       integer :: L, LL, Lb, Lt
       double precision :: wavfx, wavfy, wavfbx, wavfby
-      double precision :: wavfu_loc, wavfbu_loc, twavL, hwavL
+      double precision :: wavfu_loc, wavfbu_loc, twavL
       double precision :: wavfv_loc, wavfbv_loc, wavfmag, wavfbmag, wavfang, wavfbang
       double precision :: fmax, ac1, ac2, hminlwi, rhoL, hminlw, gammaloc
 
       integer :: k1, k2
 
-      if (jawaveforces == 0) then
+      if (jawaveforces == 0 .or. fforc == 0d0) then
          wavfu = 0d0
          wavfv = 0d0
          return
@@ -124,7 +124,6 @@
             k1 = ln(1, LL); k2 = ln(2, LL)
             ac1 = acL(LL); ac2 = 1d0 - ac1
             !
-            hwavL = max(ac1 * hwav(k1) + ac2 * hwav(k2), 0.01d0)
             twavL = max(ac1 * twav(k1) + ac2 * twav(k2), 0.1d0)
             fmax = facmax * hu(LL)**1.5 / twavL
             rhoL = rhomean
@@ -137,35 +136,6 @@
             wavfv_loc = -snu(LL) * wavfx + csu(LL) * wavfy
             wavfu(Lt) = sign(min(abs(wavfu_loc), fmax), wavfu_loc) / rhoL / max(hu(LL) - hu(Lt - 1), hminlw) ! top layer, as in D3D
             wavfv(Lt) = sign(min(abs(wavfv_loc), fmax), wavfv_loc) / rhoL / max(hu(LL) - hu(Lt - 1), hminlw) ! this limitation only works in sigma layers
-            !
-            ! The following is pretty inaccurate for limited nr of layers:
-            !
-            !wavfuL    = 4d0*sign(min(abs(wavfu_loc), fmax), wavfu_loc)/hwavL
-            !wavfvL    = 4d0*sign(min(abs(wavfv_loc), fmax), wavfv_loc)/hwavL          ! hwavL/4 is integral over 0.5*hwavL waterdepth of linear decrease
-         !! Check if first layer is thicker than 0.5*hrms
-         !! In that case, distribute over first layer
-            !dzu=hu(Lt)-hu(Lt-1)
-            !halfwav=0.5*hwavL
-         !!
-            !if (dzu > halfwav) then
-            !   wavfu(Lt) = wavfuL*0.25d0*hwavL/rhoL/dzu                               ! division by 0.5*hrms done above
-            !   wavfv(Lt) = wavfvL*0.25d0*hwavL/rhoL/dzu
-            !else
-            !zw=0.5d0*dzu
-            !do L=Lt,Lb+1,-1
-            !   if (zw<=halfwav) then
-            !      wavfu(L) = wavfuL*(1d0-2d0*zw/hwavL)/rhoL                                     ! division by 0.5*hrms done above
-            !      wavfv(L) = wavfvL*(1d0-2d0*zw/hwavL)/rhoL
-            !      zw = zw + 0.5*(hu(L)-hu(L-2))
-            !   elseif (zw>halfwav .and. hu(L)>(hu(LL)-halfwav)) then                        ! partial layer
-            !      cc = 0.5*(hu(L)+(hu(LL)-halfwav))                                           ! replaced layer center
-            !      zw = hu(LL)-cc                                                                ! depth below surface
-            !      wavfu(L) = wavfuL*(1d0-zw/halfwav)/rhoL                                     ! contribution over partial layer
-            !      wavfv(L) = wavfvL*(1d0-zw/halfwav)/rhoL
-            !   endif
-            !enddo
-            !endif
-            !
             ! Body forces, uniform over depth
             !
             wavfx = ac1 * sbxwav(k1) + ac2 * sbxwav(k2)
@@ -177,6 +147,11 @@
                wavfv(L) = wavfv(L) + sign(min(abs(wavfv_loc), fmax), wavfv_loc) / rhoL / max(hu(LL), hminlw)
             end do
          end do
+      end if
+      !
+      if (fforc > 0.0) then
+         wavfu = fforc * wavfu
+         wavfv = fforc * wavfv
       end if
 1234  continue
       return

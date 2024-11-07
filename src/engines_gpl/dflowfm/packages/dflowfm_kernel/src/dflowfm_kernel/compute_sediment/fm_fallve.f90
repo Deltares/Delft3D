@@ -149,7 +149,7 @@
       end do
 
       do k = 1, ndx
-         if (s1(k) - bl(k) < epshs) cycle
+         if (s1(k) - bl(k) <= epshs) cycle
          !
          h0 = s1(k) - bl(k)
          chezy = sag * log(h0 / ee / max(epsz0, z0rou(k))) / vonkar ! consistency with getczz0
@@ -171,6 +171,7 @@
          end if
          !
          ! loop over the interfaces in the vertical
+         ! This does not work for kmx==1
          !
          if (kmx > 0) then ! 3D
             call getkbotktop(k, kb, kt)
@@ -182,7 +183,7 @@
          do kk = kb, kt - 1
             ! HK: is this better than first establish fallvelocity in a cell, next interpolate to interfaces?
 
-            if (kmx > 0) then ! 3D
+            if (kmx > 1) then ! 3D
                tka = zws(kk + 1) - zws(kk) ! thickness above
                tkb = zws(kk) - zws(kk - 1) ! thickness below
                tkt = tka + tkb
@@ -323,7 +324,7 @@
                ws(kk, ll) = wsloc
             end do ! ll
          end do ! kk
-         if (kmx > 1) then
+         if (kmx > 1) then ! what abt kmx=1?
             do ll = 1, lsed
                ws(kb - 1, ll) = ws(kb, ll) ! to check
             end do ! ll

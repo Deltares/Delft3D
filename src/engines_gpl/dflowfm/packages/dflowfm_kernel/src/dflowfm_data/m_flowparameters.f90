@@ -749,9 +749,9 @@ contains
 
       jawave = 0 ! Include wave model nr
 
-      waveforcing = 0 !< Include wave forcing
+      waveforcing = 0 !< Include wave forcing for offline waves
 
-      jawavestreaming = 0 ! Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
+      jawavestreaming = 1 ! Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
 
       jawavestokes = 1 ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
 

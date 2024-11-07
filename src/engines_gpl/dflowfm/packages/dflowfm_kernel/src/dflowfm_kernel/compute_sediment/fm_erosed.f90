@@ -59,6 +59,7 @@
       use sediment_basics_module
       use m_physcoef, only: ag, vonkar, sag, ee, backgroundsalinity, backgroundwatertemperature, vismol
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
+      use m_sediment, only: difparam, difcal
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, kmx, zws, hs, &
                         iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
@@ -448,7 +449,7 @@
             do k = kb, kt
                zcc = 0.5d0 * (zws(k - 1) + zws(k)) ! cell centre position in vertical layer admin, using absolute height
                kmxvel = k
-               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. zcc >= (bl(kk) + deltas(kk))) then
+               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. (jawave > 0 .and. zcc >= (bl(kk) + deltas(kk)))) then
                   exit
                end if
             end do
@@ -990,7 +991,7 @@
                cycle
             end if
             !
-            ! sediment transport governed by bedoad vector and reference concentration
+            ! sediment transport governed by bedload vector and reference concentration
             !
             suspfrac = has_advdiff(tratyp(l))
             !
@@ -1151,11 +1152,16 @@
                   ! coefficients for sediment in layer interfaces from
                   ! bottom of reference cell downwards, to ensure little
                   ! gradient in sed. conc. exists in this area.
-
-                  difbot = 10.0_fp * ws(kmxsed(nm, l) - 1, l) * thick1
-                  do kk = kb - 1, kmxsed(nm, l) - 1
-                     seddif(l, kk) = difbot
-                  end do
+                  if (difparam > 0.0) then
+                     difbot = difparam * ws(kmxsed(nm, l) - 1, l) * thick1
+                     do kk = kb - 1, kmxsed(nm, l) - 1
+                        seddif(l, kk) = difbot
+                     end do
+                  end if
+                  !
+                  if (difcal > 0d0) then
+                     seddif = difcal * seddif
+                  end if
                end if ! suspfrac
             else
                !

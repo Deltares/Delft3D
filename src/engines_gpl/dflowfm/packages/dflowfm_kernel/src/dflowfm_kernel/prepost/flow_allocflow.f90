@@ -1055,6 +1055,13 @@
        call aerr('czu(lnx)', ierr, lnx); czu = 0
     end if
 
+    if (dynroughveg > 0) then
+       allocate ( frcu0(lnx)    , stat=ierr)
+       call aerr('frcu0(lnx)'   , ierr, lnx)   ; frcu0   = frcuni
+       allocate ( dynveg(lnx)    , stat=ierr)
+       call aerr('dynveg(lnx)'   , ierr, lnx)   ; dynveg=.false.
+    endif
+
     if (jarhoxu > 0 .or. jased > 0) then
        if (allocated(rhou)) deallocate (rhou)
        allocate (rhou(lnkx), stat=ierr)

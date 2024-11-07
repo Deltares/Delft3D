@@ -42,7 +42,7 @@ subroutine flow_sedmorinit()
    use unstruc_files
    use m_flowgeom
    use m_flowtimes
-   use m_physcoef, only: rhomean, ag, vismol
+   use m_physcoef, only: rhomean, ag, vismol, dynroughveg
    use m_initsedtra, only: initsedtra
    use m_rdmorlyr, only: rdinimorlyr
    use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
@@ -510,7 +510,12 @@ subroutine flow_sedmorinit()
       if (jamormergedtuser > 0 .and. my_rank == 0) then ! safety, set equal dt_user across mormerge processes once
          call put_get_time_step(stmpar%morpar%mergehandle, dt_user)
       end if
-   end if
+    end if
+      
+    if (dynroughveg > 0) then
+       if (allocated(cumes)) deallocate(cumes)
+       call realloc(cumes, lnx,stat=ierr,fill=0d0, keepExisting=.false.)
+    end if
 
 1234 return
 end subroutine flow_sedmorinit

@@ -31,7 +31,7 @@ subroutine bermslopenudging(error)
    use m_sediment
    use m_fm_erosed
    use m_flow, only: hu, epshu
-   use m_flowgeom, only: lnx, ln, wu_mor
+   use m_flowgeom, only: lnx, ln, wu_mor, snu, csu
    use m_waves, only: hwav
    use m_flowparameters, only: jawave
    use m_debug
@@ -43,6 +43,7 @@ subroutine bermslopenudging(error)
    integer :: L, k1, k2
    integer :: lsd
    double precision :: hwavu, slope, flx, frc, fixf, trmag_u, slpfac
+   double precision :: cosw, sinw, coswu
 
    error = .true.
    !
@@ -88,7 +89,15 @@ subroutine bermslopenudging(error)
       ! Transports positive outgoing
       !
       slope = max(hypot(e_dzdn(L), e_dzdt(L)), 1d-8)
-      slpfac = bermslopefac * (-e_dzdn(L) + bermslope * e_dzdn(L) / slope) / max(morfac, 1d0)
+      if (jawave > 0) then
+         cosw  = 0.5d0*(cosd(phiwav(k1)) + cosd(phiwav(k2)))
+         sinw  = 0.5d0*(sind(phiwav(k1)) + sind(phiwav(k2)))
+         coswu = cosw * csu(L) + sinw * snu(L)
+         slpfac = bermslopefac * (-e_dzdn(L) + bermslope * coswu) / max(morfac, 1d0)
+      else
+         ! we have no good substitute, so old approach
+         slpfac = bermslopefac * (-e_dzdn(L) + bermslope * e_dzdn(L) / slope) / max(morfac, 1d0)
+      end if
       do lsd = 1, lsedtot
          !
          ! slope magnitude smaller than bermslope leads to transport away from the cell, ie outward

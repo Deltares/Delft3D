@@ -1471,13 +1471,13 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        pardef(2)  = 0.3_fp
     elseif (iform == 19) then
        name       = 'Van Thiel / Van Rijn (2008)'
-       nparopt    =  13
+       nparopt    =  14
        parkeyw(1) = 'facua'
-       pardef(1)  = 0.1_fp
+       pardef(1)  = 0.0_fp
        parkeyw(2) = 'facAs'
-       pardef(2)  = 0.1_fp
+       pardef(2)  = 0.2_fp
        parkeyw(3) = 'facSk'
-       pardef(3)  = 0.1_fp
+       pardef(3)  = 0.15_fp
        parkeyw(4) = 'waveform'
        pardef(4)  = 2.0_fp      ! 1=ruessink, 2=van thiel
        parkeyw(5) = 'sws'
@@ -1498,16 +1498,17 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        pardef(12)  = 30.0_fp
        parkeyw(13) = 'cmax'
        pardef(13)  = 0.1_fp
-       
+       parkeyw(14) = 'alfad50'
+       pardef(14)  = 0.0_fp      
     elseif (iform == 20) then
        name       = 'Soulsby / Van Rijn, XBeach flavour'
-       nparopt    =  14
+       nparopt    =  15
        parkeyw(1) = 'facua'
-       pardef(1)  = 0.1_fp
+       pardef(1)  = 0.0_fp
        parkeyw(2) = 'facAs'
-       pardef(2)  = 0.1_fp
+       pardef(2)  = 0.2_fp
        parkeyw(3) = 'facSk'
-       pardef(3)  = 0.1_fp
+       pardef(3)  = 0.15_fp
        parkeyw(4) = 'waveform'
        pardef(4)  =  2.0_fp      ! 1=ruessink, 2=van thiel
        parkeyw(5) = 'sws'
@@ -1530,6 +1531,8 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        pardef(13)  = 0.1_fp 
        parkeyw(14) = 'z0'
        pardef(14)  = 0.006_fp
+       parkeyw(15) = 'alfad50'
+       pardef(15) = 0.0_fp
     elseif (iform == 21) then
        if (name == ' ') name = 'External subroutine'
        nparreq    = 0

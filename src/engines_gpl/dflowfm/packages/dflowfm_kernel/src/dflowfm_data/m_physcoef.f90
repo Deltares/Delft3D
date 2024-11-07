@@ -68,6 +68,10 @@ module m_physcoef
    integer :: ifrctypuni !< 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D)
    real(kind=dp) :: frcunilin !<60.    ! 6      ! 66     ! uniform friction coeff
    real(kind=dp) :: umodlin !< linear friction umod , ifrctyp 4,5,6
+   integer :: dynroughveg
+   real(kind=dp) :: frcumin
+   real(kind=dp) :: droot
+   real(kind=dp) :: dstem
 
    real(kind=dp) :: wall_ks !< vertical wall nIKURADSE ROUGHNESSs (m)
    real(kind=dp) :: wall_z0 !< z0 for vertical walls, ~= Ks/30    (m)
@@ -215,6 +219,10 @@ contains
 
       NFEntrainmentMomentum = 0
 
+      dynroughveg = 0
+      droot = 0.5_dp
+      dstem = 0.5_dp
+      frcumin = 2.3e-2_dp
    end subroutine default_physcoef
 
 !> Check if density is pressure dependent

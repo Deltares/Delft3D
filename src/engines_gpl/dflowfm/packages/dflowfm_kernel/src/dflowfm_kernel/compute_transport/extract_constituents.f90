@@ -51,8 +51,8 @@ subroutine extract_constituents()
    integer :: i, iconst, k, kk, limmin, limmax, ll, kb, k1, kt
    double precision :: dmin
    double precision :: t_freeze !< freezing point temperature [degC]
-   integer(4) :: ithndl =  0
-   
+   integer(4) :: ithndl = 0
+
    if (timon) call timstrt("extract_constituents", ithndl)
    limmax = 0
    limmin = 0
@@ -174,7 +174,7 @@ subroutine extract_constituents()
                do k = 1, ndx
                   if (hs(k) < stmpar%morpar%sedthr) then
                      call getkbotktop(k, kb, kt)
-                     ssccum(ll, k) = ssccum(ll, k) + sum(constituents(ISED1 + ll - 1, kb:kt)) / dts * bai_mor(k) * vol1(k)
+                     ssccum(ll, k) = ssccum(ll, k) + sum(constituents(ISED1 + ll - 1, kb:kt) * vol1(kb:kt)) / dts * bai_mor(k)
                      constituents(ISED1 + ll - 1, kb:kt) = 0d0
                   end if
                end do
