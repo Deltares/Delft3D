@@ -90,7 +90,6 @@ if __name__ == "__main__":
     indexer = FolderIndex()
     component = indexer.get_scope("ci/teamcity/Dimr_TestbenchMatrix/repo_index.json", changes)
 
-    print(
-        f"Determined scope: {component}\n----------- CHANGES -----------\n{'\n'.join(indexer.changes_with_component)}"
-    )
+    changes_string = "\n".join(indexer.changes_with_component)
+    print(f"Determined scope: {component}\n----------- CHANGES -----------\n{changes_string}")
     print(f"##teamcity[setParameter name='branch_name' value='{component}']")
