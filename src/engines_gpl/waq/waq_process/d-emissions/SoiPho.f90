@@ -22,6 +22,7 @@
 !!  rights reserved.
 module m_soipho
    use m_waq_precision
+   use m_demissions_input_checks, only: check_fraction
 
    implicit none
 
@@ -36,18 +37,18 @@ contains
       !
       !     Type    Name         I/O Description
       !
-      real(kind=real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(kind=real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp) :: ipoint(*)   ! I  Array of pointers in pmsa to get and store the data
-      integer(kind=int_wp) :: increm(*)   ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer(kind=int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
-      integer(kind=int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
+      real(kind=real_wp) :: pmsa(*) !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp) :: fl(*) ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp) :: ipoint(*) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp) :: increm(*) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp) :: noseg ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp) :: noflux ! I  Number of fluxes, increment in the fl array
       integer(kind=int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer(kind=int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer(kind=int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer(kind=int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer(kind=int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer(kind=int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp) :: iknmrk(*) ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp) :: noq1 ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp) :: noq2 ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp) :: noq3 ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp) :: noq4 ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
       !
       !*******************************************************************************
 
@@ -56,7 +57,7 @@ contains
       ! PMSA admin
       integer(kind=int_wp), parameter :: lins = 5
       integer(kind=int_wp), parameter :: louts = 2
-      integer(kind=int_wp) :: ipnt(lins + louts)    !    Local work array for the pointering
+      integer(kind=int_wp) :: ipnt(lins + louts) ! Local work array for the pointering
 
       ! pointers to concrete items
       integer(kind=int_wp), parameter :: ip_ptot = 1
@@ -88,6 +89,7 @@ contains
          plab = max(pmsa(ipnt(ip_plab)), 0.0)
          thick = pmsa(ipnt(ip_thick))
          poros = min(pmsa(ipnt(ip_poros)), 0.99)
+         call check_fraction(poros, "SoilPoros", iseg)
          dmden = max(pmsa(ipnt(ip_dmden)), 100.)
 
          ! mg/kg        g/m2      m              kg/m3

@@ -24,6 +24,7 @@ module m_espgss
    use m_waq_precision
    use m_calcorder
    use m_logger_helper, only: write_error_message
+   use m_demissions_input_checks, only: check_fraction
 
    implicit none
 
@@ -37,18 +38,18 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(kind=real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(kind=real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp) :: ipoint(*)  ! I  Array of pointers in pmsa to get and store the data
-      integer(kind=int_wp) :: increm(*)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer(kind=int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
-      integer(kind=int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
+      real(kind=real_wp) :: pmsa(*) !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp) :: fl(*) ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp) :: ipoint(*) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp) :: increm(*) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp) :: noseg ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp) :: noflux ! I  Number of fluxes, increment in the fl array
       integer(kind=int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer(kind=int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer(kind=int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer(kind=int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer(kind=int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer(kind=int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp) :: iknmrk(*) ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp) :: noq1 ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp) :: noq2 ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp) :: noq3 ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp) :: noq4 ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
       !
       !     NOTE every receptor is a substance!
       !     NOTE all time is in seconds
@@ -82,7 +83,7 @@ contains
       integer(kind=int_wp), parameter :: ipar_srca_ev = 1
       integer(kind=int_wp), parameter :: ipar_srca_loc = 2
       integer(kind=int_wp), parameter :: ipar_srca_ef = 3
-      integer(kind=int_wp), parameter :: nopar_srcb = 2 !  count of parameters for type B sources
+      integer(kind=int_wp), parameter :: nopar_srcb = 2 ! count of parameters for type B sources
       integer(kind=int_wp), parameter :: ipar_srcb_ev = 1
       integer(kind=int_wp), parameter :: ipar_srcb_ef = 2
 
@@ -260,8 +261,9 @@ contains
       integer(kind=int_wp) :: lu_txt
       character(len=80), parameter :: filbin = 'outdata_em.bin'
       character(len=80), parameter :: filtxt = 'outdata_em.txt'
+      character(len=80) :: par_name
 
-      !     other
+      ! other
       logical first
       data first/.true./
 
@@ -289,11 +291,11 @@ contains
          over_hithr = pmsa(ipoint(ip_over_hithr))
 
          ! PMSA admin
-         offset_srca = lastsingle                             ! data for sources type A
-         offset_srcb = offset_srca + nsrca * (nopar_srca + nrec)  ! data for sources type B
-         offset_conc = offset_srcb + nsrcb * (nopar_srcb + nrec)  ! Concentration
-         lins = offset_conc + nrec                   ! SUM
-         if (noflux < (nrec * (1 + nsrca + nsrcb) + nofluxrest)) then  ! if other processes have fluxes too, we can not demand equality
+         offset_srca = lastsingle ! data for sources type A
+         offset_srcb = offset_srca + nsrca * (nopar_srca + nrec) ! data for sources type B
+         offset_conc = offset_srcb + nsrcb * (nopar_srcb + nrec) ! Concentration
+         lins = offset_conc + nrec ! SUM
+         if (noflux < (nrec * (1 + nsrca + nsrcb) + nofluxrest)) then ! if other processes have fluxes too, we can not demand equality
             write (*, *) 'nrec  = ', nrec
             write (*, *) 'nsrca = ', nsrca
             write (*, *) 'nsrcb = ', nsrcb
@@ -312,7 +314,7 @@ contains
          ! set non-time variable properties
          ! Emission factors
          allocate (emisfacA(nsrca, noseg))
-         !            allocate(emisfacB(nsrcb,noseg))
+         ! allocate(emisfacB(nsrcb,noseg))
          do isrc = 1, nsrca
             ip = offset_srca + (isrc - 1) * (nopar_srca + nrec) + ipar_srca_ef
             ipp = ipoint(ip)
@@ -333,7 +335,9 @@ contains
                ip = ip + 1
                ipp = ipoint(ip)
                do iseg = 1, noseg
+                  write (par_name, '("Released fraction of source A",i2.2," to receptor ", i0)') isrc, irec
                   frac2recA(irec, isrc, iseg) = pmsa(ipp)
+                  call check_fraction(frac2recA(irec, isrc, iseg), par_name, iseg)
                   ipp = ipp + increm(ip)
                end do
             end do
@@ -344,7 +348,9 @@ contains
                ip = ip + 1
                ipp = ipoint(ip)
                do iseg = 1, noseg
+                  write (par_name, '("Released fraction of source B",i2.2," to receptor ", i0)') isrc, irec
                   frac2recB(irec, isrc, iseg) = pmsa(ipp)
+                  call check_fraction(frac2recB(irec, isrc, iseg), par_name, iseg)
                   ipp = ipp + increm(ip)
                end do
             end do
@@ -421,30 +427,41 @@ contains
          ! collect all relevant input from PMSA
          totsurf = max(1.0, pmsa(ipoint(ip_totsurf) + (iseg - 1) * increm(ip_totsurf)))
          fpaved = max(0.001, pmsa(ipoint(ip_fpaved) + (iseg - 1) * increm(ip_fpaved)))
+         call check_fraction(fpaved, "fPaved", iseg)
          funpaved = max(0.001, pmsa(ipoint(ip_funpaved) + (iseg - 1) * increm(ip_funpaved)))
+         call check_fraction(funpaved, "fUnpaved", iseg)
          fwater = pmsa(ipoint(ip_fwater) + (iseg - 1) * increm(ip_fwater))
-         rainfall = pmsa(ipoint(ip_rainfall) + (iseg - 1) * increm(ip_rainfall)) * 86400.    ! m3/s to m3/d
+         call check_fraction(fwater, "fOpenWater", iseg)
+         rainfall = pmsa(ipoint(ip_rainfall) + (iseg - 1) * increm(ip_rainfall)) * 86400. ! m3/s to m3/d
          drydep = pmsa(ipoint(ip_drydep) + (iseg - 1) * increm(ip_drydep))
          rainconc = pmsa(ipoint(ip_rainconc) + (iseg - 1) * increm(ip_rainconc))
          kpaved = pmsa(ipoint(ip_kpaved) + (iseg - 1) * increm(ip_kpaved))
          kunpaved = pmsa(ipoint(ip_kunpaved) + (iseg - 1) * increm(ip_kunpaved))
          kdunpaved = pmsa(ipoint(ip_kdunpaved) + (iseg - 1) * increm(ip_kdunpaved))
+         call check_fraction(kdunpaved, "KdUnpa", iseg)
          ksoil = pmsa(ipoint(ip_ksoil) + (iseg - 1) * increm(ip_ksoil))
          kdsoil = pmsa(ipoint(ip_kdsoil) + (iseg - 1) * increm(ip_kdsoil))
+         call check_fraction(kdsoil, "KdSoi", iseg)
          kimmo = pmsa(ipoint(ip_kimmo) + (iseg - 1) * increm(ip_kimmo))
          ropaved = pmsa(ipoint(ip_ropaved) + (iseg - 1) * increm(ip_ropaved))
          fcomsew = pmsa(ipoint(ip_fcomsew) + (iseg - 1) * increm(ip_fcomsew))
+         call check_fraction(fcomsew, "fComSew", iseg)
          frainsew = pmsa(ipoint(ip_frainsew) + (iseg - 1) * increm(ip_frainsew))
+         call check_fraction(frainsew, "FrRainSew", iseg)
          rounpaved = pmsa(ipoint(ip_rounpaved) + (iseg - 1) * increm(ip_rounpaved))
          infilt = pmsa(ipoint(ip_infilt) + (iseg - 1) * increm(ip_infilt))
          leakage = pmsa(ipoint(ip_leakage) + (iseg - 1) * increm(ip_leakage))
          pop = pmsa(ipoint(ip_pop) + (iseg - 1) * increm(ip_pop))
          pcww = pmsa(ipoint(ip_pcww) + (iseg - 1) * increm(ip_pcww))
          fwwsew = pmsa(ipoint(ip_fwwsew) + (iseg - 1) * increm(ip_fwwsew))
+         call check_fraction(fwwsew, "FrSewered", iseg)
          eff_rs = pmsa(ipoint(ip_eff_rs) + (iseg - 1) * increm(ip_eff_rs))
+         call check_fraction(eff_rs, "Eff_RS", iseg)
          sld_rs = pmsa(ipoint(ip_sld_rs) + (iseg - 1) * increm(ip_sld_rs))
+         call check_fraction(sld_rs, "Sld_RS", iseg)
          soilthick = pmsa(ipoint(ip_soilthick) + (iseg - 1) * increm(ip_soilthick)) / 1000. ! Convert from mm to m
          soilpor = pmsa(ipoint(ip_soilpor) + (iseg - 1) * increm(ip_soilpor))
+         call check_fraction(soilpor, "SoilPoros", iseg)
          exfilt = max(pmsa(ipoint(ip_exfilt) + (iseg - 1) * increm(ip_exfilt)), 0.0)
          ssurf = max(pmsa(ipoint(ip_ssurf) + (iseg - 1) * increm(ip_ssurf)), 0.0)
          ero1 = pmsa(ipoint(ip_ero1) + (iseg - 1) * increm(ip_ero1)) ! g/d
@@ -454,18 +471,31 @@ contains
          concpas = pmsa(ipoint(ip_concpas) + (iseg - 1) * increm(ip_concpas))
          overland = pmsa(ipoint(ip_overland) + (iseg - 1) * increm(ip_overland))
          FrSeptic = pmsa(ipoint(ip_FrSeptic) + (iseg - 1) * increm(ip_FrSeptic))
+         call check_fraction(FrSeptic, "FrSeptic", iseg)
          Eff_Septic = pmsa(ipoint(ip_Eff_Septic) + (iseg - 1) * increm(ip_Eff_Septic)) ! Interpret as losses to Sfw, before reaching WWTPs
+         call check_fraction(Eff_Septic, "Eff_Septic", iseg)
          Sld_Septic = pmsa(ipoint(ip_Sld_Septic) + (iseg - 1) * increm(ip_Sld_Septic)) ! Interpret as losses to Soi, before reaching WWTPs
+         call check_fraction(Sld_Septic, "Sld_Septic", iseg)
          fSldgRem = pmsa(ipoint(ip_fSldgRem) + (iseg - 1) * increm(ip_fSldgRem))
+         call check_fraction(fSldgRem, "FrSldgRem", iseg)
          FrTreat1 = pmsa(ipoint(ip_FrTreat1) + (iseg - 1) * increm(ip_FrTreat1))
+         call check_fraction(FrTreat1, "FrTreat1", iseg)
          FrTreat2 = pmsa(ipoint(ip_FrTreat2) + (iseg - 1) * increm(ip_FrTreat2))
+         call check_fraction(FrTreat2, "FrTreat2", iseg)
          FrTreat3 = pmsa(ipoint(ip_FrTreat3) + (iseg - 1) * increm(ip_FrTreat3))
+         call check_fraction(FrTreat3, "FrTreat3", iseg)
          Eff_Treat1 = pmsa(ipoint(ip_Eff_Treat1) + (iseg - 1) * increm(ip_Eff_Treat1))
+         call check_fraction(Eff_Treat1, "Eff_Treat1", iseg)
          Eff_Treat2 = pmsa(ipoint(ip_Eff_Treat2) + (iseg - 1) * increm(ip_Eff_Treat2))
+         call check_fraction(Eff_Treat2, "Eff_Treat2", iseg)
          Eff_Treat3 = pmsa(ipoint(ip_Eff_Treat3) + (iseg - 1) * increm(ip_Eff_Treat3))
+         call check_fraction(Eff_Treat3, "Eff_Treat3", iseg)
          Sld_Treat1 = pmsa(ipoint(ip_Sld_Treat1) + (iseg - 1) * increm(ip_Sld_Treat1))
+         call check_fraction(Sld_Treat1, "Sld_Treat1", iseg)
          Sld_Treat2 = pmsa(ipoint(ip_Sld_Treat2) + (iseg - 1) * increm(ip_Sld_Treat2))
+         call check_fraction(Sld_Treat2, "Sld_Treat2", iseg)
          Sld_Treat3 = pmsa(ipoint(ip_Sld_Treat3) + (iseg - 1) * increm(ip_Sld_Treat3))
+         call check_fraction(Sld_Treat3, "Sld_Treat3", iseg)
 
          do irec = 1, nrec
             ip = offset_conc + irec
@@ -485,7 +515,7 @@ contains
             ! pick up (total domain) EV and calculate domain losses per substance
             ip = offset_srca + (isrc - 1) * (nopar_srca + nrec) + ipar_srca_ev
             emisvar = pmsa(ipoint(ip))
-            losses = emisvar * emisfacA(isrc, iseg) * 1000.   ! kg/d to g/d
+            losses = emisvar * emisfacA(isrc, iseg) * 1000. ! kg/d to g/d
 
             ! losses per sc
             if (sumlocator(isrc) > 0.0) then
@@ -493,7 +523,7 @@ contains
                   flux = losses * frac2recA(irec, isrc, iseg) * locator(isrc, iseg) / sumlocator(isrc) / 86400.
                   if (flux < 0.0) then ! extraction is prescribed, limit to store plus earlier sources
                      mass = currentmass(irec)
-                     limit = mass / delt + totflxin(irec)  ! pool plus earlier sources
+                     limit = mass / delt + totflxin(irec) ! pool plus earlier sources
                      flux = max(flux, -limit)
                   end if
                   iflux = iflux + 1
@@ -520,7 +550,7 @@ contains
                flux = losses * frac2recB(irec, isrc, iseg) / 86400.
                if (flux < 0.0) then ! extraction is prescribed, limit to store plus earlier sources
                   mass = currentmass(irec)
-                  limit = mass / delt + totflxin(irec)  ! pool plus earlier sources
+                  limit = mass / delt + totflxin(irec) ! pool plus earlier sources
                   flux = max(flux, -limit)
                end if
                fl(iflux + (iseg - 1) * noflux) = flux
@@ -529,7 +559,7 @@ contains
          end do
 
          ! Atmospheric deposition ------------------------------------------------------------------
-         frac2rec = 0.0  ! default
+         frac2rec = 0.0 ! default
          frac2rec(rec_pav) = fpaved
          frac2rec(rec_unp) = funpaved
          frac2rec(rec_sfw) = fwater
@@ -559,7 +589,7 @@ contains
          fr2sfw = FrUnManaged * fWater + FrSeptic * Eff_Septic
          fr2soi = FrUnManaged * (1.0 - fWater) + FrSeptic * Sld_Septic
 
-         !  set routing fluxes
+         ! set routing fluxes
          iflux = fl0_rest + dww2sew + (iseg - 1) * noflux
          fl(iflux) = fluxin * fr2sew
          iflux = fl0_rest + dww2sfw + (iseg - 1) * noflux
@@ -592,7 +622,7 @@ contains
          end if
          ro2sew = ropaved * frainsew * fcomsew ! m3/s with scale factors
 
-         !  to mixed sewers
+         ! to mixed sewers
          iflux = fl0_rest + pav2sew + (iseg - 1) * noflux
          fl(iflux) = fluxwash * frainsew * fcomsew
          ! and next to separated sewers
@@ -616,8 +646,8 @@ contains
          ! UNPAVED SYSTEM ------------------------------------------------------------------------------------
 
          roun_mmperday = rounpaved / (totsurf * funpaved) * 1000.*86400.
-         in_mmperday = infilt / (totsurf * funpaved) * 1000.*86400.   ! BUGFIX 3 jan 2023 correction funpaved added
-         ra_mmperday = rainfall / totsurf * 1000.           ! already in m3/d
+         in_mmperday = infilt / (totsurf * funpaved) * 1000.*86400. ! BUGFIX 3 jan 2023 correction funpaved added
+         ra_mmperday = rainfall / totsurf * 1000. ! already in m3/d
          ferosion = (ra_mmperday - ra_lothr) / (ra_hithr - ra_lothr)
          ferosion = max(min(ferosion, 1.0), 0.0)
          fdisp = (roun_mmperday + in_mmperday) / disp_hithr
@@ -635,8 +665,8 @@ contains
          maxflux = mass / delt + totflxin(rec_unp) - fluxloss - fluxbur
          ! kd is now defined as the unbound share NOT the bound share
          ! the trick with the double precision is to make the subtraction valid
-         fluxbound = sngl(1d0 - dble(kdunpaved)) * maxflux  ! Bound substance  flux
-         fluxunbound = kdunpaved * maxflux  ! Unbound substance  flux
+         fluxbound = sngl(1d0 - dble(kdunpaved)) * maxflux ! Bound substance  flux
+         fluxunbound = kdunpaved * maxflux ! Unbound substance  flux
          fluxero = fluxbound * ferosion
          fluxinf = fluxunbound * fdisp * finf
          fluxroun = fluxunbound * fdisp * froun
@@ -663,13 +693,15 @@ contains
          totflxin(rec_soi) = totflxin(rec_soi) + fluxinf + fluxbur
 
          ! COMBINED SEWERS ---------------------------------------------------------------------------------
-         ! (local leakage) (or CSO): postive is a %, negative a rainfall threshold
+         ! (local leakage) (or CSO): postive is a fraction, negative a rainfall threshold
          if (leakage < -0.1) then
-            if (ra_mmperday > (-leakage)) then   ! threshold on the mm per day value
+            if (ra_mmperday > (-leakage)) then ! threshold on the mm per day value
                leakage = 1.0
             else
                leakage = 0.0
             end if
+         else
+            call check_fraction(leakage, "SewLeakage", iseg)
          end if
 
          ! (un)treated

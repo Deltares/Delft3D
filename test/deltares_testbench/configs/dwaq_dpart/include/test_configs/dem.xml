@@ -26,7 +26,7 @@
                     <parameter name="mesh2d_2d_Stw" toleranceAbsolute="3.0e-00"/>
                     <parameter name="mesh2d_2d_Sfw" toleranceAbsolute="3.0e-00"/>
                     <parameter name="mesh2d_2d_Soi" toleranceAbsolute="3.0e-00"/>
-                    <parameter name="mesh2d_2d_SoilPass" toleranceAbsolute="3.0e-00"/>
+                    <parameter name="mesh2d_2d_SoilPass" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
             <file name="EMtemplate-bal.prn" type="NUMBERTEXT">

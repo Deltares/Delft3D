@@ -22,6 +22,7 @@
 !!  rights reserved.
 module m_diftem
    use m_waq_precision
+   use m_demissions_input_checks, only: check_fraction
 
    implicit none
 
@@ -35,18 +36,18 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(kind=real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(kind=real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp) :: ipoint(*)   ! I  Array of pointers in pmsa to get and store the data
-      integer(kind=int_wp) :: increm(*)   ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer(kind=int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
-      integer(kind=int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
+      real(kind=real_wp) :: pmsa(*) !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp) :: fl(*) ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp) :: ipoint(*) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp) :: increm(*) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp) :: noseg ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp) :: noflux ! I  Number of fluxes, increment in the fl array
       integer(kind=int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer(kind=int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer(kind=int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer(kind=int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer(kind=int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer(kind=int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp) :: iknmrk(*) ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp) :: noq1 ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp) :: noq2 ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp) :: noq3 ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp) :: noq4 ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 
 !
       !     support variables
@@ -117,13 +118,13 @@ contains
          volume = pmsa(ipnt(ip_volume))
 
          ! buffer flux1 over period
-         period1 = pmsa(ipnt(ip_period1)) / delt    ! expressed as timesteps
+         period1 = pmsa(ipnt(ip_period1)) / delt ! expressed as timesteps
          ws1 = pmsa(ipnt(ip_wsin1))
          ws1 = ((period1 - 1.0) * ws1 + tempair) / period1
          pmsa(ipnt(ip_wsin1)) = ws1
 
          ! buffer flux2 over period
-         period2 = pmsa(ipnt(ip_period2)) / delt    ! expressed as timesteps
+         period2 = pmsa(ipnt(ip_period2)) / delt ! expressed as timesteps
          ws2 = pmsa(ipnt(ip_wsin2))
          ws2 = ((period2 - 1.0) * ws2 + tempair) / period2
          pmsa(ipnt(ip_wsin2)) = ws2
@@ -133,6 +134,7 @@ contains
          fl(iflux + 1) = tflux
 
          cloudf = pmsa(ipnt(ip_cloudf))
+         call check_fraction(cloudf, "CloudFrac", iseg)
          cloudp = cloudf * 100.
          pmsa(ipnt(ip_cloudp)) = cloudp
 
