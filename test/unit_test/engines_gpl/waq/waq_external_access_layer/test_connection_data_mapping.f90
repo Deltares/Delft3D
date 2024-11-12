@@ -69,6 +69,9 @@ program tests_connection_data_mapping
         case ('test_set_connection_data_for_constant')
             write (*, *) "Running "//cmd_arg
             call runtests(call_test_set_connection_data_for_constant)
+        case ('test_set_connection_data_hydrodynamics')
+            write (*, *) "Running "//cmd_arg
+            call runtests(call_test_set_connection_data_hydrodynamics)
         end select
     else
         write (*, *) "No test specified, running all tests"
@@ -78,6 +81,7 @@ program tests_connection_data_mapping
         call runtests(call_test_set_connection_data_segment_with_index)
         call runtests(call_test_set_connection_data_observation_with_index)
         call runtests(call_test_set_connection_data_for_constant)
+        call runtests(call_test_set_connection_data_hydrodynamics)
     end if
 
     call runtests_final()
@@ -119,6 +123,10 @@ contains
 
     subroutine call_test_set_connection_data_for_constant
         call test(test_set_connection_data_for_constant, 'Test setting data for a constant connection')
+    end subroutine
+
+    subroutine call_test_set_connection_data_hydrodynamics
+        call test(test_set_connection_data_hydrodynamics, 'Test setting data for exchanging hydrodynamic quantities')
     end subroutine
 
     subroutine test_set_connection_data_wasteload_with_index()
@@ -277,5 +285,41 @@ contains
         call assert_equal(new_connection%buffer_idx, 6, 'connection buffer_idx should be correct')
 
     end subroutine
+
+    subroutine test_set_connection_data_hydrodynamics()
+        use m_real_array_indices, only: ivol, iflow, iarea
+        use m_waq_memory_dimensions, only: num_cells, num_cells_bottom, num_exchanges
+
+        type(connection_data), allocatable :: new_connection_vol, new_connection_flow, new_connection_area
+        character(*), parameter :: exchange_name_vol  = "FROM_DELWAQ|HYDRO|VOLUME"
+        character(*), parameter :: exchange_name_flow = "FROM_DELWAQ|HYDRO|FLOW"
+        character(*), parameter :: exchange_name_area = "FROM_DELWAQ|HYDRO|AREA"
+
+        ! arrange - note: the actual arrays are not filled
+        ivol             = 17
+        iflow            = 37
+        iarea            = 59
+        num_cells        = 13
+        num_cells_bottom = 3
+        num_exchanges    = 71
+
+        ! act
+        new_connection_vol  = parse_connection_string(exchange_name_vol)
+        new_connection_flow = parse_connection_string(exchange_name_flow)
+        new_connection_area = parse_connection_string(exchange_name_area)
+        call set_connection_data(new_connection_vol)
+        call set_connection_data(new_connection_flow)
+        call set_connection_data(new_connection_area)
+
+        ! assert
+        call assert_equal(new_connection_vol%buffer_idx,     ivol,          'connection buffer_index for volumes should be correct')
+        call assert_equal(new_connection_flow%buffer_idx,    iflow,         'connection buffer_index for flows should be correct')
+        call assert_equal(new_connection_area%buffer_idx,    iarea,         'connection buffer_index for areas should be correct')
+        call assert_equal(size(new_connection_vol%p_value),  num_cells+num_cells_bottom, &
+                                                                            'connection array size for volumes should be correct')
+        call assert_equal(size(new_connection_flow%p_value), num_exchanges, 'connection array size for flows should be correct')
+        call assert_equal(size(new_connection_area%p_value), num_exchanges, 'connection array size for areas should be correct')
+
+    end subroutine test_set_connection_data_hydrodynamics
 end program
 

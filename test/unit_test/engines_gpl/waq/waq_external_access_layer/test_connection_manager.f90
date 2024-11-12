@@ -110,7 +110,7 @@ contains
         type(connection_data), allocatable :: new_connection
         type(connection_data), pointer :: found_connection
         type(connection_data), pointer :: new_connection_pointer
-        real(kind=dp), pointer :: dummy_pointer
+        real(kind=dp), pointer :: dummy_pointer(:) => null()
         character(*), parameter :: exchange_name = "TO_DELWAQ|WASTE|1|FLOW"
 
         found_connection => connections%get_connection_by_exchange_name(exchange_name)
@@ -203,7 +203,7 @@ contains
         type(connection_data), pointer :: new_connection3_pointer
 
         type(connection_wrapper), allocatable, dimension(:) :: found_connections
-        real(kind=dp), pointer :: dummy_pointer
+        real(kind=dp), pointer :: dummy_pointer(:) => null()
         character(*), parameter :: exchange_name = "TO_DELWAQ|WASTE|1|FLOW"
 
         ! arrange
@@ -235,7 +235,7 @@ contains
         character(*) :: exchange_name
         type(connection_data), allocatable :: new_connection
 
-        real(kind=dp), pointer :: dummy_pointer
+        real(kind=dp), pointer :: dummy_pointer(:) => null()
 
         new_connection = connection_data( &
                          exchange_name=exchange_name, &

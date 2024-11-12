@@ -76,8 +76,8 @@ contains
             connection%buffer_idx      = iflow
             num_values                 = num_exchanges
         elseif (string_equals(connection%subst_name, 'AREA')) then
-            connection%substance_index = 2
-            connection%buffer_idx      = iflow
+            connection%substance_index = 3
+            connection%buffer_idx      = iarea
             num_values                 = num_exchanges
         end if
 
