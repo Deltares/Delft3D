@@ -1787,7 +1787,7 @@ contains
                              'spiral_intensity', 'm/s', UNC_LOC_S)
       call add_output_config(config_set_map, IDX_MAP_NUMLIMDT, &
                              'Wrimap_numlimdt', 'Numlimdt', 'Number of times flow element was Courant limiting', &
-                             '', '1', UNC_LOC_S, description='Write the number times a cell was Courant limiting to map file. (Consider using Wrimap_flow_analysis instead.)')
+                             '', '1', UNC_LOC_S, description='Write the total number of times a cell was Courant limiting to map file. (Consider using Wrimap_flow_analysis instead.)')
       call add_output_config(config_set_map, IDX_MAP_TAUSX, &
                              'Wrimap_taucurrent', 'tausx', 'Total bed shear stress vector, x-component', &
                              '', 'N m-2', UNC_LOC_S, description='Write the shear stress to map file')

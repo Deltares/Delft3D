@@ -2037,6 +2037,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', jamapfw, success)
       call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', jamapspir, success)
       call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', jamapnumlimdt, success)
+      call prop_get(md_ptr, 'output', 'Wrixyz_numlimdt', write_numlimdt_file, success)
       call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', jamaptaucurrent, success)
       call prop_get(md_ptr, 'output', 'Wrimap_z0', jamapz0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_salinity', jamapsal, success)
@@ -3811,6 +3812,10 @@ contains
             ibuf = 0
          end if
          call prop_set(prop_ptr, 'output', 'NcWriteLatLon', ibuf, 'Write extra lat-lon coordinates for all projected coordinate variables in each NetCDF file (for CF-compliancy).')
+      end if
+      if(writeall .or. write_numlimdt_file) then
+         call prop_set(prop_ptr, 'output', 'Wrixyz_numlimdt', merge(1,0,write_numlimdt_file), &
+             'Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file (1: yes, 0: no).')
       end if
       if (writeall .or. len_trim(unc_metadatafile) > 0) then
          call prop_set(prop_ptr, 'output', 'MetaDataFile', unc_metadatafile, 'Metadata NetCDF file with user-defined global dataset attributes (*_meta.nc).')

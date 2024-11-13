@@ -29,43 +29,23 @@
 
 !
 !
-
- subroutine wrinumlimdt()
+!> Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file.
+ subroutine write_timestep_limiting_cells()
     use m_flowgeom, only: ndx, xz, yz
     use m_flow, only: numlimdt
     use unstruc_model, only: md_ident, getoutputdir
-    implicit none
-    integer :: mlim, k
 
-    call newfil(mlim, trim(getoutputdir())//trim(md_ident)//'_numlimdt.xyz')
-    do k = 1, ndx
-       if (numlimdt(k) > 0) then
-          write (mlim, *) xz(k), yz(k), numlimdt(k)
+    implicit none
+
+    integer :: file_unit, cell
+
+    call newfil(file_unit, trim(getoutputdir())//trim(md_ident)//'_numlimdt.xyz')
+    do cell = 1, ndx
+       if (numlimdt(cell) > 0) then
+          write (file_unit, *) xz(cell), yz(cell), numlimdt(cell)
        end if
     end do
-    call doclose(mlim)
-
- end subroutine wrinumlimdt
-
-!> a little bit a general subroutine to write double precision (:,:) data over flow nodes
- subroutine write_dp_data_over_cells(data_name, idata_begin, idata_end, idata1, idata2, data)
-    use m_flowgeom, only: ndx, xz, yz
-    use unstruc_model, only: md_ident, getoutputdir
-
-    implicit none
-
-    character(len=*), intent(in) :: data_name
-    integer, intent(in) :: idata_begin, idata_end, idata1, idata2
-    double precision, dimension(idata1, idata2), intent(in) :: data
-
-    integer :: file_unit, cell_number, index_data
-
-    call newfil(file_unit, trim(getoutputdir())//trim(md_ident)//'_'//trim(data_name)//'.xyz')
-
-    do cell_number = 1, min(ndx, idata2)
-       write (file_unit, *) xz(cell_number), yz(cell_number), (data(index_data, cell_number), index_data=idata_begin, idata_end)
-    end do
-
     call doclose(file_unit)
 
- end subroutine write_dp_data_over_cells
+ end subroutine write_timestep_limiting_cells
+

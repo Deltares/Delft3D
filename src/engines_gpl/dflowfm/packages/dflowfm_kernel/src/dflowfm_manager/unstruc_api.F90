@@ -210,7 +210,7 @@ contains
          call warn_flush()
       end if
 
-      call writesomefinaloutput()
+      call write_some_final_output()
 
       if (jagui > 0) then
          call plotnu(md_ident)

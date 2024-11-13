@@ -30,24 +30,22 @@
 !
 !
 
- subroutine writesomefinaloutput()
-    use m_sferic
+ subroutine write_some_final_output()
     use timers
-    use unstruc_model
     use m_flow
-    use m_flowgeom
+    use m_flowgeom, only: ndx
     use m_flowtimes
-    use unstruc_messages
+    use m_flowparameters, only: write_numlimdt_file
+    use unstruc_messages, only: msgbuf, msg_flush
     use m_timer
-    use m_netw
-    use m_partitioninfo
-    use m_monitoring_crosssections
+    use m_partitioninfo, only: jampi, numranks, my_rank
+    use m_monitoring_crosssections, only: crs, ncrs
     use m_observations_data, only: mxls
     use unstruc_files, only: defaultFilename
     use m_sediment, only: stm_included
     use m_transport, only: maserrsed
     use mass_balance_areas_routines, only: mba_final
-    use m_datum
+    use m_datum, only: datum
 #ifdef _OPENMP
     use omp_lib
 #endif
@@ -225,14 +223,10 @@
        msgbuf = ' '; call msg_flush()
     end do
 
-    ! if (ti_xls > 0) then
-    ! call wrirstfileold(time1)                     ! schrijf aan het einde     een ascii.rst-file weg
-    ! call wrinumlimdt()                                 ! number of limitating timesteps per node
-    ! endif
-    !call unc_write_his(time1)                         ! schrijf aan het einde ook een .his-file weg
-    !call wrimap(time1)                                ! schrijf aan het einde ook een .map-file weg
-
-!   call mba_final(time_user)
+    if (write_numlimdt_file) then
+       call write_timestep_limiting_cells()
+    end if
+    
     if (ti_mba > 0) then
        call mba_final(time_user)
     end if
@@ -255,4 +249,4 @@
     end if
 
     call timstrt('All', handle_all)
- end subroutine writesomefinaloutput
+ end subroutine write_some_final_output

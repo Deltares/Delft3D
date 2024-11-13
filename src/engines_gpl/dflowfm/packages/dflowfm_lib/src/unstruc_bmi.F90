@@ -484,7 +484,7 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: finalize
       use m_partitioninfo
 
-      call writesomefinaloutput()
+      call write_some_final_output()
 
       if (jampi == 1) then
 !        finalize before exit
