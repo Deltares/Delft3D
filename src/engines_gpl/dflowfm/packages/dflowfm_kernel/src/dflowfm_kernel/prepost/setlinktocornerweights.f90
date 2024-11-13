@@ -228,14 +228,14 @@
 
     end do
 
-    deallocate (wcnxy, acn, jacorner)
 
  end subroutine set_linktocornerweights
 
  subroutine allocate_linktocornerweights() ! allocate corner related link x- and y weights
     use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, wcnxy, jacorner
     use m_netw, only: numk
-
+    use m_alloc
+    
     implicit none
 
     integer ierr
