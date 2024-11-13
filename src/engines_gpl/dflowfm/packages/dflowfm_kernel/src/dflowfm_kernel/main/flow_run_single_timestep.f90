@@ -98,8 +98,9 @@ subroutine flow_run_single_timestep(key, iresult) ! do only 1 flow timestep
    end if
 
    if (ja_Perot_weight_update == 1) then
+      call set_linktocornerweights()
       call set_linktocenterweights()
-   end if    
+   end if
 
    return ! Return with success
 

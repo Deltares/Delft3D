@@ -30,7 +30,7 @@
 !
 !
 
- subroutine setlinktocornerweights() ! set corner related link x- and y weights
+ subroutine set_linktocornerweights() ! set corner related link x- and y weights
 
     use m_flow
     use m_netw
@@ -43,30 +43,19 @@
     implicit none
 
     double precision :: ax, ay, wuL, wud, csa, sna
-    integer :: k, L, ierr, nx
+    integer :: k, L, nx
     integer :: k1, k2, k3, k4
     integer :: ka, kb, LL
 
-    double precision, allocatable :: wcnxy(:, :) ! corner weight factors (2,numk) , only for normalising
-    integer, dimension(:), allocatable :: jacorner ! corner node (1) or not (0), dim(numk)
-
     double precision, external :: lin2corx, lin2cory
 
-    if (allocated(wcnx3)) deallocate (wcnx3, wcny3, wcnx4, wcny4)
-    if (allocated(wcnxy)) deallocate (wcnxy)
-    allocate (wcnx3(lnx), stat=ierr); wcnx3 = 0
-    call aerr('wcnx3(lnx) ', ierr, lnx)
-    allocate (wcny3(lnx), stat=ierr); wcny3 = 0
-    call aerr('wcny3(lnx) ', ierr, lnx)
-    allocate (wcnx4(lnx), stat=ierr); wcnx4 = 0
-    call aerr('wcnx4(lnx) ', ierr, lnx)
-    allocate (wcny4(lnx), stat=ierr); wcny4 = 0
-    call aerr('wcny4(lnx) ', ierr, lnx)
+    wcnx3 = 0
+    wcny3 = 0
+    wcnx4 = 0
+    wcny4 = 0
 
     !if (kmx > 0 .and. jased > 0 .and. jased < 4) then
-    if (allocated(wcLn)) deallocate (wcLn)
-    allocate (wcLn(2, lnx), stat=ierr); wcLn = 0
-    call aerr('wcLn(2,lnx)', ierr, lnx)
+    wcLn = 0
     !endif
 
     nx = 0
@@ -74,12 +63,9 @@
        k3 = lncn(1, L); k4 = lncn(2, L)
        nx = max(nx, k3, k4)
     end do
-    allocate (wcnxy(3, numk), stat=ierr); wcnxy = 0
-    call aerr('wcnxy(3,numk)', ierr, 3 * numk)
+    wcnxy = 0
 
-    allocate (jacorner(numk), stat=ierr)
     jacorner = 0
-    call aerr('jacorner(numk)', ierr, numk)
 
     do L = lnx1D + 1, lnx
        if (abs(kcu(L)) == 1) then
@@ -201,18 +187,11 @@
        end if
     end do
 
-    if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
-    allocate (cscnw(nrcnw), stat=ierr); cscnw = 0
-    call aerr('cscnw(nrcnw)', ierr, nrcnw)
-    allocate (sncnw(nrcnw), stat=ierr); sncnw = 0
-    call aerr('sncnw(nrcnw)', ierr, nrcnw)
-    allocate (kcnw(nrcnw), stat=ierr); kcnw = 0
-    call aerr(' kcnw(nrcnw)', ierr, nrcnw)
-    allocate (nwalcnw(2, nrcnw), stat=ierr); nwalcnw = 0
-    call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
-    allocate (sfcnw(nrcnw), stat=ierr); sfcnw = 0
-    call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
-
+    cscnw = 0
+    sncnw = 0
+    kcnw = 0
+    nwalcnw = 0
+    sfcnw = 0
     nrcnw = 0
     do k = 1, numk ! set up admin for corner velocity alignment at closed walls
 
@@ -251,4 +230,45 @@
 
     deallocate (wcnxy, acn, jacorner)
 
- end subroutine setlinktocornerweights
+ end subroutine set_linktocornerweights
+
+ subroutine allocate_linktocornerweights() ! allocate corner related link x- and y weights
+    use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, wcnxy, jacorner
+    use m_netw, only: numk
+
+    implicit none
+
+    integer ierr
+
+    if (allocated(wcnx3)) deallocate (wcnx3, wcny3, wcnx4, wcny4)
+    if (allocated(wcnxy)) deallocate (wcnxy)
+    allocate (wcnx3(lnx), stat=ierr); 
+    call aerr('wcnx3(lnx) ', ierr, lnx)
+    allocate (wcny3(lnx), stat=ierr);     
+    call aerr('wcny3(lnx) ', ierr, lnx)
+    allocate (wcnx4(lnx), stat=ierr);
+    call aerr('wcnx4(lnx) ', ierr, lnx)
+    allocate (wcny4(lnx), stat=ierr); 
+    call aerr('wcny4(lnx) ', ierr, lnx)
+    if (allocated(wcLn)) deallocate (wcLn)
+    allocate (wcLn(2, lnx), stat=ierr);
+    call aerr('wcLn(2,lnx)', ierr, lnx)
+    allocate (wcnxy(3, numk), stat=ierr); 
+    call aerr('wcnxy(3,numk)', ierr, 3 * numk)    
+    allocate (jacorner(numk), stat=ierr)
+    call aerr('jacorner(numk)', ierr, numk)
+
+    if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
+    allocate (cscnw(nrcnw), stat=ierr); 
+    call aerr('cscnw(nrcnw)', ierr, nrcnw)
+    allocate (sncnw(nrcnw), stat=ierr); 
+    call aerr('sncnw(nrcnw)', ierr, nrcnw)
+    allocate (kcnw(nrcnw), stat=ierr); 
+    call aerr(' kcnw(nrcnw)', ierr, nrcnw)
+    allocate (nwalcnw(2, nrcnw), stat=ierr); 
+    call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
+    allocate (sfcnw(nrcnw), stat=ierr); 
+    call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
+    
+ end subroutine allocate_linktocornerweights
+    
