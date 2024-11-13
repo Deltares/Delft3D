@@ -200,7 +200,7 @@
     do L = 1, lnx
        k1 = ln(1, L); k2 = ln(2, L)
        if (abs(kcu(L)) == 2 .or. abs(kcu(L)) == 4) then ! 2D links and 1D2D lateral links
-          if (kfs_cutcell(K1) == 0) then ! kfs temporarily used as cutcell flag, set in cutcelwu
+          if (kfs_cutcell(K1) == 0) then 
              wcx1(L) = wcx1(L) * bai(k1)
              wcy1(L) = wcy1(L) * bai(k1)
           else

@@ -1026,10 +1026,10 @@
     end do
 
     ! call message ('cutcell call 4',' ',' ')
-    if (allocated(kfs)) deallocate (kfs)
+    if (allocated(kfs_cutcell)) deallocate (kfs_cutcell)
     fnam = '*.cut'
     n12 = 4
-    allocate (kfs(ndx)); kfs = 0
+    allocate (kfs_cutcell(ndx)); kfs_cutcell = 0
     call cutcell_list(n12, 2) ! CUT CELLS, N12 = 4, flag cells to be cut in kfs, prior to setlinktocenter/CORNERweights calls below
 
     call setcentertolinkorientations()

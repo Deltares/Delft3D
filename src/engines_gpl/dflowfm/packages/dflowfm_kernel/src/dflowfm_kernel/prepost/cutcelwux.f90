@@ -117,7 +117,7 @@
                        !  wu(Lf) = 0d0
                     end if
                  else if (N12 == 4) then
-                    kfs_cutcell(n) = 1 ! temporary cutcell flag, TO CHANGE LINKTOCENTER AND LINKTOCORNERSWEIGHTING FOR CUTCELLS
+                    kfs_cutcell(n) = 1 
                  end if
 
               else

@@ -298,7 +298,7 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
                         wu(Lf) = 0d0
                      end if
                   else if (N12 == 4) then
-                     kfs_cutcell(n) = 1 ! temporary cutcell flag, TO CHANGE LINKTOCENTER AND LINKTOCORNERSWEIGHTING FOR CUTCELLS
+                     kfs_cutcell(n) = 1 
                   else if (n12 == 6) then
                      jadelete = 0
                      if (KC(K1) == 1 .and. kc(k2) /= 1) then ! 1 OUTSIDE
