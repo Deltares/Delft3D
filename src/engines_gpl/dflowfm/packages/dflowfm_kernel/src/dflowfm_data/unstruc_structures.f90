@@ -1686,7 +1686,7 @@ contains
 
 !> Determine the combined number of geometry nodes for all pumps
 !! (used to determine the size of geometry variables in the his-file)
-   integer function number_of_pump_nodes
+   integer function number_of_pump_nodes()
       use m_flowparameters, only: jahispump
       use fm_external_forcings_data, only: npumpsg, L1pumpsg, L2pumpsg
       use unstruc_channel_flow, only: network

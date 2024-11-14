@@ -5295,7 +5295,7 @@ contains
 !! This is currently used for statistical output, to disable output items that
 !! would in this case produce incorrect results (as integrated values on cross-sections
 !! are only reduced every user time step, so min/max in time would not be valid)
-   function model_has_crosssections_across_partitions result(res)
+   function model_has_crosssections_across_partitions() result(res)
       use m_monitoring_crosssections, only: ncrs, crs
 
       logical :: res !< True if the crs array contains any cross-sections that lie across multiple partitions, false otherwise
