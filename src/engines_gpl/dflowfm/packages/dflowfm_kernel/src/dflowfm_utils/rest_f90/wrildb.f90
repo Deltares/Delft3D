@@ -44,11 +44,11 @@ contains
       use m_inview
 
       integer, intent(inout) :: mpol !< Open file pointer where to write to.
-      double precision, intent(in) :: XSH(NSH), YSH(NSH) !< Coordinates, polylines can be separated by dmiss value.
       integer, intent(in) :: nsh !< Number of points in polyline.
+      double precision, intent(in) :: XSH(NSH), YSH(NSH) !< Coordinates, polylines can be separated by dmiss value.
       integer, intent(in) :: namlen !< string length of names.
-      character(len=namlen), intent(in) :: names(nnam) !< Names of all polylines, header of each Tekal Block.
       integer, intent(in) :: nnam !< Number of polyline names.
+      character(len=namlen), intent(in) :: names(nnam) !< Names of all polylines, header of each Tekal Block.
       integer, intent(in) :: NCLAN(*) !< Third integer value for each point in XSH, optional: use nnclan=0 to ignore
       integer, intent(in) :: nnclan !< Size of NCLAN, use 0 to ignore.
       double precision, intent(in) :: ZSH(*) !< Third double  value for each point in XSH, optional: use nzsh=0 to ignore
