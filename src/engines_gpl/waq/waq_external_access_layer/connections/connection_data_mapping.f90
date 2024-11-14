@@ -57,7 +57,6 @@ contains
 
     !> Set the connection data for a hydrodynamics connection
     subroutine set_hydrodynamics_connection_data(connection)
-        !!use delwaq2_global_data, only: load_name
         use m_waq_memory_dimensions, only: num_cells, num_cells_bottom, num_exchanges
         use m_real_array_indices, only: ivol, iarea, iflow
         use m_string_utils, only: string_equals

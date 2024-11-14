@@ -63,7 +63,7 @@ module m_waq_external_access_layer
     public :: ext_initialize, ext_update_until, ext_finalize
 
     ! data exchange
-    public :: ext_set_var, ext_get_version_string, ext_get_attribute, ext_get_value_ptr
+    public :: ext_set_var, ext_get_version_string, ext_get_attribute, ext_get_value_ptr, ext_get_var_shape
 
     ! Define some global constants
     character(*), parameter, public :: EXT_PREFIX = "WAQ"
@@ -77,13 +77,16 @@ module m_waq_external_access_layer
 contains
 
     !> The set_var function lets the caller set a variable within DELWAQ.
-    !! Currently only used to manipulate key-value pairs that could appear
-    !! on the command line.
     function ext_set_var(c_key, xptr) result(error_code)
+        use m_connection_data_mapping
+        use m_connection_parser
         character(kind=c_char), intent(in) :: c_key(EXT_MAXSTRLEN)  !< Incoming string, determines the variable to be set
         type(c_ptr), value, intent(in) :: xptr                  !< C-pointer to the actual value to be picked up by DELWAQ
         integer(c_int) :: error_code                            !< Always returns zero - there is no error condition
 
+        type(connection_data), pointer                :: con_data
+        type(connection_data), allocatable            :: new_con_data
+        real(dp), dimension(:), pointer               :: incoming_data
         character(kind=c_char), dimension(:), pointer :: c_value => null()
         character(EXT_MAXSTRLEN) :: key_given
         character(EXT_MAXSTRLEN) :: value_given
@@ -96,49 +99,82 @@ contains
         call init_logger()
         call log%log_debug("ext_set_var started")
 
-        ! Store the key and value
+        ! Get the key and determine the required action
         key_given = char_array_to_string(c_key)
-        call c_f_pointer(xptr, c_value, [EXT_MAXSTRLEN])
 
-        call log%log_debug("Set_var: key = "//key_given)
+        if ( key_given(1:1) /= '-' ) then
+            !
+            ! Only continue processing if the key does not contain "_shape" - that
+            ! is the way DIMR passes on the shape information
+            !
+            if ( index(key_given,'_shape') == 0 ) then
+                ! Get the connection
+                con_data => connections%get_connection_by_exchange_name(key_given)
 
-        value_given = " "
-        if (associated(c_value)) then
-            do i = 1, EXT_MAXSTRLEN
-                if (c_value(i) == c_null_char) exit
-                value_given(i:i) = c_value(i)
-            end do
-        end if
+                if (.not. associated(con_data)) then
+                    new_con_data = parse_connection_string(key_given)
 
-        call log%log_debug("Set_var: value = "//value_given)
+                    if (allocated(new_con_data)) then
+                        call set_connection_data(new_con_data)
 
-        !
-        argnew = 2
-        if (value_given(1:1) == ' ') argnew = 1
-        if (key_given(1:1) == ' ') argnew = 0
-        !
-        if (argnew > 0) then
-            ! Add new arguments to argv
-            if (allocated(argv_tmp)) deallocate (argv_tmp)
-            if (allocated(argv)) then
-                argc = size(argv, 1)
-                allocate (argv_tmp(argc))
-                do iarg = 1, argc
-                    argv_tmp(iarg) = argv(iarg)
+                        ! use added connection instance
+                        con_data => connections%add_connection(new_con_data)
+                    endif
+                end if
+
+                if ( associated(con_data) ) then
+                    !
+                    ! Copy the data for later use
+                    !
+                    if ( size(con_data%p_value) > 1 ) then
+                        call c_f_pointer(xptr, incoming_data, [size(con_data%p_value)])
+                        con_data%p_value = incoming_data
+                    endif
+                endif
+            endif
+        else
+            call c_f_pointer(xptr, c_value, [EXT_MAXSTRLEN])
+
+            call log%log_debug("Set_var: key = "//key_given)
+
+            value_given = " "
+            if (associated(c_value)) then
+                do i = 1, EXT_MAXSTRLEN
+                    if (c_value(i) == c_null_char) exit
+                    value_given(i:i) = c_value(i)
                 end do
-                deallocate (argv)
-            else
-                argc = 0
             end if
-            allocate (argv(argc + argnew))
-            do iarg = 1, argc
-                argv(iarg) = argv_tmp(iarg)
-            end do
-            argv(argc + 1) = key_given
-            if (argnew == 2) then
-                argv(argc + 2) = value_given
+
+            call log%log_debug("Set_var: value = "//value_given)
+
+            !
+            argnew = 2
+            if (value_given(1:1) == ' ') argnew = 1
+            if (key_given(1:1) == ' ') argnew = 0
+            !
+            if (argnew > 0) then
+                ! Add new arguments to argv
+                if (allocated(argv_tmp)) deallocate (argv_tmp)
+                if (allocated(argv)) then
+                    argc = size(argv, 1)
+                    allocate (argv_tmp(argc))
+                    do iarg = 1, argc
+                        argv_tmp(iarg) = argv(iarg)
+                    end do
+                    deallocate (argv)
+                else
+                    argc = 0
+                end if
+                allocate (argv(argc + argnew))
+                do iarg = 1, argc
+                    argv(iarg) = argv_tmp(iarg)
+                end do
+                argv(argc + 1) = key_given
+                if (argnew == 2) then
+                    argv(argc + 2) = value_given
+                end if
             end if
-        end if
+        endif
         error_code = 0
         call log%log_debug("ext_set_var ended")
     end function ext_set_var
@@ -463,6 +499,26 @@ contains
         call log%log_debug("Get_var done "//int_to_str(con_data%buffer_idx)//real_to_str(con_data%p_value(1)))
         call log%log_debug("ext_get_current_time ended")
     end function ext_get_value_ptr
+
+    integer function ext_get_var_shape(c_var_name, shape)
+        character(kind=c_char), intent(in)    :: c_var_name(EXT_MAXSTRLEN)
+        integer(c_int)        , intent(inout) :: shape(EXT_MAXDIMS)
+
+        character(len=strlen(c_var_name))     :: var_name
+        type(connection_data), pointer        :: con_data !< current connection data object
+
+        var_name = char_array_to_string(c_var_name)
+        shape    = 0
+
+
+        con_data => connections%get_connection_by_exchange_name(var_name)
+
+        shape(1) = size(con_data%p_value)
+
+        write(88,*) 'Shape', var_name, shape(1)
+
+        ext_get_var_shape = 0
+    end function ext_get_var_shape
 
     subroutine init_logger()
         if (.not. allocated(log)) then

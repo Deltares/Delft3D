@@ -59,6 +59,17 @@ contains
         set_var = ext_set_var(c_key, xptr)
     end function set_var
 
+    !> The get_var_shape function lets the caller communicate the shape an array
+    subroutine get_var_shape(c_key, shape) bind(C, name="get_var_shape")
+        !DEC$ ATTRIBUTES DLLEXPORT::get_var_shape
+        character(kind=c_char), intent(in)        :: c_key(MAXSTRLEN)  !< Incoming string, determines the variable to be set
+        integer(c_int), dimension(*), intent(out) :: shape             !< Array of six - dimensions
+
+        integer                                   :: rc
+
+        rc = ext_get_var_shape(c_key, shape)
+    end subroutine get_var_shape
+
     ! Control
 
     !>    The initialize() function accepts a string argument that
