@@ -2,12 +2,9 @@ package testbenchMatrix
 
 import java.io.File
 import jetbrains.buildServer.configs.kotlin.*
-import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
-import jetbrains.buildServer.configs.kotlin.buildFeatures.pullRequests
-import jetbrains.buildServer.configs.kotlin.buildSteps.python
-import jetbrains.buildServer.configs.kotlin.triggers.VcsTrigger
-import jetbrains.buildServer.configs.kotlin.triggers.vcs
-import jetbrains.buildServer.configs.kotlin.buildSteps.script
+import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.buildSteps.*
+import jetbrains.buildServer.configs.kotlin.triggers.*
 
 import testbenchMatrix.Trigger
 
@@ -15,6 +12,14 @@ object Windows : BuildType({
 
     name = "Windows"
     buildNumberPattern = "%dep.${Trigger.id}.build.revisions.short%"
+
+    artifactRules = """
+        delft3d\test\deltares_testbench\data\cases\**\*.pdf      => pdf
+        delft3d\test\deltares_testbench\data\cases\**\*.dia      => logging
+        delft3d\test\deltares_testbench\data\cases\**\*.log      => logging
+        delft3d\test\deltares_testbench\logs                     => logging
+        delft3d\test\deltares_testbench\copy_cases               => copy_cases.zip
+    """.trimIndent()
 
     val filePath = "${DslContext.baseDir}/vars/dimr_testbench_table.csv"
     val lines = File(filePath).readLines()
@@ -53,6 +58,17 @@ object Windows : BuildType({
                 filterSourceBranch = "+:*"
                 ignoreDrafts = true
             }
+        }
+        commitStatusPublisher {
+            id = "Delft3D_gitlab"
+            enabled = true
+            vcsRootExtId = "${DslContext.settingsRoot.id}"
+            publisher = gitlab {
+                authType = vcsRoot()
+            }
+        }
+        perfmon {
+            id = "perfmon"
         }
     }
 

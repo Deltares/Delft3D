@@ -78,7 +78,7 @@ object Trigger : BuildType({
                      -d '<build branchName="%teamcity.build.branch%" replace="true">
                             <buildType id="${Linux.id}"/>
                             <revisions>
-                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.vcs.branch.Delft3dGitlab%">
+                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
                                     <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
                                 </revision>
                             </revisions>
@@ -116,7 +116,7 @@ object Trigger : BuildType({
                      -d '<build branchName="%teamcity.build.branch%" replace="true">
                             <buildType id="${Windows.id}"/>
                             <revisions>
-                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.vcs.branch.Delft3dGitlab%">
+                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
                                     <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
                                 </revision>
                             </revisions>

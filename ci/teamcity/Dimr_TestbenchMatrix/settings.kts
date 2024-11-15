@@ -1,6 +1,7 @@
 import jetbrains.buildServer.configs.kotlin.*
 
 import testbenchMatrix.Trigger
+import testbenchMatrix.DockerLinuxBuild
 import testbenchMatrix.Linux
 import testbenchMatrix.Windows
 import testbenchMatrix.Release
@@ -11,9 +12,10 @@ project {
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
     buildType(Trigger)
+    buildType(DockerLinuxBuild)
     buildType(Linux)
     buildType(Windows)
     buildType(Release)
 
-    buildTypesOrder = arrayListOf(Trigger, Linux, Windows, Release)
+    buildTypesOrder = arrayListOf(Trigger, DockerLinuxBuild, Linux, Windows, Release)
 }
