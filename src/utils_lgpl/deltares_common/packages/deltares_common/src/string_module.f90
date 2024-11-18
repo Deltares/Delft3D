@@ -68,6 +68,7 @@ module string_module
    public :: real2string, real2stringLeft
    public :: GetLine
    public :: int2str
+   public :: get_version_major_minor_integer
 
    interface strip_quotes
       module procedure strip_quotes1
@@ -1001,4 +1002,41 @@ module string_module
          string = trim(string11)
       end function int2str
 
-end module string_module
+      !> Get integer of major and minor version information from a FileVersion string.
+      !! VersionString should contain <<major>>.<<minor>>.
+      !! Dummy argument 'success' is set to false, when no '.' is found.
+      subroutine get_version_major_minor_integer(versionstring, major, minor, success)
+         character(len=*), intent(in   ) :: versionstring !< Version string
+         integer,          intent(  out) :: major         !< Major number in the version string
+         integer,          intent(  out) :: minor         !< Minor number in the version string
+         logical,          intent(  out) :: success       !< Returns whether dot is found in version string
+
+         integer :: idot
+         integer :: iend
+         logical :: isnum
+         
+         idot = index(versionstring, '.')
+         if (idot == 0) then
+            success = .false.
+            return
+         end if
+
+         read (versionstring(1:idot - 1), *) major
+
+         iend = idot
+         isnum = .true.
+         do while (isnum)
+            if (iend + 1 > len(versionstring)) then
+               isnum = .false.
+            elseif (scan(versionstring(iend + 1:iend + 1), '0123456789') /= 0) then
+               iend = iend + 1
+            else
+               isnum = .false.
+            end if
+         end do
+
+         read (versionstring(idot + 1:iend), *) minor
+         success = .true.
+      end subroutine get_version_major_minor_integer
+
+    end module string_module
