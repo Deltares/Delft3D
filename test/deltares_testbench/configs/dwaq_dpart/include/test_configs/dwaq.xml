@@ -7282,7 +7282,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f10_c06_partitioning" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f10_additional_modules/c06_partitioning</path>
+        <path version="2024-11-18T14:55:00">e03_waq/f10_additional_modules/c06_partitioning</path>
         <checks>
             <file name="c06_partitioning.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
