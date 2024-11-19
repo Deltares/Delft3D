@@ -31,6 +31,7 @@
 !
 
 module m_chadep
+use m_typevalue
 use m_kcir
 use m_disval1
 

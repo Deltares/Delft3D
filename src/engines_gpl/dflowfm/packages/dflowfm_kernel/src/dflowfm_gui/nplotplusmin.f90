@@ -30,6 +30,8 @@
 !
 !
 module m_n_plot_plus_min
+use m_textflow
+
    implicit none
 contains
      subroutine nPLOTPLUSMIN(IPM)

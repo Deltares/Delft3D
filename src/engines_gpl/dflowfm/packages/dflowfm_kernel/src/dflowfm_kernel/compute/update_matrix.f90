@@ -30,16 +30,25 @@
 !
 !
 
-! update overlapping ghost-parts of matrix
- subroutine update_matrix(ierror)
-!    use m_flow
-    use m_flowgeom
-    use m_reduce
-    use m_partitioninfo
-    use m_alloc
-    implicit none
+module m_update_matrix
 
-    integer, intent(out) :: ierror ! error (1) or not (0)
+implicit none
+
+private
+
+public :: update_matrix
+
+contains
+    
+!> update overlapping ghost-parts of matrix
+ subroutine update_matrix(ierror)
+    use m_flowgeom, only: ndx, lnx
+    use m_reduce, only: bbr, ccr, ddr, lv2
+    use m_partitioninfo, only: workmatbd, workmatc, numsend_sall, isendlist_sall, numsend_u, isendlist_u, &
+        itype_sall, itype_u, numghost_sall, ighostlist_sall, numghost_u, ighostlist_u, update_ghosts
+    use m_alloc
+
+    integer, intent(out) :: ierror !< error (1) or not (0)
 
     integer :: i, k, L
 
@@ -80,3 +89,5 @@
 
     return
  end subroutine update_matrix
+
+end module m_update_matrix

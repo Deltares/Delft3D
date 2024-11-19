@@ -36,6 +36,7 @@
 !! Writes his/map/rst data to the (existing) files.
 !! Note: no timings/waq output.
 subroutine flow_externaloutput_direct()
+   use m_wrirst, only: wrirst
    use m_flowtimes
    use unstruc_messages
    use time_module, only: datetime_to_string

@@ -31,6 +31,8 @@
 !
 
 module m_krec
+use m_rectangle
+
 
 implicit none
 

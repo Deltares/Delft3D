@@ -41,9 +41,9 @@ contains
     use m_samples
     use m_flowgeom, only: lnx, xu, yu
     use m_flow, only: epshu, hu
+    use m_zlin
 
     integer :: k, L
-    double precision, external :: zlin
 
     k = 0
     do L = 1, Lnx

@@ -30,6 +30,12 @@
 !
 !
 
+module m_findqorifice
+
+implicit none
+
+contains
+
 subroutine findqorifice(gateheight, crestheight, h1, h3, q, h2, hg, regime, num, qcrit) ! bepaal q en hoogte h2 achter schuif, waterstand links = h1, rechts= h4, schuif = a, alles tov bodem
    use m_qorifdif
    use m_getq1
@@ -126,3 +132,5 @@ subroutine findqorifice(gateheight, crestheight, h1, h3, q, h2, hg, regime, num,
    num = nummin
 
 end subroutine findqorifice
+
+end module m_findqorifice

@@ -30,7 +30,14 @@
 !
 !
 
+module m_textflow
+
+implicit none
+
+contains
+
  subroutine TEXTFLOW()
+    use m_setxor
     use m_ictext
     use time_module, only: seconds_to_datetimestring
     use m_flowgeom, only: ndx, lnx
@@ -43,8 +50,9 @@
     use m_transport, only: nsubsteps, numnonglobal
     use m_drawthis
     use m_get_link1
+    use m_zlin
+    use m_znod
     implicit none
-    double precision, external :: znod, zlin
     double precision :: cpuperstep, solrest, znn, dtav
     double precision :: tsteps, tsol, tstepinc
     integer :: nn, LL, nl
@@ -143,3 +151,5 @@
 
     return
  end subroutine
+
+end module m_textflow

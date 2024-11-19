@@ -30,6 +30,12 @@
 !
 !
 
+module m_textparameters
+
+implicit none
+
+contains
+
       subroutine TEXTPARAMETERS()
          use unstruc_display
          use dflowfm_version_module, only: company, product_name
@@ -228,3 +234,5 @@
          goto 30
 
       end
+
+end module m_textparameters

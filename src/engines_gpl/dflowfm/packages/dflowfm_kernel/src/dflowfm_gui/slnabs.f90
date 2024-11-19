@@ -30,6 +30,12 @@
 !
 !
 
+module m_slnabs
+
+implicit none
+
+contains
+
  subroutine slnabs(n, sx1, sy1)
     use m_shipcoor
     use m_lnabs
@@ -39,3 +45,5 @@
     call shipcoor(n, sx1, sy1, sx2, sy2)
     call lnabs(sx2, sy2)
  end subroutine slnabs
+
+end module m_slnabs

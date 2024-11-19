@@ -32,6 +32,7 @@
 
 !> net orthogonalisation and smoothing
 subroutine ORTHOGONALISENET(jarerun)
+   use m_teknet
    use m_copynetnodestosam
    use m_halt3
    use m_confrm

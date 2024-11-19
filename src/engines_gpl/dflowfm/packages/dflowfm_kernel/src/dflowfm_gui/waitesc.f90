@@ -30,6 +30,12 @@
 !
 !
 
+module m_waitesc
+
+implicit none
+
+contains
+
       subroutine WAITESC()
          implicit none
          integer :: key
@@ -39,3 +45,5 @@
          if (KEY == 27) return
          goto 10
       end
+
+end module m_waitesc

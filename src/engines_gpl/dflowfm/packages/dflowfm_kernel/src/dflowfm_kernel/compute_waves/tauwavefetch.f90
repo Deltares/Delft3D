@@ -50,6 +50,7 @@ subroutine tauwavefetch(tim)
    use m_partitioninfo
    use timers
    use m_drawthis
+   use m_getfetch, only: getfetch
 
    implicit none
 

@@ -30,6 +30,12 @@
 !
 !
 
+module m_qsun_nominal
+
+implicit none
+
+contains
+
 subroutine qsun_nominal(rlon, rlat, timhr, qs)
    use m_sferic
    use m_flowtimes, only: timjan, tzone
@@ -56,3 +62,5 @@ subroutine qsun_nominal(rlon, rlat, timhr, qs)
    snh = max(0d0, min(1d0, snh))
    qs = 1368d0 * snh * 0.76d0
 end subroutine qsun_nominal
+
+end module m_qsun_nominal

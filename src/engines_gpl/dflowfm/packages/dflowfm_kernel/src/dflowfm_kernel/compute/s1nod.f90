@@ -30,7 +30,20 @@
 !
 !
 
- subroutine s1nod() ! nodes in continuity eq
+module m_s1nod
+use m_update_matrix, only: update_matrix
+
+
+implicit none
+
+private
+
+public :: s1nod
+
+contains
+
+!> nodes in continuity eq
+ subroutine s1nod() 
     use precision_basics
     use time_module, only: seconds_to_datetimestring
     use m_plotdots
@@ -47,8 +60,6 @@
     use iso_c_utils, only: MAXSTRINGLEN
     use m_fm_icecover, only: ice_apply_pressure, ice_p
     use m_qnerror
-
-    implicit none
 
     integer :: n
     integer :: kb, k2, L, k, LL, itpbn
@@ -291,3 +302,5 @@
     end if
 
  end subroutine s1nod
+
+end module m_s1nod

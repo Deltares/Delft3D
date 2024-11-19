@@ -32,6 +32,7 @@
 
 !> Initializes a single computational timestep, call this prior to flow_perform_single_timestep.
 subroutine flow_init_single_timestep(iresult)
+   use m_flow_initimestep
    use timers
    use m_flow
    use m_flowgeom

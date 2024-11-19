@@ -30,6 +30,12 @@
 !
 !
 
+module m_duikerstoprofs
+
+implicit none
+
+contains
+
  subroutine duikerstoprofs()
     use m_netw
     use m_flowgeom
@@ -90,3 +96,5 @@
 
     end do
  end subroutine duikerstoprofs
+
+end module m_duikerstoprofs

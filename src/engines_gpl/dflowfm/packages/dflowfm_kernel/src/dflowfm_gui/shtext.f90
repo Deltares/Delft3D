@@ -30,6 +30,12 @@
 !
 !
 
+module m_shtext
+
+implicit none
+
+contains
+
  subroutine shtext(n, snum, sx1, sy1)
     use m_shipcoor
     use m_htext
@@ -39,3 +45,5 @@
     call shipcoor(n, sx1, sy1, sx2, sy2)
     call htext(snum, sx2, sy2)
  end subroutine shtext
+
+end module m_shtext

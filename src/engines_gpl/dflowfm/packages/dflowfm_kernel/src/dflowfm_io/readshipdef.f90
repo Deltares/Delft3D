@@ -30,6 +30,16 @@
 !
 !
 
+module m_readshipdef
+
+implicit none
+
+private
+
+public :: readshipdef
+
+contains
+
  subroutine readshipdef()
     use m_sferic
     use m_ship
@@ -145,3 +155,5 @@
     end if
 
  end subroutine readshipdef
+
+end module m_readshipdef

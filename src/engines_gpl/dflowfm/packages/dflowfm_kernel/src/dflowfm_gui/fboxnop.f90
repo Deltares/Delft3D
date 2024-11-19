@@ -30,6 +30,8 @@
 !
 !
 module m_fbox_nop
+use m_rectangle
+
    implicit none
 contains
       subroutine FBOXNOP(XB1, YB1, XB2, YB2)

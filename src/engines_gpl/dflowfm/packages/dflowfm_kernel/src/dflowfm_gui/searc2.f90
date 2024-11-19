@@ -30,6 +30,12 @@
 !
 !
 
+module m_searc2
+
+implicit none
+
+contains
+
       subroutine SEARC2(NAHEAD, HLPTXT, NUMTXT, LOOKUP, NUMCHC, JOFND)
          use m_okay
          implicit none
@@ -60,3 +66,5 @@
          NUMCHC = min(NUMTXT, K + 1)
          return
       end
+
+end module m_searc2

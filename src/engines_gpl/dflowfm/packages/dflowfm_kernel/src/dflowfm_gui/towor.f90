@@ -31,6 +31,12 @@
 !
 
 !
+module m_towor
+
+implicit none
+
+contains
+
       subroutine TOWOR(NX, NY, X, Y)
          implicit none
          integer :: nx
@@ -44,3 +50,5 @@
          Y = dble(ry)
          return
       end
+
+end module m_towor

@@ -29,6 +29,13 @@
 
 !
 module m_sethu
+   use m_setveg, only: setveg
+   use m_sets01zbnd, only: sets01zbnd
+   use m_get_upstream_downstream_cell_numbers
+   use m_get_lkbot_set_ltop_upwind
+   use m_getucxucynoweirs
+   use m_enloss
+   use m_adjust_bobs_for_dams_and_structs, only: adjust_bobs_for_dams_and_structs
    use stdlib_kinds, only: dp
 
    private

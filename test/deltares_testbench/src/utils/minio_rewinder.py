@@ -132,12 +132,10 @@ class Rewinder:
             Get past versions of the objects in MinIO. Rewind time to this timestamp.
         """
         rewind_timestamp = rewind_timestamp or datetime.now(timezone.utc)
-
-        def rewind(versions: Iterable[MinioObject], timestamp: datetime) -> Optional[MinioObject]:
-            return next((obj for obj in versions if timestamp >= obj.last_modified), None)
-
         object_map = self.__object_versions_grouped_by_key(S3Path.from_bucket(bucket) / source_path)
-        rewinded_versions = (rewind(versions, rewind_timestamp) for versions in object_map.values())
+        rewinded_versions = (
+            self.__get_rewinded_version(versions, rewind_timestamp) for versions in object_map.values()
+        )
         downloads = [v for v in rewinded_versions if v and not v.is_delete_marker]
         if not downloads:
             self._logger.error(f"No downloads found in bucket {bucket} at {source_path}")
@@ -359,16 +357,12 @@ class Rewinder:
         List[VersionPair]
             Return list of conficts between `timestamp` and now.
         """
-
-        def get_rewinded_version(versions: Iterable[MinioObject], timestamp: datetime) -> Optional[MinioObject]:
-            return next((obj for obj in versions if timestamp >= obj.last_modified), None)
-
         object_map = self.__object_versions_grouped_by_key(prefix)
         version_pairs = [
             pair
             for pair in (
                 VersionPair(
-                    rewinded_version=get_rewinded_version(versions, timestamp),
+                    rewinded_version=self.__get_rewinded_version(versions, timestamp),
                     latest_version=versions[0],
                 )
                 for versions in object_map.values()
@@ -381,6 +375,59 @@ class Rewinder:
                 pair.latest_version = self.__add_object_tags(pair.latest_version)
 
         return version_pairs
+
+    def list_objects(
+        self,
+        prefix: S3Path,
+        timestamp: Optional[datetime] = None,
+        include_delete_markers: bool = False,
+        add_tags: bool = False,
+    ) -> Iterable[MinioObject]:
+        """List objects in Minio at given timestamp.
+
+        If the `timestamp` is not provided, get the latest versions of the objects.
+
+        Parameters
+        ----------
+        prefix : S3Path
+            S3 Prefix of a set of objects in MinIO.
+        timestamp : Optional[datetime], optional
+            List the MinIO objects at this point in time. Or list the latest objects
+            if `timestamp` is `None`.
+        add_tags : bool, optional
+            Request and attach the object tags to the latest minio object. Default: `False`.
+        include_delete_markers : bool, optional
+            If `False`, filter out delete markers. Default: `False`
+
+        Returns
+        -------
+        Iterable[MinioObject]
+        """
+        if timestamp is None:
+            timestamp = datetime.max.replace(tzinfo=timezone.utc)
+
+        object_map = self.__object_versions_grouped_by_key(prefix)
+        objects: Iterable[MinioObject] = (
+            rewinded_version
+            for versions in object_map.values()
+            if (rewinded_version := self.__get_rewinded_version(versions, timestamp)) is not None
+        )
+
+        if not include_delete_markers:
+            # Filter out delete markers.
+            objects = (obj for obj in objects if not obj.is_delete_marker)
+
+        if add_tags:
+            return (self.__add_object_tags(obj) for obj in objects)
+        return objects
+
+    @staticmethod
+    def __get_rewinded_version(versions: Iterable[MinioObject], timestamp: datetime) -> Optional[MinioObject]:
+        """Get rewinded version of object.
+
+        Note: Make sure `versions` is sorted in *descending* order.
+        """
+        return next((obj for obj in versions if obj.last_modified <= timestamp), None)  # type: ignore
 
     def __object_versions_grouped_by_key(self, prefix: S3Path) -> Mapping[str, List[MinioObject]]:
         """List object versions in MinIO by `prefix` and group them by object key.

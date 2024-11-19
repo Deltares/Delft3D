@@ -30,8 +30,13 @@
 !
 !
 
+module m_zcorn
+
+implicit none
+
+contains
+
  double precision function zcorn(k) ! get various values at flow cell corners
-    use m_flow
     use m_flowgeom
     use m_drawthis
     implicit none
@@ -47,3 +52,5 @@
        zcorn = sqrt(ucnx(k) * ucnx(k) + ucny(k) * ucny(k))
     end if
  end function zcorn
+
+end module m_zcorn

@@ -30,6 +30,18 @@
 !
 !
 
+module m_update_verticalprofiles
+use m_vertical_profile_u0, only: vertical_profile_u0
+
+
+implicit none
+
+private
+
+public :: update_verticalprofiles
+
+contains
+
 subroutine update_verticalprofiles()
 !c************************************************************************
 !c
@@ -44,17 +56,18 @@ subroutine update_verticalprofiles()
 !c         Programmer: R.E. Uittenbogaard
 !c************************************************************************
 
+   use m_getustbcfuhi
+   use m_doaddksources, only: doaddksources
    use m_flow
-   use m_flowgeom
+   use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
    use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
-   use m_partitioninfo
+   use m_partitioninfo, only: jampi, itype_sall3d, update_ghosts
    use m_flowtimes
-   use m_ship
    use m_sferic
-   use m_missing
    use m_get_kbot_ktop
    use m_get_Lbot_Ltop
    use m_links_to_centers, only: links_to_centers
+   use m_setrho, only: setrhofixedp
 
    implicit none
 
@@ -69,7 +82,6 @@ subroutine update_verticalprofiles()
    double precision :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL, prsappr
    integer :: k, ku, kb, kt, n, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
    integer :: k1, k2, k1u, k2u, n1, n2, kup, ierror
-   double precision, external :: setrhofixedp
 
    if (iturbulencemodel <= 0 .or. kmx == 0) return
 
@@ -1064,3 +1076,5 @@ subroutine update_verticalprofiles()
    call links_to_centers(vicwws, vicwwu)
 
 end subroutine update_verticalprofiles
+
+end module m_update_verticalprofiles

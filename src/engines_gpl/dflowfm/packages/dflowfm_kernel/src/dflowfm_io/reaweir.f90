@@ -30,6 +30,16 @@
 !
 !
 
+module m_reaweir
+
+implicit none
+
+private
+
+public :: reaweir
+
+contains
+
       subroutine REAweir(MMDD, JA)
          use m_missing
          use m_fixedweirs
@@ -89,3 +99,5 @@
          call DOCLOSE(MMDD)
          JA = 0
       end subroutine REAWEIR
+
+end module m_reaweir

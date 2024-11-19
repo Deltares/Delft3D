@@ -30,12 +30,21 @@
 !
 !
 
- subroutine setkfs() ! set kfs
-    use m_flow
-    use m_flowgeom
-    use m_flowtimes
+module m_setkfs
 
-    implicit none
+implicit none
+
+private
+
+public :: setkfs
+
+contains
+
+!> set kfs
+ subroutine setkfs() 
+    use m_flow, only: ivariableteta, hu, nbndz, kbndz, nbndu, kbndu, qin
+    use m_flowgeom, only: kfs, ndx, lnx, ln, teta
+ !   use m_flowtimes
 
     integer :: L
     integer :: n, kb, ki, ndn
@@ -93,3 +102,5 @@
     end do
 
  end subroutine setkfs
+
+end module m_setkfs

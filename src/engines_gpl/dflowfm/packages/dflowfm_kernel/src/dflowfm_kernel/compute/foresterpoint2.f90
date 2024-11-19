@@ -30,6 +30,12 @@
 !
 !
 
+module m_foresterpoint2
+
+implicit none
+
+contains
+
 subroutine foresterpoint2(constituents, numconst, ndkx, itemp, vol, a, d, km, kmxx, kb, maxit, ip)
    use m_flow, only: eps6, eps10
    implicit none
@@ -77,3 +83,5 @@ subroutine foresterpoint2(constituents, numconst, ndkx, itemp, vol, a, d, km, km
    end if
 
 end subroutine foresterpoint2
+
+end module m_foresterpoint2

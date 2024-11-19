@@ -30,6 +30,12 @@
 !
 !
 
+module m_zlin
+
+implicit none
+
+contains
+
  double precision function zlin(LL) ! get various values at flow links
     use m_getltoplot
     use m_flow
@@ -287,3 +293,5 @@
     end if
 
  end function zlin
+
+end module m_zlin

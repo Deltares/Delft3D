@@ -30,6 +30,12 @@
 !
 !
 
+module m_wearel
+
+implicit none
+
+contains
+
       subroutine WEAREL()
          use m_minmaxworld
          use m_inilca
@@ -49,3 +55,5 @@
          !ENDIF
          return
       end
+
+end module m_wearel

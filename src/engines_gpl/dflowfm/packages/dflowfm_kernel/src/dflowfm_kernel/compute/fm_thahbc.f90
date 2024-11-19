@@ -50,6 +50,12 @@
 !
 !!--declarations----------------------------------------------------------------
 
+module m_fm_thahbc
+
+implicit none
+
+contains
+
    subroutine fm_thahbc()
 
       use fm_external_forcings_data
@@ -177,3 +183,5 @@
       end do
    end subroutine
 
+
+end module m_fm_thahbc

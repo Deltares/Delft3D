@@ -30,6 +30,8 @@
 !
 !
 module m_fbox
+use m_rectangle
+
    implicit none
 contains
    subroutine FBOX(X1, Y1, X2, Y2)

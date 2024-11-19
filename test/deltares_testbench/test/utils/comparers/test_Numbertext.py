@@ -14,7 +14,7 @@ from src.utils.comparers.number_text_comparer import NumberTextComparer
 from test.utils.test_logger import TestLogger
 
 
-def is_Nan(number) -> bool:
+def is_nan(number: float) -> bool:
     return number != number
 
 
@@ -79,6 +79,6 @@ class TestNumberTextComparer:
         assert not result_structure.passed
         assert not result_structure.error
         assert result_structure.result == "NOK"
-        assert is_Nan(result_structure.max_abs_diff)
+        assert is_nan(result_structure.max_abs_diff)
         assert result_structure.max_abs_diff_coordinates == (4, 4)
         assert pytest.approx(result_structure.max_rel_diff) == 1.0

@@ -31,6 +31,7 @@
 !
 
 subroutine CUTCELWU(n12, jamasks, ipoly)
+   use m_tekpolygon
    use m_netw
    use m_flowgeom
    use kdtree2Factory

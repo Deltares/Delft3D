@@ -30,10 +30,17 @@
 !
 !
 
-double precision function rho_Eckart(sal, temp)
-! use m_physcoef
+module m_rho_eckart
 
-   implicit none
+implicit none
+
+private
+
+public :: rho_eckart
+
+contains
+
+double precision function rho_Eckart(sal, temp)
    double precision :: sal, temp
    double precision :: cp1, clam1, temp2
    double precision :: cp0, clam0, clam
@@ -53,3 +60,5 @@ double precision function rho_Eckart(sal, temp)
 ! rho_Eckart = 0.7d0*saL + 1000d0
 
 end function rho_Eckart
+
+end module m_rho_eckart

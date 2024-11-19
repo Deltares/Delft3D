@@ -31,6 +31,7 @@
 !
 
  subroutine flow_spatietimestep() ! do flowstep
+    use m_setzcs, only: setzcs
     use m_flowtimes
     use m_flowgeom, only: ndx
     use m_flowparameters, only: janudge

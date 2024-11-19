@@ -30,6 +30,12 @@
 !
 !
 
+module m_tektxt
+
+implicit none
+
+contains
+
       subroutine TEKTXT()
          use m_wearelt
          use m_set_col
@@ -83,3 +89,5 @@
 
          return
       end
+
+end module m_tektxt

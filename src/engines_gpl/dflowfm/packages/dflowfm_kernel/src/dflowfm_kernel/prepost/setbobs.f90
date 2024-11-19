@@ -30,6 +30,8 @@
 !
 !
 module m_set_bobs
+use m_duikerstoprofs
+
    implicit none
 contains
  subroutine setbobs() ! and set blu, weigthed depth at u point

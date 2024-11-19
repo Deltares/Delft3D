@@ -29,8 +29,30 @@
 
 !
 !
-!< Intialise flow timestep, also called once after flowinit.
+!> Intialise flow timestep, also called once after flowinit.
+module m_flow_initimestep
+use m_compute_wave_parameters, only: compute_wave_parameters
+use m_compute_wave_forcing_rhs, only: compute_wave_forcing_rhs
+use m_fillsystem_advec, only: fillsystem_advec
+use m_setumod, only: setumod
+use m_settaubxu_nowave, only: settaubxu_nowave
+use m_setship, only: setship
+use m_setkfs, only: setkfs
+use m_setdt, only: setdt
+use m_setcfuhi, only: setcfuhi
+use m_setbaptist, only: setbaptist
+use m_makeq1qaatstart
+use m_pillar_upd
+use m_heatu
+
+
+implicit none
+
+contains
+
  subroutine flow_initimestep(jazws0, set_hu, use_u1, iresult)
+    use m_bathyupdate, only: bathyupdate
+    use m_advecdriver, only: advecdriver
     use timers
     use m_flowtimes
     use m_flow
@@ -209,3 +231,5 @@
 888 continue
     ! Error
  end subroutine flow_initimestep
+
+end module m_flow_initimestep

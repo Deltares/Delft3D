@@ -30,18 +30,29 @@
 !
 !
 
- subroutine QucPer3Dsigmapiaczekteta(LL, Lb, Lt, cs, sn, ae, ai) ! Piaczekteta in 3D
+module m_qucper3dsigmapiaczekteta
 
-    use m_flow ! advect the cell center velocities (dimension: m4/s2)
+implicit none
+
+private
+
+public :: qucper3dsigmapiaczekteta
+
+contains
+
+!> Piaczekteta in 3D
+!! advect the cell center velocities (dimension: m4/s2)
+ subroutine QucPer3Dsigmapiaczekteta(LL, Lb, Lt, cs, sn, ae, ai) 
+
+    use m_flow 
     use m_flowgeom
-    use m_flowtimes, only: dts !
+    use m_flowtimes, only: dts
     use m_sferic
-    implicit none
 
-    integer, intent(in) :: LL, Lb, Lt ! working for basis link LL
+    integer, intent(in) :: LL, Lb, Lt !< working for basis link LL
     double precision, intent(in) :: cs, sn
-    double precision, intent(out) :: ae(Lt - Lb + 1) ! explicit part
-    double precision, intent(out) :: ai(Lt - Lb + 1) ! implicit part
+    double precision, intent(out) :: ae(Lt - Lb + 1) !< explicit part
+    double precision, intent(out) :: ai(Lt - Lb + 1) !< implicit part
 
     ! locals
     integer :: La, LLL, LLLL, Lb2, Lt2, Lk ! for links LL,
@@ -106,3 +117,5 @@
     end do
 
  end subroutine QucPer3Dsigmapiaczekteta
+
+end module m_qucper3dsigmapiaczekteta

@@ -30,6 +30,9 @@
 !
 !
 module m_zoomin
+use m_wearel
+use m_setxor
+use m_setwynew
 use m_orglocator
 use m_inqasp
 

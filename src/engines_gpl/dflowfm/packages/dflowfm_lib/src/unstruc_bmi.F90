@@ -35,6 +35,8 @@
 #define no_warning_unused_variable(x) associate( x => x ); end associate
 
 module bmi
+   use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
+   use m_write_some_final_output, only: write_some_final_output
    use iso_c_binding
    use unstruc_api
    use m_gui ! this should be removed when jaGUI = 0 by default
@@ -63,6 +65,7 @@ module bmi
    use m_nearfield
    use m_VolumeTables, only: vltb, vltbonlinks, ndx1d
    use m_update_land_nodes
+   use m_find_name, only: find_name
 
    implicit none
 
@@ -88,7 +91,6 @@ module bmi
    real(c_double), target, allocatable, save :: TcrEro(:, :)
    real(c_double), target, allocatable, save :: TcrSed(:, :)
    integer, private :: iconst
-   integer, external :: findname
 
    integer(c_int), parameter :: var_count_compound = 11 ! pumps, weirs, orifices, gates, generalstructures, culverts, sourcesinks, dambreak, observations, crosssections, laterals ! TODO: AvD: temp, as long as this is not templated
 contains
@@ -484,7 +486,7 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: finalize
       use m_partitioninfo
 
-      call writesomefinaloutput()
+      call write_some_final_output()
 
       if (jampi == 1) then
 !        finalize before exit
@@ -778,7 +780,7 @@ contains
       end select
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          type_name = "double"
@@ -851,7 +853,7 @@ contains
       end select
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          rank = 1
@@ -983,7 +985,7 @@ contains
       include "bmi_get_var_shape.inc"
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          shape(1) = ndkx
@@ -1293,7 +1295,7 @@ contains
       ! TODO: AvD: add returns to all auto generated cases to avoid unnecessary fall-through
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          call realloc(const_t, (/ndkx, numconst/), keepExisting=.true.)
@@ -1583,7 +1585,7 @@ contains
       end select
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          call c_f_pointer(xptr, x_1d_double_ptr, (/ndkx/))
@@ -1748,7 +1750,7 @@ contains
       end select
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
@@ -2221,7 +2223,7 @@ contains
          case default
             !       assume this is a tracer
             !       get constituent number for this tracer
-            iconst = findname(NUMCONST, const_names, field_name)
+            iconst = find_name(const_names, field_name)
 
             if (iconst == 0) then
                !          tracer not found
@@ -2373,7 +2375,7 @@ contains
       case ('water_temperature')
          constituent_index = ITEMP
       case default
-         constituent_index = findname(NUMCONST, const_names, constituent_name)
+         constituent_index = find_name(const_names, constituent_name)
          if (iconst == 0) then
             !        tracer not found
             c_lateral_pointer = c_null_ptr

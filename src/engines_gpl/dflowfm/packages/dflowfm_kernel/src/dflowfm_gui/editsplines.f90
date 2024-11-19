@@ -31,6 +31,8 @@
 !
 
 module m_editsplines
+use m_selecteditmode
+
 
 implicit none
 

@@ -30,6 +30,8 @@
 !
 !
 module m_tek_num_netcells
+use m_settextsizefac
+use m_settextsize
 use m_kcir
 
    implicit none

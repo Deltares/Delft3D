@@ -30,7 +30,23 @@
 !
 !
 
+module m_setship
+use m_volship, only: volship
+
+
+implicit none
+
+private
+
+public :: setship
+
+contains
+
  subroutine setship()
+    use m_setpressurehull, only: setpressurehull
+    use m_afhouwendammit, only: afhouwendammit
+    use m_addship2d, only: addship2D
+    use m_readshipdef, only: readshipdef
     use m_getshipcontrol
     use m_netw
     use m_flowgeom
@@ -846,3 +862,5 @@
 
     iniship = 1
  end subroutine setship
+
+end module m_setship

@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekgrpt
+
+implicit none
+
+contains
+
       subroutine TEKGRPT(X, Y, mmax, nmax, MC, NC, MP, NP, NCOL)
 !     TEKEN GRIDLIJNEN UITKOMEND OP DIT PUNT
          use m_missing
@@ -78,3 +84,5 @@
          end if
          return
       end
+
+end module m_tekgrpt

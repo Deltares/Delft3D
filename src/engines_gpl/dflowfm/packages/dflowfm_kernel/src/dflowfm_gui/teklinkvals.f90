@@ -30,6 +30,12 @@
 !
 !
 
+module m_teklinkvals
+
+implicit none
+
+contains
+
   subroutine TEKLINKVALS(MET)
      use m_isocol2
      use m_drcirc
@@ -145,3 +151,5 @@
 
      return
   end subroutine TEKLINKVALS
+
+end module m_teklinkvals

@@ -33,7 +33,10 @@ module unstruc_display
 !! Handles all display settings and screen plotting for Unstruc
 !! (Not yet, a lot is still in REST.F90 [AvD])
 
-!
+   use m_setwynew
+   use m_setwor
+   use m_settextsizefac
+   use m_settextsize
    use m_plotdiamond
    use m_plotcross
    use m_minmaxworld
@@ -479,10 +482,11 @@ contains
       use m_pfiller
       use m_gtext
       use m_inview
+      use m_znod
 
       integer :: n, NN, K, kb, kt
       character(len=40) :: tex
-      double precision :: znod, temb, temt
+      double precision :: temb, temt
 
       if (ndrawobs == 1) return
 
@@ -1218,6 +1222,8 @@ contains
       use m_1d_structures
       use m_Pump
       use m_Culvert
+      use m_zlin
+      use m_znod
       implicit none
 
       integer, intent(in) :: LL !< flow link number
@@ -1229,7 +1235,6 @@ contains
       integer :: L ! net link number
       integer :: line_max ! maximal line number
       integer :: branchindex, ilocallin, nstruc, istrtype, i
-      double precision, external :: zlin, znod
       type(t_pump), pointer :: ppump
       type(t_culvert), pointer :: pculvert
 
@@ -1456,73 +1461,6 @@ subroutine zoomshift(nshift) ! based on polygon
    call setwor(x1, y1, x2, y2)
    ndraw(10) = 1 ! wel plotten
 end subroutine zoomshift
-
-subroutine tekship()
-   use m_ship
-   use m_set_col
-   use m_movabs
-   use m_lnabs
-   implicit none
-   double precision :: sx2, sy2, css, sns, rr, cr, sr, snum
-   integer :: n
-   if (iniship == 0) return
-
-   call setcol(4)
-
-   do n = 1, nshiptxy
-      css = cos(shi(n)); sns = sin(shi(n))
-
-      call smovabs(n, 1.0d0, 0.0d0)
-      call slnabs(n, 0.9d0, -1.0d0)
-      call slnabs(n, -1.0d0, -1.0d0)
-      call slnabs(n, -1.0d0, 1.0d0)
-      call slnabs(n, 0.9d0, 1.0d0)
-      call slnabs(n, 1.0d0, 0.0d0)
-
-      snum = css * fx2(n) + sns * fy2(n) ! pressure force in shipL dir
-      call shtext(n, snum, -1.3d0, 0d0)
-
-      snum = -sns * fx2(n) + css * fy2(n) ! pressure force in shipB dir
-      call shtext(n, snum, -1.3d0, 1d0)
-
-      snum = fm2(n) / shL(n) ! pressure mom vertical ax
-      call shtext(n, snum, -1.3d0, -1d0)
-
-      snum = css * fricx(n) + sns * fricy(n) ! fric force in shipL dir
-      call shtext(n, snum, 1.3d0, 0d0)
-
-      snum = -sns * fricx(n) + css * fricy(n) ! fric force in shipB dir
-      call shtext(n, snum, 1.3d0, 1d0)
-
-      snum = fricm(n) / shL(n) ! fric mom vertical ax
-      call shtext(n, snum, 1.3d0, -1d0)
-
-      snum = css * stuwx(n) + sns * stuwy(n) ! stuwforce in shipL dir
-      call shtext(n, snum, -0.8d0, 0d0)
-
-      snum = -sns * stuwx(n) + css * stuwy(n) ! stuwforce in shipB dir
-      call shtext(n, snum, -0.8d0, 1d0)
-
-      snum = stuwm(n) / shL(n) ! stuwmom vertical ax normalised by half length
-      call shtext(n, snum, -0.8d0, -1d0)
-
-      snum = css * shu(n) + sns * shv(n) ! snelheid in shipL dir
-      call shtext(n, snum, -0.d0, 0d0)
-
-      snum = -sns * shu(n) + css * shv(n) ! snelheid in shipB dir
-      call shtext(n, snum, -0.0d0, 1.1d0)
-
-      snum = sho(n) ! ronjes/minuut vertical ax
-      call shtext(n, snum * 60d0 / 6.28d0, -0.d0, -1.1d0)
-
-      sx2 = shx(n) - shL(n) * css ! rudder
-      sy2 = shy(n) - shL(n) * sns
-      call movabs(sx2, sy2)
-      rr = 0.4d0 * shb(n); cr = cos(shi(n) + roer(n)); sr = sin(shi(n) + roer(n))
-      call lnabs(sx2 - rr * cr, sy2 - rr * sr)
-
-   end do
-end subroutine tekship
 
 subroutine tekwindvector()
    use m_wind

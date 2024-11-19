@@ -43,6 +43,7 @@ subroutine comp_tmax_other(mc, jlay, xc, yc, vel, mc1, xc1, yc1, vel1, idx1, tma
    use m_spline2curvi, only: dtolLR
    use geometry_module, only: dbdistance
    use m_get_lr
+   use m_comp_cross_time_2, only: comp_cross_time_2
 
    implicit none
 
@@ -74,8 +75,6 @@ subroutine comp_tmax_other(mc, jlay, xc, yc, vel, mc1, xc1, yc1, vel1, idx1, tma
 
    integer :: i, j, i1, j1, i2, j2, iL, iR, nummax, idum, imin, imax
    integer :: iLL, iRR, jsferic_old
-
-   double precision, external :: comp_cross_time_2
 
    double precision, parameter :: dtol = 1d-8
 !   double precision, parameter                        :: dtolLR= 1d-2

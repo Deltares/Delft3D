@@ -30,6 +30,12 @@
 !
 !
 
+module m_qucnu
+
+implicit none
+
+contains
+
  double precision function Qucnu(n12, L) ! sum of (Q*uc cell centre upwind normal) at side n12 of link L
     use m_flow ! advect the cell center velocities (dimension: m4/s2)
     use m_flowgeom ! leaving the cell = +
@@ -80,3 +86,5 @@
     end do
 
  end function Qucnu
+
+end module m_qucnu

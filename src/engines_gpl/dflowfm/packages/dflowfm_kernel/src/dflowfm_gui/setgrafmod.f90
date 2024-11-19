@@ -30,6 +30,12 @@
 !
 !
 
+module m_setgrafmod
+
+implicit none
+
+contains
+
       subroutine SETGRAFMOD()
          use m_devices
          implicit none
@@ -53,3 +59,5 @@
 !     ENDIF
          return
       end
+
+end module m_setgrafmod

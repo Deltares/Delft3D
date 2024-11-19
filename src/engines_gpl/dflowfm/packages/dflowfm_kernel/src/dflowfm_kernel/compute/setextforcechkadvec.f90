@@ -28,6 +28,12 @@
 !-------------------------------------------------------------------------------
 
  subroutine setextforcechkadvec()
+    use m_get_spiralforce
+    use m_get_spiral3d
+    use m_comp_gravinput, only: comp_GravInput
+    use m_anticreep, only: anticreep
+    use m_add_internaltidesfrictionforces, only: add_InternalTidesFrictionForces
+    use m_addbaroclinicpressure, only: addbaroclinicpressure
     use m_flow
     use m_flowparameters, only: trshcorio
     use m_flowgeom

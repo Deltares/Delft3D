@@ -30,7 +30,18 @@
 !
 !
 
+module m_setequilibriumsedimentbnds
+
+implicit none
+
+private
+
+public :: setequilibriumsedimentbnds
+
+contains
+
 subroutine setequilibriumsedimentbnds(nbnd, n4, kbnd, kban, i01)
+   use m_getequilibriumtransportrates2, only: getequilibriumtransportrates2
    use m_flow
    use m_flowgeom
    use m_sediment
@@ -78,3 +89,5 @@ subroutine setequilibriumsedimentbnds(nbnd, n4, kbnd, kban, i01)
    end do
 
 end subroutine setequilibriumsedimentbnds
+
+end module m_setequilibriumsedimentbnds

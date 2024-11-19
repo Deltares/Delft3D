@@ -33,6 +33,12 @@
 !> Module with subroutines for bed level update.
 module m_fm_bott3d
 
+   use m_fm_adjust_bedload, only: fm_adjust_bedload
+   use m_duneaval, only: duneaval
+   use m_compthick, only: compthick
+   use m_collectcumultransports, only: collectcumultransports
+   use m_bndmorlyr, only: bndmorlyr
+   use m_bermslopenudging, only: bermslopenudging
    use precision
 
    implicit none

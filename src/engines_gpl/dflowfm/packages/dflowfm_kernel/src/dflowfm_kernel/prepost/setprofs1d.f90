@@ -32,6 +32,8 @@
 
  subroutine setprofs1D()
 
+    use m_readprofilesloc
+    use m_readprofilesdef
     use m_flowgeom
     use m_flow
     use UNSTRUC_MODEL

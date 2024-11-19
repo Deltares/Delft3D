@@ -30,8 +30,18 @@
 !
 !
 
+module m_teknet
+use m_tekxz
+
+
+implicit none
+
+contains
+
       subroutine TEKNET(ja)
 
+         use m_tekfaces
+         use m_setlinkcolour
          use m_cir
          use m_netw
          use geometry_module, only: dbdistance
@@ -220,3 +230,5 @@
 
          return
       end subroutine TEKNET
+
+end module m_teknet

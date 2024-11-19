@@ -31,12 +31,17 @@
 !
 
 module m_editflow
+use m_write_flowdiff, only: write_flowdiff
+use m_viewcycle
+use m_typevalue
+use m_textflow
+use m_tekprofs
+use m_selecteditmode
 use m_plotklnup
 use m_moveprobe
 use m_minmxnds
 use m_highlight_nodesnlinks
 use m_getstring
-
 
 implicit none
 
@@ -67,6 +72,7 @@ contains
         use m_k_plot_plus_min
         use m_draw_nu
         use m_set_col
+        use m_znod
 
         integer :: MODE, KEY, kb, kt, k, NL
         integer :: newmode
@@ -75,7 +81,7 @@ contains
         integer :: num
         integer :: numb
         integer :: nwhat
-        double precision :: xp, yp, zp, ZNOD
+        double precision :: xp, yp, zp
 
         integer :: i, Nin, Nout, ierror
         double precision, dimension(:), allocatable :: xin, yin, xout, yout ! testing, for snappol

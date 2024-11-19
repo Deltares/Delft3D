@@ -30,6 +30,8 @@
 !
 !
 module m_tek_link
+use m_setlinkcolour
+
    implicit none
 contains
   subroutine TEKLINK(L, NCOL)

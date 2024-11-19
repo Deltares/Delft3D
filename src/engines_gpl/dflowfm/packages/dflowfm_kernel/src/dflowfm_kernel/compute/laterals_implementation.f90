@@ -90,7 +90,7 @@ contains
    module subroutine average_concentrations_for_laterals(num_const, kmx, kmxn, cell_volume, constituents, dt)
 
       use m_alloc, only: aerr
-      use m_get_kbot_ktop
+      use m_get_kbot_ktop, only: getkbotktop
 
       integer, intent(in) :: num_const !< Number or constituents.
       integer, intent(in) :: kmx !< Number of layers (0 means 2D computation).
@@ -190,7 +190,7 @@ contains
    module subroutine get_lateral_volume_per_layer(lateral_volume_per_layer)
 
       use m_flow, only: vol1, kmx, kmxn
-      use m_get_kbot_ktop
+      use m_get_kbot_ktop, only: getkbotktop
 
       real(kind=dp), dimension(:, :), intent(out) :: lateral_volume_per_layer !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
 
@@ -236,7 +236,7 @@ contains
    module subroutine distribute_lateral_discharge(provided_lateral_discharge, lateral_discharge_per_layer_lateral_cell)
 
       use m_flow, only: vol1, kmx, kmxn
-      use m_get_kbot_ktop
+      use m_get_kbot_ktop, only: getkbotktop
 
       real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per layer
       real(kind=dp), dimension(:, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge per layer

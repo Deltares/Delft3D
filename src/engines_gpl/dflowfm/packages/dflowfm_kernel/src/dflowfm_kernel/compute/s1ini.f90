@@ -30,7 +30,21 @@
 !
 !
 
- subroutine s1ini() ! links in continuity eq.
+module m_s1ini
+use m_setgrwflowexpl, only: setgrwflowexpl
+use m_setsorsin, only: setsorsin
+
+
+implicit none
+
+private
+
+public :: s1ini
+
+contains
+    
+!> links in continuity eq.
+ subroutine s1ini() 
     use precision_basics, only: dp
     use m_flow
     use m_flowgeom
@@ -43,7 +57,6 @@
     use m_partitioninfo
     use m_laterals, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
                          apply_transport
-    implicit none
 
     integer :: L, k1, k2, k, LL, kt, idim, imba, i_lat, i_node
     double precision :: aufu, auru, tetau
@@ -353,3 +366,5 @@
     end if
 
  end subroutine s1ini
+
+end module m_s1ini

@@ -93,7 +93,7 @@ class PublicWikiHelper(object):
             Tuple[str, str]: A tuple containing the Windows and Linux artifacts respectively.
         """
         latest_dimr_collector_release_build_id = self.__teamcity.get_latest_build_id_for_build_type_id(
-            build_type_id=DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID)
+            build_type_id=TEAMCITY_IDS.DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID.value)
 
         windows_version_artifact = self.__teamcity.get_build_artifact(build_id=latest_dimr_collector_release_build_id,
                                                                       path_to_artifact=PATH_TO_WINDOWS_VERSION_ARTIFACT)
@@ -123,7 +123,7 @@ class PublicWikiHelper(object):
             str: The Summary.txt artifact.
         """
         latest_dimr_collector_release_signed_build_id = self.__teamcity.get_latest_build_id_for_build_type_id(
-            build_type_id=DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID)
+            build_type_id=TEAMCITY_IDS.DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID.value)
 
         summary_artifact = self.__teamcity.get_build_artifact(build_id=latest_dimr_collector_release_signed_build_id,
                                                               path_to_artifact=PATH_TO_DIMR_COLLECTOR_RELEASE_SIGNED_ARTIFACT)
@@ -147,10 +147,10 @@ class PublicWikiHelper(object):
             Tuple[str, str]: The number of unsigned files and the number of total files respectively.
         """
         latest_dimr_collector_release_signed_build_id = self.__teamcity.get_latest_build_id_for_build_type_id(
-            build_type_id=DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID)
+            build_type_id=TEAMCITY_IDS.DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID.value)
 
         dimr_collector_release_builds = self.__teamcity.get_builds_for_build_type_id(
-            build_type_id=DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID,
+            build_type_id=TEAMCITY_IDS.DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID.value,
             limit=2,
             include_failed_builds=False,
             pinned="true")
@@ -317,7 +317,7 @@ class PublicWikiHelper(object):
             str: The content.
         """
         latest_dimr_release_testbench_build_id = self.__teamcity.get_latest_build_id_for_build_type_id(
-            build_type_id=DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID)
+            build_type_id=TEAMCITY_IDS.DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID.value)
         release_testbench_artifact = self.__teamcity.get_build_artifact(latest_dimr_release_testbench_build_id,
                                                                         PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT)
 

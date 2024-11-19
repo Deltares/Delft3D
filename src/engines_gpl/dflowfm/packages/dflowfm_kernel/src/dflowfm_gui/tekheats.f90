@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekheats
+
+implicit none
+
+contains
+
   subroutine TEKHEATS(TIMNOW)
      use m_heatfluxes
      use m_gtext
@@ -45,3 +51,5 @@
 
      return
   end
+
+end module m_tekheats

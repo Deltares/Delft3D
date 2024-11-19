@@ -32,6 +32,7 @@
 
 !> Refine entire current polyline from start to end.
       subroutine refinepolygon()
+         use m_typevalue
          use m_polygon !, only: npl, dxuni
          use m_tpoly
          use m_sferic

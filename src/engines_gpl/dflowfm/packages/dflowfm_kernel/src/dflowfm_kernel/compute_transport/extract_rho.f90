@@ -30,6 +30,16 @@
 !
 !
 
+module m_extract_rho
+
+implicit none
+
+private
+
+public :: extract_rho
+
+contains
+
 subroutine extract_rho()
    use m_transport
    use m_flow
@@ -53,3 +63,5 @@ subroutine extract_rho()
    if (timon) call timstop(ithndl)
    return
 end subroutine extract_rho
+
+end module m_extract_rho

@@ -17,17 +17,11 @@ object Release : BuildType({
         """.trimIndent()
     }
 
-    features {
-        approval {
-            approvalRules = """
-                user:svc_dimr_approve_linux
-                user:svc_dimr_approve_windows
-            """.trimIndent()
-        }
-    }
-
     dependencies {
-        snapshot(Trigger) {
+        snapshot(Linux) {
+            reuseBuilds = ReuseBuilds.NO
+        }
+        snapshot(Windows) {
             reuseBuilds = ReuseBuilds.NO
         }
     }

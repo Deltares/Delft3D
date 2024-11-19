@@ -30,6 +30,12 @@
 !
 !
 
+module m_setisoscale2is1
+
+implicit none
+
+contains
+
       subroutine SETISOSCALE2IS1()
          use m_depmax
          use m_depmax2
@@ -44,3 +50,5 @@
          end if
 
       end subroutine SETISOSCALE2IS1
+
+end module m_setisoscale2is1

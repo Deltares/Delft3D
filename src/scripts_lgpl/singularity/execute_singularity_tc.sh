@@ -19,7 +19,7 @@
 # Modify them according to your requirements:
 
 # MPI_DIR: the path to your own installation of IntelMPI
-MPI_DIR=/opt/apps/intelmpi/2021.2.0/mpi/2021.2.0
+MPI_DIR=/opt/apps/intelmpi/2021.11.0/mpi/2021.11
 container_PATH=$MPI_DIR/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin 
 container_LD_LIBRARY_PATH=$MPI_DIR/lib:$MPI_DIR/lib/release
 

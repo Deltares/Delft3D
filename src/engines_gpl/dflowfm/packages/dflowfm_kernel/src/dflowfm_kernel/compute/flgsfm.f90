@@ -30,6 +30,16 @@
 !
 !
 
+module m_flgsfm
+use m_flupdofm
+use m_flqhgsfm
+use m_flgtarfm
+
+
+implicit none
+
+contains
+
 subroutine flgsfm(n, ng, L, jarea)
    use m_flowgeom
 !!--description-----------------------------------------------------------------
@@ -298,3 +308,5 @@ subroutine flgsfm(n, ng, L, jarea)
    ! TEMP = laatste statement
    ! strhis(15, istru) = ds + crest     ! waterlevel on crest
 end subroutine flgsfm
+
+end module m_flgsfm

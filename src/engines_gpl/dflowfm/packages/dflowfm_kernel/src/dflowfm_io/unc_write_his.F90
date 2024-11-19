@@ -111,7 +111,7 @@ contains
       use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc
       use string_module
       use m_dad
-      use m_filter, only: checkmonitor
+      use m_filter_data, only: checkmonitor
       use m_alloc
       use unstruc_channel_flow, only: network
       use simple_geometry, only: sgeom_def_geometry_variables

@@ -30,6 +30,16 @@
 !
 !
 
+module m_fm_upwbed
+
+implicit none
+
+private
+
+public :: fm_upwbed
+
+contains
+
    ! Interpolate flownode-based vector (sx,sy) to edge-based vector (e_sn, e_st)
    subroutine fm_upwbed(lsedtot, sx, sy, sxtot, sytot, e_sn, e_st)
       use m_flowgeom, only: acl, snu, csu, kcu
@@ -196,3 +206,5 @@
          end do
       end if
    end subroutine fm_upwbed
+
+end module m_fm_upwbed

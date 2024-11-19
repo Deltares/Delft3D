@@ -30,6 +30,8 @@
 !
 !
 module unstruc_api
+   use m_write_some_final_output, only: write_some_final_output
+   use m_writecdcoeffs, only: writeCdcoeffs
    use m_plotnu
    use m_choices
    use m_flowtimes
@@ -210,7 +212,7 @@ contains
          call warn_flush()
       end if
 
-      call writesomefinaloutput()
+      call write_some_final_output()
 
       if (jagui > 0) then
          call plotnu(md_ident)

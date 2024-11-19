@@ -31,6 +31,8 @@
 !
 
 module m_editgridblok
+use m_shwxyz
+use m_selecteditmode
 use m_ispoin
 
 

@@ -30,7 +30,26 @@
 !
 !
 
+module m_step_reduce_transport_morpho
+use m_subsupl_update_s1, only: subsupl_update_s1
+use m_setucxucy_mor, only: setucxucy_mor
+use m_fm_flocculate, only: fm_flocculate
+use m_fm_fallve, only: fm_fallve
+use m_apply_subsupl, only: apply_subsupl
+use m_update_s_explicit, only: update_s_explicit
+use m_u1q1, only: u1q1
+use m_transport_sub, only: transport
+
+implicit none
+
+private
+
+public :: step_reduce_transport_morpho
+
+contains
+
  subroutine step_reduce_transport_morpho()
+    use m_equili_spiralintensity
     use m_flow
     use m_flowgeom
     use m_sediment, only: stm_included
@@ -56,9 +75,8 @@
     use m_set_kbot_ktop
     use m_volsur
     use m_set_bobs
-
-    implicit none
-
+    use m_fm_erosed_sub, only: fm_erosed
+    
     numnodneg = 0
     if (wrwaqon .and. allocated(qsrcwaq)) then
        qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
@@ -145,3 +163,5 @@
     end if
 
  end subroutine step_reduce_transport_morpho
+
+end module m_step_reduce_transport_morpho

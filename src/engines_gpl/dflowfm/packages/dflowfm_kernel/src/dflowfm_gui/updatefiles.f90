@@ -30,6 +30,12 @@
 !
 !
 
+module m_updatefiles
+
+implicit none
+
+contains
+
       subroutine UPDATEFILES(FILNAM, FILIST, NUMFIL, NUMDIR, IFDATE, IFSIZE, IXP, IYP, IH)
          use unstruc_display
          use m_qnerror
@@ -189,3 +195,5 @@
          call IOUTMenuScroll(FILIST, NUMFIL, IXP, IYP + 10, ' ', IH - 7, 0, 1)
          return
       end
+
+end module m_updatefiles

@@ -30,16 +30,23 @@
 !
 !
 
+module m_sethigherorderadvectionvelocities
+
+implicit none
+
+private
+
+public :: sethigherorderadvectionvelocities
+
+contains
+
 subroutine sethigherorderadvectionvelocities()
    use m_flowgeom
    use m_flow
    use m_sferic
-   use m_flowtimes
-   use unstruc_messages
+   use m_flowtimes, only: dts
    use m_dslim
    use m_get_Lbot_Ltop
-
-   implicit none
 
    integer :: L, LL, k1, k2, k, ku, kd, kku, ku2, is, ip, Lb, Lt, kkua, kkub
    integer :: n12, ib
@@ -300,3 +307,5 @@ subroutine sethigherorderadvectionvelocities()
    end if ! kmx
 
 end subroutine sethigherorderadvectionvelocities
+
+end module m_sethigherorderadvectionvelocities

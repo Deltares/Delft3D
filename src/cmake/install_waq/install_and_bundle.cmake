@@ -29,7 +29,6 @@ fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/waqmerge" "${BUILD_LIBRARIES}" "${THIR
 fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/ddcouple" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
 fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/agrhyd" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
 fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/maptonetcdf" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
-fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/calcage" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
 
 
 set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")

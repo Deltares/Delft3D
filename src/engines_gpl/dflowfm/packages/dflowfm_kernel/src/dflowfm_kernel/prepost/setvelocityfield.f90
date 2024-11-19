@@ -31,6 +31,7 @@
 !
 
  subroutine setvelocityfield()
+    use m_setcornervelocities, only: setcornervelocities
     use m_flow
     use m_flowgeom
     implicit none

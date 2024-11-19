@@ -30,6 +30,12 @@
 !
 !
 
+module m_tektri
+
+implicit none
+
+contains
+
       subroutine TEKTRI(XL, YL, NCOL)
          use m_set_col
          use m_movabs
@@ -44,3 +50,5 @@
          call LNABS(XL(1), YL(1))
          return
       end
+
+end module m_tektri

@@ -31,6 +31,16 @@
 !
 
 !> compute vertical fluxes
+module m_comp_fluxver
+
+implicit none
+
+private
+
+public :: comp_fluxver
+
+contains
+
 subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, zws, qw, kbot, ktop, sed, nsubsteps, jaupdate, ndeltasteps, flux, wsf)
    use m_flowgeom, only: Ndx, ba, kfs ! static mesh information
    use m_flowtimes, only: dts
@@ -180,3 +190,5 @@ subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, zws, qw, kbot, ktop, 
    if (timon) call timstop(ithndl)
    return
 end subroutine comp_fluxver
+
+end module m_comp_fluxver

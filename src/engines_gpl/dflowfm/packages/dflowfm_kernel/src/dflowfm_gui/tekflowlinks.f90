@@ -30,7 +30,14 @@
 !
 !
 
+module m_tekflowlinks
+
+implicit none
+
+contains
+
  subroutine tekflowlinks()
+    use m_setisoscale2is1
     use m_minmxlns
     use m_isosmoothflownode2
     use m_isocol2
@@ -50,9 +57,10 @@
     use m_three_two
     use m_inview
     use m_pfiller_core
+    use m_zlin
     implicit none
     integer :: k, L, ja, k1, k2, ncol, linkmode
-    double precision :: zlin, zL
+    double precision :: zL
     double precision :: xcl, ycl, zcl ! help only
     double precision :: xx1, yy1, Zz1 ! help only
     double precision :: xx2, yy2, Zz2 ! help only
@@ -165,3 +173,5 @@
        end if ! linkmode
     end if ! ndraw(29)
  end subroutine tekflowlinks
+
+end module m_tekflowlinks

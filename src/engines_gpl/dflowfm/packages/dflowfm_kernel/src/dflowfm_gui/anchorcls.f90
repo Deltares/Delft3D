@@ -31,6 +31,8 @@
 !
 
 module m_anchorcls
+use m_setxor
+
 
 implicit none
 

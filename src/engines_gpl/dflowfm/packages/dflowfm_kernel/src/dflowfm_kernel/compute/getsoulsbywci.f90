@@ -30,6 +30,12 @@
 !
 !
 
+module m_getsoulsbywci
+
+implicit none
+
+contains
+
 subroutine getsoulsbywci(modind, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL, taubxuLL)
    use m_physcoef, only: rhomean
    implicit none
@@ -48,3 +54,5 @@ subroutine getsoulsbywci(modind, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL
    taubxuLL = ymxpar * (taucur + tauwav) ! Max shear stress needed in Erosed, (N/m2)
 
 end subroutine getsoulsbywci
+
+end module m_getsoulsbywci

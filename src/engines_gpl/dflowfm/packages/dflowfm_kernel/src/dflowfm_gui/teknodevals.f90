@@ -30,6 +30,12 @@
 !
 !
 
+module m_teknodevals
+
+implicit none
+
+contains
+
   subroutine TEKNODEVALS(MET)
      use m_isosmoothnet
      use m_isocol
@@ -168,3 +174,5 @@
 
      return
   end subroutine TEKNODEVALS
+
+end module m_teknodevals

@@ -30,6 +30,16 @@
 !
 !
 
+module m_addlink1d2dinternal
+
+implicit none
+
+private
+
+public :: addlink1D2Dinternal
+
+contains
+
  subroutine addlink1D2Dinternal(L, japerim) ! and add area's and volumes of 1D2D links
     use m_flowgeom
     use m_flow
@@ -37,6 +47,7 @@
     use m_get_link_area_wid2D
     use m_get_prof2d
     use m_get_cz
+    use m_get_hpr_nostruc
 
     implicit none
 
@@ -46,7 +57,6 @@
     double precision :: hpr1, ar1, wid1, hpr2, ar2, wid2, aru, widu, aconvu
     double precision :: dx1, dx2, frcn, BL1, BL2, b21, wu2, ai
     double precision :: beta, deltaa, hyr, Cz
-    double precision, external :: get_hpr_nostruc
 
     k1 = ln(1, L); k2 = ln(2, L)
     if (bob0(1, L) < bob0(2, L)) then
@@ -131,3 +141,5 @@
     end if
 
  end subroutine addlink1D2Dinternal
+
+end module m_addlink1d2dinternal

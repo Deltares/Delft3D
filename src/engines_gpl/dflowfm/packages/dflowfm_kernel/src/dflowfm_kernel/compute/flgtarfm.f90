@@ -30,6 +30,12 @@
 !
 !
 
+module m_flgtarfm
+
+implicit none
+
+contains
+
 subroutine flgtarfm(ng, L0, wuL, bl1, bl2, teken, zs, wstr, w2, wsd, zb2, ds1, ds2, cgf, & ! fromgeneral
                     cgd, cwf, cwd, mugf, lambda, strdamf, gatedoorheight)
 !!--description-----------------------------------------------------------------
@@ -192,3 +198,5 @@ subroutine flgtarfm(ng, L0, wuL, bl1, bl2, teken, zs, wstr, w2, wsd, zb2, ds1, d
       zb2 = help
    end if
 end subroutine flgtarfm
+
+end module m_flgtarfm

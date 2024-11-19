@@ -29,34 +29,37 @@
 
 !
 !
+module m_read_arc_info_block
+   implicit none
+contains
+   subroutine readarcinfoblock(MINP, D, MC, NC, RMIS)
+      use M_MISSING
+      use precision, only: sp, dp
+      integer :: i
+      integer :: j
+      integer :: mc
+      integer :: minp
+      integer :: nc
+      real(kind=dp) :: rmis
+      real(kind=sp) :: D(MC, NC)
+      character TEX * 16
 
-      subroutine READARCINFOBLOCK(MINP, D, MC, NC, RMIS)
-         use M_MISSING
-         implicit none
-         integer :: i
-         integer :: j
-         integer :: mc
-         integer :: minp
-         integer :: nc
-         double precision :: rmis
-         real :: D(MC, NC)
-         character TEX * 16
-
-         do J = NC, 1, -1
-            read (MINP, *, ERR=101, end=100) (D(I, J), I=1, MC)
+      do J = NC, 1, -1
+         read (MINP, *, ERR=101, end=100) (D(I, J), I=1, MC)
+      end do
+      do i = 1, MC
+         do j = 1, NC
+            if (D(I, J) == RMIS) D(I, J) = dmiss
          end do
-         do i = 1, MC
-            do j = 1, NC
-               if (D(I, J) == RMIS) D(I, J) = dmiss
-            end do
-         end do
-         call doclose(MINP)
-         return
+      end do
+      call doclose(MINP)
+      return
 
-100      continue
-         call EOFERROR(MINP)
-101      continue
-         write (TEX, '(2I8)') I, J
-         call READERROR('ERROR READING ARC-INFO BLOCK IN COLNR, ROWNR :', TEX, MINP)
-         return
-      end
+100   continue
+      call EOFERROR(MINP)
+101   continue
+      write (TEX, '(2I8)') I, J
+      call READERROR('ERROR READING ARC-INFO BLOCK IN COLNR, ROWNR :', TEX, MINP)
+      return
+   end subroutine readarcinfoblock
+end module m_read_arc_info_block

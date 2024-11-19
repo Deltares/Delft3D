@@ -31,6 +31,8 @@
 !
 
 module m_filemenu
+use m_updatefiles
+
 
 implicit none
 

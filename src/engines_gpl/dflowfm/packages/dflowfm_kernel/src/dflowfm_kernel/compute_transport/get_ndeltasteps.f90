@@ -31,6 +31,16 @@
 !
 
 !> get number of subtimesteps and delta subtimesteps
+module m_get_ndeltasteps
+
+implicit none
+
+private
+
+public :: get_ndeltasteps
+
+contains
+
 subroutine get_ndeltasteps()
    use m_flowgeom, only: Ndxi, Lnxi, Lnx, ln
    use m_flowtimes, only: dts
@@ -88,3 +98,5 @@ subroutine get_ndeltasteps()
    if (timon) call timstop(ithndl)
    return
 end subroutine get_ndeltasteps
+
+end module m_get_ndeltasteps

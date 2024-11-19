@@ -46,6 +46,9 @@ module fm_location_types
    integer, parameter, public :: UNC_LOC_U3D = 5          !< Data location: horizontal velocity point in all layers.
    integer, parameter, public :: UNC_LOC_W = 6            !< Data location: vertical velocity point on all layer interfaces.
    integer, parameter, public :: UNC_LOC_WU = 16          !< Data location: vertical viscosity point on all layer interfaces.
+   integer, parameter, public :: UNC_LOC_3DV = 17         !< Data location: vertical positions at pressure points and constant for 
+                                                          !! all gridpoints.
+   
 
    ! Model global:
    integer, parameter, public :: UNC_LOC_GLOBAL = 21      !< Data location: model global (e.g. water balance)

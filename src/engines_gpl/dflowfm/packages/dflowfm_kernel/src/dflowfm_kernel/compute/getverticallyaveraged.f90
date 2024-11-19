@@ -30,6 +30,12 @@
 !
 !
 
+module m_getverticallyaveraged
+
+implicit none
+
+contains
+
 subroutine getverticallyaveraged(sal, mx)
    use m_flow
    use m_flowgeom
@@ -49,3 +55,5 @@ subroutine getverticallyaveraged(sal, mx)
       end if
    end do
 end subroutine getverticallyaveraged
+
+end module m_getverticallyaveraged

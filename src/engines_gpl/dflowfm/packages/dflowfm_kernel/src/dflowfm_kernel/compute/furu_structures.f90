@@ -30,6 +30,12 @@
 !
 !
 
+module m_furu_structures
+
+implicit none
+
+contains
+
  subroutine furu_structures()
     use m_flow
     use m_flowgeom
@@ -53,7 +59,6 @@
     integer :: i
     integer :: k1
     integer :: k2
-    integer :: kfu
     integer :: L
     integer :: L0
     integer :: mdown
@@ -124,7 +129,7 @@
                    call getcz(hu(L), frcu(L), ifrcutp(L), Cz, L)
                    au(L) = pstru%au(L0)
                    call computeGeneralStructure(pstru%generalst, direction, L0, width, bob0(:, L), fu(L), ru(L), &
-                                                au(L), as1, as2, width, kfu, s1(k1), s1(k2), q1(L), Cz, dx(L), dts, SkipDimensionChecks)
+                                                au(L), as1, as2, width, s1(k1), s1(k2), q1(L), Cz, dx(L), dts, SkipDimensionChecks)
                 case (ST_DAMBREAK)
                    continue
                 case (ST_CULVERT)
@@ -139,14 +144,14 @@
                    call GetCSParsFlow(network%adm%line2cross(L, 2), network%crs%cross, dpt, wetdown, perimeter, width)
 
                    wetdown = max(wetdown, 0.0001d0)
-                   call computeculvert(pstru%culvert, fu(L), ru(L), au(L), width, kfu, cmustr, s1(k1), s1(k2), &
+                   call computeculvert(pstru%culvert, fu(L), ru(L), au(L), width, cmustr, s1(k1), s1(k2), &
                                        q1(L), q1(L), pstru%u1(L0), pstru%u0(L0), dx(L), dts, wetdown)
 
                 case (ST_UNI_WEIR)
                    fu(L) = pstru%fu(L0)
                    ru(L) = pstru%ru(L0)
                    au(L) = pstru%au(L0)
-                   call computeUniversalWeir(pstru%uniweir, fu(L), ru(L), au(L), width, bob0(:, L), kfu, s1(k1), s1(k2), &
+                   call computeUniversalWeir(pstru%uniweir, fu(L), ru(L), au(L), width, bob0(:, L), s1(k1), s1(k2), &
                                              q1(L), pstru%u1(L0), dx(L), dts, changeStructureDimensions)
                 case (ST_BRIDGE)
                    dpt = max(epshu, s1(k1) - bob0(1, L))
@@ -157,7 +162,7 @@
                    ! WU(L) is the average width at the bridge (max of up/downstream side).
                    wu(L) = max(wu(L), as2 / dpt)
                    width = wu(L)
-                   call ComputeBridge(pstru%bridge, fu(L), ru(L), au(L), width, kfu, s1(k1), s1(k2), pstru%u1(L0), dx(L), dts, &
+                   call ComputeBridge(pstru%bridge, fu(L), ru(L), au(L), width, s1(k1), s1(k2), pstru%u1(L0), dx(L), dts, &
                                       as1, as2, bob0(:, L), changeStructureDimensions)
                 case (ST_LONGCULVERT)
                    ! NOTE: UNST-4328: long culverts are no actual structures, but rather just normal 1D flow links, no furu-step needed here.
@@ -202,3 +207,5 @@
     end do
 
  end subroutine furu_structures
+
+end module m_furu_structures

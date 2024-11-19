@@ -30,6 +30,18 @@
 !
 !
 
+module m_checksuspended_transport
+use m_check_einstein_garcia2, only: check_einstein_garcia2
+
+
+implicit none
+
+private
+
+public :: checksuspended_transport
+
+contains
+
  subroutine checksuspended_transport()
     use m_check_einstein_garcia
     implicit none
@@ -146,3 +158,5 @@
     call doclose(mout)
 
  end subroutine checksuspended_transport
+
+end module m_checksuspended_transport

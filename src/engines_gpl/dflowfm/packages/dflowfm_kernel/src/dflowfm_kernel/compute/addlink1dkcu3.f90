@@ -30,6 +30,16 @@
 !
 !
 
+module m_addlink1dkcu3
+
+implicit none
+
+private
+
+public :: addlink1Dkcu3
+
+contains
+
  subroutine addlink1Dkcu3(L, japerim) ! and add area's and volumes of 1D link kcu3
     use m_flowgeom
     use m_flow
@@ -37,6 +47,7 @@
     use unstruc_channel_flow
     use precision_basics
     use m_get_prof_1D
+    use m_get_hpr_nostruc
 
     implicit none
 
@@ -45,7 +56,6 @@
     integer :: k1, k2, calcConv
     double precision :: ar1, wid1, ar2, wid2, dx1, dx2, widu, perim
     double precision :: hpr
-    double precision, external :: get_hpr_nostruc
 
     if (japerim == 0) then
        calcConv = 0
@@ -108,3 +118,5 @@
 
     end if
  end subroutine addlink1Dkcu3
+
+end module m_addlink1dkcu3

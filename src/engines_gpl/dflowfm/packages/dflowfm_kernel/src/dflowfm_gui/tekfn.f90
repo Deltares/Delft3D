@@ -30,7 +30,14 @@
 !
 !
 
+module m_tekfn
+
+implicit none
+
+contains
+
       subroutine TEKFN(NSC, NF, JW, X, Y, N, X1, X2, Y1, Y2, NCOL, TITLE, JAUTO, JP, DAG, kp1)
+         use m_setwindow
          use m_isofil
          use m_dispf2cir
          use m_dispf2
@@ -232,3 +239,5 @@
 
          return
       end
+
+end module m_tekfn

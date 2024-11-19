@@ -36,6 +36,8 @@
 !> <flow1d_implicit> and only has access to the variables in that project.
 
 module m_initialize_flow1d_implicit
+use m_init_1dinfo, only: init_1dinfo
+
 
 contains
 

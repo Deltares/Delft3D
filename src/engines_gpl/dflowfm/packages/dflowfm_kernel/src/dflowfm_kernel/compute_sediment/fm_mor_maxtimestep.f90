@@ -30,6 +30,16 @@
 !
 !
 
+module m_fm_mor_maxtimestep
+
+implicit none
+
+private
+
+public :: fm_mor_maxtimestep
+
+contains
+
    subroutine fm_mor_maxtimestep()
       use m_flowtimes, only: dts
       use m_flow, only: eps10, jamapflowanalysis, kkcflmx, limitingTimestepEstimation
@@ -95,3 +105,5 @@
       dts = dtmaxmor
 
    end subroutine fm_mor_maxtimestep
+
+end module m_fm_mor_maxtimestep

@@ -30,6 +30,8 @@
 !
 !
 module m_get_cz
+use m_hydraulicallysmooth
+
    implicit none
 contains
  subroutine getcz(h1, frcn, ifrctyp, cz, L) ! basic get chezy coefficient,  this routine is not safe for frcn == 0

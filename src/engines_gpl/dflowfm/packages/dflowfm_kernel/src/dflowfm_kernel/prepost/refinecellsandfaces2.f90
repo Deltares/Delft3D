@@ -32,6 +32,7 @@
 
 !> refine cells by splitting links
 subroutine refinecellsandfaces2()
+   use m_write_illegal_cells_to_pol, only: write_illegal_cells_to_pol
    use m_confrm
    use m_change_samples_refine_param
    use m_netw

@@ -30,7 +30,21 @@
 !
 !
 
+module m_teknetstuff
+use m_tekpreviousnet
+use m_teknodevals
+use m_teknodenums
+
+
+implicit none
+
+contains
+
    subroutine TEKNETSTUFF(key)
+      use m_teknetcells
+      use m_teknet
+      use m_teklinkvals
+      use m_teklinknums
       use unstruc_colors
       use unstruc_display, only: jaHighlight
       use m_netw
@@ -91,3 +105,5 @@
 
       return
    end subroutine TEKNETSTUFF
+
+end module m_teknetstuff

@@ -30,6 +30,22 @@
 !
 !
 
+module m_fm_erosed_sub
+use m_setucxucy_mor, only: setucxucy_mor
+use m_setucxqucyq_mor, only: setucxqucyq_mor
+use m_init_1dinfo, only: init_1dinfo
+use m_fm_upwbed, only: fm_upwbed
+use m_fm_red_soursin, only: fm_red_soursin
+
+
+implicit none
+
+private
+
+public :: fm_erosed
+
+contains
+
    subroutine fm_erosed()
    !!--description-----------------------------------------------------------------
    !!
@@ -1353,3 +1369,5 @@
       end if
 
    end subroutine fm_erosed
+
+end module m_fm_erosed_sub

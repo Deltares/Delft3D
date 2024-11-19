@@ -30,11 +30,23 @@
 !
 !
 
+module m_densfm
+
+implicit none
+
+private
+
+public :: densfm
+
+contains
+
 double precision function densfm(sal, temp, p0)
    use m_physcoef
    use m_flow
+   use m_rho_eckart, only: rho_eckart
+   use m_rho_unesco, only: rho_unesco
+   
    double precision :: sal, temp, p0
-   double precision, external :: rho_Eckart, rho_Unesco, rho_unesco83
 
    if (idensform == 0) then ! Uniform density
       densfm = rhomean
@@ -61,7 +73,6 @@ double precision function densfm(sal, temp, p0)
 end function densfm
 
 subroutine checkunesco83()
-   double precision, external :: rho_unesco83
    double precision :: sal, tem, pres, dum0, dum1, dum2, rho_u
 
    write (*, *) 'rhounesco83 at 0 m and 10 km depth '
@@ -98,7 +109,6 @@ subroutine checkunesco83()
 end subroutine checkunesco83
 
 double precision function rho_unesco83(sal, temp, pres)
-   double precision, external :: svan
    double precision :: sal, temp, pres, sigma, sva
 
    sva = svan(sal, temp, pres, sigma)
@@ -249,3 +259,5 @@ function svan(S4, T4, P04, SIGMA)
    return
 end function svan
 
+
+end module m_densfm

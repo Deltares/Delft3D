@@ -113,7 +113,7 @@ module m_General_Structure
 contains
 
    !> compute FU, RU and AU for a single flow link in a general structure.
-   subroutine computeGeneralStructure(genstr, direction, L0, maxWidth, bob0, fuL, ruL, auL, as1, as2, structwidth, kfuL, s1m1, s1m2, &
+   subroutine computeGeneralStructure(genstr, direction, L0, maxWidth, bob0, fuL, ruL, auL, as1, as2, structwidth, s1m1, s1m2, &
                                       qtotal, Cz, dxL, dt, SkipDimensionChecks)
       ! modules
 
@@ -129,7 +129,6 @@ contains
       double precision,                  intent(in   ) :: as1                  !< (Geometrical) upstream flow area.
       double precision,                  intent(in   ) :: as2                  !< (Geometrical) downstream flow area.
       double precision,                  intent(  out) :: structwidth          !< Flow width of structure.
-      integer,                           intent(  out) :: kfuL                 !< Flag indicating whether the structure link is wet (=1) or not (=0).
       double precision,                  intent(in   ) :: s1m1                 !< (Geometrical) upstream water level.
       double precision,                  intent(in   ) :: s1m2                 !< (Geometrical) downstream water level.
       double precision,                  intent(in   ) :: qtotal               !< Total discharge (in case of a compound structure this is not equal to 
@@ -237,7 +236,6 @@ contains
         fuL = 0.0d0
         ruL = 0.0d0
         auL = 0.0d0
-        kfuL = 0
         genstr%fu(:,L0) = 0.0d0
         genstr%ru(:,L0) = 0.0d0
         genstr%au(:,L0) = 0.0d0     
@@ -263,7 +261,7 @@ contains
          u1L = ru(1) - fu(1)*dsL 
          qL = Au(1)*u1L
 
-         call flqhgs(fu(1), ru(1), u1L, dxL, dt, structwidth, kfuL, au(1), qL, flowDir, &
+         call flqhgs(fu(1), ru(1), u1L, dxL, dt, structwidth, au(1), qL, flowDir, &
                      hu, hd, uu, zs, gatefraction*wstr, w2, wsd, zb2, ds1, ds2, dg,                &
                      rhoast, cgf, cgd, cwf, cwd, mugf, lambda, Cz, dx_struc, ds, genstr%state(1,L0), velheight)
          genstr%sOnCrest(L0) = ds + crest     ! waterlevel on crest
@@ -297,7 +295,7 @@ contains
          u1L = ru(2) - fu(2)*dsL 
          qL = Au(2)*u1L
 
-         call flqhgs(fu(2), ru(2), u1L, dxL, dt, structwidth, kfuL, au(2), qL, flowDir, &
+         call flqhgs(fu(2), ru(2), u1L, dxL, dt, structwidth, au(2), qL, flowDir, &
                      hu, hd, uu, zgate, gatefraction*wstr, w2, wsd, zb2, ds1, ds2, dg,                &
                      rhoast, cgf, cgd, cwf, cwd, mugf, 0d0, 0d0, dx_struc, ds, genstr%state(2,L0), velheight)
       else
@@ -313,7 +311,7 @@ contains
          u1L = ru(3) - fu(3)*dsL 
          qL = Au(3)*u1L
          
-         call flqhgs(fu(3), ru(3), u1L, dxL, dt, structwidth, kfuL, au(3), qL, flowDir, &
+         call flqhgs(fu(3), ru(3), u1L, dxL, dt, structwidth, au(3), qL, flowDir, &
                      hu, hd, uu, zs, (1d0-gatefraction)*wstr, w2, wsd, zb2, ds1, ds2, dg,                &
                      rhoast, cgf, cgd, cwf, cwd, mugf, lambda, Cz, dx_struc, ds, genstr%state(3,L0), velheight)
          genstr%sOnCrest(L0) = ds + crest     ! waterlevel on crest
@@ -461,7 +459,7 @@ contains
    end subroutine flgtar
 
    !> FLow QH relation for General Structure
-   subroutine flqhgs(fuL, ruL, u1L, dxL, dt, structwidth, kfuL, auL, qL, flowDir, &
+   subroutine flqhgs(fuL, ruL, u1L, dxL, dt, structwidth, auL, qL, flowDir, &
                   hu, hd, uu, zs, wstr, w2, wsd, zb2, ds1, ds2,   &
                   dg, rhoast, cgf, cgd, cwf, cwd, mugf, lambda, Cz, dx_struc,  &
                   ds, state, velheight)
@@ -470,7 +468,6 @@ contains
       !
       ! Global variables
       !
-      integer, intent(out)            :: kfuL      !< Flag indicating whether the structure link is wet (=1) or not (=0)
       double precision, intent(inout) :: auL       !< flow area
       double precision, intent(inout) :: fuL       !< fu component of momentum equation
       double precision, intent(inout) :: ruL       !< Right hand side component of momentum equation
@@ -668,7 +665,7 @@ contains
       !       The flowe condition is known so calculate
       !       the linearization coefficients FU and RU
       !
-      call flgsfuru(fuL, ruL, u1L, auL, qL, dxL, dt, structwidth, kfuL, state, &
+      call flgsfuru(fuL, ruL, u1L, auL, qL, dxL, dt, structwidth, state, &
                      flowDir, hu, hd, velhght, zs, ds, dg, dc, wstr,   &
                      cwfa, cwd, mugfa, cgfa, cgda, dx_struc, lambda, Cz)
    end subroutine flqhgs
@@ -915,7 +912,7 @@ contains
    !! The linearization coefficients FU and RU are
    !! calculated for the general structure.\n
    !! The stage of the flow was already determined.
-   subroutine flgsfuru(fuL, ruL, u1L, auL, qL, dxL, dt, structwidth, kfuL, state, &
+   subroutine flgsfuru(fuL, ruL, u1L, auL, qL, dxL, dt, structwidth, state, &
                        flowDir, hu, hd, velhght, zs, ds, dg, dc, wstr,&
                        cwfa, cwd, mugfa, cgfa, cgda, dx_struc, lambda, Cz)
       use m_GlobalParameters
@@ -933,7 +930,6 @@ contains
                                                    !< 2 : drowned weir flow\n
                                                    !< 3 : free gate flow\n
                                                    !< 4 : drowned gate flow\n
-      integer, intent(out)           :: kfuL       !< Flag indicating whether the structure link is wet (=1) or not (=0)
       double precision, intent(out)  :: fuL        !< fu component of momentum equation
       double precision, intent(out)  :: ruL        !< Right hand side component of momentum equation
       double precision, intent(inout):: u1L        !< Flow velocity at current time step
@@ -981,7 +977,6 @@ contains
        !
       if (state==0) then
          !        closed or dry
-         kfuL = 0
          fuL = 0.0
          ruL = 0.0
          u1L = 0.0

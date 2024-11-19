@@ -30,6 +30,16 @@
 !
 !
 
+module m_upwsalslope
+
+implicit none
+
+private
+
+public :: upwsalslope
+
+contains
+
 double precision function upwsalslope(L, k, ds2) ! k is upwind cell for link L, find slope upwind of k
    use m_flowgeom ! limit upwind slopes for all inflowing links
    use m_flow
@@ -64,3 +74,5 @@ double precision function upwsalslope(L, k, ds2) ! k is upwind cell for link L, 
       end if
    end do
 end function upwsalslope
+
+end module m_upwsalslope

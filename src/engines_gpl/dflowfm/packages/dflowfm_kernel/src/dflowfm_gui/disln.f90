@@ -37,10 +37,10 @@ contains
     use m_devices, only: iws
     use m_ktext
     use m_gtext
+    use m_zlin
 
     integer :: LL
     character TEX * 23
-    double precision :: ZLIN
 
     if (LL <= 0) then
        TEX = 'NO FLOW LINK FOUND    '

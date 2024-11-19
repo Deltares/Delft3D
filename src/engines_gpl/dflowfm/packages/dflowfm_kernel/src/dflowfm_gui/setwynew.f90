@@ -30,16 +30,23 @@
 !
 !
 
+module m_setwynew
+use m_xydisformat
+
+
+implicit none
+
+contains
+
       subroutine SETWYnew(X, Y, DY)
 !     Set zoomwindow limits at proper aspect ratio
+         use m_setwor
          use m_inqasp
          use m_wearelt
          use m_sferic
          use m_sferzoom
-         use unstruc_display
          use m_dproject
 
-         implicit none
          double precision :: asp, x, y, dy, dx, XA, Y1A, y2a
 
          FAC = 1
@@ -89,3 +96,5 @@
          call XYDISFORMAT()
          return
       end
+
+end module m_setwynew

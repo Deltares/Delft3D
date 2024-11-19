@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekxz
+
+implicit none
+
+contains
+
       subroutine TEKXZ(NCOL)
          use m_dcirr
          use m_netw
@@ -44,3 +50,5 @@
 
          return
       end subroutine TEKXZ
+
+end module m_tekxz

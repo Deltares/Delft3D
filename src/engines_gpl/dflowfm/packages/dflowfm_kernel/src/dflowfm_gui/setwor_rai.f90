@@ -30,7 +30,14 @@
 !
 !
 
+module m_setwor_rai
+
+implicit none
+
+contains
+
  subroutine setwor_rai(xs1, ys1, xs2, ys2, xw1, yw1, xw2, yw2)
+    use m_setwor
     use m_raaitek
     use m_view_port
     implicit none
@@ -47,3 +54,5 @@
     xw2m = xw2
     yw2m = yw2
  end subroutine setwor_rai
+
+end module m_setwor_rai

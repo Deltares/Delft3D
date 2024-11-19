@@ -31,6 +31,16 @@
 !
 
 ! Anti-creep
+module m_anticreep
+
+implicit none
+
+private
+
+public :: anticreep
+
+contains
+
 subroutine anticreep(L)
 
    use m_flow
@@ -304,3 +314,5 @@ subroutine anticreep(L)
    deallocate (point, drho, dsal, dtem)
 
 end subroutine anticreep
+
+end module m_anticreep

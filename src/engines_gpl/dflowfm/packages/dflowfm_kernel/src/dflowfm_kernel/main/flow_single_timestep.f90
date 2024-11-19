@@ -32,6 +32,7 @@
 
  !> A complete single computational time step (init-perform-finalize).
  subroutine flow_single_timestep(key, iresult) ! do only 1 flow timestep
+    use m_sedmor_write_stats, only: sedmor_write_stats
     use m_flow
     use m_flowgeom
     use m_flowtimes

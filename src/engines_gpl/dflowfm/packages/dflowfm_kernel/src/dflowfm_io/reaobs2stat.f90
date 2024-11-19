@@ -30,6 +30,16 @@
 !
 !
 
+module m_reaobs2stat
+
+implicit none
+
+private
+
+public :: reaobs2stat
+
+contains
+
  subroutine reaobs2stat(mobs, mout) ! convert d3d obs file to model independent
     use m_grid
     implicit none
@@ -55,3 +65,5 @@
     call doclose(mout)
 
  end subroutine reaobs2stat
+
+end module m_reaobs2stat

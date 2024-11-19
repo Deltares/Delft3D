@@ -30,6 +30,14 @@
 ! 
 ! 
 
+module m_heatun
+use m_qsun_nominal
+
+
+implicit none
+
+contains
+
 subroutine heatun(n, timhr, qsno)
 use m_flow
 use m_flowgeom
@@ -426,3 +434,5 @@ endif
     end function saturation_pressure
     
 end subroutine heatun
+
+end module m_heatun

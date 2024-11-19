@@ -31,6 +31,8 @@
 !
 
 module m_axes
+use m_smallscreen
+
 
 implicit none
 

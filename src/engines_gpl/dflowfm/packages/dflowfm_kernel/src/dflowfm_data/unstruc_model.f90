@@ -31,6 +31,7 @@
 !> Manages the unstruc model definition for the active problem.
 module unstruc_model
 
+   use m_setgrainsizes, only: setgrainsizes
    use precision
    use properties
    use tree_data_types
@@ -728,6 +729,7 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_map_his_precision
       use m_qnerror
+      use m_densfm, only: densfm
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -744,7 +746,6 @@ contains
       integer :: jadum
       real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
       character(len=200), dimension(:), allocatable :: fnames
-      real(kind=dp), external :: densfm
       real(kind=dp) :: tim
       real(kind=dp) :: sumlaycof
       real(kind=dp), parameter :: tolSumLay = 1d-12
@@ -2037,6 +2038,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', jamapfw, success)
       call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', jamapspir, success)
       call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', jamapnumlimdt, success)
+      call prop_get(md_ptr, 'output', 'Wrixyz_numlimdt', write_numlimdt_file, success)
       call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', jamaptaucurrent, success)
       call prop_get(md_ptr, 'output', 'Wrimap_z0', jamapz0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_salinity', jamapsal, success)
@@ -3460,7 +3462,7 @@ contains
          call prop_set(prop_ptr, 'veg', 'Cbveg', Cbveg, 'Stem stiffness coefficient , default 0.0 ()')
          call prop_set(prop_ptr, 'veg', 'Rhoveg', Rhoveg, 'Stem Rho, if > 0, -> bouyant stick procedure, default 0.0 (kg/m3)')
          call prop_set(prop_ptr, 'veg', 'Stemheightstd', Stemheightstd, 'Stem height standard deviation fraction, e.g. 0.1  ()')
-         if (writeall .or. stemheight_convention /= UPWARD_FROM_BED) then ! research keyword - only write to .dia if the research keyword is not set to the default value.
+         if (stemheight_convention /= UPWARD_FROM_BED) then ! research keyword - only write to .dia if the research keyword is not set to the default value.
             call prop_set(prop_ptr, 'veg', 'StemheightConvention', trim(StemheightConvention), 'Stem height convention: ''upward_from_bed'' or ''downward_from_surface''.')
          end if
          if (kmx == 0) then
@@ -3811,6 +3813,10 @@ contains
             ibuf = 0
          end if
          call prop_set(prop_ptr, 'output', 'NcWriteLatLon', ibuf, 'Write extra lat-lon coordinates for all projected coordinate variables in each NetCDF file (for CF-compliancy).')
+      end if
+      if(writeall .or. write_numlimdt_file) then
+         call prop_set(prop_ptr, 'output', 'Wrixyz_numlimdt', merge(1,0,write_numlimdt_file), &
+             'Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file (1: yes, 0: no).')
       end if
       if (writeall .or. len_trim(unc_metadatafile) > 0) then
          call prop_set(prop_ptr, 'output', 'MetaDataFile', unc_metadatafile, 'Metadata NetCDF file with user-defined global dataset attributes (*_meta.nc).')

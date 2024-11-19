@@ -30,6 +30,21 @@
 !
 !
 module m_flow_flowinit
+   use m_inisolver_advec, only: inisolver_advec
+   use m_setzcs, only: setzcs
+   use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
+   use m_setsigmabnds, only: setsigmabnds
+   use m_setship, only: setship
+   use m_sets01zbnd, only: sets01zbnd
+   use m_setrho, only: setrho
+   use m_setiadvpure1d, only: setiadvpure1d
+   use m_furusobekstructures
+   use m_filter
+   use m_adjust_bobs_for_dams_and_structs, only: adjust_bobs_for_dams_and_structs
+   use m_addlink1d, only: addlink1D
+   use m_a1vol1tot, only: a1vol1tot
+   use m_rearst, only: rearst
+   use m_read_restart_from_map, only: read_restart_from_map
    use m_inifcori
    use m_inidensconstants
    use m_alloc_jacobi
@@ -60,7 +75,7 @@ contains
       use m_flow
       use m_flowtimes
       use m_sferic
-      use unstruc_model, only: md_netfile, md_input_specific, md_restartfile
+      use unstruc_model, only: md_netfile, md_input_specific, md_restartfile, md_obsfile
       use m_reduce, only: nodtot, lintot
       use m_transport
       use dfm_error
@@ -82,6 +97,8 @@ contains
       use m_set_kbot_ktop
       use m_ini_sferic
       use m_volsur
+      use m_meteo, only: initialize_ec_module
+      use m_observations, only: read_moving_stations
 
       implicit none
 
@@ -152,6 +169,8 @@ contains
 
       call setkbotktop(1) ! prior to correctblforzlayerpoints, setting kbot
 
+      call initialize_ec_module()
+
       call mess(LEVEL_INFO, 'Start initializing external forcings...')
       call timstrt('Initialise external forcings', handle_iniext)
       error = flow_initexternalforcings() ! this is the general hook-up to wind and boundary conditions
@@ -162,6 +181,9 @@ contains
          return
       end if
       call mess(LEVEL_INFO, 'Done initializing external forcings.')
+      
+      ! it has to be called after EC module initialization
+      call read_moving_stations(md_obsfile)
 
       call set_ihorvic_related_to_horizontal_viscosity()
       call redimension_summ_arrays_in_crs()
@@ -1555,6 +1577,7 @@ contains
       use m_sediment, only: stm_included
       use m_turbulence, only: rhowat
       use m_get_kbot_ktop
+      use m_setrho, only: setrhokk
 
       implicit none
 
@@ -1597,6 +1620,7 @@ contains
       use m_ini_sferic
       use m_set_bobs
       use m_get_czz0
+      use m_rho_eckart, only: rho_eckart
 
       implicit none
 
@@ -1613,8 +1637,6 @@ contains
       double precision :: r, eer, r0, dep, Rossby, amp, csth, sqghi, snth
       double precision :: rr, rmx, x0, y0, dxx, dyy, ucmk, phi, dphi
       double precision :: xm, ym
-
-      double precision, external :: rho_Eckart
 
       call dminmax(xz, ndx, xzmin, xzmax, ndx)
       call dminmax(xk, numk, xkmin, xkmax, numk)

@@ -30,12 +30,18 @@
 !
 !
 
+module m_tekrailinesbathy
+
+implicit none
+
+contains
+
  subroutine tekrailinesBATHY(ncol, ITYP)
     use m_flowgeom
-    use M_FLOW
-    use m_flowtimes
-    use m_sferic
-    use unstruc_display
+    use m_flowparameters, only: ibedlevtyp
+    use m_missing, only: dmiss
+    use m_sferic, only: jsferic
+    use unstruc_display_data
     use m_netw, only: xk, yk, zk, kc
     use m_sediment
     use m_polygon
@@ -168,3 +174,5 @@
     end if
 
  end subroutine tekrailinesBATHY
+
+end module m_tekrailinesbathy

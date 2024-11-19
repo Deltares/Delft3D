@@ -31,6 +31,16 @@
 !
 
 !> determine if the horizontal fluxes have to be updated (1) or not (0) from cell-based mask
+module m_get_jaupdatehorflux
+
+implicit none
+
+private
+
+public :: get_jaupdatehorflux
+
+contains
+
 subroutine get_jaupdatehorflux(nsubsteps, limtyp, jaupdate, jaupdatehorflux)
    use m_flowgeom, only: Ndx, Lnx, ln, klnup
    use timers
@@ -108,3 +118,5 @@ subroutine get_jaupdatehorflux(nsubsteps, limtyp, jaupdate, jaupdatehorflux)
    if (timon) call timstop(ithndl)
    return
 end subroutine get_jaupdatehorflux
+
+end module m_get_jaupdatehorflux

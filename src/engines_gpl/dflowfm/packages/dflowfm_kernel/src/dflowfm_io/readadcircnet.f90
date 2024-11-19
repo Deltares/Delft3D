@@ -30,6 +30,12 @@
 !
 !
 
+module m_readadcircnet
+
+implicit none
+
+contains
+
       subroutine READADCIRCNET(MNET, JA, JADOORLADEN)
 
          use m_confrm
@@ -43,8 +49,6 @@
          use m_set_nod_adm
          use m_qn_read_error
          use m_qn_eof_error
-
-         implicit none
 
          integer :: MNET, JA, JADOORLADEN
          integer :: k, j
@@ -212,3 +216,5 @@
          return
 
       end subroutine READADCIRCNET
+
+end module m_readadcircnet

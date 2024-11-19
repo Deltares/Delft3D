@@ -31,6 +31,16 @@
 !
 
 !> determine if the cells have to be updated (1) or not (0)
+module m_get_jaupdate
+
+implicit none
+
+private
+
+public :: get_jaupdate
+
+contains
+
 subroutine get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
    use timers
 
@@ -71,3 +81,5 @@ subroutine get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
    if (timon) call timstop(ithndl)
    return
 end subroutine get_jaupdate
+
+end module m_get_jaupdate

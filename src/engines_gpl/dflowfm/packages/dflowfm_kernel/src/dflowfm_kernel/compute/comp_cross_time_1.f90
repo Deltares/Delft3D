@@ -31,6 +31,16 @@
 !
 
 !> compute time (>0) when node x1 will cross line segment (3-4)
+module m_comp_cross_time_1
+
+implicit none
+
+private
+
+public :: comp_cross_time_1
+
+contains
+
 double precision function comp_cross_time_1(x1, x3, x4, v1, v3, v4, dclear)
    use m_missing
    use m_comp_roots4
@@ -107,3 +117,5 @@ double precision function comp_cross_time_1(x1, x3, x4, v1, v3, v4, dclear)
 
    return
 end function comp_cross_time_1
+
+end module m_comp_cross_time_1

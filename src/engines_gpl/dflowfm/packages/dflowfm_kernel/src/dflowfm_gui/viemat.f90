@@ -30,6 +30,12 @@
 !
 !
 
+module m_viemat
+
+implicit none
+
+contains
+
   !
   !
   subroutine viemat(the, phi)
@@ -110,3 +116,5 @@
      call matm4(Vs, T2, Z)
      call matm4(Z, T1, Vs)
   end subroutine viemat
+
+end module m_viemat

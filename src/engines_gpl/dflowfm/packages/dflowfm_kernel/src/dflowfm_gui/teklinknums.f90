@@ -30,6 +30,12 @@
 !
 !
 
+module m_teklinknums
+
+implicit none
+
+contains
+
   subroutine TEKLINKNUMS(MET, NCOL)
      use m_dhtext
      use m_dhitext
@@ -79,3 +85,5 @@
      end if
      return
   end subroutine TEKLINKNUMS
+
+end module m_teklinknums

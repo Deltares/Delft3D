@@ -37,6 +37,7 @@ subroutine add_bndtracer(tracnam, tracunit, itrac, janew)
    use m_missing
    use m_fm_wq_processes
    use unstruc_messages
+   use m_find_name, only: find_name
 
    implicit none
 
@@ -44,8 +45,6 @@ subroutine add_bndtracer(tracnam, tracunit, itrac, janew)
    character(len=20), intent(in) :: tracunit
    integer, intent(out) :: itrac
    integer, intent(out) :: janew
-
-   integer, external :: findname
    integer :: iwqbot
 
    if (.not. allocated(trnames)) then
@@ -55,8 +54,8 @@ subroutine add_bndtracer(tracnam, tracunit, itrac, janew)
       allocate (wqbotnames(0))
    end if
 
-   itrac = findname(numtracers, trnames, tracnam)
-   iwqbot = findname(numwqbots, wqbotnames, tracnam)
+   itrac = find_name(trnames, tracnam)
+   iwqbot = find_name(wqbotnames, tracnam)
 
    if (iwqbot /= 0) then
       call mess(LEVEL_ERROR, 'add_bndtracer: tracer named '''//trim(tracnam)//''' already exists as a water quality bottom variable')

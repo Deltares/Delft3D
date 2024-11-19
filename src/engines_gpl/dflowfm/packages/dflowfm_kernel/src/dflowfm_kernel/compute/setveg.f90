@@ -30,6 +30,16 @@
 !
 !
 
+module m_setveg
+
+implicit none
+
+private
+
+public :: setveg
+
+contains
+
  subroutine setveg()
     use m_flow
     use m_flowgeom
@@ -165,3 +175,5 @@
     end function calculate_plant_inertia_moment
 
  end subroutine setveg
+
+end module m_setveg

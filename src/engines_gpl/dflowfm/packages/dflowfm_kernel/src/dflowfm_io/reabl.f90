@@ -30,6 +30,12 @@
 !
 !
 
+module m_reabl
+
+implicit none
+
+contains
+
  subroutine reabl(mout) ! read bottom level
     use m_flowgeom
     use M_samples
@@ -38,7 +44,7 @@
     use m_reasam
     use m_qn_read_error
     use m_interpdivers
-    implicit none
+
     integer :: mout
     character(len=256) :: rec
 
@@ -56,3 +62,5 @@
     call doclose(mout)
 
  end subroutine reabl
+
+end module m_reabl

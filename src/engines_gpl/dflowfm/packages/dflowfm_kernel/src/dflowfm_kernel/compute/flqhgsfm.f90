@@ -30,9 +30,20 @@
 !
 !
 
+module m_flqhgsfm
+
+implicit none
+
+contains
+
 subroutine flqhgsfm(m, teken, husb, hdsb, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, &
                     dg, cgf, cgd, cwf, cwd, mugf, lambda, strdamf, jarea, ds)
 
+   use m_flgsfurufm
+   use m_flgsd3fm
+   use m_flgsd2fm
+   use m_flgsareafm
+   use m_flccgsfm
    use m_physcoef, only: ag
    use m_dpsequfm
 
@@ -282,3 +293,5 @@ subroutine flqhgsfm(m, teken, husb, hdsb, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, 
                       cwfa, cwd, mugfa, cgfa, cgda, strdamf, lambda)
    end if
 end subroutine flqhgsfm
+
+end module m_flqhgsfm

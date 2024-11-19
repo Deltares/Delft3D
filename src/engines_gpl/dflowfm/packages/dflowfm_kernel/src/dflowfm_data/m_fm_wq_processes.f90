@@ -113,7 +113,7 @@ module m_fm_wq_processes
    character(len=NAMWAQLEN), dimension(:), allocatable :: wqbotunits !< water quality bottom variable units
    integer, allocatable, dimension(:, :) :: id_wqb !< wqbot id's in map-file
    integer, allocatable, dimension(:, :) :: id_wqb3d !< 3d wqbot id's in map-file
-   real(hp), allocatable, dimension(:, :) :: wqbot !< water quality bottom variable values in double precision
+   real(hp), allocatable, dimension(:, :), target :: wqbot !< water quality bottom variable values in double precision
 
    type(OutputPointers) :: outputs !< output structure
    integer, allocatable, dimension(:, :) :: id_waq !< waq output id's in map-file

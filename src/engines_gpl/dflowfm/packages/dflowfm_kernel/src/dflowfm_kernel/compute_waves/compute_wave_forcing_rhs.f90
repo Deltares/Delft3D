@@ -30,6 +30,16 @@
 !
 !
 
+module m_compute_wave_forcing_rhs
+
+implicit none
+
+private
+
+public :: compute_wave_forcing_rhs
+
+contains
+
    subroutine compute_wave_forcing_RHS()
       use m_xbeach_data
       use m_waves
@@ -107,3 +117,5 @@
 1234  continue
       return
    end subroutine compute_wave_forcing_RHS
+
+end module m_compute_wave_forcing_rhs

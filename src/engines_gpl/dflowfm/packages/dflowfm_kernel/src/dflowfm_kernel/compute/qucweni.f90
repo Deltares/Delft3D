@@ -30,13 +30,25 @@
 !
 !
 
- double precision function QucWeni(n12, L) ! sum of (Q*uc cell centre upwind normal) at side n12 of link L
-    use m_flow ! advect the cell center velocities (dimension: m4/s2)
-    use m_flowgeom ! leaving the cell = +
-    implicit none
+module m_qucweni
 
-    integer :: L ! for link L,
-    integer :: n12 ! find normal velocity components of the other links
+implicit none
+
+private
+
+public :: qucweni
+
+contains
+
+!> sum of (Q*uc cell centre upwind normal) at side n12 of link L
+!! advect the cell center velocities (dimension: m4/s2)
+!! leaving the cell = +
+ double precision function QucWeni(n12, L) 
+    use m_flow 
+    use m_flowgeom
+
+    integer :: L !< for link L,
+    integer :: n12 !< find normal velocity components of the other links
 
     ! locals
     integer :: LL, LLL, LLLL ! for links LL,
@@ -77,3 +89,5 @@
     end do
 
  end function QucWeni
+
+end module m_qucweni

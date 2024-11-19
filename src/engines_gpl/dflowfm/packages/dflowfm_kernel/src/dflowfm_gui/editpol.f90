@@ -31,6 +31,11 @@
 !
 
 module m_editpol
+use m_droptracer, only: droptracer
+use m_wearel
+use m_viewcycle
+use m_typevalue
+use m_selecteditmode
 use m_plotnu
 use m_kcir
 

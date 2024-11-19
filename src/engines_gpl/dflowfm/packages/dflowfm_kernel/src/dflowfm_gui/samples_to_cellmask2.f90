@@ -31,6 +31,12 @@
 !
 
 ! update cellmask from samples
+module m_samples_to_cellmask2
+
+implicit none
+
+contains
+
 subroutine samples_to_cellmask2()
 
    use network_data
@@ -82,3 +88,5 @@ subroutine samples_to_cellmask2()
 
    return
 end subroutine samples_to_cellmask2
+
+end module m_samples_to_cellmask2

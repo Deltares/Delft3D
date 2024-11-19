@@ -78,15 +78,10 @@ module m_saad
 
    integer :: jasafe = 0 ! thread-safe (1) or not (0)
 
-   interface ddotXXX
-      module procedure ddotXXX_1
-      module procedure ddotXXX_2
-   end interface ddotXXX
-
 contains
 
 ! NOT THREAD-SAFE
-   double precision function ddotXXX_1(n, dx, incx, dy, incy)
+   double precision function ddotXXX(n, dx, incx, dy, incy)
       use m_saadf, only: ddotORG
 
       implicit none
@@ -108,29 +103,18 @@ contains
                DOTs = DOTs + DX(I) * DY(I)
             end do
             !$OMP END PARALLEL DO
-            ddotXXX_1 = dots
+            ddotXXX = dots
          else
             do I = 1, N
                DOTs = DOTs + DX(I) * DY(I)
             end do
-            ddotXXX_1 = dots
+            ddotXXX = dots
          end if
 
       else
-         ddotXXX_1 = ddotORG(n, dx, incx, dy, incy)
+         ddotXXX = ddotORG(n, dx, incx, dy, incy)
       end if
-   end function ddotXXX_1
-
-   double precision function ddotXXX_2(n, dx_2, incx, dy_2, incy)
-      integer :: N, INCX, INCY
-      double precision :: dx_2(:, :), dy_2(:, :)
-
-      double precision, allocatable, dimension(:) :: dx, dy
-
-      dx = reshape(dx_2, [N])
-      dy = reshape(dy_2, [N])
-      ddotXXX_2 = ddotXXX_1(n, dx, incx, dy, incy)
-   end function ddotXXX_2
+   end function ddotXXX
 
    subroutine inisaad(epscg_loc, maxmatvecs_loc, alpha_loc)
       use m_reduce

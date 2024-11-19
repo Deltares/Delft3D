@@ -30,6 +30,12 @@
 !
 !
 
+module m_load1d2dlinkfile
+
+implicit none
+
+contains
+
    !> Reads custom parameters for 1D2D links from a *.ini file,
    !! and assigns them to the correct flow links.
    subroutine load1D2DLinkFile(filename)
@@ -40,12 +46,11 @@
       use unstruc_messages
       use timespace
       use unstruc_model, only: File1D2DLinkMajorVersion, File1D2DLinkMinorVersion
+      use m_linktypetoint
 
       implicit none
 
       character(len=*), intent(in) :: filename !< Name of *.ini file containing 1D2D link parameters.
-
-      integer, external :: linkTypeToInt
 
       type(tree_data), pointer :: md_ptr
       type(tree_data), pointer :: node_ptr
@@ -194,3 +199,5 @@
       call tree_destroy(md_ptr)
 
    end subroutine load1D2DLinkFile
+
+end module m_load1d2dlinkfile

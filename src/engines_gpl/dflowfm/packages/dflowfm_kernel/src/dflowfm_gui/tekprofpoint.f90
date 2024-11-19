@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekprofpoint
+
+implicit none
+
+contains
+
  subroutine tekprofpoint()
     use m_flowgeom, only: xz, yz
     use m_flow, only: nplot
@@ -44,3 +50,5 @@
        ! call PFILLER(nd(k)%x, nd(k)%y, nn, klprof, klprof)
     end if
  end subroutine tekprofpoint
+
+end module m_tekprofpoint

@@ -31,6 +31,12 @@
 !
 
 module m_calbedform
+use m_solve_2d, only: solve_2d
+use m_comp_sumhorflux, only: comp_sumhorflux
+use m_comp_fluxhor3d, only: comp_fluxhor3d
+use m_comp_dxiau, only: comp_dxiau
+use m_setucxucy_mor, only: setucxucy_mor
+
 
    implicit none
 

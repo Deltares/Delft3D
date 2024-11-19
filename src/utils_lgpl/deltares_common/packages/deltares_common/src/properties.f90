@@ -3081,7 +3081,7 @@ contains
       !
       ! Parameters
       !
-      type(tree_data), pointer :: tree
+      type(tree_data), pointer, intent(in) :: tree
       character(*), intent(in) :: chapterin
       character(*), intent(in) :: keyin
       integer, intent(in) :: valuelength

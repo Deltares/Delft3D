@@ -31,9 +31,12 @@
 !
 
 module m_editnetw
+use m_viewcycle
+use m_typevalue
+use m_teknode
+use m_selecteditmode
 use m_kcir
 use m_highlight_nodesnlinks
-
 
 implicit none
 
@@ -64,6 +67,8 @@ contains
          use m_is_link
          use m_draw_nu
          use m_set_col
+         use m_derefine_mesh, only: derefine_mesh
+         use m_kill_cell, only: killcell
 
          integer :: MODE, KEY
          integer :: newmode

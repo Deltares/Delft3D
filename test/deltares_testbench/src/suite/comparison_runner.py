@@ -158,7 +158,7 @@ class ComparisonRunner(TestSetRunner):
 
         return [(test_case_config.name, file_check, parameter, result)]
 
-    def __raise_error_when_missing(self, all_result_files, file_check) -> None:
+    def __raise_error_when_missing(self, all_result_files: list[str], file_check: FileCheck) -> None:
         in_results = Paths().rebuildToLocalPath(file_check.name) in all_result_files
         if (
             not in_results

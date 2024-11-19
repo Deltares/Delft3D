@@ -30,7 +30,14 @@
 !
 !
 
+module m_get_spiral3d
+
+implicit none
+
+contains
+
    subroutine get_spiral3d
+      use m_findfn
       use m_flow, only: ucx, ucy, spirint, zws, hs, dzslay, spiratx, spiraty
       use m_flowgeom, only: ndx
       use m_get_kbot_ktop
@@ -74,3 +81,5 @@
       end do
 
    end subroutine get_spiral3d
+
+end module m_get_spiral3d

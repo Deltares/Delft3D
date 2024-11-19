@@ -69,6 +69,7 @@
 ! subroutines from net.F90
 !----------------------------------------------------------------------
 module m_choices
+use m_zerowaterdepth
 use m_plusabs_flow
 use m_plusabsi
 use m_plusabsd
@@ -120,6 +121,8 @@ contains
       use m_draw_nu
       use m_set_bobs
       use m_interpdivers
+      use m_derefine_mesh, only: derefine_mesh
+      use m_coarsen_mesh, only: coarsen_mesh
 
       implicit none
       integer :: ja, n12, ikey, mnx

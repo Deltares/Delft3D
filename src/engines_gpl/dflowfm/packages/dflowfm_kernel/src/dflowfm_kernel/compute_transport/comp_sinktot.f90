@@ -30,6 +30,16 @@
 !
 !
 
+module m_comp_sinktot
+
+implicit none
+
+private
+
+public :: comp_sinktot
+
+contains
+
 subroutine comp_sinktot()
    use m_transport
    use m_flow, only: vol1, kmx
@@ -72,3 +82,5 @@ subroutine comp_sinktot()
 
    if (timon) call timstop(ithndl)
 end subroutine comp_sinktot
+
+end module m_comp_sinktot

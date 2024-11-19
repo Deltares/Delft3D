@@ -33,6 +33,7 @@
 !> read drypoints files and delete dry points from net geometry (netcells)
 !! Grid enclosures are handled via the jinside=-1 option.
 subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
+   use m_samples_to_cellmask2
    use m_confrm
    use unstruc_messages
    use m_sferic, only: jsferic

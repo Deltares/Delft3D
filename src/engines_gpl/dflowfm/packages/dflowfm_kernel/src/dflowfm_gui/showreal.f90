@@ -30,6 +30,12 @@
 !
 !
 
+module m_showreal
+
+implicit none
+
+contains
+
       ! Now a double precision (double precision ::)
       subroutine SHOWREAL(TEXT, value)
          use m_devices
@@ -62,3 +68,5 @@
          call ITEXTCOLOURN(NFORGR, NBCKGR)
          return
       end
+
+end module m_showreal

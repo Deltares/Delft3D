@@ -30,15 +30,25 @@
 !
 !
 
+module m_write_flowdiff
+
+implicit none
+
+private
+
+public :: write_flowdiff
+
+contains
+
       subroutine write_flowdiff()
          use m_flow
          use m_samples
+         use m_znod
          implicit none
 
          integer mdiag
          double precision :: avdiffm, avdifwq, fm, wq
          integer :: k, kk, num
-         double precision, external :: znod
 
          avdiffm = 0d0; avdifwq = 0d0; num = 0
          do k = 1, ns
@@ -60,3 +70,5 @@
          end if
          write (mdiag, *) ' avdiffm, avdifwq,num ', avdiffm, avdifwq, num
       end subroutine write_flowdiff
+
+end module m_write_flowdiff

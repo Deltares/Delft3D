@@ -3889,32 +3889,26 @@ stocfl,stocsu,stocsc
 "dm_GrnChl1","GreenChl_1",  -1.00000
 "dm_GreenN1","GreenN_1  ",  -1.00000
 "dm_GreenP1","GreenP_1  ",  -1.00000
-"dm_GrnSi1 ","GreenSi_1 ",   0.00000
 "dm_GreenC2","GreenC_2  ",  -1.00000
 "dm_GrnChl2","GreenChl_2",  -1.00000
 "dm_GreenN2","GreenN_2  ",  -1.00000
 "dm_GreenP2","GreenP_2  ",  -1.00000
-"dm_GrnSi2 ","GreenSi_2 ",   0.00000
 "dm_cmC1   ","cmC_1     ",  -1.00000
 "dm_cmChl1 ","cmChl_1   ",  -1.00000
 "dm_cmN1   ","cmN_1     ",  -1.00000
 "dm_cmP1   ","cmP_1     ",  -1.00000
-"dm_cmSi1  ","cmSi_1    ",   0.00000
 "dm_cmC2   ","cmC_2     ",  -1.00000
 "dm_cmChl2 ","cmChl_2   ",  -1.00000
 "dm_cmN2   ","cmN_2     ",  -1.00000
 "dm_cmP2   ","cmP_2     ",  -1.00000
-"dm_cmSi2  ","cmSi_2    ",   0.00000
 "dm_ncmC1  ","ncmC_1    ",  -1.00000
 "dm_ncmChl1","ncmChl_1  ",  -1.00000
 "dm_ncmN1  ","ncmN_1    ",  -1.00000
 "dm_ncmP1  ","ncmP_1    ",  -1.00000
-"dm_ncmSi1 ","ncmSi_1   ",   0.00000
 "dm_ncmC2  ","ncmC_2    ",  -1.00000
 "dm_ncmChl2","ncmChl_2  ",  -1.00000
 "dm_ncmN2  ","ncmN_2    ",  -1.00000
 "dm_ncmP2  ","ncmP_2    ",  -1.00000
-"dm_ncmSi2 ","ncmSi_2   ",   0.00000
 "dm_zooC1  ","zooC_1    ",  -1.00000
 "dm_zooChl1","zooChl_1  ",   0.00000
 "dm_zooN1  ","zooN_1    ",  -1.00000
@@ -3939,32 +3933,26 @@ stocfl,stocsu,stocsc
 "dZ_GrnChl1","GreenChl_1",  -1.00000
 "dZ_GreenN1","GreenN_1  ",  -1.00000
 "dZ_GreenP1","GreenP_1  ",  -1.00000
-"dZ_GrnSi1 ","GreenSi_1 ",   0.00000
 "dZ_GreenC2","GreenC_2  ",  -1.00000
 "dZ_GrnChl2","GreenChl_2",  -1.00000
 "dZ_GreenN2","GreenN_2  ",  -1.00000
 "dZ_GreenP2","GreenP_2  ",  -1.00000
-"dZ_GrnSi2 ","GreenSi_2 ",   0.00000
 "dZ_cmC1   ","cmC_1     ",  -1.00000
 "dZ_cmChl1 ","cmChl_1   ",  -1.00000
 "dZ_cmN1   ","cmN_1     ",  -1.00000
 "dZ_cmP1   ","cmP_1     ",  -1.00000
-"dZ_cmSi1  ","cmSi_1    ",   0.00000
 "dZ_cmC2   ","cmC_2     ",  -1.00000
 "dZ_cmChl2 ","cmChl_2   ",  -1.00000
 "dZ_cmN2   ","cmN_2     ",  -1.00000
 "dZ_cmP2   ","cmP_2     ",  -1.00000
-"dZ_cmSi2  ","cmSi_2    ",   0.00000
 "dZ_ncmC1  ","ncmC_1    ",  -1.00000
 "dZ_ncmChl1","ncmChl_1  ",  -1.00000
 "dZ_ncmN1  ","ncmN_1    ",  -1.00000
 "dZ_ncmP1  ","ncmP_1    ",  -1.00000
-"dZ_ncmSi1 ","ncmSi_1   ",   0.00000
 "dZ_ncmC2  ","ncmC_2    ",  -1.00000
 "dZ_ncmChl2","ncmChl_2  ",  -1.00000
 "dZ_ncmN2  ","ncmN_2    ",  -1.00000
 "dZ_ncmP2  ","ncmP_2    ",  -1.00000
-"dZ_ncmSi2 ","ncmSi_2   ",   0.00000
 "dZ_zooC1  ","zooC_1    ",  -1.00000
 "dZ_zooChl1","zooChl_1  ",   0.00000
 "dZ_zooN1  ","zooN_1    ",  -1.00000
@@ -3993,28 +3981,22 @@ stocfl,stocsu,stocsc
 "dG3_GreenN","GreenN_2  ",  -1.00000
 "dG3_GreenP","GreenP_1  ",  -1.00000
 "dG3_GreenP","GreenP_2  ",  -1.00000
-"dG3_GrnSi1","GreenSi_1 ",   0.00000
-"dG3_GrnSi2","GreenSi_2 ",   0.00000
 "dG3_cmC1  ","cmC_1     ",  -1.00000
 "dG3_cmChl1","cmChl_1   ",  -1.00000
 "dG3_cmN1  ","cmN_1     ",  -1.00000
 "dG3_cmP1  ","cmP_1     ",  -1.00000
-"dG3_cmSi1 ","cmSi_1    ",   0.00000
 "dG3_cmC2  ","cmC_2     ",  -1.00000
 "dG3_cmChl2","cmChl_2   ",  -1.00000
 "dG3_cmN2  ","cmN_2     ",  -1.00000
 "dG3_cmP2  ","cmP_2     ",  -1.00000
-"dG3_cmSi2 ","cmSi_2    ",   0.00000
 "dG3_ncmC1 ","ncmC_1    ",  -1.00000
 "dG3_ncmChl","ncmChl_1  ",  -1.00000
 "dG3_ncmChl","ncmChl_2  ",  -1.00000
 "dG3_ncmN1 ","ncmN_1    ",  -1.00000
 "dG3_ncmP1 ","ncmP_1    ",  -1.00000
-"dG3_ncmSi1","ncmSi_1   ",   0.00000
 "dG3_ncmC2 ","ncmC_2    ",  -1.00000
 "dG3_ncmN2 ","ncmN_2    ",  -1.00000
 "dG3_ncmP2 ","ncmP_2    ",  -1.00000
-"dG3_ncmSi2","ncmSi_2   ",   0.00000
 "dG3_zooC1 ","zooC_1    ",  -1.00000
 "dG3_zooChl","zooChl_1  ",   0.00000
 "dG3_zooChl","zooChl_2  ",   0.00000
@@ -4043,28 +4025,22 @@ stocfl,stocsu,stocsc
 "dG4_GreenN","GreenN_2  ",  -1.00000
 "dG4_GreenP","GreenP_1  ",  -1.00000
 "dG4_GreenP","GreenP_2  ",  -1.00000
-"dG4_GrnSi1","GreenSi_1 ",   0.00000
-"dG4_GrnSi2","GreenSi_2 ",   0.00000
 "dG4_cmC1  ","cmC_1     ",  -1.00000
 "dG4_cmChl1","cmChl_1   ",  -1.00000
 "dG4_cmN1  ","cmN_1     ",  -1.00000
 "dG4_cmP1  ","cmP_1     ",  -1.00000
-"dG4_cmSi1 ","cmSi_1    ",   0.00000
 "dG4_cmC2  ","cmC_2     ",  -1.00000
 "dG4_cmChl2","cmChl_2   ",  -1.00000
 "dG4_cmN2  ","cmN_2     ",  -1.00000
 "dG4_cmP2  ","cmP_2     ",  -1.00000
-"dG4_cmSi2 ","cmSi_2    ",   0.00000
 "dG4_ncmC1 ","ncmC_1    ",  -1.00000
 "dG4_ncmChl","ncmChl_1  ",  -1.00000
 "dG4_ncmChl","ncmChl_2  ",  -1.00000
 "dG4_ncmN1 ","ncmN_1    ",  -1.00000
 "dG4_ncmP1 ","ncmP_1    ",  -1.00000
-"dG4_ncmSi1","ncmSi_1   ",   0.00000
 "dG4_ncmC2 ","ncmC_2    ",  -1.00000
 "dG4_ncmN2 ","ncmN_2    ",  -1.00000
 "dG4_ncmP2 ","ncmP_2    ",  -1.00000
-"dG4_ncmSi2","ncmSi_2   ",   0.00000
 "dG4_zooC1 ","zooC_1    ",  -1.00000
 "dG4_zooChl","zooChl_1  ",   0.00000
 "dG4_zooChl","zooChl_2  ",   0.00000
@@ -4093,28 +4069,22 @@ stocfl,stocsu,stocsc
 "dG5_GreenN","GreenN_2  ",  -1.00000
 "dG5_GreenP","GreenP_1  ",  -1.00000
 "dG5_GreenP","GreenP_2  ",  -1.00000
-"dG5_GrnSi1","GreenSi_1 ",   0.00000
-"dG5_GrnSi2","GreenSi_2 ",   0.00000
 "dG5_cmC1  ","cmC_1     ",  -1.00000
 "dG5_cmChl1","cmChl_1   ",  -1.00000
 "dG5_cmN1  ","cmN_1     ",  -1.00000
 "dG5_cmP1  ","cmP_1     ",  -1.00000
-"dG5_cmSi1 ","cmSi_1    ",   0.00000
 "dG5_cmC2  ","cmC_2     ",  -1.00000
 "dG5_cmChl2","cmChl_2   ",  -1.00000
 "dG5_cmN2  ","cmN_2     ",  -1.00000
 "dG5_cmP2  ","cmP_2     ",  -1.00000
-"dG5_cmSi2 ","cmSi_2    ",   0.00000
 "dG5_ncmC1 ","ncmC_1    ",  -1.00000
 "dG5_ncmChl","ncmChl_1  ",  -1.00000
 "dG5_ncmChl","ncmChl_2  ",  -1.00000
 "dG5_ncmN1 ","ncmN_1    ",  -1.00000
 "dG5_ncmP1 ","ncmP_1    ",  -1.00000
-"dG5_ncmSi1","ncmSi_1   ",   0.00000
 "dG5_ncmC2 ","ncmC_2    ",  -1.00000
 "dG5_ncmN2 ","ncmN_2    ",  -1.00000
 "dG5_ncmP2 ","ncmP_2    ",  -1.00000
-"dG5_ncmSi2","ncmSi_2   ",   0.00000
 "dG5_zooC1 ","zooC_1    ",  -1.00000
 "dG5_zooChl","zooChl_1  ",   0.00000
 "dG5_zooChl","zooChl_2  ",   0.00000

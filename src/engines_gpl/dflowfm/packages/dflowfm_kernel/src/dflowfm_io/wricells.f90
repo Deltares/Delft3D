@@ -29,6 +29,16 @@
 
 !
 !
+! It seems it is not used. 
+module m_wricells
+
+implicit none
+
+private
+
+public :: wricells
+
+contains
 
  subroutine wricells(mout) ! write flow cell surrounding netnodes
     use m_netw
@@ -45,3 +55,5 @@
     end do
 
  end subroutine wricells
+
+end module m_wricells

@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekflownodes
+
+implicit none
+
+contains
+
  subroutine tekflownodes(ja)
     use m_isosmoothflownode
     use m_isocol
@@ -46,10 +52,11 @@
     use m_drawthis
     use m_pfiller
     use m_inview
+    use m_znod
     implicit none
     integer :: nodemode, nodewhat
     integer :: k, ja, ja2, nn, ncol
-    double precision :: znod, zn
+    double precision :: zn
 
     nodemode = ndraw(19)
     nodewhat = ndraw(28)
@@ -107,3 +114,5 @@
        end if
     end do
  end subroutine tekflownodes
+
+end module m_tekflownodes

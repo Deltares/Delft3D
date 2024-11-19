@@ -30,6 +30,12 @@
 !
 !
 
+module m_zerowaterdepth
+
+implicit none
+
+contains
+
  !subroutine wricir()
  !use m_sferic
  !use m_flow
@@ -60,3 +66,5 @@
     u0 = 0d0
     u1 = 0d0
  end subroutine zerowaterdepth
+
+end module m_zerowaterdepth

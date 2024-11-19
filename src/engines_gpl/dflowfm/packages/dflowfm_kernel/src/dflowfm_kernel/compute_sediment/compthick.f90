@@ -30,6 +30,16 @@
 !
 !
 
+module m_compthick
+
+implicit none
+
+private
+
+public :: compthick
+
+contains
+
    subroutine compthick()
    !!--description-----------------------------------------------------------------
       !
@@ -126,3 +136,5 @@
          !
       end select
    end subroutine compthick
+
+end module m_compthick

@@ -31,6 +31,9 @@
 !
 
 module m_editgridlineshift
+use m_tekgrpt
+use m_shwxyz
+use m_selecteditmode
 use m_ispoin
 
 

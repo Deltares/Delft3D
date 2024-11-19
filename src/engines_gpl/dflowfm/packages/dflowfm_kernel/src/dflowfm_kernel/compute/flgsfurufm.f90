@@ -30,6 +30,12 @@
 !
 !
 
+module m_flgsfurufm
+
+implicit none
+
+contains
+
 subroutine flgsfurufm(formno, m, teken, husb, hdsb, velhght, zs, ds, dg, dc, wstr,&
                   & cwfa, cwd, mugfa, cgfa, cgda, strdamf, lambda)
 !!--description-----------------------------------------------------------------
@@ -44,6 +50,7 @@ subroutine flgsfurufm(formno, m, teken, husb, hdsb, velhght, zs, ds, dg, dc, wst
    use m_flowgeom, only: dx
    use m_flow
    use m_flowtimes
+   use m_iterfurufm
 
    implicit none
 !
@@ -86,7 +93,6 @@ subroutine flgsfurufm(formno, m, teken, husb, hdsb, velhght, zs, ds, dg, dc, wst
    double precision :: su
    double precision :: sd
 
-   logical, external :: iterfurufm
 !
 !
 !! executable statements -------------------------------------------------------
@@ -205,3 +211,5 @@ subroutine flgsfurufm(formno, m, teken, husb, hdsb, velhght, zs, ds, dg, dc, wst
    end do
    q1(m) = au(m) * u1(m) !  this may be done without
 end subroutine flgsfurufm
+
+end module m_flgsfurufm

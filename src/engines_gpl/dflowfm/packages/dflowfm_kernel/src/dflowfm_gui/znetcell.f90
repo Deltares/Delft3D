@@ -30,6 +30,12 @@
 !
 !
 
+module m_znetcell
+
+implicit none
+
+contains
+
    double precision function znetcell(k)
 
       use unstruc_display
@@ -109,3 +115,5 @@
       end if
 
    end function znetcell
+
+end module m_znetcell

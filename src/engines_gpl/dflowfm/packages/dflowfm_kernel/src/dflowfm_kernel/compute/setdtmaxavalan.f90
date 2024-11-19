@@ -1,6 +1,7 @@
+
    !----- AGPL --------------------------------------------------------------------
    !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+   !  Copyright (C)  Stichting Deltares, 2017-2024.
    !
    !  This file is part of Delft3D (D-Flow Flexible Mesh component).
    !
@@ -27,17 +28,25 @@
    !
    !-------------------------------------------------------------------------------
 
-   !
-   !
+module m_setdtmaxavalan
 
+implicit none
+
+private
+
+public :: setdtmaxavalan
+
+contains
+    
    subroutine setdtmaxavalan(dts)
       use m_fm_erosed, only: avaltime
-      implicit none
 
-      double precision, intent(inout) :: dts !timestep to use
+      double precision, intent(inout) :: dts !< timestep to use
 
       if (dts > avaltime / 2d0 - 1d0) then
          dts = avaltime / 2d0 - 1d0 !make sure timestep is smaller than half the avaltime (e.g. with default avaltime 9 seconds)
       end if
 
    end subroutine setdtmaxavalan
+
+end module m_setdtmaxavalan

@@ -31,6 +31,16 @@
 !
 
 ! update the water levels for the bed level change caused by subsidence/uplift
+module m_subsupl_update_s1
+
+implicit none
+
+private
+
+public :: subsupl_update_s1
+
+contains
+
 subroutine subsupl_update_s1()
    use m_subsidence, only: sdu_update_s1, sdu_blp
    use m_flowgeom, only: ndx, bl
@@ -61,3 +71,5 @@ subroutine subsupl_update_s1()
       end do
    end if
 end subroutine subsupl_update_s1
+
+end module m_subsupl_update_s1

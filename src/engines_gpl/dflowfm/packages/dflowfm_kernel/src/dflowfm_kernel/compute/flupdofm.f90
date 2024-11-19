@@ -33,6 +33,12 @@
 !> Determines flow link' upwind/downwind parameters based on current velocities and water levels.
 !! NOTE that this is purely for this flow link, independent of left-right orientation of the structure itself.
 !! (Motivation: a single structure in 2D may be crossed by multiple flow links, with varying 1->2 orientation.)
+module m_flupdofm
+
+implicit none
+
+contains
+
 subroutine flupdofm(m, il, ir, istru, velheight, &
                     husb, hdsb, uu, ud, teken, relax)
 
@@ -128,3 +134,5 @@ subroutine flupdofm(m, il, ir, istru, velheight, &
    end if
 
 end subroutine flupdofm
+
+end module m_flupdofm

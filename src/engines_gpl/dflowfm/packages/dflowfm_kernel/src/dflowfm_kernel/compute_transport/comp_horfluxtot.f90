@@ -30,6 +30,16 @@
 !
 !
 
+module m_comp_horfluxtot
+
+implicit none
+
+private
+
+public :: comp_horfluxtot
+
+contains
+
 subroutine comp_horfluxtot()
    use m_flowgeom, only: Lnx
    use m_flow, only: Lbot, Ltop, kmx
@@ -66,3 +76,5 @@ subroutine comp_horfluxtot()
 
    if (timon) call timstop(ithndl)
 end subroutine comp_horfluxtot
+
+end module m_comp_horfluxtot

@@ -27,17 +27,22 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_setucxy1d
 
-! =================================================================================================
-! =================================================================================================
-subroutine setucxy1D() ! give ucx,ucy magnitude of uc1D, jaPure1D
+implicit none
 
-   use m_flowgeom
-   use m_flow
+private
 
-   implicit none
+public :: setucxy1d
+
+contains
+
+!> give ucx,ucy magnitude of uc1D, jaPure1D
+subroutine setucxy1D() 
+
+   use m_flowgeom, only: ndx, lnx, lnxi, kcu, ln
+   use m_flow, only: ucx, ucy, uc1d
+
    integer :: n, LL, k2
    double precision :: uxy
 
@@ -67,3 +72,5 @@ subroutine setucxy1D() ! give ucx,ucy magnitude of uc1D, jaPure1D
    end do
 
 end subroutine setucxy1D
+
+end module m_setucxy1d

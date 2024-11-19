@@ -30,6 +30,12 @@
 !
 !
 
+module m_setwor
+
+implicit none
+
+contains
+
       subroutine SETWOR(XW1, YW1, XW2, YW2)
          use unstruc_opengl
 #ifdef HAVE_OPENGL
@@ -55,3 +61,5 @@
          end if
          return
       end
+
+end module m_setwor

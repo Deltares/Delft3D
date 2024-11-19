@@ -30,6 +30,12 @@
 !
 !
 
+module m_ispumpon
+
+implicit none
+
+contains
+
  integer function ispumpon(n, s1k)
     use fm_external_forcings_data
     use m_missing
@@ -54,3 +60,5 @@
     end if
     ispumpon = int(pumponoff(5, n)) ! no change
  end function ispumpon
+
+end module m_ispumpon

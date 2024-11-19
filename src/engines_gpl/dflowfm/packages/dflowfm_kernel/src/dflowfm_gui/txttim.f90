@@ -30,7 +30,14 @@
 !
 !
 
+module m_txttim
+
+implicit none
+
+contains
+
       subroutine TXTTIM()
+         use m_settextsize
          use m_mtext
          use m_devices
          use m_textim
@@ -47,3 +54,5 @@
 
          return
       end
+
+end module m_txttim

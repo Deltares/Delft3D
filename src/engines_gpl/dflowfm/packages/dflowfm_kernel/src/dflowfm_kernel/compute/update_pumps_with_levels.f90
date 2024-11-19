@@ -30,6 +30,16 @@
 !
 !
 
+module m_update_pumps_with_levels
+
+implicit none
+
+private
+
+public :: update_pumps_with_levels
+
+contains
+
 subroutine update_pumps_with_levels()
 
    use m_flowgeom
@@ -75,3 +85,5 @@ subroutine update_pumps_with_levels()
    end if
 
 end subroutine update_pumps_with_levels
+
+end module m_update_pumps_with_levels

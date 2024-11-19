@@ -44,10 +44,10 @@ contains
     use m_depmax
     use m_drawthis
     use m_inview
+    use m_znod
     
     integer :: i
     double precision :: rmin, rmax
-    double precision, external :: znod
     double precision :: zn
     integer :: n, ja2
 

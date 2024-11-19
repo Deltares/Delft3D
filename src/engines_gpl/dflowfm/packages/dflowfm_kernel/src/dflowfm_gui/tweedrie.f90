@@ -30,6 +30,12 @@
 !
 !
 
+module m_tweedrie
+
+implicit none
+
+contains
+
    subroutine TWEEDRIE(X, Y, XD, YD, ZD)
       use m_howtoview
       implicit none
@@ -60,3 +66,5 @@
 
       return
    end subroutine TWEEDRIE
+
+end module m_tweedrie

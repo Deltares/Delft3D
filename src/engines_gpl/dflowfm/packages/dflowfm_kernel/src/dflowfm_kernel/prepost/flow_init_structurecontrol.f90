@@ -32,6 +32,7 @@
 
 !> Initializes controllers that force structures.
 function flow_init_structurecontrol() result(status)
+   use m_togeneral, only: togeneral
    use dfm_error
    use m_hash_search
    use m_alloc
@@ -54,6 +55,7 @@ function flow_init_structurecontrol() result(status)
    use m_longculverts, only: nlongculverts
    use m_partitioninfo, only: jampi
    use m_qnerror
+   use m_read_property, only: read_property
 
    implicit none
    logical :: status
@@ -557,7 +559,7 @@ function flow_init_structurecontrol() result(status)
          case ('weir')
             rec = ' '
             key = 'CrestLevel'
-            call read_property(strs_ptr%child_nodes(cgenidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+            call read_property(strs_ptr%child_nodes(cgenidx(n))%node_ptr, trim(key), rec, tmpval, is_double, strid, successloc)
             if (.not. successloc) then
                write (msgbuf, '(a,a,a)') 'Required field '//trim(key)//' missing in weir ''', trim(strid), '''.'
                call warn_flush()
@@ -618,7 +620,7 @@ function flow_init_structurecontrol() result(status)
          case ('gate')
             rec = ' '
             key = 'CrestLevel'
-            call read_property(strs_ptr%child_nodes(cgenidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+            call read_property(strs_ptr%child_nodes(cgenidx(n))%node_ptr, trim(key), rec, tmpval, is_double, strid, successloc)
             if (.not. successloc) then
                write (msgbuf, '(a)') 'Required field '//trim(key)//' missing in gate '//trim(strid)//'.'
                call warn_flush()
@@ -667,7 +669,7 @@ function flow_init_structurecontrol() result(status)
             hulp(idx_gateheight, n) = tmpval ! gatedoorheight.
             rec = ' '
             key = 'GateLowerEdgeLevel'
-            call read_property(strs_ptr%child_nodes(cgenidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+            call read_property(strs_ptr%child_nodes(cgenidx(n))%node_ptr, trim(key), rec, tmpval, is_double, strid, successloc)
             if (.not. successloc) then
                write (msgbuf, '(a)') 'Required field '//trim(key)//' missing in gate '//trim(strid)//'.'
                call warn_flush()
@@ -700,7 +702,7 @@ function flow_init_structurecontrol() result(status)
             ! Opening width between left and right doors. (If any. Otherwise set to 0 for a single gate door with under/overflow)
             rec = ' '
             key = 'GateOpeningWidth'
-            call read_property(strs_ptr%child_nodes(cgenidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+            call read_property(strs_ptr%child_nodes(cgenidx(n))%node_ptr, trim(key), rec, tmpval, is_double, strid, successloc)
             if (.not. successloc) then
                write (msgbuf, '(a)') 'Optional field '//trim(key)//' not available for gate '//trim(strid)//'. Use default value.'
                call msg_flush()
@@ -761,7 +763,7 @@ function flow_init_structurecontrol() result(status)
             do k = 1, NUMGENERALKEYWRD ! generalstructure keywords
                tmpval = dmiss
                key = generalkeywrd(k)
-               call read_property(strs_ptr%child_nodes(cgenidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+               call read_property(strs_ptr%child_nodes(cgenidx(n))%node_ptr, trim(key), rec, tmpval, is_double, strid, successloc)
                if (.not. successloc) then
                   write (msgbuf, '(a)') 'Required field '//trim(key)//' not available for generalstructure '//trim(strid)//'.'
                   call msg_flush()
@@ -887,7 +889,7 @@ function flow_init_structurecontrol() result(status)
          call resolvePath(plifile, md_structurefile_dir)
 
          key = 'lower_edge_level'
-         call read_property(strs_ptr%child_nodes(gateidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+         call read_property(strs_ptr%child_nodes(gateidx(n))%node_ptr, trim(key), rec, tmpval, is_double, strid, successloc)
          if (.not. successloc) then
             write (msgbuf, '(a)') 'Required field '//trim(key)//' missing in gate '//trim(strid)//'.'
             call warn_flush()
@@ -960,7 +962,7 @@ function flow_init_structurecontrol() result(status)
 
          rec = ' '
          key = 'crest_level'
-         call read_property(strs_ptr%child_nodes(cdamidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+         call read_property(strs_ptr%child_nodes(cdamidx(n))%node_ptr, trim(key), rec, tmpval, is_double, strid, successloc)
          if (.not. successloc) then
             write (msgbuf, '(a,a,a)') 'Field ''crest_level'' not available for damlevel ''', trim(strid), '''.'
             call msg_flush()
@@ -1091,7 +1093,7 @@ function flow_init_structurecontrol() result(status)
 
             rec = ' '
             key = 'capacity'
-            call read_property(strs_ptr%child_nodes(pumpidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+            call read_property(strs_ptr%child_nodes(pumpidx(n))%node_ptr, trim(key), rec, tmpval, is_double, strid, successloc)
             if (.not. successloc) then
                write (msgbuf, '(a,i0,a)') 'Required field '//trim(key)//' missing for pump #', n, '.'
                call warn_flush()

@@ -31,12 +31,23 @@
 !
 
 !> solve equations implicitly in vertical direction
+module m_solve_vertical
+
+implicit none
+
+private
+
+public :: solve_vertical
+
+contains
+
 subroutine solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
                           zws, qw, vol1, kbot, ktop, &
                           sumhorflux, fluxver, source, sink, &
                           difsed, sigdifi, vicwws, &
                           nsubsteps, jaupdate, ndeltasteps, sed, &
                           a, b, c, d, e, sol, rhs)
+   use m_make_rhs, only: make_rhs
    use m_flowgeom, only: Ndxi, Ndx, ba, kfs ! static mesh information
    use m_flowtimes, only: dts
    use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
@@ -262,3 +273,5 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
    if (timon) call timstop(ithndl)
    return
 end subroutine solve_vertical
+
+end module m_solve_vertical

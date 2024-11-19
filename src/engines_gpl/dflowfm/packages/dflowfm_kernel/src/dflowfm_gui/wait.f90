@@ -30,6 +30,12 @@
 !
 !
 
+module m_wait
+
+implicit none
+
+contains
+
       subroutine wait()
          implicit none
          integer :: key
@@ -39,3 +45,5 @@
          if (KEY /= -999 .and. KEY /= -32387) return
          goto 10
       end
+
+end module m_wait

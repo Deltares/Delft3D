@@ -30,6 +30,16 @@
 !
 !
 
+module m_comp_sq
+
+implicit none
+
+private
+
+public :: comp_sq
+
+contains
+
 subroutine comp_sq(Ndkx, Lnkx, kbot, ktop, Lbot, Ltop, q1, qw, sq)
    use m_flowgeom, only: Ndx, Lnx, ln
    implicit none
@@ -93,3 +103,5 @@ subroutine comp_sq(Ndkx, Lnkx, kbot, ktop, Lbot, Ltop, q1, qw, sq)
 
    return
 end subroutine comp_sq
+
+end module m_comp_sq

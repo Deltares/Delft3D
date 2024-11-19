@@ -30,6 +30,12 @@
 !
 !
 
+module m_findfn
+
+implicit none
+
+contains
+
 subroutine findfn(zn, fn)
 
    implicit none
@@ -72,3 +78,5 @@ subroutine findfn(zn, fn)
    fn = acof * (zn - znc) + bcof
 
 end subroutine findfn
+
+end module m_findfn

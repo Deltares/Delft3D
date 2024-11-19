@@ -43,6 +43,14 @@ module m_observations
    integer, private :: iUniq_ = 1
    character(len=*), parameter, private :: defaultName_ = 'Obs'
    
+   interface
+      module subroutine read_moving_stations(obs_filenames)
+         character(len=*), intent(in) :: obs_filenames !< File containing names of observation files. 
+      end subroutine read_moving_stations
+    end interface
+   
+    public :: read_moving_stations
+    
 contains
 
 !> (re)initialize valobs and set pointers for observation stations
@@ -832,7 +840,7 @@ contains
 !> Reads observation points from file.
 !! Two file types are supported: *_obs.xyn and *_obs.ini.
    subroutine loadObservations(filename, jadoorladen)
-      use messageHandling
+      use messageHandling, only: mess, LEVEL_ERROR
       use m_readObservationPoints, only: readObservationPoints
       use unstruc_channel_flow, only: network
       use m_inquire_flowgeom

@@ -30,6 +30,12 @@
 !
 !
 
+module m_stopja
+
+implicit none
+
+contains
+
       subroutine STOPJA(JA)
          use unstruc_files
          use m_devices
@@ -61,3 +67,5 @@
          end if
          return
       end
+
+end module m_stopja

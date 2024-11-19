@@ -30,6 +30,9 @@
 !
 !
 module m_get_equilibrium_transport_rates
+use m_widarhyr, only: widarhyr
+use m_check_einstein_garcia2, only: check_einstein_garcia2
+
    implicit none
 contains
  subroutine getequilibriumtransportrates(kk, seq, wse, mx, hsk) ! get them for flowcell kk or ban kk

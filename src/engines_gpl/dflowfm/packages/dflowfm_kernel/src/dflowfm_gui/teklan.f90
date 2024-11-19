@@ -30,6 +30,12 @@
 !
 !
 
+module m_teklan
+
+implicit none
+
+contains
+
   subroutine TEKLAN(NCOL)
      use m_linewidth
      use m_disp3c
@@ -101,3 +107,5 @@
 
      return
   end subroutine TEKLAN
+
+end module m_teklan

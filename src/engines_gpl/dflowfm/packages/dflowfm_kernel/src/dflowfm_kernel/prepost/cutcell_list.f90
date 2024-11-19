@@ -31,6 +31,7 @@
 !
 
   subroutine cutcell_list(n12, jamasks)
+     use m_write_illegal_cells_to_pol, only: write_illegal_cells_to_pol
      use M_NETW
      use M_FLOWGEOM
      use m_missing

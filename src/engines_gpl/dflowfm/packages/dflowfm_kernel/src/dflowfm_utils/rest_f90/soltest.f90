@@ -32,6 +32,7 @@
 
    !> test iterative solver (as "mpitest")
    subroutine soltest(iCFL, icgsolver_loc, maxsubmatvecs, iepsdiff, iepscg)
+      use m_update_matrix, only: update_matrix
       use m_partitioninfo
       use m_timer
       use unstruc_messages

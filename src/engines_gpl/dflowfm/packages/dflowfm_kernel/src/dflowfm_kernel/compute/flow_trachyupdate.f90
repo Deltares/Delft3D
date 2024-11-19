@@ -30,6 +30,14 @@
 !
 !
 
+module m_flow_trachyupdate
+use m_setucxucy_mor, only: setucxucy_mor
+
+
+implicit none
+
+contains
+
 subroutine flow_trachyupdate()
    use unstruc_messages
    use unstruc_files, only: mdia
@@ -260,3 +268,5 @@ subroutine flow_trachyupdate()
    end if
 
 end subroutine flow_trachyupdate
+
+end module m_flow_trachyupdate

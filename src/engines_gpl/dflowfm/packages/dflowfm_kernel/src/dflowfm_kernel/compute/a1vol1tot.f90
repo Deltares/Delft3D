@@ -30,6 +30,16 @@
 !
 !
 
+module m_a1vol1tot
+
+implicit none
+
+private
+
+public :: a1vol1tot
+
+contains
+
  subroutine a1vol1tot()
     use m_flowgeom
     use m_flow
@@ -94,3 +104,5 @@
 ! end debug
 
  end subroutine a1vol1tot
+
+end module m_a1vol1tot

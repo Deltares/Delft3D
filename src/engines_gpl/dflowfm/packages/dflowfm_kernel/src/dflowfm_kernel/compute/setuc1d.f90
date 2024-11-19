@@ -26,6 +26,16 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+module m_setuc1d
+
+implicit none
+
+private
+
+public :: setuc1d
+
+contains
+
    subroutine setuc1d()
       use m_netw
       use m_flow
@@ -215,3 +225,5 @@
       end if
 
    end subroutine setuc1d
+
+end module m_setuc1d

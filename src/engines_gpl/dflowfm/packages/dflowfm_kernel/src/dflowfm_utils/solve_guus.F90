@@ -1608,6 +1608,7 @@
  end subroutine gauss_eliminationjipjan
 
  subroutine pack_matrix()
+    use m_setkfs, only: setkfs
     use m_reduce
     use m_flowgeom
     use m_flow

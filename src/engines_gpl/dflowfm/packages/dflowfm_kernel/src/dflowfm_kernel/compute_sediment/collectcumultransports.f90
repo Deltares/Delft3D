@@ -30,12 +30,20 @@
 !
 !
 
+module m_collectcumultransports
+
+implicit none
+
+private
+
+public :: collectcumultransports
+
+contains
+
    subroutine collectcumultransports()
       use m_flowtimes, only: dts
-      use m_flowgeom
+      use m_flowgeom, only: ndx
       use m_fm_erosed
-
-      implicit none
 
       integer :: k, l
       double precision :: dtmor_
@@ -52,3 +60,5 @@
       end do
 
    end subroutine
+
+end module m_collectcumultransports

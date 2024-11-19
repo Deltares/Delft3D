@@ -68,7 +68,35 @@
 !>     d(h sedl)/dt = -div (q1 sedl) + div (diag(NU) grad sedl) + h ( -sink sedl + source )
 !>   solves for each column {k | 1<=k<k=top} an equation of the form
 !>     aaj(k) sedj(k-1) + bbj(k) sedj(k) + ccj(k) sedj(k+1) = ddj(k)
+module m_update_constituents
+
+implicit none
+
+private
+
+public :: update_constituents
+
+contains
+
 subroutine update_constituents(jarhoonly)
+   use m_solve_vertical, only: solve_vertical
+   use m_solve_2d, only: solve_2d
+   use m_get_ndeltasteps, only: get_ndeltasteps
+   use m_get_jaupdatehorflux, only: get_jaupdatehorflux
+   use m_get_jaupdate, only: get_jaupdate
+   use m_get_dtmax, only: get_dtmax
+   use m_fill_rho, only: fill_rho
+   use m_fill_constituents, only: fill_constituents
+   use m_extract_rho, only: extract_rho
+   use m_extract_constituents, only: extract_constituents
+   use m_diffusionimplicit2d, only: diffusionimplicit2d
+   use m_decaytracers, only: decaytracers
+   use m_comp_sumhorflux, only: comp_sumhorflux
+   use m_comp_sinktot, only: comp_sinktot
+   use m_comp_horfluxtot, only: comp_horfluxtot
+   use m_comp_fluxver, only: comp_fluxver
+   use m_comp_fluxhor3d, only: comp_fluxhor3d
+   use m_comp_dxiau, only: comp_dxiau
    use m_flowgeom, only: Ndx, Ndxi, Lnx ! static mesh information
    use m_flow, only: Ndkx, Lnkx, u1, q1, au, qw, zws, sqi, vol1, kbot, ktop, Lbot, Ltop, kmxn, kmxL, kmx, viu, vicwws, wsf, jadecaytracers
    use m_flowtimes, only: dts
@@ -266,3 +294,5 @@ subroutine update_constituents(jarhoonly)
    if (timon) call timstop(ithndl)
    return
 end subroutine update_constituents
+
+end module m_update_constituents

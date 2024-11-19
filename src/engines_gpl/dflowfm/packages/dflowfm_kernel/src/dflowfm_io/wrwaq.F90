@@ -326,6 +326,7 @@ end module wrwaq
 !! Currently only writing of WAQ-files.
 module waq
    use unstruc_messages
+   use m_getkbotktopmax
 
    implicit none
 

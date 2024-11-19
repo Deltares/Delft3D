@@ -30,6 +30,16 @@
 !
 !
 
+module m_decaytracers
+
+implicit none
+
+private
+
+public :: decaytracers
+
+contains
+
 subroutine decaytracers()
    use m_transport
    use m_flowgeom
@@ -57,3 +67,5 @@ subroutine decaytracers()
 
    if (timon) call timstop(ithndl)
 end subroutine decaytracers
+
+end module m_decaytracers

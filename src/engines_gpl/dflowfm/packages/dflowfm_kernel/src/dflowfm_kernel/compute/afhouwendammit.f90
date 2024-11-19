@@ -30,6 +30,17 @@
 !
 !
 
+module m_afhouwendammit
+use m_inkade
+
+implicit none
+
+private
+
+public :: afhouwendammit
+
+contains
+
  subroutine afhouwendammit()
     use m_ship
     use m_shipcoor
@@ -185,3 +196,5 @@
     end do
 
  end subroutine afhouwendammit
+
+end module m_afhouwendammit

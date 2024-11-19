@@ -30,6 +30,12 @@
 !
 !
 
+module m_selecteditmode
+
+implicit none
+
+contains
+
     !> Selects the edit mode for a given keypress code.
     !! Alt-P/-N/-S/-G/-B/-F for the respective modes.
     subroutine selecteditmode(newmode, key)
@@ -52,3 +58,5 @@
        end if
        return
     end subroutine selecteditmode
+
+end module m_selecteditmode

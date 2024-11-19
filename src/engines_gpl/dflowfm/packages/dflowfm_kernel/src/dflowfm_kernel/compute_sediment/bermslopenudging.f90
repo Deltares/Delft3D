@@ -27,6 +27,16 @@
 !
 !-------------------------------------------------------------------------------
 
+module m_bermslopenudging
+
+implicit none
+
+private
+
+public :: bermslopenudging
+
+contains
+
 subroutine bermslopenudging(error)
    use m_sediment
    use m_fm_erosed
@@ -35,8 +45,6 @@ subroutine bermslopenudging(error)
    use m_waves, only: hwav
    use m_flowparameters, only: jawave
    use m_debug
-
-   implicit none
 
    logical, intent(out) :: error
 
@@ -153,3 +161,5 @@ subroutine getfracfixfac(L, k1, k2, lsd, transp, frc, fixf)
       end if
    end if
 end subroutine getfracfixfac
+
+end module m_bermslopenudging

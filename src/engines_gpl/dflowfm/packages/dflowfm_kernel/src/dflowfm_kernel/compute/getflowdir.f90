@@ -30,6 +30,12 @@
 !
 !
 
+module m_getflowdir
+
+implicit none
+
+contains
+
  subroutine getflowdir(L, iu)
     use m_flow
     use m_flowgeom
@@ -49,3 +55,5 @@
        end if
     end if
  end subroutine getflowdir
+
+end module m_getflowdir

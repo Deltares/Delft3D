@@ -37,6 +37,9 @@ contains
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_old(iresult)
 
+      use m_add_tracer, only: add_tracer
+      use m_setzcs, only: setzcs
+      use m_getkbotktopmax
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
       use m_inquire_flowgeom, only: IFLTP_1D, IFLTP_ALL
@@ -46,15 +49,15 @@ contains
       use m_structures, only: jaoldstr
       use m_meteo
       use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
-      use m_transport, only: ised1, numconst, const_names, constituents, itrac2const
+      use m_transport, only: ised1, const_names, constituents, itrac2const
       use m_mass_balance_areas, only: mbaname, nomba, mbadef, nammbalen
       use mass_balance_areas_routines, only: get_mbainputname
-      use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbot
+      use m_fm_wq_processes, only: wqbotnames, wqbot
       use dfm_error, only: dfm_noerr, dfm_extforcerror
       use m_sferic, only: jsferic
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
-      use unstruc_files, only: basename, resolvepath
+      use unstruc_files, only: resolvepath, basename
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
       use timers, only: timstop, timstrt
@@ -64,7 +67,9 @@ contains
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
-      use m_observations, only: addobservation
+      use m_observations, only: nummovobs, addobservation
+      use unstruc_inifields, only: initialfield2Dto3D
+      use m_find_name, only: find_name
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
@@ -78,7 +83,6 @@ contains
       character(len=NAMSFLEN) :: sfnam
       character(len=20) :: wqinput
       character(len=NAMMBALEN) :: mbainputname
-      integer, external :: findname
       double precision, allocatable :: viuh(:), tt(:)
       integer, dimension(:), pointer :: pkbot, pktop
       double precision :: factor
@@ -386,7 +390,7 @@ contains
                   sah = dmiss
                   success = timespaceinitialfield(xz, yz, sah, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
                   if (success) then
-                     call initialfield2Dto3D(sah, sa1, transformcoef(13), transformcoef(14))
+                     call initialfield2Dto3D(sah, sa1, transformcoef(13), transformcoef(14), operand)
                   end if
                end if
                success = .true. ! We allow to disable salinity without removing the quantity.
@@ -450,7 +454,7 @@ contains
                call get_sedfracname(qid, sfnam, qidnam)
                iconst = 0
                if (ISED1 > 0 .and. trim(sfnam) /= '') then
-                  iconst = findname(NUMCONST, const_names, sfnam)
+                  iconst = find_name(const_names, sfnam)
                end if
                if (iconst > 0) then
                   if (allocated(viuh)) deallocate (viuh)
@@ -489,7 +493,7 @@ contains
                call get_sedfracname(qid, sfnam, qidnam)
                iconst = 0
                if (ISED1 > 0 .and. trim(sfnam) /= '') then
-                  iconst = findname(NUMCONST, const_names, sfnam)
+                  iconst = find_name(const_names, sfnam)
                end if
                if (iconst > 0) then
                   allocate (tt(1:ndkx))
@@ -503,7 +507,7 @@ contains
                call get_sedfracname(qid, sfnam, qidnam)
                iconst = 0
                if (ISED1 > 0 .and. trim(sfnam) /= '') then
-                  iconst = findname(NUMCONST, const_names, sfnam)
+                  iconst = find_name(const_names, sfnam)
                end if
                if (iconst > 0) then
                   allocate (tt(1:ndkx))
@@ -516,7 +520,7 @@ contains
             else if (qid(1:13) == 'initialtracer') then
                call get_tracername(qid, tracnam, qidnam)
                call add_tracer(tracnam, iconst) ! or just gets constituents number if tracer already exists
-               itrac = findname(numtracers, trnames, tracnam)
+               itrac = find_name(trnames, tracnam)
 
                if (itrac == 0) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: tracer '//trim(tracnam)//' not found')
@@ -573,7 +577,7 @@ contains
                deallocate (viuh)
 
             else if (qid(1:13) == 'initialwaqbot') then
-               iwqbot = findname(numwqbots, wqbotnames, wqinput)
+               iwqbot = find_name(wqbotnames, wqinput)
 
                if (iwqbot == 0) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: water quality bottom variable '//trim(wqinput)//' not found')
@@ -1150,7 +1154,7 @@ contains
                   if (.not. allocated(mbaname)) then
                      allocate (mbaname(0))
                   end if
-                  imba = findname(nomba, mbaname, mbainputname)
+                  imba = find_name(mbaname, mbainputname)
 
                   if (imba == 0) then
                      nomba = nomba + 1
@@ -1371,6 +1375,7 @@ contains
          initialize_lateraldata, apply_transport
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
+      use m_togeneral, only: togeneral
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 

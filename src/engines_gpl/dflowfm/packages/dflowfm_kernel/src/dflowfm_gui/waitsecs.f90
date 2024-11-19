@@ -30,6 +30,12 @@
 !
 !
 
+module m_waitsecs
+
+implicit none
+
+contains
+
       subroutine WAITSECS(NSEC)
          implicit none
          integer :: i
@@ -43,3 +49,5 @@
          end do
          return
       end
+
+end module m_waitsecs
