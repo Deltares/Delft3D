@@ -112,7 +112,7 @@ object Linux : BuildType({
                     --username "%s3_dsctestbench_accesskey%"
                     --password "%s3_dsctestbench_secret%"
                     --compare
-                    --config "configs/dimr/%configfile%"
+                    --config "configs/%configfile%"
                     --log-level DEBUG
                     --parallel
                     --teamcity
@@ -127,6 +127,24 @@ object Linux : BuildType({
                 --pull always
                 --shm-size 8G
             """.trimIndent()
+        }
+        dockerCommand {
+            name = "Remove container"
+            id = "Remove_Container"
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+            commandType = other {
+                subCommand = "rmi"
+                commandArgs = "containers.deltares.nl/delft3d/test/delft3dfm:alma8-%dep.${DockerLinuxBuild.id}.build.revisions.short%"
+            }
+        }
+        dockerCommand {
+            name = "Prune"
+            id = "Prune"
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+            commandType = other {
+                subCommand = "system"
+                commandArgs = "prune -f"
+            }
         }
     }
 

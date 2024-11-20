@@ -12,6 +12,7 @@ object DockerLinuxBuild : BuildType({
 
     vcs {
         root(DslContext.settingsRoot)
+        cleanCheckout = true
     }
 
     steps {
@@ -133,12 +134,12 @@ object DockerLinuxBuild : BuildType({
             """.trimIndent()
         }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
-            id = "ARTIFACT_DEPENDENCY_1122"
+            cleanDestination = true
             buildRule = lastSuccessful()
             artifactRules = "Bin64.zip!/Release/Wandadef.dat=>wanda/bin/Wandadef.dat"
         }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64LinuxAlma8")) {
-            id = "ARTIFACT_DEPENDENCY_2182"
+            cleanDestination = true
             buildRule = lastSuccessful()
             artifactRules = "build.zip!/lib/*=>wanda/lib"
         }

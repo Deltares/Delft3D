@@ -44,6 +44,25 @@ object Trigger : BuildType({
             }
         }
 
+        // Enable this buildstep to check for code changes instead of branch (disable previous buildstep)
+        python {
+            name = "Determine components by code changes"
+            enabled = false
+
+            // The code changes can only be requested through the gitlab api on merge-requests.
+            conditions {
+                contains("teamcity.build.branch", "merge-requests")
+            }
+            command = file {
+                filename = "ci/teamcity/scripts/check_scope.py"
+                scriptArguments = """
+                    -b "%teamcity.build.branch%"
+                    -t "%gitlab_private_access_token%"
+                    -f "ci/teamcity/Dimr_TestbenchMatrix/vars/repo_index.json"
+                """.trimIndent()
+            }
+        }
+
         python {
             name = "Retrieve Linux Testbench XMLs from CSV"
             command = file {
