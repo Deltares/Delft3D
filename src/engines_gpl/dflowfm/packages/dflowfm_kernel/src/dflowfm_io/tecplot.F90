@@ -39,12 +39,6 @@ module m_tecplot
    interface
       integer function tecpolyface142 &
          (numfaces, ifacenodecounts, ifacenodes, ifaceleftelems, ifacerightelems)
-         !MS$ATTRIBUTES STDCALL :: tecpolyface142
-         !MS$ATTRIBUTES REFERENCE :: numfaces
-         !MS$ATTRIBUTES REFERENCE :: ifacenodecounts
-         !MS$ATTRIBUTES REFERENCE :: ifacenodes
-         !MS$ATTRIBUTES REFERENCE :: ifaceleftelems
-         !MS$ATTRIBUTES REFERENCE :: ifacerightelems
          integer :: numfaces
          integer :: ifacenodecounts(*)
          integer :: ifacenodes(*)
