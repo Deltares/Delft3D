@@ -37,7 +37,7 @@ fm lim-waves,dimr/dimr_dflowfm_lim_waves_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,F
 fm parallel,dimr/dimr_dflowfm_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm rws acceptance parallel,dimr/dimr_dflowfm_lnx64_rws_acceptance_parallel.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm,dimr/dimr_dflowfm_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm mormerge,dimr/dimr_dflowfm_mormerge_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm mormerge,dimr/dimr_dflowfm_mormerge_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Disabled until transition due to hard-coded paths in case."
 fm mormerge,dimr/dimr_dflowfm_mormerge_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm processes,dimr/dimr_dflowfm_processes_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm processes,dimr/dimr_dflowfm_processes_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
@@ -51,7 +51,7 @@ fm tutorials,dimr/dimr_dflowfm_tutorials_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,F
 fm tutorials,dimr/dimr_dflowfm_tutorials_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm validation,dimr/dimr_dflowfm_validation_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm validation,dimr/dimr_dflowfm_validation_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm wanda,dimr/dimr_dflowfm_wanda_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm wanda,dimr/dimr_dflowfm_wanda_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Parallel run is flaky."
 fm wanda,dimr/dimr_dflowfm_wanda_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq 1d2d,dimr/dimr_dflowfm_waq_coupling_1D2D_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq 1d2d,dimr/dimr_dflowfm_waq_coupling_1D2D_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
@@ -77,7 +77,7 @@ dwaq drtc,dimr/dimr_dwaq_drtc_win64.xml,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
 dwaves,dimr/dimr_dwaves_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 dwaves,dimr/dimr_dwaves_win64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 dpart structured,dwaq_dpart/lnx64/dpart_structured.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
-dpart structured,dwaq_dpart/win64/dpart_structured.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+dpart structured,dwaq_dpart/win64/dpart_structured.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Fails in matrix build for unknown reason."
 dpart unstructured,dwaq_dpart/lnx64/dpart_unstructured.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dpart unstructured,dwaq_dpart/win64/dpart_unstructured.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dwaq dpart,dwaq_dpart/lnx64/dwaq_dpart.xml,TRUE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,

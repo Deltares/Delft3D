@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <project>
   <modelVersion>4.0.0</modelVersion>
-  <name>Dimr_TestbenchMatrix Config DSL Script</name>
-  <groupId>Dimr_TestbenchMatrix</groupId>
-  <artifactId>Dimr_TestbenchMatrix_dsl</artifactId>
+  <name>Delft3D Config DSL Script</name>
+  <groupId>Delft3D</groupId>
+  <artifactId>Delft3D_dsl</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <parent>

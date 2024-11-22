@@ -3,7 +3,6 @@
         "src/engines_gpl/d_hydro/*",
         "src/engines_gpl/dimr/*",
         "test/test/test/third_party_open/*",
-        "src/tools_gpl/*",
         "src/tools_lgpl/*",
         "src/utils_gpl/*",
         "src/utils_lgpl/*"
@@ -22,7 +21,6 @@
     ],
     "part": [
         "src/engines_gpl/part/*",
-        "test/deltares_testbench/configs/dimr/dimr_dpart_*.xml",
         "test/deltares_testbench/configs/dwaq_dpart/*dpart*.xml"
     ],
     "rr": [
@@ -33,7 +31,10 @@
     "waq": [
         "src/engines_gpl/waq/*",
         "src/test/engines_gpl/waq/*",
-        "test/deltares_testbench/configs/dimr/dimr_*waq_*.xml",
+        "src/tools_gpl/waq_tools/*",
+        "src/tools_gpl/io_hyd/*",
+        "src/tools_gpl/waq_hyd_data/*",
+        "test/unit_test/engines_gpl/waq/*",
         "test/deltares_testbench/configs/dwaq_dpart/*dwaq*.xml"
     ],
     "wave":[
@@ -45,6 +46,9 @@
         "src/tools_lgpl/matlab/quickplot/*"
     ],
     "tc":[
-        "test/deltares_testbench/*"
+        "test/deltares_testbench/tools/*",
+        "test/deltares_testbench/test/*",
+        "test/deltares_testbench/src/*",
+        "test/deltares_testbench/ci/*"
     ]
 }

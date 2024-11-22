@@ -1,7 +1,9 @@
-package testbenchMatrix
+package release
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.approval
+
+import testbench.*
 
 object Release : BuildType({
 
@@ -18,10 +20,10 @@ object Release : BuildType({
     }
 
     dependencies {
-        snapshot(Linux) {
+        snapshot(TestbenchLinux) {
             reuseBuilds = ReuseBuilds.NO
         }
-        snapshot(Windows) {
+        snapshot(TestbenchWindows) {
             reuseBuilds = ReuseBuilds.NO
         }
     }

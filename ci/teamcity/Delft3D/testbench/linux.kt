@@ -1,4 +1,4 @@
-package testbenchMatrix
+package testbench
 
 import java.io.File
 import jetbrains.buildServer.configs.kotlin.*
@@ -6,22 +6,22 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
 
-import testbenchMatrix.Trigger
+import build.*
 
-object Linux : BuildType({
+object TestbenchLinux : BuildType({
 
     name = "Linux"
-    buildNumberPattern = "%dep.${DockerLinuxBuild.id}.build.revisions.short%"
+    buildNumberPattern = "%dep.${BuildDockerLinux.id}.build.revisions.short%"
 
     artifactRules = """
-        delft3d\test\deltares_testbench\data\cases\**\*.pdf      => pdf
-        delft3d\test\deltares_testbench\data\cases\**\*.dia      => logging
-        delft3d\test\deltares_testbench\data\cases\**\*.log      => logging
-        delft3d\test\deltares_testbench\logs                     => logging
-        delft3d\test\deltares_testbench\copy_cases               => copy_cases.zip
+        test\deltares_testbench\data\cases\**\*.pdf      => pdf
+        test\deltares_testbench\data\cases\**\*.dia      => logging
+        test\deltares_testbench\data\cases\**\*.log      => logging
+        test\deltares_testbench\logs                     => logging
+        test\deltares_testbench\copy_cases               => copy_cases.zip
     """.trimIndent()
 
-    val filePath = "${DslContext.baseDir}/vars/dimr_testbench_table.csv"
+    val filePath = "${DslContext.baseDir}/testbench/vars/dimr_testbench_table.csv"
     val lines = File(filePath).readLines()
     val linuxLines = lines.filter { line -> line.contains("lnx64")}
     val configs = linuxLines.map { line ->
@@ -40,7 +40,9 @@ object Linux : BuildType({
             options = configs,
             display = ParameterDisplay.PROMPT
         )
-        param("s3_dsctestbench_accesskey", "j3WxZe0x3LB6cHgg5vp9")
+        checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
+        text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
+        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a159")
     }
 
@@ -58,7 +60,7 @@ object Linux : BuildType({
                     token = "%gitlab_private_access_token%"
                 }
                 filterSourceBranch = "+:*"
-                ignoreDrafts = true
+                // ignoreDrafts = true
             }
         }
         dockerSupport {
@@ -68,12 +70,14 @@ object Linux : BuildType({
                 dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
             }
         }
-        commitStatusPublisher {
-            id = "Delft3D_gitlab"
-            enabled = true
-            vcsRootExtId = "${DslContext.settingsRoot.id}"
-            publisher = gitlab {
-                authType = vcsRoot()
+        if (DslContext.getParameter("environment") == "production") {
+            commitStatusPublisher {
+                id = "Delft3D_gitlab"
+                enabled = true
+                vcsRootExtId = "${DslContext.settingsRoot.id}"
+                publisher = gitlab {
+                    authType = vcsRoot()
+                }
             }
         }
         perfmon {
@@ -113,13 +117,14 @@ object Linux : BuildType({
                     --password "%s3_dsctestbench_secret%"
                     --compare
                     --config "configs/%configfile%"
+                    --filter "testcase=%case_filter%"
                     --log-level DEBUG
                     --parallel
                     --teamcity
-                    --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt"
+                    --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
                 """.trimIndent()
             }
-            dockerImage = "containers.deltares.nl/delft3d/test/delft3dfm:alma8-%dep.${DockerLinuxBuild.id}.build.revisions.short%"
+            dockerImage = "containers.deltares.nl/delft3d/test/delft3dfm:alma8-%dep.${BuildDockerLinux.id}.build.revisions.short%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
             dockerPull = true
             dockerRunParameters = """
@@ -134,7 +139,7 @@ object Linux : BuildType({
             executionMode = BuildStep.ExecutionMode.ALWAYS
             commandType = other {
                 subCommand = "rmi"
-                commandArgs = "containers.deltares.nl/delft3d/test/delft3dfm:alma8-%dep.${DockerLinuxBuild.id}.build.revisions.short%"
+                commandArgs = "containers.deltares.nl/delft3d/test/delft3dfm:alma8-%dep.${BuildDockerLinux.id}.build.revisions.short%"
             }
         }
         dockerCommand {
@@ -146,15 +151,23 @@ object Linux : BuildType({
                 commandArgs = "prune -f"
             }
         }
+        script {
+            name = "Copy cases"
+            id = "Copy_cases"
+            executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
+            conditions { equals("copy_cases", "true") }
+            workingDir = "test/deltares_testbench"
+            scriptContent = "cp -r data/cases copy_cases"
+        }
     }
 
     dependencies {
-        dependency(Trigger) {
+        dependency(TestbenchTrigger) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
             }
         }
-        dependency(DockerLinuxBuild) {
+        dependency(BuildDockerLinux) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
             }

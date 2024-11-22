@@ -1,12 +1,14 @@
-package testbenchMatrix
+package build
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.dockerSupport
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 
-object DockerLinuxBuild : BuildType({
+import build.thirdParty.*
 
-    name = "Docker Linux Build"
+object BuildDockerLinux : BuildType({
+
+    name = "Docker Linux"
     buildNumberPattern = "%build.revisions.short%"
     description = "Build DIMRset Linux container."
 
@@ -62,7 +64,7 @@ object DockerLinuxBuild : BuildType({
             id = "Docker_build_dimrset"
             commandType = build {
                 source = file {
-                    path = "ci/teamcity/Dimr_TestbenchMatrix/docker/dimrset.Dockerfile"
+                    path = "ci/teamcity/Delft3D/docker/dimrset.Dockerfile"
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
@@ -83,7 +85,7 @@ object DockerLinuxBuild : BuildType({
             id = "Docker_build_testbench"
             commandType = build {
                 source = file {
-                    path = "ci/teamcity/Dimr_TestbenchMatrix/docker/testbench.Dockerfile"
+                    path = "ci/teamcity/Delft3D/docker/testbench.Dockerfile"
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
@@ -106,6 +108,16 @@ object DockerLinuxBuild : BuildType({
         }
     }
     features {
+        pullRequests {
+            id = "merge_request"
+            provider = gitlab {
+                authType = token {
+                    token = "%gitlab_private_access_token%"
+                }
+                filterSourceBranch = "+:*"
+                // ignoreDrafts = true
+            }
+        }
         dockerSupport {
             id = "DockerSupport"
             cleanupPushedImages = true
@@ -124,7 +136,7 @@ object DockerLinuxBuild : BuildType({
             }
         }
 
-        artifacts(AbsoluteId("Delft3D_ThirdParty_Linux_IntelMpi")) {
+        artifacts(DownloadIntelMpi) {
             buildRule = lastSuccessful()
             cleanDestination = true
             artifactRules = """

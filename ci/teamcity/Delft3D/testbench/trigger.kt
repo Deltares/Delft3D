@@ -1,14 +1,11 @@
-package testbenchMatrix
+package testbench
 
 import jetbrains.buildServer.configs.kotlin.*
-import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
-import jetbrains.buildServer.configs.kotlin.buildFeatures.pullRequests
-import jetbrains.buildServer.configs.kotlin.buildSteps.python
-import jetbrains.buildServer.configs.kotlin.triggers.VcsTrigger
-import jetbrains.buildServer.configs.kotlin.triggers.vcs
-import jetbrains.buildServer.configs.kotlin.buildSteps.script
+import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.buildSteps.*
+import jetbrains.buildServer.configs.kotlin.triggers.*
 
-object Trigger : BuildType({
+object TestbenchTrigger : BuildType({
 
     name = "Trigger"
     buildNumberPattern = "%build.revisions.short%"
@@ -18,7 +15,7 @@ object Trigger : BuildType({
     }
 
     params {
-        param("testbench_table", "ci/teamcity/Dimr_TestbenchMatrix/vars/dimr_testbench_table.csv")
+        param("testbench_table", "ci/teamcity/Delft3D/testbench/vars/dimr_testbench_table.csv")
     
         param("teamcity_user", "svc_dimr_trigger")
         password("teamcity_pass", "credentialsJSON:15cc6665-e900-4360-8942-00e654f6acfe")
@@ -58,7 +55,7 @@ object Trigger : BuildType({
                 scriptArguments = """
                     -b "%teamcity.build.branch%"
                     -t "%gitlab_private_access_token%"
-                    -f "ci/teamcity/Dimr_TestbenchMatrix/vars/repo_index.json"
+                    -f "ci/teamcity/Delft3D/testbench/vars/repo_index.json"
                 """.trimIndent()
             }
         }
@@ -95,7 +92,7 @@ object Trigger : BuildType({
                      -X POST \
                      -H "Content-Type: application/xml" \
                      -d '<build branchName="%teamcity.build.branch%" replace="true">
-                            <buildType id="${Linux.id}"/>
+                            <buildType id="${TestbenchLinux.id}"/>
                             <revisions>
                                 <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
                                     <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
@@ -133,7 +130,7 @@ object Trigger : BuildType({
                      -X POST \
                      -H "Content-Type: application/xml" \
                      -d '<build branchName="%teamcity.build.branch%" replace="true">
-                            <buildType id="${Windows.id}"/>
+                            <buildType id="${TestbenchWindows.id}"/>
                             <revisions>
                                 <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
                                     <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
@@ -156,6 +153,25 @@ object Trigger : BuildType({
         }
     }
 
+    if (DslContext.getParameter("environment") == "production") {
+        triggers {
+            schedule {
+                schedulingPolicy = daily {
+                    hour = 20
+                }
+                branchFilter = ""
+                triggerBuild = always()
+                withPendingChangesOnly = false
+                param("revisionRuleBuildBranch", "<default>")
+            }
+            vcs {
+                quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_CUSTOM
+                quietPeriod = 60
+                branchFilter = "+:merge-requests/*"
+            }
+        }
+    }
+
     features{
         pullRequests {
             id = "merge_request"
@@ -164,7 +180,7 @@ object Trigger : BuildType({
                     token = "%gitlab_private_access_token%"
                 }
                 filterSourceBranch = "+:*"
-                ignoreDrafts = true
+                // ignoreDrafts = true
             }
         }
     }
