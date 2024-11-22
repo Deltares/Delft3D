@@ -1957,6 +1957,7 @@ void Dimr::connectLibs(void) {
 
         if (componentsList.components[i].type == COMP_TYPE_DEFAULT_BMI ||
             componentsList.components[i].type == COMP_TYPE_FM ||
+            componentsList.components[i].type == COMP_TYPE_ZSF ||
             componentsList.components[i].type == COMP_TYPE_COSUMO_BMI) {
             componentsList.components[i].dllGetVarShape = (BMI_GETVARSHAPE)GETPROCADDRESS(dllhandle, BmiGetVarShapeEntryPoint);
             if (componentsList.components[i].dllGetVarShape == NULL) {
