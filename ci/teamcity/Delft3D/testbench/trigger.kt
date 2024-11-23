@@ -32,7 +32,7 @@ object TestbenchTrigger : BuildType({
             command = script {
                 content="""
                 if "merge-request" in "%teamcity.build.branch%":
-                    branch_name = parameters["teamcity.pullRequest.source.branch"].split("/")[0]
+                    branch_name = "%teamcity.pullRequest.source.branch%".split("/")[0]
                     print(f"##teamcity[setParameter name='branch_name' value='{branch_name}']")
                 else:
                     branch_name = "%teamcity.build.branch%".split("/")[0]
@@ -181,6 +181,16 @@ object TestbenchTrigger : BuildType({
                 }
                 filterSourceBranch = "+:*"
                 // ignoreDrafts = true
+            }
+        }
+        if (DslContext.getParameter("environment") == "production") {
+            commitStatusPublisher {
+                id = "Delft3D_gitlab"
+                enabled = true
+                vcsRootExtId = "${DslContext.settingsRoot.id}"
+                publisher = gitlab {
+                    authType = vcsRoot()
+                }
             }
         }
     }

@@ -120,7 +120,6 @@ object BuildDockerLinux : BuildType({
         }
         dockerSupport {
             id = "DockerSupport"
-            cleanupPushedImages = true
             loginToRegistry = on {
                 dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
             }
