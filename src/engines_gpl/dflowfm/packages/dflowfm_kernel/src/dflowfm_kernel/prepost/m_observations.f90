@@ -36,6 +36,7 @@ module m_observations
    use m_missing
    use fm_external_forcings_data
    use MessageHandling, only: IdLen
+   use precision, only: dp
 
    implicit none
    
@@ -595,7 +596,7 @@ contains
 !> Removes the observation point at indicated list position.
    subroutine updateObservationXY(pos, xnew, ynew)
       integer, intent(in) :: pos
-      double precision, intent(in) :: xnew, ynew
+      real(kind=dp), intent(in) :: xnew, ynew
 
       if (pos <= numobs + nummovobs) then
          xobs(pos) = xnew
@@ -608,8 +609,8 @@ contains
    subroutine addObservation(x, y, name, isMoving, loctype, iOP)
       use m_alloc
       use m_GlobalParameters, only: INDTP_ALL
-      double precision, intent(in) :: x !< x-coordinate
-      double precision, intent(in) :: y !< y-coordinate
+      real(kind=dp), intent(in) :: x !< x-coordinate
+      real(kind=dp), intent(in) :: y !< y-coordinate
       character(len=*), optional, intent(in) :: name !< Name of the station, appears in output file.
       logical, optional, intent(in) :: isMoving !< Whether point is a moving station or not. Default: .false.
       integer, optional, intent(in) :: loctype !< location type (one of INDTP_1D/2D/ALL)
@@ -713,7 +714,7 @@ contains
       integer :: ierr, nobsini, i
       type(t_ObservationPoint), pointer :: pOPnt
       integer, allocatable :: branchIdx_tmp(:), ibrch2obs(:)
-      double precision, allocatable :: Chainage_tmp(:), xx_tmp(:), yy_tmp(:)
+      real(kind=dp), allocatable :: Chainage_tmp(:), xx_tmp(:), yy_tmp(:)
 
       ierr = DFM_NOERR
       nByBrch = 0
@@ -884,7 +885,7 @@ contains
       character(len=*), intent(in) :: filename
 
       integer :: mobs, L, L2
-      double precision :: xp, yp
+      real(kind=dp) :: xp, yp
       character(len=256) :: rec
       character(len=IdLen) :: nam
 
