@@ -33,9 +33,10 @@
 !> update observation station data
 subroutine updateValuesOnObservationStations()
    use m_flowtimes, only: time1
-   use m_observations_data
-   use m_partitioninfo
-   use m_timer
+   use m_observations_data, only: IPNT_NUM, numobs, nummovobs, valobs, valobs_last_update_time
+   use m_partitioninfo, only: jampi
+   use m_timer, only: jatimer, IOUTPUTMPI
+
    implicit none
 
    if (valobs_last_update_time == time1) then
