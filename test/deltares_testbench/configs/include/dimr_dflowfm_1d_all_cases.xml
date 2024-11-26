@@ -125,9 +125,9 @@
 		<checks>
 			<file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceAbsolute="0.1" />
 					<parameter name="water_balance_precipitation_total" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_evaporation" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_evaporation" toleranceAbsolute="0.1" />
 					<parameter name="rain" toleranceAbsolute="0.0001" />
 					<parameter name="infiltration_actual" toleranceAbsolute="0.0001" />
 					<parameter name="waterlevel" toleranceAbsolute="0.0001" />

@@ -28,10 +28,14 @@
 !-------------------------------------------------------------------------------
 
 module m_itdate
-   character(len=8) :: refdat
-   integer :: itdate !< should be user specified for (asc routines)
-   integer :: jul0, imonth0, iday0, iyear0
-   double precision :: Tzone ! doubling with "use m_flowtimes, only : tzone"
+   use precision, only: dp
+   implicit none
+   private
+
+   character(len=8), public :: refdat
+   integer, public :: itdate !< should be user specified for (asc routines)
+   integer, public :: jul0, imonth0, iday0, iyear0
+   real(kind=dp), public :: Tzone ! doubling with "use m_flowtimes, only : tzone"
 end module m_itdate
 
 ! ==========================================================================
@@ -47,19 +51,19 @@ module timespace_read
 ! Adri.Mourits@WlDelft.nl
 !
 !!--declarations----------------------------------------------------------------
-   use precision
+   use precision, only: dp
    implicit none
 
    integer, parameter :: maxnamelen = 256
-   double precision, parameter :: dmiss_default = -999.0_fp ! Default missing value in meteo arrays
-   double precision, parameter :: xymiss = -999.0_fp ! Default missing value in elementset
+   real(kind=dp), parameter :: dmiss_default = -999.0_dp ! Default missing value in meteo arrays
+   real(kind=dp), parameter :: xymiss = -999.0_dp ! Default missing value in elementset
    character(300), target :: errormessage = ' ' ! When an error occurs, a message is set in message.
    ! function getmeteoerror returns the message
 
-   double precision :: pi ! pi
-   double precision :: d2r ! degrees to radials
-   double precision :: r2d ! degrees to radials
-   double precision, private, parameter :: earthrad = 6378137.0_fp ! Mathworld, IUGG
+   real(kind=dp) :: pi ! pi
+   real(kind=dp) :: d2r ! degrees to radials
+   real(kind=dp) :: r2d ! degrees to radials
+   real(kind=dp), private, parameter :: earthrad = 6378137.0_dp ! Mathworld, IUGG
 
 contains
    !
@@ -150,10 +154,10 @@ module timespace_data
    use timespace_parameters
    implicit none
 
-   double precision :: timelast = -1d10 ! time of most recent value requested
+   real(kind=dp) :: timelast = -1d10 ! time of most recent value requested
    ! if time =< timelast, no updates
 
-   double precision :: t01ini = -1d10 ! initial time for dataproviders t0 and t1 fields
+   real(kind=dp) :: t01ini = -1d10 ! initial time for dataproviders t0 and t1 fields
 
    ! AvD: NOTE
    ! De pointers in alle onderstaande types worden puur gebruikt om dynamisch
@@ -185,11 +189,11 @@ contains
       character(len=*), intent(out) :: filename !< Name of data file for current quantity.
       character(len=*), intent(out) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
       character(len=1), intent(out) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
-      real(kind=hp), intent(out) :: transformcoef(:) !< Transformation coefficients
+      real(kind=dp), intent(out) :: transformcoef(:) !< Transformation coefficients
       integer, intent(out) :: ja !< Whether a block was successfully read or not.
       character(len=*), intent(out) :: varname !< variable name within filename; only in case of NetCDF
       character(len=*), intent(out), optional :: smask !< Name of mask-file applied to source arcinfo meteo-data
-      real(kind=hp), intent(out), optional :: maxSearchRadius !< max search radius for method == 11
+      real(kind=dp), intent(out), optional :: maxSearchRadius !< max search radius for method == 11
 
       ! locals
       character(len=maxnamelen) :: rec, keywrd
@@ -352,7 +356,7 @@ contains
    !
    subroutine readTransformcoefficients(minp, transformcoef)
       integer, intent(in) :: minp
-      real(kind=hp), intent(out) :: transformcoef(:)
+      real(kind=dp), intent(out) :: transformcoef(:)
 
       type tKeyInt
          character(len=32) :: key
@@ -451,8 +455,8 @@ contains
    subroutine read1polylin(minp, xs, ys, ns, pliname, has_more_records)
       use m_alloc
       integer, intent(inout) :: minp !< Unit number of poly file (already opened), will be closed after successful read.
-      double precision, allocatable, intent(out) :: xs(:) !< x-coordinates read from file
-      double precision, allocatable, intent(out) :: ys(:) !< y-coordinates read from file
+      real(kind=dp), allocatable, intent(out) :: xs(:) !< x-coordinates read from file
+      real(kind=dp), allocatable, intent(out) :: ys(:) !< y-coordinates read from file
       integer, intent(out) :: ns !< Number of pli-points read
       character(len=:), allocatable, optional, intent(out) :: pliname !< (Optional) Name (identifier) of the polyline read
       logical, optional, intent(out) :: has_more_records !< (Optional) Whether or not more polyline data exists in the remainder of the file, after reading this one polyline.
@@ -556,7 +560,7 @@ contains
       use m_julday
       character(len=8) :: refda
       integer :: jul00
-      double precision :: tz, timjan
+      real(kind=dp) :: tz, timjan
 
       integer :: juljan
 
@@ -598,13 +602,13 @@ contains
       integer :: jul0 ! interpolate results in ndx
       integer :: Np !< number of potentials in tidep
 
-      double precision :: time, dstart, dstop, eps, dxx, dyy
-      double precision :: xx(4), yy(4) !, DAREA, DLENGTH, DLENMX
+      real(kind=dp) :: time, dstart, dstop, eps, dxx, dyy
+      real(kind=dp) :: xx(4), yy(4) !, DAREA, DLENGTH, DLENMX
 
-      double precision, allocatable, save :: xz2(:, :), yz2(:, :), td2(:, :), self(:, :), avhs(:, :) !, area(:,:)
-      double precision :: xmn, xmx, ymn, ymx, di, dj, f11, f21, f12, f22
+      real(kind=dp), allocatable, save :: xz2(:, :), yz2(:, :), td2(:, :), self(:, :), avhs(:, :) !, area(:,:)
+      real(kind=dp) :: xmn, xmx, ymn, ymx, di, dj, f11, f21, f12, f22
 
-      double precision, allocatable, save :: td2_x(:, :), td2_y(:, :)
+      real(kind=dp), allocatable, save :: td2_x(:, :), td2_y(:, :)
 
       integer :: i, j, n, ierr, m1, m2, n1, n2, L
       integer, save :: ndx2
@@ -784,12 +788,12 @@ contains
 
       integer :: i1, i2, j1, j2, k, k1, LL, i, j, iL, iR, ierr
       integer, save :: ini = 0
-      double precision :: alf, x, y
-      double precision :: avhs(i1:i2, j1:j2), area(i1:i2, j1:j2)
+      real(kind=dp) :: alf, x, y
+      real(kind=dp) :: avhs(i1:i2, j1:j2), area(i1:i2, j1:j2)
 
-      double precision, dimension(:, :), allocatable :: xx, yy
+      real(kind=dp), dimension(:, :), allocatable :: xx, yy
       integer, dimension(:, :), allocatable :: kk
-      double precision, dimension(:, :, :), allocatable, save :: workin, workout ! work arrays for parallel communication
+      real(kind=dp), dimension(:, :, :), allocatable, save :: workin, workout ! work arrays for parallel communication
 
       integer :: Ni, Nj
       integer :: jakdtree = 1
@@ -797,11 +801,11 @@ contains
 
       character(len=1024) :: str
 
-      double precision :: t0, t1
-      double precision :: wo
-      double precision :: Ds
+      real(kind=dp) :: t0, t1
+      real(kind=dp) :: wo
+      real(kind=dp) :: Ds
 
-      double precision, allocatable, save :: jasea(:, :)
+      real(kind=dp), allocatable, save :: jasea(:, :)
 
       Ni = i2 - i1 + 1
       Nj = j2 - j1 + 1
@@ -1009,10 +1013,10 @@ contains
    subroutine findleftright(area, ii, ji, i1, i2, j1, j2, iL, iR, alf)
       implicit none
       integer, intent(in) :: i1, i2, ii, j1, j2, ji
-      double precision, intent(in) :: area(i1:i2, j1:j2)
+      real(kind=dp), intent(in) :: area(i1:i2, j1:j2)
 
       integer, intent(out) :: iL, iR
-      double precision, intent(out) :: alf
+      real(kind=dp), intent(out) :: alf
       integer :: i, dr, dl, findr, findl, disR, disL, stopsearch
 
       stopsearch = 0
@@ -1080,17 +1084,17 @@ contains
 
       ! Input\Output parameter
       integer, intent(in) :: i1, i2, j1, j2, jaselfal
-      double precision, intent(in) :: avhs(i1:i2, j1:j2)
-      double precision, intent(out) :: self(i1:i2, j1:j2)
+      real(kind=dp), intent(in) :: avhs(i1:i2, j1:j2)
+      real(kind=dp), intent(out) :: self(i1:i2, j1:j2)
 
       ! Local parameters
-      double precision, parameter :: Me = 5.9726d24, R = 6371d3, g = 9.81d0, pi = 4d0 * atan(1.0), rhow = 1.0240164d3, rhoe = 3d0 * Me / (4d0 * pi * R * R * R)
+      real(kind=dp), parameter :: Me = 5.9726d24, R = 6371d3, g = 9.81d0, pi = 4d0 * atan(1.0), rhow = 1.0240164d3, rhoe = 3d0 * Me / (4d0 * pi * R * R * R)
       integer :: nlat, nlon, lsave
       integer :: i, j, ierror, isym, nt, l, mdab, ndab, k1
-      double precision, dimension(:), allocatable :: llnh, llnk
-      double precision, dimension(:), allocatable :: wshaec, wshsec
-      double precision, dimension(:, :), allocatable :: a, b
-      double precision, dimension(:, :), allocatable :: avhs1, self1
+      real(kind=dp), dimension(:), allocatable :: llnh, llnk
+      real(kind=dp), dimension(:), allocatable :: wshaec, wshsec
+      real(kind=dp), dimension(:, :), allocatable :: a, b
+      real(kind=dp), dimension(:, :), allocatable :: avhs1, self1
 
       ! Initialisation
       nlat = 181
@@ -1174,7 +1178,7 @@ contains
       implicit none
 
       ! Input\Output parameter
-      double precision, dimension(0:1024), intent(out) :: llnh, llnk
+      real(kind=dp), dimension(0:1024), intent(out) :: llnh, llnk
 
       !Fill arrays
       llnh(0) = 0.0000000000d+00
@@ -3279,10 +3283,10 @@ contains
       !
       integer idim1, jul0
 
-      double precision :: rmjdat, dstart, dstop, eps, TIME
-      double precision xzeta(idim1), yzeta(idim1), tidep(idim1)
+      real(kind=dp) :: rmjdat, dstart, dstop, eps, TIME
+      real(kind=dp) xzeta(idim1), yzeta(idim1), tidep(idim1)
 
-      double precision, allocatable, save :: tideuc(:, :, :), tideus(:, :, :) !       (idim1, 0:3,2:3),
+      real(kind=dp), allocatable, save :: tideuc(:, :, :), tideus(:, :, :) !       (idim1, 0:3,2:3),
 
       integer, save :: IRC = 0
 
@@ -3316,7 +3320,7 @@ contains
       !
       integer maxdat, maxfld, idebug, i1, i1dbg, i2dbg, N
 
-      double precision :: pi, g, rmu, re, d2r, reps
+      real(kind=dp) :: pi, g, rmu, re, d2r, reps
       parameter(idebug=0, i1dbg=0, i2dbg=0)
       parameter(maxdat=500) ! maximal # records in table
       parameter(maxfld=7) ! maximal # fields in table
@@ -3326,18 +3330,18 @@ contains
 
       integer ntable, nskip
       integer itable(maxdat, maxfld)
-      double precision :: amps(maxdat), plsmin(6), rklove(3), rhlove(3), &
+      real(kind=dp) :: amps(maxdat), plsmin(6), rklove(3), rhlove(3), &
          factor(2:3), pol1(0:3, 2:3), cm1(0:3), sm1(0:3)
 
       integer i, j, nq, mq, IERR
       integer kk(10)
-      double precision :: fnm, pnm, har, argum, argfct, dtab1, dtab2, &
+      real(kind=dp) :: fnm, pnm, har, argum, argfct, dtab1, dtab2, &
          dtab, rlslat, rlslon, rlat, rlong, potent
-      double precision :: elmnts(6), can(maxdat), san(maxdat)
-      double precision :: cansum(0:3, 2:3), sansum(0:3, 2:3)
+      real(kind=dp) :: elmnts(6), can(maxdat), san(maxdat)
+      real(kind=dp) :: cansum(0:3, 2:3), sansum(0:3, 2:3)
       character(len=80) record
       logical permnt
-      double precision, save :: FACTORIAL(0:6)
+      real(kind=dp), save :: FACTORIAL(0:6)
 
       !
       !     amps           table with scaled amplitudes for selected tidal components
@@ -3758,7 +3762,7 @@ contains
       !
       !     INPUT / OUTPUT   PARAMETERS
       !
-      double precision :: six(6), mjdate
+      real(kind=dp) :: six(6), mjdate
       !
       !     mjdate      i    modified julian day (24-jan-2008 0:00 UTC : 54489.00000)
       !     six           o  array of six double precision variables used for Doodson
@@ -3778,14 +3782,14 @@ contains
       !
       !     --- constant values:
       !
-      double precision :: circle
+      real(kind=dp) :: circle
       parameter(CIRCLE=360.0d0)
       !
       !     circle       number of degrees in a circle
       !
       !     --- variables:
       !
-      double precision :: T, TIME, UT
+      real(kind=dp) :: T, TIME, UT
       integer i
       !
       !     T           translated time: TIME - 51544.4993D0
@@ -3860,7 +3864,7 @@ contains
       !     INPUT / OUTPUT   PARAMETERS
       !
       integer n, m
-      double precision :: theta, pnm
+      real(kind=dp) :: theta, pnm
       !
       !     m       i        degree of Legendre polynomial
       !     n       i        order of Legendre polynomial
@@ -3871,7 +3875,7 @@ contains
       !
       !     LOCAL PARAMETERS
       !
-      double precision :: cp, sp
+      real(kind=dp) :: cp, sp
       !
       !     cp          cos(theta)
       !     sp          sin(theta)
@@ -4410,8 +4414,11 @@ end module timespace_data
 ! ==========================================================================
 !>
 module M_arcuv ! plotbuitenbeentje
+   use precision, only: dp
    implicit none
-   double precision, allocatable :: arcuv(:, :, :)
+   private
+
+   real(kind=dp), allocatable, public :: arcuv(:, :, :)
 end module M_arcuv
 !
 !
@@ -4421,8 +4428,11 @@ end module M_arcuv
 ! ==========================================================================
 !>
 module m_spiderweb ! plot spiderweb
+   use precision, only: dp
    implicit none
-   double precision, allocatable :: spw(:, :, :)
+   private
+
+   real(kind=dp), allocatable, public :: spw(:, :, :)
 end module m_spiderweb
 !
 !
@@ -4447,8 +4457,8 @@ module timespace_triangle
    integer :: nsold ! nr of samples in previous triangulation
    integer :: numtri
    integer, allocatable, dimension(:, :) :: indx
-   double precision, allocatable, dimension(:) :: xcent
-   double precision, allocatable, dimension(:) :: ycent
+   real(kind=dp), allocatable, dimension(:) :: xcent
+   real(kind=dp), allocatable, dimension(:) :: ycent
 
    interface triint
       module procedure triint_z1D
@@ -4478,13 +4488,13 @@ contains
       ! Author: H. Kernkamp
       implicit none
 
-      double precision, intent(in) :: xl, yl ! point under consideration
+      real(kind=dp), intent(in) :: xl, yl ! point under consideration
       integer, intent(in) :: n
-      double precision, dimension(n), intent(in) :: x, y ! polygon(n)
+      real(kind=dp), dimension(n), intent(in) :: x, y ! polygon(n)
       integer, intent(out) :: inside
 
       integer :: i, i1, i2, np, rechts
-      double precision :: rl, rm, x1, x2, y1, y2
+      real(kind=dp) :: rl, rm, x1, x2, y1, y2
 
       if (n <= 2) then
          inside = 1
@@ -4549,21 +4559,21 @@ contains
 
       ! Global variables
       integer, intent(in) :: nss ! Dimension of samples
-      double precision, dimension(:), intent(in) :: xss ! samples
-      double precision, dimension(:), intent(in) :: yss
-      double precision, dimension(:), intent(in) :: zss ! dimension: nss*kx
+      real(kind=dp), dimension(:), intent(in) :: xss ! samples
+      real(kind=dp), dimension(:), intent(in) :: yss
+      real(kind=dp), dimension(:), intent(in) :: zss ! dimension: nss*kx
       integer, dimension(:), intent(in) :: kcsss ! samples mask
 
       integer, intent(in) :: mnx ! Dimension of grid
       integer, intent(in) :: kx ! vectormax
-      double precision, dimension(:), intent(in) :: x ! grid
-      double precision, dimension(:), intent(in) :: y
-      double precision, dimension(:, :), intent(out) :: z ! dimension: nx*kx
+      real(kind=dp), dimension(:), intent(in) :: x ! grid
+      real(kind=dp), dimension(:), intent(in) :: y
+      real(kind=dp), dimension(:, :), intent(out) :: z ! dimension: nx*kx
       integer, dimension(:), intent(in) :: kcs ! grid mask
       integer, intent(in) :: jdla ! refresh delauney yes /no
 
       integer, optional :: indxn(:, :) ! if present get weightfactors and indices
-      double precision, optional :: wfn(:, :)
+      real(kind=dp), optional :: wfn(:, :)
 
       call triint_z1D(xss, yss, zss, kcsss, nss, &
                       x, y, z, kcs, kx, mnx, jdla, indxn, wfn)
@@ -4579,21 +4589,21 @@ contains
 
       ! Global variables
       integer, intent(in) :: nss ! Dimension of samples
-      double precision, dimension(:), intent(in) :: xss ! samples
-      double precision, dimension(:), intent(in) :: yss
-      double precision, dimension(:), intent(in) :: zss ! dimension: nss*kx
+      real(kind=dp), dimension(:), intent(in) :: xss ! samples
+      real(kind=dp), dimension(:), intent(in) :: yss
+      real(kind=dp), dimension(:), intent(in) :: zss ! dimension: nss*kx
       integer, dimension(:), intent(in) :: kcsss ! samples mask
 
       integer, intent(in) :: mnx ! Dimension of grid
       integer, intent(in) :: kx ! vectormax
-      double precision, dimension(:), intent(in) :: x ! grid
-      double precision, dimension(:), intent(in) :: y
-      double precision, dimension(:, :, :), intent(out) :: z ! dimension: nx*kx
+      real(kind=dp), dimension(:), intent(in) :: x ! grid
+      real(kind=dp), dimension(:), intent(in) :: y
+      real(kind=dp), dimension(:, :, :), intent(out) :: z ! dimension: nx*kx
       integer, dimension(:), intent(in) :: kcs ! grid mask
       integer, intent(in) :: jdla ! refresh delauney yes /no
 
       integer, optional :: indxn(:, :) ! if present get weightfactors and indices
-      double precision, optional :: wfn(:, :)
+      real(kind=dp), optional :: wfn(:, :)
 
       call triint_z1D(xss, yss, zss, kcsss, nss, &
                       x, y, z, kcs, kx, mnx, jdla, indxn, wfn)
@@ -4612,36 +4622,36 @@ contains
 
       ! Global variables
       integer, intent(in) :: nss ! Dimension of samples
-      double precision, dimension(:), intent(in) :: xss ! samples
-      double precision, dimension(:), intent(in) :: yss
-      double precision, dimension(:), intent(in) :: zss ! dimension: nss*kx
+      real(kind=dp), dimension(:), intent(in) :: xss ! samples
+      real(kind=dp), dimension(:), intent(in) :: yss
+      real(kind=dp), dimension(:), intent(in) :: zss ! dimension: nss*kx
       integer, dimension(:), intent(in) :: kcsss ! samples mask
 
       integer, intent(in) :: mnx ! Dimension of grid
       integer, intent(in) :: kx ! vectormax
-      double precision, dimension(:), intent(in) :: x ! grid
-      double precision, dimension(:), intent(in) :: y
-      double precision, dimension(kx*mnx), intent(out) :: z ! dimension: mnx*kx
+      real(kind=dp), dimension(:), intent(in) :: x ! grid
+      real(kind=dp), dimension(:), intent(in) :: y
+      real(kind=dp), dimension(kx*mnx), intent(out) :: z ! dimension: mnx*kx
       integer, dimension(:), intent(in) :: kcs ! grid mask
       integer, intent(in) :: jdla ! refresh delauney yes /no
 
       integer, optional :: indxn(:, :) ! if present get weightfactors and indices
-      double precision, optional :: wfn(:, :)
+      real(kind=dp), optional :: wfn(:, :)
 
       ! Local variables
 
-      double precision, dimension(8) :: x_set
-      double precision, dimension(8) :: y_set
+      real(kind=dp), dimension(8) :: x_set
+      real(kind=dp), dimension(8) :: y_set
       integer, dimension(8) :: kcs_set = 1
-      double precision, dimension(4) :: x_extr
-      double precision, dimension(4) :: y_extr
-      double precision, dimension(4) :: z_extr
-      double precision, dimension(3) :: zp
+      real(kind=dp), dimension(4) :: x_extr
+      real(kind=dp), dimension(4) :: y_extr
+      real(kind=dp), dimension(4) :: z_extr
+      real(kind=dp), dimension(3) :: zp
       integer, dimension(3) :: indxp
 
-      double precision, dimension(:), allocatable :: xs
-      double precision, dimension(:), allocatable :: ys
-      double precision, dimension(:), allocatable :: zs
+      real(kind=dp), dimension(:), allocatable :: xs
+      real(kind=dp), dimension(:), allocatable :: ys
+      real(kind=dp), dimension(:), allocatable :: zs
       integer, dimension(:), allocatable :: kcss
       integer :: ns
       integer :: k, n, jgetw, ierr ! , MOUT
@@ -4739,15 +4749,15 @@ contains
       implicit none
 
       ! Global variables
-      double precision, intent(in) :: xp ! for this point
-      double precision, intent(in) :: yp
+      real(kind=dp), intent(in) :: xp ! for this point
+      real(kind=dp), intent(in) :: yp
 
       integer, intent(in) :: ns
-      double precision, dimension(ns), intent(in) :: xs ! on this set
-      double precision, dimension(ns), intent(in) :: ys
+      real(kind=dp), dimension(ns), intent(in) :: xs ! on this set
+      real(kind=dp), dimension(ns), intent(in) :: ys
 
       integer, dimension(3), intent(out) :: indxp ! find indices to set
-      double precision, dimension(3), intent(out) :: zp ! and corresponding weightfactors
+      real(kind=dp), dimension(3), intent(out) :: zp ! and corresponding weightfactors
 
       ! Local variables
       integer :: k
@@ -4755,12 +4765,12 @@ contains
       integer :: k2, n3
       integer :: intri
       integer :: nroldfind, nrfind
-      double precision :: xtmax
-      double precision :: xtmin
-      double precision :: ytmax
-      double precision :: ytmin
-      double precision, dimension(3) :: xt
-      double precision, dimension(3) :: yt
+      real(kind=dp) :: xtmax
+      real(kind=dp) :: xtmin
+      real(kind=dp) :: ytmax
+      real(kind=dp) :: ytmin
+      real(kind=dp), dimension(3) :: xt
+      real(kind=dp), dimension(3) :: yt
       !
       !
       data nroldfind/0/
@@ -4817,15 +4827,15 @@ contains
    !>
    subroutine linweight(xt, yt, xp, yp, zp)
 
-      double precision, intent(in) :: xp ! for this point
-      double precision, intent(in) :: yp
+      real(kind=dp), intent(in) :: xp ! for this point
+      real(kind=dp), intent(in) :: yp
 
-      double precision, dimension(3) :: xt ! in this triangle
-      double precision, dimension(3) :: yt
+      real(kind=dp), dimension(3) :: xt ! in this triangle
+      real(kind=dp), dimension(3) :: yt
 
-      double precision, dimension(3), intent(out) :: zp ! the weightfactors are...
+      real(kind=dp), dimension(3), intent(out) :: zp ! the weightfactors are...
 
-      double precision :: a11, a12, a21, a22, b1, b2, det
+      real(kind=dp) :: a11, a12, a21, a22, b1, b2, det
 
       zp = 0
       a11 = xt(2) - xt(1)
@@ -4857,44 +4867,44 @@ contains
       !
       ! COMMON variables
       !
-      double precision :: dmiss
+      real(kind=dp) :: dmiss
 
       data dmiss/-999d0/
       !
       ! Global variables
       !
       integer, intent(in) :: jslo
-      double precision, intent(out) :: slo
-      double precision :: xp
-      double precision :: yp
-      double precision :: zp
-      double precision, dimension(3) :: x
-      double precision, dimension(3) :: y
-      double precision, dimension(3), intent(in) :: z
+      real(kind=dp), intent(out) :: slo
+      real(kind=dp) :: xp
+      real(kind=dp) :: yp
+      real(kind=dp) :: zp
+      real(kind=dp), dimension(3) :: x
+      real(kind=dp), dimension(3) :: y
+      real(kind=dp), dimension(3), intent(in) :: z
       !
       !
       ! Local variables
       !
 
-      double precision :: a11
-      double precision :: a12
-      double precision :: a21
-      double precision :: a22
-      double precision :: a31
-      double precision :: a32
-      double precision :: b1
-      double precision :: b2
-      double precision :: det
-      double precision :: r3
-      double precision :: rlam
-      double precision :: rmhu
-      double precision :: x3
-      double precision :: xn
-      double precision :: xy
-      double precision :: y3
-      double precision :: yn
-      double precision :: z3
-      double precision :: zn
+      real(kind=dp) :: a11
+      real(kind=dp) :: a12
+      real(kind=dp) :: a21
+      real(kind=dp) :: a22
+      real(kind=dp) :: a31
+      real(kind=dp) :: a32
+      real(kind=dp) :: b1
+      real(kind=dp) :: b2
+      real(kind=dp) :: det
+      real(kind=dp) :: r3
+      real(kind=dp) :: rlam
+      real(kind=dp) :: rmhu
+      real(kind=dp) :: x3
+      real(kind=dp) :: xn
+      real(kind=dp) :: xy
+      real(kind=dp) :: y3
+      real(kind=dp) :: yn
+      real(kind=dp) :: z3
+      real(kind=dp) :: zn
       !
       !
    !! executable statements -------------------------------------------------------
@@ -4953,9 +4963,9 @@ contains
       ! Global variables
 
       integer, intent(in) :: n
-      double precision, dimension(n), intent(in) :: x
-      double precision :: xmax
-      double precision :: xmin
+      real(kind=dp), dimension(n), intent(in) :: x
+      real(kind=dp) :: xmax
+      real(kind=dp) :: xmin
 
       integer :: i
 
@@ -4973,13 +4983,13 @@ contains
    !>
    subroutine get_extend2D(n, m, x, y, kcs, x_dummy, y_dummy)
 
-      double precision, dimension(:, :) :: x
-      double precision, dimension(:, :) :: y
+      real(kind=dp), dimension(:, :) :: x
+      real(kind=dp), dimension(:, :) :: y
       integer, dimension(:, :) :: kcs
       integer :: n
       integer :: m
-      double precision, dimension(:) :: x_dummy
-      double precision, dimension(:) :: y_dummy
+      real(kind=dp), dimension(:) :: x_dummy
+      real(kind=dp), dimension(:) :: y_dummy
 
       call get_extend1D(n * m, x, y, kcs, x_dummy, y_dummy)
 
@@ -4991,17 +5001,17 @@ contains
    subroutine get_extend1D(n, x, y, kcs, x_dummy, y_dummy)
 
       integer :: n
-      double precision, dimension(n) :: x
-      double precision, dimension(n) :: y
+      real(kind=dp), dimension(n) :: x
+      real(kind=dp), dimension(n) :: y
       integer, dimension(n) :: kcs
-      double precision, dimension(4) :: x_dummy
-      double precision, dimension(4) :: y_dummy
-      double precision :: x_min
-      double precision :: x_max
-      double precision :: x_dist
-      double precision :: y_min
-      double precision :: y_max
-      double precision :: y_dist
+      real(kind=dp), dimension(4) :: x_dummy
+      real(kind=dp), dimension(4) :: y_dummy
+      real(kind=dp) :: x_min
+      real(kind=dp) :: x_max
+      real(kind=dp) :: x_dist
+      real(kind=dp) :: y_min
+      real(kind=dp) :: y_max
+      real(kind=dp) :: y_dist
       integer :: index
 
       x_min = 1e30
@@ -5050,20 +5060,20 @@ contains
    subroutine extrapolate(n, x, y, z, kcs, n_extr, x_extr, y_extr, z_extr)
 
       integer :: n
-      double precision, dimension(n) :: x
-      double precision, dimension(n) :: y
-      double precision, dimension(n) :: z
+      real(kind=dp), dimension(n) :: x
+      real(kind=dp), dimension(n) :: y
+      real(kind=dp), dimension(n) :: z
       integer, dimension(n) :: kcs
       integer :: n_extr
-      double precision, dimension(n_extr), target :: x_extr
-      double precision, dimension(n_extr), target :: y_extr
-      double precision, dimension(n_extr), target :: z_extr
+      real(kind=dp), dimension(n_extr), target :: x_extr
+      real(kind=dp), dimension(n_extr), target :: y_extr
+      real(kind=dp), dimension(n_extr), target :: z_extr
       integer :: i_extr
       integer :: i_min
-      double precision, pointer :: x_a
-      double precision, pointer :: y_a
-      double precision, pointer :: z_a
-      double precision :: dist_min
+      real(kind=dp), pointer :: x_a
+      real(kind=dp), pointer :: y_a
+      real(kind=dp), pointer :: z_a
+      real(kind=dp) :: dist_min
 
       dist_min = 1e30
       i_min = 0
@@ -5087,15 +5097,15 @@ contains
 
       integer :: n
       integer :: m
-      double precision, dimension(:, :) :: x
-      double precision, dimension(:, :) :: y
+      real(kind=dp), dimension(:, :) :: x
+      real(kind=dp), dimension(:, :) :: y
       integer, dimension(:, :) :: kcs
       integer :: n_min
       integer :: m_min
       integer :: i_min
-      double precision :: x_a
-      double precision :: y_a
-      double precision :: dist_min
+      real(kind=dp) :: x_a
+      real(kind=dp) :: y_a
+      real(kind=dp) :: dist_min
 
       call find_nearest1D(n * m, x, y, kcs, x_a, y_a, i_min, dist_min)
 
@@ -5114,16 +5124,16 @@ contains
 
       integer :: n
       integer :: m
-      double precision, dimension(:, :) :: x
-      double precision, dimension(:, :) :: y
-      double precision, dimension(:, :) :: z
+      real(kind=dp), dimension(:, :) :: x
+      real(kind=dp), dimension(:, :) :: y
+      real(kind=dp), dimension(:, :) :: z
       integer, dimension(:, :) :: kcs
       integer :: n_min
       integer :: m_min
       integer :: i_min
-      double precision :: x_a
-      double precision :: y_a
-      double precision :: dist_min
+      real(kind=dp) :: x_a
+      real(kind=dp) :: y_a
+      real(kind=dp) :: dist_min
 
       call find_nearest1D_missing_value(n * m, x, y, z, kcs, x_a, y_a, i_min, dist_min)
 
@@ -5141,15 +5151,15 @@ contains
       use precision
 
       integer :: n
-      double precision, dimension(n) :: x
-      double precision, dimension(n) :: y
+      real(kind=dp), dimension(n) :: x
+      real(kind=dp), dimension(n) :: y
       integer, dimension(n) :: kcs
       integer :: i
       integer :: i_min
-      double precision :: x_a
-      double precision :: y_a
-      double precision :: dist
-      double precision :: dist_min
+      real(kind=dp) :: x_a
+      real(kind=dp) :: y_a
+      real(kind=dp) :: dist
+      real(kind=dp) :: dist_min
 
       dist_min = 1e30
       i_min = 0
@@ -5176,16 +5186,16 @@ contains
       use precision
 
       integer :: n
-      double precision, dimension(n) :: x
-      double precision, dimension(n) :: y
-      double precision, dimension(n) :: z
+      real(kind=dp), dimension(n) :: x
+      real(kind=dp), dimension(n) :: y
+      real(kind=dp), dimension(n) :: z
       integer, dimension(n) :: kcs
       integer :: i
       integer :: i_min
-      double precision :: x_a
-      double precision :: y_a
-      double precision :: dist
-      double precision :: dist_min
+      real(kind=dp) :: x_a
+      real(kind=dp) :: y_a
+      real(kind=dp) :: dist
+      real(kind=dp) :: dist_min
 
       dist_min = 1e30
       i_min = 0
@@ -5214,25 +5224,25 @@ contains
 
       ! Global variables
       integer, intent(in) :: ns !< Dimension of polygon OR LINE BOUNDARY
-      double precision, dimension(:), intent(in) :: xs !< polyline point coordinates
-      double precision, dimension(:), intent(in) :: ys
-      double precision, dimension(:), intent(in) :: zs !< Values at all points. Dimension: ns*kx
+      real(kind=dp), dimension(:), intent(in) :: xs !< polyline point coordinates
+      real(kind=dp), dimension(:), intent(in) :: ys
+      real(kind=dp), dimension(:), intent(in) :: zs !< Values at all points. Dimension: ns*kx
       integer, dimension(:), intent(in) :: kcs !< polyline mask
 
       integer, intent(in) :: mnx !< Dimension of target points
       integer, intent(in) :: kx !< #values at each point (vectormax)
-      double precision, dimension(:), intent(in) :: x !< Grid points (where to interpolate to)
-      double precision, dimension(:), intent(in) :: y
-      double precision, dimension(kx*mnx), intent(out) :: z !< Output array for interpolated values. Dimension: mnx*kx
+      real(kind=dp), dimension(:), intent(in) :: x !< Grid points (where to interpolate to)
+      real(kind=dp), dimension(:), intent(in) :: y
+      real(kind=dp), dimension(kx*mnx), intent(out) :: z !< Output array for interpolated values. Dimension: mnx*kx
       integer, intent(in) :: jintp !< (Re-)interpolate if 1 (otherwise use index weights)
 
-      double precision, dimension(:, :), intent(in) :: xyen !< cellsize / tol
+      real(kind=dp), dimension(:, :), intent(in) :: xyen !< cellsize / tol
       integer, dimension(:, :), intent(inout), optional :: indxn !< pli segment is identified by its first node nr.
-      double precision, dimension(:, :), intent(inout), optional :: wfn !< If present, get weight index and factor
+      real(kind=dp), dimension(:, :), intent(inout), optional :: wfn !< If present, get weight index and factor
 
       ! locals
 
-      double precision :: wL, wR
+      real(kind=dp) :: wL, wR
       integer :: m, k, kL, kR, jgetw
 
       jgetw = 0 ! niets met gewichten, doe interpolatie
@@ -5285,16 +5295,16 @@ contains
    !
    ! ! Global variables
    ! integer ,                intent(in)     :: ns       ! Dimension of polygon OR LINE BOUNDARY
-   ! double precision, dimension(:),  intent(in) :: xs       ! polygon
-   ! double precision, dimension(:),  intent(in) :: ys
+   ! real(kind=dp), dimension(:),  intent(in) :: xs       ! polygon
+   ! real(kind=dp), dimension(:),  intent(in) :: ys
    ! integer, dimension(:),  intent(in)      :: kcs      ! polygon mask
-   ! double precision                        :: xyen(:)
-   ! double precision                        :: xe, ye, rl
+   ! real(kind=dp)                        :: xyen(:)
+   ! real(kind=dp)                        :: xe, ye, rl
    !
    !
    ! integer :: ja1, ja2, k, km, k1, k2
-   ! double precision:: x1,x2,y1,y2,dis,xn,yn,dx,dy
-   ! double precision:: dism, dis1, dis2, rl1, rl2, dbdistance
+   ! real(kind=dp):: x1,x2,y1,y2,dis,xn,yn,dx,dy
+   ! real(kind=dp):: dism, dis1, dis2, rl1, rl2, dbdistance
    !
    !
    ! dism = 1e30
@@ -5360,19 +5370,19 @@ contains
 
       ! Global variables
       integer, intent(in) :: ns !< Dimension of polygon OR LINE BOUNDARY
-      double precision, intent(in) :: xs(:) !< polygon
-      double precision, intent(in) :: ys(:)
+      real(kind=dp), intent(in) :: xs(:) !< polygon
+      real(kind=dp), intent(in) :: ys(:)
       integer, intent(in) :: kcs(:) !< polygon mask
-      double precision, intent(in) :: xe, ye !
-      double precision, intent(in) :: xen, yen !< in input uitstekers, on output SL and CRP
+      real(kind=dp), intent(in) :: xe, ye !
+      real(kind=dp), intent(in) :: xen, yen !< in input uitstekers, on output SL and CRP
       integer, intent(out) :: kL !< Index of left nearest polyline point (with kcs==1!)
-      double precision, intent(out) :: wL !< Relative weight of left nearest polyline point.
+      real(kind=dp), intent(out) :: wL !< Relative weight of left nearest polyline point.
       integer, intent(out) :: kR !< Index of right nearest polyline point (with kcs==1!)
-      double precision, intent(out) :: wR !< Relative weight of right nearest polyline point.
+      real(kind=dp), intent(out) :: wR !< Relative weight of right nearest polyline point.
 
       integer :: k, km, JACROS
-      double precision :: dis, disM, disL, disR !, rl1, rl2,
-      double precision :: SL, SM, SMM, SLM, XCR, YCR, CRP, CRPM, DEPS
+      real(kind=dp) :: dis, disM, disL, disR !, rl1, rl2,
+      real(kind=dp) :: SL, SM, SMM, SLM, XCR, YCR, CRP, CRPM, DEPS
 
       DISM = huge(DISM)
       kL = 0 ! Default: No valid point found
@@ -5446,8 +5456,8 @@ contains
 !
 !
 !   integer          :: ja
-!   DOUBLE PRECISION :: X1,Y1,X2,Y2,X3,Y3,DIS,XN,YN
-!   DOUBLE PRECISION :: R2,RL,X21,Y21,X31,Y31,dbdistance
+!   real(kind=dp) :: X1,Y1,X2,Y2,X3,Y3,DIS,XN,YN
+!   real(kind=dp) :: R2,RL,X21,Y21,X31,Y31,dbdistance
 !
 !   ! korste afstand tot lijnelement tussen eindpunten
 !   JA  = 0
@@ -5547,9 +5557,9 @@ contains
 
       ! arguments
       integer, intent(in) :: mnx !< dimension of quantity
-      double precision, intent(in) :: x(:) !< x   of elset of all possible points in model
-      double precision, intent(in) :: y(:) !< y   of elset
-      double precision, intent(in) :: xyen(:, :) !< Points on opposite edges of elementset
+      real(kind=dp), intent(in) :: x(:) !< x   of elset of all possible points in model
+      real(kind=dp), intent(in) :: y(:) !< y   of elset
+      real(kind=dp), intent(in) :: xyen(:, :) !< Points on opposite edges of elementset
       integer, intent(inout) :: kc(:) !< kcs of elset, allowable kandidates have 1, eg. points with less links than edges
       integer, intent(out) :: ki(:) !< Returned indices of allowable points (in x/y) that fall near provided data
       integer :: num !< nr of points served bij this provider
@@ -5557,18 +5567,18 @@ contains
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
       logical, intent(in) :: usemask !< Whether to use the mask array kc, or not (allows you to keep kc, but disable it for certain quantities, for example salinitybnd).
-      double precision, intent(in), optional :: rrtolrel !< Optional, a more strict rrtolerance value than the global rrtol. selectelset will succeed if cross SL value <= rrtolrel
+      real(kind=dp), intent(in), optional :: rrtolrel !< Optional, a more strict rrtolerance value than the global rrtol. selectelset will succeed if cross SL value <= rrtolrel
       character(len=:), allocatable, optional :: pliname !< Optional, name (identifier) of pli
 
       ! locals
-      double precision, allocatable :: xs(:) ! temporary array to hold polygon
-      double precision, allocatable :: ys(:) !
+      real(kind=dp), allocatable :: xs(:) ! temporary array to hold polygon
+      real(kind=dp), allocatable :: ys(:) !
       integer, allocatable :: kcs(:) !
-      double precision :: wL, wR
+      real(kind=dp) :: wL, wR
       integer :: kL, kR, minp, ns, m
       integer :: JACROS
       integer :: ierr
-      double precision :: SL, SM, XCR, YCR, CRP
+      real(kind=dp) :: SL, SM, XCR, YCR, CRP
       logical :: has_more_pli
 
       num = 0
@@ -5687,13 +5697,13 @@ contains
       integer, intent(in) :: loc_spec_type !< Type of spatial input for selecting nodes. One of: LOCTP_POLYGON_FILE, LOCTP_POLYLINE_FILE, LOCTP_POLYGON_XY , LOCTP_POLYLINE_XY, LOCTP_BRANCHID_CHAINAGE or LOCTP_CONTACTID.
       character(len=*), optional, intent(in) :: loc_file !< (Optional) File name of a polyline file (when loc_spec_type==LOCTP_POLYGON_FILE).
       integer, optional, intent(in) :: nump !< (Optional) Number of points in polyline coordinate arrays xpin and ypin (when loc_spec_type==LOCTP_POLYGON_XY/LOCTP_POLYLINE_XY).
-      double precision, optional, intent(in) :: xpin(:) !< (Optional) Array with x-coordinates of a polygon/line, used instead of a polygon/line file (when loc_spec_type==LOCTP_POLYGON_XY/LOCTP_POLYLINE_XY).
-      double precision, optional, intent(in) :: ypin(:) !< (Optional) Array with y-coordinates of a polygon/line, used instead of a polygon/line file (when loc_spec_type==LOCTP_POLYGON_XY/LOCTP_POLYLINE_XY).
+      real(kind=dp), optional, intent(in) :: xpin(:) !< (Optional) Array with x-coordinates of a polygon/line, used instead of a polygon/line file (when loc_spec_type==LOCTP_POLYGON_XY/LOCTP_POLYLINE_XY).
+      real(kind=dp), optional, intent(in) :: ypin(:) !< (Optional) Array with y-coordinates of a polygon/line, used instead of a polygon/line file (when loc_spec_type==LOCTP_POLYGON_XY/LOCTP_POLYLINE_XY).
       integer, optional, intent(in) :: branchindex !< (Optional) Branch index on which flow link is searched for (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
-      double precision, optional, intent(in) :: chainage !< (Optional) Offset along specified branch (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
+      real(kind=dp), optional, intent(in) :: chainage !< (Optional) Offset along specified branch (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
       character(len=*), optional, intent(in) :: contactId !< (Optional) Unique contactId for one flow link (when loc_spec_type==LOCTP_CONTACTID) (stored as mesh contact in input grid).
       integer, optional, intent(in) :: linktype !< (Optional) Limit search to specific link types: only 1D flow links (linktype==IFLTP_1D), 2D (linktype==IFLTP_2D), or both (linktype==IFLTP_ALL).
-      double precision, allocatable, optional, intent(inout) :: xps(:), yps(:) !< (Optional) Arrays in which the read in polyline x,y-points can be stored (only relevant when loc_spec_type==LOCTP_POLYGON_FILE/LOCTP_POLYLINE_FILE).
+      real(kind=dp), allocatable, optional, intent(inout) :: xps(:), yps(:) !< (Optional) Arrays in which the read in polyline x,y-points can be stored (only relevant when loc_spec_type==LOCTP_POLYGON_FILE/LOCTP_POLYLINE_FILE).
       integer, optional, intent(inout) :: nps !< (Optional) Number of polyline points that have been read in (only relevant when loc_spec_type==LOCTP_POLYGON_FILE/LOCTP_POLYLINE_FILE).
       integer, optional, intent(inout) :: lftopol(:) !< (Optional) Mapping array from flow links to the polyline index that intersected that flow link (only relevant when loc_spec_type==LOCTP_POLYLINE_FILE or LOCTP_POLYLINE_XY).
       integer, optional, intent(in) :: sortLinks !< (Optional) Whether or not to sort the found flow links along the polyline path. (only relevant when loc_spec_type==LOCTP_POLYGON_FILE or LOCTP_POLYGON_XY).
@@ -5856,8 +5866,8 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: xz(:) !< Flow nodes center x-coordinates.
-      double precision, intent(in) :: yz(:) !< Flow nodes center y-coordinates.
+      real(kind=dp), intent(in) :: xz(:) !< Flow nodes center x-coordinates.
+      real(kind=dp), intent(in) :: yz(:) !< Flow nodes center y-coordinates.
       integer, intent(in) :: kc(:) !< Mask for which flow nodes are allowed for selection (1/0 = yes/no).
       integer, intent(in) :: nx !< Number of flow nodes in input.
       integer, intent(out) :: kp(:) !< Output array containing the flow node numbers that were selected.
@@ -5866,10 +5876,10 @@ contains
       integer, intent(in) :: loc_spec_type !< Type of spatial input for selecting nodes. One of: LOCTP_POLYGON_FILE, LOCTP_POLYGON_XY or LOCTP_BRANCHID_CHAINAGE or LOCTP_NODEID.
       character(len=*), optional, intent(in) :: loc_file !< File name of a polygon file (when loc_spec_type==LOCTP_POLYGON_FILE).
       integer, optional, intent(in) :: numcoord !< Number of coordinates in input arrays (when loc_spec_type==LOCTP_POLYGON_XY).
-      double precision, optional, intent(in) :: xpin(:) !< Polygon x-coordinates (when loc_spec_type==LOCTP_POLYGON_XY).
-      double precision, optional, intent(in) :: ypin(:) !< Polygon y-coordinates (when loc_spec_type==LOCTP_POLYGON_XY).
+      real(kind=dp), optional, intent(in) :: xpin(:) !< Polygon x-coordinates (when loc_spec_type==LOCTP_POLYGON_XY).
+      real(kind=dp), optional, intent(in) :: ypin(:) !< Polygon y-coordinates (when loc_spec_type==LOCTP_POLYGON_XY).
       character(len=*), optional, intent(in) :: branchId !< Branch id (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
-      double precision, optional, intent(in) :: chainage !< Chainage along branch (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
+      real(kind=dp), optional, intent(in) :: chainage !< Chainage along branch (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
       character(len=*), optional, intent(in) :: nodeId !< Node id (network node id) (when loc_spec_type==LOCTP_NODEID).
       !
       ! locals
@@ -5949,8 +5959,8 @@ contains
    subroutine operate(a, b, operand)
       use precision
       implicit none
-      double precision, intent(inout) :: a !< Current value, will be updated based on b and operand.
-      double precision, intent(in) :: b !< New value, to be combined with existing value a.
+      real(kind=dp), intent(inout) :: a !< Current value, will be updated based on b and operand.
+      real(kind=dp), intent(in) :: b !< New value, to be combined with existing value a.
       character(len=1), intent(in) :: operand !< Operand type, valid values: 'O', 'A', '+', '*', 'X', 'N'.
 
       ! b = factor*b + offset ! todo doorplussen
@@ -6007,9 +6017,9 @@ contains
       logical :: success
 
       integer, intent(in) :: nx
-      double precision, intent(in) :: xu(nx)
-      double precision, intent(in) :: yu(nx)
-      double precision, intent(out) :: zu(nx)
+      real(kind=dp), intent(in) :: xu(nx)
+      real(kind=dp), intent(in) :: yu(nx)
+      real(kind=dp), intent(out) :: zu(nx)
 
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
@@ -6021,28 +6031,28 @@ contains
       ! 8 : smoothing
       ! 9 : internal diffusion
       character(1), intent(in) :: operand ! override, add
-      double precision, intent(in) :: transformcoef(:) !< Transformation coefficients
+      real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
       integer, intent(in) :: iprimpos ! only needed for averaging, position of primitive variables in network
       ! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
       integer, intent(in), optional :: kcc(nx)
 
-      double precision, allocatable :: zh(:)
+      real(kind=dp), allocatable :: zh(:)
       integer :: ierr
       integer :: minp0, inside, k, jdla, mout
-      double precision, allocatable :: xx(:, :), yy(:, :)
+      real(kind=dp), allocatable :: xx(:, :), yy(:, :)
       integer, allocatable :: nnn(:)
 
-      double precision, allocatable :: xxx(:), yyy(:)
+      real(kind=dp), allocatable :: xxx(:), yyy(:)
       integer, allocatable :: LnnL(:), Lorg(:)
       logical, external :: read_samples_from_geotiff
 
-      double precision :: zz
+      real(kind=dp) :: zz
 
       integer :: n6, L, Lk, n, n1, n2, i
       integer :: ierror, jakc
       integer :: jakdtree = 1
 
-      double precision :: rcel_store, percentileminmax_store
+      real(kind=dp) :: rcel_store, percentileminmax_store
       integer :: iav_store, nummin_store
 
       character(len=5) :: sd
@@ -6287,8 +6297,8 @@ contains
    subroutine bilinarc(xk, yk, zk, n)
       use m_missing
       integer, intent(in) :: n
-      real(kind=hp), intent(in) :: xk(:), yk(:)
-      real(kind=hp), intent(out) :: zk(:)
+      real(kind=dp), intent(in) :: xk(:), yk(:)
+      real(kind=dp), intent(out) :: zk(:)
 
       integer :: k
 
@@ -6304,10 +6314,10 @@ contains
    subroutine bilinarcinfo(x, y, z)
       use m_arcinfo
       use m_missing
-      real(kind=hp), intent(in) :: x, y
-      real(kind=hp), intent(out) :: z
+      real(kind=dp), intent(in) :: x, y
+      real(kind=dp), intent(out) :: z
 
-      real(kind=hp) :: dm, dn, am, an
+      real(kind=dp) :: dm, dn, am, an
       integer :: m, n
 
       dm = (x - x0) / dxa; m = int(dm); am = dm - m; m = m + 1
@@ -6327,10 +6337,10 @@ contains
    subroutine bilinarcinfocheck(x, y, z, landsea)
       use m_arcinfo
       use m_missing
-      real(kind=hp), intent(in) :: x, y
-      real(kind=hp), intent(out) :: z
+      real(kind=dp), intent(in) :: x, y
+      real(kind=dp), intent(out) :: z
       integer, intent(out) :: landsea
-      real(kind=hp) :: dm, dn, am, an, zmx, zmn
+      real(kind=dp) :: dm, dn, am, an, zmx, zmn
       integer :: m, n
 
       dm = (x - x0) / dxa; m = int(dm); am = dm - m; m = m + 1
@@ -6370,13 +6380,13 @@ contains
       logical :: success
 
       integer, intent(in) :: nx
-      double precision, intent(in) :: xz(nx)
-      double precision, intent(in) :: yz(nx)
+      real(kind=dp), intent(in) :: xz(nx)
+      real(kind=dp), intent(in) :: yz(nx)
       integer, intent(out) :: zz(nx)
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
       character(1), intent(in) :: operand ! file name for meteo data file
-      double precision, intent(in) :: transformcoef(:) !< Transformation coefficients
+      real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
       integer :: minp0, inside, k
 
       success = .false.
@@ -6872,7 +6882,7 @@ contains
       character(len=*), intent(in) :: qidname
 
       integer, pointer :: itemPtr1, itemPtr2, itemPtr3, itemPtr4
-      real(hp), dimension(:), pointer :: dataPtr1, dataPtr2, dataPtr3, dataPtr4
+      real(kind=dp), dimension(:), pointer :: dataPtr1, dataPtr2, dataPtr3, dataPtr4
 
       ! for tracers:
       integer :: itrac, isf, ifun, isfun
@@ -7240,7 +7250,7 @@ contains
       integer :: operand !< Operand (add/replace)
       integer :: method !< Method of interpolation
       type(tEcMask), optional :: srcmask !< Mask excluding source points
-      real(hp), pointer, optional :: inputptr !< pointer to an input arg for the converter (for QHBND)
+      real(kind=dp), pointer, optional :: inputptr !< pointer to an input arg for the converter (for QHBND)
       !
       success = ecSetConverterType(instancePtr, converterId, convtype)
       if (success) success = ecSetConverterOperand(instancePtr, converterId, operand)
@@ -7324,11 +7334,11 @@ contains
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer, intent(in) :: itemID !< unique Item id
-      real(hp), intent(in) :: t0, t1, dt !< get data corresponding to this number of timesteps since FM's refdate
-      real(hp), dimension(:), allocatable, intent(inout) :: target_array !< kernel's data array for the requested values
-      real(hp), dimension(:), pointer :: arr1dPtr => null()
+      real(kind=dp), intent(in) :: t0, t1, dt !< get data corresponding to this number of timesteps since FM's refdate
+      real(kind=dp), dimension(:), allocatable, intent(inout) :: target_array !< kernel's data array for the requested values
+      real(kind=dp), dimension(:), pointer :: arr1dPtr => null()
 
-      real(hp) :: tt
+      real(kind=dp) :: tt
       integer :: it, nt, blksize
       tt = t0
       it = 0
@@ -7358,8 +7368,8 @@ contains
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       character(len=*), intent(in) :: group_name !< unique group name
-      real(hp), intent(in) :: timesteps !< get data corresponding to this number of timesteps since FM's refdate
-      double precision, dimension(:), pointer :: ptm, prh, ptd
+      real(kind=dp), intent(in) :: timesteps !< get data corresponding to this number of timesteps since FM's refdate
+      real(kind=dp), dimension(:), pointer :: ptm, prh, ptd
       !
       success = .false.
       !
@@ -7417,12 +7427,12 @@ contains
       ! $$RH(T,T_d) = \exp\left[\frac{BT}{C+T} - \frac{BT_d}{C+T_d}\right] \times 100$$
       use physicalconsts, only: CtoKelvin
       implicit none
-      double precision, dimension(:), pointer :: td !< dewpoint temperature
-      double precision, dimension(:), pointer :: tm !< air temperature
-      double precision, dimension(:), pointer :: rh !< relative humidity
+      real(kind=dp), dimension(:), pointer :: td !< dewpoint temperature
+      real(kind=dp), dimension(:), pointer :: tm !< air temperature
+      real(kind=dp), dimension(:), pointer :: rh !< relative humidity
 
-      double precision, parameter :: B = 17.502 ! exactly as in
-      double precision, parameter :: C = -32.19
+      real(kind=dp), parameter :: B = 17.502 ! exactly as in
+      real(kind=dp), parameter :: C = -32.19
       integer :: i, n
       td => rh ! Dewpoint temperature was stored in the array where relative humidity will be stored
       n = size(td)
