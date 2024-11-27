@@ -544,11 +544,15 @@ contains
 
       select case (target_name)
       case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin')
-         if (.not. checkFileType(ec_filetype, provFile_uniform, target_name)) then
+         if (checkFileType(ec_filetype, provFile_uniform, target_name)) then
+            ! the file reader will have created an item called 'uniform_item'
+            sourceItemName = 'uniform_item'
+         else if (checkFileType(ec_filetype, provFile_bc, target_name)) then
+            sourceItemName = target_name
+         else
             return
          end if
-         ! the file reader will have created an item called 'uniform_item'
-         sourceItemName = 'uniform_item'
+
       case ('pump', 'generalstructure', 'damlevel', 'valve1D', 'gateloweredgelevel', 'lateral_discharge', 'dambreakLevelsAndWidths')
          if (checkFileType(ec_filetype, provFile_uniform, target_name)) then
             !
