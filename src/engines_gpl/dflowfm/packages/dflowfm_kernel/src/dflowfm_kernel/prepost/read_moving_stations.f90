@@ -122,13 +122,13 @@ contains
                station_name = ''
                call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'name', station_name, is_successful)
                if (.not. is_successful) then
-                  write (msgbuf, '(a,i0,a)') 'Error Reading Observation Point #', (i-1), ' from ''', trim(file_names(j)), ''', name is missing.'
+                  write (msgbuf, '(a,i0,a)') 'Error Reading Observation Point #', (i - 1), ' from ''', trim(file_names(j)), ''', name is missing.'
                   call err_flush()
                   cycle
                end if
                call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'locationFileType', location_file_type_string, is_successful)
                if (.not. is_successful) then
-                  write (msgbuf, '(a,i0,a)') 'Error Reading Observation Point #', (i-1), ' from ''', trim(file_names(j)), &
+                  write (msgbuf, '(a,i0,a)') 'Error Reading Observation Point #', (i - 1), ' from ''', trim(file_names(j)), &
                      ''', locationFileType should be given when locationFile is used.'
                   call err_flush()
                   cycle
