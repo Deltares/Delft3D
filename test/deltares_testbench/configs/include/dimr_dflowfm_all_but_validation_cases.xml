@@ -2784,6 +2784,24 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f010_c019_gate" ref="dflowfm_default">
+      <path version="2024-11-25T18:34:12.295000">e02_dflowfm/f010_structures/c019_gate</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+         <file name="dflowfm/output/dflow-fm_his.nc" type="netCDF">
+            <parameters>
+              <parameter name="gategen_discharge" toleranceRelative="0.7" />
+              <parameter name="gategen_crest_level" toleranceAbsolute="0.0003" />
+              <parameter name="gategen_crest_width" toleranceAbsolute="0.0003" />
+              <parameter name="gategen_crest_width" toleranceAbsolute="0.0003" />
+              <parameter name="gategen_flow_through_height" toleranceAbsolute="0.01" />
+              <parameter name="gategen_gate_opening_width" toleranceAbsolute="0.002" />
+              <parameter name="gategen_s1up" toleranceAbsolute="0.01" />
+              <parameter name="gategen_s1dn" toleranceAbsolute="0.01" />
+            </parameters>
+         </file>
+      </checks>
+   </testCase>
     <testCase name="e02_f011_c015_sobey_uniform_squares" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f011_wind/c015_sobey_uniform_squares</path>
       <maxRunTime>15000.0000000</maxRunTime>
