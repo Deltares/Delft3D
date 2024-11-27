@@ -37,7 +37,7 @@ fm lim-waves,dimr/dimr_dflowfm_lim_waves_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,F
 fm parallel,dimr/dimr_dflowfm_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm rws acceptance parallel,dimr/dimr_dflowfm_lnx64_rws_acceptance_parallel.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm,dimr/dimr_dflowfm_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm mormerge,dimr/dimr_dflowfm_mormerge_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Disabled until transition due to hard-coded paths in case."
+fm mormerge,dimr/dimr_dflowfm_mormerge_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm mormerge,dimr/dimr_dflowfm_mormerge_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm processes,dimr/dimr_dflowfm_processes_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm processes,dimr/dimr_dflowfm_processes_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
