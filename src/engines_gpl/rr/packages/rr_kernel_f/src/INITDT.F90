@@ -25,7 +25,7 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
- ! Last changed
+! Last changed
 ! by:               $Author:: Schrier           $
 ! at:               $Modtime:: 15-08-97 11:31a  $
 !
@@ -338,7 +338,7 @@
            endif
            if (NCRRRunoffSCS  .gt. 0)  then
                NStartSCS = NSRMap(15) + 1
-               NSRMap(15) = NSRMap(15) + 1   ! 1  additional SCS parameter
+               NSRMap(15) = NSRMap(15) + 2   ! 1  additional SCS parameter
            endif
            if (NCRRRunoffNAM .gt. 0) then
                NStartNAM = NSRMap(15) + 1
@@ -887,6 +887,8 @@
           if (NCRRRUnoffSCS .gt. 0) then
               DSRMAP(15,NStartSCS) = TranslateString (LanguageHandle,'Max.SCS_Storage [mm]')
               UNITS (15,NStartSCS) = TranslateString (LanguageHandle,'mm')
+              DSRMAP(15,NStartSCS+1) = TranslateString (LanguageHandle,'Max.SCS_Infiltration [mm]')
+              UNITS (15,NStartSCS+1) = TranslateString (LanguageHandle,'mm')
           endif
           if (NCRRRUnoffNAM .gt. 0) then
               DSRMAP(15,NStartNAM   ) = TranslateString (LanguageHandle,'Max.D-NAM ExternalWaterLevel [m AD]')
@@ -1054,6 +1056,8 @@
           if (NCRRRUnoffSCS .gt. 0) then
               DSRMAP(15,NStartSCS) = TranslateString (LanguageHandle,'SCS_Storage [mm]')
               UNITS (15,NStartSCS) = TranslateString (LanguageHandle,'mm')
+              DSRMAP(15,NStartSCS+1) = TranslateString (LanguageHandle,'SCS_Infiltration [mm]')
+              UNITS (15,NStartSCS+1) = TranslateString (LanguageHandle,'mm')
           endif
           if (NCRRRUnoffNAM .gt. 0) then
               DSRMAP(15,NStartNAM   ) = TranslateString (LanguageHandle,'D-NAM ExternalWaterLevel [m AD]')
@@ -1642,6 +1646,7 @@
           endif
           if (NCRRRUnoffSCS .gt. 0) then
               LongDSRMAP(15,NStartSCS) = TranslateString (LanguageHandle,'Maximum SCS_Storage')
+              LongDSRMAP(15,NStartSCS+1) = TranslateString (LanguageHandle,'Maximum SCS_Infiltration')
           endif
           if (NCRRRUnoffNAM .gt. 0) then
               LongDSRMAP(15,NStartNAM   ) = TranslateString (LanguageHandle,'Maximum D-NAM External Water Level')
@@ -1763,6 +1768,7 @@
           endif
           if (NCRRRUnoffSCS .gt. 0) then
               LongDSRMAP(15,NStartSCS) = TranslateString (LanguageHandle,'SCS_Storage')
+              LongDSRMAP(15,NStartSCS+1) = TranslateString (LanguageHandle,'SCS_Infiltration')
           endif
           if (NCRRRUnoffNAM .gt. 0) then
               LongDSRMAP(15,NStartNAM   ) = TranslateString (LanguageHandle,'D-NAM External Water Level')
