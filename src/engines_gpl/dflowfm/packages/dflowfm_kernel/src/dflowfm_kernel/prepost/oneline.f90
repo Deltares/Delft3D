@@ -31,6 +31,8 @@
 !
 
   subroutine ONELINE(K) ! TWEE LIJNTJES WORDEN 1
+     use m_delnode, only: delnode
+     use m_connect, only: connect
      use m_netw
      use gridoperations
      use m_settings

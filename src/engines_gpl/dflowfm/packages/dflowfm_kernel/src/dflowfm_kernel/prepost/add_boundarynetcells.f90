@@ -31,6 +31,16 @@
 !
 
 !  increase netcell admin. to include boundary nodes (safety)
+module m_add_boundarynetcells
+
+implicit none
+
+private
+
+public :: add_boundarynetcells
+
+contains
+
    subroutine add_boundarynetcells()
 
       use network_data
@@ -57,3 +67,5 @@
 
       return
    end subroutine add_boundarynetcells
+
+end module m_add_boundarynetcells

@@ -30,7 +30,20 @@
 !
 !
 
+module m_connectcurvilinearquadsddtype
+use m_dellink, only: dellink
+
+
+implicit none
+
+private
+
+public :: connectcurvilinearquadsddtype
+
+contains
+
   subroutine connectcurvilinearquadsDDtype()
+     use m_closeenough, only: closeenough
      use m_netw
      use stdlib_sorting, only: sort_index
      use geometry_module, only: dbdistance, cross
@@ -41,7 +54,6 @@
      use m_set_nod_adm
      use m_new_link
 
-     implicit none
      integer :: ins
      integer :: ip
      integer :: ja
@@ -596,3 +608,5 @@
      deallocate (dist, idx, kdum)
 
   end subroutine connectcurvilinearquadsDDtype
+
+end module m_connectcurvilinearquadsddtype

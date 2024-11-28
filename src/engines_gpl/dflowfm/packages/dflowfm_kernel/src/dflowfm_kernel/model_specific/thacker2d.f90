@@ -30,6 +30,16 @@
 !
 !
 
+module m_thacker2d
+
+implicit none
+
+private
+
+public :: thacker2d
+
+contains
+
     subroutine thacker2d(t, ini)
        use m_netw, only: xk, yk, zk, numk
        use m_flowgeom
@@ -37,7 +47,7 @@
        use m_sferic
        use m_dminmax
        use m_set_bobs
-       implicit none
+
        double precision :: t, rms
        integer :: ini, k, L, k1, k2
        double precision :: xzmin, xzmax, yzmin, yzmax, s1k, x0, y0, r0, xx, yy, r, omeg, st, ct
@@ -115,3 +125,5 @@
        end if
 
     end subroutine thacker2d
+
+end module m_thacker2d

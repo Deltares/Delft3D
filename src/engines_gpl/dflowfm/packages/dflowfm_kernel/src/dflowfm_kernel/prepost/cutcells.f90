@@ -30,13 +30,24 @@
 !
 !
 
+module m_cutcells_sub
+
+implicit none
+
+private
+
+public :: cutcells
+
+contains
+
   subroutine CUTCELLS(n12)
+     use m_crosslinkpoly, only: crosslinkpoly
      use m_netw
      use gridoperations
      use m_readyy
      use m_set_nod_adm
      use m_new_link
-     implicit none
+
      integer, intent(in) :: N12
      integer :: ja, KMOD
      integer :: K, KM, K1, K2, L, LL, LNU, N, NN
@@ -155,3 +166,5 @@
      call READYY('CUTCELLS', -1d0)
 
   end subroutine CUTCELLS
+
+end module m_cutcells_sub

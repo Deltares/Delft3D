@@ -30,10 +30,20 @@
 !
 !
 
+module m_dellink
+
+implicit none
+
+private
+
+public :: dellink
+
+contains
+
   subroutine DELLINK(LL)
      use m_netw
      use m_del_elem
-     implicit none
+
      integer :: LL
 
      integer :: k1
@@ -47,3 +57,5 @@
      end if
      return
   end subroutine DELLINK
+
+end module m_dellink

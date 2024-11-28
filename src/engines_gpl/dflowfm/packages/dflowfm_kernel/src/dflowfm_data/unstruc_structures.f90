@@ -31,6 +31,7 @@ module m_structures
 !
 !
 
+   use precision_basics, only: dp
    use properties
    use unstruc_channel_flow, only: network
    use MessageHandling
@@ -86,16 +87,16 @@ module m_structures
    integer, parameter :: NUMVALS_WEIRGEN = NUMVALS_COMMON + NUMEXTVALS_WEIRGEN !< Total number of variables for weir
    integer, parameter :: NUMVALS_ORIFGEN = NUMVALS_COMMON + NUMEXTVALS_ORIFGEN !< Total number of variables for orifice
 
-   double precision, dimension(:, :), allocatable, target :: valgenstru !< Array for general structure, (1:NUMVALS_GENSTRU,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
+   real(kind=dp), dimension(:, :), allocatable, target :: valgenstru !< Array for general structure, (1:NUMVALS_GENSTRU,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
    !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
    !<                                   IVAL_FORCEDIF, IVAL_OPENW, IVAL_EDGEL, IVAL_OPENH,
    !<                                   IVAL_UPPL, IVAL_DIS_OPEN, IVAL_DIS_OVER, IVAL_DIS_UNDER,
    !<                                   IVAL_AREA_OPEN, IVAL_AREA_OVER, IVAL_AREA_UNDER, IVAL_VEL_OPEN, IVAL_VEL_OVER,
    !<                                   IVAL_VEL_UNDER, IVAL_COUNT.
-   double precision, dimension(:, :), allocatable, target :: valweirgen !< Array for weir, (1:NUMVALS_WEIRGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
+   real(kind=dp), dimension(:, :), allocatable, target :: valweirgen !< Array for weir, (1:NUMVALS_WEIRGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
    !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
    !<                                   IVAL_FORCEDIF, NUMVALS_WEIRGEN is the counter
-   double precision, dimension(:, :), allocatable, target :: valorifgen !< Array for orifice, (1:NUMVALS_ORIFGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
+   real(kind=dp), dimension(:, :), allocatable, target :: valorifgen !< Array for orifice, (1:NUMVALS_ORIFGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
    !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
    !<                                   IVAL_FORCEDIF, IVAL_OPENW, IVAL_EDGEL, IVAL_OPENH, the last one NUMVALS_ORIFGEN is the counter
    ! Bridge, extra variables:
@@ -104,7 +105,7 @@ module m_structures
    integer, parameter :: IVAL_BLACTUAL = NUMVALS_COMMON + 3 !< Index of actual bed level (crest)
    integer, parameter :: NUMEXTVALS_BRIDGE = 3 !< Number of extra variables for bridge
    integer, parameter :: NUMVALS_BRIDGE = NUMVALS_COMMON + NUMEXTVALS_BRIDGE !< Total number of variables for bridge
-   double precision, dimension(:, :), allocatable, target :: valbridge !< Array for bridge(1:NUMVALS_BRIDGE,:), the first dimension of this array contains
+   real(kind=dp), dimension(:, :), allocatable, target :: valbridge !< Array for bridge(1:NUMVALS_BRIDGE,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and NUMEXTVALS_BRIDGE extra variables here.
 
    ! Dambreak, extra variables:
@@ -115,7 +116,7 @@ module m_structures
    integer, parameter :: IVAL_DB_DISCUM = NUMVALS_COMMON + 5 !< Index of cumulative discharge for dambreak
    integer, parameter :: NUMEXTVALS_DAMBREAK = 5 !< Number of extra variables for dambreak
    integer, parameter :: NUMVALS_DAMBREAK = NUMVALS_COMMON + NUMEXTVALS_DAMBREAK !< Total number of variables for dambreak
-   double precision, dimension(:, :), allocatable, target :: valdambreak !< Array for dambreak, (1:NUMVALS_DAMBREAK,:), the first dimension of this array contains
+   real(kind=dp), dimension(:, :), allocatable, target :: valdambreak !< Array for dambreak, (1:NUMVALS_DAMBREAK,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and NUMEXTVALS_DAMBREAK extra variables here.
    ! Culvert, extra variables:
    integer, parameter :: IVAL_CL_CRESTL = NUMVALS_COMMON + 1 !< Index of culvert crest level
@@ -124,14 +125,14 @@ module m_structures
    integer, parameter :: IVAL_CL_OPENH = NUMVALS_COMMON + 4 !< Index of culvert gate opening height
    integer, parameter :: NUMEXTVALS_CULVERT = 4 !< Number of extra variables for culvertt
    integer, parameter :: NUMVALS_CULVERT = NUMVALS_COMMON + NUMEXTVALS_CULVERT !< Total number of variables for culvert
-   double precision, dimension(:, :), allocatable, target :: valculvert !< Array for culvert(1:NUMVALS_CULVERT,:), the first dimension of this array contains
+   real(kind=dp), dimension(:, :), allocatable, target :: valculvert !< Array for culvert(1:NUMVALS_CULVERT,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and above extra variables.
 
    ! Univeral weir, extra variables:
    integer, parameter :: IVAL_UW_CRESTL = NUMVALS_COMMON + 1 !< Index of universal weir crest level
    integer, parameter :: NUMEXTVALS_UNIWEIR = 1 !< Number of extra variables for universal weir
    integer, parameter :: NUMVALS_UNIWEIR = NUMVALS_COMMON + NUMEXTVALS_UNIWEIR !< Total number of variables for universal weir
-   double precision, dimension(:, :), allocatable, target :: valuniweir !< Array for universal weir(1:NUMVALS_UNIWEIR,:), the first dimension of this array contains
+   real(kind=dp), dimension(:, :), allocatable, target :: valuniweir !< Array for universal weir(1:NUMVALS_UNIWEIR,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and above extra variables.
 
    ! gate (new),  extra variables:
@@ -144,12 +145,12 @@ module m_structures
    integer, parameter :: IVAL_GATE_WIDTHWET = NUMVALS_COMMON_GATE + 6 !< Width of wet links at upstream (used for IVAL_GATE_FLOWH)
    integer, parameter :: NUMEXTVALS_GATE = 6 !< Number of extra variables for gate
    integer, parameter :: NUMVALS_GATEGEN = NUMVALS_COMMON_GATE + NUMEXTVALS_GATE !< Total number of variables for gate
-   double precision, dimension(:, :), allocatable, target :: valgategen !< Array for (new) gate (1:NUMVALS_GATEGEN,:), the first dimension of this array contains
+   real(kind=dp), dimension(:, :), allocatable, target :: valgategen !< Array for (new) gate (1:NUMVALS_GATEGEN,:), the first dimension of this array contains
    !< NUMVALS_COMMON_GATE common variables (see definitation at top) and NUMEXTVALS_GATE extra variables.
 
    ! Compound structure
    integer, parameter :: NUMVALS_CMPSTRU = NUMVALS_COMMON !< Total number of variables for compound structure, no extra variables.
-   double precision, dimension(:, :), allocatable, target :: valcmpstru !< Array for compound structure(1:NUMVALS_CMPSTRU,:)
+   real(kind=dp), dimension(:, :), allocatable, target :: valcmpstru !< Array for compound structure(1:NUMVALS_CMPSTRU,:)
 
    ! Pump shares the first 9 indices in common indices, extra variables are as follows:
    integer, parameter :: NUMVALS_COMMON_PUMP = 9 !< Number of common variables shared by pump
@@ -162,70 +163,75 @@ module m_structures
    integer, parameter :: IVAL_PP_DISDIR = NUMVALS_COMMON_PUMP + 7 !< Pump discharge w.r.t. pumping orientation (same sign as capacity)
    integer, parameter :: NUMEXTVALS_PUMP = 7 !< Number of extra variables for pump
    integer, parameter :: NUMVALS_PUMP = NUMVALS_COMMON_PUMP + NUMEXTVALS_PUMP !< Total number of variables for pump
-   double precision, dimension(:, :), allocatable, target :: valpump !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
+   real(kind=dp), dimension(:, :), allocatable, target :: valpump !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
    !< NUMVALS_COMMON_PUMP common variables (see definitation at top) and NUMEXTVALS_PUMP extra variables.
 
    ! Long culvert
    integer, parameter :: IVAL_LC_VALVE = NUMVALS_COMMON + 1 !< long culvert valve relative opening
    integer, parameter :: NUMEXTVALS_LONGCULV = 1 !< Number of extra variables for long culvert
    integer, parameter :: NUMVALS_LONGCULVERT = NUMVALS_COMMON + NUMEXTVALS_LONGCULV !< Number of variables for long culvert
-   double precision, dimension(:, :), allocatable, target :: vallongculvert !< Array for long culvert, (1:NUMVALS_LONGCULVERT,:), the first dimension of this array contains
+   real(kind=dp), dimension(:, :), allocatable, target :: vallongculvert !< Array for long culvert, (1:NUMVALS_LONGCULVERT,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top)and above extra variables.
    ! For old stype structures
    integer :: NUMVALS_GATE = 5 !< Number of variables for gate
    integer :: NUMVALS_CDAM = 4 !< Number of variables for controble dam
    integer :: NUMVALS_CGEN = 4 !< Number of variables for general structure (old ext file)
-   double precision, dimension(:, :), allocatable, target :: valgate !< Array for gate;      (1,:) discharge through gate
-   double precision, dimension(:, :), allocatable, target :: valcdam !< Array for cdam;      (1,:) discharge through controlable dam
+   real(kind=dp), dimension(:, :), allocatable, target :: valgate !< Array for gate;      (1,:) discharge through gate
+   real(kind=dp), dimension(:, :), allocatable, target :: valcdam !< Array for cdam;      (1,:) discharge through controlable dam
    !<                      (2,:) Upstream average water levels
    !<                      (3,:) downstream average water level
    !<                      (4,0) width of dam
-   double precision, dimension(:, :), allocatable :: valcgen !< Array for general structure (old ext), (1,:) discharge
+   real(kind=dp), dimension(:, :), allocatable :: valcgen !< Array for general structure (old ext), (1,:) discharge
 
  !! Geometry variables
    ! weir
    integer :: nNodesWeir, nNodesWeirInput !< [-] Total number of nodes for all weirs
    integer, allocatable, target :: nodeCountWeir(:) !< [-] Count of nodes per weir.
    integer, allocatable, target :: nodeCountWeirInput(:) !< [-] Input Count of nodes per weir.
-   double precision, allocatable, target :: geomXWeir(:) !< [m] x coordinates of weirs.
-   double precision, allocatable, target :: geomYWeir(:) !< [m] y coordinates of weirs.
-   double precision, allocatable, target :: geomXWeirInput(:) !< [m] x coordinates of weirs.
-   double precision, allocatable, target :: geomYWeirInput(:) !< [m] y coordinates of weirs.
+   real(kind=dp), allocatable, target :: geomXWeir(:) !< [m] x coordinates of weirs.
+   real(kind=dp), allocatable, target :: geomYWeir(:) !< [m] y coordinates of weirs.
+   real(kind=dp), allocatable, target :: geomXWeirInput(:) !< [m] x coordinates of weirs.
+   real(kind=dp), allocatable, target :: geomYWeirInput(:) !< [m] y coordinates of weirs.
    ! general structure
    integer :: nNodesGenstru !< [-] Total number of nodes for all general structures
    integer, allocatable, target :: nodeCountGenstru(:) !< [-] Count of nodes per general structure.
-   double precision, allocatable, target :: geomXGenstru(:) !< [m] x coordinates of general structures.
-   double precision, allocatable, target :: geomYGenstru(:) !< [m] y coordinates of general structures.
+   real(kind=dp), allocatable, target :: geomXGenstru(:) !< [m] x coordinates of general structures.
+   real(kind=dp), allocatable, target :: geomYGenstru(:) !< [m] y coordinates of general structures.
    ! orifice
    integer :: nNodesOrif !< [-] Total number of nodes for all orifices
    integer, allocatable, target :: nodeCountOrif(:) !< [-] Count of nodes per orifice.
-   double precision, allocatable, target :: geomXOrif(:) !< [m] x coordinates of orifices.
-   double precision, allocatable, target :: geomYOrif(:) !< [m] y coordinates of orifices.
+   real(kind=dp), allocatable, target :: geomXOrif(:) !< [m] x coordinates of orifices.
+   real(kind=dp), allocatable, target :: geomYOrif(:) !< [m] y coordinates of orifices.
+   ! gate
+   integer :: nNodesgate !< [-] Total number of nodes for all gates
+   integer, allocatable, target :: nodeCountgate(:) !< [-] Count of nodes per gate.
+   real(kind=dp), allocatable, target :: geomXgate(:) !< [m] x coordinates of gates.
+   real(kind=dp), allocatable, target :: geomYgate(:) !< [m] y coordinates of gates.
    ! universal weir
    integer :: nNodesUniweir !< [-] Total number of nodes for all universal weirs
    integer, allocatable, target :: nodeCountUniweir(:) !< [-] Count of nodes per universal weir.
-   double precision, allocatable, target :: geomXUniweir(:) !< [m] x coordinates of universal weirs.
-   double precision, allocatable, target :: geomYUniweir(:) !< [m] y coordinates of universal weirs.
+   real(kind=dp), allocatable, target :: geomXUniweir(:) !< [m] x coordinates of universal weirs.
+   real(kind=dp), allocatable, target :: geomYUniweir(:) !< [m] y coordinates of universal weirs.
    ! culvert
    integer :: nNodesCulv !< [-] Total number of nodes for all culverts
    integer, allocatable, target :: nodeCountCulv(:) !< [-] Count of nodes per culvert.
-   double precision, allocatable, target :: geomXCulv(:) !< [m] x coordinates of culverts.
-   double precision, allocatable, target :: geomYCulv(:) !< [m] y coordinates of culverts.
+   real(kind=dp), allocatable, target :: geomXCulv(:) !< [m] x coordinates of culverts.
+   real(kind=dp), allocatable, target :: geomYCulv(:) !< [m] y coordinates of culverts.
    ! pump
    integer :: nNodesPump !< [-] Total number of nodes for all pumps
    integer, allocatable, target :: nodeCountPump(:) !< [-] Count of nodes per pump.
-   double precision, allocatable, target :: geomXPump(:) !< [m] x coordinates of pumps.
-   double precision, allocatable, target :: geomYPump(:) !< [m] y coordinates of pumps.
+   real(kind=dp), allocatable, target :: geomXPump(:) !< [m] x coordinates of pumps.
+   real(kind=dp), allocatable, target :: geomYPump(:) !< [m] y coordinates of pumps.
    ! bridge
    integer :: nNodesBridge !< [-] Total number of nodes for all bridges
    integer, allocatable, target :: nodeCountBridge(:) !< [-] Count of nodes per bridge.
-   double precision, allocatable, target :: geomXBridge(:) !< [m] x coordinates of bridges.
-   double precision, allocatable, target :: geomYBridge(:) !< [m] y coordinates of bridges.
+   real(kind=dp), allocatable, target :: geomXBridge(:) !< [m] x coordinates of bridges.
+   real(kind=dp), allocatable, target :: geomYBridge(:) !< [m] y coordinates of bridges.
    ! long culvert
    integer :: nNodesLongCulv !< [-] Total number of nodes for all long culverts
    integer, allocatable, target :: nodeCountLongCulv(:) !< [-] Count of nodes per long culverts.
-   double precision, allocatable, target :: geomXLongCulv(:) !< [m] x coordinates of long culverts.
-   double precision, allocatable, target :: geomYLongCulv(:) !< [m] y coordinates of long culverts.
+   real(kind=dp), allocatable, target :: geomXLongCulv(:) !< [m] x coordinates of long culverts.
+   real(kind=dp), allocatable, target :: geomYLongCulv(:) !< [m] y coordinates of long culverts.
 
    !> Whether or not the model has any structures that lie across multiple partitions
  !! (needed to disable possibly invalid statistical output items)
@@ -248,11 +254,8 @@ module m_structures
    integer, parameter :: IOPENDIR_SYMMETRIC = 0 !< Gate door opens/closes symmetrically (from center).
 
    type tgate !< Gate structure type, before it gets evaluated as a general structure.
-      !double precision :: sill_level       !< Not used: stored in zcgen(1,igen)
-      !double precision :: lower_edge_level !< Not used: stored in zcgen(2,igen)
-      !double precision :: opening_width    !< Not used: stored in zcgen(3,igen)
-      double precision :: door_height !< Height of the door, used for 'double-barrier' overflow. Time-INDEPENDENT.
-      double precision :: sill_width !< Width of the sill, may be larger than the opening width, such that in open part we have weir flow and in closed part we have gate flow. Time-INDEPENDENT.
+      real(kind=dp) :: door_height !< Height of the door, used for 'double-barrier' overflow. Time-INDEPENDENT.
+      real(kind=dp) :: sill_width !< Width of the sill, may be larger than the opening width, such that in open part we have weir flow and in closed part we have gate flow. Time-INDEPENDENT.
       integer :: opening_direction !< Direction from which the gate opens/closes, IOPENDIR_FROMLEFT|FROMRIGHT|SYMMETRIC.
    end type tgate
 
@@ -264,22 +267,21 @@ contains
    !> Allocates and initializes all "valstruct"(:,:) arrays.
    !! Used for history output and/or restart file output for hydraulic structures.
    subroutine init_structure_hisvalues()
-      use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, ndambreaksignals
-      !use m_structures, only: NUMVALS_PUMP, NUMVALS_GATE, NUMVALS_CDAM, NUMVALS_CGEN, &
-      !                        NUMVALS_GATEGEN, NUMVALS_WEIRGEN, NUMVALS_GENSTRU
+      use fm_external_forcings_data, only: ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, ndambreaksignals
       use m_alloc
       use m_flowtimes, only: ti_rst
       use m_longculverts, only: nlongculverts
       implicit none
 
-      if ((ti_rst > 0 .or. jahispump > 0) .and. npumpsg > 0) then
+      if ((ti_rst > 0 .or. jahispump > 0) .and. network%sts%numpumps > 0) then
          if (allocated(valpump)) deallocate (valpump)
-         allocate (valpump(NUMVALS_PUMP, npumpsg)); valpump = 0d0
+         allocate (valpump(NUMVALS_PUMP, network%sts%numpumps))
+         valpump = 0.0_dp
       end if
       if (ti_rst > 0 .or. jahiscgen > 0) then
          if (ncgensg > 0) then
             if (allocated(valcgen)) deallocate (valcgen)
-            allocate (valcgen(NUMVALS_CGEN, ncgensg)); valcgen = 0d0
+            allocate (valcgen(NUMVALS_CGEN, ncgensg)); valcgen = 0.0_dp
          end if
 
          if (ngenstru == 0) then ! If it is new general structure, then it is stored in the network type
@@ -287,22 +289,22 @@ contains
          end if
          if (ngenstru > 0) then
             if (allocated(valgenstru)) deallocate (valgenstru)
-            allocate (valgenstru(NUMVALS_GENSTRU, ngenstru)); valgenstru = 0d0
+            allocate (valgenstru(NUMVALS_GENSTRU, ngenstru)); valgenstru = 0.0_dp
          end if
       end if
       if (jahisgate > 0) then
          if (ngatesg > 0) then
             if (allocated(valgate)) deallocate (valgate)
-            allocate (valgate(NUMVALS_CGEN, ngatesg)); valgate = 0d0
+            allocate (valgate(NUMVALS_CGEN, ngatesg)); valgate = 0.0_dp
          end if
          if (ngategen > 0) then
             if (allocated(valgategen)) deallocate (valgategen)
-            allocate (valgategen(NUMVALS_GATEGEN, ngategen)); valgategen = 0d0
+            allocate (valgategen(NUMVALS_GATEGEN, ngategen)); valgategen = 0.0_dp
          end if
       end if
       if (jahiscdam > 0 .and. ncdamsg > 0) then
          if (allocated(valcdam)) deallocate (valcdam)
-         allocate (valcdam(NUMVALS_CDAM, ncdamsg)); valcdam = 0d0
+         allocate (valcdam(NUMVALS_CDAM, ncdamsg)); valcdam = 0.0_dp
       end if
       if (nweirgen == 0) then ! If it is new 1D weir, the weir is stored in the network type
          nweirgen = network%sts%numWeirs
@@ -310,35 +312,35 @@ contains
 
       if ((ti_rst > 0 .or. jahisweir > 0) .and. nweirgen > 0) then
          if (allocated(valweirgen)) deallocate (valweirgen)
-         allocate (valweirgen(NUMVALS_WEIRGEN, nweirgen)); valweirgen = 0d0
+         allocate (valweirgen(NUMVALS_WEIRGEN, nweirgen)); valweirgen = 0.0_dp
       end if
       if (jahisdambreak > 0 .and. ndambreaksignals > 0) then
          if (allocated(valdambreak)) deallocate (valdambreak)
-         allocate (valdambreak(NUMVALS_DAMBREAK, ndambreaksignals)); valdambreak = 0d0
+         allocate (valdambreak(NUMVALS_DAMBREAK, ndambreaksignals)); valdambreak = 0.0_dp
       end if
       if ((ti_rst > 0 .or. jahisorif > 0) .and. network%sts%numOrifices > 0) then
          if (allocated(valorifgen)) deallocate (valorifgen)
-         allocate (valorifgen(NUMVALS_ORIFGEN, network%sts%numOrifices)); valorifgen = 0d0
+         allocate (valorifgen(NUMVALS_ORIFGEN, network%sts%numOrifices)); valorifgen = 0.0_dp
       end if
       if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
          if (allocated(valbridge)) deallocate (valbridge)
-         allocate (valbridge(NUMVALS_BRIDGE, network%sts%numBridges)); valbridge = 0d0
+         allocate (valbridge(NUMVALS_BRIDGE, network%sts%numBridges)); valbridge = 0.0_dp
       end if
       if ((ti_rst > 0 .or. jahisculv > 0) .and. network%sts%numCulverts > 0) then
          if (allocated(valculvert)) deallocate (valculvert)
-         allocate (valculvert(NUMVALS_CULVERT, network%sts%numCulverts)); valculvert = 0d0
+         allocate (valculvert(NUMVALS_CULVERT, network%sts%numCulverts)); valculvert = 0.0_dp
       end if
       if (jahisuniweir > 0 .and. network%sts%numUniWeirs > 0) then
          if (allocated(valuniweir)) deallocate (valuniweir)
-         allocate (valuniweir(NUMVALS_UNIWEIR, network%sts%numUniWeirs)); valuniweir = 0d0
+         allocate (valuniweir(NUMVALS_UNIWEIR, network%sts%numUniWeirs)); valuniweir = 0.0_dp
       end if
       if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
          if (allocated(valcmpstru)) deallocate (valcmpstru)
-         allocate (valcmpstru(NUMVALS_CMPSTRU, network%cmps%count)); valcmpstru = 0d0
+         allocate (valcmpstru(NUMVALS_CMPSTRU, network%cmps%count)); valcmpstru = 0.0_dp
       end if
       if (jahislongculv > 0 .and. nlongculverts > 0) then
          if (allocated(vallongculvert)) deallocate (vallongculvert)
-         allocate (vallongculvert(NUMVALS_LONGCULVERT, nlongculverts)); vallongculvert = 0d0
+         allocate (vallongculvert(NUMVALS_LONGCULVERT, nlongculverts)); vallongculvert = 0.0_dp
       end if
 
 ! TIDAL TURBINES: Insert init_turbines here
@@ -389,7 +391,7 @@ contains
       use m_longculverts
       use m_flowparameters, only: epshs, epshu
       implicit none
-      double precision, dimension(:), intent(inout) :: valstruct !< Output values on structure (e.g. valweirgen(:)):
+      real(kind=dp), dimension(:), intent(inout) :: valstruct !< Output values on structure (e.g. valweirgen(:)):
       !< (IVAL_WIDTH) total width, no matter dry or not
       !< (IVAL_WIDTHWET) total width of wet links
       !< (IVAL_WIDTHUP) total width of wet flowlinks on upstream side
@@ -420,7 +422,7 @@ contains
       !< (IVAL_VEL_OVER) velocity over gate
       !< (IVAL_VEL_UNDER) velocity under gate
       integer, intent(in) :: L !< Flow link number.
-      double precision, intent(in) :: dir !< Direction of flow link w.r.t. structure orientation (1.0 for same direction, -1.0 for opposite).
+      real(kind=dp), intent(in) :: dir !< Direction of flow link w.r.t. structure orientation (1.0 for same direction, -1.0 for opposite).
       integer, intent(in) :: istrtypein !< The type of the structure. May differ from the struct%type, for example:
       !< an orifice should be called with istrtypein = ST_ORIFICE, whereas its struct(istru)%type = ST_GENERAL_ST.
       integer, intent(in) :: istru !< Structure index in network%sts set or in longculverts.
@@ -428,7 +430,7 @@ contains
 
       integer :: ku, kd, k1, k2
       type(t_GeneralStructure), pointer :: genstr
-      double precision :: qcmp
+      real(kind=dp) :: qcmp
       logical :: in_compound
 
       in_compound = .false.
@@ -539,7 +541,7 @@ contains
       use m_General_Structure, only: t_GeneralStructure
       use m_GlobalParameters
       implicit none
-      double precision, dimension(:), intent(inout) :: valstruct !< Output values on structure (e.g. valpump(:)):
+      real(kind=dp), dimension(:), intent(inout) :: valstruct !< Output values on structure (e.g. valpump(:)):
       !< (IVAL_WIDTH) total width
       !< (IVAL_WIDTHWET) total width of wet links
       !< (IVAL_WIDTHUP) total width of wet flowlinks on upstream side
@@ -594,13 +596,13 @@ contains
       end if
       ! 1b. other generic variables
       if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
-         if (valstruct(IVAL_WIDTH) == 0d0) then
+         if (valstruct(IVAL_WIDTH) == 0.0_dp) then
             valstruct(IVAL_CRESTL) = dmiss ! crest level
             valstruct(IVAL_CRESTW) = dmiss ! crest width
          end if
       end if
 
-      if (valstruct(IVAL_WIDTHWET) == 0d0) then ! zero width
+      if (valstruct(IVAL_WIDTHWET) == 0.0_dp) then ! zero width
          valstruct(IVAL_DIS) = dmiss ! discharge
          if (istrtypein /= ST_PUMP) then
             valstruct(IVAL_AREA) = dmiss ! flow area
@@ -615,10 +617,10 @@ contains
       else
 
          if (istrtypein /= ST_PUMP) then
-            if (valstruct(IVAL_AREA) > 0d0) then ! non-zero flow area
+            if (valstruct(IVAL_AREA) > 0.0_dp) then ! non-zero flow area
                valstruct(IVAL_VEL) = valstruct(IVAL_DIS) / valstruct(IVAL_AREA) ! velocity
             else
-               valstruct(IVAL_VEL) = 0d0
+               valstruct(IVAL_VEL) = 0.0_dp
             end if
          end if
 
@@ -632,10 +634,10 @@ contains
       ! 2. More specific valus that apply to certain structure types only
       ! General structure-based structures with a (gate) door.
       if (any(istrtypein == (/ST_GENERAL_ST, ST_ORIFICE/))) then ! TODO: ST_GATE
-         if (valstruct(IVAL_WIDTH) == 0d0) then ! zero width
+         if (valstruct(IVAL_WIDTH) == 0.0_dp) then ! zero width
             valstruct(IVAL_OPENW:) = dmiss
          end if
-         if (valstruct(IVAL_WIDTHWET) == 0d0) then ! zero wet width, info. on gate is not changed to dmiss
+         if (valstruct(IVAL_WIDTHWET) == 0.0_dp) then ! zero wet width, info. on gate is not changed to dmiss
             valstruct(IVAL_DIS_OPEN:) = dmiss
          else
             ! only for general structure
@@ -655,7 +657,7 @@ contains
 
       ! 3. More specific values that apply to bridge
       if (istrtypein == ST_BRIDGE) then
-         if (valstruct(IVAL_WIDTH) == 0d0) then ! zero width
+         if (valstruct(IVAL_WIDTH) == 0.0_dp) then ! zero width
             valstruct(IVAL_BLUP) = dmiss
             valstruct(IVAL_BLDN) = dmiss
             valstruct(IVAL_BLACTUAL) = dmiss
@@ -668,9 +670,9 @@ contains
 
       ! 4. More specific values that apply to culvert
       if (istrtypein == ST_CULVERT) then
-         if (valstruct(IVAL_WIDTH) == 0d0) then
+         if (valstruct(IVAL_WIDTH) == 0.0_dp) then
             valstruct(IVAL_CL_CRESTL:NUMVALS_CULVERT) = dmiss
-         else if (valstruct(IVAL_WIDTHWET) == 0d0) then
+         else if (valstruct(IVAL_WIDTHWET) == 0.0_dp) then
             valstruct(IVAL_CL_STATE) = dmiss
          end if
       end if
@@ -678,7 +680,7 @@ contains
    end subroutine average_valstruct
 
 !!> Gets force difference per unit width over structure (weir, gate, general structure) per link.
-   double precision function get_force_difference(istru, L)
+   real(kind=dp) function get_force_difference(istru, L)
       use m_missing
       use m_flowgeom, only: ln
       use m_flow, only: s1
@@ -688,11 +690,11 @@ contains
       integer, intent(in) :: istru !< structure index
       integer, intent(in) :: L !< current link L
 
-      double precision :: s1up !< water level up
-      double precision :: s1dn !< water level down
-      double precision :: crestl
+      real(kind=dp) :: s1up !< water level up
+      real(kind=dp) :: s1dn !< water level down
+      real(kind=dp) :: crestl
       integer :: k1, k2
-      double precision :: rholeft, rhoright
+      real(kind=dp) :: rholeft, rhoright
 
       crestl = get_crest_level(network%sts%struct(istru))
 
@@ -700,12 +702,12 @@ contains
       k2 = ln(2, L)
       s1up = max(s1(k1), s1(k2))
       s1dn = min(s1(k1), s1(k2))
-      if (crestl > dmiss + 0.1d0) then
-         rholeft = 1000.0d0
-         rhoright = 1000.0d0
+      if (crestl > dmiss + 0.1_dp) then
+         rholeft = 1000.0_dp
+         rhoright = 1000.0_dp
 
-         get_force_difference = max((s1up - crestl), 0.0d0)**2 * rholeft * gravity / 2.0d0 - &
-                                max((s1dn - crestl), 0.0d0)**2 * rhoright * gravity / 2.0d0
+         get_force_difference = max((s1up - crestl), 0.0_dp)**2 * rholeft * gravity * 0.5_dp - &
+                                max((s1dn - crestl), 0.0_dp)**2 * rhoright * gravity * 0.5_dp
       else
          get_force_difference = dmiss
       end if
@@ -713,38 +715,38 @@ contains
    end function get_force_difference
 
 !> Gets discharge through gate opening per link.
-   double precision function get_discharge_through_gate_opening(genstr, L0, s1m1, s1m2)
+   real(kind=dp) function get_discharge_through_gate_opening(genstr, L0, s1m1, s1m2)
       use m_missing
       use m_General_Structure
       implicit none
       type(t_GeneralStructure), pointer, intent(in) :: genstr !< Derived type containing general structure information.
       integer, intent(in) :: L0 !< Local link index in genstr%..(:) link-based arrays.
-      double precision, intent(in) :: s1m1 !< (geometrical) upstream water level.
-      double precision, intent(in) :: s1m2 !< (geometrical) downstream water level.
-      double precision :: u1L, dsL, gatefraction
+      real(kind=dp), intent(in) :: s1m1 !< (geometrical) upstream water level.
+      real(kind=dp), intent(in) :: s1m2 !< (geometrical) downstream water level.
+      real(kind=dp) :: u1L, dsL, gatefraction
 
       dsL = s1m2 - s1m1
       gatefraction = genstr%gateclosedfractiononlink(L0)
 
-      if (gatefraction < 1d0 - gatefrac_eps) then
+      if (gatefraction < 1.0_dp - gatefrac_eps) then
          u1L = genstr%ru(3, L0) - genstr%fu(3, L0) * dsL
          get_discharge_through_gate_opening = genstr%au(3, L0) * u1L
       else
-         get_discharge_through_gate_opening = 0d0
+         get_discharge_through_gate_opening = 0.0_dp
       end if
 
    end function get_discharge_through_gate_opening
 
 !> Gets discharge over gate opening per link.
-   double precision function get_discharge_over_gate(genstr, L0, s1m1, s1m2)
+   real(kind=dp) function get_discharge_over_gate(genstr, L0, s1m1, s1m2)
       use m_missing
       use m_General_Structure
       implicit none
       type(t_GeneralStructure), pointer, intent(in) :: genstr !< Derived type containing general structure information
       integer, intent(in) :: L0 !< Local link index in genstr%..(:) link-based arrays.
-      double precision, intent(in) :: s1m1 !< (geometrical) upstream water level.
-      double precision, intent(in) :: s1m2 !< (geometrical) downstream water level.
-      double precision :: u1L, dsL, gatefraction
+      real(kind=dp), intent(in) :: s1m1 !< (geometrical) upstream water level.
+      real(kind=dp), intent(in) :: s1m2 !< (geometrical) downstream water level.
+      real(kind=dp) :: u1L, dsL, gatefraction
 
       dsL = s1m2 - s1m1
       gatefraction = genstr%gateclosedfractiononlink(L0)
@@ -753,21 +755,21 @@ contains
          u1L = genstr%ru(2, L0) - genstr%fu(2, L0) * dsL
          get_discharge_over_gate = genstr%au(2, L0) * u1L
       else
-         get_discharge_over_gate = 0d0
+         get_discharge_over_gate = 0.0_dp
       end if
 
    end function get_discharge_over_gate
 
 !> Gets discharge under gate per link.
-   double precision function get_discharge_under_gate(genstr, L0, s1m1, s1m2)
+   real(kind=dp) function get_discharge_under_gate(genstr, L0, s1m1, s1m2)
       use m_missing
       use m_General_Structure
       implicit none
       type(t_GeneralStructure), pointer, intent(in) :: genstr !< Derived type containing general structure information
       integer, intent(in) :: L0 !< Local link index in genstr%..(:) link-based arrays.
-      double precision, intent(in) :: s1m1 !< (geometrical) upstream water level.
-      double precision, intent(in) :: s1m2 !< (geometrical) downstream water level.
-      double precision :: u1L, dsL, gatefraction
+      real(kind=dp), intent(in) :: s1m1 !< (geometrical) upstream water level.
+      real(kind=dp), intent(in) :: s1m2 !< (geometrical) downstream water level.
+      real(kind=dp) :: u1L, dsL, gatefraction
 
       dsL = s1m2 - s1m1
       gatefraction = genstr%gateclosedfractiononlink(L0)
@@ -776,7 +778,7 @@ contains
          u1L = genstr%ru(1, L0) - genstr%fu(1, L0) * dsL
          get_discharge_under_gate = genstr%au(1, L0) * u1L
       else
-         get_discharge_under_gate = 0d0
+         get_discharge_under_gate = 0.0_dp
       end if
 
    end function get_discharge_under_gate
@@ -874,6 +876,8 @@ contains
          get_istru = network%sts%weirIndices(i)
       case (ST_ORIFICE)
          get_istru = network%sts%orificeIndices(i)
+      case (ST_GATE)
+         get_istru = network%sts%gateIndices(i)
       case (ST_GENERAL_ST)
          get_istru = network%sts%generalStructureIndices(i)
       case (ST_CULVERT)
@@ -1006,12 +1010,12 @@ contains
       !< an orifice should be called with istrtypein = ST_ORIFICE, whereas its struct(istru)%type = ST_GENERAL_ST.
       integer, intent(in) :: i !< Structure index for this structure type.
       integer, intent(in) :: nNodes !< Number of geometry nodes in this structure (as computed by get_number_of_geom_nodes()).
-      double precision, allocatable, intent(out) :: x(:) !< x-coordinates of the structure (will be reallocated when needed)
-      double precision, allocatable, intent(out) :: y(:) !< y-coordinates of the structure (will be reallocated when needed)
+      real(kind=dp), allocatable, intent(out) :: x(:) !< x-coordinates of the structure (will be reallocated when needed)
+      real(kind=dp), allocatable, intent(out) :: y(:) !< y-coordinates of the structure (will be reallocated when needed)
       integer, allocatable, intent(out) :: maskLocalStartEnd(:) !< Mask array of local start and end nodes on current subdomain (now only used for long culverts)
 
       integer :: istru, nLinks, L, L0, Ls, k1, k2, k3, k4, k, nLinksTmp, jaghost, idmn_ghost, Lf, La
-      double precision :: dtmp
+      real(kind=dp) :: dtmp
       type(t_structure), pointer :: pstru
       integer, allocatable :: links(:)
 
@@ -1149,11 +1153,11 @@ contains
       implicit none
       integer, intent(in) :: i !< Structure index for this structure type.
       integer, intent(in) :: nNodes !< Number of geometry nodes in this structure.
-      double precision, allocatable, intent(out) :: x(:) !< x-coordinates of the structure (will be reallocated when needed)
-      double precision, allocatable, intent(out) :: y(:) !< y-coordinates of the structure (will be reallocated when needed)
+      real(kind=dp), allocatable, intent(out) :: x(:) !< x-coordinates of the structure (will be reallocated when needed)
+      real(kind=dp), allocatable, intent(out) :: y(:) !< y-coordinates of the structure (will be reallocated when needed)
 
       integer :: L, L0, k1, k2, k3, k4, k
-      double precision :: dtmp
+      real(kind=dp) :: dtmp
 
       if (nNodes > 0) then
          call realloc(x, nNodes)
@@ -1215,17 +1219,17 @@ contains
       integer, intent(in) :: nstru !< Number of this structure type
       integer, intent(out) :: nNodesStru !< Total number of nodes of this structure type
       integer, allocatable, intent(out) :: nodeCountStru(:) !< Node count of this structure type
-      double precision, allocatable, intent(out) :: geomXStru(:) !< [m] x coordinate of nodes of this structure type
-      double precision, allocatable, intent(out) :: geomYStru(:) !< [m] y coordinate of nodes of this structure type
+      real(kind=dp), allocatable, intent(out) :: geomXStru(:) !< [m] x coordinate of nodes of this structure type
+      real(kind=dp), allocatable, intent(out) :: geomYStru(:) !< [m] y coordinate of nodes of this structure type
 
-      double precision, allocatable :: xGat(:), yGat(:) ! Coordinates that are gatherd data from all subdomains
+      real(kind=dp), allocatable :: xGat(:), yGat(:) ! Coordinates that are gatherd data from all subdomains
       integer, allocatable :: nodeCountStruMPI(:) ! Count of nodes per structure after mpi communication.
-      double precision, allocatable :: geomXStruMPI(:) ! [m] x coordinates of structures after mpi communication.
-      double precision, allocatable :: geomYStruMPI(:) ! [m] y coordinates of structures after mpi communication.
+      real(kind=dp), allocatable :: geomXStruMPI(:) ! [m] x coordinates of structures after mpi communication.
+      real(kind=dp), allocatable :: geomYStruMPI(:) ! [m] y coordinates of structures after mpi communication.
       integer, allocatable :: nodeCountStruGat(:), nNodesStruGat(:), displs(:)
-      double precision, allocatable :: geomX(:), geomY(:)
+      real(kind=dp), allocatable :: geomX(:), geomY(:)
       integer :: i, j, j1, k, k1, ierror, is, ie, n, ii, nNodes, nNodesStruMPI, jaexist, ke, ks, kk, nLocalStartEnd, nLocalStartEndLast, npar
-      double precision :: xNew, yNew, xOld, yOld
+      real(kind=dp) :: xNew, yNew, xOld, yOld
       integer, allocatable :: maskLocalStartEnd(:), maskLocalStartEndAll(:), maskLocalStartEndGat(:), indLocalStartEndMPI(:) ! Arrays for local start/end nodes, only used in parallel run
       integer, allocatable :: jacoincide(:)
 
@@ -1236,8 +1240,8 @@ contains
          nodeCountStru(i) = nNodes
       end do
       nNodesStru = sum(nodeCountStru)
-      call realloc(geomXStru, nNodesStru, keepExisting=.false., fill=0d0)
-      call realloc(geomYStru, nNodesStru, keepExisting=.false., fill=0d0)
+      call realloc(geomXStru, nNodesStru, keepExisting=.false., fill=0.0_dp)
+      call realloc(geomYStru, nNodesStru, keepExisting=.false., fill=0.0_dp)
       if (jampi > 0 .and. struc_type_id == ST_LONGCULVERT) then
          ! In parallel runs, one structure might lie on multiple subdomains. To handle this situation,
          ! we will need to know which nodes are local start/end nodes of a structure on each subdomain, and the local start/end nodes will be handled separately.
@@ -1274,6 +1278,8 @@ contains
             model_has_general_structures_across_partitions = .true.
          case (ST_ORIFICE)
             model_has_orifices_across_partitions = .true.
+         case (ST_GATE)
+            model_has_gates_across_partitions = .true.
          case (ST_UNI_WEIR)
             model_has_universal_weirs_across_partitions = .true.
          case (ST_CULVERT)
@@ -1297,14 +1303,14 @@ contains
          if (my_rank == 0) then
             ! Allocate arrays
             call realloc(nodeCountStruMPI, nstru, keepExisting=.false., fill=0)
-            call realloc(geomXStruMPI, nNodesStruMPI, keepExisting=.false., fill=0d0)
-            call realloc(geomYStruMPI, nNodesStruMPI, keepExisting=.false., fill=0d0)
+            call realloc(geomXStruMPI, nNodesStruMPI, keepExisting=.false., fill=0.0_dp)
+            call realloc(geomYStruMPI, nNodesStruMPI, keepExisting=.false., fill=0.0_dp)
 
             ! Allocate arrays that gather information from all subdomains
             ! Data on all subdomains will be gathered in a contiguous way
             call realloc(nodeCountStruGat, nstru * ndomains, keepExisting=.false., fill=0)
-            call realloc(xGat, nNodesStruMPI, keepExisting=.false., fill=0d0)
-            call realloc(yGat, nNodesStruMPI, keepExisting=.false., fill=0d0)
+            call realloc(xGat, nNodesStruMPI, keepExisting=.false., fill=0.0_dp)
+            call realloc(yGat, nNodesStruMPI, keepExisting=.false., fill=0.0_dp)
             call realloc(displs, ndomains, keepExisting=.false., fill=0)
             call realloc(nNodesStruGat, ndomains, keepExisting=.false., fill=0)
             if (struc_type_id == ST_LONGCULVERT) then
@@ -1331,7 +1337,7 @@ contains
             end do
          end if
 
-         ! Gather double precision data, here, different number of data can be gatherd from different subdomains to process 0000
+         ! Gather real(kind=dp) data, here, different number of data can be gatherd from different subdomains to process 0000
          call gatherv_double_data_mpi_dif(nNodesStru, geomXStru, nNodesStruMPI, xGat, ndomains, nNodesStruGat, displs, 0, ierror)
          call gatherv_double_data_mpi_dif(nNodesStru, geomYStru, nNodesStruMPI, yGat, ndomains, nNodesStruGat, displs, 0, ierror)
          if (struc_type_id == ST_LONGCULVERT) then
@@ -1445,8 +1451,8 @@ contains
             ! Copy the MPI-arrays to nodeCoutLat, geomXStru and geomYStru for the his-output
             nNodesStru = nNodesStruMPI
             nodeCountStru(1:nstru) = nodeCountStruMPI(1:nstru)
-            call realloc(geomXStru, nNodesStru, keepExisting=.false., fill=0d0)
-            call realloc(geomYStru, nNodesStru, keepExisting=.false., fill=0d0)
+            call realloc(geomXStru, nNodesStru, keepExisting=.false., fill=0.0_dp)
+            call realloc(geomYStru, nNodesStru, keepExisting=.false., fill=0.0_dp)
             geomXStru(1:nNodesStru) = geomXStruMPI(1:nNodesStru)
             geomYStru(1:nNodesStru) = geomYStruMPI(1:nNodesStru)
          end if
@@ -1514,7 +1520,7 @@ contains
       use m_General_Structure, only: t_GeneralStructure
       use m_GlobalParameters
       implicit none
-      double precision, dimension(:), intent(inout) :: valstruct !< Output values on structure (e.g. valweirgen(:)):
+      real(kind=dp), dimension(:), intent(inout) :: valstruct !< Output values on structure (e.g. valweirgen(:)):
       !< (IVAL_WIDTH) total width, no matter dry or not
       !< (IVAL_WIDTHWET) total width of wet links
       !< (IVAL_WIDTHUP) total width of wet flowlinks on upstream side
@@ -1548,7 +1554,7 @@ contains
       integer, intent(in) :: istru !< Structure index in network%sts set or in longculverts
       integer, intent(in) :: nlinks !< Number of links for the structure
 
-      double precision :: tmp
+      real(kind=dp) :: tmp
       integer :: jadif, i
       type(t_structure), pointer :: pstru
       type(t_GeneralStructure), pointer :: genstr
@@ -1595,8 +1601,8 @@ contains
       use m_sferic, only: jsferic
 
       integer, intent(in) :: structuretype !< Structure type, see: m_globalparameters
-      double precision, allocatable, target, intent(out) :: geomXStructInput(:) !< [m] array with input x coordinates of structures.
-      double precision, allocatable, target, intent(out) :: geomYStructInput(:) !< [m] array with input y coordinates of structures.
+      real(kind=dp), allocatable, target, intent(out) :: geomXStructInput(:) !< [m] array with input x coordinates of structures.
+      real(kind=dp), allocatable, target, intent(out) :: geomYStructInput(:) !< [m] array with input y coordinates of structures.
       integer, allocatable, target, intent(out) :: nNodesStructInput(:) !< Array with number of coordinates for each structure
       integer, intent(out) :: numstructs !< Number of structures of structure type
       integer, intent(out) :: nNodeTot !< Total number of nodes of structure type,
@@ -1686,7 +1692,7 @@ contains
 
 !> Determine the combined number of geometry nodes for all pumps
 !! (used to determine the size of geometry variables in the his-file)
-   integer function number_of_pump_nodes
+   integer function number_of_pump_nodes()
       use m_flowparameters, only: jahispump
       use fm_external_forcings_data, only: npumpsg, L1pumpsg, L2pumpsg
       use unstruc_channel_flow, only: network

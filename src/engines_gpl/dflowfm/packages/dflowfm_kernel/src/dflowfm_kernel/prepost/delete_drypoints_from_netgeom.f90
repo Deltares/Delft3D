@@ -32,7 +32,18 @@
 
 !> read drypoints files and delete dry points from net geometry (netcells)
 !! Grid enclosures are handled via the jinside=-1 option.
+module m_delete_drypoints_from_netgeom
+
+implicit none
+
+private
+
+public :: delete_drypoints_from_netgeom
+
+contains
+
 subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
+   use m_cutcell_list, only: cutcell_list
    use m_samples_to_cellmask2
    use m_confrm
    use unstruc_messages
@@ -46,7 +57,6 @@ subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
    use m_reapol
    use m_delsam
    use m_reasam
-   implicit none
 
    character(*), intent(inout) :: dryptsfilelist !< List of file names to process for deleting dry parts. (Supported formats: .xyz, .pol)
    integer, intent(in) :: jaconfirm !< Whether (1) or not (0) to interactively prompt for inclusion of each individual file from the list.
@@ -187,3 +197,5 @@ subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
 
    return
 end subroutine delete_drypoints_from_netgeom
+
+end module m_delete_drypoints_from_netgeom

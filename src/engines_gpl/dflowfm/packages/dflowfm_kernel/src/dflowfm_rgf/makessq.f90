@@ -37,17 +37,16 @@ contains
 
       integer :: nt, mfac, imax
       double precision :: S(IMAX), A(IMAX), SR(IMAX), SL(IMAX), SSQ(IMAX)
-      double precision :: glad
       integer :: i, k, kr
       double precision :: ar, al
-      GLAD(I) = (S(I + 1) - S(I)) / (S(I) - S(I - 1))
+
       if (NT == 2) then
          do K = 1, MFAC + 1
             SSQ(K) = S(1) + (S(2) - S(1)) * (dble(K - 1)) / dble(MFAC)
          end do
       else if (NT >= 3) then
          do I = 2, NT - 1
-            A(I) = GLAD(I)
+            A(I) = (S(I + 1) - S(I)) / (S(I) - S(I - 1))
          end do
          A(1) = A(2)
          A(NT) = A(NT - 1)

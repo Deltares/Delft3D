@@ -30,6 +30,18 @@
 !
 !
 
+module m_wave_fillsurdis
+use m_wave_statbreakerdis, only: wave_statbreakerdis
+
+
+implicit none
+
+private
+
+public :: wave_fillsurdis
+
+contains
+
    subroutine wave_fillsurdis(k, surdis)
       use m_waves
       use m_xbeach_data, only: DR, D, roller
@@ -70,3 +82,5 @@
       end select
 
    end subroutine wave_fillsurdis
+
+end module m_wave_fillsurdis

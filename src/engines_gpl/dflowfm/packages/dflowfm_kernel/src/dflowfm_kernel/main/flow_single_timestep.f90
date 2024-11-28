@@ -30,8 +30,21 @@
 !
 !
 
+module m_flow_single_timestep
+
+implicit none
+
+private
+
+public :: flow_single_timestep
+
+contains
+
  !> A complete single computational time step (init-perform-finalize).
  subroutine flow_single_timestep(key, iresult) ! do only 1 flow timestep
+    use m_flow_run_single_timestep, only: flow_run_single_timestep
+    use m_flow_init_single_timestep, only: flow_init_single_timestep
+    use m_flow_finalize_single_timestep, only: flow_finalize_single_timestep
     use m_sedmor_write_stats, only: sedmor_write_stats
     use m_flow
     use m_flowgeom
@@ -41,7 +54,6 @@
     use m_timer
     use dfm_error
     use m_sedtrails_netcdf, only: sedtrails_write_stats
-    implicit none
 
     integer :: key
     integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
@@ -92,3 +104,5 @@
 888 continue
     ! Error
  end subroutine flow_single_timestep
+
+end module m_flow_single_timestep

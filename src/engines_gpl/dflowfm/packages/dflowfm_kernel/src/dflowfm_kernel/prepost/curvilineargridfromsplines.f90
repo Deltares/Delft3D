@@ -30,10 +30,20 @@
 !
 !
 
+module m_curvilineargridfromsplines
+
+implicit none
+
+private
+
+public :: curvilineargridfromsplines
+
+contains
+
       subroutine curvilinearGRIDfromsplines()
          use M_SPLINES
          use m_qnerror
-         implicit none
+
          if (MCS == 0) then
             call QNERROR('First Create or Open Splines', ' ', ' ')
             !NUM = 0
@@ -41,3 +51,5 @@
          end if
          call SPLRGFR()
       end subroutine curvilinearGRIDfromsplines
+
+end module m_curvilineargridfromsplines

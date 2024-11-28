@@ -31,6 +31,7 @@
 !
 
  subroutine polygonlayering(mpol)
+    use m_closedefinedflownode, only: closedefinedflownode
     use m_flow
     use m_flowgeom
     use m_polygon

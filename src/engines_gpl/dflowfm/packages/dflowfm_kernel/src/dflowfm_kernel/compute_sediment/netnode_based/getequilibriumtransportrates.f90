@@ -30,6 +30,7 @@
 !
 !
 module m_get_equilibrium_transport_rates
+use m_swart, only: swart
 use m_widarhyr, only: widarhyr
 use m_check_einstein_garcia2, only: check_einstein_garcia2
 

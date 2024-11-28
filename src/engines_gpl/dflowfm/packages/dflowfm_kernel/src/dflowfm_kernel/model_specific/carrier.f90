@@ -30,10 +30,20 @@
 !
 !
 
+module m_carrier
+
+implicit none
+
+private
+
+public :: carrier
+
+contains
+
  subroutine carrier(time1)
     use m_movabs
     use m_lnabs
-    implicit none
+
     double precision :: time1
 
     double precision :: J0(100), J1(100), A1(100), A3(100), ahh
@@ -125,3 +135,5 @@
     ! enddo
 
  end subroutine carrier
+
+end module m_carrier

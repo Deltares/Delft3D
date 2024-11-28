@@ -31,6 +31,7 @@
 !
 
 module m_ndisplay
+use m_checknetwork, only: checknetwork
 use m_add_tracer, only: add_tracer
 use m_textparameters
 use m_setwy
@@ -74,7 +75,7 @@ contains
       integer :: ierror
       integer :: numopt
       integer, parameter :: MAXOP = 64
-      character * 40 OPTION(MAXOP), exp(MAXOP)
+      character(len=40) :: OPTION(MAXOP), exp(MAXOP)
 
 1234  continue
 

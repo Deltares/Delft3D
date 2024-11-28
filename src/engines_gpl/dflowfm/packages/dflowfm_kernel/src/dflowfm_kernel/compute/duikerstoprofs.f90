@@ -31,6 +31,8 @@
 !
 
 module m_duikerstoprofs
+use m_closeto1dnetlink, only: closeto1dnetlink
+
 
 implicit none
 

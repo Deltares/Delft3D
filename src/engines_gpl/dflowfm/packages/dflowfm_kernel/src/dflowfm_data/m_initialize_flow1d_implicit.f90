@@ -1101,7 +1101,7 @@ contains
 
       integer :: kd, idx_fm, k1, idx_sre, idx_l1, idx_l2, k2, kn, kl, n1, n2, L, idx_n
 
-      real :: swaoft
+      integer :: swaoft
 
       double precision :: wu_int, au_int
 

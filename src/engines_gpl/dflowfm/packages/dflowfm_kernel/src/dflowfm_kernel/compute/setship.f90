@@ -47,6 +47,7 @@ contains
     use m_afhouwendammit, only: afhouwendammit
     use m_addship2d, only: addship2D
     use m_readshipdef, only: readshipdef
+    use precision, only: dp
     use m_getshipcontrol
     use m_netw
     use m_flowgeom
@@ -63,15 +64,15 @@ contains
     implicit none
     integer :: L, k, k1, k2, k3, k4, kk, n, ierr, i0, i1, j0, j1, m, nn
     integer :: mmx, mm, Lt, k1t, k2t
-    double precision :: alf, alfy
-    double precision :: rela, dpx, dpy, fxx, fyy, yf, yf2, dvL, dp_length
-    double precision :: sxr, syr, sxr2, syr2, css, sns, dss, prp, prop, volprop, prptot, volu, frb, a
-    double precision :: frc, uxsh, uysh, uxw, uyw, uxd, uyd, umods, uud, uush, uushd, friL, frix, friy, frim, phi
-    double precision :: FX, FY, XM, YM, armx, army, shvol, roeri, stuwc, stuwn, frixi, friyi, frimi, frcL, dzz
+    real(kind=dp) :: alf, alfy
+    real(kind=dp) :: rela, dpx, dpy, fxx, fyy, yf, yf2, dvL, dp_length
+    real(kind=dp) :: sxr, syr, sxr2, syr2, css, sns, dss, prp, prop, volprop, prptot, volu, frb, a
+    real(kind=dp) :: frc, uxsh, uysh, uxw, uyw, uxd, uyd, umods, uud, uush, uushd, friL, frix, friy, frim, phi
+    real(kind=dp) :: FX, FY, XM, YM, armx, army, shvol, roeri, stuwc, stuwn, frixi, friyi, frimi, frcL, dzz
 
-    double precision :: xx, yy, dxx, dyy, dxsa, dysa, df, ai, bi, qz, qza, arm
-    double precision, allocatable :: zsp2(:)
-    double precision :: xxm, delx, Cf, Cf2, Rex, h1, h2, clear, vnu, Ar, aav, aa, fac, yyk, xxk, dxxx, zspk, exx, eyy
+    real(kind=dp) :: xx, yy, dxx, dyy, dxsa, dysa, df, ai, bi, qz, qza, arm
+    real(kind=dp), allocatable :: zsp2(:)
+    real(kind=dp) :: xxm, delx, Cf, Cf2, Rex, h1, h2, clear, vnu, Ar, aav, aa, fac, yyk, xxk, dxxx, zspk, exx, eyy
 
     if (nshiptxy == 0) return
 

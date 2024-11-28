@@ -31,7 +31,18 @@
 !
 
 !> detect ridges and reduce structured sample set
+module m_detect_ridges
+
+implicit none
+
+private
+
+public :: detect_ridges
+
+contains
+
 subroutine detect_ridges(jadeleteHessians)
+   use m_deallocate_samplehessian, only: deallocate_samplehessian
    use m_plot_ridges
    use m_samples
    use m_samples_refine
@@ -100,3 +111,5 @@ subroutine detect_ridges(jadeleteHessians)
 
    return
 end subroutine detect_ridges
+
+end module m_detect_ridges

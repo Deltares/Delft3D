@@ -28,6 +28,16 @@
 !-------------------------------------------------------------------------------
 
 !> Finalizes a single time step, should be called directly after flow_run_single_timestep
+module m_flow_finalize_single_timestep
+
+implicit none
+
+private
+
+public :: flow_finalize_single_timestep
+
+contains
+
 subroutine flow_finalize_single_timestep(iresult)
    use m_filter
    use m_textflow
@@ -57,7 +67,6 @@ subroutine flow_finalize_single_timestep(iresult)
    use m_structure_parameters
    use m_flow_f0isf1
 
-   implicit none
    integer, intent(out) :: iresult
 
    ! Timestep has been performed, now finalize it.
@@ -189,3 +198,5 @@ subroutine flow_finalize_single_timestep(iresult)
    end if
 
 end subroutine flow_finalize_single_timestep
+
+end module m_flow_finalize_single_timestep

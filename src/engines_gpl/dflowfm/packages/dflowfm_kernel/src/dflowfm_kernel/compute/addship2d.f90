@@ -42,6 +42,7 @@ contains
 
  subroutine addship2D(japerim)
     use m_addlinkship2d, only: addlinkship2D
+    use precision, only: dp
     use m_ship
     use m_flowgeom
     use m_flow
@@ -50,8 +51,8 @@ contains
     use m_flowtimes
     implicit none
     integer :: k, L, k1, k2, japerim, i0, i1, j0, j1, n, numi, kk
-    double precision :: slotsav, h1, h2, dx2d, d2, css, sns, dxsa, dysa, dxx, dyy, xx, yy, sxr, syr, sxrL, sxrR, alfa
-    double precision :: alf, alfy, dss, frb, yf, v1, v2, domp, omegadomp, za, zs1, zs2
+    real(kind=dp) :: slotsav, h1, h2, dx2d, d2, css, sns, dxsa, dysa, dxx, dyy, xx, yy, sxr, syr, sxrL, sxrR, alfa
+    real(kind=dp) :: alf, alfy, dss, frb, yf, v1, v2, domp, omegadomp, za, zs1, zs2
 
     if (japressurehull == 2) then
 
@@ -142,7 +143,7 @@ contains
                 end if
                 alfa = 1d0
                 if (sxrL < -shL(n)) then
-                   alfa = (SxrR - -shL(n)) / dx2d
+                   alfa = (SxrR - (-shL(n))) / dx2d
                 else if (sxrR > shL(n)) then
                    alfa = (shL(n) - sxRL) / dx2d
                 end if

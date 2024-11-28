@@ -31,11 +31,19 @@
 !
 
 !> deallocate sample Hessian data
+module m_deallocate_samplehessian
+
+implicit none
+
+private
+
+public :: deallocate_samplehessian
+
+contains
+
 subroutine deallocate_sampleHessian()
    use m_samples
    use m_samples_refine
-
-   implicit none
 
    if (allocated(zss)) deallocate (zss)
 
@@ -43,3 +51,5 @@ subroutine deallocate_sampleHessian()
 
    return
 end subroutine deallocate_sampleHessian
+
+end module m_deallocate_samplehessian

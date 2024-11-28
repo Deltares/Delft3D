@@ -31,11 +31,21 @@
 !
 
 !> allocate sample Hessian data
+module m_allocate_samplehessian
+use m_deallocate_samplehessian, only: deallocate_samplehessian
+
+
+implicit none
+
+private
+
+public :: allocate_samplehessian
+
+contains
+
 subroutine allocate_sampleHessian()
    use m_samples
    use m_samples_refine
-
-   implicit none
 
    call deallocate_sampleHessian()
 
@@ -43,5 +53,6 @@ subroutine allocate_sampleHessian()
 
    iHesstat = iHesstat_DIRTY
 
-   return
 end subroutine allocate_sampleHessian
+
+end module m_allocate_samplehessian

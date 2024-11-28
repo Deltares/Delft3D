@@ -31,9 +31,18 @@
 !
 
 !> count number of 2D links and 1D endpoints
+module m_count_links
+
+implicit none
+
+private
+
+public :: count_links
+
+contains
+
 subroutine count_links(mx1Dend, Nx)
    use network_data, only: numL, numL1D, kn, lne, nmk
-   implicit none
 
    integer, intent(out) :: mx1Dend !< number of 1D endpoints
    integer, intent(out) :: Nx !< number of 2D links and 1D endpoints
@@ -55,3 +64,5 @@ subroutine count_links(mx1Dend, Nx)
 
    return
 end subroutine count_links
+
+end module m_count_links

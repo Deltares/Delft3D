@@ -32,6 +32,7 @@
 
    subroutine RELINK()
 
+      use m_dellinksinpol, only: dellinksinpol
       use m_netw
       use m_ec_triangle
       use gridoperations

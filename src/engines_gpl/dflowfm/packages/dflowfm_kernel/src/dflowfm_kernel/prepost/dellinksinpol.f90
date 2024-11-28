@@ -30,12 +30,21 @@
 !
 !
 
+module m_dellinksinpol
+
+implicit none
+
+private
+
+public :: dellinksinpol
+
+contains
+
    subroutine DELLINKSINPOL()
       use m_netw
       use m_missing, only: dmiss, jins
       use geometry_module, only: pinpok
       use m_min_max_pol
-      implicit none
 
       integer :: in
       integer :: in2
@@ -69,3 +78,5 @@
          end do
       end if
    end subroutine DELLINKSINPOL
+
+end module m_dellinksinpol

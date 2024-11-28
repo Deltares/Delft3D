@@ -30,6 +30,16 @@
 !
 !
 module m_flow_flowinit
+   use m_check_structures_and_fixed_weirs, only: check_structures_and_fixed_weirs
+   use m_thacker2d, only: thacker2d
+   use m_thacker1d, only: thacker1d
+   use m_coriolistilt, only: coriolistilt
+   use m_wave_uorbrlabda, only: wave_uorbrlabda
+   use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
+   use m_tauwavehk, only: tauwavehk
+   use m_tauwave, only: tauwave
+   use m_setwavmubnd, only: setwavmubnd
+   use m_setwavfu, only: setwavfu
    use m_inisolver_advec, only: inisolver_advec
    use m_setzcs, only: setzcs
    use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
@@ -1621,6 +1631,8 @@ contains
       use m_set_bobs
       use m_get_czz0
       use m_rho_eckart, only: rho_eckart
+      use m_corioliskelvin, only: corioliskelvin, oceaneddy
+      use m_model_specific, only: equatorial, poiseuille
 
       implicit none
 

@@ -27,9 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> split polygon recursively into (Ni X Nj) smaller polygons, at most MAXsplit times, until polygons have at most NPLmax nodes
  subroutine split_pol(Ni, Nj, NPLmax, MAXsplit)
     use m_polygon
@@ -38,6 +35,8 @@
     use m_missing
     use unstruc_messages
     use m_wrildb
+    use m_addtopol, only: addtopol
+    
     implicit none
 
     integer, intent(in) :: Ni
@@ -69,8 +68,6 @@
     integer, dimension(0) :: nclan
 
     integer, parameter :: MAXLRWK = 1e9
-
-    external :: addtopol
 
     if (NPL < 3) return
 

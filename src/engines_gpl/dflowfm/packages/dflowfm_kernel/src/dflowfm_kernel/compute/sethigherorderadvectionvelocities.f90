@@ -31,6 +31,8 @@
 !
 
 module m_sethigherorderadvectionvelocities
+use m_dslimvec, only: dslimvec
+
 
 implicit none
 

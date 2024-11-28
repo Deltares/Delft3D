@@ -32,6 +32,8 @@
 
 !> refine cells by splitting links
 subroutine refinecellsandfaces2()
+   use m_deallocate_samplehessian, only: deallocate_samplehessian
+   use m_connect_hanging_nodes, only: connect_hanging_nodes
    use m_write_illegal_cells_to_pol, only: write_illegal_cells_to_pol
    use m_confrm
    use m_change_samples_refine_param

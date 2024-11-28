@@ -31,6 +31,12 @@
 !
 
  subroutine flow_geominit(iphase) ! initialise flow geometry
+    use m_cutcell_list, only: cutcell_list
+    use m_checknetwork, only: checknetwork
+    use m_allocate_linktocenterweights, only: allocate_linktocenterweights
+    use m_add_boundarynetcells, only: add_boundarynetcells
+    use m_addexternalboundarypoints, only: addexternalboundarypoints
+    use m_xbeachwaves, only: xbeach_makethetagrid
     use m_setisnbnodisnblin, only: setisnbnodisnblin
     use m_load1d2dlinkfile
     use m_allocateandset2dnodexyarrays

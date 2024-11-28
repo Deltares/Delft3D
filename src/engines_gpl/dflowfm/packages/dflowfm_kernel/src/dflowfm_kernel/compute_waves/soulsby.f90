@@ -30,6 +30,16 @@
 !
 !
 
+module m_soulsby
+
+implicit none
+
+private
+
+public :: soulsby
+
+contains
+
 subroutine soulsby(tsig, uorbu, z00, fw)
    use m_sferic, only: pi
 
@@ -46,3 +56,5 @@ subroutine soulsby(tsig, uorbu, z00, fw)
    end if
 
 end subroutine soulsby
+
+end module m_soulsby

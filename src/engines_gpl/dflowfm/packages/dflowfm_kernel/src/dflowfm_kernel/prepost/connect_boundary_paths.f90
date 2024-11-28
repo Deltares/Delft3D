@@ -31,6 +31,16 @@
 !
 
 !> connect netboundary paths
+module m_connect_boundary_paths
+
+implicit none
+
+private
+
+public :: connect_boundary_paths
+
+contains
+
 recursive subroutine connect_boundary_paths(Lstart, nodemask, init, numnodes, nodelist)
    use m_netw
    use m_alloc
@@ -41,8 +51,6 @@ recursive subroutine connect_boundary_paths(Lstart, nodemask, init, numnodes, no
    use m_set_col
    use m_movabs
    use m_lnabs
-
-   implicit none
 
    integer, intent(in) :: Lstart !< initial netlink
    integer, dimension(numk), intent(in) :: nodemask !< nodemask
@@ -260,3 +268,5 @@ contains
    end subroutine add_land
 
 end subroutine connect_boundary_paths
+
+end module m_connect_boundary_paths

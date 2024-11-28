@@ -464,35 +464,35 @@ end subroutine deallocstructure
 
    end subroutine reIndexCrossSections
 
-   integer function GetStrucType_from_string(string)
+   pure function GetStrucType_from_string(string) result(istrtype)
       use string_module
 
-      character(len=*) :: string
-
+      character(len=*), intent(in) :: string
+      integer                      :: istrtype
       call str_lower(string, 999)
       select case(trim(string))
       case ('pump')
-         GetStrucType_from_string = ST_PUMP
+         istrtype = ST_PUMP
       case ('generalstructure')
-         GetStrucType_from_string = ST_GENERAL_ST
+         istrtype = ST_GENERAL_ST
       case ('weir')
-         GetStrucType_from_string = ST_WEIR
+         istrtype = ST_WEIR
       case ('orifice')
-         GetStrucType_from_string = ST_ORIFICE
+         istrtype = ST_ORIFICE
       case ('gate')
-         GetStrucType_from_string = ST_GATE
+         istrtype = ST_GATE
       case ('culvert')
-         GetStrucType_from_string = ST_CULVERT
+         istrtype = ST_CULVERT
       case ('universalweir')
-         GetStrucType_from_string = ST_UNI_WEIR
+         istrtype = ST_UNI_WEIR
       case ('dambreak')
-         GetStrucType_from_string = ST_DAMBREAK
+         istrtype = ST_DAMBREAK
       case ('bridge')
-         GetStrucType_from_string = ST_BRIDGE
+         istrtype = ST_BRIDGE
       case ('compound')
-         GetStrucType_from_string = ST_COMPOUND
+         istrtype = ST_COMPOUND
       case default
-         GetStrucType_from_string = -1
+         istrtype = -1
       end select
    end function GetStrucType_from_string
 

@@ -31,10 +31,10 @@
 !
 
 module m_arcinfo
-   use precision, only: sp, dp
+   use precision, only: dp
    implicit none
    private
-   real(kind=sp), allocatable, public :: D(:, :)
+   real(kind=dp), allocatable, public :: D(:, :)
    integer, public :: MCa = 0, NCa
    real(kind=dp), public :: X0 = 0.0_dp, Y0 = 0.0_dp, DXa = 1.0_dp, DYa = 1.0_dp, RMIS = -999.0_dp
    integer, public :: MAXARCTILE = 9000 * 4500 ! if arc is larger, tile the arc data

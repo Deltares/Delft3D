@@ -30,6 +30,16 @@
 !
 !
 
+module m_hurdlestive
+
+implicit none
+
+private
+
+public :: hurdlestive
+
+contains
+
  subroutine hurdlestive(U10, fetchL, fetchD, Hsig, Tsig)
     use m_physcoef
     implicit none
@@ -53,3 +63,5 @@
     tsig = 8.30d0 * tanhsafe(aa2) * tanhsafe(aa4)**0.3333333d0
     tsig = tsig * ua / ag
  end subroutine hurdlestive
+
+end module m_hurdlestive

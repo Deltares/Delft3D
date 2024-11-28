@@ -31,6 +31,8 @@
 !
 
 module m_getsoulsbywci
+use m_getymxpar, only: getymxpar
+
 
 implicit none
 

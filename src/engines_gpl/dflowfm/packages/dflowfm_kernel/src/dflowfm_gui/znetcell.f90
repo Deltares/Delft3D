@@ -31,6 +31,9 @@
 !
 
 module m_znetcell
+use m_checktrianglenetcell, only: checktrianglenetcell
+use m_getwavenr, only: getwavenr
+
 
 implicit none
 

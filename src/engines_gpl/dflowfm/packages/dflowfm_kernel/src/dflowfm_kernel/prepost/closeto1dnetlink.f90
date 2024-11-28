@@ -30,6 +30,16 @@
 !
 !
 
+module m_closeto1dnetlink
+
+implicit none
+
+private
+
+public :: closeto1dnetlink
+
+contains
+
       subroutine CLOSETO1Dnetlink(XP1, YP1, N1, XN1, YN1, DIST, kn3channelonly) !
 
          use m_netw
@@ -37,7 +47,6 @@
          use m_missing, only: dmiss
          use m_sferic, only: jsferic, jasfer3D
 
-         implicit none
          integer :: n1
          double precision :: XP1, YP1, XN1, YN1
          double precision, intent(out) :: DIST !< distance to 1D link
@@ -81,3 +90,5 @@
          DIST = DISMIN
 
       end subroutine CLOSETO1Dnetlink
+
+end module m_closeto1dnetlink

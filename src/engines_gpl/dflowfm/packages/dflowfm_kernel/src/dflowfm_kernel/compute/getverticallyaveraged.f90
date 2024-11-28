@@ -41,8 +41,8 @@ subroutine getverticallyaveraged(sal, mx)
    use m_flowgeom
    use m_get_kbot_ktop
    implicit none
-   double precision :: sal(mx)
    integer :: n, k, kb, kt, mx
+   double precision :: sal(mx)
 
    do n = 1, ndx
       call getkbotktop(n, kb, kt)

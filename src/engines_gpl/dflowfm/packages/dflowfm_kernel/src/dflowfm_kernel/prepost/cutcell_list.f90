@@ -30,6 +30,18 @@
 !
 !
 
+module m_cutcell_list
+use m_delnet, only: delnet
+use m_cutcelwu, only: cutcelwu
+
+implicit none
+
+private
+
+public :: cutcell_list
+
+contains
+
   subroutine cutcell_list(n12, jamasks)
      use m_write_illegal_cells_to_pol, only: write_illegal_cells_to_pol
      use M_NETW
@@ -46,7 +58,7 @@
      use m_delpol
      use m_reapol
      use m_set_nod_adm
-     implicit none
+     use m_cutcells_sub, only: cutcells
 
      integer, intent(in) :: n12 !< type of operation (1, 2, 3, 4, 5), see docs below.
      integer, intent(in) :: jamasks !< store masks and polygons (1), use stored masks and polygons (2), use stored masks masks and polygons and clear masks and polygons (3), do not use stored masks and polygons at all (0)
@@ -424,3 +436,5 @@
      end subroutine find_intersecting_polysections
 
   end subroutine cutcell_list
+
+end module m_cutcell_list

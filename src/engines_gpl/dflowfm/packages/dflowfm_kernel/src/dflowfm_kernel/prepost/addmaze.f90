@@ -30,11 +30,20 @@
 !
 !
 
+module m_addmaze
+
+implicit none
+
+private
+
+public :: addmaze
+
+contains
+
    subroutine ADDMAZE(X, Y, Z, N, JAFIVE) ! FOR FLOW GRIDS
       use m_netw
       use gridoperations
 
-      implicit none
       integer :: N
       double precision :: X(N), Y(N), Z(N)
       integer :: k
@@ -62,3 +71,5 @@
 
       return
    end subroutine ADDMAZE
+
+end module m_addmaze

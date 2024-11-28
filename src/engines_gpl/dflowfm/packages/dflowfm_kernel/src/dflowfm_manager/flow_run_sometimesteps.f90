@@ -32,6 +32,7 @@
 
 !> Runs flow steps for a certain period (do computational flowsteps for as long as timeinterval dtrange).
 subroutine flow_run_sometimesteps(dtrange, iresult) ! do computational flowsteps for as long as timeinterval dtrange
+   use m_flow_single_timestep, only: flow_single_timestep
    use m_flowtimes
    use unstruc_messages
    use m_partitioninfo

@@ -31,6 +31,7 @@
 !
 
 module m_writecdcoeffs
+use m_hurdlestive, only: hurdlestive
 use m_setcdwcoefficient, only: setcdwcoefficient
 
 

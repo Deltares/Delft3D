@@ -63,6 +63,7 @@ contains
       use m_set_col
       use m_inview
       use m_znetcell
+      use m_coarsening_info, only: coarsening_info
 
       implicit none
 
@@ -71,7 +72,6 @@ contains
       double precision :: xfac
       integer :: k, kk, ja, ncol, nodemode, nn
       integer :: ntopology, numcellstoplot
-      double precision, external :: coarsening_info
 
       if (netwhat <= 1) return
 

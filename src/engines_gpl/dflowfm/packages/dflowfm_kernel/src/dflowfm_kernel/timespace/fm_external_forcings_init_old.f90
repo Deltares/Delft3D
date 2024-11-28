@@ -37,6 +37,7 @@ contains
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_old(iresult)
 
+      use m_addsorsin, only: addsorsin
       use m_add_tracer, only: add_tracer
       use m_setzcs, only: setzcs
       use m_getkbotktopmax

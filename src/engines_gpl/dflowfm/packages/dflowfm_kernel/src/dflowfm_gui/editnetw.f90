@@ -31,6 +31,10 @@
 !
 
 module m_editnetw
+use m_delnode, only: delnode
+use m_delnet, only: delnet
+use m_dellink, only: dellink
+use m_checknetwork, only: checknetwork
 use m_viewcycle
 use m_typevalue
 use m_teknode

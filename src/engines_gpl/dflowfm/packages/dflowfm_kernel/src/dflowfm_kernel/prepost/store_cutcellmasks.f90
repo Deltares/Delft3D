@@ -33,7 +33,6 @@
 !> add polygon and fill cutcell mask with "kc"
    subroutine store_cutcellmasks(numk, kc, numL, Lmask, xmL, ymL)
       use m_cutcells
-!      use network_data, only: kc, numk
       use m_alloc
       use unstruc_messages
       implicit none

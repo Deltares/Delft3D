@@ -34,7 +34,7 @@ module properties
 !!--declarations----------------------------------------------------------------
    use precision
    use tree_structures
-   use string_module, only: str_tolower, str_lower
+   use string_module, only: str_tolower, str_lower, get_version_major_minor_integer
 
    implicit none
    private
@@ -3201,6 +3201,7 @@ contains
       logical :: isnum
       integer :: idot
       integer :: iend
+      integer :: major_, minor_
 
       if (present(chapterin)) then
          chapterin_ = chapterin
@@ -3222,29 +3223,15 @@ contains
          versionstring = string
       end if
 
-      idot = index(string, '.')
-      if (idot == 0) then
-         success = .false.
+      call get_version_major_minor_integer(string, major_, minor_, success)
+      if (.not. success) then
          return
       end if
-
       if (present(major)) then
-         read (string(1:idot - 1), *) major
+         major = major_
       end if
       if (present(minor)) then
-         iend = idot
-         isnum = .true.
-         do while (isnum)
-            if (iend + 1 > len(string)) then
-               isnum = .false.
-            elseif (scan(string(iend + 1:iend + 1), '0123456789') /= 0) then
-               iend = iend + 1
-            else
-               isnum = .false.
-            end if
-         end do
-
-         read (string(idot + 1:iend), *) minor
+         minor = minor_
       end if
    end subroutine prop_get_version_number
 end module properties

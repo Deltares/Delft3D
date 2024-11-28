@@ -31,6 +31,16 @@
 !
 
 !> add tracer boundary
+module m_add_bndtracer
+
+implicit none
+
+private
+
+public :: add_bndtracer
+
+contains
+
 subroutine add_bndtracer(tracnam, tracunit, itrac, janew)
    use fm_external_forcings_data
    use m_alloc
@@ -38,8 +48,6 @@ subroutine add_bndtracer(tracnam, tracunit, itrac, janew)
    use m_fm_wq_processes
    use unstruc_messages
    use m_find_name, only: find_name
-
-   implicit none
 
    character(len=*), intent(in) :: tracnam
    character(len=20), intent(in) :: tracunit
@@ -98,3 +106,5 @@ subroutine add_bndtracer(tracnam, tracunit, itrac, janew)
 
    trunits(itrac) = tracunit
 end subroutine add_bndtracer
+
+end module m_add_bndtracer

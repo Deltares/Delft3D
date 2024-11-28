@@ -31,8 +31,9 @@
 !
 
 module m_update_verticalprofiles
+use m_model_specific, only: update_turkin_modelspecific
+use m_wave_fillsurdis, only: wave_fillsurdis
 use m_vertical_profile_u0, only: vertical_profile_u0
-
 
 implicit none
 

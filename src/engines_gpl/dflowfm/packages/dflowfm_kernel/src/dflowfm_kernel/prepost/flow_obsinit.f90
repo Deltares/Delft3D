@@ -30,6 +30,8 @@
 !
 !
 module m_flow_obsinit
+use m_crosssections_on_flowgeom, only: crosssections_on_flowgeom
+
    implicit none
 contains
  !> Initializes all administration encessary for writing output to his-files.

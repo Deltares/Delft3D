@@ -30,6 +30,16 @@
 !
 !
 
+module m_dslimvec
+
+implicit none
+
+private
+
+public :: dslimvec
+
+contains
+
    !> limited higher-order correction of vector data
    subroutine dslimvec(ds1x, ds1y, ds2x, ds2y, csu, snu, limtyp, dsx, dsy)
       use m_flowparameters
@@ -74,3 +84,5 @@
 
       return
    end subroutine dslimvec
+
+end module m_dslimvec

@@ -833,6 +833,8 @@ try
                                         if showfig
                                             include_figure(logid2,reffile(4:end));
                                         end
+                                        % if work file is equal to reference file, delete the work file
+                                        delete(checkf)
                                     else
                                         if showfig
                                             include_diff_figures(logid2,{reffile(4:end),['work/' checkf],diffimg{:}},Color);

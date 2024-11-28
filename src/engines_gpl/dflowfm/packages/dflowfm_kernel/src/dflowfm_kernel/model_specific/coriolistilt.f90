@@ -30,6 +30,16 @@
 !
 !
 
+module m_coriolistilt
+
+implicit none
+
+private
+
+public :: coriolistilt
+
+contains
+
     subroutine coriolistilt(tim)
        use m_netw
        use m_flowgeom
@@ -37,7 +47,6 @@
        use m_sferic
        use unstruc_display
        use m_set_bobs
-       implicit none
 
        integer :: k, L
        double precision :: s1k, yy, samp, ux, uy, dif, alf, tim
@@ -73,3 +82,5 @@
 
        call statisticsfinalise()
     end subroutine coriolistilt
+
+end module m_coriolistilt

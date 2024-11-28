@@ -1589,6 +1589,7 @@ contains
       ! still not sure about this one, discuss with Dano and use with caution for now
       use m_xbeach_avgoutput
       use m_flowgeom, only: ndx
+      use m_xbeachwaves_getcellcentergradients, only: getcellcentergradients
 
       implicit none
 

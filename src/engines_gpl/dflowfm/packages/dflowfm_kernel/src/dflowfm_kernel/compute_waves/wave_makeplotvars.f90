@@ -30,6 +30,16 @@
 !
 !
 
+module m_wave_makeplotvars
+
+implicit none
+
+private
+
+public :: wave_makeplotvars
+
+contains
+
    subroutine wave_makeplotvars
       use m_waves, only: ustokes, ust_mag, fwav_mag, ustx_cc, usty_cc
       use m_flowparameters, only: jawave
@@ -96,3 +106,5 @@
       return
 
    end subroutine wave_makeplotvars
+
+end module m_wave_makeplotvars

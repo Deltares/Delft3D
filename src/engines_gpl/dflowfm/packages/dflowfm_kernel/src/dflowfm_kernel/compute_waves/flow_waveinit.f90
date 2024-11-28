@@ -31,6 +31,7 @@
 !
 
 module m_flow_waveinit
+use m_xbeachwaves, only: allocstatsolverarrays
 
 implicit none
 

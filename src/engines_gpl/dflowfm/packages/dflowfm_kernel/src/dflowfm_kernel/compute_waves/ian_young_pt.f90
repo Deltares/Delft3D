@@ -30,6 +30,16 @@
 !
 !
 
+module m_ian_young_pt
+
+implicit none
+
+private
+
+public :: ian_young_pt
+
+contains
+
  subroutine ian_young_pt(U10, x, d, Hsig, Tsig)
     use m_physcoef
     implicit none
@@ -55,3 +65,5 @@
     fp = nu * ag / U10 ! peak freq from non-dim freq, Hz
     Tsig = 1d0 / fp
  end subroutine ian_young_pt
+
+end module m_ian_young_pt

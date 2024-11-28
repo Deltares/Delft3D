@@ -31,6 +31,10 @@
 !
 
 module m_compute_wave_parameters
+use m_wave_uorbrlabda, only: wave_uorbrlabda
+use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
+use m_tauwavehk, only: tauwavehk
+
 
 implicit none
 

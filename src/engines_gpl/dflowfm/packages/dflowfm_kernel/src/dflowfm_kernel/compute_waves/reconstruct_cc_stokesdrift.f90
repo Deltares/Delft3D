@@ -30,6 +30,16 @@
 !
 !
 
+module m_reconstruct_cc_stokesdrift
+
+implicit none
+
+private
+
+public :: reconstruct_cc_stokesdrift
+
+contains
+
  subroutine reconstruct_cc_stokesdrift(ndkx, ust_x, ust_y)
     use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2
     use m_flow, only: kmx
@@ -71,3 +81,5 @@
        end do
     end if
  end subroutine reconstruct_cc_stokesdrift
+
+end module m_reconstruct_cc_stokesdrift

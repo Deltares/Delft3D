@@ -38,11 +38,21 @@
 !! coordinates in xk,yk.
 !!
 !! \see crspath_on_flowgeom, thindams_on_netgeom
+module m_crspath_on_netgeom
+
+implicit none
+
+private
+
+public :: crspath_on_netgeom
+
+contains
+
 subroutine crspath_on_netgeom(path)
    use m_crspath
    use network_data
    use m_get_link_neighboring_cell_coords
-   implicit none
+
    type(tcrspath), intent(inout) :: path !< Cross section path that must be imposed on network geometry.
 
    integer :: L, isactive
@@ -58,3 +68,5 @@ subroutine crspath_on_netgeom(path)
       call crspath_on_singlelink(path, L, xk(kn(1, L)), yk(kn(1, L)), xk(kn(2, L)), yk(kn(2, L)), xza, yza, xzb, yzb, 1)
    end do
 end subroutine crspath_on_netgeom
+
+end module m_crspath_on_netgeom

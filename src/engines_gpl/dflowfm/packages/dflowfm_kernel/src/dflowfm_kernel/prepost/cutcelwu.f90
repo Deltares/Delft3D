@@ -30,7 +30,18 @@
 !
 !
 
+module m_cutcelwu
+
+implicit none
+
+private
+
+public :: cutcelwu
+
+contains
+
 subroutine CUTCELWU(n12, jamasks, ipoly)
+   use m_crosslinkpoly, only: crosslinkpoly
    use m_tekpolygon
    use m_netw
    use m_flowgeom
@@ -44,7 +55,6 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
    use m_flow, only: numlimdt, numlimdt_baorg, baorgfracmin
    use m_readyy
 
-   implicit none
    integer, intent(in) :: N12 ! 3: only mask nodes, 4: preparation for cut cells (set kfs), 5: actual cut cells (change wu, nd), 6: dry cells
    integer, intent(in) :: jamasks ! do not use masks (0), store masks (1), use stored masks (2)
    integer, intent(in) :: ipoly ! polygon number for masks
@@ -417,3 +427,5 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
    call READYY('CUTCELWU', -1d0)
 
 end subroutine CUTCELwu
+
+end module m_cutcelwu

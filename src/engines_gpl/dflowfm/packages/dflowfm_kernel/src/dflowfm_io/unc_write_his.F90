@@ -127,6 +127,7 @@ contains
       use m_output_config
       use MessageHandling, only: err, mess, LEVEL_WARN, LEVEL_ERROR
       use m_ug_nc_attribute, only: ug_nc_attribute
+      use unstruc_channel_flow, only: network
 
       implicit none
 
@@ -373,19 +374,33 @@ contains
          ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATE, jahisgate, ngatesg, 'none', 0, id_strlendim, &
                                                   id_gatedim, id_gate_id)
 
-         if (jahisgate > 0 .and. ngategen > 0) then
-            ! Define geometry related variables
+         if (jahisgate > 0) then
             nNodeTot = 0
-            do n = 1, ngategen
-               i = gate2cgen(n)
-               nlinks = L2cgensg(i) - L1cgensg(i) + 1
-               if (nlinks > 0) then
-                  nNodes = nlinks + 1
-               else if (nlinks == 0) then
-                  nNodes = 0
-               end if
-               nNodeTot = nNodeTot + nNodes
-            end do
+            if (network%sts%numGates > 0) then ! new gate
+               do n = 1, network%sts%numGates
+                  associate(pstru => network%sts%struct(network%sts%gateIndices(n)))
+                     nlinks = pstru%numlinks
+                     if (nlinks > 0) then
+                        nNodes = nlinks + 1
+                     else if (nlinks == 0) then
+                        nNodes = 0
+                     end if
+                     nNodeTot = nNodeTot + nNodes
+                  end associate
+               end do
+            else
+               ! Define geometry related variables
+               do n = 1, ngategen
+                  i = gate2cgen(n)
+                  nlinks = L2cgensg(i) - L1cgensg(i) + 1
+                  if (nlinks > 0) then
+                     nNodes = nlinks + 1
+                  else if (nlinks == 0) then
+                     nNodes = 0
+                  end if
+                  nNodeTot = nNodeTot + nNodes
+               end do
+            end if
          end if
          ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATEGEN, jahisgate, ngategen, 'line', nNodeTot, id_strlendim, &
                                                   id_gategendim, id_gategen_id, id_gategengeom_node_count, id_gategengeom_node_coordx, id_gategengeom_node_coordy, &
@@ -1539,9 +1554,16 @@ contains
       structure_names = [(srcname(i), integer :: i=1, numsrc)]
       call unc_put_his_structure_names(ncid, jahissourcesink, id_srcname, structure_names)
 
-      indices = [(gate2cgen(i), integer :: i=1, ngategen)]
-      structure_names = [(cgen_ids(indices(i)), integer :: i=1, ngategen)]
+      if (network%sts%numGates> 0) then
+         indices = [(network%sts%gateIndices(i), integer :: i=1, ngategen)]
+         structure_names = [(trimexact(network%sts%struct(network%sts%gateIndices(i))%id, strlen_netcdf), integer :: i=1, ngategen)]
+      else
+         indices = [(gate2cgen(i), integer :: i=1, ngategen)]
+         structure_names = [(cgen_ids(indices(i)), integer :: i=1, ngategen)]
+      end if
+
       call unc_put_his_structure_names(ncid, jahisgate, id_gategen_id, structure_names)
+
 
       structure_names = [(lat_ids(i), integer :: i=1, numlatsg)]
       call unc_put_his_structure_names(ncid, jahislateral, id_lat_id, structure_names)

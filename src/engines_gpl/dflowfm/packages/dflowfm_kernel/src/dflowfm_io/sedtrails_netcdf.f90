@@ -613,7 +613,7 @@ contains
       integer, intent(out) :: istat !< Return status (0=success)
       integer, intent(in) :: jadoorladen
 
-      integer :: k0, numkn
+      integer :: k0, numkn, i
       logical :: jawel
 
       inquire (file=filename, exist=jawel)
@@ -637,7 +637,7 @@ contains
          ! Fill global domain mode numbers, before reducing the sedtrails grid to the submodel we're in
          if (jampi > 0) then
             call realloc(iglobal_s, numk, keepExisting=.false., fill=0)
-            iglobal_s = (/1:numk/)
+            iglobal_s = [ (i, i=1, numk) ]
          end if
       else
          call qnerror('sedtrails_loadNetwork::Error while loading network from '''//trim(filename)//''', please inspect the preceding diagnostic output.', ' ', ' ')

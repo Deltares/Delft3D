@@ -263,7 +263,7 @@ subroutine set_mpi_environment_wwo_fetch_proc()
    implicit none
 
    integer, dimension(:), allocatable :: list_of_procs ! a list of procs to create a new commmunicator without the fetch proc
-   integer :: error
+   integer :: error, i
 
 #ifdef HAVE_MPI
    DFM_COMM_ALLWORLD = DFM_COMM_DFMWORLD
@@ -277,7 +277,7 @@ subroutine set_mpi_environment_wwo_fetch_proc()
       call mpi_comm_size(DFM_COMM_ALLWORLD, numranks, error)
       if (numranks > 2) then
          allocate (list_of_procs(numranks - 1), stat=error)
-         list_of_procs = (/0:numranks - 2/)
+         list_of_procs = [ (i, i=0, numranks - 2) ]
          call MPI_Comm_group(DFM_COMM_ALLWORLD, dflowfm_entire_group, error)
          call MPI_Group_incl(dflowfm_entire_group, numranks - 1, list_of_procs, dflowfm_group, error)
          call MPI_Comm_create(DFM_COMM_ALLWORLD, dflowfm_group, DFM_COMM_DFMWORLD, error)

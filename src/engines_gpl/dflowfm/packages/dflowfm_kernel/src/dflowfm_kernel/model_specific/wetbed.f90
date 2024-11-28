@@ -30,12 +30,23 @@
 !
 !
 
+module m_wetbed
+use m_compareanalytic, only: compareanalytic
+
+
+implicit none
+
+private
+
+public :: wetbed
+
+contains
+
  subroutine wetbed(time)
 
     use m_flowparameters, only: hwetbed
     use m_movabs
     use m_lnabs
-    implicit none
 
     integer, parameter :: mmax = 601 !  3000
     double precision :: s(0:mmax), u(0:mmax), x(0:mmax)
@@ -175,3 +186,5 @@
     call compareanalytic(s, x, mmax)
 
  end subroutine wetbed
+
+end module m_wetbed

@@ -1955,7 +1955,7 @@ contains
 ! local variables
 !
       integer k, j
-      real * 8 t
+      real(dp) t
 !-----------------------------------------------------------------------
       do k = 1, n
          x(k) = y(k)

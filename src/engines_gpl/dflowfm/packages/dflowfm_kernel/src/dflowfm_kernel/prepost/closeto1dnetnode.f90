@@ -30,6 +30,16 @@
 !
 !
 
+module m_closeto1dnetnode
+
+implicit none
+
+private
+
+public :: closeto1dnetnode
+
+contains
+
    subroutine CLOSETO1Dnetnode(XP1, YP1, N1, dist) !
 
       use m_netw
@@ -66,3 +76,5 @@
       end do
       dist = dismin
    end subroutine CLOSETO1Dnetnode
+
+end module m_closeto1dnetnode

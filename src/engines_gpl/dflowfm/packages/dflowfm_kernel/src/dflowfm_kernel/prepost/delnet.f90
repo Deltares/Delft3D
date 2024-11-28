@@ -30,6 +30,16 @@
 !
 !
 
+module m_delnet
+
+implicit none
+
+private
+
+public :: delnet
+
+contains
+
   subroutine DELNET(KEY, jacheckcells, JASAVE)
      use m_confrm
      use m_netw
@@ -41,7 +51,6 @@
      use m_delpol
      use m_set_nod_adm
 
-     implicit none
      integer :: KEY, jacheckcells, JASAVE
 
      integer :: inhul, inall, ip, ic, n, k, nn, nzero
@@ -237,3 +246,5 @@
 
      return
   end subroutine DELNET
+
+end module m_delnet

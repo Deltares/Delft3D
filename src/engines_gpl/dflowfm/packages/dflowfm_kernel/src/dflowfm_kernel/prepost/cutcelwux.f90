@@ -30,7 +30,18 @@
 !
 !
 
+module m_cutcelwux
+
+implicit none
+
+private
+
+public :: cutcelwux
+
+contains
+
   subroutine CUTCELWUx(n12)
+     use m_crosslinkpoly, only: crosslinkpoly
      use m_netw
      use M_FLOWGEOM
      use m_missing, only: dmiss, JINS
@@ -39,7 +50,6 @@
      use m_sferic, only: jsferic, jasfer3D
      use m_readyy
 
-     implicit none
      integer :: N12
      integer :: ja, KMOD
      integer :: K, K1, K2, L, LL, N, NN, LF, IC, LLU, IN
@@ -165,3 +175,5 @@
      call READYY('CUTCELWU', -1d0)
 
   end subroutine CUTCELwux
+
+end module m_cutcelwux

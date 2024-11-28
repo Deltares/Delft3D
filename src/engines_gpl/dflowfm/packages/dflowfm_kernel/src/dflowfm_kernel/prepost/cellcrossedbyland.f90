@@ -31,14 +31,22 @@
 !
 
 !> check if a cell is close to a land boundary segment
+module m_cellcrossedbyland
+
+implicit none
+
+private
+
+public :: cellcrossedbyland
+
+contains
+
 subroutine cellcrossedbyland(k, jstart, jend, jacross)
    use m_netw
    use m_landboundary
    use m_missing
    use geometry_module, only: cross
    use m_sferic, only: jsferic
-
-   implicit none
 
    integer, intent(in) :: k !< cell number
    integer, intent(in) :: jstart, jend !< start and end point of land boundary segment respectively
@@ -74,3 +82,5 @@ subroutine cellcrossedbyland(k, jstart, jend, jacross)
 
    return
 end subroutine cellcrossedbyland
+
+end module m_cellcrossedbyland

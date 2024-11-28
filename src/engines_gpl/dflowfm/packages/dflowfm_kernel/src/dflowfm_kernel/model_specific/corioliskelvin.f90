@@ -27,8 +27,15 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_corioliskelvin
+
+implicit none
+
+private
+
+public :: corioliskelvin, oceaneddy
+
+contains
 
     subroutine corioliskelvin(tim)
        use m_netw
@@ -37,10 +44,11 @@
        use m_sferic
        use unstruc_display
        use m_ini_sferic
-       implicit none
 
+       double precision :: tim
+       
        integer :: k, L, k1, k2
-       double precision :: tim, s1k, xx, yy, samp, dif, cs, sn, aer, dep, r0, x0, y0, Rossby, rr, sgh
+       double precision :: s1k, xx, yy, samp, dif, cs, sn, aer, dep, r0, x0, y0, Rossby, rr, sgh
 
        if (tim == 0d0) then
           call inisferic()
@@ -181,3 +189,5 @@
        !call statisticsfinalise()
     end subroutine oceaneddy
 
+
+end module m_corioliskelvin

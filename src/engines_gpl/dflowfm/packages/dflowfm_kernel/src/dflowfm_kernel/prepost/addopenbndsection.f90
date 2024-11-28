@@ -30,6 +30,16 @@
 !
 !
 
+module m_addopenbndsection
+
+implicit none
+
+private
+
+public :: addopenbndsection
+
+contains
+
  !> Adds administration for an open boundary segment, intended
  !! for postprocessing.
  !!
@@ -38,7 +48,7 @@
  subroutine addopenbndsection(nbnd, netlinknrs, plifilename, ibndtype)
     use m_alloc
     use fm_external_forcings_data
-    implicit none
+
     integer, intent(in) :: nbnd !< Nr. of net links in this open bnd section.
     integer, intent(in) :: netlinknrs(nbnd) !< Net link nrs in this open bnd section (in any order)
     character(len=*), intent(in) :: plifilename !< File name of the original boundary condition definition polyline.
@@ -83,3 +93,5 @@
     nopenbndlin(nopenbndsect) = istart + nbnd
 
  end subroutine addopenbndsection
+
+end module m_addopenbndsection

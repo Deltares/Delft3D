@@ -51,6 +51,9 @@ subroutine tauwavefetch(tim)
    use timers
    use m_drawthis
    use m_getfetch, only: getfetch
+   use m_hurdlestive, only: hurdlestive
+   use m_ian_young_pt, only: ian_young_pt
+   use m_tauwavehk, only: tauwavehk
 
    implicit none
 

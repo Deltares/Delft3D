@@ -32,6 +32,7 @@
 
   subroutine islinkadjacenttolink(L1, L2, ja, k1k, k2k)
 
+     use m_adjacent, only: adjacent
      use m_netw
      use m_sferic, only: jsferic, jasfer3D
      use m_missing, only: dxymis

@@ -30,6 +30,16 @@
 !
 !
 
+module m_getwavenr
+
+implicit none
+
+private
+
+public :: getwavenr
+
+contains
+
  subroutine getwavenr(h, T, k)
     use m_sferic
     use m_physcoef
@@ -56,3 +66,5 @@
     k = sqrt(ome2 * num / den) / h
 
  end subroutine getwavenr
+
+end module m_getwavenr

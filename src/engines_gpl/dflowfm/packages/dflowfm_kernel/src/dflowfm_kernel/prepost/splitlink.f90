@@ -32,6 +32,7 @@
 
 !> split a link, make new cells and update administration
 subroutine splitlink(xp, yp, L_, dcosmin, jatek, ierror)
+   use m_dellink, only: dellink
    use m_dcirr
    use m_netw
    use network_data, only: xzw, yzw

@@ -31,10 +31,17 @@
 !
 
 module m_tekrai
+use m_wetbed, only: wetbed
+use m_thacker1d, only: thacker1d
+use m_model_specific, only: equatorial, poiseuille
+use m_drybed, only: drybed
+use m_coriolistilt, only: coriolistilt
+use m_corioliskelvin, only: corioliskelvin
+use m_carrier, only: carrier
+use m_belanger, only: belanger
 use m_tektransport1d
 use m_tekrailinesbathy
 use m_tekrailines
-
 
 implicit none
 

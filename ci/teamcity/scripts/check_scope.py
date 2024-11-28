@@ -84,9 +84,12 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    merge_branch = args.merge_branch
-    token = args.token
-    json_file = args.file
+    merge_branch: str = args.merge_branch
+    token: str = args.token
+    json_file: str = args.file
+
+    # The gitlab api requires _ instead of the - of the git branch.
+    merge_branch = merge_branch.replace("merge-requests", "merge_requests")
 
     api = GitlabApi()
     changes = api.get_file_changes(merge_branch, token)

@@ -34,6 +34,7 @@
  !! To be called upon flow_modelinit().
  !! Upon program startup and loading of new model/MDU, call resetFullFlowModel() instead.
  subroutine resetFlow()
+    use m_xbeachwaves, only: xbeach_reset
     use m_reset_sedtra, only: reset_sedtra
     use m_wind
     use m_flow

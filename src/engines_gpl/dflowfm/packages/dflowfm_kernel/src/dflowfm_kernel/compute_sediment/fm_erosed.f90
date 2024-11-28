@@ -31,6 +31,7 @@
 !
 
 module m_fm_erosed_sub
+use m_xbeachwaves, only: rollerturbulence
 use m_setucxucy_mor, only: setucxucy_mor
 use m_setucxqucyq_mor, only: setucxqucyq_mor
 use m_init_1dinfo, only: init_1dinfo

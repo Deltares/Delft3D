@@ -27,6 +27,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine fm_wq_processes_ini_sub()
+   use m_add_bndtracer, only: add_bndtracer
    use m_getkbotktopmax
    use m_fm_wq_processes
    use m_alloc

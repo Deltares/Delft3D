@@ -30,13 +30,21 @@
 !
 !
 
+module m_closeenough
+
+implicit none
+
+private
+
+public :: closeenough
+
+contains
+
   subroutine closeenough(x1, y1, x2, y2, r, ja)
 
      use m_missing, only: dmiss
      use m_sferic, only: jsferic, jasfer3D
      use geometry_module, only: dbdistance
-
-     implicit none
 
      double precision :: x1, y1, x2, y2, r2, r
      integer :: ja
@@ -47,3 +55,5 @@
         ja = 1
      end if
   end subroutine
+
+end module m_closeenough

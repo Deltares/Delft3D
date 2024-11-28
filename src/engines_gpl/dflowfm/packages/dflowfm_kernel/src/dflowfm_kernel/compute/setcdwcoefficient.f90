@@ -31,6 +31,8 @@
 !
 
 module m_setcdwcoefficient
+use m_getwavenr, only: getwavenr
+
 
 implicit none
 
@@ -114,7 +116,7 @@ contains
 
           nit = nit + 1
           sold = s
-          s = sold * (log(hsurf * ag * sold * sold / (max(0.001, cdb(1) * uwi * uwi))) - 2d0) / (vonkarw * sold - 2d0)
+          s = sold * (log(hsurf * ag * sold * sold / (max(0.001d0, cdb(1) * uwi * uwi))) - 2d0) / (vonkarw * sold - 2d0)
 
           if (nit >= maxnit) then
              cd10 = 1d-3

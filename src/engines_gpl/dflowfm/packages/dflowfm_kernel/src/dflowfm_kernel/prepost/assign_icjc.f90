@@ -31,7 +31,18 @@
 !
 
 !> assign node-based indices (ic,jc) in the net
+module m_assign_icjc
+
+implicit none
+
+private
+
+public :: assign_icjc
+
+contains
+
 subroutine assign_icjc(xp, yp, ic, jc, iexit)
+   use m_assignijgrid, only: assignijgrid
    use m_netw
    use m_grid
    use m_alloc
@@ -40,8 +51,6 @@ subroutine assign_icjc(xp, yp, ic, jc, iexit)
    use m_polygon, only: NPL, xpl, ypl, zpl
    use geometry_module, only: pinpok, dbpinpol, get_startend
    use m_find_common_node
-
-   implicit none
 
    double precision :: xp, yp !< coordinates of starting point
 
@@ -157,3 +166,5 @@ subroutine assign_icjc(xp, yp, ic, jc, iexit)
    iexit = 1
 
 end subroutine assign_icjc
+
+end module m_assign_icjc

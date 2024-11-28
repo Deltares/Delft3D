@@ -30,12 +30,21 @@
 !
 !
 
+module m_deleteselectedcrosssections
+
+implicit none
+
+private
+
+public :: deleteselectedcrosssections
+
+contains
+
    subroutine deleteSelectedCrossSections()
       use m_confrm
       use m_monitoring_crosssections
       use M_POLYGON
       use M_MISSING
-      implicit none
 
       integer :: i, j
       integer :: inhul
@@ -72,3 +81,5 @@
       return
 
    end subroutine deleteSelectedCrossSections
+
+end module m_deleteselectedcrosssections

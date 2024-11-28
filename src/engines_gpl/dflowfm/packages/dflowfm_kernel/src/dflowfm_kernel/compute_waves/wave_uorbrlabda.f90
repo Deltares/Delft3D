@@ -30,7 +30,18 @@
 !
 !
 
+module m_wave_uorbrlabda
+
+implicit none
+
+private
+
+public :: wave_uorbrlabda
+
+contains
+
    subroutine wave_uorbrlabda()
+      use m_getwavenr, only: getwavenr
       use m_waves, only: uorb, wlenwav, uorbwav, twav, hwav, rlabda, jauorb, jauorbfromswan
       use m_flow, only: s1
       use m_flowgeom, only: ndx, bl
@@ -78,3 +89,5 @@
       end do
 
    end subroutine wave_uorbrlabda
+
+end module m_wave_uorbrlabda

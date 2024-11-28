@@ -30,10 +30,19 @@
 !
 !
 
+module m_allocxz
+
+implicit none
+
+private
+
+public :: allocxz
+
+contains
+
    subroutine ALLOCXZ()
       use m_netw
       use M_FLOWGEOM
-      implicit none
 
       integer :: mxp
       integer :: IERR
@@ -44,3 +53,5 @@
       call AERR('XZ(MXP), YZ(MXP)', IERR, 2 * MXP)
 
    end subroutine ALLOCXZ
+
+end module m_allocxz

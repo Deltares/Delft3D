@@ -30,10 +30,20 @@
 !
 !
 
+module m_deallocnet
+
+implicit none
+
+private
+
+public :: deallocnet
+
+contains
+
    subroutine DEALLOCNET()
       use m_netw
       use M_FLOWgeom
-      implicit none
+
       integer :: p, numpx
 
       NUMK = 0; NUML = 0
@@ -59,3 +69,5 @@
          nump = 0
       end if
    end subroutine DEALLOCNET
+
+end module m_deallocnet

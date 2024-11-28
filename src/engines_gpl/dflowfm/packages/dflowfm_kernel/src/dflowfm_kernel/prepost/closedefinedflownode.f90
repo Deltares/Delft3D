@@ -30,6 +30,16 @@
 !
 !
 
+module m_closedefinedflownode
+
+implicit none
+
+private
+
+public :: closedefinedflownode
+
+contains
+
       subroutine CLOSEdefinedflownode(XP1, YP1, N1) !
 
          use m_flowgeom
@@ -37,8 +47,6 @@
          use geometry_module, only: dbdistance
          use m_missing, only: dmiss
          use m_sferic, only: jsferic, jasfer3D
-
-         implicit none
 
          integer :: n1
          double precision :: XP1, YP1
@@ -56,3 +64,5 @@
             end if
          end do
       end subroutine CLOSEdefinedflownode
+
+end module m_closedefinedflownode
