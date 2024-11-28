@@ -157,7 +157,7 @@ for i = 1:length(folders)
     % search iteratively from the selected folder up to the system root ...
     folder = folders{i};
     while true
-        location = locate_file(folder, file)
+        location = locate_file(folder, file);
         if ~isempty(location)
             % found it!
             return
