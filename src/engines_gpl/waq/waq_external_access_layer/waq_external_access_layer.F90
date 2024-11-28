@@ -85,7 +85,6 @@ contains
         integer(c_int)                     :: error_code            !< Always returns zero - there is no error condition
 
         type(connection_data), pointer                :: con_data
-        type(connection_data), allocatable            :: new_con_data
         real(dp), dimension(:), pointer               :: incoming_data
         character(EXT_MAXSTRLEN)                      :: key_given
 
@@ -473,14 +472,10 @@ contains
         ! If the connection is outgoing, copy the current value into the pointer,
         ! else leave it to the update routine.
         if (.not. con_data%incoming) then
-            if ( size(con_data%p_value) == 1 ) then
-                con_data%p_value(1) = dlwqd%buffer%rbuf(con_data%buffer_idx)
-            else
-                do i = 1,size(con_data%p_value)
-                    j = con_data%buffer_idx + (i-1) * con_data%stride
-                    con_data%p_value(i) = dlwqd%buffer%rbuf(j)
-                enddo
-            endif
+            do i = 1,size(con_data%p_value)
+                j = con_data%buffer_idx + (i-1) * con_data%stride
+                con_data%p_value(i) = dlwqd%buffer%rbuf(j)
+            enddo
         end if
 
         xptr = c_loc(con_data%p_value)

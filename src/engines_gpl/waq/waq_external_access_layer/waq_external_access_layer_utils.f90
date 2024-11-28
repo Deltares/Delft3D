@@ -85,13 +85,13 @@ contains
         type(connection_data), intent(in) :: connection !< Connection to update
         integer                           :: first_index, last_index
 
-        if ( size(connection%p_value) == 1 ) then
-            dlwqd%buffer%rbuf(connection%buffer_idx) = connection%p_value(1)
-        else
-            first_index = connection%buffer_idx
-            last_index  = connection%buffer_idx - 1 + size(connection%p_value)
-            dlwqd%buffer%rbuf(first_index:last_index) = connection%p_value
-        endif
+        !
+        ! As DELWAQ parameters are layed with each parameter in a contiguous
+        ! block, the stride is 1. This is different for substances, by the way
+        !
+        first_index = connection%buffer_idx
+        last_index  = connection%buffer_idx - 1 + size(connection%p_value)
+        dlwqd%buffer%rbuf(first_index:last_index) = connection%p_value
     end subroutine update_process_parameters
 
     subroutine update_hydrodynamic_data(connection)
@@ -99,6 +99,10 @@ contains
         type(connection_data), intent(in) :: connection !< Connection to update
         integer                           :: first_index, last_index
 
+        !
+        ! The hydrodynamic data are stored contiguously per quantity.
+        ! So a stride of 1.
+        !
         first_index = connection%buffer_idx
         last_index  = connection%buffer_idx - 1 + size(connection%p_value)
         dlwqd%buffer%rbuf(first_index:last_index) = connection%p_value

@@ -65,18 +65,16 @@ contains
 
         integer(kind=int_wp) :: num_values
 
-        write(88,*) 'HYD:', ivol, iflow, iarea
-
         ! The substance/parameter may be "VOLUME", "AREA" or "FLOW"
-        if (string_equals(connection%subst_name, 'VOLUME')) then
+        if (string_equals(connection%quantity_name, 'VOLUME')) then
             connection%substance_index = 1
             connection%buffer_idx      = ivol
             num_values                 = num_cells + num_cells_bottom
-        elseif (string_equals(connection%subst_name, 'FLOW')) then
+        elseif (string_equals(connection%quantity_name, 'FLOW')) then
             connection%substance_index = 2
             connection%buffer_idx      = iflow
             num_values                 = num_exchanges
-        elseif (string_equals(connection%subst_name, 'AREA')) then
+        elseif (string_equals(connection%quantity_name, 'AREA')) then
             connection%substance_index = 3
             connection%buffer_idx      = iarea
             num_values                 = num_exchanges
@@ -106,7 +104,7 @@ contains
         connection%data_index = get_data_index(connection, load_name)
 
         ! The substance/parameter may be "FLOW": handle this carefully.
-        if (string_equals(connection%subst_name, 'FLOW')) then
+        if (string_equals(connection%quantity_name, 'FLOW')) then
             connection%substance_index = 1
         else
             ! add 1 for "flow" substance
@@ -168,19 +166,24 @@ contains
 
         ! look up the index of the parameter in the procparam_const array or the
         ! procparam_param array
-        connection%data_index = index_in_array(connection%subst_name, procparam_const)
+        connection%data_index = index_in_array(connection%quantity_name, procparam_const)
         if ( connection%data_index > 0 ) then
             connection%buffer_idx = icons - 1 + connection%data_index
             allocate (connection%p_value(1))
         else
-            connection%data_index = index_in_array(connection%subst_name, procparam_param)
-            connection%buffer_idx = iparm - 1 + connection%data_index
-            connection%stride     = num_spatial_parameters
-            allocate (connection%p_value(num_cells+num_cells_bottom))
+            connection%data_index = index_in_array(connection%quantity_name, procparam_param)
+            if ( connection%data_index > 0 ) then
+                connection%buffer_idx = iparm - 1 + connection%data_index
+                connection%stride     = num_spatial_parameters
+                allocate (connection%p_value(num_cells+num_cells_bottom))
+            else
+                ! TODO: log error message - or stop?
+                return
+            endif
         endif
     end subroutine
 
-    !> Determine substance index based on subst_name
+    !> Determine substance index based on quantity_name
     function get_substance_index(connection) result(substance_index)
         use delwaq2_global_data, only: substance_name
         use m_string_utils, only: index_in_array
@@ -188,7 +191,7 @@ contains
         type(connection_data), intent(in) :: connection !< connection to use
         integer(kind=int_wp) :: substance_index !< index of the substance in the substances array
 
-        substance_index = index_in_array(connection%subst_name, substance_name)
+        substance_index = index_in_array(connection%quantity_name, substance_name)
     end function
 
     !> Determine location index based on location_text (id), if needed
@@ -218,7 +221,7 @@ contains
             data_index = location_lookup(data_index)
         end if
 
-        ! todo : add error if index can not be found
+        ! TODO: log error if index can not be found - or stop?
     end function
 
     !> Determine the buffer index for the connection based on the index offset, substance index and connection location index

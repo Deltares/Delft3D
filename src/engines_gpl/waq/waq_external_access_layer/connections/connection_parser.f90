@@ -78,9 +78,9 @@ contains
                 ! index will be determined later by parsing location_text property
                 new_connection%location_index = -1
             end if
-            new_connection%subst_name = trim(string_parts(4))
+            new_connection%quantity_name = trim(string_parts(4))
         else
-            new_connection%subst_name = trim(string_parts(3))
+            new_connection%quantity_name = trim(string_parts(3))
         end if
 
         connection = new_connection

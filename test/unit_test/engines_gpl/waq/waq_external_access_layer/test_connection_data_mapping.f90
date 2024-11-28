@@ -331,9 +331,9 @@ contains
         use m_waq_memory_dimensions, only: num_cells, num_cells_bottom, num_exchanges
 
         type(connection_data), allocatable :: new_connection_vol, new_connection_flow, new_connection_area
-        character(*), parameter :: exchange_name_vol  = "FROM_DELWAQ|HYDRO|VOLUME"
-        character(*), parameter :: exchange_name_flow = "FROM_DELWAQ|HYDRO|FLOW"
-        character(*), parameter :: exchange_name_area = "FROM_DELWAQ|HYDRO|AREA"
+        character(*), parameter :: exchange_name_vol  = "TO_DELWAQ|HYDRO|VOLUME"
+        character(*), parameter :: exchange_name_flow = "TO_DELWAQ|HYDRO|FLOW"
+        character(*), parameter :: exchange_name_area = "TO_DELWAQ|HYDRO|AREA"
 
         ! arrange - note: the actual arrays are not filled
         ivol             = 17

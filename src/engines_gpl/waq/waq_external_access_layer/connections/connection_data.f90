@@ -37,9 +37,9 @@ module m_connection_data
         integer(kind=int_wp) :: category           !< Which category of data: concentrations, process parameters ...
         integer(kind=int_wp) :: data_index         !< Index to use for finding the data
         integer(kind=int_wp) :: location_index     !< Index of the location
-        integer(kind=int_wp) :: substance_index    !< Index of the substance in the substance array
+        integer(kind=int_wp) :: substance_index    !< Index of the substance (if the quantity is a substance) in the substance array
         character(:), allocatable :: location_text !< Text of the locations
-        character(:), allocatable :: subst_name    !< Name of the substance
+        character(:), allocatable :: quantity_name !< Name of the quantity
 
         ! data reference
         integer(kind=int_wp) :: buffer_idx         !< Index into the RBUF array
