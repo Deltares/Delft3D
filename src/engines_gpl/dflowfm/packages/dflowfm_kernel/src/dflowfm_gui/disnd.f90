@@ -42,6 +42,7 @@ contains
     use network_data, only: rnod, netcell, xk, yk, nump
     use m_save_ugrid_state, only: nodeids
     use m_ktext
+    use m_znod
 
     integer, intent(in) :: nn !< Node number (either net or flow node)
     integer, intent(in) :: netorflow !< Whether to display net node info (0) or flow node info (1)
@@ -49,7 +50,6 @@ contains
     character TEX * 23
     character(len=8) :: nodetype
     character(len=23) :: idtext
-    double precision, external :: ZNOD
 
     double precision :: x, y, val
 

@@ -40,11 +40,11 @@ contains
     use m_flowgeom
     use m_flow
     use m_netw
+    use m_znod
 
     integer :: k, kk, kkk, n, nn, ierr, ja
     real, allocatable, save :: rn(:)
     double precision :: znn
-    double precision :: znod
 
     ja = 0
     if (.not. allocated(rn)) then

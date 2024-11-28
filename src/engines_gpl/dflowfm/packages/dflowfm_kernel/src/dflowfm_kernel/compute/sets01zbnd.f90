@@ -30,6 +30,16 @@
 !
 !
 
+module m_sets01zbnd
+
+implicit none
+
+private
+
+public :: sets01zbnd
+
+contains
+
  !> Sets s1 or s0 water levels at zbndz-type boundaries.
  subroutine sets01zbnd(n01, jasetBlDepth)
     use m_flowgeom
@@ -118,3 +128,5 @@
     call set_1d2d_01()
 
  end subroutine sets01zbnd
+
+end module m_sets01zbnd

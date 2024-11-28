@@ -365,8 +365,8 @@ module m_output_config
    integer, public :: IDX_MAP_CFU
    integer, public :: IDX_MAP_CFUTYP
    integer, public :: IDX_MAP_TEM1
+   integer, public :: IDX_MAP_SED
    integer, public :: IDX_MAP_CONST
-   integer, public :: IDX_MAP_MORS
    integer, public :: IDX_MAP_TURKIN1
    integer, public :: IDX_MAP_VICWWU
    integer, public :: IDX_MAP_TUREPS1

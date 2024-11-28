@@ -31,6 +31,9 @@
 !
 
 module m_intini
+use m_settextsize
+use m_setgrafmod
+use m_setcolortable
 use m_minmaxworld
 
 

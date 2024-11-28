@@ -30,6 +30,16 @@
 !
 !
 
+module m_checktriangle
+
+implicit none
+
+private
+
+public :: checktriangle
+
+contains
+
    subroutine CHECKTRIANGLE(N, JA, phimin, phimax)
 
       use m_samples
@@ -39,7 +49,6 @@
       use geometry_module, only: dcosphi
       use m_missing, only: dxymis
 
-      implicit none
       double precision :: phimin, phimax
       integer :: n, ja
 
@@ -65,3 +74,5 @@
       end do
       return
    end subroutine CHECKTRIANGLE
+
+end module m_checktriangle

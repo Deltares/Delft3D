@@ -30,6 +30,16 @@
 !
 !
 
+module m_delnode
+
+implicit none
+
+private
+
+public :: delnode
+
+contains
+
   subroutine DELNODE(KP)
      use m_netw
      use m_missing, only: dmiss
@@ -57,3 +67,5 @@
 
      return
   end subroutine DELNODE
+
+end module m_delnode

@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekbottom
+
+implicit none
+
+contains
+
   subroutine TEKBOTTOM(MET)
      use m_dmovabs
      use m_dlnabs
@@ -96,3 +102,5 @@
 
      return
   end subroutine TEKBOTTOM
+
+end module m_tekbottom

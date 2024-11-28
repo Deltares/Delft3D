@@ -28,10 +28,14 @@
 !-------------------------------------------------------------------------------
 
 module m_itdate
-   character(len=8) :: refdat
-   integer :: itdate !< should be user specified for (asc routines)
-   integer :: jul0, imonth0, iday0, iyear0
-   double precision :: Tzone ! doubling with "use m_flowtimes, only : tzone"
+   use precision, only: dp
+   implicit none
+   private
+
+   character(len=8), public :: refdat
+   integer, public :: itdate !< should be user specified for (asc routines)
+   integer, public :: jul0, imonth0, iday0, iyear0
+   real(kind=dp), public :: Tzone ! doubling with "use m_flowtimes, only : tzone"
 end module m_itdate
 
 ! ==========================================================================
@@ -47,19 +51,19 @@ module timespace_read
 ! Adri.Mourits@WlDelft.nl
 !
 !!--declarations----------------------------------------------------------------
-   use precision
+   use precision, only: dp
    implicit none
 
    integer, parameter :: maxnamelen = 256
-   double precision, parameter :: dmiss_default = -999.0_fp ! Default missing value in meteo arrays
-   double precision, parameter :: xymiss = -999.0_fp ! Default missing value in elementset
+   real(kind=dp), parameter :: dmiss_default = -999.0_dp ! Default missing value in meteo arrays
+   real(kind=dp), parameter :: xymiss = -999.0_dp ! Default missing value in elementset
    character(300), target :: errormessage = ' ' ! When an error occurs, a message is set in message.
    ! function getmeteoerror returns the message
 
-   double precision :: pi ! pi
-   double precision :: d2r ! degrees to radials
-   double precision :: r2d ! degrees to radials
-   double precision, private, parameter :: earthrad = 6378137.0_fp ! Mathworld, IUGG
+   real(kind=dp) :: pi ! pi
+   real(kind=dp) :: d2r ! degrees to radials
+   real(kind=dp) :: r2d ! degrees to radials
+   real(kind=dp), private, parameter :: earthrad = 6378137.0_dp ! Mathworld, IUGG
 
 contains
    !
@@ -150,10 +154,10 @@ module timespace_data
    use timespace_parameters
    implicit none
 
-   double precision :: timelast = -1d10 ! time of most recent value requested
+   real(kind=dp) :: timelast = -1d10 ! time of most recent value requested
    ! if time =< timelast, no updates
 
-   double precision :: t01ini = -1d10 ! initial time for dataproviders t0 and t1 fields
+   real(kind=dp) :: t01ini = -1d10 ! initial time for dataproviders t0 and t1 fields
 
    ! AvD: NOTE
    ! De pointers in alle onderstaande types worden puur gebruikt om dynamisch
@@ -185,11 +189,11 @@ contains
       character(len=*), intent(out) :: filename !< Name of data file for current quantity.
       character(len=*), intent(out) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
       character(len=1), intent(out) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
-      real(kind=hp), intent(out) :: transformcoef(:) !< Transformation coefficients
+      real(kind=dp), intent(out) :: transformcoef(:) !< Transformation coefficients
       integer, intent(out) :: ja !< Whether a block was successfully read or not.
       character(len=*), intent(out) :: varname !< variable name within filename; only in case of NetCDF
       character(len=*), intent(out), optional :: smask !< Name of mask-file applied to source arcinfo meteo-data
-      real(kind=hp), intent(out), optional :: maxSearchRadius !< max search radius for method == 11
+      real(kind=dp), intent(out), optional :: maxSearchRadius !< max search radius for method == 11
 
       ! locals
       character(len=maxnamelen) :: rec, keywrd
@@ -352,7 +356,7 @@ contains
    !
    subroutine readTransformcoefficients(minp, transformcoef)
       integer, intent(in) :: minp
-      real(kind=hp), intent(out) :: transformcoef(:)
+      real(kind=dp), intent(out) :: transformcoef(:)
 
       type tKeyInt
          character(len=32) :: key
@@ -451,8 +455,8 @@ contains
    subroutine read1polylin(minp, xs, ys, ns, pliname, has_more_records)
       use m_alloc
       integer, intent(inout) :: minp !< Unit number of poly file (already opened), will be closed after successful read.
-      double precision, allocatable, intent(out) :: xs(:) !< x-coordinates read from file
-      double precision, allocatable, intent(out) :: ys(:) !< y-coordinates read from file
+      real(kind=dp), allocatable, intent(out) :: xs(:) !< x-coordinates read from file
+      real(kind=dp), allocatable, intent(out) :: ys(:) !< y-coordinates read from file
       integer, intent(out) :: ns !< Number of pli-points read
       character(len=:), allocatable, optional, intent(out) :: pliname !< (Optional) Name (identifier) of the polyline read
       logical, optional, intent(out) :: has_more_records !< (Optional) Whether or not more polyline data exists in the remainder of the file, after reading this one polyline.
@@ -556,7 +560,7 @@ contains
       use m_julday
       character(len=8) :: refda
       integer :: jul00
-      double precision :: tz, timjan
+      real(kind=dp) :: tz, timjan
 
       integer :: juljan
 
@@ -598,13 +602,13 @@ contains
       integer :: jul0 ! interpolate results in ndx
       integer :: Np !< number of potentials in tidep
 
-      double precision :: time, dstart, dstop, eps, dxx, dyy
-      double precision :: xx(4), yy(4) !, DAREA, DLENGTH, DLENMX
+      real(kind=dp) :: time, dstart, dstop, eps, dxx, dyy
+      real(kind=dp) :: xx(4), yy(4) !, DAREA, DLENGTH, DLENMX
 
-      double precision, allocatable, save :: xz2(:, :), yz2(:, :), td2(:, :), self(:, :), avhs(:, :) !, area(:,:)
-      double precision :: xmn, xmx, ymn, ymx, di, dj, f11, f21, f12, f22
+      real(kind=dp), allocatable, save :: xz2(:, :), yz2(:, :), td2(:, :), self(:, :), avhs(:, :) !, area(:,:)
+      real(kind=dp) :: xmn, xmx, ymn, ymx, di, dj, f11, f21, f12, f22
 
-      double precision, allocatable, save :: td2_x(:, :), td2_y(:, :)
+      real(kind=dp), allocatable, save :: td2_x(:, :), td2_y(:, :)
 
       integer :: i, j, n, ierr, m1, m2, n1, n2, L
       integer, save :: ndx2
@@ -784,12 +788,12 @@ contains
 
       integer :: i1, i2, j1, j2, k, k1, LL, i, j, iL, iR, ierr
       integer, save :: ini = 0
-      double precision :: alf, x, y
-      double precision :: avhs(i1:i2, j1:j2), area(i1:i2, j1:j2)
+      real(kind=dp) :: alf, x, y
+      real(kind=dp) :: avhs(i1:i2, j1:j2), area(i1:i2, j1:j2)
 
-      double precision, dimension(:, :), allocatable :: xx, yy
+      real(kind=dp), dimension(:, :), allocatable :: xx, yy
       integer, dimension(:, :), allocatable :: kk
-      double precision, dimension(:, :, :), allocatable, save :: workin, workout ! work arrays for parallel communication
+      real(kind=dp), dimension(:, :, :), allocatable, save :: workin, workout ! work arrays for parallel communication
 
       integer :: Ni, Nj
       integer :: jakdtree = 1
@@ -797,11 +801,11 @@ contains
 
       character(len=1024) :: str
 
-      double precision :: t0, t1
-      double precision :: wo
-      double precision :: Ds
+      real(kind=dp) :: t0, t1
+      real(kind=dp) :: wo
+      real(kind=dp) :: Ds
 
-      double precision, allocatable, save :: jasea(:, :)
+      real(kind=dp), allocatable, save :: jasea(:, :)
 
       Ni = i2 - i1 + 1
       Nj = j2 - j1 + 1
@@ -1009,10 +1013,10 @@ contains
    subroutine findleftright(area, ii, ji, i1, i2, j1, j2, iL, iR, alf)
       implicit none
       integer, intent(in) :: i1, i2, ii, j1, j2, ji
-      double precision, intent(in) :: area(i1:i2, j1:j2)
+      real(kind=dp), intent(in) :: area(i1:i2, j1:j2)
 
       integer, intent(out) :: iL, iR
-      double precision, intent(out) :: alf
+      real(kind=dp), intent(out) :: alf
       integer :: i, dr, dl, findr, findl, disR, disL, stopsearch
 
       stopsearch = 0
@@ -1080,17 +1084,17 @@ contains
 
       ! Input\Output parameter
       integer, intent(in) :: i1, i2, j1, j2, jaselfal
-      double precision, intent(in) :: avhs(i1:i2, j1:j2)
-      double precision, intent(out) :: self(i1:i2, j1:j2)
+      real(kind=dp), intent(in) :: avhs(i1:i2, j1:j2)
+      real(kind=dp), intent(out) :: self(i1:i2, j1:j2)
 
       ! Local parameters
-      double precision, parameter :: Me = 5.9726d24, R = 6371d3, g = 9.81d0, pi = 4d0 * atan(1.0), rhow = 1.0240164d3, rhoe = 3d0 * Me / (4d0 * pi * R * R * R)
+      real(kind=dp), parameter :: Me = 5.9726d24, R = 6371d3, g = 9.81d0, pi = 4d0 * atan(1.0), rhow = 1.0240164d3, rhoe = 3d0 * Me / (4d0 * pi * R * R * R)
       integer :: nlat, nlon, lsave
       integer :: i, j, ierror, isym, nt, l, mdab, ndab, k1
-      double precision, dimension(:), allocatable :: llnh, llnk
-      double precision, dimension(:), allocatable :: wshaec, wshsec
-      double precision, dimension(:, :), allocatable :: a, b
-      double precision, dimension(:, :), allocatable :: avhs1, self1
+      real(kind=dp), dimension(:), allocatable :: llnh, llnk
+      real(kind=dp), dimension(:), allocatable :: wshaec, wshsec
+      real(kind=dp), dimension(:, :), allocatable :: a, b
+      real(kind=dp), dimension(:, :), allocatable :: avhs1, self1
 
       ! Initialisation
       nlat = 181
@@ -1174,7 +1178,7 @@ contains
       implicit none
 
       ! Input\Output parameter
-      double precision, dimension(0:1024), intent(out) :: llnh, llnk
+      real(kind=dp), dimension(0:1024), intent(out) :: llnh, llnk
 
       !Fill arrays
       llnh(0) = 0.0000000000d+00
@@ -3279,10 +3283,10 @@ contains
       !
       integer idim1, jul0
 
-      double precision :: rmjdat, dstart, dstop, eps, TIME
-      double precision xzeta(idim1), yzeta(idim1), tidep(idim1)
+      real(kind=dp) :: rmjdat, dstart, dstop, eps, TIME
+      real(kind=dp) xzeta(idim1), yzeta(idim1), tidep(idim1)
 
-      double precision, allocatable, save :: tideuc(:, :, :), tideus(:, :, :) !       (idim1, 0:3,2:3),
+      real(kind=dp), allocatable, save :: tideuc(:, :, :), tideus(:, :, :) !       (idim1, 0:3,2:3),
 
       integer, save :: IRC = 0
 
@@ -3316,7 +3320,7 @@ contains
       !
       integer maxdat, maxfld, idebug, i1, i1dbg, i2dbg, N
 
-      double precision :: pi, g, rmu, re, d2r, reps
+      real(kind=dp) :: pi, g, rmu, re, d2r, reps
       parameter(idebug=0, i1dbg=0, i2dbg=0)
       parameter(maxdat=500) ! maximal # records in table
       parameter(maxfld=7) ! maximal # fields in table
@@ -3326,18 +3330,18 @@ contains
 
       integer ntable, nskip
       integer itable(maxdat, maxfld)
-      double precision :: amps(maxdat), plsmin(6), rklove(3), rhlove(3), &
+      real(kind=dp) :: amps(maxdat), plsmin(6), rklove(3), rhlove(3), &
          factor(2:3), pol1(0:3, 2:3), cm1(0:3), sm1(0:3)
 
       integer i, j, nq, mq, IERR
       integer kk(10)
-      double precision :: fnm, pnm, har, argum, argfct, dtab1, dtab2, &
+      real(kind=dp) :: fnm, pnm, har, argum, argfct, dtab1, dtab2, &
          dtab, rlslat, rlslon, rlat, rlong, potent
-      double precision :: elmnts(6), can(maxdat), san(maxdat)
-      double precision :: cansum(0:3, 2:3), sansum(0:3, 2:3)
+      real(kind=dp) :: elmnts(6), can(maxdat), san(maxdat)
+      real(kind=dp) :: cansum(0:3, 2:3), sansum(0:3, 2:3)
       character(len=80) record
       logical permnt
-      double precision, save :: FACTORIAL(0:6)
+      real(kind=dp), save :: FACTORIAL(0:6)
 
       !
       !     amps           table with scaled amplitudes for selected tidal components
@@ -3758,7 +3762,7 @@ contains
       !
       !     INPUT / OUTPUT   PARAMETERS
       !
-      double precision :: six(6), mjdate
+      real(kind=dp) :: six(6), mjdate
       !
       !     mjdate      i    modified julian day (24-jan-2008 0:00 UTC : 54489.00000)
       !     six           o  array of six double precision variables used for Doodson
@@ -3778,14 +3782,14 @@ contains
       !
       !     --- constant values:
       !
-      double precision :: circle
+      real(kind=dp) :: circle
       parameter(CIRCLE=360.0d0)
       !
       !     circle       number of degrees in a circle
       !
       !     --- variables:
       !
-      double precision :: T, TIME, UT
+      real(kind=dp) :: T, TIME, UT
       integer i
       !
       !     T           translated time: TIME - 51544.4993D0
@@ -3860,7 +3864,7 @@ contains
       !     INPUT / OUTPUT   PARAMETERS
       !
       integer n, m
-      double precision :: theta, pnm
+      real(kind=dp) :: theta, pnm
       !
       !     m       i        degree of Legendre polynomial
       !     n       i        order of Legendre polynomial
@@ -3871,7 +3875,7 @@ contains
       !
       !     LOCAL PARAMETERS
       !
-      double precision :: cp, sp
+      real(kind=dp) :: cp, sp
       !
       !     cp          cos(theta)
       !     sp          sin(theta)
@@ -4410,8 +4414,11 @@ end module timespace_data
 ! ==========================================================================
 !>
 module M_arcuv ! plotbuitenbeentje
+   use precision, only: dp
    implicit none
-   double precision, allocatable :: arcuv(:, :, :)
+   private
+
+   real(kind=dp), allocatable, public :: arcuv(:, :, :)
 end module M_arcuv
 !
 !
@@ -4421,8 +4428,11 @@ end module M_arcuv
 ! ==========================================================================
 !>
 module m_spiderweb ! plot spiderweb
+   use precision, only: dp
    implicit none
-   double precision, allocatable :: spw(:, :, :)
+   private
+
+   real(kind=dp), allocatable, public :: spw(:, :, :)
 end module m_spiderweb
 !
 !
@@ -4447,8 +4457,8 @@ module timespace_triangle
    integer :: nsold ! nr of samples in previous triangulation
    integer :: numtri
    integer, allocatable, dimension(:, :) :: indx
-   double precision, allocatable, dimension(:) :: xcent
-   double precision, allocatable, dimension(:) :: ycent
+   real(kind=dp), allocatable, dimension(:) :: xcent
+   real(kind=dp), allocatable, dimension(:) :: ycent
 
    interface triint
       module procedure triint_z1D
@@ -4478,13 +4488,13 @@ contains
       ! Author: H. Kernkamp
       implicit none
 
-      double precision, intent(in) :: xl, yl ! point under consideration
+      real(kind=dp), intent(in) :: xl, yl ! point under consideration
       integer, intent(in) :: n
-      double precision, dimension(n), intent(in) :: x, y ! polygon(n)
+      real(kind=dp), dimension(n), intent(in) :: x, y ! polygon(n)
       integer, intent(out) :: inside
 
       integer :: i, i1, i2, np, rechts
-      double precision :: rl, rm, x1, x2, y1, y2
+      real(kind=dp) :: rl, rm, x1, x2, y1, y2
 
       if (n <= 2) then
          inside = 1
@@ -4549,21 +4559,21 @@ contains
 
       ! Global variables
       integer, intent(in) :: nss ! Dimension of samples
-      double precision, dimension(:), intent(in) :: xss ! samples
-      double precision, dimension(:), intent(in) :: yss
-      double precision, dimension(:), intent(in) :: zss ! dimension: nss*kx
+      real(kind=dp), dimension(:), intent(in) :: xss ! samples
+      real(kind=dp), dimension(:), intent(in) :: yss
+      real(kind=dp), dimension(:), intent(in) :: zss ! dimension: nss*kx
       integer, dimension(:), intent(in) :: kcsss ! samples mask
 
       integer, intent(in) :: mnx ! Dimension of grid
       integer, intent(in) :: kx ! vectormax
-      double precision, dimension(:), intent(in) :: x ! grid
-      double precision, dimension(:), intent(in) :: y
-      double precision, dimension(:, :), intent(out) :: z ! dimension: nx*kx
+      real(kind=dp), dimension(:), intent(in) :: x ! grid
+      real(kind=dp), dimension(:), intent(in) :: y
+      real(kind=dp), dimension(:, :), intent(out) :: z ! dimension: nx*kx
       integer, dimension(:), intent(in) :: kcs ! grid mask
       integer, intent(in) :: jdla ! refresh delauney yes /no
 
       integer, optional :: indxn(:, :) ! if present get weightfactors and indices
-      double precision, optional :: wfn(:, :)
+      real(kind=dp), optional :: wfn(:, :)
 
       call triint_z1D(xss, yss, zss, kcsss, nss, &
                       x, y, z, kcs, kx, mnx, jdla, indxn, wfn)
@@ -4579,21 +4589,21 @@ contains
 
       ! Global variables
       integer, intent(in) :: nss ! Dimension of samples
-      double precision, dimension(:), intent(in) :: xss ! samples
-      double precision, dimension(:), intent(in) :: yss
-      double precision, dimension(:), intent(in) :: zss ! dimension: nss*kx
+      real(kind=dp), dimension(:), intent(in) :: xss ! samples
+      real(kind=dp), dimension(:), intent(in) :: yss
+      real(kind=dp), dimension(:), intent(in) :: zss ! dimension: nss*kx
       integer, dimension(:), intent(in) :: kcsss ! samples mask
 
       integer, intent(in) :: mnx ! Dimension of grid
       integer, intent(in) :: kx ! vectormax
-      double precision, dimension(:), intent(in) :: x ! grid
-      double precision, dimension(:), intent(in) :: y
-      double precision, dimension(:, :, :), intent(out) :: z ! dimension: nx*kx
+      real(kind=dp), dimension(:), intent(in) :: x ! grid
+      real(kind=dp), dimension(:), intent(in) :: y
+      real(kind=dp), dimension(:, :, :), intent(out) :: z ! dimension: nx*kx
       integer, dimension(:), intent(in) :: kcs ! grid mask
       integer, intent(in) :: jdla ! refresh delauney yes /no
 
       integer, optional :: indxn(:, :) ! if present get weightfactors and indices
-      double precision, optional :: wfn(:, :)
+      real(kind=dp), optional :: wfn(:, :)
 
       call triint_z1D(xss, yss, zss, kcsss, nss, &
                       x, y, z, kcs, kx, mnx, jdla, indxn, wfn)
@@ -4612,36 +4622,36 @@ contains
 
       ! Global variables
       integer, intent(in) :: nss ! Dimension of samples
-      double precision, dimension(:), intent(in) :: xss ! samples
-      double precision, dimension(:), intent(in) :: yss
-      double precision, dimension(:), intent(in) :: zss ! dimension: nss*kx
+      real(kind=dp), dimension(:), intent(in) :: xss ! samples
+      real(kind=dp), dimension(:), intent(in) :: yss
+      real(kind=dp), dimension(:), intent(in) :: zss ! dimension: nss*kx
       integer, dimension(:), intent(in) :: kcsss ! samples mask
 
       integer, intent(in) :: mnx ! Dimension of grid
       integer, intent(in) :: kx ! vectormax
-      double precision, dimension(:), intent(in) :: x ! grid
-      double precision, dimension(:), intent(in) :: y
-      double precision, dimension(kx*mnx), intent(out) :: z ! dimension: mnx*kx
+      real(kind=dp), dimension(:), intent(in) :: x ! grid
+      real(kind=dp), dimension(:), intent(in) :: y
+      real(kind=dp), dimension(kx*mnx), intent(out) :: z ! dimension: mnx*kx
       integer, dimension(:), intent(in) :: kcs ! grid mask
       integer, intent(in) :: jdla ! refresh delauney yes /no
 
       integer, optional :: indxn(:, :) ! if present get weightfactors and indices
-      double precision, optional :: wfn(:, :)
+      real(kind=dp), optional :: wfn(:, :)
 
       ! Local variables
 
-      double precision, dimension(8) :: x_set
-      double precision, dimension(8) :: y_set
+      real(kind=dp), dimension(8) :: x_set
+      real(kind=dp), dimension(8) :: y_set
       integer, dimension(8) :: kcs_set = 1
-      double precision, dimension(4) :: x_extr
-      double precision, dimension(4) :: y_extr
-      double precision, dimension(4) :: z_extr
-      double precision, dimension(3) :: zp
+      real(kind=dp), dimension(4) :: x_extr
+      real(kind=dp), dimension(4) :: y_extr
+      real(kind=dp), dimension(4) :: z_extr
+      real(kind=dp), dimension(3) :: zp
       integer, dimension(3) :: indxp
 
-      double precision, dimension(:), allocatable :: xs
-      double precision, dimension(:), allocatable :: ys
-      double precision, dimension(:), allocatable :: zs
+      real(kind=dp), dimension(:), allocatable :: xs
+      real(kind=dp), dimension(:), allocatable :: ys
+      real(kind=dp), dimension(:), allocatable :: zs
       integer, dimension(:), allocatable :: kcss
       integer :: ns
       integer :: k, n, jgetw, ierr ! , MOUT
@@ -4739,15 +4749,15 @@ contains
       implicit none
 
       ! Global variables
-      double precision, intent(in) :: xp ! for this point
-      double precision, intent(in) :: yp
+      real(kind=dp), intent(in) :: xp ! for this point
+      real(kind=dp), intent(in) :: yp
 
       integer, intent(in) :: ns
-      double precision, dimension(ns), intent(in) :: xs ! on this set
-      double precision, dimension(ns), intent(in) :: ys
+      real(kind=dp), dimension(ns), intent(in) :: xs ! on this set
+      real(kind=dp), dimension(ns), intent(in) :: ys
 
       integer, dimension(3), intent(out) :: indxp ! find indices to set
-      double precision, dimension(3), intent(out) :: zp ! and corresponding weightfactors
+      real(kind=dp), dimension(3), intent(out) :: zp ! and corresponding weightfactors
 
       ! Local variables
       integer :: k
@@ -4755,12 +4765,12 @@ contains
       integer :: k2, n3
       integer :: intri
       integer :: nroldfind, nrfind
-      double precision :: xtmax
-      double precision :: xtmin
-      double precision :: ytmax
-      double precision :: ytmin
-      double precision, dimension(3) :: xt
-      double precision, dimension(3) :: yt
+      real(kind=dp) :: xtmax
+      real(kind=dp) :: xtmin
+      real(kind=dp) :: ytmax
+      real(kind=dp) :: ytmin
+      real(kind=dp), dimension(3) :: xt
+      real(kind=dp), dimension(3) :: yt
       !
       !
       data nroldfind/0/
@@ -4817,15 +4827,15 @@ contains
    !>
    subroutine linweight(xt, yt, xp, yp, zp)
 
-      double precision, intent(in) :: xp ! for this point
-      double precision, intent(in) :: yp
+      real(kind=dp), intent(in) :: xp ! for this point
+      real(kind=dp), intent(in) :: yp
 
-      double precision, dimension(3) :: xt ! in this triangle
-      double precision, dimension(3) :: yt
+      real(kind=dp), dimension(3) :: xt ! in this triangle
+      real(kind=dp), dimension(3) :: yt
 
-      double precision, dimension(3), intent(out) :: zp ! the weightfactors are...
+      real(kind=dp), dimension(3), intent(out) :: zp ! the weightfactors are...
 
-      double precision :: a11, a12, a21, a22, b1, b2, det
+      real(kind=dp) :: a11, a12, a21, a22, b1, b2, det
 
       zp = 0
       a11 = xt(2) - xt(1)
@@ -4857,44 +4867,44 @@ contains
       !
       ! COMMON variables
       !
-      double precision :: dmiss
+      real(kind=dp) :: dmiss
 
       data dmiss/-999d0/
       !
       ! Global variables
       !
       integer, intent(in) :: jslo
-      double precision, intent(out) :: slo
-      double precision :: xp
-      double precision :: yp
-      double precision :: zp
-      double precision, dimension(3) :: x
-      double precision, dimension(3) :: y
-      double precision, dimension(3), intent(in) :: z
+      real(kind=dp), intent(out) :: slo
+      real(kind=dp) :: xp
+      real(kind=dp) :: yp
+      real(kind=dp) :: zp
+      real(kind=dp), dimension(3) :: x
+      real(kind=dp), dimension(3) :: y
+      real(kind=dp), dimension(3), intent(in) :: z
       !
       !
       ! Local variables
       !
 
-      double precision :: a11
-      double precision :: a12
-      double precision :: a21
-      double precision :: a22
-      double precision :: a31
-      double precision :: a32
-      double precision :: b1
-      double precision :: b2
-      double precision :: det
-      double precision :: r3
-      double precision :: rlam
-      double precision :: rmhu
-      double precision :: x3
-      double precision :: xn
-      double precision :: xy
-      double precision :: y3
-      double precision :: yn
-      double precision :: z3
-      double precision :: zn
+      real(kind=dp) :: a11
+      real(kind=dp) :: a12
+      real(kind=dp) :: a21
+      real(kind=dp) :: a22
+      real(kind=dp) :: a31
+      real(kind=dp) :: a32
+      real(kind=dp) :: b1
+      real(kind=dp) :: b2
+      real(kind=dp) :: det
+      real(kind=dp) :: r3
+      real(kind=dp) :: rlam
+      real(kind=dp) :: rmhu
+      real(kind=dp) :: x3
+      real(kind=dp) :: xn
+      real(kind=dp) :: xy
+      real(kind=dp) :: y3
+      real(kind=dp) :: yn
+      real(kind=dp) :: z3
+      real(kind=dp) :: zn
       !
       !
    !! executable statements -------------------------------------------------------
@@ -4953,9 +4963,9 @@ contains
       ! Global variables
 
       integer, intent(in) :: n
-      double precision, dimension(n), intent(in) :: x
-      double precision :: xmax
-      double precision :: xmin
+      real(kind=dp), dimension(n), intent(in) :: x
+      real(kind=dp) :: xmax
+      real(kind=dp) :: xmin
 
       integer :: i
 
@@ -4973,13 +4983,13 @@ contains
    !>
    subroutine get_extend2D(n, m, x, y, kcs, x_dummy, y_dummy)
 
-      double precision, dimension(:, :) :: x
-      double precision, dimension(:, :) :: y
+      real(kind=dp), dimension(:, :) :: x
+      real(kind=dp), dimension(:, :) :: y
       integer, dimension(:, :) :: kcs
       integer :: n
       integer :: m
-      double precision, dimension(:) :: x_dummy
-      double precision, dimension(:) :: y_dummy
+      real(kind=dp), dimension(:) :: x_dummy
+      real(kind=dp), dimension(:) :: y_dummy
 
       call get_extend1D(n * m, x, y, kcs, x_dummy, y_dummy)
 
@@ -4991,17 +5001,17 @@ contains
    subroutine get_extend1D(n, x, y, kcs, x_dummy, y_dummy)
 
       integer :: n
-      double precision, dimension(n) :: x
-      double precision, dimension(n) :: y
+      real(kind=dp), dimension(n) :: x
+      real(kind=dp), dimension(n) :: y
       integer, dimension(n) :: kcs
-      double precision, dimension(4) :: x_dummy
-      double precision, dimension(4) :: y_dummy
-      double precision :: x_min
-      double precision :: x_max
-      double precision :: x_dist
-      double precision :: y_min
-      double precision :: y_max
-      double precision :: y_dist
+      real(kind=dp), dimension(4) :: x_dummy
+      real(kind=dp), dimension(4) :: y_dummy
+      real(kind=dp) :: x_min
+      real(kind=dp) :: x_max
+      real(kind=dp) :: x_dist
+      real(kind=dp) :: y_min
+      real(kind=dp) :: y_max
+      real(kind=dp) :: y_dist
       integer :: index
 
       x_min = 1e30
@@ -5050,20 +5060,20 @@ contains
    subroutine extrapolate(n, x, y, z, kcs, n_extr, x_extr, y_extr, z_extr)
 
       integer :: n
-      double precision, dimension(n) :: x
-      double precision, dimension(n) :: y
-      double precision, dimension(n) :: z
+      real(kind=dp), dimension(n) :: x
+      real(kind=dp), dimension(n) :: y
+      real(kind=dp), dimension(n) :: z
       integer, dimension(n) :: kcs
       integer :: n_extr
-      double precision, dimension(n_extr), target :: x_extr
-      double precision, dimension(n_extr), target :: y_extr
-      double precision, dimension(n_extr), target :: z_extr
+      real(kind=dp), dimension(n_extr), target :: x_extr
+      real(kind=dp), dimension(n_extr), target :: y_extr
+      real(kind=dp), dimension(n_extr), target :: z_extr
       integer :: i_extr
       integer :: i_min
-      double precision, pointer :: x_a
-      double precision, pointer :: y_a
-      double precision, pointer :: z_a
-      double precision :: dist_min
+      real(kind=dp), pointer :: x_a
+      real(kind=dp), pointer :: y_a
+      real(kind=dp), pointer :: z_a
+      real(kind=dp) :: dist_min
 
       dist_min = 1e30
       i_min = 0
@@ -5087,15 +5097,15 @@ contains
 
       integer :: n
       integer :: m
-      double precision, dimension(:, :) :: x
-      double precision, dimension(:, :) :: y
+      real(kind=dp), dimension(:, :) :: x
+      real(kind=dp), dimension(:, :) :: y
       integer, dimension(:, :) :: kcs
       integer :: n_min
       integer :: m_min
       integer :: i_min
-      double precision :: x_a
-      double precision :: y_a
-      double precision :: dist_min
+      real(kind=dp) :: x_a
+      real(kind=dp) :: y_a
+      real(kind=dp) :: dist_min
 
       call find_nearest1D(n * m, x, y, kcs, x_a, y_a, i_min, dist_min)
 
@@ -5114,16 +5124,16 @@ contains
 
       integer :: n
       integer :: m
-      double precision, dimension(:, :) :: x
-      double precision, dimension(:, :) :: y
-      double precision, dimension(:, :) :: z
+      real(kind=dp), dimension(:, :) :: x
+      real(kind=dp), dimension(:, :) :: y
+      real(kind=dp), dimension(:, :) :: z
       integer, dimension(:, :) :: kcs
       integer :: n_min
       integer :: m_min
       integer :: i_min
-      double precision :: x_a
-      double precision :: y_a
-      double precision :: dist_min
+      real(kind=dp) :: x_a
+      real(kind=dp) :: y_a
+      real(kind=dp) :: dist_min
 
       call find_nearest1D_missing_value(n * m, x, y, z, kcs, x_a, y_a, i_min, dist_min)
 
@@ -5141,15 +5151,15 @@ contains
       use precision
 
       integer :: n
-      double precision, dimension(n) :: x
-      double precision, dimension(n) :: y
+      real(kind=dp), dimension(n) :: x
+      real(kind=dp), dimension(n) :: y
       integer, dimension(n) :: kcs
       integer :: i
       integer :: i_min
-      double precision :: x_a
-      double precision :: y_a
-      double precision :: dist
-      double precision :: dist_min
+      real(kind=dp) :: x_a
+      real(kind=dp) :: y_a
+      real(kind=dp) :: dist
+      real(kind=dp) :: dist_min
 
       dist_min = 1e30
       i_min = 0
@@ -5176,16 +5186,16 @@ contains
       use precision
 
       integer :: n
-      double precision, dimension(n) :: x
-      double precision, dimension(n) :: y
-      double precision, dimension(n) :: z
+      real(kind=dp), dimension(n) :: x
+      real(kind=dp), dimension(n) :: y
+      real(kind=dp), dimension(n) :: z
       integer, dimension(n) :: kcs
       integer :: i
       integer :: i_min
-      double precision :: x_a
-      double precision :: y_a
-      double precision :: dist
-      double precision :: dist_min
+      real(kind=dp) :: x_a
+      real(kind=dp) :: y_a
+      real(kind=dp) :: dist
+      real(kind=dp) :: dist_min
 
       dist_min = 1e30
       i_min = 0
@@ -5214,25 +5224,25 @@ contains
 
       ! Global variables
       integer, intent(in) :: ns !< Dimension of polygon OR LINE BOUNDARY
-      double precision, dimension(:), intent(in) :: xs !< polyline point coordinates
-      double precision, dimension(:), intent(in) :: ys
-      double precision, dimension(:), intent(in) :: zs !< Values at all points. Dimension: ns*kx
+      real(kind=dp), dimension(:), intent(in) :: xs !< polyline point coordinates
+      real(kind=dp), dimension(:), intent(in) :: ys
+      real(kind=dp), dimension(:), intent(in) :: zs !< Values at all points. Dimension: ns*kx
       integer, dimension(:), intent(in) :: kcs !< polyline mask
 
       integer, intent(in) :: mnx !< Dimension of target points
       integer, intent(in) :: kx !< #values at each point (vectormax)
-      double precision, dimension(:), intent(in) :: x !< Grid points (where to interpolate to)
-      double precision, dimension(:), intent(in) :: y
-      double precision, dimension(kx*mnx), intent(out) :: z !< Output array for interpolated values. Dimension: mnx*kx
+      real(kind=dp), dimension(:), intent(in) :: x !< Grid points (where to interpolate to)
+      real(kind=dp), dimension(:), intent(in) :: y
+      real(kind=dp), dimension(kx*mnx), intent(out) :: z !< Output array for interpolated values. Dimension: mnx*kx
       integer, intent(in) :: jintp !< (Re-)interpolate if 1 (otherwise use index weights)
 
-      double precision, dimension(:, :), intent(in) :: xyen !< cellsize / tol
+      real(kind=dp), dimension(:, :), intent(in) :: xyen !< cellsize / tol
       integer, dimension(:, :), intent(inout), optional :: indxn !< pli segment is identified by its first node nr.
-      double precision, dimension(:, :), intent(inout), optional :: wfn !< If present, get weight index and factor
+      real(kind=dp), dimension(:, :), intent(inout), optional :: wfn !< If present, get weight index and factor
 
       ! locals
 
-      double precision :: wL, wR
+      real(kind=dp) :: wL, wR
       integer :: m, k, kL, kR, jgetw
 
       jgetw = 0 ! niets met gewichten, doe interpolatie
@@ -5285,16 +5295,16 @@ contains
    !
    ! ! Global variables
    ! integer ,                intent(in)     :: ns       ! Dimension of polygon OR LINE BOUNDARY
-   ! double precision, dimension(:),  intent(in) :: xs       ! polygon
-   ! double precision, dimension(:),  intent(in) :: ys
+   ! real(kind=dp), dimension(:),  intent(in) :: xs       ! polygon
+   ! real(kind=dp), dimension(:),  intent(in) :: ys
    ! integer, dimension(:),  intent(in)      :: kcs      ! polygon mask
-   ! double precision                        :: xyen(:)
-   ! double precision                        :: xe, ye, rl
+   ! real(kind=dp)                        :: xyen(:)
+   ! real(kind=dp)                        :: xe, ye, rl
    !
    !
    ! integer :: ja1, ja2, k, km, k1, k2
-   ! double precision:: x1,x2,y1,y2,dis,xn,yn,dx,dy
-   ! double precision:: dism, dis1, dis2, rl1, rl2, dbdistance
+   ! real(kind=dp):: x1,x2,y1,y2,dis,xn,yn,dx,dy
+   ! real(kind=dp):: dism, dis1, dis2, rl1, rl2, dbdistance
    !
    !
    ! dism = 1e30
@@ -5360,19 +5370,19 @@ contains
 
       ! Global variables
       integer, intent(in) :: ns !< Dimension of polygon OR LINE BOUNDARY
-      double precision, intent(in) :: xs(:) !< polygon
-      double precision, intent(in) :: ys(:)
+      real(kind=dp), intent(in) :: xs(:) !< polygon
+      real(kind=dp), intent(in) :: ys(:)
       integer, intent(in) :: kcs(:) !< polygon mask
-      double precision, intent(in) :: xe, ye !
-      double precision, intent(in) :: xen, yen !< in input uitstekers, on output SL and CRP
+      real(kind=dp), intent(in) :: xe, ye !
+      real(kind=dp), intent(in) :: xen, yen !< in input uitstekers, on output SL and CRP
       integer, intent(out) :: kL !< Index of left nearest polyline point (with kcs==1!)
-      double precision, intent(out) :: wL !< Relative weight of left nearest polyline point.
+      real(kind=dp), intent(out) :: wL !< Relative weight of left nearest polyline point.
       integer, intent(out) :: kR !< Index of right nearest polyline point (with kcs==1!)
-      double precision, intent(out) :: wR !< Relative weight of right nearest polyline point.
+      real(kind=dp), intent(out) :: wR !< Relative weight of right nearest polyline point.
 
       integer :: k, km, JACROS
-      double precision :: dis, disM, disL, disR !, rl1, rl2,
-      double precision :: SL, SM, SMM, SLM, XCR, YCR, CRP, CRPM, DEPS
+      real(kind=dp) :: dis, disM, disL, disR !, rl1, rl2,
+      real(kind=dp) :: SL, SM, SMM, SLM, XCR, YCR, CRP, CRPM, DEPS
 
       DISM = huge(DISM)
       kL = 0 ! Default: No valid point found
@@ -5446,8 +5456,8 @@ contains
 !
 !
 !   integer          :: ja
-!   DOUBLE PRECISION :: X1,Y1,X2,Y2,X3,Y3,DIS,XN,YN
-!   DOUBLE PRECISION :: R2,RL,X21,Y21,X31,Y31,dbdistance
+!   real(kind=dp) :: X1,Y1,X2,Y2,X3,Y3,DIS,XN,YN
+!   real(kind=dp) :: R2,RL,X21,Y21,X31,Y31,dbdistance
 !
 !   ! korste afstand tot lijnelement tussen eindpunten
 !   JA  = 0
@@ -5547,9 +5557,9 @@ contains
 
       ! arguments
       integer, intent(in) :: mnx !< dimension of quantity
-      double precision, intent(in) :: x(:) !< x   of elset of all possible points in model
-      double precision, intent(in) :: y(:) !< y   of elset
-      double precision, intent(in) :: xyen(:, :) !< Points on opposite edges of elementset
+      real(kind=dp), intent(in) :: x(:) !< x   of elset of all possible points in model
+      real(kind=dp), intent(in) :: y(:) !< y   of elset
+      real(kind=dp), intent(in) :: xyen(:, :) !< Points on opposite edges of elementset
       integer, intent(inout) :: kc(:) !< kcs of elset, allowable kandidates have 1, eg. points with less links than edges
       integer, intent(out) :: ki(:) !< Returned indices of allowable points (in x/y) that fall near provided data
       integer :: num !< nr of points served bij this provider
@@ -5557,18 +5567,18 @@ contains
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
       logical, intent(in) :: usemask !< Whether to use the mask array kc, or not (allows you to keep kc, but disable it for certain quantities, for example salinitybnd).
-      double precision, intent(in), optional :: rrtolrel !< Optional, a more strict rrtolerance value than the global rrtol. selectelset will succeed if cross SL value <= rrtolrel
+      real(kind=dp), intent(in), optional :: rrtolrel !< Optional, a more strict rrtolerance value than the global rrtol. selectelset will succeed if cross SL value <= rrtolrel
       character(len=:), allocatable, optional :: pliname !< Optional, name (identifier) of pli
 
       ! locals
-      double precision, allocatable :: xs(:) ! temporary array to hold polygon
-      double precision, allocatable :: ys(:) !
+      real(kind=dp), allocatable :: xs(:) ! temporary array to hold polygon
+      real(kind=dp), allocatable :: ys(:) !
       integer, allocatable :: kcs(:) !
-      double precision :: wL, wR
+      real(kind=dp) :: wL, wR
       integer :: kL, kR, minp, ns, m
       integer :: JACROS
       integer :: ierr
-      double precision :: SL, SM, XCR, YCR, CRP
+      real(kind=dp) :: SL, SM, XCR, YCR, CRP
       logical :: has_more_pli
 
       num = 0
@@ -5687,13 +5697,13 @@ contains
       integer, intent(in) :: loc_spec_type !< Type of spatial input for selecting nodes. One of: LOCTP_POLYGON_FILE, LOCTP_POLYLINE_FILE, LOCTP_POLYGON_XY , LOCTP_POLYLINE_XY, LOCTP_BRANCHID_CHAINAGE or LOCTP_CONTACTID.
       character(len=*), optional, intent(in) :: loc_file !< (Optional) File name of a polyline file (when loc_spec_type==LOCTP_POLYGON_FILE).
       integer, optional, intent(in) :: nump !< (Optional) Number of points in polyline coordinate arrays xpin and ypin (when loc_spec_type==LOCTP_POLYGON_XY/LOCTP_POLYLINE_XY).
-      double precision, optional, intent(in) :: xpin(:) !< (Optional) Array with x-coordinates of a polygon/line, used instead of a polygon/line file (when loc_spec_type==LOCTP_POLYGON_XY/LOCTP_POLYLINE_XY).
-      double precision, optional, intent(in) :: ypin(:) !< (Optional) Array with y-coordinates of a polygon/line, used instead of a polygon/line file (when loc_spec_type==LOCTP_POLYGON_XY/LOCTP_POLYLINE_XY).
+      real(kind=dp), optional, intent(in) :: xpin(:) !< (Optional) Array with x-coordinates of a polygon/line, used instead of a polygon/line file (when loc_spec_type==LOCTP_POLYGON_XY/LOCTP_POLYLINE_XY).
+      real(kind=dp), optional, intent(in) :: ypin(:) !< (Optional) Array with y-coordinates of a polygon/line, used instead of a polygon/line file (when loc_spec_type==LOCTP_POLYGON_XY/LOCTP_POLYLINE_XY).
       integer, optional, intent(in) :: branchindex !< (Optional) Branch index on which flow link is searched for (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
-      double precision, optional, intent(in) :: chainage !< (Optional) Offset along specified branch (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
+      real(kind=dp), optional, intent(in) :: chainage !< (Optional) Offset along specified branch (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
       character(len=*), optional, intent(in) :: contactId !< (Optional) Unique contactId for one flow link (when loc_spec_type==LOCTP_CONTACTID) (stored as mesh contact in input grid).
       integer, optional, intent(in) :: linktype !< (Optional) Limit search to specific link types: only 1D flow links (linktype==IFLTP_1D), 2D (linktype==IFLTP_2D), or both (linktype==IFLTP_ALL).
-      double precision, allocatable, optional, intent(inout) :: xps(:), yps(:) !< (Optional) Arrays in which the read in polyline x,y-points can be stored (only relevant when loc_spec_type==LOCTP_POLYGON_FILE/LOCTP_POLYLINE_FILE).
+      real(kind=dp), allocatable, optional, intent(inout) :: xps(:), yps(:) !< (Optional) Arrays in which the read in polyline x,y-points can be stored (only relevant when loc_spec_type==LOCTP_POLYGON_FILE/LOCTP_POLYLINE_FILE).
       integer, optional, intent(inout) :: nps !< (Optional) Number of polyline points that have been read in (only relevant when loc_spec_type==LOCTP_POLYGON_FILE/LOCTP_POLYLINE_FILE).
       integer, optional, intent(inout) :: lftopol(:) !< (Optional) Mapping array from flow links to the polyline index that intersected that flow link (only relevant when loc_spec_type==LOCTP_POLYLINE_FILE or LOCTP_POLYLINE_XY).
       integer, optional, intent(in) :: sortLinks !< (Optional) Whether or not to sort the found flow links along the polyline path. (only relevant when loc_spec_type==LOCTP_POLYGON_FILE or LOCTP_POLYGON_XY).
@@ -5856,8 +5866,8 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: xz(:) !< Flow nodes center x-coordinates.
-      double precision, intent(in) :: yz(:) !< Flow nodes center y-coordinates.
+      real(kind=dp), intent(in) :: xz(:) !< Flow nodes center x-coordinates.
+      real(kind=dp), intent(in) :: yz(:) !< Flow nodes center y-coordinates.
       integer, intent(in) :: kc(:) !< Mask for which flow nodes are allowed for selection (1/0 = yes/no).
       integer, intent(in) :: nx !< Number of flow nodes in input.
       integer, intent(out) :: kp(:) !< Output array containing the flow node numbers that were selected.
@@ -5866,10 +5876,10 @@ contains
       integer, intent(in) :: loc_spec_type !< Type of spatial input for selecting nodes. One of: LOCTP_POLYGON_FILE, LOCTP_POLYGON_XY or LOCTP_BRANCHID_CHAINAGE or LOCTP_NODEID.
       character(len=*), optional, intent(in) :: loc_file !< File name of a polygon file (when loc_spec_type==LOCTP_POLYGON_FILE).
       integer, optional, intent(in) :: numcoord !< Number of coordinates in input arrays (when loc_spec_type==LOCTP_POLYGON_XY).
-      double precision, optional, intent(in) :: xpin(:) !< Polygon x-coordinates (when loc_spec_type==LOCTP_POLYGON_XY).
-      double precision, optional, intent(in) :: ypin(:) !< Polygon y-coordinates (when loc_spec_type==LOCTP_POLYGON_XY).
+      real(kind=dp), optional, intent(in) :: xpin(:) !< Polygon x-coordinates (when loc_spec_type==LOCTP_POLYGON_XY).
+      real(kind=dp), optional, intent(in) :: ypin(:) !< Polygon y-coordinates (when loc_spec_type==LOCTP_POLYGON_XY).
       character(len=*), optional, intent(in) :: branchId !< Branch id (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
-      double precision, optional, intent(in) :: chainage !< Chainage along branch (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
+      real(kind=dp), optional, intent(in) :: chainage !< Chainage along branch (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
       character(len=*), optional, intent(in) :: nodeId !< Node id (network node id) (when loc_spec_type==LOCTP_NODEID).
       !
       ! locals
@@ -5949,8 +5959,8 @@ contains
    subroutine operate(a, b, operand)
       use precision
       implicit none
-      double precision, intent(inout) :: a !< Current value, will be updated based on b and operand.
-      double precision, intent(in) :: b !< New value, to be combined with existing value a.
+      real(kind=dp), intent(inout) :: a !< Current value, will be updated based on b and operand.
+      real(kind=dp), intent(in) :: b !< New value, to be combined with existing value a.
       character(len=1), intent(in) :: operand !< Operand type, valid values: 'O', 'A', '+', '*', 'X', 'N'.
 
       ! b = factor*b + offset ! todo doorplussen
@@ -6007,9 +6017,9 @@ contains
       logical :: success
 
       integer, intent(in) :: nx
-      double precision, intent(in) :: xu(nx)
-      double precision, intent(in) :: yu(nx)
-      double precision, intent(out) :: zu(nx)
+      real(kind=dp), intent(in) :: xu(nx)
+      real(kind=dp), intent(in) :: yu(nx)
+      real(kind=dp), intent(out) :: zu(nx)
 
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
@@ -6021,28 +6031,28 @@ contains
       ! 8 : smoothing
       ! 9 : internal diffusion
       character(1), intent(in) :: operand ! override, add
-      double precision, intent(in) :: transformcoef(:) !< Transformation coefficients
+      real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
       integer, intent(in) :: iprimpos ! only needed for averaging, position of primitive variables in network
       ! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
       integer, intent(in), optional :: kcc(nx)
 
-      double precision, allocatable :: zh(:)
+      real(kind=dp), allocatable :: zh(:)
       integer :: ierr
       integer :: minp0, inside, k, jdla, mout
-      double precision, allocatable :: xx(:, :), yy(:, :)
+      real(kind=dp), allocatable :: xx(:, :), yy(:, :)
       integer, allocatable :: nnn(:)
 
-      double precision, allocatable :: xxx(:), yyy(:)
+      real(kind=dp), allocatable :: xxx(:), yyy(:)
       integer, allocatable :: LnnL(:), Lorg(:)
       logical, external :: read_samples_from_geotiff
 
-      double precision :: zz
+      real(kind=dp) :: zz
 
       integer :: n6, L, Lk, n, n1, n2, i
       integer :: ierror, jakc
       integer :: jakdtree = 1
 
-      double precision :: rcel_store, percentileminmax_store
+      real(kind=dp) :: rcel_store, percentileminmax_store
       integer :: iav_store, nummin_store
 
       character(len=5) :: sd
@@ -6287,8 +6297,8 @@ contains
    subroutine bilinarc(xk, yk, zk, n)
       use m_missing
       integer, intent(in) :: n
-      real(kind=hp), intent(in) :: xk(:), yk(:)
-      real(kind=hp), intent(out) :: zk(:)
+      real(kind=dp), intent(in) :: xk(:), yk(:)
+      real(kind=dp), intent(out) :: zk(:)
 
       integer :: k
 
@@ -6304,10 +6314,10 @@ contains
    subroutine bilinarcinfo(x, y, z)
       use m_arcinfo
       use m_missing
-      real(kind=hp), intent(in) :: x, y
-      real(kind=hp), intent(out) :: z
+      real(kind=dp), intent(in) :: x, y
+      real(kind=dp), intent(out) :: z
 
-      real(kind=hp) :: dm, dn, am, an
+      real(kind=dp) :: dm, dn, am, an
       integer :: m, n
 
       dm = (x - x0) / dxa; m = int(dm); am = dm - m; m = m + 1
@@ -6327,10 +6337,10 @@ contains
    subroutine bilinarcinfocheck(x, y, z, landsea)
       use m_arcinfo
       use m_missing
-      real(kind=hp), intent(in) :: x, y
-      real(kind=hp), intent(out) :: z
+      real(kind=dp), intent(in) :: x, y
+      real(kind=dp), intent(out) :: z
       integer, intent(out) :: landsea
-      real(kind=hp) :: dm, dn, am, an, zmx, zmn
+      real(kind=dp) :: dm, dn, am, an, zmx, zmn
       integer :: m, n
 
       dm = (x - x0) / dxa; m = int(dm); am = dm - m; m = m + 1
@@ -6370,13 +6380,13 @@ contains
       logical :: success
 
       integer, intent(in) :: nx
-      double precision, intent(in) :: xz(nx)
-      double precision, intent(in) :: yz(nx)
+      real(kind=dp), intent(in) :: xz(nx)
+      real(kind=dp), intent(in) :: yz(nx)
       integer, intent(out) :: zz(nx)
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
       character(1), intent(in) :: operand ! file name for meteo data file
-      double precision, intent(in) :: transformcoef(:) !< Transformation coefficients
+      real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
       integer :: minp0, inside, k
 
       success = .false.
@@ -6424,7 +6434,7 @@ module m_meteo
    use fm_external_forcings_data
    use processes_input, only: num_time_functions, funame, funinp, nosfunext, sfunname, sfuninp
    use unstruc_messages
-   use m_observations_data
+   use m_observations_data, only: xyobs
    use string_module
    use m_sediment, only: stm_included, stmpar
    use m_subsidence
@@ -6554,7 +6564,52 @@ module m_meteo
    end interface ec_gettimeseries
 
    public ec_gettimeseries
-
+   
+   interface
+      module logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
+                                            xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
+                                            dtnodal, quiet, varname, varname2, targetMaskSelect, &
+                                            tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
+                                            tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
+                                            multuni1, multuni2, multuni3, multuni4)
+         character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
+         real(hp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
+         real(hp), dimension(:), intent(in) :: y !< Array of y-coordinates for the target ElementSet.
+         integer, intent(in) :: vectormax !< Vector max (length of data values at each element location).
+         integer, dimension(:), intent(in) :: mask !< Array of masking values for the target ElementSet.
+         character(len=*), intent(in) :: filename !< File name of meteo data file.
+         integer, intent(in) :: filetype !< FM's filetype enumeration.
+         integer, intent(in) :: method !< FM's method enumeration.
+         character(len=1), intent(in) :: operand !< FM's operand enumeration.
+         real(hp), optional, intent(in) :: xyen(:, :) !< FM's distance tolerance / cellsize of ElementSet.
+         real(hp), dimension(:), optional, intent(in), target :: z !< FM's array of z/sigma coordinates
+         real(hp), dimension(:), optional, pointer :: pzmin !< FM's array of minimal z coordinate
+         real(hp), dimension(:), optional, pointer :: pzmax !< FM's array of maximum z coordinate
+         integer, dimension(:), intent(in), optional, pointer :: pkbot
+         integer, dimension(:), intent(in), optional, pointer :: pktop
+         integer, optional, intent(in) :: targetIndex !< target position or rank of (complete!) vector in target array
+         character(len=*), optional, intent(in) :: forcingfile !< file containing the forcing data for pli-file 'filename'
+         character(len=*), optional, intent(in) :: srcmaskfile !< file containing mask applicable to the arcinfo source data
+         real(hp), optional, intent(in) :: dtnodal !< update interval for nodal factors
+         logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
+         character(len=*), optional, intent(in) :: varname !< variable name within filename
+         character(len=*), optional, intent(in) :: varname2 !< variable name within filename
+         character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
+         real(hp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
+         real(hp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
+         real(hp), dimension(:), optional, pointer :: tgt_data3 !< optional pointer to the storage location for target data 3 field
+         real(hp), dimension(:), optional, pointer :: tgt_data4 !< optional pointer to the storage location for target data 4 field
+         integer, optional, intent(inout), target :: tgt_item1 !< optional target item ID 1
+         integer, optional, intent(inout), target :: tgt_item2 !< optional target item ID 2
+         integer, optional, intent(inout), target :: tgt_item3 !< optional target item ID 3
+         integer, optional, intent(inout), target :: tgt_item4 !< optional target item ID 4
+         integer, optional, intent(inout), target :: multuni1 !< multiple uni item ID 1
+         integer, optional, intent(inout), target :: multuni2 !< multiple uni item ID 2
+         integer, optional, intent(inout), target :: multuni3 !< item ID 3
+         integer, optional, intent(inout), target :: multuni4 !< item ID 4
+      end function ec_addtimespacerelation
+   end  interface
+   
 contains
 
    !> Initialize the module variables.
@@ -6819,17 +6874,18 @@ contains
    function fm_ext_force_name_to_ec_item(trname, sfname, waqinput, qidname, &
                                          itemPtr1, itemPtr2, itemPtr3, itemPtr4, &
                                          dataPtr1, dataPtr2, dataPtr3, dataPtr4) result(success)
+      use m_find_name, only: find_name
+
       logical :: success
       character(len=*), intent(in) :: trname, sfname, waqinput
 
       character(len=*), intent(in) :: qidname
 
       integer, pointer :: itemPtr1, itemPtr2, itemPtr3, itemPtr4
-      real(hp), dimension(:), pointer :: dataPtr1, dataPtr2, dataPtr3, dataPtr4
+      real(kind=dp), dimension(:), pointer :: dataPtr1, dataPtr2, dataPtr3, dataPtr4
 
       ! for tracers:
       integer :: itrac, isf, ifun, isfun
-      integer, external :: findname
 
       success = .true.
 
@@ -7098,22 +7154,22 @@ contains
          dataPtr1 => uorbwav
       case ('tracerbnd')
          ! get tracer (boundary) number
-         itrac = findname(numtracers, trnames, trname)
+         itrac = find_name(trnames, trname)
          itemPtr1 => item_tracerbnd(itrac)
          dataPtr1 => bndtr(itrac)%z
       case ('sedfracbnd')
          ! get sediment fraction (boundary) number
-         isf = findname(numfracs, sfnames, sfname)
+         isf = find_name(sfnames, sfname)
          itemPtr1 => item_sedfracbnd(isf)
          dataPtr1 => bndsf(isf)%z
       case ('waqfunction')
          ! get sediment fraction (boundary) number
-         ifun = findname(num_time_functions, funame, waqinput)
+         ifun = find_name(funame, waqinput)
          itemPtr1 => item_waqfun(ifun)
          dataPtr1 => funinp(ifun, :)
       case ('waqsegmentfunction')
          ! get sediment fraction (boundary) number
-         isfun = findname(nosfunext, sfunname, waqinput)
+         isfun = find_name(sfunname, waqinput)
          itemPtr1 => item_waqsfun(isfun)
          dataPtr1 => sfuninp(isfun, :)
       case ('initialtracer')
@@ -7194,7 +7250,7 @@ contains
       integer :: operand !< Operand (add/replace)
       integer :: method !< Method of interpolation
       type(tEcMask), optional :: srcmask !< Mask excluding source points
-      real(hp), pointer, optional :: inputptr !< pointer to an input arg for the converter (for QHBND)
+      real(kind=dp), pointer, optional :: inputptr !< pointer to an input arg for the converter (for QHBND)
       !
       success = ecSetConverterType(instancePtr, converterId, convtype)
       if (success) success = ecSetConverterOperand(instancePtr, converterId, operand)
@@ -7240,1162 +7296,6 @@ contains
    end function checkFileType
 
    ! ==========================================================================
-   !> Replacement function for FM's meteo1 'addtimespacerelation' function.
-   logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
-                                            xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                            dtnodal, quiet, varname, varname2, targetMaskSelect, &
-                                            tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
-                                            tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
-                                            multuni1, multuni2, multuni3, multuni4)
-      use m_ec_module, only: ecFindFileReader, ec_filetype_to_conv_type ! TODO: Refactor this private data access (UNST-703).
-      use m_ec_filereader_read, only: ecParseARCinfoMask
-      use m_flowparameters, only: jawave
-      use m_sferic, only: jsferic
-      use m_missing, only: dmiss
-      use m_flowtimes, only: refdate_mjd
-      use string_module, only: str_upper
-      use timespace_parameters
-      use timespace
-      use fm_external_forcings_utils, only: get_tracername, get_sedfracname
-
-      character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
-      real(hp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
-      real(hp), dimension(:), intent(in) :: y !< Array of y-coordinates for the target ElementSet.
-      integer, intent(in) :: vectormax !< Vector max (length of data values at each element location).
-      integer, dimension(:), intent(in) :: mask !< Array of masking values for the target ElementSet.
-      character(len=*), intent(in) :: filename !< File name of meteo data file.
-      integer, intent(in) :: filetype !< FM's filetype enumeration.
-      integer, intent(in) :: method !< FM's method enumeration.
-      character(len=1), intent(in) :: operand !< FM's operand enumeration.
-      real(hp), optional, intent(in) :: xyen(:, :) !< FM's distance tolerance / cellsize of ElementSet.
-      real(hp), dimension(:), optional, intent(in), target :: z !< FM's array of z/sigma coordinates
-      real(hp), dimension(:), optional, pointer :: pzmin !< FM's array of minimal z coordinate
-      real(hp), dimension(:), optional, pointer :: pzmax !< FM's array of maximum z coordinate
-      integer, dimension(:), optional, pointer :: pkbot
-      integer, dimension(:), optional, pointer :: pktop
-      integer, optional, intent(in) :: targetIndex !< target position or rank of (complete!) vector in target array
-      character(len=*), optional, intent(in) :: forcingfile !< file containing the forcing data for pli-file 'filename'
-      character(len=*), optional, intent(in) :: srcmaskfile !< file containing mask applicable to the arcinfo source data
-      real(hp), optional, intent(in) :: dtnodal !< update interval for nodal factors
-      logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
-      character(len=*), optional, intent(in) :: varname !< variable name within filename
-      character(len=*), optional, intent(in) :: varname2 !< variable name within filename
-      character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
-      real(hp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
-      real(hp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
-      real(hp), dimension(:), optional, pointer :: tgt_data3 !< optional pointer to the storage location for target data 3 field
-      real(hp), dimension(:), optional, pointer :: tgt_data4 !< optional pointer to the storage location for target data 4 field
-      integer, optional, intent(inout), target :: tgt_item1 !< optional target item ID 1
-      integer, optional, intent(inout), target :: tgt_item2 !< optional target item ID 2
-      integer, optional, intent(inout), target :: tgt_item3 !< optional target item ID 3
-      integer, optional, intent(inout), target :: tgt_item4 !< optional target item ID 4
-      integer, optional, intent(inout), target :: multuni1 !< multiple uni item ID 1
-      integer, optional, intent(inout), target :: multuni2 !< multiple uni item ID 2
-      integer, optional, intent(inout), target :: multuni3 !< item ID 3
-      integer, optional, intent(inout), target :: multuni4 !< item ID 4
-      !
-      integer :: ec_filetype !< EC-module's enumeration.
-      integer :: ec_convtype !< EC-module's convType_ enumeration.
-      integer :: ec_method !< EC-module's interpolate_ enumeration.
-      integer :: ec_operand !< EC-module's operand_ enumeration.
-      !
-      integer :: fileReaderId !< Unique FileReader id.
-      integer :: quantityId !< Unique Quantity id.
-      integer :: elementSetId !< Unique ElementSet id.
-      integer :: fieldId !< Unique Field id.
-      integer :: fieldId_2 !< Unique Field id.
-      integer :: fieldId_3 !< Unique Field id.
-      integer :: fieldId_4 !< Unique Field id.
-      integer :: converterId !< Unique Converter id.
-      integer :: connectionId !< Unique Connection id.
-      integer :: sourceItemId !< Unique source item id.
-      integer :: sourceItemId_2 !< Unique additional second source item id.
-      integer :: sourceItemId_3 !< Unique additional third source item id.
-      integer :: sourceItemId_4 !< Unique additional fourth source item id.
-      integer :: ndx
-      !
-      character(len=maxnamelen) :: sourceItemName !< name of source item (as created by provider)
-      character(len=maxnamelen) :: target_name !< Unstruc target name derived from user-specified name
-      character(len=maxnamelen) :: location !< location (name) as specified in the LOCATION field of the new EXT-file
-      integer, pointer :: targetItemPtr1 => null() !< pointer to the target item id
-      integer, pointer :: targetItemPtr2 => null() !< pointer to optional second target item id (e.g. in case of windxy)
-      integer, pointer :: targetItemPtr3 => null() !< pointer to optional third target item id (e.g. in case of spiderweb)
-      integer, pointer :: targetItemPtr4 => null() !< pointer to optional fourth target item id (e.g. in case of hacs)
-      real(hp), dimension(:), pointer :: dataPtr1 => null() !< Pointer to FM's 1D data arrays.
-      real(hp), dimension(:), pointer :: dataPtr2 => null() !< Pointer to FM's optional extra 1D data array (e.g. in case of windxy)
-      real(hp), dimension(:), pointer :: dataPtr3 => null() !< Pointer to FM's optional third 1D data array (e.g. in case of spiderweb)
-      real(hp), dimension(:), pointer :: dataPtr4 => null() !< Pointer to FM's optional fourth 1D data array (e.g. in case of hacs)
-      type(tEcFileReader), pointer :: fileReaderPtr => null() !<
-
-      logical :: success
-      logical :: quiet_
-      character(len=NAMTRACLEN) :: trname, sfname, qidname
-      character(len=20) :: waqinput
-      integer, external :: findname
-      type(tEcMask) :: srcmask
-      integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
-      logical :: exist, opened, withCharnock, withStress
-
-      double precision :: relrow, relcol
-      double precision, allocatable :: transformcoef(:)
-      integer :: row0, row1, col0, col1, ncols, nrows, issparse, Ndatasize
-      character(len=128) :: txt1, txt2, txt3
-      real(hp), pointer :: inputptr => null()
-
-      call clearECMessage()
-      ec_addtimespacerelation = .false.
-      if (present(quiet)) then
-         quiet_ = quiet
-      else
-         quiet_ = .false. ! Default: print errors at the end of routine, if no success
-      end if
-
-      ndx = size(x)
-
-      ! ========================================================
-      ! Translate FM's enumerations to EC-module's enumerations.
-      ! ========================================================
-      call filetype_fm_to_ec(filetype, ec_filetype)
-      if (ec_filetype == provFile_undefined) then
-         write (msgbuf, '(a,i0,a)') 'm_meteo::ec_addtimespacerelation: Unsupported filetype ''', filetype, &
-            ''' for quantity '''//trim(name)//''' and file '''//trim(filename)//'''.'
-         call err_flush()
-         return
-      end if
-      call method_fm_to_ec(method, ec_method)
-      if (ec_method == interpolate_unknown) then
-         write (msgbuf, '(a,i0,a)') 'm_meteo::ec_addtimespacerelation: Unsupported method ''', method, &
-            ''' for quantity '''//trim(name)//''' and file '''//trim(filename)//'''.'
-         call err_flush()
-         return
-      end if
-      call operand_fm_to_ec(operand, ec_operand)
-      if (ec_operand == operand_undefined) then
-         write (msgbuf, '(a,a,a)') 'm_meteo::ec_addtimespacerelation: Unsupported operand ''', operand, &
-            ''' for quantity '''//trim(name)//''' and file '''//trim(filename)//'''.'
-         call err_flush()
-         return
-      end if
-
-      ! =================================================
-      ! Convert ext file names to accepted Unstruc names.
-      ! =================================================
-      ! Name conversion: (targetname=qidname==name for all names, except name=tracerbndfoo --> qidname=tracerbnd)
-      qidname = name
-      call get_tracername(name, trname, qidname)
-      call get_sedfracname(name, sfname, qidname)
-      call get_waqinputname(name, waqinput, qidname)
-      target_name = qidname
-
-      call clearECMessage()
-
-      ! ============================================================
-      ! If BC-Type file, create filereader and source items here
-      ! ============================================================
-      location = filename
-      if (ec_filetype == provFile_bc) then
-         if (.not. ecCreateInitializeBCFileReader(ecInstancePtr, forcingfile, location, qidname, &
-                                                  refdate_mjd, tzone, ec_second, fileReaderId)) then
-
-            if (.not. quiet_) then
-               message = dumpECMessageStack(LEVEL_WARN, callback_msg)
-            end if
-            message = 'Boundary '''//trim(qidname)//''', location='''//trim(location)//''', file='''//trim(forcingfile)//''' failed!'
-            call mess(LEVEL_ERROR, message)
-         end if
-      else
-         !success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile, dtnodal=dtnodal)
-         !success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile)
-         ! ============================================================
-         ! For the remaining types, construct the fileReader and source Items here.
-         ! ============================================================
-         ! first see if the file has already been opened
-         inquire (file=trim(fileName), exist=exist, opened=opened)
-         if (opened .and. ec_fileType == provFile_spiderweb) then ! double file access not allowed when using the Gnu compiler
-            fileReaderPtr => ecFindFileReader(ecInstancePtr, fileName)
-            if (.not. associated(fileReaderPtr)) then
-               continue
-            end if
-            fileReaderId = fileReaderPtr%id
-         else
-            !success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal, varname=varname)
-            fileReaderId = ecCreateFileReader(ecInstancePtr)
-
-            fileReaderPtr => ecFindFileReader(ecInstancePtr, fileReaderId) ! TODO: Refactor this private data access (UNST-703).
-
-            fileReaderPtr%vectormax = vectormax
-
-            if (present(forcingfile)) then
-               if (present(dtnodal)) then
-                  success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile, dtnodal=dtnodal / 86400.d0)
-               else
-                  success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile)
-               end if
-               !message = dumpECMessageStack(LEVEL_WARN,callback_msg)
-               if (.not. success) then
-                  goto 1234
-               end if
-               if (ecAtLeastOnePointIsCorrection) then ! TODO: Refactor this shortcut (UNST-180).
-                  ecAtLeastOnePointIsCorrection = .false. ! TODO: Refactor this shortcut (UNST-180).
-                  ec_addtimespacerelation = .true.
-                  return
-               end if
-            else
-               !success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname)
-               if (name == 'qhbnd') then
-                  ec_filetype = provFile_qhtable
-                  success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename(1:index(filename, '.'))//'qh', refdate_mjd, tzone, ec_second, name)
-               else
-                  if (present(dtnodal)) then
-                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.d0, varname=varname)
-                  else
-                     if (present(varname2)) then
-                        success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname, varname2=varname2)
-                     else
-                        success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname)
-                     end if
-                  end if
-                  if (.not. success) then
-                     ! message = ecGetMessage()
-                     ! message = dumpECMessageStack(LEVEL_WARN,callback_msg)
-                     ! NOTE: do all error dumping (if any) at the end of this routine at label 1234
-
-                     ! NOTE: in relation to WAVE: all calling WAVE-related routines now pass quiet=.true. to this addtimespace routine.
-                     ! When running online with WAVE and the first WAVE calculation is after the first DFlowFM calculation,
-                     ! this message will be generated. This must be a warning: notify the user that DFlowFM is going to do
-                     ! a calculation with zero wave values. This message should be written every time step, until proper
-                     ! wave data is available. The user has to check whether this behaviour is as expected.
-                     goto 1234
-                  end if
-               end if
-            end if
-         end if
-      end if
-
-      ! ==============================
-      ! Construct the target Quantity.
-      ! ==============================
-      quantityId = ecCreateQuantity(ecInstancePtr)
-      if (.not. ecSetQuantity(ecInstancePtr, quantityId, name=target_name, units=' ', vectormax=vectormax)) then
-         goto 1234
-      end if
-
-      ! ================================
-      ! Construct the target ElementSet.
-      ! ================================
-      elementSetId = ecCreateElementSet(ecInstancePtr)
-
-      if (ec_filetype == provFile_poly_tim) then
-         success = ecSetElementSetType(ecInstancePtr, elementSetId, elmSetType_polytim)
-      else
-         if (jsferic == 0) then
-            success = ecSetElementSetType(ecInstancePtr, elementSetId, elmSetType_cartesian)
-         else
-            success = ecSetElementSetType(ecInstancePtr, elementSetId, elmSetType_spheric)
-         end if
-      end if
-
-      if (success) success = ecSetElementSetXArray(ecInstancePtr, elementSetId, x)
-      if (success) success = ecSetElementSetYArray(ecInstancePtr, elementSetId, y)
-      if (success) success = ecSetElementSetMaskArray(ecInstancePtr, elementSetId, mask)
-      if (success) success = ecSetElementSetNumberOfCoordinates(ecInstancePtr, elementSetId, size(x))
-      if (present(xyen)) then
-         if (success) success = ecSetElementSetXyen(ecInstancePtr, elementSetId, xyen)
-      end if
-
-      if (present(z)) then ! 3D
-         if (present(pzmin) .and. present(pzmax)) then ! implicitly means: target elt z-type == SIGMA
-            if (success) success = ecSetElementSetZArray(ecInstancePtr, elementSetId, z, pzmin=pzmin, pzmax=pzmax, Lpointer_=.true.)
-            if (success) success = ecSetElementSetvptyp(ecInstancePtr, elementSetID, BC_VPTYP_PERCBED) ! sigma layers
-         else if (present(pkbot) .and. present(pktop)) then ! implicitly means: target elt z-type == Z WITH sparse kbot/ktop storage
-            if (success) success = ecSetElementSetZArray(ecInstancePtr, elementSetId, z, Lpointer_=.true.)
-            if (success) success = ecSetElementSetKbotKtop(ecInstancePtr, elementSetId, pkbot, pktop, Lpointer_=.true.)
-            if (success) success = ecSetElementSetvptyp(ecInstancePtr, elementSetID, BC_VPTYP_ZDATUM) ! z-layers
-         else
-            ! ERROR .. TODO: LR
-         end if
-
-         ! add 3D settings if needed
-         if (ec_filetype == provFile_poly_tim .and. (target_name == 'salinitybnd' .or. target_name == 'temperaturebnd' .or. target_name == 'tracerbnd' .or. target_name == 'sedfracbnd')) then ! TODO JRE sediment
-            if (success) success = ecSetElementSetMaskArray(ecInstancePtr, elementSetId, mask)
-            if (success) success = ecSetElementSetNumberOfCoordinates(ecInstancePtr, elementSetId, size(x))
-         end if
-      end if
-
-      if (.not. success) then
-         goto 1234
-      end if
-
-      ! ==============================================
-      ! Construct the target field and the target item
-      ! ==============================================
-      ! determine which target item (id) will be created, and which FM data array has to be used
-      if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, qidname, &
-                                             targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
-                                             dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
-         return
-      end if
-      continue
-
-      ! Overrule hard-coded pointers to target data by optional pointers passed in the call
-      if (present(tgt_data1)) dataPtr1 => tgt_data1
-      if (present(tgt_data2)) dataPtr2 => tgt_data2
-      if (present(tgt_data3)) dataPtr3 => tgt_data3
-      if (present(tgt_data4)) dataPtr4 => tgt_data4
-
-      ! Overrule hard-coded pointers to target items by optional pointers passed in the call
-      if (present(tgt_item1)) targetItemPtr1 => tgt_item1
-      if (present(tgt_item2)) targetItemPtr2 => tgt_item2
-      if (present(tgt_item3)) targetItemPtr3 => tgt_item3
-      if (present(tgt_item4)) targetItemPtr4 => tgt_item4
-
-      ! Create the field and the target item, and if needed additional ones.
-      fieldId = ecCreateField(ecInstancePtr)
-      success = ecSetField1dArray(ecInstancePtr, fieldId, dataPtr1)
-      if (success) success = ecSetFieldMissingValue(ecInstancePtr, fieldId, dmiss)
-      if (success) success = createItem(ecInstancePtr, targetItemPtr1, quantityId, elementSetId, fieldId)
-      if (present(multuni1)) then ! if multiple-uni item(s) specified:
-         if (multuni1 < 0) then
-            multuni1 = ecInstanceCreateItem(ecInstancePtr)
-            if (.not. ecSetItemRole(ecInstancePtr, multuni1, itemType_target)) return
-         end if
-         connectionId = ecCreateConnection(ecInstancePtr)
-         if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, targetItemPtr1)) return ! connecting source to new converter
-         if (.not. ecAddConnectionTargetItem(ecInstancePtr, connectionId, multuni1)) return ! connecting multuni1 as target item to the new converter
-         if (.not. ecCopyItemProperty(ecInstancePtr, multuni1, targetItemPtr1, 'quantityPtr')) return ! copying the quantity pointer to the multi uni item
-         if (.not. ecAddItemConnection(ecInstancePtr, multuni1, connectionId)) return ! adding the new converter to multuni1
-      end if
-      if (associated(targetItemPtr2)) then
-         ! second field (e.g. for 'windxy')
-         fieldId_2 = ecCreateField(ecInstancePtr)
-         if (success) success = ecSetField1dArray(ecInstancePtr, fieldId_2, dataPtr2)
-         if (success) success = ecSetFieldMissingValue(ecInstancePtr, fieldId_2, dmiss)
-         if (success) success = createItem(ecInstancePtr, targetItemPtr2, quantityId, elementSetId, fieldId_2)
-         if (present(multuni2)) then ! if multiple-uni item(s) specified:
-            if (multuni2 < 0) then
-               multuni2 = ecInstanceCreateItem(ecInstancePtr)
-               if (.not. ecSetItemRole(ecInstancePtr, multuni2, itemType_target)) return
-            end if
-            connectionId = ecCreateConnection(ecInstancePtr)
-            if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, targetItemPtr2)) return ! connecting source to new converter
-            if (.not. ecAddConnectionTargetItem(ecInstancePtr, connectionId, multuni2)) return ! connecting multuni1 as target item to the new converter
-            if (.not. ecCopyItemProperty(ecInstancePtr, multuni2, targetItemPtr2, 'quantityPtr')) return ! copying the quantity pointer to the multi uni item
-            if (.not. ecAddItemConnection(ecInstancePtr, multuni2, connectionId)) return ! adding the new converter to multuni1
-         end if
-      end if
-      if (associated(targetItemPtr3)) then
-         ! third field (e.g. for 'airpressure_windx_windy'
-         fieldId_3 = ecCreateField(ecInstancePtr)
-         if (success) success = ecSetField1dArray(ecInstancePtr, fieldId_3, dataPtr3)
-         if (success) success = ecSetFieldMissingValue(ecInstancePtr, fieldId_3, dmiss)
-         if (success) success = createItem(ecInstancePtr, targetItemPtr3, quantityId, elementSetId, fieldId_3)
-         if (present(multuni3)) then ! if multiple-uni item(s) specified:
-            if (multuni3 < 0) then
-               multuni3 = ecInstanceCreateItem(ecInstancePtr)
-               if (.not. ecSetItemRole(ecInstancePtr, multuni3, itemType_target)) return
-            end if
-            connectionId = ecCreateConnection(ecInstancePtr)
-            if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, targetItemPtr3)) return ! connecting source to new converter
-            if (.not. ecAddConnectionTargetItem(ecInstancePtr, connectionId, multuni3)) return ! connecting multuni1 as target item to the new converter
-            if (.not. ecCopyItemProperty(ecInstancePtr, multuni3, targetItemPtr3, 'quantityPtr')) return ! copying the quantity pointer to the multi uni item
-            if (.not. ecAddItemConnection(ecInstancePtr, multuni3, connectionId)) return ! adding the new converter to multuni1
-         end if
-      end if
-      if (associated(targetItemPtr4)) then
-         ! fourth field (e.g. for 'humidity_airtemperatur_cloudiness_solarradiation'
-         fieldId_4 = ecCreateField(ecInstancePtr)
-         if (success) success = ecSetField1dArray(ecInstancePtr, fieldId_4, dataPtr4)
-         if (success) success = ecSetFieldMissingValue(ecInstancePtr, fieldId_4, dmiss)
-         if (success) success = createItem(ecInstancePtr, targetItemPtr4, quantityId, elementSetId, fieldId_4)
-         if (present(multuni4)) then ! if multiple-uni item(s) specified:
-            if (multuni4 < 0) then
-               multuni4 = ecInstanceCreateItem(ecInstancePtr)
-               if (.not. ecSetItemRole(ecInstancePtr, multuni4, itemType_target)) return
-            end if
-            connectionId = ecCreateConnection(ecInstancePtr)
-            if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, targetItemPtr4)) return ! connecting source to new converter
-            if (.not. ecAddConnectionTargetItem(ecInstancePtr, connectionId, multuni4)) return ! connecting multuni1 as target item to the new converter
-            if (.not. ecCopyItemProperty(ecInstancePtr, multuni4, targetItemPtr4, 'quantityPtr')) return ! copying the quantity pointer to the multi uni item
-            if (.not. ecAddItemConnection(ecInstancePtr, multuni4, connectionId)) return ! adding the new converter to multuni1
-         end if
-      end if
-
-      if (.not. success) then
-         goto 1234
-      end if
-
-      ! ==========================
-      ! Construct a new Converter.
-      ! ==========================
-      ec_convtype = ec_filetype_to_conv_type(ec_filetype, name)
-      if (ec_convtype == convType_undefined) then
-         call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported converter.')
-         return
-      end if
-
-      converterId = ecCreateConverter(ecInstancePtr)
-
-      select case (target_name)
-      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin', 'pump', 'valve1D', 'damlevel', 'gateloweredgelevel', 'generalstructure', 'lateral_discharge', 'dambreakLevelsAndWidths')
-         ! for the FM 'target' arrays, the index is provided by the caller
-         if (.not. present(targetIndex)) then
-            message = 'Internal program error: missing targetIndex for quantity '''//trim(target_name)
-            call mess(LEVEL_ERROR, message)
-            return
-         end if
-         success = initializeConverter(ecInstancePtr, converterId, ec_convtype, operand_replace_element, ec_method)
-         if (success) success = ecSetConverterElement(ecInstancePtr, converterId, targetIndex)
-      case ('qhbnd')
-         ! count qh boundaries
-         n_qhbnd = n_qhbnd + 1
-         inputptr => atqh_all(n_qhbnd)
-         success = initializeConverter(ecInstancePtr, converterId, ec_convtype, operand_replace_element, interpolate_passthrough, inputptr=inputptr)
-         if (success) success = ecSetConverterElement(ecInstancePtr, converterId, n_qhbnd)
-         ! Each qhbnd polytim file replaces exactly one element in the target data array.
-         ! Converter will put qh value in target_array(n_qhbnd)
-      case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'atmosphericpressure', 'airpressure_windx_windy', 'airdensity', &
-            'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy', 'humidity', 'dewpoint', 'airtemperature', 'cloudiness', 'solarradiation', 'longwaveradiation')
-         if (present(srcmaskfile)) then
-            if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
-               if (.not. ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then
-                  write (msgbuf, '(3a)') 'Error while reading mask file ''', trim(srcmaskfile), '''.'
-                  call err_flush()
-                  return
-               end if
-               if (.not. initializeConverter(ecInstancePtr, converterId, ec_convtype, ec_operand, ec_method, srcmask=srcmask)) then
-                  write (msgbuf, '(5a)') 'Error while setting mask to converter (file=''', trim(srcmaskfile), ''', associated with meteo file ''', trim(filename), '''.'
-                  call err_flush()
-                  return
-               end if
-            end if
-         else
-            if (ec_filetype == provFile_bc .and. target_name == 'windxy') then
-               ec_convtype = convType_unimagdir
-            end if
-            success = initializeConverter(ecInstancePtr, converterId, ec_convtype, ec_operand, ec_method)
-         end if
-      case ('rainfall')
-         if (present(srcmaskfile)) then
-            if (allocated(srcmask%msk)) deallocate (srcmask%msk)
-            allocate (srcmask%msk(ndx))
-            if (allocated(transformcoef)) deallocate (transformcoef)
-            allocate (transformcoef(1))
-            if (present(targetMaskSelect)) then
-               if (targetMaskSelect == 'i') then
-                  itargetMaskSelect = 1
-               else
-                  itargetMaskSelect = 0
-               end if
-            else
-               itargetMaskSelect = 1
-            end if
-            if (itargetMaskSelect == 1) then
-               transformcoef = 1.0d0
-               srcmask%msk = 0
-            else
-               transformcoef = 0.0d0
-               srcmask%msk = 1
-            end if
-
-            success = timespaceinitialfield_int(x, y, srcmask%msk, ndx, srcmaskfile, inside_polygon, operand, transformcoef) ! zie meteo module
-            if (.not. success) then
-               write (msgbuf, '(3a)') 'Error while reading mask file ''', trim(srcmaskfile), '''.'
-               call err_flush()
-               return
-            end if
-            if (.not. initializeConverter(ecInstancePtr, converterId, ec_convtype, ec_operand, ec_method, srcmask=srcmask)) then
-               write (msgbuf, '(5a)') 'Error while setting mask to converter (file=''', trim(srcmaskfile), ''', associated with meteo file ''', trim(filename), '''.'
-               call err_flush()
-               return
-            end if
-            if (allocated(srcmask%msk)) deallocate (srcmask%msk)
-            if (allocated(transformcoef)) deallocate (transformcoef)
-         else
-            success = initializeConverter(ecInstancePtr, converterId, ec_convtype, ec_operand, ec_method)
-         end if
-      case default
-         success = initializeConverter(ecInstancePtr, converterId, ec_convtype, ec_operand, ec_method)
-         if (present(targetindex)) then
-            success = ecSetConverterElement(ecInstancePtr, converterId, targetindex)
-         end if
-      end select
-
-      if (.not. success) then
-         goto 1234
-      end if
-
-      ! ================================================================
-      ! Construct a new Connection, and connect source and target Items.
-      ! ================================================================
-      connectionId = ecCreateConnection(ecInstancePtr)
-
-      if (.not. ecSetConnectionConverter(ecInstancePtr, connectionId, converterId)) then
-         goto 1234
-      end if
-
-      ! determine the source item's name
-      ! note 1: this can be determined (and be improved) when creating the file reader
-      ! note 2: the source item's name is set in the select case switch below. In some cases
-      !         of this switch ('special cases') the source-target connections is established
-      !         immediatly, and sourceItemName is NOT set.
-      !         So the generic 'connect source and target' statements after the switch are
-      !         only executed if sourceItemName IS set.
-      !
-      sourceItemName = ' '
-
-      sourceItemId = 0
-      sourceItemId_2 = 0
-      sourceItemId_3 = 0
-      sourceItemId_4 = 0
-
-      select case (target_name)
-      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin')
-         if (.not. checkFileType(ec_filetype, provFile_uniform, target_name)) then
-            return
-         end if
-         ! the file reader will have created an item called 'uniform_item'
-         sourceItemName = 'uniform_item'
-      case ('pump', 'generalstructure', 'damlevel', 'valve1D', 'gateloweredgelevel', 'lateral_discharge', 'dambreakLevelsAndWidths')
-         if (checkFileType(ec_filetype, provFile_uniform, target_name)) then
-            !
-            ! *.tim file
-            !
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'uniform_item')
-            if (sourceItemId == ec_undef_int) then
-               ! Add something to the EC message stack about missing source item
-               return
-            end if
-            if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)) return
-         else if (checkFileType(ec_filetype, provFile_bc, target_name)) then
-            !
-            ! *.bc file
-            !
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, target_name)
-            if (sourceItemId == ec_undef_int) then
-               ! Add something to the EC message stack about missing source item
-               return
-            end if
-            if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)) return
-         else if (checkFileType(ec_filetype, provFile_fourier, target_name)) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'period')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'magnitude')
-            sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'phase')
-            if ((sourceItemId == ec_undef_int) .or. (sourceItemId_2 == ec_undef_int) .or. (sourceItemId_3 == ec_undef_int)) then
-               ! Add something to the EC message stack about missing source item
-               return
-            else
-               if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)) return
-               if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)) return
-               if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)) return
-            end if
-         else if (checkFileType(ec_filetype, provFile_poly_tim, target_name)) then
-            sourceItemName = 'polytim_item'
-         else
-            ! Add something to the EC message stack about mismatching filetype bla bla
-            return
-         end if
-         if (.not. ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr1)) return
-         if (.not. ecAddItemConnection(ecInstancePtr, targetItemPtr1, connectionId)) return
-      case ('qhbnd')
-         if ((.not. checkFileType(ec_filetype, provFile_poly_tim, target_name)) .and. &
-             (.not. checkFileType(ec_filetype, provFile_qhtable, target_name)) .and. &
-             (.not. checkFileType(ec_filetype, provFile_bc, target_name))) then
-            return
-         end if
-         if (ec_filetype == provFile_poly_tim) then
-            sourceItemName = 'polytim_item'
-         else if (ec_filetype == provFile_bc .or. ec_filetype == provFile_qhtable) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'discharge')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'waterlevel')
-            sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'slope')
-            sourceItemId_4 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'crossing')
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_4)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr1)
-            if (success) success = ecAddItemConnection(ecInstancePtr, targetItemPtr1, connectionId)
-            if (.not. success) then
-               goto 1234
-            end if
-         end if
-      case ('velocitybnd', 'dischargebnd', 'waterlevelbnd', 'salinitybnd', 'tracerbnd', &
-            'neumannbnd', 'riemannbnd', 'absgenbnd', 'outflowbnd', &
-            'temperaturebnd', 'sedimentbnd', 'tangentialvelocitybnd', 'uxuyadvectionvelocitybnd', &
-            'normalvelocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'sedfracbnd', 'riemannubnd')
-         if ((.not. checkFileType(ec_filetype, provFile_poly_tim, target_name)) .and. &
-             (.not. checkFileType(ec_filetype, provFile_bc, target_name))) then
-            return
-         end if
-         if (ec_filetype == provFile_poly_tim) then
-            sourceItemName = 'polytim_item'
-         else if (ec_filetype == provFile_bc) then
-            sourceItemName = name
-            call str_upper(sourceItemName)
-         end if
-      case ('rainfall')
-         ! the name of the source item depends on the file reader
-         if (ec_filetype == provFile_uniform) then
-            sourceItemName = 'uniform_item'
-         else if (ec_filetype == provFile_bc) then
-            sourceItemName = 'RAINFALL'
-         else if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'precipitation_amount'
-         else if (ec_filetype == provFile_curvi) then
-            sourceItemName = 'curvi_source_item_1'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity rainfall.')
-            return
-         end if
-         if (.not. (ecQuantitySet(ecInstancePtr, quantityId, timeint=timeint_rainfall))) return
-      case ('rainfall_rate')
-         ! the name of the source item depends on the file reader
-         if (ec_filetype == provFile_uniform) then
-            sourceItemName = 'uniform_item'
-         else if (ec_filetype == provFile_bc) then
-            sourceItemName = 'RAINFALL_RATE'
-         else if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'rainfall_rate'
-         else if (ec_filetype == provFile_curvi) then
-            sourceItemName = 'curvi_source_item_1'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity rainfall_rate.')
-            return
-         end if
-      case ('hrms', 'tp', 'tps', 'rtp', 'dir', 'fx', 'fy', 'wsbu', 'wsbv', 'mx', 'my', 'dissurf', 'diswcap', 'ubot')
-         ! the name of the source item created by the file reader will be the same as the ext.force. quant name
-         sourceItemName = target_name
-         ! this file contains wave data
-         if (jawave == 3) then
-            ! wave data is read from a com.nc file produced by D-Waves which contains one time field only
-            fileReaderPtr%one_time_field = .true.
-         end if
-      case ('wavesignificantheight', 'waveperiod', 'xwaveforce', 'ywaveforce', &
-            'wavebreakerdissipation', 'whitecappingdissipation', 'totalwaveenergydissipation')
-         ! the name of the source item created by the file reader will be the same as the ext.force. var name
-         sourceItemName = varname
-      case ('airpressure', 'atmosphericpressure')
-         if (ec_filetype == provFile_arcinfo) then
-            sourceItemName = 'wind_p'
-         else if (ec_filetype == provFile_curvi) then
-            sourceItemName = 'curvi_source_item_1'
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemName = 'uniform_item'
-         else if (ec_filetype == provFile_spiderweb) then
-            sourceItemName = 'p_drop'
-         else if (ec_filetype == provFile_netcdf) then
-            ! the arc-info file contains 'air_pressure', which is also the standard_name
-            sourceItemName = 'air_pressure'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity wind_p.')
-            return
-         end if
-      case ('windx')
-         ! the name of the source item depends on the file reader
-         if (ec_filetype == provFile_arcinfo) then
-            sourceItemName = 'wind_u'
-         else if (ec_filetype == provFile_curvi) then
-            sourceItemName = 'curvi_source_item_1'
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemName = 'uniform_item'
-         else if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'eastward_wind'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windx.')
-            return
-         end if
-      case ('windy')
-         ! the name of the source item depends on the file reader
-         if (ec_filetype == provFile_arcinfo) then
-            sourceItemName = 'wind_v'
-         else if (ec_filetype == provFile_curvi) then
-            sourceItemName = 'curvi_source_item_1'
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemName = 'uniform_item'
-         else if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'northward_wind'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windy.')
-            return
-         end if
-      case ('stressx')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'surface_downward_eastward_stress'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: stressx only implemented for NetCDF.')
-            return
-         end if
-      case ('stressy')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'surface_downward_northward_stress'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: stressy only implemented for NetCDF.')
-            return
-         end if
-      case ('stressxy')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_downward_eastward_stress')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_downward_northward_stress')
-            if (sourceItemId == ec_undef_int .or. sourceItemId_2 == ec_undef_int) then
-               goto 1234
-            end if
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: stressxy only implemented for NetCDF.')
-            return
-         end if
-         success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-         if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_stressxy_x)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_stressxy_y)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_stressxy_x, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_stressxy_y, connectionId)
-      case ('charnock')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'charnock')
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
-            return
-         end if
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_charnock)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_charnock, connectionId)
-      case ('friction_coefficient_time_dependent')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'friction_coefficient'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: friction_coefficient_time_dependent only implemented for NetCDF.')
-            return
-         end if
-      case ('windxy')
-         ! special case: m:n converter, (for now) handle here in case switch
-         if (ec_filetype == provFile_unimagdir) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'uniform_item')
-            success = (sourceItemId /= ec_undef_int)
-            if (.not. success) then
-               goto 1234
-            end if
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'uniform_item')
-            success = (sourceItemId /= ec_undef_int)
-            if (.not. success) then
-               goto 1234
-            end if
-         else if (ec_filetype == provFile_bc) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'WINDXY')
-            success = (sourceItemId /= ec_undef_int)
-            if (.not. success) then
-               goto 1234
-            end if
-         else if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'eastward_wind')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'northward_wind')
-            success = (sourceItemId /= ec_undef_int .and. sourceItemId_2 /= ec_undef_int)
-            if (.not. success) then
-               goto 1234
-            end if
-         else if (ec_filetype == provFile_spiderweb) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'windspeed')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'winddirection')
-            success = (sourceItemId /= ec_undef_int .and. sourceItemId_2 /= ec_undef_int)
-            if (.not. success) then
-               goto 1234
-            end if
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windxy.')
-            return
-         end if
-         if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-         if (sourceItemId_2 > 0) then
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-         end if
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_windxy_x)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_windxy_y)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_x, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_y, connectionId)
-      case ('airpressure_windx_windy', 'airpressure_windx_windy_charnock', 'airpressure_stressx_stressy')
-         withCharnock = (target_name == 'airpressure_windx_windy_charnock')
-         withStress = (target_name == 'airpressure_stressx_stressy')
-         ! special case: m:n converter, (for now) handle seperately
-         if (ec_filetype == provFile_curvi) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_1')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_2')
-            sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_3')
-         else if (ec_filetype == provFile_spiderweb) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'windspeed')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'winddirection')
-            sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'p_drop')
-         else if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_pressure')
-            if (.not. withStress) then
-               sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'eastward_wind')
-               sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'northward_wind')
-            else
-               sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_downward_eastward_stress')
-               sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_downward_northward_stress')
-            end if
-            if (withCharnock) then
-               sourceItemId_4 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'charnock')
-               if (sourceItemId_4 == ec_undef_int) goto 1234
-            end if
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
-            return
-         end if
-         if (sourceItemId == ec_undef_int .or. sourceItemId_2 == ec_undef_int .or. sourceItemId_3 == ec_undef_int) then
-            goto 1234
-         end if
-         success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-         if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-         if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
-         if (success .and. withCharnock) then
-            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_4)
-         end if
-         if (ec_filetype == provFile_curvi .or. ec_filetype == provFile_netcdf) then
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_apwxwy_p)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_apwxwy_x)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_apwxwy_y)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_apwxwy_p, connectionId)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_apwxwy_x, connectionId)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_apwxwy_y, connectionId)
-            if (withCharnock) then
-               if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_apwxwy_c)
-               if (success) success = ecAddItemConnection(ecInstancePtr, item_apwxwy_c, connectionId)
-            end if
-         else if (ec_filetype == provFile_spiderweb) then
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_apwxwy_x)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_apwxwy_y)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_apwxwy_p)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_apwxwy_x, connectionId)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_apwxwy_y, connectionId)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_apwxwy_p, connectionId)
-         end if
-         if (.not. success) then
-            goto 1234
-         end if
-      case ('humidity_airtemperature_cloudiness')
-         ! special case: m:n converter, (for now) handle seperately
-         if (ec_filetype == provFile_curvi .or. ec_filetype == provFile_uniform .or. ec_filetype == provFile_netcdf) then
-            if (ec_filetype == provFile_curvi) then
-               sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_1')
-               sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_2')
-               sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_3')
-               if (sourceItemId == ec_undef_int .or. sourceItemId_2 == ec_undef_int .or. sourceItemId_3 == ec_undef_int) then
-                  goto 1234
-               end if
-               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-               if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-               if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
-            else if (ec_filetype == provFile_uniform) then
-               sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'uniform_item')
-               if (sourceItemId == ec_undef_int) then
-                  goto 1234
-               end if
-               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            else if (ec_filetype == provFile_netcdf) then
-               sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'relative_humidity')
-               sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
-               sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'cloud_area_fraction')
-               if (sourceItemId == ec_undef_int .or. sourceItemId_2 == ec_undef_int .or. sourceItemId_3 == ec_undef_int) then
-                  goto 1234
-               end if
-               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-               if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-               if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
-            end if
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_humidity)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_airtemperature)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_cloudiness)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_hac_humidity, connectionId)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_hac_airtemperature, connectionId)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_hac_cloudiness, connectionId)
-            if (.not. success) then
-               goto 1234
-            end if
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity humidity_airtemperature_cloudiness.')
-            return
-         end if
-      case ('humidity_airtemperature_cloudiness_solarradiation')
-         ! special case: m:n converter, (for now) handle seperately
-         if (ec_filetype == provFile_curvi) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_1')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_2')
-            sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_3')
-            sourceItemId_4 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_4')
-            if (sourceItemId == ec_undef_int .or. sourceItemId_2 == ec_undef_int .or. &
-                sourceItemId_3 == ec_undef_int .or. sourceItemId_4 == ec_undef_int) then
-               goto 1234
-            end if
-            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_4)
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'uniform_item')
-            if (sourceItemId == ec_undef_int) then
-               goto 1234
-            end if
-            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-         else if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'humidity')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
-            sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'cloud_area_fraction')
-            sourceItemId_4 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_net_downward_shortwave_flux')
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_4)
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
-            return
-         end if
-
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hacs_humidity)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hacs_airtemperature)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hacs_cloudiness)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hacs_solarradiation)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_hacs_humidity, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_hacs_airtemperature, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_hacs_cloudiness, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_hacs_solarradiation, connectionId)
-         if (.not. success) then
-            goto 1234
-         end if
-      case ('dewpoint_airtemperature_cloudiness')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'dew_point_temperature')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
-            sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'cloud_area_fraction')
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
-            if (.not. success) goto 1234
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'uniform_item')
-            success = (sourceItemId /= ec_undef_int)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
-            return
-         end if
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dac_dewpoint)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dac_airtemperature)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dac_cloudiness)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dac_dewpoint, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dac_airtemperature, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dac_cloudiness, connectionId)
-      case ('dewpoint_airtemperature_cloudiness_solarradiation')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'dew_point_temperature')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
-            sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'cloud_area_fraction')
-            sourceItemId_4 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_net_downward_shortwave_flux')
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_4)
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'uniform_item')
-            success = (sourceItemId /= ec_undef_int)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
-            return
-         end if
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dacs_dewpoint)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dacs_airtemperature)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dacs_cloudiness)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dacs_solarradiation)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_dewpoint, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_airtemperature, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_cloudiness, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_solarradiation, connectionId)
-      case ('humidity')
-         sourceItemName = 'relative_humidity'
-      case ('dewpoint')
-         sourceItemName = 'dew_point_temperature'
-      case ('airtemperature')
-         if (ec_filetype == provFile_uniform) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'uniform_item')
-            if (sourceItemId == ec_undef_int) then
-               goto 1234
-            end if
-            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_airtemperature)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_airtemperature, connectionId)
-         elseif (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
-            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_airtemperature)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_airtemperature, connectionId)
-            if (.not. success) then
-               goto 1234
-            end if
-         else
-            sourceItemName = 'air_temperature'
-         end if
-      case ('cloudiness')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'cloud_area_fraction'
-         else
-            sourceItemName = 'cloudiness'
-         end if
-      case ('airdensity')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_density')
-            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
-            return
-         end if
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_airdensity)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_airdensity, connectionId)
-      case ('solarradiation')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'surface_net_downward_shortwave_flux'
-         else
-            sourceItemName = 'sw_radiation_flux'
-         end if
-      case ('longwaveradiation')
-         sourceItemName = 'surface_net_downward_longwave_flux'
-      case ('nudge_salinity_temperature')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_water_potential_temperature')
-            sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_water_salinity')
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
-            return
-         end if
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_nudge_tem)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_nudge_sal)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_nudge_tem, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_nudge_sal, connectionId)
-      case ('waqfunction')
-         if (.not. checkFileType(ec_filetype, provFile_uniform, target_name)) then
-            return
-         end if
-         ! the file reader will have created an item called 'polytim_item'
-         sourceItemName = 'uniform_item'
-      case ('waqsegmentfunction')
-         ! the name of the source item depends on the file reader
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = name
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '''//trim(name)//'''')
-            return
-         end if
-      case ('initialtracer')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = name(14:)
-         end if
-      case ('bedrock_surface_elevation', 'sea_ice_area_fraction', 'sea_ice_thickness')
-         if (ec_filetype == provFile_arcinfo) then
-            sourceItemName = name
-         else if (ec_filetype == provFile_curvi) then
-            sourceItemName = 'curvi_source_item_1'
-         else if (ec_filetype == provFile_netcdf) then
-            sourceItemName = name
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemName = 'uniform_item'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(name)//'.')
-            return
-         end if
-      case default
-         fileReaderPtr => ecFindFileReader(ecInstancePtr, fileReaderId)
-         if (fileReaderPtr%nitems >= 1) then
-            sourceItemId = fileReaderPtr%items(1)%ptr%id
-            if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr1)
-            if (success) success = ecAddItemConnection(ecInstancePtr, targetItemPtr1, connectionId)
-            if (fileReaderPtr%nitems >= 2) then
-               sourceItemId_2 = fileReaderPtr%items(2)%ptr%id
-               if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-               if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr2)
-               if (success) success = ecAddItemConnection(ecInstancePtr, targetItemPtr2, connectionId)
-               if (fileReaderPtr%nitems >= 3) then
-                  sourceItemId_3 = fileReaderPtr%items(3)%ptr%id
-                  if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
-                  if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr3)
-                  if (success) success = ecAddItemConnection(ecInstancePtr, targetItemPtr3, connectionId)
-                  if (fileReaderPtr%nitems >= 4) then
-                     sourceItemId_4 = fileReaderPtr%items(4)%ptr%id
-                     if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_4)
-                     if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr4)
-                     if (success) success = ecAddItemConnection(ecInstancePtr, targetItemPtr4, connectionId)
-                  end if
-               end if
-            end if
-            if (success) then
-               ! all statements executed successfully ... this must be good
-               ec_addtimespacerelation = .true.
-            else
-               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Error while default processing of ext-file (connect source and target) for : '//trim(target_name)//'.')
-            end if
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported quantity specified in ext-file (connect source and target): '//trim(target_name)//'.')
-         end if
-      end select
-
-      if (sourceItemName /= ' ') then
-         ! not a special case, connect source and target
-         sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
-         if (sourceItemId == ec_undef_int) then
-            goto 1234
-         end if
-         if (.not. initializeConnection(ecInstancePtr, connectionId, sourceItemId, targetItemPtr1)) then
-            goto 1234
-         end if
-         if (present(targetIndex)) then
-            if (.not. checkVectorMax(ecInstancePtr, sourceItemId, targetItemPtr1)) then
-               goto 1234
-            end if
-         end if
-      end if
-
-      success = ecSetConnectionIndexWeights(ecInstancePtr, connectionId)
-
-      if (target_name == 'nudge_salinity_temperature') then
-         call ecConverterGetBbox(ecInstancePtr, SourceItemID, 0, col0, col1, row0, row1, ncols, nrows, issparse, Ndatasize)
-         relcol = dble(col1 - col0 + 1) / dble(ncols)
-         relrow = dble(row1 - row0 + 1) / dble(nrows)
-         write (txt1, "('nudge_salinity_temperature: bounding box')")
-         write (txt2, "('col0-col1 X row0-row1 = ', I0, '-', I0, ' X ', I0, '-', I0, ', ncols X nrows = ', I0, ' X ', I0)") col0, col1, row0, row1, ncols, nrows
-         write (txt3, "('relcol X relrow = ', F4.2, ' X ', F4.2, ' = ', F4.2)") relcol, relrow, relcol * relrow
-         call mess(LEVEL_INFO, trim(txt1)//' '//trim(txt2)//', '//trim(txt3))
-
-         if (issparse == 1) then
-            write (txt1, "('sparse: data size = ', I0, ', ncols X nrows = ', I0, ' X ', I0, ' = ', I0)") Ndatasize, ncols, nrows, ncols * nrows
-            write (txt2, "('factor = ', F4.2)") dble(Ndatasize) / dble(Ncols * Nrows)
-            call mess(LEVEL_INFO, trim(txt1)//' '//trim(txt2))
-         end if
-      end if
-
-      ec_addtimespacerelation = .true.
-      return
-
-      ! Error handling.
-1234  continue
-      ec_addtimespacerelation = .false.
-!     message = ecGetMessage()
-
-      if (.not. quiet_) then
-         ! TODO: AvD: I'd rather have a full message stack that will combine EC + meteo + dflowfm, and any caller may print any pending messages.
-         ! For now: Print the EC message stack here, and leave the rest to the caller.
-         ! TODO: RL: the message below is from m_meteo::message, whereas timespace::getmeteoerror() returns timespace::errormessage. So now this message here is lost/never printed at call site.
-         message = dumpECMessageStack(LEVEL_WARN, callback_msg)
-         ! Leave this concluding message for the caller to print or not. (via getmeteoerror())
-      end if
-      message = 'm_meteo::ec_addtimespacerelation: Error while initializing '''//trim(name)//''' from file: '''//trim(filename)//''''
-      if (present(forcingfile)) then
-         message = trim(message)//' ('''//trim(forcingfile)//''')'
-      end if
-
-   end function ec_addtimespacerelation
-
-   ! ==========================================================================
    function checkVectorMax(ecInstancePtr, sourceItemId, targetItemId) result(success)
       logical :: success !< function result
       type(tEcInstance), pointer :: ecInstancePtr !< the instance pointer
@@ -8434,11 +7334,11 @@ contains
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer, intent(in) :: itemID !< unique Item id
-      real(hp), intent(in) :: t0, t1, dt !< get data corresponding to this number of timesteps since FM's refdate
-      real(hp), dimension(:), allocatable, intent(inout) :: target_array !< kernel's data array for the requested values
-      real(hp), dimension(:), pointer :: arr1dPtr => null()
+      real(kind=dp), intent(in) :: t0, t1, dt !< get data corresponding to this number of timesteps since FM's refdate
+      real(kind=dp), dimension(:), allocatable, intent(inout) :: target_array !< kernel's data array for the requested values
+      real(kind=dp), dimension(:), pointer :: arr1dPtr => null()
 
-      real(hp) :: tt
+      real(kind=dp) :: tt
       integer :: it, nt, blksize
       tt = t0
       it = 0
@@ -8468,8 +7368,8 @@ contains
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       character(len=*), intent(in) :: group_name !< unique group name
-      real(hp), intent(in) :: timesteps !< get data corresponding to this number of timesteps since FM's refdate
-      double precision, dimension(:), pointer :: ptm, prh, ptd
+      real(kind=dp), intent(in) :: timesteps !< get data corresponding to this number of timesteps since FM's refdate
+      real(kind=dp), dimension(:), pointer :: ptm, prh, ptd
       !
       success = .false.
       !
@@ -8527,12 +7427,12 @@ contains
       ! $$RH(T,T_d) = \exp\left[\frac{BT}{C+T} - \frac{BT_d}{C+T_d}\right] \times 100$$
       use physicalconsts, only: CtoKelvin
       implicit none
-      double precision, dimension(:), pointer :: td !< dewpoint temperature
-      double precision, dimension(:), pointer :: tm !< air temperature
-      double precision, dimension(:), pointer :: rh !< relative humidity
+      real(kind=dp), dimension(:), pointer :: td !< dewpoint temperature
+      real(kind=dp), dimension(:), pointer :: tm !< air temperature
+      real(kind=dp), dimension(:), pointer :: rh !< relative humidity
 
-      double precision, parameter :: B = 17.502 ! exactly as in
-      double precision, parameter :: C = -32.19
+      real(kind=dp), parameter :: B = 17.502 ! exactly as in
+      real(kind=dp), parameter :: C = -32.19
       integer :: i, n
       td => rh ! Dewpoint temperature was stored in the array where relative humidity will be stored
       n = size(td)

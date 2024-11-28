@@ -30,6 +30,16 @@
 !
 !
 
+module m_velocities_explicit
+
+implicit none
+
+private
+
+public :: velocities_explicit
+
+contains
+
  subroutine velocities_explicit()
     use m_flowgeom
     use m_flow
@@ -75,3 +85,5 @@
        end do
     end if
  end subroutine velocities_explicit
+
+end module m_velocities_explicit

@@ -30,13 +30,26 @@
 !
 !
 
- subroutine QucPer3Dsigma(n12, LL, Lb, Lt, cs, sn, quk1) ! sum of (Q*uc cell centre upwind normal) at side n12 of basis link LL
-    use m_flow ! advect the cell center velocities (dimension: m4/s2)
-    use m_flowgeom ! leaving the cell = +
+module m_qucper3dsigma
+
+implicit none
+
+private
+
+public :: qucper3dsigma
+
+    contains
+
+!> sum of (Q*uc cell centre upwind normal) at side n12 of basis link LL
+!! advect the cell center velocities (dimension: m4/s2)
+!! leaving the cell = +
+ subroutine QucPer3Dsigma(n12, LL, Lb, Lt, cs, sn, quk1) 
+    use m_flow 
+    use m_flowgeom 
     use m_sferic
     implicit none
 
-    integer, intent(in) :: n12, LL, Lb, Lt ! working for basis link LL
+    integer, intent(in) :: n12, LL, Lb, Lt !< working for basis link LL
     double precision, intent(in) :: cs, sn
     double precision, intent(out) :: quk1(3, Lt - Lb + 1) !
 
@@ -92,3 +105,5 @@
     end do
 
  end subroutine QucPer3Dsigma
+
+end module m_qucper3dsigma

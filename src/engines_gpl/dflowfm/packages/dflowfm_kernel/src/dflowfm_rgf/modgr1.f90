@@ -32,6 +32,7 @@
 
       !> This routine operates directly on active grid data from m_grid
       subroutine MODGR1(NPUT, MP, NP, IN, JN) !, NCOL)!XH, YH, mmax, nmax, MC, NC,
+         use m_tekgrpt
          use m_missing
          use m_grid
          use unstruc_colors

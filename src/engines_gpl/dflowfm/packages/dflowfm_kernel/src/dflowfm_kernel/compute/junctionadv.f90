@@ -30,6 +30,12 @@
 !
 !
 
+module m_junctionadv
+
+implicit none
+
+contains
+
    ! =================================================================================================
    ! =================================================================================================
    subroutine junctionadv()
@@ -65,3 +71,5 @@
       end do
 
    end subroutine junctionadv
+
+end module m_junctionadv

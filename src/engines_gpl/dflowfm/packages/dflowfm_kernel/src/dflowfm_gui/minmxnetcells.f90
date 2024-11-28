@@ -50,8 +50,6 @@ subroutine MINMXNETCELLS()
    double precision :: rmax
    double precision :: rmin
 
-   double precision, external :: znetcell
-
    if (JAAUTO > 0) then
       RMIN = 1.0d30
       NODMIN = 0

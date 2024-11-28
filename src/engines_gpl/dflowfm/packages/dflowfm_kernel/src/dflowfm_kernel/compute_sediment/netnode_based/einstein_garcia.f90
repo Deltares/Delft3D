@@ -30,9 +30,19 @@
 !
 !
 
+module m_einstein_garcia_sub
+
+implicit none
+
+private
+
+public :: einstein_garcia
+
+contains
+
 subroutine einstein_garcia(da, rs, dj1, dj2)
    use m_einstein_garcia
-   implicit none
+
    double precision :: da, rs, dj1, dj2
 
    double precision :: aa, rsk, dj12, dj22
@@ -88,3 +98,5 @@ subroutine einstein_garcia(da, rs, dj1, dj2)
    end if
 
 end subroutine einstein_garcia
+
+end module m_einstein_garcia_sub

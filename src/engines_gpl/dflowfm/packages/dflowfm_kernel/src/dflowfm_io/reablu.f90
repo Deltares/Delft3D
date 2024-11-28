@@ -30,12 +30,18 @@
 !
 !
 
+module m_reablu
+
+implicit none
+
+contains
+
  subroutine reablu(mout) ! read bottom level u points
     use M_FLOWGEOM
     use m_qnerror
     use m_qn_read_error
     use m_set_bobs
-    implicit none
+
     integer :: mout
     character(len=256) :: rec
 
@@ -64,3 +70,5 @@
     call doclose(mout)
 
  end subroutine reablu
+
+end module m_reablu

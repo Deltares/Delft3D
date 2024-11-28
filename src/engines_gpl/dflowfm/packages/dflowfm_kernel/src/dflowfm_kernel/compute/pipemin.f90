@@ -30,6 +30,12 @@
 !
 !
 
+module m_pipemin
+
+implicit none
+
+contains
+
 subroutine pipemin(hpr, dia, area, width) ! top minus part
    use m_sferic
    implicit none
@@ -53,3 +59,5 @@ subroutine pipemin(hpr, dia, area, width) ! top minus part
       width = dia
    end if
 end subroutine pipemin
+
+end module m_pipemin

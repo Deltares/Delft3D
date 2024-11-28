@@ -452,7 +452,7 @@ contains
 !! is stripped off (instead of .nc only)
    subroutine basename(filename, filebase, filecat)
       use system_utils, only: FILESEP
-      implicit none
+
       character(len=*), intent(in) :: filename
       character(len=*), intent(out) :: filebase
       character(len=*), optional, intent(in) :: filecat
@@ -478,7 +478,7 @@ contains
       filebase = ' '
       filebase = filename(L1:L2)
    end subroutine basename
-
+   
 !> Resolves an input path (typically a file path) to its
 !! actual location. This routine selects whether the path
 !! needs to be resolved relative to a given basedir, or

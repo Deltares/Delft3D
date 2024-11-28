@@ -30,6 +30,16 @@
 !
 !
 
+module m_addlink1d2d
+
+implicit none
+
+private
+
+public :: addlink1D2D
+
+contains
+
  subroutine addlink1D2D(L, japerim) ! and add area's and volumes of 1D2D links
     use m_flowgeom
     use m_flow
@@ -130,3 +140,5 @@
 
     end if
  end subroutine addlink1D2D
+
+end module m_addlink1d2d

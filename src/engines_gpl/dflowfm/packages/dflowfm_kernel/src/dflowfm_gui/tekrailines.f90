@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekrailines
+
+implicit none
+
+contains
+
  subroutine tekrailines(ncol, jaall, ITYP)
     use m_flowgeom
     use M_FLOW
@@ -134,3 +140,5 @@
     end do
 
  end subroutine tekrailines
+
+end module m_tekrailines

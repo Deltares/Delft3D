@@ -30,6 +30,12 @@
 !
 !
 
+module m_setlinkcolour
+
+implicit none
+
+contains
+
   subroutine SETLINKCOLOUR(L, NCOL)
      use m_netw
      use unstruc_colors
@@ -62,3 +68,5 @@
      call SETCOL(NCL)
      return
   end
+
+end module m_setlinkcolour

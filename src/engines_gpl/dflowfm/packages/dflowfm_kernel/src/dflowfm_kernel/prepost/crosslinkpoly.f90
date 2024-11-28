@@ -30,6 +30,16 @@
 !
 !
 
+module m_crosslinkpoly
+
+implicit none
+
+private
+
+public :: crosslinkpoly
+
+contains
+
   !> Finds the crossing of link L with the current polyline.
   !! returns first crossing, if found, JA=1
   subroutine CROSSLINKPOLY(L, num, ipoly, jdxL, pdxL, XM, YM, JA)
@@ -42,7 +52,6 @@
      use geometry_module, only: dbdistance, crossinbox
      use m_qnerror
 
-     implicit none
      integer :: L, JA
      double precision :: XM, YM
      integer, intent(in) :: num !< number of polygon sections that intersect netlink L
@@ -157,3 +166,5 @@
      end if
 
   end subroutine CROSSLINKPOLY
+
+end module m_crosslinkpoly

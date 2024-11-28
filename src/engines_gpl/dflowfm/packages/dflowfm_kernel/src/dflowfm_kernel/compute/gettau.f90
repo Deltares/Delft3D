@@ -30,6 +30,8 @@
 !
 !
 module m_get_tau
+use m_swart, only: swart
+
    implicit none
 
    private

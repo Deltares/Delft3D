@@ -30,6 +30,12 @@
 !
 !
 
+module m_viewcycle
+
+implicit none
+
+contains
+
   subroutine VIEWCYCLE(KEY)
      use m_howtoview
      use m_perspx
@@ -41,3 +47,5 @@
      KEY = 3
      return
   end subroutine VIEWCYCLE
+
+end module m_viewcycle

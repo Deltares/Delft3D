@@ -31,6 +31,7 @@
 !
 
   subroutine REFINECELLSANDFACES()
+     use m_allin, only: allin
      use m_netw
      use m_samples
      use m_flowtimes, only: dt_max

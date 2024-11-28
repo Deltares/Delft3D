@@ -30,6 +30,16 @@
 !
 !
 
+module m_reamdd
+
+implicit none
+
+private
+
+public :: reamdd
+
+contains
+
       subroutine REAMDD(MMDD, RD1, MC, NC, JA)
          use m_readyy
          use m_qn_read_error
@@ -70,3 +80,5 @@
          call DOCLOSE(MMDD)
          JA = 0
       end subroutine REAMDD
+
+end module m_reamdd

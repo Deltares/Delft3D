@@ -30,6 +30,12 @@
 !
 !
 
+module m_teknetcells
+
+implicit none
+
+contains
+
    subroutine teknetcells(netwhat, jahalt, jacol)
       use m_minmxnetcells
       use m_isosmoothnet
@@ -56,6 +62,8 @@
       use m_pfiller
       use m_set_col
       use m_inview
+      use m_znetcell
+      use m_coarsening_info, only: coarsening_info
 
       implicit none
 
@@ -64,8 +72,6 @@
       double precision :: xfac
       integer :: k, kk, ja, ncol, nodemode, nn
       integer :: ntopology, numcellstoplot
-      double precision, external :: znetcell
-      double precision, external :: coarsening_info
 
       if (netwhat <= 1) return
 
@@ -239,3 +245,5 @@
       end if
 
    end subroutine TEKNETCELLS
+
+end module m_teknetcells

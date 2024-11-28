@@ -31,10 +31,23 @@
 !
 
 !> add tracer to constituents, or get constituents number if tracer already exists
+module m_add_tracer
+use m_alloc_transport, only: alloc_transport
+
+
+implicit none
+
+private
+
+public :: add_tracer
+
+contains
+
 subroutine add_tracer(tracer_name, iconst)
    use m_transport
    use unstruc_messages
    use m_meteo, only: numtracers, trnames
+   use m_find_name, only: find_name
    implicit none
 
    character(len=*), intent(in) :: tracer_name !< tracer name, or '' for default name
@@ -44,14 +57,12 @@ subroutine add_tracer(tracer_name, iconst)
 
    integer :: ierror, itrac
 
-   integer, external :: findname
-
    ierror = 1
 
 !  check if tracer already exists, based on tracer name
    iconst = 0
    if (ITRA1 > 0 .and. trim(tracer_name) /= '') then
-      iconst = findname(NUMCONST, const_names, tracer_name)
+      iconst = find_name(const_names, tracer_name)
 
       if (iconst >= ITRA1 .and. iconst <= ITRAN) then ! existing tracer found
          call mess(LEVEL_INFO, 'add_tracer: tracer '//trim(tracer_name)//' already exists. No update required.')
@@ -91,7 +102,7 @@ subroutine add_tracer(tracer_name, iconst)
 
    if (numtracers > 0) then ! number of tracers with boundary conditions
 !     generate tracer (boundary condition) to constituent
-      itrac = findname(numtracers, trnames, trim(tracer_name))
+      itrac = find_name(trnames, tracer_name)
       if (itrac > 0) then
          itrac2const(itrac) = iconst
       end if
@@ -103,3 +114,5 @@ subroutine add_tracer(tracer_name, iconst)
 
    return
 end subroutine add_tracer
+
+end module m_add_tracer

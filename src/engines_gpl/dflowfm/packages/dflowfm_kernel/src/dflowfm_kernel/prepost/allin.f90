@@ -30,9 +30,19 @@
 !
 !
 
+module m_allin
+
+implicit none
+
+private
+
+public :: allin
+
+contains
+
    subroutine ALLIN(N, JA)
       use m_netw
-      implicit none
+
       integer :: n
       integer :: ja
 
@@ -48,3 +58,5 @@
          end if
       end do
    end subroutine ALLIN
+
+end module m_allin

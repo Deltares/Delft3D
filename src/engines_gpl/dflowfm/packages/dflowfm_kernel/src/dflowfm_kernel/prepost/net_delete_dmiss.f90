@@ -32,6 +32,7 @@
 
 !> delete missing values part of network
 subroutine net_delete_DMISS()
+   use m_delnode, only: delnode
    use m_netw
    use m_missing
    use gridoperations

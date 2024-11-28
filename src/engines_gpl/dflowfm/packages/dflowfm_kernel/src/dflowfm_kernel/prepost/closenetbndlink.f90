@@ -30,13 +30,22 @@
 !
 !
 
+module m_closenetbndlink
+
+implicit none
+
+private
+
+public :: closenetbndlink
+
+contains
+
       subroutine CLOSENETBNDLINK(XP1, YP1, N1)
          use m_netw
          use geometry_module, only: dlinedis
          use m_missing, only: dmiss
          use m_sferic, only: jsferic, jasfer3D
 
-         implicit none
          integer :: n1
          double precision :: xp1
          double precision :: yp1
@@ -68,3 +77,5 @@
          end do
 
       end subroutine CLOSENETBNDLINK
+
+end module m_closenetbndlink

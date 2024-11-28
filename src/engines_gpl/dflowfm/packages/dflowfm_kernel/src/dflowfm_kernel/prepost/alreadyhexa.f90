@@ -30,10 +30,20 @@
 !
 !
 
+module m_alreadyhexa
+
+implicit none
+
+private
+
+public :: alreadyhexa
+
+contains
+
   subroutine ALREADYHEXA(K1, K2, K3, K4, K5, K6, JA)
      use m_netw
      use m_qnerror
-     implicit none
+
      integer :: K1, K2, K3, K4, K5, K6, JA
 
      integer :: n1
@@ -70,5 +80,7 @@
            end if
         end if
      end do
-     return
+
   end subroutine ALREADYHEXA
+
+end module m_alreadyhexa

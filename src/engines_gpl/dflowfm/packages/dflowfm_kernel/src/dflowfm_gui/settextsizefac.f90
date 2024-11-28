@@ -30,6 +30,12 @@
 !
 !
 
+module m_settextsizefac
+
+implicit none
+
+contains
+
       subroutine SETTEXTSIZEFAC(T)
          use unstruc_opengl
          use m_textsize
@@ -42,3 +48,5 @@
             call IGRCHARSIZE(real(T * TSIZE), real(T * TSIZE))
          end if
       end
+
+end module m_settextsizefac

@@ -30,6 +30,12 @@
 !
 !
 
+module m_smallscreen
+
+implicit none
+
+contains
+
       subroutine SMALLSCREEN()
          use m_screenarea
          use m_view_port
@@ -44,3 +50,5 @@
 
          return
       end
+
+end module m_smallscreen

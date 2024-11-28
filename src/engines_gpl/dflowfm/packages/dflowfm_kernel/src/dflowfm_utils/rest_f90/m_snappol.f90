@@ -32,6 +32,7 @@
 
 !---------------------------------------------------------------
 module m_snappol ! intentionally a module (for assumed size)
+   use m_count_links, only: count_links
    use kdtree2Factory
    implicit none
 contains

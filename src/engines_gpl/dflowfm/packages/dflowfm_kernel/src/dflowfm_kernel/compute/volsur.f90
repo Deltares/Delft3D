@@ -30,7 +30,9 @@
 !
 !
 module m_volsur
-   implicit none
+use m_vol12d, only: vol12d
+
+implicit none
 contains
  subroutine volsur() ! volsur entirely in s1 because of s1 iteration
     use timers

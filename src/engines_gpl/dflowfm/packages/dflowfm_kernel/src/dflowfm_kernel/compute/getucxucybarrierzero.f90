@@ -32,6 +32,12 @@
 
 ! =================================================================================================
 ! =================================================================================================
+module m_getucxucybarrierzero
+
+implicit none
+
+contains
+
   subroutine getucxucybarrierzero(Lf, ku, ucxku, ucyku)
      use m_flow
      use m_flowgeom
@@ -63,3 +69,5 @@
      ucyku = ucyku / ba(ku)
 
   end subroutine getucxucybarrierzero
+
+end module m_getucxucybarrierzero

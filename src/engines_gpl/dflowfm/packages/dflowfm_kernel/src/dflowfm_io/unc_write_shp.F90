@@ -31,8 +31,18 @@
 !
 
 !> Writes shapefiles, these shapefiles can be visualized in geographic information system (GIS) software
-#ifdef HAVE_SHAPELIB
+module m_unc_write_shp
+
+implicit none
+
+private
+
+public :: unc_write_shp
+
+contains
+
 subroutine unc_write_shp()
+#ifdef HAVE_SHAPELIB
    use m_flowparameters, only: jashp_crs, jashp_obs, jashp_weir, jashp_thd, jashp_gate, jashp_emb, jashp_fxw, jashp_src, jashp_pump, jashp_dry, jashp_genstruc, jashp_dambreak
    use unstruc_shapefile
    use m_monitoring_crosssections, only: ncrs, crs
@@ -229,6 +239,7 @@ subroutine unc_write_shp()
          call mess(LEVEL_WARN, 'SHAPEFILE: No shape file for dam breaks is written because no dam break is found'//trim(subdomain))
       end if
    end if
-
-end subroutine unc_write_shp
 #endif
+end subroutine unc_write_shp
+
+end module m_unc_write_shp

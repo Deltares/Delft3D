@@ -30,6 +30,12 @@
 !
 !
 
+module m_hydraulicallysmooth
+
+implicit none
+
+contains
+
  subroutine hydraulicallysmooth(umod, h, sqcf)
     use m_physcoef
     use m_flow
@@ -62,3 +68,5 @@
     end if
 
  end subroutine hydraulicallysmooth
+
+end module m_hydraulicallysmooth

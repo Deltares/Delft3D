@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekbathy
+
+implicit none
+
+contains
+
  subroutine tekbathy(ja)
     use m_isocol2
     use m_halt
@@ -40,10 +46,11 @@
     use m_drawthis
     use m_pfiller
     use m_inview
+    use m_znod
     implicit none
     integer :: nodewhat
     integer :: k, ja, nn, ncol
-    double precision :: znod, zn
+    double precision :: zn
 
     if (ndraw(39) == 0) return
 
@@ -69,3 +76,5 @@
 
     ndraw(28) = nodewhat
  end subroutine tekbathy
+
+end module m_tekbathy

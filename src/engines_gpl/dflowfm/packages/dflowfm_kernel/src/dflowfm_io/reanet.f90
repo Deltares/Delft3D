@@ -29,6 +29,16 @@
 
 !
 !
+! It seems it is ot used. 
+module m_reanet
+
+implicit none
+
+private
+
+public :: reanet
+
+contains
 
       subroutine REANET(filename, k0, L0, NUMKN, NUMLN, istat)
          use m_netw
@@ -136,3 +146,5 @@
          return
 
       end subroutine REANET
+
+end module m_reanet

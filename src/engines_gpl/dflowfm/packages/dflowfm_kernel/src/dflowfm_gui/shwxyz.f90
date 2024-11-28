@@ -30,8 +30,17 @@
 !
 !
 
+module m_shwxyz
+use m_tekgpt
+
+
+implicit none
+
+contains
+
       ! NOTE: japes is disabled [AvD]
       subroutine SHWXYZ(X, Y, RD1, mmax, nmax, MC, NC, JAPERS, KEY, M, N)
+         use m_setxor
          use m_orglocator
          use m_dispos2
          use m_disdep
@@ -152,3 +161,5 @@
          end if
          goto 20
       end subroutine shwxyz
+
+end module m_shwxyz

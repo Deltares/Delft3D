@@ -30,6 +30,12 @@
 !
 !
 
+module m_viematn
+
+implicit none
+
+contains
+
   subroutine VIEMATn(the, phi)
      use m_viewmat
      use m_perspx
@@ -110,3 +116,5 @@
      call matm4(Vs, T2, Z)
      call matm4(Z, T1, Vs)
   end subroutine VIEMATn
+
+end module m_viematn

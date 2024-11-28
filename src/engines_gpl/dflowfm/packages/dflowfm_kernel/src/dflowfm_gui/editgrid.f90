@@ -31,6 +31,8 @@
 !
 
 module m_editgrid
+use m_tekgrpt
+use m_selecteditmode
 use m_ispoin
 
 

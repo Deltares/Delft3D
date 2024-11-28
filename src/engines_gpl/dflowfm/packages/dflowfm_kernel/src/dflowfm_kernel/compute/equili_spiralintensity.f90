@@ -32,6 +32,12 @@
 
 ! =================================================================================================
 ! =================================================================================================
+module m_equili_spiralintensity
+
+implicit none
+
+contains
+
 subroutine equili_spiralintensity()
    use m_flow
    use m_flowgeom
@@ -49,3 +55,5 @@ subroutine equili_spiralintensity()
    end do
 
 end subroutine equili_spiralintensity
+
+end module m_equili_spiralintensity

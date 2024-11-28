@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekspw
+
+implicit none
+
+contains
+
  subroutine tekspw(vfac)
     use m_arrowsxy
     use m_flowgeom
@@ -63,3 +69,5 @@
     end if
 
  end subroutine tekspw
+
+end module m_tekspw

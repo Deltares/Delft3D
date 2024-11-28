@@ -30,13 +30,26 @@
 !
 !
 
-subroutine QucPeripiaczekteta(n12, L, ai, ae, volu, iad) ! sum of (Q*uc cell IN centre upwind normal) at side n12 of link L
-   use m_flow ! advect the cell center velocities (dimension: m4/s2)
+module m_qucperipiaczekteta
+
+implicit none
+
+private
+
+public :: qucperipiaczekteta
+
+contains
+
+!> sum of (Q*uc cell IN centre upwind normal) at side n12 of link L
+!! advect the cell center velocities (dimension: m4/s2)
+!! leaving the cell = +
+subroutine QucPeripiaczekteta(n12, L, ai, ae, volu, iad) 
+   use m_flow 
    use m_flowgeom
-   use m_flowtimes ! leaving the cell = +
+   use m_flowtimes 
    use m_sferic
-   implicit none
-   integer :: n12, L, iad ! for link L,
+
+   integer :: n12, L, iad !< for link L,
    double precision ai, ae, volu
 
    ! locals
@@ -97,3 +110,5 @@ subroutine QucPeripiaczekteta(n12, L, ai, ae, volu, iad) ! sum of (Q*uc cell IN 
    end do
 
 end subroutine Qucperipiaczekteta
+
+end module m_qucperipiaczekteta

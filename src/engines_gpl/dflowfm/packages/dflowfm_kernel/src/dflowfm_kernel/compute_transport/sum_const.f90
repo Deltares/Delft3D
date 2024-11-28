@@ -30,6 +30,16 @@
 !
 !
 
+module m_sum_const
+
+implicit none
+
+private
+
+public :: sum_const
+
+contains
+
 subroutine sum_const(iter, vol1)
    use m_transport
    use m_flowgeom, only: Ndx
@@ -64,3 +74,5 @@ subroutine sum_const(iter, vol1)
 
    return
 end subroutine sum_const
+
+end module m_sum_const

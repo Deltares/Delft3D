@@ -30,6 +30,16 @@
 !
 !
 
+module m_diffusionimplicit2d
+
+implicit none
+
+private
+
+public :: diffusionimplicit2d
+
+contains
+
 subroutine diffusionimplicit2D()
    use m_transport
    use m_flowgeom
@@ -85,3 +95,5 @@ subroutine diffusionimplicit2D()
 
    if (timon) call timstop(ithndl)
 end subroutine diffusionimplicit2D
+
+end module m_diffusionimplicit2d

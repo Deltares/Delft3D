@@ -30,6 +30,12 @@
 !
 !
 
+module m_horvic3
+
+implicit none
+
+contains
+
  double precision function horvic3(n12, L) ! horizontal viscosity term, out of face normal and tang comp's
     use m_flow
     use m_flowgeom
@@ -128,3 +134,5 @@
     horvic3 = horvic3 * bai(k12)
 
  end function Horvic3
+
+end module m_horvic3

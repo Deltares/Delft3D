@@ -31,6 +31,12 @@
 !
 
 !
+module m_scrlpg
+
+implicit none
+
+contains
+
       subroutine SCRLPG(HLPTXT, NUMTXT, NUMTOP, NUMCHC, IH)
          use m_page
          implicit none
@@ -51,3 +57,5 @@
 !
          return
       end
+
+end module m_scrlpg

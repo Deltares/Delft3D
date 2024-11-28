@@ -30,9 +30,14 @@
 !
 !
 
+module m_linkstocentercartcomp
+
+implicit none
+
+contains
+
  subroutine linkstocentercartcomp(knod, vlin, vnod)
-    use m_flow
-    use m_netw
+    use m_flow, only: kmx, lnkx
     use m_flowgeom
     use m_get_Lbot_Ltop
 
@@ -86,3 +91,5 @@
     end if
 
  end subroutine linkstocentercartcomp
+
+end module m_linkstocentercartcomp

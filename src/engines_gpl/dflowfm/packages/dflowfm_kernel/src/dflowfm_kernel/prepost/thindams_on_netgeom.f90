@@ -34,6 +34,7 @@
 !! All crossed net links are set to kn(3,L) = 0, such that flow_geominit
 !! does not even create a flow link across it.
 subroutine thindams_on_netgeom()
+   use m_crspath_on_netgeom, only: crspath_on_netgeom
    use m_thindams
    use network_data
    use unstruc_messages

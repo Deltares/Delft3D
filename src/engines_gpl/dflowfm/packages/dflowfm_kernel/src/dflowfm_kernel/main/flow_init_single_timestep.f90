@@ -31,14 +31,24 @@
 !
 
 !> Initializes a single computational timestep, call this prior to flow_perform_single_timestep.
+module m_flow_init_single_timestep
+
+implicit none
+
+private
+
+public :: flow_init_single_timestep
+
+contains
+
 subroutine flow_init_single_timestep(iresult)
+   use m_flow_initimestep
    use timers
    use m_flow
    use m_flowgeom
    use m_flowtimes
    use m_timer
    use dfm_error
-   implicit none
 
    integer, parameter :: JAZWS0 = 0
    logical, parameter :: SET_HU = .true.
@@ -69,3 +79,5 @@ subroutine flow_init_single_timestep(iresult)
    ! Error
 
 end subroutine flow_init_single_timestep
+
+end module m_flow_init_single_timestep

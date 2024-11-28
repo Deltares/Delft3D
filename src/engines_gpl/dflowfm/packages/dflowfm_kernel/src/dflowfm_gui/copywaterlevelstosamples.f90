@@ -41,9 +41,9 @@ contains
     use m_flowgeom, only: ndx, xz, yz
     use m_flow, only: hs
     use unstruc_display_data, only: wetplot
+    use m_znod
 
     integer :: k, n
-    double precision, external :: znod
 
     k = 0
     do n = 1, ndx

@@ -30,7 +30,14 @@
 !
 !
 
+module m_txtlines
+
+implicit none
+
+contains
+
       subroutine TXTLINES()
+         use m_settextsize
          use m_mtext
          use m_devices
          use m_textlines
@@ -49,3 +56,5 @@
 
          return
       end
+
+end module m_txtlines

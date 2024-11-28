@@ -3,7 +3,7 @@
 ## Installation
 Before you can use the testbench you need to install the dependencies. You will need to have
 python installed. At the time of this writing we require python with version greater than or
-equal to '3.9'. Please consult the `requires-python` setting in `pyproject.toml` for the
+equal to '3.11'. Please consult the `requires-python` setting in `pyproject.toml` for the
 latest version requirement of python. You can check which versions of python are in your path
 and their versions using the following
 

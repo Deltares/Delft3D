@@ -30,6 +30,16 @@
 !
 !
 
+module m_check_einstein_garcia2
+
+implicit none
+
+private
+
+public :: check_einstein_garcia2
+
+contains
+
 subroutine check_einstein_garcia2(aref, h, z0, rs, ein)
    use m_sediment, only: numintverticaleinstein
 
@@ -82,3 +92,5 @@ subroutine check_einstein_garcia2(aref, h, z0, rs, ein)
    end do
    ein = ein * (aref / (h - aref))**rs
 end subroutine check_einstein_garcia2
+
+end module m_check_einstein_garcia2

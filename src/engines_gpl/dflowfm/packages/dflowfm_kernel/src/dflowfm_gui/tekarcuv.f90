@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekarcuv
+
+implicit none
+
+contains
+
  subroutine tekarcuv(vfac, met)
     use m_arrowsxy
     use M_arcuv
@@ -54,3 +60,5 @@
        end do
     end do
  end subroutine tekarcuv
+
+end module m_tekarcuv

@@ -30,10 +30,22 @@
 !
 !
 
- double precision function QucPerpure1D(n12, L) ! sum of (Q*uc cell centre upwind normal) at side n12 of link L
-    use m_flow ! advect the cell center velocities (dimension: m4/s2)
-    use m_flowgeom ! leaving the cell = +
-    implicit none
+module m_qucperpure1d
+
+implicit none
+
+private
+
+public :: qucperpure1d
+
+contains
+
+!> sum of (Q*uc cell centre upwind normal) at side n12 of link L
+!! advect the cell center velocities (dimension: m4/s2)
+!! leaving the cell = +
+ double precision function QucPerpure1D(n12, L) 
+    use m_flow 
+    use m_flowgeom 
 
     integer, intent(in) :: L !< link number
     integer, intent(in) :: n12 !< index of the node to be processed: 1 (from node) or 2 (to node)
@@ -81,3 +93,5 @@
     end do
 
  end function QucPerpure1D
+
+end module m_qucperpure1d

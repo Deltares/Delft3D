@@ -31,6 +31,7 @@
 !
 
  subroutine setuniformwind()
+    use m_setwindstress, only: setwindstress
     use m_wind
     use m_sferic
     use m_flowgeom

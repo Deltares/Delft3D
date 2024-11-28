@@ -28,7 +28,19 @@
 !-------------------------------------------------------------------------------
 
 !> Finalizes a single time step, should be called directly after flow_run_single_timestep
+module m_flow_finalize_single_timestep
+
+implicit none
+
+private
+
+public :: flow_finalize_single_timestep
+
+contains
+
 subroutine flow_finalize_single_timestep(iresult)
+   use m_filter
+   use m_textflow
    use m_flow
    use m_flowgeom
    use m_flowtimes
@@ -55,7 +67,6 @@ subroutine flow_finalize_single_timestep(iresult)
    use m_structure_parameters
    use m_flow_f0isf1
 
-   implicit none
    integer, intent(out) :: iresult
 
    ! Timestep has been performed, now finalize it.
@@ -85,10 +96,11 @@ subroutine flow_finalize_single_timestep(iresult)
    call timstrt('update HIS data DtUser', handle_extra(75))
    if (ti_his > 0) then
 
-      call updateValuesOnObservationStations()
+      if (apply_statistics_on_output) then ! update every numerical timestep if statistics requested
+         call updateValuesOnObservationStations()
+      end if
 
       if (comparereal(time1, time_his, eps10) >= 0) then
-         !do_fourier = do_fourier .or. (md_fou_step == 2)
          if (jampi == 1) then
             call updateValuesOnRunupGauges_mpi()
             !call reduce_particles()
@@ -181,3 +193,5 @@ subroutine flow_finalize_single_timestep(iresult)
    end if
 
 end subroutine flow_finalize_single_timestep
+
+end module m_flow_finalize_single_timestep

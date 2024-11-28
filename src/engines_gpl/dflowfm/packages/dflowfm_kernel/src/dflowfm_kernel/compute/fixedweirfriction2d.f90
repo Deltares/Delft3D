@@ -30,6 +30,14 @@
 !
 !
 
+module m_fixedweirfriction2d
+use m_getucxucynoweirs
+
+
+implicit none
+
+contains
+
  subroutine fixedweirfriction2D(L, k1, k2, frL) ! frL of fixed weir
     use m_flowgeom
     use m_flow
@@ -148,3 +156,5 @@
     end if
 
  end subroutine fixedweirfriction2D
+
+end module m_fixedweirfriction2d

@@ -30,6 +30,12 @@
 !
 !
 
+module m_setcolortable
+
+implicit none
+
+contains
+
       subroutine SETCOLORTABLE()
          use m_depmax
          use m_depmax2
@@ -47,3 +53,5 @@
             NCOLS2(I) = min(255, NIS2 + I - 1)
          end do
       end subroutine SETCOLORTABLE
+
+end module m_setcolortable

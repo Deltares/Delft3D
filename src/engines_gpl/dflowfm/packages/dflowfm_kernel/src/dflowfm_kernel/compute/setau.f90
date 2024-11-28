@@ -31,6 +31,11 @@
 !
 
  subroutine setau() ! get wet cross-sections at u points, after limiters, setau = vol12D with japerim == 1
+    use m_vol12d, only: vol12d
+    use m_get_upstream_downstream_cell_numbers
+    use m_get_lkbot_set_ltop_upwind
+    use m_getflowdir
+    use m_addlink2d, only: addlink2D
     use m_flowgeom
     use m_flow
     use unstruc_model

@@ -30,6 +30,12 @@
 !
 !
 
+module m_tektransport1d
+
+implicit none
+
+contains
+
  subroutine tektransport1D(tim)
     use m_sferic
     use m_statistics
@@ -72,3 +78,5 @@
     avedif = avedif / ndxi
 
  end subroutine tektransport1D
+
+end module m_tektransport1d

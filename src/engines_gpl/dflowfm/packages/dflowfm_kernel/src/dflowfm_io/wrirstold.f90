@@ -30,6 +30,16 @@
 !
 !
 
+module m_wrirstold
+
+implicit none
+
+private
+
+public :: WRIRSTold
+
+contains
+
    subroutine WRIRSTold(MOUT)
       use M_FLOWTIMES
       use M_FLOW
@@ -89,3 +99,5 @@
       end if
 
    end subroutine WRIRSTold
+
+end module m_wrirstold

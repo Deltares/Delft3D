@@ -30,15 +30,22 @@
 !
 !
 
- subroutine setcornervelocities() ! set corner related velocity x- and y components
+module m_setcornervelocities
 
+implicit none
+
+private
+
+public :: setcornervelocities
+
+contains
+
+!> set corner related velocity x- and y components
+ subroutine setcornervelocities() 
     use m_flow
-    use m_netw
     use m_flowgeom
     use m_sferic
     use m_get_Lbot_Ltop
-
-    implicit none
 
     integer :: L, k1, k2, k3, k4, k, kk, LL, Lb, Lt, kw
     integer :: m, n
@@ -154,3 +161,5 @@
 
  end subroutine setcornervelocities
 
+
+end module m_setcornervelocities

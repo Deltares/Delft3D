@@ -30,6 +30,12 @@
 !
 !
 
+module m_flgsareafm
+
+implicit none
+
+contains
+
 subroutine flgsareafm(formno, m, husb, velhght, zs, ds, dg, wstr)
 !!--description-----------------------------------------------------------------
 ! NONE
@@ -126,3 +132,5 @@ subroutine flgsareafm(formno, m, husb, velhght, zs, ds, dg, wstr)
       end if
    end if
 end subroutine flgsareafm
+
+end module m_flgsareafm

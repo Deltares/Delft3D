@@ -30,6 +30,16 @@
 !
 !
 
+module m_wrirst
+
+implicit none
+
+private
+
+public :: wrirst
+
+contains
+
 subroutine wrirst(tim)
    use m_flow
    use m_flowtimes
@@ -61,3 +71,5 @@ subroutine wrirst(tim)
    ierr = unc_close(irstfile) ! Do more than flushing: close the file, it is not needed anymore
 
 end subroutine wrirst
+
+end module m_wrirst

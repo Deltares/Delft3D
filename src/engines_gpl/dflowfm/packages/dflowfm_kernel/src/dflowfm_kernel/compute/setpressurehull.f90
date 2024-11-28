@@ -30,6 +30,16 @@
 !
 !
 
+module m_setpressurehull
+
+implicit none
+
+private
+
+public :: setpressurehull
+
+contains
+
  subroutine setpressurehull()
     use m_ship
     use m_flowgeom
@@ -45,3 +55,5 @@
        end if
     end do
  end subroutine setpressurehull
+
+end module m_setpressurehull

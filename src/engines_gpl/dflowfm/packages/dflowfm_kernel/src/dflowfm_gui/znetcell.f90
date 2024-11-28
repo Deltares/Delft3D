@@ -30,6 +30,15 @@
 !
 !
 
+module m_znetcell
+use m_checktrianglenetcell, only: checktrianglenetcell
+use m_getwavenr, only: getwavenr
+
+
+implicit none
+
+contains
+
    double precision function znetcell(k)
 
       use unstruc_display
@@ -109,3 +118,5 @@
       end if
 
    end function znetcell
+
+end module m_znetcell

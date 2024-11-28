@@ -31,6 +31,14 @@
 !
 
 !
+module m_setwy
+use m_setwynew
+
+
+implicit none
+
+contains
+
       subroutine SETWY(X1, Y1, X2)
          use m_inqasp
          use m_sferic
@@ -45,3 +53,5 @@
          call SETWYnew(x, y, dy)
          return
       end
+
+end module m_setwy

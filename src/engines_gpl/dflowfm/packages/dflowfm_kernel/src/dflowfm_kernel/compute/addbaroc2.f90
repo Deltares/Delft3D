@@ -30,6 +30,16 @@
 !
 !
 
+module m_addbaroc2
+
+implicit none
+
+private
+
+public :: addbaroc2
+
+contains
+
  subroutine addbaroc2(LL, Lb, Lt)
     use m_flowgeom
     use m_flow
@@ -256,3 +266,5 @@
     end if
 
  end subroutine addbaroc2
+
+end module m_addbaroc2

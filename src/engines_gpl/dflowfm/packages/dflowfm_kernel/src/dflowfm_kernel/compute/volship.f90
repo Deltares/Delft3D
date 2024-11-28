@@ -30,6 +30,16 @@
 !
 !
 
+module m_volship
+
+implicit none
+
+private
+
+public :: volship
+
+contains
+
  subroutine volship() ! compute ship volume relative to fixed level 0d0
     use m_ship
     use m_flowgeom
@@ -66,3 +76,5 @@
     end do
     slotw2D = slotsav
  end subroutine volship
+
+end module m_volship

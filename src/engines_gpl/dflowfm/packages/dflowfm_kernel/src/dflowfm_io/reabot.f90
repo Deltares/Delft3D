@@ -30,6 +30,12 @@
 !
 !
 
+module m_reabot
+
+implicit none
+
+contains
+
       subroutine REABOT(MMDD, JA)
          use M_GRID
          use m_readyy
@@ -96,3 +102,5 @@
          call DOCLOSE(MMDD)
          JA = 0
       end subroutine REABOT
+
+end module m_reabot

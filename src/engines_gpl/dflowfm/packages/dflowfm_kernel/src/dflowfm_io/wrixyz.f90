@@ -30,6 +30,16 @@
 !
 !
 
+module m_wrixyz
+
+implicit none
+
+private
+
+public :: WRIXYZ
+
+contains
+
       subroutine WRIXYZ(FILNAM, XS, YS, ZS, NS)
          implicit none
          character(LEN=*) :: FILNAM
@@ -43,3 +53,5 @@
          end do
          call DOCLOSE(MOUT)
       end subroutine WRIXYZ
+
+end module m_wrixyz

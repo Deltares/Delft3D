@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekfaces
+
+implicit none
+
+contains
+
       subroutine TEKFACES()
 
          use unstruc_colors, only: ncolln
@@ -101,3 +107,5 @@
 
          return
       end subroutine TEKFACES
+
+end module m_tekfaces

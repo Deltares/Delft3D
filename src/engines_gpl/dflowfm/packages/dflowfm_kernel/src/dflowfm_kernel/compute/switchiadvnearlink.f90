@@ -30,6 +30,16 @@
 !
 !
 
+module m_switchiadvnearlink
+
+implicit none
+
+private
+
+public :: switchiadvnearlink
+
+contains
+
 subroutine switchiadvnearlink(L)
    use m_flowgeom
    use m_flow
@@ -66,3 +76,5 @@ subroutine switchiadvnearlink(L)
    end do
 
 end subroutine switchiadvnearlink
+
+end module m_switchiadvnearlink

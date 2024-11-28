@@ -31,6 +31,8 @@
 !
 
 module m_qnmessagewait
+use m_wait
+
 
 implicit none
 

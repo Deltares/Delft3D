@@ -36,10 +36,10 @@ subroutine copycellstosam()
    use m_missing
    use m_polygon, only: NPL, xpl, ypl, zpl
    use geometry_module, only: dbpinpol
+   use m_znetcell
 
    implicit none
    integer :: in, k, c
-   double precision, external :: znetcell
    in = -1
    k = ns
 

@@ -32,6 +32,7 @@
 
  subroutine copylandboundaryto1Dnetwork()
 
+    use m_accumulatedistance, only: accumulatedistance
     use m_polygon
     use m_landboundary
     use m_netw

@@ -30,6 +30,16 @@
 !
 !
 
+module m_reset_sedtra
+
+implicit none
+
+private
+
+public :: reset_sedtra
+
+contains
+
    subroutine reset_sedtra()
       use m_sediment
       use morphology_data_module
@@ -55,3 +65,5 @@
          deallocate (mtd%messages)
       end if
    end subroutine reset_sedtra
+
+end module m_reset_sedtra

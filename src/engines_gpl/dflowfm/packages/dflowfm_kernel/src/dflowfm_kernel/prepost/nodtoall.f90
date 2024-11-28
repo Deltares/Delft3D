@@ -31,6 +31,7 @@
 !
 
   subroutine NODTOALL()
+     use m_addelem, only: addelem
      use m_netw
      use gridoperations
      implicit none

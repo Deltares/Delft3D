@@ -526,7 +526,8 @@ module m_flowparameters
    integer :: jamapucmag !< velocity vector magnitude to map file, 0: no, 1: yes
    integer :: jamapucqvec !< velocity vectors (discharge based) to map file, 0: no, 1: yes
    integer :: jamapww1 !< upward velocity on flow link to map file, 0: no, 1: yes
-   integer :: jamapnumlimdt !< num limdt to map file, 0: no, 1: yes
+   integer :: jamapnumlimdt !< Write the total number of times a cell was Courant limiting to map file, 0: no, 1: yes
+   logical :: write_numlimdt_file !< Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file 
    integer :: jamaptaucurrent !< shear stress to map file, 0: no, 1: yes
    integer :: jamapz0 !< roughness heights to map file, 0: no, 1: yes
    integer :: jamap_chezy_elements !< chezy roughness in flow elements to map file, 0: no, 1: yes
@@ -1009,6 +1010,7 @@ contains
       jamapucqvec = 0
       jamapww1 = 1
       jamapnumlimdt = 1
+      write_numlimdt_file = .false.
       jamaptaucurrent = 1
       jamapz0 = 0
       jamap_chezy_elements = 0

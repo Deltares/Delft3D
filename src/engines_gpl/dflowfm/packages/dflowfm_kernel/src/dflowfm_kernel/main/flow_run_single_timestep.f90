@@ -31,7 +31,24 @@
 !
 
 !> Performs a single computational timestep, but not the init and finalize of the timestep.
+module m_flow_run_single_timestep
+
+implicit none
+
+private
+
+public :: flow_run_single_timestep
+
+contains
+
 subroutine flow_run_single_timestep(key, iresult) ! do only 1 flow timestep
+   use m_flow_initialize_fm1dimp_timestep, only: flow_initialize_fm1dimp_timestep
+   use m_flow_finalize_fm1dimp_timestep, only: flow_finalize_fm1dimp_timestep
+   use m_velocities_explicit, only: velocities_explicit
+   use m_transport_sub, only: transport
+   use m_step_reduce_transport_morpho, only: step_reduce_transport_morpho
+   use m_step_reduce_hydro, only: step_reduce_hydro
+   use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
    use m_flow
    use timers
    use m_flowgeom
@@ -40,8 +57,6 @@ subroutine flow_run_single_timestep(key, iresult) ! do only 1 flow timestep
    use m_timer
    use dfm_error
    use m_wrimap
-
-   implicit none
 
    integer :: key
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful. DFM_TIMESETBACK if succesful, but with timestep setbacks.
@@ -103,3 +118,5 @@ subroutine flow_run_single_timestep(key, iresult) ! do only 1 flow timestep
    ! Error
 
 end subroutine flow_run_single_timestep
+
+end module m_flow_run_single_timestep

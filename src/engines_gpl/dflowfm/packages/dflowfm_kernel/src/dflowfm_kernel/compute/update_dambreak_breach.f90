@@ -30,6 +30,16 @@
 !
 !
 
+module m_update_dambreak_breach
+
+implicit none
+
+private
+
+public :: update_dambreak_breach
+
+contains
+
 subroutine update_dambreak_breach(startTime, deltaTime)
 
    use m_flowgeom
@@ -205,3 +215,5 @@ subroutine update_dambreak_breach(startTime, deltaTime)
       end if
    end if
 end subroutine update_dambreak_breach
+
+end module m_update_dambreak_breach

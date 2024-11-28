@@ -31,6 +31,12 @@
 !
 
 !
+module m_scrolh
+
+implicit none
+
+contains
+
       subroutine SCROLH(NUMCHC, HLPTXT, NUMTXT, NLEVEL, IH, JOFND, JATAB)
          use m_timlin
          use m_next
@@ -77,3 +83,5 @@
          end if
          return
       end
+
+end module m_scrolh

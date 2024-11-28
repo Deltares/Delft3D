@@ -30,6 +30,16 @@
 !
 !
 
+module m_swart
+
+implicit none
+
+private
+
+public :: swart
+
+contains
+
 subroutine Swart(Tsig, uorbu, z00, fw, ustw2)
 
    implicit none
@@ -50,3 +60,5 @@ subroutine Swart(Tsig, uorbu, z00, fw, ustw2)
    ustw2 = 0.5d0 * fw * uorbu * uorbu
 
 end subroutine Swart
+
+end module m_swart

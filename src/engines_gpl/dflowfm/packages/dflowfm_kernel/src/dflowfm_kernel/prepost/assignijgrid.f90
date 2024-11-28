@@ -31,14 +31,23 @@
 !
 
 !>  assign indices (i,j) to the curvi-linear grid
+module m_assignijgrid
+
+implicit none
+
+private
+
+public :: assignijgrid
+
+contains
+
 subroutine assignijgrid(k, ic, jc)
 
+   use m_assignij, only: assignij
    use m_netw
    use m_grid
    use m_missing
    use m_readyy
-
-   implicit none
 
    integer :: k !< current cell
 
@@ -106,3 +115,5 @@ subroutine assignijgrid(k, ic, jc)
    call readyy('creating curvilinear grid', -1d0)
 
 end subroutine assignijgrid
+
+end module m_assignijgrid

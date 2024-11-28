@@ -30,6 +30,12 @@
 !
 !
 
+module m_flgsd3fm
+
+implicit none
+
+contains
+
 subroutine flgsd3fm(wsd, wstr, zs, w2, zb2, ds1, ds2, elu, hd, rhoast, cwd,   &
                 & ds, lambda)
 !!--description-----------------------------------------------------------------
@@ -184,3 +190,5 @@ subroutine flgsd3fm(wsd, wstr, zs, w2, zb2, ds1, ds2, elu, hd, rhoast, cwd,   &
       ds = u + v - aw / 3.0d0
    end if
 end subroutine flgsd3fm
+
+end module m_flgsd3fm

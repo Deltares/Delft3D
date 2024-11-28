@@ -30,6 +30,12 @@
 !
 !
 
+module m_reacrs
+
+implicit none
+
+contains
+
       subroutine REAcrs(MMDD, JA)
          use M_GRID
          use m_missing
@@ -106,3 +112,5 @@
          call DOCLOSE(MMDD)
          JA = 0
       end subroutine REAcrs
+
+end module m_reacrs

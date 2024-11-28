@@ -31,7 +31,18 @@
 !
 
 !> extract constituent array
+module m_extract_constituents
+
+implicit none
+
+private
+
+public :: extract_constituents
+
+contains
+
 subroutine extract_constituents()
+   use m_doforester, only: doforester
    use precision, only: dp
    use m_transport
    use m_flow
@@ -186,3 +197,5 @@ subroutine extract_constituents()
    if (timon) call timstop(ithndl)
    return
 end subroutine extract_constituents
+
+end module m_extract_constituents

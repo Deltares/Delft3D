@@ -30,6 +30,16 @@
 !
 !
 
+module m_wave_comp_stokes_velocities
+
+implicit none
+
+private
+
+public :: wave_comp_stokes_velocities
+
+contains
+
    subroutine wave_comp_stokes_velocities()
       use m_flowparameters
       use m_flowgeom
@@ -150,3 +160,5 @@
 1234  continue
       return
    end subroutine wave_comp_stokes_velocities
+
+end module m_wave_comp_stokes_velocities

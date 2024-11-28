@@ -30,6 +30,13 @@
 !
 !
 
+module m_readprofilesdef
+use m_readyzprofnr, only: readyzprofnr
+
+implicit none
+
+contains
+
 subroutine readprofilesdef(ja) ! in afwachting van een module die profieldefinities leest
    use UNSTRUC_MODEL
    use m_flowgeom
@@ -237,3 +244,5 @@ subroutine readprofilesdef(ja) ! in afwachting van een module die profieldefinit
    end if
 
 end subroutine readprofilesdef
+
+end module m_readprofilesdef

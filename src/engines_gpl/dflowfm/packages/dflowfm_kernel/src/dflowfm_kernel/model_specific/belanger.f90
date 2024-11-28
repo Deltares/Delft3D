@@ -27,21 +27,27 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_belanger
+use m_compareanalytic, only: compareanalytic
+
+
+implicit none
+
+private
+
+public :: belanger
+
+contains
 
  subroutine belanger()
     use m_physcoef
-
     use fm_external_forcings_data
-
     use m_flowgeom, only: xz, bl, dxi, ln
     use m_flow, only: s1, iadvec
     use m_get_cz
     use m_movabs
     use m_lnabs
 
-    implicit none
     double precision :: chezy, cf, h0, h1, x0, x1, q, constant, bot, a, x, hav, slope, h, h3, hc, hc3, he3
     integer :: k, kb, L
     integer, parameter :: mmax = 100000, num = 200
@@ -111,3 +117,5 @@
     call compareanalytic(ss, xx, mmax)
 
  end subroutine belanger
+
+end module m_belanger

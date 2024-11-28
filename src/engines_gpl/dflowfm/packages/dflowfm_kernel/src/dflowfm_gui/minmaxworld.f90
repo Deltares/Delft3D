@@ -31,6 +31,8 @@
 !
 
 module m_minmaxworld
+use m_setwynew
+
 
 implicit none
 

@@ -31,12 +31,21 @@
 !
 
 !> check if structures on flowlinks are unique
+module m_check_structures_and_fixed_weirs
+
+implicit none
+
+private
+
+public :: check_structures_and_fixed_weirs
+
+contains
+
 subroutine check_structures_and_fixed_weirs()
    use m_flowgeom, only: Lnx
    use fm_external_forcings_data, only: ncgensg, kcgen, L1cgensg, L2cgensg, cgen_ids
    use m_fixedweirs, only: nfxw, lnfxw
    use unstruc_messages
-   implicit none
 
    integer, dimension(:), allocatable :: links_used_by_structures
    integer, dimension(:), allocatable :: links_used_by_weirs
@@ -93,3 +102,5 @@ subroutine check_structures_and_fixed_weirs()
 
    return
 end subroutine check_structures_and_fixed_weirs
+
+end module m_check_structures_and_fixed_weirs

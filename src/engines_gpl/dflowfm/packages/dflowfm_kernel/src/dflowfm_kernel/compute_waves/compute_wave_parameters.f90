@@ -30,20 +30,31 @@
 !
 !
 
+module m_compute_wave_parameters
+use m_wave_uorbrlabda, only: wave_uorbrlabda
+use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
+use m_tauwavehk, only: tauwavehk
+
+
+implicit none
+
+private
+
+public :: compute_wave_parameters
+
+contains
+
    ! compute uorb, rlabda for input in other subroutines
    subroutine compute_wave_parameters()
       use m_xbeach_data
       use m_waves
-      use m_flow
-      use m_flowgeom
-      use m_sferic
-      use m_flowtimes
+      use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flowwithoutwaves, epshu, wx, wy, ag, hs, waveforcing
+      use m_flowgeom, only: bl, lnx, ln, csu, snu, ndx
+   !   use m_sferic
+   !   use m_flowtimes
       use mathconsts, only: sqrt2_hp
-      use m_transform_wave_physics
-
-      use unstruc_display
-
-      implicit none
+      use m_transform_wave_physics, only: transform_wave_physics_hp
+   !   use unstruc_display
 
       integer :: k1, k2, k, L
       integer :: ierror
@@ -162,3 +173,5 @@
 1234  continue
       return
    end subroutine compute_wave_parameters
+
+end module m_compute_wave_parameters

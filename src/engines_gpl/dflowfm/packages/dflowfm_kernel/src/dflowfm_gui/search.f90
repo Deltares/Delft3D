@@ -30,6 +30,12 @@
 !
 !
 
+module m_search
+
+implicit none
+
+contains
+
       subroutine SEARCH(NAHEAD, NLEVEL, HLPTXT, NUMTXT, WRDKEY, NUMCHC, JOFND)
          use m_okay
          implicit none
@@ -62,3 +68,5 @@
          NUMCHC = K
          return
       end
+
+end module m_search

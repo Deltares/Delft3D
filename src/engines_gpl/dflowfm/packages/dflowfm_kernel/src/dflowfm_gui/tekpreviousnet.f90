@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekpreviousnet
+
+implicit none
+
+contains
+
       subroutine TEKPREVIOUSNET(NCOL)
          use m_dmovabs
          use m_dlnabs
@@ -53,3 +59,5 @@
             end if
          end do
       end subroutine TEKPREVIOUSNET
+
+end module m_tekpreviousnet

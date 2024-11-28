@@ -30,20 +30,25 @@
 !
 !
 
+module m_teksam
+
+implicit none
+
+contains
+
    subroutine TEKSAM(MET)
 
+      use m_settextsize
       use m_minmxsam
       use unstruc_colors
       use m_missing, only: DMISS
       use unstruc_opengl, only: jaopengl
       use m_samples
-      use unstruc_display
       use m_arcinfo
       use m_perspx
       use m_halt2
       use m_set_col
       
-      implicit none
       double precision :: RC
       double precision :: hrc
       integer :: i, KMOD
@@ -96,6 +101,7 @@
    end subroutine TEKSAM
 
    subroutine TEKarc(MET)
+      use m_settextsize
       use m_minmxsam
       use m_arcinfo
       use unstruc_display
@@ -196,3 +202,5 @@
 
    end subroutine tek1sample
 
+
+end module m_teksam

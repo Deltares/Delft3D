@@ -32,6 +32,7 @@
 
   subroutine SETPOINT(XP, YP, ZP, K1)
 
+     use m_tweedrie
      use m_netw
      use m_howtoview
 

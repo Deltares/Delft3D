@@ -30,6 +30,18 @@
 !
 !
 
+module m_setcdwcoefficient
+use m_getwavenr, only: getwavenr
+
+
+implicit none
+
+private
+
+public :: setcdwcoefficient
+
+contains
+
  subroutine setcdwcoefficient(uwi, cd10, L)
     use m_wind
     use m_flow, only: ag, hs, jaCdwusp, Cdwusp
@@ -104,7 +116,7 @@
 
           nit = nit + 1
           sold = s
-          s = sold * (log(hsurf * ag * sold * sold / (max(0.001, cdb(1) * uwi * uwi))) - 2d0) / (vonkarw * sold - 2d0)
+          s = sold * (log(hsurf * ag * sold * sold / (max(0.001d0, cdb(1) * uwi * uwi))) - 2d0) / (vonkarw * sold - 2d0)
 
           if (nit >= maxnit) then
              cd10 = 1d-3
@@ -181,3 +193,5 @@
        end if
     end if
  end subroutine setcdwcoefficient
+
+end module m_setcdwcoefficient

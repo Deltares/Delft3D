@@ -148,20 +148,6 @@ class TestMinioTool:
         with pytest.raises(ValueError, match="Unsupported path type"):
             minio_tool.push("foo", PathType.NONE)
 
-    def test_push__test_case_has_version_timestamp_from_future__raise_error(
-        self,
-        minio_tool: MinioTool,
-    ) -> None:
-        # Arrange
-        now = datetime.now(timezone.utc)
-        minio_tool._indexed_configs = {
-            Path("configs/foo.xml"): [make_test_case("foo", version=now + timedelta(seconds=43))]
-        }
-
-        # Act
-        with pytest.raises(MinioToolError, match="future"):
-            minio_tool.push("foo", PathType.INPUT)
-
     def test_push__no_changes__print_up_to_date_message(
         self,
         capsys: pytest.CaptureFixture,
@@ -265,9 +251,9 @@ class TestMinioTool:
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
-        mocker: MockerFixture,
     ) -> None:
         # Arrange
+        now = datetime.now(timezone.utc)
         local_dir = Path("local")
         config_path = Path("configs/config.xml")
         fs.create_file(local_dir / "foo.txt", contents="foo")
@@ -280,6 +266,7 @@ class TestMinioTool:
             items=[PlanItem.create(local_dir / "foo.txt", bucket / "references/foo.txt")],  # No changes.
         )
         rewinder.build_plan.return_value = plan
+        rewinder.list_objects.return_value = [make_object("references/foo.txt", last_modified=now)]
         prompt.yes_no.side_effect = [True, False]  # Yes, apply changes. No, don't save the configs.
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
@@ -294,10 +281,7 @@ class TestMinioTool:
             allow_create_and_delete=False,
         )
         rewinder.execute_plan.assert_called_once_with(plan)
-        test_case_writer.config_updates.assert_called_once_with({"foo": mocker.ANY}, [config_path])
-        new_timestamp = test_case_writer.config_updates.call_args.args[0]["foo"]
-        now = datetime.now(timezone.utc)
-        assert timedelta(seconds=59) <= new_timestamp - now <= timedelta(minutes=2)
+        test_case_writer.config_updates.assert_called_once_with({"foo": now + timedelta(milliseconds=1)}, [config_path])
 
         cap = capsys.readouterr()
         assert "-old+new" in cap.out  # The diff is printed to the output.
@@ -313,6 +297,7 @@ class TestMinioTool:
         fs: FakeFilesystem,
     ) -> None:
         # Arrange
+        now = datetime.now(timezone.utc)
         local_dir = Path("local")
         config_path = Path("configs/config.xml")
         fs.create_file(local_dir / "foo.txt", contents="foo")
@@ -326,6 +311,7 @@ class TestMinioTool:
         )
         rewinder.build_plan.return_value = plan
         prompt.yes_no.return_value = True  # Yes to all prompts.
+        rewinder.list_objects.return_value = [make_object("references/foo.txt", last_modified=now)]
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
         # Act
@@ -408,6 +394,7 @@ class TestMinioTool:
         )
         rewinder.build_plan.return_value = plan
         prompt.yes_no.return_value = True  # Yes to all prompts.
+        rewinder.list_objects.return_value = [make_object("references/foo.txt", last_modified=now)]
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
         # Act
@@ -744,20 +731,6 @@ class TestMinioTool:
         with pytest.raises(MinioToolError, match="matches multiple"):
             minio_tool.update_references("foo", local_dir=Path("local"))
 
-    def test_update_references__test_case_has_version_timestamp_from_future__raise_error(
-        self,
-        minio_tool: MinioTool,
-    ) -> None:
-        # Arrange
-        now = datetime.now(timezone.utc)
-        minio_tool._indexed_configs = {
-            Path("configs/foo.xml"): [make_test_case("foo", version=now + timedelta(seconds=43))]
-        }
-
-        # Act
-        with pytest.raises(MinioToolError, match="future"):
-            minio_tool.update_references("foo")
-
     def test_update_references__no_changes__print_up_to_date_message(
         self,
         capsys: pytest.CaptureFixture,
@@ -860,9 +833,9 @@ class TestMinioTool:
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
-        mocker: MockerFixture,
     ) -> None:
         # Arrange
+        now = datetime.now(timezone.utc)
         local_dir = Path("local")
         config_path = Path("configs/config.xml")
         fs.create_file(local_dir / "foo.txt", contents="foo")
@@ -876,6 +849,7 @@ class TestMinioTool:
         )
         rewinder.build_plan.return_value = plan
         prompt.yes_no.side_effect = [True, False]  # Yes, apply changes. No, don't save the configs.
+        rewinder.list_objects.return_value = [make_object("references/foo.txt", last_modified=now)]
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
         # Act
@@ -889,9 +863,7 @@ class TestMinioTool:
             allow_create_and_delete=False,
         )
         rewinder.execute_plan.assert_called_once_with(plan)
-        test_case_writer.config_updates.assert_called_once_with({"foo": mocker.ANY}, [config_path])
-        new_timestamp = test_case_writer.config_updates.call_args.args[0]["foo"]
-        assert datetime.now(timezone.utc) - new_timestamp < timedelta(seconds=2)
+        test_case_writer.config_updates.assert_called_once_with({"foo": now + timedelta(milliseconds=1)}, [config_path])
 
         cap = capsys.readouterr()
         assert "-old+new" in cap.out  # The diff is printed to the output.
@@ -907,6 +879,7 @@ class TestMinioTool:
         fs: FakeFilesystem,
     ) -> None:
         # Arrange
+        now = datetime.now(timezone.utc)
         local_dir = Path("local")
         config_path = Path("configs/config.xml")
         fs.create_file(local_dir / "foo.txt", contents="foo")
@@ -920,6 +893,7 @@ class TestMinioTool:
         )
         rewinder.build_plan.return_value = plan
         prompt.yes_no.return_value = True  # Yes to all prompts.
+        rewinder.list_objects.return_value = [make_object("references/foo.txt", last_modified=now)]
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
         # Act
@@ -1002,6 +976,7 @@ class TestMinioTool:
         )
         rewinder.build_plan.return_value = plan
         prompt.yes_no.return_value = True  # Yes to all prompts.
+        rewinder.list_objects.return_value = [make_object("references/foo.txt", last_modified=now)]
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
         # Act

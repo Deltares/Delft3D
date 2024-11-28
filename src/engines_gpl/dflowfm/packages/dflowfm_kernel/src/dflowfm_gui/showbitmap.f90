@@ -30,7 +30,14 @@
 !
 !
 
+module m_showbitmap
+
+implicit none
+
+contains
+
       subroutine SHOWBITMAP(jainterpolate)
+         use m_rectangle
          use m_pixcount
          use M_WEARELT
          use M_BITMAP
@@ -114,3 +121,5 @@
 
          return
       end
+
+end module m_showbitmap

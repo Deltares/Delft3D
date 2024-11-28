@@ -36,6 +36,8 @@
 !> <flow1d_implicit> and only has access to the variables in that project.
 
 module m_initialize_flow1d_implicit
+use m_init_1dinfo, only: init_1dinfo
+
 
 contains
 
@@ -1099,7 +1101,7 @@ contains
 
       integer :: kd, idx_fm, k1, idx_sre, idx_l1, idx_l2, k2, kn, kl, n1, n2, L, idx_n
 
-      real :: swaoft
+      integer :: swaoft
 
       double precision :: wu_int, au_int
 

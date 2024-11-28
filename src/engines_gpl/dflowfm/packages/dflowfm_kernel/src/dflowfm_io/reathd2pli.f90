@@ -30,6 +30,16 @@
 !
 !
 
+module m_reathd2pli
+
+implicit none
+
+private
+
+public :: reathd2pli
+
+contains
+
  subroutine reathd2pli(mthd, mout) ! convert d3d obs file to model independent
     use m_grid
     implicit none
@@ -69,3 +79,5 @@
     call doclose(mout)
 
  end subroutine reathd2pli
+
+end module m_reathd2pli

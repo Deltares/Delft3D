@@ -30,6 +30,12 @@
 !
 !
 
+module m_xydisformat
+
+implicit none
+
+contains
+
       subroutine XYDISFORMAT()
          use m_sferic
          use m_wearelt
@@ -90,3 +96,5 @@
 
          return
       end
+
+end module m_xydisformat

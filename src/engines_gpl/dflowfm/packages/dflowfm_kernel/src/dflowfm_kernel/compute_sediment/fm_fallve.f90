@@ -30,6 +30,16 @@
 !
 !
 
+module m_fm_fallve
+
+implicit none
+
+private
+
+public :: fm_fallve
+
+contains
+
    subroutine fm_fallve()
    !!--description-----------------------------------------------------------------
       !
@@ -332,3 +342,5 @@
 
       deallocate (localpar, stat=istat)
    end subroutine fm_fallve
+
+end module m_fm_fallve

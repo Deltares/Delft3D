@@ -30,7 +30,22 @@
 !
 !
 
+module m_step_reduce_hydro
+
+implicit none
+
+private
+
+public :: step_reduce_hydro
+
+contains
+
  subroutine step_reduce_hydro(key) ! do a flow timestep dts guus, reduce once, then elimin conjugate grad substi
+    use m_setkfs, only: setkfs
+    use m_s1nod, only: s1nod
+    use m_s1ini, only: s1ini
+    use m_poshcheck
+    use m_furu
     use m_flow ! when entering this subroutine, s1=s0, u1=u0, etc
     use m_flowgeom
     use Timers
@@ -279,3 +294,5 @@
     end do setback
 
  end subroutine step_reduce_hydro
+
+end module m_step_reduce_hydro

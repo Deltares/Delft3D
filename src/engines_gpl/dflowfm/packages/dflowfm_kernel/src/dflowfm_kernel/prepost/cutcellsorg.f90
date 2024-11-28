@@ -30,15 +30,24 @@
 !
 !
 
+module m_cutcellsorg
+
+implicit none
+
+private
+
+public :: cutcellsorg
+
+contains
+
   subroutine CUTCELLSORG()
 
+     use m_crosslinkpoly, only: crosslinkpoly
      use m_netw
      use m_missing, only: dmiss, JINS
      use m_readyy
      use m_set_nod_adm
      use m_new_link
-
-     implicit none
      
      integer :: ja, KMOD
      integer :: k
@@ -198,3 +207,5 @@
      call READYY('CUTCELLS', -1d0)
 
   end subroutine CUTCELLSORG
+
+end module m_cutcellsorg

@@ -12,7 +12,7 @@ include_component("D-WAQ tools" ${waq_include_dir}/dwaq_tools.cmake)
 include_component("D-PART kernel" ${waq_include_dir}/dpart.cmake)
 include_component("D-WAQ third party libraries" ${waq_include_dir}/dwaq_third_party.cmake)
 include_component("D-WAQ utils" ${waq_include_dir}/dwaq_utils.cmake)
-include_component("D-WAQ unit tests" ${waq_include_dir}/dwaq_tests.cmake)
+include_component("D-WAQ unit and integration tests" ${waq_include_dir}/dwaq_tests.cmake)
 
 # Installation
 add_target_with_subdirectory(install_waq ${install_waq_module})

@@ -31,13 +31,21 @@
 !
 
 !> check if a connection from node1 to node2 exists
+module m_checkgridline
+
+implicit none
+
+private
+
+public :: checkgridline
+
+contains
+
 subroutine checkgridline(node1, node2, lconflict)
 
    use m_netw
    use m_grid
    use m_missing
-
-   implicit none
 
    integer, intent(in) :: node1, node2 !< nodes
 
@@ -69,3 +77,5 @@ subroutine checkgridline(node1, node2, lconflict)
    end do
 
 end subroutine checkgridline
+
+end module m_checkgridline

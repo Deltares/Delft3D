@@ -31,6 +31,8 @@
 !
 
 module m_editsam
+use m_typevalue
+use m_selecteditmode
 use m_minmxsam
 use m_kcir
 

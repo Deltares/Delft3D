@@ -137,8 +137,8 @@ module m_sediment
 
    integer :: jamorf ! 0 or 1 do morf
 
-   double precision, allocatable :: sedh(:) !< help sed arr for initial
-   double precision, allocatable :: sed(:, :) !< sediment concentraton kg/m3 (mxgr,ndkx)
+   double precision, allocatable, target :: sedh(:) !< help sed arr for initial
+   double precision, allocatable, target :: sed(:, :) !< sediment concentraton kg/m3 (mxgr,ndkx)
    double precision, allocatable :: sedi(:, :) !< sediment concentraton increment, kg/m3 only needed for jaceneqtr == 2
    double precision, allocatable :: sdupq(:, :) !< sediment flux kg/s
    double precision, allocatable :: blinc(:) !< bottom level increment (m)

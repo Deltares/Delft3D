@@ -31,6 +31,8 @@
 !
 
 module m_changedisplayparameters
+use m_settextsize
+
 
 implicit none
 

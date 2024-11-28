@@ -32,8 +32,15 @@
 
 !> Updates the flow variables of FM when the Sobek-RE kernel is used.
 
-!This function cannot be in the <fm1dimp> module because it uses FM variables and
-!while the kernel of FM depends on the <fm1dimp> module, the opposite is not true.
+module m_flow_finalize_fm1dimp_timestep
+
+implicit none
+
+private
+
+public :: flow_finalize_fm1dimp_timestep
+
+contains
 
 subroutine flow_finalize_fm1dimp_timestep()
 
@@ -44,8 +51,6 @@ subroutine flow_finalize_fm1dimp_timestep()
    use m_flow, only: s1, u1, s0, au, qa
    use m_fm_erosed, only: ndx_mor, lnx_mor, ln_mor
    use m_f1dimp, only: f1dimppar
-
-   implicit none
 
 !
 !DECLARATION
@@ -108,3 +113,5 @@ subroutine flow_finalize_fm1dimp_timestep()
    end do
 
 end subroutine flow_finalize_fm1dimp_timestep
+
+end module m_flow_finalize_fm1dimp_timestep

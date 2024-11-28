@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekhook
+
+implicit none
+
+contains
+
       subroutine TEKHOOK(XP, YP)
          use m_sferic
          use m_locatora
@@ -50,3 +56,5 @@
          call LNABS(XP - DY, YP + DX)
          return
       end
+
+end module m_tekhook

@@ -30,9 +30,18 @@
 !
 !
 
+module m_weirtheory
+
+implicit none
+
+private
+
+public :: weirtheory
+
+contains
+
 subroutine weirtheory(zupstream, zdownstream, crestheight, zcrestperfect, zminsub, zcrest, &
                       qweir, uupstream, ucrest, udownstream, regime, qfree)
-   implicit none
    double precision :: zupstream, zdownstream, crestheight, zcrestperfect, zminsub, zcrest, &
       qweir, uupstream, ucrest, udownstream, qfree
    double precision :: pi, g, d, z1, h1, p, q, cosfi, fi, zc1, zc2, zc3, &
@@ -215,3 +224,5 @@ subroutine weirtheory(zupstream, zdownstream, crestheight, zcrestperfect, zminsu
    return
 
 end subroutine weirtheory
+
+end module m_weirtheory

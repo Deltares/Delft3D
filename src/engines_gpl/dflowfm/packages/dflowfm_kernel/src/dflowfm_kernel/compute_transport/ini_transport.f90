@@ -31,7 +31,18 @@
 !
 
 !> initialize transport, set the enumerators
+module m_ini_transport
+
+implicit none
+
+private
+
+public :: ini_transport
+
+contains
+
 subroutine ini_transport()
+   use m_alloc_transport, only: alloc_transport
    use m_transport
    use m_flowparameters
    use m_sediment
@@ -40,6 +51,7 @@ subroutine ini_transport()
    use string_module
    use Messagehandling
    use m_flow, only: kmx
+   use m_find_name, only: find_name
 
    use m_fm_wq_processes
    use m_alloc
@@ -52,7 +64,6 @@ subroutine ini_transport()
    character(len=256) :: msg
 
    integer :: i, itrace, ised, isf, ifrac, isys
-   integer, external :: findname
 
    NUMCONST = 0
    ISALT = 0
@@ -166,7 +177,7 @@ subroutine ini_transport()
          !
          if (numfracs > 0) then
             do isf = 1, stmpar%lsedsus ! dimension of sed constituents
-               ifrac = findname(numfracs, sfnames, trim(const_names(isf + ISED1 - 1)))
+               ifrac = find_name(sfnames, const_names(isf + ISED1 - 1))
                if (ifrac > 0) then
                   ifrac2const(ifrac) = isf + ISED1 - 1
                else
@@ -251,3 +262,5 @@ subroutine ini_transport()
 
    return
 end subroutine ini_transport
+
+end module m_ini_transport

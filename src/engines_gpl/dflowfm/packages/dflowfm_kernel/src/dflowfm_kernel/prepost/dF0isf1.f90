@@ -30,6 +30,16 @@
 !
 !
 
+module m_df0isf1
+
+implicit none
+
+private
+
+public :: df0isf1
+
+contains
+
       subroutine DF0ISF1(X0, X1, KMAX)
          implicit none
          integer :: KMAX
@@ -42,3 +52,5 @@
          end do
          return
       end subroutine DF0ISF1
+
+end module m_df0isf1

@@ -32,6 +32,12 @@
 
 !> Computes the velocity magnitude in cell centers, typically used for output only.
 !! All arrays via input arguments, not via use m_flow.
+module m_getucmag
+
+implicit none
+
+contains
+
 subroutine getucmag(N, ucxi, ucyi, ucmago)
    use m_flowgeom, only: ndx
    use m_flow, only: kmx
@@ -61,3 +67,5 @@ subroutine getucmag(N, ucxi, ucyi, ucmago)
    end if
 
 end subroutine getucmag
+
+end module m_getucmag

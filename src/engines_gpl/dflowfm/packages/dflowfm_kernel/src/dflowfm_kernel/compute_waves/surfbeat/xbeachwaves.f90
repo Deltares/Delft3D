@@ -30,6 +30,18 @@
 !
 !
 
+module m_xbeachwaves
+use m_xbeachwaves_getcellcentergradients, only: getcellcentergradients
+
+implicit none
+
+private
+
+public :: xbeach_waves, xbeach_flow_bc, xbeach_wave_compute_flowforcing2D, xbeach_apply_wave_bc, xbeach_wave_bc, xbeach_wave_compute_flowforcing3D, xbeach_makethetagrid, &
+    xbeach_wave_init, xbeach_wave_input, allocstatsolverarrays, rollerturbulence, xbeach_reset, xbeach_wave_maxtimestep
+
+contains
+
 subroutine xbeach_wave_input
 !! Start logging
 !! Read input from params.txt
@@ -37,8 +49,6 @@ subroutine xbeach_wave_input
    use m_xbeach_data
    use m_xbeach_readkey
    use m_xbeach_filefunctions
-
-   implicit none
 
    logical, save :: init = .false.
 
@@ -752,7 +762,6 @@ subroutine xbeach_dispersion(hh)
 
    integer :: k, L, k1, k2
    double precision :: kh
-   double precision, external :: iteratedispersion
 
    do k = 1, ndx
       if (hh(k) > epshu) then
@@ -843,51 +852,6 @@ function iteratedispersion(L0, Lestimate, px, h) result(L)
    end if
 
 end function iteratedispersion
-
-subroutine getcellcentergradients(hh, dhsdx, dhsdy)
-   use m_flow
-   use m_flowgeom
-
-   implicit none
-
-   double precision, intent(in), dimension(ndx) :: hh
-   double precision, intent(out), dimension(ndx) :: dhsdx, dhsdy
-
-   integer :: L, k1, k2, k, kb, ki
-   double precision :: hs1, hs2
-
-   ! Tegeltjesdiepte approach is eenvoudiger en onnauwkeuriger, maar werkt altijd, ook met morfologie
-   dhsdx = 0d0
-   dhsdy = 0d0
-   do L = 1, Lnx
-      if (hu(L) > epshu) then ! link flows
-         k1 = ln(1, L)
-         k2 = ln(2, L)
-         hs1 = hh(k1)
-         hs2 = hh(k2)
-
-         dhsdx(k1) = dhsdx(k1) + wcx1(L) * (hs2 - hs1) * dxi(L) ! dimension m/m
-         dhsdy(k1) = dhsdy(k1) + wcy1(L) * (hs2 - hs1) * dxi(L)
-         dhsdx(k2) = dhsdx(k2) + wcx2(L) * (hs2 - hs1) * dxi(L)
-         dhsdy(k2) = dhsdy(k2) + wcy2(L) * (hs2 - hs1) * dxi(L)
-      end if
-   end do
-
-   do k = 1, nbndu
-      kb = kbndu(1, k)
-      ki = kbndu(2, k)
-      dhsdx(kb) = dhsdx(ki)
-      dhsdy(kb) = dhsdy(ki)
-   end do
-
-   do k = 1, nbndz
-      kb = kbndz(1, k)
-      ki = kbndz(2, k)
-      dhsdx(kb) = dhsdx(ki)
-      dhsdy(kb) = dhsdy(ki)
-   end do
-
-end subroutine getcellcentergradients
 
 subroutine xbeach_wave_instationary()
    use m_sferic, only: pi, rd2dg
@@ -4258,6 +4222,7 @@ subroutine xbeach_solve_wave_stationary(callType, ierr)
    use fm_external_forcings_data, only: nbndw, kbndw
    use m_alloc
    use unstruc_display
+   use m_wave_makeplotvars, only: wave_makeplotvars
 
    implicit none
 
@@ -5982,6 +5947,7 @@ end subroutine ! xbeach_wave_stationary
 
 ! Determine surface forces and body forces for 3D applications
 subroutine xbeach_wave_compute_flowforcing3D()
+   use m_setwavfu, only: setwavfu
    use m_xbeach_data
    use m_waves
    use m_flowgeom, only: ndx
@@ -6107,3 +6073,5 @@ subroutine xbeach_compute_stokesdrift()
    deallocate (ustw, ustr, uwf, vwf, urf, vrf, stat=ierr)
    return
 end subroutine
+
+end module m_xbeachwaves

@@ -30,8 +30,15 @@
 !
 !
 
+module m_setwor
+
+implicit none
+
+contains
+
       subroutine SETWOR(XW1, YW1, XW2, YW2)
          use unstruc_opengl
+         use precision, only: dp
 #ifdef HAVE_OPENGL
          use IFOPNGL, only: GL_PROJECTION, GL_MODELVIEW, fglMatrixMode, fglLoadIdentity, fglOrtho
 #endif
@@ -47,7 +54,7 @@
             !  CALL fglDisable(GL_DEPTH_TEST) ! no depth
             call fglMatrixMode(GL_PROJECTION)
             call fglLoadIdentity()
-            call fglOrtho(XW1, XW2, YW1, YW2, 0, 1)
+            call fglOrtho(real(XW1, dp), real(XW2, dp), real(YW1, dp), real(YW2, dp), real(0, dp), real(1, dp))
             call fglMatrixMode(GL_MODELVIEW)
 #endif
          else
@@ -55,3 +62,5 @@
          end if
          return
       end
+
+end module m_setwor

@@ -33,7 +33,21 @@
 !----------------------------------------------------------------------
 ! subroutines from unstruc.f90
 !----------------------------------------------------------------------
+module m_tekflowstuff
+use m_tekspw
+use m_tekprofpoint
+
+
+implicit none
+
+contains
+
  subroutine tekflowstuff(ja)
+    use m_tekflownodes
+    use m_tekflowlinks
+    use m_tekbathy
+    use m_tekbanfs
+    use m_tekarcuv
     use m_rcirc
     use m_minmxnds
     use m_isocol
@@ -63,14 +77,13 @@
     use m_inview
     use m_movabs
     use m_lnabs
-
-    implicit none
+    use m_zcorn
+    use m_znod
 
     !locals
     integer :: k, kk, L, LL, k1, k2, ncol, nn, k3, k4
     integer :: nodemode, linkmode ! how  to show on flow nodes and links
     integer :: nodewhat ! what to show on flow nodes and links
-    double precision :: znod, zcorn ! what to show functions
     double precision :: xx1, yy1, Zz1 ! help only
     double precision :: xx2, yy2, Zz2 ! help only
     double precision :: x3, y3 ! help only
@@ -319,3 +332,5 @@
     call tekship()
 
  end subroutine tekflowstuff
+
+end module m_tekflowstuff

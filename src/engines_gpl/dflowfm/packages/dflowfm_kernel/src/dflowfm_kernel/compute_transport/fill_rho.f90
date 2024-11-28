@@ -30,6 +30,16 @@
 !
 !
 
+module m_fill_rho
+
+implicit none
+
+private
+
+public :: fill_rho
+
+contains
+
 subroutine fill_rho()
    use m_transport
    use m_flowgeom
@@ -67,3 +77,5 @@ subroutine fill_rho()
    if (timon) call timstop(ithndl)
    return
 end subroutine fill_rho
+
+end module m_fill_rho

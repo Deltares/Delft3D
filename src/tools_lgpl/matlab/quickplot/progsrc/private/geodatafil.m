@@ -148,18 +148,47 @@ end
 DimFlag=Props.DimFlag;
 
 
-function root = search_file(type)
+function location = search_file(type)
 file = ['binned_' type '_i.nc'];
-roots = {qp_basedir('exe') % same folder
-    [qp_basedir('exe') filesep 'GSHHG'] % subfolder
-    [qp_basedir('exe') filesep '..' filesep 'quickplot' filesep 'bin' filesep 'GSHHG'] % subfolder next to QP (from D3D-MATLAB interface)
+folders = {qp_basedir('exe') % same folder
     [getenv('D3D_HOME') filesep getenv('ARCH') filesep 'quickplot' filesep 'bin' filesep 'GSHHG'] % subfolder next to QP (from anywhere if environment variables have been defined)
     fileparts(which(file))}; % on the MATLAB search path
-for i = 1:length(roots)
-    root = roots{i};
-    if exist([root filesep file],'file')
-        return
+for i = 1:length(folders)
+    % search iteratively from the selected folder up to the system root ...
+    folder = folders{i};
+    while true
+        location = locate_file(folder, file)
+        if ~isempty(location)
+            % found it!
+            return
+        end
+        
+        parent = fileparts(folder);
+        if ~isequal(parent, folder)
+            folder = parent;
+        else
+            break
+        end
     end
 end
 % can't find the file
 root = '';
+
+function location = locate_file(folder, file)
+if exist([folder, filesep, file], 'file')
+    location = folder;
+    return
+end
+subdirs = {'GSHHG','delft3d_matlab','quickplot','64bit','bin'};
+for i = 1:length(subdirs)
+    subfolder = [folder, filesep, subdirs{i}]
+    if exist(subfolder, 'dir')
+        location = locate_file(subfolder, file)
+        if ~isempty(location)
+            % found it!
+            return
+        end
+    end
+end
+% can't find the file
+location = '';

@@ -30,6 +30,16 @@
 !
 !
 
+module m_addlinkship2d
+
+implicit none
+
+private
+
+public :: addlinkship2D
+
+contains
+
  subroutine addlinkship2D(L, japerim) ! but substract, nested Newton
     use m_ship
     use m_flowgeom
@@ -75,3 +85,5 @@
        end if
     end if
  end subroutine addlinkship2D
+
+end module m_addlinkship2d

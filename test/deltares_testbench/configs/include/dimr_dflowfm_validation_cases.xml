@@ -1,6 +1,6 @@
   <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f001_c010_Channel_with_refinement_squares" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c010_Channel_with_refinement_squares</path>
+      <path version="2024-11-17T20:10:00">e02_dflowfm/f001_general/c010_Channel_with_refinement_squares</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
@@ -9,7 +9,7 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" type="xyz" ignore="true" />
+        <file name="dflowfmoutput/simplechannel_numlimdt.xyz" type="ASCII" />
       </checks>
     </testCase>
     <testCase name="e02_f001_c011_Channel_with_refinement_triangles" ref="dflowfm_default">
@@ -22,7 +22,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f003_c010_belanger" ref="dflowfm_default">
@@ -35,7 +34,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f003_c020_dambreak1dwet_standard" ref="dflowfm_default">
@@ -48,7 +46,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" type="xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f003_c021_dambreak1ddry_standard" ref="dflowfm_default">
@@ -61,7 +58,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" type="xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f003_c040_thacker1d_standard" ref="dflowfm_default">
@@ -81,7 +77,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f003_c043_thacker2d_hexagons" ref="dflowfm_default">
@@ -94,7 +89,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f004_c010_chezy" ref="dflowfm_default">
@@ -107,7 +101,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f005_c011_waterlevel_tim_varying" ref="dflowfm_default">
@@ -121,7 +114,6 @@
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f005_c015_waterlevel_cmp_varying" ref="dflowfm_default">
@@ -135,7 +127,6 @@
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f005_c020_astronomic_cmp_standard" ref="dflowfm_default">
@@ -149,7 +140,6 @@
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f005_c052_neumann_cmp_1d" ref="dflowfm_default">
@@ -162,7 +152,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f005_c053_neumann_cmp_2d" ref="dflowfm_default">
@@ -175,7 +164,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f005_c068_riemann_tim_1d_outer" ref="dflowfm_default">
@@ -195,7 +183,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f005_c069_riemann_tim_2d_outer" ref="dflowfm_default">
@@ -215,7 +202,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f005_c080_qhbnd" ref="dflowfm_default">
@@ -235,7 +221,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f005_c090_salinity_tim_constant" ref="dflowfm_default">
@@ -250,7 +235,6 @@
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f006_c020_basinnofriction_squares" ref="dflowfm_default">
@@ -270,7 +254,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f006_c023_basinwithfriction_squares" ref="dflowfm_default">
@@ -290,7 +273,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f006_c030_flatbed_quadrilateral" ref="dflowfm_default">
@@ -310,7 +292,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f009_c010_beyer004_supergrid_standard" ref="dflowfm_default">
@@ -324,7 +305,6 @@
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f009_c020_beyer004_contr10" ref="dflowfm_default">
@@ -338,7 +318,6 @@
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f009_c024_beyer004_contr10_empirical" ref="dflowfm_default">
@@ -352,7 +331,6 @@
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" type="xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f009_c030_zandloper30m" ref="dflowfm_default">
@@ -372,7 +350,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f009_c040_beyer044_standard" ref="dflowfm_default">
@@ -392,7 +369,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f010_c010_gate_sub" ref="dflowfm_default">
@@ -406,7 +382,6 @@
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f011_c012_schematized_lake" ref="dflowfm_default">
@@ -426,7 +401,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" type="xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f011_c026_spiderweb_regular" ref="dflowfm_default">
@@ -448,7 +422,6 @@
             <parameter name="mesh2d_windy" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" type="xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f012_c026_rstseriesonevalue" ref="dflowfm_default">
@@ -468,7 +441,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" type="xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f012_c032_alloutrealistic" ref="dflowfm_default">
@@ -489,7 +461,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f012_c040_restartmap2d_bndconstant" ref="dflowfm_default">
@@ -509,7 +480,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f012_c041_restartmap2d_bndvariable" ref="dflowfm_default">
@@ -529,7 +499,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f012_c050_restartrst2d_bndconstant" ref="dflowfm_default">
@@ -549,7 +518,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f012_c051_restartrst2d_bndvariable" ref="dflowfm_default">
@@ -569,7 +537,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f013_c010_frisianinlet_schematized" ref="dflowfm_default">
@@ -589,7 +556,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f013_c020_frisianinlet_realistic" ref="dflowfm_default">
@@ -609,7 +575,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f013_c030_coastcalifornia" ref="dflowfm_default">
@@ -629,7 +594,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f013_c040_loosdrecht" ref="dflowfm_default">
@@ -649,7 +613,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f013_c050_inclinedbed_withobstacle" ref="dflowfm_default">
@@ -669,7 +632,6 @@
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f016_c010_schematic_xyz" ref="dflowfm_default">
@@ -689,7 +651,6 @@
             <parameter name="unorm" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f016_c011_schematic_pol" ref="dflowfm_default">
@@ -709,7 +670,6 @@
             <parameter name="unorm" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f019_c010_tracer_squares_coarse" ref="dflowfm_default">
@@ -723,7 +683,6 @@
             <parameter name="mesh2d_block" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
   </testCases>

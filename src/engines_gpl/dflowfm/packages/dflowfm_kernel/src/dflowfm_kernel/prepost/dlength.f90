@@ -30,13 +30,22 @@
 !
 !
 
+module m_dlength
+
+implicit none
+
+private
+
+public :: dlength
+
+contains
+
       double precision function DLENGTH(K1, K2)
          use m_netw
          use geometry_module, only: dbdistance
          use m_missing, only: dmiss
          use m_sferic, only: jsferic, jasfer3D
 
-         implicit none
          integer :: K1, K2
          double precision :: XD, YD, ZD
          if (NETFLOW == 1) then
@@ -49,3 +58,5 @@
          end if
          return
       end function DLENGTH
+
+end module m_dlength

@@ -30,6 +30,12 @@
 !
 !
 
+module m_readprofilesloc
+
+implicit none
+
+contains
+
  subroutine readprofilesloc(minp)
     use m_profiles
     implicit none
@@ -60,3 +66,5 @@
     nproflocs = n
 
  end subroutine readprofilesloc
+
+end module m_readprofilesloc

@@ -34,14 +34,43 @@ module fm_external_forcings_utils
 
 contains
 
+   !> Split quantity id (qid) into base qid and specific qid.
+   !! The base qid is the part of the qid that is common for all tracers of the same type.
+   !! The specific qid is the part of the qid that is specific for a certain tracer.
+   subroutine split_qid(qid, qid_base, qid_specific)
+      use mass_balance_areas_routines, only: get_mbainputname
+
+      character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'tracerbndfluor'.
+      character(len=*), intent(out) :: qid_base !< The base quantity name, e.g., 'tracerbnd'.
+      character(len=*), intent(out) :: qid_specific !< The specific quantity name, e.g., 'fluor'.
+
+      call get_tracername(qid, qid_specific, qid_base)
+      ! As soon as the qid is different from the base qid, the qid is split and this routine is finished.
+      if (qid_base /= qid) then
+         return
+      end if
+      call get_sedfracname(qid, qid_specific, qid_base)
+      if (qid_base /= qid) then
+         return
+      end if
+      call get_waqinputname(qid, qid_specific, qid_base)
+      if (qid_base /= qid) then
+         return
+      end if
+      call get_mbainputname(qid, qid_specific, qid_base)
+      if (qid_base /= qid) then
+         return
+      end if
+   end subroutine split_qid
+
    !> Convert quantity id (from .ext file) to tracer name (split in generic qidname and specific tracer name).
    !! If the input qid is not tracer, then the same qid is returned (and no tracer name)
    subroutine get_tracername(qid, trname, qidname)
       use m_transportdata, only: DEFTRACER
       implicit none
 
-      character(len=*), intent(in) :: qid      !< Original quantityid, e.g., 'tracerbndfluor'.
-      character(len=*), intent(out) :: trname  !< The trimmed tracer name, e.g., 'fluor'.
+      character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'tracerbndfluor'.
+      character(len=*), intent(out) :: trname !< The trimmed tracer name, e.g., 'fluor'.
       character(len=*), intent(out) :: qidname !< The base quantity name for further use in external forcing, e.g., 'tracerbnd'.
 
       trname = ''
@@ -71,8 +100,8 @@ contains
    subroutine get_sedfracname(qid, sfname, qidname)
       implicit none
 
-      character(len=*), intent(in) :: qid        !< Original quantityid, e.g., 'sedfracbndsediment1'.
-      character(len=*), intent(out) :: sfname    !< The trimmed tracer name, e.g., 'sediment1'.
+      character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'sedfracbndsediment1'.
+      character(len=*), intent(out) :: sfname !< The trimmed tracer name, e.g., 'sediment1'.
       character(len=*), intent(inout) :: qidname !< The base quantity name for further use in external forcing, e.g., 'sedfracbnd'.
 
       sfname = ''
@@ -107,5 +136,4 @@ contains
          end if
       end if
    end subroutine get_sedfracname
-
 end module fm_external_forcings_utils

@@ -31,6 +31,16 @@
 !
 
 ! compute Au/Dx for diffusive flux
+module m_comp_dxiau
+
+implicit none
+
+private
+
+public :: comp_dxiau
+
+contains
+
 subroutine comp_dxiAu() ! or: setdxiau
    use m_flowgeom, only: ln, Lnx, dxi, wu, Lnxi, bob
    use m_flow, only: hs, zws, kmx, Au, hu, jadiffusiononbnd, chkdifd, ifixedweirscheme, s1
@@ -129,3 +139,5 @@ subroutine comp_dxiAu() ! or: setdxiau
    if (timon) call timstop(ithndl)
    return
 end subroutine comp_dxiAu
+
+end module m_comp_dxiau

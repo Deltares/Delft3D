@@ -30,7 +30,14 @@
 !
 !
 
+module m_teksorsin
+
+implicit none
+
+contains
+
 subroutine teksorsin() ! teksrc
+   use m_settextsizefac
    use fm_external_forcings_data
    use unstruc_display, only: klsrc
    use m_transport, only: isalt, itemp
@@ -109,3 +116,5 @@ subroutine teksorsin() ! teksrc
    end do
 
 end subroutine teksorsin
+
+end module m_teksorsin

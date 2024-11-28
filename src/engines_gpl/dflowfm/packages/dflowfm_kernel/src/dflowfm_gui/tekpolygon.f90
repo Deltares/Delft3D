@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekpolygon
+
+implicit none
+
+contains
+
    subroutine tekpolygon()
       use m_rcirc
       use m_polygon
@@ -167,3 +173,5 @@
 
       end if
    end subroutine tekpolygon
+
+end module m_tekpolygon

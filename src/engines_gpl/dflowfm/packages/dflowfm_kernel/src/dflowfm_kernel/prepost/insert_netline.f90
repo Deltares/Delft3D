@@ -36,6 +36,7 @@
 !! The direction and start cell is determined by specifying a single 'cross'
 !! link that will be split.
 recursive subroutine insert_netline(xp, yp, L_)
+   use m_teknet
    use m_netw
    use gridoperations
    use m_readyy

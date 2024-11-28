@@ -30,6 +30,16 @@
 !
 !
 
+module m_wriblu
+
+implicit none
+
+private
+
+public :: wriblu
+
+contains
+
  subroutine wriblu(mout) ! write bottom level u points
     use M_FLOWGEOM
     implicit none
@@ -44,3 +54,5 @@
     call doclose(mout)
 
  end subroutine wriblu
+
+end module m_wriblu

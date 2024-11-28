@@ -31,6 +31,16 @@
 !
 
 !> disable network nodes/samples outside curvilinear grid
+module m_disable_outside_curvigrid
+
+implicit none
+
+private
+
+public :: disable_outside_curvigrid
+
+contains
+
 subroutine disable_outside_curvigrid(Nk, Ns, xk, yk, xs, ys, imaskk, imasks)
    use m_grid
    use m_polygon
@@ -91,3 +101,5 @@ subroutine disable_outside_curvigrid(Nk, Ns, xk, yk, xs, ys, imaskk, imasks)
 
    return
 end subroutine disable_outside_curvigrid
+
+end module m_disable_outside_curvigrid

@@ -30,6 +30,12 @@
 !
 !
 
+module m_teknodenums
+
+implicit none
+
+contains
+
  subroutine TEKNODENUMS(MET, NCOL)
     use m_dhtext
     use m_dhitext
@@ -87,3 +93,5 @@
 
     return
  end subroutine TEKNODENUMS
+
+end module m_teknodenums

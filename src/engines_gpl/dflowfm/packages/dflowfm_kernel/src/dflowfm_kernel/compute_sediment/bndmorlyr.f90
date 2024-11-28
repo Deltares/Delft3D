@@ -30,6 +30,16 @@
 !
 !
 
+module m_bndmorlyr
+
+implicit none
+
+private
+
+public :: bndmorlyr
+
+contains
+
    subroutine bndmorlyr(lsedtot, timhr, nto, bc_mor_array, stmpar)
    !!--description-----------------------------------------------------------------
       !
@@ -42,8 +52,6 @@
       use table_handles, only: handletype, gettabledata
       use m_fm_erosed, only: bedbndtype, cmpbndtype
       use m_sediment, only: stmtype
-      !
-      implicit none
       !
       ! The following list of pointer parameters is used to point inside the gdp structure
       !
@@ -141,3 +149,5 @@
          end do
       end do
    end subroutine bndmorlyr
+
+end module m_bndmorlyr

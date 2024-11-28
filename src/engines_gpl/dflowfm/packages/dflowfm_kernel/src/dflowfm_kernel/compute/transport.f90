@@ -30,8 +30,25 @@
 !
 !
 
-subroutine transport() ! transport for now, advect salinity and add
-   ! high order limited terms to uqcx, uqcy
+module m_transport_sub
+use m_update_constituents, only: update_constituents
+use m_apply_tracer_bc, only: apply_tracer_bc
+use m_setequilibriumsedimentbnds, only: setequilibriumsedimentbnds
+
+
+implicit none
+
+private
+
+public :: transport
+
+contains
+
+!> transport for now, advect salinity and add
+!! high order limited terms to uqcx, uqcy
+subroutine transport() 
+   use m_setrho, only: setrho, setrhokk
+   use m_getverticallyaveraged
    use m_flowgeom
    use m_flow
    use Timers
@@ -48,8 +65,6 @@ subroutine transport() ! transport for now, advect salinity and add
    use m_get_Lbot_Ltop
    use m_get_equilibrium_transport_rates
    
-   implicit none
-
    integer :: L, k, k1, k2, kb, n
 
    double precision :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
@@ -423,3 +438,5 @@ subroutine transport() ! transport for now, advect salinity and add
    call timstop(handle_extra(52)) ! transport
 
 end subroutine transport
+
+end module m_transport_sub

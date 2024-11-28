@@ -365,6 +365,7 @@ contains
 
 !> create and store the new nodes in directional refinequads_casulli
    subroutine makenodes_directional(xp, yp, Lstart, ierror)
+      use m_assign_icjc, only: assign_icjc
       use m_confrm
       use unstruc_colors, only: ncolln
       use m_tek_link

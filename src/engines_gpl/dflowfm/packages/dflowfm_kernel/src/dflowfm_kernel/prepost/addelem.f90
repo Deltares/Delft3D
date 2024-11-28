@@ -30,16 +30,27 @@
 !
 !
 
+module m_addelem
+use m_connect, only: connect
+
+implicit none
+
+private
+
+public :: addelem
+
+contains
+
   subroutine ADDELEM(K1, K2)
      use M_AFMETING
      use m_settings
      use m_cconstants
-     implicit none
+     use m_dlength, only: dlength
+
      integer :: K1, K2
 
      double precision :: a0
      double precision :: r0
-     double precision :: DLENGTH
      
      if (JANET == 1) then
         A0 = PI * RDIAM * RDIAM / 4
@@ -50,3 +61,5 @@
      call CONNECT(K1, K2, 1, R0)
      return
   end subroutine ADDELEM
+
+end module m_addelem

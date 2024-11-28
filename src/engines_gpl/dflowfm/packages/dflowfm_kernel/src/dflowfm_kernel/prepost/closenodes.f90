@@ -30,13 +30,24 @@
 !
 !
 
+module m_closenodes
+
+implicit none
+
+private
+
+public :: closenodes
+
+contains
+
   subroutine CLOSENODES(K, KK, JA) ! ARE THESE NODES CLOSE, BUT UNCONNECTED?
 
+     use m_closeenough, only: closeenough
      use m_netw
      use m_wearelt
      use gridoperations
+     use m_dlength, only: dlength
 
-     implicit none
      integer :: K, KK, JA
 
      integer :: k2
@@ -44,7 +55,7 @@
      integer :: n
      integer :: nx
 
-     double precision :: R0, R1, R2, DLENGTH, SHORTESTLINK
+     double precision :: R0, R1, R2, SHORTESTLINK
      JA = 0
      R0 = DLENGTH(K, KK)
      if (R0 > 6d0 * RCIR) return
@@ -76,3 +87,5 @@
 
      return
   end subroutine CLOSENODES
+
+end module m_closenodes

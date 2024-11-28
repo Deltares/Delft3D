@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekpoly
+
+implicit none
+
+contains
+
       subroutine tekpoly(n, x, y, ncol)
          use m_set_col
          use m_movabs
@@ -51,3 +57,5 @@
 
          return
       end
+
+end module m_tekpoly

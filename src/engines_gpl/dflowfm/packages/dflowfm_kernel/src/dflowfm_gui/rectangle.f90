@@ -30,6 +30,12 @@
 !
 !
 
+module m_rectangle
+
+implicit none
+
+contains
+
       subroutine RECTANGLE(x1, y1, x2, y2)
          use unstruc_opengl
          use m_pfiller_core
@@ -52,3 +58,5 @@
          end if
 
       end subroutine
+
+end module m_rectangle

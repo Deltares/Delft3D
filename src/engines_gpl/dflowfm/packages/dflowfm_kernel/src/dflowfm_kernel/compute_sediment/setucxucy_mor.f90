@@ -30,6 +30,16 @@
 !
 !
 
+module m_setucxucy_mor
+
+implicit none
+
+private
+
+public :: setucxucy_mor
+
+contains
+
    ! =================================================================================================
    ! =================================================================================================
    subroutine setucxucy_mor(u1_loc)
@@ -467,3 +477,5 @@
       end do
 
    end subroutine setucxucy_mor
+
+end module m_setucxucy_mor

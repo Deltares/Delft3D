@@ -31,6 +31,7 @@
 !
 
    subroutine Triangulatesamplestonetwork(JADOORLADEN)
+      use m_checktriangle, only: checktriangle
       use m_netw, only: numk, numl, kn, xk, yk, zk, nb, LMAX, KMAX
       use M_SAMPLES
       use m_ec_triangle

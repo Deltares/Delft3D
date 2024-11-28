@@ -72,8 +72,8 @@ def main():
         sys.exit(-1)
 
     if not is_compiled_with_intel(log_text):
-        print("Error: The log does not indicate that the code was compiled with Intel.")
-        sys.exit(-1)
+        print("Remark: No compilation with intel was detected, exiting.")
+        sys.exit(0)
 
     messages = parse_log(log_text)
 

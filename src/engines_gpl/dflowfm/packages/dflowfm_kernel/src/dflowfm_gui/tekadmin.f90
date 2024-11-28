@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekadmin
+
+implicit none
+
+contains
+
       subroutine TEKADMIN(X, Y, I, J)
          use m_draw_text
          implicit none
@@ -69,3 +75,5 @@
          call DRAWTEXT(real(X), real(Y), TEX(1:L))
          return
       end
+
+end module m_tekadmin

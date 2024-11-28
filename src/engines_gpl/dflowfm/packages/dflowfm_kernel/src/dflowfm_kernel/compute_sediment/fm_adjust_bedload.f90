@@ -30,6 +30,16 @@
 !
 !
 
+module m_fm_adjust_bedload
+
+implicit none
+
+private
+
+public :: fm_adjust_bedload
+
+contains
+
    subroutine fm_adjust_bedload(sbn, sbt, avalan, slopecor)
       use m_physcoef, only: ag
       use m_sferic, only: pi
@@ -264,3 +274,5 @@
       end do ! Lf
 
    end subroutine fm_adjust_bedload
+
+end module m_fm_adjust_bedload

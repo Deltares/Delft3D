@@ -30,10 +30,20 @@
 !
 !
 
+module m_alreadypenta
+
+implicit none
+
+private
+
+public :: alreadypenta
+
+contains
+
   subroutine ALREADYPENTA(K1, K2, K3, K4, K5, JA)
      use m_netw
      use m_qnerror
-     implicit none
+
      integer :: K1, K2, K3, K4, K5, JA
 
      integer :: n1
@@ -67,5 +77,7 @@
            end if
         end if
      end do
-     return
+
   end subroutine ALREADYPENTA
+
+end module m_alreadypenta

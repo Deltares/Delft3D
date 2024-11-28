@@ -32,6 +32,7 @@
 
    subroutine regrid1D(jaregrid) ! based on 1D net itself, 1 = regrid, otherwise 1dgrid to pol
 
+      use m_accumulatedistance, only: accumulatedistance
       use m_flowgeom
       use m_flow
       use m_netw

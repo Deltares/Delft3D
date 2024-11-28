@@ -32,6 +32,12 @@
 
 ! =================================================================================================
 ! =================================================================================================
+module m_getucxucyweironly
+
+implicit none
+
+contains
+
  subroutine getucxucyweironly(ku, ucxku, ucyku)
     use m_flow
     use m_flowgeom
@@ -92,3 +98,5 @@
     ucyku = ucyku / ba(ku)
 
  end subroutine getucxucyweironly
+
+end module m_getucxucyweironly

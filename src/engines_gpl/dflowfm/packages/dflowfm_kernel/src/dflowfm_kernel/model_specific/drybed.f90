@@ -30,11 +30,25 @@
 !
 !
 
+module m_drybed
+use m_compareanalytic, only: compareanalytic
+
+
+implicit none
+
+private
+
+public :: drybed
+
+contains
+
  subroutine drybed(time)
     use m_movabs
     use m_lnabs
-    implicit none
-    double precision :: time, xm, xmx, h0, dxw
+
+    double precision :: time
+    
+    double precision :: xm, xmx, h0, dxw
     integer, parameter :: mmax = 601 !  3000
     double precision :: s(0:mmax), u(0:mmax), xx(0:mmax)
     double precision :: g, t, cw, xl, xr, sa, ua, x
@@ -75,3 +89,5 @@
 
     call compareanalytic(s, xx, mmax)
  end subroutine drybed
+
+end module m_drybed

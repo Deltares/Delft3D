@@ -30,13 +30,23 @@
 !
 !
 
+module m_adjacent
+use m_closeenough, only: closeenough
+
+implicit none
+
+private
+
+public :: adjacent
+
+contains
+
   subroutine adjacent(x1, y1, x2, y2, x3, y3, x4, y4, ja, k1k, k2k)
 
      use m_missing, only: dmiss
      use m_sferic, only: jsferic, jasfer3D
      use geometry_module, only: dbdistance, dlinedis
 
-     implicit none
      integer :: jac
      double precision :: x1, y1, x2, y2, x3, y3, x4, y4
      integer :: ja, k1k, k2k
@@ -90,3 +100,5 @@
      end if
 
   end subroutine adjacent
+
+end module m_adjacent

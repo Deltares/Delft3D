@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekbanfs
+
+implicit none
+
+contains
+
 subroutine tekbanfs()
    use m_isocol
    use m_dhtext
@@ -79,3 +85,5 @@ subroutine tekbanfs()
    end do
 
 end subroutine tekbanfs
+
+end module m_tekbanfs

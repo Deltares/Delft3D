@@ -40,11 +40,11 @@ contains
     use m_flowgeom, only: lnxi, lnx1d, lncn, wu, dx
     use network_data
     use m_alloc
+    use m_zlin
     implicit none
     integer :: L, k, k1, k2, ierr, ja
     real, allocatable, save :: rn(:)
     double precision :: zL, aL
-    double precision :: zlin
 
     ja = 0
     if (.not. allocated(rn)) then

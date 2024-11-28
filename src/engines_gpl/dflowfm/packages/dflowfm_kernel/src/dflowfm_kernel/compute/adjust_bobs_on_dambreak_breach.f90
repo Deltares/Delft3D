@@ -31,6 +31,16 @@
 !
 
 !> Calculate the links affected by the dam break and sets bobs accordingly
+module m_adjust_bobs_on_dambreak_breach
+
+implicit none
+
+private
+
+public :: adjust_bobs_on_dambreak_breach
+
+contains
+
 subroutine adjust_bobs_on_dambreak_breach(width, maxwidth, crl, startingLink, L1, L2, strucid)
 
    use m_flowgeom
@@ -159,3 +169,5 @@ subroutine adjust_bobs_on_dambreak_breach(width, maxwidth, crl, startingLink, L1
    end if
 
 end subroutine adjust_bobs_on_dambreak_breach
+
+end module m_adjust_bobs_on_dambreak_breach

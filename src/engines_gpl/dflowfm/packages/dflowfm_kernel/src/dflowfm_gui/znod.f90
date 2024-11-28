@@ -30,6 +30,14 @@
 !
 !
 
+module m_znod
+use m_getfetch, only: getfetch
+
+
+implicit none
+
+contains
+
  double precision function znod(kk) ! get various values at flow nodes
     use m_getktoplot
     use m_flow
@@ -42,7 +50,7 @@
     use m_observations_data
     use m_flowparameters, only: ispirparopt
     use m_wind, only: jawind
-    use unstruc_display, only: grwhydopt
+    use unstruc_display_data, only: grwhydopt
     use m_drawthis
     use m_get_equilibrium_transport_rates
     use m_get_tau
@@ -504,3 +512,5 @@
        end select
     end if
  end function znod
+
+end module m_znod

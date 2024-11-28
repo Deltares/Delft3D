@@ -30,13 +30,19 @@
 !
 !
 
+module m_getverticallyaveraged
+
+implicit none
+
+contains
+
 subroutine getverticallyaveraged(sal, mx)
    use m_flow
    use m_flowgeom
    use m_get_kbot_ktop
    implicit none
-   double precision :: sal(mx)
    integer :: n, k, kb, kt, mx
+   double precision :: sal(mx)
 
    do n = 1, ndx
       call getkbotktop(n, kb, kt)
@@ -49,3 +55,5 @@ subroutine getverticallyaveraged(sal, mx)
       end if
    end do
 end subroutine getverticallyaveraged
+
+end module m_getverticallyaveraged

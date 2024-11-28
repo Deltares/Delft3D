@@ -30,17 +30,26 @@
 !
 !
 
+module m_thacker1d
+
+implicit none
+
+private
+
+public :: thacker1d
+
+contains
+
  subroutine thacker1d(ini, xz, yz, s1, bl, ndx, t)
-    use m_netw
+    use m_netw, only: numk, xk, zk
     use m_sferic
-    use m_physcoef
-    use m_flowparameters
+    use m_physcoef, only: ag
+    use m_flowparameters, only: ibedlevtyp
     use m_set_bobs
     use m_inview
     use m_movabs
     use m_lnabs
 
-    implicit none
     integer :: ndx, ini
     double precision :: dep, xz(ndx), yz(ndx), s1(ndx), bl(ndx), t
     integer :: is, k
@@ -108,3 +117,5 @@
     uy = -psi * omeg * ct
 
  end subroutine thacker1d
+
+end module m_thacker1d

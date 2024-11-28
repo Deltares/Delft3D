@@ -31,6 +31,7 @@
 !
 
 module m_oned_functions
+   use m_vol12d, only: vol12d
    use m_missing, only: dmiss
    implicit none
    private

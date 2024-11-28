@@ -69,6 +69,19 @@
 ! subroutines from net.F90
 !----------------------------------------------------------------------
 module m_choices
+use m_detect_ridges, only: detect_ridges
+use m_del_badortholinks, only: del_badortholinks
+use m_delnetzkabovezkuni, only: delnetzkabovezkuni
+use m_delnet, only: delnet
+use m_deleteselectedsplines, only: deleteselectedsplines
+use m_deleteselectedobservations, only: deleteselectedobservations
+use m_cutcell_list, only: cutcell_list
+use m_curvilineargridinpolygon, only: curvilineargridinpolygon
+use m_curvilineargridfromsplines, only: curvilineargridfromsplines
+use m_createsamplesinpolygon, only: createsamplesinpolygon
+use m_copypolto1dnet, only: copypolto1dnet
+use m_connectcurvilinearquadsddtype, only: connectcurvilinearquadsddtype
+use m_zerowaterdepth
 use m_plusabs_flow
 use m_plusabsi
 use m_plusabsd
@@ -120,6 +133,8 @@ contains
       use m_draw_nu
       use m_set_bobs
       use m_interpdivers
+      use m_derefine_mesh, only: derefine_mesh
+      use m_coarsen_mesh, only: coarsen_mesh
 
       implicit none
       integer :: ja, n12, ikey, mnx
@@ -127,7 +142,7 @@ contains
       integer :: irerun ! orthogonalisenet: rerun
       integer :: maxopt, ierr
       integer, parameter :: MAXOP = 64
-      character * 40 OPTION(MAXOP), exp(MAXOP)
+      character(len=40) :: OPTION(MAXOP), exp(MAXOP)
       integer, external :: flow_modelinit
 
       if (netstat /= NETSTAT_OK) call setnodadm(0)

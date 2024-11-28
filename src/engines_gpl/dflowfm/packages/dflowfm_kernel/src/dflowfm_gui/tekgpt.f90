@@ -30,9 +30,16 @@
 !
 !
 
+module m_tekgpt
+
+implicit none
+
+contains
+
       subroutine TEKGPT(X, Y, mmax, nmax, MC, NC, &
                         MP, NP, NCOL, RD1)
 !     TEKEN GRIDLIJNEN UITKOMEND OP DIT PUNT
+         use m_setxor
          use m_isocol
          use m_cir
          use m_missing
@@ -90,3 +97,5 @@
          call SETXOR(1)
          return
       end subroutine tekgpt
+
+end module m_tekgpt

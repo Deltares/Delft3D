@@ -31,6 +31,8 @@
 !
 
 module m_editgridlineblok
+use m_shwxyz
+use m_selecteditmode
 use m_ispoin
 use m_editgridlineshift
 

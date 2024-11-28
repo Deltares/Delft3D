@@ -30,6 +30,16 @@
 !
 !
 
+module m_writesluices
+
+implicit none
+
+private
+
+public :: writesluices
+
+contains
+
  subroutine writesluices()
     integer :: mgat = 0, mgat2 = 0, k, j
     double precision :: t(6), h(6), tim, zgt, bed
@@ -67,3 +77,5 @@
     call doclose(mgat2); mgat2 = -1
 
  end subroutine writesluices
+
+end module m_writesluices

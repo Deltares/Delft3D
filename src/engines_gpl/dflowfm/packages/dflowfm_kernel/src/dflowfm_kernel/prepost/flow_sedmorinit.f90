@@ -31,6 +31,7 @@
 !
 
 subroutine flow_sedmorinit()
+   use m_inipointers_erosed, only: inipointers_erosed
    use m_sediment
    use m_rdstm
    use m_flow, only: kmx, ndkx, iturbulencemodel

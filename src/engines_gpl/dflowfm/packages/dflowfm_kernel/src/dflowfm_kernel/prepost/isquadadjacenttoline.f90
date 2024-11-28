@@ -31,6 +31,7 @@
 !
 
   subroutine isquadadjacenttoline(L1, n, L2)
+     use m_adjacent, only: adjacent
      use m_netw
      implicit none
      integer :: L1, n, L2

@@ -30,6 +30,16 @@
 !
 !
 
+module m_duneaval
+
+implicit none
+
+private
+
+public :: duneaval
+
+contains
+
 subroutine duneaval(error)
    use m_fm_erosed
    use m_sediment
@@ -97,3 +107,5 @@ subroutine duneaval(error)
    error = .false.
 1234 continue
 end subroutine duneaval
+
+end module m_duneaval

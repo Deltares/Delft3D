@@ -27,6 +27,16 @@
 !
 !-------------------------------------------------------------------------------
 
+module m_tabellenboek
+
+implicit none
+
+private
+
+public :: tabellenboek
+
+contains
+
 double precision function tabellenboek(d1, eweir, qunit, qvolk)
 !-------------------------------------------------------------------------------
 !!--description-----------------------------------------------------------------
@@ -207,3 +217,5 @@ double precision function tabellenboek(d1, eweir, qunit, qvolk)
    f2 = (1 - theta) * f2low + theta * f2up
    tabellenboek = f1 * d1**f2
 end function tabellenboek
+
+end module m_tabellenboek

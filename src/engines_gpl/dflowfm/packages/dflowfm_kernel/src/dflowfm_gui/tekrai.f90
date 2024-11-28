@@ -30,8 +30,27 @@
 !
 !
 
+module m_tekrai
+use m_wetbed, only: wetbed
+use m_thacker1d, only: thacker1d
+use m_model_specific, only: equatorial, poiseuille
+use m_drybed, only: drybed
+use m_coriolistilt, only: coriolistilt
+use m_corioliskelvin, only: corioliskelvin
+use m_carrier, only: carrier
+use m_belanger, only: belanger
+use m_tektransport1d
+use m_tekrailinesbathy
+use m_tekrailines
+
+implicit none
+
+contains
+
  subroutine tekrai(nsiz)
 
+    use m_setwor_rai
+    use m_setwor
     use m_linewidth
     use m_isofil
     use m_isocol2
@@ -65,6 +84,8 @@
     use m_view_port
     use m_movabs
     use m_lnabs
+    use m_zlin
+    use m_znod
 
     implicit none
 
@@ -81,7 +102,6 @@
     double precision :: xmn, xmx, ymx, zmx, zmx2, bot, top, xx, yy, bup, xxu, zzu
     double precision :: xp(4), yp(4), zp(4), xxmn, xxmx, zn, dlay, dl, xp1, yp1, qsrck
     integer :: mx, kb, kt, Lb, Lt, LL, kplotfrombedorsurfacesav, ierror, numcrossedlinks, japol = 0
-    double precision, external :: znod, zlin
 
     double precision, allocatable :: plotlin2(:)
     integer, allocatable :: ip(:), ip2(:)
@@ -693,3 +713,5 @@
 
     return
  end subroutine tekrai
+
+end module m_tekrai

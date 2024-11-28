@@ -30,6 +30,12 @@
 !
 !
 
+module m_flgsd2fm
+
+implicit none
+
+contains
+
 subroutine flgsd2fm(wsd, wstr, zs, w2, zb2, dg, ds1, ds2, elu, hd, rhoast,    &
                 & cgd, imag, ds, lambda)
 !!--description-----------------------------------------------------------------
@@ -159,3 +165,5 @@ subroutine flgsd2fm(wsd, wstr, zs, w2, zb2, dg, ds1, ds2, elu, hd, rhoast,    &
       ds = (-bg + sqrt(det)) / (2.0d0 * ag)
    end if
 end subroutine flgsd2fm
+
+end module m_flgsd2fm

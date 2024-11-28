@@ -31,6 +31,16 @@
 !
 
 !> Update the cumulative flow analysis parameters and compute the flow Courant number, just before writing to the netcdf file
+module m_update_flowanalysis_parameters
+
+implicit none
+
+private
+
+public :: updateFlowAnalysisParameters
+
+contains
+
 subroutine updateFlowAnalysisParameters()
    use m_flow
    use m_flowgeom
@@ -52,3 +62,5 @@ subroutine updateFlowAnalysisParameters()
       flowCourantNumber(n) = flowCourantNumber(n) * dts
    end do
 end subroutine updateFlowAnalysisParameters
+
+end module m_update_flowanalysis_parameters

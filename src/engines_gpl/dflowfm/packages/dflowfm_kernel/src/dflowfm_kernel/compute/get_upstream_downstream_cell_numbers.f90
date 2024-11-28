@@ -31,6 +31,12 @@
 !
 
 !> get upstream downstream cell numbers
+module m_get_upstream_downstream_cell_numbers
+
+implicit none
+
+contains
+
 subroutine get_upstream_downstream_cell_numbers(left_cell_upstream, left_cell, right_cell, &
                                                 upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
 
@@ -60,3 +66,5 @@ subroutine get_upstream_downstream_cell_numbers(left_cell_upstream, left_cell, r
    end if
 
 end subroutine get_upstream_downstream_cell_numbers
+
+end module m_get_upstream_downstream_cell_numbers

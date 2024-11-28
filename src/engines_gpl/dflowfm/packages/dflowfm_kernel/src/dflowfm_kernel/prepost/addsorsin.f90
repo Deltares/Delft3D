@@ -30,6 +30,16 @@
 !
 !
 
+module m_addsorsin
+
+implicit none
+
+private
+
+public :: addsorsin
+
+contains
+
  subroutine addsorsin(filename, area, ierr)
 
     use fm_external_forcings_data
@@ -45,8 +55,6 @@
     use MessageHandling, only: IdLen
     use m_find_flownode, only: find_nearest_flownodes
     use m_reapol
-
-    implicit none
 
     character(len=*), intent(in) :: filename
     double precision, intent(in) :: area
@@ -176,3 +184,5 @@
 8888 continue
 
  end subroutine addsorsin
+
+end module m_addsorsin

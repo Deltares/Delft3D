@@ -30,6 +30,16 @@
 !
 !
 
+module m_widarhyr
+
+implicit none
+
+private
+
+public :: widarhyr
+
+contains
+
 subroutine widarhyr(hpr, dz, wu2, wid, ar, hyr)
    use m_flow, only: slotw2D
    implicit none
@@ -52,3 +62,5 @@ subroutine widarhyr(hpr, dz, wu2, wid, ar, hyr)
       hyr = ar / per
    end if
 end subroutine widarhyr
+
+end module m_widarhyr

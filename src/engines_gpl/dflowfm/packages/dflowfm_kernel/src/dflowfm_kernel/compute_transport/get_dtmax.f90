@@ -31,6 +31,16 @@
 !
 
 !> get maximum timestep for water columns (see setdtorg)
+module m_get_dtmax
+
+implicit none
+
+private
+
+public :: get_dtmax
+
+contains
+
 subroutine get_dtmax()
    use m_flowgeom, only: Ndx, Ndxi, bl, ln, lnx, ba
    use m_flow, only: s1, epshu, squ, sqi, vol1, kmx, diusp, viu, Lbot, Ltop, jaimplicitfallvelocity
@@ -215,3 +225,5 @@ subroutine get_dtmax()
    if (timon) call timstop(ithndl)
    return
 end subroutine get_dtmax
+
+end module m_get_dtmax

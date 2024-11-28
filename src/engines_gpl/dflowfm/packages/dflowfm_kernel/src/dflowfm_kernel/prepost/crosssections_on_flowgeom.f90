@@ -27,229 +27,16 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_crosssections_on_flowgeom
 
-!!> Converts the current polylines to flux cross sections.
-!!! This means, finding shortest path of connected netlinks
-!!! between the active polyline points. The latter are first
-!!! snapped to the closest net nodes.
-!!!
-!!! Set jaExisting to 1, if the existing polylines in crs()%xp
-!!! have to be used (when called from flow flow_modelinit/obsinit)
-!subroutine poltocrs(jaExisting, jaKeepPol)
-!use m_polygon
-!use m_crosssections
-!use m_missing
-!use network_data
-!use unstruc_colors
-!use m_alloc
-!use unstruc_messages
-!implicit none
-!
-!integer :: jaExisting !< Use existing crs%xp instead of active polygon in xpl
-!integer :: jaKeepPol  !< Leave the CRS polylines active on screen (only useful in interactive mode, i.e., jaExisting==0)
-!
-!integer :: i, i1, ip, ip0, IPL, np, k, k1, k2, kmin, L, ja, ntrc, numnam
-!integer, allocatable :: kp(:), kk(:), crstp(:)
-!double precision :: dis, rmin, x0, y0, xx1, yy1, xkn, ykn, xn, yn, dpr, dprmin, sl
-!double precision :: dbdistance, dprodin
-!double precision, allocatable :: xtrc(:), ytrc(:) !< The cross sections that are traced along netnodes
-!character(len=64) :: namcrs
-!
-!if (allocated(nampli)) then
-!    numnam = size(nampli)
-!else
-!    numnam = 0
-!end if
-!
-!! for jaExisting, copy existing cross section polylines to active polylines in xpl
-!if (jaExisting == 1) then
-!    call savepol() ! xph now contains the onscreen polylines
-!    allocate(crstp(ncrs))
-!    ! Back up types of existing crss
-!    do i=1,ncrs
-!        crstp(i) = crs(i)%type
-!    end do
-!    call copycrosssectionstopol(1) ! overwrite existing crs
-!end if
-!
-!! No crss to be traced, return
-!if (npl == 0) then
-!    if (jaExisting == 1) then
-!        ! Restore original onscreen polylines when needed.
-!        call restorepol()
-!    end if
-!    return
-!end if
-!
-!! xpl contains the polylines that need to be traced as a crs.
-!! xtrc will contain the traced crs path after each iteration
-!allocate(kp(npl))
-!allocate(kk(maxpol)) ! Save net node nrs of traversed sequence (same pace as xk, yk).
-!allocate(xtrc(maxpol), ytrc(maxpol)) ! Save net node nrs of traversed sequence (same pace as xk, yk).
-!kp = -1
-!! First, snap the polyline points to the closest net nodes.
-!do i=1,npl
-!    if (xpl(i) == dmiss .or. ypl(i) == dmiss) cycle
-!
-!    rmin = huge(rmin)
-!    kmin = -1
-!    do k=1,numk
-!        ! AvD: todo, disable/skip 1D nodes?
-!        dis = dbdistance(xk(k), yk(k), xpl(i), ypl(i))
-!        if (dis < rmin) then
-!            rmin = dis
-!            kmin = k
-!        end if
-!    end do
-!    kp(i) = kmin
-!    !call cirr(xk(kmin), yk(kmin), ncolcrs)
-!end do
-!
-!ntrc = 0         ! xtrc(:) is used as placeholder for crs(ncrs)%xk(:), ntrc is growing nr of nodes
-!ip   = 0         ! position in array of coarse polylines xpl, if xpl(ip+1)==dmiss, start a new crs.
-!ipl  = 0         ! Nr of current polyline (to acces nampol)
-!do              ! Loop across polylines.
-!    ip0 = ip
-!
-!    ip  = ip+1
-!    if (ip > npl) exit    ! Last polyline was finished
-!    if (kp(ip) < 0) cycle ! Superfluous dmiss separator, skip to next point
-!
-!    kc = 0      ! Mark which net nodes are in the new crs.
-!    IPL = IPL + 1
-!    ntrc = 1
-!
-!    if (ipl > numnam) then
-!        namcrs = ' '
-!    else
-!        namcrs = nampli(ipl)
-!    end if
-!
-!    k        = kp(ip)
-!    kc(k)    = 1
-!    xtrc(ntrc) = xk(k)
-!    ytrc(ntrc) = yk(k)
-!    kk(ntrc )  = k
-!    ! For each polyline segment, find closest connected path of net links.
-!pli:do          ! Loop across the segments of current polyline. i=1,np-1
-!        if (ip == npl) exit
-!        k  = kp(ip)
-!        k1 = kp(ip+1)
-!        if (k1 <= 0) exit ! End of current polyline, jump to next
-!
-!        x0  = xk(k)  ! Segment's start point
-!        y0  = yk(k)
-!        xx1 = xk(k1) ! Segment's end point
-!        yy1 = yk(k1)
-!
-!  path: do      ! Loop until path of net links has reached node k1 (k==k1).
-!            if (k==k1) exit
-!
-!            ! Search line from current point to next polyline point.
-!            dis = dbdistance(xk(k), yk(k), xk(k1), yk(k1))
-!            dis = dis*dis
-!
-!            ! Next, find the link with smallest angle to line towards xx1,yy1
-!            dprmin = huge(dprmin)
-!            kmin   = 0
-!            ! Projected the current point k on line 0-1, that is the start of new search axis.
-!            call dlinedis(xk(k), yk(k), x0, y0, xx1, yy1,ja,dpr,xkn,ykn)
-!            do L=1,nmk(k)
-!                call othernode(k, nod(k)%lin(L), k2)
-!                if (kc(k2) == 1) then
-!                    if (ip == npl-1 .and. k2 == kk(1)) then
-!                        continue ! Point was used before, but allow it anyway (closing point of close polygon)
-!                    else
-!                        cycle ! Node already in crs
-!                    end if
-!                end if
-!
-!                ! Distance to line between projected previous point xkn and
-!                ! endpoint xx1 should be small, i.e., close to original polyline segment.
-!                call dlinedis2(xk(k2), yk(k2), xkn, ykn, xx1, yy1,ja,dpr,xn,yn, sl)
-!
-!                if (sl < -.01d0 .or. sl > 1.01d0) cycle ! Hardly allow backwards or beyond motion.
-!
-!                if (dpr < dprmin) then
-!                    dprmin = dpr
-!                    kmin   = k2
-!                end if
-!            end do
-!            if (kmin == 0) then
-!                ! Could not find a link leading any further towards xx1,yy1,
-!                ! Discard this entire polyline
-!                !npl = 0 ! Reset, to detect faulty cross section below
-!                do  ! Traverse current polyline to end, after that, exit to outer loop.
-!                    ip = ip + 1
-!                    if (ip == npl) exit pli
-!                    if (kp(ip) < 0) exit pli
-!                end do
-!            end if
-!
-!            ! Select the best direction.
-!            k     = kmin
-!            kc(k) = 1
-!            ! Add the current node to the new polyline.
-!            ntrc       = ntrc+1
-!            xtrc(ntrc) = xk(k)
-!            ytrc(ntrc) = yk(k)
-!            kk(ntrc)   = k
-!            !call cirr(xk(kmin), yk(kmin), ncolcrs)
-!        end do path ! net link path for a single polyline segment
-!        ! AvD: TODO: xtrc etc are now allocated at maxpol, potential overflow.
-!
-!        ip = ip + 1
-!    end do pli ! one polyline becomes one cross section
-!
-!    ! Create the new rai
-!    if (ntrc <= 1) then
-!        write(msgbuf, '(a,i2,a,a,a)') 'Cross section path incomplete or too short. Discarding #', ipl, ' (''', trim(namcrs), ''').'
-!        call msg_flush()
-!    else
-!        np = ip-ip0
-!        call newCrossSection(namcrs, np=np)
-!        if (jaExisting == 1) then
-!            crs(ncrs)%type = crstp(ipl)
-!        end if
-!
-!        crs(ncrs)%xp(1:np) = xpl(ip0+1:ip)
-!        crs(ncrs)%yp(1:np) = ypl(ip0+1:ip)
-!        crs(ncrs)%np = np
-!
-!        call allocCRSLinks(ncrs, ntrc-1)
-!        crs(ncrs)%xk  = xtrc(1:ntrc)
-!        crs(ncrs)%yk  = ytrc(1:ntrc)
-!        crs(ncrs)%kk  = kk(1:ntrc)
-!        crs(ncrs)%len = ntrc-1
-!    end if
-!    xtrc = dmiss
-!    ytrc = dmiss
-!    ntrc = 0
-!    mp   = 0
-!    mps  = 0
-!
-!    ! Proceed to next polyline/next cross section
-!end do ! multiple polylines/cross sections possible
-!
-!! Restore original onscreen polylines if existing crs's plis had overwritten them.
-!if (jaExisting == 1) then
-!    deallocate(crstp)
-!end if
-!if (jaKeepPol /= 1)  then
-!    call restorepol()
-!end if
-!
-!nampli = ' ' ! Reset names (to prevent them from being reused in subsequent interactive polylines)
-!deallocate(kp, kk, xtrc, ytrc)
-!
-!end subroutine poltocrs
-!> Put the polyline cross sections on flow links.
-!! The resulting link administration in the crspath structures is later
-!! used when computing cumulative data across the cross sections.
-!!
-!! \see update_values_on_cross_sections, fixedweirs_on_flowgeom, thindams_on_netgeom
+implicit none
+
+private
+
+public :: crosssections_on_flowgeom
+
+contains
+
 subroutine crosssections_on_flowgeom()
    use m_monitoring_crosssections
    use m_flowgeom, only: Lnx
@@ -265,7 +52,6 @@ subroutine crosssections_on_flowgeom()
    use m_wall_clock_time
    use m_find_crossed_links_kdtree2
    use m_crspath_on_flowgeom
-   implicit none
 
    integer :: ic, icmod
 
@@ -450,3 +236,5 @@ subroutine crosssections_on_flowgeom()
 
    return
 end subroutine crosssections_on_flowgeom
+
+end module m_crosssections_on_flowgeom

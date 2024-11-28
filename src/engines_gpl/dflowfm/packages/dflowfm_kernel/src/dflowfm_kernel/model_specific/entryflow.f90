@@ -30,9 +30,17 @@
 !
 !
 
-      ! ********************************************************************
+module m_entryflow
+
+implicit none
+
+private
+
+public :: entryflow
+
+contains
+
       subroutine ENTRYFLOW(Y0, J, U, DUDY, TKE, EPS, NUT, GAMT)
-! ********************************************************************
 !     STRATIFIED MIXING LAYER EXPERIMENTS BY DELFT HYDRAULICS
 !                           1987
 !
@@ -214,3 +222,5 @@
          GAMT = NUT / ST
          return
       end
+
+end module m_entryflow

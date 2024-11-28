@@ -32,6 +32,8 @@ module fm_statistical_output
    real(dp), dimension(:), allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
    real(dp), dimension(:), allocatable, target :: qplat_data
 
+   logical, public :: apply_statistics_on_output
+
 contains
 
    subroutine close_fm_statistical_output()
@@ -1785,7 +1787,7 @@ contains
                              'spiral_intensity', 'm/s', UNC_LOC_S)
       call add_output_config(config_set_map, IDX_MAP_NUMLIMDT, &
                              'Wrimap_numlimdt', 'Numlimdt', 'Number of times flow element was Courant limiting', &
-                             '', '1', UNC_LOC_S, description='Write the number times a cell was Courant limiting to map file. (Consider using Wrimap_flow_analysis instead.)')
+                             '', '1', UNC_LOC_S, description='Write the total number of times a cell was Courant limiting to map file. (Consider using Wrimap_flow_analysis instead.)')
       call add_output_config(config_set_map, IDX_MAP_TAUSX, &
                              'Wrimap_taucurrent', 'tausx', 'Total bed shear stress vector, x-component', &
                              '', 'N m-2', UNC_LOC_S, description='Write the shear stress to map file')
@@ -1802,32 +1804,32 @@ contains
                              'Wrimap_z0', 'z0ucur', 'Current related roughness height', &
                              '', 'm', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_Z0UROU, &
-                             'Wrimap_salinity', 'z0urou', 'Current-wave related roughness height', &
-                             '', 'm', UNC_LOC_U, description='Write salinity to map file')
+                             'Wrimap_z0_wave', 'z0urou', 'Current-wave related roughness height', &
+                             '', 'm', UNC_LOC_U, description='Write current-wave related roughness height to map file')
       call add_output_config(config_set_map, IDX_MAP_SA1, &
-                             'Wrimap_chezy', 'sa1', 'Salinity in flow element', &
-                             'sea_water_salinity', '1e-3', UNC_LOC_S, description='Write the chezy values in flow elements to map file')
+                             'Wrimap_salinity', 'sa1', 'Salinity in flow element', &
+                             'sea_water_salinity', '1e-3', UNC_LOC_S, description='Write salinity to map file')
       call add_output_config(config_set_map, IDX_MAP_CZS, &
-                             'Wrimap_chezy_on_flow_links', 'czs', 'Chezy roughness in flow element center', &
+                             'Wrimap_chezy', 'czs', 'Chezy roughness in flow element center', &
                              '', 'm0.5s-1', UNC_LOC_S, description='Write the chezy values on flow links to map file')
       call add_output_config(config_set_map, IDX_MAP_CZU, &
-                             'Wrimap_input_roughness', 'czu', 'Chezy roughness on flow links', &
+                             'Wrimap_chezy_on_flow_links', 'czu', 'Chezy roughness on flow links', &
                              '', 'm0.5s-1', UNC_LOC_U, description='Write the input roughness on flow links to map file')
       call add_output_config(config_set_map, IDX_MAP_CFU, &
                              'Wrimap_input_roughness', 'cfu', 'Input roughness on flow links', &
                              '', '-', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_CFUTYP, &
-                             'Wrimap_temperature', 'cfutyp', 'Input roughness type on flow links', &
+                             'Wrimap_input_roughness', 'cfutyp', 'Input roughness type on flow links', &
                              '', '', UNC_LOC_U, id_nc_type=id_nc_int)
       call add_output_config(config_set_map, IDX_MAP_TEM1, &
                              'Wrimap_constituents', 'tem1', 'Temperature in flow element', &
-                             'sea_water_temperature', 'degC', UNC_LOC_S, description='Write constituents to map file')
+                             'sea_water_temperature', 'degC', UNC_LOC_S, description='Write temperature to map file')
+      call add_output_config(config_set_map, IDX_MAP_SED, &
+                             'Wrimap_sediment', 'sed', 'Sediment concentration', &
+                             '', '-', UNC_LOC_S, description='Write sediment concentrations to map file')
       call add_output_config(config_set_map, IDX_MAP_CONST, &
-                             'Wrimap_sediment', 'const', '', &
-                             '', '-', UNC_LOC_S, description='Write sediment fractions to map file')
-      call add_output_config(config_set_map, IDX_MAP_MORS, &
-                             'Wrimap_turbulence', 'mors', '', &
-                             '', '-', UNC_LOC_S, description='Write vicww, k and eps to map file')
+                             'Wrimap_sediment', 'const', 'Constituents', &
+                             '', '-', UNC_LOC_S, description='Write constiuents to map file')
       call add_output_config(config_set_map, IDX_MAP_TURKIN1, &
                              'Wrimap_turbulence', 'turkin1', 'turbulent kinetic energy', &
                              'specific_turbulent_kinetic_energy_of_sea_water', 'm2 s-2', UNC_LOC_WU)
@@ -2474,7 +2476,7 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DISCHARGE_MAGNITUDE), valobs(:, IPNT_QMAG))
             end if
          end if
-         
+
          ! Turbulence model
          if (jahistur > 0) then
             if (model_is_3D()) then
@@ -2852,8 +2854,8 @@ contains
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_CFU                                                       )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_CFUTYP                                                    )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TEM1                                                      )
+      !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_SED                                                      )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_CONST                                                     )
-      !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_MORS                                                      )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TURKIN1                                                   )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_VICWWU                                                    )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TUREPS1                                                   )
@@ -2958,6 +2960,7 @@ contains
       call process_output_quantity_configs(output_set)
       call realloc(output_set, .true.) ! set size to count
       call initialize_statistical_output(output_set%statout)
+      apply_statistics_on_output = any(station_statistics_requested(output_set%statout))
 
    end subroutine flow_init_statistical_output_his
 
@@ -2975,6 +2978,21 @@ contains
       end do
 
    end subroutine process_output_quantity_configs
+
+   !> return whether the output variable item is a station where the requested operation type is a statistical one
+   elemental function station_statistics_requested(item) result(res)
+      use m_statistical_output_types, only: SO_CURRENT, SO_NONE, SO_UNKNOWN
+
+      type(t_output_variable_item), intent(in) :: item !< output variable item to check
+      logical :: res !< Return value
+
+      if (allocated(item%output_config)) then
+         res = (.not. any(item%operation_type == [SO_CURRENT, SO_NONE, SO_UNKNOWN])) .and. item%output_config%location_specifier == UNC_LOC_STATION
+      else
+         res = .false.
+      end if
+
+   end function station_statistics_requested
 
    !> Deactivate invalid dimension IDs depending on model parameters
    subroutine process_nc_dim_ids(nc_dim_ids)

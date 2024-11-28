@@ -30,6 +30,12 @@
 !
 !
 
+module m_fdster
+
+implicit none
+
+contains
+
  subroutine fdster(dster, taucr, thetcr, pclay, g, d50, rhos, rhow, FCR)
     implicit none
     double precision :: dster, taucr, thetcr, pclay, g, d50, rhos, rhow, FCR
@@ -62,3 +68,5 @@
 
     TAUCR = (RHOS - RHOW) * G * D50 * THETCR
  end
+
+end module m_fdster

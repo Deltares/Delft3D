@@ -37,7 +37,7 @@ module m_update_values_on_cross_sections
 
    public :: update_values_on_cross_sections
 
-   real(dp) :: time_of_last_reset = -1.0_dp
+   real(dp) :: time_of_initialise = -1.0_dp
    real(dp) :: time_of_last_call
 
 contains
@@ -48,35 +48,38 @@ contains
       use precision, only: comparereal
       use m_flowtimes, only: time1
 
-      real(dp) :: time_since_last_reset, time_since_last_call
+      real(dp) :: time_since_initialise, time_since_last_call
       integer :: iv, icrs
 
       if (ncrs < 1) then
          return
       end if
 
-      if (comparereal(time_of_last_reset, -1.0_dp) == 0) then
+      if (comparereal(time_of_initialise, -1.0_dp) == 0) then
          call initialise_cross_section_integrals
       end if
 
       call integrate_over_cross_section_flowlinks
 
       time_since_last_call = time1 - time_of_last_call
-
-      if (comparereal(time_since_last_reset, 0.0_dp) == 0) then
-         time_since_last_reset = 1.0_dp ! So that the first time after resetting, we don't divide by zero in calculating the average
-      else
-         time_since_last_reset = time1 - time_of_last_reset
-      end if
+      time_since_initialise = time1 - time_of_initialise
 
       ! Update values of crs object
       do icrs = 1, ncrs
          do iv = 1, nval
             crs(icrs)%sumvalcur(iv) = crs_values(iv, icrs)
-            crs(icrs)%sumvalcum(iv) = crs(icrs)%sumvalcum(iv) + max(crs_timescales(iv), 1.0_dp) * time_since_last_call * crs_values(iv, icrs)
-            crs(icrs)%sumvalavg(iv) = crs(icrs)%sumvalcum(iv) / time_since_last_reset / max(crs_timescales(iv), 1.0_dp)
          end do
       end do
+
+      if (comparereal(time_since_initialise, 0.0_dp) == 1) then
+         ! Update values of cumulative and average crs objects
+         do icrs = 1, ncrs
+            do iv = 1, nval
+               crs(icrs)%sumvalcum(iv) = crs(icrs)%sumvalcum(iv) + max(crs_timescales(iv), 1.0_dp) * time_since_last_call * crs_values(iv, icrs)
+               crs(icrs)%sumvalavg(iv) = crs(icrs)%sumvalcum(iv) / time_since_initialise / max(crs_timescales(iv), 1.0_dp)
+            end do
+         end do
+      end if
 
       time_of_last_call = time1
 
@@ -111,7 +114,7 @@ contains
          crs(icrs)%sumvalavg = 0.0_dp
       end do
 
-      time_of_last_reset = time1
+      time_of_initialise = time1
       time_of_last_call = time1
 
    end subroutine initialise_cross_section_integrals

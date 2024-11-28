@@ -30,6 +30,14 @@
 !
 !
 
+module m_duikerstoprofs
+use m_closeto1dnetlink, only: closeto1dnetlink
+
+
+implicit none
+
+contains
+
  subroutine duikerstoprofs()
     use m_netw
     use m_flowgeom
@@ -90,3 +98,5 @@
 
     end do
  end subroutine duikerstoprofs
+
+end module m_duikerstoprofs

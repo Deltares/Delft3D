@@ -30,6 +30,10 @@
 !
 !
 module m_get_ustwav
+use m_swart, only: swart
+use m_soulsby, only: soulsby
+use m_getwavenr, only: getwavenr
+
    implicit none
 contains
 subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! at u-point, get ustarwave and get ustokes

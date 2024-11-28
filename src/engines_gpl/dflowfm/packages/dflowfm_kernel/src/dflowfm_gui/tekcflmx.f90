@@ -30,6 +30,12 @@
 !
 !
 
+module m_tekcflmx
+
+implicit none
+
+contains
+
  subroutine tekcflmx()
     use m_rcirc
     use m_flowgeom
@@ -44,3 +50,5 @@
        call HTEXT(dtsc, xz(kkcflmx), yz(kkcflmx))
     end if
  end subroutine tekcflmx
+
+end module m_tekcflmx

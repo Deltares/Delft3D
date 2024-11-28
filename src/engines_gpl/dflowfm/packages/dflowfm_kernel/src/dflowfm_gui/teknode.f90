@@ -30,6 +30,12 @@
 !
 !
 
+module m_teknode
+
+implicit none
+
+contains
+
   subroutine TEKNODE(KP, NCOL)
      use m_dptabs
      use m_dmovabs
@@ -74,3 +80,5 @@
      if (KC(KP) == -1) call DCIRR(XK(KP), YK(KP), ZK(KP), NCOL)
      return
   end subroutine TEKNODE
+
+end module m_teknode

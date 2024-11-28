@@ -30,7 +30,18 @@
 !
 !
 
+module m_update_s_explicit
+
+implicit none
+
+private
+
+public :: update_s_explicit
+
+contains
+
  subroutine update_s_explicit()
+    use m_sets01zbnd, only: sets01zbnd
     use m_flow
     use m_flowgeom
     use m_flowtimes
@@ -121,3 +132,5 @@
 
     return
  end subroutine update_s_explicit
+
+end module m_update_s_explicit

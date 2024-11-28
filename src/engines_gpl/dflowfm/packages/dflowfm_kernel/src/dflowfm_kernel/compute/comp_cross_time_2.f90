@@ -30,12 +30,23 @@
 !
 !
 
+module m_comp_cross_time_2
+
+implicit none
+
+private
+
+public :: comp_cross_time_2
+
+contains
+
 double precision function comp_cross_time_2(x1, x3, x4, v1, v3, v4, dclear)
 
    use m_missing
    use geometry_module, only: dlinedis
    use m_sferic, only: jsferic, jasfer3D
    use m_comp_roots4
+   use m_comp_cross_time_1, only: comp_cross_time_1
 
    implicit none
 
@@ -52,8 +63,6 @@ double precision function comp_cross_time_2(x1, x3, x4, v1, v3, v4, dclear)
    double precision :: t1, t2, DdDt
 
    integer :: i, ja
-
-   double precision, external :: comp_cross_time_1
 
    logical, external :: Lcrossgridline
 
@@ -151,3 +160,5 @@ double precision function comp_cross_time_2(x1, x3, x4, v1, v3, v4, dclear)
 
    return
 end function comp_cross_time_2
+
+end module m_comp_cross_time_2

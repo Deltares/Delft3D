@@ -30,6 +30,9 @@
 !
 !
 module m_get_ucx_ucy_eul_mag
+use m_getucxucyeuler
+use m_getucmag
+
    implicit none
 contains
 !> Computes/gets cell centered horizontal x/y velocities, either Eulerian or Lagrangian, and when requested also magnitude.

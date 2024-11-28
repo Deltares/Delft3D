@@ -30,6 +30,12 @@
 !
 !
 
+module m_iterfurufm
+
+implicit none
+
+contains
+
 logical function iterfurufm(m, su, sd, ustru, cu, rhsc, dxdt, lambda)
 
    !=======================================================================
@@ -108,3 +114,5 @@ logical function iterfurufm(m, su, sd, ustru, cu, rhsc, dxdt, lambda)
       iterfurufm = .false.
    end if
 end function iterfurufm
+
+end module m_iterfurufm

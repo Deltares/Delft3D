@@ -2,7 +2,7 @@ import re
 from typing import Any, Dict
 
 from lib.TeamCity import TeamCity
-from settings.teamcity_settings import DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID, KERNELS, DIMR_TO_NGHS_BUILD_TYPE_ID
+from settings.teamcity_settings import TEAMCITY_IDS, KERNELS
 
 
 class KernelVersionExtractor(object):
@@ -32,7 +32,7 @@ class KernelVersionExtractor(object):
             Dict[str, str]: A dictionary of "kernel name" -> "version"
         """
         latest_dimr_collector_build_info = self.__teamcity.get_build_info_for_latest_build_for_build_type_id(
-            build_type_id=DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID)
+            build_type_id=TEAMCITY_IDS.DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID.value)
         self.__kernel_versions = self.__extract_kernel_versions(build_info=latest_dimr_collector_build_info)
         return self.__kernel_versions
 
@@ -55,7 +55,7 @@ class KernelVersionExtractor(object):
     def get_branch_name(self) -> str:
         """ Returns the branch name from the latest release collector build. """
         latest_dimr_collector_build_info = self.__teamcity.get_build_info_for_latest_build_for_build_type_id(
-            build_type_id=DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID)
+            build_type_id=TEAMCITY_IDS.DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID.value)
         branch_name_property = next((prop for prop in latest_dimr_collector_build_info['resultingProperties']['property'] 
                         if prop['name'] == 'teamcity.build.branch'), None)
         self.__branch_name = branch_name_property['value']

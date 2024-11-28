@@ -30,6 +30,15 @@
 !
 !
 
+module m_heatu
+use m_qsun_nominal
+use m_heatun
+
+
+implicit none
+
+contains
+
 subroutine heatu(timhr)
    use m_flow
    use m_flowgeom
@@ -78,3 +87,5 @@ subroutine heatu(timhr)
 !$OMP END PARALLEL DO
 
 end subroutine heatu
+
+end module m_heatu

@@ -31,6 +31,12 @@
 !
 
 !
+module m_setxor
+
+implicit none
+
+contains
+
       subroutine SETXOR(I)
          implicit none
          integer :: i
@@ -43,3 +49,5 @@
 !
          return
       end
+
+end module m_setxor

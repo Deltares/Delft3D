@@ -30,6 +30,11 @@
 !
 !
 module m_help
+use m_search
+use m_searc2
+use m_scrolh
+use m_scrlpg
+
    implicit none
 contains
       subroutine HELP(WRDKEY, NLEVEL)

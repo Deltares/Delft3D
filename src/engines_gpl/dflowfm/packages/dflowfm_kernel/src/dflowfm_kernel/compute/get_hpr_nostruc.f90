@@ -35,6 +35,12 @@
 !! on it, based on current water depth.
 !! By default, hu(L) is returned when no structure is present, or when the
 !! setting ChangeVelocityAtStructures is off (0).
+module m_get_hpr_nostruc
+
+implicit none
+
+contains
+
 pure function get_hpr_nostruc(L) result(hpr)
    use m_flowgeom, only: bob, bob0
    use m_flow, only: hu, u1
@@ -56,3 +62,5 @@ pure function get_hpr_nostruc(L) result(hpr)
       end if
    end if
 end function get_hpr_nostruc
+
+end module m_get_hpr_nostruc

@@ -35,6 +35,16 @@
 !>      within the selecting polygon, and
 !>      either close to the net boundary, or
 !>      not close to the net boundary
+module m_admin_landboundary_segments
+
+implicit none
+
+private
+
+public :: admin_landboundary_segments
+
+contains
+
 subroutine admin_landboundary_segments()
    use m_landboundary
    use m_polygon
@@ -45,7 +55,6 @@ subroutine admin_landboundary_segments()
    use m_copynetboundstopol
    use m_d_line_dis3
 
-   implicit none
    integer, allocatable, dimension(:) :: lanmask ! mask the parts of the landboundary that are within the polygon
    !   0: inactive
    !  -1: active, not member of an edge close to land boundary
@@ -207,3 +216,5 @@ subroutine admin_landboundary_segments()
 
    return
 end subroutine admin_landboundary_segments
+
+end module m_admin_landboundary_segments

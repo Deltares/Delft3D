@@ -30,10 +30,20 @@
 !
 !
 
+module m_alreadytri
+
+implicit none
+
+private
+
+public :: alreadytri
+
+contains
+
   subroutine ALREADYTRI(K1, K2, K3, JA)
      use m_netw
      use m_qnerror
-     implicit none
+
      integer :: K1, K2, K3, JA
 
      integer :: n1
@@ -55,5 +65,7 @@
            end if
         end if
      end do
-     return
+
   end subroutine ALREADYTRI
+
+end module m_alreadytri

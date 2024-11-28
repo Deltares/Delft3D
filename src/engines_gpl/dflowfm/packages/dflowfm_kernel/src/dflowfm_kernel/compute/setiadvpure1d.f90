@@ -27,14 +27,21 @@
 !
 !-------------------------------------------------------------------------------
 
-! update iadvec flag if Pure1D is switched on
+module m_setiadvpure1d
+
+implicit none
+
+private
+
+public :: setiadvpure1d
+
+contains
+
+!> update iadvec flag if Pure1D is switched on
 subroutine setiadvpure1D(jaPure1D)
    use m_flowgeom, only: lnx1d, lnxi, lnx, ln, kcu, iadv
    use m_flowparameters, only: iadvec1D
    use network_data, only: kc
-! integer, dimension(ndx) :: kc !< temporary integer array for determining node type
-
-   implicit none
 
    integer, intent(in) :: jaPure1D !< flag specifying type of 1D discretization
 
@@ -83,3 +90,5 @@ subroutine setiadvpure1D(jaPure1D)
    end do
 
 end subroutine setiadvpure1D
+
+end module m_setiadvpure1d

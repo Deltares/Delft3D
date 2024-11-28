@@ -30,7 +30,18 @@
 !
 !
 
+module m_tauwavehk
+
+implicit none
+
+private
+
+public :: tauwavehk
+
+contains
+
  subroutine tauwavehk(Hrms, Tsig, Depth, Uorbi, rlabd, ust)
+    use m_getwavenr, only: getwavenr
     use m_flow, only: rhog
     use m_sferic
     use m_waves, only: gammax, jauorb
@@ -91,3 +102,5 @@
     end if
 
  end subroutine tauwavehk
+
+end module m_tauwavehk

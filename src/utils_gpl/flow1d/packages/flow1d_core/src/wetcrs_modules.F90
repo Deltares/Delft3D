@@ -274,7 +274,7 @@ subroutine CalcConveyanceTable(convtab, frictype, friction_value_per_segment, y,
    numlevels=levelscount_convtab
    
    do k = 1, levelscount_csdef
-      i = segmentToSectionIndex(k)
+      i = min(segmentToSectionIndex(k),size(frictionType))
       frictype(k) = frictionType(i)
       friction_value_per_segment(k) = frictionValue(i)
    enddo
@@ -508,7 +508,7 @@ subroutine regulate_yz_coordinates(y, z, bedlevel, segmentToSectionIndex, levels
          z(current+1) = dda
       endif
       if (current > levelscount) then
-         current = levelscount
+         current = levelscount 
       endif
       do k = start+1,current
          segmentToSectionIndex(k) = i-1

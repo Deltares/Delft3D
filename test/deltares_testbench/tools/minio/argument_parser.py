@@ -143,6 +143,7 @@ def make_minio_tool(namespace: argparse.Namespace) -> MinioTool:
     minio_client = Minio(
         endpoint=str(url.netloc),
         credentials=CredentialHandler(profile=namespace.profile).get_credentials(),
+        secure=(url.scheme != "http"),
     )
     return MinioTool(
         rewinder=Rewinder(minio_client, logger),  # type: ignore

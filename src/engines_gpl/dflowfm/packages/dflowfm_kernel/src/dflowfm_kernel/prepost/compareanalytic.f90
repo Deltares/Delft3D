@@ -30,6 +30,16 @@
 !
 !
 
+module m_compareanalytic
+
+implicit none
+
+private
+
+public :: compareanalytic
+
+contains
+
 subroutine compareanalytic(s, x, mmax)
 
    use m_flowgeom
@@ -37,7 +47,6 @@ subroutine compareanalytic(s, x, mmax)
    use m_set_col
    use m_inview
 
-   implicit none
    integer :: mmax
    double precision :: s(0:mmax), x(0:mmax)
    double precision :: alf, dif, si
@@ -73,3 +82,5 @@ subroutine compareanalytic(s, x, mmax)
    call statisticsfinalise()
 
 end subroutine compareanalytic
+
+end module m_compareanalytic

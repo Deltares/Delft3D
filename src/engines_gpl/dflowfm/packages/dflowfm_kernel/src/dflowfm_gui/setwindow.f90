@@ -30,6 +30,14 @@
 !
 !
 
+module m_setwindow
+use m_setwor
+
+
+implicit none
+
+contains
+
       subroutine SETWINDOW(NSC, X1, Y1, X2, Y2, DXH, DYH)
          use m_dscreens
          use m_view_port
@@ -54,3 +62,5 @@
 
          return
       end
+
+end module m_setwindow
