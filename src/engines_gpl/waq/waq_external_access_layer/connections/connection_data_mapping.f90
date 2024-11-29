@@ -67,15 +67,12 @@ contains
 
         ! The substance/parameter may be "VOLUME", "AREA" or "FLOW"
         if (string_equals(connection%quantity_name, 'VOLUME')) then
-            connection%substance_index = 1
-            connection%buffer_idx      = ivol
-            num_values                 = num_cells + num_cells_bottom
+            connection%buffer_idx     = ivol
+            num_values                = num_cells + num_cells_bottom
         elseif (string_equals(connection%quantity_name, 'FLOW')) then
-            connection%substance_index = 2
-            connection%buffer_idx      = iflow
-            num_values                 = num_exchanges
+            connection%buffer_idx     = iflow
+            num_values                = num_exchanges
         elseif (string_equals(connection%quantity_name, 'AREA')) then
-            connection%substance_index = 3
             connection%buffer_idx      = iarea
             num_values                 = num_exchanges
         end if
@@ -92,7 +89,7 @@ contains
         type(connection_data), intent(inout) :: connection !< connection to set
 
         character(:), allocatable :: location_id
-        character(:), allocatable :: substance_id
+        character(:), allocatable :: quantity_id
         integer(kind=int_wp) :: location_index
 
         if (.not. connection%has_location_filter) then
@@ -105,10 +102,10 @@ contains
 
         ! The substance/parameter may be "FLOW": handle this carefully.
         if (string_equals(connection%quantity_name, 'FLOW')) then
-            connection%substance_index = 1
+            connection%quantity_index = 1
         else
             ! add 1 for "flow" substance
-            connection%substance_index = get_substance_index(connection) + 1
+            connection%quantity_index = get_substance_index(connection) + 1
         end if
 
         ! If the waste load is to be set, we set the flow, hence store the index
@@ -134,7 +131,7 @@ contains
         end if
 
         connection%data_index = connection%location_index
-        connection%substance_index = get_substance_index(connection)
+        connection%quantity_index = get_substance_index(connection)
 
         connection%buffer_idx = get_connection_buffer_index(connection, iconc)
         allocate (connection%p_value(1))
@@ -149,7 +146,7 @@ contains
         integer(kind=int_wp) :: monitorpoint_index
 
         connection%data_index = get_data_index(connection, monitor_name, monitor_cell)
-        connection%substance_index = get_substance_index(connection)
+        connection%quantity_index = get_substance_index(connection)
 
         connection%buffer_idx = get_connection_buffer_index(connection, iconc)
         allocate (connection%p_value(1))
@@ -233,16 +230,16 @@ contains
         integer(kind=int_wp), intent(in), optional :: extra_substances_count !< number of extra substances
         integer(kind=int_wp) :: buffer_idx !< number of extra substances
 
-        integer(kind=int_wp) :: substance_count
+        integer(kind=int_wp) :: quantity_count
 
         if (present(extra_substances_count)) then
-            substance_count = num_substances_total + extra_substances_count
+            quantity_count = num_substances_total + extra_substances_count
         else
-            substance_count = num_substances_total
+            quantity_count = num_substances_total
         end if
 
-        buffer_idx = index_offset - 1 + connection%substance_index + &
-                     (connection%data_index - 1) * substance_count
+        buffer_idx = index_offset - 1 + connection%quantity_index + &
+                     (connection%data_index - 1) * quantity_count
     end function
 
 end module m_connection_data_mapping

@@ -117,7 +117,7 @@ contains
         call assert_true(new_connection%incoming, 'connection should be incoming')
         call assert_equal(new_connection%location_text, "1", 'connection location_text should be correct')
         call assert_equal(new_connection%location_index, 1, 'connection location_index should be correct')
-        call assert_equal(new_connection%subst_name, "FLOW", 'connection subst_name should be correct')
+        call assert_equal(new_connection%quantity_name, "FLOW", 'connection quantity_name should be correct')
 
     end subroutine
 
@@ -134,7 +134,7 @@ contains
         call assert_true(new_connection%incoming, 'connection should be incoming')
         call assert_equal(new_connection%location_text, "", 'connection location_text should be correct')
         call assert_equal(new_connection%location_index, 0, 'connection location_index should be correct')
-        call assert_equal(new_connection%subst_name, "VWind", 'connection subst_name should be correct')
+        call assert_equal(new_connection%quantity_name, "VWind", 'connection quantity_name should be correct')
 
     end subroutine
 
@@ -151,7 +151,7 @@ contains
         call assert_false(new_connection%incoming, 'connection should be incoming')
         call assert_equal(new_connection%location_text, "9", 'connection location_text should be correct')
         call assert_equal(new_connection%location_index, 9, 'connection location_index should be correct')
-        call assert_equal(new_connection%subst_name, "OXY", 'connection subst_name should be correct')
+        call assert_equal(new_connection%quantity_name, "OXY", 'connection quantity_name should be correct')
 
     end subroutine
 
@@ -168,7 +168,7 @@ contains
         call assert_false(new_connection%incoming, 'connection should be incoming')
         call assert_equal(new_connection%location_text, "id1", 'connection location_text should be correct')
         call assert_equal(new_connection%location_index, -1, 'connection location_index should be correct')
-        call assert_equal(new_connection%subst_name, "OXY", 'connection subst_name should be correct')
+        call assert_equal(new_connection%quantity_name, "OXY", 'connection quantity_name should be correct')
 
     end subroutine
 end program

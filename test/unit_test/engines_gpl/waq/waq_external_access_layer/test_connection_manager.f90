@@ -188,8 +188,8 @@ contains
         call assert_false(associated(found_connection_incorrect_name), 'connection should not be found')
 
         ! found_connection_correct_name should be a reference to the connection (not a copy)
-        found_connection_correct_name%subst_name = "abc"
-        call assert_equal(new_connection_pointer%subst_name, "abc", 'connection should have be a reference to the connection')
+        found_connection_correct_name%quantity_name = "abc"
+        call assert_equal(new_connection_pointer%quantity_name, "abc", 'connection should have be a reference to the connection')
     end subroutine
 
     subroutine test_get_incoming_connections_by_category()
@@ -227,8 +227,8 @@ contains
         call assert_equal(found_connections(1)%connection_ptr%exchange_name, new_connection3%exchange_name, 'connection should be the correct connection')
 
         ! found_connections should contain a reference to the connection (not a copy)
-        found_connections(1)%connection_ptr%subst_name = "abc"
-        call assert_equal(new_connection3_pointer%subst_name, "abc", 'connection should have be a reference to the connection')
+        found_connections(1)%connection_ptr%quantity_name = "abc"
+        call assert_equal(new_connection3_pointer%quantity_name, "abc", 'connection should have be a reference to the connection')
     end subroutine
 
     function create_default_connection(exchange_name) result(new_connection)
@@ -243,7 +243,7 @@ contains
                          has_location_filter=.true., &
                          category=category_wasteload, &
                          data_index=0, &
-                         substance_index=0, &
+                         quantity_index=0, &
                          location_index=0, &
                          buffer_idx=0, &
                          p_value=dummy_pointer &

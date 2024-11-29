@@ -115,7 +115,6 @@ contains
         type(connection_data), intent(in) :: connection !< Connection to update
 
         type(wasteload), pointer :: waste_load
-        integer(kind=int_wp) :: substance_index
 
         if (.not. allocated(wasteloads)) then
             return
@@ -128,6 +127,6 @@ contains
             waste_load%set_factor = 1.0
         end if
 
-        waste_load%set_factor(connection%substance_index) = connection%p_value(1)
+        waste_load%set_factor(connection%quantity_index) = connection%p_value(1)
     end subroutine update_wasteload
 end module m_waq_external_access_layer_utils
