@@ -70,6 +70,8 @@ module bmi
    use m_update_land_nodes
    use m_find_name, only: find_name
 
+   use waq, only: waqpar
+
    implicit none
 
    ! Define some global constants
@@ -853,6 +855,8 @@ contains
          rank = 2
       case ("tem1Surf")
          rank = 1
+      case ("waq/volume", "waq/flow", "waq/area", "waq/velocity", "waq/vertdiff", "waq/shearstress", "waq/salinity", "waq/temperature")
+         rank = 1
       end select
 
       if (numconst > 0) then
@@ -982,6 +986,12 @@ contains
       case ("runid")
          shape(1) = 1
          shape(2) = len(md_ident)
+         return
+      case ("waq/volume", "waq/velocity", "waq/vertdiff", "waq/shearstress", "waq/salinity", "waq/temperature")
+         shape(1) = waqpar%nosegl * waqpar%kmxnxa
+         return
+      case ("waq/flow", "waq/area")
+         shape(1) = waqpar%num_exchanges
          return
       end select
 
@@ -1257,6 +1267,31 @@ contains
          x = c_loc(Network)
       case ('kbndz')
          x = c_loc(kbndz)
+
+      case ("waq/volume")
+         waqpar%online_hydrodynamics = .true.
+         x = c_loc(waqpar%vol)
+      case ("waq/velocity")
+         waqpar%online_hydrodynamics = .true.
+         x = c_loc(waqpar%vel)
+      case ("waq/vertdiff")
+         waqpar%online_hydrodynamics = .true.
+         x = c_loc(waqpar%vdf)
+      case ("waq/shearstress")
+         waqpar%online_hydrodynamics = .true.
+         x = c_loc(waqpar%tau)
+      case ("waq/salinity")
+         waqpar%online_hydrodynamics = .true.
+         x = c_loc(waqpar%sal)
+      case ("waq/temperature")
+         waqpar%online_hydrodynamics = .true.
+         x = c_loc(waqpar%tem)
+      case ("waq/flow")
+         waqpar%online_hydrodynamics = .true.
+         x = c_loc(waqpar%qag)
+      case ("waq/area")
+         waqpar%online_hydrodynamics = .true.
+         x = c_loc(waqpar%area)
       end select
 
       ! Try to parse variable name as slash-separated id (e.g., 'weirs/Lith/crest_level')

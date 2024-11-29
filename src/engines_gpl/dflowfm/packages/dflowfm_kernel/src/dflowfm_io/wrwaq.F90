@@ -332,6 +332,7 @@ module waq
 
    logical, parameter :: waq_format_ascii = .false. !< For debugging: .true. produces ascii files. .false. the binary files used for DELWAQ input.
    type gd_waqpar
+      logical :: online_hydrodynamics = .false. ! Pass volumes, flows etc. via memory instead of files when true
       integer :: aggre !  0: no aggregation (=active cells only in FM), 1: aggregation according to content of flhoraggr
       integer :: aggrel !  0: no layer aggregation, 1: layer aggregation
       integer :: lunvol !  file unit number to an output file
@@ -384,7 +385,7 @@ module waq
       character(256) :: flvertaggr !  Name of input aggregation file
    end type gd_waqpar
 
-   type(gd_waqpar) :: waqpar ! all waq data
+   type(gd_waqpar), target :: waqpar ! all waq data
    logical :: horaggr ! horizontal aggregation is on
    logical :: vertaggr ! vertical aggregation is on
 
@@ -2651,7 +2652,9 @@ contains
       end if
 
       ! Call the waq-vol file writer
-      call wrwaqbin(itim, waqpar%vol, waqpar%num_cells, filenamevol, waq_format_ascii, lunvol)
+      if (.not. waqpar%online_hydrodynamics) then
+          call wrwaqbin(itim, waqpar%vol, waqpar%num_cells, filenamevol, waq_format_ascii, lunvol)
+      end if
    end subroutine waq_wri_vol
 !
 !------------------------------------------------------------------------------
@@ -2719,7 +2722,9 @@ contains
       end if
 
       ! Call the waq-vol file writer for vel
-      call wrwaqbin(itim, waqpar%vel, waqpar%num_cells, filenamevel, waq_format_ascii, lunvel)
+      if (.not. waqpar%online_hydrodynamics) then
+          call wrwaqbin(itim, waqpar%vel, waqpar%num_cells, filenamevel, waq_format_ascii, lunvel)
+      end if
 
    end subroutine waq_wri_vel
 !
@@ -2782,7 +2787,9 @@ contains
       end if
 
       ! Call the waq-vol file writer for salinity
-      call wrwaqbin(itim, waqpar%sal, waqpar%num_cells, filenamesal, waq_format_ascii, lunsal)
+      if (.not. waqpar%online_hydrodynamics) then
+          call wrwaqbin(itim, waqpar%sal, waqpar%num_cells, filenamesal, waq_format_ascii, lunsal)
+      end if
    end subroutine waq_wri_sal
 !
 !------------------------------------------------------------------------------
@@ -2844,7 +2851,9 @@ contains
       end if
 
       ! Call the waq-vol file writer for temperature
-      call wrwaqbin(itim, waqpar%tem, waqpar%num_cells, filenametem, waq_format_ascii, luntem)
+      if (.not. waqpar%online_hydrodynamics) then
+          call wrwaqbin(itim, waqpar%tem, waqpar%num_cells, filenametem, waq_format_ascii, luntem)
+      end if
    end subroutine waq_wri_tem
 !
 !------------------------------------------------------------------------------
@@ -2900,7 +2909,9 @@ contains
       end if
 
       ! Call the waq-vol file writer for tau
-      call wrwaqbin(itim, waqpar%tau, waqpar%num_cells, filenametau, waq_format_ascii, luntau)
+      if (.not. waqpar%online_hydrodynamics) then
+          call wrwaqbin(itim, waqpar%tau, waqpar%num_cells, filenametau, waq_format_ascii, luntau)
+      end if
 
    end subroutine waq_wri_tau
 !
@@ -2970,7 +2981,9 @@ contains
          end do
       end if
       ! Call the waq-vol file writer for vertical diffusion
-      call wrwaqbin(itim, waqpar%vdf, waqpar%num_cells, filenamevdf, waq_format_ascii, lunvdf)
+      if (.not. waqpar%online_hydrodynamics) then
+          call wrwaqbin(itim, waqpar%vdf, waqpar%num_cells, filenamevdf, waq_format_ascii, lunvdf)
+      end if
    end subroutine waq_wri_vdf
 !
 !------------------------------------------------------------------------------
@@ -3038,7 +3051,9 @@ contains
       end if
 
       ! Call the waq-flo file writer
-      call wrwaqbin(itim, waqpar%area, waqpar%num_exchanges, filename, waq_format_ascii, lun)
+      if (.not. waqpar%online_hydrodynamics) then
+          call wrwaqbin(itim, waqpar%area, waqpar%num_exchanges, filename, waq_format_ascii, lun)
+      end if
    end subroutine waq_wri_are
 !
 !------------------------------------------------------------------------------
@@ -3142,7 +3157,9 @@ contains
       end if
 
       ! Call the waq-flo file writer
-      call wrwaqbin(itim, waqpar%qag, waqpar%num_exchanges, filename, waq_format_ascii, lun)
+      if (.not. waqpar%online_hydrodynamics) then
+          call wrwaqbin(itim, waqpar%qag, waqpar%num_exchanges, filename, waq_format_ascii, lun)
+      end if
    end subroutine waq_wri_flo
 !
 !------------------------------------------------------------------------------
