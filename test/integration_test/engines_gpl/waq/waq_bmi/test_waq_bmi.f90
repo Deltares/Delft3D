@@ -22,7 +22,7 @@
 !!  rights reserved.
 program test_delwaq_dimr
    !! Run the computation step by step
-   
+
    use iso_c_binding
 
    implicit none
@@ -98,13 +98,13 @@ program test_delwaq_dimr
    version_string(k:) = ' '
 
    if (log) write (lunlog, '(A)') 'dll version string:'
-   if (log) write (lunlog, '(A)') version_string ! trim(version_string)
+   if (log) write (lunlog, '(A)') version_string
 
    key = '-waq'
    value = ' '
    dummy = set_var(key, value)
    key = '-p'
-   !   value = 'c:\Program Files\Deltares\Delft3D 4.02.00.01\win64\waq\resources\proc_def.dat'
+
    value = '..\..\bin\win64\waq\resources\proc_def.dat'
    dummy = set_var(key, value)
 
@@ -115,18 +115,11 @@ program test_delwaq_dimr
       stop
    end if
    if (log) write (lunlog, '(A)') 'run id:'
-   if (log) write (lunlog, '(A)') runid ! trim(runid)
+   if (log) write (lunlog, '(A)') runid
 
    dummy = initialize(runid)
 
    write (lunlog, *) 'Start of calculation:'
-
-!    This fragment must be updated!
-!    do i = 1000, 40000, 1000
-!        write( key, "(i10,a20)" ) i, "IM1"
-!        dummy = get_value( key, p_value )
-!        write( lunlog, * ) i, p_value
-!    enddo
 
    call get_start_time(startTime)
    if (log) write (lunlog, '(A)') 'start time:'
@@ -146,15 +139,7 @@ program test_delwaq_dimr
    if (log) write (lunlog, '(g17.6)') currentTime
 
    write (lunlog, *) 'End of calculation:'
-   !    This fragment must be updated
-   !    do i = 1000, 40000, 1000!
-   !        write( key, "(i10,a20)" ) i, "IM1"
-   !        dummy = get_value( key, p_value )
-   !        write( lunlog, * ) i, p_value
-   !    enddo
 
    dummy = finalize()
-
-   stop(0)
 
 end program test_delwaq_dimr

@@ -13696,7 +13696,7 @@ contains
       end if !ITRA1
 
       ! Read the water quality bottom variables
-      is_wq_bot_3d = jahiswqbot3d .or. jamapwqbot3d
+      is_wq_bot_3d = jahiswqbot3d /= 0 .or. jamapwqbot3d /= 0
       if (numwqbots > 0) then
          call realloc(tmpvar1D, ndkx, keepExisting=.false., fill=0.0d0)
          do iwqbot = 1, numwqbots

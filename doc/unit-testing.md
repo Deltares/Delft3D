@@ -299,13 +299,11 @@ ctest -C debug --test-dir build_all
 
 ### 2.1 Linux
 
-- Linux: After building, it is necessary to extend the $LD_LIBRARY_PATH to include the `install/lib` directory, so the
-  test executables can find the compiled *.so's. Here the `build_all` indicates the directory where the source code is built (
-  i.e. build_all, build_waq, etc.).
+- Linux: After building the source code, execute ctest in the build directory
 
 ```bash
-export LD_LIBRARY_PATH=/<path-where-repo-exist>/<build-dir>/install/lib:$LD_LIBRARY_PATH
-ctest -C debug --test-dir build_all
+cd build_all
+ctest -C debug
 ```
 
 ### 2.2 Run specific test

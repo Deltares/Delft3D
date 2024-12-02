@@ -22,8 +22,9 @@ cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
 cmake_path(GET PARENT_DIR PARENT_PATH dir)
 
 
-# Set unit test root directory
-set(unit_tests_dir ${dir}/test/unit_test) # This points to the location of OSS/test
+# Set unit and integration test root directory
+set(unit_tests_dir ${dir}/test/unit_test)
+set(integration_tests_dir ${dir}/test/integration_test)
 
 include(modules.cmake)
 

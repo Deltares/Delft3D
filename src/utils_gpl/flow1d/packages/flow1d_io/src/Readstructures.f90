@@ -30,6 +30,7 @@ module m_readstructures
 !-------------------------------------------------------------------------------
 
    use MessageHandling
+   use precision_basics, only: dp
    use string_module
    use m_network
    use m_CrossSections
@@ -67,7 +68,7 @@ module m_readstructures
    
    ! Structure file current version: 1.00
    integer, parameter :: StructureFileMajorVersion = 3
-   integer, parameter :: StructureFileMinorVersion = 0
+   integer, parameter :: StructureFileMinorVersion = 1
    
    ! History structure file versions:
 
@@ -79,6 +80,7 @@ module m_readstructures
    ! 2.00 (2019-07-22): Consistent renaming,
    ! 2.01 (2020-10-20): Added new type=longCulvert.
    ! 3.00 (2021-06-17): Bridge field 'bedLevel' removed and replaced by 'shift' (UNST-5177).
+   ! 3.01 (2024-11-25): Added new type=gate, polylineFile replaced by locationFile.
    
 
    contains
@@ -138,6 +140,7 @@ module m_readstructures
       integer                                                :: iStrucType
       type(t_structure), pointer                             :: pstru
       integer                                                :: major, minor, ierr
+      character(len=IdLen)                                   :: filename
       
       success = .true.
 
@@ -153,8 +156,10 @@ module m_readstructures
       minor = 0
       call get_version_number(md_ptr, major = major, minor = minor, success = success1)
       if (.not. success1) then
-         msgbuf = ' Early return, file '//trim(structurefile)//' is a 2D3D structure file, it will be read by function flow_init_structurecontrol.'
+         msgbuf = 'Early return, file '//trim(structurefile)//' is a 2D3D structure file, it will be read by function flow_init_structurecontrol.'
          call msg_flush()
+         msgbuf = 'This functionality is deprecated, please convert this file to the current version.'
+         call warn_flush()
          return
       endif
       ! For now majorVersion = 2.xx is supported for all structures, except for the bridge. 
@@ -190,12 +195,6 @@ module m_readstructures
             ! Read Common Structure Data
             
             ! TODO: UNST-2799: temporary check on polylinefile to prevent stopping on old (1.00) structure files. They will be read by dflowfm kernel itself.
-            call prop_get_alloc_string(md_ptr%child_nodes(i)%node_ptr, '', 'polylinefile', str_buf, success1)
-            if (success1) then
-               write (msgbuf, '(a,i0,a)') 'Detected structure #', i, ' from '''//trim(structureFile)//''' as an old v1.00 structure. Will be read later by main program.'
-               call dbg_flush()
-               cycle
-            end if
 
             call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'id', st_id, success1)
             if (.not. success1) then
@@ -230,10 +229,10 @@ module m_readstructures
                   call err_flush()
                   success = .false.
                endif
-            else 
+            endif
+            if (.not. success1) then
                call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'numCoordinates', pstru%numCoordinates, success1)
-               success = success .and. check_input_result(success1, st_id, 'numCoordinates')
-               if (success) then
+               if (success1) then
                   allocate(pstru%xCoordinates(pstru%numCoordinates), pstru%yCoordinates(pstru%numCoordinates), stat = istat)
                   call aerr( 'readStructureFile:pstru%x/y coordinates', istat, 2*pstru%numCoordinates)
 
@@ -246,13 +245,26 @@ module m_readstructures
                   success = success .and. check_input_result(success1, st_id, 'yCoordinates')
                endif
             endif
-            
+
+            if (.not. success1) then
+               call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'locationFile', filename, success1)
+               if (.not. success1) then
+                  ! For backward compatibility: if locationfile is not found, try polylinefile.
+                  call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'polylineFile', filename, success1)
+                  if (success1) then
+                     msgbuf = 'Error Reading Structure '''//trim(st_id)//''' from '''//trim(structureFile)//''', polylineFile is found. Please use locationFile instead.'
+                     call warn_flush()
+                  end if
+                  
+               end if
+               if (success1) then
+                  call read_polyfile(filename, pstru%xCoordinates, pstru%yCoordinates, pstru%numCoordinates, success1)
+               end if
+
+               success = success .and. check_input_result(success1, st_id, 'branchId, numCoordinates and locationfile')  
+            end if         
             pstru%compound = 0
-            if (.not. success) then
-               ! Error(s) found while scanning the structuretype independent stuff. Do not read the type dependent items
-               cycle
-            endif
-            
+
             select case (iStrucType)
             case (ST_WEIR)
                ! support for version >= 2.0 structure files weirs as general structure
@@ -270,9 +282,12 @@ module m_readstructures
                endif 
             case (ST_PUMP)
                call readPump(pstru%pump, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
-            case (ST_ORIFICE, ST_GATE)
+            case (ST_ORIFICE)
                ! support for version >= 2.0 structure files weirs as general structure
                call readOrificeAsGenstru(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
+            case (ST_GATE)
+               ! support for version >= 2.0 structure files weirs as general structure
+               call readGateAsGenstru(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_GENERAL_ST)
                call readGeneralStructure(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_DAMBREAK)
@@ -501,7 +516,7 @@ module m_readstructures
 
       integer                                      :: istat
       integer                                      :: i, ilowest
-      double precision                             :: lowestz
+      real(kind = dp)                             :: lowestz
       character(len=Idlen)                         :: txt
       logical                                      :: success1
 
@@ -548,7 +563,7 @@ module m_readstructures
       
       ! The z-values contains a relative height with respect to the crest level.
       ! As a result the minimal value for Z must be 0. Shift-user-specified values to 0.
-      lowestz = huge(1d0)
+      lowestz = huge(1.0_dp)
       do i = 1, uniweir%yzcount
          if (lowestz >  uniweir%z(i)) then
             lowestz = uniweir%z(i)
@@ -586,15 +601,15 @@ module m_readstructures
       integer                                     :: icross
       
       integer                                     :: bedFrictionType
-      double precision                            :: bedFriction
+      real(kind = dp)                            :: bedFriction
       integer                                     :: groundFrictionType
-      double precision                            :: groundFriction
+      real(kind = dp)                            :: groundFriction
       integer                                     :: valveonoff
       
       integer                                     :: lossCoeffCount
       integer                                     :: istat
-      double precision, allocatable, dimension(:) :: relOpen
-      double precision, allocatable, dimension(:) :: lossCoeff
+      real(kind = dp), allocatable, dimension(:) :: relOpen
+      real(kind = dp), allocatable, dimension(:) :: lossCoeff
       logical                                     :: success1 
       character(len=IdLen)                        :: subtype 
 
@@ -626,11 +641,11 @@ module m_readstructures
       success = success .and. check_input_result(success1, st_id, 'bedFriction')
       
       groundFrictionType = 0
-      groundFriction = 45d0
+      groundFriction = 45.0_dp
       call prop_get(md_ptr, '', 'groundFrictionType', groundFrictionType)
       call prop_get(md_ptr, '', 'groundFriction', groundFriction)
          
-      icross = AddCrossSection(network%crs, network%CSDefinitions, 0, 0.0d0, CrsDefIndx, 0.0d0, &
+      icross = AddCrossSection(network%crs, network%CSDefinitions, 0, 0.0_dp, CrsDefIndx, 0.0_dp, &
                                bedFrictionType, bedFriction, groundFrictionType, groundFriction)
       network%crs%cross(icross)%csid = 'CS_Culvert_'//trim(st_id)
       network%crs%cross(icross)%branchid = -1
@@ -666,7 +681,7 @@ module m_readstructures
          if (.not. success1) then
             call SetMessage(LEVEL_ERROR, 'Parameter bendLossCoeff is missing for culvert ''' // trim(st_id) // '''.')
          endif
-         if (culvert%bendLossCoeff < 0d0) then
+         if (culvert%bendLossCoeff < 0.0_dp) then
             call SetMessage(LEVEL_ERROR, 'Parameter bendLossCoeff is less than 0 for culvert '''  // trim(st_id) // '''.')
          endif
          culvert%isInvertedSiphon = .true.
@@ -718,7 +733,7 @@ module m_readstructures
          
       else
          culvert%has_valve = .false.
-         culvert%valveOpening = 0.0d0
+         culvert%valveOpening = 0.0_dp
       endif
    
    end subroutine readCulvert
@@ -738,24 +753,24 @@ module m_readstructures
       integer                                    :: CrsDefIndx
       integer                                    :: icross
       logical                                    :: success1
-      double precision                           :: shift  
+      real(kind = dp)                           :: shift  
       
       
       success = .true.
       allocate(bridge)
       
-      bridge%bedLevel           = 0.0d0
-      bridge%pillarwidth        = 0d0
-      bridge%formfactor         = 0d0
+      bridge%bedLevel           = 0.0_dp
+      bridge%pillarwidth        = 0.0_dp
+      bridge%formfactor         = 0.0_dp
       bridge%allowedflowdir     = 0
       bridge%useOwnCrossSection = .false.
       bridge%pcross             => null()
       bridge%crosssectionnr     = 0
       bridge%bedFrictionType    = 0
-      bridge%bedFriction        = 0.0d0
-      bridge%length             = 0.0d0
-      bridge%inletlosscoeff     = 0d0
-      bridge%outletlosscoeff    = 0d0
+      bridge%bedFriction        = 0.0_dp
+      bridge%length             = 0.0_dp
+      bridge%inletlosscoeff     = 0.0_dp
+      bridge%outletlosscoeff    = 0.0_dp
 
       call prop_get(md_ptr, 'structure', 'allowedFlowDir', txt, success1)
       success = success .and. check_input_result(success1, st_id, 'allowedFlowDir')
@@ -793,8 +808,8 @@ module m_readstructures
          success = success .and. check_input_result(success1, st_id, 'friction')
          
          if (success) then
-            icross = AddCrossSection(network%crs, network%CSDefinitions, 0, 0.0d0, CrsDefIndx, 0.0d0, &
-                                     bridge%bedFrictionType, bridge%bedFriction, groundFrictionType = -1, groundFriction = -1d0)
+            icross = AddCrossSection(network%crs, network%CSDefinitions, 0, 0.0_dp, CrsDefIndx, 0.0_dp, &
+                                     bridge%bedFrictionType, bridge%bedFriction, groundFrictionType = -1, groundFriction = -1.0_dp)
             network%crs%cross(icross)%branchid = -1
             network%crs%cross(icross)%csid = 'CS_Bridge_'//trim(st_id)
 
@@ -901,6 +916,7 @@ module m_readstructures
       if (dambr%algorithm == 3) then
          ! UNST-3308: NOTE that only the .tim filename is read below. It is NOT added to the network%forcinglist.
          !            All time-space handling of the dambreak is still done in kernel.
+         
          call prop_get(md_ptr, 'Structure', 'DambreakLevelsAndWidths', dambr%levelsAndWidths, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'DambreakLevelsAndWidths')
          if (.not. success) return         
@@ -926,8 +942,8 @@ module m_readstructures
       
       integer                                      :: tabsize
       integer                                      :: istat
-      double precision, allocatable, dimension(:)  :: head
-      double precision, allocatable, dimension(:)  :: redfac
+      real(kind = dp), allocatable, dimension(:)  :: head
+      real(kind = dp), allocatable, dimension(:)  :: redfac
       integer :: numcap, numred, iside
       logical :: success1
       character(len=IdLen) :: txt
@@ -964,8 +980,8 @@ module m_readstructures
          ! addtimespace gaat qid='pump' gebruiken, de bc provider moet via FM juiste name doorkrijgen (==structureid)
          success = success .and. check_input_result(success1, st_id, 'capacity')
       else
-         ! Stages with control: only support table with double precision values.
-         pump%capacity = -1d0
+         ! Stages with control: only support table with real(kind = dp) values.
+         pump%capacity = -1.0_dp
          call prop_get(md_ptr, '', 'capacity', pump%capacity, pump%nrstages, success1)
          success = success .and. check_input_result(success1, st_id, 'capacity')
          if (any(pump%capacity < 0)) then
@@ -1026,8 +1042,8 @@ module m_readstructures
       else
          ! When no reduction table given in input, always create one dummy entry in table with 100% pump capacity.
          tabsize   = 1
-         head(1)   = 0.0d0
-         redfac(1) = 1.0d0
+         head(1)   = 0.0_dp
+         redfac(1) = 1.0_dp
       endif
 
       call setTable(pump%reducfact, 0, head, redfac, tabsize)
@@ -1042,13 +1058,13 @@ module m_readstructures
       
       ! Initialize Parameters for Pump
       pump%actual_stage      = 0
-      pump%discharge         = 0.0d0
+      pump%discharge         = 0.0_dp
       pump%is_active         = .true.
-      pump%pump_head         = 0.0d0
-      pump%reduction_factor  = 1.0d0
-      pump%ss_level          = 0.0d0
-      pump%ds_level          = 0.0d0
-      pump%current_capacity  = 0.0d0
+      pump%pump_head         = 0.0_dp
+      pump%reduction_factor  = 1.0_dp
+      pump%ss_level          = 0.0_dp
+      pump%ds_level          = 0.0_dp
+      pump%current_capacity  = 0.0_dp
       
    end subroutine readPump
 
@@ -1058,7 +1074,7 @@ module m_readstructures
       use m_forcinglist
       type(tree_data), pointer,     intent(in   ) :: md_ptr      !< ini tree pointer with user input.
       character(len=*),             intent(in   ) :: key         !< name of the item in the input file
-      double precision, target,     intent(  out) :: value       !< The variable into which the read value may be stored.
+      real(kind = dp), target,     intent(  out) :: value       !< The variable into which the read value may be stored.
                                                                  !< In case of a time series/realtime forcing, this variable will be pointed to in the forcinglist.
       character(IdLen),             intent(in   ) :: st_id       !< Structure character Id.
       integer,                      intent(in   ) :: st_type     !< structure type
@@ -1111,13 +1127,13 @@ module m_readstructures
       success = .true.
       allocate(generalst)
 
-      generalst%ws = 1d10
+      generalst%ws = 1.0e10_dp
       call prop_get(md_ptr, '', 'crestWidth', generalst%ws)
 
       call get_value_or_addto_forcinglist(md_ptr, 'crestLevel', generalst%zs, st_id, ST_WEIR, forcinglist, success1)
       success = success .and. check_input_result(success1, st_id, 'crestLevel')
 
-      generalst%mugf_pos = 1d0
+      generalst%mugf_pos = 1.0_dp
       if (success) call prop_get(md_ptr, '', 'corrCoeff',  generalst%cgf_pos)
 
       generalst%velheight = .true.
@@ -1127,16 +1143,16 @@ module m_readstructures
       call prop_get(md_ptr, '', 'allowedFlowDir', dirString, success1)
       generalst%allowedflowdir = allowedFlowDirToInt(dirString)
    
-      ! all levels are set to -1d-10. In the time loop these parameters will be set to the bed level.
-      generalst%zu1                = -1d10
-      generalst%zu2                = -1d10
-      generalst%zd1                = -1d10
-      generalst%zd2                = -1d10
+      ! all levels are set to -1e-10. In the time loop these parameters will be set to the bed level.
+      generalst%zu1                = -1.0e10_dp
+      generalst%zu2                = -1.0e10_dp
+      generalst%zd1                = -1.0e10_dp
+      generalst%zd2                = -1.0e10_dp
       generalst%wu1                = generalst%ws
       generalst%wu2                = generalst%ws
       generalst%wd1                = generalst%ws
       generalst%wd2                = generalst%ws
-      generalst%gateLowerEdgeLevel = 1d10
+      generalst%gateLowerEdgeLevel = 1.0e10_dp
       generalst%cgf_pos            = generalst%cgf_pos
       generalst%cgd_pos            = generalst%cgf_pos
       generalst%cwf_pos            = generalst%cgf_pos
@@ -1145,12 +1161,12 @@ module m_readstructures
       generalst%cgd_neg            = generalst%cgf_pos
       generalst%cwf_neg            = generalst%cgf_pos
       generalst%cwd_neg            = generalst%cgf_pos
-      generalst%mugf_neg           = 1d0
-      generalst%mugf_pos           = 1d0
-      generalst%extraresistance    = 0d0
-      generalst%gatedoorheight     = 1d10
+      generalst%mugf_neg           = 1.0_dp
+      generalst%mugf_pos           = 1.0_dp
+      generalst%extraresistance    = 0.0_dp
+      generalst%gatedoorheight     = 1.0e10_dp
       generalst%gateopeningwidth   = generalst%ws
-      generalst%crestlength        = 0d0
+      generalst%crestlength        = 0.0_dp
       generalst%openingDirection   = GEN_SYMMETRIC
 
    end subroutine readWeirAsGenStru
@@ -1176,10 +1192,10 @@ module m_readstructures
       call get_value_or_addto_forcinglist(md_ptr, 'crestLevel', generalst%zs, st_id, ST_ORIFICE, forcinglist, success1)
       success = success .and. check_input_result(success1, st_id, 'crestLevel')
 
-      generalst%mugf_pos = 1d0
+      generalst%mugf_pos = 1.0_dp
       call prop_get(md_ptr, '', 'corrCoeff',  generalst%cgf_pos)
 
-      generalst%ws = 1d10
+      generalst%ws = 1.0e10_dp
       call prop_get(md_ptr, '', 'crestWidth',  generalst%ws)
       
       call get_value_or_addto_forcinglist(md_ptr, 'gateLowerEdgeLevel', generalst%gateLowerEdgeLevel, st_id, ST_ORIFICE, &
@@ -1220,11 +1236,11 @@ module m_readstructures
       end if
 
       ! Set default/standard values for orifice
-      ! all levels are set to -1d-10. In the time loop these parameters will be set to the bed level.
-      generalst%zu1                = -1d10
-      generalst%zu2                = -1d10
-      generalst%zd1                = -1d10
-      generalst%zd2                = -1d10
+      ! all levels are set to -1e-10. In the time loop these parameters will be set to the bed level.e
+      generalst%zu1                = -1.0e10_dp
+      generalst%zu2                = -1.0e10_dp
+      generalst%zd1                = -1.0e10_dp
+      generalst%zd2                = -1.0e10_dp
       generalst%wu1                = generalst%ws
       generalst%wu2                = generalst%ws
       generalst%wd1                = generalst%ws
@@ -1237,16 +1253,84 @@ module m_readstructures
       generalst%cgd_neg            = generalst%cgf_pos
       generalst%cwf_neg            = generalst%cgf_pos
       generalst%cwd_neg            = generalst%cgf_pos
-      generalst%mugf_neg           = 1d0
-      generalst%mugf_pos           = 1d0
-      generalst%extraresistance    = 0d0
-      generalst%gatedoorheight     = 1d10
-      generalst%gateopeningwidth   = 0d0
-      generalst%crestlength        = 0d0
+      generalst%mugf_neg           = 1.0_dp
+      generalst%mugf_pos           = 1.0_dp
+      generalst%extraresistance    = 0.0_dp
+      generalst%gatedoorheight     = 1.0e10_dp
+      generalst%gateopeningwidth   = 0.0_dp
+      generalst%crestlength        = 0.0_dp
       generalst%openingDirection   = GEN_SYMMETRIC ! TODO: once 2D structures are being read by this reader, also support fromleft and fromright
 
    end subroutine readOrificeAsGenStru
 
+   !> Read the gate parameters and define a general structure.
+   !! The common fields for the structure (e.g. branchId) must have been read elsewhere.
+   subroutine readGateAsGenStru(generalst, md_ptr, st_id, forcinglist, success)
+   
+      use messageHandling
+      
+      type(t_GeneralStructure), pointer,  intent(inout) :: generalst   !< General structure to be read into. 
+      type(tree_data), pointer,           intent(in   ) :: md_ptr      !< ini tree pointer with user input.
+      character(IdLen),                   intent(in   ) :: st_id       !< Structure character Id.
+      type(t_forcinglist),                intent(inout) :: forcinglist !< List of all (structure) forcing parameters, to which orifice forcing will be added if needed.
+      logical,                            intent(  out) :: success     !< Result status, whether reading of the structure was successful.
+      
+      character(len=Idlen) :: dirString
+      logical              :: success1
+      
+      success = .true.
+      allocate(generalst)
+
+      call get_value_or_addto_forcinglist(md_ptr, 'crestLevel', generalst%zs, st_id, ST_GATE, forcinglist, success1)
+      success = success .and. check_input_result(success1, st_id, 'crestLevel')
+
+      generalst%ws = 1e10_dp
+      call get_value_or_addto_forcinglist(md_ptr, 'crestWidth',  generalst%ws, st_id, ST_GATE, forcinglist, success1)
+      
+      call get_value_or_addto_forcinglist(md_ptr, 'gateLowerEdgeLevel', generalst%gateLowerEdgeLevel, st_id, ST_GATE, &
+      forcinglist, success1)
+      success = success .and. check_input_result(success1, st_id, 'gateLowerEdgeLevel')
+      
+      call prop_get(md_ptr, '', 'gateHeight',  generalst%gatedoorheight, success1)
+      success = success .and. check_input_result(success1, st_id, 'gateHeight')
+      
+      generalst%gateOpeningWidth = 0.0_dp
+      call get_value_or_addto_forcinglist(md_ptr, 'gateOpeningWidth',  generalst%gateOpeningWidth, st_id, ST_GATE, &
+      forcinglist, success1)
+      
+      generalst%openingDirection   = GEN_SYMMETRIC
+      call prop_get(md_ptr, '', 'gateOpeningHorizontalDirection',  generalst%openingDirection)
+      
+      generalst%velheight = .true.
+      call prop_get(md_ptr, '', 'useVelocityHeight',  generalst%velheight)
+      
+      ! Set default/standard values for orifice
+      ! all levels are set to -1e-10. In the time loop these parameters will be set to the bed level.
+      generalst%zu1                = -1.0e10_dp
+      generalst%zu2                = -1.0e10_dp
+      generalst%zd1                = -1.0e10_dp
+      generalst%zd2                = -1.0e10_dp
+      generalst%wu1                = generalst%ws
+      generalst%wu2                = generalst%ws
+      generalst%wd1                = generalst%ws
+      generalst%wd2                = generalst%ws
+      generalst%cgf_pos            = 1.0_dp
+      generalst%cgd_pos            = 1.0_dp
+      generalst%cwf_pos            = 1.0_dp
+      generalst%cwd_pos            = 1.0_dp
+      generalst%cgf_neg            = 1.0_dp
+      generalst%cgd_neg            = 1.0_dp
+      generalst%cwf_neg            = 1.0_dp
+      generalst%cwd_neg            = 1.0_dp
+      generalst%mugf_neg           = 1.0_dp
+      generalst%mugf_pos           = 1.0_dp
+      generalst%extraresistance    = 0.0_dp
+      generalst%crestlength        = 1.0_dp
+      generalst%allowedflowdir = FLOWDIR_BOTH
+      generalst%uselimitFlowPos = .false.
+      generalst%uselimitFlowNeg = .false.
+
+   end subroutine readGateAsGenStru
 
    !> Helper routine to check the result status of a read/prop_get action.
    !! Checks if success is true or false, when false generate an error message.
@@ -1285,35 +1369,35 @@ module m_readstructures
       success = .true.
       allocate(generalst)
 
-      generalst%wu1                = 10d0
+      generalst%wu1                = 10.0_dp
       call prop_get(md_ptr, '', 'upstream1Width', generalst%wu1, success1)
-      generalst%wu2                = 10d0
+      generalst%wu2                = 10.0_dp
       call prop_get(md_ptr, '', 'upstream2Width',  generalst%wu2, success1)
-      generalst%ws                 = 10d0
+      generalst%ws                 = 10.0_dp
       call get_value_or_addto_forcinglist(md_ptr, 'crestWidth', generalst%ws, st_id, ST_GENERAL_ST, forcinglist)
-      generalst%wd1                = 10d0
+      generalst%wd1                = 10.0_dp
       call prop_get(md_ptr, '', 'downstream1Width', generalst%wd1, success1)
-      generalst%wd2                = 10d0
+      generalst%wd2                = 10.0_dp
       call prop_get(md_ptr, '', 'downstream2Width',   generalst%wd2, success1)
 
-      generalst%zu1                = 0d0
+      generalst%zu1                = 0.0_dp
       call prop_get(md_ptr, '', 'upstream1Level',   generalst%zu1, success1)
-      generalst%zu2                = 0d0
+      generalst%zu2                = 0.0_dp
       call prop_get(md_ptr, '', 'upstream2Level',  generalst%zu2, success1)
-      generalst%zs                 = 0d0
+      generalst%zs                 = 0.0_dp
       call get_value_or_addto_forcinglist(md_ptr, 'crestLevel',    generalst%zs, st_id, ST_GENERAL_ST, forcinglist, success1)
-      generalst%zd1                = 0d0
+      generalst%zd1                = 0.0_dp
       call prop_get(md_ptr, '', 'downstream1Level', generalst%zd1, success1)
-      generalst%zd2                = 0d0
+      generalst%zd2                = 0.0_dp
       call prop_get(md_ptr, '', 'downstream2Level',  generalst%zd2, success1)
 
-      generalst%gateLowerEdgeLevel = 1d10
+      generalst%gateLowerEdgeLevel = 1.0e10_dp
       call get_value_or_addto_forcinglist(md_ptr, 'gateLowerEdgeLevel', generalst%gateLowerEdgeLevel, st_id, ST_GENERAL_ST, forcinglist, success1)
-      generalst%crestlength        = 0d0
+      generalst%crestlength        = 0.0_dp
       call prop_get(md_ptr, '', 'crestLength',   generalst%crestlength)
-      generalst%gatedoorheight     = 1d10
+      generalst%gatedoorheight     = 1.0e10_dp
       call prop_get(md_ptr, '', 'gateHeight',   generalst%gatedoorheight, success1)
-      generalst%gateopeningwidth   = 0d0
+      generalst%gateopeningwidth   = 0.0_dp
       call get_value_or_addto_forcinglist(md_ptr, 'gateOpeningWidth', generalst%gateopeningwidth, st_id, ST_GENERAL_ST, forcinglist, success1)
 
       dirString = 'symmetric'
@@ -1324,29 +1408,29 @@ module m_readstructures
       call prop_get(md_ptr, '', 'allowedFlowDir', dirString, success1)
       generalst%allowedflowdir = allowedFlowDirToInt(dirString)
       
-      generalst%cgf_pos            = 1d0
+      generalst%cgf_pos            = 1.0_dp
       call prop_get(md_ptr, '', 'posFreeGateflowCoeff',  generalst%cgf_pos)
-      generalst%cgd_pos            = 1d0
+      generalst%cgd_pos            = 1.0_dp
       call prop_get(md_ptr, '', 'posDrownGateFlowCoeff', generalst%cgd_pos)
-      generalst%cwf_pos            = 1d0
+      generalst%cwf_pos            = 1.0_dp
       call prop_get(md_ptr, '', 'posFreeWeirFlowCoeff',  generalst%cwf_pos)
-      generalst%cwd_pos            = 1d0
+      generalst%cwd_pos            = 1.0_dp
       call prop_get(md_ptr, '', 'posDrownWeirFlowCoeff', generalst%cwd_pos)
-      generalst%mugf_pos           = 1d0  
+      generalst%mugf_pos           = 1.0_dp  
       call prop_get(md_ptr, '', 'posContrCoefFreeGate',  generalst%mugf_pos)
       
-      generalst%cgf_neg            = 1d0
+      generalst%cgf_neg            = 1.0_dp
       call prop_get(md_ptr, '', 'negFreeGateFlowCoeff',  generalst%cgf_neg)
-      generalst%cgd_neg            = 1d0
+      generalst%cgd_neg            = 1.0_dp
       call prop_get(md_ptr, '', 'negDrownGateFlowCoeff', generalst%cgd_neg)
-      generalst%cwf_neg            = 1d0
+      generalst%cwf_neg            = 1.0_dp
       call prop_get(md_ptr, '', 'negFreeWeirFlowCoeff',  generalst%cwf_neg)
-      generalst%cwd_neg            = 1d0
+      generalst%cwd_neg            = 1.0_dp
       call prop_get(md_ptr, '', 'negDrownWeirFlowCoeff', generalst%cwd_neg)
-      generalst%mugf_neg           = 1d0
+      generalst%mugf_neg           = 1.0_dp
       call prop_get(md_ptr, '', 'negContrCoefFreeGate',  generalst%mugf_neg)
       
-      generalst%extraresistance    = 0d0
+      generalst%extraresistance    = 0.0_dp
       call prop_get(md_ptr, '', 'extraResistance', generalst%extraresistance)
       
       generalst%velheight = .true.
@@ -1450,5 +1534,62 @@ module m_readstructures
       end select
       
    end function allowedFlowDirToString
-  
+
+   !> Read the poly file and return the x and y coordinates.
+   subroutine read_polyfile(filename, xs, ys, ns, success)
+      use m_alloc, only: reallocP
+      use messagehandling, only: err, IdLen
+      character(len=*), intent(in) :: filename!< Name of the poly file to read.
+      real(kind = dp), pointer, dimension(:), intent(out) :: xs(:) !< x-coordinates read from file
+      real(kind = dp), pointer, dimension(:), intent(out) :: ys(:) !< y-coordinates read from file
+      integer, intent(out) :: ns !< Number of pli-points read
+      logical, intent(out) :: success !< Success status of the read operation.
+      
+      character(len=Idlen) :: rec
+      integer :: minp 
+      integer :: k
+      integer :: ierr
+
+      ns = 0
+
+      success = .true.
+      open (newunit=minp, file=filename, iostat=ierr)
+      if (ierr /= 0) then
+         call err('File: unable to open ', trim(filename), ' ')
+         return
+      end if
+
+      rec(1:1) = '*'
+      do while (rec(1:1) == '*')
+         read (minp, '(a)', end=999) rec
+      end do
+
+      read (minp, '(a)', end=999) rec
+      read (rec, *, err=888) ns
+
+      call reallocP(xs, ns, keepExisting=.false.)
+      call reallocP(ys, ns, keepExisting=.false.)
+
+      do k = 1, ns
+         read (minp, '(a)', end=999) rec
+         read (rec, *, err=777) xs(k), ys(k)
+      end do
+
+      call doclose(minp)
+      return
+
+999   call eoferror(minp)
+      success =  .false.
+      return
+
+888   call readerror('reading nrows but getting ', rec, minp)
+      success =  .false.
+      return
+
+777   call readerror('reading x, y  but getting ', rec, minp)
+      success =  .false.
+      return
+
+   end subroutine read_polyfile
+
 end module m_readstructures

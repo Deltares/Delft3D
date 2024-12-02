@@ -75,7 +75,7 @@ contains
       integer :: ierror
       integer :: numopt
       integer, parameter :: MAXOP = 64
-      character * 40 OPTION(MAXOP), exp(MAXOP)
+      character(len=40) :: OPTION(MAXOP), exp(MAXOP)
 
 1234  continue
 

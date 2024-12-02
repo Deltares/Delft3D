@@ -60,7 +60,7 @@ object TestbenchWindows : BuildType({
                     token = "%gitlab_private_access_token%"
                 }
                 filterSourceBranch = "+:*"
-                // ignoreDrafts = true
+                ignoreDrafts = true
             }
         }
         if (DslContext.getParameter("environment") == "production") {
@@ -88,7 +88,7 @@ object TestbenchWindows : BuildType({
             }
             workingDir = "."
             scriptContent = """
-                git remote add temporary 'https://svc_teamcity_gitdsc:%gitlab_private_access_token%@git.deltares.nl/oss/delft3d.git'
+                git remote add temporary "https://svc_teamcity_gitdsc:%gitlab_private_access_token%@git.deltares.nl/oss/delft3d.git"
                 git fetch temporary refs/merge-requests/*:refs/remotes/temporary/merge-requests/* --quiet
                 git checkout temporary/%teamcity.build.branch%/merge
                 python -c "import subprocess; commit_id=subprocess.check_output(['git','rev-parse', 'HEAD'], universal_newlines=True).strip(); print('##teamcity[addBuildTag \'merge commit ID: '+commit_id+'\']')"

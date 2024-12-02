@@ -101,11 +101,6 @@ subroutine flow_finalize_single_timestep(iresult)
       end if
 
       if (comparereal(time1, time_his, eps10) >= 0) then
-         if (.not. apply_statistics_on_output) then
-            call updateValuesOnObservationStations()
-         end if
-
-         !do_fourier = do_fourier .or. (md_fou_step == 2)
          if (jampi == 1) then
             call updateValuesOnRunupGauges_mpi()
             !call reduce_particles()

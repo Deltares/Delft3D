@@ -132,7 +132,7 @@ contains
         call assert_true(allocated(new_connection), 'new connection should be made')
         call assert_equal(new_connection%category, category_procparam, 'connection category should be correct')
         call assert_true(new_connection%incoming, 'connection should be incoming')
-        call assert_equal(new_connection%location_text, "", 'connection location_text should be correct')
+        call assert_false(allocated(new_connection%location_text), 'connection location_text should be correct')
         call assert_equal(new_connection%location_index, 0, 'connection location_index should be correct')
         call assert_equal(new_connection%subst_name, "VWind", 'connection subst_name should be correct')
 

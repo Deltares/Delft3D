@@ -66,6 +66,7 @@ contains
     use m_qucperq1, only: qucperq1
     use m_qucwen, only: qucwen
     use m_qufper, only: QufPer
+    use unstruc_channel_flow, only : network
     
     ! locals
     integer :: L, k1, k2 ! link, nd1, nd2
@@ -130,15 +131,28 @@ contains
              call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
           end do
        end do
-       do n = 1, ngategen
-          i = gate2cgen(n)
-          do L = L1cgensg(i), L2cgensg(i)
-             LL = kcgen(3, L); LL = abs(LL)
-             kd = ln(1, LL); ku = ln(2, LL)
-             call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
-             call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
-          end do
-       end do
+       if (network%sts%numGates > 0) then
+         do n = 1, network%sts%numGates
+            associate(pstru => network%sts%struct(network%sts%gateIndices(n)))
+               do i = 1, pstru%numlinks
+                  L = pstru%linknumbers(i)
+                  kd = ln(1, L); ku = ln(2, L)
+                  call getucxucybarrierzero(L, kd, ucx(kd), ucy(kd))
+                  call getucxucybarrierzero(L, ku, ucx(ku), ucy(ku))
+               end do
+            end associate
+         end do
+       else
+         do n = 1, ngategen
+            i = gate2cgen(n)
+            do L = L1cgensg(i), L2cgensg(i)
+               LL = kcgen(3, L); LL = abs(LL)
+               kd = ln(1, LL); ku = ln(2, LL)
+               call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
+               call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
+            end do
+         end do
+       end if
     end if
 
     call sethigherorderadvectionvelocities()

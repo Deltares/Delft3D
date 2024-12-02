@@ -51,34 +51,35 @@ contains
       use timespace
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
       use timespace_read, only: maxnamelen
+      use precision, only: dp
 
       character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
-      real(hp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
-      real(hp), dimension(:), intent(in) :: y !< Array of y-coordinates for the target ElementSet.
+      real(kind=dp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
+      real(kind=dp), dimension(:), intent(in) :: y !< Array of y-coordinates for the target ElementSet.
       integer, intent(in) :: vectormax !< Vector max (length of data values at each element location).
       integer, dimension(:), intent(in) :: mask !< Array of masking values for the target ElementSet.
       character(len=*), intent(in) :: filename !< File name of meteo data file.
       integer, intent(in) :: filetype !< FM's filetype enumeration.
       integer, intent(in) :: method !< FM's method enumeration.
       character(len=1), intent(in) :: operand !< FM's operand enumeration.
-      real(hp), optional, intent(in) :: xyen(:, :) !< FM's distance tolerance / cellsize of ElementSet.
-      real(hp), dimension(:), optional, intent(in), target :: z !< FM's array of z/sigma coordinates
-      real(hp), dimension(:), optional, pointer :: pzmin !< FM's array of minimal z coordinate
-      real(hp), dimension(:), optional, pointer :: pzmax !< FM's array of maximum z coordinate
+      real(kind=dp), optional, intent(in) :: xyen(:, :) !< FM's distance tolerance / cellsize of ElementSet.
+      real(kind=dp), dimension(:), optional, intent(in), target :: z !< FM's array of z/sigma coordinates
+      real(kind=dp), dimension(:), optional, pointer :: pzmin !< FM's array of minimal z coordinate
+      real(kind=dp), dimension(:), optional, pointer :: pzmax !< FM's array of maximum z coordinate
       integer, dimension(:), intent(in), optional, pointer :: pkbot
       integer, dimension(:), intent(in), optional, pointer :: pktop
       integer, optional, intent(in) :: targetIndex !< target position or rank of (complete!) vector in target array
       character(len=*), optional, intent(in) :: forcingfile !< file containing the forcing data for pli-file 'filename'
       character(len=*), optional, intent(in) :: srcmaskfile !< file containing mask applicable to the arcinfo source data
-      real(hp), optional, intent(in) :: dtnodal !< update interval for nodal factors
+      real(kind=dp), optional, intent(in) :: dtnodal !< update interval for nodal factors
       logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
       character(len=*), optional, intent(in) :: varname !< variable name within filename
       character(len=*), optional, intent(in) :: varname2 !< variable name within filename
       character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
-      real(hp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
-      real(hp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
-      real(hp), dimension(:), optional, pointer :: tgt_data3 !< optional pointer to the storage location for target data 3 field
-      real(hp), dimension(:), optional, pointer :: tgt_data4 !< optional pointer to the storage location for target data 4 field
+      real(kind=dp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
+      real(kind=dp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
+      real(kind=dp), dimension(:), optional, pointer :: tgt_data3 !< optional pointer to the storage location for target data 3 field
+      real(kind=dp), dimension(:), optional, pointer :: tgt_data4 !< optional pointer to the storage location for target data 4 field
       integer, optional, intent(inout), target :: tgt_item1 !< optional target item ID 1
       integer, optional, intent(inout), target :: tgt_item2 !< optional target item ID 2
       integer, optional, intent(inout), target :: tgt_item3 !< optional target item ID 3
@@ -115,10 +116,10 @@ contains
       integer, pointer :: targetItemPtr2 => null() !< pointer to optional second target item id (e.g. in case of windxy)
       integer, pointer :: targetItemPtr3 => null() !< pointer to optional third target item id (e.g. in case of spiderweb)
       integer, pointer :: targetItemPtr4 => null() !< pointer to optional fourth target item id (e.g. in case of hacs)
-      real(hp), dimension(:), pointer :: dataPtr1 => null() !< Pointer to FM's 1D data arrays.
-      real(hp), dimension(:), pointer :: dataPtr2 => null() !< Pointer to FM's optional extra 1D data array (e.g. in case of windxy)
-      real(hp), dimension(:), pointer :: dataPtr3 => null() !< Pointer to FM's optional third 1D data array (e.g. in case of spiderweb)
-      real(hp), dimension(:), pointer :: dataPtr4 => null() !< Pointer to FM's optional fourth 1D data array (e.g. in case of hacs)
+      real(kind=dp), dimension(:), pointer :: dataPtr1 => null() !< Pointer to FM's 1D data arrays.
+      real(kind=dp), dimension(:), pointer :: dataPtr2 => null() !< Pointer to FM's optional extra 1D data array (e.g. in case of windxy)
+      real(kind=dp), dimension(:), pointer :: dataPtr3 => null() !< Pointer to FM's optional third 1D data array (e.g. in case of spiderweb)
+      real(kind=dp), dimension(:), pointer :: dataPtr4 => null() !< Pointer to FM's optional fourth 1D data array (e.g. in case of hacs)
       type(tEcFileReader), pointer :: fileReaderPtr => null() !<
 
       logical :: success
@@ -130,11 +131,11 @@ contains
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
       logical :: exist, opened, withCharnock, withStress
 
-      double precision :: relrow, relcol
-      double precision, allocatable :: transformcoef(:)
+      real(kind=dp) :: relrow, relcol
+      real(kind=dp), allocatable :: transformcoef(:)
       integer :: row0, row1, col0, col1, ncols, nrows, issparse, Ndatasize
       character(len=128) :: txt1, txt2, txt3
-      real(hp), pointer :: inputptr => null()
+      real(kind=dp), pointer :: inputptr => null()
 
       call clearECMessage()
       ec_addtimespacerelation = .false.

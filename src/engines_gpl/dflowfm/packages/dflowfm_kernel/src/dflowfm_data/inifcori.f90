@@ -155,10 +155,10 @@ subroutine inifcori()
    if (k > 0) then
       !call newfil(msgbu, trim(getoutputdir())//trim(md_ident)//'_Cdwcoeff.tek')
       !call newfil(mout,'fcori.xyz')
-      fcormin = 1d9; fcormax = -fcormin
+      fcormin = huge(1d0); fcormax = -huge(1d0)
       do i = 1, k
-         fcormin = min(fcormin, fcori(i))
-         fcormax = max(fcormax, fcori(i))
+         fcormin = min(fcormin, real(fcori(i), dp))
+         fcormax = max(fcormax, real(fcori(i), dp))
          if (icorio <= 6) then
             xx = xu(i); yy = yu(i)
          else

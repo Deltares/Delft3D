@@ -35,9 +35,9 @@ contains
 !>    read Arcinfo data and average it into a smaller array
    subroutine ReadLargeArcInfoBlock(MINP, Mfile, Nfile, istart, iend, jstart, jend, Marray, Narray, RMIS, istep, jstep, D)
       use m_halt3
-      use m_missing
+      use m_missing, only: dmiss
       use m_readyy
-      use precision, only: sp, dp
+      use precision, only: dp
 
       integer, intent(in) :: Mfile, Nfile !< arcinfo dimensions
       integer, intent(in) :: istart, iend, jstart, jend !< block to be read in file-index numbering
@@ -45,15 +45,15 @@ contains
       integer, intent(inout) :: MINP !< input file unit number
       real(kind=dp), intent(in) :: RMIS !< missing value
       integer, intent(out) :: istep, jstep !< subblock sizes
-      real(kind=sp), dimension(Marray, Narray), intent(inout) :: D !< sample data array
+      real(kind=dp), dimension(Marray, Narray), intent(inout) :: D !< sample data array
 
-      real(kind=sp), dimension(:), allocatable :: dline
+      real(kind=dp), dimension(:), allocatable :: dline
 
       integer :: iarray, jarray, ifile, jfile, ja3
       integer :: isub, jsub
       integer, dimension(:), allocatable :: num
 
-      double precision :: af
+      real(kind=dp) :: af
 
       integer :: ierror
       character TEX * 16

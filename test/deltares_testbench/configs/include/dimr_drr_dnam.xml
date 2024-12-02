@@ -3,7 +3,7 @@
     -->
     <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <testCase name="e108(drr)_f02(dnam)_c01_382_baseflow" ref="drr_default">
-            <path version="2024-01-12T07:40:00">e108_drr/f02_dnam/c01_382_baseflow</path>
+            <path version="2024-11-27T17:40:00">e108_drr/f02_dnam/c01_382_baseflow</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
                     <parameters>

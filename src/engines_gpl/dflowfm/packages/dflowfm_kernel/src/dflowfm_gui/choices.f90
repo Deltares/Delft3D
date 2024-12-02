@@ -142,7 +142,7 @@ contains
       integer :: irerun ! orthogonalisenet: rerun
       integer :: maxopt, ierr
       integer, parameter :: MAXOP = 64
-      character * 40 OPTION(MAXOP), exp(MAXOP)
+      character(len=40) :: OPTION(MAXOP), exp(MAXOP)
       integer, external :: flow_modelinit
 
       if (netstat /= NETSTAT_OK) call setnodadm(0)

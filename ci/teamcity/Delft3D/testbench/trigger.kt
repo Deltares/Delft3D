@@ -180,7 +180,7 @@ object TestbenchTrigger : BuildType({
                     token = "%gitlab_private_access_token%"
                 }
                 filterSourceBranch = "+:*"
-                // ignoreDrafts = true
+                ignoreDrafts = true
             }
         }
         if (DslContext.getParameter("environment") == "production") {

@@ -41,6 +41,7 @@ public :: readshipdef
 contains
 
  subroutine readshipdef()
+    use precision, only: dp
     use m_sferic
     use m_ship
     use unstruc_model
@@ -51,7 +52,7 @@ contains
     implicit none
     integer :: minp, ja, n, nn, i, j, ierr, L1
     logical jawel
-    double precision, allocatable :: e(:, :)
+    real(kind=dp), allocatable :: e(:, :)
 
     inquire (file=md_shipdeffile, exist=jawel)
 

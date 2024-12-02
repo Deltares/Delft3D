@@ -1627,7 +1627,7 @@ contains
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
 
 ! if ice properties not yet read before, initialize ...
-         if (.not. (ja_ice_area_fraction_read .or. ja_ice_thickness_read)) then
+         if (.not. (ja_ice_area_fraction_read /= 0 .or. ja_ice_thickness_read /= 0)) then
             call fm_ice_activate_by_ext_forces(ndx)
          end if
          target_location_type = UNC_LOC_S

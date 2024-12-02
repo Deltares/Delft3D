@@ -33,17 +33,18 @@ contains
 !
 
       subroutine READARCINFOHEADER(MINP, MMAX, NMAX, X0, Y0, DX, DY, RMIS)
-         double precision :: dx, dy
+         use precision, only: dp
+         real(kind=dp) :: dx, dy
          integer :: jacornerx
          integer :: jacornery
          integer :: minp
          integer :: mmax
          integer :: nmax
-         double precision :: rmis
-         double precision :: x0
-         double precision :: y0
-         double precision :: DumX, DumY
-         character REC * 132
+         real(kind=dp) :: rmis
+         real(kind=dp) :: x0
+         real(kind=dp) :: y0
+         real(kind=dp) :: DumX, DumY
+         character(len=132) :: rec
 
          DumY = -1d10
 

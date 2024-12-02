@@ -184,7 +184,7 @@ contains
                   u11 = umax / sqrt(ag * huL)
                   a11 = -0.0049d0 * t1**2 - 0.069d0 * t1 + 0.2911d0
                   raih = max(0.5d0, -5.25d0 - 6.1d0 * tanh(a11 * u11 - 1.76d0))
-                  rmax = max(0.62d0, min(0.75, -2.5d0 * huL / max(rlabdau, 1.0d-20) + 0.85d0))
+                  rmax = max(0.62d0, min(0.75d0, -2.5d0 * huL / max(rlabdau, 1.0d-20) + 0.85d0))
                   uon = umax * (0.5d0 + (rmax - 0.5d0) * tanh((raih - 0.5d0) / (rmax - 0.5d0)))
                   uoff = umax - uon
                   uon = max(1.0d-5, uon)

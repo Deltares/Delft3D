@@ -321,7 +321,8 @@ contains
       integer :: istat
       integer :: ierror
       integer :: kk
-      real(fp) :: hdtb, hdtb_max, nsteps
+      integer :: nsteps
+      real(fp) :: hdtb, hdtb_max
       real(fp) :: hpow
       real(fp) :: dtsori
       real(fp) :: T_relax !< bedform relaxation time in seconds

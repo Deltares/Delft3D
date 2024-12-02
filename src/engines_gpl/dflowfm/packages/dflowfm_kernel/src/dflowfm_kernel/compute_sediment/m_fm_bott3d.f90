@@ -981,7 +981,7 @@ contains
       use m_flowgeom, only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz, ndx
       use m_flow, only: kmx, s1, vol1
       use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor
-      use m_fm_erosed, only: nd => nd_mor
+      use m_fm_erosed, only: nd => nd_mor, sedtyp, depfac, max_mud_sedtyp
       use m_sediment, only: avalflux, ssccum
       use m_flowtimes, only: dts, dnt
       use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
@@ -1096,17 +1096,33 @@ contains
                      k = kb
                   end if
                   thick1 = vol1(k) * bai_mor(nm)
-                  sedflx = sinksetot(j, nm) * bai_mor(nm) + ssccum(l, nm) ! kg/s/m2
+                  ! no fluff, everything to bed layer
+                  if (iflufflyr == 0) then
+                     sedflx = sinksetot(j, nm) * bai_mor(nm) + ssccum(l, nm) ! kg/s/m2
+                  else
+                     !
+                     ! Update sedflx icw fluff layer
+                     !
+                     ! 1. update fluff layer mass
+                     mfluff(l, nm) = mfluff(l, nm) + dts * (sinkftot(j, nm) * bai_mor(nm) - sourf(l, nm) * thick1)
+                     !
+                     ! 2. sand to bed layer
+                     sedflx = sinksetot(j, nm) * bai_mor(nm)
+                     !
+                     if (sedtyp(l) == SEDTYP_SAND) then
+                        sedflx = sedflx + ssccum(l, nm)
+                     elseif (sedtyp(l) <= max_mud_sedtyp) then
+                        ! 3. if silt/clay and drying, mass to fluff layer
+                        if (iflufflyr == 1) then
+                           mfluff(l, nm) = mfluff(l, nm) + ssccum(l, nm)
+                        else ! iflufflyr == 2
+                           mfluff(l, nm) = mfluff(l, nm) + (1.0_fp - depfac(l, nm)) * ssccum(l, nm)
+                           sedflx = sedflx + depfac(l, nm) * ssccum(l, nm)
+                        end if
+                     end if
+                  end if
                   ssccum(l, nm) = 0d0
                   eroflx = sourse(nm, l) * thick1 ! mass conservation, different from D3D
-                  !
-                  ! Update fluff layer
-                  !
-                  if (iflufflyr > 0) then
-                     mfluff(l, nm) = mfluff(l, nm) + &
-                        & dts * (sinkftot(j, nm) * bai_mor(nm)   &
-                        &      - sourf(l, nm) * thick1)
-                  end if
                   !
                   ! add suspended transport correction vector
                   !

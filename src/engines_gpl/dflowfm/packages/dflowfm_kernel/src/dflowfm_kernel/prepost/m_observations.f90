@@ -36,21 +36,22 @@ module m_observations
    use m_missing
    use fm_external_forcings_data
    use MessageHandling, only: IdLen
+   use precision, only: dp
 
    implicit none
-   
+
    integer, parameter, private :: capacity_ = 1 !< Nr of additionally allocated elements when lists are full
    integer, private :: iUniq_ = 1
    character(len=*), parameter, private :: defaultName_ = 'Obs'
-   
+
    interface
       module subroutine read_moving_stations(obs_filenames)
-         character(len=*), intent(in) :: obs_filenames !< File containing names of observation files. 
+         character(len=*), intent(in) :: obs_filenames !< File containing names of observation files.
       end subroutine read_moving_stations
-    end interface
-   
-    public :: read_moving_stations
-    
+   end interface
+
+   public :: read_moving_stations
+
 contains
 
 !> (re)initialize valobs and set pointers for observation stations
@@ -87,7 +88,7 @@ contains
 !! IPNT_XXX are the pointers in the "valobs" array,
 !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
-      use m_flowparameters
+      use m_flowparameters, only: jawave, jahistaucurrent, jatem, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur 
       use m_flow, only: iturbulencemodel, idensform, kmx, density_is_pressure_dependent
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
@@ -96,6 +97,7 @@ contains
 
       integer :: i, i0, numfracs, nlyrs
 
+      valobs_last_update_time = dmiss
       MAXNUMVALOBS2D = 0
       MAXNUMVALOBS3D = 0
       MAXNUMVALOBS3Dw = 0
@@ -594,7 +596,7 @@ contains
 !> Removes the observation point at indicated list position.
    subroutine updateObservationXY(pos, xnew, ynew)
       integer, intent(in) :: pos
-      double precision, intent(in) :: xnew, ynew
+      real(kind=dp), intent(in) :: xnew, ynew
 
       if (pos <= numobs + nummovobs) then
          xobs(pos) = xnew
@@ -607,8 +609,8 @@ contains
    subroutine addObservation(x, y, name, isMoving, loctype, iOP)
       use m_alloc
       use m_GlobalParameters, only: INDTP_ALL
-      double precision, intent(in) :: x !< x-coordinate
-      double precision, intent(in) :: y !< y-coordinate
+      real(kind=dp), intent(in) :: x !< x-coordinate
+      real(kind=dp), intent(in) :: y !< y-coordinate
       character(len=*), optional, intent(in) :: name !< Name of the station, appears in output file.
       logical, optional, intent(in) :: isMoving !< Whether point is a moving station or not. Default: .false.
       integer, optional, intent(in) :: loctype !< location type (one of INDTP_1D/2D/ALL)
@@ -712,7 +714,7 @@ contains
       integer :: ierr, nobsini, i
       type(t_ObservationPoint), pointer :: pOPnt
       integer, allocatable :: branchIdx_tmp(:), ibrch2obs(:)
-      double precision, allocatable :: Chainage_tmp(:), xx_tmp(:), yy_tmp(:)
+      real(kind=dp), allocatable :: Chainage_tmp(:), xx_tmp(:), yy_tmp(:)
 
       ierr = DFM_NOERR
       nByBrch = 0
@@ -883,7 +885,7 @@ contains
       character(len=*), intent(in) :: filename
 
       integer :: mobs, L, L2
-      double precision :: xp, yp
+      real(kind=dp) :: xp, yp
       character(len=256) :: rec
       character(len=IdLen) :: nam
 

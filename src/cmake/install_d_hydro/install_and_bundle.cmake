@@ -23,8 +23,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/../functions.cmake)
 
 set(BU_CHMOD_BUNDLE_ITEMS 1)
 
-# fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/d_hydro" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
-
 set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")
 set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")
 set_rpath("${CMAKE_INSTALL_PREFIX}/share" "$ORIGIN/../lib:$ORIGIN")
