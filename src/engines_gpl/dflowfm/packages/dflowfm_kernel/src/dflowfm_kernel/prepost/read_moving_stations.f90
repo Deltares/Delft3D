@@ -40,7 +40,6 @@ contains
       use properties, only: prop_file, prop_get, get_version_number, tree_data, tree_get_name, tree_create, tree_destroy
       use timespace_parameters, only: convert_file_type_string_to_integer, UNIFORM, BCASCII, SPACEANDTIME
       use m_meteo, only: ec_addtimespacerelation, initialize_ec_module
-      use unstruc_files, only: basename
       use m_missing, only: dmiss
       use string_module, only: strcmpi, strsplit
       use messagehandling, only: Idlen, LEVEL_INFO, LEVEL_ERROR, msgbuf, msg_flush, warn_flush, err_flush, SetMessage
@@ -68,6 +67,7 @@ contains
       integer, dimension(1) :: kdum
       real(hp), dimension(1) :: xdum, ydum
       integer :: num_mov_obs_prev
+      integer :: num_obs_block_in_file
 
       if (len_trim(obs_filenames) <= 0) then
          return
@@ -111,8 +111,10 @@ contains
 
          num_mov_obs_prev = nummovobs
 
+         num_obs_block_in_file = 0
          do i = 1, numstr
             if (strcmpi(tree_get_name(md_ptr%child_nodes(i)%node_ptr), 'ObservationPoint')) then
+               num_obs_block_in_file = num_obs_block_in_file + 1
                call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'locationFile', location_file, is_successful)
                if (.not. is_successful) then
                   ! Non-moving observation stations have already been read in readObservationPoints subroutine.
@@ -122,13 +124,15 @@ contains
                station_name = ''
                call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'name', station_name, is_successful)
                if (.not. is_successful) then
-                  write (msgbuf, '(a,i0,a)') 'Error Reading Observation Point #', (i - 1), ' from ''', trim(file_names(j)), ''', name is missing.'
+                  write (msgbuf, '(a,i0,a)') 'Error Reading Observation Point #', num_obs_block_in_file, &
+                     ' from ''', trim(file_names(j)), ''', name is missing.'
                   call err_flush()
                   cycle
                end if
                call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'locationFileType', location_file_type_string, is_successful)
                if (.not. is_successful) then
-                  write (msgbuf, '(a,i0,a)') 'Error Reading Observation Point #', (i - 1), ' from ''', trim(file_names(j)), &
+                  write (msgbuf, '(a,i0,5a)') 'Error Reading Observation Point #', num_obs_block_in_file, &
+                     ' (''', trim(station_name),''') from ''', trim(file_names(j)), &
                      ''', locationFileType should be given when locationFile is used.'
                   call err_flush()
                   cycle
