@@ -70,7 +70,7 @@ subroutine macro_floc_settling_manning( spm, tshear, ws_macro )
         ws_macro = 3.96_fp  + 0.000346_fp * spm - 4.38_fp * tshear + 1.33_fp * tshear ** 2
     else
         ! Note: in the article the upper limit for tshear is 5 N/m2
-        ws_macro = 1.18_fp  + 0.000302_fp * spm - 0.491_fp * tshear + 0.057_fp * tshear ** 2
+        ws_macro = 1.18_fp  + 0.000302_fp * spm - 0.491_fp * min(4.0_fp, tshear) + 0.057_fp * min(4.0_fp, tshear) ** 2
     endif
 
     !
@@ -160,6 +160,7 @@ subroutine floc_manning( spm, tshear, ws_avg, macro_frac, ws_macro, ws_micro )
 
 !
 ! Local variables
+    real(fp) ws_macro_corrected
 !
 !   NONE
 
@@ -181,7 +182,8 @@ subroutine floc_manning( spm, tshear, ws_avg, macro_frac, ws_macro, ws_micro )
     !
     ! Effective settling velocity for both macro and micro flocs together
     !
-    ws_avg = ws_micro + macro_frac * (ws_macro - ws_micro)
+    ws_macro_corrected = max(ws_micro, ws_macro)
+    ws_avg = ws_micro + macro_frac * (ws_macro_corrected - ws_micro)
 
 end subroutine floc_manning
 
