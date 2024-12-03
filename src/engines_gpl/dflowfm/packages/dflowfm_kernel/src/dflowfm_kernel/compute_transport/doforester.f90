@@ -30,7 +30,18 @@
 !
 !
 
+module m_doforester
+
+implicit none
+
+private
+
+public :: doforester
+
+contains
+
 subroutine doforester()
+   use m_foresterpoint2
    use m_flow, only: vol1, ndkx, kbot, ktop, kmxn, ndkx, maxitverticalforestersal, maxitverticalforestertem
    use m_flowgeom, only: ndxi
    use m_turbulence, only: kmxx
@@ -59,3 +70,5 @@ subroutine doforester()
 
    if (timon) call timstop(ithndl)
 end subroutine doforester
+
+end module m_doforester

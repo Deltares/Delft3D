@@ -30,6 +30,16 @@
 !
 !
 
+module m_checktrianglenetcell
+
+implicit none
+
+private
+
+public :: checktrianglenetcell
+
+contains
+
    subroutine CHECKTRIANGLEnetcell(N, JA, phimin, phimax)
       use M_netw
       use M_SFERIC
@@ -37,7 +47,6 @@
       use m_missing, only: dxymis
       use geometry_module, only: dcosphi
 
-      implicit none
       double precision :: phimin, phimax
       integer :: n, ja
 
@@ -65,3 +74,5 @@
       end do
       return
    end subroutine CHECKTRIANGLEnetcell
+
+end module m_checktrianglenetcell

@@ -30,13 +30,24 @@
 !
 !
 
- subroutine setgrwflowexpl() ! groundwater flow explicit
+module m_setgrwflowexpl
+
+implicit none
+
+private
+
+public :: setgrwflowexpl
+
+contains
+
+!> groundwater flow explicit
+ subroutine setgrwflowexpl() 
     use m_flowgeom
     use m_flow
     use m_flowtimes
     use m_hydrology_data
     use horton
-    implicit none
+
     double precision, parameter :: mmphr_to_mps = 1d-3 / 3600d0
 
     integer :: k1, k2, L, k
@@ -145,3 +156,5 @@
     end if
 
  end subroutine setgrwflowexpl
+
+end module m_setgrwflowexpl

@@ -36,6 +36,16 @@
 !! a sideways closing gate with two doors from the left and right side, where the partially
 !! closed portions have gate flow, and the center open portion still only has normal weir
 !! flow across the sill.
+module m_update_zcgen_widths_and_heights
+
+implicit none
+
+private
+
+public :: update_zcgen_widths_and_heights
+
+contains
+
 subroutine update_zcgen_widths_and_heights()
    use m_strucs
    use fm_external_forcings_data
@@ -209,3 +219,5 @@ subroutine update_zcgen_widths_and_heights()
    end do ! 1,ngensg
 
 end subroutine update_zcgen_widths_and_heights
+
+end module m_update_zcgen_widths_and_heights

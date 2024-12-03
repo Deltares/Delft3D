@@ -30,13 +30,26 @@
 !
 !
 
- double precision function QucPer(n12, L) ! sum of (Q*uc cell centre upwind normal) at side n12 of link L
-    use m_flow ! advect the cell center velocities (dimension: m4/s2)
-    use m_flowgeom ! leaving the cell = +
+module m_qucper
+
+implicit none
+
+private
+
+public :: qucper
+
+    contains
+
+!> sum of (Q*uc cell centre upwind normal) at side n12 of link L
+!! advect the cell center velocities (dimension: m4/s2)
+!! leaving the cell = +
+ double precision function QucPer(n12, L) 
+    use m_flow 
+    use m_flowgeom 
     implicit none
 
-    integer :: L ! for link L,
-    integer :: n12 ! find normal velocity components of the other links
+    integer :: L !< for link L,
+    integer :: n12 !< find normal velocity components of the other links
 
     ! locals
     integer :: LL, LLL, LLLL ! for links LL,
@@ -77,3 +90,5 @@
     end do
 
  end function QucPer
+
+end module m_qucper

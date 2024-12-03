@@ -30,6 +30,12 @@
 !
 !
 
+module m_flccgsfm
+
+implicit none
+
+contains
+
 subroutine flccgsfm(dg, dsc, cgd, cgf, cw, mugf, cgda, cgfa, mugfa)
 !!--description-----------------------------------------------------------------
 ! NONE
@@ -131,3 +137,5 @@ subroutine flccgsfm(dg, dsc, cgd, cgf, cw, mugf, cgda, cgfa, mugfa)
       cgfa = cgf
    end if
 end subroutine flccgsfm
+
+end module m_flccgsfm

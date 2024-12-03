@@ -30,13 +30,22 @@
 !
 !
 
+module m_deleteselectedsplines
+
+implicit none
+
+private
+
+public :: deleteselectedsplines
+
+contains
+
    subroutine deleteSelectedSplines()
       use m_confrm
       use M_SPLINES
       use M_POLYGON
       use M_MISSING
       use geometry_module, only: pinpok
-      implicit none
 
       integer :: i, j
       integer :: inhul
@@ -73,3 +82,5 @@
       return
 
    end subroutine deleteSelectedSplines
+
+end module m_deleteselectedsplines

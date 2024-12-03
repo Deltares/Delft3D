@@ -30,6 +30,16 @@
 !
 !
 
+module m_readyzprofnr
+
+implicit none
+
+private
+
+public :: readyzprofnr
+
+contains
+
  !> Reads xyz profiles (and stores them as yz profiles).
  !! When the model is in spherical coordinates, the x,y pairs (lon,lat) are translated
  !! into metric distances.
@@ -142,3 +152,5 @@
 777 call readerror('reading x,y,z , but getting ', rec, myzprofs); return
 
  end subroutine readyzprofnr
+
+end module m_readyzprofnr

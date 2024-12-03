@@ -951,6 +951,8 @@ contains
       use m_alloc
       use m_sferic
       use m_get_ucx_ucy_eul_mag
+      use m_linkstocentercartcomp
+
       implicit none
 
       double precision, intent(in) :: dt ! timestep
@@ -1587,6 +1589,7 @@ contains
       ! still not sure about this one, discuss with Dano and use with caution for now
       use m_xbeach_avgoutput
       use m_flowgeom, only: ndx
+      use m_xbeachwaves_getcellcentergradients, only: getcellcentergradients
 
       implicit none
 

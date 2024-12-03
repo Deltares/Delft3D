@@ -31,7 +31,18 @@
 !
 
 !> initialize transport, set the enumerators
+module m_ini_transport
+
+implicit none
+
+private
+
+public :: ini_transport
+
+contains
+
 subroutine ini_transport()
+   use m_alloc_transport, only: alloc_transport
    use m_transport
    use m_flowparameters
    use m_sediment
@@ -251,3 +262,5 @@ subroutine ini_transport()
 
    return
 end subroutine ini_transport
+
+end module m_ini_transport

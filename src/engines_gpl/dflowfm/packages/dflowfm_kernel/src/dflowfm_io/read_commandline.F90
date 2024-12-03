@@ -32,6 +32,16 @@
 
 !> Read options and files from command line
 !>  autostart/autostartstop is not filled in directly, needs to be merged with MDU-file option
+module m_read_commandline
+
+implicit none
+
+private
+
+public :: read_commandline
+   
+contains
+
 function read_commandline() result(istat)
    use m_commandline_option
    use unstruc_model
@@ -458,3 +468,5 @@ function read_commandline() result(istat)
    end if
 
 end function read_commandline
+
+end module m_read_commandline

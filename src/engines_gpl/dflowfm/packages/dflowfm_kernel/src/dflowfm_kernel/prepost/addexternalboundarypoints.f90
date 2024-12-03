@@ -30,6 +30,16 @@
 !
 !
 
+module m_addexternalboundarypoints
+
+implicit none
+
+private
+
+public :: addexternalboundarypoints
+
+contains
+
  subroutine addexternalboundarypoints
     use m_netw
     use m_flow
@@ -42,8 +52,6 @@
     use m_sferic, only: jsferic, jasfer3D
     use geometry_module, only: half
     use m_reapol
-
-    implicit none
 
     logical, external :: is_1d_boundary_candidate
 
@@ -310,3 +318,5 @@
        if (allocated(kdum)) deallocate (kdum)
     end if ! nbnd1d2d > 0
  end subroutine addexternalboundarypoints
+
+end module m_addexternalboundarypoints

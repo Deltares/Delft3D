@@ -35,6 +35,10 @@
  !! and output is only written if the current time tim exceeds the last
  !! written interval.
  subroutine flow_externaloutput(tim) ! give signals etc, write map, his etc
+    use m_wrirst, only: wrirst
+    use m_wricom, only: wricom
+    use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
+    use m_unc_write_shp, only: unc_write_shp
     use m_flowtimes
     use m_flow
     use unstruc_model

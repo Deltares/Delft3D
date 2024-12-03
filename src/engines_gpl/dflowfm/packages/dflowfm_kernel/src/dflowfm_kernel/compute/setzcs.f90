@@ -30,12 +30,22 @@
 !
 !
 
+module m_setzcs
+
+implicit none
+
+private
+
+public :: setzcs
+
+contains
+
  subroutine setzcs()
-    use m_flow
-    use m_flowgeom
+    use m_flow, only: zcs, ndkx, zws, jabaroczlaybed, layertype, keepzlayeringatbed, zslay
+    use m_flowgeom, only: ndx
     use m_get_kbot_ktop
     use m_get_zlayer_indices
-    implicit none
+    use m_alloc, only: realloc
 
     integer :: kk, k, kb, kt, nlayb, nrlay
 
@@ -60,3 +70,5 @@
 
     return
  end subroutine setzcs
+
+end module m_setzcs

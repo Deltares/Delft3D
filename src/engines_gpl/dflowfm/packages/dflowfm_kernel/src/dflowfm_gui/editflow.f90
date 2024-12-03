@@ -31,6 +31,7 @@
 !
 
 module m_editflow
+use m_write_flowdiff, only: write_flowdiff
 use m_viewcycle
 use m_typevalue
 use m_textflow
@@ -41,7 +42,6 @@ use m_moveprobe
 use m_minmxnds
 use m_highlight_nodesnlinks
 use m_getstring
-
 
 implicit none
 

@@ -31,6 +31,17 @@
 !
 
 !> assign indices to the nodes of the cell neighboring cell kcell in kdir direction
+module m_assignij
+use m_checkvalidnode, only: checkvalidnode
+
+implicit none
+
+private
+
+public :: assignij
+
+contains
+
 subroutine assignij(kcell, kdir, kneighbor, ic, jc)
 !---------------------------------------------------------
 !  kdir: direction of neighboring cell
@@ -44,8 +55,6 @@ subroutine assignij(kcell, kdir, kneighbor, ic, jc)
    use unstruc_messages
    use m_missing
    use m_find_common_node
-
-   implicit none
 
    integer :: kcell !< cell number
    integer :: kdir !< direction
@@ -175,3 +184,5 @@ subroutine assignij(kcell, kdir, kneighbor, ic, jc)
    end if
 
 end subroutine
+
+end module m_assignij

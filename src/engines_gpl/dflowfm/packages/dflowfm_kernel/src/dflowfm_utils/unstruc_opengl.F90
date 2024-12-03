@@ -234,7 +234,7 @@ contains
       call fglMatrixMode(GL_PROJECTION)
       call fglLoadIdentity()
 
-      call fglOrtho(X1, X2, Y1, Y2, 0, 1) ! world coordinates extent
+      call fglOrtho(real(X1, dp), real(X2, dp), real(Y1, dp), real(Y2, dp), real(0, dp), real(1, dp)) ! world coordinates extent
       call fglMatrixMode(GL_MODELVIEW)
 
       ! clear the screen
@@ -250,7 +250,7 @@ contains
          b = nbluep / 255d0
       end if
 
-      call fglClearColor(r, g, b, 0) ! screen background
+      call fglClearColor(real(r, sp), real(g, sp), real(b, sp), real(0, sp)) ! screen background
 
       call fglClear(GL_COLOR_BUFFER_BIT)
 
@@ -381,9 +381,9 @@ contains
       ! prepare the font to render text in
       font = CreateFont(height, 0, 0, 0, & ! font size
                         FW_NORMAL, & ! bold
-                        .false., & ! italic
-                        .false., & ! underline
-                        .false., & ! strikout
+                        0, & ! italic
+                        0, & ! underline
+                        0, & ! strikout
                         ANSI_CHARSET, &
                         OUT_TT_PRECIS, &
                         CLIP_DEFAULT_PRECIS, &

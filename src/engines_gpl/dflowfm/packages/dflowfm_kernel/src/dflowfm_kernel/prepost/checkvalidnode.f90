@@ -31,12 +31,21 @@
 !
 
 !> check if new node is valid
+module m_checkvalidnode
+
+implicit none
+
+private
+
+public :: checkvalidnode
+
+contains
+
 subroutine checkvalidnode(node, i, j, lconflict)
 
+   use m_checkgridline, only: checkgridline
    use m_grid
    use m_missing
-
-   implicit none
 
    integer, intent(in) :: node !< node
    integer, intent(in) :: i, j !< indices
@@ -81,3 +90,5 @@ subroutine checkvalidnode(node, i, j, lconflict)
    end if
 
 end subroutine
+
+end module m_checkvalidnode

@@ -30,6 +30,16 @@
 !
 !
 
+module m_del_badortholinks
+
+implicit none
+
+private
+
+public :: del_badortholinks
+
+contains
+
  !> remove netlinks to improve orthogonality
  subroutine del_badortholinks()
     use network_data
@@ -182,3 +192,5 @@
 
     return
  end subroutine del_badortholinks
+
+end module m_del_badortholinks

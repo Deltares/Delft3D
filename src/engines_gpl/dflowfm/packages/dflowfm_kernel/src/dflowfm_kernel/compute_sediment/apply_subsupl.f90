@@ -31,6 +31,16 @@
 !
 
 ! update the bed levels due to subsidence/uplift
+module m_apply_subsupl
+
+implicit none
+
+private
+
+public :: apply_subsupl
+
+contains
+
 subroutine apply_subsupl()
    use m_flowtimes, only: dts, dt_user
    use m_subsidence, only: sdu_blp, subsupl, subsupl_tp
@@ -77,3 +87,5 @@ subroutine apply_subsupl()
       end do
    end select
 end subroutine apply_subsupl
+
+end module m_apply_subsupl

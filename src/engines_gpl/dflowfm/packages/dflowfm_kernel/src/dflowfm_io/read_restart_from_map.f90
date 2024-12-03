@@ -30,6 +30,16 @@
 !
 !
 
+module m_read_restart_from_map
+
+implicit none
+
+private
+
+public :: read_restart_from_map
+
+contains
+
    subroutine read_restart_from_map(filename, ierr)
       use unstruc_netcdf, only: unc_read_map_or_rst
       implicit none
@@ -39,3 +49,5 @@
       call unc_read_map_or_rst(filename, ierr)
 
    end subroutine read_restart_from_map
+
+end module m_read_restart_from_map

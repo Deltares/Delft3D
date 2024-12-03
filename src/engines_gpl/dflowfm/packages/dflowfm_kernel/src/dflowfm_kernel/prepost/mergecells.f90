@@ -32,6 +32,7 @@
 
 !> merge two cells with a common link and update administration
 subroutine mergecells(ic1, ic2, jatek)
+   use m_dellink, only: dellink
    use m_netw
    use m_alloc
    use gridoperations

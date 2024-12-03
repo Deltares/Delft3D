@@ -30,7 +30,18 @@
 !
 !
 
+module m_droptracer
+
+implicit none
+
+private
+
+public :: droptracer
+
+contains
+
 subroutine droptracer(xp, yp, dval)
+   use m_add_tracer, only: add_tracer
    use m_tekflowstuff
    use m_transport
    use m_flowgeom
@@ -102,3 +113,5 @@ subroutine droptracer(xp, yp, dval)
 
    return
 end subroutine droptracer
+
+end module m_droptracer

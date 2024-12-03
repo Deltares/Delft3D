@@ -29,6 +29,12 @@
 
 !
 !
+module m_poshcheck
+
+implicit none
+
+contains
+
  subroutine poshcheck(key)
     use m_rcirc
     use m_flow
@@ -173,3 +179,5 @@
     end subroutine set_water_level_and_hu_for_dry_cells
 
  end subroutine poshcheck
+
+end module m_poshcheck

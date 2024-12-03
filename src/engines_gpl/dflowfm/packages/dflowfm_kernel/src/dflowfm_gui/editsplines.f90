@@ -31,6 +31,7 @@
 !
 
 module m_editsplines
+use m_deleteselectedsplines, only: deleteselectedsplines
 use m_selecteditmode
 
 

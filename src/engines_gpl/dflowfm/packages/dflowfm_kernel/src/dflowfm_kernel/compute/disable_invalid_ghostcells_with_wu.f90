@@ -36,6 +36,16 @@
 !>     -is not a boundary node (k.le.Ndxi), and
 !>     -is not in the own subdomain (idomain(k).ne.my_rank), and
 !>     -is not a member of ghostlist_sall
+module m_disable_invalid_ghostcells_with_wu
+
+implicit none
+
+private
+
+public :: disable_invalid_ghostcells_with_wu
+
+contains
+
 subroutine disable_invalid_ghostcells_with_wu()
    use m_partitioninfo
    use m_flowgeom, only: Ndx, Ndxi, nd, wu
@@ -77,3 +87,5 @@ subroutine disable_invalid_ghostcells_with_wu()
 
    return
 end subroutine disable_invalid_ghostcells_with_wu
+
+end module m_disable_invalid_ghostcells_with_wu

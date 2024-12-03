@@ -30,13 +30,23 @@
 !
 !
 
+module m_copypolto1dnet
+
+implicit none
+
+private
+
+public :: copypolto1dnet
+
+contains
+
   subroutine COPYPOLTo1Dnet()
+     use m_addnetlink, only: addnetlink
      use m_polygon
      use M_netw
      use M_MISSING
      use network_data, only: kn3typ
      use m_delpol
-     implicit none
 
      integer :: k, L, kn3o
 
@@ -55,3 +65,5 @@
      call DELPOL()
      return
   end subroutine COPYPOLTo1Dnet
+
+end module m_copypolto1dnet

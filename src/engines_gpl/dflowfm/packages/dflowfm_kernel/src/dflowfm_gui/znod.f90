@@ -31,6 +31,8 @@
 !
 
 module m_znod
+use m_getfetch, only: getfetch
+
 
 implicit none
 

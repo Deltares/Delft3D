@@ -31,6 +31,16 @@
 !
 
 !> allocate transport arrays
+module m_alloc_transport
+
+implicit none
+
+private
+
+public :: alloc_transport
+
+contains
+
 subroutine alloc_transport(Keepexisting)
    use m_flowgeom, only: Ndx, Lnx
    use m_flow, only: Lnkx, Ndkx, kmx, sigdifi, wsf
@@ -124,3 +134,5 @@ subroutine alloc_transport(Keepexisting)
    call realloc(iconst2sys, NUMCONST, keepExisting=.true., fill=0)
    return
 end subroutine alloc_transport
+
+end module m_alloc_transport

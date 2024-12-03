@@ -77,6 +77,15 @@ contains
       use m_reablu
       use m_reabl
       use m_readadcircnet
+      use m_reajanet, only: reajanet
+      use m_read_restart_from_map, only: read_restart_from_map
+      use m_rearst, only: rearst
+      use m_wriblu, only: wriblu
+      use m_wribl, only: wribl
+      use m_wricmps, only: wricmps
+      use m_wrirstfileold, only: WRIRSTfileold
+      use m_wriswan, only: WRIswan
+      use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
 
       integer :: NUM, NWHAT, KEY
       integer :: ja, ierr

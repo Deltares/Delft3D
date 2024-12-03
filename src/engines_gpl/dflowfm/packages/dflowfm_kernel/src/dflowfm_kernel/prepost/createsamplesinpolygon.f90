@@ -30,6 +30,17 @@
 !
 !
 
+module m_createsamplesinpolygon
+use m_createsamplesinpolygon2, only: createsamplesinpolygon2
+
+implicit none
+
+private
+
+public :: createsamplesinpolygon
+
+contains
+
    subroutine CREATESAMPLESINPOLYGON()
       use m_flowparameters, only: autotrisam
       use m_polygon
@@ -70,3 +81,5 @@
       deallocate (xplsav, yplsav)
 
    end subroutine CREATESAMPLESINPOLYGON
+
+end module m_createsamplesinpolygon

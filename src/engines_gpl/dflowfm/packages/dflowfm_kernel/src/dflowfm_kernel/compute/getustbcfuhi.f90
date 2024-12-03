@@ -1,3 +1,11 @@
+module m_getustbcfuhi
+use m_getvanrijnwci
+
+
+implicit none
+
+contains
+
    !----- AGPL --------------------------------------------------------------------
    !
 !  Copyright (C)  Stichting Deltares, 2017-2024.
@@ -31,6 +39,7 @@
    !
 
    subroutine getustbcfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
+      use m_getsoulsbywci
       use m_flow
       use m_flowgeom, only: ln, dxi, csu, snu
       use m_flowtimes, only: dti
@@ -332,3 +341,5 @@
       end if
 
    end subroutine getustbcfuhi
+
+end module m_getustbcfuhi

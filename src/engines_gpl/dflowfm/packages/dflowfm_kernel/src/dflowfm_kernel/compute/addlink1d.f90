@@ -30,6 +30,16 @@
 !
 !
 
+module m_addlink1d
+
+implicit none
+
+private
+
+public :: addlink1D
+
+contains
+
  subroutine addlink1D(L, japerim) ! and add area's and volumes of 1D links
     use m_flowgeom
     use m_flow
@@ -39,6 +49,7 @@
     use precision_basics
     use m_get_prof_1D
     use m_get_prof_1D_min
+    use m_get_hpr_nostruc
 
     implicit none
 
@@ -47,7 +58,6 @@
     integer :: k1, k2, LL
     double precision :: ar1, wid1, ar2, wid2, dx1, dx2, widu, perim
     double precision :: hpr
-    double precision, external :: get_hpr_nostruc
 
     dx1 = 0.5d0 * dx(L)
     dx2 = dx1
@@ -185,3 +195,5 @@
     end if
 
  end subroutine addlink1D
+
+end module m_addlink1d

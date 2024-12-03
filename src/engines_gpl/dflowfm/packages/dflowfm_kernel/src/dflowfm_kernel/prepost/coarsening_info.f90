@@ -31,14 +31,22 @@
 !
 
 !> netcell-based cell-coarsening information
+module m_coarsening_info
+
+implicit none
+
+private
+
+public :: coarsening_info
+
+contains
+
 double precision function coarsening_info(k)
 
    use m_netw
    use m_missing
    use m_sferic, only: dtol_pole
    use gridoperations
-
-   implicit none
 
    integer :: k !< netcell number
 
@@ -90,3 +98,5 @@ double precision function coarsening_info(k)
 
    return
 end function
+
+end module m_coarsening_info

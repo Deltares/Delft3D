@@ -30,10 +30,20 @@
 !
 !
 
+module m_togeneral
+
+implicit none
+
+private
+
+public :: togeneral
+
+contains
+
 subroutine togeneral(ng, hulp, ngen, widths)
    use m_strucs
    use m_alloc
-   implicit none
+
    integer, intent(in) :: ng !< Index of this general structure in the generalstruc(:) array
    double precision, intent(in) :: hulp(26) !< genstru params read from file
    integer, intent(in) :: ngen !< Number of flow links crossed by this single general structure
@@ -77,3 +87,5 @@ subroutine togeneral(ng, hulp, ngen, widths)
 
    call realloc(generalstruc(ng)%gateclosedfractiononlink, ngen, fill=0d0)
 end subroutine togeneral
+
+end module m_togeneral

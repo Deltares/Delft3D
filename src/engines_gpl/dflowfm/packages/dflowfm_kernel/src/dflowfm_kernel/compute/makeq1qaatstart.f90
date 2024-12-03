@@ -30,9 +30,15 @@
 !
 !
 
+module m_makeq1qaatstart
+
+implicit none
+
+contains
+
  subroutine makeq1qaAtStart()
-    use m_flow
-    use m_flowgeom
+    use m_flow, only: au, hu, u0, u1, q1, qa
+    use m_flowgeom, only: lnx, teta
     use unstruc_model, only: md_restartfile
     use unstruc_netcdf
     implicit none
@@ -80,3 +86,5 @@
     end if
 
  end subroutine makeq1qaAtStart
+
+end module m_makeq1qaatstart

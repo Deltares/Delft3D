@@ -30,6 +30,12 @@
 !
 !
 
+module m_getvanrijnwci
+
+implicit none
+
+contains
+
  subroutine getvanrijnwci(LL, umod, u2dh, taubpuLL, z0urouL)
     use m_flow
     use m_bedform
@@ -111,3 +117,5 @@
     taubpuLL = ag * (u2dh * u2dh / umod) / ca**2
     z0urouL = max(3.33d-5, ka / 30d0)
  end subroutine getvanrijnwci
+
+end module m_getvanrijnwci

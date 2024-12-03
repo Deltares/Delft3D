@@ -30,6 +30,16 @@
 !
 !
 
+module m_writeset
+
+implicit none
+
+private
+
+public :: writeset
+
+contains
+
  subroutine writeset(kk, fnam, nr, a)
     implicit none
     integer :: kk, nr
@@ -48,3 +58,5 @@
     end do
     call doclose(mout)
  end subroutine writeset
+
+end module m_writeset

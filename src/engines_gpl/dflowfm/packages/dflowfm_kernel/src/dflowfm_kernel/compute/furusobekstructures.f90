@@ -30,7 +30,14 @@
 !
 !
 
+module m_furusobekstructures
+
+implicit none
+
+contains
+
 subroutine furusobekstructures()
+   use m_flgsfm
    use m_flow
    use m_flowgeom
    use m_strucs
@@ -62,3 +69,5 @@ subroutine furusobekstructures()
    end do
 
 end subroutine furusobekstructures
+
+end module m_furusobekstructures

@@ -30,6 +30,16 @@
 !
 !
 
+module m_getequilibriumtransportrates2
+
+implicit none
+
+private
+
+public :: getequilibriumtransportrates2
+
+contains
+
  subroutine getequilibriumtransportrates2(L, kb1, kb2, seq, wse, mx, hsk, jamin) ! get equilibrium transportrateconc seq based on bans associated with bndlink L
     use m_netw
     use m_flowgeom
@@ -84,3 +94,5 @@
     end if
 
  end subroutine getequilibriumtransportrates2
+
+end module m_getequilibriumtransportrates2

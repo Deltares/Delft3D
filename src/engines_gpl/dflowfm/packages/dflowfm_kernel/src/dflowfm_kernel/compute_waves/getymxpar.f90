@@ -30,6 +30,16 @@
 !
 !
 
+module m_getymxpar
+
+implicit none
+
+private
+
+public :: getymxpar
+
+contains
+
 subroutine getymxpar(modind, tauwav, taucur, fw, cdrag, abscos, ypar, ymxpar)
    implicit none
    integer, intent(in) :: modind
@@ -105,3 +115,5 @@ subroutine getymxpar(modind, tauwav, taucur, fw, cdrag, abscos, ypar, ymxpar)
       end if
    end if
 end subroutine getymxpar
+
+end module m_getymxpar

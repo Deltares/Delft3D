@@ -30,6 +30,16 @@
 !
 !
 
+module m_getfetch
+
+implicit none
+
+private
+
+public :: getfetch
+
+contains
+
 subroutine getfetch(k, U10, FetchL, FetchD) !and windspeed
    use m_flow, only: Hs, Wx, Wy
    use m_waves, only: fetch, nwf, fetdp
@@ -66,3 +76,5 @@ subroutine getfetch(k, U10, FetchL, FetchD) !and windspeed
       end if
    end if
 end subroutine getfetch
+
+end module m_getfetch

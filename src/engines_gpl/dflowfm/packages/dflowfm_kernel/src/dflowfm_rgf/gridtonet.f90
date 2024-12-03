@@ -31,6 +31,7 @@
 !
 
      subroutine gridtonet()
+        use m_addnetpointnocheck, only: addnetpointnocheck
         use m_confrm
         use m_netw
         use m_grid

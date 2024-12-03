@@ -30,6 +30,16 @@
 !
 !
 
+module m_addclosed_2d_walls
+
+implicit none
+
+private
+
+public :: addclosed_2D_walls
+
+contains
+
  subroutine addclosed_2D_walls()
     use m_flowgeom
     use m_flow
@@ -52,3 +62,5 @@
     end do
 
  end subroutine addclosed_2D_walls
+
+end module m_addclosed_2d_walls

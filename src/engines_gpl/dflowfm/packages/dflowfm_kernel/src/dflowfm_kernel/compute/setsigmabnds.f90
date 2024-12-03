@@ -30,6 +30,16 @@
 !
 !
 
+module m_setsigmabnds
+
+implicit none
+
+private
+
+public :: setsigmabnds
+
+contains
+
  subroutine setsigmabnds()
     use m_netw
     use m_flowgeom
@@ -170,3 +180,5 @@
     end if
 
  end subroutine setsigmabnds
+
+end module m_setsigmabnds

@@ -83,7 +83,7 @@ module m_readObservationPoints
       character(len=IdLen)                  :: obsPointName
       character(len=IdLen)                  :: branchID
       character(len=IdLen)                  :: locationType
-      
+      character(len=IdLen)                  :: location_file
       double precision                      :: Chainage
       double precision                      :: xx, yy
       integer                               :: loctype
@@ -131,6 +131,11 @@ module m_readObservationPoints
       do i = 1, numstr
          
          if (strcmpi(tree_get_name(md_ptr%child_nodes(i)%node_ptr), 'ObservationPoint')) then
+            call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'locationFile', location_file, success)
+            if (success) then
+                ! currently, locationFile is used for moving observation points that are processed in other subroutine
+                cycle
+            end if
             ! Read Data
             call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'name', obsPointName, success)
             if (success) then
@@ -197,7 +202,7 @@ module m_readObservationPoints
          endif
       end do
       
-      write(msgbuf,'(i10,2a)') network%obs%Count , ' observation points have been read from file ', trim(observationPointsFile)
+      write(msgbuf,'(i10,2a)') network%obs%Count , ' static observation points have been read from file ', trim(observationPointsFile)
       call msg_flush()
       
       call fill_hashtable(network%obs)

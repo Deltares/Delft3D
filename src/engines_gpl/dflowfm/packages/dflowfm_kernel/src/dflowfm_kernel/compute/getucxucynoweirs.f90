@@ -30,6 +30,12 @@
 !
 !
 
+module m_getucxucynoweirs
+
+implicit none
+
+contains
+
  subroutine getucxucynoweirs(ku, ucxku, ucyku)
     use m_flow
     use m_flowgeom
@@ -90,3 +96,5 @@
     ucyku = ucyku / ba(ku)
 
  end subroutine getucxucynoweirs
+
+end module m_getucxucynoweirs

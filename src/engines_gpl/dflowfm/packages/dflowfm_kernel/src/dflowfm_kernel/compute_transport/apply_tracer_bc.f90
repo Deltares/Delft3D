@@ -31,6 +31,16 @@
 !
 
 !> apply tracer boundary conditions
+module m_apply_tracer_bc
+
+implicit none
+
+private
+
+public :: apply_tracer_bc
+
+contains
+
 subroutine apply_tracer_bc()
    use m_transport
    use m_meteo
@@ -86,3 +96,5 @@ subroutine apply_tracer_bc()
    if (timon) call timstop(ithndl)
    return
 end subroutine apply_tracer_bc
+
+end module m_apply_tracer_bc

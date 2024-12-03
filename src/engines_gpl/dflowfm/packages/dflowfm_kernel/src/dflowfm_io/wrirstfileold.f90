@@ -30,6 +30,17 @@
 !
 !
 
+module m_wrirstfileold
+use m_wrirstold, only: WRIRSTold
+
+implicit none
+
+private
+
+public :: WRIRSTfileold
+
+contains
+
    subroutine WRIRSTfileold(tim)
       use m_flowtimes
       use unstruc_model
@@ -46,3 +57,5 @@
       call wrirstold(mout)
 
    end subroutine wrirstfileold
+
+end module m_wrirstfileold

@@ -30,17 +30,25 @@
 !
 !
 
+module m_setsorsin
+
+implicit none
+
+private
+
+public :: setsorsin
+
+contains
+
  !> Compute and set source and sink values for the 'intake-outfall' structures.
- subroutine setsorsin() ! links in continuity eq.
+ subroutine setsorsin()
     use m_flow
-    use m_flowgeom
-    use m_flowtimes
-    use m_missing
+    use m_flowtimes, only: dts
     use m_transport, only: NUMCONST, constituents
-    use MessageHandling
-    use m_partitioninfo
+    use MessageHandling, only: LEVEL_WARN, msgbuf, mess
+    use m_partitioninfo, only: jampi, reduce_srsn
     use m_get_kbot_ktop
-    implicit none
+
     integer :: n, kk, k, kb, kt, kk2, ku, numvals, L
     double precision :: qsrck, qsrckk, dzss
     double precision :: frac = 0.5d0 ! cell volume fraction that can at most be extracted in one step
@@ -246,3 +254,5 @@
     end do
 
  end subroutine setsorsin
+
+end module m_setsorsin

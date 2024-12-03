@@ -30,6 +30,12 @@
 !
 !
 
+module m_pipe
+
+implicit none
+
+contains
+
 subroutine pipe(hpr, dia, area, width, japerim, perim) ! half open part
    use m_sferic
    use m_flow, only: slotw1D
@@ -84,3 +90,5 @@ subroutine pipe(hpr, dia, area, width, japerim, perim) ! half open part
       area = area + slotw1D * hpr
    end if
 end subroutine pipe
+
+end module m_pipe

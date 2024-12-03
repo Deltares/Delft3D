@@ -30,6 +30,16 @@
 !
 !
 
+module m_setucxqucyq_mor
+
+implicit none
+
+private
+
+public :: setucxqucyq_mor
+
+contains
+
    subroutine setucxqucyq_mor(u1, ucxq, ucyq)
       use m_fm_erosed, only: ucxq_mor, ucyq_mor, hs_mor, link1, link1sign, ndx_mor
       use m_flowgeom, only: ndx, lnx, lnxi, ln, nd, wcx1, wcx2, wcy1, wcy2, csu, snu, bl, lnx1D, kcs
@@ -287,3 +297,5 @@
       end if !flow_solver
 
    end subroutine setucxqucyq_mor
+
+end module m_setucxqucyq_mor

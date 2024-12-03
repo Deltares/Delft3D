@@ -31,6 +31,7 @@
 !
 
  subroutine shift1Dnetnodestoduikers()
+    use m_closeto1dnetlink, only: closeto1dnetlink
     use m_netw
     use m_flowgeom
     use m_flow

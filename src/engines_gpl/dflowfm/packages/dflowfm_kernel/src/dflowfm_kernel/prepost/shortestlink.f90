@@ -32,6 +32,7 @@
 
   double precision function SHORTESTLINK(K)
      use m_netw
+     use m_dlength, only: dlength
      implicit none
      integer :: K
 
@@ -40,7 +41,6 @@
      integer :: l1
      double precision :: r1
      integer :: KK, NX
-     double precision :: DLENGTH
 
      SHORTESTLINK = 1d9
      NX = size(NOD(K)%LIN)

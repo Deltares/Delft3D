@@ -31,6 +31,7 @@
 !
 
   subroutine REFINELINES()
+     use m_connect, only: connect
      use m_netw
      use M_GRIDSETTINGS
      use m_missing, only: dmiss, jins

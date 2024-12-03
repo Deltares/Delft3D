@@ -30,6 +30,16 @@
 !
 !
 
+module m_inipointers_erosed
+
+implicit none
+
+private
+
+public :: inipointers_erosed
+
+contains
+
    !
    ! ========================================================================================
    !
@@ -247,3 +257,5 @@
       q_zeta = 0d0
 
    end subroutine inipointers_erosed
+
+end module m_inipointers_erosed

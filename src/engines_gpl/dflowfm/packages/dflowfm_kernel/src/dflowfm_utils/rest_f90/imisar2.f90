@@ -35,7 +35,7 @@
          implicit none
          integer :: i
          integer :: mmax
-         integer * 2 IH(MMAX)
+         integer(kind=selected_int_kind(2)) IH(MMAX)
 
          do I = 1, MMAX
             IH(I) = int(dmiss)

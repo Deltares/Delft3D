@@ -30,6 +30,17 @@
 !
 !
 
+module m_flow_waveinit
+use m_xbeachwaves, only: allocstatsolverarrays
+
+implicit none
+
+private
+
+public :: flow_waveinit
+
+contains
+
    subroutine flow_waveinit
       use m_flow
       use m_flowgeom
@@ -363,3 +374,5 @@
          end if
       end if
    end subroutine flow_waveinit
+
+end module m_flow_waveinit

@@ -30,6 +30,12 @@
 !
 !
 
+module m_get_spiralforce
+
+implicit none
+
+contains
+
 subroutine get_spiralforce ! Effect of secondary flow on momentum equations
    ! This subroutine calculates the forces fx and fy for momentum equations
    use m_flow
@@ -128,3 +134,5 @@ subroutine get_spiralforce ! Effect of secondary flow on momentum equations
    end do
 
 end subroutine get_spiralforce
+
+end module m_get_spiralforce

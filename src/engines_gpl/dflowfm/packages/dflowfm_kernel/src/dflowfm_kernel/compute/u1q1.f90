@@ -30,6 +30,16 @@
 !
 !
 
+module m_u1q1
+
+implicit none
+
+private
+
+public :: u1q1
+
+contains
+
  subroutine u1q1()
     use m_flow ! substitute u1 and q1
     use m_flowgeom
@@ -423,3 +433,5 @@
     end do
 
  end subroutine u1q1
+
+end module m_u1q1

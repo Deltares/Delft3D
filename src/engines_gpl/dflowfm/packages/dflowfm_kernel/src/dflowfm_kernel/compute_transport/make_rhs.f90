@@ -31,6 +31,16 @@
 !
 
 !> compose right-hand side
+module m_make_rhs
+
+implicit none
+
+private
+
+public :: make_rhs
+
+contains
+
 subroutine make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
    use m_flowgeom, only: Ndxi, Ndx, ba ! static mesh information
    use m_flowtimes, only: dts
@@ -144,3 +154,5 @@ subroutine make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux
 
    if (timon) call timstop(ithndl)
 end subroutine make_rhs
+
+end module m_make_rhs

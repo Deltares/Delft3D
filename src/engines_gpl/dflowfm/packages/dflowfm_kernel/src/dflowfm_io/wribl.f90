@@ -30,6 +30,16 @@
 !
 !
 
+module m_wribl
+
+implicit none
+
+private
+
+public :: wribl
+
+contains
+
  subroutine wribl(mout) ! write bottom level
     use M_FLOWGEOM
     implicit none
@@ -44,3 +54,5 @@
     call doclose(mout)
 
  end subroutine wribl
+
+end module m_wribl

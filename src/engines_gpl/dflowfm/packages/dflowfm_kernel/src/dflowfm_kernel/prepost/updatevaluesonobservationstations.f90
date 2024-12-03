@@ -32,10 +32,19 @@
 
 !> update observation station data
 subroutine updateValuesOnObservationStations()
-   use m_observations_data
-   use m_partitioninfo
-   use m_timer
+   use m_flowtimes, only: time1
+   use m_flowparameters, only: eps10
+   use m_observations_data, only: IPNT_NUM, numobs, nummovobs, valobs, valobs_last_update_time
+   use m_partitioninfo, only: jampi, reduce_valobs
+   use m_timer, only: jatimer, IOUTPUTMPI, starttimer, stoptimer
+   use precision_basics, only: comparereal
+
    implicit none
+
+   if (comparereal(time1, valobs_last_update_time, eps10) == 0) then
+      return
+   end if
+   valobs_last_update_time = time1
 
    call fill_valobs()
 

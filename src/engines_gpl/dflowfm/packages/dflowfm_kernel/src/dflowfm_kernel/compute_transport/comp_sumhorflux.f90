@@ -31,6 +31,16 @@
 !
 
 !> sum horizontal fluxes
+module m_comp_sumhorflux
+
+implicit none
+
+private
+
+public :: comp_sumhorflux
+
+contains
+
 subroutine comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
    use m_flowgeom, only: Lnx, Ln ! static mesh information
    use timers
@@ -84,3 +94,5 @@ subroutine comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumho
    if (timon) call timstop(ithndl)
    return
 end subroutine comp_sumhorflux
+
+end module m_comp_sumhorflux

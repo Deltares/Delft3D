@@ -31,12 +31,20 @@
 !
 
 !> allocate splineprops array
+module m_allocate_splineprops
+
+implicit none
+
+private
+
+public :: allocate_splineprops
+
+contains
+
 subroutine allocate_splineprops()
    use m_splines
    use m_spline2curvi
    use m_missing
-
-   implicit none
 
    integer :: ispline
 
@@ -72,5 +80,7 @@ subroutine allocate_splineprops()
       splineprops(ispline)%iL = 0
       splineprops(ispline)%iR = 0
    end do
-   return
+
 end subroutine allocate_splineprops
+
+end module m_allocate_splineprops

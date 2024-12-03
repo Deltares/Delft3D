@@ -30,6 +30,16 @@
 !
 !
 
+module m_setwavmubnd
+
+implicit none
+
+private
+
+public :: setwavmubnd
+
+contains
+
    subroutine setwavmubnd()
       use m_flowgeom
       use m_flowparameters
@@ -126,3 +136,5 @@
       !  tangential-velocity boundaries: not needed to define mass fluxes
 
    end subroutine setwavmubnd
+
+end module m_setwavmubnd

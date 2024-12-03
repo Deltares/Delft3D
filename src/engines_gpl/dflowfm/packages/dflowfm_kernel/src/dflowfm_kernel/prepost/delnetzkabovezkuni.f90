@@ -30,6 +30,16 @@
 !
 !
 
+module m_delnetzkabovezkuni
+
+implicit none
+
+private
+
+public :: delnetzkabovezkuni
+
+contains
+
   subroutine delnetzkabovezkuni()
 
      use m_netw
@@ -64,3 +74,5 @@
      call setnodadm(0)
 
   end subroutine delnetzkabovezkuni
+
+end module m_delnetzkabovezkuni

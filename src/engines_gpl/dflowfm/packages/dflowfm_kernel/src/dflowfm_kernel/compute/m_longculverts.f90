@@ -34,6 +34,7 @@
 !! Long culverts are read from the structures.ini file(s), and converted into
 !! new netlinks and prof1D definitions.
 module m_longculverts
+   use m_getflowdir
    use MessageHandling
    use m_missing
    use iso_c_binding

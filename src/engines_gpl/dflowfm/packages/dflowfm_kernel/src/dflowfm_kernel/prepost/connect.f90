@@ -30,11 +30,22 @@
 !
 !
 
+module m_connect
+
+implicit none
+
+private
+
+public :: connect
+
+contains
+
   subroutine CONNECT(K1, K2, LFAC, R00)
      use m_netw
      use gridoperations
      use m_cconstants
-     implicit none
+     use m_dlength, only: dlength
+
      integer :: K1, K2, LFAC
      double precision :: R00
      integer :: ja
@@ -44,7 +55,6 @@
      integer :: ll
      integer :: lnu
      double precision :: r0
-     double precision :: DLENGTH
 
      do L = 1, NUML
         if (KN(1, L) == K1 .and. KN(2, L) == K2 .or. &
@@ -96,3 +106,5 @@
 
      return
   end subroutine CONNECT
+
+end module m_connect

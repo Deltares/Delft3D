@@ -31,6 +31,8 @@
 !
 
    subroutine REFINEPOLYGONUSINGNETWORK()
+      use m_closein, only: closein
+      use m_checktriangle, only: checktriangle
       use m_netw
       use M_SAMPLES
       use m_ec_triangle

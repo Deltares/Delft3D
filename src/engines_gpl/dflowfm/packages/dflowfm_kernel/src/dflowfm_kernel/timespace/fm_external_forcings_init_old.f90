@@ -37,6 +37,10 @@ contains
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_old(iresult)
 
+      use m_addsorsin, only: addsorsin
+      use m_add_tracer, only: add_tracer
+      use m_setzcs, only: setzcs
+      use m_getkbotktopmax
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
       use m_inquire_flowgeom, only: IFLTP_1D, IFLTP_ALL
@@ -54,7 +58,7 @@ contains
       use m_sferic, only: jsferic
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
-      use unstruc_files, only: basename, resolvepath
+      use unstruc_files, only: resolvepath, basename
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
       use timers, only: timstop, timstrt
@@ -64,7 +68,7 @@ contains
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
-      use m_observations, only: addobservation
+      use m_observations, only: nummovobs, addobservation
       use unstruc_inifields, only: initialfield2Dto3D
       use m_find_name, only: find_name
 
@@ -1372,6 +1376,7 @@ contains
          initialize_lateraldata, apply_transport
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
+      use m_togeneral, only: togeneral
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 

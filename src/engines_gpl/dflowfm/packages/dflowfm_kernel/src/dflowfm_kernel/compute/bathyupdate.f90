@@ -30,6 +30,16 @@
 !
 !
 
+module m_bathyupdate
+
+implicit none
+
+private
+
+public :: bathyupdate
+
+contains
+
  subroutine bathyupdate()
     use m_flowgeom
     use m_flow
@@ -134,3 +144,5 @@
     bob0(:, lnx1D + 1:lnxi) = bob(:, lnx1D + 1:lnxi)
 
  end subroutine bathyupdate
+
+end module m_bathyupdate

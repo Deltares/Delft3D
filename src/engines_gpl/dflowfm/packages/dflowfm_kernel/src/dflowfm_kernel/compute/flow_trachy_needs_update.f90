@@ -31,6 +31,12 @@
 !
 
 !> helper function to make sure that the check for updating cross sections is in line with the flow_trachyupdate
+module m_flow_trachy_needs_update
+
+implicit none
+
+contains
+
 logical function flow_trachy_needs_update(time1)
    use precision_basics, only: hp
    use m_flowtimes, only: tstart_user, dt_user
@@ -44,3 +50,5 @@ logical function flow_trachy_needs_update(time1)
    ntrtsteps = (time1 - tstart_user) / dt_trachy
    flow_trachy_needs_update = (abs(ntrtsteps - floor(ntrtsteps)) < 1d-6)
 end function flow_trachy_needs_update
+
+end module m_flow_trachy_needs_update

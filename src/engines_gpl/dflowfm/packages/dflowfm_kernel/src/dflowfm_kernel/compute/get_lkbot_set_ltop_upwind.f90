@@ -31,6 +31,12 @@
 !
 !> Get 3D flow link and node indices for a given "2D" flow link based on given upwind node.
 !! Also sets global Lbot array.
+module m_get_lkbot_set_ltop_upwind
+
+implicit none
+
+contains
+
 subroutine get_lkbot_set_ltop_upwind(link, upstream_cell, upstream_cell_index, Lb, kb, kt)
    use m_flow, only: Lbot, ktop, Ltop
    use m_turbulence, only: ln0
@@ -50,3 +56,5 @@ subroutine get_lkbot_set_ltop_upwind(link, upstream_cell, upstream_cell_index, L
    Ltop(link) = Lb + kt - kb
 
 end subroutine get_lkbot_set_ltop_upwind
+
+end module m_get_lkbot_set_ltop_upwind

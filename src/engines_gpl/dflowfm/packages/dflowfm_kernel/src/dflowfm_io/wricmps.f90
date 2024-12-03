@@ -30,6 +30,16 @@
 !
 !
 
+module m_wricmps
+
+implicit none
+
+private
+
+public :: wricmps
+
+contains
+
  !> Writes a set of template component files (_xxxx.cmp) associated with the current polyline.
  !! Should only be called directly after savepol has been called.
  !! If the current polyline was then saved to polname.pli, then
@@ -140,3 +150,5 @@
     end if
 
  end subroutine wricmps
+
+end module m_wricmps

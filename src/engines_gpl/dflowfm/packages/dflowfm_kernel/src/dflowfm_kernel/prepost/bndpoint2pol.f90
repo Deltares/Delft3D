@@ -30,11 +30,22 @@
 !
 !
 
+module m_bndpoint2pol
+
+implicit none
+
+private
+
+public :: bndpoint2pol
+
+contains
+
  subroutine bndpoint2pol(m, n)
     use m_polygon
     use m_grid
-    implicit none
+
     integer :: m, n
+    
     double precision :: xce, yce, xbb, ybb
     integer :: mu, nu, md, nd
 
@@ -93,3 +104,5 @@
     end if
 
  end subroutine bndpoint2pol
+
+end module m_bndpoint2pol

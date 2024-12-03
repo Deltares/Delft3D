@@ -30,6 +30,16 @@
 !
 !
 
+module m_readset
+
+implicit none
+
+private
+
+public :: readset
+
+contains
+
  subroutine readset(kk, mbca, a)
     implicit none
     integer :: kk
@@ -40,3 +50,5 @@
        read (mbca, '(a)') a(k)
     end do
  end subroutine readset
+
+end module m_readset

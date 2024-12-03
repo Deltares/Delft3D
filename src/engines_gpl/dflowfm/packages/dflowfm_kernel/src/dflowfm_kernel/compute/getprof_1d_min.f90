@@ -30,6 +30,8 @@
 !
 !
 module m_get_prof_1D_min
+use m_pipemin
+
    implicit none
 contains
 subroutine getprof_1D_min(L, hpr, area, width) ! pressurepipe

@@ -35,6 +35,9 @@ contains
 
 !> set boundary conditions
    module subroutine set_external_forcings_boundaries(time, iresult)
+      use m_update_dambreak_breach, only: update_dambreak_breach
+      use m_setsigmabnds, only: setsigmabnds
+      use m_fm_thahbc
       use timers
       use m_flowtimes
       use m_flowgeom
@@ -42,7 +45,7 @@ contains
       use m_sferic
       use timespace
       use m_ship
-      use m_observations, only: updateobservationxy
+      use m_observations, only: numobs, nummovobs, updateobservationxy
       use m_timer
       use m_partitioninfo
       use m_meteo

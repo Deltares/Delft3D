@@ -30,6 +30,7 @@
 !
 !
 module wave_boundary_update_module
+   use precision, only: dp
    use wave_boundary_datastore
    !
    implicit none
@@ -79,7 +80,7 @@ module wave_boundary_update_module
       integer, dimension(:), pointer :: WDindex ! Index of wave train component locations on wave directional bin axis
       integer, dimension(:), pointer :: PRindex ! Index of wave train components to be phase-resolved (rather than
       ! using energy balance)
-      double complex, dimension(:, :), pointer :: CompFn ! Fourier components of the wave trains
+      complex(kind=dp), dimension(:, :), pointer :: CompFn ! Fourier components of the wave trains
       character(1024) :: Efilename, qfilename, nhfilename
       real(dp), dimension(:, :), pointer :: zsits ! time series of total surface elevation for nonhspectrum==1
       real(dp), dimension(:, :), pointer :: uits ! time series of depth-averaged horizontal east velocity nonhspectrum==1 or swkhmin>0
@@ -2757,7 +2758,7 @@ contains
          chk2 = cosh(wp%kgen(m + 1:K) * hb0)
 
          D(m, 1:K - m) = -par_g * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m)) / 2.d0 / term1 + &
-                         +term2**2 / (par_g * 2) + par_g * term2 / &
+                         term2**2 / (par_g * 2) + par_g * term2 / &
                          ((par_g * k3(m, 1:K - m) * tanh(k3(m, 1:K - m) * hb0) - (term2new)**2) * term1) * &
                          (term2 * ((term1)**2 / par_g / par_g - wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m))) &
                           - 0.50d0 * ((-wp%wgen(1:K - m)) * wp%kgen(m + 1:K)**2 / (chk2**2) + wp%wgen(m + 1:K) * wp%kgen(1:K - m)**2 / (chk1**2)))

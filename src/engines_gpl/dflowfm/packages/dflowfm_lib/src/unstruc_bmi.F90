@@ -35,6 +35,11 @@
 #define no_warning_unused_variable(x) associate( x => x ); end associate
 
 module bmi
+   use m_flow_run_single_timestep, only: flow_run_single_timestep
+   use m_flow_init_single_timestep, only: flow_init_single_timestep
+   use m_flow_finalize_single_timestep, only: flow_finalize_single_timestep
+   use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
+   use m_write_some_final_output, only: write_some_final_output
    use iso_c_binding
    use unstruc_api
    use m_gui ! this should be removed when jaGUI = 0 by default
@@ -484,7 +489,7 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: finalize
       use m_partitioninfo
 
-      call writesomefinaloutput()
+      call write_some_final_output()
 
       if (jampi == 1) then
 !        finalize before exit

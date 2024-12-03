@@ -30,6 +30,16 @@
 ! $Id: addbarocl.f90 142295 2023-01-10 08:25:27Z klapwijk $
 ! $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/trunk/src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/compute/addbarocl.f90 $
 
+module m_addbarocl
+
+implicit none
+
+private
+
+public :: addbarocL, addbarocLorg, addbarocLrho_w
+
+contains
+
  subroutine addbarocL(LL, Lb, Lt)
     use m_flowgeom
     use m_flow
@@ -149,6 +159,7 @@
     use m_flowtimes
     use m_transport, only: ISALT, ITEMP, constituents
     use m_physcoef, only: rhomean
+    use m_densfm, only: densfm
 
     implicit none
     integer, intent(in) :: LL, Lb, Lt
@@ -156,7 +167,6 @@
     integer :: L, k1, k2, k1t, k2t, k, kt, kz, ktz, insigpart, morelayersleft, i
     double precision :: gradpu(kmxx), rhovol(kmxx), gr3
     double precision :: rv1, rv2, gr1, gr2, rvk, grk, saw0, saw1, tmw0, tmw1, fzu, fzd, dzz, rhow0, rhow1, pdb, p0d
-    double precision, external :: densfm
 
     gradpu(1:Lt - Lb + 1) = 0d0
 
@@ -396,3 +406,5 @@
     end if
 
  end subroutine barocLtimeint
+
+end module m_addbarocl

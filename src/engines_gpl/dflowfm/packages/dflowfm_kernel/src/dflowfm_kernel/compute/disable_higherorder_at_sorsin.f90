@@ -30,6 +30,16 @@
 !
 !
 
+module m_disable_higherorder_at_sorsin
+
+implicit none
+
+private
+
+public :: disable_higherorder_at_sorsin
+
+contains
+
    subroutine disable_higherorder_at_sorsin()
       use m_flowgeom
       use fm_external_forcings_data, only: numsrc, ksrc
@@ -127,3 +137,5 @@
 
       return
    end subroutine disable_higherorder_at_sorsin
+
+end module m_disable_higherorder_at_sorsin

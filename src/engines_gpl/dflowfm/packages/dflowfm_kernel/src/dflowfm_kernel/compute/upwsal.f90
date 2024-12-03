@@ -30,6 +30,16 @@
 !
 !
 
+module m_upwsal
+
+implicit none
+
+private
+
+public :: upwsal
+
+contains
+
  double precision function upwsal(L, k12) ! upwind salinity
     use m_flowgeom
     use m_flow
@@ -75,3 +85,5 @@
     end if
 
  end function upwsal
+
+end module m_upwsal

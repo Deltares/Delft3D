@@ -30,6 +30,16 @@
 !
 !
 
+module m_writesomeinitialoutput
+
+implicit none
+
+private
+
+public writesomeinitialoutput
+
+contains
+
 subroutine writesomeinitialoutput()
    use m_flow
    use m_flowgeom
@@ -162,3 +172,5 @@ subroutine flowgeom_dimensions_message()
    end if
 
 end subroutine flowgeom_dimensions_message
+
+end module m_writesomeinitialoutput

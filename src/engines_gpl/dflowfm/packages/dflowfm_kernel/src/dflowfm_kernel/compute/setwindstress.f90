@@ -30,7 +30,18 @@
 !
 !
 
+module m_setwindstress
+
+implicit none
+
+private
+
+public :: setwindstress
+
+contains
+
  subroutine setwindstress()
+    use m_setcdwcoefficient, only: setcdwcoefficient
     use m_flowgeom
     use m_flow
     use m_wind
@@ -144,3 +155,5 @@
        end if
     end if
  end subroutine setwindstress
+
+end module m_setwindstress

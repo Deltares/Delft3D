@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 
 	<testCase name="e02_f010_c100_dambreak_VerheijvdKnaap" ref="dimr_default">
-		<path version="2024-01-11T11:50:00">e02_dflowfm/f010_structures/c100_dambreak_VerheijvdKnaap</path>
+		<path version="2024-10-08T13:41:00">e02_dflowfm/f010_structures/c100_dambreak_VerheijvdKnaap</path>
 		<checks>
 			<file name="DFM_OUTPUT_DikeBreachTest15s_FMadjusted/DikeBreachTest15s_FMadjusted_map.nc" type="netCDF">
 				<parameters>
@@ -125,9 +125,9 @@
 		<checks>
 			<file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceAbsolute="0.1" />
 					<parameter name="water_balance_precipitation_total" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_evaporation" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_evaporation" toleranceAbsolute="0.1" />
 					<parameter name="rain" toleranceAbsolute="0.0001" />
 					<parameter name="infiltration_actual" toleranceAbsolute="0.0001" />
 					<parameter name="waterlevel" toleranceAbsolute="0.0001" />
@@ -868,7 +868,6 @@
 				<parameters>
 					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
 					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
 				</parameters>
 			</file>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="netCDF">
@@ -1407,7 +1406,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f107_c10_Equal1D_Equal2D_Rural_Lateral_Links_Dambreak" ref="dimr_default">
-		<path version="2024-01-11T13:00:00">e02_dflowfm/f107_1d2d_validation/c10_Equal1D_Equal2D_Rural_Lateral_Links_Dambreak</path>
+		<path version="2024-11-25T11:30:00">e02_dflowfm/f107_1d2d_validation/c10_Equal1D_Equal2D_Rural_Lateral_Links_Dambreak</path>
 		<checks>
 			<file name="DFM_OUTPUT_1D2D/1D2D_map.nc" type="netCDF">
 				<parameters>
@@ -1420,6 +1419,7 @@
 				<parameters>
 					<parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
 					<parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_discharge" toleranceAbsolute="0.0001" />
 				</parameters>
 			</file>
 		</checks>

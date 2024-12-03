@@ -31,13 +31,21 @@
 !
 
 !> compute the "best-fit" circumcenter of a polygon
+module m_comp_circumcenter
+
+implicit none
+
+private
+
+public :: comp_circumcenter
+
+contains
+
 subroutine comp_circumcenter(N, xp, yp, xf, yf, xc, yc)
    use m_sferic
    use m_missing
    use geometry_module, only: pinpok, getdxdy, getdx, getdy, cross, normalin
    use m_qnerror
-
-   implicit none
 
    integer, intent(in) :: N !< polygon dimension
    double precision, dimension(N), intent(in) :: xp, yp !< polygon node coordinates
@@ -141,3 +149,5 @@ subroutine comp_circumcenter(N, xp, yp, xf, yf, xc, yc)
 
    return
 end subroutine comp_circumcenter
+
+end module m_comp_circumcenter

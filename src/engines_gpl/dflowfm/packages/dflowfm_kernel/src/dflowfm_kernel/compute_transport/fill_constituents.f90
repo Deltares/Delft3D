@@ -31,7 +31,18 @@
 !
 
 !> fill constituent array
+module m_fill_constituents
+
+implicit none
+
+private
+
+public :: fill_constituents
+
+contains
+
 subroutine fill_constituents(jas) ! if jas == 1 do sources
+   use m_apply_sediment_bc, only: apply_sediment_bc
    use m_transport, only: ISED1, ISPIR, NUMCONST, ISALT, ITEMP, ITRA1, ITRAN, constituents, const_sour, const_sink, difsedu, difsedw
    use m_flowgeom, only: ndx, ndxi, ba
    use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
@@ -380,3 +391,5 @@ contains
    end subroutine set_sorsin
 
 end subroutine fill_constituents
+
+end module m_fill_constituents

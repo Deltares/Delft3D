@@ -38,4 +38,12 @@
         </location>
         <path>bin/run_delpar.bat</path>
     </program>
+
+    <program name="plct" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+        <path>plct.exe</path>
+        <shell ref="command_prompt"/>
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/plct</from>
+        </location>
+    </program>
 </programs>

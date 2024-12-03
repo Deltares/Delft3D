@@ -32,6 +32,8 @@
 
    subroutine MAKENET(japaramscreen)
 
+      use m_dellink, only: dellink
+      use m_addmaze, only: addmaze
       use m_makenetparameters
       use m_netw
       use m_makenet ! NTYP ANGLE SIZE THICK NRX NRY

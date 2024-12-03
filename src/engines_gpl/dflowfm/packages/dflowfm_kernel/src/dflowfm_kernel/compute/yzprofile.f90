@@ -30,10 +30,21 @@
 !
 !
 
+module m_yzprofile
+
+implicit none
+
+private
+
+public :: yzprofile
+
+contains
+
 subroutine yzprofile(hpr, ka, itp, area, width, japerim, frcn, ifrctyp, perim, cfhi)
-   use m_profiles
+   use m_getseg1d
+   use m_profiles, only: profiles1d
    use m_physcoef, only: ag
-   implicit none
+
    integer :: ka, japerim, itp
    double precision :: hpr ! hoogte in profiel
    double precision :: area ! wet cross sectional area
@@ -99,3 +110,5 @@ subroutine yzprofile(hpr, ka, itp, area, width, japerim, frcn, ifrctyp, perim, c
    end if
 
 end subroutine yzprofile
+
+end module m_yzprofile

@@ -32,6 +32,7 @@
 
  subroutine setprofs1D()
 
+    use m_closeto1dnetlink, only: closeto1dnetlink
     use m_readprofilesloc
     use m_readprofilesdef
     use m_flowgeom

@@ -32,6 +32,16 @@
 
 !> Check network data for possible errors.
 !! Netlink crossings are stored in linkcross, and can be shown through display menu.
+module m_checknetwork
+
+implicit none
+
+private
+
+public :: checknetwork
+
+contains
+
 subroutine checknetwork()
 
    use network_data
@@ -41,8 +51,6 @@ subroutine checknetwork()
    use m_missing, only: dmiss
    use m_sferic, only: jsferic
    use m_readyy
-
-   implicit none
 
    integer, allocatable :: linkQueue(:), jaLinkVisited(:)
    integer :: nLink = 0
@@ -152,3 +160,5 @@ contains
    end subroutine findLinks
 
 end subroutine checknetwork
+
+end module m_checknetwork

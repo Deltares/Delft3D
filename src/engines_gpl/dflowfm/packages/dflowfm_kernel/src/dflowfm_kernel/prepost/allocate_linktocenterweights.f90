@@ -29,12 +29,20 @@
 
 !
 !
+module m_allocate_linktocenterweights
+
+implicit none
+
+private
+
+public :: allocate_linktocenterweights
+
+contains
+
  subroutine allocate_linktocenterweights() ! allocate center related linkxy weights
 
     use m_flowgeom
     use m_alloc
-
-    implicit none
 
     integer :: ierr
 
@@ -53,3 +61,5 @@
     call aerr('wcL  (2,Lnx)', ierr, 2 * Lnx)
 
  end subroutine allocate_linktocenterweights
+
+end module m_allocate_linktocenterweights

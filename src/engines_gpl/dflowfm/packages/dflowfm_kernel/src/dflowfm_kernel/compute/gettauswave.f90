@@ -30,6 +30,9 @@
 !
 !
 module m_gettauswave
+use m_swart, only: swart
+use m_linkstocentercartcomp
+
    implicit none
 contains
 !> Make output arrays for bed shear stress icm jawave>0, depending on waq coupling and 2D/3D

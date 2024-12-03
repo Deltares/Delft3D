@@ -30,6 +30,16 @@
 ! $Id$
 ! $HeadURL$
 
+module m_fm_flocculate
+
+implicit none
+
+private
+
+public :: fm_flocculate
+
+contains
+
    subroutine fm_flocculate()
       !--description-----------------------------------------------------------------
       !
@@ -119,3 +129,5 @@
       deallocate (cfloc, stat=istat)
 
    end subroutine fm_flocculate
+
+end module m_fm_flocculate

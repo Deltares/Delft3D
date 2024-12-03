@@ -32,6 +32,8 @@
 
 !> find meshline nearest to land boundary
 subroutine find_nearest_meshline(jasnap)
+   use m_connect_boundary_paths, only: connect_boundary_paths
+   use m_admin_landboundary_segments, only: admin_landboundary_segments
    use m_clnabs
    use m_netw
    use m_landboundary
@@ -342,6 +344,7 @@ contains
 !> mask the nodes that are considered in the shortest path algorithm
    subroutine masknodes(numseg)
 
+      use m_cellcrossedbyland, only: cellcrossedbyland
       use m_missing
       use m_polygon, only: NPL, xpl, ypl, zpl
       use geometry_module, only: dbpinpol

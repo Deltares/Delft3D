@@ -30,6 +30,12 @@
 !
 !
 
+module m_getseg1d
+
+implicit none
+
+contains
+
 subroutine getseg1D(hpr, wu2, dz, ai, frcn, ifrctyp, wid, ar, conv, perim, jaconv) ! copy of above routine dressed out for 1D
    use m_get_cz
    implicit none
@@ -95,3 +101,5 @@ subroutine getseg1D(hpr, wu2, dz, ai, frcn, ifrctyp, wid, ar, conv, perim, jacon
 
    end if
 end subroutine getseg1D
+
+end module m_getseg1d

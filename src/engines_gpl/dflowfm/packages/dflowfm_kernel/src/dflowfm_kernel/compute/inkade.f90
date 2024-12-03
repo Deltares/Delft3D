@@ -30,6 +30,12 @@
 !
 !
 
+module m_inkade
+
+implicit none
+
+contains
+
  subroutine inkade(sx2, sy2, i, j)
     use m_ship
     implicit none
@@ -45,3 +51,5 @@
     end if
 
  end subroutine inkade
+
+end module m_inkade

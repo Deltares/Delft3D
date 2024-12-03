@@ -30,6 +30,12 @@
 !
 !
 
+module m_hordiflimited
+
+implicit none
+
+contains
+
 double precision function hordiflimited(LL, L, rho_, nx) ! used to compute a strict horizontal gradient see vkester,stelling 1994
    use m_flow
    use m_flowgeom
@@ -127,3 +133,5 @@ double precision function hordiflimited(LL, L, rho_, nx) ! used to compute a str
    end if
 
 end function hordiflimited
+
+end module m_hordiflimited

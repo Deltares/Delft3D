@@ -30,10 +30,20 @@
 !
 !
 
+module m_alreadyquad
+
+implicit none
+
+private
+
+public :: alreadyquad
+
+contains
+
   subroutine ALREADYQUAD(K1, K2, K3, K4, JA)
      use m_netw
      use m_qnerror
-     implicit none
+
      integer :: K1, K2, K3, K4, JA
 
      integer :: n1
@@ -59,5 +69,7 @@
            end if
         end if
      end do
-     return
+
   end subroutine ALREADYQUAD
+
+end module m_alreadyquad

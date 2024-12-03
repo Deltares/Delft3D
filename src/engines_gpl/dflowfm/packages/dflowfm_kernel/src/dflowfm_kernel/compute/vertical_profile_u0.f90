@@ -32,6 +32,16 @@
 
 ! =================================================================================================
 ! =================================================================================================
+module m_vertical_profile_u0
+
+implicit none
+
+private
+
+public :: vertical_profile_u0
+
+contains
+
  subroutine vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)
     use m_flow
     use m_flowgeom
@@ -39,7 +49,7 @@
     use m_missing
     use m_waves
     use m_sferic
-    use m_filter, only: ustar, itype
+    use m_filter_data, only: ustar, itype
     implicit none
     integer :: Lb, Lt, kxL, LL
     double precision :: a(kmxx), b(kmxx), c(kmxx), d(kmxx), e(kmxx), dzu(kxL), womegu(kxL - 1), dzv(kmxx)
@@ -287,3 +297,5 @@
     end if
 
  end subroutine vertical_profile_u0
+
+end module m_vertical_profile_u0

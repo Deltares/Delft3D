@@ -31,6 +31,7 @@
 !
 
 module m_textflow
+use m_model_specific, only: textflowspecific
 
 implicit none
 

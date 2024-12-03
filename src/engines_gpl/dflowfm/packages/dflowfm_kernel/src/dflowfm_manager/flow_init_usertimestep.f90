@@ -34,6 +34,7 @@
 !!
 !! Should be followed by a flow_run_usertimestep and a flow_finalize_usertimestep.
 subroutine flow_init_usertimestep(iresult)
+   use m_setzcs, only: setzcs
    use m_flowtimes
    use dfm_error
    use MessageHandling

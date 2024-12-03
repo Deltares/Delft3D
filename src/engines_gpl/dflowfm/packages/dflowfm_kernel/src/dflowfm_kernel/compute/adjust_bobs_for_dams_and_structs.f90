@@ -30,6 +30,18 @@
 !
 !
 
+module m_adjust_bobs_for_dams_and_structs
+use m_switchiadvnearlink, only: switchiadvnearlink
+use m_adjust_bobs_on_dambreak_breach, only: adjust_bobs_on_dambreak_breach
+
+implicit none
+
+private
+
+public :: adjust_bobs_for_dams_and_structs
+
+contains
+
  !> adjust bobs and iadvec for dams and structs
  subroutine adjust_bobs_for_dams_and_structs()
     use m_alloc
@@ -171,3 +183,5 @@
     end if
     return
  end subroutine adjust_bobs_for_dams_and_structs
+
+end module m_adjust_bobs_for_dams_and_structs

@@ -32,6 +32,7 @@
 
 !> generate curvi-linear grid from net, growing from (xp,yp)
 subroutine netw2curv(xp, yp)
+   use m_assign_icjc, only: assign_icjc
    use m_netw
    use m_grid
    use m_alloc

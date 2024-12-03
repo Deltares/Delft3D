@@ -30,14 +30,24 @@
 !
 !
 
- subroutine setcfuhi() ! set friction coefficients g/C2 etc
-    use m_flowtimes ! sqrt(g/C2) in both in 2D and in 3D
+module m_setcfuhi
+
+implicit none
+
+private
+
+public :: setcfuhi
+
+contains
+
+!> set friction coefficients g/C2 etc
+!! sqrt(g/C2) in both in 2D and in 3D
+ subroutine setcfuhi() 
+    use m_flowtimes 
     use m_flow
-    use m_flowgeom
+    use m_flowgeom, only: lnx, lnx1d
     use m_missing
     use m_get_cz
-
-    implicit none
 
     ! locals
     double precision :: h0, cz, frcn
@@ -84,3 +94,5 @@
     end if
 
  end subroutine setcfuhi
+
+end module m_setcfuhi

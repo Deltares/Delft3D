@@ -30,6 +30,16 @@
 !
 !
 
+module m_settaubxu_nowave
+
+implicit none
+
+private
+
+public :: settaubxu_nowave
+
+contains
+
    subroutine settaubxu_nowave(use_u1)
       use m_flowgeom
       use m_flow
@@ -71,3 +81,5 @@
       end do
 
    end subroutine
+
+end module m_settaubxu_nowave

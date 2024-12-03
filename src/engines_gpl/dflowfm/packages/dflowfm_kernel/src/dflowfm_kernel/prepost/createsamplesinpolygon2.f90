@@ -30,10 +30,19 @@
 !
 !
 
+module m_createsamplesinpolygon2
+
+implicit none
+
+private
+
+public :: createsamplesinpolygon2
+
+contains
+
    subroutine CREATESAMPLESINPOLYGON2()
       use m_ec_triangle
       use network_data, only: TRIANGLESIZEFAC
-      !use m_netw
       use M_SAMPLES
       use M_MISSING
       use m_sferic
@@ -41,11 +50,6 @@
       use geometry_module, only: dbpinpol, get_startend
       use m_polygon
       use m_qnerror
-
-      implicit none
-
-      !integer          :: NPL
-      !double precision :: XPL(NPL), YPL(NPL)
 
       integer :: ierr
       integer :: in
@@ -137,3 +141,5 @@
 
       return
    end subroutine CREATESAMPLESINPOLYGON2
+
+end module m_createsamplesinpolygon2

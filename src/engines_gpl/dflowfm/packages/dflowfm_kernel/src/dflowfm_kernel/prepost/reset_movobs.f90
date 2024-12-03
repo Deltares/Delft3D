@@ -34,7 +34,7 @@
  !! Necessary because moving stations are always reread from .ext file
  !! (i.e. *after* MDU read, as opposed to static stations
  subroutine reset_movobs()
-    use m_observations, only: numobs, nummovobs, deleteobservation, deleteobservations, purgeobservations
+    use m_observations, only: numobs, nummovobs, deleteobservation, purgeobservations
     implicit none
 
     integer :: i

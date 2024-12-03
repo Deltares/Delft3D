@@ -30,12 +30,21 @@
 !
 !
 
+module m_addtopol
+
+implicit none
+
+private
+
+public :: addtopol
+
+contains
+
  !> add polygon to global polygons
  subroutine addtopol(XCRA, YCRA, NCRA)
     use m_polygon
     use m_alloc
     use m_missing
-    implicit none
 
     integer, intent(in) :: NCRA
     double precision, dimension(NCRA), intent(in) :: XCRA, YCRA
@@ -62,3 +71,5 @@
 
     return
  end subroutine addtopol
+
+end module m_addtopol

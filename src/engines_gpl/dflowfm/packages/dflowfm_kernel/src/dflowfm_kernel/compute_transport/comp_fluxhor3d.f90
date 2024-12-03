@@ -31,6 +31,16 @@
 !
 
 !> compute horizontal transport fluxes at flowlink
+module m_comp_fluxhor3d
+
+implicit none
+
+private
+
+public :: comp_fluxhor3d
+
+contains
+
 subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, sed, difsed, sigdifi, &
                           viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu)
    use m_flowgeom, only: Ndx, Lnx, ln, nd, klnup, slnup, dxi, acl, csu, snu, wcx1, wcx2, wcy1, wcy2, Dx ! static mesh information
@@ -373,3 +383,5 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot,
    return
 
 end subroutine comp_fluxhor3D
+
+end module m_comp_fluxhor3d

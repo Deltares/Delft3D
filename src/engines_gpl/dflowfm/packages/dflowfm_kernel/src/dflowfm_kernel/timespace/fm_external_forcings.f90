@@ -28,6 +28,11 @@
 !-------------------------------------------------------------------------------
 
 module fm_external_forcings
+   use m_count_links, only: count_links
+   use m_add_bndtracer, only: add_bndtracer
+   use m_addopenbndsection, only: addopenbndsection
+   use m_setwindstress, only: setwindstress
+   use m_setsigmabnds, only: setsigmabnds
    use precision_basics, only: hp, dp
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname
    implicit none
@@ -1634,6 +1639,7 @@ contains
       use timers, only: timstop, timstrt
       use unstruc_inifields, only: initialize_initial_fields
       use m_qnerror
+      use m_flow_init_structurecontrol, only: flow_init_structurecontrol
 
       integer, intent(out) :: iresult
 
@@ -1642,7 +1648,6 @@ contains
       integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx, itrac
       integer, parameter :: N4 = 6
       character(len=256) :: rec
-      logical, external :: flow_init_structurecontrol
       integer :: tmp_nbndu, tmp_nbndt, tmp_nbndn
 
       iresult = DFM_NOERR
@@ -1683,8 +1688,6 @@ contains
       inivel = 0 ! no initial velocity field loaded
       inivelx = 0
       inively = 0
-
-      call initialize_ec_module()
 
       ! First initialize new-style StructureFile quantities.
       if (.not. flow_init_structurecontrol()) then

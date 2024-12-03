@@ -30,6 +30,16 @@
 !
 !
 
+module m_reajanet
+
+implicit none
+
+private
+
+public :: reajanet
+
+contains
+
       subroutine REAJANET(MNET, JA, JADOORLADEN)
          use m_netw
          use gridoperations
@@ -131,3 +141,5 @@
          return
 
       end subroutine REAJANET
+
+end module m_reajanet

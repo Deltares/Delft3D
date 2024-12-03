@@ -31,13 +31,21 @@
 !
 
 !> make inner links in a cell with hanging nodes
+module m_connect_hanging_nodes
+
+implicit none
+
+private
+
+public :: connect_hanging_nodes
+
+contains
+
 subroutine connect_hanging_nodes(linkbrother)
    use m_netw
    use m_qnerror
    use m_find_common_node
    use m_new_link
-
-   implicit none
 
    integer, dimension(numL), intent(in) :: linkbrother !< brotherlink, that shares a (hanging) node, dim: numL
 
@@ -166,3 +174,5 @@ subroutine connect_hanging_nodes(linkbrother)
 
    return
 end subroutine connect_hanging_nodes
+
+end module m_connect_hanging_nodes

@@ -31,6 +31,18 @@
 !
 
 !> add tracer to constituents, or get constituents number if tracer already exists
+module m_add_tracer
+use m_alloc_transport, only: alloc_transport
+
+
+implicit none
+
+private
+
+public :: add_tracer
+
+contains
+
 subroutine add_tracer(tracer_name, iconst)
    use m_transport
    use unstruc_messages
@@ -102,3 +114,5 @@ subroutine add_tracer(tracer_name, iconst)
 
    return
 end subroutine add_tracer
+
+end module m_add_tracer

@@ -42,6 +42,18 @@
 !<
 
 !> Print model-specific text strings on screen, based on current solution state.
+module m_model_specific
+use m_weirtheory, only: weirtheory
+
+
+implicit none
+
+private
+
+public :: textflowspecific, equatorial, poiseuille, update_turkin_modelspecific
+
+contains
+
 subroutine textflowspecific()
    use m_settextsizefac
    use m_ictext
@@ -56,7 +68,6 @@ subroutine textflowspecific()
    use m_monitoring_crosssections
    use time_module, only: seconds_to_datetimestring
    use m_znod
-   implicit none
 
    character(len=140) :: tex
    double precision :: QCURV, QRECT
@@ -185,6 +196,7 @@ subroutine textflowspecific()
 end subroutine textflowspecific
 
 subroutine update_turkin_modelspecific(Lf)
+   use m_entryflow, only: entryflow
    use m_flowgeom
    use m_flow
    use m_flowtimes
@@ -424,6 +436,8 @@ subroutine riverfloodwave()
 end subroutine riverfloodwave
 
 subroutine weirtheo(j12)
+   use m_findqorifice12
+   use m_findqorifice
    use m_ictext
    use time_module, only: seconds_to_datetimestring
    use m_flow
@@ -635,6 +649,7 @@ subroutine weirtheo(j12)
 end subroutine weirtheo
 
 subroutine gatetheo()
+   use m_findqorifice
    use m_ictext
    use m_flowgeom
    use m_flow
@@ -1020,3 +1035,5 @@ subroutine poiseuille(init)
    if (allocated(var1)) deallocate (var1)
 
 end subroutine poiseuille
+
+end module m_model_specific

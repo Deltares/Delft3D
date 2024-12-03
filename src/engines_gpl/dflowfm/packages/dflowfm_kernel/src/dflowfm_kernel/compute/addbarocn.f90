@@ -30,6 +30,16 @@
 !
 !
 
+module m_addbarocn
+
+implicit none
+
+private
+
+public :: addbarocn, addbarocnorg, addbarocnrho_w
+
+contains
+
  subroutine addbarocn(n) ! rho at cell centers
     use m_flowgeom
     use m_flow
@@ -93,6 +103,7 @@
     use m_transport, only: ISALT, ITEMP, constituents
     use m_physcoef, only: rhomean
     use m_get_kbot_ktop
+    use m_densfm, only: densfm
 
     implicit none
     integer, intent(in) :: n
@@ -100,7 +111,6 @@
     integer :: k, kb, kt, i
     double precision :: saw(0:kmxx), tmw(0:kmxx) ! rho at pressure point layer interfaces
     double precision :: fzu, fzd, pu, pd, dzz, p0d, pdb, rhosk
-    double precision, external :: densfm
 
     call getkbotktop(n, kb, kt)
     ! if (kt < kb) return
@@ -203,3 +213,5 @@
 
  end subroutine addbarocnorg
 
+
+end module m_addbarocn

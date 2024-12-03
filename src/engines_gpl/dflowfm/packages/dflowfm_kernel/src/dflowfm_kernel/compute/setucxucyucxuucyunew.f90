@@ -30,7 +30,18 @@
 !
 !
 
+module m_setucxucyucxuucyunew
+
+implicit none
+
+private
+
+public :: setucxucyucxuucyunew
+
+contains
+
  subroutine setucxucyucxuucyunew() ! and reclaim ucxq, ucyq for Coriolis without interfering with Morfology
+    use m_setuc1d, only: setuc1d
     use m_flowgeom
     use precision_basics
     use m_flow
@@ -1043,3 +1054,5 @@
     end if
 
  end subroutine setucxucyucxuucyunew
+
+end module m_setucxucyucxuucyunew

@@ -31,6 +31,16 @@
 !
 
 !> output illegal cells to polygon file
+module m_write_illegal_cells_to_pol
+
+implicit none
+
+private
+
+public :: write_illegal_cells_to_pol
+
+contains
+
 subroutine write_illegal_cells_to_pol(jausekc)
    use m_netw
    use m_polygon
@@ -124,3 +134,5 @@ subroutine write_illegal_cells_to_pol(jausekc)
 
    return
 end subroutine write_illegal_cells_to_pol
+
+end module m_write_illegal_cells_to_pol

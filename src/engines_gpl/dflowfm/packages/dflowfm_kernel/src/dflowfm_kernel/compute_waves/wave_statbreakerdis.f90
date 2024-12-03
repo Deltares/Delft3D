@@ -30,6 +30,16 @@
 !
 !
 
+module m_wave_statbreakerdis
+
+implicit none
+
+private
+
+public :: wave_statbreakerdis
+
+contains
+
 subroutine wave_statbreakerdis(h, hrms, tp, k, D)
    !
    ! Baldock
@@ -53,3 +63,5 @@ subroutine wave_statbreakerdis(h, hrms, tp, k, D)
    D = 0.25d0 * alpha * rhomean * ag / tp * exp(-(Hb / hrms)**2) * (Hb**3 + hrms**3) / gammax / h
 
 end subroutine wave_statbreakerdis
+
+end module m_wave_statbreakerdis

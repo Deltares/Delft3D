@@ -30,6 +30,25 @@
 !
 !
 
+module m_advec
+use m_setucxy1d, only: setucxy1d
+use m_sethigherorderadvectionvelocities, only: sethigherorderadvectionvelocities
+use m_qucperipiaczekteta, only: qucperipiaczekteta
+use m_qucperipiaczek, only: qucperipiaczek
+use m_qucper3dsigmapiaczekteta, only: qucper3dsigmapiaczekteta
+use m_qucper3dsigma, only: qucper3dsigma
+use m_getucxucyweironly
+use m_getucxucynoweirs
+use m_getucxucybarrierzero
+
+implicit none
+
+private
+
+public :: advec
+
+contains
+
  subroutine advec() ! advection, based on u0, q0 24
     use m_flowtimes
     use m_flowgeom
@@ -40,9 +59,15 @@
     use m_dlimiter
     use m_dslim
     use m_get_kbot_ktop
+    use m_qucper, only: qucper
+    use m_qucpercu, only: qucpercu
+    use m_qucperi, only: qucperi
+    use m_qucperpure1d, only: qucperpure1d
+    use m_qucperq1, only: qucperq1
+    use m_qucwen, only: qucwen
+    use m_qufper, only: QufPer
+    use unstruc_channel_flow, only : network
     
-    implicit none
-
     ! locals
     integer :: L, k1, k2 ! link, nd1, nd2
     double precision :: v12t
@@ -51,19 +76,6 @@
     double precision :: qu1 ! Flux times advection velocity node 1 (m4/s2)
     double precision :: qu2 ! idem                          node 2
     double precision :: cs, sn
-
-    double precision :: QucWen ! Sum over links of Flux times upwind cell centre velocity (m4/s2), do not include own link
-    double precision :: QucPer ! idem, include own link
-    double precision :: QucPerpure1D ! idem, include own link
-    !double precision                  :: QucWeni        ! idem, only incoming
-    double precision :: QucPeri ! idem, inly incoming         nb: QucPeripiaczek is a subroutine
-! double precision                  :: QunPeri
-
-    double precision :: QucPerq1 ! ..
-    double precision :: QucPercu ! testing center differences
-    double precision :: QufPer ! testing adv of face velocities instead of centre upwind velocities
-
-    !double precision                  :: Qucnu          ! = original of QucPer
 
     integer :: isg, iadvL
     integer :: iad, n, kk, kb
@@ -119,15 +131,28 @@
              call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
           end do
        end do
-       do n = 1, ngategen
-          i = gate2cgen(n)
-          do L = L1cgensg(i), L2cgensg(i)
-             LL = kcgen(3, L); LL = abs(LL)
-             kd = ln(1, LL); ku = ln(2, LL)
-             call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
-             call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
-          end do
-       end do
+       if (network%sts%numGates > 0) then
+         do n = 1, network%sts%numGates
+            associate(pstru => network%sts%struct(network%sts%gateIndices(n)))
+               do i = 1, pstru%numlinks
+                  L = pstru%linknumbers(i)
+                  kd = ln(1, L); ku = ln(2, L)
+                  call getucxucybarrierzero(L, kd, ucx(kd), ucy(kd))
+                  call getucxucybarrierzero(L, ku, ucx(ku), ucy(ku))
+               end do
+            end associate
+         end do
+       else
+         do n = 1, ngategen
+            i = gate2cgen(n)
+            do L = L1cgensg(i), L2cgensg(i)
+               LL = kcgen(3, L); LL = abs(LL)
+               kd = ln(1, LL); ku = ln(2, LL)
+               call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
+               call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
+            end do
+         end do
+       end if
     end if
 
     call sethigherorderadvectionvelocities()
@@ -1190,3 +1215,5 @@
     end if
 
  end subroutine advec
+
+end module m_advec

@@ -30,7 +30,18 @@
 !
 !
 
+module m_setgrainsizes
+
+implicit none
+
+private
+
+public :: setgrainsizes
+
+contains
+
  subroutine setgrainsizes() ! for all fractions:
+    use m_fdster
     use M_SEDIMENT
     use m_physcoef, only: ag, rhomean, backgroundwatertemperature, vismol
     use MessageHandling
@@ -88,3 +99,5 @@
     end do
 
  end subroutine setgrainsizes
+
+end module m_setgrainsizes

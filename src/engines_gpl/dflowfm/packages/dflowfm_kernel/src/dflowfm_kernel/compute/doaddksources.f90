@@ -30,6 +30,16 @@
 !
 !
 
+module m_doaddksources
+
+implicit none
+
+private
+
+public :: doaddksources
+
+contains
+
  subroutine doaddksources() ! add k sources
     use m_flow
     use m_flowtimes
@@ -66,3 +76,5 @@
 
     end do
  end subroutine doaddksources
+
+end module m_doaddksources

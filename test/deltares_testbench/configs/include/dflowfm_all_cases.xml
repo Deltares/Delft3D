@@ -1,6 +1,6 @@
   <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f001_c010_Channel_with_refinement_squares" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c010_Channel_with_refinement_squares</path>
+      <path version="2024-11-17T20:10:00">e02_dflowfm/f001_general/c010_Channel_with_refinement_squares</path>
       <programs>
         <program ref="DFlowFM">
           <arguments>
@@ -19,6 +19,7 @@
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
+        <file name="dflowfmoutput/simplechannel_numlimdt.xyz" type="ASCII" />
       </checks>
     </testCase>
     <testCase name="e02_f001_c011_Channel_with_refinement_triangles" ref="dflowfm_default">

@@ -33,6 +33,12 @@
 !> Computes the Eulerian horizontal velocities.
 !! In absence of waves, these are equal to the Lagrangian ucx/ucy.
 !! The Stokes drift on links is averaged to cell centers using the Perot weights.
+module m_getucxucyeuler
+
+implicit none
+
+contains
+
 subroutine getucxucyeuler(N, ucxeu, ucyeu)
    use m_flowgeom
    use m_flow
@@ -63,3 +69,5 @@ subroutine getucxucyeuler(N, ucxeu, ucyeu)
       end do
    end if
 end subroutine getucxucyeuler
+
+end module m_getucxucyeuler

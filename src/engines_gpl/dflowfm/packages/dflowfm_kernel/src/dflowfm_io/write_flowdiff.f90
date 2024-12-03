@@ -30,6 +30,16 @@
 !
 !
 
+module m_write_flowdiff
+
+implicit none
+
+private
+
+public :: write_flowdiff
+
+contains
+
       subroutine write_flowdiff()
          use m_flow
          use m_samples
@@ -60,3 +70,5 @@
          end if
          write (mdiag, *) ' avdiffm, avdifwq,num ', avdiffm, avdifwq, num
       end subroutine write_flowdiff
+
+end module m_write_flowdiff

@@ -30,6 +30,16 @@
 !
 !
 
+module m_ucrouse
+
+implicit none
+
+private
+
+public :: ucrouse
+
+contains
+
 double precision function ucrouse(z, z0, h, a, rs)
    use m_einstein_garcia
    implicit none
@@ -38,3 +48,5 @@ double precision function ucrouse(z, z0, h, a, rs)
    ucrouse = log(z / z0) * ((a / (h - a)) * ((h - z) / z))**rs
 
 end function
+
+end module m_ucrouse

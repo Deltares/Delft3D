@@ -30,7 +30,18 @@
 !
 !
 
+module m_setucxucyucxuucyu
+
+implicit none
+
+private
+
+public :: setucxucyucxuucyu
+
+contains
+
  subroutine setucxucyucxuucyu()
+    use m_setuc1d, only: setuc1d
     use m_flowgeom
     use m_flow
     use m_sobekdfm
@@ -658,3 +669,5 @@
     end if
 
  end subroutine setucxucyucxuucyu
+
+end module m_setucxucyucxuucyu

@@ -30,6 +30,12 @@
 !
 !
 
+module m_horvic
+
+implicit none
+
+contains
+
  !> compute viscous flux balance of cell ln (n12,L) in coordinate frame of L
  double precision function horvic(n12, L) ! horizontal viscosity term
     use m_flow
@@ -128,3 +134,5 @@
        horvic = horvic / hs(k12)
     end if
  end function Horvic
+
+end module m_horvic

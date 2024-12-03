@@ -62,6 +62,7 @@
 !
 module m_netw
 
+   use m_clearflowmodelinputs, only: clearflowmodelinputs
    use network_data
    use m_alloc
    implicit none

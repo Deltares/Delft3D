@@ -30,6 +30,16 @@
 !
 !
 
+module m_wriswan
+
+implicit none
+
+private
+
+public :: WRIswan
+
+contains
+
       subroutine WRIswan(MNET, filnam)
 
          use m_netw
@@ -121,3 +131,5 @@
 
          return
       end subroutine WRIswan
+
+end module m_wriswan

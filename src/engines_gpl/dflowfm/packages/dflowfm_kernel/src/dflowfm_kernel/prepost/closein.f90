@@ -30,9 +30,19 @@
 !
 !
 
+module m_closein
+
+implicit none
+
+private
+
+public :: closein
+
+contains
+
    subroutine CLOSEIN(XA, YA, INNUMP, KIN, NKIN, KK) ! KK IS HET MEEST DICHTBIJ GELEGEN POINT VAN INNUMP
       use m_netw
-      implicit none
+
       double precision :: xa
       double precision :: ya
       integer :: innump
@@ -66,3 +76,5 @@
 
       return
    end subroutine CLOSEIN
+
+end module m_closein

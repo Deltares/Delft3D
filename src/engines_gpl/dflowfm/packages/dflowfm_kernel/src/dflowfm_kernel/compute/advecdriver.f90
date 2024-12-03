@@ -30,7 +30,20 @@
 !
 !
 
+module m_advecdriver
+use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
+
+
+implicit none
+
+private
+
+public :: advecdriver
+
+contains
+
  subroutine advecdriver()
+    use m_advec, only: advec
     use m_flowtimes
     use m_flow
     use m_flowgeom
@@ -78,3 +91,5 @@
 
     call setextforcechkadvec() ! set external forcings and check explicit part adve
  end subroutine advecdriver
+
+end module m_advecdriver

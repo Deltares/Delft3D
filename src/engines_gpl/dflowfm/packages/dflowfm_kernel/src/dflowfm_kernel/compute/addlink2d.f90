@@ -30,12 +30,23 @@
 !
 !
 
+module m_addlink2d
+
+implicit none
+
+private
+
+public :: addlink2D
+
+contains
+
  subroutine addlink2D(L, japerim) ! and add area's and volumes of 2D links
     use m_flowgeom
     use m_flow
     use m_sferic, only: jasfer3d
     use m_get_link_area_wid2D
     use m_get_prof2d
+    use m_get_hpr_nostruc
 
     implicit none
 
@@ -46,7 +57,6 @@
     double precision :: dx1, dx2, frcn, BL1, BL2, b21, wu2, ai
     double precision :: beta, bt2, deltaa, hyr, uucn, ucna, bob1, bob2, hsmall
     double precision, external :: cor2linx, cor2liny
-    double precision, external :: get_hpr_nostruc
 
     if (japerim == 0) then
 
@@ -173,3 +183,5 @@
        end if
     end if
  end subroutine addlink2D
+
+end module m_addlink2d

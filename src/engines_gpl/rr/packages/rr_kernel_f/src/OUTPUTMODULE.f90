@@ -25,7 +25,6 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
- 
 module Output
 
   !use
@@ -638,7 +637,7 @@ module Output
 
     Implicit none
 
-    Integer iEvent, iNode, iKind, iNr, iMap, iLoc, iSlt, iKKl, j, Itmstp, IRRRunoffSub
+    Integer iEvent, iNode, iKind, iNr, iMap, iLoc, iSlt, iKKl, i, j, Itmstp, IRRRunoffSub
     Integer iPlv, iPlv2, iPlv3, iplv4, ipTyp, iPOpp
     Integer iOW, Ibnd, IRwzi, iPluv
     Integer NodeUp, NodeDown, kind, inr2, idum
@@ -1615,11 +1614,12 @@ module Output
                    RSLMAP19_RRRunoff(NStartHBV+15,ILOC,1) = HBV_Percolation (IRRRunoffSub)
 ! not needed       RSLMAP19_RRRunoff(NStartHBV+16,ILOC,1) = HBV_InUpperZone (IRRRunoffSub)
                elseif (RRRunoff_CompOption(Inr) .eq. 2 ) then
-                   ! simple runoff node: SCS model- curve number; use SCS rainfall, storage, qrunoff
+                   ! simple runoff node: SCS model- curve number; use SCS rainfall, storage, qrunoff, infiltration (GreenAmpt) optional
                    RSLMAP19_RRRunoff(1,ILOC,1) = SCS_Rainfall(IRRRunoffSub)
                    RSLMAP19_RRRunoff(4,ILOC,1) = RRRunoffNode_Outflow(INR) * timeSettings%TimestepSize / Area_RRRunoffNode(INR) / mm2m
                    RSLMAP19_RRRunoff(5,ILOC,1) = RRRunoffNode_Outflow(INR)
                    RSLMAP19_RRRunoff(NStartSCS,ILOC,1)= SCS_Storage(IRRRunoffSub)
+                   RSLMAP19_RRRunoff(NStartSCS+1,ILOC,1)= SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
                elseif (RRRunoff_CompOption(Inr) .eq. 3 ) then
                    ! simple runoff node: NAM model
                    RSLMAP19_RRRunoff(1,ILOC,1) =  NAMRainfall(IRRRunoffSub)
@@ -1811,7 +1811,7 @@ module Output
                 elseif (RRRunoff_CompOption(Inr) .eq. 2 ) then    ! SCS
                  RSLMAP8_bal(1,ILOC,1) = SCS_Rainfall(iRRRunoffSub) * Area_RRRunoffNode(inr) * mm2m
                  RSLMAP8_bal(2,ILOC,1) = 0.0
-                 RSLMAP8_bal(3,ILOC,1) = 0.0
+                 RSLMAP8_bal(3,ILOC,1) = SCS_GreenAmpt_InfCurrentStep(iRRRunoffSub) * Area_RRRunoffNode(inr) * mm2m
                  RSLMAP8_bal(4,ILOC,1) = RRRunoffNode_Outflow(inr) * timeSettings%timestepSize
                  RSLMAP8_bal(5,ILOC,1) = DeltaVol
                 elseif (RRRunoff_CompOption(Inr) .eq. 3 ) then     ! NAM
@@ -1884,7 +1884,7 @@ module Output
                  RSLMAP8_bal(3,ILOC,1) = DeltaVol
                 elseif (RRRunoff_CompOption(Inr) .eq. 2 ) then
                  RSLMAP8_bal(1,ILOC,1) = SCS_Rainfall(iRRRunoffSub) * Area_RRRunoffNode(inr) * mm2m
-                 RSLMAP8_bal(2,ILOC,1) = RRRunoffNode_Outflow(inr) * timeSettings%timestepSize
+                 RSLMAP8_bal(2,ILOC,1) = RRRunoffNode_Outflow(inr) * timeSettings%timestepSize + SCS_GreenAmpt_InfCurrentStep(iRRRunoffSub) * Area_RRRunoffNode(inr) * mm2m
                  RSLMAP8_bal(3,ILOC,1) = DeltaVol
                 elseif (RRRunoff_CompOption(Inr) .eq. 3 ) then
                  RSLMAP8_bal(1,ILOC,1) = NAMRainfall(iRRRunoffSub) * Area_RRRunoffNode(inr) * mm2m
@@ -1946,6 +1946,7 @@ module Output
                  Bal3B (29) = Bal3B (29) + DeltaVol
                 elseif (RRRunoff_CompOption(Inr) .eq. 2 ) then         ! SCS
                  Bal3B ( 2) = Bal3B ( 2) + SCS_Rainfall(iRRRunoffSub) * Area_RRRunoffNode(inr) * mm2m
+                 Bal3B (19) = Bal3B (19) + SCS_GreenAmpt_InfCurrentStep(iRRRunoffSub) * Area_RRRunoffNode(inr) * mm2m
                  Bal3B (29) = Bal3B (29) + DeltaVol
                 elseif (RRRunoff_CompOption(Inr) .eq. 3 ) then         ! NAM
                  Bal3B ( 2) = Bal3B ( 2) + NAMRainfall(iRRRunoffSub) * Area_RRRunoffNode(inr) * mm2m
@@ -4998,7 +4999,7 @@ module Output
 ! Ievent = event number
 ! Itmstp = timestep
 
-   Integer Ievent, Lasttm
+   Integer Ievent, Lasttm, iout1
    Real    DefaultT0OutputValue
    Character(len=32) RestartVersion
 
@@ -5645,8 +5646,8 @@ module Output
           IF (NHISPRtc .GT. NHISRtc) then
               Write(iout1,*) 'ReadDioPlt NPar error: ', NHISPRtc, NHISRtc
               call ErrMsgStandard (912, 0, NAME,' NPARameters in HIS file')
-          endif 
-              
+          endif
+
         ! *********************************************************************
         ! *** In First timestep: determine conversion array mapping id's
         ! *** from HIS file to RTC.Loc file

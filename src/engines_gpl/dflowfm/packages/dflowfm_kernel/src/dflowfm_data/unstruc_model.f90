@@ -31,6 +31,8 @@
 !> Manages the unstruc model definition for the active problem.
 module unstruc_model
 
+   use m_setmodind, only: setmodind
+   use m_setgrainsizes, only: setgrainsizes
    use precision
    use properties
    use tree_data_types
@@ -238,7 +240,7 @@ module unstruc_model
    integer :: md_exportnet_bedlevel = 0 !< Export interpreted bed levels after initialization (1) or not (0)
    integer :: md_cutcells = 0
    integer :: npolf = 0 !< nr of polygonplotfiles saved with n key in editpol
-   integer :: md_usecaching = 1 !< Use the caching file if it exists (1) or not (0)
+   logical :: md_usecaching !< Use and/or generate cache file if true
 
    integer :: md_convertlongculverts = 0 !< convert culverts (and exit program) yes (1) or no (0)
    character(len=128) :: md_culvertprefix = ' ' !< prefix for generating long culvert files
@@ -368,7 +370,7 @@ contains
 
       md_cfgfile = ' '
 
-      md_usecaching = 1 !< Use the caching file if it exists (1) or not (0)
+      md_usecaching = .true. !< Use and/or generate cache file if true
 
       ! The following settings are intentionally *not* reset for each model.
       !md_snapshot_seqnr  = 0 ! not handy in practice, it destroys previous plots without warning
@@ -467,7 +469,7 @@ contains
       end if
 
       ! load the caching file - if there is any
-      call loadCachingFile(md_ident, md_netfile, md_usecaching)
+      call load_caching_file(md_ident, md_netfile, md_usecaching)
 
       ! read and proces dflow1d model
       ! This routine is still used for Morphology model with network in INI-File (Willem Ottevanger)
@@ -728,6 +730,7 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_map_his_precision
       use m_qnerror
+      use m_densfm, only: densfm
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -744,7 +747,6 @@ contains
       integer :: jadum
       real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
       character(len=200), dimension(:), allocatable :: fnames
-      real(kind=dp), external :: densfm
       real(kind=dp) :: tim
       real(kind=dp) :: sumlaycof
       real(kind=dp), parameter :: tolSumLay = 1d-12
@@ -840,10 +842,17 @@ contains
       call prop_get(md_ptr, 'geometry', 'Cutcelllist', md_cutcelllist, success)
       call prop_get(md_ptr, 'geometry', 'IniFieldFile', md_inifieldfile, success)
 
-      call prop_get(md_ptr, 'geometry', 'UseCaching', md_usecaching, success)
+      call prop_get(md_ptr, 'geometry', 'UseCaching', md_usecaching, success, value_parsed)
+      if (success .and. .not. value_parsed) then
+         call mess(LEVEL_ERROR, 'Did not recognise UseCaching value. It must be 0 or 1.')
+      end if
       ! Merge cmd line switches with mdu file settings
       if (iarg_usecaching /= -1) then
-         md_usecaching = iarg_usecaching
+         if (iarg_usecaching == 0) then
+            md_usecaching = .false.
+         else if (iarg_usecaching == 1) then
+            md_usecaching = .true.
+         end if
       end if
 
       call prop_get(md_ptr, 'geometry', 'FixedWeirFile', md_fixedweirfile, success)
@@ -2037,6 +2046,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', jamapfw, success)
       call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', jamapspir, success)
       call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', jamapnumlimdt, success)
+      call prop_get(md_ptr, 'output', 'Wrixyz_numlimdt', write_numlimdt_file, success)
       call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', jamaptaucurrent, success)
       call prop_get(md_ptr, 'output', 'Wrimap_z0', jamapz0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_salinity', jamapsal, success)
@@ -2666,7 +2676,7 @@ contains
       call prop_set(prop_ptr, 'geometry', 'ProfdefFile', trim(md_profdeffile), 'Channel profile definition file *_profdefinition.def with definition for all profile numbers')
       call prop_set(prop_ptr, 'geometry', 'ProfdefxyzFile', trim(md_profdefxyzfile), 'Channel profile definition file _profdefinition.def with definition for all profile numbers')
       call prop_set(prop_ptr, 'geometry', 'IniFieldFile', trim(md_inifieldfile), 'Initial values and parameter fields file')
-      call prop_set(prop_ptr, 'geometry', 'UseCaching', md_usecaching, 'Use caching for geometrical/network-related items (0: no, 1: yes)')
+      call prop_set(prop_ptr, 'geometry', 'UseCaching', merge(1, 0, md_usecaching), 'Use caching for geometrical/network-related items (0: no, 1: yes)')
 
       call prop_set(prop_ptr, 'geometry', 'Uniformwidth1D', wu1Duni, 'Uniform width for channel profiles not specified by profloc')
       if (writeall .or. hh1Duni /= 3d3) then
@@ -3811,6 +3821,10 @@ contains
             ibuf = 0
          end if
          call prop_set(prop_ptr, 'output', 'NcWriteLatLon', ibuf, 'Write extra lat-lon coordinates for all projected coordinate variables in each NetCDF file (for CF-compliancy).')
+      end if
+      if (writeall .or. write_numlimdt_file) then
+         call prop_set(prop_ptr, 'output', 'Wrixyz_numlimdt', merge(1, 0, write_numlimdt_file), &
+                       'Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file (1: yes, 0: no).')
       end if
       if (writeall .or. len_trim(unc_metadatafile) > 0) then
          call prop_set(prop_ptr, 'output', 'MetaDataFile', unc_metadatafile, 'Metadata NetCDF file with user-defined global dataset attributes (*_meta.nc).')

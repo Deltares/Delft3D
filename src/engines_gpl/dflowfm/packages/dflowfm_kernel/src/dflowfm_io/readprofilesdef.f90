@@ -31,6 +31,7 @@
 !
 
 module m_readprofilesdef
+use m_readyzprofnr, only: readyzprofnr
 
 implicit none
 

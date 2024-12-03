@@ -27,6 +27,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine fm_wq_processes_ini_sub()
+   use m_add_bndtracer, only: add_bndtracer
+   use m_getkbotktopmax
    use m_fm_wq_processes
    use m_alloc
    use unstruc_messages
@@ -363,6 +365,7 @@ subroutine fm_wq_processes_ini_sub()
 end subroutine fm_wq_processes_ini_sub
 
 subroutine fm_wq_processes_ini_proc()
+   use m_getkbotktopmax
    use m_fm_wq_processes
    use m_wq_processes_initialise
    use m_wq_processes_pmsa_size
@@ -1358,6 +1361,8 @@ end subroutine fm_wq_processes_step
 
 subroutine copy_data_from_fm_to_wq_processes(time)
    !  copy data from D-FlowFM to WAQ
+   use m_getfetch, only: getfetch
+   use m_getkbotktopmax
    use m_flowgeom, only: Ndxi, ba
    use m_flow, only: vol1, ucx, ucy
    use m_flowtimes, only: irefdate, tunit
@@ -1683,6 +1688,7 @@ end subroutine copy_data_from_fm_to_wq_processes
 
 subroutine copy_data_from_wq_processes_to_fm(dt, tim)
    !  copy data from WAQ to D-FlowFM
+   use m_getkbotktopmax
    use m_missing, only: dmiss
    use m_flowgeom, only: Ndxi, ba
    use m_flow, only: vol1

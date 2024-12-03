@@ -26,11 +26,22 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+module m_setuc1d
+
+implicit none
+
+private
+
+public :: setuc1d
+
+contains
+
    subroutine setuc1d()
       use m_netw
       use m_flow
       use m_flowgeom
       use m_get_prof_1D
+      use precision, only: dp
       implicit none
 
       integer, parameter :: JACSTOT = 0 !< 0 for computing the total area
@@ -209,9 +220,11 @@
                end if
             end do
 
-            alpha_mom_1D(n) = qu_in / max(1e-20, qu_out)
-            alpha_ene_1D(n) = qu2_in / max(1e-20, qu2_out)
+            alpha_mom_1D(n) = qu_in / max(1e-20_dp, qu_out)
+            alpha_ene_1D(n) = qu2_in / max(1e-20_dp, qu2_out)
          end do
       end if
 
    end subroutine setuc1d
+
+end module m_setuc1d

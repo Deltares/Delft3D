@@ -30,6 +30,16 @@
 !
 !
 
+module m_addbaroc
+
+implicit none
+
+private
+
+public :: addbaroc
+
+contains
+
 subroutine addbaroc(LL, Lb, Lt) ! this routine is wrong, here only for backward comp
    use m_flowgeom
    use m_flow
@@ -195,3 +205,5 @@ subroutine addbaroc(LL, Lb, Lt) ! this routine is wrong, here only for backward 
    end do
 
 end subroutine addbaroc
+
+end module m_addbaroc

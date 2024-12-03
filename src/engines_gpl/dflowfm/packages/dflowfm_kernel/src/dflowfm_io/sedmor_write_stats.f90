@@ -30,6 +30,16 @@
 !
 !
 
+module m_sedmor_write_stats
+
+implicit none
+
+private
+
+public :: sedmor_write_stats
+
+contains
+
    subroutine sedmor_write_stats(tim)
       use m_sediment, only: stm_included, stmpar
       use m_flowparameters, only: eps10
@@ -70,3 +80,5 @@
 1234  continue
       return
    end subroutine sedmor_write_stats
+
+end module m_sedmor_write_stats
