@@ -34,6 +34,7 @@ module m_delete_cell
 contains
 !> delete cell and update administration (no direct need for findcells afterwards)
    subroutine deletecell(k, ndirect, nindirect, kdirect, kindirect, kne, Lprompt_nogo, jadeleted)
+      use precision, only: dp
       use m_confrm
       use m_netw
       use m_missing
@@ -55,7 +56,7 @@ contains
       logical, intent(in) :: Lprompt_nogo !< prompt for cells that cannot be delete (.true.) or not (.false.)
       integer, intent(out) :: jadeleted !< cell has been deleted (1) or not (0)
 
-      double precision :: xc, yc, fac, factot
+      real(kind=dp) :: xc, yc, fac, factot
 
       integer :: k1, k2, kk, N, ja
       integer :: i, iR, im1, in, j, kcell, kcell1, L, L1, L2

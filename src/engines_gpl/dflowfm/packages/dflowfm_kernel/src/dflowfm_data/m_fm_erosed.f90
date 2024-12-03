@@ -30,7 +30,7 @@
 !
 !
 
-   !>  pointer data
+!>  pointer data
 module m_fm_erosed
    use precision
    use bedcomposition_module

@@ -41,6 +41,7 @@
 !>     |           |
 !>   2 x-----------x 3
 subroutine pol2curvi(i1, i2, i3, ja4)
+   use precision, only: dp
    use m_grid
    use m_gridsettings
    use m_alloc
@@ -53,9 +54,9 @@ subroutine pol2curvi(i1, i2, i3, ja4)
    integer, intent(in) :: i1, i2, i3 !< first, second and third corner point in polygon, respectively
    integer, intent(in) :: ja4 !< use polygon for fourth side (1) or not (0)
 
-   double precision, dimension(:, :), allocatable :: xh, yh ! mesh boundary coordinates
+   real(kind=dp), dimension(:, :), allocatable :: xh, yh ! mesh boundary coordinates
 
-   double precision :: xi
+   real(kind=dp) :: xi
 
    integer :: i4, Nh
    integer :: istart, iend

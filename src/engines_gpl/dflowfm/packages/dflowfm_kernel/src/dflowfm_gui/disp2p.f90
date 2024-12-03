@@ -33,33 +33,34 @@
 !
 module m_disp2p
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISP2P(X, Y, MMAX, MC, NC, NCOL)
-         use m_cir
-         use m_set_col
-         use m_movabs
-         implicit none
-         integer :: i
-         integer :: j
-         integer :: mc
-         integer :: mmax
-         integer :: nc
-         integer :: ncol
+   subroutine DISP2P(X, Y, MMAX, MC, NC, NCOL)
+      use precision, only: dp
+      use m_cir
+      use m_set_col
+      use m_movabs
+      implicit none
+      integer :: i
+      integer :: j
+      integer :: mc
+      integer :: mmax
+      integer :: nc
+      integer :: ncol
 !     LAAT EEN TWEEDIMENSIONALE FUNCTIE ZIEN MET PUNTJES
-         double precision :: X(MMAX, MMAX), Y(MMAX, MMAX)
-         call SETCOL(NCOL)
-         do I = 1, MC
-            do J = 1, NC
-               if (X(I, J) /= 0) then
-                  call MOVABS(X(I, J), Y(I, J))
-                  call CIR(0d0)
-               end if
-            end do
+      real(kind=dp) :: X(MMAX, MMAX), Y(MMAX, MMAX)
+      call SETCOL(NCOL)
+      do I = 1, MC
+         do J = 1, NC
+            if (X(I, J) /= 0) then
+               call MOVABS(X(I, J), Y(I, J))
+               call CIR(0d0)
+            end if
          end do
-         return
-      end
+      end do
+      return
+   end
 
 end module m_disp2p

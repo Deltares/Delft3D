@@ -31,35 +31,36 @@
 !
 
 module m_addelem
-use m_connect, only: connect
+   use m_connect, only: connect
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: addelem
+   public :: addelem
 
 contains
 
-  subroutine ADDELEM(K1, K2)
-     use M_AFMETING
-     use m_settings
-     use m_cconstants
-     use m_dlength, only: dlength
+   subroutine ADDELEM(K1, K2)
+      use precision, only: dp
+      use M_AFMETING
+      use m_settings
+      use m_cconstants
+      use m_dlength, only: dlength
 
-     integer :: K1, K2
+      integer :: K1, K2
 
-     double precision :: a0
-     double precision :: r0
-     
-     if (JANET == 1) then
-        A0 = PI * RDIAM * RDIAM / 4
-     else
-        A0 = 1e6 * RWIDTH * RTHICK
-     end if
-     R0 = DLENGTH(K1, K2)
-     call CONNECT(K1, K2, 1, R0)
-     return
-  end subroutine ADDELEM
+      real(kind=dp) :: a0
+      real(kind=dp) :: r0
+
+      if (JANET == 1) then
+         A0 = PI * RDIAM * RDIAM / 4
+      else
+         A0 = 1e6 * RWIDTH * RTHICK
+      end if
+      R0 = DLENGTH(K1, K2)
+      call CONNECT(K1, K2, 1, R0)
+      return
+   end subroutine ADDELEM
 
 end module m_addelem

@@ -32,6 +32,7 @@
 
 !> snap spline to nearest land boundary
 subroutine snap_spline(ispline)
+   use precision, only: dp
    use m_confrm
    use m_comp_afinespline
    use m_landboundary
@@ -49,24 +50,24 @@ subroutine snap_spline(ispline)
 
    integer, intent(in) :: ispline !< spline number
 
-   double precision, dimension(:, :), allocatable :: A, AtWA, AtWAi
-   double precision, dimension(:), allocatable :: xf, yf ! sample points
-   double precision, dimension(:), allocatable :: xb, yb ! sample points projected on land boundary
-   double precision, dimension(:), allocatable :: AtWxb, AtWyb ! (A, W xb) and (A, W yb)
-   double precision, dimension(:), allocatable :: rhsx, rhsy ! right-hand side vectors
-   double precision, dimension(:, :), allocatable :: B, C ! constraints matrics Bx+Cy=d
-   double precision, dimension(:), allocatable :: d ! constraints rhs
-   double precision, dimension(:), allocatable :: lambda ! Lagrangian multipliers
-   double precision, dimension(:, :), allocatable :: E ! E lambda = f
-   double precision, dimension(:), allocatable :: w ! weights
+   real(kind=dp), dimension(:, :), allocatable :: A, AtWA, AtWAi
+   real(kind=dp), dimension(:), allocatable :: xf, yf ! sample points
+   real(kind=dp), dimension(:), allocatable :: xb, yb ! sample points projected on land boundary
+   real(kind=dp), dimension(:), allocatable :: AtWxb, AtWyb ! (A, W xb) and (A, W yb)
+   real(kind=dp), dimension(:), allocatable :: rhsx, rhsy ! right-hand side vectors
+   real(kind=dp), dimension(:, :), allocatable :: B, C ! constraints matrics Bx+Cy=d
+   real(kind=dp), dimension(:), allocatable :: d ! constraints rhs
+   real(kind=dp), dimension(:), allocatable :: lambda ! Lagrangian multipliers
+   real(kind=dp), dimension(:, :), allocatable :: E ! E lambda = f
+   real(kind=dp), dimension(:), allocatable :: w ! weights
 
-   double precision, dimension(:), allocatable :: xspp, yspp ! second order spline derivatives
+   real(kind=dp), dimension(:), allocatable :: xspp, yspp ! second order spline derivatives
 
-   double precision :: dis, rL, curv, dsx, dsy
+   real(kind=dp) :: dis, rL, curv, dsx, dsy
 
-   double precision :: dn1x, dn1y, dn2x, dn2y, xx1, yy1, xx2, yy2 ! constraints: (x(1)-xx1)nx1 + (y(1)-yy1)ny1 = 0, etc.
+   real(kind=dp) :: dn1x, dn1y, dn2x, dn2y, xx1, yy1, xx2, yy2 ! constraints: (x(1)-xx1)nx1 + (y(1)-yy1)ny1 = 0, etc.
 
-   double precision :: t0, t1 ! for timing
+   real(kind=dp) :: t0, t1 ! for timing
 
    integer :: ierror
    integer :: i, iL, iR, j, ja, k, num, Numnew, Numconstr

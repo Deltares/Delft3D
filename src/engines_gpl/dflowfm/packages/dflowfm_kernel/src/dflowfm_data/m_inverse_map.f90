@@ -32,13 +32,14 @@
 
 !> inverse-map smoother in orthogonalisenet
 module m_inverse_map
+   use precision, only: dp
 
    type tops !< operator type
-      double precision, allocatable, dimension(:, :) :: Az !< cell-center coefficient matrix; node-to-cell
-      double precision, allocatable, dimension(:, :) :: Gxi, Geta !< netcell-gradient coefficient matrices; node-to-link
-      double precision, allocatable, dimension(:) :: Divxi, Diveta !< netnode-gradient coefficient matrices; link-to-node
-      double precision, allocatable, dimension(:) :: Jxi, Jeta !< netnode-gradient coefficient matrices; node-to-node
-      double precision, allocatable, dimension(:) :: ww2 !< weights in Laplacian smoother
+      real(kind=dp), allocatable, dimension(:, :) :: Az !< cell-center coefficient matrix; node-to-cell
+      real(kind=dp), allocatable, dimension(:, :) :: Gxi, Geta !< netcell-gradient coefficient matrices; node-to-link
+      real(kind=dp), allocatable, dimension(:) :: Divxi, Diveta !< netnode-gradient coefficient matrices; link-to-node
+      real(kind=dp), allocatable, dimension(:) :: Jxi, Jeta !< netnode-gradient coefficient matrices; node-to-node
+      real(kind=dp), allocatable, dimension(:) :: ww2 !< weights in Laplacian smoother
    end type
 
    type tadm !< administration type (per node)
@@ -52,7 +53,7 @@ module m_inverse_map
 
    type ttop !< topology array type (for unique topologies)
       integer, allocatable, dimension(:) :: nmk, nmk2 !< stored number of links and nodes in stencil resp.
-      double precision, allocatable, dimension(:, :) :: xi, eta !< stored node coordinates (xi, eta)
+      real(kind=dp), allocatable, dimension(:, :) :: xi, eta !< stored node coordinates (xi, eta)
    end type
 
 !---------------------------

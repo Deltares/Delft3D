@@ -30,6 +30,7 @@
 !
 !
  subroutine setlinktocenterweights() ! set center related linkxy weights
+    use precision, only: dp
 
     use m_flow
     use m_netw
@@ -38,25 +39,25 @@
     use m_longculverts
     implicit none
 
-    double precision :: wud, wuL1, wuL2, cs, sn
+    real(kind=dp) :: wud, wuL1, wuL2, cs, sn
     integer :: L, ierr, n, kk, n12, lnxmax
     integer :: k1, k2, LL
     integer :: ilongc, L1dlink
 
-    double precision :: aa1, wcw, alf
-    double precision, allocatable :: wwL(:)
+    real(kind=dp) :: aa1, wcw, alf
+    real(kind=dp), allocatable :: wwL(:)
 
-    double precision, allocatable :: wcxy(:, :) ! center weight factors (2,ndx) , only for normalising
-    double precision, allocatable :: wc(:) ! center weight factors (ndx)   , only for normalising
+    real(kind=dp), allocatable :: wcxy(:, :) ! center weight factors (2,ndx) , only for normalising
+    real(kind=dp), allocatable :: wc(:) ! center weight factors (ndx)   , only for normalising
 
-    double precision, external :: lin2nodx, lin2nody
+    real(kind=dp), external :: lin2nodx, lin2nody
 
     wcx1 = 0
     wcy1 = 0
     wcx2 = 0
     wcy2 = 0
     wcL = 0
-    
+
     if (allocated(wcxy)) deallocate (wcxy)
     allocate (wcxy(2, ndx), stat=ierr); wcxy = 0
     call aerr('wcxy (2,ndx)', ierr, 2 * ndx)

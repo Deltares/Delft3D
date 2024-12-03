@@ -31,71 +31,72 @@
 !
 
 module m_waves
+   use precision, only: dp
 
    implicit none
    integer, parameter :: TPWAVDEFAULT = 0 !< Indicator for TP
    integer, parameter :: TPWAVSMOOTH = 1 !< Indicator for TPS
    integer, parameter :: TPWAVRELATIVE = 2 !< Indicator for RTP
    integer :: nwf !< nr of fetch wind dirs + 1
-   double precision, allocatable :: fetch(:, :) !< wind dir dep. fetch lenght (m) of each cell, dimension 5,*, or 13, * nr of wind dirs + 1
-   double precision, allocatable :: fetdp(:, :) !< wind dir dep. waterdepth (m)   of each cell, dimension 5,*, or 13, * nr of wind dirs + 1
-   double precision, allocatable :: fett(:, :) !< reduce array, (2,ndx)
+   real(kind=dp), allocatable :: fetch(:, :) !< wind dir dep. fetch lenght (m) of each cell, dimension 5,*, or 13, * nr of wind dirs + 1
+   real(kind=dp), allocatable :: fetdp(:, :) !< wind dir dep. waterdepth (m)   of each cell, dimension 5,*, or 13, * nr of wind dirs + 1
+   real(kind=dp), allocatable :: fett(:, :) !< reduce array, (2,ndx)
 
-   double precision, allocatable, target :: hwav(:) !< [m] root mean square wave height (m) from external source, {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable, target :: hwavcom(:) !< [m] root mean square wave height (m) from external source
-   double precision, allocatable, target :: twav(:) !< [s] wave period {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable, target :: twavcom(:) !< [s] wave period from external source {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable, target :: phiwav(:) !< [degree] mean wave direction (degrees) from external source
-   double precision, allocatable, target :: uorb(:) !< [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable, target :: ustokes(:) !< [m/s] wave induced velocity, link-based and link-oriented
-   double precision, allocatable, target :: vstokes(:) !< [m/s] wave induced velocity, link-based and link-oriented
-   double precision, allocatable :: rlabda(:) !< [m] wave length
-   double precision, allocatable :: ustx_cc(:), usty_cc(:) !< [m/s] ustokes components cell centres
+   real(kind=dp), allocatable, target :: hwav(:) !< [m] root mean square wave height (m) from external source, {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: hwavcom(:) !< [m] root mean square wave height (m) from external source
+   real(kind=dp), allocatable, target :: twav(:) !< [s] wave period {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: twavcom(:) !< [s] wave period from external source {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: phiwav(:) !< [degree] mean wave direction (degrees) from external source
+   real(kind=dp), allocatable, target :: uorb(:) !< [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: ustokes(:) !< [m/s] wave induced velocity, link-based and link-oriented
+   real(kind=dp), allocatable, target :: vstokes(:) !< [m/s] wave induced velocity, link-based and link-oriented
+   real(kind=dp), allocatable :: rlabda(:) !< [m] wave length
+   real(kind=dp), allocatable :: ustx_cc(:), usty_cc(:) !< [m/s] ustokes components cell centres
 
-   double precision, allocatable, target :: dsurf(:) !< [w/m2] wave energy dissipation rate due to breaking at the free surface, "DISSURF" in WAVE
-   double precision, allocatable, target :: dwcap(:) !< [w/m2] wave energy dissipation rate due to white capping
-   double precision, allocatable, target :: distot(:) !< [w/m2] total wave energy dissipation rate, "DISTOT" in WAVE
+   real(kind=dp), allocatable, target :: dsurf(:) !< [w/m2] wave energy dissipation rate due to breaking at the free surface, "DISSURF" in WAVE
+   real(kind=dp), allocatable, target :: dwcap(:) !< [w/m2] wave energy dissipation rate due to white capping
+   real(kind=dp), allocatable, target :: distot(:) !< [w/m2] total wave energy dissipation rate, "DISTOT" in WAVE
 
-   double precision :: hwavuni = 0d0 !< uniform (*.mdu) value of ...
-   double precision :: twavuni = 0d0 !< uniform (*.mdu) value of ...
-   double precision :: phiwavuni = 0d0 !< uniform (*.mdu) value of ...
+   real(kind=dp) :: hwavuni = 0d0 !< uniform (*.mdu) value of ...
+   real(kind=dp) :: twavuni = 0d0 !< uniform (*.mdu) value of ...
+   real(kind=dp) :: phiwavuni = 0d0 !< uniform (*.mdu) value of ...
 
-   double precision :: ftauw !< Swartfactor, tune bed shear stress
-   double precision :: fwfac !< Soulsby factor, tune streaming
-   double precision :: fbreak !< tune breaking in tke model
-   double precision :: fwavpendep !< Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+   real(kind=dp) :: ftauw !< Swartfactor, tune bed shear stress
+   real(kind=dp) :: fwfac !< Soulsby factor, tune streaming
+   real(kind=dp) :: fbreak !< tune breaking in tke model
+   real(kind=dp) :: fwavpendep !< Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
 
    character(len=4) :: rouwav !< Friction model for wave induced shear stress
 
-   double precision, allocatable, target :: sxwav(:) !< [N/m2] wave force in x (east)  direction on water surface (N/m2) from external source, "FX"   in WAVE
-   double precision, allocatable, target :: sywav(:) !< [N/m2] wave force in y (north) direction on water surface (N/m2) from external source, "FY"   in WAVE
-   double precision, allocatable, target :: sbxwav(:) !< [N/m2] wave force in x (east)  direction on water column  (N/m2) from external source, "WSBU" in WAVE
-   double precision, allocatable, target :: sbywav(:) !< [N/m2] wave force in y (north) direction on water column  (N/m2) from external source, "WSBV" in WAVE
-   double precision, allocatable, target :: uorbwav(:) !< [m/s] orbital velocity (m/s) from external source
-   double precision, allocatable, target :: wlenwav(:) !< [m] wave length (m) from external source
+   real(kind=dp), allocatable, target :: sxwav(:) !< [N/m2] wave force in x (east)  direction on water surface (N/m2) from external source, "FX"   in WAVE
+   real(kind=dp), allocatable, target :: sywav(:) !< [N/m2] wave force in y (north) direction on water surface (N/m2) from external source, "FY"   in WAVE
+   real(kind=dp), allocatable, target :: sbxwav(:) !< [N/m2] wave force in x (east)  direction on water column  (N/m2) from external source, "WSBU" in WAVE
+   real(kind=dp), allocatable, target :: sbywav(:) !< [N/m2] wave force in y (north) direction on water column  (N/m2) from external source, "WSBV" in WAVE
+   real(kind=dp), allocatable, target :: uorbwav(:) !< [m/s] orbital velocity (m/s) from external source
+   real(kind=dp), allocatable, target :: wlenwav(:) !< [m] wave length (m) from external source
 
    ! additional data for WAVE/SWAN-coupling
-   double precision, allocatable, target :: mxwav(:) !< wave induced volume flux, in x-direction at flow-nodes
-   double precision, allocatable, target :: mywav(:) !< wave induced volume flux, in y-direction at flow-nodes
+   real(kind=dp), allocatable, target :: mxwav(:) !< wave induced volume flux, in x-direction at flow-nodes
+   real(kind=dp), allocatable, target :: mywav(:) !< wave induced volume flux, in y-direction at flow-nodes
 
-   double precision, allocatable :: cfwavhi(:)
-   double precision, allocatable :: cfhi_vanrijn(:)
-   double precision, allocatable :: wblt(:)
+   real(kind=dp), allocatable :: cfwavhi(:)
+   real(kind=dp), allocatable :: cfhi_vanrijn(:)
+   real(kind=dp), allocatable :: wblt(:)
 
-   double precision :: facmax !< maximum wave force
-   double precision :: JONSWAPgamma0 = 3.3 !< Peak enhancement factor JONSWAP
+   real(kind=dp) :: facmax !< maximum wave force
+   real(kind=dp) :: JONSWAPgamma0 = 3.3 !< Peak enhancement factor JONSWAP
 
    ! for visualisation
    integer :: waveparopt
    integer :: numoptwav
 
-   double precision, allocatable :: ust_mag(:)
-   double precision, allocatable :: fwav_mag(:)
+   real(kind=dp), allocatable :: ust_mag(:)
+   real(kind=dp), allocatable :: fwav_mag(:)
 
    ! parameters, may be overwritten by user in mdu-file
-   double precision :: gammax !< Maximum wave height/water depth ratio
-   double precision :: alfdeltau = 20d0 !< coeff for thickness of wave bed boundary layer
-   double precision :: hminlw !< [m] minimum depth for wave forcing in flow momentum equation RHS.
+   real(kind=dp) :: gammax !< Maximum wave height/water depth ratio
+   real(kind=dp) :: alfdeltau = 20d0 !< coeff for thickness of wave bed boundary layer
+   real(kind=dp) :: hminlw !< [m] minimum depth for wave forcing in flow momentum equation RHS.
    integer :: jatpwav = TPWAVDEFAULT !< TPWAV, TPWAVSMOOTH, TPWAVRELATIVE
    integer :: jauorb !< multiply with factor sqrt(pi)/2 (=0), or not (=1). Default 0, delft3d style
    integer :: jahissigwav !< 1: sign wave height on his output; 0: hrms wave height on his output.

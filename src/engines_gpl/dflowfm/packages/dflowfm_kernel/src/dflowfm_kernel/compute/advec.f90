@@ -50,6 +50,7 @@ module m_advec
 contains
 
    subroutine advec() ! advection, based on u0, q0 24
+      use precision, only: dp
       use m_flowtimes
       use m_flowgeom
       use m_flow
@@ -70,41 +71,41 @@ contains
 
       ! locals
       integer :: L, k1, k2 ! link, nd1, nd2
-      double precision :: v12t
-      double precision :: advel ! local adve
+      real(kind=dp) :: v12t
+      real(kind=dp) :: advel ! local adve
 
-      double precision :: qu1 ! Flux times advection velocity node 1 (m4/s2)
-      double precision :: qu2 ! idem                          node 2
-      double precision :: cs, sn
+      real(kind=dp) :: qu1 ! Flux times advection velocity node 1 (m4/s2)
+      real(kind=dp) :: qu2 ! idem                          node 2
+      real(kind=dp) :: cs, sn
 
       integer :: isg, iadvL
       integer :: iad, n, kk, kb
-      double precision :: ucxku, ucyku, ai, ae, abh, volu, volui, huvL, baik1, baik2
-      double precision :: vol_k1 !< representative volume for node k1
-      double precision :: vol_k2 !< representative volume for node k2
-      double precision :: ucin, fdx, ql, ac1, ac2, uqn, qn, rhoinsrc, dzss, qnn
+      real(kind=dp) :: ucxku, ucyku, ai, ae, abh, volu, volui, huvL, baik1, baik2
+      real(kind=dp) :: vol_k1 !< representative volume for node k1
+      real(kind=dp) :: vol_k2 !< representative volume for node k2
+      real(kind=dp) :: ucin, fdx, ql, ac1, ac2, uqn, qn, rhoinsrc, dzss, qnn
       integer :: LL, Lb, Lt, i
 
       integer :: ku, kd, k, nfw, kt
       integer :: n12
 
-      double precision :: quk1(3, kmxx), quk2(3, kmxx), volukk(kmxx) ! 3D for 1=u, 2=turkin, 3=tureps
+      real(kind=dp) :: quk1(3, kmxx), quk2(3, kmxx), volukk(kmxx) ! 3D for 1=u, 2=turkin, 3=tureps
 
       integer :: kt1, kt2, n1, n2, kb1, kb2, Ltx0, ktx01, ktx02, ktx1, ktx2, Ltx, L1, ksb, kst
-      double precision :: hs1, hs2, vo1, vo2
-      double precision :: tol = 1d-4, sl, dzu, dzk, du1, du2, dux, duy
+      real(kind=dp) :: hs1, hs2, vo1, vo2
+      real(kind=dp) :: tol = 1d-4, sl, dzu, dzk, du1, du2, dux, duy
 
-      double precision :: quuk1(0:kmxx), quuk2(0:kmxx), volk1(0:kmxx), volk2(0:kmxx), sqak1(0:kmxx), sqak2(0:kmxx)
-      double precision :: quuL1(0:kmxx), quuL2(0:kmxx), volL1(0:kmxx), volL2(0:kmxx), sqaL1(0:kmxx), sqaL2(0:kmxx)
-      double precision :: sigk1(0:kmxx), sigk2(0:kmxx), siguL(0:kmxx)
+      real(kind=dp) :: quuk1(0:kmxx), quuk2(0:kmxx), volk1(0:kmxx), volk2(0:kmxx), sqak1(0:kmxx), sqak2(0:kmxx)
+      real(kind=dp) :: quuL1(0:kmxx), quuL2(0:kmxx), volL1(0:kmxx), volL2(0:kmxx), sqaL1(0:kmxx), sqaL2(0:kmxx)
+      real(kind=dp) :: sigk1(0:kmxx), sigk2(0:kmxx), siguL(0:kmxx)
 
-      double precision, external :: lin2nodx, lin2nody
-      double precision, external :: nod2linx, nod2liny
+      real(kind=dp), external :: lin2nodx, lin2nody
+      real(kind=dp), external :: nod2linx, nod2liny
 
-      double precision :: am
-      double precision :: qv
-      double precision :: u_ene
-      double precision :: u_mom
+      real(kind=dp) :: am
+      real(kind=dp) :: qv
+      real(kind=dp) :: u_ene
+      real(kind=dp) :: u_mom
 
       japiaczek33 = 0
 

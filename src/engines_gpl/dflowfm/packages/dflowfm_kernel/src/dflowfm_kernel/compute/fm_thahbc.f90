@@ -52,7 +52,7 @@
 
 module m_fm_thahbc
 
-implicit none
+   implicit none
 
 contains
 
@@ -120,6 +120,7 @@ contains
    end subroutine fm_thahbc
 
    subroutine thconst(iconst, nbnd, zbnd, kbnd, tht, thz)
+      use precision, only: dp
 
       use m_transport
       use mathconsts, only: pi_hp
@@ -134,9 +135,9 @@ contains
 
       integer, intent(in) :: iconst, nbnd
       integer, intent(in) :: kbnd(5, nbnd)
-      double precision, intent(inout) :: zbnd(nbnd * kmxd), tht(nbnd), thz(nbnd * kmxd)
+      real(kind=dp), intent(inout) :: zbnd(nbnd * kmxd), tht(nbnd), thz(nbnd * kmxd)
 
-      double precision :: thfactor, rettim, q
+      real(kind=dp) :: thfactor, rettim, q
       integer :: i, j, l, lf, m, n, lb, lt, ki
 
       if (nbnd == 0) then
@@ -182,6 +183,5 @@ contains
          end do
       end do
    end subroutine
-
 
 end module m_fm_thahbc

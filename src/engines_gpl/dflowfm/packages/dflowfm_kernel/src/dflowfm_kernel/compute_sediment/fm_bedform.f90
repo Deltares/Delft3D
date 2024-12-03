@@ -31,12 +31,11 @@
 !
 
 module m_calbedform
-use m_solve_2d, only: solve_2d
-use m_comp_sumhorflux, only: comp_sumhorflux
-use m_comp_fluxhor3d, only: comp_fluxhor3d
-use m_comp_dxiau, only: comp_dxiau
-use m_setucxucy_mor, only: setucxucy_mor
-
+   use m_solve_2d, only: solve_2d
+   use m_comp_sumhorflux, only: comp_sumhorflux
+   use m_comp_fluxhor3d, only: comp_fluxhor3d
+   use m_comp_dxiau, only: comp_dxiau
+   use m_setucxucy_mor, only: setucxucy_mor
 
    implicit none
 
@@ -59,7 +58,7 @@ contains
       use m_physcoef, only: ag, rhomean, vismol
       use m_flowgeom, only: ndxi, ndx, lnx, lnxi, ln, wcl, bl
       use m_flowparameters, only: epshs, jawave, flowWithoutWaves
-      use m_flow, only: frcu,ifrcutp,hu, u1,s1, ucx_mor, ucy_mor, lnkx
+      use m_flow, only: frcu, ifrcutp, hu, u1, s1, ucx_mor, ucy_mor, lnkx
       use m_flowtimes
       use m_waves
       use m_get_kbot_ktop
@@ -111,8 +110,8 @@ contains
       real(fp) :: d90
       real(fp) :: relden
       real(fp) :: czu
-      double precision, allocatable :: czn(:)
-      double precision, allocatable :: u1eul(:)
+      real(kind=dp), allocatable :: czn(:)
+      real(kind=dp), allocatable :: u1eul(:)
 !
 !! executable statements -------------------------------------------------------
 !
@@ -363,10 +362,10 @@ contains
       real(fp), dimension(:, :), pointer :: e_sbn
       real(fp), dimension(:, :), pointer :: e_sbt
 
-      double precision, dimension(:, :), allocatable :: dh
-      double precision, dimension(:), allocatable :: uxbf
-      double precision, dimension(:), allocatable :: uybf
-      double precision, dimension(:), allocatable :: ubedformu
+      real(kind=dp), dimension(:, :), allocatable :: dh
+      real(kind=dp), dimension(:), allocatable :: uxbf
+      real(kind=dp), dimension(:), allocatable :: uybf
+      real(kind=dp), dimension(:), allocatable :: ubedformu
 !
 !! executable statements -------------------------------------------------------
 !
@@ -694,8 +693,8 @@ contains
       real(fp) :: maxdepfrac, zcc, zz
       real(fp) :: hh, arg, uw, rr, umax, t1, uu, a11, raih, rmax, uon, uoff, uwbih, depth, umod, u2dh
       real(fp) :: d50l, d90l, fch2, fcoarse, uwc, psi, rksr0, rksmr0, rksd0
-      double precision, dimension(:), allocatable :: u0eul
-      double precision, dimension(:), allocatable :: z0rou, deltas
+      real(kind=dp), dimension(:), allocatable :: u0eul
+      real(kind=dp), dimension(:), allocatable :: z0rou, deltas
 
 !
 !! executable statements -------------------------------------------------------
@@ -1018,41 +1017,41 @@ contains
 
       implicit none
 
-      integer, parameter :: BFNSUBSTEPS=1
-      
-      double precision, dimension(1, ndx), intent(inout) :: thevar !< variable to be tranported
-      double precision, dimension(lnx), intent(in) :: qadv
-      double precision, dimension(lnx), intent(in) :: uadv
-      double precision, dimension(ndx), intent(in) :: bedform_sour
-      double precision, dimension(ndx), intent(in) :: bedform_sink
+      integer, parameter :: BFNSUBSTEPS = 1
+
+      real(kind=dp), dimension(1, ndx), intent(inout) :: thevar !< variable to be tranported
+      real(kind=dp), dimension(lnx), intent(in) :: qadv
+      real(kind=dp), dimension(lnx), intent(in) :: uadv
+      real(kind=dp), dimension(ndx), intent(in) :: bedform_sour
+      real(kind=dp), dimension(ndx), intent(in) :: bedform_sink
       integer, intent(in) :: limityp !< limiter type (>0) or upwind (0)
       integer, intent(out) :: ierror !< error (1) or not (0)
 
-      double precision :: dvoli
+      real(kind=dp) :: dvoli
       integer :: k1, k2
 
-      double precision, dimension(:, :), allocatable :: fluxhorbf ! horizontal fluxes
-      double precision, dimension(:, :), allocatable :: fluxverbf ! vertical   fluxes
+      real(kind=dp), dimension(:, :), allocatable :: fluxhorbf ! horizontal fluxes
+      real(kind=dp), dimension(:, :), allocatable :: fluxverbf ! vertical   fluxes
 
-      double precision, dimension(:), allocatable :: difsedubf ! sum of molecular and user-specified diffusion coefficient
-      double precision, dimension(:), allocatable :: difsedwbf ! sum of molecular and user-specified diffusion coefficient
-      double precision, dimension(:), allocatable :: sigdifibf
+      real(kind=dp), dimension(:), allocatable :: difsedubf ! sum of molecular and user-specified diffusion coefficient
+      real(kind=dp), dimension(:), allocatable :: difsedwbf ! sum of molecular and user-specified diffusion coefficient
+      real(kind=dp), dimension(:), allocatable :: sigdifibf
 
       real, dimension(:), allocatable :: dumL
-      double precision, dimension(:), allocatable :: bfsq
-      double precision, dimension(:), allocatable :: bfsqi
-      double precision, dimension(:), allocatable :: bfsqu
+      real(kind=dp), dimension(:), allocatable :: bfsq
+      real(kind=dp), dimension(:), allocatable :: bfsqi
+      real(kind=dp), dimension(:), allocatable :: bfsqu
 
-      double precision, dimension(:, :), allocatable :: const_sourbf ! sources in transport, dim(NUMCONST,Ndkx)
-      double precision, dimension(:, :), allocatable :: const_sinkbf ! linear term of sinks in transport, dim(NUMCONST,Ndkx)
+      real(kind=dp), dimension(:, :), allocatable :: const_sourbf ! sources in transport, dim(NUMCONST,Ndkx)
+      real(kind=dp), dimension(:, :), allocatable :: const_sinkbf ! linear term of sinks in transport, dim(NUMCONST,Ndkx)
 
 !  work arrays
-      double precision, dimension(:, :), allocatable :: rhsbf ! right-hand side, dim(NUMCONST,Ndkx)
+      real(kind=dp), dimension(:, :), allocatable :: rhsbf ! right-hand side, dim(NUMCONST,Ndkx)
       integer, dimension(:), allocatable :: jabfupdate
       integer, dimension(:), allocatable :: jabfhorupdate
       integer, dimension(:), allocatable :: nbfdeltasteps
 
-      double precision, dimension(:), allocatable :: bfsumhorflux, dumx, dumy
+      real(kind=dp), dimension(:), allocatable :: bfsumhorflux, dumx, dumy
 
       integer :: k, L
 

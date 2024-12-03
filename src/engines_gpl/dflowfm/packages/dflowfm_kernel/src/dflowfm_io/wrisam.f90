@@ -33,6 +33,7 @@ module m_wrisam
    implicit none
 contains
    subroutine WRISAM(MSAM)
+      use precision, only: dp
       use M_SAMPLES
       use M_ARCINFO
       use M_MISSING, only: DMISS
@@ -42,7 +43,7 @@ contains
 
       integer :: msam, KMOD
 
-      double precision :: af
+      real(kind=dp) :: af
       integer :: i
 
       call READYY('Writing Samples File', 0d0)

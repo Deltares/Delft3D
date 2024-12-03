@@ -50,6 +50,7 @@ contains
 !c
 !c             Module: based on Subroutine tratur in DPM
 !c           Function: Transport solver tke and epsilon plus vertical momentum exchange u0
+      use precision, only: dp
 !c        Method used: Teta method for integration in time.
 !c                     Tke and eps computed at layer interfaces.
 !c                     SANCTUM
@@ -72,15 +73,15 @@ contains
 
       implicit none
 
-      double precision :: tetm1, dzc1, dzc2, tkedisL
-      double precision :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu, drhodz
-      double precision :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur
-      double precision :: hdzb, dtiL, adv, omegu, drhodz1, drhodz2
-      double precision :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
-      double precision :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax, zf
-      double precision :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, c2esqcmukep, teps, tkin
-      double precision :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps, tttctot, c3t
-      double precision :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL, prsappr
+      real(kind=dp) :: tetm1, dzc1, dzc2, tkedisL
+      real(kind=dp) :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu, drhodz
+      real(kind=dp) :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur
+      real(kind=dp) :: hdzb, dtiL, adv, omegu, drhodz1, drhodz2
+      real(kind=dp) :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
+      real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax, zf
+      real(kind=dp) :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, c2esqcmukep, teps, tkin
+      real(kind=dp) :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps, tttctot, c3t
+      real(kind=dp) :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL, prsappr
       integer :: k, ku, kb, kt, n, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
       integer :: k1, k2, k1u, k2u, n1, n2, kup, ierror
 

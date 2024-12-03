@@ -31,6 +31,7 @@
 !
 
   subroutine REFINEQUADS()
+     use precision, only: dp
      use m_confrm
      use m_netw
      use m_afmeting, only: k0
@@ -70,7 +71,7 @@
      integer :: n
      integer :: nf
      integer :: numkorg
-     double precision :: XM, YM
+     real(kind=dp) :: XM, YM
      integer, allocatable :: KNP(:)
      integer KKI(5)
 

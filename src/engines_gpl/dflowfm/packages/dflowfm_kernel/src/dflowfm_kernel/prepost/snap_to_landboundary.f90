@@ -32,12 +32,13 @@
 
 !> snap netnodes to land boundary segment
 subroutine snap_to_landboundary()
+   use precision, only: dp
    use m_netw
    use m_landboundary
 
    implicit none
 
-   double precision :: xn, yn, ddis, rL
+   real(kind=dp) :: xn, yn, ddis, rL
 
    integer :: k, numlanseg, jstart, jend, j, MXLAN_sav
 

@@ -353,7 +353,7 @@ contains
 
       ntotal = product(shape)
       scale = sqrt(1.0_fftkind / product(shape(d(1:ndim))))
-      do concurrent (i = 1: ntotal)
+      do concurrent(i=1:ntotal)
          array(i) = array(i) * scale
       end do
       do i = 1, ndim
@@ -1154,15 +1154,15 @@ contains
    end subroutine flipa
 
    function xerf(x) result(y)
-
+      use precision, only: dp
       implicit none
 
       integer :: i
-      double precision, dimension(:) :: x
-      double precision, dimension(size(x)) :: w, y
+      real(kind=dp), dimension(:) :: x
+      real(kind=dp), dimension(size(x)) :: w, y
       integer :: k
-      double precision :: t
-      double precision, dimension(0:64) :: a, b
+      real(kind=dp) :: t
+      real(kind=dp), dimension(0:64) :: a, b
 
       ! based on derf.f from http://www.kurims.kyoto-u.ac.jp/~ooura/
 

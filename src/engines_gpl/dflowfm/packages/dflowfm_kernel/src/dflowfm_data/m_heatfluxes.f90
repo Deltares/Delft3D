@@ -31,46 +31,47 @@
 !
 
 module m_heatfluxes
+   use precision, only: dp
    use physicalconsts
    implicit none
 
-   double precision :: albedo ! reflection coefficient of water () at average incidence angle of 60 deg,
+   real(kind=dp) :: albedo ! reflection coefficient of water () at average incidence angle of 60 deg,
    ! (albedo is .025 at angle 0 deg, 0.13 at angle 70 deg)
-   double precision :: em ! Emissivity ()
-   double precision :: cpa ! Specific heat air   [J/kg/K]
-   double precision :: rcpa !
-   double precision :: cpw ! Specific heat water [J/kg/K]
-   double precision :: rcpi ! m3K/J
-   double precision :: emstf ! Em*Stf [W/m^2/K^4]
-   double precision, parameter :: tkelvn = CtoKelvin ! Absolute zero
+   real(kind=dp) :: em ! Emissivity ()
+   real(kind=dp) :: cpa ! Specific heat air   [J/kg/K]
+   real(kind=dp) :: rcpa !
+   real(kind=dp) :: cpw ! Specific heat water [J/kg/K]
+   real(kind=dp) :: rcpi ! m3K/J
+   real(kind=dp) :: emstf ! Em*Stf [W/m^2/K^4]
+   real(kind=dp), parameter :: tkelvn = CtoKelvin ! Absolute zero
 
-   double precision :: QSUNav ! Solar influx              (W/m2)
-   double precision :: QEVAav ! Evaporative heat loss     (W/m2)
-   double precision :: QCONav ! Convective heat loss      (W/m2)
-   double precision :: QLongav ! Long wave back radiation  (W/m2)
-   double precision :: Qfreeav ! Free conv + evap heat loss (W/m2)
-   double precision :: Qfrconav ! Free convection heat loss (W/m2)
-   double precision :: Qfrevaav ! Free evaporation heat loss (W/m2)
+   real(kind=dp) :: QSUNav ! Solar influx              (W/m2)
+   real(kind=dp) :: QEVAav ! Evaporative heat loss     (W/m2)
+   real(kind=dp) :: QCONav ! Convective heat loss      (W/m2)
+   real(kind=dp) :: QLongav ! Long wave back radiation  (W/m2)
+   real(kind=dp) :: Qfreeav ! Free conv + evap heat loss (W/m2)
+   real(kind=dp) :: Qfrconav ! Free convection heat loss (W/m2)
+   real(kind=dp) :: Qfrevaav ! Free evaporation heat loss (W/m2)
 
-   double precision :: sarea ! Only for excess temp model jatem=3, lake area
-   double precision :: fwind ! Only for excess temp model jatem=3, wind factor
+   real(kind=dp) :: sarea ! Only for excess temp model jatem=3, lake area
+   real(kind=dp) :: fwind ! Only for excess temp model jatem=3, wind factor
 
    integer :: jamapheatflux !< write heatfluxes to map
    integer :: jaRichardsononoutput !< write Richardson nr to his
    integer :: jaSecchisp !< Spatial Secchi 0,1
    integer :: jaRoro !< Use roair(n)/rho(ntop) in windstress 0,1
 
-   double precision, allocatable, target :: Qsunmap(:) !< [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable :: Qevamap(:)
-   double precision, allocatable :: Qconmap(:)
-   double precision, allocatable :: Qlongmap(:)
-   double precision, allocatable :: Qfrevamap(:)
-   double precision, allocatable :: Qfrconmap(:)
-   double precision, allocatable :: Qtotmap(:)
+   real(kind=dp), allocatable, target :: Qsunmap(:) !< [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable :: Qevamap(:)
+   real(kind=dp), allocatable :: Qconmap(:)
+   real(kind=dp), allocatable :: Qlongmap(:)
+   real(kind=dp), allocatable :: Qfrevamap(:)
+   real(kind=dp), allocatable :: Qfrconmap(:)
+   real(kind=dp), allocatable :: Qtotmap(:)
 
-   double precision, allocatable :: Rich(:)
-   double precision, allocatable :: Secchisp(:)
-   double precision, allocatable :: Roair(:)
+   real(kind=dp), allocatable :: Rich(:)
+   real(kind=dp), allocatable :: Secchisp(:)
+   real(kind=dp), allocatable :: Roair(:)
 
 contains
 

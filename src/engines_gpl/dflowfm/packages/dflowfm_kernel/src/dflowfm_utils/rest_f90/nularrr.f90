@@ -31,6 +31,7 @@
 !
 
       subroutine NULARRR(X, MMAX, NMAX, LMAX)
+         use precision, only: dp
          implicit none
          integer :: i
          integer :: j
@@ -38,7 +39,7 @@
          integer :: lmax
          integer :: mmax
          integer :: nmax
-         double precision :: x
+         real(kind=dp) :: x
          dimension X(MMAX, NMAX, LMAX)
          do I = 1, MMAX
             do J = 1, NMAX

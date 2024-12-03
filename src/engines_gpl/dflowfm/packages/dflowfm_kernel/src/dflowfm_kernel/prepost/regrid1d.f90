@@ -31,6 +31,7 @@
 !
 
    subroutine regrid1D(jaregrid) ! based on 1D net itself, 1 = regrid, otherwise 1dgrid to pol
+      use precision, only: dp
 
       use m_accumulatedistance, only: accumulatedistance
       use m_flowgeom
@@ -44,8 +45,8 @@
 
       implicit none
       integer :: jaregrid
-      double precision :: dxa, xlb
-      double precision, allocatable :: xh(:), yh(:), zh(:)
+      real(kind=dp) :: dxa, xlb
+      real(kind=dp), allocatable :: xh(:), yh(:), zh(:)
       integer :: L, LL, k, n, nh, ibr, LA, k1, k2, ium
 
       if (jaregrid == 1) then

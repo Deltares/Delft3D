@@ -32,83 +32,84 @@
 
 module m_qucperipiaczekteta
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: qucperipiaczekteta
+   public :: qucperipiaczekteta
 
 contains
 
 !> sum of (Q*uc cell IN centre upwind normal) at side n12 of link L
 !! advect the cell center velocities (dimension: m4/s2)
 !! leaving the cell = +
-subroutine QucPeripiaczekteta(n12, L, ai, ae, volu, iad) 
-   use m_flow 
-   use m_flowgeom
-   use m_flowtimes 
-   use m_sferic
+   subroutine QucPeripiaczekteta(n12, L, ai, ae, volu, iad)
+      use precision, only: dp
+      use m_flow
+      use m_flowgeom
+      use m_flowtimes
+      use m_sferic
 
-   integer :: n12, L, iad !< for link L,
-   double precision ai, ae, volu
+      integer :: n12, L, iad !< for link L,
+      real(kind=dp) ai, ae, volu
 
-   ! locals
-   integer :: LL, LLL, LLLL ! for links LL,
-   integer :: k12, ja ! relevant node, 1 or 2, L/R
-   double precision :: cs, sn, ucin, cfl, tet, ucinx, uciny
+      ! locals
+      integer :: LL, LLL, LLLL ! for links LL,
+      integer :: k12, ja ! relevant node, 1 or 2, L/R
+      real(kind=dp) :: cs, sn, ucin, cfl, tet, ucinx, uciny
 
-   integer :: nn12
+      integer :: nn12
 
-   double precision, external :: lin2nodx, lin2nody, nod2linx, nod2liny
+      real(kind=dp), external :: lin2nodx, lin2nody, nod2linx, nod2liny
 
-   ai = 0d0; ae = 0d0
-   cs = csu(L)
-   sn = snu(L)
+      ai = 0d0; ae = 0d0
+      cs = csu(L)
+      sn = snu(L)
 
-   k12 = ln(n12, L)
-   do LL = 1, nd(k12)%lnx ! loop over all attached links
-      LLL = nd(k12)%ln(LL)
-      LLLL = abs(LLL)
+      k12 = ln(n12, L)
+      do LL = 1, nd(k12)%lnx ! loop over all attached links
+         LLL = nd(k12)%ln(LL)
+         LLLL = abs(LLL)
 
-      if (qa(LLLL) /= 0d0) then !
+         if (qa(LLLL) /= 0d0) then !
 
-         ja = 0
-         if (iad == 3) then
-            ja = 1 ! all in odd schemes
-         else if (LLL * qa(LLLL) > 0d0) then
-            ja = 1 ! incoming only otherwise
-         end if
+            ja = 0
+            if (iad == 3) then
+               ja = 1 ! all in odd schemes
+            else if (LLL * qa(LLLL) > 0d0) then
+               ja = 1 ! incoming only otherwise
+            end if
 
-         if (ja == 1) then
+            if (ja == 1) then
 
-            cfl = abs(qa(LLLL)) * dts / volu
-            if (nd(k12)%lnx == 3) cfl = 1.4d0 * cfl
-            if (cfl > 0) then
-               tet = max(0d0, 1d0 - 1d0 / cfl)
-               if (jasfer3D == 1) then
-                  nn12 = 1; if (LLL > 0) nn12 = 2
-                  ucinx = lin2nodx(LLLL, nn12, ucxu(LLLL), ucyu(LLLL))
-                  uciny = lin2nody(LLLL, nn12, ucxu(LLLL), ucyu(LLLL))
-                  ucin = nod2linx(L, n12, ucinx, uciny) * cs + nod2liny(L, n12, ucinx, uciny) * sn - u1(L) * (1d0 - tet)
-               else
-                  ucin = ucxu(LLLL) * cs + ucyu(LLLL) * sn - u1(L) * (1d0 - tet)
+               cfl = abs(qa(LLLL)) * dts / volu
+               if (nd(k12)%lnx == 3) cfl = 1.4d0 * cfl
+               if (cfl > 0) then
+                  tet = max(0d0, 1d0 - 1d0 / cfl)
+                  if (jasfer3D == 1) then
+                     nn12 = 1; if (LLL > 0) nn12 = 2
+                     ucinx = lin2nodx(LLLL, nn12, ucxu(LLLL), ucyu(LLLL))
+                     uciny = lin2nody(LLLL, nn12, ucxu(LLLL), ucyu(LLLL))
+                     ucin = nod2linx(L, n12, ucinx, uciny) * cs + nod2liny(L, n12, ucinx, uciny) * sn - u1(L) * (1d0 - tet)
+                  else
+                     ucin = ucxu(LLLL) * cs + ucyu(LLLL) * sn - u1(L) * (1d0 - tet)
+                  end if
+
+                  if (LLL > 0) then ! incoming link
+                     ae = ae - qa(LLLL) * ucin
+                     ai = ai + qa(LLLL) * tet
+                  else
+                     ae = ae + qa(LLLL) * ucin
+                     ai = ai - qa(LLLL) * tet
+                  end if
                end if
 
-               if (LLL > 0) then ! incoming link
-                  ae = ae - qa(LLLL) * ucin
-                  ai = ai + qa(LLLL) * tet
-               else
-                  ae = ae + qa(LLLL) * ucin
-                  ai = ai - qa(LLLL) * tet
-               end if
             end if
 
          end if
 
-      end if
+      end do
 
-   end do
-
-end subroutine Qucperipiaczekteta
+   end subroutine Qucperipiaczekteta
 
 end module m_qucperipiaczekteta

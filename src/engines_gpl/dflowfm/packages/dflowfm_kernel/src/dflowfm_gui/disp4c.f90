@@ -31,46 +31,46 @@
 !
 
 module m_disp4c
-use m_rcirc
+   use m_rcirc
 
-
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISP4C(X, Y, N)
-         use M_MISSING
-         use m_halt2
-         use m_movabs
-         use m_lnabs
-         implicit none
-         integer :: i
-         integer :: istart
-         integer :: key
-         integer :: n
+   subroutine DISP4C(X, Y, N)
+      use precision, only: dp
+      use M_MISSING
+      use m_halt2
+      use m_movabs
+      use m_lnabs
+      implicit none
+      integer :: i
+      integer :: istart
+      integer :: key
+      integer :: n
 !     LAAT EEN TWEEDIMENSIONALE FUNCTIE ZIEN MET CIRKELS
-         double precision :: X(N), Y(N)
+      real(kind=dp) :: X(N), Y(N)
 
-         if (N <= 0) return
-         ISTART = 0
-         do I = 1, N
-            if (X(I) /= dmiss) then
-               if (ISTART == 1) then
-                  call LNABS(X(I), Y(I))
-               else
-                  call MOVABS(X(I), Y(I))
-                  ISTART = 1
-               end if
-               call RCIRC(X(I), Y(I))
+      if (N <= 0) return
+      ISTART = 0
+      do I = 1, N
+         if (X(I) /= dmiss) then
+            if (ISTART == 1) then
+               call LNABS(X(I), Y(I))
             else
-               ISTART = 0
+               call MOVABS(X(I), Y(I))
+               ISTART = 1
             end if
-            if (mod(I, 50) == 0) then
-               call HALT2(KEY)
-               if (KEY == 1) return
-            end if
-         end do
-         return
-      end
+            call RCIRC(X(I), Y(I))
+         else
+            ISTART = 0
+         end if
+         if (mod(I, 50) == 0) then
+            call HALT2(KEY)
+            if (KEY == 1) return
+         end if
+      end do
+      return
+   end
 
 end module m_disp4c

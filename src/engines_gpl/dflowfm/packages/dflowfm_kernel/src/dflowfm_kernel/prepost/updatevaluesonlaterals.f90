@@ -35,17 +35,17 @@
 subroutine updateValuesOnLaterals(tim1, timestep)
    use m_flowtimes, only: ti_his, time_his, ti_hiss
    use m_laterals, only: qqLat, numlatsg, num_layers, qplat, qplatCum, qplatCumPre, qplatAve, qLatReal, &
-                        qLatRealCum, qLatRealCumPre, qLatRealAve, n1latsg, n1latsg, n2latsg, nnlat
+                         qLatRealCum, qLatRealCumPre, qLatRealAve, n1latsg, n1latsg, n2latsg, nnlat
    use precision
    use m_alloc
    use m_flowparameters, only: eps10
    use m_partitioninfo, only: jampi, reduce_double_sum, is_ghost_node
    implicit none
-   double precision, intent(in) :: tim1 !< Current (new) time
-   double precision, intent(in) :: timestep !< Timestep is the difference between tim1 and the last update time
+   real(kind=dp), intent(in) :: tim1 !< Current (new) time
+   real(kind=dp), intent(in) :: timestep !< Timestep is the difference between tim1 and the last update time
 
    integer :: k1, i, i_lat, i_layer, i_node
-   double precision, allocatable :: qLatRealCumTmp(:), qLatRealMPI(:)
+   real(kind=dp), allocatable :: qLatRealCumTmp(:), qLatRealMPI(:)
 
    ! If current time has not reached the history output start time yet, do not update
    if (comparereal(tim1, ti_hiss, eps10) < 0) then

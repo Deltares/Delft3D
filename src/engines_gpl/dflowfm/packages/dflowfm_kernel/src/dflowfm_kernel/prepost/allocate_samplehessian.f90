@@ -32,27 +32,26 @@
 
 !> allocate sample Hessian data
 module m_allocate_samplehessian
-use m_deallocate_samplehessian, only: deallocate_samplehessian
+   use m_deallocate_samplehessian, only: deallocate_samplehessian
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: allocate_samplehessian
+   public :: allocate_samplehessian
 
 contains
 
-subroutine allocate_sampleHessian()
-   use m_samples
-   use m_samples_refine
+   subroutine allocate_sampleHessian()
+      use m_samples
+      use m_samples_refine
 
-   call deallocate_sampleHessian()
+      call deallocate_sampleHessian()
 
-   allocate (zss(NDIM, MXSAM, MYSAM))
+      allocate (zss(NDIM, MXSAM, MYSAM))
 
-   iHesstat = iHesstat_DIRTY
+      iHesstat = iHesstat_DIRTY
 
-end subroutine allocate_sampleHessian
+   end subroutine allocate_sampleHessian
 
 end module m_allocate_samplehessian

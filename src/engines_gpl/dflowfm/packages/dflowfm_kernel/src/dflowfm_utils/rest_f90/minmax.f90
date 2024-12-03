@@ -31,16 +31,17 @@
 !
 
       subroutine MINMAX(X, MXLAN, XMIN, XMAX, MAXLAN)
+         use precision, only: dp
          use M_MISSING
          implicit none
          integer :: i
          integer :: maxlan
          integer :: mxlan
-         double precision :: xmax
-         double precision :: xmin
-         double precision :: xx
+         real(kind=dp) :: xmax
+         real(kind=dp) :: xmin
+         real(kind=dp) :: xx
 !     BEPAAL MINIMUM EN MAXIMUM VAN EEN EENDIMENSIONALE ARRAY
-         double precision :: X(MAXLAN)
+         real(kind=dp) :: X(MAXLAN)
 
          if (MXLAN == 0) then
             XMIN = 0

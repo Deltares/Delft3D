@@ -32,26 +32,26 @@
 
 module m_dislink
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISLINK(MP)
-         use m_devices, only: iws
-         use m_ktext
+   subroutine DISLINK(MP)
+      use m_devices, only: iws
+      use m_ktext
 
-         integer :: mp
-         character TEX * 23
+      integer :: mp
+      character TEX * 23
 
-         if (MP <= 0) then
-            TEX = 'LINK NOT FOUND        '
-         else
-            TEX = 'LINK NR:              '
-            write (TEX(10:), '(I10)') MP
-         end if
-         call KTEXT(TEX, IWS - 22, 4, 15)
+      if (MP <= 0) then
+         TEX = 'LINK NOT FOUND        '
+      else
+         TEX = 'LINK NR:              '
+         write (TEX(10:), '(I10)') MP
+      end if
+      call KTEXT(TEX, IWS - 22, 4, 15)
 
-         return
-      end
+      return
+   end
 
 end module m_dislink

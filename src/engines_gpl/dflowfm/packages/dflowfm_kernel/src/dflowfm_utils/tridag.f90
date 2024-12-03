@@ -33,9 +33,10 @@
 ! =================================================================================================
 ! =================================================================================================
  subroutine tridag(a, b, c, d, e, u, n)
+    use precision, only: dp
     implicit none
     integer :: n, j
-    double precision :: a(n), b(n), c(n), d(n), e(n), u(n), bet, accur = 1d-15
+    real(kind=dp) :: a(n), b(n), c(n), d(n), e(n), u(n), bet, accur = 1d-15
 
     bet = b(1)
     u(1) = d(1) / bet

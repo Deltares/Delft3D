@@ -33,6 +33,7 @@
 !> Reads and sets cell-centered bed levels directly from the net file (when present).
 !! _net.nc file should contain a variable with standard_name=altitude
 subroutine setbedlevelfromnetfile()
+   use precision, only: dp
    use m_flowgeom
    use m_flowparameters
    use M_samples
@@ -47,8 +48,8 @@ subroutine setbedlevelfromnetfile()
    implicit none
 
    integer :: ierr, ioncid, iconvtype, ncid, nmesh, im, id_bl, networkid
-   double precision :: bl_fillvalue
-   double precision :: convversion
+   real(kind=dp) :: bl_fillvalue
+   real(kind=dp) :: convversion
    integer :: nflownode
    integer :: k
    type(t_ug_meshgeom) :: meshgeom

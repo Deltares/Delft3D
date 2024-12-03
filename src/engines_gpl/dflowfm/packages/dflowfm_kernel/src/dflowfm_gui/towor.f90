@@ -33,22 +33,23 @@
 !
 module m_towor
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine TOWOR(NX, NY, X, Y)
-         implicit none
-         integer :: nx
-         integer :: ny
-         double precision :: x
-         double precision :: y
-         real :: rx, ry
+   subroutine TOWOR(NX, NY, X, Y)
+      use precision, only: dp
+      implicit none
+      integer :: nx
+      integer :: ny
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      real :: rx, ry
 !     GIVE WORLD COORDINATES OF SCREENCOORDINATES
-         call IGRUNITSFROMPIXELS(NX, NY, rx, ry)
-         X = dble(rx)
-         Y = dble(ry)
-         return
-      end
+      call IGRUNITSFROMPIXELS(NX, NY, rx, ry)
+      X = dble(rx)
+      Y = dble(ry)
+      return
+   end
 
 end module m_towor

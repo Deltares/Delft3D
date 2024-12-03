@@ -32,28 +32,29 @@
 
 module m_closeenough
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: closeenough
+   public :: closeenough
 
 contains
 
-  subroutine closeenough(x1, y1, x2, y2, r, ja)
+   subroutine closeenough(x1, y1, x2, y2, r, ja)
+      use precision, only: dp
 
-     use m_missing, only: dmiss
-     use m_sferic, only: jsferic, jasfer3D
-     use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+      use geometry_module, only: dbdistance
 
-     double precision :: x1, y1, x2, y2, r2, r
-     integer :: ja
+      real(kind=dp) :: x1, y1, x2, y2, r2, r
+      integer :: ja
 
-     ja = 0
-     r2 = dbdistance(x1, y1, x2, y2, jsferic, jasfer3D, dmiss)
-     if (r2 < r) then
-        ja = 1
-     end if
-  end subroutine
+      ja = 0
+      r2 = dbdistance(x1, y1, x2, y2, jsferic, jasfer3D, dmiss)
+      if (r2 < r) then
+         ja = 1
+      end if
+   end subroutine
 
 end module m_closeenough

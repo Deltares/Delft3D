@@ -32,11 +32,12 @@
 
 !> delete cell by merging all its nodes and update administration
 module m_kill_cell
-use m_teknode
+   use m_teknode
 
    implicit none
 contains
    subroutine killcell(xp, yp)
+      use precision, only: dp
       use m_netw
       use m_missing, only: dmiss, jins
       use geometry_module, only: pinpok
@@ -45,7 +46,7 @@ contains
       use m_makenetnodescoding
       use m_delete_cell, only: deletecell
 
-      double precision, intent(in) :: xp, yp !< coordinates of input point
+      real(kind=dp), intent(in) :: xp, yp !< coordinates of input point
 
       integer, parameter :: NMAX = 100 !< array size
       integer :: ndirect !< number of directly connected cells

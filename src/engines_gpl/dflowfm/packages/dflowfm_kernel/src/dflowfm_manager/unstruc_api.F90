@@ -41,7 +41,7 @@ module unstruc_api
 
    implicit none
 
-   double precision :: cpuall0
+   real(kind=dp) :: cpuall0
 contains
 
 !> Initializes global program/core data, not specific to a particular model.
@@ -110,7 +110,7 @@ contains
       implicit none
       integer :: ierr, minp, mout, L1, istat, i
       integer :: MODE, NUM, NWHAT, KEY
-      double precision :: QQQ, upot, ukin, ueaa
+      real(kind=dp) :: QQQ, upot, ukin, ueaa
       character(len=*) :: batfile
       character(len=256) :: rec, filnam, basemdu, tex
 

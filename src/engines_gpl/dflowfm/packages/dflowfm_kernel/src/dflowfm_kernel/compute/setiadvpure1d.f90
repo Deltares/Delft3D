@@ -29,66 +29,66 @@
 
 module m_setiadvpure1d
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setiadvpure1d
+   public :: setiadvpure1d
 
 contains
 
 !> update iadvec flag if Pure1D is switched on
-subroutine setiadvpure1D(jaPure1D)
-   use m_flowgeom, only: lnx1d, lnxi, lnx, ln, kcu, iadv
-   use m_flowparameters, only: iadvec1D
-   use network_data, only: kc
+   subroutine setiadvpure1D(jaPure1D)
+      use m_flowgeom, only: lnx1d, lnxi, lnx, ln, kcu, iadv
+      use m_flowparameters, only: iadvec1D
+      use network_data, only: kc
 
-   integer, intent(in) :: jaPure1D !< flag specifying type of 1D discretization
+      integer, intent(in) :: jaPure1D !< flag specifying type of 1D discretization
 
-   integer :: iadv_Pure1D !< iadvec flag to be used for Pure1D links
-   integer :: L !< link index
-   integer :: n1 !< index of from-node
-   integer :: n2 !< index of to-node
+      integer :: iadv_Pure1D !< iadvec flag to be used for Pure1D links
+      integer :: L !< link index
+      integer :: n1 !< index of from-node
+      integer :: n2 !< index of to-node
 
-   if (jaPure1D == 0) then
-      ! no Pure1D return
-      return
+      if (jaPure1D == 0) then
+         ! no Pure1D return
+         return
 
-   elseif (jaPure1D < 3) then
-      ! stay close to the default behaviour
-      iadv_Pure1D = 103
+      elseif (jaPure1D < 3) then
+         ! stay close to the default behaviour
+         iadv_Pure1D = 103
 
-   else
-      ! switch to SOBEK type 1D advection
-      iadv_Pure1D = 104
+      else
+         ! switch to SOBEK type 1D advection
+         iadv_Pure1D = 104
 
-   end if
-
-   kc = 0
-   do L = 1, lnx
-      n1 = ln(1, L)
-      n2 = ln(2, L)
-      if (abs(kcu(L)) == 1) then
-         kc(n1) = kc(n1) + 1
-         kc(n2) = kc(n2) + 1
       end if
-   end do
 
-   do L = 1, lnx1D
-      n1 = ln(1, L); n2 = ln(2, L)
-      if (iadv(L) == iadvec1D .or. &
-          & (iadv(L) == 6 .and. kc(n1) == 2 .and. kc(n2) == 2)) then
-         iadv(L) = iadv_Pure1D
-      end if
-   end do
+      kc = 0
+      do L = 1, lnx
+         n1 = ln(1, L)
+         n2 = ln(2, L)
+         if (abs(kcu(L)) == 1) then
+            kc(n1) = kc(n1) + 1
+            kc(n2) = kc(n2) + 1
+         end if
+      end do
 
-   do L = lnxi + 1, lnx
-      n2 = ln(2, L)
-      if (abs(kcu(L)) == 1 .and. kc(n2) == 2) then
-         iadv(L) = iadv_Pure1D
-      end if
-   end do
+      do L = 1, lnx1D
+         n1 = ln(1, L); n2 = ln(2, L)
+         if (iadv(L) == iadvec1D .or. &
+             & (iadv(L) == 6 .and. kc(n1) == 2 .and. kc(n2) == 2)) then
+            iadv(L) = iadv_Pure1D
+         end if
+      end do
 
-end subroutine setiadvpure1D
+      do L = lnxi + 1, lnx
+         n2 = ln(2, L)
+         if (abs(kcu(L)) == 1 .and. kc(n2) == 2) then
+            iadv(L) = iadv_Pure1D
+         end if
+      end do
+
+   end subroutine setiadvpure1D
 
 end module m_setiadvpure1d

@@ -103,17 +103,17 @@ contains
       integer :: i_layer
       integer :: iostat
 
-      real(kind=dp), allocatable, dimension(:) :: total_volume !< Placeholder of total lateral-volume per layer 
+      real(kind=dp), allocatable, dimension(:) :: total_volume !< Placeholder of total lateral-volume per layer
       real(kind=dp), allocatable, dimension(:, :, :) :: total_time_weighted_quantity !< Placeholder of accumulated quantity (mass and/or temperature) weighted by time, for each layer, lateral and constituent
 
       allocate (total_volume(num_layers), stat=iostat)
       call aerr('total_volume', iostat, num_layers, 'average_concentrations_for_laterals')
       allocate (total_time_weighted_quantity(num_layers, num_const, numlatsg), stat=iostat)
-      call aerr('total_time_weighted_quantity', iostat, num_layers*num_const*numlatsg, 'average_concentrations_for_laterals')
+      call aerr('total_time_weighted_quantity', iostat, num_layers * num_const * numlatsg, 'average_concentrations_for_laterals')
 
       do i_lat = 1, numlatsg
          total_volume(:) = 0.0_dp
-         total_time_weighted_quantity(:,:,:) = 0.0_dp
+         total_time_weighted_quantity(:, :, :) = 0.0_dp
          do k1 = n1latsg(i_lat), n2latsg(i_lat)
             i_node = nnlat(k1)
             if (i_node > 0) then
@@ -130,7 +130,7 @@ contains
                      total_volume(i_layer) = total_volume(i_layer) + cell_volume(k)
                      do i_const = 1, num_const
                         total_time_weighted_quantity(i_layer, i_const, i_lat) = total_time_weighted_quantity(i_layer, i_const, i_lat) + &
-                                                                     dt * cell_volume(k) * constituents(i_const, k)
+                                                                                dt * cell_volume(k) * constituents(i_const, k)
                      end do
                      i_layer = i_layer + 1
                   end do
@@ -139,7 +139,7 @@ contains
          end do
          do i_layer = 1, num_layers
             if (total_volume(i_layer) > 0) then
-               outgoing_lat_concentration(i_layer, :, i_lat) = outgoing_lat_concentration(i_layer, :, i_lat) + & 
+               outgoing_lat_concentration(i_layer, :, i_lat) = outgoing_lat_concentration(i_layer, :, i_lat) + &
                                                                total_time_weighted_quantity(i_layer, :, i_lat) / total_volume(i_layer)
             else
                outgoing_lat_concentration(i_layer, :, i_lat) = 0.0_dp
@@ -152,10 +152,10 @@ contains
    ! Add lateral input contribution to the load being transported
    module subroutine add_lateral_load_and_sink(transport_load, transport_sink, cell_volume, dtol)
       use m_transportdata, only: numconst
-      real(kind=dp), dimension(:, :), intent(inout) :: transport_load !< Load being transported into domain. 
-                                                                      !< Sign-convention: positive means load being transported into model.
-      real(kind=dp), dimension(:, :), intent(inout) :: transport_sink !< Load being transported out. 
-                                                                      !< Sign-convention: positive means load being transported out.
+      real(kind=dp), dimension(:, :), intent(inout) :: transport_load !< Load being transported into domain.
+      !< Sign-convention: positive means load being transported into model.
+      real(kind=dp), dimension(:, :), intent(inout) :: transport_sink !< Load being transported out.
+      !< Sign-convention: positive means load being transported out.
       real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3]
       real(kind=dp), intent(in) :: dtol !< cut off value for cell_volume, to prevent division by zero
 
@@ -173,9 +173,9 @@ contains
                   qlat = qqlat(i_layer, k1)
                   if (comparereal(qlat, 0._dp, eps10) > 0) then
                      transport_load(i_const, i_cell) = transport_load(i_const, i_cell) &
-                                                     + delta_cell_volume * qlat * incoming_lat_concentration(1, i_const, i_lateral)
+                                                       + delta_cell_volume * qlat * incoming_lat_concentration(1, i_const, i_lateral)
                   else
-                  ! Sink sign-convention: positive means flux going out of model, hence the negative sign here
+                     ! Sink sign-convention: positive means flux going out of model, hence the negative sign here
                      transport_sink(i_const, i_cell) = transport_sink(i_const, i_cell) - delta_cell_volume * qlat
                   end if
                end do

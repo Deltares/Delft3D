@@ -1,8 +1,7 @@
 module m_getustbcfuhi
-use m_getvanrijnwci
+   use m_getvanrijnwci
 
-
-implicit none
+   implicit none
 
 contains
 
@@ -39,6 +38,7 @@ contains
    !
 
    subroutine getustbcfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
+      use precision, only: dp
       use m_getsoulsbywci
       use m_flow
       use m_flowgeom, only: ln, dxi, csu, snu
@@ -52,26 +52,26 @@ contains
 
       implicit none
       integer, intent(in) :: LL, Lb
-      double precision, intent(out) :: ustbLL, cfuhiLL, hdzb, z00
-      double precision, intent(out) :: cfuhi3D ! 3D bedfriction coeffient, advi(Lb) = advi(Lb) + cfuhi3D
+      real(kind=dp), intent(out) :: ustbLL, cfuhiLL, hdzb, z00
+      real(kind=dp), intent(out) :: cfuhi3D ! 3D bedfriction coeffient, advi(Lb) = advi(Lb) + cfuhi3D
 
       integer :: ifrctyp, L
-      double precision :: frcn, sqcf, cz, umod, u1Lb, gsx, ustw2, ustc2, fw, cdrag, abscos, dfuc, costu
-      double precision :: taubpuLL ! taubpu = umod*ag/C2 or ypar*(taucur+tauwav)/rho/umod or ustar*ustar/u
-      double precision :: taubxuLL ! taubxu = ymxpar*(taucur+tauwav)
+      real(kind=dp) :: frcn, sqcf, cz, umod, u1Lb, gsx, ustw2, ustc2, fw, cdrag, abscos, dfuc, costu
+      real(kind=dp) :: taubpuLL ! taubpu = umod*ag/C2 or ypar*(taucur+tauwav)/rho/umod or ustar*ustar/u
+      real(kind=dp) :: taubxuLL ! taubxu = ymxpar*(taucur+tauwav)
 
-      double precision :: csw, snw ! wave direction cosines
-      double precision :: Dfu, Dfu0, Dfu1, htop, dzu ! wave dissipation by bed friction, / (rhomean*c*deltau)
-      double precision :: deltau ! wave dissipation layer thickness
-      double precision :: u2dh
-      double precision :: z0urouL, rhoL, uorbu
-      double precision :: umodeps
+      real(kind=dp) :: csw, snw ! wave direction cosines
+      real(kind=dp) :: Dfu, Dfu0, Dfu1, htop, dzu ! wave dissipation by bed friction, / (rhomean*c*deltau)
+      real(kind=dp) :: deltau ! wave dissipation layer thickness
+      real(kind=dp) :: u2dh
+      real(kind=dp) :: z0urouL, rhoL, uorbu
+      real(kind=dp) :: umodeps
 
       integer :: nit, nitm = 100
-      double precision :: r, rv = 123.8d0, e = 8.84d0, eps = 1d-2
-      double precision :: s, sd, er, ers, dzb, uu, vv, alin
-      double precision :: cphi, sphi
-      double precision :: fsqrtt = sqrt(2d0)
+      real(kind=dp) :: r, rv = 123.8d0, e = 8.84d0, eps = 1d-2
+      real(kind=dp) :: s, sd, er, ers, dzb, uu, vv, alin
+      real(kind=dp) :: cphi, sphi
+      real(kind=dp) :: fsqrtt = sqrt(2d0)
 
       cfuhi3D = 0d0
       ustbLL = 0d0; cfuhiLL = 0d0; hdzb = 0d0; z00 = 0d0; cz = 0d0; nit = 0

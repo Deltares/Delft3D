@@ -50,7 +50,7 @@ subroutine SETCOLTABFILE(FILNAM, JASECOND)
    integer :: minp
    integer, parameter :: mxq = 1, mxclass = 1
    character FILNAM * (*), FOLNAM * 86
-   
+
    FOLNAM = FILNAM
    if (FILNAM(1:5) == '*.hls') then
       MINP = 0

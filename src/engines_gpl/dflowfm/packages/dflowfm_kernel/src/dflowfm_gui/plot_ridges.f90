@@ -33,67 +33,68 @@
 !> plot the ridges
 module m_plot_ridges
 
-implicit none
+   implicit none
 
 contains
 
-subroutine plot_ridges(ierror)
+   subroutine plot_ridges(ierror)
+      use precision, only: dp
 
-   use m_samples
-   use m_samples_refine
-   use m_missing, only: dmiss
-   use geometry_module, only: dbdistance
-   use m_set_col
-   use m_movabs
-   use m_lnabs
-   use m_comp_sampleDh
+      use m_samples
+      use m_samples_refine
+      use m_missing, only: dmiss
+      use geometry_module, only: dbdistance
+      use m_set_col
+      use m_movabs
+      use m_lnabs
+      use m_comp_sampleDh
 
-   integer, intent(out) :: ierror !< error (1) or not (0)
+      integer, intent(out) :: ierror !< error (1) or not (0)
 
-   integer :: i, j, ip
+      integer :: i, j, ip
 
-   double precision :: Dx, Dy, dum, Dh, x0, y0, x1, y1, x2, y2
+      real(kind=dp) :: Dx, Dy, dum, Dh, x0, y0, x1, y1, x2, y2
 
-   ierror = 1
+      ierror = 1
 
-   if (iHesstat /= iHesstat_OK) goto 1234
+      if (iHesstat /= iHesstat_OK) goto 1234
 
 !  plot ridge
-   do i = 1, MXSAM
-      do j = 1, MYSAM
+      do i = 1, MXSAM
+         do j = 1, MYSAM
 !        compute sample mesh width
-         Dh = comp_sampleDh(i, j)
+            Dh = comp_sampleDh(i, j)
 
-         ip = i + (j - 1) * MXSAM
+            ip = i + (j - 1) * MXSAM
 
-         if (abs(zss(5, i, j)) > 0.5d0 * Dh .or. zss(4, i, j) > -1d-8 .or. zss(5, i, j) == DMISS) cycle
+            if (abs(zss(5, i, j)) > 0.5d0 * Dh .or. zss(4, i, j) > -1d-8 .or. zss(5, i, j) == DMISS) cycle
 
-         Dx = zss(3, i, j)
-         Dy = -zss(2, i, j)
-         dum = Dh / sqrt(Dx**2 + Dy**2 + 1d-16)
-         Dx = Dx * dum
-         Dy = Dy * dum
+            Dx = zss(3, i, j)
+            Dy = -zss(2, i, j)
+            dum = Dh / sqrt(Dx**2 + Dy**2 + 1d-16)
+            Dx = Dx * dum
+            Dy = Dy * dum
 
-         call setcol(204)
+            call setcol(204)
 
-         x0 = xs(ip) + zss(2, i, j) * zss(5, i, j)
-         y0 = ys(ip) + zss(3, i, j) * zss(5, i, j)
-         x1 = min(max(x0 - Dx, xs(ip) - 0.5d0 * Dh), xs(ip) + 0.5 * Dh)
-         y1 = min(max(y0 - Dy, ys(ip) - 0.5d0 * Dh), ys(ip) + 0.5 * Dh)
-         x2 = min(max(x0 + Dx, xs(ip) - 0.5d0 * Dh), xs(ip) + 0.5 * Dh)
-         y2 = min(max(y0 + Dy, ys(ip) - 0.5d0 * Dh), ys(ip) + 0.5 * Dh)
+            x0 = xs(ip) + zss(2, i, j) * zss(5, i, j)
+            y0 = ys(ip) + zss(3, i, j) * zss(5, i, j)
+            x1 = min(max(x0 - Dx, xs(ip) - 0.5d0 * Dh), xs(ip) + 0.5 * Dh)
+            y1 = min(max(y0 - Dy, ys(ip) - 0.5d0 * Dh), ys(ip) + 0.5 * Dh)
+            x2 = min(max(x0 + Dx, xs(ip) - 0.5d0 * Dh), xs(ip) + 0.5 * Dh)
+            y2 = min(max(y0 + Dy, ys(ip) - 0.5d0 * Dh), ys(ip) + 0.5 * Dh)
 
-         call movabs(x1, y1)
-         call lnabs(x2, y2)
+            call movabs(x1, y1)
+            call lnabs(x2, y2)
+         end do
       end do
-   end do
 
 !   call qnerror(' ', ' ', ' ')
 
-   ierror = 0
-1234 continue
+      ierror = 0
+1234  continue
 
-   return
-end subroutine plot_ridges
+      return
+   end subroutine plot_ridges
 
 end module m_plot_ridges

@@ -31,11 +31,12 @@
 !
 
       subroutine GEOMERC(XG, YG, XX, YY)
+         use precision, only: dp
          use M_SFERIC
          implicit none
-         double precision :: XX, YY, XG, YG, FI2, YC, CY, F, E
-         double precision :: a
-         double precision :: sf
+         real(kind=dp) :: XX, YY, XG, YG, FI2, YC, CY, F, E
+         real(kind=dp) :: a
+         real(kind=dp) :: sf
          XX = XG * DG2RD * RA
 
          FI2 = DG2RD * YG

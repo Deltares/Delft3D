@@ -32,7 +32,8 @@
 module m_dslim
    implicit none
 contains
-   double precision function dslim(d1, d2, limtyp)
+   real(kind=dp) function dslim(d1, d2, limtyp)
+      use precision, only: dp
       use m_dminmod
       use m_dvanleer
       use m_dkoren
@@ -42,7 +43,7 @@ contains
       use m_dsuperbee
       use m_dlimitercentral
 
-      double precision d1, d2 ! voorslope, naslope
+      real(kind=dp) d1, d2 ! voorslope, naslope
       integer limtyp
 
       ! In order to translate psi to limiter, you have to multiply the psi function with ds2

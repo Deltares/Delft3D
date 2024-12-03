@@ -36,6 +36,7 @@
 !                          IJC,IJYES,TIJ,XH,YH,         &
 !                          X1,Y1,X2,Y2,X3,Y3,X4,Y4)
     subroutine SPLRGFR()
+       use precision, only: dp
        use M_SPLINES
        use m_missing, only: xymis
        use m_grid
@@ -51,12 +52,12 @@
        use m_get_ij
        implicit none
 
-       double precision, allocatable, dimension(:, :) :: xspc, yspc, xh, yh, tij
-       double precision, allocatable, dimension(:) :: x1, x2, x3, x4, y1, y2, y3, y4
+       real(kind=dp), allocatable, dimension(:, :) :: xspc, yspc, xh, yh, tij
+       real(kind=dp), allocatable, dimension(:) :: x1, x2, x3, x4, y1, y2, y3, y4
        integer, allocatable, dimension(:, :) :: mn12
-       double precision, allocatable, dimension(:) :: xi1, yi1, ti1
+       real(kind=dp), allocatable, dimension(:) :: xi1, yi1, ti1
        integer, allocatable, dimension(:) :: ntyp
-       double precision, allocatable, dimension(:) :: tt
+       real(kind=dp), allocatable, dimension(:) :: tt
 ! x, y -> xc, yc (m_grid)
 ! ijc, ijyes in m_grid
        integer :: ierr, mspl

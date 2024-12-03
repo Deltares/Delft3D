@@ -32,19 +32,20 @@
 
 module m_isofil
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine ISOFIL(X, Y, Z, n4, NCOLR)
-         use m_isofil_color
-         use m_depmax
+   subroutine ISOFIL(X, Y, Z, n4, NCOLR)
+      use precision, only: dp
+      use m_isofil_color
+      use m_depmax
 
-         integer :: n4, ncolr
-         double precision :: X(n4), Y(n4), Z(n4)
+      integer :: n4, ncolr
+      real(kind=dp) :: X(n4), Y(n4), Z(n4)
 
-         call isofil_color(X, Y, Z, n4, NCOLR, VAL, NCOLS, NV)
+      call isofil_color(X, Y, Z, n4, NCOLR, VAL, NCOLS, NV)
 
-      end subroutine isofil
+   end subroutine isofil
 
 end module m_isofil

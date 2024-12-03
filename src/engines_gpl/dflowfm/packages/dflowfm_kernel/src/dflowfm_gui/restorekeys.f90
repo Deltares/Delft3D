@@ -32,14 +32,14 @@
 module m_restore_keys
    implicit none
 contains
-      subroutine RESTOREKEYS()
-         use m_keycodes
+   subroutine RESTOREKEYS()
+      use m_keycodes
 
-         integer :: i
+      integer :: i
 
-         do I = 1, MAXKEY
-            call INCONTROLKEY(I, KEYCOD(I))
-         end do
-         return
-      end
+      do I = 1, MAXKEY
+         call INCONTROLKEY(I, KEYCOD(I))
+      end do
+      return
+   end
 end module m_restore_keys

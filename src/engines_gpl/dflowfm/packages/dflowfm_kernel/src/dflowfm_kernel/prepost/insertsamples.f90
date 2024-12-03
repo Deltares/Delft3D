@@ -31,12 +31,13 @@
 !
 
       subroutine insertsamples(L1, L2)
+         use precision, only: dp
          use m_samples
          use m_gridsettings, only: mfac
          implicit none
          integer :: L1, L2
          integer :: k
-         double precision :: aa, bb
+         real(kind=dp) :: aa, bb
 
          do k = 1, mfac
             ns = ns + 1

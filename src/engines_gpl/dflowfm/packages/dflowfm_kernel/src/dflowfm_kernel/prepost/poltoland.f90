@@ -31,6 +31,7 @@
 !
 
       subroutine POLTOLAND(L1, L2) ! SHIFT POLYGON TO LANDBOUNDARY
+         use precision, only: dp
          use M_POLYGON
          use M_MISSING
          use M_LANDBOUNDARY
@@ -40,7 +41,7 @@
 
          integer :: in
          integer :: l, j
-         double precision :: xp, yp, xpn, ypn, dis, rL
+         real(kind=dp) :: xp, yp, xpn, ypn, dis, rL
 
          IN = 1; if (L2 < L1) IN = -1
          do L = L1, L2, IN

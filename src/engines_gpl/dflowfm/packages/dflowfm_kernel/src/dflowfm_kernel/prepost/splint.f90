@@ -34,17 +34,18 @@ module m_splint
 contains
 
    subroutine SPLINT(YA, Y2A, N, X, Y)
+      use precision, only: dp
 
       integer :: N !< number of control points
-      double precision, dimension(N) :: ya !< control point values
-      double precision, dimension(N) :: y2a !< control point second order derivatives
-      double precision, intent(in) :: x !< spline coordinate
-      double precision, intent(out) :: y !< interpolated value at prescribed spline coordinate
+      real(kind=dp), dimension(N) :: ya !< control point values
+      real(kind=dp), dimension(N) :: y2a !< control point second order derivatives
+      real(kind=dp), intent(in) :: x !< spline coordinate
+      real(kind=dp), intent(out) :: y !< interpolated value at prescribed spline coordinate
 
 !     AANGEPAST VOOR GEBRUIK BIJ XA IS ENKEL 0,1,2...N-1
 !     ZOEKEN KAN GESLOOPT DOOR DEFINITIE VAN XA IS 0,1,
 
-      double precision :: EPS, A, B, SPLFAC = 1d0
+      real(kind=dp) :: EPS, A, B, SPLFAC = 1d0
 
       integer :: intx
       integer :: KLO, KHI

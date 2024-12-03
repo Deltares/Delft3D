@@ -61,8 +61,9 @@
 !
 !
 module M_MAPPROPARAMETERS
+   use precision, only: dp
    implicit none
-   double precision :: XCE, YCE, DELTX, DELTY, XF, YF, FI, XCSTEREO, YCSTEREO
-   double precision :: CSE = 1d0, SNE = 0d0
+   real(kind=dp) :: XCE, YCE, DELTX, DELTY, XF, YF, FI, XCSTEREO, YCSTEREO
+   real(kind=dp) :: CSE = 1d0, SNE = 0d0
    integer :: ITYPE = 0, IZONE = 0, NZONE = 0, IHEM = 1
 end module M_MAPPROPARAMETERS

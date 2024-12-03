@@ -31,6 +31,7 @@
 !
 
       subroutine UTMGeo(xutm, yutm, xgeo, ygeo, IZONE, ierr)
+         use precision, only: dp
          use m_ellips
          implicit none
 !
@@ -42,68 +43,68 @@
 ! -----------------------------------------------------------------------------
 !
 !     arguments:
-!     xutm    i    double precision ::    easting (UTM)
-!     yutm    i    double precision ::    northing (UTM)
+!     xutm    i    real(kind=dp) ::    easting (UTM)
+!     yutm    i    real(kind=dp) ::    northing (UTM)
 !     Izone    i    integer   Izone (UTM)
-!     a       i    double precision ::    semi-major axis of ellipsoid
-!     e       i    double precision ::    excentricity of ellipsoid
-!     xgeo    o    double precision ::    longitude (geographical coordinate)
-!     ygeo    o    double precision ::    lattitude (geographical coordinate)
+!     a       i    real(kind=dp) ::    semi-major axis of ellipsoid
+!     e       i    real(kind=dp) ::    excentricity of ellipsoid
+!     xgeo    o    real(kind=dp) ::    longitude (geographical coordinate)
+!     ygeo    o    real(kind=dp) ::    lattitude (geographical coordinate)
 !     ierr    o    integer   error code (zero for no error)
 !
-         double precision :: xutm, yutm, ygeo, xgeo
+         real(kind=dp) :: xutm, yutm, ygeo, xgeo
          integer Izone, ierr
 !
 !     local variables:
-!     pi           double precision ::    3.14....
-!     eps          double precision ::    stopping criterion (limit in change)
-!     fn           double precision ::    false northing
-!     fe           double precision ::    false easting
-!     cxutm        double precision ::    xutm, corrected for false eastin
-!     cyutm        double precision ::    yutm, corrected for false northing
-!     fi           double precision ::    geographic lattitude (equivalent to lat)
-!     dl           double precision ::    longitude within zone
-!     dl2          double precision ::    dl*dl
-!     s            double precision ::    sin(fi)
-!     ss           double precision ::    s*s
-!     sc           double precision ::    sin(fi)*cos(fi)
-!     c            double precision ::    cos(fi)
-!     cc           double precision ::    c*c
-!     cccc         double precision ::    c*c*c*c
-!     f1           double precision ::    coefficient in function dm(fi)
-!     f2           double precision ::    coefficient in function dm(fi)
-!     f3           double precision ::    coefficient in function dm(fi)
-!     f4           double precision ::    coefficient in function dm(fi)
-!     e2           double precision ::    e*e
-!     e4           double precision ::    e2*e2
-!     e6           double precision ::    e2*e4
-!     r            double precision ::    1-e2*ss
-!     n            double precision ::    e*e/(1-e*e)
-!     nn           double precision ::    n*n
-!     x            double precision ::    UTM easting (similar to xutm)
-!     dxdfi        double precision ::    partial derivative of x wrt. fi
-!     dxddl        double precision ::    partial derivative of x wrt. dl
-!     y            double precision ::    UTM northing (similar to yutm)
-!     dydfi        double precision ::    partial derivative of y wrt. fi
-!     dyddl        double precision ::    partial derivative of y wrt. dl
-!     rp           double precision ::    function rp(fi)
-!     drpdfi       double precision ::    derivative of rp wrt. fi
-!     dm           double precision ::    function dm(fi)
-!     ddmdfi       double precision ::    derivative of dm wrt. fi
-!     gx           double precision ::    function gx
-!     dgxdfi       double precision ::    partial derivative of gx wrt. fi
-!     dgxddl       double precision ::    partial derivative of gx wrt. dl
-!     gy           double precision ::    function gy
-!     dgydfi       double precision ::    partial derivative of gy wrt. fi
-!     dgyddl       double precision ::    partial derivative of gy wrt. dl
-!     det          double precision ::    determinant
-!     chanfi       double precision ::    change in fi (NR-iteration)
-!     chandl       double precision ::    change in dl (NR-iteration)
+!     pi           real(kind=dp) ::    3.14....
+!     eps          real(kind=dp) ::    stopping criterion (limit in change)
+!     fn           real(kind=dp) ::    false northing
+!     fe           real(kind=dp) ::    false easting
+!     cxutm        real(kind=dp) ::    xutm, corrected for false eastin
+!     cyutm        real(kind=dp) ::    yutm, corrected for false northing
+!     fi           real(kind=dp) ::    geographic lattitude (equivalent to lat)
+!     dl           real(kind=dp) ::    longitude within zone
+!     dl2          real(kind=dp) ::    dl*dl
+!     s            real(kind=dp) ::    sin(fi)
+!     ss           real(kind=dp) ::    s*s
+!     sc           real(kind=dp) ::    sin(fi)*cos(fi)
+!     c            real(kind=dp) ::    cos(fi)
+!     cc           real(kind=dp) ::    c*c
+!     cccc         real(kind=dp) ::    c*c*c*c
+!     f1           real(kind=dp) ::    coefficient in function dm(fi)
+!     f2           real(kind=dp) ::    coefficient in function dm(fi)
+!     f3           real(kind=dp) ::    coefficient in function dm(fi)
+!     f4           real(kind=dp) ::    coefficient in function dm(fi)
+!     e2           real(kind=dp) ::    e*e
+!     e4           real(kind=dp) ::    e2*e2
+!     e6           real(kind=dp) ::    e2*e4
+!     r            real(kind=dp) ::    1-e2*ss
+!     n            real(kind=dp) ::    e*e/(1-e*e)
+!     nn           real(kind=dp) ::    n*n
+!     x            real(kind=dp) ::    UTM easting (similar to xutm)
+!     dxdfi        real(kind=dp) ::    partial derivative of x wrt. fi
+!     dxddl        real(kind=dp) ::    partial derivative of x wrt. dl
+!     y            real(kind=dp) ::    UTM northing (similar to yutm)
+!     dydfi        real(kind=dp) ::    partial derivative of y wrt. fi
+!     dyddl        real(kind=dp) ::    partial derivative of y wrt. dl
+!     rp           real(kind=dp) ::    function rp(fi)
+!     drpdfi       real(kind=dp) ::    derivative of rp wrt. fi
+!     dm           real(kind=dp) ::    function dm(fi)
+!     ddmdfi       real(kind=dp) ::    derivative of dm wrt. fi
+!     gx           real(kind=dp) ::    function gx
+!     dgxdfi       real(kind=dp) ::    partial derivative of gx wrt. fi
+!     dgxddl       real(kind=dp) ::    partial derivative of gx wrt. dl
+!     gy           real(kind=dp) ::    function gy
+!     dgydfi       real(kind=dp) ::    partial derivative of gy wrt. fi
+!     dgyddl       real(kind=dp) ::    partial derivative of gy wrt. dl
+!     det          real(kind=dp) ::    determinant
+!     chanfi       real(kind=dp) ::    change in fi (NR-iteration)
+!     chandl       real(kind=dp) ::    change in dl (NR-iteration)
 !
-         double precision :: pi, eps, fn, fe, cxutm, cyutm
-         double precision :: fi, dl, dl2, s, ss, sc, c, cc, cccc, f1, f2, f3, f4, e2, e4, e6, r
-         double precision :: n, nn, x, dxdfi, dxddl, y, dydfi, dyddl, rp, drpdfi, dm, ddmdfi
-         double precision :: gx, dgxdfi, gy, dgydfi, det, chanfi, chandl
+         real(kind=dp) :: pi, eps, fn, fe, cxutm, cyutm
+         real(kind=dp) :: fi, dl, dl2, s, ss, sc, c, cc, cccc, f1, f2, f3, f4, e2, e4, e6, r
+         real(kind=dp) :: n, nn, x, dxdfi, dxddl, y, dydfi, dyddl, rp, drpdfi, dm, ddmdfi
+         real(kind=dp) :: gx, dgxdfi, gy, dgydfi, det, chanfi, chandl
 !
 !c -----------------------------------------------------------------------------
 !     t.j.zitman                                   last update: 5 december 1990

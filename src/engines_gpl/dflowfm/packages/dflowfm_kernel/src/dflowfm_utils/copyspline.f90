@@ -32,6 +32,7 @@
 
 !>    copy and move a whole spline
       subroutine copyspline(ispline, inode, xp, yp)
+         use precision, only: dp
          use m_splines
          use m_sferic
          use geometry_module, only: dbdistance, dcosphi
@@ -44,16 +45,16 @@
 
          integer, intent(inout) :: ispline !< spline number
          integer, intent(in) :: inode !< spline control point
-         double precision, intent(in) :: xp, yp !< new spline control point coordinates
+         real(kind=dp), intent(in) :: xp, yp !< new spline control point coordinates
 
-         double precision, dimension(maxsplen) :: xspp, yspp, xlist, ylist
+         real(kind=dp), dimension(maxsplen) :: xspp, yspp, xlist, ylist
 
-         double precision :: dnx, dny, dsx, dsy, curv, alphan, alphas
-         double precision :: x0, y0, x1, y1, ds, t
+         real(kind=dp) :: dnx, dny, dsx, dsy, curv, alphan, alphas
+         real(kind=dp) :: x0, y0, x1, y1, ds, t
 
          integer :: i, j, num
 
-         double precision, parameter :: EPS = 1d-4
+         real(kind=dp), parameter :: EPS = 1d-4
 
          integer, parameter :: Nresample = 1
 

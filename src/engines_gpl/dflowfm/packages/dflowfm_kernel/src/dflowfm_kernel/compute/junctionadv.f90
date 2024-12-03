@@ -32,19 +32,20 @@
 
 module m_junctionadv
 
-implicit none
+   implicit none
 
 contains
 
    ! =================================================================================================
    ! =================================================================================================
    subroutine junctionadv()
+      use precision, only: dp
       use m_flowgeom, only: lnx1d, ln, nd
       use m_flow, only: q1
       use m_fm_erosed, only: q_zeta
       implicit none
       integer :: i, L, Li, Lf, La, k
-      double precision :: s_l, s_m
+      real(kind=dp) :: s_l, s_m
 
       q_zeta = 0d0
 

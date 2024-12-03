@@ -33,6 +33,7 @@ module m_wrihistek
    implicit none
 contains
    subroutine wrihistek(tim)
+      use precision, only: dp
       use m_observations_data
       use m_monitoring_crosssections, only: ncrs, crs
       use m_flow, only: hs, ucy, ucx, s1, ag
@@ -42,8 +43,8 @@ contains
       use unstruc_files, only: defaultFilename
 
       integer :: n, ntbal, k1, k2
-      double precision :: tim, ue, te
-      double precision :: vv1, vv2, eh1, eh2, ee1, ee2, ft, dinch, wid, h1, h2, rr1, rr2, xl1, xl2, df1, df2, hb, AA1, AA2, QQ, s12, froude2
+      real(kind=dp) :: tim, ue, te
+      real(kind=dp) :: vv1, vv2, eh1, eh2, ee1, ee2, ft, dinch, wid, h1, h2, rr1, rr2, xl1, xl2, df1, df2, hb, AA1, AA2, QQ, s12, froude2
 
       character(len=256) :: nam
 

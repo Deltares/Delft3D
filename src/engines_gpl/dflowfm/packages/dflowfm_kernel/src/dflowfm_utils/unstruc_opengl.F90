@@ -264,7 +264,7 @@ contains
       use M_DEVICES
       use user32
       implicit none
-      integer(1) :: res 
+      integer(1) :: res
 
       if (jaOpenGL == 0) then
          return
@@ -286,7 +286,7 @@ contains
       use M_DEVICES
       implicit none
       integer(HANDLE) :: ptr_bytes
-      integer(1) :: res 
+      integer(1) :: res
 
       type(T_BITMAPINFO) bmi
 
@@ -330,7 +330,7 @@ contains
 #ifdef HAVE_OPENGL
       use IFWINA ! renamed symbols to avoid conflicts
       implicit none
-      integer(1) :: res 
+      integer(1) :: res
       integer :: pixelFormat, error_code
       type(T_PixelFormatDescriptor) pfd
 
@@ -376,7 +376,7 @@ contains
 
 #ifdef HAVE_OPENGL
       integer(HANDLE) :: font
-      integer(1) :: res 
+      integer(1) :: res
 
       ! prepare the font to render text in
       font = CreateFont(height, 0, 0, 0, & ! font size
@@ -403,7 +403,7 @@ contains
 #ifdef HAVE_OPENGL
       use IFWINA
       implicit none
-      integer(1) :: res 
+      integer(1) :: res
 
       res = DeleteObject(hbitmap)
       res = fwglMakeCurrent(NULL, NULL)

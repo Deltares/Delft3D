@@ -32,6 +32,7 @@
 
 !> check and see if the cell is convex (1) or not (0)
 integer function isconvexcell(k)
+   use precision, only: dp
 
    use m_netw
    use geometry_module, only: dcosphi
@@ -47,9 +48,9 @@ integer function isconvexcell(k)
    integer :: k1, k2, k3
 !   integer                     :: L
 
-   double precision :: cosphi
+   real(kind=dp) :: cosphi
 
-   double precision, parameter :: TOL = 0d-2
+   real(kind=dp), parameter :: TOL = 0d-2
 
    isconvexcell = 1
 

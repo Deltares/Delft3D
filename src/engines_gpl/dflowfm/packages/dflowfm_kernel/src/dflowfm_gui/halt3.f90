@@ -32,25 +32,25 @@
 
 module m_halt3
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine HALT3(JA)
-         ! left   mouse button: 1
-         ! middle mouse button: 2
-         ! right  mouse button: 3
-         implicit none
-         integer :: ja
-         integer :: numkey
+   subroutine HALT3(JA)
+      ! left   mouse button: 1
+      ! middle mouse button: 2
+      ! right  mouse button: 3
+      implicit none
+      integer :: ja
+      integer :: numkey
 !     kappen met muis
-         JA = 0
-         call INKEYEVENTIMM(NUMKEY)
-         if (NUMKEY >= 251 .and. NUMKEY <= 253) then
-            JA = NUMKEY - 251 + 1
+      JA = 0
+      call INKEYEVENTIMM(NUMKEY)
+      if (NUMKEY >= 251 .and. NUMKEY <= 253) then
+         JA = NUMKEY - 251 + 1
 !         call inflush()
-         end if
-         return
-      end
+      end if
+      return
+   end
 
 end module m_halt3

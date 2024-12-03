@@ -32,47 +32,47 @@
 
 module m_delnetzkabovezkuni
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: delnetzkabovezkuni
+   public :: delnetzkabovezkuni
 
 contains
 
-  subroutine delnetzkabovezkuni()
+   subroutine delnetzkabovezkuni()
 
-     use m_netw
-     use M_MISSING
-     use gridoperations
-     use m_set_nod_adm
+      use m_netw
+      use M_MISSING
+      use gridoperations
+      use m_set_nod_adm
 
-     implicit none
-     integer :: k, kk, L, k2, jaweg
+      implicit none
+      integer :: k, kk, L, k2, jaweg
 
-     do k = 1, numk
-        if (zk(k) /= dmiss) then
-           if (zk(k) > zkuni) then
-              jaweg = 0
-              do kk = 1, nmk(k)
-                 L = nod(k)%lin(kk)
-                 k2 = kn(1, L) + kn(2, L) - k
-                 if (zk(k2) > zkuni .or. zk(k2) == dmiss) then
-                    jaweg = jaweg + 1
-                 end if
-              end do
-              if (jaweg == nmk(k)) then
-                 xk(k) = dmiss; yk(k) = dmiss; zk(k) = dmiss
-              end if
+      do k = 1, numk
+         if (zk(k) /= dmiss) then
+            if (zk(k) > zkuni) then
+               jaweg = 0
+               do kk = 1, nmk(k)
+                  L = nod(k)%lin(kk)
+                  k2 = kn(1, L) + kn(2, L) - k
+                  if (zk(k2) > zkuni .or. zk(k2) == dmiss) then
+                     jaweg = jaweg + 1
+                  end if
+               end do
+               if (jaweg == nmk(k)) then
+                  xk(k) = dmiss; yk(k) = dmiss; zk(k) = dmiss
+               end if
 
-           end if
-        else if (zk(k) == dmiss) then
-           xk(k) = dmiss; yk(k) = dmiss; zk(k) = dmiss
-        end if
-     end do
+            end if
+         else if (zk(k) == dmiss) then
+            xk(k) = dmiss; yk(k) = dmiss; zk(k) = dmiss
+         end if
+      end do
 
-     call setnodadm(0)
+      call setnodadm(0)
 
-  end subroutine delnetzkabovezkuni
+   end subroutine delnetzkabovezkuni
 
 end module m_delnetzkabovezkuni

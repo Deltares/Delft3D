@@ -32,21 +32,22 @@
 
 !>    transform local spherical coordinates (xloc,yloc) around reference point (xref,yref) to global spherical coordinates (xglob,yglob)
       subroutine loc2spher(xref, yref, N, xloc, yloc, xglob, yglob)
+         use precision, only: dp
          use m_sferic
          use geometry_module, only: sphertocart3D, cart3Dtospher
          implicit none
 
-         double precision, intent(in) :: xref, yref !< global coordinates of reference point (longitude, latitude)
+         real(kind=dp), intent(in) :: xref, yref !< global coordinates of reference point (longitude, latitude)
          integer, intent(in) :: N !< number of global coordinates
-         double precision, dimension(N), intent(in) :: xloc, yloc !< local coordinates
-         double precision, dimension(N), intent(out) :: xglob, yglob !< global coordinates, (longitude, latitude)
+         real(kind=dp), dimension(N), intent(in) :: xloc, yloc !< local coordinates
+         real(kind=dp), dimension(N), intent(out) :: xglob, yglob !< global coordinates, (longitude, latitude)
 
-         double precision, dimension(3) :: exxp, eyyp, ezzp ! base vectors of rotated 3D Cartesian reference frame
+         real(kind=dp), dimension(3) :: exxp, eyyp, ezzp ! base vectors of rotated 3D Cartesian reference frame
 
-         double precision :: xx, yy, zz !  3D Cartesian coordinates
-         double precision :: xxp, yyp, zzp !  3D Cartesian coordinates in rotated frame
+         real(kind=dp) :: xx, yy, zz !  3D Cartesian coordinates
+         real(kind=dp) :: xxp, yyp, zzp !  3D Cartesian coordinates in rotated frame
 
-         double precision :: phi0, lambda0
+         real(kind=dp) :: phi0, lambda0
 
          integer :: i
 

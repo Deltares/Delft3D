@@ -31,6 +31,7 @@
 !
 
   subroutine ONELINE(K) ! TWEE LIJNTJES WORDEN 1
+     use precision, only: dp
      use m_delnode, only: delnode
      use m_connect, only: connect
      use m_netw
@@ -47,7 +48,7 @@
      integer :: l2
      integer :: lfa
      integer :: nm
-     double precision :: r0
+     real(kind=dp) :: r0
 
      JA = 0
      NM = NMK(K)

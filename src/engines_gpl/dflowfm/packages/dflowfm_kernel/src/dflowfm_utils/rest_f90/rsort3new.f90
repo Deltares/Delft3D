@@ -31,12 +31,13 @@
 !
 
       subroutine RSORT3new(X, Y, Z, N)
+         use precision, only: dp
          use stdlib_sorting, only: sort_index
          implicit none
          integer :: k, n
-         double precision :: X(N), Y(N), Z(N)
+         real(kind=dp) :: X(N), Y(N), Z(N)
          integer, allocatable :: ind(:)
-         double precision, allocatable :: h(:)
+         real(kind=dp), allocatable :: h(:)
 
          allocate (ind(n), h(n))
 

@@ -30,49 +30,50 @@
 !
 !
 module m_jgtext
-use m_getpos
+   use m_getpos
 
    implicit none
 contains
-  subroutine JGTEXT(TEX, X, Y, NCOL, WIC, HIC, JAHOOG) ! grafische tekst, grafische posities, met kleurblokjes ERONDER
-     use unstruc_colors
-     use m_box_nop
-     use m_fbox_nop
-     use m_set_col
-     use m_draw_text
+   subroutine JGTEXT(TEX, X, Y, NCOL, WIC, HIC, JAHOOG) ! grafische tekst, grafische posities, met kleurblokjes ERONDER
+      use precision, only: dp
+      use unstruc_colors
+      use m_box_nop
+      use m_fbox_nop
+      use m_set_col
+      use m_draw_text
 
-     double precision :: hic, WIC
-     integer :: jahoog
-     integer :: ncol
-     double precision :: x
-     double precision :: xa
-     double precision :: xb
-     double precision :: xp
-     double precision :: y
-     double precision :: ya
-     double precision :: yb
-     double precision :: yp
-     character TEX * (*)
+      real(kind=dp) :: hic, WIC
+      integer :: jahoog
+      integer :: ncol
+      real(kind=dp) :: x
+      real(kind=dp) :: xa
+      real(kind=dp) :: xb
+      real(kind=dp) :: xp
+      real(kind=dp) :: y
+      real(kind=dp) :: ya
+      real(kind=dp) :: yb
+      real(kind=dp) :: yp
+      character TEX * (*)
 
-     call SETCOL(KLTEX)
-     call DRAWTEXT(real(X), real(Y), TEX)
-     call GETPOS(XP, YP)
+      call SETCOL(KLTEX)
+      call DRAWTEXT(real(X), real(Y), TEX)
+      call GETPOS(XP, YP)
 
-     XA = XP + 0.3d0 * WIC
-     YA = YP - 0.8d0 * HIC + JAHOOG * HIC
-     XB = XA + 1.3d0 * WIC
-     YB = YA + 0.7d0 * HIC
+      XA = XP + 0.3d0 * WIC
+      YA = YP - 0.8d0 * HIC + JAHOOG * HIC
+      XB = XA + 1.3d0 * WIC
+      YB = YA + 0.7d0 * HIC
 
-     if (NCOL /= 0) then
-        call SETCOL(NCOL)
-        if (JAHOOG == 0) then
-           call FBOXnop(XA, YA, XB, YB)
-           call SETCOL(KLTEX)
-           call BOXnop(XA, YA, XB, YB)
-        else
-           call FBOXnop(XA, YA, XB, YB)
-        end if
-     end if
-     return
-  end
+      if (NCOL /= 0) then
+         call SETCOL(NCOL)
+         if (JAHOOG == 0) then
+            call FBOXnop(XA, YA, XB, YB)
+            call SETCOL(KLTEX)
+            call BOXnop(XA, YA, XB, YB)
+         else
+            call FBOXnop(XA, YA, XB, YB)
+         end if
+      end if
+      return
+   end
 end module m_jgtext

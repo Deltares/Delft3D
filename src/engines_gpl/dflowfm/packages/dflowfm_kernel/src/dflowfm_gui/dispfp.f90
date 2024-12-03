@@ -33,26 +33,27 @@
 !
 module m_dispfp
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISPFP(X, Y, N, NCOL)
-         use m_cir
-         use m_set_col
-         use m_movabs
+   subroutine DISPFP(X, Y, N, NCOL)
+      use precision, only: dp
+      use m_cir
+      use m_set_col
+      use m_movabs
 
-         integer :: i
-         integer :: n
-         integer :: ncol
+      integer :: i
+      integer :: n
+      integer :: ncol
 !     LAAT EEN EENDIMENSIONALE FUNCTIE ZIEN MET PUNTJES
-         double precision :: X(N), Y(N)
-         call SETCOL(NCOL)
-         do I = 1, N
-            call MOVABS(X(I), Y(I))
-            call CIR(0d0)
-         end do
-         return
-      end
+      real(kind=dp) :: X(N), Y(N)
+      call SETCOL(NCOL)
+      do I = 1, N
+         call MOVABS(X(I), Y(I))
+         call CIR(0d0)
+      end do
+      return
+   end
 
 end module m_dispfp

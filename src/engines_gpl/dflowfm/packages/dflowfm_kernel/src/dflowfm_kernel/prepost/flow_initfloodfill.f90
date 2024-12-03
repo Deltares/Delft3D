@@ -39,6 +39,7 @@
 !! of the other samples.
 !! Also used by flow_flowinit() for the <tt>WaterLevIniFile</tt> from the MDU.
 subroutine flow_initfloodfill()
+   use precision, only: dp
    use m_samples
    use m_flow
    use m_flowgeom
@@ -53,7 +54,7 @@ subroutine flow_initfloodfill()
    integer, allocatable :: kcsfill(:)
    integer, allocatable :: ndqueue(:)
    integer, dimension(:), allocatable :: inodes
-   double precision, allocatable :: s1queue(:)
+   real(kind=dp), allocatable :: s1queue(:)
    integer :: iqcur, iqtail
    integer :: ierror
    integer :: jakdtree

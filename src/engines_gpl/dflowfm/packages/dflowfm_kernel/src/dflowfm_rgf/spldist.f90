@@ -32,14 +32,15 @@
 module m_spldist
    implicit none
 contains
-   double precision function SPLDIST(X, X2, Y, Y2, XX, YY, TV, N)
+   real(kind=dp) function SPLDIST(X, X2, Y, Y2, XX, YY, TV, N)
+      use precision, only: dp
       use m_splint
       use m_planedistance
 
       integer :: n
 !     AFSTAND VAN PUNT XX,YY TOT SPLINEPUNT MET PARM TV
 
-      double precision :: X(N), X2(N), Y(N), Y2(N), TV, XX, YY, XV, YV
+      real(kind=dp) :: X(N), X2(N), Y(N), Y2(N), TV, XX, YY, XV, YV
       TV = max(0d0, min(TV, N - 1d0))
       call SPLINT(X, X2, N, TV, XV)
       call SPLINT(Y, Y2, N, TV, YV)

@@ -38,6 +38,7 @@
 !!    - a time-dependent updating routine
 
 module m_calibration
+   use precision, only: dp
    implicit none
 
    public cldtype
@@ -73,26 +74,26 @@ module m_calibration
 
    type cldtype
       ! definitions
-      double precision, dimension(:), allocatable :: cldtable_q !> Calibration defintion q values
-      double precision, dimension(:), allocatable :: cldtable_zs !> Calibration defintion zs values
-      double precision, dimension(:), allocatable :: rttdef !> Calibration defintion real values (non-h, non-q, and non-interpolated h and q)
+      real(kind=dp), dimension(:), allocatable :: cldtable_q !> Calibration defintion q values
+      real(kind=dp), dimension(:), allocatable :: cldtable_zs !> Calibration defintion zs values
+      real(kind=dp), dimension(:), allocatable :: rttdef !> Calibration defintion real values (non-h, non-q, and non-interpolated h and q)
       integer, dimension(:), allocatable :: ittdef !> Calibration defintion integer values (i.e. calibration definition codes)
       integer, dimension(:), allocatable :: def2icld !> Calibration defintion number to index in calibration defintion table
 
       integer, dimension(:), allocatable :: ittdef_q !> Calibration defintion integer values associated with q values (i.e. calibration definition codes)
       integer, dimension(:), allocatable :: start_q !> Start row indices for q table
       integer, dimension(:), allocatable :: end_q !> End row indices for q table
-      double precision, dimension(:), allocatable :: rttdef_q !> Calibration defintion real values associated with q values
-      double precision, dimension(:), allocatable :: slope_q !> Slope for table associated with q values
-      double precision, dimension(:), allocatable :: cross_q !> Slope for table associated with q values
+      real(kind=dp), dimension(:), allocatable :: rttdef_q !> Calibration defintion real values associated with q values
+      real(kind=dp), dimension(:), allocatable :: slope_q !> Slope for table associated with q values
+      real(kind=dp), dimension(:), allocatable :: cross_q !> Slope for table associated with q values
       integer, dimension(:), allocatable :: icld_q !> Get icld index for general definition table
 
       integer, dimension(:), allocatable :: ittdef_zs !> Calibration defintion integer values associated with zs values (i.e. calibration definition codes)
       integer, dimension(:), allocatable :: start_zs !> Start row indices for zs table
       integer, dimension(:), allocatable :: end_zs !> End row indices for zs table
-      double precision, dimension(:), allocatable :: rttdef_zs !> Calibration defintion real values associated with zs values
-      double precision, dimension(:), allocatable :: slope_zs !> Slope for table associated with zs values
-      double precision, dimension(:), allocatable :: cross_zs !> Slope for table associated with zs values
+      real(kind=dp), dimension(:), allocatable :: rttdef_zs !> Calibration defintion real values associated with zs values
+      real(kind=dp), dimension(:), allocatable :: slope_zs !> Slope for table associated with zs values
+      real(kind=dp), dimension(:), allocatable :: cross_zs !> Slope for table associated with zs values
       integer, dimension(:), allocatable :: icld_zs !> Get icld index for general definition table
 
       integer, dimension(:), allocatable :: crs !> Calibration defintion related cross-section id
@@ -100,10 +101,10 @@ module m_calibration
 
       ! areas
       integer, dimension(:, :), allocatable :: ittar !> Calibration area integer values (i.e. link, calibration definition codes)
-      double precision, dimension(:), allocatable :: rttar !> Calibration area real values (i.e. area percentage)
+      real(kind=dp), dimension(:), allocatable :: rttar !> Calibration area real values (i.e. area percentage)
 
       ! error catching
-      double precision, dimension(:), allocatable :: sumar !> Sum of calibration areas (should be <= 1)  TO DO: check if we want this way, or more like trachytope approach with blocks?.
+      real(kind=dp), dimension(:), allocatable :: sumar !> Sum of calibration areas (should be <= 1)  TO DO: check if we want this way, or more like trachytope approach with blocks?.
       integer, dimension(:), allocatable :: linar !> Line number in file for error message
 
    end type cldtype
@@ -113,6 +114,7 @@ module m_calibration
 contains
 
    subroutine read_cldfile(md_cldfile, clddata, phase)
+      use precision, only: dp
       use unstruc_messages
       use m_missing, only: dmiss, intmiss
       use unstruc_files, only: mdia
@@ -153,7 +155,7 @@ contains
       character(len=132) :: rec132
       logical :: error
 !    logical                          :: cld_in_arl = .true.
-      double precision, dimension(CLD_MAXFLD) :: rfield
+      real(kind=dp), dimension(CLD_MAXFLD) :: rfield
 
 !
 !! executable statements -------------------------------------------------------
@@ -467,6 +469,7 @@ contains
    end subroutine read_cldfile
 
    subroutine read_cllfile(md_cllfile, clddata, phase)
+      use precision, only: dp
       use unstruc_messages
       use m_missing, only: intmiss
       use unstruc_files, only: mdia
@@ -510,15 +513,15 @@ contains
 !    logical                          :: lfirst
       logical :: lokay
 !    logical                          :: lprblk
-      double precision, dimension(CLL_MAXFLD) :: rfield
+      real(kind=dp), dimension(CLL_MAXFLD) :: rfield
       character(30), dimension(CLL_MAXFLD) :: cfield
       character(132) :: rec132
       character(10) :: ltmp
 
-      double precision :: dtol_cl = 1d-4
-      double precision :: x
-      double precision :: y
-      double precision :: dist
+      real(kind=dp) :: dtol_cl = 1d-4
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      real(kind=dp) :: dist
 
       istat = 0
       lundia = mdia
@@ -745,14 +748,15 @@ contains
    end subroutine read_cllfile
 
    subroutine update_clddata()
+      use precision, only: dp
       use unstruc_messages
       use m_monitoring_crosssections
       use m_observations_data, only: valobs, IPNT_S1
 
       !integer, intent(in) :: update_mode
-      double precision :: zs
-      double precision :: q
-      double precision :: f
+      real(kind=dp) :: zs
+      real(kind=dp) :: q
+      real(kind=dp) :: f
 
       integer :: icldobs
       integer :: icldcrs
@@ -807,18 +811,19 @@ contains
    subroutine f_from_table_of_x(xvals, fvals, idx_start, idx_end, fslope, fcross, x, f)
 ! Calibration helper function -- Determines f value from a f table which is a function of x based on a query value x
 ! TO DO: general function available? combine with trachy?
+      use precision, only: dp
 
       implicit none
 
-      double precision, dimension(:), intent(in) :: xvals
-      double precision, dimension(:), intent(in) :: fvals
+      real(kind=dp), dimension(:), intent(in) :: xvals
+      real(kind=dp), dimension(:), intent(in) :: fvals
       integer, intent(in) :: idx_start
       integer, intent(in) :: idx_end
-      double precision, dimension(:), intent(in) :: fcross
-      double precision, dimension(:), intent(in) :: fslope
-      double precision, intent(in) :: x
+      real(kind=dp), dimension(:), intent(in) :: fcross
+      real(kind=dp), dimension(:), intent(in) :: fslope
+      real(kind=dp), intent(in) :: x
 
-      double precision, intent(out) :: f
+      real(kind=dp), intent(out) :: f
 
       integer :: idx
 

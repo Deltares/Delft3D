@@ -32,21 +32,22 @@
 
 module m_boxx
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine BOXX(X, Y, NCOL)
-         use m_colnow
-         use m_set_col
-         implicit none
-         integer :: ncol
-         double precision :: x
-         double precision :: y
+   subroutine BOXX(X, Y, NCOL)
+      use precision, only: dp
+      use m_colnow
+      use m_set_col
+      implicit none
+      integer :: ncol
+      real(kind=dp) :: x
+      real(kind=dp) :: y
 
-         call SETCOL(NCOL)
-         if (NCOLNOW >= 0) call IGrMARKER(real(X), real(Y), 3)
-         return
-      end
+      call SETCOL(NCOL)
+      if (NCOLNOW >= 0) call IGrMARKER(real(X), real(Y), 3)
+      return
+   end
 
 end module m_boxx

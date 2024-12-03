@@ -32,58 +32,58 @@
 
 module m_velocities_explicit
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: velocities_explicit
+   public :: velocities_explicit
 
 contains
 
- subroutine velocities_explicit()
-    use m_flowgeom
-    use m_flow
-    use m_flowtimes
-    implicit none
-    integer :: n, L, LL, k1, k2
+   subroutine velocities_explicit()
+      use m_flowgeom
+      use m_flow
+      use m_flowtimes
+      implicit none
+      integer :: n, L, LL, k1, k2
 
-    if (itstep == 1) then
-       u1 = (u0 - dts * adve) / (1d0 + dts * advi)
-       do n = 1, nbndu !       boundaries at u points
-          L = kbndu(3, n)
-          u1(L) = zbndu(n)
-       end do
-    end if
-    q1 = u1 * au
+      if (itstep == 1) then
+         u1 = (u0 - dts * adve) / (1d0 + dts * advi)
+         do n = 1, nbndu !       boundaries at u points
+            L = kbndu(3, n)
+            u1(L) = zbndu(n)
+         end do
+      end if
+      q1 = u1 * au
 
-    squ = 0d0; sqi = 0d0
-    if (kmx == 0) then
-       do L = 1, lnx
-          if (q1(L) > 0) then
-             k1 = ln(1, L); k2 = ln(2, L)
-             squ(k1) = squ(k1) + q1(L)
-             sqi(k2) = sqi(k2) + q1(L)
-          else if (q1(L) < 0) then
-             k1 = ln(1, L); k2 = ln(2, L)
-             squ(k2) = squ(k2) - q1(L)
-             sqi(k1) = sqi(k1) - q1(L)
-          end if
-       end do
-    else
-       do LL = 1, lnx
-          do L = Lbot(LL), Ltop(LL)
-             if (q1(L) > 0) then
-                k1 = ln(1, L); k2 = ln(2, L)
-                squ(k1) = squ(k1) + q1(L)
-                sqi(k2) = sqi(k2) + q1(L)
-             else if (q1(L) < 0) then
-                k1 = ln(1, L); k2 = ln(2, L)
-                squ(k2) = squ(k2) - q1(L)
-                sqi(k1) = sqi(k1) - q1(L)
-             end if
-          end do
-       end do
-    end if
- end subroutine velocities_explicit
+      squ = 0d0; sqi = 0d0
+      if (kmx == 0) then
+         do L = 1, lnx
+            if (q1(L) > 0) then
+               k1 = ln(1, L); k2 = ln(2, L)
+               squ(k1) = squ(k1) + q1(L)
+               sqi(k2) = sqi(k2) + q1(L)
+            else if (q1(L) < 0) then
+               k1 = ln(1, L); k2 = ln(2, L)
+               squ(k2) = squ(k2) - q1(L)
+               sqi(k1) = sqi(k1) - q1(L)
+            end if
+         end do
+      else
+         do LL = 1, lnx
+            do L = Lbot(LL), Ltop(LL)
+               if (q1(L) > 0) then
+                  k1 = ln(1, L); k2 = ln(2, L)
+                  squ(k1) = squ(k1) + q1(L)
+                  sqi(k2) = sqi(k2) + q1(L)
+               else if (q1(L) < 0) then
+                  k1 = ln(1, L); k2 = ln(2, L)
+                  squ(k2) = squ(k2) - q1(L)
+                  sqi(k1) = sqi(k1) - q1(L)
+               end if
+            end do
+         end do
+      end if
+   end subroutine velocities_explicit
 
 end module m_velocities_explicit

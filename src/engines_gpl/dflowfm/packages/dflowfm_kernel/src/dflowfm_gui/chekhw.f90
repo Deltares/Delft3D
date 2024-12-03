@@ -32,28 +32,28 @@
 
 module m_chekhw
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine CHEKHW()
-         implicit none
-         integer :: infogrscreen
-         integer :: key
+   subroutine CHEKHW()
+      implicit none
+      integer :: infogrscreen
+      integer :: key
 
 !  check the hardware in use - must have graphics
 
-         logical NOGRAF
+      logical NOGRAF
 
-         NOGRAF = InfoGrScreen(1) == 0
-         if (NOGRAF) then
-            call IOutError('Sorry, this program requires a display ' &
-                           //'with graphics capability - Press a key')
-            call InKeyEvent(KEY)
+      NOGRAF = InfoGrScreen(1) == 0
+      if (NOGRAF) then
+         call IOutError('Sorry, this program requires a display ' &
+                        //'with graphics capability - Press a key')
+         call InKeyEvent(KEY)
 !         exit tidily, clearing the screen
-            call IScreenQuit('C')
-         end if
-         return
-      end
+         call IScreenQuit('C')
+      end if
+      return
+   end
 
 end module m_chekhw

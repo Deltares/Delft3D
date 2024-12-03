@@ -32,29 +32,30 @@
 
 module m_soulsby
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: soulsby
+   public :: soulsby
 
 contains
 
-subroutine soulsby(tsig, uorbu, z00, fw)
-   use m_sferic, only: pi
+   subroutine soulsby(tsig, uorbu, z00, fw)
+      use precision, only: dp
+      use m_sferic, only: pi
 
-   implicit none
-   double precision, intent(in) :: tsig, uorbu, z00
-   double precision, intent(out) :: fw
-   double precision :: a
+      implicit none
+      real(kind=dp), intent(in) :: tsig, uorbu, z00
+      real(kind=dp), intent(out) :: fw
+      real(kind=dp) :: a
 
-   a = uorbu * tsig / 2d0 / pi
-   if (a > 0d0) then
-      fw = min(1.39d0 * (a / z00)**(-0.52d0), 0.3d0)
-   else
-      fw = 0.3d0
-   end if
+      a = uorbu * tsig / 2d0 / pi
+      if (a > 0d0) then
+         fw = min(1.39d0 * (a / z00)**(-0.52d0), 0.3d0)
+      else
+         fw = 0.3d0
+      end if
 
-end subroutine soulsby
+   end subroutine soulsby
 
 end module m_soulsby

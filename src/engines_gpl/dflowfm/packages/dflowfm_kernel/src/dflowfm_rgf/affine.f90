@@ -31,6 +31,7 @@
 !
 
       subroutine AFFINE(XX, YY, XG, YG, INI)
+         use precision, only: dp
          use M_BITMAP
          use string_module, only: find_first_letter
          use m_qnerror
@@ -41,12 +42,12 @@
          integer :: k
          integer :: minp
          integer :: numbersonline
-         double precision :: xg4
-         double precision :: xx4
-         double precision :: yg4
-         double precision :: yy4
+         real(kind=dp) :: xg4
+         real(kind=dp) :: xx4
+         real(kind=dp) :: yg4
+         real(kind=dp) :: yy4
          character REC * 132
-         double precision :: XX, YY, XG, YG
+         real(kind=dp) :: XX, YY, XG, YG
          XX4 = XX; YY4 = YY
 
          if (INI == 1) then

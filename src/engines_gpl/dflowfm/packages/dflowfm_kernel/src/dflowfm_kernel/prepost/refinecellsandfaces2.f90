@@ -32,6 +32,7 @@
 
 !> refine cells by splitting links
 subroutine refinecellsandfaces2()
+   use precision, only: dp
    use m_deallocate_samplehessian, only: deallocate_samplehessian
    use m_connect_hanging_nodes, only: connect_hanging_nodes
    use m_write_illegal_cells_to_pol, only: write_illegal_cells_to_pol
@@ -62,7 +63,7 @@ subroutine refinecellsandfaces2()
 
    integer, dimension(:), allocatable :: kc_sav ! save of kc
 
-   double precision :: xboundmin, xboundmax, dxxmax, dxxmin, dl
+   real(kind=dp) :: xboundmin, xboundmax, dxxmax, dxxmin, dl
 
    integer :: ierror ! error (1) or not (0)
    integer :: ja, jaCourantnetwork
@@ -77,7 +78,7 @@ subroutine refinecellsandfaces2()
    integer :: k2
    integer :: num ! number of removed isolated hangning noded
 
-   double precision, external :: getdy, dlinklength
+   real(kind=dp), external :: getdy, dlinklength
 
    character(len=64) :: tex
 
@@ -433,6 +434,7 @@ contains
 
 !> compute refinement criterion from sample data
    subroutine compute_jarefine(jarefine, jalink, jakdtree, ierror)
+      use precision, only: dp
       use m_netw
       use m_samples
       use m_ec_interpolationsettings
@@ -448,10 +450,10 @@ contains
       integer, parameter :: M = 10 ! maximum number of nodes in cell
       integer, parameter :: MAXSUB = 4 ! maxinum number of subcells in cell
 
-      double precision, dimension(M) :: xloc, yloc ! node list
+      real(kind=dp), dimension(M) :: xloc, yloc ! node list
       integer, dimension(M) :: jarefinelink ! refine links (1) or not (0)
       integer, dimension(M) :: LnnL, Lorg ! not used
-      double precision :: zz ! not used
+      real(kind=dp) :: zz ! not used
 
       integer :: ic, kk, N
       integer :: L, LL
@@ -549,6 +551,7 @@ contains
 !> compute refinement criterion in a polygon
 !>    always based on averaging2 or bilinarc
    subroutine compute_jarefine_poly(ic, N, x, y, jarefine, jarefinelink, jakdtree, Lhang)
+      use precision, only: dp
 
       use m_ec_interpolationsettings
       use m_samples, only: NS, xs, ys, zs
@@ -568,34 +571,34 @@ contains
       integer, intent(in) :: N !< polygon size
       integer :: nnn(1) !< polygon size
 
-      double precision, intent(in) :: x(:), y(:) !< polygon coordinates
-      double precision :: z(8) !< idem, z
+      real(kind=dp), intent(in) :: x(:), y(:) !< polygon coordinates
+      real(kind=dp) :: z(8) !< idem, z
 
-!      double precision, dimension(N),     intent(in)    :: x, y      !< polygon coordinates
-!      double precision, dimension(2),     intent(in)    :: u, v      !< orientation vectors of polygon
+!      real(kind=dp), dimension(N),     intent(in)    :: x, y      !< polygon coordinates
+!      real(kind=dp), dimension(2),     intent(in)    :: u, v      !< orientation vectors of polygon
       integer, intent(out) :: jarefine !< refine (1) or not (0)
       integer, dimension(:), intent(out) :: jarefinelink !< refine link (1) or not (0)
       integer, intent(inout) :: jakdtree !< use kdtree (1) or not (0)
       logical, dimension(:), intent(in) :: Lhang !< link with hanging node (.true.) or not (.false.)
 
-      double precision, dimension(1) :: xc, yc !  polygon center coordinates
-      double precision, dimension(NDIM) :: zc !  interpolated sample vector [zs, DzsDx, DzsDy]
-      double precision :: zsloc, DzsDx, DzsDy
-      double precision :: dsize, dcellsize_wanted, dcellsize, dmincellsize, dmaxcellsize
-      double precision, dimension(N) :: dlinklength ! link lengths
+      real(kind=dp), dimension(1) :: xc, yc !  polygon center coordinates
+      real(kind=dp), dimension(NDIM) :: zc !  interpolated sample vector [zs, DzsDx, DzsDy]
+      real(kind=dp) :: zsloc, DzsDx, DzsDy
+      real(kind=dp) :: dsize, dcellsize_wanted, dcellsize, dmincellsize, dmaxcellsize
+      real(kind=dp), dimension(N) :: dlinklength ! link lengths
 
       integer, dimension(1) :: isam
 
-      double precision :: dval, C, Courant, dlinklengthnew, zmn, zmx
+      real(kind=dp) :: dval, C, Courant, dlinklengthnew, zmn, zmx
 
       integer :: ivar, k, kp1, num, ierror, jdla
       integer :: landsea ! cell: 0=sea, 1=landsea, 2=land
       integer :: linkcourant ! link oriented courant icw cell landsea
-      double precision, parameter :: FAC = 1d0
-      double precision, dimension(6) :: transformcoef = 0
+      real(kind=dp), parameter :: FAC = 1d0
+      real(kind=dp), dimension(6) :: transformcoef = 0
       integer :: mxsam, mysam, m
       type(TerrorInfo) :: errorInfo
-!      double precision, parameter                       :: dtol = 1d-8
+!      real(kind=dp), parameter                       :: dtol = 1d-8
 
       jarefine = 0
       jarefinelink = 0
@@ -939,6 +942,7 @@ contains
 
 !> refine the cells, based on a cell and link refinement mask
    subroutine refine_cells(jarefine, jalink, linkbrother, ierror)
+      use precision, only: dp
 
       use m_comp_middle_latitude
       use geometry_module, only: getcircumcenter
@@ -952,8 +956,8 @@ contains
       integer, allocatable, dimension(:), intent(inout) :: linkbrother !< brotherlink, that shares a (hanging) node
       integer, intent(out) :: ierror !< error (1) or not (0)
 
-      double precision :: xnew, ynew
-      double precision :: ymin, ymax
+      real(kind=dp) :: xnew, ynew
+      real(kind=dp) :: ymin, ymax
       integer, parameter :: MMAX = 10 ! maximum number of links per netcell
       integer, dimension(MMAX) :: nods ! list with new nodes
       integer :: i, k, k2, k3, kk, kkm1, kkp1, kkk
@@ -967,14 +971,14 @@ contains
       logical :: Lrefine ! refine cell (.true.) or not (.false.)
       integer :: Np
       integer, dimension(MMAX) :: ishanging
-      double precision :: xz, yz
-      double precision, dimension(MMAX) :: xp, yp
+      real(kind=dp) :: xz, yz
+      real(kind=dp), dimension(MMAX) :: xp, yp
 
 !     for spherical, periodic coordinates
-      double precision, dimension(MMAX) :: xv, yv
+      real(kind=dp), dimension(MMAX) :: xv, yv
       integer, dimension(MMAX) :: LnnL
       integer, dimension(MMAX) :: Lorg
-      double precision :: zz
+      real(kind=dp) :: zz
       integer :: nn
       logical :: Lpole1, Lpole2
 
@@ -1358,6 +1362,7 @@ contains
 !> find the brother links
 !>    hanging nodes are assumed to have two consecutive brother links
    subroutine find_linkbrothers(linkbrother)
+      use precision, only: dp
       use m_comp_middle_latitude
       use m_netw
       use m_sferic
@@ -1369,8 +1374,8 @@ contains
 
       integer, dimension(:), intent(inout) :: linkbrother !< brother links, that share a common hanging node, dim(numL)
 
-      double precision :: xkc, ykc, dtol
-      double precision :: xmn, xmx ! for periodic coordinates
+      real(kind=dp) :: xkc, ykc, dtol
+      real(kind=dp) :: xmn, xmx ! for periodic coordinates
 
       integer :: k, k1, k2, kk, kkp1, L, Lp1
       integer :: ic1L, ic1R, ic2L, ic2R

@@ -31,12 +31,13 @@
 !
 
  subroutine dropk(xp, yp)
+    use precision, only: dp
     use m_polygon
     use m_flowgeom
     use m_flow
     use m_get_Lbot_Ltop
     implicit none
-    double precision, intent(in) :: xp, yp
+    real(kind=dp), intent(in) :: xp, yp
 
     ! locals
     integer :: L, LL, Lb, Lt

@@ -32,6 +32,7 @@
 
 !> create pillar grid in polygon
 subroutine pillargrid(ierror)
+   use precision, only: dp
    use m_grid
    use m_gridsettings
    use m_polygon
@@ -46,7 +47,7 @@ subroutine pillargrid(ierror)
 
    integer :: i, j, jstart, jend, num, ipol
 
-   double precision :: R0, R1, x0, y0, x1, y1, alpha, beta
+   real(kind=dp) :: R0, R1, x0, y0, x1, y1, alpha, beta
 
    ierror = 1
 

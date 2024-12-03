@@ -33,75 +33,76 @@
 !> compose right-hand side
 module m_solve_2d
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: solve_2d
+   public :: solve_2d
 
 contains
 
-subroutine solve_2D(NUMCONST, Ndkx, vol1, kbot, ktop, sumhorflux, fluxver, source, sink, nsubsteps, jaupdate, ndeltasteps, sed, rhs)
-   use m_make_rhs, only: make_rhs
-   use m_flowgeom, only: Ndxi, Ndx! static mesh information
-   use m_flowtimes, only: dts
-   use timers
+   subroutine solve_2D(NUMCONST, Ndkx, vol1, kbot, ktop, sumhorflux, fluxver, source, sink, nsubsteps, jaupdate, ndeltasteps, sed, rhs)
+      use precision, only: dp
+      use m_make_rhs, only: make_rhs
+      use m_flowgeom, only: Ndxi, Ndx ! static mesh information
+      use m_flowtimes, only: dts
+      use timers
 
-   implicit none
+      implicit none
 
-   integer, intent(in) :: NUMCONST !< number of transported quantities
-   integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
-   double precision, dimension(Ndkx), intent(in) :: vol1 !< volumes
-   integer, dimension(Ndkx), intent(in) :: kbot !< flow-node based layer administration
-   integer, dimension(Ndkx), intent(in) :: ktop !< flow-node based layer administration
-   double precision, dimension(NUMCONST, Ndkx), intent(inout) :: sumhorflux !< sum of horizontal fluxes
-   double precision, dimension(NUMCONST, Ndkx), intent(in) :: fluxver !< vertical fluxes
-   double precision, dimension(NUMCONST, Ndkx), intent(in) :: source !< sources
-   double precision, dimension(NUMCONST, Ndkx), intent(in) :: sink !< linearized sinks
-   integer, intent(in) :: nsubsteps !< number of substeps
-   integer, dimension(Ndx), intent(in) :: jaupdate !< update cell (1) or not (0)
-   integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of substeps between updates
-   double precision, dimension(NUMCONST, Ndkx), intent(inout) :: sed !< transported quantities
-   double precision, dimension(NUMCONST, Ndkx) :: rhs ! work array: right-hand side, dim(NUMCONST,Ndkx)
+      integer, intent(in) :: NUMCONST !< number of transported quantities
+      integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
+      real(kind=dp), dimension(Ndkx), intent(in) :: vol1 !< volumes
+      integer, dimension(Ndkx), intent(in) :: kbot !< flow-node based layer administration
+      integer, dimension(Ndkx), intent(in) :: ktop !< flow-node based layer administration
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sumhorflux !< sum of horizontal fluxes
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: fluxver !< vertical fluxes
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: source !< sources
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: sink !< linearized sinks
+      integer, intent(in) :: nsubsteps !< number of substeps
+      integer, dimension(Ndx), intent(in) :: jaupdate !< update cell (1) or not (0)
+      integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of substeps between updates
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sed !< transported quantities
+      real(kind=dp), dimension(NUMCONST, Ndkx) :: rhs ! work array: right-hand side, dim(NUMCONST,Ndkx)
 
-   double precision, dimension(NUMCONST) :: thetavert
+      real(kind=dp), dimension(NUMCONST) :: thetavert
 
-   double precision :: dt_loc
+      real(kind=dp) :: dt_loc
 
-   integer :: j, k
+      integer :: j, k
 
-   integer(4) :: ithndl =  0
-   
-   if (timon) call timstrt("solve_2D", ithndl)
+      integer(4) :: ithndl = 0
 
-   thetavert = 0d0
+      if (timon) call timstrt("solve_2D", ithndl)
 
-   dt_loc = dts
+      thetavert = 0d0
 
-   call make_rhs(NUMCONST, thetavert, Ndkx, 0, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
+      dt_loc = dts
 
-   !$OMP PARALLEL DO         &
-   !$OMP PRIVATE(k,j)        &
-   !$OMP FIRSTPRIVATE(dt_loc)
-   do k = 1, Ndxi
-      if (nsubsteps > 1) then
-         if (jaupdate(k) == 0) then
-            cycle
+      call make_rhs(NUMCONST, thetavert, Ndkx, 0, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
+
+      !$OMP PARALLEL DO         &
+      !$OMP PRIVATE(k,j)        &
+      !$OMP FIRSTPRIVATE(dt_loc)
+      do k = 1, Ndxi
+         if (nsubsteps > 1) then
+            if (jaupdate(k) == 0) then
+               cycle
+            else
+               dt_loc = dts * ndeltasteps(k)
+            end if
          else
-            dt_loc = dts * ndeltasteps(k)
+            dt_loc = dts
          end if
-      else
-         dt_loc = dts
-      end if
 
-      do j = 1, NUMCONST
-         sed(j, k) = rhs(j, k) / (1d0 + dt_loc * sink(j, k))
+         do j = 1, NUMCONST
+            sed(j, k) = rhs(j, k) / (1d0 + dt_loc * sink(j, k))
+         end do
       end do
-   end do
-   !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
 
-   if (timon) call timstop(ithndl)
-   return
-end subroutine solve_2D
+      if (timon) call timstop(ithndl)
+      return
+   end subroutine solve_2D
 
 end module m_solve_2d

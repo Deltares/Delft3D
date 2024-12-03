@@ -31,6 +31,7 @@
 !
 
  subroutine flow_settidepotential(timmin)
+    use precision, only: dp
     use m_flow
     use m_flowgeom
     use m_flowtimes
@@ -41,9 +42,9 @@
 
     implicit none
 
-    double precision :: timmin
+    real(kind=dp) :: timmin
     integer :: kk
-    double precision :: tt
+    real(kind=dp) :: tt
 
     call meteo_tidepotential(julrefdat, TIMmin, doodsonstart, doodsonstop, doodsoneps)
 

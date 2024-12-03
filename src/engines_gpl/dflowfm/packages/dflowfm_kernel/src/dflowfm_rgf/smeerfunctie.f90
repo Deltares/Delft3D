@@ -34,11 +34,12 @@ module m_smeerfunctie
 contains
 
    subroutine SMEERFUNCTIE(I, J, MP, NP, FR, IN, JN)
+      use precision, only: dp
       use m_grid_block
 
       integer :: i, j, mp, np, in, jn
-      double precision :: fr
-      double precision :: pi, phi, fri, frj
+      real(kind=dp) :: fr
+      real(kind=dp) :: pi, phi, fri, frj
       PI = acos(-1d0)
 
       if (I == MP) then

@@ -31,12 +31,13 @@
 !
 
 module m_coarsen_mesh
-use m_teknode
+   use m_teknode
 
    implicit none
 contains
 !> coarsen the net
    subroutine coarsen_mesh()
+      use precision, only: dp
       use m_halt3
       use m_netw
       use unstruc_colors, only: ncolhl
@@ -70,13 +71,13 @@ contains
       integer, parameter :: MAXITER = 1000
       integer :: numchanged ! number of cells deleted
 
-      double precision, dimension(:), allocatable :: areas ! cell areas
+      real(kind=dp), dimension(:), allocatable :: areas ! cell areas
 
-      double precision :: area, area_tot, Darea
-      double precision :: xc, yc, funct
-      double precision :: x, y ! for putget_un
+      real(kind=dp) :: area, area_tot, Darea
+      real(kind=dp) :: xc, yc, funct
+      real(kind=dp) :: x, y ! for putget_un
 
-      double precision :: area_opt
+      real(kind=dp) :: area_opt
 
       logical :: Lstepbystep, Ldoit
 

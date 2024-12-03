@@ -32,6 +32,7 @@
 
 !> copy the spline to a polyline
 subroutine spline2poly()
+   use precision, only: dp
    use m_splines
    use m_spline2curvi
    use m_gridsettings
@@ -41,11 +42,11 @@ subroutine spline2poly()
 
    implicit none
 
-   double precision, allocatable, dimension(:) :: sc !  spline-coordinates of grid points, not used
+   real(kind=dp), allocatable, dimension(:) :: sc !  spline-coordinates of grid points, not used
 
    integer :: ispline, num, numpoints, mfacmax
 
-   double precision :: hmax
+   real(kind=dp) :: hmax
 
    call savepol()
    call delpol()

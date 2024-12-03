@@ -32,54 +32,55 @@
 
 module m_reconstruct_cc_stokesdrift
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: reconstruct_cc_stokesdrift
+   public :: reconstruct_cc_stokesdrift
 
 contains
 
- subroutine reconstruct_cc_stokesdrift(ndkx, ust_x, ust_y)
-    use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2
-    use m_flow, only: kmx
-    use m_waves, only: ustokes
-    use m_get_Lbot_Ltop_max
+   subroutine reconstruct_cc_stokesdrift(ndkx, ust_x, ust_y)
+      use precision, only: dp
+      use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2
+      use m_flow, only: kmx
+      use m_waves, only: ustokes
+      use m_get_Lbot_Ltop_max
 
-    implicit none
+      implicit none
 
-    ! Input variables
-    integer, intent(in) :: ndkx
-    double precision, dimension(ndkx), intent(out) :: ust_x, ust_y
+      ! Input variables
+      integer, intent(in) :: ndkx
+      real(kind=dp), dimension(ndkx), intent(out) :: ust_x, ust_y
 
-    ! Local variables
-    integer :: L, LL, Lb, Lt, k1, k2
-    double precision :: ustL
+      ! Local variables
+      integer :: L, LL, Lb, Lt, k1, k2
+      real(kind=dp) :: ustL
 
-    ust_x = 0d0; ust_y = 0d0
+      ust_x = 0d0; ust_y = 0d0
 
-    if (kmx == 0) then
-       do L = 1, lnx
-          k1 = ln(1, L); k2 = ln(2, L)
-          ustL = ustokes(L)
-          ust_x(k1) = ust_x(k1) + wcx1(L) * ustL
-          ust_x(k2) = ust_x(k2) + wcx2(L) * ustL
-          ust_y(k1) = ust_y(k1) + wcy1(L) * ustL
-          ust_y(k2) = ust_y(k2) + wcy2(L) * ustL
-       end do
-    else
-       do LL = 1, lnx
-          call getLbotLtopmax(LL, Lb, Lt)
-          do L = Lb, Lt
-             k1 = ln(1, L); k2 = ln(2, L)
-             ustL = ustokes(L)
-             ust_x(k1) = ust_x(k1) + wcx1(LL) * ustL
-             ust_x(k2) = ust_x(k2) + wcx2(LL) * ustL
-             ust_y(k1) = ust_y(k1) + wcy1(LL) * ustL
-             ust_y(k2) = ust_y(k2) + wcy2(LL) * ustL
-          end do
-       end do
-    end if
- end subroutine reconstruct_cc_stokesdrift
+      if (kmx == 0) then
+         do L = 1, lnx
+            k1 = ln(1, L); k2 = ln(2, L)
+            ustL = ustokes(L)
+            ust_x(k1) = ust_x(k1) + wcx1(L) * ustL
+            ust_x(k2) = ust_x(k2) + wcx2(L) * ustL
+            ust_y(k1) = ust_y(k1) + wcy1(L) * ustL
+            ust_y(k2) = ust_y(k2) + wcy2(L) * ustL
+         end do
+      else
+         do LL = 1, lnx
+            call getLbotLtopmax(LL, Lb, Lt)
+            do L = Lb, Lt
+               k1 = ln(1, L); k2 = ln(2, L)
+               ustL = ustokes(L)
+               ust_x(k1) = ust_x(k1) + wcx1(LL) * ustL
+               ust_x(k2) = ust_x(k2) + wcx2(LL) * ustL
+               ust_y(k1) = ust_y(k1) + wcy1(LL) * ustL
+               ust_y(k2) = ust_y(k2) + wcy2(LL) * ustL
+            end do
+         end do
+      end if
+   end subroutine reconstruct_cc_stokesdrift
 
 end module m_reconstruct_cc_stokesdrift

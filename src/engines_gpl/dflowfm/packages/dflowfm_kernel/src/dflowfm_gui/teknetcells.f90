@@ -32,11 +32,12 @@
 
 module m_teknetcells
 
-implicit none
+   implicit none
 
 contains
 
    subroutine teknetcells(netwhat, jahalt, jacol)
+      use precision, only: dp
       use m_minmxnetcells
       use m_isosmoothnet
       use m_isocol
@@ -68,8 +69,8 @@ contains
       implicit none
 
       integer, intent(in) :: netwhat, jahalt, jacol
-      double precision :: xx(6), yy(6), aspect, uu1, vv1, uu2, vv2
-      double precision :: xfac
+      real(kind=dp) :: xx(6), yy(6), aspect, uu1, vv1, uu2, vv2
+      real(kind=dp) :: xfac
       integer :: k, kk, ja, ncol, nodemode, nn
       integer :: ntopology, numcellstoplot
 

@@ -31,25 +31,26 @@
 !
 
 module m_filter_data
+   use precision, only: dp
    use m_solver
 
    type(tsolver) :: solver_filter
 
-   double precision, dimension(:), allocatable :: ALvec2 !< vector Laplacian in CRS format, matrix entries
+   real(kind=dp), dimension(:), allocatable :: ALvec2 !< vector Laplacian in CRS format, matrix entries
 
    integer, dimension(:), allocatable :: iLvec !< vector Laplacian in CRS format, startpointers
    integer, dimension(:), allocatable :: jLvec !< vector Laplacian in CRS format, row numbers
-   double precision, dimension(:), allocatable :: ALvec !< vector Laplacian in CRS format, matrix entries
+   real(kind=dp), dimension(:), allocatable :: ALvec !< vector Laplacian in CRS format, matrix entries
 
-   double precision, dimension(:), allocatable :: sol !< solution of "filter" solve, dim(Lnx)
-   double precision, dimension(:), allocatable :: ustar !< predictor, dim(Lnkx)
-   double precision, dimension(:, :), allocatable :: eps !< filter coefficient, dim(kmx,Lnx)
-   double precision, dimension(:), allocatable :: dtmaxeps !< maximum time step multiplied with filter coefficient, dim(Lnx)
-   double precision, dimension(:), allocatable :: Deltax !< typical mesh width, dim(Lnx)
-   double precision, dimension(:), allocatable :: checkmonitor !< "checkerboard" mode monitor, dim(kmx+1)
+   real(kind=dp), dimension(:), allocatable :: sol !< solution of "filter" solve, dim(Lnx)
+   real(kind=dp), dimension(:), allocatable :: ustar !< predictor, dim(Lnkx)
+   real(kind=dp), dimension(:, :), allocatable :: eps !< filter coefficient, dim(kmx,Lnx)
+   real(kind=dp), dimension(:), allocatable :: dtmaxeps !< maximum time step multiplied with filter coefficient, dim(Lnx)
+   real(kind=dp), dimension(:), allocatable :: Deltax !< typical mesh width, dim(Lnx)
+   real(kind=dp), dimension(:), allocatable :: checkmonitor !< "checkerboard" mode monitor, dim(kmx+1)
 
-   double precision, dimension(:), allocatable :: workin !< work array, dim(kmx+1)
-   double precision, dimension(:), allocatable :: workout !< work array, dim(kmx+1)
+   real(kind=dp), dimension(:), allocatable :: workin !< work array, dim(kmx+1)
+   real(kind=dp), dimension(:), allocatable :: workout !< work array, dim(kmx+1)
 
    integer :: order !< order, 1st (1) or 3rd (3)
    integer :: itype !< explicit (1), implicit (2), implicit with hor. terms (3), no filter (0)

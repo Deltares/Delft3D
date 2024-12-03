@@ -32,8 +32,9 @@
 
 !> original locate
   subroutine LOCATE_ORG(XX, N, X, J)
+     use precision, only: dp
      integer :: N, J
-     double precision :: XX(N), X
+     real(kind=dp) :: XX(N), X
 
      integer :: JL, JU, JM
 

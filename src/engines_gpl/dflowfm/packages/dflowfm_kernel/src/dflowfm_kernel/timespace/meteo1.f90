@@ -3331,12 +3331,12 @@ contains
       integer ntable, nskip
       integer itable(maxdat, maxfld)
       real(kind=dp) :: amps(maxdat), plsmin(6), rklove(3), rhlove(3), &
-         factor(2:3), pol1(0:3, 2:3), cm1(0:3), sm1(0:3)
+                       factor(2:3), pol1(0:3, 2:3), cm1(0:3), sm1(0:3)
 
       integer i, j, nq, mq, IERR
       integer kk(10)
       real(kind=dp) :: fnm, pnm, har, argum, argfct, dtab1, dtab2, &
-         dtab, rlslat, rlslon, rlat, rlong, potent
+                       dtab, rlslat, rlslon, rlat, rlong, potent
       real(kind=dp) :: elmnts(6), can(maxdat), san(maxdat)
       real(kind=dp) :: cansum(0:3, 2:3), sansum(0:3, 2:3)
       character(len=80) record
@@ -3739,7 +3739,8 @@ contains
       !     DESCRIPTION
       !
       !     This copied from richard's subroutine astrol, in goes the
-      !     modified Julian date, out comes an array of six double precision
+      use precision, only: dp
+      !     modified Julian date, out comes an array of six real(kind=dp)
       !     variables used for Doodson number computations
       !
       !     Computes the basic astronomical mean longitudes  s, h, p, N.
@@ -3765,7 +3766,7 @@ contains
       real(kind=dp) :: six(6), mjdate
       !
       !     mjdate      i    modified julian day (24-jan-2008 0:00 UTC : 54489.00000)
-      !     six           o  array of six double precision variables used for Doodson
+      !     six           o  array of six real(kind=dp) variables used for Doodson
       !                      number computations
       !                      see also Cartwright 1993, summer school lecture notes,
       !                      page 108
@@ -6564,14 +6565,14 @@ module m_meteo
    end interface ec_gettimeseries
 
    public ec_gettimeseries
-   
+
    interface
       module logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
-                                            xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                            dtnodal, quiet, varname, varname2, targetMaskSelect, &
-                                            tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
-                                            tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
-                                            multuni1, multuni2, multuni3, multuni4)
+                                                      xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
+                                                      dtnodal, quiet, varname, varname2, targetMaskSelect, &
+                                                      tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
+                                                      tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
+                                                      multuni1, multuni2, multuni3, multuni4)
          character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
          real(hp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
          real(hp), dimension(:), intent(in) :: y !< Array of y-coordinates for the target ElementSet.
@@ -6608,8 +6609,8 @@ module m_meteo
          integer, optional, intent(inout), target :: multuni3 !< item ID 3
          integer, optional, intent(inout), target :: multuni4 !< item ID 4
       end function ec_addtimespacerelation
-   end  interface
-   
+   end interface
+
 contains
 
    !> Initialize the module variables.

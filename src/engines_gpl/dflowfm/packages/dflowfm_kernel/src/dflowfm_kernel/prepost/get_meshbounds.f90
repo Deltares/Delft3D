@@ -33,12 +33,13 @@
 !> get mesh bounding box coordinates (useful for spherical, periodic coordinates)
 !>   2D part of the mesh only
 subroutine get_meshbounds(xboundmin, xboundmax)
+   use precision, only: dp
    use network_data
    implicit none
 
-   double precision, intent(out) :: xboundmin, xboundmax !< mesh bounding box x-coordinates
+   real(kind=dp), intent(out) :: xboundmin, xboundmax !< mesh bounding box x-coordinates
 
-   double precision :: x1, x2
+   real(kind=dp) :: x1, x2
 
    integer :: L, k1, k2
 

@@ -32,60 +32,61 @@
 
 module m_closenodes
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: closenodes
+   public :: closenodes
 
 contains
 
-  subroutine CLOSENODES(K, KK, JA) ! ARE THESE NODES CLOSE, BUT UNCONNECTED?
+   subroutine CLOSENODES(K, KK, JA) ! ARE THESE NODES CLOSE, BUT UNCONNECTED?
+      use precision, only: dp
 
-     use m_closeenough, only: closeenough
-     use m_netw
-     use m_wearelt
-     use gridoperations
-     use m_dlength, only: dlength
+      use m_closeenough, only: closeenough
+      use m_netw
+      use m_wearelt
+      use gridoperations
+      use m_dlength, only: dlength
 
-     integer :: K, KK, JA
+      integer :: K, KK, JA
 
-     integer :: k2
-     integer :: l1
-     integer :: n
-     integer :: nx
+      integer :: k2
+      integer :: l1
+      integer :: n
+      integer :: nx
 
-     double precision :: R0, R1, R2, SHORTESTLINK
-     JA = 0
-     R0 = DLENGTH(K, KK)
-     if (R0 > 6d0 * RCIR) return
+      real(kind=dp) :: R0, R1, R2, SHORTESTLINK
+      JA = 0
+      R0 = DLENGTH(K, KK)
+      if (R0 > 6d0 * RCIR) return
 
-     L1 = NOD(K)%LIN(1)
-     R1 = SHORTESTLINK(K); R2 = SHORTESTLINK(KK); R1 = min(R1, R2) * 0.4d0
-     call CLOSEENOUGH(XK(K), YK(K), XK(KK), YK(KK), R1, JA)
-     if (JA == 0) return
+      L1 = NOD(K)%LIN(1)
+      R1 = SHORTESTLINK(K); R2 = SHORTESTLINK(KK); R1 = min(R1, R2) * 0.4d0
+      call CLOSEENOUGH(XK(K), YK(K), XK(KK), YK(KK), R1, JA)
+      if (JA == 0) return
 
-     JA = 0
-     NX = size(NOD(K)%LIN)
-     do N = 1, NX
-        L1 = NOD(K)%LIN(N)
-        call OTHERNODE(K, L1, K2)
-        if (K2 == KK) then
-           JA = 0; return
-        end if
-     end do
+      JA = 0
+      NX = size(NOD(K)%LIN)
+      do N = 1, NX
+         L1 = NOD(K)%LIN(N)
+         call OTHERNODE(K, L1, K2)
+         if (K2 == KK) then
+            JA = 0; return
+         end if
+      end do
 
-     NX = size(NOD(KK)%LIN)
-     do N = 1, NX
-        L1 = NOD(KK)%LIN(N)
-        call OTHERNODE(KK, L1, K2)
-        if (K2 == K) then
-           JA = 0; return
-        end if
-     end do
-     JA = 1 ! KENNELIJK UNCONNECTED
+      NX = size(NOD(KK)%LIN)
+      do N = 1, NX
+         L1 = NOD(KK)%LIN(N)
+         call OTHERNODE(KK, L1, K2)
+         if (K2 == K) then
+            JA = 0; return
+         end if
+      end do
+      JA = 1 ! KENNELIJK UNCONNECTED
 
-     return
-  end subroutine CLOSENODES
+      return
+   end subroutine CLOSENODES
 
 end module m_closenodes

@@ -31,9 +31,10 @@
 !
 
       subroutine getarcinfolevel(x, y, zzz)
+         use precision, only: dp
          use m_arcinfo
          implicit none
-         double precision :: x, y, zzz
+         real(kind=dp) :: x, y, zzz
          ! locals
          integer :: m, n
 

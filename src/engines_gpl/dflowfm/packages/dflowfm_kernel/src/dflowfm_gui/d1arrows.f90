@@ -32,29 +32,30 @@
 
 module m_d1arrows
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine D1ARROWS(X, Y, Z, U, V, W, PSI0, VFAC)
-         use m_arrows
-         use m_three_two
+   subroutine D1ARROWS(X, Y, Z, U, V, W, PSI0, VFAC)
+      use precision, only: dp
+      use m_arrows
+      use m_three_two
 
-         double precision :: psi0
-         double precision :: vfac
-         double precision :: X, Y, Z, U, V, W
-         double precision XD, YD, ZD, XP, YP, ZP, &
-            UD, VD, WD, UR, VR, WR
-         XD = X
-         YD = Y
-         ZD = Z
-         UD = U
-         VD = V
-         WD = W
-         call DRIETWEE(XD, YD, ZD, XP, YP, ZP)
-         call DRIETWEE(UD, VD, WD, UR, VR, WR)
-         call ARROWS(XP, YP, UR, VR, PSI0, VFAC)
-         return
-      end subroutine D1ARROWS
+      real(kind=dp) :: psi0
+      real(kind=dp) :: vfac
+      real(kind=dp) :: X, Y, Z, U, V, W
+      real(kind=dp) XD, YD, ZD, XP, YP, ZP, &
+         UD, VD, WD, UR, VR, WR
+      XD = X
+      YD = Y
+      ZD = Z
+      UD = U
+      VD = V
+      WD = W
+      call DRIETWEE(XD, YD, ZD, XP, YP, ZP)
+      call DRIETWEE(UD, VD, WD, UR, VR, WR)
+      call ARROWS(XP, YP, UR, VR, PSI0, VFAC)
+      return
+   end subroutine D1ARROWS
 
 end module m_d1arrows

@@ -32,15 +32,16 @@
 
 module m_fm_mor_maxtimestep
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: fm_mor_maxtimestep
+   public :: fm_mor_maxtimestep
 
 contains
 
    subroutine fm_mor_maxtimestep()
+      use precision, only: dp
       use m_flowtimes, only: dts
       use m_flow, only: eps10, jamapflowanalysis, kkcflmx, limitingTimestepEstimation
       use m_flowgeom, only: acl, ba, csu, snu, wu
@@ -53,7 +54,7 @@ contains
       implicit none
 
       integer :: k, k1, k2, kk, L, ised, ac1, ac2
-      double precision :: dum, sx, sy, sL, dt, dtmaxmor, kkcflmxloc, mf
+      real(kind=dp) :: dum, sx, sy, sL, dt, dtmaxmor, kkcflmxloc, mf
 
       dtmaxmor = huge(0d0)
       kkcflmxloc = 0

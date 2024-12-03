@@ -33,6 +33,7 @@ module m_reasam
    implicit none
 contains
    subroutine REASAM(MSAM, JADOORLADEN)
+      use precision, only: dp
       use M_MISSING
       use M_SAMPLES
       use m_alloc
@@ -51,8 +52,8 @@ contains
       integer :: nsm
       integer :: num
       integer :: K, K0
-      double precision :: x, y, z
-      double precision :: XX, YY, ZZ, ZZ2
+      real(kind=dp) :: x, y, z
+      real(kind=dp) :: XX, YY, ZZ, ZZ2
       character REC * 132, TEX * 10
       logical THISISANUMBER
 

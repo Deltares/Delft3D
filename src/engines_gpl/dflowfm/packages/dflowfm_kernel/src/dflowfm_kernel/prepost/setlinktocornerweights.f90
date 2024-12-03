@@ -31,6 +31,7 @@
 !
 
  subroutine setlinktocornerweights() ! set corner related link x- and y weights
+    use precision, only: dp
 
     use m_flow
     use m_netw
@@ -42,15 +43,15 @@
 
     implicit none
 
-    double precision :: ax, ay, wuL, wud, csa, sna
+    real(kind=dp) :: ax, ay, wuL, wud, csa, sna
     integer :: k, L, ierr, nx
     integer :: k1, k2, k3, k4
     integer :: ka, kb, LL
 
-    double precision, allocatable :: wcnxy(:, :) ! corner weight factors (2,numk) , only for normalising
+    real(kind=dp), allocatable :: wcnxy(:, :) ! corner weight factors (2,numk) , only for normalising
     integer, dimension(:), allocatable :: jacorner ! corner node (1) or not (0), dim(numk)
 
-    double precision, external :: lin2corx, lin2cory
+    real(kind=dp), external :: lin2corx, lin2cory
 
     if (allocated(wcnx3)) deallocate (wcnx3, wcny3, wcnx4, wcny4)
     if (allocated(wcnxy)) deallocate (wcnxy)

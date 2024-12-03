@@ -32,11 +32,11 @@
 
 module m_init_1dinfo
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: init_1dinfo
+   public :: init_1dinfo
 
 contains
 

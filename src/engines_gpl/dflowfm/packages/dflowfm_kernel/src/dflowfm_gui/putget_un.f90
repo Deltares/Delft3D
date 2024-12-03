@@ -33,6 +33,7 @@ module m_putget_un
    implicit none
 contains
    subroutine putget_un(NUM, NWHAT, NPUT, NUMB, XP, YP, KEY)
+      use precision, only: dp
       use m_drawthis
       use m_fkeys
       use m_disput
@@ -49,8 +50,8 @@ contains
       integer :: num
       integer :: numb
       integer :: nwhat
-      double precision :: xp
-      double precision :: yp
+      real(kind=dp) :: xp
+      real(kind=dp) :: yp
 
 !
       call DISPUT(NPUT)

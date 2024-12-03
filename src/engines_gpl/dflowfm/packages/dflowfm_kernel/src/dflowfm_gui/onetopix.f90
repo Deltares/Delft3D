@@ -32,20 +32,21 @@
 
 module m_onetopix
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine ONETOPIX(X, Y, NX, NY)
-         use m_devices
+   subroutine ONETOPIX(X, Y, NX, NY)
+      use precision, only: dp
+      use m_devices
 
-         integer :: nx
-         integer :: ny
-         double precision :: x
-         double precision :: y
-         NX = X * NPX
-         NY = Y * NPY
-         return
-      end
+      integer :: nx
+      integer :: ny
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      NX = X * NPX
+      NY = Y * NPY
+      return
+   end
 
 end module m_onetopix

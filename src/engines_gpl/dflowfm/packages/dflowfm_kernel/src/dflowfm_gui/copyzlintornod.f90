@@ -32,49 +32,50 @@
 
 module m_copyzlintornod
 
-implicit none
+   implicit none
 
 contains
 
- subroutine copyzlintornod() ! for smooth plotting only
-    use m_flowgeom, only: lnxi, lnx1d, lncn, wu, dx
-    use network_data
-    use m_alloc
-    use m_zlin
-    implicit none
-    integer :: L, k, k1, k2, ierr, ja
-    real, allocatable, save :: rn(:)
-    double precision :: zL, aL
+   subroutine copyzlintornod() ! for smooth plotting only
+      use precision, only: dp
+      use m_flowgeom, only: lnxi, lnx1d, lncn, wu, dx
+      use network_data
+      use m_alloc
+      use m_zlin
+      implicit none
+      integer :: L, k, k1, k2, ierr, ja
+      real, allocatable, save :: rn(:)
+      real(kind=dp) :: zL, aL
 
-    ja = 0
-    if (.not. allocated(rn)) then
-       ja = 1
-    else if (size(rn) < numk) then
-       deallocate (rn); ja = 1
-    end if
-    if (ja == 1) then
-       allocate (rn(numk), stat=ierr)
-       call aerr('rn(numk)', ierr, numk)
-    end if
+      ja = 0
+      if (.not. allocated(rn)) then
+         ja = 1
+      else if (size(rn) < numk) then
+         deallocate (rn); ja = 1
+      end if
+      if (ja == 1) then
+         allocate (rn(numk), stat=ierr)
+         call aerr('rn(numk)', ierr, numk)
+      end if
 
-    rnod = 0d0; rn = 0d0
-    do L = lnx1D + 1, lnxi ! regular 2D flow links
-       k1 = lncn(1, L) ! netnode 1
-       k2 = lncn(2, L) ! netnode 2
-       zL = zlin(L)
-       aL = dx(L) * wu(L)
-       rnod(k1) = rnod(k1) + zL * aL
-       rn(k1) = rn(k1) + aL
-       rnod(k2) = rnod(k2) + zL * aL
-       rn(k2) = rn(k2) + aL
-    end do
+      rnod = 0d0; rn = 0d0
+      do L = lnx1D + 1, lnxi ! regular 2D flow links
+         k1 = lncn(1, L) ! netnode 1
+         k2 = lncn(2, L) ! netnode 2
+         zL = zlin(L)
+         aL = dx(L) * wu(L)
+         rnod(k1) = rnod(k1) + zL * aL
+         rn(k1) = rn(k1) + aL
+         rnod(k2) = rnod(k2) + zL * aL
+         rn(k2) = rn(k2) + aL
+      end do
 
-    do k = 1, numk
-       if (rn(k) > 0) then
-          rnod(k) = rnod(k) / rn(k)
-       end if
-    end do
+      do k = 1, numk
+         if (rn(k) > 0) then
+            rnod(k) = rnod(k) / rn(k)
+         end if
+      end do
 
- end subroutine copyzlintornod
+   end subroutine copyzlintornod
 
 end module m_copyzlintornod

@@ -38,6 +38,7 @@ module unstruc_shapefile
 
    use, intrinsic :: iso_c_binding
 #ifdef HAVE_SHAPELIB
+   use precision, only: dp
    use shapelib
    use unstruc_messages
    use unstruc_files, only: defaultFilename
@@ -269,7 +270,7 @@ contains
       character(len=lencharattr) :: filename, objectid
       character(len=4) :: lenobj_loc
       integer :: id_objectid, id_flowlinknr, id_weirgen_cresth
-      double precision :: tmp_x(2), tmp_y(2)
+      real(kind=dp) :: tmp_x(2), tmp_y(2)
       if (jampi == 0) then
          call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for weirs.')
       else
@@ -461,7 +462,7 @@ contains
       character(len=4) :: lenobj_loc
       integer :: id_objectid, id_silllev, id_sillwidth, id_openwidth, id_loweredgel, id_doorheight, &
                  id_effwu, id_efflowere, id_flowlinknr
-      double precision :: tmp_x(2), tmp_y(2)
+      real(kind=dp) :: tmp_x(2), tmp_y(2)
       if (jampi == 0) then
          call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for gates.')
       else
@@ -671,7 +672,7 @@ contains
       integer :: i, j, ii, k1, k2, L, ishape, Lb, istart
       character(len=lencharattr) :: filename, objectid, ebmname_loc
       integer :: id_objectid, id_crestlev
-      double precision :: tmp_x(2), tmp_y(2)
+      real(kind=dp) :: tmp_x(2), tmp_y(2)
       if (jampi == 0) then
          call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for embankments.')
       else
@@ -777,7 +778,7 @@ contains
       character(len=6) :: lenobj_loc
       integer :: id_objectid, id_crestlev, id_crestlen, id_sillhl, id_sillhr, id_taludslpl, id_taludslpr, &
                  id_vegcoef, id_weirtype, id_advtype, id_effwu, id_flowlinknr
-      double precision :: tmp_x(2), tmp_y(2)
+      real(kind=dp) :: tmp_x(2), tmp_y(2)
       if (jampi == 0) then
          call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for fixed weirs.')
       else
@@ -1029,7 +1030,7 @@ contains
       integer :: i, j, k1, k2, ishape, maxnr
       character(len=lencharattr) :: filename, objectid
       integer :: id_objectid, id_area, id_origxsnk, id_origysnk, id_origxsrc, id_origysrc
-      double precision :: tmp_x(2), tmp_y(2), snkx, snky, srcx, srcy
+      real(kind=dp) :: tmp_x(2), tmp_y(2), snkx, snky, srcx, srcy
       if (jampi == 0) then
          call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for source-sinks.')
       else
@@ -1193,7 +1194,7 @@ contains
       character(len=lencharattr) :: filename, objectid
       character(len=4) :: lenobj_loc
       integer :: id_objectid, id_flowlinknr
-      double precision :: tmp_x(2), tmp_y(2)
+      real(kind=dp) :: tmp_x(2), tmp_y(2)
       if (jampi == 0) then
          call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for pumps.')
       else
@@ -1288,7 +1289,7 @@ contains
       character(len=lencharattr) :: filename, objectid
       character(len=6) :: lenobj_loc
       integer :: id_objectid, id_flowlinknr, id_linktype
-      double precision :: tmp_x(2), tmp_y(2)
+      real(kind=dp) :: tmp_x(2), tmp_y(2)
       if (jampi == 0) then
          call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for dry areas.')
       else
@@ -1394,7 +1395,7 @@ contains
       integer :: id_objectid, id_crestlev, id_crestwid, id_gateheight, id_doorheight, &
                  id_openwidth, id_effwu, id_flowlinknr
       integer :: checkerror
-      double precision :: tmp_x(2), tmp_y(2)
+      real(kind=dp) :: tmp_x(2), tmp_y(2)
 
       checkerror = 0
       if (jampi == 0) then
@@ -1591,7 +1592,7 @@ contains
       character(len=lencharattr) :: filename, objectid
       character(len=6) :: lenobj_loc
       integer :: id_objectid, id_flowlinknr
-      double precision :: tmp_x(2), tmp_y(2)
+      real(kind=dp) :: tmp_x(2), tmp_y(2)
 
       if (jampi == 0) then
          call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for dam breaks.')

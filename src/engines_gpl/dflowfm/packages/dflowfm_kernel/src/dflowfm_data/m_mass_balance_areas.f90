@@ -31,6 +31,7 @@
 !
 
 module m_mass_balance_areas
+   use precision, only: dp
    integer, parameter :: NAMMBALEN = 128 !< maximum length of mass balance area names
 
    integer, parameter :: DIR_FROM = 1 !< flux direction from this area
@@ -102,75 +103,75 @@ module m_mass_balance_areas
    integer :: itimembastart !< start time of balance period
    integer :: itimembastarttot !< start time of balance period
    integer :: itimembaend !< end time of balance period
-   double precision :: timembastart !< start time of balance period
-   double precision :: timembastarttot !< start time of balance period
-   double precision :: timembaend !< end time of balance period
+   real(kind=dp) :: timembastart !< start time of balance period
+   real(kind=dp) :: timembastarttot !< start time of balance period
+   real(kind=dp) :: timembaend !< end time of balance period
 
-   double precision, allocatable :: mbaarea(:) !< surface area of mass balance area
+   real(kind=dp), allocatable :: mbaarea(:) !< surface area of mass balance area
 
-   double precision, allocatable, target :: mbavolumebegin(:) !< begin volume in mass balance area
-   double precision, allocatable, target :: mbavolumebegintot(:) !< total begin volume in mass balance area
-   double precision, allocatable :: mbavolumeend(:) !< end volume in mass balance area
+   real(kind=dp), allocatable, target :: mbavolumebegin(:) !< begin volume in mass balance area
+   real(kind=dp), allocatable, target :: mbavolumebegintot(:) !< total begin volume in mass balance area
+   real(kind=dp), allocatable :: mbavolumeend(:) !< end volume in mass balance area
 
-   double precision, allocatable, target :: mbaflowhor(:, :, :) !< periodical flow between balance areas and between boundaries and balance areas
-   double precision, allocatable, target :: mbaflowhortot(:, :, :) !< total flow between balance areas and between boundaries and balance areas
-   double precision, allocatable, target :: mbaflowsorsin(:, :) !< periodical flow from source sinks
-   double precision, allocatable, target :: mbaflowsorsintot(:, :) !< total flow from source sinks
-   double precision, allocatable, target :: mbaflowraineva(:, :) !< periodical flow from rain and prescribed evaporation
-   double precision, allocatable, target :: mbaflowrainevatot(:, :) !< total flow from rain and prescribed evaporation
-   double precision, allocatable, target :: mbafloweva(:) !< periodical flow from calculated evaporation
-   double precision, allocatable, target :: mbaflowevatot(:) !< total flow from calculated evaporation
+   real(kind=dp), allocatable, target :: mbaflowhor(:, :, :) !< periodical flow between balance areas and between boundaries and balance areas
+   real(kind=dp), allocatable, target :: mbaflowhortot(:, :, :) !< total flow between balance areas and between boundaries and balance areas
+   real(kind=dp), allocatable, target :: mbaflowsorsin(:, :) !< periodical flow from source sinks
+   real(kind=dp), allocatable, target :: mbaflowsorsintot(:, :) !< total flow from source sinks
+   real(kind=dp), allocatable, target :: mbaflowraineva(:, :) !< periodical flow from rain and prescribed evaporation
+   real(kind=dp), allocatable, target :: mbaflowrainevatot(:, :) !< total flow from rain and prescribed evaporation
+   real(kind=dp), allocatable, target :: mbafloweva(:) !< periodical flow from calculated evaporation
+   real(kind=dp), allocatable, target :: mbaflowevatot(:) !< total flow from calculated evaporation
 
-   double precision, allocatable, target :: mbamassbegin(:, :) !< begin volume in mass balance area
-   double precision, allocatable, target :: mbamassbegintot(:, :) !< total begin volume in mass balance area
-   double precision, allocatable :: mbamassend(:, :) !< end volume in mass balance area
+   real(kind=dp), allocatable, target :: mbamassbegin(:, :) !< begin volume in mass balance area
+   real(kind=dp), allocatable, target :: mbamassbegintot(:, :) !< total begin volume in mass balance area
+   real(kind=dp), allocatable :: mbamassend(:, :) !< end volume in mass balance area
 
-   double precision, target :: mbamorfacbegin !< begin morphological factor
-   double precision, target :: mbamorfacbegintot !< total begin morphological factor
-   double precision :: mbamorfacend !< end morphological factor
+   real(kind=dp), target :: mbamorfacbegin !< begin morphological factor
+   real(kind=dp), target :: mbamorfacbegintot !< total begin morphological factor
+   real(kind=dp) :: mbamorfacend !< end morphological factor
 
-   double precision, allocatable, target :: mbabedmassbegin(:, :) !< begin volume in bed stratigraphy of mass balance area
-   double precision, allocatable, target :: mbabedmassbegintot(:, :) !< total begin volume in bed stratigraphy of mass balance area
-   double precision, allocatable, target :: mbabedshortmassbegin(:, :) !< begin volume in bed shortage of mass balance area
-   double precision, allocatable, target :: mbabedshortmassbegintot(:, :) !< total begin volume in bed shortage of mass balance area
-   double precision, allocatable, target :: mbafluffmassbegin(:, :) !< begin volume in fluff layer of mass balance area
-   double precision, allocatable, target :: mbafluffmassbegintot(:, :) !< total begin volume in fluff layer of mass balance area
-   double precision, allocatable :: mbabedmassend(:, :) !< end volume in bed stratigraphy of mass balance area
-   double precision, allocatable :: mbabedshortmassend(:, :) !< end volume in bed shortage of mass balance area
-   double precision, allocatable :: mbafluffmassend(:, :) !< end volume in fluff layer of mass balance area
+   real(kind=dp), allocatable, target :: mbabedmassbegin(:, :) !< begin volume in bed stratigraphy of mass balance area
+   real(kind=dp), allocatable, target :: mbabedmassbegintot(:, :) !< total begin volume in bed stratigraphy of mass balance area
+   real(kind=dp), allocatable, target :: mbabedshortmassbegin(:, :) !< begin volume in bed shortage of mass balance area
+   real(kind=dp), allocatable, target :: mbabedshortmassbegintot(:, :) !< total begin volume in bed shortage of mass balance area
+   real(kind=dp), allocatable, target :: mbafluffmassbegin(:, :) !< begin volume in fluff layer of mass balance area
+   real(kind=dp), allocatable, target :: mbafluffmassbegintot(:, :) !< total begin volume in fluff layer of mass balance area
+   real(kind=dp), allocatable :: mbabedmassend(:, :) !< end volume in bed stratigraphy of mass balance area
+   real(kind=dp), allocatable :: mbabedshortmassend(:, :) !< end volume in bed shortage of mass balance area
+   real(kind=dp), allocatable :: mbafluffmassend(:, :) !< end volume in fluff layer of mass balance area
 
-   double precision, allocatable, target :: mbasedflux(:, :, :, :) !< periodical bedload sediment fluxes between balance areas and between boundaries and balance areas
-   double precision, allocatable, target :: mbasedfluxtot(:, :, :, :) !< total periodical bedload sediment fluxes between balance areas and between boundaries and balance areas
-   double precision, allocatable :: mbasedfluxreduce(:, :, :, :) !< periodical bedload sediment fluxes between balance areas and between boundaries and balance areas (for MPI reduce)
+   real(kind=dp), allocatable, target :: mbasedflux(:, :, :, :) !< periodical bedload sediment fluxes between balance areas and between boundaries and balance areas
+   real(kind=dp), allocatable, target :: mbasedfluxtot(:, :, :, :) !< total periodical bedload sediment fluxes between balance areas and between boundaries and balance areas
+   real(kind=dp), allocatable :: mbasedfluxreduce(:, :, :, :) !< periodical bedload sediment fluxes between balance areas and between boundaries and balance areas (for MPI reduce)
 
-   double precision, allocatable, target :: mbafluxhor(:, :, :, :) !< periodical fluxes between balance areas and between boundaries and balance areas
-   double precision, allocatable, target :: mbafluxhortot(:, :, :, :) !< total fluxes between balance areas and between boundaries and balance areas
-   double precision, allocatable, target :: mbafluxsorsin(:, :, :, :) !< periodical fluxes from source sinks
-   double precision, allocatable, target :: mbafluxsorsintot(:, :, :, :) !< total fluxes from source sinks
-   double precision, allocatable, target :: mbafluxheat(:, :) !< temperature heat flux
-   double precision, allocatable, target :: mbafluxheattot(:, :) !< total temperature heat flux
+   real(kind=dp), allocatable, target :: mbafluxhor(:, :, :, :) !< periodical fluxes between balance areas and between boundaries and balance areas
+   real(kind=dp), allocatable, target :: mbafluxhortot(:, :, :, :) !< total fluxes between balance areas and between boundaries and balance areas
+   real(kind=dp), allocatable, target :: mbafluxsorsin(:, :, :, :) !< periodical fluxes from source sinks
+   real(kind=dp), allocatable, target :: mbafluxsorsintot(:, :, :, :) !< total fluxes from source sinks
+   real(kind=dp), allocatable, target :: mbafluxheat(:, :) !< temperature heat flux
+   real(kind=dp), allocatable, target :: mbafluxheattot(:, :) !< total temperature heat flux
 
-   double precision, allocatable :: mbavolumereduce(:) !< begin volume in mass balance area
-   double precision, allocatable :: mbaflowhorreduce(:, :, :) !< periodical flow between balance areas and between boundaries and balance areas
-   double precision, allocatable :: mbaflowsorsinreduce(:, :) !< periodical flow from sources sinks
-   double precision, allocatable :: mbaflowrainevareduce(:, :) !< periodical flow from rainfal and prescribed evaporation
-   double precision, allocatable :: mbaflowevareduce(:) !< periodical flow from calculated evaporation
-   double precision, allocatable :: mbamassreduce(:, :) !< begin volume in mass balance area
-   double precision, allocatable :: mbafluxhorreduce(:, :, :, :) !< periodical fluxes between balance areas and between boundaries and balance areas
-   double precision, allocatable :: mbafluxsorsinreduce(:, :, :, :) !< periodical fluxes from source sinks
-   double precision, allocatable :: mbafluxheatreduce(:, :) !< temperature heat flux
+   real(kind=dp), allocatable :: mbavolumereduce(:) !< begin volume in mass balance area
+   real(kind=dp), allocatable :: mbaflowhorreduce(:, :, :) !< periodical flow between balance areas and between boundaries and balance areas
+   real(kind=dp), allocatable :: mbaflowsorsinreduce(:, :) !< periodical flow from sources sinks
+   real(kind=dp), allocatable :: mbaflowrainevareduce(:, :) !< periodical flow from rainfal and prescribed evaporation
+   real(kind=dp), allocatable :: mbaflowevareduce(:) !< periodical flow from calculated evaporation
+   real(kind=dp), allocatable :: mbamassreduce(:, :) !< begin volume in mass balance area
+   real(kind=dp), allocatable :: mbafluxhorreduce(:, :, :, :) !< periodical fluxes between balance areas and between boundaries and balance areas
+   real(kind=dp), allocatable :: mbafluxsorsinreduce(:, :, :, :) !< periodical fluxes from source sinks
+   real(kind=dp), allocatable :: mbafluxheatreduce(:, :) !< temperature heat flux
 
    type balance_type
       integer :: n_entries !< number of flow/flux entries
       character(len=NAMMBALEN), dimension(:), allocatable :: group !< group to which balance flow/flux belongs
       character(len=NAMMBALEN), dimension(:), allocatable :: name !< name of balance flow/flux
-      double precision, dimension(:, :), allocatable :: values !< value of balance flow/flux (1,:) = from, (2,:) = to
+      real(kind=dp), dimension(:, :), allocatable :: values !< value of balance flow/flux (1,:) = from, (2,:) = to
    end type balance_type
 
    type bal_group_type
       type(balance_type), dimension(:), allocatable :: bal_area !< balance information: names and flows/fluxes per area
-      double precision, dimension(:), allocatable :: bal_error !< balance error per area
-      double precision, dimension(:), allocatable :: bal_cumerror !< balance cumulative error per area
+      real(kind=dp), dimension(:), allocatable :: bal_error !< balance error per area
+      real(kind=dp), dimension(:), allocatable :: bal_cumerror !< balance cumulative error per area
    end type bal_group_type
 
    type(bal_group_type), target :: water_flow !< water balance

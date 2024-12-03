@@ -32,180 +32,181 @@
 
 module m_cutcellsorg
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: cutcellsorg
+   public :: cutcellsorg
 
 contains
 
-  subroutine CUTCELLSORG()
+   subroutine CUTCELLSORG()
+      use precision, only: dp
 
-     use m_crosslinkpoly, only: crosslinkpoly
-     use m_netw
-     use m_missing, only: dmiss, JINS
-     use m_readyy
-     use m_set_nod_adm
-     use m_new_link
-     
-     integer :: ja, KMOD
-     integer :: k
-     integer :: k1
-     integer :: k2
-     integer :: k3
-     integer :: k4
-     integer :: km
-     integer :: l
-     integer :: ll
-     integer :: lnu
-     integer :: n
-     integer :: n1
-     integer :: n2
-     integer :: nn
-     integer :: nr
-     integer, allocatable :: KNP(:), KNEW(:), LDIN(:), LD1(:), LD2(:)
-     integer :: KK(4)
+      use m_crosslinkpoly, only: crosslinkpoly
+      use m_netw
+      use m_missing, only: dmiss, JINS
+      use m_readyy
+      use m_set_nod_adm
+      use m_new_link
 
-     double precision :: XM, YM
+      integer :: ja, KMOD
+      integer :: k
+      integer :: k1
+      integer :: k2
+      integer :: k3
+      integer :: k4
+      integer :: km
+      integer :: l
+      integer :: ll
+      integer :: lnu
+      integer :: n
+      integer :: n1
+      integer :: n2
+      integer :: nn
+      integer :: nr
+      integer, allocatable :: KNP(:), KNEW(:), LDIN(:), LD1(:), LD2(:)
+      integer :: KK(4)
 
-     if (MXLAN == 0) return
+      real(kind=dp) :: XM, YM
 
-     call READYY('CUTCELLS', 0d0)
+      if (MXLAN == 0) return
 
-     call SAVEPOL()
+      call READYY('CUTCELLS', 0d0)
 
-     allocate (LDIN(MXLAN), LD1(1000), LD2(1000))
-     LDIN = 0; LD1 = 0; LD2 = 0
+      call SAVEPOL()
 
-     LDIN(1) = -1
-     do K = 1, MXLAN
-        call DBPINPOL(XLAN(K), YLAN(K), LDIN(K), dmiss, jins, NPL, xpl, ypl, zpl) ! ALL LDB POINTS INSIDE POLYGON
-     end do
+      allocate (LDIN(MXLAN), LD1(1000), LD2(1000))
+      LDIN = 0; LD1 = 0; LD2 = 0
 
-     NR = 0; N1 = 0; N2 = 0
-     do K = 1, MXLAN ! + 1 ! TODO [AvD] allocate met +1 en even doorlopen
-        if (XLAN(K) /= -999d0 .and. LDIN(K) == 1) then
-           if (N1 == 0) N1 = K
-           N2 = K
-           if (LDIN(K) == 1) JA = 1 ! SOME POINT OF LDB IS INSIDE POL,
-        else if (N1 /= 0) then ! THIS LDB SEGMENT WILL BE HANDLED
-           if (JA == 1) then
-              NR = NR + 1; LD1(NR) = N1; LD2(NR) = N2
-           end if
-           N1 = 0; N2 = 0
-        end if
-     end do
+      LDIN(1) = -1
+      do K = 1, MXLAN
+         call DBPINPOL(XLAN(K), YLAN(K), LDIN(K), dmiss, jins, NPL, xpl, ypl, zpl) ! ALL LDB POINTS INSIDE POLYGON
+      end do
 
-     do NN = 1, NR
+      NR = 0; N1 = 0; N2 = 0
+      do K = 1, MXLAN ! + 1 ! TODO [AvD] allocate met +1 en even doorlopen
+         if (XLAN(K) /= -999d0 .and. LDIN(K) == 1) then
+            if (N1 == 0) N1 = K
+            N2 = K
+            if (LDIN(K) == 1) JA = 1 ! SOME POINT OF LDB IS INSIDE POL,
+         else if (N1 /= 0) then ! THIS LDB SEGMENT WILL BE HANDLED
+            if (JA == 1) then
+               NR = NR + 1; LD1(NR) = N1; LD2(NR) = N2
+            end if
+            N1 = 0; N2 = 0
+         end if
+      end do
 
-        N1 = LD1(NN); N2 = LD2(NN)
-        call COPYLDBPIECETOPOL(N1, N2)
-        call FINDCELLS(4) ! ALL FACES INSIDE LANDBOUNDARY PIECE
+      do NN = 1, NR
 
-        allocate (KNP(NUMP)); KNP = 0
-        allocate (KNEW(NUML)); KNEW = 0
+         N1 = LD1(NN); N2 = LD2(NN)
+         call COPYLDBPIECETOPOL(N1, N2)
+         call FINDCELLS(4) ! ALL FACES INSIDE LANDBOUNDARY PIECE
 
-        do N = 1, NUMP
-           if (netcell(N)%N == 4) then
-              K1 = netcell(N)%NOD(1)
-              K2 = netcell(N)%NOD(2)
-              K3 = netcell(N)%NOD(3)
-              K4 = netcell(N)%NOD(4)
-              KNP(N) = KC(K1) * KC(K2) * KC(K3) * KC(K4) ! COMPLETELY INSIDE = 1
-           end if
-        end do
+         allocate (KNP(NUMP)); KNP = 0
+         allocate (KNEW(NUML)); KNEW = 0
 
-        KMOD = max(1, NUMP / 100)
-        do N = 1, NUMP
+         do N = 1, NUMP
+            if (netcell(N)%N == 4) then
+               K1 = netcell(N)%NOD(1)
+               K2 = netcell(N)%NOD(2)
+               K3 = netcell(N)%NOD(3)
+               K4 = netcell(N)%NOD(4)
+               KNP(N) = KC(K1) * KC(K2) * KC(K3) * KC(K4) ! COMPLETELY INSIDE = 1
+            end if
+         end do
 
-           if (mod(n, KMOD) == 0) call READYY('CUTCELLS', dble(n) / dble(nump))
+         KMOD = max(1, NUMP / 100)
+         do N = 1, NUMP
 
-           if (KNP(N) == 0) then ! AT LEAST 1 POINT OUTSIDE POLYGON
+            if (mod(n, KMOD) == 0) call READYY('CUTCELLS', dble(n) / dble(nump))
 
-              do LL = 1, 4
+            if (KNP(N) == 0) then ! AT LEAST 1 POINT OUTSIDE POLYGON
 
-                 L = netcell(N)%LIN(LL)
+               do LL = 1, 4
 
-                 if (KNEW(L) == 0) then
+                  L = netcell(N)%LIN(LL)
 
-                    call CROSSLINKPOLY(L, 0, 0, (/0/), (/0/), XM, YM, JA)
+                  if (KNEW(L) == 0) then
 
-                    if (JA == 1) then
-                       call DSETNEWPOINT(XM, YM, KM)
-                       KNEW(L) = KM
-                    end if
+                     call CROSSLINKPOLY(L, 0, 0, (/0/), (/0/), XM, YM, JA)
 
-                 end if
+                     if (JA == 1) then
+                        call DSETNEWPOINT(XM, YM, KM)
+                        KNEW(L) = KM
+                     end if
 
-              end do
+                  end if
 
-           end if
+               end do
 
-        end do
+            end if
 
-        do N = 1, NUMP
+         end do
 
-           K = 0
-           do LL = 1, 4
+         do N = 1, NUMP
 
-              L = netcell(N)%LIN(LL)
-              K1 = KN(1, L); K2 = KN(2, L)
+            K = 0
+            do LL = 1, 4
 
-              if (KNP(N) == 0) then ! SHOULD BE HANDLED
+               L = netcell(N)%LIN(LL)
+               K1 = KN(1, L); K2 = KN(2, L)
 
-                 if (KNEW(L) /= 0) then ! NIEUW PUNT KOPPELEN
+               if (KNP(N) == 0) then ! SHOULD BE HANDLED
 
-                    if (KNEW(L) > 0) then
-                       if (KC(K1) == 1) then
-                          call NEWLINK(KNEW(L), K2, LNU)
-                       else
-                          call NEWLINK(KNEW(L), K1, LNU)
-                       end if
-                       KNEW(L) = -1 * KNEW(L)
-                    end if
-                    K = K + 1; KK(K) = abs(KNEW(L))
+                  if (KNEW(L) /= 0) then ! NIEUW PUNT KOPPELEN
 
-                 end if
+                     if (KNEW(L) > 0) then
+                        if (KC(K1) == 1) then
+                           call NEWLINK(KNEW(L), K2, LNU)
+                        else
+                           call NEWLINK(KNEW(L), K1, LNU)
+                        end if
+                        KNEW(L) = -1 * KNEW(L)
+                     end if
+                     K = K + 1; KK(K) = abs(KNEW(L))
 
-              end if
+                  end if
 
-              if (K1 /= 0 .and. K2 /= 0) then
-                 if (KC(K1) == 1 .or. KC(K2) == 1) then
-                    KN(1, L) = 0; KN(2, L) = 0
-                 end if
-              end if
+               end if
 
-           end do
+               if (K1 /= 0 .and. K2 /= 0) then
+                  if (KC(K1) == 1 .or. KC(K2) == 1) then
+                     KN(1, L) = 0; KN(2, L) = 0
+                  end if
+               end if
 
-           if (K >= 2) then
-              call NEWLINK(KK(1), KK(2), LNU)
-           end if
+            end do
 
-           if (K >= 3) then
-              call NEWLINK(KK(2), KK(3), LNU)
-           end if
+            if (K >= 2) then
+               call NEWLINK(KK(1), KK(2), LNU)
+            end if
 
-           if (K >= 4) then
-              call NEWLINK(KK(3), KK(4), LNU)
-           end if
+            if (K >= 3) then
+               call NEWLINK(KK(2), KK(3), LNU)
+            end if
 
-        end do
+            if (K >= 4) then
+               call NEWLINK(KK(3), KK(4), LNU)
+            end if
 
-        call SETNODADM(0)
+         end do
 
-        deallocate (KNP, KNEW)
+         call SETNODADM(0)
 
-     end do
+         deallocate (KNP, KNEW)
 
-     deallocate (LDIN, LD1, LD2)
+      end do
 
-     call RESTOREPOL()
+      deallocate (LDIN, LD1, LD2)
 
-     call SETNODADM(0)
+      call RESTOREPOL()
 
-     call READYY('CUTCELLS', -1d0)
+      call SETNODADM(0)
 
-  end subroutine CUTCELLSORG
+      call READYY('CUTCELLS', -1d0)
+
+   end subroutine CUTCELLSORG
 
 end module m_cutcellsorg

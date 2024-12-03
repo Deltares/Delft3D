@@ -29,6 +29,7 @@
 
 !> split polygon recursively into (Ni X Nj) smaller polygons, at most MAXsplit times, until polygons have at most NPLmax nodes
  subroutine split_pol(Ni, Nj, NPLmax, MAXsplit)
+    use precision, only: dp
     use m_polygon
     use m_tpoly
     use m_alloc
@@ -36,7 +37,7 @@
     use unstruc_messages
     use m_wrildb
     use m_addtopol, only: addtopol
-    
+
     implicit none
 
     integer, intent(in) :: Ni
@@ -48,12 +49,12 @@
 
     character(len=128) :: FNAM
 
-    double precision :: xmin, ymin, xmax, ymax
-    double precision :: xa, ya, xb, yb
+    real(kind=dp) :: xmin, ymin, xmax, ymax
+    real(kind=dp) :: xa, ya, xb, yb
 
     integer :: i, j, ipol, N, numpols
 
-    double precision, dimension(:), allocatable :: rwrk
+    real(kind=dp), dimension(:), allocatable :: rwrk
     integer, dimension(:), allocatable :: iwrk
     integer :: lrwk
 
@@ -63,7 +64,7 @@
     integer :: ierr
 
     integer, parameter :: NCCP = 5
-    double precision, dimension(NCCP) :: xccp, yccp
+    real(kind=dp), dimension(NCCP) :: xccp, yccp
 
     integer, dimension(0) :: nclan
 

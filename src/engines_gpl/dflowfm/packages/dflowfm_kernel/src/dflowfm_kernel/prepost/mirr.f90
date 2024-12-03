@@ -31,11 +31,12 @@
 !
 
   subroutine MIRR(X, Y, Z, X2, Y2, Z2)
+     use precision, only: dp
      use M_LANDBOUNDARY
      implicit none
-     double precision X, Y, Z, X2, Y2, Z2
+     real(kind=dp) X, Y, Z, X2, Y2, Z2
 
-     double precision :: ym
+     real(kind=dp) :: ym
      YM = (YLAN(1) + YLAN(2)) / 2
      X2 = X
      Y2 = 2 * YM - Y

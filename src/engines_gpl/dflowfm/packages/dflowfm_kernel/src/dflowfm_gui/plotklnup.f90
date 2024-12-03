@@ -33,47 +33,48 @@
 !     plot stencil for higher-order corrections to screen
 module m_plotklnup
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine plotklnup(L)
-         use m_dhtext
-         use m_flowgeom
-         use m_cirr
+   subroutine plotklnup(L)
+      use precision, only: dp
+      use m_dhtext
+      use m_flowgeom
+      use m_cirr
 
-         integer, intent(in) :: L !< flowlink number
+      integer, intent(in) :: L !< flowlink number
 
-         double precision :: sln1, sln2, sln3
-         integer :: i, ip, k1, k2, kdum
+      real(kind=dp) :: sln1, sln2, sln3
+      integer :: i, ip, k1, k2, kdum
 
-         integer, dimension(3) :: icolor = (/31, 221, 31/)
+      integer, dimension(3) :: icolor = (/31, 221, 31/)
 
-         i = 0
-         do ip = 0, 3, 3
-            i = i + 1
-            k1 = klnup(1 + ip, L)
-            sln1 = slnup(1 + ip, L)
-            k2 = abs(klnup(2 + ip, L))
-            sln2 = slnup(2 + ip, L)
-            sln3 = slnup(3 + ip, L)
-            if (k1 /= 0) then
-               kdum = abs(k1)
-               call cirr(xz(kdum), yz(kdum), icolor(i))
-               call dHTEXT(sln1, xz(kdum), yz(kdum), 0d0)
-            else
-               call cirr(xu(L), yu(L), icolor(3))
+      i = 0
+      do ip = 0, 3, 3
+         i = i + 1
+         k1 = klnup(1 + ip, L)
+         sln1 = slnup(1 + ip, L)
+         k2 = abs(klnup(2 + ip, L))
+         sln2 = slnup(2 + ip, L)
+         sln3 = slnup(3 + ip, L)
+         if (k1 /= 0) then
+            kdum = abs(k1)
+            call cirr(xz(kdum), yz(kdum), icolor(i))
+            call dHTEXT(sln1, xz(kdum), yz(kdum), 0d0)
+         else
+            call cirr(xu(L), yu(L), icolor(3))
+         end if
+         if (k1 > 0) then
+            if (k2 > 0) then
+               call cirr(xz(k2), yz(k2), icolor(i))
+               call dHTEXT(sln2, xz(k2), yz(k2), 0d0)
+               call dHTEXT(sln3, xu(L), yu(L), 0d0)
             end if
-            if (k1 > 0) then
-               if (k2 > 0) then
-                  call cirr(xz(k2), yz(k2), icolor(i))
-                  call dHTEXT(sln2, xz(k2), yz(k2), 0d0)
-                  call dHTEXT(sln3, xu(L), yu(L), 0d0)
-               end if
-            end if
-         end do
+         end if
+      end do
 
-         return
-      end subroutine plotklnup
+      return
+   end subroutine plotklnup
 
 end module m_plotklnup

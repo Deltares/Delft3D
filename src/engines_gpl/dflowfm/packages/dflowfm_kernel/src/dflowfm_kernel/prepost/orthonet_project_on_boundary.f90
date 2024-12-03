@@ -32,6 +32,7 @@
 
 !> project boundary-nodes back to the boundary of an original net
 subroutine orthonet_project_on_boundary(nmkx, kk1, k_bc, xkb, ykb)
+   use precision, only: dp
    use m_netw
    use m_d_line_dis3
 
@@ -39,12 +40,12 @@ subroutine orthonet_project_on_boundary(nmkx, kk1, k_bc, xkb, ykb)
 
    integer :: nmkx !< maximum number of link-connected neighboring nodes
    integer, dimension(numk) :: k_bc !< maps nodes to nearest original boundary nodes
-   double precision, dimension(numk) :: xkb, ykb !< copy of the original net
+   real(kind=dp), dimension(numk) :: xkb, ykb !< copy of the original net
    integer, dimension(nmkx, numk) :: kk1 !< link-connected neighboring nodes
 
-   double precision :: x0, y0
-   double precision :: x2, y2, x3, y3, xn2, yn2, xn3, yn3
-   double precision :: dis2, dis3, r2, r3
+   real(kind=dp) :: x0, y0
+   real(kind=dp) :: x2, y2, x3, y3, xn2, yn2, xn3, yn3
+   real(kind=dp) :: dis2, dis3, r2, r3
 
    integer :: k, kk, k0, kL, kR, nr, ja2, ja3
 

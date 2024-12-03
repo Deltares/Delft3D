@@ -33,11 +33,11 @@
 !  increase netcell admin. to include boundary nodes (safety)
 module m_add_boundarynetcells
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: add_boundarynetcells
+   public :: add_boundarynetcells
 
 contains
 

@@ -31,13 +31,14 @@
 !
 
       subroutine MISARR(H, MMAX, NMAX)
+         use precision, only: dp
          use M_MISSING
          implicit none
          integer :: i
          integer :: j
          integer :: mmax
          integer :: nmax
-         double precision :: H(MMAX, NMAX)
+         real(kind=dp) :: H(MMAX, NMAX)
 
          do I = 1, MMAX
             do J = 1, NMAX

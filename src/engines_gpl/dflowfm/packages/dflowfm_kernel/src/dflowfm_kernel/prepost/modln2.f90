@@ -31,6 +31,7 @@
 !
 
       subroutine MODLN2(X, Y, Z, MMAX, NUMPI, MP, XP, YP, NPUT)
+         use precision, only: dp
          use m_missing, only: dmiss
          use m_okay
          use m_dispnode
@@ -41,8 +42,8 @@
 !     DELETE ENTIRE LINE, -3
 !     DELETE ALL EXCEPT SELECTED LINE, -4
          integer :: MMAX, NUMPI, MP, nput
-         double precision :: X(MMAX), Y(MMAX), Z(MMAX)
-         double precision :: XP, YP, ZP
+         real(kind=dp) :: X(MMAX), Y(MMAX), Z(MMAX)
+         real(kind=dp) :: XP, YP, ZP
          integer :: i
          integer :: istart
          integer :: j

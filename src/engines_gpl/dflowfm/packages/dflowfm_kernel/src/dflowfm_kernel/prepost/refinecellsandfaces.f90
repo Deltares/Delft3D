@@ -31,6 +31,7 @@
 !
 
   subroutine REFINECELLSANDFACES()
+     use precision, only: dp
      use m_allin, only: allin
      use m_netw
      use m_samples
@@ -51,11 +52,11 @@
      integer :: IERR, JA, K1, K2, K, KP, L, L1, L2, LNU, N, NN, NR, KA, KB, JADOEN, KK, JA2
      integer :: JACOURANTNETWORK, JDLA, N1, N2, N6
      integer :: ic1, ic2, numL_old, kkm1, kkp1, kkm2, kkp2, Lm2, Lp2, numtris, num, iter, MAXITER
-     double precision :: XL, YL, ZL, CELLSIZE, COURANT, C, DIS, XN, YN, RS
+     real(kind=dp) :: XL, YL, ZL, CELLSIZE, COURANT, C, DIS, XN, YN, RS
      integer, allocatable :: KPL(:, :), KP2(:), NA(:)
-     double precision, allocatable :: XC(:), YC(:), ZC(:), AR(:)
+     real(kind=dp), allocatable :: XC(:), YC(:), ZC(:), AR(:)
 
-     double precision, allocatable :: XX(:, :), YY(:, :)
+     real(kind=dp), allocatable :: XX(:, :), YY(:, :)
      integer, allocatable :: NNN(:)
      type(TerrorInfo) :: errorInfo
 

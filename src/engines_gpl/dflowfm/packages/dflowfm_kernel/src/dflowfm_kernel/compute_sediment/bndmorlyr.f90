@@ -32,11 +32,11 @@
 
 module m_bndmorlyr
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: bndmorlyr
+   public :: bndmorlyr
 
 contains
 

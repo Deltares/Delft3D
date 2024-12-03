@@ -32,69 +32,70 @@
 module m_refine
    implicit none
 contains
-      subroutine REFINE(M1, N1, M2, N2, NUM)
-         use m_grid, only: ijyes, nc, mc, mmax, mnmax, nmax, xc, yc
-         use m_gridsettings, only: mfac, nfac
-         use messagehandling, only: LEVEL_DEBUG, mess
-         use m_readyy
-         use m_qnerror
-         use m_increase_grid
-         use m_isitu
+   subroutine REFINE(M1, N1, M2, N2, NUM)
+      use precision, only: dp
+      use m_grid, only: ijyes, nc, mc, mmax, mnmax, nmax, xc, yc
+      use m_gridsettings, only: mfac, nfac
+      use messagehandling, only: LEVEL_DEBUG, mess
+      use m_readyy
+      use m_qnerror
+      use m_increase_grid
+      use m_isitu
 
-         integer :: m1, n1, m2, n2, num
-         double precision, allocatable :: XI2(:, :), XJ2(:, :), YI2(:, :), YJ2(:, :), XR(:, :), YR(:, :), XRH(:, :), YRH(:, :)
-         integer :: NRM, NRN, MCR, NCR
+      integer :: m1, n1, m2, n2, num
+      real(kind=dp), allocatable :: XI2(:, :), XJ2(:, :), YI2(:, :), YJ2(:, :), XR(:, :), YR(:, :), XRH(:, :), YRH(:, :)
+      integer :: NRM, NRN, MCR, NCR
 
-         call mess(LEVEL_DEBUG, 'INTERPOLATION')
-         call mess(LEVEL_DEBUG, 'DIMENSIONS OF GRID : ', MC, NC)
+      call mess(LEVEL_DEBUG, 'INTERPOLATION')
+      call mess(LEVEL_DEBUG, 'DIMENSIONS OF GRID : ', MC, NC)
 
-         if (MC == 0) then
-            call QNERROR('First Create or Load a Grid', ' ', ' ')
-            NUM = 0
-            return
-         end if
-
-         NRM = M2 - M1
-         NRN = N2 - N1
-         MCR = MC - NRM + 1 + NRM * MFAC - 1
-         NCR = NC - NRN + 1 + NRN * NFAC - 1
-
-         call SAVEgrd()
-
-         call increasegrid(mcr, ncr)
-
-         allocate (xi2(mmax, nmax), xj2(mmax, nmax), yi2(mmax, nmax), yj2(mmax, nmax), &
-                   xr(mmax, nmax), yr(mmax, nmax), xrh(mmax, nmax), yrh(mmax, nmax))
-
-         call READYY('INTERPOLATION', 0d0)
-         call ISITU() !      X,      Y,     MC,  NC,    IJC,  IJYES)
-         call READYY(' ', 0.10d0)
-
-         call GETSPL2(Xc, XI2, XJ2, MC, NC, mmax, nmax)
-         call READYY(' ', 0.15d0)
-
-         call GETSPL2(Yc, YI2, YJ2, MC, NC, mmax, nmax)
-         call READYY(' ', 0.20d0)
-
-         if (MFAC /= 1 .or. NFAC /= 1) then
-            call XYSPLN(Xc, Yc, XR, YR, &
-                        XI2, YI2, XJ2, YJ2, XRH, YRH, &
-                        mmax, nmax, mnmax, &
-                        M1, N1, M2, N2, MC, NC, &
-                        MFAC, NFAC, IJYES)
-            call READYY(' ', 0.90d0)
-         end if
-
-         call PUTARR(XR, Xc, MMAX, NMAX)
-         call PUTARR(YR, Yc, MMAX, NMAX)
-
-         MC = MCR
-         NC = NCR
-
-         call READYY(' ', 1d0)
-         call READYY(' ', -1d0)
-         deallocate (XI2, XJ2, YI2, YJ2, XR, YR, XRH, YRH)
-
+      if (MC == 0) then
+         call QNERROR('First Create or Load a Grid', ' ', ' ')
+         NUM = 0
          return
-      end subroutine refine
+      end if
+
+      NRM = M2 - M1
+      NRN = N2 - N1
+      MCR = MC - NRM + 1 + NRM * MFAC - 1
+      NCR = NC - NRN + 1 + NRN * NFAC - 1
+
+      call SAVEgrd()
+
+      call increasegrid(mcr, ncr)
+
+      allocate (xi2(mmax, nmax), xj2(mmax, nmax), yi2(mmax, nmax), yj2(mmax, nmax), &
+                xr(mmax, nmax), yr(mmax, nmax), xrh(mmax, nmax), yrh(mmax, nmax))
+
+      call READYY('INTERPOLATION', 0d0)
+      call ISITU() !      X,      Y,     MC,  NC,    IJC,  IJYES)
+      call READYY(' ', 0.10d0)
+
+      call GETSPL2(Xc, XI2, XJ2, MC, NC, mmax, nmax)
+      call READYY(' ', 0.15d0)
+
+      call GETSPL2(Yc, YI2, YJ2, MC, NC, mmax, nmax)
+      call READYY(' ', 0.20d0)
+
+      if (MFAC /= 1 .or. NFAC /= 1) then
+         call XYSPLN(Xc, Yc, XR, YR, &
+                     XI2, YI2, XJ2, YJ2, XRH, YRH, &
+                     mmax, nmax, mnmax, &
+                     M1, N1, M2, N2, MC, NC, &
+                     MFAC, NFAC, IJYES)
+         call READYY(' ', 0.90d0)
+      end if
+
+      call PUTARR(XR, Xc, MMAX, NMAX)
+      call PUTARR(YR, Yc, MMAX, NMAX)
+
+      MC = MCR
+      NC = NCR
+
+      call READYY(' ', 1d0)
+      call READYY(' ', -1d0)
+      deallocate (XI2, XJ2, YI2, YJ2, XR, YR, XRH, YRH)
+
+      return
+   end subroutine refine
 end module m_refine

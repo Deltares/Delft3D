@@ -32,11 +32,11 @@
 
 module m_deallocnet
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: deallocnet
+   public :: deallocnet
 
 contains
 

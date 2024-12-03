@@ -58,13 +58,14 @@ contains
 
 !    Secondary Flow
    subroutine get_curvature ! Find the curvature of the bend, to be used in secondary flow
+      use precision, only: dp
       use m_flow
       use m_flowgeom
       use m_netw
 
       integer :: k, k1, k2, L, LL, n
-      double precision :: cofa, cofb, cofc, cofd, cofe, coff, cofg, cofw, cofx, cofy, cofu, cofv, cof0
-      double precision :: dudx, dudy, dvdx, dvdy
+      real(kind=dp) :: cofa, cofb, cofc, cofd, cofe, coff, cofg, cofw, cofx, cofy, cofu, cofv, cof0
+      real(kind=dp) :: dudx, dudy, dvdx, dvdy
 
       call get_spirucm()
 

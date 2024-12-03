@@ -31,16 +31,17 @@
 !
 
       subroutine FINDNM(XL, YL, X, Y, mmax, nmax, MC, NC, INSIDE, MV, NV, IN, JN, wf)
+         use precision, only: dp
          use m_missing
          use geometry_module, only: pinpok
          implicit none
 
          integer :: mmax, nmax, mc, nc, inside, mv, nv, in, jn
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), XX(4), YY(4), XK(3), YK(3)
-         double precision :: xl, yl, wf(4)
+         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), XX(4), YY(4), XK(3), YK(3)
+         real(kind=dp) :: xl, yl, wf(4)
 
          integer :: ishot, i, j, mz, nz, m1, m2, n1, n2, insidet, mvol, nvol, i1, i2, ier
-         double precision :: dx, dy, r, rmin, xxc, yyc
+         real(kind=dp) :: dx, dy, r, rmin, xxc, yyc
 
          data MVOL/0/, NVOL/0/
          if (MC == 0 .or. NC == 0) return

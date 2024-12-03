@@ -32,31 +32,31 @@
 !> Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file.
 module m_write_timestep_limiting_cells
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: write_timestep_limiting_cells
+   public :: write_timestep_limiting_cells
 
 contains
 
- subroutine write_timestep_limiting_cells()
-    use m_flowgeom, only: ndx, xz, yz
-    use m_flow, only: numlimdt
-    use unstruc_model, only: md_ident, getoutputdir
+   subroutine write_timestep_limiting_cells()
+      use m_flowgeom, only: ndx, xz, yz
+      use m_flow, only: numlimdt
+      use unstruc_model, only: md_ident, getoutputdir
 
-    implicit none
+      implicit none
 
-    integer :: file_unit, cell
+      integer :: file_unit, cell
 
-    call newfil(file_unit, trim(getoutputdir())//trim(md_ident)//'_numlimdt.xyz')
-    do cell = 1, ndx
-       if (numlimdt(cell) > 0) then
-          write (file_unit, *) xz(cell), yz(cell), numlimdt(cell)
-       end if
-    end do
-    call doclose(file_unit)
+      call newfil(file_unit, trim(getoutputdir())//trim(md_ident)//'_numlimdt.xyz')
+      do cell = 1, ndx
+         if (numlimdt(cell) > 0) then
+            write (file_unit, *) xz(cell), yz(cell), numlimdt(cell)
+         end if
+      end do
+      call doclose(file_unit)
 
- end subroutine write_timestep_limiting_cells
+   end subroutine write_timestep_limiting_cells
 
 end module m_write_timestep_limiting_cells

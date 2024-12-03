@@ -32,11 +32,11 @@
 
 module m_alloc9basicwavearrays
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: alloc9basicwavearrays
+   public :: alloc9basicwavearrays
 
 contains
 

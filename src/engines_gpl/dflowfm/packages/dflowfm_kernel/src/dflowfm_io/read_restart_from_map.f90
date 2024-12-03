@@ -32,11 +32,11 @@
 
 module m_read_restart_from_map
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: read_restart_from_map
+   public :: read_restart_from_map
 
 contains
 

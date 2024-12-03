@@ -33,11 +33,11 @@
 !> default solver settings
 module m_solversettings
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: solversettings
+   public :: solversettings
 
 contains
 

@@ -31,11 +31,12 @@
 !
 
       subroutine XMISAR(X, MMAX)
+         use precision, only: dp
          use M_MISSING
          implicit none
          integer :: i
          integer :: mmax
-         double precision :: x
+         real(kind=dp) :: x
          dimension X(MMAX)
          do I = 1, MMAX
             X(I) = XYMIS

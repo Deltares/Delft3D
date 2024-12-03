@@ -31,18 +31,18 @@
 !
 
 module m_wave_fillsurdis
-use m_wave_statbreakerdis, only: wave_statbreakerdis
+   use m_wave_statbreakerdis, only: wave_statbreakerdis
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: wave_fillsurdis
+   public :: wave_fillsurdis
 
 contains
 
    subroutine wave_fillsurdis(k, surdis)
+      use precision, only: dp
       use m_waves
       use m_xbeach_data, only: DR, D, roller
       use m_flowparameters, only: jawave
@@ -53,10 +53,10 @@ contains
       implicit none
 
       integer, intent(in) :: k
-      double precision, intent(out) :: surdis
+      real(kind=dp), intent(out) :: surdis
 
-      double precision :: rk
-      double precision :: hsk
+      real(kind=dp) :: rk
+      real(kind=dp) :: hsk
 
       select case (jawave)
       case (3)

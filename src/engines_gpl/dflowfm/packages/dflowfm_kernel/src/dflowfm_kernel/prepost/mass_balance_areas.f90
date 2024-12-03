@@ -405,6 +405,7 @@ contains
    end subroutine get_mbainputname
 
    subroutine mba_update(time)
+      use precision, only: dp
       use m_mass_balance_areas
       use m_fm_wq_processes
       use m_partitioninfo
@@ -416,10 +417,10 @@ contains
       use m_fm_erosed, only: lsedtot, iflufflyr
       use time_module, only: mjd2date
 
-      double precision, intent(in) :: time !< time     for waq in seconds
+      real(kind=dp), intent(in) :: time !< time     for waq in seconds
 
       integer :: iyear, imonth, iday, ihour, imin
-      double precision :: sec
+      real(kind=dp) :: sec
       character(len=19) :: datembastart, datembaend
       logical :: write_balance !< flag specifying whether balance should be written
       logical :: overall_balance !< balance period: use the total begin arrays, or just the last period
@@ -535,6 +536,7 @@ contains
    end subroutine mba_update
 
    subroutine mba_final(time)
+      use precision, only: dp
       use m_mass_balance_areas
       use m_fm_wq_processes
       use m_partitioninfo
@@ -542,10 +544,10 @@ contains
       use m_flowtimes, only: refdate_mjd
       use time_module, only: mjd2date
 
-      double precision, intent(in) :: time !< time     for waq in seconds
+      real(kind=dp), intent(in) :: time !< time     for waq in seconds
 
       integer :: iyear, imonth, iday, ihour, imin
-      double precision :: sec
+      real(kind=dp) :: sec
       character(len=19) :: datembastart, datembaend
       logical :: write_balance !< flag specifying whether balance should be written
       logical :: overall_balance !< balance period: use the total begin arrays, or just the last period
@@ -585,6 +587,7 @@ contains
    end subroutine mba_final
 
    subroutine mba_sum(nombs, nomba, mbadef, mbavolume, mbamass)
+      use precision, only: dp
 
       use m_fm_wq_processes, only: numwqbots, wqbot
       use m_partitioninfo
@@ -595,8 +598,8 @@ contains
 
       integer :: nombs, nomba
       integer :: mbadef(ndxi)
-      double precision :: mbavolume(nomba) ! volumes
-      double precision :: mbamass(nombs, nomba) ! masses
+      real(kind=dp) :: mbavolume(nomba) ! volumes
+      real(kind=dp) :: mbamass(nombs, nomba) ! masses
 
       integer :: k, kk, kb, kt, iconst, iwqbot, imba
 
@@ -623,6 +626,7 @@ contains
    end subroutine mba_sum
 
    subroutine mba_sum_morphology(lsedtot, nomba, mbadef, mbamorfac, mbabedmass, mbabedshortmass, mbafluffmass, mbamassreduce)
+      use precision, only: dp
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_flowgeom, only: ndxi, ba
       use m_fm_erosed, only: lsed, stmpar, mfluff, morfac, iflufflyr
@@ -631,11 +635,11 @@ contains
       integer, intent(in) :: lsedtot
       integer, intent(in) :: nomba
       integer, intent(in) :: mbadef(ndxi)
-      double precision, intent(out) :: mbamorfac
-      double precision, intent(out) :: mbabedmass(lsedtot, nomba)
-      double precision, intent(out) :: mbabedshortmass(lsedtot, nomba)
-      double precision, allocatable, intent(out) :: mbafluffmass(:, :)
-      double precision, allocatable, intent(out) :: mbamassreduce(:, :)
+      real(kind=dp), intent(out) :: mbamorfac
+      real(kind=dp), intent(out) :: mbabedmass(lsedtot, nomba)
+      real(kind=dp), intent(out) :: mbabedshortmass(lsedtot, nomba)
+      real(kind=dp), allocatable, intent(out) :: mbafluffmass(:, :)
+      real(kind=dp), allocatable, intent(out) :: mbamassreduce(:, :)
 
       integer :: imba !< mass balance area number
       integer :: ised !< sediment fraction
@@ -692,13 +696,14 @@ contains
    end subroutine mba_sum_morphology
 
    subroutine mba_sum_area(nomba, mbadef, mbaba)
+      use precision, only: dp
 
       use m_partitioninfo
       use m_flowgeom
 
       integer :: nomba
       integer :: mbadef(ndxi)
-      double precision :: mbaba(nomba) ! areas
+      real(kind=dp) :: mbaba(nomba) ! areas
 
       integer :: kk, imba
 
@@ -715,6 +720,7 @@ contains
    end subroutine mba_sum_area
 
    subroutine comp_horflowmba()
+      use precision, only: dp
       use m_flow, only: Lbot, Ltop, q1
       use m_flowtimes, only: dts
       use fm_external_forcings_data, only: numsrc, qsrc
@@ -722,10 +728,10 @@ contains
       use timers
 
       integer :: LL, L, Lb, Lt, k1, k2, i, n
-      double precision :: qsrck
+      real(kind=dp) :: qsrck
 
-      integer(4) :: ithndl =  0
-      
+      integer(4) :: ithndl = 0
+
       if (timon) call timstrt("comp_horflowmba", ithndl)
 
       do i = 1, nombaln
@@ -762,6 +768,7 @@ contains
    end subroutine comp_horflowmba
 
    subroutine comp_horfluxmba()
+      use precision, only: dp
       use m_flow, only: Lbot, Ltop
       use m_flowtimes, only: dts
       use m_mass_balance_areas
@@ -777,7 +784,7 @@ contains
       integer :: Lb !< index of bottom-most 3D flow link
       integer :: LL !< index of 2D flow link
       integer :: Lt !< index of top-most 3D flow link
-      double precision :: dt !< effective time step
+      real(kind=dp) :: dt !< effective time step
 
       integer(4) :: ithndl = 0 !< timer handle
 
@@ -814,6 +821,7 @@ contains
    end subroutine comp_horfluxmba
 
    subroutine comp_bedload_fluxmba()
+      use precision, only: dp
       use m_flowtimes, only: dts
       use m_mass_balance_areas, only: nombaln, mbalnlist, mbalnfromto, mbasedflux
       use m_fm_erosed, only: lsedtot, e_sbn, morfac
@@ -824,8 +832,8 @@ contains
       integer :: LL !< link index
       integer :: k1 !< index of balance area 1
       integer :: k2 !< index of balance area 2
-      double precision :: flx !< bedload flux along line
-      double precision :: dtmor !< morphological time step
+      real(kind=dp) :: flx !< bedload flux along line
+      real(kind=dp) :: dtmor !< morphological time step
 
       dtmor = dts * morfac
       do ised = 1, lsedtot
@@ -1069,9 +1077,10 @@ contains
    end subroutine add_name
 
    subroutine add_values(bal_values, ii, values, jalump, has_entry)
-      double precision, dimension(:, :), intent(inout) :: bal_values !< array containing the flux values
+      use precision, only: dp
+      real(kind=dp), dimension(:, :), intent(inout) :: bal_values !< array containing the flux values
       integer, intent(inout) :: ii !< last written index into flow_or_flux
-      double precision, dimension(2), intent(in) :: values !< vector
+      real(kind=dp), dimension(2), intent(in) :: values !< vector
       integer, optional, intent(in) :: jalump !< flag to indicate whether this quantity should be lumped (0 = no, 1 = yes)
       logical, optional, intent(inout) :: has_entry !< flag to indicate whether this quantity has already an entry
 
@@ -1102,12 +1111,13 @@ contains
    end subroutine add_values
 
    subroutine add_value_change(bal_values, ii, val_beg, val_end)
+      use precision, only: dp
       use m_mass_balance_areas, only: DIR_FROM, DIR_TO
 
-      double precision, dimension(:, :), intent(inout) :: bal_values !< array containing the flux values
+      real(kind=dp), dimension(:, :), intent(inout) :: bal_values !< array containing the flux values
       integer, intent(inout) :: ii !< last written index into bal_values
-      double precision, intent(in) :: val_beg !< value at begin of period
-      double precision, intent(in) :: val_end !< value at end f period
+      real(kind=dp), intent(in) :: val_beg !< value at begin of period
+      real(kind=dp), intent(in) :: val_end !< value at end f period
 
       ii = ii + 1
       if (val_beg > val_end) then
@@ -1254,6 +1264,7 @@ contains
    end subroutine mba_prepare_names_flows
 
    subroutine mba_prepare_values_flows(imba, overall_balance)
+      use precision, only: dp
       use m_flowparameters, only: jatem, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc
@@ -1266,14 +1277,14 @@ contains
       integer :: jmba !< index of other mass balance area or open boundary
       integer :: isrc !< index of source/sink
 
-      double precision, dimension(:, :), pointer :: flows
+      real(kind=dp), dimension(:, :), pointer :: flows
       logical :: has_entry !< flag to indicate that values should be lumped to the previous entry
 
-      double precision, pointer :: p_mbavolumebegin(:)
-      double precision, pointer :: p_mbaflowhor(:, :, :)
-      double precision, pointer :: p_mbaflowsorsin(:, :)
-      double precision, pointer :: p_mbaflowraineva(:, :)
-      double precision, pointer :: p_mbafloweva(:)
+      real(kind=dp), pointer :: p_mbavolumebegin(:)
+      real(kind=dp), pointer :: p_mbaflowhor(:, :, :)
+      real(kind=dp), pointer :: p_mbaflowsorsin(:, :)
+      real(kind=dp), pointer :: p_mbaflowraineva(:, :)
+      real(kind=dp), pointer :: p_mbafloweva(:)
 
       if (overall_balance) then
          p_mbavolumebegin => mbavolumebegintot
@@ -1394,6 +1405,7 @@ contains
    end subroutine mba_prepare_names_flows_whole_model
 
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
+      use precision, only: dp
       use m_flowparameters, only: jatem, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc
@@ -1405,14 +1417,14 @@ contains
       integer :: jmba !< index of other mass balance area or open boundary
       integer :: isrc !< index of source/sink
 
-      double precision, dimension(:, :), pointer :: flows
+      real(kind=dp), dimension(:, :), pointer :: flows
       logical :: has_entry !< flag to indicate that values should be lumped to the previous entry
 
-      double precision, pointer :: p_mbavolumebegin(:)
-      double precision, pointer :: p_mbaflowhor(:, :, :)
-      double precision, pointer :: p_mbaflowsorsin(:, :)
-      double precision, pointer :: p_mbaflowraineva(:, :)
-      double precision, pointer :: p_mbafloweva(:)
+      real(kind=dp), pointer :: p_mbavolumebegin(:)
+      real(kind=dp), pointer :: p_mbaflowhor(:, :, :)
+      real(kind=dp), pointer :: p_mbaflowsorsin(:, :)
+      real(kind=dp), pointer :: p_mbaflowraineva(:, :)
+      real(kind=dp), pointer :: p_mbafloweva(:)
 
       if (overall_balance) then
          p_mbavolumebegin => mbavolumebegintot
@@ -1620,6 +1632,7 @@ contains
    end subroutine mba_prepare_names_fluxes
 
    subroutine mba_prepare_values_fluxes(imbs, imba, overall_balance)
+      use precision, only: dp
       use m_flowparameters, only: jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc
       use m_flowparameters, only: jatem
@@ -1642,20 +1655,20 @@ contains
       integer :: jflux !< index of process flux in fluxname
       integer :: jmba !< index of other mass balance area or open boundary
 
-      double precision :: flux(2) !< temporary array to contain a process flux
-      double precision, pointer :: fluxes(:, :) !< pointer to an array containing all fluxes
+      real(kind=dp) :: flux(2) !< temporary array to contain a process flux
+      real(kind=dp), pointer :: fluxes(:, :) !< pointer to an array containing all fluxes
       logical :: has_entry !< flag to indicate that values should be lumped to the previous entry
 
-      double precision, pointer :: p_mbamassbegin(:, :)
-      double precision, pointer :: p_mbafluxhor(:, :, :, :)
-      double precision, pointer :: p_mbafluxsorsin(:, :, :, :)
-      double precision, pointer :: p_mbafluxheat(:, :)
-      double precision, pointer :: p_flxdmp(:, :, :)
-      double precision, pointer :: p_mbasedflux(:, :, :, :)
-      double precision, pointer :: p_mbamorfacbegin
-      double precision, pointer :: p_mbabedmassbegin(:, :)
-      double precision, pointer :: p_mbabedshortmassbegin(:, :)
-      double precision, pointer :: p_mbafluffmassbegin(:, :)
+      real(kind=dp), pointer :: p_mbamassbegin(:, :)
+      real(kind=dp), pointer :: p_mbafluxhor(:, :, :, :)
+      real(kind=dp), pointer :: p_mbafluxsorsin(:, :, :, :)
+      real(kind=dp), pointer :: p_mbafluxheat(:, :)
+      real(kind=dp), pointer :: p_flxdmp(:, :, :)
+      real(kind=dp), pointer :: p_mbasedflux(:, :, :, :)
+      real(kind=dp), pointer :: p_mbamorfacbegin
+      real(kind=dp), pointer :: p_mbabedmassbegin(:, :)
+      real(kind=dp), pointer :: p_mbabedshortmassbegin(:, :)
+      real(kind=dp), pointer :: p_mbafluffmassbegin(:, :)
 
       if (overall_balance) then
          p_mbamassbegin => mbamassbegintot
@@ -1909,6 +1922,7 @@ contains
    end subroutine mba_prepare_names_fluxes_whole_model
 
    subroutine mba_prepare_values_fluxes_whole_model(imbs, overall_balance)
+      use precision, only: dp
       use m_flowparameters, only: jatem, jambalumpbnd, jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc
       use m_flowparameters, only: jatem
@@ -1930,20 +1944,20 @@ contains
       integer :: jflux !< index of process flux in fluxname
       integer :: jmba !< index of other mass balance area or open boundary
 
-      double precision :: flux(2) !< temporary array to contain a process flux
-      double precision, pointer :: fluxes(:, :) !< pointer to an array containing all fluxes
+      real(kind=dp) :: flux(2) !< temporary array to contain a process flux
+      real(kind=dp), pointer :: fluxes(:, :) !< pointer to an array containing all fluxes
       logical :: has_entry !< flag to indicate that values should be lumped to the previous entry
 
-      double precision, pointer :: p_mbamassbegin(:, :)
-      double precision, pointer :: p_mbafluxhor(:, :, :, :)
-      double precision, pointer :: p_mbafluxsorsin(:, :, :, :)
-      double precision, pointer :: p_mbafluxheat(:, :)
-      double precision, pointer :: p_flxdmp(:, :, :)
-      double precision, pointer :: p_mbasedflux(:, :, :, :)
-      double precision, pointer :: p_mbamorfacbegin
-      double precision, pointer :: p_mbabedmassbegin(:, :)
-      double precision, pointer :: p_mbabedshortmassbegin(:, :)
-      double precision, pointer :: p_mbafluffmassbegin(:, :)
+      real(kind=dp), pointer :: p_mbamassbegin(:, :)
+      real(kind=dp), pointer :: p_mbafluxhor(:, :, :, :)
+      real(kind=dp), pointer :: p_mbafluxsorsin(:, :, :, :)
+      real(kind=dp), pointer :: p_mbafluxheat(:, :)
+      real(kind=dp), pointer :: p_flxdmp(:, :, :)
+      real(kind=dp), pointer :: p_mbasedflux(:, :, :, :)
+      real(kind=dp), pointer :: p_mbamorfacbegin
+      real(kind=dp), pointer :: p_mbabedmassbegin(:, :)
+      real(kind=dp), pointer :: p_mbabedshortmassbegin(:, :)
+      real(kind=dp), pointer :: p_mbafluffmassbegin(:, :)
 
       if (overall_balance) then
          p_mbamassbegin => mbamassbegintot
@@ -2065,6 +2079,7 @@ contains
    end subroutine mba_prepare_values_fluxes_whole_model
 
    subroutine mba_write_netcdf_header()
+      use precision, only: dp
       use unstruc_netcdf, only: unc_create, unc_close
       use unstruc_files, only: defaultFilename
       use m_flowtimes, only: Tudunitstr
@@ -2087,7 +2102,7 @@ contains
       character(len=:), allocatable :: conc_units !< unit string for average value per unit volume of the mass balance quantity, e.g. kg/m3
       character(len=:), allocatable :: mass_units !< unit string for volume integrated value of the mass balance quantity, e.g. kg
 
-      ! for the time being always double precision
+      ! for the time being always real(kind=dp)
       nc_precision = nf90_double
 
       ! create netcdf file
@@ -2294,6 +2309,7 @@ contains
    end function mba_write_netcdf_flux_names
 
    subroutine mba_write_netcdf_step()
+      use precision, only: dp
       use m_flowtimes, only: time1
       use m_mass_balance_areas
       use netcdf, only: nf90_write, nf90_put_var, nf90_strerror
@@ -2308,8 +2324,8 @@ contains
       integer :: ised !< index of sediment fraction (0 if not sediment)
 
       integer :: num_fluxes
-      double precision, dimension(:, :), pointer :: flux
-      double precision, dimension(:), allocatable :: var
+      real(kind=dp), dimension(:, :), pointer :: flux
+      real(kind=dp), dimension(:), allocatable :: var
 
       ierr = unc_open(nc_bal_name, nf90_write, ncid_bal_file)
 
@@ -2393,6 +2409,7 @@ contains
    end subroutine mba_write_netcdf_final
 
    subroutine mba_write_bal_time_step(lunbal, timestart, timeend, datestart, dateend, overall_balance)
+      use precision, only: dp
 
       use m_mass_balance_areas
       use m_fm_wq_processes, ifluxdummy => iflux
@@ -2400,8 +2417,8 @@ contains
 
       integer :: lunbal !< unit number for balance txt file
 
-      double precision :: timestart !< start time of balance period (s)
-      double precision :: timeend !< end time of balance period (s)
+      real(kind=dp) :: timestart !< start time of balance period (s)
+      real(kind=dp) :: timeend !< end time of balance period (s)
       character(len=19) :: datestart !< start date of balance period
       character(len=19) :: dateend !< end date of balance period
       logical :: overall_balance !< balance period: use the total begin arrays, or just the last period
@@ -2409,31 +2426,31 @@ contains
       character(len=20), external :: seconds_to_dhms
       character(len=:), allocatable :: units
       integer :: imbs, imba, iflux
-      double precision :: totals(2) !< totals for both columns
-      double precision :: concbegin !< concentration begin
-      double precision :: concend !< concentration end
-      double precision :: summbaarea !< sum area of mass balance area
-      double precision :: summbavolumebegin !< sum volume of mass balance area begin
-      double precision :: summbavolumeend !< sum volume of mass balance area end
-      double precision :: summbamassbegin !< sum mass of mass balance area
-      double precision :: summbamassend !< sum mass of mass balance area
-      double precision :: reference !< reference for relative error
-      double precision :: relative_error !< relative error
-      double precision, parameter :: zero = 0.0d0 !< zero
-      double precision, parameter :: tiny = 1.0d-10 !< tiny
+      real(kind=dp) :: totals(2) !< totals for both columns
+      real(kind=dp) :: concbegin !< concentration begin
+      real(kind=dp) :: concend !< concentration end
+      real(kind=dp) :: summbaarea !< sum area of mass balance area
+      real(kind=dp) :: summbavolumebegin !< sum volume of mass balance area begin
+      real(kind=dp) :: summbavolumeend !< sum volume of mass balance area end
+      real(kind=dp) :: summbamassbegin !< sum mass of mass balance area
+      real(kind=dp) :: summbamassend !< sum mass of mass balance area
+      real(kind=dp) :: reference !< reference for relative error
+      real(kind=dp) :: relative_error !< relative error
+      real(kind=dp), parameter :: zero = 0.0d0 !< zero
+      real(kind=dp), parameter :: tiny = 1.0d-10 !< tiny
 
       type(balance_type), pointer :: balance !< derived type containing the flux groups, names and values
 
-      double precision, pointer :: p_mbavolumebegin(:)
-      double precision, pointer :: p_mbaflowhor(:, :, :)
-      double precision, pointer :: p_mbaflowsorsin(:, :)
-      double precision, pointer :: p_mbaflowraineva(:, :)
-      double precision, pointer :: p_mbafloweva(:)
-      double precision, pointer :: p_mbamassbegin(:, :)
-      double precision, pointer :: p_mbafluxhor(:, :, :, :)
-      double precision, pointer :: p_mbafluxsorsin(:, :, :, :)
-      double precision, pointer :: p_mbafluxheat(:, :)
-      double precision, pointer :: p_flxdmp(:, :, :)
+      real(kind=dp), pointer :: p_mbavolumebegin(:)
+      real(kind=dp), pointer :: p_mbaflowhor(:, :, :)
+      real(kind=dp), pointer :: p_mbaflowsorsin(:, :)
+      real(kind=dp), pointer :: p_mbaflowraineva(:, :)
+      real(kind=dp), pointer :: p_mbafloweva(:)
+      real(kind=dp), pointer :: p_mbamassbegin(:, :)
+      real(kind=dp), pointer :: p_mbafluxhor(:, :, :, :)
+      real(kind=dp), pointer :: p_mbafluxsorsin(:, :, :, :)
+      real(kind=dp), pointer :: p_mbafluxheat(:, :)
+      real(kind=dp), pointer :: p_flxdmp(:, :, :)
 
       if (overall_balance) then
          p_mbavolumebegin => mbavolumebegintot
@@ -2654,6 +2671,7 @@ contains
    end subroutine mba_write_bal_time_step
 
    subroutine mba_write_csv_time_step(luncsvm, luncsvmb, datestart, dateend)
+      use precision, only: dp
 
       use m_mass_balance_areas
       use m_fm_wq_processes, ifluxdummy => iflux
@@ -2666,14 +2684,14 @@ contains
 
       character(len=20), external :: seconds_to_dhms
       integer :: imbs, imba, iflux
-      double precision :: volchange ! volume change
-      double precision :: masschange ! mass change
-      double precision :: summbavolumebegin ! sum volume of mass balance area begin
-      double precision :: summbavolumeend ! sum volume of mass balance area end
-      double precision :: summbamassbegin ! sum mass of mass balance area
-      double precision :: summbamassend ! sum mass of mass balance area
-      double precision, parameter :: zero = 0.0d0 ! zero
-      double precision, parameter :: tiny = 1.0d-10 ! tiny
+      real(kind=dp) :: volchange ! volume change
+      real(kind=dp) :: masschange ! mass change
+      real(kind=dp) :: summbavolumebegin ! sum volume of mass balance area begin
+      real(kind=dp) :: summbavolumeend ! sum volume of mass balance area end
+      real(kind=dp) :: summbamassbegin ! sum mass of mass balance area
+      real(kind=dp) :: summbamassend ! sum mass of mass balance area
+      real(kind=dp), parameter :: zero = 0.0d0 ! zero
+      real(kind=dp), parameter :: tiny = 1.0d-10 ! tiny
 
       character(len=128) :: datetimmbambs
 

@@ -31,13 +31,13 @@
 !
 
 module m_flow_waveinit
-use m_xbeachwaves, only: allocstatsolverarrays
+   use m_xbeachwaves, only: allocstatsolverarrays
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: flow_waveinit
+   public :: flow_waveinit
 
 contains
 

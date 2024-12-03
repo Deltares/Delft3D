@@ -31,11 +31,12 @@
 !
 
       subroutine DPUTAR(XR, X, MMAX)
+         use precision, only: dp
          implicit none
          integer :: i
          integer :: mmax
 !     DE EERSTE IN DE TWEEDE
-         double precision XR(MMAX), X(MMAX)
+         real(kind=dp) XR(MMAX), X(MMAX)
          do I = 1, MMAX
             X(I) = XR(I)
          end do

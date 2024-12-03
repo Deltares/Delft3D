@@ -30,58 +30,59 @@
 !
 !
 module m_update_land_nodes
-use m_isocol
+   use m_isocol
 
    implicit none
 contains
 ! updates zk value at specified net node index using diven delta
 ! TODO: extend it to multiple indices
-subroutine update_land_nodes(node_index, new_zk)
-   use network_data, only: xk, yk, zk
-   use m_polygon, only: npl
-   use m_flowgeom, only: ndx
-   use unstruc_display, only: rcir
-   use m_sediment, only: jased, jaceneqtr, mxgr, grainlay
-   use m_hlcir2
-   use m_movabs
+   subroutine update_land_nodes(node_index, new_zk)
+      use precision, only: dp
+      use network_data, only: xk, yk, zk
+      use m_polygon, only: npl
+      use m_flowgeom, only: ndx
+      use unstruc_display, only: rcir
+      use m_sediment, only: jased, jaceneqtr, mxgr, grainlay
+      use m_hlcir2
+      use m_movabs
 
-   integer, intent(in) :: node_index
-   double precision, intent(in) :: new_zk
+      integer, intent(in) :: node_index
+      real(kind=dp), intent(in) :: new_zk
 
-   ! locals
-   integer :: k, ncol, j
-   double precision :: old_zk
+      ! locals
+      integer :: k, ncol, j
+      real(kind=dp) :: old_zk
 
-   if (ndx == 0) return
+      if (ndx == 0) return
 
-   k = node_index
+      k = node_index
 
-   if (npl > 2) then
-      old_zk = zk(k)
-      zk(k) = new_zk
-      if (jaceneqtr == 2 .and. jased > 0) then
-         do j = 1, mxgr
-            grainlay(j, k) = max(0d0, grainlay(j, k) + (old_zk - new_zk) / mxgr)
-         end do
+      if (npl > 2) then
+         old_zk = zk(k)
+         zk(k) = new_zk
+         if (jaceneqtr == 2 .and. jased > 0) then
+            do j = 1, mxgr
+               grainlay(j, k) = max(0d0, grainlay(j, k) + (old_zk - new_zk) / mxgr)
+            end do
+         end if
+         call isocol(zk(k), ncol)
+         call movabs(xk(k), yk(k))
+         call hlcir2(rcir, ncol, 30)
+      else
+         old_zk = zk(k)
+         zk(k) = new_zk
+         if (jaceneqtr == 2 .and. jased > 0) then
+            do j = 1, mxgr
+               grainlay(j, k) = max(0d0, grainlay(j, k) + (old_zk - new_zk) / mxgr)
+            end do
+         end if
+         call isocol(zk(k), ncol)
+         call movabs(xk(k), yk(k))
+         call hlcir2(rcir, ncol, 30)
       end if
-      call isocol(zk(k), ncol)
-      call movabs(xk(k), yk(k))
-      call hlcir2(rcir, ncol, 30)
-   else
-      old_zk = zk(k)
-      zk(k) = new_zk
-      if (jaceneqtr == 2 .and. jased > 0) then
-         do j = 1, mxgr
-            grainlay(j, k) = max(0d0, grainlay(j, k) + (old_zk - new_zk) / mxgr)
-         end do
-      end if
-      call isocol(zk(k), ncol)
-      call movabs(xk(k), yk(k))
-      call hlcir2(rcir, ncol, 30)
-   end if
 
-   ! NOTE: update of bobs/bl/s1/hs is now in subroutine on_land_change().
-   !       Should be called separately on call-site!
+      ! NOTE: update of bobs/bl/s1/hs is now in subroutine on_land_change().
+      !       Should be called separately on call-site!
 
-end subroutine update_land_nodes
+   end subroutine update_land_nodes
 end module m_update_land_nodes

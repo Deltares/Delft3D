@@ -32,27 +32,27 @@
 
 module m_wribl
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: wribl
+   public :: wribl
 
 contains
 
- subroutine wribl(mout) ! write bottom level
-    use M_FLOWGEOM
-    implicit none
+   subroutine wribl(mout) ! write bottom level
+      use M_FLOWGEOM
+      implicit none
 
-    integer :: mout, k
+      integer :: mout, k
 
-    write (mout, '(A,I12)') 'NR of internal FLOWCELLS = ', ndxi
+      write (mout, '(A,I12)') 'NR of internal FLOWCELLS = ', ndxi
 
-    do k = 1, ndxi
-       write (mout, *) xz(k), yz(k), bl(k)
-    end do
-    call doclose(mout)
+      do k = 1, ndxi
+         write (mout, *) xz(k), yz(k), bl(k)
+      end do
+      call doclose(mout)
 
- end subroutine wribl
+   end subroutine wribl
 
 end module m_wribl

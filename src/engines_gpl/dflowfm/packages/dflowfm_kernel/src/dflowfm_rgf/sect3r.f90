@@ -33,7 +33,7 @@
 !>    compute the intersection of two splines
       subroutine SECT3R(XI, YI, XJ, YJ, imax, CRP, &
                         NUMPI, NUMPJ, NUMCRO, TIV, TJV, XP, YP)
-
+         use precision, only: dp
          use m_missing
          use geometry_module, only: dbdistance, cross
          use m_sferic, only: jsferic, jasfer3D
@@ -47,24 +47,24 @@
          integer, intent(in) :: numpi !< number of control points of first spline
          integer, intent(in) :: numpj !< number of control points of second spline
 
-         double precision, dimension(imax), intent(in) :: xi, yi !< control point coordinates of first spline
-         double precision, dimension(imax), intent(in) :: xj, yj !< control point coordinates of second spline
+         real(kind=dp), dimension(imax), intent(in) :: xi, yi !< control point coordinates of first spline
+         real(kind=dp), dimension(imax), intent(in) :: xj, yj !< control point coordinates of second spline
 
          integer, intent(out) :: numcro !< number of intersections found
 
-         double precision, intent(out) :: crp !< cross product (SPvdP: dimensional, so only look at sign)
-         double precision, intent(out) :: tiv !< spline-coordinate of intersetion point on first spline (0 corresponds to first control point, 1 to second, and so on)
-         double precision, intent(out) :: tjv !< spline-coordinate of intersetion point on second spline
-         double precision, intent(out) :: xp, yp !< coordinates of intersection point
+         real(kind=dp), intent(out) :: crp !< cross product (SPvdP: dimensional, so only look at sign)
+         real(kind=dp), intent(out) :: tiv !< spline-coordinate of intersetion point on first spline (0 corresponds to first control point, 1 to second, and so on)
+         real(kind=dp), intent(out) :: tjv !< spline-coordinate of intersetion point on second spline
+         real(kind=dp), intent(out) :: xp, yp !< coordinates of intersection point
 
-         double precision :: ti, tj, tip, tjp, ti0, ti1, ti2, tj0, tj1, tj2, tii, tjj, &
-            tio, tjo, &
-            timx, tjmx, eps, eps2, xcr, ycr, crs, dis, &
-            xo, yo
-         double precision :: sl, sm, xi2(imax), yi2(imax), xj2(imax), yj2(imax), xc(4), yc(4)
+         real(kind=dp) :: ti, tj, tip, tjp, ti0, ti1, ti2, tj0, tj1, tj2, tii, tjj, &
+                          tio, tjo, &
+                          timx, tjmx, eps, eps2, xcr, ycr, crs, dis, &
+                          xo, yo
+         real(kind=dp) :: sl, sm, xi2(imax), yi2(imax), xj2(imax), yj2(imax), xc(4), yc(4)
          integer :: i, j, jo, jacros, k
 
-         double precision :: sdist, sdistmin
+         real(kind=dp) :: sdist, sdistmin
 
          NUMCRO = 0
          EPS = 0.0001

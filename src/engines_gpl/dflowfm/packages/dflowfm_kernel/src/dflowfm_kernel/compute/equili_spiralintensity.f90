@@ -34,26 +34,27 @@
 ! =================================================================================================
 module m_equili_spiralintensity
 
-implicit none
+   implicit none
 
 contains
 
-subroutine equili_spiralintensity()
-   use m_flow
-   use m_flowgeom
-   use m_sferic, only: jsferic, fcorio
-   implicit none
-   integer :: kk
-   double precision :: spir_ce, spir_be, fcoriocof
+   subroutine equili_spiralintensity()
+      use precision, only: dp
+      use m_flow
+      use m_flowgeom
+      use m_sferic, only: jsferic, fcorio
+      implicit none
+      integer :: kk
+      real(kind=dp) :: spir_ce, spir_be, fcoriocof
 
-   do kk = 1, ndx
-      fcoriocof = fcorio
-      if (icorio > 0 .and. jsferic == 1) fcoriocof = fcoris(kk)
-      spir_ce = fcorio * hs(kk) * 0.5d0
-      spir_be = hs(kk) * spircrv(kk) * spirucm(kk)
-      spirint(kk) = spir_be - spir_ce
-   end do
+      do kk = 1, ndx
+         fcoriocof = fcorio
+         if (icorio > 0 .and. jsferic == 1) fcoriocof = fcoris(kk)
+         spir_ce = fcorio * hs(kk) * 0.5d0
+         spir_be = hs(kk) * spircrv(kk) * spirucm(kk)
+         spirint(kk) = spir_be - spir_ce
+      end do
 
-end subroutine equili_spiralintensity
+   end subroutine equili_spiralintensity
 
 end module m_equili_spiralintensity

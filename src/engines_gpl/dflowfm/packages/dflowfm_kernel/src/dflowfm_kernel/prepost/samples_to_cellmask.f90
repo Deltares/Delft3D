@@ -32,6 +32,7 @@
 
 ! update cellmask from samples
 subroutine samples_to_cellmask()
+   use precision, only: dp
 
    use network_data
    use m_samples
@@ -41,7 +42,7 @@ subroutine samples_to_cellmask()
    implicit none
 
    integer :: i, in, k, kk, n, nn
-   double precision :: xx(6), yy(6)
+   real(kind=dp) :: xx(6), yy(6)
 
    if (allocated(cellmask)) deallocate (cellmask)
    allocate (cellmask(nump1d2d)); cellmask = 0

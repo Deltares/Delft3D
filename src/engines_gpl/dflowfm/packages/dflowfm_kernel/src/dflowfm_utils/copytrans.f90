@@ -31,6 +31,7 @@
 !
 
   subroutine COPYTRANS()
+     use precision, only: dp
      use m_netw
      use m_alloc
      use m_missing, only: jins, dmiss
@@ -48,9 +49,9 @@
      integer :: l0
      integer :: lo
      integer :: n
-     double precision :: xoff
-     double precision :: yoff
-     double precision :: zoff
+     real(kind=dp) :: xoff
+     real(kind=dp) :: yoff
+     real(kind=dp) :: zoff
 
      integer, allocatable :: KC2(:), LC2(:)
      allocate (KC2(NUMK), LC2(NUML), STAT=IERR)

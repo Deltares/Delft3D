@@ -32,58 +32,59 @@
 
 module m_minmxnds
 
-implicit none
+   implicit none
 
 contains
 
- subroutine minmxnds()
-    use unstruc_display_data ! bepaal minimum en maximum van znod in viewing area
-    use m_flowgeom, only: ndx, xz, yz
-    use m_flow, only: ndmin, ndmax, hs
-    use m_missing, only: dmiss
-    use m_depmax
-    use m_drawthis
-    use m_inview
-    use m_znod
-    
-    integer :: i
-    double precision :: rmin, rmax
-    double precision :: zn
-    integer :: n, ja2
+   subroutine minmxnds()
+      use precision, only: dp
+      use unstruc_display_data ! bepaal minimum en maximum van znod in viewing area
+      use m_flowgeom, only: ndx, xz, yz
+      use m_flow, only: ndmin, ndmax, hs
+      use m_missing, only: dmiss
+      use m_depmax
+      use m_drawthis
+      use m_inview
+      use m_znod
 
-    if (jaauto > 0) then
-       rmin = 1d30; ndmin = 0
-       rmax = -1d30; ndmax = 0
+      integer :: i
+      real(kind=dp) :: rmin, rmax
+      real(kind=dp) :: zn
+      integer :: n, ja2
 
-       do n = 1, ndx
-          ja2 = 1
-          if (wetplot > 0d0) then
-             if (hs(n) < wetplot) then
-                ja2 = 0
-             end if
-          end if
-          if (ja2 == 1 .or. ndraw(28) == 3) then ! crash
-             if (inview(xz(n), yz(n))) then
-                zn = znod(n)
-                if (zn == DMISS) cycle
-                if (zn < rmin) then
-                   rmin = zn; ndmin = n
-                end if
-                if (zn > rmax) then
-                   rmax = zn; ndmax = n
-                end if
-             end if
-          end if
-       end do
-       vmax = rmax
-       vmin = rmin
-    end if
+      if (jaauto > 0) then
+         rmin = 1d30; ndmin = 0
+         rmax = -1d30; ndmax = 0
 
-    dv = vmax - vmin
-    do i = 1, nv
-       val(i) = vmin + (i - 1) * dv / (nv - 1)
-    end do
+         do n = 1, ndx
+            ja2 = 1
+            if (wetplot > 0d0) then
+               if (hs(n) < wetplot) then
+                  ja2 = 0
+               end if
+            end if
+            if (ja2 == 1 .or. ndraw(28) == 3) then ! crash
+               if (inview(xz(n), yz(n))) then
+                  zn = znod(n)
+                  if (zn == DMISS) cycle
+                  if (zn < rmin) then
+                     rmin = zn; ndmin = n
+                  end if
+                  if (zn > rmax) then
+                     rmax = zn; ndmax = n
+                  end if
+               end if
+            end if
+         end do
+         vmax = rmax
+         vmin = rmin
+      end if
 
- end subroutine minmxnds
+      dv = vmax - vmin
+      do i = 1, nv
+         val(i) = vmin + (i - 1) * dv / (nv - 1)
+      end do
+
+   end subroutine minmxnds
 
 end module m_minmxnds

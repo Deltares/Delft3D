@@ -32,28 +32,28 @@
 
 module m_wearel
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine WEAREL()
-         use m_minmaxworld
-         use m_inilca
-         use m_wearelt
-         implicit none
+   subroutine WEAREL()
+      use m_minmaxworld
+      use m_inilca
+      use m_wearelt
+      implicit none
 
-         call MINMAXWORLD(XMIN, YMIN, XMAX, YMAX)
+      call MINMAXWORLD(XMIN, YMIN, XMAX, YMAX)
 
-         !X1   = XMIN
-         !Y1   = YMIN
-         !X2   = XMAX
-         !CALL SETWY(X1,Y1,X2,Y2)
-         !IF (INI .EQ. 1) THEN
-         call INILCA()
-         !ELSE
-         !   INI = 1
-         !ENDIF
-         return
-      end
+      !X1   = XMIN
+      !Y1   = YMIN
+      !X2   = XMAX
+      !CALL SETWY(X1,Y1,X2,Y2)
+      !IF (INI .EQ. 1) THEN
+      call INILCA()
+      !ELSE
+      !   INI = 1
+      !ENDIF
+      return
+   end
 
 end module m_wearel

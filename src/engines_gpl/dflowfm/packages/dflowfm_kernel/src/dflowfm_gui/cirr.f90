@@ -34,17 +34,18 @@ module m_cirr
 
    implicit none
 contains
-      subroutine CIRR(X, Y, NCOL)
-         use m_wearelt
-         use m_set_col
-         use m_movabs
+   subroutine CIRR(X, Y, NCOL)
+      use precision, only: dp
+      use m_wearelt
+      use m_set_col
+      use m_movabs
 
-         integer :: ncol
-         double precision :: x
-         double precision :: y
-         call SETCOL(NCOL)
-         call MOVABS(X, Y)
-         call CIR(RCIR)
-         return
-      end
+      integer :: ncol
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      call SETCOL(NCOL)
+      call MOVABS(X, Y)
+      call CIR(RCIR)
+      return
+   end
 end module m_cirr

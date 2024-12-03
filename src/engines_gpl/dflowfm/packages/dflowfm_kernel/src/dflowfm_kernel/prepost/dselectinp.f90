@@ -31,21 +31,22 @@
 !
 
    subroutine DSELECTINP(X, Y, N, KIN)
+      use precision, only: dp
       use M_POLYGON
       use m_missing, only: dmiss, jins
       use geometry_module, only: dpinpok
       use m_min_max_pol
       implicit none
       integer :: N
-      double precision :: X(N), Y(N), ZK
+      real(kind=dp) :: X(N), Y(N), ZK
       integer :: KIN(N)
 
       integer :: in
       integer :: k
-      double precision :: xmaxp
-      double precision :: xminp
-      double precision :: ymaxp
-      double precision :: yminp
+      real(kind=dp) :: xmaxp
+      real(kind=dp) :: xminp
+      real(kind=dp) :: ymaxp
+      real(kind=dp) :: yminp
       ZK = 1d0
 
       if (NPL < 3) then

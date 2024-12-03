@@ -32,38 +32,38 @@
 
 module m_copypolto1dnet
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: copypolto1dnet
+   public :: copypolto1dnet
 
 contains
 
-  subroutine COPYPOLTo1Dnet()
-     use m_addnetlink, only: addnetlink
-     use m_polygon
-     use M_netw
-     use M_MISSING
-     use network_data, only: kn3typ
-     use m_delpol
+   subroutine COPYPOLTo1Dnet()
+      use m_addnetlink, only: addnetlink
+      use m_polygon
+      use M_netw
+      use M_MISSING
+      use network_data, only: kn3typ
+      use m_delpol
 
-     integer :: k, L, kn3o
+      integer :: k, L, kn3o
 
-     kn3o = kn3typ; kn3typ = 1
+      kn3o = kn3typ; kn3typ = 1
 
-     ! CALL INCREASENETW(NUMK+NPL, NUML+NPL-1)
-     do K = 2, NPL
+      ! CALL INCREASENETW(NUMK+NPL, NUML+NPL-1)
+      do K = 2, NPL
 
-        if (xpl(k) /= dmiss .and. xpl(K - 1) /= dmiss) then
-           call addnetlink(xpl(k - 1), ypl(k - 1), xpl(k), ypl(k), L)
-        end if
+         if (xpl(k) /= dmiss .and. xpl(K - 1) /= dmiss) then
+            call addnetlink(xpl(k - 1), ypl(k - 1), xpl(k), ypl(k), L)
+         end if
 
-     end do
+      end do
 
-     kn3typ = kn3o
-     call DELPOL()
-     return
-  end subroutine COPYPOLTo1Dnet
+      kn3typ = kn3o
+      call DELPOL()
+      return
+   end subroutine COPYPOLTo1Dnet
 
 end module m_copypolto1dnet

@@ -32,79 +32,80 @@
 
 module m_connect
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: connect
+   public :: connect
 
 contains
 
-  subroutine CONNECT(K1, K2, LFAC, R00)
-     use m_netw
-     use gridoperations
-     use m_cconstants
-     use m_dlength, only: dlength
+   subroutine CONNECT(K1, K2, LFAC, R00)
+      use precision, only: dp
+      use m_netw
+      use gridoperations
+      use m_cconstants
+      use m_dlength, only: dlength
 
-     integer :: K1, K2, LFAC
-     double precision :: R00
-     integer :: ja
-     integer :: kl
-     integer :: kr
-     integer :: l
-     integer :: ll
-     integer :: lnu
-     double precision :: r0
+      integer :: K1, K2, LFAC
+      real(kind=dp) :: R00
+      integer :: ja
+      integer :: kl
+      integer :: kr
+      integer :: l
+      integer :: ll
+      integer :: lnu
+      real(kind=dp) :: r0
 
-     do L = 1, NUML
-        if (KN(1, L) == K1 .and. KN(2, L) == K2 .or. &
-            KN(1, L) == K2 .and. KN(2, L) == K1) then
-           ! CALL CONFRM('POINTS ALREADY CONNECTED, CONTINUE', JA)
-           ! IF (JA .NE. 1) RETURN
-           return
-        end if
-     end do
+      do L = 1, NUML
+         if (KN(1, L) == K1 .and. KN(2, L) == K2 .or. &
+             KN(1, L) == K2 .and. KN(2, L) == K1) then
+            ! CALL CONFRM('POINTS ALREADY CONNECTED, CONTINUE', JA)
+            ! IF (JA .NE. 1) RETURN
+            return
+         end if
+      end do
 
-     R0 = R00
-     if (R0 <= 0) R0 = DLENGTH(K1, K2)
+      R0 = R00
+      if (R0 <= 0) R0 = DLENGTH(K1, K2)
 
-     do LL = 1, LFAC
+      do LL = 1, LFAC
 
-        ! CALL GIVENEWLINKNUM(LNU)   ! En increase NUML als nodig
+         ! CALL GIVENEWLINKNUM(LNU)   ! En increase NUML als nodig
 
-        if (LL == 1) then
-           KL = K1
-           if (LFAC > 1) then ! LUS EIGENLIJK ANDERS STARTEN
-              call GIVENEWNODENUM(KR)
-           else
-              KR = K2
-           end if
-        else if (LL == LFAC) then
-           KL = KR
-           KR = K2
-        else
-           KL = KR
-           call GIVENEWNODENUM(KR)
-        end if
+         if (LL == 1) then
+            KL = K1
+            if (LFAC > 1) then ! LUS EIGENLIJK ANDERS STARTEN
+               call GIVENEWNODENUM(KR)
+            else
+               KR = K2
+            end if
+         else if (LL == LFAC) then
+            KL = KR
+            KR = K2
+         else
+            KL = KR
+            call GIVENEWNODENUM(KR)
+         end if
 
-        !CALL ADDLINKTONODES(KL,KR,LNU)
-        !CALL CONNECTDB(KL,KR,LNU)
+         !CALL ADDLINKTONODES(KL,KR,LNU)
+         !CALL CONNECTDB(KL,KR,LNU)
 
-        call CONNECTDBN(KL, KR, LNU)
+         call CONNECTDBN(KL, KR, LNU)
 
-        KN(3, LNU) = KN3TYP
+         KN(3, LNU) = KN3TYP
 
-        XK(KL) = XK(K1) + (XK(K2) - XK(K1)) * dble(LL - 1) / dble(LFAC)
-        YK(KL) = YK(K1) + (YK(K2) - YK(K1)) * dble(LL - 1) / dble(LFAC)
-        ZK(KL) = ZK(K1) + (ZK(K2) - ZK(K1)) * dble(LL - 1) / dble(LFAC)
-        XK(KR) = XK(K1) + (XK(K2) - XK(K1)) * dble(LL) / dble(LFAC)
-        YK(KR) = YK(K1) + (YK(K2) - YK(K1)) * dble(LL) / dble(LFAC)
-        ZK(KR) = ZK(K1) + (ZK(K2) - ZK(K1)) * dble(LL) / dble(LFAC)
-     end do
+         XK(KL) = XK(K1) + (XK(K2) - XK(K1)) * dble(LL - 1) / dble(LFAC)
+         YK(KL) = YK(K1) + (YK(K2) - YK(K1)) * dble(LL - 1) / dble(LFAC)
+         ZK(KL) = ZK(K1) + (ZK(K2) - ZK(K1)) * dble(LL - 1) / dble(LFAC)
+         XK(KR) = XK(K1) + (XK(K2) - XK(K1)) * dble(LL) / dble(LFAC)
+         YK(KR) = YK(K1) + (YK(K2) - YK(K1)) * dble(LL) / dble(LFAC)
+         ZK(KR) = ZK(K1) + (ZK(K2) - ZK(K1)) * dble(LL) / dble(LFAC)
+      end do
 
-     JA = 1
+      JA = 1
 
-     return
-  end subroutine CONNECT
+      return
+   end subroutine CONNECT
 
 end module m_connect

@@ -32,20 +32,21 @@
 
 module m_rcirc
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine RCIRC(X, Y)
-         use m_cir
-         use m_wearelt
-         use m_movabs
+   subroutine RCIRC(X, Y)
+      use precision, only: dp
+      use m_cir
+      use m_wearelt
+      use m_movabs
 
-         double precision :: x
-         double precision :: y
-         call MOVABS(X, Y)
-         call CIR(RCIR)
-         return
-      end
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      call MOVABS(X, Y)
+      call CIR(RCIR)
+      return
+   end
 
 end module m_rcirc

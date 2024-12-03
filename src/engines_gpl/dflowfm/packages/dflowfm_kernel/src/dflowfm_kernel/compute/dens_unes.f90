@@ -64,6 +64,7 @@ contains
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes water density from temperature and
+      use precision, only: dp
 !              salinity using equation of state (rhowat).
 !
 ! Method used: Equation of state following UNESCO, (UNESCO,
@@ -81,13 +82,13 @@ contains
 !
 ! Global variables
 !
-      double precision, intent(in) :: salt, temp
-      double precision, intent(out) :: rhouns, rhods, rhodt
+      real(kind=dp), intent(in) :: salt, temp
+      real(kind=dp), intent(out) :: rhouns, rhods, rhodt
 !
 ! Local variables
 !
-      double precision :: s, sq, rhwa, asal, bsal
-      double precision, dimension(5) :: t
+      real(kind=dp) :: s, sq, rhwa, asal, bsal
+      real(kind=dp), dimension(5) :: t
       double precision, dimension(0:5), parameter :: cf = &
          (/999.842594d0, &
            6.793952d-2, &
@@ -105,7 +106,7 @@ contains
          (/-5.72466d-3, &
            1.0227d-4, &
            -1.6546d-6/)
-      double precision, parameter :: csal = 4.8314d-4
+      real(kind=dp), parameter :: csal = 4.8314d-4
 !
 !! executable statements -------------------------------------------------------
 !

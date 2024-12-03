@@ -32,14 +32,15 @@
 
 module m_tweedrie
 
-implicit none
+   implicit none
 
 contains
 
    subroutine TWEEDRIE(X, Y, XD, YD, ZD)
+      use precision, only: dp
       use m_howtoview
       implicit none
-      double precision :: X, Y, XD, YD, ZD
+      real(kind=dp) :: X, Y, XD, YD, ZD
 
       if (JVIEW == 1) then
          XD = X

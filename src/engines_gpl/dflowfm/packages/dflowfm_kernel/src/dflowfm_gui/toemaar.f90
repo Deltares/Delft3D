@@ -36,7 +36,7 @@ contains
       use m_okay
       use m_timlin
       use m_fkeys
-      
+
       integer :: key
       call OKAY(0)
       call TIMLIN()

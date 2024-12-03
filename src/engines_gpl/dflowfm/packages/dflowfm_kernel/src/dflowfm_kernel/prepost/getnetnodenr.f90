@@ -31,9 +31,10 @@
 !
 
 subroutine getnetnodenr(x, y, k)
+   use precision, only: dp
    use m_missing
    use gridoperations
-   double precision :: x, y, z
+   real(kind=dp) :: x, y, z
    integer :: k
 
    z = dmiss

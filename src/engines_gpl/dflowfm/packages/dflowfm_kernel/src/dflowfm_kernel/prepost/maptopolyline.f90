@@ -34,14 +34,15 @@
       !! The points are placed onto a polyline at the distances measured along
       !! the consecutive polyline segments.
       subroutine mapToPolyline(XHO, YHO, DPL, NO, XH, YH, DPLA, NPL) ! HAAL HUIDIGE PUNTEN OP
+         use precision, only: dp
          use m_interpolateOnPolyline
          implicit none
          integer, intent(in) :: NO !< Nr. of polyline points.
          integer, intent(in) :: npl !< Nr. of points to be interpolated.
-         double precision, intent(in) :: XHO(NO), YHO(NO) !< Polyline points.
-         double precision, intent(in) :: DPL(NO) !< Accumulated segment sizes along polyline.
-         double precision, intent(out) :: XH(NPL), YH(NPL) !< Output points interpolated on polyline.
-         double precision, intent(in) :: DPLA(NPL) !< Desired distances for all points.
+         real(kind=dp), intent(in) :: XHO(NO), YHO(NO) !< Polyline points.
+         real(kind=dp), intent(in) :: DPL(NO) !< Accumulated segment sizes along polyline.
+         real(kind=dp), intent(out) :: XH(NPL), YH(NPL) !< Output points interpolated on polyline.
+         real(kind=dp), intent(in) :: DPLA(NPL) !< Desired distances for all points.
 
          integer :: ja
          integer :: n

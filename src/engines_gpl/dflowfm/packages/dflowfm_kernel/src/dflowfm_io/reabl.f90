@@ -32,35 +32,35 @@
 
 module m_reabl
 
-implicit none
+   implicit none
 
 contains
 
- subroutine reabl(mout) ! read bottom level
-    use m_flowgeom
-    use M_samples
-    use m_missing
-    use m_delsam
-    use m_reasam
-    use m_qn_read_error
-    use m_interpdivers
+   subroutine reabl(mout) ! read bottom level
+      use m_flowgeom
+      use M_samples
+      use m_missing
+      use m_delsam
+      use m_reasam
+      use m_qn_read_error
+      use m_interpdivers
 
-    integer :: mout
-    character(len=256) :: rec
+      integer :: mout
+      character(len=256) :: rec
 
-    call reasam(mout, 0)
+      call reasam(mout, 0)
 
-    bl = dmiss
+      bl = dmiss
 
-    call interpdivers(1)
+      call interpdivers(1)
 
-    call delsam(-1) ! deallocate
+      call delsam(-1) ! deallocate
 
-    return
+      return
 
-888 call qnreaderror('trying to read nr of internal flow nodes but getting', rec, mout)
-    call doclose(mout)
+888   call qnreaderror('trying to read nr of internal flow nodes but getting', rec, mout)
+      call doclose(mout)
 
- end subroutine reabl
+   end subroutine reabl
 
 end module m_reabl

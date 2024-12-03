@@ -31,10 +31,11 @@
 !
 
       subroutine DISPFORM(value, fmt)
+         use precision, only: dp
          implicit none
          integer :: n1
          integer :: n2
-         double precision :: value
+         real(kind=dp) :: value
          character fmt * (*)
 
          fmt = '(f9.3)'

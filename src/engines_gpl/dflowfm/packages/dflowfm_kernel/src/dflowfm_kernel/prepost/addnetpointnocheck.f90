@@ -32,27 +32,28 @@
 
 module m_addnetpointnocheck
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: addnetpointnocheck
+   public :: addnetpointnocheck
 
 contains
 
-  subroutine addnetpointnocheck(XP, YP, ZP, K1)
-     use m_netw
+   subroutine addnetpointnocheck(XP, YP, ZP, K1)
+      use precision, only: dp
+      use m_netw
 
-     double precision :: xp, yp, ZP
-     integer :: k1
-     
-     numk = numk + 1
-     k1 = numk
-     xk(k1) = xp
-     yk(k1) = yp
-     ZK(K1) = ZP
-     kc(k1) = 1
+      real(kind=dp) :: xp, yp, ZP
+      integer :: k1
 
-  end subroutine addnetpointnocheck
+      numk = numk + 1
+      k1 = numk
+      xk(k1) = xp
+      yk(k1) = yp
+      ZK(K1) = ZP
+      kc(k1) = 1
+
+   end subroutine addnetpointnocheck
 
 end module m_addnetpointnocheck

@@ -32,11 +32,12 @@
 
 module m_tekpolygon
 
-implicit none
+   implicit none
 
 contains
 
    subroutine tekpolygon()
+      use precision, only: dp
       use m_rcirc
       use m_polygon
       use unstruc_display
@@ -51,7 +52,7 @@ contains
       implicit none
 
       integer :: k, kk, key, k2
-      double precision :: a, b, x, y, z, s, c, d, dx, dy, dc, dl, dr, dxL, dyL, dxR, dyR, sL, sR, dcxR, dcyR, dcxL, dcyL
+      real(kind=dp) :: a, b, x, y, z, s, c, d, dx, dy, dc, dl, dr, dxL, dyL, dxR, dyR, sL, sR, dcxR, dcyR, dcxL, dcyL
 
       if (ndrawpol == 2) then
 

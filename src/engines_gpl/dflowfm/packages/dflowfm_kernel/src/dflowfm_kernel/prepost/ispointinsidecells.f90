@@ -31,13 +31,14 @@
 !
 
  subroutine ispointinsidecells(xz, yz, nn) ! check if certain point is inside other cells
+    use precision, only: dp
 
     use m_netw
     use geometry_module, only: pinpok
     use m_missing, only: jins, dmiss
 
     implicit none
-    double precision :: xz, yz, x(10), y(10)
+    real(kind=dp) :: xz, yz, x(10), y(10)
     integer :: nn
 
     ! locals

@@ -33,7 +33,8 @@ module m_check_einstein_garcia
    implicit none
 contains
    subroutine check_einstein_garcia(aref, h, z0, rs, ein)
-      double precision :: aref, h, z0, rs, ein, ucrouse, z, dz
+      use precision, only: dp
+      real(kind=dp) :: aref, h, z0, rs, ein, ucrouse, z, dz
       integer :: num, k
 
       ein = 0d0

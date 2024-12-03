@@ -32,11 +32,12 @@
 
 !> derefine mesh
 module m_derefine_mesh
-use m_teknode
+   use m_teknode
 
    implicit none
 contains
    subroutine derefine_mesh(xp, yp, Lconfirm)
+      use precision, only: dp
 
       use m_confrm
       use m_netw
@@ -48,7 +49,7 @@ contains
       use m_cirr
       use m_delete_cell, only: deletecell
 
-      double precision, intent(in) :: xp, yp !< coordinates of input point ( not used with Lconfirm .eq. .true. )
+      real(kind=dp), intent(in) :: xp, yp !< coordinates of input point ( not used with Lconfirm .eq. .true. )
       logical, intent(in) :: Lconfirm !< prompt for cell deletion (.true.) or not (.false.)
 
       integer, parameter :: NMAX = 100 !< array size
@@ -58,7 +59,7 @@ contains
       integer, dimension(NMAX) :: kindirect !< indirectly connected cells, i.e. cells sharing a node, but not a link, with cell k
       integer, dimension(2, NMAX) :: kne !< left and right neighboring (in)direct cell that neighbors the directly connected cells
 
-      double precision :: xx, yy
+      real(kind=dp) :: xx, yy
 
       integer :: numfront, numfrontnew
       integer, dimension(:), allocatable :: ifront, ifrontnew, icellmask

@@ -31,6 +31,7 @@
 !
 
       subroutine ABREL2(X, Y, D, NN, T)
+         use precision, only: dp
 
          use geometry_module, only: dbdistance
          use m_missing, only: dmiss
@@ -39,8 +40,8 @@
          implicit none
          integer :: j
          integer :: nn
-         double precision :: X(NN), Y(NN), D(NN)
-         double precision :: T
+         real(kind=dp) :: X(NN), Y(NN), D(NN)
+         real(kind=dp) :: T
          D(1) = 0
          do J = 2, NN
             D(J) = D(J - 1) + DBDISTANCE(X(J - 1), Y(J - 1), X(J), Y(J), jsferic, jasfer3D, dmiss)

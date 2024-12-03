@@ -32,17 +32,17 @@
 
 module m_haltesc
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine HALTESC()
-         implicit none
-         integer :: numkey
-         numkey = 0
-         do while (numkey /= 27)
-            call INKEYEVENTIMM(NUMKEY)
-         end do
-      end
+   subroutine HALTESC()
+      implicit none
+      integer :: numkey
+      numkey = 0
+      do while (numkey /= 27)
+         call INKEYEVENTIMM(NUMKEY)
+      end do
+   end
 
 end module m_haltesc

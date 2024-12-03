@@ -31,6 +31,7 @@
 !
 
       subroutine INDEKSI(N, NARRIN, INDX)
+         use precision, only: dp
          implicit none
          integer :: i
          integer :: indx
@@ -40,7 +41,7 @@
          integer :: l
          integer :: n
          integer :: narrin
-         double precision :: q
+         real(kind=dp) :: q
          dimension NARRIN(N), INDX(N)
          do J = 1, N
             INDX(J) = J

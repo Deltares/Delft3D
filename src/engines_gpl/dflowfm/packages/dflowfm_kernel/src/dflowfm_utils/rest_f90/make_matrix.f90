@@ -32,15 +32,16 @@
 
 !> prepares a matrix for solver test (as in "mpitest")
 subroutine make_matrix(CFL, s1)
+   use precision, only: dp
    use m_reduce
    use m_flowgeom
 
    implicit none
 
-   double precision, intent(in) :: CFL !< CFL-number
-   double precision, dimension(Ndx), intent(in) :: s1 !< exact solution
+   real(kind=dp), intent(in) :: CFL !< CFL-number
+   real(kind=dp), dimension(Ndx), intent(in) :: s1 !< exact solution
 
-   double precision :: aufu
+   real(kind=dp) :: aufu
 
    integer :: k1, k2, L
 

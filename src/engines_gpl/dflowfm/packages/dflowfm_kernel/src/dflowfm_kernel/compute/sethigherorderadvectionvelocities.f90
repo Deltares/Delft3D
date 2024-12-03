@@ -42,6 +42,7 @@ module m_sethigherorderadvectionvelocities
 contains
 
    subroutine sethigherorderadvectionvelocities()
+      use precision, only: dp
       use m_flowgeom
       use m_flow
       use m_sferic
@@ -51,11 +52,11 @@ contains
 
       integer :: L, LL, k1, k2, k, ku, kd, kku, ku2, is, ip, Lb, Lt, kkua, kkub
       integer :: n12, ib
-      double precision :: half, sl1, sl2, sl3, cf, ucxku, ucyku, ds1x, ds1y, ds2x, ds2y
-      double precision :: dsx, dsy
+      real(kind=dp) :: half, sl1, sl2, sl3, cf, ucxku, ucyku, ds1x, ds1y, ds2x, ds2y
+      real(kind=dp) :: dsx, dsy
 
-      double precision, external :: nod2linx, nod2liny
-      double precision, external :: nodup2linx, nodup2liny
+      real(kind=dp), external :: nod2linx, nod2liny
+      real(kind=dp), external :: nodup2linx, nodup2liny
 
       if (limtypmom < 1) return
 

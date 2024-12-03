@@ -32,36 +32,37 @@
 
 module m_arrowrcir
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine ARROWrcir(X0, Y0, cs, sn)
-         use M_WEARELT
-         use m_movabs
-         use m_lnabs
-         implicit none
-         double precision :: cs
-         integer :: i
-         double precision :: sn
-         double precision :: x0
-         double precision :: y0
-         double precision :: X(3), Y(3), XR(3), YR(3)
-         data X(1)/0.8d0/, X(2)/1d0/, X(3)/0.8d0/, &
-            Y(1)/-0.1d0/, Y(2)/0d0/, Y(3)/0.1d0/
+   subroutine ARROWrcir(X0, Y0, cs, sn)
+      use precision, only: dp
+      use M_WEARELT
+      use m_movabs
+      use m_lnabs
+      implicit none
+      real(kind=dp) :: cs
+      integer :: i
+      real(kind=dp) :: sn
+      real(kind=dp) :: x0
+      real(kind=dp) :: y0
+      real(kind=dp) :: X(3), Y(3), XR(3), YR(3)
+      data X(1)/0.8d0/, X(2)/1d0/, X(3)/0.8d0/, &
+         Y(1)/-0.1d0/, Y(2)/0d0/, Y(3)/0.1d0/
 
-         do I = 1, 3
-            XR(I) = X0 + 3 * rcir * (X(I) * CS - Y(I) * SN)
-            YR(I) = Y0 + 3 * rcir * (Y(I) * CS + X(I) * SN)
-         end do
+      do I = 1, 3
+         XR(I) = X0 + 3 * rcir * (X(I) * CS - Y(I) * SN)
+         YR(I) = Y0 + 3 * rcir * (Y(I) * CS + X(I) * SN)
+      end do
 
-         call MOVABS(X0, Y0)
-         call LNABS(XR(2), YR(2))
-         call LNABS(XR(1), YR(1))
+      call MOVABS(X0, Y0)
+      call LNABS(XR(2), YR(2))
+      call LNABS(XR(1), YR(1))
 
-         call MOVABS(XR(2), YR(2))
-         call LNABS(XR(3), YR(3))
-         return
-      end
+      call MOVABS(XR(2), YR(2))
+      call LNABS(XR(3), YR(3))
+      return
+   end
 
 end module m_arrowrcir

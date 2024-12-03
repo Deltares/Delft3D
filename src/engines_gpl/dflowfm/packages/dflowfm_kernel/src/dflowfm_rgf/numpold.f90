@@ -33,12 +33,13 @@ module m_numpold
    implicit none
 contains
    subroutine NUMPold(X, mmax, nmax, MP, NUMPI)
+      use precision, only: dp
 !     GEEF AANTAL PUNTEN VAN SPLINE MP
       !USE DIMENS
       use m_missing
 
       integer :: mp, numpi, mmax, nmax
-      double precision :: X(MMAX, NMAX)
+      real(kind=dp) :: X(MMAX, NMAX)
 
       integer :: j
       NUMPI = 0

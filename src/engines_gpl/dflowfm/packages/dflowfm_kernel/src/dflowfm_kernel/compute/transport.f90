@@ -46,6 +46,7 @@ contains
 !> transport for now, advect salinity and add
 !! high order limited terms to uqcx, uqcy
    subroutine transport()
+      use precision, only: dp
       use m_setrho, only: setrho, setrhokk
       use m_getverticallyaveraged
       use m_flowgeom
@@ -66,15 +67,15 @@ contains
 
       integer :: L, k, k1, k2, kb, n
 
-      double precision :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
+      real(kind=dp) :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
       integer :: j, ki, jastep, kk
       integer :: LL, Lb, Lt, kt, km
 
-      double precision :: flx(mxgr) !< sed erosion flux (kg/s)                 , dimension = mxgr
-      double precision :: seq(mxgr) !< sed equilibrium transport rate (kg/m/s) , dimension = mxgr
-      double precision :: wse(mxgr) !< effective fall velocity (m/s)           , dimension = mxgr, ws*crefa=wse*seq
+      real(kind=dp) :: flx(mxgr) !< sed erosion flux (kg/s)                 , dimension = mxgr
+      real(kind=dp) :: seq(mxgr) !< sed equilibrium transport rate (kg/m/s) , dimension = mxgr
+      real(kind=dp) :: wse(mxgr) !< effective fall velocity (m/s)           , dimension = mxgr, ws*crefa=wse*seq
 
-      double precision :: valtop
+      real(kind=dp) :: valtop
 
       call timstrt('Transport', handle_extra(52)) ! transport
 

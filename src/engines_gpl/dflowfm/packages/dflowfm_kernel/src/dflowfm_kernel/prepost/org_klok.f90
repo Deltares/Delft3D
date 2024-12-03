@@ -31,9 +31,10 @@
 !
 
   subroutine org_klok(cpu) ! for true performance monitoring, wallclock gives more meaningfull information than cpuclock
+     use precision, only: dp
      implicit none
      integer, dimension(8) :: IV
-     double precision :: cpu
+     real(kind=dp) :: cpu
 
      call date_and_time(VALUES=IV)
 

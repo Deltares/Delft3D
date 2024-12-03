@@ -32,75 +32,76 @@
 
 module m_reabot
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine REABOT(MMDD, JA)
-         use M_GRID
-         use m_readyy
-         use m_qn_read_error
-         use m_qn_eof_error
-         implicit none
+   subroutine REABOT(MMDD, JA)
+      use precision, only: dp
+      use M_GRID
+      use m_readyy
+      use m_qn_read_error
+      use m_qn_eof_error
+      implicit none
 
-         integer :: mmdd, ja, m1, n1, m2, n2, L1, L2, L3, L4, L5
-         integer :: m, n
-         double precision :: af
+      integer :: mmdd, ja, m1, n1, m2, n2, L1, L2, L3, L4, L5
+      integer :: m, n
+      real(kind=dp) :: af
 
-         character REC * 132
-         call READYY('Reading SIMONA *.bottom File', 0d0)
+      character REC * 132
+      call READYY('Reading SIMONA *.bottom File', 0d0)
 
-5        continue
+5     continue
+
+      read (MMDD, '(A)', end=777) REC
+      if (REC(1:3) /= 'BOX') then
+         goto 5
+      else
+         L1 = index(REC, '=(')
+         read (REC(L1 + 2:), *) M1
+
+         L2 = L1 + index(REC(L1:), ',')
+         L3 = index(REC(:), ';') - 1
+
+         read (REC(L2:L3), *) N1
+
+         L3 = index(REC, ';')
+         read (REC(L3 + 1:), *) M2
+
+         L4 = L3 + index(REC(L3:), ',')
+         L5 = index(REC, ')') - 1
+
+         read (REC(L4:L5), *) N2
+
+      end if
+
+      do M = M1, M2
+         AF = dble(M) / dble(MC)
+         call READYY('Reading SIMONA *.bottom File', AF)
 
          read (MMDD, '(A)', end=777) REC
-         if (REC(1:3) /= 'BOX') then
-            goto 5
-         else
-            L1 = index(REC, '=(')
-            read (REC(L1 + 2:), *) M1
+         backspace (MMDD)
 
-            L2 = L1 + index(REC(L1:), ',')
-            L3 = index(REC(:), ';') - 1
+         read (MMDD, *, end=999, ERR=888) (ZC(M, N), N=N1, N2)
+      end do
+      goto 5
 
-            read (REC(L2:L3), *) N1
+777   call READYY('Reading SIMONA *.bottom File', -1d0)
+      call DOCLOSE(MMDD)
+      JA = 1
+      return
 
-            L3 = index(REC, ';')
-            read (REC(L3 + 1:), *) M2
+999   continue
+      call QNEOFERROR(MMDD)
+      call READYY('Reading SIMONA *.bottom File', -1d0)
+      call DOCLOSE(MMDD)
+      JA = 0
+      return
 
-            L4 = L3 + index(REC(L3:), ',')
-            L5 = index(REC, ')') - 1
-
-            read (REC(L4:L5), *) N2
-
-         end if
-
-         do M = M1, M2
-            AF = dble(M) / dble(MC)
-            call READYY('Reading SIMONA *.bottom File', AF)
-
-            read (MMDD, '(A)', end=777) REC
-            backspace (MMDD)
-
-            read (MMDD, *, end=999, ERR=888) (ZC(M, N), N=N1, N2)
-         end do
-         goto 5
-
-777      call READYY('Reading SIMONA *.bottom File', -1d0)
-         call DOCLOSE(MMDD)
-         JA = 1
-         return
-
-999      continue
-         call QNEOFERROR(MMDD)
-         call READYY('Reading SIMONA *.bottom File', -1d0)
-         call DOCLOSE(MMDD)
-         JA = 0
-         return
-
-888      call QNREADERROR('Reading ERROR SIMONA bottom File With Wrong Dimensions', ' ', MMDD)
-         call READYY('Reading *.bottom File', -1d0)
-         call DOCLOSE(MMDD)
-         JA = 0
-      end subroutine REABOT
+888   call QNREADERROR('Reading ERROR SIMONA bottom File With Wrong Dimensions', ' ', MMDD)
+      call READYY('Reading *.bottom File', -1d0)
+      call DOCLOSE(MMDD)
+      JA = 0
+   end subroutine REABOT
 
 end module m_reabot
