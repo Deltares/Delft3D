@@ -59,13 +59,14 @@ subroutine thindams_on_netgeom()
    integer :: numcrossedLinks
    integer :: isactive
    integer :: ic, iL, L, LL, NPL_prev
-   integer :: jakdtree = 1 ! use kdtree (1) or not (0)
+   integer :: jakdtree ! use kdtree (1) or not (0)
    logical :: cache_read
 
    if (nthd == 0) return
 
    ierror = 1
-   
+   jakdtree = 1
+
    cache_read = .false.
    if (cache_retrieved()) then
       call copy_cached_thin_dams(thd, cache_read)
