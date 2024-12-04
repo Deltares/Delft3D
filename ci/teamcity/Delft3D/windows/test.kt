@@ -9,6 +9,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 import Delft3D.template.*
 
 import Trigger
+import CsvProcessor
 
 object WindowsTest : BuildType({
 
@@ -31,6 +32,7 @@ object WindowsTest : BuildType({
     """.trimIndent()
 
     val filePath = "${DslContext.baseDir}/vars/dimr_testbench_table.csv"
+    val processor = CsvProcessor(filePath, "win64")
     val lines = File(filePath).readLines()
     val windowsLines = lines.filter { line -> line.contains("win64")}
     val configs = windowsLines.map { line ->
@@ -45,9 +47,9 @@ object WindowsTest : BuildType({
     }
 
     params {
-        select("configfile", selectedConfigs.joinToString(","),
+        select("configfile", processor.activeConfigs.joinToString(","),
             allowMultiple = true,
-            options = configs,
+            options = processor.configs.zip(processor.labels) { config, label -> label to config },
             display = ParameterDisplay.PROMPT
         )
         checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
@@ -60,8 +62,8 @@ object WindowsTest : BuildType({
     features {
         matrix {
             id = "matrix"
-            param("configfile", selectedConfigs.map { config ->
-                value(config)
+            param("configfile", processor.activeConfigs.mapIndexed { index, config ->
+                value(config, label = processor.activeLabels[index])
             })
         }
     }
