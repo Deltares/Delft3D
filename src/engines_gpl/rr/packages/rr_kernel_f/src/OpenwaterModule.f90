@@ -344,6 +344,10 @@ contains
     Integer, Pointer :: ReferenceToDefinition(:)
     Logical, Pointer :: AlreadyRead(:)
 
+    Character(Len=CharIdLength)  FileName
+    Character(Len=1000000)       KeepBufString
+    Integer                      IoUnit, LenString, ipos
+
     Logical Success
 
     success = Dh_AllocInit (NcOw, SepDef, TlvDef, H0Def, ' ')
@@ -384,6 +388,17 @@ contains
 !   OpwRefSeepage_TTable = 0
 
 ! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(49)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !paved.3b_cleaned
+        Write(*,*) ' Cleaning openwate.3b to file:', FileName
+        Write(iout1,*) ' Cleaning openwate.3b to file:', FileName
+   endif
+
+! *********************************************************************
 ! Read openwate.3b file
 ! *********************************************************************
    call SetMessage(LEVEL_DEBUG, 'Read Openwate.3b file')
@@ -408,6 +423,9 @@ contains
          if (alreadyRead(index)) then
            call SetMessage(LEVEL_ERROR, 'Data for Openwater node '//id(1:Len_trim(id))//' double in datafile Openwate.3B')
          else
+! cleaning RR files
+          If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
           AlreadyRead(index) = .true.
           OwNam(index) = inod
           teller = teller + 1
@@ -505,6 +523,19 @@ contains
                              ' Some open water nodes in schematisation not present in OpenWate.3B file')
     Endif
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for openwate.sep
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(50)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !openwate.sep_cleaned
+        Write(*,*) ' Cleaning Openwate.sep to file:', FileName
+        Write(iout1,*) ' Cleaning Openwate.sep to file:', FileName
+   endif
 
 ! *********************************************************************
 ! Read openwate.sep file
@@ -532,6 +563,7 @@ contains
         if (Iow .gt. 0) then
            if (ReferenceToDefinition(iow) .gt. 0) then
              call SetMessage(LEVEL_ERROR, 'Seepage Definition '//name(1:Len_trim(name))//' double in datafile Unpaved.Sep')
+             occurs = .false. ! om verdere verwerking te stoppen
            endif
         endif
 
@@ -556,6 +588,8 @@ contains
             RetVal = RetVal + GetVAR2 (STRING,' sp ',2,' Openwate_readAscii',' Openwate.sep file',IOUT1, &
                           CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
             owseepage = RDUM(1)
+           ! cleaning RR files
+            If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
           elseif (dummyCompOption .ge. 2 .and. dummyCompOption .le. 3) then
 ! 2 = variable seepage with H0 from a table
 ! 3 = variable seepage with H0 on line from Modflow
@@ -567,9 +601,13 @@ contains
                           CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
              DummyH0Table = CDUM(1)
              H0Defined = .true.
+             ! cleaning RR files
+             If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
            else
              OwOnLineModflowUsed = .true.
 !            write(*,*) ' OwOnlineModFlowUsed= ',OwOnLineModflowUsed
+             ! cleaning RR files
+             If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
            endif
 ! 4 = seepage as time table
 ! 5 = seepage and seepage salt concentration time table
@@ -580,6 +618,12 @@ contains
              Success = GetRecord(Infile2, 'SEEP', Endfil, idebug, Iout1)     ! get record van keyword SEEP tot seep, zet in buffer
              IF (.not. success) goto 211
              IF (ENDFIL) GOTO 211
+             Success = GetStringFromBuffer (KeepBufString)
+             IF (.not. Success .and. CleanRRFiles)   then
+                 Write(*,*) 'local buffer OpenwaterModule too small, OW_T record'
+                 Write(iout1,*) 'local buffer OpenwaterModule too small, OW_T record'
+                 GOTO 211
+             Endif
              Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
              IF (.not. success) goto 211
              If (TabYesNo .and. TableName .ne. '') Then
@@ -593,6 +637,7 @@ contains
                       occurs = .false.
                    elseif ( OpwRefSeepage_TTable(iow) .gt. 0) then
                       call SetMessage(LEVEL_ERROR, 'OWSeepage table definition '//Tablename(1:Len_trim(TableName))//' double in datafile Openwate.Tbl')
+                      NrColumns = 0     ! om verdere verwerking uit te zetten
                    endif
                 endif
 !               Verwerken Target level definition
@@ -601,6 +646,33 @@ contains
                    Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
                    IF (.not. success) goto 211
                    if (idebug .ne. 0) write(idebugLunRR,*) ' Read owseep table ',TableName(1:32), ' Table index ', TableNr
+! clean RR files
+                   If (CleanRRFiles) then
+                     ! use KeepBufString to write to file
+                     ! first till TBLE
+                     ! then till < characters
+                     ! then till the end of the buffer string
+                     lenstring = len_trim(KeepBufString)
+                     ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+                     if (ipos .gt. 0) then
+                        write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                        KeepBufString(1:) = KeepBufString(ipos+5:)
+                     else
+                        ! error: no TBLE found
+                          call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+                     endif
+ 1031                continue
+                     lenstring = len_trim(KeepBufString)
+                     ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+                     if (ipos .gt. 0) then
+                        write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                        KeepBufString(1:) = KeepBufString(ipos+3:)
+                        goto 1031
+                     else
+                        ! write remaining part
+                        write(Iounit,'(A)') KeepBufString (1:lenstring)
+                     endif
+                   Endif
 ! Set references
                    Do iOw = 1, ncOw
                       if (StringComp(SepDef(Iow), TableName, CaseSensitive) )  OpwRefSeepage_TTable(iOw) = TableNr
@@ -679,6 +751,19 @@ contains
                                       ' Some Seepage Table Definitions not present in Openwate.Sep file')
 
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for openwate.tbl
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(51)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !openwate.tbl_cleaned
+        Write(*,*) ' Cleaning Openwate.tbl to file:', FileName
+        Write(iout1,*) ' Cleaning Openwate.tbl to file:', FileName
+   endif
 
 ! *********************************************************************
 ! Read openwate.tbl:
@@ -695,6 +780,12 @@ contains
        Success = GetRecord(Infile3, 'OW_T', Endfil, idebug, Iout1)     ! get record van keyword OW_T tot ow_t, zet in buffer
        IF (.not. success) goto 3111
        IF (ENDFIL) GOTO 3111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Write(*,*) 'local buffer OpenwaterModule too small, OW_T record'
+           Write(iout1,*) 'local buffer OpenwaterModule too small, OW_T record'
+           GOTO 3111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        IF (.not. success) goto 3111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -707,6 +798,7 @@ contains
           if (Iow .gt. 0) then
              if ( OpwRefOW_TTable(iow) .gt. 0) then
                 call SetMessage(LEVEL_ERROR, 'pen water target level Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Openwate.Tbl')
+                NrColumns = 0     ! om verdere verwerking uit te zetten
              endif
           endif
 !         Verwerken Target level definition
@@ -714,6 +806,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
              Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
              IF (.not. success) goto 3111
+! clean RR files
+             If (CleanRRFiles) then
+               ! use KeepBufString to write to file
+               ! first till TBLE
+               ! then till < characters
+               ! then till the end of the buffer string
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                  KeepBufString(1:) = KeepBufString(ipos+5:)
+               else
+                  ! error: no TBLE found
+                    call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+               endif
+ 1041          continue
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                  KeepBufString(1:) = KeepBufString(ipos+3:)
+                  goto 1041
+               else
+                  ! write remaining part
+                  write(Iounit,'(A)') KeepBufString (1:lenstring)
+               endif
+             Endif
 ! Set references
              Do iOw = 1, ncOw
                 if (StringComp(TlvDef(Iow), TableName, CaseSensitive) )  then
@@ -741,6 +860,12 @@ contains
        Success = GetRecord(Infile3, 'H0_T', Endfil, idebug, Iout1)     ! get record van keyword H0_T tot h0_t, zet in buffer
        IF (.not. success) goto 4111
        IF (ENDFIL) GOTO 4111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Write(*,*) 'local buffer OpenwaterModule too small, H0_T record'
+           Write(iout1,*) 'local buffer OpenwaterModule too small, H0_T record'
+           GOTO 4111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        IF (.not. success) goto 4111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -752,6 +877,7 @@ contains
           if (Iow .gt. 0) then
              if ( OpwRefH0_TTable(iow) .gt. 0) then
                 call SetMessage(LEVEL_ERROR, 'H0 table definition '//Tablename(1:Len_trim(TableName))//' double in datafile Openwate.Tbl')
+                NrColumns = 0  ! om verdere verwerking te stoppen
              endif
           endif
 !         Verwerken Target level definition
@@ -759,6 +885,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
              Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
              IF (.not. success) goto 4111
+! clean RR files
+             If (CleanRRFiles) then
+               ! use KeepBufString to write to file
+               ! first till TBLE
+               ! then till < characters
+               ! then till the end of the buffer string
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                  KeepBufString(1:) = KeepBufString(ipos+5:)
+               else
+                  ! error: no TBLE found
+                    call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+               endif
+ 1051          continue
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                  KeepBufString(1:) = KeepBufString(ipos+3:)
+                  goto 1051
+               else
+                  ! write remaining part
+                  write(Iounit,'(A)') KeepBufString (1:lenstring)
+               endif
+             Endif
 ! Set references
              Do iOw = 1, ncOw
                 if (StringComp(H0Def(Iow), TableName, CaseSensitive) )  OpwRefH0_TTable(iOw) = TableNr
@@ -780,6 +933,12 @@ contains
        Success = GetRecord(Infile3, 'SPCO', Endfil, idebug, Iout1)     ! get record van keyword SPCO tot spco, zet in buffer
        IF (.not. success) goto 5111
        IF (ENDFIL) GOTO 5111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Write(*,*) 'local buffer OpenwaterModule too small, SPCO record'
+           Write(iout1,*) 'local buffer OpenwaterModule too small, SPCO record'
+           GOTO 5111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        IF (.not. success) goto 5111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -791,6 +950,7 @@ contains
           if (Iow .gt. 0) then
              if ( OpwRefSeepageConc_TTable(iow) .gt. 0) then
                 call SetMessage(LEVEL_ERROR, 'Seeepage concentration table definition '//Tablename(1:Len_trim(TableName))//' double in datafile Openwate.Tbl')
+                NrColumns = 0  ! om verdere verwerking te stoppen
              endif
           endif
 !         Verwerken Target level definition
@@ -798,6 +958,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
              Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
              IF (.not. success) goto 4111
+! clean RR files
+             If (CleanRRFiles) then
+               ! use KeepBufString to write to file
+               ! first till TBLE
+               ! then till < characters
+               ! then till the end of the buffer string
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                  KeepBufString(1:) = KeepBufString(ipos+5:)
+               else
+                  ! error: no TBLE found
+                    call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+               endif
+ 1061          continue
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                  KeepBufString(1:) = KeepBufString(ipos+3:)
+                  goto 1061
+               else
+                  ! write remaining part
+                  write(Iounit,'(A)') KeepBufString (1:lenstring)
+               endif
+             Endif
 ! Set references
              Do iOw = 1, ncOw
                 if (StringComp(SaltConcDef(Iow), TableName, CaseSensitive) )  OpwRefSeepageConc_TTable(iOw) = TableNr
@@ -807,6 +994,9 @@ contains
        Call SKPCOM (Infile3, ENDFIL,'ODS')
      Enddo
 5111 Continue
+
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
 
 ! *********************************************************************
 ! Check of alle referenties naar tabellen opgelost
@@ -874,6 +1064,9 @@ contains
 
     Logical Success
 
+    Character(Len=CharIdLength)  FileName
+    Integer                      IoUnit
+
 
     success = Dh_AllocInit (NcOwRain, AlreadyRead, .false. )
     If (.not. success) call ErrMsgStandard (981, 0, ' Error allocating arrays in subroutine ', ' OpenWaterPrecip_ReadAscii')
@@ -887,6 +1080,17 @@ contains
 ! *********************************************************************
 ! resetten parameters
 ! *********************************************************************
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input - open water precipitation, only 3b. file (overlap with open water nodes)
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(49)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,3)  !openwate.3b_cleaned      ! in append mode, since already used by openwater nodes
+        Write(*,*) ' Cleaning openwate.3b to file:', FileName
+        Write(iout1,*) ' Cleaning openwate.3b to file:', FileName
+   endif
 
 ! *********************************************************************
 ! Read openwate.3b file
@@ -913,6 +1117,9 @@ contains
          if (alreadyRead(index)) then
            call SetMessage(LEVEL_ERROR, 'Data for Openwater node '//id(1:Len_trim(id))//' double in datafile Openwate.3B')
          else
+! cleaning RR files
+          If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
           AlreadyRead(index) = .true.
           OwPrecipNam(index) = inod
           teller = teller + 1
@@ -937,6 +1144,9 @@ contains
      CALL SKPCOM (Infile1, ENDFIL,'ODS')
    Enddo
 21 continue
+
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
     If (RetVal .gt. 0)  call ErrMsgStandard (972, 0, ' Error reading Openwate.3B file', ' Error getting OWRR records')
     If (teller .lt. NcOwRain)  Then

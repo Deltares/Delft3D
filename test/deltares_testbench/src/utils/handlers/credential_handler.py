@@ -24,7 +24,7 @@ class CredentialHandler:
     def __init__(
         self,
         credentials: Optional[Credentials] = None,
-        log_level: Optional[LogLevel] = LogLevel.INFO,
+        log_level: LogLevel = LogLevel.INFO,
         profile: Optional[str] = None,
     ) -> None:
         self.cred_path: Path = (Path("~") / ".aws" / "credentials").expanduser()

@@ -1,26 +1,26 @@
 function varargout=ui_typeandname(varargin)
 %UI_TYPEANDNAME  Selection dialog with name specification.
-%   [SelectedType,SelectedName,SelectedNr]=UI_TYPEANDNAME(Types)
+%   [SelectedType, SelectedName, SelectedNr] = UI_TYPEANDNAME(Types)
 %   creates a dialog in which the user can select one of the type
 %   strings specified in the cell string array Types. The selected type
 %   string is returned as SelectedType, its number in the list is
 %   returned as SelectedNr. The user can also specify a name, which is
 %   returned as SelectedName.
 %
-%   Default type and name can be specified as two additional input
-%   arguments:
-%   ...=UI_TYPEANDNAME(Types,DefaultType,DefaultName)
+%   ... = UI_TYPEANDNAME(Types, DefaultType, DefaultName)
+%   specifies the default type and name as two additional input arguments.
 %
-%   The dialog name/title is by default empty. It can be set by
-%   specifying the keyword WINDOWTITLE and the title:
-%   ...=UI_TYPEANDNAME(...,'windowtitle',Title)
+%   ... = UI_TYPEANDNAME(..., 'windowtitle', Title)
+%   set the dialog name/title; it is empty by default.
 %
-%   If the user should only select a quantity from a list (no
-%   additional name associated with the selection) you can simplify the
-%   dialog accordingly by specifying the keyword SPECIFYNAME and as
-%   value NO. The number of output arguments is reduced to two, namely
-%   only the SelectedType and SelectedNr:
-%   [SelectedType,SelectedNr]=UI_TYPEANDNAME(...,'specifyname','no')
+%   ... = UI_TYPEANDNAME(..., 'multiselect')
+%   allow the user to select zero, one, or multiple types. When using this
+%   option, the SelectedType output argument is a cell string instead of a
+%   char array.
+%
+%   [SelectedType, SelectedNr] = UI_TYPEANDNAME(..., 'specifyname', 'off')
+%   disable the option to specify a name. The user can only select one (or
+%   zero/more when combined with 'multiselect') quantity from the list.
 %
 %   See also UI_TYPE
 
@@ -61,30 +61,37 @@ XX=xx_constants;
 selname=[];
 windowtitle='';
 specifyname=1;
+multiselect = false;
 
 varin=varargin;
 i=1;
 while i<=length(varin)
     if ~ischar(varin{i}) || size(varin{i},1)~=1
         i = i+1;
-    elseif strcmpi(varin{i},'windowtitle') && i<length(varin)
-        windowtitle=varin{i+1};
-        varin(i:i+1)=[];
-    elseif strcmpi(varin{i},'specifyname') && i<length(varin)
-        specifyname=varin{i+1};
-        if ischar(specifyname)
-            switch lower(specifyname)
-                case {'yes','y','on','true'}
-                    specifyname=1;
-                case {'no','n','off','false'}
-                    specifyname=0;
-            end
-        elseif isnumeric(specifyname)
-            specifyname=logical(specifyname(1));
-        end
-        varin(i:i+1)=[];
     else
-        i=i+1;
+        switch varin{i}
+            case 'windowtitle'
+                windowtitle=varin{i+1};
+                varin(i:i+1)=[];
+            case 'multiselect'
+                multiselect = true;
+                varin(i) = [];
+            case 'specifyname'
+                specifyname=varin{i+1};
+                if ischar(specifyname)
+                    switch lower(specifyname)
+                        case {'yes','y','on','true'}
+                            specifyname=1;
+                        case {'no','n','off','false'}
+                            specifyname=0;
+                    end
+                elseif isnumeric(specifyname)
+                    specifyname=logical(specifyname(1));
+                end
+                varin(i:i+1)=[];
+            otherwise
+                i=i+1;
+        end
     end
 end
 if specifyname
@@ -102,14 +109,14 @@ switch length(varin)
         error('Too few input arguments: missing type list.')
     case 1 % =UI_TYPEANDNAME(Types)
         types=varin{1};
-        seltype=1;
+        itypes=1;
     case 2 % =UI_TYPEANDNAME(Types,DefaultType)
         types=varin{1};
-        seltype=varin{2};
+        itypes=varin{2};
     case 3 % =UI_TYPEANDNAME(Types,DefaultType,DefaultName)
         if specifyname
             types=varin{1};
-            seltype=varin{2};
+            itypes=varin{2};
             selname=varin{3};
             if ~ischar(selname)
                 error('Invalid default selection name or unknown keywords.')
@@ -126,16 +133,36 @@ if ischar(types)
 elseif ~iscellstr(types)
     error('Invalid list supplied.')
 end
-if ischar(seltype)
-    s=ustrcmpi(seltype,types);
-    if s<0
-        error('Invalid default type selection string.')
+
+if iscellstr(itypes)
+    seltypes = itypes;
+    if ~multiselect
+        error('DefaultType argument is only allowed to be cell string if the "multiselect" option is specified.')
     else
-        seltype=s;
+        [Lia, Locb] = ismember(seltypes, types);
+        if any(~Lia)
+            wrong_type = seltypes{find(~Lia,1,'first')};
+            error('The DefaultType "%s" is invalid.', wrong_type)
+        end
+        itypes = Locb;
     end
-else
-    if seltype>length(types) || seltype<1 || seltype~=round(seltype) || ~isequal(size(seltype),[1 1])
-        error('Invalid default type selection number.')
+
+elseif ischar(itypes)
+    seltypes = itypes;
+    [Lia, Locb] = ismember(seltypes, types);
+    if ~Lia
+        error('The DefaultType "%s" is invalid.', seltypes)
+    else
+        itypes = Locb;
+    end
+
+else % numeric
+    if any(itypes > length(types)) ... % valid entries are not too large
+            || any(itypes < 1) ... % positive
+            || any(itypes ~= round(itypes)) % integer
+        error('The DefaultType selection is invalid (positive integers in the range 1:%i).', length(types))
+    elseif ~multiselect && ~isequal(size(itypes),[1 1])
+        error('Without "multiselect" the DefaultType should be a single integer.')
     end
 end
 
@@ -167,11 +194,14 @@ ListBox=uicontrol('style','listbox', ...
     'tag','list', ...
     'parent',fig, ...
     'string',types, ...
-    'value',seltype, ...
+    'value',itypes, ...
     'backgroundcolor',XX.Clr.White, ...
     'keypressfcn',@ui_typeandname_keypress, ...
     'callback','set(gcbf,''userdata'',1)', ...
     'enable','on');
+if multiselect
+    set(ListBox,'max',2)
+end
 
 rect(2) = rect(2)+rect(4);
 rect(4) = XX.Txt.Height;
@@ -187,7 +217,7 @@ rect(3) = Fig_Width-2*XX.Margin;
 Edit=[];
 if specifyname
     if ~ischar(selname)
-        selname=types{seltype};
+        selname = default_name(types, itypes);
     end
     rect(2) = rect(2)+rect(4)+XX.Margin;
     Edit=uicontrol('style','edit', ...
@@ -239,22 +269,38 @@ while 1
     set(fig,'userdata',[]);
     switch Cmd
         case {-1,27} % cancel
-            break;
+            break
         case 0 % continue
-            selnr=get(ListBox,'value');
-            seltype=types{selnr};
+            itypes = get(ListBox,'value');
+            if multiselect
+                seltypes = types(itypes);
+            else
+                seltypes = types{itypes};
+            end
             if specifyname
                 selname=get(Edit,'string');
-                varargout={seltype,selname,selnr};
+                varargout={seltypes,selname,itypes};
             else
-                varargout={seltype,selnr};
+                varargout={seltypes,itypes};
             end
             break;
         case 1 % listbox
-            set(Edit,'string',types{get(ListBox,'value')});
+            itypes = get(ListBox,'value');
+            str = default_name(types, itypes);
+            set(Edit,'string',str);
     end
 end
 delete(fig);
+
+function str = default_name(types, itypes)
+switch length(itypes)
+    case 0
+        str = 'none';
+    case 1
+        str = types{itypes};
+    otherwise
+        str = 'multiple';
+end
 
 function ui_typeandname_keypress(source,event)
 if isequal(get(gcbf,'currentcharacter'),27) % escape

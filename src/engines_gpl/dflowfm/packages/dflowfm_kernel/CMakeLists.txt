@@ -122,108 +122,67 @@ target_link_libraries(${library_name} PRIVATE
     additional_compiler_warnings
 )
 
+target_link_libraries(${library_name} PRIVATE
+                      deltares_common
+                      deltares_common_c
+                      deltares_common_mpi
+                      dhydrology_kernel
+                      ec_module
+                      flow1d
+                      flow1d_core
+                      flow1d_io
+                      flow1d_implicit
+                      gridgeom
+                      ice_data
+                      ice_io
+                      io_netcdf
+                      io_netcdf_data
+                      kdtree_wrapper
+                      kdtree2
+                      fortrangis
+                      libsigwatch
+                      md5digest
+                      md5
+                      metis
+                      metisoptions
+                      morphology_data
+                      morphology_io
+                      morphology_kernel
+                      morphology_plugins_c
+                      netcdf4
+                      netcdff
+                      polypack
+                      trachytopes_io
+                      trachytopes_kernel
+                      triangle_c
+                      waq_definition
+                      wq_processes
+                      waq_process
+                      waq_hyd_data
+                      waq_utils_c
+                      waq_utils_f
+                      spherepack
+)
+
 # Add dependencies
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
 
-    set(oss_dependencies    deltares_common
-                            deltares_common_c
-                            deltares_common_mpi
-                            dhydrology_kernel
-                            ec_module
-                            flow1d
-                            flow1d_core
-                            flow1d_io
-                            flow1d_implicit
-                            gridgeom
-                            ice_data
-                            ice_io
-                            io_netcdf
-                            io_netcdf_data
-                            kdtree_wrapper
-                            kdtree2
-                            fortrangis
-                            libsigwatch
-                            md5digest
-                            md5
-                            metis
-                            metisoptions
-                            morphology_data
-                            morphology_io
-                            morphology_kernel
-                            morphology_plugins_c
-                            netcdf4
-                            netcdff
-                            polypack
-                            trachytopes_io
-                            trachytopes_kernel
-                            triangle_c
-                            waq_definition
-                            wq_processes
-                            waq_process
-                            waq_hyd_data
-                            waq_utils_c
-                            waq_utils_f
-                            interacter_stub)
-
-    target_link_libraries(${library_name} PRIVATE ${oss_dependencies}
-         PkgConfig::PETSC
-         uuid
+    target_link_libraries(${library_name} PRIVATE
+                          interacter_stub
+                          PkgConfig::PETSC
+                          uuid
     )
-
 endif(UNIX)
 
 if (WIN32)
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         deltares_common_mpi
-                         dhydrology_kernel
-                         ec_module
-                         flow1d
-                         flow1d_core
-                         flow1d_io
-                         flow1d_implicit
-                         gridgeom
-                         ice_data
-                         ice_io
-                         io_netcdf
-                         io_netcdf_data
-                         kdtree_wrapper
-                         kdtree2
-                         fortrangis
-                         libsigwatch
-                         md5digest
-                         md5
-                         metis
-                         metisoptions
-                         morphology_data
-                         morphology_io
-                         morphology_kernel
-                         morphology_plugins_c
-                         netcdf4
-                         netcdff
-                         petsc
-                         polypack
-                         trachytopes_io
-                         trachytopes_kernel
-                         triangle_c
-                         waq_definition
-                         waq_process
-                         waq_hyd_data
-                         waq_utils_c
-                         waq_utils_f
-                         wq_processes
-    )
-
     if(NOT WITH_INTERACTER)
-        set(oss_dependencies ${oss_dependencies} interacter_stub)
+        target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
-    target_link_libraries(${library_name} PRIVATE
-                          ${oss_dependencies}
-    )
+    target_link_libraries(${library_name} PRIVATE petsc)
 
     include_directories(${petsc_path})
 endif(WIN32)
@@ -277,10 +236,6 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/rest_f90/read_samples_from_geotiff.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_waves_path}/fetch_proc.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
-
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
 # Define preprocessor definitions
 if (WIN32)

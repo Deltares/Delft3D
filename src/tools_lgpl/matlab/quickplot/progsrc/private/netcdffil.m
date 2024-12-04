@@ -302,15 +302,16 @@ if FI.NumDomains>1
         end
         
         valLoc = Props.Geom(end-3:end);
-        hasTimeDim = false;
-        tDim = {};
         if isfield(partData,'Time') && length(partData(1).Time)>1
-            hasTimeDim = true;
-            tDim = {':'};
+            nPrefixDim = 1;
+            prefixDim = {':'};
+        else
+            nPrefixDim = 0;
+            prefixDim = {};
         end
-        hasStationDim = Props.DimFlag(ST_) > 0;
-        if hasStationDim
-            tDim = cat(2,tDim,{':'});
+        if Props.DimFlag(ST_) > 0
+            nPrefixDim = nPrefixDim + 1;
+            prefixDim{end+1} = ':';
         end
 
         % z values
@@ -320,7 +321,7 @@ if FI.NumDomains>1
             else
                 zLoc = valLoc;
             end
-            Data = mergePartData(Data, partData, FI, zLoc,{'Z'}, hasTimeDim, hasStationDim, tDim);
+            Data = mergePartData(Data, partData, FI, zLoc,{'Z'}, nPrefixDim, prefixDim);
             Data.ZLocation = zLoc;
         end
         
@@ -334,7 +335,7 @@ if FI.NumDomains>1
             Data.ClassVal = partData(1).ClassVal;
         end
         valFields = {'Val','XComp','YComp','NormalComp','TangentialComp'};
-        Data = mergePartData(Data, partData, FI, valLoc, valFields, hasTimeDim, hasStationDim, tDim);
+        Data = mergePartData(Data, partData, FI, valLoc, valFields, nPrefixDim, prefixDim);
         %
         if iscell(field.varid)
             if strcmp(field.varid{1},'stream_function') % note field is the original copy of Props
@@ -381,13 +382,13 @@ if FI.NumDomains>1
             for v = {'Val','XComp','YComp','NormalComp','TangentialComp'}
                 fld = v{1};
                 if isfield(partData,fld)
-                    Data.(fld) = Data.(fld)(tDim{:},idx{M_},:);
+                    Data.(fld) = Data.(fld)(prefixDim{:},idx{M_},:);
                 end
             end
             %
             if isfield(Data,'ZLocation')
                 if isequal(Data.ZLocation,Data.ValLocation)
-                    Data.Z = Data.Z(tDim{:},idx{M_},:);
+                    Data.Z = Data.Z(prefixDim{:},idx{M_},:);
                 end
             end
         end
@@ -3343,7 +3344,7 @@ if ~isempty(connect)
 end
 
 
-function Data = mergePartData(Data,partData,FI,valLoc,valFields,hasTimeDim,hasStationDim,tDim)
+function Data = mergePartData(Data,partData,FI,valLoc,valFields,nPrefixDim,prefixDim)
 switch valLoc
     case 'NODE'
         nloc = FI.MergedPartitions.nNodes;
@@ -3362,11 +3363,11 @@ for v = valFields
     fld = v{1};
     if isfield(partData,fld)
         sz = size(partData(1).(fld));
-        sz(hasTimeDim+hasStationDim+1) = nloc;
+        sz(nPrefixDim+1) = nloc;
         Data.(fld) = NaN(sz);
         for p = 1:length(partData)
             masked = domainMask{p};
-            Data.(fld)(tDim{:},globalIndex{p}(masked),:) = partData(p).(fld)(tDim{:},masked,:);
+            Data.(fld)(prefixDim{:},globalIndex{p}(masked),:) = partData(p).(fld)(prefixDim{:},masked,:);
         end
     end
 end

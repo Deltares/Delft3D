@@ -25,9 +25,12 @@ target_compile_options(compiler_warnings_as_errors INTERFACE
 # Turning on warnings as errors in the intel compiler (/warn:errors) also gives errors for warnings that were turned off.
 # Parse the output of the build log instead
 function(add_warnings_as_errors_post_build_windows target_name)
+    if (NOT Python_FOUND)
+        find_package(Python COMPONENTS Interpreter REQUIRED)
+    endif()
     add_custom_command(TARGET ${target_name}
                        POST_BUILD
-                       COMMAND python fortran_warnings_as_errors.py "${CMAKE_CURRENT_BINARY_DIR}/${target_name}.dir/$<CONFIG>/BuildLog.htm" --print-messages --project-name "${target_name}"
+                       COMMAND Python::Interpreter fortran_warnings_as_errors.py "${CMAKE_CURRENT_BINARY_DIR}/${target_name}.dir/$<CONFIG>/BuildLog.htm" --print-messages --project-name "${target_name}"
                        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../../tools/warnings_as_errors
                        VERBATIM
                        )

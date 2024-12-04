@@ -47,6 +47,8 @@ subroutine ini_filter(jafilter, filterorder, jacheckmonitor, ierr)
    use m_qnerror
    use m_writematrix
    use m_makenetnodescoding
+   use m_saadf, only: amub_countonly, amub
+   use m_saad, only: allocSolver
    implicit none
 
    integer, intent(in) :: jafilter !< explicit (1), implicit (2), or no filter (0)
@@ -386,6 +388,7 @@ end subroutine ini_filter
 ! clean-up filter
 subroutine dealloc_filter
    use m_filter
+   use m_saad, only: deallocSolver
    implicit none
 
    call deallocSolver(solver_filter)
@@ -464,7 +467,7 @@ subroutine comp_filter_predictor()
    use m_flow, only: kmx, u0, plotlin, adve
    use m_flowtimes, only: Dts
    use unstruc_messages
-   use m_saad, only: jasafe ! for amux
+   use m_saad, only: jasafe, amuxXXX, solveSystem
    use m_partitioninfo, only: jampi, update_ghosts, ITYPE_U, reduce_int1_max
    use m_timer
    use m_get_Lbot_Ltop

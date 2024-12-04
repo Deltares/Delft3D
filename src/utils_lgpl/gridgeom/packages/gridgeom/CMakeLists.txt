@@ -26,9 +26,5 @@ if (WIN32)
     target_compile_options(${library_name} PRIVATE "${heap_arrays_one_flag}")
 endif(WIN32)
 
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
-
 # Create the folder structure in vfproj
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/gridgeom)

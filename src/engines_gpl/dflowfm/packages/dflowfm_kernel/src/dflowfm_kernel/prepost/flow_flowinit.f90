@@ -34,7 +34,6 @@ module m_flow_flowinit
    use m_inidensconstants
    use m_alloc_jacobi
 
-
    implicit none
 
    private
@@ -1227,10 +1226,10 @@ contains
 
 !> set wave modelling
    subroutine set_wave_modelling()
-      use m_flowparameters, only: jawave, flowWithoutWaves, waveforcing
+      use m_flowparameters, only: jawave, flowWithoutWaves, waveforcing, jawavestokes
       use m_flow, only: hs, hu, kmx
       use mathconsts, only: sqrt2_hp
-      use m_waves                !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
+      use m_waves !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
       use m_flowgeom, only: lnx, ln, csu, snu, ndx
       use m_physcoef, only: ag
       use m_transform_wave_physics
@@ -1284,7 +1283,7 @@ contains
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave == SWAN_NETCDF) .and. flowWithoutWaves) then
+      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flowWithoutWaves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
@@ -1303,18 +1302,21 @@ contains
          hwav = min(hwavcom, gammax * hs)
          call wave_uorbrlabda()
          if (kmx == 0) then
-            do link = 1, lnx
-               left_node = ln(1, link)
-               right_node = ln(2, link)
-               hh = hu(link)
-               hw = 0.5d0 * (hwav(left_node) + hwav(right_node))
-               tw = 0.5d0 * (twav(left_node) + twav(right_node))
-               csw = 0.5 * (cosd(phiwav(left_node)) + cosd(phiwav(right_node)))
-               snw = 0.5 * (sind(phiwav(left_node)) + sind(phiwav(right_node)))
-               call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
-               ustokes(link) = ustt * (csu(link) * csw + snu(link) * snw)
-               vstokes(link) = ustt * (-snu(link) * csw + csu(link) * snw)
-            end do
+            if (jawavestokes > 0) then
+               do link = 1, lnx
+                  left_node = ln(1, link)
+                  right_node = ln(2, link)
+                  hh = hu(link)
+                  hw = 0.5d0 * (hwav(left_node) + hwav(right_node))
+                  tw = 0.5d0 * (twav(left_node) + twav(right_node))
+                  csw = 0.5 * (cosd(phiwav(left_node)) + cosd(phiwav(right_node)))
+                  snw = 0.5 * (sind(phiwav(left_node)) + sind(phiwav(right_node)))
+                  call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
+                  ustokes(link) = ustt * (csu(link) * csw + snu(link) * snw)
+                  vstokes(link) = ustt * (-snu(link) * csw + csu(link) * snw)
+               end do
+            end if
+            !
             call tauwave()
          end if
       end if

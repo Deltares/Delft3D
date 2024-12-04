@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -134,6 +134,9 @@ module Rwzi
     Character(CharIdLength), Pointer :: TBLDEF(:)
     Logical      , Pointer :: AlreadyRead(:)
     Logical Success
+    Character(Len=CharIdLength)  FileName
+    Character(Len=1000000)       KeepBufString
+    Integer                      IoUnit, LenString, ipos
 
     ncRwzi = Network_get_nrRwzi()
     ncNode = Network_get_nrNodes()
@@ -156,8 +159,19 @@ module Rwzi
     allow = .false.
     found = .false.
 
-
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(59)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !wwtp.3b_cleaned
+        Write(*,*) ' Cleaning wwtp.3b to file:', FileName
+        Write(iout1,*) ' Cleaning wwtp.3b to file:', FileName
+   endif
+! *********************************************************************
 ! read wwtp.3b
+! *********************************************************************
     call SetMessage(LEVEL_INFO, 'Read WWTP.3B file')
     Endfil = .false.
     teller = 0
@@ -179,6 +193,9 @@ module Rwzi
          if (alreadyRead(index)) then
            call SetMessage(LEVEL_ERROR, 'Data for WWTP node '//cdum(1)(1:Len_trim(Cdum(1)))//' double in datafile WWTP.3B')
          else
+! cleaning RR files
+          If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
           AlreadyRead(index) = .true.
           teller = teller + 1
           RetVal = RetVal + GetVAR2 (STRING,' tb ',3,' WWTP_readAscii',' bound3b.3b file',IOUT1, &
@@ -215,7 +232,22 @@ module Rwzi
                             ' Some WWTPs from schematisation not present in WWTP.3B file')
     Endif
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for wwtp.tbl
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(60)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !wwtp.tbl_cleaned
+        Write(*,*) ' Cleaning wwtp.tbl to file:', FileName
+        Write(iout1,*) ' Cleaning wwtp.tbl:', FileName
+   endif
+! *********************************************************************
 ! read wwtp.tbl
+! *********************************************************************
 ! de tabellen met wwtp measured data
 ! MEAS records, alleen als WwtpTable = .true.
      call SetMessage(LEVEL_INFO, 'Read WWTP.Tbl file')
@@ -225,6 +257,12 @@ module Rwzi
         Success = GetRecord(Infile2, 'MEAS', Endfil, idebug, Iout1)  ! get record van keyword MEAS tot meas, zet in buffer
         IF (.not. success) GOTO 3111
         IF (ENDFIL) GOTO 3111
+        Success = GetStringFromBuffer (KeepBufString)
+        IF (.not. Success .and. CleanRRFiles)   then
+            Write(*,*) 'local buffer RWZIModule too small'
+            Write(iout1,*) 'local buffer RWZIModule too small'
+            GOTO 3111
+        Endif
         Success = GetTableName (TabYesNo, TableName, ' id ', Iout1) ! get table name via keyword ' id ', TabYesNo=TBLE found
         IF (.not. success) GOTO 3111
         If (TabYesNo .and. TableName .ne. '') Then
@@ -236,6 +274,7 @@ module Rwzi
            if (Irwzi .gt. 0) then
               if ( RwziRefTable(irwzi) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'WWTP table Definition '//Tablename(1:Len_trim(TableName))//' double in datafile WWTP.Tbl')
+                 NrColumns = 0     ! om verdere verwerking uit te zetten
               endif
            endif
 !          Verwerk definitie
@@ -243,6 +282,33 @@ module Rwzi
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
               Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
               IF (.not. success) GOTO 3111
+! clean RR files
+              If (CleanRRFiles) then
+                ! use KeepBufString to write to file
+                ! first till TBLE
+                ! then till < characters
+                ! then till the end of the buffer string
+                lenstring = len_trim(KeepBufString)
+                ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+                if (ipos .gt. 0) then
+                   write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                   KeepBufString(1:) = KeepBufString(ipos+5:)
+                else
+                   ! error: no TBLE found
+                     call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+                endif
+ 1041           continue
+                lenstring = len_trim(KeepBufString)
+                ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+                if (ipos .gt. 0) then
+                   write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                   KeepBufString(1:) = KeepBufString(ipos+3:)
+                   goto 1041
+                else
+                   ! write remaining part
+                   write(Iounit,'(A)') KeepBufString (1:lenstring)
+                endif
+              Endif
 ! Set references
               Do irwzi = 1, ncrwzi
                 if (StringComp(TblDef(Irwzi), TableName, CaseSensitive) )  RwziRefTable(irwzi) = TableNr
@@ -252,6 +318,9 @@ module Rwzi
         Call SKPCOM (Infile2, ENDFIL,'ODS')
      Enddo
 3111 Continue
+
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
 
 ! Check of alle referenties naar tabellen opgelost
     Err969 = .false.

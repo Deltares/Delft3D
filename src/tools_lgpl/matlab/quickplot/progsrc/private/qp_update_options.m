@@ -307,10 +307,13 @@ if isfield(Ops,'colourlimits')
         set(findobj(OH,'tag','climmax=?'),'enable','on','backgroundcolor',Active,'string',Ops.colourlimits(2))
         set(findobj(OH,'tag','climmin'),'enable','on')
         set(findobj(OH,'tag','climmin=?'),'enable','on','backgroundcolor',Active,'string',Ops.colourlimits(1))
-        Min=get(findobj(OH,'tag','climmin=?'),'userdata');
-        Max=get(findobj(OH,'tag','climmax=?'),'userdata');
+        %
+        if isfield(Ops,'climclipping')
+            climclip=findobj(OH,'tag','climclip');
+            set(climclip,'enable','on','backgroundcolor',Active,'value',Ops.climclipping)
+        end
     else
-        set(climmode,'enable','on','backgroundcolor',Active,'value',1)
+        set(climmode,'enable','on','value',1)
     end
 end
 

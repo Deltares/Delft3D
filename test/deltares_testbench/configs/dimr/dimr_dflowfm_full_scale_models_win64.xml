@@ -124,7 +124,7 @@
             </checks>
         </testCase>
         <testCase name="e02_f150_c12_korte-woerden-2d" ref="dimr_default">
-            <path version="2024-07-05T14:27:00">e02_dflowfm/f150_1d2d_acceptance_urban/c12_korte-woerden-2d</path>
+            <path version="2024-10-14T13:56:00">e02_dflowfm/f150_1d2d_acceptance_urban/c12_korte-woerden-2d</path>
             <checks>
                 <file name="DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
                     <parameters>
@@ -143,7 +143,7 @@
             <maxRunTime>200.0</maxRunTime> <!-- seconds -->
         </testCase>	
         <testCase name="e02_f150_c13_korte-woerden-1d2d-ManholeStreetinlets" ref="dimr_default">
-            <path version="2024-07-05T14:26:00">e02_dflowfm/f150_1d2d_acceptance_urban/c13_korte-woerden-1d2d-ManholeStreetinlets/dimr_model</path>
+            <path version="2024-10-14T13:58:00">e02_dflowfm/f150_1d2d_acceptance_urban/c13_korte-woerden-1d2d-ManholeStreetinlets/dimr_model</path>
             <checks>
                 <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
                     <parameters>
@@ -297,7 +297,7 @@
             </checks>
         </testCase>
         <testCase name="e02_f150_c32_pudong_2D" ref="dimr_default">
-            <path version="2024-07-05T14:25:00">e02_dflowfm/f150_1d2d_acceptance_urban/c32_pudong-2d</path>
+            <path version="2024-10-14T14:01:00">e02_dflowfm/f150_1d2d_acceptance_urban/c32_pudong-2d</path>
             <checks>
                 <file name="DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
                     <parameters>

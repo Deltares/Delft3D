@@ -68,7 +68,7 @@ program unstruc
    use unstruc_model
    use netcdf
    use properties
-   use m_observations
+   use m_observations_data
    use unstruc_netcdf
    use unstruc_messages
    use UNSTRUC_DISPLAY

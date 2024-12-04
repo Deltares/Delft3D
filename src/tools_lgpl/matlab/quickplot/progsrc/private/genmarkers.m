@@ -78,8 +78,10 @@ end
 
 if isfield(Ops,'Thresholds') && ~strcmp(Ops.Thresholds,'none')
     Thresholds = Ops.Thresholds;
+    PlotClass = Ops.PlotClass;
 else
     Thresholds = [];
+    PlotClass = [];
 end
 %
 if any(~ishandle(hOld)) || ~isempty(Thresholds)
@@ -114,10 +116,12 @@ if plot_using_patch
             'markeredgecolor',Ops.markercolour, ...
             'markerfacecolor',Ops.markerfillcolour);
     else
-        nThresholds = length(Thresholds);
-        Thresholds(end+1) = inf;
+        nThresholds = length(Thresholds)-1;
         hNew=zeros(1,nThresholds);
         for i = 1:nThresholds
+            if ~PlotClass(i)
+                continue
+            end
             iclass = Val>=Thresholds(i) & Val<Thresholds(i+1);
             FacesIndex=(1:sum(iclass))';
             if any(iclass)
@@ -143,6 +147,7 @@ if plot_using_patch
                 'markeredgecolor',markeredgecolor, ...
                 'markerfacecolor',markerfacecolor);
         end
+        hNew(hNew==0) = [];
     end
 else
     if isempty(xyz)

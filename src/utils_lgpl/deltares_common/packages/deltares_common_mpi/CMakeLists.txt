@@ -15,10 +15,6 @@ set_source_files_properties(${source_path}/dfbroadc.f90
                             ${source_path}/dfreduce.f90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
-
 target_link_libraries(${library_name} ${oss_dependencies})
 
 # Create the folder structure in vfproj

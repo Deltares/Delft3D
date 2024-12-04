@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  module RRConnectionBifurcationNodes
@@ -142,6 +142,8 @@ contains
     Logical       , Pointer :: AlreadyRead(:)
     Logical success
     Real    TotalFrac
+    Character(Len=CharIdLength)  FileName
+    Integer                      IoUnit
 
 
     iOut1 = ConfFil_get_iOut1()
@@ -152,7 +154,20 @@ contains
 
     Success = Dh_AllocInit (NBifur, AlreadyRead, .false.)
 
-! read BIFU records from Link file
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(44)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,3)  !sacrmnto.3b cleand in append mode !
+        Write(*,*) ' Cleaning sacrmnto.3b to file:', FileName
+        Write(iout1,*) ' Cleaning sacrmnto.3b to file:', FileName
+   endif
+
+! *********************************************************************
+! read BIFU records from Sacramento file
+! *********************************************************************
     call SetMessage(LEVEL_DEBUG, 'Read BIFU records')
     Endfil = .false.
     teller = 0
@@ -175,6 +190,8 @@ contains
          if (AlreadyRead(index)) then
            call SetMessage(LEVEL_ERROR, 'Data for Bifurcation node '//trim(id(1:Len_trim(id)))//' double in datafile')
          else
+! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
            AlreadyRead(index) = .true.
            teller = teller + 1
 ! number of downstream links
@@ -219,6 +236,9 @@ contains
       CALL SKPCOM (Infile1, ENDFIL,'ODS')
     Enddo
  21 continue
+! cleaning RR files
+    If (CleanRRFiles) Call closeGP (Iounit)
+
     If (RetVal .gt. 0)  call ErrMsgStandard (972, 0, ' Error reading Bifurcation data', ' Error getting BIFU records')
     If (teller .lt. NcBifur)  Then
         Do inode=1,NCNode
@@ -250,7 +270,7 @@ contains
 
 150 CONTINUE
      call SetMessage(LEVEL_FATAL, 'Read error in Bifurcation ASCII')
-
+     If (CleanRRFiles) Call closeGP (Iounit)
 
   Return
   End subroutine RRBifurcation_ReadAsciiInput

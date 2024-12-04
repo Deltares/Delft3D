@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -256,6 +256,9 @@ contains
     Character(Len=CharIdLength), pointer, save ::  CAPDEF(:), UNITHYDEF(:), OtherDef(:)
     Logical Success
 
+    Character(Len=CharIdLength)  FileName
+    Integer                      IoUnit
+
     Success = Dh_AllocInit (NSacr, CapDef, UnitHyDef, OtherDef, ' ')
     Success = Success .and. Dh_AllocInit (NCSacr, AlreadyRead, .false.)
     Success = Success .and. Dh_AllocInit (NCSacr, ReferenceToDefinition, 0)
@@ -272,7 +275,21 @@ contains
     found = .false.
     iOut1 = ConfFil_get_iOut1()
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(44)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !sacrmnto.3b
+        Write(*,*) ' Cleaning sacrmnto.3b to file:', FileName
+        Write(iout1,*) ' Cleaning sacrmnto.3b to file:', FileName
+   endif
+
+! *********************************************************************
 ! Read Sacramento.3B file
+! *********************************************************************
+
     call SetMessage(LEVEL_DEBUG, 'Read Sacramento.3b file')
     endfil = .false.
     teller = 0
@@ -294,6 +311,9 @@ contains
           if (AlreadyRead(isacr)) then
             call SetMessage(LEVEL_ERROR, 'Data for Sacramento node '//id(1:Len_Trim(id))//' double in datafile Sacramento.3B')
           else
+! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
            teller = teller + 1
            AlreadyRead(isacr) = .true.
 !          SACNAM(isacr) = index
@@ -387,6 +407,10 @@ contains
     if (ISacr .gt. 0) then
        if (ReferenceToDefinition(iSacr) .gt. 0) then
           call SetMessage(LEVEL_ERROR, 'Capacity Definition '//Name(1:Len_Trim(Name))//' double in datafile Sacramento.Cap')
+          Occurs = .false.    ! voorkomt verdere verwerking
+       else
+          ! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
        endif
     endif
 ! Verwerk Capacity definition
@@ -512,6 +536,10 @@ contains
     if (ISacr .gt. 0) then
        if (ReferenceToDefinition(iSacr) .gt. 0) then
           call SetMessage(LEVEL_ERROR, 'UnitHydrograph Definition '//name(1:Len_Trim(Name))//' double in datafile Sacramento.UH')
+          Occurs = .false.    ! voorkomt verdere verwerking
+       else
+          ! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
        endif
     endif
 ! Verwerk UnitHydrograph definition
@@ -579,6 +607,10 @@ contains
     if (ISacr .gt. 0) then
        if (ReferenceToDefinition(iSacr) .gt. 0) then
           call SetMessage(LEVEL_ERROR, 'OtherParameters Definition '//name(1:Len_Trim(Name))//' double in datafile Sacramento.Oth')
+          Occurs = .false.    ! voorkomt verdere verwerking
+       else
+          ! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
        endif
     endif
 ! Verwerk OtherParameters Definition
@@ -655,6 +687,8 @@ contains
    If (Err969) call ErrMsgStandard (972, 0, ' Not enough Sacramento data found', &
                               ' Some Other Parameter Definitions not present in Sacramento.Oth file')
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
 
      iDebug = 0
@@ -664,6 +698,8 @@ contains
      DeAllocate ( AlreadyRead)
      DeAllocate ( ReferenceToDefinition)
      call SetMessage(LEVEL_FATAL, 'Read error in Sacramento ASCII')
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
 
      Return
   End subroutine Sacramento_readASCII

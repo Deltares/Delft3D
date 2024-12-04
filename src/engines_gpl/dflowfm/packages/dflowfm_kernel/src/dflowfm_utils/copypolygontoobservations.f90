@@ -31,7 +31,7 @@
 !
 
    subroutine copyPolygonToObservations()
-      use m_observations
+      use m_observations, only: addObservation
       use M_POLYGON
       implicit none
 

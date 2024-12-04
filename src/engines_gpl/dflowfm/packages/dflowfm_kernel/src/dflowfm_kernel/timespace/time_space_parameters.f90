@@ -33,8 +33,6 @@ module timespace_parameters
 
    implicit none
 
-   integer, parameter :: NODE_ID = -1 ! for a reference to a node ID
-   integer, parameter :: LINK_ID = -1 ! for a reference to a link ID
    ! enumeration for filetypes van de providers
    integer, parameter :: FILE_TYPE_UNKNOWN = -1
    integer, parameter :: UNIFORM = 1 ! kx values per tijdstap 1 dim arr       uni
@@ -54,6 +52,7 @@ module timespace_parameters
    integer, parameter :: BCASCII = 17 ! .bc format as ASCII file
    integer, parameter :: FIELD1D = 18 ! Scalar quantity on a 1D network, used for initial/parameter fields.
    integer, parameter :: GEOTIFF = 19 ! GeoTIFF, used for initial/parameter fields.
+   integer, parameter :: NODE_ID = 20 ! for a reference to a node ID
    integer, parameter :: MAX_FILE_TYPES = 103 !  max nr of supported types for end user in ext file.
    ! Enumeration for file types of sub-providers (not directly in ext file)
    integer, parameter :: FOURIER = 101 ! period(hrs), ampl(m), phas(deg) NOTE: not directly used in ext file by users.
@@ -105,7 +104,7 @@ contains
       select case (str_tolower(trim(string)))
       case ('1dfield')
          file_type = FIELD1D
-      case ('aaigrid')
+      case ('arcinfo')
          file_type = ARCINFO
       case ('bcascii')
          file_type = BCASCII

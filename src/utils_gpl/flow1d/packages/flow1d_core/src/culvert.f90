@@ -93,7 +93,7 @@ contains
    end subroutine deallocCulvert
                               
    !> 
-   subroutine ComputeCulvert(culvert, fum, rum, aum, dadsm, kfum, cmustr, s1m1, s1m2, qm,  &
+   subroutine ComputeCulvert(culvert, fum, rum, aum, dadsm, cmustr, s1m1, s1m2, qm,  &
                              q0m, u1m, u0m, dxm, dt, wetdown)
       use m_Roughness
 
@@ -102,7 +102,6 @@ contains
       ! Global variables
       !
       type(t_culvert), pointer                     :: culvert
-      integer,          intent(  out)              :: kfum
       double precision, intent(  out)              :: aum
       double precision, intent(  out)              :: dadsm
       double precision, intent(  out)              :: fum
@@ -176,10 +175,9 @@ contains
 
       ! Check on Flow Direction
       allowedFlowDir = culvert%allowedflowdir
-      if ((allowedFlowDir == 3) .or. &
+      if ((smax <= culvertCrest) .or. (allowedFlowDir == 3) .or. &
           (dir == 1  .and. allowedFlowDir == 2) .or. &
           (dir == -1 .and. allowedFlowDir == 1)) then
-         kfum  = 0
          fum   = 0.0d0
          rum   = 0.0d0
          u1m   = 0.0d0
@@ -214,7 +212,6 @@ contains
       call GetCSParsFlow(CrossSection, dpt, wArea, wPerimiter, wWidth)
 
       if (abs(wArea) < eps10 .or. (culvert%has_valve .and. abs(culvert%valveOpening) < eps10)) then
-         kfum  = 0
          fum   = 0.0d0
          rum   = 0.0d0
          u1m   = 0.0d0

@@ -32,10 +32,6 @@ target_link_libraries(${library_name} PRIVATE no_compiler_warnings)
 target_include_directories(${library_name} PRIVATE ${mpi_module_path} ${mpi_include_path})
 target_include_directories(${library_name} PRIVATE ${petsc_path})
 
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
-
 # Create the vfproj structure
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${sources})
 set_target_properties (${library_name} PROPERTIES FOLDER third_party_open/petsc)

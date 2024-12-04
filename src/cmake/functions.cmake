@@ -325,24 +325,27 @@ function(create_test test_name)
         add_test(NAME ${test_name} COMMAND ${test_name})
         set_property(TEST ${test_name} PROPERTY FAIL_REGULAR_EXPRESSION ${fail_reg_ex})
     endif()
-
-    if (DEFINED op_include_dir)
+    # test data
+    set(TEST_DATA_PATH ${CMAKE_CURRENT_BINARY_DIR}/test_data)
+    if(DEFINED op_include_dir)
         # Copy an entire directory
-        file(COPY ${op_include_dir} DESTINATION ${CMAKE_BINARY_DIR}/test_data/${test_name})
+        file(COPY ${op_include_dir} DESTINATION ${TEST_DATA_PATH})
 
-        if (DEFINED op_test_list)
+        if(DEFINED op_test_list)
             foreach(test_i IN LISTS op_test_list)
-                set_tests_properties(${test_i} PROPERTIES ENVIRONMENT DATA_PATH=${CMAKE_BINARY_DIR}/test_data/${test_name})
+                set_tests_properties(${test_i} PROPERTIES
+                        ENVIRONMENT "DATA_PATH=${TEST_DATA_PATH}")
             endforeach()
         else()
-            set_tests_properties(${test_name} PROPERTIES ENVIRONMENT DATA_PATH=${CMAKE_BINARY_DIR}/test_data/${test_name})
+            set_tests_properties(${test_name} PROPERTIES
+                    ENVIRONMENT "DATA_PATH=${TEST_DATA_PATH}"
+            )
         endif()
 
     endif()
 
     # add labels to tests
-
-    if (DEFINED op_labels)
+    if(DEFINED op_labels)
         # convert the labels list to a dictionary
         list(LENGTH op_labels labels_len)
 

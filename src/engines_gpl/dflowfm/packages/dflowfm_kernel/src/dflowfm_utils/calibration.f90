@@ -118,7 +118,7 @@ contains
       use unstruc_files, only: mdia
       use system_utils, only: exifil
       use m_monitoring_crosssections, only: crs, ncrs
-      use m_observations, only: namobs, numobs
+      use m_observations_data, only: namobs, numobs
 
       character(len=*), intent(in) :: md_cldfile
       integer, intent(in) :: phase
@@ -747,7 +747,7 @@ contains
    subroutine update_clddata()
       use unstruc_messages
       use m_monitoring_crosssections
-      use m_observations, only: valobs, IPNT_S1
+      use m_observations_data, only: valobs, IPNT_S1
 
       !integer, intent(in) :: update_mode
       double precision :: zs

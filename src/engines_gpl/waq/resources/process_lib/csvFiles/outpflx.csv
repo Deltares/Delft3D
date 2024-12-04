@@ -2632,6 +2632,7 @@ outfpr,outffl,outfnm,outfdo
 "SedTAgg   ","dSedTAgg41",  10,"x"
 "SedTAgg   ","dSedTAgg42",  11,"x"
 "SedTAgg   ","dSedTAgg43",  12,"x"
+"SumTRWP   ","dDumSTRWP ",   1,"x"
 "Prot_Dia  ","dNH4up_D1 ",   1," "
 "Prot_Dia  ","dNO3up_D1 ",   2," "
 "Prot_Dia  ","dPup_D1   ",   3," "

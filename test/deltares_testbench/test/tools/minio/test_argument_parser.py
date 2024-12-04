@@ -1,4 +1,5 @@
 import argparse
+import os
 from datetime import datetime, timezone
 from typing import List, Union
 
@@ -13,28 +14,29 @@ def arg_parser() -> argparse.ArgumentParser:
     return make_argument_parser()
 
 
-def assert_push_defaults(args: argparse.Namespace) -> None:
+def assert_defaults(args: argparse.Namespace) -> None:
     assert args.color_output
     assert args.interactive
-    assert not args.force
+    assert args.bucket == "dsc-testbench"
+    assert args.endpoint_url == os.environ.get("AWS_ENDPOINT_URL", "https://s3.deltares.nl")
+    assert args.profile == os.environ.get("AWS_PROFILE")
     assert args.local_path is None
+    assert not args.force
+
+
+def assert_push_defaults(args: argparse.Namespace) -> None:
     assert not args.allow_create_and_delete
+    assert_defaults(args)
 
 
 def assert_pull_defaults(args: argparse.Namespace) -> None:
-    assert args.color_output
-    assert args.interactive
-    assert not args.force
-    assert args.local_path is None
     assert args.timestamp is None
     assert not args.latest
+    assert_defaults(args)
 
 
 def assert_update_refs_defaults(args: argparse.Namespace) -> None:
-    assert args.color_output
-    assert args.interactive
-    assert not args.force
-    assert args.local_path is None
+    assert_defaults(args)
 
 
 def test_non_existent_command__raise_system_exit(arg_parser: argparse.ArgumentParser) -> None:
@@ -113,14 +115,8 @@ def test_push__only_required_long_opts(
 
 @pytest.mark.parametrize(
     ("flag", "attr_name", "attr_value"),
-    ids=["no-color", "batch", "force", "local-path", "short-local-path", "allow-create-and-delete"],
-    argvalues=[
-        ("--no-color", "color_output", False),
-        ("--batch", "interactive", False),
-        ("--force", "force", True),
-        ("--local-path=foo/bar", "local_path", "foo/bar"),
-        ("-p=foo/bar", "local_path", "foo/bar"),
-        ("--allow-create-and-delete", "allow_create_and_delete", True),
+    [
+        pytest.param("--allow-create-and-delete", "allow_create_and_delete", True, id="allow-create-and-delete"),
     ],
 )
 def test_push__optional_arguments(
@@ -156,26 +152,6 @@ def test_update_refs__required_only__long_opts(arg_parser: argparse.ArgumentPars
     assert args.test_case_name == "foo"
     assert args.issue_id == "FOO-123"
     assert_update_refs_defaults(args)
-
-
-@pytest.mark.parametrize(
-    ("flag", "attr_name", "attr_value"),
-    ids=["no-color", "batch", "force", "local-path", "short-local-path"],
-    argvalues=[
-        ("--no-color", "color_output", False),
-        ("--batch", "interactive", False),
-        ("--force", "force", True),
-        ("--local-path=foo/bar", "local_path", "foo/bar"),
-        ("-p=foo/bar", "local_path", "foo/bar"),
-    ],
-)
-def test_update_references__optional_arguments(
-    flag: str, attr_name: str, attr_value: Union[bool, str], arg_parser: argparse.ArgumentParser
-) -> None:
-    # Arrange, Act, Assert
-    argv = ["update-references", "-c=path/to/config", "-n=foo", "--issue-id=FOO-123", flag]
-    args = arg_parser.parse_args(argv)
-    assert getattr(args, attr_name) == attr_value
 
 
 @pytest.mark.parametrize(
@@ -239,19 +215,40 @@ def test_pull__latest(arg_parser: argparse.ArgumentParser) -> None:
 
 @pytest.mark.parametrize(
     ("flag", "attr_name", "attr_value"),
-    ids=["no-color", "batch", "force", "local-path", "short-local-path", "timestamp", "timestamp-short", "latest"],
-    argvalues=[
-        ("--no-color", "color_output", False),
-        ("--batch", "interactive", False),
-        ("--force", "force", True),
-        ("--local-path=foo/bar", "local_path", "foo/bar"),
-        ("-p=foo/bar", "local_path", "foo/bar"),
-        ("--timestamp=2024-04-17T12:00", "timestamp", "2024-04-17T12:00"),
-        ("-t=2024-04-17T12:00", "timestamp", "2024-04-17T12:00"),
-        ("--latest", "latest", True),
+    [
+        pytest.param("--timestamp=2024-04-17T12:00", "timestamp", "2024-04-17T12:00", id="timestamp"),
+        pytest.param("-t=2024-04-17T12:00", "timestamp", "2024-04-17T12:00", id="short-timestamp"),
+        pytest.param("--latest", "latest", True, id="latest"),
     ],
 )
 def test_pull__optional_arguments(
+    flag: str, attr_name: str, attr_value: Union[bool, str], arg_parser: argparse.ArgumentParser
+) -> None:
+    # Arrange, Act, Assert
+    argv = ["pull", "--reference", "-c=path/to/config", "-n=foo", flag]
+    args = arg_parser.parse_args(argv)
+    assert getattr(args, attr_name) == attr_value
+
+
+@pytest.mark.parametrize(
+    ("flag", "attr_name", "attr_value"),
+    [
+        pytest.param("--no-color", "color_output", False, id="no-color"),
+        pytest.param("--batch", "interactive", False, id="batch"),
+        pytest.param("--force", "force", True, id="force"),
+        pytest.param("--local-path=foo/bar", "local_path", "foo/bar", id="local-path"),
+        pytest.param(
+            "-p=foo/bar",
+            "local_path",
+            "foo/bar",
+            id="short-local-path",
+        ),
+        pytest.param("--bucket=my-bucket", "bucket", "my-bucket", id="bucket"),
+        pytest.param("--endpoint-url=https://my.s3:4242", "endpoint_url", "https://my.s3:4242", id="endpoint-url"),
+        pytest.param("--profile=minio-super-admin", "profile", "minio-super-admin", id="profile"),
+    ],
+)
+def test_optional_arguments(
     flag: str, attr_name: str, attr_value: Union[bool, str], arg_parser: argparse.ArgumentParser
 ) -> None:
     # Arrange, Act, Assert

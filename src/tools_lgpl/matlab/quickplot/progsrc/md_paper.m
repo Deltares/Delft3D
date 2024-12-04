@@ -51,6 +51,12 @@ function Out = md_paper(cmd,varargin)
 %                   vector should match the number of textboxes, or
 %                   alternatively one may specify fields 'BorderText1',
 %                   'BorderText2', etc.
+%      'LeftPage'   0 for right page (boxes defined corresponding the
+%                   layout) or 1 for left page (boxes defined flipped
+%                   compared to the layout).
+%      'UpsideDown' 0 for text with normal orientation, 1 for rotating the
+%                   border texts to match the y-label orientation in
+%                   landscape mode.
 %
 %   hBorder = MD_PAPER('no edit',...) right click editing disabled. Use
 %   MD_PAPER('edit',hBorder) to edit the texts via a dialog.
@@ -151,6 +157,32 @@ switch lcmd
         end
         BFormat = get(gcba,'userdata');
         ExpandP = getappdata(get(gcba,'parent'),'ExpandPAR');
+        %
+        BFormat.LeftPage = get(findobj(Fig,'tag','LeftPage'),'value');
+        switch BFormat.LeftPage
+            case 0
+                dir = 'normal';
+            case 1
+                dir = 'reverse';
+        end
+        switch get(get(gcba,'parent'),'paperorientation')
+            case 'portrait'
+                set(gcba,'xdir',dir)
+                rot = 0;
+            otherwise
+                set(gcba,'ydir',dir)
+                rot = 270;
+        end
+        %
+        switch get(findobj(Fig,'tag','UpsideDown'),'value')
+            case 0
+                % rot = rot + 0;
+                BFormat.UpsideDown = 0;
+            otherwise
+                rot = mod(rot + 180, 360);
+                BFormat.UpsideDown = 1;
+        end
+        %
         for i = 1:max(BFormat.Box(:))
             hedittext=findobj(Fig,'tag',sprintf('Text%i',i));
             hplottext=findobj(gcba,'tag',sprintf('plottext%i',i));
@@ -162,23 +194,9 @@ switch lcmd
             if ~isempty(ExpandP)
                 str = qp_strrep(str,ExpandP.PAR);
             end
-            set(hplottext,'string',str)
+            set(hplottext,'string',str,'rotation',rot)
         end
-        leftpage=findobj(Fig,'tag','LeftPage');
-        switch get(get(gcba,'parent'),'paperorientation')
-            case 'portrait'
-                if get(leftpage,'value') %=1
-                    set(gcba,'xdir','reverse');
-                else %=0
-                    set(gcba,'xdir','normal');
-                end
-            otherwise
-                if get(leftpage,'value') %=1
-                    set(gcba,'ydir','reverse');
-                else %=0
-                    set(gcba,'ydir','normal');
-                end
-        end
+        %
         set(gcba,'userdata',BFormat)
         if strcmp(lcmd,'done')
             delete(gcbf);
@@ -234,13 +252,10 @@ switch lcmd
             set(hedittext,'string',deserialize(BFormat.(sprintf('BorderText%i',i))))
         end
         set(Fig,'userdata',gcba);
-        leftpage=findobj(Fig,'tag','LeftPage');
-        switch get(get(gcba,'parent'),'paperorientation')
-            case 'portrait'
-                set(leftpage,'value',strcmp(get(gcba,'xdir'),'reverse'));
-            otherwise
-                set(leftpage,'value',strcmp(get(gcba,'ydir'),'reverse'));
-        end
+        %
+        set(findobj(Fig,'tag','LeftPage'),'value',BFormat.LeftPage)
+        set(findobj(Fig,'tag','UpsideDown'),'value',BFormat.UpsideDown)
+        %
         if strcmpi(lcmd,'editmodal')
             waitfor(Fig)
         end
@@ -909,6 +924,7 @@ fg = get(hBorder,'parent');
 vs = get(fg,'visible');
 
 BFormat=get(hBorder,'userdata');
+update = 0;
 if isempty(BFormat) % backward compatibility and update
     BFormat.Border= 1;
     BFormat.Margin= [1 1 1 1];
@@ -925,6 +941,23 @@ if isempty(BFormat) % backward compatibility and update
         str = get(hplottext,'string');
         BFormat.(sprintf('BorderText%i',i)) = serialize(str);
     end
+    update = 1;
+end
+if ~isfield(BFormat,'LeftPage')
+    switch get(get(hBorder,'parent'),'paperorientation')
+        case 'portrait'
+            dir = 'xdir';
+        otherwise
+            dir = 'ydir';
+    end
+    BFormat.LeftPage = strcmp(get(hBorder,dir),'reverse');
+    update = 1;
+end
+if ~isfield(BFormat,'UpsideDown')
+    BFormat.UpsideDown = 0;
+    update = 1;
+end
+if update
     set(hBorder,'userdata',BFormat)
 end
 Width = 560;
@@ -976,6 +1009,19 @@ uicontrol('Parent',h0, ...
     'String','left page', ...
     'Visible',vs, ...
     'Tag','LeftPage');
+
+uicontrol('Parent',h0, ...
+    'Units','pixels', ...
+    'ListboxTop',0, ...
+    'FontUnits','pixels', ...
+    'FontSize',12, ...
+    'HorizontalAlignment','left', ...
+    'Position',[100 10+25*N 85 20], ...
+    'Style','checkbox', ...
+    'BackgroundColor',get(h0,'color'), ...
+    'String','upside down', ...
+    'Visible',vs, ...
+    'Tag','UpsideDown');
 
 uicontrol('Parent',h0, ...
     'Units','pixels', ...

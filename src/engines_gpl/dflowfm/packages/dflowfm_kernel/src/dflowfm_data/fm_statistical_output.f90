@@ -32,6 +32,8 @@ module fm_statistical_output
    real(dp), dimension(:), allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
    real(dp), dimension(:), allocatable, target :: qplat_data
 
+   logical, public :: apply_statistics_on_output
+
 contains
 
    subroutine close_fm_statistical_output()
@@ -102,7 +104,7 @@ contains
    !> Subroutine that divides sediment transport x,y variables by rho
    subroutine assign_sediment_transport(X, Y, IPNT_X, IPNT_Y)
       use m_sediment
-      use m_observations
+      use m_observations_data
 
       real(dp), dimension(:), intent(out) :: X, Y !< arrays to assign valobs values to
       integer, intent(in) :: IPNT_X, IPNT_Y !< location specifier inside valobs array
@@ -142,7 +144,7 @@ contains
    end subroutine calculate_dredge_time_fraction
 
    integer function get_sediment_array_size()
-      use m_observations, only: numobs, nummovobs
+      use m_observations_data, only: numobs, nummovobs
       use m_sediment, only: stmpar
 
       get_sediment_array_size = (numobs + nummovobs) * stmpar%lsedtot
@@ -150,7 +152,7 @@ contains
 
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SSW(source_input)
-      use m_observations
+      use m_observations_data
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
       call allocate_and_associate(source_input, get_sediment_array_size(), SSWX, SSWY)
       call assign_sediment_transport(SSWX, SSWY, IPNT_SSWX1, IPNT_SSWY1)
@@ -158,7 +160,7 @@ contains
 
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SSC(source_input)
-      use m_observations
+      use m_observations_data
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSCX" item, to be assigned once on first call.
       call allocate_and_associate(source_input, get_sediment_array_size(), SSCX, SSCY)
       call assign_sediment_transport(SSCX, SSCY, IPNT_SSCX1, IPNT_SSCY1)
@@ -166,7 +168,7 @@ contains
 
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SBW(source_input)
-      use m_observations
+      use m_observations_data
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBWX" item, to be assigned once on first call.
       call allocate_and_associate(source_input, get_sediment_array_size(), SBWX, SBWY)
       call assign_sediment_transport(SBWX, SBWY, IPNT_SBWX1, IPNT_SBWY1)
@@ -174,7 +176,7 @@ contains
 
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SBC(source_input)
-      use m_observations
+      use m_observations_data
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
       call allocate_and_associate(source_input, get_sediment_array_size(), SBCX, SBCY)
       call assign_sediment_transport(SBCX, SBCY, IPNT_SBCX1, IPNT_SBCY1)
@@ -187,7 +189,7 @@ contains
       use m_ug_nc_attribute, only: ug_nc_attribute
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_set_att
-      use m_observations, only: numobs, nummovobs
+      use m_observations_data, only: numobs, nummovobs
       use m_flow, only: kmx
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< Output configuration for the his-file.
       integer, allocatable, dimension(:), intent(out) :: idx_his_hwq
@@ -489,7 +491,7 @@ contains
    subroutine add_station_tracer_output_items(output_set, output_config_set, idx_tracers_stations)
       use m_transportdata, only: ITRA1, ITRAN
       use m_flow, only: kmx
-      use m_observations, only: numobs, nummovobs, valobs, IPNT_TRA1
+      use m_observations_data, only: numobs, nummovobs, valobs, IPNT_TRA1
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
       type(t_output_quantity_config_set), intent(in) :: output_config_set !< Read config items out of config set
       integer, intent(in) :: idx_tracers_stations(:) !< Indices of just-in-time added tracers in output_config_set array
@@ -599,7 +601,7 @@ contains
    subroutine add_station_wqbot_output_items(output_set, output_config_set, idx_wqbot_stations)
 
       use m_fm_wq_processes, only: numwqbots
-      use m_observations, only: valobs, IPNT_WQB1
+      use m_observations_data, only: valobs, IPNT_WQB1
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
       type(t_output_quantity_config_set), intent(in) :: output_config_set !< Read config items out of config set
@@ -617,7 +619,7 @@ contains
    subroutine add_station_wqbot3D_output_items(output_set, output_config_set, idx_wqbot3D_stations)
 
       use m_fm_wq_processes, only: numwqbots
-      use m_observations, only: valobs, IPNT_WQB3D1
+      use m_observations_data, only: valobs, IPNT_WQB3D1
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
       type(t_output_quantity_config_set), intent(in) :: output_config_set !< Read config items out of config set
@@ -2153,7 +2155,7 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_structures
-      use m_observations
+      use m_observations_data
       use m_physcoef, only: density_is_pressure_dependent
       use m_statistical_output_types, only: process_data_interface_double
       use m_transport, only: NUMCONST, itemp, isalt, ised1
@@ -2474,7 +2476,7 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DISCHARGE_MAGNITUDE), valobs(:, IPNT_QMAG))
             end if
          end if
-         
+
          ! Turbulence model
          if (jahistur > 0) then
             if (model_is_3D()) then
@@ -2958,6 +2960,7 @@ contains
       call process_output_quantity_configs(output_set)
       call realloc(output_set, .true.) ! set size to count
       call initialize_statistical_output(output_set%statout)
+      apply_statistics_on_output = any(station_statistics_requested(output_set%statout))
 
    end subroutine flow_init_statistical_output_his
 
@@ -2975,6 +2978,21 @@ contains
       end do
 
    end subroutine process_output_quantity_configs
+
+   !> return whether the output variable item is a station where the requested operation type is a statistical one
+   elemental function station_statistics_requested(item) result(res)
+      use m_statistical_output_types, only: SO_CURRENT, SO_NONE, SO_UNKNOWN
+
+      type(t_output_variable_item), intent(in) :: item !< output variable item to check
+      logical :: res !< Return value
+
+      if (allocated(item%output_config)) then
+         res = (.not. any(item%operation_type == [SO_CURRENT, SO_NONE, SO_UNKNOWN])) .and. item%output_config%location_specifier == UNC_LOC_STATION
+      else
+         res = .false.
+      end if
+
+   end function station_statistics_requested
 
    !> Deactivate invalid dimension IDs depending on model parameters
    subroutine process_nc_dim_ids(nc_dim_ids)
@@ -3003,7 +3021,7 @@ contains
 
    !> Check if model has fixed observation stations
    pure function model_has_fixed_obs_stations() result(res)
-      use m_observations, only: numobs
+      use m_observations_data, only: numobs
       logical :: res !< Return value
 
       res = (numobs > 0)
@@ -3011,7 +3029,7 @@ contains
 
    !> Check if model has moving observation stations
    pure function model_has_moving_obs_stations() result(res)
-      use m_observations, only: nummovobs
+      use m_observations_data, only: nummovobs
       logical :: res !< Return value
 
       res = (nummovobs > 0)
@@ -3019,7 +3037,7 @@ contains
 
    !> Check if model has any observation stations, fixed or moving
    pure function model_has_obs_stations() result(res)
-      use m_observations, only: numobs, nummovobs
+      use m_observations_data, only: numobs, nummovobs
       logical :: res !< Return value
 
       res = (numobs + nummovobs > 0)

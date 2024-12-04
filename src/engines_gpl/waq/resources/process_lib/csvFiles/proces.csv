@@ -11,7 +11,7 @@ procid,procco,procfo,procnm
 "MaxMacro  ",123,"MAXMAC    ","maximum biomass macrophytes                       "
 "Coverage  ",123,"COVMAC    ","coverage by macrophytes                           "
 "DAYRAD    ",123,"DAYRAD    ","Irradiance over the day                           "
-"TempMode  ",123,"TMODE     ","Temperature and heat exchange                     "
+"TempMode  ",123,"TMODE     ","Modelled temperature conversion and limitation    "
 "Temperatur",123,"TEMPER    ","Temperature and heat exchange                     "
 "VarSal    ",123,"VARSAL    ","Salinity in case of constant river discharge      "
 "Salinchlor",123,"SALCHL    ","Conversion of salinity into chloride or vv        "

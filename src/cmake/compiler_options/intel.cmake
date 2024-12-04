@@ -43,7 +43,7 @@ if (WIN32)
     set(debug_information_flag                /Z7)
 
     # Set debug flags:
-    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${debug_information_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${debug_information_flag} ${check_pointers_flag} ${floating_point_exception_flag}")
     string(APPEND CMAKE_Fortran_FLAGS_RELWITHDEBINFO " ${debug_information_flag}")
 
     # To prevent Visual Studio compilation failures when trying to write the manifest file
@@ -77,26 +77,26 @@ if (UNIX)
 
     set(cpp_compiler_flags                       "-std=c++17")
     set(cxx_compiler_flags......................."-lstdc++")
-    set(automatic_local_variable_storage_flag    -auto)
-    set(extend_source132_flag                    -extend-source 132)
-    set(real_size_64_flag                        -r8)
+    set(automatic_local_variable_storage_flag    "-auto")
+    set(extend_source132_flag                    "-extend-source 132")
+    set(real_size_64_flag                        "-r8")
 
-    set(file_preprocessor_flag                   -fpp)
+    set(file_preprocessor_flag                   "-fpp")
     set(check_bounds_flag                        "-check bounds")
     set(check_nobounds_flag                      "-check nobounds")
-    set(check_pointers_flag                      -check pointers)
-    set(check_nopointers_flag                    -check nopointers)
+    set(check_pointers_flag                      "-check pointers")
+    set(check_nopointers_flag                    "-check nopointers")
     set(check_uninit_flag                        "-check uninit")
     set(check_stack_flag                         "-check stack")
     set(openmp_flag                              "-qopenmp")
-    set(generate_reentrancy_threaded_flag        -reentrancy threaded)
-    set(floating_point_exception_flag            -fpe0)
-    set(traceback_flag                           -traceback)
+    set(generate_reentrancy_threaded_flag        "-reentrancy threaded")
+    set(floating_point_exception_flag            "-fpe0")
+    set(traceback_flag                           "-traceback")
 
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
     # Set debug flags:
-    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${check_pointers_flag} ${floating_point_exception_flag}")
 endif(UNIX)
 
 set(qauto_threaded_flags ${automatic_local_variable_storage_flag} ${generate_reentrancy_threaded_flag})

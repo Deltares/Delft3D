@@ -121,7 +121,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f024_c06_Evaporation" ref="dimr_default">
-		<path version="2024-08-06T15:50:00">e02_dflowfm/f024_hydrology/c06_Evaporation</path>
+		<path version="2024-10-14T13:45:00">e02_dflowfm/f024_hydrology/c06_Evaporation</path>
 		<checks>
 			<file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
 				<parameters>
@@ -136,7 +136,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f024_c07_Interception" ref="dimr_default">
-		<path version="2024-08-06T15:54:00">e02_dflowfm/f024_hydrology/c07_Interception</path>
+		<path version="2024-10-14T13:52:00">e02_dflowfm/f024_hydrology/c07_Interception</path>
 		<checks>
 			<file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
 				<parameters>

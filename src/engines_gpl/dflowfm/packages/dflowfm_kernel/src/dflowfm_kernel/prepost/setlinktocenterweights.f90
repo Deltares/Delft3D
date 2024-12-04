@@ -29,7 +29,6 @@
 
 !
 !
-
  subroutine setlinktocenterweights() ! set center related linkxy weights
 
     use m_flow
@@ -52,22 +51,15 @@
 
     double precision, external :: lin2nodx, lin2nody
 
-    if (allocated(wcx1)) deallocate (wcx1, wcy1, wcx2, wcy2)
+    wcx1 = 0
+    wcy1 = 0
+    wcx2 = 0
+    wcy2 = 0
+    wcL = 0
+    
     if (allocated(wcxy)) deallocate (wcxy)
-    if (allocated(wcL)) deallocate (wcL)
-
-    allocate (wcx1(lnx), stat=ierr); wcx1 = 0
-    call aerr('wcx1(lnx)', ierr, lnx)
-    allocate (wcy1(lnx), stat=ierr); wcy1 = 0
-    call aerr('wcy1(lnx)', ierr, lnx)
-    allocate (wcx2(lnx), stat=ierr); wcx2 = 0
-    call aerr('wcx2(lnx)', ierr, lnx)
-    allocate (wcy2(lnx), stat=ierr); wcy2 = 0
-    call aerr('wcy2(lnx)', ierr, lnx)
     allocate (wcxy(2, ndx), stat=ierr); wcxy = 0
     call aerr('wcxy (2,ndx)', ierr, 2 * ndx)
-    allocate (wcL(2, Lnx), stat=ierr); wcL = 0
-    call aerr('wcL  (2,Lnx)', ierr, 2 * Lnx)
     allocate (wc(ndx), stat=ierr); wc = 0
     call aerr('wc     (ndx)', ierr, ndx)
 

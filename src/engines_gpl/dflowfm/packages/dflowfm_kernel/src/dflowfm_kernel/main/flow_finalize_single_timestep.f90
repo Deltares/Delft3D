@@ -85,9 +85,15 @@ subroutine flow_finalize_single_timestep(iresult)
    call timstrt('update HIS data DtUser', handle_extra(75))
    if (ti_his > 0) then
 
-      call updateValuesOnObservationStations()
+      if (apply_statistics_on_output) then ! update every numerical timestep if statistics requested
+         call updateValuesOnObservationStations()
+      end if
 
       if (comparereal(time1, time_his, eps10) >= 0) then
+         if (.not. apply_statistics_on_output) then
+            call updateValuesOnObservationStations()
+         end if
+
          !do_fourier = do_fourier .or. (md_fou_step == 2)
          if (jampi == 1) then
             call updateValuesOnRunupGauges_mpi()

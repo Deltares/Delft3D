@@ -30,8 +30,6 @@ module integration_schemes
     use m_integration_scheme_0, only: scheme_0_no_transport
     use m_integration_scheme_1, only: scheme_1_time_explicit_space_backward
     use m_integration_scheme_5, only: scheme_5_time_explicit_flux_corrected_transport
-    use m_integration_scheme_6, only: scheme_6_steady_state_hz_upwind
-    use m_integration_scheme_7, only: scheme_7_steady_state_hz_upwind_vl_central
     use m_integration_scheme_11, only: scheme_11_time_explicit_forester_hz_upwind_vl_central
     use m_integration_scheme_12, only: scheme_12_time_explicit_flux_corrected_transport
     use m_integration_scheme_13, only: scheme_13_time_explicit_space_upwind
@@ -182,15 +180,11 @@ contains
         case (1)
             ! backward in space and time
             call scheme_1_time_explicit_space_backward(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
-        case (2, 3, 4) ! deprecated
+        case (2, 3, 4) ! removed
             goto 991
         case (5)     ! Flux corrected transport
             call scheme_5_time_explicit_flux_corrected_transport(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
-        case (6)     ! Direct steady state, backward differences in space
-            call scheme_6_steady_state_hz_upwind(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
-        case (7)     ! Direct steady state, central differences in space
-            call scheme_7_steady_state_hz_upwind_vl_central(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
-        case (8, 9, 10) ! deprecated
+        case (6, 7, 8, 9, 10) ! removed
             goto 991
         case (11)     ! Horizontal explicit upwind, vertical implicit central
             call scheme_11_time_explicit_forester_hz_upwind_vl_central(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
@@ -216,7 +210,7 @@ contains
         case (18)     ! stationary GMRES, horizontal upwind, vertical central
             call scheme_18_steady_state_hz_upwind_vl_central(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
-        case (19, 20) ! deprecated
+        case (19, 20) ! removed
             goto 991
 
         case (21)     ! Self adjusting theta method (limiter Salezac)
@@ -253,7 +247,7 @@ contains
 
         990     write (*, *) ' ERROR: INTEGRATION OPTION NOT IMPLEMENTED'
         call stop_with_error()
-        991     write (*, *) ' ERROR: INTEGRATION OPTION DEPRECATED'
+        991     write (*, *) ' ERROR: INTEGRATION OPTION REMOVED'
         call stop_with_error()
         992     write (*, *) ' ERROR : INITIALISATION FAILED'
         call stop_with_error()

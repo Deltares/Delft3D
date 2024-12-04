@@ -137,7 +137,7 @@ contains
 
 !> Write a shape file for observation points
    subroutine unc_write_shp_obs()
-      use m_observations
+      use m_observations_data
       use m_flowgeom, only: xz, yz
 
       implicit none

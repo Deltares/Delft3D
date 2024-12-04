@@ -1,4 +1,4 @@
-function [hNew,Thresholds,Param,Parent] = qp_plot_ugrid(hNew,Parent,Param,data,Ops,Props)
+function [hNew,Param,Parent] = qp_plot_ugrid(hNew,Parent,Param,data,Ops,Props)
 %QP_PLOT_UGRID Plot function of QuickPlot for unstructured data sets.
 
 %----- LGPL --------------------------------------------------------------------
@@ -52,7 +52,6 @@ s=Param.s;
 compat7=Param.compat7;
 
 DimFlag=Props.DimFlag;
-Thresholds=Ops.Thresholds;
 axestype=Ops.basicaxestype;
 
 if isfield(data,'FaceNodeConnect')
@@ -476,7 +475,7 @@ switch NVal
                                 mz=max(c2(:));
                                 c1(isnan(c1))=ms;
                                 c2(isnan(c2))=mz;
-                                hNew=gencontour(hNew,Ops,Parent,c1,c2,v,Thresholds);
+                                hNew=gencontour(hNew,Ops,Parent,c1,c2,v,Ops.Thresholds);
                                 
                         end
                         if FirstFrame
@@ -599,7 +598,7 @@ switch NVal
                             mz=max(c2(:));
                             c1(isnan(c1))=ms;
                             c2(isnan(c2))=mz;
-                            hNew=gencontour(hNew,Ops,Parent,c1,c2,v,Thresholds);
+                            hNew=gencontour(hNew,Ops,Parent,c1,c2,v,Ops.Thresholds);
                             
                     end
                     if FirstFrame
@@ -900,11 +899,11 @@ switch NVal
                     if ~isempty(Ops.vectorcolour)
                         if ~strcmp(Ops.Thresholds,'none')
                             vc = zeros(size(data.Val));
-                            for i=1:length(Thresholds)
-                                vc(data.Val>=Thresholds(i))=i;
+                            for i=1:length(Ops.Thresholds)
+                                vc(data.Val>=Ops.Thresholds(i))=i;
                             end
                             data.Val=vc;
-                            set(Parent,'clim',[1 length(Thresholds)]);
+                            set(Parent,'clim',[1 length(Ops.Thresholds)]);
                         end
                         hNew=colquiver(hNew,data.Val);
                     else

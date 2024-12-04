@@ -21,11 +21,11 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module test_lateral
-   use ftnunit
+   use ftnunit, only: assert_comparable 
    use precision_basics, only: dp
    use dfm_error, only: DFM_NOERR
    use m_alloc, only: aerr
-   use m_laterals
+   use m_laterals ! no only statement because this is the module under test
 
    implicit none
 
@@ -79,7 +79,6 @@ contains
       n1latsg(2) = 4
       n2latsg(2) = 5
       nnlat = (/1, 2, 3, 5, 8/)
-      apply_transport(:) = 1
       vol1(:) = 0.1_dp
       hs(:) = 2._dp
       kmxn(:) = 1
@@ -138,8 +137,8 @@ contains
          do i_cell = n1latsg(i_lateral), n2latsg(i_lateral)
             i_node = nnlat(i_cell)
             dvoli = 1 / (vol1(i_cell))
-            ! sink sign-convention: positive means flux going out of model, hence the abs().
-            refval = dvoli * abs(qqlat(1, i_cell))
+            ! sink sign-convention: positive means flux going out of model, hence the minus.
+            refval = - dvoli * qqlat(1, i_cell)
             call assert_comparable(transport_sink(i_const, i_node), refval, tolerance, "lateral_sink value is not correct")
          end do
       end do
@@ -185,6 +184,8 @@ contains
       call aerr('n2latsg', iostat, numlatsg, 'test_lateral, setup_testcase')
       allocate (apply_transport(numlatsg), stat=iostat)
       call aerr('apply_transport', iostat, numlatsg, 'test_lateral, setup_testcase')
+      ! Substance transport should be active for all laterals under test in this module
+      apply_transport(:) = 1
       allocate (nnlat(nlatnd), stat=iostat)
       call aerr('nnlat', iostat, nlatnd, 'test_lateral, setup_testcase')
       allocate (vol1(ndxi), stat=iostat)

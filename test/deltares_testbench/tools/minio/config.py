@@ -90,10 +90,12 @@ class ConfigIndexer:
     def __init__(
         self,
         configs: Optional[Iterable[Path]] = None,
+        bucket: str = "dsc-testbench",
         logger: Optional[logging.Logger] = None,
     ) -> None:
-        self._logger = logger or logging.getLogger(__name__)
         self._configs = configs or Path("configs").rglob("*.xml")
+        self._bucket = bucket
+        self._logger = logger or logging.getLogger(__name__)
 
     def index_configs(self) -> Dict[Path, List[TestCaseData]]:
         """Return an index of the test cases.
@@ -121,7 +123,7 @@ class ConfigIndexer:
                 return []  # Not a test bench config.
 
         try:
-            config_loader = TestBenchConfigLoader(xml)
+            config_loader = TestBenchConfigLoader(xml, server_base_url=f"s3://{self._bucket}")
             return config_loader.get_test_cases()
         except Exception:
             self._logger.exception(f"Skip xml: {xml} due to error in parsing.")

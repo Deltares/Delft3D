@@ -975,7 +975,7 @@ elseif ((nval==1 || nval==6) && TimeSpatial==2) || ...
                             if SpatialV
                                 PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
                             else
-                                PrsTps={'markers';'values';'edges';'vector edges'};
+                                PrsTps={'markers';'values';'edges';'vector edges';'normal vector edges'};
                             end
                         case {'UGRID1D_NETWORK-NODE','UGRID1D-NODE'}
                             if SpatialV
@@ -1106,7 +1106,7 @@ elseif ((nval==1 || nval==6) && TimeSpatial==2) || ...
                 lineproperties=1;
             case 'grid with numbers'
                 ask_for_textprops=1;
-            case 'vector edges'
+            case {'vector edges','normal vector edges'}
                 lineproperties=1;
                 thindams=1;
                 nval=0.9;
@@ -1378,7 +1378,7 @@ end
 
 % plot value as is, or absolute value?
 % in case of vector edges we need the sign for the vector direction
-if nval>0 && nval<2 && (~isfield(Ops,'presentationtype') || ~strcmp(Ops.presentationtype,'vector edges'))
+if nval>0 && nval<2 && (~isfield(Ops,'presentationtype') || ~ismember(Ops.presentationtype,{'vector edges','normal vector edges'}))
     oper=findobj(OH,'tag','operator');
     set(oper,'enable','on')
     oper=findobj(OH,'tag','operator=?');
@@ -1392,7 +1392,7 @@ end
 
 if MultipleColors ...
         && isfield(Ops,'presentationtype') ...
-        && ismember(Ops.presentationtype,{'patches','edges','vector edges'})
+        && ismember(Ops.presentationtype,{'patches','edges','vector edges','normal vector edges'})
     cun = findobj(OH,'tag','unicolour');
     set(cun,'enable','on')
     Ops.unicolour = get(cun,'value');
@@ -1580,7 +1580,7 @@ if ismember(geometry,{'PNT'}) && ~multiple(T_) && nval>=0
         forcemarker = 1;
     end
     lineproperties = 0;
-elseif isfield(Ops,'presentationtype') && strcmp(Ops.presentationtype,'vector edges')
+elseif isfield(Ops,'presentationtype') && ismember(Ops.presentationtype,{'vector edges','normal vector edges'})
     usesmarker = 0;
 elseif lineproperties || nval==0
     usesmarker = 1;
@@ -1676,37 +1676,6 @@ if usesmarker
     end
 end
 
-if isfield(Ops,'presentationtype')
-    switch Ops.presentationtype
-        case {'vector','patches','patches with lines','markers'}
-            if MultipleColors && Props.NVal~=6
-                cclass=findobj(OH,'tag','colclassify');
-                set(cclass,'enable','on')
-                if get(cclass,'value')
-                    ask_for_thresholds = 1;
-                end
-            end
-    end
-end
-
-if ask_for_thresholds
-    set(findobj(OH,'tag','thresholds'),'enable','on')
-    set(findobj(OH,'tag','thresholds=?'),'enable','on','backgroundcolor',Active)
-    Ops.thresholds=get(findobj(OH,'tag','thresholds=?'),'userdata');
-    %
-    % if the thresholds have not explicitly been specified
-    % (only the number of thresholds is given, or even that is left to default)
-    % then ask for distribution of thresholds
-    %
-    if isempty(Ops.thresholds) || ...
-            (isequal(size(Ops.thresholds),[1 1]) && isnumeric(Ops.thresholds) && isequal(Ops.thresholds,round(Ops.thresholds)) && Ops.thresholds>0)
-        thrd=findobj(OH,'tag','threshdistr=?');
-        set(thrd,'enable','on','backgroundcolor',Active)
-        thrdStr=get(thrd,'string'); % linear, logarithmic, anti-logarithmic
-        Ops.thresholddistribution=thrdStr{get(thrd,'value')};
-    end
-end
-
 if MultipleColors
     if Props.NVal~=6
         set(findobj(OH,'tag','climmode'),'enable','on')
@@ -1747,6 +1716,9 @@ if MultipleColors
                 else
                     Ops.colourlimits=[Min Max];
                 end
+                climclip = findobj(OH,'tag','climclip');
+                set(climclip,'enable','on')
+                Ops.climclipping = get(climclip, 'value');
         end
     end
     set(findobj(OH,'tag','colourmap'),'enable','on')
@@ -1767,6 +1739,40 @@ if MultipleColors
         end
     else
         Ops.colourbar='none';
+    end
+end
+
+if isfield(Ops,'presentationtype')
+    switch Ops.presentationtype
+        case {'vector','patches','patches with lines','markers'}
+            if MultipleColors && Props.NVal~=6
+                cclass=findobj(OH,'tag','colclassify');
+                set(cclass,'enable','on')
+                if get(cclass,'value')
+                    ask_for_thresholds = 1;
+                end
+            end
+    end
+end
+if ask_for_thresholds
+    set(findobj(OH,'tag','thresholds'),'enable','on')
+    set(findobj(OH,'tag','thresholds=?'),'enable','on','backgroundcolor',Active)
+    Ops.thresholds=get(findobj(OH,'tag','thresholds=?'),'userdata');
+    %
+    % if the thresholds have not explicitly been specified
+    % (only the number of thresholds is given, or even that is left to default)
+    % then ask for distribution of thresholds
+    %
+    if isempty(Ops.thresholds) || ...
+            (isequal(size(Ops.thresholds),[1 1]) && isnumeric(Ops.thresholds) && isequal(Ops.thresholds,round(Ops.thresholds)) && Ops.thresholds>0)
+        thrd=findobj(OH,'tag','threshdistr=?');
+        set(thrd,'enable','on','backgroundcolor',Active)
+        thrdStr=get(thrd,'string'); % linear, logarithmic, anti-logarithmic
+        Ops.thresholddistribution=thrdStr{get(thrd,'value')};
+    end
+    if false % to be activated under UNST-8375
+        set(findobj(OH,'tag','plotclass'),'enable','on')
+        set(findobj(OH,'tag','plotclassbutton'),'enable','on')
     end
 end
 

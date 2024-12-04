@@ -1075,8 +1075,7 @@ contains
    end subroutine findleftright
 
    subroutine selfattraction(avhs, self, i1, i2, j1, j2, jaselfal)
-      use m_shaec
-      use m_shsec
+      use spherepack, only: shaec, shaeci, shsec, shseci
       implicit none
 
       ! Input\Output parameter
@@ -1086,35 +1085,21 @@ contains
 
       ! Local parameters
       double precision, parameter :: Me = 5.9726d24, R = 6371d3, g = 9.81d0, pi = 4d0 * atan(1.0), rhow = 1.0240164d3, rhoe = 3d0 * Me / (4d0 * pi * R * R * R)
-      integer :: nlat, nlon, n15, lsave, lwork, ldwork, lwk, liwk, lshaec, lshsec
+      integer :: nlat, nlon, lsave
       integer :: i, j, ierror, isym, nt, l, mdab, ndab, k1
-!   double precision, dimension(0:1024) :: llnh, llnk
       double precision, dimension(:), allocatable :: llnh, llnk
-      double precision, dimension(:), allocatable :: work, wk, iwk, wshaec, wshsec
-      double precision, dimension(:), allocatable :: dwork
+      double precision, dimension(:), allocatable :: wshaec, wshsec
       double precision, dimension(:, :), allocatable :: a, b
-!   double precision, dimension(0:180,0:359) :: avhs1, self1
       double precision, dimension(:, :), allocatable :: avhs1, self1
 
       ! Initialisation
       nlat = 181
       nlon = 360
-      n15 = nlon + 15
-      lsave = nlat * (nlat + 1) + 3 * ((nlat - 2) * (2 * nlat - nlat - 1) + n15)
-      lshaec = lsave
-      lshsec = lsave
-      lwork = (nlat + 1) * (nlon + 3 * nlat) + nlat * (2 * nlat + 1)
-      ldwork = nlat + 1
-      lwk = 46 * nlat * (nlon + 1)
-      liwk = 14 * nlat * (nlon + 1)
+      lsave = nlat * (nlat + 1) + 3 * ((nlat - 2) * (2 * nlat - nlat - 1) + nlon + 15)
       mdab = nlat
       ndab = nlat
 
 !  allocate
-      allocate (work(1:lwork))
-      allocate (dwork(1:ldwork))
-      allocate (wk(1:lwk))
-      allocate (iwk(1:liwk))
       allocate (wshaec(1:lsave))
       allocate (wshsec(1:lsave))
       allocate (a(1:mdab, 1:ndab))
@@ -1146,9 +1131,8 @@ contains
       isym = 0
       nt = 1
       !Spherical harmonic analysis
-      call shaeci(nlat, nlon, wshaec, lshaec, dwork, ldwork, ierror)
-      call shaec(nlat, nlon, isym, nt, avhs1, nlat, nlon, a, b, mdab, ndab, &
-                 wshaec, lshaec, work, lwork, ierror)
+      call shaeci(nlat, nlon, wshaec, ierror)
+      call shaec(nlat, nlon, isym, nt, avhs1, nlat, nlon, a, b, mdab, ndab, wshaec, ierror)
 
       !Multiplication in spherical harmonic space (=convolution)
       if (jaselfal == 2) then
@@ -1165,9 +1149,9 @@ contains
       end if
 
       !Spherical harmonic synthesis
-      call shseci(nlat, nlon, wshsec, lshsec, dwork, ldwork, ierror)
+      call shseci(nlat, nlon, wshsec, ierror)
       call shsec(nlat, nlon, isym, nt, self1, nlat, nlon, a, b, mdab, ndab, &
-                 wshsec, lshsec, work, lwork, ierror)
+                 wshsec, ierror)
 
       !self1 is defined on the same grid than avhs1, we put it back in the same grid than avhs
       self = 0d0
@@ -1183,41 +1167,6 @@ contains
          end do
          k1 = k1 + 1
       end do
-
-      !Create output file
-!   open (newunit=filsal, file='d:\output_SALtide2.txt',status='unknown',position='append')
-!   open (newunit=filtide, file='d:\output_tide2.txt',status='unknown',position='append')
-!   do i=1,nlat
-!            do j=1,nlon
-!                write(filsal,fmt=*) self1(i-1,j-1)/g
-!                write(filtide,fmt=*) avhs1(i-1,j-1)
-!            enddo
-!   enddo
-!   close(filsal)
-!   close(filtide)
-      !  open (newunit=filavhs, file='d:\output_avhs.txt',status='unknown',position='append')
-      !  do i=i1,i2
-      !           do j=j1,j2
-      !               write(filavhs,fmt=*) avhs(i,j)
-      !           enddo
-      !  enddo
-      !  close(filavhs)
-
-!  deallocate
-      if (allocated(work)) deallocate (work)
-      if (allocated(dwork)) deallocate (dwork)
-      if (allocated(wk)) deallocate (wk)
-      if (allocated(iwk)) deallocate (iwk)
-      if (allocated(wshaec)) deallocate (wshaec)
-      if (allocated(wshsec)) deallocate (wshsec)
-      if (allocated(a)) deallocate (a)
-      if (allocated(b)) deallocate (b)
-
-      if (allocated(llnh)) deallocate (llnh)
-      if (allocated(llnk)) deallocate (llnk)
-      if (allocated(avhs1)) deallocate (avhs1)
-      if (allocated(self1)) deallocate (self1)
-
    end subroutine selfattraction
 
    subroutine loadlovenumber(llnh, llnk)
@@ -4780,12 +4729,6 @@ contains
 
          end if
       end do
-
-      deallocate (xs)
-      deallocate (ys)
-      deallocate (zs)
-      deallocate (kcss)
-
    end subroutine triint_z1D
    !
    !
@@ -5682,7 +5625,7 @@ contains
 
          deallocate (xs, ys, kcs)
 
-      elseif (filetype == node_id) then
+      elseif (filetype == NODE_ID) then
 
          ierr = findlink_by_nodeid(filename, m)
          if (m <= 0) then
@@ -6481,7 +6424,7 @@ module m_meteo
    use fm_external_forcings_data
    use processes_input, only: num_time_functions, funame, funinp, nosfunext, sfunname, sfuninp
    use unstruc_messages
-   use m_observations
+   use m_observations_data
    use string_module
    use m_sediment, only: stm_included, stmpar
    use m_subsidence
@@ -6741,33 +6684,33 @@ contains
       integer, intent(out) :: ec_filetype
       !
       select case (filetype)
-      case (uniform) ! 1
+      case (UNIFORM) ! 1
          ec_filetype = provFile_uniform
-      case (unimagdir) ! 2
+      case (UNIMAGDIR) ! 2
          ec_filetype = provFile_unimagdir
-      case (svwp) ! 3
+      case (SVWP) ! 3
          ec_filetype = provFile_svwp
-      case (arcinfo) ! 4
+      case (ARCINFO) ! 4
          ec_filetype = provFile_arcinfo
-      case (spiderweb) ! 5
+      case (SPIDERWEB) ! 5
          ec_filetype = provFile_spiderweb
-      case (curvi) ! 6
+      case (CURVI) ! 6
          ec_filetype = provFile_curvi
-      case (triangulation) ! 7
+      case (TRIANGULATION) ! 7
          ec_filetype = provFile_samples
-      case (triangulationmagdir) ! 8
+      case (TRIANGULATIONMAGDIR) ! 8
          ec_filetype = provFile_triangulationmagdir
-      case (poly_tim) ! 9
+      case (POLY_TIM) ! 9
          ec_filetype = provFile_poly_tim
-      case (ncgrid, ncwave) ! 11, 14
+      case (NCGRID, NCWAVE) ! 11, 14
          ec_filetype = provFile_netcdf
-      case (ncflow) ! 12
+      case (NCFLOW) ! 12
          ec_filetype = provFile_undefined ! only used for timespaceinitialfield, no EC yet.
-      case (bcascii) ! 17
+      case (BCASCII) ! 17
          ec_filetype = provFile_bc
-      case (node_id) ! -1
+      case (NODE_ID) ! 20
          ec_filetype = provFile_bc
-      case (fourier) ! 101
+      case (FOURIER) ! 101
          ec_filetype = provFile_fourier
       case default
          ec_filetype = provFile_undefined
@@ -7126,43 +7069,33 @@ contains
       case ('fx', 'xwaveforce')
          itemPtr1 => item_fx
          dataPtr1 => sxwav
-         jamapwav_sxwav = 1
       case ('fy', 'ywaveforce')
          itemPtr1 => item_fy
          dataPtr1 => sywav
-         jamapwav_sywav = 1
       case ('wsbu')
          itemPtr1 => item_wsbu
          dataPtr1 => sbxwav
-         jamapwav_sbxwav = 1
       case ('wsbv')
          itemPtr1 => item_wsbv
          dataPtr1 => sbywav
-         jamapwav_sbywav = 1
       case ('mx')
          itemPtr1 => item_mx
          dataPtr1 => mxwav
-         jamapwav_mxwav = 1
       case ('my')
          itemPtr1 => item_my
          dataPtr1 => mywav
-         jamapwav_mywav = 1
       case ('dissurf', 'wavebreakerdissipation')
          itemPtr1 => item_dissurf
          dataPtr1 => dsurf
-         jamapwav_dsurf = 1
       case ('diswcap', 'whitecappingdissipation')
          itemPtr1 => item_diswcap
          dataPtr1 => dwcap
-         jamapwav_dwcap = 1
       case ('totalwaveenergydissipation')
          itemPtr1 => item_distot
          dataPtr1 => distot
-         jamapwav_distot = 1
       case ('ubot')
          itemPtr1 => item_ubot
          dataPtr1 => uorbwav
-         jamapwav_uorb = 1
       case ('tracerbnd')
          ! get tracer (boundary) number
          itrac = findname(numtracers, trnames, trname)

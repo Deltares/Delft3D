@@ -579,7 +579,7 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Phy_Blo   ","BLOOMGRP29",  35," ",1
 "Phy_Blo   ","BLOOMGRP30",  36," ",1
 "MakOOC    ","POCnoa    ",   1,"x",1
-"MakOOCS1  ","S1_PC1    ",   1,"x",1
+"MakOOCS1  ","POCS1     ",   1,"x",1
 "MakOOCS2  ","POCS2     ",   1,"x",1
 "Phy_dyn   ","Phyt      ",   1,"x",1
 "Phy_dyn   ","AlgN      ",   2,"x",1

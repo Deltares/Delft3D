@@ -34,6 +34,7 @@
 !! When file does not exist or is already open, program stops with
 !! an error message.
 subroutine oldfil(minp, filename) !, istat)
+   use messagehandling, only: err
    use unstruc_files
    use string_module, only: find_first_char
    implicit none
@@ -143,6 +144,7 @@ end subroutine zoekal
 !! When file already exists, it will be overwritten.
 !! When access is denied, program stops with an error message.
 subroutine newfil(minp, filename) !, istat)
+   use messagehandling, only: err
    use unstruc_files
    use string_module, only: find_first_char
    implicit none

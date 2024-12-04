@@ -54,11 +54,11 @@ function xx_logo(logoname,ax,varargin)
 
 switch lower(logoname)
     case {'deltares'}
-        F = 'Local_DL';
+        plot_logo = @Local_DL;
     case {'wl','dh'}
-        F = 'Local_DH';
-    case 'ut',
-        F = 'Local_UT';
+        plot_logo = @Local_DH;
+    case 'ut'
+        plot_logo = @Local_UT;
 end
 if nargin>2 & ~isequal(size(varargin{1}),[1 1])
     pos = varargin{1};
@@ -85,7 +85,7 @@ if length(pos)==4
 else
     ang=pos(5);
 end
-feval(F,ax,pos,ang,args{:})
+plot_logo(ax,pos,ang,args{:})
 
 function Local_DL(ax,pos,ang,lw,edge,face,face2)
 % LOCAL_DL Draws the Deltares logo.

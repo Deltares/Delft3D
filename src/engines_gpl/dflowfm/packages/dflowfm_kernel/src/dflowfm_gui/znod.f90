@@ -39,7 +39,7 @@
     use m_fm_erosed, only: ucxq_mor, ucyq_mor
     use m_xbeach_data
     use m_transportdata
-    use m_observations
+    use m_observations_data
     use m_flowparameters, only: ispirparopt
     use m_wind, only: jawind
     use unstruc_display, only: grwhydopt

@@ -1,4 +1,4 @@
-function classbar(ax,Th,varargin)
+function classbar(ax, Thresholds, varargin)
 %CLASSBAR Converts a color bar into a classbar.
 %   CLASSBAR(ColorbarHandle,Thresholds,NumberFormat) converts the specified
 %   colorbar into a class bar using the specified number format (default
@@ -12,6 +12,10 @@ function classbar(ax,Th,varargin)
 %   labeled in case of a CONTOUR plot, the transitions should be labeled in
 %   case of a CONTOURF plot.
 %
+%   ...,'labellines')
+%   labels the colors instead of the transitions, and plots the colors as
+%   lines instead of patches.
+%
 %   ...,'plotall')
 %   makes sure that all classes are drawn irrespective of the classes used
 %   in the plot. This includes the last class >= maximum threshold.
@@ -23,6 +27,9 @@ function classbar(ax,Th,varargin)
 %
 %   ...,'plotrange',[N1 N2])
 %   plots only the classes in the range N1:N2.
+%
+%   ...,'plotselect',YESPLOT)
+%   plots only the classes for which the array YESPLOT is true.
 %
 %   ...,'label',ThresholdsVal)
 %   uses the value in the ThresholdsVal vector to display along the class
@@ -91,11 +98,14 @@ if nargin<2
 end
 
 Format='%1.4g';
+PlotSelect=[];
 PlotAll=0;
 PlotRange=[];
 ColorByIndex=0;
 sTh=[];
 LabelCol=0;
+PlotLines=0;
+LineParams={};
 MaxValues=0;
 ClimMode='extend';
 TickLabelInterpreter='none';
@@ -110,6 +120,12 @@ if nargin>2
                     PlotAll=inf;
                 case 'labelcolor'
                     LabelCol=1;
+                case 'labellines'
+                    LabelCol=1;
+                    PlotLines=1;
+                case 'lineparams'
+                    i=i+1;
+                    LineParams=varargin{i};
                 case 'colorbyindex'
                     ColorByIndex=1;
                 case 'climmode'
@@ -121,6 +137,9 @@ if nargin>2
                 case 'plotrange'
                     i=i+1;
                     PlotRange=varargin{i};
+                case 'plotselect'
+                    i=i+1;
+                    PlotSelect=varargin{i};
                 case 'label'
                     i=i+1;
                     sTh=varargin{i};
@@ -153,11 +172,11 @@ Patches=findall(OrigAx,'type','patch');
 CLim=get(OrigAx,'clim');
 if ~ColorByIndex && ~strcmp(ClimMode,'new')
     CLimTh = CLim;
-    if Th(1)<CLimTh(1)
-        CLimTh(1)=Th(1);
+    if Thresholds(1)<CLimTh(1)
+        CLimTh(1)=Thresholds(1);
     end
-    if Th(end)>CLimTh(2)
-        CLimTh(2)=Th(end);
+    if Thresholds(end)>CLimTh(2)
+        CLimTh(2)=Thresholds(end);
     end
     set(ax,'clim',CLimTh);
     if ~isequal(CLim,CLimTh)
@@ -165,12 +184,13 @@ if ~ColorByIndex && ~strcmp(ClimMode,'new')
     end
 end
 
-Th=Th(:);
+Thresholds=Thresholds(:);
 if isempty(sTh)
-    sTh=Th;
+    sTh=Thresholds;
 end
-NTh=length(Th);
-N=NTh;
+nThresholds = length(Thresholds);
+firstClass = 1;
+lastClass = nThresholds;
 
 % The color value of the patches containing the minimum value of the data set
 % does not equal the largest threshold value smaller than the minimum value,
@@ -186,9 +206,9 @@ N=NTh;
 for i=1:length(Patches)
     cp=get(Patches(i),'cdata');
     if isequal(size(cp),[1 1])
-        CVal = max(find(Th<=cp));
+        CVal = max(find(Thresholds<=cp));
         if ~ColorByIndex
-            CVal = Th(CVal);
+            CVal = Thresholds(CVal);
         end
         set(Patches(i),'cdata',CVal);
     end
@@ -199,29 +219,29 @@ horbar=isempty(get(ax,'ytick')); % if no ytick, horz. bar
 clim=limits(OrigAx,'clim');
 if horbar % if no ytick, horz. bar
     if ColorByIndex
-        cdat=transpose(1:NTh);
+        cdat=transpose(1:nThresholds);
     else
-        cdat=transpose(Th); % cdat(1) should be replaced by min(cdata)
+        cdat=transpose(Thresholds); % cdat(1) should be replaced by min(cdata)
     end
     xx='x';
     yy='y';
 else
     if ColorByIndex
-        cdat=1:NTh;
+        cdat=1:nThresholds;
     else
-        cdat=Th;
+        cdat=Thresholds;
     end
     xx='y';
     yy='x';
 end
-set(I,'cdatamapping','scaled','cdata',cdat,[xx 'data'],[1 NTh]+0.5,'visible','off');
+set(I,'cdatamapping','scaled','cdata',cdat,[xx 'data'],[1 nThresholds]+0.5,'visible','off');
 if ~iscell(Format)
-    tckL=cell(1,length(Th));
-    if length(sTh)==NTh-1
-        for i=1:NTh
+    tckL=cell(1,length(Thresholds));
+    if length(sTh)==nThresholds-1
+        for i=1:nThresholds
             if i==1
                 tckL{i}=sprintf(['<' Format],sTh(i));
-            elseif i==NTh
+            elseif i==nThresholds
                 tckL{i}=sprintf(['>' Format],sTh(i-1));
             else
                 tckL{i}=sprintf([Format '-' Format],sTh(i-1:i));
@@ -231,7 +251,7 @@ if ~iscell(Format)
             end
         end
     else
-        for i=1:NTh
+        for i=1:nThresholds
             if isnan(sTh(i)) || isequal(sTh(i),-inf)
                 tckL{i}='';
             else
@@ -242,12 +262,12 @@ if ~iscell(Format)
             end
         end
     end
-    set(ax,[xx 'tick'],(1:NTh),[xx 'ticklabel'],tckL);
+    set(ax,[xx 'tick'],(1:nThresholds),[xx 'ticklabel'],tckL);
 else
-    set(ax,[xx 'ticklabel'],Format,[xx 'tick'],(1:NTh))
+    set(ax,[xx 'ticklabel'],Format,[xx 'tick'],(1:nThresholds))
 end
 if LabelCol
-    set(ax,[xx 'tick'],(1:NTh)+.5,'ticklength',[0 0])
+    set(ax,[xx 'tick'],(1:nThresholds)+.5,'ticklength',[0 0])
 end
 YLim=get(ax,[yy 'lim']);
 axprops = get(ax);
@@ -257,47 +277,55 @@ elseif ~strcmp(TickLabelInterpreter,'none')
     warning('TickLabelInterpreter not supported by this MATLAB version.')
 end
 
-F=1;
-if ~isempty(PlotRange)
-    F=min(PlotRange);
-    N=max(PlotRange);
-elseif ~PlotAll
-    if ColorByIndex
-        N=min(find((1:NTh)>clim(2)))-1;
-        F=max(find((1:NTh)<clim(1)))+1;
+if isempty(PlotSelect)
+    PlotSelect = true(size(Thresholds));
+
+    if ~isempty(PlotRange)
+        PlotSelect(1:min(PlotRange)-1) = false;
+        PlotSelect(max(PlotRange)+1:end) = false;
+
+    elseif PlotAll == 0
+        if ColorByIndex
+            PlotSelect((1:nThresholds) < clim(1) | ...
+                (1:nThresholds) > clim(2)) = false;
+        else
+            PlotSelect(Thresholds < clim(1) | ...
+                Thresholds > clim(2)) = false;
+        end
+
     else
-        N=min(find(Th>clim(2)))-1;
-        F=max(find(Th<clim(1)))+1;
+        PlotAll = min(PlotAll, length(PlotSelect)); % inf not allowed as index
+        PlotSelect(PlotAll+1:end) = false;
     end
-    if isempty(N) % max > threshold of last class
-        N=length(Th);
-    end
-    if isempty(F) % min < threshold of first class
-        F=1;
-    end
-else
-    N=min(N,PlotAll);
 end
-if F==N+1
-    F=N;
-end
-set(ax,[xx 'lim'],[F N+1]-MaxValues);
+firstClass = find(PlotSelect, 1, 'first');
+lastClass = find(PlotSelect, 1, 'last');
+set(ax,[xx 'lim'],[firstClass lastClass+1]-MaxValues);
 I=findobj(ax,'tag','classbounds');
 if ~isempty(I)
     delete(I)
 end
-XP=[(1:N)+1; (1:N)+1; (1:N); (1:N)]-MaxValues;
-YP=[repmat(YLim(1),[1 N]);repmat(YLim(2),[1 N])
-    repmat(YLim(2),[1 N]);repmat(YLim(1),[1 N])];
+if ColorByIndex
+    cdat = transpose(1:lastClass);
+else
+    cdat = transpose(Thresholds(1:lastClass));
+end
+if PlotLines
+    XP=[(1:lastClass)+0.5; (1:lastClass)+0.5; NaN([1 lastClass])]-MaxValues;
+    YP=[repmat(YLim(1),[1 lastClass]);repmat(YLim(2),[1 lastClass])
+        NaN([1 lastClass])];
+    cdat = repmat(cdat,3,1);
+    plotOps = [{'EdgeColor','flat'},LineParams];
+else
+    XP=[(1:lastClass)+1; (1:lastClass)+1; (1:lastClass); (1:lastClass)]-MaxValues;
+    YP=[repmat(YLim(1),[1 lastClass]);repmat(YLim(2),[1 lastClass])
+        repmat(YLim(2),[1 lastClass]);repmat(YLim(1),[1 lastClass])];
+    plotOps = {};
+end
 if ~horbar
     TMP=YP;
     YP=XP;
     XP=TMP;
 end
-if ColorByIndex
-    cdat = transpose(1:N);
-else
-    cdat = transpose(Th(1:N));
-end
-patch(XP,YP,1,'cdata',cdat,'parent',ax,'tag','classbounds')
+patch(XP,YP,1,'cdata',cdat,'parent',ax,'tag','classbounds',plotOps{:})
 set(OrigAx,'clim',get(ax,'clim'))

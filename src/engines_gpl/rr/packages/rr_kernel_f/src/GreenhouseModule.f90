@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -251,22 +251,25 @@
       ! variables
       Integer(4) Infile1, Infile2, Infile3
       Integer teller, teller1, teller2, in, ikas, index, inod, idebug, iecode, iout1
-      Character(CharIdLength) name
-      Character(1000) string
+      Character(Len=CharIdLength) name
+      Character(Len=1000) string
       Logical         allow, found, endfil, Err969
       Integer         NHLP
       Parameter       (NHLP=32)
       Integer         IDUM(NHLP)
       REAL            RDUM(NHLP)
-      Character(CharIdLength)   CDUM(NHLP), NodeId
+      Character(Len=CharIdLength)   CDUM(NHLP), NodeId
       Real            BmxDakDum,silocdum, pmpcapdum
 
-      Character(CharIdLength), Pointer :: STODEF(:), SILDEF(:)
+      Character(Len=CharIdLength), Pointer :: STODEF(:), SILDEF(:)
       Real, Pointer :: AREATOT(:)
 
       Logical, Pointer :: AlreadyRead(:)
       Integer, Pointer :: ReferenceToDefinition(:)
       Logical Success
+
+      Character(Len=CharIdLength)  FileName
+      Integer                      IoUnit
 
       Success = Dh_AllocInit (NCKas, AlreadyRead, .false.)
       Success = success .and. Dh_AllocInit (NCKas, ReferenceToDefinition, 0)
@@ -299,7 +302,20 @@
 !      SilDef = ''
 ! einde initialisatie
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(35)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !greenhse.3b_cleaned
+        Write(*,*) ' Cleaning greenhse.3b to file:', FileName
+        Write(iout1,*) ' Cleaning greenhse.3b to file:', FileName
+   endif
+
+! *********************************************************************
 ! read file greenhse.3b
+! *********************************************************************
       call SetMessage(LEVEL_DEBUG, 'Read Greenhouse.3b file')
       teller = 0
       RetVal = 0
@@ -320,6 +336,9 @@
            if (alreadyRead(index)) then
              call SetMessage(LEVEL_ERROR, 'Data for greenhouse node '//cdum(1)(1:Len_trim(Cdum(1)))//' double in datafile Greenhse.3B')
            else
+! cleaning RR files
+            If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
             AlreadyRead(index) = .true.
             teller = teller + 1
 ! number of areas = 10 by default
@@ -388,8 +407,23 @@
         call ErrMsgStandard (972, 0, ' Not enough Greenhouse data found', &
                            ' Some greenhouse nodes in netwerk schematisation are not present in Greenhse.3b file')
       Endif
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for greenhse.rf
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(36)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !greenhse.rf_cleaned
+        Write(*,*) ' Cleaning Greenhse.rf to file:', FileName
+        Write(iout1,*) ' Cleaning Greenhse.rf to file:', FileName
+   endif
+
+! *********************************************************************
 ! Read greenhse.rf file
+! *********************************************************************
       call SetMessage(LEVEL_DEBUG, 'Read Greenhouse.rf file')
 !     Vector/Array initialisation
       ReferenceToDefinition = 0
@@ -414,8 +448,15 @@
 ! Assign definition to individual nodes
            Do iKas = 1, ncKas
               if (StringComp(StoDef(Ikas), Name, CaseSensitive) )  then
-                  ReferenceToDefinition(iKas) = teller
-                  BMXDAK(iKas) = bmxDAKdum * AREATOT(iKas) / 1000 !in m3
+                  if (ReferenceToDefinition(iKas) .gt. 0) then
+                     ! double !! skip last definition
+                  else
+                    ! cleaning RR files
+                    If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
+                    ReferenceToDefinition(iKas) = teller
+                    BMXDAK(iKas) = bmxDAKdum * AREATOT(iKas) / 1000 !in m3
+                  endif
               endif
            Enddo
         endif
@@ -434,7 +475,23 @@
       If (Err969) call ErrMsgStandard (972, 0, ' Not enough Greenhouse data found',&
                                      ' Some Roof Storage definitions not present in Greenhouse.rf file')
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for greenhse.rf
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(48)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !greenhse.sil_cleaned
+        Write(*,*) ' Cleaning Greenhse.sil to file:', FileName
+        Write(iout1,*) ' Cleaning Greenhse.sil to file:', FileName
+   endif
+
+! *********************************************************************
 ! Read greenhse.sil file
+! *********************************************************************
       call SetMessage(LEVEL_DEBUG, 'Read Greenhouse.Sil file')
 !     Vector/Array initialisation
       ReferenceToDefinition = 0
@@ -461,9 +518,16 @@
 ! Assign definition to individual nodes
            Do iKas = 1, ncKas
               if (StringComp(SilDef(Ikas), Name, CaseSensitive) )  then
-                  ReferenceToDefinition(ikas) = teller
-                  SILOC(iKas) = silocdum
-                  PMPCAP(iKas) = pmpcapdum
+                  if (ReferenceToDefinition(iKas) .gt. 0) then
+                     ! double !! skip last definition
+                  else
+                    ! cleaning RR files
+                    If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
+                    ReferenceToDefinition(ikas) = teller
+                    SILOC(iKas) = silocdum
+                    PMPCAP(iKas) = pmpcapdum
+                  endif
               endif
            Enddo
          endif
@@ -481,6 +545,9 @@
       If (RetVal .gt. 0) call ErrMsgStandard (972, 0, ' Error reading Greenhouse.sil file ', ' Error getting SILO records')
       If (Err969) call ErrMsgStandard (969, 0, ' Not enough Greenhouse data found',&
                                      ' Some Silo definitions not present in Greenhouse.Sil file')
+
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
 ! reading kasklasse-data
 !     write(*,*) ' Greenhouse ReadAscii NewFormatKasData=',NewFormatKasData
@@ -538,7 +605,7 @@
       INTEGER      IN, ICALL, iECode, i, iCode, iOpN
       Real         bMax, bDepth
       LOGICAL      ENDFIL
-      CHARACTER(20) NAME
+      CHARACTER(Len=20) NAME
       Integer       iDebug, Iout1
 ! Feb 2002
       Logical       Allow, Found, TabYesNo, Success

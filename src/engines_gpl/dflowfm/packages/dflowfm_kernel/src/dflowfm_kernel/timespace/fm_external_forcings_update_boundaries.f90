@@ -42,7 +42,7 @@ contains
       use m_sferic
       use timespace
       use m_ship
-      use m_observations
+      use m_observations, only: updateobservationxy
       use m_timer
       use m_partitioninfo
       use m_meteo

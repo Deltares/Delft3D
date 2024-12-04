@@ -40,7 +40,7 @@ contains
     use unstruc_display_data, only: npos
     use unstruc_colors
     use dflowfm_version_module, only: company, product_name
-    use m_observations, only: jafahrenheit
+    use m_observations_data, only: jafahrenheit
     use m_helpnow
     use m_save_keys
     use m_restore_keys

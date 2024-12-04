@@ -124,15 +124,18 @@ if getdata
 else
     H=[];
 end
-NonEmptyLevel=zeros(size(levels));
+
+% don't try to plot contour patches at infinity or beyond the data
+levels(levels == inf | levels > max(v(:))) = [];
+
 maxfinite=max(max(levels),max(v(isfinite(v(:)))));
 minfinite=min(min(levels),min(v(isfinite(v(:)))));
 v(v(:)==-inf)=-realmax;
 v(v(:)==+inf)=realmax;
 
 for LevelNr=1:length(levels)+1
-    if (LevelNr==1)
-        if length(levels)==0
+    if LevelNr == 1
+        if isempty(levels)
             level=minfinite;
         else
             level=levels(LevelNr);
@@ -142,12 +145,12 @@ for LevelNr=1:length(levels)+1
         Nsmaller=sum(Smaller,2);
         Larger=(v(tri)>=level) & ~Smaller;
         Nlarger=sum(Larger,2);
-    elseif (LevelNr>length(levels))
+    elseif LevelNr > length(levels)
         plevel=level;
         level=maxfinite;
         Nsmaller=3-Nlarger;
         Smaller=~Larger;
-        Larger=logical(zeros(size(tri)));
+        Larger=false(size(tri));
         Nlarger=zeros(size(tri,1),1);
     else
         plevel=level;
@@ -441,7 +444,7 @@ for LevelNr=1:length(levels)+1
                 Z=transpose(z(Index));
             end
             V=transpose(v(Index));
-        end;
+        end
         Lambda=(level-V(1,:))./(V(3,:)-V(1,:));
         XPoint(2,:)=X(1,:)+Lambda.*(X(3,:)-X(1,:));
         YPoint(2,:)=Y(1,:)+Lambda.*(Y(3,:)-Y(1,:));
@@ -600,7 +603,6 @@ for LevelNr=1:length(levels)+1
     if getdata
         H{LevelNr}={Coord(:,1:3) TRI LevelNr};
     elseif ~isempty(Coord)
-        NonEmptyLevel(LevelNr)=1;
         if ~isnan(ZPlane)
             Coord(:,3)=ZPlane;
         end

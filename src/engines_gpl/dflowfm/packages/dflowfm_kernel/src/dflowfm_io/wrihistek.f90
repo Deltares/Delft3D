@@ -33,7 +33,7 @@ module m_wrihistek
    implicit none
 contains
    subroutine wrihistek(tim)
-      use m_observations
+      use m_observations_data
       use m_monitoring_crosssections, only: ncrs, crs
       use m_flow, only: hs, ucy, ucx, s1, ag
       use m_flowgeom, only: bl

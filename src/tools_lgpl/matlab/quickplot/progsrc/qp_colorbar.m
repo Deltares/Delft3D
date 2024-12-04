@@ -75,12 +75,16 @@ end
 ax = [];
 if ishandle(loc)
    ax = loc;
-   if ~strcmp(get(ax,'type'),'axes'),
+   if ~strcmp(get(ax,'type'),'axes')
       error('Requires axes handle.');
    end
    units = get(ax,'units'); set(ax,'units','pixels');
    rect = get(ax,'position'); set(ax,'units',units)
-   if rect(3) > rect(4), loc = 'horiz'; else loc = 'vert'; end
+   if rect(3) > rect(4)
+       loc = 'horiz';
+   else
+       loc = 'vert';
+   end
 end
 
 % Determine color limits by context.  If any axes child is an image
@@ -102,12 +106,13 @@ end
 
 lengthcmap=size(get(GCF,'colormap'),1);
 
+climmode = get(h,'climmode');
 t0 = get(h,'clim');
 df0 = (t0(2) - t0(1))/lengthcmap;
 tm = mean(t0);
 df = max(df0, tm * 1e-11);
-t = mean(t0) + [-1 1]*(lengthcmap-1)*df/2;
-cblim = t;%[0 100];
+tickval = mean(t0) + [-1 1]*(lengthcmap-1)*df/2;
+cblim = tickval;%[0 100];
 manualTicks = df>df0;
 
 %
@@ -115,14 +120,18 @@ manualTicks = df>df0;
 %
 % Search for existing colorbar
 ch = get(findobj(GCF,'type','image','tag','TMW_COLORBAR'),{'parent'});
-for i=1:length(ch),
+for i=1:length(ch)
    ud = get(ch{i},'userdata');
    d = ud.PlotHandle;
    if numel(d)==1 && isequal(d,h)
       eax = ch{i};
       units = get(eax,'units'); set(eax,'units','pixels');
       rect = get(eax,'position'); set(eax,'units',units)
-      if rect(3)<rect(4), eloc = 'vert'; else eloc = 'horiz'; end
+      if rect(3)<rect(4)
+          eloc = 'vert';
+      else
+          eloc = 'horiz';
+      end
       if ischar(rloc) && ~isequal(eloc,rloc)
          delete(eax)
       else
@@ -138,7 +147,7 @@ end
 
 origCurAxes = get(GCF,'CurrentAxes');
 origNextPlot = get(GCF,'NextPlot');
-if strcmp(origNextPlot,'replacechildren') || strcmp(origNextPlot,'replace'),
+if strcmp(origNextPlot,'replacechildren') || strcmp(origNextPlot,'replace')
    set(GCF,'NextPlot','add')
 end
 
@@ -149,7 +158,11 @@ if loc(1)=='v' % Append vertical scale to right of current plot
       pos = get(h,'Position');
       azel=get(h,'view'); az=azel(1); el=azel(2);
       stripe = 0.075; edge = 0.02;
-      if all([az,el]==[0 90]), space = 0.05; else space = .1; end
+      if all([az,el]==[0 90])
+          space = 0.05;
+      else
+          space = .1;
+      end
       set(h,'Position',[pos(1) pos(2) pos(3)*(1-stripe-edge-space) pos(4)])
       rect = [pos(1)+(1-stripe-edge)*pos(3) pos(2) stripe*pos(3) pos(4)];
       ud.origPos = pos;
@@ -247,9 +260,39 @@ if manualTicks
             break
         end
     end
-    set(ax,[X 'tick'],t,[X 'ticklabel'],tstr)
+    set(ax,[X 'tick'],tickval,[X 'ticklabel'],tstr)
 else
     set(ax,[X 'tickmode'],'auto',[X 'ticklabelmode'],'auto')
+    if strcmp(climmode,'manual')
+        climauto = limits(h,'color');
+        clim = get(h,'CLim');
+        % in case of values outside the color range, add leq and geq signs
+        if climauto(1) < clim(1) && climauto(2) > clim(2)
+            tickval = get(ax,[X,'tick']);
+            % The axis ruler may have an exponent. If so, the tick labels
+            % can't be used since when they are set manually, the exponent
+            % will disappear and that invalidates the original tick labels.
+            ticklabel = cell(length(tickval),1);
+            for i = 1:length(tickval)
+                ticklabel{i} = sprintf('%g',tickval(i));
+            end
+            if matlabversionnumber > 8.02
+                leq = '\leq ';
+                geq = '\geq ';
+            else
+                leq = '<=';
+                geq = '>=';
+            end
+            set(ax,[X 'tickmode'],'manual')
+            if tickval(1) == clim(1)
+                ticklabel{1} = [leq, ticklabel{1}];
+            end
+            if tickval(end) == clim(2)
+                ticklabel{end} = [geq, ticklabel{end}];
+            end
+            set(ax,[X 'ticklabel'],ticklabel)
+        end
+    end
 end
 
 if ~isfield(ud,'DeleteProxy'), ud.DeleteProxy = []; end

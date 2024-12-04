@@ -37,7 +37,7 @@
      use m_flowgeom
      use m_wearelt
      use M_RAAITEK
-     use m_observations
+     use m_observations_data
      use m_missing
      use m_polygon
      use m_wind

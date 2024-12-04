@@ -210,6 +210,10 @@ if(NOT TARGET nefis)
     add_subdirectory(${checkout_src_root}/${nefis_module} nefis)
 endif()
 
+# spherepack
+if(NOT TARGET spherepack)
+    add_subdirectory(${checkout_src_root}/${spherepack_module} spherepack)
+endif()
 
 # Unit tests for dflowfm and io_netcdf
 # Only for the version without interacter

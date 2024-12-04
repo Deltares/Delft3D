@@ -32,7 +32,7 @@
 
 !> update observation station data
 subroutine updateValuesOnObservationStations()
-   use m_observations
+   use m_observations_data
    use m_partitioninfo
    use m_timer
    implicit none

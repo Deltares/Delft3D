@@ -79,6 +79,13 @@ switch Ops.presentationtype
         hNew=flipud(hNew);
 end
 set(hNew,'parent',Parent)
+if isfield(Ops,'climclipping') && Ops.climclipping
+    % :-( can't apply clipping here ... the contour patches are over-
+    % lapping, hence we can't hide one or more patches! qp_export is using
+    % process_polygons to clip overlapping polygons, but maybe it's better
+    % to start treating structured as a special case of unstructured and
+    % avoid overlaps altogether.
+end
 if ~isnan(min(Thresholds)) && ~strcmp(Ops.presentationtype,'contour lines')
     if length(Thresholds)>1
         set(Parent,'clim',[1 length(Thresholds)]);

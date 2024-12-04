@@ -53,7 +53,7 @@
     use geometry_module, only: getdx, getdy, getdxdy
     use gridoperations
 
-    use m_observations
+    use m_observations_data
     use m_vfac
     use m_drawthis
     use m_halt2

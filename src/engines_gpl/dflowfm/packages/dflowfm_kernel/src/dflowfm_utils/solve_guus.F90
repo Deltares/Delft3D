@@ -617,14 +617,13 @@
  subroutine conjugategradientSAAD(righthandside, s1, ndx, its, jaini, jadosafe, ierror)
     use m_reduce
 ! use unstruc_messages
-    use M_SAAD
+    use m_saad, only: jasafe, nn, ngs, iao, sol, rhs, ao, jao, cgsaad
     use m_flowgeom, only: kfs
     use MessageHandling
     use m_flowparameters, only: Noderivedtypes
     use m_netw, only: xzw, yzw
     use unstruc_model, only: md_ident
     use m_qnerror
-    use m_calls_saad
     
     implicit none
     integer :: ndx, its
@@ -634,7 +633,7 @@
     integer, intent(in) :: jadosafe !< thread-safe (1) or not (0), will set jasafe module variable
     integer, intent(out) :: ierror !< error (1) or not (0)
 
-    integer :: j, jj, n, ntot, na, nietnul, m
+    integer :: i, j, jj, n, ntot, na, nietnul, m
     integer :: minp, k
 
     double precision :: res
@@ -1667,7 +1666,7 @@
     use m_flowparameters, only: icgsolver, ipre, Noderivedtypes
     use m_partitioninfo
     use m_readyy
-    use m_calls_saad
+    use m_saad, only: inisaad
     
     implicit none
 
@@ -2243,7 +2242,7 @@
     use m_partitioninfo
     use messagehandling, only: mess, LEVEL_ERROR
     use m_plotdots
-    use m_calls_saad
+    use m_saad, only: inisaad
     implicit none
 
     integer, dimension(:), allocatable :: imask
@@ -2375,13 +2374,12 @@
  subroutine testsolver(Ndx, s1, itsol, ierror)
     use m_partitioninfo
     use m_reduce
-    use m_saad
+    use m_saad, only: tol, ipar, fpar, nn, iao, sol, rhs, cgsaad
     use m_flowgeom, only: kfs
     use unstruc_messages
     use m_timer
     use m_flowparameters, only: jalogsolverconvergence
     use mpi
-    use m_calls_saad
     implicit none
 
     integer, intent(in) :: ndx
@@ -2400,7 +2398,7 @@
     
     integer, parameter :: MAXITER = 100
     integer :: iter, its
-    integer :: jj, n, na
+    integer :: i, jj, n, na
     integer :: iout
     integer :: ki, kb, L
 

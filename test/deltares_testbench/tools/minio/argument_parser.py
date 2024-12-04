@@ -6,6 +6,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlparse
 
 from minio import Minio
 from minio.commonconfig import Tags
@@ -18,21 +19,24 @@ from tools.minio import config, prompt
 from tools.minio.config import TestBenchConfigWriter
 from tools.minio.minio_tool import ErrorCode, MinioTool, MinioToolError
 
-HELP_CONFIG = "Path to test bench config file"
+HELP_CONFIG = "Path to test bench config file."
 HELP_TEST_CASE_FILE = "Relative path from the testbench root folder, contains a list of testcases to update."
 HELP_TEST_CASE_NAME = (
     "Name of a test case in the config file. This can be a substring, but it should match exactly one test case."
 )
-HELP_COLOR = "Use color in the output"
-HELP_NO_COLOR = "Don't use color in the output"
-HELP_INTERACTIVE = "Use the interactive prompt to allow users to make decisions"
-HELP_BATCH = "Turn on (non-interactive) batch mode. Makes the default decision"
-HELP_FORCE = "Only in combination with batch mode: Ignore conflicts and always proceed"
-HELP_LOCAL_PATH = "Path to local directory"
+HELP_COLOR = "Use color in the output."
+HELP_NO_COLOR = "Don't use color in the output."
+HELP_INTERACTIVE = "Use the interactive prompt to allow users to make decisions."
+HELP_BATCH = "Turn on (non-interactive) batch mode. Makes the default decision."
+HELP_FORCE = "Only in combination with batch mode: Ignore conflicts and always proceed."
+HELP_LOCAL_PATH = "Path to local directory."
 HELP_ALLOW_CREATE_AND_DELETE = "Create new files or remove files from MinIO."
 HELP_ISSUE_ID = "Identifier for the JIRA issue related to this change. Format: '[A-Z]+-[0-9]+'"
-HELP_TIMESTAMP = "Get past version of the objects in MinIO"
-HELP_LATEST = "Get the latest version of the objects in MinIO"
+HELP_TIMESTAMP = "Get past version of the objects in MinIO."
+HELP_LATEST = "Get the latest version of the objects in MinIO."
+HELP_BUCKET = "The name of the MinIO bucket to upload or download test case data."
+HELP_PROFILE = "The name of the profile to load the credentials from in the credentials file."
+HELP_ENDPOINT_URL = "The endpoint url to an S3-compatible service."
 
 
 def make_argument_parser() -> argparse.ArgumentParser:
@@ -53,7 +57,18 @@ def make_argument_parser() -> argparse.ArgumentParser:
     common_parser.add_argument("-f", "--force", action="store_true", help=HELP_FORCE)
     common_parser.add_argument("-p", "--local-path", required=False, help=HELP_LOCAL_PATH)
     common_parser.add_argument("--log-level", required=False, choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"])
-    common_parser.set_defaults(color_output=True, interactive=True, force=False)
+    common_parser.add_argument("--bucket", required=False, help=HELP_BUCKET)
+    common_parser.add_argument("--profile", required=False, help=HELP_PROFILE)
+    common_parser.add_argument("--endpoint-url", required=False, help=HELP_ENDPOINT_URL)
+    common_parser.set_defaults(
+        endpoint_url=os.environ.get("AWS_ENDPOINT_URL", "https://s3.deltares.nl"),
+        profile=os.environ.get("AWS_PROFILE"),
+        bucket="dsc-testbench",
+        log_level="INFO",
+        color_output=True,
+        interactive=True,
+        force=False,
+    )
 
     # Add subparsers for each 'command'.
     subparsers = parser.add_subparsers()
@@ -101,10 +116,10 @@ def make_minio_tool(namespace: argparse.Namespace) -> MinioTool:
 
     if namespace.config is None:
         logger.info("Indexing configs in directory `configs`. Parsing testcases and creating a Dict for processing.")
-        indexer = config.ConfigIndexer(logger=logger)
+        indexer = config.ConfigIndexer(logger=logger, bucket=namespace.bucket)
     else:
         logger.info(f"Reading test cases from file: {namespace.config}")
-        indexer = config.ConfigIndexer(configs=[Path(namespace.config)], logger=logger)
+        indexer = config.ConfigIndexer(configs=[Path(namespace.config)], bucket=namespace.bucket, logger=logger)
 
     prompter: prompt.Prompt = (
         prompt.InteractivePrompt() if namespace.interactive else prompt.DefaultPrompt(force_yes=namespace.force)
@@ -118,9 +133,17 @@ def make_minio_tool(namespace: argparse.Namespace) -> MinioTool:
         tags["jira-issue-id"] = issue_id
     color_output: bool = namespace.color_output
 
+    url = urlparse(namespace.endpoint_url)
+    if not url.scheme:
+        raise ValueError(
+            f"Invalid endpoint url '{namespace.endpoint_url}': Url must start with a scheme "
+            "(e.g. 'https://<hostname>' or 'http://<hostname>')"
+        )
+
     minio_client = Minio(
-        endpoint="s3.deltares.nl",
-        credentials=CredentialHandler().get_credentials(),
+        endpoint=str(url.netloc),
+        credentials=CredentialHandler(profile=namespace.profile).get_credentials(),
+        secure=(url.scheme != "http"),
     )
     return MinioTool(
         rewinder=Rewinder(minio_client, logger),  # type: ignore
