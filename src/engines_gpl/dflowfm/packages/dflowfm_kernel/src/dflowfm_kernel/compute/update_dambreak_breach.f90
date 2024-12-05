@@ -42,17 +42,22 @@ contains
 
    subroutine update_dambreak_breach(startTime, deltaTime)
       use precision, only: dp
-
-      use m_flowgeom
-      use m_flow
-      use m_missing
-      use m_structures
-      use unstruc_channel_flow
-      use m_Dambreak
-      use m_partitioninfo
-      use m_meteo
-      use fm_external_forcings_data
-      use m_flowtimes
+      use m_flowgeom, only: wu
+      use m_flow, only: s1, hu, au, u1
+      use m_missing, only: dmiss
+      use unstruc_channel_flow, only: network
+      use m_Dambreak, only: prepareComputeDambreak
+      use m_partitioninfo, only: getAverageQuantityFromLinks
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_dambreakLevelsAndWidthsFromTable
+      use fm_external_forcings_data, only: success, ndambreaklinks, ndambreaksignals, dambreakAveraging, &
+         dambreaks, maximumDambreakWidths, breachWidthDambreak, breachDepthDambreak, &
+         dambreakLevelsAndWidthsFromTable, normalVelocityDambreak, breachWidthDerivativeDambreak, waterLevelJumpDambreak, &
+         LStartBreach, L1dambreaksg, L2dambreaksg, kdambreak, activeDambreakLinks, &
+         nDambreakLocationsUpstream, dambreakLocationsUpstream, waterLevelsDambreakUpStream, &
+         dambreakLocationsUpstreamMapping, nDambreakAveragingUpstream, dambreakAverigingUpstreamMapping, &
+         nDambreakLocationsDownstream, dambreakLocationsDownstream, waterLevelsDambreakDownStream, &
+         dambreakLocationsDownstreamMapping, nDambreakAveragingDownstream, dambreakAverigingDownstreamMapping
+      use m_flowtimes, only: irefdate, tunit, tzone
 
       implicit none
 
@@ -73,13 +78,12 @@ contains
          !
          ! Initialize
          !
-         dambreakAveraging = 0.0d0
-         waterLevelsDambreakUpStream = 0.0d0
-         waterLevelsDambreakDownStream = 0.0d0
-         normalVelocityDambreak = 0.0d0
-         breachWidthDerivativeDambreak = 0.0d0
-         waterLevelJumpDambreak = 0.0d0
-
+         dambreakAveraging(:,:) = 0.0d0
+         waterLevelsDambreakUpStream(:) = 0.0d0
+         waterLevelsDambreakDownStream(:) = 0.0d0
+         normalVelocityDambreak(:) = 0.0d0
+         breachWidthDerivativeDambreak(:) = 0.0d0
+         waterLevelJumpDambreak(:) = 0.0d0
          !
          ! Upstream water level
          !
