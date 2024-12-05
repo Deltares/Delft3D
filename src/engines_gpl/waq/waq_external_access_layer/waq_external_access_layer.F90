@@ -86,8 +86,8 @@ contains
 
         type(connection_data), pointer                :: con_data
         real(dp), dimension(:), pointer               :: incoming_data
-        real(dp), dimension(:), pointer               :: timeframe
         character(EXT_MAXSTRLEN)                      :: key_given
+        logical                                       :: first_only = .true.
 
         call init_logger()
         call log%log_debug("ext_set_var started")
@@ -103,8 +103,9 @@ contains
             if ( index(key_given,'_shape') == 0 ) then
 
                 ! Handle the time frame differently
-                if ( key_given == 'TO_DELWAQ|timeframe' ) then
-                    call handle_coupling_timeframe( xptr )
+                if ( key_given == 'TO_DELWAQ|HYDRO|timeframe' ) then
+                    call set_coupling_timeframe( xptr, first_only )
+                    first_only = .false.
                 else
 
                     ! Get the connection
@@ -354,6 +355,13 @@ contains
             update_steps = (update_steps + 1) / 2
         end if
 
+        !
+        ! Update the hydrodynamic time information, if in online mode
+        !
+        if ( dlwqd%online_hydrodynamics ) then
+            call set_coupling_timeframe( c_null_ptr, .false. )
+        endif
+
         call update_from_incoming_data(connections)
 
         do step = 1, update_steps
@@ -578,19 +586,20 @@ contains
     !! are connecting to. Also update the information on the
     !! hydrodynamic data we are holding - volumes only.
     !!
-    subroutine handle_coupling_timeframe( xptr )
+    subroutine set_coupling_timeframe( xptr, first_only )
         use m_timer_variables
         type(c_ptr), value, intent(in)  :: xptr                  !< C-pointer to the actual value to be picked up by DELWAQ
+        logical, intent(in)             :: first_only            !< Indicate whether some specific initial steps should be taken
 
         real(dp), dimension(:), pointer :: timeframe
-        logical, save                   :: first = .true.
 
         integer, parameter              :: ILUN  = 7             ! NOTE: this is a fixed LU-number, see DLWQT4.
         integer                         :: iColl
         integer, save                   :: coupling_step         ! Time step for coupling in seconds (!)
 
-        if ( first ) then
-            first = .false.
+        ! TODO: correct the date for differences in reference date/time
+
+        if ( first_only ) then
             call c_f_pointer(xptr, timeframe, [4])
 
             itstrt        = int( timeframe(1) )
@@ -598,18 +607,20 @@ contains
             coupling_step = int( timeframe(3) )
 
             dlwqd%itime   = int( timeframe(1) )
+        else
+            !
+            ! Correct the hydrodynamic information - volumes only
+            !
+            if ( associated(dlwqd%CollColl%FileUseDefColls) ) then
+                iColl = FileUseDefCollCollFind (dlwqd%CollColl, ILUN)
+
+                if ( iColl > 0 ) then
+                    dlwqd%CollColl%FileUseDefColls(iColl)%istart = dlwqd%itime
+                    dlwqd%CollColl%FileUseDefColls(iColl)%istop  = dlwqd%itime + coupling_step
+                endif
+            endif
         endif
 
-        !
-        ! Correct the hydrodynamic information - volumes only
-        !
-        iColl = FileUseDefCollCollFind (dlwqd%CollColl, ILUN)
-
-        dlwqd%CollColl%FileUseDefColls(iColl)%istart = dlwqd%itime
-        dlwqd%CollColl%FileUseDefColls(iColl)%istop  = dlwqd%itime + coupling_step
-
-        ! TODO: correct the date for differences in reference date/time
-
-    end subroutine
+    end subroutine set_coupling_timeframe
 
 end module m_waq_external_access_layer
