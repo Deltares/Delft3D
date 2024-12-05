@@ -32,42 +32,43 @@
 
 module m_tekspw
 
-implicit none
+   implicit none
 
 contains
 
- subroutine tekspw(vfac)
-    use m_arrowsxy
-    use m_flowgeom
-    use m_spiderweb
-    use m_wind
-    use m_set_col
-    implicit none
-    double precision :: vfac, shft
+   subroutine tekspw(vfac)
+      use precision, only: dp
+      use m_arrowsxy
+      use m_flowgeom
+      use m_spiderweb
+      use m_wind
+      use m_set_col
+      implicit none
+      real(kind=dp) :: vfac, shft
 
-    integer :: mx, nx, i, j, L
+      integer :: mx, nx, i, j, L
 
-    shft = 0d0
-    mx = size(spw, 2)
-    nx = size(spw, 3)
-    if (sum(xu(:)) < 0) then
-       shft = 1d0
-    end if
-    if (mx /= 0 .and. nx /= 0) then
-       do i = 1, mx - 1
-          do j = 1, nx
-             call setcol(221)
-             call arrowsxy(spw(1, i, j) - shft * 360d0, spw(2, i, j), spw(3, i, j), spw(4, i, j), 0.05 * VFAC)
-          end do
-       end do
-    end if
-    if (allocated(wx)) then
-       do L = 1, lnxi
-          call setcol(224)
-          call arrowsxy(xu(L), yu(L), wx(L), wy(L), 0.05 * VFAC)
-       end do
-    end if
+      shft = 0d0
+      mx = size(spw, 2)
+      nx = size(spw, 3)
+      if (sum(xu(:)) < 0) then
+         shft = 1d0
+      end if
+      if (mx /= 0 .and. nx /= 0) then
+         do i = 1, mx - 1
+            do j = 1, nx
+               call setcol(221)
+               call arrowsxy(spw(1, i, j) - shft * 360d0, spw(2, i, j), spw(3, i, j), spw(4, i, j), 0.05 * VFAC)
+            end do
+         end do
+      end if
+      if (allocated(wx)) then
+         do L = 1, lnxi
+            call setcol(224)
+            call arrowsxy(xu(L), yu(L), wx(L), wy(L), 0.05 * VFAC)
+         end do
+      end if
 
- end subroutine tekspw
+   end subroutine tekspw
 
 end module m_tekspw

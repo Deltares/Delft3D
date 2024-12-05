@@ -35,6 +35,7 @@ contains
 
 !> set boundary conditions
    module subroutine set_external_forcings_boundaries(time, iresult)
+      use precision, only: dp
       use m_update_dambreak_breach, only: update_dambreak_breach
       use m_setsigmabnds, only: setsigmabnds
       use m_fm_thahbc
@@ -58,11 +59,11 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: time !< Current simulation time (s)
+      real(kind=dp), intent(in) :: time !< Current simulation time (s)
       integer, intent(out) :: iresult !< Integer error status
 
       integer :: i, n, k2, kb, L, itrac, isf
-      double precision :: dQ
+      real(kind=dp) :: dQ
 
       iresult = DFM_EXTFORCERROR
       call timstrt('External forcings boundaries', handle_extbnd)

@@ -43,6 +43,10 @@ integer function init_openmp(maxnumthreads, mpion) result(iresult)
    integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
 
    iresult = DFM_NOERR
+#ifndef _OPENMP
+   associate (maxnumthreads => maxnumthreads) ! Required to prevent compiler error for unused variable in case OpenMP is not defined
+   end associate
+#endif
 
    if (mpion == 1) then
 #ifdef _OPENMP

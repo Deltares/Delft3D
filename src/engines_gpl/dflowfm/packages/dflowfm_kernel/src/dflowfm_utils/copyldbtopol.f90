@@ -31,6 +31,7 @@
 !
 
   subroutine COPYLDBTOPOL()
+     use precision, only: dp
      use m_polygon
      use m_missing
      use m_landboundary
@@ -42,7 +43,7 @@
      integer :: mx
      integer :: in, num, isnew
 
-     double precision, allocatable, dimension(:) :: xdum, ydum, zdum
+     real(kind=dp), allocatable, dimension(:) :: xdum, ydum, zdum
 
      MX = MAXLAN
 !  call increasepol(maxlan, 0)

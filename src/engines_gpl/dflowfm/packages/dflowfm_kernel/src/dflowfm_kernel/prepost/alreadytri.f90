@@ -32,40 +32,40 @@
 
 module m_alreadytri
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: alreadytri
+   public :: alreadytri
 
 contains
 
-  subroutine ALREADYTRI(K1, K2, K3, JA)
-     use m_netw
-     use m_qnerror
+   subroutine ALREADYTRI(K1, K2, K3, JA)
+      use m_netw
+      use m_qnerror
 
-     integer :: K1, K2, K3, JA
+      integer :: K1, K2, K3, JA
 
-     integer :: n1
-     integer :: n2
-     integer :: n3
-     integer :: np
-     JA = 0
-     do NP = NUMP, 1, -1
-        if (netcell(NP)%N == 3) then
-           N1 = netcell(NP)%NOD(1)
-           N2 = netcell(NP)%NOD(2)
-           N3 = netcell(NP)%NOD(3)
-           if ((K1 == N1 .or. K1 == N2 .or. K1 == N3) .and. &
-               (K2 == N1 .or. K2 == N2 .or. K2 == N3) .and. &
-               (K3 == N1 .or. K3 == N2 .or. K3 == N3)) then
-              JA = np
-              call qnerror('already 3', ' ', ' ')
-              return
-           end if
-        end if
-     end do
+      integer :: n1
+      integer :: n2
+      integer :: n3
+      integer :: np
+      JA = 0
+      do NP = NUMP, 1, -1
+         if (netcell(NP)%N == 3) then
+            N1 = netcell(NP)%NOD(1)
+            N2 = netcell(NP)%NOD(2)
+            N3 = netcell(NP)%NOD(3)
+            if ((K1 == N1 .or. K1 == N2 .or. K1 == N3) .and. &
+                (K2 == N1 .or. K2 == N2 .or. K2 == N3) .and. &
+                (K3 == N1 .or. K3 == N2 .or. K3 == N3)) then
+               JA = np
+               call qnerror('already 3', ' ', ' ')
+               return
+            end if
+         end if
+      end do
 
-  end subroutine ALREADYTRI
+   end subroutine ALREADYTRI
 
 end module m_alreadytri

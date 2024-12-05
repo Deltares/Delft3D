@@ -32,29 +32,30 @@
 module m_disdis
    implicit none
 contains
-      subroutine DISDIS()
+   subroutine DISDIS()
+      use precision, only: dp
 
-         use m_devices
-         use geometry_module, only: dbdistance
-         use m_missing, only: dmiss
-         use m_sferic, only: jsferic, jasfer3D
-         use m_locatora
-         use m_disfor
-         use m_ktext
-         
-         double precision :: dis
+      use m_devices
+      use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+      use m_locatora
+      use m_disfor
+      use m_ktext
+
+      real(kind=dp) :: dis
 !     -------------------------------
 !     write distance
 !     -------------------------------
-         character DISTAN * 25
+      character DISTAN * 25
 
-         DISTAN = 'DIS:'
-         DIS = dbdistance(xa, ya, xlc, ylc, jsferic, jasfer3D, dmiss)
-         write (DISTAN(6:), '(F17.5)') min(DIS, 1d9)
-         call KTEXT(DISTAN, IWS - 24, 3, 15)
+      DISTAN = 'DIS:'
+      DIS = dbdistance(xa, ya, xlc, ylc, jsferic, jasfer3D, dmiss)
+      write (DISTAN(6:), '(F17.5)') min(DIS, 1d9)
+      call KTEXT(DISTAN, IWS - 24, 3, 15)
 
-         !   checkdislin()
+      !   checkdislin()
 
-         return
-      end
+      return
+   end
 end module m_disdis

@@ -41,6 +41,7 @@
 !! values at net links are known.
 !!
 module m_trachy
+   use precision, only: dp
    use trachytopes_data_module
    use properties
    implicit none
@@ -57,18 +58,18 @@ module m_trachy
    logical :: update_umag !< Logical for updating cell-centred velocity magnitude in trachytopes computation
    logical :: trachy_resistance = .false. !< Logical for additional resistance term in momentum equation
    !
-   !double precision, allocatable     :: rhosol(:)                   !< Density of sediment (lsedtot)
-   double precision, allocatable :: sig(:) !< sigma layer notation as in Delft3D in trachytopes computation
-   double precision, allocatable :: umag(:) !< velocity magnitude in trachytopes computation (ndx)
-   !double precision, allocatable     :: bedformD50(:)               !< 50-th percentile of the sediment considered for bedform in trachytopes computation (ndx)
-   !double precision, allocatable     :: bedformD90(:)               !< 90-th percentile of the sediment considered for bedform in trachytopes computation (ndx)
-   !double precision, allocatable     :: rksr(:)                     !< roughness due to ripples in trachytopes computation (cf. Van Rijn 20..) (ndx)
-   !double precision, allocatable     :: rksmr(:)                    !< roughness due to mega-ripples in trachytopes computation (cf. Van Rijn 20..) (ndx)
-   !double precision, allocatable     :: rksd(:)                     !< roughness due to dunes in trachytopes computation (cf. Van Rijn 20..)(ndx)
-   !double precision, allocatable     :: dxx(:,:)                    !< sediment percentiles in trachytopes computation (cf. Van Rijn 20..) (ndx,nxx)
-   double precision, allocatable :: z0rou(:) !< z0rou in trachytopes computation (numl)
-   double precision, allocatable :: hu_trt(:) !< water depth on net links in trachytopes computation (numl)
-   double precision, allocatable :: dx_trt(:) !< length of net links in trachytopes computation (numl)
+   !real(kind=dp), allocatable     :: rhosol(:)                   !< Density of sediment (lsedtot)
+   real(kind=dp), allocatable :: sig(:) !< sigma layer notation as in Delft3D in trachytopes computation
+   real(kind=dp), allocatable :: umag(:) !< velocity magnitude in trachytopes computation (ndx)
+   !real(kind=dp), allocatable     :: bedformD50(:)               !< 50-th percentile of the sediment considered for bedform in trachytopes computation (ndx)
+   !real(kind=dp), allocatable     :: bedformD90(:)               !< 90-th percentile of the sediment considered for bedform in trachytopes computation (ndx)
+   !real(kind=dp), allocatable     :: rksr(:)                     !< roughness due to ripples in trachytopes computation (cf. Van Rijn 20..) (ndx)
+   !real(kind=dp), allocatable     :: rksmr(:)                    !< roughness due to mega-ripples in trachytopes computation (cf. Van Rijn 20..) (ndx)
+   !real(kind=dp), allocatable     :: rksd(:)                     !< roughness due to dunes in trachytopes computation (cf. Van Rijn 20..)(ndx)
+   !real(kind=dp), allocatable     :: dxx(:,:)                    !< sediment percentiles in trachytopes computation (cf. Van Rijn 20..) (ndx,nxx)
+   real(kind=dp), allocatable :: z0rou(:) !< z0rou in trachytopes computation (numl)
+   real(kind=dp), allocatable :: hu_trt(:) !< water depth on net links in trachytopes computation (numl)
+   real(kind=dp), allocatable :: dx_trt(:) !< length of net links in trachytopes computation (numl)
    !
    integer :: kmaxtrt !< number of sigma layers as in Delft3D in trachytopes computation
    !integer                           :: lsedtot                     !< number of sediment fractions in trachytopes computation

@@ -30,17 +30,18 @@
 !
 !
 module m_fbox
-use m_rectangle
+   use m_rectangle
 
    implicit none
 contains
    subroutine FBOX(X1, Y1, X2, Y2)
+      use precision, only: dp
       use m_fboxold
       use m_drawthis
       use m_dproject
 
-      double precision :: x1, x2, y1, y2
-      double precision :: xb1, xb2, yb1, yb2
+      real(kind=dp) :: x1, x2, y1, y2
+      real(kind=dp) :: xb1, xb2, yb1, yb2
 
       call DPROJECT(X1, Y1, XB1, YB1, 1)
       call DPROJECT(X2, Y2, XB2, YB2, 1)

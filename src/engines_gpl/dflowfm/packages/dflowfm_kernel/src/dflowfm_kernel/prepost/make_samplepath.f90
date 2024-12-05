@@ -32,6 +32,7 @@
 
 ! make a heighest walk in a structured sample set
 subroutine make_samplepath(xp, yp)
+   use precision, only: dp
    use m_netw
    use m_samples
    use m_arcinfo
@@ -40,7 +41,7 @@ subroutine make_samplepath(xp, yp)
 
    implicit none
 
-   double precision, intent(inout) :: xp, yp !< coordinates of start point
+   real(kind=dp), intent(inout) :: xp, yp !< coordinates of start point
 
    integer, dimension(:), allocatable :: ipsub
 

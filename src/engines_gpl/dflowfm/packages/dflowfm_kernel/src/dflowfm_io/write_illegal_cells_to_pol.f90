@@ -33,106 +33,106 @@
 !> output illegal cells to polygon file
 module m_write_illegal_cells_to_pol
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: write_illegal_cells_to_pol
+   public :: write_illegal_cells_to_pol
 
 contains
 
-subroutine write_illegal_cells_to_pol(jausekc)
-   use m_netw
-   use m_polygon
-   use m_missing
-   use gridoperations
-   use m_wripol
+   subroutine write_illegal_cells_to_pol(jausekc)
+      use m_netw
+      use m_polygon
+      use m_missing
+      use gridoperations
+      use m_wripol
 
-   implicit none
+      implicit none
 
-   integer, intent(in) :: jausekc !<use existing kc (1), or not (0), kc=0 is inactive node, kc=-1 is active node on original netboundary, kc=1 is internal active node
+      integer, intent(in) :: jausekc !<use existing kc (1), or not (0), kc=0 is inactive node, kc=-1 is active node on original netboundary, kc=1 is internal active node
 
-   integer, dimension(:), allocatable :: kc_sav
+      integer, dimension(:), allocatable :: kc_sav
 
-   integer :: i, ic, ii, k, k1, k2, L
-   integer :: isillegalcell
-   integer :: ifil
+      integer :: i, ic, ii, k, k1, k2, L
+      integer :: isillegalcell
+      integer :: ifil
 
-   allocate (kc_sav(numk))
+      allocate (kc_sav(numk))
 
 !  mark nodes to find the illegal cells: unmasked nodes
-   if (jausekc == 1) then
-      do k = 1, numk
-         kc_sav(k) = kc(k)
-      end do
-   else
+      if (jausekc == 1) then
+         do k = 1, numk
+            kc_sav(k) = kc(k)
+         end do
+      else
 !     mark nodes on original net boundary with _valid_ lnn
-      kc_sav = 1
-      do L = 1, numL
-         if (lnn(L) == 1 .and. kn(3, L) /= 0) then
-            k1 = kn(1, L)
-            k2 = kn(2, L)
-            kc_sav(k1) = -abs(kc_sav(k1))
-            kc_sav(k2) = -abs(kc_sav(k2))
-         end if
-      end do
-   end if
+         kc_sav = 1
+         do L = 1, numL
+            if (lnn(L) == 1 .and. kn(3, L) /= 0) then
+               k1 = kn(1, L)
+               k2 = kn(2, L)
+               kc_sav(k1) = -abs(kc_sav(k1))
+               kc_sav(k2) = -abs(kc_sav(k2))
+            end if
+         end do
+      end if
 
-   call savepol()
-   call savecells()
-   NPL = 0
+      call savepol()
+      call savecells()
+      NPL = 0
 
 !  find cells without node mask, no setnodadm
-   kc = 1
-   call findcells(11000)
+      kc = 1
+      call findcells(11000)
 
-   NPL = 0
+      NPL = 0
 
 !  compare with stored node masked and detect illegal cells
-   do ic = 1, nump
-      isillegalcell = 1
-      do ii = 1, netcell(ic)%N
-         L = netcell(ic)%lin(ii)
-         if (L > 0) then
-            k1 = kn(1, L)
-            k2 = kn(2, L)
+      do ic = 1, nump
+         isillegalcell = 1
+         do ii = 1, netcell(ic)%N
+            L = netcell(ic)%lin(ii)
+            if (L > 0) then
+               k1 = kn(1, L)
+               k2 = kn(2, L)
 
-            if (kc_sav(k1) /= 0 .or. kc_sav(k2) /= 0) then ! link is active
-               if (lnn(L) == 1 .or. (kc_sav(k1) /= -1 .or. kc_sav(k2) /= -1)) then ! not an original boundary link, or new boundary link
-                  isillegalcell = 0
-                  exit
+               if (kc_sav(k1) /= 0 .or. kc_sav(k2) /= 0) then ! link is active
+                  if (lnn(L) == 1 .or. (kc_sav(k1) /= -1 .or. kc_sav(k2) /= -1)) then ! not an original boundary link, or new boundary link
+                     isillegalcell = 0
+                     exit
+                  end if
                end if
             end if
+         end do
+
+         if (isillegalcell == 1) then
+            i = NPL
+            NPL = NPL + netcell(ic)%N + 1
+            call increasepol(NPL, 1)
+            do ii = 1, netcell(ic)%N
+               i = i + 1
+               k = netcell(ic)%nod(ii)
+               xpl(i) = xk(k)
+               ypl(i) = yk(k)
+            end do
+            i = i + 1
+            xpl(i) = DMISS
+            ypl(i) = DMISS
          end if
       end do
 
-      if (isillegalcell == 1) then
-         i = NPL
-         NPL = NPL + netcell(ic)%N + 1
-         call increasepol(NPL, 1)
-         do ii = 1, netcell(ic)%N
-            i = i + 1
-            k = netcell(ic)%nod(ii)
-            xpl(i) = xk(k)
-            ypl(i) = yk(k)
-         end do
-         i = i + 1
-         xpl(i) = DMISS
-         ypl(i) = DMISS
+      if (NPL > 0) then
+         call newfil(ifil, 'illegalcells.pol')
+         call wripol(ifil)
       end if
-   end do
 
-   if (NPL > 0) then
-      call newfil(ifil, 'illegalcells.pol')
-      call wripol(ifil)
-   end if
+      call restorepol()
+      call restorecells()
 
-   call restorepol()
-   call restorecells()
+      if (allocated(kc_sav)) deallocate (kc_sav)
 
-   if (allocated(kc_sav)) deallocate (kc_sav)
-
-   return
-end subroutine write_illegal_cells_to_pol
+      return
+   end subroutine write_illegal_cells_to_pol
 
 end module m_write_illegal_cells_to_pol

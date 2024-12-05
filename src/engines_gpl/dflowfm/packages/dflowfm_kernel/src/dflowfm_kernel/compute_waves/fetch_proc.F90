@@ -33,10 +33,11 @@
 !> holds variables and arrays for the fetch proc operation
 module fetch_proc_operation_data
 
+   use precision, only: dp
    integer, dimension(:), allocatable :: ndx_over_procs !< ndx data over procs
    integer, dimension(:, :), allocatable :: iglobal_s_procs !< iglobal_s data for each proc
-   double precision, dimension(:, :), allocatable :: f_buffer !< buffer to send fetch/fetdp data
-   double precision, dimension(:), allocatable :: s1_buffer !< buffer to send s1 data
+   real(kind=dp), dimension(:, :), allocatable :: f_buffer !< buffer to send fetch/fetdp data
+   real(kind=dp), dimension(:), allocatable :: s1_buffer !< buffer to send s1 data
 
    integer :: dflowfm_entire_group !< this group includes all procs
    integer :: dflowfm_group !< this group includes all procs except the last one which is the fetch proc
@@ -66,9 +67,9 @@ integer function initialise_fetch_proc_data() result(iresult)
    integer :: ndx_max, index_loop, error, source, tag = 100, icount
    integer, dimension(:), allocatable :: iglobal_s_source
    integer :: flow_node, isearch, j0
-   double precision, dimension(:), allocatable :: xz_proc, yz_proc
+   real(kind=dp), dimension(:), allocatable :: xz_proc, yz_proc
    logical :: iglobal_s_exist_on_fetch_proc = .false.
-   double precision, parameter :: tolerance = 1.0d-3
+   real(kind=dp), parameter :: tolerance = 1.0d-3
 
 #ifdef HAVE_MPI
    if (allocated(ndx_over_procs)) deallocate (ndx_over_procs)
@@ -277,7 +278,7 @@ subroutine set_mpi_environment_wwo_fetch_proc()
       call mpi_comm_size(DFM_COMM_ALLWORLD, numranks, error)
       if (numranks > 2) then
          allocate (list_of_procs(numranks - 1), stat=error)
-         list_of_procs = [ (i, i=0, numranks - 2) ]
+         list_of_procs = [(i, i=0, numranks - 2)]
          call MPI_Comm_group(DFM_COMM_ALLWORLD, dflowfm_entire_group, error)
          call MPI_Group_incl(dflowfm_entire_group, numranks - 1, list_of_procs, dflowfm_group, error)
          call MPI_Comm_create(DFM_COMM_ALLWORLD, dflowfm_group, DFM_COMM_DFMWORLD, error)

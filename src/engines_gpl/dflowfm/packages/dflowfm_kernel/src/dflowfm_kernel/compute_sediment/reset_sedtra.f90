@@ -32,11 +32,11 @@
 
 module m_reset_sedtra
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: reset_sedtra
+   public :: reset_sedtra
 
 contains
 

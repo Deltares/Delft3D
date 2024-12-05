@@ -46,7 +46,7 @@ subroutine update_waq_lateral_fluxes()
    use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat
    implicit none
 
-   integer :: i_node, k1 
+   integer :: i_node, k1
    integer :: i_lat, i_latwaq, i_layer
 
 ! Accumulate lateral discharges for waq

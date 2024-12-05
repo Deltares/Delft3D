@@ -34,15 +34,16 @@
       !! The interpolation is done along a polyline at the distances
       !! measured along the consecutive polyline segments.
       subroutine interpOnPolyline(DPL, DXS, NPL, DXS1, DXS2)
+         use precision, only: dp
          implicit none
          integer :: npl
-         double precision, intent(in) :: DPL(NPL) !< Accumulated distance at each point.
-         double precision, intent(out) :: DXS(NPL) !< Interpolated values of dxs1--dxs2 on polyline points.
-         double precision, intent(in) :: dxs1 !< Value at first polyline point.
-         double precision, intent(in) :: dxs2 !< Value at last polyline point.
+         real(kind=dp), intent(in) :: DPL(NPL) !< Accumulated distance at each point.
+         real(kind=dp), intent(out) :: DXS(NPL) !< Interpolated values of dxs1--dxs2 on polyline points.
+         real(kind=dp), intent(in) :: dxs1 !< Value at first polyline point.
+         real(kind=dp), intent(in) :: dxs2 !< Value at last polyline point.
 
-         double precision :: f
-         double precision :: f1
+         real(kind=dp) :: f
+         real(kind=dp) :: f1
          integer :: n
 
          if (NPL <= 1) return

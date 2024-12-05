@@ -32,6 +32,7 @@
 
 !> grow ijc with blocksize to satisfy objective lower- and upperbound
 subroutine grow_ijc(lowold, uppold, lowobj, uppobj, init)
+   use precision, only: dp
 
    use m_alloc
    use m_grid
@@ -49,7 +50,7 @@ subroutine grow_ijc(lowold, uppold, lowobj, uppobj, init)
    integer, parameter :: IJCBLOCK = 100 ! block size in ijc
    integer, dimension(2), save :: blocklow ! lower blocksizes in ijc
    integer, dimension(2), save :: blockupp ! upper blocksizes in ijc
-   double precision, parameter :: FAC = 1.2 ! growfactor of blocksizes
+   real(kind=dp), parameter :: FAC = 1.2 ! growfactor of blocksizes
 
    if (init == 1) then
       blocklow = (/1, 1/)

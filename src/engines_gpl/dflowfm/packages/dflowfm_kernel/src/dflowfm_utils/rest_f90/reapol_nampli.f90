@@ -35,6 +35,7 @@
       !! The block names may be used for cross sections.
       !! A dmiss line starts a new polyline without a name. Multiple dmiss lines are skipped.
       subroutine REAPOL_NAMPLI(MPOL, jadoorladen, janampl, ipli)
+         use precision, only: dp
          use M_POLYGON
          use network_data, only: NETSTAT_CELLS_DIRTY
          use M_MISSING
@@ -57,8 +58,8 @@
          integer :: nrow
          integer :: nmiss
          integer :: ierr
-         double precision :: xx, yy, zz, dz1, dz2
-         double precision :: zcrest, sillup, silldown, crestl, taludl, taludr, veg
+         real(kind=dp) :: xx, yy, zz, dz1, dz2
+         real(kind=dp) :: zcrest, sillup, silldown, crestl, taludl, taludr, veg
          character(len=1) :: weirtype
 
          character(len=64) :: MATR

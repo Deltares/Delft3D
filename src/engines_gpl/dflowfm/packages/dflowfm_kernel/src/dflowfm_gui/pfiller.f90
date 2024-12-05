@@ -32,44 +32,45 @@
 module m_pfiller
    implicit none
 contains
-    subroutine PFILLER(X, Y, N_, NCOL, NCLR)
-       use unstruc_opengl, only: inopenglrendering
-       use m_sferic, only: jsfertek
-       use m_colnow
-       use m_drawthis
-       use m_dproject
-       use m_set_col
-       use m_realpolygon
-       use m_pfiller_core
+   subroutine PFILLER(X, Y, N_, NCOL, NCLR)
+      use precision, only: dp
+      use unstruc_opengl, only: inopenglrendering
+      use m_sferic, only: jsfertek
+      use m_colnow
+      use m_drawthis
+      use m_dproject
+      use m_set_col
+      use m_realpolygon
+      use m_pfiller_core
 
-       integer :: N_
-       integer :: nclr
-       integer :: ncol, i, n
-       double precision :: X(N_), Y(N_), xx, yy
-       integer, parameter :: NMAX = 128
-       real xr(NMAX), yr(NMAX)
+      integer :: N_
+      integer :: nclr
+      integer :: ncol, i, n
+      real(kind=dp) :: X(N_), Y(N_), xx, yy
+      integer, parameter :: NMAX = 128
+      real xr(NMAX), yr(NMAX)
 
-       call SETCOL(NCOL)
+      call SETCOL(NCOL)
 
 !   safety
-       N = min(N_, NMAX)
+      N = min(N_, NMAX)
 
-       if (jsfertek == 1) then
-          do i = 1, n
-             call dproject(x(i), y(i), xx, yy, 1)
-             xr(i) = xx; yr(i) = yy
-          end do
-       else
-          xr(1:N) = x(1:N)
-          yr(1:N) = y(1:N)
-       end if
+      if (jsfertek == 1) then
+         do i = 1, n
+            call dproject(x(i), y(i), xx, yy, 1)
+            xr(i) = xx; yr(i) = yy
+         end do
+      else
+         xr(1:N) = x(1:N)
+         yr(1:N) = y(1:N)
+      end if
 
-       call PFILLERCORE(xr, yr, N)
+      call PFILLERCORE(xr, yr, N)
 
-       if (.not. InOpenGLRendering .and. (NCLR /= NCOL .or. ndraw(10) /= 0)) then
-          call realPolygon(Xr, Yr, N, NCLR)
-       end if
+      if (.not. InOpenGLRendering .and. (NCLR /= NCOL .or. ndraw(10) /= 0)) then
+         call realPolygon(Xr, Yr, N, NCLR)
+      end if
 
-       return
-    end
+      return
+   end
 end module m_pfiller

@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-submodule (m_meteo) m_ec_addtimespacerelation
+submodule(m_meteo) m_ec_addtimespacerelation
 
    implicit none
 
@@ -35,11 +35,11 @@ contains
    ! ==========================================================================
    !> Replacement function for FM's meteo1 'addtimespacerelation' function.
    module logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
-                                            xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                            dtnodal, quiet, varname, varname2, targetMaskSelect, &
-                                            tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
-                                            tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
-                                            multuni1, multuni2, multuni3, multuni4)
+                                                   xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
+                                                   dtnodal, quiet, varname, varname2, targetMaskSelect, &
+                                                   tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
+                                                   tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
+                                                   multuni1, multuni2, multuni3, multuni4)
       use m_ec_module, only: ecFindFileReader, ec_filetype_to_conv_type ! TODO: Refactor this private data access (UNST-703).
       use m_ec_filereader_read, only: ecParseARCinfoMask
       use m_flowparameters, only: jawave
@@ -1188,6 +1188,6 @@ contains
          message = trim(message)//' ('''//trim(forcingfile)//''')'
       end if
 
-    end function ec_addtimespacerelation
-    
+   end function ec_addtimespacerelation
+
 end submodule m_ec_addtimespacerelation

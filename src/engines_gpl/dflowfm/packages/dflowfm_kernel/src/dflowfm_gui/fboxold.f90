@@ -30,29 +30,30 @@
 !
 !
 module m_fboxold
-    implicit none
+   implicit none
 contains
-    
-      subroutine FBOXOLD(XB1, YB1, XB2, YB2)
-         use m_colnow
-         use m_pfiller_core
-         integer :: n
-         double precision :: xb1
-         double precision :: xb2
-         double precision :: yb1
-         double precision :: yb2
-         real X(4), Y(4)
-         N = 4
-         X(1) = real(XB1)
-         X(2) = real(XB2)
-         X(3) = real(XB2)
-         X(4) = real(XB1)
-         Y(1) = real(YB1)
-         Y(2) = real(YB1)
-         Y(3) = real(YB2)
-         Y(4) = real(YB2)
-         if (NCOLNOW >= 0) call PFILLERCORE(X, Y, N)
-         return
-      end
+
+   subroutine FBOXOLD(XB1, YB1, XB2, YB2)
+      use precision, only: dp
+      use m_colnow
+      use m_pfiller_core
+      integer :: n
+      real(kind=dp) :: xb1
+      real(kind=dp) :: xb2
+      real(kind=dp) :: yb1
+      real(kind=dp) :: yb2
+      real X(4), Y(4)
+      N = 4
+      X(1) = real(XB1)
+      X(2) = real(XB2)
+      X(3) = real(XB2)
+      X(4) = real(XB1)
+      Y(1) = real(YB1)
+      Y(2) = real(YB1)
+      Y(3) = real(YB2)
+      Y(4) = real(YB2)
+      if (NCOLNOW >= 0) call PFILLERCORE(X, Y, N)
+      return
+   end
 
 end module m_fboxold

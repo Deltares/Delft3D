@@ -31,11 +31,12 @@
 !
 
       subroutine MISAR(H, MMAX)
+         use precision, only: dp
          use M_MISSING
          implicit none
          integer :: i
          integer :: mmax
-         double precision :: H(MMAX)
+         real(kind=dp) :: H(MMAX)
 
          do I = 1, MMAX
             H(I) = dmiss

@@ -32,107 +32,108 @@
 
 module m_horvic
 
-implicit none
+   implicit none
 
 contains
 
- !> compute viscous flux balance of cell ln (n12,L) in coordinate frame of L
- double precision function horvic(n12, L) ! horizontal viscosity term
-    use m_flow
-    use m_flowgeom
-    use m_missing
-    use m_sferic
-    implicit none
+   !> compute viscous flux balance of cell ln (n12,L) in coordinate frame of L
+   real(kind=dp) function horvic(n12, L) ! horizontal viscosity term
+      use precision, only: dp
+      use m_flow
+      use m_flowgeom
+      use m_missing
+      use m_sferic
+      implicit none
 
-    integer :: L ! in direction of link L
-    integer :: n12 ! find hor visc term for cell 1 or 2
+      integer :: L ! in direction of link L
+      integer :: n12 ! find hor visc term for cell 1 or 2
 
-    ! locals
-    integer :: LL, LLL, LLLL ! for links LL,
-    integer :: k12, k1, k2, k3, k4 ! relevant node, 1 or 2
-    double precision :: cs, sn, csL, snL
-    double precision :: duxdn, duydn, duxdt, duydt, txx, tyy, c11, c12, c22, vicl
+      ! locals
+      integer :: LL, LLL, LLLL ! for links LL,
+      integer :: k12, k1, k2, k3, k4 ! relevant node, 1 or 2
+      real(kind=dp) :: cs, sn, csL, snL
+      real(kind=dp) :: duxdn, duydn, duxdt, duydt, txx, tyy, c11, c12, c22, vicl
 
-    double precision :: txx_k12, tyy_k12
-    integer :: ik1, ik2, in3, in4
+      real(kind=dp) :: txx_k12, tyy_k12
+      integer :: ik1, ik2, in3, in4
 
-    double precision, external :: nod2linx, nod2liny, lin2nodx, lin2nody, cor2linx, cor2liny
+      real(kind=dp), external :: nod2linx, nod2liny, lin2nodx, lin2nody, cor2linx, cor2liny
 
-    horvic = 0d0
-    csL = csu(L); snL = snu(L)
-    k12 = ln(n12, L)
+      horvic = 0d0
+      csL = csu(L); snL = snu(L)
+      k12 = ln(n12, L)
 
-    do LL = 1, nd(k12)%lnx ! loop over all attached links
+      do LL = 1, nd(k12)%lnx ! loop over all attached links
 
-       LLL = nd(k12)%ln(LL)
-       LLLL = abs(LLL)
+         LLL = nd(k12)%ln(LL)
+         LLLL = abs(LLL)
 
-       if (LLLL /= L) then
+         if (LLLL /= L) then
 
-          if (LLL < 0) then
-             cs = csu(LLLL)
-             sn = snu(LLLL)
-             k1 = ln(1, LLLL); k2 = ln(2, LLLL) ! k1 = k12
-             k3 = lncn(1, LLLL); k4 = lncn(2, LLLL)
-             ik1 = 1
-             ik2 = 2
-             in3 = 1
-             in4 = 2
-          else
-             cs = -csu(LLLL)
-             sn = -snu(LLLL)
-             k1 = ln(2, LLLL); k2 = ln(1, LLLL) ! k1 = k12
-             k3 = lncn(2, LLLL); k4 = lncn(1, LLLL)
-             ik1 = 2
-             ik2 = 1
-             in3 = 2
-             in4 = 1
-          end if
+            if (LLL < 0) then
+               cs = csu(LLLL)
+               sn = snu(LLLL)
+               k1 = ln(1, LLLL); k2 = ln(2, LLLL) ! k1 = k12
+               k3 = lncn(1, LLLL); k4 = lncn(2, LLLL)
+               ik1 = 1
+               ik2 = 2
+               in3 = 1
+               in4 = 2
+            else
+               cs = -csu(LLLL)
+               sn = -snu(LLLL)
+               k1 = ln(2, LLLL); k2 = ln(1, LLLL) ! k1 = k12
+               k3 = lncn(2, LLLL); k4 = lncn(1, LLLL)
+               ik1 = 2
+               ik2 = 1
+               in3 = 2
+               in4 = 1
+            end if
 
-          if (jasfer3D == 0) then
-             duxdn = (ucx(k2) - ucx(k1)) * dxi(LLLL)
-             duydn = (ucy(k2) - ucy(k1)) * dxi(LLLL)
-             duxdt = (ucnx(k4) - ucnx(k3)) * wui(LLLL)
-             duydt = (ucny(k4) - ucny(k3)) * wui(LLLL)
-          else
-             duxdn = (nod2linx(LLLL, ik2, ucx(k2), ucy(k2)) - nod2linx(LLLL, ik1, ucx(k1), ucy(k1))) * dxi(LLLL)
-             duydn = (nod2liny(LLLL, ik2, ucx(k2), ucy(k2)) - nod2liny(LLLL, ik1, ucx(k1), ucy(k1))) * dxi(LLLL)
-             duxdt = (cor2linx(LLLL, in4, ucnx(k4), ucny(k4)) - cor2linx(LLLL, in3, ucnx(k3), ucny(k3))) * wui(LLLL)
-             duydt = (cor2liny(LLLL, in4, ucnx(k4), ucny(k4)) - cor2liny(LLLL, in3, ucnx(k3), ucny(k3))) * wui(LLLL)
-          end if
+            if (jasfer3D == 0) then
+               duxdn = (ucx(k2) - ucx(k1)) * dxi(LLLL)
+               duydn = (ucy(k2) - ucy(k1)) * dxi(LLLL)
+               duxdt = (ucnx(k4) - ucnx(k3)) * wui(LLLL)
+               duydt = (ucny(k4) - ucny(k3)) * wui(LLLL)
+            else
+               duxdn = (nod2linx(LLLL, ik2, ucx(k2), ucy(k2)) - nod2linx(LLLL, ik1, ucx(k1), ucy(k1))) * dxi(LLLL)
+               duydn = (nod2liny(LLLL, ik2, ucx(k2), ucy(k2)) - nod2liny(LLLL, ik1, ucx(k1), ucy(k1))) * dxi(LLLL)
+               duxdt = (cor2linx(LLLL, in4, ucnx(k4), ucny(k4)) - cor2linx(LLLL, in3, ucnx(k3), ucny(k3))) * wui(LLLL)
+               duydt = (cor2liny(LLLL, in4, ucnx(k4), ucny(k4)) - cor2liny(LLLL, in3, ucnx(k3), ucny(k3))) * wui(LLLL)
+            end if
 
-          c11 = cs * cs; c12 = cs * sn; c22 = sn * sn
-          txx = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
-          tyy = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
+            c11 = cs * cs; c12 = cs * sn; c22 = sn * sn
+            txx = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
+            tyy = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
 
-          if (javiusp == 1) then
-             vicl = viusp(LLLL)
-          else
-             vicl = vicouv
-          end if
+            if (javiusp == 1) then
+               vicl = viusp(LLLL)
+            else
+               vicl = vicouv
+            end if
 
-          txx_k12 = lin2nodx(LLLL, ik1, txx, tyy)
-          tyy_k12 = lin2nody(LLLL, ik1, txx, tyy)
+            txx_k12 = lin2nodx(LLLL, ik1, txx, tyy)
+            tyy_k12 = lin2nody(LLLL, ik1, txx, tyy)
 
-          if (istresstyp == 4) then
-             if (jasfer3D == 0) then
-                horvic = horvic + (txx * csl + tyy * snl) * wu(LLLL) * vicL
-             else
-                horvic = horvic + (nod2linx(L, n12, txx_k12, tyy_k12) * csl + nod2liny(L, n12, txx_k12, tyy_k12) * snl) * wu(LLLL) * vicL
-             end if
+            if (istresstyp == 4) then
+               if (jasfer3D == 0) then
+                  horvic = horvic + (txx * csl + tyy * snl) * wu(LLLL) * vicL
+               else
+                  horvic = horvic + (nod2linx(L, n12, txx_k12, tyy_k12) * csl + nod2liny(L, n12, txx_k12, tyy_k12) * snl) * wu(LLLL) * vicL
+               end if
 
-          else if (istresstyp == 5) then ! volume averaged
-             ! horvic = horvic + ( txx*csl + tyy*snl )*au(LLLL)*vicL
-             horvic = horvic + (nod2linx(L, n12, txx_k12, tyy_k12) * csl + nod2liny(L, n12, txx_k12, tyy_k12) * snl) * au(LLLL) * vicL
-          end if
+            else if (istresstyp == 5) then ! volume averaged
+               ! horvic = horvic + ( txx*csl + tyy*snl )*au(LLLL)*vicL
+               horvic = horvic + (nod2linx(L, n12, txx_k12, tyy_k12) * csl + nod2liny(L, n12, txx_k12, tyy_k12) * snl) * au(LLLL) * vicL
+            end if
 
-       end if
+         end if
 
-    end do
-    horvic = horvic * bai(k12)
-    if (istresstyp == 5) then ! volume averaged
-       horvic = horvic / hs(k12)
-    end if
- end function Horvic
+      end do
+      horvic = horvic * bai(k12)
+      if (istresstyp == 5) then ! volume averaged
+         horvic = horvic / hs(k12)
+      end if
+   end function Horvic
 
 end module m_horvic

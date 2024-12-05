@@ -31,6 +31,7 @@
 !
 
     subroutine RDGEO(xrd, yrd, xgeo, ygeo, JAPARIJS)
+       use precision, only: dp
        use m_sferic
        implicit none
        integer :: japarijs
@@ -49,8 +50,8 @@
 !     xgeo   [ O ]   geographical east-coordinate (degrees; decimal)
 !     ygeo   [ O ]   geographical north-coordinate (degrees; decimal)
 !
-       double precision :: xrd, yrd
-       double precision :: xgeo, ygeo
+       real(kind=dp) :: xrd, yrd
+       real(kind=dp) :: xgeo, ygeo
 !
 !     local variables:
 !     urd    : linearly transformed xrd
@@ -58,16 +59,16 @@
 !     ugeo   : linearly transformed xgeo
 !     vgeo   : linearly transformed ygeo
 !
-       double precision :: urd, vrd
-       double precision :: ugeo, vgeo
+       real(kind=dp) :: urd, vrd
+       real(kind=dp) :: ugeo, vgeo
 
-       double precision :: a01, a20, a02, a21, a03, a22, a40, a23, a41, a04, a42, a24
-       double precision :: b10, b11, b12, b30, b31, b13, b32, b14, b50, b33, b51, b15
-       double precision :: dx, dx2, dx3, dx4, dx5, xd, x0
-       double precision :: dy, dy2, dy3, dy4, dy5, yd, y0
+       real(kind=dp) :: a01, a20, a02, a21, a03, a22, a40, a23, a41, a04, a42, a24
+       real(kind=dp) :: b10, b11, b12, b30, b31, b13, b32, b14, b50, b33, b51, b15
+       real(kind=dp) :: dx, dx2, dx3, dx4, dx5, xd, x0
+       real(kind=dp) :: dy, dy2, dy3, dy4, dy5, yd, y0
 
-       double precision :: a, e, ya, xa, b0, dl0, gn, gm, rr, dk, r, sa, ca, psi, spsi
-       double precision :: cb, sb, b, sdl, dl, rl, w, q, psia, dq, phi
+       real(kind=dp) :: a, e, ya, xa, b0, dl0, gn, gm, rr, dk, r, sa, ca, psi, spsi
+       real(kind=dp) :: cb, sb, b, sdl, dl, rl, w, q, psia, dq, phi
 
        integer :: k, jazitman = 1
 

@@ -31,6 +31,7 @@
 !
 
       subroutine RSORT3(X, Y, Z, N)
+         use precision, only: dp
          implicit none
          integer :: j
          integer :: j1
@@ -39,9 +40,9 @@
          integer :: lk
          integer :: n
          integer :: nm
-         double precision :: temp
+         real(kind=dp) :: temp
 
-         double precision :: X(N), Y(N), Z(N)
+         real(kind=dp) :: X(N), Y(N), Z(N)
          if (N == 0) return
          LK = N / 2
          K0 = LK

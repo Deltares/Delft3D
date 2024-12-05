@@ -32,47 +32,48 @@
 
 module m_isoceltri
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine ISOCELTRI(X, Y, P, NCOLR)
-         use m_hitlin
-         use m_dispf2
-         use m_depmax
+   subroutine ISOCELTRI(X, Y, P, NCOLR)
+      use precision, only: dp
+      use m_hitlin
+      use m_dispf2
+      use m_depmax
 
-         integer :: i, ih, ja, ncolr, nh, nplus
-         double precision :: p, p1, p2, vn, x, x1, x2, xh, xhit, y, y1, y2, yh, yhit
+      integer :: i, ih, ja, ncolr, nh, nplus
+      real(kind=dp) :: p, p1, p2, vn, x, x1, x2, xh, xhit, y, y1, y2, yh, yhit
 
 !     TEKENT ALLE NV ISOLIJNEN IN EEN CEL TEKAL-METHODE
-         dimension P(3), X(3), Y(3), XH(3), YH(3)
+      dimension P(3), X(3), Y(3), XH(3), YH(3)
 
-         do I = 1, NV
-            NPLUS = 1
-            VN = VAL(I)
-            NH = 0
-            do IH = 1, 3
-               if (IH == 3) NPLUS = -2
-               P1 = P(IH)
-               P2 = P(IH + NPLUS)
-               X1 = X(IH)
-               X2 = X(IH + NPLUS)
-               Y1 = Y(IH)
-               Y2 = Y(IH + NPLUS)
-               call HITLIN(P1, P2, X1, Y1, X2, Y2, VN, XHIT, YHIT, JA)
-               if (JA == 1) then
-                  NH = NH + 1
-                  XH(NH) = XHIT
-                  YH(NH) = YHIT
-               end if
-            end do
-            !        IF (NH .GT. 1) CALL DISPF2(XH,YH,NH,3,NCOLS(I+1))
-            if (NH > 1) call DISPF2(XH, YH, NH, 3, 0)
+      do I = 1, NV
+         NPLUS = 1
+         VN = VAL(I)
+         NH = 0
+         do IH = 1, 3
+            if (IH == 3) NPLUS = -2
+            P1 = P(IH)
+            P2 = P(IH + NPLUS)
+            X1 = X(IH)
+            X2 = X(IH + NPLUS)
+            Y1 = Y(IH)
+            Y2 = Y(IH + NPLUS)
+            call HITLIN(P1, P2, X1, Y1, X2, Y2, VN, XHIT, YHIT, JA)
+            if (JA == 1) then
+               NH = NH + 1
+               XH(NH) = XHIT
+               YH(NH) = YHIT
+            end if
          end do
+         !        IF (NH .GT. 1) CALL DISPF2(XH,YH,NH,3,NCOLS(I+1))
+         if (NH > 1) call DISPF2(XH, YH, NH, 3, 0)
+      end do
 
-         if (NCOLR /= 0) call DISPF2(X, Y, 3, 3, NCOLR)
+      if (NCOLR /= 0) call DISPF2(X, Y, 3, 3, NCOLR)
 
-         return
-      end
+      return
+   end
 
 end module m_isoceltri

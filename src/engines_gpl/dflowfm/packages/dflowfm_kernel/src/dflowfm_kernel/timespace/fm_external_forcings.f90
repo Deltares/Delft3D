@@ -1751,6 +1751,7 @@ contains
             xbndz(k) = xe(L) ! xz(kb)
             ybndz(k) = ye(L) ! yz(kb)
             zbndz0(k) = dmiss
+            zbndz(k) = dmiss
             xy2bndz(:, k) = xyen(:, L)
 
             kbndz(1, k) = kb

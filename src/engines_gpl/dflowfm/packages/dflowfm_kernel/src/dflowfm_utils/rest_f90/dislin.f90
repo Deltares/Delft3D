@@ -33,7 +33,8 @@ module m_dislin
    implicit none
 contains
 !>     AFSTAND VAN PUNT XX,YY TOT LIJN MET PARM TV
-   double precision function DISLIN(X, Y, N, XX, YY, TV)
+   real(kind=dp) function DISLIN(X, Y, N, XX, YY, TV)
+      use precision, only: dp
 
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
@@ -41,13 +42,13 @@ contains
       use m_lint
 
       integer :: n
-      double precision :: tv
-      double precision :: xv
-      double precision :: xx
-      double precision :: yv
-      double precision :: yy
+      real(kind=dp) :: tv
+      real(kind=dp) :: xv
+      real(kind=dp) :: xx
+      real(kind=dp) :: yv
+      real(kind=dp) :: yy
 
-      double precision :: X(N), Y(N)
+      real(kind=dp) :: X(N), Y(N)
       TV = max(0d0, min(TV, N - 1d0))
       call LINT(X, Y, N, TV, XV, YV)
       dislin = dbdistance(XV, YV, XX, YY, jsferic, jasfer3D, dmiss)

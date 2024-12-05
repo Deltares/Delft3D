@@ -33,70 +33,71 @@
 !> netcell-based cell-coarsening information
 module m_coarsening_info
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: coarsening_info
+   public :: coarsening_info
 
 contains
 
-double precision function coarsening_info(k)
+   real(kind=dp) function coarsening_info(k)
+      use precision, only: dp
 
-   use m_netw
-   use m_missing
-   use m_sferic, only: dtol_pole
-   use gridoperations
+      use m_netw
+      use m_missing
+      use m_sferic, only: dtol_pole
+      use gridoperations
 
-   integer :: k !< netcell number
+      integer :: k !< netcell number
 
-   integer, parameter :: NMAX = 100 !< maximum of directly or indirectly connected netcells
+      integer, parameter :: NMAX = 100 !< maximum of directly or indirectly connected netcells
 
-   integer :: ndirect, nindirect
-   integer, dimension(NMAX) :: kdirect, kindirect
-   integer, dimension(2, nmax) :: kne
+      integer :: ndirect, nindirect
+      integer, dimension(NMAX) :: kdirect, kindirect
+      integer, dimension(2, nmax) :: kne
 
-   double precision :: xc, yc
-   double precision :: area, area_tot, Darea
-   double precision :: funct
+      real(kind=dp) :: xc, yc
+      real(kind=dp) :: area, area_tot, Darea
+      real(kind=dp) :: funct
 
-   double precision :: area_opt = 1d5
+      real(kind=dp) :: area_opt = 1d5
 
-   integer :: kk
+      integer :: kk
 
-   coarsening_info = DMISS
+      coarsening_info = DMISS
 
-   call find_surrounding_cells(k, NMAX, ndirect, nindirect, kdirect, kindirect, kne)
+      call find_surrounding_cells(k, NMAX, ndirect, nindirect, kdirect, kindirect, kne)
 
-   if (ndirect < 1 .or. nindirect < 1) return
+      if (ndirect < 1 .or. nindirect < 1) return
 
-   area_tot = 0d0
-   funct = 0d0
+      area_tot = 0d0
+      funct = 0d0
 
-   call getcellsurface(k, area, xc, yc)
-   area_tot = area_tot + area
-   funct = funct - (area - area_opt)**2
-   do kk = 1, ndirect
-      call getcellsurface(kdirect(kk), area, xc, yc)
+      call getcellsurface(k, area, xc, yc)
       area_tot = area_tot + area
       funct = funct - (area - area_opt)**2
-   end do
+      do kk = 1, ndirect
+         call getcellsurface(kdirect(kk), area, xc, yc)
+         area_tot = area_tot + area
+         funct = funct - (area - area_opt)**2
+      end do
 
 !  compute the area increase of the indirectly connected cells
-   Darea = area_tot / dble(nindirect)
+      Darea = area_tot / dble(nindirect)
 
 !  compute the change in the functional
-   do kk = 1, nindirect
-      call getcellsurface(kindirect(kk), area, xc, yc)
-      funct = funct - (area - area_opt)**2
-      area = area + Darea
-      funct = funct + (area - area_opt)**2
-   end do
+      do kk = 1, nindirect
+         call getcellsurface(kindirect(kk), area, xc, yc)
+         funct = funct - (area - area_opt)**2
+         area = area + Darea
+         funct = funct + (area - area_opt)**2
+      end do
 
-   coarsening_info = -funct
-   if (coarsening_info <= 0d0) coarsening_info = DMISS
+      coarsening_info = -funct
+      if (coarsening_info <= 0d0) coarsening_info = DMISS
 
-   return
-end function
+      return
+   end function
 
 end module m_coarsening_info

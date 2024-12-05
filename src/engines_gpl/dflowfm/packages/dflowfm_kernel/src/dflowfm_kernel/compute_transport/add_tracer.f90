@@ -32,87 +32,86 @@
 
 !> add tracer to constituents, or get constituents number if tracer already exists
 module m_add_tracer
-use m_alloc_transport, only: alloc_transport
+   use m_alloc_transport, only: alloc_transport
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: add_tracer
+   public :: add_tracer
 
 contains
 
-subroutine add_tracer(tracer_name, iconst)
-   use m_transport
-   use unstruc_messages
-   use m_meteo, only: numtracers, trnames
-   use m_find_name, only: find_name
-   implicit none
+   subroutine add_tracer(tracer_name, iconst)
+      use m_transport
+      use unstruc_messages
+      use m_meteo, only: numtracers, trnames
+      use m_find_name, only: find_name
+      implicit none
 
-   character(len=*), intent(in) :: tracer_name !< tracer name, or '' for default name
-   integer, intent(out) :: iconst !< constituent number
+      character(len=*), intent(in) :: tracer_name !< tracer name, or '' for default name
+      integer, intent(out) :: iconst !< constituent number
 
-   character(len=8) :: str
+      character(len=8) :: str
 
-   integer :: ierror, itrac
+      integer :: ierror, itrac
 
-   ierror = 1
+      ierror = 1
 
 !  check if tracer already exists, based on tracer name
-   iconst = 0
-   if (ITRA1 > 0 .and. trim(tracer_name) /= '') then
-      iconst = find_name(const_names, tracer_name)
+      iconst = 0
+      if (ITRA1 > 0 .and. trim(tracer_name) /= '') then
+         iconst = find_name(const_names, tracer_name)
 
-      if (iconst >= ITRA1 .and. iconst <= ITRAN) then ! existing tracer found
-         call mess(LEVEL_INFO, 'add_tracer: tracer '//trim(tracer_name)//' already exists. No update required.')
-         goto 1234
+         if (iconst >= ITRA1 .and. iconst <= ITRAN) then ! existing tracer found
+            call mess(LEVEL_INFO, 'add_tracer: tracer '//trim(tracer_name)//' already exists. No update required.')
+            goto 1234
+         end if
       end if
-   end if
 
 !  append tracer
-   if (ITRA1 == 0) then
-      NUMCONST = NUMCONST + 1
-      ITRA1 = NUMCONST
-      ITRAN = NUMCONST
-   else
+      if (ITRA1 == 0) then
+         NUMCONST = NUMCONST + 1
+         ITRA1 = NUMCONST
+         ITRAN = NUMCONST
+      else
 !     check if tracers are at the back
-      if (iTRAN /= NUMCONST) then
-         call mess(LEVEL_ERROR, 'add_tracer: tracer(s) not at the back of the constituents array')
-         goto 1234
-      end if
+         if (iTRAN /= NUMCONST) then
+            call mess(LEVEL_ERROR, 'add_tracer: tracer(s) not at the back of the constituents array')
+            goto 1234
+         end if
 
-      NUMCONST = NUMCONST + 1
-      ITRAN = NUMCONST
-   end if
+         NUMCONST = NUMCONST + 1
+         ITRAN = NUMCONST
+      end if
 
 !  output tracer number
-   iconst = ITRAN
+      iconst = ITRAN
 
 !  reallocate arrays
-   call alloc_transport(.true.)
+      call alloc_transport(.true.)
 
 !  set name
-   if (trim(tracer_name) /= '') then
-      const_names(ITRAN) = trim(tracer_name)
-   else
-      write (str, "(I0)") ITRAN - ITRA1 + 1
-      const_names(ITRAN) = 'tracer_'//trim(str)
-   end if
-
-   if (numtracers > 0) then ! number of tracers with boundary conditions
-!     generate tracer (boundary condition) to constituent
-      itrac = find_name(trnames, tracer_name)
-      if (itrac > 0) then
-         itrac2const(itrac) = iconst
+      if (trim(tracer_name) /= '') then
+         const_names(ITRAN) = trim(tracer_name)
+      else
+         write (str, "(I0)") ITRAN - ITRA1 + 1
+         const_names(ITRAN) = 'tracer_'//trim(str)
       end if
-   end if
 
-   ierror = 0
+      if (numtracers > 0) then ! number of tracers with boundary conditions
+!     generate tracer (boundary condition) to constituent
+         itrac = find_name(trnames, tracer_name)
+         if (itrac > 0) then
+            itrac2const(itrac) = iconst
+         end if
+      end if
 
-1234 continue
+      ierror = 0
 
-   return
-end subroutine add_tracer
+1234  continue
+
+      return
+   end subroutine add_tracer
 
 end module m_add_tracer

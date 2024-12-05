@@ -31,130 +31,130 @@
 !
 
 module m_fixedweirfriction2d
-use m_getucxucynoweirs
+   use m_getucxucynoweirs
 
-
-implicit none
+   implicit none
 
 contains
 
- subroutine fixedweirfriction2D(L, k1, k2, frL) ! frL of fixed weir
-    use m_flowgeom
-    use m_flow
-    use m_missing
-    use m_get_cz
+   subroutine fixedweirfriction2D(L, k1, k2, frL) ! frL of fixed weir
+      use precision, only: dp
+      use m_flowgeom
+      use m_flow
+      use m_missing
+      use m_get_cz
 
-    implicit none
+      implicit none
 
-    integer :: L
-    double precision :: frL
+      integer :: L
+      real(kind=dp) :: frL
 
-    integer :: k1, k2
-    double precision :: umod, uin, frLk1, frLk2, ucxk, ucyk, Cz, weirheight, weirlength, flatlength, a, ff
+      integer :: k1, k2
+      real(kind=dp) :: umod, uin, frLk1, frLk2, ucxk, ucyk, Cz, weirheight, weirlength, flatlength, a, ff
 
-    if (frcu(L) == 0 .or. hu(L) < epshu) then
-       frL = 0d0; return
-    end if
+      if (frcu(L) == 0 .or. hu(L) < epshu) then
+         frL = 0d0; return
+      end if
 
-    if (fixedweirtopfrictcoef /= dmiss) then ! standard friction on weirtop only
-       call getcz(hu(L), fixedweirtopfrictcoef, ifrcutp(L), Cz, L)
-    else
-       call getcz(hu(L), frcu(L), ifrcutp(L), Cz, L)
-    end if
+      if (fixedweirtopfrictcoef /= dmiss) then ! standard friction on weirtop only
+         call getcz(hu(L), fixedweirtopfrictcoef, ifrcutp(L), Cz, L)
+      else
+         call getcz(hu(L), frcu(L), ifrcutp(L), Cz, L)
+      end if
 
-    umod = sqrt(u1(L) * u1(L) + v(L) * v(L))
-    frL = umod * ag / (Cz * Cz * hu(L)) ! on top of weir
-    frLk1 = frL ! on side 1
-    frLk2 = frL ! on side 2
+      umod = sqrt(u1(L) * u1(L) + v(L) * v(L))
+      frL = umod * ag / (Cz * Cz * hu(L)) ! on top of weir
+      frLk1 = frL ! on side 1
+      frLk2 = frL ! on side 2
 
-    weirheight = max(0d0, 0.5d0 * (bob(1, L) + bob(2, L)) - 0.5d0 * (bl(k1) + bl(k2)))
-    weirlength = fixedweirtopwidth
-    flatlength = max(weirlength, dx(L) - (weirlength + 2d0 * weirheight * fixedweirtalud))
-    a = weirlength / (weirlength + flatlength)
+      weirheight = max(0d0, 0.5d0 * (bob(1, L) + bob(2, L)) - 0.5d0 * (bl(k1) + bl(k2)))
+      weirlength = fixedweirtopwidth
+      flatlength = max(weirlength, dx(L) - (weirlength + 2d0 * weirheight * fixedweirtalud))
+      a = weirlength / (weirlength + flatlength)
 
-    if (ifxedweirfrictscheme == 1) then ! simple bedlevel&velocity
-       ! assumption + direct linearisation
-       if (hs(k1) > 0d0) then
-          ff = min(1d0, hu(L) / hs(k1))
-          umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
-          frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
-       end if
+      if (ifxedweirfrictscheme == 1) then ! simple bedlevel&velocity
+         ! assumption + direct linearisation
+         if (hs(k1) > 0d0) then
+            ff = min(1d0, hu(L) / hs(k1))
+            umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
+            call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
+            frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
+         end if
 
-       if (hs(k2) > 0d0) then
-          ff = min(1d0, hu(L) / hs(k2))
-          umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
-          frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
-       end if
+         if (hs(k2) > 0d0) then
+            ff = min(1d0, hu(L) / hs(k2))
+            umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
+            call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
+            frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
+         end if
 
-       frL = a * frL + (1d0 - a) * ((frLk1 + frLk2) * 0.5d0)
+         frL = a * frL + (1d0 - a) * ((frLk1 + frLk2) * 0.5d0)
 
-    else if (ifxedweirfrictscheme == 2) then ! Without weir like WAQUA
+      else if (ifxedweirfrictscheme == 2) then ! Without weir like WAQUA
 
-       if (hs(k1) > 0d0) then
-          ff = min(1d0, hu(L) / hs(k1))
-          umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
-          frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
-       end if
+         if (hs(k1) > 0d0) then
+            ff = min(1d0, hu(L) / hs(k1))
+            umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
+            call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
+            frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
+         end if
 
-       if (hs(k2) > 0d0) then
-          ff = min(1d0, hu(L) / hs(k2))
-          umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
-          frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
-       end if
+         if (hs(k2) > 0d0) then
+            ff = min(1d0, hu(L) / hs(k2))
+            umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
+            call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
+            frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
+         end if
 
-       frL = (frLk1 + frLk2) * 0.5d0
+         frL = (frLk1 + frLk2) * 0.5d0
 
-    else if (ifxedweirfrictscheme == 3) then ! full undisturbed velocity reconstruction
+      else if (ifxedweirfrictscheme == 3) then ! full undisturbed velocity reconstruction
 
-       if (abs(u1(L)) > 0.1d0) then
+         if (abs(u1(L)) > 0.1d0) then
 
-          if (hs(k1) > 0d0) then
-             call getucxucynoweirs(k1, ucxk, ucyk)
-             umod = sqrt(ucxk * ucxk + ucyk * ucyk)
-             uin = abs(ucxk * csu(L) + ucyk * snu(L))
-             call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
-             frLk1 = umod * uin * ag / (Cz * Cz * hs(k1) * u1(L))
-          end if
+            if (hs(k1) > 0d0) then
+               call getucxucynoweirs(k1, ucxk, ucyk)
+               umod = sqrt(ucxk * ucxk + ucyk * ucyk)
+               uin = abs(ucxk * csu(L) + ucyk * snu(L))
+               call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
+               frLk1 = umod * uin * ag / (Cz * Cz * hs(k1) * u1(L))
+            end if
 
-          if (hs(k2) > 0d0) then
-             call getucxucynoweirs(k2, ucxk, ucyk)
-             umod = sqrt(ucxk * ucxk + ucyk * ucyk)
-             uin = abs(ucxk * csu(L) + ucyk * snu(L))
-             call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
-             frLk2 = umod * uin * ag / (Cz * Cz * hs(k2) * u1(L))
-          end if
+            if (hs(k2) > 0d0) then
+               call getucxucynoweirs(k2, ucxk, ucyk)
+               umod = sqrt(ucxk * ucxk + ucyk * ucyk)
+               uin = abs(ucxk * csu(L) + ucyk * snu(L))
+               call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
+               frLk2 = umod * uin * ag / (Cz * Cz * hs(k2) * u1(L))
+            end if
 
-       end if
+         end if
 
-       frL = a * frL + (1d0 - a) * ((frLk1 + frLk2) * 0.5d0)
+         frL = a * frL + (1d0 - a) * ((frLk1 + frLk2) * 0.5d0)
 
-    else if (ifxedweirfrictscheme == 4) then ! full undisturbed velocity reconstruction
+      else if (ifxedweirfrictscheme == 4) then ! full undisturbed velocity reconstruction
 
-       flatlength = max(weirlength, dx(L) - (weirlength + weirheight * fixedweirtalud))
-       a = weirlength / (weirlength + flatlength)
+         flatlength = max(weirlength, dx(L) - (weirlength + weirheight * fixedweirtalud))
+         a = weirlength / (weirlength + flatlength)
 
-       if (hs(k1) > 0d0) then
-          ff = min(1d0, hu(L) / hs(k1))
-          umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
-          frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
-       end if
+         if (hs(k1) > 0d0) then
+            ff = min(1d0, hu(L) / hs(k1))
+            umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
+            call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
+            frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
+         end if
 
-       if (hs(k2) > 0d0) then
-          ff = min(1d0, hu(L) / hs(k2))
-          umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
-          call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
-          frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
-       end if
+         if (hs(k2) > 0d0) then
+            ff = min(1d0, hu(L) / hs(k2))
+            umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
+            call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)
+            frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
+         end if
 
-       frL = a * frL + (1d0 - a) * ((frLk1 + frLk2) * 0.5d0)
+         frL = a * frL + (1d0 - a) * ((frLk1 + frLk2) * 0.5d0)
 
-    end if
+      end if
 
- end subroutine fixedweirfriction2D
+   end subroutine fixedweirfriction2D
 
 end module m_fixedweirfriction2d

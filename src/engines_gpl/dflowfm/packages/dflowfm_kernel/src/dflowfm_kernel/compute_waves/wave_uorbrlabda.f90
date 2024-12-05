@@ -32,15 +32,16 @@
 
 module m_wave_uorbrlabda
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: wave_uorbrlabda
+   public :: wave_uorbrlabda
 
 contains
 
    subroutine wave_uorbrlabda()
+      use precision, only: dp
       use m_getwavenr, only: getwavenr
       use m_waves, only: uorb, wlenwav, uorbwav, twav, hwav, rlabda, jauorb, jauorbfromswan
       use m_flow, only: s1
@@ -53,7 +54,7 @@ contains
       integer :: k
       integer :: wlenwav_from_SWAN = 0
 
-      double precision :: hss, per, omeg, k0, k0h, rk
+      real(kind=dp) :: hss, per, omeg, k0, k0h, rk
 
       do k = 1, ndx
          hss = max(1d-2, s1(k) - bl(k))

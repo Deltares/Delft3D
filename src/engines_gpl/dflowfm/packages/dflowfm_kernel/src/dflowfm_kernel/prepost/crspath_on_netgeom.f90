@@ -40,33 +40,34 @@
 !! \see crspath_on_flowgeom, thindams_on_netgeom
 module m_crspath_on_netgeom
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: crspath_on_netgeom
+   public :: crspath_on_netgeom
 
 contains
 
-subroutine crspath_on_netgeom(path)
-   use m_crspath
-   use network_data
-   use m_get_link_neighboring_cell_coords
+   subroutine crspath_on_netgeom(path)
+      use precision, only: dp
+      use m_crspath
+      use network_data
+      use m_get_link_neighboring_cell_coords
 
-   type(tcrspath), intent(inout) :: path !< Cross section path that must be imposed on network geometry.
+      type(tcrspath), intent(inout) :: path !< Cross section path that must be imposed on network geometry.
 
-   integer :: L, isactive
-   double precision :: xza, yza, xzb, yzb
+      integer :: L, isactive
+      real(kind=dp) :: xza, yza, xzb, yzb
 
-   path%lnx = 0 ! Reset link administration for this path.
+      path%lnx = 0 ! Reset link administration for this path.
 
 !   Loop across all net links
-   do L = 1, numl
-      call get_link_neighboringcellcoords(L, isactive, xza, yza, xzb, yzb)
-      if (isactive /= 1) cycle
+      do L = 1, numl
+         call get_link_neighboringcellcoords(L, isactive, xza, yza, xzb, yzb)
+         if (isactive /= 1) cycle
 
-      call crspath_on_singlelink(path, L, xk(kn(1, L)), yk(kn(1, L)), xk(kn(2, L)), yk(kn(2, L)), xza, yza, xzb, yzb, 1)
-   end do
-end subroutine crspath_on_netgeom
+         call crspath_on_singlelink(path, L, xk(kn(1, L)), yk(kn(1, L)), xk(kn(2, L)), yk(kn(2, L)), xza, yza, xzb, yzb, 1)
+      end do
+   end subroutine crspath_on_netgeom
 
 end module m_crspath_on_netgeom

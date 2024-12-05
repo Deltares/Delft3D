@@ -33,6 +33,7 @@
 !> Determines the bed level at a u-point for a given flowlink,
 !! based on the bob(1:2,L) values, the kcu link type and conveyance2D setting.
 subroutine getblu_from_bob(L, iup, blu)
+   use precision, only: dp
    use m_flowgeom, only: bob, lnx1D, kcu, jagrounlay, grounlay
    use m_flow, only: kmx
    use m_flowparameters, only: jaconveyance2D
@@ -40,7 +41,7 @@ subroutine getblu_from_bob(L, iup, blu)
 
    integer, intent(in) :: L !< Flow link number.
    integer, intent(in) :: iup !< Upwind node index for this flow link (either 1 or 2, use 0 if irrelevant).
-   double precision, intent(out) :: blu !< Resulting bed level at u-point.
+   real(kind=dp), intent(out) :: blu !< Resulting bed level at u-point.
 
    ! NOTE: this code originates from sethu() originally.
 

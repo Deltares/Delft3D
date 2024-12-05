@@ -32,24 +32,24 @@
 
 module m_getktoplot
 
-implicit none
+   implicit none
 
 contains
 
-subroutine getktoplot(kk, k)
-   use m_flowgeom
-   use m_flow
+   subroutine getktoplot(kk, k)
+      use m_flowgeom
+      use m_flow
 
-   integer, intent(in) :: kk
-   integer, intent(out) :: k
-   if (kplotfrombedorsurface == 1) then
-      k = kbot(kk) - 1 + min(kplot, kmxn(kk))
-      k = min(k, ktop(kk))
-   else
-      k = kbot(kk) + kmxn(kk) - kplot
-      !k = max(k, kbot(kk) )
-      if (k < kbot(kk)) k = -1 ! no plot
-   end if
-end subroutine getktoplot
+      integer, intent(in) :: kk
+      integer, intent(out) :: k
+      if (kplotfrombedorsurface == 1) then
+         k = kbot(kk) - 1 + min(kplot, kmxn(kk))
+         k = min(k, ktop(kk))
+      else
+         k = kbot(kk) + kmxn(kk) - kplot
+         !k = max(k, kbot(kk) )
+         if (k < kbot(kk)) k = -1 ! no plot
+      end if
+   end subroutine getktoplot
 
 end module m_getktoplot

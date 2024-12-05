@@ -32,57 +32,58 @@
 
 module m_xbeachwaves_getcellcentergradients
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: getcellcentergradients
+   public :: getcellcentergradients
 
 contains
 
-subroutine getcellcentergradients(hh, dhsdx, dhsdy)
-   use m_flow
-   use m_flowgeom
+   subroutine getcellcentergradients(hh, dhsdx, dhsdy)
+      use precision, only: dp
+      use m_flow
+      use m_flowgeom
 
-   implicit none
+      implicit none
 
-   double precision, intent(in), dimension(ndx) :: hh
-   double precision, intent(out), dimension(ndx) :: dhsdx, dhsdy
+      real(kind=dp), intent(in), dimension(ndx) :: hh
+      real(kind=dp), intent(out), dimension(ndx) :: dhsdx, dhsdy
 
-   integer :: L, k1, k2, k, kb, ki
-   double precision :: hs1, hs2
+      integer :: L, k1, k2, k, kb, ki
+      real(kind=dp) :: hs1, hs2
 
-   ! Tegeltjesdiepte approach is eenvoudiger en onnauwkeuriger, maar werkt altijd, ook met morfologie
-   dhsdx = 0d0
-   dhsdy = 0d0
-   do L = 1, Lnx
-      if (hu(L) > epshu) then ! link flows
-         k1 = ln(1, L)
-         k2 = ln(2, L)
-         hs1 = hh(k1)
-         hs2 = hh(k2)
+      ! Tegeltjesdiepte approach is eenvoudiger en onnauwkeuriger, maar werkt altijd, ook met morfologie
+      dhsdx = 0d0
+      dhsdy = 0d0
+      do L = 1, Lnx
+         if (hu(L) > epshu) then ! link flows
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            hs1 = hh(k1)
+            hs2 = hh(k2)
 
-         dhsdx(k1) = dhsdx(k1) + wcx1(L) * (hs2 - hs1) * dxi(L) ! dimension m/m
-         dhsdy(k1) = dhsdy(k1) + wcy1(L) * (hs2 - hs1) * dxi(L)
-         dhsdx(k2) = dhsdx(k2) + wcx2(L) * (hs2 - hs1) * dxi(L)
-         dhsdy(k2) = dhsdy(k2) + wcy2(L) * (hs2 - hs1) * dxi(L)
-      end if
-   end do
+            dhsdx(k1) = dhsdx(k1) + wcx1(L) * (hs2 - hs1) * dxi(L) ! dimension m/m
+            dhsdy(k1) = dhsdy(k1) + wcy1(L) * (hs2 - hs1) * dxi(L)
+            dhsdx(k2) = dhsdx(k2) + wcx2(L) * (hs2 - hs1) * dxi(L)
+            dhsdy(k2) = dhsdy(k2) + wcy2(L) * (hs2 - hs1) * dxi(L)
+         end if
+      end do
 
-   do k = 1, nbndu
-      kb = kbndu(1, k)
-      ki = kbndu(2, k)
-      dhsdx(kb) = dhsdx(ki)
-      dhsdy(kb) = dhsdy(ki)
-   end do
+      do k = 1, nbndu
+         kb = kbndu(1, k)
+         ki = kbndu(2, k)
+         dhsdx(kb) = dhsdx(ki)
+         dhsdy(kb) = dhsdy(ki)
+      end do
 
-   do k = 1, nbndz
-      kb = kbndz(1, k)
-      ki = kbndz(2, k)
-      dhsdx(kb) = dhsdx(ki)
-      dhsdy(kb) = dhsdy(ki)
-   end do
+      do k = 1, nbndz
+         kb = kbndz(1, k)
+         ki = kbndz(2, k)
+         dhsdx(kb) = dhsdx(ki)
+         dhsdy(kb) = dhsdy(ki)
+      end do
 
-end subroutine getcellcentergradients
+   end subroutine getcellcentergradients
 
-endmodule  m_xbeachwaves_getcellcentergradients
+end module m_xbeachwaves_getcellcentergradients

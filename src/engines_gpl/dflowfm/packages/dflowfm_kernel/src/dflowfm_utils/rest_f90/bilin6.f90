@@ -32,26 +32,27 @@
 
 !>    bilineair interpolation between four nodes
       subroutine bilin6(x, y, z, xp, yp, zp)
+         use precision, only: dp
          use m_missing
 
          implicit none
 
-         double precision, dimension(2, 2), intent(in) :: x, y !< node coordinates
-         double precision, dimension(2, 2), intent(in) :: z !< node values
-         double precision, intent(in) :: xp, yp !< interpolant coordinates
-         double precision, intent(out) :: zp !< interpolant value
+         real(kind=dp), dimension(2, 2), intent(in) :: x, y !< node coordinates
+         real(kind=dp), dimension(2, 2), intent(in) :: z !< node values
+         real(kind=dp), intent(in) :: xp, yp !< interpolant coordinates
+         real(kind=dp), intent(out) :: zp !< interpolant value
 
          integer :: ierror
 
-         double precision :: A, B, C, D
-         double precision :: E, F, G, H
-         double precision :: P, Q, R, S
-         double precision :: xi1, eta1, xp1, yp1
-         double precision :: xi2, eta2, xp2, yp2
+         real(kind=dp) :: A, B, C, D
+         real(kind=dp) :: E, F, G, H
+         real(kind=dp) :: P, Q, R, S
+         real(kind=dp) :: xi1, eta1, xp1, yp1
+         real(kind=dp) :: xi2, eta2, xp2, yp2
 
-         double precision :: aa, bb, cc, dis
+         real(kind=dp) :: aa, bb, cc, dis
 
-         double precision, parameter :: dtol = 1d-9
+         real(kind=dp), parameter :: dtol = 1d-9
 
          ierror = 1
 

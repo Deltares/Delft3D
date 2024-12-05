@@ -31,6 +31,7 @@
 !
 
 subroutine cosphiunetcheck(jausererror)
+   use precision, only: dp
    use m_flowgeom
    use network_data
    use m_alloc
@@ -45,7 +46,7 @@ subroutine cosphiunetcheck(jausererror)
 
    implicit none
    integer, intent(in) :: jausererror !< Whether or not (1/0) to topup a error message when bad ortho occurs.
-   double precision :: csph
+   real(kind=dp) :: csph
    integer :: L
    integer :: i
 

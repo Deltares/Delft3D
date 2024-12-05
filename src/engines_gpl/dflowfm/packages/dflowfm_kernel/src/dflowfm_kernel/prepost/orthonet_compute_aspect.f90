@@ -32,6 +32,7 @@
 
 !>  compute link-based aspect ratios
 subroutine orthonet_compute_aspect(aspect)
+   use precision, only: dp
    use m_netw
    use m_flowgeom
    use m_missing
@@ -41,13 +42,13 @@ subroutine orthonet_compute_aspect(aspect)
 
    implicit none
 
-   double precision, dimension(numL) :: aspect !< aspect-ratios at the links
+   real(kind=dp), dimension(numL) :: aspect !< aspect-ratios at the links
 
-   double precision :: x0, y0, x1, y1, x0_bc, y0_bc
-   double precision :: xL, yL, xR, yR
-   double precision :: SLR, R01, dinRy
-   double precision, allocatable, dimension(:, :) :: R ! averaged netlink length at both sides of the netlink
-   double precision, allocatable, dimension(:) :: S ! flowlink lengths
+   real(kind=dp) :: x0, y0, x1, y1, x0_bc, y0_bc
+   real(kind=dp) :: xL, yL, xR, yR
+   real(kind=dp) :: SLR, R01, dinRy
+   real(kind=dp), allocatable, dimension(:, :) :: R ! averaged netlink length at both sides of the netlink
+   real(kind=dp), allocatable, dimension(:) :: S ! flowlink lengths
 
    integer :: k, kk, kkm1, kkp1, kkp2
    integer :: klink, klinkm1, klinkp1, klinkp2, N
@@ -56,10 +57,10 @@ subroutine orthonet_compute_aspect(aspect)
 
    logical, allocatable, dimension(:) :: Liscurvi ! node-based curvi-like indicator
 
-   double precision :: ortho1
+   real(kind=dp) :: ortho1
 
-   double precision, external :: dprodin
-   double precision, parameter :: EPS = 1d-4
+   real(kind=dp), external :: dprodin
+   real(kind=dp), parameter :: EPS = 1d-4
 
    allocate (R(2, numL), S(numL), Liscurvi(numk))
    R = DMISS
@@ -224,7 +225,8 @@ subroutine orthonet_compute_aspect(aspect)
 contains
 
 !  compute link length
-   double precision function dblinklength(kk)
+   real(kind=dp) function dblinklength(kk)
+      use precision, only: dp
       use m_netw
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss

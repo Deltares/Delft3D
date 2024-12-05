@@ -33,23 +33,23 @@
 !> deallocate sample Hessian data
 module m_deallocate_samplehessian
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: deallocate_samplehessian
+   public :: deallocate_samplehessian
 
 contains
 
-subroutine deallocate_sampleHessian()
-   use m_samples
-   use m_samples_refine
+   subroutine deallocate_sampleHessian()
+      use m_samples
+      use m_samples_refine
 
-   if (allocated(zss)) deallocate (zss)
+      if (allocated(zss)) deallocate (zss)
 
-   iHesstat = iHesstat_DIRTY
+      iHesstat = iHesstat_DIRTY
 
-   return
-end subroutine deallocate_sampleHessian
+      return
+   end subroutine deallocate_sampleHessian
 
 end module m_deallocate_samplehessian

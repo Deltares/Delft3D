@@ -68,6 +68,7 @@ contains
 
    !> set field oriented boundary conditions
    module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
+      use precision, only: dp
       use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
       use m_update_pumps_with_levels, only: update_pumps_with_levels
       use m_heatu
@@ -75,7 +76,7 @@ contains
       use m_flow_trachy_needs_update
       use m_set_frcu_mor
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
-      double precision, intent(in) :: time_in_seconds !< Time in seconds
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
 
@@ -235,10 +236,11 @@ contains
 
 !> get_timespace_value_by_item_and_array_and_consider_success_value
    subroutine get_timespace_value_by_item_array_consider_success_value(item, array, time_in_seconds)
+      use precision, only: dp
 
       integer, intent(in) :: item !< Item for getting values
-      double precision, intent(inout) :: array(:) !< Array that stores the values
-      double precision, intent(in) :: time_in_seconds !< Time in seconds
+      real(kind=dp), intent(inout) :: array(:) !< Array that stores the values
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
 
@@ -246,7 +248,8 @@ contains
 
 !> set_temperature_models
    subroutine set_temperature_models(time_in_seconds)
-      double precision, intent(in) :: time_in_seconds !< Time in seconds
+      use precision, only: dp
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       logical :: foundtempforcing
 
@@ -298,8 +301,9 @@ contains
 
 !> get_timespace_value_by_name_and_consider_success_value
    subroutine get_timespace_value_by_name_and_consider_success_value(name, time_in_seconds)
+      use precision, only: dp
       character(*), intent(in) :: name
-      double precision, intent(in) :: time_in_seconds !< Time in seconds
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       success = success .and. ec_gettimespacevalue(ecInstancePtr, name, time_in_seconds)
 
@@ -307,9 +311,10 @@ contains
 
 !> get_timespace_value_by_item_and_consider_success_value
    subroutine get_timespace_value_by_item_and_consider_success_value(item, time_in_seconds)
+      use precision, only: dp
 
       integer, intent(in) :: item
-      double precision, intent(in) :: time_in_seconds !< Time in seconds
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
 
@@ -317,10 +322,11 @@ contains
 
    !> get_timespace_value_by_item_and_array
    subroutine get_timespace_value_by_item_and_array(item, array, time_in_seconds)
+      use precision, only: dp
 
       integer, intent(in) :: item !< Item for getting values
-      double precision, intent(inout) :: array(:) !< Array that stores the values
-      double precision, intent(in) :: time_in_seconds !< Time in seconds
+      real(kind=dp), intent(inout) :: array(:) !< Array that stores the values
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
 
@@ -328,9 +334,10 @@ contains
 
 !> get_timespace_value_by_item
    subroutine get_timespace_value_by_item(item, time_in_seconds)
+      use precision, only: dp
 
       integer, intent(in) :: item !< Item for getting values
-      double precision, intent(in) :: time_in_seconds !< Time in seconds
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
 
@@ -340,7 +347,7 @@ contains
    subroutine set_wave_parameters(initialization)
       use ieee_arithmetic, only: ieee_is_nan
       use m_compute_wave_parameters, only: compute_wave_parameters
-      
+
       logical, intent(in) :: initialization !< initialization phase
 
       logical :: all_wave_variables !< flag indicating whether _all_ wave variables should be mirrored at the boundary
@@ -584,12 +591,13 @@ contains
 
 !> convert wave direction [degrees] from nautical to cartesian meteorological convention
    elemental function convert_wave_direction_from_nautical_to_cartesian(nautical_wave_direction) result(cartesian_wave_direction)
+      use precision, only: dp
 
-      double precision, intent(in) :: nautical_wave_direction !< wave direction [degrees] in nautical  convention
-      double precision :: cartesian_wave_direction !< wave direction [degrees] in cartesian convention
+      real(kind=dp), intent(in) :: nautical_wave_direction !< wave direction [degrees] in nautical  convention
+      real(kind=dp) :: cartesian_wave_direction !< wave direction [degrees] in cartesian convention
 
-      double precision, parameter :: MAX_RANGE_IN_DEGREES = 360d0
-      double precision, parameter :: CONVERSION_PARAMETER_IN_DEGREES = 270d0
+      real(kind=dp), parameter :: MAX_RANGE_IN_DEGREES = 360d0
+      real(kind=dp), parameter :: CONVERSION_PARAMETER_IN_DEGREES = 270d0
 
       cartesian_wave_direction = modulo(CONVERSION_PARAMETER_IN_DEGREES - nautical_wave_direction, MAX_RANGE_IN_DEGREES)
 
@@ -597,8 +605,9 @@ contains
 
 !> retrieve icecover
    subroutine retrieve_icecover(time_in_seconds)
+      use precision, only: dp
       use m_fm_icecover, only: ja_icecover, ice_af, ice_h, ICECOVER_EXT
-      double precision, intent(in) :: time_in_seconds !< Time in seconds
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       if (ja_icecover == ICECOVER_EXT) then
          ice_af = 0.d0
@@ -615,7 +624,8 @@ contains
 
 !> retrieve_rainfall
    subroutine retrieve_rainfall(time_in_seconds)
-      double precision, intent(in) :: time_in_seconds !< Time in seconds
+      use precision, only: dp
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       ! Retrieve rainfall for ext-file quantity 'rainfall'.
       if (jarain > 0) then
@@ -631,7 +641,8 @@ contains
 
 !> update_network_data
    subroutine update_network_data(time_in_seconds)
-      double precision, intent(in) :: time_in_seconds !< Time in seconds
+      use precision, only: dp
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       logical :: success_previous
 
@@ -665,7 +676,8 @@ contains
 
 !> update_subsidence_and_uplift_data
    subroutine update_subsidence_and_uplift_data(time_in_seconds)
-      double precision, intent(in) :: time_in_seconds !< Time in seconds
+      use precision, only: dp
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       if (.not. sdu_first) then
          ! preserve the previous 'bedrock_surface_elevation' for computing the subsidence/uplift rate

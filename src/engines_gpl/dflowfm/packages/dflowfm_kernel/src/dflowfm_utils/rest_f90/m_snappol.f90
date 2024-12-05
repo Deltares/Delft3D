@@ -39,6 +39,7 @@ contains
 
 !> snap polygon to mesh
    subroutine snappol(Nin, Xin, Yin, dsep, itype, Nout, Xout, Yout, ipoLout, ierror)
+      use precision, only: dp
       use m_polygon
       use m_missing
       use m_alloc
@@ -49,18 +50,18 @@ contains
       implicit none
 
       integer, intent(in) :: Nin !< thin-dyke polyline size
-      double precision, dimension(Nin), intent(in) :: Xin, Yin !< dsep-separated thin-dyke polyline coordinates
-      double precision, intent(in) :: dsep !< separator
+      real(kind=dp), dimension(Nin), intent(in) :: Xin, Yin !< dsep-separated thin-dyke polyline coordinates
+      real(kind=dp), intent(in) :: dsep !< separator
       integer, intent(in) :: itype !< netlinks (1: cross with dual link, 3: cross with netlink itself) or flowlinks(2)
 
       integer, intent(out) :: Nout !< output polygon size
-      double precision, dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
+      real(kind=dp), dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
       integer, dimension(:), allocatable, intent(out) :: ipoLout !< reference to input polyline (>0), seperator w.r.t. input polyline (0), dim(Nout)
       integer, intent(out) :: ierror !< error (1) or not (0)
 
       integer :: NumLinks, NDIM
 
-      double precision, dimension(:), allocatable :: dSL
+      real(kind=dp), dimension(:), allocatable :: dSL
       integer, dimension(:), allocatable :: iLink, ipol
       integer, dimension(:), allocatable :: ipolnr, indx
 
@@ -236,6 +237,7 @@ contains
 
 !> snap point to flow node
    subroutine snappnt(Nin, xin, yin, dsep, Nout, xout, yout, ipoLout, ierror, kout)
+      use precision, only: dp
       use m_alloc
       use m_flowgeom, only: xz, yz
       use m_GlobalParameters, only: INDTP_ALL
@@ -245,12 +247,12 @@ contains
       implicit none
 
       integer, intent(in) :: Nin !< thin-dyke polyline size
-      double precision, dimension(Nin) :: Xin, Yin !< dsep-separated thin-dyke polyline coordinates
+      real(kind=dp), dimension(Nin) :: Xin, Yin !< dsep-separated thin-dyke polyline coordinates
 
-      double precision, intent(in) :: dsep !< missing value
+      real(kind=dp), intent(in) :: dsep !< missing value
 
       integer, intent(out) :: Nout !< output polygon size
-      double precision, dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
+      real(kind=dp), dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
       integer, dimension(:), allocatable, intent(out) :: ipoLout !< reference to input points (>0), no flownode found (0), dim(Nout)
       integer, intent(out) :: ierror !< error (1) or not (0)
       integer, optional, dimension(:), allocatable, intent(out) :: kout !< flownode numbers found by snapping (0=not flownode found)
@@ -316,6 +318,7 @@ contains
 !> snap polyline to mesh boundary
 !>   2D only
    subroutine snapbnd(bndtype, Nin, Xin, Yin, dsep, Nout, Xout, Yout, ipoLout, ierror)
+      use precision, only: dp
       use timespace_triangle
       use m_polygon
       use m_missing
@@ -327,26 +330,26 @@ contains
       character(len=*), intent(in) :: bndtype !< boundary condition type
 
       integer, intent(in) :: Nin !< polyline size
-      double precision, dimension(Nin), intent(in) :: Xin, Yin !< dsep-separated polyline coordinates
-      double precision, intent(in) :: dsep !< separator
+      real(kind=dp), dimension(Nin), intent(in) :: Xin, Yin !< dsep-separated polyline coordinates
+      real(kind=dp), intent(in) :: dsep !< separator
 
       integer, intent(out) :: Nout !< output polygon size
-      double precision, dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
+      real(kind=dp), dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
       integer, dimension(:), allocatable, intent(out) :: ipoLout !< reference to input polyline (>0), seperator w.r.t. input polyline (0), dim(Nout)
       integer, intent(out) :: ierror !< error (1) or not (0)
 
-      double precision, dimension(:), allocatable :: xe, ye
-      double precision, dimension(:, :), allocatable :: xyen
-      double precision, dimension(:), allocatable :: xdum, ydum
+      real(kind=dp), dimension(:), allocatable :: xe, ye
+      real(kind=dp), dimension(:, :), allocatable :: xyen
+      real(kind=dp), dimension(:), allocatable :: xdum, ydum
 
       integer, dimension(:), allocatable :: kce, ke, ki, kcs
       integer, dimension(:), allocatable :: idx
 
-      double precision :: wL, wR
-      double precision :: xm, ym, crpm, distanceStartPolygon
+      real(kind=dp) :: wL, wR
+      real(kind=dp) :: xm, ym, crpm, distanceStartPolygon
 
-      double precision, dimension(4) :: xx, yy
-      double precision :: xzz, yzz, xci, yci, xce2, yce2
+      real(kind=dp), dimension(4) :: xx, yy
+      real(kind=dp) :: xzz, yzz, xci, yci, xce2, yce2
 
       integer :: mx1Dend, Nx, numpols, jamiss
       integer :: i, iend, k1, k2, k3, k4, kL, kR, L, m, num, NDIM

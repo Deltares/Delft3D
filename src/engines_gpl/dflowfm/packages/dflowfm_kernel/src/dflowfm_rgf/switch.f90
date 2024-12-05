@@ -31,13 +31,14 @@
 !
 
       subroutine SWITCH(X, Y, mmax, nmax, JN, NUMPJ)
+         use precision, only: dp
 !      USE DIMENS
          implicit none
          integer :: mmax, nmax, jn, numpj
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
+         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
 
          integer :: j
-         double precision :: xh, yh
+         real(kind=dp) :: xh, yh
 
          do J = 1, NUMPJ / 2
             XH = X(JN, J)

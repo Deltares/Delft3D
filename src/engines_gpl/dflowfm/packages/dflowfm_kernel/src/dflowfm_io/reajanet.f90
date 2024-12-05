@@ -32,114 +32,115 @@
 
 module m_reajanet
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: reajanet
+   public :: reajanet
 
 contains
 
-      subroutine REAJANET(MNET, JA, JADOORLADEN)
-         use m_netw
-         use gridoperations
-         use m_set_nod_adm
-         use m_qn_read_error
-         use m_qn_eof_error
+   subroutine REAJANET(MNET, JA, JADOORLADEN)
+      use precision, only: dp
+      use m_netw
+      use gridoperations
+      use m_set_nod_adm
+      use m_qn_read_error
+      use m_qn_eof_error
 
-         implicit none
-         integer :: MNET, JA, JADOORLADEN
+      implicit none
+      integer :: MNET, JA, JADOORLADEN
 
-         integer :: k
-         integer :: k0
-         integer :: l
-         integer :: l0
-         integer :: n1
-         integer :: numkn
-         integer :: numln
-         double precision :: x10
+      integer :: k
+      integer :: k0
+      integer :: l
+      integer :: l0
+      integer :: n1
+      integer :: numkn
+      integer :: numln
+      real(kind=dp) :: x10
 
-         character REC * 3320
+      character REC * 3320
 
-         if (JADOORLADEN == 0) then
-            K0 = 0
-            L0 = 0
-         else
-            K0 = NUMK
-            L0 = NUML
-         end if
+      if (JADOORLADEN == 0) then
+         K0 = 0
+         L0 = 0
+      else
+         K0 = NUMK
+         L0 = NUML
+      end if
 
-         JA = 0
-         read (MNET, '(A)', end=777) REC ! COMMENT
+      JA = 0
+      read (MNET, '(A)', end=777) REC ! COMMENT
 
+      read (MNET, '(A)', end=777) REC
+      N1 = index(REC, '=') + 1
+      read (REC(N1:), *, err=555) NUMKN
+
+      read (MNET, '(A)', end=777) REC
+      N1 = index(REC, '=') + 1
+      read (REC(N1:), *, err=555) NUMP
+
+      read (MNET, '(A)', end=777) REC
+
+      read (MNET, '(A)', end=777) REC
+      N1 = index(REC, '=') + 1
+      read (REC(N1:), *, err=555) NUMLN
+
+      read (MNET, '(A)', end=777) REC
+
+      read (MNET, '(A)', end=777) REC
+
+      read (MNET, '(A)', end=777) REC
+
+      do K = 1, 4
          read (MNET, '(A)', end=777) REC
-         N1 = index(REC, '=') + 1
-         read (REC(N1:), *, err=555) NUMKN
+      end do
 
+      call INCREASENETW(K0 + NUMKN, L0 + NUMLN)
+
+      do K = K0 + 1, K0 + NUMKN
          read (MNET, '(A)', end=777) REC
-         N1 = index(REC, '=') + 1
-         read (REC(N1:), *, err=555) NUMP
+         read (REC, *, ERR=999) XK(K), YK(K)
+      end do
+      !XK   = XK - 270000
+      !YK   = YK - 2700000
 
+      NUMK = K0 + NUMKN
+      KC = 1
+
+      do K = 1, NUMP
+         read (MNET, *)
+      end do
+
+      do L = L0 + 1, L0 + NUMLN
          read (MNET, '(A)', end=777) REC
+         read (REC, *, ERR=888) x10, KN(1, L), KN(2, L)
+         KN(1, L) = KN(1, L) + K0
+         KN(2, L) = KN(2, L) + K0
+         KN(3, L) = 2
+      end do
+      NUML = L0 + NUMLN
 
-         read (MNET, '(A)', end=777) REC
-         N1 = index(REC, '=') + 1
-         read (REC(N1:), *, err=555) NUMLN
+      call SETNODADM(0)
 
-         read (MNET, '(A)', end=777) REC
+      ja = 1
+      return
 
-         read (MNET, '(A)', end=777) REC
+999   call QNREADERROR('READING NETNODES, BUT GETTING ', REC, MNET)
+      return
 
-         read (MNET, '(A)', end=777) REC
+888   call QNREADERROR('READING NETLINKS, BUT GETTING ', REC, MNET)
 
-         do K = 1, 4
-            read (MNET, '(A)', end=777) REC
-         end do
+777   call QNEOFERROR(MNET)
+      return
 
-         call INCREASENETW(K0 + NUMKN, L0 + NUMLN)
+555   call QNREADERROR('READING NR OF NETNODES, BUT GETTING ', REC, MNET)
+      return
 
-         do K = K0 + 1, K0 + NUMKN
-            read (MNET, '(A)', end=777) REC
-            read (REC, *, ERR=999) XK(K), YK(K)
-         end do
-         !XK   = XK - 270000
-         !YK   = YK - 2700000
+444   call QNREADERROR('READING NR OF NETLINKS, BUT GETTING ', REC, MNET)
+      return
 
-         NUMK = K0 + NUMKN
-         KC = 1
-
-         do K = 1, NUMP
-            read (MNET, *)
-         end do
-
-         do L = L0 + 1, L0 + NUMLN
-            read (MNET, '(A)', end=777) REC
-            read (REC, *, ERR=888) x10, KN(1, L), KN(2, L)
-            KN(1, L) = KN(1, L) + K0
-            KN(2, L) = KN(2, L) + K0
-            KN(3, L) = 2
-         end do
-         NUML = L0 + NUMLN
-
-         call SETNODADM(0)
-
-         ja = 1
-         return
-
-999      call QNREADERROR('READING NETNODES, BUT GETTING ', REC, MNET)
-         return
-
-888      call QNREADERROR('READING NETLINKS, BUT GETTING ', REC, MNET)
-
-777      call QNEOFERROR(MNET)
-         return
-
-555      call QNREADERROR('READING NR OF NETNODES, BUT GETTING ', REC, MNET)
-         return
-
-444      call QNREADERROR('READING NR OF NETLINKS, BUT GETTING ', REC, MNET)
-         return
-
-      end subroutine REAJANET
+   end subroutine REAJANET
 
 end module m_reajanet

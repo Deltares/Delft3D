@@ -32,124 +32,125 @@
 
 module m_teklinkvals
 
-implicit none
+   implicit none
 
 contains
 
-  subroutine TEKLINKVALS(MET)
-     use m_isocol2
-     use m_drcirc
-     use m_dmovabs
-     use m_dlnabs
-     use m_missing
-     use m_netw
-     use unstruc_colors, only: ncolhl
-     use geometry_module, only: getdx, getdy, getdxdy
-     use m_sferic, only: jsferic
-     use m_depmax2, only: vmax=>vmax2, vmin=>vmin2
-     use m_howtoview
-     use m_halt2
-     use m_three_two
-     use m_cirr
-     use m_pfiller
-     use m_movabs
-     use m_lnabs
-     use m_getrcir
-     use m_invnod
+   subroutine TEKLINKVALS(MET)
+      use precision, only: dp
+      use m_isocol2
+      use m_drcirc
+      use m_dmovabs
+      use m_dlnabs
+      use m_missing
+      use m_netw
+      use unstruc_colors, only: ncolhl
+      use geometry_module, only: getdx, getdy, getdxdy
+      use m_sferic, only: jsferic
+      use m_depmax2, only: vmax => vmax2, vmin => vmin2
+      use m_howtoview
+      use m_halt2
+      use m_three_two
+      use m_cirr
+      use m_pfiller
+      use m_movabs
+      use m_lnabs
+      use m_getrcir
+      use m_invnod
 
-     implicit none
-     integer :: MET
-     double precision :: d
-     integer :: k1
-     integer :: k2
-     integer :: l
-     integer :: ncol, key
-     double precision :: rd
-     double precision :: vv
-     double precision XD, YD, ZD, DX, DY, DZ, XX1, YY1, ZZ1, XX2, YY2, ZZ2, X3, Y3, Z3
-     double precision :: X(4), Y(4), Z(4)
+      implicit none
+      integer :: MET
+      real(kind=dp) :: d
+      integer :: k1
+      integer :: k2
+      integer :: l
+      integer :: ncol, key
+      real(kind=dp) :: rd
+      real(kind=dp) :: vv
+      real(kind=dp) XD, YD, ZD, DX, DY, DZ, XX1, YY1, ZZ1, XX2, YY2, ZZ2, X3, Y3, Z3
+      real(kind=dp) :: X(4), Y(4), Z(4)
 
-     D = 0.5d0 * GETRCIR() !
-     if (MET >= 3) then
-        LMOD = max(1, NUML / 100)
-        do L = 1, NUML
-           if (mod(L, LMOD) == 0) then
-              call HALT2(KEY)
-              if (KEY == 1) then
-                 return
-              end if
-           end if
-           VV = RLIN(L)
-           if (VV /= dmiss) then
-              K1 = KN(1, L)
-              K2 = KN(2, L)
-              if (K1 /= 0 .and. K2 /= 0) then
-                 if (.not. INVNOD(K1) .and. .not. INVNOD(K2)) cycle
-                 XX1 = XK(K1)
-                 YY1 = YK(K1)
-                 ZZ1 = ZK(K1)
-                 XX2 = XK(K2)
-                 YY2 = YK(K2)
-                 ZZ2 = ZK(K2)
-                 call ISOCOL2(VV, NCOL)
-                 if (MET == 3 .or. MET == 6) then
-                    call DMOVABS(XX1, YY1, ZZ1)
-                    call DLNABS(XX2, YY2, ZZ2)
-                 else if (MET == 4 .or. MET == 7) then
-                    !XD = getdx (XX1, yy1, xx2, yy2)
-                    !YD = getdy (XX1, yy1, xx2, yy2)
-                    call getdxdy(XX1, yy1, xx2, yy2, xd, yd, jsferic)
-                    RD = sqrt(xd * xd + yd * yd)
-                    if (RD /= 0) then
-                       if (JVIEW == 1 .or. JVIEW == 4) then
-                          DX = -D * YD / RD
-                          DY = D * XD / RD
-                          DZ = 0
-                       else if (JVIEW == 2) then
-                          DZ = -D * YD / RD
-                          DY = D * ZD / RD
-                          DX = 0
-                       else if (JVIEW == 3) then
-                          DX = -D * ZD / RD
-                          DZ = D * XD / RD
-                          DY = 0
-                       end if
-                       call DRIETWEE(XX2 + DX, YY2 + DY, ZZ2 + DZ, X(1), Y(1), Z(1))
-                       call DRIETWEE(XX1 + DX, YY1 + DY, ZZ1 + DZ, X(2), Y(2), Z(2))
-                       call DRIETWEE(XX1 - DX, YY1 - DY, ZZ1 - DZ, X(3), Y(3), Z(3))
-                       call DRIETWEE(XX2 - DX, YY2 - DY, ZZ2 - DZ, X(4), Y(4), Z(4))
-                       call pfiller(X, Y, 4, ncol, ncol)
+      D = 0.5d0 * GETRCIR() !
+      if (MET >= 3) then
+         LMOD = max(1, NUML / 100)
+         do L = 1, NUML
+            if (mod(L, LMOD) == 0) then
+               call HALT2(KEY)
+               if (KEY == 1) then
+                  return
+               end if
+            end if
+            VV = RLIN(L)
+            if (VV /= dmiss) then
+               K1 = KN(1, L)
+               K2 = KN(2, L)
+               if (K1 /= 0 .and. K2 /= 0) then
+                  if (.not. INVNOD(K1) .and. .not. INVNOD(K2)) cycle
+                  XX1 = XK(K1)
+                  YY1 = YK(K1)
+                  ZZ1 = ZK(K1)
+                  XX2 = XK(K2)
+                  YY2 = YK(K2)
+                  ZZ2 = ZK(K2)
+                  call ISOCOL2(VV, NCOL)
+                  if (MET == 3 .or. MET == 6) then
+                     call DMOVABS(XX1, YY1, ZZ1)
+                     call DLNABS(XX2, YY2, ZZ2)
+                  else if (MET == 4 .or. MET == 7) then
+                     !XD = getdx (XX1, yy1, xx2, yy2)
+                     !YD = getdy (XX1, yy1, xx2, yy2)
+                     call getdxdy(XX1, yy1, xx2, yy2, xd, yd, jsferic)
+                     RD = sqrt(xd * xd + yd * yd)
+                     if (RD /= 0) then
+                        if (JVIEW == 1 .or. JVIEW == 4) then
+                           DX = -D * YD / RD
+                           DY = D * XD / RD
+                           DZ = 0
+                        else if (JVIEW == 2) then
+                           DZ = -D * YD / RD
+                           DY = D * ZD / RD
+                           DX = 0
+                        else if (JVIEW == 3) then
+                           DX = -D * ZD / RD
+                           DZ = D * XD / RD
+                           DY = 0
+                        end if
+                        call DRIETWEE(XX2 + DX, YY2 + DY, ZZ2 + DZ, X(1), Y(1), Z(1))
+                        call DRIETWEE(XX1 + DX, YY1 + DY, ZZ1 + DZ, X(2), Y(2), Z(2))
+                        call DRIETWEE(XX1 - DX, YY1 - DY, ZZ1 - DZ, X(3), Y(3), Z(3))
+                        call DRIETWEE(XX2 - DX, YY2 - DY, ZZ2 - DZ, X(4), Y(4), Z(4))
+                        call pfiller(X, Y, 4, ncol, ncol)
 !                    CALL IGRJOIN(real(x(1)),real(y(1)),real(x(2)),real(y(2)))
-                       call movabs(x(1), y(1))
-                       call lnabs(x(2), y(2))
-                    end if
-                 else if (MET == 5 .or. MET == 8) then
-                    X3 = 0.5d0 * (XX1 + XX2)
-                    Y3 = 0.5d0 * (YY1 + YY2)
-                    Z3 = 0.5d0 * (ZZ1 + ZZ2)
-                    call DRCIRC(X3, Y3, Z3)
-                 else if (MET == 9) then
-                    if (VV /= dmiss .and. VV < vmin + 0.05d0 * (vmax - vmin)) then
-                       X3 = 0.5d0 * (XX1 + XX2)
-                       Y3 = 0.5d0 * (YY1 + YY2)
-                       Z3 = 0.5d0 * (ZZ1 + ZZ2)
-                       call CIRR(X3, Y3, ncolhl)
-                    end if
-                 else if (MET == 10) then
-                    if (VV /= dmiss .and. VV > vmax - 0.05d0 * (vmax - vmin)) then
-                       X3 = 0.5d0 * (XX1 + XX2)
-                       Y3 = 0.5d0 * (YY1 + YY2)
-                       Z3 = 0.5d0 * (ZZ1 + ZZ2)
-                       call CIRR(X3, Y3, ncolhl)
-                    end if
-                 end if
-              end if
-           end if
-        end do
+                        call movabs(x(1), y(1))
+                        call lnabs(x(2), y(2))
+                     end if
+                  else if (MET == 5 .or. MET == 8) then
+                     X3 = 0.5d0 * (XX1 + XX2)
+                     Y3 = 0.5d0 * (YY1 + YY2)
+                     Z3 = 0.5d0 * (ZZ1 + ZZ2)
+                     call DRCIRC(X3, Y3, Z3)
+                  else if (MET == 9) then
+                     if (VV /= dmiss .and. VV < vmin + 0.05d0 * (vmax - vmin)) then
+                        X3 = 0.5d0 * (XX1 + XX2)
+                        Y3 = 0.5d0 * (YY1 + YY2)
+                        Z3 = 0.5d0 * (ZZ1 + ZZ2)
+                        call CIRR(X3, Y3, ncolhl)
+                     end if
+                  else if (MET == 10) then
+                     if (VV /= dmiss .and. VV > vmax - 0.05d0 * (vmax - vmin)) then
+                        X3 = 0.5d0 * (XX1 + XX2)
+                        Y3 = 0.5d0 * (YY1 + YY2)
+                        Z3 = 0.5d0 * (ZZ1 + ZZ2)
+                        call CIRR(X3, Y3, ncolhl)
+                     end if
+                  end if
+               end if
+            end if
+         end do
 
-     end if
+      end if
 
-     return
-  end subroutine TEKLINKVALS
+      return
+   end subroutine TEKLINKVALS
 
 end module m_teklinkvals

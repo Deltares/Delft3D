@@ -1,6 +1,7 @@
 module m_setucxcuy_leastsquare
+   use precision, only: dp
 
-   double precision, dimension(:, :, :), allocatable :: AtWAiAtW ! Matrix for each flow node
+   real(kind=dp), dimension(:, :, :), allocatable :: AtWAiAtW ! Matrix for each flow node
    integer, dimension(:), allocatable :: ireconstu
    integer, dimension(:), allocatable :: ireconstz
 
@@ -9,6 +10,7 @@ contains
    ! ==============================================================================================
    ! ==============================================================================================
    subroutine reconst2ndini()
+      use precision, only: dp
       use m_flow
       use m_flowgeom
       use m_netw
@@ -16,13 +18,13 @@ contains
       implicit none
       integer :: i, j, k1, k2, kk, L, L1, L2, L3, m, mm, n1, n2, ierr
       integer :: L1a, L2a, L3a, k3, nmax
-      double precision :: cof0, xwall, ywall, scale, cs, sn, Deltxu, Deltyu
+      real(kind=dp) :: cof0, xwall, ywall, scale, cs, sn, Deltxu, Deltyu
       integer, parameter :: mmax = 64
-      double precision, dimension(9, 9) :: AtWA, AtWAi
-      double precision, dimension(9, mmax) :: AtW
-      double precision, dimension(mmax, 9) :: Amat
-      double precision, dimension(mmax) :: Wmat
-      double precision, dimension(9) :: svec
+      real(kind=dp), dimension(9, 9) :: AtWA, AtWAi
+      real(kind=dp), dimension(9, mmax) :: AtW
+      real(kind=dp), dimension(mmax, 9) :: Amat
+      real(kind=dp), dimension(mmax) :: Wmat
+      real(kind=dp), dimension(9) :: svec
       integer, dimension(lnx) :: LDone
       integer, dimension(mxwalls) :: LwDone
 
@@ -283,6 +285,7 @@ contains
    ! ==============================================================================================
    ! ==============================================================================================
    subroutine reconst2nd()
+      use precision, only: dp
       use m_flow
       use m_flowgeom
       use m_netw
@@ -293,11 +296,11 @@ contains
       integer :: i, j, k1, k2, L, L1, L2, L3, m
       integer :: L1a, L2a, L3a, L3b, L3t, k3, nmax, LL, Lb, Lt, kk1, kk2
       integer, parameter :: mmax = 64
-      double precision, dimension(mmax) :: bvec
-      double precision, dimension(9) :: xvec
+      real(kind=dp), dimension(mmax) :: bvec
+      real(kind=dp), dimension(9) :: xvec
       integer, dimension(lnx) :: LDone
       integer, dimension(mxwalls) :: LwDone
-      double precision, dimension(:), allocatable :: uxu, uyu
+      real(kind=dp), dimension(:), allocatable :: uxu, uyu
 
       if (.not. allocated(uxu)) then
          allocate (uxu(lnkx), uyu(lnkx)); uxu = 0d0; uyu = 0d0
@@ -598,14 +601,15 @@ contains
    ! ==============================================================================================
    ! ==============================================================================================
    subroutine gaussj1(a, n, np, b, m, mp, ierr)
+      use precision, only: dp
 
       implicit none
       integer :: m, mp, n, np, ierr
       integer :: i, icol, irow, j, k, l, ll
       integer, dimension(np) :: indxc, indxr, ipiv
-      double precision :: big, dum, pivinv
-      double precision, dimension(np, np) :: a
-      double precision, dimension(np, mp) :: b
+      real(kind=dp) :: big, dum, pivinv
+      real(kind=dp), dimension(np, np) :: a
+      real(kind=dp), dimension(np, mp) :: b
 
       ierr = 0
       do j = 1, n
@@ -686,13 +690,14 @@ contains
    ! ==============================================================================================
    ! ==============================================================================================
    subroutine qrdcmp(a, n, np, c, d, sing)
+      use precision, only: dp
 
       implicit none
       integer :: n, np
       integer :: i, j, k
-      double precision :: scale, sigma, sum, tau
-      double precision, dimension(np, np) :: a
-      double precision, dimension(n) :: c, d
+      real(kind=dp) :: scale, sigma, sum, tau
+      real(kind=dp), dimension(np, np) :: a
+      real(kind=dp), dimension(n) :: c, d
       logical sing
 
       sing = .false.

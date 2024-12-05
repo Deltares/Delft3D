@@ -32,52 +32,52 @@
 
 module m_reathd2pli
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: reathd2pli
+   public :: reathd2pli
 
 contains
 
- subroutine reathd2pli(mthd, mout) ! convert d3d obs file to model independent
-    use m_grid
-    implicit none
-    integer :: mthd, mout
-    character(len=132) :: rec
-    character(len=1) :: uv
-    integer :: m, n, m2, n2, mn, mx, nn, nx, i
+   subroutine reathd2pli(mthd, mout) ! convert d3d obs file to model independent
+      use m_grid
+      implicit none
+      integer :: mthd, mout
+      character(len=132) :: rec
+      character(len=1) :: uv
+      integer :: m, n, m2, n2, mn, mx, nn, nx, i
 
-10  read (mthd, '(a)', end=999) rec
+10    read (mthd, '(a)', end=999) rec
 
-    read (rec, *) m, n, m2, n2, uv
+      read (rec, *) m, n, m2, n2, uv
 
-    write (mout, '(a)') 'Line'
-    write (mout, '(a)') ' 2 2'
+      write (mout, '(a)') 'Line'
+      write (mout, '(a)') ' 2 2'
 
-    if (index(rec, 'u') > 0 .or. index(rec, 'U') > 0) then
+      if (index(rec, 'u') > 0 .or. index(rec, 'U') > 0) then
 
-       nn = min(n, n2); nx = max(n, n2)
-       write (mout, *) xc(m, nn - 1), yc(m, nn - 1)
-       do i = nn, nx
-          write (mout, *) xc(m, i), yc(m, i)
-       end do
+         nn = min(n, n2); nx = max(n, n2)
+         write (mout, *) xc(m, nn - 1), yc(m, nn - 1)
+         do i = nn, nx
+            write (mout, *) xc(m, i), yc(m, i)
+         end do
 
-    else
+      else
 
-       mn = min(m, m2); mx = max(m, m2)
-       write (mout, *) xc(mn - 1, n), yc(mn - 1, n)
-       do i = mn, mx
-          write (mout, *) xc(i, n), yc(i, n)
-       end do
+         mn = min(m, m2); mx = max(m, m2)
+         write (mout, *) xc(mn - 1, n), yc(mn - 1, n)
+         do i = mn, mx
+            write (mout, *) xc(i, n), yc(i, n)
+         end do
 
-    end if
+      end if
 
-    goto 10
+      goto 10
 
-999 call doclose(mthd)
-    call doclose(mout)
+999   call doclose(mthd)
+      call doclose(mout)
 
- end subroutine reathd2pli
+   end subroutine reathd2pli
 
 end module m_reathd2pli

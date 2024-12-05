@@ -39,11 +39,12 @@
 #include "blasfm.h"
 
 module GAMMAS
-   double precision :: gammax, gammay, alpha
+   use precision, only: dp
+   real(kind=dp) :: gammax, gammay, alpha
 end module GAMMAS
 
 module m_saad
-
+   use precision, only: dp
    use GAMMAS
 
    integer, allocatable :: &
@@ -62,7 +63,7 @@ module m_saad
 
    logical, parameter :: sym = .true. ! indicates that matrix is symmetric
 
-   double precision, allocatable :: &
+   real(kind=dp), allocatable :: &
       ao(:), & ! original matrix in CSR format
       a(:), & ! permuted matrix in CSR format
       solo(:), rhso(:), & ! original solution and right-hand side
@@ -70,25 +71,25 @@ module m_saad
       alu(:), & ! ILU preconditioner in MSR format
       wk(:) ! work array
 
-   double precision :: al(6), epssaad
+   real(kind=dp) :: al(6), epssaad
 
    character :: qbc * 3
 
-   double precision :: tol, fpar(16), cp0, cp1, cfl
+   real(kind=dp) :: tol, fpar(16), cp0, cp1, cfl
 
    integer :: jasafe = 0 ! thread-safe (1) or not (0)
 
 contains
 
 ! NOT THREAD-SAFE
-   double precision function ddotXXX(n, dx, incx, dy, incy)
+   real(kind=dp) function ddotXXX(n, dx, incx, dy, incy)
       use m_saadf, only: ddotORG
 
       implicit none
 
       integer :: N, INCX, INCY
-      double precision :: dx(N), dy(N)
-      double precision :: dots
+      real(kind=dp) :: dx(N), dy(N)
+      real(kind=dp) :: dots
       integer :: i
 
       if (INCX == 1 .and. INCY == 1) then
@@ -120,9 +121,9 @@ contains
       use m_reduce
       use m_flowparameters, only: Noderivedtypes
 
-      double precision, intent(in) :: epscg_loc !< threshold in termination criterium
+      real(kind=dp), intent(in) :: epscg_loc !< threshold in termination criterium
       integer, intent(in) :: maxmatvecs_loc !< maximum number of matrix-vector multiplications
-      double precision, intent(in) :: alpha_loc !< ILU (0.0) to MILU (1.0) preconditioning
+      real(kind=dp), intent(in) :: alpha_loc !< ILU (0.0) to MILU (1.0) preconditioning
 
       integer :: na, n, ntot, j
 
@@ -163,9 +164,9 @@ contains
       implicit none
 
       integer :: NOCG0, NA
-      double precision :: epscg
+      real(kind=dp) :: epscg
       integer :: maxmatvecs, n30
-      double precision, intent(in) :: alpha_loc !< ILU (0.0) to MILU (1.0) preconditioning
+      real(kind=dp), intent(in) :: alpha_loc !< ILU (0.0) to MILU (1.0) preconditioning
 
       NROW = NOCG0; nax = na
       ! n30  = 30
@@ -261,7 +262,7 @@ contains
       integer, intent(in) :: jaini !< compute preconditioner and permutation (1) or not (0), or initialization only (-1), or ILU solve only (2)
       integer, intent(in) :: jabcgstab !< use bcgstab (1) or cg (other)
       integer, intent(out) :: ierror !< error (1) or not (0)
-      double precision, intent(out) :: res !< || residual ||
+      real(kind=dp), intent(out) :: res !< || residual ||
 
       integer :: n, m, maxcol, ncol, nset, job
 
@@ -397,7 +398,7 @@ contains
    subroutine ilud(n, a, ja, ia, alph, tol, alu, jlu, ju, iwk, w, jw, ierr, na)
       implicit none
       integer n, na
-      double precision :: a(na), alu(*), w(2 * n), tol, alph
+      real(kind=dp) :: a(na), alu(*), w(2 * n), tol, alph
       integer ja(na), ia(n + 1), jlu(*), ju(n), jw(2 * n), iwk, ierr
 !----------------------------------------------------------------------*
 !                     *** ILUD preconditioner ***                      *
@@ -477,7 +478,7 @@ contains
 !-----------------------------------------------------------------------
 !     locals
       integer ju0, k, j1, j2, j, ii, i, lenl, lenu, jj, jrow, jpos, len
-      double precision :: tnorm, t, abs, s, fact, dropsum
+      real(kind=dp) :: tnorm, t, abs, s, fact, dropsum
 !-----------------------------------------------------------------------
 !     initialize ju0 (points to next element to be added to alu,jlu)
 !     and pointer array.
@@ -735,7 +736,7 @@ contains
    subroutine runrc2(n, rhs, sol, ipar, fpar, wk, a, ja, ia, au, jau, ju, its, eps, jabcgstab, ierror, nau)
       implicit none
       integer n, nau, ipar(16), ia(n + 1), ja(5 * n), ju(n), jau(nau), jabcgstab
-      double precision :: fpar(16), rhs(n), sol(n), wk(2 * nau), a(5 * n), au(nau), eps
+      real(kind=dp) :: fpar(16), rhs(n), sol(n), wk(2 * nau), a(5 * n), au(nau), eps
       integer :: ierror !< error (1) or not (0)
 
 !-----------------------------------------------------------------------
@@ -749,7 +750,7 @@ contains
 !     local variables
 !
       integer iou, its
-      double precision :: res
+      real(kind=dp) :: res
 !     real dtime, dt(2), time
 !     external dtime
       EXTERNAL_DNRM2
@@ -857,7 +858,7 @@ contains
       use m_wall_clock_time
       implicit none
       integer n, ipar(16), ia(n + 1), ja(5 * n), ju(n), jau(30 * n)
-      double precision :: fpar(16), rhs(n), sol(n), sol0(n), guess(n), wk(2 * 30 * n), a(5 * n), au(30 * n), cp0, cp1
+      real(kind=dp) :: fpar(16), rhs(n), sol(n), sol0(n), guess(n), wk(2 * 30 * n), a(5 * n), au(30 * n), cp0, cp1
 
       external solver
 !-----------------------------------------------------------------------
@@ -871,7 +872,7 @@ contains
 !     local variables
 !
       integer i, iou, its
-      double precision :: res
+      real(kind=dp) :: res
 !     real dtime, dt(2), time
 !     external dtime
       EXTERNAL_DNRM2
@@ -969,9 +970,9 @@ contains
       implicit none
 
       integer :: n
-      double precision :: sol(n), sol0(n)
+      real(kind=dp) :: sol(n), sol0(n)
 
-      double precision :: errmx, errav
+      real(kind=dp) :: errmx, errav
       errmx = maxval(abs(sol - sol0))
       errav = sum(abs(sol - sol0))
       errav = errav / n
@@ -981,13 +982,13 @@ contains
    function distdot(n, x, ix, y, iy)
       implicit none
       integer n, ix, iy
-      double precision :: distdot, x(*), y(*)
+      real(kind=dp) :: distdot, x(*), y(*)
       distdot = ddot(n, x, ix, y, iy)
       return
    end function distdot
 
    function afun(x, y, z)
-      double precision :: afun, x, y, z
+      real(kind=dp) :: afun, x, y, z
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
@@ -996,7 +997,7 @@ contains
    end function afun
 
    function bfun(x, y, z)
-      double precision :: bfun, x, y, z
+      real(kind=dp) :: bfun, x, y, z
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
@@ -1005,7 +1006,7 @@ contains
    end function bfun
 
    function cfun(x, y, z)
-      double precision :: cfun, x, y, z
+      real(kind=dp) :: cfun, x, y, z
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
@@ -1015,7 +1016,7 @@ contains
 
    function dfun(x, y, z)
       use GAMMAS
-      double precision :: dfun, x, y, z
+      real(kind=dp) :: dfun, x, y, z
       no_warning_unused_dummy_argument(z)
       dfun = gammax * exp(x * y)
       return
@@ -1023,14 +1024,14 @@ contains
 
    function efun(x, y, z)
       use GAMMAS
-      double precision :: efun, x, y, z
+      real(kind=dp) :: efun, x, y, z
       no_warning_unused_dummy_argument(z)
       efun = gammay * exp(-x * y)
       return
    end function efun
 
    function ffun(x, y, z)
-      double precision :: ffun, x, y, z
+      real(kind=dp) :: ffun, x, y, z
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
@@ -1041,7 +1042,7 @@ contains
    function gfun(x, y, z)
       use GAMMAS
 
-      double precision :: gfun, x, y, z
+      real(kind=dp) :: gfun, x, y, z
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
@@ -1052,13 +1053,13 @@ contains
    function hfun(x, y, z)
       use GAMMAS
 
-      double precision :: hfun, x, y, z
+      real(kind=dp) :: hfun, x, y, z
       hfun = alpha * sin(gammax * x + gammay * y - z)
       return
    end function hfun
 
    function betfun(side, x, y, z)
-      double precision :: betfun, x, y, z
+      real(kind=dp) :: betfun, x, y, z
       character(len=2) side
       no_warning_unused_dummy_argument(side)
       no_warning_unused_dummy_argument(x)
@@ -1069,7 +1070,7 @@ contains
    end function betfun
 
    function gamfun(side, x, y, z)
-      double precision :: gamfun, x, y, z
+      real(kind=dp) :: gamfun, x, y, z
       character(len=2) side
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
@@ -1109,7 +1110,7 @@ contains
 !     They all have the following calling sequence:
 !      subroutine solver(n, rhs, sol, ipar, fpar, w)
 !      integer n, ipar(16)
-!      double precision ::  rhs(n), sol(n), fpar(16), w(*)
+!      real(kind=dp) ::  rhs(n), sol(n), fpar(16), w(*)
 !     Where
 !     (1) 'n' is the size of the linear system,
 !     (2) 'rhs' is the right-hand side of the linear system,
@@ -1145,12 +1146,12 @@ contains
 !     (2) ALL iterative solvers require a user-supplied DOT-product
 !     routine named DISTDOT. The prototype of DISTDOT is
 !
-!     double precision ::  function distdot(n,x,ix,y,iy)
+!     real(kind=dp) ::  function distdot(n,x,ix,y,iy)
 !     integer n, ix, iy
-!     double precision ::  x(1+(n-1)*ix), y(1+(n-1)*iy)
+!     real(kind=dp) ::  x(1+(n-1)*ix), y(1+(n-1)*iy)
 !
 !     This interface of DISTDOT is exactly the same as that of
-!     DDOT (or SDOT if real == double precision :: ) from BLAS-1. It should have
+!     DDOT (or SDOT if real == real(kind=dp) :: ) from BLAS-1. It should have
 !     same functionality as DDOT on a single processor machine. On a
 !     parallel/distributed environment, each processor can perform
 !     DDOT on the data it has, then perform a summation on all the
@@ -1456,7 +1457,7 @@ contains
    subroutine cg(n, rhs, sol, ipar, fpar, w)
       implicit none
       integer n, ipar(16)
-      double precision :: rhs(n), sol(n), fpar(16), w(:)
+      real(kind=dp) :: rhs(n), sol(n), fpar(16), w(:)
 !-----------------------------------------------------------------------
 !     This is a implementation of the Conjugate Gradient (CG) method
 !     for solving linear system.
@@ -1478,7 +1479,7 @@ contains
 !     local variables
 !
       integer i
-      double precision :: alpha
+      real(kind=dp) :: alpha
       logical lp, rp
       save
 !
@@ -1652,7 +1653,7 @@ contains
    subroutine cgnr(n, rhs, sol, ipar, fpar, wk)
       implicit none
       integer n, ipar(16)
-      double precision :: rhs(n), sol(n), fpar(16), wk(:, :)
+      real(kind=dp) :: rhs(n), sol(n), fpar(16), wk(:, :)
 !-----------------------------------------------------------------------
 !     CGNR -- Using CG algorithm solving A x = b by solving
 !     Normal Residual equation: A^T A x = A^T b
@@ -1673,7 +1674,7 @@ contains
 !     local variables
 !
       integer i
-      double precision :: alpha, zz, zzm1
+      real(kind=dp) :: alpha, zz, zzm1
       logical lp, rp
       save
 !
@@ -1896,7 +1897,7 @@ contains
    subroutine bcg(n, rhs, sol, ipar, fpar, w)
       implicit none
       integer n, ipar(16)
-      double precision :: fpar(16), rhs(n), sol(n), w(:, :)
+      real(kind=dp) :: fpar(16), rhs(n), sol(n), w(:, :)
 !-----------------------------------------------------------------------
 !     BCG: Bi Conjugate Gradient method. Programmed with reverse
 !     communication, see the header for detailed specifications
@@ -1918,13 +1919,13 @@ contains
 !     w(:,7) -- changes in the solution
 !-----------------------------------------------------------------------
 !
-      double precision :: one
+      real(kind=dp) :: one
       parameter(one=1.0d0)
 !
 !     local variables
 !
       integer i
-      double precision :: alpha
+      real(kind=dp) :: alpha
       logical rp, lp
       save
 !
@@ -2147,7 +2148,7 @@ contains
    subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
       implicit none
       integer n, ipar(16)
-      double precision :: rhs(n), sol(n), fpar(16), w(n, 8)
+      real(kind=dp) :: rhs(n), sol(n), fpar(16), w(n, 8)
 !-----------------------------------------------------------------------
 !     BCGSTAB --- Bi Conjugate Gradient stabilized (BCGSTAB)
 !     This is an improved BCG routine. (1) no matrix transpose is
@@ -2190,13 +2191,13 @@ contains
 !               at the end
 !-----------------------------------------------------------------------
 !
-      double precision :: one
+      real(kind=dp) :: one
       parameter(one=1.0d0)
 !
 !     local variables
 !
       integer i
-      double precision :: alpha, beta, rho, omega
+      real(kind=dp) :: alpha, beta, rho, omega
       logical lp, rp
       save lp, rp
 !
@@ -2480,7 +2481,7 @@ contains
    subroutine tfqmr(n, rhs, sol, ipar, fpar, w)
       implicit none
       integer n, ipar(16)
-      double precision :: rhs(n), sol(n), fpar(16), w(:, :)
+      real(kind=dp) :: rhs(n), sol(n), fpar(16), w(:, :)
 !-----------------------------------------------------------------------
 !     TFQMR --- transpose-free Quasi-Minimum Residual method
 !     This is developed from BCG based on the principle of Quasi-Minimum
@@ -2506,14 +2507,14 @@ contains
 !     w(:,11) -- changes in the solution
 !-----------------------------------------------------------------------
 !
-      double precision :: one, zero
+      real(kind=dp) :: one, zero
       parameter(one=1.0d0, zero=0.0d0)
 !
 !     local variables
 !
       integer i
       logical lp, rp
-      double precision :: eta, sigma, theta, te, alpha, rho, tao
+      real(kind=dp) :: eta, sigma, theta, te, alpha, rho, tao
       save
 !
 !     status of the call (where to go)
@@ -2778,7 +2779,7 @@ contains
    subroutine fom(n, rhs, sol, ipar, fpar, w)
       implicit none
       integer n, ipar(16)
-      double precision :: rhs(n), sol(n), fpar(16), w(*)
+      real(kind=dp) :: rhs(n), sol(n), fpar(16), w(*)
 !-----------------------------------------------------------------------
 !     This a version of The Full Orthogonalization Method (FOM)
 !     implemented with reverse communication. It is a simple restart
@@ -2804,7 +2805,7 @@ contains
 !     ipar(5) <= 1.
 !----------------------------------------------------------------------
 !
-      double precision :: one, zero
+      real(kind=dp) :: one, zero
       parameter(one=1.0d0, zero=0.0d0)
 !
 !     local variables, ptr and p2 are temporary pointers,
@@ -2814,7 +2815,7 @@ contains
 !     the right hand side of the least square problem solved.
 !
       integer i, ii, idx, k, m, ptr, p2, prs, hes, vs, vrn
-      double precision :: alpha, c, s
+      real(kind=dp) :: alpha, c, s
       logical lp, rp
       save
 !
@@ -3103,7 +3104,7 @@ contains
    subroutine gmres(n, rhs, sol, ipar, fpar, w)
       implicit none
       integer n, ipar(16)
-      double precision :: rhs(n), sol(n), fpar(16), w(*)
+      real(kind=dp) :: rhs(n), sol(n), fpar(16), w(*)
 !-----------------------------------------------------------------------
 !     This a version of GMRES implemented with reverse communication.
 !     It is a simple restart version of the GMRES algorithm.
@@ -3125,7 +3126,7 @@ contains
 !     ipar(5) <= 1.
 !-----------------------------------------------------------------------
 !
-      double precision :: one, zero
+      real(kind=dp) :: one, zero
       parameter(one=1.0d0, zero=0.0d0)
 !
 !     local variables, ptr and p2 are temporary pointers,
@@ -3135,7 +3136,7 @@ contains
 !     the right hand side of the least square problem solved.
 !
       integer i, ii, idx, k, m, ptr, p2, hess, vs, vrn
-      double precision :: alpha, c, s
+      real(kind=dp) :: alpha, c, s
       logical lp, rp
       save
 !
@@ -3415,7 +3416,7 @@ contains
    subroutine dqgmres(n, rhs, sol, ipar, fpar, w)
       implicit none
       integer n, ipar(16)
-      double precision :: rhs(n), sol(n), fpar(16), w(:)
+      real(kind=dp) :: rhs(n), sol(n), fpar(16), w(:)
 !-----------------------------------------------------------------------
 !     DQGMRES -- Flexible Direct version of Quasi-General Minimum
 !     Residual method. The right preconditioning can be varied from
@@ -3426,12 +3427,12 @@ contains
 !-----------------------------------------------------------------------
 !     local variables
 !
-      double precision :: one, zero, deps
+      real(kind=dp) :: one, zero, deps
       parameter(one=1.0d0, zero=0.0d0)
       parameter(deps=1.0d-33)
 !
       integer i, ii, j, jp1, j0, k, ptrw, ptrv, iv, iw, ic, is, ihm, ihd, lb, ptr
-      double precision :: alpha, beta, psi, c, s
+      real(kind=dp) :: alpha, beta, psi, c, s
       logical lp, rp, full
       save
 !
@@ -3723,7 +3724,7 @@ contains
    subroutine fgmres(n, rhs, sol, ipar, fpar, w)
       implicit none
       integer n, ipar(16)
-      double precision :: rhs(n), sol(n), fpar(16), w(*)
+      real(kind=dp) :: rhs(n), sol(n), fpar(16), w(*)
 !-----------------------------------------------------------------------
 !     This a version of FGMRES implemented with reverse communication.
 !
@@ -3745,7 +3746,7 @@ contains
 !     ipar(5) <= 1.
 !-----------------------------------------------------------------------
 !
-      double precision :: one, zero
+      real(kind=dp) :: one, zero
       parameter(one=1.0d0, zero=0.0d0)
 !
 !     local variables, ptr and p2 are temporary pointers,
@@ -3755,7 +3756,7 @@ contains
 !     the right hand side of the least square problem solved.
 !
       integer i, ii, idx, iz, k, m, ptr, p2, hess, vs, vrn
-      double precision :: alpha, c, s
+      real(kind=dp) :: alpha, c, s
       logical lp, rp
       save
 !
@@ -4016,10 +4017,10 @@ contains
    subroutine dbcg(n, rhs, sol, ipar, fpar, w)
       implicit none
       integer n, ipar(16)
-      double precision :: rhs(n), sol(n), fpar(16), w(:, :)
+      real(kind=dp) :: rhs(n), sol(n), fpar(16), w(:, :)
 !-----------------------------------------------------------------------
 ! Quasi GMRES method for solving a linear
-! system of equations a * sol = y.  double precision version.
+! system of equations a * sol = y.  real(kind=dp) version.
 ! this version is without restarting and without preconditioning.
 ! parameters :
 ! -----------
@@ -4051,13 +4052,13 @@ contains
 !-----------------------------------------------------------------------
 !     local variables
 !
-      double precision :: one, zero
+      real(kind=dp) :: one, zero
       parameter(one=1.0d0, zero=0.0d0)
 !
-      double precision :: t, sqrt, ss, res, beta, ss1, delta, x, zeta, umm
+      real(kind=dp) :: t, sqrt, ss, res, beta, ss1, delta, x, zeta, umm
       integer k, j, i, i2, ip2, ju, lb, lbm1, np, indp
       logical lp, rp, full, perm(3)
-      double precision :: ypiv(3), u(3), usav(3)
+      real(kind=dp) :: ypiv(3), u(3), usav(3)
       save
 !
 !     where to go
@@ -4383,7 +4384,7 @@ contains
    subroutine implu(np, umm, beta, ypiv, u, permut, full)
       implicit none
 
-      double precision :: umm, beta, ypiv(*), u(*), x, xpiv
+      real(kind=dp) :: umm, beta, ypiv(*), u(*), x, xpiv
       logical full, perm, permut(*)
       integer np, k, npm1
 !-----------------------------------------------------------------------
@@ -4426,13 +4427,13 @@ contains
    subroutine uppdir(n, p, np, lbp, indp, y, u, usav, flops)
       implicit none
       integer k, np, n, npm1, j, ju, indp, lbp
-      double precision :: p(n, lbp), y(*), u(*), usav(*), x, flops
+      real(kind=dp) :: p(n, lbp), y(*), u(*), usav(*), x, flops
 !-----------------------------------------------------------------------
 !     updates the conjugate directions p given the upper part of the
 !     banded upper triangular matrix u.  u contains the non zero
 !     elements of the column of the triangular matrix..
 !-----------------------------------------------------------------------
-      double precision :: zero
+      real(kind=dp) :: zero
       parameter(zero=0.0d0)
 !
       npm1 = np - 1
@@ -4461,13 +4462,13 @@ contains
    subroutine givens(x, y, c, s)
       implicit none
 
-      double precision :: x, y, c, s
+      real(kind=dp) :: x, y, c, s
 !-----------------------------------------------------------------------
 !     Given x and y, this subroutine generates a Givens' rotation c, s.
 !     And apply the rotation on (x,y) ==> (sqrt(x**2 + y**2), 0).
 !     (See P 202 of "matrix computation" by Golub and van Loan.)
 !-----------------------------------------------------------------------
-      double precision :: t, one, zero
+      real(kind=dp) :: t, one, zero
       parameter(zero=0.0d0, one=1.0d0)
 !
       no_warning_unused_dummy_argument(c)
@@ -4503,7 +4504,7 @@ contains
    logical function stopbis(n, ipar, mvpi, fpar, r, delx, sx)
       implicit none
       integer n, mvpi, ipar(16)
-      double precision :: fpar(16), r(n), delx(n), sx
+      real(kind=dp) :: fpar(16), r(n), delx(n), sx
 !-----------------------------------------------------------------------
 !     function for determining the stopping criteria. return value of
 !     true if the stopbis criteria is satisfied.
@@ -4559,11 +4560,11 @@ contains
    subroutine tidycg(n, ipar, fpar, sol, delx)
       implicit none
       integer n, ipar(16)
-      double precision :: fpar(16), sol(n), delx(n)
+      real(kind=dp) :: fpar(16), sol(n), delx(n)
 !-----------------------------------------------------------------------
 !     Some common operations required before terminating the CG routines
 !-----------------------------------------------------------------------
-      double precision :: zero
+      real(kind=dp) :: zero
       parameter(zero=0.0d0)
 !
       if (ipar(12) /= 0) then
@@ -4593,7 +4594,7 @@ contains
    logical function brkdn(alpha, ipar)
       implicit none
       integer ipar(16)
-      double precision :: alpha, beta, zero, one
+      real(kind=dp) :: alpha, beta, zero, one
       parameter(zero=0.0d0, one=1.0d0)
 !-----------------------------------------------------------------------
 !     test whether alpha is zero or an abnormal number, if yes,
@@ -4629,11 +4630,11 @@ contains
       implicit none
       integer i, ipar(16), wksize, dsc
       logical lp, rp
-      double precision :: fpar(16), wk(*)
+      real(kind=dp) :: fpar(16), wk(*)
 !-----------------------------------------------------------------------
 !     some common initializations for the iterative solvers
 !-----------------------------------------------------------------------
-      double precision :: zero, one
+      real(kind=dp) :: zero, one
       parameter(zero=0.0d0, one=1.0d0)
       no_warning_unused_dummy_argument(dsc)
 !
@@ -4702,7 +4703,7 @@ contains
       implicit none
       logical full
       integer lda, m, n, ind, ierr
-      double precision :: ops, hh(m), vec(lda, m)
+      real(kind=dp) :: ops, hh(m), vec(lda, m)
 !-----------------------------------------------------------------------
 !     MGSRO  -- Modified Gram-Schmidt procedure with Selective Re-
 !               Orthogonalization
@@ -4731,10 +4732,10 @@ contains
 !               -2: input vector contains abnormal numbers
 !               -3: input vector is a linear combination of others
 !
-!     External routines used: double precision ::  ddot
+!     External routines used: real(kind=dp) ::  ddot
 !-----------------------------------------------------------------------
       integer i, k
-      double precision :: nrm0, nrm1, fct, thr, zero, one, reorth
+      real(kind=dp) :: nrm0, nrm1, fct, thr, zero, one, reorth
       parameter(zero=0.0d0, one=1.0d0, reorth=0.98d0)
 !
 !     compute the norm of the input vector
@@ -4833,9 +4834,9 @@ contains
    subroutine stb_test(n, sol, alu, jlu, ju, tmax)
       implicit none
       integer n, jlu(*), ju(*)
-      double precision :: sol(n), alu(*), tmax
+      real(kind=dp) :: sol(n), alu(*), tmax
 !-----------------------------------------------------------------------
-      double precision :: max, t, abs
+      real(kind=dp) :: max, t, abs
       integer j
 !
       call lusol(n, sol, sol, alu, jlu, ju, 30 * n)
@@ -4893,7 +4894,7 @@ contains
       implicit none
 
       integer ja(*), ia(*), iau(*), nx, ny, nz, mode, n
-      double precision :: a(*), rhs(*), al(6)
+      real(kind=dp) :: a(*), rhs(*), al(6)
 !-----------------------------------------------------------------------
 ! On entry:
 !
@@ -4923,8 +4924,8 @@ contains
 !     afun, bfun, cfun, dfun, efun, ffun, gfun, hfun
 !     betfun, gamfun
 ! They have the following prototype:
-!     double precision ::  function xfun(x, y, z)
-!     double precision ::  x, y, z
+!     real(kind=dp) ::  function xfun(x, y, z)
+!     real(kind=dp) ::  x, y, z
 !-----------------------------------------------------------------------
 ! This subroutine computes the sparse matrix in compressed sparse row
 ! format for the elliptic equation:
@@ -5019,13 +5020,13 @@ contains
 !-------------------------------------------------------------------
 !     some constants
 !
-      double precision :: one
+      real(kind=dp) :: one
       parameter(one=1.0d0)
 !
 !     local variables
 !
       integer ix, iy, iz, kx, ky, kz, node, iedge
-      double precision :: r, h, stencil(7)
+      real(kind=dp) :: r, h, stencil(7)
       logical value, genrhs
 !
 !     nx has to be larger than 1
@@ -5120,7 +5121,7 @@ contains
       implicit none
 
       integer nx, ny, nz, mode, kx, ky, kz
-      double precision :: stencil(*), h, rhs
+      real(kind=dp) :: stencil(*), h, rhs
 !-----------------------------------------------------------------------
 !     This subroutine calculates the correct stencil values for
 !     centered difference discretization of the elliptic operator
@@ -5142,13 +5143,13 @@ contains
 !-----------------------------------------------------------------------
 !     some constants
 !
-      double precision :: zero, half
+      real(kind=dp) :: zero, half
       parameter(zero=0.0d0, half=0.5d0)
 !
 !     local variables
 !
       integer k
-      double precision :: hhalf, cntr, x, y, z, coeff
+      real(kind=dp) :: hhalf, cntr, x, y, z, coeff
       no_warning_unused_dummy_argument(nx)
 !
 !     if mode < 0, we shouldn't have come here
@@ -5222,7 +5223,7 @@ contains
    subroutine gen57bl(nx, ny, nz, nfree, na, n, a, ja, ia, iau, stencil)
       implicit none
       integer ja(*), ia(*), iau(*), nx, ny, nz, nfree, na, n
-      double precision :: a(na, 1), stencil(7, 1)
+      real(kind=dp) :: a(na, 1), stencil(7, 1)
 !--------------------------------------------------------------------
 ! This subroutine computes the sparse matrix in compressed
 ! format for the elliptic operator
@@ -5306,13 +5307,13 @@ contains
 !-------------------------------------------------------------------
 !     some constants
 !
-      double precision :: one
+      real(kind=dp) :: one
       parameter(one=1.0d0)
 !
 !     local variables
 !
       integer iedge, ix, iy, iz, k, kx, ky, kz, nfree2, node
-      double precision :: h
+      real(kind=dp) :: h
 !
       h = one / dble(nx + 1)
       kx = 1
@@ -5417,14 +5418,14 @@ contains
 !
       implicit none
 
-      double precision :: zero, half
+      real(kind=dp) :: zero, half
       parameter(zero=0.0d0, half=0.5d0)
 !
 !     local variables
 !
       integer :: i, k, kx, ky, kz, nfree, nfree2, nx, ny, nz
-      double precision :: stencil(7, *)
-      double precision :: cntr(225), coeff(225), h, h2, hhalf, x, y, z, xh
+      real(kind=dp) :: stencil(7, *)
+      real(kind=dp) :: cntr(225), coeff(225), h, h2, hhalf, x, y, z, xh
       no_warning_unused_dummy_argument(nx)
 !------------
       if (nfree > 15) then
@@ -5522,7 +5523,7 @@ contains
    subroutine fdreduce(nx, ny, nz, alpha, n, a, ja, ia, iau, rhs, stencil)
       implicit none
       integer nx, ny, nz, n, ia(*), ja(*), iau(*)
-      double precision :: alpha(*), a(*), rhs(*), stencil(*)
+      real(kind=dp) :: alpha(*), a(*), rhs(*), stencil(*)
 !-----------------------------------------------------------------------
 ! This subroutine tries to reduce the size of the matrix by looking
 ! for Dirichlet boundary conditions at each surface and solve the boundary
@@ -5531,13 +5532,13 @@ contains
 !-----------------------------------------------------------------------
 !     parameters
 !
-      double precision :: zero
+      real(kind=dp) :: zero
       parameter(zero=0.0d0)
 !
 !     local variables
 !
       integer i, j, k, kx, ky, kz, lx, ux, ly, uy, lz, uz, node, nbnode, lk, ld, iedge
-      double precision :: val
+      real(kind=dp) :: val
 !
 !     The first half of this subroutine will try to change the right-hand
 !     side of all the nodes that has a neighbor with Dirichlet boundary
@@ -5779,7 +5780,7 @@ contains
       implicit none
 
       integer nx, ny, nz, ia(nx * ny * nz), ja(7 * nx * ny * nz), iau(nx * ny * nz)
-      double precision :: h, al(6), a(7 * nx * ny * nz), rhs(nx * ny * nz)
+      real(kind=dp) :: h, al(6), a(7 * nx * ny * nz), rhs(nx * ny * nz)
 !-----------------------------------------------------------------------
 ! This subroutine will add the boundary condition to the linear system
 ! consutructed without considering the boundary conditions
@@ -5794,8 +5795,8 @@ contains
 ! Beta and gamma appears as the functions, betfun and gamfun.
 ! They have the following prototype
 !
-! double precision ::  function xxxfun(x, y, z)
-! double precision ::  x, y, z
+! real(kind=dp) ::  function xxxfun(x, y, z)
+! real(kind=dp) ::  x, y, z
 !
 ! where x, y, z are vales in the range of [0, 1][0, (ny-1)*h]
 ! [0, (nz-1)*h]
@@ -5812,14 +5813,14 @@ contains
 !-----------------------------------------------------------------------
 !     some constants
 !
-      double precision :: half, zero, one, two
+      real(kind=dp) :: half, zero, one, two
       parameter(half=0.5d0, zero=0.0d0, one=1.0d0, two=2.0d0)
 !
 !     local variables
 !
       character(len=2) side
       integer i, j, k, kx, ky, kz, node, nbr, ly, uy, lx, ux
-      double precision :: coeff, ctr, hhalf, x, y, z
+      real(kind=dp) :: coeff, ctr, hhalf, x, y, z
 !
       hhalf = half * h
       kx = 1
@@ -6423,7 +6424,7 @@ contains
       implicit none
 
       integer n, nau, jlu(nau), ju(nau)
-      double precision :: x(n), y(n), alu(nau)
+      real(kind=dp) :: x(n), y(n), alu(nau)
 !-----------------------------------------------------------------------
 !
 ! This routine solves the system (LU) x = y,
@@ -6478,7 +6479,7 @@ contains
       implicit none
 
       integer n, jlu(*), ju(*)
-      double precision :: x(n), y(n), alu(*)
+      real(kind=dp) :: x(n), y(n), alu(*)
 !-----------------------------------------------------------------------
 !
 ! This routine solves the system  Transp(LU) x = y,
@@ -6604,12 +6605,12 @@ contains
       implicit none
 
       type(tsolver), intent(in) :: solver !< solver
-      double precision, dimension(solver%numrows), intent(inout) :: sol !< solution vector
+      real(kind=dp), dimension(solver%numrows), intent(inout) :: sol !< solution vector
       integer, intent(in) :: japrecond !< compute preconditioner (1) or not (0)
       integer, intent(out) :: iters !< number of iterations
       integer, intent(inout) :: ierror !< error (1) or not (0)
 
-!   double precision, dimension(:), allocatable :: w
+!   real(kind=dp), dimension(:), allocatable :: w
 !   integer,          dimension(:), allocatable :: jw
 
       integer :: N

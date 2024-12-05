@@ -31,6 +31,7 @@
 !
 !> for Tecplot output
 module m_tecplot
+   use precision, only: dp
    implicit none
 #ifdef HAVE_TECPLOT
    include 'tecio.f90'
@@ -49,7 +50,7 @@ module m_tecplot
 
    character :: NULLCHR
 
-   integer, pointer, dimension(:)  :: Nulli => null()
+   integer, pointer, dimension(:) :: Nulli => null()
 
    integer :: ifileformat = 0 ! 0: .plt, 1: .szplt
    integer :: ifiletype = 1 ! 0: full, 1: grid, 2: solution
@@ -60,7 +61,7 @@ module m_tecplot
    integer :: icellmax = 0; ! not used
    integer :: jcellmax = 0; ! not used
    integer :: kcellmax = 0; ! not used
-   double precision :: soltime = 0d0
+   real(kind=dp) :: soltime = 0d0
    integer :: istrandid = 0 ! static zone
    integer :: iparentzn = 0 ! no parent zone
    integer :: jablock = 1 ! block
@@ -89,10 +90,10 @@ contains
       implicit none
 
       integer, intent(in) :: num ! data size
-      double precision, dimension(num), intent(in) :: var ! data to be written
+      real(kind=dp), dimension(num), intent(in) :: var ! data to be written
       integer, intent(out) :: ierr ! error (1) or not (0)
       integer, dimension(num), optional, intent(in) :: kmask ! mask
-      double precision, optional, intent(in) :: miss ! missing value
+      real(kind=dp), optional, intent(in) :: miss ! missing value
 
       real, dimension(:), allocatable :: xx
 
@@ -143,7 +144,7 @@ subroutine wrinet_tecplot(FNAM)
 
 #ifdef HAVE_TECPLOT
 
-   double precision, dimension(:), allocatable :: dum
+   real(kind=dp), dimension(:), allocatable :: dum
 
    integer, dimension(4) :: ValueLocation
 

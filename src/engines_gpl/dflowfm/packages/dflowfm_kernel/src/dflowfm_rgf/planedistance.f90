@@ -33,7 +33,8 @@ module m_planedistance
    implicit none
 contains
    subroutine PLANEDISTANCE(X1, Y1, X2, Y2, D12)
-      double precision :: X1, Y1, X2, Y2, D12, DX, DY
+      use precision, only: dp
+      real(kind=dp) :: X1, Y1, X2, Y2, D12, DX, DY
 !     D12 IS DISTANCE BETWEEN 1 AND 2 IN PLANE COORDINATES
       DX = X1 - X2
       DY = Y1 - Y2

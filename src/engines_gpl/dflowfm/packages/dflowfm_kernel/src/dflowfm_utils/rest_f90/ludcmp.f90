@@ -31,11 +31,12 @@
 !
 
       subroutine LUDCMP(A, N, NP, INDX, D, JAPARALLEL)
+         use precision, only: dp
          implicit none
-         double precision :: a
-         double precision :: aamax
-         double precision :: d
-         double precision :: dum
+         real(kind=dp) :: a
+         real(kind=dp) :: aamax
+         real(kind=dp) :: d
+         real(kind=dp) :: dum
          integer :: i
          integer :: imax
          integer :: indx
@@ -45,9 +46,9 @@
          integer :: n
          integer :: np
          integer :: nx
-         double precision :: sum
-         double precision :: tiny
-         double precision :: vv
+         real(kind=dp) :: sum
+         real(kind=dp) :: tiny
+         real(kind=dp) :: vv
          parameter(NX=4, TINY=1d-20)
          dimension A(NP, NP), INDX(N), VV(NX)
          JAPARALLEL = 0

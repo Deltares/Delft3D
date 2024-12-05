@@ -326,7 +326,7 @@ contains
         ENDIF
 
         IF (TWOFRC) THEN
-            IF (IN1==0) THEN
+            IF (IN1/=0) THEN
                 CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: MP with the combination MPDIS/MPPAR is invalid'

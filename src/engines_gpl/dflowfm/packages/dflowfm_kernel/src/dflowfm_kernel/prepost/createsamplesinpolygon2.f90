@@ -32,15 +32,16 @@
 
 module m_createsamplesinpolygon2
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: createsamplesinpolygon2
+   public :: createsamplesinpolygon2
 
 contains
 
    subroutine CREATESAMPLESINPOLYGON2()
+      use precision, only: dp
       use m_ec_triangle
       use network_data, only: TRIANGLESIZEFAC
       use M_SAMPLES
@@ -58,8 +59,8 @@ contains
       integer :: ns1, NPL1
       integer :: ntx, I
 
-      double precision :: TRIAREA, SAFESIZE
-      double precision :: AREPOL, DLENPOL, DLENAV, DLENMX, XP, YP, xplmin, xplmax, yplmin, yplmax
+      real(kind=dp) :: TRIAREA, SAFESIZE
+      real(kind=dp) :: AREPOL, DLENPOL, DLENAV, DLENMX, XP, YP, xplmin, xplmax, yplmin, yplmax
 
       if (NPL <= 2) return
 

@@ -31,6 +31,7 @@
 !
 
   subroutine ISNODE(KP, XP, YP, ZP)
+     use precision, only: dp
 
      use m_netw
      use m_wearelt, only: cr, rcir
@@ -43,8 +44,8 @@
      implicit none
 
      integer :: KP
-     double precision :: XP, YP, ZP
-     double precision :: rcy, dis
+     real(kind=dp) :: XP, YP, ZP
+     real(kind=dp) :: rcy, dis
      integer :: K, KPREV
 
      if (KP < 0) then

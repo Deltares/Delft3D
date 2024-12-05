@@ -31,15 +31,16 @@
 !
 
       subroutine ADJUST(X, Y, mmax, nmax, MC, NC)
+         use precision, only: dp
          use m_missing
          implicit none
          integer :: mmax, nmax, mc, nc
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
+         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
 ! TODO: Z not present, no filling with dmiss [AvD]
 !     schuif data naar links en of beneden en geef nieuwe MC,NC
 
          integer :: i, j, ifirst, jfirst
-         double precision, allocatable :: XH(:, :), YH(:, :)
+         real(kind=dp), allocatable :: XH(:, :), YH(:, :)
          allocate (xh(MMAX, NMAX), YH(MMAX, NMAX))
 
          xh = x

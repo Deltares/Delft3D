@@ -32,6 +32,7 @@
 
 !> copy netboundary to polygon, starting from a specified point
 subroutine netboundtopoly(kstart)
+   use precision, only: dp
    use m_polygon
    use m_netw
    use m_alloc
@@ -47,7 +48,7 @@ subroutine netboundtopoly(kstart)
    integer :: nlist ! number of entries in list
    integer :: ilist ! position in list
 
-   double precision :: crs
+   real(kind=dp) :: crs
 
    integer :: iorient !  orientation of branch, net on left (1) or right (0) or do not consider (-1)
 

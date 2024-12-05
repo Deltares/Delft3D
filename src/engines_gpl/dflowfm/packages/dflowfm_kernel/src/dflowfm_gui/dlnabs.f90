@@ -32,24 +32,25 @@
 
 module m_dlnabs
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DLNABS(XD, YD, ZD)
-         use m_oldz, only: oz
-         use m_three_two
-         use m_lnabs
+   subroutine DLNABS(XD, YD, ZD)
+      use precision, only: dp
+      use m_oldz, only: oz
+      use m_three_two
+      use m_lnabs
 
-         double precision :: x
-         double precision :: y
-         double precision :: z
-         double precision XD, YD, ZD
-         call DRIETWEE(XD, YD, ZD, X, Y, Z)
-         !IF (OZ .NE. DMISS .AND. Z .NE. DMISS) THEN
-         call LNABS(X, Y)
-         !ENDIF
-         OZ = Z
-      end
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      real(kind=dp) :: z
+      real(kind=dp) XD, YD, ZD
+      call DRIETWEE(XD, YD, ZD, X, Y, Z)
+      !IF (OZ .NE. DMISS .AND. Z .NE. DMISS) THEN
+      call LNABS(X, Y)
+      !ENDIF
+      OZ = Z
+   end
 
 end module m_dlnabs

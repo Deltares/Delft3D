@@ -30,19 +30,20 @@
 !
 !
 module m_dlimiter
-    implicit none
+   implicit none
 contains
 
 !> limiter function
-   double precision function dlimiter(d1, d2, limtyp)
+   real(kind=dp) function dlimiter(d1, d2, limtyp)
+      use precision, only: dp
 
-      double precision, intent(in) :: d1, d2 !< left and right slopes
+      real(kind=dp), intent(in) :: d1, d2 !< left and right slopes
       integer, intent(in) :: limtyp !< first order upwind (0) or MC (>0)
 
-      double precision :: r
-      double precision, parameter :: dtol = 1d-16
+      real(kind=dp) :: r
+      real(kind=dp), parameter :: dtol = 1d-16
 
-      double precision, parameter :: TWO = 2.0d0
+      real(kind=dp), parameter :: TWO = 2.0d0
 
       dlimiter = 0d0
       if (limtyp == 0) return

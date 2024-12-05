@@ -33,6 +33,7 @@
 !> smooth structured sample data and put it in zss(1,:,:)
 !>    D u/ D t = div grad u
 subroutine smooth_samples(MXSAM, MYSAM, NS, NDIM, Nsamplesmooth, zs, zss)
+   use precision, only: dp
 !   use m_samples
 !   use m_samples_refine
    use m_missing
@@ -45,17 +46,17 @@ subroutine smooth_samples(MXSAM, MYSAM, NS, NDIM, Nsamplesmooth, zs, zss)
    integer, intent(in) :: NDIM !< number of variable per sample in zss
    integer, intent(in) :: Nsamplesmooth !< number of smoothing iterations
 
-   double precision, dimension(Ns), intent(in) :: zs !< sample input variables, dim(NS)
-   double precision, dimension(NDIM, MXSAM, MYSAM), intent(inout) :: zss !< sample output variables, dim(NDIM,MXSAM,MYSAM), only first component will be smoothed
+   real(kind=dp), dimension(Ns), intent(in) :: zs !< sample input variables, dim(NS)
+   real(kind=dp), dimension(NDIM, MXSAM, MYSAM), intent(inout) :: zss !< sample output variables, dim(NDIM,MXSAM,MYSAM), only first component will be smoothed
 
-   double precision, dimension(:, :), allocatable :: zsdum
+   real(kind=dp), dimension(:, :), allocatable :: zsdum
 
    integer :: iter, i, j
-   double precision :: c0, ciL, ciR, cjL, cjR, af
+   real(kind=dp) :: c0, ciL, ciR, cjL, cjR, af
 
    integer :: ierror
 
-   double precision, parameter :: sigma = 0.5d0
+   real(kind=dp), parameter :: sigma = 0.5d0
 
    ierror = 1
 

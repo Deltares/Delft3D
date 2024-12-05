@@ -32,6 +32,7 @@
 
 !> find the frontline of the old (static) grid
 subroutine findfront(mc, nc, mmax, nmax, xc, yc, num, xf, yf, idxf, nf)
+   use precision, only: dp
    use m_missing, only: dmiss
    use m_get_lr
 
@@ -39,10 +40,10 @@ subroutine findfront(mc, nc, mmax, nmax, xc, yc, num, xf, yf, idxf, nf)
 
    integer, intent(in) :: mc, nc !< grid dimensions
    integer, intent(in) :: mmax, nmax !< array size
-   double precision, dimension(mmax, nmax), intent(in) :: xc, yc !< grid point coordinates
+   real(kind=dp), dimension(mmax, nmax), intent(in) :: xc, yc !< grid point coordinates
 
    integer, intent(in) :: num !< array size
-   double precision, dimension(num), intent(inout) :: xf, yf !< front point coordinates
+   real(kind=dp), dimension(num), intent(inout) :: xf, yf !< front point coordinates
    integer, dimension(2, num), intent(inout) :: idxf !< (i,j)-indices of grid points
    integer, intent(out) :: nf !< front dimension
 

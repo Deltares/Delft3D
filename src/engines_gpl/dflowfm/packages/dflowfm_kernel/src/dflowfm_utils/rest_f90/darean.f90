@@ -35,20 +35,21 @@
  !! Only the first polygon is considered; whenever a missing value
  !! is encountered, the polygon is 'closed'.
  subroutine dAREAN(XX, YY, N, DAREA, DLENGTH, DLENMX)
+    use precision, only: dp
     use m_missing
     use m_sferic
     use geometry_module, only: dbdistance, get_startend, comp_masscenter
 
     implicit none
     integer, intent(in) :: n !< Nr. of polygon points.
-    double precision, intent(in) :: XX(N), YY(N) !< Polygon points.
-    double precision, intent(out) :: DAREA !< Area enclosed within polygon.
-    double precision, intent(out) :: DLENGTH !< Length of polygon contour.
-    double precision, intent(out) :: DLENMX !< Length of longest segment in polygon contour.
+    real(kind=dp), intent(in) :: XX(N), YY(N) !< Polygon points.
+    real(kind=dp), intent(out) :: DAREA !< Area enclosed within polygon.
+    real(kind=dp), intent(out) :: DLENGTH !< Length of polygon contour.
+    real(kind=dp), intent(out) :: DLENMX !< Length of longest segment in polygon contour.
 
     integer :: i, iu, nend, jstart, jend
-    double precision :: Y0, DLE
-    double precision :: xcg, ycg
+    real(kind=dp) :: Y0, DLE
+    real(kind=dp) :: xcg, ycg
     integer :: jacounterclockwise
     DAREA = 0d0
     DLENGTH = 0d0

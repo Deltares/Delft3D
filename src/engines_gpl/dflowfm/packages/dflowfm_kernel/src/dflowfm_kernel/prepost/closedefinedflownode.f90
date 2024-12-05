@@ -32,37 +32,38 @@
 
 module m_closedefinedflownode
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: closedefinedflownode
+   public :: closedefinedflownode
 
 contains
 
-      subroutine CLOSEdefinedflownode(XP1, YP1, N1) !
+   subroutine CLOSEdefinedflownode(XP1, YP1, N1) !
+      use precision, only: dp
 
-         use m_flowgeom
-         use m_flow
-         use geometry_module, only: dbdistance
-         use m_missing, only: dmiss
-         use m_sferic, only: jsferic, jasfer3D
+      use m_flowgeom
+      use m_flow
+      use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
 
-         integer :: n1
-         double precision :: XP1, YP1
-         double precision :: dismin, dis
-         integer :: n
+      integer :: n1
+      real(kind=dp) :: XP1, YP1
+      real(kind=dp) :: dismin, dis
+      integer :: n
 
-         N1 = 0
-         DISMIN = 9d33
-         do n = 1, ndxi
-            if (laydefnr(n) > 0) then
-               dis = dbdistance(XP1, YP1, XZ(n), YZ(n), jsferic, jasfer3D, dmiss)
-               if (dis < dismin) then
-                  n1 = n; dismin = dis
-               end if
+      N1 = 0
+      DISMIN = 9d33
+      do n = 1, ndxi
+         if (laydefnr(n) > 0) then
+            dis = dbdistance(XP1, YP1, XZ(n), YZ(n), jsferic, jasfer3D, dmiss)
+            if (dis < dismin) then
+               n1 = n; dismin = dis
             end if
-         end do
-      end subroutine CLOSEdefinedflownode
+         end if
+      end do
+   end subroutine CLOSEdefinedflownode
 
 end module m_closedefinedflownode

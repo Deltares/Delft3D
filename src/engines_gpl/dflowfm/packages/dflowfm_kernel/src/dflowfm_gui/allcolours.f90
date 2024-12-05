@@ -32,54 +32,55 @@
 
 module m_allcolours
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine ALLCOLOURS()
-         use m_wearelt
-         use m_box_nop
-         use m_fbox_nop
-         use m_set_col
-         implicit none
-         double precision :: dx
-         double precision :: dxc
-         double precision :: dy
-         double precision :: dyc
-         integer :: i
-         integer :: j
-         integer :: ncol
-         double precision :: x
-         double precision :: xc
-         double precision :: xl
-         double precision :: xu
-         double precision :: y
-         double precision :: yc
-         double precision :: yl
-         double precision :: yu
-         NCOL = 0
-         XL = X2 - 0.66d0 * DSIX - RCIR * 4
-         XU = XL + 0.66d0 * DSIX
-         YL = Y1 + DSIX
-         YU = Y2 - DSIX
-         DX = XU - XL
-         DY = YU - YL
-         DXC = DX / 20
-         DYC = DY / 20
-         do J = 1, 16
-            do I = 1, 16
-               X = dble(I - 1) / 15d0
-               Y = dble(J - 1) / 15d0
-               XC = XL + X * DX
-               YC = YL + Y * DY
-               call SETCOL(NCOL)
-               NCOL = NCOL + 1
-               call FBOXnop(XC - DXC, YC - DYC, XC + DXC, YC + DYC)
-               call SETCOL(0)
-               call BOXnop(XC - DXC, YC - DYC, XC + DXC, YC + DYC)
-            end do
+   subroutine ALLCOLOURS()
+      use precision, only: dp
+      use m_wearelt
+      use m_box_nop
+      use m_fbox_nop
+      use m_set_col
+      implicit none
+      real(kind=dp) :: dx
+      real(kind=dp) :: dxc
+      real(kind=dp) :: dy
+      real(kind=dp) :: dyc
+      integer :: i
+      integer :: j
+      integer :: ncol
+      real(kind=dp) :: x
+      real(kind=dp) :: xc
+      real(kind=dp) :: xl
+      real(kind=dp) :: xu
+      real(kind=dp) :: y
+      real(kind=dp) :: yc
+      real(kind=dp) :: yl
+      real(kind=dp) :: yu
+      NCOL = 0
+      XL = X2 - 0.66d0 * DSIX - RCIR * 4
+      XU = XL + 0.66d0 * DSIX
+      YL = Y1 + DSIX
+      YU = Y2 - DSIX
+      DX = XU - XL
+      DY = YU - YL
+      DXC = DX / 20
+      DYC = DY / 20
+      do J = 1, 16
+         do I = 1, 16
+            X = dble(I - 1) / 15d0
+            Y = dble(J - 1) / 15d0
+            XC = XL + X * DX
+            YC = YL + Y * DY
+            call SETCOL(NCOL)
+            NCOL = NCOL + 1
+            call FBOXnop(XC - DXC, YC - DYC, XC + DXC, YC + DYC)
+            call SETCOL(0)
+            call BOXnop(XC - DXC, YC - DYC, XC + DXC, YC + DYC)
          end do
-         return
-      end
+      end do
+      return
+   end
 
 end module m_allcolours

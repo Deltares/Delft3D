@@ -33,78 +33,78 @@
 !> add tracer boundary
 module m_add_bndtracer
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: add_bndtracer
+   public :: add_bndtracer
 
 contains
 
-subroutine add_bndtracer(tracnam, tracunit, itrac, janew)
-   use fm_external_forcings_data
-   use m_alloc
-   use m_missing
-   use m_fm_wq_processes
-   use unstruc_messages
-   use m_find_name, only: find_name
+   subroutine add_bndtracer(tracnam, tracunit, itrac, janew)
+      use fm_external_forcings_data
+      use m_alloc
+      use m_missing
+      use m_fm_wq_processes
+      use unstruc_messages
+      use m_find_name, only: find_name
 
-   character(len=*), intent(in) :: tracnam
-   character(len=20), intent(in) :: tracunit
-   integer, intent(out) :: itrac
-   integer, intent(out) :: janew
-   integer :: iwqbot
+      character(len=*), intent(in) :: tracnam
+      character(len=20), intent(in) :: tracunit
+      integer, intent(out) :: itrac
+      integer, intent(out) :: janew
+      integer :: iwqbot
 
-   if (.not. allocated(trnames)) then
-      allocate (trnames(0))
-   end if
-   if (.not. allocated(wqbotnames)) then
-      allocate (wqbotnames(0))
-   end if
+      if (.not. allocated(trnames)) then
+         allocate (trnames(0))
+      end if
+      if (.not. allocated(wqbotnames)) then
+         allocate (wqbotnames(0))
+      end if
 
-   itrac = find_name(trnames, tracnam)
-   iwqbot = find_name(wqbotnames, tracnam)
+      itrac = find_name(trnames, tracnam)
+      iwqbot = find_name(wqbotnames, tracnam)
 
-   if (iwqbot /= 0) then
-      call mess(LEVEL_ERROR, 'add_bndtracer: tracer named '''//trim(tracnam)//''' already exists as a water quality bottom variable')
-   end if
+      if (iwqbot /= 0) then
+         call mess(LEVEL_ERROR, 'add_bndtracer: tracer named '''//trim(tracnam)//''' already exists as a water quality bottom variable')
+      end if
 
-   janew = 0
-   if (itrac == 0) then
-      janew = 1
+      janew = 0
+      if (itrac == 0) then
+         janew = 1
 !     add tracer
 
-      numtracers = numtracers + 1
+         numtracers = numtracers + 1
 !     realloc
-      call realloc(nbndtr, numtracers, keepExisting=.true., fill=0)
-      call realloc(trnames, numtracers, keepExisting=.true., fill='')
-      call realloc(trunits, numtracers, keepExisting=.true., fill='')
-      call realloc(wstracers, numtracers, keepExisting=.true., fill=0d0)
-      call realloc(decaytimetracers, numtracers, keepExisting=.true., fill=0d0)
-      if (transformcoef(24) /= DMISS) then
-         wstracers(numtracers) = transformcoef(24)
-      end if
-      if (transformcoef(25) /= dmiss .and. transformcoef(25) /= 0d0) then
-         jadecaytracers = 1
-         decaytimetracers(numtracers) = transformcoef(25)
+         call realloc(nbndtr, numtracers, keepExisting=.true., fill=0)
+         call realloc(trnames, numtracers, keepExisting=.true., fill='')
+         call realloc(trunits, numtracers, keepExisting=.true., fill='')
+         call realloc(wstracers, numtracers, keepExisting=.true., fill=0d0)
+         call realloc(decaytimetracers, numtracers, keepExisting=.true., fill=0d0)
+         if (transformcoef(24) /= DMISS) then
+            wstracers(numtracers) = transformcoef(24)
+         end if
+         if (transformcoef(25) /= dmiss .and. transformcoef(25) /= 0d0) then
+            jadecaytracers = 1
+            decaytimetracers(numtracers) = transformcoef(25)
+         end if
+
+         trnames(numtracers) = trim(tracnam)
+         itrac = numtracers
+      else
+         if (transformcoef(24) /= dmiss .and. transformcoef(24) /= 0d0 .and. transformcoef(24) /= wstracers(itrac)) then
+            write (msgbuf, '(a,e12.5,a,e12.5,a)') 'add_bndtracer: tracer '''//trim(tracnam)//''' already has a fall velocity (', &
+               wstracers(itrac), '). Ignoring different value (', transformcoef(24), ').'
+            call warn_flush()
+         end if
+         if (transformcoef(25) /= dmiss .and. transformcoef(25) /= 0d0 .and. transformcoef(25) /= decaytimetracers(itrac)) then
+            write (msgbuf, '(a,e12.5,a,e12.5,a)') 'add_bndtracer: tracer '''//trim(tracnam)//''' already has a decay time (', &
+               decaytimetracers(itrac), '). Ignoring different value (', transformcoef(25), ').'
+            call warn_flush()
+         end if
       end if
 
-      trnames(numtracers) = trim(tracnam)
-      itrac = numtracers
-   else
-      if (transformcoef(24) /= dmiss .and. transformcoef(24) /= 0d0 .and. transformcoef(24) /= wstracers(itrac)) then
-         write (msgbuf, '(a,e12.5,a,e12.5,a)') 'add_bndtracer: tracer '''//trim(tracnam)//''' already has a fall velocity (', &
-            wstracers(itrac), '). Ignoring different value (', transformcoef(24), ').'
-         call warn_flush()
-      end if
-      if (transformcoef(25) /= dmiss .and. transformcoef(25) /= 0d0 .and. transformcoef(25) /= decaytimetracers(itrac)) then
-         write (msgbuf, '(a,e12.5,a,e12.5,a)') 'add_bndtracer: tracer '''//trim(tracnam)//''' already has a decay time (', &
-            decaytimetracers(itrac), '). Ignoring different value (', transformcoef(25), ').'
-         call warn_flush()
-      end if
-   end if
-
-   trunits(itrac) = tracunit
-end subroutine add_bndtracer
+      trunits(itrac) = tracunit
+   end subroutine add_bndtracer
 
 end module m_add_bndtracer

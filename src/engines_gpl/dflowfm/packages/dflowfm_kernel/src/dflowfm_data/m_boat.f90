@@ -31,11 +31,12 @@
 !
 
 module m_boat
+   use precision, only: dp
    implicit none
-   double precision, allocatable :: XBOAT(:), YBOAT(:), ZBOAT(:) ! INLEZEN &
-   double precision, allocatable :: XBOOT(:), YBOOT(:), ZBOOT(:) ! AFBEELDEN LIJNEN
+   real(kind=dp), allocatable :: XBOAT(:), YBOAT(:), ZBOAT(:) ! INLEZEN &
+   real(kind=dp), allocatable :: XBOOT(:), YBOOT(:), ZBOOT(:) ! AFBEELDEN LIJNEN
    integer, allocatable :: NCBOAT(:) !
    integer :: MXBOAT, MAXBOAT, NCLBOAT
-   double precision :: BLEN = 25, BHEIGHT = 4, BWIDTH = 5, BHPMAX = 1000, BHPPERC = 0.5d0
+   real(kind=dp) :: BLEN = 25, BHEIGHT = 4, BWIDTH = 5, BHPMAX = 1000, BHPPERC = 0.5d0
    integer :: KKB(10) = 0
 end module m_boat

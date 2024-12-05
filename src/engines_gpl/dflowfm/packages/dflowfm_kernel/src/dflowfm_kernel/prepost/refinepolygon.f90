@@ -32,6 +32,7 @@
 
 !> Refine entire current polyline from start to end.
       subroutine refinepolygon()
+         use precision, only: dp
          use m_typevalue
          use m_polygon !, only: npl, dxuni
          use m_tpoly
@@ -45,7 +46,7 @@
 
          type(tpoly), dimension(:), allocatable :: pli, pliout ! tpoly-type polygons
 
-         double precision :: dl, xnew, ynew, znew
+         real(kind=dp) :: dl, xnew, ynew, znew
 
          integer :: numpols, numpolsout ! number of tpoly-type polygons
          integer :: i

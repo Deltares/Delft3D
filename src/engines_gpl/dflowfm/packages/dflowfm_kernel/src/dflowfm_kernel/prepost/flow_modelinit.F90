@@ -109,9 +109,9 @@
     integer, external :: init_openmp
     integer, external :: set_model_boundingbox
 
-    double precision, allocatable :: weirdte_save(:)
-    double precision, allocatable :: ucxq_save(:), ucyq_save(:)
-    double precision, allocatable :: fvcoro_save(:)
+    real(kind=dp), allocatable :: weirdte_save(:)
+    real(kind=dp), allocatable :: ucxq_save(:), ucyq_save(:)
+    real(kind=dp), allocatable :: fvcoro_save(:)
 
     !
     ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:

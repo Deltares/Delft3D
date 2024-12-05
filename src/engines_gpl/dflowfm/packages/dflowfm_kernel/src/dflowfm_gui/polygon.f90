@@ -33,6 +33,7 @@ module m_sub_polygon
    implicit none
 contains
    subroutine POLYGON(X, Y, N, NCOL)
+      use precision, only: dp
       use m_colnow
       use m_set_col
       use m_lnabs
@@ -41,7 +42,7 @@ contains
       integer :: i
       integer :: n
       integer :: ncol
-      double precision :: X(N), Y(N)
+      real(kind=dp) :: X(N), Y(N)
 
       call SETCOL(NCOL)
       call PTABS(X(1), Y(1))

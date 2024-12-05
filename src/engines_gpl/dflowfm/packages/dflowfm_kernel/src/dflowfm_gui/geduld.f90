@@ -32,19 +32,19 @@
 
 module m_geduld
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine GEDULD()
-         implicit none
-         integer :: i
-         integer :: numkey
-         do I = 1, 800
-            call INKEYEVENTIMM(NUMKEY)
-            if (NUMKEY /= 0) return
-         end do
-         return
-      end
+   subroutine GEDULD()
+      implicit none
+      integer :: i
+      integer :: numkey
+      do I = 1, 800
+         call INKEYEVENTIMM(NUMKEY)
+         if (NUMKEY /= 0) return
+      end do
+      return
+   end
 
 end module m_geduld

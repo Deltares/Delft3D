@@ -31,13 +31,14 @@
 !
 
 module m_plotdots
+   use precision, only: dp
    implicit none
    integer :: numdots ! number of dots
    integer :: NSIZE = 0 ! array size
-   double precision, dimension(:), allocatable :: xdots, ydots ! dot coordinates, dim(NSIZE)
-   double precision, dimension(:), allocatable :: zdots ! dot z-value
+   real(kind=dp), dimension(:), allocatable :: xdots, ydots ! dot coordinates, dim(NSIZE)
+   real(kind=dp), dimension(:), allocatable :: zdots ! dot z-value
    integer, dimension(:), allocatable :: colnumber ! colour number
-   double precision, parameter :: ZDOTDEFAULT = 0d0
+   real(kind=dp), parameter :: ZDOTDEFAULT = 0d0
 
 contains
 
@@ -62,12 +63,13 @@ contains
 
 !> add a dot
    subroutine adddot(x, y, z, colournumber)
+      use precision, only: dp
       implicit none
 
-      double precision, intent(in) :: x, y
-      double precision, optional, intent(in) :: z
+      real(kind=dp), intent(in) :: x, y
+      real(kind=dp), optional, intent(in) :: z
       integer, optional, intent(in) :: colournumber
-      double precision :: zloc
+      real(kind=dp) :: zloc
 
       zloc = ZDOTDEFAULT
       if (present(z)) then

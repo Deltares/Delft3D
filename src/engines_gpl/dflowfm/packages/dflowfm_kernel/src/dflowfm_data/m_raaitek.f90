@@ -31,9 +31,10 @@
 !
 
 module M_RAAITEK
+   use precision, only: dp
    implicit none
-   double precision :: ZMINrai = -999, ZMAXrai = -999
+   real(kind=dp) :: ZMINrai = -999, ZMAXrai = -999
    integer :: JTEXTFLOW = 1
    real :: xs1m, ys1m, xs2m, ys2m
-   double precision :: xw1m, yw1m, xw2m, yw2m ! screen and world corners in module
+   real(kind=dp) :: xw1m, yw1m, xw2m, yw2m ! screen and world corners in module
 end module M_RAAITEK

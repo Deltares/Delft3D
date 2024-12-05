@@ -32,29 +32,30 @@
 
 module m_disdep
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISDEP(m, n, dep)
-         use m_devices, only: iws
-         use m_ktext
+   subroutine DISDEP(m, n, dep)
+      use precision, only: dp
+      use m_devices, only: iws
+      use m_ktext
 
-         double precision :: dep
-         integer :: m
-         integer :: n
-         character distan * 23
-         character fmt * 6
+      real(kind=dp) :: dep
+      integer :: m
+      integer :: n
+      character distan * 23
+      character fmt * 6
 
-         DISTAN = 'M:    N:    D:         '
-         write (DISTAN(3:5), '(I3)') M
-         write (DISTAN(9:11), '(I3)') N
-         fmt = '(f9.3)'
-         call dispform(dep, fmt)
-         write (DISTAN(15:23), fmt) DEP
-         call KTEXT(DISTAN, IWS - 22, 4, 15)
+      DISTAN = 'M:    N:    D:         '
+      write (DISTAN(3:5), '(I3)') M
+      write (DISTAN(9:11), '(I3)') N
+      fmt = '(f9.3)'
+      call dispform(dep, fmt)
+      write (DISTAN(15:23), fmt) DEP
+      call KTEXT(DISTAN, IWS - 22, 4, 15)
 
-         return
-      end
+      return
+   end
 
 end module m_disdep

@@ -32,6 +32,7 @@
 
 !> interpolation of sample data to network nodes, in curvilinear grid coordinates
 subroutine sam2net_curvi(numk, xk, yk, zk)
+   use precision, only: dp
    use m_disable_outside_curvigrid, only: disable_outside_curvigrid
    use m_confrm
    use m_grid
@@ -49,19 +50,19 @@ subroutine sam2net_curvi(numk, xk, yk, zk)
    implicit none
 
    integer, intent(in) :: numk !< number of netnodes
-   double precision, dimension(numk), intent(in) :: xk, yk !< netnode coordinates
-   double precision, dimension(numk), intent(inout) :: zk !< netnode z-values
+   real(kind=dp), dimension(numk), intent(in) :: xk, yk !< netnode coordinates
+   real(kind=dp), dimension(numk), intent(inout) :: zk !< netnode z-values
 
-   double precision, dimension(:, :), allocatable :: xietak ! network grid-coordinates, dim(2,numk)
-   double precision, dimension(:, :), allocatable :: xietas ! sample grid-coordinates, dim(2,NS)
-   double precision, dimension(:, :), allocatable :: xietac ! grid grid-coordinates, dim(2,mc*nc)
+   real(kind=dp), dimension(:, :), allocatable :: xietak ! network grid-coordinates, dim(2,numk)
+   real(kind=dp), dimension(:, :), allocatable :: xietas ! sample grid-coordinates, dim(2,NS)
+   real(kind=dp), dimension(:, :), allocatable :: xietac ! grid grid-coordinates, dim(2,mc*nc)
 
-   double precision, dimension(:), allocatable :: xik, etak ! network grid-coordinates, dim(numk)
-   double precision, dimension(:), allocatable :: xis, etas ! network grid-coordinates, dim(NS)
+   real(kind=dp), dimension(:), allocatable :: xik, etak ! network grid-coordinates, dim(numk)
+   real(kind=dp), dimension(:), allocatable :: xis, etas ! network grid-coordinates, dim(NS)
    integer, dimension(:), allocatable :: imaskk ! network inside curvigrid (1) or not (0)
    integer, dimension(:), allocatable :: imasks ! sample  inside curvigrid (1) or not (0)
 
-   double precision :: xiloc, etaloc, zloc(1, 1, 1), etamin, etamax
+   real(kind=dp) :: xiloc, etaloc, zloc(1, 1, 1), etamin, etamax
 
    integer :: ierror
    integer :: i, ipoint, j, ja, jadl, jakdtree, k

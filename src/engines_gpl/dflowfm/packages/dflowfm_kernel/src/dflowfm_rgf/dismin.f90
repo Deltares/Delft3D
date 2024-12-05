@@ -31,15 +31,16 @@
 !
 
       subroutine DISMIN(X, X2, Y, Y2, XX, YY, N, DIS, TV, XV, YV)
+         use precision, only: dp
          use m_splint
          implicit none
          integer :: n
-         double precision :: rn
+         real(kind=dp) :: rn
 !     ZOEK MEEST NABIJE PUNT OP SPLINE
 !     START ZOEKEN ROND TV, ZOEK MET GULDEN SNEDE ROUTINE
 !     N IS MAXIMUM INDEX ZOEKGEBIED
-         double precision :: X(N), X2(N), Y(N), Y2(N), XV, YV, XX, YY, TV
-         double precision :: AX, BX, CX, TOL, DIS
+         real(kind=dp) :: X(N), X2(N), Y(N), Y2(N), XV, YV, XX, YY, TV
+         real(kind=dp) :: AX, BX, CX, TOL, DIS
 
 !     RLEN = SQRT((X(1)-X(2))**2+(Y(1)-Y(2))**2)
          TOL = 0.000001d0

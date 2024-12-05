@@ -32,11 +32,11 @@
 
 module m_wave_makeplotvars
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: wave_makeplotvars
+   public :: wave_makeplotvars
 
 contains
 

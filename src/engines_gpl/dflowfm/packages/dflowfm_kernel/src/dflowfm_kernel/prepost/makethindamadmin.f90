@@ -31,6 +31,7 @@
 !
 
 subroutine makethindamadmin()
+   use precision, only: dp
    use m_flowgeom
    use network_data
    use m_alloc
@@ -41,7 +42,7 @@ subroutine makethindamadmin()
    implicit none
 
    integer :: n, kk, L, k1, k3, k4, ja, ierr
-   double precision :: cs, sn, a, b, sig, dis, xn, yn, rrr
+   real(kind=dp) :: cs, sn, a, b, sig, dis, xn, yn, rrr
 
    ! count thin dam points
    nthd = 0

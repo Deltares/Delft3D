@@ -32,18 +32,19 @@
 
 module m_smovabs
 
-implicit none
+   implicit none
 
 contains
 
- subroutine smovabs(n, sx1, sy1)
-    use m_shipcoor
-    use m_movabs
-    implicit none
-    integer :: n
-    double precision :: sx1, sx2, sy1, sy2
-    call shipcoor(n, sx1, sy1, sx2, sy2)
-    call movabs(sx2, sy2)
- end subroutine smovabs
+   subroutine smovabs(n, sx1, sy1)
+      use precision, only: dp
+      use m_shipcoor
+      use m_movabs
+      implicit none
+      integer :: n
+      real(kind=dp) :: sx1, sx2, sy1, sy2
+      call shipcoor(n, sx1, sy1, sx2, sy2)
+      call movabs(sx2, sy2)
+   end subroutine smovabs
 
 end module m_smovabs

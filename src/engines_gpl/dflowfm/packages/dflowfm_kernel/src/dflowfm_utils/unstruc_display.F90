@@ -93,7 +93,7 @@ contains
       integer :: jaeps, jaland
       integer :: KRGB(4)
       integer :: jaopengl_loc
-      double precision :: x, y, dy, asp
+      real(kind=dp) :: x, y, dy, asp
 
       ! Put .dis file into a property tree
       call tree_create(trim(filename), dis_ptr)
@@ -486,7 +486,7 @@ contains
 
       integer :: n, NN, K, kb, kt
       character(len=40) :: tex
-      double precision :: temb, temt
+      real(kind=dp) :: temb, temt
 
       if (ndrawobs == 1) return
 
@@ -573,7 +573,7 @@ contains
       integer :: m1_, m2_, ncol_
       integer :: m, n2, numpi, numnew
 
-      double precision, allocatable, dimension(:) :: xlist, ylist
+      real(kind=dp), allocatable, dimension(:) :: xlist, ylist
 
 !   allocate
       allocate (xlist(1), ylist(1))
@@ -627,13 +627,13 @@ contains
       implicit none
 
       integer, intent(in) :: numpi
-      double precision, dimension(numpi), intent(in) :: xh, yh
+      real(kind=dp), dimension(numpi), intent(in) :: xh, yh
       integer, intent(in) :: ncol
 
       !integer :: imax = 500 ! TODO: uit DIMENS [AvD]
-!    double precision :: XH2(1000), YH2(1000)
-      double precision, allocatable, dimension(:) :: xh2, yh2
-      double precision :: xk, yk, tn
+!    real(kind=dp) :: XH2(1000), YH2(1000)
+      real(kind=dp), allocatable, dimension(:) :: xh2, yh2
+      real(kind=dp) :: xk, yk, tn
       integer :: i, met, k, numk
       MET = NDRAW(15)
 
@@ -728,7 +728,7 @@ contains
          implicit none
          integer, intent(in) :: numw !< Available chars (10?)
          integer, intent(in) :: numd !< Num digits preferred (3?)
-         double precision, intent(in) :: val !< Value to be printed
+         real(kind=dp), intent(in) :: val !< Value to be printed
 
          character(len=7) :: fmt
          fmt = '(f10.3)'
@@ -773,7 +773,7 @@ contains
       use m_htext
 
       integer :: i, L, k3, k4, ncol
-      double precision :: xu, yu
+      real(kind=dp) :: xu, yu
 
       if (ndrawFixedWeirs == 0 .or. nfxw == 0) return
 
@@ -853,7 +853,7 @@ contains
       integer, intent(in) :: jaArrow !< Whether or not (1/0) to draw an outgoing arrow.
 
       integer :: j, jj, jmin, jmax
-      double precision :: xt, yt, rn, rt, xx1, yy1, xx2, yy2, xx, yy
+      real(kind=dp) :: xt, yt, rn, rt, xx1, yy1, xx2, yy2, xx, yy
 
       call setcol(ncol)
 
@@ -948,11 +948,11 @@ contains
       use m_dminmax
       use m_drawthis
       implicit none
-      double precision :: aspect
+      real(kind=dp) :: aspect
       integer :: n
-      double precision :: xcmax, xcmin, xlmax, xlmin, xplmax, xplmin, xsmax, xsmin, xspmax, xspmin
-      double precision :: ycmax, ycmin, ylmax, ylmin, yplmax, yplmin, ysmax, ysmin, yspmax, yspmin
-      double precision :: XH(10), YH(10)
+      real(kind=dp) :: xcmax, xcmin, xlmax, xlmin, xplmax, xplmin, xsmax, xsmin, xspmax, xspmin
+      real(kind=dp) :: ycmax, ycmin, ylmax, ylmin, yplmax, yplmin, ysmax, ysmin, yspmax, yspmin
+      real(kind=dp) :: XH(10), YH(10)
 
       call DMINMAX(XLAN, MXLAN, XLMIN, XLMAX, MAXLAN)
       call DMINMAX(YLAN, MXLAN, YLMIN, YLMAX, MAXLAN)
@@ -1075,8 +1075,8 @@ contains
       implicit none
 
       integer :: is, link
-      double precision :: icon_rw_size !< Size of plotted icons in real-world coordinates.
-      double precision :: x, y
+      real(kind=dp) :: icon_rw_size !< Size of plotted icons in real-world coordinates.
+      real(kind=dp) :: x, y
       logical :: active
 
       if (ndrawStructures <= 1) then
@@ -1149,9 +1149,9 @@ contains
    subroutine drawTriangle(x, y, size, icolfill, icoledge, filled)
       implicit none
 
-      double precision, intent(in) :: x !< x coordinate of center of triangle.
-      double precision, intent(in) :: y !< y coordinate of center of triangle.
-      double precision, intent(in) :: size !< size of triangle in world coordinates.
+      real(kind=dp), intent(in) :: x !< x coordinate of center of triangle.
+      real(kind=dp), intent(in) :: y !< y coordinate of center of triangle.
+      real(kind=dp), intent(in) :: size !< size of triangle in world coordinates.
       integer, intent(in) :: icolfill !< Colour number for inner fill
       integer, intent(in) :: icoledge !< Colour number for edge
       logical, intent(in) :: filled !< Filled or empty
@@ -1184,14 +1184,14 @@ contains
    subroutine drawStar(x, y, size, icolfill, icoledge)
       implicit none
 
-      double precision, intent(in) :: x !< x coordinate of center of star.
-      double precision, intent(in) :: y !< y coordinate of center of star.
-      double precision, intent(in) :: size !< size of start in world coordinates.
+      real(kind=dp), intent(in) :: x !< x coordinate of center of star.
+      real(kind=dp), intent(in) :: y !< y coordinate of center of star.
+      real(kind=dp), intent(in) :: size !< size of start in world coordinates.
       integer, intent(in) :: icolfill !< Colour number for inner fill
       integer, intent(in) :: icoledge !< Colour number for edge
 
-      double precision, dimension(8) :: xs
-      double precision, dimension(8) :: ys
+      real(kind=dp), dimension(8) :: xs
+      real(kind=dp), dimension(8) :: ys
 
       xs = (/x - size / 2, x - size / 8, x, x + size / 8, x + size / 2, x + size / 8, x, x - size / 8/)
       ys = (/y, y - size / 8, y - size / 2, y - size / 8, y, y + size / 8, y + size / 2, y + size / 8/)
@@ -1402,12 +1402,12 @@ contains
       call IOUTSTRINGXY(1, ipos, tex)
    end subroutine Write2ScrInt
 
-   !> Writes a line with double precision data to the interacter screen.
+   !> Writes a line with real(kind=dp) data to the interacter screen.
    subroutine Write2ScrDouble(ipos, desc, val, unit)
       implicit none
       integer, intent(inout) :: ipos
       character(len=*), intent(in) :: desc
-      double precision, intent(in) :: val
+      real(kind=dp), intent(in) :: val
       character(len=*), intent(in) :: unit
 
       character :: tex * 48, help * 27
@@ -1443,7 +1443,7 @@ subroutine zoomshift(nshift) ! based on polygon
    use m_drawthis
    implicit none
    integer :: nshift, i1
-   double precision :: dr, x00, y00, dxw, dyw, rshift
+   real(kind=dp) :: dr, x00, y00, dxw, dyw, rshift
 
    nshift = nshift + 1
    rshift = dble(nshift) / dble(numzoomshift)
@@ -1480,7 +1480,7 @@ subroutine tekwindvector()
    use m_gtext
 
    implicit none
-   double precision :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa
+   real(kind=dp) :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa
    character tex * 60
    integer :: ncol, k, kk, vlatin, vlatout, i, mout
 
@@ -1761,8 +1761,8 @@ subroutine upotukinueaa(upot, ukin, ueaa)
    use m_flowgeom
    use m_missing
    implicit none
-   double precision :: upot, ukin, ueaa
-   double precision :: vtot, roav, zz, rhok, bmin
+   real(kind=dp) :: upot, ukin, ueaa
+   real(kind=dp) :: vtot, roav, zz, rhok, bmin
    integer k, kk
 
    upot = 0d0; ukin = 0d0; ueaa = 0d0; vtot = 0d0; roav = 0d0; bmin = 1d9

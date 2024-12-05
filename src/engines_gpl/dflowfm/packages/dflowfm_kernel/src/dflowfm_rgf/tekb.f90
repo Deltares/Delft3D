@@ -31,12 +31,13 @@
 !
 
       subroutine TEKB(X, Y, MMAX, NMAX, NCOL)
+         use precision, only: dp
          use m_grid_block
          use m_cirr
          use m_tekln2
          implicit none
          integer :: mmax, nmax, ncol
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
+         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
          integer :: i
 
          if (ITYPE == 1) then

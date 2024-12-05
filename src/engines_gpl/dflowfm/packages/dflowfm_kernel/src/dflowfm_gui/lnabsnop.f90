@@ -32,15 +32,16 @@
 module m_lnabs_nop
    implicit none
 contains
-      subroutine LNABSnop(X, Y)
-         use unstruc_opengl, only: InOpenGLRendering, LineTo
+   subroutine LNABSnop(X, Y)
+      use precision, only: dp
+      use unstruc_opengl, only: InOpenGLRendering, LineTo
 
-         double precision :: x, y
+      real(kind=dp) :: x, y
 
-         if (InOpenGLRendering) then
-            call LineTo(X, Y)
-         else
-            call IGRLINETO(real(X), real(y))
-         end if
-      end subroutine LNABSnop
+      if (InOpenGLRendering) then
+         call LineTo(X, Y)
+      else
+         call IGRLINETO(real(X), real(y))
+      end if
+   end subroutine LNABSnop
 end module m_lnabs_nop

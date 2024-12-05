@@ -34,13 +34,14 @@ contains
 
 !>    plot a statusbar in the GUI
    subroutine READYY(TEXT, AF)
+      use precision, only: dp
       use m_devices
       use m_gui
       use m_fillup
       implicit none
 
       character TEXT * (*), BALK * 400
-      double precision :: af
+      real(kind=dp) :: af
 
       integer, save :: ih
       integer, save :: ini = 0

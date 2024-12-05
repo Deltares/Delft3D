@@ -31,6 +31,7 @@
 !
 
   subroutine NODTOALL()
+     use precision, only: dp
      use m_addelem, only: addelem
      use m_netw
      use gridoperations
@@ -39,7 +40,7 @@
      integer :: k
      integer :: k1
      integer :: n1
-     double precision :: XX, YY, ZZ
+     real(kind=dp) :: XX, YY, ZZ
      N1 = NUMK
      XX = 0.5d0; YY = 0.5d0; ZZ = 0d0
      call GIVENEWNODENUM(K1)

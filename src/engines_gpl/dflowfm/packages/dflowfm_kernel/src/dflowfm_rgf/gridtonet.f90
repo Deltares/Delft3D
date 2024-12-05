@@ -31,6 +31,7 @@
 !
 
      subroutine gridtonet()
+        use precision, only: dp
         use m_addnetpointnocheck, only: addnetpointnocheck
         use m_confrm
         use m_netw
@@ -41,7 +42,7 @@
         use m_readyy
         use m_set_nod_adm
         implicit none
-        double precision :: af
+        real(kind=dp) :: af
 
         integer, allocatable :: mn(:, :)
         integer :: k0, l0, ja, jadoorladen, i, j, k, l, ierr

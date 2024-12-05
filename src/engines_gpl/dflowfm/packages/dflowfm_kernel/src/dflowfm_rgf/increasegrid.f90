@@ -32,32 +32,32 @@
 module m_increase_grid
    implicit none
 contains
-      subroutine INCREASEGRID(M, N)
-         use M_GRID
-         use M_MISSING, only: dxymis
-         use m_alloc
+   subroutine INCREASEGRID(M, N)
+      use M_GRID
+      use M_MISSING, only: dxymis
+      use m_alloc
 
-         integer :: m, n
+      integer :: m, n
 
-         integer, dimension(2) :: ibounds, iboundsp1
+      integer, dimension(2) :: ibounds, iboundsp1
 
-         !if (m <= mmax .and. n <= nmax) return
-         !Freshly allocate arrays, so that size fits exactly (e.g., for passing as 2D arrays to ecrrea)
+      !if (m <= mmax .and. n <= nmax) return
+      !Freshly allocate arrays, so that size fits exactly (e.g., for passing as 2D arrays to ecrrea)
 !      if (allocated(xc)) deallocate (xc,yc,zc,ijc,ijyes)
 
 !      mmax = m ; nmax = n ; MNMAX = MAX(M,N)
 !      ibounds   = (/ mmax, nmax /)
 !      iboundsp1 = (/ mmax+1, nmax+1 /)
 
-         mmax = m + 1; nmax = n + 1; MNMAX = max(M, N)
-         ibounds = (/mmax, nmax/)
-         iboundsp1 = ibounds
+      mmax = m + 1; nmax = n + 1; MNMAX = max(M, N)
+      ibounds = (/mmax, nmax/)
+      iboundsp1 = ibounds
 
-         call realloc(xc, ibounds, fill=dxymis)
-         call realloc(yc, ibounds, fill=dxymis)
-         call realloc(zc, iboundsp1, fill=dxymis)
-         call realloc(ijc, ibounds, fill=0)
-         call realloc(ijyes, ibounds, fill=0)
+      call realloc(xc, ibounds, fill=dxymis)
+      call realloc(yc, ibounds, fill=dxymis)
+      call realloc(zc, iboundsp1, fill=dxymis)
+      call realloc(ijc, ibounds, fill=0)
+      call realloc(ijyes, ibounds, fill=0)
 
-      end subroutine INCREASEGRID
+   end subroutine INCREASEGRID
 end module m_increase_grid

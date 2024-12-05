@@ -32,26 +32,27 @@
 
 module m_checktrianglenetcell
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: checktrianglenetcell
+   public :: checktrianglenetcell
 
 contains
 
    subroutine CHECKTRIANGLEnetcell(N, JA, phimin, phimax)
+      use precision, only: dp
       use M_netw
       use M_SFERIC
       use m_ec_triangle
       use m_missing, only: dxymis
       use geometry_module, only: dcosphi
 
-      double precision :: phimin, phimax
+      real(kind=dp) :: phimin, phimax
       integer :: n, ja
 
       integer :: k0, k1, k2, n0, n2, nn
-      double precision :: X0, Y0, X1, Y1, X2, Y2, COSPHI, PHI
+      real(kind=dp) :: X0, Y0, X1, Y1, X2, Y2, COSPHI, PHI
       JA = 1
       phimin = 1d3; phimax = 0d0
       do NN = 1, 3

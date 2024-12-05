@@ -32,7 +32,7 @@
 
 module m_nfiles
 
-implicit none
+   implicit none
 
 contains
 
@@ -348,8 +348,8 @@ contains
             else
                ja = 0
             end if
-         ipli=0
-         CALL reapol_nampli(MLAN, ja,1,ipli) ! Read pol/pli as crs
+            ipli = 0
+            call reapol_nampli(MLAN, ja, 1, ipli) ! Read pol/pli as crs
             call pol_to_crosssections(xpl, ypl, npl, names=nampli)
             if (NPL > 0) call delpol()
             call MESSAGE('YOU LOADED ', filnam, ' ')

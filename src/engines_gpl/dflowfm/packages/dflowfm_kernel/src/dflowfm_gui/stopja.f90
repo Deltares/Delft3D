@@ -32,40 +32,40 @@
 
 module m_stopja
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine STOPJA(JA)
-         use unstruc_files
-         use m_devices
-         use m_okay
-         implicit none
-         integer :: imenutwo
-         integer :: infocursor
-         integer :: iopt
-         integer :: ixp
-         integer :: iyp
-         integer :: ja
-         IXP = INFOCURSOR(1)
-         IYP = INFOCURSOR(2)
-         call INPOPUP('ON')
-         call ITEXTCOLOUR('BWHITE', 'RED')
-         call INHIGHLIGHT('BLUE', 'BWHITE')
-         call OKAY(0)
-         IOPT = IMenuTwo &
-                ('NO', 'YES', (IWS - 41) / 2, IHS / 2, 'DO YOU REALLY WANT TO '// &
-                 'QUIT THE PROGRAM ? ', 1, 1)
-         call INPOPUP('OFF')
-         if (IOPT == 1) then
-            JA = 0
-         else
-            write (msgbuf, '(A)') 'YOU STOPPED THE PROGRAM'
-            call msg_flush()
-            call IWinClose(1)
-            call STOPINT()
-         end if
-         return
-      end
+   subroutine STOPJA(JA)
+      use unstruc_files
+      use m_devices
+      use m_okay
+      implicit none
+      integer :: imenutwo
+      integer :: infocursor
+      integer :: iopt
+      integer :: ixp
+      integer :: iyp
+      integer :: ja
+      IXP = INFOCURSOR(1)
+      IYP = INFOCURSOR(2)
+      call INPOPUP('ON')
+      call ITEXTCOLOUR('BWHITE', 'RED')
+      call INHIGHLIGHT('BLUE', 'BWHITE')
+      call OKAY(0)
+      IOPT = IMenuTwo &
+             ('NO', 'YES', (IWS - 41) / 2, IHS / 2, 'DO YOU REALLY WANT TO '// &
+              'QUIT THE PROGRAM ? ', 1, 1)
+      call INPOPUP('OFF')
+      if (IOPT == 1) then
+         JA = 0
+      else
+         write (msgbuf, '(A)') 'YOU STOPPED THE PROGRAM'
+         call msg_flush()
+         call IWinClose(1)
+         call STOPINT()
+      end if
+      return
+   end
 
 end module m_stopja

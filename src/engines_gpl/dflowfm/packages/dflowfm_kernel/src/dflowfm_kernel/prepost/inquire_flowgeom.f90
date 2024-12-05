@@ -67,6 +67,7 @@ contains
 
    !> Find flow link number(s) intersected by a given polyline.
    function findlink_by_pli(npl, xpl, ypl, Larr, numlinks, lftopol, sortlinks, linktype) result(ierr)
+      use precision, only: dp
       use m_flowgeom, only: xz, yz, ln, lnx, lnx1D
       use stdlib_sorting, only: sort_index
       use dfm_error
@@ -74,20 +75,20 @@ contains
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       integer, intent(in) :: npl !< Number of polyline points.
-      double precision, intent(in) :: xpl(:) !< x-coordinates of the polyline.
-      double precision, intent(in) :: ypl(:) !< y-coordinates of the polyline.
+      real(kind=dp), intent(in) :: xpl(:) !< x-coordinates of the polyline.
+      real(kind=dp), intent(in) :: ypl(:) !< y-coordinates of the polyline.
       integer, intent(out) :: Larr(:) !< array with flow links, intersected by the polyline. Length is the resonsibility of the call site.
       integer, intent(out) :: numlinks !< Number of found flow links.
       integer, optional, intent(in) :: sortlinks !< Indicates whether the flow links have to be sorted.
       integer, optional, intent(in) :: linktype !< Limit search to specific link types: only 1D flow links (linktype==IFLTP_1D), 2D (linktype==IFLTP_2D), or both (linktype==IFLTP_ALL).
       integer, optional, intent(inout) :: lftopol(:) !< Mapping array from flow link to intersecting polyline segment.
 
-      double precision :: xa, ya
-      double precision :: xb, yb
-      double precision :: xm, ym
-      double precision :: crpm
-      double precision :: dist
-      double precision, allocatable :: distsStartPoly(:)
+      real(kind=dp) :: xa, ya
+      real(kind=dp) :: xb, yb
+      real(kind=dp) :: xm, ym
+      real(kind=dp) :: crpm
+      real(kind=dp) :: dist
+      real(kind=dp), allocatable :: distsStartPoly(:)
       integer, allocatable :: sortedIndices(:)
       integer, allocatable :: tempLinkArray(:)
       integer :: found
@@ -173,12 +174,13 @@ contains
 
    !> Find the nearest flow link number for a given location, using (branch index, chainage).
    function findlink_by_branchindex(branchindex, chainage, L) result(ierr)
+      use precision, only: dp
       use unstruc_channel_flow
       use dfm_error
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       integer, intent(in) :: branchindex !< Branch index in network brs set.
-      double precision, intent(in) :: chainage !< Chainage of item on the branch with index branchindex
+      real(kind=dp), intent(in) :: chainage !< Chainage of item on the branch with index branchindex
       integer, intent(out) :: L !< Found flow link number, -1 when not found.
 
       L = -1
@@ -194,13 +196,14 @@ contains
 
    !> Find the nearest flow link number for a given location, using (branch id, chainage).
    function findlink_by_branchid(branchid, chainage, L) result(ierr)
+      use precision, only: dp
       use unstruc_channel_flow
       use m_hash_search
       use dfm_error
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       character(len=Idlen), intent(in) :: branchid !< Branch Id to be searched in network brs set.
-      double precision, intent(in) :: chainage !< Chainage of item on the branch with index branchindex.
+      real(kind=dp), intent(in) :: chainage !< Chainage of item on the branch with index branchindex.
       integer, intent(out) :: L !< Found flow link number, -1 when not found.
 
       integer :: branchindex
@@ -327,6 +330,7 @@ contains
 
    !> find flow node number(s), enclosed in a polygon
    function findnode_by_pol(npol, xpol, ypol, points, numpoints, nodetype) result(ierr)
+      use precision, only: dp
       use m_flowgeom, only: xz, yz, ndx2D, ndxi
       use messagehandling
       use m_polygon, only: xpl, ypl, npl, increasepol
@@ -334,8 +338,8 @@ contains
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       integer, intent(in) :: npol !< number of points in the polygon
-      double precision, intent(in) :: xpol(:) !< x-coordinates of the points in the polygon
-      double precision, intent(in) :: ypol(:) !< y-coordinates of the points in the polygon
+      real(kind=dp), intent(in) :: xpol(:) !< x-coordinates of the points in the polygon
+      real(kind=dp), intent(in) :: ypol(:) !< y-coordinates of the points in the polygon
       integer, intent(out) :: points(:) !< array with points, inside the polygon. Length is the resonsibility of the call-side
       integer, intent(out) :: numpoints !< number of found links
       integer, optional, intent(in) :: nodetype !< select for search range only 1D nodes (nodetype==FL_1D), 2d (nodetype==FL_2D), or both (nodetype==FL_1D+FL_2D)
@@ -420,13 +424,14 @@ contains
 
    !> find the flow node number, using (branch id, chainage).
    function findnode_by_branchid(branchId, chainage, nodenr) result(ierr)
+      use precision, only: dp
       use m_hash_search
       use unstruc_channel_flow
       use dfm_error
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       character(len=Idlen), intent(in) :: branchid !< branch Id
-      double precision, intent(in) :: chainage !< chainage of item on the branch with id branchid
+      real(kind=dp), intent(in) :: chainage !< chainage of item on the branch with id branchid
       integer, intent(out) :: nodenr !< Found flow node number, -1 when not found.
 
       integer :: branchindex
@@ -445,13 +450,14 @@ contains
 
    !> Find the flow node number, using (branch index, chainage).
    function findnode_by_branchindex(branchIndex, chainage, nodenr) result(ierr)
+      use precision, only: dp
       use m_hash_search
       use unstruc_channel_flow
       use dfm_error
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       integer, intent(in) :: branchindex !< branch index
-      double precision, intent(in) :: chainage !< chainage of item on the branch with index branchindex
+      real(kind=dp), intent(in) :: chainage !< chainage of item on the branch with index branchindex
       integer, intent(out) :: nodenr !< Found flow node number, -1 when not found.
 
       nodenr = -1

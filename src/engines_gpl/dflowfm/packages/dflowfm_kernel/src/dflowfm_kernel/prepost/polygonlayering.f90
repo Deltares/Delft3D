@@ -31,6 +31,7 @@
 !
 
  subroutine polygonlayering(mpol)
+    use precision, only: dp
     use m_closedefinedflownode, only: closedefinedflownode
     use m_flow
     use m_flowgeom
@@ -47,7 +48,7 @@
     integer :: mpol
     integer :: k, j, jstart, jend, ierr, jdla, ipoint, jakdtree, ndim, n, in, nspl, n1
     integer, allocatable :: nds(:), ndn(:)
-    double precision, allocatable :: zz(:)
+    real(kind=dp), allocatable :: zz(:)
 
     call reapol(mpol, 0)
 

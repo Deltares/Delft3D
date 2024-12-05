@@ -32,6 +32,7 @@
 
 !> generate curvilinear grid from spline
 subroutine spline2curvi()
+   use precision, only: dp
 
    use m_confrm
    use m_comp_edgevel
@@ -56,29 +57,29 @@ subroutine spline2curvi()
    integer :: ierror ! 0: no error, 1: error
 
    integer, allocatable, dimension(:) :: ifront ! active node in front (1) or not (0), dim(mc)
-   double precision, allocatable, dimension(:) :: edgevel ! grid layer segment normal-velocity, dim(mc-1)
+   real(kind=dp), allocatable, dimension(:) :: edgevel ! grid layer segment normal-velocity, dim(mc-1)
    integer, allocatable, dimension(:, :) :: nfac1 ! number of cells perpendicular to center spline, per edge on spline for each subinterval of grid layers, dimension(Nsubmax,mc-1)
-   double precision, allocatable, dimension(:, :) :: dgrow1 ! grow factor, per edge on the spline for each subinterval of grid layers, dimension(Nsubmax,mc-1)
+   real(kind=dp), allocatable, dimension(:, :) :: dgrow1 ! grow factor, per edge on the spline for each subinterval of grid layers, dimension(Nsubmax,mc-1)
 
    integer, allocatable, dimension(:) :: nlist ! dummy array, dimension(Nsubmax)
-   double precision :: dt ! time step
+   real(kind=dp) :: dt ! time step
    integer :: jacancelled
    integer :: igL
    integer :: i, is, js, isnew, isubL, isubR, j, jc
    integer :: mcs_old, j_loc
    integer :: istop, jatopol, mfacmax
    integer :: inhul
-   double precision :: hmax
+   real(kind=dp) :: hmax
 !  grid edge-based cross splines
-   double precision, dimension(2) :: xs1, ys1
-   double precision :: xe, ye, nx, ny
+   real(kind=dp), dimension(2) :: xs1, ys1
+   real(kind=dp) :: xe, ye, nx, ny
    integer, dimension(3, mcs) :: iLRmfac
    integer, dimension(mcs) :: id
    logical :: Lnewsplines
    logical :: jaAllPoints
    integer, external :: comp_nfac, get_isub
-   double precision, external :: splinelength, comp_dgrow
-   double precision, parameter :: dnu = -0.50d0
+   real(kind=dp), external :: splinelength, comp_dgrow
+   real(kind=dp), parameter :: dnu = -0.50d0
    integer :: nul, nul1(1), nul2(1, 1)
 
 !  Note: edge_vel is the grow velocity per front edge and in Cartesian coordinates

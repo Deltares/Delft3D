@@ -32,52 +32,53 @@
 module m_tek_grd
    implicit none
 contains
-      subroutine TEKgrd(XC, YC, MMAX, NMAX, m1, n1, m2, n2, NCOL, MET, key, MC)
-         use m_halt2
-         use m_jgrline8
-         use m_tek_num_netcells
-         use m_set_col
+   subroutine TEKgrd(XC, YC, MMAX, NMAX, m1, n1, m2, n2, NCOL, MET, key, MC)
+      use precision, only: dp
+      use m_halt2
+      use m_jgrline8
+      use m_tek_num_netcells
+      use m_set_col
 
-         integer :: mmax, nmax, m1, n1, m2, n2, ncol, met, key, mc
-         double precision :: XC(MMAX, NMAX), YC(MMAX, NMAX), xlist(nmax), ylist(nmax)
+      integer :: mmax, nmax, m1, n1, m2, n2, ncol, met, key, mc
+      real(kind=dp) :: XC(MMAX, NMAX), YC(MMAX, NMAX), xlist(nmax), ylist(nmax)
 
-         integer :: i, j, kmax, ja, key_local
+      integer :: i, j, kmax, ja, key_local
 
-         key_local = key
-         
-         if (MET == 0 .or. MC == 0) return
-         JA = 0
+      key_local = key
 
-         call SETCOL(NCOL)
-         if (MET == 2 .or. MET == 4) call IGRLINETYPE(1)
+      if (MET == 0 .or. MC == 0) return
+      JA = 0
 
-         KMAX = 8
-         do J = N1, N2
-            if (mod(J, 10) == 0) call HALT2(JA)
-            if (JA == 1) then
-               if (MET == 2 .or. MET == 4) call IGRLINETYPE(0)
-               return
-            end if
+      call SETCOL(NCOL)
+      if (MET == 2 .or. MET == 4) call IGRLINETYPE(1)
 
-            call JGRLINE8(Xc(M1, J), Yc(M1, J), M2 - M1 + 1)
-         end do
-
-         do I = M1, M2
-            if (mod(I, 10) == 0) call HALT2(JA)
-            if (JA == 1) then
-               if (MET == 2 .or. MET == 4) call IGRLINETYPE(0)
-               return
-            end if
-
-            xlist(1:N2 - N1 + 1) = xc(i, N1:N2)
-            ylist(1:N2 - N1 + 1) = yc(i, N1:N2)
-            call JGRLINE8(xlist, ylist, N2 - N1 + 1)
-         end do
-
-         if (MET == 2 .or. MET == 4) call IGRLINETYPE(0)
-         if (MET == 5) then
-            call TEKnumnetcells(0)
+      KMAX = 8
+      do J = N1, N2
+         if (mod(J, 10) == 0) call HALT2(JA)
+         if (JA == 1) then
+            if (MET == 2 .or. MET == 4) call IGRLINETYPE(0)
+            return
          end if
 
-      end subroutine tekgrd
+         call JGRLINE8(Xc(M1, J), Yc(M1, J), M2 - M1 + 1)
+      end do
+
+      do I = M1, M2
+         if (mod(I, 10) == 0) call HALT2(JA)
+         if (JA == 1) then
+            if (MET == 2 .or. MET == 4) call IGRLINETYPE(0)
+            return
+         end if
+
+         xlist(1:N2 - N1 + 1) = xc(i, N1:N2)
+         ylist(1:N2 - N1 + 1) = yc(i, N1:N2)
+         call JGRLINE8(xlist, ylist, N2 - N1 + 1)
+      end do
+
+      if (MET == 2 .or. MET == 4) call IGRLINETYPE(0)
+      if (MET == 5) then
+         call TEKnumnetcells(0)
+      end if
+
+   end subroutine tekgrd
 end module m_tek_grd

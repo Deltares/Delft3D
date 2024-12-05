@@ -31,6 +31,7 @@
 !
 
       subroutine MODGR4(NUMP, LANDORSPLINE)
+         use precision, only: dp
          use m_grid
          use m_landboundary
          use M_SPLINES, only: mcs, splnump => nump
@@ -40,7 +41,7 @@
          implicit none
          integer :: nump, landorspline
          integer :: m1, m2, n1, n2, i, j, in, jn, ncs, jdum
-         double precision :: EPS, X0, Y0, XN, YN, DIS, RL
+         real(kind=dp) :: EPS, X0, Y0, XN, YN, DIS, RL
 !     TO LAND
          data EPS/0.00001d0/
          if (LANDORSPLINE == 1) then

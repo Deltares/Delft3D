@@ -31,12 +31,13 @@
 !
 
    subroutine CLOSEWORLD()
+      use precision, only: dp
       use M_NETW
       use M_SFERIC
       use m_mergenodes
       implicit none
       integer :: K1, K2, ja
-      double precision :: xmn, xmx
+      real(kind=dp) :: xmn, xmx
 
       if (JSFERIC == 0) return
 

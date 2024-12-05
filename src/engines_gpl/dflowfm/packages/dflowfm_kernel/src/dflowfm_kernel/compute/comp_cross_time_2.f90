@@ -32,133 +32,134 @@
 
 module m_comp_cross_time_2
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: comp_cross_time_2
+   public :: comp_cross_time_2
 
 contains
 
-double precision function comp_cross_time_2(x1, x3, x4, v1, v3, v4, dclear)
+   real(kind=dp) function comp_cross_time_2(x1, x3, x4, v1, v3, v4, dclear)
+      use precision, only: dp
 
-   use m_missing
-   use geometry_module, only: dlinedis
-   use m_sferic, only: jsferic, jasfer3D
-   use m_comp_roots4
-   use m_comp_cross_time_1, only: comp_cross_time_1
+      use m_missing
+      use geometry_module, only: dlinedis
+      use m_sferic, only: jsferic, jasfer3D
+      use m_comp_roots4
+      use m_comp_cross_time_1, only: comp_cross_time_1
 
-   implicit none
+      implicit none
 
-   double precision, dimension(2) :: x1, x3, x4 !< coordinates
-   double precision, dimension(2) :: v1, v3, v4 !< velocities
-   double precision :: dclear !< clearance
+      real(kind=dp), dimension(2) :: x1, x3, x4 !< coordinates
+      real(kind=dp), dimension(2) :: v1, v3, v4 !< velocities
+      real(kind=dp) :: dclear !< clearance
 
-   double precision, dimension(2) :: xdum1, xdum2
-   double precision, dimension(4) :: x
-   double precision, dimension(5) :: coeffs
+      real(kind=dp), dimension(2) :: xdum1, xdum2
+      real(kind=dp), dimension(4) :: x
+      real(kind=dp), dimension(5) :: coeffs
 
-   double precision :: a, b, c, dnow, xc, yc, dteps, deps
+      real(kind=dp) :: a, b, c, dnow, xc, yc, dteps, deps
 
-   double precision :: t1, t2, DdDt
+      real(kind=dp) :: t1, t2, DdDt
 
-   integer :: i, ja
+      integer :: i, ja
 
-   logical, external :: Lcrossgridline
+      logical, external :: Lcrossgridline
 
-   comp_cross_time_2 = 1d99
+      comp_cross_time_2 = 1d99
 
-   call dlinedis(x1(1), x1(2), x3(1), x3(2), x4(1), x4(2), ja, dnow, xc, yc, jsferic, jasfer3D, dmiss)
+      call dlinedis(x1(1), x1(2), x3(1), x3(2), x4(1), x4(2), ja, dnow, xc, yc, jsferic, jasfer3D, dmiss)
 
-   t2 = 1d99
+      t2 = 1d99
 
 !  only take nodes into account that are at the right-hand-side of the edge
-   if (-(x1(1) - x3(1)) * (x4(2) - x3(2)) + (x1(2) - x3(2)) * (x4(1) - x3(1)) < 0d0) return
+      if (-(x1(1) - x3(1)) * (x4(2) - x3(2)) + (x1(2) - x3(2)) * (x4(1) - x3(1)) < 0d0) return
 
-   if (dnow <= dclear .and. dclear > 0d0) then
-      t2 = comp_cross_time_1(x1, x3, x4, v1, v3, v4, 0d0)
+      if (dnow <= dclear .and. dclear > 0d0) then
+         t2 = comp_cross_time_1(x1, x3, x4, v1, v3, v4, 0d0)
 
-      if (t2 < 1d99) then
+         if (t2 < 1d99) then
 !        check if distance is increasing
-         dteps = 1d-2
-         call dlinedis(x1(1) + v1(1) * dteps, x1(2) + v1(2) * dteps, x3(1) + v3(1) * dteps, x3(2) + v3(2) * dteps, x4(1) + v4(1) * dteps, x4(2) + v4(2) * dteps, ja, deps, xc, yc, jsferic, jasfer3D, dmiss)
-         DdDt = (deps - dnow) / dteps
-         if (DdDt < -1d-4) then
+            dteps = 1d-2
+            call dlinedis(x1(1) + v1(1) * dteps, x1(2) + v1(2) * dteps, x3(1) + v3(1) * dteps, x3(2) + v3(2) * dteps, x4(1) + v4(1) * dteps, x4(2) + v4(2) * dteps, ja, deps, xc, yc, jsferic, jasfer3D, dmiss)
+            DdDt = (deps - dnow) / dteps
+            if (DdDt < -1d-4) then
 !            t2 = comp_cross_time_1(x1,x3,x4,v1,v3,v4,0d0)
-            t2 = 0d0
-         else
-            t2 = comp_cross_time_1(x1, x3, x4, v1, v3, v4, 0d0)
+               t2 = 0d0
+            else
+               t2 = comp_cross_time_1(x1, x3, x4, v1, v3, v4, 0d0)
+            end if
          end if
+
+         comp_cross_time_2 = t2
+         return
       end if
 
-      comp_cross_time_2 = t2
-      return
-   end if
+      t1 = comp_cross_time_1(x1, x3, x4, v1, v3, v4, dclear)
 
-   t1 = comp_cross_time_1(x1, x3, x4, v1, v3, v4, dclear)
-
-   if (t1 == DMISS .or. t1 <= 0d0) t1 = 1d99
+      if (t1 == DMISS .or. t1 <= 0d0) t1 = 1d99
 
 !   if ( dbdistance(x1(1),x1(2),x3(1),x3(2)).gt.dclear ) then
-   a = dot_product(v1 - v3, v1 - v3)
-   b = 2d0 * dot_product(v1 - v3, x1 - x3)
-   c = dot_product(x1 - x3, x1 - x3)
+      a = dot_product(v1 - v3, v1 - v3)
+      b = 2d0 * dot_product(v1 - v3, x1 - x3)
+      c = dot_product(x1 - x3, x1 - x3)
 
-   coeffs = (/0d0, 0d0, a, b, c - dclear * dclear/)
-   call comp_roots4(coeffs, x)
-   do i = 1, 4
-      if (x(i) == DMISS .or. x(i) <= 0d0 .or. x(i) > t1) cycle
+      coeffs = (/0d0, 0d0, a, b, c - dclear * dclear/)
+      call comp_roots4(coeffs, x)
+      do i = 1, 4
+         if (x(i) == DMISS .or. x(i) <= 0d0 .or. x(i) > t1) cycle
 !        check if intersection is in the right regime
-      if (dot_product(x1 - x3 + (v1 - v3) * x(i), x4 - x3 + (v4 - v3) * x(i)) > 0d0) then
-         cycle
-      end if
+         if (dot_product(x1 - x3 + (v1 - v3) * x(i), x4 - x3 + (v4 - v3) * x(i)) > 0d0) then
+            cycle
+         end if
 
 !        check if distance is decreasing
-      DdDt = 1d99
-      if (dclear > 0d0 .and. x(i) > 0d0) then
+         DdDt = 1d99
+         if (dclear > 0d0 .and. x(i) > 0d0) then
 !           check if the new connecting line does not cross the center spline gridline
-         xdum1 = x1 + v1 * x(i)
-         xdum2 = x3 + v3 * x(i)
-         if (.not. Lcrossgridline(xdum1, xdum2, 1)) then
-            DdDt = (2d0 * a * x(i) + b) / (2d0 * dclear)
+            xdum1 = x1 + v1 * x(i)
+            xdum2 = x3 + v3 * x(i)
+            if (.not. Lcrossgridline(xdum1, xdum2, 1)) then
+               DdDt = (2d0 * a * x(i) + b) / (2d0 * dclear)
+            end if
          end if
-      end if
 !        take minimum time
-      if (x(i) /= DMISS .and. x(i) > 0d0 .and. DdDt < 0d0) t1 = min(t1, x(i))
-   end do
+         if (x(i) /= DMISS .and. x(i) > 0d0 .and. DdDt < 0d0) t1 = min(t1, x(i))
+      end do
 !   end if
 !
 !   if ( dbdistance(x1(1),x1(2),x4(1),x4(2)).gt.dclear ) then
-   a = dot_product(v1 - v4, v1 - v4)
-   b = 2d0 * dot_product(v1 - v4, x1 - x4)
-   c = dot_product(x1 - x4, x1 - x4)
+      a = dot_product(v1 - v4, v1 - v4)
+      b = 2d0 * dot_product(v1 - v4, x1 - x4)
+      c = dot_product(x1 - x4, x1 - x4)
 
-   coeffs = (/0d0, 0d0, a, b, c - dclear * dclear/)
-   call comp_roots4(coeffs, x)
-   do i = 1, 4
-      if (x(i) == DMISS .or. x(i) <= 0d0 .or. x(i) > t1) cycle
+      coeffs = (/0d0, 0d0, a, b, c - dclear * dclear/)
+      call comp_roots4(coeffs, x)
+      do i = 1, 4
+         if (x(i) == DMISS .or. x(i) <= 0d0 .or. x(i) > t1) cycle
 !        check if intersection is in the right regime
-      if (dot_product(x1 - x4 + (v1 - v4) * x(i), x3 - x4 + (v3 - v4) * x(i)) > 0d0) then
-         cycle
-      end if
-!        check if distance is decreasing
-      DdDt = 1d99
-      if (dclear > 0d0 .and. x(i) > 0d0) then
-!           check if the new connecting line does not cross the center spline gridline
-         xdum1 = x1 + v1 * x(i)
-         xdum2 = x4 + v4 * x(i)
-         if (.not. Lcrossgridline(xdum1, xdum2, 1)) then
-            DdDt = (2d0 * a * x(i) + b) / (2d0 * dclear)
+         if (dot_product(x1 - x4 + (v1 - v4) * x(i), x3 - x4 + (v3 - v4) * x(i)) > 0d0) then
+            cycle
          end if
-      end if
+!        check if distance is decreasing
+         DdDt = 1d99
+         if (dclear > 0d0 .and. x(i) > 0d0) then
+!           check if the new connecting line does not cross the center spline gridline
+            xdum1 = x1 + v1 * x(i)
+            xdum2 = x4 + v4 * x(i)
+            if (.not. Lcrossgridline(xdum1, xdum2, 1)) then
+               DdDt = (2d0 * a * x(i) + b) / (2d0 * dclear)
+            end if
+         end if
 !        take minimum time
-      if (x(i) /= DMISS .and. x(i) > 0d0 .and. DdDt < 0d0) t1 = min(t1, x(i))
-   end do
+         if (x(i) /= DMISS .and. x(i) > 0d0 .and. DdDt < 0d0) t1 = min(t1, x(i))
+      end do
 !   end if
 
-   comp_cross_time_2 = min(t1, t2)
+      comp_cross_time_2 = min(t1, t2)
 
-   return
-end function comp_cross_time_2
+      return
+   end function comp_cross_time_2
 
 end module m_comp_cross_time_2

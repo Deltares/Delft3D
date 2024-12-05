@@ -35,6 +35,7 @@
 !---------------------------------------------------------------------------------------------------------------------------------
 ! solve_guus.f90
 module m_reduce
+   use precision, only: dp
 
    implicit none
    !
@@ -93,21 +94,21 @@ module m_reduce
    integer, allocatable :: intbuf(:) !< Work array in pointonstack>ijtrue
    logical, allocatable :: logbuf(:) !< Work array in pointonstack>ijtrue
 
-   double precision :: epscg = 1d-14 ! epsilon waterlevels cg method (maximum)
-   double precision :: epsdiff = 1d-3 ! tolerance in (outer) Schwarz iterations (for Schwarz solver)
+   real(kind=dp) :: epscg = 1d-14 ! epsilon waterlevels cg method (maximum)
+   real(kind=dp) :: epsdiff = 1d-3 ! tolerance in (outer) Schwarz iterations (for Schwarz solver)
    integer :: maxmatvecs = 100000 ! maximum number of matrix-vector multiplications in Saad solver
 
-   double precision, allocatable :: bbr(:), bbl(:) ! not left !
-   double precision, allocatable :: ccr(:), ccrsav(:)
-   double precision, allocatable :: ddr(:)
+   real(kind=dp), allocatable :: bbr(:), bbl(:) ! not left !
+   real(kind=dp), allocatable :: ccr(:), ccrsav(:)
+   real(kind=dp), allocatable :: ddr(:)
 
-   double precision, allocatable :: d0(:)
-   double precision, allocatable :: zkr(:)
-   double precision, allocatable :: pk(:)
-   double precision, allocatable :: apk(:)
-   double precision, allocatable :: rk(:)
+   real(kind=dp), allocatable :: d0(:)
+   real(kind=dp), allocatable :: zkr(:)
+   real(kind=dp), allocatable :: pk(:)
+   real(kind=dp), allocatable :: apk(:)
+   real(kind=dp), allocatable :: rk(:)
 
-   double precision, allocatable :: ccc(:) !< work array in gauss_elimination
+   real(kind=dp), allocatable :: ccc(:) !< work array in gauss_elimination
 
    integer, allocatable :: L1row(:), L2row(:), iarow(:), jrow(:), ifrow(:), ift(:) ! for jipjan
 
@@ -118,6 +119,6 @@ module m_reduce
    integer :: mindgr
    integer :: nocgiter
 
-   double precision, allocatable, dimension(:) :: s1_ghost ! for testsolver
+   real(kind=dp), allocatable, dimension(:) :: s1_ghost ! for testsolver
 
 end module m_reduce

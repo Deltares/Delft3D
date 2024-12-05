@@ -31,6 +31,7 @@
 !
 
    subroutine REMOVECOINCIDINGTRIANGLES()
+      use precision, only: dp
       use m_netw ! 2 REMOVES SMALL TRIANGLES NEXT TO
       use M_FLOWGEOM
       use unstruc_messages
@@ -40,13 +41,13 @@
       use m_mergenodes
       implicit none
 
-      double precision :: DX2, DY2, DX3, DY3, DEN
+      real(kind=dp) :: DX2, DY2, DX3, DY3, DEN
       integer :: K1, K2, K3, KDUM, N, L, LL, JA, IERR
 
-      double precision, allocatable :: XNW(:), YNW(:)
+      real(kind=dp), allocatable :: XNW(:), YNW(:)
       integer, allocatable :: NNW(:, :)
 
-      double precision, external :: getdx, getdy
+      real(kind=dp), external :: getdx, getdy
 
       call FINDCELLS(3)
 

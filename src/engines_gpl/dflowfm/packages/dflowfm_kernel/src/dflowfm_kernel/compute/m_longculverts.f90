@@ -34,6 +34,7 @@
 !! Long culverts are read from the structures.ini file(s), and converted into
 !! new netlinks and prof1D definitions.
 module m_longculverts
+   use precision, only: dp
    use m_getflowdir
    use MessageHandling
    use m_missing
@@ -67,13 +68,13 @@ module m_longculverts
       !< 1 only positive flow
       !< 2 only negative flow
       !< 3 no flow allowed
-      double precision :: friction_value = -999d0 !< Friction value
-      double precision, dimension(:), allocatable :: xcoords !< X-coordinates of the numlinks+1 points
-      double precision, dimension(:), allocatable :: ycoords !< Y-coordinates of the numlinks+1 points
-      double precision, dimension(:), allocatable :: bl !< Bed level on numlinks+1 points
-      double precision :: width !< Width of the rectangular culvert
-      double precision :: height !< Height of the rectangular culvert
-      double precision :: valve_relative_opening !< Relative valve opening: 0 = fully closed, 1 = fully open
+      real(kind=dp) :: friction_value = -999d0 !< Friction value
+      real(kind=dp), dimension(:), allocatable :: xcoords !< X-coordinates of the numlinks+1 points
+      real(kind=dp), dimension(:), allocatable :: ycoords !< Y-coordinates of the numlinks+1 points
+      real(kind=dp), dimension(:), allocatable :: bl !< Bed level on numlinks+1 points
+      real(kind=dp) :: width !< Width of the rectangular culvert
+      real(kind=dp) :: height !< Height of the rectangular culvert
+      real(kind=dp) :: valve_relative_opening !< Relative valve opening: 0 = fully closed, 1 = fully open
       integer :: flownode_up = 0 !< Flow node index at upstream
       integer :: flownode_dn = 0 !< Flow node index at downstream
    end type
@@ -857,6 +858,7 @@ contains
    !! In case of multiple culverts, the coordinate arrays must have missing value
    !! (dmiss) separators between each polyline.
    subroutine make1D2DLongCulverts(xplCulv, yplCulv, zplCulv, nplCulv, linksCulv)
+      use precision, only: dp
       use m_missing
       use m_polygon
       use geometry_module
@@ -867,14 +869,14 @@ contains
       use gridoperations
       implicit none
 
-      double precision, intent(in) :: xplCulv(:) !< x-coordinates of the polyline of one or more culverts.
-      double precision, intent(in) :: yplCulv(:) !< y-coordinates of the polyline of one or more culverts.
-      double precision, intent(in) :: zplCulv(:) !< z-coordinates of the polyline of one or more culverts.
+      real(kind=dp), intent(in) :: xplCulv(:) !< x-coordinates of the polyline of one or more culverts.
+      real(kind=dp), intent(in) :: yplCulv(:) !< y-coordinates of the polyline of one or more culverts.
+      real(kind=dp), intent(in) :: zplCulv(:) !< z-coordinates of the polyline of one or more culverts.
       integer, intent(in) :: nplCulv !< Number of points in the culvert polyline.
       integer, intent(out) :: linksCulv(:) !< Resulting netlink numbers of one or more culverts.
 
       integer :: j, jpoint, jstart, jend, k1, k2, ipoly
-      double precision :: x1, y1, z1, x2, y2, z2
+      real(kind=dp) :: x1, y1, z1, x2, y2, z2
 
       ipoly = 0
       jpoint = 1
@@ -941,6 +943,7 @@ contains
    !! In case of multiple culverts, the coordinate arrays must have missing value
    !! (dmiss) separators between each polyline.
    subroutine convert1D2DLongCulverts(xplCulv, yplCulv, zplCulv, nplCulv, linksCulv)
+      use precision, only: dp
       use m_missing
       use m_polygon
       use geometry_module
@@ -954,14 +957,14 @@ contains
 
       implicit none
 
-      double precision, intent(inout) :: xplCulv(:) !< x-coordinates of the polyline of one or more culverts.
-      double precision, intent(in) :: yplCulv(:) !< y-coordinates of the polyline of one or more culverts.
-      double precision, intent(in) :: zplCulv(:) !< z-coordinates of the polyline of one or more culverts.
+      real(kind=dp), intent(inout) :: xplCulv(:) !< x-coordinates of the polyline of one or more culverts.
+      real(kind=dp), intent(in) :: yplCulv(:) !< y-coordinates of the polyline of one or more culverts.
+      real(kind=dp), intent(in) :: zplCulv(:) !< z-coordinates of the polyline of one or more culverts.
       integer, intent(in) :: nplCulv !< Number of points in the culvert polyline.
       integer, intent(out) :: linksCulv(:) !< Resulting netlink numbers of one or more culverts.
 
       integer :: j, jpoint, jstart, jend, k1, k2, ipoly, numculvertpoints, currentbranchindex, newnodeindex, newedgeindex, newgeomindex, newnetnodeindex
-      double precision :: x2, y2, z2, pathlength, pathdiff
+      real(kind=dp) :: x2, y2, z2, pathlength, pathdiff
       character(len=5) :: ipolychar, nodechar
 
       if (meshgeom1d%numnode == -1 .and. meshgeom1d%nnodes == -1) then
@@ -1110,13 +1113,14 @@ contains
    !! The cross section definition (defining the long culvert's shape)
    !! must already have been read from file.
    subroutine addlongculvertcrosssections(network, branchId, csdefId, zpl, iref)
+      use precision, only: dp
       use m_hash_search
       use m_readCrossSections
       use m_network
       type(t_network), intent(inout) :: network !< Network structure
       character(len=IdLen), intent(in) :: branchId !< Branch id on which to place the cross section
       character(len=IdLen), intent(in) :: csdefId !< Id of cross section definition
-      double precision, allocatable, intent(in) :: zpl(:) !< (numlinks+1) Bed level on the long culvert support points
+      real(kind=dp), allocatable, intent(in) :: zpl(:) !< (numlinks+1) Bed level on the long culvert support points
       integer, intent(out) :: iref !< Index of reference cross section definition (if csdefId was found)
 
       integer :: k
@@ -1315,6 +1319,7 @@ contains
 
    !> Find 2D netcell the longculvert endpoint is located in, add a new node and return its node number
    subroutine longculvert_create_endpoint(j, k)
+      use precision, only: dp
       use m_polygon, only: xpl, ypl, zpl
       use network_data, only: xzw, yzw, zk
       use gridoperations, only: setnewpoint, incells
@@ -1323,7 +1328,7 @@ contains
       integer, intent(out) :: k !< new node index
 
       integer :: node1d2d
-      double precision :: x, y, z
+      real(kind=dp) :: x, y, z
 
       call incells(xpl(j), ypl(j), node1d2d)
       if (node1d2d == 0) then
@@ -1346,8 +1351,8 @@ contains
       use gridoperations, only: incells
 
       integer, intent(in) :: j !< Index in polyline coordinate arrays for the endpoint that needs to be checked.
-      double precision, intent(inout) :: xplCulv(:) !< x-coordinates of the polyline of one or more culverts.
-      double precision, intent(in) :: yplCulv(:) !< y-coordinates of the polyline of one or more culverts.
+      real(kind=dp), intent(inout) :: xplCulv(:) !< x-coordinates of the polyline of one or more culverts.
+      real(kind=dp), intent(in) :: yplCulv(:) !< y-coordinates of the polyline of one or more culverts.
 
       integer :: node1d2d
 

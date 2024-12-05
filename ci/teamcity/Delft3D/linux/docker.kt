@@ -1,15 +1,23 @@
-package build
+package Delft3D.linux
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 
-import build.thirdParty.*
+import Delft3D.template.*
+import Delft3D.linux.thirdParty.*
 
-object BuildDockerLinux : BuildType({
+object LinuxDocker : BuildType({
 
-    name = "Docker Linux"
-    buildNumberPattern = "%build.revisions.short%"
+    templates(
+        TemplateMergeRequest,
+        TemplateMergeTarget,
+        TemplatePublishStatus,
+        TemplateMonitorPerformance
+    )
+
+    name = "Docker Build"
+    buildNumberPattern = "%build.vcs.number%"
     description = "Build DIMRset Linux container."
 
     vcs {
@@ -64,18 +72,18 @@ object BuildDockerLinux : BuildType({
             id = "Docker_build_dimrset"
             commandType = build {
                 source = file {
-                    path = "ci/teamcity/Delft3D/docker/dimrset.Dockerfile"
+                    path = "ci/teamcity/Delft3D/linux/docker/build.Dockerfile"
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
                 namesAndTags = """
                     dimrset
-                    containers.deltares.nl/delft3d/delft3dfm:alma8-%build.revisions.short%
+                    containers.deltares.nl/delft3d/delft3dfm:alma8-%build.vcs.number%
                 """.trimIndent()
                 commandArgs = """
                     --pull
                     --no-cache
-                    --build-arg GIT_COMMIT=%build.revisions.revision%
+                    --build-arg GIT_COMMIT=%build.vcs.number%
                     --build-arg GIT_BRANCH=%teamcity.build.branch%
                 """.trimIndent()
             }
@@ -85,13 +93,13 @@ object BuildDockerLinux : BuildType({
             id = "Docker_build_testbench"
             commandType = build {
                 source = file {
-                    path = "ci/teamcity/Delft3D/docker/testbench.Dockerfile"
+                    path = "ci/teamcity/Delft3D/linux/docker/test.Dockerfile"
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
-                namesAndTags = "containers.deltares.nl/delft3d/test/delft3dfm:alma8-%build.revisions.short%"
+                namesAndTags = "containers.deltares.nl/delft3d/test/delft3dfm:alma8-%build.vcs.number%"
                 commandArgs = """
-                    --build-arg GIT_COMMIT=%build.revisions.revision%
+                    --build-arg GIT_COMMIT=%build.vcs.number%
                     --build-arg GIT_BRANCH=%teamcity.build.branch%
                 """.trimIndent()
             }
@@ -101,23 +109,13 @@ object BuildDockerLinux : BuildType({
             id = "Docker_push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d/delft3dfm:alma8-%build.revisions.short%
-                    containers.deltares.nl/delft3d/test/delft3dfm:alma8-%build.revisions.short%
+                    containers.deltares.nl/delft3d/delft3dfm:alma8-%build.vcs.number%
+                    containers.deltares.nl/delft3d/test/delft3dfm:alma8-%build.vcs.number%
                 """.trimIndent()
             }
         }
     }
     features {
-        pullRequests {
-            id = "merge_request"
-            provider = gitlab {
-                authType = token {
-                    token = "%gitlab_private_access_token%"
-                }
-                filterSourceBranch = "+:*"
-                ignoreDrafts = true
-            }
-        }
         dockerSupport {
             id = "DockerSupport"
             loginToRegistry = on {
@@ -126,8 +124,10 @@ object BuildDockerLinux : BuildType({
         }
     }
     dependencies {
-        dependency(AbsoluteId("Delft3DSobek_OssBuilds_Alma8LinuxTest_1aDimrCollectorDailyLnx64")) {
+        dependency(LinuxCollect) {
             snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
 
             artifacts {
@@ -135,7 +135,7 @@ object BuildDockerLinux : BuildType({
             }
         }
 
-        artifacts(DownloadIntelMpi) {
+        artifacts(LinuxThirdPartyDownloadIntelMpi) {
             buildRule = lastSuccessful()
             cleanDestination = true
             artifactRules = """

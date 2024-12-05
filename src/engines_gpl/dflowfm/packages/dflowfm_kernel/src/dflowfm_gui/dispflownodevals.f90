@@ -31,55 +31,54 @@
 !
 
 module m_dispflownodevals
-use m_drcirc
+   use m_drcirc
 
-
-implicit none
+   implicit none
 
 contains
 
-subroutine DISPFLOWNODEVALS(KP)
-   use m_flowgeom, only: xz, yz, bl, nd
-   use m_devices, only: iws
-   use m_ktext
-   use m_znod
+   subroutine DISPFLOWNODEVALS(KP)
+      use m_flowgeom, only: xz, yz, bl, nd
+      use m_devices, only: iws
+      use m_ktext
+      use m_znod
 
-   integer :: KP
+      integer :: KP
 
-   integer :: l
-   integer :: n
-   character TEX * 23
+      integer :: l
+      integer :: n
+      character TEX * 23
 
-   if (KP == 0) return
-   call DRCIRC(XZ(KP), YZ(KP), BL(KP))
+      if (KP == 0) return
+      call DRCIRC(XZ(KP), YZ(KP), BL(KP))
 
-   TEX = 'NODE NR    :           '
-   write (TEX(14:), '(I10)') KP
-   call KTEXT(TEX, IWS - 22, 4, 15)
+      TEX = 'NODE NR    :           '
+      write (TEX(14:), '(I10)') KP
+      call KTEXT(TEX, IWS - 22, 4, 15)
 
-   TEX = 'X COORD    :           '
-   write (TEX(14:), '(E10.3)') Xz(KP)
-   call KTEXT(TEX, IWS - 22, 13, 15)
+      TEX = 'X COORD    :           '
+      write (TEX(14:), '(E10.3)') Xz(KP)
+      call KTEXT(TEX, IWS - 22, 13, 15)
 
-   TEX = 'Y COORD    :           '
-   write (TEX(14:), '(E10.3)') Yz(KP)
-   call KTEXT(TEX, IWS - 22, 14, 15)
+      TEX = 'Y COORD    :           '
+      write (TEX(14:), '(E10.3)') Yz(KP)
+      call KTEXT(TEX, IWS - 22, 14, 15)
 
-   TEX = 'Z COORD    :           '
-   write (TEX(14:), '(E10.3)') bl(KP)
-   call KTEXT(TEX, IWS - 22, 15, 15)
+      TEX = 'Z COORD    :           '
+      write (TEX(14:), '(E10.3)') bl(KP)
+      call KTEXT(TEX, IWS - 22, 15, 15)
 
-   TEX = 'Z COORD    :           '
-   write (TEX(14:), '(e10.3)') znod(kp)
-   call KTEXT(TEX, IWS - 22, 16, 15)
+      TEX = 'Z COORD    :           '
+      write (TEX(14:), '(e10.3)') znod(kp)
+      call KTEXT(TEX, IWS - 22, 16, 15)
 
-   TEX = 'link       :           '
-   do N = 1, Nd(kp)%lnx
-      L = ND(KP)%LN(N)
-      write (TEX(6:11), '(I6 )') N
-      write (TEX(14:23), '(I10)') L
-      call KTEXT(TEX, IWS - 22, 16 + N, 15)
-   end do
-end subroutine DISPFLOWNODEVALS
+      TEX = 'link       :           '
+      do N = 1, Nd(kp)%lnx
+         L = ND(KP)%LN(N)
+         write (TEX(6:11), '(I6 )') N
+         write (TEX(14:23), '(I10)') L
+         call KTEXT(TEX, IWS - 22, 16 + N, 15)
+      end do
+   end subroutine DISPFLOWNODEVALS
 
 end module m_dispflownodevals

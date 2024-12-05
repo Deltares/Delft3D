@@ -31,14 +31,15 @@
 !
 
       subroutine TIDYSAMPLES(XS, YS, ZS, IPSAM, NS, MXSAM, MYSAM)
+         use precision, only: dp
          use stdlib_sorting, only: sort_index
          use m_readyy
          implicit none
          integer :: ns
-         double precision :: XS(NS), YS(NS), ZS(NS) !< sample coordinates
+         real(kind=dp) :: XS(NS), YS(NS), ZS(NS) !< sample coordinates
          integer, dimension(NS), intent(out) :: IPSAM !< permutation array (increasing x-coordinate)
          integer, intent(in) :: MXSAM, MYSAM !< structured sample data dimensions (>0) or unstructured (0)
-         double precision, allocatable :: xs_copy(:)
+         real(kind=dp), allocatable :: xs_copy(:)
 !      IF (NS .GT. 1) CALL RSORT3(XS,YS,ZS,NS)
 
          xs_copy = xs

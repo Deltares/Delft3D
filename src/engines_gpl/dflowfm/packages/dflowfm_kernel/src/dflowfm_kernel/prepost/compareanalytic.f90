@@ -32,55 +32,56 @@
 
 module m_compareanalytic
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: compareanalytic
+   public :: compareanalytic
 
 contains
 
-subroutine compareanalytic(s, x, mmax)
+   subroutine compareanalytic(s, x, mmax)
+      use precision, only: dp
 
-   use m_flowgeom
-   use m_flow
-   use m_set_col
-   use m_inview
+      use m_flowgeom
+      use m_flow
+      use m_set_col
+      use m_inview
 
-   integer :: mmax
-   double precision :: s(0:mmax), x(0:mmax)
-   double precision :: alf, dif, si
-   integer :: n, i, ii
+      integer :: mmax
+      real(kind=dp) :: s(0:mmax), x(0:mmax)
+      real(kind=dp) :: alf, dif, si
+      integer :: n, i, ii
 
-   call statisticsnewstep()
+      call statisticsnewstep()
 
-   call setcol(221)
-   do n = 1, ndx
+      call setcol(221)
+      do n = 1, ndx
 
-      if (.not. inview(xz(n), yz(n))) cycle
+         if (.not. inview(xz(n), yz(n))) cycle
 
-      i = 0
-      do ii = 1, mmax - 1
-         if (x(ii) <= xz(n) .and. xz(n) < x(ii + 1)) then
-            i = ii
-            exit
+         i = 0
+         do ii = 1, mmax - 1
+            if (x(ii) <= xz(n) .and. xz(n) < x(ii + 1)) then
+               i = ii
+               exit
+            end if
+         end do
+         !i = (xz(n) + 0.5*dxw) / dxw
+         if (i > 2 .and. i < mmax - 1) then
+            alf = (xz(n) - x(i)) / (x(i + 1) - x(i))
+            if (alf < 0d0 .or. alf > 1d0) then
+               si = 0
+            else
+               si = (1 - alf) * s(i) + alf * s(i + 1)
+               dif = abs(s1(n) - si)
+               call statisticsonemorepoint(dif)
+               !   call ptabs(xz(n), bl(n) + 100d0*dif)
+            end if
          end if
       end do
-      !i = (xz(n) + 0.5*dxw) / dxw
-      if (i > 2 .and. i < mmax - 1) then
-         alf = (xz(n) - x(i)) / (x(i + 1) - x(i))
-         if (alf < 0d0 .or. alf > 1d0) then
-            si = 0
-         else
-            si = (1 - alf) * s(i) + alf * s(i + 1)
-            dif = abs(s1(n) - si)
-            call statisticsonemorepoint(dif)
-            !   call ptabs(xz(n), bl(n) + 100d0*dif)
-         end if
-      end if
-   end do
-   call statisticsfinalise()
+      call statisticsfinalise()
 
-end subroutine compareanalytic
+   end subroutine compareanalytic
 
 end module m_compareanalytic

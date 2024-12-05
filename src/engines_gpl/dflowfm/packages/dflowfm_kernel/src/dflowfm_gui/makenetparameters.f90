@@ -32,7 +32,7 @@
 
 module m_makenetparameters
 
-implicit none
+   implicit none
 
 contains
 

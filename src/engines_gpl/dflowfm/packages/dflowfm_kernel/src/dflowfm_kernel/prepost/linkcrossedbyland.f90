@@ -32,6 +32,7 @@
 
 !> check if a link is close to a land boundary segment
 subroutine linkcrossedbyland(L, jstart, jend, jland, jacross)
+   use precision, only: dp
 
    use m_netw
    use m_landboundary
@@ -53,12 +54,12 @@ subroutine linkcrossedbyland(L, jstart, jend, jland, jacross)
    integer :: iter, j, j_
    integer :: ja, jastop
 
-   double precision :: x1, y1, x2, y2 !  node coordinates
-   double precision :: x3, y3, x4, y4 ! land boundary point coordinates
+   real(kind=dp) :: x1, y1, x2, y2 !  node coordinates
+   real(kind=dp) :: x3, y3, x4, y4 ! land boundary point coordinates
 
-   double precision :: sm, DL, Dm, Dtol, dismin
+   real(kind=dp) :: sm, DL, Dm, Dtol, dismin
 
-   double precision :: dis, xn, yn, rL1, rL2 ! for dlinedis3
+   real(kind=dp) :: dis, xn, yn, rL1, rL2 ! for dlinedis3
 
    jacross = 0
 

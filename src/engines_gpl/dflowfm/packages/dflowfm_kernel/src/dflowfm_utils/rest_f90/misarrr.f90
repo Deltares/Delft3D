@@ -31,6 +31,7 @@
 !
 
       subroutine MISARRR(H, NUMQ, MMAX, NMAX)
+         use precision, only: dp
          use M_MISSING
          implicit none
          integer :: i
@@ -39,7 +40,7 @@
          integer :: mmax
          integer :: nmax
          integer :: numq
-         double precision :: H(NUMQ, MMAX, NMAX)
+         real(kind=dp) :: H(NUMQ, MMAX, NMAX)
 
          do K = 1, NUMQ
             do I = 1, MMAX

@@ -31,14 +31,15 @@
 !
 
       subroutine FINDSPLT(X, Y, X2, Y2, MMAX, MFAC, MCS, TS, DS, XS, YS, JA)
+         use precision, only: dp
          use m_splint
          implicit none
          integer :: ja
          integer :: mcs
          integer :: mfac
          integer :: mmax
-         double precision :: X(MMAX), Y(MMAX), X2(MMAX), Y2(MMAX), TS, DS, XS, YS
-         double precision :: TA, XA, TB, XB, YA, YB, DMF, DB, DA, DX, DY
+         real(kind=dp) :: X(MMAX), Y(MMAX), X2(MMAX), Y2(MMAX), TS, DS, XS, YS
+         real(kind=dp) :: TA, XA, TB, XB, YA, YB, DMF, DB, DA, DX, DY
 !     TS is de administratieve start zoekindex tussen 0 en MCS
 !     DS is de te zoeken afstand vanaf punt TS
          JA = 1

@@ -31,6 +31,7 @@
 !
 
  subroutine get2Dnormal(n1, xn1, yn1) ! get x and y components of land normal vector pointing upward.
+    use precision, only: dp
 
     use m_flowgeom ! = ok for all internal cells
     use m_flow
@@ -41,7 +42,7 @@
 
     implicit none
     integer :: n1, k, L, LL, k3, k4
-    double precision :: xn1, yn1, a, aa, alf, xt, yt, slope
+    real(kind=dp) :: xn1, yn1, a, aa, alf, xt, yt, slope
 
     xn1 = 0d0; yn1 = 0d0; a = 0d0
     do k = 1, size(nd(n1)%ln)

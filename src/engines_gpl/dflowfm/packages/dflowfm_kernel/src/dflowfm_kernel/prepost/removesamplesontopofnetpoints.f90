@@ -31,18 +31,19 @@
 !
 
    subroutine REMOVESAMPLESONTOPOFNETPOINTS(XS, YS, NS)
+      use precision, only: dp
       use m_netw
       implicit none
       integer :: ns
-      double precision :: XS(NS), YS(NS)
+      real(kind=dp) :: XS(NS), YS(NS)
 
-      double precision :: dx
-      double precision :: dy
+      real(kind=dp) :: dx
+      real(kind=dp) :: dy
       integer :: jaontop
       integer :: k
       integer :: ks
       integer :: n
-      double precision :: tolnet
+      real(kind=dp) :: tolnet
       TOLNET = 0.1d0
       N = 0
       do KS = 1, NS

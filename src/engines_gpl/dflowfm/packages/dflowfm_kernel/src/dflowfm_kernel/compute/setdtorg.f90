@@ -31,6 +31,7 @@
 !
 
  subroutine setdtorg(jareduced) ! set computational timestep dts
+    use precision, only: dp
     use m_flowgeom
     use m_flow
     use m_wind
@@ -47,13 +48,13 @@
     ! locals
     integer :: L, LL, k, n1, n2, kk, kb, kt, k1, k2, k3, k4, Lb, Lt
     integer :: kk1, kk2
-    double precision :: rhomin, rhomax, cbaroc, drho
-    double precision :: dtsc2D
+    real(kind=dp) :: rhomin, rhomax, cbaroc, drho
+    real(kind=dp) :: dtsc2D
 
-    double precision :: dxiAu !
-    double precision :: huv
-    double precision :: dtsc1, dtsc2
-    double precision :: squloc
+    real(kind=dp) :: dxiAu !
+    real(kind=dp) :: huv
+    real(kind=dp) :: dtsc1, dtsc2
+    real(kind=dp) :: squloc
 
     jareduced = 0
     if (jamapdtcell > 0) dtcell = 0d0

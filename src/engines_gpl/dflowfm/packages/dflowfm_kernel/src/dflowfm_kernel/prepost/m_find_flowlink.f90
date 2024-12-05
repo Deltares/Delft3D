@@ -59,7 +59,7 @@ contains
          call mess(LEVEL_ERROR, 'find_flowlinks: unmatched input array size')
       end if
 
-      allocate(distances(size(xx)))
+      allocate (distances(size(xx)))
       ! Return warnings for points that lie outside the grid
       do ii = 1, size(xx)
          k = 0
@@ -119,7 +119,7 @@ contains
       ierror = 0
 
       ! Calculate the x,y-coordinates of the midpoints of all the flowlinks
-      allocate(flowlink_midpoints_x(lnx), flowlink_midpoints_y(lnx), zs_dummy(lnx))
+      allocate (flowlink_midpoints_x(lnx), flowlink_midpoints_y(lnx), zs_dummy(lnx))
       do link_id = 1, lnx
          ka = ln(1, link_id)
          kb = ln(2, link_id)

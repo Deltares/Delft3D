@@ -32,27 +32,27 @@
 
 module m_txttim
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine TXTTIM()
-         use m_settextsize
-         use m_mtext
-         use m_devices
-         use m_textim
-         implicit none
-         integer :: l
+   subroutine TXTTIM()
+      use m_settextsize
+      use m_mtext
+      use m_devices
+      use m_textim
+      implicit none
+      integer :: l
 
-         L = len_trim(TXTIM)
-         if (L == 0) return
-         call IGRCHARSIZE(real(TXTIMSIZE), real(TXTIMSIZE))
-         call IGRCHARFONT(3)
-         call MTEXT(TXTIM, TXTIMX, TXTIMY, 35)
-         call IGRCHARFONT(1)
-         call SETTEXTSIZE()
+      L = len_trim(TXTIM)
+      if (L == 0) return
+      call IGRCHARSIZE(real(TXTIMSIZE), real(TXTIMSIZE))
+      call IGRCHARFONT(3)
+      call MTEXT(TXTIM, TXTIMX, TXTIMY, 35)
+      call IGRCHARFONT(1)
+      call SETTEXTSIZE()
 
-         return
-      end
+      return
+   end
 
 end module m_txttim

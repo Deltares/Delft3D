@@ -32,25 +32,25 @@
 
 module m_getkey
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine GETKEY(KEY)
-         use m_nkeys
-         implicit none
-         integer :: i
-         integer :: infoinput
-         integer :: key
-         integer :: keynum
+   subroutine GETKEY(KEY)
+      use m_nkeys
+      implicit none
+      integer :: i
+      integer :: infoinput
+      integer :: key
+      integer :: keynum
 
-         KEY = InfoInput(57)
-         KEYNUM = -999
-         do I = 1, NUMKEYS
-            if (KEY == NKEY(I)) KEYNUM = I
-         end do
-         if (KEYNUM /= -999) KEY = NUMC(KEYNUM)
-         return
-      end
+      KEY = InfoInput(57)
+      KEYNUM = -999
+      do I = 1, NUMKEYS
+         if (KEY == NKEY(I)) KEYNUM = I
+      end do
+      if (KEYNUM /= -999) KEY = NUMC(KEYNUM)
+      return
+   end
 
 end module m_getkey

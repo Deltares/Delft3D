@@ -31,54 +31,54 @@
 !
 
 module m_disp3cab
-use m_dmovabs
-use m_dlnabs
+   use m_dmovabs
+   use m_dlnabs
 
-
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISP3CAB(X, Y, Z, NCL, N, RCIR, NCOL, A, B)
-         use m_cir
-         use M_MISSING
-         use m_halt2
-         use m_set_col
-         implicit none
-         double precision :: a
-         double precision :: b
-         integer :: i
-         integer :: istart
-         integer :: key
-         integer :: n
-         integer :: ncol
-         double precision :: rcir
+   subroutine DISP3CAB(X, Y, Z, NCL, N, RCIR, NCOL, A, B)
+      use precision, only: dp
+      use m_cir
+      use M_MISSING
+      use m_halt2
+      use m_set_col
+      implicit none
+      real(kind=dp) :: a
+      real(kind=dp) :: b
+      integer :: i
+      integer :: istart
+      integer :: key
+      integer :: n
+      integer :: ncol
+      real(kind=dp) :: rcir
 !     LAAT EEN TWEEDIMENSIONALE FUNCTIE ZIEN MET CIRKELS EN KLEUREN
-         double precision X(N), Y(N), Z(N)
-         integer NCL(N)
+      real(kind=dp) X(N), Y(N), Z(N)
+      integer NCL(N)
 
-         if (N <= 0) return
-         call SETCOL(NCOL)
-         ISTART = 0
-         do I = 1, N
-            if (X(I) /= dmiss) then
-               if (ISTART == 1) then
-                  call DLNABS(A * X(I) + B, Y(I), Z(I))
-               else
-                  if (NCL(I) /= 0) call SETCOL(NCL(I))
-                  call DMOVABS(A * X(I) + B, Y(I), Z(I))
-                  ISTART = 1
-               end if
-               call CIR(RCIR)
+      if (N <= 0) return
+      call SETCOL(NCOL)
+      ISTART = 0
+      do I = 1, N
+         if (X(I) /= dmiss) then
+            if (ISTART == 1) then
+               call DLNABS(A * X(I) + B, Y(I), Z(I))
             else
-               ISTART = 0
+               if (NCL(I) /= 0) call SETCOL(NCL(I))
+               call DMOVABS(A * X(I) + B, Y(I), Z(I))
+               ISTART = 1
             end if
-            if (mod(I, 50) == 0) then
-               call HALT2(KEY)
-               if (KEY == 1) return
-            end if
-         end do
-         return
-      end
+            call CIR(RCIR)
+         else
+            ISTART = 0
+         end if
+         if (mod(I, 50) == 0) then
+            call HALT2(KEY)
+            if (KEY == 1) return
+         end if
+      end do
+      return
+   end
 
 end module m_disp3cab

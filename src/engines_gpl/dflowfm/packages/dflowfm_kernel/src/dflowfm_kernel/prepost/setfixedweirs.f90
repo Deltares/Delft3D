@@ -31,6 +31,7 @@
 !
 !>  override bobs along pliz's, jadykes == 0: only heights, 1 = also dyke attributes
 subroutine setfixedweirs()
+   use precision, only: dp
    use m_netw
    use m_flowgeom
    use m_flow
@@ -59,12 +60,12 @@ subroutine setfixedweirs()
    integer :: k, kk, n1, n2, n, L, LL, jacros, minp, kint, ierr, nh, nhh, i, Lf
    integer :: jaweir, Lastfoundk, kf, kL, Lnt, nna, nnb, k3, k4
    integer, allocatable :: ihu(:)
-   double precision :: SL, SM, XCR, YCR, CRP, Xa, Ya, Xb, Yb, zc, zh, zhu, zhd, af, dz1, dz2, xn, yn, adjacentbob, cosphi, sig, bobL
-   double precision, allocatable :: csh(:), snh(:), zcrest(:), dzsillu(:), dzsilld(:), crestlen(:), taludu(:), taludd(:), vegetat(:), ztoeu(:), ztoed(:)
+   real(kind=dp) :: SL, SM, XCR, YCR, CRP, Xa, Ya, Xb, Yb, zc, zh, zhu, zhd, af, dz1, dz2, xn, yn, adjacentbob, cosphi, sig, bobL
+   real(kind=dp), allocatable :: csh(:), snh(:), zcrest(:), dzsillu(:), dzsilld(:), crestlen(:), taludu(:), taludd(:), vegetat(:), ztoeu(:), ztoed(:)
    integer, allocatable :: iweirtyp(:)
    integer, allocatable :: ifirstweir(:)
 
-   double precision, dimension(:), allocatable :: dSL
+   real(kind=dp), dimension(:), allocatable :: dSL
    integer, dimension(:), allocatable :: iLink
    integer, dimension(:), allocatable :: iLcr ! link crossed yes no
    integer, dimension(:), allocatable :: iPol
@@ -78,7 +79,7 @@ subroutine setfixedweirs()
    character(len=200), allocatable :: fnames(:)
    integer, allocatable :: start_npl_for_files(:)
    integer :: jadoorladen, ifil
-   double precision :: t0, t1, t_extra(2, 10), BLmn
+   real(kind=dp) :: t0, t1, t_extra(2, 10), BLmn
    character(len=128) :: mesg
 
    integer, parameter :: KEEP_PLI_NAMES = 1
@@ -632,15 +633,16 @@ subroutine setfixedweirs()
 contains
 
    subroutine check_fixed_weirs_parameters_against_limits()
+      use precision, only: dp
 
-      double precision, parameter :: GROUND_HEIGHT_MINIMUM = -500.0d0
-      double precision, parameter :: GROUND_HEIGHT_MAXIMUM = 500.0d0
+      real(kind=dp), parameter :: GROUND_HEIGHT_MINIMUM = -500.0d0
+      real(kind=dp), parameter :: GROUND_HEIGHT_MAXIMUM = 500.0d0
 
-      double precision, parameter :: SLOPE_MINIMUM = -1.0d-8
-      double precision, parameter :: SLOPE_MAXIMUM = 1000.0d0
+      real(kind=dp), parameter :: SLOPE_MINIMUM = -1.0d-8
+      real(kind=dp), parameter :: SLOPE_MAXIMUM = 1000.0d0
 
-      double precision, parameter :: CREST_LEVEL_MAXIMUM = 10000.0d0
-      double precision, parameter :: CREST_LEVEL_MINIMUM = -10000.0d0
+      real(kind=dp), parameter :: CREST_LEVEL_MAXIMUM = 10000.0d0
+      real(kind=dp), parameter :: CREST_LEVEL_MINIMUM = -10000.0d0
 
       logical :: inside_limits
       integer :: line
@@ -710,10 +712,11 @@ contains
 
 !> check_value_and_write_message
    logical function is_value_inside_limits(value_to_be_checked, min_limit, max_limit, value_name, file_name, pli_name, location)
+      use precision, only: dp
 
-      double precision, intent(in) :: value_to_be_checked !< value_to_be_checked
-      double precision, intent(in) :: min_limit !< min_limit
-      double precision, intent(in) :: max_limit !< max_limit
+      real(kind=dp), intent(in) :: value_to_be_checked !< value_to_be_checked
+      real(kind=dp), intent(in) :: min_limit !< min_limit
+      real(kind=dp), intent(in) :: max_limit !< max_limit
       character(len=*), intent(in) :: value_name !< value_name
       character(len=*), intent(in) :: file_name !< file_name
       character(len=*), intent(in) :: pli_name !< pli_name

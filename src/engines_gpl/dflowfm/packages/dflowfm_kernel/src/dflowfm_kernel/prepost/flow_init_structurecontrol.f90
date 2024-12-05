@@ -26,18 +26,16 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!> 
+!>
 module m_flow_init_structurecontrol
    private
 
    public flow_init_structurecontrol
 
-   
    interface
       module function flow_init_structurecontrol() result(status)
          logical :: status
       end function flow_init_structurecontrol
    end interface
-
 
 end module m_flow_init_structurecontrol

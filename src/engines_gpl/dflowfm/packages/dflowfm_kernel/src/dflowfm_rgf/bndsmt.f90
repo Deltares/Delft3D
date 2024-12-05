@@ -32,11 +32,12 @@
 
 !*******************  BOUNDARY TREATMENT *****************************
       subroutine BNDSMT(XR, YR, XI2, YI2, XJ2, YJ2, ATP, M1, N1, M2, N2)
+         use precision, only: dp
          use m_grid
          use m_gridsettings
          use m_get_ij
          implicit none
-         double precision :: bfe
+         real(kind=dp) :: bfe
          integer :: i
          integer :: iff
          integer :: ifr
@@ -59,28 +60,28 @@
          integer :: n1
          integer :: n2
          integer :: num
-         double precision :: qb
-         double precision :: qbc
-         double precision :: qc
-         double precision :: rn
-         double precision :: x0
-         double precision :: x1
-         double precision :: x2
-         double precision :: x3
-         double precision :: y0
-         double precision :: y1
-         double precision :: y2
-         double precision :: y3
+         real(kind=dp) :: qb
+         real(kind=dp) :: qbc
+         real(kind=dp) :: qc
+         real(kind=dp) :: rn
+         real(kind=dp) :: x0
+         real(kind=dp) :: x1
+         real(kind=dp) :: x2
+         real(kind=dp) :: x3
+         real(kind=dp) :: y0
+         real(kind=dp) :: y1
+         real(kind=dp) :: y2
+         real(kind=dp) :: y3
 !     RANDPUNTEN OF INTERNE PUNTEN
 !     TERUGZETTEN OP DE SPLINE TUSSEN OUDE POSITIE OP RAND (BFAC = 0)
 !     EN PROJECTIE OP SPLINE VAN NABIJ PUNT (BFAC = 1)
 !     BIJ NCODE IS 5, INT(ERNAL) HORIZONTAAL, 6 = VERTICAAL
-         double precision :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
-            XI2(MMAX, NMAX), XJ2(MMAX, NMAX), ATP(MMAX, NMAX), &
-            YI2(MMAX, NMAX), YJ2(MMAX, NMAX)
+         real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
+                          XI2(MMAX, NMAX), XJ2(MMAX, NMAX), ATP(MMAX, NMAX), &
+                          YI2(MMAX, NMAX), YJ2(MMAX, NMAX)
 
-         double precision, allocatable :: XH(:), YH(:), XH2(:), YH2(:)
-         double precision :: XX1, XX2, YY1, YY2, TV, XV, YV, XV2, YV2, DIS
+         real(kind=dp), allocatable :: XH(:), YH(:), XH2(:), YH2(:)
+         real(kind=dp) :: XX1, XX2, YY1, YY2, TV, XV, YV, XV2, YV2, DIS
 
          allocate (XH(MNMAX), YH(MNMAX), XH2(MNMAX), YH2(MNMAX))
 

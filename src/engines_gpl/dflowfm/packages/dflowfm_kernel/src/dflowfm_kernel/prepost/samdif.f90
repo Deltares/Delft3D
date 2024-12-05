@@ -32,6 +32,7 @@
 
 !> take difference of samples with second sample set within tooclose distance
 subroutine samdif()
+   use precision, only: dp
 
    use m_polygon
    use m_samples
@@ -44,13 +45,13 @@ subroutine samdif()
 
    implicit none
 
-   double precision :: dist
+   real(kind=dp) :: dist
 
    integer :: i, ipnt, ierror
    integer :: numnoval
 
-   double precision, parameter :: VAL_NOPNT = 1234d0
-   double precision, parameter :: dtol = 1d-8
+   real(kind=dp), parameter :: VAL_NOPNT = 1234d0
+   real(kind=dp), parameter :: dtol = 1d-8
 
    if (NS < 1 .or. NS3 < 2) goto 1234
 

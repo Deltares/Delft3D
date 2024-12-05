@@ -31,42 +31,41 @@
 !
 
 module m_qnmessagewait
-use m_wait
+   use m_wait
 
-
-implicit none
+   implicit none
 
 contains
 
-      subroutine QNMESSAGEWAIT(TEX)
-         use unstruc_messages, only: msgbuf, msg_flush
-         use unstruc_display_data, only: npos
-         use unstruc_colors
-         use m_devices, only: iws, ihs
-         
-         integer :: ih
-         integer :: iw
-         integer :: ixp
-         integer :: iyp
-         character TEX * (*)
+   subroutine QNMESSAGEWAIT(TEX)
+      use unstruc_messages, only: msgbuf, msg_flush
+      use unstruc_display_data, only: npos
+      use unstruc_colors
+      use m_devices, only: iws, ihs
 
-         IW = NPOS(3)
-         IXP = NPOS(1) + (IWS - IW) / 2
-         IYP = NPOS(2)
-         IH = IHS - 9
+      integer :: ih
+      integer :: iw
+      integer :: ixp
+      integer :: iyp
+      character TEX * (*)
 
-         write (msgbuf, '(A)') TEX
-         call msg_flush()
+      IW = NPOS(3)
+      IXP = NPOS(1) + (IWS - IW) / 2
+      IYP = NPOS(2)
+      IH = IHS - 9
 
-         call ITEXTCOLOURN(HLPFOR, HLPBCK)
-         call IWinAction('FPC')
-         call IWinOpen(IXP, IHS - 1, IW, 2)
-         call IWINOUTCENTRE(1, TEX)
-         call IWINOUTCENTRE(2, 'this message will also appear in HISTORY (F2)')
-         call wait()
-         call IWinClose(1)
+      write (msgbuf, '(A)') TEX
+      call msg_flush()
 
-         return
-      end
+      call ITEXTCOLOURN(HLPFOR, HLPBCK)
+      call IWinAction('FPC')
+      call IWinOpen(IXP, IHS - 1, IW, 2)
+      call IWINOUTCENTRE(1, TEX)
+      call IWINOUTCENTRE(2, 'this message will also appear in HISTORY (F2)')
+      call wait()
+      call IWinClose(1)
+
+      return
+   end
 
 end module m_qnmessagewait

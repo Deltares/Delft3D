@@ -1,28 +1,37 @@
-package testbench
-
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
 
-object TestbenchTrigger : BuildType({
+import Delft3D.template.*
+import Delft3D.linux.*
+import Delft3D.windows.*
+
+object Trigger : BuildType({
+
+    templates(
+        TemplateMergeRequest,
+        TemplateMergeTarget,
+        TemplatePublishStatus,
+        TemplateMonitorPerformance
+    )
 
     name = "Trigger"
-    buildNumberPattern = "%build.revisions.short%"
+    buildNumberPattern = "%build.vcs.number%"
 
     vcs {
         root(DslContext.settingsRoot)
     }
 
     params {
-        param("testbench_table", "ci/teamcity/Delft3D/testbench/vars/dimr_testbench_table.csv")
+        param("testbench_table", "ci/teamcity/Delft3D/vars/dimr_testbench_table.csv")
     
         param("teamcity_user", "svc_dimr_trigger")
         password("teamcity_pass", "credentialsJSON:15cc6665-e900-4360-8942-00e654f6acfe")
 
-        param("matrix_list_lnx64",   "dummy_value")
+        param("matrix_list_lnx64", "dummy_value")
         param("matrix_list_win64", "dummy_value")
-        param("branch_name",         "dummy_value")
+        param("branch_name", "dummy_value")
     }
 
     steps {
@@ -55,7 +64,7 @@ object TestbenchTrigger : BuildType({
                 scriptArguments = """
                     -b "%teamcity.build.branch%"
                     -t "%gitlab_private_access_token%"
-                    -f "ci/teamcity/Delft3D/testbench/vars/repo_index.json"
+                    -f "ci/teamcity/Delft3D/vars/repo_index.json"
                 """.trimIndent()
             }
         }
@@ -92,7 +101,7 @@ object TestbenchTrigger : BuildType({
                      -X POST \
                      -H "Content-Type: application/xml" \
                      -d '<build branchName="%teamcity.build.branch%" replace="true">
-                            <buildType id="${TestbenchLinux.id}"/>
+                            <buildType id="${LinuxTest.id}"/>
                             <revisions>
                                 <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
                                     <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
@@ -130,7 +139,7 @@ object TestbenchTrigger : BuildType({
                      -X POST \
                      -H "Content-Type: application/xml" \
                      -d '<build branchName="%teamcity.build.branch%" replace="true">
-                            <buildType id="${TestbenchWindows.id}"/>
+                            <buildType id="${WindowsTest.id}"/>
                             <revisions>
                                 <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
                                     <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
@@ -168,29 +177,6 @@ object TestbenchTrigger : BuildType({
                 quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_CUSTOM
                 quietPeriod = 60
                 branchFilter = "+:merge-requests/*"
-            }
-        }
-    }
-
-    features{
-        pullRequests {
-            id = "merge_request"
-            provider = gitlab {
-                authType = token {
-                    token = "%gitlab_private_access_token%"
-                }
-                filterSourceBranch = "+:*"
-                ignoreDrafts = true
-            }
-        }
-        if (DslContext.getParameter("environment") == "production") {
-            commitStatusPublisher {
-                id = "Delft3D_gitlab"
-                enabled = true
-                vcsRootExtId = "${DslContext.settingsRoot.id}"
-                publisher = gitlab {
-                    authType = vcsRoot()
-                }
             }
         }
     }

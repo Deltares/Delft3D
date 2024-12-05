@@ -46,9 +46,9 @@ module m_monitoring_crosssections
       integer :: nval !< Amount of different quantities monitored
       type(tcrspath) :: path !< Polyline+crossed flow links that defines this cross section.
       integer :: loc2OC = 0 !< mapping from global obs index to obs that are defined by branchID and chainage
-      double precision, allocatable :: sumvalcur(:) !< Values integrated over the crs
-      double precision, allocatable :: sumvalcum(:) !< Values integrated over crs *and* time
-      double precision, allocatable :: sumvalavg(:) !< Values integrated over crs and averaged in time.
+      real(kind=dp), allocatable :: sumvalcur(:) !< Values integrated over the crs
+      real(kind=dp), allocatable :: sumvalcum(:) !< Values integrated over crs *and* time
+      real(kind=dp), allocatable :: sumvalavg(:) !< Values integrated over crs and averaged in time.
                                                    !! Size is nval: nr of monitored quantities.
    end type tcrs
 
@@ -71,8 +71,8 @@ module m_monitoring_crosssections
    integer :: nval = 0 !< number of quantities moonitored including sediment
    integer :: nNodesCrs !< [-] Total number of nodes for all cross section geometries
    integer, allocatable, target :: nodeCountCrs(:) !< [-] Count of nodes per cross section geometry.
-   double precision, allocatable, target :: geomXCrs(:) !< [m] x coordinates of cross section geometries.
-   double precision, allocatable, target :: geomYCrs(:) !< [m] y coordinates of cross section geometries.
+   real(kind=dp), allocatable, target :: geomXCrs(:) !< [m] x coordinates of cross section geometries.
+   real(kind=dp), allocatable, target :: geomYCrs(:) !< [m] y coordinates of cross section geometries.
 contains
 
 !> Returns the index/position of a named crosssection in the global set arrays of this module.
@@ -201,8 +201,9 @@ contains
 
 !> Starts a new cross section in the active array of crs, increasing memory when necessary.
    subroutine addCrossSections(name, xp, yp, iOC)
+      use precision, only: dp
       character(len=*), intent(in) :: name
-      double precision, intent(in) :: xp(:), yp(:)
+      real(kind=dp), intent(in) :: xp(:), yp(:)
       integer, optional, intent(in) :: iOC !< local index of cross sections that are defined via *.ini, in the m_network%network%observcrs set.
 
       integer :: m
@@ -305,6 +306,7 @@ contains
 
 !> Adds observation cross sections, that are read from *.ini file, to the normal cross section adm
    subroutine addObservCrsFromIni(network, filename)
+      use precision, only: dp
       use m_network
       use m_sferic, only: jsferic
       use odugrid
@@ -320,7 +322,7 @@ contains
       integer :: ierr, ncrsini, i, numv
       type(t_observCrossSection), pointer :: pCrs
       integer, allocatable :: branchIdx_tmp(:), ibrch2crs(:)
-      double precision, allocatable :: Chainage_tmp(:), xx_tmp(:), yy_tmp(:)
+      real(kind=dp), allocatable :: Chainage_tmp(:), xx_tmp(:), yy_tmp(:)
 
       ierr = DFM_NOERR
       nByBrch = 0
@@ -383,9 +385,10 @@ contains
 !! The input arrays have the structure of the global polygon:
 !! one or more polylines separated by dmiss values.
    subroutine pol_to_crosssections(xpl, ypl, npl, names)
+      use precision, only: dp
       use m_missing
 
-      double precision, intent(in) :: xpl(:), ypl(:) !< Long array with one or more polylines, separated by dmiss
+      real(kind=dp), intent(in) :: xpl(:), ypl(:) !< Long array with one or more polylines, separated by dmiss
       integer, intent(in) :: npl !< Total number of polyline points
       character(len=*), optional, intent(in) :: names(:) !< Optional names for cross sections
 

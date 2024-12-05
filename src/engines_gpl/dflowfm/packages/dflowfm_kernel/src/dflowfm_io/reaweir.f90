@@ -32,72 +32,73 @@
 
 module m_reaweir
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: reaweir
+   public :: reaweir
 
 contains
 
-      subroutine REAweir(MMDD, JA)
-         use m_missing
-         use m_fixedweirs
-         use M_GRID
-         use m_readyy
-         use m_qn_read_error
-         use m_qn_eof_error
-         implicit none
+   subroutine REAweir(MMDD, JA)
+      use precision, only: dp
+      use m_missing
+      use m_fixedweirs
+      use M_GRID
+      use m_readyy
+      use m_qn_read_error
+      use m_qn_eof_error
+      implicit none
 
-         integer :: mmdd, ja
-         integer :: m, n, MOUT
-         double precision :: hu, hv, Du1, Du2, Dv1, Dv2
+      integer :: mmdd, ja
+      integer :: m, n, MOUT
+      real(kind=dp) :: hu, hv, Du1, Du2, Dv1, Dv2
 
-         character REC * 132
+      character REC * 132
 
-         JA = 0
+      JA = 0
 
-         call NEWFIL(MOUT, 'WEIRS.POL')
+      call NEWFIL(MOUT, 'WEIRS.POL')
 
-5        continue
+5     continue
 
-         read (MMDD, '(A)', end=777) REC
+      read (MMDD, '(A)', end=777) REC
 
-         if (index(rec, '#') == 0) then
+      if (index(rec, '#') == 0) then
 
-            read (REC(2:), *, ERR=999) M, N, HU, Du1, Du2, HV, Dv1, Dv2
+         read (REC(2:), *, ERR=999) M, N, HU, Du1, Du2, HV, Dv1, Dv2
 
-            if (HU > 0) then
-               write (MOUT, *) XC(M, N), YC(M, N), HU, DU1, DU2
-               write (MOUT, *) XC(M, N - 1), YC(M, N - 1), HU, DU1, DU2
-               write (MOUT, *) DMISS, DMISS, DMISS
-            end if
-
-            if (HV > 0) then
-               write (MOUT, *) XC(M, N), YC(M, N), HV, DV1, DV2
-               write (MOUT, *) XC(M - 1, N), YC(M - 1, N), HV, DV1, DV2
-               write (MOUT, *) DMISS, DMISS, DMISS
-            end if
-
+         if (HU > 0) then
+            write (MOUT, *) XC(M, N), YC(M, N), HU, DU1, DU2
+            write (MOUT, *) XC(M, N - 1), YC(M, N - 1), HU, DU1, DU2
+            write (MOUT, *) DMISS, DMISS, DMISS
          end if
 
-         goto 5
+         if (HV > 0) then
+            write (MOUT, *) XC(M, N), YC(M, N), HV, DV1, DV2
+            write (MOUT, *) XC(M - 1, N), YC(M - 1, N), HV, DV1, DV2
+            write (MOUT, *) DMISS, DMISS, DMISS
+         end if
 
-777      call DOCLOSE(MMDD)
-         call DOCLOSE(MOUT)
-         JA = 1
-         return
+      end if
 
-999      continue
-         call QNEOFERROR(MMDD)
-         call READYY('Reading SIMONA *.bottom File', -1d0)
-         call DOCLOSE(MMDD)
-         JA = 0
-         return
+      goto 5
 
-888      call QNREADERROR('Reading ERROR SIMONA WEIR File', REC, MMDD)
-         call DOCLOSE(MMDD)
-         JA = 0
-      end subroutine REAWEIR
+777   call DOCLOSE(MMDD)
+      call DOCLOSE(MOUT)
+      JA = 1
+      return
+
+999   continue
+      call QNEOFERROR(MMDD)
+      call READYY('Reading SIMONA *.bottom File', -1d0)
+      call DOCLOSE(MMDD)
+      JA = 0
+      return
+
+888   call QNREADERROR('Reading ERROR SIMONA WEIR File', REC, MMDD)
+      call DOCLOSE(MMDD)
+      JA = 0
+   end subroutine REAWEIR
 
 end module m_reaweir

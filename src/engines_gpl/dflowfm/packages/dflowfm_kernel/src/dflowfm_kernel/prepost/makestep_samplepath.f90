@@ -32,6 +32,7 @@
 
 ! make a step to the next sample in a sample path
 subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
+   use precision, only: dp
    use m_samples
    use m_samples_refine
    use m_missing, only: dmiss, dxymis
@@ -54,8 +55,8 @@ subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
    integer :: i, j, i0, i1, j0, j1, ip, iploc, icur, jcur, num, Nsub0
    integer :: isub, jsub, i00, i11, j00, j11, ii, ip1, ip2
 
-   double precision :: dcsphi, disub, djsub, zs_ave, zs_max
-   double precision :: Dh
+   real(kind=dp) :: dcsphi, disub, djsub, zs_ave, zs_max
+   real(kind=dp) :: Dh
 
    integer, parameter :: Nwidth = 5 !  number of sample widths considered
 

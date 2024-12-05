@@ -32,6 +32,7 @@
 
 !  remove a netcell
    subroutine removecell(xp, yp)
+      use precision, only: dp
       use m_netw
       use m_missing, only: jins, dmiss
       use geometry_module, only: pinpok
@@ -43,7 +44,7 @@
 
       integer, save :: NEEDFINDCELLS = 1
 
-      double precision, intent(in) :: xp, yp !< coordinates of input point
+      real(kind=dp), intent(in) :: xp, yp !< coordinates of input point
 
       integer :: k, in
 

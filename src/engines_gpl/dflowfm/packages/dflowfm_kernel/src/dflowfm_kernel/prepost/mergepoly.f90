@@ -35,18 +35,19 @@
     !! Multiple polylines are stored in one large array, separated by dmiss.
     !! Possibly, one or two of the polylines is flipped and then glued to the other.
     subroutine mergepoly(X, Y, Z, maxpol, n, i1, i2)
+       use precision, only: dp
        use M_MISSING
        implicit none
        integer, intent(in) :: MAXPOL !< Length of polyline coordinate arrays.
-       double precision, intent(inout) :: X(MAXPOL), Y(MAXPOL) !< Entire polyline coordinate arrays
-       double precision, intent(inout) :: Z(MAXPOL) !< polyline Z-value array
+       real(kind=dp), intent(inout) :: X(MAXPOL), Y(MAXPOL) !< Entire polyline coordinate arrays
+       real(kind=dp), intent(inout) :: Z(MAXPOL) !< polyline Z-value array
        integer, intent(inout) :: N !< Index of last filled polyline point (npol<=maxpol)
        integer, intent(inout) :: i1, i2 !< Indices of polyline start/ends which need to be connected.
 
        integer :: i, im, in, ih, ii, n2, nh
        logical :: jadiff, jaflip
-       double precision, allocatable :: xh(:), yh(:), zh(:)
-       double precision :: xt, yt, zt
+       real(kind=dp), allocatable :: xh(:), yh(:), zh(:)
+       real(kind=dp) :: xt, yt, zt
 
        if (i1 == i2 .or. i1 <= 0 .or. i1 > n .or. i2 <= 0 .or. i2 > n) return
        if (X(i1) == dmiss .or. X(i2) == dmiss) return

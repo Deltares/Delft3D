@@ -32,6 +32,7 @@
 
 !> debugging subroutine
 subroutine inipole(japole)
+   use precision, only: dp
    use unstruc_model
    use m_flow
    use m_flowgeom
@@ -40,7 +41,7 @@ subroutine inipole(japole)
 
    integer, intent(in) :: japole !< pole (1) or equator (0)
 
-   double precision :: lambda, phi
+   real(kind=dp) :: lambda, phi
 
    integer :: L
    integer, external :: flow_modelinit

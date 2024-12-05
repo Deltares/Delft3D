@@ -32,80 +32,81 @@
 
 module m_teklan
 
-implicit none
+   implicit none
 
 contains
 
-  subroutine TEKLAN(NCOL)
-     use m_linewidth
-     use m_disp3c
-     use m_dhitext
-     use M_LANDBOUNDARY
-     use m_wearelt
-     use unstruc_colors
-     use unstruc_display
-     use m_drawthis
-     use m_fbox
-     use m_pfiller
-     use m_set_col
-     use m_inview
+   subroutine TEKLAN(NCOL)
+      use precision, only: dp
+      use m_linewidth
+      use m_disp3c
+      use m_dhitext
+      use M_LANDBOUNDARY
+      use m_wearelt
+      use unstruc_colors
+      use unstruc_display
+      use m_drawthis
+      use m_fbox
+      use m_pfiller
+      use m_set_col
+      use m_inview
 
-     implicit none
-     integer :: NCOL
-     integer :: j1
-     integer :: k
-     integer :: ncl
-     integer :: ncold
-     double precision :: rh
+      implicit none
+      integer :: NCOL
+      integer :: j1
+      integer :: k
+      integer :: ncl
+      integer :: ncold
+      real(kind=dp) :: rh
 
-     if (NDRAW(3) == 0) return
+      if (NDRAW(3) == 0) return
 
-     if (NDRAW(3) == 4 .or. NDRAW(3) == 8) then
-        call linewidth(3)
-     end if
+      if (NDRAW(3) == 4 .or. NDRAW(3) == 8) then
+         call linewidth(3)
+      end if
 
-     call DISP3C(XLAN, YLAN, ZLAN, NCLAN, MXLAN, 0d0, NCOL)
+      call DISP3C(XLAN, YLAN, ZLAN, NCLAN, MXLAN, 0d0, NCOL)
 
-     NCOLD = 0
-     do K = 1, MXLAN
-        NCL = NCLAN(K)
-        if (NCL < 0) then
-           if (NCOLD == 0) then
-              NCOLD = abs(NCL)
-              J1 = K
-           else if (abs(NCL) /= NCOLD) then
-              call PFILLER(XLAN(J1), YLAN(J1), K - J1, NCOLD, NCOLD)
-              NCOLD = 0
-           end if
-        else if (NCOLD /= 0) then
-           call PFILLER(XLAN(J1), YLAN(J1), K - J1, NCOLD, NCOLD)
-           NCOLD = 0
-        end if
-     end do
-     if (ndraw(3) == 2 .or. ndraw(3) == 6) then
-        call SETCOL(NCOLDG)
-        rh = 0.2 * rcir
-        do K = 1, MXLAN
-           if (inview(xlan(k), ylan(k))) then
-              !CALL PTABS( XLAN(K), YLAN(K) )
-              call fbox(xlan(k) - rh, ylan(k) - rh, xlan(k) + rh, ylan(k) + rh)
-           end if
-        end do
-     end if
+      NCOLD = 0
+      do K = 1, MXLAN
+         NCL = NCLAN(K)
+         if (NCL < 0) then
+            if (NCOLD == 0) then
+               NCOLD = abs(NCL)
+               J1 = K
+            else if (abs(NCL) /= NCOLD) then
+               call PFILLER(XLAN(J1), YLAN(J1), K - J1, NCOLD, NCOLD)
+               NCOLD = 0
+            end if
+         else if (NCOLD /= 0) then
+            call PFILLER(XLAN(J1), YLAN(J1), K - J1, NCOLD, NCOLD)
+            NCOLD = 0
+         end if
+      end do
+      if (ndraw(3) == 2 .or. ndraw(3) == 6) then
+         call SETCOL(NCOLDG)
+         rh = 0.2 * rcir
+         do K = 1, MXLAN
+            if (inview(xlan(k), ylan(k))) then
+               !CALL PTABS( XLAN(K), YLAN(K) )
+               call fbox(xlan(k) - rh, ylan(k) - rh, xlan(k) + rh, ylan(k) + rh)
+            end if
+         end do
+      end if
 
-     if (ndraw(3) == 3 .or. ndraw(3) == 7) then
-        call SETCOL(NCOLDG)
-        do K = 1, MXLAN
-           if (inview(xlan(k), ylan(k))) then
-              RH = 0
-              call DHITEXT(K, XLAN(K), YLAN(K))
-           end if
-        end do
-     end if
+      if (ndraw(3) == 3 .or. ndraw(3) == 7) then
+         call SETCOL(NCOLDG)
+         do K = 1, MXLAN
+            if (inview(xlan(k), ylan(k))) then
+               RH = 0
+               call DHITEXT(K, XLAN(K), YLAN(K))
+            end if
+         end do
+      end if
 
-     call linewidth(1)
+      call linewidth(1)
 
-     return
-  end subroutine TEKLAN
+      return
+   end subroutine TEKLAN
 
 end module m_teklan

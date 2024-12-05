@@ -33,6 +33,7 @@
   ! =================================================================================================
   ! =================================================================================================
   subroutine setpillars()
+     use precision, only: dp
      use m_flowgeom, only: ndx, lnx, ba, wu, nd
      use fm_external_forcings_data, only: pillar, Cpil
      use m_vegetation, only: rnveg, diaveg, stemheight
@@ -42,10 +43,10 @@
      use m_crspath_on_flowgeom
      implicit none
      integer :: i, j, k, L, Lf, La, m, n
-     double precision :: pi
+     real(kind=dp) :: pi
      integer, dimension(:), allocatable :: npil
-     double precision, dimension(:), allocatable :: cdeq
-     double precision, dimension(:), allocatable :: Aeff
+     real(kind=dp), dimension(:), allocatable :: cdeq
+     real(kind=dp), dimension(:), allocatable :: Aeff
      integer, dimension(:), allocatable :: linktype
      integer :: nPath
      type(tcrspath), dimension(:), allocatable :: Path

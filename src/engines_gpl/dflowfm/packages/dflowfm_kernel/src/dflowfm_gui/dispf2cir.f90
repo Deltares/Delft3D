@@ -32,33 +32,34 @@
 
 module m_dispf2cir
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISPF2cir(X, Y, N, Rcx, Rcy, NCOL)
-         use m_fbox
-         use m_set_col
-         use m_movabs
-         use m_lnabs
+   subroutine DISPF2cir(X, Y, N, Rcx, Rcy, NCOL)
+      use precision, only: dp
+      use m_fbox
+      use m_set_col
+      use m_movabs
+      use m_lnabs
 
-         integer :: i
-         integer :: n
-         integer :: ncol
+      integer :: i
+      integer :: n
+      integer :: ncol
 !     LAAT EENDIMENSIONALE FUNCTIE ZIEN met cirkels
-         double precision :: X(N), Y(N), rcx, rcy
-         call SETCOL(NCOL)
-         call MOVABS(X(1), Y(1))
-         do I = 2, N
-            call LNABS(X(I), Y(I))
-         end do
-         call MOVABS(X(1), Y(1))
-         if (rcx > 0) call fbox(x(1) - rcx, y(1) - rcy, x(1) + rcx, y(1) + rcy) ! CIR(RCIR)
-         do I = 2, N
-            if (rcx > 0) call fbox(x(i) - rcx, y(i) - rcy, x(i) + rcx, y(i) + rcy) ! CIR(RCIR)
-         end do
+      real(kind=dp) :: X(N), Y(N), rcx, rcy
+      call SETCOL(NCOL)
+      call MOVABS(X(1), Y(1))
+      do I = 2, N
+         call LNABS(X(I), Y(I))
+      end do
+      call MOVABS(X(1), Y(1))
+      if (rcx > 0) call fbox(x(1) - rcx, y(1) - rcy, x(1) + rcx, y(1) + rcy) ! CIR(RCIR)
+      do I = 2, N
+         if (rcx > 0) call fbox(x(i) - rcx, y(i) - rcy, x(i) + rcx, y(i) + rcy) ! CIR(RCIR)
+      end do
 
-         return
-      end
+      return
+   end
 
 end module m_dispf2cir

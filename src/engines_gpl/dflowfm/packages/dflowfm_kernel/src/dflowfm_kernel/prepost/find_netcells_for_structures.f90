@@ -36,6 +36,7 @@
 !! NOTE: This functionality ONLY supports when using "polylinefile" to specify the structure location
 !! TODO: extend it to support other ways of specifying the structure location.
 subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
+   use precision, only: dp
    use m_structures
    use string_module
    use timespace_parameters
@@ -59,7 +60,7 @@ subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
    logical :: success
    character(len=:), allocatable :: str_buf
    integer, allocatable :: istrulinks(:), ipol_tmp(:)
-   double precision, allocatable :: xpl_tmp(:), ypl_tmp(:), DSL_tmp(:)
+   real(kind=dp), allocatable :: xpl_tmp(:), ypl_tmp(:), DSL_tmp(:)
    integer :: i, L, k, ii, nstr, loc_spec_type, nstrulinks, &
               npl_tmp, minp_tmp, ierror, nstru_read1, nstru_read2
 

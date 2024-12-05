@@ -29,38 +29,26 @@
 
 module m_setucxy1d
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setucxy1d
+   public :: setucxy1d
 
 contains
 
 !> give ucx,ucy magnitude of uc1D, jaPure1D
-subroutine setucxy1D() 
+   subroutine setucxy1D()
+      use precision, only: dp
 
-   use m_flowgeom, only: ndx, lnx, lnxi, kcu, ln
-   use m_flow, only: ucx, ucy, uc1d
+      use m_flowgeom, only: ndx, lnx, lnxi, kcu, ln
+      use m_flow, only: ucx, ucy, uc1d
 
-   integer :: n, LL, k2
-   double precision :: uxy
+      integer :: n, LL, k2
+      real(kind=dp) :: uxy
 
-   do n = 1, ndx
-      if (uc1D(n) /= 0) then
-         uxy = sqrt(ucx(n) * ucx(n) + ucy(n) * ucy(n))
-         if (uxy > 0) then
-            uxy = abs(uc1D(n)) / uxy
-            ucx(n) = ucx(n) * uxy
-            ucy(n) = ucy(n) * uxy
-         end if
-      end if
-   end do
-
-   do LL = lnxi + 1, lnx ! bnd
-      if (kcu(LL) == -1) then ! 1D type link
-         n = Ln(1, LL); k2 = Ln(2, LL)
-         if (uc1D(k2) /= 0) then
+      do n = 1, ndx
+         if (uc1D(n) /= 0) then
             uxy = sqrt(ucx(n) * ucx(n) + ucy(n) * ucy(n))
             if (uxy > 0) then
                uxy = abs(uc1D(n)) / uxy
@@ -68,9 +56,22 @@ subroutine setucxy1D()
                ucy(n) = ucy(n) * uxy
             end if
          end if
-      end if
-   end do
+      end do
 
-end subroutine setucxy1D
+      do LL = lnxi + 1, lnx ! bnd
+         if (kcu(LL) == -1) then ! 1D type link
+            n = Ln(1, LL); k2 = Ln(2, LL)
+            if (uc1D(k2) /= 0) then
+               uxy = sqrt(ucx(n) * ucx(n) + ucy(n) * ucy(n))
+               if (uxy > 0) then
+                  uxy = abs(uc1D(n)) / uxy
+                  ucx(n) = ucx(n) * uxy
+                  ucy(n) = ucy(n) * uxy
+               end if
+            end if
+         end if
+      end do
+
+   end subroutine setucxy1D
 
 end module m_setucxy1d

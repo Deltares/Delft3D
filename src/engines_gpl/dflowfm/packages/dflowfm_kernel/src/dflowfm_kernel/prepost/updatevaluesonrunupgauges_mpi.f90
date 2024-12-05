@@ -32,6 +32,7 @@
 
 !< Reduce runup values over domains
 subroutine updateValuesOnRunupGauges_mpi()
+   use precision, only: dp
    use m_monitoring_runupgauges
    use m_partitioninfo
    use m_timer
@@ -40,8 +41,8 @@ subroutine updateValuesOnRunupGauges_mpi()
    implicit none
 
    integer :: irug, ierror
-   double precision, allocatable, dimension(:, :) :: ruh
-   double precision, allocatable, dimension(:, :) :: xy, xy_red
+   real(kind=dp), allocatable, dimension(:, :) :: ruh
+   real(kind=dp), allocatable, dimension(:, :) :: xy, xy_red
 
    if (.not. (allocated(ruh))) then
       allocate (ruh(2, num_rugs))

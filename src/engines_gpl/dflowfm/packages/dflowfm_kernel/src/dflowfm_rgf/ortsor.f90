@@ -33,6 +33,7 @@
       subroutine ORTSOR(XR, YR, A, B, C, D, E, ATP, M1, N1, M2, N2, &
                         XI2, YI2, XJ2, YJ2, XO, YO, &
                         RJAC)
+         use precision, only: dp
          use unstruc_colors
          use m_sferic
          use m_grid
@@ -48,14 +49,14 @@
          integer :: m2
          integer :: n1
          integer :: n2
-         double precision :: rjac
+         real(kind=dp) :: rjac
 
-         double precision :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
-            XI2(MMAX, NMAX), XJ2(MMAX, NMAX), &
-            YI2(MMAX, NMAX), YJ2(MMAX, NMAX), &
-            XO(MMAX, NMAX), YO(MMAX, NMAX), &
-            A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), &
-            D(MMAX, NMAX), E(MMAX, NMAX), ATP(MMAX, NMAX)
+         real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
+                          XI2(MMAX, NMAX), XJ2(MMAX, NMAX), &
+                          YI2(MMAX, NMAX), YJ2(MMAX, NMAX), &
+                          XO(MMAX, NMAX), YO(MMAX, NMAX), &
+                          A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), &
+                          D(MMAX, NMAX), E(MMAX, NMAX), ATP(MMAX, NMAX)
 
          do I = 1, ITBND
 

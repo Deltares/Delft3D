@@ -32,11 +32,11 @@
 
 module m_allocxz
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: allocxz
+   public :: allocxz
 
 contains
 

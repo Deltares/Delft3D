@@ -32,13 +32,14 @@
 
 module m_load1d2dlinkfile
 
-implicit none
+   implicit none
 
 contains
 
    !> Reads custom parameters for 1D2D links from a *.ini file,
    !! and assigns them to the correct flow links.
    subroutine load1D2DLinkFile(filename)
+      use precision, only: dp
       use string_module, only: strcmpi
       use m_flowgeom, only: lnx1d, kcu, wu1D2D, hh1D2D, lnx, lnx1D
       use m_inquire_flowgeom
@@ -65,14 +66,14 @@ contains
       logical :: success
       integer :: major, minor, ierr
       integer :: numcoordinates
-      double precision, allocatable :: xcoordinates(:), ycoordinates(:)
+      real(kind=dp), allocatable :: xcoordinates(:), ycoordinates(:)
       integer :: loc_spec_type
 
       integer :: numcontactblocks, numok
       integer, allocatable :: ke1d2dprops(:)
       integer :: num1d2dprops
       integer :: LL, Lf
-      double precision :: wu1D2Dread, hh1D2Dread
+      real(kind=dp) :: wu1D2Dread, hh1D2Dread
 
       call tree_create(trim(filename), md_ptr)
       call prop_file('ini', trim(filename), md_ptr, istat)

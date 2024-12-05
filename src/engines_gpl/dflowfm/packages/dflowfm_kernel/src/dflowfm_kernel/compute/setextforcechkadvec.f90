@@ -28,6 +28,7 @@
 !-------------------------------------------------------------------------------
 
  subroutine setextforcechkadvec()
+    use precision, only: dp
     use m_get_spiralforce
     use m_get_spiral3d
     use m_comp_gravinput, only: comp_GravInput
@@ -51,9 +52,9 @@
     implicit none
 
     integer :: L, LL, Lb, Lt, k1, k2, kt1, kt2
-    double precision :: dptot, tidp, trshcorioi, dzt, dztm, alf
-    double precision :: wfac, Dzk
-    double precision :: uixL, uiyL, uL, vL, uxL, uyL, duxL, duyL, duL, cdi, ice_shear
+    real(kind=dp) :: dptot, tidp, trshcorioi, dzt, dztm, alf
+    real(kind=dp) :: wfac, Dzk
+    real(kind=dp) :: uixL, uiyL, uL, vL, uxL, uyL, duxL, duyL, duL, cdi, ice_shear
 
     trshcorioi = 1d0 / trshcorio
 

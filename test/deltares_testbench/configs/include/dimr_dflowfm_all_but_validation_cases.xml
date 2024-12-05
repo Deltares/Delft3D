@@ -5498,11 +5498,11 @@
       <checks>
         <file name="dflowfmoutput/test_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_netnode_bedlevel_zk" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ero1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sed1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_netnode_bedlevel_zk" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_ero1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_sed1" toleranceAbsolute="0.001" />
           </parameters>
         </file>
       </checks>

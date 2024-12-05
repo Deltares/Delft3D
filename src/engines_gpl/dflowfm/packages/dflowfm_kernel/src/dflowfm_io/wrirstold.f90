@@ -32,11 +32,11 @@
 
 module m_wrirstold
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: WRIRSTold
+   public :: WRIRSTold
 
 contains
 

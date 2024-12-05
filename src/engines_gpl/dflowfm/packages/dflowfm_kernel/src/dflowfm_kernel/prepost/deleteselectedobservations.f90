@@ -32,11 +32,11 @@
 
 module m_deleteselectedobservations
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: deleteselectedobservations
+   public :: deleteselectedobservations
 
 contains
 

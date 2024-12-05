@@ -33,16 +33,17 @@ module m_lint
    implicit none
 contains
    subroutine LINT(X, Y, N, TV, XV, YV)
+      use precision, only: dp
       integer :: n
       integer :: n1
       integer :: n2
       integer :: ntv
-      double precision :: t
-      double precision :: tv
-      double precision :: xv
-      double precision :: yv
+      real(kind=dp) :: t
+      real(kind=dp) :: tv
+      real(kind=dp) :: xv
+      real(kind=dp) :: yv
 !     Lineaire interpolatie op TV in lijn
-      double precision :: X(N), Y(N)
+      real(kind=dp) :: X(N), Y(N)
       NTV = int(TV)
       T = TV - NTV
       N1 = NTV + 1

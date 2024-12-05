@@ -32,8 +32,9 @@
 
 !
       subroutine INDEKS(N, ARRIN, INDX)
+         use precision, only: dp
          implicit none
-         double precision :: arrin
+         real(kind=dp) :: arrin
          integer :: i
          integer :: indx
          integer :: indxt
@@ -41,7 +42,7 @@
          integer :: j
          integer :: l
          integer :: n
-         double precision :: q
+         real(kind=dp) :: q
          dimension ARRIN(N), INDX(N)
          do J = 1, N
             INDX(J) = J

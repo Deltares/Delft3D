@@ -33,9 +33,10 @@ module m_dminmod
    implicit none
 contains
 
-   double precision function dminmod(d1, d2) ! twee maal vergroot vanwege acl
+   real(kind=dp) function dminmod(d1, d2) ! twee maal vergroot vanwege acl
+      use precision, only: dp
 
-      double precision d1, d2
+      real(kind=dp) d1, d2
       if (d1 * d2 > 0d0) then
          dminmod = min(1d0, d2 / d1)
       else

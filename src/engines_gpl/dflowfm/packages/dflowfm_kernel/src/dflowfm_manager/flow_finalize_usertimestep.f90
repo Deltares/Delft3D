@@ -34,6 +34,7 @@
 !!
 !! Should be called directly after a flow_run_usertimestep.
 subroutine flow_finalize_usertimestep(iresult)
+   use precision, only: dp
    use m_filter
    use m_flowtimes
    use Timers
@@ -57,7 +58,7 @@ subroutine flow_finalize_usertimestep(iresult)
 
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
-   double precision :: tem_dif
+   real(kind=dp) :: tem_dif
    logical :: do_fourier
 
    iresult = DFM_GENERICERROR

@@ -32,70 +32,71 @@
 
 module m_minmxnetlins
 
-implicit none
+   implicit none
 
 contains
 
-  subroutine MINMXNETLINS()
+   subroutine MINMXNETLINS()
+      use precision, only: dp
 
-     use m_netw
-     use m_missing, only: dmiss
-     use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, dv=>dv2, val=>val2, nv=>nv2, jaauto=>jaauto2
-     use m_inview
+      use m_netw
+      use m_missing, only: dmiss
+      use m_depmax2, only: vmax => vmax2, vmin => vmin2, dv => dv2, val => val2, nv => nv2, jaauto => jaauto2
+      use m_inview
 
-     integer :: i
-     integer :: k1
-     integer :: k2
-     integer :: l
-     double precision :: rd
-     double precision :: rmax
-     double precision :: rmin
-     double precision :: xp1
-     double precision :: xp2
-     double precision :: yp1
-     double precision :: yp2
-     double precision :: zp1
-     double precision :: zp2
+      integer :: i
+      integer :: k1
+      integer :: k2
+      integer :: l
+      real(kind=dp) :: rd
+      real(kind=dp) :: rmax
+      real(kind=dp) :: rmin
+      real(kind=dp) :: xp1
+      real(kind=dp) :: xp2
+      real(kind=dp) :: yp1
+      real(kind=dp) :: yp2
+      real(kind=dp) :: zp1
+      real(kind=dp) :: zp2
 
-     if (JAAUTO > 0) then
-        RMIN = 1.0d30
-        linmin = 0
-        RMAX = -1.0d30
-        linmax = 0
-        do L = 1, NUML
-           K1 = KN(1, L)
-           K2 = KN(2, L)
-           if (RLIN(L) /= DMISS .and. K1 /= 0 .and. K2 /= 0) then
-              XP1 = XK(K1)
-              YP1 = YK(K1)
-              ZP1 = ZK(K1)
-              XP2 = XK(K2)
-              YP2 = YK(K2)
-              ZP2 = ZK(K2)
-              if (INVIEW(XK(K1), YK(K1)) .or. INVIEW(XK(K2), YK(K2))) then
-                 RD = RLIN(L)
-                 if (RD < RMIN) then
-                    RMIN = RD
-                    LINMIN = L
-                 end if
-                 if (RD > RMAX) then
-                    RMAX = RD
-                    LINMAX = L
-                 end if
-              end if
-           end if
-        end do
+      if (JAAUTO > 0) then
+         RMIN = 1.0d30
+         linmin = 0
+         RMAX = -1.0d30
+         linmax = 0
+         do L = 1, NUML
+            K1 = KN(1, L)
+            K2 = KN(2, L)
+            if (RLIN(L) /= DMISS .and. K1 /= 0 .and. K2 /= 0) then
+               XP1 = XK(K1)
+               YP1 = YK(K1)
+               ZP1 = ZK(K1)
+               XP2 = XK(K2)
+               YP2 = YK(K2)
+               ZP2 = ZK(K2)
+               if (INVIEW(XK(K1), YK(K1)) .or. INVIEW(XK(K2), YK(K2))) then
+                  RD = RLIN(L)
+                  if (RD < RMIN) then
+                     RMIN = RD
+                     LINMIN = L
+                  end if
+                  if (RD > RMAX) then
+                     RMAX = RD
+                     LINMAX = L
+                  end if
+               end if
+            end if
+         end do
 
-        VMAX = RMAX
-        VMIN = RMIN
-     end if
+         VMAX = RMAX
+         VMIN = RMIN
+      end if
 
-     DV = VMAX - VMIN
-     do I = 1, NV
-        VAL(I) = VMIN + (I - 1) * DV / (NV - 1)
-     end do
+      DV = VMAX - VMIN
+      do I = 1, NV
+         VAL(I) = VMIN + (I - 1) * DV / (NV - 1)
+      end do
 
-     return
-  end subroutine MINMXNETLINS
+      return
+   end subroutine MINMXNETLINS
 
 end module m_minmxnetlins

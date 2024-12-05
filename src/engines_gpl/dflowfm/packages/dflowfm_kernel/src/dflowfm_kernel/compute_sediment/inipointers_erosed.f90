@@ -32,11 +32,11 @@
 
 module m_inipointers_erosed
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: inipointers_erosed
+   public :: inipointers_erosed
 
 contains
 

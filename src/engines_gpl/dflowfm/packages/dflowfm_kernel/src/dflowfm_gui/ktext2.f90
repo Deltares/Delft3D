@@ -32,20 +32,20 @@
 
 module m_ktext2
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine KTEXT2(TEX, NX, NY, NCOL, NCOL2)
-         integer :: ncol
-         integer :: ncol2
-         integer :: nx
-         integer :: ny
+   subroutine KTEXT2(TEX, NX, NY, NCOL, NCOL2)
+      integer :: ncol
+      integer :: ncol2
+      integer :: nx
+      integer :: ny
 !     tekst op normale text posities met EIGEN achtergrond
-         character(len=*) TEX
-         call ITEXTCOLOURN(NCOL, NCOL2)
-         call IOUTSTRINGXY(NX, NY, trim(TEX))
-         return
-      end
+      character(len=*) TEX
+      call ITEXTCOLOURN(NCOL, NCOL2)
+      call IOUTSTRINGXY(NX, NY, trim(TEX))
+      return
+   end
 
 end module m_ktext2

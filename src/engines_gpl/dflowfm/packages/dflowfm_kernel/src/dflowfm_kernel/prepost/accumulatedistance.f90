@@ -32,32 +32,33 @@
 
 module m_accumulatedistance
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: accumulatedistance
+   public :: accumulatedistance
 
 contains
 
-      !> Stop afstand tussen polygoonpunten vanaf begin in array
-      subroutine accumulateDistance(X, Y, T, MMAX)
+   !> Stop afstand tussen polygoonpunten vanaf begin in array
+   subroutine accumulateDistance(X, Y, T, MMAX)
+      use precision, only: dp
 
-         use geometry_module, only: dbdistance
-         use m_missing, only: dmiss
-         use m_sferic, only: jsferic, jasfer3D
+      use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
 
-         integer :: mmax
-         double precision, intent(in) :: X(MMAX), Y(MMAX) !< Input polyline coordinates
-         double precision, intent(out) :: T(MMAX) !< Output accumulated distances along polyline segments.
+      integer :: mmax
+      real(kind=dp), intent(in) :: X(MMAX), Y(MMAX) !< Input polyline coordinates
+      real(kind=dp), intent(out) :: T(MMAX) !< Output accumulated distances along polyline segments.
 
-         integer :: k
+      integer :: k
 
-         T(1) = 0d0
-         do K = 2, MMAX
-            T(K) = T(K - 1) + dbdistance(x(k), y(k), x(k - 1), y(k - 1), jsferic, jasfer3D, dmiss)
-         end do
-         return
-      end subroutine accumulateDistance
+      T(1) = 0d0
+      do K = 2, MMAX
+         T(K) = T(K - 1) + dbdistance(x(k), y(k), x(k - 1), y(k - 1), jsferic, jasfer3D, dmiss)
+      end do
+      return
+   end subroutine accumulateDistance
 
 end module m_accumulatedistance

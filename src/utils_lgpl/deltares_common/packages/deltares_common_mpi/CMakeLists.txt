@@ -19,7 +19,3 @@ target_link_libraries(${library_name} ${oss_dependencies})
 
 # Create the folder structure in vfproj
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/deltares_common)
-
-
-get_target_property(LIB_DIR ${library_name} BINARY_DIR)
-target_include_directories(${library_name} INTERFACE ${LIB_DIR}/mod)

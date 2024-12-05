@@ -31,6 +31,7 @@
 !
 
       subroutine INTDXSTRI(XH, YH, DXS, NPH, JDLA)
+         use precision, only: dp
          use m_missing
          use m_samples
          use m_sferic, only: jsferic, jasfer3D
@@ -40,9 +41,9 @@
 
          implicit none
          integer :: nph, jdla
-         double precision :: XH(NPH), YH(NPH), DXS(NPH)
+         real(kind=dp) :: XH(NPH), YH(NPH), DXS(NPH)
 
-         double precision :: dxsav
+         real(kind=dp) :: dxsav
          integer :: n
          integer :: nn
 

@@ -31,6 +31,7 @@
 !
 
       subroutine REAARC(MINP, japrompt)
+         use precision, only: dp
          use m_getreal
          use m_arcinfo
          use m_polygon
@@ -51,7 +52,7 @@
          integer :: istep, jstep, MCfile, NCfile
          integer :: istart, iend, jstart, jend !< block to be read in file-index numbering
 
-         double precision :: distep, djstep, dsqrtnumcur
+         real(kind=dp) :: distep, djstep, dsqrtnumcur
 
          call READARCINFOHEADER(MINP, MCa, NCa, X0, Y0, DXa, DYa, RMIS)
 

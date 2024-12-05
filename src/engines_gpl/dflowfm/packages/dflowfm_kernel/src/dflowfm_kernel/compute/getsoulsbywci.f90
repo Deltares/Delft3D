@@ -31,30 +31,30 @@
 !
 
 module m_getsoulsbywci
-use m_getymxpar, only: getymxpar
+   use m_getymxpar, only: getymxpar
 
-
-implicit none
+   implicit none
 
 contains
 
-subroutine getsoulsbywci(modind, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL, taubxuLL)
-   use m_physcoef, only: rhomean
-   implicit none
-   integer, intent(in) :: modind
-   double precision, intent(in) :: ustc2, ustw2, fw, cdrag, umod, abscos ! Cdrag = ag/C2, abscos = wav relative to link dir
-   double precision, intent(out) :: taubpuLL, taubxuLL
-   double precision :: ypar, ymxpar
-   double precision :: tauwav, taucur
+   subroutine getsoulsbywci(modind, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL, taubxuLL)
+      use precision, only: dp
+      use m_physcoef, only: rhomean
+      implicit none
+      integer, intent(in) :: modind
+      real(kind=dp), intent(in) :: ustc2, ustw2, fw, cdrag, umod, abscos ! Cdrag = ag/C2, abscos = wav relative to link dir
+      real(kind=dp), intent(out) :: taubpuLL, taubxuLL
+      real(kind=dp) :: ypar, ymxpar
+      real(kind=dp) :: tauwav, taucur
 
-   tauwav = ustw2 * rhomean
-   taucur = ustc2 * rhomean
+      tauwav = ustw2 * rhomean
+      taucur = ustc2 * rhomean
 
-   call getymxpar(modind, tauwav, taucur, fw, cdrag, abscos, ypar, ymxpar)
+      call getymxpar(modind, tauwav, taucur, fw, cdrag, abscos, ypar, ymxpar)
 
-   taubpuLL = ypar * (taucur + tauwav) / (umod * rhomean + 1d-4) ! umod*ag/C2, (m/s)
-   taubxuLL = ymxpar * (taucur + tauwav) ! Max shear stress needed in Erosed, (N/m2)
+      taubpuLL = ypar * (taucur + tauwav) / (umod * rhomean + 1d-4) ! umod*ag/C2, (m/s)
+      taubxuLL = ymxpar * (taucur + tauwav) ! Max shear stress needed in Erosed, (N/m2)
 
-end subroutine getsoulsbywci
+   end subroutine getsoulsbywci
 
 end module m_getsoulsbywci

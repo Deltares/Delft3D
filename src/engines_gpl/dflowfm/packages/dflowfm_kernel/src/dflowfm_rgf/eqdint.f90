@@ -31,12 +31,13 @@
 !
 
       subroutine EQDINT(YH2, imax, TJ, Y2)
+         use precision, only: dp
          implicit none
          integer :: imax
-         double precision :: YH2(imax)
-         double precision :: TJ, Y2
+         real(kind=dp) :: YH2(imax)
+         real(kind=dp) :: TJ, Y2
          integer :: j1, j2
-         double precision :: T1, T2
+         real(kind=dp) :: T1, T2
          J1 = int(TJ) + 1
          J2 = J1 + 1
          T1 = TJ - int(TJ)

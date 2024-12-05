@@ -31,10 +31,11 @@
 !
 
       subroutine ININUMBERS()
+         use precision, only: dp
          use M_MISSING
          implicit none
 
-         double precision :: pi, dg2rd, rd2dg, ra
+         real(kind=dp) :: pi, dg2rd, rd2dg, ra
          RA = 6370000d0
 !     RA    = dble(6378000.0)   DIT IN MEESTE ANDERE LITERATUUR
          PI = acos(-1d0)

@@ -31,16 +31,17 @@
 !
 
 subroutine rectan(hpr, br, hr, area, width, japerim, perim, closed)
+   use precision, only: dp
    use m_flow, only: slotw1D
    use m_longculverts, only: newculverts
    implicit none
    integer :: japerim
-   double precision :: hpr ! hoogte   in profiel
-   double precision :: br ! breedte van profiel
-   double precision :: hr ! hoogte  van profiel
-   double precision :: area ! wet cross sectional area
-   double precision :: width ! width at water surface
-   double precision :: perim, hp ! wet perimeter
+   real(kind=dp) :: hpr ! hoogte   in profiel
+   real(kind=dp) :: br ! breedte van profiel
+   real(kind=dp) :: hr ! hoogte  van profiel
+   real(kind=dp) :: area ! wet cross sectional area
+   real(kind=dp) :: width ! width at water surface
+   real(kind=dp) :: perim, hp ! wet perimeter
    logical, intent(in) :: closed !< Whether the rectangle shape is closed (ceiling can be included in wet perimeter)
 
    if (japerim == 1) then

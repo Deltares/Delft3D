@@ -32,30 +32,30 @@
 
 module m_dellink
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: dellink
+   public :: dellink
 
 contains
 
-  subroutine DELLINK(LL)
-     use m_netw
-     use m_del_elem
+   subroutine DELLINK(LL)
+      use m_netw
+      use m_del_elem
 
-     integer :: LL
+      integer :: LL
 
-     integer :: k1
-     integer :: k2
-     integer :: lnu
+      integer :: k1
+      integer :: k2
+      integer :: lnu
 
-     if (LL /= 0) then
-        K1 = KN(1, LL); K2 = KN(2, LL)
-        call DELELEM(K1, K2, LNU)
-        LL = 0
-     end if
-     return
-  end subroutine DELLINK
+      if (LL /= 0) then
+         K1 = KN(1, LL); K2 = KN(2, LL)
+         call DELELEM(K1, K2, LNU)
+         LL = 0
+      end if
+      return
+   end subroutine DELLINK
 
 end module m_dellink

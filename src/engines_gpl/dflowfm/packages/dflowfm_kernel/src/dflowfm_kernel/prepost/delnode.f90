@@ -32,40 +32,40 @@
 
 module m_delnode
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: delnode
+   public :: delnode
 
 contains
 
-  subroutine DELNODE(KP)
-     use m_netw
-     use m_missing, only: dmiss
-     use m_del_elem
-     implicit none
-     integer :: KP
-     integer :: k1
-     integer :: k2
-     integer :: l1
-     integer :: lnu
-     integer :: nm1
+   subroutine DELNODE(KP)
+      use m_netw
+      use m_missing, only: dmiss
+      use m_del_elem
+      implicit none
+      integer :: KP
+      integer :: k1
+      integer :: k2
+      integer :: l1
+      integer :: lnu
+      integer :: nm1
 
-     do NM1 = NMK(KP), 1, -1
-        L1 = NOD(KP)%LIN(NM1)
-        K1 = KN(1, L1)
-        K2 = KN(2, L1)
-        call DELELEM(K1, K2, LNU)
-     end do
-     NMK(KP) = 0
-     KC(KP) = 0
-     XK(KP) = dmiss
-     YK(KP) = dmiss
-     ZK(KP) = dmiss
-     ! RM(KP)  = 0
+      do NM1 = NMK(KP), 1, -1
+         L1 = NOD(KP)%LIN(NM1)
+         K1 = KN(1, L1)
+         K2 = KN(2, L1)
+         call DELELEM(K1, K2, LNU)
+      end do
+      NMK(KP) = 0
+      KC(KP) = 0
+      XK(KP) = dmiss
+      YK(KP) = dmiss
+      ZK(KP) = dmiss
+      ! RM(KP)  = 0
 
-     return
-  end subroutine DELNODE
+      return
+   end subroutine DELNODE
 
 end module m_delnode

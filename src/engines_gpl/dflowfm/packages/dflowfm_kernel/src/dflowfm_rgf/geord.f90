@@ -31,6 +31,7 @@
 !
 
       subroutine GEORD(xgeo, ygeo, xrd, yrd, JAPARIJS)
+         use precision, only: dp
          use m_wgs842bessel
          implicit none
          integer :: japarijs
@@ -47,15 +48,15 @@
 !     xrd    [ O ]   east-coordinate in RD system
 !     yrd    [ O ]   north-coordinate in RD system
 !
-         double precision :: xgeo, ygeo
-         double precision :: xrd, yrd
-         double precision :: xx, yy
+         real(kind=dp) :: xgeo, ygeo
+         real(kind=dp) :: xrd, yrd
+         real(kind=dp) :: xx, yy
 !
 !     local variables:
 !     ugeo   : linearly transformed xgeo
 !     vgeo   : linearly transformed ygeo
 !
-         double precision :: ugeo, vgeo
+         real(kind=dp) :: ugeo, vgeo
 !
 !     externals:
 !     none

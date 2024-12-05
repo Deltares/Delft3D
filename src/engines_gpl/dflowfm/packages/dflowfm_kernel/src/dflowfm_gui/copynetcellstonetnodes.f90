@@ -32,49 +32,50 @@
 
 module m_copynetcellstonetnodes
 
-implicit none
+   implicit none
 
 contains
 
-subroutine copynetcellstonetnodes() ! for smooth plotting only
-   use m_flowgeom, only: ndx2d, ba
-   use m_netw, only: numk, rnod, netcell, rlin
-   use m_alloc, only: aerr
+   subroutine copynetcellstonetnodes() ! for smooth plotting only
+      use precision, only: dp
+      use m_flowgeom, only: ndx2d, ba
+      use m_netw, only: numk, rnod, netcell, rlin
+      use m_alloc, only: aerr
 
-   integer :: k, kk, kkk, n, nn4, ierr, ja
-   real, allocatable, save :: rn(:)
-   double precision :: znn
+      integer :: k, kk, kkk, n, nn4, ierr, ja
+      real, allocatable, save :: rn(:)
+      real(kind=dp) :: znn
 
-   ja = 0
-   if (.not. allocated(rn)) then
-      ja = 1
-   else if (size(rn) < numk) then
-      deallocate (rn); ja = 1
-   end if
-   if (ja == 1) then
-      allocate (rn(numk), stat=ierr)
-      call aerr('rn(numk)', ierr, numk)
-   end if
-
-   rnod = 0d0; rn = 0d0
-   do n = 1, ndx2d
-      nn4 = netcell(n)%n
-
-      znn = rlin(n)
-
-      do kk = 1, nn4
-         kkk = netcell(n)%nod(kk)
-         rnod(kkk) = rnod(kkk) + znn * ba(n)
-         rn(kkk) = rn(kkk) + ba(n)
-      end do
-   end do
-
-   do k = 1, numk
-      if (rn(k) > 0) then
-         rnod(k) = rnod(k) / rn(k)
+      ja = 0
+      if (.not. allocated(rn)) then
+         ja = 1
+      else if (size(rn) < numk) then
+         deallocate (rn); ja = 1
       end if
-   end do
+      if (ja == 1) then
+         allocate (rn(numk), stat=ierr)
+         call aerr('rn(numk)', ierr, numk)
+      end if
 
-end subroutine copynetcellstonetnodes !in afwachting van isosmoothflownodes
+      rnod = 0d0; rn = 0d0
+      do n = 1, ndx2d
+         nn4 = netcell(n)%n
+
+         znn = rlin(n)
+
+         do kk = 1, nn4
+            kkk = netcell(n)%nod(kk)
+            rnod(kkk) = rnod(kkk) + znn * ba(n)
+            rn(kkk) = rn(kkk) + ba(n)
+         end do
+      end do
+
+      do k = 1, numk
+         if (rn(k) > 0) then
+            rnod(k) = rnod(k) / rn(k)
+         end if
+      end do
+
+   end subroutine copynetcellstonetnodes !in afwachting van isosmoothflownodes
 
 end module m_copynetcellstonetnodes

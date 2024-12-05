@@ -22,8 +22,9 @@ cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
 cmake_path(GET PARENT_DIR PARENT_PATH dir)
 
 
-# Set unit test root directory
-set(unit_tests_dir ${dir}/test/unit_test) # This points to the location of OSS/test
+# Set unit and integration test root directory
+set(unit_tests_dir ${dir}/test/unit_test)
+set(integration_tests_dir ${dir}/test/integration_test)
 
 include(modules.cmake)
 
@@ -166,10 +167,10 @@ endif(WIN32)
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
 string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
 
-#IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(installdir "install_${configuration_type_lower}")
   SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
-#ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     # Set root name of the projects in the root UI of Visual Studio

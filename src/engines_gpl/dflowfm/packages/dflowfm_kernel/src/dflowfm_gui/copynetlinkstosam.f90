@@ -32,57 +32,57 @@
 
 module m_copynetlinkstosam
 
-implicit none
+   implicit none
 
 contains
 
-subroutine copynetlinkstosam()
-   use m_samples, only: ns, xs, ys, zs, increasesam
-   use m_netw, only: kn, numl, rlin, xe, ye, xk, yk, lc
-   use m_missing, only: dmiss, jins
-   use m_polygon, only: NPL, xpl, ypl, zpl
-   use geometry_module, only: dbpinpol
+   subroutine copynetlinkstosam()
+      use m_samples, only: ns, xs, ys, zs, increasesam
+      use m_netw, only: kn, numl, rlin, xe, ye, xk, yk, lc
+      use m_missing, only: dmiss, jins
+      use m_polygon, only: NPL, xpl, ypl, zpl
+      use geometry_module, only: dbpinpol
 
-   integer :: in, k, l, K1, K2
-   in = -1
-   k = ns
+      integer :: in, k, l, K1, K2
+      in = -1
+      k = ns
 
 !need to compute the coordinates of the links
-   if (.not. allocated(xe)) then
-      allocate (xe(numl))
-   end if
-   if (.not. allocated(ye)) then
-      allocate (ye(numl))
-   end if
-
-   LC = 0
-   do l = 1, numl
-      if (rlin(l) /= dmiss) then
-         K1 = KN(1, L)
-         K2 = KN(2, L)
-         ! calculate the centre of the link
-         xe(l) = .5d0 * (xk(K1) + xk(K2)) ! TODO: LC: make this sferic+3D-safe
-         ye(l) = .5d0 * (yk(K1) + yk(K2))
-         call DBPINPOL(xe(l), ye(l), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
-         if (IN == 1) then
-            LC(l) = 1
-            K = K + 1
-         end if
+      if (.not. allocated(xe)) then
+         allocate (xe(numl))
       end if
-   end do
+      if (.not. allocated(ye)) then
+         allocate (ye(numl))
+      end if
 
-   call INCREASESAM(k)
+      LC = 0
+      do l = 1, numl
+         if (rlin(l) /= dmiss) then
+            K1 = KN(1, L)
+            K2 = KN(2, L)
+            ! calculate the centre of the link
+            xe(l) = .5d0 * (xk(K1) + xk(K2)) ! TODO: LC: make this sferic+3D-safe
+            ye(l) = .5d0 * (yk(K1) + yk(K2))
+            call DBPINPOL(xe(l), ye(l), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
+            if (IN == 1) then
+               LC(l) = 1
+               K = K + 1
+            end if
+         end if
+      end do
+
+      call INCREASESAM(k)
 
 !assign the calculated value in rlin
-   K = NS
-   do l = 1, numl
-      if (LC(l) == 1) then
-         k = k + 1
-         xs(k) = xe(l); ys(k) = ye(l); zs(k) = rlin(l)
-      end if
-   end do
-   ns = k
+      K = NS
+      do l = 1, numl
+         if (LC(l) == 1) then
+            k = k + 1
+            xs(k) = xe(l); ys(k) = ye(l); zs(k) = rlin(l)
+         end if
+      end do
+      ns = k
 
-end subroutine copynetlinkstosam
+   end subroutine copynetlinkstosam
 
 end module m_copynetlinkstosam

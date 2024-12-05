@@ -31,23 +31,24 @@
 !
 
       subroutine GOLD(AX, BX, CX, TOL, XMIN, P, P2, Q, Q2, XX, YY, N, DIS)
+         use precision, only: dp
          use m_spldist
          implicit none
-         double precision :: c
-         double precision :: f0
-         double precision :: f1
-         double precision :: f2
-         double precision :: f3
+         real(kind=dp) :: c
+         real(kind=dp) :: f0
+         real(kind=dp) :: f1
+         real(kind=dp) :: f2
+         real(kind=dp) :: f3
          integer :: n
-         double precision :: r
-         double precision :: x0
-         double precision :: x3
+         real(kind=dp) :: r
+         real(kind=dp) :: x0
+         real(kind=dp) :: x3
          parameter(R=.61803399, C=.38196602)
 
-         double precision :: AX, BX, CX, TOL, DIS, XMIN, XX, YY, X1, X2
+         real(kind=dp) :: AX, BX, CX, TOL, DIS, XMIN, XX, YY, X1, X2
 
 !     EENDIMENSIONAAL ZOEKEN VAN 'GEBRACKED' MINIMUM
-         double precision :: P(N), P2(N), Q(N), Q2(N)
+         real(kind=dp) :: P(N), P2(N), Q(N), Q2(N)
          X0 = AX
          X3 = CX
          if (abs(CX - BX) > abs(BX - AX)) then

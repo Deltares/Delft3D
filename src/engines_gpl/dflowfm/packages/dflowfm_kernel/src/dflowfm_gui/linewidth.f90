@@ -32,19 +32,19 @@
 
 module m_linewidth
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine LINEWIDTH(iW)
-         use unstruc_opengl, only: InOpenGLRendering, SetLineWidth
+   subroutine LINEWIDTH(iW)
+      use unstruc_opengl, only: InOpenGLRendering, SetLineWidth
 
-         integer :: iw
-         if (InOpenGLRendering) then
-            call SetLineWidth(iw)
-         else
-            call IGRLINEWIDTH(iw, iw)
-         end if
-      end subroutine
+      integer :: iw
+      if (InOpenGLRendering) then
+         call SetLineWidth(iw)
+      else
+         call IGRLINEWIDTH(iw, iw)
+      end if
+   end subroutine
 
 end module m_linewidth

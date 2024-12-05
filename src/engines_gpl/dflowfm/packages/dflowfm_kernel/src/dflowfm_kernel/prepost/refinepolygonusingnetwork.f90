@@ -31,6 +31,7 @@
 !
 
    subroutine REFINEPOLYGONUSINGNETWORK()
+      use precision, only: dp
       use m_closein, only: closein
       use m_checktriangle, only: checktriangle
       use m_netw
@@ -47,9 +48,9 @@
 
       implicit none
 
-      double precision :: a
-      double precision :: af
-      double precision :: disav, TRIANGLESIZE
+      real(kind=dp) :: a
+      real(kind=dp) :: af
+      real(kind=dp) :: disav, TRIANGLESIZE
       integer :: ierr
       integer :: in
       integer :: innump
@@ -77,10 +78,10 @@
       integer :: nn2
       integer :: nsdl
       integer :: nsin
-      double precision :: rln, rlp, xa, ya, xkk, ykk, phimin, phimax
+      real(kind=dp) :: rln, rlp, xa, ya, xkk, ykk, phimin, phimax
 
-      double precision :: X1, Y1, X2, Y2
-      double precision, allocatable :: XH(:), YH(:)
+      real(kind=dp) :: X1, Y1, X2, Y2
+      real(kind=dp), allocatable :: XH(:), YH(:)
       integer, allocatable :: KIN(:), KS(:)
 
       if (NPL <= 2) return

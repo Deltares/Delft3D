@@ -29,165 +29,166 @@
 
 module m_corioliskelvin
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: corioliskelvin, oceaneddy
+   public :: corioliskelvin, oceaneddy
 
 contains
 
-    subroutine corioliskelvin(tim)
-       use m_netw
-       use m_flowgeom
-       use m_flow
-       use m_sferic
-       use unstruc_display
-       use m_ini_sferic
+   subroutine corioliskelvin(tim)
+      use precision, only: dp
+      use m_netw
+      use m_flowgeom
+      use m_flow
+      use m_sferic
+      use unstruc_display
+      use m_ini_sferic
 
-       double precision :: tim
-       
-       integer :: k, L, k1, k2
-       double precision :: s1k, xx, yy, samp, dif, cs, sn, aer, dep, r0, x0, y0, Rossby, rr, sgh
+      real(kind=dp) :: tim
 
-       if (tim == 0d0) then
-          call inisferic()
-       end if
+      integer :: k, L, k1, k2
+      real(kind=dp) :: s1k, xx, yy, samp, dif, cs, sn, aer, dep, r0, x0, y0, Rossby, rr, sgh
 
-       dep = sini - zkuni
-       sgh = sqrt(ag / dep)
-       Rossby = sqrt(ag * dep) / fcorio
-       r0 = 0.5d0 * (xkmax - xkmin)
-       x0 = 0.5d0 * (xkmax + xkmin)
-       y0 = 0.5d0 * (ykmax + ykmin)
-       samp = 0.05d0
+      if (tim == 0d0) then
+         call inisferic()
+      end if
 
-       call statisticsnewstep()
+      dep = sini - zkuni
+      sgh = sqrt(ag / dep)
+      Rossby = sqrt(ag * dep) / fcorio
+      r0 = 0.5d0 * (xkmax - xkmin)
+      x0 = 0.5d0 * (xkmax + xkmin)
+      y0 = 0.5d0 * (ykmax + ykmin)
+      samp = 0.05d0
 
-       do k = 1, ndx
-          yy = yz(k) - y0
-          xx = xz(k) - x0
-          rr = sqrt(xx * xx + yy * yy)
-          cs = xx / rr
-          sn = yy / rr
+      call statisticsnewstep()
 
-          aer = samp * exp((rr - r0) / Rossby)
-          s1k = aer * cs
+      do k = 1, ndx
+         yy = yz(k) - y0
+         xx = xz(k) - x0
+         rr = sqrt(xx * xx + yy * yy)
+         cs = xx / rr
+         sn = yy / rr
 
-          if (tim == 0) then
-             s1(k) = max(bl(k), s1k); s0(k) = s1(k)
-             ucx(k) = -s1k * sgh * sn
-             ucy(k) = s1k * sgh * cs
-          end if
+         aer = samp * exp((rr - r0) / Rossby)
+         s1k = aer * cs
 
-          dif = abs(s1(k) - s1k)
-          call statisticsonemorepoint(dif)
-       end do
+         if (tim == 0) then
+            s1(k) = max(bl(k), s1k); s0(k) = s1(k)
+            ucx(k) = -s1k * sgh * sn
+            ucy(k) = s1k * sgh * cs
+         end if
 
-       if (tim == 0) then
-          do L = 1, Lnx
-             k1 = ln(1, L); k2 = ln(2, L)
-             u1(L) = 0.5d0 * (ucx(k1) + ucx(k2)) * csu(L) + 0.5d0 * (ucy(k1) + ucy(k2)) * snu(L)
-             u0(L) = u1(L)
-          end do
-       end if
+         dif = abs(s1(k) - s1k)
+         call statisticsonemorepoint(dif)
+      end do
 
-       call statisticsfinalise()
-    end subroutine corioliskelvin
+      if (tim == 0) then
+         do L = 1, Lnx
+            k1 = ln(1, L); k2 = ln(2, L)
+            u1(L) = 0.5d0 * (ucx(k1) + ucx(k2)) * csu(L) + 0.5d0 * (ucy(k1) + ucy(k2)) * snu(L)
+            u0(L) = u1(L)
+         end do
+      end if
 
-    subroutine oceaneddy(tim)
-       use m_netw
-       use m_flowgeom
-       use m_flow
-       use m_sferic, only: fcorio
-       use m_set_kbot_ktop
-       use m_ini_sferic
-       use m_dbdistance_hk
-       implicit none
+      call statisticsfinalise()
+   end subroutine corioliskelvin
 
-       integer :: k, L, k1, k2, LL, i, j, imx, jmx
-       double precision :: tim, s1k, xx, yy, samp, cs, sn, dep, rs
-       double precision :: x0, y0, Rossby, rr, sgh, uv, uvr, xff = 0.1d0, yff = 0.1d0
+   subroutine oceaneddy(tim)
+      use precision, only: dp
+      use m_netw
+      use m_flowgeom
+      use m_flow
+      use m_sferic, only: fcorio
+      use m_set_kbot_ktop
+      use m_ini_sferic
+      use m_dbdistance_hk
+      implicit none
 
-       if (tim == 0d0) then
-          call inisferic()
-       end if
+      integer :: k, L, k1, k2, LL, i, j, imx, jmx
+      real(kind=dp) :: tim, s1k, xx, yy, samp, cs, sn, dep, rs
+      real(kind=dp) :: x0, y0, Rossby, rr, sgh, uv, uvr, xff = 0.1d0, yff = 0.1d0
 
-       dep = sini - zkuni
-       sgh = sqrt(ag / dep)
-       Rossby = sqrt(ag * dep) / fcorio
-       call dbdistancehk(xkmin, ykmin, xkmax, ykmax, rs)
-       rs = oceaneddysizefrac * rs
-       if (oceaneddysize /= 0d0) rs = oceaneddysize
-       samp = oceaneddyamp
-       if (oceaneddyvel > 0d0) then
-          samp = oceaneddyvel * 2d0 * fcorio * rs / ag
-       end if
-       uv = ag / (2d0 * fcorio * rs * rs)
+      if (tim == 0d0) then
+         call inisferic()
+      end if
 
-       !call statisticsnewstep()
+      dep = sini - zkuni
+      sgh = sqrt(ag / dep)
+      Rossby = sqrt(ag * dep) / fcorio
+      call dbdistancehk(xkmin, ykmin, xkmax, ykmax, rs)
+      rs = oceaneddysizefrac * rs
+      if (oceaneddysize /= 0d0) rs = oceaneddysize
+      samp = oceaneddyamp
+      if (oceaneddyvel > 0d0) then
+         samp = oceaneddyvel * 2d0 * fcorio * rs / ag
+      end if
+      uv = ag / (2d0 * fcorio * rs * rs)
 
-       xff = oceaneddyxoff
-       yff = oceaneddyyoff
-       imx = 1; jmx = 1
-       if (oceaneddyxoff /= 0d0) imx = 2
-       if (oceaneddyyoff /= 0d0) jmx = 2
+      !call statisticsnewstep()
 
-       do i = 1, imx
-          if (i == 2) then
-             xff = -xff
-             samp = -samp
-          end if
+      xff = oceaneddyxoff
+      yff = oceaneddyyoff
+      imx = 1; jmx = 1
+      if (oceaneddyxoff /= 0d0) imx = 2
+      if (oceaneddyyoff /= 0d0) jmx = 2
 
-          do j = 1, jmx
+      do i = 1, imx
+         if (i == 2) then
+            xff = -xff
+            samp = -samp
+         end if
 
-             if (j == 2) then
-                yff = -yff
-                samp = -samp
-             end if
+         do j = 1, jmx
 
-             x0 = (0.5d0 + xff) * xkmax + (0.5d0 - xff) * xkmin
-             y0 = (0.5d0 + yff) * ykmax + (0.5d0 - yff) * ykmin
+            if (j == 2) then
+               yff = -yff
+               samp = -samp
+            end if
 
-             do k = 1, ndx
-                call dbdistancehk(xz(k), yz(k), x0, y0, rr)
-                call dbdistancehk(x0, yz(k), xz(k), yz(k), xx); if (xz(k) < x0) xx = -xx
-                call dbdistancehk(xz(k), y0, xz(k), yz(k), yy); if (yz(k) < y0) yy = -yy
+            x0 = (0.5d0 + xff) * xkmax + (0.5d0 - xff) * xkmin
+            y0 = (0.5d0 + yff) * ykmax + (0.5d0 - yff) * ykmin
 
-                cs = xx / rr
-                sn = yy / rr
+            do k = 1, ndx
+               call dbdistancehk(xz(k), yz(k), x0, y0, rr)
+               call dbdistancehk(x0, yz(k), xz(k), yz(k), xx); if (xz(k) < x0) xx = -xx
+               call dbdistancehk(xz(k), y0, xz(k), yz(k), yy); if (yz(k) < y0) yy = -yy
 
-                s1k = samp * exp(-rr * rr / (2d0 * rs * rs))
-                uvr = s1k * uv * rr
+               cs = xx / rr
+               sn = yy / rr
 
-                if (tim == 0) then
-                   s1(k) = s1(k) + max(bl(k), s1k); s0(k) = s1(k)
-                   ucx(k) = ucx(k) + uvr * sn
-                   ucy(k) = ucy(k) - uvr * cs
-                end if
+               s1k = samp * exp(-rr * rr / (2d0 * rs * rs))
+               uvr = s1k * uv * rr
 
-                !dif = abs(s1(k) - s1k)
-                !call statisticsonemorepoint(dif)
-             end do
+               if (tim == 0) then
+                  s1(k) = s1(k) + max(bl(k), s1k); s0(k) = s1(k)
+                  ucx(k) = ucx(k) + uvr * sn
+                  ucy(k) = ucy(k) - uvr * cs
+               end if
 
-          end do
-       end do
+               !dif = abs(s1(k) - s1k)
+               !call statisticsonemorepoint(dif)
+            end do
 
-       if (tim == 0) then
-          call setkbotktop(1)
-          do L = 1, Lnx
-             k1 = ln(1, L); k2 = ln(2, L)
-             u1(L) = 0.5d0 * (ucx(k1) + ucx(k2)) * csu(L) + 0.5d0 * (ucy(k1) + ucy(k2)) * snu(L)
-             u0(L) = u1(L)
-             Ltop(L) = Lbot(L) + kmx - 1
-             do LL = Lbot(L), Ltop(L)
-                u1(LL) = u1(L); u0(LL) = u1(L)
-             end do
-          end do
-       end if
+         end do
+      end do
 
-       !call statisticsfinalise()
-    end subroutine oceaneddy
+      if (tim == 0) then
+         call setkbotktop(1)
+         do L = 1, Lnx
+            k1 = ln(1, L); k2 = ln(2, L)
+            u1(L) = 0.5d0 * (ucx(k1) + ucx(k2)) * csu(L) + 0.5d0 * (ucy(k1) + ucy(k2)) * snu(L)
+            u0(L) = u1(L)
+            Ltop(L) = Lbot(L) + kmx - 1
+            do LL = Lbot(L), Ltop(L)
+               u1(LL) = u1(L); u0(LL) = u1(L)
+            end do
+         end do
+      end if
 
+      !call statisticsfinalise()
+   end subroutine oceaneddy
 
 end module m_corioliskelvin

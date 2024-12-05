@@ -31,6 +31,7 @@
 !
 
  subroutine copylandboundaryto1Dnetwork()
+    use precision, only: dp
 
     use m_accumulatedistance, only: accumulatedistance
     use m_polygon
@@ -44,8 +45,8 @@
 
     integer :: MX = 1000000
     integer :: k, kk, k1, k2, n, LL, NL, ierr, nh
-    double precision :: D, D1D, DTOT
-    double precision, allocatable :: DLan(:), XH(:), YH(:), DH(:)
+    real(kind=dp) :: D, D1D, DTOT
+    real(kind=dp), allocatable :: DLan(:), XH(:), YH(:), DH(:)
 
     if (mxlan == 0 .and. numl > 0) then
        call regrid1D(1) ! based on 1D net

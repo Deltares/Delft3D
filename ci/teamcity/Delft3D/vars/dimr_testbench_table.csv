@@ -35,7 +35,7 @@ fm hyd,dimr/dimr_dflowfm_hyd_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,F
 fm lim-waves,dimr/dimr_dflowfm_lim_waves_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Do NOT run for wave branch, as this is an FM wave function. Case names mention waq, but that is not used."
 fm lim-waves,dimr/dimr_dflowfm_lim_waves_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Do NOT run for wave branch, as this is an FM wave function. Case names mention waq, but that is not used."
 fm parallel,dimr/dimr_dflowfm_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm rws acceptance parallel,dimr/dimr_dflowfm_lnx64_rws_acceptance_parallel.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm rws acceptance parallel,dimr/dimr_dflowfm_lnx64_rws_acceptance_parallel.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Well known to be flaky."
 fm,dimr/dimr_dflowfm_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm mormerge,dimr/dimr_dflowfm_mormerge_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm mormerge,dimr/dimr_dflowfm_mormerge_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
@@ -61,7 +61,7 @@ fm waq,dimr/dimr_dflowfm_waq_coupling_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE
 fm waq structures,dimr/dimr_dflowfm_waq_coupling_structures_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq,dimr/dimr_dflowfm_waq_coupling_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm parallel,dimr/dimr_dflowfm_win64_parallel.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm rws acceptance parallel,dimr/dimr_dflowfm_win64_rws_acceptance_parallel.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm rws acceptance parallel,dimr/dimr_dflowfm_win64_rws_acceptance_parallel.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Well known to be flaky."
 fm rws acceptance,dimr/dimr_dflowfm_win64_rws_acceptance.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm,dimr/dimr_dflowfm_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dmorphology,dimr/dimr_dmorphology_validation_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,

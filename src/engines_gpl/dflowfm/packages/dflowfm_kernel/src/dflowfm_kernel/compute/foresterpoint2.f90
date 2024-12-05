@@ -32,56 +32,57 @@
 
 module m_foresterpoint2
 
-implicit none
+   implicit none
 
 contains
 
-subroutine foresterpoint2(constituents, numconst, ndkx, itemp, vol, a, d, km, kmxx, kb, maxit, ip)
-   use m_flow, only: eps6, eps10
-   implicit none
+   subroutine foresterpoint2(constituents, numconst, ndkx, itemp, vol, a, d, km, kmxx, kb, maxit, ip)
+      use precision, only: dp
+      use m_flow, only: eps6, eps10
+      implicit none
 
-   integer :: numconst, ndkx, itemp, km, kmxx, kb, maxit, ip
-   double precision :: constituents(numconst, ndkx), vol(kmxx), a(km), d(km)
+      integer :: numconst, ndkx, itemp, km, kmxx, kb, maxit, ip
+      real(kind=dp) :: constituents(numconst, ndkx), vol(kmxx), a(km), d(km)
 
-   double precision :: dif
-   integer :: k, m, ja
+      real(kind=dp) :: dif
+      integer :: k, m, ja
 
-   do k = 1, km
-      a(k) = constituents(itemp, kb + k - 1)
-   end do
-
-   do m = 1, maxit
-
-      d(1:km) = a(1:km)
-      ja = 0
-
-      do k = 1, km - 1
-         dif = d(k + 1) - d(k)
-         if (dif * ip > eps6 .or. d(k) < 0d0 .or. d(k + 1) < 0d0) then
-            if (vol(k) > eps10 .and. vol(k + 1) > eps10) then
-               ja = 1
-               dif = 0.1666666666667d0 * dif * (vol(k + 1) + vol(k))
-               a(k) = a(k) + dif / vol(k)
-               a(k + 1) = a(k + 1) - dif / vol(k + 1)
-            else
-               dif = 0d0
-            end if
-         end if
+      do k = 1, km
+         a(k) = constituents(itemp, kb + k - 1)
       end do
 
-      if (ja == 0) then
-         exit
+      do m = 1, maxit
+
+         d(1:km) = a(1:km)
+         ja = 0
+
+         do k = 1, km - 1
+            dif = d(k + 1) - d(k)
+            if (dif * ip > eps6 .or. d(k) < 0d0 .or. d(k + 1) < 0d0) then
+               if (vol(k) > eps10 .and. vol(k + 1) > eps10) then
+                  ja = 1
+                  dif = 0.1666666666667d0 * dif * (vol(k + 1) + vol(k))
+                  a(k) = a(k) + dif / vol(k)
+                  a(k + 1) = a(k + 1) - dif / vol(k + 1)
+               else
+                  dif = 0d0
+               end if
+            end if
+         end do
+
+         if (ja == 0) then
+            exit
+         end if
+
+      end do
+
+      do k = 1, km
+         constituents(itemp, kb + k - 1) = a(k)
+      end do
+      if (kmxx > km) then
+         constituents(itemp, kb + km:kb + kmxx - 1) = a(km)
       end if
 
-   end do
-
-   do k = 1, km
-      constituents(itemp, kb + k - 1) = a(k)
-   end do
-   if (kmxx > km) then
-      constituents(itemp, kb + km:kb + kmxx - 1) = a(km)
-   end if
-
-end subroutine foresterpoint2
+   end subroutine foresterpoint2
 
 end module m_foresterpoint2

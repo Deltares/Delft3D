@@ -31,6 +31,7 @@
 !
 
     subroutine REALAN(MLAN, ANTOT)
+       use precision, only: dp
        use m_polygon
        use M_landboundary
        use M_MISSING
@@ -47,10 +48,10 @@
        integer :: nkol
        integer :: nrow
        integer :: ntot, n, k, kd, ku
-       double precision :: xlr
+       real(kind=dp) :: xlr
 
        character MATR * 4, REC * 132
-       double precision :: XL, YL, ZL
+       real(kind=dp) :: XL, YL, ZL
 
        if (present(antot)) then
           NTOT = antot

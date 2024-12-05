@@ -31,13 +31,14 @@
 !
 
   subroutine SETPOINT(XP, YP, ZP, K1)
+     use precision, only: dp
 
      use m_tweedrie
      use m_netw
      use m_howtoview
 
      implicit none
-     double precision :: XP, YP, ZP
+     real(kind=dp) :: XP, YP, ZP
      integer :: K1
 
      call TWEEDRIE(XP, YP, XK(K1), YK(K1), ZK(K1))

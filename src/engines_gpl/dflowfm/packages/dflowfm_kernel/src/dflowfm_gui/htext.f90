@@ -33,12 +33,13 @@ module m_htext
    implicit none
 contains
    subroutine HTEXT(VAL, X, Y)
+      use precision, only: dp
       use m_colnow
       use m_draw_text
 
-      double precision :: val
-      double precision :: x
-      double precision :: y
+      real(kind=dp) :: val
+      real(kind=dp) :: x
+      real(kind=dp) :: y
 !     getal value op grafisch scherm in current color
       character TEXT * 6, TEXT2 * 10
 

@@ -31,24 +31,24 @@
 !
 
 module m_dkcir
-use m_kcir
+   use m_kcir
 
-
-implicit none
+   implicit none
 
 contains
 
-      subroutine DKCIR(XD, YD, ZD, V)
-         use m_three_two
+   subroutine DKCIR(XD, YD, ZD, V)
+      use precision, only: dp
+      use m_three_two
 
-         double precision :: v
-         double precision :: x
-         double precision :: y
-         double precision :: z
-         double precision XD, YD, ZD
-         call DRIETWEE(XD, YD, ZD, X, Y, Z)
-         call KCIR(X, Y, V)
-         return
-      end
+      real(kind=dp) :: v
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      real(kind=dp) :: z
+      real(kind=dp) XD, YD, ZD
+      call DRIETWEE(XD, YD, ZD, X, Y, Z)
+      call KCIR(X, Y, V)
+      return
+   end
 
 end module m_dkcir

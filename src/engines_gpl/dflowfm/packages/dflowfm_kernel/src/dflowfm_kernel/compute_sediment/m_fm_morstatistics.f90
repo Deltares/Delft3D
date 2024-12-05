@@ -132,8 +132,8 @@ module m_fm_morstatistics
    !
    integer :: nmorstatqnt
    integer :: morstatflg(10, 4)
-   double precision :: morstatt0
-   double precision, dimension(:, :), allocatable :: morstatqnt
+   real(kind=dp) :: morstatt0
+   real(kind=dp), dimension(:, :), allocatable :: morstatqnt
 
 contains
 
@@ -507,6 +507,7 @@ contains
 
    ! Write sedmor statistics to NetCDF
    subroutine unc_write_sed(tim)
+      use precision, only: dp
       use m_flow
       use m_flowtimes
       use unstruc_netcdf
@@ -515,7 +516,7 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
 
       type(t_unc_sedids), save :: sedids
       integer :: ierr
@@ -547,6 +548,7 @@ contains
    end subroutine unc_write_sed
 
    subroutine unc_write_sedstat_filepointer_ugrid(sedids, tim)
+      use precision, only: dp
       use m_alloc
       use io_ugrid
       use unstruc_netcdf
@@ -560,7 +562,7 @@ contains
       implicit none
 
       type(t_unc_sedids), intent(inout) :: sedids
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
 
       integer :: j, k, ll
       integer :: ndim
@@ -572,12 +574,12 @@ contains
       integer :: idx
       integer :: dim
       integer, dimension(:), allocatable :: dimids_
-      double precision :: meanmag2
-      double precision :: morfc
-      double precision, save :: morft0, hydrt0
-      double precision, dimension(:, :), allocatable :: work
-      double precision, dimension(:), allocatable :: work2
-      double precision, dimension(:), allocatable :: wghtfac
+      real(kind=dp) :: meanmag2
+      real(kind=dp) :: morfc
+      real(kind=dp), save :: morft0, hydrt0
+      real(kind=dp), dimension(:, :), allocatable :: work
+      real(kind=dp), dimension(:), allocatable :: work2
+      real(kind=dp), dimension(:), allocatable :: wghtfac
       character(len=10) :: transpunit
       character(len=75) :: var1, var2
       character(len=150) :: descr1, descr2

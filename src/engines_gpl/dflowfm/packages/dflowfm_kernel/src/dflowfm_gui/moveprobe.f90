@@ -36,33 +36,34 @@
 !>      1 2 3
 module m_moveprobe
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine moveprobe(idir, kk, xp, yp)
-         use m_flowgeom, only: ln, nd, csu, snu
-         use network_data, only: xzw, yzw
+   subroutine moveprobe(idir, kk, xp, yp)
+      use precision, only: dp
+      use m_flowgeom, only: ln, nd, csu, snu
+      use network_data, only: xzw, yzw
 
-         integer, intent(in) :: idir !< direction (see keys on keypad)
-         integer, intent(inout) :: kk !< probed flownode number
-         double precision, intent(inout) :: xp, yp !< probed flownode coordinates
+      integer, intent(in) :: idir !< direction (see keys on keypad)
+      integer, intent(inout) :: kk !< probed flownode number
+      real(kind=dp), intent(inout) :: xp, yp !< probed flownode coordinates
 
-         double precision :: csdir, sndir !< direction vector components
-         double precision :: dum
-         double precision :: dmaxinprod
+      real(kind=dp) :: csdir, sndir !< direction vector components
+      real(kind=dp) :: dum
+      real(kind=dp) :: dmaxinprod
 
-         integer :: i, L, knext
+      integer :: i, L, knext
 
-         if (kk == 0 .or. idir == 5) then
-            call in_flowcell(xp, yp, KK)
-         else
+      if (kk == 0 .or. idir == 5) then
+         call in_flowcell(xp, yp, KK)
+      else
 !           determine direction vector
-            csdir = mod(idir - 1, 3) - 1d0
-            sndir = int((idir - 1) / 3) - 1d0
-            dum = sqrt(csdir**2 + sndir**2)
-            csdir = csdir / dum
-            sndir = sndir / dum
+         csdir = mod(idir - 1, 3) - 1d0
+         sndir = int((idir - 1) / 3) - 1d0
+         dum = sqrt(csdir**2 + sndir**2)
+         csdir = csdir / dum
+         sndir = sndir / dum
 
 !!           find next flownode
 !            knext = 0
@@ -93,29 +94,29 @@ contains
 !            end do
 
 !           find next flownode
-            knext = 0
-            dmaxinprod = -huge(0d0)
-            do i = 1, nd(kk)%lnx
-               L = nd(kk)%ln(i)
-               if (L < 0) then
-                  dum = csdir * csu(-L) + sndir * snu(-L)
-               else
-                  dum = -(csdir * csu(L) + sndir * snu(L))
-               end if
-               if (dum > 0d0 .and. dum > dmaxinprod) then
-                  knext = ln(1, abs(L)) + ln(2, abs(L)) - kk
-                  dmaxinprod = dum
-               end if
-            end do
-
-            if (knext /= 0) then
-               kk = knext
-               xp = xzw(kk)
-               yp = yzw(kk)
+         knext = 0
+         dmaxinprod = -huge(0d0)
+         do i = 1, nd(kk)%lnx
+            L = nd(kk)%ln(i)
+            if (L < 0) then
+               dum = csdir * csu(-L) + sndir * snu(-L)
+            else
+               dum = -(csdir * csu(L) + sndir * snu(L))
             end if
-         end if
+            if (dum > 0d0 .and. dum > dmaxinprod) then
+               knext = ln(1, abs(L)) + ln(2, abs(L)) - kk
+               dmaxinprod = dum
+            end if
+         end do
 
-         return
-      end subroutine moveprobe
+         if (knext /= 0) then
+            kk = knext
+            xp = xzw(kk)
+            yp = yzw(kk)
+         end if
+      end if
+
+      return
+   end subroutine moveprobe
 
 end module m_moveprobe

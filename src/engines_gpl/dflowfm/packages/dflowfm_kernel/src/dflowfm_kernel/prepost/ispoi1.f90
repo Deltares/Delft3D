@@ -36,6 +36,7 @@
       !! input coordinates to the exact polyline point coordinates when
       !! it is found.
       subroutine ISPOI1(X, Y, N, XL, YL, MV)
+         use precision, only: dp
          use m_wearelt, only: rcir
          use m_missing, only: dmiss
          use m_dispnode
@@ -48,8 +49,8 @@
 
 !     is dit een POLYGpunt?
          integer, intent(in) :: N !< Index of last filled polyline point (npol<=maxpol)
-         double precision, intent(in) :: X(n), Y(n) !< Entire polyline coordinate arrays.
-         double precision, intent(inout) :: XL, YL !< x- and y-coordinates of the point to be checked (set to exact point coordinates when found).
+         real(kind=dp), intent(in) :: X(n), Y(n) !< Entire polyline coordinate arrays.
+         real(kind=dp), intent(inout) :: XL, YL !< x- and y-coordinates of the point to be checked (set to exact point coordinates when found).
          integer, intent(out) :: MV !< The index of the polygon point (if found, otherwise 0)
 
          integer :: MVOL
