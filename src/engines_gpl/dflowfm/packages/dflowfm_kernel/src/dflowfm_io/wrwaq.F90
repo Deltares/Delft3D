@@ -383,6 +383,7 @@ module waq
       real(kind=dp), allocatable :: vdf(:) ! WAQ (aggregated) vertical diffusion
       real(kind=dp), allocatable :: qag(:) ! WAQ (aggregated) flux
       real(kind=dp), allocatable :: area(:) ! WAQ (aggregated) exchange areas
+      real(kind=dp)              :: coupling_timeframe(4) ! Time frame for coupling with WAQ via BMI
       character(256) :: flhoraggr !  Name of input aggregation file
       character(256) :: flvertaggr !  Name of input aggregation file
    end type gd_waqpar

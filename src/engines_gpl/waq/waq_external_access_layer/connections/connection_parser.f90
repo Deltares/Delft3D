@@ -50,6 +50,9 @@ contains
         type(connection_data) :: new_connection
         integer(kind=int_wp) :: location_index
 
+        !! TODO: Error handling!
+
+
         ! We require at least three parts, separated by a vertical bar ("|")
         string_parts = split_string(connection_string, "|")
         if (size(string_parts) < 3) then
