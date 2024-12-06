@@ -32,21 +32,22 @@
 
 module m_ucrouse
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: ucrouse
+   public :: ucrouse
 
 contains
 
-double precision function ucrouse(z, z0, h, a, rs)
-   use m_einstein_garcia
-   implicit none
-   double precision :: z, z0, h, a, rs
+   real(kind=dp) function ucrouse(z, z0, h, a, rs)
+      use precision, only: dp
+      use m_einstein_garcia
+      implicit none
+      real(kind=dp) :: z, z0, h, a, rs
 
-   ucrouse = log(z / z0) * ((a / (h - a)) * ((h - z) / z))**rs
+      ucrouse = log(z / z0) * ((a / (h - a)) * ((h - z) / z))**rs
 
-end function
+   end function
 
 end module m_ucrouse

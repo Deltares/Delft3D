@@ -32,22 +32,22 @@
 
 module m_get_s_key
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine get_s_key(JA) ! s or left mouse
-         implicit none
-         integer :: ja
-         integer :: numkey
+   subroutine get_s_key(JA) ! s or left mouse
+      implicit none
+      integer :: ja
+      integer :: numkey
 !     kappen met muis
-         JA = 0
-         call INKEYEVENTIMM(NUMKEY)
-         if (NUMKEY == 115 .or. NUMKEY == 115 - 32 .or. NUMKEY == 251) then
-            JA = 1
-            call inflush()
-         end if
-         return
-      end
+      JA = 0
+      call INKEYEVENTIMM(NUMKEY)
+      if (NUMKEY == 115 .or. NUMKEY == 115 - 32 .or. NUMKEY == 251) then
+         JA = 1
+         call inflush()
+      end if
+      return
+   end
 
 end module m_get_s_key

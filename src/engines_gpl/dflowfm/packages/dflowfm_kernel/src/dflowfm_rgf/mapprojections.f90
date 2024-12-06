@@ -31,6 +31,7 @@
 !
 
       subroutine MAPPROJECTIONS(IT, JA)
+         use precision, only: dp
          use m_converparameters
          use M_MAPPROPARAMETERS
          use M_SFERIC
@@ -50,7 +51,7 @@
          integer :: j
          integer :: ja
          integer :: k
-         double precision :: XG, YG
+         real(kind=dp) :: XG, YG
 
          INI = 1
          DELTX = 0d0

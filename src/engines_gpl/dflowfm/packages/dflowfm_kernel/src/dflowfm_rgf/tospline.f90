@@ -31,15 +31,16 @@
 !
 
        subroutine TOSPLINE(XX, YY, XV, YV)
+          use precision, only: dp
           use M_SPLINES
           use m_spline
           use m_get_ij
           implicit none
 
-          double precision :: XX, YY, XV, YV
+          real(kind=dp) :: XX, YY, XV, YV
 
-          double precision :: XI(maxsplen), XI2(maxsplen), YI(maxsplen), YI2(maxsplen)
-          double precision :: TV, DIS
+          real(kind=dp) :: XI(maxsplen), XI2(maxsplen), YI(maxsplen), YI2(maxsplen)
+          real(kind=dp) :: TV, DIS
           integer :: IN, NUMPI
 
           IN = 1 ! Pick first spline

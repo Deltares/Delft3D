@@ -32,31 +32,31 @@
 !>    reads info from a help file and puts it into HELPTEXT
 module m_helpin
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine HELPIN()
-         use unstruc_files
-         use m_helpc
-         implicit none
-         integer :: k
-         
-         NUMTXT = 0
-         if (MHLP == 0) return
+   subroutine HELPIN()
+      use unstruc_files
+      use m_helpc
+      implicit none
+      integer :: k
 
-         K = 0
+      NUMTXT = 0
+      if (MHLP == 0) return
 
-10       continue
-         K = K + 1
-         read (MHLP, '(A)', end=9999) HLPTXT(K)
-         goto 10
+      K = 0
 
-9999     continue
-         call doclose(mhlp)
-         NUMTXT = K - 1
+10    continue
+      K = K + 1
+      read (MHLP, '(A)', end=9999) HLPTXT(K)
+      goto 10
 
-         return
-      end
+9999  continue
+      call doclose(mhlp)
+      NUMTXT = K - 1
+
+      return
+   end
 
 end module m_helpin

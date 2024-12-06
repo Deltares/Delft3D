@@ -32,13 +32,14 @@
 
 !> write matlab double array to file
    subroutine matlab_write_double(matfile, varname, var, Ni, Nj)
+      use precision, only: dp
 
       implicit none
 
       integer :: matfile !< matlab file unit number
       character(len=*) :: varname !< variable name
       integer :: Ni, Nj !< array sizes
-      double precision, dimension(Ni, Nj) :: var !< variable
+      real(kind=dp), dimension(Ni, Nj) :: var !< variable
 
       integer i, j
 

@@ -32,6 +32,7 @@
 
 ! compose an orthogonal dual mesh (cell centers), while keeping the primary mesh (net nodes) fixed
 subroutine make_orthocenters(dmaxnonortho, maxiter)
+   use precision, only: dp
    use m_comp_circumcenter, only: comp_circumcenter
    use m_halt3
    use m_netw
@@ -47,16 +48,16 @@ subroutine make_orthocenters(dmaxnonortho, maxiter)
 
    implicit none
 
-   double precision, intent(in) :: dmaxnonortho !< maximum allowed non-orthogonality
+   real(kind=dp), intent(in) :: dmaxnonortho !< maximum allowed non-orthogonality
    integer, intent(in) :: maxiter !< maximum number of iterations
 
    integer, parameter :: N6 = 6 ! maximum polygon dimension
 
-   double precision, dimension(N6) :: xplist, yplist, xflist, yflist
+   real(kind=dp), dimension(N6) :: xplist, yplist, xflist, yflist
 
-   double precision, dimension(:), allocatable :: xc, yc !< cell centers
+   real(kind=dp), dimension(:), allocatable :: xc, yc !< cell centers
 
-   double precision :: af, dmaxabscosphi, drmsabscosphi, dabscosphi
+   real(kind=dp) :: af, dmaxabscosphi, drmsabscosphi, dabscosphi
 
    integer :: iter
 
@@ -64,7 +65,7 @@ subroutine make_orthocenters(dmaxnonortho, maxiter)
 
    integer :: ierror
 
-   double precision, parameter :: dsigma = 0.95d0
+   real(kind=dp), parameter :: dsigma = 0.95d0
 
    ierror = 1
    ic = 0

@@ -42,6 +42,7 @@
       !! Next line should be mmax, nmax
       !! That ends the header, start reading coordinates in the usual fashion.
       subroutine WRIRGF(MRGF, FILNAM)
+         use precision, only: dp
          use m_sferic
          use m_grid
          use m_missing
@@ -52,7 +53,7 @@
          use m_wripol
 
          implicit none
-         double precision :: half
+         real(kind=dp) :: half
          integer :: ipnt, n, i, j, nfirst
          integer :: mrgf, mdep
 

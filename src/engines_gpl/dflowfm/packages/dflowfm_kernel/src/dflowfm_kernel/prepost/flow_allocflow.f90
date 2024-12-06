@@ -31,6 +31,7 @@
 !
 
  subroutine flow_allocflow() ! initialise flow model time independent parameters
+    use precision, only: dp
     use m_netw, only: kn
     use m_flowgeom
     use m_flow
@@ -61,8 +62,8 @@
     integer :: nlayb1L, nrlay1L, nlayb2L, nrlay2L
     integer :: ndx1d
 
-    double precision :: zmn, zmx, dzm ! for 3D
-    double precision :: gf, w1, w2, w3, zbt, zbb, dzb, gfi, gfk
+    real(kind=dp) :: zmn, zmx, dzm ! for 3D
+    real(kind=dp) :: gf, w1, w2, w3, zbt, zbb, dzb, gfi, gfk
     logical :: jawel
 
     if (ndx == 0) return
@@ -1096,18 +1097,18 @@
        allocate (patm(ndx), stat=ierr)
        call aerr('patm(ndx)', ierr, ndx)
        patm(:) = 0d0
-       
+
        if (allocated(tair)) deallocate (tair)
        allocate (tair(ndx), stat=ierr)
        call aerr('tair(ndx)', ierr, ndx)
        tair(:) = 0d0
-       
+
        if (allocated(rhum)) deallocate (rhum)
        allocate (rhum(ndx), stat=ierr)
        call aerr('rhum(ndx)', ierr, ndx)
        rhum(:) = 0d0
     end if
-    
+
     if (jatem > 0) then
        if (allocated(tem1)) deallocate (tem1)
        allocate (tem1(ndkx), stat=ierr)

@@ -32,22 +32,23 @@
 
 module m_disdep2
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISDEP2(DEP)
-         use m_devices, only: iws
-         use m_ktext
+   subroutine DISDEP2(DEP)
+      use precision, only: dp
+      use m_devices, only: iws
+      use m_ktext
 
-         double precision :: dep
-         character DISTAN * 23
+      real(kind=dp) :: dep
+      character DISTAN * 23
 
-         DISTAN = 'D2:                    '
-         write (DISTAN(5:), '(F8.3)') DEP
-         call KTEXT(DISTAN, IWS - 22, 5, 15)
+      DISTAN = 'D2:                    '
+      write (DISTAN(5:), '(F8.3)') DEP
+      call KTEXT(DISTAN, IWS - 22, 5, 15)
 
-         return
-      end
+      return
+   end
 
 end module m_disdep2

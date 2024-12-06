@@ -31,20 +31,20 @@
 !
 
 module m_editpol
-use m_droptracer, only: droptracer
-use m_wearel
-use m_viewcycle
-use m_typevalue
-use m_selecteditmode
-use m_plotnu
-use m_kcir
+   use m_droptracer, only: droptracer
+   use m_wearel
+   use m_viewcycle
+   use m_typevalue
+   use m_selecteditmode
+   use m_plotnu
+   use m_kcir
 
-
-implicit none
+   implicit none
 
 contains
 
    subroutine EDITPOL(MODE, KEY, NETFLOW)
+      use precision, only: dp
       use m_confrm
       use m_cir
       use m_choices
@@ -89,7 +89,7 @@ contains
 
       integer :: MODE, KEY, NETFLOW
       integer :: newmode, mout
-      double precision :: xp, yp, RD
+      real(kind=dp) :: xp, yp, RD
       integer :: iresult
       integer :: ja4
       logical, external :: ispolystartend

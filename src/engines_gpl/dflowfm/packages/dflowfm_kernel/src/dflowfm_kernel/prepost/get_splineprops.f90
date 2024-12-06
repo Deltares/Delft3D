@@ -32,6 +32,7 @@
 
 !> derive center spline propererties from cross splines
 subroutine get_splineprops(mcs_old, id, iLRmfac)
+   use precision, only: dp
 
    use m_allocate_splineprops, only: allocate_splineprops
    use m_splines
@@ -45,14 +46,14 @@ subroutine get_splineprops(mcs_old, id, iLRmfac)
    integer, dimension(mcs_old), intent(in) :: id !< original settings
    integer, dimension(3, mcs_old), intent(in) :: iLRmfac !< original settings
 
-   double precision, dimension(:), allocatable :: xlist, ylist
+   real(kind=dp), dimension(:), allocatable :: xlist, ylist
 
    integer :: i, j, is, js, imiddle, ismiddle
    integer :: num, ncs, numnew
 
-   double precision :: dslength, hsumL, hsumR, hmax
+   real(kind=dp) :: dslength, hsumL, hsumR, hmax
 
-   double precision, external :: splinelength
+   real(kind=dp), external :: splinelength
 
 !  allocate
    allocate (xlist(1), ylist(1))

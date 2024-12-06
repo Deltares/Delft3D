@@ -1,14 +1,19 @@
-package release
-
 import jetbrains.buildServer.configs.kotlin.*
-import jetbrains.buildServer.configs.kotlin.buildFeatures.approval
+import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 
-import testbench.*
+import Delft3D.template.*
+import Delft3D.linux.*
+import Delft3D.windows.*
 
 object Release : BuildType({
 
+    templates(
+        TemplatePublishStatus,
+        TemplateMonitorPerformance
+    )
+
     name = "Release"
-    buildNumberPattern = "%build.revisions.short%"
+    buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
 
     vcs {
@@ -20,10 +25,10 @@ object Release : BuildType({
     }
 
     dependencies {
-        snapshot(TestbenchLinux) {
+        snapshot(LinuxTest) {
             reuseBuilds = ReuseBuilds.NO
         }
-        snapshot(TestbenchWindows) {
+        snapshot(WindowsTest) {
             reuseBuilds = ReuseBuilds.NO
         }
     }

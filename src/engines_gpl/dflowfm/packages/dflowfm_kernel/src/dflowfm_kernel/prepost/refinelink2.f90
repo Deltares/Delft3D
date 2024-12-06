@@ -31,6 +31,7 @@
 !
 
   subroutine REFINELINK2(L12, K12)
+     use precision, only: dp
      use m_netw
      use gridoperations, only: dsetnewpoint
      use m_new_link
@@ -40,7 +41,7 @@
      integer :: k1
      integer :: k2
      integer :: lnu
-     double precision :: XM, YM
+     real(kind=dp) :: XM, YM
 
      K1 = KN(1, L12); KC(K1) = 5
      K2 = KN(2, L12); KC(K2) = 5

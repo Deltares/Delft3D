@@ -32,29 +32,30 @@
 
 module m_tekhook
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine TEKHOOK(XP, YP)
-         use m_sferic
-         use m_locatora
-         use m_movabs
-         use m_lnabs
+   subroutine TEKHOOK(XP, YP)
+      use precision, only: dp
+      use m_sferic
+      use m_locatora
+      use m_movabs
+      use m_lnabs
 
-         implicit none
-         double precision :: dx
-         double precision :: dy
-         double precision :: xp
-         double precision :: yp
+      implicit none
+      real(kind=dp) :: dx
+      real(kind=dp) :: dy
+      real(kind=dp) :: xp
+      real(kind=dp) :: yp
 
-         DX = XA - XP
-         DY = YA - YP
-         call MOVABS(XA, YA)
-         call LNABS(XP - DX, YP - DY)
-         call MOVABS(XP + DY, YP - DX)
-         call LNABS(XP - DY, YP + DX)
-         return
-      end
+      DX = XA - XP
+      DY = YA - YP
+      call MOVABS(XA, YA)
+      call LNABS(XP - DX, YP - DY)
+      call MOVABS(XP + DY, YP - DX)
+      call LNABS(XP - DY, YP + DX)
+      return
+   end
 
 end module m_tekhook

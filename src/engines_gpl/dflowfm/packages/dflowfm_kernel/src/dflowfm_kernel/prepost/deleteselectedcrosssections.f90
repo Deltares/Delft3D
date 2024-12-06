@@ -32,11 +32,11 @@
 
 module m_deleteselectedcrosssections
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: deleteselectedcrosssections
+   public :: deleteselectedcrosssections
 
 contains
 

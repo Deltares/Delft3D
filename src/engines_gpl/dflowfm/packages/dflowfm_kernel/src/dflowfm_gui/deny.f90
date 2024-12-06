@@ -32,29 +32,29 @@
 
 module m_deny
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DENY(IXP, IYP)
-         use m_toemaar
+   subroutine DENY(IXP, IYP)
+      use m_toemaar
 
-         integer :: infoattribute
-         integer :: ixp
-         integer :: iyp
-         integer :: nbckgr
-         integer :: nforgr
-         NFORGR = InfoAttribute(13)
-         NBCKGR = InfoAttribute(14)
-         call IWinAction('FPC')
-         call ITEXTCOLOUR('BWHITE', 'RED')
-         call IWinOpen(IXP + 40, IYP + 9, 24, 2)
-         call IWinOutStringXY(1, 1, 'THIS FILE DOES NOT EXIST')
-         call IWinOutStringXY(1, 2, 'CHOOSE ANOTHER OR EXIT')
-         call TOEMAAR()
-         call IWinClose(1)
-         call ITEXTCOLOURN(NFORGR, NBCKGR)
-         return
-      end
+      integer :: infoattribute
+      integer :: ixp
+      integer :: iyp
+      integer :: nbckgr
+      integer :: nforgr
+      NFORGR = InfoAttribute(13)
+      NBCKGR = InfoAttribute(14)
+      call IWinAction('FPC')
+      call ITEXTCOLOUR('BWHITE', 'RED')
+      call IWinOpen(IXP + 40, IYP + 9, 24, 2)
+      call IWinOutStringXY(1, 1, 'THIS FILE DOES NOT EXIST')
+      call IWinOutStringXY(1, 2, 'CHOOSE ANOTHER OR EXIT')
+      call TOEMAAR()
+      call IWinClose(1)
+      call ITEXTCOLOURN(NFORGR, NBCKGR)
+      return
+   end
 
 end module m_deny

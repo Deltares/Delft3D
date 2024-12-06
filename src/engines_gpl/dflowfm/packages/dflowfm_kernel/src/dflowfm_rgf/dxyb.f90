@@ -33,17 +33,18 @@
       subroutine DXYB(X, Y, mmax, nmax, MC, &
                       NC, II, JJ, IN, &
                       JN, DXY0)
+         use precision, only: dp
          use m_missing
          use geometry_module, only: dbdistance
          use m_sferic, only: jsferic, jasfer3D
 
          implicit none
          integer :: mmax, nmax, mc, nc, ii, jj, in, jn
-         double precision :: dxy0
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
+         real(kind=dp) :: dxy0
+         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
 
          integer :: num
-         double precision :: XU, YU, XD, YD, dxy1
+         real(kind=dp) :: XU, YU, XD, YD, dxy1
          NUM = 0
          DXY0 = 0
 

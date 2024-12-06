@@ -32,10 +32,11 @@
 module m_min_max_pol
 contains
    subroutine MINMAXPOL(XMIN, YMIN, XMAX, YMAX)
+      use precision, only: dp
       use M_POLYGON
       use M_MISSING, only: xymis
       implicit none
-      double precision :: XMIN, YMIN, XMAX, YMAX
+      real(kind=dp) :: XMIN, YMIN, XMAX, YMAX
 
       integer :: k
       XMAX = -1e30; XMIN = -XMAX

@@ -39,6 +39,7 @@ contains
 
 !> Find for each input point the nearest flow node, given a set of points [xx, yy].
    subroutine find_nearest_flownodes(n, xx, yy, names, node_nrs_nearest, jakdtree, jaoutside, iLocTp)
+      use precision, only: dp
       use unstruc_messages
       use m_partitioninfo
       use m_flowgeom
@@ -52,8 +53,8 @@ contains
       implicit none
 
       integer, intent(in) :: n !< number of points
-      double precision, dimension(n), intent(in) :: xx !< x-coordinate of input points
-      double precision, dimension(n), intent(in) :: yy !< y-coordinate of input points
+      real(kind=dp), dimension(n), intent(in) :: xx !< x-coordinate of input points
+      real(kind=dp), dimension(n), intent(in) :: yy !< y-coordinate of input points
       character(len=IdLen), dimension(n), intent(in) :: names !< names of points
       integer, dimension(n), intent(inout) :: node_nrs_nearest !< associated flow node numbers, if any found.
       integer, intent(inout) :: jakdtree !< use kdtree (1) or not (other)
@@ -62,7 +63,7 @@ contains
       integer :: ierror !< error (1) or not (0)
       integer :: i, k, k1b
       integer, dimension(1) :: idum
-      double precision :: d1, d2
+      real(kind=dp) :: d1, d2
 
       ierror = 1
 
@@ -137,6 +138,7 @@ contains
 !> Find for each input point the nearest flow node, given a set of points [xx, yy].
 !! Uses the k-d tree routines
    subroutine find_nearest_flownodes_kdtree(treeinst, Ns, xs, ys, node_nr_nearest, jaoutside, iLocTp, ierror)
+      use precision, only: dp
 
       use m_missing
       use m_flowgeom
@@ -152,7 +154,7 @@ contains
 
       type(kdtree_instance), intent(inout) :: treeinst
       integer, intent(in) :: Ns !< number of samples
-      double precision, dimension(Ns), intent(in) :: xs, ys !< observation coordinates
+      real(kind=dp), dimension(Ns), intent(in) :: xs, ys !< observation coordinates
       integer, dimension(Ns), intent(out) :: node_nr_nearest !< node number of nearest flow node
       integer, intent(in) :: jaoutside !< allow outside cells (for 1D) (1) or not (0)
       integer, intent(in) :: iLocTp !< (0) not for obs, or obs with locationtype==0, (1) for obs with locationtype==1, (2) for obs with locationtype==2
@@ -162,15 +164,15 @@ contains
 
       integer, parameter :: Msize = 10
 
-      double precision, dimension(Msize) :: xloc, yloc
+      real(kind=dp), dimension(Msize) :: xloc, yloc
       integer, dimension(Msize) :: Lorg
       integer, dimension(Msize) :: LnnL
 
-      double precision :: dmaxsize, R2search, t0, t1, zz
+      real(kind=dp) :: dmaxsize, R2search, t0, t1, zz
 
       integer :: i, ip1, isam, in, k, N, NN
       integer :: nstart, nend
-      double precision :: dist_old, dist_new
+      real(kind=dp) :: dist_old, dist_new
 
       ierror = 1
 

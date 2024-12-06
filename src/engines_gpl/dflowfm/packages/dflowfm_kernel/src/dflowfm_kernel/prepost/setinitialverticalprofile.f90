@@ -31,6 +31,7 @@
 !
 
  subroutine setinitialverticalprofile(yy, ny, filename) ! polyfil
+    use precision, only: dp
     use m_flowgeom
     use m_flow
     use m_polygon
@@ -39,8 +40,8 @@
     use m_get_zlayer_indices
     implicit none
     integer :: ny
-    double precision :: xx(kmxx)
-    double precision :: yy(ny)
+    real(kind=dp) :: xx(kmxx)
+    real(kind=dp) :: yy(ny)
     character(*), intent(in) :: filename ! file name for polygonfile
 
     integer :: minp0, n, k, kb, kt, ktx, nlayb, nrlay

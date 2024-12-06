@@ -31,6 +31,7 @@
 !
 
       subroutine DMINMX2(X, XMIN, XMAX, MC, NC, MMAX, NMAX)
+         use precision, only: dp
          use M_MISSING
          implicit none
          integer :: i
@@ -39,11 +40,11 @@
          integer :: mmax
          integer :: nc
          integer :: nmax
-         double precision :: xmax
-         double precision :: xmin
-         double precision :: xx
+         real(kind=dp) :: xmax
+         real(kind=dp) :: xmin
+         real(kind=dp) :: xx
 !     BEPAAL MINIMUM EN MAXIMUM VAN EEN TWEEDIMENSIONALE ARRAY
-         double precision :: X(MMAX, NMAX)
+         real(kind=dp) :: X(MMAX, NMAX)
          if (MC == 0 .or. NC == 0) then
             XMIN = 0
             XMAX = 0

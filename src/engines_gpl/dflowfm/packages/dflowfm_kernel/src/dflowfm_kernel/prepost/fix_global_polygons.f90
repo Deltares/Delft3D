@@ -31,6 +31,7 @@
 !
 
    subroutine fix_global_polygons(jaalwayscopyleftright, japartpols)
+      use precision, only: dp
 
       use m_sferic
       use m_polygon
@@ -49,9 +50,9 @@
 
       integer :: i, j, k
 
-      double precision :: x1, x2
-      double precision :: dist, dist1, dist2
-      double precision :: xmin, xmax
+      real(kind=dp) :: x1, x2
+      real(kind=dp) :: dist, dist1, dist2
+      real(kind=dp) :: xmin, xmax
 
       integer :: jpoint, jstart, jend
       integer :: i1, i2, num, NPLnew, NPLnewest

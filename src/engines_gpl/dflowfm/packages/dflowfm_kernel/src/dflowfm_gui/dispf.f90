@@ -33,26 +33,27 @@
 !
 module m_dispf
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISPF(Y, N, NCOL)
-         use m_set_col
-         use m_movabs
-         use m_lnabs
+   subroutine DISPF(Y, N, NCOL)
+      use precision, only: dp
+      use m_set_col
+      use m_movabs
+      use m_lnabs
 
-         integer :: i
-         integer :: n
-         integer :: ncol
+      integer :: i
+      integer :: n
+      integer :: ncol
 !     LAAT EENDIMENSIONALE FUNCTIE ZIEN
-         double precision :: Y(N)
-         call SETCOL(NCOL)
-         call MOVABS(0d0, Y(1))
-         do I = 1, N
-            call LNABS(dble(I), Y(I))
-         end do
-         return
-      end
+      real(kind=dp) :: Y(N)
+      call SETCOL(NCOL)
+      call MOVABS(0d0, Y(1))
+      do I = 1, N
+         call LNABS(dble(I), Y(I))
+      end do
+      return
+   end
 
 end module m_dispf

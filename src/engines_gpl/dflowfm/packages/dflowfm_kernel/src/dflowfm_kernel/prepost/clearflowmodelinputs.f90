@@ -32,23 +32,23 @@
 
 module m_clearflowmodelinputs
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: clearflowmodelinputs
+   public :: clearflowmodelinputs
 
 contains
 
- subroutine clearflowmodelinputs()
-    use m_flow
+   subroutine clearflowmodelinputs()
+      use m_flow
 
-    nbndz = 0
-    nbndu = 0
-    nbnds = 0
-    nbndtm = 0
-    nbndt = 0
-    nbnduxy = 0
- end subroutine clearflowmodelinputs
+      nbndz = 0
+      nbndu = 0
+      nbnds = 0
+      nbndtm = 0
+      nbndt = 0
+      nbnduxy = 0
+   end subroutine clearflowmodelinputs
 
 end module m_clearflowmodelinputs

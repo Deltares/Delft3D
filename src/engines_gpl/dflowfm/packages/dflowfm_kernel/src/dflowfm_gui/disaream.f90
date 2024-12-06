@@ -32,19 +32,20 @@
 
 module m_disaream
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISAREAM(AREAM)
-         use m_devices, only: iws
-         use m_ktext
+   subroutine DISAREAM(AREAM)
+      use precision, only: dp
+      use m_devices, only: iws
+      use m_ktext
 
-         double precision :: aream
-         character(len=32) :: DISTAN
-         write (DISTAN, '("CR. AR. M ", E11.4, " M2")') AREAM
-         call KTEXT(DISTAN, IWS - 22, 6, 15)
-         return
-      end
+      real(kind=dp) :: aream
+      character(len=32) :: DISTAN
+      write (DISTAN, '("CR. AR. M ", E11.4, " M2")') AREAM
+      call KTEXT(DISTAN, IWS - 22, 6, 15)
+      return
+   end
 
 end module m_disaream

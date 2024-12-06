@@ -32,11 +32,11 @@
 
 module m_fm_flocculate
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: fm_flocculate
+   public :: fm_flocculate
 
 contains
 

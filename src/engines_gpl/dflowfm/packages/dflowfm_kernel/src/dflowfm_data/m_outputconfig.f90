@@ -685,5 +685,4 @@ contains
 
    end subroutine set_properties
 
-
 end module m_output_config

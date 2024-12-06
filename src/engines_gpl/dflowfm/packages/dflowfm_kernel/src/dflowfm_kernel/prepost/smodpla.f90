@@ -31,14 +31,15 @@
 !
 
       subroutine SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH DESIRED
+         use precision, only: dp
          use M_ALLOC
          implicit none
          integer :: npl
-         double precision :: DPLA(NPL), DXS(NPL)
-         double precision, allocatable :: DH(:)
+         real(kind=dp) :: DPLA(NPL), DXS(NPL)
+         real(kind=dp), allocatable :: DH(:)
 
-         double precision :: a1
-         double precision :: a2
+         real(kind=dp) :: a1
+         real(kind=dp) :: a2
          integer :: k
          integer :: n
 

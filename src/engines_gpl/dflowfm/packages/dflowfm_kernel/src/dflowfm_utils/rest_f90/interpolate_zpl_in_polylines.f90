@@ -32,6 +32,7 @@
 
 !> linear interpolation of z-values in polylines
 subroutine interpolate_zpl_in_polylines()
+   use precision, only: dp
    use m_polygon
    use m_missing
    use geometry_module, only: dbdistance, get_startend
@@ -40,18 +41,18 @@ subroutine interpolate_zpl_in_polylines()
 
    implicit none
 
-   double precision, dimension(:), allocatable :: wfromLeft ! arc length from left
+   real(kind=dp), dimension(:), allocatable :: wfromLeft ! arc length from left
 
    integer, dimension(:), allocatable :: iLeft, iRight ! left and right node for interpolation, respectively
 
-   double precision :: wL, wR, w
+   real(kind=dp) :: wL, wR, w
 
    integer :: jstart, jend
    integer :: jpoint
    integer :: i, iL, iR
 
    integer :: ierror
-   double precision, parameter :: dtol = 1d-8
+   real(kind=dp), parameter :: dtol = 1d-8
 
    ierror = 1
 

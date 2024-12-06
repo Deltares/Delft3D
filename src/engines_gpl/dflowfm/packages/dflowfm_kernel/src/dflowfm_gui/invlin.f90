@@ -32,22 +32,22 @@
 
 module m_invlin
 
-implicit none
+   implicit none
 
 contains
 
-      logical function INVLIN(L)
-         use m_netw
-         use m_inview
+   logical function INVLIN(L)
+      use m_netw
+      use m_inview
 
-         integer :: k1
-         integer :: k2
-         integer :: l
+      integer :: k1
+      integer :: k2
+      integer :: l
 
-         K1 = KN(1, L)
-         K2 = KN(2, L)
-         INVLIN = INVIEW(XK(K1), YK(K1)) .or. INVIEW(XK(K2), YK(K2))
-         return
-      end
+      K1 = KN(1, L)
+      K2 = KN(2, L)
+      INVLIN = INVIEW(XK(K1), YK(K1)) .or. INVIEW(XK(K2), YK(K2))
+      return
+   end
 
 end module m_invlin

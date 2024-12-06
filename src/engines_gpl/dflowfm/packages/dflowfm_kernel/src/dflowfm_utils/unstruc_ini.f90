@@ -103,13 +103,14 @@ contains
 
    end subroutine get_req_integers
 
-!> Reads the value for a double precision variable from a propery tree.
+!> Reads the value for a real(kind=dp) variable from a propery tree.
 !! When not found, and error is logged and program stops.
    subroutine get_req_double(prop_ptr, chapter, key, value)
+      use precision, only: dp
       type(tree_data), pointer, intent(in) :: prop_ptr
       character(*), intent(in) :: chapter
       character(*), intent(in) :: key
-      double precision, intent(out) :: value
+      real(kind=dp), intent(out) :: value
 
       logical :: success
 

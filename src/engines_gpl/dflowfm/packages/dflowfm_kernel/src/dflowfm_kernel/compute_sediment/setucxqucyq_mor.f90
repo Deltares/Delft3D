@@ -32,15 +32,16 @@
 
 module m_setucxqucyq_mor
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setucxqucyq_mor
+   public :: setucxqucyq_mor
 
 contains
 
    subroutine setucxqucyq_mor(u1, ucxq, ucyq)
+      use precision, only: dp
       use m_fm_erosed, only: ucxq_mor, ucyq_mor, hs_mor, link1, link1sign, ndx_mor
       use m_flowgeom, only: ndx, lnx, lnxi, ln, nd, wcx1, wcx2, wcy1, wcy2, csu, snu, bl, lnx1D, kcs
       use m_flow, only: hs, hu, zws, kmx, au, q1, lnkx, ndkx
@@ -54,18 +55,18 @@ contains
       use m_get_Lbot_Ltop
 
       implicit none
-      double precision, dimension(lnkx), intent(in) :: u1
-      double precision, dimension(ndkx), intent(in) :: ucxq
-      double precision, dimension(ndkx), intent(in) :: ucyq
+      real(kind=dp), dimension(lnkx), intent(in) :: u1
+      real(kind=dp), dimension(ndkx), intent(in) :: ucxq
+      real(kind=dp), dimension(ndkx), intent(in) :: ucyq
       integer :: L, LL, k, k1, k2, Lt, Lb, kk, kb, kt, idx_sre, kd
-      double precision :: wcxu, wcyu, cs, sn, uin, huL
+      real(kind=dp) :: wcxu, wcyu, cs, sn, uin, huL
       logical, pointer :: maximumwaterdepth
-      double precision, pointer :: maximumwaterdepthfrac
-      double precision, dimension(:), allocatable :: area
+      real(kind=dp), pointer :: maximumwaterdepthfrac
+      real(kind=dp), dimension(:), allocatable :: area
       integer :: qsign
-      double precision :: area_L
-      double precision :: width_L
-      double precision :: perim_L
+      real(kind=dp) :: area_L
+      real(kind=dp) :: width_L
+      real(kind=dp) :: perim_L
       integer :: nstruc
 
       maximumwaterdepth => stmpar%morpar%mornum%maximumwaterdepth

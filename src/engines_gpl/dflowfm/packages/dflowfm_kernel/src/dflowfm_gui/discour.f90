@@ -32,26 +32,27 @@
 
 module m_discour
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISCOUR(M, N, DEP)
-         use m_devices, only: iws
-         use m_ktext
+   subroutine DISCOUR(M, N, DEP)
+      use precision, only: dp
+      use m_devices, only: iws
+      use m_ktext
 
-         double precision :: dep
-         integer :: m
-         integer :: n
-         character DISTAN * 23
+      real(kind=dp) :: dep
+      integer :: m
+      integer :: n
+      character DISTAN * 23
 
-         DISTAN = 'M:    N:    CRT:       '
-         write (DISTAN(3:5), '(I3)') M
-         write (DISTAN(9:11), '(I3)') N
-         write (DISTAN(17:23), '(F7.2)') DEP
-         call KTEXT(DISTAN, IWS - 22, 4, 15)
+      DISTAN = 'M:    N:    CRT:       '
+      write (DISTAN(3:5), '(I3)') M
+      write (DISTAN(9:11), '(I3)') N
+      write (DISTAN(17:23), '(F7.2)') DEP
+      call KTEXT(DISTAN, IWS - 22, 4, 15)
 
-         return
-      end
+      return
+   end
 
 end module m_discour

@@ -33,62 +33,62 @@
 !
 module m_plusabs_flow
 
-implicit none
+   implicit none
 
 contains
 
- subroutine plusabs_flow(numchoice)
-    use m_plusabsd
-    use m_flow
-    use m_flowgeom
-    use m_transport, only: ISALT, constituents
-    use m_qnerror
-    use m_get_kbot_ktop
-    use m_set_bobs
+   subroutine plusabs_flow(numchoice)
+      use m_plusabsd
+      use m_flow
+      use m_flowgeom
+      use m_transport, only: ISALT, constituents
+      use m_qnerror
+      use m_get_kbot_ktop
+      use m_set_bobs
 
-    integer :: numchoice, k, kk, kb, kt
+      integer :: numchoice, k, kk, kb, kt
 
-    ! locals
-    integer :: key
+      ! locals
+      integer :: key
 
-    if (ndx == 0 .or. lnx == 0) then
-       call qnerror('First reinitialise flow model, current dimensions are 0', ' ', ' ')
-       return
-    end if
+      if (ndx == 0 .or. lnx == 0) then
+         call qnerror('First reinitialise flow model, current dimensions are 0', ' ', ' ')
+         return
+      end if
 
-    if (numchoice == 1) then
-       call plusabsd(xz, yz, yz, ndx, key, s1); s1 = max(s1, bl)
-    else if (numchoice == 2 .and. jasal > 0) then
-       if (.not. allocated(sa1)) then
-          allocate (sa1(ndx))
-       end if
-       do kk = 1, ndx
-          sa1(kk) = constituents(isalt, kk)
-       end do
-       call plusabsd(xz, yz, yz, ndx, key, sa1)
-       do kk = 1, ndx
-          call getkbotktop(kk, kb, kt)
-          do k = kb, kt
-             constituents(isalt, k) = sa1(kk)
-          end do
-          constituents(isalt, kk) = sa1(kk)
-       end do
+      if (numchoice == 1) then
+         call plusabsd(xz, yz, yz, ndx, key, s1); s1 = max(s1, bl)
+      else if (numchoice == 2 .and. jasal > 0) then
+         if (.not. allocated(sa1)) then
+            allocate (sa1(ndx))
+         end if
+         do kk = 1, ndx
+            sa1(kk) = constituents(isalt, kk)
+         end do
+         call plusabsd(xz, yz, yz, ndx, key, sa1)
+         do kk = 1, ndx
+            call getkbotktop(kk, kb, kt)
+            do k = kb, kt
+               constituents(isalt, k) = sa1(kk)
+            end do
+            constituents(isalt, kk) = sa1(kk)
+         end do
 
-       salmax = maxval(sa1)
+         salmax = maxval(sa1)
 
-    else if (numchoice == 3) then
-       if (ibedlevtyp == 1) then
-          call plusabsd(xz, yz, yz, ndx, key, bl)
-       else if (ibedlevtyp == 2) then
-          call plusabsd(xu, yu, yu, lnx, key, blu)
-       else
-          call qnerror('Specifying cell bottom levels bl (ibedlevtyp=1) or flow link bottom levels blu (ibedlevtyp=2)', ' ', ' ')
-          call qnerror('Change parameter ibedlevtyp in Various, Change Geometry Parameters', ' ', ' ')
-          return
-       end if
-       call setbobs()
-       s1 = max(s1, bl)
-    end if
- end subroutine plusabs_flow
+      else if (numchoice == 3) then
+         if (ibedlevtyp == 1) then
+            call plusabsd(xz, yz, yz, ndx, key, bl)
+         else if (ibedlevtyp == 2) then
+            call plusabsd(xu, yu, yu, lnx, key, blu)
+         else
+            call qnerror('Specifying cell bottom levels bl (ibedlevtyp=1) or flow link bottom levels blu (ibedlevtyp=2)', ' ', ' ')
+            call qnerror('Change parameter ibedlevtyp in Various, Change Geometry Parameters', ' ', ' ')
+            return
+         end if
+         call setbobs()
+         s1 = max(s1, bl)
+      end if
+   end subroutine plusabs_flow
 
 end module m_plusabs_flow

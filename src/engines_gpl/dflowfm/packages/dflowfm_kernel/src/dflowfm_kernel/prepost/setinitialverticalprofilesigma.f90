@@ -31,6 +31,7 @@
 !
 
 subroutine setinitialverticalprofilesigma(yy, ny, filename) ! polyfil
+   use precision, only: dp
    use m_flowgeom
    use m_flow
    use m_polygon
@@ -38,8 +39,8 @@ subroutine setinitialverticalprofilesigma(yy, ny, filename) ! polyfil
    use m_get_kbot_ktop
    implicit none
    integer :: ny
-   double precision :: xx(kmxx), xxx(kmxx)
-   double precision :: yy(ny)
+   real(kind=dp) :: xx(kmxx), xxx(kmxx)
+   real(kind=dp) :: yy(ny)
    character(*), intent(in) :: filename ! file name for polygonfile
 
    integer :: minp0, n, k, kb, kt, ktx

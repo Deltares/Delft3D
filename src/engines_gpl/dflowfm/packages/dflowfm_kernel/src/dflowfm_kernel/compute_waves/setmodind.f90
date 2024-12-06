@@ -32,11 +32,11 @@
 
 module m_setmodind
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setmodind
+   public :: setmodind
 
 contains
 

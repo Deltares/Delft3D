@@ -34,6 +34,7 @@
     !!
     !! Format: each line should have one SVG command (m/M/c/l/z) with coordi nates.
     subroutine parsekerst(filename)
+       use precision, only: dp
        use m_polygon
        use m_missing
        use unstruc_messages
@@ -51,7 +52,7 @@
        character(len=2000) :: line
        real, allocatable :: pts(:)
        real :: startx, starty, curx, cury, x, y, t
-       double precision :: zp
+       real(kind=dp) :: zp
 
        maxpts = 200
        allocate (pts(maxpts))

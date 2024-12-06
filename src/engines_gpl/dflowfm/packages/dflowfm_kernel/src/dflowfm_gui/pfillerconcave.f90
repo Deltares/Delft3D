@@ -32,40 +32,41 @@
 
 module m_pfillerconcave
 
-implicit none
+   implicit none
 
 contains
 
-    subroutine PFILLERconcave(X, Y, N_, NCOL, NCLR)
-       use unstruc_opengl
-       use m_colnow
-       use m_drawthis
-       use m_set_col
-       use m_realpolygon
+   subroutine PFILLERconcave(X, Y, N_, NCOL, NCLR)
+      use precision, only: dp
+      use unstruc_opengl
+      use m_colnow
+      use m_drawthis
+      use m_set_col
+      use m_realpolygon
 
-       integer :: N_
-       integer :: nclr
-       integer :: ncol
-       double precision :: X(N_), Y(N_)
-       integer :: N
-       integer, parameter :: NMAX = 128
-       real xr(NMAX), yr(NMAX)
+      integer :: N_
+      integer :: nclr
+      integer :: ncol
+      real(kind=dp) :: X(N_), Y(N_)
+      integer :: N
+      integer, parameter :: NMAX = 128
+      real xr(NMAX), yr(NMAX)
 
-       call SETCOL(NCOL)
+      call SETCOL(NCOL)
 
 !   safety
-       N = min(N_, NMAX)
+      N = min(N_, NMAX)
 
-       xr(1:N) = x(1:N)
-       yr(1:N) = y(1:N)
+      xr(1:N) = x(1:N)
+      yr(1:N) = y(1:N)
 
-       call IGrPolygoncomplex(Xr, Yr, N)
+      call IGrPolygoncomplex(Xr, Yr, N)
 
-       if (.not. InOpenGLRendering .and. (NCLR /= NCOL .or. ndraw(10) /= 0)) then
-          call realPolygon(Xr, Yr, N, NCLR)
-       end if
+      if (.not. InOpenGLRendering .and. (NCLR /= NCOL .or. ndraw(10) /= 0)) then
+         call realPolygon(Xr, Yr, N, NCLR)
+      end if
 
-       return
-    end
+      return
+   end
 
 end module m_pfillerconcave

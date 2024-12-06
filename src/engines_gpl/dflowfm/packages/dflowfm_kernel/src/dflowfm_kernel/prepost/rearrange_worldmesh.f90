@@ -33,11 +33,12 @@
 !> rearrange netnodes for spherical, periodic coordinates
 !>    net nodes at the left are preferred
 subroutine rearrange_worldmesh(xboundmin, xboundmax)
+   use precision, only: dp
    use m_sferic
    use network_data
    implicit none
 
-   double precision, intent(in) :: xboundmin, xboundmax !< mesh bounding box x-coordinates
+   real(kind=dp), intent(in) :: xboundmin, xboundmax !< mesh bounding box x-coordinates
 
    integer :: k
 

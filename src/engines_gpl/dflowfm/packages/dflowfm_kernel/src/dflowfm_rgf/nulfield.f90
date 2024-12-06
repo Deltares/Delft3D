@@ -31,11 +31,12 @@
 !
 
       subroutine NULFIELD(X, Y, mmax, nmax)
+         use precision, only: dp
          use m_missing
          use m_grid_block
          implicit none
          integer :: mmax, nmax
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
+         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
          integer :: i, j
 
          do I = MB(3), MB(4)

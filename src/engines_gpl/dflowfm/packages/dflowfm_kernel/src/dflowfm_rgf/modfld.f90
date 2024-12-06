@@ -38,6 +38,7 @@ contains
    subroutine MODFLD(XH, YH, X, Y, &
                      mmax, nmax, MC, NC, MP, NP, &
                      NUMP, NLOC, IN, JN)
+      use precision, only: dp
       use m_missing, only: xymis
       use m_wearelt, only: dsix
       use m_tolocl
@@ -46,8 +47,8 @@ contains
 
       integer :: mmax, nmax, mc, nc, mp, np, nump, nloc, in, jn
 
-      double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)
-      double precision :: pi2, x0, y0, dx0, dy0, rsx, rn, fr, dx, dy, xn, yn
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)
+      real(kind=dp) :: pi2, x0, y0, dx0, dy0, rsx, rn, fr, dx, dy, xn, yn
       integer :: m1, n1, m2, n2, ismeer, i, j
 
       PI2 = asin(1d0)

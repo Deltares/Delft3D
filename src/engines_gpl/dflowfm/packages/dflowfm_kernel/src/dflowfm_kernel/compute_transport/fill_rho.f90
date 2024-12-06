@@ -32,50 +32,51 @@
 
 module m_fill_rho
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: fill_rho
+   public :: fill_rho
 
 contains
 
-subroutine fill_rho()
-   use m_transport
-   use m_flowgeom
-   use m_flow
-   use m_sediment
-   use m_transport
-   use m_sferic
-   use timers
-   use m_get_kbot_ktop
+   subroutine fill_rho()
+      use precision, only: dp
+      use m_transport
+      use m_flowgeom
+      use m_flow
+      use m_sediment
+      use m_transport
+      use m_sferic
+      use timers
+      use m_get_kbot_ktop
 
-   implicit none
+      implicit none
 
-   integer :: kk, k, kb, kt
-   double precision :: dvoli, dtol = 1d-8
+      integer :: kk, k, kb, kt
+      real(kind=dp) :: dvoli, dtol = 1d-8
 
-   integer(4) :: ithndl = 0
-   
-   if (timon) call timstrt("fill_rho", ithndl)
+      integer(4) :: ithndl = 0
 
-   do k = 1, Ndkx
-      sa1(k) = constituents(1, k)
-      constituents(1, k) = rho(k)
-   end do
+      if (timon) call timstrt("fill_rho", ithndl)
+
+      do k = 1, Ndkx
+         sa1(k) = constituents(1, k)
+         constituents(1, k) = rho(k)
+      end do
 
 !  sources
-   do kk = 1, Ndx
-      call getkbotktop(kk, kb, kt)
-      do k = kb, kt
-         dvoli = 1d0 / max(vol1(k), dtol)
-         const_sour(1, k) = -rho(k) * sq(k) * dvoli
-         const_sink(1, k) = 0d0
+      do kk = 1, Ndx
+         call getkbotktop(kk, kb, kt)
+         do k = kb, kt
+            dvoli = 1d0 / max(vol1(k), dtol)
+            const_sour(1, k) = -rho(k) * sq(k) * dvoli
+            const_sink(1, k) = 0d0
+         end do
       end do
-   end do
 
-   if (timon) call timstop(ithndl)
-   return
-end subroutine fill_rho
+      if (timon) call timstop(ithndl)
+      return
+   end subroutine fill_rho
 
 end module m_fill_rho

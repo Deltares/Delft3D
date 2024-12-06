@@ -32,25 +32,25 @@
 module m_new_link
    implicit none
 contains
-  subroutine NEWLINK(K1, K2, LNU) ! no checks
-     use m_netw
-     use unstruc_colors, only: ncoldn
-     use gridoperations, only: increasenetw
-     use m_tek_link
+   subroutine NEWLINK(K1, K2, LNU) ! no checks
+      use m_netw
+      use unstruc_colors, only: ncoldn
+      use gridoperations, only: increasenetw
+      use m_tek_link
 
-     integer :: K1, K2, LNU
+      integer :: K1, K2, LNU
 
-     NUML = NUML + 1
-     if (NUML >= LMAX) then
-        call INCREASENETW(NUMK, NUML)
-     end if
-     KN(1, NUML) = K1
-     KN(2, NUML) = K2
-     KN(3, NUML) = KN3TYP
+      NUML = NUML + 1
+      if (NUML >= LMAX) then
+         call INCREASENETW(NUMK, NUML)
+      end if
+      KN(1, NUML) = K1
+      KN(2, NUML) = K2
+      KN(3, NUML) = KN3TYP
 
-     LNU = NUML
+      LNU = NUML
 
-     call TEKLINK(NUML, NCOLDN)
+      call TEKLINK(NUML, NCOLDN)
 
-  end subroutine NEWLINK
+   end subroutine NEWLINK
 end module m_new_link

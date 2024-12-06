@@ -91,8 +91,8 @@ contains
    !! Local parameters
    !!
 
-      double precision, parameter :: DAY2SEC = 86400.0d0 !< seconds in a day
-      double precision, parameter :: H2SEC = 3600.0d0 !< seconds in an hour
+      real(kind=dp), parameter :: DAY2SEC = 86400.0d0 !< seconds in a day
+      real(kind=dp), parameter :: H2SEC = 3600.0d0 !< seconds in an hour
       logical, parameter :: AVALANCHE_ON = .true.
       logical, parameter :: AVALANCHE_OFF = .false.
       logical, parameter :: SLOPECOR_ON = .true.
@@ -106,8 +106,8 @@ contains
 
       integer :: ierror, ll
 
-      double precision :: dtmor
-      double precision :: timhr
+      real(kind=dp) :: dtmor
+      real(kind=dp) :: timhr
 
       logical, pointer :: cmpupd
 
@@ -310,19 +310,19 @@ contains
       integer :: l, ll, Lx, Lf, k1, k2
       integer :: Lb, Lt, ka, kf1, kf2, ac1, ac2
 
-      double precision :: cavg
-      double precision :: cavg1
-      double precision :: cavg2
-      double precision :: ceavg
-      double precision :: cumflux
-      double precision :: aksu
-      double precision :: apower
-      double precision :: cflux
-      double precision :: dz
-      double precision :: dzup
-      double precision :: r1avg
-      double precision :: z
-      double precision :: zktop
+      real(kind=dp) :: cavg
+      real(kind=dp) :: cavg1
+      real(kind=dp) :: cavg2
+      real(kind=dp) :: ceavg
+      real(kind=dp) :: cumflux
+      real(kind=dp) :: aksu
+      real(kind=dp) :: apower
+      real(kind=dp) :: cflux
+      real(kind=dp) :: dz
+      real(kind=dp) :: dzup
+      real(kind=dp) :: r1avg
+      real(kind=dp) :: z
+      real(kind=dp) :: zktop
 
    !!
    !! Execute
@@ -514,6 +514,7 @@ contains
    !! one branch (e.g., a bifurcation). This is done by applying a closure
    !! relation (the nodal point relation)
    subroutine apply_nodal_point_relation()
+      use precision, only: dp
 
    !!
    !! Declarations
@@ -550,14 +551,14 @@ contains
 
       real(fp), dimension(:, :), allocatable :: sb_in !< sum of incoming sediment transport at 1d node
 
-      double precision :: ldir
-      double precision :: faccheck
-      double precision :: expQ
-      double precision :: expW
-      double precision :: facQ
-      double precision :: facW
-      double precision :: qb1d, wb1d, sb1d
-      double precision :: sbrratio, qbrratio, Qbr1, Qbr2
+      real(kind=dp) :: ldir
+      real(kind=dp) :: faccheck
+      real(kind=dp) :: expQ
+      real(kind=dp) :: expW
+      real(kind=dp) :: facQ
+      real(kind=dp) :: facW
+      real(kind=dp) :: qb1d, wb1d, sb1d
+      real(kind=dp) :: sbrratio, qbrratio, Qbr1, Qbr2
 
       type(t_nodefraction), pointer :: pFrac
       type(t_noderelation), pointer :: pNodRel
@@ -771,6 +772,7 @@ contains
 
    !> Apply morphodynamic boundary condition on bed level
    subroutine fm_bed_boundary_conditions(timhr)
+      use precision, only: dp
 
    !!
    !! Declarations
@@ -797,7 +799,7 @@ contains
    !! I/O
    !!
 
-      double precision, intent(in) :: timhr
+      real(kind=dp), intent(in) :: timhr
 
    !!
    !! Local variables
@@ -808,15 +810,15 @@ contains
       integer :: jawaveswartdelwaq_local
       integer :: lsedbed
 
-      double precision :: tausum2(1)
-      double precision :: alfa_dist
-      double precision :: alfa_mag
-      double precision :: sbsum
-      double precision :: taucurc
-      double precision :: czc
-      double precision :: rate
+      real(kind=dp) :: tausum2(1)
+      real(kind=dp) :: alfa_dist
+      real(kind=dp) :: alfa_mag
+      real(kind=dp) :: sbsum
+      real(kind=dp) :: taucurc
+      real(kind=dp) :: czc
+      real(kind=dp) :: rate
 
-      double precision, dimension(lsedtot) :: bc_sed_distribution
+      real(kind=dp), dimension(lsedtot) :: bc_sed_distribution
 
       character(len=256) :: msg
 
@@ -972,6 +974,7 @@ contains
 
    !> Compute change in bed level `dbodsd`
    subroutine fm_change_in_sediment_thickness(dtmor)
+      use precision, only: dp
 
    !!
    !! Declarations
@@ -981,7 +984,7 @@ contains
       use m_flowgeom, only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz, ndx
       use m_flow, only: kmx, s1, vol1
       use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor
-      use m_fm_erosed, only: nd => nd_mor
+      use m_fm_erosed, only: nd => nd_mor, sedtyp, depfac, max_mud_sedtyp
       use m_sediment, only: avalflux, ssccum
       use m_flowtimes, only: dts, dnt
       use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
@@ -995,7 +998,7 @@ contains
    !! I/O
    !!
 
-      double precision, intent(in) :: dtmor
+      real(kind=dp), intent(in) :: dtmor
 
    !!
    !! Local variables
@@ -1009,15 +1012,15 @@ contains
       integer :: bedchangemesscount
       integer :: lstart
 
-      double precision :: trndiv
-      double precision :: sedflx
-      double precision :: eroflx
-      double precision :: flux
-      double precision :: dhmax
-      double precision :: dsdnm
-      double precision :: h1
-      double precision :: sumflux
-      double precision :: thick1
+      real(kind=dp) :: trndiv
+      real(kind=dp) :: sedflx
+      real(kind=dp) :: eroflx
+      real(kind=dp) :: flux
+      real(kind=dp) :: dhmax
+      real(kind=dp) :: dsdnm
+      real(kind=dp) :: h1
+      real(kind=dp) :: sumflux
+      real(kind=dp) :: thick1
 
    !!
    !! Execute
@@ -1096,17 +1099,33 @@ contains
                      k = kb
                   end if
                   thick1 = vol1(k) * bai_mor(nm)
-                  sedflx = sinksetot(j, nm) * bai_mor(nm) + ssccum(l, nm) ! kg/s/m2
+                  ! no fluff, everything to bed layer
+                  if (iflufflyr == 0) then
+                     sedflx = sinksetot(j, nm) * bai_mor(nm) + ssccum(l, nm) ! kg/s/m2
+                  else
+                     !
+                     ! Update sedflx icw fluff layer
+                     !
+                     ! 1. update fluff layer mass
+                     mfluff(l, nm) = mfluff(l, nm) + dts * (sinkftot(j, nm) * bai_mor(nm) - sourf(l, nm) * thick1)
+                     !
+                     ! 2. sand to bed layer
+                     sedflx = sinksetot(j, nm) * bai_mor(nm)
+                     !
+                     if (sedtyp(l) == SEDTYP_SAND) then
+                        sedflx = sedflx + ssccum(l, nm)
+                     elseif (sedtyp(l) <= max_mud_sedtyp) then
+                        ! 3. if silt/clay and drying, mass to fluff layer
+                        if (iflufflyr == 1) then
+                           mfluff(l, nm) = mfluff(l, nm) + ssccum(l, nm)
+                        else ! iflufflyr == 2
+                           mfluff(l, nm) = mfluff(l, nm) + (1.0_fp - depfac(l, nm)) * ssccum(l, nm)
+                           sedflx = sedflx + depfac(l, nm) * ssccum(l, nm)
+                        end if
+                     end if
+                  end if
                   ssccum(l, nm) = 0d0
                   eroflx = sourse(nm, l) * thick1 ! mass conservation, different from D3D
-                  !
-                  ! Update fluff layer
-                  !
-                  if (iflufflyr > 0) then
-                     mfluff(l, nm) = mfluff(l, nm) + &
-                        & dts * (sinkftot(j, nm) * bai_mor(nm)   &
-                        &      - sourf(l, nm) * thick1)
-                  end if
                   !
                   ! add suspended transport correction vector
                   !
@@ -1179,6 +1198,7 @@ contains
    !> Redistribute erosion of wet cell next to dry cell to the dry cell
    !! to consider some sort of bank or beach erosion
    subroutine fm_dry_bed_erosion(dtmor)
+      use precision, only: dp
 
    !!
    !! Declarations
@@ -1198,7 +1218,7 @@ contains
    !! I/O
    !!
 
-      double precision, intent(in) :: dtmor
+      real(kind=dp), intent(in) :: dtmor
 
    !!
    !! Local variables
@@ -1206,11 +1226,11 @@ contains
 
       integer :: l, nm, k1, k2, knb, ll, lf
 
-      double precision :: bamin
-      double precision :: dv
-      double precision :: thet
-      double precision :: totdbodsd
-      double precision :: totfixfrac
+      real(kind=dp) :: bamin
+      real(kind=dp) :: dv
+      real(kind=dp) :: thet
+      real(kind=dp) :: totdbodsd
+      real(kind=dp) :: totfixfrac
 
    !!
    !! Execute
@@ -1390,6 +1410,7 @@ contains
 
    !> Apply bed boundary condition
    subroutine fm_apply_bed_boundary_condition(dtmor, timhr)
+      use precision, only: dp
 
    !!
    !! Declarations
@@ -1411,8 +1432,8 @@ contains
    !! I/O
    !!
 
-      double precision, intent(in) :: dtmor
-      double precision, intent(in) :: timhr
+      real(kind=dp), intent(in) :: dtmor
+      real(kind=dp), intent(in) :: timhr
 
    !!
    !! Local variables
@@ -1421,9 +1442,9 @@ contains
       integer :: nto, jb, ib, nm, nxmx, lm
       integer :: icond
 
-      double precision :: alfa_dist
-      double precision :: alfa_mag
-      double precision :: rate
+      real(kind=dp) :: alfa_dist
+      real(kind=dp) :: alfa_mag
+      real(kind=dp) :: rate
 
       character(len=256) :: msg
 
@@ -1555,6 +1576,7 @@ contains
    !< Update concentrations in water column to conserve mass because of bottom update
    !! This needs to happen in work array sed, not constituents, because of copying back and forth later on
    subroutine fm_update_concentrations_after_bed_level_update()
+      use precision, only: dp
 
       use m_flow, only: kmx, hs
       use m_flowgeom, only: ndx
@@ -1572,8 +1594,8 @@ contains
 
       integer :: k, ll, kb, kt, kk, itrac
 
-      double precision :: hsk
-      double precision :: ddp
+      real(kind=dp) :: hsk
+      real(kind=dp) :: ddp
 
    !!
    !! Execute
@@ -1791,6 +1813,7 @@ contains
 
    !> Update bottom elevation
    subroutine fm_update_bed_level(dtmor)
+      use precision, only: dp
 
    !!
    !! Declarations
@@ -1812,7 +1835,7 @@ contains
    !! I/O
    !!
 
-      double precision, intent(in) :: dtmor
+      real(kind=dp), intent(in) :: dtmor
 
    !!
    !! Local variables
@@ -1957,6 +1980,7 @@ contains
    end subroutine fm_update_bl
 
    subroutine fm_erosion_velocity(dtmor)
+      use precision, only: dp
 
       use m_flowgeom, only: ndx
       use m_fm_erosed, only: blchg, dzbdt
@@ -1967,7 +1991,7 @@ contains
    !! I/O
    !!
 
-      double precision, intent(in) :: dtmor
+      real(kind=dp), intent(in) :: dtmor
 
    !!
    !! Local variables
@@ -1990,6 +2014,7 @@ contains
    end subroutine fm_erosion_velocity
 
    subroutine fm_sumflux(LL, sumflux, flux)
+      use precision, only: dp
 
    !!
    !! Declarations
@@ -2003,8 +2028,8 @@ contains
 
       integer, intent(in) :: LL
 
-      double precision, intent(in) :: flux
-      double precision, intent(inout) :: sumflux
+      real(kind=dp), intent(in) :: flux
+      real(kind=dp), intent(inout) :: sumflux
 
    !!
    !! Execute

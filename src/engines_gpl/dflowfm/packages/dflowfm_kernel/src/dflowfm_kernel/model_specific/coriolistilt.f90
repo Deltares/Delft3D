@@ -32,55 +32,56 @@
 
 module m_coriolistilt
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: coriolistilt
+   public :: coriolistilt
 
 contains
 
-    subroutine coriolistilt(tim)
-       use m_netw
-       use m_flowgeom
-       use m_flow
-       use m_sferic
-       use unstruc_display
-       use m_set_bobs
+   subroutine coriolistilt(tim)
+      use precision, only: dp
+      use m_netw
+      use m_flowgeom
+      use m_flow
+      use m_sferic
+      use unstruc_display
+      use m_set_bobs
 
-       integer :: k, L
-       double precision :: s1k, yy, samp, ux, uy, dif, alf, tim
+      integer :: k, L
+      real(kind=dp) :: s1k, yy, samp, ux, uy, dif, alf, tim
 
-       ux = 0.1d0; uy = 0d0; samp = ux * fcorio / ag
-       if (tim == 0d0) then
+      ux = 0.1d0; uy = 0d0; samp = ux * fcorio / ag
+      if (tim == 0d0) then
 
-          do k = 1, numk
-             alf = (yk(k) - ykmin) / (ykmax - ykmin)
-             zk(k) = -600d0 + 500d0 * cos(pi * alf)
-          end do
+         do k = 1, numk
+            alf = (yk(k) - ykmin) / (ykmax - ykmin)
+            zk(k) = -600d0 + 500d0 * cos(pi * alf)
+         end do
 
-          call setbobs()
+         call setbobs()
 
-          do L = 1, lnx
-             u1(L) = csu(L) * ux + snu(L) * uy
-          end do
-       end if
+         do L = 1, lnx
+            u1(L) = csu(L) * ux + snu(L) * uy
+         end do
+      end if
 
-       call statisticsnewstep()
+      call statisticsnewstep()
 
-       do k = 1, ndx
-          yy = yz(k)
-          s1k = -samp * yy
+      do k = 1, ndx
+         yy = yz(k)
+         s1k = -samp * yy
 
-          if (tim == 0d0) then
-             s1(k) = max(bl(k), s1k); s0(k) = s1(k)
-          end if
+         if (tim == 0d0) then
+            s1(k) = max(bl(k), s1k); s0(k) = s1(k)
+         end if
 
-          dif = abs(s1(k) - s1k)
-          call statisticsonemorepoint(dif)
-       end do
+         dif = abs(s1(k) - s1k)
+         call statisticsonemorepoint(dif)
+      end do
 
-       call statisticsfinalise()
-    end subroutine coriolistilt
+      call statisticsfinalise()
+   end subroutine coriolistilt
 
 end module m_coriolistilt

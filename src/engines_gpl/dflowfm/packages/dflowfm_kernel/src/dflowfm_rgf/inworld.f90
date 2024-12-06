@@ -31,9 +31,10 @@
 !
 
  subroutine inworld(xx) ! shifts x coordinates in world window, only call if jsferic == 1
+    use precision, only: dp
     use m_missing
     use m_sferic
-    double precision :: xx
+    real(kind=dp) :: xx
     if (xx /= dmiss) then
        do while (xx < xwleft)
           xx = xx + 360d0

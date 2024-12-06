@@ -31,6 +31,7 @@
 !
 
 subroutine runupgauges_on_flowgeom()
+   use precision, only: dp
    use m_monitoring_runupgauges
    use m_flowgeom, only: Lnx, lne2ln
    use m_missing
@@ -47,8 +48,8 @@ subroutine runupgauges_on_flowgeom()
 
    integer :: ic, icmod
 
-   double precision, dimension(:), allocatable :: xx, yy
-   double precision, dimension(:), allocatable :: dSL
+   real(kind=dp), dimension(:), allocatable :: xx, yy
+   real(kind=dp), dimension(:), allocatable :: dSL
    integer, dimension(:), allocatable :: iLink, ipol, istartcrs, numlist
    integer, dimension(:, :), allocatable :: linklist
    integer, dimension(:), allocatable :: idum
@@ -57,7 +58,7 @@ subroutine runupgauges_on_flowgeom()
    integer :: istart, iend
 
    integer :: jakdtree = 1
-   double precision :: t0, t1
+   real(kind=dp) :: t0, t1
    character(len=128) :: mesg
 
    if (num_rugs < 1) return

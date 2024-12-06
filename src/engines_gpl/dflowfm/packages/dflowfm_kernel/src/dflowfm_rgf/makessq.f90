@@ -33,12 +33,13 @@ module m_makessq
    implicit none
 contains
    subroutine MAKESSQ(S, A, SR, SL, SSQ, NT, MFAC, IMAX)
+      use precision, only: dp
       use m_makesr
 
       integer :: nt, mfac, imax
-      double precision :: S(IMAX), A(IMAX), SR(IMAX), SL(IMAX), SSQ(IMAX)
+      real(kind=dp) :: S(IMAX), A(IMAX), SR(IMAX), SL(IMAX), SSQ(IMAX)
       integer :: i, k, kr
-      double precision :: ar, al
+      real(kind=dp) :: ar, al
 
       if (NT == 2) then
          do K = 1, MFAC + 1

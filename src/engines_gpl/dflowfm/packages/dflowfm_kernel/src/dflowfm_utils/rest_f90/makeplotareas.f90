@@ -31,21 +31,22 @@
 !
 
       subroutine MAKEPLOTAREAS(NUMROW, NUMCOL, nsize)
+         use precision, only: dp
          use m_dscreens
          implicit none
-         double precision :: dx
-         double precision :: dy
+         real(kind=dp) :: dx
+         real(kind=dp) :: dy
          integer :: i, nsize
          integer :: j
          integer :: nsc
          integer :: numcol
          integer :: numrow
-         double precision :: xb
-         double precision :: xm
-         double precision :: xz
-         double precision :: yb
-         double precision :: ym
-         double precision :: yz
+         real(kind=dp) :: xb
+         real(kind=dp) :: xm
+         real(kind=dp) :: xz
+         real(kind=dp) :: yb
+         real(kind=dp) :: ym
+         real(kind=dp) :: yz
 
          NSC = 0
 

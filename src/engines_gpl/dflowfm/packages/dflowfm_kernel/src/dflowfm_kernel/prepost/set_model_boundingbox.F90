@@ -55,7 +55,7 @@ function set_model_boundingbox() result(ierr)
    integer :: ierr !< Result status (DFM_NOERR if successful)
    integer :: n, k, kk, nv
 
-   double precision, pointer :: lonn(:), latn(:)
+   real(kind=dp), pointer :: lonn(:), latn(:)
    integer :: make_latlon
 
    ierr = DFM_NOERR

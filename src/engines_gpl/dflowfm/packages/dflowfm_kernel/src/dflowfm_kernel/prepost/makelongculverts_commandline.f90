@@ -36,7 +36,7 @@ subroutine makelongculverts_commandline()
    use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID
    use system_utils
    use m_set_nod_adm
-  
+
    implicit none
 
    character(len=1024) :: fnamesstring
@@ -47,7 +47,7 @@ subroutine makelongculverts_commandline()
    character(len=:), allocatable :: tempstring_netfile
    character(len=200), dimension(:), allocatable :: fnames
    character(len=IdLen) :: temppath, tempname, tempext
-   
+
    integer :: istat, ifil
 
    if (len_trim(md_1dfiles%structures) > 0) then
@@ -59,11 +59,11 @@ subroutine makelongculverts_commandline()
          call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat, md_1dfiles%cross_section_definitions)
       else
          call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat)
-      end if 
-      do ifil=2,size(fnames)
-         call convertLongCulvertsAsNetwork(fnames(ifil), 1,md_culvertprefix, tempstring_fnames,tempstring_crsdef, istat)
+      end if
+      do ifil = 2, size(fnames)
+         call convertLongCulvertsAsNetwork(fnames(ifil), 1, md_culvertprefix, tempstring_fnames, tempstring_crsdef, istat)
          converted_crsdefsstring = trim(trim(converted_crsdefsstring)//', ')//tempstring_crsdef
-         converted_fnamesstring  = trim(trim(converted_fnamesstring) //', ')//tempstring_fnames
+         converted_fnamesstring = trim(trim(converted_fnamesstring)//', ')//tempstring_fnames
       end do
       deallocate (fnames)
       call setnodadm(0)

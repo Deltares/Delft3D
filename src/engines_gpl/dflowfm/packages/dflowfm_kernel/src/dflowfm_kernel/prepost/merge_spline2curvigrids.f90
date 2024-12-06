@@ -32,6 +32,7 @@
 
 !> merge grids from spline2curvi
 subroutine merge_spline2curvigrids()
+   use precision, only: dp
    use m_grid
    use m_alloc
    use m_missing
@@ -41,7 +42,7 @@ subroutine merge_spline2curvigrids()
 
    implicit none
 
-   double precision, dimension(:, :), allocatable :: xcnew, ycnew
+   real(kind=dp), dimension(:, :), allocatable :: xcnew, ycnew
 
    integer, dimension(2) :: iupperold, ilowerold, iupper, ilower
 
@@ -53,7 +54,7 @@ subroutine merge_spline2curvigrids()
 
    logical :: Lconnected
 
-   double precision, parameter :: dtol = 1d-6
+   real(kind=dp), parameter :: dtol = 1d-6
 
 !  allocate
    allocate (xcnew(1, 1), ycnew(1, 1))

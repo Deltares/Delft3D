@@ -32,6 +32,7 @@
 
       subroutine ATPPAR(X, Y, M1, N1, M2, N2, &
                         ATP, A, B, C, D, E)
+         use precision, only: dp
          use m_grid, not1 => xc, not2 => yc
          use M_GRIDSETTINGS
          use m_orthosettings
@@ -39,9 +40,9 @@
          use m_drawthis
          use m_planedistance
          implicit none
-         double precision :: af
-         double precision :: cy
-         double precision :: dg2rd
+         real(kind=dp) :: af
+         real(kind=dp) :: cy
+         real(kind=dp) :: dg2rd
          integer :: i
          integer :: j
          integer :: m1
@@ -49,17 +50,17 @@
          integer :: n1
          integer :: n2
          integer :: ndraw8
-         double precision :: ym
+         real(kind=dp) :: ym
 !     STUURPARAMETERS (1,MC-1)
 !     4 3             (1,NC-1)
 !     1 2       D1: (12+43)/2   D2:(14 + 23)/2
 !     En vul ATP in celmiddens
 
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), ATP(MMAX, NMAX), &
-            A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), &
-            D(MMAX, NMAX), E(MMAX, NMAX)
+         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), ATP(MMAX, NMAX), &
+                          A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), &
+                          D(MMAX, NMAX), E(MMAX, NMAX)
 
-         double precision :: X1, Y1, X2, Y2, D12, X3, Y3, X4, Y4, D34, D14, D23
+         real(kind=dp) :: X1, Y1, X2, Y2, D12, X3, Y3, X4, Y4, D34, D14, D23
          save NDRAW8
 
          A = DXYMIS; B = DXYMIS; C = DXYMIS; D = DXYMIS; E = DXYMIS; ATP = DXYMIS

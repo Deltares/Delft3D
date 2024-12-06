@@ -32,23 +32,23 @@
 
 module m_setisoscale2is1
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine SETISOSCALE2IS1()
-         use m_depmax
-         use m_depmax2
-         implicit none
+   subroutine SETISOSCALE2IS1()
+      use m_depmax
+      use m_depmax2
+      implicit none
 
-         if (jaauto2 == 2) then
-            nv2 = nv
-            VMAX2 = VMAX
-            VMIN2 = VMIN
-            DV2 = DV
-            VAL2 = VAL
-         end if
+      if (jaauto2 == 2) then
+         nv2 = nv
+         VMAX2 = VMAX
+         VMIN2 = VMIN
+         DV2 = DV
+         VAL2 = VAL
+      end if
 
-      end subroutine SETISOSCALE2IS1
+   end subroutine SETISOSCALE2IS1
 
 end module m_setisoscale2is1

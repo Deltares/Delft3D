@@ -31,9 +31,9 @@
 !
 
 module m_changenetworkparameters
-use m_filemenu
+   use m_filemenu
 
-implicit none
+   implicit none
 
 contains
 

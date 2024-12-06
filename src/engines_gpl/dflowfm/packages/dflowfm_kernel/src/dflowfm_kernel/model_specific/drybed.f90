@@ -31,63 +31,63 @@
 !
 
 module m_drybed
-use m_compareanalytic, only: compareanalytic
+   use m_compareanalytic, only: compareanalytic
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: drybed
+   public :: drybed
 
 contains
 
- subroutine drybed(time)
-    use m_movabs
-    use m_lnabs
+   subroutine drybed(time)
+      use precision, only: dp
+      use m_movabs
+      use m_lnabs
 
-    double precision :: time
-    
-    double precision :: xm, xmx, h0, dxw
-    integer, parameter :: mmax = 601 !  3000
-    double precision :: s(0:mmax), u(0:mmax), xx(0:mmax)
-    double precision :: g, t, cw, xl, xr, sa, ua, x
-    integer :: m
+      real(kind=dp) :: time
 
-    g = 9.81 ! 10.0
-    t = time
-    h0 = 2
-    cw = sqrt(9.81 * h0)
-    dxw = 100.
-    xl = -cw * t
-    xr = t * 2 * cw
+      real(kind=dp) :: xm, xmx, h0, dxw
+      integer, parameter :: mmax = 601 !  3000
+      real(kind=dp) :: s(0:mmax), u(0:mmax), xx(0:mmax)
+      real(kind=dp) :: g, t, cw, xl, xr, sa, ua, x
+      integer :: m
 
-    xmx = -9999
-    do m = 2, 600 ! ndx
-       xm = m * dxw - 50 ! xz(m)
-       x = xm - 300 * dxw
-       if (x > xl .and. x < xr) then
-          sa = (((2 * cw - x / t) / 3.0)**2) / g
-          ua = 2 * (cw + x / t) / 3.0
-          xmx = max(xmx, xm)
-       else if (x < xl) then
-          sa = h0
-          ua = 0.0
-       else
-          sa = 0.0
-          ua = 0.0
-       end if
-       s(m) = sa; u(m) = ua; xx(m) = xm
-       if (m == 2) then
-          call movabs(xm, sa)
-       else
-          call lnabs(xm, sa)
-       end if
-    end do
-    call movabs(xmx, 0.1d0 * h0)
-    call lnabs(xmx, 0.2d0 * h0)
+      g = 9.81 ! 10.0
+      t = time
+      h0 = 2
+      cw = sqrt(9.81 * h0)
+      dxw = 100.
+      xl = -cw * t
+      xr = t * 2 * cw
 
-    call compareanalytic(s, xx, mmax)
- end subroutine drybed
+      xmx = -9999
+      do m = 2, 600 ! ndx
+         xm = m * dxw - 50 ! xz(m)
+         x = xm - 300 * dxw
+         if (x > xl .and. x < xr) then
+            sa = (((2 * cw - x / t) / 3.0)**2) / g
+            ua = 2 * (cw + x / t) / 3.0
+            xmx = max(xmx, xm)
+         else if (x < xl) then
+            sa = h0
+            ua = 0.0
+         else
+            sa = 0.0
+            ua = 0.0
+         end if
+         s(m) = sa; u(m) = ua; xx(m) = xm
+         if (m == 2) then
+            call movabs(xm, sa)
+         else
+            call lnabs(xm, sa)
+         end if
+      end do
+      call movabs(xmx, 0.1d0 * h0)
+      call lnabs(xmx, 0.2d0 * h0)
+
+      call compareanalytic(s, xx, mmax)
+   end subroutine drybed
 
 end module m_drybed

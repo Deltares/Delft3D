@@ -32,18 +32,18 @@
 
 module m_waitesc
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine WAITESC()
-         implicit none
-         integer :: key
-         call INFLUSH()
-10       continue
-         call INKEYEVENTIMM(KEY)
-         if (KEY == 27) return
-         goto 10
-      end
+   subroutine WAITESC()
+      implicit none
+      integer :: key
+      call INFLUSH()
+10    continue
+      call INKEYEVENTIMM(KEY)
+      if (KEY == 27) return
+      goto 10
+   end
 
 end module m_waitesc

@@ -32,64 +32,65 @@
 
 module m_linkstocentercartcomp
 
-implicit none
+   implicit none
 
 contains
 
- subroutine linkstocentercartcomp(knod, vlin, vnod)
-    use m_flow, only: kmx, lnkx
-    use m_flowgeom
-    use m_get_Lbot_Ltop
+   subroutine linkstocentercartcomp(knod, vlin, vnod)
+      use precision, only: dp
+      use m_flow, only: kmx, lnkx
+      use m_flowgeom
+      use m_get_Lbot_Ltop
 
-    implicit none
+      implicit none
 
-    integer, intent(in) :: knod
-    double precision, intent(in) :: vlin(lnkx)
-    double precision, intent(out) :: vnod(2, max(kmx, 1))
+      integer, intent(in) :: knod
+      real(kind=dp), intent(in) :: vlin(lnkx)
+      real(kind=dp), intent(out) :: vnod(2, max(kmx, 1))
 
-    integer :: L, k1, k2, k3, LL, LLL, Lb, Lt
+      integer :: L, k1, k2, k3, LL, LLL, Lb, Lt
 
-    vnod = 0d0
-    if (kmx == 0) then
-       do L = 1, nd(knod)%lnx
-          LL = abs(L)
-          k1 = ln(1, LL); k2 = ln(2, LL)
-          if (k1 == knod) then
-             vnod(1, 1) = vnod(1, 1) + vlin(LL) * wcx1(LL)
-             vnod(2, 1) = vnod(2, 1) + vlin(LL) * wcy1(LL)
-          end if
-          if (k2 == knod) then
-             vnod(1, 1) = vnod(1, 1) + vlin(LL) * wcx2(LL)
-             vnod(2, 1) = vnod(2, 1) + vlin(LL) * wcy2(LL)
-          end if
-       end do
+      vnod = 0d0
+      if (kmx == 0) then
+         do L = 1, nd(knod)%lnx
+            LL = abs(L)
+            k1 = ln(1, LL); k2 = ln(2, LL)
+            if (k1 == knod) then
+               vnod(1, 1) = vnod(1, 1) + vlin(LL) * wcx1(LL)
+               vnod(2, 1) = vnod(2, 1) + vlin(LL) * wcy1(LL)
+            end if
+            if (k2 == knod) then
+               vnod(1, 1) = vnod(1, 1) + vlin(LL) * wcx2(LL)
+               vnod(2, 1) = vnod(2, 1) + vlin(LL) * wcy2(LL)
+            end if
+         end do
 
-    else
-       do L = 1, nd(knod)%lnx
-          LL = abs(nd(knod)%ln(L))
-          k1 = ln(1, LL); k2 = ln(2, LL)
-          if (k1 == knod) then
-             call getLbotLtop(LL, Lb, Lt)
-             if (Lt < Lb) cycle
-             do LLL = Lb, Lt
-                k3 = LLL - Lb + 1
-                vnod(1, k3) = vnod(1, k3) + vlin(LLL) * wcx1(LL)
-                vnod(2, k3) = vnod(2, k3) + vlin(LLL) * wcy1(LL)
-             end do
-          end if
-          !
-          if (k2 == knod) then
-             call getLbotLtop(LL, Lb, Lt)
-             if (Lt < Lb) cycle
-             do LLL = Lb, Lt
-                k3 = LLL - Lb + 1
-                vnod(1, k3) = vnod(1, k3) + vlin(LLL) * wcx2(LL)
-                vnod(2, k3) = vnod(2, k3) + vlin(LLL) * wcy2(LL)
-             end do
-          end if
-       end do
-    end if
+      else
+         do L = 1, nd(knod)%lnx
+            LL = abs(nd(knod)%ln(L))
+            k1 = ln(1, LL); k2 = ln(2, LL)
+            if (k1 == knod) then
+               call getLbotLtop(LL, Lb, Lt)
+               if (Lt < Lb) cycle
+               do LLL = Lb, Lt
+                  k3 = LLL - Lb + 1
+                  vnod(1, k3) = vnod(1, k3) + vlin(LLL) * wcx1(LL)
+                  vnod(2, k3) = vnod(2, k3) + vlin(LLL) * wcy1(LL)
+               end do
+            end if
+            !
+            if (k2 == knod) then
+               call getLbotLtop(LL, Lb, Lt)
+               if (Lt < Lb) cycle
+               do LLL = Lb, Lt
+                  k3 = LLL - Lb + 1
+                  vnod(1, k3) = vnod(1, k3) + vlin(LLL) * wcx2(LL)
+                  vnod(2, k3) = vnod(2, k3) + vlin(LLL) * wcy2(LL)
+               end do
+            end if
+         end do
+      end if
 
- end subroutine linkstocentercartcomp
+   end subroutine linkstocentercartcomp
 
 end module m_linkstocentercartcomp

@@ -68,11 +68,11 @@
 #endif
     implicit none
 
-    double precision, intent(in) :: tim !< Current time, should in fact be time1, since all writers use s1, q1, etc.
-    double precision :: time_map_mpt
+    real(kind=dp), intent(in) :: tim !< Current time, should in fact be time1, since all writers use s1, q1, etc.
+    real(kind=dp) :: time_map_mpt
     real(dp) :: time_com_ctv
-    double precision :: runtime
-    double precision :: tem_dif
+    real(kind=dp) :: runtime
+    real(kind=dp) :: tem_dif
 
     call inctime_split(tim)
 

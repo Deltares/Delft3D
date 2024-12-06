@@ -32,30 +32,31 @@
 
 module m_tekpoly
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine tekpoly(n, x, y, ncol)
-         use m_set_col
-         use m_movabs
-         use m_lnabs
-         implicit none
-         integer, intent(in) :: N !< polygon dimension
-         double precision, dimension(n), intent(in) :: x, y !< polygon coordinates
-         integer, intent(in) :: ncol !< color number
-         integer :: i
+   subroutine tekpoly(n, x, y, ncol)
+      use precision, only: dp
+      use m_set_col
+      use m_movabs
+      use m_lnabs
+      implicit none
+      integer, intent(in) :: N !< polygon dimension
+      real(kind=dp), dimension(n), intent(in) :: x, y !< polygon coordinates
+      integer, intent(in) :: ncol !< color number
+      integer :: i
 
-         if (N < 3) return
+      if (N < 3) return
 
-         call setcol(ncol)
-         call movabs(x(N), y(N))
+      call setcol(ncol)
+      call movabs(x(N), y(N))
 
-         do i = 1, N
-            call lnabs(x(i), y(i))
-         end do
+      do i = 1, N
+         call lnabs(x(i), y(i))
+      end do
 
-         return
-      end
+      return
+   end
 
 end module m_tekpoly

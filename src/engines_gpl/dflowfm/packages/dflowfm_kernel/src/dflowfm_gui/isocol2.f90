@@ -32,28 +32,29 @@
 
 module m_isocol2
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine ISOCOL2(VALC, NCOL)
-         use m_depmax2, only: val=>val2, ncols=>ncols2, nv=>nv2
-         use m_set_col
+   subroutine ISOCOL2(VALC, NCOL)
+      use precision, only: dp
+      use m_depmax2, only: val => val2, ncols => ncols2, nv => nv2
+      use m_set_col
 
-         integer :: i, ncol
-         double precision :: valc
+      integer :: i, ncol
+      real(kind=dp) :: valc
 
-         do I = NV, 1, -1
-            if (VALC >= VAL(I)) then
-               NCOL = I + 1
-               call SETCOL(NCOLS(NCOL))
-               NCOL = NCOLS(NCOL)
-               return
-            end if
-         end do
-         NCOL = ncols(1)
-         call SETCOL(NCOL)
-         return
-      end
+      do I = NV, 1, -1
+         if (VALC >= VAL(I)) then
+            NCOL = I + 1
+            call SETCOL(NCOLS(NCOL))
+            NCOL = NCOLS(NCOL)
+            return
+         end if
+      end do
+      NCOL = ncols(1)
+      call SETCOL(NCOL)
+      return
+   end
 
 end module m_isocol2

@@ -30,12 +30,13 @@
 !
 !
 module M_splines
+   use precision, only: dp
    use m_missing, only: dxymis
    use m_readyy
-   
+
    implicit none
 
-   double precision, dimension(:, :), allocatable :: xsp, ysp, xsp2, ysp2
+   real(kind=dp), dimension(:, :), allocatable :: xsp, ysp, xsp2, ysp2
    integer, allocatable :: lensp(:), lensp2(:) !< Length of each spline
 
    integer :: maxspl = 5 !< Max nr. of splines
@@ -128,15 +129,17 @@ contains
    end subroutine newSpline
 
    subroutine setSplinePoint(m, n, xp, yp)
+      use precision, only: dp
       integer, intent(in) :: m, n
-      double precision, intent(in) :: xp, yp
+      real(kind=dp), intent(in) :: xp, yp
       xsp(m, n) = xp
       ysp(m, n) = yp
    end subroutine setSplinePoint
 
    subroutine insertSplinePoint(m, n, xp, yp)
+      use precision, only: dp
       integer, intent(in) :: m, n
-      double precision, intent(in) :: xp, yp
+      real(kind=dp), intent(in) :: xp, yp
 
       integer :: j
 
@@ -164,15 +167,17 @@ contains
    end subroutine insertSplinePoint
 
    subroutine addSplinePoint(m, x, y)
+      use precision, only: dp
       integer, intent(in) :: m
-      double precision, intent(in) :: x, y
+      real(kind=dp), intent(in) :: x, y
 
       call addSplinePoints(m, (/x/), (/y/))
    end subroutine addSplinePoint
 
    subroutine addSplinePoints(m, x, y)
+      use precision, only: dp
       integer, intent(in) :: m
-      double precision, intent(in) :: x(:), y(:)
+      real(kind=dp), intent(in) :: x(:), y(:)
       integer :: npts
 
       if (m > mcs) then
@@ -249,10 +254,11 @@ contains
 
 !> Finds a spline point within a certain radius of a clicked point.
    subroutine isSplinePoint(xl, yl, rcir, mv, nv)
+      use precision, only: dp
       use m_dispnode2
-      
-      double precision, intent(inout) :: xl, yl !< The clicked point
-      double precision, intent(in) :: rcir !< The search radius around the point
+
+      real(kind=dp), intent(inout) :: xl, yl !< The clicked point
+      real(kind=dp), intent(in) :: rcir !< The search radius around the point
       integer, intent(out) :: mv, nv !< The spline nr and spline-point nr found.
 
       integer :: mvold, nvold, ishot, m1, n1, m2, n2, i, j
@@ -303,11 +309,12 @@ contains
 
 !>  read splines in TEKAL format
    subroutine readSplines(mspl)
+      use precision, only: dp
       integer :: mspl
 
       character REC * 4
       integer :: j, nrow, ncol
-      double precision :: xp, yp
+      real(kind=dp) :: xp, yp
 
       ! if jadoorladen...
       call delSplines()

@@ -32,20 +32,21 @@
 
 module m_inidensconstants
 
-implicit none
+   implicit none
 
 contains
 
-subroutine inidensconstants()
-   use m_physcoef
+   subroutine inidensconstants()
+      use precision, only: dp
+      use m_physcoef
 
-   implicit none
-   double precision :: temp
+      implicit none
+      real(kind=dp) :: temp
 
-   temp = backgroundwatertemperature
-   cp0 = 5890.0d0 + 38.00d0 * temp - 0.3750d0 * temp * temp
-   clam = 1779.5d0 + 11.25d0 * temp - 0.0745d0 * temp * temp
-   clam0 = 3.8d0 + 0.01d0 * temp
-end subroutine inidensconstants
+      temp = backgroundwatertemperature
+      cp0 = 5890.0d0 + 38.00d0 * temp - 0.3750d0 * temp * temp
+      clam = 1779.5d0 + 11.25d0 * temp - 0.0745d0 * temp * temp
+      clam0 = 3.8d0 + 0.01d0 * temp
+   end subroutine inidensconstants
 
 end module m_inidensconstants

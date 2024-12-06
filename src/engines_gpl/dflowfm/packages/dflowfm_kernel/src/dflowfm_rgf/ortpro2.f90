@@ -31,11 +31,12 @@
 !
 
       subroutine ORTPRO2(X1, Y1, X2, Y2, X3, Y3, X4, Y4, TV, JA)
+         use precision, only: dp
          implicit none
-         double precision :: X1, Y1, X2, Y2, X3, Y3, X4, Y4, TV
+         real(kind=dp) :: X1, Y1, X2, Y2, X3, Y3, X4, Y4, TV
          integer :: JA
 
-         double precision :: DX, DY, R2
+         real(kind=dp) :: DX, DY, R2
 
          JA = -1
          DX = X2 - X1

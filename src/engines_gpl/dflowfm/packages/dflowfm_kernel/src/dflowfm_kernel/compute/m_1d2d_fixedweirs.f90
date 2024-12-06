@@ -1,4 +1,5 @@
 module m_1d2d_fixedweirs
+   use precision, only: dp
 
    implicit none
    private
@@ -16,49 +17,49 @@ module m_1d2d_fixedweirs
    integer, public :: n_1d2d_fixedweirs !< Number of 1d2d fixed weirs
    integer, allocatable, dimension(:) :: index_1d2d_fixedweirs !< L-indexes for the 1d2d fixed weirs
 
-   double precision, allocatable, public :: dx_i(:) !< Flow width of the 1d2d link. Note: can be smaller than wu(:), for partially closed links.
-   double precision, allocatable, public :: b0_1ds(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
+   real(kind=dp), allocatable, public :: dx_i(:) !< Flow width of the 1d2d link. Note: can be smaller than wu(:), for partially closed links.
+   real(kind=dp), allocatable, public :: b0_1ds(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
    !< Paragraph iterative 1d2d links.
-   double precision, allocatable, public :: b0_1dq(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
+   real(kind=dp), allocatable, public :: b0_1dq(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
    !< Paragraph iterative 1d2d links.
-   double precision, allocatable, public :: d0_1d(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
+   real(kind=dp), allocatable, public :: d0_1d(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
    !< Paragraph iterative 1d2d links.
-   double precision, allocatable, public :: b0_2di(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
+   real(kind=dp), allocatable, public :: b0_2di(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
    !< Paragraph iterative 1d2d links.
-   double precision, allocatable, public :: b0_2dv(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
+   real(kind=dp), allocatable, public :: b0_2dv(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
    !< Paragraph iterative 1d2d links.
-   double precision, allocatable, public :: d1p_2dv(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
+   real(kind=dp), allocatable, public :: d1p_2dv(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
    !< Paragraph iterative 1d2d links.
-   double precision, allocatable, public :: s0_1d(:) !< 1d water level at the previous time level.
-   double precision, allocatable, public :: s0_2dv(:) !< 2d water level at the previous time level, located on the u-point of the 1d2d link.
-   double precision, allocatable, public :: b_i(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
+   real(kind=dp), allocatable, public :: s0_1d(:) !< 1d water level at the previous time level.
+   real(kind=dp), allocatable, public :: s0_2dv(:) !< 2d water level at the previous time level, located on the u-point of the 1d2d link.
+   real(kind=dp), allocatable, public :: b_i(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
    !< Paragraph iterative 1d2d links.
-   double precision, allocatable, public :: s1_2dv(:) !< 2d water level at the current time level, located on the u-point of the 1d2d link.
+   real(kind=dp), allocatable, public :: s1_2dv(:) !< 2d water level at the current time level, located on the u-point of the 1d2d link.
    integer, allocatable, public :: L_1d(:) !< Flow link number for using the width of the 1d channel.
-   double precision, allocatable, public :: CFL(:) !< Flow Courant number, for a comprehensive explanation please refer to the "Technical Reference Manual",
+   real(kind=dp), allocatable, public :: CFL(:) !< Flow Courant number, for a comprehensive explanation please refer to the "Technical Reference Manual",
    !< Paragraph iterative 1d2d links.
-   double precision, allocatable, public :: sb_1d2d(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
+   real(kind=dp), allocatable, public :: sb_1d2d(:) !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
    !< Paragraph iterative 1d2d links.
    integer, allocatable, public :: FlowCond(:) !< Flow condition
-   double precision, allocatable, public :: qzeta_1d2d(:) !< Discharge coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
+   real(kind=dp), allocatable, public :: qzeta_1d2d(:) !< Discharge coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual",
    !< Paragraph iterative 1d2d links.
-   double precision, allocatable, public :: qlat_1d2d(:) !< Lateral discharge, for a comprehensive explanation please refer to the "Technical Reference Manual",
+   real(kind=dp), allocatable, public :: qlat_1d2d(:) !< Lateral discharge, for a comprehensive explanation please refer to the "Technical Reference Manual",
    !< Paragraph iterative 1d2d links.
-   double precision, allocatable, public :: u_2d1d(:) !< Flow velocity at the 2d side of the 1d2d link. Flow from 2d to 1d is the positive direction.
-   double precision, allocatable, public :: direction(:) !< Link orientation w.r.t. the orientation of u_2d1d.
+   real(kind=dp), allocatable, public :: u_2d1d(:) !< Flow velocity at the 2d side of the 1d2d link. Flow from 2d to 1d is the positive direction.
+   real(kind=dp), allocatable, public :: direction(:) !< Link orientation w.r.t. the orientation of u_2d1d.
    integer, allocatable, public :: kindex(:, :) !< K-Indexes for the 1d2d fixed weirs. kindex(1,:) contain the indexes for the 1d nodes
    !< kindex(2,:) contain the indexes for the 2d nodes
-   double precision :: relax
+   real(kind=dp) :: relax
 
-   double precision, private :: kdx_i_2d !< pi*1d0/16d0
-   double precision, private :: kdx_I_1d !< pi*3d0/8d0
-   double precision, parameter :: ce = 1d0 !< Weir coefficients (fixed for now).
-   double precision, parameter :: cw = 1d0 !< Weir coefficients (fixed for now).
-   double precision, public :: lat_fix_weir_umin !< Coefficients for "tweaking" the 1d2d iteration loop, not used for now.
-   double precision, public :: lat_fix_weir_relax = 0.1d0 !< Coefficients for "tweaking" the 1d2d iteration loop, not used for now.
+   real(kind=dp), private :: kdx_i_2d !< pi*1d0/16d0
+   real(kind=dp), private :: kdx_I_1d !< pi*3d0/8d0
+   real(kind=dp), parameter :: ce = 1d0 !< Weir coefficients (fixed for now).
+   real(kind=dp), parameter :: cw = 1d0 !< Weir coefficients (fixed for now).
+   real(kind=dp), public :: lat_fix_weir_umin !< Coefficients for "tweaking" the 1d2d iteration loop, not used for now.
+   real(kind=dp), public :: lat_fix_weir_relax = 0.1d0 !< Coefficients for "tweaking" the 1d2d iteration loop, not used for now.
    integer, public :: lat_fix_weir_umin_method !< Coefficients for "tweaking" the 1d2d iteration loop, not used for now.
-   double precision, public :: lat_fix_weir_minimal_1d2d_embankment !< Minimal crest height of 1D2D Lateral_fixedweir embankments (height, not level).
-   double precision, public :: lat_fix_weir_dx !< Model specific delta x, can be used for smoothing the solution.
+   real(kind=dp), public :: lat_fix_weir_minimal_1d2d_embankment !< Minimal crest height of 1D2D Lateral_fixedweir embankments (height, not level).
+   real(kind=dp), public :: lat_fix_weir_dx !< Model specific delta x, can be used for smoothing the solution.
 
 contains
 
@@ -225,23 +226,23 @@ contains
       use m_flowparameters, only: epshu
       implicit none
 
-      double precision :: f
-      double precision :: alfa0_1d
-      double precision :: beta0_1d
-      double precision :: alfa0_2d
-      double precision :: beta0_2d
-      double precision :: zs
-      double precision :: dx_uI
-      double precision :: q_1d2d
-      double precision :: s1p_1d
-      double precision :: s0_up
-      double precision :: s0_down
-      double precision :: u_c
-      double precision :: s_cI
-      double precision :: alfa_sf
-      double precision :: s1_2dv_at_interface
-      double precision :: dx_1d2d
-      double precision :: width_1d
+      real(kind=dp) :: f
+      real(kind=dp) :: alfa0_1d
+      real(kind=dp) :: beta0_1d
+      real(kind=dp) :: alfa0_2d
+      real(kind=dp) :: beta0_2d
+      real(kind=dp) :: zs
+      real(kind=dp) :: dx_uI
+      real(kind=dp) :: q_1d2d
+      real(kind=dp) :: s1p_1d
+      real(kind=dp) :: s0_up
+      real(kind=dp) :: s0_down
+      real(kind=dp) :: u_c
+      real(kind=dp) :: s_cI
+      real(kind=dp) :: alfa_sf
+      real(kind=dp) :: s1_2dv_at_interface
+      real(kind=dp) :: dx_1d2d
+      real(kind=dp) :: width_1d
 
       integer :: i, L, k1d, k2d
 
@@ -255,7 +256,7 @@ contains
          zs = bob(1, L)
 
          s1p_1d = s1(k1d)
-         if (comparereal(b0_2dv(i), 0d0)/=0) then
+         if (comparereal(b0_2dv(i), 0d0) /= 0) then
             s1_2dv(i) = d1p_2dv(i) / b0_2dv(i) - (b0_2di(i) / b0_2dv(i)) * s1(k2d)
          else
             s1_2dv(i) = s1(k2d)
@@ -384,16 +385,17 @@ contains
 
    !> Adjust the matrix for the 1d2d lateral links
    subroutine set_matrix_coefficients()
+      use precision, only: dp
       use m_flow, only: fu, ru, hu, u0, au
       use m_flowgeom, only: ln, teta
       use m_reduce, only: lv2, ccr, bbr, ddr
       implicit none
 
       integer :: L, i, k1, k2, k1d, k2d
-      double precision :: cc_cfi
-      double precision :: aufu
-      double precision :: auru
-      double precision :: tetau
+      real(kind=dp) :: cc_cfi
+      real(kind=dp) :: aufu
+      real(kind=dp) :: auru
+      real(kind=dp) :: tetau
 
       do i = 1, n_1d2d_fixedweirs
          L = index_1d2d_fixedweirs(i)
@@ -443,9 +445,9 @@ contains
       implicit none
 
       integer :: L, i, k1, k2, k1d, k2d
-      double precision :: aufu
-      double precision :: auru
-      double precision :: tetau
+      real(kind=dp) :: aufu
+      real(kind=dp) :: auru
+      real(kind=dp) :: tetau
       do i = 1, n_1d2d_fixedweirs
 
          L = index_1d2d_fixedweirs(i)
@@ -508,7 +510,7 @@ contains
 
       integer :: L, i, k1d, k2d
 
-      double precision :: agp, gdxi, cu, du, ds, u1L, u1l0, frl, bui, slopec
+      real(kind=dp) :: agp, gdxi, cu, du, ds, u1L, u1l0, frl, bui, slopec
       integer :: itu1
 
       do i = 1, n_1d2d_fixedweirs
@@ -569,12 +571,13 @@ contains
    !> For convergence the discharge calculated at the 1d node (from 1d to 2d) must be
    !> equal to - discharge calculated at the 2d node from the 2d node to the 1d node.
    logical function check_convergence_1d2d_fixedweirs()
+      use precision, only: dp
       use m_flow, only: au, s1, hu
       use precision_basics, only: comparereal
       use m_flowtimes
       use messagehandling
 
-      double precision :: Q_1d2d, Q_2d1d
+      real(kind=dp) :: Q_1d2d, Q_2d1d
       integer i, L
 
       !call compute_coefficients()

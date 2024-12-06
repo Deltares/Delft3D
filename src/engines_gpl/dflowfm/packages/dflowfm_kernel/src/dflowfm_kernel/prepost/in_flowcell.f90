@@ -31,6 +31,7 @@
 !
 
    subroutine in_flowcell(xp, yp, kk)
+      use precision, only: dp
 
       use m_flowgeom
       use unstruc_display
@@ -38,7 +39,7 @@
       use geometry_module, only: pinpok, dbdistance
 
       implicit none
-      double precision :: xp, yp
+      real(kind=dp) :: xp, yp
       integer :: inn, k, kk, nn
 
       kk = 0

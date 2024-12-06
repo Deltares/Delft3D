@@ -32,6 +32,7 @@
 
       !> This routine operates directly on active grid data from m_grid
       subroutine MODGR1(NPUT, MP, NP, IN, JN) !, NCOL)!XH, YH, mmax, nmax, MC, NC,
+         use precision, only: dp
          use m_tekgrpt
          use m_missing
          use m_grid
@@ -41,7 +42,7 @@
          implicit none
 
          integer :: nput, mp, np, in, jn
-!      double precision :: XH(MMAX,NMAX), YH(MMAX,NMAX)
+!      real(kind=dp) :: XH(MMAX,NMAX), YH(MMAX,NMAX)
 !     een beetje flauw geprogrammeerd, ook tekenen bij insert mode
 
          integer :: ja

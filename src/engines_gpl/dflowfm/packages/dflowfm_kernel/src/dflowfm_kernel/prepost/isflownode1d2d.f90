@@ -31,6 +31,7 @@
 !
 
    subroutine isflownode1D2D(xp, yp, kk)
+      use precision, only: dp
       use m_flowgeom
       use unstruc_display
       use m_missing, only: dmiss, jins
@@ -39,7 +40,7 @@
 
       implicit none
 
-      double precision :: xp, yp, dis
+      real(kind=dp) :: xp, yp, dis
       integer :: inn, k, kk, nn
 
       kk = 0

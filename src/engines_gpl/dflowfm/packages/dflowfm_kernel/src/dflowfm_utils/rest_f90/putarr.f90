@@ -31,13 +31,14 @@
 !
 
       subroutine PUTARR(XR, X, MMAX, NMAX)
+         use precision, only: dp
          implicit none
          integer :: i
          integer :: j
          integer :: mmax
          integer :: nmax
-         double precision :: x
-         double precision :: xr
+         real(kind=dp) :: x
+         real(kind=dp) :: xr
 !     DE EERSTE IN DE TWEEDE
          dimension XR(MMAX, NMAX), X(MMAX, NMAX)
          do I = 1, MMAX

@@ -32,16 +32,17 @@
 
  !> split polygon with line through two points (xa,ya) and (xb,yb)
  subroutine split_pol_with_line(xa, ya, xb, yb, idir)
+    use precision, only: dp
     use m_polygon
     use m_alloc
     use m_missing
     use m_tpoly
     implicit none
 
-    double precision, intent(in) :: xa, ya, xb, yb !< of two point on line
+    real(kind=dp), intent(in) :: xa, ya, xb, yb !< of two point on line
     integer, intent(in) :: idir !< left (1), or right (2)
 
-    double precision :: sx, sy ! vector perpendicular to line
+    real(kind=dp) :: sx, sy ! vector perpendicular to line
 
     integer :: imask
     integer :: i, ip1, ipol, numpols, num, numadd
@@ -130,7 +131,8 @@
  contains
 
     logical function isleft(x, y) !< is left-hand side of line (given some orientation)
-       double precision, intent(in) :: x, y
+       use precision, only: dp
+       real(kind=dp), intent(in) :: x, y
 
        isleft = .false.
 
@@ -145,12 +147,13 @@
 
 !>  intersect line segment 1-2 with line through points a and b
     subroutine intersect(x1, y1, x2, y2, xi, yi)
+       use precision, only: dp
        implicit none
 
-       double precision, intent(in) :: x1, y1, x2, y2 !< line start and end coordinates
-       double precision, intent(out) :: xi, yi !< intersection coordinates
+       real(kind=dp), intent(in) :: x1, y1, x2, y2 !< line start and end coordinates
+       real(kind=dp), intent(out) :: xi, yi !< intersection coordinates
 
-       double precision :: alpha, dx12, dy12, dxab, dyab
+       real(kind=dp) :: alpha, dx12, dy12, dxab, dyab
 
        dx12 = x2 - x1
        dy12 = y2 - y1

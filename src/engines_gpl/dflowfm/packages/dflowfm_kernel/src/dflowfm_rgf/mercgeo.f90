@@ -31,9 +31,10 @@
 !
 
       subroutine MERCGEO(XX, YY, XG, YG)
+         use precision, only: dp
          use M_SFERIC
          implicit none
-         double precision :: XX, YY, XG, YG, FI2
+         real(kind=dp) :: XX, YY, XG, YG, FI2
          XG = RD2DG * XX / RA
          FI2 = atan(sinh(YY / RA))
          YG = RD2DG * FI2

@@ -31,12 +31,13 @@
 !
 
  subroutine setvelocityfield()
+    use precision, only: dp
     use m_setcornervelocities, only: setcornervelocities
     use m_flow
     use m_flowgeom
     implicit none
     integer :: k, k1, k2, L
-    double precision :: xx, yy, ux, uy, yyy, uuu, ykmx
+    real(kind=dp) :: xx, yy, ux, uy, yyy, uuu, ykmx
 
     uy = -0.5d0
     ux = 0.5d0 * sqrt(3d0)

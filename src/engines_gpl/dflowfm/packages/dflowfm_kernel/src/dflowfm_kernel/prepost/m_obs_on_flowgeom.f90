@@ -104,6 +104,7 @@ contains
 !! obs that are defined in *.ini file by xy coordinate, to be snaped to only 2D flow node (Locationtype == 2), use kdtree
 !! obs that are defined in *.ini file by branchID and chainage, to be snaped to only 1D flow node (Locationtype == 3), do not use kdtree
    subroutine find_flownodes_and_links_for_all_observation_stations(nstart, nend)
+      use precision, only: dp
       use MessageHandling
       use m_network
       use m_ObservationPoints
@@ -125,8 +126,8 @@ contains
       integer, allocatable :: ixy2obs0(:), ixy2obs1(:), ixy2obs2(:)
       integer, allocatable :: kobs_tmp0(:), kobs_tmp1(:), kobs_tmp2(:)
       integer, allocatable :: lobs_tmp0(:), lobs_tmp1(:), lobs_tmp2(:)
-      double precision, allocatable :: xobs_tmp0(:), xobs_tmp1(:), xobs_tmp2(:)
-      double precision, allocatable :: yobs_tmp0(:), yobs_tmp1(:), yobs_tmp2(:)
+      real(kind=dp), allocatable :: xobs_tmp0(:), xobs_tmp1(:), xobs_tmp2(:)
+      real(kind=dp), allocatable :: yobs_tmp0(:), yobs_tmp1(:), yobs_tmp2(:)
       character(len=IdLen), allocatable :: namobs_tmp0(:), namobs_tmp1(:), namobs_tmp2(:)
       integer :: nloctype1D, nloctype2D, nloctypeAll
       type(t_ObservationPoint), pointer :: pOPnt

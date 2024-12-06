@@ -32,21 +32,21 @@
 module m_pfiller_core
    implicit none
 contains
-    subroutine PFILLERCORE(XR, YR, N)
-       use unstruc_opengl, only: inopenglrendering, FillPolygon
+   subroutine PFILLERCORE(XR, YR, N)
+      use unstruc_opengl, only: inopenglrendering, FillPolygon
 
-       integer :: n
-       real xr(N), yr(N)
+      integer :: n
+      real xr(N), yr(N)
 
-       if (InOpenGLRendering) then
-          call FillPolygon(xr, yr, n)
-       else
-          if (n <= 4) then
-             call igrpolygonsimple(xr, yr, n)
-          else
-             call IGrPolygoncomplex(Xr, Yr, N)
-          end if
-       end if
+      if (InOpenGLRendering) then
+         call FillPolygon(xr, yr, n)
+      else
+         if (n <= 4) then
+            call igrpolygonsimple(xr, yr, n)
+         else
+            call IGrPolygoncomplex(Xr, Yr, N)
+         end if
+      end if
 
-    end subroutine
+   end subroutine
 end module m_pfiller_core

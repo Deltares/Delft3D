@@ -32,26 +32,27 @@
 
 module m_dtekpenta
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DTEKPENTA(X1, Y1, Z1, X2, Y2, Z2, X3, Y3, Z3, X4, Y4, Z4, X5, Y5, Z5, NCOL, NCOLR)
-         use m_three_two
-         use m_pfiller
+   subroutine DTEKPENTA(X1, Y1, Z1, X2, Y2, Z2, X3, Y3, Z3, X4, Y4, Z4, X5, Y5, Z5, NCOL, NCOLR)
+      use precision, only: dp
+      use m_three_two
+      use m_pfiller
 
-         integer :: ncol
-         integer :: ncolr
-         double precision :: zz
-         double precision :: XX(5), YY(5)
-         double precision X1, Y1, Z1, X2, Y2, Z2, X3, Y3, Z3, X4, Y4, Z4, X5, Y5, Z5
-         call DRIETWEE(X1, Y1, Z1, XX(1), YY(1), ZZ)
-         call DRIETWEE(X2, Y2, Z2, XX(2), YY(2), ZZ)
-         call DRIETWEE(X3, Y3, Z3, XX(3), YY(3), ZZ)
-         call DRIETWEE(X4, Y4, Z4, XX(4), YY(4), ZZ)
-         call DRIETWEE(X5, Y5, Z5, XX(5), YY(5), ZZ)
-         call PFILLER(XX, YY, 5, NCOL, NCOLR)
-         return
-      end
+      integer :: ncol
+      integer :: ncolr
+      real(kind=dp) :: zz
+      real(kind=dp) :: XX(5), YY(5)
+      real(kind=dp) X1, Y1, Z1, X2, Y2, Z2, X3, Y3, Z3, X4, Y4, Z4, X5, Y5, Z5
+      call DRIETWEE(X1, Y1, Z1, XX(1), YY(1), ZZ)
+      call DRIETWEE(X2, Y2, Z2, XX(2), YY(2), ZZ)
+      call DRIETWEE(X3, Y3, Z3, XX(3), YY(3), ZZ)
+      call DRIETWEE(X4, Y4, Z4, XX(4), YY(4), ZZ)
+      call DRIETWEE(X5, Y5, Z5, XX(5), YY(5), ZZ)
+      call PFILLER(XX, YY, 5, NCOL, NCOLR)
+      return
+   end
 
 end module m_dtekpenta

@@ -1,7 +1,7 @@
-!> module containing subroutine distribute_linearized_3d_structure_coefficients for distributing linearized 3D structure coefficients 
+!> module containing subroutine distribute_linearized_3d_structure_coefficients for distributing linearized 3D structure coefficients
 !! over the layers of the structure.
 module m_distribute_linearized_3d_structure_coefficients
-   contains
+contains
    !> distribute linearized 3D structure coefficients over the layers of the structure.
    subroutine distribute_linearized_3d_structure_coefficients(structure)
       use precision_basics, only: dp
@@ -15,9 +15,9 @@ module m_distribute_linearized_3d_structure_coefficients
 
       implicit none
 
-      type(t_structure), pointer, intent(in) :: structure               !< Derived type containing structure information.
-      
-      type(t_GeneralStructure), pointer :: genstr               !< Derived type containing general structure information.
+      type(t_structure), pointer, intent(in) :: structure !< Derived type containing structure information.
+
+      type(t_GeneralStructure), pointer :: genstr !< Derived type containing general structure information.
       integer :: Lf, Lb, Lt
       integer :: L0, iup, LL, kk, k1, k2
       real(kind=dp) :: hhi(3), zti(3), zbi(3)
@@ -31,7 +31,7 @@ module m_distribute_linearized_3d_structure_coefficients
 
          call getLbotLtop(Lf, Lb, Lt)
          gatefraction = genstr%gateclosedfractiononlink(L0)
-         
+
          if (jastructurelayersactive == 0) then
             do LL = Lb, Lt
                fu(LL) = fu(Lf); ru(LL) = ru(Lf)
@@ -82,8 +82,8 @@ module m_distribute_linearized_3d_structure_coefficients
                   ru(LL) = 0.0_dp
                end if
             end do
-        end if
-      end do 
+         end if
+      end do
    end subroutine distribute_linearized_3d_structure_coefficients
 
 end module m_distribute_linearized_3d_structure_coefficients

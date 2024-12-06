@@ -33,14 +33,15 @@ module m_dproject
    implicit none
 contains
    subroutine dPROJECT(X8, Y8, XX4, YY4, MODE)
+      use precision, only: dp
       use m_sferic
       use m_wearelt
       use m_sferzoom
 
-      double precision :: x8, y8, xx4, yy4
+      real(kind=dp) :: x8, y8, xx4, yy4
       integer :: mode
-      double precision :: X, Y, XX, YY, SX, CX, SY, CY, SY0, CY0, RR, C, SC, CC, RN
-      double precision, save :: EPS = 1.d-20
+      real(kind=dp) :: X, Y, XX, YY, SX, CX, SY, CY, SY0, CY0, RR, C, SC, CC, RN
+      real(kind=dp), save :: EPS = 1.d-20
       X = X8
       Y = Y8
       if (JSFERTEK == 0) then ! Just Transfer

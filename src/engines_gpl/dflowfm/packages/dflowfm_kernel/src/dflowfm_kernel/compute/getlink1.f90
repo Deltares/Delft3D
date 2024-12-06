@@ -32,14 +32,14 @@
 module m_get_link1
    implicit none
 contains
-subroutine getlink1(k, LL)
-   use m_flowgeom, only: nd
-   
-   integer :: k, LL
-   if (nd(k)%lnx == 0) then
-      LL = 1
-   else
-      LL = abs(nd(k)%ln(1))
-   end if
-end subroutine
+   subroutine getlink1(k, LL)
+      use m_flowgeom, only: nd
+
+      integer :: k, LL
+      if (nd(k)%lnx == 0) then
+         LL = 1
+      else
+         LL = abs(nd(k)%ln(1))
+      end if
+   end subroutine
 end module m_get_link1

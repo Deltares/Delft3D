@@ -31,33 +31,33 @@
 !
 
 module m_orglocator
-use m_towor
+   use m_towor
 
-
-implicit none
+   implicit none
 
 contains
 
-      subroutine ORGLOCATOR(XL, YL)
-         use m_devices
-         use m_locatora
+   subroutine ORGLOCATOR(XL, YL)
+      use precision, only: dp
+      use m_devices
+      use m_locatora
 
-         integer :: ml
-         integer :: nl
-         double precision :: xl
-         double precision :: yl
+      integer :: ml
+      integer :: nl
+      real(kind=dp) :: xl
+      real(kind=dp) :: yl
 
-         if (XL == 0 .and. YL == 0) then
-            ML = NPX / 2
-            NL = NPY / 2
-            call TOWOR(ML, NL, XLC, YLC)
-         else
-            XLC = XL
-            YLC = YL
-         end if
+      if (XL == 0 .and. YL == 0) then
+         ML = NPX / 2
+         NL = NPY / 2
+         call TOWOR(ML, NL, XLC, YLC)
+      else
+         XLC = XL
+         YLC = YL
+      end if
 
-         call IMOUSECURSORXYG(real(XLC), real(YLC))
-         return
-      end
+      call IMOUSECURSORXYG(real(XLC), real(YLC))
+      return
+   end
 
 end module m_orglocator

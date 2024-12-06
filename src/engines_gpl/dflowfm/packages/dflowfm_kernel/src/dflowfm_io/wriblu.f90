@@ -32,27 +32,27 @@
 
 module m_wriblu
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: wriblu
+   public :: wriblu
 
 contains
 
- subroutine wriblu(mout) ! write bottom level u points
-    use M_FLOWGEOM
-    implicit none
+   subroutine wriblu(mout) ! write bottom level u points
+      use M_FLOWGEOM
+      implicit none
 
-    integer :: mout, L
+      integer :: mout, L
 
-    write (mout, '(A,I12)') 'NR of FLOWlinks = ', lnx
+      write (mout, '(A,I12)') 'NR of FLOWlinks = ', lnx
 
-    do L = 1, lnx
-       write (mout, *) xu(L), yu(L), blu(L)
-    end do
-    call doclose(mout)
+      do L = 1, lnx
+         write (mout, *) xu(L), yu(L), blu(L)
+      end do
+      call doclose(mout)
 
- end subroutine wriblu
+   end subroutine wriblu
 
 end module m_wriblu

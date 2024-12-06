@@ -32,6 +32,7 @@
 
 !>    copy and move a polygon orthogonally
       subroutine copypol(ipol, xp, yp)
+         use precision, only: dp
          use m_sferic
          use m_polygon
          use m_sferic
@@ -41,12 +42,12 @@
          implicit none
 
          integer, intent(in) :: ipol !< polygon point
-         double precision, intent(in) :: xp, yp !< new polygon point coordinates
+         real(kind=dp), intent(in) :: xp, yp !< new polygon point coordinates
 
-         double precision, dimension(:), allocatable :: dnx, dny !< node-based normal vectors
+         real(kind=dp), dimension(:), allocatable :: dnx, dny !< node-based normal vectors
 
-         double precision :: dsx, dsy, dnxL, dnyL, dnxR, dnyR, ds, dist, fac
-         double precision :: dnxLi, dnyLi, dnxRi, dnyRi, dnxi, dnyi, dx, dy, det
+         real(kind=dp) :: dsx, dsy, dnxL, dnyL, dnxR, dnyR, ds, dist, fac
+         real(kind=dp) :: dnxLi, dnyLi, dnxRi, dnyRi, dnxi, dnyi, dx, dy, det
 
          integer :: i, jstart, jend, jpoint, numadd
 

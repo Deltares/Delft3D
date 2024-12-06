@@ -31,26 +31,26 @@
 !
 
 module m_krec
-use m_rectangle
+   use m_rectangle
 
-
-implicit none
+   implicit none
 
 contains
 
-      subroutine KREC(X, Y, Z, XD)
-         use m_isocol
-         use m_colnow
+   subroutine KREC(X, Y, Z, XD)
+      use precision, only: dp
+      use m_isocol
+      use m_colnow
 
-         integer :: ncol
-         double precision :: x
-         double precision :: xd
-         double precision :: y
-         double precision :: z
+      integer :: ncol
+      real(kind=dp) :: x
+      real(kind=dp) :: xd
+      real(kind=dp) :: y
+      real(kind=dp) :: z
 
-         call ISOCOL(Z, NCOL)
-         if (NCOLNOW >= 0) call RECTANGLE(real(X - XD), real(Y - XD), real(X + XD), real(Y + XD))
-         return
-      end
+      call ISOCOL(Z, NCOL)
+      if (NCOLNOW >= 0) call RECTANGLE(real(X - XD), real(Y - XD), real(X + XD), real(Y + XD))
+      return
+   end
 
 end module m_krec

@@ -32,11 +32,11 @@
 
 module m_start_parameters
    implicit none
-   
+
    integer, parameter :: MD_NOAUTOSTART = 0 !< Do not autostart (nor stop) this model.
    integer, parameter :: MD_AUTOSTART = 1 !< Autostart this model and then idle.
    integer, parameter :: MD_AUTOSTARTSTOP = 2 !< Autostart this model and then exit (batchmode)
-   
+
    integer :: md_jaAutoStart = MD_NOAUTOSTART !< Autostart simulation after loading or not.
 
 end module m_start_parameters

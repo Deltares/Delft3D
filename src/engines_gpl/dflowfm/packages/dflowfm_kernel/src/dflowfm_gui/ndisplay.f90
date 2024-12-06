@@ -31,13 +31,12 @@
 !
 
 module m_ndisplay
-use m_checknetwork, only: checknetwork
-use m_add_tracer, only: add_tracer
-use m_textparameters
-use m_setwy
+   use m_checknetwork, only: checknetwork
+   use m_add_tracer, only: add_tracer
+   use m_textparameters
+   use m_setwy
 
-
-implicit none
+   implicit none
 
 contains
 

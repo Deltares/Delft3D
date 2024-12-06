@@ -98,6 +98,7 @@ subroutine removelinksofhangingnodes()
 end subroutine removelinksofhangingnodes
 
 subroutine makeZKbedlevels()
+   use precision, only: dp
    use m_netw
    use m_sferic
    use m_flow
@@ -108,7 +109,7 @@ subroutine makeZKbedlevels()
    implicit none
 
    integer :: k, k1, k2, ja
-   double precision :: X3, Y3, X1, Y1, X2, Y2, disn, dist, XN, YN, rl, hh, phase, bedwid2, bedrepose, gridsize
+   real(kind=dp) :: X3, Y3, X1, Y1, X2, Y2, disn, dist, XN, YN, rl, hh, phase, bedwid2, bedrepose, gridsize
 
    x1 = 0d0
    y1 = 0d0

@@ -33,24 +33,24 @@ module m_comp_roots4
    implicit none
 contains
 !> solves the quartic equation Ax^4+Bx^3+Cx^2+Dx+E=0
-subroutine comp_roots4(coeffs, x)
-   use m_missing, only: dmiss
-   use Solve_Real_Poly
+   subroutine comp_roots4(coeffs, x)
+      use m_missing, only: dmiss
+      use Solve_Real_Poly, only: dp_14_60, rpoly
 
-   double precision, dimension(5), intent(in) :: coeffs !< coefficient vector (A,B,C,D,E)
-   double precision, dimension(4), intent(out) :: x !< roots
+      real(kind=dp_14_60), dimension(5), intent(in) :: coeffs !< coefficient vector (A,B,C,D,E)
+      real(kind=dp_14_60), dimension(4), intent(out) :: x !< roots
 
-   double precision, dimension(4) :: re, im !< real and imaginairy parts of zeros
+      real(kind=dp_14_60), dimension(4) :: re, im !< real and imaginairy parts of zeros
 
-   logical :: Lfail
+      logical :: Lfail
 
-   double precision :: dtol = 1d-12
+      real(kind=dp_14_60) :: dtol = 1d-12
 
-   integer :: i, ndegree
+      integer :: i, ndegree
 
-   x = DMISS
+      x = DMISS
 
-   Lfail = .true.
+      Lfail = .true.
 !
 !   ndegree = 4
 !   do i=1,4
@@ -62,17 +62,17 @@ subroutine comp_roots4(coeffs, x)
 !      call rpoly(coeffs(5-ndegree:5), ndegree, re(1:ndegree), im(1:ndegree), Lfail)
 !   end if
 
-   do i = 4, 1, -1
-      ndegree = i
-      if (abs(coeffs(5 - ndegree)) < dtol) cycle
-      call rpoly(coeffs(5 - ndegree:5), ndegree, re(1:ndegree), im(1:ndegree), Lfail)
-      exit
+      do i = 4, 1, -1
+         ndegree = i
+         if (abs(coeffs(5 - ndegree)) < dtol) cycle
+         call rpoly(coeffs(5 - ndegree:5), ndegree, re(1:ndegree), im(1:ndegree), Lfail)
+         exit
 !      if ( .not.Lfail ) exit
-   end do
+      end do
 
-   if (Lfail .and. ndegree > 0) then
-      return
-   end if
+      if (Lfail .and. ndegree > 0) then
+         return
+      end if
 
 !   do i=1,ndegree
 !      if ( abs(im(i)).lt.dtol ) then
@@ -91,11 +91,11 @@ subroutine comp_roots4(coeffs, x)
 !      end if
 !    end do
 
-   do i = 1, ndegree
-      if (abs(im(i)) < 1d-4) then
-         x(i) = re(i)
-      end if
-   end do
+      do i = 1, ndegree
+         if (abs(im(i)) < 1d-4) then
+            x(i) = re(i)
+         end if
+      end do
 
-end subroutine comp_roots4
+   end subroutine comp_roots4
 end module m_comp_roots4

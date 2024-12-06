@@ -33,38 +33,38 @@
 !> get upstream downstream cell numbers
 module m_get_upstream_downstream_cell_numbers
 
-implicit none
+   implicit none
 
 contains
 
-subroutine get_upstream_downstream_cell_numbers(left_cell_upstream, left_cell, right_cell, &
-                                                upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
+   subroutine get_upstream_downstream_cell_numbers(left_cell_upstream, left_cell, right_cell, &
+                                                   upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
 
-   implicit none
+      implicit none
 
-   logical, intent(in) :: left_cell_upstream !< condition for considering if left cell is the upstream cell, true implies that the left cell is internal and vice-versa
-   integer, intent(in) :: left_cell !< flow node of cell left of the link
-   integer, intent(in) :: right_cell !< flow node of cell right of the link
-   integer, intent(out) :: upstream_cell_index !< index of the flow node upstream of the link, 1 = LEFT, 2 = RIGHT
-   integer, intent(out) :: upstream_cell !< flow node of cell upstream of the link
-   integer, intent(out) :: downstream_cell !< flow node of cell downstream of the link
-   integer, intent(out) :: direction_sign !< sign of the direction, 1=from LEFT to RIGHT, -1=from RIGHT to LEFT
+      logical, intent(in) :: left_cell_upstream !< condition for considering if left cell is the upstream cell, true implies that the left cell is internal and vice-versa
+      integer, intent(in) :: left_cell !< flow node of cell left of the link
+      integer, intent(in) :: right_cell !< flow node of cell right of the link
+      integer, intent(out) :: upstream_cell_index !< index of the flow node upstream of the link, 1 = LEFT, 2 = RIGHT
+      integer, intent(out) :: upstream_cell !< flow node of cell upstream of the link
+      integer, intent(out) :: downstream_cell !< flow node of cell downstream of the link
+      integer, intent(out) :: direction_sign !< sign of the direction, 1=from LEFT to RIGHT, -1=from RIGHT to LEFT
 
-   integer, parameter :: LEFT = 1
-   integer, parameter :: RIGHT = 2
+      integer, parameter :: LEFT = 1
+      integer, parameter :: RIGHT = 2
 
-   if (left_cell_upstream) then
-      upstream_cell_index = LEFT
-      upstream_cell = left_cell
-      downstream_cell = right_cell
-      direction_sign = 1
-   else
-      upstream_cell_index = RIGHT
-      upstream_cell = right_cell
-      downstream_cell = left_cell
-      direction_sign = -1
-   end if
+      if (left_cell_upstream) then
+         upstream_cell_index = LEFT
+         upstream_cell = left_cell
+         downstream_cell = right_cell
+         direction_sign = 1
+      else
+         upstream_cell_index = RIGHT
+         upstream_cell = right_cell
+         downstream_cell = left_cell
+         direction_sign = -1
+      end if
 
-end subroutine get_upstream_downstream_cell_numbers
+   end subroutine get_upstream_downstream_cell_numbers
 
 end module m_get_upstream_downstream_cell_numbers

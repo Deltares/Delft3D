@@ -32,19 +32,19 @@
 module m_view_port
    implicit none
 contains
-      subroutine viewport(xs1, ys1, xs2, ys2)
-         use unstruc_opengl
+   subroutine viewport(xs1, ys1, xs2, ys2)
+      use unstruc_opengl
 #ifdef HAVE_OPENGL
-         use IFOPNGL, only: fglViewPort
+      use IFOPNGL, only: fglViewPort
 #endif
-         real xs1, ys1, xs2, ys2
-         if (InOpenGLRendering) then
+      real xs1, ys1, xs2, ys2
+      if (InOpenGLRendering) then
 #ifdef HAVE_OPENGL
-            ! screen coordinates extend
-            call fglViewPort(int(xs1 * currentWidth), int(ys1 * currentHeight), int((xs2 - xs1) * currentWidth), int((ys2 - ys1) * currentHeight))
+         ! screen coordinates extend
+         call fglViewPort(int(xs1 * currentWidth), int(ys1 * currentHeight), int((xs2 - xs1) * currentWidth), int((ys2 - ys1) * currentHeight))
 #endif
-         else
-            call igrarea(xs1, ys1, xs2, ys2)
-         end if
-      end
+      else
+         call igrarea(xs1, ys1, xs2, ys2)
+      end if
+   end
 end module m_view_port

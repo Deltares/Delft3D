@@ -33,8 +33,9 @@ module m_lubksb
    implicit none
 contains
    subroutine LUBKSB(A, N, NP, INDX, B)
-      double precision :: a
-      double precision :: b
+      use precision, only: dp
+      real(kind=dp) :: a
+      real(kind=dp) :: b
       integer :: i
       integer :: ii
       integer :: indx
@@ -42,7 +43,7 @@ contains
       integer :: ll
       integer :: n
       integer :: np
-      double precision :: sum
+      real(kind=dp) :: sum
       dimension A(NP, NP), INDX(N), B(N)
       II = 0
       do I = 1, N

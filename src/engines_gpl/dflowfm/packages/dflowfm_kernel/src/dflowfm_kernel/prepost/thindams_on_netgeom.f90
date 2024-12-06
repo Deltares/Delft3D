@@ -34,6 +34,7 @@
 !! All crossed net links are set to kn(3,L) = 0, such that flow_geominit
 !! does not even create a flow link across it.
 subroutine thindams_on_netgeom()
+   use precision, only: dp
    use m_crspath_on_netgeom, only: crspath_on_netgeom
    use m_thindams
    use network_data
@@ -47,12 +48,12 @@ subroutine thindams_on_netgeom()
    use m_append_crspath_to_pol
    implicit none
 
-   double precision, dimension(:), allocatable :: dSL
+   real(kind=dp), dimension(:), allocatable :: dSL
    integer, dimension(:), allocatable :: iLink, ipol, idum
 
-   double precision :: xza, yza, xzb, yzb
+   real(kind=dp) :: xza, yza, xzb, yzb
 
-   double precision :: t0, t1
+   real(kind=dp) :: t0, t1
 
    character(len=128) :: mesg
 

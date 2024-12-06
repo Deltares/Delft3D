@@ -39,6 +39,13 @@ HELP_PROFILE = "The name of the profile to load the credentials from in the cred
 HELP_ENDPOINT_URL = "The endpoint url to an S3-compatible service."
 
 
+def issue_id_type(issue_id: str) -> str:
+    """Verify that `issue_id` matches the JIRA issue regex."""
+    if re.match(r"^[_A-Z0-9]+-\d+$", issue_id) is None:
+        raise argparse.ArgumentTypeError("Issue id must match pattern [_A-Z0-9]+-[0-9]+")
+    return issue_id
+
+
 def make_argument_parser() -> argparse.ArgumentParser:
     """Build `ArgumentParser` used to parse the command line arguments."""
     # Create top level parser.
@@ -81,7 +88,7 @@ def make_argument_parser() -> argparse.ArgumentParser:
     push_parser.add_argument(
         "--allow-create-and-delete", action="store_true", default=False, help=HELP_ALLOW_CREATE_AND_DELETE
     )
-    push_parser.add_argument("--issue-id", required=True, help=HELP_ISSUE_ID)
+    push_parser.add_argument("--issue-id", type=issue_id_type, required=True, help=HELP_ISSUE_ID)
     push_parser.set_defaults(tool=push_tool)
 
     # Create the parser for the `pull` command.
@@ -95,7 +102,7 @@ def make_argument_parser() -> argparse.ArgumentParser:
 
     # Create the parser for the `update-references` command.
     update_refs_parser = subparsers.add_parser("update-references", parents=[common_parser])
-    update_refs_parser.add_argument("--issue-id", required=True, help=HELP_ISSUE_ID)
+    update_refs_parser.add_argument("--issue-id", type=issue_id_type, required=True, help=HELP_ISSUE_ID)
     update_refs_parser.set_defaults(tool=update_references_tool)
 
     return parser
@@ -127,8 +134,6 @@ def make_minio_tool(namespace: argparse.Namespace) -> MinioTool:
     tags: Optional[Tags] = None
     issue_id: Optional[str] = getattr(namespace, "issue_id", None)
     if issue_id is not None:
-        if not re.match(r"^[_A-Z]+-\d+$", issue_id):
-            raise ValueError("Invalid JIRA issue id: Must match the pattern [_A-Z]+-[0-9]+")
         tags = Tags.new_object_tags()
         tags["jira-issue-id"] = issue_id
     color_output: bool = namespace.color_output

@@ -7281,6 +7281,18 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e03_f10_c06_partitioning" ref="dwaq_default">
+        <path version="2024-11-28T14:55:00">e03_waq/f10_additional_modules/c06_partitioning</path>
+        <checks>
+            <file name="c06_partitioning.hda" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <!-- The values are quite small, order 1.0e-6 -->
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-10" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-10" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e03_f11_c01_netcdf_output" ref="dwaq_default">
         <path version="2024-01-11T13:20:00">e03_waq/f11_netcdf_output/c01_netcdf_output</path>
         <checks>

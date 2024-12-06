@@ -33,13 +33,14 @@ module m_writearcinfoheader
    implicit none
 contains
    subroutine WRITEARCINFOHEADER(MARC, MC, NC, X0, Y0, DX, DY, dmiss)
-      double precision :: dmiss
-      double precision :: dx, dy
+      use precision, only: dp
+      real(kind=dp) :: dmiss
+      real(kind=dp) :: dx, dy
       integer :: marc
       integer :: mc
       integer :: nc
-      double precision :: x0
-      double precision :: y0
+      real(kind=dp) :: x0
+      real(kind=dp) :: y0
       write (MARC, '(A,I8)') 'ncols         ', MC
       write (MARC, '(A,I8)') 'nrows         ', NC
       write (MARC, '(A,F16.6)') 'xllcorner     ', X0 - DX / 2

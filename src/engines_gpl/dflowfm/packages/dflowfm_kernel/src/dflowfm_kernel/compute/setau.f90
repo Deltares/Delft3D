@@ -31,6 +31,7 @@
 !
 
  subroutine setau() ! get wet cross-sections at u points, after limiters, setau = vol12D with japerim == 1
+    use precision, only: dp
     use m_vol12d, only: vol12d
     use m_get_upstream_downstream_cell_numbers
     use m_get_lkbot_set_ltop_upwind
@@ -48,7 +49,7 @@
 
     integer :: n, nq, L, k2
     integer :: ng, Lnu, LL, iup, k
-    double precision :: at, ssav, wwav, fac, zlu, zgaten, sup, bupmin, bup, openfact, afac, hh
+    real(kind=dp) :: at, ssav, wwav, fac, zlu, zgaten, sup, bupmin, bup, openfact, afac, hh
     integer :: upstream_cell
     integer :: upstream_cell_index
     integer :: kb
@@ -58,9 +59,9 @@
     integer :: right_cell
     integer :: downstream_cell
     integer :: direction_sign
-    double precision :: velocity
+    real(kind=dp) :: velocity
 
-    double precision, parameter :: FAC23 = 0.6666666666667d0
+    real(kind=dp), parameter :: FAC23 = 0.6666666666667d0
 
     ! call writesluices()
 

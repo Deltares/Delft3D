@@ -36,6 +36,7 @@ module m_gettaus
    implicit none
 contains
    subroutine gettaus(typout, kernel)
+      use precision, only: dp
       use m_flowgeom, only: ndxi
       use m_flow, only: czs, taus
       use m_alloc
@@ -48,8 +49,8 @@ contains
       integer, intent(in) :: kernel !< kernel requesting to compute taus, 1: D-Flow FM, 2: D-WAQ
       !
       ! Locals
-      double precision :: taucurc !< local variable for taucurrent
-      double precision :: czc !< local variable for chezy
+      real(kind=dp) :: taucurc !< local variable for taucurrent
+      real(kind=dp) :: czc !< local variable for chezy
       integer :: ierr !< Error code
       integer :: n !< Counter
       integer :: jawaveswartdelwaq_local !< Local value of jawaveswartdelwaq, depending on kernel and flowWithoutWaves

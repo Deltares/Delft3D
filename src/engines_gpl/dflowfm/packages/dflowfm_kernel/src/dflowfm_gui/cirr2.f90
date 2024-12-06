@@ -32,22 +32,23 @@
 
 module m_cirr2
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine CIRR2(X, Y, NCOL, R)
-         use m_cir
-         use m_wearelt
-         use m_set_col
-         use m_movabs
-         implicit none
-         integer :: ncol
-         double precision :: x, y, r
-         call SETCOL(NCOL)
-         call MOVABS(X, Y)
-         call CIR(RCIR * R)
-         return
-      end
+   subroutine CIRR2(X, Y, NCOL, R)
+      use precision, only: dp
+      use m_cir
+      use m_wearelt
+      use m_set_col
+      use m_movabs
+      implicit none
+      integer :: ncol
+      real(kind=dp) :: x, y, r
+      call SETCOL(NCOL)
+      call MOVABS(X, Y)
+      call CIR(RCIR * R)
+      return
+   end
 
 end module m_cirr2

@@ -31,6 +31,7 @@
 !
 
  subroutine dropzout(idir)
+    use precision, only: dp
     use m_isocol
     use m_polygon
     use m_flowgeom
@@ -46,7 +47,7 @@
 
     ! locals
     integer :: n, nn, in, ncol, k, kb, kt
-    double precision :: dropstep
+    real(kind=dp) :: dropstep
 
     if (ndx == 0) return
 

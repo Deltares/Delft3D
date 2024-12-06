@@ -32,6 +32,7 @@
 
 !> generate curvi-linear grid from net, growing from (xp,yp)
 subroutine netw2curv(xp, yp)
+   use precision, only: dp
    use m_assign_icjc, only: assign_icjc
    use m_netw
    use m_grid
@@ -43,7 +44,7 @@ subroutine netw2curv(xp, yp)
 
    implicit none
 
-   double precision :: xp, yp !< coordinates of starting point
+   real(kind=dp) :: xp, yp !< coordinates of starting point
 
    integer :: ierr
 

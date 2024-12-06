@@ -30,6 +30,7 @@
 !
 
 subroutine tekship()
+   use precision, only: dp
    use m_ship
    use m_set_col
    use m_movabs
@@ -39,7 +40,7 @@ subroutine tekship()
    use m_shtext
 
    implicit none
-   double precision :: sx2, sy2, css, sns, rr, cr, sr, snum
+   real(kind=dp) :: sx2, sy2, css, sns, rr, cr, sr, snum
    integer :: n
    if (iniship == 0) return
 

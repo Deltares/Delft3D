@@ -30,6 +30,7 @@
 !
 !
 module unstruc_display_data
+   use precision, only: dp
    implicit none
 
    integer :: ntek = 0
@@ -58,12 +59,12 @@ module unstruc_display_data
    integer :: grwhydopt = 1 !< Groundwater & Hydrology display menu item
 
    integer :: numzoomshift = 250 !< nr of steps in zoomshift
-   double precision :: wetplot = 0.001 !< only show wet waterlevel points if (hs>wetplot)
-   double precision :: yfac = 0.0 !< cheap perspective
+   real(kind=dp) :: wetplot = 0.001 !< only show wet waterlevel points if (hs>wetplot)
+   real(kind=dp) :: yfac = 0.0 !< cheap perspective
    integer :: jafullbottomline = 0 !<larger bottomline with more complete description in screen
-   double precision :: profmax(20) = -999d0 !< minmax axes of tekprofiles
-   double precision :: profmin(20) = -999d0
-   double precision :: ymn, zmn ! for tekrailines
+   real(kind=dp) :: profmax(20) = -999d0 !< minmax axes of tekprofiles
+   real(kind=dp) :: profmin(20) = -999d0
+   real(kind=dp) :: ymn, zmn ! for tekrailines
 
 end module unstruc_display_data
 

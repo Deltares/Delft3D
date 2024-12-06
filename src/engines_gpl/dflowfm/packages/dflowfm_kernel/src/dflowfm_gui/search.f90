@@ -32,41 +32,41 @@
 
 module m_search
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine SEARCH(NAHEAD, NLEVEL, HLPTXT, NUMTXT, WRDKEY, NUMCHC, JOFND)
-         use m_okay
-         implicit none
-         integer :: jofnd
-         integer :: k
-         integer :: len
-         integer :: nahead
-         integer :: nlevel
-         integer :: numchc
-         integer :: numtxt
+   subroutine SEARCH(NAHEAD, NLEVEL, HLPTXT, NUMTXT, WRDKEY, NUMCHC, JOFND)
+      use m_okay
+      implicit none
+      integer :: jofnd
+      integer :: k
+      integer :: len
+      integer :: nahead
+      integer :: nlevel
+      integer :: numchc
+      integer :: numtxt
 !     Search at level NLEVEL
-         character HLPTXT(NUMTXT) * (*), WRDKEY * 40
+      character HLPTXT(NUMTXT) * (*), WRDKEY * 40
 
-         LEN = len_trim(WRDKEY)
-         if (LEN == 0) return
+      LEN = len_trim(WRDKEY)
+      if (LEN == 0) return
 
-         JOFND = 0
-         K = NUMCHC - NAHEAD
+      JOFND = 0
+      K = NUMCHC - NAHEAD
 
-10       continue
-         K = K + NAHEAD
-         if (K > NUMTXT .or. K < 1) then
-            if (JOFND == 0) call OKAY(0)
-            return
-         else
-            if (HLPTXT(K) (NLEVEL:NLEVEL + LEN - 1) /= WRDKEY) goto 10
-         end if
-
-         JOFND = 1
-         NUMCHC = K
+10    continue
+      K = K + NAHEAD
+      if (K > NUMTXT .or. K < 1) then
+         if (JOFND == 0) call OKAY(0)
          return
-      end
+      else
+         if (HLPTXT(K) (NLEVEL:NLEVEL + LEN - 1) /= WRDKEY) goto 10
+      end if
+
+      JOFND = 1
+      NUMCHC = K
+      return
+   end
 
 end module m_search

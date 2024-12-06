@@ -32,24 +32,24 @@
 
 module m_geduld2
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine GEDULD2(JAKNOP)
-         implicit none
-         integer :: i
-         integer :: jaknop
-         integer :: numkey
-         JAKNOP = 0
-         do I = 1, 160000
-            call INKEYEVENTIMM(NUMKEY)
-            if (NUMKEY /= -999 .and. NUMKEY /= 257) then
-               JAKNOP = 1
-               return
-            end if
-         end do
-         return
-      end
+   subroutine GEDULD2(JAKNOP)
+      implicit none
+      integer :: i
+      integer :: jaknop
+      integer :: numkey
+      JAKNOP = 0
+      do I = 1, 160000
+         call INKEYEVENTIMM(NUMKEY)
+         if (NUMKEY /= -999 .and. NUMKEY /= 257) then
+            JAKNOP = 1
+            return
+         end if
+      end do
+      return
+   end
 
 end module m_geduld2

@@ -31,6 +31,7 @@
 !
 
       subroutine POLTONET(L1, L2) ! PULL POLYGON TO NETWORK, KEEPING SUITABLE TRIANGLES TO OUTSIDE
+         use precision, only: dp
 
          use m_closenetbndlink, only: closenetbndlink
          use m_netw
@@ -46,7 +47,7 @@
          integer :: l1
          integer :: l2
 
-         double precision :: d1, d2, xp1, xp2, yp1, yp2
+         real(kind=dp) :: d1, d2, xp1, xp2, yp1, yp2
          integer :: i
          integer :: ja
          integer :: k
@@ -63,7 +64,7 @@
          integer :: n1
          integer :: n2
 
-         double precision :: XR, YR, XN, YN, XR1, YR1, XR2, YR2, AR1, DIS
+         real(kind=dp) :: XR, YR, XN, YN, XR1, YR1, XR2, YR2, AR1, DIS
          call SAVEPOL()
 
          if (L1 > L2) then

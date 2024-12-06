@@ -30,37 +30,37 @@
 !
 !
 module m_fieldopt
-         implicit none
+   implicit none
 contains
-      subroutine FIELDOPT(NFLD)
-         use M_GRID
-         use m_menuv2
-         use m_local_refine
-         use m_fieldop
+   subroutine FIELDOPT(NFLD)
+      use M_GRID
+      use m_menuv2
+      use m_local_refine
+      use m_fieldop
 
-         integer :: nfld
-         integer, parameter :: MAXOP = 64
-         integer :: nwhat2, maxopt, i
-         character(len=40) OPTION(MAXOP), exp(MAXOP)
-         exp(1) = 'MENU 10                                 '
-         exp(2) = 'GRID EDIT OPTIONS                       '
-         MAXOPT = 22
-         do I = 1, MAXOPT
-            OPTION(I) = FIELDOP(I)
-         end do
-         NWHAT2 = NFLD
-         call MENUV2(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 >= 1) then
-            if (NWHAT2 == 19) then
-               call ORTHOGRID(1, 1, MC, NC)
-            else if (NWHAT2 == 20) then
-               call LOCALREFINE(Nwhat2, 1, 1, mc, nc, 1)
-            else if (NWHAT2 == 21) then
-               call LOCALREFINE(Nwhat2, 1, 1, mc, nc, 2)
-            else
-               NFLD = NWHAT2
-            end if
+      integer :: nfld
+      integer, parameter :: MAXOP = 64
+      integer :: nwhat2, maxopt, i
+      character(len=40) OPTION(MAXOP), exp(MAXOP)
+      exp(1) = 'MENU 10                                 '
+      exp(2) = 'GRID EDIT OPTIONS                       '
+      MAXOPT = 22
+      do I = 1, MAXOPT
+         OPTION(I) = FIELDOP(I)
+      end do
+      NWHAT2 = NFLD
+      call MENUV2(NWHAT2, OPTION, MAXOPT)
+      if (NWHAT2 >= 1) then
+         if (NWHAT2 == 19) then
+            call ORTHOGRID(1, 1, MC, NC)
+         else if (NWHAT2 == 20) then
+            call LOCALREFINE(Nwhat2, 1, 1, mc, nc, 1)
+         else if (NWHAT2 == 21) then
+            call LOCALREFINE(Nwhat2, 1, 1, mc, nc, 2)
+         else
+            NFLD = NWHAT2
          end if
-         return
-      end subroutine fieldopt
+      end if
+      return
+   end subroutine fieldopt
 end module m_fieldopt

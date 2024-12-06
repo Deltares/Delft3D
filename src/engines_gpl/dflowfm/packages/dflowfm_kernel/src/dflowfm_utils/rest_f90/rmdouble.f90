@@ -31,6 +31,7 @@
 !
 
       subroutine RMDOUBLE(XS, YS, ZS, IPSAM, NS)
+         use precision, only: dp
          use m_missing
          use m_sferic
          use unstruc_messages
@@ -47,15 +48,15 @@
          integer :: nsorg
          integer :: numweg
          integer :: isam, jsam
-         double precision, intent(inout) :: XS(NS), YS(NS), ZS(NS)
+         real(kind=dp), intent(inout) :: XS(NS), YS(NS), ZS(NS)
          integer, dimension(NS), intent(inout) :: IPSAM !< permutation array (increasing x-coordinate)
          integer, dimension(:), allocatable :: newnode
 
-         double precision, dimension(:), allocatable :: xx, yy ! non-missing sample coordinates
+         real(kind=dp), dimension(:), allocatable :: xx, yy ! non-missing sample coordinates
 
          integer, dimension(:), allocatable :: iperm ! permutation array
 
-         double precision :: t0, t1, t2, t3, t4
+         real(kind=dp) :: t0, t1, t2, t3, t4
          integer :: ii, jj, NN, num, nummerged, ierror
          integer :: jakdtree = 1
 
@@ -63,7 +64,7 @@
 
          character(len=128) :: txt
 
-         double precision, parameter :: dtol2 = 1d-8 ! sample-on-top of each other tolerance, squared
+         real(kind=dp), parameter :: dtol2 = 1d-8 ! sample-on-top of each other tolerance, squared
 
          character OUD * 8
          NSORG = NS

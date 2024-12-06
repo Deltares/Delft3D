@@ -31,7 +31,7 @@
 !
 module m_structure_parameters
    use precision_basics, only: dp
-   
+
    implicit none
    private
    public :: structure_parameters
@@ -226,10 +226,10 @@ contains
       ! === Gates (new)
       !
       if (allocated(valgategen)) then
-         valgategen(:,:) = 0.0_dp
+         valgategen(:, :) = 0.0_dp
          if (network%sts%numGates > 0) then
             do n = 1, network%sts%numGates
-               associate(pstru => network%sts%struct(network%sts%gateIndices(n)))
+               associate (pstru => network%sts%struct(network%sts%gateIndices(n)))
                   do i = 1, pstru%numlinks
                      La = abs(pstru%linknumbers(i))
                      if (jampi > 0) then
@@ -295,7 +295,7 @@ contains
                         valgategen(IVAL_GATE_FLOWH, n) = dmiss
                      else
                         valgategen(IVAL_GATE_FLOWH, n) = max(min(pstru%generalst%gateLowerEdgeLevel_actual - pstru%generalst%zs_actual, &
-                                             valgategen(IVAL_GATE_FLOWH, n) / valgategen(IVAL_GATE_WIDTHWET, n) - pstru%generalst%zs_actual), 0.0_dp) ! flow through height is always positive
+                                                                 valgategen(IVAL_GATE_FLOWH, n) / valgategen(IVAL_GATE_WIDTHWET, n) - pstru%generalst%zs_actual), 0.0_dp) ! flow through height is always positive
                      end if
                   end if
                end associate
@@ -371,7 +371,7 @@ contains
                   end if
                end if
             end do
-         end if 
+         end if
       end if
       !
       ! === Weirs
@@ -1029,41 +1029,41 @@ contains
       timprev = time1
 
    end subroutine structure_parameters
-   
+
    ! =================================================================================================
 ! =================================================================================================
-subroutine substitute_reduce_buffer(vals, nvals)
-   use m_partitioninfo
-   implicit none
-   integer :: i
-   integer, intent(in) :: nvals
-   real(kind=dp), dimension(1:nvals) :: vals
+   subroutine substitute_reduce_buffer(vals, nvals)
+      use m_partitioninfo
+      implicit none
+      integer :: i
+      integer, intent(in) :: nvals
+      real(kind=dp), dimension(1:nvals) :: vals
 
-   nreducebuf = nreducebuf - nvals
-   do i = 1, nvals
-      vals(i) = reducebuf(nreducebuf + i)
-   end do
+      nreducebuf = nreducebuf - nvals
+      do i = 1, nvals
+         vals(i) = reducebuf(nreducebuf + i)
+      end do
 
-end subroutine substitute_reduce_buffer
+   end subroutine substitute_reduce_buffer
 
 ! =================================================================================================
 ! =================================================================================================
-subroutine fill_reduce_buffer(vals, nvals)
-   use m_partitioninfo
-   implicit none
-   integer :: i
-   integer, intent(in) :: nvals
-   real(kind=dp), dimension(1:nvals) :: vals
+   subroutine fill_reduce_buffer(vals, nvals)
+      use m_partitioninfo
+      implicit none
+      integer :: i
+      integer, intent(in) :: nvals
+      real(kind=dp), dimension(1:nvals) :: vals
 
-   if (jampi == 0) then
-      return
-   end if
+      if (jampi == 0) then
+         return
+      end if
 
-   do i = 1, nvals
-      reducebuf(nreducebuf + i) = vals(i)
-   end do
-   nreducebuf = nreducebuf + nvals
+      do i = 1, nvals
+         reducebuf(nreducebuf + i) = vals(i)
+      end do
+      nreducebuf = nreducebuf + nvals
 
-end subroutine fill_reduce_buffer
+   end subroutine fill_reduce_buffer
 
 end module m_structure_parameters

@@ -32,18 +32,19 @@
 
 !> make a gridline on the spline
 subroutine spline2gridline(mc, num, xsp, ysp, xc, yc, sc, h)
+   use precision, only: dp
    use m_makespl
 
    implicit none
 
    integer, intent(in) :: mc !< number of gridnodes
    integer, intent(in) :: num !< number of splinenodes
-   double precision, dimension(num), intent(in) :: xsp, ysp !< splinenode coordinates
-   double precision, dimension(mc), intent(out) :: xc, yc !< coordinates of grid points
-   double precision, dimension(mc), intent(out) :: sc !< spline-coordinates of grid points
-   double precision, intent(in) :: h !< for curvature adapted meshing (>0) or disable (<=0)
+   real(kind=dp), dimension(num), intent(in) :: xsp, ysp !< splinenode coordinates
+   real(kind=dp), dimension(mc), intent(out) :: xc, yc !< coordinates of grid points
+   real(kind=dp), dimension(mc), intent(out) :: sc !< spline-coordinates of grid points
+   real(kind=dp), intent(in) :: h !< for curvature adapted meshing (>0) or disable (<=0)
 
-   double precision, dimension(2) :: startstop
+   real(kind=dp), dimension(2) :: startstop
 
    integer :: kmax
 

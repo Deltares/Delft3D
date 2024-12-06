@@ -31,133 +31,134 @@
 !
 
 module m_setdt
-use m_xbeachwaves, only: xbeach_wave_maxtimestep
-use m_fm_mor_maxtimestep, only: fm_mor_maxtimestep
-use m_setdtmaxavalan, only: setdtmaxavalan
+   use m_xbeachwaves, only: xbeach_wave_maxtimestep
+   use m_fm_mor_maxtimestep, only: fm_mor_maxtimestep
+   use m_setdtmaxavalan, only: setdtmaxavalan
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setdt
+   public :: setdt
 
 contains
 
-subroutine setdt()
-   use m_tekcflmx
-   use m_partitioninfo
-   use m_flowparameters, only: jawave, flow_solver, FLOW_SOLVER_SRE
-   use m_xbeach_data, only: swave, instat
-   use m_flowtimes
-   use m_flow, only: kkcflmx
-   use m_timer
-   use m_gui
-   use m_sediment, only: jased, stm_included, stmpar, jamorcfl, jamormergedtuser
-   use m_fm_erosed, only: duneavalan
-   use m_mormerge
-   implicit none
+   subroutine setdt()
+      use precision, only: dp
+      use m_tekcflmx
+      use m_partitioninfo
+      use m_flowparameters, only: jawave, flow_solver, FLOW_SOLVER_SRE
+      use m_xbeach_data, only: swave, instat
+      use m_flowtimes
+      use m_flow, only: kkcflmx
+      use m_timer
+      use m_gui
+      use m_sediment, only: jased, stm_included, stmpar, jamorcfl, jamormergedtuser
+      use m_fm_erosed, only: duneavalan
+      use m_mormerge
+      implicit none
 
-   double precision :: dtsc_loc
-   integer :: nsteps
-   integer :: jareduced
+      real(kind=dp) :: dtsc_loc
+      integer :: nsteps
+      integer :: jareduced
 
 !  compute CFL-based maximum time step and limiting flownode/time step, per subomdain
-   call setdtorg(jareduced) ! 7.1 2031
+      call setdtorg(jareduced) ! 7.1 2031
 
-   ! morphological timestep reduction
-   if (stm_included .and. jamorcfl > 0) then
-      if (time1 > tstart_user + stmpar%morpar%tmor * tfac) then
-         call fm_mor_maxtimestep()
+      ! morphological timestep reduction
+      if (stm_included .and. jamorcfl > 0) then
+         if (time1 > tstart_user + stmpar%morpar%tmor * tfac) then
+            call fm_mor_maxtimestep()
+         end if
       end if
-   end if
 
-   if (jawave == 4 .and. swave == 1) then
-      if (.not. (trim(instat) == 'stat' .or. trim(instat) == 'stat_table')) then
-         call xbeach_wave_maxtimestep()
+      if (jawave == 4 .and. swave == 1) then
+         if (.not. (trim(instat) == 'stat' .or. trim(instat) == 'stat_table')) then
+            call xbeach_wave_maxtimestep()
+         end if
       end if
-   end if
 
-   if (jased == 4 .and. stm_included) then
-      if (duneavalan) then
-         call setdtmaxavalan(dts)
+      if (jased == 4 .and. stm_included) then
+         if (duneavalan) then
+            call setdtmaxavalan(dts)
+         end if
       end if
-   end if
 
-   dtsc_loc = dtsc
+      dtsc_loc = dtsc
 
-   !  globally reduce time step
-   if (jampi == 1 .and. jareduced == 0) then
-      !     globally reduce dts (dtsc may now be larger)
-      if (jatimer == 1) call starttimer(IMPIREDUCE)
-      call reduce_double_min(dts)
-      if (jatimer == 1) call stoptimer(IMPIREDUCE)
-   end if
+      !  globally reduce time step
+      if (jampi == 1 .and. jareduced == 0) then
+         !     globally reduce dts (dtsc may now be larger)
+         if (jatimer == 1) call starttimer(IMPIREDUCE)
+         call reduce_double_min(dts)
+         if (jatimer == 1) call stoptimer(IMPIREDUCE)
+      end if
 
-   dtsc = dts
+      dtsc = dts
 
 !  account for user time step
-   if (ja_timestep_auto >= 1) then
-      if (dts > dtfacmax * dtprev) then
-         dts = dtfacmax * dtprev
-         nsteps = ceiling((time_user - time0) / dts)
-         ! New timestep dts would be rounded down to same dtprev (undesired, so use nsteps-1)
-         if (1000 * dtprev > time_user - time0) then
+      if (ja_timestep_auto >= 1) then
+         if (dts > dtfacmax * dtprev) then
+            dts = dtfacmax * dtprev
             nsteps = ceiling((time_user - time0) / dts)
-            if (nsteps == ceiling((time_user - time0) / dtprev)) then
-               nsteps = max(1, nsteps - 1)
+            ! New timestep dts would be rounded down to same dtprev (undesired, so use nsteps-1)
+            if (1000 * dtprev > time_user - time0) then
+               nsteps = ceiling((time_user - time0) / dts)
+               if (nsteps == ceiling((time_user - time0) / dtprev)) then
+                  nsteps = max(1, nsteps - 1)
+               end if
+               dts = (time_user - time0) / dble(nsteps)
+               ! dtmax is always leading.
+               if (dts > dt_max .or. dts > dtsc) then ! Fall back to smaller step anyway.
+                  dts = (time_user - time0) / dble(nsteps + 1)
+               end if
             end if
-            dts = (time_user - time0) / dble(nsteps)
-            ! dtmax is always leading.
-            if (dts > dt_max .or. dts > dtsc) then ! Fall back to smaller step anyway.
-               dts = (time_user - time0) / dble(nsteps + 1)
-            end if
-         end if
 
-      else
-         ! dts = min (dts, dt_max) ! hk: commented out, already done this 15 lines above
-
-         ! Fit timestep dts so that we will exactly reach time_user in future steps.
-         !if ( time0+dts.ge.time_user ) then
-         !   dts = min(dts, time_user-time0)
-         !else
-         ! NOTE: when the model has an extremely small timestep, nsteps gets an integer overflow,
-         ! then becomes negative, so the max below sets nsteps=1, violating the dtmax requirement. (UNST-1926)
-         nsteps = max(1, ceiling((time_user - time0) / dts))
-         dts = (time_user - time0) / dble(nsteps)
-         !end if
-      end if
-   else
-      dts = dt_max
-      dtsc = 0d0 ! SPvdP: safety, was undefined but could be used later
-      kkcflmx = 0 ! SPvdP: safety, was undefined but could be used later
-   end if
-
-   if (stm_included .and. jased > 0) then
-      if (stmpar%morpar%multi .and. jamormergedtuser == 0) then
-         if (jampi == 0) then
-            call put_get_time_step(stmpar%morpar%mergehandle, dts)
          else
-            call reduce_double_min(dts)
-            if (my_rank == 0) then
+            ! dts = min (dts, dt_max) ! hk: commented out, already done this 15 lines above
+
+            ! Fit timestep dts so that we will exactly reach time_user in future steps.
+            !if ( time0+dts.ge.time_user ) then
+            !   dts = min(dts, time_user-time0)
+            !else
+            ! NOTE: when the model has an extremely small timestep, nsteps gets an integer overflow,
+            ! then becomes negative, so the max below sets nsteps=1, violating the dtmax requirement. (UNST-1926)
+            nsteps = max(1, ceiling((time_user - time0) / dts))
+            dts = (time_user - time0) / dble(nsteps)
+            !end if
+         end if
+      else
+         dts = dt_max
+         dtsc = 0d0 ! SPvdP: safety, was undefined but could be used later
+         kkcflmx = 0 ! SPvdP: safety, was undefined but could be used later
+      end if
+
+      if (stm_included .and. jased > 0) then
+         if (stmpar%morpar%multi .and. jamormergedtuser == 0) then
+            if (jampi == 0) then
                call put_get_time_step(stmpar%morpar%mergehandle, dts)
+            else
+               call reduce_double_min(dts)
+               if (my_rank == 0) then
+                  call put_get_time_step(stmpar%morpar%mergehandle, dts)
+               end if
+               call reduce_double_min(dts)
             end if
-            call reduce_double_min(dts)
          end if
       end if
-   end if
 
-   if (flow_solver == FLOW_SOLVER_SRE) then
-      dts = dt_max
-   end if
+      if (flow_solver == FLOW_SOLVER_SRE) then
+         dts = dt_max
+      end if
 
-   call timestepanalysis(dtsc_loc)
+      call timestepanalysis(dtsc_loc)
 
-   dti = 1d0 / dts
+      dti = 1d0 / dts
 
-   if (jaGUI == 1) then
-      call tekcflmx()
-   end if
+      if (jaGUI == 1) then
+         call tekcflmx()
+      end if
 
-end subroutine setdt
+   end subroutine setdt
 
 end module m_setdt

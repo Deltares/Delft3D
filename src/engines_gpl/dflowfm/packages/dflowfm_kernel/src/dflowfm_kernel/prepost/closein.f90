@@ -32,31 +32,32 @@
 
 module m_closein
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: closein
+   public :: closein
 
 contains
 
    subroutine CLOSEIN(XA, YA, INNUMP, KIN, NKIN, KK) ! KK IS HET MEEST DICHTBIJ GELEGEN POINT VAN INNUMP
+      use precision, only: dp
       use m_netw
 
-      double precision :: xa
-      double precision :: ya
+      real(kind=dp) :: xa
+      real(kind=dp) :: ya
       integer :: innump
       integer :: nkin
       integer :: KIN(NKIN)
       integer :: kk
 
-      double precision :: dx
-      double precision :: dy
+      real(kind=dp) :: dx
+      real(kind=dp) :: dy
       integer :: k
       integer :: k1
       integer :: nn
-      double precision :: ra
-      double precision :: ramin
+      real(kind=dp) :: ra
+      real(kind=dp) :: ramin
       RAMIN = 1e30
 
       KK = 0

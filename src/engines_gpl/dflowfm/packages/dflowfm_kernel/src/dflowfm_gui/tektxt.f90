@@ -32,62 +32,63 @@
 
 module m_tektxt
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine TEKTXT()
-         use m_wearelt
-         use m_set_col
-         use m_draw_text
-         implicit none
-         integer :: ia
-         integer, save :: ini = 0
-         integer :: k
-         integer :: maxtxt
-         integer :: ntxt
+   subroutine TEKTXT()
+      use precision, only: dp
+      use m_wearelt
+      use m_set_col
+      use m_draw_text
+      implicit none
+      integer :: ia
+      integer, save :: ini = 0
+      integer :: k
+      integer :: maxtxt
+      integer :: ntxt
 !      ------------------------------------------------------------------
 !     tekenen van de strings die in een file staan en ingelezen zijn met
 !     REATXT
 !     ------------------------------------------------------------------
-         parameter(maxtxt=2000)
-         double precision :: xtxt(maxtxt), ytxt(maxtxt), heitxt(maxtxt)
-         integer symtxt(maxtxt), coltxt(maxtxt)
-         character xytexts(maxtxt) * 120
+      parameter(maxtxt=2000)
+      real(kind=dp) :: xtxt(maxtxt), ytxt(maxtxt), heitxt(maxtxt)
+      integer symtxt(maxtxt), coltxt(maxtxt)
+      character xytexts(maxtxt) * 120
 
-         if (ini == 0) then
-            ntxt = 0
-            ini = 1
-         end if
-         if (NTXT <= 0) return
+      if (ini == 0) then
+         ntxt = 0
+         ini = 1
+      end if
+      if (NTXT <= 0) return
 
 !     call IGrSymbSet('calctek.smb')
 !     call IGrCharSet('symbols.chr')
 !     call IGrCharSize(3.0,3.0)
 !     call IGrCharJustify ('C')
 
-         do k = 1, ntxt
-            call SETCOL(coltxt(k))
+      do k = 1, ntxt
+         call SETCOL(coltxt(k))
 
 !        call IGRMOVETO    ( xtxt(k),ytxt(k) )
 !        call IGRCIRCLEREL ( rcir            )
 
-            call IGrCharJustify('C')
-            call IGrCharSize(real(heitxt(k)), real(heitxt(k)))
+         call IGrCharJustify('C')
+         call IGrCharSize(real(heitxt(k)), real(heitxt(k)))
 
-            if (symtxt(k) /= 0) then
-               call IGrSymbOut(real(xtxt(k)), real(ytxt(k)), symtxt(k))
-            end if
+         if (symtxt(k) /= 0) then
+            call IGrSymbOut(real(xtxt(k)), real(ytxt(k)), symtxt(k))
+         end if
 
-            call IGrMoveTo(real(xtxt(k) + 1.1 * rcir), real(ytxt(k)))
-            ia = len_trim(xytexts(k))
-            call IGrCharJustify('L')
-            call DRAWTEXT(real(xtxt(k) + 1.1 * rcir), real(ytxt(k)), xytexts(k) (1:ia))
-         end do
+         call IGrMoveTo(real(xtxt(k) + 1.1 * rcir), real(ytxt(k)))
+         ia = len_trim(xytexts(k))
+         call IGrCharJustify('L')
+         call DRAWTEXT(real(xtxt(k) + 1.1 * rcir), real(ytxt(k)), xytexts(k) (1:ia))
+      end do
 
-         call IGrCharSize(0.5, 0.5)
+      call IGrCharSize(0.5, 0.5)
 
-         return
-      end
+      return
+   end
 
 end module m_tektxt

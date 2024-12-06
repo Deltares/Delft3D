@@ -31,7 +31,8 @@
 !
 
 !>    gives link length
-      double precision function dLinklength(L)
+      real(kind=dp) function dLinklength(L)
+         use precision, only: dp
 
          use m_netw
          use m_missing, only: dmiss

@@ -34,21 +34,22 @@ module m_sample_spline
 contains
 !> sample a spline
    subroutine sample_spline(num, xs, ys, numref, Nr, xr, yr, ierror)
+      use precision, only: dp
       use m_splines
       use m_alloc
       use m_splint
       use m_spline
 
       integer, intent(in) :: num !< number of spline control points
-      double precision, dimension(num), intent(in) :: xs, ys !< spline control points coordinates
+      real(kind=dp), dimension(num), intent(in) :: xs, ys !< spline control points coordinates
       integer, intent(in) :: numref !< number of additional points between spline control points
       integer, intent(inout) :: Nr !< array size (in), number of sample points (out)
-      double precision, dimension(Nr), intent(out) :: xr, yr !< sample point coordinates
+      real(kind=dp), dimension(Nr), intent(out) :: xr, yr !< sample point coordinates
       integer, intent(out) :: ierror !< no error (0), memory error (2) or other error (1)
 
-      double precision, dimension(:), allocatable :: xh2, yh2
+      real(kind=dp), dimension(:), allocatable :: xh2, yh2
 
-      double precision :: tn
+      real(kind=dp) :: tn
 
       integer :: i, j, Nr_in
 

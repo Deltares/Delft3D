@@ -31,18 +31,19 @@
 !
 
 module m_statistics
+   use precision, only: dp
    implicit none
-   double precision :: avedif !< for now only, cum dif with analytic sol
-   double precision :: sqadif !< for now only, cum dif with analytic sol
-   double precision :: rmsdif !< for now only, cum dif with analytic sol
-   double precision :: dmxdif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: avedif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: sqadif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: rmsdif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: dmxdif !< for now only, cum dif with analytic sol
    integer :: numdif
 
-   double precision :: cumavedif !< for now only, cum dif with analytic sol
-   double precision :: cumrmsdif !< for now only, cum dif with analytic sol
-   double precision :: cumdmxdif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: cumavedif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: cumrmsdif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: cumdmxdif !< for now only, cum dif with analytic sol
    integer :: numcum, npdf
-   double precision, allocatable :: xpdf(:), ypdf(:)
+   real(kind=dp), allocatable :: xpdf(:), ypdf(:)
 contains
    subroutine reset_statistics()
       avedif = 0d0 ! for now only, cum dif with analytic sol

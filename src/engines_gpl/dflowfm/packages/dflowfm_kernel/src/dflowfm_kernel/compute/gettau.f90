@@ -30,7 +30,7 @@
 !
 !
 module m_get_tau
-use m_swart, only: swart
+   use m_swart, only: swart
 
    implicit none
 
@@ -44,10 +44,11 @@ use m_swart, only: swart
 
 contains
    subroutine gettau(n, taucurc, czc, jawaveswartdelwaq_par)
+      use precision, only: dp
       !
       ! Parameters
       integer :: n
-      double precision :: taucurc, czc, ustw2
+      real(kind=dp) :: taucurc, czc, ustw2
       integer :: jawaveswartdelwaq_par
       !
       ! Body
@@ -55,6 +56,7 @@ contains
    end subroutine gettau
 
    subroutine gettau2(n, taucurc, czc, ustw2, jawaveswartdelwaq_par)
+      use precision, only: dp
       use m_flowgeom
       use m_flow
       use m_waves
@@ -62,14 +64,14 @@ contains
       !
       ! Parameters
       integer, intent(in) :: n !< Flow node number
-      double precision, intent(out) :: taucurc !< Bed shear stress from current or current plus wave
-      double precision, intent(out) :: czc !< Chezy at flow node (taucurrent)
-      double precision, intent(out) :: ustw2 !< Ustarwave Swart (if Jawaveswartdelwaq == 1)
+      real(kind=dp), intent(out) :: taucurc !< Bed shear stress from current or current plus wave
+      real(kind=dp), intent(out) :: czc !< Chezy at flow node (taucurrent)
+      real(kind=dp), intent(out) :: ustw2 !< Ustarwave Swart (if Jawaveswartdelwaq == 1)
       integer :: jawaveswartdelwaq_par !< Overwrite the global jawaveswartdelwaq
       !
       ! Local variables
       integer :: LL, nn !< Local link counters
-      double precision :: cf, cfn, cz, frcn, ar, wa, ust, ust2, fw, z00 !< Local intermediate variables
+      real(kind=dp) :: cf, cfn, cz, frcn, ar, wa, ust, ust2, fw, z00 !< Local intermediate variables
       !
       ! Body
       ustw2 = 0d0

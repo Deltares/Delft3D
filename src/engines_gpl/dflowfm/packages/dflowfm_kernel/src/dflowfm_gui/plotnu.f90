@@ -32,7 +32,7 @@
 
 module m_plotnu
 
-implicit none
+   implicit none
 
 contains
 

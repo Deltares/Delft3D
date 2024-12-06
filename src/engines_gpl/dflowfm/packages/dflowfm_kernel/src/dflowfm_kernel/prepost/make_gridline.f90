@@ -32,6 +32,7 @@
 
 !> generate a gridline on a spline with a prescribed maximum mesh width
 subroutine make_gridline(num, xsp, ysp, dwidth, mfacmax, mfac, hmax, xg, yg, sc, jacurv)
+   use precision, only: dp
 
    use m_missing
    use m_alloc
@@ -42,26 +43,26 @@ subroutine make_gridline(num, xsp, ysp, dwidth, mfacmax, mfac, hmax, xg, yg, sc,
    implicit none
 
    integer, intent(in) :: num !< number of spline control points
-   double precision, dimension(num), intent(in) :: xsp, ysp !< coordinates of spline control points
+   real(kind=dp), dimension(num), intent(in) :: xsp, ysp !< coordinates of spline control points
 
-   double precision, intent(in) :: dwidth !< maximum mesh width
+   real(kind=dp), intent(in) :: dwidth !< maximum mesh width
    integer, intent(in) :: mfacmax !< maximum allowed number of mesh intervals
-   double precision, intent(in) :: hmax !< maximum grid height for this spline (both sides)
+   real(kind=dp), intent(in) :: hmax !< maximum grid height for this spline (both sides)
 
    integer, intent(out) :: mfac !< number of mesh intervals
-   double precision, dimension(mfacmax + 1), intent(out) :: xg, yg !< coordinates of grid points
-   double precision, dimension(mfacmax + 1), intent(inout) :: sc !< spline-coordinates of grid points
+   real(kind=dp), dimension(mfacmax + 1), intent(out) :: xg, yg !< coordinates of grid points
+   real(kind=dp), dimension(mfacmax + 1), intent(inout) :: sc !< spline-coordinates of grid points
 
    integer, intent(in) :: jacurv !< curvature adapted grid spacing (1) or not (0)
 
-   double precision, dimension(num) :: xsp2, ysp2 ! second order derivatives of spline coordinates
+   real(kind=dp), dimension(num) :: xsp2, ysp2 ! second order derivatives of spline coordinates
 
-   double precision :: dmaxwidth ! current maximum mesh width
-   double precision :: dspllength ! spline length
+   real(kind=dp) :: dmaxwidth ! current maximum mesh width
+   real(kind=dp) :: dspllength ! spline length
 
    integer :: i, mfac_loc
 
-   double precision, external :: splinelength
+   real(kind=dp), external :: splinelength
 
 !  test
 !  copy spline nodes to grid points

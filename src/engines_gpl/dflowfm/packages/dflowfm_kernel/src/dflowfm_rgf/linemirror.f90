@@ -31,6 +31,7 @@
 !
 
       subroutine LINEMIRROR() !X, Y, mmax, nmax, MC, NC, IJC,IJYES)
+         use precision, only: dp
          use m_missing
          use m_grid
          use m_gridsettings
@@ -42,11 +43,11 @@
          implicit none
 
 !      integer :: mmax, nmax, mc, nc
-!      double precision :: X(MMAX,NMAX), Y(MMAX,NMAX)
+!      real(kind=dp) :: X(MMAX,NMAX), Y(MMAX,NMAX)
 !      INTEGER IJC(MMAX,NMAX), IJYES(MMAX,NMAX)
 
          integer :: M1, M2, N1, N2, MD, ND, M, N
-         double precision :: A, B
+         real(kind=dp) :: A, B
 
          call ISITU()
 

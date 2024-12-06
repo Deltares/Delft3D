@@ -31,10 +31,11 @@
 !
 
       subroutine NULAR(X, MMAX)
+         use precision, only: dp
          implicit none
          integer :: i
          integer :: mmax
-         double precision :: x
+         real(kind=dp) :: x
          dimension X(MMAX)
          do I = 1, MMAX
             X(I) = 0d0

@@ -31,33 +31,32 @@
 !
 
 module m_axes
-use m_smallscreen
+   use m_smallscreen
 
-
-implicit none
+   implicit none
 
 contains
 
-      subroutine AXES()
-         use unstruc_colors
-         use m_screenarea
-         use m_set_col
-         use m_view_port
-         implicit none
+   subroutine AXES()
+      use unstruc_colors
+      use m_screenarea
+      use m_set_col
+      use m_view_port
+      implicit none
 
-         if (JAXIS == 1) then
-            call SETCOL(KLAXS)
-            call viewport(0.0, 0.0, 1.0, 1.0)
-            call IPGBORDER()
-            call IPGXTICKPOS(Y1, Y2)
-            call IPGXSCALE('TN')
-            call IPGXSCALETOP('TN')
-            call IPGYTICKPOS(X1, X2)
-            call IPGYSCALELEFT('TN')
-            call IPGYSCALERIGHT('TN')
-            call SMALLSCREEN()
-         end if
-         return
-      end
+      if (JAXIS == 1) then
+         call SETCOL(KLAXS)
+         call viewport(0.0, 0.0, 1.0, 1.0)
+         call IPGBORDER()
+         call IPGXTICKPOS(Y1, Y2)
+         call IPGXSCALE('TN')
+         call IPGXSCALETOP('TN')
+         call IPGYTICKPOS(X1, X2)
+         call IPGYSCALELEFT('TN')
+         call IPGYSCALERIGHT('TN')
+         call SMALLSCREEN()
+      end if
+      return
+   end
 
 end module m_axes

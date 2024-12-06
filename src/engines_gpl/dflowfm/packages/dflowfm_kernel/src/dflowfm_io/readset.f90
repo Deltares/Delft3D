@@ -32,23 +32,23 @@
 
 module m_readset
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: readset
+   public :: readset
 
 contains
 
- subroutine readset(kk, mbca, a)
-    implicit none
-    integer :: kk
-    character(len=132) :: a(100)
-    integer :: k, mbca
+   subroutine readset(kk, mbca, a)
+      implicit none
+      integer :: kk
+      character(len=132) :: a(100)
+      integer :: k, mbca
 
-    do k = 1, kk
-       read (mbca, '(a)') a(k)
-    end do
- end subroutine readset
+      do k = 1, kk
+         read (mbca, '(a)') a(k)
+      end do
+   end subroutine readset
 
 end module m_readset

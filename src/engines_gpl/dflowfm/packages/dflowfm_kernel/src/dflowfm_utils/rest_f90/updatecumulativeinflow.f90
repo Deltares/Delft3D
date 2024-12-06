@@ -32,11 +32,12 @@
 
 ! update m_wind::vextcum(:) with the realized inflow from m_wind::qextreal(:)
 subroutine updateCumulativeInflow(deltat)
+   use precision, only: dp
    use m_wind
    use m_flowgeom, only: ndx
 
    integer :: k
-   double precision, intent(in) :: deltat ! dt of current timestep
+   real(kind=dp), intent(in) :: deltat ! dt of current timestep
 
    if (jaQext == 0) return
 

@@ -32,36 +32,37 @@
 
 module m_wave_statbreakerdis
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: wave_statbreakerdis
+   public :: wave_statbreakerdis
 
 contains
 
-subroutine wave_statbreakerdis(h, hrms, tp, k, D)
-   !
-   ! Baldock
-   !
-   use m_physcoef, only: ag, rhomean
-   use m_waves, only: gammax
+   subroutine wave_statbreakerdis(h, hrms, tp, k, D)
+      use precision, only: dp
+      !
+      ! Baldock
+      !
+      use m_physcoef, only: ag, rhomean
+      use m_waves, only: gammax
 
-   implicit none
+      implicit none
 
-   double precision, intent(in) :: h
-   double precision, intent(in) :: hrms
-   double precision, intent(in) :: tp
-   double precision, intent(in) :: k
-   double precision, intent(out) :: D
+      real(kind=dp), intent(in) :: h
+      real(kind=dp), intent(in) :: hrms
+      real(kind=dp), intent(in) :: tp
+      real(kind=dp), intent(in) :: k
+      real(kind=dp), intent(out) :: D
 
-   double precision :: alpha, Hb
+      real(kind=dp) :: alpha, Hb
 
-   alpha = 1d0 ! can be slope dependent, see work of Bertin et al
+      alpha = 1d0 ! can be slope dependent, see work of Bertin et al
 
-   Hb = 0.88d0 / k * tanh(gammax * k * h / 0.88d0)
-   D = 0.25d0 * alpha * rhomean * ag / tp * exp(-(Hb / hrms)**2) * (Hb**3 + hrms**3) / gammax / h
+      Hb = 0.88d0 / k * tanh(gammax * k * h / 0.88d0)
+      D = 0.25d0 * alpha * rhomean * ag / tp * exp(-(Hb / hrms)**2) * (Hb**3 + hrms**3) / gammax / h
 
-end subroutine wave_statbreakerdis
+   end subroutine wave_statbreakerdis
 
 end module m_wave_statbreakerdis

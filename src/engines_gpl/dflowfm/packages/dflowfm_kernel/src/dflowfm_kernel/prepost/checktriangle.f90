@@ -32,15 +32,16 @@
 
 module m_checktriangle
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: checktriangle
+   public :: checktriangle
 
 contains
 
    subroutine CHECKTRIANGLE(N, JA, phimin, phimax)
+      use precision, only: dp
 
       use m_samples
       use m_ec_triangle
@@ -49,11 +50,11 @@ contains
       use geometry_module, only: dcosphi
       use m_missing, only: dxymis
 
-      double precision :: phimin, phimax
+      real(kind=dp) :: phimin, phimax
       integer :: n, ja
 
       integer :: k0, k1, k2, n0, n2, nn
-      double precision :: X0, Y0, X1, Y1, X2, Y2, COSPHI, PHI
+      real(kind=dp) :: X0, Y0, X1, Y1, X2, Y2, COSPHI, PHI
       if (TRIANGLEMINANGLE >= TRIANGLEMAXANGLE) return
       JA = 1
       phimin = 1d3; phimax = 0d0

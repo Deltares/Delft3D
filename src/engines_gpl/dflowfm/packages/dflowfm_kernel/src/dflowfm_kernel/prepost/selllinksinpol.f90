@@ -31,6 +31,7 @@
 !
 
    subroutine SELLLINKSINPOL(LIN, N)
+      use precision, only: dp
       use m_netw
       use m_missing, only: dmiss, jins
       use geometry_module, only: pinpok
@@ -44,14 +45,14 @@
       integer :: k1
       integer :: k2
       integer :: l
-      double precision :: xp1
-      double precision :: xp2
-      double precision :: xplmax
-      double precision :: xplmin
-      double precision :: yp1
-      double precision :: yp2
-      double precision :: yplmax
-      double precision :: yplmin
+      real(kind=dp) :: xp1
+      real(kind=dp) :: xp2
+      real(kind=dp) :: xplmax
+      real(kind=dp) :: xplmin
+      real(kind=dp) :: yp1
+      real(kind=dp) :: yp2
+      real(kind=dp) :: yplmax
+      real(kind=dp) :: yplmin
 
       if (NPL < 3) then
          LIN = 1

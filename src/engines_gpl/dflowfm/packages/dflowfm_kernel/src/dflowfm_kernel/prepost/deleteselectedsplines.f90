@@ -32,11 +32,11 @@
 
 module m_deleteselectedsplines
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: deleteselectedsplines
+   public :: deleteselectedsplines
 
 contains
 

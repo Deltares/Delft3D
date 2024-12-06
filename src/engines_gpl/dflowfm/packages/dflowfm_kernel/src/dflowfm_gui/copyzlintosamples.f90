@@ -32,31 +32,31 @@
 
 module m_copyzlintosamples
 
-implicit none
+   implicit none
 
 contains
 
- !> copy values that are displayed at flowlinks to samples
- subroutine copyzlintosamples()
-    use m_samples
-    use m_flowgeom, only: lnx, xu, yu
-    use m_flow, only: epshu, hu
-    use m_zlin
+   !> copy values that are displayed at flowlinks to samples
+   subroutine copyzlintosamples()
+      use m_samples
+      use m_flowgeom, only: lnx, xu, yu
+      use m_flow, only: epshu, hu
+      use m_zlin
 
-    integer :: k, L
+      integer :: k, L
 
-    k = 0
-    do L = 1, Lnx
-       if (hu(L) > epshu) then
-          k = k + 1
-          call increasesam(k)
-          xs(k) = xu(L)
-          ys(k) = yu(L)
-          zs(k) = zlin(L)
-       end if
-    end do
-    Ns = k
+      k = 0
+      do L = 1, Lnx
+         if (hu(L) > epshu) then
+            k = k + 1
+            call increasesam(k)
+            xs(k) = xu(L)
+            ys(k) = yu(L)
+            zs(k) = zlin(L)
+         end if
+      end do
+      Ns = k
 
- end subroutine copyzlintosamples
+   end subroutine copyzlintosamples
 
 end module m_copyzlintosamples

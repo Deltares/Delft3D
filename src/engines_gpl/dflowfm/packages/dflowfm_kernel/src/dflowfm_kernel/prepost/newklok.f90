@@ -31,8 +31,9 @@
 !
 
   subroutine NEWklok(cpu)
+     use precision, only: dp
      implicit none
-     double precision :: cpu
+     real(kind=dp) :: cpu
      real :: currentcpu
 
      call cpu_time(currentcpu)

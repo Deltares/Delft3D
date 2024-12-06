@@ -33,162 +33,163 @@
 !> compute vertical fluxes
 module m_comp_fluxver
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: comp_fluxver
+   public :: comp_fluxver
 
 contains
 
-subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, zws, qw, kbot, ktop, sed, nsubsteps, jaupdate, ndeltasteps, flux, wsf)
-   use m_flowgeom, only: Ndx, ba, kfs ! static mesh information
-   use m_flowtimes, only: dts
-   use m_flow, only: s1, epshsdif, cffacver, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
-   use m_transport, only: ISED1, ISEDN ! preferably in argument list
-   use m_sediment, only: mtd
-   use unstruc_messages
-   use m_sediment, only: jased, sedtra, stm_included
-   use sediment_basics_module
-   use timers
-   use m_dlimiter
-   
-   implicit none
+   subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, zws, qw, kbot, ktop, sed, nsubsteps, jaupdate, ndeltasteps, flux, wsf)
+      use precision, only: dp
+      use m_flowgeom, only: Ndx, ba, kfs ! static mesh information
+      use m_flowtimes, only: dts
+      use m_flow, only: s1, epshsdif, cffacver, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
+      use m_transport, only: ISED1, ISEDN ! preferably in argument list
+      use m_sediment, only: mtd
+      use unstruc_messages
+      use m_sediment, only: jased, sedtra, stm_included
+      use sediment_basics_module
+      use timers
+      use m_dlimiter
 
-   integer, intent(in) :: NUMCONST !< number of transported quantities
-   integer, intent(in) :: limtyp !< limiter type
-   double precision, dimension(NUMCONST), intent(in) :: thetavert !< compute fluxes (<1) or not (1)
-   integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
-   double precision, dimension(Ndkx), intent(in) :: zws !< vertical coordinate of layers at interface/center locations
-   double precision, dimension(Ndkx), intent(in) :: qw !< flow-field vertical discharges
-   integer, dimension(Ndx), intent(in) :: kbot !< flow-node based layer administration
-   integer, dimension(Ndx), intent(in) :: ktop !< flow-node based layer administration
-   double precision, dimension(NUMCONST, Ndkx), intent(in) :: sed !< transported quantities
-   integer, intent(in) :: nsubsteps !< number of substeps
-   integer, dimension(Ndx), intent(in) :: jaupdate !< update cell (1) or not (0)
-   integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of substeps between updates
-   double precision, dimension(NUMCONST, Ndkx), intent(inout) :: flux !< adds vertical advection fluxes
-   double precision, dimension(NUMCONST), intent(in) :: wsf !< vertical fall velocities
+      implicit none
 
-   double precision, dimension(2049) :: dz
+      integer, intent(in) :: NUMCONST !< number of transported quantities
+      integer, intent(in) :: limtyp !< limiter type
+      real(kind=dp), dimension(NUMCONST), intent(in) :: thetavert !< compute fluxes (<1) or not (1)
+      integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
+      real(kind=dp), dimension(Ndkx), intent(in) :: zws !< vertical coordinate of layers at interface/center locations
+      real(kind=dp), dimension(Ndkx), intent(in) :: qw !< flow-field vertical discharges
+      integer, dimension(Ndx), intent(in) :: kbot !< flow-node based layer administration
+      integer, dimension(Ndx), intent(in) :: ktop !< flow-node based layer administration
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: sed !< transported quantities
+      integer, intent(in) :: nsubsteps !< number of substeps
+      integer, dimension(Ndx), intent(in) :: jaupdate !< update cell (1) or not (0)
+      integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of substeps between updates
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: flux !< adds vertical advection fluxes
+      real(kind=dp), dimension(NUMCONST), intent(in) :: wsf !< vertical fall velocities
 
-   double precision :: sedL, sedR, ds1L, ds2L, ds1R, ds2R, sl3L, sl3R, cf
-   double precision :: dt_loc
-   double precision :: qw_loc
+      real(kind=dp), dimension(2049) :: dz
 
-   integer :: kk, k, kb, kt, kL, kR, kLL, kRR
-   integer :: j, ll
+      real(kind=dp) :: sedL, sedR, ds1L, ds2L, ds1R, ds2R, sl3L, sl3R, cf
+      real(kind=dp) :: dt_loc
+      real(kind=dp) :: qw_loc
 
-   double precision, parameter :: DTOL = 1d-8
+      integer :: kk, k, kb, kt, kL, kR, kLL, kRR
+      integer :: j, ll
 
-   integer(4) :: ithndl = 0
-   
-   if (timon) call timstrt("comp_fluxver", ithndl)
+      real(kind=dp), parameter :: DTOL = 1d-8
 
-   if (sum(1d0 - thetavert(1:NUMCONST)) < DTOL) goto 1234 ! nothing to do
+      integer(4) :: ithndl = 0
 
-   !if ( limtyp.eq.6 ) then
-   !   call message(LEVEL_ERROR, 'transport/comp_fluxver: limtyp==6 not supported')
-   !end if
+      if (timon) call timstrt("comp_fluxver", ithndl)
 
-   dt_loc = dts
+      if (sum(1d0 - thetavert(1:NUMCONST)) < DTOL) goto 1234 ! nothing to do
 
-   !$xOMP PARALLEL DO                                                                       &
-   !$xOMP PRIVATE(kk,kb,kt,dz,k,cf,kL,kR,j,sedL,sedR,kLL,kRR,sl3L,sl3R,ds1L,ds1R,ds2L,ds2R,qw_loc) &
-   !$xOMP FIRSTPRIVATE(dt_loc)
-   do kk = 1, Ndx
-      if (kfs(kk) <= 0) cycle
+      !if ( limtyp.eq.6 ) then
+      !   call message(LEVEL_ERROR, 'transport/comp_fluxver: limtyp==6 not supported')
+      !end if
 
-      if (nsubsteps > 1) then
-         if (jaupdate(kk) == 0) then
-            cycle
-         else
-            dt_loc = dts * ndeltasteps(kk)
-         end if
-      else
-         dt_loc = dts
-      end if
+      dt_loc = dts
 
-      kb = kbot(kk)
-      kt = ktop(kk)
-      dz(1) = max(dtol, zws(kb) - zws(kb - 1))
-      ! dz(2:kt-kb+1) = max(dtol, 0.5d0*(zws(kb+1:kt)-zws(kb-1:kt-1))  ) ! thickness between cell centers org
-      dz(2:kt - kb + 1) = max(dtol, 0.5d0 * (zws(kb + 1:kt) - zws(kb - 1:kt - 2))) ! thickness between cell centers
+      !$xOMP PARALLEL DO                                                                       &
+      !$xOMP PRIVATE(kk,kb,kt,dz,k,cf,kL,kR,j,sedL,sedR,kLL,kRR,sl3L,sl3R,ds1L,ds1R,ds2L,ds2R,qw_loc) &
+      !$xOMP FIRSTPRIVATE(dt_loc)
+      do kk = 1, Ndx
+         if (kfs(kk) <= 0) cycle
 
-      dz(kt - kb + 2) = max(dtol, zws(kt) - zws(kt - 1))
-
-      ! dz = max(dz,dtol)  !     fix for zero-thickness layer
-
-      do k = kb, kt - 1
-         ! cf = dt_loc*qw(k)/(ba(kk)*dz(k-kb+2))
-
-         kL = k ! max(k,kb)
-         kR = k + 1 ! min(k+1,kt)
-
-         do j = 1, NUMCONST
-            qw_loc = qw(k)
-            if (jaimplicitfallvelocity == 0) then ! explicit
-               if (jased < 4) then
-                  qw_loc = qw(k) - wsf(j) * ba(kk)
-               elseif (stm_included .and. j >= ISED1 .and. j <= ISEDN) then
-                  ll = j - ISED1 + 1
-                  if (k < sedtra%kmxsed(kk, ll)) then
-                     qw_loc = qw(k) ! settling flux zero below kmxsed layer
-                  else
-                     qw_loc = qw(k) - mtd%ws(k, ll) * ba(kk)
-                  end if
-               else
-                  qw_loc = qw(k) - wsf(j) * ba(kk) ! enable tracers with settling vel icw morphology
-               end if
-            end if
-
-            if (cffacver > 0d0) then
-               cf = cffacver * dt_loc * abs(qw_loc) / (ba(kk) * dz(k - kb + 2)) ! courant nr
-               cf = max(0d0, 1d0 - cf) ! use high order only for small courant
+         if (nsubsteps > 1) then
+            if (jaupdate(kk) == 0) then
+               cycle
             else
-               cf = 1d0 ! or always use it, is MUSCL = default
+               dt_loc = dts * ndeltasteps(kk)
             end if
+         else
+            dt_loc = dts
+         end if
 
-            if (thetavert(j) == 1d0) cycle
+         kb = kbot(kk)
+         kt = ktop(kk)
+         dz(1) = max(dtol, zws(kb) - zws(kb - 1))
+         ! dz(2:kt-kb+1) = max(dtol, 0.5d0*(zws(kb+1:kt)-zws(kb-1:kt-1))  ) ! thickness between cell centers org
+         dz(2:kt - kb + 1) = max(dtol, 0.5d0 * (zws(kb + 1:kt) - zws(kb - 1:kt - 2))) ! thickness between cell centers
 
-            sedL = sed(j, kL)
-            sedR = sed(j, kR)
+         dz(kt - kb + 2) = max(dtol, zws(kt) - zws(kt - 1))
 
-            if (thetavert(j) > 0d0) then ! semi-explicit, use central scheme
-               flux(j, k) = flux(j, k) + qw_loc * 0.5d0 * (sedL + sedR)
-            else ! fully explicit
-               !  if (limtyp.ne.0  ) then
-               if (k > kb - 1 .and. qw_loc > 0d0) then
-                  kLL = max(k - 1, kb)
-                  sL3L = dz(k - kb + 2) / dz(k - kb + 1)
+         ! dz = max(dz,dtol)  !     fix for zero-thickness layer
 
-                  ds2L = sedR - sedL
-                  ds1L = (sedL - sed(j, kLL)) * sl3L
-                  sedL = sedL + 0.5d0 * cf * dlimiter(ds1L, ds2L, limtyp) * ds2L
+         do k = kb, kt - 1
+            ! cf = dt_loc*qw(k)/(ba(kk)*dz(k-kb+2))
+
+            kL = k ! max(k,kb)
+            kR = k + 1 ! min(k+1,kt)
+
+            do j = 1, NUMCONST
+               qw_loc = qw(k)
+               if (jaimplicitfallvelocity == 0) then ! explicit
+                  if (jased < 4) then
+                     qw_loc = qw(k) - wsf(j) * ba(kk)
+                  elseif (stm_included .and. j >= ISED1 .and. j <= ISEDN) then
+                     ll = j - ISED1 + 1
+                     if (k < sedtra%kmxsed(kk, ll)) then
+                        qw_loc = qw(k) ! settling flux zero below kmxsed layer
+                     else
+                        qw_loc = qw(k) - mtd%ws(k, ll) * ba(kk)
+                     end if
+                  else
+                     qw_loc = qw(k) - wsf(j) * ba(kk) ! enable tracers with settling vel icw morphology
+                  end if
                end if
 
-               if (k < kt .and. qw_loc < 0d0 .and. s1(kk) - zws(kb - 1) > epshsdif) then
-                  kRR = min(k + 2, kt)
-                  sL3R = dz(k - kb + 2) / dz(k - kb + 3)
-
-                  ds2R = sedL - sedR
-                  ds1R = (sedR - sed(j, kRR)) * sl3R
-                  sedR = sedR + 0.5d0 * cf * dlimiter(ds1R, ds2R, limtyp) * ds2R
+               if (cffacver > 0d0) then
+                  cf = cffacver * dt_loc * abs(qw_loc) / (ba(kk) * dz(k - kb + 2)) ! courant nr
+                  cf = max(0d0, 1d0 - cf) ! use high order only for small courant
+               else
+                  cf = 1d0 ! or always use it, is MUSCL = default
                end if
-               !  end if
 
-               flux(j, k) = flux(j, k) + max(qw_loc, 0d0) * sedL + min(qw_loc, 0d0) * sedR
-            end if
+               if (thetavert(j) == 1d0) cycle
+
+               sedL = sed(j, kL)
+               sedR = sed(j, kR)
+
+               if (thetavert(j) > 0d0) then ! semi-explicit, use central scheme
+                  flux(j, k) = flux(j, k) + qw_loc * 0.5d0 * (sedL + sedR)
+               else ! fully explicit
+                  !  if (limtyp.ne.0  ) then
+                  if (k > kb - 1 .and. qw_loc > 0d0) then
+                     kLL = max(k - 1, kb)
+                     sL3L = dz(k - kb + 2) / dz(k - kb + 1)
+
+                     ds2L = sedR - sedL
+                     ds1L = (sedL - sed(j, kLL)) * sl3L
+                     sedL = sedL + 0.5d0 * cf * dlimiter(ds1L, ds2L, limtyp) * ds2L
+                  end if
+
+                  if (k < kt .and. qw_loc < 0d0 .and. s1(kk) - zws(kb - 1) > epshsdif) then
+                     kRR = min(k + 2, kt)
+                     sL3R = dz(k - kb + 2) / dz(k - kb + 3)
+
+                     ds2R = sedL - sedR
+                     ds1R = (sedR - sed(j, kRR)) * sl3R
+                     sedR = sedR + 0.5d0 * cf * dlimiter(ds1R, ds2R, limtyp) * ds2R
+                  end if
+                  !  end if
+
+                  flux(j, k) = flux(j, k) + max(qw_loc, 0d0) * sedL + min(qw_loc, 0d0) * sedR
+               end if
+            end do
          end do
       end do
-   end do
 
-   !$xOMP END PARALLEL DO
+      !$xOMP END PARALLEL DO
 
-1234 continue
+1234  continue
 
-   if (timon) call timstop(ithndl)
-   return
-end subroutine comp_fluxver
+      if (timon) call timstop(ithndl)
+      return
+   end subroutine comp_fluxver
 
 end module m_comp_fluxver

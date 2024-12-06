@@ -1,11 +1,11 @@
-package build.thirdParty
+package Delft3D.linux.thirdParty
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 
-object DownloadIntelMpi : BuildType({
-    name = "Download Intel MPI"
+object LinuxThirdPartyDownloadIntelMpi : BuildType({
+    name = "Download Intel MPI (Linux)"
     description = "Download and package Intel MPI components for DIMRset from https://www.intel.com/content/www/us/en/developer/articles/tool/oneapi-standalone-components.html#mpi"
 
     artifactRules = "artifacts/**/* => intelmpi.tar.gz"

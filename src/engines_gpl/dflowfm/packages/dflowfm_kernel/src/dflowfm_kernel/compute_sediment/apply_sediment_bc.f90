@@ -32,11 +32,11 @@
 
 module m_apply_sediment_bc
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: apply_sediment_bc
+   public :: apply_sediment_bc
 
 contains
 
