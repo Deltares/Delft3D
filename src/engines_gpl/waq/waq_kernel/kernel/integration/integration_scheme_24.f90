@@ -285,6 +285,7 @@ contains
             ! get new volumes
             itimel = itime
             itime = itime + idt
+            write(88,*) 'Scheme 24: new volumes', ivflag, itime
             select case (ivflag)
             case (1) ! computation of volumes for computed volumes only
                 call copy_real_array_elements(a(ivol:), a(ivol2:), num_cells)

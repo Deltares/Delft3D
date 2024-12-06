@@ -99,6 +99,7 @@ contains
         endif
 
         !volumes
+        write(88,*) 'update_volumes_and_time_step'
         if (nrharm(2) >= 0 .and. .not. dlwqd%online_hydrodynamics) then
             call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), volume, 1, nrharm(2), &

@@ -74,6 +74,8 @@ module m_waq_external_access_layer
     type(connection_manager), public :: connections = connection_manager() !< Controls the exchanges between Delwaq and other external components
     class(logger), allocatable, save :: log !< logger to log towards
 
+    logical, save                    :: init_mass = .false.
+
 contains
 
     !> The set_var function lets the caller set a variable within DELWAQ.
@@ -159,6 +161,7 @@ contains
         end if
 
         call log%log_debug("Set_var: value = "//value_given)
+        write(88,*) "Set_var: key -- value = ", trim(key_given), ' -- ', trim(value_given)
 
         argnew = 2
         if (value_given(1:1) == ' ') argnew = 1
@@ -219,6 +222,7 @@ contains
         runid_given = char_array_to_string(c_config_file)
 
         call log%log_debug("Initialise: "//runid_given)
+        write(88,*) "Ext_initialize: ", trim(runid_given)
 
         ! Add runid_given before the current arguments list
         if (allocated(argv_tmp)) deallocate (argv_tmp)
@@ -239,6 +243,7 @@ contains
         end do
 
         if (delwaq1(argv)) then
+            init_mass = .true.
             call delwaq2_global_data_initialize(runid_given)
             call dlwqmain(ACTION_INITIALISATION, dlwqd)
             call delwaq2_global_data_copy(dlwqd)
@@ -254,6 +259,7 @@ contains
                            int_to_str(idt))
 
         call log%log_debug("ext_initialize ended")
+        write(88,*) "ext_initialize ended"
 
     end function ext_initialize
 
@@ -333,6 +339,7 @@ contains
 
         call init_logger()
         call log%log_debug("ext_update_until started")
+        write(88,*) 'ext_update_until: ', dlwqd%itime, tupdate
 
         update_steps = nint(tupdate - dlwqd%itime) / idt
 
@@ -363,6 +370,24 @@ contains
         endif
 
         call update_from_incoming_data(connections)
+        write(88,*) 'update_until: update_from_incoming_data', dlwqd%buffer%rbuf(iflow+2000-1:iflow+2009)
+
+        !
+        ! If we are using the online coupling mode, then this is the moment that
+        ! everything is ready from the side of the hydrodydnamic module.
+        ! We re-calculate the masses from the initial concentrations and the
+        ! volumes that we now know from the incoming data.
+        !
+        ! If we are using the standalone mode, the volumes were already known
+        ! and this step is not needed.
+        !
+        if ( init_mass .and. dlwqd%online_hydrodynamics ) then
+            write(88,*) 'ext_update_until: recalculate mass'
+            init_mass = .false.
+            call recalculate_masses
+        endif
+
+        write(88,*) 'ext_update_until: ', dlwqd%buffer%rbuf(ivol+2000-1), dlwqd%buffer%rbuf(ivol+3000-1)
 
         do step = 1, update_steps
             call dlwqmain(ACTION_SINGLESTEP, dlwqd)
@@ -622,5 +647,26 @@ contains
         endif
 
     end subroutine set_coupling_timeframe
+
+    !> Recalculate the masses, as the initial volumes are now known
+    !
+    !  Note: this could be an opportunity for a smart use of ASSOCIATE
+    !
+    subroutine recalculate_masses
+        use m_real_array_indices, only: imass, iconc
+        integer       :: cell_i, i1
+        real(real_wp) :: volume
+
+        do cell_i = 0, dlwqd%nosss - 1
+            volume = dlwqd%buffer%rbuf(ivol + cell_i)
+
+            do i1 = cell_i * num_substances_total, cell_i * num_substances_total + num_substances_transported - 1
+                dlwqd%buffer%rbuf(imass + i1) = dlwqd%buffer%rbuf(iconc + i1) * volume
+                if ( cell_i == 2000 ) then
+                    write(88,*) 'Volume, Concentration, Mass: ', volume, dlwqd%buffer%rbuf(imass + i1), dlwqd%buffer%rbuf(iconc + i1)
+                endif
+            enddo
+        enddo
+    end subroutine recalculate_masses
 
 end module m_waq_external_access_layer

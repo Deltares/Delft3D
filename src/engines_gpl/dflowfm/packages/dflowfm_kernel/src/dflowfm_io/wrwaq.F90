@@ -3061,6 +3061,7 @@ contains
       end if
 
       ! Call the waq-flo file writer
+      write(88,*) 'D-Flow FM: waq_wri_are ', itim, waqpar%area(2000:2010)
       if (.not. waqpar%online_hydrodynamics) then
           call wrwaqbin(itim, waqpar%area, waqpar%num_exchanges, filename, waq_format_ascii, lun)
       end if
@@ -3167,6 +3168,7 @@ contains
       end if
 
       ! Call the waq-flo file writer
+      write(88,*) 'D-Flow FM: waq_wri_flo ', itim, waqpar%qag(2000:2010)
       if (.not. waqpar%online_hydrodynamics) then
           call wrwaqbin(itim, waqpar%qag, waqpar%num_exchanges, filename, waq_format_ascii, lun)
       end if

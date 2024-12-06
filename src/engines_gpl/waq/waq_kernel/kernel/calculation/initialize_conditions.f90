@@ -303,6 +303,7 @@ contains
             ! first read of relevant time varying arrays
             IFFLAG = 1
 
+            write(88,*) 'Initialize_conditions: external_forcing'
             CALL update_time_dependent_external_forcing (file_unit_list, ITSTRT, ITIMEL, A(IHARM:), A(IFARR:), &
                     J(INRHA:), J(INRH2:), J(INRFT:), IDT, A(IVOL:), &
                     A(IDIFF:), A(IAREA:), A(IFLOW:), A(IVELO:), A(ILENG:), &
@@ -353,6 +354,7 @@ contains
 
             !         initial conditions coflowing substances
 
+            write(88,*) 'Initialize_conditions: initial concentrations', maxval( a(ivol:ivol+nosss-1) ), minval( a(ivol:ivol+nosss-1) )
             do cell_i = 0, nosss - 1
                 volume = a(ivol + cell_i)
                 do i1 = cell_i * num_substances_total, cell_i * num_substances_total + num_substances_transported - 1
