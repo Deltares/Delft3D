@@ -57,7 +57,7 @@ object WindowsBuildEnvironment : BuildType({
                 contextDir = "ci/dockerfiles"
                 platform = DockerCommandStep.ImagePlatform.Windows
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:latest
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
                 """.trimIndent()
                 commandArgs = "--no-cache"
@@ -67,7 +67,7 @@ object WindowsBuildEnvironment : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:latest
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
                 """.trimIndent()
             }

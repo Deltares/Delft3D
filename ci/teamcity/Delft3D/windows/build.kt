@@ -51,6 +51,8 @@ object WindowsBuild : BuildType({
                 echo #define BUILD_NR "%build.vcs.number%" > checkout_info.h
                 echo #define BRANCH "%teamcity.build.branch%" >> checkout_info.h
             """.trimIndent()
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
         }
         script {
             name = "Build"
@@ -61,6 +63,8 @@ object WindowsBuild : BuildType({
 
                 cmake --build . -j --target install --config %build_type%
             """.trimIndent()
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
         }
     }
 
