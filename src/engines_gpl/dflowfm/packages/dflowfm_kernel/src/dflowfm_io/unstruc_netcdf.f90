@@ -13355,7 +13355,7 @@ contains
       ! Read qa (flow link), optional: only from rst file, so no error check
       ierr = get_var_and_shift(imapfile, 'qa', qa, tmpvar1, UNC_LOC_U3D, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
                                um%ilink_own, um%ilink_merge)
-
+    
       ! Read ucxq (flow elem), optional: only from rst file, so no error check
       ucxyq_read_rst = .true.
 
@@ -13374,6 +13374,14 @@ contains
          ucxyq_read_rst = .false.
       end if
 
+      ! Read ucx (flow elem), optional: only from rst file, so no error check
+      ierr = get_var_and_shift(imapfile, 'ucx', ucx, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
+                              um%inode_own, um%inode_merge)
+      
+      ! Read ucy (flow elem), optional: only from rst file, so no error check
+      ierr = get_var_and_shift(imapfile, 'ucy', ucy, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
+                              um%inode_own, um%inode_merge)
+      
       ! Read rho (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
       rho_read_rst = .true.
 
