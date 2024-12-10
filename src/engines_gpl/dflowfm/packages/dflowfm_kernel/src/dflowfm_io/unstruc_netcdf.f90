@@ -7550,8 +7550,11 @@ contains
                      windx(k2) = windx(k2) + wcx2(L) * wavfu(L) * huL * rhomean
                      windy(k1) = windy(k1) + wcy1(L) * wavfu(L) * huL * rhomean
                      windy(k2) = windy(k2) + wcy2(L) * wavfu(L) * huL * rhomean
-                     wavout(L) = wavfu(L) * hu(L) * rhomean ! stack
-                     wavout2(L) = wavfv(L) * hu(L) * rhomean
+                     wavout(L) = wavfu(L) * huL * rhomean ! stack
+                     wavout2(L) = wavfv(L) * huL * rhomean
+                     if (hypot(windx(k1),windy(k1)) > 100d0 .or. hypot(windx(k2),windy(k2)) > 100d0) then
+                         continue
+                     end if
                   end do
                else
                   do L = 1, lnx
