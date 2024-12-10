@@ -595,7 +595,7 @@
     </testCase>
 
     <testCase name="e02_f020_c001_htc_read_uniform" ref="dflowfm_default">
-      <path version="2024-07-03T12:36:00">e02_dflowfm/f020_heat_flux/c001_htc_read_uniform</path>
+      <path version="2024-10-04T13:30:14.121000">e02_dflowfm/f020_heat_flux/c001_htc_read_uniform</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/htccase_map.nc" type="netCDF">
