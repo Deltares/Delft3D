@@ -63,6 +63,7 @@
     use m_wrihistek
     use m_unc_write_his, only: unc_write_his
     use m_intrinsic_replacements, only: cosd
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 
 #ifdef _OPENMP
     use omp_lib
@@ -205,7 +206,7 @@
                 time_com = tstop_user + 1
              else
                 tem_dif = (tim - ti_coms) / ti_com
-                if (isnan(tem_dif)) tem_dif = 0.0_hp
+                if (ieee_is_nan(tem_dif)) tem_dif = 0.0_hp
                 time_com = max(ti_coms + (floor(tem_dif + 0.001d0) + 1) * ti_com, ti_coms)
                 ti_ctv_rel = ti_ctv - tim
                 time_com_ctv = tim + minval(ti_ctv_rel, mask=ti_ctv_rel > 0)

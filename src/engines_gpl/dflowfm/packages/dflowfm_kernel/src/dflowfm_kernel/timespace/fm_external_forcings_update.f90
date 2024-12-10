@@ -348,6 +348,7 @@ contains
       use ieee_arithmetic, only: ieee_is_nan
       use m_compute_wave_parameters, only: compute_wave_parameters
       use m_intrinsic_replacements, only: cosd
+      use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 
       logical, intent(in) :: initialization !< initialization phase
 
@@ -403,7 +404,7 @@ contains
             ! If wave model and flow model do not cover each other exactly, NaN values can propagate in the flow model.
             ! Correct for this by setting values to zero
             do k = 1, ndx
-               if (isnan(hwavcom(k))) then ! one check should be enough, everything is collocated
+               if (ieee_is_nan(hwavcom(k))) then ! one check should be enough, everything is collocated
                   hwavcom(k) = 0d0
                   twavcom(k) = 0d0
                   sxwav(k) = 0d0
