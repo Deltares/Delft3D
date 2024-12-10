@@ -478,6 +478,10 @@ contains
       ! We might have to set time_user or dt_user
 
       write(88,*) 'FLOW: update', dt, time1
+      if ( waqpar%online_hydrodynamics ) then
+          waqpar%volprev = waqpar%vol
+      endif
+
       call flow_run_sometimesteps(dt, ierr)
 
       update = ierr
@@ -991,7 +995,7 @@ contains
          shape(1) = 1
          shape(2) = len(md_ident)
          return
-      case ("waq/volume", "waq/velocity", "waq/vertdiff", "waq/shearstress", "waq/salinity", "waq/temperature")
+      case ("waq/volumeprev", "waq/volume", "waq/velocity", "waq/vertdiff", "waq/shearstress", "waq/salinity", "waq/temperature")
          shape(1) = waqpar%nosegl * waqpar%kmxnxa
          return
       case ("waq/flow", "waq/area")
@@ -1277,6 +1281,9 @@ contains
       case ('kbndz')
          x = c_loc(kbndz)
 
+      case ("waq/volumeprev")
+         waqpar%online_hydrodynamics = .true.
+         x = c_loc(waqpar%volprev)
       case ("waq/volume")
          waqpar%online_hydrodynamics = .true.
          x = c_loc(waqpar%vol)

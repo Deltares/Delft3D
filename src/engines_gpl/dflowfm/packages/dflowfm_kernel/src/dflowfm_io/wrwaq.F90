@@ -376,6 +376,7 @@ module waq
       integer, allocatable :: kmk2(:) ! Second WAQ segment features at start of calculation (1 surface, 3 bottom, 0 both, 2 neither)
       real(kind=dp), allocatable :: horsurf(:) ! horizontal surfaces of segments
       real(kind=dp), allocatable :: vol(:) ! WAQ (aggregated) volumes
+      real(kind=dp), allocatable :: volprev(:) ! WAQ (aggregated) volumes - previous volume
       real(kind=dp), allocatable :: vel(:) ! WAQ (aggregated) velocities
       real(kind=dp), allocatable :: sal(:) ! WAQ (aggregated) salinity
       real(kind=dp), allocatable :: tem(:) ! WAQ (aggregated) temperature
@@ -1774,6 +1775,8 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
+      write(88,*) 'In waq_wri_coupling'
+
       write (msgbuf, *) 'In waq_wri_couple_files: #', it_waq, ', time: ', time
       it_waq = it_waq + 1
       call msg_flush()
@@ -1781,6 +1784,13 @@ contains
       itim = nint(time)
 
       ! Volume file (volumes of computational cells)
+      ! Note: store the first volume in case of online coupling
+      ! - we do not know yet if this is really the case, though
+      if ( itim_prev == -1 ) then
+          waqpar%volprev = waqpar%vol
+      endif
+
+      write(88,*) 'In waq_wri_coupling: write volume'
       call waq_wri_vol(itim, defaultFilename('vol'), waqpar%lunvol)
       ! TODO: AvD: add a 'mode' 0/1/2 similar to Delft3D, so that we can write some quantities
       ! at *start* of *next* timestep instead of currently at the *end* of *current* timestep.
@@ -1813,6 +1823,7 @@ contains
 
       ! For first step, do not write any flux-related quantities (note the return).
       if (it_waq > 1) then
+         write(88,*) 'In waq_wri_coupling: write area/flow'
          ! Area file (flow areas)
          call waq_wri_are(itim_prev, defaultFilename('are'), waqpar%lunare)
          ! AvD: NOTE: A bit strange, au is *not* accumulated, defined at time1, but still printed
@@ -1853,6 +1864,8 @@ contains
          qlatwaq = 0d0 ! Reset accumulated discharges
       end if
       itim_prev = itim
+
+      write(88,*) 'waq_wri_coupling - done'
    end subroutine waq_wri_couple_files
 !
 !------------------------------------------------------------------------------
@@ -2004,6 +2017,7 @@ contains
       waqpar%num_cells = waqpar%nosegl * waqpar%kmxnxa
       call realloc(waqpar%nosega, waqpar%num_cells, keepExisting=.false., fill=0)
       call realloc(waqpar%vol, waqpar%num_cells, keepExisting=.false., fill=0d0)
+      call realloc(waqpar%volprev, waqpar%num_cells, keepExisting=.false., fill=0d0)
       call realloc(waqpar%vel, waqpar%num_cells, keepExisting=.false., fill=0d0)
       call realloc(waqpar%sal, waqpar%num_cells, keepExisting=.false., fill=0d0)
       call realloc(waqpar%tem, waqpar%num_cells, keepExisting=.false., fill=0d0)
@@ -3061,7 +3075,7 @@ contains
       end if
 
       ! Call the waq-flo file writer
-      write(88,*) 'D-Flow FM: waq_wri_are ', itim, waqpar%area(2000:2010)
+      write(88,*) 'D-Flow FM: waq_wri_are ', itim, waqpar%area(100:110)
       if (.not. waqpar%online_hydrodynamics) then
           call wrwaqbin(itim, waqpar%area, waqpar%num_exchanges, filename, waq_format_ascii, lun)
       end if
@@ -3168,7 +3182,7 @@ contains
       end if
 
       ! Call the waq-flo file writer
-      write(88,*) 'D-Flow FM: waq_wri_flo ', itim, waqpar%qag(2000:2010)
+      write(88,*) 'D-Flow FM: waq_wri_flo ', itim, waqpar%qag(100:110)
       if (.not. waqpar%online_hydrodynamics) then
           call wrwaqbin(itim, waqpar%qag, waqpar%num_exchanges, filename, waq_format_ascii, lun)
       end if

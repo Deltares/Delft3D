@@ -58,15 +58,18 @@ contains
     !> Set the connection data for a hydrodynamics connection
     subroutine set_hydrodynamics_connection_data(connection)
         use m_waq_memory_dimensions, only: num_cells, num_cells_bottom, num_exchanges
-        use m_real_array_indices, only: ivol, iarea, iflow
+        use m_real_array_indices, only: ivol, ivol2, iarea, iflow
         use m_string_utils, only: string_equals
 
         type(connection_data), intent(inout) :: connection !< connection to set
 
         integer(kind=int_wp) :: num_values
 
-        ! The substance/parameter may be "VOLUME", "AREA" or "FLOW"
+        ! The substance/parameter may be "VOLUME", "VOLUMEPREV', "AREA" or "FLOW"
         if (string_equals(connection%quantity_name, 'VOLUME')) then
+            connection%buffer_idx     = ivol2
+            num_values                = num_cells + num_cells_bottom
+        elseif (string_equals(connection%quantity_name, 'VOLUMEPREV')) then
             connection%buffer_idx     = ivol
             num_values                = num_cells + num_cells_bottom
         elseif (string_equals(connection%quantity_name, 'FLOW')) then

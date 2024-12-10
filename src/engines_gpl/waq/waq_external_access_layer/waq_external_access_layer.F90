@@ -76,6 +76,8 @@ module m_waq_external_access_layer
 
     logical, save                    :: init_mass = .false.
 
+    integer, save                    :: luvol, luflow, luarea
+
 contains
 
     !> The set_var function lets the caller set a variable within DELWAQ.
@@ -259,6 +261,12 @@ contains
                            int_to_str(idt))
 
         call log%log_debug("ext_initialize ended")
+
+        !! Write out what we get ...
+        open( newunit = luvol,  file = 'volumes.bin', access = 'stream', status = 'new' )
+        open( newunit = luflow, file = 'flows.bin',   access = 'stream', status = 'new' )
+        open( newunit = luarea, file = 'areas.bin',   access = 'stream', status = 'new' )
+
         write(88,*) "ext_initialize ended"
 
     end function ext_initialize
@@ -370,7 +378,12 @@ contains
         endif
 
         call update_from_incoming_data(connections)
-        write(88,*) 'update_until: update_from_incoming_data', dlwqd%buffer%rbuf(iflow+2000-1:iflow+2009)
+        write(88,*) 'update_until: update_from_incoming_data', dlwqd%buffer%rbuf(iflow+100-1:iflow+109)
+
+        !! Write out what we get ...
+        write( luvol  ) dlwqd%itime, dlwqd%buffer%rbuf(ivol:ivol+num_cells-1)
+        write( luflow ) dlwqd%itime, dlwqd%buffer%rbuf(iflow:iflow+num_exchanges-1)
+        write( luarea ) dlwqd%itime, dlwqd%buffer%rbuf(iarea:iarea+num_exchanges-1)
 
         !
         ! If we are using the online coupling mode, then this is the moment that
