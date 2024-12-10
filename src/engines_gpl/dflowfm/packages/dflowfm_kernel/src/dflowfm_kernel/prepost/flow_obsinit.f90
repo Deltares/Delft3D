@@ -30,66 +30,66 @@
 !
 !
 module m_flow_obsinit
-use m_crosssections_on_flowgeom, only: crosssections_on_flowgeom
+   use m_crosssections_on_flowgeom, only: crosssections_on_flowgeom
 
    implicit none
 contains
- !> Initializes all administration encessary for writing output to his-files.
+   !> Initializes all administration encessary for writing output to his-files.
  !! That is: snap observation stations to flow cells, cross sections to flow links.
  !! And bookkeeping for time series output on structures.
- subroutine flow_obsinit()
-    use m_observations, only: init_valobs
-    use unstruc_model, only: md_delete_observation_points_outside_grid
-    use m_wind, only: jawind
-    use m_structures
-    use fm_external_forcings, only: allocatewindarrays
-    use m_obs_on_flowgeom, only: obs_on_flowgeom
+   subroutine flow_obsinit()
+      use m_observations, only: init_valobs
+      use unstruc_model, only: md_delete_observation_points_outside_grid
+      use m_wind, only: jawind
+      use m_structures
+      use fm_external_forcings, only: allocatewindarrays
+      use m_obs_on_flowgeom, only: obs_on_flowgeom
 
-    call crosssections_on_flowgeom()
-    call runupgauges_on_flowgeom()
+      call crosssections_on_flowgeom()
+      call runupgauges_on_flowgeom()
 
-    if (jawind == 1) then ! was needed here if jawind was set 1 by windext
-       call allocatewindarrays()
-    end if
+      if (jawind == 1) then ! was needed here if jawind was set 1 by windext
+         call allocatewindarrays()
+      end if
 
-    call obs_on_flowgeom(0)
+      call obs_on_flowgeom(0)
 
-    if (md_delete_observation_points_outside_grid == 1) then
-       call delete_static_observation_points_outside_grid()
-    end if
+      if (md_delete_observation_points_outside_grid == 1) then
+         call delete_static_observation_points_outside_grid()
+      end if
 
 !   for the following, it is assumed that the moving observation stations have been initialized (in flow_initexternalforcings)
-    call init_valobs() ! (re)initialize work array and set pointers for observation stations
+      call init_valobs() ! (re)initialize work array and set pointers for observation stations
 
-    call updateValuesOnObservationStations() ! and fill first value
+      call updateValuesOnObservationStations() ! and fill first value
 
-    call init_structure_hisvalues()
+      call init_structure_hisvalues()
 
- contains
+   contains
 
-    !> delete_static_observation_points_outside_grid
-    subroutine delete_static_observation_points_outside_grid()
-       use m_observations, only: kobs, numobs, deleteObservation, purgeObservations
-       use MessageHandling
+      !> delete_static_observation_points_outside_grid
+      subroutine delete_static_observation_points_outside_grid()
+         use m_observations, only: kobs, numobs, deleteObservation, purgeObservations
+         use MessageHandling
 
-       integer :: point
-       integer :: number_of_deleted_points
+         integer :: point
+         integer :: number_of_deleted_points
 
-       number_of_deleted_points = 0
-       do point = 1, numobs
-          if (kobs(point) == 0) then
-             call deleteObservation(point)
-             number_of_deleted_points = number_of_deleted_points + 1
-          end if
-       end do
+         number_of_deleted_points = 0
+         do point = 1, numobs
+            if (kobs(point) == 0) then
+               call deleteObservation(point)
+               number_of_deleted_points = number_of_deleted_points + 1
+            end if
+         end do
 
-       if (number_of_deleted_points > 0) then
-          call purgeObservations()
-          write (msgbuf, '(a,i0)') 'Number of deleted observation points outside of the grid is ', number_of_deleted_points
-          call msg_flush()
-       end if
+         if (number_of_deleted_points > 0) then
+            call purgeObservations()
+            write (msgbuf, '(a,i0)') 'Number of deleted observation points outside of the grid is ', number_of_deleted_points
+            call msg_flush()
+         end if
 
-    end subroutine delete_static_observation_points_outside_grid
+      end subroutine delete_static_observation_points_outside_grid
 
- end subroutine flow_obsinit
+   end subroutine flow_obsinit
 end module m_flow_obsinit

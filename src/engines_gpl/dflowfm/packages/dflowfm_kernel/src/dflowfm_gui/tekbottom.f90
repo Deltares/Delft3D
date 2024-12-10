@@ -32,75 +32,76 @@
 
 module m_tekbottom
 
-implicit none
+   implicit none
 
 contains
 
-  subroutine TEKBOTTOM(MET)
-     use m_dmovabs
-     use m_dlnabs
-     use m_wearelt
-     use m_howtoview
-     use m_set_col
-     implicit none
-     double precision :: dz
-     integer :: i
-     integer :: k
-     integer :: k1
-     integer :: k2
-     integer :: nz
-     double precision :: wd
-     double precision :: ybot
-     double precision :: ytop
-     integer :: MET
-     double precision XD, YD, ZD, XX1, XX2, ZZ1, ZZ2
-     call SETCOL(160)
-     if (MET == 1) return
+   subroutine TEKBOTTOM(MET)
+      use precision, only: dp
+      use m_dmovabs
+      use m_dlnabs
+      use m_wearelt
+      use m_howtoview
+      use m_set_col
+      implicit none
+      real(kind=dp) :: dz
+      integer :: i
+      integer :: k
+      integer :: k1
+      integer :: k2
+      integer :: nz
+      real(kind=dp) :: wd
+      real(kind=dp) :: ybot
+      real(kind=dp) :: ytop
+      integer :: MET
+      real(kind=dp) XD, YD, ZD, XX1, XX2, ZZ1, ZZ2
+      call SETCOL(160)
+      if (MET == 1) return
 
-     WD = 1000
-     XX2 = WD / 2
-     XX1 = -XX2
-     ZZ2 = WD / 2
-     ZZ1 = -ZZ2
-     DZ = 0
-     NZ = 1
+      WD = 1000
+      XX2 = WD / 2
+      XX1 = -XX2
+      ZZ2 = WD / 2
+      ZZ1 = -ZZ2
+      DZ = 0
+      NZ = 1
 
-     if (JVIEW >= 3) then
-        NZ = 11
-        DZ = WD / (NZ - 1)
-     end if
+      if (JVIEW >= 3) then
+         NZ = 11
+         DZ = WD / (NZ - 1)
+      end if
 
-     if (MET == 2) then
-        K1 = 1
-        K2 = 2
-     else if (MET == 3) then
-        K1 = 2
-        K2 = 2
-     else if (MET == 4) then
-        K1 = 1
-        K2 = 1
-     end if
+      if (MET == 2) then
+         K1 = 1
+         K2 = 2
+      else if (MET == 3) then
+         K1 = 2
+         K2 = 2
+      else if (MET == 4) then
+         K1 = 1
+         K2 = 1
+      end if
 
-     YD = YTOP
-     call SETCOL(128) ! (112)
-     do K = K1, K2
-        if (K == 2) then
-           YD = YBOT
-           call SETCOL(89) ! 128)
-        end if
-        XD = XX1
-        ZD = ZZ1
-        do I = 1, NZ
-           call DMOVABS(XX1, YD, ZD)
-           call DLNABS(XX2, YD, ZD)
-           call DMOVABS(XD, YD, ZZ1)
-           call DLNABS(XD, YD, ZZ2)
-           ZD = ZD + DZ
-           XD = XD + DZ
-        end do
-     end do
+      YD = YTOP
+      call SETCOL(128) ! (112)
+      do K = K1, K2
+         if (K == 2) then
+            YD = YBOT
+            call SETCOL(89) ! 128)
+         end if
+         XD = XX1
+         ZD = ZZ1
+         do I = 1, NZ
+            call DMOVABS(XX1, YD, ZD)
+            call DLNABS(XX2, YD, ZD)
+            call DMOVABS(XD, YD, ZZ1)
+            call DLNABS(XD, YD, ZZ2)
+            ZD = ZD + DZ
+            XD = XD + DZ
+         end do
+      end do
 
-     return
-  end subroutine TEKBOTTOM
+      return
+   end subroutine TEKBOTTOM
 
 end module m_tekbottom

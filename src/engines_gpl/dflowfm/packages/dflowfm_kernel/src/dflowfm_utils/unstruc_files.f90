@@ -136,6 +136,7 @@ contains
 !!
 !! When an output directory is configured, the filename is also prefixed with that, unless switched off by prefixWithDirectory=.false..
    function defaultFilename(filecat, timestamp, prefixWithDirectory, allowWildcard)
+      use precision, only: dp
       use unstruc_model
       use m_flowtimes
       use time_module, only: seconds_to_datetimestring
@@ -145,7 +146,7 @@ contains
       character(len=*), intent(in) :: filecat !< File category for which the filename is requested, e.g. 'obs', 'map', 'hyd'.
       logical, optional, intent(in) :: prefixWithDirectory !< Optional, default true. Prefix file name with the configured output directory. Set this to .false. to get purely the filename.
       logical, optional, intent(in) :: allowWildcard !< Optional, default false. Allow the result to fall back to *.<ext>, in case no model id or other basename could be found.
-      double precision, optional, intent(in) :: timestamp !< Optional, default disabled. Form a datetime string out of the timestamp (in seconds) and include it in the filename.
+      real(kind=dp), optional, intent(in) :: timestamp !< Optional, default disabled. Form a datetime string out of the timestamp (in seconds) and include it in the filename.
 
       character(len=255) :: activeFile
       character(len=255) :: basename
@@ -478,7 +479,7 @@ contains
       filebase = ' '
       filebase = filename(L1:L2)
    end subroutine basename
-   
+
 !> Resolves an input path (typically a file path) to its
 !! actual location. This routine selects whether the path
 !! needs to be resolved relative to a given basedir, or

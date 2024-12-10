@@ -32,8 +32,8 @@ module m_ellips
    use precision, only: dp
 
    implicit none
-   
+
    real(dp) :: a
    real(dp) :: e
 
-    end module m_ellips
+end module m_ellips

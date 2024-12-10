@@ -31,6 +31,7 @@
 !
 
    subroutine ORTHOGONISENET_old()
+      use precision, only: dp
 
       use m_clnabs
       use m_netw
@@ -47,23 +48,23 @@
 
       implicit none
 
-      double precision :: X0, Y0, X1, Y1, W0, XL, YL, XR, YR, ZZZ
-      double precision :: X2, Y2, X3, Y3, X4, Y4, A, B, DIS2, DIS3, XN, YN
+      real(kind=dp) :: X0, Y0, X1, Y1, W0, XL, YL, XR, YR, ZZZ
+      real(kind=dp) :: X2, Y2, X3, Y3, X4, Y4, A, B, DIS2, DIS3, XN, YN
       integer :: JACROS
-      double precision :: SL, SM, XCR, YCR, CRP
-      double precision :: R01, R23
-      double precision, allocatable :: WW(:, :)
+      real(kind=dp) :: SL, SM, XCR, YCR, CRP
+      real(kind=dp) :: R01, R23
+      real(kind=dp), allocatable :: WW(:, :)
       integer, allocatable :: KK1(:, :)
       integer :: I, N, NO, NN, L, LL, K, KK, K0, K1, K2, K3, KL, KR, kprev, knext, kdone, NMKX, NR, K1L, JA, JA2, JA3
-      double precision :: ATPF1
+      real(kind=dp) :: ATPF1
       integer, save :: NUMKO = 0, NUMLO = 0
-      double precision :: area, areatot, xzwr, yzwr, rout
-      double precision, external :: dprodin
-      double precision :: relaxin, relax1
+      real(kind=dp) :: area, areatot, xzwr, yzwr, rout
+      real(kind=dp), external :: dprodin
+      real(kind=dp) :: relaxin, relax1
 
       integer :: JSFERICold
 
-      double precision, allocatable :: xbd(:, :), ybd(:, :), xv(:), yv(:)
+      real(kind=dp), allocatable :: xbd(:, :), ybd(:, :), xv(:), yv(:)
       integer, allocatable :: KC00(:)
 
       integer, allocatable :: kccell(:), lnnl(:)

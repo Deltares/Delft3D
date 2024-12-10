@@ -31,13 +31,14 @@
 !
 
       subroutine WRILAN(MPOL)
+         use precision, only: dp
          use M_LANDBOUNDARY
          use m_wrildb
          implicit none
          integer :: mpol
          integer :: mx
-         double precision, allocatable :: XL(:), YL(:)
-         double precision :: ZL(0) ! no z-values
+         real(kind=dp), allocatable :: XL(:), YL(:)
+         real(kind=dp) :: ZL(0) ! no z-values
          character(len=1) :: names(1) ! no names
 
          MX = MAXLAN

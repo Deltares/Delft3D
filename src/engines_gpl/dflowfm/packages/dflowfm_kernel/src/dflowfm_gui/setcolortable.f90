@@ -32,26 +32,26 @@
 
 module m_setcolortable
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine SETCOLORTABLE()
-         use m_depmax
-         use m_depmax2
-         implicit none
+   subroutine SETCOLORTABLE()
+      use m_depmax
+      use m_depmax2
+      implicit none
 
-         integer :: i
+      integer :: i
 
-         NIS = 72
-         do I = 1, 256
-            NCOLS(I) = min(255, NIS + I - 1)
-         end do
+      NIS = 72
+      do I = 1, 256
+         NCOLS(I) = min(255, NIS + I - 1)
+      end do
 
-         NIS2 = 136
-         do I = 1, 256
-            NCOLS2(I) = min(255, NIS2 + I - 1)
-         end do
-      end subroutine SETCOLORTABLE
+      NIS2 = 136
+      do I = 1, 256
+         NCOLS2(I) = min(255, NIS2 + I - 1)
+      end do
+   end subroutine SETCOLORTABLE
 
 end module m_setcolortable

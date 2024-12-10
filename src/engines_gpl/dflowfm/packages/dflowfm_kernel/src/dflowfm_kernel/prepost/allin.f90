@@ -32,11 +32,11 @@
 
 module m_allin
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: allin
+   public :: allin
 
 contains
 

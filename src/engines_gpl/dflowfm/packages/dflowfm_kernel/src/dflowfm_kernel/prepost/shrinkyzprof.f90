@@ -31,15 +31,16 @@
 !
 
    subroutine SHRINKYZPROF(Y, Z, N, NX)
+      use precision, only: dp
       use M_MISSING
       implicit none
       integer :: N, NX, NACT
-      double precision :: Y(N), Z(N)
+      real(kind=dp) :: Y(N), Z(N)
 
-      double precision, allocatable :: YH(:), ZH(:)
+      real(kind=dp), allocatable :: YH(:), ZH(:)
 
       integer :: NH, K, KM
-      double precision :: ZMIN, D01, D02, Z01, AT, ZD, ZDMIN, A, B
+      real(kind=dp) :: ZMIN, D01, D02, Z01, AT, ZD, ZDMIN, A, B
 
       allocate (YH(N), ZH(N))
 

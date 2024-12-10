@@ -31,13 +31,14 @@
 !
 
 !>    return x-component in link coordinate frame of vector in wall coordinate frame
-      double precision function nod2wally(nw, ux, uy)
+      real(kind=dp) function nod2wally(nw, ux, uy)
+         use precision, only: dp
          use m_flowgeom, only: csbwn, snbwn
          use m_sferic
          implicit none
 
          integer, intent(in) :: nw !< wall element number
-         double precision, intent(in) :: ux, uy !< vector components in wall coordinate frame
+         real(kind=dp), intent(in) :: ux, uy !< vector components in wall coordinate frame
 
          if (jsferic /= 1 .or. jasfer3D /= 1) then
             nod2wally = uy

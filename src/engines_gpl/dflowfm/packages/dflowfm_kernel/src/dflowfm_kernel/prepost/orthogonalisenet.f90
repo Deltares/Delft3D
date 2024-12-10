@@ -32,6 +32,7 @@
 
 !> net orthogonalisation and smoothing
 subroutine ORTHOGONALISENET(jarerun)
+   use precision, only: dp
    use m_teknet
    use m_copynetnodestosam
    use m_halt3
@@ -60,10 +61,10 @@ subroutine ORTHOGONALISENET(jarerun)
 
    integer :: jarerun !< rerun, no=1, yes=1
 
-   double precision, dimension(:, :), allocatable :: ww, rhs ! weights and right-hand sides
-   double precision, dimension(:), allocatable :: aspect ! aspect ratio of the links
-   double precision, dimension(:), allocatable :: smp_mu ! coefficients in Laplacian smoother
-   double precision, dimension(:), allocatable :: xkb, ykb ! copy for original boundary nodes
+   real(kind=dp), dimension(:, :), allocatable :: ww, rhs ! weights and right-hand sides
+   real(kind=dp), dimension(:), allocatable :: aspect ! aspect ratio of the links
+   real(kind=dp), dimension(:), allocatable :: smp_mu ! coefficients in Laplacian smoother
+   real(kind=dp), dimension(:), allocatable :: xkb, ykb ! copy for original boundary nodes
 
    integer, dimension(:, :), allocatable :: kk1 ! neighboring nodes
    integer, dimension(:), allocatable :: k_bc ! maps nodes to nearest initial-boundary node
@@ -71,11 +72,11 @@ subroutine ORTHOGONALISENET(jarerun)
 
    integer, dimension(2) :: ibounds
 
-   double precision :: x0, y0, ATPF1, relaxin, relax1
+   real(kind=dp) :: x0, y0, ATPF1, relaxin, relax1
 
 !  used for sferical
-   double precision :: x00, y00, y1, DUM(2), w0(2)
-   double precision, dimension(2) :: righthandside
+   real(kind=dp) :: x00, y00, y1, DUM(2), w0(2)
+   real(kind=dp), dimension(2) :: righthandside
 
    integer :: i, k, kk, k1, L, n, no, npl_old
    integer :: JSFERICold, ja, ja1, ja3
@@ -84,33 +85,33 @@ subroutine ORTHOGONALISENET(jarerun)
 
    logical :: Lteknet
 
-   double precision, external :: getDx, getDy
+   real(kind=dp), external :: getDx, getDy
 
 !   integer,          parameter                   :: IMISS = -999999
-   double precision, parameter :: EPS = 1d-4
+   real(kind=dp), parameter :: EPS = 1d-4
 
-   double precision :: mu, mumin, mumax, mumat, wwx, wwy
+   real(kind=dp) :: mu, mumin, mumax, mumat, wwx, wwy
 
-   double precision, allocatable, dimension(:, :) :: ww2, ww2x, ww2y ! weights
+   real(kind=dp), allocatable, dimension(:, :) :: ww2, ww2x, ww2y ! weights
 
    integer :: ierror ! 0: no error, 1: error
 
    type(tops), allocatable, dimension(:) :: ops ! array of structure with operators of unique topologies
 
-   double precision :: atpf_loc, atpf1_loc
-   double precision, dimension(4) :: J ! Jacobian matrix
+   real(kind=dp) :: atpf_loc, atpf1_loc
+   real(kind=dp), dimension(4) :: J ! Jacobian matrix
    logical :: Lcopymu ! copy initial-mesh data to smp_mu (.true.) or not (.false.)
-   double precision, allocatable, dimension(:) :: zk_bak ! backup copy of zk
-   double precision :: smpminn, smpmaxx
-   double precision :: atpf_min
+   real(kind=dp), allocatable, dimension(:) :: zk_bak ! backup copy of zk
+   real(kind=dp) :: smpminn, smpmaxx
+   real(kind=dp) :: atpf_min
    logical :: Ltemp
-   double precision :: circormass_bak
+   real(kind=dp) :: circormass_bak
    integer :: ik
 
-   double precision :: Dx0, Dy0
-   double precision, allocatable, dimension(:) :: xloc, yloc ! local coordinates
+   real(kind=dp) :: Dx0, Dy0
+   real(kind=dp), allocatable, dimension(:) :: xloc, yloc ! local coordinates
    integer, allocatable, dimension(:) :: iloc ! startpointers in local coordinate arrays, dim(numk+1)
-   double precision, dimension(1) :: dumx, dumy
+   real(kind=dp), dimension(1) :: dumx, dumy
 
    jarerun = 0
 
@@ -719,6 +720,7 @@ subroutine ORTHOGONALISENET(jarerun)
 contains
 
    subroutine comp_local_coords(iloc, kk1, x, y, Nloc, xloc, yloc)
+      use precision, only: dp
       use m_sferic
       use network_data, only: numk, nmk
       use m_inverse_map
@@ -726,11 +728,11 @@ contains
 
       integer, dimension(numk + 1), intent(in) :: iloc !< start pointer in local coordinate arrays
       integer, dimension(nmkx, numk), intent(in) :: kk1 !< link-connected nodes
-      double precision, dimension(numk), intent(in) :: x, y !< node coordinates
+      real(kind=dp), dimension(numk), intent(in) :: x, y !< node coordinates
       integer, intent(in) :: Nloc !< size of arrays with local coordinates = iloc(numk+1)-1
-      double precision, dimension(Nloc), intent(out) :: xloc, yloc !< local coordinates
+      real(kind=dp), dimension(Nloc), intent(out) :: xloc, yloc !< local coordinates
 
-      double precision, dimension(:), allocatable :: xx, yy
+      real(kind=dp), dimension(:), allocatable :: xx, yy
 
       integer :: k, k0, kk, N
 
@@ -785,6 +787,7 @@ contains
 !!   sum_kk ww(kk,k0) * (x1(kk1(kk,k0)) - x1(k0)) = rhs(1,k0)
 !!   sum_kk ww(kk,k0) * (y1(kk1(kk,k0)) - y1(k0)) = rhs(2,k0)
    subroutine orthonet_compweights(nmkx, kk1, aspect, ww, rhs)
+      use precision, only: dp
       use m_netw
       use m_sferic
       use m_flowgeom
@@ -797,24 +800,24 @@ contains
       integer, intent(in) :: nmkx !< maximum number of neighboring link-connected nodes
       integer, dimension(nmkx, numk), intent(in) :: kk1 !< neighboring link-connected nodes
 
-      double precision, dimension(numL), intent(in) :: aspect !< aspect ratio of the links
-      double precision, dimension(nmkx, numk), intent(inout) :: ww !< weights
-      double precision, dimension(2, numk), intent(out) :: rhs !< right-hand sides
+      real(kind=dp), dimension(numL), intent(in) :: aspect !< aspect ratio of the links
+      real(kind=dp), dimension(nmkx, numk), intent(inout) :: ww !< weights
+      real(kind=dp), dimension(2, numk), intent(out) :: rhs !< right-hand sides
 
-      double precision :: r01, slr
-      double precision :: mu
-      double precision :: x0, y0, x1, y1, x3, y3, xn, yn
-      double precision :: atpf1
+      real(kind=dp) :: r01, slr
+      real(kind=dp) :: mu
+      real(kind=dp) :: x0, y0, x1, y1, x3, y3, xn, yn
+      real(kind=dp) :: atpf1
 
-      double precision, external :: dprodin
+      real(kind=dp), external :: dprodin
 
       integer :: kk, k0, k1l, kl, l, ja
       integer :: nn
 
-      double precision :: dummy ! used for debug purposes only
-      double precision :: SfR ! SLR/R01
-      double precision :: factor
-      double precision, parameter :: EPS = 1d-4
+      real(kind=dp) :: dummy ! used for debug purposes only
+      real(kind=dp) :: SfR ! SLR/R01
+      real(kind=dp) :: factor
+      real(kind=dp), parameter :: EPS = 1d-4
 
       dummy = ATPF
       !  ATPF needs to be set to 1d0, since smoothing is performed seperately
@@ -901,6 +904,7 @@ contains
 
 !> smoother that strives to optimize the cell area distribution
    subroutine orthonet_compweights_vol(nmkx2, nmk2, kk2, ww2x, ww2y, ierror)
+      use precision, only: dp
       use m_netw
       use m_sferic
       use m_orthosettings
@@ -916,11 +920,11 @@ contains
       integer, allocatable, dimension(:), intent(in) :: nmk2 !< number of nodes in stencil
       integer, allocatable, dimension(:, :), intent(in) :: kk2 !< node administration; first row, i.e. kk2(1,:), points to center nodes
 
-      double precision, allocatable, dimension(:, :), intent(inout) :: ww2x, ww2y !< weights
+      real(kind=dp), allocatable, dimension(:, :), intent(inout) :: ww2x, ww2y !< weights
 
       integer, intent(out) :: ierror !< 0: no error, 1: error
 
-      double precision, allocatable, dimension(:, :) :: Vx, Vy ! D vol/Dx and D vol/Dy matrices
+      real(kind=dp), allocatable, dimension(:, :) :: Vx, Vy ! D vol/Dx and D vol/Dy matrices
 
       integer :: icell, ilink
       integer :: k0, k1
@@ -929,8 +933,8 @@ contains
       integer :: kdum
       integer :: N, kk0, kk1, kkk0, kkk1
 
-      double precision :: x0, y0, x1, y1, xL, yL, xR, yR
-      double precision :: DvolL, DvolR, xdum
+      real(kind=dp) :: x0, y0, x1, y1, xL, yL, xR, yR
+      real(kind=dp) :: DvolL, DvolR, xdum
 !     Matlab output only
 !      integer, dimension(Numl)                                     :: lne1, lne2, kn1, kn2
 !      integer, parameter                                           :: ioutfile
@@ -1136,6 +1140,7 @@ contains
 !!   sum_kk ww(kk,k0) * x1(kk2(kk,k0)) = 0
 !!   sum_kk ww(kk,k0) * y1(kk2(kk,k0)) = 0
    subroutine orthonet_compweights_smooth(ops, u, ww2, ierror)
+      use precision, only: dp
       use m_netw
       use m_sferic
       use m_flowgeom
@@ -1147,42 +1152,42 @@ contains
 
       implicit none
       type(tops), allocatable, dimension(:), intent(inout) :: ops !< operators for each unique topology
-      double precision, allocatable, dimension(:), intent(in) :: u !< 'physcial solution' whose gradient will attract the mesh
-      double precision, allocatable, dimension(:, :), intent(inout) :: ww2 !< weights
+      real(kind=dp), allocatable, dimension(:), intent(in) :: u !< 'physcial solution' whose gradient will attract the mesh
+      real(kind=dp), allocatable, dimension(:, :), intent(inout) :: ww2 !< weights
 
       integer, intent(out) :: ierror !< node number that gave error
 
       !---------------------------
       !  mesh adaptation arrays
       !---------------------------
-      double precision, allocatable, dimension(:, :) :: Ginv ! mesh monitor matrices
-      double precision, dimension(4) :: Adum
+      real(kind=dp), allocatable, dimension(:, :) :: Ginv ! mesh monitor matrices
+      real(kind=dp), dimension(4) :: Adum
       !---------------------------
 
-      double precision, allocatable, dimension(:, :) :: J ! Jacobian matrices at the nodes
+      real(kind=dp), allocatable, dimension(:, :) :: J ! Jacobian matrices at the nodes
 
       integer :: k, kk, k0
-      double precision, dimension(2) :: a1, a2 ! contravariant base vectors
-      double precision :: det
+      real(kind=dp), dimension(2) :: a1, a2 ! contravariant base vectors
+      real(kind=dp) :: det
 
       integer, allocatable, dimension(:) :: Mcell ! for matlab output
-      double precision, allocatable, dimension(:, :) :: x, y ! for matlab output
+      real(kind=dp), allocatable, dimension(:, :) :: x, y ! for matlab output
 
       integer :: imat ! matlab file unit number
 
       logical, save :: Lsavematlabfile = .false.
 
-      double precision :: UU(2, 2), VV(2, 2), S(2), uu1, vv1, uu2, vv2
-      double precision :: aspect ! Jacobian at link positions
+      real(kind=dp) :: UU(2, 2), VV(2, 2), S(2), uu1, vv1, uu2, vv2
+      real(kind=dp) :: aspect ! Jacobian at link positions
       integer :: ierror_, kcheck
       type(tops) :: op ! structure with operators
       type(tadm) :: adm ! structure with administration
-      double precision, allocatable, dimension(:) :: xi, eta ! node coordinates (xi,eta)
+      real(kind=dp), allocatable, dimension(:) :: xi, eta ! node coordinates (xi,eta)
 
-      double precision :: alpha ! used for monotonicity correction
-      double precision :: dcosfac
-      double precision, dimension(4) :: DGinvDxi, DGinvDeta
-      double precision, parameter :: EPS = 1e-8
+      real(kind=dp) :: alpha ! used for monotonicity correction
+      real(kind=dp) :: dcosfac
+      real(kind=dp), dimension(4) :: DGinvDxi, DGinvDeta
+      real(kind=dp), parameter :: EPS = 1e-8
 
       ierror_ = 1
 
@@ -1483,28 +1488,29 @@ contains
 !!     Moving Mesh Partial Differential Equations',
 !!     J. of Comp. Phys., 2001, sects. 3.4 and 3.5
    subroutine orthonet_comp_Ginv(u, ops, J, Ginv)
+      use precision, only: dp
       use m_netw
       use m_orthosettings
 
       implicit none
 
-      double precision, dimension(:) :: u !< 'physcial solution' whose gradient will attract the mesh
+      real(kind=dp), dimension(:) :: u !< 'physcial solution' whose gradient will attract the mesh
       type(tops), dimension(:) :: ops !< array of structure with operators of unique topologies
-      double precision, dimension(:, :) :: J !< Jacobian matrices at the nodes
+      real(kind=dp), dimension(:, :) :: J !< Jacobian matrices at the nodes
 
-      double precision, dimension(:, :) :: Ginv !< inverse mesh monitor matrix at net-nodes
+      real(kind=dp), dimension(:, :) :: Ginv !< inverse mesh monitor matrix at net-nodes
 
-      double precision, allocatable, dimension(:) :: u_smooth ! smoothed solution
-      double precision, allocatable, dimension(:, :) :: vdir ! refinement direction vector
-      double precision, allocatable, dimension(:) :: Phi !
-      double precision, dimension(2) :: a1, a2 ! contravariant base vectors
+      real(kind=dp), allocatable, dimension(:) :: u_smooth ! smoothed solution
+      real(kind=dp), allocatable, dimension(:, :) :: vdir ! refinement direction vector
+      real(kind=dp), allocatable, dimension(:) :: Phi !
+      real(kind=dp), dimension(2) :: a1, a2 ! contravariant base vectors
 
-      double precision, allocatable, dimension(:, :) :: G ! mesh monitor matrix at net-nodes
-      double precision, allocatable, dimension(:, :) :: G_tmp ! temporary mesh monitor matrix at net-nodes
+      real(kind=dp), allocatable, dimension(:, :) :: G ! mesh monitor matrix at net-nodes
+      real(kind=dp), allocatable, dimension(:, :) :: G_tmp ! temporary mesh monitor matrix at net-nodes
 
-      double precision :: det, dudxi, dudeta
-      double precision :: alpha, lambda1, lambda2, lfac
-      double precision :: Phi_ave, vol
+      real(kind=dp) :: det, dudxi, dudeta
+      real(kind=dp) :: alpha, lambda1, lambda2, lfac
+      real(kind=dp) :: Phi_ave, vol
 
       integer :: k0, imat
 
@@ -1636,6 +1642,7 @@ contains
 !> compute the operators for each unique topology in the
 !!    inverse-map elliptic smoother
    subroutine orthonet_comp_ops(ops, ierror)
+      use precision, only: dp
       use m_netw
       use m_alloc
       use m_inverse_map
@@ -1649,7 +1656,7 @@ contains
       integer :: k0
       integer :: itopo
 
-      double precision, allocatable, dimension(:) :: xi, eta ! node coordinates (xi,eta)
+      real(kind=dp), allocatable, dimension(:) :: xi, eta ! node coordinates (xi,eta)
 
       logical :: lisnew ! new topology (.true.) or not (.false.)
       logical, allocatable, dimension(:) :: lnewtopo
@@ -1841,6 +1848,7 @@ contains
 !>  determine and store unique topologies, based on xi and eta
 !!    topology is defined by the node angels w.r.t. center node: theta
    subroutine orthonet_save_topo(k0, adm, xi, eta, top, lisnew)
+      use precision, only: dp
       use m_netw
       use m_missing
       use m_inverse_map
@@ -1849,20 +1857,20 @@ contains
 
       integer :: k0 !< center node
       type(tadm) :: adm !< structure with administration
-      double precision, allocatable, dimension(:) :: xi, eta !< node coordinates (xi,eta)
+      real(kind=dp), allocatable, dimension(:) :: xi, eta !< node coordinates (xi,eta)
       type(ttop) :: top !< structure with topology arrays
       logical :: lisnew !< new topology (.true.) or not (.false.)
 
-      double precision, dimension(adm%nmk2) :: theta ! atan(eta/xi)
+      real(kind=dp), dimension(adm%nmk2) :: theta ! atan(eta/xi)
 
-      double precision :: theta_sav
+      real(kind=dp) :: theta_sav
 
       integer :: k
       integer :: itopo, idum
 
       integer, dimension(2) :: newbound
 
-      double precision, parameter :: TOL = 1e-4
+      real(kind=dp), parameter :: TOL = 1e-4
 
 !     compute the angle theta of the nodes connected to center node k0
       theta = DMISS
@@ -1922,12 +1930,13 @@ contains
    end subroutine orthonet_save_topo
 
 !>  Anorm = (Ax,y)
-   double precision function Anorm(x, y, A)
+   real(kind=dp) function Anorm(x, y, A)
+      use precision, only: dp
 
       implicit none
 
-      double precision, dimension(2) :: x, y !< 2-dim. vectors
-      double precision, dimension(2, 2) :: A !< 2x2 matrix
+      real(kind=dp), dimension(2) :: x, y !< 2-dim. vectors
+      real(kind=dp), dimension(2, 2) :: A !< 2x2 matrix
 
       Anorm = (A(1, 1) * x(1) + A(1, 2) * x(2)) * y(1) + &
               (A(2, 1) * x(1) + A(2, 2) * x(2)) * y(2)
@@ -1945,6 +1954,7 @@ contains
 !!      Phi_c = sum_{l-1}^nmk Az_l Phi_l
 !!    Gxi, Geta, Divxi, Diveta and Az are stored in (type tops) op
    subroutine orthonet_comp_operators(k0, adm, xi, eta, op, ierror)
+      use precision, only: dp
       use m_netw
       use m_sferic
       use m_inverse_map
@@ -1955,7 +1965,7 @@ contains
 
       integer :: k0 !< center node
       type(tadm) :: adm !< structure with administration
-      double precision, allocatable, dimension(:) :: xi, eta !< node coordinates (xi,eta)
+      real(kind=dp), allocatable, dimension(:) :: xi, eta !< node coordinates (xi,eta)
       type(tops) :: op !< structure with operaters
       integer, optional :: ierror !< 0: no error, 1: error
 
@@ -1967,30 +1977,30 @@ contains
       integer :: NL, NR
       integer :: k, k1
 
-      double precision :: I_LR_SWAP ! either 1d0 or -1d0
+      real(kind=dp) :: I_LR_SWAP ! either 1d0 or -1d0
 
-      double precision :: xi1, eta1, xiL, etaL, xiR, etaR
-      double precision :: xi_bc, eta_bc
-      double precision :: exiLR, eetaLR, exi01, eeta01
-      double precision :: fac, alpha, alphaL, alphaR, alpha_x
-      double precision :: facxiL, facxiR, facetaL, facetaR
-      double precision :: facxi0, facxi1, faceta0, faceta1
-      double precision :: volxi
+      real(kind=dp) :: xi1, eta1, xiL, etaL, xiR, etaR
+      real(kind=dp) :: xi_bc, eta_bc
+      real(kind=dp) :: exiLR, eetaLR, exi01, eeta01
+      real(kind=dp) :: fac, alpha, alphaL, alphaR, alpha_x
+      real(kind=dp) :: facxiL, facxiR, facetaL, facetaR
+      real(kind=dp) :: facxi0, facxi1, faceta0, faceta1
+      real(kind=dp) :: volxi
 
-      double precision, dimension(nmkx2) :: xinodes, etanodes
+      real(kind=dp), dimension(nmkx2) :: xinodes, etanodes
       integer :: ic, N
 
-      double precision, dimension(nmkx) :: xL, yL, xR, yR ! for Jacobian
-      double precision :: x_bc, y_bc
+      real(kind=dp), dimension(nmkx) :: xL, yL, xR, yR ! for Jacobian
+      real(kind=dp) :: x_bc, y_bc
 
       integer, dimension(2) :: kbound ! boundary links
-      double precision, dimension(nmkx) :: xis, etas
+      real(kind=dp), dimension(nmkx) :: xis, etas
 
       integer :: kL, kR, linkL, linkR
 
-      double precision :: RlinkL, RlinkR, cDPhi
-      double precision :: volwwxi
-      double precision, external :: getdx, getdy
+      real(kind=dp) :: RlinkL, RlinkR, cDPhi
+      real(kind=dp) :: volwwxi
+      real(kind=dp), external :: getdx, getdy
 
       ierror_ = 1
       if (present(ierror)) ierror = ierror_
@@ -2287,6 +2297,7 @@ contains
 
 !>    assign xi and eta to all nodes in the stencil
    subroutine orthonet_assign_xieta(k0, adm, xi, eta, ierror)
+      use precision, only: dp
       use m_netw
       use m_sferic
       use m_missing
@@ -2299,25 +2310,25 @@ contains
 
       integer :: k0 !< center node
       type(tadm) :: adm !< structure with administration
-      double precision, allocatable, dimension(:) :: xi, eta !< node coordinates (xi,eta)
+      real(kind=dp), allocatable, dimension(:) :: xi, eta !< node coordinates (xi,eta)
       integer, optional :: ierror !< 0: no error, 1: error
 
-      double precision :: Phi0, DPhi0, DPhitot ! angles in the (xi,eta) frame
-      double precision :: theta, Dtheta ! angles in the (xi',eta') frame, attached to a cell
-      double precision :: xip, etap ! coordinates in (xi', eta') frame, attached to a cell
-      double precision :: R0, dmu, aspect
+      real(kind=dp) :: Phi0, DPhi0, DPhitot ! angles in the (xi,eta) frame
+      real(kind=dp) :: theta, Dtheta ! angles in the (xi',eta') frame, attached to a cell
+      real(kind=dp) :: xip, etap ! coordinates in (xi', eta') frame, attached to a cell
+      real(kind=dp) :: R0, dmu, aspect
 
       integer :: k, kk, ic, L, N, kL, kR, k1, kk1, L1, kcell
 
-      double precision :: FAC = 1d0 ! part of the full circle that needs to be filled
+      real(kind=dp) :: FAC = 1d0 ! part of the full circle that needs to be filled
 
       integer :: Nnodes, Ntri, Ntri_square, Nquad, icL, icR
-      double precision :: DPhi, DPhitri, DPhitri_square, DPhiquad, DPhimin
-      double precision :: dmutri, dmutri_square
+      real(kind=dp) :: DPhi, DPhitri, DPhitri_square, DPhiquad, DPhimin
+      real(kind=dp) :: dmutri, dmutri_square
       integer :: ilink_first_quad
       integer :: kp1, km1
-      double precision, dimension(adm%Ncell) :: Philink
-      double precision, dimension(adm%nmk2) :: theta_square ! 'square' angles
+      real(kind=dp), dimension(adm%Ncell) :: Philink
+      real(kind=dp), dimension(adm%nmk2) :: theta_square ! 'square' angles
       logical, dimension(adm%Ncell) :: L_is_square_cell
       logical :: L_is_square
       integer :: KCHECK, ierror_
@@ -2611,11 +2622,12 @@ contains
    end subroutine orthonet_assign_xieta
 
 !>  compute the optimal angle between two links
-   double precision function opt_angle(Nnodes, theta1, theta2, lblink)
+   real(kind=dp) function opt_angle(Nnodes, theta1, theta2, lblink)
+      use precision, only: dp
       implicit none
 
       integer :: Nnodes !< number of nodes in the netcell
-      double precision, optional :: theta1, theta2 !< optionally: link angles
+      real(kind=dp), optional :: theta1, theta2 !< optionally: link angles
       logical, optional :: lblink !< optionally: is boundary link (.true.) or not (.false.)
 
       logical :: lblink_
@@ -2642,6 +2654,7 @@ contains
 
 !>  smooth the node-based variable u
    subroutine orthonet_smooth_u(u, ITAPSM, u_smooth)
+      use precision, only: dp
       use m_netw
       use m_orthosettings
       use unstruc_messages
@@ -2650,15 +2663,15 @@ contains
 
       implicit none
 
-      double precision, dimension(:), intent(in) :: u !< node-based solution
+      real(kind=dp), dimension(:), intent(in) :: u !< node-based solution
       integer, intent(in) :: ITAPSM !< number of smoothing iterations
-      double precision, dimension(:), intent(out) :: u_smooth !< smoothed node-based solution
+      real(kind=dp), dimension(:), intent(out) :: u_smooth !< smoothed node-based solution
 
-      double precision, dimension(nmkx2) :: ww2
-      double precision, dimension(numk) :: u_temp
+      real(kind=dp), dimension(nmkx2) :: ww2
+      real(kind=dp), dimension(numk) :: u_temp
       integer :: iter, k0
 
-      double precision :: alpha, alpha1
+      real(kind=dp) :: alpha, alpha1
 
       alpha = 0.5d0
 

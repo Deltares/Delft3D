@@ -32,33 +32,34 @@
 
 module m_tekarcuv
 
-implicit none
+   implicit none
 
 contains
 
- subroutine tekarcuv(vfac, met)
-    use m_arrowsxy
-    use M_arcuv
-    use m_htext
-    use m_set_col
-    implicit none
-    double precision :: vfac
-    integer :: met
+   subroutine tekarcuv(vfac, met)
+      use precision, only: dp
+      use m_arrowsxy
+      use M_arcuv
+      use m_htext
+      use m_set_col
+      implicit none
+      real(kind=dp) :: vfac
+      integer :: met
 
-    integer :: mx, nx, i, j
+      integer :: mx, nx, i, j
 
-    mx = size(arcuv, 2)
-    nx = size(arcuv, 3)
-    do i = 1, mx
-       do j = 1, nx
-          call setcol(221)
-          if (met == 6) then
-             call arrowsxy(arcuv(1, i, j), arcuv(2, i, j), arcuv(3, i, j), arcuv(4, i, j), 50 * VFAC)
-          else
-             call htext(arcuv(3, i, j), arcuv(1, i, j), arcuv(2, i, j))
-          end if
-       end do
-    end do
- end subroutine tekarcuv
+      mx = size(arcuv, 2)
+      nx = size(arcuv, 3)
+      do i = 1, mx
+         do j = 1, nx
+            call setcol(221)
+            if (met == 6) then
+               call arrowsxy(arcuv(1, i, j), arcuv(2, i, j), arcuv(3, i, j), arcuv(4, i, j), 50 * VFAC)
+            else
+               call htext(arcuv(3, i, j), arcuv(1, i, j), arcuv(2, i, j))
+            end if
+         end do
+      end do
+   end subroutine tekarcuv
 
 end module m_tekarcuv

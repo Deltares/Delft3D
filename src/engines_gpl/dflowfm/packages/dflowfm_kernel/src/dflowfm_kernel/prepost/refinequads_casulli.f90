@@ -32,6 +32,7 @@
 
 !> "Casulli"-type refinement of quads
 subroutine refinequads_casulli
+   use precision, only: dp
    use m_getlink_gui
    use m_confrm
    use m_netw
@@ -52,7 +53,7 @@ subroutine refinequads_casulli
 
    type(tadm) :: adm ! structure with administration
 
-   double precision :: xc, yc, xp, yp
+   real(kind=dp) :: xc, yc, xp, yp
 
    integer :: Lstart
 
@@ -365,6 +366,7 @@ contains
 
 !> create and store the new nodes in directional refinequads_casulli
    subroutine makenodes_directional(xp, yp, Lstart, ierror)
+      use precision, only: dp
       use m_assign_icjc, only: assign_icjc
       use m_confrm
       use unstruc_colors, only: ncolln
@@ -372,14 +374,14 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: xp, yp !> coordinates of clicked point
+      real(kind=dp), intent(in) :: xp, yp !> coordinates of clicked point
       integer, intent(in) :: Lstart !> clicked link number
       integer, intent(out) :: ierror !> error (1) or not (0)
 
       integer, dimension(:), allocatable :: linkmask
       integer, dimension(:), allocatable :: ic, jc
 
-      double precision :: x0, y0, xnew, ynew, xc, yc
+      real(kind=dp) :: x0, y0, xnew, ynew, xc, yc
 
       integer :: k1, k2, L, Link, iSE, iexit, idiff, jdiff
 

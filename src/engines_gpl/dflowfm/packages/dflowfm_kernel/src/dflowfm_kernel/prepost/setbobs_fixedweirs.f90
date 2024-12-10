@@ -33,12 +33,13 @@
 !> Sets the bob values on the flow links that are overridden by a fixed weir.
 !! This is based on the interpolated pliz values from the fixed weir definition.
 subroutine setbobs_fixedweirs()
+   use precision, only: dp
    use m_flowgeom
    use m_fixedweirs
    implicit none
 
    integer :: i, ip, iL, Lf
-   double precision :: alpha, zc
+   real(kind=dp) :: alpha, zc
 
    if (nfxw == 0) return
 

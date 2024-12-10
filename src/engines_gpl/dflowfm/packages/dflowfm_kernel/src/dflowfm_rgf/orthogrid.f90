@@ -31,6 +31,7 @@
 !
 
       subroutine ORTHOGRID(M1, N1, M2, N2)
+         use precision, only: dp
          use unstruc_colors
          use M_GRID
          use M_SFERIC
@@ -53,10 +54,10 @@
          integer :: ncr
          integer :: num
          integer :: nx
-         double precision :: rjac
+         real(kind=dp) :: rjac
 
-         double precision, dimension(:, :), allocatable :: XR, YR, XI2, XJ2, YI2, YJ2, &
-            A, B, C, D, E, ATP, XO, YO
+         real(kind=dp), dimension(:, :), allocatable :: XR, YR, XI2, XJ2, YI2, YJ2, &
+                                                        A, B, C, D, E, ATP, XO, YO
 
          integer :: M1, N1, M2, N2
 

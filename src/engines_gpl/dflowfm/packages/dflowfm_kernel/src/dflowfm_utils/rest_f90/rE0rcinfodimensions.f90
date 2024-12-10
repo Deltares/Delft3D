@@ -31,9 +31,10 @@
 !
 
       subroutine RE0RCINFODIMENSIONS(MINP, MMAX, NMAX, DX, X0, Y0)
+         use precision, only: dp
          use m_readarcinfoheader
          implicit none
-         double precision :: dx
+         real(kind=dp) :: dx
          integer :: ja
          integer :: larc
          integer :: marc
@@ -42,9 +43,9 @@
          integer :: mmax
          integer :: nc
          integer :: nmax
-         double precision :: rmis
-         double precision :: x0
-         double precision :: y0
+         real(kind=dp) :: rmis
+         real(kind=dp) :: x0
+         real(kind=dp) :: y0
          character REC * 132, FILENAME * 80
 
          rewind (MINP)

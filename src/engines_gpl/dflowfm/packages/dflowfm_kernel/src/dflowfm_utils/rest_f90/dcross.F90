@@ -64,25 +64,26 @@
 #include "config.h"
 #endif
       subroutine dCROSS(X1, Y1, X2, Y2, X3, Y3, X4, Y4, JACROS, SL, SM, XCR, YCR, CRP) ! liggen 3 en 4 aan weerszijden van lijn 12
+         use precision, only: dp
          use m_sferic
          use geometry_module, only: getdxdy, sphertoCart3D, Cart3Dtospher, crossinbox
          implicit none
-         double precision :: det
-         double precision :: eps
-         double precision :: X1, Y1, X2, Y2, X3, Y3, X4, Y4, SL, SM, XCR, YCR, CRP
+         real(kind=dp) :: det
+         real(kind=dp) :: eps
+         real(kind=dp) :: X1, Y1, X2, Y2, X3, Y3, X4, Y4, SL, SM, XCR, YCR, CRP
          integer :: JACROS
 
-         double precision :: X21, Y21, X43, Y43, X31, Y31
-         double precision :: xx1, yy1, zz1
-         double precision :: xx2, yy2, zz2
-         double precision :: xx3, yy3, zz3
-         double precision :: xx4, yy4, zz4
-         double precision :: xx21, yy21, zz21
-         double precision :: xx43, yy43, zz43
-         double precision :: xx31, yy31, zz31
-         double precision :: xxn, yyn, zzn
-         double precision :: det2
-         double precision :: xxcr, yycr, zzcr
+         real(kind=dp) :: X21, Y21, X43, Y43, X31, Y31
+         real(kind=dp) :: xx1, yy1, zz1
+         real(kind=dp) :: xx2, yy2, zz2
+         real(kind=dp) :: xx3, yy3, zz3
+         real(kind=dp) :: xx4, yy4, zz4
+         real(kind=dp) :: xx21, yy21, zz21
+         real(kind=dp) :: xx43, yy43, zz43
+         real(kind=dp) :: xx31, yy31, zz31
+         real(kind=dp) :: xxn, yyn, zzn
+         real(kind=dp) :: det2
+         real(kind=dp) :: xxcr, yycr, zzcr
 
          JACROS = 0
          EPS = 0.00001d0

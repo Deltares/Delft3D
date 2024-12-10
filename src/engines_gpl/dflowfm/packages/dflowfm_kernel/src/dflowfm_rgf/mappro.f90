@@ -31,6 +31,7 @@
 !
 
       subroutine MAPPRO(XX, YY, XG, YG, IZONE, NZONE, IHEM, ITYPE, JSFERIC, INIA)
+         use precision, only: dp
          use M_MISSING
          !use proj4
          implicit none
@@ -42,7 +43,7 @@
          integer :: jsferic
          integer :: nzone
          integer :: ihem
-         double precision :: XX, YY, XG, YG
+         real(kind=dp) :: XX, YY, XG, YG
 
          data INI/0/
          if (INI == 0) then

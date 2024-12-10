@@ -31,7 +31,8 @@
 !
 
 !> approximate spline pathlength in interval
-double precision function splinelength_int(num, xspl, yspl, s0, s1)
+real(kind=dp) function splinelength_int(num, xspl, yspl, s0, s1)
+   use precision, only: dp
 
    use geometry_module, only: dbdistance
    use m_missing, only: dmiss
@@ -42,12 +43,12 @@ double precision function splinelength_int(num, xspl, yspl, s0, s1)
    implicit none
 
    integer, intent(in) :: num !< number of spline control points
-   double precision, dimension(num), intent(in) :: xspl, yspl !< coordinates of slpine control points
-   double precision, intent(in) :: s0, s1 !< begin and end of interval in spline coordinates respectively
+   real(kind=dp), dimension(num), intent(in) :: xspl, yspl !< coordinates of slpine control points
+   real(kind=dp), intent(in) :: s0, s1 !< begin and end of interval in spline coordinates respectively
 
-   double precision, dimension(num) :: xspl2, yspl2 !  second order derivates of spline coordinates
+   real(kind=dp), dimension(num) :: xspl2, yspl2 !  second order derivates of spline coordinates
 
-   double precision :: xL, yL, xR, yR, tL, tR, dt, fac
+   real(kind=dp) :: xL, yL, xR, yR, tL, tR, dt, fac
 
    integer :: i, N
 

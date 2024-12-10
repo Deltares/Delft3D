@@ -69,7 +69,7 @@ end module
 module m_partitioninfo
 
    use m_tpoly
-   use precision_basics, only: hp
+   use precision_basics, only: hp, dp
    use meshdata, only: ug_idsLen, ug_idsLongNamesLen
    use gridoperations, only: dlinkangle
    use m_qnerror
@@ -201,10 +201,10 @@ module m_partitioninfo
    integer :: nglobal_s !< total number of global net cells, equals unpartitioned nump1d2d, ndxi
    integer, allocatable :: numcells(:) !< number of active cells per domain, dim(0:ndomains-1)
 
-   double precision, allocatable, private :: work(:), workrec(:) !< work array
+   real(kind=dp), allocatable, private :: work(:), workrec(:) !< work array
 
-   double precision, allocatable :: workmatbd(:, :) ! for overlap (solver): matrix (bbr,ddr)
-   double precision, allocatable :: workmatc(:, :) ! for overlap (solver): matrix (ccr)
+   real(kind=dp), allocatable :: workmatbd(:, :) ! for overlap (solver): matrix (bbr,ddr)
+   real(kind=dp), allocatable :: workmatc(:, :) ! for overlap (solver): matrix (ccr)
 
    integer, allocatable :: nghostlist_s_3D(:)
    integer, allocatable :: nsendlist_s_3D(:)
@@ -230,16 +230,16 @@ module m_partitioninfo
    integer :: jampi = 0 !< use MPI (1) or not (0)
 #endif
 
-   double precision, allocatable :: reducebuf(:) !< work array for mpi-reduce
+   real(kind=dp), allocatable :: reducebuf(:) !< work array for mpi-reduce
    integer :: nreducebuf !< size of work array 'reducebuf'
 
 !   for test solver:  Schwarz method with Robin-Robin coupling
    integer :: nbndint ! number of interface links
    integer, allocatable :: kbndint(:, :) ! interface administration, similar to kbndz, etc., dim(3,nbndint)
-   double precision, allocatable :: zbndint(:, :) ! (1,:): beta value, (2,:): interface value, dim(2,nbndint)
-   double precision :: stoptol = 1d-4 ! parameter of stopping criteria for subsolver of Schwarz method
-   double precision :: sbeta = 10d0 ! beta value in Robin-Robin coupling for Schwarz iterations
-   double precision :: prectol = 0.50d-2 ! tolerance for drop of preconditioner
+   real(kind=dp), allocatable :: zbndint(:, :) ! (1,:): beta value, (2,:): interface value, dim(2,nbndint)
+   real(kind=dp) :: stoptol = 1d-4 ! parameter of stopping criteria for subsolver of Schwarz method
+   real(kind=dp) :: sbeta = 10d0 ! beta value in Robin-Robin coupling for Schwarz iterations
+   real(kind=dp) :: prectol = 0.50d-2 ! tolerance for drop of preconditioner
    integer :: jabicgstab = 1 !
    integer :: Nsubiters = 1000
 
@@ -276,7 +276,7 @@ contains
       use m_missing
       use m_alloc
       use gridoperations
-      
+
       implicit none
 
       integer, intent(in) :: janet !< for network (1) or flow geom (0) or add 1D net (2)
@@ -285,7 +285,7 @@ contains
       integer, allocatable :: idomain_prev(:)
       integer, allocatable :: idum(:)
 
-      double precision :: zval
+      real(kind=dp) :: zval
 
       integer :: i, idmn, ipol, in
       integer :: ierror, numcells
@@ -1380,7 +1380,7 @@ contains
 
       character(len=64), dimension(:), allocatable :: nampli
 
-      double precision, dimension(:), allocatable :: xpl, ypl
+      real(kind=dp), dimension(:), allocatable :: xpl, ypl
 
       integer, dimension(:), allocatable :: ipl
 
@@ -1630,20 +1630,20 @@ contains
       integer, intent(in) :: other_domain_number
       integer, intent(in) :: itype !< ITYPE_*
       integer, intent(in) :: N_req !< number of flownodes/links/corners requested by other domain
-      double precision, intent(in) :: x_req(N_req), y_req(N_req) !< coordinates of requested flownodes/links/corners
+      real(kind=dp), intent(in) :: x_req(N_req), y_req(N_req) !< coordinates of requested flownodes/links/corners
       type(tghost), intent(in) :: ghost_list(:)
       integer, allocatable, intent(inout) :: send_list(:) !< send list
       integer, allocatable, intent(inout) :: nr_send_list(:) !< cumulative number of flownodes/links/corners per domain in the list, starts with fictitious domain 0, dim(-1:ndomains-1)
       integer, intent(out) :: ierror !< error (1) or not (0)
 
       integer, allocatable :: temp_list(:) !< temp list holds a list of flow nodes/links/corners
-      double precision, pointer :: x_local(:), y_local(:) !< pointers on flow nodes/links/corners
+      real(kind=dp), pointer :: x_local(:), y_local(:) !< pointers on flow nodes/links/corners
       integer :: i, ii, j, ghost_level, num, numnew
       integer :: numdomains, idum
       integer :: node
 
       integer :: jafound
-      double precision, parameter :: TOLERANCE = 1d-4
+      real(kind=dp), parameter :: TOLERANCE = 1d-4
       character(len=80) :: message2, message3
 
       ierror = 1
@@ -1906,9 +1906,9 @@ contains
 
       type(tghost), allocatable, target :: ghost_list(:)
 
-      double precision, pointer :: x_coords(:), y_coords(:)
-      double precision, allocatable :: xy_send(:, :) ! send buffer for cell/link center or corner coordinates (first x, then y)
-      double precision, allocatable :: xy_recv(:, :) ! receive buffer for cell/link center or corner coordinates (first x, then y)
+      real(kind=dp), pointer :: x_coords(:), y_coords(:)
+      real(kind=dp), allocatable :: xy_send(:, :) ! send buffer for cell/link center or corner coordinates (first x, then y)
+      real(kind=dp), allocatable :: xy_recv(:, :) ! receive buffer for cell/link center or corner coordinates (first x, then y)
 
       integer, allocatable :: ighostlev_bak(:) ! store of the combined ghost levelslevels
       integer, allocatable :: ighostlev_cellbased_bak(:) ! store of the cell-based ghost levels
@@ -2112,15 +2112,15 @@ contains
       character(len=128) :: message
       integer, intent(out) :: ierror !< error (1) or not (0)
 
-      double precision, dimension(:), allocatable :: csu_loc, snu_loc
+      real(kind=dp), dimension(:), allocatable :: csu_loc, snu_loc
 
       integer, dimension(:), allocatable :: imask
 
-      double precision :: dum
+      real(kind=dp) :: dum
 
       integer :: i, k, k1, k2, L, num
 
-      double precision, parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1d-8
 
       ierror = 1
 
@@ -2445,7 +2445,7 @@ contains
       integer, intent(in) :: itype !< type: 0: flownode, 1: flowlink
       integer, intent(in) :: ndim !< number of unknowns per flownode/link
       integer, intent(in) :: n !< number of flownodes/links
-      double precision, dimension(ndim*n), intent(inout) :: solution !< solution
+      real(kind=dp), dimension(ndim*n), intent(inout) :: solution !< solution
       integer, intent(out) :: error !< error (1) or not (0)
       logical, optional, intent(in) :: ignore_orientation !< Ignore orientation of ghost and own location, useful for directionless quantities on u-points. Default: .false.
 
@@ -2557,7 +2557,7 @@ contains
       integer, intent(in) :: ndomains !< number of subdomains
       integer, intent(in) :: NDIM !< number of unknowns per flownode/link
       integer, intent(in) :: N !< number of flownodes/links
-      double precision, dimension(NDIM*N), intent(inout) :: s !< Solution. Note: will correct for orientation between ghost and own location if needed (typically only for u-points).
+      real(kind=dp), dimension(NDIM*N), intent(inout) :: s !< Solution. Note: will correct for orientation between ghost and own location if needed (typically only for u-points).
       integer, intent(in) :: numghost !< number of ghost nodes/links
       integer, dimension(numghost), intent(in) :: ighost !< ghost nodes/links
       integer, dimension(-1:ndomains - 1), intent(in) :: nghost !< ghost list pointers
@@ -2573,7 +2573,7 @@ contains
       integer, dimension(N), intent(in), optional :: kbot !< bottom layer indices
       logical, intent(in), optional :: ignore_orientation !< Ignore orientation of ghost and own location, useful for directionless quantities on u-points. Default: .false.
 
-!      double precision, dimension(:), allocatable                :: work         ! work array
+!      real(kind=dp), dimension(:), allocatable                :: work         ! work array
 #ifdef HAVE_MPI
       integer, dimension(MPI_STATUS_SIZE) :: istat
 
@@ -2586,7 +2586,7 @@ contains
       integer :: ja3d ! 3D (1) or not (0)
 
       integer, parameter :: INIWORKSIZE = 1000
-!      double precision, parameter                                 :: DNOCELL = -1234.5678
+!      real(kind=dp), parameter                                 :: DNOCELL = -1234.5678
 
       character(len=1024) :: str
       logical :: ignore_orientation_
@@ -3030,7 +3030,7 @@ contains
       integer, intent(in) :: jatime !< time MPI communication (1) or not (0)
 
 #ifdef HAVE_MPI
-      double precision, dimension(:), allocatable :: dum
+      real(kind=dp), dimension(:), allocatable :: dum
 
       integer :: i, n, num
       integer :: ierror
@@ -3159,10 +3159,10 @@ contains
 
       implicit none
 
-      double precision, intent(inout) :: var !< variable
+      real(kind=dp), intent(inout) :: var !< variable
 #ifdef HAVE_MPI
 
-      double precision :: var_all
+      real(kind=dp) :: var_all
 
       integer :: ierror
 
@@ -3181,10 +3181,10 @@ contains
 
       implicit none
 
-      double precision, intent(inout) :: var !< variable
+      real(kind=dp), intent(inout) :: var !< variable
 #ifdef HAVE_MPI
 
-      double precision :: var_all
+      real(kind=dp) :: var_all
 
       integer :: ierror
 
@@ -3204,8 +3204,8 @@ contains
       implicit none
 
       integer, intent(in) :: N !< array size
-      double precision, dimension(N), intent(in) :: varin !< variable
-      double precision, dimension(N), intent(out) :: varout !< reduced variable
+      real(kind=dp), dimension(N), intent(in) :: varin !< variable
+      real(kind=dp), dimension(N), intent(out) :: varout !< reduced variable
 #ifdef HAVE_MPI
 
       integer :: ierror
@@ -3226,11 +3226,11 @@ contains
 
       implicit none
 
-      double precision, intent(inout) :: var1 !< variables
-      double precision, intent(inout) :: var2 !< variables
+      real(kind=dp), intent(inout) :: var1 !< variables
+      real(kind=dp), intent(inout) :: var2 !< variables
 #ifdef HAVE_MPI
 
-      double precision, dimension(2) :: dum, var_all
+      real(kind=dp), dimension(2) :: dum, var_all
 
       integer :: ierror
 
@@ -3251,12 +3251,12 @@ contains
 
       implicit none
 
-      double precision, intent(inout) :: var1 !< variables
-      double precision, intent(inout) :: var2 !< variables
-      double precision, intent(inout) :: var3 !< variables
+      real(kind=dp), intent(inout) :: var1 !< variables
+      real(kind=dp), intent(inout) :: var2 !< variables
+      real(kind=dp), intent(inout) :: var3 !< variables
 #ifdef HAVE_MPI
 
-      double precision, dimension(3) :: dum, var_all
+      real(kind=dp), dimension(3) :: dum, var_all
 
       integer :: ierror
 
@@ -3460,9 +3460,9 @@ contains
       implicit none
 
       integer, intent(in) :: N !< array size
-      double precision, dimension(N), intent(inout) :: var !< array with values to be summed over the subdomains (not an array summation)
+      real(kind=dp), dimension(N), intent(inout) :: var !< array with values to be summed over the subdomains (not an array summation)
 
-      double precision, dimension(N) :: dum
+      real(kind=dp), dimension(N) :: dum
 
       integer :: ierror
 
@@ -3565,19 +3565,19 @@ contains
 
       integer, intent(in) :: N !< number of observation stations
       integer, dimension(N), intent(inout) :: kobs !< observation station flow_node numbers, >0: in own subdomain, -1: in other subdomain, 0: not found in any subdomain
-      double precision, dimension(N), intent(in) :: xobs, yobs !< observation station coordinates
+      real(kind=dp), dimension(N), intent(in) :: xobs, yobs !< observation station coordinates
       integer, intent(in) :: jaoutside !< allow outside cells (for 1D) (1) or not (0)
 
 #ifdef HAVE_MPI
-      double precision, dimension(:), allocatable :: dist ! distances from flow nodes to observation stations
-      double precision, dimension(:, :), allocatable :: dist_all
+      real(kind=dp), dimension(:), allocatable :: dist ! distances from flow nodes to observation stations
+      real(kind=dp), dimension(:, :), allocatable :: dist_all
 
-      double precision :: xp, yp
+      real(kind=dp) :: xp, yp
 
       integer :: i, other_domain, in, k1, ierror
 
-      double precision, parameter :: DPENALTY = 1d10 ! should be smaller than DREJECT
-      double precision, parameter :: DREJECT = 2d99 ! should be larger than DPENALTY
+      real(kind=dp), parameter :: DPENALTY = 1d10 ! should be smaller than DREJECT
+      real(kind=dp), parameter :: DREJECT = 2d99 ! should be larger than DPENALTY
 
       if (N < 1) return
 
@@ -3719,9 +3719,9 @@ contains
 
       integer, intent(in) :: numvals !< number of values
       integer, intent(in) :: numobs !< number of observation stations
-      double precision, dimension(numobs, numvals), intent(inout) :: valobs !< values at obervations stations to be output.
+      real(kind=dp), dimension(numobs, numvals), intent(inout) :: valobs !< values at obervations stations to be output.
 
-      double precision, parameter :: dsmall = -huge(1d0)
+      real(kind=dp), parameter :: dsmall = -huge(1d0)
       integer :: iobs, ival
       integer :: ierror
 
@@ -3763,10 +3763,10 @@ contains
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that we wish to update.
 
-      double precision, parameter :: dsmall = -huge(1d0)
+      real(kind=dp), parameter :: dsmall = -huge(1d0)
       integer :: i_stat, i_loc
-      double precision, pointer :: stat_output(:) !< pointer to statistical output data array that is to be written to the Netcdf file after reduction across partitions.
-      double precision, allocatable :: send_buffer(:) !< send buffer for mpi reduction because MPI_IN_PLACE does not work for unknown reasons.
+      real(kind=dp), pointer :: stat_output(:) !< pointer to statistical output data array that is to be written to the Netcdf file after reduction across partitions.
+      real(kind=dp), allocatable :: send_buffer(:) !< send buffer for mpi reduction because MPI_IN_PLACE does not work for unknown reasons.
       integer :: ierr
 
 #ifdef HAVE_MPI
@@ -3808,9 +3808,9 @@ contains
       implicit none
 
       integer, intent(in) :: numvals, numsrc !< number of sources/sinks
-      double precision srsn(numvals, numsrc) !< values associated with sources/sinks
+      real(kind=dp) srsn(numvals, numsrc) !< values associated with sources/sinks
 
-      double precision, dimension(NUMVALS, numsrc) :: srsn_all
+      real(kind=dp), dimension(NUMVALS, numsrc) :: srsn_all
 
       integer :: ierror
 
@@ -3830,18 +3830,18 @@ contains
       implicit none
 
       integer, intent(in) :: Nproflocs !< number of profile locations (samples)
-      double precision, dimension(:), intent(inout) :: xlsam !< branch-coordinate of sample points
-      double precision, dimension(:), intent(inout) :: distsam !< distance from sample to branch
+      real(kind=dp), dimension(:), intent(inout) :: xlsam !< branch-coordinate of sample points
+      real(kind=dp), dimension(:), intent(inout) :: distsam !< distance from sample to branch
       integer, dimension(:), intent(inout) :: iconnsam !< connected-branch associated with sample
 
 #ifdef HAVE_MPI
-      double precision, dimension(:), allocatable :: dum
+      real(kind=dp), dimension(:), allocatable :: dum
 
       integer, dimension(:), allocatable :: idum
 
-      double precision, parameter :: dtol = 1d-8
-      double precision, parameter :: DLARGE = 1d99
-      double precision, parameter :: ILARGE = 10000
+      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: DLARGE = 1d99
+      real(kind=dp), parameter :: ILARGE = 10000
 
       integer :: i, ierror
 
@@ -3892,9 +3892,9 @@ contains
 
       integer, intent(in) :: ncrs !< number of cross-sections
       integer, intent(in) :: numvals !< which values to sum (1=discharge)
-      double precision, dimension(numvals, ncrs), intent(inout) :: resu !< cross-section data, note: ncrs from module m_monitoring_crosssections
+      real(kind=dp), dimension(numvals, ncrs), intent(inout) :: resu !< cross-section data, note: ncrs from module m_monitoring_crosssections
 
-      double precision, dimension(:, :), allocatable :: resu_all
+      real(kind=dp), dimension(:, :), allocatable :: resu_all
 
       integer :: ierror
 
@@ -3921,8 +3921,8 @@ contains
       implicit none
 
       integer, intent(in) :: num_rugs !< number of gauges
-      double precision, dimension(2, num_rugs), intent(inout) :: resu !< runup data
-      double precision, dimension(:, :), allocatable :: resu_all
+      real(kind=dp), dimension(2, num_rugs), intent(inout) :: resu !< runup data
+      real(kind=dp), dimension(:, :), allocatable :: resu_all
 
       integer :: ierror
 
@@ -4033,9 +4033,9 @@ contains
       integer, dimension(:), allocatable :: numbranches ! number of branches per domain, dim(0:numranks-1)
 
 #ifdef HAVE_MPI
-      double precision, dimension(:, :), allocatable :: xyL_all ! center coordinates and angle of left  link of branch, dim(3,numallnetbr)
-      double precision, dimension(:, :), allocatable :: xyR_all ! center coordinates and angle of right link of branch, dim(3,numallnetbr)
-      double precision, dimension(:, :), allocatable :: xyL_loc, xyR_loc
+      real(kind=dp), dimension(:, :), allocatable :: xyL_all ! center coordinates and angle of left  link of branch, dim(3,numallnetbr)
+      real(kind=dp), dimension(:, :), allocatable :: xyR_all ! center coordinates and angle of right link of branch, dim(3,numallnetbr)
+      real(kind=dp), dimension(:, :), allocatable :: xyL_loc, xyR_loc
 
       integer, dimension(:), allocatable :: ibr_glob_left ! global number of left  connected branch, dim(numallnetbr)
       integer, dimension(:), allocatable :: ibr_glob_right ! global number of right connected branch, dim(numallnetbr)
@@ -4047,17 +4047,17 @@ contains
       integer, dimension(:), allocatable :: iordened_branches ! ordened branched, dim(numallnetbr)
       integer, dimension(:), allocatable :: ipoint ! pointer in iordened_branches list, dim(numallnetbr+1)
 
-      double precision, dimension(:), allocatable :: dlL, dlR, dLtot ! left-part, right-part and total branch length
-      double precision, dimension(:), allocatable :: doffset ! offset length of branch
-      double precision, dimension(:), allocatable :: ddum
+      real(kind=dp), dimension(:), allocatable :: dlL, dlR, dLtot ! left-part, right-part and total branch length
+      real(kind=dp), dimension(:), allocatable :: doffset ! offset length of branch
+      real(kind=dp), dimension(:), allocatable :: ddum
 
       integer :: numnetbr ! number of branches in this domain
       integer :: numallnetbr ! number of branches summed over all domains
       integer :: numnew ! new number of (connected) branches
 
-      double precision :: xloc, yloc
-      double precision :: dabsangle
-      double precision :: dlength, dleft, dconnected
+      real(kind=dp) :: xloc, yloc
+      real(kind=dp) :: dabsangle
+      real(kind=dp) :: dlength, dleft, dconnected
 
       integer :: iglobalbranch_first
       integer :: ibr, ibrr, idmn, i, iglob, k, N, num, L, LL, LR
@@ -4068,9 +4068,9 @@ contains
 
       logical :: Lleftfound, Lrightfound
 
-      double precision, external :: dlinklength
+      real(kind=dp), external :: dlinklength
 
-      double precision, parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1d-8
 
 !     count the number of branches
       numnetbr = mxnetbr
@@ -4523,9 +4523,9 @@ contains
 
       integer, intent(in) :: itype
 
-      double precision, dimension(:), intent(inout) :: var
+      real(kind=dp), dimension(:), intent(inout) :: var
 
-      double precision, dimension(:), allocatable :: dum
+      real(kind=dp), dimension(:), allocatable :: dum
 
       integer :: i, k, L, N
       integer :: ierr
@@ -4583,25 +4583,25 @@ contains
       !inputs
       integer, intent(in), dimension(:) :: startLinks !< start indexes [1,nsegments]
       integer, intent(in), dimension(:) :: endLinks !< end   indexes [1,nsegments]
-      double precision, intent(in), dimension(:) :: weights !< global weights array
+      real(kind=dp), intent(in), dimension(:) :: weights !< global weights array
       integer, intent(in), dimension(:) :: indsWeight !< local indexes on global weights array
-      double precision, intent(in), dimension(:) :: quantity !< global quantity array
+      real(kind=dp), intent(in), dimension(:) :: quantity !< global quantity array
       integer, intent(in), dimension(:) :: indsQuantity !< local indexes on global quantity array
       integer, intent(in) :: quantityType !< The type of quantity: 0 scalar, 1 array (edge orientation matters)
 
-      double precision, intent(in), dimension(:), optional :: firstFilter !< filter to apply on the global weights array
-      double precision, intent(in), optional :: firstFilterValue !< value to activate the first filter (activated if larger than filter value)
+      real(kind=dp), intent(in), dimension(:), optional :: firstFilter !< filter to apply on the global weights array
+      real(kind=dp), intent(in), optional :: firstFilterValue !< value to activate the first filter (activated if larger than filter value)
 
       integer, intent(in), dimension(:), optional :: secondFilter !< filter to apply on the local weights array
       integer, intent(in), optional :: secondFilterValue !< value to activate the second filter (activated if larger than filter value)
       !locals
       integer :: ns, nsegments, nl, indWeight, indQuantity
-      double precision :: sumQuantitiesByWeight, sumWeights
-      double precision :: quantitiesByWeight, weight
-      double precision, allocatable :: resultsSum(:, :)
+      real(kind=dp) :: sumQuantitiesByWeight, sumWeights
+      real(kind=dp) :: quantitiesByWeight, weight
+      real(kind=dp), allocatable :: resultsSum(:, :)
 
       !outputs
-      double precision, dimension(:, :), intent(inout) :: results
+      real(kind=dp), dimension(:, :), intent(inout) :: results
       integer :: ierr
 
       ierr = 0
@@ -4838,7 +4838,7 @@ contains
 
    end subroutine gather_int_data_mpi_same
 
-!> Gathers double precision data into specified locations from all processes in a group and delivers to a specified root process.
+!> Gathers real(kind=dp) data into specified locations from all processes in a group and delivers to a specified root process.
 !! Note: Different numbers of data on different subdomains can be sent.
    subroutine gatherv_double_data_mpi_dif(ndata_send, data_send, ndata_gat, data_gat, ngroups, recvCount, displs, root, ierror)
 #ifdef HAVE_MPI
@@ -4847,9 +4847,9 @@ contains
 
       implicit none
       integer, intent(in) :: ndata_send !< Number of data in array data_send
-      double precision, dimension(ndata_send), intent(in) :: data_send !< Array of data on one subdomain to send
+      real(kind=dp), dimension(ndata_send), intent(in) :: data_send !< Array of data on one subdomain to send
       integer, intent(in) :: ndata_gat !< Number of data in array data_gat
-      double precision, dimension(ndata_gat), intent(inout) :: data_gat !< Array of data gathered from all subdomains to receive
+      real(kind=dp), dimension(ndata_gat), intent(inout) :: data_gat !< Array of data gathered from all subdomains to receive
       integer, intent(in) :: ngroups !< Number of groups (subdomains)
       integer, dimension(ngroups), intent(in) :: recvCount !< Array containing the number of elements that are received from each subdomain
       integer, dimension(ngroups), intent(in) :: displs !< Entry i in this array specifies the displacement (relative to data_gat) at which
@@ -5523,7 +5523,7 @@ contains
             end do
          end if
 
-         ! Gather double precision data, here, different number of data can be gatherd from different subdomains to process 0000
+         ! Gather real(kind=dp) data, here, different number of data can be gatherd from different subdomains to process 0000
          call gatherv_double_data_mpi_dif(nNodesCrs, geomXCrs, nNodesCrsMPI, xGat, ndomains, nNodesCrsGat, displs, 0, ierror)
          call gatherv_double_data_mpi_dif(nNodesCrs, geomYCrs, nNodesCrsMPI, yGat, ndomains, nNodesCrsGat, displs, 0, ierror)
          call gatherv_int_data_mpi_dif(nNodesCrs, maskBndAll, nNodesCrsMPI, maskBndGat, ndomains, nNodesCrsGat, displs, 0, ierror)
@@ -5658,7 +5658,7 @@ subroutine print_timings(FNAM, dtime)
    implicit none
 
    character(len=*), intent(in) :: FNAM !< file name
-   double precision, intent(in) :: dtime !< time
+   real(kind=dp), intent(in) :: dtime !< time
 
    integer :: ierr
    integer :: i, j, lenstr
@@ -5671,7 +5671,7 @@ subroutine print_timings(FNAM, dtime)
    integer, parameter :: Ntvarlist = 13
    integer, dimension(Ntvarlist), parameter :: itvarlist = (/1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17/)
 
-   double precision, dimension(:, :), allocatable :: t_max, t_ave, tcpu_max, tcpu_ave
+   real(kind=dp), dimension(:, :), allocatable :: t_max, t_ave, tcpu_max, tcpu_ave
    integer :: itsol_max
 
    integer :: jadoit
@@ -6224,8 +6224,8 @@ subroutine reduce_bal(voltotal, numidx)
    implicit none
 
    integer, intent(in) :: numidx !< which values to sum (1=discharge)
-   double precision, dimension(numidx), intent(inout) :: voltotal !< cross-section data, note: ncrs from module m_monitoring_crosssections
-   double precision, dimension(:), allocatable :: voltot_all
+   real(kind=dp), dimension(numidx), intent(inout) :: voltotal !< cross-section data, note: ncrs from module m_monitoring_crosssections
+   real(kind=dp), dimension(:), allocatable :: voltot_all
    integer :: ierror
 
 #ifdef HAVE_MPI
@@ -6266,8 +6266,8 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
    integer, intent(out) :: ierror !< error (1) or not (0)
 
 #ifdef HAVE_MPI
-   double precision, dimension(:, :), allocatable :: xysnd ! send     cell-center coordinates (first x, then y)
-   double precision, dimension(:, :), allocatable :: xyrec ! recieved cell-center coordinates (first x, then y)
+   real(kind=dp), dimension(:, :), allocatable :: xysnd ! send     cell-center coordinates (first x, then y)
+   real(kind=dp), dimension(:, :), allocatable :: xyrec ! recieved cell-center coordinates (first x, then y)
 
    integer, dimension(:, :), allocatable :: numrequest ! number of cells requested from other domains (message size)
    integer, dimension(:), allocatable :: numrequest_loc
@@ -6281,9 +6281,9 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
 
    character(len=1024) :: str
 
-   double precision :: xL, yL, dis
+   real(kind=dp) :: xL, yL, dis
 
-   double precision :: t0, t1, t2, t3, timefind1, timefind2
+   real(kind=dp) :: t0, t1, t2, t3, timefind1, timefind2
 
    integer :: Nbnd ! number of boundary links
 
@@ -6295,7 +6295,7 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
 
    integer :: numdisabled
 
-   double precision, parameter :: dtol = 1d-4
+   real(kind=dp), parameter :: dtol = 1d-4
 
    call wall_clock_time(t0)
 
@@ -6580,11 +6580,11 @@ subroutine update_ghostboundvals(itype, NDIM, N, var, jacheck, ierror)
    integer, intent(in) :: itype !< type: 0: flownode, 1: flowlink
    integer, intent(in) :: NDIM !< number of unknowns per flownode/link
    integer, intent(in) :: N !< number of flownodes/links
-   double precision, dimension(NDIM*N), intent(inout) :: var !< solution
+   real(kind=dp), dimension(NDIM*N), intent(inout) :: var !< solution
    integer, intent(in) :: jacheck !< check if boundary flowlinks are updated (1) or not (0)
    integer, intent(out) :: ierror !< error (1) or not (0)
 
-   double precision, dimension(:), allocatable :: dum
+   real(kind=dp), dimension(:), allocatable :: dum
 
    integer, dimension(:), allocatable :: Lbndmask
 

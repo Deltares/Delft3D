@@ -226,7 +226,7 @@ contains
 
       integer :: istat
       integer, parameter :: imissval = -1
-      double precision, parameter :: rmissval = -999.999_fp
+      real(kind=dp), parameter :: rmissval = -999.999_fp
 
       istat = 0
       !
@@ -1150,7 +1150,7 @@ contains
             ! Calculate MIN value
             !
             do n = 1, nmaxus
-               fousmas(n) = min(fousmas(n), real(rarray(n),sp))
+               fousmas(n) = min(fousmas(n), real(rarray(n), sp))
             end do
             if (gdfourier%withTime(ifou)) then
                do n = 1, nmaxus
@@ -1454,6 +1454,7 @@ contains
    !> do the actual fourier and min/max update
    !! write to file after last update
    subroutine postpr_fourier(time0, dts)
+      use precision, only: dp
       use m_transport, only: constituents
       use m_flowgeom, only: bl, lnx, bl_min
       use m_flow
@@ -1475,8 +1476,8 @@ contains
       character(len=16), dimension(:), pointer :: founam
       character(len=20) :: cnum ! string to hold a number
       character(len=20) :: cquant ! 'quantity' or 'quantities'
-      double precision, pointer :: fieldptr1(:), fieldptr2(:)
-      double precision, allocatable, target :: wmag(:) ! [m/s] wind magnitude    (m/s) at u point {"location": "edge", "shape": ["lnx"]}
+      real(kind=dp), pointer :: fieldptr1(:), fieldptr2(:)
+      real(kind=dp), allocatable, target :: wmag(:) ! [m/s] wind magnitude    (m/s) at u point {"location": "edge", "shape": ["lnx"]}
       real(kind=fp) :: dtw
 
       fouwrt => gdfourier%fouwrt
@@ -1554,9 +1555,10 @@ contains
    contains
 
       subroutine find_field_pointer(fieldptr, fieldname)
+         use precision, only: dp
          use m_gettaus
          use m_gettauswave
-         double precision, pointer :: fieldptr(:)
+         real(kind=dp), pointer :: fieldptr(:)
          character(len=*), intent(in) :: fieldname
 
          select case (fieldname)

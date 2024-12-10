@@ -1,9 +1,10 @@
 import jetbrains.buildServer.configs.kotlin.*
 
-import build.*
-import build.thirdParty.*
-import testbench.*
-import release.*
+import Delft3D.*
+import Delft3D.linux.*
+import Delft3D.linux.thirdParty.*
+import Delft3D.windows.*
+import Delft3D.template.*
 
 version = "2024.03"
 
@@ -11,49 +12,59 @@ project {
 
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
+    template(TemplateMergeRequest)
+    template(TemplateMergeTarget)
+    template(TemplatePublishStatus)
+    template(TemplateMonitorPerformance)
+
     subProject {
-        id("Build")
-        name = "Build"
+        id("Linux")
+        name = "Linux"
         subProject {
-            id("ThirdParty")
+            id("LinuxThirdParty")
             name = "Third Party"
-            buildType(DownloadIntelMpi)
+            buildType(LinuxThirdPartyDownloadIntelMpi)
             buildTypesOrder = arrayListOf(
-                DownloadIntelMpi
+                LinuxThirdPartyDownloadIntelMpi
             )
         }
-        buildType(BuildDockerLinux)
+        buildType(LinuxBuild)
+        buildType(LinuxCollect)
+        buildType(LinuxDocker)
+        buildType(LinuxTest)
         buildTypesOrder = arrayListOf(
-            BuildDockerLinux
+            LinuxBuild,
+            LinuxCollect,
+            LinuxDocker,
+            LinuxTest
         )
     }
 
     subProject {
-        id("Test")
-        name = "Test"
-        buildType(TestbenchTrigger)
-        buildType(TestbenchLinux)
-        buildType(TestbenchWindows)
-        buildTypesOrder = arrayListOf(
-            TestbenchTrigger,
-            TestbenchLinux,
-            TestbenchWindows
-        )
-    }
+        id("Windows")
+        name = "Windows"
 
-    subProject {
-        id("Release")
-        name = "Release"
-        buildType(Release)
+        buildType(WindowsBuild)
+        buildType(WindowsCollect)
+        buildType(WindowsTest)
         buildTypesOrder = arrayListOf(
-            Release
+            WindowsBuild,
+            WindowsCollect,
+            WindowsTest
         )
     }
 
     subProjectsOrder = arrayListOf(
-        RelativeId("Build"),
-        RelativeId("Test"),
-        RelativeId("Release")
+        RelativeId("Linux"),
+        RelativeId("Windows")
+    )
+
+    buildType(Trigger)
+    buildType(Release)
+
+    buildTypesOrder = arrayListOf(
+        Trigger,
+        Release
     )
 
 }

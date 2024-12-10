@@ -32,6 +32,7 @@
 
  !> get uniform curvilinear grid parameters in "makenet" from polygon
  subroutine pol2netparams()
+    use precision, only: dp
     use m_makenet
     use m_polygon
     use m_sferic
@@ -39,10 +40,10 @@
     use geometry_module
     implicit none
 
-    double precision :: ximin, ximax
-    double precision :: etamin, etamax
-    double precision :: xref, yref, Dx, Dy
-    double precision :: xi, eta, csa, sna
+    real(kind=dp) :: ximin, ximax
+    real(kind=dp) :: etamin, etamax
+    real(kind=dp) :: xref, yref, Dx, Dy
+    real(kind=dp) :: xi, eta, csa, sna
 
     integer :: i
 

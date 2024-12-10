@@ -32,6 +32,7 @@
 
  !> make structured triangular mesh from curvlinear grid
  subroutine maketrigrid()
+    use precision, only: dp
     use m_confrm
     use m_cleargrid
     use m_grid, only: nc, mc, xc, yc
@@ -43,7 +44,7 @@
     use m_tek_grid
     implicit none
 
-    double precision, dimension(:, :), allocatable :: x, y ! original grid coordinates
+    real(kind=dp), dimension(:, :), allocatable :: x, y ! original grid coordinates
 
     integer :: i, j
     integer :: M, N ! original grid dimensions

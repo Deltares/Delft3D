@@ -32,24 +32,25 @@
 
 module m_tekheats
 
-implicit none
+   implicit none
 
 contains
 
-  subroutine TEKHEATS(TIMNOW)
-     use m_heatfluxes
-     use m_gtext
-     implicit none
-     double precision :: TIMNOW, tday
+   subroutine TEKHEATS(TIMNOW)
+      use precision, only: dp
+      use m_heatfluxes
+      use m_gtext
+      implicit none
+      real(kind=dp) :: TIMNOW, tday
 
-     TDAY = modulo(TIMNOW, 1440d0 * 60d0)
-     call GTEXT('SUN', TDAY, QSunav, 221)
-     call GTEXT('LWR', TDAY, QLongav, 221)
-     call GTEXT('CON', TDAY, QEVAav, 221)
-     call GTEXT('EVA', TDAY, QCONav, 221)
-     call GTEXT('fre', TDAY, Qfreeav, 221)
+      TDAY = modulo(TIMNOW, 1440d0 * 60d0)
+      call GTEXT('SUN', TDAY, QSunav, 221)
+      call GTEXT('LWR', TDAY, QLongav, 221)
+      call GTEXT('CON', TDAY, QEVAav, 221)
+      call GTEXT('EVA', TDAY, QCONav, 221)
+      call GTEXT('fre', TDAY, Qfreeav, 221)
 
-     return
-  end
+      return
+   end
 
 end module m_tekheats

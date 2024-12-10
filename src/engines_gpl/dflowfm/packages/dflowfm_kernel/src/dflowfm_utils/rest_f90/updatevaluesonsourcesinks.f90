@@ -38,10 +38,10 @@ subroutine updateValuesOnSourceSinks(tim1)
    use m_flowparameters, only: eps10
    use m_alloc
    implicit none
-   double precision, intent(in) :: tim1 !< Current (new) time
+   real(kind=dp), intent(in) :: tim1 !< Current (new) time
 
-   double precision, save :: timprev = -1d0 ! TODO: save is unsafe, replace by using time1 and time0, also two other occurrences
-   double precision :: timstep
+   real(kind=dp), save :: timprev = -1d0 ! TODO: save is unsafe, replace by using time1 and time0, also two other occurrences
+   real(kind=dp) :: timstep
    integer :: i
 
    if (timprev < 0d0) then

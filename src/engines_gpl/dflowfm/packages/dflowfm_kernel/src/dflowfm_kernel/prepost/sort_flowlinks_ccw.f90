@@ -32,6 +32,7 @@
 
 !> sort flowlinks in nd%ln counterclockwise (copy-paste and modified from above)
 subroutine sort_flowlinks_ccw()
+   use precision, only: dp
    use m_flowgeom, only: xz, yz, nd, Ndx, ln
    use m_sferic
    use m_alloc
@@ -42,14 +43,14 @@ subroutine sort_flowlinks_ccw()
 
    integer :: k ! node number
    integer :: maxlin ! array size
-   double precision, dimension(:), allocatable :: arglin ! dummy array
+   real(kind=dp), dimension(:), allocatable :: arglin ! dummy array
    integer, dimension(:), allocatable :: linnrs, inn ! dummy arrays
 
    integer :: k1, k2, L
 
-   double precision :: phi0
+   real(kind=dp) :: phi0
 
-   double precision :: phi, dx, dy
+   real(kind=dp) :: phi, dx, dy
 
    integer :: lnxx
 

@@ -31,11 +31,12 @@
 !
 
   subroutine GETMIDDLEKNOT(K1, K2, K12, A12, R12)
+     use precision, only: dp
      use m_netw
      use gridoperations
      implicit none
      integer :: K1, K2, K12, K22
-     double precision :: A12, R12
+     real(kind=dp) :: A12, R12
 
      integer :: l1
      integer :: l2

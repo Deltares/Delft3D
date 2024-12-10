@@ -33,13 +33,13 @@
 !
 module m_clr
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine CLR()
-         implicit none
-         call IWINCLEAR()
-      end
+   subroutine CLR()
+      implicit none
+      call IWINCLEAR()
+   end
 
 end module m_clr

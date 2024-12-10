@@ -31,17 +31,19 @@
 !
 
 module m_fetch_local_data
-use m_kcir
+   use precision, only: dp
+   use m_kcir
 
    logical, allocatable :: calculate_for(:)
    integer, allocatable :: list_of_upwind_cells(:), number_of_upwind_cells(:)
-   double precision, allocatable :: data_at_upwind_cells(:, :)
-   double precision, allocatable :: fetch_temp(:, :)
+   real(kind=dp), allocatable :: data_at_upwind_cells(:, :)
+   real(kind=dp), allocatable :: fetch_temp(:, :)
 end module m_fetch_local_data
 
 !> calculates fetch length and depth based significant wave height and period
 !! based on Hurdle, Stive formulae, tauwave based on Swart, taus = taubmx = taucur + tauwave, as in Delwaq
 subroutine tauwavefetch(tim)
+   use precision, only: dp
    use m_sediment, only: rlabda
    use m_flowgeom, only: ndx, ndxi, ndx2d
    use m_flow
@@ -57,14 +59,14 @@ subroutine tauwavefetch(tim)
 
    implicit none
 
-   double precision, intent(in) :: tim
+   real(kind=dp), intent(in) :: tim
 
    integer :: error, cell
    integer, save :: total_nr_cells
    integer, external :: initialise_fetch_proc_data
    logical, external :: stop_fetch_computation
    logical, parameter :: call_from_tauwavefetch = .true.
-   double precision :: U10, fetchL, fetchd, hsig, tsig, rsqrt2, dum
+   real(kind=dp) :: U10, fetchL, fetchd, hsig, tsig, rsqrt2, dum
 
    if (.not. allocated(fetch) .or. size(fetch, 2) /= ndx) then
       nwf = 13
@@ -169,6 +171,7 @@ end subroutine tauwavefetch
 
 !> calculates fetch length and depth
 subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)
+   use precision, only: dp
    use m_arrowsxy
    use m_netw
    use m_flowgeom
@@ -191,7 +194,7 @@ subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)
 
    integer :: cell, index_wind_direction, error
    integer :: nr_cells_done, nr_cells_done_red
-   double precision :: wind_direction, u_wind, v_wind, xp, yp, vfw
+   real(kind=dp) :: wind_direction, u_wind, v_wind, xp, yp, vfw
 
    call timstrt('Ext.forcings fetch', handle_fetch)
    allocate (fetch_temp(2, ndx), stat=error)
@@ -255,6 +258,7 @@ end subroutine calculate_fetch_values_for_all_wind_directions
 
 !< make a list of upwind cells for each cell for a given wind direction
 subroutine make_list_of_upwind_cells(u_wind, v_wind)
+   use precision, only: dp
    use m_flowgeom
    use m_fetch_local_data
    use m_alloc
@@ -262,11 +266,11 @@ subroutine make_list_of_upwind_cells(u_wind, v_wind)
 
    implicit none
 
-   double precision, intent(in) :: u_wind, v_wind
+   real(kind=dp), intent(in) :: u_wind, v_wind
 
    character(1024) :: message2, message3
    integer :: cell, cell2, cell_link, index, link, error
-   double precision :: cs, sn, prin, www
+   real(kind=dp) :: cs, sn, prin, www
 
    number_of_upwind_cells = 0
    do cell = 1, ndxi
@@ -341,6 +345,7 @@ end subroutine make_list_of_upwind_cells
 
 !< search cells that are starting points for the fetch length calculations
 subroutine search_starting_cells(u_wind, v_wind, nr_cells_done)
+   use precision, only: dp
    use m_netw
    use m_flowgeom
    use m_flow, only: s1, dxymis
@@ -356,13 +361,13 @@ subroutine search_starting_cells(u_wind, v_wind, nr_cells_done)
 
    implicit none
 
-   double precision, intent(in) :: u_wind, v_wind
+   real(kind=dp), intent(in) :: u_wind, v_wind
    integer, intent(out) :: nr_cells_done
 
    integer :: jaopen, jacros
    integer :: cell, cell_link, link, index_cell_node, node1, node2, min_distance_node
-   double precision :: sl, sm, xcr, ycr
-   double precision :: prin, dist, min_distance, max_cell_size, wdep, xn, yn, crp, xnode1, ynode1, xnode2, ynode2
+   real(kind=dp) :: sl, sm, xcr, ycr
+   real(kind=dp) :: prin, dist, min_distance, max_cell_size, wdep, xn, yn, crp, xnode1, ynode1, xnode2, ynode2
 
    nr_cells_done = 0
    do cell = 1, ndxi
@@ -449,6 +454,7 @@ end subroutine search_starting_cells
 
 !< calculates fetch length and depth for a given wind direction
 subroutine calculate_fetch_values(nr_cells_done, total_nr_cells)
+   use precision, only: dp
 
    use m_flowgeom, only: ndxi, ndx, bl, xz, yz
    use m_flow
@@ -466,7 +472,7 @@ subroutine calculate_fetch_values(nr_cells_done, total_nr_cells)
    integer, intent(in) :: total_nr_cells
 
    integer :: cell, index_upwind_cell, upwind_cell, nr_cells_done_red, nr_cells_done_prev_cycle, error
-   double precision :: prin, fetch_length, fetch_depthw, sumw, www
+   real(kind=dp) :: prin, fetch_length, fetch_depthw, sumw, www
    integer :: numcycles
 
    numcycles = 0
@@ -531,7 +537,8 @@ end subroutine calculate_fetch_values
 
 !> get phiwav values
 subroutine get_phiwav_values()
-use m_waves, only : phiwav
+   use precision, only: dp
+   use m_waves, only: phiwav
    use m_flowgeom
    use m_flow
    use m_sferic, only: pi
@@ -539,7 +546,7 @@ use m_waves, only : phiwav
    implicit none
 
    integer :: link, k1, k2
-   double precision, dimension(:), allocatable :: wxc, wyc
+   real(kind=dp), dimension(:), allocatable :: wxc, wyc
 
    call realloc(wxc, ndx, keepExisting=.false.)
    call realloc(wyc, ndx, keepExisting=.false.)
@@ -557,7 +564,7 @@ end subroutine get_phiwav_values
 
 !> copy values to boundary nodes
 subroutine copy_values_to_boundary_nodes()
-   use m_waves, only : phiwav, rlabda
+   use m_waves, only: phiwav, rlabda
    use m_flowgeom
    use m_flow
    use m_waves, only: uorb, twav, hwav

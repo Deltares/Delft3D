@@ -32,11 +32,11 @@
 
 module m_fm_red_soursin
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: fm_red_soursin
+   public :: fm_red_soursin
 
 contains
 

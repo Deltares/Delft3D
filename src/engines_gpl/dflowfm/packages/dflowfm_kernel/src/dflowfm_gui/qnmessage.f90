@@ -32,39 +32,39 @@
 
 module m_qnmessage
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine QNMESSAGE(TEX)
-         use unstruc_display_data, only: npos
-         use unstruc_colors
-         use m_devices, only: iws, ihs
-         use unstruc_messages, only: msgbuf, msg_flush
+   subroutine QNMESSAGE(TEX)
+      use unstruc_display_data, only: npos
+      use unstruc_colors
+      use m_devices, only: iws, ihs
+      use unstruc_messages, only: msgbuf, msg_flush
 
-         integer :: ih
-         integer :: iw
-         integer :: ixp
-         integer :: iyp
-         character TEX * (*)
+      integer :: ih
+      integer :: iw
+      integer :: ixp
+      integer :: iyp
+      character TEX * (*)
 
-         IW = NPOS(3)
-         IXP = NPOS(1) + (IWS - IW) / 2
-         IYP = NPOS(2)
-         IH = IHS - 9
+      IW = NPOS(3)
+      IXP = NPOS(1) + (IWS - IW) / 2
+      IYP = NPOS(2)
+      IH = IHS - 9
 
-         write (msgbuf, '(A)') TEX
-         call msg_flush()
+      write (msgbuf, '(A)') TEX
+      call msg_flush()
 
-         call ITEXTCOLOURN(HLPFOR, HLPBCK)
-         call IWinAction('FPC')
-         call IWinOpen(IXP, IHS - 1, IW, 2)
-         call IWINOUTCENTRE(1, TEX)
-         call IWINOUTCENTRE(2, 'press F2 to read this message')
-         call IOSWAIT(200)
-         call IWinClose(1)
+      call ITEXTCOLOURN(HLPFOR, HLPBCK)
+      call IWinAction('FPC')
+      call IWinOpen(IXP, IHS - 1, IW, 2)
+      call IWINOUTCENTRE(1, TEX)
+      call IWINOUTCENTRE(2, 'press F2 to read this message')
+      call IOSWAIT(200)
+      call IWinClose(1)
 
-         return
-      end
+      return
+   end
 
 end module m_qnmessage

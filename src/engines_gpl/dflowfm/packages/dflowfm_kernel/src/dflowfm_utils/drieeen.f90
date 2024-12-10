@@ -31,9 +31,10 @@
 !
 
   subroutine DRIEEEN(XD, YD, ZD, Z)
+     use precision, only: dp
      use m_howtoview
      implicit none
-     double precision :: XD, YD, ZD, Z
+     real(kind=dp) :: XD, YD, ZD, Z
 
      if (JVIEW == 1) then ! TEGEN Z-AS
         Z = ZD

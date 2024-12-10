@@ -32,16 +32,16 @@
 module m_draw_text
    implicit none
 contains
-    subroutine DRAWTEXT(X, Y, TEX)
-       use unstruc_opengl, only: InOpenGLRendering, RenderText
+   subroutine DRAWTEXT(X, Y, TEX)
+      use unstruc_opengl, only: InOpenGLRendering, RenderText
 
-       real :: x, y
-       character TEX * (*)
+      real :: x, y
+      character TEX * (*)
 
-       if (InOpenGLRendering) then
-          call RenderText(X, Y, TEX)
-       else
-          call IGRCHAROUT(X, Y, TEX)
-       end if
-    end subroutine DRAWTEXT
+      if (InOpenGLRendering) then
+         call RenderText(X, Y, TEX)
+      else
+         call IGRCHAROUT(X, Y, TEX)
+      end if
+   end subroutine DRAWTEXT
 end module m_draw_text

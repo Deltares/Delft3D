@@ -88,7 +88,7 @@ contains
 !! IPNT_XXX are the pointers in the "valobs" array,
 !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
-      use m_flowparameters, only: jawave, jahistaucurrent, jatem, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur 
+      use m_flowparameters, only: jawave, jahistaucurrent, jatem, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur
       use m_flow, only: iturbulencemodel, idensform, kmx, density_is_pressure_dependent
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots

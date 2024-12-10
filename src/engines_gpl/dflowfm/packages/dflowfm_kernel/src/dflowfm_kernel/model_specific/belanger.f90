@@ -28,94 +28,94 @@
 !-------------------------------------------------------------------------------
 
 module m_belanger
-use m_compareanalytic, only: compareanalytic
+   use m_compareanalytic, only: compareanalytic
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: belanger
+   public :: belanger
 
 contains
 
- subroutine belanger()
-    use m_physcoef
-    use fm_external_forcings_data
-    use m_flowgeom, only: xz, bl, dxi, ln
-    use m_flow, only: s1, iadvec
-    use m_get_cz
-    use m_movabs
-    use m_lnabs
+   subroutine belanger()
+      use precision, only: dp
+      use m_physcoef
+      use fm_external_forcings_data
+      use m_flowgeom, only: xz, bl, dxi, ln
+      use m_flow, only: s1, iadvec
+      use m_get_cz
+      use m_movabs
+      use m_lnabs
 
-    double precision :: chezy, cf, h0, h1, x0, x1, q, constant, bot, a, x, hav, slope, h, h3, hc, hc3, he3
-    integer :: k, kb, L
-    integer, parameter :: mmax = 100000, num = 200
-    double precision, allocatable :: xx(:), ss(:), uu(:)
+      real(kind=dp) :: chezy, cf, h0, h1, x0, x1, q, constant, bot, a, x, hav, slope, h, h3, hc, hc3, he3
+      integer :: k, kb, L
+      integer, parameter :: mmax = 100000, num = 200
+      real(kind=dp), allocatable :: xx(:), ss(:), uu(:)
 
-    allocate (xx(0:mmax), ss(0:mmax), uu(0:mmax))
+      allocate (xx(0:mmax), ss(0:mmax), uu(0:mmax))
 
-    x0 = 0d0 ! left
+      x0 = 0d0 ! left
 
-    kb = kbndz(1, 1)
-    x1 = xz(kb) ! right
-    bot = bl(kb)
+      kb = kbndz(1, 1)
+      x1 = xz(kb) ! right
+      bot = bl(kb)
 
-    h1 = s1(kb) - bot ! exact    right
-    h0 = 20d0 ! geschat  left
+      h1 = s1(kb) - bot ! exact    right
+      h0 = 20d0 ! geschat  left
 
-    slope = abs((bl(ln(1, 3)) - bl(ln(2, 3))) * dxi(3))
+      slope = abs((bl(ln(1, 3)) - bl(ln(2, 3))) * dxi(3))
 
-    ! slope = 1d-4
+      ! slope = 1d-4
 
-    hav = 0.5 * (h0 + h1)
-    call getcz(hav, frcuni, ifrctypuni, Chezy, L)
-    cf = ag / Chezy**2
+      hav = 0.5 * (h0 + h1)
+      call getcz(hav, frcuni, ifrctypuni, Chezy, L)
+      cf = ag / Chezy**2
 
-    q = 1500d0 / 50d0
-    hc3 = q * q / ag
-    hc = hc3**0.333333333d0
+      q = 1500d0 / 50d0
+      hc3 = q * q / ag
+      hc = hc3**0.333333333d0
 
-    constant = 0.25d0 * h1**4 - h1 * hc**3 + x1 * cf * hc**3
+      constant = 0.25d0 * h1**4 - h1 * hc**3 + x1 * cf * hc**3
 
-    call movabs(x1, h1 + bot)
-    x = x1; h = h1
-    xx(mmax) = x1; ss(mmax) = h1 + bot
+      call movabs(x1, h1 + bot)
+      x = x1; h = h1
+      xx(mmax) = x1; ss(mmax) = h1 + bot
 
-    if (slope == 0d0) then ! analytic
+      if (slope == 0d0) then ! analytic
 
-       do k = 1, -num
-          a = 1d0 - dble(k - 1) / dble(num - 1)
-          h = h0 * (1d0 - a) + h1 * a
-          x = (constant - 0.25d0 * h**4 + h * hc**3) / (cf * hc**3)
-          if (x > x0) then
-             call lnabs(x, h + bot)
-          end if
-       end do
+         do k = 1, -num
+            a = 1d0 - dble(k - 1) / dble(num - 1)
+            h = h0 * (1d0 - a) + h1 * a
+            x = (constant - 0.25d0 * h**4 + h * hc**3) / (cf * hc**3)
+            if (x > x0) then
+               call lnabs(x, h + bot)
+            end if
+         end do
 
-    else
-       he3 = cf * hc3 / slope
-    end if
+      else
+         he3 = cf * hc3 / slope
+      end if
 
-    do k = mmax - 1, 0, -1
-       x = x - 1d0
-       h3 = h**3
-       if (slope == 0d0) then
-          if (iadvec == 0) then
-             h = h + (cf * hc**3) / h3 !  - hc**3)
-          else
-             h = h + (cf * hc**3) / (h3 - hc3)
-          end if
-       else
-          h = h - slope * (h3 - he3) / (h3 - hc3)
-       end if
-       bot = bot + slope
-       call lnabs(x, h + bot)
-       xx(k) = x; ss(k) = h + bot
-    end do
+      do k = mmax - 1, 0, -1
+         x = x - 1d0
+         h3 = h**3
+         if (slope == 0d0) then
+            if (iadvec == 0) then
+               h = h + (cf * hc**3) / h3 !  - hc**3)
+            else
+               h = h + (cf * hc**3) / (h3 - hc3)
+            end if
+         else
+            h = h - slope * (h3 - he3) / (h3 - hc3)
+         end if
+         bot = bot + slope
+         call lnabs(x, h + bot)
+         xx(k) = x; ss(k) = h + bot
+      end do
 
-    call compareanalytic(ss, xx, mmax)
+      call compareanalytic(ss, xx, mmax)
 
- end subroutine belanger
+   end subroutine belanger
 
 end module m_belanger

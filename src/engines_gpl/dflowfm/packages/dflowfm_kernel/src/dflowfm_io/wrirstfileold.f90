@@ -31,17 +31,18 @@
 !
 
 module m_wrirstfileold
-use m_wrirstold, only: WRIRSTold
+   use m_wrirstold, only: WRIRSTold
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: WRIRSTfileold
+   public :: WRIRSTfileold
 
 contains
 
    subroutine WRIRSTfileold(tim)
+      use precision, only: dp
       use m_flowtimes
       use unstruc_model
       use m_flow
@@ -49,7 +50,7 @@ contains
       use unstruc_files, only: defaultFileName
 
       implicit none
-      double precision :: tim
+      real(kind=dp) :: tim
       integer :: mout
 
       call newfil(mout, defaultFileName('xyz', timestamp=tim))

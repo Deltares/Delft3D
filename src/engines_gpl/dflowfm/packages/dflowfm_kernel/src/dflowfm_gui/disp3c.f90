@@ -31,71 +31,71 @@
 !
 
 module m_disp3c
-use m_dmovabs
-use m_dlnabs
+   use m_dmovabs
+   use m_dlnabs
 
-
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISP3C(X, Y, Z, NCL, N, RCIR, NCOL)
-         use m_cir
-         use M_MISSING
-         use m_halt2
-         use m_jgrline8
-         use m_set_col
-         implicit none
-         integer :: i
-         integer :: istart
-         integer :: n
-         integer :: ncol
-         double precision :: rcir
+   subroutine DISP3C(X, Y, Z, NCL, N, RCIR, NCOL)
+      use precision, only: dp
+      use m_cir
+      use M_MISSING
+      use m_halt2
+      use m_jgrline8
+      use m_set_col
+      implicit none
+      integer :: i
+      integer :: istart
+      integer :: n
+      integer :: ncol
+      real(kind=dp) :: rcir
 !     LAAT EEN TWEEDIMENSIONALE FUNCTIE ZIEN MET CIRKELS EN KLEUREN
-         double precision X(N), Y(N), Z(N)
-         integer NCL(N), ja, jacol
+      real(kind=dp) X(N), Y(N), Z(N)
+      integer NCL(N), ja, jacol
 
-         if (N <= 0) return
-         call SETCOL(NCOL)
+      if (N <= 0) return
+      call SETCOL(NCOL)
 
-         jacol = 0
-         do i = 1, n
-            if (ncl(i) /= 0) then
-               jacol = 1
-               exit
+      jacol = 0
+      do i = 1, n
+         if (ncl(i) /= 0) then
+            jacol = 1
+            exit
+         end if
+      end do
+
+      if (jacol == 0) then
+         call JGRLINE8(x, y, N)
+      else
+
+         ISTART = 0
+         ja = 0
+         do I = 1, N
+            if (X(I) /= dmiss) then
+               if (ISTART == 1) then
+                  call DLNABS(X(I), Y(I), Z(I))
+               else
+                  if (NCL(I) /= 0) then
+                     call SETCOL(NCL(I))
+                  end if
+                  call DMOVABS(X(I), Y(I), Z(I))
+                  ISTART = 1
+               end if
+               call CIR(RCIR)
+            else
+               ISTART = 0
+            end if
+            if (mod(I, 50) == 0) then
+               call HALT2(ja)
+               if (ja == 1) return
             end if
          end do
 
-         if (jacol == 0) then
-            call JGRLINE8(x, y, N)
-         else
+      end if
 
-            ISTART = 0
-            ja = 0
-            do I = 1, N
-               if (X(I) /= dmiss) then
-                  if (ISTART == 1) then
-                     call DLNABS(X(I), Y(I), Z(I))
-                  else
-                     if (NCL(I) /= 0) then
-                        call SETCOL(NCL(I))
-                     end if
-                     call DMOVABS(X(I), Y(I), Z(I))
-                     ISTART = 1
-                  end if
-                  call CIR(RCIR)
-               else
-                  ISTART = 0
-               end if
-               if (mod(I, 50) == 0) then
-                  call HALT2(ja)
-                  if (ja == 1) return
-               end if
-            end do
-
-         end if
-
-         return
-      end
+      return
+   end
 
 end module m_disp3c

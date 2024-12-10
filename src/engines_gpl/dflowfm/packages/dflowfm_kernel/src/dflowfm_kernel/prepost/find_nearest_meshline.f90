@@ -32,6 +32,7 @@
 
 !> find meshline nearest to land boundary
 subroutine find_nearest_meshline(jasnap)
+   use precision, only: dp
    use m_connect_boundary_paths, only: connect_boundary_paths
    use m_admin_landboundary_segments, only: admin_landboundary_segments
    use m_clnabs
@@ -49,7 +50,7 @@ subroutine find_nearest_meshline(jasnap)
 
    integer, dimension(:), allocatable :: nodemask, linkmask ! note that cellmask is in module
    integer, dimension(:), allocatable :: klink ! link connected to the node in the shortest path
-   double precision, dimension(:), allocatable :: dismin ! minimum distance to whole land boundary
+   real(kind=dp), dimension(:), allocatable :: dismin ! minimum distance to whole land boundary
 
 !   integer, parameter                                :: maxnodes=100        ! in connect_boundary_paths: large enough, depends on DCLOSE
    integer :: numnodes ! in connect_boundary_paths: number of nodes found so far
@@ -67,13 +68,13 @@ subroutine find_nearest_meshline(jasnap)
    integer :: num, numrejected, numcellsmasked, maskdepth
    integer :: ierr
 
-   double precision :: xp, yp
-   double precision :: xn, yn, ddis, rL, ddismin ! in toland
-   double precision :: xn_prev, yn_prev, ddis_prev, rL_prev
+   real(kind=dp) :: xp, yp
+   real(kind=dp) :: xn, yn, ddis, rL, ddismin ! in toland
+   real(kind=dp) :: xn_prev, yn_prev, ddis_prev, rL_prev
 
 !   integer, parameter                                :: IMISS = -999
 
-   double precision, parameter :: DISNEAREST = 2d0
+   real(kind=dp), parameter :: DISNEAREST = 2d0
 
    logical, parameter :: LMASK = .true.
 
@@ -343,6 +344,7 @@ contains
 
 !> mask the nodes that are considered in the shortest path algorithm
    subroutine masknodes(numseg)
+      use precision, only: dp
 
       use m_cellcrossedbyland, only: cellcrossedbyland
       use m_missing
@@ -357,7 +359,7 @@ contains
 
       integer, parameter :: M = 10 ! maximum number of nodes per netcell
       integer, dimension(M) :: nlist
-      double precision, dimension(M) :: xlist, ylist
+      real(kind=dp), dimension(M) :: xlist, ylist
 
       integer, allocatable, dimension(:) :: listnext ! next-cell list in maskcells
       integer :: numnext ! size of next-cell list in maskcells
@@ -624,6 +626,7 @@ contains
 
 !> Dijkstra's shortest path algorithm
    subroutine shortest_path(numseg, jstart, jend, kstart, nodemask, netboundonly, klink)
+      use precision, only: dp
 
       use network_data
       use geometry_module, only: dbdistance, dlinedis
@@ -639,21 +642,21 @@ contains
       integer, intent(in) :: netboundonly !< consider only the net boundary (1) or not (0)
       integer, dimension(numk), intent(out) :: klink !< link connected to the node in the shortest path
 
-      double precision, allocatable, dimension(:) :: dist
+      real(kind=dp), allocatable, dimension(:) :: dist
 
       integer :: i, j, kcur, kneighbor, L
       integer :: j1, j2, j3
       integer :: ja
 
-      double precision :: x1, y1, x2, y2, x3, y3
-      double precision :: xn1, yn1, xn2, yn2, xn3, yn3 ! projection on land boundary
-      double precision :: ddis1, ddis2, ddis3
-      double precision :: rL1, rL2, rL3
-      double precision :: dl1, dl2, dL, ddmax
-      double precision :: dlinklength, dist_alt
+      real(kind=dp) :: x1, y1, x2, y2, x3, y3
+      real(kind=dp) :: xn1, yn1, xn2, yn2, xn3, yn3 ! projection on land boundary
+      real(kind=dp) :: ddis1, ddis2, ddis3
+      real(kind=dp) :: rL1, rL2, rL3
+      real(kind=dp) :: dl1, dl2, dL, ddmax
+      real(kind=dp) :: dlinklength, dist_alt
 
-      double precision, parameter :: DMAX = 1d99
-      double precision, parameter :: fsixth = 1d0 / 6d0
+      real(kind=dp), parameter :: DMAX = 1d99
+      real(kind=dp), parameter :: fsixth = 1d0 / 6d0
       integer, parameter :: alpha = 1
 
 !      integer, parameter                                         :: IMISS = -999
@@ -749,6 +752,7 @@ contains
 !>       within a certain distance from the land boundary segment
 !>  note: will use jleft, jright, rLleft and rLright
    subroutine get_kstartend(jstart, jend, kstart, kend)
+      use precision, only: dp
 
       use m_missing, only: dmiss, JINS
       use m_polygon, only: NPL, xpl, ypl, zpl
@@ -766,13 +770,13 @@ contains
 
       integer :: kend_prev, disendmin_prev, dislandend_prev
 
-      double precision :: xstart, ystart, xend, yend ! coordinates of begin and end point of land boundary segment respectively
-      double precision :: x3, y3
-      double precision :: xn, yn, rl ! for toland
+      real(kind=dp) :: xstart, ystart, xend, yend ! coordinates of begin and end point of land boundary segment respectively
+      real(kind=dp) :: x3, y3
+      real(kind=dp) :: xn, yn, rl ! for toland
 
-      double precision :: dis, disstart, disend
-      double precision :: disstartmin, disendmin, dislandstart, dislandend
-      double precision :: dismax
+      real(kind=dp) :: dis, disstart, disend
+      real(kind=dp) :: disstartmin, disendmin, dislandstart, dislandend
+      real(kind=dp) :: dismax
 
 !     default values
       kstart = 0
@@ -861,6 +865,7 @@ contains
 !>       on a link that is closest to the start and end node of the boundary segment respectively
 !>  note: will use jleft, jright, rLleft and rLright
    subroutine get_kstartend2(jend, kstart, kend)
+      use precision, only: dp
 
       use m_missing, only: dmiss, JINS
       use m_polygon, only: NPL, xpl, ypl, zpl
@@ -880,12 +885,12 @@ contains
       integer :: L, Lstart, Lend
       integer :: ka, kb, kd, ke
 
-      double precision :: xstart, ystart, xend, yend ! coordinates of begin and end point of land boundary segment respectively
-      double precision :: xa, ya, xb, yb
-      double precision :: xn, yn, r ! for toland
+      real(kind=dp) :: xstart, ystart, xend, yend ! coordinates of begin and end point of land boundary segment respectively
+      real(kind=dp) :: xa, ya, xb, yb
+      real(kind=dp) :: xn, yn, r ! for toland
 
-      double precision :: disstart, disend
-      double precision :: disstartmin, disendmin
+      real(kind=dp) :: disstart, disend
+      real(kind=dp) :: disstartmin, disendmin
 
       ierror = 1
 
@@ -983,7 +988,8 @@ contains
    end subroutine get_kstartend2
 
 !> compute typical mesh width for a node, which is the maximum length of the connected links
-   double precision function dmeshwidth(k)
+   real(kind=dp) function dmeshwidth(k)
+      use precision, only: dp
 
       use m_missing
       use m_polygon, only: NPL, xpl, ypl, zpl
@@ -996,7 +1002,7 @@ contains
 
       integer :: kother, kk, L, in
 
-      double precision :: x1, y1, x2, y2
+      real(kind=dp) :: x1, y1, x2, y2
 
 !     not-in-polygon value
       dmeshwidth = DMISS

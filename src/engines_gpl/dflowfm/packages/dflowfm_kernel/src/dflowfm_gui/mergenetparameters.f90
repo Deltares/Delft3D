@@ -32,7 +32,7 @@
 
 module m_mergenetparameters
 
-implicit none
+   implicit none
 
 contains
 

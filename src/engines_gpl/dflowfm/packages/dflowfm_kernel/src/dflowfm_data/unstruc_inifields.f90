@@ -42,7 +42,7 @@ module unstruc_inifields
    use properties
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp
-   
+
    implicit none
    private ! Prevent used modules from being exported
 
@@ -135,8 +135,8 @@ contains
          water_specifier = enum_water_depth
       else
          write (msgbuf, '(a)') 'File '''//trim(ini_file_name)// &
-            ''': error while setting initial field values of quantities ''waterlevel'' and ''waterdepth'';'//&
-               ' Provided quantity name '''// trim(global_quantity)//''' is invalid.'
+            ''': error while setting initial field values of quantities ''waterlevel'' and ''waterdepth'';'// &
+            ' Provided quantity name '''//trim(global_quantity)//''' is invalid.'
          call err_flush()
       end if
 
@@ -298,14 +298,14 @@ contains
          else
             if (strcmpi(groupname, 'Initial')) then
                call process_initial_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                              target_array_3d, first_index, method)
+                                          target_array_3d, first_index, method)
             else
                target_array_3d => null()
                call process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                                target_array_integer)
+                                            target_array_integer)
             end if
 
-            if (.not. associated(target_array).and. .not. associated(target_array_3d)) then
+            if (.not. associated(target_array) .and. .not. associated(target_array_3d)) then
                cycle
             end if
 
@@ -332,7 +332,7 @@ contains
                                                  filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
                                                  varname=varname, tgt_item1=ec_item)
                success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-               tunit, tstart_user, target_array)
+                                                                      tunit, tstart_user, target_array)
                if (.not. success) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
                end if
@@ -613,7 +613,7 @@ contains
          end if
       end if
 
-      varname = '' 
+      varname = ''
 
       ! We've made it to here, success!
       ja = 1
@@ -1177,7 +1177,7 @@ contains
    !> Set the control parameters for the actual reading of either the [Initial] type items from the input file or
    !! connecting the input to the EC-module.
    subroutine process_initial_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                        target_array_3d, indx, method)
+                                    target_array_3d, indx, method)
       use stdlib_kinds, only: c_bool
       use system_utils, only: split_filename
       use tree_data_types
@@ -1266,7 +1266,7 @@ contains
             call realloc(satop, ndx, keepexisting=.true., fill=dmiss)
             target_location_type = UNC_LOC_S
             target_array => satop
-            if (inisal2D /= 0 .and. inisal2D /=2) then
+            if (inisal2D /= 0 .and. inisal2D /= 2) then
                call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', initialSalinityTop and initialSalinityBot found. Only one of them can be used.')
                success = .false.
             end if
@@ -1280,7 +1280,7 @@ contains
             call realloc(sabot, ndx, keepexisting=.true., fill=dmiss)
             target_location_type = UNC_LOC_S
             target_array => sabot
-            if (inisal2D /= 0 .and. inisal2D /=3) then
+            if (inisal2D /= 0 .and. inisal2D /= 3) then
                call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', initialSalinityTop and initialSalinityBot found. Only one of them can be used.')
                success = .false.
             end if
@@ -1342,8 +1342,8 @@ contains
          indx = iconst
          target_array_3d => constituents
       case ('initialvelocity')
-         call SetMessage(LEVEL_WARN, 'initialvelocity is not supported in the inifields file. Use initialvelocityx'//&
-                                     ' and initialvelocityy instead.')
+         call SetMessage(LEVEL_WARN, 'initialvelocity is not supported in the inifields file. Use initialvelocityx'// &
+                         ' and initialvelocityy instead.')
          success = .false.
 
       case ('initialvelocityx')
@@ -1449,7 +1449,7 @@ contains
    !> Set the control parameters for the actual reading of the items from the input file or
    !! connecting the input to the EC-module.
    subroutine process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                          target_array_integer)
+                                      target_array_integer)
       use stdlib_kinds, only: c_bool
       use system_utils, only: split_filename
       use tree_data_types
@@ -1526,7 +1526,7 @@ contains
          if (infiltrationmodel /= DFM_HYD_INFILT_CONST) then
             write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(qid) &
                //'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_CONST, ''' in the MDU file (constant).'
-            call warn_flush() 
+            call warn_flush()
             success = .false.
             return
          end if
@@ -1780,16 +1780,16 @@ contains
    end subroutine finish_initialization
 
    subroutine fill_field_values(target_array, target_array_3d, target_location_type, first_index, filename, filetype, method, operand, &
-      transformcoef, iloctype, kcsini, success)
+                                transformcoef, iloctype, kcsini, success)
 
       use m_alloc, only: reallocP
       use timespace, only: timespaceinitialfield
       use m_missing, only: dmiss
       use m_flow, only: ndkx
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_3DV
-      
+
       real(kind=dp), dimension(:), pointer, intent(inout) :: target_array !< The array to be filled with values. (in case of a 2d array)
-      real(kind=dp), dimension(:,:), pointer, intent(inout) :: target_array_3d !< The array to be filled with values. (in case of a 3d array)
+      real(kind=dp), dimension(:, :), pointer, intent(inout) :: target_array_3d !< The array to be filled with values. (in case of a 3d array)
       integer, intent(in) :: target_location_type !< The location type of the target array.
       integer, intent(in) :: first_index !< The first index of the target array (3D).
       character(len=*), intent(in) :: filename !< The name of the file containing the field values.
@@ -1809,13 +1809,13 @@ contains
       if (target_location_type == UNC_LOC_3DV) then
          call setinitialverticalprofile(target_array, ndkx, filename)
          success = .true.
-      else 
+      else
          loc_type = target_location_type
-         call set_coordinates_for_location_type(target_location_type, x_loc, y_loc, num_items, iloctype, kcsini )
-         
+         call set_coordinates_for_location_type(target_location_type, x_loc, y_loc, num_items, iloctype, kcsini)
+
          if (target_location_type == UNC_LOC_S3D) then
             used_operand = 'O'
-            call reallocP(target_array, num_items, fill = dmiss, keepExisting=.false.)
+            call reallocP(target_array, num_items, fill=dmiss, keepExisting=.false.)
             loc_type = UNC_LOC_S ! timespaceinitialfield expects UNC_LOC_S in stead of UNC_LOC_S3D
          else
             used_operand = operand
@@ -1823,11 +1823,11 @@ contains
 
          success = timespaceinitialfield(x_loc, y_loc, target_array, num_items, filename, filetype, method, used_operand, &
                                          transformcoef, loc_type)
-                                         
+
          if (associated(target_array_3d)) then
             call initialfield2Dto3D_dbl_indx(target_array, target_array_3d, first_index, transformcoef(13), transformcoef(14), &
                                              operand)
-            deallocate(target_array)
+            deallocate (target_array)
             target_array => null()
          end if
       end if
@@ -1835,13 +1835,13 @@ contains
    end subroutine fill_field_values
 
    subroutine set_coordinates_for_location_type(target_location_type, x_loc, y_loc, num_items, iloctype, kcsini)
-   
+
       use m_alloc, only: realloc
       use m_cell_geometry, only: xz, yz
       use m_flowgeom, only: ndx, lnx, xu, yu
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
-      
+
       integer, intent(in) :: target_location_type !< The spatial type of the target locations: 1D, 2D or all.
       real(kind=dp), pointer, dimension(:), intent(out) :: x_loc, y_loc !< The x and y coordinates of the target locations.
       integer, intent(out) :: num_items !< The number of target locations.
@@ -1867,30 +1867,29 @@ contains
       end select
    end subroutine set_coordinates_for_location_type
 
-
-   !> The values from the input array are transferred to the 3d locations in the output array. A bamdwith can be specified, 
-   !! by using the bandwith_lower_limit and bandwith_upper_limit. If the bandwith is not specified, the values are transferred to all 
+   !> The values from the input array are transferred to the 3d locations in the output array. A bamdwith can be specified,
+   !! by using the bandwith_lower_limit and bandwith_upper_limit. If the bandwith is not specified, the values are transferred to all
    !! 3d grid cells
    subroutine initialfield2Dto3D(input_array_2d, output_array_3d, bandwith_lower_limit, bandwith_upper_limit, operand)
       use m_missing
 
       implicit none
 
-      real(kind=dp), dimension(:), intent(inout), target :: input_array_2d  !< The input array on 2d grid cells.
+      real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells.
       real(kind=dp), dimension(:), intent(inout), target :: output_array_3d !< The output array on 3d grid cells.
       real(kind=dp), intent(in) :: bandwith_lower_limit, bandwith_upper_limit !< The value for the first index of the output array.
       character(len=*), intent(in) :: operand !< The operand to be used for filling the field values.
-      
+
       real(kind=dp), dimension(:, :), pointer :: output_array_3d_tmp
-   
+
       output_array_3d_tmp(1:1, 1:size(output_array_3d)) => output_array_3d
 
       call initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d_tmp, 1, bandwith_lower_limit, bandwith_upper_limit, operand)
 
    end subroutine initialfield2Dto3D
 
-   !> The values from the input array are transferred to the 3d locations in the output array. A bamdwith can be specified, 
-   !! by using the bandwith_lower_limit and bandwith_upper_limit. If the bandwith is not specified, the values are transferred to all 
+   !> The values from the input array are transferred to the 3d locations in the output array. A bamdwith can be specified,
+   !! by using the bandwith_lower_limit and bandwith_upper_limit. If the bandwith is not specified, the values are transferred to all
    !! 3d grid cells.
    subroutine initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d, first_index, bandwith_lower_limit, bandwith_upper_limit, operand)
       use m_flowgeom, only: ndx

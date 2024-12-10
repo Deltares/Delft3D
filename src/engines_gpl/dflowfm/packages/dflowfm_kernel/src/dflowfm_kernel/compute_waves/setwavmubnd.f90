@@ -32,15 +32,16 @@
 
 module m_setwavmubnd
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setwavmubnd
+   public :: setwavmubnd
 
 contains
 
    subroutine setwavmubnd()
+      use precision, only: dp
       use m_flowgeom
       use m_flowparameters
       use fm_external_forcings_data
@@ -49,10 +50,10 @@ contains
       use m_get_Lbot_Ltop
       implicit none
 
-      double precision :: ac1, ac2
+      real(kind=dp) :: ac1, ac2
 
       integer :: kb, ki, L, n, LL, Lb, Lt
-      double precision :: hminlwi, wavmubndL
+      real(kind=dp) :: hminlwi, wavmubndL
 
       hminlwi = 1d0 / hminlw
 

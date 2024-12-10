@@ -36,8 +36,7 @@
 !> <flow1d_implicit> and only has access to the variables in that project.
 
 module m_initialize_flow1d_implicit
-use m_init_1dinfo, only: init_1dinfo
-
+   use m_init_1dinfo, only: init_1dinfo
 
 contains
 
@@ -789,6 +788,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
    subroutine inifm1dimp_faap(iresult)
+      use precision, only: dp
 
       use m_f1dimp
       use m_flowgeom, only: ndx, bai_mor, ba, bl, dx, lnx, dxi, acl, wu, snu, csu, wu_mor, wcx1, wcx2, wcy1, wcy2, kcu, wcl, lnxi, griddim
@@ -821,13 +821,13 @@ contains
 
       integer :: kl, kd, k1
 
-      double precision, allocatable, dimension(:, :) :: bodsed_o
-      double precision, allocatable, dimension(:, :) :: thlyr_o
-      double precision, allocatable, dimension(:, :) :: sedshort_o
-      double precision, allocatable, dimension(:, :) :: svfrac_o
-      double precision, allocatable, dimension(:, :) :: preload_o
+      real(kind=dp), allocatable, dimension(:, :) :: bodsed_o
+      real(kind=dp), allocatable, dimension(:, :) :: thlyr_o
+      real(kind=dp), allocatable, dimension(:, :) :: sedshort_o
+      real(kind=dp), allocatable, dimension(:, :) :: svfrac_o
+      real(kind=dp), allocatable, dimension(:, :) :: preload_o
 
-      double precision, allocatable, dimension(:, :, :) :: msed_o
+      real(kind=dp), allocatable, dimension(:, :, :) :: msed_o
 
 !----------------------------------------
 !BEGIN POINT
@@ -1068,6 +1068,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
    subroutine inifm1dimp_fic(iresult)
+      use precision, only: dp
 
       use m_f1dimp
       use m_flowgeom, only: ndx, ndxi, wu, nd
@@ -1086,8 +1087,8 @@ contains
 
       real, dimension(:, :), pointer :: waoft
 
-      double precision, dimension(:, :), pointer :: hpack
-      double precision, dimension(:, :), pointer :: qpack
+      real(kind=dp), dimension(:, :), pointer :: hpack
+      real(kind=dp), dimension(:, :), pointer :: qpack
 
 !
 !output
@@ -1103,7 +1104,7 @@ contains
 
       integer :: swaoft
 
-      double precision :: wu_int, au_int
+      real(kind=dp) :: wu_int, au_int
 
 !----------------------------------------
 !BEGIN POINT

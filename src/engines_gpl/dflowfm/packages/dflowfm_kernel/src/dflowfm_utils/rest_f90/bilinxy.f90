@@ -32,39 +32,40 @@
 module m_bilinxy
    implicit none
 contains
-      subroutine BILINXY(X, Y, XZ, YZ, XP, YP, XP2, YP2, INI)
-         use m_qnerror
-         use m_lubksb
+   subroutine BILINXY(X, Y, XZ, YZ, XP, YP, XP2, YP2, INI)
+      use precision, only: dp
+      use m_qnerror
+      use m_lubksb
 
-         double precision :: c
-         integer :: i
-         integer :: ini
-         integer :: japarallel
-         double precision, save :: A(4, 4), BX(4), BY(4)
-         double precision :: X(4), Y(4), XZ(4), YZ(4), XP, YP, XP2, YP2
-         integer, save :: INX(4)
-         ! (Zi = AXi + BYi + CXiYi + Di ,i=1,4)
-         ! Coefficienten in A, rechterlid in B, opl met LU-decompositie
-         if (INI == 1) then
-            do I = 1, 4
-               A(I, 1) = X(I) - X(1)
-               A(I, 2) = Y(I) - Y(1)
-               A(I, 3) = (Y(I) - Y(1)) * (X(I) - X(1))
-               A(I, 4) = 1
-               BX(I) = XZ(I)
-               BY(I) = YZ(I)
-            end do
-            call LUDCMP(A, 4, 4, INX, C, JAPARALLEL)
-            if (JAPARALLEL == 1) then
-               call qnerror('Problem in Ludcmp', ' ', ' ')
-               INI = -1
-               return
-            end if
-            call LUBKSB(A, 4, 4, INX, BX)
-            call LUBKSB(A, 4, 4, INX, BY)
+      real(kind=dp) :: c
+      integer :: i
+      integer :: ini
+      integer :: japarallel
+      real(kind=dp), save :: A(4, 4), BX(4), BY(4)
+      real(kind=dp) :: X(4), Y(4), XZ(4), YZ(4), XP, YP, XP2, YP2
+      integer, save :: INX(4)
+      ! (Zi = AXi + BYi + CXiYi + Di ,i=1,4)
+      ! Coefficienten in A, rechterlid in B, opl met LU-decompositie
+      if (INI == 1) then
+         do I = 1, 4
+            A(I, 1) = X(I) - X(1)
+            A(I, 2) = Y(I) - Y(1)
+            A(I, 3) = (Y(I) - Y(1)) * (X(I) - X(1))
+            A(I, 4) = 1
+            BX(I) = XZ(I)
+            BY(I) = YZ(I)
+         end do
+         call LUDCMP(A, 4, 4, INX, C, JAPARALLEL)
+         if (JAPARALLEL == 1) then
+            call qnerror('Problem in Ludcmp', ' ', ' ')
+            INI = -1
+            return
          end if
-         XP2 = (XP - X(1)) * BX(1) + (YP - Y(1)) * BX(2) + (XP - X(1)) * (YP - Y(1)) * BX(3) + BX(4)
-         YP2 = (XP - X(1)) * BY(1) + (YP - Y(1)) * BY(2) + (XP - X(1)) * (YP - Y(1)) * BY(3) + BY(4)
-         return
-      end
+         call LUBKSB(A, 4, 4, INX, BX)
+         call LUBKSB(A, 4, 4, INX, BY)
+      end if
+      XP2 = (XP - X(1)) * BX(1) + (YP - Y(1)) * BX(2) + (XP - X(1)) * (YP - Y(1)) * BX(3) + BX(4)
+      YP2 = (XP - X(1)) * BY(1) + (YP - Y(1)) * BY(2) + (XP - X(1)) * (YP - Y(1)) * BY(3) + BY(4)
+      return
+   end
 end module m_bilinxy

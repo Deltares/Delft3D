@@ -31,6 +31,7 @@
 !
 
   subroutine MAKECOARSE2FINETRIANGLECONNECTIONCELLS()
+     use precision, only: dp
      use m_netw
      use m_sferic, only: jsferic, jasfer3D
      use m_missing, only: dxymis
@@ -41,7 +42,7 @@
 
      implicit none
      integer :: N3(6)
-     double precision :: ARN, XCN, YCN
+     real(kind=dp) :: ARN, XCN, YCN
      integer :: N, NN, K3, K, K0, NR, KA, KB, K1, K2, L1, L2, LNU, K01, KP, K7, KK3, K03, NN3, KK, L, K23
 
      call FINDCELLS(0)

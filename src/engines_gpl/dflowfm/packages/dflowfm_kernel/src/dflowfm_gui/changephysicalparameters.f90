@@ -32,11 +32,12 @@
 
 module m_changephysicalparameters
 
-implicit none
+   implicit none
 
 contains
 
    subroutine CHANGEPHYSICALPARAMETERS()
+      use precision, only: dp
       use m_flow
       use m_flowgeom, only: ndx
       use unstruc_colors
@@ -56,7 +57,7 @@ contains
 !
       integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key, ierr
       integer :: nbut, imp, inp
-      double precision :: frcuniorg
+      real(kind=dp) :: frcuniorg
 
       NLEVEL = 4
       OPTION(1) = 'frcuni                                  '; it(2 * 1) = 6

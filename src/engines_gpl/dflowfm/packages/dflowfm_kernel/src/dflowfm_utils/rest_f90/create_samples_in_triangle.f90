@@ -32,6 +32,7 @@
 
 !> create samples in triangle
 subroutine create_samples_in_triangle()
+   use precision, only: dp
 
    use m_polygon
    use m_samples
@@ -43,12 +44,12 @@ subroutine create_samples_in_triangle()
 
    implicit none
 
-   double precision, dimension(:, :), allocatable :: xx
-   double precision, dimension(:, :), allocatable :: yy
+   real(kind=dp), dimension(:, :), allocatable :: xx
+   real(kind=dp), dimension(:, :), allocatable :: yy
 
-   double precision :: dcos
-   double precision :: xi, eta
-   double precision :: dfac, dfacL, dfacR, RL, RR
+   real(kind=dp) :: dcos
+   real(kind=dp) :: xi, eta
+   real(kind=dp) :: dfac, dfacL, dfacR, RL, RR
 
    integer :: n1, n2, n3
    integer :: M, N, Nxi, Msize

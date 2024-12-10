@@ -31,10 +31,9 @@
 !
 
 module m_changedisplayparameters
-use m_settextsize
+   use m_settextsize
 
-
-implicit none
+   implicit none
 
 contains
 
@@ -58,7 +57,7 @@ contains
       use m_drawthis
       use m_help
       use m_highlight_form_line
-      
+
       implicit none
       integer :: i
       integer :: ifexit

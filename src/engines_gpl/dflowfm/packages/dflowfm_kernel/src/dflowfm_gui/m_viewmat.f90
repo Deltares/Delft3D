@@ -33,7 +33,7 @@ module m_viewmat
    use precision, only: dp
 
    implicit none
-   real(dp), dimension(4,4) :: vs
+   real(dp), dimension(4, 4) :: vs
    real(dp) :: x0s
    real(dp) :: y0s
 

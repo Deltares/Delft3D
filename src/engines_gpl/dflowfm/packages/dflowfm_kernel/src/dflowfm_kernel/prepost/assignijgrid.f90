@@ -33,32 +33,32 @@
 !>  assign indices (i,j) to the curvi-linear grid
 module m_assignijgrid
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: assignijgrid
+   public :: assignijgrid
 
 contains
 
-subroutine assignijgrid(k, ic, jc)
+   subroutine assignijgrid(k, ic, jc)
 
-   use m_assignij, only: assignij
-   use m_netw
-   use m_grid
-   use m_missing
-   use m_readyy
+      use m_assignij, only: assignij
+      use m_netw
+      use m_grid
+      use m_missing
+      use m_readyy
 
-   integer :: k !< current cell
+      integer :: k !< current cell
 
-   integer, dimension(numk) :: ic, jc !< indices (i,j) of the nodes
+      integer, dimension(numk) :: ic, jc !< indices (i,j) of the nodes
 
-   integer :: kcell, kneighbor, kdir
-   integer :: icount, iter, lowold(2), uppold(2)
-   integer, parameter :: MAXITER = 1000000
+      integer :: kcell, kneighbor, kdir
+      integer :: icount, iter, lowold(2), uppold(2)
+      integer, parameter :: MAXITER = 1000000
 ! integer, parameter       :: IMISS   = -999999
 
-   integer :: numiter_guess
+      integer :: numiter_guess
 !---------------------------------------------------------
 ! cellmask
 !   -1 : inactive,     in curvi-grid
@@ -68,52 +68,52 @@ subroutine assignijgrid(k, ic, jc)
 !---------------------------------------------------------
 
 ! mask current cell as frontcell
-   cellmask(k) = 10
+      cellmask(k) = 10
 
-   lowold = lbound(ijc)
-   uppold = ubound(ijc)
+      lowold = lbound(ijc)
+      uppold = ubound(ijc)
 
-   numiter_guess = sqrt(dble(nump)) * 10
+      numiter_guess = sqrt(dble(nump)) * 10
 
-   call readyy('creating curvilinear grid', 0d0)
+      call readyy('creating curvilinear grid', 0d0)
 
-   do iter = 1, MAXITER
-      call readyy('creating curvilinear grid', min(dble(iter - 1) / dble(numiter_guess - 1), 1d0))
+      do iter = 1, MAXITER
+         call readyy('creating curvilinear grid', min(dble(iter - 1) / dble(numiter_guess - 1), 1d0))
 
-      icount = 0
+         icount = 0
 
-      do kcell = 1, nump
-         if (cellmask(kcell) == iter + 9) then
+         do kcell = 1, nump
+            if (cellmask(kcell) == iter + 9) then
 
 ! done with cell kcell - unmask cell
-            cellmask(kcell) = -1
+               cellmask(kcell) = -1
 
-            do kdir = 1, 4
+               do kdir = 1, 4
 
-               call assignij(kcell, kdir, kneighbor, ic, jc)
+                  call assignij(kcell, kdir, kneighbor, ic, jc)
 
-               if (kneighbor /= 0) then
-                  if (cellmask(kneighbor) == 1) then
-                     cellmask(kneighbor) = iter + 10
-                     icount = icount + 1
+                  if (kneighbor /= 0) then
+                     if (cellmask(kneighbor) == 1) then
+                        cellmask(kneighbor) = iter + 10
+                        icount = icount + 1
+                     end if
                   end if
-               end if
-            end do
-         end if
-      end do
+               end do
+            end if
+         end do
 
 ! only one layer of cells will be added during the next iteration at maximum
-      call grow_ijc(lowold, uppold, &
-                    (/minval(ic, ic /= IMISS) - 1, minval(jc, jc /= IMISS) - 1/), &
-                    (/maxval(ic, ic /= IMISS) + 1, maxval(jc, jc /= IMISS) + 1/), 0)
+         call grow_ijc(lowold, uppold, &
+                       (/minval(ic, ic /= IMISS) - 1, minval(jc, jc /= IMISS) - 1/), &
+                       (/maxval(ic, ic /= IMISS) + 1, maxval(jc, jc /= IMISS) + 1/), 0)
 
-      if (icount == 0) exit
-   end do
+         if (icount == 0) exit
+      end do
 
-   if (iter == MAXITER) write (6, *) 'assignijgrid: iter=MAXITER'
+      if (iter == MAXITER) write (6, *) 'assignijgrid: iter=MAXITER'
 
-   call readyy('creating curvilinear grid', -1d0)
+      call readyy('creating curvilinear grid', -1d0)
 
-end subroutine assignijgrid
+   end subroutine assignijgrid
 
 end module m_assignijgrid

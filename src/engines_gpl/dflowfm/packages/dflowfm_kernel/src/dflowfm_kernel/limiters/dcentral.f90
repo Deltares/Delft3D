@@ -32,9 +32,10 @@
 module m_dcentral
    implicit none
 contains
-   double precision function dcentral(d1, d2) ! twee maal vergroot vanwege acl
+   real(kind=dp) function dcentral(d1, d2) ! twee maal vergroot vanwege acl
+      use precision, only: dp
       use m_dcminmod
-      double precision d1, d2
+      real(kind=dp) d1, d2
 
       if (d1 * d2 > 0d0) then
          dcentral = dcminmod((d1 + d2) * 0.5d0, dcminmod(2d0 * d1, 2d0 * d2))

@@ -32,15 +32,16 @@
 
 module m_closeto1dnetnode
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: closeto1dnetnode
+   public :: closeto1dnetnode
 
 contains
 
    subroutine CLOSETO1Dnetnode(XP1, YP1, N1, dist) !
+      use precision, only: dp
 
       use m_netw
       use geometry_module, only: dbdistance
@@ -48,13 +49,13 @@ contains
       use m_missing
 
       implicit none
-      double precision, intent(in) :: XP1, YP1
-      double precision, intent(out) :: dist ! find 1D point close to x,y:
+      real(kind=dp), intent(in) :: XP1, YP1
+      real(kind=dp), intent(out) :: dist ! find 1D point close to x,y:
       integer, intent(out) :: n1 ! 1D point found
 
-      double precision :: dismin
+      real(kind=dp) :: dismin
       integer :: k, k1, k2, L
-      double precision :: dis, dis1, dis2
+      real(kind=dp) :: dis, dis1, dis2
 
       N1 = 0
       DISMIN = 9e+33

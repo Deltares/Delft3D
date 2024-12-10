@@ -32,22 +32,23 @@
 
 ! todo: MERGE THIS WITH UNSTRUC_BOUNDARIES
 module m_bnd !< boundary-type module
+   use precision, only: dp
    implicit none
    integer, parameter :: NAMLEN = 128
 
    type bndtype
       character(len=NAMLEN) :: name !< boundary-type name
       integer :: N !< number of boundary points
-      double precision, dimension(:), allocatable :: x !< inner node x-coordinates
-      double precision, dimension(:), allocatable :: y !< inner node y-coordinates
-      double precision, dimension(:), allocatable :: sigma !< sigma-values
-      double precision, dimension(:), allocatable :: zminmax !< zmin and zmax
-      double precision, dimension(:), allocatable :: z !< boundary condition values
-      double precision, dimension(:, :), allocatable :: xy2 !< outer-node (x,y)-coordinates
+      real(kind=dp), dimension(:), allocatable :: x !< inner node x-coordinates
+      real(kind=dp), dimension(:), allocatable :: y !< inner node y-coordinates
+      real(kind=dp), dimension(:), allocatable :: sigma !< sigma-values
+      real(kind=dp), dimension(:), allocatable :: zminmax !< zmin and zmax
+      real(kind=dp), dimension(:), allocatable :: z !< boundary condition values
+      real(kind=dp), dimension(:, :), allocatable :: xy2 !< outer-node (x,y)-coordinates
       integer, dimension(:), allocatable :: kd !< boundary points
       integer, dimension(:, :), allocatable :: k !< index array, see e.g. kbnd
-      double precision, dimension(:), allocatable :: tht !< Thatcher-Harleman outflow time
-      double precision, dimension(:), allocatable :: thz !< Thatcher-Harleman concentration
+      real(kind=dp), dimension(:), allocatable :: tht !< Thatcher-Harleman outflow time
+      real(kind=dp), dimension(:), allocatable :: thz !< Thatcher-Harleman concentration
    end type bndtype
 
 contains

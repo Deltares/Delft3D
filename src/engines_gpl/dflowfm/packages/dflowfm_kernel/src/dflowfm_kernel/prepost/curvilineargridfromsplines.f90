@@ -32,24 +32,24 @@
 
 module m_curvilineargridfromsplines
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: curvilineargridfromsplines
+   public :: curvilineargridfromsplines
 
 contains
 
-      subroutine curvilinearGRIDfromsplines()
-         use M_SPLINES
-         use m_qnerror
+   subroutine curvilinearGRIDfromsplines()
+      use M_SPLINES
+      use m_qnerror
 
-         if (MCS == 0) then
-            call QNERROR('First Create or Open Splines', ' ', ' ')
-            !NUM = 0
-            return
-         end if
-         call SPLRGFR()
-      end subroutine curvilinearGRIDfromsplines
+      if (MCS == 0) then
+         call QNERROR('First Create or Open Splines', ' ', ' ')
+         !NUM = 0
+         return
+      end if
+      call SPLRGFR()
+   end subroutine curvilinearGRIDfromsplines
 
 end module m_curvilineargridfromsplines

@@ -30,37 +30,38 @@
 !
 !
 module m_get_ucx_ucy_eul_mag
-use m_getucxucyeuler
-use m_getucmag
+   use m_getucxucyeuler
+   use m_getucmag
 
    implicit none
 contains
 !> Computes/gets cell centered horizontal x/y velocities, either Eulerian or Lagrangian, and when requested also magnitude.
 !! Centralized routine for multiple uses in output files.
-subroutine getucxucyeulmag(N, ucxeulg, ucyeulg, ucmago, jaeulervel, jaucmag)
-   use m_flow, only: ndkx, ucx, ucy
-   use m_flowparameters, only: jawave, flowWithoutWaves
+   subroutine getucxucyeulmag(N, ucxeulg, ucyeulg, ucmago, jaeulervel, jaucmag)
+      use precision, only: dp
+      use m_flow, only: ndkx, ucx, ucy
+      use m_flowparameters, only: jawave, flowWithoutWaves
 
-   integer, intent(in) :: N !< Length of cell arrays (probably ndkx)
-   double precision, intent(out) :: ucxeulg(N) !< Target array in which to store x-velocities.
-   double precision, intent(out) :: ucyeulg(N) !< Target array in which to store y-velocities.
-   double precision, intent(out) :: ucmago(N) !< Target array in which to store velocity magnitudes. May be undefined when jaucmag==0.
-   integer, intent(in) :: jaeulervel !< Whether or not (1/0) to compute Eulerian velocities (i.e., substract Stokes drift)
-   integer, intent(in) :: jaucmag !< Whether or not (1/0) to compute velocity magnitudes.
+      integer, intent(in) :: N !< Length of cell arrays (probably ndkx)
+      real(kind=dp), intent(out) :: ucxeulg(N) !< Target array in which to store x-velocities.
+      real(kind=dp), intent(out) :: ucyeulg(N) !< Target array in which to store y-velocities.
+      real(kind=dp), intent(out) :: ucmago(N) !< Target array in which to store velocity magnitudes. May be undefined when jaucmag==0.
+      integer, intent(in) :: jaeulervel !< Whether or not (1/0) to compute Eulerian velocities (i.e., substract Stokes drift)
+      integer, intent(in) :: jaucmag !< Whether or not (1/0) to compute velocity magnitudes.
 
-   ! Copy ucx/ucy to ucxeulg/ucyeulg
-   ! They will optionally be transformed into Eulerian velocities
-   ucxeulg(1:ndkx) = ucx(1:ndkx); ucyeulg(1:ndkx) = ucy(1:ndkx)
+      ! Copy ucx/ucy to ucxeulg/ucyeulg
+      ! They will optionally be transformed into Eulerian velocities
+      ucxeulg(1:ndkx) = ucx(1:ndkx); ucyeulg(1:ndkx) = ucy(1:ndkx)
 
-   ! Transform uxy/ucy into Eulerian velocities
-   if (jaeulervel == 1 .and. jawave > 0 .and. .not. flowWithoutWaves) then
-      call getucxucyeuler(N, ucxeulg, ucyeulg)
-   end if
+      ! Transform uxy/ucy into Eulerian velocities
+      if (jaeulervel == 1 .and. jawave > 0 .and. .not. flowWithoutWaves) then
+         call getucxucyeuler(N, ucxeulg, ucyeulg)
+      end if
 
-   ! Compute magnitude for vel.vectors (either Lagr. or Eul.)
-   if (jaucmag == 1) then
-      call getucmag(N, ucxeulg, ucyeulg, ucmago)
-   end if
+      ! Compute magnitude for vel.vectors (either Lagr. or Eul.)
+      if (jaucmag == 1) then
+         call getucmag(N, ucxeulg, ucyeulg, ucmago)
+      end if
 
-end subroutine getucxucyeulmag
+   end subroutine getucxucyeulmag
 end module m_get_ucx_ucy_eul_mag

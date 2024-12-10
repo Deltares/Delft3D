@@ -32,15 +32,16 @@
 
 module m_tauwave
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: tauwave
+   public :: tauwave
 
 contains
 
    subroutine tauwave()
+      use precision, only: dp
       use m_getymxpar, only: getymxpar
       use m_sferic
       use m_flowparameters
@@ -59,16 +60,16 @@ contains
 
       logical :: javegczu
       integer :: k1, k2, L
-      double precision :: phivr
-      double precision :: fw, astar, astarc, tauwav, taucur, cdrag, tpu, z0, uorbu, fsqrtt
-      double precision :: cz, uuu, vvv, umod, umodsq, abscos, uorbhs, waveps
-      double precision :: ymxpar, yparL
-      double precision :: ust, ac1, ac2, rhoL, csw, snw
-      double precision :: rz, cf, cwall, huL
-      double precision :: hrmsu, rlabdau, rr, umax, t1, u11, a11, raih, rmax, uon, uoff, uwbih
-      double precision :: rksru, rksmru, gamma, ksc, uratio, ka, ca
-      double precision :: cosk1, cosk2, sink1, sink2
-      double precision :: tauwci, cphi, sphi
+      real(kind=dp) :: phivr
+      real(kind=dp) :: fw, astar, astarc, tauwav, taucur, cdrag, tpu, z0, uorbu, fsqrtt
+      real(kind=dp) :: cz, uuu, vvv, umod, umodsq, abscos, uorbhs, waveps
+      real(kind=dp) :: ymxpar, yparL
+      real(kind=dp) :: ust, ac1, ac2, rhoL, csw, snw
+      real(kind=dp) :: rz, cf, cwall, huL
+      real(kind=dp) :: hrmsu, rlabdau, rr, umax, t1, u11, a11, raih, rmax, uon, uoff, uwbih
+      real(kind=dp) :: rksru, rksmru, gamma, ksc, uratio, ka, ca
+      real(kind=dp) :: cosk1, cosk2, sink1, sink2
+      real(kind=dp) :: tauwci, cphi, sphi
 
       waveps = 1d-4 ! see taubot
       astarc = 30.*pi**2 ! critical value for astar

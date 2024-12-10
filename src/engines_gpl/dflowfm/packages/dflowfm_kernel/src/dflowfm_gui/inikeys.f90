@@ -32,60 +32,60 @@
 
 module m_inikeys
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine INIKEYS()
-         use m_devices
-         use m_nkeys
-         implicit none
-         integer :: i
+   subroutine INIKEYS()
+      use m_devices
+      use m_nkeys
+      implicit none
+      integer :: i
 !     Keyboard
-         NKEY(1) = 142
-         NKEY(2) = 166
-         NKEY(3) = 13
-         NKEY(4) = 27
-         NKEY(5) = 171
-         NKEY(6) = 172
-         NKEY(7) = 173
-         NKEY(8) = 9
+      NKEY(1) = 142
+      NKEY(2) = 166
+      NKEY(3) = 13
+      NKEY(4) = 27
+      NKEY(5) = 171
+      NKEY(6) = 172
+      NKEY(7) = 173
+      NKEY(8) = 9
 
-         if (NOPSYS > 1) then
-            NKEY(9) = 259
-         else
-            NKEY(9) = NKEY(8)
-         end if
+      if (NOPSYS > 1) then
+         NKEY(9) = 259
+      else
+         NKEY(9) = NKEY(8)
+      end if
 
 !     Muistoetsen
-         NKEY(10) = 251
-         NKEY(11) = 252
-         NKEY(12) = 253
+      NKEY(10) = 251
+      NKEY(11) = 252
+      NKEY(12) = 253
 
-         NUMC(1) = 21
-         NUMC(2) = 22
-         NUMC(3) = 22
-         NUMC(4) = 23
-         NUMC(5) = 24
-         NUMC(6) = 25
-         NUMC(7) = 26
-         NUMC(8) = 27
+      NUMC(1) = 21
+      NUMC(2) = 22
+      NUMC(3) = 22
+      NUMC(4) = 23
+      NUMC(5) = 24
+      NUMC(6) = 25
+      NUMC(7) = 26
+      NUMC(8) = 27
 
-         if (NOPSYS > 1) then
-            NUMC(9) = 50
-         else
-            NUMC(9) = NUMC(8)
-         end if
+      if (NOPSYS > 1) then
+         NUMC(9) = 50
+      else
+         NUMC(9) = NUMC(8)
+      end if
 
-         NUMC(10) = 21
-         NUMC(11) = 22
-         NUMC(12) = 22
+      NUMC(10) = 21
+      NUMC(11) = 22
+      NUMC(12) = 22
 
-         NUMKEYS = 9
-         do I = 1, NUMKEYS
-            call INCONTROLKEY(NUMC(I), NKEY(I))
-         end do
-         NUMKEYS = 12
+      NUMKEYS = 9
+      do I = 1, NUMKEYS
+         call INCONTROLKEY(NUMC(I), NKEY(I))
+      end do
+      NUMKEYS = 12
 
 !     INS CONFIRM                  CALL INConTRoLkey(21, 142)
 !     ENTER CONFIRM                CALL INConTRoLkey(22,  13)
@@ -96,7 +96,7 @@ contains
 !     F3 COMMAND                   CALL INConTRoLkey(26, 173)
 !     TAB SWITCH TUSSEN 3 SCHERMEN CALL INConTRoLkey(27,   9)
 !     EXPOSE RESIZE                CALL INCONTROLKEY(50, 259)
-         return
-      end
+      return
+   end
 
 end module m_inikeys

@@ -32,37 +32,38 @@
 
 module m_getcolornumber
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine GETCOLORNUMBER(XP, YP, NUMCOL, N1O, N2O, N3O)
-         use m_disvalcolors
-         use m_set_col
-         use m_ptabs
-         implicit none
-         integer :: i
-         integer :: n1
-         integer :: n1o
-         integer :: n2
-         integer :: n2o
-         integer :: n3
-         integer :: n3o
-         integer :: numcol
-         double precision :: xp
-         double precision :: yp
-         call IGRGETPIXELRGB(real(XP), real(YP), N1O, N2O, N3O)
-         do I = 0, 255
-            call SETCOL(I)
-            call PTABS(XP, YP)
-            call IGRGETPIXELRGB(real(XP), real(YP), N1, N2, N3)
-            if (N1 == N1O .and. N2 == N2O .and. N3 == N3O) then
-               NUMCOL = I
-               call DISVALCOLORS(NUMCOL, N1, N2, N3, 1)
-               return
-            end if
-         end do
-         return
-      end
+   subroutine GETCOLORNUMBER(XP, YP, NUMCOL, N1O, N2O, N3O)
+      use precision, only: dp
+      use m_disvalcolors
+      use m_set_col
+      use m_ptabs
+      implicit none
+      integer :: i
+      integer :: n1
+      integer :: n1o
+      integer :: n2
+      integer :: n2o
+      integer :: n3
+      integer :: n3o
+      integer :: numcol
+      real(kind=dp) :: xp
+      real(kind=dp) :: yp
+      call IGRGETPIXELRGB(real(XP), real(YP), N1O, N2O, N3O)
+      do I = 0, 255
+         call SETCOL(I)
+         call PTABS(XP, YP)
+         call IGRGETPIXELRGB(real(XP), real(YP), N1, N2, N3)
+         if (N1 == N1O .and. N2 == N2O .and. N3 == N3O) then
+            NUMCOL = I
+            call DISVALCOLORS(NUMCOL, N1, N2, N3, 1)
+            return
+         end if
+      end do
+      return
+   end
 
 end module m_getcolornumber

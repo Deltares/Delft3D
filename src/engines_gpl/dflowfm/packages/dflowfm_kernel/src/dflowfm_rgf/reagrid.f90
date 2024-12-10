@@ -42,6 +42,7 @@
       !! Next line should be mmax, nmax
       !! That ends the header, start reading coordinates in the usual fashion.
       subroutine REAgrid(Mrgf, FILNAM, ja)
+         use precision, only: dp
          use m_reaweir, only: reaweir
          use m_reathd2pli, only: reathd2pli
          use m_reaobs2stat, only: reaobs2stat
@@ -68,7 +69,7 @@
 
          character(LEN=*) :: FILNAM
          integer :: MRGF, JA
-         double precision :: xymis
+         real(kind=dp) :: xymis
 
          integer :: Mbnd, mbca, mobs, mout
 

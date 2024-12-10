@@ -36,6 +36,7 @@
 module m_petsc
 #include <petsc/finclude/petscksp.h>
 
+   use precision, only: dp
    use petsc
    PetscInt :: numrows ! number of rows in this domain
    integer :: numallrows ! number of rows of whole system
@@ -43,7 +44,7 @@ module m_petsc
 
 !  CRS matrices for PETSc/MatCreateMPIAIJWithSplitArrays
    PetscInt :: numdia ! number of non-zero entries in diagonal block
-   double precision, dimension(:), allocatable :: adia ! non-zero matrix entries, diagonal block
+   real(kind=dp), dimension(:), allocatable :: adia ! non-zero matrix entries, diagonal block
    PetscInt, dimension(:), allocatable :: idia, jdia ! column indices and row pointers of off-diagonal block
 
    integer :: numoff ! number of non-zero entries in off-diagonal block
@@ -58,9 +59,9 @@ module m_petsc
    integer :: numzerorows ! number of zero rows
    integer, dimension(:), allocatable :: izerorow ! zero-rows in matrix (kfs=0)
 
-   double precision, dimension(:), allocatable :: rhs_val ! values in vector rhs
-   double precision, dimension(:), allocatable :: sol_val ! values in vector sol
-   double precision, dimension(:), allocatable :: res_val ! values in vector res
+   real(kind=dp), dimension(:), allocatable :: rhs_val ! values in vector rhs
+   real(kind=dp), dimension(:), allocatable :: sol_val ! values in vector sol
+   real(kind=dp), dimension(:), allocatable :: res_val ! values in vector res
    Vec :: res ! residual vector
    Vec :: rhs ! right-hand side vector
    Vec :: sol ! solution vector
@@ -658,9 +659,9 @@ subroutine preparePETSCsolver(japipe)
 
    PetscErrorCode :: ierr = PETSC_OK
    PetscInt, parameter :: maxits = 4000
-   double precision, parameter :: RelTol = 1d-14
-   double precision, parameter :: AbsTol = 1d-14
-   double precision, parameter :: dTol = PETSC_DEFAULT_REAL
+   real(kind=dp), parameter :: RelTol = 1d-14
+   real(kind=dp), parameter :: AbsTol = 1d-14
+   real(kind=dp), parameter :: dTol = PETSC_DEFAULT_REAL
 
    jasucces = 0
 
@@ -738,12 +739,12 @@ subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
    implicit none
 
    integer, intent(in) :: ndx
-   double precision, dimension(Ndx), intent(inout) :: s1
+   real(kind=dp), dimension(Ndx), intent(inout) :: s1
    integer, intent(out) :: its
    integer, intent(in) :: jacompprecond !< compute preconditioner (1) or not (0)
    integer, intent(in) :: iprecond !< preconditioner type
 
-   double precision :: rnorm ! residual norm
+   real(kind=dp) :: rnorm ! residual norm
 
    integer :: i, n, jasucces
 

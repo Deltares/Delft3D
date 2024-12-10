@@ -31,12 +31,13 @@
 !
 
   subroutine quadsTOTRI()
+     use precision, only: dp
      use m_connect, only: connect
      use m_netw
      use gridoperations
      use m_dlength, only: dlength
      implicit none
-     double precision :: a
+     real(kind=dp) :: a
      integer :: k0
      integer :: k1
      integer :: k2
@@ -46,7 +47,7 @@
      integer :: l12
      integer :: np
      integer :: numtri
-     double precision :: r
+     real(kind=dp) :: r
 
      call FINDcells(4) ! quads
 

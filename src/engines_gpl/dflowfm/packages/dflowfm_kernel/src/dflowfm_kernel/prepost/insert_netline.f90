@@ -36,6 +36,7 @@
 !! The direction and start cell is determined by specifying a single 'cross'
 !! link that will be split.
 recursive subroutine insert_netline(xp, yp, L_)
+   use precision, only: dp
    use m_teknet
    use m_netw
    use gridoperations
@@ -44,11 +45,11 @@ recursive subroutine insert_netline(xp, yp, L_)
 
    implicit none
 
-   double precision, intent(in) :: xp, yp !< link coordinates (used only if L_.eq.0)
+   real(kind=dp), intent(in) :: xp, yp !< link coordinates (used only if L_.eq.0)
    integer, intent(in) :: L_ !< link number (set to 0 first time)
 
-   double precision :: zp
-   double precision, parameter :: dcostol = 0.25d0
+   real(kind=dp) :: zp
+   real(kind=dp), parameter :: dcostol = 0.25d0
 
    integer, dimension(2) :: Lnext ! next links in recursion
    integer :: Nnext ! number of next links

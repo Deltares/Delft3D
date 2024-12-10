@@ -32,6 +32,7 @@
 
 ! fill observation stations array
 subroutine fill_valobs()
+   use precision, only: dp
    use m_linkstocentercartcomp
    use m_flow
    use m_flowtimes
@@ -64,15 +65,15 @@ subroutine fill_valobs()
    integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx
    integer :: link_id_nearest
    integer :: kmx_const, kk_const, nlyrs
-   double precision :: wavfac
-   double precision :: dens, prsappr, drhodz, rhomea
-   double precision :: ux, uy, um
-   double precision, allocatable :: wa(:, :)
-   double precision, allocatable :: frac(:, :)
-   double precision, allocatable :: poros(:)
-   double precision, allocatable :: ueux(:)
-   double precision, allocatable :: ueuy(:)
-   double precision, allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
+   real(kind=dp) :: wavfac
+   real(kind=dp) :: dens, prsappr, drhodz, rhomea
+   real(kind=dp) :: ux, uy, um
+   real(kind=dp), allocatable :: wa(:, :)
+   real(kind=dp), allocatable :: frac(:, :)
+   real(kind=dp), allocatable :: poros(:)
+   real(kind=dp), allocatable :: ueux(:)
+   real(kind=dp), allocatable :: ueuy(:)
+   real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
 
    kmx_const = kmx
    nlyrs = 0

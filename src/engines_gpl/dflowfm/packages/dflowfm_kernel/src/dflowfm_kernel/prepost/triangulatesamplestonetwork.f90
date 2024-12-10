@@ -31,6 +31,7 @@
 !
 
    subroutine Triangulatesamplestonetwork(JADOORLADEN)
+      use precision, only: dp
       use m_checktriangle, only: checktriangle
       use m_netw, only: numk, numl, kn, xk, yk, zk, nb, LMAX, KMAX
       use M_SAMPLES
@@ -50,8 +51,8 @@
       use m_lnabs
       implicit none
       integer :: jadoorladen ! ,npl
-      !double precision :: xpl(npl),ypl(npl)
-      double precision :: af
+      !real(kind=dp) :: xpl(npl),ypl(npl)
+      real(kind=dp) :: af
       integer :: in
       integer :: ja
       integer :: k
@@ -74,7 +75,7 @@
       integer :: IERR
 
       integer, allocatable :: KS(:)
-      double precision :: XP, YP, THIRD, phimin, phimax
+      real(kind=dp) :: XP, YP, THIRD, phimin, phimax
 
       THIRD = 1d0 / 3d0
 

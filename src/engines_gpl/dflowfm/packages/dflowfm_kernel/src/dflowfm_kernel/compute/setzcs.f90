@@ -32,43 +32,43 @@
 
 module m_setzcs
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setzcs
+   public :: setzcs
 
 contains
 
- subroutine setzcs()
-    use m_flow, only: zcs, ndkx, zws, jabaroczlaybed, layertype, keepzlayeringatbed, zslay
-    use m_flowgeom, only: ndx
-    use m_get_kbot_ktop
-    use m_get_zlayer_indices
-    use m_alloc, only: realloc
+   subroutine setzcs()
+      use m_flow, only: zcs, ndkx, zws, jabaroczlaybed, layertype, keepzlayeringatbed, zslay
+      use m_flowgeom, only: ndx
+      use m_get_kbot_ktop
+      use m_get_zlayer_indices
+      use m_alloc, only: realloc
 
-    integer :: kk, k, kb, kt, nlayb, nrlay
+      integer :: kk, k, kb, kt, nlayb, nrlay
 
-    if (.not. allocated(zcs)) then
-       call realloc(zcs, Ndkx)
-    end if
+      if (.not. allocated(zcs)) then
+         call realloc(zcs, Ndkx)
+      end if
 
-    do kk = 1, Ndx
-       call getkbotktop(kk, kb, kt)
-       do k = kb, kt
-          zcs(k) = 0.5d0 * (zws(k) + zws(k - 1))
-       end do
-       if (layertype == 2 .and. keepzlayeringatbed /= 1 .and. jabaroczlaybed == 1) then
-          call getzlayerindices(kk, nlayb, nrlay)
-          zcs(kb) = 0.5d0 * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
-          if (kt > kb .and. keepzlayeringatbed == 2) then ! only 2
-             zcs(kb + 1) = 0.5d0 * (zslay(nlayb + 1, 1) + zslay(nlayb, 1))
-          end if
-       end if
+      do kk = 1, Ndx
+         call getkbotktop(kk, kb, kt)
+         do k = kb, kt
+            zcs(k) = 0.5d0 * (zws(k) + zws(k - 1))
+         end do
+         if (layertype == 2 .and. keepzlayeringatbed /= 1 .and. jabaroczlaybed == 1) then
+            call getzlayerindices(kk, nlayb, nrlay)
+            zcs(kb) = 0.5d0 * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
+            if (kt > kb .and. keepzlayeringatbed == 2) then ! only 2
+               zcs(kb + 1) = 0.5d0 * (zslay(nlayb + 1, 1) + zslay(nlayb, 1))
+            end if
+         end if
 
-    end do
+      end do
 
-    return
- end subroutine setzcs
+      return
+   end subroutine setzcs
 
 end module m_setzcs

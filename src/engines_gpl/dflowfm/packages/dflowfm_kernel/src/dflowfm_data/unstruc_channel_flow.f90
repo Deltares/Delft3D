@@ -31,13 +31,14 @@
 !
 
 module unstruc_channel_flow
+   use precision, only: dp
    use m_network
    implicit none
    type(t_network), target :: network
    integer :: CSCalculationOption !< Calculation option for total area computation in 1d
 
    logical, public :: useVolumeTables !< Indicates whether 1d volume tables are useds
-   double precision, public :: tableIncrement !< Increment for volume tables
+   real(kind=dp), public :: tableIncrement !< Increment for volume tables
    logical, public :: useVolumeTableFile !< Write the volume tables to file (or not)
    character(len=IdLen), public :: volumeTableFile !< Name of the table input file
 contains

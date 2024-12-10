@@ -30,7 +30,7 @@
 !
 !
 module m_delsam
-use m_confrm
+   use m_confrm
 
    implicit none
 contains
@@ -39,6 +39,7 @@ contains
 !>                1:        prompt for confirmation,       keep arrays,        make copy
 !>               -1: do not prompt for confirmation, deallocate arrays, do not make copy
    subroutine DELSAM(JACONFIRM) ! SPvdP: need promptless delsam in orthogonalisenet
+      use precision, only: dp
       use M_SAMPLES
       use m_polygon
       use m_missing
@@ -52,9 +53,9 @@ contains
       integer :: k
       integer :: key
       integer :: nsol
-      double precision :: rd
-      double precision :: xi
-      double precision :: yi
+      real(kind=dp) :: rd
+      real(kind=dp) :: xi
+      real(kind=dp) :: yi
 
       if (jaconfirm == -1) then
          if (nsmax > 0) then

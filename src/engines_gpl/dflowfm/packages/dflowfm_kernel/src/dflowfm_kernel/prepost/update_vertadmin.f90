@@ -34,6 +34,7 @@
 !>    check bl and kmxn
 !>    update kmxn, kmxL
 subroutine update_vertadmin()
+   use precision, only: dp
    use m_partitioninfo
    use m_flowgeom
    use m_flow
@@ -42,7 +43,7 @@ subroutine update_vertadmin()
 
    character(len=128) :: mesg
 
-   double precision, dimension(:, :), allocatable :: dum
+   real(kind=dp), dimension(:, :), allocatable :: dum
 
    integer :: k, L
    integer :: ierror

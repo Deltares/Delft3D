@@ -31,6 +31,7 @@
 !
 
       subroutine checkdislin()
+         use precision, only: dp
          use m_rcirc
          use m_polygon
          use m_sferic
@@ -40,7 +41,7 @@
 
          implicit none
          integer :: ja
-         double precision :: dis, xn, yn
+         real(kind=dp) :: dis, xn, yn
 
          if (npl >= 2) then
             call DLINEDIS(xlc, ylc, Xpl(1), ypl(1), xpl(2), ypl(2), JA, DIS, XN, YN, jsferic, jasfer3D, dmiss)

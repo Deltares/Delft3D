@@ -31,6 +31,7 @@
 !
 
       subroutine read_samples_from_dem(filnam, jadoorladen)
+         use precision, only: dp
          use dem
          use m_missing
          use m_samples
@@ -43,7 +44,7 @@
          integer :: i, j, istep
          type(DEMInfo) :: dem_info
          integer, allocatable :: arr(:, :)
-         double precision, allocatable :: xarr(:, :), yarr(:, :)
+         real(kind=dp), allocatable :: xarr(:, :), yarr(:, :)
          character(len=10) :: TEX
 
          call savesam()

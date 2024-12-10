@@ -32,6 +32,7 @@
 
 !< update runup values per dts
 subroutine updateValuesOnRunupGauges()
+   use precision, only: dp
    use m_monitoring_runupgauges
    use m_missing
    use m_flow, only: s1, hs
@@ -44,7 +45,7 @@ subroutine updateValuesOnRunupGauges()
    integer :: irug
    integer :: k1, k2
    integer :: L, il
-   double precision :: max_x, max_y, maxz, maxk
+   real(kind=dp) :: max_x, max_y, maxz, maxk
 
 !   update runup on gauge locations
    hs = max(s1 - bl, 0d0)

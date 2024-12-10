@@ -32,14 +32,14 @@
 module m_givekey
    implicit none
 contains
-      subroutine GIVEKEY(KEY)
-         use m_ktext
+   subroutine GIVEKEY(KEY)
+      use m_ktext
 
-         integer :: key
-         character TEX * 14
-         TEX = ' KEYPRESS=    '
-         write (TEX(11:14), '(I4)') KEY
-         call KTEXT(TEX, 1, 3, 15)
-         return
-      end
+      integer :: key
+      character TEX * 14
+      TEX = ' KEYPRESS=    '
+      write (TEX(11:14), '(I4)') KEY
+      call KTEXT(TEX, 1, 3, 15)
+      return
+   end
 end module m_givekey

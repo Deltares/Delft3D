@@ -31,14 +31,15 @@
 !
 
       subroutine ANDERSOM(X, N)
+         use precision, only: dp
 
          use m_alloc
 
          implicit none
          integer :: n
-         double precision :: X(N)
+         real(kind=dp) :: X(N)
          integer :: i, ierr
-         double precision, allocatable :: XH(:)
+         real(kind=dp), allocatable :: XH(:)
          allocate (XH(N), stat=ierr)
          call aerr('XH(N)', ierr, N)
          XH = X

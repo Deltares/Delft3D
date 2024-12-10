@@ -32,11 +32,12 @@
 
 module m_get_spiral3d
 
-implicit none
+   implicit none
 
 contains
 
    subroutine get_spiral3d
+      use precision, only: dp
       use m_findfn
       use m_flow, only: ucx, ucy, spirint, zws, hs, dzslay, spiratx, spiraty
       use m_flowgeom, only: ndx
@@ -44,8 +45,8 @@ contains
 
       implicit none
       integer :: k, kk, k1, kb, kt
-      double precision :: uav, vav, utot, unx, uny, ut, un, zn, fn
-      double precision :: sumff, sumfu
+      real(kind=dp) :: uav, vav, utot, unx, uny, ut, un, zn, fn
+      real(kind=dp) :: sumff, sumfu
 
       do k = 1, ndx
          call getkbotktop(k, kb, kt)

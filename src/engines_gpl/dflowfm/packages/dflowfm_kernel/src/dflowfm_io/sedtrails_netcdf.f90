@@ -48,6 +48,7 @@ module m_sedtrails_netcdf
 contains
 
    subroutine sedtrails_write_stats(tim)
+      use precision, only: dp
       use m_flowparameters, only: eps10
       use m_flowtimes, only: ti_st, ti_sts, ti_ste, tstop_user, time_st
       use precision_basics
@@ -55,7 +56,7 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
       integer :: ierr
 
       ierr = 1
@@ -81,6 +82,7 @@ contains
    end subroutine sedtrails_write_stats
 
    subroutine sedtrails_write_nc(tim)
+      use precision, only: dp
       use netcdf
       use m_flowtimes, only: it_st
       use unstruc_model
@@ -88,7 +90,7 @@ contains
       use Messagehandling
       implicit none
 
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
 
       type(t_unc_sedtrailsids), save :: stids
       integer :: ierr
@@ -121,6 +123,7 @@ contains
 !> Reads the net data from a NetCDF file.
 !! Processing is done elsewhere.
    subroutine sedtrails_unc_read_net_ugrid(filename, numk_keep, numk_read, ierr)
+      use precision, only: dp
       use m_sedtrails_data
       use m_sedtrails_network, only: sedtrails_increasenetwork
       use m_save_ugrid_state
@@ -144,7 +147,7 @@ contains
       integer :: ioncid, iconvtype, start_index, networkIndex
       integer :: im, nmesh, i, numk_last
       integer :: ncid
-      double precision :: convversion
+      real(kind=dp) :: convversion
       type(t_ug_meshgeom) :: meshgeom
 
       character(len=:), allocatable :: tmpstring
@@ -371,6 +374,7 @@ contains
    end subroutine sedtrails_unc_write_flowgeom_filepointer
 
    subroutine unc_write_sedtrails_filepointer(imapfile, tim)
+      use precision, only: dp
       use m_sedtrails_stats
       use m_alloc
       use m_flowtimes, only: Tudunitstr
@@ -382,7 +386,7 @@ contains
       implicit none
 
       integer, intent(in) :: imapfile
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
 
       ! Locals
       integer :: ndxndxi
@@ -393,7 +397,7 @@ contains
       integer, dimension(2), save :: id_timedim, id_time, id_timestep, id_sbx, id_sby, id_ssx, id_ssy, id_ssc, &
                                      id_sedtotdim, id_flowelemdim, id_ucx, id_ucy, id_bl, id_hs, id_taus, id_tausmax, &
                                      id_ua, id_va
-      double precision, allocatable :: work(:, :)
+      real(kind=dp), allocatable :: work(:, :)
       integer, allocatable :: nodes(:)
 
       ! Define variables and write time-invariant data
@@ -637,7 +641,7 @@ contains
          ! Fill global domain mode numbers, before reducing the sedtrails grid to the submodel we're in
          if (jampi > 0) then
             call realloc(iglobal_s, numk, keepExisting=.false., fill=0)
-            iglobal_s = [ (i, i=1, numk) ]
+            iglobal_s = [(i, i=1, numk)]
          end if
       else
          call qnerror('sedtrails_loadNetwork::Error while loading network from '''//trim(filename)//''', please inspect the preceding diagnostic output.', ' ', ' ')

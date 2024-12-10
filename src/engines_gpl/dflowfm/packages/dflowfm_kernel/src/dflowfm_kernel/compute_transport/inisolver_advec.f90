@@ -64,14 +64,13 @@
 !>   Cartesian cell-centered vector components are numbered as
 !>      ( ucx_1, ucy_1, ucx_2, ucy_2, ..., ...)
 module m_inisolver_advec
-use m_solversettings, only: solversettings
+   use m_solversettings, only: solversettings
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: inisolver_advec
+   public :: inisolver_advec
 
 contains
 

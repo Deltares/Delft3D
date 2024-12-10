@@ -32,27 +32,28 @@
 
 module m_dispxp
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISPXP(X, Y, N, NCOL)
-         use m_cir
-         use m_set_col
-         use m_movabs
+   subroutine DISPXP(X, Y, N, NCOL)
+      use precision, only: dp
+      use m_cir
+      use m_set_col
+      use m_movabs
 
-         integer :: i
-         integer :: n
-         integer :: ncol
-         double precision :: y
+      integer :: i
+      integer :: n
+      integer :: ncol
+      real(kind=dp) :: y
 !     LAAT TWEEDIMENSIONALE FUNCTIE PUNTJES ZIEN
-         double precision :: X(N)
-         call SETCOL(NCOL)
-         do I = 1, N
-            call MOVABS(X(I), Y)
-            call CIR(0d0)
-         end do
-         return
-      end
+      real(kind=dp) :: X(N)
+      call SETCOL(NCOL)
+      do I = 1, N
+         call MOVABS(X(I), Y)
+         call CIR(0d0)
+      end do
+      return
+   end
 
 end module m_dispxp

@@ -32,21 +32,22 @@
 
 module m_collectcumultransports
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: collectcumultransports
+   public :: collectcumultransports
 
 contains
 
    subroutine collectcumultransports()
+      use precision, only: dp
       use m_flowtimes, only: dts
       use m_flowgeom, only: ndx
       use m_fm_erosed
 
       integer :: k, l
-      double precision :: dtmor_
+      real(kind=dp) :: dtmor_
 
       ! cumulative transports
       dtmor_ = dts * morfac

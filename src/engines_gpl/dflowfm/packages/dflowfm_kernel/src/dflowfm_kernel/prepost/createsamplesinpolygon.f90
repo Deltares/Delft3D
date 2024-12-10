@@ -31,17 +31,18 @@
 !
 
 module m_createsamplesinpolygon
-use m_createsamplesinpolygon2, only: createsamplesinpolygon2
+   use m_createsamplesinpolygon2, only: createsamplesinpolygon2
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: createsamplesinpolygon
+   public :: createsamplesinpolygon
 
 contains
 
    subroutine CREATESAMPLESINPOLYGON()
+      use precision, only: dp
       use m_flowparameters, only: autotrisam
       use m_polygon
       use m_missing
@@ -49,7 +50,7 @@ contains
       use geometry_module, only: get_startend ! zijn er nog meer startends zodat dit afgeschermd moet worden?
 
       integer :: jpoint, jstart, jend, jadoall, nplsav
-      double precision, allocatable :: xplsav(:), yplsav(:)
+      real(kind=dp), allocatable :: xplsav(:), yplsav(:)
 
       allocate (xplsav(npl), yplsav(npl)); xplsav = xpl(1:npl); yplsav = ypl(1:npl); nplsav = npl
 

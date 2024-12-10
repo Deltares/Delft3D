@@ -28,11 +28,11 @@
 !-------------------------------------------------------------------------------
 module m_setisnbnodisnblin
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setisnbnodisnblin
+   public :: setisnbnodisnblin
 
 contains
 

@@ -28,6 +28,7 @@
 !-------------------------------------------------------------------------------
 
 module m_monitoring_runupgauges
+   use precision, only: dp
    use m_crspath
    use m_missing
    use MessageHandling, only: IdLen
@@ -37,9 +38,9 @@ module m_monitoring_runupgauges
    type t_runup_gauge
       character(len=IdLen) :: name !< Name
       type(tcrspath) :: path !< Polyline+crossed flow links that defines this runup gauge.
-      double precision :: max_x !< flow node xz of max runup
-      double precision :: max_y !< flow node xy of max runup
-      double precision :: max_rug_height !< Runup water level
+      real(kind=dp) :: max_x !< flow node xz of max runup
+      real(kind=dp) :: max_y !< flow node xy of max runup
+      real(kind=dp) :: max_rug_height !< Runup water level
    end type t_runup_gauge
 
    type(t_runup_gauge), allocatable, target :: rug(:)
@@ -140,9 +141,10 @@ contains
 !! The input arrays have the structure of the global polygon:
 !! one or more polylines separated by dmiss values.
    subroutine polyline_to_runupgauges(pl_x, pl_y, pl_n, names)
+      use precision, only: dp
       use m_missing
 
-      double precision, intent(in) :: pl_x(:), pl_y(:) !< Long array with one or more polylines, separated by dmiss
+      real(kind=dp), intent(in) :: pl_x(:), pl_y(:) !< Long array with one or more polylines, separated by dmiss
       integer, intent(in) :: pl_n !< Total number of polyline points
       character(len=*), optional, intent(in) :: names(:) !< Optional names for run up gauges
 
@@ -231,8 +233,9 @@ contains
 
 !> adds runup gauge with name and polyline coordinates
    subroutine add_runup_gauges(name, pl_x, pl_y)
+      use precision, only: dp
       character(len=*), intent(in) :: name !> name of the new runup gauge
-      double precision, intent(in) :: pl_x(:), pl_y(:) !> x- and y coordinates of polyline
+      real(kind=dp), intent(in) :: pl_x(:), pl_y(:) !> x- and y coordinates of polyline
 
       integer :: name_length
       character(len=1) :: runup_gauge_digits

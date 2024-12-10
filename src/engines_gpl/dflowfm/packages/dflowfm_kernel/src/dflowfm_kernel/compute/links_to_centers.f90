@@ -41,7 +41,7 @@ module m_links_to_centers
       module procedure links_to_centers_dp_rank_2
    end interface links_to_centers
 contains
-   !> Set flow node value based on flow link values, where vlin is double precision
+   !> Set flow node value based on flow link values, where vlin is real(kind=dp)
    subroutine links_to_centers_dp(vnod, vlin)
       use precision, only: dp
       use m_flow, only: lnkx, ndkx, kmx, kmxn

@@ -31,10 +31,11 @@
 !
 
  subroutine statisticsonemorepoint(dif)
+    use precision, only: dp
     use m_statistics
     implicit none
 
-    double precision :: dif
+    real(kind=dp) :: dif
     avedif = avedif + dif
     sqadif = sqadif + dif * dif
     dmxdif = max(dmxdif, dif)

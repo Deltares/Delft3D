@@ -32,6 +32,7 @@
 
  !> set wall to flowlinks and wall to flownode oientations
  subroutine setwallorientations()
+    use precision, only: dp
     use m_flowgeom
     use network_data, only: xk, yk
     use m_sferic
@@ -41,7 +42,7 @@
 
     implicit none
 
-    double precision :: xh, yh
+    real(kind=dp) :: xh, yh
 
     integer :: k1, k3, k4
     integer :: L1, L2

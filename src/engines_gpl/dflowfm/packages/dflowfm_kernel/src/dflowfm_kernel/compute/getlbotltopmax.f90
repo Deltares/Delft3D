@@ -30,18 +30,18 @@
 !
 !
 module m_get_Lbot_Ltop_max
-    implicit none
+   implicit none
 contains
- subroutine getLbotLtopmax(LL, Lb, Ltx)
+   subroutine getLbotLtopmax(LL, Lb, Ltx)
 ! Variation on getLbotLtop. Always returns the maximum possible layer range in stead of the actual range, even for dry links.
-    use m_flow, only: kmx, kmxl, lbot
+      use m_flow, only: kmx, kmxl, lbot
 
-    integer :: LL, Lb, Ltx
-    if (kmx == 0) then
-       Lb = LL
-       Ltx = LL
-    else
-       Lb = Lbot(LL); Ltx = Lbot(LL) + kmxL(LL) - 1
-    end if
- end subroutine getLbotLtopmax
+      integer :: LL, Lb, Ltx
+      if (kmx == 0) then
+         Lb = LL
+         Ltx = LL
+      else
+         Lb = Lbot(LL); Ltx = Lbot(LL) + kmxL(LL) - 1
+      end if
+   end subroutine getLbotLtopmax
 end module m_get_Lbot_Ltop_max

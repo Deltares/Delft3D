@@ -33,11 +33,12 @@
 !>  Singular value Decomposition
 !!    from: Numerical Recipes in Fortran 77
       subroutine SVDCMP(A, M, N, MP, NP, W, V)
+         use precision, only: dp
          implicit none
-         double precision :: A, W, V
+         real(kind=dp) :: A, W, V
          integer, intent(in) :: m, n, mp, np
 
-         double precision :: ANORM, C, F, G, H, RV1, S, SCALE, X, Y, Z
+         real(kind=dp) :: ANORM, C, F, G, H, RV1, S, SCALE, X, Y, Z
          integer :: I, ITS, J, K, L, NM, NMAX
 
          parameter(NMAX=100)

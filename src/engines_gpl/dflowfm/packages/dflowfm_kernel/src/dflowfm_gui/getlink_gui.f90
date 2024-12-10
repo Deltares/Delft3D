@@ -33,11 +33,12 @@
 !> select link for directional refinement in GUI
 module m_getlink_gui
 
-implicit none
+   implicit none
 
 contains
 
    subroutine getlink_GUI(xp, yp, L)
+      use precision, only: dp
       use m_qnerror
       use m_ktext
       use m_putget_un
@@ -48,10 +49,10 @@ contains
       use m_draw_nu
       implicit none
 
-      double precision, intent(out) :: xp, yp !< coordinates of clicked point
+      real(kind=dp), intent(out) :: xp, yp !< coordinates of clicked point
       integer, intent(out) :: L !< clicked link number
 
-      double precision :: zp
+      real(kind=dp) :: zp
 
       integer :: num, nwhat, nput, numb, key
 

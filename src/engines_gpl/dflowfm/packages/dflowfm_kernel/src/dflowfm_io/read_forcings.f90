@@ -35,6 +35,7 @@
 !! *.ext file for quantities such as initialwaterlevel,
 !! frictioncoefficient, etc.
 module unstruc_extfile
+   use precision, only: dp
 
    use unstruc_messages
    use properties
@@ -53,22 +54,22 @@ module unstruc_extfile
       character(len=:), allocatable :: locationfile
       integer :: locationtype
       character(len=:), allocatable :: forcingfile
-      double precision :: returntime
-      double precision :: openboundarytolerance
+      real(kind=dp) :: returntime
+      real(kind=dp) :: openboundarytolerance
       character(len=:), allocatable :: id
       character(len=:), allocatable :: operand
-      double precision :: averagingrelsize
+      real(kind=dp) :: averagingrelsize
       integer :: averagingnummin
       integer :: averagingtype
-      double precision :: averagingpercentile
+      real(kind=dp) :: averagingpercentile
       integer :: interpmethod
       integer :: extrapmethod = 0
       character(len=:), allocatable :: datafile
       integer :: datafiletype
       integer :: lateraltype
-      double precision :: lateralflow
-      double precision :: value
-      double precision, pointer :: transformcoef(:) !< Transformation coefficients
+      real(kind=dp) :: lateralflow
+      real(kind=dp) :: value
+      real(kind=dp), pointer :: transformcoef(:) !< Transformation coefficients
    end type ext_rec
 
 contains

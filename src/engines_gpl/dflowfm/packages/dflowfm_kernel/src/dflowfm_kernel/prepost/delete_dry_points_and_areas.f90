@@ -42,7 +42,7 @@
     logical cache_success
     cache_success = .false.
 
-    if (cacheRetrieved()) then
+    if (cache_retrieved()) then
        call copy_cached_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell, cache_success)
     end if
 

@@ -32,29 +32,30 @@
 
 module m_dslimvec
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: dslimvec
+   public :: dslimvec
 
 contains
 
    !> limited higher-order correction of vector data
    subroutine dslimvec(ds1x, ds1y, ds2x, ds2y, csu, snu, limtyp, dsx, dsy)
+      use precision, only: dp
       use m_flowparameters
       use m_dslim
       implicit none
 
-      double precision, intent(in) :: ds1x, ds1y !< "voorslope" components
-      double precision, intent(in) :: ds2x, ds2y !< "naslope" components
-      double precision, intent(in) :: csu, snu !< orientation vector components
+      real(kind=dp), intent(in) :: ds1x, ds1y !< "voorslope" components
+      real(kind=dp), intent(in) :: ds2x, ds2y !< "naslope" components
+      real(kind=dp), intent(in) :: csu, snu !< orientation vector components
       integer, intent(in) :: limtyp !< limiter type
-      double precision, intent(out) :: dsx, dsy !< correction components
+      real(kind=dp), intent(out) :: dsx, dsy !< correction components
 
-      double precision :: ds1n, ds1t !< normal and tangential component, respectively
-      double precision :: ds2n, ds2t !< normal and tangential component, respectively
-      double precision :: dsn, dst
+      real(kind=dp) :: ds1n, ds1t !< normal and tangential component, respectively
+      real(kind=dp) :: ds2n, ds2t !< normal and tangential component, respectively
+      real(kind=dp) :: dsn, dst
 
       if (jalimnor == 1) then
          ds1n = csu * ds1x + snu * ds1y

@@ -32,31 +32,32 @@
 
 module m_getvminmax
 
-implicit none
+   implicit none
 
 contains
 
-  subroutine getvminmax(num, vmin, vmax, v, n)
-     use unstruc_display_data
-     use m_missing, only: dmiss
+   subroutine getvminmax(num, vmin, vmax, v, n)
+      use precision, only: dp
+      use unstruc_display_data
+      use m_missing, only: dmiss
 
-     integer :: n
-     integer, intent(in) :: num
-     double precision :: vmin, vmax, v(n)
+      integer :: n
+      integer, intent(in) :: num
+      real(kind=dp) :: vmin, vmax, v(n)
 
-     if (profmin(num) == dmiss) then
-        vmin = 1d9
-        vmin = min(vmin, minval(v(1:n)))
-     else
-        vmin = profmin(num)
-     end if
+      if (profmin(num) == dmiss) then
+         vmin = 1d9
+         vmin = min(vmin, minval(v(1:n)))
+      else
+         vmin = profmin(num)
+      end if
 
-     if (profmax(num) == dmiss) then
-        vmax = -1d9
-        vmax = max(vmax, maxval(v(1:n)), vmin + 1d-5)
-     else
-        vmax = profmax(num)
-     end if
-  end subroutine getvminmax
+      if (profmax(num) == dmiss) then
+         vmax = -1d9
+         vmax = max(vmax, maxval(v(1:n)), vmin + 1d-5)
+      else
+         vmax = profmax(num)
+      end if
+   end subroutine getvminmax
 
 end module m_getvminmax

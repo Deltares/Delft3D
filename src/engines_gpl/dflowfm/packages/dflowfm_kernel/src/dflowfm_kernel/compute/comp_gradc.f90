@@ -34,23 +34,24 @@
 !>   note: since we use wcx1 etc., it is assumed that normal components at the closed boundary are zero
 module m_comp_gradc
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: comp_gradC
+   public :: comp_gradC
 
 contains
 
    subroutine comp_gradC(val, gradx, grady)
+      use precision, only: dp
       use m_flowgeom, only: ln, Lnx, Ndx, Dxi, wcx1, wcy1, wcx2, wcy2
       implicit none
 
-      double precision, dimension(Ndx), intent(in) :: val !< cell-centered data
-      double precision, dimension(Ndx), intent(out) :: gradx !< x-component of cell-centered gradient vector
-      double precision, dimension(Ndx), intent(out) :: grady !< y-component of cell-centered gradient vector
+      real(kind=dp), dimension(Ndx), intent(in) :: val !< cell-centered data
+      real(kind=dp), dimension(Ndx), intent(out) :: gradx !< x-component of cell-centered gradient vector
+      real(kind=dp), dimension(Ndx), intent(out) :: grady !< y-component of cell-centered gradient vector
 
-      double precision :: DvalDn
+      real(kind=dp) :: DvalDn
 
       integer :: k1, k2, L
 

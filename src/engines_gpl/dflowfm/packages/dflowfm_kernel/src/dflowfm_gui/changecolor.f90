@@ -34,84 +34,84 @@
 ! subroutines from rest.F90
 !----------------------------------------------------------------------
 module m_changecolor
-use m_orglocator
-use m_getcolornumber
+   use m_orglocator
+   use m_getcolornumber
 
-
-implicit none
+   implicit none
 
 contains
 
-      subroutine CHANGECOLOR(XP, YP)
-         use m_allcolours
-         use unstruc_colors
-         use m_depmax
-         use m_helpnow
-         use m_disvalcolors
-         use m_disput
-         use m_set_col
-         use m_help
-         
-         implicit none
-         integer :: ic
-         integer :: key
-         integer :: n1
-         integer :: n2
-         integer :: n3
-         integer :: numcol
+   subroutine CHANGECOLOR(XP, YP)
+      use precision, only: dp
+      use m_allcolours
+      use unstruc_colors
+      use m_depmax
+      use m_helpnow
+      use m_disvalcolors
+      use m_disput
+      use m_set_col
+      use m_help
 
-         double precision :: xp
-         double precision :: yp
+      implicit none
+      integer :: ic
+      integer :: key
+      integer :: n1
+      integer :: n2
+      integer :: n3
+      integer :: numcol
 
-         integer NCL(3)
+      real(kind=dp) :: xp
+      real(kind=dp) :: yp
 
-         IC = 1
+      integer NCL(3)
 
-         call IMOUSECURSORHIDE()
-         call DISPUT(35)
+      IC = 1
 
-         call GETCOLORNUMBER(XP, YP, NUMCOL, N1, N2, N3)
-         NCL(1) = N1
-         NCL(2) = N2
-         NCL(3) = N3
+      call IMOUSECURSORHIDE()
+      call DISPUT(35)
 
-         call SETCOL(NUMCOL)
-         call DISVALCOLORS(NUMCOL, NCL(1), NCL(2), NCL(3), IC)
+      call GETCOLORNUMBER(XP, YP, NUMCOL, N1, N2, N3)
+      NCL(1) = N1
+      NCL(2) = N2
+      NCL(3) = N3
 
-20       continue
+      call SETCOL(NUMCOL)
+      call DISVALCOLORS(NUMCOL, NCL(1), NCL(2), NCL(3), IC)
 
-         call INKEYEVENT(KEY)
+20    continue
 
-         if (KEY == 131) then
-            IC = IC - 1
-            if (IC == 0) IC = 3
-         else if (KEY == 130) then
-            IC = IC + 1
-            if (IC == 4) IC = 1
-         else if (KEY == 128) then
-            NCL(IC) = min(255, NCL(IC) + 1)
-            call IGRPALETTERGB(NUMCOL, NCL(1), NCL(2), NCL(3))
-         else if (KEY == 129) then
-            NCL(IC) = max(0, NCL(IC) - 1)
-            call IGRPALETTERGB(NUMCOL, NCL(1), NCL(2), NCL(3))
-         else if (KEY == 171) then
-            call HELP(WRDKEY, 3)
-         else if (KEY == 13 .or. KEY >= 251 .and. KEY <= 253) then
-            call ORGLOCATOR(XP, YP)
-            call IMOUSECURSORSHOW()
-            return
-         else if (KEY == 27) then
-            call IGRPALETTERGB(NUMCOL, N1, N2, N3)
-            call ORGLOCATOR(XP, YP)
-            call IMOUSECURSORSHOW()
-            return
-         end if
+      call INKEYEVENT(KEY)
 
-         call SETCOL(NUMCOL)
-         call DISVALCOLORS(NUMCOL, NCL(1), NCL(2), NCL(3), IC)
-         call ALLCOLOURS()
+      if (KEY == 131) then
+         IC = IC - 1
+         if (IC == 0) IC = 3
+      else if (KEY == 130) then
+         IC = IC + 1
+         if (IC == 4) IC = 1
+      else if (KEY == 128) then
+         NCL(IC) = min(255, NCL(IC) + 1)
+         call IGRPALETTERGB(NUMCOL, NCL(1), NCL(2), NCL(3))
+      else if (KEY == 129) then
+         NCL(IC) = max(0, NCL(IC) - 1)
+         call IGRPALETTERGB(NUMCOL, NCL(1), NCL(2), NCL(3))
+      else if (KEY == 171) then
+         call HELP(WRDKEY, 3)
+      else if (KEY == 13 .or. KEY >= 251 .and. KEY <= 253) then
+         call ORGLOCATOR(XP, YP)
+         call IMOUSECURSORSHOW()
+         return
+      else if (KEY == 27) then
+         call IGRPALETTERGB(NUMCOL, N1, N2, N3)
+         call ORGLOCATOR(XP, YP)
+         call IMOUSECURSORSHOW()
+         return
+      end if
 
-         goto 20
-      end
+      call SETCOL(NUMCOL)
+      call DISVALCOLORS(NUMCOL, NCL(1), NCL(2), NCL(3), IC)
+      call ALLCOLOURS()
+
+      goto 20
+   end
 
 end module m_changecolor

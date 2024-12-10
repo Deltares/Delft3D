@@ -31,14 +31,15 @@
 !
 
 !>    return x-component in link coordinate frame of vector in corner (netnode) coordinate frame
-      double precision function cor2linx(L, i12, ux, uy)
+      real(kind=dp) function cor2linx(L, i12, ux, uy)
+         use precision, only: dp
          use m_flowgeom, only: csbn, snbn
          use m_sferic
          implicit none
 
          integer, intent(in) :: L !< flowlink number
          integer, intent(in) :: i12 !< left (1) or right (2) neighboring corner (netnode)
-         double precision, intent(in) :: ux, uy !< vector components in corner coordinate frame
+         real(kind=dp), intent(in) :: ux, uy !< vector components in corner coordinate frame
 
          if (jsferic /= 1 .or. jasfer3D /= 1) then
             cor2linx = ux

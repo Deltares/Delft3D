@@ -30,15 +30,16 @@
 !
 !
 module m_zoomin
-use m_wearel
-use m_setxor
-use m_setwynew
-use m_orglocator
-use m_inqasp
+   use m_wearel
+   use m_setxor
+   use m_setwynew
+   use m_orglocator
+   use m_inqasp
 
    implicit none
 contains
    subroutine ZOOMIN(KEY, NPUT)
+      use precision, only: dp
       use unstruc_colors
       use m_wearelt
       use m_sferic
@@ -51,7 +52,7 @@ contains
       use m_set_col
       use m_help
 
-      double precision :: aspect, dx, dy, xln, yln, xl, yl, X1B, Y1B, X2B, Y2B, xl2, yl2
+      real(kind=dp) :: aspect, dx, dy, xln, yln, xl, yl, X1B, Y1B, X2B, Y2B, xl2, yl2
       integer :: k, nlevel, jadraw, nput, nnn, ja, key
 
       character(len=40) :: WRDKEY

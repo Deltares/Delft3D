@@ -31,30 +31,31 @@
 !
 
       subroutine GOLDLN(AX, BX, CX, TOL, XMIN, P, Q, N, XX, YY, DIS)
+         use precision, only: dp
          use m_dislin
          implicit none
-         double precision :: ax
-         double precision :: bx
-         double precision :: c
-         double precision :: cx
-         double precision :: dis
-         double precision :: f0
-         double precision :: f1
-         double precision :: f2
-         double precision :: f3
+         real(kind=dp) :: ax
+         real(kind=dp) :: bx
+         real(kind=dp) :: c
+         real(kind=dp) :: cx
+         real(kind=dp) :: dis
+         real(kind=dp) :: f0
+         real(kind=dp) :: f1
+         real(kind=dp) :: f2
+         real(kind=dp) :: f3
          integer :: n
-         double precision :: r
-         double precision :: tol
-         double precision :: x0
-         double precision :: x1
-         double precision :: x2
-         double precision :: x3
-         double precision :: xmin
-         double precision :: xx
-         double precision :: yy
+         real(kind=dp) :: r
+         real(kind=dp) :: tol
+         real(kind=dp) :: x0
+         real(kind=dp) :: x1
+         real(kind=dp) :: x2
+         real(kind=dp) :: x3
+         real(kind=dp) :: xmin
+         real(kind=dp) :: xx
+         real(kind=dp) :: yy
          parameter(R=.61803399, C=.38196602)
 !     EENDIMENSIONAAL ZOEKEN VAN 'GEBRACKED' MINIMUM
-         double precision :: P(N), Q(N)
+         real(kind=dp) :: P(N), Q(N)
 
          X0 = AX
          X3 = CX

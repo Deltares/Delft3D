@@ -34,6 +34,7 @@ module m_inflowcell
 contains
    subroutine inflowcell(xp, yp, k, jaoutside, iLocTp) ! is this point in a flowcell
       !FB TODO: this should be a function not a subroutine, return value (k) is not the last argument in list. booleans should be logical not integer.
+      use precision, only: dp
       use m_flowgeom
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
       use m_flow
@@ -41,14 +42,14 @@ contains
       use geometry_module, only: pinpok
       use m_missing, only: jins, dmiss
 
-      double precision, intent(in) :: xp, yp
+      real(kind=dp), intent(in) :: xp, yp
       integer, intent(inout) :: k !return value, if flowcell is found k = cell index
       integer, intent(in) :: jaoutside
       integer, intent(in) :: iLocTp !< Node type, one of INDTP_1D/2D/ALL.
 
       ! locals
       integer :: n, nn, in, kb, L, nstart, nend
-      double precision :: dxx, dyy, r
+      real(kind=dp) :: dxx, dyy, r
 
       ! define the searching range, this is especially for the purpose of snapping obs to 1D, 2D or 1D+2D flownodes.
       ! For other purpose it should stay as before

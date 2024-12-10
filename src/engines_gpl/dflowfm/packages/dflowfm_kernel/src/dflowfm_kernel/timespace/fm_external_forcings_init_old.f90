@@ -36,6 +36,7 @@ contains
 
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_old(iresult)
+      use precision, only: dp
 
       use m_addsorsin, only: addsorsin
       use m_add_tracer, only: add_tracer
@@ -77,20 +78,20 @@ contains
       integer :: ja, method, lenqidnam, ierr, ilattype, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
       integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
-      double precision :: maxSearchRadius
+      real(kind=dp) :: maxSearchRadius
       character(len=256) :: filename, sourcemask
       character(len=256) :: varname
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=NAMSFLEN) :: sfnam
       character(len=20) :: wqinput
       character(len=NAMMBALEN) :: mbainputname
-      double precision, allocatable :: viuh(:), tt(:)
+      real(kind=dp), allocatable :: viuh(:), tt(:)
       integer, dimension(:), pointer :: pkbot, pktop
-      double precision :: factor
-      double precision, external :: ran0
+      real(kind=dp) :: factor
+      real(kind=dp), external :: ran0
       character(len=256) :: rec
       integer, allocatable :: mask(:)
-      double precision, allocatable :: xdum(:), ydum(:)
+      real(kind=dp), allocatable :: xdum(:), ydum(:)
       integer, allocatable :: kdum(:)
 
       ! Finish with all remaining old-style ExtForceFile quantities.
@@ -1362,6 +1363,7 @@ contains
 
    !> Initialization of all extra quantities not covered by initialize_ext_old, such as structures and laterals. Only called as part of fm_initexternalforcings
    module subroutine init_misc(iresult)
+      use precision, only: dp
       use m_flowgeom, only: ln, xz, yz, iadv, ba, wu
       use unstruc_model, only: md_extfile_dir
       use timespace, only: uniform, spaceandtime, readprovider
@@ -1373,7 +1375,7 @@ contains
       use m_sobekdfm, only: nbnd1d2d
       use m_partitioninfo, only: is_ghost_node, jampi, reduce_sum
       use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, &
-         initialize_lateraldata, apply_transport
+                            initialize_lateraldata, apply_transport
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
       use m_togeneral, only: togeneral
@@ -1386,9 +1388,9 @@ contains
       character(len=256) :: filename, filename0
       character(len=64) :: varname
       logical :: exist
-      double precision, allocatable :: hulp(:, :)
-      double precision, allocatable :: widths(:)
-      double precision, allocatable :: xdum(:), ydum(:)
+      real(kind=dp), allocatable :: hulp(:, :)
+      real(kind=dp), allocatable :: widths(:)
+      real(kind=dp), allocatable :: xdum(:), ydum(:)
       integer, allocatable :: kdum(:)
 
       allocate (xdum(1), ydum(1), kdum(1), stat=ierr)

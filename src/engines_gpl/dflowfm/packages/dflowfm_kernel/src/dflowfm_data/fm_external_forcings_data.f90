@@ -59,12 +59,12 @@ module fm_external_forcings_data
    integer, allocatable :: openbndlin(:) !< (sum(nopenbndlin(1:nopenbndsect)) Net link nrs for each open boundary.
    character(len=256), allocatable :: openbndname(:) !< (nopenbndsect)
    character(len=256), allocatable :: openbndfile(:) !< (nopenbndsect)
-   double precision, allocatable :: bndWidth1D(:) !< (nopenbndsect) Optional custom width for (1D) boundary flow links.
-   double precision, allocatable :: bndBlDepth(:) !< (nopenbndsect) Optional custom bed level depth for boundary flow links.
+   real(kind=dp), allocatable :: bndWidth1D(:) !< (nopenbndsect) Optional custom width for (1D) boundary flow links.
+   real(kind=dp), allocatable :: bndBlDepth(:) !< (nopenbndsect) Optional custom bed level depth for boundary flow links.
    integer, allocatable :: lnxbnd(:) !< (lnx-lnxi) Mapping from boundary flow link nr to nopenbndsect index.
 
    integer, parameter :: NTRANSFORMCOEF = 26
-   double precision :: transformcoef(NTRANSFORMCOEF) !< Transform coefficients a+b*x
+   real(kind=dp) :: transformcoef(NTRANSFORMCOEF) !< Transform coefficients a+b*x
 
    integer, allocatable :: kez(:) !< temp (numl) edge oriented z lev
    integer, allocatable :: keu(:) !< temp (numl) edge oriented u vel
@@ -95,21 +95,21 @@ module fm_external_forcings_data
                                                         !! 1,*=boundary number (nopenbndsect), see type indicator kbndz(5,*) below
    integer, allocatable :: itpenu(:) !< temp (numl) edge oriented,
                                                         !! 1,*=boundary number (nopenbndsect), see type indicator kbndu(5,*) below
-   double precision, allocatable :: ftpet(:)
+   real(kind=dp), allocatable :: ftpet(:)
 
-   double precision, allocatable :: threttim(:, :) !< (NUMCONST,nopenbndsect) Thatcher-Harleman return times
+   real(kind=dp), allocatable :: threttim(:, :) !< (NUMCONST,nopenbndsect) Thatcher-Harleman return times
 
    character(len=256), allocatable :: thrtq(:) !< temp array for Thatcher-Harleman return time readout, stores constituents
-   double precision, allocatable :: thrtt(:) !< temp array for Thatcher-Harleman return time readout, stores return times
+   real(kind=dp), allocatable :: thrtt(:) !< temp array for Thatcher-Harleman return time readout, stores return times
    integer, allocatable :: thrtn(:) !< temp array for Thatcher-Harleman return time readout, stores cell indices (first one)
 
    integer, target :: nzbnd !< number of waterlevel boundary segments
    integer, target :: nbndz !< waterlevel boundary points dimension
-   double precision, allocatable :: xbndz(:) !< waterlevel boundary points xcor
-   double precision, allocatable :: ybndz(:) !< waterlevel boundary points ycor
-   double precision, allocatable, target :: zbndz(:) !< [m] waterlevel boundary points function  {"location": "edge", "shape": ["nbndz"]}
-   double precision, allocatable :: zbndz0(:) !< waterlevel boundary points function
-   double precision, allocatable :: xy2bndz(:, :) !< waterlevel boundary 'external tolerance point'
+   real(kind=dp), allocatable :: xbndz(:) !< waterlevel boundary points xcor
+   real(kind=dp), allocatable :: ybndz(:) !< waterlevel boundary points ycor
+   real(kind=dp), allocatable, target :: zbndz(:) !< [m] waterlevel boundary points function  {"location": "edge", "shape": ["nbndz"]}
+   real(kind=dp), allocatable :: zbndz0(:) !< waterlevel boundary points function
+   real(kind=dp), allocatable :: xy2bndz(:, :) !< waterlevel boundary 'external tolerance point'
    integer, allocatable :: kdz(:) !< waterlevel boundary points temp array
    integer, allocatable, target :: kbndz(:, :) !< waterlevel boundary points index array
                                                         !! 1,* = index in s1 boundary point
@@ -124,78 +124,78 @@ module fm_external_forcings_data
                                                         !!                        6 = waterlevel outflow
                                                         !! 5,* = member of boundary number somuch of this type
                                                         !! 6,* = riemann relaxation time for this point (s)
-   double precision, allocatable :: zkbndz(:, :) !< only for jaceneqtr == 2 : left and right vertical netnode zk levels
-   double precision :: zbndzval1 = -999d0, zbndzval2 = -999d0
+   real(kind=dp), allocatable :: zkbndz(:, :) !< only for jaceneqtr == 2 : left and right vertical netnode zk levels
+   real(kind=dp) :: zbndzval1 = -999d0, zbndzval2 = -999d0
    integer, allocatable :: kbanz(:, :) !< ban pointer 2,*
 
    integer :: nubnd !< number of velocity boundary segments
    integer :: nbndu !< velocity   boundary points dimension
-   double precision, allocatable :: xbndu(:) !< velocity   boundary points xcor
-   double precision, allocatable :: ybndu(:) !< velocity   boundary points ycor
-   double precision, allocatable, target :: zbndu(:) !< [m/s] velocity   boundary points function   {"location": "edge", "shape": ["nbndu"]}
-   double precision, allocatable, target :: zbndq(:) !< [m3/s] discharge  boundary points function   {"location": "edge", "shape": ["nbndu"]}
-   double precision, allocatable :: zbndu0(:) !< velocity   boundary points function in start time
-   double precision, allocatable :: xy2bndu(:, :) !< velocity   boundary 'external tolerance point'
+   real(kind=dp), allocatable :: xbndu(:) !< velocity   boundary points xcor
+   real(kind=dp), allocatable :: ybndu(:) !< velocity   boundary points ycor
+   real(kind=dp), allocatable, target :: zbndu(:) !< [m/s] velocity   boundary points function   {"location": "edge", "shape": ["nbndu"]}
+   real(kind=dp), allocatable, target :: zbndq(:) !< [m3/s] discharge  boundary points function   {"location": "edge", "shape": ["nbndu"]}
+   real(kind=dp), allocatable :: zbndu0(:) !< velocity   boundary points function in start time
+   real(kind=dp), allocatable :: xy2bndu(:, :) !< velocity   boundary 'external tolerance point'
    integer, allocatable :: kdu(:) !< velocity   boundary points temp array
    integer, allocatable :: kbndu(:, :) !< velocity   boundary points index array, see lines above
    integer, allocatable :: L1qbnd(:) !< first  nbndu point in discharge bnd nqbnd
    integer, allocatable :: L2qbnd(:) !< second nbndu point in discharge bnd nqbnd
-   double precision, allocatable :: at_all(:) !< "at" for all qbnd's, dim(nqbnd)
-   double precision, allocatable :: at_sum(:) !< "at" for all qbnd's, summed over all domains, dim(nqbnd)
-   double precision, allocatable :: wwssav_all(:, :) !< "wwav" and "ssav" for all qnbd's, dim(2,nqbnd)
-   double precision, allocatable :: wwssav_sum(:, :) !< "wwav" and "ssav" for all qnbd's, summed over all domains, dim(2,nqbnd)
+   real(kind=dp), allocatable :: at_all(:) !< "at" for all qbnd's, dim(nqbnd)
+   real(kind=dp), allocatable :: at_sum(:) !< "at" for all qbnd's, summed over all domains, dim(nqbnd)
+   real(kind=dp), allocatable :: wwssav_all(:, :) !< "wwav" and "ssav" for all qnbd's, dim(2,nqbnd)
+   real(kind=dp), allocatable :: wwssav_sum(:, :) !< "wwav" and "ssav" for all qnbd's, summed over all domains, dim(2,nqbnd)
    integer :: japartqbnd !< one or more of the discharge boundaries is partitioned (1) or not (0)
-   double precision, allocatable :: huqbnd(:) !< hu used in normalised Manning discharge boundary condition, based on average water-level
+   real(kind=dp), allocatable :: huqbnd(:) !< hu used in normalised Manning discharge boundary condition, based on average water-level
    integer :: nqbnd !<
-   double precision :: qbndhutrs = 0.1d0 !< only discharge bnd here if hu>qbndhutrs
-   double precision, allocatable :: zkbndu(:, :) !< only for jaceneqtr == 2 : left and right vertical netnode zk levels
+   real(kind=dp) :: qbndhutrs = 0.1d0 !< only discharge bnd here if hu>qbndhutrs
+   real(kind=dp), allocatable :: zkbndu(:, :) !< only for jaceneqtr == 2 : left and right vertical netnode zk levels
    integer, allocatable :: kbanu(:, :) !< ban pointer 2,*
 
    integer :: nbnds !< salinity   boundary points dimension in 1D and 2D
-   double precision, allocatable :: xbnds(:) !< salinity   boundary points xcor
-   double precision, allocatable :: ybnds(:) !< salinity   boundary points ycor
-   double precision, allocatable, target :: zminmaxs(:) !< salinity   boundary points zmin and zmax
-   double precision, allocatable, target :: sigmabnds(:) !< salinity   boundary points sigma coordinates (for now: dim = (nbnds*kmx) )
-   double precision, allocatable, target :: zbnds(:) !< salinity   boundary points function
-   double precision, allocatable :: xy2bnds(:, :) !< salinity   boundary 'external tolerance point'
+   real(kind=dp), allocatable :: xbnds(:) !< salinity   boundary points xcor
+   real(kind=dp), allocatable :: ybnds(:) !< salinity   boundary points ycor
+   real(kind=dp), allocatable, target :: zminmaxs(:) !< salinity   boundary points zmin and zmax
+   real(kind=dp), allocatable, target :: sigmabnds(:) !< salinity   boundary points sigma coordinates (for now: dim = (nbnds*kmx) )
+   real(kind=dp), allocatable, target :: zbnds(:) !< salinity   boundary points function
+   real(kind=dp), allocatable :: xy2bnds(:, :) !< salinity   boundary 'external tolerance point'
    integer, allocatable :: kds(:) !< satinity   boundary points temp array
    integer, allocatable :: kbnds(:, :) !< salinity   boundary points index array, see lines above
-   double precision, allocatable :: thtbnds(:) !< salinity Thatcher-Harleman outflow times (dim = (nbnds))
-   double precision, allocatable :: thzbnds(:) !< salinity Thatcher-Harleman outflow concentrations (dim = (nbnds*kmx))
+   real(kind=dp), allocatable :: thtbnds(:) !< salinity Thatcher-Harleman outflow times (dim = (nbnds))
+   real(kind=dp), allocatable :: thzbnds(:) !< salinity Thatcher-Harleman outflow concentrations (dim = (nbnds*kmx))
 
    integer :: nbndw !< wave    boundary points dimension
-   double precision, allocatable :: xbndw(:) !< wave    boundary points xcor
-   double precision, allocatable :: ybndw(:) !< wave    boundary points ycor
-   double precision, allocatable :: zbndw(:, :) !< wave    boundary points function
-   double precision, allocatable :: xy2bndw(:, :) !< wave    boundary 'external tolerance point'
+   real(kind=dp), allocatable :: xbndw(:) !< wave    boundary points xcor
+   real(kind=dp), allocatable :: ybndw(:) !< wave    boundary points ycor
+   real(kind=dp), allocatable :: zbndw(:, :) !< wave    boundary points function
+   real(kind=dp), allocatable :: xy2bndw(:, :) !< wave    boundary 'external tolerance point'
    integer, allocatable :: kdw(:) !< wave    boundary points temp array
    integer, allocatable :: kbndw(:, :) !< wave    boundary points index array, see lines above
    integer, allocatable :: L1wbnd(:) !< first  nbndw point in wave-energy bnd nwbnd
    integer, allocatable :: L2wbnd(:) !< second nbndw point in wave-energy bnd nwbnd
 
    integer :: nbndtm !< temperature boundary points dimension
-   double precision, allocatable :: xbndtm(:) !< temperature boundary points xcor
-   double precision, allocatable :: ybndtm(:) !< temperature boundary points ycor
-   double precision, allocatable, target :: zminmaxTM(:) !< temperature boundary points zmin and zmax
-   double precision, allocatable, target :: sigmabndTM(:) !< temperature boundary points sigma coordinates
-   double precision, allocatable, target :: zbndtm(:) !< temperature boundary points function
-   double precision, allocatable :: xy2bndtm(:, :) !< temperature external tolerance point'
+   real(kind=dp), allocatable :: xbndtm(:) !< temperature boundary points xcor
+   real(kind=dp), allocatable :: ybndtm(:) !< temperature boundary points ycor
+   real(kind=dp), allocatable, target :: zminmaxTM(:) !< temperature boundary points zmin and zmax
+   real(kind=dp), allocatable, target :: sigmabndTM(:) !< temperature boundary points sigma coordinates
+   real(kind=dp), allocatable, target :: zbndtm(:) !< temperature boundary points function
+   real(kind=dp), allocatable :: xy2bndtm(:, :) !< temperature external tolerance point'
    integer, allocatable :: kdtm(:) !< temperature boundary points temp array
    integer, allocatable :: kbndtm(:, :) !< temperature boundary points index array, see lines above
-   double precision, allocatable :: thtbndtm(:) !< temperature Thatcher-Harleman outflow times
-   double precision, allocatable :: thzbndtm(:) !< temperature Thatcher-Harleman outflow concentrations
+   real(kind=dp), allocatable :: thtbndtm(:) !< temperature Thatcher-Harleman outflow times
+   real(kind=dp), allocatable :: thzbndtm(:) !< temperature Thatcher-Harleman outflow concentrations
 
    integer :: nbndsd !< sediment   boundary points dimension
-   double precision, allocatable :: xbndsd(:) !< sediment   boundary points xcor
-   double precision, allocatable :: ybndsd(:) !< sediment   boundary points ycor
-   double precision, allocatable, target :: zminmaxsd(:) !< sediment   boundary points zmin and zmax
-   double precision, allocatable, target :: sigmabndsd(:) !< sediment   boundary points sigma coordinates
-   double precision, allocatable, target :: zbndsd(:) !< sediment   boundary points function
-   double precision, allocatable :: xy2bndsd(:, :) !< sediment   boundary 'external tolerance point'
+   real(kind=dp), allocatable :: xbndsd(:) !< sediment   boundary points xcor
+   real(kind=dp), allocatable :: ybndsd(:) !< sediment   boundary points ycor
+   real(kind=dp), allocatable, target :: zminmaxsd(:) !< sediment   boundary points zmin and zmax
+   real(kind=dp), allocatable, target :: sigmabndsd(:) !< sediment   boundary points sigma coordinates
+   real(kind=dp), allocatable, target :: zbndsd(:) !< sediment   boundary points function
+   real(kind=dp), allocatable :: xy2bndsd(:, :) !< sediment   boundary 'external tolerance point'
    integer, allocatable :: kdsd(:) !< sediment   boundary points temp array
    integer, allocatable :: kbndsd(:, :) !< sediment   boundary points index array, see lines above
-   double precision, allocatable :: thtbndsd(:) !< sediment Thatcher-Harleman outflow times
-   double precision, allocatable :: thzbndsd(:) !< sediment Thatcher-Harleman outflow concentrations
+   real(kind=dp), allocatable :: thtbndsd(:) !< sediment Thatcher-Harleman outflow times
+   real(kind=dp), allocatable :: thzbndsd(:) !< sediment Thatcher-Harleman outflow concentrations
 
    integer, allocatable :: nbndtr(:) !< tracer boundary points dimension
    integer :: nbndtr_all !< all tracer boundary points dimension (max(nbndtr))
@@ -204,8 +204,8 @@ module fm_external_forcings_data
    character(len=NAMTRACLEN), allocatable :: trnames(:) !< tracer names (boundary conditions only, used for look-up)
    character(len=NAMTRACLEN), allocatable :: trunits(:) !< tracer units
    type(bndtype), allocatable, target :: bndtr(:)
-   double precision, allocatable :: wstracers(:) !< tracer fall velocity pos is downward (m/s)
-   double precision, allocatable :: decaytimetracers(:) !< tracer decaytimes (s)
+   real(kind=dp), allocatable :: wstracers(:) !< tracer fall velocity pos is downward (m/s)
+   real(kind=dp), allocatable :: decaytimetracers(:) !< tracer decaytimes (s)
    integer :: jadecaytracers = 0 !< 0 = no, 1 =yes
 
    ! JRE sedfracbnds
@@ -218,31 +218,31 @@ module fm_external_forcings_data
    !\ sedfracbnds
 
    integer :: nbndt !< tang.velocity boundary points dimension
-   double precision, allocatable :: xbndt(:) !< tang.velocity boundary points xcor
-   double precision, allocatable :: ybndt(:) !< tang.velocity boundary points ycor
-   double precision, allocatable, target :: zbndt(:) !< tang.velocity boundary points function
-   double precision, allocatable :: xy2bndt(:, :) !< tang.velocity boundary 'external tolerance point'
+   real(kind=dp), allocatable :: xbndt(:) !< tang.velocity boundary points xcor
+   real(kind=dp), allocatable :: ybndt(:) !< tang.velocity boundary points ycor
+   real(kind=dp), allocatable, target :: zbndt(:) !< tang.velocity boundary points function
+   real(kind=dp), allocatable :: xy2bndt(:, :) !< tang.velocity boundary 'external tolerance point'
    integer, allocatable :: kdt(:) !< tang.velocity boundary points temp array
    integer, allocatable :: kbndt(:, :) !< tang.velocity boundary points index array, see lines above
 
    integer :: nbnduxy !< uxuyadvectionvelocity boundary points dimension
-   double precision, allocatable :: xbnduxy(:) !< uxuyadvectionvelocity boundary points xcor
-   double precision, allocatable :: ybnduxy(:) !< uxuyadvectionvelocity boundary points ycor
-   double precision, allocatable, target :: zminmaxuxy(:) !< uxuyadvectionvelocity boundary points zmin and zmax
-   double precision, allocatable, target :: sigmabnduxy(:) !< uxuyadvectionvelocity boundary points sigma coordinates (for now: dim = (nbnds*kmx) )
-   double precision, allocatable, target :: zbnduxy(:) !< uxuyadvectionvelocity boundary points function
-   double precision, allocatable :: xy2bnduxy(:, :) !< uxuyadvectionvelocity boundary 'external tolerance point'
+   real(kind=dp), allocatable :: xbnduxy(:) !< uxuyadvectionvelocity boundary points xcor
+   real(kind=dp), allocatable :: ybnduxy(:) !< uxuyadvectionvelocity boundary points ycor
+   real(kind=dp), allocatable, target :: zminmaxuxy(:) !< uxuyadvectionvelocity boundary points zmin and zmax
+   real(kind=dp), allocatable, target :: sigmabnduxy(:) !< uxuyadvectionvelocity boundary points sigma coordinates (for now: dim = (nbnds*kmx) )
+   real(kind=dp), allocatable, target :: zbnduxy(:) !< uxuyadvectionvelocity boundary points function
+   real(kind=dp), allocatable :: xy2bnduxy(:, :) !< uxuyadvectionvelocity boundary 'external tolerance point'
    integer, allocatable :: kduxy(:) !< uxuyadvectionvelocity boundary points temp array
    integer, allocatable :: kbnduxy(:, :) !< uxuyadvectionvelocity boundary points index array, see lines above
-   double precision :: zbnduxyval = -999d0
+   real(kind=dp) :: zbnduxyval = -999d0
 
    integer :: nbndn !< norm.velocity boundary points dimension
-   double precision, allocatable :: xbndn(:) !< norm.velocity boundary points xcor
-   double precision, allocatable :: ybndn(:) !< norm.velocity boundary points ycor
-   double precision, allocatable, target :: zminmaxu(:) !< norm.velocity boundary points zmin and zmax
-   double precision, allocatable, target :: sigmabndu(:) !< norm.velocity boundary points sigma coordinates (for now: dim = (nbndn*kmx) )
-   double precision, allocatable, target :: zbndn(:) !< norm.velocity boundary points function
-   double precision, allocatable :: xy2bndn(:, :) !< norm.velocity boundary 'external tolerance point'
+   real(kind=dp), allocatable :: xbndn(:) !< norm.velocity boundary points xcor
+   real(kind=dp), allocatable :: ybndn(:) !< norm.velocity boundary points ycor
+   real(kind=dp), allocatable, target :: zminmaxu(:) !< norm.velocity boundary points zmin and zmax
+   real(kind=dp), allocatable, target :: sigmabndu(:) !< norm.velocity boundary points sigma coordinates (for now: dim = (nbndn*kmx) )
+   real(kind=dp), allocatable, target :: zbndn(:) !< norm.velocity boundary points function
+   real(kind=dp), allocatable :: xy2bndn(:, :) !< norm.velocity boundary 'external tolerance point'
    integer, allocatable :: kdn(:) !< norm.velocity boundary points temp array
    integer, allocatable :: kbndn(:, :) !< norm.velocity boundary points index array, see lines above
 
@@ -250,10 +250,10 @@ module fm_external_forcings_data
    integer, allocatable :: ibnd_own(:) !< Index mapping own boundary points (without ghost points) to the index in all boundary points
 
    integer :: ngate !< gates links dimension, to specify gate lower edge level
-   double precision, allocatable :: xgate(:) !< gates links xcor = xz(k1)
-   double precision, allocatable :: ygate(:) !< gates links ycor
-   double precision, allocatable, target :: zgate(:) !< gates lower_edge_level value
-   double precision, allocatable :: xy2gate(:, :) !< gates links second point xcor = xz(k2)
+   real(kind=dp), allocatable :: xgate(:) !< gates links xcor = xz(k1)
+   real(kind=dp), allocatable :: ygate(:) !< gates links ycor
+   real(kind=dp), allocatable, target :: zgate(:) !< gates lower_edge_level value
+   real(kind=dp), allocatable :: xy2gate(:, :) !< gates links second point xcor = xz(k2)
    integer, allocatable :: kgate(:, :) !< gates links index array, see lines above
    integer, allocatable, target :: kdg(:) !< helper for multiple_uni
    integer, allocatable :: L1gatesg(:) !< first  ngate point in gate signal ngatesg
@@ -262,10 +262,10 @@ module fm_external_forcings_data
    character(len=128), allocatable, target :: gate_ids(:)
 
    integer :: ncdam !< nr of controllable dam points
-   double precision, allocatable :: xcdam(:) !< dam nodes xcor = xz(k1)
-   double precision, allocatable :: ycdam(:) !< dam nodes ycor
-   double precision, allocatable, target :: zcdam(:) !< dam nodes zvalue {"shape": ["ncdam"]}
-   double precision, allocatable :: xy2cdam(:, :) !< cdams links second point xcor = xz(k2)
+   real(kind=dp), allocatable :: xcdam(:) !< dam nodes xcor = xz(k1)
+   real(kind=dp), allocatable :: ycdam(:) !< dam nodes ycor
+   real(kind=dp), allocatable, target :: zcdam(:) !< dam nodes zvalue {"shape": ["ncdam"]}
+   real(kind=dp), allocatable :: xy2cdam(:, :) !< cdams links second point xcor = xz(k2)
    integer, allocatable :: kcdam(:, :) !< cdams links index array, see lines above
    integer, allocatable, target :: kdd(:) !< helper for multiple_uni_damlevel
    integer, allocatable :: L1cdamsg(:) !< first  ncdam point in cdam signal ncdamsg
@@ -278,24 +278,24 @@ module fm_external_forcings_data
 
    type pillar_type
       integer :: np !< number of pillars
-      double precision, dimension(:), allocatable :: xcor !< x-coordinates of pillars
-      double precision, dimension(:), allocatable :: ycor !< y-coordinates of pillars
-      double precision, dimension(:), allocatable :: dia !< radius od pillars
-      double precision, dimension(:), allocatable :: cd !< Cd coefficient of pillars
+      real(kind=dp), dimension(:), allocatable :: xcor !< x-coordinates of pillars
+      real(kind=dp), dimension(:), allocatable :: ycor !< y-coordinates of pillars
+      real(kind=dp), dimension(:), allocatable :: dia !< radius od pillars
+      real(kind=dp), dimension(:), allocatable :: cd !< Cd coefficient of pillars
    end type pillar_type
    type(pillar_Type), dimension(:), allocatable :: pillar
-   double precision, dimension(:), allocatable :: Cpil
+   real(kind=dp), dimension(:), allocatable :: Cpil
 
    integer :: ncgen !< nr of controllable generalstr points
-   double precision, allocatable :: xcgen(:) !< generalstr nodes xcor = xz(k1)
-   double precision, allocatable :: ycgen(:) !< generalstr nodes ycor
-   double precision, allocatable, target :: zcgen(:) !< generalstr nodes zvalue (kx=3)
-   double precision, allocatable :: xy2cgen(:, :) !< cgen links second point xcor = xz(k2)
+   real(kind=dp), allocatable :: xcgen(:) !< generalstr nodes xcor = xz(k1)
+   real(kind=dp), allocatable :: ycgen(:) !< generalstr nodes ycor
+   real(kind=dp), allocatable, target :: zcgen(:) !< generalstr nodes zvalue (kx=3)
+   real(kind=dp), allocatable :: xy2cgen(:, :) !< cgen links second point xcor = xz(k2)
 
-   double precision, allocatable :: Fusav(:, :) !< only needed if gatedoorheight > 0 , dim = ncgen
-   double precision, allocatable :: Rusav(:, :) !< only needed if gatedoorheight > 0
-   double precision, allocatable :: Ausav(:, :) !< only needed if gatedoorheight > 0
-   double precision, allocatable :: ff3(:, :) !< only needed if kmx>0 and jastructurelayersactive>0
+   real(kind=dp), allocatable :: Fusav(:, :) !< only needed if gatedoorheight > 0 , dim = ncgen
+   real(kind=dp), allocatable :: Rusav(:, :) !< only needed if gatedoorheight > 0
+   real(kind=dp), allocatable :: Ausav(:, :) !< only needed if gatedoorheight > 0
+   real(kind=dp), allocatable :: ff3(:, :) !< only needed if kmx>0 and jastructurelayersactive>0
 
    integer, allocatable :: kcgen(:, :) !< cgen links index array, see lines above
                                                         !! 1,* = index in s1 point "left" of genstru
@@ -327,23 +327,23 @@ module fm_external_forcings_data
 
    ! Pumps and pumps with levels
    integer :: npump !< nr of pump links
-   double precision, allocatable :: xpump(:) !< pump nodes xcor = xz(k1)
-   double precision, allocatable :: ypump(:) !< pump nodes ycor
-   double precision, allocatable, target :: qpump(:) !< pump discharge m3/s
-   double precision, allocatable :: xy2pump(:, :) !< pump links second point xcor = xz(k2)
+   real(kind=dp), allocatable :: xpump(:) !< pump nodes xcor = xz(k1)
+   real(kind=dp), allocatable :: ypump(:) !< pump nodes ycor
+   real(kind=dp), allocatable, target :: qpump(:) !< pump discharge m3/s
+   real(kind=dp), allocatable :: xy2pump(:, :) !< pump links second point xcor = xz(k2)
    integer, allocatable :: kpump(:, :) !< pump links index array, see lines above
    integer, allocatable, target :: kdp(:) !< helper for multiple_uni_pump
    integer, allocatable :: L1pumpsg(:) !< first  npump point in pump signal npumpsg
    integer, allocatable :: L2pumpsg(:) !< second npump point in pump signal npumpsg
-   double precision, allocatable :: pumponoff(:, :) !< 1=suct on, 2=suct off, 3=deliv on, 4=deliv off , *)
+   real(kind=dp), allocatable :: pumponoff(:, :) !< 1=suct on, 2=suct off, 3=deliv on, 4=deliv off , *)
    integer :: npumpsg !< nr of pump signals specified
    integer, allocatable :: L1strucsg(:) !< first  nstru point in pump signal
    integer, allocatable :: L2strucsg(:) !< second nstru point in pump signal
    !variables for pump with levels
    ! time varying
-   double precision, allocatable :: waterLevelsPumpLeft(:) !< left considering flow direction
-   double precision, allocatable :: waterLevelsPumpRight(:) !< right considering flow direction
-   double precision, allocatable :: pumpAveraging(:, :) !< to avoid allocations/deallocations
+   real(kind=dp), allocatable :: waterLevelsPumpLeft(:) !< left considering flow direction
+   real(kind=dp), allocatable :: waterLevelsPumpRight(:) !< right considering flow direction
+   real(kind=dp), allocatable :: pumpAveraging(:, :) !< to avoid allocations/deallocations
    ! constant in time
    integer :: nPumpsWithLevels !< nr of pump signals with levels (sobek format)
    integer, allocatable :: pumpsWithLevels(:) !< -1 = legacy, not 1 = new pump
@@ -351,18 +351,18 @@ module fm_external_forcings_data
 
    ! Dambreak
    !time varying
-   double precision, allocatable, target :: waterLevelsDambreakUpStream(:) !< the water levels computed each time step upstream
-   double precision, allocatable, target :: waterLevelsDambreakDownStream(:) !< the water levels computed each time step downstream
-   double precision, allocatable, target :: breachDepthDambreak(:) !< the dambreak breach width (as a level)
-   double precision, allocatable, target :: breachWidthDambreak(:) !< the dambreak breach width (as a level)
-   double precision, allocatable :: normalVelocityDambreak(:) !< dambreak normal velocity
-   double precision, allocatable :: dambreakAveraging(:, :) !< to avoid allocations/deallocations
-   double precision, allocatable :: breachWidthDerivativeDambreak(:) !< breach width derivatives
-   double precision, allocatable :: waterLevelJumpDambreak(:) !< water level jumps
+   real(kind=dp), allocatable, target :: waterLevelsDambreakUpStream(:) !< the water levels computed each time step upstream
+   real(kind=dp), allocatable, target :: waterLevelsDambreakDownStream(:) !< the water levels computed each time step downstream
+   real(kind=dp), allocatable, target :: breachDepthDambreak(:) !< the dambreak breach width (as a level)
+   real(kind=dp), allocatable, target :: breachWidthDambreak(:) !< the dambreak breach width (as a level)
+   real(kind=dp), allocatable :: normalVelocityDambreak(:) !< dambreak normal velocity
+   real(kind=dp), allocatable :: dambreakAveraging(:, :) !< to avoid allocations/deallocations
+   real(kind=dp), allocatable :: breachWidthDerivativeDambreak(:) !< breach width derivatives
+   real(kind=dp), allocatable :: waterLevelJumpDambreak(:) !< water level jumps
    !constant in time
-   double precision, allocatable :: maximumDambreakWidths(:) !< the total dambreak width (from pli file)
-   double precision, allocatable :: dambreakLinksEffectiveLength(:) !< dambreak maximum flow widths
-   double precision, allocatable :: dambreakLinksActualLength(:) !< dambreak actual flow widths
+   real(kind=dp), allocatable :: maximumDambreakWidths(:) !< the total dambreak width (from pli file)
+   real(kind=dp), allocatable :: dambreakLinksEffectiveLength(:) !< dambreak maximum flow widths
+   real(kind=dp), allocatable :: dambreakLinksActualLength(:) !< dambreak actual flow widths
    integer, allocatable :: dambreaks(:) !< store the dambreaks indexes among all structures
    integer, parameter :: DBW_SYMM = 1 !< symmetrical dambreak widening (limited width in case of asymmetric starting link placement)
    integer, parameter :: DBW_PROP = 2 !< dambreak wideining proportional to left/right dam length
@@ -376,7 +376,7 @@ module fm_external_forcings_data
    integer, allocatable :: activeDambreakLinks(:) !< activeDambreakLinks, open dambreak links
    integer, allocatable :: LStartBreach(:) !< the starting link, the closest to the breach point
    integer, allocatable :: kdambreak(:, :) !< dambreak links index array
-   double precision, allocatable, target :: dambreakLevelsAndWidthsFromTable(:) !< dambreak widths and heights
+   real(kind=dp), allocatable, target :: dambreakLevelsAndWidthsFromTable(:) !< dambreak widths and heights
    character(len=128), allocatable, target :: dambreak_ids(:) !< the dambreak ids
    ! Upstream water level
    integer :: nDambreakLocationsUpstream !< nr of dambreak signals with locations upstream
@@ -392,7 +392,7 @@ module fm_external_forcings_data
    integer, allocatable :: dambreakAverigingDownstreamMapping(:) !< mapping of dambreak averaging in the dambreak arrays
 
    type polygon
-      double precision, dimension(:), allocatable :: xp, yp
+      real(kind=dp), dimension(:), allocatable :: xp, yp
       integer :: np
    end type polygon
    type(polygon), dimension(:), allocatable :: dambreakPolygons
@@ -402,12 +402,12 @@ module fm_external_forcings_data
 
    integer :: nvalv !< nr of valvs
    integer, allocatable :: Lvalv(:) !< valv links index array, pos=allow 1->2, neg= allow 2->1
-   double precision, allocatable :: valv(:) !< open fraction of Au
+   real(kind=dp), allocatable :: valv(:) !< open fraction of Au
 
    integer :: nbndqh !< q-h boundary points dimension
-   double precision, allocatable :: xbndqh(:) !< q-h boundary points xcor
-   double precision, allocatable :: ybndqh(:) !< q-h boundary points ycor
-   double precision, allocatable :: zbndqh(:) !< q-h boundary points function
+   real(kind=dp), allocatable :: xbndqh(:) !< q-h boundary points xcor
+   real(kind=dp), allocatable :: ybndqh(:) !< q-h boundary points ycor
+   real(kind=dp), allocatable :: zbndqh(:) !< q-h boundary points function
    integer, allocatable :: kdqh(:) !< q-h boundary points temp array
    integer, allocatable :: kbndqh(:, :) !< q-h boundary points index array
                                                         !! 1,* = index in s1 boundary point
@@ -425,13 +425,13 @@ module fm_external_forcings_data
    character(len=255), allocatable :: qhpliname(:) !< name of the location extracted from the pli-file
    integer, allocatable :: L1qhbnd(:) !< first  nbndz point in discharge bnd nqbnd
    integer, allocatable :: L2qhbnd(:) !< second nbndz point in discharge bnd nqbnd
-   double precision, allocatable, target :: qhbndz(:) !< temporary array for storing boundary values per qh boundary segment
-   double precision, allocatable :: qhbndz_plus(:) !< temporary array for calculating the slope of the QH relation
-   double precision, allocatable :: qhbndz_min(:) !< temporary array for calculating the slope of the QH relation
-   double precision, allocatable, target :: atqh_all(:) !< temporary array for computing discharge through the QH boundary per domain
-   double precision, allocatable :: q_org(:) !< temporary array for saving the discharge through the QH boundary per domain
-   double precision, allocatable :: qh_gamma(:) !< temporary array for saving the slope of the QH-relation
-   double precision, allocatable :: atqh_sum(:) !< temporary array for computing total discharge through qh boundary
+   real(kind=dp), allocatable, target :: qhbndz(:) !< temporary array for storing boundary values per qh boundary segment
+   real(kind=dp), allocatable :: qhbndz_plus(:) !< temporary array for calculating the slope of the QH relation
+   real(kind=dp), allocatable :: qhbndz_min(:) !< temporary array for calculating the slope of the QH relation
+   real(kind=dp), allocatable, target :: atqh_all(:) !< temporary array for computing discharge through the QH boundary per domain
+   real(kind=dp), allocatable :: q_org(:) !< temporary array for saving the discharge through the QH boundary per domain
+   real(kind=dp), allocatable :: qh_gamma(:) !< temporary array for saving the slope of the QH-relation
+   real(kind=dp), allocatable :: atqh_sum(:) !< temporary array for computing total discharge through qh boundary
 
    integer :: nwbnd !< number of wave-energy boundaries
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
@@ -441,39 +441,39 @@ module fm_external_forcings_data
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield
    integer :: msrc = 0 !< maximal number of points that polylines contains for all sources/sinks
    integer, allocatable :: ksrc(:, :) !< index array, 1=nodenr sink, 2 =kbsin , 3=ktsin, 4 = nodenr source, 5 =kbsor , 6=ktsor
-   double precision, target, allocatable :: qsrc(:) !< cell influx (m3/s) if negative: outflux
-   double precision, allocatable :: sasrc(:) !< q*salinity    (ppt) (m3/s)  if ksrc 3,4 == 0, else delta salinity
-   double precision, allocatable :: tmsrc(:) !< q*temperature (degC) (m3/s) if ksrc 3,4 == 0, else delta temperature
-   double precision, allocatable :: ccsrc(:, :) !< dimension (numvalssrc,numsrc), keeps sasrc, tmsrc etc
-   double precision, allocatable :: qcsrc(:, :) !< q*constituent (c) (m3/s)  )
-   double precision, allocatable :: vcsrc(:, :) !< v*constituent (c) (m3)    )
-   double precision, allocatable :: arsrc(:) !< pipe cross sectional area (m2). If 0, no net momentum
-   double precision, allocatable :: cssrc(:, :) !< (1:2,numsrc) cosine discharge dir pipe on start side (1) and end side (2) of pipe.
-   double precision, allocatable :: snsrc(:, :) !< (1:2,numsrc) sine discharge dir pipe on start side (1) and end side (2) of pipe.
-   double precision, allocatable :: zsrc(:, :) !< vertical level (m) bot
-   double precision, allocatable :: zsrc2(:, :) !< vertical level (m) top (optional)
-   double precision, allocatable :: srsn(:, :) !< 2*(1+numvalssrc),numsrc, to be reduced
+   real(kind=dp), target, allocatable :: qsrc(:) !< cell influx (m3/s) if negative: outflux
+   real(kind=dp), allocatable :: sasrc(:) !< q*salinity    (ppt) (m3/s)  if ksrc 3,4 == 0, else delta salinity
+   real(kind=dp), allocatable :: tmsrc(:) !< q*temperature (degC) (m3/s) if ksrc 3,4 == 0, else delta temperature
+   real(kind=dp), allocatable :: ccsrc(:, :) !< dimension (numvalssrc,numsrc), keeps sasrc, tmsrc etc
+   real(kind=dp), allocatable :: qcsrc(:, :) !< q*constituent (c) (m3/s)  )
+   real(kind=dp), allocatable :: vcsrc(:, :) !< v*constituent (c) (m3)    )
+   real(kind=dp), allocatable :: arsrc(:) !< pipe cross sectional area (m2). If 0, no net momentum
+   real(kind=dp), allocatable :: cssrc(:, :) !< (1:2,numsrc) cosine discharge dir pipe on start side (1) and end side (2) of pipe.
+   real(kind=dp), allocatable :: snsrc(:, :) !< (1:2,numsrc) sine discharge dir pipe on start side (1) and end side (2) of pipe.
+   real(kind=dp), allocatable :: zsrc(:, :) !< vertical level (m) bot
+   real(kind=dp), allocatable :: zsrc2(:, :) !< vertical level (m) top (optional)
+   real(kind=dp), allocatable :: srsn(:, :) !< 2*(1+numvalssrc),numsrc, to be reduced
    integer, allocatable :: jamess(:) !< issue message mess for from or to point, 0, 1, 2
-   double precision, allocatable, target :: qstss(:) !< array to catch multiple_uni_discharge_salinity_temperature
+   real(kind=dp), allocatable, target :: qstss(:) !< array to catch multiple_uni_discharge_salinity_temperature
    character(len=255), allocatable :: srcname(:) !< sources/sinks name (numsrc)
-   double precision, target, allocatable :: vsrccum(:) !< cumulative volume at each source/sink from Tstart to now
-   double precision, allocatable :: vsrccum_pre(:) !< cumulative volume at each source/sink from Tstart to the previous His-output time
-   double precision, target, allocatable :: qsrcavg(:) !< average discharge in the past his-interval at each source/sink
-   double precision, allocatable :: xsrc(:, :) !< x-coordinates of source/sink
-   double precision, allocatable :: ysrc(:, :) !< y-coordinates of source/sink
+   real(kind=dp), target, allocatable :: vsrccum(:) !< cumulative volume at each source/sink from Tstart to now
+   real(kind=dp), allocatable :: vsrccum_pre(:) !< cumulative volume at each source/sink from Tstart to the previous His-output time
+   real(kind=dp), target, allocatable :: qsrcavg(:) !< average discharge in the past his-interval at each source/sink
+   real(kind=dp), allocatable :: xsrc(:, :) !< x-coordinates of source/sink
+   real(kind=dp), allocatable :: ysrc(:, :) !< y-coordinates of source/sink
    integer, allocatable :: nxsrc(:) !< mx nr of points in xsrc, ysrc
    integer, allocatable :: ksrcwaq(:) !< index array, starting point in qsrcwaq
-   double precision, allocatable :: qsrcwaq(:) !< Cumulative qsrc within current waq-timestep
-   double precision, allocatable :: qsrcwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
-   double precision, allocatable :: qlatwaq(:) !< Cumulative qsrc within current waq-timestep
-   double precision, allocatable :: qlatwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
-   double precision :: addksources = 0d0 !< Add k of sources to turkin 1/0
+   real(kind=dp), allocatable :: qsrcwaq(:) !< Cumulative qsrc within current waq-timestep
+   real(kind=dp), allocatable :: qsrcwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
+   real(kind=dp), allocatable :: qlatwaq(:) !< Cumulative qsrc within current waq-timestep
+   real(kind=dp), allocatable :: qlatwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
+   real(kind=dp) :: addksources = 0d0 !< Add k of sources to turkin 1/0
 
-   double precision, allocatable, target :: sah(:) ! temp
-   double precision, allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness
+   real(kind=dp), allocatable, target :: sah(:) ! temp
+   real(kind=dp), allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness
    integer :: num_lat_ini_blocks
    logical :: tair_available, dewpoint_available
-   double precision, allocatable, target :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
+   real(kind=dp), allocatable, target :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
    integer :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
 
 contains

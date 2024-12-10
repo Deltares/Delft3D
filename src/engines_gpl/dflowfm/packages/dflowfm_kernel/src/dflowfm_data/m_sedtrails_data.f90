@@ -31,6 +31,7 @@
 !
 
 module m_sedtrails_data
+   use precision, only: dp
    use coordinate_reference_system
    implicit none
 
@@ -38,11 +39,11 @@ module m_sedtrails_data
    !
    ! flow geometry from md_sedtrailsfile
    !
-   double precision, allocatable, target :: xk(:) !< [-] net node x coordinate {"shape": ["numk"]}
-   double precision, allocatable, target :: yk(:) !< [-] net node y coordinate {"shape": ["numk"]}
-   double precision, allocatable, target :: zk(:) !< [-] net node z coordinate {"shape": ["numk"]}
-   double precision, allocatable :: xk0(:), yk0(:), zk0(:) !< backup for xk, etc.
-   double precision, allocatable :: xk1(:), yk1(:), zk1(:) !< work array for xk, etc.
+   real(kind=dp), allocatable, target :: xk(:) !< [-] net node x coordinate {"shape": ["numk"]}
+   real(kind=dp), allocatable, target :: yk(:) !< [-] net node y coordinate {"shape": ["numk"]}
+   real(kind=dp), allocatable, target :: zk(:) !< [-] net node z coordinate {"shape": ["numk"]}
+   real(kind=dp), allocatable :: xk0(:), yk0(:), zk0(:) !< backup for xk, etc.
+   real(kind=dp), allocatable :: xk1(:), yk1(:), zk1(:) !< work array for xk, etc.
 
    integer :: numk0
    integer, target :: numk !< [-] nr. of sedtrails nodes. {"shape": []}
@@ -50,7 +51,7 @@ module m_sedtrails_data
    type(t_crs), target :: crs !< crs read from net file, to be written to output geom.
 
    integer, allocatable :: st_ind(:, :) !< indexes and weight factors for interpolation cell centre->sedtrails grid
-   double precision, allocatable :: st_wf(:, :) !< (3,:)
+   real(kind=dp), allocatable :: st_wf(:, :) !< (3,:)
 
    integer, allocatable :: idomain(:)
    integer, allocatable :: iglobal_s(:)

@@ -31,6 +31,7 @@
 !
 
   subroutine POLTOLINES()
+     use precision, only: dp
 
      use m_connect, only: connect
      use m_netw
@@ -40,12 +41,12 @@
      use m_dlength, only: dlength
 
      implicit none
-     double precision :: ael
+     real(kind=dp) :: ael
      integer :: k
      integer :: k1
      integer :: k2
-     double precision :: rml
-     double precision :: zp
+     real(kind=dp) :: rml
+     real(kind=dp) :: zp
 
      AEL = PI * RDIAM * RDIAM / 4 ! RDIAM in mm
      do K = 1, NPL - 1

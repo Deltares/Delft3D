@@ -33,6 +33,7 @@
 !> Module for storing the optional hydrology state variables
 module m_hydrology_data
 
+   use precision, only: dp
    implicit none
 
    !
@@ -54,20 +55,20 @@ module m_hydrology_data
    !
    ! Precipitation
    !
-   double precision, allocatable, target :: Precipitation(:)
+   real(kind=dp), allocatable, target :: Precipitation(:)
    integer :: precipitationTarget
 
    !
    ! Interception
    integer :: interceptionmodel !< [-] Interception model, one of DFM_HYD_(NOINTERCEPT|INTERCEPT_LAYER)
-   double precision, allocatable, target :: InterceptThickness(:) !< [m] Interception layer thickness (max depth) {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable, target :: InterceptHs(:) !< [m] Interception layer water depth at current time {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: InterceptThickness(:) !< [m] Interception layer thickness (max depth) {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: InterceptHs(:) !< [m] Interception layer water depth at current time {"location": "face", "shape": ["ndx"]}
 
    !
    ! Evaporation
    !
-   double precision, allocatable, target :: PotEvap(:) !< [m/s] Potential evaporation {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable, target :: ActEvap(:) !< [m/s] Actual evaporation {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: PotEvap(:) !< [m/s] Potential evaporation {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: ActEvap(:) !< [m/s] Actual evaporation {"location": "face", "shape": ["ndx"]}
    integer :: potEvapTarget
 
    !
@@ -75,30 +76,30 @@ module m_hydrology_data
    !
    integer :: infiltrationmodel !< Infiltration formula, one of DFM_HYD_NOINFILT, DFM_HYD_INFILT_(CONST|DARCY|HORTON).
 
-   double precision :: infiltcapuni !< [m s-1] Uniform infiltration capacity. Only used if infiltrationmodel == 2 (DFM_HYD_INFILT_CONST).
-   double precision, allocatable, target :: infilt(:) !< [m3 s-1] Actual infiltration flux at current time {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable, target :: infiltcap0(:) !< [mm h-1] Maximum infiltration capacity on each cell at previous timestep {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable, target :: infiltcap(:) !< [m s-1] Maximum infiltration capacity on each cell {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable :: infiltcaproofs(:) !< temporary of the same
+   real(kind=dp) :: infiltcapuni !< [m s-1] Uniform infiltration capacity. Only used if infiltrationmodel == 2 (DFM_HYD_INFILT_CONST).
+   real(kind=dp), allocatable, target :: infilt(:) !< [m3 s-1] Actual infiltration flux at current time {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: infiltcap0(:) !< [mm h-1] Maximum infiltration capacity on each cell at previous timestep {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: infiltcap(:) !< [m s-1] Maximum infiltration capacity on each cell {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable :: infiltcaproofs(:) !< temporary of the same
 
    ! Horton-specific:
-   double precision, allocatable, target :: HortonMinInfCap(:) !< [mm/hr] Minimum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable, target :: HortonMaxInfCap(:) !< [mm/hr] Maximum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable, target :: HortonDecreaseRate(:) !< [1/hr]  Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable, target :: HortonRecoveryRate(:) !< [1/hr]  Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: HortonMinInfCap(:) !< [mm/hr] Minimum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: HortonMaxInfCap(:) !< [mm/hr] Maximum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: HortonDecreaseRate(:) !< [1/hr]  Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: HortonRecoveryRate(:) !< [1/hr]  Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
    integer, allocatable, target :: HortonState(:) !< [-]     Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
 
    !
    ! dhydrology state (not used yet, only when WFLOW functionality will be connected)
    !
-   double precision, allocatable, target :: CanopyGapFraction(:)
-   double precision, allocatable, target :: Cmax(:)
-   double precision, allocatable, target :: CanopyStorage(:)
-   double precision, allocatable, target :: NetInterception(:)
-   double precision, allocatable, target :: ThroughFall(:)
-   double precision, allocatable, target :: StemFlow(:)
-   double precision, allocatable, target :: LeftOver(:)
-   double precision, allocatable, target :: Interception(:)
+   real(kind=dp), allocatable, target :: CanopyGapFraction(:)
+   real(kind=dp), allocatable, target :: Cmax(:)
+   real(kind=dp), allocatable, target :: CanopyStorage(:)
+   real(kind=dp), allocatable, target :: NetInterception(:)
+   real(kind=dp), allocatable, target :: ThroughFall(:)
+   real(kind=dp), allocatable, target :: StemFlow(:)
+   real(kind=dp), allocatable, target :: LeftOver(:)
+   real(kind=dp), allocatable, target :: Interception(:)
 
 contains
 

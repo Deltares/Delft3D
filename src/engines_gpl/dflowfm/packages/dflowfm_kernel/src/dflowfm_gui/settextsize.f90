@@ -32,20 +32,20 @@
 
 module m_settextsize
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine SETTEXTSIZE()
-         use unstruc_opengl
-         use m_textsize
-         implicit none
+   subroutine SETTEXTSIZE()
+      use unstruc_opengl
+      use m_textsize
+      implicit none
 
-         if (InOpenGLRendering) then
-            call SetTextHeight(int(FontSize * TSIZE))
-         else
-            call IGRCHARSIZE(real(TSIZE), real(TSIZE))
-         end if
-      end
+      if (InOpenGLRendering) then
+         call SetTextHeight(int(FontSize * TSIZE))
+      else
+         call IGRCHARSIZE(real(TSIZE), real(TSIZE))
+      end if
+   end
 
 end module m_settextsize

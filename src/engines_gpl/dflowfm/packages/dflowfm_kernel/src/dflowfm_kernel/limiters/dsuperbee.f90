@@ -33,8 +33,9 @@ module m_dsuperbee
    implicit none
 contains
 
-   double precision function dsuperbee(ds1, ds2)
-      double precision :: ds1, ds2, r
+   real(kind=dp) function dsuperbee(ds1, ds2)
+      use precision, only: dp
+      real(kind=dp) :: ds1, ds2, r
 
       if (ds1 * ds2 > 0d0) then
          r = ds1 / ds2

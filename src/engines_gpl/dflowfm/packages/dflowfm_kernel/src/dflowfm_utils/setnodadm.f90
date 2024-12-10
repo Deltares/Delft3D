@@ -37,52 +37,52 @@ contains
 !! * update_flow1d_admin(), to remove any net links from
 !!   the flow1d::network administration, if they were also
 !!   removed from network_data in the first step.
-subroutine setnodadm(jacrosscheck_)
-   use gridoperations
-   use m_network
-   use m_save_ugrid_state, only: contactnlinks, contactnetlinks, netlink2contact, hashlist_contactids
-   use unstruc_channel_flow, only: network
-   use network_data, only: lc, numl1d, Lperminv, nlinkremoved
-   use m_alloc
-   use messagehandling, only: msgbuf
+   subroutine setnodadm(jacrosscheck_)
+      use gridoperations
+      use m_network
+      use m_save_ugrid_state, only: contactnlinks, contactnetlinks, netlink2contact, hashlist_contactids
+      use unstruc_channel_flow, only: network
+      use network_data, only: lc, numl1d, Lperminv, nlinkremoved
+      use m_alloc
+      use messagehandling, only: msgbuf
 
-   integer, intent(in) :: jacrosscheck_ !< Whether or not to remove any crossing netlinks.
+      integer, intent(in) :: jacrosscheck_ !< Whether or not to remove any crossing netlinks.
 
-   integer :: L, LL, Lnew, Ltoberemoved, Linc
+      integer :: L, LL, Lnew, Ltoberemoved, Linc
 
-   call setnodadm_grd_op(10 + jacrosscheck_)
+      call setnodadm_grd_op(10 + jacrosscheck_)
 
-   ! Update netlink numbers for all 1d2d contacts, after netlinks may have been permuted:
-   ! Also, contruct now the complete inverse mapping from net links to contacts
-   call realloc(netlink2contact, numl1d, keepExisting=.false., fill=0)
-   if (contactnlinks > 0) then
-      Ltoberemoved = 1 ! used later, for checking if the length is 0
-      do LL = 1, contactnlinks
-         L = contactnetlinks(LL)
-         Lnew = Lperminv(L)
-         contactnetlinks(LL) = Lnew
+      ! Update netlink numbers for all 1d2d contacts, after netlinks may have been permuted:
+      ! Also, contruct now the complete inverse mapping from net links to contacts
+      call realloc(netlink2contact, numl1d, keepExisting=.false., fill=0)
+      if (contactnlinks > 0) then
+         Ltoberemoved = 1 ! used later, for checking if the length is 0
+         do LL = 1, contactnlinks
+            L = contactnetlinks(LL)
+            Lnew = Lperminv(L)
+            contactnetlinks(LL) = Lnew
 
-         netlink2contact(Lnew) = LL
+            netlink2contact(Lnew) = LL
 
-         ! Check if this link's length is 0.
-         ! If L is in array LC (filled in subroutine setnodadm_grd_op), then this link has 0 length and we write a warning message.
-         do Linc = Ltoberemoved, nlinkremoved
-            if (LC(Linc) > L) then ! Link numbers in LC are ascending, so link L will not be present in the remaining LC values.
-               exit
-            else if (LC(Linc) == L) then ! 1D2D link #LL was removed by setnodadm_grd_op()
-               write (msgbuf, '(a,a,a)') '1D2D contact link ''', trim(hashlist_contactids%id_list(LL)), ''' has length of 0, this link will be ignored (removed).'
-               call warn_flush()
+            ! Check if this link's length is 0.
+            ! If L is in array LC (filled in subroutine setnodadm_grd_op), then this link has 0 length and we write a warning message.
+            do Linc = Ltoberemoved, nlinkremoved
+               if (LC(Linc) > L) then ! Link numbers in LC are ascending, so link L will not be present in the remaining LC values.
+                  exit
+               else if (LC(Linc) == L) then ! 1D2D link #LL was removed by setnodadm_grd_op()
+                  write (msgbuf, '(a,a,a)') '1D2D contact link ''', trim(hashlist_contactids%id_list(LL)), ''' has length of 0, this link will be ignored (removed).'
+                  call warn_flush()
 
-               Ltoberemoved = Linc + 1 ! remember for next LL loop.
-               exit
-            end if
-         end do ! Linc
-      end do ! LL
-   end if
+                  Ltoberemoved = Linc + 1 ! remember for next LL loop.
+                  exit
+               end if
+            end do ! Linc
+         end do ! LL
+      end if
 
-   if (nlinkremoved > 0) then
-      call update_flow1d_admin(network, lc)
-   end if
+      if (nlinkremoved > 0) then
+         call update_flow1d_admin(network, lc)
+      end if
 
-end subroutine setnodadm
+   end subroutine setnodadm
 end module m_set_nod_adm

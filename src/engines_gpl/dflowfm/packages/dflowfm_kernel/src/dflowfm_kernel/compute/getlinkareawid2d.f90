@@ -32,25 +32,26 @@
 module m_get_link_area_wid2D
    implicit none
 contains
- subroutine getlinkareawid2D(wu2, dz, ai, hpr, ar, wid)
-    use m_flow, only: slotw2D
+   subroutine getlinkareawid2D(wu2, dz, ai, hpr, ar, wid)
+      use precision, only: dp
+      use m_flow, only: slotw2D
 
-    double precision, intent(in) :: wu2, dz, ai, hpr
-    double precision, intent(out) :: ar, wid
-    double precision :: hp2
+      real(kind=dp), intent(in) :: wu2, dz, ai, hpr
+      real(kind=dp), intent(out) :: ar, wid
+      real(kind=dp) :: hp2
 
-    if (ai < 1d-3) then
-       ! if (dz == 0d0) then
-       wid = wu2; wid = wid + slotw2D
-       ar = wid * hpr
-    else if (hpr < dz) then
-       wid = wu2 * hpr / dz; wid = wid + slotw2D
-       ar = 0.5d0 * wid * hpr
-    else
-       wid = wu2; wid = wid + slotw2D
-       hp2 = hpr - dz
-       ar = wid * 0.5d0 * (hpr + hp2)
-    end if
+      if (ai < 1d-3) then
+         ! if (dz == 0d0) then
+         wid = wu2; wid = wid + slotw2D
+         ar = wid * hpr
+      else if (hpr < dz) then
+         wid = wu2 * hpr / dz; wid = wid + slotw2D
+         ar = 0.5d0 * wid * hpr
+      else
+         wid = wu2; wid = wid + slotw2D
+         hp2 = hpr - dz
+         ar = wid * 0.5d0 * (hpr + hp2)
+      end if
 
- end subroutine getlinkareawid2D
+   end subroutine getlinkareawid2D
 end module m_get_link_area_wid2D

@@ -32,53 +32,53 @@
 
 module m_teknode
 
-implicit none
+   implicit none
 
 contains
 
-  subroutine TEKNODE(KP, NCOL)
-     use m_dptabs
-     use m_dmovabs
-     use m_dlnabs
-     use m_dcirr
-     use m_netw
-     use unstruc_colors
-     use m_set_col
-     implicit none
-     integer :: KP, NCOL
-     integer :: k1
-     integer :: k2
-     integer :: l
-     integer :: n
+   subroutine TEKNODE(KP, NCOL)
+      use m_dptabs
+      use m_dmovabs
+      use m_dlnabs
+      use m_dcirr
+      use m_netw
+      use unstruc_colors
+      use m_set_col
+      implicit none
+      integer :: KP, NCOL
+      integer :: k1
+      integer :: k2
+      integer :: l
+      integer :: n
 
-     call SETCOL(NCOL)
-     do N = 1, NMK(KP)
-        L = NOD(KP)%LIN(N)
-        K1 = KN(1, L)
-        K2 = KN(2, L)
-        if (k1 > 0 .and. k2 > 0) then
-           call DMOVABS(XK(K1), YK(K1), ZK(K1))
-           call DLNABS(XK(K2), YK(K2), ZK(K2))
-        end if
-     end do
+      call SETCOL(NCOL)
+      do N = 1, NMK(KP)
+         L = NOD(KP)%LIN(N)
+         K1 = KN(1, L)
+         K2 = KN(2, L)
+         if (k1 > 0 .and. k2 > 0) then
+            call DMOVABS(XK(K1), YK(K1), ZK(K1))
+            call DLNABS(XK(K2), YK(K2), ZK(K2))
+         end if
+      end do
 
-     if (NCOL > 0) then
-        call SETCOL(NCOLNN)
-        do N = 1, NMK(KP)
-           L = NOD(KP)%LIN(N)
-           K1 = KN(1, L)
-           K2 = KN(2, L)
-           if (k1 > 0) then
-              call DPTABS(XK(K1), YK(K1), ZK(K1))
-           end if
-           if (k2 > 0) then
-              call DPTABS(XK(K2), YK(K2), ZK(K2))
-           end if
-        end do
-     end if
+      if (NCOL > 0) then
+         call SETCOL(NCOLNN)
+         do N = 1, NMK(KP)
+            L = NOD(KP)%LIN(N)
+            K1 = KN(1, L)
+            K2 = KN(2, L)
+            if (k1 > 0) then
+               call DPTABS(XK(K1), YK(K1), ZK(K1))
+            end if
+            if (k2 > 0) then
+               call DPTABS(XK(K2), YK(K2), ZK(K2))
+            end if
+         end do
+      end if
 
-     if (KC(KP) == -1) call DCIRR(XK(KP), YK(KP), ZK(KP), NCOL)
-     return
-  end subroutine TEKNODE
+      if (KC(KP) == -1) call DCIRR(XK(KP), YK(KP), ZK(KP), NCOL)
+      return
+   end subroutine TEKNODE
 
 end module m_teknode

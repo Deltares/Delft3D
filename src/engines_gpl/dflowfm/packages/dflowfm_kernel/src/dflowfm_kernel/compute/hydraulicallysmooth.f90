@@ -32,41 +32,42 @@
 
 module m_hydraulicallysmooth
 
-implicit none
+   implicit none
 
 contains
 
- subroutine hydraulicallysmooth(umod, h, sqcf)
-    use m_physcoef
-    use m_flow
-    implicit none
-    double precision :: umod, h, sqcf
-    double precision :: r, rv = 123.8d0, e = 8.84d0, eps = 1d-2, s, sd, er, ers
+   subroutine hydraulicallysmooth(umod, h, sqcf)
+      use precision, only: dp
+      use m_physcoef
+      use m_flow
+      implicit none
+      real(kind=dp) :: umod, h, sqcf
+      real(kind=dp) :: r, rv = 123.8d0, e = 8.84d0, eps = 1d-2, s, sd, er, ers
 
-    r = umod * h / viskin ! Local re-number:
-    r = max(r, 0.001d0)
-    er = e * r
-    if (r < rv) then ! Viscous sublayer:
-       s = sqrt(r)
-    else
+      r = umod * h / viskin ! Local re-number:
+      r = max(r, 0.001d0)
+      er = e * r
+      if (r < rv) then ! Viscous sublayer:
+         s = sqrt(r)
+      else
 
-       s = 12d0 ! In log-layer; initial trial for s:
-100    continue
-       sd = s
-       ers = max(er / sd, 1.0001d0)
-       s = log(ers) / vonkar
+         s = 12d0 ! In log-layer; initial trial for s:
+100      continue
+         sd = s
+         ers = max(er / sd, 1.0001d0)
+         s = log(ers) / vonkar
 
-       if (abs(sd - s) > (eps * s)) then
-          go to 100 ! Convergence criterium:
-       end if
-    end if
+         if (abs(sd - s) > (eps * s)) then
+            go to 100 ! Convergence criterium:
+         end if
+      end if
 
-    if (s > 0d0) then
-       sqcf = 1d0 / s
-    else
-       sqcf = 0d0
-    end if
+      if (s > 0d0) then
+         sqcf = 1d0 / s
+      else
+         sqcf = 0d0
+      end if
 
- end subroutine hydraulicallysmooth
+   end subroutine hydraulicallysmooth
 
 end module m_hydraulicallysmooth

@@ -30,109 +30,110 @@
 !
 !
 module m_postgrid
-use m_confrm
+   use m_confrm
 
    implicit none
 contains
 !> remove skewed cells and cells whose aspect ratio exceeds a prescibed value
 !> note: latter not implemented yet
-subroutine postgrid()
+   subroutine postgrid()
+      use precision, only: dp
 
-   use m_grid
-   use m_missing, only: dmiss, dxymis
-   use geometry_module, only: dbdistance, dcosphi
-   use m_sferic, only: jsferic, jasfer3D
-   use m_cirr
-   use m_get_lr
-   use m_tek_grid
+      use m_grid
+      use m_missing, only: dmiss, dxymis
+      use geometry_module, only: dbdistance, dcosphi
+      use m_sferic, only: jsferic, jasfer3D
+      use m_cirr
+      use m_get_lr
+      use m_tek_grid
 
-   integer, dimension(mc) :: ifront
-   double precision :: dcos, dcosR, xn, yn
-   integer :: i, iL, iR, iRR, idum, iL0, iR0, j, ja, iter, numchanged
-   double precision, parameter :: dcosmax = 0.93969
-   double precision, parameter :: dtol = 1d-2
-   double precision, parameter :: dtolcos = 1d-2
+      integer, dimension(mc) :: ifront
+      real(kind=dp) :: dcos, dcosR, xn, yn
+      integer :: i, iL, iR, iRR, idum, iL0, iR0, j, ja, iter, numchanged
+      real(kind=dp), parameter :: dcosmax = 0.93969
+      real(kind=dp), parameter :: dtol = 1d-2
+      real(kind=dp), parameter :: dtolcos = 1d-2
 
-   call tekgrid(i)
+      call tekgrid(i)
 
-   ja = 1
-   call confrm('Remove skinny triangles?', ja)
+      ja = 1
+      call confrm('Remove skinny triangles?', ja)
 
-   if (ja == 1) then
+      if (ja == 1) then
 !     remove skewed cells
-      do j = nc - 1, 2, -1
-         ifront = 1
-         do iter = 1, 10
-            write (6, "('iter = ', i0, ': ')", advance="no") iter
-            numchanged = 0
-            !        loop over the edges
-            !         do i=1,mc-1
-            iR = 1
-            i = iR
-            do while (iR /= mc .or. i /= mc)
-               if (iR > i) then
-                  i = iR
-               else
-                  i = i + 1
-                  if (i >= mc) exit
-               end if
+         do j = nc - 1, 2, -1
+            ifront = 1
+            do iter = 1, 10
+               write (6, "('iter = ', i0, ': ')", advance="no") iter
+               numchanged = 0
+               !        loop over the edges
+               !         do i=1,mc-1
+               iR = 1
+               i = iR
+               do while (iR /= mc .or. i /= mc)
+                  if (iR > i) then
+                     i = iR
+                  else
+                     i = i + 1
+                     if (i >= mc) exit
+                  end if
 
-               if (xc(i, j) == DMISS) cycle
+                  if (xc(i, j) == DMISS) cycle
 
-               call get_LR(mc, xc(:, j), yc(:, j), i, iL, iR)
+                  call get_LR(mc, xc(:, j), yc(:, j), i, iL, iR)
 
-               if (dbdistance(xc(i, j), yc(i, j), xc(iR, j), yc(iR, j), jsferic, jasfer3D, dmiss) < dtol) cycle
+                  if (dbdistance(xc(i, j), yc(i, j), xc(iR, j), yc(iR, j), jsferic, jasfer3D, dmiss) < dtol) cycle
 
-               !        detect triangular cell
-               if (xc(i, j + 1) == DMISS) cycle
+                  !        detect triangular cell
+                  if (xc(i, j + 1) == DMISS) cycle
 
-               call get_LR(mc, xc(:, j + 1), yc(:, j + 1), i, iL0, iR0)
+                  call get_LR(mc, xc(:, j + 1), yc(:, j + 1), i, iL0, iR0)
 
-               if (dbdistance(xc(iL, j), yc(iL, j), xc(i, j), yc(i, j), jsferic, jasfer3D, dmiss) < dtol) iL = i
+                  if (dbdistance(xc(iL, j), yc(iL, j), xc(i, j), yc(i, j), jsferic, jasfer3D, dmiss) < dtol) iL = i
 
-               if (xc(iR, j + 1) /= DMISS) then
-                  if (dbdistance(xc(i, j + 1), yc(i, j + 1), xc(iR, j + 1), yc(iR, j + 1), jsferic, jasfer3D, dmiss) < dtol .and. &
-                      dcosphi(xc(i, j + 1), yc(i, j + 1), xc(i, j), yc(i, j), xc(i, j + 1), yc(i, j + 1), xc(iR, j), yc(iR, j), jsferic, jasfer3D, dxymis) > dcosmax) then
-                     !              determine persistent node
-                     dcos = dcosphi(xc(i, j - 1), yc(i, j - 1), xc(i, j), yc(i, j), xc(i, j), yc(i, j), xc(i, j + 1), yc(i, j + 1), jsferic, jasfer3D, dxymis)
-                     dcosR = dcosphi(xc(iR, j - 1), yc(iR, j - 1), xc(iR, j), yc(iR, j), xc(iR, j), yc(iR, j), xc(iR, j + 1), yc(iR, j + 1), jsferic, jasfer3D, dxymis)
+                  if (xc(iR, j + 1) /= DMISS) then
+                     if (dbdistance(xc(i, j + 1), yc(i, j + 1), xc(iR, j + 1), yc(iR, j + 1), jsferic, jasfer3D, dmiss) < dtol .and. &
+                         dcosphi(xc(i, j + 1), yc(i, j + 1), xc(i, j), yc(i, j), xc(i, j + 1), yc(i, j + 1), xc(iR, j), yc(iR, j), jsferic, jasfer3D, dxymis) > dcosmax) then
+                        !              determine persistent node
+                        dcos = dcosphi(xc(i, j - 1), yc(i, j - 1), xc(i, j), yc(i, j), xc(i, j), yc(i, j), xc(i, j + 1), yc(i, j + 1), jsferic, jasfer3D, dxymis)
+                        dcosR = dcosphi(xc(iR, j - 1), yc(iR, j - 1), xc(iR, j), yc(iR, j), xc(iR, j), yc(iR, j), xc(iR, j + 1), yc(iR, j + 1), jsferic, jasfer3D, dxymis)
 
-                     call get_LR(mc, xc(:, j), yc(:, j), iR, idum, iRR)
-                     if ((iRR == iR .or. dcos - dcosR < -dtolcos) .and. iL /= i) then ! move left node
-                        call cirr(xc(i, j), yc(i, j), 211)
-                        call cirr(xc(iR, j), yc(iR, j), 31)
-                        xc(i:iR - 1, j) = xc(iR, j)
-                        yc(i:iR - 1, j) = yc(iR, j)
-                        numchanged = numchanged + 1
-                        write (6, "(I0, '-', I0, 'L ')", advance="no") i, iR - 1
-                     else if ((iL == i .or. dcosR - dcos < -dtolcos) .and. iRR /= iR) then ! move right node
-                        call cirr(xc(iR, j), yc(iR, j), 211)
-                        call cirr(xc(i, j), yc(i, j), 204)
-                        xc(iR:iRR - 1, j) = xc(i, j)
-                        yc(iR:iRR - 1, j) = yc(i, j)
-                        numchanged = numchanged + 1
-                        write (6, "(I0, '-', I0, 'R ')", advance="no") iR, iRR - 1
-                     else ! move both nodes
-                        xn = 0.5d0 * (xc(i, j) + xc(iR, j))
-                        yn = 0.5d0 * (yc(i, j) + yc(iR, j))
-                        call cirr(xn, yn, 211)
-                        xc(i:iR - 1, j) = xn
-                        yc(i:iR - 1, j) = yn
-                        xc(iR:iRR - 1, j) = xn
-                        yc(iR:iRR - 1, j) = yn
-                        numchanged = numchanged + 1
-                        write (6, "(I0, '-', I0, 'C ')", advance="no") i, iRR - 1
+                        call get_LR(mc, xc(:, j), yc(:, j), iR, idum, iRR)
+                        if ((iRR == iR .or. dcos - dcosR < -dtolcos) .and. iL /= i) then ! move left node
+                           call cirr(xc(i, j), yc(i, j), 211)
+                           call cirr(xc(iR, j), yc(iR, j), 31)
+                           xc(i:iR - 1, j) = xc(iR, j)
+                           yc(i:iR - 1, j) = yc(iR, j)
+                           numchanged = numchanged + 1
+                           write (6, "(I0, '-', I0, 'L ')", advance="no") i, iR - 1
+                        else if ((iL == i .or. dcosR - dcos < -dtolcos) .and. iRR /= iR) then ! move right node
+                           call cirr(xc(iR, j), yc(iR, j), 211)
+                           call cirr(xc(i, j), yc(i, j), 204)
+                           xc(iR:iRR - 1, j) = xc(i, j)
+                           yc(iR:iRR - 1, j) = yc(i, j)
+                           numchanged = numchanged + 1
+                           write (6, "(I0, '-', I0, 'R ')", advance="no") iR, iRR - 1
+                        else ! move both nodes
+                           xn = 0.5d0 * (xc(i, j) + xc(iR, j))
+                           yn = 0.5d0 * (yc(i, j) + yc(iR, j))
+                           call cirr(xn, yn, 211)
+                           xc(i:iR - 1, j) = xn
+                           yc(i:iR - 1, j) = yn
+                           xc(iR:iRR - 1, j) = xn
+                           yc(iR:iRR - 1, j) = yn
+                           numchanged = numchanged + 1
+                           write (6, "(I0, '-', I0, 'C ')", advance="no") i, iRR - 1
+                        end if
                      end if
                   end if
-               end if
+               end do
+               write (6, *)
+               if (numchanged == 0) exit
             end do
-            write (6, *)
-            if (numchanged == 0) exit
+            write (6, *) iter, numchanged
          end do
-         write (6, *) iter, numchanged
-      end do
-   end if
+      end if
 
-   return
-end subroutine postgrid
+      return
+   end subroutine postgrid
 end module m_postgrid

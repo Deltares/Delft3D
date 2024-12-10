@@ -31,13 +31,14 @@
 !
 
       subroutine SOR(A, B, C, D, E, U, RJAC, M1, N1, M2, N2)
+         use precision, only: dp
          use m_grid
          use m_gridsettings
          use m_orthosettings, only: ITIN
          implicit none
-         double precision :: anorm
-         double precision :: anormf
-         double precision :: half
+         real(kind=dp) :: anorm
+         real(kind=dp) :: anormf
+         real(kind=dp) :: half
          integer :: j
          integer :: l
          integer :: m1
@@ -46,15 +47,15 @@
          integer :: n
          integer :: n1
          integer :: n2
-         double precision :: one
-         double precision :: qtr
-         double precision :: rjac
-         double precision :: zero
-!     IMPLICIT double precision ::(A-H,O-Z)
-         double precision :: A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), D(MMAX, NMAX), E(MMAX, NMAX), U(MMAX, NMAX)
+         real(kind=dp) :: one
+         real(kind=dp) :: qtr
+         real(kind=dp) :: rjac
+         real(kind=dp) :: zero
+!     IMPLICIT real(kind=dp) ::(A-H,O-Z)
+         real(kind=dp) :: A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), D(MMAX, NMAX), E(MMAX, NMAX), U(MMAX, NMAX)
 
          parameter(ZERO=0d0, HALF=.5d0, QTR=.25d0, ONE=1d0)
-         double precision :: RESID, OMEGA
+         real(kind=dp) :: RESID, OMEGA
 !     WRITE (MDIA,*) 'MEGS AVAILABLE SOR ', N4*4.096*0.001,
 !      (N1+N2)*4.096*0.001d0
          MAXITS = ITIN

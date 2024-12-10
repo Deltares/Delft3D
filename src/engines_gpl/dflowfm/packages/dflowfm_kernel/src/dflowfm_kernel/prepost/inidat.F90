@@ -92,10 +92,10 @@
       use m_ini_sferic
       implicit none
 
-      double precision :: dx
+      real(kind=dp) :: dx
       integer :: k
-      double precision :: rk
-      double precision :: rmiss
+      real(kind=dp) :: rk
+      real(kind=dp) :: rmiss
       integer, save :: jaSkipCmdLineArgs = 0 !< Later set to 1, to read cmdline args just once.
 
       !  1=CLS

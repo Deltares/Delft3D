@@ -31,12 +31,13 @@
 !
 
       subroutine DNULARR(X, MMAX, NMAX)
+         use precision, only: dp
          implicit none
          integer :: i
          integer :: j
          integer :: mmax
          integer :: nmax
-         double precision X(MMAX, NMAX)
+         real(kind=dp) X(MMAX, NMAX)
          do I = 1, MMAX
             do J = 1, NMAX
                X(I, J) = 0d0

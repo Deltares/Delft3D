@@ -32,90 +32,91 @@
 
 module m_thacker1d
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: thacker1d
+   public :: thacker1d
 
 contains
 
- subroutine thacker1d(ini, xz, yz, s1, bl, ndx, t)
-    use m_netw, only: numk, xk, zk
-    use m_sferic
-    use m_physcoef, only: ag
-    use m_flowparameters, only: ibedlevtyp
-    use m_set_bobs
-    use m_inview
-    use m_movabs
-    use m_lnabs
+   subroutine thacker1d(ini, xz, yz, s1, bl, ndx, t)
+      use precision, only: dp
+      use m_netw, only: numk, xk, zk
+      use m_sferic
+      use m_physcoef, only: ag
+      use m_flowparameters, only: ibedlevtyp
+      use m_set_bobs
+      use m_inview
+      use m_movabs
+      use m_lnabs
 
-    integer :: ndx, ini
-    double precision :: dep, xz(ndx), yz(ndx), s1(ndx), bl(ndx), t
-    integer :: is, k
-    double precision :: omeg, r, r0, rr0, psi, samp, st, ct, ux, uy, s1k, dif, xx, yy, period
+      integer :: ndx, ini
+      real(kind=dp) :: dep, xz(ndx), yz(ndx), s1(ndx), bl(ndx), t
+      integer :: is, k
+      real(kind=dp) :: omeg, r, r0, rr0, psi, samp, st, ct, ux, uy, s1k, dif, xx, yy, period
 
-    dep = 10d0
-    fcorio = 0d0
-    ! omeg   = twopi/(12*3600)  ! period = 12 hrs
-    ! r0     = sqrt( 2d0*ag*dep/ ( omeg*( omeg+fcorio) ) )  ! Casulli 2007 (19) mind you, no - sign in front of fcorio
+      dep = 10d0
+      fcorio = 0d0
+      ! omeg   = twopi/(12*3600)  ! period = 12 hrs
+      ! r0     = sqrt( 2d0*ag*dep/ ( omeg*( omeg+fcorio) ) )  ! Casulli 2007 (19) mind you, no - sign in front of fcorio
 
-    r0 = 120d0
-    omeg = sqrt(2d0 * ag * dep / (r0 * r0))
-    period = twopi / omeg
+      r0 = 120d0
+      omeg = sqrt(2d0 * ag * dep / (r0 * r0))
+      period = twopi / omeg
 
-    if (ini == 1) then
-       if (ibedlevtyp == 3) then
-          do k = 1, numk
-             r = xk(k) - 150d0
-             rr0 = (r * r) / (r0 * r0)
-             zk(k) = -dep * (1d0 - rr0)
-          end do
-       else
-          do k = 1, ndx
-             r = xz(k) - 150d0
-             rr0 = (r * r) / (r0 * r0)
-             bl(k) = -dep * (1d0 - rr0)
-          end do
-       end if
-       call setbobs()
-    end if
+      if (ini == 1) then
+         if (ibedlevtyp == 3) then
+            do k = 1, numk
+               r = xk(k) - 150d0
+               rr0 = (r * r) / (r0 * r0)
+               zk(k) = -dep * (1d0 - rr0)
+            end do
+         else
+            do k = 1, ndx
+               r = xz(k) - 150d0
+               rr0 = (r * r) / (r0 * r0)
+               bl(k) = -dep * (1d0 - rr0)
+            end do
+         end if
+         call setbobs()
+      end if
 
-    !psi    = 0.25d0*r0
-    psi = 0.23d0 * r0
-    samp = psi * dep / (r0 * r0)
-    st = sin(omeg * t)
-    ct = cos(omeg * t)
-    is = 0
-    call statisticsnewstep()
-    do k = 1, ndx
+      !psi    = 0.25d0*r0
+      psi = 0.23d0 * r0
+      samp = psi * dep / (r0 * r0)
+      st = sin(omeg * t)
+      ct = cos(omeg * t)
+      is = 0
+      call statisticsnewstep()
+      do k = 1, ndx
 !    r     = xz(k) - 150d0  ! sqrt(  xz(k)*xz(k) + yz(k)*yz(k) )
 !    s1k   = samp*r*ct
 
-       xx = xz(k) - 150d0; yy = 0
-       s1k = samp * (2d0 * xx * ct - 2d0 * yy * st - psi * ct * ct)
+         xx = xz(k) - 150d0; yy = 0
+         s1k = samp * (2d0 * xx * ct - 2d0 * yy * st - psi * ct * ct)
 
-       if (ini == 1) then
-          s1(k) = max(bl(k), s1k)
-       end if
+         if (ini == 1) then
+            s1(k) = max(bl(k), s1k)
+         end if
 
-       if (s1k > bl(k)) then
-          dif = abs(s1(k) - s1k)
-          if (inview(xz(k), yz(k))) then
-             call statisticsonemorepoint(dif)
-          end if
-          if (is == 0) then
-             call movabs(xz(k), s1k); is = 1
-          else
-             call lnabs(xz(k), s1k)
-          end if
-       end if
-    end do
-    call statisticsfinalise()
+         if (s1k > bl(k)) then
+            dif = abs(s1(k) - s1k)
+            if (inview(xz(k), yz(k))) then
+               call statisticsonemorepoint(dif)
+            end if
+            if (is == 0) then
+               call movabs(xz(k), s1k); is = 1
+            else
+               call lnabs(xz(k), s1k)
+            end if
+         end if
+      end do
+      call statisticsfinalise()
 
-    ux = -psi * omeg * st
-    uy = -psi * omeg * ct
+      ux = -psi * omeg * st
+      uy = -psi * omeg * ct
 
- end subroutine thacker1d
+   end subroutine thacker1d
 
 end module m_thacker1d

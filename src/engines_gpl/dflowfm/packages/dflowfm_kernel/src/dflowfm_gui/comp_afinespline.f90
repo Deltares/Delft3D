@@ -37,63 +37,64 @@
 !>   xf and yf are the sample point coordinates
 module m_comp_afinespline
 
-implicit none
+   implicit none
 
 contains
 
-subroutine comp_Afinespline(N, numref, Nr, A, ierror)
-   use m_sample_spline
-   implicit none
+   subroutine comp_Afinespline(N, numref, Nr, A, ierror)
+      use precision, only: dp
+      use m_sample_spline
+      implicit none
 
-   integer, intent(in) :: N !< number of spline control points
-   integer, intent(in) :: numref !< number of additional points between spline control points
-   integer, intent(inout) :: Nr !< array size (in), number of sample points (out)
-   double precision, dimension(Nr, N), intent(out) :: A !< spline to fine-spline matrices
-   integer, intent(out) :: ierror !< no error (0), memory error (2) or other error (1)
+      integer, intent(in) :: N !< number of spline control points
+      integer, intent(in) :: numref !< number of additional points between spline control points
+      integer, intent(inout) :: Nr !< array size (in), number of sample points (out)
+      real(kind=dp), dimension(Nr, N), intent(out) :: A !< spline to fine-spline matrices
+      integer, intent(out) :: ierror !< no error (0), memory error (2) or other error (1)
 
-   integer :: j, Nr_in
+      integer :: j, Nr_in
 
-   double precision, dimension(:), allocatable :: xloc, yloc, xf, yf
+      real(kind=dp), dimension(:), allocatable :: xloc, yloc, xf, yf
 
-   ierror = 1
+      ierror = 1
 
-   Nr_in = Nr
+      Nr_in = Nr
 
-   if (N < 1) goto 1234
+      if (N < 1) goto 1234
 
 !  compute the number of samples
-   Nr = N + (N - 1) * numref
+      Nr = N + (N - 1) * numref
 
 !  check array size
-   if (Nr_in < Nr) then
-      ierror = 2
-      goto 1234
-   end if
+      if (Nr_in < Nr) then
+         ierror = 2
+         goto 1234
+      end if
 
 !  allocate
-   allocate (xloc(N), yloc(N), xf(Nr), yf(Nr))
+      allocate (xloc(N), yloc(N), xf(Nr), yf(Nr))
 
 !  compose the matrix
 !    note: although the y-coordinate spline is refined, it is not used
-   xloc = 0d0
-   yloc = 0d0
-   do j = 1, N
-      xloc(j) = 1d0
-      call sample_spline(N, xloc, yloc, numref, Nr, xf, yf, ierror)
-      if (ierror /= 0) goto 1234
-      A(1:Nr, j) = xf
-      xloc(j) = 0d0
-   end do
+      xloc = 0d0
+      yloc = 0d0
+      do j = 1, N
+         xloc(j) = 1d0
+         call sample_spline(N, xloc, yloc, numref, Nr, xf, yf, ierror)
+         if (ierror /= 0) goto 1234
+         A(1:Nr, j) = xf
+         xloc(j) = 0d0
+      end do
 
-   ierror = 0
-1234 continue
+      ierror = 0
+1234  continue
 
 !  deallocate
-   if (allocated(xloc)) deallocate (xloc)
-   if (allocated(yloc)) deallocate (yloc)
-   if (allocated(xf)) deallocate (xf)
-   if (allocated(yf)) deallocate (yf)
-   return
-end subroutine comp_Afinespline
+      if (allocated(xloc)) deallocate (xloc)
+      if (allocated(yloc)) deallocate (yloc)
+      if (allocated(xf)) deallocate (xf)
+      if (allocated(yf)) deallocate (yf)
+      return
+   end subroutine comp_Afinespline
 
 end module m_comp_afinespline

@@ -69,34 +69,33 @@
 ! subroutines from net.F90
 !----------------------------------------------------------------------
 module m_choices
-use m_detect_ridges, only: detect_ridges
-use m_del_badortholinks, only: del_badortholinks
-use m_delnetzkabovezkuni, only: delnetzkabovezkuni
-use m_delnet, only: delnet
-use m_deleteselectedsplines, only: deleteselectedsplines
-use m_deleteselectedobservations, only: deleteselectedobservations
-use m_cutcell_list, only: cutcell_list
-use m_curvilineargridinpolygon, only: curvilineargridinpolygon
-use m_curvilineargridfromsplines, only: curvilineargridfromsplines
-use m_createsamplesinpolygon, only: createsamplesinpolygon
-use m_copypolto1dnet, only: copypolto1dnet
-use m_connectcurvilinearquadsddtype, only: connectcurvilinearquadsddtype
-use m_zerowaterdepth
-use m_plusabs_flow
-use m_plusabsi
-use m_plusabsd
-use m_nfiles
-use m_ndisplay
-use m_menuv3
-use m_copywaterlevelstosamples
-use m_copynetwtonetw
-use m_copynetnodestosam
-use m_copynetlinkstosam
-use m_copygridtosam
-use m_copyzlintosamples
+   use m_detect_ridges, only: detect_ridges
+   use m_del_badortholinks, only: del_badortholinks
+   use m_delnetzkabovezkuni, only: delnetzkabovezkuni
+   use m_delnet, only: delnet
+   use m_deleteselectedsplines, only: deleteselectedsplines
+   use m_deleteselectedobservations, only: deleteselectedobservations
+   use m_cutcell_list, only: cutcell_list
+   use m_curvilineargridinpolygon, only: curvilineargridinpolygon
+   use m_curvilineargridfromsplines, only: curvilineargridfromsplines
+   use m_createsamplesinpolygon, only: createsamplesinpolygon
+   use m_copypolto1dnet, only: copypolto1dnet
+   use m_connectcurvilinearquadsddtype, only: connectcurvilinearquadsddtype
+   use m_zerowaterdepth
+   use m_plusabs_flow
+   use m_plusabsi
+   use m_plusabsd
+   use m_nfiles
+   use m_ndisplay
+   use m_menuv3
+   use m_copywaterlevelstosamples
+   use m_copynetwtonetw
+   use m_copynetnodestosam
+   use m_copynetlinkstosam
+   use m_copygridtosam
+   use m_copyzlintosamples
 
-
-implicit none
+   implicit none
 
 contains
 

@@ -31,6 +31,7 @@
 !
 
    subroutine REMOVESMALLLINKS() ! 1 REMOVES IF FLOW LINK DISTANCES ARE SMALL RELATIVE TO CONNECTED CELL SIZES
+      use precision, only: dp
 
       use m_netw ! 2 REMOVES SMALL TRIANGLES NEXT TO
       use M_FLOWGEOM
@@ -43,14 +44,14 @@
       use m_set_nod_adm
       implicit none
 
-      double precision :: R01, R02, AN1, AN2, XL, YL, XR, YR, XZWr, YZWr, ZZZ
+      real(kind=dp) :: R01, R02, AN1, AN2, XL, YL, XR, YR, XZWr, YZWr, ZZZ
       integer :: KL1, KL2, KN1a, KN2a, L, jaremove
 
-      double precision :: AREA, TAREA, COSMIN, COSPHI, FRAC, DIS, XN, YN
+      real(kind=dp) :: AREA, TAREA, COSMIN, COSPHI, FRAC, DIS, XN, YN
       integer :: NAAST, N, NN, NUMT, LL, K0, K1, K2, LU, LD, KA, KB, KH, K, JA, IERR, NW
       integer :: LLA, LLB, LLC, L0, L1, L2, LT, LI, KK, NL, NR
 
-      double precision, allocatable :: XNW(:), YNW(:)
+      real(kind=dp), allocatable :: XNW(:), YNW(:)
       integer, allocatable :: NNW(:, :)
 
       call SAVENET()

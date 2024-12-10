@@ -32,6 +32,7 @@
 
 !> reverse indexing of selected polygon
 subroutine flippo(ip)
+   use precision, only: dp
    use m_polygon
 
    implicit none
@@ -41,7 +42,7 @@ subroutine flippo(ip)
    integer :: jpoint, jstart, jend, Num
    integer :: i, j, ierror
 
-   double precision, dimension(:), allocatable :: xxp, yyp, zzp
+   real(kind=dp), dimension(:), allocatable :: xxp, yyp, zzp
 
    jpoint = 1
    jstart = 1

@@ -37,29 +37,30 @@
 !! Written by Chuck Gantz- chuck.gantz@globalstar.com
 !! BY: Chuck Gantz, http://www.gpsy.com/gpsinfo/geotoutm/gantz/LatLong-UTMconversion.cpp
     subroutine utmgeo2(xutm, yutm, xgeo, ygeo, IZONE, ihem)
+       use precision, only: dp
        use m_sferic
        use m_ellips
        implicit none
-!     xutm    i    double precision ::    easting (UTM)
-!     yutm    i    double precision ::    northing (UTM)
+!     xutm    i    real(kind=dp) ::    easting (UTM)
+!     yutm    i    real(kind=dp) ::    northing (UTM)
 !     Izone   i    integer   Izone (UTM)
 !     Ihem    i    integer hemisphere (0=north, 1 = south)
-!     a       i    double precision ::    semi-major axis of ellipsoid
-!     e       i    double precision ::    excentricity of ellipsoid
-!     xgeo    o    double precision ::    longitude (geographical coordinate)
-!     ygeo    o    double precision ::    lattitude (geographical coordinate)
+!     a       i    real(kind=dp) ::    semi-major axis of ellipsoid
+!     e       i    real(kind=dp) ::    excentricity of ellipsoid
+!     xgeo    o    real(kind=dp) ::    longitude (geographical coordinate)
+!     ygeo    o    real(kind=dp) ::    lattitude (geographical coordinate)
 !
-       double precision :: xutm, yutm, ygeo, xgeo
+       real(kind=dp) :: xutm, yutm, ygeo, xgeo
        integer :: Izone, ihem
 
-       double precision :: k0 = 0.9996
-       double precision :: eccSquared
-       double precision :: eccPrimeSquared; 
-       double precision :: e1
-       double precision :: N1, T1, C1, R1, D, M
-       double precision :: LongOrigin
-       double precision :: mu, phi1, phi1Rad
-       double precision :: x, y
+       real(kind=dp) :: k0 = 0.9996
+       real(kind=dp) :: eccSquared
+       real(kind=dp) :: eccPrimeSquared; 
+       real(kind=dp) :: e1
+       real(kind=dp) :: N1, T1, C1, R1, D, M
+       real(kind=dp) :: LongOrigin
+       real(kind=dp) :: mu, phi1, phi1Rad
+       real(kind=dp) :: x, y
        integer :: ZoneNumber
        integer :: NorthernHemisphere !1 for northern hemispher, 0 for southern
 

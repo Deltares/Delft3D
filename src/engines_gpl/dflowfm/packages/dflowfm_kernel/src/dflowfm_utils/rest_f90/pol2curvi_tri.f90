@@ -32,6 +32,7 @@
 
 !> construct triangle with three blocks of curvilinear grids
 subroutine pol2curvi_tri(i1, i2_, i3_)
+   use precision, only: dp
    use m_grid
    use m_gridsettings
    use m_alloc
@@ -43,10 +44,10 @@ subroutine pol2curvi_tri(i1, i2_, i3_)
 
    integer, intent(in) :: i1, i2_, i3_ !< first, second and third corner point in polygon, respectively
 
-   double precision, dimension(:, :), allocatable :: xh, yh, xg, yg
+   real(kind=dp), dimension(:, :), allocatable :: xh, yh, xg, yg
 
-   double precision :: xm, ym
-   double precision :: xia, xib, xic
+   real(kind=dp) :: xm, ym
+   real(kind=dp) :: xia, xib, xic
 
    integer, dimension(3) :: M, N, i0, ileft, iright
 

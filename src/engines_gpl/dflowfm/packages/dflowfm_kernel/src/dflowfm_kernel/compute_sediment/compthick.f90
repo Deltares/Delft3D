@@ -32,11 +32,11 @@
 
 module m_compthick
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: compthick
+   public :: compthick
 
 contains
 

@@ -33,35 +33,36 @@
 !> Updates the flow variables of FM when the Sobek-RE kernel is used.
 module m_flow_initialize_fm1dimp_timestep
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: flow_initialize_fm1dimp_timestep
+   public :: flow_initialize_fm1dimp_timestep
 
 contains
 
-subroutine flow_initialize_fm1dimp_timestep(iresult, time1)
-   use m_fm1dimp_update_network
-   use m_fm1dimp_update_bc
+   subroutine flow_initialize_fm1dimp_timestep(iresult, time1)
+      use precision, only: dp
+      use m_fm1dimp_update_network
+      use m_fm1dimp_update_bc
 
 !
 !DECLARATION
 !
 
 !input
-   double precision, intent(in) :: time1
+      real(kind=dp), intent(in) :: time1
 
 !output
-   integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
 
 !
 !CALC
 !
 
-   call fm1dimp_update_network(iresult) !update of the flow variables (change every time step)
-   call fm1dimp_update_bc(iresult, time1) !update of the boundary conditions
+      call fm1dimp_update_network(iresult) !update of the flow variables (change every time step)
+      call fm1dimp_update_bc(iresult, time1) !update of the boundary conditions
 
-end subroutine flow_initialize_fm1dimp_timestep
+   end subroutine flow_initialize_fm1dimp_timestep
 
 end module m_flow_initialize_fm1dimp_timestep

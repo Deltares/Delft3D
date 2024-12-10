@@ -36,6 +36,7 @@
 !! Validity is determined by s01max, u01max, umagmax and dtminbreak.
 !! Also print a warning if water level or velocity > s01warn, u01warn, umagwarn
 subroutine flow_validatestate(iresult)
+   use precision, only: dp
    use unstruc_messages
    use m_flow
    use m_flowgeom
@@ -46,7 +47,7 @@ subroutine flow_validatestate(iresult)
    use m_get_ucx_ucy_eul_mag
    implicit none
    integer, intent(out) :: iresult ! validation result status
-   double precision :: dtavgwindow
+   real(kind=dp) :: dtavgwindow
    integer :: i, q, k
 
    iresult = DFM_NOERR

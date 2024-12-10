@@ -32,6 +32,7 @@
 
    !> test iterative solver (as "mpitest")
    subroutine soltest(iCFL, icgsolver_loc, maxsubmatvecs, iepsdiff, iepscg)
+      use precision, only: dp
       use m_update_matrix, only: update_matrix
       use m_partitioninfo
       use m_timer
@@ -50,11 +51,11 @@
       integer, intent(in) :: iepsdiff ! -10log(tolerance in Schwarz iterations) (if > 0)
       integer, intent(in) :: iepscg ! -10log(tolerance in inner iterations) (if > 0)
 
-      double precision, dimension(:), allocatable :: sex ! exact solution at cell centers
-      double precision, dimension(:), allocatable :: dmask ! used for masking ghost cells that are not being updated
+      real(kind=dp), dimension(:), allocatable :: sex ! exact solution at cell centers
+      real(kind=dp), dimension(:), allocatable :: dmask ! used for masking ghost cells that are not being updated
 
-      double precision :: CFL
-      double precision :: diffmax
+      real(kind=dp) :: CFL
+      real(kind=dp) :: diffmax
 
       integer :: NRUNS
       integer :: i, ii, irun

@@ -31,6 +31,7 @@
 !
 
 module m_sedtrails_stats
+   use precision, only: dp
    use m_sedtrails_data
 
    implicit none
@@ -51,10 +52,10 @@ module m_sedtrails_stats
    !
    integer, parameter :: is_numndvals = 13 !< Number of variables on flow nodes for which statistics are recorded.
 
-   double precision, allocatable, target :: is_sumvalsnd(:, :, :)
+   real(kind=dp), allocatable, target :: is_sumvalsnd(:, :, :)
 
    character(len=100) :: is_valnamesnd(is_numndvals)
-   double precision, target :: is_dtint !< [s] total time interval since last statistics reset.
+   real(kind=dp), target :: is_dtint !< [s] total time interval since last statistics reset.
 
 contains
 
@@ -112,6 +113,7 @@ contains
 
    !> Update the (time-)integral statistics for all flow nodes, typically after each time step.
    subroutine update_sedtrails_stats()
+      use precision, only: dp
       use m_flowtimes, only: dts
       use m_flow, only: hs, ucx, ucy, taus, kmx, hs, vol1
       use m_flowgeom, only: ndx, bl, ba
@@ -130,23 +132,23 @@ contains
 
       integer :: k, l
       integer :: kk, kbot, ktop
-      double precision :: ssc !< sediment concentration [kg/m3]
-      double precision, parameter :: sqrttwo = sqrt(2d0)
-      double precision, parameter :: halfsqrttwo = 0.5 * sqrttwo
-      double precision :: twopi
-      double precision, parameter :: facua = 0.1d0 !< scaling factor wave asymmetry/skewness [-]
-      double precision :: kw !< wave number [rad/m]
-      double precision :: hw !< sign wave height [m]
-      double precision :: urms !< rms orbital velocity [m/s]
-      double precision :: h !< water depth [m]
-      double precision :: as !< wave asymmetry [-]
-      double precision :: sk !< wave skewness [-]
-      double precision :: urs !< ursell number [-]
-      double precision :: bm !< total (non-dimensional) non-linearity (hypot(sk,as)) [-]
-      double precision :: phi_phase !< phase angle non-linearity [-]
-      double precision :: ua !< x component non-linear velocity waves [m/s]
-      double precision :: va !< y component non-linear velocity waves [m/s]
-      double precision :: uamag !< magnitude non-linear velocity waves [m/s]
+      real(kind=dp) :: ssc !< sediment concentration [kg/m3]
+      real(kind=dp), parameter :: sqrttwo = sqrt(2d0)
+      real(kind=dp), parameter :: halfsqrttwo = 0.5 * sqrttwo
+      real(kind=dp) :: twopi
+      real(kind=dp), parameter :: facua = 0.1d0 !< scaling factor wave asymmetry/skewness [-]
+      real(kind=dp) :: kw !< wave number [rad/m]
+      real(kind=dp) :: hw !< sign wave height [m]
+      real(kind=dp) :: urms !< rms orbital velocity [m/s]
+      real(kind=dp) :: h !< water depth [m]
+      real(kind=dp) :: as !< wave asymmetry [-]
+      real(kind=dp) :: sk !< wave skewness [-]
+      real(kind=dp) :: urs !< ursell number [-]
+      real(kind=dp) :: bm !< total (non-dimensional) non-linearity (hypot(sk,as)) [-]
+      real(kind=dp) :: phi_phase !< phase angle non-linearity [-]
+      real(kind=dp) :: ua !< x component non-linear velocity waves [m/s]
+      real(kind=dp) :: va !< y component non-linear velocity waves [m/s]
+      real(kind=dp) :: uamag !< magnitude non-linear velocity waves [m/s]
 
       if (is_numndvals <= 0) then
          return

@@ -33,6 +33,7 @@
 !> Fills in the geometry arrays of laterals for history output.
 !! In parallel models, only process with rank 0 will have the complete geometry arrays filled.
 subroutine fill_geometry_arrays_lateral()
+   use precision, only: dp
    use m_laterals, only: numlatsg, nodecountlat, geomXLat, geomYLat, nlatnd, n1latsg, n2latsg, nnlat, nNodesLat, model_has_laterals_across_partitions
    use m_alloc
    use m_partitioninfo
@@ -40,12 +41,12 @@ subroutine fill_geometry_arrays_lateral()
    implicit none
 
    integer, allocatable :: nodeCountLatGat(:), nlatndGat(:), displs(:)
-   double precision, allocatable :: xGat(:), yGat(:) ! Coordinates that are gatherd data from all subdomains
+   real(kind=dp), allocatable :: xGat(:), yGat(:) ! Coordinates that are gatherd data from all subdomains
    integer :: i, j, jprev, k, k1, ierror, is, ie, n, nnode, n1gat, n2gat
    integer :: nlatnd_noghosts, nlatndMPI
    integer, allocatable :: nodeCountLatMPI(:) ! Count of nodes per lateral after mpi communication.
-   double precision, allocatable :: geomXLatMPI(:) ! [m] x coordinates of laterals after mpi communication.
-   double precision, allocatable :: geomYLatMPI(:) ! [m] y coordinates of laterals after mpi communication.
+   real(kind=dp), allocatable :: geomXLatMPI(:) ! [m] x coordinates of laterals after mpi communication.
+   real(kind=dp), allocatable :: geomYLatMPI(:) ! [m] y coordinates of laterals after mpi communication.
 
    ! Allocate and construct geometry variable arrays (on one subdomain)
    call realloc(nodeCountLat, numlatsg, keepExisting=.false., fill=0)
@@ -114,7 +115,7 @@ subroutine fill_geometry_arrays_lateral()
          end do
       end if
 
-      ! Gather double precision data, here, different number of data are gatherd from different subdomains to process 0000
+      ! Gather real(kind=dp) data, here, different number of data are gatherd from different subdomains to process 0000
       call gatherv_double_data_mpi_dif(nlatnd_noghosts, geomXLat(1:nlatnd_noghosts), nlatndMPI, xGat, ndomains, nlatndGat, displs, 0, ierror)
       call gatherv_double_data_mpi_dif(nlatnd_noghosts, geomYLat(1:nlatnd_noghosts), nlatndMPI, yGat, ndomains, nlatndGat, displs, 0, ierror)
 

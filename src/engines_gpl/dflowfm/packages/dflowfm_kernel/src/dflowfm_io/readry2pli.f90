@@ -32,31 +32,32 @@
 module m_read_dry2pli
    implicit none
 contains
- subroutine readry2pli(mthd, mout) ! convert barrier v file to model independent, barv content =  m,n,sill depth
-    use m_grid, only: xc, yc
+   subroutine readry2pli(mthd, mout) ! convert barrier v file to model independent, barv content =  m,n,sill depth
+      use precision, only: dp
+      use m_grid, only: xc, yc
 
-    integer :: mthd, mout
-    double precision :: z = 9999d0
-    character(len=132) :: rec
-    integer :: m, n
+      integer :: mthd, mout
+      real(kind=dp) :: z = 9999d0
+      character(len=132) :: rec
+      integer :: m, n
 
-10  read (mthd, '(a)', end=999) rec
+10    read (mthd, '(a)', end=999) rec
 
-    read (rec, *) m, n
+      read (rec, *) m, n
 
-    write (mout, '(a)') 'Line'
-    write (mout, '(a)') ' 5 3'
+      write (mout, '(a)') 'Line'
+      write (mout, '(a)') ' 5 3'
 
-    write (mout, *) xc(m, n - 1), yc(m, n - 1), z
-    write (mout, *) xc(m, n), yc(m, n), z
-    write (mout, *) xc(m - 1, n), yc(m - 1, n), z
-    write (mout, *) xc(m - 1, n - 1), yc(m - 1, n - 1), z
-    write (mout, *) xc(m, n - 1), yc(m, n - 1), z
+      write (mout, *) xc(m, n - 1), yc(m, n - 1), z
+      write (mout, *) xc(m, n), yc(m, n), z
+      write (mout, *) xc(m - 1, n), yc(m - 1, n), z
+      write (mout, *) xc(m - 1, n - 1), yc(m - 1, n - 1), z
+      write (mout, *) xc(m, n - 1), yc(m, n - 1), z
 
-    goto 10
+      goto 10
 
-999 call doclose(mthd)
-    call doclose(mout)
+999   call doclose(mthd)
+      call doclose(mout)
 
- end subroutine readry2pli
+   end subroutine readry2pli
 end module m_read_dry2pli
