@@ -1,9 +1,10 @@
-package Verschilanalyse
+package Delft3D.verschilanalyse
 
+import java.io.File
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 
-import Verschilanalyse.ReportVerschilanalyse
+import Delft3D.verschilanalyse.ReportVerschilanalyse
 
 
 object StartVerschilanalyse : BuildType({
@@ -19,8 +20,8 @@ object StartVerschilanalyse : BuildType({
             "harbor_webhook.image.url", 
             sequenceOf(
                 "containers.deltares.nl",
-                DslContext.getParameter("harbor_project"),
-                "${DslContext.getParameter("harbor_repository")}:latest"
+                DslContext.getParameter("va_harbor_project"),
+                "${DslContext.getParameter("va_harbor_repository")}:latest"
             ).joinToString(separator="/")
         )         
         param("reference_prefix", "output/release/2025.01")
@@ -29,7 +30,7 @@ object StartVerschilanalyse : BuildType({
     }
 
     triggers {
-        if (DslContext.getParameter("harbor_webhook_enabled", "false").lowercase() == "true") {
+        if (DslContext.getParameter("va_harbor_webhook_enabled", "false").lowercase() == "true") {
             // TeamCity webhook plugin docs: https://github.com/tcplugins/tcWebHookTrigger
             // I couldn't find a webhook event payload example in the Harbor documenations,
             // but this GitHub issue comment has an example:
@@ -46,10 +47,10 @@ object StartVerschilanalyse : BuildType({
                 """.trimIndent())
                 param("webhook.build.trigger.path.filters", """
                     name=harbor_webhook.type::template=${'$'}{harbor_webhook.type}::regex=PUSH_ARTIFACT
-                    name=harbor_webhook.project::template=${'$'}{harbor_webhook.project}::regex=${DslContext.getParameter("harbor_project")}
-                    name=harbor_webhook.repository::template=${'$'}{harbor_webhook.repository}::regex=${DslContext.getParameter("harbor_repository")}
-                    name=harbor_webhook.image.tag::template=${'$'}{harbor_webhook.image.tag}::regex=${DslContext.getParameter("harbor_image_tag_regex")}
-                    name=output_prefix::template=output/weekly/${'$'}{harbor_webhook.image.tag}::regex=output/weekly/${DslContext.getParameter("harbor_image_tag_regex")}
+                    name=harbor_webhook.project::template=${'$'}{harbor_webhook.project}::regex=${DslContext.getParameter("va_harbor_project")}
+                    name=harbor_webhook.repository::template=${'$'}{harbor_webhook.repository}::regex=${DslContext.getParameter("va_harbor_repository")}
+                    name=harbor_webhook.image.tag::template=${'$'}{harbor_webhook.image.tag}::regex=${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
+                    name=output_prefix::template=output/weekly/${'$'}{harbor_webhook.image.tag}::regex=output/weekly/${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
                 """.trimIndent())
                 param("webhook.build.trigger.include.payload", "true")
             }
@@ -61,7 +62,7 @@ object StartVerschilanalyse : BuildType({
             name = "Upload bundle"
             transportProtocol = SSHUpload.TransportProtocol.SCP
             sourcePath = """
-                ci/teamcity/Verschilanalyse/bundle => bundle.tar.gz
+                ci/teamcity/Delft3D/verschilanalyse/bundle => bundle.tar.gz
             """.trimIndent()
             targetUrl = "h7.directory.intra"
             authMethod = password {

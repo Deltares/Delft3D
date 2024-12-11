@@ -6,6 +6,8 @@ import Delft3D.linux.thirdParty.*
 import Delft3D.windows.*
 import Delft3D.template.*
 
+import Delft3D.verschilanalyse.*
+
 version = "2024.03"
 
 project {
@@ -54,9 +56,12 @@ project {
         )
     }
 
+    subProject(VerschilanalyseProject)
+
     subProjectsOrder = arrayListOf(
         RelativeId("Linux"),
-        RelativeId("Windows")
+        RelativeId("Windows"),
+        VerschilanalyseProject
     )
 
     buildType(Trigger)

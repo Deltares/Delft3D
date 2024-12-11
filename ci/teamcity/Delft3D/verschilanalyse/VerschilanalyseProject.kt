@@ -1,19 +1,19 @@
-package Verschilanalyse
+package Delft3D.verschilanalyse
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.projectFeatures.*
-import Verschilanalyse.StartVerschilanalyse
-import Verschilanalyse.ReportVerschilanalyse
 
 
 object VerschilanalyseProject : Project ({
+    name = "Verschilanalyse"
+
     description = """
         Automated weekly runs of the verschilanalyse on the H7.
         Contact: BlackOps (black-ops@deltares.nl)
     """.trimIndent()
 
     params {
-        param("h7_account_username", DslContext.getParameter("h7_account_username"))
+        param("h7_account_username", DslContext.getParameter("va_h7_account_username"))
         password("h7_account_password", "credentialsJSON:f496d729-b353-4853-8fed-d438292e0790")
     }
 
@@ -28,7 +28,7 @@ object VerschilanalyseProject : Project ({
         }
         s3CompatibleStorage {
             id = "PROJECT_EXT_1"
-            accessKeyID = DslContext.getParameter("minio_access_key_id")
+            accessKeyID = DslContext.getParameter("va_minio_access_key_id")
             accessKey = "credentialsJSON:a8071317-8442-48da-96ed-b69247463912"
             endpoint = "https://s3.deltares.nl"
             storageName = "VerschilAnalyseBucket"
@@ -39,7 +39,7 @@ object VerschilanalyseProject : Project ({
             id = "minio_verschilanalyse_connection"
             name = "Deltares MinIO connection"
             credentialsType = static {
-                accessKeyId = DslContext.getParameter("minio_access_key_id")
+                accessKeyId = DslContext.getParameter("va_minio_access_key_id")
                 secretAccessKey = "credentialsJSON:a8071317-8442-48da-96ed-b69247463912"
                 useSessionCredentials = false
             }

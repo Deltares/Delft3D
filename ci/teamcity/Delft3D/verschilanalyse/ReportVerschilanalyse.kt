@@ -1,10 +1,8 @@
-package Verschilanalyse
+package Delft3D.verschilanalyse
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
-
-import Verschilanalyse.StartVerschilanalyse
 
 object ReportVerschilanalyse: BuildType({
     name = "Report verschilanalyse"
