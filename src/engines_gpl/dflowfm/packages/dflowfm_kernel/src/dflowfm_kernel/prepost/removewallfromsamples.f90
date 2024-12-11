@@ -31,6 +31,7 @@
 !
 
       subroutine removewallfromsamples()
+         use m_findneargroundpoint, only: findneargroundpoint
          use m_samples
          use m_polygon
 

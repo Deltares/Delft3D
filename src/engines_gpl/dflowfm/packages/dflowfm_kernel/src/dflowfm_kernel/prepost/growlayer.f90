@@ -30,6 +30,7 @@
 !
 !
 module m_grow_layer
+   use m_findfront, only: findfront
    use m_halt3
    use m_comp_vel
    use m_comp_tmax_self

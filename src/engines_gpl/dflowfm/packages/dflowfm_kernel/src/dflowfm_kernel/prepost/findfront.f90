@@ -31,6 +31,16 @@
 !
 
 !> find the frontline of the old (static) grid
+module m_findfront
+
+implicit none
+
+private
+
+public :: findfront
+
+contains
+
 subroutine findfront(mc, nc, mmax, nmax, xc, yc, num, xf, yf, idxf, nf)
    use precision, only: dp
    use m_missing, only: dmiss
@@ -151,3 +161,5 @@ subroutine findfront(mc, nc, mmax, nmax, xc, yc, num, xf, yf, idxf, nf)
 
    return
 end subroutine findfront
+
+end module m_findfront

@@ -254,7 +254,8 @@ contains
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use m_statistical_output, only: update_source_input, update_statistical_output
       use m_wall_clock_time
-      integer, external :: flow_modelinit
+      use m_flow_modelinit, only: flow_modelinit
+
       integer :: timerHandle, inner_timerhandle
 
       !call inidia('api')

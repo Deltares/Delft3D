@@ -98,6 +98,7 @@ program unstruc
    use m_editsam
    use m_editnetw
    use m_read_commandline, only: read_commandline
+   use m_flow_modelinit, only: flow_modelinit
 
    implicit none
 
@@ -117,7 +118,6 @@ program unstruc
    character(len=maxnamelen) :: md_classmapfile_base !< storing the user-defined class map file
 
    integer, external :: iget_jaopengl
-   integer, external :: flow_modelinit
 
    real(kind=dp) :: tstartall, tstopall ! just checking...
 

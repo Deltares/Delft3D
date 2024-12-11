@@ -33,6 +33,7 @@
 !> snap network meshlines to nearest land boundary
 subroutine nettoland()
 
+   use m_find_nearest_meshline, only: find_nearest_meshline
    use m_confrm
    use M_netw
    use M_MISSING

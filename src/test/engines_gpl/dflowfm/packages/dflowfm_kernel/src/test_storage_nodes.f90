@@ -48,9 +48,6 @@ subroutine test_storage_nodes_nodeID_table
     use network_data, only: numk
     use ifport
     !
-    ! Externals
-    integer, external :: flow_modelinit
-    !
     ! Locals
     integer, parameter                           :: N_StorageNodes = 1
     logical                                      :: success

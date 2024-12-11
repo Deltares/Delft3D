@@ -30,7 +30,18 @@
 !
 !
 
+module m_flow_geominit
+
+implicit none
+
+private
+
+public :: flow_geominit
+
+contains
+
  subroutine flow_geominit(iphase) ! initialise flow geometry
+    use m_fixedweirs_on_flowgeom, only: fixedweirs_on_flowgeom
     use precision, only: dp
     use m_cutcell_list, only: cutcell_list
     use m_checknetwork, only: checknetwork
@@ -1485,3 +1496,5 @@
     end if
 
  end subroutine flow_geominit
+
+end module m_flow_geominit

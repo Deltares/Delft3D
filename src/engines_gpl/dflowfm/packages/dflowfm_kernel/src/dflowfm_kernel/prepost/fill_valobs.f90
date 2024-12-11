@@ -31,6 +31,16 @@
 !
 
 ! fill observation stations array
+module m_fill_valobs
+
+implicit none
+
+private
+
+public :: fill_valobs
+
+contains
+
 subroutine fill_valobs()
    use precision, only: dp
    use m_linkstocentercartcomp
@@ -564,3 +574,5 @@ subroutine fill_valobs()
    if (timon) call timstop(handle_extra(55))
    return
 end subroutine fill_valobs
+
+end module m_fill_valobs

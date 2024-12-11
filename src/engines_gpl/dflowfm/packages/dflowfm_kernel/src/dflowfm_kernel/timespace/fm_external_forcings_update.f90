@@ -45,6 +45,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use dfm_error
    use m_laterals, only: numlatsg
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
+   use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
    implicit none
 
    integer, parameter :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS = 1
@@ -57,7 +58,6 @@ submodule(fm_external_forcings) fm_external_forcings_update
    logical :: l_set_frcu_mor = .false.
    logical :: first_time_wind
 
-   logical, external :: flow_initwaveforcings_runtime
    character(len=255) :: tmpstr
    type(c_time) :: ecTime !< Time in EC-module
 

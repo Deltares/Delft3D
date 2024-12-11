@@ -31,6 +31,7 @@
 !
 
   subroutine quadsTOTRI()
+     use m_findel, only: findel
      use precision, only: dp
      use m_connect, only: connect
      use m_netw

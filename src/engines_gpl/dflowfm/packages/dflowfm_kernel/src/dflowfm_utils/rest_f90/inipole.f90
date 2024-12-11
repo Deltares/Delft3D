@@ -44,7 +44,6 @@ subroutine inipole(japole)
    real(kind=dp) :: lambda, phi
 
    integer :: L
-   integer, external :: flow_modelinit
 
 !  set velocity field
    do L = 1, Lnx

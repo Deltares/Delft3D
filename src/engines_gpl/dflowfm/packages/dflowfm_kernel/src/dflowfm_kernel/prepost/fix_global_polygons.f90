@@ -30,6 +30,16 @@
 !
 !
 
+module m_fix_global_polygons
+
+implicit none
+
+private
+
+public :: fix_global_polygons
+
+contains
+
    subroutine fix_global_polygons(jaalwayscopyleftright, japartpols)
       use precision, only: dp
 
@@ -350,3 +360,5 @@
 
       return
    end subroutine fix_global_polygons
+
+end module m_fix_global_polygons

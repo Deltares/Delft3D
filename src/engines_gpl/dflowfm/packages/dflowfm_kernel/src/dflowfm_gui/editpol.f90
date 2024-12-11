@@ -31,6 +31,7 @@
 !
 
 module m_editpol
+   use m_flippo, only: flippo
    use m_droptracer, only: droptracer
    use m_wearel
    use m_viewcycle

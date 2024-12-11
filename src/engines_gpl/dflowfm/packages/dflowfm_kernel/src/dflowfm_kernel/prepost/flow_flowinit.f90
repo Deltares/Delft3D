@@ -30,6 +30,9 @@
 !
 !
 module m_flow_flowinit
+   use m_flow_initfloodfill, only: flow_initfloodfill
+   use m_fill_valobs, only: fill_valobs
+   use m_fill_onlywetlinks, only: fill_onlywetlinks
    use m_check_structures_and_fixed_weirs, only: check_structures_and_fixed_weirs
    use m_thacker2d, only: thacker2d
    use m_thacker1d, only: thacker1d

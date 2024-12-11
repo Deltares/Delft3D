@@ -37,10 +37,10 @@
     use m_flowgeom, only: ndx
     use m_flowparameters, only: janudge
     use fm_external_forcings
+    use m_flow_modelinit, only: flow_modelinit
 
     implicit none
     integer :: key, ierr
-    integer, external :: flow_modelinit
 
     if (ndx == 0) then
        ierr = flow_modelinit()

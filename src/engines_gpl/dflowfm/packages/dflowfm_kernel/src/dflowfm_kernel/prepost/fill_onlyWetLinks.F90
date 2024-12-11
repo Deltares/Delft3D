@@ -27,6 +27,16 @@
 !
 !-------------------------------------------------------------------------------
 
+module m_fill_onlywetlinks
+
+implicit none
+
+private
+
+public :: fill_onlywetlinks
+
+contains
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -61,3 +71,5 @@ subroutine fill_onlyWetLinks()
    wetLinkBnd = min(wetLinkBnd, wetLinkCount + 1)
 
 end subroutine fill_onlyWetLinks
+
+end module m_fill_onlywetlinks

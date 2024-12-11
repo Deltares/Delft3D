@@ -31,6 +31,7 @@
 !
 
 module m_editsam
+   use m_flow_initfloodfill, only: flow_initfloodfill
    use m_typevalue
    use m_selecteditmode
    use m_minmxsam

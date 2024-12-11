@@ -30,6 +30,16 @@
 !
 !
 
+module m_flow_allocflow
+
+implicit none
+
+private
+
+public :: flow_allocflow
+
+contains
+
  subroutine flow_allocflow() ! initialise flow model time independent parameters
     use precision, only: dp
     use m_netw, only: kn
@@ -55,7 +65,6 @@
     use m_get_zlayer_indices
     use m_get_zlayer_indices_bobL
 
-    implicit none
     integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
     integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
     integer :: laybed, laytop, nrlayL, Lf, kuni, kb
@@ -1326,3 +1335,5 @@
     end if
 
  end subroutine flow_allocflow
+
+end module m_flow_allocflow

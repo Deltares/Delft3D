@@ -32,6 +32,8 @@
 
 !> net orthogonalisation and smoothing
 subroutine ORTHOGONALISENET(jarerun)
+   use m_fliplinks, only: fliplinks
+   use m_find_nearest_meshline, only: find_nearest_meshline
    use precision, only: dp
    use m_teknet
    use m_copynetnodestosam

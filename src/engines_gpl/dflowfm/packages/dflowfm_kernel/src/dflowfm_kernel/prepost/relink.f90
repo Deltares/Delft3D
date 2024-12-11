@@ -31,6 +31,7 @@
 !
 
    subroutine RELINK()
+      use m_dselectinp, only: dselectinp
       use precision, only: dp
 
       use m_dellinksinpol, only: dellinksinpol

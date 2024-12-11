@@ -30,6 +30,16 @@
 !
 !
 
+module m_dumpstations
+
+implicit none
+
+private
+
+public :: dumpstations
+
+contains
+
    subroutine dumpstations(name)
       use m_observations_data
       use m_flow
@@ -62,3 +72,5 @@
 
       call doclose(mhis2)
    end subroutine dumpstations
+
+end module m_dumpstations

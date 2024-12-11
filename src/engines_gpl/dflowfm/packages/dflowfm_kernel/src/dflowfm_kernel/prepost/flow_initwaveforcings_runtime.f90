@@ -32,6 +32,16 @@
 !
 
 ! This is the general hook-up to wave conditions for online wave coupling
+module m_flow_initwaveforcings_runtime
+
+implicit none
+
+private
+
+public :: flow_initwaveforcings_runtime
+
+contains
+
 function flow_initwaveforcings_runtime() result(retval)
    use m_flowparameters
    use m_flowtimes ! Two stages: 1 = collect elsets for which data is provided
@@ -44,8 +54,6 @@ function flow_initwaveforcings_runtime() result(retval)
    use m_waves
    use m_alloc
    use m_meteo
-
-   implicit none
 
    logical :: retval !< Whether init was successful or not
 
@@ -187,3 +195,5 @@ function flow_initwaveforcings_runtime() result(retval)
    extfor_wave_initialized = retval ! Becomes .true. or .false., depending on whether the timespace relations have been created succesfully.
 
 end function flow_initwaveforcings_runtime
+
+end module m_flow_initwaveforcings_runtime

@@ -104,11 +104,8 @@ subroutine test_read_snapped_obs_points
     use m_observations
     use unstruc_model
     use m_partitioninfo, only: jampi
-    !use chdir_mod
     use ifport
-    !
-    ! Externals
-    integer, external :: flow_modelinit
+    use m_flow_modelinit, only: flow_modelinit
     !
     ! Locals
     integer, parameter                           :: N_OBS_POINTS = 4

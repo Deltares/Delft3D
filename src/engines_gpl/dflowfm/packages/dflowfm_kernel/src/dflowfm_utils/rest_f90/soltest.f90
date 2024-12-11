@@ -43,6 +43,7 @@
       use m_reduce
       use m_flow
       use m_alloc
+      use m_flow_modelinit, only: flow_modelinit
       implicit none
 
       integer, intent(in) :: iCFL !< wave-based Courant number
@@ -60,8 +61,6 @@
       integer :: NRUNS
       integer :: i, ii, irun
       integer :: ierror
-
-      integer, external :: flow_modelinit
 
       jarenumber = 0
       CFL = 10d0

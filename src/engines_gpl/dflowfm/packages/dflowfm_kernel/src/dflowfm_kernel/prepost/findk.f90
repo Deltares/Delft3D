@@ -30,6 +30,16 @@
 !
 !
 
+module m_findk
+
+implicit none
+
+private
+
+public :: findk
+
+contains
+
    subroutine FINDK(XL, YL, ZL, KV)
       use precision, only: dp
       use m_netw
@@ -58,3 +68,5 @@
 
       return
    end subroutine FINDK
+
+end module m_findk

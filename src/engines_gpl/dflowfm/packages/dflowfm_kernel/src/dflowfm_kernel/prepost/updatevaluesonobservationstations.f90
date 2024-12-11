@@ -32,6 +32,7 @@
 
 !> update observation station data
 subroutine updateValuesOnObservationStations()
+   use m_fill_valobs, only: fill_valobs
    use m_flowtimes, only: time1
    use m_flowparameters, only: eps10
    use m_observations_data, only: IPNT_NUM, numobs, nummovobs, valobs, valobs_last_update_time

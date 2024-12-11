@@ -30,6 +30,16 @@
 !
 !
 
+module m_findsplt
+
+implicit none
+
+private
+
+public :: findsplt
+
+contains
+
       subroutine FINDSPLT(X, Y, X2, Y2, MMAX, MFAC, MCS, TS, DS, XS, YS, JA)
          use precision, only: dp
          use m_splint
@@ -76,3 +86,5 @@
          end if
          goto 10
       end subroutine FINDSPLT
+
+end module m_findsplt

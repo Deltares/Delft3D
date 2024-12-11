@@ -30,6 +30,16 @@
 !
 !
 
+module m_failsave
+
+implicit none
+
+private
+
+public :: failsave
+
+contains
+
       subroutine FAILSAVE()
          use m_wrinet
          implicit none
@@ -38,3 +48,5 @@
          call WRINET(MSAV)
          return
       end subroutine FAILSAVE
+
+end module m_failsave

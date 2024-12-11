@@ -69,6 +69,8 @@
 ! subroutines from net.F90
 !----------------------------------------------------------------------
 module m_choices
+   use m_fliplinks, only: fliplinks
+   use m_externaltrianglestoouterquads, only: externaltrianglestoouterquads
    use m_detect_ridges, only: detect_ridges
    use m_del_badortholinks, only: del_badortholinks
    use m_delnetzkabovezkuni, only: delnetzkabovezkuni
@@ -134,6 +136,7 @@ contains
       use m_interpdivers
       use m_derefine_mesh, only: derefine_mesh
       use m_coarsen_mesh, only: coarsen_mesh
+      use m_flow_modelinit, only: flow_modelinit
 
       implicit none
       integer :: ja, n12, ikey, mnx
@@ -142,7 +145,6 @@ contains
       integer :: maxopt, ierr
       integer, parameter :: MAXOP = 64
       character(len=40) :: OPTION(MAXOP), exp(MAXOP)
-      integer, external :: flow_modelinit
 
       if (netstat /= NETSTAT_OK) call setnodadm(0)
 

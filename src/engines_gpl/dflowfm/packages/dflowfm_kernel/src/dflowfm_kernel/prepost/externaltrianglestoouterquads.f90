@@ -30,6 +30,16 @@
 !
 !
 
+module m_externaltrianglestoouterquads
+
+implicit none
+
+private
+
+public :: externaltrianglestoouterquads
+
+contains
+
    subroutine externaltrianglestoouterquads()
       use precision, only: dp
 
@@ -76,3 +86,5 @@
       end do
 
    end subroutine externaltrianglestoouterquads
+
+end module m_externaltrianglestoouterquads

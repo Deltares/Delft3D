@@ -32,6 +32,7 @@
 
 !> copy netboundary to polygon, starting from a specified point
 subroutine netboundtopoly(kstart)
+   use m_flippo, only: flippo
    use precision, only: dp
    use m_polygon
    use m_netw

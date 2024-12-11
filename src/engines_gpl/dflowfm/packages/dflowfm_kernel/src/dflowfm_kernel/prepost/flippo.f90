@@ -31,11 +31,19 @@
 !
 
 !> reverse indexing of selected polygon
+module m_flippo
+
+implicit none
+
+private
+
+public :: flippo
+
+contains
+
 subroutine flippo(ip)
    use precision, only: dp
    use m_polygon
-
-   implicit none
 
    integer, intent(in) :: ip !< polygon point
 
@@ -85,3 +93,5 @@ subroutine flippo(ip)
 
    return
 end subroutine flippo
+
+end module m_flippo

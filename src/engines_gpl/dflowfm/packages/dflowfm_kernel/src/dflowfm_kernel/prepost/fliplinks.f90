@@ -32,7 +32,18 @@
 
 !> flip links in quads, when appropriate
 !>   note: we look for a local optimum, which is not necessarily the global one
+module m_fliplinks
+
+implicit none
+
+private
+
+public :: fliplinks
+
+contains
+
 subroutine fliplinks()
+   use m_find_nearest_meshline, only: find_nearest_meshline
    use precision, only: dp
    use m_confrm
    use m_comp_ntopo
@@ -289,3 +300,5 @@ subroutine fliplinks()
    return
 
 end subroutine fliplinks
+
+end module m_fliplinks

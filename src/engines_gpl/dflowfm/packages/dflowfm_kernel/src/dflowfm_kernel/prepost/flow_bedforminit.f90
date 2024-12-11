@@ -28,19 +28,24 @@
 !-------------------------------------------------------------------------------
 
 !
-!
-
-!
 ! Bedform prediction routines
 !
+module m_flow_bedforminit
+
+implicit none
+
+private
+
+public :: flow_bedforminit
+
+contains
+
 subroutine flow_bedforminit(stage)
    use m_bedform
    use m_bedform_io, only: fm_rdbedformpar, fm_initbedformpar
    use unstruc_model, only: md_bedformfile
    use m_flowparameters, only: jawave, modind
    use MessageHandling, only: mess, LEVEL_FATAL
-
-   implicit none
 
    logical :: error
    integer, intent(in) :: stage
@@ -73,3 +78,5 @@ subroutine flow_bedforminit(stage)
    end if
 
 end subroutine flow_bedforminit
+
+end module m_flow_bedforminit
