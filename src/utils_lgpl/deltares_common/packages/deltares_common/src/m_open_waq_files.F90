@@ -44,8 +44,6 @@ contains
 
         ierr = 0
 
-        write(88,*) 'open_waq_files: ', file_unit, ' -- ', trim(file_name)
-
         ! get the correct open statement
         select case (file_id)
             ! 1 = common-block file
