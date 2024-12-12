@@ -52,6 +52,8 @@ object WindowsBuild : BuildType({
                 echo #define BUILD_NR "%build.vcs.number%" > checkout_info.h
                 echo #define BRANCH "%teamcity.build.branch%" >> checkout_info.h
             """.trimIndent()
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
         }
         script {
             name = "Build"
@@ -62,6 +64,9 @@ object WindowsBuild : BuildType({
 
                 cmake --build . -j --target install --config %build_type%
             """.trimIndent()
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
+            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
     }
 
@@ -83,9 +88,12 @@ object WindowsBuild : BuildType({
         }
     }
 
-    requirements {
-        equals("env.VS2019INSTALLDIR", """C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional""")
-        doesNotExist("env.IFORT_COMPILER24")
-        exists("env.IFORT_COMPILER23")
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
+            }
+        }
     }
+
 })

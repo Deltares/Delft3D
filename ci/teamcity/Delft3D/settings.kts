@@ -51,10 +51,12 @@ project {
         id("Windows")
         name = "Windows"
 
+        buildType(WindowsBuildEnvironment)
         buildType(WindowsBuild)
         buildType(WindowsCollect)
         buildType(WindowsTest)
         buildTypesOrder = arrayListOf(
+            WindowsBuildEnvironment,
             WindowsBuild,
             WindowsCollect,
             WindowsTest
