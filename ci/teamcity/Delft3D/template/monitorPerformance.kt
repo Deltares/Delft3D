@@ -10,7 +10,6 @@ object TemplateMonitorPerformance : Template({
 
     features {
         perfmon {
-            id = "perfmon"
         }
     }
 })

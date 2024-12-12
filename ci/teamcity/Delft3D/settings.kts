@@ -19,6 +19,7 @@ project {
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
     template(TemplateMergeRequest)
+    template(TemplateDetermineProduct)
     template(TemplateMergeTarget)
     template(TemplatePublishStatus)
     template(TemplateMonitorPerformance)

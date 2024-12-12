@@ -71,7 +71,6 @@ object WindowsTest : BuildType({
     steps {
         python {
             name = "Run TestBench.py"
-            id = "Run_Testbench"
             workingDir = "test/deltares_testbench/"
             environment = venv {
                 requirementsFile = "pip/win-requirements.txt"
@@ -92,7 +91,6 @@ object WindowsTest : BuildType({
         }
         script {
             name = "Copy cases"
-            id = "Copy_cases"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
             conditions { equals("copy_cases", "true") }
             workingDir = "test/deltares_testbench"
@@ -100,7 +98,6 @@ object WindowsTest : BuildType({
         }
         script {
             name = "Kill dimr.exe, mpiexec.exe, and hydra_pmi_proxy.exe"
-            id = "Kill_processes"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             scriptContent = """
                 echo off

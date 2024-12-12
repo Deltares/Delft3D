@@ -11,6 +11,7 @@ object WindowsBuild : BuildType({
 
     templates(
         TemplateMergeRequest,
+        TemplateDetermineProduct,
         TemplateMergeTarget,
         TemplatePublishStatus,
         TemplateMonitorPerformance

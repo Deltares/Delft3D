@@ -5,7 +5,11 @@
         "test/test/test/third_party_open/*",
         "src/tools_lgpl/*",
         "src/utils_gpl/*",
-        "src/utils_lgpl/*"
+        "src/utils_lgpl/*",
+
+        "src/engines_gpl/waq/waq_external_access_layer/*",
+        "src/engines_gpl/waq/waq_process/*",
+        "src/engines_gpl/waq/wq_processes/*"
     ],
     "fm": [
         "src/engines_gpl/dflowfm/*",
@@ -19,9 +23,7 @@
         "src/engines_gpl/rtc/*",
         "test/deltares_testbench/configs/include/delft3d4_*.xml"
     ],
-    "part": [
-        "src/engines_gpl/part/*",
-        "test/deltares_testbench/configs/dwaq_dpart/*dpart*.xml"
+    "part": [        
     ],
     "rr": [
         "src/engines_gpl/rr/*",
@@ -29,13 +31,34 @@
         "test/deltares_testbench/configs/include/dimr_*drr_*.xml"
     ],
     "waq": [
-        "src/engines_gpl/waq/*",
-        "src/test/engines_gpl/waq/*",
+        "src/engines_gpl/waq/delwaq_exe/*",
+        "src/engines_gpl/waq/delwaq_lib/*",
+        "src/engines_gpl/waq/resources/*",
+        "src/engines_gpl/waq/waq_computation/*",
+        "src/engines_gpl/waq/waq_data/*",
+        "src/engines_gpl/waq/waq_definition/*",
+        "src/engines_gpl/waq/waq_io/*",
+        "src/engines_gpl/waq/waq_kernel/*",
+        "src/engines_gpl/waq/waq_logging/*",
+        "src/engines_gpl/waq/waq_memory/*",
+        "src/engines_gpl/waq/waq_netcdf/*",
+        "src/engines_gpl/waq/waq_plugin_wasteload/*",
+        "src/engines_gpl/waq/waq_preprocessor/*",
+        "src/engines_gpl/waq/waq_proc_preprocess/*",
+        "src/engines_gpl/waq/waq_utils_c/*",
+        "src/engines_gpl/waq/waq_utils_f/*",
+        "src/engines_gpl/waq/waq_validation/*",
+        
+        "src/engines_gpl/part/*",
+        
         "src/tools_gpl/waq_tools/*",
-        "src/tools_gpl/io_hyd/*",
-        "src/tools_gpl/waq_hyd_data/*",
+        "src/utils_lgpl/io_hyd/*",
+        "src/utils_lgpl/waq_hyd_data/*",
+
+        "test/integration_test/engines_gpl/waq/*",
         "test/unit_test/engines_gpl/waq/*",
-        "test/deltares_testbench/configs/dwaq_dpart/*dwaq*.xml"
+        
+        "test/deltares_testbench/configs/dwaq_dpart/*.xml"        
     ],
     "wave":[
         "src/engines_gpl/wave/*",

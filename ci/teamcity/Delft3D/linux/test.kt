@@ -65,7 +65,6 @@ object LinuxTest : BuildType({
             })
         }
         dockerSupport {
-            id = "DockerSupport"
             cleanupPushedImages = true
             loginToRegistry = on {
                 dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
@@ -76,7 +75,6 @@ object LinuxTest : BuildType({
     steps {
         python {
             name = "Run TestBench.py"
-            id = "Run_Testbench"
             workingDir = "test/deltares_testbench/"
             pythonVersion = customPython {
                 executable = "python3.9"
@@ -106,7 +104,6 @@ object LinuxTest : BuildType({
         }
         dockerCommand {
             name = "Remove container"
-            id = "Remove_Container"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             commandType = other {
                 subCommand = "rmi"
@@ -115,7 +112,6 @@ object LinuxTest : BuildType({
         }
         dockerCommand {
             name = "Prune"
-            id = "Prune"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             commandType = other {
                 subCommand = "system"
@@ -124,7 +120,6 @@ object LinuxTest : BuildType({
         }
         script {
             name = "Copy cases"
-            id = "Copy_cases"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
             conditions { equals("copy_cases", "true") }
             workingDir = "test/deltares_testbench"
