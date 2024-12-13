@@ -91,13 +91,19 @@ object LinuxCollect : BuildType({
                 artifactRules = "oss_artifacts_lnx64_*.tar.gz!lnx64/** => lnx64"
             }
         }
-        artifacts(AbsoluteId("Delft3DSobek_OssBuilds_Alma8LinuxTest_FbcToolsBuildOssX64Alma8CMakeReleaseLinux64")) {
-            buildRule = lastSuccessful()
-            artifactRules = """
-                FBCTools*.tar.gz!bin/* => lnx64/bin
-                FBCTools*.tar.gz!lib/* => lnx64/lib
-                FBCTools*.tar.gz!share/* => lnx64/share/drtc
-            """.trimIndent()
+        dependency(AbsoluteId("Delft3DSobek_OssBuilds_Alma8LinuxTest_FbcToolsBuildOssX64Alma8CMakeReleaseLinux64")) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            artifacts {
+                buildRule = lastSuccessful()
+                artifactRules = """
+                    FBCTools*.tar.gz!bin/* => lnx64/bin
+                    FBCTools*.tar.gz!lib/* => lnx64/lib
+                    FBCTools*.tar.gz!share/* => lnx64/share/drtc
+                """.trimIndent()
+            }
         }
     }
     requirements {

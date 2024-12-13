@@ -87,8 +87,8 @@ object WindowsCollect : BuildType({
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
-
             artifacts {
+                buildRule = lastSuccessful()
                 artifactRules = """
                     *.dll => x64/lib
                     *.xsd => x64/share/drtc
