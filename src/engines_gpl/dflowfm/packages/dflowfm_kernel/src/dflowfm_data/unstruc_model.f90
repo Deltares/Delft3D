@@ -1605,7 +1605,7 @@ contains
       call prop_get(md_ptr, 'waves', 'Waveforcing', waveforcing)
       call prop_get(md_ptr, 'waves', 'WavePeakEnhancementFactor', JONSWAPgamma0)
       if (jawave == 6) then ! backward compatibility
-         write (msgbuf, '(a,i0,a)') 'Wavemodelnr = ', waveforcing, ' is now merged with the offline wave functionality (wavemodelnr=7), and option 6 is deprecated.'
+         write (msgbuf, '(a,i0,a)') 'Wavemodelnr = ', jawave, ' is now merged with the offline wave functionality (wavemodelnr=7), and option 6 is deprecated.'
          call mess(LEVEL_WARN, msgbuf)
          jawave = 7
       end if

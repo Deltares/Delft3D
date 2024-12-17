@@ -278,7 +278,7 @@ contains
     call flow_allocflow() ! allocate   flow arrays
     call timstop(handle_extra(37)) ! end alloc flow
     !
-    if (jawave > 0) then ! .and. .not. flowWithoutWaves) then
+    if (jawave > 0) then
        call alloc9basicwavearrays()
     end if
     if (jawave > 2) then

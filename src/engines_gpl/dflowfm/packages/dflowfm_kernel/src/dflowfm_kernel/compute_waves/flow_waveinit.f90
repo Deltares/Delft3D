@@ -130,18 +130,6 @@ contains
          call aerr('twavcom   (ndx)', ierr, ndx)
       end if
       !
-      ! Ugly, fix with allocate9basic andsoon
-      if (jawave == 7) then
-         call realloc(hwav, ndx, stat=ierr, keepExisting=.false., fill=hwavuni)
-         call aerr('hwav   (ndx)', ierr, ndx)
-         call realloc(twav, ndx, stat=ierr, keepExisting=.false., fill=twavuni)
-         call aerr('twav   (ndx)', ierr, ndx)
-         call realloc(rlabda, ndx, stat=ierr, keepExisting=.false., fill=0d0)
-         call aerr('rlabda  (ndx)', ierr, ndx)
-         call realloc(uorb, ndx, stat=ierr, keepExisting=.false., fill=0d0)
-         call aerr('uorb    (ndx)', ierr, ndx)
-      end if
-
       if (jawave == 4) then
          if (trim(instat) == 'stat' .or. &
              trim(instat) == 'stat_table') then
