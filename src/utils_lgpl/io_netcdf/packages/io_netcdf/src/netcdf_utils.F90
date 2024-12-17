@@ -951,10 +951,10 @@ end subroutine ncu_set_att_reals
 
 !> Replace forbidden chars in NetCDF names by _.
 subroutine ncu_sanitize_name(name_string)
-   use string_module, only: replace_char
+   use string_module, only: replace_char, ichar_space, ichar_forward_slash, ichar_underscore
    character(len=*), intent(inout) :: name_string !< Name to be used in NetCDF (variable, dimension etc.)
-   call replace_char(name_string, 32, 95) ! ' ' -> '_'
-   call replace_char(name_string, 47, 95) ! '/' -> '_'
+   call replace_char(name_string, ichar_space, ichar_underscore)
+   call replace_char(name_string, ichar_forward_slash, ichar_underscore)
 end subroutine ncu_sanitize_name
 
 !> Check the error code returned by the NetCDF API and print the error message in case of an error.

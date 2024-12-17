@@ -75,10 +75,11 @@ module unstruc_model
    ! 1.00 (2014-09-22): first version of new permissive checking procedure. All (older) unversioned input remains accepted.
 
    integer, parameter :: ExtfileNewMajorVersion = 2
-   integer, parameter :: ExtfileNewMinorVersion = 1
+   integer, parameter :: ExtfileNewMinorVersion = 2
    ! History ExtfileNewVersion:
    ! 2.00 (2019-08-06): enabled specifying "nodeId" in a 1D network node.
    ! 2.01 (2019-12-04): optional fields targetMaskFile and targetMaskInvert for [Meteo] blocks.
+   ! 2.02 (2024-10-24): add [SourceSink] blocks.
 
    !> The version number of the 1D2DFile format: d.dd, [config_major].[config_minor], e.g., 1.03
     !!
