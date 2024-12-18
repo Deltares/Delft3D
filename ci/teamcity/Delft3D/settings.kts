@@ -14,6 +14,7 @@ version = "2024.12"
 project {
     params {
         password("delft3d-dev-secret", "credentialsJSON:75eb18ff-a859-4d78-aa74-206d10865c2e")
+        param("product", "dummy_value")
     }
 
     description = "contact: BlackOps (black-ops@deltares.nl)"

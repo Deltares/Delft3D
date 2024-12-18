@@ -8,10 +8,6 @@ object TemplateDetermineProduct : Template({
     name = "Determine product to build and test."
     description = "Determine branch prefix for selecting testbenches to run."
 
-    params {
-        param("product", "dummy_value")
-    }
-
     steps {
         python {
             name = "Determine product by branch prefix"
