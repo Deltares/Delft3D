@@ -93,7 +93,7 @@
 
       Call SKPCOM (IN, ENDFIL,'RTC')
       If (ENDFIL) then
-         Call ERRMSG (911, 0, 'RDWIND', ' Constant wind file', IOUT1)
+         call write_error_message_rtc (911, 0, 'RDWIND', ' Constant wind file', IOUT1)
          RetVal = 911
          Return
       Endif
@@ -139,7 +139,7 @@
 
 ! check dimensies
          If (IWIND .GT. NWIND) Then
-            Call ERRMSG (913, 0,'Rdwind',' wind data lokaties',IOUT1)
+            call write_error_message_rtc (913, 0,'Rdwind',' wind data lokaties',IOUT1)
             RetVal = 913
             Return
          EndIf
@@ -218,7 +218,7 @@
                 If (TIMRD .GE. RTC_TIMNEW .AND. TIMRD .LE. TIMEND) then
                   INDX = INDX+1
                   If (INDX .GT. NTIMW) Then
-                     Call ERRMSG (913, 0,'Rdwind',' wind tijdserie',IOUT1)
+                     call write_error_message_rtc (913, 0,'Rdwind',' wind tijdserie',IOUT1)
                      RetVal = 913
                      Return
                   EndIf
@@ -308,7 +308,7 @@
                 If (TIMRD .GE. RTC_TIMNEW .AND. TIMRD .LE. TIMEND) then
                   INDX = INDX+1
                   If (INDX .GT. NTIMW) Then
-                     Call ERRMSG (913, 0,'Rdwind',' wind tijdserie',IOUT1)
+                     call write_error_message_rtc (913, 0,'Rdwind',' wind tijdserie',IOUT1)
                      RetVal = 913
                      Return
                   EndIf
@@ -362,7 +362,7 @@
 ! *********************************************************************
 !
   150 Continue
-      Call ERRMSG (902, IECODE, 'Rdwind', ' wind data file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rdwind', ' wind data file', IOUT1)
       RetVal = 902
 
 ! *********************************************************************

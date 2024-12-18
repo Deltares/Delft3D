@@ -79,7 +79,7 @@
 !                Check whether VarSbk has valid value
                  IF (VARSBK(IPARA,I) .GT. NPARS .or. VarSbk(Ipara,i) .le. 0) THEN
                     WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                    CALL ERRMSG (916, NPARS, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                    call write_error_message_rtc (916, NPARS, 'Rdpara', ' Beslisparameterfile', IOUT1)
                     RetVal = 916
                     Return
                  ENDIF
@@ -100,7 +100,7 @@
 !                Check whether Var3B has valid value
                  IF (VAR3B (IPARA,I) .GT. NPAR3 .or. Var3B(Ipara,i) .le. 0) THEN
                      WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                     CALL ERRMSG (916, NPAR3, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                     call write_error_message_rtc (916, NPAR3, 'Rdpara', ' Beslisparameterfile', IOUT1)
                      RetVal = 916
                      Return
                  ENDIF
@@ -121,7 +121,7 @@
 !                Check whether VarWQ has valid value
                  IF (VARWQ (IPARA,I) .GT. NPARQ .or. VarWQ (Ipara,i) .le. 0) THEN
                      WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                     CALL ERRMSG (916, NPARQ, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                     call write_error_message_rtc (916, NPARQ, 'Rdpara', ' Beslisparameterfile', IOUT1)
                      RetVal = 916
                      Return
                  ENDIF
@@ -142,7 +142,7 @@
 !                Check whether Var3D has valid value
                  IF (VAR3D (IPARA,I) .GT. NPAR3D .or. Var3D(Ipara,i) .le. 0) THEN
                      WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                     CALL ERRMSG (916, NPAR3, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                     call write_error_message_rtc (916, NPAR3, 'Rdpara', ' Beslisparameterfile', IOUT1)
                      RetVal = 916
                      Return
                  ENDIF

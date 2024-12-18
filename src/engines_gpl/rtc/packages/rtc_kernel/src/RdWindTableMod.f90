@@ -126,7 +126,7 @@
 
       Call SKPCOM (IN, ENDFIL,'RTC')
       If (ENDFIL) then
-         Call ERRMSG (911, 0, 'RdWindTableMod', ' Constant wind file', IOUT1)
+         call write_error_message_rtc (911, 0, 'RdWindTableMod', ' Constant wind file', IOUT1)
          RetVal = 911
          Return
       Endif
@@ -173,7 +173,7 @@
          success = GetRecord (In, KeyWrd, Endfil, Idebug, IOut1)
          iWind = IWind + 1
          If (IWIND .GT. NWIND .or. .not. success) Then
-            Call ERRMSG (913, 0,'RdWindTableMod',' wind data lokaties',IOUT1)
+            call write_error_message_rtc (913, 0,'RdWindTableMod',' wind data lokaties',IOUT1)
             RetVal = 913
             Return
          EndIf
@@ -181,7 +181,7 @@
 !     Get wind velocity data
          ILeftBuf = Index(String(1:nbuf), ' wv tv ')
          If (ILeftBuf .le. 0 .or. .not. success) then
-            Call ERRMSG (913, 0,'RdWindTableMod',' Error finding wv tv string',IOUT1)
+            call write_error_message_rtc (913, 0,'RdWindTableMod',' Error finding wv tv string',IOUT1)
             RetVal = 913
             Return
          Endif
@@ -196,7 +196,7 @@
             CONSWV(Iwind) = .FALSE.
             success = GetTableName (TabYesNo, TableName, ' id ', Iout1)
             If (.not. success) then
-               Call ERRMSG (913, 0,'RdWindTableMod',' Error getting table name',IOUT1)
+               call write_error_message_rtc (913, 0,'RdWindTableMod',' Error getting table name',IOUT1)
                RetVal = 913
                Return
             Endif
@@ -210,7 +210,7 @@
                If (ILeftBuf .gt. IRightBuf) IRightBuf = nBuf
                Success = GetTableFromBuffer (RtcTableHandle, TableName, NrColumns, TableNr, idebug, Iout1, ILeftBuf, IRightBuf)
                If (.not. success) then
-                  Call ERRMSG (913, 0,'RdWindTableMod',' Error getting table data',IOUT1)
+                  call write_error_message_rtc (913, 0,'RdWindTableMod',' Error getting table data',IOUT1)
                   RetVal = 913
                   Return
                Endif
@@ -220,7 +220,7 @@
                If (ReduceWindTable) success= ReduceTable(RtcTableHandle, TableNr, NrColumns, StartDate, StartTime, &
                                                          EndDate, EndTime, Idebug, Iout1)
                If (.not. success) then
-                  Call ERRMSG (913, 0,'RdWindTableMod',' Error Reducing Table ',IOUT1)
+                  call write_error_message_rtc (913, 0,'RdWindTableMod',' Error Reducing Table ',IOUT1)
                   RetVal = 913
                   Return
                Endif
@@ -229,7 +229,7 @@
 ! ** wind direction
          ILeftBuf = Index(String(1:nbuf), ' wd td ')
          If (ILeftBuf .le. 0) Then
-            Call ERRMSG (913, 0,'RdWindTableMod',' Error finding wd td string',IOUT1)
+            call write_error_message_rtc (913, 0,'RdWindTableMod',' Error finding wd td string',IOUT1)
             RetVal = 913
             Return
          Endif
@@ -244,7 +244,7 @@
             CONSWD(Iwind) = .FALSE.
             Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)
             If (.not. success) then
-               Call ERRMSG (913, 0,'RdWindTableMod',' Error getting table name',IOUT1)
+               call write_error_message_rtc (913, 0,'RdWindTableMod',' Error getting table name',IOUT1)
                RetVal = 913
                Return
             Endif
@@ -262,7 +262,7 @@
                Endif
                Success = GetTableFromBuffer (RtcTableHandle, TableName, NrColumns, TableNr, idebug, Iout1, ILeftBuf, IRightBuf)
                If (.not. success) then
-                  Call ERRMSG (913, 0,'RdWindTableMod',' Error getting table data',IOUT1)
+                  call write_error_message_rtc (913, 0,'RdWindTableMod',' Error getting table data',IOUT1)
                   RetVal = 913
                   Return
                Endif
@@ -272,7 +272,7 @@
                If (ReduceWindTable) Success = ReduceTable(RtcTableHandle, TableNr, NrColumns, StartDate, StartTime, &
                                                           EndDate, EndTime, Idebug, Iout1)
                If (.not. success) then
-                  Call ERRMSG (913, 0,'RdWindTableMod',' Error Reducing Table ',IOUT1)
+                  call write_error_message_rtc (913, 0,'RdWindTableMod',' Error Reducing Table ',IOUT1)
                   RetVal = 913
                   Return
                Endif
@@ -314,7 +314,7 @@
 ! *********************************************************************
 !
   150 Continue
-      Call ERRMSG (902, IECODE, 'RdWindTableMod', ' wind data file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'RdWindTableMod', ' wind data file', IOUT1)
       RetVal = 902
 
 ! *********************************************************************

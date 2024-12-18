@@ -25,7 +25,7 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-      SUBROUTINE ERRMSG (ICODE, IECODE, NAMSUB, STRING, IOUT1)
+      subroutine write_error_message_rtc (icode, iecode, namsub, string, iout1)
 
 ! *********************************************************************
 ! *** RTC module for use with SOBEK, Delft_3B

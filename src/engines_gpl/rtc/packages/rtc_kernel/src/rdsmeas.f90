@@ -91,7 +91,7 @@
     1 FORMAT (' Rdsmeas')
 !
       IF (NHLP .LT. NSCV) then
-         CALL ERRMSG (913, 0,'Rdsmeas',' NHLP local parameter', IOUT1)
+         call write_error_message_rtc (913, 0,'Rdsmeas',' NHLP local parameter', IOUT1)
          RetVal = 913
          Return
       Endif
@@ -112,10 +112,10 @@
 !
 ! Addition June 1998: measures of type 5-8, which were already documented earlier, but not yet implemented
 !
-!     SBMS id 'Sobek_id5' pr 1 ty 5 nv 3 bp 'Beslispar2' ‘Beslispar5’ 'Beslispar3' cv 3.0 5.0 7.0 ch '<' ‘>‘ '<' sp 5.0 iv  0.0  sbms
-!     SBMS id 'Sobek_id6' pr 1 ty 6 nv 2 bp 'Beslispar2' ‘Beslispar5’  cv 3.0 5.0 ch '<' ‘>‘ psp ‘Beslispar1’ iv  0.0 sbms
-!     SBMS id 'Sobek_id7' pr 2 ty 7 nv 2 bp 'Beslispar2' ‘Beslispar5’  cp ‘Beslispar4’ ‘Beslispar3’ ch '>' ‘<‘ sp 5.0 iv  0.0  sbms
-!     SBMS id 'Sobek_id8' pr 2 ty 8 nv 2 bp 'Beslispar2' ‘Beslispar5’  cp 'Beslispar3' ‘Beslispar4’ ch '<' ‘>‘ psp 'Beslispar1' iv 0.0 sbms
+!     SBMS id 'Sobek_id5' pr 1 ty 5 nv 3 bp 'Beslispar2' ï¿½Beslispar5ï¿½ 'Beslispar3' cv 3.0 5.0 7.0 ch '<' ï¿½>ï¿½ '<' sp 5.0 iv  0.0  sbms
+!     SBMS id 'Sobek_id6' pr 1 ty 6 nv 2 bp 'Beslispar2' ï¿½Beslispar5ï¿½  cv 3.0 5.0 ch '<' ï¿½>ï¿½ psp ï¿½Beslispar1ï¿½ iv  0.0 sbms
+!     SBMS id 'Sobek_id7' pr 2 ty 7 nv 2 bp 'Beslispar2' ï¿½Beslispar5ï¿½  cp ï¿½Beslispar4ï¿½ ï¿½Beslispar3ï¿½ ch '>' ï¿½<ï¿½ sp 5.0 iv  0.0  sbms
+!     SBMS id 'Sobek_id8' pr 2 ty 8 nv 2 bp 'Beslispar2' ï¿½Beslispar5ï¿½  cp 'Beslispar3' ï¿½Beslispar4ï¿½ ch '<' ï¿½>ï¿½ psp 'Beslispar1' iv 0.0 sbms
 !
 ! Addition March 1998: MATLAB measure (ty 9)
 !      SBMS id 'Sobek-id' pr iprior ty 9 iv initval sbms
@@ -166,7 +166,7 @@
          IF (STRING(1:4) .NE. 'FLCM') GOTO 19
 ! check dimensies
          IF (IMEAS .GT. NSMES) then
-            CALL ERRMSG (913, 0,'Rdsmeas',' NSMES Sobek measures',IOUT1)
+            call write_error_message_rtc (913, 0,'Rdsmeas',' NSMES Sobek measures',IOUT1)
             RetVal = 913
             Return
          Endif
@@ -177,7 +177,7 @@
          ReadError = .false.
          Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
          If (Endfil .or. .not. success) then
-            Call ErrMsg (913, 0, 'RdSMeas', ' Unexpected end of file ',IOUT1)
+            call write_error_message_rtc (913, 0, 'RdSMeas', ' Unexpected end of file ',IOUT1)
             RetVal = 913
             Return
          Endif
@@ -189,7 +189,7 @@
          IF (ReadError) then
              ErrorString = ' Read error during reading RTC measures ParseToken for CF module ' // &
                             String(1:len_trim(String))
-             Call ErrMsg (974,0,'RdSBMs',ErrorString,IOUT1)
+             call write_error_message_rtc (974,0,'RdSBMs',ErrorString,IOUT1)
              RetVal = 974
              Return
          Endif
@@ -225,7 +225,7 @@
          If (ReadError) then
               ErrorString = ' Some error in general part of FLCM record for RTC-measure for CF ' // &
                               String(1:len_trim(String))
-              Call ErrMsg (974,0,'RdSMeas',ErrorString,IOUT1)
+              call write_error_message_rtc (974,0,'RdSMeas',ErrorString,IOUT1)
               RetVal = 974
               Return
          endif
@@ -261,7 +261,7 @@
             If (ReadError) then
               ErrorString = ' Some error in type or priority in SBMS record for RTC-measure for CF ' // &
                               String(1:len_trim(String))
-              Call ErrMsg (974,0,'RdSMeas',ErrorString,IOUT1)
+              call write_error_message_rtc (974,0,'RdSMeas',ErrorString,IOUT1)
               RetVal = 974
               Return
             endif
@@ -282,20 +282,20 @@
                   MEASBP(IMEAS) = 'Dll' // INTCH4 (IMEAS)
                   NrSbkDllmeasures = NrSbkDllMeasures + 1
                   if (dll_handle .eq. 0) then
-                     CALL ERRMSG (958,IMEAS, ErrorString,' Warning: DLL measure defined, but no DLL shared library defined', IOUT1)
+                     call write_error_message_rtc (958,IMEAS, ErrorString,' Warning: DLL measure defined, but no DLL shared library defined', IOUT1)
                   endif
                elseif (MeasTy(imeas) .eq. 12) then
                   if (Getkey ('ti', StartSubRecord, RecordData, EndSubRecord, ReturnIndx, ParseTokenSearchCaseSensitive)) then
                      MEASBP(IMEAS) = 'TCN_' // RecordData%Token(ReturnIndx+1)
                   else
-                     CALL ERRMSG (958,IMEAS, ErrorString,' Warning: measure type 12, but no measure id with keyword ti defined', IOUT1)
+                     call write_error_message_rtc (958,IMEAS, ErrorString,' Warning: measure type 12, but no measure id with keyword ti defined', IOUT1)
                   endif
 ! check that csv files are specified if type 12 measure used
                   if (.not. UseTCN) then
-                     CALL ERRMSG (958,IMEAS, ErrorString,' Error: measure type 12 used, but UseTCN not switched on in Settings', IOUT1)
+                     call write_error_message_rtc (958,IMEAS, ErrorString,' Error: measure type 12 used, but UseTCN not switched on in Settings', IOUT1)
                   endif
                   if (WriteCsvFile .eq. '' .or. ReadCsvFile .eq. '' .or. RunCommand .eq. '') then
-                     CALL ERRMSG (958,IMEAS, ErrorString,' Error: measure type 12 used, but no external command or csv files specified', IOUT1)
+                     call write_error_message_rtc (958,IMEAS, ErrorString,' Error: measure type 12 used, but no external command or csv files specified', IOUT1)
                   endif
                endif
                if (Getkey ('mi', StartSubRecord, RecordData, EndSubRecord, ReturnIndx, ParseTokenSearchCaseSensitive)) then
@@ -306,7 +306,7 @@
                     MeasIdMatlab(Imeas) = MeasId(Imeas)
                     ErrorString = ' Measure id = '// MeasId(imeas)(1:len_trim(MeasId(imeas))) //  &
                                   ' Measure name = '// MeasName(imeas)(1:len_trim(MeasName(imeas)))
-                    CALL ERRMSG (994,IMEAS, ErrorString,' Warning: Matlab communication id is missing for this measure', IOUT1)
+                    call write_error_message_rtc (994,IMEAS, ErrorString,' Warning: Matlab communication id is missing for this measure', IOUT1)
                   endif
                endif
 !              Matlab/TCN default value
@@ -351,7 +351,7 @@
                   ReadError = .true.
               endif
               IF (MEASNV(IMEAS) .GT. NHLP .OR. MEASNV(Imeas) .gt. NSCV)  then
-                 CALL ERRMSG (913,0,'Rdsmeas',' NHLP; MEASNV',IOUT1)
+                 call write_error_message_rtc (913,0,'Rdsmeas',' NHLP; MEASNV',IOUT1)
                  RetVal = 913
                  Return
               Endif
@@ -412,7 +412,7 @@
                   ReadError = .true.
               endif
               IF (MEASNV(IMEAS) .GT. NHLP) then
-                 CALL ERRMSG (913,0,'Rdsmeas',' NHLP; MEASNV',IOUT1)
+                 call write_error_message_rtc (913,0,'Rdsmeas',' NHLP; MEASNV',IOUT1)
                  RetVal = 913
                  Return
               Endif
@@ -450,7 +450,7 @@
                   ReadError = .true.
               endif
               IF (MEASNV(IMEAS) .GT. NHLP) then
-                 CALL ERRMSG (913,0,'Rdsmeas',' NHLP; MEASNV',IOUT1)
+                 call write_error_message_rtc (913,0,'Rdsmeas',' NHLP; MEASNV',IOUT1)
                  RetVal = 913
                  Return
               Endif
@@ -488,7 +488,7 @@
                   ReadError = .true.
               endif
               IF (MEASNV(IMEAS) .GT. NHLP)  then
-                 CALL ERRMSG (913,0,'Rdsmeas',' NHLP; MEASNV',IOUT1)
+                 call write_error_message_rtc (913,0,'Rdsmeas',' NHLP; MEASNV',IOUT1)
                  RetVal = 913
                  Return
               Endif
@@ -526,7 +526,7 @@
                   ReadError = .true.
               endif
               IF (MEASNV(IMEAS) .GT. NHLP) then
-                 CALL ERRMSG (913,0,'Rdsmeas',' NHLP; MEASNV',IOUT1)
+                 call write_error_message_rtc (913,0,'Rdsmeas',' NHLP; MEASNV',IOUT1)
                  RetVal = 913
                  Return
               Endif
@@ -567,7 +567,7 @@
                   ErrorString = ' RTC-measure type 10 psp not specified correctly ' // &
                             ' Measure id = '// MeasId(imeas)(1:len_trim(MeasId(imeas))) //  &
                             ' Measure name = '// MeasName(imeas)(1:len_trim(MeasName(imeas)))
-                  Call ErrMsg (974,0,'RdSMeas',ErrorString,IOUT1)
+                  call write_error_message_rtc (974,0,'RdSMeas',ErrorString,IOUT1)
                   RetVal = 974
                   Return
               endif
@@ -576,7 +576,7 @@
               ErrorString = ' Unsupported type of RTC-measure after ty keyword in SBMS records for CF module ' // &
                             ' Measure id = '// MeasId(imeas)(1:len_trim(MeasId(imeas))) //  &
                             ' Measure name = '// MeasName(imeas)(1:len_trim(MeasName(imeas)))
-              Call ErrMsg (974,0,'RdSMeas',ErrorString,IOUT1)
+              call write_error_message_rtc (974,0,'RdSMeas',ErrorString,IOUT1)
               RetVal = 974
               Return
             ENDIF
@@ -643,7 +643,7 @@
                 ErrorString = ' Read error during reading RTC measures SBMS records for CF module ' // &
                               ' Measure id = '// MeasId(imeas)(1:len_trim(MeasId(imeas))) //  &
                               ' Measure name = '// MeasName(imeas)(1:len_trim(MeasName(imeas)))
-                Call ErrMsg (974,0,'RdSBMs',ErrorString,IOUT1)
+                call write_error_message_rtc (974,0,'RdSBMs',ErrorString,IOUT1)
                 RetVal = 974
                 Return
             Endif
@@ -667,7 +667,7 @@
                  DO IPARA=1,NPARA
                     WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)(1:len_trim(ParaId(Ipara)))
                  ENDDO
-                 CALL ERRMSG (919,0, MEASBP(IMEAS)(1:len_trim(MeasBP(Imeas))), ' Sobek-measure file', IOUT1)
+                 call write_error_message_rtc (919,0, MEASBP(IMEAS)(1:len_trim(MeasBP(Imeas))), ' Sobek-measure file', IOUT1)
                  RetVal = 919
                  Return
               ELSE ! Matlab,DLL or TCN maatregel: voeg beslisparameter toe
@@ -698,7 +698,7 @@
                     DO IPARA=1,NPARA
                       WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)(1:len_trim(ParaId(Ipara)))
                     ENDDO
-                    CALL ERRMSG (919,0, MEASNBP(INR,IMEAS)(1:len_trim(MeasNBP(Inr,Imeas))), ' Sobek-measure file', IOUT1)
+                    call write_error_message_rtc (919,0, MEASNBP(INR,IMEAS)(1:len_trim(MeasNBP(Inr,Imeas))), ' Sobek-measure file', IOUT1)
                     RetVal = 919
                     Return
                   ELSE ! Matlab maatregel: voeg beslisparameter toe
@@ -730,7 +730,7 @@
                   DO IPARA=1,NPARA
                      WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)(1:len_trim(ParaId(Ipara)))
                   ENDDO
-                  CALL ERRMSG (919,0, MEASCP(IMEAS)(1:len_trim(MeasCP(Imeas))), ' Sobek-measure file', IOUT1)
+                  call write_error_message_rtc (919,0, MEASCP(IMEAS)(1:len_trim(MeasCP(Imeas))), ' Sobek-measure file', IOUT1)
                   RetVal = 919
                   Return
                ENDIF
@@ -752,7 +752,7 @@
                     DO IPARA=1,NPARA
                        WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)(1:len_trim(ParaId(Ipara)))
                     ENDDO
-                    CALL ERRMSG (919,0, MEASNCP(INR,IMEAS)(1:len_trim(MeasNCP(Inr,Imeas))),' Sobek-measure file', IOUT1)
+                    call write_error_message_rtc (919,0, MEASNCP(INR,IMEAS)(1:len_trim(MeasNCP(Inr,Imeas))),' Sobek-measure file', IOUT1)
                     RetVal = 919
                     Return
                  ENDIF
@@ -775,7 +775,7 @@
                   DO IPARA=1,NPARA
                      WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)(1:len_trim(ParaId(Ipara)))
                   ENDDO
-                  CALL ERRMSG (919,0, MEASCSP(IMEAS)(1:len_trim(MEASCSP(Imeas))), ' Sobek-measure file', IOUT1)
+                  call write_error_message_rtc (919,0, MEASCSP(IMEAS)(1:len_trim(MEASCSP(Imeas))), ' Sobek-measure file', IOUT1)
                   RetVal = 919
                   Return
                ENDIF
@@ -787,7 +787,7 @@
                                                      MEASCH(IMEAS) .NE. '>')   THEN
                  ErrorString = ' Measure id = '// MeasId(imeas)(1:len_trim(MeasId(imeas))) //  &
                                ' Measure name = '// MeasName(imeas)(1:len_trim(MeasName(imeas)))
-                 CALL ERRMSG (920,IMEAS, ErrorString, MEASCH(IMEAS), IOUT1)
+                 call write_error_message_rtc (920,IMEAS, ErrorString, MEASCH(IMEAS), IOUT1)
                  RetVal = 920
                  Return
                ENDIF
@@ -797,7 +797,7 @@
                                                             MEASNCH(INR,IMEAS) .NE. '>')  THEN
                    ErrorString = ' Measure id = '// MeasId(imeas)(1:len_trim(MeasId(imeas))) //  &
                                  ' Measure name = '// MeasName(imeas)(1:len_trim(MeasName(imeas)))
-                   CALL ERRMSG (920,IMEAS, ErrorString, MEASNCH(INR,IMEAS), IOUT1)
+                   call write_error_message_rtc (920,IMEAS, ErrorString, MEASNCH(INR,IMEAS), IOUT1)
                    RetVal = 920
                    Return
                  ENDIF
@@ -828,7 +828,7 @@
 ! *********************************************************************
 !
   150 CONTINUE
-      CALL ERRMSG (902, IECODE,'Rdsmeas',' Sbk-measurefile',IOUT1)
+      call write_error_message_rtc (902, IECODE,'Rdsmeas',' Sbk-measurefile',IOUT1)
       RetVal = 902
       Return
 
@@ -932,7 +932,7 @@
     1 FORMAT (' Rdsmeas_OldFormat')
 !
       IF (NHLP .LT. NSCV) then
-         CALL ERRMSG (913, 0,'Rdsmeas_OldFormat',' NHLP local parameter', IOUT1)
+         call write_error_message_rtc (913, 0,'Rdsmeas_OldFormat',' NHLP local parameter', IOUT1)
          RetVal = 913
          Return
       Endif
@@ -953,10 +953,10 @@
 !
 ! Addition June 1998: measures of type 5-8, which were already documented earlier, but not yet implemented
 !
-!     SBMS id 'Sobek_id5' pr 1 ty 5 nv 3 bp 'Beslispar2' ‘Beslispar5’ 'Beslispar3' cv 3.0 5.0 7.0 ch '<' ‘>‘ '<' sp 5.0 iv  0.0  sbms
-!     SBMS id 'Sobek_id6' pr 1 ty 6 nv 2 bp 'Beslispar2' ‘Beslispar5’  cv 3.0 5.0 ch '<' ‘>‘ psp ‘Beslispar1’ iv  0.0 sbms
-!     SBMS id 'Sobek_id7' pr 2 ty 7 nv 2 bp 'Beslispar2' ‘Beslispar5’  cp ‘Beslispar4’ ‘Beslispar3’ ch '>' ‘<‘ sp 5.0 iv  0.0  sbms
-!     SBMS id 'Sobek_id8' pr 2 ty 8 nv 2 bp 'Beslispar2' ‘Beslispar5’  cp 'Beslispar3' ‘Beslispar4’ ch '<' ‘>‘ psp 'Beslispar1' iv 0.0 sbms
+!     SBMS id 'Sobek_id5' pr 1 ty 5 nv 3 bp 'Beslispar2' ï¿½Beslispar5ï¿½ 'Beslispar3' cv 3.0 5.0 7.0 ch '<' ï¿½>ï¿½ '<' sp 5.0 iv  0.0  sbms
+!     SBMS id 'Sobek_id6' pr 1 ty 6 nv 2 bp 'Beslispar2' ï¿½Beslispar5ï¿½  cv 3.0 5.0 ch '<' ï¿½>ï¿½ psp ï¿½Beslispar1ï¿½ iv  0.0 sbms
+!     SBMS id 'Sobek_id7' pr 2 ty 7 nv 2 bp 'Beslispar2' ï¿½Beslispar5ï¿½  cp ï¿½Beslispar4ï¿½ ï¿½Beslispar3ï¿½ ch '>' ï¿½<ï¿½ sp 5.0 iv  0.0  sbms
+!     SBMS id 'Sobek_id8' pr 2 ty 8 nv 2 bp 'Beslispar2' ï¿½Beslispar5ï¿½  cp 'Beslispar3' ï¿½Beslispar4ï¿½ ch '<' ï¿½>ï¿½ psp 'Beslispar1' iv 0.0 sbms
 !
 ! Addition March 1998: MATLAB measure (ty 9)
 !      SBMS id 'Sobek-id' pr iprior ty 9 iv initval sbms
@@ -977,7 +977,7 @@
          IF (STRING(1:4) .NE. 'SBMS') GOTO 19
 ! check dimensies
          IF (IMEAS .GT. NSMES) then
-            CALL ERRMSG (913, 0,'Rdsmeas_OldFormat',' NSMES Sobek measures',IOUT1)
+            call write_error_message_rtc (913, 0,'Rdsmeas_OldFormat',' NSMES Sobek measures',IOUT1)
             RetVal = 913
             Return
          Endif
@@ -987,7 +987,7 @@
          ReadError = .false.
          Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
          If (Endfil .or. .not. success) then
-            Call ErrMsg (913, 0, 'Rdpara', ' Unexpected end of file ',IOUT1)
+            call write_error_message_rtc (913, 0, 'Rdpara', ' Unexpected end of file ',IOUT1)
             RetVal = 913
             Return
          Endif
@@ -1057,7 +1057,7 @@
                ReadError = .true.
            endif
            IF (MEASNV(IMEAS) .GT. NHLP)  then
-              CALL ERRMSG (913,0,'Rdsmeas_OldFormat',' NHLP; MEASNV',IOUT1)
+              call write_error_message_rtc (913,0,'Rdsmeas_OldFormat',' NHLP; MEASNV',IOUT1)
               RetVal = 913
               Return
            Endif
@@ -1118,7 +1118,7 @@
                ReadError = .true.
            endif
            IF (MEASNV(IMEAS) .GT. NHLP) then
-              CALL ERRMSG (913,0,'Rdsmeas_OldFormat',' NHLP; MEASNV',IOUT1)
+              call write_error_message_rtc (913,0,'Rdsmeas_OldFormat',' NHLP; MEASNV',IOUT1)
               RetVal = 913
               Return
            Endif
@@ -1156,7 +1156,7 @@
                ReadError = .true.
            endif
            IF (MEASNV(IMEAS) .GT. NHLP) then
-              CALL ERRMSG (913,0,'Rdsmeas_OldFormat',' NHLP; MEASNV',IOUT1)
+              call write_error_message_rtc (913,0,'Rdsmeas_OldFormat',' NHLP; MEASNV',IOUT1)
               RetVal = 913
               Return
            Endif
@@ -1194,7 +1194,7 @@
                ReadError = .true.
            endif
            IF (MEASNV(IMEAS) .GT. NHLP)  then
-              CALL ERRMSG (913,0,'Rdsmeas_OldFormat',' NHLP; MEASNV',IOUT1)
+              call write_error_message_rtc (913,0,'Rdsmeas_OldFormat',' NHLP; MEASNV',IOUT1)
               RetVal = 913
               Return
            Endif
@@ -1232,7 +1232,7 @@
                ReadError = .true.
            endif
            IF (MEASNV(IMEAS) .GT. NHLP) then
-              CALL ERRMSG (913,0,'Rdsmeas_OldFormat',' NHLP; MEASNV',IOUT1)
+              call write_error_message_rtc (913,0,'Rdsmeas_OldFormat',' NHLP; MEASNV',IOUT1)
               RetVal = 913
               Return
            Endif
@@ -1324,7 +1324,7 @@
   992    Continue
 
          IF (ReadError) then
-             Call ErrMsg (974,0,'RdSBMs',' Read error during reading RTC measures SBMS records for CF module',IOUT1)
+             call write_error_message_rtc (974,0,'RdSBMs',' Read error during reading RTC measures SBMS records for CF module',IOUT1)
              RetVal = 974
              Return
          Endif
@@ -1346,7 +1346,7 @@
               DO IPARA=1,NPARA
                  WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)(1:len_trim(ParaId(Ipara)))
               ENDDO
-              CALL ERRMSG (919,0, MEASBP(IMEAS), ' Sobek-measure file', IOUT1)
+              call write_error_message_rtc (919,0, MEASBP(IMEAS), ' Sobek-measure file', IOUT1)
               RetVal = 919
               Return
            ELSE
@@ -1376,7 +1376,7 @@
                  DO IPARA=1,NPARA
                    WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)(1:len_trim(ParaId(Ipara)))
                  ENDDO
-                 CALL ERRMSG (919,0, MEASNBP(INR,IMEAS), ' Sobek-measure file', IOUT1)
+                 call write_error_message_rtc (919,0, MEASNBP(INR,IMEAS), ' Sobek-measure file', IOUT1)
                  RetVal = 919
                  Return
                ELSE
@@ -1407,7 +1407,7 @@
                DO IPARA=1,NPARA
                   WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)(1:len_trim(ParaId(Ipara)))
                ENDDO
-               CALL ERRMSG (919,0, MEASCP(IMEAS), ' Sobek-measure file', IOUT1)
+               call write_error_message_rtc (919,0, MEASCP(IMEAS), ' Sobek-measure file', IOUT1)
                RetVal = 919
                Return
             ENDIF
@@ -1427,7 +1427,7 @@
                  DO IPARA=1,NPARA
                     WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)(1:len_trim(ParaId(Ipara)))
                  ENDDO
-                 CALL ERRMSG (919,0, MEASNCP(INR,IMEAS),' Sobek-measure file', IOUT1)
+                 call write_error_message_rtc (919,0, MEASNCP(INR,IMEAS),' Sobek-measure file', IOUT1)
                  RetVal = 919
                  Return
               ENDIF
@@ -1447,7 +1447,7 @@
                DO IPARA=1,NPARA
                   WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)(1:len_trim(ParaId(Ipara)))
                ENDDO
-               CALL ERRMSG (919,0, MEASCSP(IMEAS), ' Sobek-measure file', IOUT1)
+               call write_error_message_rtc (919,0, MEASCSP(IMEAS), ' Sobek-measure file', IOUT1)
                RetVal = 919
                Return
             ENDIF
@@ -1457,7 +1457,7 @@
          IF (MEASTY(IMEAS) .LE. 4. .and. MEASTY(IMEAS) .ne. 2) Then
             IF ( MEASCH(IMEAS) .NE. '<' .AND. MEASCH(IMEAS) .NE. '=' .AND. &
                                                   MEASCH(IMEAS) .NE. '>')   THEN
-              CALL ERRMSG (920,IMEAS, MEASID(IMEAS), MEASCH(IMEAS), IOUT1)
+              call write_error_message_rtc (920,IMEAS, MEASID(IMEAS), MEASCH(IMEAS), IOUT1)
               RetVal = 920
               Return
             ENDIF
@@ -1465,7 +1465,7 @@
             DO INR=1,MEASNV(IMEAS)
               IF ( MEASNCH(INR,IMEAS) .NE. '<' .AND. MEASNCH(INR,IMEAS) .NE. '=' .AND. &
                                                          MEASNCH(INR,IMEAS) .NE. '>')  THEN
-                CALL ERRMSG (920,IMEAS, MEASID(IMEAS), MEASNCH(INR,IMEAS), IOUT1)
+                call write_error_message_rtc (920,IMEAS, MEASID(IMEAS), MEASNCH(INR,IMEAS), IOUT1)
                 RetVal = 920
                 Return
               ENDIF
@@ -1490,7 +1490,7 @@
 ! *********************************************************************
 !
   150 CONTINUE
-      CALL ERRMSG (902, IECODE,'Rdsmeas_OldFormat',' Sbk-measurefile',IOUT1)
+      call write_error_message_rtc (902, IECODE,'Rdsmeas_OldFormat',' Sbk-measurefile',IOUT1)
       RetVal = 902
       Return
 
