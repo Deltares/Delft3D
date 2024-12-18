@@ -28,7 +28,6 @@
      module PMInterface
 
      use ReadLib
-     use MessageHandling
 
 
     ! variables voor de interface met de Process Manager
