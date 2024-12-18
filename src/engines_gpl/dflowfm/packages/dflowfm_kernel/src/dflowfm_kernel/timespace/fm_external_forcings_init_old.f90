@@ -1296,7 +1296,7 @@ contains
                end if
             else if (trim(qid) == "wavebreakerdissipation") then
                ! wave forces based on dissipation at free surface and water column
-               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == 3) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCES_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1305,7 +1305,7 @@ contains
                end if
             else if (trim(qid) == "whitecappingdissipation") then
                ! wave forces based on dissipation at free surface and water column
-               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == 3) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCES_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1313,7 +1313,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "xwaveforce") then
-               if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == 1 .or. waveforcing == 3)) then
+               if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCES_RADIATIONSTRESS .or. waveforcing == WAVEFORCES_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1321,7 +1321,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "ywaveforce") then
-               if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == 1 .or. waveforcing == 3)) then
+               if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCES_RADIATIONSTRESS .or. waveforcing == WAVEFORCES_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1329,7 +1329,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "totalwaveenergydissipation") then
-               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == 2) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCES_DISSIPATION_TOTAL) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')

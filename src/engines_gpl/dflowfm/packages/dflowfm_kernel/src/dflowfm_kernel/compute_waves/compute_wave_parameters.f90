@@ -66,7 +66,7 @@ contains
       if (jawave < WAVE_SWAN_ONLINE .and. .not. flowWithoutWaves) then ! Every timestep, not only at getfetch updates, as waterdepth changes
          ! get ustokes, vstokes for 2D, else in update_verticalprofiles getustwav
          hwav = min(hwav, gammax * max(s1 - bl, 0d0))
-         if (kmx == 0 .and. jawavestokes > 0) then
+         if (kmx == 0 .and. jawavestokes > NO_STOKES_DRIFT) then
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
                hh = hu(L); 
@@ -145,7 +145,7 @@ contains
          do k = 1, ndx
             hwav(k) = min(hwavuni, gammax * (s1(k) - bl(k)))
          end do
-         if (kmx == 0 .and. jawavestokes > 0) then
+         if (kmx == 0 .and. jawavestokes > NO_STOKES_DRIFT) then
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
                hh = hu(L); 
@@ -167,7 +167,7 @@ contains
       end if
 
       ! shortcut to switch off stokes influence
-      if (jawavestokes == 0) then
+      if (jawavestokes == NO_STOKES_DRIFT) then
          ustokes = 0d0; vstokes = 0d0
       end if
 

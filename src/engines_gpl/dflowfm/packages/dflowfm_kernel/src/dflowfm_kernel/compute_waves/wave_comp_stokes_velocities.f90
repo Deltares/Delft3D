@@ -67,7 +67,7 @@ contains
       vstokes = 0d0
 
       ! switch off stokes drifts
-      if (jawavestokes == 0) then
+      if (jawavestokes == NO_STOKES_DRIFT) then
          return
       end if
 

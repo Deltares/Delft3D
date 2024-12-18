@@ -1353,7 +1353,7 @@ contains
          hwav = min(hwavcom, gammax * hs)
          call wave_uorbrlabda()
          if (kmx == 0) then
-            if (jawavestokes > 0) then
+            if (jawavestokes > NO_STOKES_DRIFT) then
                do link = 1, lnx
                   left_node = ln(1, link)
                   right_node = ln(2, link)

@@ -6201,7 +6201,7 @@ contains
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'twav', 'sea_surface_wave_period_at_variance_spectral_density_maximum', 'Wave peak period', 's') ! we assume working with the peak period in all our formulations
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb, nc_precision, UNC_LOC_S, 'uorb', 'sea_surface_wave_orbital_velocity', 'Wave orbital velocity', 'm s-1', jabndnd=jabndnd_) ! not CF
                !
-               if (jawavestokes > 0) then
+               if (jawavestokes > NO_STOKES_DRIFT) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ustokes, nc_precision, iLocS, 'ust_cc', 'sea_surface_wave_stokes_drift_x_velocity', 'Stokes drift, x-component', 'm s-1', jabndnd=jabndnd_)
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vstokes, nc_precision, iLocS, 'vst_cc', 'sea_surface_wave_stokes_drift_y_velocity', 'Stokes drift, y-component', 'm s-1', jabndnd=jabndnd_)
 
@@ -7524,7 +7524,7 @@ contains
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb, UNC_LOC_S, uorb, jabndnd=jabndnd_)
             deallocate (wa)
             !
-            if (jawavestokes > 0) then
+            if (jawavestokes > NO_STOKES_DRIFT) then
                call realloc(ust_x, ndkx, keepExisting=.false.)
                call realloc(ust_y, ndkx, keepExisting=.false.)
                call reconstruct_cc_stokesdrift(ndkx, ust_x, ust_y)

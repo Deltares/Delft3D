@@ -360,15 +360,15 @@ contains
 
          if (.not. initialization) then
             !
-            if (jawave == WAVE_NC_OFFLINE .and. waveforcing == 1) then
+            if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCES_RADIATIONSTRESS) then
                !
                call set_parameters_for_radiation_stress_driven_forces()
                !
-            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == 2) then
+            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCES_DISSIPATION_TOTAL) then
                !
                call set_parameters_for_dissipation_driven_forces()
                !
-            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == 3) then
+            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCES_DISSIPATION_3D) then
                !
                call set_parameters_for_3d_dissipation_driven_forces()
             else
@@ -448,7 +448,7 @@ contains
                end if
             end if
 
-            all_wave_variables = .not. (jawave == WAVE_NC_OFFLINE .and. waveforcing /= 3)
+            all_wave_variables = .not. (jawave == WAVE_NC_OFFLINE .and. waveforcing /= WAVEFORCES_DISSIPATION_3D)
             call select_wave_variables_subgroup(all_wave_variables)
 
             ! In MPI case, partition ghost cells are filled properly already, open boundaries are not
@@ -541,7 +541,7 @@ contains
 
    end subroutine set_all_wave_parameters
 
-!> set wave parameters for jawave == WAVE_NC_OFFLINE (offline wave coupling) and waveforcing == 1 (wave forces via radiation stress)
+!> set wave parameters for jawave == WAVE_NC_OFFLINE (offline wave coupling) and waveforcing == WAVEFORCES_RADIATIONSTRESS (wave forces via radiation stress)
    subroutine set_parameters_for_radiation_stress_driven_forces()
 
       twav(:) = 0d0
@@ -555,7 +555,7 @@ contains
       uorbwav(:) = 0d0
 
    end subroutine set_parameters_for_radiation_stress_driven_forces
-   !> set wave parameters for jawave == WAVE_NC_OFFLINE (offline wave coupling) and waveforcing == 2 (wave forces via total dissipation)
+   !> set wave parameters for jawave == WAVE_NC_OFFLINE (offline wave coupling) and waveforcing == WAVEFORCES_DISSIPATION_TOTAL (wave forces via total dissipation)
    subroutine set_parameters_for_dissipation_driven_forces()
 
       twav(:) = 0d0
@@ -572,7 +572,7 @@ contains
 
    end subroutine set_parameters_for_dissipation_driven_forces
 
-   !> set wave parameters for jawave == WAVE_NC_OFFLINE (offline wave coupling) and waveforcing == 3 (wave forces via 3D dissipation distribution)
+   !> set wave parameters for jawave == WAVE_NC_OFFLINE (offline wave coupling) and waveforcing == WAVEFORCES_DISSIPATION_3D (wave forces via 3D dissipation distribution)
    subroutine set_parameters_for_3d_dissipation_driven_forces()
 
       twav(:) = 0d0

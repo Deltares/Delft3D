@@ -752,11 +752,11 @@ contains
 
       jawave = NO_WAVES ! Include wave model nr
 
-      waveforcing = 0 !< Include wave forcing
+      waveforcing = NO_WAVEFORCES !< Include wave forcing
 
       jawavestreaming = 0 ! Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
 
-      jawavestokes = 1 ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
+      jawavestokes = STOKES_DRIFT_DEPTHUNIFORM ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
 
       jawavebreakerturbulence = 1 ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 

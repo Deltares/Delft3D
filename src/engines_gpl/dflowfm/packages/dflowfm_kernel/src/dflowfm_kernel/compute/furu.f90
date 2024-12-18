@@ -324,7 +324,7 @@ contains
             vLL = v(LL); v(LL) = 0d0
             call getustbcfuhi(LL, LL, ustbLL, cfuhi(LL), hdzb, z00, cfuhi3D) ! call with Lb = LL => layer integral profile
             ! JRE with HK, used to be in getustb
-            if (jawave > NO_WAVES .and. jawaveStokes >= 1) then ! Ustokes correction at bed
+            if (jawave > NO_WAVES .and. jawaveStokes > NO_STOKES_DRIFT) then ! Ustokes correction at bed
                adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
             end if
             v(LL) = vLL

@@ -45,13 +45,14 @@ module m_waveconst
    ! wave forcing
    integer, parameter :: NO_WAVEFORCES = 0
    integer, parameter :: WAVEFORCES_RADIATIONSTRESS = 1
-   integer, parameter :: WAVEFORCES_DISSIPATION = 2
-   integer, parameter :: WAVEFORCES_DISSIPATION3D = 3
+   integer, parameter :: WAVEFORCES_DISSIPATION_TOTAL = 2
+   integer, parameter :: WAVEFORCES_DISSIPATION_3D = 3
    
    ! Stokes drift profile
    integer, parameter :: NO_STOKES_DRIFT = 0
    integer, parameter :: STOKES_DRIFT_DEPTHUNIFORM = 1
    integer, parameter :: STOKES_DRIFT_2NDORDER = 2
-   
+   integer, parameter :: STOKES_DRIFT_2NDORDER_ADVE = 3
+   integer, parameter :: STOKES_DRIFT_2NDORDER_ADVE_VISC = 4
 
 end module m_waveconst

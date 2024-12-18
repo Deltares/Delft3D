@@ -1658,7 +1658,7 @@ contains
       end if
 
       if (jawave <= WAVE_FETCH_YOUNG) then
-         jawaveStokes = 0
+         jawaveStokes = NO_STOKES_DRIFT
          jawaveforces = 0
          jawavestreaming = 0
          jawavedelta = 0

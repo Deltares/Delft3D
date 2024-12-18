@@ -116,7 +116,7 @@ contains
                call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) !Constant
                advi(Lb) = advi(Lb) + cfuhi3D
                !
-               if (jawave > NO_WAVES .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
+               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
 
@@ -171,7 +171,7 @@ contains
                call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) ! algebraic
                advi(Lb) = advi(Lb) + cfuhi3D
                !
-               if (jawave > NO_WAVES .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
+               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
 
@@ -382,7 +382,7 @@ contains
 
                ! Calculate turkin source from wave dissipation: preparation
                if (jawave > NO_WAVES) then
-                  if (jawaveStokes > 0 .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
+                  if (jawaveStokes > NO_STOKES_DRIFT .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
                      adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                   end if
 
@@ -538,7 +538,7 @@ contains
                   ! Addition of production and of dissipation to matrix ;
                   ! observe implicit treatment by Newton linearization.
 
-                  if (jawave > NO_WAVES .and. jawaveStokes >= 3 .and. .not. flowWithoutWaves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
+                  if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_2NDORDER_ADVE .and. .not. flowWithoutWaves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
                      dijdij(k) = ((u1(Lu) - ustokes(Lu) - u1(L) + ustokes(L))**2 + (v(Lu) - vstokes(Lu) - v(L) + vstokes(L))**2) / dzw(k)**2
                   else
                      dijdij(k) = ((u1(Lu) - u1(L))**2 + (v(Lu) - v(L))**2) / dzw(k)**2
