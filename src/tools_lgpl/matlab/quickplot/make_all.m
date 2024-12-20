@@ -59,8 +59,7 @@ if nargin == 0
     release = sprintf('Build %d.%2.2d',yr,mn);
 end
 
-c = computer;
-if strcmp(c(end-1:end),'64')
+if strcmp(computer,'PCWIN64')
    make_d3dmatlab(curdir,'version',qpversion,'url',repo_url,'hash',hash,'time',T,'release',release)
 end
 make_quickplot(curdir,qpversion,repo_url,hash,T)

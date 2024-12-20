@@ -5243,7 +5243,7 @@ contains
       use m_flowparameters, only: jatrt, ibedlevtyp
       use m_mass_balance_areas
       use m_fm_wq_processes
-      use m_xbeach_data
+      use m_xbeach_data, hminlw_xb => hminlw
       use m_transportdata
       use m_alloc
       use m_waves, hminlw_waves => hminlw
@@ -5287,7 +5287,7 @@ contains
       character(16) :: dxname
       character(64) :: dxdescr
       character(15) :: transpunit
-      real(kind=dp) :: rhol, mortime, wavfac
+      real(kind=dp) :: rhol, mortime, wavfac, hmlwL, huL
       real(kind=dp) :: moravg, dmorft, dmorfs, rhodt
       real(kind=dp) :: um, ux, uy, dzu
       real(kind=dp), dimension(:, :), allocatable :: poros, toutputx, toutputy, sxtotori, sytotori
@@ -5363,6 +5363,16 @@ contains
       end if
 
       call realloc(mapids%id_const, (/MAX_ID_VAR, NUMCONST/), keepExisting=.false.)
+
+      ! Set correct limiting depth for waves
+      if (jawave > 0) then
+         select case (jawave)
+         case (4)
+            hmlwL = hminlw_xb
+         case default
+            hmlwL = hminlw_waves
+         end select
+      end if
 
       ! Use nr of dimensions in netCDF file a quick check whether vardefs were written
       ! before in previous calls.
@@ -7536,18 +7546,20 @@ contains
                if (kmx == 0) then
                   do L = 1, lnx
                      k1 = ln(1, L); k2 = ln(2, L)
-                     windx(k1) = windx(k1) + wcx1(L) * wavfu(L) * hu(L) * rhomean
-                     windx(k2) = windx(k2) + wcx2(L) * wavfu(L) * hu(L) * rhomean
-                     windy(k1) = windy(k1) + wcy1(L) * wavfu(L) * hu(L) * rhomean
-                     windy(k2) = windy(k2) + wcy2(L) * wavfu(L) * hu(L) * rhomean
-                     wavout(L) = wavfu(L) * hu(L) * rhomean ! stack
-                     wavout2(L) = wavfv(L) * hu(L) * rhomean
+                     huL = max(hu(L), hmlwL)
+                     windx(k1) = windx(k1) + wcx1(L) * wavfu(L) * huL * rhomean
+                     windx(k2) = windx(k2) + wcx2(L) * wavfu(L) * huL * rhomean
+                     windy(k1) = windy(k1) + wcy1(L) * wavfu(L) * huL * rhomean
+                     windy(k2) = windy(k2) + wcy2(L) * wavfu(L) * huL * rhomean
+                     wavout(L) = wavfu(L) * huL * rhomean ! stack
+                     wavout2(L) = wavfv(L) * huL * rhomean
                   end do
                else
                   do L = 1, lnx
                      k1 = ln(1, L); k2 = ln(2, L)
                      call getLbotLtop(L, Lb, Lt)
                      if (Lt < Lb) cycle
+                     huL = max(hu(L), hmlwL)
                      do LL = Lb, Lt
                         if (LL == Lb) then
                            dzu = hu(Lb)
@@ -7560,8 +7572,8 @@ contains
                         windy(k1) = windy(k1) + wcy1(L) * wavfu(LL) * dzu * rhomean
                         windy(k2) = windy(k2) + wcy2(L) * wavfu(LL) * dzu * rhomean
                         ! depth dependent
-                        wavout(LL) = wavfu(LL) * hu(L) * rhomean ! stack
-                        wavout2(LL) = wavfv(LL) * hu(L) * rhomean
+                        wavout(LL) = wavfu(LL) * huL * rhomean ! stack
+                        wavout2(LL) = wavfv(LL) * huL * rhomean
                      end do
                   end do
                end if
@@ -13335,7 +13347,7 @@ contains
       ! Read qa (flow link), optional: only from rst file, so no error check
       ierr = get_var_and_shift(imapfile, 'qa', qa, tmpvar1, UNC_LOC_U3D, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
                                um%ilink_own, um%ilink_merge)
-    
+
       ! Read ucxq (flow elem), optional: only from rst file, so no error check
       ucxyq_read_rst = .true.
 
@@ -13356,12 +13368,12 @@ contains
 
       ! Read ucx (flow elem), optional: only from rst file, so no error check
       ierr = get_var_and_shift(imapfile, 'ucx', ucx, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
-                              um%inode_own, um%inode_merge)
-      
+                               um%inode_own, um%inode_merge)
+
       ! Read ucy (flow elem), optional: only from rst file, so no error check
       ierr = get_var_and_shift(imapfile, 'ucy', ucy, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
-                              um%inode_own, um%inode_merge)
-      
+                               um%inode_own, um%inode_merge)
+
       ! Read rho (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
       rho_read_rst = .true.
 

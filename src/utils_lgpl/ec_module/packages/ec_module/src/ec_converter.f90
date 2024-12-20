@@ -40,6 +40,7 @@ module m_ec_converter
    use m_ec_parameters
    use m_ec_spatial_extrapolation
    use time_class
+   use, intrinsic :: ieee_arithmetic
 
    implicit none
 
@@ -313,6 +314,7 @@ contains
       use kdtree2Factory
       use m_ec_basic_interpolation
       use m_alloc
+      use ieee_arithmetic, only: ieee_is_nan
       implicit none
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(inout)
@@ -512,6 +514,10 @@ contains
                y1 = maxval(targetElementSet%y)
                do jj = 1, n_cols - 1
                   do ii = 1, n_rows - 1
+                     if (ieee_is_nan(sx_2D(jj, ii)) .or. ieee_is_nan(sx_2D(jj + 1, ii)) .or. ieee_is_nan(sx_2D(jj, ii + 1)) .or. ieee_is_nan(sx_2D(jj + 1, ii + 1)) .or. &
+                        ieee_is_nan(sy_2D(jj, ii)) .or. ieee_is_nan(sy_2D(jj + 1, ii)) .or. ieee_is_nan(sy_2D(jj, ii + 1)) .or. ieee_is_nan(sy_2D(jj + 1, ii + 1))) then
+                        cycle
+                     end if
                      cx = (sx_2D(jj, ii) + sx_2D(jj + 1, ii) + sx_2D(jj, ii + 1) + sx_2D(jj + 1, ii + 1)) / 4.0
                      cy = (sy_2D(jj, ii) + sy_2D(jj + 1, ii) + sy_2D(jj, ii + 1) + sy_2D(jj + 1, ii + 1)) / 4.0
                      r2 = (max( &
@@ -2314,6 +2320,11 @@ contains
       real(hp) :: maxangle
       real(hp) :: delta
       real(hp) :: weightfac
+      
+      if (ieee_is_nan(var1) .or. ieee_is_nan(var2)) then
+         cyclic_interpolation = ieee_value(0.0_hp, ieee_quiet_nan)
+         return
+      end if
 
       minangle = var1
       maxangle = var2
@@ -3110,7 +3121,7 @@ contains
                                     sourcevals(1 + ii, 1 + jj, 1, 1) = wd2d(mp + ii, np + jj)
                                     sourcevals(1 + ii, 1 + jj, 1, 2) = wd2d(mp + ii, np + jj) ! needed for finding extrapolations
                                     waveheight(1 + ii, 1 + jj) = a0 * waveheightT0(mp + ii, np + jj) + a1 * waveheightT1(mp + ii, np + jj)
-                                    if (isnan(waveheight(1 + ii, 1 + jj)) .or. waveheight(1 + ii, 1 + jj) < 0.01_fp) then
+                                    if (ieee_is_nan(waveheight(1 + ii, 1 + jj)) .or. waveheight(1 + ii, 1 + jj) < 0.01_fp) then
                                        waveheight(1 + ii, 1 + jj) = 1.0_fp
                                     end if
                                  end do
@@ -3160,7 +3171,7 @@ contains
                               targetvalsin = targetvalsin + sinwd(2, 2) * indexWeight%weightFactors(3, j)
                               targetvalsin = targetvalsin + sinwd(1, 2) * indexWeight%weightFactors(4, j)
                               targetValues(j) = atan2d(targetvalsin, targetvalcos)
-                              if (targetValues(j) < 0d0) then
+                              if (.not. ieee_is_nan(targetValues(j)) .and. targetValues(j) < 0d0) then
                                  targetValues(j) = targetValues(j) + 360d0
                               end if
                            else

@@ -404,7 +404,17 @@ contains
             ! If wave model and flow model do not cover each other exactly, NaN values can propagate in the flow model.
             ! Correct for this by setting values to zero
             do k = 1, ndx
-               if (isnan(hwavcom(k))) then ! one check should be enough, everything is collocated
+               if (ieee_is_nan(hwavcom(k)) .or. &
+                   ieee_is_nan(phiwav(k)) .or. &
+                   ieee_is_nan(sxwav(k)) .or. &
+                   ieee_is_nan(sywav(k)) .or. &
+                   ieee_is_nan(sbxwav(k)) .or. &
+                   ieee_is_nan(sbywav(k)) .or. &
+                   ieee_is_nan(dsurf(k)) .or. &
+                   ieee_is_nan(dwcap(k)) .or. &
+                   ieee_is_nan(mxwav(k)) .or. &
+                   ieee_is_nan(mywav(k)) .or. &
+                   hs(k) <= epshu) then
                   hwavcom(k) = 0d0
                   twavcom(k) = 0d0
                   sxwav(k) = 0d0

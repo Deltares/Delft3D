@@ -1,17 +1,11 @@
-function folder = uigetfolder(title, initial_path)
-%UIGETFOLDER   Standard Windows browse for folder dialog box.
-%
-%   folder = uigetfolder(title, initial_path)
-%
-%   Output: folder       = selected folder (empty string if dialog cancelled)
-%   Inputs: title        = title string (OPTIONAL)
-%           initial_path = initial path (OPTIONAL, defaults to PWD)
-%
-%   Examples:   folder = uigetfolder                          - default title and initial path
-%               folder = uigetfolder('Select results folder') - default initial path
-%               folder = uigetfolder([], 'C:\Program Files')  - default title
-%
-%   See also UIGETFILE, UIPUTFILE
+function CloseSplashScreen
+%CloseSplashScreen Send a signal to close the QUICKPLOT splash screen.
+%    CloseSplashScreen sends a signal to close the QUICKPLOT splash screen. The
+%    splash screen is shown by d3d_qp.exe when running in standalone mode
+%    before starting d3d_qp.exec which executes the actual QUICKPLOT code
+%    (corresponding to the d3d_qp command).
+%    
+%    See also d3d_qp.
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
@@ -43,35 +37,8 @@ function folder = uigetfolder(title, initial_path)
 %   $HeadURL$
 %   $Id$
 
-%-----------------------------------------------------------------------------------------------
-%#function uigetfolder_win32
-
-if ~strcmp(computer, 'PCWIN')
-    error_dialog_handle = errordlg(['The function ', upper(mfilename), ' only works on a MS-Windows PC'], ...
-        mfilename, ...
-        'modal');
-    folder = '';
-else
-    if nargin < 2
-        initial_path = pwd;
-    end
-
-    if nargin < 1 | isempty(title)
-        title = 'Select a folder';
-    end
-
-    % Error checking
-    if ~ischar(title)
-        error('The title must be a string')
-    end
-    if ~ischar(initial_path)
-        error('The initial path must be a string')
-    end
-    if ~exist(initial_path, 'dir')
-        error(['The initial path: ', initial_path, ' does not exist!'])
-    end
-
-    folder = calldll('uigetfolder_win32',title, initial_path);
-
+try
+    CloseSplashScreen_precompiled
+catch
+    error('Missing MEX-file "CloseSplashScreen"');
 end
-%-----------------------------------------------------------------------------------------------

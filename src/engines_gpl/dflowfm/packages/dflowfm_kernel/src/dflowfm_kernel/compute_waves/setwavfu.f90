@@ -124,8 +124,10 @@ contains
                wavfu(L) = wavfu_loc + wavfbu_loc
                wavfv(L) = wavfv_loc + wavfbv_loc
             end if
+            !
             wavfu(L) = wavfu(L) * min(huvli(L), hminlwi) / rhomean ! Dimensions [m/s^2]
-            wavfv(L) = wavfv(L) * min(huvli(L), hminlwi) / rhomean ! Dimensions [m/s^2]
+            wavfv(L) = wavfv(L) * min(huvli(L), hminlwi) / rhomean
+            !
          end do
       else ! kmx>0
          do LL = 1, lnx

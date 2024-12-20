@@ -50,11 +50,8 @@ contains
       use m_waves
       use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flowwithoutwaves, epshu, wx, wy, ag, hs, waveforcing
       use m_flowgeom, only: bl, lnx, ln, csu, snu, ndx
-      !   use m_sferic
-      !   use m_flowtimes
       use mathconsts, only: sqrt2_hp
       use m_transform_wave_physics, only: transform_wave_physics_hp
-      !   use unstruc_display
 
       integer :: k1, k2, k, L
       integer :: ierror
@@ -104,6 +101,7 @@ contains
          !
          ! Needed here, because we need wave mass fluxes to calculate stokes drift
          if (jawave == 7) then
+            !
             call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
                                & sxwav, sywav, mxwav, mywav, &
                                & distot, dsurf, dwcap, &
@@ -131,7 +129,7 @@ contains
          end if
          hwav = min(hwav, gammax * hs)
          twav = twavcom
-         call wave_uorbrlabda() ! hwav gets depth-limited here
+         call wave_uorbrlabda()
       end if
       !
       ! Surfbeat model

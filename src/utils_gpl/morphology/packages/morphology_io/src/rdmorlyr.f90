@@ -47,6 +47,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     use morphology_data_module
     use grid_dimens_module, only: griddimtype
     use message_module, only: write_error
+    use dfparall, only: parll
     !
     implicit none
 !
@@ -622,11 +623,17 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
              exit
           endif
        enddo
-       if (.not.found) then
-          errmsg = 'Unknown boundary "'//trim(bndname)//'" in '//trim(filmor)
-          call write_error(errmsg, unit=lundia)
-          error = .true.
-          return
+        if (.not.found) then
+           if (parll) then
+              errmsg = 'Boundary "'//trim(bndname)//'" in '//trim(filmor)// ' not found. As this is a parallel run, it must be in another partition.' !while not an error message, we use this variable because it is allocated to 256
+              write (lundia, '(a)') errmsg
+              cycle
+           else   
+             errmsg = 'Unknown boundary "'//trim(bndname)//'" in '//trim(filmor)
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return
+          endif
        endif
        !
        call prop_get(morbound_ptr, '*', 'ICmpCond', cmpbnd(j)%icond)
