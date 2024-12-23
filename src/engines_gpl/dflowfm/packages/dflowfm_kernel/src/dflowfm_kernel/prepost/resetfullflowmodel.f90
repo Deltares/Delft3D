@@ -31,6 +31,7 @@
 !
 
 module m_resetfullflowmodel
+use m_fm_wq_processes_sub, only: default_fm_wq_processes
 
 implicit none
 

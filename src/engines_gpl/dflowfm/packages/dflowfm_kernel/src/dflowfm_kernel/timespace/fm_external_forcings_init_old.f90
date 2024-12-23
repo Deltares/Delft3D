@@ -74,6 +74,7 @@ contains
       use m_observations, only: nummovobs, addobservation
       use unstruc_inifields, only: initialfield2Dto3D
       use m_find_name, only: find_name
+      use m_fm_wq_processes_sub, only: get_waqinputname
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 

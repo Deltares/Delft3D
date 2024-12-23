@@ -30,39 +30,24 @@
 !
 !
 
-module m_rectan2d
+module m_remove_masked_netcells
 
 implicit none
 
 private
 
-public :: rectan2d
+public :: remove_masked_netcells
 
-contains
+interface
 
-subroutine rectan2D(hpr, br, hr, area, width, japerim, perim)
-   use precision, only: dp
-   use m_flow, only: slotw1D
+   !> remove "dry"masked netcells (cellmask==1) from netcell administration
+   !> typically used in combination with a drypoints file (samples or polygons)
+   !> \see samples_to_cellmask and \see polygon_to_cellmask
+   !> note: we do not want to alter the netnodes and netlinks and will therefore not change kn and nod%lin
+   module subroutine remove_masked_netcells()
+      implicit none
+   end subroutine remove_masked_netcells
 
-   integer :: japerim
-   real(kind=dp) :: hpr ! hoogte   in profiel
-   real(kind=dp) :: br ! breedte van profiel
-   real(kind=dp) :: hr ! hoogte  van profiel
-   real(kind=dp) :: area ! wet cross sectional area
-   real(kind=dp) :: width ! width at water surface
-   real(kind=dp) :: perim, hp ! wet perimeter
-   if (japerim == 1) then
-      hp = min(hpr, hr)
-   else
-      hp = hpr
-   end if
-   area = hp * br
-   width = br
-   perim = br
-   if (slotw1D > 0 .and. japerim == 0) then
-      width = width + slotw1D
-      area = area + slotw1D * hpr
-   end if
-end subroutine rectan2D
+end interface
 
-end module m_rectan2d
+end module m_remove_masked_netcells

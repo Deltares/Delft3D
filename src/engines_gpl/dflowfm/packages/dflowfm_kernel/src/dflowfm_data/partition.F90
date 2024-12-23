@@ -67,7 +67,7 @@ end module
 
 !> Administration data for D-Flow FM's partitions and MPI-communication patterns.
 module m_partitioninfo
-
+   use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
    use m_tpoly
    use precision_basics, only: hp, dp
    use meshdata, only: ug_idsLen, ug_idsLongNamesLen
@@ -588,6 +588,7 @@ contains
       use network_data
       use m_alloc
       use gridoperations
+      use m_remove_masked_netcells, only: remove_masked_netcells
 
       implicit none
 
@@ -4022,6 +4023,7 @@ contains
       use m_missing
       use m_sferic, only: pi
       use geometry_module, only: dbdistance
+      use m_dlinklength, only: dlinklength
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -4066,8 +4068,6 @@ contains
       integer :: ierror ! error (1) or not (0)
 
       logical :: Lleftfound, Lrightfound
-
-      real(kind=dp), external :: dlinklength
 
       real(kind=dp), parameter :: dtol = 1d-8
 
@@ -6041,7 +6041,7 @@ end function metisopts
 
 !> generate partition numbers from polygons, or with METIS of no polygons are present
 subroutine partition_to_idomain()
-
+   use m_cosphiunetcheck, only: cosphiunetcheck
    use m_polygon
    use m_partitioninfo
    use MessageHandling
@@ -6677,6 +6677,7 @@ end subroutine update_ghostboundvals
 !! NOTE: It uses "Ne/Nparts" as the special weights on structures, othere weight values can also be investigated.
 !! Now ONLY support structures defined by polylines. TODO: support setting special weights on structures that are defined by other ways.
 subroutine set_edge_weights_and_vsize_for_METIS(Ne, Nparts, njadj, xadj, adjncy, vsize, adjw)
+   use m_find_netcells_for_structures, only: find_netcells_for_structures
    implicit none
    integer, intent(in) :: Ne !< Number of vertices
    integer, intent(in) :: Nparts !< Number of partition subdomains

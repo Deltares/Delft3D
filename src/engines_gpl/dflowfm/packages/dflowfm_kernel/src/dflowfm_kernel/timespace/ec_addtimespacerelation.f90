@@ -40,6 +40,7 @@ contains
                                                    tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                                    tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
                                                    multuni1, multuni2, multuni3, multuni4)
+      use m_fm_wq_processes_sub, only: get_waqinputname
       use m_ec_module, only: ecFindFileReader, ec_filetype_to_conv_type ! TODO: Refactor this private data access (UNST-703).
       use m_ec_filereader_read, only: ecParseARCinfoMask
       use m_flowparameters, only: jawave

@@ -35,21 +35,26 @@
 !! As a result, structures will not intercross the partition boundaries
 !! NOTE: This functionality ONLY supports when using "polylinefile" to specify the structure location
 !! TODO: extend it to support other ways of specifying the structure location.
-subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
+submodule(m_find_netcells_for_structures) m_find_netcells_for_structures_
+
+implicit none
+
+contains
+
+module subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
    use precision, only: dp
-   use m_structures
-   use string_module
-   use timespace_parameters
+   use m_structures, only: strs_ptr
+   use properties, only: prop_get, prop_get_alloc_string
+   use string_module, only: strcmpi
+   use timespace_parameters, only: loctp_polyline_file
    use unstruc_files, only: resolvePath
-   use TREE_STRUCTURES
-   use MessageHandling
+   use tree_structures, only: tree_data, tree_num_nodes, tree_get_name
+   use messagehandling, only: LEVEL_INFO, msgbuf, msg_flush, mess, warn_flush
    use unstruc_model, only: md_structurefile_dir, md_structurefile
-   use network_data
+   use network_data, only: numl, lne, maxpoly
    use timespace, only: read1polylin
-   use kdtree2Factory
-   use m_alloc
-   use m_find_crossed_links_kdtree2
-   implicit none
+   use kdtree2Factory, only: treeglob
+   use m_find_crossed_links_kdtree2, only: find_crossed_links_kdtree2
 
    integer, intent(in) :: size_istrucells !< size of istrucells array
    integer, intent(inout) :: nstrucells !< Number of the netcells that are related to structures
@@ -173,3 +178,5 @@ subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
       //'and partition again, or use polyline to define structures.'
    call warn_flush()
 end subroutine find_netcells_for_structures
+
+end submodule m_find_netcells_for_structures_

@@ -30,11 +30,21 @@
 !
 !
 
+module m_rectan
+
+implicit none
+
+private
+
+public :: rectan
+
+contains
+
 subroutine rectan(hpr, br, hr, area, width, japerim, perim, closed)
    use precision, only: dp
    use m_flow, only: slotw1D
    use m_longculverts, only: newculverts
-   implicit none
+
    integer :: japerim
    real(kind=dp) :: hpr ! hoogte   in profiel
    real(kind=dp) :: br ! breedte van profiel
@@ -61,3 +71,5 @@ subroutine rectan(hpr, br, hr, area, width, japerim, perim, closed)
       area = area + slotw1D * hpr
    end if
 end subroutine rectan
+
+end module m_rectan

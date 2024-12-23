@@ -33,6 +33,8 @@
 module unstruc_startup
 !! Separates some startup/initialization procedures from the main program in net.f90
 
+   use m_setcoltabfile, only: setcoltabfile
+   use m_iset_jaopengl, only: iset_jaopengl
    use m_inidepmax2, only: inidepmax2
    use m_intini
    use m_helpin

@@ -30,6 +30,7 @@
 !
 !
 module m_botlin
+use m_zoom3, only: zoom3
 use m_stopint, only: stopint
 
    implicit none

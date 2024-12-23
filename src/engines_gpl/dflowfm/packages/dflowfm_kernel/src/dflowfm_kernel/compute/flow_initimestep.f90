@@ -31,6 +31,7 @@
 !
 !> Intialise flow timestep, also called once after flowinit.
 module m_flow_initimestep
+   use m_setau, only: setau
    use m_compute_wave_parameters, only: compute_wave_parameters
    use m_compute_wave_forcing_rhs, only: compute_wave_forcing_rhs
    use m_fillsystem_advec, only: fillsystem_advec

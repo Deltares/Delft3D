@@ -288,17 +288,11 @@ contains
       use m_loadbitmap
       use m_reagrid, only: reagrid
       use m_read_samples_from_arcinfo, only: read_samples_from_arcinfo
+      use m_realan, only: realan
 
       character inarg * (*), EXT * 4
       logical JAWEL
       integer :: minp, n1, n2, istat, ja
-
-      interface
-         subroutine realan(mlan, antot)
-            integer, intent(inout) :: mlan
-            integer, intent(inout), optional :: antot
-         end subroutine realan
-      end interface
 
       inquire (FILE=trim(inarg), EXIST=JAWEL)
       if (JAWEL) then

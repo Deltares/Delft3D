@@ -31,6 +31,7 @@
 !
 
 module m_orthogonisenet_old
+use m_cosphiunetcheck, only: cosphiunetcheck
 
 implicit none
 

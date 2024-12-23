@@ -30,17 +30,14 @@
 !
 !
 !> Opens an existing file for reading.
-!!
-!! When file does not exist or is already open, program stops with
-!! an error message.
-subroutine oldfil(minp, filename) !, istat)
-   use messagehandling, only: err
-   use unstruc_files
+!! When file does not exist or is already open, program stops with an error message.
+subroutine oldfil(minp, filename)
+   use messagehandling, only: err, LEVEL_INFO, mess
+   use unstruc_files, only: err_filenotexist, err_filealreadyopen, err_fileaccessdenied, maxnum, filenames, reg_file_open
    use string_module, only: find_first_char
    implicit none
    integer, intent(out) :: minp !< New file pointer to opened file. 0 in case of some error.
    character(*), intent(in) :: filename !< Name of the file to open.
-!    integer, optional, intent(out) :: istat
 
    integer :: istat_
    integer :: i
@@ -94,15 +91,13 @@ subroutine oldfil(minp, filename) !, istat)
    if (istat_ /= 0) then
       minp = 0
    end if
-!    if (present(istat)) then
-!        istat = istat_
-!        return
-!    endif
+
 end subroutine oldfil
 
 !> Closes a filepointer with proper bookkeeping.
 subroutine doclose(minp)
-   use unstruc_files
+   use unstruc_files, only: maxnum, lunfils, filenames, reg_file_close
+   use messagehandling, only: LEVEL_INFO, mess
    implicit none
    integer, intent(inout) :: minp !< File unit of a (probably open) file. Will be set to 0 upon return.
    integer :: i
@@ -119,7 +114,7 @@ subroutine doclose(minp)
 end subroutine doclose
 
 subroutine zoekal(minp, rec, text, ja)
-   use unstruc_messages
+   use messagehandling, only: LEVEL_INFO, mess
    implicit none
    integer, intent(in) :: minp
    character(len=*), intent(out) :: rec
@@ -140,17 +135,15 @@ subroutine zoekal(minp, rec, text, ja)
 end subroutine zoekal
 
 !> Opens a new file for writing (and reading).
-!!
 !! When file already exists, it will be overwritten.
 !! When access is denied, program stops with an error message.
-subroutine newfil(minp, filename) !, istat)
-   use messagehandling, only: err
-   use unstruc_files
+subroutine newfil(minp, filename)
+   use messagehandling, only: err, LEVEL_INFO, mess
+   use unstruc_files, only: maxnum, err_filenotexist, err_filealreadyopen, err_fileaccessdenied, filenames, reg_file_open
    use string_module, only: find_first_char
    implicit none
    integer, intent(out) :: minp !< New file pointer to opened file. 0 in case of some error.
    character(*), intent(in) :: filename !< Name of the file to open.
-!    integer, optional, intent(out) :: istat
 
    integer :: istat_
    integer :: i
@@ -194,10 +187,7 @@ subroutine newfil(minp, filename) !, istat)
    if (istat_ /= 0) then
       minp = 0
    end if
-!    if (present(istat)) then
-!        istat = istat_
-!        return
-!    endif
+
 end subroutine newfil
 
 subroutine newnewfil(minp, filename)
@@ -353,22 +343,6 @@ function numbersonline(rec)
    end do
 end function numbersonline
 
-! function ifirstchar(rec)
-!    Moved to public function find_first_char in module string_module of Deltares_common.
-! end function ifirstchar
-
-! function ifirstletter(rec)
-!    Moved to public function find_first_letter in module string_module of Deltares_common.
-! end function ifirstletter
-
-! subroutine ifirstword(rec, i1, i2)
-!    Moved to public function find_first_word in module string_module of Deltares_common.
-! end subroutine ifirstword
-
-! function isblank(letter)
-!    Moved to private function is_whitespace in module string_module of Deltares_common.
-! end function isblank
-
 function empty(rec)
 !!--description-----------------------------------------------------------------
 ! NONE
@@ -403,7 +377,8 @@ function empty(rec)
 end function empty
 
 subroutine zoekja(minp, rec, text, ja)
-   use unstruc_messages
+   use messagehandling, only: LEVEL_INFO, mess
+
    implicit none
    integer, intent(in) :: minp
    character(len=*), intent(out) :: rec
@@ -412,10 +387,6 @@ subroutine zoekja(minp, rec, text, ja)
 
    character(len=255) :: key2, rec0
 
-   !
-   !     voorwaarts zoeken, geen error als mislukt
-   ! write (msgbuf, '(a,a)') 'looking for keyword: ', trim(text)
-   ! call msg_flush()
    key2 = text
    call lowcas(key2)
 10 continue
@@ -438,7 +409,7 @@ subroutine zoekja(minp, rec, text, ja)
 end subroutine zoekja
 
 subroutine readandchecknextrecord(minp, rec, text, ja)
-   use unstruc_messages
+   use messagehandling, only: LEVEL_INFO, mess
    implicit none
    integer, intent(in) :: minp
    character(len=*), intent(out) :: rec
@@ -447,10 +418,6 @@ subroutine readandchecknextrecord(minp, rec, text, ja)
 
    character(len=255) :: key2, rec0
 
-   !
-   !     voorwaarts zoeken, geen error als mislukt
-   ! write (msgbuf, '(a,a)') 'looking for keyword: ', trim(text)
-   ! call msg_flush()
    key2 = text
    call lowcas(key2)
 10 continue
@@ -552,8 +519,6 @@ end subroutine zoekdouble
 !> Searches for an optional keyword on current line and returns the text value.
 !! 'key=text'. Rewinds the file pointer to the original line.
 subroutine zoekopt(minp, value, key, ja)
-   use unstruc_messages
-   use unstruc_files
    implicit none
    integer, intent(out) :: ja !< Whether key was found or not.
    integer, intent(in) :: minp !< File pointer
@@ -564,9 +529,6 @@ subroutine zoekopt(minp, value, key, ja)
    character(len=255) :: rec, key2
    integer :: l1
 
-   !write (msgbuf, '(a,a)') 'looking for optional keyword: ', key
-   !call msg_flush()
-
    ja = 0
    key2 = key; call lowcas(key2)
 
@@ -574,12 +536,10 @@ subroutine zoekopt(minp, value, key, ja)
    read (minp, '(a255)', end=999, err=998, iostat=iostat) rec
    call lowcas(rec)
    if (rec(1:1) == '*') goto 10
-   !  call mess(LEVEL_INFO, 'Looking for optional '//trim(key)//' in: ', rec )
    if (index(rec, trim(key2)) /= 0) then
       ja = 1
       l1 = index(rec, '=') + 1
       value = rec(l1:)
-      ! call mess(LEVEL_INFO, 'Found optional keyword', trim(key) )
       return
    else
       backspace (minp)
@@ -587,20 +547,18 @@ subroutine zoekopt(minp, value, key, ja)
 
 998 continue
    if (iostat /= 0) then ! handle exception
-!      write (msgbuf, '(a,a,a,i0,a)') 'FILE ',trim(filenames(minp)),' returned IOSTAT ',iostat,' !!'
-!      call warn_flush()
+
    end if
 999 continue
-   !backspace(minp)
-   ! call mess(LEVEL_INFO, 'optional keyword', trim(key), 'NOT found.')
+
 end subroutine zoekopt
 
 !> Performs a clean program stop upon errors.
 !! This routine is automatically called from the MessageHandling module.
 subroutine unstruc_errorhandler(level)
-   use unstruc_messages
-   use unstruc_files
-   use dfm_error
+   use unstruc_messages, only: threshold_abort
+   use unstruc_files, only: mdia, close_all_files
+   use dfm_error, only: dfm_genericerror
 #ifdef HAVE_MPI
    use mpi
    use m_partitioninfo, only: DFM_COMM_ALLWORLD, jampi
@@ -625,55 +583,28 @@ subroutine unstruc_errorhandler(level)
 end subroutine unstruc_errorhandler
 
 subroutine error(w1, w2, w3)
-!!--description-----------------------------------------------------------------
-! NONE
-!!--pseudo code and references--------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
-   use unstruc_messages
-   use unstruc_files
+   use messagehandling, only: LEVEL_ERROR, mess
    implicit none
-!
-! Global variables
-!
+
    character(len=*), intent(in) :: w1
    character(len=*), intent(in) :: w2
    character(len=*), intent(in) :: w3
-!
-!
-!! executable statements -------------------------------------------------------
-!
    !
    call mess(LEVEL_ERROR, w1, w2, w3)
 
-   ! call doclose(mdia)
-   ! stop ! TODO: netjes afsluiten elders [AvD]
 end subroutine error
 
 function thisisanumber(rec)
    use string_module, only: find_first_char
-!!--description-----------------------------------------------------------------
-! NONE
-!!--pseudo code and references--------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
+
    implicit none
-!
-! Global variables
-!
+
    logical :: thisisanumber
    character(len=*), intent(in) :: rec
-!
-!
-! Local variables
-!
+
    integer :: ich
    integer :: l
-!
-!
-!! executable statements -------------------------------------------------------
-!
-   !
+
    !     is waar als eerste character van rec een getal is.
    l = find_first_char(rec)
    if (l == 0) then
@@ -689,30 +620,17 @@ function thisisanumber(rec)
 end function thisisanumber
 
 function ifirstnum(rec) ! first digit
-!!--description-----------------------------------------------------------------
-! NONE
-!!--pseudo code and references--------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
+
    implicit none
-!
-! Global variables
-!
+
    integer :: ifirstnum
    character(len=*), intent(in) :: rec
-!
-!
-! Local variables
-!
+
    integer :: i
    integer :: i1
    integer :: len_trim
    integer :: l
-!
-!
-!! executable statements -------------------------------------------------------
-!
-   !
+
    !     geeft positie van eerste nummer
    l = len_trim(rec)
    ifirstnum = 0
@@ -724,31 +642,18 @@ function ifirstnum(rec) ! first digit
       end if
    end do
 end function ifirstnum
+    
 function ilastnum(rec)
-!!--description-----------------------------------------------------------------
-! NONE
-!!--pseudo code and references--------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
    implicit none
-!
-! Global variables
-!
+
    integer :: ilastnum
    character(len=*), intent(in) :: rec
-!
-!
-! Local variables
-!
+
    integer :: i
    integer :: i1
    integer :: len_trim
    integer :: l
-!
-!
-!! executable statements -------------------------------------------------------
-!
-   !
+
    !     GEEFT POSITIE VAN LAATSTE NUMMER
    l = len_trim(rec)
    ilastnum = 0
@@ -763,7 +668,8 @@ end function ilastnum
 
 !> Error when reading incorrectly formatted data from file.
 subroutine readerror(w1, w2, minp)
-   use unstruc_files
+   use messagehandling, only: LEVEL_ERROR, mess
+   use unstruc_files, only: get_filename
    implicit none
    character(len=*), intent(in) :: w1
    character(len=*), intent(in) :: w2
@@ -776,7 +682,8 @@ end subroutine readerror
 
 !> Error when a premature EOF is encountered.
 subroutine eoferror(minp)
-   use unstruc_files
+   use messagehandling, only: LEVEL_ERROR, mess
+   use unstruc_files, only: get_filename
    implicit none
    integer, intent(in) :: minp
    character(len=1024) :: fileName_loc ! Local parameter
@@ -786,23 +693,12 @@ subroutine eoferror(minp)
 end subroutine eoferror
 
 subroutine message(w1, w2, w3)
-!!--description-----------------------------------------------------------------
-! NONE
-!!--pseudo code and references--------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
-   use unstruc_messages
+   use messagehandling, only: LEVEL_INFO, mess
    implicit none
-!
-! Global variables
-!
+
    character(len=*), intent(in) :: w1
    character(len=*), intent(in) :: w2
    character(len=*), intent(in) :: w3
-!
-!
-!! executable statements -------------------------------------------------------
-!
    !
    call mess(LEVEL_INFO, w1, w2, w3)
 end subroutine message

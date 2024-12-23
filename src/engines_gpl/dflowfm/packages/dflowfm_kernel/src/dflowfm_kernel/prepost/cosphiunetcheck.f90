@@ -30,20 +30,26 @@
 !
 !
 
-subroutine cosphiunetcheck(jausererror)
+submodule(m_cosphiunetcheck) m_cosphiunetcheck_
+
+implicit none
+
+contains
+
+module subroutine cosphiunetcheck(jausererror)
    use m_resetflow, only: resetflow
    use precision, only: dp
-   use m_flowgeom
-   use network_data
-   use m_alloc
-   use unstruc_messages
-   use m_gui
-   use m_missing
-   use m_partitioninfo
-   use m_plotdots
-   use m_drawthis
-   use m_qnerror
-   use m_cosphiunet
+   use network_data, only: numl, nump, numl1d, xk, yk, kn, nlinkbadortho, nlinktoosmall, linkbadqual,&
+                          cosphiutrsh
+   use m_alloc, only: realloc
+   use messagehandling, only: mess, LEVEL_ERROR
+   use m_gui, only: jagui
+   use m_missing, only: dmiss
+   use m_partitioninfo, only: jampi
+   use m_plotdots, only: numdots, adddot
+   use m_drawthis, only: ndraw
+   use m_qnerror, only: qnerror
+   use m_cosphiunet, only: cosphiunet
 
    implicit none
    integer, intent(in) :: jausererror !< Whether or not (1/0) to topup a error message when bad ortho occurs.
@@ -95,3 +101,5 @@ subroutine cosphiunetcheck(jausererror)
    end if
 
 end subroutine cosphiunetcheck
+
+end submodule m_cosphiunetcheck_

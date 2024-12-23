@@ -30,7 +30,13 @@
 !
 !
 
-    subroutine REALAN(MLAN, ANTOT)
+submodule(m_realan) m_realan_
+
+implicit none
+
+contains
+
+    module subroutine REALAN(MLAN, ANTOT)
        use precision, only: dp
        use m_polygon
        use M_landboundary
@@ -180,4 +186,6 @@
        call doclose(MLAN)
        return
 
-    end
+    end subroutine REALAN
+
+end submodule m_realan_

@@ -31,6 +31,8 @@
 !
 
 module m_scherm
+use m_histor, only: histor
+
 
 implicit none
 

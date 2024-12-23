@@ -29,6 +29,7 @@
 
 !> Finalizes a single time step, should be called directly after flow_run_single_timestep
 module m_flow_finalize_single_timestep
+use m_fm_wq_processes_sub, only: fm_wq_processes_step
 use m_updatevaluesonsourcesinks, only: updatevaluesonsourcesinks
 use m_updatecumulativeinflow, only: updatecumulativeinflow
 use m_updatebalance, only: updatebalance

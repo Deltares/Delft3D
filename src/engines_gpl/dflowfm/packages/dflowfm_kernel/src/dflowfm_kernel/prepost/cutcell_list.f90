@@ -31,6 +31,7 @@
 !
 
 module m_cutcell_list
+   use m_remove_masked_netcells, only: remove_masked_netcells
    use m_fix_global_polygons, only: fix_global_polygons
    use m_delnet, only: delnet
    use m_cutcelwu, only: cutcelwu

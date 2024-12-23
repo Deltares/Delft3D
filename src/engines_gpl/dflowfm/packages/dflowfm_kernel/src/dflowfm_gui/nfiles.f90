@@ -102,6 +102,7 @@ contains
       use m_wrilan, only: wrilan
       use m_wricrs, only: wricrs
       use m_reapol_nampli, only: reapol_nampli
+      use m_realan, only: realan
 
       integer :: NUM, NWHAT, KEY
       integer :: ja, ierr
@@ -111,13 +112,6 @@ contains
       integer :: i, ierror
       integer :: ipli
       logical :: jawel
-
-      interface
-         subroutine realan(mlan, antot)
-            integer, intent(inout) :: mlan
-            integer, intent(inout), optional :: antot
-         end subroutine realan
-      end interface
 
       character FILNAM * 86
 

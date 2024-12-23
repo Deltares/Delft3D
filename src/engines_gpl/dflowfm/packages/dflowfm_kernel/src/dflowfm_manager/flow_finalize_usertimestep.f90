@@ -34,6 +34,7 @@
 !!
 !! Should be called directly after a flow_run_usertimestep.
 module m_flow_finalize_usertimestep
+use m_fm_wq_processes_sub, only: fm_wq_processes_step
 
 implicit none
 

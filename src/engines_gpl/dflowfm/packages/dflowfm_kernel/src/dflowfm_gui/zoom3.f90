@@ -30,7 +30,13 @@
 !
 !
 
-      subroutine ZOOM3(KEY, NPUT)
+submodule(m_zoom3) m_zoom3_
+
+implicit none
+
+contains
+
+      module subroutine ZOOM3(KEY, NPUT)
          use m_wearelt
          use m_locatora
          use m_zoomin
@@ -44,4 +50,6 @@
          call IMOUSECURSORXYG(real(XLC), real(YLC))
          call ZOOMIN(KEY, NPUT)
          return
-      end
+      end subroutine ZOOM3
+
+end submodule m_zoom3_

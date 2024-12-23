@@ -30,15 +30,21 @@
 !
 !
 
+submodule(m_delete_dry_points_and_areas) m_delete_dry_points_and_areas_
+
+implicit none
+
+contains
+
  ! Delete dry points from netgeom based on drypoints files and grid enclosure file
- subroutine delete_dry_points_and_areas()
+ module subroutine delete_dry_points_and_areas()
     use m_delete_drypoints_from_netgeom, only: delete_drypoints_from_netgeom
     use unstruc_model, only: md_dryptsfile, md_encfile
     use gridoperations, only: update_cell_circumcenters
     use unstruc_caching
     use network_data, only: nump, nump1d2d, lne, lnn, xzw, yzw, netcell
     use m_flowgeom, only: xz, yz, ba
-    implicit none
+
     logical cache_success
     cache_success = .false.
 
@@ -59,5 +65,6 @@
        call cache_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell)
     end if
 
-    return
  end subroutine delete_dry_points_and_areas
+
+end submodule m_delete_dry_points_and_areas_

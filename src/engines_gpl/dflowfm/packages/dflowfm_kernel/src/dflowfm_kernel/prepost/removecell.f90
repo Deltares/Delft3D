@@ -32,6 +32,8 @@
 
 !  remove a netcell
 module m_removecell
+use m_remove_masked_netcells, only: remove_masked_netcells
+
 
 implicit none
 

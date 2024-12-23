@@ -31,6 +31,7 @@
 !
 
 module m_removesmalllinks
+use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
 
 implicit none
 

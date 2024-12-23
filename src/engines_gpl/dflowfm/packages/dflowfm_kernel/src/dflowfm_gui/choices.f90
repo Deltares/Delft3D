@@ -69,6 +69,7 @@
 ! subroutines from net.F90
 !----------------------------------------------------------------------
 module m_choices
+   use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
    use m_zerolan, only: zerolan
    use m_stopint, only: stopint
    use m_smooth_samples_from_gui, only: smooth_samples_from_gui

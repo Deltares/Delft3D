@@ -431,13 +431,7 @@ contains
       use m_delpol
       use m_reapol
       use m_set_nod_adm
-
-      interface
-         subroutine realan(mlan, antot)
-            integer, intent(inout) :: mlan
-            integer, intent(inout), optional :: antot
-         end subroutine realan
-      end interface
+      use m_realan, only: realan
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 

@@ -29,7 +29,13 @@
 
 !
 !
-      subroutine HISTOR()
+submodule(m_histor) m_histor_
+
+implicit none
+
+contains
+
+      module subroutine HISTOR()
          use unstruc_files, only: mdia
          use unstruc_colors
          use unstruc_display_data, only: npos
@@ -37,7 +43,7 @@
          use dflowfm_version_module, only: company, product_name
          use m_helpnow
          use m_help
-         implicit none
+
          integer :: ih
          integer :: infoinput
          integer :: infowindow
@@ -118,9 +124,7 @@
 !
          NUMWNH = InfoWindow(1)
          call IWinSelect(NUMWNH)
-!  30 CONTINUE
-!     CALL SCRLPG(DIATXT,NUMTXT,NUMTOP,NUMCHC,IH)
-!     CALL SCROLH(NUMCHC,DIATXT,NUMTXT,NLEVEL,IH,JOFND,JATAB)
+
 50       continue
          IPOS = max(1, NUMTXT - 10)
          call IWINBROWSETEXT(DIATXT, NUMTXT, 10, IPOS, ' ')
@@ -129,9 +133,11 @@
             call HELP(WRDKEY, NLEVEL)
             goto 50
          end if
-!     IF (NUMCHC .NE. 0) GOTO 30
+
          call IWinClose(1)
          call IWinClose(1)
          call IWinClose(1)
-         return
-      end
+         
+      end subroutine HISTOR
+
+end submodule m_histor_

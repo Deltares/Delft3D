@@ -31,6 +31,8 @@
 !
 
 module m_flow_geominit
+use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
+use m_cosphiunetcheck, only: cosphiunetcheck
 use m_darean, only: darean
 use m_dumpnetlink, only: dumpnetlink
 use m_which2dnetlinkwascrossed, only: which2dnetlinkwascrossed

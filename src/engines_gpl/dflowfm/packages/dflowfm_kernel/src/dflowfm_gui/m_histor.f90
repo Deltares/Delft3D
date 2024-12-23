@@ -29,40 +29,18 @@
 
 !
 !
-
-module m_rectan2d
+module m_histor
 
 implicit none
 
 private
 
-public :: rectan2d
+public :: HISTOR
 
-contains
-
-subroutine rectan2D(hpr, br, hr, area, width, japerim, perim)
-   use precision, only: dp
-   use m_flow, only: slotw1D
-
-   integer :: japerim
-   real(kind=dp) :: hpr ! hoogte   in profiel
-   real(kind=dp) :: br ! breedte van profiel
-   real(kind=dp) :: hr ! hoogte  van profiel
-   real(kind=dp) :: area ! wet cross sectional area
-   real(kind=dp) :: width ! width at water surface
-   real(kind=dp) :: perim, hp ! wet perimeter
-   if (japerim == 1) then
-      hp = min(hpr, hr)
-   else
-      hp = hpr
-   end if
-   area = hp * br
-   width = br
-   perim = br
-   if (slotw1D > 0 .and. japerim == 0) then
-      width = width + slotw1D
-      area = area + slotw1D * hpr
-   end if
-end subroutine rectan2D
-
-end module m_rectan2d
+interface
+   module subroutine HISTOR()
+     implicit none
+   end subroutine HISTOR
+end interface
+    
+end module m_histor

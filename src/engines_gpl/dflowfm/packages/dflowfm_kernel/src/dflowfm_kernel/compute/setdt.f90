@@ -31,6 +31,7 @@
 !
 
 module m_setdt
+   use m_setdtorg, only: setdtorg
    use m_timestepanalysis, only: timestepanalysis
    use m_xbeachwaves, only: xbeach_wave_maxtimestep
    use m_fm_mor_maxtimestep, only: fm_mor_maxtimestep

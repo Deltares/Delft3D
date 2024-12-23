@@ -30,39 +30,28 @@
 !
 !
 
-module m_rectan2d
+!> Finds indices of netcells that relate to structures.
+!! The indices will be used when partitioning the mesh with METIS, by giving a special weight on the netcells.
+!! As a result, structures will not intercross the partition boundaries
+!! NOTE: This functionality ONLY supports when using "polylinefile" to specify the structure location
+!! TODO: extend it to support other ways of specifying the structure location.
+module m_find_netcells_for_structures
 
 implicit none
 
 private
 
-public :: rectan2d
+public :: find_netcells_for_structures
 
-contains
+interface
 
-subroutine rectan2D(hpr, br, hr, area, width, japerim, perim)
-   use precision, only: dp
-   use m_flow, only: slotw1D
-
-   integer :: japerim
-   real(kind=dp) :: hpr ! hoogte   in profiel
-   real(kind=dp) :: br ! breedte van profiel
-   real(kind=dp) :: hr ! hoogte  van profiel
-   real(kind=dp) :: area ! wet cross sectional area
-   real(kind=dp) :: width ! width at water surface
-   real(kind=dp) :: perim, hp ! wet perimeter
-   if (japerim == 1) then
-      hp = min(hpr, hr)
-   else
-      hp = hpr
-   end if
-   area = hp * br
-   width = br
-   perim = br
-   if (slotw1D > 0 .and. japerim == 0) then
-      width = width + slotw1D
-      area = area + slotw1D * hpr
-   end if
-end subroutine rectan2D
-
-end module m_rectan2d
+module subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
+   implicit none
+   integer, intent(in) :: size_istrucells !< size of istrucells array
+   integer, intent(inout) :: nstrucells !< Number of the netcells that are related to structures
+   integer, dimension(size_istrucells), intent(inout) :: istrucells !< Indices of the netcells that are related to structures
+end subroutine find_netcells_for_structures
+   
+end interface
+    
+end module m_find_netcells_for_structures

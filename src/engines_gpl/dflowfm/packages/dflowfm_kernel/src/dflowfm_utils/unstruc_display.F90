@@ -33,6 +33,8 @@ module unstruc_display
 !! Handles all display settings and screen plotting for Unstruc
 !! (Not yet, a lot is still in REST.F90 [AvD])
 
+   use m_setcoltabfile, only: setcoltabfile
+   use m_iset_jaopengl, only: iset_jaopengl
    use m_setwynew
    use m_setwor
    use m_settextsizefac

@@ -30,6 +30,16 @@
 !
 !
 
+module m_setau
+
+implicit none
+
+private
+
+public :: setau
+
+contains
+
  subroutine setau() ! get wet cross-sections at u points, after limiters, setau = vol12D with japerim == 1
     use precision, only: dp
     use m_vol12d, only: vol12d
@@ -44,8 +54,6 @@
     use m_timer
     use m_longculverts
     use precision_basics
-
-    implicit none
 
     integer :: n, nq, L, k2
     integer :: ng, Lnu, LL, iup, k
@@ -317,3 +325,5 @@
     end do
 
  end subroutine setau
+
+end module m_setau
