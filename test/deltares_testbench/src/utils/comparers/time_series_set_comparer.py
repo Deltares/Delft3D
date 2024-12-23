@@ -16,6 +16,7 @@ import src.utils.plot_differences as plot
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.i_comparer import IComparer
 from src.utils.logging.i_logger import ILogger
 
@@ -165,7 +166,7 @@ class TimeseriesSetComparer(IComparer, ABC):
                             paramnew.tolerance_relative,
                         )
 
-                        if result.result == "NOK":
+                        if result.result == EndResult.NOK:
                             datetime_series = left_timeseries_worst["dates"]
                             plot.PlotDifferencesTimeSeries(
                                 right_path,

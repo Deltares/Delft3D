@@ -16,6 +16,7 @@ from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.config.test_case_failure import TestCaseFailure
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.i_comparer import IComparer
 from src.utils.logging.i_logger import ILogger
 
@@ -192,7 +193,7 @@ class HisComparer(IComparer):
                         parameter.tolerance_relative,
                     )
 
-                    if result.result == "NOK":
+                    if result.result == EndResult.NOK:
                         try:
                             start_datetime, delta = interpret_time_unit(left_root.start_date, logger)
                             datetime_series = [start_datetime + int(t_i) * delta for t_i in left_root.times[:]]
