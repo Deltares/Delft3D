@@ -85,7 +85,7 @@ object LinuxPyTest : BuildType({
     }
 
     dependencies {
-        dependency(AbsoluteId("LinuxTestbenchContainer")) {
+        dependency(LinuxTestbenchContainer) {
             snapshot {
             }
 
