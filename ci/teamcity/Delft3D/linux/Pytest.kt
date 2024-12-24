@@ -33,7 +33,7 @@ object LinuxPyTest : BuildType({
                 installToolPackage = false
                 isTestReportingEnabled = false
             }
-            dockerImage = "containers.deltares.nl/delft3d/test/testbench:testbench-%dep.Dimr_DimrCollectors_Alma8_TestbenchContainer.build.vcs.number%"
+            dockerImage = "containers.deltares.nl/delft3d/test/testbench:testbench-%build.vcs.number%"
             dockerRunParameters = "--rm --pull always -v ./logs:/data/logs -w /data"
         }
         script {
@@ -44,7 +44,7 @@ object LinuxPyTest : BuildType({
                 ruff format --check .
                 ruff check --output-format=junit --output-file=logs/ruff_check_results.xml --select F4,F5,F6,F7,W,I
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d/test/testbench:testbench-%dep.Dimr_DimrCollectors_Alma8_TestbenchContainer.build.vcs.number%"
+            dockerImage = "containers.deltares.nl/delft3d/test/testbench:testbench-%build.vcs.number%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerPull = true
             dockerRunParameters = "--rm -v ./logs:/data/logs -w /data"
