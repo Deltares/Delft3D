@@ -31,9 +31,19 @@
 !
 
 !
+module m_setellips
+
+implicit none
+
+private
+
+public :: setellips
+
+contains
+
       subroutine SETELLIPS(IELL)
          use m_ellips
-         implicit none
+
          integer :: iell
 
          A = 6378137d0
@@ -57,3 +67,5 @@
          end if
          return
       end subroutine SETELLIPS
+
+end module m_setellips

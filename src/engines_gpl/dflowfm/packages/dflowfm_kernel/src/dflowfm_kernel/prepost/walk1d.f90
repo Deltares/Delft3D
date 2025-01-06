@@ -30,12 +30,22 @@
 !
 !
 
+module m_walk1d
+
+implicit none
+
+private
+
+public :: walk1d
+
+contains
+
   recursive subroutine WALK1D(K1, IBR, NRL, JASTOP, KN316)
 
+     use m_gaanwestoppen, only: gaanwestoppen
      use m_netw
      use gridoperations
 
-     implicit none
      integer :: K1, K2, IBR, NRL, JASTOP, KN316
 
      integer :: KK, L, KA
@@ -64,3 +74,5 @@
         end if
      end do
   end subroutine WALK1D
+
+end module m_walk1d

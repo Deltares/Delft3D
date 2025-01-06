@@ -30,6 +30,16 @@
 !
 !
 
+module m_islinkadjacenttolink
+
+implicit none
+
+private
+
+public :: islinkadjacenttolink
+
+contains
+
   subroutine islinkadjacenttolink(L1, L2, ja, k1k, k2k)
 
      use m_adjacent, only: adjacent
@@ -39,7 +49,6 @@
      use geometry_module, only: dcosphi
      use precision, only: dp
 
-     implicit none
      integer :: L1, L2, ja, k1k, k2k
 
      real(kind=dp) :: x1, y1, x2, y2, x3, y3, x4, y4
@@ -62,3 +71,5 @@
         end if
      end if
   end subroutine islinkadjacenttolink
+
+end module m_islinkadjacenttolink

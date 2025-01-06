@@ -35,7 +35,18 @@
 !!
 !! Validity is determined by s01max, u01max, umagmax and dtminbreak.
 !! Also print a warning if water level or velocity > s01warn, u01warn, umagwarn
+module m_flow_validatestate
+
+implicit none
+
+private
+
+public :: flow_validatestate
+
+contains
+
 subroutine flow_validatestate(iresult)
+   use m_flow_externaloutput_direct, only: flow_externaloutput_direct
    use precision, only: dp
    use unstruc_messages
    use m_flow
@@ -45,7 +56,7 @@ subroutine flow_validatestate(iresult)
    use m_transport
    use dfm_error
    use m_get_ucx_ucy_eul_mag
-   implicit none
+
    integer, intent(out) :: iresult ! validation result status
    real(kind=dp) :: dtavgwindow
    integer :: i, q, k
@@ -156,3 +167,5 @@ subroutine flow_validatestate(iresult)
    end if
 
 end subroutine flow_validatestate
+
+end module m_flow_validatestate

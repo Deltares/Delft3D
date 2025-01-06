@@ -30,6 +30,16 @@
 !
 !
 
+module m_remzeros
+
+implicit none
+
+private
+
+public :: remzeros
+
+contains
+
   subroutine REMZEROS()
      use m_netw
      use gridoperations
@@ -99,3 +109,5 @@
 
      return
   end subroutine REMZEROS
+
+end module m_remzeros

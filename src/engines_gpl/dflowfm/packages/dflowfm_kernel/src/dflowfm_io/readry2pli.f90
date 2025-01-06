@@ -35,6 +35,7 @@ contains
    subroutine readry2pli(mthd, mout) ! convert barrier v file to model independent, barv content =  m,n,sill depth
       use precision, only: dp
       use m_grid, only: xc, yc
+      use m_filez, only: doclose
 
       integer :: mthd, mout
       real(kind=dp) :: z = 9999d0

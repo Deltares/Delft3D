@@ -30,8 +30,17 @@
 !
 !
 
+module m_inular
+
+implicit none
+
+private
+
+public :: inular
+
+contains
+
       subroutine INULAR(X, MMAX)
-         implicit none
          integer :: i
          integer :: mmax
          integer X(MMAX)
@@ -40,3 +49,5 @@
          end do
          return
       end
+
+end module m_inular

@@ -33,6 +33,16 @@
 !> Fourier Analysis, copied from Delft3D:
 !! Opens and reads .fou file (md_foufile, specified in the mdu)
 !! and prepares the fourier structure
+module m_flow_fourierinit
+
+implicit none
+
+private
+
+public :: flow_fourierinit
+
+contains
+
 subroutine flow_fourierinit()
    use precision, only: fp
    use m_fourier_analysis
@@ -44,8 +54,8 @@ subroutine flow_fourierinit()
    use m_flowtimes, only: tstart_user, tstop_user, ti_his, dt_user
    use unstruc_channel_flow, only: network
    use m_oned_functions, only: set_ground_level_for_1d_nodes, set_max_volume_for_1d_nodes
+   use m_filez, only: oldfil, doclose
 
-   implicit none
    integer :: minp
    logical :: success
    real(kind=fp) :: ti_fou
@@ -89,3 +99,5 @@ subroutine flow_fourierinit()
    call doclose(minp)
 
 end subroutine flow_fourierinit
+
+end module m_flow_fourierinit

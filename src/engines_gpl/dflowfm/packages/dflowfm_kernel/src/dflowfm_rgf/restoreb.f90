@@ -30,9 +30,19 @@
 !
 !
 
+module m_restoreb
+
+implicit none
+
+private
+
+public :: restoreb
+
+contains
+
       subroutine RESTOREB(NPUT)
          use m_grid_block
-         implicit none
+
          integer :: nput
 
          MB = MB2
@@ -41,3 +51,5 @@
          NPUT = NPUTO
          return
       end subroutine restoreb
+
+end module m_restoreb

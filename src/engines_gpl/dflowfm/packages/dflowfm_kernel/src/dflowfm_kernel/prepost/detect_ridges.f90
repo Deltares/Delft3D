@@ -32,6 +32,7 @@
 
 !> detect ridges and reduce structured sample set
 module m_detect_ridges
+use m_prepare_samplehessian, only: prepare_samplehessian
 
    implicit none
 

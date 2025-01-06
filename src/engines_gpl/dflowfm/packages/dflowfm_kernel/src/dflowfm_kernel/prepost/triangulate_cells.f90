@@ -31,11 +31,19 @@
 !
 
 !> convert quadrilaterals, pentagons and hexagons to triangles
+module m_triangulate_cells
+
+implicit none
+
+private
+
+public :: triangulate_cells
+
+contains
+
 subroutine triangulate_cells()
    use m_netw
    use m_new_link
-
-   implicit none
 
    integer :: k, k0, k1, kk, Lnew, N
 
@@ -51,3 +59,5 @@ subroutine triangulate_cells()
    end do
 
 end subroutine triangulate_cells
+
+end module m_triangulate_cells

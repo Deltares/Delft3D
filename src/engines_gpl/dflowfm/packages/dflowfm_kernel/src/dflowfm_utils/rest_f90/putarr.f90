@@ -30,9 +30,19 @@
 !
 !
 
+module m_putarr
+
+implicit none
+
+private
+
+public :: putarr
+
+contains
+
       subroutine PUTARR(XR, X, MMAX, NMAX)
          use precision, only: dp
-         implicit none
+
          integer :: i
          integer :: j
          integer :: mmax
@@ -48,3 +58,5 @@
          end do
          return
       end
+
+end module m_putarr

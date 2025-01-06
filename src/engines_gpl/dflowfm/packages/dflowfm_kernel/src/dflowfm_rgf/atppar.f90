@@ -30,6 +30,17 @@
 !
 !
 
+module m_atppar
+use m_somdist, only: somdist
+
+implicit none
+
+private
+
+public :: atppar
+
+contains
+
       subroutine ATPPAR(X, Y, M1, N1, M2, N2, &
                         ATP, A, B, C, D, E)
          use precision, only: dp
@@ -39,7 +50,7 @@
          use M_MISSING
          use m_drawthis
          use m_planedistance
-         implicit none
+
          real(kind=dp) :: af
          real(kind=dp) :: cy
          real(kind=dp) :: dg2rd
@@ -168,3 +179,5 @@
 
          return
       end subroutine ATPPAR
+
+end module m_atppar

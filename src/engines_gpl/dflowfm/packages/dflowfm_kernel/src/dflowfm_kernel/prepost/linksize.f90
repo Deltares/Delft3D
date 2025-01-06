@@ -30,6 +30,16 @@
 !
 !
 
+module m_linksize
+
+implicit none
+
+private
+
+public :: linksize
+
+contains
+
  !> compute the length of a netlink
  real(kind=dp) function linksize(L)
     use precision, only: dp
@@ -38,9 +48,10 @@
     use m_missing, only: dmiss
     use m_sferic, only: jsferic, jasfer3D
 
-    implicit none
     integer :: L, k1, k2
 
     k1 = kn(1, L); k2 = kn(2, L)
     linksize = dbdistance(xk(k1), yk(k1), xk(k1), yk(k2), jsferic, jasfer3D, dmiss)
  end function linksize
+
+end module m_linksize

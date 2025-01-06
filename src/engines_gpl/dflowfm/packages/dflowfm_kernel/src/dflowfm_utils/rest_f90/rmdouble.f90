@@ -30,6 +30,16 @@
 !
 !
 
+module m_rmdouble
+
+implicit none
+
+private
+
+public :: rmdouble
+
+contains
+
       subroutine RMDOUBLE(XS, YS, ZS, IPSAM, NS)
          use precision, only: dp
          use m_missing
@@ -37,8 +47,6 @@
          use unstruc_messages
          use kdtree2Factory
          use m_wall_clock_time
-
-         implicit none
 
          integer :: i
          integer :: j
@@ -253,3 +261,5 @@
 
          return
       end
+
+end module m_rmdouble

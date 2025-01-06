@@ -157,7 +157,7 @@ for i = 1:length(folders)
     % search iteratively from the selected folder up to the system root ...
     folder = folders{i};
     while true
-        location = locate_file(folder, file)
+        location = locate_file(folder, file);
         if ~isempty(location)
             % found it!
             return
@@ -181,9 +181,9 @@ if exist([folder, filesep, file], 'file')
 end
 subdirs = {'GSHHG','delft3d_matlab','quickplot','64bit','bin'};
 for i = 1:length(subdirs)
-    subfolder = [folder, filesep, subdirs{i}]
+    subfolder = [folder, filesep, subdirs{i}];
     if exist(subfolder, 'dir')
-        location = locate_file(subfolder, file)
+        location = locate_file(subfolder, file);
         if ~isempty(location)
             % found it!
             return

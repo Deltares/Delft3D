@@ -30,24 +30,28 @@
 !
 !
 
+submodule(m_reapol_nampli) m_reapol_nampli_
+
+implicit none
+
+contains
+
       !> Read polygon file (or cross section/pli file) and store in global polygon.
       !! File should contain Tekal block(s) with two or three columns.
       !! The block names may be used for cross sections.
       !! A dmiss line starts a new polyline without a name. Multiple dmiss lines are skipped.
-      subroutine REAPOL_NAMPLI(MPOL, jadoorladen, janampl, ipli)
+      module subroutine REAPOL_NAMPLI(MPOL, jadoorladen, janampl, ipli)
          use precision, only: dp
          use M_POLYGON
          use network_data, only: NETSTAT_CELLS_DIRTY
-         use M_MISSING
+         use m_missing, only: dmiss, xymis
          use m_alloc
-         use unstruc_messages
-         use unstruc_files
          use m_flowparameters, only: ifixedweirscheme
          use m_readyy
          use m_qnerror
          use m_qn_read_error
+         use m_filez, only: doclose
 
-         implicit none
          integer :: mpol
          integer, intent(in) :: jadoorladen !< Append to existing polygons (intended to read multiple crs files)
          integer, intent(in) :: janampl !< Store the pli-name as crosssection name
@@ -222,3 +226,5 @@
          return
 
       end subroutine REAPOL_NAMPLI
+
+end submodule m_reapol_nampli_

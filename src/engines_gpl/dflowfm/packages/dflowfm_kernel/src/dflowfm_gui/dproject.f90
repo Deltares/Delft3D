@@ -30,6 +30,8 @@
 !
 !
 module m_dproject
+use m_inworld, only: inworld
+
    implicit none
 contains
    subroutine dPROJECT(X8, Y8, XX4, YY4, MODE)

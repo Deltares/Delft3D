@@ -30,14 +30,22 @@
 !
 !
 
+module m_copytrans
+
+implicit none
+
+private
+
+public :: copytrans
+
+contains
+
   subroutine COPYTRANS()
      use precision, only: dp
      use m_netw
      use m_alloc
      use m_missing, only: jins, dmiss
      use geometry_module, only: get_startend, dpinpok
-
-     implicit none
 
      integer :: ierr
      integer :: in
@@ -125,3 +133,5 @@
      !   CALL REMZEROS()
      return
   end subroutine COPYTRANS
+
+end module m_copytrans

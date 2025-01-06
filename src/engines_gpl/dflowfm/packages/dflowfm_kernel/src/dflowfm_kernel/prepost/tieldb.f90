@@ -30,8 +30,19 @@
 !
 !
 
+module m_tieldb
+
+implicit none
+
+private
+
+public :: tieldb
+
+contains
+
       ! SPvdP: TIELDB never called
       subroutine TIELDB()
+         use m_setpoint, only: setpoint
          use precision, only: dp
          use m_addelem, only: addelem
          use m_netw
@@ -40,7 +51,6 @@
          use m_sferic, only: jsferic
          use m_three_two
 
-         implicit none
          real(kind=dp) :: crp
          integer :: in1, in2, jacros, k, k1, k2, k3, ku, L, Lnu
          real(kind=dp) :: sl, sm, xcr, ycr, z, zcr, x1, x2, y1, y2
@@ -75,3 +85,5 @@
          end do
          return
       end subroutine TIELDB
+
+end module m_tieldb

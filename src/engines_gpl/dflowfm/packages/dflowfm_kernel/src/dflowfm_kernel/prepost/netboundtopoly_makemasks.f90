@@ -31,13 +31,21 @@
 !
 
 !> make the masks for netboundtopoly
+module m_netboundtopoly_makemasks
+
+implicit none
+
+private
+
+public :: netboundtopoly_makemasks
+
+contains
+
 subroutine netboundtopoly_makemasks()
    use m_netw
    use m_polygon
    use m_missing, only: dmiss, JINS
    use geometry_module, only: dbpinpol
-
-   implicit none
 
    integer :: inside, k1, k2, L
 
@@ -80,3 +88,5 @@ subroutine netboundtopoly_makemasks()
 
    return
 end subroutine netboundtopoly_makemasks
+
+end module m_netboundtopoly_makemasks

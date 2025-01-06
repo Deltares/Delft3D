@@ -31,8 +31,19 @@
 !
 
 !> original locate
+module m_locate_org
+
+implicit none
+
+private
+
+public :: locate_org
+
+contains
+
   subroutine LOCATE_ORG(XX, N, X, J)
      use precision, only: dp
+     
      integer :: N, J
      real(kind=dp) :: XX(N), X
 
@@ -52,3 +63,5 @@
      J = JL
      return
   end
+
+end module m_locate_org

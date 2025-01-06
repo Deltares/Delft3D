@@ -224,6 +224,8 @@ contains
 
 !> Write ASCII attributes file for WAQ.
    subroutine wrwaqatr(nosegl, num_layers, kmk1, kmk2, filename)
+      use m_filez, only: newfil
+
       implicit none
       integer, intent(in) :: nosegl !< Nr. of segments per layer
       integer, intent(in) :: num_layers !< Nr. of layers
@@ -394,9 +396,8 @@ module waq
 contains
 
    subroutine reset_waq()
-!
-!! executable statements -------------------------------------------------------
-!
+      use m_filez, only: doclose
+
       implicit none
 
       call close_and_reset(waqpar%lunvol)
@@ -435,6 +436,8 @@ contains
       use unstruc_model
       use time_module, only: ymd2jul
       use m_dateandtimenow
+      use m_timdat, only: timdat
+      use m_filez, only: doclose, newfil
 
       implicit none
       !
@@ -1574,6 +1577,7 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use m_missing, only: dmiss, dxymis
       use geometry_module, only: normalout
+      use m_filez, only: doclose, newfil
 
       implicit none
       !
@@ -1864,6 +1868,7 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_alloc
+      use m_filez, only: oldfil
       implicit none
 
       integer :: i, kb, kt, ktx, vaglay
@@ -3152,6 +3157,7 @@ contains
 !> Read an aggregation file (.dwq) into the global aggregation table.
    subroutine waq_read_dwq(ndxi, ndx, iapnt, filename)
       use unstruc_files
+      use m_filez, only: oldfil
       implicit none
       !
       !           Global variables

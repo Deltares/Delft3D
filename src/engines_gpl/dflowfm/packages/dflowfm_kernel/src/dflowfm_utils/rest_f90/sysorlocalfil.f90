@@ -30,11 +30,22 @@
 !
 !
 
+module m_sysorlocalfil
+
+implicit none
+
+private
+
+public :: sysorlocalfil
+
+contains
+
   subroutine SYSORLOCALFIL(LUNID, FILNAM, MUSTBE)
      use string_module, only: find_first_char
      use unstruc_messages
      use unstruc_files
-     implicit none
+     use m_filez, only: oldfil
+
      character(len=*), intent(in) :: FILNAM !< Name of file to be opened.
      integer, intent(out) :: lunid !< File unit of the opened file, 0 in case of error.
      integer, intent(in) :: mustbe !< Whether or not (1/0) the file must be checked whether it exists. When 1 and file does not exist, an error is given.
@@ -69,3 +80,5 @@
 
      return
   end
+
+end module m_sysorlocalfil

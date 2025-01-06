@@ -30,9 +30,19 @@
 !
 !
 
+module m_fixddboundaries
+
+implicit none
+
+private
+
+public :: fixddboundaries
+
+contains
+
       subroutine FIXDDBOUNDARIES()
          use m_grid
-         implicit none
+
          integer :: i
          integer :: m
          integer :: m1
@@ -77,3 +87,5 @@
          end do
          return
       end subroutine FIXDDBOUNDARIES
+
+end module m_fixddboundaries

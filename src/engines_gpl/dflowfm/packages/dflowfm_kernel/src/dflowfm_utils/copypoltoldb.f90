@@ -30,12 +30,21 @@
 !
 !
 
+module m_copypoltoldb
+
+implicit none
+
+private
+
+public :: copypoltoldb
+
+contains
+
   subroutine COPYPOLTOLDB()
      use m_polygon
      use M_LANDBOUNDARY
      use M_MISSING
      use m_delpol
-     implicit none
 
      integer :: k
      integer :: l
@@ -61,3 +70,5 @@
      call DELPOL()
      return
   end subroutine COPYPOLTOLDB
+
+end module m_copypoltoldb

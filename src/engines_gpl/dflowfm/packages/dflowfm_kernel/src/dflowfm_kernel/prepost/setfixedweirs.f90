@@ -30,6 +30,18 @@
 !
 !
 !>  override bobs along pliz's, jadykes == 0: only heights, 1 = also dyke attributes
+module m_setfixedweirs
+use m_reapol_nampli, only: reapol_nampli
+use m_setfixedweirscheme3onlink, only: setfixedweirscheme3onlink
+
+implicit none
+
+private
+
+public :: setfixedweirs
+
+contains
+
 subroutine setfixedweirs()
    use precision, only: dp
    use m_netw
@@ -54,8 +66,7 @@ subroutine setfixedweirs()
    use m_readyy
    use m_wall_clock_time
    use m_find_crossed_links_kdtree2
-
-   implicit none
+   use m_filez, only: oldfil, doclose, newfil
 
    integer :: k, kk, n1, n2, n, L, LL, jacros, minp, kint, ierr, nh, nhh, i, Lf
    integer :: jaweir, Lastfoundk, kf, kL, Lnt, nna, nnb, k3, k4
@@ -167,15 +178,15 @@ subroutine setfixedweirs()
    allocate (iLcr(Lnx)); Ilcr = 0
    allocate (ipol(Lnx))
    allocate (dSL(Lnx))
-   if (cacheRetrieved()) then
+   if (cache_retrieved()) then
       ierror = 0
-      call copyCachedFixedWeirs(npl, xpl, ypl, numcrossedLinks, iLink, iPol, dSL, success)
+      call copy_cached_fixed_weirs(npl, xpl, ypl, numcrossedLinks, iLink, iPol, dSL, success)
    else
       success = .false.
    end if
    if (.not. success) then
       call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, 2, Lnx, 2, numcrossedLinks, iLink, iPol, dSL, ierror)
-      call cacheFixedWeirs(npl, xpl, ypl, numcrossedLinks, iLink, iPol, dSL)
+      call cache_fixed_weirs(npl, xpl, ypl, numcrossedLinks, iLink, iPol, dSL)
    end if
    call wall_clock_time(t_extra(2, 3))
 
@@ -744,3 +755,5 @@ contains
    end function is_value_inside_limits
 
 end subroutine setfixedweirs
+
+end module m_setfixedweirs

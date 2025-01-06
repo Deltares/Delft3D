@@ -27,14 +27,21 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_shortestlink
+
+implicit none
+
+private
+
+public :: shortestlink
+
+contains
 
   real(kind=dp) function SHORTESTLINK(K)
      use precision, only: dp
      use m_netw
      use m_dlength, only: dlength
-     implicit none
+
      integer :: K
 
      integer :: k1
@@ -57,3 +64,5 @@
      end do
      return
   end function SHORTESTLINK
+
+end module m_shortestlink

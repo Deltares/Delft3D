@@ -31,11 +31,20 @@
 !
 
 !>    return x-component in link coordinate frame of vector in wall coordinate frame
+module m_wall2linx
+
+implicit none
+
+private
+
+public :: wall2linx
+
+contains
+
       real(kind=dp) function wall2linx(nw, i12, ux, uy)
          use precision, only: dp
          use m_flowgeom, only: csbw, snbw
          use m_sferic
-         implicit none
 
          integer, intent(in) :: nw !< wall element number
          integer, intent(in) :: i12 !< left (1) or right (2) attached flowlink
@@ -49,3 +58,5 @@
 
          return
       end function wall2linx
+
+end module m_wall2linx

@@ -30,9 +30,19 @@
 !
 !
 
+module m_tegenovernodesandlink
+
+implicit none
+
+private
+
+public :: tegenovernodesandlink
+
+contains
+
   subroutine tegenovernodesandlink(np, LL, k1a, k2a, La)
      use m_netw
-     implicit none
+
      integer :: np, LL, k1a, k2a, La
 
      integer :: lk
@@ -61,3 +71,5 @@
      k2a = kn(2, La)
 
   end subroutine tegenovernodesandlink
+
+end module m_tegenovernodesandlink

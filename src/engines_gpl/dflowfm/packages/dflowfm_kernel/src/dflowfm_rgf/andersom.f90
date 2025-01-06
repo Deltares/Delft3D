@@ -30,12 +30,20 @@
 !
 !
 
+module m_andersom
+
+implicit none
+
+private
+
+public :: andersom
+
+contains
+
       subroutine ANDERSOM(X, N)
          use precision, only: dp
-
          use m_alloc
 
-         implicit none
          integer :: n
          real(kind=dp) :: X(N)
          integer :: i, ierr
@@ -50,3 +58,5 @@
          deallocate (XH)
          call aerr('XH', ierr, -N)
       end subroutine ANDERSOM
+
+end module m_andersom

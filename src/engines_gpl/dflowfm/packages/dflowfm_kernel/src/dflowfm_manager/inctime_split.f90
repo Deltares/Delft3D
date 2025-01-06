@@ -33,12 +33,22 @@
 !> Increment the time-splitting upcoming time, if input time argument lies on or beyond that time.
 !! Each output file with name base_timesplit0_.. will contain output for time_split0 < time1 <= time_split.
 !! (Only for time1=tstart_user, time_split0 <= time1, i.e. first map file in sequence will have one more snapshot.)
+module m_inctime_split
+
+implicit none
+
+private
+
+public :: inctime_split
+
+contains
+
 subroutine inctime_split(tim)
    use precision, only: dp
    use m_flowtimes
    use unstruc_messages
    use m_date_time_from_ref_date, only: date_time_from_ref_date
-   implicit none
+
    real(kind=dp), intent(in) :: tim !< Current time, used to checked whether an increment is necessary at all.
 
    integer :: iyear, imonth, iday, ihour, imin, isec, add_seconds
@@ -91,3 +101,5 @@ subroutine inctime_split(tim)
       end if
    end do ! until tim <= time_split
 end subroutine inctime_split
+
+end module m_inctime_split

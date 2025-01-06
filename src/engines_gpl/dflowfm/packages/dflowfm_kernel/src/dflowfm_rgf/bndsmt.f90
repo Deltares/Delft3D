@@ -31,12 +31,23 @@
 !
 
 !*******************  BOUNDARY TREATMENT *****************************
+module m_bndsmt
+use m_dismin, only: dismin
+
+implicit none
+
+private
+
+public :: bndsmt
+
+contains
+
       subroutine BNDSMT(XR, YR, XI2, YI2, XJ2, YJ2, ATP, M1, N1, M2, N2)
          use precision, only: dp
          use m_grid
          use m_gridsettings
          use m_get_ij
-         implicit none
+
          real(kind=dp) :: bfe
          integer :: i
          integer :: iff
@@ -271,3 +282,5 @@
 
          return
       end subroutine BNDSMT
+
+end module m_bndsmt

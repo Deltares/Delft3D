@@ -30,6 +30,16 @@
 !
 !
 
+module m_polygontocurvilinear
+
+implicit none
+
+private
+
+public :: polygontocurvilinear
+
+contains
+
   subroutine polygontocurvilinear()
      use m_netw
      use M_polygon
@@ -38,3 +48,5 @@
      ! call givecornernrs(ncorn)
 
   end subroutine polygontocurvilinear
+
+end module m_polygontocurvilinear

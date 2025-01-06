@@ -31,11 +31,20 @@
 !
 
 !>    return y-component in link coordinate frame of a vector in node coordinate frame
+module m_nod2liny
+
+implicit none
+
+private
+
+public :: nod2liny
+
+contains
+
       real(kind=dp) function nod2liny(L, i12, ux, uy)
          use precision, only: dp
          use m_flowgeom, only: csb, snb
          use m_sferic
-         implicit none
 
          integer, intent(in) :: L !< flowlink number
          integer, intent(in) :: i12 !< left (1) or right (2) neighboring cell
@@ -49,3 +58,5 @@
 
          return
       end function nod2liny
+
+end module m_nod2liny

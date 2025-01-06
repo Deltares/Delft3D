@@ -29,6 +29,7 @@
 
 submodule(fm_external_forcings) fm_external_forcings_init_old
    use fm_external_forcings_data
+   use m_setfixedweirscheme3onlink, only: setfixedweirscheme3onlink
 
    implicit none
 
@@ -36,8 +37,9 @@ contains
 
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_old(iresult)
+      use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
+      use m_setinitialverticalprofile, only: setinitialverticalprofile
       use precision, only: dp
-
       use m_addsorsin, only: addsorsin
       use m_add_tracer, only: add_tracer
       use m_setzcs, only: setzcs
@@ -72,6 +74,7 @@ contains
       use m_observations, only: nummovobs, addobservation
       use unstruc_inifields, only: initialfield2Dto3D
       use m_find_name, only: find_name
+      use m_fm_wq_processes_sub, only: get_waqinputname
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 

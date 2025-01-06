@@ -31,6 +31,8 @@
 !
 
 module m_stopja
+use m_stopint, only: stopint
+
 
    implicit none
 

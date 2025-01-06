@@ -30,11 +30,25 @@
 !
 !
 
+module m_failsave
+
+implicit none
+
+private
+
+public :: failsave
+
+contains
+
       subroutine FAILSAVE()
          use m_wrinet
+         use m_filez, only: newfil
+
          implicit none
          integer :: MSAV
          call NEWFIL(MSAV, 'asave.net')
          call WRINET(MSAV)
          return
       end subroutine FAILSAVE
+
+end module m_failsave

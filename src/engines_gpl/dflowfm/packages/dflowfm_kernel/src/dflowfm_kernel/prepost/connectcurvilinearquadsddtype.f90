@@ -31,6 +31,9 @@
 !
 
 module m_connectcurvilinearquadsddtype
+   use m_tegenovernodesandlink, only: tegenovernodesandlink
+   use m_nextcel, only: nextcel
+   use m_islinkadjacenttolink, only: islinkadjacenttolink
    use m_dellink, only: dellink
 
    implicit none

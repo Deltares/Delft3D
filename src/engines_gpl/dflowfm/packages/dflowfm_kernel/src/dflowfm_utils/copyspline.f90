@@ -31,6 +31,16 @@
 !
 
 !>    copy and move a whole spline
+module m_copyspline
+
+implicit none
+
+private
+
+public :: copyspline
+
+contains
+
       subroutine copyspline(ispline, inode, xp, yp)
          use precision, only: dp
          use m_splines
@@ -40,8 +50,6 @@
          use m_splint
          use m_spline
          use m_comp_curv
-
-         implicit none
 
          integer, intent(inout) :: ispline !< spline number
          integer, intent(in) :: inode !< spline control point
@@ -113,3 +121,5 @@
          end if
          return
       end subroutine copyspline
+
+end module m_copyspline

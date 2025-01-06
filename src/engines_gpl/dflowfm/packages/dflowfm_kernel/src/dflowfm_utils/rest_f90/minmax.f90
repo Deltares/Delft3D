@@ -30,10 +30,20 @@
 !
 !
 
+module m_minmax
+
+implicit none
+
+private
+
+public :: minmax
+
+contains
+
       subroutine MINMAX(X, MXLAN, XMIN, XMAX, MAXLAN)
          use precision, only: dp
          use M_MISSING
-         implicit none
+
          integer :: i
          integer :: maxlan
          integer :: mxlan
@@ -62,3 +72,5 @@
          if (XMAX == -10d20) XMAX = 0
          return
       end
+
+end module m_minmax

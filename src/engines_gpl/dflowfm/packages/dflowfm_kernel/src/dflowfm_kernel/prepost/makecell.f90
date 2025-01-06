@@ -32,6 +32,16 @@
 
 !> administer a cell
 !>    note: cell circumcenters are not updated (would require up-to-date lnn, lne)
+module m_makecell
+
+implicit none
+
+private
+
+public :: makecell
+
+contains
+
 subroutine makecell(N, nodlist, linlist, ic, ierror)
 
    use m_netw
@@ -39,8 +49,6 @@ subroutine makecell(N, nodlist, linlist, ic, ierror)
    use network_data, only: xzw, yzw
    use m_flowgeom, only: ndx, xz, yz, ba
    use gridoperations
-
-   implicit none
 
    integer, intent(in) :: N !< number of nodes and links in cell
    integer, dimension(N), intent(in) :: nodlist !< nodelist
@@ -97,3 +105,5 @@ subroutine makecell(N, nodlist, linlist, ic, ierror)
 
    return
 end subroutine makecell
+
+end module m_makecell

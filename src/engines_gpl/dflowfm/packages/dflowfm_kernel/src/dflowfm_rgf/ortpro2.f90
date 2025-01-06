@@ -30,9 +30,19 @@
 !
 !
 
+module m_ortpro2
+
+implicit none
+
+private
+
+public :: ortpro2
+
+contains
+
       subroutine ORTPRO2(X1, Y1, X2, Y2, X3, Y3, X4, Y4, TV, JA)
          use precision, only: dp
-         implicit none
+
          real(kind=dp) :: X1, Y1, X2, Y2, X3, Y3, X4, Y4, TV
          integer :: JA
 
@@ -49,3 +59,5 @@
          TV = TV * sqrt(R2)
          return
       end subroutine ORTPRO2
+
+end module m_ortpro2

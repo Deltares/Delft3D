@@ -218,6 +218,9 @@ contains
       use messageHandling
       use dfm_error
       use m_polygon
+      use m_reapol_nampli, only: reapol_nampli
+      use m_filez, only: oldfil, doclose
+
       implicit none
       character(len=*), intent(in) :: file_name !< name of polyline file to load runup gauges from
 

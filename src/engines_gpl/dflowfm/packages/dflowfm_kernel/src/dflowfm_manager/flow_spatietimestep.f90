@@ -30,17 +30,29 @@
 !
 !
 
+module m_flow_spatietimestep
+use m_inctime_user, only: inctime_user
+
+implicit none
+
+private
+
+public :: flow_spatietimestep
+
+contains
+
  subroutine flow_spatietimestep() ! do flowstep
+    use m_flow_externaloutput, only: flow_externaloutput
+    use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
     use m_flow_single_timestep, only: flow_single_timestep
     use m_setzcs, only: setzcs
     use m_flowtimes
     use m_flowgeom, only: ndx
     use m_flowparameters, only: janudge
     use fm_external_forcings
+    use m_flow_modelinit, only: flow_modelinit
 
-    implicit none
     integer :: key, ierr
-    integer, external :: flow_modelinit
 
     if (ndx == 0) then
        ierr = flow_modelinit()
@@ -67,3 +79,5 @@
     call flow_externaloutput(time1) ! receive signals etc, write map, his etc
     ! these two functions are explicit. therefore, they are in the usertimestep
  end subroutine flow_spatietimestep
+
+end module m_flow_spatietimestep

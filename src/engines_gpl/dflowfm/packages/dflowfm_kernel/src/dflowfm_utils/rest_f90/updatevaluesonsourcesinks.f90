@@ -30,14 +30,25 @@
 !
 !
 
+module m_updatevaluesonsourcesinks
+
+implicit none
+
+private
+
+public :: updatevaluesonsourcesinks
+
+contains
+
 subroutine updateValuesOnSourceSinks(tim1)
+   use m_reallocsrc, only: reallocsrc
    use fm_external_forcings_data, only: qsrc, qsrcavg, vsrccum, vsrccum_pre, numsrc
    use m_missing
    use m_flowtimes, only: ti_his, time_his
    use precision
    use m_flowparameters, only: eps10
    use m_alloc
-   implicit none
+
    real(kind=dp), intent(in) :: tim1 !< Current (new) time
 
    real(kind=dp), save :: timprev = -1d0 ! TODO: save is unsafe, replace by using time1 and time0, also two other occurrences
@@ -64,3 +75,5 @@ subroutine updateValuesOnSourceSinks(tim1)
 
    timprev = tim1
 end subroutine updateValuesOnSourceSinks
+
+end module m_updatevaluesonsourcesinks

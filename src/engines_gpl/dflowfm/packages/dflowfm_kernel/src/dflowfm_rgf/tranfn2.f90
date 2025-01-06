@@ -30,14 +30,25 @@
 !
 !
 
+module m_tranfn2
+
+implicit none
+
+private
+
+public :: tranfn2
+
+contains
+
       subroutine TRANFN2(X1, X2, X3, X4, & ! WAS B
                          Y1, Y2, Y3, Y4, &
                          IMX, MX, NX, XRH, YRH)
 
+         use m_abrel2, only: abrel2
          use precision, only: dp
          use M_GRIDSETTINGS
          use m_orthosettings, only: ITIN
-         implicit none
+
          integer :: i
          integer :: ierr
          integer :: imx
@@ -211,3 +222,5 @@
 
          return
       end subroutine tranfn2
+
+end module m_tranfn2

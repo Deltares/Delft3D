@@ -31,7 +31,18 @@
 !
 
 !> generate the first gridline of the whole grid, i.e. on all center splines
+module m_make_wholegridline
+
+implicit none
+
+private
+
+public :: make_wholegridline
+
+contains
+
 subroutine make_wholegridline(ierror)
+   use m_make_gridline, only: make_gridline
    use precision, only: dp
    use m_splines
    use m_grid
@@ -40,8 +51,6 @@ subroutine make_wholegridline(ierror)
    use m_alloc
    use m_missing
    use m_qnerror
-
-   implicit none
 
    integer, intent(out) :: ierror ! error (1) or not (0)
 
@@ -148,3 +157,5 @@ subroutine make_wholegridline(ierror)
 
    return
 end subroutine make_wholegridline
+
+end module m_make_wholegridline

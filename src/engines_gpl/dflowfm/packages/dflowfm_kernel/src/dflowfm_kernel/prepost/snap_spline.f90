@@ -27,10 +27,19 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> snap spline to nearest land boundary
+module m_snap_spline
+use m_toland, only: toland
+
+
+implicit none
+
+private
+
+public :: snap_spline
+
+contains
+
 subroutine snap_spline(ispline)
    use precision, only: dp
    use m_confrm
@@ -45,8 +54,6 @@ subroutine snap_spline(ispline)
    use m_spline
    use m_wall_clock_time
    use m_comp_curv
-
-   implicit none
 
    integer, intent(in) :: ispline !< spline number
 
@@ -243,3 +250,5 @@ subroutine snap_spline(ispline)
 
    return
 end subroutine snap_spline
+
+end module m_snap_spline

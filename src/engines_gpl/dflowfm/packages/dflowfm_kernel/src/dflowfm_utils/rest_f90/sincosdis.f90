@@ -30,12 +30,22 @@
 !
 !
 
+module m_sincosdis
+
+implicit none
+
+private
+
+public :: sincosdis
+
+contains
+
  subroutine sincosdis(x1, y1, x2, y2, s, c, d) ! get sin, cos, length of a line segment
     use precision, only: dp
     use m_missing
     use m_sferic, only: jsferic
     use geometry_module, only: getdx, getdy
-    implicit none
+
     real(kind=dp) :: x1, y1, x2, y2, s, c, d
     real(kind=dp) :: dx1, dy1
 
@@ -50,3 +60,5 @@
        c = 0d0
     end if
  end subroutine sincosdis
+
+end module m_sincosdis

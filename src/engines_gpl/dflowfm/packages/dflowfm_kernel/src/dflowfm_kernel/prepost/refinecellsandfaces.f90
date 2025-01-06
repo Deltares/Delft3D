@@ -30,6 +30,16 @@
 !
 !
 
+module m_refinecellsandfaces
+
+implicit none
+
+private
+
+public :: refinecellsandfaces
+
+contains
+
   subroutine REFINECELLSANDFACES()
      use precision, only: dp
      use m_allin, only: allin
@@ -46,8 +56,6 @@
      use m_set_nod_adm
      use m_dlinedis2
      use m_new_link
-
-     implicit none
 
      integer :: IERR, JA, K1, K2, K, KP, L, L1, L2, LNU, N, NN, NR, KA, KB, JADOEN, KK, JA2
      integer :: JACOURANTNETWORK, JDLA, N1, N2, N6
@@ -373,3 +381,5 @@
      end if
 
   end subroutine REFINECELLSANDFACES
+
+end module m_refinecellsandfaces

@@ -30,6 +30,16 @@
 !
 !
 
+module m_dselectinp
+
+implicit none
+
+private
+
+public :: dselectinp
+
+contains
+
    subroutine DSELECTINP(X, Y, N, KIN)
       use precision, only: dp
       use M_POLYGON
@@ -62,3 +72,5 @@
          end do
       end if
    end subroutine DSELECTINP
+
+end module m_dselectinp

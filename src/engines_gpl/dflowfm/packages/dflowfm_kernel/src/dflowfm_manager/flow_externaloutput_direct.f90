@@ -35,6 +35,16 @@
 !!
 !! Writes his/map/rst data to the (existing) files.
 !! Note: no timings/waq output.
+module m_flow_externaloutput_direct
+
+implicit none
+
+private
+
+public :: flow_externaloutput_direct
+
+contains
+
 subroutine flow_externaloutput_direct()
    use m_wrirst, only: wrirst
    use m_flowtimes
@@ -43,7 +53,7 @@ subroutine flow_externaloutput_direct()
    use m_date_time_from_ref_date, only: date_time_from_ref_date
    use m_wrimap
    use m_unc_write_his, only: unc_write_his
-   implicit none
+
    integer :: iyear, imonth, iday, ihour, imin, isec
 
    call mess(LEVEL_INFO, 'Performing direct write of solution state...')
@@ -63,3 +73,5 @@ subroutine flow_externaloutput_direct()
    call mess(LEVEL_INFO, 'Done writing solution state.')
 
 end subroutine flow_externaloutput_direct
+
+end module m_flow_externaloutput_direct

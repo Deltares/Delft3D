@@ -30,6 +30,16 @@
 !
 !
 
+module m_removecoincidingtriangles
+
+implicit none
+
+private
+
+public :: removecoincidingtriangles
+
+contains
+
    subroutine REMOVECOINCIDINGTRIANGLES()
       use precision, only: dp
       use m_netw ! 2 REMOVES SMALL TRIANGLES NEXT TO
@@ -39,7 +49,6 @@
       use geometry_module, only: getdxdy
       use gridoperations
       use m_mergenodes
-      implicit none
 
       real(kind=dp) :: DX2, DY2, DX3, DY3, DEN
       integer :: K1, K2, K3, KDUM, N, L, LL, JA, IERR
@@ -95,3 +104,5 @@
 
       deallocate (XNW, YNW, NNW)
    end subroutine REMOVECOINCIDINGTRIANGLES
+
+end module m_removecoincidingtriangles

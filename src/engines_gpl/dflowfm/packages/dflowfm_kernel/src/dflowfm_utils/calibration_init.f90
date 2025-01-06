@@ -31,14 +31,22 @@
 !
 
 ! Initialise calibration factors
+module m_calibration_init
+
+implicit none
+
+private
+
+public :: calibration_init
+
+contains
+
 subroutine calibration_init()
    use m_calibration
    use unstruc_messages
    use unstruc_model, only: md_cldfile, md_cllfile
    use m_flowgeom, only: lnx, lnx1d
    use m_flow, only: ifrcutp, ifrctypuni
-   !
-   implicit none
    !
    integer :: LF
    logical :: error
@@ -80,3 +88,5 @@ subroutine calibration_init()
    !
    !
 end subroutine calibration_init
+
+end module m_calibration_init

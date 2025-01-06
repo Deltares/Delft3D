@@ -30,9 +30,19 @@
 !
 !
 
+module m_positiveblok
+
+implicit none
+
+private
+
+public :: positiveblok
+
+contains
+
       subroutine POSITIVEBLOK()
          use m_grid_block
-         implicit none
+
          integer :: mh, nh, m1, n1, m2, n2, i
 
          if (NPT <= 1) return
@@ -66,3 +76,5 @@
          NB(4) = N2
          return
       end subroutine positiveblok
+
+end module m_positiveblok

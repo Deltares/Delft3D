@@ -30,6 +30,16 @@
 !
 !
 
+module m_mergepoly
+
+implicit none
+
+private
+
+public :: mergepoly
+
+contains
+
     !> Merges two polylines, indicated by two start/end points
     !!
     !! Multiple polylines are stored in one large array, separated by dmiss.
@@ -37,7 +47,7 @@
     subroutine mergepoly(X, Y, Z, maxpol, n, i1, i2)
        use precision, only: dp
        use M_MISSING
-       implicit none
+
        integer, intent(in) :: MAXPOL !< Length of polyline coordinate arrays.
        real(kind=dp), intent(inout) :: X(MAXPOL), Y(MAXPOL) !< Entire polyline coordinate arrays
        real(kind=dp), intent(inout) :: Z(MAXPOL) !< polyline Z-value array
@@ -205,3 +215,5 @@
        n = ih + n - in - 2
 
     end subroutine mergepoly
+
+end module m_mergepoly

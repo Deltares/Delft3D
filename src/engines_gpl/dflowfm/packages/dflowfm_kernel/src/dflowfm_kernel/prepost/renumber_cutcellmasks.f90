@@ -30,6 +30,16 @@
 !
 !
 
+module m_renumber_cutcellmasks
+
+implicit none
+
+private
+
+public :: renumber_cutcellmasks
+
+contains
+
   subroutine renumber_cutcellmasks(perm)
      use precision, only: dp
      use network_data, only: numL
@@ -89,3 +99,5 @@
 
      return
   end subroutine renumber_cutcellmasks
+
+end module m_renumber_cutcellmasks

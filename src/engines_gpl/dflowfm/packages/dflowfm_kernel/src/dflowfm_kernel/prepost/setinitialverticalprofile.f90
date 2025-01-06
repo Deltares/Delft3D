@@ -30,6 +30,16 @@
 !
 !
 
+module m_setinitialverticalprofile
+
+implicit none
+
+private
+
+public :: setinitialverticalprofile
+
+contains
+
  subroutine setinitialverticalprofile(yy, ny, filename) ! polyfil
     use precision, only: dp
     use m_flowgeom
@@ -38,7 +48,8 @@
     use m_reapol
     use m_get_kbot_ktop
     use m_get_zlayer_indices
-    implicit none
+    use m_filez, only: oldfil
+
     integer :: ny
     real(kind=dp) :: xx(kmxx)
     real(kind=dp) :: yy(ny)
@@ -96,3 +107,5 @@
        end if
     end do
  end subroutine keepzlayering
+
+end module m_setinitialverticalprofile

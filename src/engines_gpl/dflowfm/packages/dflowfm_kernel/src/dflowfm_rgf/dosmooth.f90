@@ -30,6 +30,19 @@
 !
 !
 
+module m_dosmooth
+use m_putarr, only: putarr
+use m_ortpro2, only: ortpro2
+
+
+implicit none
+
+private
+
+public :: dosmooth
+
+contains
+
       subroutine DOSMOOTH(NFLD)
          use precision, only: dp
          use m_gridsettings
@@ -44,7 +57,7 @@
          use m_movabs
          use m_lnabs
          use m_tek_grd
-         implicit none
+
          integer :: nfld
          real(kind=dp), allocatable :: XH(:, :), YH(:, :)
 
@@ -272,3 +285,5 @@
 
          return
       end subroutine dosmooth
+
+end module m_dosmooth

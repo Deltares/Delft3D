@@ -30,10 +30,20 @@
 !
 !
 
+module m_geord
+
+implicit none
+
+private
+
+public :: geord
+
+contains
+
       subroutine GEORD(xgeo, ygeo, xrd, yrd, JAPARIJS)
          use precision, only: dp
          use m_wgs842bessel
-         implicit none
+
          integer :: japarijs
 
 ! -----------------------------------------------------------------------------
@@ -89,3 +99,5 @@
 
          return
       end subroutine GEORD
+
+end module m_geord

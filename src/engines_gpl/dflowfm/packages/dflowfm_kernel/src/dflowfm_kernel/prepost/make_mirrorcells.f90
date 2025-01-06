@@ -31,10 +31,22 @@
 !
 
 !> make the mirror cells for open boundaries
+module m_make_mirrorcells
+use m_mirrorcell, only: mirrorcell
+
+
+implicit none
+
+private
+
+public :: make_mirrorcells
+
+contains
+
 subroutine make_mirrorcells(Nx, xe, ye, xyen, kce, ke, ierror)
    use precision, only: dp
    use network_data, only: numL, kn, lne, xk, yk
-   implicit none
+   use m_is_1d_boundary_candidate, only: is_1d_boundary_candidate
 
    integer, intent(in) :: Nx !< number of links
    real(kind=dp), dimension(Nx), intent(out) :: xe, ye !< inner cell center coordinates
@@ -43,8 +55,6 @@ subroutine make_mirrorcells(Nx, xe, ye, xyen, kce, ke, ierror)
    integer, dimension(Nx), intent(out) :: ke !< inner cell number
 
    integer, intent(out) :: ierror !< error (1) or not (0)
-
-   logical, external :: is_1d_boundary_candidate
 
    real(kind=dp), dimension(4) :: xx, yy ! (half) mirror cell contour
 
@@ -98,3 +108,5 @@ subroutine make_mirrorcells(Nx, xe, ye, xyen, kce, ke, ierror)
 
    return
 end subroutine make_mirrorcells
+
+end module m_make_mirrorcells

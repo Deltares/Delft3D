@@ -31,6 +31,7 @@
 !
 
 module m_createsamplesinpolygon
+   use m_triangulatesamplestonetwork, only: triangulatesamplestonetwork
    use m_createsamplesinpolygon2, only: createsamplesinpolygon2
 
    implicit none

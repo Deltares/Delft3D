@@ -31,6 +31,16 @@
 !
 
 !> create pillar grid in polygon
+module m_pillargrid
+
+implicit none
+
+private
+
+public :: pillargrid
+
+contains
+
 subroutine pillargrid(ierror)
    use precision, only: dp
    use m_grid
@@ -40,8 +50,6 @@ subroutine pillargrid(ierror)
    use m_sferic, only: jsferic, jasfer3D
    use geometry_module, only: dbdistance, get_startend
    use m_increase_grid
-
-   implicit none
 
    integer, intent(out) :: ierror ! error (1) or not (0)
 
@@ -101,3 +109,5 @@ subroutine pillargrid(ierror)
 
    return
 end subroutine pillargrid
+
+end module m_pillargrid

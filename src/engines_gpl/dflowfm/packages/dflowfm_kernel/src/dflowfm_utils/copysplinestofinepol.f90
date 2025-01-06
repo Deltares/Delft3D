@@ -31,13 +31,21 @@
 !
 
 !> copy spline to resampled polygon
+module m_copysplinestofinepol
+
+implicit none
+
+private
+
+public :: copysplinestofinepol
+
+contains
+
 subroutine copySplinesToFinePol(numk)
    use M_SPLINES
    use m_polygon
    use m_missing
    use m_sample_spline
-
-   implicit none
 
    integer, intent(in) :: numk !< resample factor
 
@@ -74,3 +82,5 @@ subroutine copySplinesToFinePol(numk)
       zpl(NPL) = DMISS
    end do
 end subroutine copySplinesToFinePol
+
+end module m_copysplinestofinepol

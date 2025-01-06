@@ -27,8 +27,17 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_setupwslopes
+use m_dcross, only: dcross
+
+
+implicit none
+
+private
+
+public :: setupwslopes
+
+contains
 
  subroutine setupwslopes() ! set upwind slope pointers and weightfactors
     use precision, only: dp
@@ -43,8 +52,7 @@
     use m_missing, only: dmiss
     use fm_external_forcings_data
     use m_dlinedis2
-
-    implicit none
+    use m_dprodin, only: dprodin
 
     integer :: L, k12, k2
     real(kind=dp) :: dxn, dyn, rmin, r
@@ -56,8 +64,6 @@
     integer :: ierr, n
     real(kind=dp) :: rn(6)
     integer :: kun(6), nri(6)
-
-    real(kind=dp), external :: dprodin
 
     if (allocated(klnup)) then
        deallocate (klnup, slnup)
@@ -320,3 +326,5 @@
     end do
 
  end subroutine setupwslopes
+
+end module m_setupwslopes

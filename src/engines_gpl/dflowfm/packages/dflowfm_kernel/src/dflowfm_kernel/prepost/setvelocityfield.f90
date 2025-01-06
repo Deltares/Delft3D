@@ -27,15 +27,22 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_setvelocityfield
+
+implicit none
+
+private
+
+public :: setvelocityfield
+
+contains
 
  subroutine setvelocityfield()
     use precision, only: dp
     use m_setcornervelocities, only: setcornervelocities
     use m_flow
     use m_flowgeom
-    implicit none
+
     integer :: k, k1, k2, L
     real(kind=dp) :: xx, yy, ux, uy, yyy, uuu, ykmx
 
@@ -85,3 +92,5 @@
     call setcornervelocities()
 
  end subroutine setvelocityfield
+
+end module m_setvelocityfield

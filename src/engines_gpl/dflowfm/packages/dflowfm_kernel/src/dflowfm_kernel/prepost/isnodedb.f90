@@ -30,10 +30,20 @@
 !
 !
 
+module m_isnodedb
+
+implicit none
+
+private
+
+public :: isnodedb
+
+contains
+
   subroutine ISNODEDB(KP, XP, YP)
      use precision, only: dp
      use m_netw
-     implicit none
+
      integer :: KP
      real(kind=dp) :: XP, YP, eps = 1d-6
 
@@ -47,3 +57,5 @@
      end do
      return
   end subroutine ISNODEDB
+
+end module m_isnodedb

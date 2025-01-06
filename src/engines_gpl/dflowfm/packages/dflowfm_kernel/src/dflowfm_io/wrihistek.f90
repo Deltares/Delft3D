@@ -41,6 +41,7 @@ contains
       use m_ship
       use m_flowtimes
       use unstruc_files, only: defaultFilename
+      use m_filez, only: doclose, newfil
 
       integer :: n, ntbal, k1, k2
       real(kind=dp) :: tim, ue, te

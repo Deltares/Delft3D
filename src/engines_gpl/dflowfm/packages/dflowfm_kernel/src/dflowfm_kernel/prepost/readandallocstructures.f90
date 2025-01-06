@@ -30,10 +30,20 @@
 !
 !
 
+module m_readandallocstructures
+
+implicit none
+
+private
+
+public :: readandallocstructures
+
+contains
+
 subroutine readandallocstructures()
    use m_strucs
    use m_alloc
-   implicit none
+
    integer :: i, ierr
 
    call realloc(strhis, mxstrhis, nstru)
@@ -66,3 +76,5 @@ subroutine readandallocstructures()
    end if
 
 end subroutine readandallocstructures
+
+end module m_readandallocstructures

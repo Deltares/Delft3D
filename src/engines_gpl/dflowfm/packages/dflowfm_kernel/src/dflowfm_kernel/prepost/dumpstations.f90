@@ -30,10 +30,21 @@
 !
 !
 
+module m_dumpstations
+
+implicit none
+
+private
+
+public :: dumpstations
+
+contains
+
    subroutine dumpstations(name)
       use m_observations_data
       use m_flow
       use m_flowgeom
+      use m_filez, only: doclose, newfil
 
       implicit none
       integer :: mhis2, n, k, L1
@@ -62,3 +73,5 @@
 
       call doclose(mhis2)
    end subroutine dumpstations
+
+end module m_dumpstations

@@ -29,6 +29,16 @@
 
 !
 
+module m_tekship
+
+implicit none
+
+private
+
+public :: tekship
+
+contains
+
 subroutine tekship()
    use precision, only: dp
    use m_ship
@@ -39,7 +49,6 @@ subroutine tekship()
    use m_smovabs
    use m_shtext
 
-   implicit none
    real(kind=dp) :: sx2, sy2, css, sns, rr, cr, sr, snum
    integer :: n
    if (iniship == 0) return
@@ -101,3 +110,5 @@ subroutine tekship()
    end do
 end subroutine tekship
 
+
+end module m_tekship

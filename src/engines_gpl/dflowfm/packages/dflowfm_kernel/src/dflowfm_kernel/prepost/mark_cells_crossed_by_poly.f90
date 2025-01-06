@@ -31,10 +31,18 @@
 !
 
 !> mark the cells that are crossed by the polygon
+module m_mark_cells_crossed_by_poly
+
+implicit none
+
+private
+
+public :: mark_cells_crossed_by_poly
+
+contains
+
    subroutine mark_cells_crossed_by_poly(ksize, kmask)
       use m_netw
-
-      implicit none
 
       integer, intent(in) :: ksize !< size of kmask array
 
@@ -103,3 +111,5 @@
       return
 
    end subroutine mark_cells_crossed_by_poly
+
+end module m_mark_cells_crossed_by_poly

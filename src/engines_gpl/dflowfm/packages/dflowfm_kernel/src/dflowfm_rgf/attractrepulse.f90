@@ -30,6 +30,17 @@
 !
 !
 
+module m_attractrepulse
+use m_dxyb, only: dxyb
+
+implicit none
+
+private
+
+public :: attractrepulse
+
+contains
+
       subroutine ATTRACTREPULSE(XH, YH, X, Y, mmax, nmax, MC, NC, NUMP, JA)
          use precision, only: dp
          use m_missing
@@ -40,7 +51,7 @@
          use m_tolocl
          use m_grid_block
          use m_smeerfunctie
-         implicit none
+
          integer :: mmax, nmax, mc, nc, nump, ja
          real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)
 !     ATTRACTIE, REPULSIE
@@ -132,3 +143,5 @@
          end do
          return
       end subroutine attractrepulse
+
+end module m_attractrepulse

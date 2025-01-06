@@ -30,6 +30,7 @@
 !
 !
 module m_isoline
+   use m_sincosdis, only: sincosdis
    use m_isofil
 
    implicit none

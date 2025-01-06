@@ -31,9 +31,18 @@
 !
 
 !> create samples in triangle
+module m_create_samples_in_triangle
+
+implicit none
+
+private
+
+public :: create_samples_in_triangle
+
+contains
+
 subroutine create_samples_in_triangle()
    use precision, only: dp
-
    use m_polygon
    use m_samples
    use network_data, only: cornercos
@@ -41,8 +50,6 @@ subroutine create_samples_in_triangle()
    use m_sferic, only: jsferic, jasfer3D
    use geometry_module, only: dbdistance, dcosphi
    use m_delsam
-
-   implicit none
 
    real(kind=dp), dimension(:, :), allocatable :: xx
    real(kind=dp), dimension(:, :), allocatable :: yy
@@ -184,3 +191,5 @@ subroutine create_samples_in_triangle()
 
    return
 end subroutine create_samples_in_triangle
+
+end module m_create_samples_in_triangle

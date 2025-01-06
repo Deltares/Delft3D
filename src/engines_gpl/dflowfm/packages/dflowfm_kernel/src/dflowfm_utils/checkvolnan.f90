@@ -30,12 +30,21 @@
 !
 !
 
+module m_checkvolnan
+
+implicit none
+
+private
+
+public :: checkvolnan
+
+contains
+
  subroutine checkvolnan(i)
     use MessageHandling
     use m_flowgeom
     use m_flow
     use ieee_arithmetic, only: ieee_is_nan
-    implicit none
 
     integer, intent(in) :: i
     integer :: n
@@ -46,3 +55,5 @@
        end if
     end do
  end subroutine checkvolnan
+
+end module m_checkvolnan

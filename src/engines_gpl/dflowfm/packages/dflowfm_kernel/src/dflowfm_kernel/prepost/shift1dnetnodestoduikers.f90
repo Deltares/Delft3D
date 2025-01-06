@@ -27,8 +27,15 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_shift1dnetnodestoduikers
+
+implicit none
+
+private
+
+public :: shift1dnetnodestoduikers
+
+contains
 
  subroutine shift1Dnetnodestoduikers()
     use precision, only: dp
@@ -44,8 +51,8 @@
     use gridoperations
     use m_reapol
     use m_wripol
+    use m_filez, only: oldfil, newfil
 
-    implicit none
     integer :: minp, Ls, n, k1, k2, kL, kR, LnL
     real(kind=dp) :: x1, y1, z1, x2, y2, z2, xc, yc, XLS, YLS, dum, dis12, dis11, disL, disd, dis22, dis21, alf, zx, xL, yL, xR, yR, half, xkc, ykc
     character(len=maxlength) :: pipefilein, pipefileout
@@ -125,3 +132,5 @@
 
     return
  end subroutine shift1Dnetnodestoduikers
+
+end module m_shift1dnetnodestoduikers

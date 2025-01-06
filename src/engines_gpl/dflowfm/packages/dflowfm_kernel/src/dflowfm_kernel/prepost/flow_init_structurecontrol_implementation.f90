@@ -593,6 +593,7 @@ contains
 !> Initializes controllers that force structures in case the file version of the structure file is equal to 1.
 !! This function will become obsolete in the future.
    function flow_init_structurecontrol_old() result(status)
+      use m_setfixedweirscheme3onlink, only: setfixedweirscheme3onlink
       use dfm_error
       use m_hash_search
       use m_alloc

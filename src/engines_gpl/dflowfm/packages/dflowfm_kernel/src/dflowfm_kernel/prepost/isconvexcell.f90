@@ -31,16 +31,23 @@
 !
 
 !> check and see if the cell is convex (1) or not (0)
+module m_isconvexcell
+
+implicit none
+
+private
+
+public :: isconvexcell
+
+contains
+
 integer function isconvexcell(k)
    use precision, only: dp
-
    use m_netw
    use geometry_module, only: dcosphi
    use m_sferic, only: jsferic, jasfer3D
    use m_missing, only: dxymis
    use gridoperations
-
-   implicit none
 
    integer, intent(in) :: k !< cell number
 
@@ -77,3 +84,5 @@ integer function isconvexcell(k)
 
    return
 end function isconvexcell
+
+end module m_isconvexcell

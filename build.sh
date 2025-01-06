@@ -18,14 +18,14 @@ function print_usage_info {
     echo
     echo "<CONFIG>:"
     echo "- If <CONFIG> is missing, this usage will be print"
-    echo "- all: All CMaked projects, currently D-Flow FM, DWAQ and DIMR"
-    echo "- dflowfm"
+    echo "- all: All CMaked products that are in fm-suite and d3d4-suite combined"
+    echo "- fm-suite"
+    echo "- d3d4-suite"
     echo "- dwaq"
     echo "- dwaves"
     echo "- dimr"
     echo "- tests"
     echo "- swan"
-    echo "- delft3d4"
     echo "- flow2d3d"
     echo
     echo "Options:"

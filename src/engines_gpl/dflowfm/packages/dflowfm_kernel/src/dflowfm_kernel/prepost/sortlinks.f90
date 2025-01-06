@@ -27,17 +27,22 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> sort per-node link administration (nod()%lin), based on connectivity
+module m_sortlinks
+
+implicit none
+
+private
+
+public :: sortlinks
+
+contains
+
 subroutine sortlinks()
    use m_netw
    use unstruc_colors, only: ncolhl
    use m_qnerror
    use m_cirr
-
-   implicit none
 
    integer :: k0 ! node number
 
@@ -142,3 +147,5 @@ subroutine sortlinks()
 !   if ( allocated(kmask) ) deallocate(kmask)
 
 end subroutine sortlinks
+
+end module m_sortlinks

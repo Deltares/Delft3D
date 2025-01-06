@@ -30,10 +30,19 @@
 !
 !
 
+module m_switch
+
+implicit none
+
+private
+
+public :: switch
+
+contains
+
       subroutine SWITCH(X, Y, mmax, nmax, JN, NUMPJ)
          use precision, only: dp
-!      USE DIMENS
-         implicit none
+
          integer :: mmax, nmax, jn, numpj
          real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
 
@@ -50,3 +59,5 @@
          end do
          return
       end subroutine switch
+
+end module m_switch

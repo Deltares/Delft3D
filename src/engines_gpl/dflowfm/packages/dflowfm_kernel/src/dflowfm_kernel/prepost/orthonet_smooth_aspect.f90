@@ -31,6 +31,16 @@
 !
 
 !>  smooth the link-based aspect ratios (SLR/R01) along parallel and perpendicular mesh lines (obsolete)
+module m_orthonet_smooth_aspect
+
+implicit none
+
+private
+
+public :: orthonet_smooth_aspect
+
+contains
+
 subroutine orthonet_smooth_aspect(aspect, iexit)
    use precision, only: dp
    use m_netw
@@ -42,8 +52,6 @@ subroutine orthonet_smooth_aspect(aspect, iexit)
    use m_missing, only: dxymis
    use m_qnerror
    use m_ktext
-
-   implicit none
 
    real(kind=dp), dimension(numL) :: aspect !< aspect ratio at the links
    integer :: iexit !< 1 if no errors have occured
@@ -244,3 +252,5 @@ subroutine orthonet_smooth_aspect(aspect, iexit)
 
    deallocate (nmkx, kkL, ww)
 end subroutine
+
+end module m_orthonet_smooth_aspect

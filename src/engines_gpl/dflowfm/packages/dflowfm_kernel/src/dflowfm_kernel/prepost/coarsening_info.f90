@@ -43,7 +43,7 @@ contains
 
    real(kind=dp) function coarsening_info(k)
       use precision, only: dp
-
+      use m_find_surrounding_cells, only: find_surrounding_cells
       use m_netw
       use m_missing
       use m_sferic, only: dtol_pole

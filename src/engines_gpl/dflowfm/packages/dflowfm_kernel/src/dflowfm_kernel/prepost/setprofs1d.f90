@@ -30,9 +30,18 @@
 !
 !
 
+module m_setprofs1d
+
+implicit none
+
+private
+
+public :: setprofs1d
+
+contains
+
  subroutine setprofs1D()
     use precision, only: dp
-
     use m_closeto1dnetlink, only: closeto1dnetlink
     use m_readprofilesloc
     use m_readprofilesdef
@@ -50,8 +59,8 @@
     use m_samples
     use m_qnerror
     use m_set_branch_lc
+    use m_filez, only: oldfil
 
-    implicit none
     integer :: ierr, MINP, LS, L, K, IBR, LL, LA, K1, K2, KA, KB, NRL, KK, ja, ium
     real(kind=dp) :: XL, ALFA
     logical :: jawel
@@ -397,3 +406,5 @@
     !call duikerstoprofs()
 
  end subroutine setprofs1D
+
+end module m_setprofs1d

@@ -30,6 +30,17 @@
 !
 !
 
+module m_orthogonisenet_old
+use m_cosphiunetcheck, only: cosphiunetcheck
+
+implicit none
+
+private
+
+public :: orthogonisenet_old
+
+contains
+
    subroutine ORTHOGONISENET_old()
       use precision, only: dp
 
@@ -46,8 +57,6 @@
       use m_makenetnodescoding
       use m_movabs
 
-      implicit none
-
       real(kind=dp) :: X0, Y0, X1, Y1, W0, XL, YL, XR, YR, ZZZ
       real(kind=dp) :: X2, Y2, X3, Y3, X4, Y4, A, B, DIS2, DIS3, XN, YN
       integer :: JACROS
@@ -59,7 +68,6 @@
       real(kind=dp) :: ATPF1
       integer, save :: NUMKO = 0, NUMLO = 0
       real(kind=dp) :: area, areatot, xzwr, yzwr, rout
-      real(kind=dp), external :: dprodin
       real(kind=dp) :: relaxin, relax1
 
       integer :: JSFERICold
@@ -571,3 +579,5 @@
       !, NB ) ! AvD: TODO: this is for showing node codes (during ortho), but also introduces memleak.
 
    end subroutine ORTHOGONISENET_old
+
+end module m_orthogonisenet_old

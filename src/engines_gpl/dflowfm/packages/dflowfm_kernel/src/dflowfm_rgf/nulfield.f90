@@ -30,11 +30,21 @@
 !
 !
 
+module m_nulfield
+
+implicit none
+
+private
+
+public :: nulfield
+
+contains
+
       subroutine NULFIELD(X, Y, mmax, nmax)
          use precision, only: dp
          use m_missing
          use m_grid_block
-         implicit none
+
          integer :: mmax, nmax
          real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
          integer :: i, j
@@ -47,3 +57,5 @@
          end do
          return
       end subroutine nulfield
+
+end module m_nulfield

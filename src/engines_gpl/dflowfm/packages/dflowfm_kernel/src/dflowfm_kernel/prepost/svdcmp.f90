@@ -32,9 +32,19 @@
 
 !>  Singular value Decomposition
 !!    from: Numerical Recipes in Fortran 77
+module m_svdcmp
+
+implicit none
+
+private
+
+public :: svdcmp
+
+contains
+
       subroutine SVDCMP(A, M, N, MP, NP, W, V)
          use precision, only: dp
-         implicit none
+
          real(kind=dp) :: A, W, V
          integer, intent(in) :: m, n, mp, np
 
@@ -273,3 +283,5 @@
          end do k_loop
          return
       end
+
+end module m_svdcmp

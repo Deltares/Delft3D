@@ -30,8 +30,17 @@
 !
 !
 
+module m_iputar
+
+implicit none
+
+private
+
+public :: iputar
+
+contains
+
       subroutine IPUTAR(IXR, IX, MMAX)
-         implicit none
          integer :: i
          integer :: ix
          integer :: ixr
@@ -43,3 +52,5 @@
          end do
          return
       end
+
+end module m_iputar

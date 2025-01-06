@@ -36,11 +36,21 @@
 !! Lat and Long are in decimal degrees.
 !! Written by Chuck Gantz- chuck.gantz@globalstar.com
 !! BY: Chuck Gantz, http://www.gpsy.com/gpsinfo/geotoutm/gantz/LatLong-UTMconversion.cpp
+module m_utmgeo2
+
+implicit none
+
+private
+
+public :: utmgeo2
+
+contains
+
     subroutine utmgeo2(xutm, yutm, xgeo, ygeo, IZONE, ihem)
        use precision, only: dp
        use m_sferic
        use m_ellips
-       implicit none
+
 !     xutm    i    real(kind=dp) ::    easting (UTM)
 !     yutm    i    real(kind=dp) ::    northing (UTM)
 !     Izone   i    integer   Izone (UTM)
@@ -102,3 +112,5 @@
        xgeo = LongOrigin + xgeo * rd2dg
 
     end subroutine utmgeo2
+
+end module m_utmgeo2

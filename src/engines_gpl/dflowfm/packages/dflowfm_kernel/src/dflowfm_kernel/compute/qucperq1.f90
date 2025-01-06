@@ -47,6 +47,10 @@ contains
       use precision, only: dp
       use m_flow
       use m_flowgeom
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
       implicit none
 
       integer :: L !< for link L,
@@ -57,8 +61,6 @@ contains
       integer :: k12 ! relevant node, 1 or 2, L/R
       real(kind=dp) :: cs, sn, ucin, ucinx, uciny
       integer :: nn12
-
-      real(kind=dp), external :: lin2nodx, lin2nody, nod2linx, nod2liny
 
       QucPerq1 = 0d0
       cs = csu(L)

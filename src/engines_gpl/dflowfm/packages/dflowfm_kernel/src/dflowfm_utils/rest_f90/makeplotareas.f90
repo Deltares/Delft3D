@@ -30,10 +30,20 @@
 !
 !
 
+module m_makeplotareas
+
+implicit none
+
+private
+
+public :: makeplotareas
+
+contains
+
       subroutine MAKEPLOTAREAS(NUMROW, NUMCOL, nsize)
          use precision, only: dp
          use m_dscreens
-         implicit none
+
          real(kind=dp) :: dx
          real(kind=dp) :: dy
          integer :: i, nsize
@@ -81,3 +91,5 @@
          NUMSC = NSC
          return
       end
+
+end module m_makeplotareas

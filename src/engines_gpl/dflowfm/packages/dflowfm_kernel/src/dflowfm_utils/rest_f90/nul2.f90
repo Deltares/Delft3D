@@ -30,8 +30,17 @@
 !
 !
 
+module m_nul2
+
+implicit none
+
+private
+
+public :: nul2
+
+contains
+
       subroutine NUL2(N1, NSMAX)
-         implicit none
          integer :: i
          integer :: nsmax
          integer(2) :: N1(NSMAX)
@@ -40,3 +49,5 @@
          end do
          return
       end
+
+end module m_nul2

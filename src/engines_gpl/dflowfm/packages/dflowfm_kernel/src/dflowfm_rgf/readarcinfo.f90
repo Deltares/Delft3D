@@ -30,6 +30,18 @@
 !
 !
 
+module m_readarcinfo
+use m_reaarc, only: reaarc
+
+
+implicit none
+
+private
+
+public :: readarcinfo
+
+contains
+
       subroutine REAdarcinfo(Marc, ja)
          use M_SFERIC
          use m_netw
@@ -37,7 +49,7 @@
          use M_ARCINFO
          use M_MISSING
          use m_increase_grid
-         implicit none
+         use m_filez, only: doclose
 
          integer :: Marc, JA
          integer :: i, j
@@ -102,3 +114,5 @@
          JA = 1
 
       end subroutine REAdarcinfo
+
+end module m_readarcinfo

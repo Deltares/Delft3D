@@ -30,6 +30,16 @@
 !
 !
 
+module m_setcentertolinkorientations
+
+implicit none
+
+private
+
+public :: setcentertolinkorientations
+
+contains
+
  subroutine setcentertolinkorientations()
     use precision, only: dp
     use m_flowgeom
@@ -39,8 +49,6 @@
     use unstruc_messages
     use geometry_module, only: half, spher2locvec
     use m_missing, only: dmiss
-
-    implicit none
 
     real(kind=dp) :: xL, yL
 
@@ -78,3 +86,5 @@
 
     return
  end subroutine setcentertolinkorientations
+
+end module m_setcentertolinkorientations

@@ -30,6 +30,17 @@
 !
 !
 
+module m_read_samples_from_dem
+use m_tidysamples, only: tidysamples
+
+implicit none
+
+private
+
+public :: read_samples_from_dem
+
+contains
+
       subroutine read_samples_from_dem(filnam, jadoorladen)
          use precision, only: dp
          use dem
@@ -38,7 +49,8 @@
          use m_drawthis
          use m_readyy
          use m_get_samples_boundingbox
-         implicit none
+         use m_filez, only: message
+
          character(len=*), intent(in) :: filnam
          integer, intent(in) :: jadoorladen
          integer :: i, j, istep
@@ -94,3 +106,5 @@
          end if
          call READYY(' ', -1d0)
       end subroutine read_samples_from_dem
+
+end module m_read_samples_from_dem

@@ -44,7 +44,7 @@ contains
       use m_observations_data, only: numobs, nummovobs, kobs, namobs
       use unstruc_messages, only: loglevel_StdOut, LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
       use m_flowgeom, only: ndx2D, ndxi
-      use unstruc_caching, only: cacheRetrieved, copyCachedObservations
+      use unstruc_caching, only: cache_retrieved, copy_cached_observations
 
       implicit none
 
@@ -70,8 +70,8 @@ contains
       ! Try to read normal (non-moving) stations from cache file
       cache_success = .false.
       if (iobstype == 0 .or. iobstype == 2) then
-         if (cacheRetrieved()) then
-            call copyCachedObservations(cache_success)
+         if (cache_retrieved()) then
+            call copy_cached_observations(cache_success)
          end if
       end if
 

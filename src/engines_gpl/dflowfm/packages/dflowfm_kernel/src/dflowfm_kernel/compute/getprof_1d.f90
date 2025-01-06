@@ -30,6 +30,8 @@
 !
 !
 module m_get_prof_1D
+   use m_rectan2d, only: rectan2d
+   use m_rectan, only: rectan
    use m_yzprofile, only: yzprofile
    use m_pipe
 

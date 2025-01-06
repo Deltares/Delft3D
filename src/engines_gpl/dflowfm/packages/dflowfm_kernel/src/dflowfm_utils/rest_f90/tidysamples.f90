@@ -30,11 +30,22 @@
 !
 !
 
+module m_tidysamples
+
+implicit none
+
+private
+
+public :: tidysamples
+
+contains
+
       subroutine TIDYSAMPLES(XS, YS, ZS, IPSAM, NS, MXSAM, MYSAM)
+         use m_rmdouble, only: rmdouble
          use precision, only: dp
          use stdlib_sorting, only: sort_index
          use m_readyy
-         implicit none
+
          integer :: ns
          real(kind=dp) :: XS(NS), YS(NS), ZS(NS) !< sample coordinates
          integer, dimension(NS), intent(out) :: IPSAM !< permutation array (increasing x-coordinate)
@@ -55,3 +66,5 @@
 
          return
       end
+
+end module m_tidysamples

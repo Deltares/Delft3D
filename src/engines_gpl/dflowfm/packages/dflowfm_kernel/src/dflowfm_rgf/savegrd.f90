@@ -30,12 +30,20 @@
 !
 !
 
+module m_savegrd
+
+implicit none
+
+private
+
+public :: savegrd
+
+contains
+
      subroutine savegrd()
         use m_grid
         use m_missing
         use m_alloc
-
-        implicit none
 
         integer, dimension(2) :: ibounds
         ! Possibly resize the help grid if the actual grid is larger.
@@ -51,3 +59,5 @@
         mch = mc
         nch = nc
      end subroutine savegrd
+
+end module m_savegrd

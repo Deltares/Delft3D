@@ -30,10 +30,20 @@
 !
 !
 
+module m_misar
+
+implicit none
+
+private
+
+public :: misar
+
+contains
+
       subroutine MISAR(H, MMAX)
          use precision, only: dp
          use M_MISSING
-         implicit none
+
          integer :: i
          integer :: mmax
          real(kind=dp) :: H(MMAX)
@@ -43,3 +53,5 @@
          end do
          return
       end
+
+end module m_misar

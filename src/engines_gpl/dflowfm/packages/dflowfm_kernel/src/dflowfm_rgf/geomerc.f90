@@ -30,10 +30,20 @@
 !
 !
 
+module m_geomerc
+
+implicit none
+
+private
+
+public :: geomerc
+
+contains
+
       subroutine GEOMERC(XG, YG, XX, YY)
          use precision, only: dp
          use M_SFERIC
-         implicit none
+
          real(kind=dp) :: XX, YY, XG, YG, FI2, YC, CY, F, E
          real(kind=dp) :: a
          real(kind=dp) :: sf
@@ -55,3 +65,5 @@
 
          return
       end subroutine GEOMERC
+
+end module m_geomerc

@@ -31,7 +31,24 @@
 !
 
 !> refine cells by splitting links
+module m_refinecellsandfaces2
+use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
+use m_tidysamples, only: tidysamples
+use m_inworld, only: inworld
+use m_remove_isolated_hanging_nodes, only: remove_isolated_hanging_nodes
+
+implicit none
+
+private
+
+public :: refinecellsandfaces2
+
+contains
+
 subroutine refinecellsandfaces2()
+   use m_rearrange_worldmesh, only: rearrange_worldmesh
+   use m_prepare_samplehessian, only: prepare_samplehessian
+   use m_get_meshbounds, only: get_meshbounds
    use precision, only: dp
    use m_deallocate_samplehessian, only: deallocate_samplehessian
    use m_connect_hanging_nodes, only: connect_hanging_nodes
@@ -54,8 +71,7 @@ subroutine refinecellsandfaces2()
    use m_arcinfo
    use m_qnerror
    use m_get_samples_boundingbox
-
-   implicit none
+   use m_dlinklength, only: dlinklength
 
    integer, dimension(:), allocatable :: jarefine ! refine cell (1) or not (0) or cell outside polygon (-1), dim(nump)
    integer, dimension(:), allocatable :: jalink ! refine link (>0) or not (<=0),
@@ -78,7 +94,7 @@ subroutine refinecellsandfaces2()
    integer :: k2
    integer :: num ! number of removed isolated hangning noded
 
-   real(kind=dp), external :: getdy, dlinklength
+   real(kind=dp), external :: getdy
 
    character(len=64) :: tex
 
@@ -1696,3 +1712,5 @@ contains
    end subroutine find_hangingnodes
 
 end subroutine refinecellsandfaces2
+
+end module m_refinecellsandfaces2

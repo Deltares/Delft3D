@@ -30,9 +30,19 @@
 !
 !
 
+module m_dputar
+
+implicit none
+
+private
+
+public :: dputar
+
+contains
+
       subroutine DPUTAR(XR, X, MMAX)
          use precision, only: dp
-         implicit none
+
          integer :: i
          integer :: mmax
 !     DE EERSTE IN DE TWEEDE
@@ -42,3 +52,5 @@
          end do
          return
       end
+
+end module m_dputar

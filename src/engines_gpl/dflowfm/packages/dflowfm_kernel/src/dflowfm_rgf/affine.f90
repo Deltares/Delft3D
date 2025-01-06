@@ -30,18 +30,28 @@
 !
 !
 
+module m_affine
+
+implicit none
+
+private
+
+public :: affine
+
+contains
+
       subroutine AFFINE(XX, YY, XG, YG, INI)
          use precision, only: dp
          use M_BITMAP
          use string_module, only: find_first_letter
          use m_qnerror
          use m_bilinxy
-         implicit none
+         use m_filez, only: oldfil, doclose, numbersonline
+
          integer :: ini
          logical :: jawel
          integer :: k
          integer :: minp
-         integer :: numbersonline
          real(kind=dp) :: xg4
          real(kind=dp) :: xx4
          real(kind=dp) :: yg4
@@ -85,3 +95,5 @@
 
          return
       end
+
+end module m_affine

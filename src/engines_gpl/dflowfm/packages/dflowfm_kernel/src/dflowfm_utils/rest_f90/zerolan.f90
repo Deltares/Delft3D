@@ -30,13 +30,23 @@
 !
 !
 
+module m_zerolan
+
+implicit none
+
+private
+
+public :: zerolan
+
+contains
+
       subroutine ZEROLAN(KEY)
          use m_confrm
          use m_landboundary
          use m_polygon
          use m_missing
          use geometry_module, only: dbpinpol
-         implicit none
+
          integer :: i
          integer :: inhul
          integer :: istart
@@ -107,3 +117,5 @@
 
          return
       end
+
+end module m_zerolan

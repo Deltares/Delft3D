@@ -31,6 +31,16 @@
 !
 
 !>    compute the intersection of two splines
+module m_sect3r
+
+implicit none
+
+private
+
+public :: sect3r
+
+contains
+
       subroutine SECT3R(XI, YI, XJ, YJ, imax, CRP, &
                         NUMPI, NUMPJ, NUMCRO, TIV, TJV, XP, YP)
          use precision, only: dp
@@ -40,7 +50,6 @@
          use m_splint
          use m_spline
 
-         implicit none
 !     BEPAAL HET SNYPUNT VAN DE 2 SPLINES NR I EN J      USE DIMENS
 
          integer, intent(in) :: imax !< array size
@@ -254,3 +263,5 @@
 
          return
       end subroutine sect3r
+
+end module m_sect3r

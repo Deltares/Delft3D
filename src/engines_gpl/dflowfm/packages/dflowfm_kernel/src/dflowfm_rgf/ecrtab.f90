@@ -30,10 +30,20 @@
 !
 !
 
+module m_ecrtab
+
+implicit none
+
+private
+
+public :: ecrtab
+
+contains
+
       subroutine ECRTAB(X, MC, NC, MRGF, HALF, mmax, nmax)
          use precision, only: dp
          use m_readyy
-         implicit none
+
          real(kind=dp) :: af
          real(kind=dp) :: half
          integer :: i
@@ -53,3 +63,5 @@
 888      format(' ETA= ', I4, 5es26.18:/(10x, 5es26.18))
          return
       end subroutine ECRTAB
+
+end module m_ecrtab

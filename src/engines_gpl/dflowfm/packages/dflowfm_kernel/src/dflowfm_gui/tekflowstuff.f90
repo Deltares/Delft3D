@@ -34,6 +34,7 @@
 ! subroutines from unstruc.f90
 !----------------------------------------------------------------------
 module m_tekflowstuff
+   use m_tekship, only: tekship
    use m_tekspw
    use m_tekprofpoint
 

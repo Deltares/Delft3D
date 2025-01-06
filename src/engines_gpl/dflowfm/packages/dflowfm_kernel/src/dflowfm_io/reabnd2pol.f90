@@ -44,6 +44,7 @@ contains
       use m_grid
       use m_polygon
       use M_MISSING
+      use m_filez, only: doclose
       implicit none
 
       character :: rec * 132, fnam * 20

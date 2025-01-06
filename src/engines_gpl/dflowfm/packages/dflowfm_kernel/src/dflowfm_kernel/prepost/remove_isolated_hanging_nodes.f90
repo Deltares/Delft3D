@@ -32,12 +32,20 @@
 
 !> delete hanging nodes on net boundary
 !>   and update netcell admin (no need for setnodadm)
+module m_remove_isolated_hanging_nodes
+
+implicit none
+
+private
+
+public :: remove_isolated_hanging_nodes
+
+contains
+
 subroutine remove_isolated_hanging_nodes(linkbrother, num)
    use m_netw
    use unstruc_messages
    use m_find_common_node
-
-   implicit none
 
    integer, dimension(numL), intent(inout) :: linkbrother !< brotherlink, that shares a (hanging) node, dim: numL
    integer, intent(out) :: num !< number of removed isolated hanging nodes
@@ -145,3 +153,5 @@ subroutine remove_isolated_hanging_nodes(linkbrother, num)
 
    return
 end subroutine remove_isolated_hanging_nodes
+
+end module m_remove_isolated_hanging_nodes

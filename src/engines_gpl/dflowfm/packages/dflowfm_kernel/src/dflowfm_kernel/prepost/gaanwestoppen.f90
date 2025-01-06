@@ -30,9 +30,19 @@
 !
 !
 
+module m_gaanwestoppen
+
+implicit none
+
+private
+
+public :: gaanwestoppen
+
+contains
+
   subroutine GAANWESTOPPEN(K, KN316, JASTOP) !SET JASTOP = 1 ALS WE GAAN STOPPEN
      use M_NETW
-     implicit none
+
      integer :: KN316, JASTOP, N1, N6, KK, L, K
 
      JASTOP = 0; N1 = 0; N6 = 0
@@ -60,3 +70,5 @@
      end if
 
   end subroutine GAANWESTOPPEN
+
+end module m_gaanwestoppen

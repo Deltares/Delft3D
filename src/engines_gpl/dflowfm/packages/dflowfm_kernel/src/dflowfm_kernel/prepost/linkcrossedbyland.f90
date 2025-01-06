@@ -31,17 +31,24 @@
 !
 
 !> check if a link is close to a land boundary segment
+module m_linkcrossedbyland
+
+implicit none
+
+private
+
+public :: linkcrossedbyland
+
+contains
+
 subroutine linkcrossedbyland(L, jstart, jend, jland, jacross)
    use precision, only: dp
-
    use m_netw
    use m_landboundary
    use m_missing, only: dmiss
    use geometry_module, only: dbdistance
    use m_sferic, only: jsferic, jasfer3D
    use m_d_line_dis3
-
-   implicit none
 
    integer, intent(in) :: L !< link number
    integer, intent(in) :: jstart, jend !< start and end point of land boundary segment respectively
@@ -153,3 +160,5 @@ subroutine linkcrossedbyland(L, jstart, jend, jland, jacross)
 
    return
 end subroutine linkcrossedbyland
+
+end module m_linkcrossedbyland

@@ -30,6 +30,16 @@
 !
 !
 
+module m_split_pol_with_line
+
+implicit none
+
+private
+
+public :: split_pol_with_line
+
+contains
+
  !> split polygon with line through two points (xa,ya) and (xb,yb)
  subroutine split_pol_with_line(xa, ya, xb, yb, idir)
     use precision, only: dp
@@ -37,7 +47,6 @@
     use m_alloc
     use m_missing
     use m_tpoly
-    implicit none
 
     real(kind=dp), intent(in) :: xa, ya, xb, yb !< of two point on line
     integer, intent(in) :: idir !< left (1), or right (2)
@@ -169,3 +178,5 @@
        return
     end subroutine
  end subroutine split_pol_with_line
+
+end module m_split_pol_with_line

@@ -48,6 +48,7 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use m_comp_roots4
       use m_comp_cross_time_1, only: comp_cross_time_1
+      use m_lcrossgridline, only: Lcrossgridline
 
       implicit none
 
@@ -64,8 +65,6 @@ contains
       real(kind=dp) :: t1, t2, DdDt
 
       integer :: i, ja
-
-      logical, external :: Lcrossgridline
 
       comp_cross_time_2 = 1d99
 

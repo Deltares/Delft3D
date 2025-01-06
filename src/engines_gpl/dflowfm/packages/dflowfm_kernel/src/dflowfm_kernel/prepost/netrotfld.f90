@@ -32,6 +32,16 @@
 
 !>  network field rotate
 !!     It is assumed that there is a backup copy of the grid.
+module m_netrotfld
+
+implicit none
+
+private
+
+public :: netrotfld
+
+contains
+
 subroutine netrotfld(xp, yp, kp)
    use precision, only: dp
    use m_teknet
@@ -43,8 +53,6 @@ subroutine netrotfld(xp, yp, kp)
    use m_wearelt
    use m_sferic
    use geometry_module, only: dbdistance
-
-   implicit none
 
    real(kind=dp) :: xp, yp !< coordinates that determine the influenced region and rotation angle
 
@@ -99,3 +107,5 @@ subroutine netrotfld(xp, yp, kp)
    end do
 
 end subroutine netrotfld
+
+end module m_netrotfld

@@ -31,14 +31,22 @@
 !
 
 !> copy samples to polygon (for further operations)
+module m_copysamtopol
+
+implicit none
+
+private
+
+public :: copysamtopol
+
+contains
+
 subroutine copysamtopol()
 
    use M_SAMPLES
    use m_missing, only: dmiss, JINS
    use m_polygon, only: NPL, xpl, ypl, zpl, increasepol, savepol
    use geometry_module, only: dbpinpol
-
-   implicit none
 
    integer, dimension(:), allocatable :: jacopy ! sample wil be copied (1) or not (0)
 
@@ -85,3 +93,5 @@ subroutine copysamtopol()
 
    return
 end subroutine copysamtopol
+
+end module m_copysamtopol

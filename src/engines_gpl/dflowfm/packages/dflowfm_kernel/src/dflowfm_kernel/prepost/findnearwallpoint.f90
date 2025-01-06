@@ -30,6 +30,16 @@
 !
 !
 
+module m_findnearwallpoint
+
+implicit none
+
+private
+
+public :: findnearwallpoint
+
+contains
+
       subroutine findnearwallpoint(k1, k2)
 
          use m_samples
@@ -51,3 +61,5 @@
             end if
          end do
       end subroutine findnearwallpoint
+
+end module m_findnearwallpoint

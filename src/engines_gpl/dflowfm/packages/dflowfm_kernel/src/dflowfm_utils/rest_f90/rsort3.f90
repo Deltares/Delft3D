@@ -30,9 +30,19 @@
 !
 !
 
+module m_rsort3
+
+implicit none
+
+private
+
+public :: rsort3
+
+contains
+
       subroutine RSORT3(X, Y, Z, N)
          use precision, only: dp
-         implicit none
+
          integer :: j
          integer :: j1
          integer :: k0
@@ -132,3 +142,5 @@
          goto 70
 
       end
+
+end module m_rsort3

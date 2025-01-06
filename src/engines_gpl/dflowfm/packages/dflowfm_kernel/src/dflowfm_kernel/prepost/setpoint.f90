@@ -30,14 +30,22 @@
 !
 !
 
+module m_setpoint
+
+implicit none
+
+private
+
+public :: setpoint
+
+contains
+
   subroutine SETPOINT(XP, YP, ZP, K1)
      use precision, only: dp
-
      use m_tweedrie
      use m_netw
      use m_howtoview
 
-     implicit none
      real(kind=dp) :: XP, YP, ZP
      integer :: K1
 
@@ -52,3 +60,5 @@
      if (KC(K1) == 0) KC(K1) = 1
      return
   end subroutine SETPOINT
+
+end module m_setpoint

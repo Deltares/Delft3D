@@ -31,12 +31,21 @@
 !
 
 !> add polygon and fill cutcell mask with "kc"
+module m_store_cutcellmasks
+
+implicit none
+
+private
+
+public :: store_cutcellmasks
+
+contains
+
    subroutine store_cutcellmasks(numk, kc, numL, Lmask, xmL, ymL)
       use precision, only: dp
       use m_cutcells
       use m_alloc
       use unstruc_messages
-      implicit none
 
       integer, intent(in) :: numk
       integer, dimension(numk), intent(in) :: kc
@@ -136,3 +145,5 @@
 
       return
    end subroutine store_cutcellmasks
+
+end module m_store_cutcellmasks

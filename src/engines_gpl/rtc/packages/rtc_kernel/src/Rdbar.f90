@@ -127,7 +127,7 @@
 !---- First check if file name was read from FNM-file
 !
       if (filnam .eq. ' ') then
-        call ERRMSG (946, 0, 'RDBAR', ' No barrier data file read from FNM-file', outuni)
+        call write_error_message_rtc (946, 0, 'RDBAR', ' No barrier data file read from FNM-file', outuni)
         RetVal = 946
         Return
       endif
@@ -141,7 +141,7 @@
 !
       inquire (file=filnam(1:namlen), exist=lexist)
       if (.not. lexist) then
-        call ERRMSG (946, 0, 'RDBAR', &
+        call write_error_message_rtc (946, 0, 'RDBAR', &
                      ' File '//filnam(1:namlen)//' does not exist', outuni)
         RetVal = 946
         Return
@@ -151,7 +151,7 @@
 !
       open (filuni, file=filnam(1:namlen),form='unformatted', IOSTAT=iocond)
       if (iocond .ne. 0) then
-        call ERRMSG (946, 0, 'RDBAR', &
+        call write_error_message_rtc (946, 0, 'RDBAR', &
                      ' Error opening file: '//filnam(1:namlen), outuni)
         RetVal = 946
         Return
@@ -187,7 +187,7 @@
 !------ Check number of rows
 !
         if (nrrecs .le. 0) then
-          call ERRMSG (946, 0, 'RDBAR', &
+          call write_error_message_rtc (946, 0, 'RDBAR', &
                        ' Table must have > 0 rows in file: '//filnam(1:namlen)// &
                        ': Barrier: '//BarrierNames(i), OUTUNI)
           RetVal = 946
@@ -204,13 +204,13 @@
         skip_loop: do i = 1, nrrecs
           read(filuni, IOSTAT= iocond) bufdat, buftim, bufval
           if (iocond .lt. 0) then
-            call ERRMSG (946, 0, 'RDBAR', &
+            call write_error_message_rtc (946, 0, 'RDBAR', &
                          ' Premature end of file: '//filnam(1:namlen), outuni)
             RetVal = 946
             Return
           endif
           if (iocond .gt. 0) then
-            call ERRMSG (946, 0, 'RDBAR', &
+            call write_error_message_rtc (946, 0, 'RDBAR', &
                          ' Error reading file: '//filnam(1:namlen), outuni)
             RetVal = 946
             Return
@@ -239,7 +239,7 @@
 !------ Check if end of file was found, now this means error!
 !
         if (leof) then
-          call ERRMSG (946, 0, 'RDBAR', &
+          call write_error_message_rtc (946, 0, 'RDBAR', &
                        ' Premature end of file: '//filnam(1:namlen), OUTUNI)
           RetVal = 946
           Return
@@ -273,7 +273,7 @@
         Data_loop: do i = 1, nrrecs
           read(filuni, IOSTAT= iocond) bufdat, buftim, bufval
           if (iocond .ne. 0) then
-            call ERRMSG (946, 0, 'RDBAR', &
+            call write_error_message_rtc (946, 0, 'RDBAR', &
                          ' Error reading data from file: '//filnam(1:namlen), outuni)
             RetVal = 946
             Return
@@ -290,7 +290,7 @@
 !---------- Check on valid date/time
 !
             if (juldt .lt. 0.0) then
-              call ERRMSG (946, 0, 'RDBAR', &
+              call write_error_message_rtc (946, 0, 'RDBAR', &
                            ' Wronge date/time file: '//filnam(1:namlen)// &
                            ': Barrier: '//BarrierNames(i), OUTUNI)
               RetVal = 946
@@ -390,7 +390,7 @@
 !
       read(filuni, IOSTAT= iocond) barnam
       if (iocond .gt. 0) then
-        call ERRMSG (946, 0, 'BARHDR', &
+        call write_error_message_rtc (946, 0, 'BARHDR', &
                      ' Error reading file: '//filnam(1:namlen), OUTUNI)
         RetVal = 946
         Return
@@ -417,11 +417,11 @@
 !
         read(filuni, IOSTAT= iocond) cinter
         if (iocond .lt. 0) then
-          call ERRMSG (946, 0, 'BARHDR', &
+          call write_error_message_rtc (946, 0, 'BARHDR', &
                        ' Premature end of file: '//filnam(1:namlen), OUTUNI)
         endif
         if (iocond .gt. 0) then
-          call ERRMSG (946, 0, 'BARHDR', &
+          call write_error_message_rtc (946, 0, 'BARHDR', &
                        ' Error reading file: '//filnam(1:namlen), OUTUNI)
         endif
         if (Iocond .ne. 0) then
@@ -434,11 +434,11 @@
 !
         read(filuni, IOSTAT= iocond) nrrecs
         if (iocond .lt. 0) then
-          call ERRMSG (946, 0, 'BARHDR', &
+          call write_error_message_rtc (946, 0, 'BARHDR', &
                        ' Premature end of file: '//filnam(1:namlen), OUTUNI)
         endif
         if (iocond .gt. 0) then
-          call ERRMSG (946, 0, 'BARHDR', &
+          call write_error_message_rtc (946, 0, 'BARHDR', &
                        ' Error reading file: '//filnam(1:namlen), OUTUNI)
         endif
         if (Iocond .ne. 0) then

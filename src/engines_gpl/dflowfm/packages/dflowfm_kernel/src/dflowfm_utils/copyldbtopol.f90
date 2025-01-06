@@ -30,14 +30,22 @@
 !
 !
 
+module m_copyldbtopol
+
+implicit none
+
+private
+
+public :: copyldbtopol
+
+contains
+
   subroutine COPYLDBTOPOL()
      use precision, only: dp
      use m_polygon
      use m_missing
      use m_landboundary
      use geometry_module, only: dbpinpol
-
-     implicit none
 
      integer :: k
      integer :: mx
@@ -121,3 +129,5 @@
 
      return
   end subroutine COPYLDBTOPOL
+
+end module m_copyldbtopol

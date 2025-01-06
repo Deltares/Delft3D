@@ -30,11 +30,21 @@
 !
 !
 
+module m_iadvecini
+
+implicit none
+
+private
+
+public :: iadvecini
+
+contains
+
  subroutine iadvecini()
     use m_flowgeom
     use m_flow
     use unstruc_messages
-    implicit none
+
     integer :: L, jado
 
     jado = 0
@@ -70,3 +80,5 @@
     end do
 
  end subroutine iadvecini
+
+end module m_iadvecini

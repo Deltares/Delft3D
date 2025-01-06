@@ -30,13 +30,23 @@
 !
 !
 
+module m_selllinksinpol
+
+implicit none
+
+private
+
+public :: selllinksinpol
+
+contains
+
    subroutine SELLLINKSINPOL(LIN, N)
       use precision, only: dp
       use m_netw
       use m_missing, only: dmiss, jins
       use geometry_module, only: pinpok
       use m_min_max_pol
-      implicit none
+
       integer :: N
       integer :: LIN(N)
 
@@ -72,3 +82,5 @@
          end do
       end if
    end subroutine SELLLINKSINPOL
+
+end module m_selllinksinpol

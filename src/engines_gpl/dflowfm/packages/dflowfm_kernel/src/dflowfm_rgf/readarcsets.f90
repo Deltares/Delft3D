@@ -30,6 +30,18 @@
 !
 !
 
+module m_readarcsets
+use m_reaarc, only: reaarc
+
+
+implicit none
+
+private
+
+public :: readarcsets
+
+contains
+
       subroutine REAdarcsets(mlist)
          use precision, only: dp
          use m_netw
@@ -37,8 +49,7 @@
          use M_MISSING
          use m_readyy
          use m_delpol
-
-         implicit none
+         use m_filez, only: oldfil, doclose
 
          integer :: Mlist
          integer :: Marc
@@ -115,3 +126,5 @@
          call READYY(' ', -1d0)
 
       end subroutine REAdarcsets
+
+end module m_readarcsets

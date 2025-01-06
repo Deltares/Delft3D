@@ -30,6 +30,16 @@
 !
 !
 
+module m_ispolystartend
+
+implicit none
+
+private
+
+public :: ispolystartend
+
+contains
+
     !> Checks whether a polyline point is at the start or end of a polyline.
     !!
     !! Multiple polylines are stored in one large array, separated by dmiss.
@@ -38,7 +48,7 @@
     logical function ispolystartend(X, N, MAXPOL, ipoi) result(res)
        use precision, only: dp
        use m_missing
-       implicit none
+
        integer, intent(in) :: MAXPOL !< Length of polyline coordinate arrays.
        real(kind=dp), intent(in) :: X(MAXPOL) !< Entire polyline coordinate array
        integer, intent(in) :: N !< Index of last filled polyline point (npol<=maxpol)
@@ -60,3 +70,5 @@
        res = (x(ipoi - 1) == dmiss .or. x(ipoi + 1) == dmiss)
 
     end function ispolystartend
+
+end module m_ispolystartend

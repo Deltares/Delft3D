@@ -30,11 +30,21 @@
 !
 !
 
+module m_copyldbpiecetopol
+
+implicit none
+
+private
+
+public :: copyldbpiecetopol
+
+contains
+
   subroutine COPYLDBPIECETOPOL(M1, M2)
      use M_POLYGON
      use m_missing
      use M_LANDBOUNDARY
-     implicit none
+
      integer :: M1, M2
 
      integer :: m
@@ -47,3 +57,5 @@
      end do
      return
   end subroutine COPYLDBPIECETOPOL
+
+end module m_copyldbpiecetopol

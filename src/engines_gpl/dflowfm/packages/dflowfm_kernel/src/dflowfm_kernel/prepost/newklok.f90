@@ -30,9 +30,19 @@
 !
 !
 
+module m_newklok
+
+implicit none
+
+private
+
+public :: newklok
+
+contains
+
   subroutine NEWklok(cpu)
      use precision, only: dp
-     implicit none
+
      real(kind=dp) :: cpu
      real :: currentcpu
 
@@ -40,3 +50,5 @@
      cpu = currentcpu
 
   end subroutine NEWklok
+
+end module m_newklok

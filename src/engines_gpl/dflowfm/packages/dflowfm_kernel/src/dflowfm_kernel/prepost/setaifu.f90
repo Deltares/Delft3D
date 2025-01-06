@@ -30,13 +30,23 @@
 !
 !
 
+module m_setaifu
+
+implicit none
+
+private
+
+public :: setaifu
+
+contains
+
  subroutine setaifu() ! set bed skewness array for roughness
     use precision, only: dp
     use m_flow
     use m_flowgeom
     use m_netw
     use m_missing
-    implicit none
+
     integer :: k, L, m, n, k1, k2
     real(kind=dp) :: zu, ai, bi, zkk
     aifu = 1d0
@@ -73,3 +83,5 @@
     end do
 
  end subroutine setaifu
+
+end module m_setaifu

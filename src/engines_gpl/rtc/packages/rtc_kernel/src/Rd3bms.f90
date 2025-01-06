@@ -94,7 +94,7 @@
 
       CALL SKPCOM (IN, ENDFIL,'RTC')
 !c    IF (ENDFIL)
-!c   *  CALL ERRMSG (911, 0, 'Rd3bms', ' 3B-Maatregelfile', IOUT1)
+!c   *  call write_error_message_rtc (911, 0, 'Rd3bms', ' 3B-Maatregelfile', IOUT1)
 
 ! *********************************************************************
 ! *** read data
@@ -141,7 +141,7 @@
            ReadError = .false.
            Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
            If (Endfil .or. .not. success) then
-              Call ErrMsg (974, 0, 'Rd3bMs', ' Unexpected end of file ',IOUT1)
+              call write_error_message_rtc (974, 0, 'Rd3bMs', ' Unexpected end of file ',IOUT1)
               RetVal = 974
               Return
            Endif
@@ -152,7 +152,7 @@
            If (.not. Success) ReadError = .true.
            IF (ReadError) then
               ErrorString = ' Read error during reading RTC measures with ParseToken for RR module' // STRING(1:len_trim(String))
-              Call ErrMsg (974,0,'Rd3BMs',ErrorString, IOUT1)
+              call write_error_message_rtc (974,0,'Rd3BMs',ErrorString, IOUT1)
               RetVal = 920
               Return
            Endif
@@ -191,7 +191,7 @@
            endif
 ! check On and Off checks '<', '=', '>'
            IF ( ONCH3B(N3MEAS) .NE. '<' .and. ONCH3B(N3MEAS) .NE. '=' .and.  ONCH3B(N3MEAS) .NE. '>' ) THEN
-              CALL ERRMSG (920,N3MEAS,MSID3B(N3MEAS),ONCH3B(N3MEAS),IOUT1)
+              call write_error_message_rtc (920,N3MEAS,MSID3B(N3MEAS),ONCH3B(N3MEAS),IOUT1)
               RetVal = 920
               Return
            ENDIF
@@ -202,7 +202,7 @@
                ReadError = .true.
            endif
            IF ( OFCH3B(N3MEAS) .NE. '<' .and. OFCH3B(N3MEAS) .NE. '=' .and. OFCH3B(N3MEAS) .NE. '>' ) THEN
-              CALL ERRMSG (920,N3MEAS,MSID3B(N3MEAS),OFCH3B(N3MEAS),IOUT1)
+              call write_error_message_rtc (920,N3MEAS,MSID3B(N3MEAS),OFCH3B(N3MEAS),IOUT1)
               RetVal = 920
               Return
            ENDIF
@@ -215,7 +215,7 @@
            ENDIF
            IF (ReadError) then
               ErrorString = ' Read error during reading RTC measures MLST records for RR module; MLST record =' // STRING(1:len_trim(String))
-              Call ErrMsg (974,0,'Rd3BMs',ErrorString, IOUT1)
+              call write_error_message_rtc (974,0,'Rd3BMs',ErrorString, IOUT1)
               RetVal = 920
               Return
            Endif
@@ -235,7 +235,7 @@
               WRITE(IOUT1,*) ' Number of decision parameters',NPARA
               WRITE(IOUT1,*) ' Measure id ',MSBP3B(N3MEAS)(1:len_trim(MsBp3B(N3Meas)))
               WRITE(IOUT1,*) ' Parameter id', (PARAID(IPARA)(1:len_trim(ParaId(IPara))),IPARA=1,NPARA)
-              CALL ERRMSG (919,0, MSBP3B(N3MEAS), ' 3B-measure file', IOUT1)
+              call write_error_message_rtc (919,0, MSBP3B(N3MEAS), ' 3B-measure file', IOUT1)
               RetVal = 919
               Return
            ENDIF
@@ -264,7 +264,7 @@
 ! Get full RRST record, structure id and notactive indication
            success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
            If (Endfil .or. .not. success) then
-              Call ErrMsg (974, 0, 'Rd3bMs', ' Unexpected end of file ',IOUT1)
+              call write_error_message_rtc (974, 0, 'Rd3bMs', ' Unexpected end of file ',IOUT1)
               RetVal = 974
               Return
            ENDIF
@@ -331,7 +331,7 @@
                endif
                IF (ReadError) then
                   ErrorString = ' Read error during reading RTC measure RRST record ty 10 for RR module; RRST record=' // STRING(1:len_trim(String))
-                  Call ErrMsg (974,0,'Rd3BMs',ErrorString, IOUT1)
+                  call write_error_message_rtc (974,0,'Rd3BMs',ErrorString, IOUT1)
                   RetVal = 974
                   Return
                ENDIF
@@ -340,7 +340,7 @@
                N3mLoc = N3MLoc -1
             Else
                ErrorString = ' Unsupported type of RTC-measure defined after ty keyword in RRST record for RR module; RRST record=' // STRING(1:len_trim(String))
-               Call ErrMsg (974,0,'Rd3BMs',ErrorString, IOUT1)
+               call write_error_message_rtc (974,0,'Rd3BMs',ErrorString, IOUT1)
                RetVal = 974
                Return
             Endif
@@ -357,7 +357,7 @@
             ENDIF
 
             IF (ReadError) then
-               Call ErrMsg (974,0,'Rd3BMs',' Read error during reading RTC measures RRST records for RR module',IOUT1)
+               call write_error_message_rtc (974,0,'Rd3BMs',' Read error during reading RTC measures RRST records for RR module',IOUT1)
                RetVal = 920
                Return
             Endif
@@ -384,7 +384,7 @@
            ReadError = .false.
            success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
            If (Endfil .or. .not. success) then
-              Call ErrMsg (974, 0, 'Rd3bMs', ' Unexpected end of file ',IOUT1)
+              call write_error_message_rtc (974, 0, 'Rd3bMs', ' Unexpected end of file ',IOUT1)
               RetVal = 974
               Return
            ENDIF
@@ -441,7 +441,7 @@
                endif
                IF (ReadError) then
                   ErrorString = ' Read error during reading RTC measure RRST record ty 9 for RR module; RRST record=' // STRING(1:len_trim(String))
-                  Call ErrMsg (974,0,'Rd3BMs',ErrorString, IOUT1)
+                  call write_error_message_rtc (974,0,'Rd3BMs',ErrorString, IOUT1)
                   RetVal = 974
                   Return
                ENDIF
@@ -501,15 +501,15 @@
 ! *********************************************************************
 
       IF (N3MEAS .GT. N3MES) THEN
-         CALL ERRMSG (913, 0,'Rd3bms',' N3MES 3B measures',IOUT1)
+         call write_error_message_rtc (913, 0,'Rd3bms',' N3MES 3B measures',IOUT1)
          RetVal = 913
          Return
       ELSEIF (N3MLOC+N3MatLoc .GT. N3LOC) THEN
-         CALL ERRMSG (913, 0,'Rd3bms',' N3LOC 3B lokatie-measures',IOUT1)
+         call write_error_message_rtc (913, 0,'Rd3bms',' N3LOC 3B lokatie-measures',IOUT1)
          RetVal = 913
          Return
       ELSEIF (N3MATLOC .GT. N3MAT) THEN
-         CALL ERRMSG (913, 0,'Rd3bms',' N3MATLOC 3B Matlab-measures',IOUT1)
+         call write_error_message_rtc (913, 0,'Rd3bms',' N3MATLOC 3B Matlab-measures',IOUT1)
          RetVal = 913
          Return
       ENDIF
@@ -532,7 +532,7 @@
 ! *********************************************************************
 
   150 CONTINUE
-      CALL ERRMSG (902, IECODE, 'Rd3bms', ' 3B-Maatregelfile', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rd3bms', ' 3B-Maatregelfile', IOUT1)
       RetVal = 902
       Return
 
@@ -561,7 +561,7 @@
             Do Imeas=1,N3Meas
                WRITE(IOUT1,*) MSID3B(IMEAS)(1:len_trim(MsId3B(Imeas)))
             Enddo
-            CALL ERRMSG (922,0, LCMS3B(I3LOC),  ' 3B-measure file', IOUT1)
+            call write_error_message_rtc (922,0, LCMS3B(I3LOC),  ' 3B-measure file', IOUT1)
             RetVal = 922
             Return
          ENDIF
@@ -675,7 +675,7 @@
 
       CALL SKPCOM (IN, ENDFIL,'RTC')
 !c    IF (ENDFIL)
-!c   *  CALL ERRMSG (911, 0, 'Rd3bms_oldformat', ' 3B-Maatregelfile', IOUT1)
+!c   *  call write_error_message_rtc (911, 0, 'Rd3bms_oldformat', ' 3B-Maatregelfile', IOUT1)
 
 ! *********************************************************************
 ! *** read data
@@ -705,7 +705,7 @@
            ReadError = .false.
            Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
            If (Endfil .or. .not. success) then
-              Call ErrMsg (974, 0, 'Rd3bMs_oldformat', ' Unexpected end of file ',IOUT1)
+              call write_error_message_rtc (974, 0, 'Rd3bMs_oldformat', ' Unexpected end of file ',IOUT1)
               RetVal = 974
               Return
            Endif
@@ -749,7 +749,7 @@
            endif
 ! check On and Off checks '<', '=', '>'
            IF ( ONCH3B(N3MEAS) .NE. '<' .and. ONCH3B(N3MEAS) .NE. '=' .and.  ONCH3B(N3MEAS) .NE. '>' ) THEN
-              CALL ERRMSG (920,N3MEAS,MSID3B(N3MEAS),ONCH3B(N3MEAS),IOUT1)
+              call write_error_message_rtc (920,N3MEAS,MSID3B(N3MEAS),ONCH3B(N3MEAS),IOUT1)
               RetVal = 920
               Return
            ENDIF
@@ -760,7 +760,7 @@
                ReadError = .true.
            endif
            IF ( OFCH3B(N3MEAS) .NE. '<' .and. OFCH3B(N3MEAS) .NE. '=' .and. OFCH3B(N3MEAS) .NE. '>' ) THEN
-              CALL ERRMSG (920,N3MEAS,MSID3B(N3MEAS),OFCH3B(N3MEAS),IOUT1)
+              call write_error_message_rtc (920,N3MEAS,MSID3B(N3MEAS),OFCH3B(N3MEAS),IOUT1)
               RetVal = 920
               Return
            ENDIF
@@ -772,7 +772,7 @@
              WRITE(IDEBUG,*) ' Check+set off', OFCH3B (N3MEAS), MSOFF3B(N3MEAS)
            ENDIF
            IF (ReadError) then
-              Call ErrMsg (974,0,'Rd3BMs_oldformat',' Read error during reading RTC measures MLST records for RR module',IOUT1)
+              call write_error_message_rtc (974,0,'Rd3BMs_oldformat',' Read error during reading RTC measures MLST records for RR module',IOUT1)
               RetVal = 920
               Return
            Endif
@@ -792,7 +792,7 @@
               WRITE(IOUT1,*) ' Number of decision parameters',NPARA
               WRITE(IOUT1,*) ' Measure id ',MSBP3B(N3MEAS)(1:len_trim(MsBp3B(N3Meas)))
               WRITE(IOUT1,*) ' Parameter id', (PARAID(IPARA)(1:len_trim(ParaId(IPara))),IPARA=1,NPARA)
-              CALL ERRMSG (919,0, MSBP3B(N3MEAS), ' 3B-measure file', IOUT1)
+              call write_error_message_rtc (919,0, MSBP3B(N3MEAS), ' 3B-measure file', IOUT1)
               RetVal = 919
               Return
            ENDIF
@@ -807,7 +807,7 @@
            ReadError = .false.
            success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
            If (Endfil .or. .not. success) then
-              Call ErrMsg (974, 0, 'Rd3bMs_oldformat', ' Unexpected end of file ',IOUT1)
+              call write_error_message_rtc (974, 0, 'Rd3bMs_oldformat', ' Unexpected end of file ',IOUT1)
               RetVal = 974
               Return
            ENDIF
@@ -843,7 +843,7 @@
                ReadError = .true.
            endif
            IF (ReadError) then
-              Call ErrMsg (974,0,'Rd3bMs_oldformat',' Read error during reading RTC measure 3BML record for RR module',IOUT1)
+              call write_error_message_rtc (974,0,'Rd3bMs_oldformat',' Read error during reading RTC measure 3BML record for RR module',IOUT1)
               RetVal = 974
               Return
            ENDIF
@@ -877,7 +877,7 @@
            ReadError = .false.
            success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
            If (Endfil .or. .not. success) then
-              Call ErrMsg (974, 0, 'Rd3bMs_oldformat', ' Unexpected end of file ',IOUT1)
+              call write_error_message_rtc (974, 0, 'Rd3bMs_oldformat', ' Unexpected end of file ',IOUT1)
               RetVal = 974
               Return
            ENDIF
@@ -943,15 +943,15 @@
 ! *********************************************************************
 
       IF (N3MEAS .GT. N3MES) THEN
-         CALL ERRMSG (913, 0,'Rd3bms_oldformat',' N3MES 3B measures',IOUT1)
+         call write_error_message_rtc (913, 0,'Rd3bms_oldformat',' N3MES 3B measures',IOUT1)
          RetVal = 913
          Return
       ELSEIF (N3MLOC+N3MatLoc .GT. N3LOC) THEN
-         CALL ERRMSG (913, 0,'Rd3bms_oldformat',' N3LOC 3B lokatie-measures',IOUT1)
+         call write_error_message_rtc (913, 0,'Rd3bms_oldformat',' N3LOC 3B lokatie-measures',IOUT1)
          RetVal = 913
          Return
       ELSEIF (N3MATLOC .GT. N3MAT) THEN
-         CALL ERRMSG (913, 0,'Rd3bms_oldformat',' N3MATLOC 3B Matlab-measures',IOUT1)
+         call write_error_message_rtc (913, 0,'Rd3bms_oldformat',' N3MATLOC 3B Matlab-measures',IOUT1)
          RetVal = 913
          Return
       ENDIF
@@ -963,7 +963,7 @@
 ! *********************************************************************
 
   150 CONTINUE
-      CALL ERRMSG (902, IECODE, 'Rd3bms_oldformat', ' 3B-Maatregelfile', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rd3bms_oldformat', ' 3B-Maatregelfile', IOUT1)
       RetVal = 902
       Return
 
@@ -989,7 +989,7 @@
             WRITE(IOUT1,*) ' Measure',N3MEAS
             WRITE(IOUT1,*) ' RR-location id',LCMS3B (I3LOC)
             WRITE(IOUT1,*) ' RR-Measure id', (MSID3B(IMEAS),IMEAS=1,N3MEAS)
-            CALL ERRMSG (922,0, LCMS3B(I3LOC),  ' 3B-measure file', IOUT1)
+            call write_error_message_rtc (922,0, LCMS3B(I3LOC),  ' 3B-measure file', IOUT1)
             RetVal = 922
             Return
          ENDIF

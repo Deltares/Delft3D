@@ -31,9 +31,19 @@
 !
 
 !
+module m_indeks
+
+implicit none
+
+private
+
+public :: indeks
+
+contains
+
       subroutine INDEKS(N, ARRIN, INDX)
          use precision, only: dp
-         implicit none
+
          real(kind=dp) :: arrin
          integer :: i
          integer :: indx
@@ -82,3 +92,5 @@
          INDX(I) = INDXT
          GO TO 10
       end
+
+end module m_indeks

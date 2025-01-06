@@ -33,10 +33,19 @@
 !!
 !! This implementation does not yet take into account 1D links, hence the call
 !! is subject to the condition numl == 0 in flow_geominit.
+module m_remove_unused_nodes_and_links
+
+implicit none
+
+private
+
+public :: remove_unused_nodes_and_links
+
+contains
+
 subroutine remove_unused_nodes_and_links()
    use network_data, only: numk, numl, nump, kc, kn, lne, lnn, netcell, nmk, nod, tnod, xk, yk, zk
    use m_alloc
-   implicit none
 
    ! local variables
    logical, dimension(:), allocatable :: nod_used !< flag specifying whether a node is used in the face definitions
@@ -190,3 +199,5 @@ subroutine remove_unused_nodes_and_links()
    deallocate (lin_used, l2lnew)
 
 end subroutine remove_unused_nodes_and_links
+
+end module m_remove_unused_nodes_and_links

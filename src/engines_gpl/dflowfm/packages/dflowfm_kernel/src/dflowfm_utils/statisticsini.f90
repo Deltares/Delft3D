@@ -30,12 +30,25 @@
 !
 !
 
+module m_statisticsini
+use m_statisticsnewstep, only: statisticsnewstep
+
+implicit none
+
+private
+
+public :: statisticsini
+
+contains
+
  subroutine statisticsini()
     use m_statistics
-    implicit none
+
     call statisticsnewstep()
     cumavedif = 0d0 ! for now only, cum dif with analytic sol
     cumrmsdif = 0d0 ! for now only, cum dif with analytic sol
     cumdmxdif = 0d0 ! for now only, cum dif with analytic sol
     numcum = 0
  end subroutine statisticsini
+
+end module m_statisticsini

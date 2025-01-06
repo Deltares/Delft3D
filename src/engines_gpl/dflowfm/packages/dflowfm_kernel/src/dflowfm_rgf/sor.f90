@@ -30,12 +30,22 @@
 !
 !
 
+module m_sor
+
+implicit none
+
+private
+
+public :: sor
+
+contains
+
       subroutine SOR(A, B, C, D, E, U, RJAC, M1, N1, M2, N2)
          use precision, only: dp
          use m_grid
          use m_gridsettings
          use m_orthosettings, only: ITIN
-         implicit none
+
          real(kind=dp) :: anorm
          real(kind=dp) :: anormf
          real(kind=dp) :: half
@@ -85,3 +95,5 @@
 
          return
       end subroutine SOR
+
+end module m_sor

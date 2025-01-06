@@ -30,8 +30,19 @@
 !
 !
 
+module m_readxymis
+
+implicit none
+
+private
+
+public :: readxymis
+
+contains
+
       subroutine READXYMIS(MINP)
          use M_MISSING
+         use m_filez, only: readerror, zoekal, message
          implicit none
          integer :: ja
          integer :: l
@@ -49,3 +60,5 @@
          return
 888      call READERROR('READING MISSING VALUE XY, BUT GETTING', REC, MINP)
       end
+
+end module m_readxymis

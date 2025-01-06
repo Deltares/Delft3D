@@ -30,9 +30,19 @@
 !
 !
 
+module m_bilin
+
+implicit none
+
+private
+
+public :: bilin
+
+contains
+
       subroutine BILIN(X, Y, Z, XP, YP, ZP)
          use precision, only: dp
-         implicit none
+
          real(kind=dp) :: r1
          real(kind=dp) :: r2
          real(kind=dp) :: x1
@@ -68,3 +78,5 @@
          ZP = XRM * YRM * Z(1) + XR * YRM * Z(2) + XR * YR * Z(3) + XRM * YR * Z(4)
          return
       end
+
+end module m_bilin

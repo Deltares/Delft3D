@@ -30,11 +30,21 @@
 !
 !
 
+module m_insertsamples
+
+implicit none
+
+private
+
+public :: insertsamples
+
+contains
+
       subroutine insertsamples(L1, L2)
          use precision, only: dp
          use m_samples
          use m_gridsettings, only: mfac
-         implicit none
+
          integer :: L1, L2
          integer :: k
          real(kind=dp) :: aa, bb
@@ -54,3 +64,5 @@
          IPSTAT = IPSTAT_NOTOK
 
       end subroutine insertsamples
+
+end module m_insertsamples

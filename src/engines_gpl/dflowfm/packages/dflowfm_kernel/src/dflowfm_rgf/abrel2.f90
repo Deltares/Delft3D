@@ -30,14 +30,22 @@
 !
 !
 
+module m_abrel2
+
+implicit none
+
+private
+
+public :: abrel2
+
+contains
+
       subroutine ABREL2(X, Y, D, NN, T)
          use precision, only: dp
-
          use geometry_module, only: dbdistance
          use m_missing, only: dmiss
          use m_sferic, only: jsferic, jasfer3D
 
-         implicit none
          integer :: j
          integer :: nn
          real(kind=dp) :: X(NN), Y(NN), D(NN)
@@ -53,3 +61,5 @@
          end do
          return
       end subroutine ABREL2
+
+end module m_abrel2

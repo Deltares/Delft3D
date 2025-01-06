@@ -586,7 +586,7 @@ contains
 
 !> Construct and write the attributes flag_values and flag_meanings and flag_bounds to the NetCDF map class file
    function put_flag_attributes(ncid, varid, class_bnds, unit, classbnds_name, lbound, ubound) result(ierr)
-      use string_module, only: replace_char
+      use string_module, only: replace_char, ichar_space, ichar_underscore
       use m_missing, only: dmiss
       integer, intent(in) :: ncid !< NetCDF file id
       integer, intent(in) :: varid !< variable id of the data variable that is stored using classes/flag values.
@@ -616,7 +616,7 @@ contains
          ubound_ = dmiss
       end if
 
-      call replace_char(unit, ichar(' '), ichar('_'))
+      call replace_char(unit, ichar_space, ichar_underscore)
 
       max_user_classes = size(class_bnds)
       allocate (values(max_user_classes + 1))

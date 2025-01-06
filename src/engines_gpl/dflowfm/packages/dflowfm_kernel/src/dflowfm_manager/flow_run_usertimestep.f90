@@ -33,6 +33,16 @@
 !> Runs a user-timestep (do computational flowsteps until timeuser), but not the init and finalize.
 !!
 !! Should be preceded by a flow_run_usertimestep and followed by a flow_finalize_usertimestep.
+module m_flow_run_usertimestep
+
+implicit none
+
+private
+
+public :: flow_run_usertimestep
+
+contains
+
 subroutine flow_run_usertimestep(key, iresult) ! do computational flowsteps until timeuser
    use m_flow_single_timestep, only: flow_single_timestep
    use m_get_s_key
@@ -41,7 +51,7 @@ subroutine flow_run_usertimestep(key, iresult) ! do computational flowsteps unti
    use m_partitioninfo
    use m_gui
    use dfm_error
-   implicit none
+
    integer, intent(out) :: key
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
@@ -76,3 +86,5 @@ subroutine flow_run_usertimestep(key, iresult) ! do computational flowsteps unti
 
 888 continue
 end subroutine flow_run_usertimestep
+
+end module m_flow_run_usertimestep

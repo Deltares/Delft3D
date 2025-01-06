@@ -30,6 +30,16 @@
 !
 !
 
+module m_triangulate_quadsandmore
+
+implicit none
+
+private
+
+public :: triangulate_quadsandmore
+
+contains
+
       subroutine triangulate_quadsandmore(ja) ! ja==1, findcells moet opnieuw
 
          use m_netw
@@ -39,8 +49,6 @@
          use geometry_module, only: dbpinpol, dbdistance
          use m_sferic, only: jsferic, jasfer3D
          use gridoperations
-
-         implicit none
 
          integer ja
          integer in, k, k1, k2, k3, k4, k5, lnu
@@ -73,3 +81,5 @@
          end do
 
       end subroutine triangulate_quadsandmore
+
+end module m_triangulate_quadsandmore

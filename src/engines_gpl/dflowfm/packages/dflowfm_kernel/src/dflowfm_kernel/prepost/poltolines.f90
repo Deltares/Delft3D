@@ -30,9 +30,21 @@
 !
 !
 
-  subroutine POLTOLINES()
-     use precision, only: dp
+module m_poltolines
+use m_setpoint, only: setpoint
 
+
+implicit none
+
+private
+
+public :: poltolines
+
+contains
+
+  subroutine POLTOLINES()
+     use m_isnode, only: isnode
+     use precision, only: dp
      use m_connect, only: connect
      use m_netw
      use m_afmeting
@@ -40,7 +52,6 @@
      use m_cconstants
      use m_dlength, only: dlength
 
-     implicit none
      real(kind=dp) :: ael
      integer :: k
      integer :: k1
@@ -65,3 +76,5 @@
      end do
      return
   end subroutine POLTOLINES
+
+end module m_poltolines

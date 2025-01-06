@@ -30,9 +30,20 @@
 !
 !
 
- subroutine copylandboundaryto1Dnetwork()
-    use precision, only: dp
+module m_copylandboundaryto1dnetwork
 
+implicit none
+
+private
+
+public :: copylandboundaryto1dnetwork
+
+contains
+
+ subroutine copylandboundaryto1Dnetwork()
+    use m_regrid1d, only: regrid1d
+    use m_maptopolyline, only: maptopolyline
+    use precision, only: dp
     use m_accumulatedistance, only: accumulatedistance
     use m_polygon
     use m_landboundary
@@ -40,8 +51,6 @@
     use m_missing
     use gridoperations
     use m_set_nod_adm
-
-    implicit none
 
     integer :: MX = 1000000
     integer :: k, kk, k1, k2, n, LL, NL, ierr, nh
@@ -118,3 +127,5 @@
     call setnodadm(0)
 
  end subroutine copylandboundaryto1Dnetwork
+
+end module m_copylandboundaryto1dnetwork

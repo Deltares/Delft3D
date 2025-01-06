@@ -30,10 +30,20 @@
 !
 !
 
+module m_print_help_commandline
+
+implicit none
+
+private
+
+public :: print_help_commandline
+
+contains
+
 subroutine print_help_commandline()
    use m_gui
    use system_utils, only: FILESEP
-   implicit none
+
    character(len=255) :: progarg
    integer :: is, ie, n, istat
 
@@ -168,3 +178,5 @@ subroutine print_help_commandline()
    write (*, *) '      Output version information and exit.'
 
 end subroutine print_help_commandline
+
+end module m_print_help_commandline

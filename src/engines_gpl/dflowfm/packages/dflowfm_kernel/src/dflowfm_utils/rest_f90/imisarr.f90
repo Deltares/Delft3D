@@ -30,9 +30,19 @@
 !
 !
 
+module m_imisarr
+
+implicit none
+
+private
+
+public :: imisarr
+
+contains
+
       subroutine IMISARR(IH, MMAX, NMAX)
          use M_MISSING
-         implicit none
+
          integer :: i
          integer :: j
          integer :: mmax
@@ -46,3 +56,5 @@
          end do
          return
       end
+
+end module m_imisarr

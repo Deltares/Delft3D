@@ -30,6 +30,18 @@
 !
 !
 
+module m_reagrid
+use m_reaarc, only: reaarc
+
+
+implicit none
+
+private
+
+public :: reagrid
+
+contains
+
       !> Read a curvilinear grid to (ascii) grd-file.
       !! NOTE: reads 'old' (RGFGrid 3.x) and 'new' format (RGFGrid 4.x)
       !!
@@ -64,8 +76,7 @@
          use m_read_bar2pli
          use m_isitu
          use m_ecrrea
-
-         implicit none
+         use m_filez, only: oldfil, doclose, newfil
 
          character(LEN=*) :: FILNAM
          integer :: MRGF, JA
@@ -312,3 +323,5 @@
          return
 
       end subroutine REAgrid
+
+end module m_reagrid

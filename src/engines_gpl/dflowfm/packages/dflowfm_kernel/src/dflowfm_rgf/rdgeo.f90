@@ -30,10 +30,21 @@
 !
 !
 
+module m_rdgeo
+
+implicit none
+
+private
+
+public :: rdgeo
+
+contains
+
     subroutine RDGEO(xrd, yrd, xgeo, ygeo, JAPARIJS)
+       use m_bessel2wgs84, only: bessel2wgs84
        use precision, only: dp
        use m_sferic
-       implicit none
+
        integer :: japarijs
 !
 ! -----------------------------------------------------------------------------
@@ -177,3 +188,5 @@
        continue
        return
     end subroutine RDGEO
+
+end module m_rdgeo

@@ -30,6 +30,16 @@
 !
 !
 
+module m_makecoarse2finetriangleconnectioncells
+
+implicit none
+
+private
+
+public :: makecoarse2finetriangleconnectioncells
+
+contains
+
   subroutine MAKECOARSE2FINETRIANGLECONNECTIONCELLS()
      use precision, only: dp
      use m_netw
@@ -40,7 +50,6 @@
      use m_set_nod_adm
      use m_new_link
 
-     implicit none
      integer :: N3(6)
      real(kind=dp) :: ARN, XCN, YCN
      integer :: N, NN, K3, K, K0, NR, KA, KB, K1, K2, L1, L2, LNU, K01, KP, K7, KK3, K03, NN3, KK, L, K23
@@ -140,3 +149,5 @@
      call SETNODADM(0)
 
   end subroutine MAKECOARSE2FINETRIANGLECONNECTIONCELLS
+
+end module m_makecoarse2finetriangleconnectioncells

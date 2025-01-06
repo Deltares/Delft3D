@@ -30,6 +30,16 @@
 !
 !
 
+module m_refinepolygonusingnetwork
+
+implicit none
+
+private
+
+public :: refinepolygonusingnetwork
+
+contains
+
    subroutine REFINEPOLYGONUSINGNETWORK()
       use precision, only: dp
       use m_closein, only: closein
@@ -45,8 +55,6 @@
       use gridoperations
       use m_readyy
       use m_set_nod_adm
-
-      implicit none
 
       real(kind=dp) :: a
       real(kind=dp) :: af
@@ -270,3 +278,5 @@
 
       return
    end subroutine REFINEPOLYGONUSINGNETWORK
+
+end module m_refinepolygonusingnetwork

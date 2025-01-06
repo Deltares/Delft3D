@@ -31,11 +31,19 @@
 !
 
 !>    bilineair interpolation between four nodes
+module m_bilin6
+
+implicit none
+
+private
+
+public :: bilin6
+
+contains
+
       subroutine bilin6(x, y, z, xp, yp, zp)
          use precision, only: dp
          use m_missing
-
-         implicit none
 
          real(kind=dp), dimension(2, 2), intent(in) :: x, y !< node coordinates
          real(kind=dp), dimension(2, 2), intent(in) :: z !< node values
@@ -157,3 +165,5 @@
 
          return
       end
+
+end module m_bilin6

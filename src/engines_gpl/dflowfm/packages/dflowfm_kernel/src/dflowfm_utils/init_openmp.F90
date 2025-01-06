@@ -33,12 +33,22 @@
 !> Initializes OpenMP settings, when necessary.
 !! Call this once initially, or after changing the max number of OpenMP threads setting.
 !! When running in MPI-mode, OpenMP is switched off, unless (i.e., 1 OpenMP thread max).
+module m_init_openmp
+
+implicit none
+
+private
+
+public :: init_openmp
+
+contains
+
 integer function init_openmp(maxnumthreads, mpion) result(iresult)
 #ifdef _OPENMP
    use omp_lib
 #endif
    use dfm_error
-   implicit none
+
    integer, intent(in) :: maxnumthreads !< Desired maximum number of OpenMP threads.
    integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
 
@@ -67,3 +77,5 @@ integer function init_openmp(maxnumthreads, mpion) result(iresult)
    end if
 
 end function init_openmp
+
+end module m_init_openmp

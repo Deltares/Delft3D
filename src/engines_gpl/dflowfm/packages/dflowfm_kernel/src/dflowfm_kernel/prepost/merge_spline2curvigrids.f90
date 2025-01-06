@@ -31,6 +31,16 @@
 !
 
 !> merge grids from spline2curvi
+module m_merge_spline2curvigrids
+
+implicit none
+
+private
+
+public :: merge_spline2curvigrids
+
+contains
+
 subroutine merge_spline2curvigrids()
    use precision, only: dp
    use m_grid
@@ -39,8 +49,6 @@ subroutine merge_spline2curvigrids()
    use geometry_module, only: dbdistance, get_startend
    use m_sferic, only: jsferic, jasfer3D
    use m_increase_grid
-
-   implicit none
 
    real(kind=dp), dimension(:, :), allocatable :: xcnew, ycnew
 
@@ -148,3 +156,5 @@ subroutine merge_spline2curvigrids()
 
    return
 end subroutine merge_spline2curvigrids
+
+end module m_merge_spline2curvigrids

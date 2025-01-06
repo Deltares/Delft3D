@@ -31,14 +31,22 @@
 !
 
 !> merge two cells with a common link and update administration
+module m_mergecells
+
+implicit none
+
+private
+
+public :: mergecells
+
+contains
+
 subroutine mergecells(ic1, ic2, jatek)
    use m_dellink, only: dellink
    use m_netw
    use m_alloc
    use gridoperations
    use m_tek_link
-
-   implicit none
 
    integer, intent(in) :: ic1, ic2 !< cell numbers
    integer, intent(in) :: jatek !< plot (1) or not (0)
@@ -149,3 +157,5 @@ subroutine mergecells(ic1, ic2, jatek)
 
    return
 end subroutine mergecells
+
+end module m_mergecells

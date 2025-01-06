@@ -30,9 +30,19 @@
 !
 !
 
+module m_indeksi
+
+implicit none
+
+private
+
+public :: indeksi
+
+contains
+
       subroutine INDEKSI(N, NARRIN, INDX)
          use precision, only: dp
-         implicit none
+
          integer :: i
          integer :: indx
          integer :: indxt
@@ -81,3 +91,5 @@
          INDX(I) = INDXT
          GO TO 10
       end
+
+end module m_indeksi

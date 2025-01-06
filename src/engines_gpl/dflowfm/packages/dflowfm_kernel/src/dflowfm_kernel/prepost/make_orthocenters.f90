@@ -31,6 +31,16 @@
 !
 
 ! compose an orthogonal dual mesh (cell centers), while keeping the primary mesh (net nodes) fixed
+module m_make_orthocenters
+
+implicit none
+
+private
+
+public :: make_orthocenters
+
+contains
+
 subroutine make_orthocenters(dmaxnonortho, maxiter)
    use precision, only: dp
    use m_comp_circumcenter, only: comp_circumcenter
@@ -45,8 +55,6 @@ subroutine make_orthocenters(dmaxnonortho, maxiter)
    use m_readyy
    use m_qnerror
    use m_cirr
-
-   implicit none
 
    real(kind=dp), intent(in) :: dmaxnonortho !< maximum allowed non-orthogonality
    integer, intent(in) :: maxiter !< maximum number of iterations
@@ -164,3 +172,5 @@ subroutine make_orthocenters(dmaxnonortho, maxiter)
 
    return
 end subroutine make_orthocenters
+
+end module m_make_orthocenters

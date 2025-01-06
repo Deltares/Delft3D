@@ -48,6 +48,8 @@ contains
       use m_get_link_area_wid2D
       use m_get_prof2d
       use m_get_hpr_nostruc
+      use m_cor2linx, only: cor2linx
+      use m_cor2liny, only: cor2liny
 
       implicit none
 
@@ -57,7 +59,6 @@ contains
       real(kind=dp) :: hpr1, ar1, wid1, hpr2, ar2, wid2, aru, widu, aconvu
       real(kind=dp) :: dx1, dx2, frcn, BL1, BL2, b21, wu2, ai
       real(kind=dp) :: beta, bt2, deltaa, hyr, uucn, ucna, bob1, bob2, hsmall
-      real(kind=dp), external :: cor2linx, cor2liny
 
       if (japerim == 0) then
 

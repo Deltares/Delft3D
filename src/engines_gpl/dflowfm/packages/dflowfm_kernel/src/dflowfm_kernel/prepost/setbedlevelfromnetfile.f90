@@ -32,6 +32,16 @@
 
 !> Reads and sets cell-centered bed levels directly from the net file (when present).
 !! _net.nc file should contain a variable with standard_name=altitude
+module m_setbedlevelfromnetfile
+
+implicit none
+
+private
+
+public :: setbedlevelfromnetfile
+
+contains
+
 subroutine setbedlevelfromnetfile()
    use precision, only: dp
    use m_flowgeom
@@ -45,7 +55,6 @@ subroutine setbedlevelfromnetfile()
    use m_ec_interpolationsettings
    use m_delsam
    use m_interpdivers
-   implicit none
 
    integer :: ierr, ioncid, iconvtype, ncid, nmesh, im, id_bl, networkid
    real(kind=dp) :: bl_fillvalue
@@ -129,3 +138,5 @@ subroutine setbedlevelfromnetfile()
    call delsam(-1) ! deallocate
 
 end subroutine setbedlevelfromnetfile
+
+end module m_setbedlevelfromnetfile

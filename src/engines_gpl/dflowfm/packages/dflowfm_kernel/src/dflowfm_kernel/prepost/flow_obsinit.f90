@@ -30,6 +30,8 @@
 !
 !
 module m_flow_obsinit
+   use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
+   use m_runupgauges_on_flowgeom, only: runupgauges_on_flowgeom
    use m_crosssections_on_flowgeom, only: crosssections_on_flowgeom
 
    implicit none

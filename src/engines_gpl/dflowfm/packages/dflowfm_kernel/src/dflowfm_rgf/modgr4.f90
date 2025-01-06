@@ -30,7 +30,19 @@
 !
 !
 
+module m_modgr4
+use m_tospline, only: tospline
+
+implicit none
+
+private
+
+public :: modgr4
+
+contains
+
       subroutine MODGR4(NUMP, LANDORSPLINE)
+         use m_toland, only: toland
          use precision, only: dp
          use m_grid
          use m_landboundary
@@ -38,7 +50,7 @@
          use m_modfld
          use m_grid_block
          use m_qnerror
-         implicit none
+
          integer :: nump, landorspline
          integer :: m1, m2, n1, n2, i, j, in, jn, ncs, jdum
          real(kind=dp) :: EPS, X0, Y0, XN, YN, DIS, RL
@@ -83,3 +95,5 @@
          end do
          return
       end subroutine modgr4
+
+end module m_modgr4

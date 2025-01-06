@@ -40,7 +40,19 @@
 !>     |           |
 !>     |           |
 !>   2 x-----------x 3
+module m_pol2curvi
+
+implicit none
+
+private
+
+public :: pol2curvi
+
+contains
+
 subroutine pol2curvi(i1, i2, i3, ja4)
+   use m_tranfn2, only: tranfn2
+   use m_get_polstartend, only: get_polstartend
    use precision, only: dp
    use m_grid
    use m_gridsettings
@@ -49,7 +61,6 @@ subroutine pol2curvi(i1, i2, i3, ja4)
    use m_polygon
    use m_qnerror
    use m_increase_grid
-   implicit none
 
    integer, intent(in) :: i1, i2, i3 !< first, second and third corner point in polygon, respectively
    integer, intent(in) :: ja4 !< use polygon for fourth side (1) or not (0)
@@ -190,3 +201,5 @@ subroutine pol2curvi(i1, i2, i3, ja4)
 
    return
 end subroutine pol2curvi
+
+end module m_pol2curvi

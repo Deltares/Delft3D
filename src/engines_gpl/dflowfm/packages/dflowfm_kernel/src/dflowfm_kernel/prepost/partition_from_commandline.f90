@@ -31,6 +31,20 @@
 !
 
 !>  perform partitioning from command line
+module m_partition_from_commandline
+use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
+use m_cosphiunetcheck, only: cosphiunetcheck
+use m_preparecells, only: preparecells
+use m_partition_write_domains, only: partition_write_domains
+
+implicit none
+
+private
+
+public :: partition_from_commandline
+
+contains
+
 subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
 
    use network_data
@@ -38,8 +52,6 @@ subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_icg
    use m_polygon
    use dfm_error
    use gridoperations
-
-   implicit none
 
    character(len=255), intent(in) :: fnam !< filename
    integer, intent(in) :: md_Ndomains !< number of subdomains, Metis (>0) or polygon (0)
@@ -97,3 +109,5 @@ subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_icg
 
    return
 end subroutine partition_from_commandline
+
+end module m_partition_from_commandline

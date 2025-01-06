@@ -30,9 +30,19 @@
 !
 !
 
+module m_saveb
+
+implicit none
+
+private
+
+public :: saveb
+
+contains
+
       subroutine SAVEB(NPUT)
          use m_grid_block
-         implicit none
+
          integer :: nput
 
          MB2 = MB
@@ -42,3 +52,5 @@
          NPUTO = NPUT
          return
       end subroutine saveb
+
+end module m_saveb

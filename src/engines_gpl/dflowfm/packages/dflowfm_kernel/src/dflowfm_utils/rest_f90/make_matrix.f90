@@ -31,12 +31,20 @@
 !
 
 !> prepares a matrix for solver test (as in "mpitest")
+module m_make_matrix
+
+implicit none
+
+private
+
+public :: make_matrix
+
+contains
+
 subroutine make_matrix(CFL, s1)
    use precision, only: dp
    use m_reduce
    use m_flowgeom
-
-   implicit none
 
    real(kind=dp), intent(in) :: CFL !< CFL-number
    real(kind=dp), dimension(Ndx), intent(in) :: s1 !< exact solution
@@ -71,3 +79,5 @@ subroutine make_matrix(CFL, s1)
 
    return
 end subroutine make_matrix
+
+end module m_make_matrix

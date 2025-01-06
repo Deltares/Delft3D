@@ -30,7 +30,19 @@
 !
 !
 
+module m_timlin0
+
+implicit none
+
+private
+
+public :: timlin0
+
+contains
+
       subroutine TIMLIN0()
          implicit none
          return
       end
+
+end module m_timlin0

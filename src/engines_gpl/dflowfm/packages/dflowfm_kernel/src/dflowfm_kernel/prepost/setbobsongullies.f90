@@ -30,6 +30,16 @@
 !
 !
 
+module m_setbobsongullies
+
+implicit none
+
+private
+
+public :: setbobsongullies
+
+contains
+
  subroutine setbobsongullies() ! override bobs along pliz's, jadykes == 0: only heights, 1 = also dyke attributes
     use precision, only: dp
     use m_netw
@@ -46,8 +56,7 @@
     use m_wall_clock_time
     use m_reapol
     use m_find_crossed_links_kdtree2
-
-    implicit none
+    use m_filez, only: oldfil
 
     integer :: i, k, L, n1, n2, nt, minp, lastfoundk, kL, kint, kf, jacros
     integer :: iL, numLL, numcrossedLinks, ierror, jakdtree = 1, ja2pt
@@ -180,3 +189,5 @@
     end if
 
  end subroutine setbobsongullies
+
+end module m_setbobsongullies

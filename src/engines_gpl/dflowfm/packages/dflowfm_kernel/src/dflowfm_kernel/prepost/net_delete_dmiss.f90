@@ -31,14 +31,22 @@
 !
 
 !> delete missing values part of network
+module m_net_delete_dmiss
+
+implicit none
+
+private
+
+public :: net_delete_dmiss
+
+contains
+
 subroutine net_delete_DMISS()
    use m_delnode, only: delnode
    use m_netw
    use m_missing
    use gridoperations
    use m_set_nod_adm
-
-   implicit none
 
    integer :: k
 
@@ -56,3 +64,5 @@ subroutine net_delete_DMISS()
 
    return
 end subroutine net_delete_DMISS
+
+end module m_net_delete_dmiss

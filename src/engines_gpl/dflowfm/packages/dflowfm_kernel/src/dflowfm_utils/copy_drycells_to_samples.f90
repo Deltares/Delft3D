@@ -30,9 +30,20 @@
 !
 !
 
+module m_copy_drycells_to_samples
+
+implicit none
+
+private
+
+public :: copy_drycells_to_samples
+
+contains
+
  !> copy disabled netcells to samples (for dry points later)
  subroutine copy_drycells_to_samples()
-    implicit none
 
     return
  end subroutine
+
+end module m_copy_drycells_to_samples

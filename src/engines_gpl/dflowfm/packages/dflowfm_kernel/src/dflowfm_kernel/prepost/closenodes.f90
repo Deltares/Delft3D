@@ -42,13 +42,13 @@ contains
 
    subroutine CLOSENODES(K, KK, JA) ! ARE THESE NODES CLOSE, BUT UNCONNECTED?
       use precision, only: dp
-
       use m_closeenough, only: closeenough
       use m_netw
       use m_wearelt
       use gridoperations
       use m_dlength, only: dlength
-
+      use m_shortestlink, only: shortestlink
+      
       integer :: K, KK, JA
 
       integer :: k2
@@ -56,7 +56,7 @@ contains
       integer :: n
       integer :: nx
 
-      real(kind=dp) :: R0, R1, R2, SHORTESTLINK
+      real(kind=dp) :: R0, R1, R2
       JA = 0
       R0 = DLENGTH(K, KK)
       if (R0 > 6d0 * RCIR) return

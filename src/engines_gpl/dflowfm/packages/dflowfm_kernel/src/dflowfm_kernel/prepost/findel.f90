@@ -30,10 +30,20 @@
 !
 !
 
+module m_findel
+
+implicit none
+
+private
+
+public :: findel
+
+contains
+
   !> Finds the net link number between two net nodes.
   subroutine FINDEL(K1, K2, L1)
-     use m_netw
-     implicit none
+     use network_data, only: nmk, nod
+
      integer, intent(in) :: K1, K2 !< The two net node numbers between which a net link is searched for.
      integer, intent(out) :: L1 !< The shared netlink between nodes k1 and k2, or 0 when not found.
 
@@ -51,3 +61,5 @@
      L1 = 0
      return
   end subroutine FINDEL
+
+end module m_findel

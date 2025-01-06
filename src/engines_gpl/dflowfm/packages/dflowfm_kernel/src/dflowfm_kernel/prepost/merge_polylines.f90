@@ -31,15 +31,24 @@
 !
 
 !> merge polylines
-subroutine merge_polylines()
-   use precision, only: dp
+module m_merge_polylines
+use m_modln2, only: modln2
 
+implicit none
+
+private
+
+public :: merge_polylines
+
+contains
+
+subroutine merge_polylines()
+   use m_mergepoly, only: mergepoly
+   use precision, only: dp
    use m_polygon
    use m_missing
    use geometry_module, only: dbdistance, get_startend
    use m_sferic, only: jsferic, jasfer3D
-
-   implicit none
 
    real(kind=dp) :: xstart1, ystart1, xend1, yend1, xstart2, ystart2, xend2, yend2
 
@@ -130,3 +139,5 @@ subroutine merge_polylines()
 
    return
 end subroutine merge_polylines
+
+end module m_merge_polylines

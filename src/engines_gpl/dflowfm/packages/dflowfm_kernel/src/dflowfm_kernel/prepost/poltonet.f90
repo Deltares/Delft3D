@@ -30,9 +30,19 @@
 !
 !
 
-      subroutine POLTONET(L1, L2) ! PULL POLYGON TO NETWORK, KEEPING SUITABLE TRIANGLES TO OUTSIDE
-         use precision, only: dp
+module m_poltonet
 
+implicit none
+
+private
+
+public :: poltonet
+
+contains
+
+      subroutine POLTONET(L1, L2) ! PULL POLYGON TO NETWORK, KEEPING SUITABLE TRIANGLES TO OUTSIDE
+         use m_mirrorline2, only: mirrorline2
+         use precision, only: dp
          use m_closenetbndlink, only: closenetbndlink
          use m_netw
          use m_polygon
@@ -43,7 +53,6 @@
          use m_qnerror
          use m_makenetnodescoding
 
-         implicit none
          integer :: l1
          integer :: l2
 
@@ -156,3 +165,5 @@
          NPL = N
 
       end subroutine POLTONET
+
+end module m_poltonet

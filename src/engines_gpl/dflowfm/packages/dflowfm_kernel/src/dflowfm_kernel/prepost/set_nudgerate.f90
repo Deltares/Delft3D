@@ -31,17 +31,26 @@
 !
 
 !>  set nudge rates [1/s] from input in following order of preference:
-!>     1. nudge time [s]
-!>     2. nudge rate [NUDGE_RATE_UNIT_TO_SECI]
-!>     3. uniform nudge time [s]
-!>
-!>  caution: will overwrite nudge_rate in 1/s
+!!     1. nudge time [s]
+!!     2. nudge rate [NUDGE_RATE_UNIT_TO_SECI]
+!!     3. uniform nudge time [s]
+!!
+!!  caution: will overwrite nudge_rate in 1/s
+module m_set_nudgerate
+
+implicit none
+
+private
+
+public :: set_nudgerate
+
+contains
+
    subroutine set_nudgerate()
       use m_flowgeom, only: Ndx
       use m_flowparameters, only: Tnudgeuni
       use m_nudge
       use m_missing
-      implicit none
 
       integer :: k
 
@@ -63,3 +72,5 @@
 
       return
    end subroutine set_nudgerate
+
+end module m_set_nudgerate

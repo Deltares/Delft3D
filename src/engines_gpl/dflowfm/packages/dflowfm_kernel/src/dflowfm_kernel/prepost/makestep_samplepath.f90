@@ -31,6 +31,16 @@
 !
 
 ! make a step to the next sample in a sample path
+module m_makestep_samplepath
+
+implicit none
+
+private
+
+public :: makestep_samplepath
+
+contains
+
 subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
    use precision, only: dp
    use m_samples
@@ -42,8 +52,6 @@ subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
    use m_set_col
    use m_movabs
    use m_lnabs
-
-   implicit none
 
    integer, intent(in) :: ipprev !< previous sample point
    integer, intent(in) :: ipcur !< current  sample point
@@ -214,3 +222,5 @@ subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
 
    return
 end subroutine makestep_samplepath
+
+end module m_makestep_samplepath

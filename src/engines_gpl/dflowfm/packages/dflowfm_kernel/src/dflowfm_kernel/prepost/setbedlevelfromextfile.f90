@@ -30,6 +30,17 @@
 !
 !
 
+module m_setbedlevelfromextfile
+use m_setbedlevelfromnetfile, only: setbedlevelfromnetfile
+
+implicit none
+
+private
+
+public :: setbedlevelfromextfile
+
+contains
+
 subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old cell centre bottom level file
    use precision, only: dp
    use timespace_data
@@ -51,8 +62,6 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
    use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
    use m_delpol
    use m_timespaceinitialfield_mpi
-
-   implicit none
 
    logical :: bl_set_from_zkuni = .false.
    integer :: ja, ja1, ja2, method, iprimpos
@@ -269,3 +278,5 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
    end if
 
 end subroutine setbedlevelfromextfile ! setbottomlevels
+
+end module m_setbedlevelfromextfile

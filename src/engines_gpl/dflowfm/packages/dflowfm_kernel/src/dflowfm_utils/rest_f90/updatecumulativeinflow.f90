@@ -31,6 +31,16 @@
 !
 
 ! update m_wind::vextcum(:) with the realized inflow from m_wind::qextreal(:)
+module m_updatecumulativeinflow
+
+implicit none
+
+private
+
+public :: updatecumulativeinflow
+
+contains
+
 subroutine updateCumulativeInflow(deltat)
    use precision, only: dp
    use m_wind
@@ -46,3 +56,5 @@ subroutine updateCumulativeInflow(deltat)
    end do
 
 end subroutine updateCumulativeInflow
+
+end module m_updatecumulativeinflow

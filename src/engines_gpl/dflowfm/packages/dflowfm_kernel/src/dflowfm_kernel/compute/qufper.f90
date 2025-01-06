@@ -47,6 +47,10 @@ contains
       use precision, only: dp
       use m_flow
       use m_flowgeom
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
 
       integer :: L !< for link L,
       integer :: n12 !< find normal velocity components of the other links
@@ -57,8 +61,6 @@ contains
       real(kind=dp) :: cs, sn, ucin, snL, csL, ufx, ufy, ucinx, uciny
 
       integer :: nn12
-
-      real(kind=dp), external :: lin2nodx, lin2nody, nod2linx, nod2liny
 
       QufPer = 0d0
       cs = csu(L)

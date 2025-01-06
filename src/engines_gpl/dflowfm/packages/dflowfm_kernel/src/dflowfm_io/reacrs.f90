@@ -42,6 +42,7 @@ contains
       use m_readyy
       use m_qn_read_error
       use m_qn_eof_error
+      use m_filez, only: doclose, newfil
 
       implicit none
 

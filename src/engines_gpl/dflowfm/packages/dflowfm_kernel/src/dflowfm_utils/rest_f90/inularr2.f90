@@ -30,8 +30,17 @@
 !
 !
 
+module m_inularr2
+
+implicit none
+
+private
+
+public :: inularr2
+
+contains
+
       subroutine INULARR2(X, MMAX, NMAX)
-         implicit none
          integer :: i
          integer :: j
          integer :: mmax
@@ -44,3 +53,5 @@
          end do
          return
       end
+
+end module m_inularr2

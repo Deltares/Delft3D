@@ -31,11 +31,20 @@
 !
 
 !>    return x-component in link coordinate frame of vector in wall coordinate frame
+module m_nod2wallx
+
+implicit none
+
+private
+
+public :: nod2wallx
+
+contains
+
       real(kind=dp) function nod2wallx(nw, ux, uy)
          use precision, only: dp
          use m_flowgeom, only: csbwn, snbwn
          use m_sferic
-         implicit none
 
          integer, intent(in) :: nw !< wall element number
          real(kind=dp), intent(in) :: ux, uy !< vector components in wall coordinate frame
@@ -48,3 +57,5 @@
 
          return
       end function nod2wallx
+
+end module m_nod2wallx

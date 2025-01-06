@@ -31,6 +31,10 @@
 !
 
 module m_editgrid
+   use m_savegrd, only: savegrd
+   use m_modgr1, only: modgr1
+   use m_findnm, only: findnm
+   use m_delgrd, only: delgrd
    use m_tekgrpt
    use m_selecteditmode
    use m_ispoin

@@ -31,10 +31,19 @@
 !
 
 !> returns the index of a named lateral in the global array from this module
+module m_getlateralindex
+
+implicit none
+
+private
+
+public :: getlateralindex
+
+contains
+
 subroutine getLateralIndex(idlat, index)
    use m_laterals, only: lat_ids, numlatsg
 
-   implicit none
    character(len=*), intent(in) :: idlat !< id of the lateral
    integer, intent(out) :: index !< its position in the global array
    integer :: i
@@ -50,3 +59,5 @@ subroutine getLateralIndex(idlat, index)
    end do
 
 end subroutine getLateralIndex
+
+end module m_getlateralindex

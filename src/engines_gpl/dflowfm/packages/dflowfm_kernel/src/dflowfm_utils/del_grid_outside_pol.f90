@@ -30,13 +30,22 @@
 !
 !
 
+module m_del_grid_outside_pol
+
+implicit none
+
+private
+
+public :: del_grid_outside_pol
+
+contains
+
  ! delete curviliniar grid outside polygon(s)
  subroutine del_grid_outside_pol()
     use m_grid
     use m_polygon
     use m_tpoly
     use m_missing
-    implicit none
 
     type(tpoly), dimension(:), allocatable :: pols
 
@@ -118,3 +127,5 @@
 
     return
  end subroutine del_grid_outside_pol
+
+end module m_del_grid_outside_pol

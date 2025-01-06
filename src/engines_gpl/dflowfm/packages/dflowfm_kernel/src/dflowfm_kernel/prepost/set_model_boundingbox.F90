@@ -29,6 +29,16 @@
 
 !
 !
+module m_set_model_boundingbox
+
+implicit none
+
+private
+
+public :: set_model_boundingbox
+
+contains
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -50,7 +60,6 @@ function set_model_boundingbox() result(ierr)
    use coordinate_reference_system, only: transform_coordinates, WGS84_PROJ_STRING
    use proj6
 #endif
-   implicit none
 
    integer :: ierr !< Result status (DFM_NOERR if successful)
    integer :: n, k, kk, nv
@@ -161,3 +170,5 @@ function set_model_boundingbox() result(ierr)
 
 end function set_model_boundingbox
 
+
+end module m_set_model_boundingbox

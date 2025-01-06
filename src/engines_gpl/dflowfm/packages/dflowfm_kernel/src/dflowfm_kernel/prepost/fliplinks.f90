@@ -32,7 +32,19 @@
 
 !> flip links in quads, when appropriate
 !>   note: we look for a local optimum, which is not necessarily the global one
+module m_fliplinks
+use m_triangulate_cells, only: triangulate_cells
+
+implicit none
+
+private
+
+public :: fliplinks
+
+contains
+
 subroutine fliplinks()
+   use m_find_nearest_meshline, only: find_nearest_meshline
    use precision, only: dp
    use m_confrm
    use m_comp_ntopo
@@ -77,7 +89,6 @@ subroutine fliplinks()
 
    logical :: Lflip
 
-   integer, external :: nmk_opt
    real(kind=dp), external :: rand
 
    if (jaswan /= 1) then
@@ -289,3 +300,5 @@ subroutine fliplinks()
    return
 
 end subroutine fliplinks
+
+end module m_fliplinks

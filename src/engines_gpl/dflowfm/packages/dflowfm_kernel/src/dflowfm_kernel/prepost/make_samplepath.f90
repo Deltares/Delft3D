@@ -31,15 +31,27 @@
 !
 
 ! make a heighest walk in a structured sample set
+module m_make_samplepath
+use m_mergepoly, only: mergepoly
+
+
+implicit none
+
+private
+
+public :: make_samplepath
+
+contains
+
 subroutine make_samplepath(xp, yp)
+   use m_makestep_samplepath, only: makestep_samplepath
+   use m_ispoi1, only: ispoi1
    use precision, only: dp
    use m_netw
    use m_samples
    use m_arcinfo
    use m_alloc
    use m_missing
-
-   implicit none
 
    real(kind=dp), intent(inout) :: xp, yp !< coordinates of start point
 
@@ -152,3 +164,5 @@ subroutine make_samplepath(xp, yp)
 
    return
 end subroutine make_samplepath
+
+end module m_make_samplepath

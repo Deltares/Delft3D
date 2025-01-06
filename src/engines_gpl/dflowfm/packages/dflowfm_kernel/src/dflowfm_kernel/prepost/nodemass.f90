@@ -30,13 +30,22 @@
 !
 !
 
+module m_nodemass
+
+implicit none
+
+private
+
+public :: nodemass
+
+contains
+
   subroutine NODEMASS()
      use m_netw
      use M_AFMETING
      use m_missing, only: jins, dmiss
      use geometry_module, only: dpinpok
      use m_cconstants
-     implicit none
 
      integer :: in1
      integer :: in2
@@ -63,3 +72,5 @@
      end do
      return
   end subroutine NODEMASS
+
+end module m_nodemass

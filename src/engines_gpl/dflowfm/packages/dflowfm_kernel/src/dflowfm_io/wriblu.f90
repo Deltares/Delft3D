@@ -42,7 +42,7 @@ contains
 
    subroutine wriblu(mout) ! write bottom level u points
       use M_FLOWGEOM
-      implicit none
+      use m_filez, only: doclose
 
       integer :: mout, L
 

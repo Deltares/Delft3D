@@ -30,6 +30,18 @@
 !
 !
 
+module m_flow_externaloutput
+use m_step_to_screen, only: step_to_screen
+use m_inctime_split, only: inctime_split
+
+implicit none
+
+private
+
+public :: flow_externaloutput
+
+contains
+
  !> Write solution data to output files (map/his/restart/waq).
  !! Each output type has its own interval (see m_flowtimes),
  !! and output is only written if the current time tim exceeds the last
@@ -66,7 +78,6 @@
 #ifdef _OPENMP
     use omp_lib
 #endif
-    implicit none
 
     real(kind=dp), intent(in) :: tim !< Current time, should in fact be time1, since all writers use s1, q1, etc.
     real(kind=dp) :: time_map_mpt
@@ -320,3 +331,5 @@
     end if
 
  end subroutine flow_externaloutput
+
+end module m_flow_externaloutput

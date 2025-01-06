@@ -31,6 +31,10 @@
 !
 
 module m_editflow
+   use m_stopint, only: stopint
+   use m_flow_spatietimestep, only: flow_spatietimestep
+   use m_isflownode1d2d, only: isflownode1d2d
+   use m_isflowlink, only: isflowlink
    use m_write_flowdiff, only: write_flowdiff
    use m_viewcycle
    use m_typevalue

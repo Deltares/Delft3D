@@ -31,10 +31,18 @@
 !
 
 !>  determine optimum nmk in fliplinks, depending on link L
+module m_nmk_opt
+
+implicit none
+
+private
+
+public :: nmk_opt
+
+contains
+
 integer function nmk_opt(k)
    use m_netw
-
-   implicit none
 
    integer, intent(in) :: k !< node number
 
@@ -46,3 +54,5 @@ integer function nmk_opt(k)
 
    return
 end function nmk_opt
+
+end module m_nmk_opt

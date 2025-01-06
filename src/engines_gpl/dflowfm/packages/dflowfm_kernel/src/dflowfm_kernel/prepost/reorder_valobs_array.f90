@@ -31,6 +31,16 @@
 !
 
 !> Reorders a 1D array obsArray in valobs, so that values on inactive layers get fillValue. For sigma-layer model, obsArray are actually not changed.
+module m_reorder_valobs_array
+
+implicit none
+
+private
+
+public :: reorder_valobs_array
+
+contains
+
 subroutine reorder_valobs_array(n, obsArray, kb, kt, nlayb, fillValue)
    use precision, only: dp
    use m_alloc
@@ -68,3 +78,5 @@ subroutine reorder_valobs_array(n, obsArray, kb, kt, nlayb, fillValue)
    end do
 
 end subroutine reorder_valobs_array
+
+end module m_reorder_valobs_array

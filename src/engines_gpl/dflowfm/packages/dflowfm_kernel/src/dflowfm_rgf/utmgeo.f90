@@ -30,10 +30,19 @@
 !
 !
 
+module m_utmgeo
+
+implicit none
+
+private
+
+public :: utmgeo
+
+contains
+
       subroutine UTMGeo(xutm, yutm, xgeo, ygeo, IZONE, ierr)
          use precision, only: dp
          use m_ellips
-         implicit none
 !
 ! -----------------------------------------------------------------------------
 !
@@ -208,3 +217,5 @@
 900      continue
          return
       end subroutine UTMGeo
+
+end module m_utmgeo

@@ -30,10 +30,20 @@
 !
 !
 
+module m_goldln
+
+implicit none
+
+private
+
+public :: goldln
+
+contains
+
       subroutine GOLDLN(AX, BX, CX, TOL, XMIN, P, Q, N, XX, YY, DIS)
          use precision, only: dp
          use m_dislin
-         implicit none
+
          real(kind=dp) :: ax
          real(kind=dp) :: bx
          real(kind=dp) :: c
@@ -103,3 +113,5 @@
          end if
          return
       end
+
+end module m_goldln

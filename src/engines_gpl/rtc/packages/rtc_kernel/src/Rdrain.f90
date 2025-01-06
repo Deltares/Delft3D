@@ -75,7 +75,7 @@
 
       CALL SKPCOM (IN, ENDFIL, 'RTC')
       IF (ENDFIL) then
-         CALL ERRMSG (911, 0, 'Rdrain', ' Precipitation file', IOUT1)
+         call write_error_message_rtc (911, 0, 'Rdrain', ' Precipitation file', IOUT1)
          Retval = 911
          Return
       Endif
@@ -112,7 +112,7 @@
             if (NameStat(idum) .eq. Id_pre(ipre)) Loc2Stat(ipre) = idum
          Enddo
          if (loc2Stat(ipre) .eq. -1) then
-            CALL ERRMSG (938, 0, '  Rdrain', Id_pre(ipre), IOUT1)
+            call write_error_message_rtc (938, 0, '  Rdrain', Id_pre(ipre), IOUT1)
             Retval = 938
             Return
          Endif
@@ -143,7 +143,7 @@
 
         CALL SKPCOM (IN, ENDFIL, 'RTC')
         IF (ENDFIL) then
-           CALL ERRMSG (911, 0, '  Rdrain', STRING, IOUT1)
+           call write_error_message_rtc (911, 0, '  Rdrain', STRING, IOUT1)
            Retval = 911
            Return
         Endif
@@ -192,11 +192,11 @@
 ! *********************************************************************
 !
   991 CONTINUE
-      CALL ERRMSG (911, IECODE, 'Rdrain', ' neerslag file', IOUT1)
+      call write_error_message_rtc (911, IECODE, 'Rdrain', ' neerslag file', IOUT1)
       RetVal = 911
       Return
   150 CONTINUE
-      CALL ERRMSG (902, IECODE, 'Rdrain', ' neerslag file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rdrain', ' neerslag file', IOUT1)
       RetVal = 902
 
 ! *********************************************************************

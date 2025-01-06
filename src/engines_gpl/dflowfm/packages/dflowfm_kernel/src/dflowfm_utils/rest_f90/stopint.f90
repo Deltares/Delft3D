@@ -30,11 +30,21 @@
 !
 !
 
+module m_stopint
+
+implicit none
+
+private
+
+public :: stopint
+
+contains
+
       subroutine STOPINT()
          use unstruc_files
          use unstruc_netcdf, only: unc_closeall
          use m_partitioninfo
-         implicit none
+
          call ISCREENCLOSE()
          call unc_closeall()
          call close_all_files()
@@ -53,3 +63,5 @@
 
          stop
       end
+
+end module m_stopint

@@ -27,19 +27,22 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> smooth structured sample data and put it in zss(1,:,:)
-!>    D u/ D t = div grad u
+!!    D u/ D t = div grad u
+module m_smooth_samples
+
+implicit none
+
+private
+
+public :: smooth_samples
+
+contains
+
 subroutine smooth_samples(MXSAM, MYSAM, NS, NDIM, Nsamplesmooth, zs, zss)
    use precision, only: dp
-!   use m_samples
-!   use m_samples_refine
    use m_missing
    use m_readyy
-
-   implicit none
 
    integer, intent(in) :: MXSAM, MYSAM !< structured block sizes (>0) or not structured (0)
    integer, intent(in) :: NS !< number of samples
@@ -129,3 +132,5 @@ subroutine smooth_samples(MXSAM, MYSAM, NS, NDIM, Nsamplesmooth, zs, zss)
 
    return
 end subroutine smooth_samples
+
+end module m_smooth_samples

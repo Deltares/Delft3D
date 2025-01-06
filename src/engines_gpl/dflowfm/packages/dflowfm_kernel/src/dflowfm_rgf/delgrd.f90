@@ -30,6 +30,17 @@
 !
 !
 
+module m_delgrd
+use m_savegrd, only: savegrd
+
+implicit none
+
+private
+
+public :: delgrd
+
+contains
+
      subroutine delgrd(KEY, JASAVE, jadelpol)
 !    delete grid
         use m_confrm
@@ -39,7 +50,6 @@
         use geometry_module, only: dbpinpol
         use m_delpol
 
-        implicit none
         integer :: inhul, ja, i, j
         integer, intent(in) :: jasave, jadelpol
         integer, intent(inout) :: key
@@ -76,3 +86,5 @@
         if (jadelpol == 1) call delpol()
         return
      end subroutine delgrd
+
+end module m_delgrd

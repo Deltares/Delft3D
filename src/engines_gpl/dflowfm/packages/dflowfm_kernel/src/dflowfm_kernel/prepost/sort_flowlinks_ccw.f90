@@ -27,10 +27,17 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> sort flowlinks in nd%ln counterclockwise (copy-paste and modified from above)
+module m_sort_flowlinks_ccw
+
+implicit none
+
+private
+
+public :: sort_flowlinks_ccw
+
+contains
+
 subroutine sort_flowlinks_ccw()
    use precision, only: dp
    use m_flowgeom, only: xz, yz, nd, Ndx, ln
@@ -38,8 +45,6 @@ subroutine sort_flowlinks_ccw()
    use m_alloc
    use geometry_module, only: getdxdy, dcosphi, getdx, getdy
    use stdlib_sorting, only: sort_index
-
-   implicit none
 
    integer :: k ! node number
    integer :: maxlin ! array size
@@ -110,3 +115,5 @@ subroutine sort_flowlinks_ccw()
 
    return
 end subroutine sort_flowlinks_ccw
+
+end module m_sort_flowlinks_ccw

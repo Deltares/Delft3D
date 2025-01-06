@@ -30,9 +30,19 @@
 !
 !
 
-   subroutine regrid1D(jaregrid) ! based on 1D net itself, 1 = regrid, otherwise 1dgrid to pol
-      use precision, only: dp
+module m_regrid1d
 
+implicit none
+
+private
+
+public :: regrid1d
+
+contains
+
+   subroutine regrid1D(jaregrid) ! based on 1D net itself, 1 = regrid, otherwise 1dgrid to pol
+      use m_maptopolyline, only: maptopolyline
+      use precision, only: dp
       use m_accumulatedistance, only: accumulatedistance
       use m_flowgeom
       use m_flow
@@ -43,7 +53,6 @@
       use m_set_nod_adm
       use m_set_branch_lc
 
-      implicit none
       integer :: jaregrid
       real(kind=dp) :: dxa, xlb
       real(kind=dp), allocatable :: xh(:), yh(:), zh(:)
@@ -130,3 +139,5 @@
       end if
 
    end subroutine regrid1D
+
+end module m_regrid1d

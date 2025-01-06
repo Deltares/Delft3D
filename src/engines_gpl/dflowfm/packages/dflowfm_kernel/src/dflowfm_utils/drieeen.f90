@@ -30,10 +30,20 @@
 !
 !
 
+module m_drieeen
+
+implicit none
+
+private
+
+public :: drieeen
+
+contains
+
   subroutine DRIEEEN(XD, YD, ZD, Z)
      use precision, only: dp
      use m_howtoview
-     implicit none
+
      real(kind=dp) :: XD, YD, ZD, Z
 
      if (JVIEW == 1) then ! TEGEN Z-AS
@@ -47,3 +57,5 @@
      end if
      return
   end subroutine DRIEEEN
+
+end module m_drieeen

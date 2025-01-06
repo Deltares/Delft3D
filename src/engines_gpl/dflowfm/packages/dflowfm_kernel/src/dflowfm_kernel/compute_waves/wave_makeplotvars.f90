@@ -73,7 +73,7 @@ contains
       end do
       ust_mag = hypot(ustx_cc, usty_cc)
 
-      if (jawave == 3 .or. jawave == 4 .or. jawave == 6) then
+      if (jawave == 3 .or. jawave == 4 .or. jawave == 6 .or. jawave == 7) then
          do L = 1, lnx
             call getLbotLtop(L, Lb, Lt)
             do LL = Lb, Lt

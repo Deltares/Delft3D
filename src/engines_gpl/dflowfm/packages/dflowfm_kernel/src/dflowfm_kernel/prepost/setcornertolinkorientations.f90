@@ -30,6 +30,16 @@
 !
 !
 
+module m_setcornertolinkorientations
+
+implicit none
+
+private
+
+public :: setcornertolinkorientations
+
+contains
+
  subroutine setcornertolinkorientations()
     use precision, only: dp
     use m_flowgeom
@@ -39,7 +49,6 @@
     use unstruc_messages
     use m_missing, only: dmiss
     use geometry_module, only: half, spher2locvec
-    implicit none
 
     real(kind=dp) :: xL, yL
 
@@ -78,3 +87,5 @@
 
     return
  end subroutine setcornertolinkorientations
+
+end module m_setcornertolinkorientations

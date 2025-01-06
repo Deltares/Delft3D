@@ -30,9 +30,19 @@
 !
 !
 
+module m_nularrr
+
+implicit none
+
+private
+
+public :: nularrr
+
+contains
+
       subroutine NULARRR(X, MMAX, NMAX, LMAX)
          use precision, only: dp
-         implicit none
+
          integer :: i
          integer :: j
          integer :: l
@@ -50,3 +60,5 @@
          end do
          return
       end
+
+end module m_nularrr

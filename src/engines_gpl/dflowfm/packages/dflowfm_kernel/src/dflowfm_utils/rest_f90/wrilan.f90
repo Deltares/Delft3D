@@ -30,11 +30,21 @@
 !
 !
 
+module m_wrilan
+
+implicit none
+
+private
+
+public :: wrilan
+
+contains
+
       subroutine WRILAN(MPOL)
          use precision, only: dp
          use M_LANDBOUNDARY
          use m_wrildb
-         implicit none
+
          integer :: mpol
          integer :: mx
          real(kind=dp), allocatable :: XL(:), YL(:)
@@ -51,3 +61,5 @@
          deallocate (XL, YL)
 
       end
+
+end module m_wrilan

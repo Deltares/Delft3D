@@ -31,6 +31,18 @@
 !
 
 !  remove a netcell
+module m_removecell
+use m_remove_masked_netcells, only: remove_masked_netcells
+
+
+implicit none
+
+private
+
+public :: removecell
+
+contains
+
    subroutine removecell(xp, yp)
       use precision, only: dp
       use m_netw
@@ -39,8 +51,6 @@
       use gridoperations
       use m_qnerror
       use m_makenetnodescoding
-
-      implicit none
 
       integer, save :: NEEDFINDCELLS = 1
 
@@ -87,3 +97,5 @@
 
       return
    end subroutine removecell
+
+end module m_removecell

@@ -31,6 +31,18 @@
 !
 
 module m_editgridblok
+   use m_tekb, only: tekb
+   use m_savegrd, only: savegrd
+   use m_saveb, only: saveb
+   use m_restoreb, only: restoreb
+   use m_resetb, only: resetb
+   use m_positiveblok, only: positiveblok
+   use m_orthogrid, only: orthogrid
+   use m_nulfield, only: nulfield
+   use m_newblockpoint, only: newblockpoint
+   use m_dosmooth, only: dosmooth
+   use m_cutfield, only: cutfield
+   use m_adjust, only: adjust
    use m_shwxyz
    use m_selecteditmode
    use m_ispoin

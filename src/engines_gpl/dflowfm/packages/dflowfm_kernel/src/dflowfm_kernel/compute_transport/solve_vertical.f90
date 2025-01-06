@@ -32,6 +32,8 @@
 
 !> solve equations implicitly in vertical direction
 module m_solve_vertical
+use m_tridag, only: tridag
+
 
    implicit none
 

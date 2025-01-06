@@ -31,11 +31,20 @@
 !
 
 !>    return x-component in node coordinate frame of a vector in link coordinate frame
+module m_lin2nodx
+
+implicit none
+
+private
+
+public :: lin2nodx
+
+contains
+
       real(kind=dp) function lin2nodx(L, i12, ux, uy)
          use precision, only: dp
          use m_flowgeom, only: csb, snb
          use m_sferic
-         implicit none
 
          integer, intent(in) :: L !< flowlink number
          integer, intent(in) :: i12 !< left (1) or right (2) neighboring cell
@@ -49,3 +58,5 @@
 
          return
       end function lin2nodx
+
+end module m_lin2nodx

@@ -31,6 +31,19 @@
 !
 
 !> find meshline nearest to land boundary
+module m_find_nearest_meshline
+use m_toland, only: toland
+use m_linkcrossedbyland, only: linkcrossedbyland
+
+
+implicit none
+
+private
+
+public :: find_nearest_meshline
+
+contains
+
 subroutine find_nearest_meshline(jasnap)
    use precision, only: dp
    use m_connect_boundary_paths, only: connect_boundary_paths
@@ -42,8 +55,6 @@ subroutine find_nearest_meshline(jasnap)
    use m_alloc
    use m_missing
 
-   implicit none
-
    integer :: jasnap !< same as japroject
 
    integer :: netboundonly ! consider only the net boundary (1) or not (0)
@@ -52,7 +63,6 @@ subroutine find_nearest_meshline(jasnap)
    integer, dimension(:), allocatable :: klink ! link connected to the node in the shortest path
    real(kind=dp), dimension(:), allocatable :: dismin ! minimum distance to whole land boundary
 
-!   integer, parameter                                :: maxnodes=100        ! in connect_boundary_paths: large enough, depends on DCLOSE
    integer :: numnodes ! in connect_boundary_paths: number of nodes found so far
    integer, dimension(:), allocatable :: nodelist ! in connect_boundary_paths: nodes found so far
 
@@ -71,8 +81,6 @@ subroutine find_nearest_meshline(jasnap)
    real(kind=dp) :: xp, yp
    real(kind=dp) :: xn, yn, ddis, rL, ddismin ! in toland
    real(kind=dp) :: xn_prev, yn_prev, ddis_prev, rL_prev
-
-!   integer, parameter                                :: IMISS = -999
 
    real(kind=dp), parameter :: DISNEAREST = 2d0
 
@@ -1032,3 +1040,5 @@ contains
    end function dmeshwidth
 
 end subroutine find_nearest_meshline
+
+end module m_find_nearest_meshline

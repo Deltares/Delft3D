@@ -31,6 +31,16 @@
 !
 
 !> link-based mesh-topology information
+module m_topo_info
+
+implicit none
+
+private
+
+public :: topo_info
+
+contains
+
 real(kind=dp) function topo_info(L)
    use precision, only: dp
    use m_comp_ntopo
@@ -38,15 +48,12 @@ real(kind=dp) function topo_info(L)
    use m_landboundary
    use m_missing
 
-   implicit none
-
    integer :: L !< link number
 
    integer :: k1, k2, kL, kR
    integer :: icellL, icellR
    integer :: n
    integer :: jalandbound ! take landboundary into account (1) or not (0)
-   integer, external :: nmk_opt ! optimal nmk for the for nodes involved
 
 !  default
    topo_info = DMISS
@@ -73,3 +80,5 @@ real(kind=dp) function topo_info(L)
    return
 
 end function topo_info
+
+end module m_topo_info

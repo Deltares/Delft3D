@@ -30,13 +30,21 @@
 !
 !
 
+module m_dobatch
+
+implicit none
+
+private
+
+public :: dobatch
+
+contains
+
 subroutine dobatch() !
    use precision, only: dp
    use m_flow
    use m_flowgeom
    use unstruc_api, only: api_loadmodel, flow
-
-   implicit none
 
    integer :: k, ierr, mout, km(100)
    real(kind=dp) :: q30, q31, q32, q40, q41, q42, dt_max
@@ -82,3 +90,5 @@ subroutine dobatch() !
    close (mout)
 end subroutine dobatch
 
+
+end module m_dobatch

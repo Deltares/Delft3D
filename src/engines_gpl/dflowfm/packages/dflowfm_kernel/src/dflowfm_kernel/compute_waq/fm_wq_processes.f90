@@ -26,7 +26,13 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine fm_wq_processes_ini_sub()
+submodule(m_fm_wq_processes_sub) m_fm_wq_processes_sub_
+
+implicit none
+
+contains
+
+module subroutine fm_wq_processes_ini_sub()
    use m_add_bndtracer, only: add_bndtracer
    use m_getkbotktopmax
    use m_fm_wq_processes
@@ -45,8 +51,6 @@ subroutine fm_wq_processes_ini_sub()
    use m_string_utils, only: index_in_array
    use m_logger_helper, only: set_log_unit_number
    use m_wind, only: jawind, jarain
-
-   implicit none
 
    integer :: ierr_sub !< error status
    integer :: ierr_eho !< error status
@@ -364,7 +368,7 @@ subroutine fm_wq_processes_ini_sub()
    if (timon) call timstop(ithndl)
 end subroutine fm_wq_processes_ini_sub
 
-subroutine fm_wq_processes_ini_proc()
+module subroutine fm_wq_processes_ini_proc()
    use m_getkbotktopmax
    use m_fm_wq_processes
    use m_wq_processes_initialise
@@ -1195,7 +1199,7 @@ contains
 
 end subroutine dfm_waq_initexternalforcings
 
-subroutine get_waqinputname(qid, inputname, qidname)
+module subroutine get_waqinputname(qid, inputname, qidname)
    !> Convert qid (from .ext file) to waq input name (split in generic qidname and specific input name).
     !! If the input qid is not waq input name, then the same qid is returned (and no waq input name)
    implicit none
@@ -1299,7 +1303,7 @@ subroutine add_wqbot(wqbotnam, wqbotunit, iwqbot, janew)
    end if
 end subroutine add_wqbot
 
-subroutine fm_wq_processes_step(dt, time)
+module subroutine fm_wq_processes_step(dt, time)
    use precision, only: dp
    use m_fm_wq_processes
    use m_wq_processes_proces
@@ -1875,7 +1879,7 @@ logical function reduce_int_max_wq_processes(wq_processes_data)
 
 end function reduce_int_max_wq_processes
 
-subroutine default_fm_wq_processes()
+module subroutine default_fm_wq_processes()
    !> defaults for process library (WAQ)
    use m_fm_wq_processes
    use unstruc_model
@@ -1890,3 +1894,5 @@ subroutine default_fm_wq_processes()
 
    return
 end subroutine default_fm_wq_processes
+
+end submodule m_fm_wq_processes_sub_

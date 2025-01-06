@@ -30,10 +30,19 @@
 !
 !
 
+module m_updatebalance
+
+implicit none
+
+private
+
+public :: updatebalance
+
+contains
+
 subroutine updateBalance()
    use m_flow
    use m_partitioninfo
-   implicit none
 
    integer :: ivar
 
@@ -57,3 +66,5 @@ subroutine updateBalance()
 
    cumvolcur = 0d0
 end subroutine updateBalance
+
+end module m_updatebalance

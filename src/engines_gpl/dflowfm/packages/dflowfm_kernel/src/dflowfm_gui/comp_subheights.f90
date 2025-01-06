@@ -41,8 +41,7 @@ contains
       use precision, only: dp
       use m_splines
       use m_spline2curvi
-
-      implicit none
+      use m_splinelength_int, only: splinelength_int
 
       integer, intent(in) :: is !< center spline number
       logical, intent(in) :: Lorient !< orientation of cross spline
@@ -58,8 +57,6 @@ contains
       integer :: k, kk, kL, kR, ks, kkL, kkR, Ndum
 
       real(kind=dp), dimension(Nsubmax) :: hdum
-
-      real(kind=dp), external :: splinelength_int
 
       hL = 0d0
       hR = 0d0

@@ -30,6 +30,8 @@
 !
 !
 module m_set_bobs
+   use m_get2dnormal, only: get2dnormal
+   use m_get1ddir, only: get1ddir
    use m_duikerstoprofs
 
    implicit none

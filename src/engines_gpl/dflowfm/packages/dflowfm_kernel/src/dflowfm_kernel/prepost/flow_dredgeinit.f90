@@ -30,6 +30,16 @@
 !
 !
 
+module m_flow_dredgeinit
+
+implicit none
+
+private
+
+public :: flow_dredgeinit
+
+contains
+
 subroutine flow_dredgeinit()
    use m_dad
    use dredge_data_module, only: initdredge
@@ -37,8 +47,6 @@ subroutine flow_dredgeinit()
    use unstruc_model, only: md_dredgefile
    use m_sediment, only: stm_included
    use MessageHandling, only: mess, LEVEL_FATAL
-
-   implicit none
 
    logical :: error
 
@@ -53,3 +61,5 @@ subroutine flow_dredgeinit()
    end if
 
 end subroutine flow_dredgeinit
+
+end module m_flow_dredgeinit

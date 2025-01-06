@@ -30,9 +30,36 @@
 !
 !
 
+module m_flow_modelinit
+use m_fill_geometry_arrays_lateral, only: fill_geometry_arrays_lateral
+use m_datum2, only: datum2
+use m_calibration_init, only: calibration_init
+use m_update_vertadmin, only: update_vertadmin
+use m_update_geom, only: update_geom
+use m_setbobsongullies, only: setbobsongullies
+use m_resetflow, only: resetflow
+use m_netlink_tree, only: netlink_tree
+use m_init_lateral_his, only: init_lateral_his
+use m_flow_trachyinit, only: flow_trachyinit
+use m_flow_sedmorinit, only: flow_sedmorinit
+
+implicit none
+
+private
+
+public :: flow_modelinit
+
+contains
+
  !> Initializes the entire current model (geometry, boundaries, initial state)
  !! @return Error status: error (/=0) or not (0)
  integer function flow_modelinit() result(iresult) ! initialise flowmodel
+    use m_flow_geominit, only: flow_geominit
+    use m_flow_fourierinit, only: flow_fourierinit
+    use m_flow_dredgeinit, only: flow_dredgeinit
+    use m_flow_bl_ave_init, only: flow_bl_ave_init
+    use m_flow_bedforminit, only: flow_bedforminit
+    use m_flow_allocflow, only: flow_allocflow
     use m_xbeachwaves, only: xbeach_wave_init, xbeach_wave_input
     use m_flow_waveinit, only: flow_waveinit
     use m_alloc9basicwavearrays, only: alloc9basicwavearrays
@@ -97,17 +124,17 @@
     use m_structure_parameters
     use m_set_frcu_mor
     use m_flow_obsinit
+    use m_set_model_boundingbox, only: set_model_boundingbox
+    use m_init_openmp, only: init_openmp
+    use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
     !
     ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
     ! Activate the following line (See also statements below)
     !use ifcore
     !
-    implicit none
 
     integer :: istat, L, ierr, k1, k2
     logical :: set_hu, use_u1
-    integer, external :: init_openmp
-    integer, external :: set_model_boundingbox
 
     real(kind=dp), allocatable :: weirdte_save(:)
     real(kind=dp), allocatable :: ucxq_save(:), ucyq_save(:)
@@ -583,3 +610,5 @@
 1234 continue
 
  end function flow_modelinit
+
+end module m_flow_modelinit

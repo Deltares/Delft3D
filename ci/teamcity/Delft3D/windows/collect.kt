@@ -4,14 +4,13 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.failureConditions.*
-
 import Delft3D.template.*
+import Delft3D.step.*
 
 object WindowsCollect : BuildType({
 
     templates(
         TemplateMergeRequest,
-        TemplateMergeTarget,
         TemplatePublishStatus,
         TemplateMonitorPerformance
     )
@@ -33,11 +32,15 @@ object WindowsCollect : BuildType({
     }
 
     steps {
+        mergeTargetBranch {}
         python {
             name = "Run artifacts_cleaner.py"
             command = file {
                 filename = "src/scripts_lgpl/artifacts_cleaner.py"
                 scriptArguments = "--product dimrset --root ."
+            }
+            conditions {
+                equals("dep.${WindowsBuild.id}.product", "fm-suite")
             }
         }
         python {
@@ -87,8 +90,8 @@ object WindowsCollect : BuildType({
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
-
             artifacts {
+                buildRule = lastSuccessful()
                 artifactRules = """
                     *.dll => x64/lib
                     *.xsd => x64/share/drtc

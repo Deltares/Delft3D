@@ -30,6 +30,16 @@
 !
 !
 
+module m_makethindamadmin
+
+implicit none
+
+private
+
+public :: makethindamadmin
+
+contains
+
 subroutine makethindamadmin()
    use precision, only: dp
    use m_flowgeom
@@ -38,8 +48,6 @@ subroutine makethindamadmin()
    use m_sferic, only: jsferic, jasfer3D
    use geometry_module, only: getdxdy, duitpl, dlinedis
    use m_missing, only: dmiss
-
-   implicit none
 
    integer :: n, kk, L, k1, k3, k4, ja, ierr
    real(kind=dp) :: cs, sn, a, b, sig, dis, xn, yn, rrr
@@ -92,3 +100,5 @@ subroutine makethindamadmin()
       end do
    end do
 end subroutine makethindamadmin
+
+end module m_makethindamadmin

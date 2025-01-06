@@ -45,6 +45,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use dfm_error
    use m_laterals, only: numlatsg
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
+   use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
    implicit none
 
    integer, parameter :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS = 1
@@ -57,7 +58,6 @@ submodule(fm_external_forcings) fm_external_forcings_update
    logical :: l_set_frcu_mor = .false.
    logical :: first_time_wind
 
-   logical, external :: flow_initwaveforcings_runtime
    character(len=255) :: tmpstr
    type(c_time) :: ecTime !< Time in EC-module
 
@@ -68,6 +68,8 @@ contains
 
    !> set field oriented boundary conditions
    module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
+      use m_calibration_update, only: calibration_update
+      use m_flow_settidepotential, only: flow_settidepotential
       use precision, only: dp
       use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
       use m_update_pumps_with_levels, only: update_pumps_with_levels
@@ -402,7 +404,17 @@ contains
             ! If wave model and flow model do not cover each other exactly, NaN values can propagate in the flow model.
             ! Correct for this by setting values to zero
             do k = 1, ndx
-               if (isnan(hwavcom(k))) then ! one check should be enough, everything is collocated
+               if (ieee_is_nan(hwavcom(k)) .or. &
+                   ieee_is_nan(phiwav(k)) .or. &
+                   ieee_is_nan(sxwav(k)) .or. &
+                   ieee_is_nan(sywav(k)) .or. &
+                   ieee_is_nan(sbxwav(k)) .or. &
+                   ieee_is_nan(sbywav(k)) .or. &
+                   ieee_is_nan(dsurf(k)) .or. &
+                   ieee_is_nan(dwcap(k)) .or. &
+                   ieee_is_nan(mxwav(k)) .or. &
+                   ieee_is_nan(mywav(k)) .or. &
+                   hs(k) <= epshu) then
                   hwavcom(k) = 0d0
                   twavcom(k) = 0d0
                   sxwav(k) = 0d0

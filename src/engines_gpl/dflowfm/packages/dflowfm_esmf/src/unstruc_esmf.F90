@@ -31,6 +31,7 @@
 !
 #define ESMF_CHECK if (ESMF_LogFoundError(rcToCheck=rc, line=__LINE__, file=__FILE__)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 module unstruc_esmf
+   use m_inidat, only: inidat
    use esmf
    ! avoid namespace collision with network
    use unstruc_api, only: flowinit, flowstep, time_user, tstop_user, api_loadmodel

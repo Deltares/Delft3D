@@ -30,13 +30,21 @@
 !
 !
 
+module m_flow_bl_ave_init
+
+implicit none
+
+private
+
+public :: flow_bl_ave_init
+
+contains
+
 subroutine flow_bl_ave_init()
 
    use m_flowgeom, only: bl_ave, bl_ave0, ndx
    use m_missing, only: dmiss
    use m_alloc, only: realloc, aerr
-
-   implicit none
 
    integer :: ierr
 
@@ -47,3 +55,5 @@ subroutine flow_bl_ave_init()
    call aerr('bl_ave0(ndx)', ierr, ndx)
 
 end subroutine flow_bl_ave_init
+
+end module m_flow_bl_ave_init

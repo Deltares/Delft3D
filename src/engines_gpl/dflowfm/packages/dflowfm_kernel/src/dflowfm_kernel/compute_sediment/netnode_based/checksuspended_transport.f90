@@ -44,7 +44,8 @@ contains
    subroutine checksuspended_transport()
       use precision, only: dp
       use m_check_einstein_garcia
-      implicit none
+      use m_filez, only: doclose, newfil
+
       real(kind=dp) :: hsk
       real(kind=dp) :: ucr, ueff, Ucur, Pmob, sster, wster, ws
       real(kind=dp) :: aref, Tmob, crefa, ustar, rouse, sqcf, z0k, dks, hdune, qssevr84

@@ -30,9 +30,20 @@
 !
 !
 
+module m_gaanwestarten
+use m_gaanwestoppen, only: gaanwestoppen
+
+implicit none
+
+private
+
+public :: gaanwestarten
+
+contains
+
   subroutine GAANWESTARTEN(L, K1, KN316, JASTART)
      use M_NETW
-     implicit none
+
      integer :: L, K1, KN316, JASTART, J
 
      JASTART = 0
@@ -47,3 +58,5 @@
      end do
 
   end subroutine GAANWESTARTEN
+
+end module m_gaanwestarten

@@ -31,14 +31,24 @@
 !
 
 !>  compute the orientation of a cell by SVD
+module m_orthonet_compute_orientation
+use m_spher2loc, only: spher2loc
+use m_svdcmp, only: svdcmp
+
+implicit none
+
+private
+
+public :: orthonet_compute_orientation
+
+contains
+
 subroutine orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, i)
    use precision, only: dp
    use m_netw
    use m_sferic
    use m_alloc
    use m_qnerror
-
-   implicit none
 
    integer, intent(in) :: i !< netcell number
    real(kind=dp), intent(out) :: aspect !< aspect ratio
@@ -151,3 +161,5 @@ subroutine orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, i)
    vv2 = UU(2, 2) * S(2)
 
 end subroutine orthonet_compute_orientation
+
+end module m_orthonet_compute_orientation

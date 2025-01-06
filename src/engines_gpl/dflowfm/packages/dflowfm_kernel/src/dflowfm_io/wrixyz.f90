@@ -42,7 +42,8 @@ contains
 
    subroutine WRIXYZ(FILNAM, XS, YS, ZS, NS)
       use precision, only: dp
-      implicit none
+      use m_filez, only: doclose, newfil
+
       character(LEN=*) :: FILNAM
       integer :: NS
       real(kind=dp) :: XS(NS), YS(NS), ZS(NS)

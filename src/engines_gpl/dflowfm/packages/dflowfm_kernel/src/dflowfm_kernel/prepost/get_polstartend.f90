@@ -31,13 +31,20 @@
 !
 
 !> find the start and end index of a polygon
+module m_get_polstartend
+
+implicit none
+
+private
+
+public :: get_polstartend
+
+contains
+
 subroutine get_polstartend(NPL, XPL, YPL, ipol, jstart, jend)
    use precision, only: dp
-!   use m_polygon
    use m_missing, only: dmiss
    use geometry_module, only: get_startend
-
-   implicit none
 
    integer, intent(in) :: NPL !< polygon size
    real(kind=dp), dimension(NPL), intent(in) :: XPL !< polygon x-coordinates
@@ -60,3 +67,5 @@ subroutine get_polstartend(NPL, XPL, YPL, ipol, jstart, jend)
 
    return
 end subroutine get_polstartend
+
+end module m_get_polstartend

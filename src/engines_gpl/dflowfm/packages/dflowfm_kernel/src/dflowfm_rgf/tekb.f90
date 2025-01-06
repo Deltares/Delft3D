@@ -30,12 +30,22 @@
 !
 !
 
+module m_tekb
+
+implicit none
+
+private
+
+public :: tekb
+
+contains
+
       subroutine TEKB(X, Y, MMAX, NMAX, NCOL)
          use precision, only: dp
          use m_grid_block
          use m_cirr
          use m_tekln2
-         implicit none
+
          integer :: mmax, nmax, ncol
          real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
          integer :: i
@@ -50,3 +60,5 @@
          end do
          return
       end subroutine tekb
+
+end module m_tekb

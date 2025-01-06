@@ -30,10 +30,20 @@
 !
 !
 
+module m_givenewlinknum
+
+implicit none
+
+private
+
+public :: givenewlinknum
+
+contains
+
   subroutine GIVENEWLINKNUM(LNU)
      use m_netw
      use gridoperations
-     implicit none
+
      integer :: LNU
 
      integer :: kx
@@ -47,3 +57,5 @@
      LNU = NUML
      return
   end subroutine GIVENEWLINKNUM
+
+end module m_givenewlinknum

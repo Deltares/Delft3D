@@ -81,7 +81,7 @@
 ! *********************************************************************
 !
       Call SKPCOM (IN, ENDFIL,'RTC')
-      If (ENDFIL)  Call ERRMSG (911, 0, 'Rdini', ' RTC-INIfile', IOUT1)
+      If (ENDFIL)  call write_error_message_rtc (911, 0, 'Rdini', ' RTC-INIfile', IOUT1)
 !
 ! *********************************************************************
 ! *** Initialisatie
@@ -304,7 +304,7 @@
            If (CDUM(1:LEN) .EQ. 'Actual' .OR. CDUM(1:LEN) .EQ. 'ACTUAL') IMODEP = 0
            If (IMODEP .NE. 0) Then
               Write(IOUT1,*) ' Option Mode<>Actual not yet supported'
-              Call ERRMSG (999, 0, 'Rdini', ' Option Mode<>Actual not yet supported', IOUT1)
+              call write_error_message_rtc (999, 0, 'Rdini', ' Option Mode<>Actual not yet supported', IOUT1)
 !              STOP 999
            Endif
         ElseIf (STRING(1:POS1-1) .EQ. 'MODEWIND') Then
@@ -313,7 +313,7 @@
            LEN = 6
            If (CDUM(1:LEN) .EQ. 'Actual' .OR. CDUM(1:LEN) .EQ. 'ACTUAL') IMODEW = 0
            If (IMODEW .NE. 0) Then
-              Call ERRMSG (999, 0, 'Rdini', ' Option Mode<>Actual not yet supported', IOUT1)
+              call write_error_message_rtc (999, 0, 'Rdini', ' Option Mode<>Actual not yet supported', IOUT1)
 !              STOP 999
            Endif
         ElseIf (STRING(1:POS1-1) .EQ. 'USEWIND') Then
@@ -332,7 +332,7 @@
            If (POS1 .GT. 0) Read(STRING(POS1+1:),*) NTIMHP
 !          If (NTIMH .LT. NTIMHP) Then
 !             Write(IOUT1,*) ' Time horizon should be <=', NTIMH
-!             Call ERRMSG (913, 0, 'Rdini', ' Time horizon', IOUT1)
+!             call write_error_message_rtc (913, 0, 'Rdini', ' Time horizon', IOUT1)
 !          Endif
         ElseIf (STRING(1:POS1-1) .EQ. 'WINDTIMEHORIZON')  Then
            Call CHRTRIM (STRING,' ')
@@ -341,7 +341,7 @@
 !          If (NTIMH .LT. NTIMHW*2) Then
 !          If (NTIMH .LT. NTIMHW*2) Then
 !             Write(IOUT1,*) ' Time horizon should be <=', NTIMH/2
-!             Call ERRMSG (913, 0, 'Rdini', ' Time horizon', IOUT1)
+!             call write_error_message_rtc (913, 0, 'Rdini', ' Time horizon', IOUT1)
 !          Endif
         ElseIf (STRING(1:POS1-1) .EQ. 'DECISIONHORIZON')  Then
 !          New: read max. decision time horizon from INI file
@@ -576,7 +576,7 @@
            istat = 0
            istat = rtc_open_shared_library(dll_handle, dllname)
            if (istat /= 0) then
-              Call ERRMSG (956, 0, 'Rdini', dllname(1:len_trim(dllname)), IOUT1)
+              call write_error_message_rtc (956, 0, 'Rdini', dllname(1:len_trim(dllname)), IOUT1)
            endif
         ElseIf (STRING(1:POS1-1) .EQ. 'DLLFUNCTION')  Then
            Read(STRING(POS1+1:),*) dll_function
@@ -629,7 +629,7 @@
 ! *********************************************************************
 !
   150 CONTINUE
-      Call ERRMSG (902, IECODE, 'Rdini', ' RTC_INIfile', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rdini', ' RTC_INIfile', IOUT1)
 
 ! *********************************************************************
 ! *** end of file
@@ -638,7 +638,7 @@
    21 CONTINUE
 
       If (dll_handle .ne. 0 .and. dll_function .eq. '') then
-         Call ERRMSG (957, 0, 'Rdini', ' open shared library function not defined ', iout1)
+         call write_error_message_rtc (957, 0, 'Rdini', ' open shared library function not defined ', iout1)
       endif
 
 ! ARS 9711
@@ -660,7 +660,7 @@
    202   Continue
          Do iDum=1,MatlabNrWqPar
             If (MatlabWqParId(idum) .eq. '') then
-                Call ERRMSG (952, Idum, 'Rdini', ' ', IOUT1)
+                call write_error_message_rtc (952, Idum, 'Rdini', ' ', IOUT1)
             Endif
          EndDo
       Else

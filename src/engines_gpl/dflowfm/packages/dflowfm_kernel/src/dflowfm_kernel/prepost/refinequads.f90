@@ -30,7 +30,19 @@
 !
 !
 
+module m_refinequads
+
+implicit none
+
+private
+
+public :: refinequads
+
+contains
+
   subroutine REFINEQUADS()
+     use m_refinelink2, only: refinelink2
+     use m_mark_cells_crossed_by_poly, only: mark_cells_crossed_by_poly
      use precision, only: dp
      use m_confrm
      use m_netw
@@ -41,7 +53,7 @@
      use m_copynetboundstopol
      use m_set_nod_adm
      use m_new_link
-     implicit none
+
      integer :: jaddrand
      integer :: k, KMOD
      integer :: k1
@@ -267,3 +279,5 @@
 
      return
   end subroutine REFINEQUADS
+
+end module m_refinequads

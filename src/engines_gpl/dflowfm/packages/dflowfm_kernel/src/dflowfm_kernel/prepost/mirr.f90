@@ -30,10 +30,20 @@
 !
 !
 
+module m_mirr
+
+implicit none
+
+private
+
+public :: mirr
+
+contains
+
   subroutine MIRR(X, Y, Z, X2, Y2, Z2)
      use precision, only: dp
      use M_LANDBOUNDARY
-     implicit none
+
      real(kind=dp) X, Y, Z, X2, Y2, Z2
 
      real(kind=dp) :: ym
@@ -43,3 +53,5 @@
      Z2 = Z
      return
   end subroutine MIRR
+
+end module m_mirr

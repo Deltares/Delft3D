@@ -86,7 +86,7 @@
 
       Call SKPCOM (IN, ENDFIL,'RTC')
       If (ENDFIL) then
-         Call ERRMSG (911, 0, 'ScanWind', ' Constant wind file', IOUT1)
+         call write_error_message_rtc (911, 0, 'ScanWind', ' Constant wind file', IOUT1)
          RetVal = 911
          Return
       Endif
@@ -133,7 +133,7 @@
 
 ! check dimensies
          If (IWIND .GT. NWIND) Then
-            Call ERRMSG (913, 0,'ScanWind',' wind data lokaties',IOUT1)
+            call write_error_message_rtc (913, 0,'ScanWind',' wind data lokaties',IOUT1)
             RetVal = 913
             Return
          EndIf
@@ -280,7 +280,7 @@
 ! *********************************************************************
 !
   150 Continue
-      Call ERRMSG (902, IECODE, 'ScanWind', ' wind data file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'ScanWind', ' wind data file', IOUT1)
       RetVal = 902
 
 ! *********************************************************************
@@ -301,7 +301,7 @@
          Enddo
       Endif
       Do IExt = 1,NExtd
-         if (WindLoc2Stat(iext) .eq. -1) CALL ERRMSG (942, 0, ' ScanWind', Id_ext(iext), IOUT1)
+         if (WindLoc2Stat(iext) .eq. -1) call write_error_message_rtc (942, 0, ' ScanWind', Id_ext(iext), IOUT1)
       Enddo
 
       RETURN

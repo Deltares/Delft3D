@@ -30,11 +30,21 @@
 !
 !
 
+module m_modgr2
+
+implicit none
+
+private
+
+public :: modgr2
+
+contains
+
       subroutine MODGR2(XH, YH, X, Y, mmax, nmax, MC, NC, NUMP)
          use precision, only: dp
          use m_modfld
          use m_grid_block
-         implicit none
+
          integer :: mmax, nmax, mc, nc, nump
          real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)
          real(kind=dp) :: EPS, dx1, dy1, dx2, dy2, fac, efac
@@ -89,3 +99,5 @@
          end do
          return
       end subroutine modgr2
+
+end module m_modgr2

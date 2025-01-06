@@ -30,9 +30,19 @@
 !
 !
 
-   subroutine RELINK()
-      use precision, only: dp
+module m_relink
 
+implicit none
+
+private
+
+public :: relink
+
+contains
+
+   subroutine RELINK()
+      use m_dselectinp, only: dselectinp
+      use precision, only: dp
       use m_dellinksinpol, only: dellinksinpol
       use m_netw
       use m_ec_triangle
@@ -41,10 +51,7 @@
       use gridoperations
       use m_readyy
       use m_set_nod_adm
-
       use m_ec_basic_interpolation, only: dlaun
-
-      implicit none
 
       real(kind=dp) :: af
       integer :: ierr
@@ -133,3 +140,5 @@
 
       return
    end subroutine RELINK
+
+end module m_relink

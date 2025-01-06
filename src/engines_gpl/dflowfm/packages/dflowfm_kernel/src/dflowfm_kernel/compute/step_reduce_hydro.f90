@@ -31,6 +31,7 @@
 !
 
 module m_step_reduce_hydro
+use m_solve_guus, only: pack_matrix, solve_matrix
 
    implicit none
 

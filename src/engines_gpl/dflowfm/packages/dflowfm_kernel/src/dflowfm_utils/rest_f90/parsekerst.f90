@@ -30,10 +30,21 @@
 !
 !
 
+module m_parsekerst
+
+implicit none
+
+private
+
+public :: parsekerst
+
+contains
+
     !> Parses a manually preprocessed SVG file into 1D network 'drawing'.
     !!
     !! Format: each line should have one SVG command (m/M/c/l/z) with coordi nates.
     subroutine parsekerst(filename)
+       use m_isnode, only: isnode
        use precision, only: dp
        use m_polygon
        use m_missing
@@ -44,8 +55,6 @@
        use m_wearelt, only: rcir
        use m_delpol
        use m_zeronet
-
-       implicit none
 
        character(len=*), intent(in) :: filename
        integer :: mfil, i, maxpts, it, maxt, KP, K1, LNU
@@ -196,3 +205,5 @@
        deallocate (pts)
 
     end subroutine parsekerst
+
+end module m_parsekerst

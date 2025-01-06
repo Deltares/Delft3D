@@ -30,9 +30,22 @@
 !
 !
 
+module m_ortsor
+use m_sor, only: sor
+
+implicit none
+
+private
+
+public :: ortsor
+
+contains
+
       subroutine ORTSOR(XR, YR, A, B, C, D, E, ATP, M1, N1, M2, N2, &
                         XI2, YI2, XJ2, YJ2, XO, YO, &
                         RJAC)
+         use m_makey2, only: makey2
+         use m_bndsmt, only: bndsmt
          use precision, only: dp
          use unstruc_colors
          use m_sferic
@@ -42,7 +55,7 @@
          use m_drawthis
          use m_readyy
          use m_tek_grd
-         implicit none
+
          integer :: i
          integer :: key
          integer :: m1
@@ -81,3 +94,5 @@
          end do
          return
       end subroutine ORTSOR
+
+end module m_ortsor

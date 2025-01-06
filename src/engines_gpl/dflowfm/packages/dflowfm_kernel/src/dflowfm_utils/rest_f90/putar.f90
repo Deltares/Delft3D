@@ -30,9 +30,19 @@
 !
 !
 
+module m_putar
+
+implicit none
+
+private
+
+public :: putar
+
+contains
+
       subroutine PUTAR(XR, X, MMAX)
          use precision, only: dp
-         implicit none
+
          integer :: i
          integer :: mmax
          real(kind=dp) :: x
@@ -44,3 +54,5 @@
          end do
          return
       end
+
+end module m_putar

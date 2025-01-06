@@ -32,12 +32,22 @@
 
 !> Copy the original polygons that define the current cross sections
 !! to the active polygons in xpl,...
+module m_copycrosssectionstopol
+
+implicit none
+
+private
+
+public :: copycrosssectionstopol
+
+contains
+
 subroutine copyCrossSectionsToPol()
    use m_monitoring_crosssections
    use m_polygon
    use m_alloc
    use m_append_crspath_to_pol
-   implicit none
+
    integer :: i
 
    npl = 0
@@ -48,3 +58,5 @@ subroutine copyCrossSectionsToPol()
    end do
 
 end subroutine copyCrossSectionsToPol
+
+end module m_copycrosssectionstopol

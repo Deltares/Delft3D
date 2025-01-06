@@ -30,9 +30,19 @@
 !
 !
 
+module m_dispform
+
+implicit none
+
+private
+
+public :: dispform
+
+contains
+
       subroutine DISPFORM(value, fmt)
          use precision, only: dp
-         implicit none
+
          integer :: n1
          integer :: n2
          real(kind=dp) :: value
@@ -60,3 +70,5 @@
 
          return
       end
+
+end module m_dispform

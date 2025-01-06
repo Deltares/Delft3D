@@ -1912,7 +1912,6 @@ module geometry_module
       double precision, intent(in)  :: x3, y3 !< Point that is considered 'inside'.
       double precision, intent(out) :: xn, yn !< Output normal vector
       integer,          intent(out) :: jaflip !< Indicates whether normal was flipped (1) or not (0).
-      double precision, external :: dprodin
 
       double precision, dimension(1) :: xnloc, ynloc
       double precision               :: xref, yref
@@ -1922,11 +1921,6 @@ module geometry_module
 
       call normalout(x1,y1,x2,y2,xn,yn, jsferic, jasfer3D, dmiss, dxymis)
       jaflip = 0
-      !din  = dprodin(x1, y1, x1+xn, y1+yn, x1, y1, x3, y3)
-      !if (din > 0d0) then   ! Check whether normal vector points really outward
-      !   xn = -xn           ! Using the previously stored internal point x4.
-      !   yn = -yn
-      !end if
 
       if ( jsferic == 1 .and. jasfer3D == 1 ) then
          !   x4 = x1+xn

@@ -31,7 +31,18 @@
 !
 
 !> "Casulli"-type refinement of quads
+module m_refinequads_casulli
+
+implicit none
+
+private
+
+public :: refinequads_casulli
+
+contains
+
 subroutine refinequads_casulli
+   use m_mark_cells_crossed_by_poly, only: mark_cells_crossed_by_poly
    use precision, only: dp
    use m_getlink_gui
    use m_confrm
@@ -45,8 +56,6 @@ subroutine refinequads_casulli
    use m_makenetnodescoding
    use m_set_nod_adm
    use m_cirr
-
-   implicit none
 
    integer, allocatable, dimension(:, :) :: newnodes ! four new nodes per existing link
    integer, allocatable, dimension(:) :: kc_old ! copy of kc
@@ -760,6 +769,7 @@ contains
 !!
 !!    important: first store the non-boundary nodes
    subroutine store_newnode(k0, L1_, L2_, knew, newnodes)
+      use m_icommon, only: common_cell_for_two_net_links
 
       implicit none
 
@@ -771,8 +781,6 @@ contains
       integer :: L1, L2
       integer :: iLR1, iLR2, iSE1, iSE2, ipoint1, ipoint2
       integer :: icell
-
-      integer, external :: common_cell_for_two_net_links
 
 !     if L1.eq.0 or L2.eq.0 or L1.eq.L2 and L1 or L2 is a boundary link, store at the "ghost"-side
       L1 = L1_
@@ -868,3 +876,5 @@ contains
 
 end subroutine refinequads_casulli
 
+
+end module m_refinequads_casulli

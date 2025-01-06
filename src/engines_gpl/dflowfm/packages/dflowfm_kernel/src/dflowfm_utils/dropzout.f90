@@ -30,6 +30,16 @@
 !
 !
 
+module m_dropzout
+
+implicit none
+
+private
+
+public :: dropzout
+
+contains
+
  subroutine dropzout(idir)
     use precision, only: dp
     use m_isocol
@@ -42,7 +52,7 @@
     use m_get_kbot_ktop
     use m_set_kbot_ktop
     use m_pfiller
-    implicit none
+
     integer, intent(in) :: idir !< direction (1 for up, -1 for down)
 
     ! locals
@@ -91,3 +101,5 @@
     end if
 
  end subroutine dropzout
+
+end module m_dropzout

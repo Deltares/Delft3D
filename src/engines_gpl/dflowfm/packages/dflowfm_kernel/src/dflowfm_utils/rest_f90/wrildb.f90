@@ -43,6 +43,7 @@ contains
       use gridoperations
       use m_readyy
       use m_inview
+      use m_filez, only: doclose, newfil
 
       integer, intent(inout) :: mpol !< Open file pointer where to write to.
       integer, intent(in) :: nsh !< Number of points in polyline.

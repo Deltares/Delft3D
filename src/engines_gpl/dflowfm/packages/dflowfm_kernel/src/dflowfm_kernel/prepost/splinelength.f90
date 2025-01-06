@@ -31,6 +31,16 @@
 !
 
 !> approximate spline length
+module m_splinelength
+
+implicit none
+
+private
+
+public :: splinelength
+
+contains
+
 real(kind=dp) function splinelength(num, xspl, yspl)
    use precision, only: dp
 
@@ -75,3 +85,5 @@ real(kind=dp) function splinelength(num, xspl, yspl)
 
    return
 end function splinelength
+
+end module m_splinelength

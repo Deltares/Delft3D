@@ -31,6 +31,16 @@
 !
 
 !> approximate spline pathlength in interval
+module m_splinelength_int
+
+implicit none
+
+private
+
+public :: splinelength_int
+
+contains
+
 real(kind=dp) function splinelength_int(num, xspl, yspl, s0, s1)
    use precision, only: dp
 
@@ -80,3 +90,5 @@ real(kind=dp) function splinelength_int(num, xspl, yspl, s0, s1)
 
    return
 end function splinelength_int
+
+end module m_splinelength_int

@@ -28,6 +28,10 @@
 !-------------------------------------------------------------------------------
 
 module m_corioliskelvin
+use m_statisticsonemorepoint, only: statisticsonemorepoint
+use m_statisticsnewstep, only: statisticsnewstep
+use m_statisticsfinalise, only: statisticsfinalise
+
 
    implicit none
 

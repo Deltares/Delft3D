@@ -30,7 +30,18 @@
 !
 !
 
+module m_gridtonet
+
+implicit none
+
+private
+
+public :: gridtonet
+
+contains
+
      subroutine gridtonet()
+        use m_mergenodesinpolygon, only: mergenodesinpolygon
         use precision, only: dp
         use m_addnetpointnocheck, only: addnetpointnocheck
         use m_confrm
@@ -41,7 +52,7 @@
         use m_mergenodes
         use m_readyy
         use m_set_nod_adm
-        implicit none
+
         real(kind=dp) :: af
 
         integer, allocatable :: mn(:, :)
@@ -152,3 +163,5 @@
         netstat = NETSTAT_CELLS_DIRTY
 
      end subroutine gridtonet
+
+end module m_gridtonet

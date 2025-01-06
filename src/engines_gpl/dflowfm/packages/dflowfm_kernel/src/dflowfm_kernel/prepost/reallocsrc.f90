@@ -30,13 +30,23 @@
 !
 !
 
+module m_reallocsrc
+
+implicit none
+
+private
+
+public :: reallocsrc
+
+contains
+
 subroutine reallocsrc(n)
    use m_transport, only: NUMCONST
    use fm_external_forcings_data
    use m_alloc
    use m_missing
    use m_polygon, only: npl
-   implicit none
+
    integer :: n
 
    msrc = max(msrc, npl)
@@ -63,3 +73,5 @@ subroutine reallocsrc(n)
    call realloc(vsrccum, n, keepExisting=.true., fill=0d0)
    call realloc(vsrccum_pre, n, keepExisting=.true., fill=0d0)
 end subroutine reallocsrc
+
+end module m_reallocsrc

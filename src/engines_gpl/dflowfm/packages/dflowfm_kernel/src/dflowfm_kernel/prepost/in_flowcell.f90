@@ -30,15 +30,23 @@
 !
 !
 
+module m_in_flowcell
+
+implicit none
+
+private
+
+public :: in_flowcell
+
+contains
+
    subroutine in_flowcell(xp, yp, kk)
       use precision, only: dp
-
       use m_flowgeom
       use unstruc_display
       use m_missing, only: jins, dmiss
       use geometry_module, only: pinpok, dbdistance
 
-      implicit none
       real(kind=dp) :: xp, yp
       integer :: inn, k, kk, nn
 
@@ -54,3 +62,5 @@
       end do
 
    end subroutine in_flowcell
+
+end module m_in_flowcell

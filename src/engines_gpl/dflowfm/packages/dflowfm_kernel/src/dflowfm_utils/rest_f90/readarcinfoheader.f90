@@ -34,6 +34,8 @@ contains
 
    subroutine READARCINFOHEADER(MINP, MMAX, NMAX, X0, Y0, DX, DY, RMIS)
       use precision, only: dp
+      use m_filez, only: readerror, eoferror
+
       real(kind=dp) :: dx, dy
       integer :: jacornerx
       integer :: jacornery

@@ -30,6 +30,16 @@
 !
 !
 
+module m_start_program
+
+implicit none
+
+private
+
+public :: start_program
+
+contains
+
       subroutine START_PROGRAM()
          use M_dimens
          use M_DEVICES
@@ -43,8 +53,6 @@
          use m_menuh
          use m_botlin
          use m_firstlin
-
-         implicit none
 
          integer :: infofile
          integer :: infoopsystem
@@ -110,3 +118,5 @@
 
          return
       end subroutine START_PROGRAM
+
+end module m_start_program

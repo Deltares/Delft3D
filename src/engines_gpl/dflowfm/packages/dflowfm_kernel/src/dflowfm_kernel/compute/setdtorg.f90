@@ -30,6 +30,16 @@
 !
 !
 
+module m_setdtorg
+
+implicit none
+
+private
+
+public :: setdtorg
+
+contains
+
  subroutine setdtorg(jareduced) ! set computational timestep dts
     use precision, only: dp
     use m_flowgeom
@@ -41,7 +51,6 @@
     use m_drawthis
     use m_get_kbot_ktop
     use m_get_Lbot_Ltop
-    implicit none
 
     integer, intent(out) :: jareduced ! maximum time-step is already globally reduced (1) or not (0)
 
@@ -518,3 +527,5 @@
        limitingTimestepEstimation(kkcflmx) = limitingTimestepEstimation(kkcflmx) + 1
     end if
  end subroutine setdtorg
+
+end module m_setdtorg

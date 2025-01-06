@@ -31,6 +31,8 @@
 !
 
 module m_disdep
+use m_dispform, only: dispform
+
 
    implicit none
 

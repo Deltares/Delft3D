@@ -30,9 +30,18 @@
 !
 !
 
+module m_setlinktocornerweights
+
+implicit none
+
+private
+
+public :: setlinktocornerweights
+
+contains
+
  subroutine setlinktocornerweights() ! set corner related link x- and y weights
     use precision, only: dp
-
     use m_flow
     use m_netw
     use m_flowgeom
@@ -40,8 +49,8 @@
     use m_sferic, only: jsferic, jasfer3D
     use m_missing, only: dmiss, dxymis
     use gridoperations
-
-    implicit none
+    use m_lin2corx, only: lin2corx
+    use m_lin2cory, only: lin2cory
 
     real(kind=dp) :: ax, ay, wuL, wud, csa, sna
     integer :: k, L, ierr, nx
@@ -50,8 +59,6 @@
 
     real(kind=dp), allocatable :: wcnxy(:, :) ! corner weight factors (2,numk) , only for normalising
     integer, dimension(:), allocatable :: jacorner ! corner node (1) or not (0), dim(numk)
-
-    real(kind=dp), external :: lin2corx, lin2cory
 
     if (allocated(wcnx3)) deallocate (wcnx3, wcny3, wcnx4, wcny4)
     if (allocated(wcnxy)) deallocate (wcnxy)
@@ -253,3 +260,5 @@
     deallocate (wcnxy, acn, jacorner)
 
  end subroutine setlinktocornerweights
+
+end module m_setlinktocornerweights

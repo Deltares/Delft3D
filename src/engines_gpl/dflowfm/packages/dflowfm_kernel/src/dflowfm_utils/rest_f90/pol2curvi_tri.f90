@@ -31,7 +31,19 @@
 !
 
 !> construct triangle with three blocks of curvilinear grids
+module m_pol2curvi_tri
+
+implicit none
+
+private
+
+public :: pol2curvi_tri
+
+contains
+
 subroutine pol2curvi_tri(i1, i2_, i3_)
+   use m_tranfn2, only: tranfn2
+   use m_get_polstartend, only: get_polstartend
    use precision, only: dp
    use m_grid
    use m_gridsettings
@@ -40,7 +52,6 @@ subroutine pol2curvi_tri(i1, i2_, i3_)
    use m_polygon
    use m_qnerror
    use m_increase_grid
-   implicit none
 
    integer, intent(in) :: i1, i2_, i3_ !< first, second and third corner point in polygon, respectively
 
@@ -242,3 +253,5 @@ subroutine pol2curvi_tri(i1, i2_, i3_)
 
    return
 end subroutine pol2curvi_tri
+
+end module m_pol2curvi_tri

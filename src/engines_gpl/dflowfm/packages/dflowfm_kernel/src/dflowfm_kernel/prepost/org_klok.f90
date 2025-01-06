@@ -30,9 +30,19 @@
 !
 !
 
+module m_org_klok
+
+implicit none
+
+private
+
+public :: org_klok
+
+contains
+
   subroutine org_klok(cpu) ! for true performance monitoring, wallclock gives more meaningfull information than cpuclock
      use precision, only: dp
-     implicit none
+
      integer, dimension(8) :: IV
      real(kind=dp) :: cpu
 
@@ -41,3 +51,5 @@
      cpu = 3600 * iv(5) + 60 * iv(6) + iv(7) + 0.001d0 * iv(8)
 
   end subroutine org_klok
+
+end module m_org_klok

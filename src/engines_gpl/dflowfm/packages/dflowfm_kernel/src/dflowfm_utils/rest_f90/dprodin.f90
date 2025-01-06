@@ -30,12 +30,22 @@
 !
 !
 
+module m_dprodin
+
+implicit none
+
+private
+
+public :: dprodin
+
+contains
+
  real(kind=dp) function dprodin(x1, y1, x2, y2, x3, y3, x4, y4) ! inner product of two segments
     use precision, only: dp
     use m_missing
     use m_sferic
     use geometry_module, only: getdx, getdy, sphertoCart3D
-    implicit none
+
     real(kind=dp) :: x1, y1, x2, y2, x3, y3, x4, y4
     real(kind=dp) :: dx1, dy1, dx2, dy2
 
@@ -70,3 +80,5 @@
 
     return
  end function dprodin
+
+end module m_dprodin

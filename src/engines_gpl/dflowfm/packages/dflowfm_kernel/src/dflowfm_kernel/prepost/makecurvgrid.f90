@@ -31,6 +31,16 @@
 !
 
 !> generate the curvi-grid from the node indices (ic,jc)
+module m_makecurvgrid
+
+implicit none
+
+private
+
+public :: makecurvgrid
+
+contains
+
 subroutine makecurvgrid(ic, jc)
 
    use m_netw
@@ -83,3 +93,5 @@ subroutine makecurvgrid(ic, jc)
    end do
 
 end subroutine makecurvgrid
+
+end module m_makecurvgrid

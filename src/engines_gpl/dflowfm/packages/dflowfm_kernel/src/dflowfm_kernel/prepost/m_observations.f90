@@ -805,6 +805,8 @@ contains
    subroutine deleteObservations()
       use m_ObservationPoints
       use unstruc_channel_flow, only: network
+      use m_filez, only: doclose
+
       if (allocated(xobs)) then
          deallocate (xobs)
          deallocate (yobs)
@@ -881,6 +883,8 @@ contains
    subroutine loadObservations_from_xyn(filename)
       use messageHandling
       use dfm_error
+      use m_filez, only: oldfil, readerror, doclose
+
       implicit none
       character(len=*), intent(in) :: filename
 
@@ -917,6 +921,8 @@ contains
 
    subroutine saveObservations(filename)
       use m_sferic, only: jsferic
+      use m_filez, only: doclose, newfil
+
       implicit none
 
       character(len=*), intent(in) :: filename

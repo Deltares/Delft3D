@@ -30,10 +30,20 @@
 !
 !
 
+module m_rectan2d
+
+implicit none
+
+private
+
+public :: rectan2d
+
+contains
+
 subroutine rectan2D(hpr, br, hr, area, width, japerim, perim)
    use precision, only: dp
    use m_flow, only: slotw1D
-   implicit none
+
    integer :: japerim
    real(kind=dp) :: hpr ! hoogte   in profiel
    real(kind=dp) :: br ! breedte van profiel
@@ -54,3 +64,5 @@ subroutine rectan2D(hpr, br, hr, area, width, japerim, perim)
       area = area + slotw1D * hpr
    end if
 end subroutine rectan2D
+
+end module m_rectan2d

@@ -30,10 +30,22 @@
 !
 !
 
+module m_dismin
+use m_gold, only: gold
+
+
+implicit none
+
+private
+
+public :: dismin
+
+contains
+
       subroutine DISMIN(X, X2, Y, Y2, XX, YY, N, DIS, TV, XV, YV)
          use precision, only: dp
          use m_splint
-         implicit none
+
          integer :: n
          real(kind=dp) :: rn
 !     ZOEK MEEST NABIJE PUNT OP SPLINE
@@ -56,3 +68,5 @@
 
          return
       end subroutine DISMIN
+
+end module m_dismin

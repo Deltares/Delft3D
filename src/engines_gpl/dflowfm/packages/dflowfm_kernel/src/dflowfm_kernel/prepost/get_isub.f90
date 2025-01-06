@@ -30,10 +30,18 @@
 !
 !
 
+module m_get_isub
+
+implicit none
+
+private
+
+public :: get_isub
+
+contains
+
 integer function get_isub(j, nfac1, j_loc) !< gets the subinterval of grid layer j
    use m_spline2curvi
-
-   implicit none
 
    integer, intent(in) :: j !< grid layer index
    integer, dimension(Nsubmax), intent(in) :: nfac1 !< subinterval lengths
@@ -63,3 +71,5 @@ integer function get_isub(j, nfac1, j_loc) !< gets the subinterval of grid layer
 
    return
 end function
+
+end module m_get_isub

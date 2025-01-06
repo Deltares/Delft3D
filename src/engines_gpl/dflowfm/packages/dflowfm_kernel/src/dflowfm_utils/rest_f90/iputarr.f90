@@ -30,8 +30,17 @@
 !
 !
 
+module m_iputarr
+
+implicit none
+
+private
+
+public :: iputarr
+
+contains
+
       subroutine IPUTARR(XR, X, MMAX, NMAX)
-         implicit none
          integer :: i
          integer :: j
          integer :: mmax
@@ -45,3 +54,5 @@
          end do
          return
       end
+
+end module m_iputarr

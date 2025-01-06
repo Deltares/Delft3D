@@ -41,13 +41,13 @@ contains
       use m_flow
       use m_flowgeom
       use m_sferic, only: jasfer3D
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
       implicit none
 
       integer :: ku, LL, L, Ls, n12
 
       real(kind=dp) :: ucxku, ucyku, ww, ac1, huweir, hunoweir, wl, wlno, at, cs, sn, fac
-
-      real(kind=dp), external :: lin2nodx, lin2nody
 
       ucxku = 0d0; ucyku = 0d0
       huweir = 0d0; hunoweir = 0d0; wl = 0d0; wlno = 0d0; at = 0d0

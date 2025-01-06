@@ -27,15 +27,20 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> make a gridline on the spline
+module m_spline2gridline
+
+implicit none
+
+private
+
+public :: spline2gridline
+
+contains
+
 subroutine spline2gridline(mc, num, xsp, ysp, xc, yc, sc, h)
    use precision, only: dp
    use m_makespl
-
-   implicit none
 
    integer, intent(in) :: mc !< number of gridnodes
    integer, intent(in) :: num !< number of splinenodes
@@ -59,3 +64,5 @@ subroutine spline2gridline(mc, num, xsp, ysp, xc, yc, sc, h)
 
    return
 end subroutine spline2gridline
+
+end module m_spline2gridline

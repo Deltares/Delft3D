@@ -30,11 +30,21 @@
 !
 !
 
+module m_smooth_samples_from_gui
+
+implicit none
+
+private
+
+public :: smooth_samples_from_gui
+
+contains
+
 subroutine smooth_samples_from_GUI()
+   use m_smooth_samples, only: smooth_samples
    use m_samples
    use m_qnerror
    use m_getint
-   implicit none
 
    integer :: N
 
@@ -54,3 +64,5 @@ subroutine smooth_samples_from_GUI()
 
    return
 end subroutine smooth_samples_from_GUI
+
+end module m_smooth_samples_from_gui

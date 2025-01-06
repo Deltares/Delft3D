@@ -31,9 +31,18 @@
 !
 
 !> take difference of samples with second sample set within tooclose distance
+module m_samdif
+
+implicit none
+
+private
+
+public :: samdif
+
+contains
+
 subroutine samdif()
    use precision, only: dp
-
    use m_polygon
    use m_samples
    use network_data, only: tooclose
@@ -42,8 +51,6 @@ subroutine samdif()
    use m_sferic, only: jsferic, jasfer3D
    use geometry_module, only: dbdistance
    use m_delpol
-
-   implicit none
 
    real(kind=dp) :: dist
 
@@ -121,3 +128,5 @@ subroutine samdif()
 
    return
 end subroutine samdif
+
+end module m_samdif

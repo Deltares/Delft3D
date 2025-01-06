@@ -30,12 +30,22 @@
 !
 !
 
+module m_copynetwtopol
+
+implicit none
+
+private
+
+public :: copynetwtopol
+
+contains
+
 subroutine copynetwtopol()
    use m_polygon
    use m_missing
    use network_data
    use unstruc_display
-   implicit none
+
    integer :: n, L, k1, k2
 
    call increasepol(3 * numl + 1000, 0)
@@ -51,3 +61,5 @@ subroutine copynetwtopol()
    numk = 0; numL = 0; kn = 0
 
 end subroutine copynetwtopol
+
+end module m_copynetwtopol

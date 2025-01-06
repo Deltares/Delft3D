@@ -30,10 +30,23 @@
 !
 !
 
+module m_getnetnodenr
+use m_isnode, only: isnode
+
+
+implicit none
+
+private
+
+public :: getnetnodenr
+
+contains
+
 subroutine getnetnodenr(x, y, k)
    use precision, only: dp
    use m_missing
    use gridoperations
+   
    real(kind=dp) :: x, y, z
    integer :: k
 
@@ -43,3 +56,5 @@ subroutine getnetnodenr(x, y, k)
       call DSETNEWPOINT(X, Y, K)
    end if
 end subroutine getnetnodenr
+
+end module m_getnetnodenr

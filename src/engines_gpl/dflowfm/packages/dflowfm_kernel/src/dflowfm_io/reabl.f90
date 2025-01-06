@@ -44,6 +44,7 @@ contains
       use m_reasam
       use m_qn_read_error
       use m_interpdivers
+      use m_filez, only: doclose
 
       integer :: mout
       character(len=256) :: rec

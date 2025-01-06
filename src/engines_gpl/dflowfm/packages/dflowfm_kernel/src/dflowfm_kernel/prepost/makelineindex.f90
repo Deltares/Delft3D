@@ -31,6 +31,16 @@
 !
 
 !>  indentify the points in an array
+module m_makelineindex
+
+implicit none
+
+private
+
+public :: makelineindex
+
+contains
+
     subroutine makelineindex(num, x, idx)
        use precision, only: dp
        use m_missing
@@ -85,3 +95,5 @@
 
        return
     end subroutine
+
+end module m_makelineindex

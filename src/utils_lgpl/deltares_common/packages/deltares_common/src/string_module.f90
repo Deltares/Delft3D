@@ -75,6 +75,11 @@ module string_module
       module procedure strip_quotes2
    end interface strip_quotes
 
+   ! parameters
+   integer, parameter, public :: ichar_space = ichar(' ')
+   integer, parameter, public :: ichar_forward_slash = ichar('/')
+   integer, parameter, public :: ichar_underscore = ichar('_')
+   
 contains
 
    ! ------------------------------------------------------------------------------

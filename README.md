@@ -10,13 +10,13 @@ See section "Workflow" below in case you want to contribute to the source code.
 #### Windows:
 - build.bat
   Execute "build.bat --help" to show the usage
-  Currently used as default build process: "build.bat all -vs 2019 -ifort 21"
+  Currently used as default build process: "build.bat fm-suite -vs 2019 -ifort 21"
   This will execute "Microsoft_VisualStudio\vcvarsall.bat". When using other versions, modifications will be needed.
 
 #### Linux:
 - build.sh
   Execute "./build.sh --help" to show the usage
-  Currently used as default build process: "./build.sh all --compiler intel21"
+  Currently used as default build process: "./build.sh fm-suite --compiler intel21"
   This will execute "src/setenv.sh" on Deltares systems. On other systems, the environment must be prepared upfront.
   For instructions, see [Setup your own Linux environment](Linux_setup.md).
 
@@ -35,15 +35,15 @@ WARNING: When building without build-script, the collection of the resulting bin
 Note: in this section:
 Replace "..." by the actual path on your system to the checkout directory.
 
-- Use build.bat to prepare the "all" configuration
-- Open "...\build_all\all.sln" in VisualStudio and build the complete release version
-  Directory "...\build_all\x64\Release\share\bin" will be created
+- Use build.bat to prepare the "fm-suite" configuration
+- Open "...\build_fm-suite\fm-suite.sln" in VisualStudio and build the complete release version
+  Directory "...\build_fm-suite\x64\Release\share\bin" will be created
 - Build the debug versie of what you need (e.g. dimr and dflowfm, waq, wave)
 - dimr project -> Set as Startup Project
 - dimr project -> properties -> Debugging:
     -> Command Arguments: dimr_config.xml
     -> Working Directory: ...\examples\12_dflowfm\test_data\e100_f02_c02-FriesianInlet_schematic_FM
-    -> Environment: PATH=...\build_all\x64\Debug;%PATH%;...\build_all\x64\Release\share\bin
+    -> Environment: PATH=...\build_fm-suite\x64\Debug;%PATH%;...\fm-suite\x64\Release\share\bin
 
 
 
@@ -86,7 +86,7 @@ Examples:
 - Then run ctest followed by the config
 
 ```
-  cd build_all
+  cd build_fm-suite
   ctest -C debug
 ```
 - For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](doc/unit-testing.md).

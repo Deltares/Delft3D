@@ -30,6 +30,16 @@
 !
 !
 
+module m_darean
+
+implicit none
+
+private
+
+public :: darean
+
+contains
+
  !> Computes the enclosed area and length of a polygon.
  !!
  !! Only the first polygon is considered; whenever a missing value
@@ -40,7 +50,6 @@
     use m_sferic
     use geometry_module, only: dbdistance, get_startend, comp_masscenter
 
-    implicit none
     integer, intent(in) :: n !< Nr. of polygon points.
     real(kind=dp), intent(in) :: XX(N), YY(N) !< Polygon points.
     real(kind=dp), intent(out) :: DAREA !< Area enclosed within polygon.
@@ -97,3 +106,5 @@
     !DAREA = ABS(DAREA)
     return
  end subroutine dAREAN
+
+end module m_darean

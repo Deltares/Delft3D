@@ -30,6 +30,16 @@
 !
 !
 
+module m_mirrorcell
+
+implicit none
+
+private
+
+public :: mirrorcell
+
+contains
+
  !> Prepares a mirror cell as candidate for an open boundary cell, and a probe point 'uitsteker' for use in selectelset().
  !! This is done by determining a representative half cell size:
  !! dis = MAX(.5*sqrt(cell area), distance from circumcenter to edge)
@@ -43,7 +53,6 @@
     use m_missing, only: dmiss, dxymis
     use geometry_module, only: normaloutchk, duitpl, dprodout, half, spher2locvec, xpav, dlinedis
 
-    implicit none
     integer, intent(in) :: n !< cell number (in 1:nump)
     real(kind=dp), intent(in) :: x3_, y3, x4_, y4 !< net node coordinates of a boundary edge of this cell
     real(kind=dp), intent(out) :: xci, yci !< cell circumcenter coordinates for this cell (i.e., xz(n), yz(n))
@@ -53,7 +62,6 @@
 
     real(kind=dp) :: dis, dis2, rx, ry, xd, yd
     real(kind=dp) :: x3, x4
-    real(kind=dp), external :: dprodin
     integer :: ja, jadismxbnd = 0
 
     real(kind=dp), dimension(1) :: rxloc, ryloc
@@ -150,3 +158,5 @@
        xx(1) = x4; yy(1) = y4
     end if
  end subroutine mirrorcell
+
+end module m_mirrorcell

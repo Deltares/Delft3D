@@ -30,7 +30,24 @@
 !
 !
 
+module m_orthogrid
+use m_savegrd, only: savegrd
+use m_ortsor, only: ortsor
+
+implicit none
+
+private
+
+public :: orthogrid
+
+contains
+
       subroutine ORTHOGRID(M1, N1, M2, N2)
+         use m_makey, only: makey
+         use m_makef, only: makef
+         use m_getspl2, only: getspl2
+         use m_fixddboundaries, only: fixddboundaries
+         use m_atppar, only: atppar
          use precision, only: dp
          use unstruc_colors
          use M_GRID
@@ -41,7 +58,7 @@
          use m_drawthis
          use m_qnerror
          use m_isitu
-         implicit none
+
          integer :: in
          integer :: it
          integer :: jdla
@@ -129,3 +146,5 @@
 
          return
       end subroutine ORTHOGRID
+
+end module m_orthogrid

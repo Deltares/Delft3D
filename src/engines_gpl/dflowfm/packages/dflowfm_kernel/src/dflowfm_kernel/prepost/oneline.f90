@@ -30,6 +30,16 @@
 !
 !
 
+module m_oneline
+
+implicit none
+
+private
+
+public :: oneline
+
+contains
+
   subroutine ONELINE(K) ! TWEE LIJNTJES WORDEN 1
      use precision, only: dp
      use m_delnode, only: delnode
@@ -38,7 +48,7 @@
      use gridoperations
      use m_settings
      use m_cconstants
-     implicit none
+
      integer :: K
 
      integer :: ja
@@ -66,3 +76,5 @@
      end if
      return
   end subroutine ONELINE
+
+end module m_oneline

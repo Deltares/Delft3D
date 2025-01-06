@@ -30,10 +30,20 @@
 !
 !
 
+module m_mirror
+
+implicit none
+
+private
+
+public :: mirror
+
+contains
+
   subroutine MIRROR()
+     use m_mirr, only: mirr
      use m_netw
      use m_qnerror
-     implicit none
 
      integer :: k
      integer :: k0
@@ -77,3 +87,5 @@
 
      return
   end subroutine MIRROR
+
+end module m_mirror

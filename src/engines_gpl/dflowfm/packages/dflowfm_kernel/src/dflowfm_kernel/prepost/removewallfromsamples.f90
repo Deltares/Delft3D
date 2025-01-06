@@ -30,11 +30,22 @@
 !
 !
 
+module m_removewallfromsamples
+
+implicit none
+
+private
+
+public :: removewallfromsamples
+
+contains
+
       subroutine removewallfromsamples()
+         use m_findneargroundpoint, only: findneargroundpoint
          use m_samples
          use m_polygon
+         use m_filez, only: newfil
 
-         implicit none
          integer :: k, k3, kk, mout
 
          call newfil(mout, 'wall.xyz')
@@ -64,3 +75,5 @@
          call restoresam()
 
       end subroutine removewallfromsamples
+
+end module m_removewallfromsamples

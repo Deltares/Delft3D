@@ -30,6 +30,16 @@
 !
 !
 
+module m_dxyb
+
+implicit none
+
+private
+
+public :: dxyb
+
+contains
+
       subroutine DXYB(X, Y, mmax, nmax, MC, &
                       NC, II, JJ, IN, &
                       JN, DXY0)
@@ -38,7 +48,6 @@
          use geometry_module, only: dbdistance
          use m_sferic, only: jsferic, jasfer3D
 
-         implicit none
          integer :: mmax, nmax, mc, nc, ii, jj, in, jn
          real(kind=dp) :: dxy0
          real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
@@ -69,3 +78,5 @@
 
          return
       end subroutine dxyb
+
+end module m_dxyb

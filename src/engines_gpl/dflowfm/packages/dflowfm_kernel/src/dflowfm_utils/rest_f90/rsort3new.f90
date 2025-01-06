@@ -30,10 +30,20 @@
 !
 !
 
+module m_rsort3new
+
+implicit none
+
+private
+
+public :: rsort3new
+
+contains
+
       subroutine RSORT3new(X, Y, Z, N)
          use precision, only: dp
          use stdlib_sorting, only: sort_index
-         implicit none
+
          integer :: k, n
          real(kind=dp) :: X(N), Y(N), Z(N)
          integer, allocatable :: ind(:)
@@ -56,3 +66,5 @@
          deallocate (ind, h)
 
       end subroutine RSORT3new
+
+end module m_rsort3new

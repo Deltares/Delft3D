@@ -30,9 +30,19 @@
 !
 !
 
+module m_onsameline
+
+implicit none
+
+private
+
+public :: onsameline
+
+contains
+
       subroutine ONSAMELINE(IPT, MP, NP, JA)
          use m_grid_block
-         implicit none
+
          integer :: mp, np, ja, ipt
          integer :: md, nd
 
@@ -50,3 +60,5 @@
          end if
          return
       end subroutine onsameline
+
+end module m_onsameline

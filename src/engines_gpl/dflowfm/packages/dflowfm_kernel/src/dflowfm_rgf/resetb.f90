@@ -30,9 +30,19 @@
 !
 !
 
+module m_resetb
+
+implicit none
+
+private
+
+public :: resetb
+
+contains
+
       subroutine RESETB(NPUT)
          use m_grid_block
-         implicit none
+
          integer :: nput
 
          MB = 0
@@ -44,3 +54,5 @@
          NPUTO = NPUT
          return
       end subroutine resetb
+
+end module m_resetb

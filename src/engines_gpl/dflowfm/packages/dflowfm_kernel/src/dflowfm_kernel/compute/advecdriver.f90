@@ -31,6 +31,7 @@
 !
 
 module m_advecdriver
+   use m_setextforcechkadvec, only: setextforcechkadvec
    use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
 
    implicit none

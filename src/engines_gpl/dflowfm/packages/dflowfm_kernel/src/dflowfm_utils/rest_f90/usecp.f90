@@ -30,9 +30,19 @@
 !
 !
 
+module m_usecp
+
+implicit none
+
+private
+
+public :: usecp
+
+contains
+
       integer function USECP()
          use m_dateandtimenow
-         implicit none
+
          integer :: ihour
          integer :: isecnd
          integer :: minute
@@ -41,3 +51,5 @@
          USECP = 3600 * IHOUR + 60 * MINUTE + ISECND
          return
       end
+
+end module m_usecp

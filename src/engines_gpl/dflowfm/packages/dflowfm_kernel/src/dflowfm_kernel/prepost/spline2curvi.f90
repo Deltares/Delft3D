@@ -27,13 +27,23 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> generate curvilinear grid from spline
-subroutine spline2curvi()
-   use precision, only: dp
+module m_spline2curvi_sub
+use m_spline2poly, only: spline2poly
 
+implicit none
+
+private
+
+public :: spline2curvi
+
+contains
+
+subroutine spline2curvi()
+   use m_merge_spline2curvigrids, only: merge_spline2curvigrids
+   use m_make_wholegridline, only: make_wholegridline
+   use m_get_splineprops, only: get_splineprops
+   use precision, only: dp
    use m_confrm
    use m_comp_edgevel
    use m_change_spline2curvi_param
@@ -51,8 +61,7 @@ subroutine spline2curvi()
    use m_deallocate_spline_props
    use m_postgrid
    use m_grow_layer
-
-   implicit none
+   use m_get_isub, only: get_isub
 
    integer :: ierror ! 0: no error, 1: error
 
@@ -77,8 +86,8 @@ subroutine spline2curvi()
    integer, dimension(mcs) :: id
    logical :: Lnewsplines
    logical :: jaAllPoints
-   integer, external :: comp_nfac, get_isub
-   real(kind=dp), external :: splinelength, comp_dgrow
+   integer, external :: comp_nfac
+   real(kind=dp), external :: comp_dgrow
    real(kind=dp), parameter :: dnu = -0.50d0
    integer :: nul, nul1(1), nul2(1, 1)
 
@@ -288,3 +297,5 @@ subroutine spline2curvi()
 
    return
 end subroutine spline2curvi
+
+end module m_spline2curvi_sub

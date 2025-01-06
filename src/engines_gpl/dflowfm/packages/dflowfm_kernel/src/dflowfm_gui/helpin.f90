@@ -39,6 +39,7 @@ contains
    subroutine HELPIN()
       use unstruc_files
       use m_helpc
+      use m_filez, only: doclose
       implicit none
       integer :: k
 

@@ -30,10 +30,19 @@
 !
 !
 
+module m_ininumbers
+
+implicit none
+
+private
+
+public :: ininumbers
+
+contains
+
       subroutine ININUMBERS()
          use precision, only: dp
          use M_MISSING
-         implicit none
 
          real(kind=dp) :: pi, dg2rd, rd2dg, ra
          RA = 6370000d0
@@ -43,3 +52,5 @@
          RD2DG = 180d0 / PI
          return
       end
+
+end module m_ininumbers

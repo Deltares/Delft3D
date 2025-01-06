@@ -30,9 +30,19 @@
 !
 !
 
+module m_statisticsfinalise
+
+implicit none
+
+private
+
+public :: statisticsfinalise
+
+contains
+
  subroutine statisticsfinalise()
     use m_statistics
-    implicit none
+
     if (numdif /= 0) then
        avedif = avedif / numdif
        cumavedif = cumavedif + avedif
@@ -42,3 +52,5 @@
        numcum = numcum + 1
     end if
  end subroutine statisticsfinalise
+
+end module m_statisticsfinalise

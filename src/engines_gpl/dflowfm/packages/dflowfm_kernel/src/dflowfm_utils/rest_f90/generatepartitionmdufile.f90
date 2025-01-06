@@ -30,12 +30,22 @@
 !
 !
 
+module m_generatepartitionmdufile
+
+implicit none
+
+private
+
+public :: generatepartitionmdufile
+
+contains
+
 subroutine generatePartitionMDUFile(filename, filename_new)
    use unstruc_model
    use unstruc_messages
    use m_partitioninfo
    use string_module
-   implicit none
+
    character(len=*), intent(in) :: filename, filename_new
    integer :: k1, k2, k3, k4, k5, k6, k7, n
    character(len=500) :: string, string_c, string_tmp, string_v
@@ -120,3 +130,5 @@ subroutine generatePartitionMDUFile(filename, filename_new)
    close (lunnew)
    return
 end subroutine generatePartitionMDUFile
+
+end module m_generatepartitionmdufile

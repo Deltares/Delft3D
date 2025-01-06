@@ -30,12 +30,22 @@
 !
 !
 
+module m_mirrorlinepoint
+
+implicit none
+
+private
+
+public :: mirrorlinepoint
+
+contains
+
    subroutine MIRRORLINEPOINT(X0, Y0, X3, Y3, X1, Y1, X2, Y2, JA, DIS, XN, YN)
       use precision, only: dp
       use geometry_module, only: getdxdy, dlinedis
       use m_sferic
       use m_missing
-      implicit none
+
       real(kind=dp) :: X0, Y0, X3, Y3, X1, Y1, X2, Y2, DIS, XN, YN, dx0, dy0
       integer :: JA
 
@@ -50,3 +60,5 @@
 
       return
    end subroutine MIRRORLINEPOINT
+
+end module m_mirrorlinepoint

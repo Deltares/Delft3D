@@ -30,9 +30,19 @@
 !
 !
 
+module m_newblockpoint
+
+implicit none
+
+private
+
+public :: newblockpoint
+
+contains
+
       subroutine NEWBLOCKPOINT(MP, NP, JA, IPT)
          use m_grid_block
-         implicit none
+
          integer :: mp, np, ja, ipt
 !     NIEUW PUNT = 1, OUD PUNT = 0, NIEW PUNT MAAR REEDS VIER PUNTEN = -1
          integer :: i
@@ -48,3 +58,5 @@
          if (NPT == 4) JA = -1
          return
       end subroutine newblockpoint
+
+end module m_newblockpoint

@@ -31,7 +31,19 @@
 !
 
 !> copy netboundary to polygon, starting from a specified point
+module m_netboundtopoly
+
+implicit none
+
+private
+
+public :: netboundtopoly
+
+contains
+
 subroutine netboundtopoly(kstart)
+   use m_merge_polylines, only: merge_polylines
+   use m_flippo, only: flippo
    use precision, only: dp
    use m_polygon
    use m_netw
@@ -39,8 +51,6 @@ subroutine netboundtopoly(kstart)
    use m_missing
    use m_sferic, only: jsferic, jasfer3D
    use geometry_module, only: dprodout
-
-   implicit none
 
    integer, intent(in) :: kstart !< startnode
 
@@ -198,3 +208,5 @@ subroutine netboundtopoly(kstart)
 
    return
 end subroutine netboundtopoly
+
+end module m_netboundtopoly

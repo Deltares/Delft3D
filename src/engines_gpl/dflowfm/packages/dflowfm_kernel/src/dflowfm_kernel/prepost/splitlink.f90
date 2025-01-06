@@ -31,7 +31,19 @@
 !
 
 !> split a link, make new cells and update administration
+module m_splitlink
+
+implicit none
+
+private
+
+public :: splitlink
+
+contains
+
 subroutine splitlink(xp, yp, L_, dcosmin, jatek, ierror)
+   use m_mergecells, only: mergecells
+   use m_makecell, only: makecell
    use precision, only: dp
    use m_dellink, only: dellink
    use m_dcirr
@@ -47,8 +59,6 @@ subroutine splitlink(xp, yp, L_, dcosmin, jatek, ierror)
    use m_qnerror
    use m_tek_link
    use m_is_link
-
-   implicit none
 
    real(kind=dp), intent(in) :: xp, yp !< clicked point coordinates (used if L.eq.0)
    integer, intent(in) :: L_ !< link number (used if L_.ne.0)
@@ -454,3 +464,5 @@ contains
       return
    end subroutine replace_intarrayelem
 end subroutine splitlink
+
+end module m_splitlink

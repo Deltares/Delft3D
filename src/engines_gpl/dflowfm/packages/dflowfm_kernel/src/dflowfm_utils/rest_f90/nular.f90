@@ -30,9 +30,19 @@
 !
 !
 
+module m_nular
+
+implicit none
+
+private
+
+public :: nular
+
+contains
+
       subroutine NULAR(X, MMAX)
          use precision, only: dp
-         implicit none
+
          integer :: i
          integer :: mmax
          real(kind=dp) :: x
@@ -42,3 +52,5 @@
          end do
          return
       end
+
+end module m_nular

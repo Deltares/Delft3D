@@ -31,14 +31,22 @@
 !
 
 !< Reduce runup values over domains
+module m_updatevaluesonrunupgauges_mpi
+
+implicit none
+
+private
+
+public :: updatevaluesonrunupgauges_mpi
+
+contains
+
 subroutine updateValuesOnRunupGauges_mpi()
    use precision, only: dp
    use m_monitoring_runupgauges
    use m_partitioninfo
    use m_timer
    use mpi
-
-   implicit none
 
    integer :: irug, ierror
    real(kind=dp), allocatable, dimension(:, :) :: ruh
@@ -92,3 +100,5 @@ subroutine updateValuesOnRunupGauges_mpi()
    deallocate (ruh)
 
 end subroutine updateValuesOnRunupGauges_mpi
+
+end module m_updatevaluesonrunupgauges_mpi

@@ -30,6 +30,18 @@
 !
 !
 
+module m_renumberflownodes
+use m_renumber_cutcellmasks, only: renumber_cutcellmasks
+
+
+implicit none
+
+private
+
+public :: renumberflownodes
+
+contains
+
     !> Renumber flow nodes in an early stage.
     !! Called only from withing flow_geominit, it operates on lne, kn and netcell
     !! data. The actual construction of all flow_geom data remains exactly the
@@ -338,3 +350,5 @@
        netstat = NETSTAT_OK
 
     end subroutine renumberFlowNodes
+
+end module m_renumberflownodes

@@ -31,6 +31,8 @@
 !
 
 module m_ndisplay
+   use m_zoom3, only: zoom3
+   use m_setcoltabfile, only: setcoltabfile
    use m_checknetwork, only: checknetwork
    use m_add_tracer, only: add_tracer
    use m_textparameters
@@ -61,6 +63,7 @@ contains
       use m_paramtext
       use m_tek_num_netcells
       use m_set_branch_lc
+      use m_filez, only: oldfil, doclose, message
 
       integer :: ium
       integer :: maxopt

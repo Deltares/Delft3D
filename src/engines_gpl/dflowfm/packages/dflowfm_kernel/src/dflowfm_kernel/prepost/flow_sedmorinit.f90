@@ -30,6 +30,16 @@
 !
 !
 
+module m_flow_sedmorinit
+
+implicit none
+
+private
+
+public :: flow_sedmorinit
+
+contains
+
 subroutine flow_sedmorinit()
    use m_inipointers_erosed, only: inipointers_erosed
    use m_sediment
@@ -66,8 +76,6 @@ subroutine flow_sedmorinit()
    use m_xbeach_data, only: gammaxxb
    use m_waves, only: gammax
    use m_turbulence, only: sigsed
-
-   implicit none
 
    logical :: error, have_mudbnd, have_sandbnd, ex, success
    character(20), dimension(:), allocatable :: nambnd ! nambnd: needed for morphological bc
@@ -515,3 +523,5 @@ subroutine flow_sedmorinit()
 
 1234 return
 end subroutine flow_sedmorinit
+
+end module m_flow_sedmorinit

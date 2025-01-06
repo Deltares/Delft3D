@@ -30,12 +30,22 @@
 !
 !
 
+module m_isnode2
+
+implicit none
+
+private
+
+public :: isnode2
+
+contains
+
   subroutine ISNODE2(KP, XP, YP, ZP) ! X,Y,Z MOETEN ALLEN KLOPPEN
      use precision, only: dp
      use m_netw
      use m_wearelt
      use m_howtoview
-     implicit none
+
      integer :: KP
      real(kind=dp) :: XP, YP, ZP
      real(kind=dp) :: eps
@@ -52,3 +62,5 @@
      end do
      return
   end subroutine ISNODE2
+
+end module m_isnode2

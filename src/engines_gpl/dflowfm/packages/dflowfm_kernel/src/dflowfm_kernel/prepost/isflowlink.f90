@@ -30,13 +30,23 @@
 !
 !
 
+module m_isflowlink
+
+implicit none
+
+private
+
+public :: isflowlink
+
+contains
+
 subroutine ISflowlink(XP, YP, LL) ! IS THIS A flow NODE OR A flow LINK ?
    use precision, only: dp
    use m_netw, only: xk, yk
    use m_flowgeom
    use m_wearelt
    use m_disln
-   implicit none
+
    real(kind=dp) :: XP, YP
    integer :: LL
    integer :: l, k1, k2
@@ -62,3 +72,5 @@ subroutine ISflowlink(XP, YP, LL) ! IS THIS A flow NODE OR A flow LINK ?
 
    return
 end subroutine ISflowlink
+
+end module m_isflowlink

@@ -33,6 +33,17 @@
 !> Initializes a new user-timestep (advances user time, sets new meteo forcing)
 !!
 !! Should be followed by a flow_run_usertimestep and a flow_finalize_usertimestep.
+module m_flow_init_usertimestep
+use m_inctime_user, only: inctime_user
+
+implicit none
+
+private
+
+public :: flow_init_usertimestep
+
+contains
+
 subroutine flow_init_usertimestep(iresult)
    use m_setzcs, only: setzcs
    use m_flowtimes
@@ -42,7 +53,6 @@ subroutine flow_init_usertimestep(iresult)
    use m_partitioninfo, only: jampi, abort_all
    use fm_external_forcings
 
-   implicit none
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
    iresult = DFM_GENERICERROR
@@ -74,3 +84,5 @@ subroutine flow_init_usertimestep(iresult)
    end if
 
 end subroutine flow_init_usertimestep
+
+end module m_flow_init_usertimestep

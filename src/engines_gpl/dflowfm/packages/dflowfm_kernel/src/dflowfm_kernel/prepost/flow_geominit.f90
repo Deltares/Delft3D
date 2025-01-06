@@ -30,7 +30,42 @@
 !
 !
 
+module m_flow_geominit
+use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
+use m_cosphiunetcheck, only: cosphiunetcheck
+use m_darean, only: darean
+use m_dumpnetlink, only: dumpnetlink
+use m_which2dnetlinkwascrossed, only: which2dnetlinkwascrossed
+use m_thindams_on_netgeom, only: thindams_on_netgeom
+use m_sort_flowlinks_ccw, only: sort_flowlinks_ccw
+use m_setwallorientations, only: setwallorientations
+use m_setprofs1d, only: setprofs1d
+use m_setlinktocornerweights, only: setlinktocornerweights
+use m_setlinktocenterweights, only: setlinktocenterweights
+use m_setcornertolinkorientations, only: setcornertolinkorientations
+use m_setcentertolinkorientations, only: setcentertolinkorientations
+use m_setbobsonroofs, only: setbobsonroofs
+use m_setbedlevelfromextfile, only: setbedlevelfromextfile
+use m_setaifu, only: setaifu
+use m_renumberflownodes, only: renumberflownodes
+use m_remove_unused_nodes_and_links, only: remove_unused_nodes_and_links
+use m_reanumlimdt, only: reanumlimdt
+use m_preparecells, only: preparecells
+use m_make_orthocenters, only: make_orthocenters
+use m_makethindamadmin, only: makethindamadmin
+use m_iadvecini, only: iadvecini
+use m_getdxofconnectedkcu1, only: getdxofconnectedkcu1
+
+implicit none
+
+private
+
+public :: flow_geominit
+
+contains
+
  subroutine flow_geominit(iphase) ! initialise flow geometry
+    use m_fixedweirs_on_flowgeom, only: fixedweirs_on_flowgeom
     use precision, only: dp
     use m_cutcell_list, only: cutcell_list
     use m_checknetwork, only: checknetwork
@@ -1485,3 +1520,5 @@
     end if
 
  end subroutine flow_geominit
+
+end module m_flow_geominit

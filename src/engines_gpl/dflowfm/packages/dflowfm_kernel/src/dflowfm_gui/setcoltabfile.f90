@@ -30,12 +30,21 @@
 !
 !
 
-subroutine SETCOLTABFILE(FILNAM, JASECOND)
+submodule(m_setcoltabfile) m_setcoltabfile_
+
+implicit none
+
+contains
+
+module subroutine SETCOLTABFILE(FILNAM, JASECOND)
+   use m_sysorlocalfil, only: sysorlocalfil
    use m_qnmessage
    use m_filemenu
    use unstruc_colors
    use m_depmax
    use m_depmax2
+   use m_filez, only: doclose
+
    implicit none
    integer :: ierror
    integer :: iblue
@@ -115,4 +124,6 @@ subroutine SETCOLTABFILE(FILNAM, JASECOND)
       call doclose(MINP)
    end if
    return
-end
+end subroutine SETCOLTABFILE
+
+end submodule m_setcoltabfile_

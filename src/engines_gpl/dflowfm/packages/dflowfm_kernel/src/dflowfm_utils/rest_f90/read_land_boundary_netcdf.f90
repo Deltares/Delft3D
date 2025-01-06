@@ -34,12 +34,20 @@
 !! Global Self-consistent Hierarchical High-resolution Shorelines (GSHHS)
 !! http://opendap.deltares.nl/thredds/catalog/opendap/noaa/gshhs/catalog.html
 !! Directly stored in m_landboundary module variables.
+module m_read_land_boundary_netcdf
+
+implicit none
+
+private
+
+public :: read_land_boundary_netcdf
+
+contains
+
 subroutine read_land_boundary_netcdf(filename)
    use M_landboundary
    use M_MISSING
    use netcdf
-
-   implicit none
 
    character(len=*), intent(in) :: fileName
 
@@ -121,3 +129,5 @@ subroutine read_land_boundary_netcdf(filename)
       succes = .true.
    end if
 end subroutine read_land_boundary_netcdf
+
+end module m_read_land_boundary_netcdf

@@ -30,10 +30,20 @@
 !
 !
 
+module m_dminmx2
+
+implicit none
+
+private
+
+public :: dminmx2
+
+contains
+
       subroutine DMINMX2(X, XMIN, XMAX, MC, NC, MMAX, NMAX)
          use precision, only: dp
          use M_MISSING
-         implicit none
+
          integer :: i
          integer :: j
          integer :: mc
@@ -65,3 +75,5 @@
          if (XMAX == -10d20) XMAX = 0
          return
       end
+
+end module m_dminmx2

@@ -30,16 +30,23 @@
 !
 !
 
+module m_in2dflowcell
+
+implicit none
+
+private
+
+public :: in2dflowcell
+
+contains
+
  subroutine in2Dflowcell(xp, yp, k) ! is this point in a 2Dflowcell
     use precision, only: dp
-
     use m_flowgeom
     use m_flow
     use fm_external_forcings_data
     use geometry_module, only: pinpok
     use m_missing, only: jins, dmiss
-
-    implicit none
 
     real(kind=dp) :: xp, yp
     integer :: k
@@ -59,3 +66,5 @@
        end if
     end do
  end subroutine in2Dflowcell
+
+end module m_in2dflowcell

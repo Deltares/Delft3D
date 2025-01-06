@@ -35,6 +35,18 @@
 !!
 !! The direction and start cell is determined by specifying a single 'cross'
 !! link that will be split.
+module m_insert_netline
+use m_splitlink, only: splitlink
+
+
+implicit none
+
+private
+
+public :: insert_netline
+
+contains
+
 recursive subroutine insert_netline(xp, yp, L_)
    use precision, only: dp
    use m_teknet
@@ -42,8 +54,6 @@ recursive subroutine insert_netline(xp, yp, L_)
    use gridoperations
    use m_readyy
    use m_is_link
-
-   implicit none
 
    real(kind=dp), intent(in) :: xp, yp !< link coordinates (used only if L_.eq.0)
    integer, intent(in) :: L_ !< link number (set to 0 first time)
@@ -122,3 +132,5 @@ recursive subroutine insert_netline(xp, yp, L_)
 
    return
 end subroutine insert_netline
+
+end module m_insert_netline

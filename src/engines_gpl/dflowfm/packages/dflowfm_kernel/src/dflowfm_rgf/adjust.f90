@@ -30,10 +30,22 @@
 !
 !
 
+module m_adjust
+use m_nums, only: nums
+
+
+implicit none
+
+private
+
+public :: adjust
+
+contains
+
       subroutine ADJUST(X, Y, mmax, nmax, MC, NC)
          use precision, only: dp
          use m_missing
-         implicit none
+
          integer :: mmax, nmax, mc, nc
          real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
 ! TODO: Z not present, no filling with dmiss [AvD]
@@ -80,3 +92,5 @@
          deallocate (xh, yh)
          return
       end
+
+end module m_adjust

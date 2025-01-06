@@ -31,12 +31,22 @@
 !
 
 !> perform actions in batch
+module m_refine_from_commandline
+
+implicit none
+
+private
+
+public :: refine_from_commandline
+
+contains
+
 subroutine refine_from_commandline()
+   use m_refinecellsandfaces2, only: refinecellsandfaces2
    use network_data
    use m_partitioninfo
    use unstruc_netcdf, only: unc_write_net
    use m_samples_refine
-   implicit none
 
    character(len=128) :: filnam
 
@@ -48,3 +58,5 @@ subroutine refine_from_commandline()
    call unc_write_net(trim(filnam))
 
 end subroutine refine_from_commandline
+
+end module m_refine_from_commandline

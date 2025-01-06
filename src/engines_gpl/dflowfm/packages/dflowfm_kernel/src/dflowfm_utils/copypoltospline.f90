@@ -31,13 +31,22 @@
 !
 
 !> copy polygon to spline
+module m_copypoltospline
+
+implicit none
+
+private
+
+public :: copypoltospline
+
+contains
+
   subroutine COPYPOLTOSPLINE()
      use m_polygon
      use m_splines
      use m_missing
      use geometry_module, only: get_startend
      use m_delpol
-     implicit none
 
      integer :: jstart, jend, jpoint
 
@@ -58,3 +67,5 @@
 
      return
   end subroutine COPYPOLTOSPLINE
+
+end module m_copypoltospline

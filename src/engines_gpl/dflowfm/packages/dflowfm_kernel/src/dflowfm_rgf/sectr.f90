@@ -30,9 +30,27 @@
 !
 !
 
+module m_sectr
+use m_nularr, only: nularr
+use m_inular, only: inular
+use m_switch, only: switch
+
+implicit none
+
+private
+
+public :: sectr
+
+contains
+
      subroutine SECTR(X, Y, TIJ, mmax, nmax, imax, &
                       merr, NUMI, &
                       NUMSPL, NUMPX, NTYP, MN12, XI, YI, XJ, YJ)
+        use m_sect3r, only: sect3r
+        use m_nums, only: nums
+        use m_checkspl, only: checkspl
+        use m_charow, only: charow
+        use m_chacol, only: chacol
         use precision, only: dp
         use unstruc_colors
         use unstruc_messages
@@ -44,7 +62,6 @@
         use m_numpold
         use m_get_ij
 
-        implicit none
         integer :: mmax, nmax, imax
         real(kind=dp), dimension(mmax, nmax), intent(inout) :: X, Y
         real(kind=dp), dimension(mmax, nmax), intent(out) :: TIJ
@@ -356,3 +373,5 @@
 
         return
      end subroutine sectr
+
+end module m_sectr

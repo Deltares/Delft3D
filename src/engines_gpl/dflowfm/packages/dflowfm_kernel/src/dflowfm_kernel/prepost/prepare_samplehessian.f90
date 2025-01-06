@@ -31,13 +31,23 @@
 !
 
 !> prepare the sample Hessians
+module m_prepare_samplehessian
+use m_smooth_samples, only: smooth_samples
+
+
+implicit none
+
+private
+
+public :: prepare_samplehessian
+
+contains
+
 subroutine prepare_sampleHessian(ierror)
    use m_allocate_samplehessian, only: allocate_samplehessian
    use m_comp_samplehessian
    use m_samples
    use m_samples_refine
-
-   implicit none
 
    integer, intent(out) :: ierror !< error (1) or not (0)
 
@@ -63,3 +73,5 @@ subroutine prepare_sampleHessian(ierror)
 
    return
 end subroutine prepare_sampleHessian
+
+end module m_prepare_samplehessian

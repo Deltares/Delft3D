@@ -31,15 +31,23 @@
 !
 
 !! Initialise net link based kd-tree for trachytopes or calibration
+module m_netlink_tree
+
+implicit none
+
+private
+
+public :: netlink_tree
+
+contains
+
 subroutine netlink_tree(phase)
    use precision, only: dp
-
    use network_data, only: numl, xk, yk, kn
    use kdtree2Factory
    use m_missing
    use m_sferic, only: jsferic, jasfer3D
    use geometry_module, only: half
-   implicit none
 
    integer :: L, k1, k2, ierror
    integer, intent(in) :: phase
@@ -73,3 +81,5 @@ subroutine netlink_tree(phase)
    end if
 
 end subroutine
+
+end module m_netlink_tree

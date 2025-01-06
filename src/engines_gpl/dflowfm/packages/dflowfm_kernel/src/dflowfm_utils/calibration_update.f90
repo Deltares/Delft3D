@@ -30,6 +30,16 @@
 !
 !
 
+module m_calibration_update
+
+implicit none
+
+private
+
+public :: calibration_update
+
+contains
+
 subroutine calibration_update()
    use m_calibration
    use m_flow, only: frcu, frcu_bkp, cfclval
@@ -51,3 +61,5 @@ subroutine calibration_update()
    end do
 
 end subroutine calibration_update
+
+end module m_calibration_update

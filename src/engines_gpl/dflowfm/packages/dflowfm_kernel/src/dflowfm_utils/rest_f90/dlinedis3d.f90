@@ -30,9 +30,19 @@
 !
 !
 
+module m_dlinedis3d
+
+implicit none
+
+private
+
+public :: dlinedis3d
+
+contains
+
       subroutine dlinedis3D(xx3, yy3, zz3, xx1, yy1, zz1, xx2, yy2, zz2, JA, DIS, xxn, yyn, zzn, rl)
          use precision, only: dp
-         implicit none
+
          integer :: ja
          real(kind=dp) :: DIS
          real(kind=dp) :: R2, RL, X21, Y21, Z21, X31, Y31, Z31
@@ -69,3 +79,5 @@
          return
 
       end subroutine dlinedis3D
+
+end module m_dlinedis3d

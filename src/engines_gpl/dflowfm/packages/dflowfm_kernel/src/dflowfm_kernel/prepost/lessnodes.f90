@@ -30,10 +30,20 @@
 !
 !
 
+module m_lessnodes
+use m_oneline, only: oneline
+
+implicit none
+
+private
+
+public :: lessnodes
+
+contains
+
   subroutine LESSNODES()
      use m_netw
      use M_AFMETING
-     implicit none
 
      integer :: k
      do K = 1, NUMK
@@ -41,3 +51,5 @@
      end do
      return
   end subroutine LESSNODES
+
+end module m_lessnodes

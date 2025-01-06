@@ -32,6 +32,16 @@
 
 !> network field move
 !!   Is is assumed that there is a backup copy of the grid.
+module m_netmodfld
+
+implicit none
+
+private
+
+public :: netmodfld
+
+contains
+
 subroutine netmodfld(xp, yp, kp)
    use precision, only: dp
    use m_netw
@@ -41,8 +51,6 @@ subroutine netmodfld(xp, yp, kp)
    use m_wearelt
    use m_sferic
    use geometry_module, only: dbdistance
-
-   implicit none
 
    real(kind=dp) :: xp, yp !< coordinates that determine the influenced region
 
@@ -74,3 +82,5 @@ subroutine netmodfld(xp, yp, kp)
    end do
 
 end subroutine netmodfld
+
+end module m_netmodfld

@@ -31,11 +31,20 @@
 !
 
 !>    return x-component in corner (netnode) coordinate frame of a vector in link coordinate frame
+module m_lin2cory
+
+implicit none
+
+private
+
+public :: lin2cory
+
+contains
+
       real(kind=dp) function lin2cory(L, i12, ux, uy)
          use precision, only: dp
          use m_flowgeom, only: csbn, snbn
          use m_sferic
-         implicit none
 
          integer, intent(in) :: L !< flowlink number
          integer, intent(in) :: i12 !< left (1) or right (2) corner (netnode)
@@ -49,3 +58,5 @@
 
          return
       end function lin2cory
+
+end module m_lin2cory

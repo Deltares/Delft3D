@@ -30,6 +30,16 @@
 !
 !
 
+module m_setzminmax
+
+implicit none
+
+private
+
+public :: setzminmax
+
+contains
+
  subroutine setzminmax()
     use m_netw
     use m_flowgeom
@@ -37,7 +47,6 @@
     use m_flowparameters
     use m_sediment, only: stm_included
     use m_get_kbot_ktop
-    implicit none
 
     integer :: i, ki, kb, kt, itrac, isf
 
@@ -136,3 +145,5 @@
        end if
     end if
  end subroutine setzminmax
+
+end module m_setzminmax

@@ -27,13 +27,20 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_shrinkyzprof
+
+implicit none
+
+private
+
+public :: shrinkyzprof
+
+contains
 
    subroutine SHRINKYZPROF(Y, Z, N, NX)
       use precision, only: dp
       use M_MISSING
-      implicit none
+
       integer :: N, NX, NACT
       real(kind=dp) :: Y(N), Z(N)
 
@@ -95,3 +102,5 @@
       end do
 
    end subroutine SHRINKYZPROF
+
+end module m_shrinkyzprof

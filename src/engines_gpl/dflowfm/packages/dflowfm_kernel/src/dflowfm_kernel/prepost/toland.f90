@@ -31,6 +31,16 @@
 !
 
 !>    compute the nearest point on the land boundary
+module m_toland
+
+implicit none
+
+private
+
+public :: toland
+
+contains
+
       subroutine TOLAND(XX, YY, JSTART, JEND, JAINVIEW, XV, YV, DISMIN, JOUT, RLOUT) ! SHIFT 1 POINT TO LANDBOUNDARY
          use precision, only: dp
          use M_LANDBOUNDARY
@@ -38,7 +48,7 @@
          use M_POLYGON
          use geometry_module, only: pinpok
          use m_d_line_dis3
-         implicit none
+
          real(kind=dp), intent(in) :: xx, yy !< coordinates of reference point
          integer, intent(in) :: JSTART, JEND !< start end end node of land boundary segment respectively
          integer, intent(in) :: JAINVIEW !< nodes in view only (1) or not (0) or in polygon only (2)
@@ -124,3 +134,5 @@
 
          return
       end subroutine TOLAND
+
+end module m_toland

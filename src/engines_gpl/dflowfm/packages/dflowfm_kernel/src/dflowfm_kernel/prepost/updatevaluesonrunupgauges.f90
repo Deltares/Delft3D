@@ -31,6 +31,16 @@
 !
 
 !< update runup values per dts
+module m_updatevaluesonrunupgauges
+
+implicit none
+
+private
+
+public :: updatevaluesonrunupgauges
+
+contains
+
 subroutine updateValuesOnRunupGauges()
    use precision, only: dp
    use m_monitoring_runupgauges
@@ -39,8 +49,6 @@ subroutine updateValuesOnRunupGauges()
    use m_cell_geometry, only: xz, yz
    use m_flowgeom, only: ln, bl
    use m_flowparameters, only: epshu
-
-   implicit none
 
    integer :: irug
    integer :: k1, k2
@@ -83,3 +91,5 @@ subroutine updateValuesOnRunupGauges()
    end do
 
 end subroutine updateValuesOnRunupGauges
+
+end module m_updatevaluesonrunupgauges

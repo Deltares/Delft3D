@@ -30,8 +30,16 @@
 !
 !
 
-  ! =================================================================================================
-  ! =================================================================================================
+module m_setpillars
+
+implicit none
+
+private
+
+public :: setpillars
+
+contains
+
   subroutine setpillars()
      use precision, only: dp
      use m_flowgeom, only: ndx, lnx, ba, wu, nd
@@ -41,7 +49,7 @@
      use m_flowparameters, only: japillar
      use m_crspath
      use m_crspath_on_flowgeom
-     implicit none
+
      integer :: i, j, k, L, Lf, La, m, n
      real(kind=dp) :: pi
      integer, dimension(:), allocatable :: npil
@@ -160,3 +168,5 @@
      end if
 
   end subroutine setpillars
+
+end module m_setpillars

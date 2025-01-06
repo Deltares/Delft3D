@@ -30,6 +30,16 @@
 !
 !
 
+module m_mergenet_sub
+
+implicit none
+
+private
+
+public :: mergenet
+
+contains
+
    subroutine MERGENET()
       use precision, only: dp
       use m_netw
@@ -41,7 +51,6 @@
       use m_mergenodes
       use m_set_nod_adm
 
-      implicit none
       real(kind=dp) :: eps
       integer :: ierr
       integer :: in1
@@ -130,3 +139,5 @@
 
       return
    end subroutine MERGENET
+
+end module m_mergenet_sub

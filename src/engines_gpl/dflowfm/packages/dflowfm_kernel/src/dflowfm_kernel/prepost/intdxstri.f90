@@ -30,6 +30,16 @@
 !
 !
 
+module m_intdxstri
+
+implicit none
+
+private
+
+public :: intdxstri
+
+contains
+
       subroutine INTDXSTRI(XH, YH, DXS, NPH, JDLA)
          use precision, only: dp
          use m_missing
@@ -39,7 +49,6 @@
          use m_ec_basic_interpolation, only: triinterp2
          use fm_external_forcings_data, only: transformcoef
 
-         implicit none
          integer :: nph, jdla
          real(kind=dp) :: XH(NPH), YH(NPH), DXS(NPH)
 
@@ -69,3 +78,5 @@
          end if
 
       end subroutine INTDXSTRI
+
+end module m_intdxstri

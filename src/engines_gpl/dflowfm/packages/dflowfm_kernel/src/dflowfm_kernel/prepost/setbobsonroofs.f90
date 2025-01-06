@@ -30,6 +30,16 @@
 !
 !
 
+module m_setbobsonroofs
+
+implicit none
+
+private
+
+public :: setbobsonroofs
+
+contains
+
 subroutine setbobsonroofs() ! override bobs along pliz's
    use precision, only: dp
    use m_netw
@@ -47,8 +57,7 @@ subroutine setbobsonroofs() ! override bobs along pliz's
    use m_wall_clock_time
    use m_reapol
    use m_find_crossed_links_kdtree2
-
-   implicit none
+   use m_filez, only: oldfil
 
    integer :: i, k, L, n1, n2, k1, k2, nt, nt2, minp, lastfoundk, kL, kint, kf, jacros
    integer :: iL, numLL, numcrossedLinks, ierror, jakdtree = 1, inp, n, ip, ip1, ip2, ierr
@@ -335,3 +344,5 @@ subroutine setbobsonroofs() ! override bobs along pliz's
    if (allocated(blav)) deallocate (blav, nblav)
 
 end subroutine setbobsonroofs
+
+end module m_setbobsonroofs

@@ -30,13 +30,22 @@
 !
 !
 
+module m_mirrorline
+
+implicit none
+
+private
+
+public :: mirrorline
+
+contains
+
    subroutine MIRRORLINE(X0, Y0, X1, Y1, X2, Y2, JA, DIS, XN, YN)
       use precision, only: dp
       use geometry_module, only: dlinedis
       use m_sferic
       use m_missing
 
-      implicit none
       real(kind=dp) :: X0, Y0, X1, Y1, X2, Y2, DIS, XN, YN
       integer :: JA
 
@@ -47,3 +56,5 @@
 
       return
    end subroutine MIRRORLINE
+
+end module m_mirrorline

@@ -27,8 +27,15 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_setuniformwind
+
+implicit none
+
+private
+
+public :: setuniformwind
+
+contains
 
  subroutine setuniformwind()
     use precision, only: dp
@@ -37,7 +44,7 @@
     use m_sferic
     use m_flowgeom
     use fm_external_forcings, only: allocatewindarrays
-    implicit none
+
     real(kind=dp) :: wdir
 
     jawind = 2
@@ -49,3 +56,5 @@
     wy = windsp * sin(wdir)
     call setwindstress()
  end subroutine setuniformwind
+
+end module m_setuniformwind

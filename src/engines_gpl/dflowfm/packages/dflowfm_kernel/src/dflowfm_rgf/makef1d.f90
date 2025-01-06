@@ -30,11 +30,21 @@
 !
 !
 
+module m_makef1d
+
+implicit none
+
+private
+
+public :: makef1d
+
+contains
+
       subroutine MAKEF1D(XR, YR, MNMAX) ! naar rekenvlak SUBROUTINE MAKEF1D
          use precision, only: dp
          use M_SFERIC
          use M_MISSING
-         implicit none
+
          integer :: mnmax
          real(kind=dp) :: XR(MNMAX), YR(MNMAX), FI2
          integer :: i
@@ -49,3 +59,5 @@
          end do
          return
       end subroutine MAKEF1D
+
+end module m_makef1d

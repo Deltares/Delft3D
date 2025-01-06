@@ -30,10 +30,20 @@
 !
 !
 
+module m_tmisarr
+
+implicit none
+
+private
+
+public :: tmisarr
+
+contains
+
       subroutine TMISARR(H, MMAX, NMAX)
          use precision, only: dp
          use M_MISSING
-         implicit none
+
          integer :: i
          integer :: j
          integer :: mmax
@@ -48,3 +58,5 @@
 
          return
       end
+
+end module m_tmisarr

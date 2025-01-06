@@ -30,11 +30,21 @@
 !
 !
 
+module m_isquadadjacenttoline
+
+implicit none
+
+private
+
+public :: isquadadjacenttoline
+
+contains
+
   subroutine isquadadjacenttoline(L1, n, L2)
      use precision, only: dp
      use m_adjacent, only: adjacent
      use m_netw
-     implicit none
+
      integer :: L1, n, L2
 
      integer :: ja
@@ -58,3 +68,5 @@
         end if
      end do
   end subroutine isquadadjacenttoline
+
+end module m_isquadadjacenttoline

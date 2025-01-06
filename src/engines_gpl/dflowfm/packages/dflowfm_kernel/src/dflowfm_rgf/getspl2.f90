@@ -30,13 +30,23 @@
 !
 !
 
+module m_getspl2
+
+implicit none
+
+private
+
+public :: getspl2
+
+contains
+
       subroutine GETSPL2(X, XI2, XJ2, MC, NC, MMAX, NMAX)
          use precision, only: dp
          use M_MISSING
          use m_spline
          use m_put_ij
          use m_get_ij
-         implicit none
+
          integer :: i
          integer :: iff
          integer :: il
@@ -124,3 +134,5 @@
 
          return
       end subroutine GETSPL2
+
+end module m_getspl2

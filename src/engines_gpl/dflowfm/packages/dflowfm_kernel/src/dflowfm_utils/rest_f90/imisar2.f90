@@ -30,9 +30,19 @@
 !
 !
 
+module m_imisar2
+
+implicit none
+
+private
+
+public :: imisar2
+
+contains
+
       subroutine IMISAR2(IH, MMAX)
          use M_MISSING
-         implicit none
+
          integer :: i
          integer :: mmax
          integer(kind=selected_int_kind(2)) IH(MMAX)
@@ -42,3 +52,5 @@
          end do
          return
       end
+
+end module m_imisar2

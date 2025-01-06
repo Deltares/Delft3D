@@ -47,14 +47,13 @@ contains
       use m_readyy
       use m_qn_read_error
       use m_qn_eof_error
-      implicit none
+      use m_filez, only: oldfil, doclose, numbersonline
 
       character(len=*), intent(in) :: filename !< inderdaad, filename
       integer :: k0, L0, NUMKN, NUMLN, istat
 
       integer :: MNET, JA, LMOD, KMOD
       integer :: k, nr, knread, L, N1
-      integer :: numbersonline
       real(kind=dp) :: af
       character REC * 332
 

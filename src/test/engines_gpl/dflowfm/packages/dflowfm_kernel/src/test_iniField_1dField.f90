@@ -67,9 +67,8 @@ subroutine test_iniField1dField
     use m_inquire_flowgeom
     use dfm_error
     use ifport
-    !
-    ! Externals
-    integer, external :: flow_modelinit
+    use m_flow_modelinit, only: flow_modelinit
+    use m_resetfullflowmodel, only: resetfullflowmodel
     !
     ! Locals
     integer                   :: i, j, k, ibr
@@ -181,9 +180,8 @@ subroutine test_iniField1dField_waterdepth
     use unstruc_model
     use dfm_error
     use ifport
-
-    ! Externals
-    integer, external :: flow_modelinit
+    use m_flow_modelinit, only: flow_modelinit
+    use m_resetfullflowmodel, only: resetfullflowmodel
 
     ! Locals
     integer                                     :: i
@@ -382,9 +380,8 @@ subroutine test_iniField1dField_waterlevel
     use unstruc_model
     use dfm_error
     use ifport
-    !
-    ! Externals
-    integer, external :: flow_modelinit
+    use m_flow_modelinit, only: flow_modelinit
+    use m_resetfullflowmodel, only: resetfullflowmodel
     !
     ! Locals
     integer                                     :: i
@@ -583,9 +580,8 @@ subroutine test_iniField1dField_waterdepth_cross_sections
     use unstruc_model
     use dfm_error
     use ifport
-    !
-    ! Externals
-    integer, external :: flow_modelinit
+    use m_flow_modelinit, only: flow_modelinit
+    use m_resetfullflowmodel, only: resetfullflowmodel
     !
     ! Locals
     integer                                     :: i
@@ -634,12 +630,12 @@ subroutine two_branch_water_depth_and_level_combination(level_first_branch, leve
     use m_netw
     use unstruc_model
     use ifport
+    use m_flow_modelinit, only: flow_modelinit
+    use m_resetfullflowmodel, only: resetfullflowmodel
 
     real(kind=dp),    intent(in) :: level_first_branch
     real(kind=dp),    intent(in) :: level_second_branch
     character(len=*), intent(in) :: test_dir_name
-
-    integer, external            :: flow_modelinit
 
     integer,           parameter :: number_nodes_first_branch = 15
     integer,           parameter :: number_nodes_second_branch = 14
@@ -730,8 +726,8 @@ subroutine test_iniField1d_waterlevel_2d_points_not_set()
     use m_netw
     use unstruc_model
     use ifport
-
-    integer, external        :: flow_modelinit
+    use m_flow_modelinit, only: flow_modelinit
+    use m_resetfullflowmodel, only: resetfullflowmodel
 
     character(len=12)        :: mdufile
     character(len=23)        :: test_dir_name

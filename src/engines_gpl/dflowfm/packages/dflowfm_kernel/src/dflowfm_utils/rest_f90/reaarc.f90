@@ -30,6 +30,16 @@
 !
 !
 
+module m_reaarc
+
+implicit none
+
+private
+
+public :: reaarc
+
+contains
+
       subroutine REAARC(MINP, japrompt)
          use precision, only: dp
          use m_getreal
@@ -41,8 +51,6 @@
          use m_readarcinfoheader
          use m_read_arc_info_block
          use m_read_large_arc_info_block
-
-         implicit none
 
          integer :: ierr
          integer :: minp
@@ -141,3 +149,5 @@
 
          return
       end
+
+end module m_reaarc

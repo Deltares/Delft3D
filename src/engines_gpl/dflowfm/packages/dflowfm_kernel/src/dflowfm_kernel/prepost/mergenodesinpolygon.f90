@@ -30,9 +30,21 @@
 !
 !
 
- subroutine MERGENODESINPOLYGON()
-    use precision, only: dp
+module m_mergenodesinpolygon
+use m_rearrange_worldmesh, only: rearrange_worldmesh
 
+
+implicit none
+
+private
+
+public :: mergenodesinpolygon
+
+contains
+
+ subroutine MERGENODESINPOLYGON()
+    use m_get_meshbounds, only: get_meshbounds
+    use precision, only: dp
     use m_netw
     use kdtree2Factory
     use unstruc_messages
@@ -45,8 +57,6 @@
     use m_readyy
     use m_set_nod_adm
     use m_set_branch_lc
-
-    implicit none
 
     integer :: K, KK, KM, K1, K2, KA, KB, kn3, L, LL, JA
     integer :: JADUM
@@ -344,3 +354,5 @@
     end if
 
  end subroutine MERGENODESINPOLYGON
+
+end module m_mergenodesinpolygon

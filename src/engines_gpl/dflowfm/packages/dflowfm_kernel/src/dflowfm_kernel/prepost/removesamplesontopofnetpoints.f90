@@ -30,10 +30,20 @@
 !
 !
 
+module m_removesamplesontopofnetpoints
+
+implicit none
+
+private
+
+public :: removesamplesontopofnetpoints
+
+contains
+
    subroutine REMOVESAMPLESONTOPOFNETPOINTS(XS, YS, NS)
       use precision, only: dp
       use m_netw
-      implicit none
+
       integer :: ns
       real(kind=dp) :: XS(NS), YS(NS)
 
@@ -61,3 +71,5 @@
       end do
       NS = N
    end subroutine REMOVESAMPLESONTOPOFNETPOINTS
+
+end module m_removesamplesontopofnetpoints

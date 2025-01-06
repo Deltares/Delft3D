@@ -31,6 +31,16 @@
 !
 
 !> linear interpolation of z-values in polylines
+module m_interpolate_zpl_in_polylines
+
+implicit none
+
+private
+
+public :: interpolate_zpl_in_polylines
+
+contains
+
 subroutine interpolate_zpl_in_polylines()
    use precision, only: dp
    use m_polygon
@@ -38,8 +48,6 @@ subroutine interpolate_zpl_in_polylines()
    use geometry_module, only: dbdistance, get_startend
    use m_sferic, only: jsferic, jasfer3D
    use m_qnerror
-
-   implicit none
 
    real(kind=dp), dimension(:), allocatable :: wfromLeft ! arc length from left
 
@@ -143,3 +151,5 @@ subroutine interpolate_zpl_in_polylines()
 
    return
 end subroutine interpolate_zpl_in_polylines
+
+end module m_interpolate_zpl_in_polylines

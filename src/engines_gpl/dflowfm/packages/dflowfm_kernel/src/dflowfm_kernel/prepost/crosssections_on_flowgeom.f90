@@ -47,7 +47,7 @@ contains
       use dfm_error
       use unstruc_channel_flow
       use m_inquire_flowgeom
-      use unstruc_caching, only: copyCachedCrossSections, saveLinkList
+      use unstruc_caching, only: copy_cached_cross_sections, save_link_list
       use m_partitioninfo, only: jampi
       use m_readyy
       use m_wall_clock_time
@@ -86,7 +86,7 @@ contains
       if (jakdtree == 1) then
          call wall_clock_time(t0)
 
-         call copyCachedCrossSections(iLink, ipol, success)
+         call copy_cached_cross_sections(iLink, ipol, success)
 
          if (success) then
             numcrossedlinks = size(iLink)
@@ -129,7 +129,7 @@ contains
             dSL = 0d0
             call find_crossed_links_kdtree2(treeglob, num, xx, yy, 2, Lnx, 1, numcrossedlinks, iLink, ipol, dSL, ierror)
 
-            call saveLinklist(numcrossedlinks, iLink, ipol)
+            call save_link_list(numcrossedlinks, iLink, ipol)
          end if
 
          if (ierror == 0 .and. numcrossedlinks > 0) then
@@ -179,7 +179,7 @@ contains
       call realloc(numlist, ncrs, keepExisting=.true., fill=0) ! In case pli-based cross sections have not allocated this yet.
       call realloc(linklist, (/max(numcrossedlinks, 1), ncrs/), keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
 
-      call copyCachedCrossSections(iLink, ipol, success)
+      call copy_cached_cross_sections(iLink, ipol, success)
 
       call READYY('Enabling cross sections on grid', 0d0)
       do ic = 1, ncrs

@@ -30,13 +30,24 @@
 !
 !
 
+module m_quadstotri
+
+implicit none
+
+private
+
+public :: quadstotri
+
+contains
+
   subroutine quadsTOTRI()
+     use m_findel, only: findel
      use precision, only: dp
      use m_connect, only: connect
      use m_netw
      use gridoperations
      use m_dlength, only: dlength
-     implicit none
+
      real(kind=dp) :: a
      integer :: k0
      integer :: k1
@@ -79,3 +90,5 @@
 
      return
   end subroutine quadsTOTRI
+
+end module m_quadstotri

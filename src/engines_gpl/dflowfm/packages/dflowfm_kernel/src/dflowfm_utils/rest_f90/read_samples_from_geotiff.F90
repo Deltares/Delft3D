@@ -32,6 +32,16 @@
 
 !> Read samples from a GeoTIFF file.
 !! Samples are being stored in the global dataset of m_samples.
+module m_read_samples_from_geotiff
+
+implicit none
+
+private
+
+public :: read_samples_from_geotiff
+
+contains
+
 function read_samples_from_geotiff(filename) result(success)
    use precision, only: dp
    use MessageHandling
@@ -46,7 +56,6 @@ function read_samples_from_geotiff(filename) result(success)
    use m_drawthis
    use m_readyy
    use m_get_samples_boundingbox
-   implicit none
 
    character(len=*), intent(in) :: filename !< Path of the file to be read
    logical :: success !< Return value to describe success of the operations
@@ -216,3 +225,5 @@ function read_samples_from_geotiff(filename) result(success)
    success = .false.
 #endif
 end function read_samples_from_geotiff
+
+end module m_read_samples_from_geotiff

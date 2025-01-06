@@ -30,12 +30,21 @@
 !
 !
 
+module m_savecells
+
+implicit none
+
+private
+
+public :: savecells
+
+contains
+
 subroutine savecells() !! save netcell, lne, lnn, idomain
    use network_data
    use m_partitioninfo, only: idomain, idomain0
    use m_flowgeom, only: xz, xz0, yz, yz0, ba, ba0
    use m_alloc
-   implicit none
 
    integer :: ierr
    integer :: k, N
@@ -89,3 +98,5 @@ subroutine savecells() !! save netcell, lne, lnn, idomain
    end if
 
 end subroutine savecells
+
+end module m_savecells

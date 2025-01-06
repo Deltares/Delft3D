@@ -49,6 +49,10 @@ contains
       use m_flowgeom
       use m_flowtimes, only: dts
       use m_sferic
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
 
       integer, intent(in) :: LL, Lb, Lt !< working for basis link LL
       real(kind=dp), intent(in) :: cs, sn
@@ -62,8 +66,6 @@ contains
 
       real(kind=dp) :: ucinx, uciny
       integer :: nn12
-
-      real(kind=dp), external :: lin2nodx, lin2nody, nod2linx, nod2liny
 
       ae = 0d0; ai = 0d0
 

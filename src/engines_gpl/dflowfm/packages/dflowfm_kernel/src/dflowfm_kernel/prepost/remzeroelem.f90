@@ -30,6 +30,16 @@
 !
 !
 
+module m_remzeroelem
+
+implicit none
+
+private
+
+public :: remzeroelem
+
+contains
+
   subroutine REMZEROELEM(LNU)
      use m_netw
      implicit none
@@ -53,3 +63,5 @@
 
      return
   end subroutine REMZEROELEM
+
+end module m_remzeroelem

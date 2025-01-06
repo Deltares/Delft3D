@@ -30,10 +30,24 @@
 !
 !
 
+module m_refinepolygonpart
+use m_smodpla, only: smodpla
+
+
+implicit none
+
+private
+
+public :: refinepolygonpart
+
+contains
+
       !> Refine part of a polygon, indicated by start and end index.
       !! If the polygon/line ends between i1 and i2 (dmiss), then refinement
       !! stops there (i.e. refinement is only within *one* polygon).
       subroutine REFINEPOLYGONpart(i1, i2, jauniform) !DPLA = ACTUELE LENGTECOOR, DXA = ACTUELE GRIDSIZE, DXS = STREEF GRIDSIZE, ALLEN OP POLYGONPOINTS
+         use m_maptopolyline, only: maptopolyline
+         use m_interponpolyline, only: interponpolyline
          use precision, only: dp
          use m_averagediff, only: averagediff
          use m_accumulatedistance, only: accumulatedistance
@@ -42,7 +56,6 @@
          use m_ec_triangle
          use M_SAMPLES
          use m_alloc
-         implicit none
 
          integer :: i1, i2
          integer, intent(in) :: jauniform !< use uniform spacing (1) or not (0)
@@ -244,3 +257,5 @@
          deallocate (XPLO, YPLO, ZPLO, DPL, XH, YH, ZH, DPLA, DXA, DXS)
 
       end subroutine REFINEPOLYGONpart
+
+end module m_refinepolygonpart

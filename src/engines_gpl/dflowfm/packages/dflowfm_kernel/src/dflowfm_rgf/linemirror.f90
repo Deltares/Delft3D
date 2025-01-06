@@ -30,6 +30,17 @@
 !
 !
 
+module m_linemirror
+use m_shifxy, only: shifxy
+
+implicit none
+
+private
+
+public :: linemirror
+
+contains
+
       subroutine LINEMIRROR() !X, Y, mmax, nmax, MC, NC, IJC,IJYES)
          use precision, only: dp
          use m_missing
@@ -40,7 +51,6 @@
          use m_qnerror
          use m_okay
          use m_isitu
-         implicit none
 
 !      integer :: mmax, nmax, mc, nc
 !      real(kind=dp) :: X(MMAX,NMAX), Y(MMAX,NMAX)
@@ -121,3 +131,5 @@
          end if
          return
       end subroutine linemirror
+
+end module m_linemirror

@@ -43,6 +43,7 @@ contains
       use m_missing
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
+      use m_dprodin, only: dprodin
 
       implicit none
 
@@ -59,8 +60,6 @@ contains
       integer :: i, jsferic_old
 
       real(kind=dp), parameter :: dtol = 1d-8
-
-      real(kind=dp), external :: dprodin
 
 !  work in model-coordinates
       jsferic_old = jsferic

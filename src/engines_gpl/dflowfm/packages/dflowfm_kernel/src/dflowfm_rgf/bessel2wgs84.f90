@@ -31,9 +31,18 @@
 !
 
 !> convert from Bessel to WGS84
+module m_bessel2wgs84
+
+implicit none
+
+private
+
+public :: bessel2wgs84
+
+contains
+
 subroutine bessel2wgs84(phibes, lambes, phiwgs, lamwgs)
    use precision, only: dp
-   implicit none
 
    real(kind=dp), intent(in) :: phibes, lambes
    real(kind=dp), intent(out) :: phiwgs, lamwgs
@@ -46,3 +55,5 @@ subroutine bessel2wgs84(phibes, lambes, phiwgs, lamwgs)
    lamwgs = A1(2) * phibes + A2(2) * lambes + b(2)
 
 end subroutine bessel2wgs84
+
+end module m_bessel2wgs84

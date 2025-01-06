@@ -30,12 +30,22 @@
 !
 !
 
+module m_dumpnetlink
+
+implicit none
+
+private
+
+public :: dumpnetlink
+
+contains
+
  subroutine dumpnetlink(tex, L)
     use m_netw
     use m_flowgeom
     use m_flow
     use unstruc_messages
-    implicit none
+
     integer :: L, k1, k2
     character(len=*) tex
     character(len=14) tex2
@@ -47,3 +57,5 @@
     call mess(LEVEL_INFO, xk(k1), yk(k1))
     call mess(LEVEL_INFO, xk(k2), yk(k2))
  end subroutine dumpnetlink
+
+end module m_dumpnetlink

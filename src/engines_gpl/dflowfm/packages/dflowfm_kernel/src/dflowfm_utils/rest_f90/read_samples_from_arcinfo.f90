@@ -32,7 +32,18 @@
 
 !> Read samples from an ASCII file.
 !! Samples are being stored in a global dataset of m_samples.
+module m_read_samples_from_arcinfo
+
+implicit none
+
+private
+
+public :: read_samples_from_arcinfo
+
+contains
+
 subroutine read_samples_from_arcinfo(filnam, jadoorladen, japrompt) ! reaasc
+   use m_reaarc, only: reaarc
    use m_missing
    use m_samples
    use m_samples_refine, only: iHesstat, iHesstat_DIRTY
@@ -40,7 +51,8 @@ subroutine read_samples_from_arcinfo(filnam, jadoorladen, japrompt) ! reaasc
    use m_drawthis
    use m_readyy
    use m_get_samples_boundingbox
-   implicit none
+   use m_filez, only: oldfil, doclose, message
+
    character(len=*), intent(in) :: filnam !< Name of *.asc file.
    integer, intent(in) :: jadoorladen !< Whether or not (1/0) to keep the existing samples in the global set.
    integer, intent(in) :: japrompt !< Whether or not (1/0) to prompt in the GUI for istep-jstep subsampled reading.
@@ -107,3 +119,5 @@ subroutine read_samples_from_arcinfo(filnam, jadoorladen, japrompt) ! reaasc
    call get_samples_boundingbox()
    IPSTAT = IPSTAT_OK
 end subroutine read_samples_from_arcinfo
+
+end module m_read_samples_from_arcinfo

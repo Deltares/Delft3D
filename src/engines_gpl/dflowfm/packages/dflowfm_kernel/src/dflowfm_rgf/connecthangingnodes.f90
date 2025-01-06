@@ -30,12 +30,22 @@
 !
 !
 
+module m_connecthangingnodes
+
+implicit none
+
+private
+
+public :: connecthangingnodes, removelinksofhangingnodes, makeZKbedlevels
+
+contains
+
 subroutine connecthangingnodes()
    use m_netw
    use m_flowgeom
    use m_missing
    use gridoperations
-   implicit none
+   use m_filez, only: doclose, newfil
 
    integer :: mout, np, kk, k, kk3, kkx, lnu, km, kp
 
@@ -146,3 +156,5 @@ subroutine makeZKbedlevels()
    call setnodadm(0)
 end subroutine makeZKbedlevels
 
+
+end module m_connecthangingnodes

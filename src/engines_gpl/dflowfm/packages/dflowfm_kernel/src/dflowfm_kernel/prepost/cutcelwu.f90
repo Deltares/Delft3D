@@ -31,6 +31,10 @@
 !
 
 module m_cutcelwu
+use m_darean, only: darean
+use m_store_cutcellmasks, only: store_cutcellmasks
+use m_split_pol, only: split_pol
+
 
    implicit none
 

@@ -37,6 +37,16 @@
 !!
 !! The code uses similair ways to distribute discharges over layers as the calling subroutine setsorsin. Changes in the
 !! calling subroutine should also be taken over in this routine!
+module m_update_waq_lateral_fluxes
+
+implicit none
+
+private
+
+public :: update_waq_lateral_fluxes
+
+contains
+
 subroutine update_waq_lateral_fluxes()
    use waq
    use m_partitioninfo, only: is_ghost_node
@@ -44,7 +54,6 @@ subroutine update_waq_lateral_fluxes()
    use m_flowgeom
    use m_flowtimes
    use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat
-   implicit none
 
    integer :: i_node, k1
    integer :: i_lat, i_latwaq, i_layer
@@ -66,3 +75,5 @@ subroutine update_waq_lateral_fluxes()
    end do
 
 end subroutine update_waq_lateral_fluxes
+
+end module m_update_waq_lateral_fluxes

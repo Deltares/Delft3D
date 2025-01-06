@@ -30,10 +30,20 @@
 !
 !
 
+module m_ogivenewnodenum
+
+implicit none
+
+private
+
+public :: ogivenewnodenum
+
+contains
+
   subroutine OGIVENEWNODENUM(KNU)
      use m_netw
      use gridoperations
-     implicit none
+
      integer :: KNU
 
      integer :: k
@@ -55,3 +65,5 @@
      end if
      return
   end subroutine OGIVENEWNODENUM
+
+end module m_ogivenewnodenum

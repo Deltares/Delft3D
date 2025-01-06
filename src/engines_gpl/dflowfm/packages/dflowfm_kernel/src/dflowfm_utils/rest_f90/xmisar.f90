@@ -30,10 +30,20 @@
 !
 !
 
+module m_xmisar
+
+implicit none
+
+private
+
+public :: xmisar
+
+contains
+
       subroutine XMISAR(X, MMAX)
          use precision, only: dp
          use M_MISSING
-         implicit none
+
          integer :: i
          integer :: mmax
          real(kind=dp) :: x
@@ -43,3 +53,5 @@
          end do
          return
       end
+
+end module m_xmisar

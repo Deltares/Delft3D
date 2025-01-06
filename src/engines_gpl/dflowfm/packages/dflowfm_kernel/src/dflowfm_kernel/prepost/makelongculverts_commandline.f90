@@ -28,6 +28,16 @@
 !-------------------------------------------------------------------------------
 
 !>  perform long culvert conversion from command line
+module m_makelongculverts_commandline
+
+implicit none
+
+private
+
+public :: makelongculverts_commandline
+
+contains
+
 subroutine makelongculverts_commandline()
    use unstruc_model
    use m_readstructures
@@ -36,8 +46,6 @@ subroutine makelongculverts_commandline()
    use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID
    use system_utils
    use m_set_nod_adm
-
-   implicit none
 
    character(len=1024) :: fnamesstring
    character(len=:), allocatable :: converted_fnamesstring
@@ -83,3 +91,5 @@ subroutine makelongculverts_commandline()
    end if
 
 end subroutine makelongculverts_commandline
+
+end module m_makelongculverts_commandline

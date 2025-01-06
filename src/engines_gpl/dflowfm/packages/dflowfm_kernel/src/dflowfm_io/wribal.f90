@@ -38,6 +38,7 @@ contains
       use m_flowtimes
       use m_flow
       use unstruc_files, only: defaultFilename
+      use m_filez, only: doclose, newfil
 
       ! locals
       integer, save :: ibal = 0

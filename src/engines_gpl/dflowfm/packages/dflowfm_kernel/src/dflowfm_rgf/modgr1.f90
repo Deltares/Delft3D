@@ -30,8 +30,20 @@
 !
 !
 
+module m_modgr1
+use m_shifxy, only: shifxy
+
+implicit none
+
+private
+
+public :: modgr1
+
+contains
+
       !> This routine operates directly on active grid data from m_grid
       subroutine MODGR1(NPUT, MP, NP, IN, JN) !, NCOL)!XH, YH, mmax, nmax, MC, NC,
+         use m_adjust, only: adjust
          use precision, only: dp
          use m_tekgrpt
          use m_missing
@@ -39,7 +51,6 @@
          use unstruc_colors
          use m_okay
          use m_increase_grid
-         implicit none
 
          integer :: nput, mp, np, in, jn
 !      real(kind=dp) :: XH(MMAX,NMAX), YH(MMAX,NMAX)
@@ -139,3 +150,5 @@
          end if
          return
       end subroutine modgr1
+
+end module m_modgr1

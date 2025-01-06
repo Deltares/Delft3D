@@ -30,6 +30,16 @@
 !
 !
 
+module m_ispoi1
+
+implicit none
+
+private
+
+public :: ispoi1
+
+contains
+
       !> Checks whether a point is (almost) one of the polyline points.
       !!
       !! Checks at a radius dcir around all polyline points and sets
@@ -40,7 +50,7 @@
          use m_wearelt, only: rcir
          use m_missing, only: dmiss
          use m_dispnode
-         implicit none
+
          integer :: i
          integer :: ishot
          integer :: m1
@@ -94,3 +104,5 @@
          call DISPNODE(MVOL)
          return
       end subroutine ISPOI1
+
+end module m_ispoi1

@@ -29,6 +29,16 @@
 
 !
 !
+module m_solve_guus
+
+implicit none
+
+private
+
+public :: pack_matrix, reducept, solve_matrix
+
+contains
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -249,6 +259,8 @@
  subroutine ijtrue(i, j)
     use m_reduce
     use m_alloc
+    use m_filez, only: error
+
     implicit none
     integer, intent(in) :: i !< First node number
     integer, intent(in) :: j !< Second node number
@@ -361,7 +373,7 @@
 
     implicit none
     integer j, n, iadres, jj, iad2, ierr
-    integer, external :: ijadr
+
     iadres = 0
     do n = 1, nodtot
        ia(n)%l = 0
@@ -426,7 +438,7 @@
 
     implicit none
     integer i, j, m, n, ijij, nn, ierr
-    integer, external :: ijadr
+
     do n = 1, nogauss
        ndn = noel(n)
        ijij = 0
@@ -467,7 +479,7 @@
 
     implicit none
     integer i, j, n, m, ierr
-    integer, external :: ijadr
+
     nocg = 0
     do i = 1, nodtot
        ndn = nbrstk(i)
@@ -624,6 +636,7 @@
     use m_netw, only: xzw, yzw
     use unstruc_model, only: md_ident
     use m_qnerror
+    use m_filez, only: doclose, newfil
 
     implicit none
     integer :: ndx, its
@@ -2189,6 +2202,8 @@
  subroutine writematrix_matlab()
     use m_reduce
     use m_partitioninfo
+    use m_filez, only: doclose, newfil
+
     implicit none
     integer :: mout, n, i, jj, j, ntot
 
@@ -2677,3 +2692,5 @@
 
     return
  end subroutine testsolver
+
+end module m_solve_guus

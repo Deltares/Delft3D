@@ -757,6 +757,7 @@ contains
       use m_qnerror
       use m_wripol
       use m_wrisam
+      use m_filez, only: doclose, newfil
 
       character(len=*), intent(in) :: basename !< Basename for the profdef/loc output files.
 

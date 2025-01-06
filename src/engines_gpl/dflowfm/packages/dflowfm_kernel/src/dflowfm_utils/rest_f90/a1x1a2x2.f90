@@ -32,11 +32,20 @@
 
 ! compute coordinates (xu, yu) from (x1,y1) and (x2,y2) with
 !    weights alpha1 and alpha2
+module m_a1x1a2x2
+
+implicit none
+
+private
+
+public :: a1x1a2x2
+
+contains
+
 subroutine a1x1a2x2(x1, y1, x2, y2, alpha1, alpha2, xu, yu)
    use precision, only: dp
    use m_sferic
    use geometry_module, only: sphertocart3D, Cart3Dtospher
-   implicit none
 
    real(kind=dp), intent(in) :: x1, y1
    real(kind=dp), intent(in) :: x2, y2
@@ -61,3 +70,5 @@ subroutine a1x1a2x2(x1, y1, x2, y2, alpha1, alpha2, xu, yu)
 
    return
 end subroutine a1x1a2x2
+
+end module m_a1x1a2x2

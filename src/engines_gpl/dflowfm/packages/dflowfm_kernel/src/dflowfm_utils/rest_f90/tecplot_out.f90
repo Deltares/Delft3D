@@ -32,14 +32,23 @@
 
 !> Write tecplot output in already opened file
 !>   note: file is closed when tim==tstop
-   subroutine tecplot_out(mtecfil, tim, Lwriheader)
-      use precision, only: dp
+module m_tecplot_out
 
+implicit none
+
+private
+
+public :: tecplot_out
+
+contains
+
+   subroutine tecplot_out(mtecfil, tim, Lwriheader)
+      use m_setvelocityfield, only: setvelocityfield
+      use precision, only: dp
       use m_flowgeom
       use m_flow
       use m_flowtimes
       use m_netw
-      implicit none
 
       integer :: mtecfil
       real(kind=dp), intent(in) :: tim
@@ -126,3 +135,5 @@
       end do
 
    end subroutine tecplot_out
+
+end module m_tecplot_out

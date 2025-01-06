@@ -30,10 +30,20 @@
 !
 !
 
+module m_geoutm
+
+implicit none
+
+private
+
+public :: geoutm
+
+contains
+
       subroutine GEOUTM(xgeo, ygeo, xutm, yutm, Izone, nzone, IERR)
          use precision, only: dp
          use m_ellips
-         implicit none
+
          integer :: nzone
 ! ----------------------------------------------------------------------
 !
@@ -164,3 +174,5 @@
          continue
          return
       end subroutine geoutm
+
+end module m_geoutm

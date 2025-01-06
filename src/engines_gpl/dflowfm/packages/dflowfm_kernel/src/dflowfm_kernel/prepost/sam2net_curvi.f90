@@ -31,7 +31,20 @@
 !
 
 !> interpolation of sample data to network nodes, in curvilinear grid coordinates
+module m_sam2net_curvi
+use m_savegrd, only: savegrd
+
+
+implicit none
+
+private
+
+public :: sam2net_curvi
+
+contains
+
 subroutine sam2net_curvi(numk, xk, yk, zk)
+   use m_regularise_spline2curvigrid, only: regularise_spline2curvigrid
    use precision, only: dp
    use m_disable_outside_curvigrid, only: disable_outside_curvigrid
    use m_confrm
@@ -46,8 +59,6 @@ subroutine sam2net_curvi(numk, xk, yk, zk)
    use m_qnerror
    use m_delpol
    use m_restore_grd
-
-   implicit none
 
    integer, intent(in) :: numk !< number of netnodes
    real(kind=dp), dimension(numk), intent(in) :: xk, yk !< netnode coordinates
@@ -260,3 +271,5 @@ subroutine sam2net_curvi(numk, xk, yk, zk)
 
    return
 end subroutine sam2net_curvi
+
+end module m_sam2net_curvi

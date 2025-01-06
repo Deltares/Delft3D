@@ -35,6 +35,7 @@
 !>      4 5 6
 !>      1 2 3
 module m_moveprobe
+use m_in_flowcell, only: in_flowcell
 
    implicit none
 

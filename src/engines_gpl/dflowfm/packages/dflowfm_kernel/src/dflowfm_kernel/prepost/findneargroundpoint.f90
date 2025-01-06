@@ -30,6 +30,16 @@
 !
 !
 
+module m_findneargroundpoint
+
+implicit none
+
+private
+
+public :: findneargroundpoint
+
+contains
+
       subroutine findneargroundpoint(k1, k2)
 
          use m_samples
@@ -53,3 +63,5 @@
             end if
          end do
       end subroutine findneargroundpoint
+
+end module m_findneargroundpoint

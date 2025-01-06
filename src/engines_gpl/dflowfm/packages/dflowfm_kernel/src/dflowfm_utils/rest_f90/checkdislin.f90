@@ -30,6 +30,16 @@
 !
 !
 
+module m_checkdislin
+
+implicit none
+
+private
+
+public :: checkdislin
+
+contains
+
       subroutine checkdislin()
          use precision, only: dp
          use m_rcirc
@@ -39,7 +49,6 @@
          use m_missing, only: dmiss
          use m_locatora
 
-         implicit none
          integer :: ja
          real(kind=dp) :: dis, xn, yn
 
@@ -62,3 +71,5 @@
 
          call rcirc(xn, yn)
       end subroutine checkdislin
+
+end module m_checkdislin

@@ -30,6 +30,7 @@
 !
 !
 module m_zoomin
+   use m_histor, only: histor
    use m_wearel
    use m_setxor
    use m_setwynew

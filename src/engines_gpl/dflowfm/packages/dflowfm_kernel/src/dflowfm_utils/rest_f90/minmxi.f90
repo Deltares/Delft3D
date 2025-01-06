@@ -30,9 +30,19 @@
 !
 !
 
+module m_minmxi
+
+implicit none
+
+private
+
+public :: minmxi
+
+contains
+
       subroutine MINMXI(IS, MMAX, MINI, MAXI)
          use M_MISSING
-         implicit none
+
          integer :: i
          integer :: maxi
          integer :: mini
@@ -49,3 +59,5 @@
          end do
          return
       end
+
+end module m_minmxi

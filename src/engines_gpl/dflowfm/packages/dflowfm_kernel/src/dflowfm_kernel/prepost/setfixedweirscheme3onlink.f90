@@ -30,10 +30,20 @@
 !
 !
 
+module m_setfixedweirscheme3onlink
+
+implicit none
+
+private
+
+public :: setfixedweirscheme3onlink
+
+contains
+
 subroutine setfixedweirscheme3onlink(L)
    use m_flowgeom
    use m_flow
-   implicit none
+
    integer :: L, nn, n12, kk, LL
 
    teta(L) = 1d0
@@ -52,3 +62,5 @@ subroutine setfixedweirscheme3onlink(L)
    end if
 
 end subroutine setfixedweirscheme3onlink
+
+end module m_setfixedweirscheme3onlink

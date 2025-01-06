@@ -30,9 +30,19 @@
 !
 !
 
+module m_eqdint
+
+implicit none
+
+private
+
+public :: eqdint
+
+contains
+
       subroutine EQDINT(YH2, imax, TJ, Y2)
          use precision, only: dp
-         implicit none
+
          integer :: imax
          real(kind=dp) :: YH2(imax)
          real(kind=dp) :: TJ, Y2
@@ -45,3 +55,5 @@
          Y2 = T2 * YH2(J1) + T1 * YH2(J2)
          return
       end subroutine EQDINT
+
+end module m_eqdint

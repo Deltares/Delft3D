@@ -30,6 +30,16 @@
 !
 !
 
+module m_datum2
+
+implicit none
+
+private
+
+public :: datum2
+
+contains
+
       subroutine DATUM2(DATE)
          use unstruc_display, only: jadatetime
          use system_utils, only: FILESEP
@@ -56,3 +66,5 @@
          end if
          return
       end
+
+end module m_datum2

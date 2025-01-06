@@ -30,10 +30,20 @@
 !
 !
 
+module m_misarr
+
+implicit none
+
+private
+
+public :: misarr
+
+contains
+
       subroutine MISARR(H, MMAX, NMAX)
          use precision, only: dp
          use M_MISSING
-         implicit none
+
          integer :: i
          integer :: j
          integer :: mmax
@@ -47,3 +57,5 @@
          end do
          return
       end
+
+end module m_misarr

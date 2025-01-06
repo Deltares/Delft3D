@@ -30,10 +30,19 @@
 !
 !
 
+module m_trarot
+
+implicit none
+
+private
+
+public :: trarot
+
+contains
+
       subroutine TRAROT(XX, YY, XG, YG)
          use precision, only: dp
          use M_MAPPROPARAMETERS
-         implicit none
 
          real(kind=dp) :: XX, YY, XG, YG
          XX = (XX - XCE) * XF
@@ -42,3 +51,5 @@
          YG = DELTY + XX * SNE + YY * CSE + YCE
          return
       end subroutine TRAROT
+
+end module m_trarot

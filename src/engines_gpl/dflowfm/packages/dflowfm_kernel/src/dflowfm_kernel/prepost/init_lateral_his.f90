@@ -31,11 +31,21 @@
 !
 
 !> Initializes all administration necessary for writing lateral discharge output to his-files.
+module m_init_lateral_his
+
+implicit none
+
+private
+
+public :: init_lateral_his
+
+contains
+
 subroutine init_lateral_his()
    use m_laterals, only: qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum, qLatRealCumPre, qLatRealAve, numlatsg
    use m_flowparameters, only: jahislateral
    use m_alloc
-   implicit none
+
    ! At the starting time of history output, initialize variables
    if (jahislateral > 0 .and. numlatsg > 0) then
       call realloc(qplatCum, numlatsg, keepExisting=.false., fill=0d0)
@@ -47,3 +57,5 @@ subroutine init_lateral_his()
       call realloc(qLatRealAve, numlatsg, keepExisting=.false., fill=0d0)
    end if
 end subroutine init_lateral_his
+
+end module m_init_lateral_his

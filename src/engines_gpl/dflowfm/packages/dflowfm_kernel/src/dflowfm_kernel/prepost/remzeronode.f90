@@ -30,6 +30,16 @@
 !
 !
 
+module m_remzeronode
+
+implicit none
+
+private
+
+public :: remzeronode
+
+contains
+
   subroutine REMZERONODE(KP)
      use m_netw
      implicit none
@@ -58,3 +68,5 @@
 
      return
   end subroutine REMZERONODE
+
+end module m_remzeronode

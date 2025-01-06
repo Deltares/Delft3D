@@ -31,6 +31,7 @@
 !
 
 module m_shwxyz
+   use m_clospt, only: clospt
    use m_tekgpt
 
    implicit none

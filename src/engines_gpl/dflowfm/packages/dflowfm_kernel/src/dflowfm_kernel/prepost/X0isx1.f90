@@ -30,9 +30,19 @@
 !
 !
 
+module m_x0isx1
+
+implicit none
+
+private
+
+public :: x0isx1
+
+contains
+
       subroutine X0ISX1(X0, Y0, Z0, X1, Y1, Z1, KMAX)
          use precision, only: dp
-         implicit none
+
          integer :: KMAX
          real(kind=dp) :: X0(KMAX), X1(KMAX), &
                           Y0(KMAX), Y1(KMAX), &
@@ -46,3 +56,5 @@
          end do
          return
       end subroutine X0ISX1
+
+end module m_x0isx1

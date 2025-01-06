@@ -30,12 +30,24 @@
 !
 !
 
+module m_poltoland
+use m_toland, only: toland
+
+
+implicit none
+
+private
+
+public :: poltoland
+
+contains
+
       subroutine POLTOLAND(L1, L2) ! SHIFT POLYGON TO LANDBOUNDARY
          use precision, only: dp
          use M_POLYGON
          use M_MISSING
          use M_LANDBOUNDARY
-         implicit none
+
          integer :: l1
          integer :: l2
 
@@ -54,3 +66,5 @@
          end do
 
       end subroutine POLTOLAND
+
+end module m_poltoland

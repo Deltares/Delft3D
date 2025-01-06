@@ -43,6 +43,7 @@
 
 !> Print model-specific text strings on screen, based on current solution state.
 module m_model_specific
+   use m_matlab_write_double, only: matlab_write_double
    use m_weirtheory, only: weirtheory
 
    implicit none
@@ -452,6 +453,8 @@ contains
       use m_monitoring_crosssections
       use m_flowtimes
       use unstruc_model, only: getoutputdir
+      use m_filez, only: oldfil, newfil
+
       implicit none
       integer, intent(in) :: j12
       integer :: k, L, num, Lweir, ncgentst

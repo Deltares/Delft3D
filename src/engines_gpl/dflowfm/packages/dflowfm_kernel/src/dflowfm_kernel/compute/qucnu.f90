@@ -40,6 +40,10 @@ contains
       use precision, only: dp
       use m_flow ! advect the cell center velocities (dimension: m4/s2)
       use m_flowgeom ! leaving the cell = +
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
       implicit none
 
       integer :: L ! for link L,
@@ -51,8 +55,6 @@ contains
       real(kind=dp) :: cs, sn, ucin, ucinx, uciny
 
       integer :: nn12
-
-      real(kind=dp), external :: lin2nodx, lin2nody, nod2linx, nod2liny
 
       Qucnu = 0d0
       cs = csu(L)

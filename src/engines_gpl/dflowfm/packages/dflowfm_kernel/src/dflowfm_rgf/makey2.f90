@@ -30,11 +30,21 @@
 !
 !
 
+module m_makey2
+
+implicit none
+
+private
+
+public :: makey2
+
+contains
+
       subroutine MAKEY2(XR, YR, XO, YO, MMAX, NMAX) ! Voor tekenen bij JSFERIC SUBROUTINE MAKEY2
          use precision, only: dp
          use M_SFERIC
          use M_MISSING
-         implicit none
+
          integer :: mmax, nmax
          real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
                           XO(MMAX, NMAX), YO(MMAX, NMAX), FI2
@@ -54,3 +64,5 @@
          end do
          return
       end subroutine MAKEY2
+
+end module m_makey2

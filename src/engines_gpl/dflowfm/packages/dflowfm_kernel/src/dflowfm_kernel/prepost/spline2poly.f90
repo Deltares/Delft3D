@@ -27,11 +27,19 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> copy the spline to a polyline
+module m_spline2poly
+
+implicit none
+
+private
+
+public :: spline2poly
+
+contains
+
 subroutine spline2poly()
+   use m_make_gridline, only: make_gridline
    use precision, only: dp
    use m_splines
    use m_spline2curvi
@@ -39,8 +47,6 @@ subroutine spline2poly()
    use m_polygon
    use m_missing
    use m_delpol
-
-   implicit none
 
    real(kind=dp), allocatable, dimension(:) :: sc !  spline-coordinates of grid points, not used
 
@@ -88,3 +94,5 @@ subroutine spline2poly()
 
    return
 end subroutine spline2poly
+
+end module m_spline2poly

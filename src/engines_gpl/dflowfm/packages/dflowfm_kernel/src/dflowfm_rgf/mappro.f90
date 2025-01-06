@@ -30,11 +30,29 @@
 !
 !
 
+module m_mappro
+use m_utmgeo2, only: utmgeo2
+use m_trarot, only: trarot
+use m_setellips, only: setellips
+use m_rdgeo, only: rdgeo
+use m_mercgeo, only: mercgeo
+
+implicit none
+
+private
+
+public :: mappro
+
+contains
+
       subroutine MAPPRO(XX, YY, XG, YG, IZONE, NZONE, IHEM, ITYPE, JSFERIC, INIA)
+         use m_geoutm, only: geoutm
+         use m_geord, only: geord
+         use m_geomerc, only: geomerc
+         use m_affine, only: affine
          use precision, only: dp
          use M_MISSING
-         !use proj4
-         implicit none
+
          integer :: ierr
          integer :: ini
          integer :: inia
@@ -99,3 +117,5 @@
          end if
          return
       end subroutine MAPPRO
+
+end module m_mappro

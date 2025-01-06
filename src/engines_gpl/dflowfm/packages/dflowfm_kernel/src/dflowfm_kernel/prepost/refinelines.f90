@@ -30,6 +30,16 @@
 !
 !
 
+module m_refinelines
+
+implicit none
+
+private
+
+public :: refinelines
+
+contains
+
   subroutine REFINELINES()
      use precision, only: dp
      use m_connect, only: connect
@@ -38,7 +48,6 @@
      use m_missing, only: dmiss, jins
      use geometry_module, only: pinpok
      use m_del_elem
-     implicit none
 
      integer :: INL
      integer :: k1
@@ -68,3 +77,5 @@
 
      return
   end subroutine REFINELINES
+
+end module m_refinelines

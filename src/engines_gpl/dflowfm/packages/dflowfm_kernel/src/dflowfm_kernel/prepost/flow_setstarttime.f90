@@ -30,9 +30,18 @@
 !
 !
 
+module m_flow_setstarttime
+
+implicit none
+
+private
+
+public :: flow_setstarttime
+
+contains
+
  subroutine flow_setstarttime() ! set flow starttime
     use m_flowtimes
-    implicit none
 
     time_user = tstart_user
     time0 = tstart_user
@@ -45,3 +54,5 @@
     time_split0 = tstart_user
     time_split = tstart_user
  end subroutine
+
+end module m_flow_setstarttime

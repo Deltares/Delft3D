@@ -31,16 +31,26 @@
 !
 
 !> generate a gridline on a spline with a prescribed maximum mesh width
+module m_make_gridline
+use m_spline2gridline, only: spline2gridline
+
+
+implicit none
+
+private
+
+public :: make_gridline
+
+contains
+
 subroutine make_gridline(num, xsp, ysp, dwidth, mfacmax, mfac, hmax, xg, yg, sc, jacurv)
    use precision, only: dp
-
    use m_missing
    use m_alloc
    use geometry_module, only: dbdistance
    use m_sferic, only: jsferic, jasfer3D
    use m_spline
-
-   implicit none
+   use m_splinelength, only: splinelength
 
    integer, intent(in) :: num !< number of spline control points
    real(kind=dp), dimension(num), intent(in) :: xsp, ysp !< coordinates of spline control points
@@ -61,8 +71,6 @@ subroutine make_gridline(num, xsp, ysp, dwidth, mfacmax, mfac, hmax, xg, yg, sc,
    real(kind=dp) :: dspllength ! spline length
 
    integer :: i, mfac_loc
-
-   real(kind=dp), external :: splinelength
 
 !  test
 !  copy spline nodes to grid points
@@ -110,3 +118,5 @@ subroutine make_gridline(num, xsp, ysp, dwidth, mfacmax, mfac, hmax, xg, yg, sc,
 
    return
 end subroutine make_gridline
+
+end module m_make_gridline

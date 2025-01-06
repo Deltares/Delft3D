@@ -30,6 +30,16 @@
 !
 !
 
+module m_runupgauges_on_flowgeom
+
+implicit none
+
+private
+
+public :: runupgauges_on_flowgeom
+
+contains
+
 subroutine runupgauges_on_flowgeom()
    use precision, only: dp
    use m_monitoring_runupgauges
@@ -44,7 +54,6 @@ subroutine runupgauges_on_flowgeom()
    use m_wall_clock_time
    use m_find_crossed_links_kdtree2
    use m_crspath_on_flowgeom
-   implicit none
 
    integer :: ic, icmod
 
@@ -76,7 +85,7 @@ subroutine runupgauges_on_flowgeom()
       call wall_clock_time(t0)
 
       ! to do: chaching
-      !call copyCachedCrossSections( iLink, ipol, success )
+      !call copy_cached_cross_sections( iLink, ipol, success )
 
       !if ( success ) then
       !    numcrossedlinks = size(iLink)
@@ -116,7 +125,7 @@ subroutine runupgauges_on_flowgeom()
       ! use itype 3, as we want crossing the edge, not the connection between adjoint cells
       call find_crossed_links_kdtree2(treeglob, num, xx, yy, 3, Lnx, 1, numcrossedlinks, iLink, ipol, dSL, ierror)
 
-      !call saveLinklist( numcrossedlinks, iLink, ipol )   to do caching
+      !call save_link_list( numcrossedlinks, iLink, ipol )   to do caching
       !endif
 
       if (ierror == 0 .and. numcrossedlinks > 0) then
@@ -163,7 +172,7 @@ subroutine runupgauges_on_flowgeom()
    call realloc(linklist, (/max(numcrossedlinks, 1), num_rugs/), keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
 
    ! todo: caching
-   !call copyCachedCrossSections( iLink, ipol, success )
+   !call copy_cached_cross_sections( iLink, ipol, success )
 
    call READYY('Enabling runup gauges on grid', 0d0)
    do ic = 1, num_rugs
@@ -197,3 +206,5 @@ subroutine runupgauges_on_flowgeom()
 
    return
 end subroutine runupgauges_on_flowgeom
+
+end module m_runupgauges_on_flowgeom

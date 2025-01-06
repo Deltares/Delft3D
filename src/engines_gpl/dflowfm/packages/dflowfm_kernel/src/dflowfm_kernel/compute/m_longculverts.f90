@@ -109,9 +109,7 @@ contains
    !> Loads the long culverts from a structures.ini file and
    !! creates extra netnodes+links for them.
    subroutine convertLongCulvertsAsNetwork(structurefile, jaKeepExisting, culvertprefix, structures_output, crsdef_output, ierr, crsdeffile)
-      !use network_data
       use dfm_error
-
       use string_module, only: strcmpi
       use m_polygon
       use m_missing
@@ -122,6 +120,7 @@ contains
       use unstruc_channel_flow
       use m_save_ugrid_state
       use system_utils
+      use m_filez, only: newfil
 
       implicit none
 

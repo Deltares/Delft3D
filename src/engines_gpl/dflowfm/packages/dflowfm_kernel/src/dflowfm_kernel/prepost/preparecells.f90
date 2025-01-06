@@ -30,6 +30,16 @@
 !
 !
 
+module m_preparecells
+
+implicit none
+
+private
+
+public :: preparecells
+
+contains
+
 subroutine preparecells(md_netfile, jaidomain, jaiglobal_s, ierr)
 
    use network_data
@@ -41,7 +51,6 @@ subroutine preparecells(md_netfile, jaidomain, jaiglobal_s, ierr)
    use unstruc_messages
    use m_qnerror
 
-   implicit none
    character(len=*), intent(in) :: md_netfile !< net filename
    integer, intent(in) :: jaidomain !< read subdomain numbers (1) or not (0)
    integer, intent(in) :: jaiglobal_s !< read global cell numbers (1) or not (0)
@@ -135,3 +144,5 @@ subroutine preparecells(md_netfile, jaidomain, jaiglobal_s, ierr)
    call update_cell_circumcenters()
 
 end subroutine preparecells
+
+end module m_preparecells

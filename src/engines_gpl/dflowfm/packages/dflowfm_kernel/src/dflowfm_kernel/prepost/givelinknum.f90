@@ -30,9 +30,19 @@
 !
 !
 
-  subroutine GIVELINKNUM(K1, K2, L)
-     use m_netw
-     implicit none
+module m_givelinknum
+
+implicit none
+
+private
+
+public :: givelinknum
+
+contains
+
+  subroutine givelinknum(K1, K2, L)
+     use network_data, only: KN, NUML
+
      integer :: K1, K2, L
 
      L = 0
@@ -42,5 +52,7 @@
            return
         end if
      end do
-     return
-  end subroutine GIVELINKNUM
+
+  end subroutine givelinknum
+
+end module m_givelinknum

@@ -27,6 +27,16 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_get_var_location
+
+implicit none
+
+private
+
+public :: bmi_get_var_location
+
+contains
+
 select case(var_name)
 %for var in variables:
   case("${var['name']}")
@@ -35,3 +45,5 @@ select case(var_name)
   case default
     location_name = ""
 end select
+
+end module m_bmi_get_var_location

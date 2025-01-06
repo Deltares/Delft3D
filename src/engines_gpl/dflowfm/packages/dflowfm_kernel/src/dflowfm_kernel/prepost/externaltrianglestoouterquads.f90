@@ -30,6 +30,19 @@
 !
 !
 
+module m_externaltrianglestoouterquads
+use m_setpoint, only: setpoint
+use m_getquad, only: getquad
+
+
+implicit none
+
+private
+
+public :: externaltrianglestoouterquads
+
+contains
+
    subroutine externaltrianglestoouterquads()
       use precision, only: dp
 
@@ -76,3 +89,5 @@
       end do
 
    end subroutine externaltrianglestoouterquads
+
+end module m_externaltrianglestoouterquads

@@ -31,9 +31,18 @@
 !
 
 !> find common neighboring cell of two links (0: no cell found)
+module m_icommon
+
+implicit none
+
+private
+
+public :: common_cell_for_two_net_links
+
+contains
+
 integer function common_cell_for_two_net_links(L1, L2)
    use network_data, only: lnn, lne
-   implicit none
 
    integer, intent(in) :: L1, L2 !< net link numbers
 
@@ -52,3 +61,5 @@ integer function common_cell_for_two_net_links(L1, L2)
 
    return
 end function common_cell_for_two_net_links
+
+end module m_icommon

@@ -35,15 +35,21 @@
 !> Determines the remaining percentage of the simulation and
 !! estimates the remaining time in d:hh:mm:ss and writes both to the
 !! screen together with the number of remaining timesteps.
+module m_step_to_screen
+
+implicit none
+
+private
+
+public :: step_to_screen, seconds_to_dhms
+
+contains
+
 subroutine step_to_screen()
    use precision
    use Timers
    use m_flowtimes
    use unstruc_messages
-   !
-   implicit none
-
-!    integer :: lunscr = 6 ! Hardcoded stdout
 !
 ! Local variables
 !
@@ -62,8 +68,6 @@ subroutine step_to_screen()
    real(fp) :: tcpu
    real(fp), save :: timesav = 0d0
    real(fp), save :: dntsav = 0d0
-
-   character(len=20), external :: seconds_to_dhms
 !
 !! executable statements -------------------------------------------------------
 !
@@ -210,3 +214,5 @@ function seconds_to_dhms(secs_long) result(timestr)
    end if
 
 end function seconds_to_dhms
+
+end module m_step_to_screen

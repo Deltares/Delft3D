@@ -32,6 +32,9 @@
 
 !---------------------------------------------------------------
 module m_snappol ! intentionally a module (for assumed size)
+   use m_mirrorcell, only: mirrorcell
+   use m_merge_polylines, only: merge_polylines
+   use m_make_mirrorcells, only: make_mirrorcells
    use m_count_links, only: count_links
    use kdtree2Factory
    implicit none

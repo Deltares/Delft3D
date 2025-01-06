@@ -27,8 +27,15 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_setwallorientations
+
+implicit none
+
+private
+
+public :: setwallorientations
+
+contains
 
  !> set wall to flowlinks and wall to flownode oientations
  subroutine setwallorientations()
@@ -39,8 +46,6 @@
     use m_alloc
     use m_missing, only: dmiss
     use geometry_module, only: half, spher2locvec
-
-    implicit none
 
     real(kind=dp) :: xh, yh
 
@@ -92,3 +97,5 @@
 
     return
  end subroutine setwallorientations
+
+end module m_setwallorientations

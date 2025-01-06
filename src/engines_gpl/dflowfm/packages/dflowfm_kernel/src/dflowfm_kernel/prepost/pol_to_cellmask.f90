@@ -34,14 +34,22 @@
 !> a cell is dry when it is:
 !>   1) inside ANY "1"-polygon (drypnts), OR
 !>   2) outside ALL "-1"-polygons (enclosures)
+module m_pol_to_cellmask
+
+implicit none
+
+private
+
+public :: pol_to_cellmask
+
+contains
+
 subroutine pol_to_cellmask()
    use network_data
    use m_polygon
    use m_missing, only: dmiss, JINS
    use geometry_module, only: dbpinpol_optinside_perpol
    use m_readyy
-
-   implicit none
 
    integer :: in, k, KMOD
    integer :: num
@@ -79,3 +87,5 @@ subroutine pol_to_cellmask()
 
    return
 end subroutine pol_to_cellmask
+
+end module m_pol_to_cellmask

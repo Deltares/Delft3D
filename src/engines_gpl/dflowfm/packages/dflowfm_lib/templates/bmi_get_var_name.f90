@@ -27,6 +27,16 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_get_var_name
+
+implicit none
+
+private
+
+public :: bmi_get_var_name
+
+contains
+
   select case(var_index)
 %for i, var in enumerate(variables):
   case(${i})
@@ -34,3 +44,5 @@
 %endfor
   end select
 
+
+end module m_bmi_get_var_name

@@ -44,6 +44,7 @@ contains
       use m_qnerror
       use m_qn_read_error
       use m_qn_eof_error
+      use m_filez, only: oldfil, doclose, numbersonline
 
       integer :: ierr
       integer :: k
@@ -52,7 +53,6 @@ contains
       integer :: l
       integer :: minp
       integer :: num
-      integer :: numbersonline
       logical JAWEL
       integer INFO(10)
       character FILNAM * (*), REC * 132

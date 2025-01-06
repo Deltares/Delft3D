@@ -16,6 +16,11 @@ object Release : BuildType({
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
 
+
+    params {
+        param("reverse.dep.*.product", "fm-suite")
+    }
+
     vcs {
         root(DslContext.settingsRoot)
         branchFilter = """

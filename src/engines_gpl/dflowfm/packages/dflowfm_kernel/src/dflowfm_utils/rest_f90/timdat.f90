@@ -30,6 +30,16 @@
 !
 !
 
+module m_timdat
+
+implicit none
+
+private
+
+public :: timdat
+
+contains
+
 subroutine timdat(julday, timsec, idatum, itijd)
 !!--description-----------------------------------------------------------------
 !
@@ -42,8 +52,6 @@ subroutine timdat(julday, timsec, idatum, itijd)
 ! NONE
 !!--declarations----------------------------------------------------------------
    use precision
-   !
-   implicit none
 !
 ! Global variables
 !
@@ -96,3 +104,5 @@ subroutine timdat(julday, timsec, idatum, itijd)
    idatum = abs(iy) * 10000 + imo * 100 + iday
    idatum = sign(idatum, iy)
 end subroutine timdat
+
+end module m_timdat

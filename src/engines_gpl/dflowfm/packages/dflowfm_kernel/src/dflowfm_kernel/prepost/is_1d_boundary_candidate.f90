@@ -33,11 +33,19 @@
 !< Returns true when a 1d node can be used as a boundary. By default
 !< the connecting edge should not lead to a bifurcation, unless
 !< the flag jaAllowBndAtBifurcation is true
+module m_is_1d_boundary_candidate
+
+implicit none
+
+private
+
+public :: is_1d_boundary_candidate
+
+contains
+
 pure logical function is_1d_boundary_candidate(L, i)
    use network_data
    use m_flowgeom
-
-   implicit none
 
    integer, intent(in) :: L !<  net link to check for boundary candidate
    integer, intent(in) :: i !<  node to check, equals 1 or 2
@@ -47,3 +55,5 @@ pure logical function is_1d_boundary_candidate(L, i)
 
    return
 end function is_1d_boundary_candidate
+
+end module m_is_1d_boundary_candidate

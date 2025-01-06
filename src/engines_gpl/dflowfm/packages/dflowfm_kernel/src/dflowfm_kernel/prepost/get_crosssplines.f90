@@ -31,6 +31,18 @@
 !
 
 !> get the intersections of a spline with all other splines
+module m_get_crosssplines
+use m_sect3r, only: sect3r
+
+
+implicit none
+
+private
+
+public :: get_crosssplines
+
+contains
+
 subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
    use precision, only: dp
    use m_splines
@@ -38,8 +50,6 @@ subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
    use m_alloc
    use stdlib_sorting, only: sort_index
    use geometry_module, only: dbdistance
-
-   implicit none
 
    integer, intent(in) :: num !< number of spline control points
    real(kind=dp), dimension(num), intent(in) :: xs1, ys1 !< coordinates of spline control points
@@ -121,3 +131,5 @@ subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
 
    return
 end subroutine get_crosssplines
+
+end module m_get_crosssplines

@@ -31,16 +31,27 @@
 !
 
 !> snap network meshlines to nearest land boundary
+module m_nettoland
+use m_snap_to_landboundary, only: snap_to_landboundary
+
+
+implicit none
+
+private
+
+public :: nettoland
+
+contains
+
 subroutine nettoland()
 
+   use m_find_nearest_meshline, only: find_nearest_meshline
    use m_confrm
    use M_netw
    use M_MISSING
    use m_observations_data
    use gridoperations
    use m_makenetnodescoding
-
-   implicit none
 
    integer :: ja
 
@@ -75,3 +86,5 @@ subroutine nettoland()
 
    return
 end subroutine nettoland
+
+end module m_nettoland

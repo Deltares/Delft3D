@@ -30,13 +30,21 @@
 !
 !
 
+module m_trace_netlink_polys
+
+implicit none
+
+private
+
+public :: trace_netlink_polys
+
+contains
+
 subroutine trace_netlink_polys()
 
    use network_data
    use m_alloc
    use gridoperations
-
-   implicit none
 
    integer :: i, ip, L, kcur, knext, lcur, iloc
 
@@ -96,3 +104,5 @@ subroutine trace_netlink_polys()
    numpath = ip
 
 end subroutine trace_netlink_polys
+
+end module m_trace_netlink_polys

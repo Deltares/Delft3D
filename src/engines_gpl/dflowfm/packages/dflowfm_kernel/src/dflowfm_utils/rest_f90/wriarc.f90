@@ -30,10 +30,20 @@
 !
 !
 
+module m_wriarc
+
+implicit none
+
+private
+
+public :: wriarc
+
+contains
+
       subroutine WRIARC(MARC, data_array, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
          use m_writearcinfoheader
          use precision, only: dp
-         implicit none
+
          real(kind=dp) :: dmiss
          integer :: mmax
          integer :: nmax
@@ -56,3 +66,5 @@
          end do
          return
       end
+
+end module m_wriarc

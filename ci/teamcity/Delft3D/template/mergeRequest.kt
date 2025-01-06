@@ -10,7 +10,6 @@ object TemplateMergeRequest : Template({
 
     features {
         pullRequests {
-            id = "merge_request"
             provider = gitlab {
                 authType = token {
                     token = "%gitlab_private_access_token%"

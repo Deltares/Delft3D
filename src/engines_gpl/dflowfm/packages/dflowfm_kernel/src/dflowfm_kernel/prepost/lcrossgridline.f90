@@ -31,15 +31,22 @@
 !
 
 !> check if a line segment crosses the gridline on the center spline
+module m_lcrossgridline
+
+implicit none
+
+private
+
+public :: lcrossgridline
+
+contains
+
 logical function Lcrossgridline(x1, x2, j)
    use precision, only: dp
-
    use m_grid
    use m_missing
    use m_sferic, only: jsferic
    use geometry_module, only: cross
-
-   implicit none
 
    real(kind=dp), dimension(2), intent(in) :: x1, x2 !< coordinates of begin and end point of line segment
    integer, intent(in) :: j !< gridline index
@@ -70,3 +77,5 @@ logical function Lcrossgridline(x1, x2, j)
 
    return
 end function ! Lcrosscenterspline
+
+end module m_lcrossgridline

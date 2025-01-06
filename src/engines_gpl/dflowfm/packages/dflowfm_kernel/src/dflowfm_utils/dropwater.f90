@@ -30,6 +30,16 @@
 !
 !
 
+module m_dropwater
+
+implicit none
+
+private
+
+public :: dropwater
+
+contains
+
  !> Drop water *during* flow computation.
  !!
  !! Use idir=1 for adding water, -1 for lowering it.
@@ -46,7 +56,6 @@
     use m_flow_f0isf1
     use m_pfiller
 
-    implicit none
     real(kind=dp), intent(in) :: xp, yp !< Clicked point, which flow node to drop. If a polygon is active, drop all contained points, independent of xp, yp.
     integer, intent(in) :: idir !< direction (1 for up, -1 for down)
 
@@ -101,3 +110,5 @@
     validateon = .false.
 
  end subroutine dropwater
+
+end module m_dropwater

@@ -30,12 +30,22 @@
 !
 !
 
+module m_restorecells
+
+implicit none
+
+private
+
+public :: restorecells
+
+contains
+
 subroutine restorecells()
    use network_data
    use m_partitioninfo, only: idomain, idomain0
    use m_flowgeom, only: xz, xz0, yz, yz0, ba, ba0
    use m_alloc
-   implicit none
+
    integer :: ierr
 
    integer :: k, N
@@ -92,3 +102,5 @@ subroutine restorecells()
    end if
 
 end subroutine restorecells
+
+end module m_restorecells

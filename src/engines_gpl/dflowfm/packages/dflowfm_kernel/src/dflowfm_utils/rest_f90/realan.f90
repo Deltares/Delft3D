@@ -30,7 +30,13 @@
 !
 !
 
-    subroutine REALAN(MLAN, ANTOT)
+submodule(m_realan) m_realan_
+
+implicit none
+
+contains
+
+    module subroutine REALAN(MLAN, ANTOT)
        use precision, only: dp
        use m_polygon
        use M_landboundary
@@ -38,6 +44,8 @@
        use m_readyy
        use m_qn_read_error
        use m_qn_eof_error
+       use m_filez, only: doclose
+
        implicit none
        integer, intent(inout) :: mlan
        integer, intent(inout), optional :: antot
@@ -180,4 +188,6 @@
        call doclose(MLAN)
        return
 
-    end
+    end subroutine REALAN
+
+end submodule m_realan_

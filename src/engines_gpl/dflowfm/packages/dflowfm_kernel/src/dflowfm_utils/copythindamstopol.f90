@@ -32,11 +32,21 @@
 
 !> Copy the original polygons that define the current thin dams
 !! to the active polygons in xpl,...
+module m_copythindamstopol
+
+implicit none
+
+private
+
+public :: copythindamstopol
+
+contains
+
 subroutine copyThinDamsToPol()
    use m_thindams
    use m_polygon, only: npl
    use m_append_crspath_to_pol
-   implicit none
+
    integer :: i
 
    npl = 0
@@ -45,3 +55,5 @@ subroutine copyThinDamsToPol()
    end do
 
 end subroutine copyThinDamsToPol
+
+end module m_copythindamstopol

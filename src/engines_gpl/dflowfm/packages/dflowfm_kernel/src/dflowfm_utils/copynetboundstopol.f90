@@ -30,6 +30,8 @@
 !
 !
 module m_copynetboundstopol
+use m_findel, only: findel
+
    implicit none
 contains
 !> copy the network boundaries to polygon

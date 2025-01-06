@@ -28,6 +28,17 @@
 !-------------------------------------------------------------------------------
 
 !> split polygon recursively into (Ni X Nj) smaller polygons, at most MAXsplit times, until polygons have at most NPLmax nodes
+module m_split_pol
+use m_split_pol_with_line, only: split_pol_with_line
+
+implicit none
+
+private
+
+public :: split_pol
+
+contains
+
  subroutine split_pol(Ni, Nj, NPLmax, MAXsplit)
     use precision, only: dp
     use m_polygon
@@ -37,8 +48,7 @@
     use unstruc_messages
     use m_wrildb
     use m_addtopol, only: addtopol
-
-    implicit none
+    use m_filez, only: doclose, newfil
 
     integer, intent(in) :: Ni
     integer, intent(in) :: Nj
@@ -196,3 +206,5 @@
 
     return
  end subroutine split_pol
+
+end module m_split_pol

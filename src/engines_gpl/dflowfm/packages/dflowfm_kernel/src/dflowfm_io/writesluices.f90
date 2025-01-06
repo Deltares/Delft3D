@@ -42,6 +42,8 @@ contains
 
    subroutine writesluices()
       use precision, only: dp
+      use m_filez, only: doclose, newfil
+
       integer :: mgat = 0, mgat2 = 0, k, j
       real(kind=dp) :: t(6), h(6), tim, zgt, bed
 

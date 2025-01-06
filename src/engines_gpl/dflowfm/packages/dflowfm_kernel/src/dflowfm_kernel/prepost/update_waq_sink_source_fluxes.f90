@@ -37,13 +37,22 @@
 !!
 !! The code uses similair ways to distribute discharges over layers as the calling subroutine setsorsin. Changes in the
 !! calling subroutine should also be taken over in this routine!
+module m_update_waq_sink_source_fluxes
+
+implicit none
+
+private
+
+public :: update_waq_sink_source_fluxes
+
+contains
+
 subroutine update_waq_sink_source_fluxes()
    use m_getkbotktopmax
    use waq
    use m_flow
    use m_flowgeom
    use m_flowtimes
-   implicit none
 
    integer :: k, k1, k2, isrc, ip, ilaysin, ilaysor
    integer :: kksin, kbsin, ktsin, kksor, kbsor, ktsor
@@ -159,3 +168,5 @@ subroutine update_waq_sink_source_fluxes()
    end do
 
 end subroutine update_waq_sink_source_fluxes
+
+end module m_update_waq_sink_source_fluxes

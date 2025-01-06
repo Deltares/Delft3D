@@ -45,7 +45,7 @@ contains
       use m_readyy
       use m_qn_read_error
       use m_qn_eof_error
-      implicit none
+      use m_filez, only: doclose
 
       integer :: mmdd, mc, nc, ja
       real(kind=dp) :: RD1(MC, NC)

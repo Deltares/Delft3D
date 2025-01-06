@@ -30,6 +30,16 @@
 !
 !
 
+module m_shifxy
+
+implicit none
+
+private
+
+public :: shifxy
+
+contains
+
       !> Operates on active grid from m_grid directly!
       subroutine SHIFXY(IS, JS, MP, NP)
 
@@ -39,7 +49,6 @@
          use geometry_module, only: pinpok
          use m_increase_grid
 
-         implicit none
          integer :: is, js, mp, np
 
          integer :: i, j
@@ -76,3 +85,5 @@
          end if
          return
       end subroutine shifxy
+
+end module m_shifxy

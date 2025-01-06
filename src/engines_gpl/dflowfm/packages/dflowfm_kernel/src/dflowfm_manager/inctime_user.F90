@@ -60,6 +60,16 @@
 !-------------------------------------------------------------------------------
 !
 !
+module m_inctime_user
+
+implicit none
+
+private
+
+public :: inctime_user
+
+contains
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -70,7 +80,7 @@
 ! binnencelpunten. graag goed zetten
  subroutine inctime_user()
     use m_flowtimes
-    implicit none
+
     if (time1 >= time_user) then
        ! If not, current time_user was not yet reached (user interrupt in interface)
        time_user = time_user + dt_user !
@@ -79,3 +89,5 @@
        dnt_user = dnt_user + 1 ! todo from, to
     end if
  end subroutine inctime_user
+
+end module m_inctime_user

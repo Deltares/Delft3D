@@ -38,6 +38,16 @@
 !! Besides that certain sediment transport formulae require a
 !! Cf at the flow node, which can only accurately be deterimined if the
 !! values at net links are known.
+module m_flow_trachyinit
+
+implicit none
+
+private
+
+public :: flow_trachyinit
+
+contains
+
 subroutine flow_trachyinit()
    use grid_dimens_module
    use network_data, only: numl, lne, xk, yk, kn, lnn
@@ -63,8 +73,6 @@ subroutine flow_trachyinit()
    use m_sferic, only: jsferic, jasfer3D
    use geometry_module, only: dbdistance, half
    use m_vegetation, only: jabaptist
-   !
-   implicit none
    !
    integer, pointer :: ntrtcrs
    integer, pointer :: ntrtobs
@@ -360,3 +368,5 @@ subroutine flow_trachyinit()
    threshold_abort = threshold_abort_current
 
 end subroutine flow_trachyinit
+
+end module m_flow_trachyinit

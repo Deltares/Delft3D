@@ -30,6 +30,16 @@
 !
 !
 
+module m_flow_settidepotential
+
+implicit none
+
+private
+
+public :: flow_settidepotential
+
+contains
+
  subroutine flow_settidepotential(timmin)
     use precision, only: dp
     use m_flow
@@ -39,8 +49,6 @@
     use m_sferic
     use unstruc_model
     use m_equatorial
-
-    implicit none
 
     real(kind=dp) :: timmin
     integer :: kk
@@ -56,3 +64,5 @@
     end if
 
  end subroutine flow_settidepotential
+
+end module m_flow_settidepotential

@@ -30,6 +30,18 @@
 !
 !
 
+module m_getdxofconnectedkcu1
+use m_which2dnetlinkwascrossed, only: which2dnetlinkwascrossed
+
+
+implicit none
+
+private
+
+public :: getdxofconnectedkcu1
+
+contains
+
  subroutine getdxofconnectedkcu1(Lf, wuL) ! width of connection link has lenght of connected 1D links
     use precision, only: dp
     use geometry_module
@@ -38,7 +50,7 @@
     use m_flowgeom
     use m_flow
     use m_netw
-    implicit none
+
     integer :: Lf, L, LL, k, kk, n, k1, k2, k3, k4, n1, n2, n2d
     real(kind=dp) :: wu1, wu2, wuL
     wu1 = 0d0; n = 0
@@ -89,3 +101,5 @@
 
     wuL = min(wu1, wu2) ! both 1D sides flood at the same moment, no division by 2
  end subroutine getdxofconnectedkcu1
+
+end module m_getdxofconnectedkcu1

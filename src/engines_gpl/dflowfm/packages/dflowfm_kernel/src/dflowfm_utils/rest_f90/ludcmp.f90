@@ -30,9 +30,19 @@
 !
 !
 
+module m_ludcmp
+
+implicit none
+
+private
+
+public :: ludcmp
+
+contains
+
       subroutine LUDCMP(A, N, NP, INDX, D, JAPARALLEL)
          use precision, only: dp
-         implicit none
+
          real(kind=dp) :: a
          real(kind=dp) :: aamax
          real(kind=dp) :: d
@@ -112,3 +122,5 @@
          if (A(N, N) == 0d0) A(N, N) = TINY
          return
       end
+
+end module m_ludcmp

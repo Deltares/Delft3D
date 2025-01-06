@@ -30,10 +30,22 @@
 !
 !
 
+module m_nextcel
+use m_tegenovernodesandlink, only: tegenovernodesandlink
+
+
+implicit none
+
+private
+
+public :: nextcel
+
+contains
+
   !   call nextcel(np,La,npb,k1b,k2b,Lb)
   subroutine nextcel(np, LL, npa, k1a, k2a, La) ! give face, link and nodes, opposite to plakrand LL of cel np
      use m_netw
-     implicit none
+
      integer :: LL, np, La, npa, k1a, k2a
 
      La = 0; npa = 0; k1a = 0; k2a = 0
@@ -51,3 +63,5 @@
      call tegenovernodesandlink(npa, LL, k1a, k2a, La)
 
   end subroutine nextcel
+
+end module m_nextcel

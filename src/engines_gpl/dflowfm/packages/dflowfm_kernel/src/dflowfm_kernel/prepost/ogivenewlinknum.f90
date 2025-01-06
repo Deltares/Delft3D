@@ -30,12 +30,21 @@
 !
 !
 
+module m_ogivenewlinknum
+
+implicit none
+
+private
+
+public :: ogivenewlinknum
+
+contains
+
   subroutine OGIVENEWLINKNUM(LNU)
 
      use m_netw
      use gridoperations
 
-     implicit none
      integer :: LNU
 
      integer :: kx
@@ -57,3 +66,5 @@
      end if
      return
   end subroutine OGIVENEWLINKNUM
+
+end module m_ogivenewlinknum

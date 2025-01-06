@@ -84,6 +84,26 @@
             </location>
             <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
         </testCase>
+        <testCase name="dimr_noconfig">
+            <programs>
+                <program ref="execute_singularity">
+                    <arguments>
+                        <argument>-p</argument>
+                        <argument>2</argument>
+                        <argument>run_dimr.sh</argument>
+                        <argument>-m</argument>
+                        <argument>dimr.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+        </testCase>
     </defaultTestCases>
     <!--
     testCases

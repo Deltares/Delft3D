@@ -30,12 +30,22 @@
 !
 !
 
+module m_tospline
+
+implicit none
+
+private
+
+public :: tospline
+
+contains
+
        subroutine TOSPLINE(XX, YY, XV, YV)
+          use m_dismin, only: dismin
           use precision, only: dp
           use M_SPLINES
           use m_spline
           use m_get_ij
-          implicit none
 
           real(kind=dp) :: XX, YY, XV, YV
 
@@ -53,3 +63,5 @@
           call DISMIN(XI, XI2, YI, YI2, XX, YY, NUMPI, DIS, TV, XV, YV)
           return
        end subroutine tospline
+
+end module m_tospline

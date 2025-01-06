@@ -120,6 +120,7 @@ module m_readstructures
       use m_GlobalParameters
       use m_1d_Structures
       use m_compound
+      use polygon_module, only: read_poly_from_tekalfile
       
       implicit none
       
@@ -258,7 +259,7 @@ module m_readstructures
                   
                end if
                if (success1) then
-                  call read_polyfile(filename, pstru%xCoordinates, pstru%yCoordinates, pstru%numCoordinates, success1)
+                  call read_poly_from_tekalfile(filename, pstru%xCoordinates, pstru%yCoordinates, pstru%numCoordinates, success1)
                end if
 
                success = success .and. check_input_result(success1, st_id, 'branchId, numCoordinates and locationfile')  
@@ -1534,62 +1535,5 @@ module m_readstructures
       end select
       
    end function allowedFlowDirToString
-
-   !> Read the poly file and return the x and y coordinates.
-   subroutine read_polyfile(filename, xs, ys, ns, success)
-      use m_alloc, only: reallocP
-      use messagehandling, only: err, IdLen
-      character(len=*), intent(in) :: filename!< Name of the poly file to read.
-      real(kind = dp), pointer, dimension(:), intent(out) :: xs(:) !< x-coordinates read from file
-      real(kind = dp), pointer, dimension(:), intent(out) :: ys(:) !< y-coordinates read from file
-      integer, intent(out) :: ns !< Number of pli-points read
-      logical, intent(out) :: success !< Success status of the read operation.
-      
-      character(len=Idlen) :: rec
-      integer :: minp 
-      integer :: k
-      integer :: ierr
-
-      ns = 0
-
-      success = .true.
-      open (newunit=minp, file=filename, iostat=ierr)
-      if (ierr /= 0) then
-         call err('File: unable to open ', trim(filename), ' ')
-         return
-      end if
-
-      rec(1:1) = '*'
-      do while (rec(1:1) == '*')
-         read (minp, '(a)', end=999) rec
-      end do
-
-      read (minp, '(a)', end=999) rec
-      read (rec, *, err=888) ns
-
-      call reallocP(xs, ns, keepExisting=.false.)
-      call reallocP(ys, ns, keepExisting=.false.)
-
-      do k = 1, ns
-         read (minp, '(a)', end=999) rec
-         read (rec, *, err=777) xs(k), ys(k)
-      end do
-
-      call doclose(minp)
-      return
-
-999   call eoferror(minp)
-      success =  .false.
-      return
-
-888   call readerror('reading nrows but getting ', rec, minp)
-      success =  .false.
-      return
-
-777   call readerror('reading x, y  but getting ', rec, minp)
-      success =  .false.
-      return
-
-   end subroutine read_polyfile
 
 end module m_readstructures

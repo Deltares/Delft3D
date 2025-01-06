@@ -30,11 +30,21 @@
 !
 !
 
+module m_makey
+
+implicit none
+
+private
+
+public :: makey
+
+contains
+
       subroutine MAKEY(XR, YR, MMAX, NMAX) ! terug naar graden SUBROUTINE MAKEY
          use precision, only: dp
          use M_SFERIC
          use M_MISSING
-         implicit none
+
          integer :: mmax, nmax
 
          real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), FI2
@@ -51,3 +61,5 @@
          end do
          return
       end subroutine MAKEY
+
+end module m_makey

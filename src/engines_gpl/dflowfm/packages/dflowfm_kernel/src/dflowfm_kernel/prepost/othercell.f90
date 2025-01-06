@@ -30,9 +30,21 @@
 !
 !
 
+module m_othercell
+
+implicit none
+
+private
+
+public :: othercell
+
+contains
+
  subroutine othercell(k1, L, k2)
     use M_FLOWGEOM
-    implicit none
+
     integer :: k1, k2, L
     k2 = ln(1, L) + ln(2, L) - k1
  end subroutine othercell
+
+end module m_othercell

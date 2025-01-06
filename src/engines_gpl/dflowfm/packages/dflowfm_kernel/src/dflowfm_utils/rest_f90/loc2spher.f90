@@ -31,11 +31,20 @@
 !
 
 !>    transform local spherical coordinates (xloc,yloc) around reference point (xref,yref) to global spherical coordinates (xglob,yglob)
+module m_loc2spher
+
+implicit none
+
+private
+
+public :: loc2spher
+
+contains
+
       subroutine loc2spher(xref, yref, N, xloc, yloc, xglob, yglob)
          use precision, only: dp
          use m_sferic
          use geometry_module, only: sphertocart3D, cart3Dtospher
-         implicit none
 
          real(kind=dp), intent(in) :: xref, yref !< global coordinates of reference point (longitude, latitude)
          integer, intent(in) :: N !< number of global coordinates
@@ -87,3 +96,5 @@
 
          return
       end subroutine loc2spher
+
+end module m_loc2spher
