@@ -33,12 +33,12 @@
 module m_partition_METIS_to_idomain
 
    implicit none
-   
+
    private
-   
+
    public :: partition_METIS_to_idomain
-   
-   interface 
+
+   interface
       module subroutine partition_METIS_to_idomain(Nparts, jacontiguous, method, iseed)
          implicit none
          integer, intent(in) :: Nparts !< number of partitions
@@ -46,6 +46,6 @@ module m_partition_METIS_to_idomain
          integer, intent(in) :: jacontiguous !< enforce contiguous domains (1) or not (0)
          integer, intent(in) :: iseed !< User defined random seed, passed to METIS'option "SEED". Useful for reproducible partitionings, but only used when /= 0.
       end subroutine partition_METIS_to_idomain
-   end interface 
-   
+   end interface
+
 end module m_partition_METIS_to_idomain

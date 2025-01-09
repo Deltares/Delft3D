@@ -33,11 +33,11 @@
 !> add polygon and fill cutcell mask with "kc"
 module m_store_cutcellmasks
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: store_cutcellmasks
+   public :: store_cutcellmasks
 
 contains
 

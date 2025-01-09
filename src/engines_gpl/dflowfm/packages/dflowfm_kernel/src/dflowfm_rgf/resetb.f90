@@ -32,27 +32,27 @@
 
 module m_resetb
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: resetb
+   public :: resetb
 
 contains
 
-      subroutine RESETB(NPUT)
-         use m_grid_block
+   subroutine RESETB(NPUT)
+      use m_grid_block
 
-         integer :: nput
+      integer :: nput
 
-         MB = 0
-         NB = 0
-         NPT = 0
-         MB2 = 0
-         NB2 = 0
-         NPT2 = 0
-         NPUTO = NPUT
-         return
-      end subroutine resetb
+      MB = 0
+      NB = 0
+      NPT = 0
+      MB2 = 0
+      NB2 = 0
+      NPT2 = 0
+      NPUTO = NPUT
+      return
+   end subroutine resetb
 
 end module m_resetb

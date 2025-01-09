@@ -33,133 +33,133 @@
 !> find the frontline of the old (static) grid
 module m_findfront
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: findfront
+   public :: findfront
 
 contains
 
-subroutine findfront(mc, nc, mmax, nmax, xc, yc, num, xf, yf, idxf, nf)
-   use precision, only: dp
-   use m_missing, only: dmiss
-   use m_get_lr
+   subroutine findfront(mc, nc, mmax, nmax, xc, yc, num, xf, yf, idxf, nf)
+      use precision, only: dp
+      use m_missing, only: dmiss
+      use m_get_lr
 
-   implicit none
+      implicit none
 
-   integer, intent(in) :: mc, nc !< grid dimensions
-   integer, intent(in) :: mmax, nmax !< array size
-   real(kind=dp), dimension(mmax, nmax), intent(in) :: xc, yc !< grid point coordinates
+      integer, intent(in) :: mc, nc !< grid dimensions
+      integer, intent(in) :: mmax, nmax !< array size
+      real(kind=dp), dimension(mmax, nmax), intent(in) :: xc, yc !< grid point coordinates
 
-   integer, intent(in) :: num !< array size
-   real(kind=dp), dimension(num), intent(inout) :: xf, yf !< front point coordinates
-   integer, dimension(2, num), intent(inout) :: idxf !< (i,j)-indices of grid points
-   integer, intent(out) :: nf !< front dimension
+      integer, intent(in) :: num !< array size
+      real(kind=dp), dimension(num), intent(inout) :: xf, yf !< front point coordinates
+      integer, dimension(2, num), intent(inout) :: idxf !< (i,j)-indices of grid points
+      integer, intent(out) :: nf !< front dimension
 
-   integer, dimension(mc - 1) :: jhfrontedge ! j-index of i-front edges
+      integer, dimension(mc - 1) :: jhfrontedge ! j-index of i-front edges
 
-   integer :: i, j, iL, iR
+      integer :: i, j, iL, iR
 
-   integer :: j1, j2
+      integer :: j1, j2
 
-   idxf = 0
+      idxf = 0
 
 !  find the j-index of the i-front edges
-   do i = 1, mc - 1
-      jhfrontedge(i) = nc
-      do j = 1, nc
-         if (xc(i, j) == DMISS .or. xc(i + 1, j) == DMISS) then
-            jhfrontedge(i) = j - 1
-            exit
-         end if
+      do i = 1, mc - 1
+         jhfrontedge(i) = nc
+         do j = 1, nc
+            if (xc(i, j) == DMISS .or. xc(i + 1, j) == DMISS) then
+               jhfrontedge(i) = j - 1
+               exit
+            end if
+         end do
       end do
-   end do
 
 !  make the front
-   nf = 0
-   j1 = 1
+      nf = 0
+      j1 = 1
 
 !  check for circular connectivity
-   i = 1
-   call get_LR(mc, xc(:, 1), yc(:, 1), i, iL, iR)
-   if (iL == i) then
-      nf = nf + 1
-      xf(nf) = xc(1, 1)
-      yf(nf) = yc(1, 1)
-      idxf(:, nf) = (/1, 1/)
-   else
-      nf = nf + 1
-      j1 = jhfrontedge(iL)
-      j2 = jhfrontedge(i)
-      xf(nf) = xc(i, j2)
-      yf(nf) = yc(i, j2)
-      idxf(:, nf) = (/i, j2/)
-   end if
-
-   do i = 1, mc - 1
+      i = 1
       call get_LR(mc, xc(:, 1), yc(:, 1), i, iL, iR)
-      j2 = jhfrontedge(i)
+      if (iL == i) then
+         nf = nf + 1
+         xf(nf) = xc(1, 1)
+         yf(nf) = yc(1, 1)
+         idxf(:, nf) = (/1, 1/)
+      else
+         nf = nf + 1
+         j1 = jhfrontedge(iL)
+         j2 = jhfrontedge(i)
+         xf(nf) = xc(i, j2)
+         yf(nf) = yc(i, j2)
+         idxf(:, nf) = (/i, j2/)
+      end if
 
-      if (j2 > 0) then
-         if (j1 == 0) then
-            nf = nf + 1
-            xf(nf) = xc(i, 1)
-            yf(nf) = yc(i, 1)
-            idxf(:, nf) = (/i, 1/)
-         end if
+      do i = 1, mc - 1
+         call get_LR(mc, xc(:, 1), yc(:, 1), i, iL, iR)
+         j2 = jhfrontedge(i)
+
+         if (j2 > 0) then
+            if (j1 == 0) then
+               nf = nf + 1
+               xf(nf) = xc(i, 1)
+               yf(nf) = yc(i, 1)
+               idxf(:, nf) = (/i, 1/)
+            end if
 
 !        add j-edges from j1 to j2
-         do j = j1 + 1, j2
-            nf = nf + 1
-            xf(nf) = xc(i, j)
-            yf(nf) = yc(i, j)
-            idxf(:, nf) = (/i, j/)
-         end do
-         do j = j1 - 1, j2, -1
-            nf = nf + 1
-            xf(nf) = xc(i, j)
-            yf(nf) = yc(i, j)
-            idxf(:, nf) = (/i, j/)
-         end do
-
-!        add i-edge from i to i+1
-         nf = nf + 1
-         xf(nf) = xc(i + 1, j2)
-         yf(nf) = yc(i + 1, j2)
-         idxf(:, nf) = (/i + 1, j2/)
-      else
-         if (j1 > 0) then
-            do j = j1 - 1, 1, -1
+            do j = j1 + 1, j2
                nf = nf + 1
                xf(nf) = xc(i, j)
                yf(nf) = yc(i, j)
                idxf(:, nf) = (/i, j/)
             end do
-            nf = nf + 1
-            xf(nf) = DMISS
-            yf(nf) = DMISS
-            idxf(:, nf) = (/i, 0/)
-         end if
-      end if
+            do j = j1 - 1, j2, -1
+               nf = nf + 1
+               xf(nf) = xc(i, j)
+               yf(nf) = yc(i, j)
+               idxf(:, nf) = (/i, j/)
+            end do
 
-      j1 = j2
-   end do
+!        add i-edge from i to i+1
+            nf = nf + 1
+            xf(nf) = xc(i + 1, j2)
+            yf(nf) = yc(i + 1, j2)
+            idxf(:, nf) = (/i + 1, j2/)
+         else
+            if (j1 > 0) then
+               do j = j1 - 1, 1, -1
+                  nf = nf + 1
+                  xf(nf) = xc(i, j)
+                  yf(nf) = yc(i, j)
+                  idxf(:, nf) = (/i, j/)
+               end do
+               nf = nf + 1
+               xf(nf) = DMISS
+               yf(nf) = DMISS
+               idxf(:, nf) = (/i, 0/)
+            end if
+         end if
+
+         j1 = j2
+      end do
 
 !  add last j-edges
 !  check for circular connectivity
-   i = mc
-   call get_LR(mc, xc(:, 1), yc(:, 1), i, iL, iR)
-   if (iR == i) then
-      do j = j2, 1, -1
-         nf = nf + 1
-         xf(nf) = xc(i, j)
-         yf(nf) = yc(i, j)
-         idxf(:, nf) = (/i, j/)
-      end do
-   end if
+      i = mc
+      call get_LR(mc, xc(:, 1), yc(:, 1), i, iL, iR)
+      if (iR == i) then
+         do j = j2, 1, -1
+            nf = nf + 1
+            xf(nf) = xc(i, j)
+            yf(nf) = yc(i, j)
+            idxf(:, nf) = (/i, j/)
+         end do
+      end if
 
-   return
-end subroutine findfront
+      return
+   end subroutine findfront
 
 end module m_findfront

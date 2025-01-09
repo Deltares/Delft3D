@@ -36,56 +36,56 @@
 !>   2) outside ALL "-1"-polygons (enclosures)
 module m_pol_to_cellmask
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: pol_to_cellmask
+   public :: pol_to_cellmask
 
 contains
 
-subroutine pol_to_cellmask()
-   use network_data
-   use m_polygon
-   use m_missing, only: dmiss, JINS
-   use geometry_module, only: dbpinpol_optinside_perpol
-   use m_readyy
+   subroutine pol_to_cellmask()
+      use network_data
+      use m_polygon
+      use m_missing, only: dmiss, JINS
+      use geometry_module, only: dbpinpol_optinside_perpol
+      use m_readyy
 
-   integer :: in, k, KMOD
-   integer :: num
+      integer :: in, k, KMOD
+      integer :: num
 
-   if (allocated(cellmask)) deallocate (cellmask)
-   allocate (cellmask(nump1d2d))
-   cellmask = 0
+      if (allocated(cellmask)) deallocate (cellmask)
+      allocate (cellmask(nump1d2d))
+      cellmask = 0
 
-   if (NPL == 0) return ! no polygon
+      if (NPL == 0) return ! no polygon
 
-   call READYY('Applying polygon cellmask', 0d0)
-   KMOD = max(1, NUMP / 100)
+      call READYY('Applying polygon cellmask', 0d0)
+      KMOD = max(1, NUMP / 100)
 
-   !  generate cell mask
-   in = -1
-   do k = 1, nump
+      !  generate cell mask
+      in = -1
+      do k = 1, nump
 !     check if cell is in any "zpl>0" polygons
-      call dbpinpol_optinside_perpol(xzw(k), yzw(k), 0, 1, in, num, dmiss, JINS, NPL, xpl, ypl, zpl)
+         call dbpinpol_optinside_perpol(xzw(k), yzw(k), 0, 1, in, num, dmiss, JINS, NPL, xpl, ypl, zpl)
 
-      if (in == 0) then
+         if (in == 0) then
 !        check if cell is outside all "zpl<0" polygons (enclosure)
-         call dbpinpol_optinside_perpol(xzw(k), yzw(k), 0, -1, in, num, dmiss, JINS, NPL, xpl, ypl, zpl) ! in=0: outside all "-1"-pol
-         if (num > 0) in = 1 - in ! only if at least one "-1"-type polygon was encountered
-      end if
+            call dbpinpol_optinside_perpol(xzw(k), yzw(k), 0, -1, in, num, dmiss, JINS, NPL, xpl, ypl, zpl) ! in=0: outside all "-1"-pol
+            if (num > 0) in = 1 - in ! only if at least one "-1"-type polygon was encountered
+         end if
 
-      if (in > 0) then
+         if (in > 0) then
 !        mask cell
-         cellmask(k) = 1
-      end if
-      if (mod(k, KMOD) == 0) then
-         call READYY(' ', min(1d0, dble(k) / nump))
-      end if
-   end do
-   call READYY(' ', -1d0)
+            cellmask(k) = 1
+         end if
+         if (mod(k, KMOD) == 0) then
+            call READYY(' ', min(1d0, dble(k) / nump))
+         end if
+      end do
+      call READYY(' ', -1d0)
 
-   return
-end subroutine pol_to_cellmask
+      return
+   end subroutine pol_to_cellmask
 
 end module m_pol_to_cellmask

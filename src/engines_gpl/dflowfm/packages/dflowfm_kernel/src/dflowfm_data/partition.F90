@@ -3995,7 +3995,7 @@ contains
       use mpi
 #endif
       use m_solve_petsc, only: stoppetsc
-      
+
       implicit none
 
       integer :: ierr
@@ -5617,198 +5617,197 @@ contains
             geomYCrs(1:nNodesCrs) = geomYCrsMPI(1:nNodesCrs)
          end if
       end if
-    end subroutine fill_geometry_arrays_crs
+   end subroutine fill_geometry_arrays_crs
 
 !> set idomain values for all open boundary cells
-subroutine set_idomain_for_all_open_boundaries()
-   use fm_external_forcings_data, only: nbndz, kez, nbndu, keu, ke1d2d
-   use m_sobekdfm, only: nbnd1d2d
-   use m_cell_geometry, only: ndx
-   use m_alloc, only: realloc
+   subroutine set_idomain_for_all_open_boundaries()
+      use fm_external_forcings_data, only: nbndz, kez, nbndu, keu, ke1d2d
+      use m_sobekdfm, only: nbnd1d2d
+      use m_cell_geometry, only: ndx
+      use m_alloc, only: realloc
 
-   if (size(idomain) < ndx) then
-      call realloc(idomain, ndx, keepExisting=.true.)
-   end if
-   call set_idomain_for_open_boundary_points(nbndz, size(kez), kez, ndx, idomain)
-   call set_idomain_for_open_boundary_points(nbndu, size(keu), keu, ndx, idomain)
-   call set_idomain_for_open_boundary_points(nbnd1d2d, size(ke1d2d), ke1d2d, ndx, idomain)
+      if (size(idomain) < ndx) then
+         call realloc(idomain, ndx, keepExisting=.true.)
+      end if
+      call set_idomain_for_open_boundary_points(nbndz, size(kez), kez, ndx, idomain)
+      call set_idomain_for_open_boundary_points(nbndu, size(keu), keu, ndx, idomain)
+      call set_idomain_for_open_boundary_points(nbnd1d2d, size(ke1d2d), ke1d2d, ndx, idomain)
 
-end subroutine set_idomain_for_all_open_boundaries
+   end subroutine set_idomain_for_all_open_boundaries
 
 !> set idomain values for a set of open boundary cells
-subroutine set_idomain_for_open_boundary_points(number_of_boundary_points, links_array_size, &
-                                                links_to_boundary_points, ndx, idomain)
-   use m_flowgeom, only: ln, lne2ln
+   subroutine set_idomain_for_open_boundary_points(number_of_boundary_points, links_array_size, &
+                                                   links_to_boundary_points, ndx, idomain)
+      use m_flowgeom, only: ln, lne2ln
 
-   integer, intent(in) :: number_of_boundary_points !< number of boundary points
-   integer, intent(in) :: links_array_size !< size of the links array
-   integer, intent(in) :: links_to_boundary_points(links_array_size) !< links to boundary cells
-   integer, intent(in) :: ndx !< number of flow nodes (internal + boundary)
-   integer, intent(inout) :: idomain(ndx) !< cell-based domain number
+      integer, intent(in) :: number_of_boundary_points !< number of boundary points
+      integer, intent(in) :: links_array_size !< size of the links array
+      integer, intent(in) :: links_to_boundary_points(links_array_size) !< links to boundary cells
+      integer, intent(in) :: ndx !< number of flow nodes (internal + boundary)
+      integer, intent(inout) :: idomain(ndx) !< cell-based domain number
 
-   integer :: boundary_cell, boundary_point_number, internal_cell, link
+      integer :: boundary_cell, boundary_point_number, internal_cell, link
 
-   do boundary_point_number = 1, number_of_boundary_points
-      link = links_to_boundary_points(boundary_point_number)
-      boundary_cell = ln(1, lne2ln(link))
-      internal_cell = ln(2, lne2ln(link))
-      idomain(boundary_cell) = idomain(internal_cell)
-   end do
+      do boundary_point_number = 1, number_of_boundary_points
+         link = links_to_boundary_points(boundary_point_number)
+         boundary_cell = ln(1, lne2ln(link))
+         internal_cell = ln(2, lne2ln(link))
+         idomain(boundary_cell) = idomain(internal_cell)
+      end do
 
-end subroutine set_idomain_for_open_boundary_points
-
+   end subroutine set_idomain_for_open_boundary_points
 
 !> reduce balances
-subroutine reduce_bal(voltotal, numidx)
+   subroutine reduce_bal(voltotal, numidx)
 #ifdef HAVE_MPI
-   use mpi
+      use mpi
 #endif
 
-   integer, intent(in) :: numidx !< which values to sum (1=discharge)
-   real(kind=dp), dimension(numidx), intent(inout) :: voltotal !< cross-section data, note: ncrs from module m_monitoring_crosssections
-   real(kind=dp), dimension(:), allocatable :: voltot_all
-   integer :: ierror
+      integer, intent(in) :: numidx !< which values to sum (1=discharge)
+      real(kind=dp), dimension(numidx), intent(inout) :: voltotal !< cross-section data, note: ncrs from module m_monitoring_crosssections
+      real(kind=dp), dimension(:), allocatable :: voltot_all
+      integer :: ierror
 
 #ifdef HAVE_MPI
-   allocate (voltot_all(numidx))
+      allocate (voltot_all(numidx))
 
-   call mpi_allreduce(voltotal, voltot_all, numidx, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
+      call mpi_allreduce(voltotal, voltot_all, numidx, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
 
-   voltotal = voltot_all
+      voltotal = voltot_all
 
-   if (allocated(voltot_all)) deallocate (voltot_all)
+      if (allocated(voltot_all)) deallocate (voltot_all)
 #endif
 
-end subroutine reduce_bal
+   end subroutine reduce_bal
 
 !> disable mirror cells that are not mirror cells in the whole model by setting kce=0
 !!    note: partition information not available yet, need to perform a manual handshake
-subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
-   use network_data
-   use m_alloc
-   use unstruc_messages
-   use geometry_module, only: dbdistance
-   use m_missing, only: dmiss
-   use m_sferic, only: jsferic, jasfer3D
-   use m_wall_clock_time
+   subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
+      use network_data
+      use m_alloc
+      use unstruc_messages
+      use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+      use m_wall_clock_time
 
 #ifdef HAVE_MPI
-   use mpi
+      use mpi
 #endif
 
-   integer, intent(in) :: Nx !< number of links
-   integer, dimension(Nx), intent(inout) :: kce !< flag
-   integer, dimension(Nx), intent(in) :: ke !< boundary cells
+      integer, intent(in) :: Nx !< number of links
+      integer, dimension(Nx), intent(inout) :: kce !< flag
+      integer, dimension(Nx), intent(in) :: ke !< boundary cells
 
-   integer, intent(out) :: ierror !< error (1) or not (0)
+      integer, intent(out) :: ierror !< error (1) or not (0)
 
 #ifdef HAVE_MPI
-   real(kind=dp), dimension(:, :), allocatable :: xysnd ! send     cell-center coordinates (first x, then y)
-   real(kind=dp), dimension(:, :), allocatable :: xyrec ! recieved cell-center coordinates (first x, then y)
+      real(kind=dp), dimension(:, :), allocatable :: xysnd ! send     cell-center coordinates (first x, then y)
+      real(kind=dp), dimension(:, :), allocatable :: xyrec ! recieved cell-center coordinates (first x, then y)
 
-   integer, dimension(:, :), allocatable :: numrequest ! number of cells requested from other domains (message size)
-   integer, dimension(:), allocatable :: numrequest_loc
+      integer, dimension(:, :), allocatable :: numrequest ! number of cells requested from other domains (message size)
+      integer, dimension(:), allocatable :: numrequest_loc
 
-   integer, dimension(:), allocatable :: irequest
-   integer, dimension(:), allocatable :: kcesnd
-   integer, dimension(:), allocatable :: kcerec
-   integer, dimension(:), allocatable :: jafound
+      integer, dimension(:), allocatable :: irequest
+      integer, dimension(:), allocatable :: kcesnd
+      integer, dimension(:), allocatable :: kcerec
+      integer, dimension(:), allocatable :: jafound
 
-   integer, dimension(MPI_STATUS_SIZE) :: istat
+      integer, dimension(MPI_STATUS_SIZE) :: istat
 
-   character(len=1024) :: str
+      character(len=1024) :: str
 
-   real(kind=dp) :: xL, yL, dis
+      real(kind=dp) :: xL, yL, dis
 
-   real(kind=dp) :: t0, t1, t2, t3, timefind1, timefind2
+      real(kind=dp) :: t0, t1, t2, t3, timefind1, timefind2
 
-   integer :: Nbnd ! number of boundary links
+      integer :: Nbnd ! number of boundary links
 
-   integer :: i, L, k3, k4, num
-   integer :: idmn, other_domain
-   integer :: nrequest, itag, icount
-   integer :: numfound
-   integer :: istart
+      integer :: i, L, k3, k4, num
+      integer :: idmn, other_domain
+      integer :: nrequest, itag, icount
+      integer :: numfound
+      integer :: istart
 
-   integer :: numdisabled
+      integer :: numdisabled
 
-   real(kind=dp), parameter :: dtol = 1d-4
+      real(kind=dp), parameter :: dtol = 1d-4
 
-   call wall_clock_time(t0)
+      call wall_clock_time(t0)
 
-   ierror = 1
+      ierror = 1
 
-   itag = 2
+      itag = 2
 
 !     get subdomain numbers in netcell
-   if (npartition_pol > 0) then
-      call partition_pol_to_idomain(1, jafindcells=0)
-   end if
+      if (npartition_pol > 0) then
+         call partition_pol_to_idomain(1, jafindcells=0)
+      end if
 
 !     allocate
-   allocate (numrequest(0:ndomains - 1, 0:ndomains - 1))
-   numrequest = 0
-   allocate (numrequest_loc(0:ndomains - 1))
-   numrequest_loc = 0
-   allocate (irequest(0:2 * ndomains - 1))
+      allocate (numrequest(0:ndomains - 1, 0:ndomains - 1))
+      numrequest = 0
+      allocate (numrequest_loc(0:ndomains - 1))
+      numrequest_loc = 0
+      allocate (irequest(0:2 * ndomains - 1))
 !     allocate xysnd sufficiently large
-   allocate (xysnd(3, numL))
-   xysnd = 0d0
+      allocate (xysnd(3, numL))
+      xysnd = 0d0
 !     allocate kcesnd sufficiently large
-   call realloc(kcesnd, numL, keepExisting=.false., fill=0)
+      call realloc(kcesnd, numL, keepExisting=.false., fill=0)
 
 !     count number of requested boundary links from other subdomains
-   Nbnd = 0
-   do L = 1, numL
-      if (kce(L) == 1) then
-         Nbnd = Nbnd + 1
-         idmn = idomain(ke(L))
-         if (idmn /= my_rank .and. idmn >= 0 .and. idmn <= ndomains - 1) then
-            numrequest_loc(idmn) = numrequest_loc(idmn) + 1
-         end if
-      end if
-   end do
-
-!     globally reduce
-   call mpi_allgather(numrequest_loc, ndomains, MPI_INTEGER, numrequest, ndomains, MPI_INTEGER, DFM_COMM_DFMWORLD, ierror)
-
-!     send own ghost boundary net links to other domain
-   nrequest = 0 ! number of outgoing requests
-   istart = 1 ! start index in xysnd
-   do other_domain = 0, ndomains - 1
-      if (other_domain == my_rank) cycle
-      num = numrequest(other_domain, my_rank)
-      if (num < 1) cycle
-
-!        get link center coordinates
-      num = 0
+      Nbnd = 0
       do L = 1, numL
          if (kce(L) == 1) then
-            if (idomain(ke(L)) == other_domain) then
-               k3 = kn(1, L)
-               k4 = kn(2, L)
-               xysnd(1, istart + num) = 0.5d0 * (xk(k3) + xk(k4))
-               xysnd(2, istart + num) = 0.5d0 * (yk(k3) + yk(k4))
-               xysnd(3, istart + num) = dble(kn(3, L)) ! also send type of netlink
-               num = num + 1
+            Nbnd = Nbnd + 1
+            idmn = idomain(ke(L))
+            if (idmn /= my_rank .and. idmn >= 0 .and. idmn <= ndomains - 1) then
+               numrequest_loc(idmn) = numrequest_loc(idmn) + 1
             end if
          end if
       end do
 
+!     globally reduce
+      call mpi_allgather(numrequest_loc, ndomains, MPI_INTEGER, numrequest, ndomains, MPI_INTEGER, DFM_COMM_DFMWORLD, ierror)
+
+!     send own ghost boundary net links to other domain
+      nrequest = 0 ! number of outgoing requests
+      istart = 1 ! start index in xysnd
+      do other_domain = 0, ndomains - 1
+         if (other_domain == my_rank) cycle
+         num = numrequest(other_domain, my_rank)
+         if (num < 1) cycle
+
+!        get link center coordinates
+         num = 0
+         do L = 1, numL
+            if (kce(L) == 1) then
+               if (idomain(ke(L)) == other_domain) then
+                  k3 = kn(1, L)
+                  k4 = kn(2, L)
+                  xysnd(1, istart + num) = 0.5d0 * (xk(k3) + xk(k4))
+                  xysnd(2, istart + num) = 0.5d0 * (yk(k3) + yk(k4))
+                  xysnd(3, istart + num) = dble(kn(3, L)) ! also send type of netlink
+                  num = num + 1
+               end if
+            end if
+         end do
+
 !        send link center coordinates
-      nrequest = nrequest + 1
-      call mpi_isend(xysnd(1, istart), 3 * num, mpi_double_precision, other_domain, itag, DFM_COMM_DFMWORLD, irequest(nrequest), ierror)
+         nrequest = nrequest + 1
+         call mpi_isend(xysnd(1, istart), 3 * num, mpi_double_precision, other_domain, itag, DFM_COMM_DFMWORLD, irequest(nrequest), ierror)
 
 !        update start index
-      istart = istart + num
-   end do
+         istart = istart + num
+      end do
 
 !     recieve requests from other domains
-   timefind1 = 0d0 ! time spent in finding netlinks
-   timefind2 = 0d0 ! time spent in finding netlinks
-   istart = 1
-   do other_domain = 0, ndomains - 1
-      num = numrequest(my_rank, other_domain)
+      timefind1 = 0d0 ! time spent in finding netlinks
+      timefind2 = 0d0 ! time spent in finding netlinks
+      istart = 1
+      do other_domain = 0, ndomains - 1
+         num = numrequest(my_rank, other_domain)
 
 !        BEGIN DEBUG
 !         if ( my_rank.eq.1 .and. other_domain.eq.18 ) then
@@ -5816,54 +5815,54 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
 !         end if
 !        END DEBUG
 
-      if (num < 1) cycle
+         if (num < 1) cycle
 !        get message length
-      call mpi_probe(other_domain, itag, DFM_COMM_DFMWORLD, istat, ierror)
-      call mpi_get_count(istat, mpi_double_precision, icount, ierror)
+         call mpi_probe(other_domain, itag, DFM_COMM_DFMWORLD, istat, ierror)
+         call mpi_get_count(istat, mpi_double_precision, icount, ierror)
 
 !        check message length (safety)
-      if (icount /= 3 * num) then
-         write (str, *) 'partition_reduce_mirrorcells: icount.ne.3*num, domain: ', my_rank, ', other domain: ', other_domain, ' icount: ', icount, ', 3*num: ', 3 * num
-         call mess(LEVEL_ERROR, str)
-      end if
+         if (icount /= 3 * num) then
+            write (str, *) 'partition_reduce_mirrorcells: icount.ne.3*num, domain: ', my_rank, ', other domain: ', other_domain, ' icount: ', icount, ', 3*num: ', 3 * num
+            call mess(LEVEL_ERROR, str)
+         end if
 
 !        realloc
-      call realloc(xyrec, (/3, num/), keepExisting=.false., fill=0d0)
+         call realloc(xyrec, (/3, num/), keepExisting=.false., fill=0d0)
 
 !        recieve
-      call mpi_recv(xyrec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)
+         call mpi_recv(xyrec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)
 
 !        realloc
-      call realloc(jafound, num, keepExisting=.false., fill=0)
-      numfound = 0
-      call wall_clock_time(t2)
-      Lloop: do L = 1, numL
-         if (kce(L) /= 1) cycle ! boundary links only
-         if (idomain(ke(L)) /= my_rank) cycle ! in own domain only
+         call realloc(jafound, num, keepExisting=.false., fill=0)
+         numfound = 0
+         call wall_clock_time(t2)
+         Lloop: do L = 1, numL
+            if (kce(L) /= 1) cycle ! boundary links only
+            if (idomain(ke(L)) /= my_rank) cycle ! in own domain only
 
-         do i = 1, num
-            if (jafound(i) == 1) cycle
+            do i = 1, num
+               if (jafound(i) == 1) cycle
 
-            if (int(xyrec(3, i)) /= kn(3, L)) cycle ! check netlink type
+               if (int(xyrec(3, i)) /= kn(3, L)) cycle ! check netlink type
 
 !              get netlink coordinates
-            k3 = kn(1, L)
-            k4 = kn(2, L)
-            xL = 0.5d0 * (xk(k3) + xk(k4))
-            yL = 0.5d0 * (yk(k3) + yk(k4))
+               k3 = kn(1, L)
+               k4 = kn(2, L)
+               xL = 0.5d0 * (xk(k3) + xk(k4))
+               yL = 0.5d0 * (yk(k3) + yk(k4))
 
 !              measure distance
-            dis = dbdistance(xL, yL, xyrec(1, i), xyrec(2, i), jsferic, jasfer3D, dmiss)
-            if (dis < dtol) then ! found
-               kcesnd(istart - 1 + i) = 1
-               jafound(i) = 1
-               numfound = numfound + 1
-               if (numfound >= num) exit Lloop
-            end if
-         end do
-      end do Lloop
-      call wall_clock_time(t3)
-      timefind2 = timefind2 + t3 - t2
+               dis = dbdistance(xL, yL, xyrec(1, i), xyrec(2, i), jsferic, jasfer3D, dmiss)
+               if (dis < dtol) then ! found
+                  kcesnd(istart - 1 + i) = 1
+                  jafound(i) = 1
+                  numfound = numfound + 1
+                  if (numfound >= num) exit Lloop
+               end if
+            end do
+         end do Lloop
+         call wall_clock_time(t3)
+         timefind2 = timefind2 + t3 - t2
 
 !!        BEGIN DEBUG
 !         write(6,*) '-----------DEBUG-----------'
@@ -5884,223 +5883,223 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
 !!        END DEBUG
 
 !        send kce to other subdomains
-      nrequest = nrequest + 1
-      call mpi_isend(kcesnd(istart), num, mpi_integer, other_domain, itag, DFM_COMM_DFMWORLD, irequest(nrequest), ierror)
+         nrequest = nrequest + 1
+         call mpi_isend(kcesnd(istart), num, mpi_integer, other_domain, itag, DFM_COMM_DFMWORLD, irequest(nrequest), ierror)
 
-      istart = istart + num
-   end do ! other_domain=0,ndomains-1
+         istart = istart + num
+      end do ! other_domain=0,ndomains-1
 
 !      write(str,"('partition_reduce_mirrorcells, time spent in finding netlinks, method 1: ', G15.5, 's.')") timefind1
 !      call mess(LEVEL_INFO, trim(str))
 !      write(str,"('partition_reduce_mirrorcells, time spent in finding netlinks, method 2: ', G15.5, 's.')") timefind2
 !      call mess(LEVEL_INFO, trim(str))
 
-   numdisabled = 0
+      numdisabled = 0
 
 !     recieve kcesnd from other domains
-   do other_domain = 0, ndomains - 1
-      num = numrequest(other_domain, my_rank)
-      if (num < 1) cycle
+      do other_domain = 0, ndomains - 1
+         num = numrequest(other_domain, my_rank)
+         if (num < 1) cycle
 !        get message length
-      call mpi_probe(other_domain, itag, DFM_COMM_DFMWORLD, istat, ierror)
-      call mpi_get_count(istat, mpi_integer, icount, ierror)
+         call mpi_probe(other_domain, itag, DFM_COMM_DFMWORLD, istat, ierror)
+         call mpi_get_count(istat, mpi_integer, icount, ierror)
 
 !        check message length (safety)
-      if (icount /= num) then
-         write (str, *) 'partition_reduce_mirrorcells: icount.ne.num, domain: ', my_rank, ', other domain: ', other_domain, ' icount: ', icount, ', num: ', num
-         call mess(LEVEL_ERROR, str)
-      end if
+         if (icount /= num) then
+            write (str, *) 'partition_reduce_mirrorcells: icount.ne.num, domain: ', my_rank, ', other domain: ', other_domain, ' icount: ', icount, ', num: ', num
+            call mess(LEVEL_ERROR, str)
+         end if
 
 !        realloc
-      call realloc(kcerec, icount, keepExisting=.false., fill=0)
+         call realloc(kcerec, icount, keepExisting=.false., fill=0)
 
 !        recieve
-      call mpi_recv(kcerec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)
+         call mpi_recv(kcerec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)
 
 !        update kce
-      num = 0
-      do L = 1, numL
-         if (kce(L) == 1) then
-            if (idomain(ke(L)) == other_domain) then
-               num = num + 1
-               if (kce(L) /= kcerec(num)) then
+         num = 0
+         do L = 1, numL
+            if (kce(L) == 1) then
+               if (idomain(ke(L)) == other_domain) then
+                  num = num + 1
+                  if (kce(L) /= kcerec(num)) then
 !                     write(str, "('my_rank: ', I0, ' setting kce(',I0,') = ', I0, ' (was: ',I0,'). And ke(',I0,') = ', I0, ', with idomain(ke(L))=',I0,'.')") my_rank, L, kcerec(num), kce(L), L, ke(L), idomain(ke(L))
 !                     call mess(LEVEL_INFO, trim(str))
-                  numdisabled = numdisabled + 1
-                  kce(L) = kcerec(num)
+                     numdisabled = numdisabled + 1
+                     kce(L) = kcerec(num)
+                  end if
                end if
             end if
-         end if
+         end do
       end do
-   end do
 
 !     terminate send (safety)
-   do i = 1, nrequest
-      call mpi_wait(irequest(i), istat, ierror)
-   end do
+      do i = 1, nrequest
+         call mpi_wait(irequest(i), istat, ierror)
+      end do
 
-   if (numdisabled > 0) then
-      write (str, "('disabled ', I0, ' boundary links')") numdisabled
+      if (numdisabled > 0) then
+         write (str, "('disabled ', I0, ' boundary links')") numdisabled
+         call mess(LEVEL_INFO, trim(str))
+      end if
+
+      call wall_clock_time(t1)
+
+      write (str, "('partition_reduce_mirrorcells, elapsed time: ', G15.5, 's.')") t1 - t0
       call mess(LEVEL_INFO, trim(str))
-   end if
 
-   call wall_clock_time(t1)
-
-   write (str, "('partition_reduce_mirrorcells, elapsed time: ', G15.5, 's.')") t1 - t0
-   call mess(LEVEL_INFO, trim(str))
-
-   ierror = 0
-1234 continue
+      ierror = 0
+1234  continue
 
 !     deallocate
-   if (allocated(irequest)) deallocate (irequest)
-   if (allocated(numrequest)) deallocate (numrequest)
-   if (allocated(numrequest_loc)) deallocate (numrequest_loc)
-   if (allocated(xysnd)) deallocate (xysnd)
-   if (allocated(xyrec)) deallocate (xyrec)
-   if (allocated(kcesnd)) deallocate (kcesnd)
-   if (allocated(kcerec)) deallocate (kcerec)
-   if (allocated(jafound)) deallocate (jafound)
+      if (allocated(irequest)) deallocate (irequest)
+      if (allocated(numrequest)) deallocate (numrequest)
+      if (allocated(numrequest_loc)) deallocate (numrequest_loc)
+      if (allocated(xysnd)) deallocate (xysnd)
+      if (allocated(xyrec)) deallocate (xyrec)
+      if (allocated(kcesnd)) deallocate (kcesnd)
+      if (allocated(kcerec)) deallocate (kcerec)
+      if (allocated(jafound)) deallocate (jafound)
 
 #endif
-   return
-end subroutine partition_reduce_mirrorcells
+      return
+   end subroutine partition_reduce_mirrorcells
 
 !> see if a discharge boundary is partitioned and set japartqbnd
-subroutine set_japartqbnd()
-   use fm_external_forcings_data
+   subroutine set_japartqbnd()
+      use fm_external_forcings_data
 #ifdef HAVE_MPI
-   use mpi
+      use mpi
 #endif
 
-   integer :: n, nq
-   integer :: ki
-   integer :: japartqbnd_all
+      integer :: n, nq
+      integer :: ki
+      integer :: japartqbnd_all
 
-   integer :: ierror
+      integer :: ierror
 
-   japartqbnd = 0
+      japartqbnd = 0
 
 #ifdef HAVE_MPI
 
-   mnlp: do nq = 1, nqbnd
-      do n = L1qbnd(nq), L2qbnd(nq) ! apart
-         ki = kbndu(2, n)
+      mnlp: do nq = 1, nqbnd
+         do n = L1qbnd(nq), L2qbnd(nq) ! apart
+            ki = kbndu(2, n)
 
-         if (idomain(ki) /= my_rank) then
-            japartqbnd = 1
-            exit mnlp
-         end if
-      end do
-   end do mnlp
+            if (idomain(ki) /= my_rank) then
+               japartqbnd = 1
+               exit mnlp
+            end if
+         end do
+      end do mnlp
 
 !     not all subdomains may have detected a partitioned q boundary: reduce japartqbnd
-   call mpi_allreduce(japartqbnd, japartqbnd_all, 1, mpi_integer, mpi_max, DFM_COMM_DFMWORLD, ierror)
-   japartqbnd = japartqbnd_all
+      call mpi_allreduce(japartqbnd, japartqbnd_all, 1, mpi_integer, mpi_max, DFM_COMM_DFMWORLD, ierror)
+      japartqbnd = japartqbnd_all
 
 #endif
 
-end subroutine set_japartqbnd
+   end subroutine set_japartqbnd
 
 !> update values in boundaries (these are not in ghost lists), 2D only
-subroutine update_ghostboundvals(itype, NDIM, N, var, jacheck, ierror)
-   use m_flowgeom
-   use m_alloc
-   use m_missing
-   use unstruc_messages
+   subroutine update_ghostboundvals(itype, NDIM, N, var, jacheck, ierror)
+      use m_flowgeom
+      use m_alloc
+      use m_missing
+      use unstruc_messages
 
-   integer, intent(in) :: itype !< type: 0: flownode, 1: flowlink
-   integer, intent(in) :: NDIM !< number of unknowns per flownode/link
-   integer, intent(in) :: N !< number of flownodes/links
-   real(kind=dp), dimension(NDIM*N), intent(inout) :: var !< solution
-   integer, intent(in) :: jacheck !< check if boundary flowlinks are updated (1) or not (0)
-   integer, intent(out) :: ierror !< error (1) or not (0)
+      integer, intent(in) :: itype !< type: 0: flownode, 1: flowlink
+      integer, intent(in) :: NDIM !< number of unknowns per flownode/link
+      integer, intent(in) :: N !< number of flownodes/links
+      real(kind=dp), dimension(NDIM*N), intent(inout) :: var !< solution
+      integer, intent(in) :: jacheck !< check if boundary flowlinks are updated (1) or not (0)
+      integer, intent(out) :: ierror !< error (1) or not (0)
 
-   real(kind=dp), dimension(:), allocatable :: dum
+      real(kind=dp), dimension(:), allocatable :: dum
 
-   integer, dimension(:), allocatable :: Lbndmask
+      integer, dimension(:), allocatable :: Lbndmask
 
-   integer :: i, L
+      integer :: i, L
 
-   ierror = 1
+      ierror = 1
 
-   if (jacheck == 1 .and. Lnx > Lnxi) then
+      if (jacheck == 1 .and. Lnx > Lnxi) then
 !        check if all ghost boundary flowlinks are being update
-      allocate (Lbndmask(1:Lnx - Lnxi + 1))
-      Lbndmask = 0
+         allocate (Lbndmask(1:Lnx - Lnxi + 1))
+         Lbndmask = 0
 
 !        mask updated boundary flowlinks
-      do i = 1, nghostlist_u(ndomains - 1)
-         L = ighostlist_u(i)
-         if (L > Lnxi) then
-            Lbndmask(L - Lnxi + 1) = 1
-         end if
-      end do
+         do i = 1, nghostlist_u(ndomains - 1)
+            L = ighostlist_u(i)
+            if (L > Lnxi) then
+               Lbndmask(L - Lnxi + 1) = 1
+            end if
+         end do
 
 !        check if all ghost boundary flowlinks are being updated
-      do L = Lnxi + 1, Lnx ! boundary links
-         if (idomain(ln(2, L)) /= my_rank) then ! ghost link
-            if (Lbndmask(L - Lnxi + 1) /= 1) then ! not masked
-               call mess(LEVEL_ERROR, 'update_ghostboundvals: not all ghost boundary flowlinks are being updated')
-               goto 1234
+         do L = Lnxi + 1, Lnx ! boundary links
+            if (idomain(ln(2, L)) /= my_rank) then ! ghost link
+               if (Lbndmask(L - Lnxi + 1) /= 1) then ! not masked
+                  call mess(LEVEL_ERROR, 'update_ghostboundvals: not all ghost boundary flowlinks are being updated')
+                  goto 1234
+               end if
             end if
-         end if
-      end do
+         end do
 
 !        deallocate
-      if (allocated(Lbndmask)) deallocate (Lbndmask)
-   end if
+         if (allocated(Lbndmask)) deallocate (Lbndmask)
+      end if
 
 !     allocate and initialize
-   call realloc(dum, NDIM * Lnx, fill=DMISS)
+      call realloc(dum, NDIM * Lnx, fill=DMISS)
 
 !     fill internal boundary-node values with boundary values
-   if (itype == ITYPE_S .or. itype == ITYPE_Sall) then
-      do L = Lnxi + 1, Lnx
-         do i = 1, NDIM
-            dum(NDIM * (L - 1) + i) = var(NDIM * (ln(1, L) - 1) + i)
+      if (itype == ITYPE_S .or. itype == ITYPE_Sall) then
+         do L = Lnxi + 1, Lnx
+            do i = 1, NDIM
+               dum(NDIM * (L - 1) + i) = var(NDIM * (ln(1, L) - 1) + i)
+            end do
          end do
-      end do
-   else if (itype == ITYPE_U) then
-      do L = Lnxi + 1, Lnx
-         do i = 1, NDIM
-            dum(NDIM * (L - 1) + i) = var(NDIM * (L - 1) + i)
+      else if (itype == ITYPE_U) then
+         do L = Lnxi + 1, Lnx
+            do i = 1, NDIM
+               dum(NDIM * (L - 1) + i) = var(NDIM * (L - 1) + i)
+            end do
          end do
-      end do
-   else
-      call qnerror(' update_ghostboundvals: unknown ghost type', ' ', ' ')
-      goto 1234
-   end if
+      else
+         call qnerror(' update_ghostboundvals: unknown ghost type', ' ', ' ')
+         goto 1234
+      end if
 
 !     update ghost values
-   call update_ghosts(ITYPE_U, NDIM, Lnx, dum, ierror)
-   if (ierror /= 0) goto 1234
+      call update_ghosts(ITYPE_U, NDIM, Lnx, dum, ierror)
+      if (ierror /= 0) goto 1234
 
 !     copy internal boundary-node values to boundary values
-   if (itype == ITYPE_S .or. itype == ITYPE_Sall) then
-      do L = Lnxi + 1, Lnx
-         do i = 1, NDIM
-            var(NDIM * (ln(1, L) - 1) + i) = dum(NDIM * (L - 1) + i)
+      if (itype == ITYPE_S .or. itype == ITYPE_Sall) then
+         do L = Lnxi + 1, Lnx
+            do i = 1, NDIM
+               var(NDIM * (ln(1, L) - 1) + i) = dum(NDIM * (L - 1) + i)
+            end do
          end do
-      end do
-   else if (itype == ITYPE_U) then
-      do L = Lnxi + 1, Lnx
-         do i = 1, NDIM
-            var(NDIM * (L - 1) + i) = dum(NDIM * (L - 1) + i)
+      else if (itype == ITYPE_U) then
+         do L = Lnxi + 1, Lnx
+            do i = 1, NDIM
+               var(NDIM * (L - 1) + i) = dum(NDIM * (L - 1) + i)
+            end do
          end do
-      end do
-   else
-      call qnerror(' update_ghostboundvals: unknown ghost type', ' ', ' ')
-      goto 1234
-   end if
+      else
+         call qnerror(' update_ghostboundvals: unknown ghost type', ' ', ' ')
+         goto 1234
+      end if
 
-   ierror = 0
-1234 continue
+      ierror = 0
+1234  continue
 
 !     deallocate
-   if (allocated(dum)) deallocate (dum)
+      if (allocated(dum)) deallocate (dum)
 
-   return
-end subroutine update_ghostboundvals
+      return
+   end subroutine update_ghostboundvals
 
 end module m_partitioninfo

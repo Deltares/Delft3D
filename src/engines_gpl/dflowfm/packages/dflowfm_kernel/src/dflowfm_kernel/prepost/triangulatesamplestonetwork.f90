@@ -32,11 +32,11 @@
 
 module m_triangulatesamplestonetwork
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: triangulatesamplestonetwork
+   public :: triangulatesamplestonetwork
 
 contains
 

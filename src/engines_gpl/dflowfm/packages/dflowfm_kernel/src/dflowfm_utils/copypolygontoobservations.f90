@@ -32,11 +32,11 @@
 
 module m_copypolygontoobservations
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: copypolygontoobservations
+   public :: copypolygontoobservations
 
 contains
 

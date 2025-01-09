@@ -34,33 +34,33 @@
 !! This is based on the interpolated pliz values from the fixed weir definition.
 module m_setbobs_fixedweirs
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setbobs_fixedweirs
+   public :: setbobs_fixedweirs
 
 contains
 
-subroutine setbobs_fixedweirs()
-   use precision, only: dp
-   use m_flowgeom
-   use m_fixedweirs
+   subroutine setbobs_fixedweirs()
+      use precision, only: dp
+      use m_flowgeom
+      use m_fixedweirs
 
-   integer :: i, ip, iL, Lf
-   real(kind=dp) :: alpha, zc
+      integer :: i, ip, iL, Lf
+      real(kind=dp) :: alpha, zc
 
-   if (nfxw == 0) return
+      if (nfxw == 0) return
 
-   do i = 1, nfxw
-      do iL = 1, fxw(i)%lnx
-         Lf = abs(fxw(i)%ln(iL))
-         ip = fxw(i)%indexp(iL)
-         alpha = fxw(i)%wfp(iL)
-         zc = alpha * fxw(i)%zp(ip) + (1d0 - alpha) * fxw(i)%zp(ip + 1)
-         bob(1, Lf) = max(zc, bob(1, Lf)); bob(2, Lf) = max(zc, bob(2, Lf))
+      do i = 1, nfxw
+         do iL = 1, fxw(i)%lnx
+            Lf = abs(fxw(i)%ln(iL))
+            ip = fxw(i)%indexp(iL)
+            alpha = fxw(i)%wfp(iL)
+            zc = alpha * fxw(i)%zp(ip) + (1d0 - alpha) * fxw(i)%zp(ip + 1)
+            bob(1, Lf) = max(zc, bob(1, Lf)); bob(2, Lf) = max(zc, bob(2, Lf))
+         end do
       end do
-   end do
-end subroutine setbobs_fixedweirs
+   end subroutine setbobs_fixedweirs
 
 end module m_setbobs_fixedweirs

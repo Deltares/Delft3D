@@ -33,33 +33,33 @@
 module m_pressakey
 
    implicit none
-   
+
    private
-   
+
    public :: pressakey
-   
-   contains
-   
+
+contains
+
    subroutine pressakey()
 #ifdef HAVE_MPI
-   use mpi
-   use m_partitioninfo, only: DFM_COMM_ALLWORLD, my_rank
+      use mpi
+      use m_partitioninfo, only: DFM_COMM_ALLWORLD, my_rank
 
-   integer :: ierr
+      integer :: ierr
 
-   call MPI_barrier(DFM_COMM_ALLWORLD, ierr)
+      call MPI_barrier(DFM_COMM_ALLWORLD, ierr)
 
-   if (my_rank == 0) then
-      write (6, *) "press a key from rank 0..."
-      read (5, *)
-   end if
+      if (my_rank == 0) then
+         write (6, *) "press a key from rank 0..."
+         read (5, *)
+      end if
 
-   call MPI_barrier(DFM_COMM_ALLWORLD, ierr)
+      call MPI_barrier(DFM_COMM_ALLWORLD, ierr)
 #else
-   write (6, *) "press a key..."
-   read (5, *)
+      write (6, *) "press a key..."
+      read (5, *)
 #endif
 
-end subroutine pressakey
-   
+   end subroutine pressakey
+
 end module m_pressakey

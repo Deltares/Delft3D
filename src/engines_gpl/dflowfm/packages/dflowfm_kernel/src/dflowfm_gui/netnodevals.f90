@@ -31,8 +31,7 @@
 !
 
 module m_netnodevals
-use m_toland, only: toland
-
+   use m_toland, only: toland
 
    implicit none
 

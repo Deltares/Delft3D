@@ -32,22 +32,22 @@
 
 module m_inular
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: inular
+   public :: inular
 
 contains
 
-      subroutine INULAR(X, MMAX)
-         integer :: i
-         integer :: mmax
-         integer X(MMAX)
-         do I = 1, MMAX
-            X(I) = 0d0
-         end do
-         return
-      end
+   subroutine INULAR(X, MMAX)
+      integer :: i
+      integer :: mmax
+      integer X(MMAX)
+      do I = 1, MMAX
+         X(I) = 0d0
+      end do
+      return
+   end
 
 end module m_inular

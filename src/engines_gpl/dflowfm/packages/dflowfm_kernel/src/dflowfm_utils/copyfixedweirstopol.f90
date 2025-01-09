@@ -34,26 +34,26 @@
 !! to the active polygons in xpl,...
 module m_copyfixedweirstopol
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: copyfixedweirstopol
+   public :: copyfixedweirstopol
 
 contains
 
-subroutine copyFixedWeirsToPol()
-   use m_fixedweirs
-   use m_polygon
-   use m_append_crspath_to_pol
+   subroutine copyFixedWeirsToPol()
+      use m_fixedweirs
+      use m_polygon
+      use m_append_crspath_to_pol
 
-   integer :: i
+      integer :: i
 
-   npl = 0
-   do i = 1, nfxw
-      call appendCRSPathToPol(fxw(i))
-   end do
+      npl = 0
+      do i = 1, nfxw
+         call appendCRSPathToPol(fxw(i))
+      end do
 
-end subroutine copyFixedWeirsToPol
+   end subroutine copyFixedWeirsToPol
 
 end module m_copyfixedweirstopol

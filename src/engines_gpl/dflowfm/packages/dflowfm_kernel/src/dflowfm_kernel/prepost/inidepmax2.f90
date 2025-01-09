@@ -32,11 +32,11 @@
 
 module m_inidepmax2
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: inidepmax2
+   public :: inidepmax2
 
 contains
 

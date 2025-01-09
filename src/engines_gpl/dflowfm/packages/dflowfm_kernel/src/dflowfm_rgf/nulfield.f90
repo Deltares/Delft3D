@@ -32,30 +32,30 @@
 
 module m_nulfield
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: nulfield
+   public :: nulfield
 
 contains
 
-      subroutine NULFIELD(X, Y, mmax, nmax)
-         use precision, only: dp
-         use m_missing
-         use m_grid_block
+   subroutine NULFIELD(X, Y, mmax, nmax)
+      use precision, only: dp
+      use m_missing
+      use m_grid_block
 
-         integer :: mmax, nmax
-         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
-         integer :: i, j
+      integer :: mmax, nmax
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
+      integer :: i, j
 
-         do I = MB(3), MB(4)
-            do J = NB(3), NB(4)
-               X(I, J) = XYMIS
-               Y(I, J) = 0d0
-            end do
+      do I = MB(3), MB(4)
+         do J = NB(3), NB(4)
+            X(I, J) = XYMIS
+            Y(I, J) = 0d0
          end do
-         return
-      end subroutine nulfield
+      end do
+      return
+   end subroutine nulfield
 
 end module m_nulfield

@@ -33,11 +33,11 @@
 !  update geometry data that may have been incorrectly computed in the ghost area
 module m_update_geom
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: update_geom
+   public :: update_geom
 
 contains
 

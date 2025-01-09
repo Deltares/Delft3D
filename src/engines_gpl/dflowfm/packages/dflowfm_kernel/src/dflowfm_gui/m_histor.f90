@@ -31,16 +31,16 @@
 !
 module m_histor
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: HISTOR
+   public :: HISTOR
 
-interface
-   module subroutine HISTOR()
-     implicit none
-   end subroutine HISTOR
-end interface
-    
+   interface
+      module subroutine HISTOR()
+         implicit none
+      end subroutine HISTOR
+   end interface
+
 end module m_histor

@@ -132,7 +132,7 @@ contains
                call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'locationFileType', location_file_type_string, is_successful)
                if (.not. is_successful) then
                   write (msgbuf, '(a,i0,5a)') 'Error Reading Observation Point #', num_obs_block_in_file, &
-                     ' (''', trim(station_name),''') from ''', trim(file_names(j)), &
+                     ' (''', trim(station_name), ''') from ''', trim(file_names(j)), &
                      ''', locationFileType should be given when locationFile is used.'
                   call err_flush()
                   cycle

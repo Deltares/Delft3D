@@ -31,88 +31,88 @@
 !
 
 module m_resetflow
-use m_reset_movobs, only: reset_movobs
+   use m_reset_movobs, only: reset_movobs
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: resetflow
+   public :: resetflow
 
 contains
 
- !> Resets the current flow- and time-state, but keeps al active parameter settings.
+   !> Resets the current flow- and time-state, but keeps al active parameter settings.
  !! To be called upon flow_modelinit().
  !! Upon program startup and loading of new model/MDU, call resetFullFlowModel() instead.
- subroutine resetFlow()
-    use m_xbeachwaves, only: xbeach_reset
-    use m_reset_sedtra, only: reset_sedtra
-    use m_wind
-    use m_flow
-    use fm_external_forcings_data
-    use m_flowparameters
-    use m_statistics
-    use m_flowgeom
-    use m_modelbounds
-    use m_flowtimes
-    use waq
-    use m_waves
-    use m_hydrology_data
-    use m_sobekdfm
-    use m_save_ugrid_state, only: reset_save_ugrid_state
-    use m_longculverts, only: reset_longculverts
-    use m_sedtrails_data
-    use m_nearfield, only: reset_nearfieldData
-    use m_laterals, only: reset_lateral
-    implicit none
+   subroutine resetFlow()
+      use m_xbeachwaves, only: xbeach_reset
+      use m_reset_sedtra, only: reset_sedtra
+      use m_wind
+      use m_flow
+      use fm_external_forcings_data
+      use m_flowparameters
+      use m_statistics
+      use m_flowgeom
+      use m_modelbounds
+      use m_flowtimes
+      use waq
+      use m_waves
+      use m_hydrology_data
+      use m_sobekdfm
+      use m_save_ugrid_state, only: reset_save_ugrid_state
+      use m_longculverts, only: reset_longculverts
+      use m_sedtrails_data
+      use m_nearfield, only: reset_nearfieldData
+      use m_laterals, only: reset_lateral
+      implicit none
 
-    ! Only reset counters and other scalars, allocatables should be
-    ! automatically reset elsewhere (e.g., allocateandset*, flow_geominit)
+      ! Only reset counters and other scalars, allocatables should be
+      ! automatically reset elsewhere (e.g., allocateandset*, flow_geominit)
 
-    call reset_wind()
+      call reset_wind()
 
-    call reset_lateral
+      call reset_lateral
 
-    call reset_waves()
+      call reset_waves()
 
-    call reset_sobekdfm()
+      call reset_sobekdfm()
 
-    ! Reset some flow (rest is done in flow_geominit())
-    call reset_flowgeom()
+      ! Reset some flow (rest is done in flow_geominit())
+      call reset_flowgeom()
 
-    ! Sedtrails
-    call sedtrails_resetdata()
+      ! Sedtrails
+      call sedtrails_resetdata()
 
-    call reset_modelbounds()
+      call reset_modelbounds()
 
-    call reset_flowexternalforcings()
+      call reset_flowexternalforcings()
 
-    call reset_longculverts()
+      call reset_longculverts()
 
-    call reset_flowtimes()
+      call reset_flowtimes()
 
-    ! call reset_flowparameters()
+      ! call reset_flowparameters()
 
-    call reset_flow()
+      call reset_flow()
 
-    call reset_waq()
+      call reset_waq()
 
-    call reset_movobs()
+      call reset_movobs()
 
-    call reset_statistics()
+      call reset_statistics()
 
-    if (jawave == 4) then
-       call xbeach_reset()
-    end if
+      if (jawave == 4) then
+         call xbeach_reset()
+      end if
 
-    call reset_save_ugrid_state()
+      call reset_save_ugrid_state()
 
-    call reset_sedtra()
+      call reset_sedtra()
 
-    call reset_hydrology_data()
+      call reset_hydrology_data()
 
-    call reset_nearfieldData()
+      call reset_nearfieldData()
 
- end subroutine resetFlow
+   end subroutine resetFlow
 
 end module m_resetflow

@@ -30,8 +30,8 @@
 !
 !
 module m_wrisam
-use m_wriarcsam, only: wriarcsam
-use m_wriarc, only: wriarc
+   use m_wriarcsam, only: wriarcsam
+   use m_wriarc, only: wriarc
 
    implicit none
 contains

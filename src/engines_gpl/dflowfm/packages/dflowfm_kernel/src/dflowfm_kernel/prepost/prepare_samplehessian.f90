@@ -32,46 +32,45 @@
 
 !> prepare the sample Hessians
 module m_prepare_samplehessian
-use m_smooth_samples, only: smooth_samples
+   use m_smooth_samples, only: smooth_samples
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: prepare_samplehessian
+   public :: prepare_samplehessian
 
 contains
 
-subroutine prepare_sampleHessian(ierror)
-   use m_allocate_samplehessian, only: allocate_samplehessian
-   use m_comp_samplehessian
-   use m_samples
-   use m_samples_refine
+   subroutine prepare_sampleHessian(ierror)
+      use m_allocate_samplehessian, only: allocate_samplehessian
+      use m_comp_samplehessian
+      use m_samples
+      use m_samples_refine
 
-   integer, intent(out) :: ierror !< error (1) or not (0)
+      integer, intent(out) :: ierror !< error (1) or not (0)
 
-   ierror = 1
+      ierror = 1
 
-   if (iHesstat /= iHesstat_OK) then
+      if (iHesstat /= iHesstat_OK) then
 !     (re)allocate
-      call allocate_sampleHessian()
+         call allocate_sampleHessian()
 
 !     copy and possibly smooth sample data to zss(1,:,:)
-      call smooth_samples(MXSAM, MYSAM, NS, NDIM, Nsamplesmooth, zs, zss)
-      Nsamplesmooth_last = Nsamplesmooth
+         call smooth_samples(MXSAM, MYSAM, NS, NDIM, Nsamplesmooth, zs, zss)
+         Nsamplesmooth_last = Nsamplesmooth
 
 !     compute sample Hessians
-      call comp_sampleHessian(ierror)
-      if (ierror /= 0) goto 1234
-   end if
+         call comp_sampleHessian(ierror)
+         if (ierror /= 0) goto 1234
+      end if
 
-   iHesstat = iHesstat_OK
+      iHesstat = iHesstat_OK
 
-   ierror = 0
-1234 continue
+      ierror = 0
+1234  continue
 
-   return
-end subroutine prepare_sampleHessian
+      return
+   end subroutine prepare_sampleHessian
 
 end module m_prepare_samplehessian

@@ -32,8 +32,7 @@
 
 !>  assign indices (i,j) to the curvi-linear grid
 module m_assignijgrid
-use m_grow_ijc, only: grow_ijc
-
+   use m_grow_ijc, only: grow_ijc
 
    implicit none
 

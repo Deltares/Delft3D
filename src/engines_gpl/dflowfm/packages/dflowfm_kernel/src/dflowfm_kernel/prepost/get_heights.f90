@@ -33,94 +33,94 @@
 !> get the grid heights from the cross spline information
 module m_get_heights
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: get_heights
+   public :: get_heights
 
 contains
 
-subroutine get_heights()
-   use precision, only: dp
-   use m_comp_subheights
-   use m_splines
-   use m_spline2curvi
-   use m_missing
-   use m_alloc
+   subroutine get_heights()
+      use precision, only: dp
+      use m_comp_subheights
+      use m_splines
+      use m_spline2curvi
+      use m_missing
+      use m_alloc
 
-   integer :: is, j, js, k, kk, ks, kks, ncs, num, numj
-   integer :: kL, kR ! left and right neighboring splines at the cross spline w.r.t. the center spline
-   integer :: numnew
-   real(kind=dp), dimension(:), allocatable :: xlist, ylist
-   logical :: Lorient
+      integer :: is, j, js, k, kk, ks, kks, ncs, num, numj
+      integer :: kL, kR ! left and right neighboring splines at the cross spline w.r.t. the center spline
+      integer :: numnew
+      real(kind=dp), dimension(:), allocatable :: xlist, ylist
+      logical :: Lorient
 
 !  allocate
-   allocate (xlist(1), ylist(1))
+      allocate (xlist(1), ylist(1))
 
-   do is = 1, mcs
+      do is = 1, mcs
 !     determine the number of control points in the spline
-      call nump(is, num)
-      if (num <= 2) cycle ! center splines only
+         call nump(is, num)
+         if (num <= 2) cycle ! center splines only
 
-      do j = 1, splineprops(is)%ncs
-         js = splineprops(is)%ics(j)
+         do j = 1, splineprops(is)%ncs
+            js = splineprops(is)%ics(j)
 
-         call nump(js, numj)
+            call nump(js, numj)
 
-         ncs = splineprops(js)%ncs
+            ncs = splineprops(js)%ncs
 
 !        for this cross spline, find the left and right neighboring splines w.r.t. the center spline
-         kL = 0
-         kR = 0
-         do k = 1, ncs
-            ks = splineprops(js)%ics(k)
-            if (ks == is) then
+            kL = 0
+            kR = 0
+            do k = 1, ncs
+               ks = splineprops(js)%ics(k)
+               if (ks == is) then
 !               if ( k.gt.1 )   kL = splineprops(js)%ics(k-1)
 !               if ( k.lt.ncs ) kR = splineprops(js)%ics(k+1)
 
-               do kk = k - 1, 1, -1
-                  kks = splineprops(js)%ics(kk)
-                  if (splineprops(kks)%id == -ks) then
-                     kL = kks
-                     exit
-                  end if
-               end do
+                  do kk = k - 1, 1, -1
+                     kks = splineprops(js)%ics(kk)
+                     if (splineprops(kks)%id == -ks) then
+                        kL = kks
+                        exit
+                     end if
+                  end do
 
-               do kk = k + 1, ncs
-                  kks = splineprops(js)%ics(kk)
-                  if (splineprops(kks)%id == -ks) then
-                     kR = splineprops(js)%ics(kk)
-                     exit
-                  end if
-               end do
+                  do kk = k + 1, ncs
+                     kks = splineprops(js)%ics(kk)
+                     if (splineprops(kks)%id == -ks) then
+                        kR = splineprops(js)%ics(kk)
+                        exit
+                     end if
+                  end do
 
-               exit
-            end if
-         end do
+                  exit
+               end if
+            end do
 
-         Lorient = splineprops(is)%Lorient(j) ! orientation of the cross spline
+            Lorient = splineprops(is)%Lorient(j) ! orientation of the cross spline
 
 !        reallocate if necessary
-         if (numj > ubound(xlist, 1)) then
-            numnew = int(1.2d0 * dble(numj)) + 1
-            call realloc(xlist, numnew)
-            call realloc(ylist, numnew)
-         end if
+            if (numj > ubound(xlist, 1)) then
+               numnew = int(1.2d0 * dble(numj)) + 1
+               call realloc(xlist, numnew)
+               call realloc(ylist, numnew)
+            end if
 
-         xlist(1:numj) = xsp(js, 1:numj)
-         ylist(1:numj) = ysp(js, 1:numj)
+            xlist(1:numj) = xsp(js, 1:numj)
+            ylist(1:numj) = ysp(js, 1:numj)
 
-         call comp_subheights(is, Lorient, numj, xlist, ylist, &
-                              splineprops(js)%ncs, splineprops(js)%ics, splineprops(js)%t, &
-                              splineprops(is)%NsubL(j), splineprops(is)%NsubR(j), splineprops(is)%hL(:, j), splineprops(is)%hR(:, j))
+            call comp_subheights(is, Lorient, numj, xlist, ylist, &
+                                 splineprops(js)%ncs, splineprops(js)%ics, splineprops(js)%t, &
+                                 splineprops(is)%NsubL(j), splineprops(is)%NsubR(j), splineprops(is)%hL(:, j), splineprops(is)%hR(:, j))
+         end do
       end do
-   end do
 
 !  deallocate
-   deallocate (xlist, ylist)
+      deallocate (xlist, ylist)
 
-   return
-end subroutine get_heights
+      return
+   end subroutine get_heights
 
 end module m_get_heights

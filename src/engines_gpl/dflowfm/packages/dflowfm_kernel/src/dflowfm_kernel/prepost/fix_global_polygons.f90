@@ -32,11 +32,11 @@
 
 module m_fix_global_polygons
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: fix_global_polygons
+   public :: fix_global_polygons
 
 contains
 

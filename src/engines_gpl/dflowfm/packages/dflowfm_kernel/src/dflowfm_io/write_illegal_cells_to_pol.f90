@@ -32,9 +32,8 @@
 
 !> output illegal cells to polygon file
 module m_write_illegal_cells_to_pol
-use m_savecells, only: savecells
-use m_restorecells, only: restorecells
-
+   use m_savecells, only: savecells
+   use m_restorecells, only: restorecells
 
    implicit none
 

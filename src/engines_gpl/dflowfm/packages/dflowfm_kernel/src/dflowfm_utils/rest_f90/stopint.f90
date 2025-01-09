@@ -32,37 +32,37 @@
 
 module m_stopint
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: stopint
+   public :: stopint
 
 contains
 
-      subroutine STOPINT()
-         use unstruc_files
-         use unstruc_netcdf, only: unc_closeall
-         use m_partitioninfo
-         use m_fetch_operation_utils, only: finish_fetch_proc
+   subroutine STOPINT()
+      use unstruc_files
+      use unstruc_netcdf, only: unc_closeall
+      use m_partitioninfo
+      use m_fetch_operation_utils, only: finish_fetch_proc
 
-         call ISCREENCLOSE()
-         call unc_closeall()
-         call close_all_files()
+      call ISCREENCLOSE()
+      call unc_closeall()
+      call close_all_files()
 
-         call finish_fetch_proc()
-         if (jampi == 1) then
+      call finish_fetch_proc()
+      if (jampi == 1) then
 !        finalize before exit
-            call partition_finalize()
-         end if
+         call partition_finalize()
+      end if
 
 !     SPvdP: close dia-file
-         if (mdia /= 0 .and. mdia < maxnum) then
-            close (mdia)
-            mdia = 0
-         end if
+      if (mdia /= 0 .and. mdia < maxnum) then
+         close (mdia)
+         mdia = 0
+      end if
 
-         stop
-      end
+      stop
+   end
 
 end module m_stopint

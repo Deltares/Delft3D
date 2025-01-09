@@ -32,11 +32,11 @@
 !> for Tecplot output
 module m_tecplot
    use precision, only: dp
-   
+
    implicit none
-   
+
    private
-   
+
    public :: wrinet_tecplot, wrimap_tecplot, ini_tecplot
 
 #ifdef HAVE_TECPLOT
@@ -133,7 +133,7 @@ contains
 
       if (allocated(xx)) deallocate (xx)
 #else
-      associate(var=>var, kmask=>kmask, miss=>miss)
+      associate (var => var, kmask => kmask, miss => miss)
       end associate
       ierr = 0
 #endif
@@ -141,291 +141,291 @@ contains
    end subroutine tecdat
 
 !>  write net to Tecplot file
-subroutine wrinet_tecplot(FNAM)
-   use network_data
-   use unstruc_messages
-   use m_partitioninfo
-   use m_qnerror
+   subroutine wrinet_tecplot(FNAM)
+      use network_data
+      use unstruc_messages
+      use m_partitioninfo
+      use m_qnerror
 
-   character(len=*), intent(in) :: FNAM
+      character(len=*), intent(in) :: FNAM
 
 #ifdef HAVE_TECPLOT
 
-   real(kind=dp), dimension(:), allocatable :: dum
+      real(kind=dp), dimension(:), allocatable :: dum
 
-   integer, dimension(4) :: ValueLocation
+      integer, dimension(4) :: ValueLocation
 
-   integer :: ierr
-   integer :: k
+      integer :: ierr
+      integer :: k
 
-   ierr = 1
+      ierr = 1
 
-   ishrconn = 0
-   ifiletype = 1 ! grid
+      ishrconn = 0
+      ifiletype = 1 ! grid
 
-   if (itecstat /= ITECSTAT_OK) then
-      call ini_tecplot()
-   end if
+      if (itecstat /= ITECSTAT_OK) then
+         call ini_tecplot()
+      end if
 
-   if (itecstat /= ITECSTAT_OK) then
-      goto 1234
-   end if
+      if (itecstat /= ITECSTAT_OK) then
+         goto 1234
+      end if
 
 !     open file
-   if (jampi /= 1) then
-      ierr = tecini142('test'//NULLCHR, 'x y z'//NULLCHR, trim(FNAM)//NULLCHR, &
-                       '.'//NULLCHR, ifileformat, ifiletype, jadebug, jadouble)
+      if (jampi /= 1) then
+         ierr = tecini142('test'//NULLCHR, 'x y z'//NULLCHR, trim(FNAM)//NULLCHR, &
+                          '.'//NULLCHR, ifileformat, ifiletype, jadebug, jadouble)
+
+         if (ierr /= 0) goto 1234
+
+         ierr = teczne142('polygonal zone'//NULLCHR, izonetype, numnodes, nump, numfaces, &
+                          icellmax, jcellmax, kcellmax, soltime, istrandid, iparentzn, jablock, &
+                          nfconns, ifnmode, numfacenodes, numbfaces, numbconnections, &
+                          NULLi, NULLi, NULLi, ishrconn)
+      else
+         ValueLocation = (/1, 1, 1, 0/)
+         ierr = tecini142('test'//NULLCHR, 'x y z imask'//NULLCHR, trim(FNAM)//NULLCHR, &
+                          '.'//NULLCHR, ifileformat, ifiletype, jadebug, jadouble)
+
+         if (ierr /= 0) goto 1234
+
+         ierr = teczne142('polygonal zone'//NULLCHR, izonetype, numnodes, nump, numfaces, &
+                          icellmax, jcellmax, kcellmax, soltime, istrandid, iparentzn, jablock, &
+                          nfconns, ifnmode, numfacenodes, numbfaces, numbconnections, &
+                          NULLi, ValueLocation, NULLi, ishrconn)
+      end if
 
       if (ierr /= 0) goto 1234
-
-      ierr = teczne142('polygonal zone'//NULLCHR, izonetype, numnodes, nump, numfaces, &
-                       icellmax, jcellmax, kcellmax, soltime, istrandid, iparentzn, jablock, &
-                       nfconns, ifnmode, numfacenodes, numbfaces, numbconnections, &
-                       NULLi, NULLi, NULLi, ishrconn)
-   else
-      ValueLocation = (/1, 1, 1, 0/)
-      ierr = tecini142('test'//NULLCHR, 'x y z imask'//NULLCHR, trim(FNAM)//NULLCHR, &
-                       '.'//NULLCHR, ifileformat, ifiletype, jadebug, jadouble)
-
-      if (ierr /= 0) goto 1234
-
-      ierr = teczne142('polygonal zone'//NULLCHR, izonetype, numnodes, nump, numfaces, &
-                       icellmax, jcellmax, kcellmax, soltime, istrandid, iparentzn, jablock, &
-                       nfconns, ifnmode, numfacenodes, numbfaces, numbconnections, &
-                       NULLi, ValueLocation, NULLi, ishrconn)
-   end if
-
-   if (ierr /= 0) goto 1234
 
 !     write nodal data
-   call tecdat(numk, xk, ierr, kmask=kmask)
-   call tecdat(numk, yk, ierr, kmask=kmask)
-   call tecdat(numk, zk, ierr, kmask=kmask, miss=zkuni)
+      call tecdat(numk, xk, ierr, kmask=kmask)
+      call tecdat(numk, yk, ierr, kmask=kmask)
+      call tecdat(numk, zk, ierr, kmask=kmask, miss=zkuni)
 
-   if (jampi == 1) then
-      allocate (dum(nump))
-      dum = 1d0
-      do k = 1, nump
-         if (idomain(k) /= my_rank) then
-            dum(k) = 0d0
-         end if
-      end do
-      call tecdat(nump, dum, ierr)
-      deallocate (dum)
-   end if
+      if (jampi == 1) then
+         allocate (dum(nump))
+         dum = 1d0
+         do k = 1, nump
+            if (idomain(k) /= my_rank) then
+               dum(k) = 0d0
+            end if
+         end do
+         call tecdat(nump, dum, ierr)
+         deallocate (dum)
+      end if
 
 !     write connectivity
-   ierr = tecpolyface142(numfaces, NULLi, ifacenodes, ifaceleftelems, ifacerightelems)
+      ierr = tecpolyface142(numfaces, NULLi, ifacenodes, ifaceleftelems, ifacerightelems)
 
-   if (ierr /= 0) goto 1234
+      if (ierr /= 0) goto 1234
 
 !     close file
-   ierr = tecend142()
+      ierr = tecend142()
 
 !     deallocate
-   if (allocated(ifacenodes)) deallocate (ifacenodes)
-   if (allocated(ifaceleftelems)) deallocate (ifaceleftelems)
-   if (allocated(ifacerightelems)) deallocate (ifacerightelems)
+      if (allocated(ifacenodes)) deallocate (ifacenodes)
+      if (allocated(ifaceleftelems)) deallocate (ifaceleftelems)
+      if (allocated(ifacerightelems)) deallocate (ifacerightelems)
 
-1234 continue
+1234  continue
 #else
-   associate(FNAM => FNAM)
-   end associate
-   call qnerror('Tecplot output not available', ' ', ' ')
+      associate (FNAM => FNAM)
+      end associate
+      call qnerror('Tecplot output not available', ' ', ' ')
 
 #endif
 
-   return
-end subroutine wrinet_tecplot
+      return
+   end subroutine wrinet_tecplot
 
 !>  write flow solution as cell-centered data to Tecplot file
 !>    it is assumed that the mesh and connectivity are written in the net file
 !>    it is also assumed that the flow-node numbering and netcell numbering are the same
-subroutine wrimap_tecplot(FNAM)
+   subroutine wrimap_tecplot(FNAM)
 #ifdef HAVE_TECPLOT
-   use m_flow, only: s1, ucx, ucy, vih
-   use m_flowgeom
-   use network_data, only: nump
-   use m_flowtimes, only: time1
-   use gridoperations
+      use m_flow, only: s1, ucx, ucy, vih
+      use m_flowgeom
+      use network_data, only: nump
+      use m_flowtimes, only: time1
+      use gridoperations
 #endif
-   use MessageHandling, only: mess, LEVEL_ERROR
+      use MessageHandling, only: mess, LEVEL_ERROR
 
-   character(len=*), intent(in) :: FNAM
+      character(len=*), intent(in) :: FNAM
 
 #ifdef HAVE_TECPLOT
 
-   integer, dimension(:), allocatable :: cellmask
+      integer, dimension(:), allocatable :: cellmask
 
-   integer :: k
-   integer :: ierr
+      integer :: k
+      integer :: ierr
 
-   ierr = 1
+      ierr = 1
 
-   ifiletype = 2 ! solution
+      ifiletype = 2 ! solution
 
 !     check if Ndxi equals nump
-   if (Ndxi /= nump) then
-      goto 1234
-   end if
+      if (Ndxi /= nump) then
+         goto 1234
+      end if
 
-   if (itecstat /= ITECSTAT_OK) then
-      call ini_tecplot()
-   end if
+      if (itecstat /= ITECSTAT_OK) then
+         call ini_tecplot()
+      end if
 
 !     make mask
-   allocate (cellmask(Ndx))
+      allocate (cellmask(Ndx))
 
-   cellmask = 0
-   do k = 1, Ndxi
-      cellmask(k) = 1
-   end do
+      cellmask = 0
+      do k = 1, Ndxi
+         cellmask(k) = 1
+      end do
 
 !     open file
-   ierr = tecini142('test'//NULLCHR, 's1 ucx ucy bl vih'//NULLCHR, trim(FNAM)//NULLCHR, &
-                    '.'//NULLCHR, ifileformat, ifiletype, jadebug, jadouble)
+      ierr = tecini142('test'//NULLCHR, 's1 ucx ucy bl vih'//NULLCHR, trim(FNAM)//NULLCHR, &
+                       '.'//NULLCHR, ifileformat, ifiletype, jadebug, jadouble)
 
-   if (ierr /= 0) goto 1234
+      if (ierr /= 0) goto 1234
 
-   numfacenodes = 0
-   istrandid = 1
-   ishrconn = 0
-   soltime = time1
+      numfacenodes = 0
+      istrandid = 1
+      ishrconn = 0
+      soltime = time1
 
-   ierr = teczne142('polygonal zone'//NULLCHR, izonetype, numnodes, nump, numfaces, &
-                    icellmax, jcellmax, kcellmax, soltime, istrandid, iparentzn, jablock, &
-                    nfconns, ifnmode, numfacenodes, numbfaces, numbconnections, &
-                    NULLi, (/0, 0, 0, 0, 0/), NULLi, ishrconn)
+      ierr = teczne142('polygonal zone'//NULLCHR, izonetype, numnodes, nump, numfaces, &
+                       icellmax, jcellmax, kcellmax, soltime, istrandid, iparentzn, jablock, &
+                       nfconns, ifnmode, numfacenodes, numbfaces, numbconnections, &
+                       NULLi, (/0, 0, 0, 0, 0/), NULLi, ishrconn)
 
 !     write cell-centered data
-   call tecdat(Ndx, s1, ierr, kmask=cellmask)
-   call tecdat(Ndx, ucx, ierr, kmask=cellmask)
-   call tecdat(Ndx, ucy, ierr, kmask=cellmask)
-   call tecdat(Ndx, bl, ierr, kmask=cellmask)
-   call tecdat(Ndx, vih, ierr, kmask=cellmask)
+      call tecdat(Ndx, s1, ierr, kmask=cellmask)
+      call tecdat(Ndx, ucx, ierr, kmask=cellmask)
+      call tecdat(Ndx, ucy, ierr, kmask=cellmask)
+      call tecdat(Ndx, bl, ierr, kmask=cellmask)
+      call tecdat(Ndx, vih, ierr, kmask=cellmask)
 
-   continue
+      continue
 
 !     close file
-   ierr = tecend142()
+      ierr = tecend142()
 
-1234 continue
+1234  continue
 
-   if (allocated(cellmask)) deallocate (cellmask)
+      if (allocated(cellmask)) deallocate (cellmask)
 #else
-   associate(FNAM => FNAM)
-   end associate
-   call mess(LEVEL_ERROR, 'Tecplot output not available')
+      associate (FNAM => FNAM)
+      end associate
+      call mess(LEVEL_ERROR, 'Tecplot output not available')
 #endif
 
-   return
-end subroutine wrimap_tecplot
+      return
+   end subroutine wrimap_tecplot
 
-subroutine ini_tecplot()
-   use network_data
-   use gridoperations
+   subroutine ini_tecplot()
+      use network_data
+      use gridoperations
 
 #ifdef HAVE_TECPLOT
 
-   integer :: i, k, L
+      integer :: i, k, L
 
-   NULLCHR = char(0)
+      NULLCHR = char(0)
 
-   ifileformat = 0 ! 0: .plt, 1: .szplt
-   ifiletype = 1 ! 0: full, 1: grid, 2: solution
-   jadebug = 1
-   jadouble = 0 ! write single precision for now
+      ifileformat = 0 ! 0: .plt, 1: .szplt
+      ifiletype = 1 ! 0: full, 1: grid, 2: solution
+      jadebug = 1
+      jadouble = 0 ! write single precision for now
 
-   izonetype = 6 ! FEPOLYGON
-   icellmax = 0; ! not used
-   jcellmax = 0; ! not used
-   kcellmax = 0; ! not used
-   soltime = 0d0
-   istrandid = 0 ! static zone
-   iparentzn = 0 ! no parent zone
-   jablock = 1 ! block
-   nfconns = 0
-   ifnmode = 0
+      izonetype = 6 ! FEPOLYGON
+      icellmax = 0; ! not used
+      jcellmax = 0; ! not used
+      kcellmax = 0; ! not used
+      soltime = 0d0
+      istrandid = 0 ! static zone
+      iparentzn = 0 ! no parent zone
+      jablock = 1 ! block
+      nfconns = 0
+      ifnmode = 0
 
-   numfaces = 0 ! will be filled by wrinet_tecplot
-   numnodes = 0 ! will be filled by wrinet_tecplot
+      numfaces = 0 ! will be filled by wrinet_tecplot
+      numnodes = 0 ! will be filled by wrinet_tecplot
 
-   numfacenodes = 0
-   numbfaces = 0
-   numbconnections = 0
-   ishrconn = 0
+      numfacenodes = 0
+      numbfaces = 0
+      numbconnections = 0
+      ishrconn = 0
 
-   itecstat = ITECSTAT_EMPTY
+      itecstat = ITECSTAT_EMPTY
 
 !     prepare connectivity
 
-   if (netstat /= NETSTAT_OK) then
-      call findcells(0)
-   end if
+      if (netstat /= NETSTAT_OK) then
+         call findcells(0)
+      end if
 
-   if (nump < 1 .or. numk < 1 .or. numL < 1) goto 1234
+      if (nump < 1 .or. numk < 1 .or. numL < 1) goto 1234
 
 !     deallocate
-   if (allocated(kmask)) deallocate (kmask)
-   if (allocated(Lmask)) deallocate (Lmask)
-   if (allocated(cellmask)) deallocate (cellmask)
-   if (allocated(ifacenodes)) deallocate (ifacenodes)
-   if (allocated(ifaceleftelems)) deallocate (ifaceleftelems)
-   if (allocated(ifacerightelems)) deallocate (ifacerightelems)
+      if (allocated(kmask)) deallocate (kmask)
+      if (allocated(Lmask)) deallocate (Lmask)
+      if (allocated(cellmask)) deallocate (cellmask)
+      if (allocated(ifacenodes)) deallocate (ifacenodes)
+      if (allocated(ifaceleftelems)) deallocate (ifaceleftelems)
+      if (allocated(ifacerightelems)) deallocate (ifacerightelems)
 
 !     allocate
-   allocate (kmask(numk))
-   allocate (Lmask(numL))
-   allocate (cellmask(nump))
+      allocate (kmask(numk))
+      allocate (Lmask(numL))
+      allocate (cellmask(nump))
 
 !     count number of active faces and make masks
-   numfaces = 0
-   kmask = 0
-   Lmask = 0
+      numfaces = 0
+      kmask = 0
+      Lmask = 0
 
-   do L = 1, numL
-      if (kn(3, L) /= 0 .and. lne(1, L) /= 0) then
-         numfaces = numfaces + 1
-         Lmask(L) = numfaces
-         kmask(kn(1, L)) = 1
-         kmask(kn(2, L)) = 1
-      end if
-   end do
+      do L = 1, numL
+         if (kn(3, L) /= 0 .and. lne(1, L) /= 0) then
+            numfaces = numfaces + 1
+            Lmask(L) = numfaces
+            kmask(kn(1, L)) = 1
+            kmask(kn(2, L)) = 1
+         end if
+      end do
 
 !     count active nodes and get new numbers
-   numnodes = 0
-   do k = 1, numk
-      if (kmask(k) == 1) then
-         numnodes = numnodes + 1
-         kmask(k) = numnodes ! store new node number
-      end if
-   end do
+      numnodes = 0
+      do k = 1, numk
+         if (kmask(k) == 1) then
+            numnodes = numnodes + 1
+            kmask(k) = numnodes ! store new node number
+         end if
+      end do
 
-   numfacenodes = 2 * numfaces
+      numfacenodes = 2 * numfaces
 
 !     compose connectivety
-   allocate (ifacenodes(numfacenodes))
-   allocate (ifaceleftelems(numfaces))
-   allocate (ifacerightelems(numfaces))
+      allocate (ifacenodes(numfacenodes))
+      allocate (ifaceleftelems(numfaces))
+      allocate (ifacerightelems(numfaces))
 
-   i = 0
-   do L = 1, numL
-      if (Lmask(L) > 0) then
-         i = i + 1
-         ifacenodes(2 * i - 1) = kmask(kn(1, L)) ! new node number
-         ifacenodes(2 * i) = kmask(kn(2, L)) ! new node number
-         ifaceleftelems(i) = lne(1, L)
-         ifacerightelems(i) = lne(2, L)
-      end if
-   end do
+      i = 0
+      do L = 1, numL
+         if (Lmask(L) > 0) then
+            i = i + 1
+            ifacenodes(2 * i - 1) = kmask(kn(1, L)) ! new node number
+            ifacenodes(2 * i) = kmask(kn(2, L)) ! new node number
+            ifaceleftelems(i) = lne(1, L)
+            ifacerightelems(i) = lne(2, L)
+         end if
+      end do
 
-   itecstat = ITECSTAT_OK
+      itecstat = ITECSTAT_OK
 
-1234 continue
+1234  continue
 
 #endif
 
-   return
-end subroutine ini_tecplot
+      return
+   end subroutine ini_tecplot
 
 end module m_tecplot

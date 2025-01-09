@@ -33,11 +33,11 @@
 !>  find cells that are directly and indirectly connected to cell k
 module m_find_surrounding_cells
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: find_surrounding_cells
+   public :: find_surrounding_cells
 
 contains
 

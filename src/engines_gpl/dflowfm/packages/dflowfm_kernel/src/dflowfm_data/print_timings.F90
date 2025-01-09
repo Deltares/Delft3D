@@ -35,152 +35,152 @@ module m_print_timings
    implicit none
 
    private
-   
+
    public :: print_timings
 
 contains
-    
+
 !>  print timing information to file
-subroutine print_timings(FNAM, dtime)
+   subroutine print_timings(FNAM, dtime)
 #ifdef HAVE_MPI
-   use mpi
+      use mpi
 #endif
-   use precision, only: dp
-   use m_timer, only: numt, t, tcpu, numcgits, tnams, numtsteps
-   use m_partitioninfo, only: jampi, ndomains, my_rank, DFM_COMM_DFMWORLD
+      use precision, only: dp
+      use m_timer, only: numt, t, tcpu, numcgits, tnams, numtsteps
+      use m_partitioninfo, only: jampi, ndomains, my_rank, DFM_COMM_DFMWORLD
 
-   character(len=*), intent(in) :: FNAM !< file name
-   real(kind=dp), intent(in) :: dtime !< time
+      character(len=*), intent(in) :: FNAM !< file name
+      real(kind=dp), intent(in) :: dtime !< time
 
-   integer :: ierr
-   integer :: i, j, lenstr
+      integer :: ierr
+      integer :: i, j, lenstr
 
-   logical :: Lexist
+      logical :: Lexist
 
-   integer, parameter :: ISTRLEN = 20
-   integer :: MFILE
+      integer, parameter :: ISTRLEN = 20
+      integer :: MFILE
 
-   integer, parameter :: Ntvarlist = 13
-   integer, dimension(Ntvarlist), parameter :: itvarlist = (/1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17/)
+      integer, parameter :: Ntvarlist = 13
+      integer, dimension(Ntvarlist), parameter :: itvarlist = (/1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17/)
 
-   real(kind=dp), dimension(:, :), allocatable :: t_max, t_ave, tcpu_max, tcpu_ave
-   integer :: itsol_max
+      real(kind=dp), dimension(:, :), allocatable :: t_max, t_ave, tcpu_max, tcpu_ave
+      integer :: itsol_max
 
-   integer :: jadoit
+      integer :: jadoit
 
-   character(len=128) :: FORMATSTRING, FORMATSTRINGINT, dum
+      character(len=128) :: FORMATSTRING, FORMATSTRINGINT, dum
 
-   allocate (t_max(3, NUMT), t_ave(3, NUMT), tcpu_max(3, NUMT), tcpu_ave(3, NUMT))
+      allocate (t_max(3, NUMT), t_ave(3, NUMT), tcpu_max(3, NUMT), tcpu_ave(3, NUMT))
 
-   if (jampi == 1) then
+      if (jampi == 1) then
 #ifdef HAVE_MPI
-      call mpi_reduce(t, t_max, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
-      call mpi_reduce(t, t_ave, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_SUM, 0, DFM_COMM_DFMWORLD, ierr)
-      t_ave = t_ave / dble(ndomains)
-      call mpi_reduce(tcpu, tcpu_max, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
-      call mpi_reduce(tcpu, tcpu_ave, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_SUM, 0, DFM_COMM_DFMWORLD, ierr)
-      tcpu_ave = tcpu_ave / dble(ndomains)
+         call mpi_reduce(t, t_max, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
+         call mpi_reduce(t, t_ave, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_SUM, 0, DFM_COMM_DFMWORLD, ierr)
+         t_ave = t_ave / dble(ndomains)
+         call mpi_reduce(tcpu, tcpu_max, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
+         call mpi_reduce(tcpu, tcpu_ave, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_SUM, 0, DFM_COMM_DFMWORLD, ierr)
+         tcpu_ave = tcpu_ave / dble(ndomains)
 #endif
-   else
-      t_ave = t
-      tcpu_ave = tcpu
-      t_max = t
-      tcpu_max = tcpu
-   end if
-
-!     reduce number of iterations
-   if (jampi == 1) then
-#ifdef HAVE_MPI
-      call mpi_reduce(numcgits, itsol_max, 1, MPI_INTEGER, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
-#endif
-      jadoit = 0
-      if (my_rank == 0) jadoit = 1
-   else
-      itsol_max = numcgits
-      jadoit = 1
-   end if
-
-   if (jadoit == 1) then
-      inquire (FILE=FNAM, EXIST=Lexist)
-      open (newunit=MFILE, FILE=trim(FNAM), access='APPEND')
-
-      if (.not. Lexist) then
-!           print header
-         lenstr = 4
-         do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ")', advance="no")
-         end do
-         write (MFILE, '(A)', advance="no") 'time'
-
-         lenstr = 16
-         do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ")', advance="no")
-         end do
-         write (MFILE, '(A)', advance="no") 'number_of_tsteps'
-
-         do i = 1, Ntvarlist
-            lenstr = len_trim(tnams(itvarlist(i)))
-            do j = 1, ISTRLEN - (lenstr + 4)
-               write (MFILE, '(" ")', advance="no")
-            end do
-            write (MFILE, "(A, '_ave')", advance="no") trim(tnams(itvarlist(i)))
-
-            do j = 1, ISTRLEN - (lenstr + 4)
-               write (MFILE, '(" ")', advance="no")
-            end do
-            write (MFILE, "(A, '_max')", advance="no") trim(tnams(itvarlist(i)))
-
-            do j = 1, ISTRLEN - (lenstr + 8)
-               write (MFILE, '(" ")', advance="no")
-            end do
-            write (MFILE, "(A, '_CPU_ave')", advance="no") trim(tnams(itvarlist(i)))
-
-            do j = 1, ISTRLEN - (lenstr + 8)
-               write (MFILE, '(" ")', advance="no")
-            end do
-            write (MFILE, "(A, '_CPU_max')", advance="no") trim(tnams(itvarlist(i)))
-         end do
-
-         lenstr = 8
-         do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ")', advance="no")
-         end do
-         write (MFILE, "(A)", advance="no") 'cg_iters'
-         write (MFILE, *)
+      else
+         t_ave = t
+         tcpu_ave = tcpu
+         t_max = t
+         tcpu_max = tcpu
       end if
 
+!     reduce number of iterations
+      if (jampi == 1) then
+#ifdef HAVE_MPI
+         call mpi_reduce(numcgits, itsol_max, 1, MPI_INTEGER, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
+#endif
+         jadoit = 0
+         if (my_rank == 0) jadoit = 1
+      else
+         itsol_max = numcgits
+         jadoit = 1
+      end if
+
+      if (jadoit == 1) then
+         inquire (FILE=FNAM, EXIST=Lexist)
+         open (newunit=MFILE, FILE=trim(FNAM), access='APPEND')
+
+         if (.not. Lexist) then
+!           print header
+            lenstr = 4
+            do j = 1, ISTRLEN - lenstr
+               write (MFILE, '(" ")', advance="no")
+            end do
+            write (MFILE, '(A)', advance="no") 'time'
+
+            lenstr = 16
+            do j = 1, ISTRLEN - lenstr
+               write (MFILE, '(" ")', advance="no")
+            end do
+            write (MFILE, '(A)', advance="no") 'number_of_tsteps'
+
+            do i = 1, Ntvarlist
+               lenstr = len_trim(tnams(itvarlist(i)))
+               do j = 1, ISTRLEN - (lenstr + 4)
+                  write (MFILE, '(" ")', advance="no")
+               end do
+               write (MFILE, "(A, '_ave')", advance="no") trim(tnams(itvarlist(i)))
+
+               do j = 1, ISTRLEN - (lenstr + 4)
+                  write (MFILE, '(" ")', advance="no")
+               end do
+               write (MFILE, "(A, '_max')", advance="no") trim(tnams(itvarlist(i)))
+
+               do j = 1, ISTRLEN - (lenstr + 8)
+                  write (MFILE, '(" ")', advance="no")
+               end do
+               write (MFILE, "(A, '_CPU_ave')", advance="no") trim(tnams(itvarlist(i)))
+
+               do j = 1, ISTRLEN - (lenstr + 8)
+                  write (MFILE, '(" ")', advance="no")
+               end do
+               write (MFILE, "(A, '_CPU_max')", advance="no") trim(tnams(itvarlist(i)))
+            end do
+
+            lenstr = 8
+            do j = 1, ISTRLEN - lenstr
+               write (MFILE, '(" ")', advance="no")
+            end do
+            write (MFILE, "(A)", advance="no") 'cg_iters'
+            write (MFILE, *)
+         end if
+
 !        make format strings
-      write (dum, '(I0)') ISTRLEN
-      FORMATSTRING = '(E'//trim(adjustl(dum))//'.5, $)'
-      FORMATSTRINGINT = '(I'//trim(adjustl(dum))//',   $)'
+         write (dum, '(I0)') ISTRLEN
+         FORMATSTRING = '(E'//trim(adjustl(dum))//'.5, $)'
+         FORMATSTRINGINT = '(I'//trim(adjustl(dum))//',   $)'
 
 !        write time
-      write (MFILE, trim(FORMATSTRING)) dtime
+         write (MFILE, trim(FORMATSTRING)) dtime
 
 !        write number of timesteps
-      write (MFILE, trim(FORMATSTRINGINT)) numtsteps
+         write (MFILE, trim(FORMATSTRINGINT)) numtsteps
 
 !        wite timings
-      do i = 1, Ntvarlist
-         write (MFILE, FORMATSTRING) t_ave(3, itvarlist(i))
-         write (MFILE, FORMATSTRING) t_max(3, itvarlist(i))
-         write (MFILE, FORMATSTRING) tcpu_ave(3, itvarlist(i))
-         write (MFILE, FORMATSTRING) tcpu_max(3, itvarlist(i))
-      end do
+         do i = 1, Ntvarlist
+            write (MFILE, FORMATSTRING) t_ave(3, itvarlist(i))
+            write (MFILE, FORMATSTRING) t_max(3, itvarlist(i))
+            write (MFILE, FORMATSTRING) tcpu_ave(3, itvarlist(i))
+            write (MFILE, FORMATSTRING) tcpu_max(3, itvarlist(i))
+         end do
 
 !        write number of iterations
-      write (MFILE, FORMATSTRINGINT) itsol_max
+         write (MFILE, FORMATSTRINGINT) itsol_max
 
-      write (MFILE, *)
+         write (MFILE, *)
 
-      close (MFILE)
-   end if
+         close (MFILE)
+      end if
 
-   if (allocated(t_max)) deallocate (t_max)
-   if (allocated(t_ave)) deallocate (t_ave)
-   if (allocated(tcpu_max)) deallocate (tcpu_max)
-   if (allocated(tcpu_ave)) deallocate (tcpu_ave)
+      if (allocated(t_max)) deallocate (t_max)
+      if (allocated(t_ave)) deallocate (t_ave)
+      if (allocated(tcpu_max)) deallocate (tcpu_max)
+      if (allocated(tcpu_ave)) deallocate (tcpu_ave)
 
-end subroutine print_timings
+   end subroutine print_timings
 
 end module m_print_timings

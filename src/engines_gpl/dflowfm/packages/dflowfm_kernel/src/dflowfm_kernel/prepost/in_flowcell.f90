@@ -32,11 +32,11 @@
 
 module m_in_flowcell
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: in_flowcell
+   public :: in_flowcell
 
 contains
 

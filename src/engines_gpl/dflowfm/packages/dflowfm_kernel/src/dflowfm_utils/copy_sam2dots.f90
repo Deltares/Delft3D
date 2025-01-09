@@ -33,11 +33,11 @@
 !  copy samples to dots
 module m_copy_sam2dots
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: copy_sam2dots
+   public :: copy_sam2dots
 
 contains
 

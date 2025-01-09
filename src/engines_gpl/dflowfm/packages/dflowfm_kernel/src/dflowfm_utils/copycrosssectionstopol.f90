@@ -34,29 +34,29 @@
 !! to the active polygons in xpl,...
 module m_copycrosssectionstopol
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: copycrosssectionstopol
+   public :: copycrosssectionstopol
 
 contains
 
-subroutine copyCrossSectionsToPol()
-   use m_monitoring_crosssections
-   use m_polygon
-   use m_alloc
-   use m_append_crspath_to_pol
+   subroutine copyCrossSectionsToPol()
+      use m_monitoring_crosssections
+      use m_polygon
+      use m_alloc
+      use m_append_crspath_to_pol
 
-   integer :: i
+      integer :: i
 
-   npl = 0
-   call realloc(nampli, ncrs, fill=' ')
-   do i = 1, ncrs
-      nampli(i) = crs(i)%name
-      call appendCRSPathToPol(crs(i)%path)
-   end do
+      npl = 0
+      call realloc(nampli, ncrs, fill=' ')
+      do i = 1, ncrs
+         nampli(i) = crs(i)%name
+         call appendCRSPathToPol(crs(i)%path)
+      end do
 
-end subroutine copyCrossSectionsToPol
+   end subroutine copyCrossSectionsToPol
 
 end module m_copycrosssectionstopol

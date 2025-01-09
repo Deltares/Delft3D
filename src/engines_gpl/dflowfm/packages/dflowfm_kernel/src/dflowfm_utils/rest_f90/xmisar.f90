@@ -32,26 +32,26 @@
 
 module m_xmisar
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: xmisar
+   public :: xmisar
 
 contains
 
-      subroutine XMISAR(X, MMAX)
-         use precision, only: dp
-         use M_MISSING
+   subroutine XMISAR(X, MMAX)
+      use precision, only: dp
+      use M_MISSING
 
-         integer :: i
-         integer :: mmax
-         real(kind=dp) :: x
-         dimension X(MMAX)
-         do I = 1, MMAX
-            X(I) = XYMIS
-         end do
-         return
-      end
+      integer :: i
+      integer :: mmax
+      real(kind=dp) :: x
+      dimension X(MMAX)
+      do I = 1, MMAX
+         X(I) = XYMIS
+      end do
+      return
+   end
 
 end module m_xmisar

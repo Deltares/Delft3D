@@ -31,34 +31,34 @@
 !
 module m_tridag
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: tridag
+   public :: tridag
 
 contains
 
- subroutine tridag(a, b, c, d, e, u, n)
-    use precision, only: dp
+   subroutine tridag(a, b, c, d, e, u, n)
+      use precision, only: dp
 
-    integer :: n, j
-    real(kind=dp) :: a(n), b(n), c(n), d(n), e(n), u(n), bet, accur = 1d-15
+      integer :: n, j
+      real(kind=dp) :: a(n), b(n), c(n), d(n), e(n), u(n), bet, accur = 1d-15
 
-    bet = b(1)
-    u(1) = d(1) / bet
-    do j = 2, n
-       e(j) = c(j - 1) / bet
-       bet = b(j) - a(j) * e(j)
-       if (abs(bet) < accur) then
-          bet = sign(accur, bet)
-       end if
-       u(j) = (d(j) - a(j) * u(j - 1)) / bet
-    end do
+      bet = b(1)
+      u(1) = d(1) / bet
+      do j = 2, n
+         e(j) = c(j - 1) / bet
+         bet = b(j) - a(j) * e(j)
+         if (abs(bet) < accur) then
+            bet = sign(accur, bet)
+         end if
+         u(j) = (d(j) - a(j) * u(j - 1)) / bet
+      end do
 
-    do j = n - 1, 1, -1
-       u(j) = u(j) - e(j + 1) * u(j + 1)
-    end do
- end subroutine tridag
+      do j = n - 1, 1, -1
+         u(j) = u(j) - e(j + 1) * u(j + 1)
+      end do
+   end subroutine tridag
 
 end module m_tridag

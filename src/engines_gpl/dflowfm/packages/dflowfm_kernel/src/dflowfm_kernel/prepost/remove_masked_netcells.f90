@@ -32,7 +32,7 @@
 
 submodule(m_remove_masked_netcells) m_remove_masked_netcells_
 
-implicit none
+   implicit none
 
 contains
 

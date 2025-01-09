@@ -32,45 +32,44 @@
 
 !> generate a gridline on a spline with a prescribed maximum mesh width
 module m_make_gridline
-use m_spline2gridline, only: spline2gridline
+   use m_spline2gridline, only: spline2gridline
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: make_gridline
+   public :: make_gridline
 
 contains
 
-subroutine make_gridline(num, xsp, ysp, dwidth, mfacmax, mfac, hmax, xg, yg, sc, jacurv)
-   use precision, only: dp
-   use m_missing
-   use m_alloc
-   use geometry_module, only: dbdistance
-   use m_sferic, only: jsferic, jasfer3D
-   use m_spline
-   use m_splinelength, only: splinelength
+   subroutine make_gridline(num, xsp, ysp, dwidth, mfacmax, mfac, hmax, xg, yg, sc, jacurv)
+      use precision, only: dp
+      use m_missing
+      use m_alloc
+      use geometry_module, only: dbdistance
+      use m_sferic, only: jsferic, jasfer3D
+      use m_spline
+      use m_splinelength, only: splinelength
 
-   integer, intent(in) :: num !< number of spline control points
-   real(kind=dp), dimension(num), intent(in) :: xsp, ysp !< coordinates of spline control points
+      integer, intent(in) :: num !< number of spline control points
+      real(kind=dp), dimension(num), intent(in) :: xsp, ysp !< coordinates of spline control points
 
-   real(kind=dp), intent(in) :: dwidth !< maximum mesh width
-   integer, intent(in) :: mfacmax !< maximum allowed number of mesh intervals
-   real(kind=dp), intent(in) :: hmax !< maximum grid height for this spline (both sides)
+      real(kind=dp), intent(in) :: dwidth !< maximum mesh width
+      integer, intent(in) :: mfacmax !< maximum allowed number of mesh intervals
+      real(kind=dp), intent(in) :: hmax !< maximum grid height for this spline (both sides)
 
-   integer, intent(out) :: mfac !< number of mesh intervals
-   real(kind=dp), dimension(mfacmax + 1), intent(out) :: xg, yg !< coordinates of grid points
-   real(kind=dp), dimension(mfacmax + 1), intent(inout) :: sc !< spline-coordinates of grid points
+      integer, intent(out) :: mfac !< number of mesh intervals
+      real(kind=dp), dimension(mfacmax + 1), intent(out) :: xg, yg !< coordinates of grid points
+      real(kind=dp), dimension(mfacmax + 1), intent(inout) :: sc !< spline-coordinates of grid points
 
-   integer, intent(in) :: jacurv !< curvature adapted grid spacing (1) or not (0)
+      integer, intent(in) :: jacurv !< curvature adapted grid spacing (1) or not (0)
 
-   real(kind=dp), dimension(num) :: xsp2, ysp2 ! second order derivatives of spline coordinates
+      real(kind=dp), dimension(num) :: xsp2, ysp2 ! second order derivatives of spline coordinates
 
-   real(kind=dp) :: dmaxwidth ! current maximum mesh width
-   real(kind=dp) :: dspllength ! spline length
+      real(kind=dp) :: dmaxwidth ! current maximum mesh width
+      real(kind=dp) :: dspllength ! spline length
 
-   integer :: i, mfac_loc
+      integer :: i, mfac_loc
 
 !  test
 !  copy spline nodes to grid points
@@ -83,40 +82,40 @@ subroutine make_gridline(num, xsp, ysp, dwidth, mfacmax, mfac, hmax, xg, yg, sc,
 !  end test
 
 !  compute second order derivates of spline coordinates
-   call spline(xsp, num, xsp2)
-   call spline(ysp, num, ysp2)
+      call spline(xsp, num, xsp2)
+      call spline(ysp, num, ysp2)
 
 !  make a gridline on the spline
-   dmaxwidth = huge(1d0)
+      dmaxwidth = huge(1d0)
 
-   dspllength = splinelength(num, xsp, ysp)
-   mfac_loc = int(0.9999d0 + dspllength / dwidth)
-   mfac = min(mfac_loc, mfacmax)
+      dspllength = splinelength(num, xsp, ysp)
+      mfac_loc = int(0.9999d0 + dspllength / dwidth)
+      mfac = min(mfac_loc, mfacmax)
 
-   do while (dmaxwidth > dwidth)
+      do while (dmaxwidth > dwidth)
 !     make the gridline
-      if (jacurv == 1) then
-         call spline2gridline(mfac + 1, num, xsp, ysp, xg, yg, sc, hmax)
-      else
-         call spline2gridline(mfac + 1, num, xsp, ysp, xg, yg, sc, -hmax)
-      end if
+         if (jacurv == 1) then
+            call spline2gridline(mfac + 1, num, xsp, ysp, xg, yg, sc, hmax)
+         else
+            call spline2gridline(mfac + 1, num, xsp, ysp, xg, yg, sc, -hmax)
+         end if
 
 !     determine maximum mesh width
-      dmaxwidth = 0d0
-      do i = 1, mfac
-         if (xg(i) == DMISS .or. xg(i + 1) == DMISS) cycle
-         dmaxwidth = max(dbdistance(xg(i), yg(i), xg(i + 1), yg(i + 1), jsferic, jasfer3D, dmiss), dmaxwidth)
-      end do
+         dmaxwidth = 0d0
+         do i = 1, mfac
+            if (xg(i) == DMISS .or. xg(i + 1) == DMISS) cycle
+            dmaxwidth = max(dbdistance(xg(i), yg(i), xg(i + 1), yg(i + 1), jsferic, jasfer3D, dmiss), dmaxwidth)
+         end do
 
 !     compute and update the number of mesh intervals
-      if (dmaxwidth <= dwidth .or. mfac == mfacmax) then
-         exit
-      else
-         mfac = min(max(int(dmaxwidth / dwidth * mfac), mfac + 1), mfacmax) ! add at least one grid point
-      end if
-   end do
+         if (dmaxwidth <= dwidth .or. mfac == mfacmax) then
+            exit
+         else
+            mfac = min(max(int(dmaxwidth / dwidth * mfac), mfac + 1), mfacmax) ! add at least one grid point
+         end if
+      end do
 
-   return
-end subroutine make_gridline
+      return
+   end subroutine make_gridline
 
 end module m_make_gridline

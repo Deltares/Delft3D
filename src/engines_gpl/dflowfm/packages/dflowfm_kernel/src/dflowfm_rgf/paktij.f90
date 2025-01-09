@@ -32,34 +32,34 @@
 
 module m_paktij
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: paktij
+   public :: paktij
 
 contains
 
-     subroutine PAKTIJ(T, mmax, nmax, TH, imax, I1, I2, J1, J2, NUM)
-        use precision, only: dp
+   subroutine PAKTIJ(T, mmax, nmax, TH, imax, I1, I2, J1, J2, NUM)
+      use precision, only: dp
 
-        !     Haal lijn uit array en geef aantal niet nul NUM
-        integer :: mmax, nmax, imax, i1, i2, j1, j2, num
-        real(kind=dp) :: T(MMAX, NMAX), TH(IMAX)
-        integer :: i, j, k, ji1
-        TH = 0d0
-        K = 0
-        JI1 = 0
-        do I = I1, I2
-           do J = J1, J2
-              if (T(I, J) /= 0) then
-                 K = K + 1
-                 TH(K) = T(I, J)
-              end if
-           end do
-        end do
-        NUM = K
-        return
-     end subroutine paktij
+      !     Haal lijn uit array en geef aantal niet nul NUM
+      integer :: mmax, nmax, imax, i1, i2, j1, j2, num
+      real(kind=dp) :: T(MMAX, NMAX), TH(IMAX)
+      integer :: i, j, k, ji1
+      TH = 0d0
+      K = 0
+      JI1 = 0
+      do I = I1, I2
+         do J = J1, J2
+            if (T(I, J) /= 0) then
+               K = K + 1
+               TH(K) = T(I, J)
+            end if
+         end do
+      end do
+      NUM = K
+      return
+   end subroutine paktij
 
 end module m_paktij

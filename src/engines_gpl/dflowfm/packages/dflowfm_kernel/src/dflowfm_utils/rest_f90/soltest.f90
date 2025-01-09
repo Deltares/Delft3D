@@ -32,11 +32,11 @@
 
 module m_soltest
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: soltest
+   public :: soltest
 
 contains
 

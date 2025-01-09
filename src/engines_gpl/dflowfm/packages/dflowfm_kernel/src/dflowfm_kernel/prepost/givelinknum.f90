@@ -32,27 +32,27 @@
 
 module m_givelinknum
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: givelinknum
+   public :: givelinknum
 
 contains
 
-  subroutine givelinknum(K1, K2, L)
-     use network_data, only: KN, NUML
+   subroutine givelinknum(K1, K2, L)
+      use network_data, only: KN, NUML
 
-     integer :: K1, K2, L
+      integer :: K1, K2, L
 
-     L = 0
-     do L = NUML, 1, -1
-        if (KN(1, L) == K1 .and. KN(2, L) == K2 .or. &
-            KN(1, L) == K2 .and. KN(2, L) == K1) then
-           return
-        end if
-     end do
+      L = 0
+      do L = NUML, 1, -1
+         if (KN(1, L) == K1 .and. KN(2, L) == K2 .or. &
+             KN(1, L) == K2 .and. KN(2, L) == K1) then
+            return
+         end if
+      end do
 
-  end subroutine givelinknum
+   end subroutine givelinknum
 
 end module m_givelinknum

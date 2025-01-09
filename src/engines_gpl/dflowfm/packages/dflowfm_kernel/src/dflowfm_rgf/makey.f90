@@ -32,34 +32,34 @@
 
 module m_makey
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: makey
+   public :: makey
 
 contains
 
-      subroutine MAKEY(XR, YR, MMAX, NMAX) ! terug naar graden SUBROUTINE MAKEY
-         use precision, only: dp
-         use M_SFERIC
-         use M_MISSING
+   subroutine MAKEY(XR, YR, MMAX, NMAX) ! terug naar graden SUBROUTINE MAKEY
+      use precision, only: dp
+      use M_SFERIC
+      use M_MISSING
 
-         integer :: mmax, nmax
+      integer :: mmax, nmax
 
-         real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), FI2
-         integer :: i, j
+      real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), FI2
+      integer :: i, j
 
-         do I = 1, MMAX
-            do J = 1, NMAX
-               if (XR(I, J) /= DXYMIS) then
-                  FI2 = atan(sinh(YR(I, J)))
-                  YR(I, J) = RD2DG * FI2
-                  XR(I, J) = RD2DG * XR(I, J)
-               end if
-            end do
+      do I = 1, MMAX
+         do J = 1, NMAX
+            if (XR(I, J) /= DXYMIS) then
+               FI2 = atan(sinh(YR(I, J)))
+               YR(I, J) = RD2DG * FI2
+               XR(I, J) = RD2DG * XR(I, J)
+            end if
          end do
-         return
-      end subroutine MAKEY
+      end do
+      return
+   end subroutine MAKEY
 
 end module m_makey

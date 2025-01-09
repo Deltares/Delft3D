@@ -32,35 +32,35 @@
 
 module m_setfixedweirscheme3onlink
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setfixedweirscheme3onlink
+   public :: setfixedweirscheme3onlink
 
 contains
 
-subroutine setfixedweirscheme3onlink(L)
-   use m_flowgeom
-   use m_flow
+   subroutine setfixedweirscheme3onlink(L)
+      use m_flowgeom
+      use m_flow
 
-   integer :: L, nn, n12, kk, LL
+      integer :: L, nn, n12, kk, LL
 
-   teta(L) = 1d0
+      teta(L) = 1d0
 
-   if (iadv(L) /= 24 .and. iadv(L) /= 25) then ! no change in advection for Tabellenboek and Villemonte
-      do nn = 1, 2
-         n12 = ln(nn, L)
-         do kk = 1, nd(n12)%lnx ! and flag non-21 links to perot incoming only
-            LL = abs(nd(n12)%ln(kk))
-            if (iadv(LL) < 21 .or. iadv(LL) > 25) then
-               iadv(LL) = 4
-            end if
-            teta(LL) = 1d0
+      if (iadv(L) /= 24 .and. iadv(L) /= 25) then ! no change in advection for Tabellenboek and Villemonte
+         do nn = 1, 2
+            n12 = ln(nn, L)
+            do kk = 1, nd(n12)%lnx ! and flag non-21 links to perot incoming only
+               LL = abs(nd(n12)%ln(kk))
+               if (iadv(LL) < 21 .or. iadv(LL) > 25) then
+                  iadv(LL) = 4
+               end if
+               teta(LL) = 1d0
+            end do
          end do
-      end do
-   end if
+      end if
 
-end subroutine setfixedweirscheme3onlink
+   end subroutine setfixedweirscheme3onlink
 
 end module m_setfixedweirscheme3onlink

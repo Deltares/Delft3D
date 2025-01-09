@@ -32,22 +32,22 @@
 
 module m_remove_masked_netcells
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: remove_masked_netcells
+   public :: remove_masked_netcells
 
-interface
+   interface
 
-   !> remove "dry"masked netcells (cellmask==1) from netcell administration
-   !> typically used in combination with a drypoints file (samples or polygons)
-   !> \see polygon_to_cellmask
-   !> note: we do not want to alter the netnodes and netlinks and will therefore not change kn and nod%lin
-   module subroutine remove_masked_netcells()
-      implicit none
-   end subroutine remove_masked_netcells
+      !> remove "dry"masked netcells (cellmask==1) from netcell administration
+      !> typically used in combination with a drypoints file (samples or polygons)
+      !> \see polygon_to_cellmask
+      !> note: we do not want to alter the netnodes and netlinks and will therefore not change kn and nod%lin
+      module subroutine remove_masked_netcells()
+         implicit none
+      end subroutine remove_masked_netcells
 
-end interface
+   end interface
 
 end module m_remove_masked_netcells

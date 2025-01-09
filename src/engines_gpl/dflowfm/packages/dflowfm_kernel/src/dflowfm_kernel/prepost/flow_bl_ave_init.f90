@@ -32,28 +32,28 @@
 
 module m_flow_bl_ave_init
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: flow_bl_ave_init
+   public :: flow_bl_ave_init
 
 contains
 
-subroutine flow_bl_ave_init()
+   subroutine flow_bl_ave_init()
 
-   use m_flowgeom, only: bl_ave, bl_ave0, ndx
-   use m_missing, only: dmiss
-   use m_alloc, only: realloc, aerr
+      use m_flowgeom, only: bl_ave, bl_ave0, ndx
+      use m_missing, only: dmiss
+      use m_alloc, only: realloc, aerr
 
-   integer :: ierr
+      integer :: ierr
 
-   call realloc(bl_ave, ndx, keepExisting=.false., fill=dmiss, stat=ierr)
-   call aerr('bl_ave(ndx)', ierr, ndx)
+      call realloc(bl_ave, ndx, keepExisting=.false., fill=dmiss, stat=ierr)
+      call aerr('bl_ave(ndx)', ierr, ndx)
 
-   call realloc(bl_ave0, ndx, keepExisting=.false., fill=dmiss, stat=ierr)
-   call aerr('bl_ave0(ndx)', ierr, ndx)
+      call realloc(bl_ave0, ndx, keepExisting=.false., fill=dmiss, stat=ierr)
+      call aerr('bl_ave0(ndx)', ierr, ndx)
 
-end subroutine flow_bl_ave_init
+   end subroutine flow_bl_ave_init
 
 end module m_flow_bl_ave_init

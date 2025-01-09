@@ -32,51 +32,51 @@
 !
 module m_flow_bedforminit
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: flow_bedforminit
+   public :: flow_bedforminit
 
 contains
 
-subroutine flow_bedforminit(stage)
-   use m_bedform
-   use m_bedform_io, only: fm_rdbedformpar, fm_initbedformpar
-   use unstruc_model, only: md_bedformfile
-   use m_flowparameters, only: jawave, modind
-   use MessageHandling, only: mess, LEVEL_FATAL
+   subroutine flow_bedforminit(stage)
+      use m_bedform
+      use m_bedform_io, only: fm_rdbedformpar, fm_initbedformpar
+      use unstruc_model, only: md_bedformfile
+      use m_flowparameters, only: jawave, modind
+      use MessageHandling, only: mess, LEVEL_FATAL
 
-   logical :: error
-   integer, intent(in) :: stage
+      logical :: error
+      integer, intent(in) :: stage
 
-   if (stage == 1) then
+      if (stage == 1) then
 
-      call fm_initbedformpar(bfmpar, error) ! need to initialize the data structure for
-      ! eg dredge, tauwave and bed roughness, even if no bedformfile there..
-      ! this resets bfmpar%lfbedfrmrou = .true. to .false., so need two stages:
-      ! one before sedmorinit, and one after
-      if (error) then
-         call mess(LEVEL_FATAL, 'unstruc::flow_bedforminit - Error in initialisation of bedform module.')
-         return
+         call fm_initbedformpar(bfmpar, error) ! need to initialize the data structure for
+         ! eg dredge, tauwave and bed roughness, even if no bedformfile there..
+         ! this resets bfmpar%lfbedfrmrou = .true. to .false., so need two stages:
+         ! one before sedmorinit, and one after
+         if (error) then
+            call mess(LEVEL_FATAL, 'unstruc::flow_bedforminit - Error in initialisation of bedform module.')
+            return
+         end if
+
+      else if (stage == 2) then
+
+         if (.not. bfm_included) return
+         !
+         call fm_rdbedformpar(bfmpar, md_bedformfile, error)
+         if (error) then
+            call mess(LEVEL_FATAL, 'unstruc::flow_bedforminit - Error in reading of bedform file.')
+            return
+         end if
+         !
+         ! safety: running waves with rouwav=vr04 can happen without sediment, or trachytopes for that matter
+         if (jawave > 0 .and. modind == 9) then
+            bfmpar%lfbedfrmrou = .true.
+         end if
       end if
 
-   else if (stage == 2) then
-
-      if (.not. bfm_included) return
-      !
-      call fm_rdbedformpar(bfmpar, md_bedformfile, error)
-      if (error) then
-         call mess(LEVEL_FATAL, 'unstruc::flow_bedforminit - Error in reading of bedform file.')
-         return
-      end if
-      !
-      ! safety: running waves with rouwav=vr04 can happen without sediment, or trachytopes for that matter
-      if (jawave > 0 .and. modind == 9) then
-         bfmpar%lfbedfrmrou = .true.
-      end if
-   end if
-
-end subroutine flow_bedforminit
+   end subroutine flow_bedforminit
 
 end module m_flow_bedforminit

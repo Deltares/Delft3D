@@ -32,59 +32,58 @@
 
 !> snap network meshlines to nearest land boundary
 module m_nettoland
-use m_snap_to_landboundary, only: snap_to_landboundary
+   use m_snap_to_landboundary, only: snap_to_landboundary
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: nettoland
+   public :: nettoland
 
 contains
 
-subroutine nettoland()
+   subroutine nettoland()
 
-   use m_find_nearest_meshline, only: find_nearest_meshline
-   use m_confrm
-   use M_netw
-   use M_MISSING
-   use m_observations_data
-   use gridoperations
-   use m_makenetnodescoding
+      use m_find_nearest_meshline, only: find_nearest_meshline
+      use m_confrm
+      use M_netw
+      use M_MISSING
+      use m_observations_data
+      use gridoperations
+      use m_makenetnodescoding
 
-   integer :: ja
+      integer :: ja
 
-   call findcells(100)
-   call makenetnodescoding()
+      call findcells(100)
+      call makenetnodescoding()
 
-   ja = 1
-   call confrm('Do you want to snap net boundary to the land boundary only?', ja)
-   if (ja == 1) then
-      call find_nearest_meshline(2) ! net boundaries only
-      call snap_to_landboundary()
-   else
       ja = 1
-      call confrm('Do you want to snap inner net to the land boundary too?', ja)
+      call confrm('Do you want to snap net boundary to the land boundary only?', ja)
       if (ja == 1) then
-         call find_nearest_meshline(3)
+         call find_nearest_meshline(2) ! net boundaries only
          call snap_to_landboundary()
       else
          ja = 1
-         call confrm('Do you want to snap all net to the land boundary?', ja)
+         call confrm('Do you want to snap inner net to the land boundary too?', ja)
          if (ja == 1) then
-            call find_nearest_meshline(4)
+            call find_nearest_meshline(3)
             call snap_to_landboundary()
+         else
+            ja = 1
+            call confrm('Do you want to snap all net to the land boundary?', ja)
+            if (ja == 1) then
+               call find_nearest_meshline(4)
+               call snap_to_landboundary()
+            end if
          end if
       end if
-   end if
 
-   if (ja == 1) then
-      call confrm('Are you satisfied?', ja)
-      if (ja /= 1) call restore()
-   end if
+      if (ja == 1) then
+         call confrm('Are you satisfied?', ja)
+         if (ja /= 1) call restore()
+      end if
 
-   return
-end subroutine nettoland
+      return
+   end subroutine nettoland
 
 end module m_nettoland

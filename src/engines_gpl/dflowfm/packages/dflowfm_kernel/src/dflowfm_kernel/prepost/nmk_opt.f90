@@ -33,26 +33,26 @@
 !>  determine optimum nmk in fliplinks, depending on link L
 module m_nmk_opt
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: nmk_opt
+   public :: nmk_opt
 
 contains
 
-integer function nmk_opt(k)
-   use m_netw
+   integer function nmk_opt(k)
+      use m_netw
 
-   integer, intent(in) :: k !< node number
+      integer, intent(in) :: k !< node number
 
 !  default value
-   nmk_opt = 6
+      nmk_opt = 6
 
-   if (nb(k) == 2) nmk_opt = 4
-   if (nb(k) == 3) nmk_opt = 3
+      if (nb(k) == 2) nmk_opt = 4
+      if (nb(k) == 3) nmk_opt = 3
 
-   return
-end function nmk_opt
+      return
+   end function nmk_opt
 
 end module m_nmk_opt

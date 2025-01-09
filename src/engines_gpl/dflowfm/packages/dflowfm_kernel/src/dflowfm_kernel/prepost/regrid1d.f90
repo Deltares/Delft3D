@@ -32,11 +32,11 @@
 
 module m_regrid1d
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: regrid1d
+   public :: regrid1d
 
 contains
 

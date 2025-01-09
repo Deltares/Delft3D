@@ -32,45 +32,45 @@
 
 module m_isflowlink
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: isflowlink
+   public :: isflowlink
 
 contains
 
-subroutine ISflowlink(XP, YP, LL) ! IS THIS A flow NODE OR A flow LINK ?
-   use precision, only: dp
-   use m_netw, only: xk, yk
-   use m_flowgeom
-   use m_wearelt
-   use m_disln
+   subroutine ISflowlink(XP, YP, LL) ! IS THIS A flow NODE OR A flow LINK ?
+      use precision, only: dp
+      use m_netw, only: xk, yk
+      use m_flowgeom
+      use m_wearelt
+      use m_disln
 
-   real(kind=dp) :: XP, YP
-   integer :: LL
-   integer :: l, k1, k2
-   real(kind=dp) :: xa, ya
+      real(kind=dp) :: XP, YP
+      integer :: LL
+      integer :: l, k1, k2
+      real(kind=dp) :: xa, ya
 
-   LL = 0
+      LL = 0
 
-   do L = 1, lnx
-      if (L > lnx1D .and. L <= lnxi) then
-         k1 = lncn(1, l); k2 = lncn(2, L) ! eigenlijk 3 en 4
-         xa = 0.5 * (xk(k1) + xk(k2)); ya = 0.5 * (yk(k1) + yk(k2))
-      else
-         k1 = ln(1, L); k2 = ln(2, L)
-         xa = 0.5 * (xz(k1) + xz(k2)); ya = 0.5 * (yz(k1) + yz(k2))
-      end if
+      do L = 1, lnx
+         if (L > lnx1D .and. L <= lnxi) then
+            k1 = lncn(1, l); k2 = lncn(2, L) ! eigenlijk 3 en 4
+            xa = 0.5 * (xk(k1) + xk(k2)); ya = 0.5 * (yk(k1) + yk(k2))
+         else
+            k1 = ln(1, L); k2 = ln(2, L)
+            xa = 0.5 * (xz(k1) + xz(k2)); ya = 0.5 * (yz(k1) + yz(k2))
+         end if
 
-      if (abs(XA - XP) < 3 * RCIR .and. abs(YA - YP) < 3 * RCIR) then
-         LL = L
-         call DISLN(LL)
-         return
-      end if
-   end do
+         if (abs(XA - XP) < 3 * RCIR .and. abs(YA - YP) < 3 * RCIR) then
+            LL = L
+            call DISLN(LL)
+            return
+         end if
+      end do
 
-   return
-end subroutine ISflowlink
+      return
+   end subroutine ISflowlink
 
 end module m_isflowlink

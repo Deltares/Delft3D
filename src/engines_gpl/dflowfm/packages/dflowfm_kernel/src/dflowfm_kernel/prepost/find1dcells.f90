@@ -59,7 +59,7 @@ contains
       integer :: ierror
       integer :: nump1d, nump1d_i
 #ifdef _OPENMP
-	  integer :: temp_threads
+      integer :: temp_threads
 #endif
       ierror = 1
 

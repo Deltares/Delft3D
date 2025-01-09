@@ -32,34 +32,34 @@
 
 module m_wrilan
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: wrilan
+   public :: wrilan
 
 contains
 
-      subroutine WRILAN(MPOL)
-         use precision, only: dp
-         use M_LANDBOUNDARY
-         use m_wrildb
+   subroutine WRILAN(MPOL)
+      use precision, only: dp
+      use M_LANDBOUNDARY
+      use m_wrildb
 
-         integer :: mpol
-         integer :: mx
-         real(kind=dp), allocatable :: XL(:), YL(:)
-         real(kind=dp) :: ZL(0) ! no z-values
-         character(len=1) :: names(1) ! no names
+      integer :: mpol
+      integer :: mx
+      real(kind=dp), allocatable :: XL(:), YL(:)
+      real(kind=dp) :: ZL(0) ! no z-values
+      character(len=1) :: names(1) ! no names
 
-         MX = MAXLAN
-         allocate (XL(MX), YL(MX))
-         XL(1:MXLAN) = XLAN(1:MXLAN)
-         YL(1:MXLAN) = YLAN(1:MXLAN)
-         names = ' '
+      MX = MAXLAN
+      allocate (XL(MX), YL(MX))
+      XL(1:MXLAN) = XLAN(1:MXLAN)
+      YL(1:MXLAN) = YLAN(1:MXLAN)
+      names = ' '
 
-         call WRILDB(MPOL, XL, YL, MXLAN, nclan, MXLAN, ZL, 0, names, 1, 1)
-         deallocate (XL, YL)
+      call WRILDB(MPOL, XL, YL, MXLAN, nclan, MXLAN, ZL, 0, names, 1, 1)
+      deallocate (XL, YL)
 
-      end
+   end
 
 end module m_wrilan

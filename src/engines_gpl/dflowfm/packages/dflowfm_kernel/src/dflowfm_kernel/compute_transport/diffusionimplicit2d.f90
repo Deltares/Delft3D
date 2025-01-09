@@ -31,7 +31,7 @@
 !
 
 module m_diffusionimplicit2d
-use m_solve_guus, only: solve_matrix
+   use m_solve_guus, only: solve_matrix
 
    implicit none
 

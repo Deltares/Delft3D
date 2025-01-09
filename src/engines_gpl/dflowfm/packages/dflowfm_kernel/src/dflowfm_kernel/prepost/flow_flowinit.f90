@@ -210,7 +210,7 @@ contains
          return
       end if
       call mess(LEVEL_INFO, 'Done initializing external forcings.')
-      
+
       ! it has to be called after EC module initialization
       call read_moving_stations(md_obsfile)
 

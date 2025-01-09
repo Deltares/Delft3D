@@ -30,7 +30,7 @@
 !
 !
 module m_osc
-use m_histor, only: histor
+   use m_histor, only: histor
 
    implicit none
 contains

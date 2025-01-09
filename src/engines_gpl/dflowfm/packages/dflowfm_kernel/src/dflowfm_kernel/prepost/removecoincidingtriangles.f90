@@ -32,11 +32,11 @@
 
 module m_removecoincidingtriangles
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: removecoincidingtriangles
+   public :: removecoincidingtriangles
 
 contains
 

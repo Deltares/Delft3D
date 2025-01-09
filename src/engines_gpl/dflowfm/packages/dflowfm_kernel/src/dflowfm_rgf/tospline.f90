@@ -32,36 +32,36 @@
 
 module m_tospline
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: tospline
+   public :: tospline
 
 contains
 
-       subroutine TOSPLINE(XX, YY, XV, YV)
-          use m_dismin, only: dismin
-          use precision, only: dp
-          use M_SPLINES
-          use m_spline
-          use m_get_ij
+   subroutine TOSPLINE(XX, YY, XV, YV)
+      use m_dismin, only: dismin
+      use precision, only: dp
+      use M_SPLINES
+      use m_spline
+      use m_get_ij
 
-          real(kind=dp) :: XX, YY, XV, YV
+      real(kind=dp) :: XX, YY, XV, YV
 
-          real(kind=dp) :: XI(maxsplen), XI2(maxsplen), YI(maxsplen), YI2(maxsplen)
-          real(kind=dp) :: TV, DIS
-          integer :: IN, NUMPI
+      real(kind=dp) :: XI(maxsplen), XI2(maxsplen), YI(maxsplen), YI2(maxsplen)
+      real(kind=dp) :: TV, DIS
+      integer :: IN, NUMPI
 
-          IN = 1 ! Pick first spline
-          call NUMP(IN, NUMPI)
-          TV = NUMPI / 2d0
-          call GETIJ(XSP, XI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
-          call GETIJ(YSP, YI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
-          call SPLINE(XI, NUMPI, XI2)
-          call SPLINE(YI, NUMPI, YI2)
-          call DISMIN(XI, XI2, YI, YI2, XX, YY, NUMPI, DIS, TV, XV, YV)
-          return
-       end subroutine tospline
+      IN = 1 ! Pick first spline
+      call NUMP(IN, NUMPI)
+      TV = NUMPI / 2d0
+      call GETIJ(XSP, XI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
+      call GETIJ(YSP, YI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
+      call SPLINE(XI, NUMPI, XI2)
+      call SPLINE(YI, NUMPI, YI2)
+      call DISMIN(XI, XI2, YI, YI2, XX, YY, NUMPI, DIS, TV, XV, YV)
+      return
+   end subroutine tospline
 
 end module m_tospline

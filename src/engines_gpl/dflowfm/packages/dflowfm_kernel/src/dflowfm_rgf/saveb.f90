@@ -32,25 +32,25 @@
 
 module m_saveb
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: saveb
+   public :: saveb
 
 contains
 
-      subroutine SAVEB(NPUT)
-         use m_grid_block
+   subroutine SAVEB(NPUT)
+      use m_grid_block
 
-         integer :: nput
+      integer :: nput
 
-         MB2 = MB
-         NB2 = NB
+      MB2 = MB
+      NB2 = NB
 
-         NPT2 = NPT
-         NPUTO = NPUT
-         return
-      end subroutine saveb
+      NPT2 = NPT
+      NPUTO = NPUT
+      return
+   end subroutine saveb
 
 end module m_saveb

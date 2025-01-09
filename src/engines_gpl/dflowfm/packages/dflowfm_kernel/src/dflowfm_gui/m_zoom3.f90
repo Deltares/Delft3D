@@ -32,19 +32,19 @@
 
 module m_zoom3
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: zoom3
+   public :: zoom3
 
-interface
+   interface
 
       module subroutine ZOOM3(KEY, NPUT)
          implicit none
          integer :: key
          integer :: nput
       end subroutine ZOOM3
-end interface
+   end interface
 
 end module m_zoom3

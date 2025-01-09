@@ -27,7 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-
 !> Performs a clean program stop upon errors.
 !! This routine is automatically called from the MessageHandling module.
 subroutine unstruc_errorhandler(level)

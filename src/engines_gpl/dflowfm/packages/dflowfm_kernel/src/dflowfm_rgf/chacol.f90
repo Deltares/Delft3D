@@ -32,28 +32,28 @@
 
 module m_chacol
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: chacol
+   public :: chacol
 
 contains
 
-      subroutine CHACOL(X, mmax, nmax, J1, J2, NUMSPL)
-         use precision, only: dp
+   subroutine CHACOL(X, mmax, nmax, J1, J2, NUMSPL)
+      use precision, only: dp
 
-         integer :: mmax, nmax, j1, j2, numspl
-         real(kind=dp) :: X(MMAX, NMAX)
-         integer :: i
-         real(kind=dp) :: xh
+      integer :: mmax, nmax, j1, j2, numspl
+      real(kind=dp) :: X(MMAX, NMAX)
+      integer :: i
+      real(kind=dp) :: xh
 
-         do I = 1, NUMSPL
-            XH = X(I, J1)
-            X(I, J1) = X(I, J2)
-            X(I, J2) = XH
-         end do
-         return
-      end subroutine chacol
+      do I = 1, NUMSPL
+         XH = X(I, J1)
+         X(I, J1) = X(I, J2)
+         X(I, J2) = XH
+      end do
+      return
+   end subroutine chacol
 
 end module m_chacol

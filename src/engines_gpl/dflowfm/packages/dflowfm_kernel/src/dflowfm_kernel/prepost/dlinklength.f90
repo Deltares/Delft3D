@@ -33,26 +33,26 @@
 !>    gives link length
 submodule(m_dlinklength) m_dlinklength_
 
-implicit none
+   implicit none
 
 contains
 
-      real(kind=dp) module function dLinklength(L)
-         use precision, only: dp
-         use network_data, only: xk, yk, kn
-         use m_missing, only: dmiss
-         use m_sferic, only: jsferic, jasfer3D
-         use geometry_module, only: dbdistance
+   real(kind=dp) module function dLinklength(L)
+      use precision, only: dp
+      use network_data, only: xk, yk, kn
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+      use geometry_module, only: dbdistance
 
-         integer, intent(in) :: L !< link number
-         integer :: La, k1, k2
+      integer, intent(in) :: L !< link number
+      integer :: La, k1, k2
 
-         La = abs(L)
-         k1 = kn(1, La)
-         k2 = kn(2, La)
+      La = abs(L)
+      k1 = kn(1, La)
+      k2 = kn(2, La)
 
-         dLinklength = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
+      dLinklength = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
 
-      end function dLinklength
+   end function dLinklength
 
 end submodule m_dlinklength_

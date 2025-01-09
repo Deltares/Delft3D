@@ -36,101 +36,100 @@
 !! The direction and start cell is determined by specifying a single 'cross'
 !! link that will be split.
 module m_insert_netline
-use m_splitlink, only: splitlink
+   use m_splitlink, only: splitlink
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: insert_netline
+   public :: insert_netline
 
 contains
 
-recursive subroutine insert_netline(xp, yp, L_)
-   use precision, only: dp
-   use m_teknet
-   use m_netw
-   use gridoperations
-   use m_readyy
-   use m_is_link
+   recursive subroutine insert_netline(xp, yp, L_)
+      use precision, only: dp
+      use m_teknet
+      use m_netw
+      use gridoperations
+      use m_readyy
+      use m_is_link
 
-   real(kind=dp), intent(in) :: xp, yp !< link coordinates (used only if L_.eq.0)
-   integer, intent(in) :: L_ !< link number (set to 0 first time)
+      real(kind=dp), intent(in) :: xp, yp !< link coordinates (used only if L_.eq.0)
+      integer, intent(in) :: L_ !< link number (set to 0 first time)
 
-   real(kind=dp) :: zp
-   real(kind=dp), parameter :: dcostol = 0.25d0
+      real(kind=dp) :: zp
+      real(kind=dp), parameter :: dcostol = 0.25d0
 
-   integer, dimension(2) :: Lnext ! next links in recursion
-   integer :: Nnext ! number of next links
-   integer :: i, ic, ja, kk, kknext, L, N, N2Dcells
-   integer :: ierror
+      integer, dimension(2) :: Lnext ! next links in recursion
+      integer :: Nnext ! number of next links
+      integer :: i, ic, ja, kk, kknext, L, N, N2Dcells
+      integer :: ierror
 
-   ierror = 1
+      ierror = 1
 
 !  initialization: find link
-   if (L_ == 0) then
-      if (netstat /= NETSTAT_OK) then
-         call findcells(100)
+      if (L_ == 0) then
+         if (netstat /= NETSTAT_OK) then
+            call findcells(100)
+         end if
+
+         L = 0
+         call islink(L, xp, yp, zp)
+
+         if (L == 0) goto 1234
+
+         call teknet(ja) ! whipe out previous net
+         call readyy('Inserting meshline', 0d0)
+      else
+         L = L_
       end if
 
-      L = 0
-      call islink(L, xp, yp, zp)
+      Nnext = 0
+      Lnext = 0
 
-      if (L == 0) goto 1234
+      if (kn(3, L) == 2) then
+         N2Dcells = lnn(L)
+      else ! 1D
+         N2Dcells = 0
+      end if
 
-      call teknet(ja) ! whipe out previous net
-      call readyy('Inserting meshline', 0d0)
-   else
-      L = L_
-   end if
+      do i = 1, N2Dcells
+         ic = lne(i, L)
+         N = netcell(ic)%N
+         if (N /= 4) cycle
+         kk = 1; do while (netcell(ic)%lin(kk) /= L .and. kk < N); kk = kk + 1; end do
+         if (netcell(ic)%lin(kk) /= L) cycle
+         kknext = kk + 2; if (kknext > N) kknext = kknext - N
+         Nnext = Nnext + 1
+         Lnext(Nnext) = netcell(ic)%lin(kknext)
+      end do
 
-   Nnext = 0
-   Lnext = 0
-
-   if (kn(3, L) == 2) then
-      N2Dcells = lnn(L)
-   else ! 1D
-      N2Dcells = 0
-   end if
-
-   do i = 1, N2Dcells
-      ic = lne(i, L)
-      N = netcell(ic)%N
-      if (N /= 4) cycle
-      kk = 1; do while (netcell(ic)%lin(kk) /= L .and. kk < N); kk = kk + 1; end do
-      if (netcell(ic)%lin(kk) /= L) cycle
-      kknext = kk + 2; if (kknext > N) kknext = kknext - N
-      Nnext = Nnext + 1
-      Lnext(Nnext) = netcell(ic)%lin(kknext)
-   end do
-
-   call splitlink(0d0, 0d0, L, dcostol, 1, ierror)
-   if (ierror /= 0) goto 1234
+      call splitlink(0d0, 0d0, L, dcostol, 1, ierror)
+      if (ierror /= 0) goto 1234
 !   ja = 1
 !   call confrm(' ', ja)
 
-   do i = 1, Nnext
+      do i = 1, Nnext
 !     proceed with links that are inside the selecting polygon
 !      if ( kc(kn(1,Lnext(i))).gt.0 .and. kc(kn(2,Lnext(i))).gt.0 ) then
-      if (lc(Lnext(i)) > 0 .and. kn(1, Lnext(i)) > 0 .and. kn(2, Lnext(i)) > 0) then ! Lnext(i) may have been disabled/deleted in the recursion
-         call insert_netline(0d0, 0d0, Lnext(i))
-      else
-         continue
-      end if
-   end do
+         if (lc(Lnext(i)) > 0 .and. kn(1, Lnext(i)) > 0 .and. kn(2, Lnext(i)) > 0) then ! Lnext(i) may have been disabled/deleted in the recursion
+            call insert_netline(0d0, 0d0, Lnext(i))
+         else
+            continue
+         end if
+      end do
 
-   ierror = 0
+      ierror = 0
 
 !  error handling
-1234 continue
+1234  continue
 
-   if (L_ == 0) then
-      call readyy(' ', -1d0)
-      call teknet(ja) ! plot new net
-   end if
+      if (L_ == 0) then
+         call readyy(' ', -1d0)
+         call teknet(ja) ! plot new net
+      end if
 
-   return
-end subroutine insert_netline
+      return
+   end subroutine insert_netline
 
 end module m_insert_netline

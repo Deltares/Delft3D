@@ -33,52 +33,52 @@
 !> link-based mesh-topology information
 module m_topo_info
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: topo_info
+   public :: topo_info
 
 contains
 
-real(kind=dp) function topo_info(L)
-   use precision, only: dp
-   use m_comp_ntopo
-   use m_netw
-   use m_landboundary
-   use m_missing
+   real(kind=dp) function topo_info(L)
+      use precision, only: dp
+      use m_comp_ntopo
+      use m_netw
+      use m_landboundary
+      use m_missing
 
-   integer :: L !< link number
+      integer :: L !< link number
 
-   integer :: k1, k2, kL, kR
-   integer :: icellL, icellR
-   integer :: n
-   integer :: jalandbound ! take landboundary into account (1) or not (0)
+      integer :: k1, k2, kL, kR
+      integer :: icellL, icellR
+      integer :: n
+      integer :: jalandbound ! take landboundary into account (1) or not (0)
 
 !  default
-   topo_info = DMISS
+      topo_info = DMISS
 
 !  check if administration is in order
-   if (L > ubound(lnn, 1)) goto 1234
+      if (L > ubound(lnn, 1)) goto 1234
 
 !  check if the landboundary can be taken into account (not necessarily the up-to-date)
-   if (ubound(lanseg_map, 1) >= numk) then
-      jalandbound = 1
-   else
-      jalandbound = 0
-   end if
+      if (ubound(lanseg_map, 1) >= numk) then
+         jalandbound = 1
+      else
+         jalandbound = 0
+      end if
 
-   call comp_ntopo(L, jalandbound, k1, k2, kL, kR, icellL, icellR, n)
+      call comp_ntopo(L, jalandbound, k1, k2, kL, kR, icellL, icellR, n)
 
-   topo_info = -dble(n)
+      topo_info = -dble(n)
 
-   if (topo_info <= 0d0) topo_info = DMISS
+      if (topo_info <= 0d0) topo_info = DMISS
 
-   return
+      return
 
-1234 continue ! error handling
-   return
+1234  continue ! error handling
+      return
 
-end function topo_info
+   end function topo_info
 
 end module m_topo_info

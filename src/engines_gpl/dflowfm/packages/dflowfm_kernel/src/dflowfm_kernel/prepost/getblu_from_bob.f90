@@ -34,51 +34,50 @@
 !! based on the bob(1:2,L) values, the kcu link type and conveyance2D setting.
 module m_getblu_from_bob
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: getblu_from_bob
+   public :: getblu_from_bob
 
 contains
 
-subroutine getblu_from_bob(L, iup, blu)
-   use precision, only: dp
-   use m_flowgeom, only: bob, lnx1D, kcu, jagrounlay, grounlay
-   use m_flow, only: kmx
-   use m_flowparameters, only: jaconveyance2D
+   subroutine getblu_from_bob(L, iup, blu)
+      use precision, only: dp
+      use m_flowgeom, only: bob, lnx1D, kcu, jagrounlay, grounlay
+      use m_flow, only: kmx
+      use m_flowparameters, only: jaconveyance2D
 
-   integer, intent(in) :: L !< Flow link number.
-   integer, intent(in) :: iup !< Upwind node index for this flow link (either 1 or 2, use 0 if irrelevant).
-   real(kind=dp), intent(out) :: blu !< Resulting bed level at u-point.
+      integer, intent(in) :: L !< Flow link number.
+      integer, intent(in) :: iup !< Upwind node index for this flow link (either 1 or 2, use 0 if irrelevant).
+      real(kind=dp), intent(out) :: blu !< Resulting bed level at u-point.
 
-   ! NOTE: this code originates from sethu() originally.
+      ! NOTE: this code originates from sethu() originally.
 
-   if (iup /= 0) then
-      ! TODO: while documenting 1D2D code, we discovered the following undesirable bup:
-      ! it should by default be the min(bob1/2), if conveyance2D < 1. Not yet changed.
-      blu = bob(iup, L)
-   else
-      blu = min(bob(1, L), bob(2, L))
-   end if
-
-   if (L <= lnx1D) then ! 1D
-      if (kcu(L) == 4 .and. jaconveyance2D >= 1) then
-         blu = min(bob(1, L), bob(2, L))
-      else if (kcu(L) == 5 .or. kcu(L) == 7) then
-         blu = max(bob(1, L), bob(2, L))
+      if (iup /= 0) then
+         ! TODO: while documenting 1D2D code, we discovered the following undesirable bup:
+         ! it should by default be the min(bob1/2), if conveyance2D < 1. Not yet changed.
+         blu = bob(iup, L)
       else
-         blu = max(bob(1, L), bob(2, L))
-      end if
-      if (jagrounlay > 0) then
-         blu = blu + grounlay(L)
+         blu = min(bob(1, L), bob(2, L))
       end if
 
-   else if (kmx == 0 .and. jaconveyance2D >= 1) then
-      blu = min(bob(1, L), bob(2, L))
-   end if
+      if (L <= lnx1D) then ! 1D
+         if (kcu(L) == 4 .and. jaconveyance2D >= 1) then
+            blu = min(bob(1, L), bob(2, L))
+         else if (kcu(L) == 5 .or. kcu(L) == 7) then
+            blu = max(bob(1, L), bob(2, L))
+         else
+            blu = max(bob(1, L), bob(2, L))
+         end if
+         if (jagrounlay > 0) then
+            blu = blu + grounlay(L)
+         end if
 
-end subroutine getblu_from_bob
+      else if (kmx == 0 .and. jaconveyance2D >= 1) then
+         blu = min(bob(1, L), bob(2, L))
+      end if
 
+   end subroutine getblu_from_bob
 
 end module m_getblu_from_bob

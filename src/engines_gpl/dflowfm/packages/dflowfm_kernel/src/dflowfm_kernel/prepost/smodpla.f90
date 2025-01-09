@@ -29,42 +29,42 @@
 
 module m_smodpla
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: smodpla
+   public :: smodpla
 
 contains
 
-      subroutine SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH DESIRED
-         use precision, only: dp
-         use M_ALLOC
+   subroutine SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH DESIRED
+      use precision, only: dp
+      use M_ALLOC
 
-         integer :: npl
-         real(kind=dp) :: DPLA(NPL), DXS(NPL)
-         real(kind=dp), allocatable :: DH(:)
+      integer :: npl
+      real(kind=dp) :: DPLA(NPL), DXS(NPL)
+      real(kind=dp), allocatable :: DH(:)
 
-         real(kind=dp) :: a1
-         real(kind=dp) :: a2
-         integer :: k
-         integer :: n
+      real(kind=dp) :: a1
+      real(kind=dp) :: a2
+      integer :: k
+      integer :: n
 
-         call REALLOC(DH, NPL)
+      call REALLOC(DH, NPL)
 
-         do K = 1, 5
+      do K = 1, 5
 
-            DH = DPLA
-            do N = 2, NPL - 1
-               a1 = 0.5d0 * (dxs(n - 1) + dxs(N))
-               a2 = 0.5d0 * (dxs(n + 1) + dxs(N))
-               DPLA(N) = (a2 * DH(N - 1) + a1 * DH(N + 1)) / (a2 + a1)
-            end do
-
+         DH = DPLA
+         do N = 2, NPL - 1
+            a1 = 0.5d0 * (dxs(n - 1) + dxs(N))
+            a2 = 0.5d0 * (dxs(n + 1) + dxs(N))
+            DPLA(N) = (a2 * DH(N - 1) + a1 * DH(N + 1)) / (a2 + a1)
          end do
 
-         deallocate (DH)
+      end do
 
-      end subroutine SMODPLA
+      deallocate (DH)
+
+   end subroutine SMODPLA
 
 end module m_smodpla

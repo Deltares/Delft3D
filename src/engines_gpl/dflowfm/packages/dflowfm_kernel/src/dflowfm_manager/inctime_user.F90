@@ -62,11 +62,11 @@
 !
 module m_inctime_user
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: inctime_user
+   public :: inctime_user
 
 contains
 
@@ -78,16 +78,16 @@ contains
 ! todo: turkin, tureps en vicwwu naar boven toe doorzetten bij weer nat maken
 ! todo, wcxyl op randen is niet goed doordat acl op randen niet goed is doordat meteomodule niet werkt met xz,yz in gespiegelde
 ! binnencelpunten. graag goed zetten
- subroutine inctime_user()
-    use m_flowtimes
+   subroutine inctime_user()
+      use m_flowtimes
 
-    if (time1 >= time_user) then
-       ! If not, current time_user was not yet reached (user interrupt in interface)
-       time_user = time_user + dt_user !
-       ! time_user = max(time_user, time1)              ! safety for now only, until sobektimestepping is introduced
-       time_user = min(time_user, tstop_user)
-       dnt_user = dnt_user + 1 ! todo from, to
-    end if
- end subroutine inctime_user
+      if (time1 >= time_user) then
+         ! If not, current time_user was not yet reached (user interrupt in interface)
+         time_user = time_user + dt_user !
+         ! time_user = max(time_user, time1)              ! safety for now only, until sobektimestepping is introduced
+         time_user = min(time_user, tstop_user)
+         dnt_user = dnt_user + 1 ! todo from, to
+      end if
+   end subroutine inctime_user
 
 end module m_inctime_user

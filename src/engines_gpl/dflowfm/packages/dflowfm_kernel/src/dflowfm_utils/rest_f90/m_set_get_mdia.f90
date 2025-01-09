@@ -32,11 +32,11 @@
 
 module m_set_get_mdia
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setmdia,  getmdia
+   public :: setmdia, getmdia
 
    interface setmdia
       module subroutine setmdia(mdi)

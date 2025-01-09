@@ -32,29 +32,29 @@ module m_solve_petsc
    implicit none
 
    private
-   
+
    public :: startpetsc, stoppetsc, ini_petsc, preparePETSCsolver, conjugategradientPETSC
-   
+
    interface
       module subroutine startpetsc()
          implicit none
       end subroutine startpetsc
-   
+
       module subroutine stoppetsc()
          implicit none
       end subroutine stoppetsc
-       
+
       module subroutine ini_petsc(Ndx, ierror)
          implicit none
          integer, intent(in) :: Ndx !< number of cells
          integer, intent(out) :: ierror !< error (1) or not (0)
       end subroutine ini_petsc
-    
+
       module subroutine preparePETSCsolver(japipe)
          implicit none
          integer, intent(in) :: japipe !< use pipelined CG (1) or not (0)
       end subroutine preparePETSCsolver
-   
+
       module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
          use precision, only: dp
          implicit none
