@@ -32,9 +32,6 @@ get_fortran_source_files(${dflowfm_gui_path} dflowfm_gui)
 set(dflowfm_io_path ${src_path}/dflowfm_io)
 get_fortran_source_files(${dflowfm_io_path} dflowfm_io)
 
-list(REMOVE_ITEM dflowfm_io ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/io_openfoam.f90
-                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/read_forcings.f90)
-
 set(dflowfm_kernel_path ${src_path}/dflowfm_kernel)
 set(dflowfm_kernel_compute_path ${dflowfm_kernel_path}/compute)
 set(dflowfm_kernel_compute_hydrology_path ${dflowfm_kernel_path}/compute_hydrology)
@@ -65,8 +62,6 @@ get_fortran_source_files(${dflowfm_kernel_path}/main dflowfm_kernel_main)
 get_fortran_source_files(${dflowfm_kernel_path}/model_specific dflowfm_kernel_model_specific)
 get_fortran_source_files(${dflowfm_kernel_prepost_path} dflowfm_kernel_prepost)
 get_fortran_source_files(${dflowfm_kernel_timespace_path} dflowfm_kernel_timespace)
-
-list(REMOVE_ITEM dflowfm_kernel_compute_waves_surfbeat ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_waves_surfbeat_path}/xbeach_wave_boundary_init.f90)
 
 # Gather source files
 set(dflowfm_manager_path ${src_path}/dflowfm_manager/)
@@ -198,6 +193,9 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
 
 set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/partition.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/pressakey.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/print_timings.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/partition_METIS_to_idomain.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/m_gui.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/menuv1.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/setwor.F90
@@ -231,6 +229,7 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/scherm.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_shapefile.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_display.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_errorhandler.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_opengl.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/rest_f90/dcross.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/rest_f90/read_samples_from_geotiff.F90

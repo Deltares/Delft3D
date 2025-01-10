@@ -44,8 +44,7 @@ contains
       use m_flowgeom, only: ndx, xz, yz
       use m_flow, only: numlimdt
       use unstruc_model, only: md_ident, getoutputdir
-
-      implicit none
+      use m_filez, only: doclose, newfil
 
       integer :: file_unit, cell
 

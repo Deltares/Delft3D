@@ -30,43 +30,55 @@
 !
 !
 
- real(kind=dp) function dprodin(x1, y1, x2, y2, x3, y3, x4, y4) ! inner product of two segments
-    use precision, only: dp
-    use m_missing
-    use m_sferic
-    use geometry_module, only: getdx, getdy, sphertoCart3D
-    implicit none
-    real(kind=dp) :: x1, y1, x2, y2, x3, y3, x4, y4
-    real(kind=dp) :: dx1, dy1, dx2, dy2
+module m_dprodin
 
-    real(kind=dp), dimension(4) :: xx, yy, zz
-    real(kind=dp) :: dz1, dz2
+   implicit none
 
-    if (jsferic == 1 .and. jasfer3D == 1) then
-       call sphertocart3D(x1, y1, xx(1), yy(1), zz(1))
-       call sphertocart3D(x2, y2, xx(2), yy(2), zz(2))
-       call sphertocart3D(x3, y3, xx(3), yy(3), zz(3))
-       call sphertocart3D(x4, y4, xx(4), yy(4), zz(4))
+   private
 
-       dx1 = xx(2) - xx(1)
-       dy1 = yy(2) - yy(1)
-       dz1 = zz(2) - zz(1)
+   public :: dprodin
 
-       dx2 = xx(4) - xx(3)
-       dy2 = yy(4) - yy(3)
-       dz2 = zz(4) - zz(3)
+contains
 
-       dprodin = dx1 * dx2 + dy1 * dy2 + dz1 * dz2
-    else
+   real(kind=dp) function dprodin(x1, y1, x2, y2, x3, y3, x4, y4) ! inner product of two segments
+      use precision, only: dp
+      use m_missing
+      use m_sferic
+      use geometry_module, only: getdx, getdy, sphertoCart3D
 
-       dx1 = getdx(x1, y1, x2, y2, jsferic)
-       dx2 = getdx(x3, y3, x4, y4, jsferic)
+      real(kind=dp) :: x1, y1, x2, y2, x3, y3, x4, y4
+      real(kind=dp) :: dx1, dy1, dx2, dy2
 
-       dy1 = getdy(x1, y1, x2, y2, jsferic)
-       dy2 = getdy(x3, y3, x4, y4, jsferic)
+      real(kind=dp), dimension(4) :: xx, yy, zz
+      real(kind=dp) :: dz1, dz2
 
-       dprodin = (dx1 * dx2 + dy1 * dy2)
-    end if
+      if (jsferic == 1 .and. jasfer3D == 1) then
+         call sphertocart3D(x1, y1, xx(1), yy(1), zz(1))
+         call sphertocart3D(x2, y2, xx(2), yy(2), zz(2))
+         call sphertocart3D(x3, y3, xx(3), yy(3), zz(3))
+         call sphertocart3D(x4, y4, xx(4), yy(4), zz(4))
 
-    return
- end function dprodin
+         dx1 = xx(2) - xx(1)
+         dy1 = yy(2) - yy(1)
+         dz1 = zz(2) - zz(1)
+
+         dx2 = xx(4) - xx(3)
+         dy2 = yy(4) - yy(3)
+         dz2 = zz(4) - zz(3)
+
+         dprodin = dx1 * dx2 + dy1 * dy2 + dz1 * dz2
+      else
+
+         dx1 = getdx(x1, y1, x2, y2, jsferic)
+         dx2 = getdx(x3, y3, x4, y4, jsferic)
+
+         dy1 = getdy(x1, y1, x2, y2, jsferic)
+         dy2 = getdy(x3, y3, x4, y4, jsferic)
+
+         dprodin = (dx1 * dx2 + dy1 * dy2)
+      end if
+
+      return
+   end function dprodin
+
+end module m_dprodin

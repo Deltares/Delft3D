@@ -32,6 +32,7 @@
 
 !> assign node-based indices (ic,jc) in the net
 module m_assign_icjc
+   use m_grow_ijc, only: grow_ijc
 
    implicit none
 

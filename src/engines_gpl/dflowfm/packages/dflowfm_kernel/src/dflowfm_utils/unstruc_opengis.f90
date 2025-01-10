@@ -664,6 +664,8 @@ contains
       use m_flowgeom
       use unstruc_files
       use properties
+      use m_filez, only: doclose, newfil
+
       character(len=*), intent(in) :: filename !< TODO: Output file names
 
       integer :: mfil

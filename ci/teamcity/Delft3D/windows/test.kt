@@ -5,8 +5,8 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
-
 import Delft3D.template.*
+import Delft3D.step.*
 
 import Trigger
 import CsvProcessor
@@ -15,7 +15,6 @@ object WindowsTest : BuildType({
 
     templates(
         TemplateMergeRequest,
-        TemplateMergeTarget,
         TemplatePublishStatus,
         TemplateMonitorPerformance
     )
@@ -69,9 +68,9 @@ object WindowsTest : BuildType({
     }
 
     steps {
+        mergeTargetBranch {}
         python {
             name = "Run TestBench.py"
-            id = "Run_Testbench"
             workingDir = "test/deltares_testbench/"
             environment = venv {
                 requirementsFile = "pip/win-requirements.txt"
@@ -92,7 +91,6 @@ object WindowsTest : BuildType({
         }
         script {
             name = "Copy cases"
-            id = "Copy_cases"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
             conditions { equals("copy_cases", "true") }
             workingDir = "test/deltares_testbench"
@@ -100,7 +98,6 @@ object WindowsTest : BuildType({
         }
         script {
             name = "Kill dimr.exe, mpiexec.exe, and hydra_pmi_proxy.exe"
-            id = "Kill_processes"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             scriptContent = """
                 echo off
@@ -108,6 +105,7 @@ object WindowsTest : BuildType({
                 call :kill_program dimr.exe
                 call :kill_program mpiexec.exe
                 call :kill_program hydra_pmi_proxy.exe
+                call :kill_program mormerge.exe
                 set errorlevel=0
                 goto :eof
                 

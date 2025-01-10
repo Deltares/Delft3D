@@ -50,6 +50,7 @@ contains
       use m_partitioninfo
       use m_qnerror
       use m_reapol
+      use m_filez, only: oldfil
       implicit none
 
       integer :: minp, Ls, Lf, n, k1, k2

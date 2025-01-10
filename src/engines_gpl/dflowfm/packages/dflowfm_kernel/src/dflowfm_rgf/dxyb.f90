@@ -30,42 +30,53 @@
 !
 !
 
-      subroutine DXYB(X, Y, mmax, nmax, MC, &
-                      NC, II, JJ, IN, &
-                      JN, DXY0)
-         use precision, only: dp
-         use m_missing
-         use geometry_module, only: dbdistance
-         use m_sferic, only: jsferic, jasfer3D
+module m_dxyb
 
-         implicit none
-         integer :: mmax, nmax, mc, nc, ii, jj, in, jn
-         real(kind=dp) :: dxy0
-         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
+   implicit none
 
-         integer :: num
-         real(kind=dp) :: XU, YU, XD, YD, dxy1
-         NUM = 0
-         DXY0 = 0
+   private
 
-         if (II + IN <= MC .and. JJ + JN <= NC) then
-            XU = X(II + IN, JJ + JN)
-            if (XU /= XYMIS) then
-               YU = Y(II + IN, JJ + JN)
-               dxy0 = dbdistance(X(II, JJ), Y(II, JJ), XU, YU, jsferic, jasfer3D, dmiss)
-               NUM = NUM + 1
-            end if
+   public :: dxyb
+
+contains
+
+   subroutine DXYB(X, Y, mmax, nmax, MC, &
+                   NC, II, JJ, IN, &
+                   JN, DXY0)
+      use precision, only: dp
+      use m_missing
+      use geometry_module, only: dbdistance
+      use m_sferic, only: jsferic, jasfer3D
+
+      integer :: mmax, nmax, mc, nc, ii, jj, in, jn
+      real(kind=dp) :: dxy0
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
+
+      integer :: num
+      real(kind=dp) :: XU, YU, XD, YD, dxy1
+      NUM = 0
+      DXY0 = 0
+
+      if (II + IN <= MC .and. JJ + JN <= NC) then
+         XU = X(II + IN, JJ + JN)
+         if (XU /= XYMIS) then
+            YU = Y(II + IN, JJ + JN)
+            dxy0 = dbdistance(X(II, JJ), Y(II, JJ), XU, YU, jsferic, jasfer3D, dmiss)
+            NUM = NUM + 1
          end if
+      end if
 
-         if (II - IN >= 1 .and. JJ - JN >= 1) then
-            XD = X(II - IN, JJ - JN)
-            if (XD /= XYMIS) then
-               YD = Y(II - IN, JJ - JN)
-               dxy1 = dbdistance(X(II, JJ), Y(II, JJ), XD, YD, jsferic, jasfer3D, dmiss)
-               NUM = NUM + 1
-               DXY0 = (DXY0 + DXY1) / dble(NUM)
-            end if
+      if (II - IN >= 1 .and. JJ - JN >= 1) then
+         XD = X(II - IN, JJ - JN)
+         if (XD /= XYMIS) then
+            YD = Y(II - IN, JJ - JN)
+            dxy1 = dbdistance(X(II, JJ), Y(II, JJ), XD, YD, jsferic, jasfer3D, dmiss)
+            NUM = NUM + 1
+            DXY0 = (DXY0 + DXY1) / dble(NUM)
          end if
+      end if
 
-         return
-      end subroutine dxyb
+      return
+   end subroutine dxyb
+
+end module m_dxyb

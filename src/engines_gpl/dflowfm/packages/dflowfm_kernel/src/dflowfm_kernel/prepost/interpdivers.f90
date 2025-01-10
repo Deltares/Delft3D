@@ -30,6 +30,9 @@
 !
 !
 module m_interpdivers
+   use m_tidysamples, only: tidysamples
+   use m_sam2net_curvi, only: sam2net_curvi
+
    implicit none
 contains
    subroutine interpdivers(naar)

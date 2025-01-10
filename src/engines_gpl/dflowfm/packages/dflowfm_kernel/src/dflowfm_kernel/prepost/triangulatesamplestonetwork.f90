@@ -30,6 +30,16 @@
 !
 !
 
+module m_triangulatesamplestonetwork
+
+   implicit none
+
+   private
+
+   public :: triangulatesamplestonetwork
+
+contains
+
    subroutine Triangulatesamplestonetwork(JADOORLADEN)
       use precision, only: dp
       use m_checktriangle, only: checktriangle
@@ -49,7 +59,7 @@
       use m_set_col
       use m_movabs
       use m_lnabs
-      implicit none
+
       integer :: jadoorladen ! ,npl
       !real(kind=dp) :: xpl(npl),ypl(npl)
       real(kind=dp) :: af
@@ -249,3 +259,5 @@
 
       return
    end subroutine Triangulatesamplestonetwork
+
+end module m_triangulatesamplestonetwork

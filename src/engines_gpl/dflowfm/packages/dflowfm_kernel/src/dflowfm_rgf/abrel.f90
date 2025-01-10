@@ -30,21 +30,33 @@
 !
 !
 
-      subroutine ABREL(X1, Y1, B1R, NFAC)
-         use precision, only: dp
-         implicit none
-         integer :: nfac
-         real(kind=dp) :: X1(NFAC + 1), Y1(NFAC + 1), B1R(NFAC + 1)
-         integer :: J
-         real(kind=dp) :: B1
-         B1 = 0
-         do J = 2, NFAC + 1
-            B1 = B1 + sqrt((X1(J) - X1(J - 1))**2 + (Y1(J) - Y1(J - 1))**2)
-            B1R(J) = B1
-         end do
+module m_abrel
 
-         do j = 2, NFAC + 1
-            B1R(J) = B1R(J) / B1R(NFAC + 1)
-         end do
-         return
-      end subroutine abrel
+   implicit none
+
+   private
+
+   public :: abrel
+
+contains
+
+   subroutine ABREL(X1, Y1, B1R, NFAC)
+      use precision, only: dp
+
+      integer :: nfac
+      real(kind=dp) :: X1(NFAC + 1), Y1(NFAC + 1), B1R(NFAC + 1)
+      integer :: J
+      real(kind=dp) :: B1
+      B1 = 0
+      do J = 2, NFAC + 1
+         B1 = B1 + sqrt((X1(J) - X1(J - 1))**2 + (Y1(J) - Y1(J - 1))**2)
+         B1R(J) = B1
+      end do
+
+      do j = 2, NFAC + 1
+         B1R(J) = B1R(J) / B1R(NFAC + 1)
+      end do
+      return
+   end subroutine abrel
+
+end module m_abrel

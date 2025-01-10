@@ -31,21 +31,32 @@
 !
 
 !>    return y-component in node coordinate frame of a vector in link coordinate frame
-      real(kind=dp) function lin2nody(L, i12, ux, uy)
-         use precision, only: dp
-         use m_flowgeom, only: csb, snb
-         use m_sferic
-         implicit none
+module m_lin2nody
 
-         integer, intent(in) :: L !< flowlink number
-         integer, intent(in) :: i12 !< left (1) or right (2) neighboring cell
-         real(kind=dp), intent(in) :: ux, uy !< vector components in flowlink coordinate frame
+   implicit none
 
-         if (jsferic /= 1 .or. jasfer3D /= 1) then
-            lin2nody = uy
-         else
-            lin2nody = snb(i12, L) * ux + csb(i12, L) * uy
-         end if
+   private
 
-         return
-      end function lin2nody
+   public :: lin2nody
+
+contains
+
+   real(kind=dp) function lin2nody(L, i12, ux, uy)
+      use precision, only: dp
+      use m_flowgeom, only: csb, snb
+      use m_sferic
+
+      integer, intent(in) :: L !< flowlink number
+      integer, intent(in) :: i12 !< left (1) or right (2) neighboring cell
+      real(kind=dp), intent(in) :: ux, uy !< vector components in flowlink coordinate frame
+
+      if (jsferic /= 1 .or. jasfer3D /= 1) then
+         lin2nody = uy
+      else
+         lin2nody = snb(i12, L) * ux + csb(i12, L) * uy
+      end if
+
+      return
+   end function lin2nody
+
+end module m_lin2nody

@@ -42,6 +42,7 @@ contains
       use m_qnerror
       use m_qn_read_error
       use m_set_bobs
+      use m_filez, only: doclose
 
       integer :: mout
       character(len=256) :: rec

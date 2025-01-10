@@ -30,23 +30,33 @@
 !
 !
 
-      subroutine ANDERSOM(X, N)
-         use precision, only: dp
+module m_andersom
 
-         use m_alloc
+   implicit none
 
-         implicit none
-         integer :: n
-         real(kind=dp) :: X(N)
-         integer :: i, ierr
-         real(kind=dp), allocatable :: XH(:)
-         allocate (XH(N), stat=ierr)
-         call aerr('XH(N)', ierr, N)
-         XH = X
-         do I = 1, N
-            X(I) = XH(N - I + 1)
-         end do
+   private
 
-         deallocate (XH)
-         call aerr('XH', ierr, -N)
-      end subroutine ANDERSOM
+   public :: andersom
+
+contains
+
+   subroutine ANDERSOM(X, N)
+      use precision, only: dp
+      use m_alloc
+
+      integer :: n
+      real(kind=dp) :: X(N)
+      integer :: i, ierr
+      real(kind=dp), allocatable :: XH(:)
+      allocate (XH(N), stat=ierr)
+      call aerr('XH(N)', ierr, N)
+      XH = X
+      do I = 1, N
+         X(I) = XH(N - I + 1)
+      end do
+
+      deallocate (XH)
+      call aerr('XH', ierr, -N)
+   end subroutine ANDERSOM
+
+end module m_andersom

@@ -31,6 +31,7 @@
 !
 
 module m_addmaze
+   use m_isnodedb, only: isnodedb
 
    implicit none
 

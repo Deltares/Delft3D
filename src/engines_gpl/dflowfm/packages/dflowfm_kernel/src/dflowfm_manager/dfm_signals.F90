@@ -40,6 +40,8 @@
 !! the actual actions for a given signal are performed (typically after time
 !! step has completed).
 module dfm_signals
+   use m_flow_externaloutput_direct, only: flow_externaloutput_direct
+
    implicit none
 
 #ifdef HAVE_SIGIWATCH

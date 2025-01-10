@@ -30,58 +30,70 @@
 !
 !
 
-      subroutine AFFINE(XX, YY, XG, YG, INI)
-         use precision, only: dp
-         use M_BITMAP
-         use string_module, only: find_first_letter
-         use m_qnerror
-         use m_bilinxy
-         implicit none
-         integer :: ini
-         logical :: jawel
-         integer :: k
-         integer :: minp
-         integer :: numbersonline
-         real(kind=dp) :: xg4
-         real(kind=dp) :: xx4
-         real(kind=dp) :: yg4
-         real(kind=dp) :: yy4
-         character REC * 132
-         real(kind=dp) :: XX, YY, XG, YG
-         XX4 = XX; YY4 = YY
+module m_affine
 
-         if (INI == 1) then
+   implicit none
 
-            inquire (FILE='AFFINE'//'.xyx', EXIST=JAWEL)
+   private
 
-            if (JAWEL) then
-               call OLDFIL(MINP, 'AFFINE'//'.xyx')
+   public :: affine
+
+contains
+
+   subroutine AFFINE(XX, YY, XG, YG, INI)
+      use precision, only: dp
+      use M_BITMAP
+      use string_module, only: find_first_letter
+      use m_qnerror
+      use m_bilinxy
+      use m_filez, only: oldfil, doclose, numbersonline
+
+      integer :: ini
+      logical :: jawel
+      integer :: k
+      integer :: minp
+      real(kind=dp) :: xg4
+      real(kind=dp) :: xx4
+      real(kind=dp) :: yg4
+      real(kind=dp) :: yy4
+      character REC * 132
+      real(kind=dp) :: XX, YY, XG, YG
+      XX4 = XX; YY4 = YY
+
+      if (INI == 1) then
+
+         inquire (FILE='AFFINE'//'.xyx', EXIST=JAWEL)
+
+         if (JAWEL) then
+            call OLDFIL(MINP, 'AFFINE'//'.xyx')
+            read (MINP, '(A)') REC
+            if (find_first_letter(REC) == 1) then
                read (MINP, '(A)') REC
-               if (find_first_letter(REC) == 1) then
+               do K = 1, 4
                   read (MINP, '(A)') REC
-                  do K = 1, 4
-                     read (MINP, '(A)') REC
-                     if (NUMBERSONLINE(REC) == 2) then
-                        read (REC, *) XP(K), YP(K)
-                     else if (NUMBERSONLINE(REC) == 4) then
-                        read (REC, *) XP(K), YP(K), XB(K), YB(K)
+                  if (NUMBERSONLINE(REC) == 2) then
+                     read (REC, *) XP(K), YP(K)
+                  else if (NUMBERSONLINE(REC) == 4) then
+                     read (REC, *) XP(K), YP(K), XB(K), YB(K)
 
-                     end if
-                  end do
-               else
-                  call QNERROR('Cannot Read AFFINE.XYX File', ' ', ' ')
-               end if
-               call DOCLOSE(MINP)
-               call BILINXY(XP, YP, XB, YB, XX4, YY4, XG4, YG4, INI)
-               INI = 0
+                  end if
+               end do
             else
-               call QNERROR('NO AFFINE.XYX FILE FOUND', ' ', ' ')
+               call QNERROR('Cannot Read AFFINE.XYX File', ' ', ' ')
             end if
+            call DOCLOSE(MINP)
+            call BILINXY(XP, YP, XB, YB, XX4, YY4, XG4, YG4, INI)
+            INI = 0
+         else
+            call QNERROR('NO AFFINE.XYX FILE FOUND', ' ', ' ')
          end if
+      end if
 
-         call BILINXY(XP, YP, XB, YB, XX4, YY4, XG4, YG4, INI)
-         XG = XG4
-         YG = YG4
+      call BILINXY(XP, YP, XB, YB, XX4, YY4, XG4, YG4, INI)
+      XG = XG4
+      YG = YG4
 
-         return
-      end
+      return
+   end
+
+end module m_affine

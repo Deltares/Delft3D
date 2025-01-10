@@ -34,6 +34,7 @@ module m_get_ij
 contains
    subroutine GETIJ(X, XH, MMAX, NMAX, MNMAX, I1, I2, J1, J2)
       use precision, only: dp
+
       integer :: i
       integer :: i1
       integer :: i2

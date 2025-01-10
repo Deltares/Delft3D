@@ -31,6 +31,7 @@
 !
 
 module m_tekpolygon
+   use m_sincosdis, only: sincosdis
 
    implicit none
 

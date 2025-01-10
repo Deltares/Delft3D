@@ -4,14 +4,13 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.failureConditions.*
-
 import Delft3D.template.*
+import Delft3D.step.*
 
 object WindowsCollect : BuildType({
 
     templates(
         TemplateMergeRequest,
-        TemplateMergeTarget,
         TemplatePublishStatus,
         TemplateMonitorPerformance
     )
@@ -33,11 +32,15 @@ object WindowsCollect : BuildType({
     }
 
     steps {
+        mergeTargetBranch {}
         python {
             name = "Run artifacts_cleaner.py"
             command = file {
                 filename = "src/scripts_lgpl/artifacts_cleaner.py"
                 scriptArguments = "--product dimrset --root ."
+            }
+            conditions {
+                equals("dep.${WindowsBuild.id}.product", "fm-suite")
             }
         }
         python {
@@ -73,7 +76,6 @@ object WindowsCollect : BuildType({
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
-
             artifacts {
                 artifactRules = """
                     oss_artifacts_x64_*.zip!/x64/bin/** => x64/bin
@@ -82,16 +84,15 @@ object WindowsCollect : BuildType({
                 """.trimIndent()
             }
         }
-        dependency(AbsoluteId("FbcTools_FbcToolsBuildOssX64CMakeReleaseWin64")) {
+        dependency(AbsoluteId("${DslContext.getParameter("delft3d_signing_project_root")}_Sign")) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
-
             artifacts {
                 artifactRules = """
-                    *.dll => x64/lib
-                    *.xsd => x64/share/drtc
+                    oss_artifacts_x64_*.zip!/x64/bin/** => x64/bin
+                    oss_artifacts_x64_*.zip!/x64/lib/** => x64/lib
                 """.trimIndent()
             }
         }

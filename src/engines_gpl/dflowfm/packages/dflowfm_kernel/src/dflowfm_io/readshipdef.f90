@@ -31,6 +31,7 @@
 !
 
 module m_readshipdef
+   use m_reaarc, only: reaarc
 
    implicit none
 
@@ -49,6 +50,7 @@ contains
       use m_missing
       use m_flow
       use m_flowgeom
+      use m_filez, only: oldfil, zoekdouble, zoekinteger, doclose
       implicit none
       integer :: minp, ja, n, nn, i, j, ierr, L1
       logical jawel

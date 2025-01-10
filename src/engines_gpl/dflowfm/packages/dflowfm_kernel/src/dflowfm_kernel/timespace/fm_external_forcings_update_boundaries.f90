@@ -35,6 +35,7 @@ contains
 
 !> set boundary conditions
    module subroutine set_external_forcings_boundaries(time, iresult)
+      use m_setzminmax, only: setzminmax
       use precision, only: dp
       use m_update_dambreak_breach, only: update_dambreak_breach
       use m_setsigmabnds, only: setsigmabnds

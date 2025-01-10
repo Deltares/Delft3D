@@ -34,6 +34,7 @@
 ! subroutines from unstruc.f90
 !----------------------------------------------------------------------
 module m_tekflowstuff
+   use m_tekship, only: tekship
    use m_tekspw
    use m_tekprofpoint
 
@@ -64,7 +65,6 @@ contains
       use m_flow
       use m_wind
       use m_reduce
-      use geometry_module, only: getdx, getdy, getdxdy
       use gridoperations
 
       use m_observations_data

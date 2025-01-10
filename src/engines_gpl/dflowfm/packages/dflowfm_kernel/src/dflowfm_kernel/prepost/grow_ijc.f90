@@ -31,59 +31,68 @@
 !
 
 !> grow ijc with blocksize to satisfy objective lower- and upperbound
-subroutine grow_ijc(lowold, uppold, lowobj, uppobj, init)
-   use precision, only: dp
-
-   use m_alloc
-   use m_grid
-   use m_missing
+module m_grow_ijc
 
    implicit none
 
-   integer, dimension(2), intent(inout) :: lowold, uppold !< current array sizes
-   integer, dimension(2), intent(in) :: lowobj, uppobj !< objective array sizes
+   private
 
-   integer :: init !< init=1: set blocksizes to initial values
+   public :: grow_ijc
 
-   integer, dimension(2) :: lownew, uppnew
-   integer :: i
-   integer, parameter :: IJCBLOCK = 100 ! block size in ijc
-   integer, dimension(2), save :: blocklow ! lower blocksizes in ijc
-   integer, dimension(2), save :: blockupp ! upper blocksizes in ijc
-   real(kind=dp), parameter :: FAC = 1.2 ! growfactor of blocksizes
+contains
 
-   if (init == 1) then
-      blocklow = (/1, 1/)
-      blockupp = (/1, 1/)
-   end if
+   subroutine grow_ijc(lowold, uppold, lowobj, uppobj, init)
+      use precision, only: dp
+      use m_alloc
+      use m_grid
+      use m_missing
 
-   lownew = lowold
-   uppnew = uppold
+      integer, dimension(2), intent(inout) :: lowold, uppold !< current array sizes
+      integer, dimension(2), intent(in) :: lowobj, uppobj !< objective array sizes
 
-   if ((lownew(1) > lowobj(1)) .or. (uppnew(1) < uppobj(1)) .or. &
-       (lownew(2) > lowobj(2)) .or. (uppnew(2) < uppobj(2))) then
+      integer :: init !< init=1: set blocksizes to initial values
 
-      do i = 1, 2
-         do while (lownew(i) > lowobj(i))
-            lownew(i) = lownew(i) - blocklow(i)
+      integer, dimension(2) :: lownew, uppnew
+      integer :: i
+      integer, parameter :: IJCBLOCK = 100 ! block size in ijc
+      integer, dimension(2), save :: blocklow ! lower blocksizes in ijc
+      integer, dimension(2), save :: blockupp ! upper blocksizes in ijc
+      real(kind=dp), parameter :: FAC = 1.2 ! growfactor of blocksizes
+
+      if (init == 1) then
+         blocklow = (/1, 1/)
+         blockupp = (/1, 1/)
+      end if
+
+      lownew = lowold
+      uppnew = uppold
+
+      if ((lownew(1) > lowobj(1)) .or. (uppnew(1) < uppobj(1)) .or. &
+          (lownew(2) > lowobj(2)) .or. (uppnew(2) < uppobj(2))) then
+
+         do i = 1, 2
+            do while (lownew(i) > lowobj(i))
+               lownew(i) = lownew(i) - blocklow(i)
+            end do
+
+            do while (uppnew(i) < uppobj(i))
+               uppnew(i) = uppnew(i) + blockupp(i)
+            end do
          end do
 
-         do while (uppnew(i) < uppobj(i))
-            uppnew(i) = uppnew(i) + blockupp(i)
+         do i = 1, 2
+            if (lownew(i) /= lowold(i)) &
+               blocklow(i) = ceiling(dble(blocklow(i)) * FAC)
+            if (uppnew(i) /= uppold(i)) &
+               blockupp(i) = ceiling(dble(blockupp(i)) * FAC)
          end do
-      end do
 
-      do i = 1, 2
-         if (lownew(i) /= lowold(i)) &
-            blocklow(i) = ceiling(dble(blocklow(i)) * FAC)
-         if (uppnew(i) /= uppold(i)) &
-            blockupp(i) = ceiling(dble(blockupp(i)) * FAC)
-      end do
+         call realloc(ijc, uppnew, lownew, fill=IMISS)
 
-      call realloc(ijc, uppnew, lownew, fill=IMISS)
+         lowold = lownew
+         uppold = uppnew
+      end if
 
-      lowold = lownew
-      uppold = uppnew
-   end if
+   end subroutine grow_ijc
 
-end subroutine grow_ijc
+end module m_grow_ijc

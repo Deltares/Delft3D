@@ -38,6 +38,7 @@ contains
       use m_missing, only: dmiss
       use m_readyy
       use precision, only: dp
+      use m_filez, only: readerror, doclose, eoferror
 
       integer, intent(in) :: Mfile, Nfile !< arcinfo dimensions
       integer, intent(in) :: istart, iend, jstart, jend !< block to be read in file-index numbering

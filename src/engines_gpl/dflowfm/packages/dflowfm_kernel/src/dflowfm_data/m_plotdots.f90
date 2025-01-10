@@ -92,6 +92,8 @@ contains
 
 !  write dots to sample file
    subroutine write_dots(FNAM, jawritten)
+      use m_filez, only: doclose, newfil
+
       implicit none
 
       character(len=*), intent(in) :: FNAM

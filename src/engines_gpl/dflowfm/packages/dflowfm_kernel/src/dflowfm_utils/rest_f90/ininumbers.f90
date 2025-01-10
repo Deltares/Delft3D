@@ -30,16 +30,27 @@
 !
 !
 
-      subroutine ININUMBERS()
-         use precision, only: dp
-         use M_MISSING
-         implicit none
+module m_ininumbers
 
-         real(kind=dp) :: pi, dg2rd, rd2dg, ra
-         RA = 6370000d0
+   implicit none
+
+   private
+
+   public :: ininumbers
+
+contains
+
+   subroutine ININUMBERS()
+      use precision, only: dp
+      use M_MISSING
+
+      real(kind=dp) :: pi, dg2rd, rd2dg, ra
+      RA = 6370000d0
 !     RA    = dble(6378000.0)   DIT IN MEESTE ANDERE LITERATUUR
-         PI = acos(-1d0)
-         DG2RD = PI / 180d0
-         RD2DG = 180d0 / PI
-         return
-      end
+      PI = acos(-1d0)
+      DG2RD = PI / 180d0
+      RD2DG = 180d0 / PI
+      return
+   end
+
+end module m_ininumbers

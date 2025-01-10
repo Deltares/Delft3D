@@ -31,21 +31,32 @@
 !
 
 !>    return x-component in link coordinate frame of vector in node coordinate frame
-      real(kind=dp) function nod2linx(L, i12, ux, uy)
-         use precision, only: dp
-         use m_flowgeom, only: csb, snb
-         use m_sferic
-         implicit none
+module m_nod2linx
 
-         integer, intent(in) :: L !< flowlink number
-         integer, intent(in) :: i12 !< left (1) or right (2) neighboring cell
-         real(kind=dp), intent(in) :: ux, uy !< vector components in flowlnode coordinate frame
+   implicit none
 
-         if (jsferic /= 1 .or. jasfer3D /= 1) then
-            nod2linx = ux
-         else
-            nod2linx = csb(i12, L) * ux + snb(i12, L) * uy
-         end if
+   private
 
-         return
-      end function nod2linx
+   public :: nod2linx
+
+contains
+
+   real(kind=dp) function nod2linx(L, i12, ux, uy)
+      use precision, only: dp
+      use m_flowgeom, only: csb, snb
+      use m_sferic
+
+      integer, intent(in) :: L !< flowlink number
+      integer, intent(in) :: i12 !< left (1) or right (2) neighboring cell
+      real(kind=dp), intent(in) :: ux, uy !< vector components in flowlnode coordinate frame
+
+      if (jsferic /= 1 .or. jasfer3D /= 1) then
+         nod2linx = ux
+      else
+         nod2linx = csb(i12, L) * ux + snb(i12, L) * uy
+      end if
+
+      return
+   end function nod2linx
+
+end module m_nod2linx

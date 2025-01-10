@@ -2,8 +2,8 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
-
 import Delft3D.template.*
+import Delft3D.step.*
 import Delft3D.linux.*
 import Delft3D.windows.*
 
@@ -11,7 +11,7 @@ object Trigger : BuildType({
 
     templates(
         TemplateMergeRequest,
-        TemplateMergeTarget,
+        TemplateDetermineProduct,
         TemplatePublishStatus,
         TemplateMonitorPerformance
     )
@@ -31,49 +31,16 @@ object Trigger : BuildType({
 
         param("matrix_list_lnx64", "dummy_value")
         param("matrix_list_win64", "dummy_value")
-        param("branch_name", "dummy_value")
+        param("product", "dummy_value")
     }
 
     steps {
-
-        python {
-            name = "Determine components by branch"
-            command = script {
-                content="""
-                if "merge-request" in "%teamcity.build.branch%":
-                    branch_name = "%teamcity.pullRequest.source.branch%".split("/")[0]
-                    print(f"##teamcity[setParameter name='branch_name' value='{branch_name}']")
-                else:
-                    branch_name = "%teamcity.build.branch%".split("/")[0]
-                    print(f"##teamcity[setParameter name='branch_name' value='{branch_name}']")
-                """.trimIndent()
-            }
-        }
-
-        // Enable this buildstep to check for code changes instead of branch (disable previous buildstep)
-        python {
-            name = "Determine components by code changes"
-            enabled = false
-
-            // The code changes can only be requested through the gitlab api on merge-requests.
-            conditions {
-                contains("teamcity.build.branch", "merge-requests")
-            }
-            command = file {
-                filename = "ci/teamcity/scripts/check_scope.py"
-                scriptArguments = """
-                    -b "%teamcity.build.branch%"
-                    -t "%gitlab_private_access_token%"
-                    -f "ci/teamcity/Delft3D/vars/repo_index.json"
-                """.trimIndent()
-            }
-        }
-
+        mergeTargetBranch {}
         python {
             name = "Retrieve Linux Testbench XMLs from CSV"
             command = file {
                 filename = "ci/teamcity/scripts/testbench_filter.py"
-                scriptArguments = "-n %branch_name% -f %testbench_table% -v lnx64"
+                scriptArguments = "-n %product% -f %testbench_table% -v lnx64"
             }
         }
 
@@ -81,7 +48,7 @@ object Trigger : BuildType({
             name = "Retrieve Windows Testbench XMLs from CSV"
             command = file {
                 filename = "ci/teamcity/scripts/testbench_filter.py"
-                scriptArguments = "-n %branch_name% -f %testbench_table% -v win64"
+                scriptArguments = "-n %product% -f %testbench_table% -v win64"
             }
         }
 
@@ -90,9 +57,8 @@ object Trigger : BuildType({
 
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
-                doesNotEqual("branch_name", "none")
-                doesNotEqual("branch_name", "qp")
-                doesNotEqual("branch_name", "d3d4")
+                doesNotEqual("product", "none")
+                doesNotEqual("product", "qp")
             }
 
             scriptContent = """
@@ -128,9 +94,8 @@ object Trigger : BuildType({
 
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
-                doesNotEqual("branch_name", "none")
-                doesNotEqual("branch_name", "qp")
-                doesNotEqual("branch_name", "d3d4")
+                doesNotEqual("product", "none")
+                doesNotEqual("product", "qp")
             }
             
             scriptContent = """

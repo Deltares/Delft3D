@@ -42,11 +42,12 @@ contains
       use precision, only: dp
       use m_flow
       use m_flowgeom
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
       implicit none
 
       integer :: ku, L, LL, Ls, n12, Lf
       real(kind=dp) :: ucxku, ucyku, ww, ac1, cs, sn
-      real(kind=dp), external :: lin2nodx, lin2nody
 
       ucxku = 0d0; ucyku = 0d0
 

@@ -31,6 +31,7 @@
 !
 
 module m_curvilineargridfromsplines
+   use m_splrgfr, only: splrgfr
 
    implicit none
 

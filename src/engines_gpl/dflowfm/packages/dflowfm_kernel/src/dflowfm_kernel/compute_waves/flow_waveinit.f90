@@ -62,6 +62,7 @@ contains
       use dfm_error
       use m_delsam
       use m_reasam
+      use m_filez, only: oldfil, doclose
 
       implicit none
 

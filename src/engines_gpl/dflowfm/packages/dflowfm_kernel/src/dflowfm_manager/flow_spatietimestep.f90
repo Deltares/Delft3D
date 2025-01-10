@@ -30,40 +30,54 @@
 !
 !
 
- subroutine flow_spatietimestep() ! do flowstep
-    use m_flow_single_timestep, only: flow_single_timestep
-    use m_setzcs, only: setzcs
-    use m_flowtimes
-    use m_flowgeom, only: ndx
-    use m_flowparameters, only: janudge
-    use fm_external_forcings
+module m_flow_spatietimestep
+   use m_inctime_user, only: inctime_user
 
-    implicit none
-    integer :: key, ierr
-    integer, external :: flow_modelinit
+   implicit none
 
-    if (ndx == 0) then
-       ierr = flow_modelinit()
-    end if
+   private
 
-    if (ndx == 0) return ! No valid flow network was initialized
+   public :: flow_spatietimestep
 
-    call inctime_user()
-    if (time0 >= time_user) then
-       Tstop_user = tstop_user + dt_user
-       time_user = time_user + dt_user
-    end if
-    ! ipv time0
-    tim1fld = max(time_user, tim1fld)
-    if (janudge == 1) call setzcs()
-    call set_external_forcings(tim1fld, .false., ierr) ! set field oriented forcings. boundary oriented forcings are in
+contains
 
-    ! call flow_externalinput(time_user)                  ! receive RTC signals etc
+   subroutine flow_spatietimestep() ! do flowstep
+      use m_flow_externaloutput, only: flow_externaloutput
+      use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
+      use m_flow_single_timestep, only: flow_single_timestep
+      use m_setzcs, only: setzcs
+      use m_flowtimes
+      use m_flowgeom, only: ndx
+      use m_flowparameters, only: janudge
+      use fm_external_forcings
+      use m_flow_modelinit, only: flow_modelinit
 
-    call flow_single_timestep(key, ierr)
+      integer :: key, ierr
 
-    call updateValuesOnObservationStations()
+      if (ndx == 0) then
+         ierr = flow_modelinit()
+      end if
 
-    call flow_externaloutput(time1) ! receive signals etc, write map, his etc
-    ! these two functions are explicit. therefore, they are in the usertimestep
- end subroutine flow_spatietimestep
+      if (ndx == 0) return ! No valid flow network was initialized
+
+      call inctime_user()
+      if (time0 >= time_user) then
+         Tstop_user = tstop_user + dt_user
+         time_user = time_user + dt_user
+      end if
+      ! ipv time0
+      tim1fld = max(time_user, tim1fld)
+      if (janudge == 1) call setzcs()
+      call set_external_forcings(tim1fld, .false., ierr) ! set field oriented forcings. boundary oriented forcings are in
+
+      ! call flow_externalinput(time_user)                  ! receive RTC signals etc
+
+      call flow_single_timestep(key, ierr)
+
+      call updateValuesOnObservationStations()
+
+      call flow_externaloutput(time1) ! receive signals etc, write map, his etc
+      ! these two functions are explicit. therefore, they are in the usertimestep
+   end subroutine flow_spatietimestep
+
+end module m_flow_spatietimestep

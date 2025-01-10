@@ -31,6 +31,7 @@
 !
 
 module m_coarsen_mesh
+   use m_find_surrounding_cells, only: find_surrounding_cells
    use m_teknode
 
    implicit none

@@ -30,21 +30,34 @@
 !
 !
 
-      subroutine WRIDEP(MMDD, ZC, M1, N1, MC, NC, mmax, nmax)
-         use precision, only: dp
-         use m_readyy
-         implicit none
-         integer :: MMDD, M1, N1, MC, NC, mmax, nmax, n, m
-         real(kind=dp) :: ZC(mmax, nmax)
-         real(kind=dp) :: AF
+module m_wridep
 
-         call READYY('Writing Depth File ', 0d0)
-         do N = N1, NC
-            AF = dble(N) / dble(NC)
-            call READYY('Writing Dept File', AF)
-            write (MMDD, '(12(1PE13.5))') (ZC(M, N), M=M1, MC)
-         end do
-         call READYY('writing Dept File', -1d0)
-         call DOCLOSE(MMDD)
-         return
-      end
+   implicit none
+
+   private
+
+   public :: wridep
+
+contains
+
+   subroutine WRIDEP(MMDD, ZC, M1, N1, MC, NC, mmax, nmax)
+      use precision, only: dp
+      use m_readyy
+      use m_filez, only: doclose
+
+      integer :: MMDD, M1, N1, MC, NC, mmax, nmax, n, m
+      real(kind=dp) :: ZC(mmax, nmax)
+      real(kind=dp) :: AF
+
+      call READYY('Writing Depth File ', 0d0)
+      do N = N1, NC
+         AF = dble(N) / dble(NC)
+         call READYY('Writing Dept File', AF)
+         write (MMDD, '(12(1PE13.5))') (ZC(M, N), M=M1, MC)
+      end do
+      call READYY('writing Dept File', -1d0)
+      call DOCLOSE(MMDD)
+      return
+   end
+
+end module m_wridep

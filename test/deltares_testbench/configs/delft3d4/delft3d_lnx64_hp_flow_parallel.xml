@@ -109,10 +109,6 @@
 			<arguments>
  				<argument>-n 2</argument>
 			</arguments>
-			<modules>
-				<module>intel/21.2.0</module>
-				<module>intelmpi/21.2.0</module>
-			</modules>
 		</program>
 <!-- 
 		<program name="COUP203" logOutputToFile="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
@@ -141,10 +137,6 @@
 			<arguments>
 				<argument>2</argument>
 			</arguments>
-			<modules>
-				<module>intel/21.2.0</module>
-				<module>intelmpi/21.2.0</module>
-			</modules>
 		</program>
 		<program name="FLOW2D3D_WAVE" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true">
 			<location ref="dsctestbench-references_bin" type="reference">
@@ -157,10 +149,6 @@
 			<arguments>
 				<argument>2</argument>
 			</arguments>
-			<modules>
-				<module>intel/21.2.0</module>
-				<module>intelmpi/21.2.0</module>
-			</modules>
 		</program>
 		<program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
 			<location ref="dsctestbench-references_bin" type="reference">

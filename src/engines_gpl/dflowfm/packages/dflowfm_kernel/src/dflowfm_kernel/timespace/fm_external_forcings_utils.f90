@@ -29,6 +29,7 @@
 
 !> Utilities module with functions for initializing and updating external forcings.
 module fm_external_forcings_utils
+   use m_fm_wq_processes_sub, only: get_waqinputname
    use precision_basics, only: hp
    implicit none
 

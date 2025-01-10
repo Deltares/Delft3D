@@ -27,35 +27,42 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> make a gridline on the spline
-subroutine spline2gridline(mc, num, xsp, ysp, xc, yc, sc, h)
-   use precision, only: dp
-   use m_makespl
+module m_spline2gridline
 
    implicit none
 
-   integer, intent(in) :: mc !< number of gridnodes
-   integer, intent(in) :: num !< number of splinenodes
-   real(kind=dp), dimension(num), intent(in) :: xsp, ysp !< splinenode coordinates
-   real(kind=dp), dimension(mc), intent(out) :: xc, yc !< coordinates of grid points
-   real(kind=dp), dimension(mc), intent(out) :: sc !< spline-coordinates of grid points
-   real(kind=dp), intent(in) :: h !< for curvature adapted meshing (>0) or disable (<=0)
+   private
 
-   real(kind=dp), dimension(2) :: startstop
+   public :: spline2gridline
 
-   integer :: kmax
+contains
 
-   if (mc < 2) return ! no curvigrid possible
+   subroutine spline2gridline(mc, num, xsp, ysp, xc, yc, sc, h)
+      use precision, only: dp
+      use m_makespl
 
-   startstop = (/0d0, dble(num - 1)/)
-   call makespl(startstop, xsp, ysp, max(mc, num), num, 2, mc - 1, xc, yc, kmax, sc, h)
+      integer, intent(in) :: mc !< number of gridnodes
+      integer, intent(in) :: num !< number of splinenodes
+      real(kind=dp), dimension(num), intent(in) :: xsp, ysp !< splinenode coordinates
+      real(kind=dp), dimension(mc), intent(out) :: xc, yc !< coordinates of grid points
+      real(kind=dp), dimension(mc), intent(out) :: sc !< spline-coordinates of grid points
+      real(kind=dp), intent(in) :: h !< for curvature adapted meshing (>0) or disable (<=0)
 
-   if (kmax /= mc) then
-      continue
-   end if
+      real(kind=dp), dimension(2) :: startstop
 
-   return
-end subroutine spline2gridline
+      integer :: kmax
+
+      if (mc < 2) return ! no curvigrid possible
+
+      startstop = (/0d0, dble(num - 1)/)
+      call makespl(startstop, xsp, ysp, max(mc, num), num, 2, mc - 1, xc, yc, kmax, sc, h)
+
+      if (kmax /= mc) then
+         continue
+      end if
+
+      return
+   end subroutine spline2gridline
+
+end module m_spline2gridline

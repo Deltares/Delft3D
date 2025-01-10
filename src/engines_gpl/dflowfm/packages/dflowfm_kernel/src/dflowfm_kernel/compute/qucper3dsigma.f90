@@ -48,6 +48,10 @@ contains
       use m_flow
       use m_flowgeom
       use m_sferic
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
       implicit none
 
       integer, intent(in) :: n12, LL, Lb, Lt !< working for basis link LL
@@ -61,8 +65,6 @@ contains
 
       real(kind=dp) :: ucinx, uciny
       integer :: nn12
-
-      real(kind=dp), external :: lin2nodx, lin2nody, nod2linx, nod2liny
 
       Quk1 = 0d0
 

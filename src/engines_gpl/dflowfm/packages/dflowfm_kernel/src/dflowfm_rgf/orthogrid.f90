@@ -30,102 +30,121 @@
 !
 !
 
-      subroutine ORTHOGRID(M1, N1, M2, N2)
-         use precision, only: dp
-         use unstruc_colors
-         use M_GRID
-         use M_SFERIC
-         use M_GRIDSETTINGS
-         use m_orthosettings
-         use m_readyy
-         use m_drawthis
-         use m_qnerror
-         use m_isitu
-         implicit none
-         integer :: in
-         integer :: it
-         integer :: jdla
-         integer :: ma1
-         integer :: ma2
-         integer :: mcr
-         integer :: mx
-         integer :: na1
-         integer :: na2
-         integer :: ncr
-         integer :: num
-         integer :: nx
-         real(kind=dp) :: rjac
+module m_orthogrid
+   use m_savegrd, only: savegrd
+   use m_ortsor, only: ortsor
 
-         real(kind=dp), dimension(:, :), allocatable :: XR, YR, XI2, XJ2, YI2, YJ2, &
-                                                        A, B, C, D, E, ATP, XO, YO
+   implicit none
 
-         integer :: M1, N1, M2, N2
+   private
 
-         if (MC == 0) then
-            call QNERROR('First Create or Load a Grid', ' ', ' ')
-            NUM = 0
-            return
-         end if
+   public :: orthogrid
 
-         call SAVEgrd()
+contains
 
-         MX = MMAX; NX = NMAX
-         allocate (XR(MX, NX), YR(MX, NX), XI2(MX, NX), XJ2(MX, NX), YI2(MX, NX), YJ2(MX, NX), &
-                   A(MX, NX), B(MX, NX), C(MX, NX), D(MX, NX), E(MX, NX), &
-                   ATP(MX, NX), XO(MX, NX), YO(MX, NX))
+   subroutine ORTHOGRID(M1, N1, M2, N2)
+      use m_makey, only: makey
+      use m_makef, only: makef
+      use m_getspl2, only: getspl2
+      use m_fixddboundaries, only: fixddboundaries
+      use m_atppar, only: atppar
+      use precision, only: dp
+      use unstruc_colors
+      use M_GRID
+      use M_SFERIC
+      use M_GRIDSETTINGS
+      use m_orthosettings
+      use m_readyy
+      use m_drawthis
+      use m_qnerror
+      use m_isitu
 
-         IN = 1
-         PI = acos(-1d0)
-         MCR = MC
-         NCR = NC
+      integer :: in
+      integer :: it
+      integer :: jdla
+      integer :: ma1
+      integer :: ma2
+      integer :: mcr
+      integer :: mx
+      integer :: na1
+      integer :: na2
+      integer :: ncr
+      integer :: num
+      integer :: nx
+      real(kind=dp) :: rjac
 
-         if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', 0d0)
-         call ISITU()
-         if (NDRAW(8) == 0) call READYY(' ', 0.05d0)
+      real(kind=dp), dimension(:, :), allocatable :: XR, YR, XI2, XJ2, YI2, YJ2, &
+                                                     A, B, C, D, E, ATP, XO, YO
 
-         if (JSFERIC == 1) call MAKEF(XC, YC, MMAX, NMAX)
+      integer :: M1, N1, M2, N2
 
-         call GETSPL2(XC, XI2, XJ2, MC, NC, MMAX, NMAX)
-         if (NDRAW(8) == 0) call READYY(' ', 0.10d0)
+      if (MC == 0) then
+         call QNERROR('First Create or Load a Grid', ' ', ' ')
+         NUM = 0
+         return
+      end if
 
-         call GETSPL2(YC, YI2, YJ2, MC, NC, MMAX, NMAX)
-         if (NDRAW(8) == 0) call READYY(' ', 0.15d0)
+      call SAVEgrd()
 
-         XR = XC
-         YR = YC
+      MX = MMAX; NX = NMAX
+      allocate (XR(MX, NX), YR(MX, NX), XI2(MX, NX), XJ2(MX, NX), YI2(MX, NX), YJ2(MX, NX), &
+                A(MX, NX), B(MX, NX), C(MX, NX), D(MX, NX), E(MX, NX), &
+                ATP(MX, NX), XO(MX, NX), YO(MX, NX))
 
-         RJAC = 0.9d0
+      IN = 1
+      PI = acos(-1d0)
+      MCR = MC
+      NCR = NC
+
+      if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', 0d0)
+      call ISITU()
+      if (NDRAW(8) == 0) call READYY(' ', 0.05d0)
+
+      if (JSFERIC == 1) call MAKEF(XC, YC, MMAX, NMAX)
+
+      call GETSPL2(XC, XI2, XJ2, MC, NC, MMAX, NMAX)
+      if (NDRAW(8) == 0) call READYY(' ', 0.10d0)
+
+      call GETSPL2(YC, YI2, YJ2, MC, NC, MMAX, NMAX)
+      if (NDRAW(8) == 0) call READYY(' ', 0.15d0)
+
+      XR = XC
+      YR = YC
+
+      RJAC = 0.9d0
 !     RJAC1 = (COS(PI/MCR) * (XM**2)*COS(PI/NCR)) / (1 + XM**2)
 !     RJAC2 = 2*(COS(PI/MCR)/XM + COS(PI/NCR)) / (1 + 1/XM)
 !     VUL DE COEFFICIENTEN-MATRICES
-         do IT = 1, ITATP
-            JDLA = 0
-            if (IT == 1) JDLA = 1
-            MA1 = max(1, M1 - 1)
-            NA1 = max(1, N1 - 1)
-            MA2 = min(MC - 1, M2)
-            NA2 = min(NC - 1, N2)
+      do IT = 1, ITATP
+         JDLA = 0
+         if (IT == 1) JDLA = 1
+         MA1 = max(1, M1 - 1)
+         NA1 = max(1, N1 - 1)
+         MA2 = min(MC - 1, M2)
+         NA2 = min(NC - 1, N2)
 
-            call ATPPAR(XR, YR, MA1, NA1, MA2, NA2, ATP, A, B, C, D, E)
+         call ATPPAR(XR, YR, MA1, NA1, MA2, NA2, ATP, A, B, C, D, E)
 
 !        JAMMER IN DEZE LOOP, IJC WORDT EERST VERKLOOT IN SOMDIST
 !        CALL SETINTERNALBOUNDARIES(IJC)
-            call FIXDDBOUNDARIES()
-            if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', 0.20d0)
+         call FIXDDBOUNDARIES()
+         if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', 0.20d0)
 
-            call ORTSOR(XR, YR, A, B, C, D, E, ATP, M1, N1, M2, N2, &
-                        XI2, YI2, XJ2, YJ2, XO, YO, &
-                        RJAC)
-         end do
+         call ORTSOR(XR, YR, A, B, C, D, E, ATP, M1, N1, M2, N2, &
+                     XI2, YI2, XJ2, YJ2, XO, YO, &
+                     RJAC)
+      end do
 
-         if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', -1d0)
+      if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', -1d0)
 
-         XC = XR; YC = YR
+      XC = XR; YC = YR
 
-         if (JSFERIC == 1) call MAKEY(XC, YC, MMAX, NMAX)
+      if (JSFERIC == 1) call MAKEY(XC, YC, MMAX, NMAX)
 !     CALL TEKSHOW(X, Y, MA2, NA2, ATP, 2,'FINAL ATP')
 
-         deallocate (XR, YR, XI2, XJ2, YI2, YJ2, A, B, C, D, E, ATP, XO, YO)
+      deallocate (XR, YR, XI2, XJ2, YI2, YJ2, A, B, C, D, E, ATP, XO, YO)
 
-         return
-      end subroutine ORTHOGRID
+      return
+   end subroutine ORTHOGRID
+
+end module m_orthogrid

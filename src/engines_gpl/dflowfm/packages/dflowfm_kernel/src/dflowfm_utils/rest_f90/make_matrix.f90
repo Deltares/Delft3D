@@ -31,43 +31,53 @@
 !
 
 !> prepares a matrix for solver test (as in "mpitest")
-subroutine make_matrix(CFL, s1)
-   use precision, only: dp
-   use m_reduce
-   use m_flowgeom
+module m_make_matrix
 
    implicit none
 
-   real(kind=dp), intent(in) :: CFL !< CFL-number
-   real(kind=dp), dimension(Ndx), intent(in) :: s1 !< exact solution
+   private
 
-   real(kind=dp) :: aufu
+   public :: make_matrix
 
-   integer :: k1, k2, L
+contains
 
-   bbr = 1 / CFL**2
-   ccr = 0d0
-   do L = 1, lnx
-      aufu = 1d0
-      k1 = ln(1, L)
-      k2 = ln(2, L)
-      bbr(k1) = bbr(k1) + aufu
-      bbr(k2) = bbr(k2) + aufu
-      ccr(Lv2(L)) = ccr(Lv2(L)) - aufu
-   end do
+   subroutine make_matrix(CFL, s1)
+      use precision, only: dp
+      use m_reduce
+      use m_flowgeom
+
+      real(kind=dp), intent(in) :: CFL !< CFL-number
+      real(kind=dp), dimension(Ndx), intent(in) :: s1 !< exact solution
+
+      real(kind=dp) :: aufu
+
+      integer :: k1, k2, L
+
+      bbr = 1 / CFL**2
+      ccr = 0d0
+      do L = 1, lnx
+         aufu = 1d0
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         bbr(k1) = bbr(k1) + aufu
+         bbr(k2) = bbr(k2) + aufu
+         ccr(Lv2(L)) = ccr(Lv2(L)) - aufu
+      end do
 
 !      dd = 0d0
 !      do n=1,Ndx
 !         dd(n) = dd(n) + bb(n)*s1(n)
 !      end do
 
-   ddr = bbr * s1
-   do L = 1, Lnx
-      k1 = ln(1, L)
-      k2 = ln(2, L)
-      ddr(k1) = ddr(k1) + ccr(Lv2(L)) * s1(k2)
-      ddr(k2) = ddr(k2) + ccr(Lv2(L)) * s1(k1)
-   end do
+      ddr = bbr * s1
+      do L = 1, Lnx
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         ddr(k1) = ddr(k1) + ccr(Lv2(L)) * s1(k2)
+         ddr(k2) = ddr(k2) + ccr(Lv2(L)) * s1(k1)
+      end do
 
-   return
-end subroutine make_matrix
+      return
+   end subroutine make_matrix
+
+end module m_make_matrix

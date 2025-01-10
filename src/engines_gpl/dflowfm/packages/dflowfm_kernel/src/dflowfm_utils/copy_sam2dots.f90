@@ -31,10 +31,19 @@
 !
 
 !  copy samples to dots
+module m_copy_sam2dots
+
+   implicit none
+
+   private
+
+   public :: copy_sam2dots
+
+contains
+
    subroutine copy_sam2dots()
       use m_samples
       use m_plotdots
-      implicit none
 
       integer :: i
 
@@ -49,3 +58,5 @@
 
       return
    end subroutine copy_sam2dots
+
+end module m_copy_sam2dots

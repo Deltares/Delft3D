@@ -37,6 +37,8 @@ contains
    subroutine readarcinfoblock(MINP, D, MC, NC, RMIS)
       use m_missing, only: dmiss
       use precision, only: dp
+      use m_filez, only: readerror, doclose, eoferror
+
       integer :: i
       integer :: j
       integer :: mc

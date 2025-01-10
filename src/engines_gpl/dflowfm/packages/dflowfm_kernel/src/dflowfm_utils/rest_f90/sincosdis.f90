@@ -30,23 +30,35 @@
 !
 !
 
- subroutine sincosdis(x1, y1, x2, y2, s, c, d) ! get sin, cos, length of a line segment
-    use precision, only: dp
-    use m_missing
-    use m_sferic, only: jsferic
-    use geometry_module, only: getdx, getdy
-    implicit none
-    real(kind=dp) :: x1, y1, x2, y2, s, c, d
-    real(kind=dp) :: dx1, dy1
+module m_sincosdis
 
-    dx1 = getdx(x1, y1, x2, y2, jsferic)
-    dy1 = getdy(x1, y1, x2, y2, jsferic)
-    d = sqrt(dx1 * dx1 + dy1 * dy1)
-    if (d > 0d0) then
-       s = dy1 / d
-       c = dx1 / d
-    else
-       s = 0d0
-       c = 0d0
-    end if
- end subroutine sincosdis
+   implicit none
+
+   private
+
+   public :: sincosdis
+
+contains
+
+   subroutine sincosdis(x1, y1, x2, y2, s, c, d) ! get sin, cos, length of a line segment
+      use precision, only: dp
+      use m_missing
+      use m_sferic, only: jsferic
+      use geometry_module, only: getdx, getdy
+
+      real(kind=dp) :: x1, y1, x2, y2, s, c, d
+      real(kind=dp) :: dx1, dy1
+
+      dx1 = getdx(x1, y1, x2, y2, jsferic)
+      dy1 = getdy(x1, y1, x2, y2, jsferic)
+      d = sqrt(dx1 * dx1 + dy1 * dy1)
+      if (d > 0d0) then
+         s = dy1 / d
+         c = dx1 / d
+      else
+         s = 0d0
+         c = 0d0
+      end if
+   end subroutine sincosdis
+
+end module m_sincosdis

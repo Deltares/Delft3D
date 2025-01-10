@@ -30,29 +30,42 @@
 !
 !
 
-      subroutine DISMIN(X, X2, Y, Y2, XX, YY, N, DIS, TV, XV, YV)
-         use precision, only: dp
-         use m_splint
-         implicit none
-         integer :: n
-         real(kind=dp) :: rn
+module m_dismin
+   use m_gold, only: gold
+
+   implicit none
+
+   private
+
+   public :: dismin
+
+contains
+
+   subroutine DISMIN(X, X2, Y, Y2, XX, YY, N, DIS, TV, XV, YV)
+      use precision, only: dp
+      use m_splint
+
+      integer :: n
+      real(kind=dp) :: rn
 !     ZOEK MEEST NABIJE PUNT OP SPLINE
 !     START ZOEKEN ROND TV, ZOEK MET GULDEN SNEDE ROUTINE
 !     N IS MAXIMUM INDEX ZOEKGEBIED
-         real(kind=dp) :: X(N), X2(N), Y(N), Y2(N), XV, YV, XX, YY, TV
-         real(kind=dp) :: AX, BX, CX, TOL, DIS
+      real(kind=dp) :: X(N), X2(N), Y(N), Y2(N), XV, YV, XX, YY, TV
+      real(kind=dp) :: AX, BX, CX, TOL, DIS
 
 !     RLEN = SQRT((X(1)-X(2))**2+(Y(1)-Y(2))**2)
-         TOL = 0.000001d0
+      TOL = 0.000001d0
 !     TOL  = 0.000005*RLEN
-         RN = dble(N)
-         AX = 0d0
-         BX = TV
-         CX = RN
-         call GOLD(AX, BX, CX, TOL, TV, X, X2, Y, Y2, XX, YY, N, DIS)
+      RN = dble(N)
+      AX = 0d0
+      BX = TV
+      CX = RN
+      call GOLD(AX, BX, CX, TOL, TV, X, X2, Y, Y2, XX, YY, N, DIS)
 
-         call SPLINT(X, X2, N, TV, XV)
-         call SPLINT(Y, Y2, N, TV, YV)
+      call SPLINT(X, X2, N, TV, XV)
+      call SPLINT(Y, Y2, N, TV, YV)
 
-         return
-      end subroutine DISMIN
+      return
+   end subroutine DISMIN
+
+end module m_dismin

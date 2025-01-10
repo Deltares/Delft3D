@@ -30,28 +30,40 @@
 !
 !
 
-      subroutine WRIARCsam(MARC, data_array, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
-         use m_writearcinfoheader
-         use precision, only: dp
-         implicit none
-         real(kind=dp) :: dmiss
-         integer :: mmax
-         integer :: nmax
-         real(kind=dp), dimension(MMAX, NMAX) :: data_array
-         real(kind=dp) :: dx, dy
-         integer :: i
-         integer :: j
-         integer :: marc
-         integer :: mc
-         integer :: nc
-         real(kind=dp) :: x0
-         real(kind=dp) :: y0
+module m_wriarcsam
 
-         call WRITEARCINFOHEADER(MARC, MC, NC, X0, Y0, DX, DY, dmiss)
+   implicit none
 
-         do J = 1, NC
-            write (MARC, '(99999999F10.2)') (data_array(J, I), I=1, MC) ! SPvdP: j-index is fastest running in sample arrays
-         end do
+   private
 
-         return
-      end
+   public :: wriarcsam
+
+contains
+
+   subroutine WRIARCsam(MARC, data_array, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
+      use m_writearcinfoheader
+      use precision, only: dp
+
+      real(kind=dp) :: dmiss
+      integer :: mmax
+      integer :: nmax
+      real(kind=dp), dimension(MMAX, NMAX) :: data_array
+      real(kind=dp) :: dx, dy
+      integer :: i
+      integer :: j
+      integer :: marc
+      integer :: mc
+      integer :: nc
+      real(kind=dp) :: x0
+      real(kind=dp) :: y0
+
+      call WRITEARCINFOHEADER(MARC, MC, NC, X0, Y0, DX, DY, dmiss)
+
+      do J = 1, NC
+         write (MARC, '(99999999F10.2)') (data_array(J, I), I=1, MC) ! SPvdP: j-index is fastest running in sample arrays
+      end do
+
+      return
+   end
+
+end module m_wriarcsam

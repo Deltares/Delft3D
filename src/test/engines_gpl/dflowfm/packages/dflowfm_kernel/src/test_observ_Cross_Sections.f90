@@ -46,9 +46,8 @@ subroutine test_read_snapped_observ_crs
     use m_partitioninfo, only: jampi
     use network_data, only: numk
     use ifport
-    !
-    ! Externals
-    integer, external :: flow_modelinit
+    use m_flow_modelinit, only: flow_modelinit
+    use m_resetfullflowmodel, only: resetfullflowmodel
     !
     ! Locals
     integer, parameter                           :: N_Observ_Crs = 3

@@ -3,15 +3,14 @@ package Delft3D.linux
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
-
 import Delft3D.template.*
+import Delft3D.step.*
 import Delft3D.linux.thirdParty.*
 
 object LinuxDocker : BuildType({
 
     templates(
         TemplateMergeRequest,
-        TemplateMergeTarget,
         TemplatePublishStatus,
         TemplateMonitorPerformance
     )
@@ -26,9 +25,9 @@ object LinuxDocker : BuildType({
     }
 
     steps {
+        mergeTargetBranch {}
         script {
             name = "Remove system libraries"
-            id = "Remove_system_libraries"
             workingDir = "dimrset/lib"
             scriptContent = """
                 rm -fv libuuid.so.* \
@@ -61,7 +60,6 @@ object LinuxDocker : BuildType({
         }
         script {
             name = "Set execute rights"
-            id = "Set_execute_rights"
             scriptContent = """
                 chmod a+x dimrset/bin/*
                 chmod a+x intel/mpi/bin/*
@@ -69,7 +67,6 @@ object LinuxDocker : BuildType({
         }
         dockerCommand {
             name = "Docker build DIMRset"
-            id = "Docker_build_dimrset"
             commandType = build {
                 source = file {
                     path = "ci/teamcity/Delft3D/linux/docker/build.Dockerfile"
@@ -90,7 +87,6 @@ object LinuxDocker : BuildType({
         }
         dockerCommand {
             name = "Docker build testbench"
-            id = "Docker_build_testbench"
             commandType = build {
                 source = file {
                     path = "ci/teamcity/Delft3D/linux/docker/test.Dockerfile"
@@ -106,7 +102,6 @@ object LinuxDocker : BuildType({
         }
         dockerCommand {
             name = "Docker push"
-            id = "Docker_push"
             commandType = push {
                 namesAndTags = """
                     containers.deltares.nl/delft3d/delft3dfm:alma8-%build.vcs.number%
@@ -117,7 +112,6 @@ object LinuxDocker : BuildType({
     }
     features {
         dockerSupport {
-            id = "DockerSupport"
             loginToRegistry = on {
                 dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
             }
@@ -141,6 +135,7 @@ object LinuxDocker : BuildType({
             artifactRules = """
                 intelmpi.tar.gz!/bin/hydra_* => intel/mpi/bin/
                 intelmpi.tar.gz!/bin/mpiexec* => intel/mpi/bin/
+                intelmpi.tar.gz!/bin/mpirun => intel/mpi/bin/
                 intelmpi.tar.gz!/lib  => intel/mpi/lib
             """.trimIndent()
         }

@@ -310,6 +310,7 @@ contains
 !>  read splines in TEKAL format
    subroutine readSplines(mspl)
       use precision, only: dp
+      use m_filez, only: doclose
       integer :: mspl
 
       character REC * 4
@@ -349,6 +350,7 @@ contains
 !> write splines in TEKAL format
    subroutine writeSplines(mspl)
       use m_firstlin
+      use m_filez, only: doclose
       implicit none
       integer :: mspl
       character MATR * 5

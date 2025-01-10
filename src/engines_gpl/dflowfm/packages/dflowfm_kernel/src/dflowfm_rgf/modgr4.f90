@@ -30,56 +30,70 @@
 !
 !
 
-      subroutine MODGR4(NUMP, LANDORSPLINE)
-         use precision, only: dp
-         use m_grid
-         use m_landboundary
-         use M_SPLINES, only: mcs, splnump => nump
-         use m_modfld
-         use m_grid_block
-         use m_qnerror
-         implicit none
-         integer :: nump, landorspline
-         integer :: m1, m2, n1, n2, i, j, in, jn, ncs, jdum
-         real(kind=dp) :: EPS, X0, Y0, XN, YN, DIS, RL
+module m_modgr4
+   use m_tospline, only: tospline
+
+   implicit none
+
+   private
+
+   public :: modgr4
+
+contains
+
+   subroutine MODGR4(NUMP, LANDORSPLINE)
+      use m_toland, only: toland
+      use precision, only: dp
+      use m_grid
+      use m_landboundary
+      use M_SPLINES, only: mcs, splnump => nump
+      use m_modfld
+      use m_grid_block
+      use m_qnerror
+
+      integer :: nump, landorspline
+      integer :: m1, m2, n1, n2, i, j, in, jn, ncs, jdum
+      real(kind=dp) :: EPS, X0, Y0, XN, YN, DIS, RL
 !     TO LAND
-         data EPS/0.00001d0/
-         if (LANDORSPLINE == 1) then
-            if (MXLAN == 0) then
-               call QNERROR('FIRST LOAD A LANDBOUNDARY', ' ', ' ')
-               return
-            end if
-         else
-            call splnump(1, ncs)
-            if (MCS < 1 .or. NCS < 2) then
-               call QNERROR('FIRST DRAW SPLINE NR 1', ' ', ' ')
-               return
-            end if
+      data EPS/0.00001d0/
+      if (LANDORSPLINE == 1) then
+         if (MXLAN == 0) then
+            call QNERROR('FIRST LOAD A LANDBOUNDARY', ' ', ' ')
+            return
          end if
-         M1 = MB(1)
-         N1 = NB(1)
-         M2 = MB(2)
-         N2 = NB(2)
-         IN = min(1, N2 - N1)
-         JN = min(1, M2 - M1)
-         do I = M1, M2
-            do J = N1, N2
-               X0 = Xch(I, J)
-               Y0 = Ych(I, J)
-               if (LANDORSPLINE == 1) then
-                  call TOLAND(X0, Y0, 1, MXLAN, 1, XN, YN, DIS, JDUM, RL)
-               else
-                  call TOSPLINE(X0, Y0, XN, YN)
-               end if
-               Xc(I, J) = XN
-               Yc(I, J) = YN
-               if (abs(Xch(I, J) - Xc(I, J)) > EPS .or. &
-                   abs(Ych(I, J) - Yc(I, J)) > EPS) then
-                  call MODFLD(Xc, Yc, Xch, Ych, mmax, nmax, &
-                              MC, NC, I, J, &
-                              NUMP, 1, IN, JN)
-               end if
-            end do
+      else
+         call splnump(1, ncs)
+         if (MCS < 1 .or. NCS < 2) then
+            call QNERROR('FIRST DRAW SPLINE NR 1', ' ', ' ')
+            return
+         end if
+      end if
+      M1 = MB(1)
+      N1 = NB(1)
+      M2 = MB(2)
+      N2 = NB(2)
+      IN = min(1, N2 - N1)
+      JN = min(1, M2 - M1)
+      do I = M1, M2
+         do J = N1, N2
+            X0 = Xch(I, J)
+            Y0 = Ych(I, J)
+            if (LANDORSPLINE == 1) then
+               call TOLAND(X0, Y0, 1, MXLAN, 1, XN, YN, DIS, JDUM, RL)
+            else
+               call TOSPLINE(X0, Y0, XN, YN)
+            end if
+            Xc(I, J) = XN
+            Yc(I, J) = YN
+            if (abs(Xch(I, J) - Xc(I, J)) > EPS .or. &
+                abs(Ych(I, J) - Yc(I, J)) > EPS) then
+               call MODFLD(Xc, Yc, Xch, Ych, mmax, nmax, &
+                           MC, NC, I, J, &
+                           NUMP, 1, IN, JN)
+            end if
          end do
-         return
-      end subroutine modgr4
+      end do
+      return
+   end subroutine modgr4
+
+end module m_modgr4

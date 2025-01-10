@@ -41,7 +41,8 @@ module m_writeset
 contains
 
    subroutine writeset(kk, fnam, nr, a)
-      implicit none
+      use m_filez, only: doclose, newfil
+
       integer :: kk, nr
       character(len=132) :: a(100)
       character(len=*) fnam

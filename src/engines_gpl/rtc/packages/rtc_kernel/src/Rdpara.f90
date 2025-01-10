@@ -176,7 +176,7 @@
 
       CALL SKPCOM (IN, ENDFIL,'RTC')
       IF (ENDFIL) goto 21
-!    *  CALL ERRMSG (911, 0, 'Rdpara', ' Beslisparameterfile', IOUT1)
+!    *  call write_error_message_rtc (911, 0, 'Rdpara', ' Beslisparameterfile', IOUT1)
 !
 ! *********************************************************************
 ! *** read data
@@ -230,7 +230,7 @@
          Success = success .and. DH_AllocInit (NrInterpTables, NrInterpolationPoints, 0)
          Success = success .and. DH_AllocInit (NrInterpTables, InterpolationTableId, ' ')
          If (.not. success)  then
-            Call ErrMsg (929, 1, ' RdPara-interpolation tables', ' ', IOUT1)
+            call write_error_message_rtc (929, 1, ' RdPara-interpolation tables', ' ', IOUT1)
             RetVal = 929
             Return
          Endif
@@ -243,19 +243,19 @@
             SearchString = 'INTP'
             Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
             If (Endfil .or. .not. success)  then
-               Call ErrMsg (974, 0, 'Rdpara', ' Unexpected end of file ',IOUT1)
+               call write_error_message_rtc (974, 0, 'Rdpara', ' Unexpected end of file ',IOUT1)
                RetVal = 974
                Return
             Else
                Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)
                If (.not. success) then
-                 Call ErrMsg (913,0,'Rdpara',' Error getting Table Name',IOUT1)
+                 call write_error_message_rtc (913,0,'Rdpara',' Error getting Table Name',IOUT1)
                  RetVal = 913
                  Return
                Endif
                success = GetStringFromBuffer(String)
                IF (.not. success) then
-                  Call ErrMsg (913,0,'Rdpara',' Error getting String from Buffer',IOUT1)
+                  call write_error_message_rtc (913,0,'Rdpara',' Error getting String from Buffer',IOUT1)
                   RetVal = 913
                   Return
                Endif
@@ -315,7 +315,7 @@
          IF (RetVal .ne. 0) Return
 !       check max. number of dec.variabelen
          IF (IPARA .gt. NDECV) then
-            CALL ERRMSG (974,0,'Rdpara',' NDECV in decispar.rtc',IOUT1)
+            call write_error_message_rtc (974,0,'Rdpara',' NDECV in decispar.rtc',IOUT1)
             RetVal = 974
             Return
          Endif
@@ -323,7 +323,7 @@
 ! check that id is not already used as decision parameter id
          DO JPARA=1,IPARA
             IF (PARAID(JPARA) .EQ. ID) THEN
-               CALL ERRMSG (927,0, ID, ' Decision parameter file', IOUT1)
+               call write_error_message_rtc (927,0, ID, ' Decision parameter file', IOUT1)
                RetVal = 927
                Return
             ENDIF
@@ -335,7 +335,7 @@
          SearchPar2 = .false.
          IF (STRING(1:4) .EQ. 'PARA') THEN
 !            If (Par2Use)  then
-!               Call Errmsg (926, 0, 'Rdpara', ' ',IOUT1)
+!               call write_error_message_rtc (926, 0, 'Rdpara', ' ',IOUT1)
 !               RetVal = 926
 !               Return
 !            Endif
@@ -408,7 +408,7 @@
          PARDIM (IPARA,9) = 0
          Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
          If (Endfil .or. .not. success)  then
-            Call ErrMsg (974, 0, 'Rdpara', ' Unexpected end of file ',IOUT1)
+            call write_error_message_rtc (974, 0, 'Rdpara', ' Unexpected end of file ',IOUT1)
             RetVal = 974
             Return
          Endif
@@ -418,7 +418,7 @@
          Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
          If (.not. Success) ReadError = .true.
          IF (ReadError) then
-            Call ErrMsg (974,0,'Rdpara',' Read error during reading decision parameter file - PARA-PAR2 ParseToken ',IOUT1)
+            call write_error_message_rtc (974,0,'Rdpara',' Read error during reading decision parameter file - PARA-PAR2 ParseToken ',IOUT1)
             RetVal = 974
             Return
          Endif
@@ -522,7 +522,7 @@
          ENDIF
          IF (IDEBUG .GT. 0)  WRITE(IDEBUG,*) ' Paroper', PAROPER(IPARA)
          IF (ReadError) then
-            Call ErrMsg (974,0,'Rdpara',' Read error during reading PAR2 decision parameter record',IOUT1)
+            call write_error_message_rtc (974,0,'Rdpara',' Read error during reading PAR2 decision parameter record',IOUT1)
             RetVal = 974
          Endif
          If (RetVal .ne. 0) Return
@@ -549,7 +549,7 @@
          Pardim(Ipara,9) = NrD3DSubRecords
          If (NrDataSubRecords .ne. NrSobekSubRecords + NrRRSubRecords + NrPrecipSubRecords + NrExtSubRecords + &
                                     NrWQSubRecords + NrParaSubRecords + NrInterpSubRecords + NrD3DSubRecords) then
-            Call ErrMsg (974,0,'Rdpara',' PAR2 record contains inconsistent subrecords ',IOUT1)
+            call write_error_message_rtc (974,0,'Rdpara',' PAR2 record contains inconsistent subrecords ',IOUT1)
             RetVal = 974
             Return
          Endif
@@ -560,28 +560,28 @@
 ! **  check dimensies
 ! *********************************************************************
       IF (PARDIM(IPARA,1) .GT. NSPAR) THEN
-        CALL ERRMSG (913, 0, 'Rdpara', ' NSPAR Sobek lokaties', IOUT1)
+        call write_error_message_rtc (913, 0, 'Rdpara', ' NSPAR Sobek lokaties', IOUT1)
         RetVal = 913
       ELSEIF (PARDIM(IPARA,2) .GT. N3PAR) THEN
-        CALL ERRMSG (913, 0, 'Rdpara', ' N3PAR 3B lokaties', IOUT1)
+        call write_error_message_rtc (913, 0, 'Rdpara', ' N3PAR 3B lokaties', IOUT1)
         RetVal = 913
       ELSEIF (PARDIM(IPARA,3) .GT. NPPAR) THEN
-        CALL ERRMSG (913, 0, 'Rdpara', ' NPPAR neerslag lokaties',IOUT1)
+        call write_error_message_rtc (913, 0, 'Rdpara', ' NPPAR neerslag lokaties',IOUT1)
         RetVal = 913
       ELSEIF (PARDIM(IPARA,4) .GT. NEPAR) THEN
-        CALL ERRMSG (913, 0, 'Rdpara', ' NEPAR externe lokaties',IOUT1)
+        call write_error_message_rtc (913, 0, 'Rdpara', ' NEPAR externe lokaties',IOUT1)
         RetVal = 913
       ELSEIF (PARDIM(IPARA,5) .GT. NQPAR) THEN
-        CALL ERRMSG (913, 0, 'Rdpara', ' NQPAR beslisparameters',IOUT1)
+        call write_error_message_rtc (913, 0, 'Rdpara', ' NQPAR beslisparameters',IOUT1)
         RetVal = 913
       ELSEIF (PARDIM(IPARA,6) .GT. NDPAR) THEN
-        CALL ERRMSG (913, 0, 'Rdpara', ' NDPAR beslisparameters',IOUT1)
+        call write_error_message_rtc (913, 0, 'Rdpara', ' NDPAR beslisparameters',IOUT1)
         RetVal = 913
       ELSEIF (PARDIM(IPARA,8) .GT. 1) THEN
-        CALL ERRMSG (913, 0, 'Rdpara', ' Interpolation references',IOUT1)
+        call write_error_message_rtc (913, 0, 'Rdpara', ' Interpolation references',IOUT1)
         RetVal = 913
       ELSEIF (PARDIM(IPARA,9) .GT. N3DPAR) THEN
-        CALL ERRMSG (913, 0, 'Rdpara', ' D3DFlow locations',IOUT1)
+        call write_error_message_rtc (913, 0, 'Rdpara', ' D3DFlow locations',IOUT1)
         RetVal = 913
       ENDIF
       If (RetVal .ne. 0) Return
@@ -606,22 +606,22 @@
       Endif
 
       IF (PARDIM(IPARA,1) .GT. 0 .AND. .NOT. USESBK) THEN
-        CALL ERRMSG (918, 0, 'Rdpara', ' Sobek ', IOUT1)
+        call write_error_message_rtc (918, 0, 'Rdpara', ' Sobek ', IOUT1)
         RetVal = 918
       ELSEIF (PARDIM(IPARA,2) .GT. 0 .AND. .NOT. USE3B) THEN
-        CALL ERRMSG (918, 0, 'Rdpara', ' 3B    ', IOUT1)
+        call write_error_message_rtc (918, 0, 'Rdpara', ' 3B    ', IOUT1)
         RetVal = 918
       ELSEIF (PARDIM(IPARA,3) .GT. 0 .AND. .NOT. USEPRE) THEN
-        CALL ERRMSG (918, 0, 'Rdpara', ' Precipitation ', IOUT1)
+        call write_error_message_rtc (918, 0, 'Rdpara', ' Precipitation ', IOUT1)
         RetVal = 918
       ELSEIF (PARDIM(IPARA,4) .GT. 0 .AND. .NOT. USEEXT) THEN
-        CALL ERRMSG (918, 0, 'Rdpara', ' External data ', IOUT1)
+        call write_error_message_rtc (918, 0, 'Rdpara', ' External data ', IOUT1)
         RetVal = 918
       ELSEIF (PARDIM(IPARA,5) .GT. 0 .AND. .NOT. USEWQ) THEN
-        CALL ERRMSG (918, 0, 'Rdpara', ' External data ', IOUT1)
+        call write_error_message_rtc (918, 0, 'Rdpara', ' External data ', IOUT1)
         RetVal = 918
       ELSEIF (PARDIM(IPARA,9) .GT. 0 .AND. .NOT. USE3D) THEN
-        CALL ERRMSG (918, 0, 'Rdpara', ' D3DFlow data ', IOUT1)
+        call write_error_message_rtc (918, 0, 'Rdpara', ' D3DFlow data ', IOUT1)
         RetVal = 918
       ENDIF
       If (RetVal .ne. 0) Return
@@ -828,7 +828,7 @@
          ReadError = .true.
    992   continue
          IF (ReadError) then
-            Call ErrMsg (974,0,'Rdpara',' Read error during reading decision parameter record',IOUT1)
+            call write_error_message_rtc (974,0,'Rdpara',' Read error during reading decision parameter record',IOUT1)
             RetVal = 974
             Return
          Endif
@@ -849,7 +849,7 @@
                WRITE(IOUT1,*) ' Sbk-Parameter id',PARSBK(IPARA,I)
                WRITE(IOUT1,*) ' Sobek ids',(ID_SBK(I2),I2=1,NSOBEK)
                WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-               CALL ERRMSG (917,0, PARSBK(IPARA,I), ' Beslisparameterfile', IOUT1)
+               call write_error_message_rtc (917,0, PARSBK(IPARA,I), ' Beslisparameterfile', IOUT1)
                RetVal = 917
            ENDIF
          ENDDO
@@ -859,12 +859,12 @@
             IF (TISSBK(IPARA,I) .LT. NTIMSH) THEN
                 TISSBK(IPARA,I) = NTIMSH
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)  ! is only a warning, so no return value
+                call write_error_message_rtc (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)  ! is only a warning, so no return value
             ENDIF
             IF (TISSBK(IPARA,I) .GT. 0) THEN
                 TISSBK(IPARA,I) = 0
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (923,0, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (923,0, 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 923
             ENDIF
             If (RetVal .ne. 0) Return
@@ -875,7 +875,7 @@
            IF (VARIDSBK(IPARA,I) .eq. '') Then
              IF (VARSBK(IPARA,I) .GT. NPARS .or. VarSbk(Ipara,i) .le. 0) THEN
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (916, NPARS, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (916, NPARS, 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 916
              ENDIF
              If (RetVal .ne. 0) Return
@@ -898,7 +898,7 @@
                WRITE(IOUT1,*) ' RR-parameter id',PAR3B (IPARA,I)
                WRITE(IOUT1,*) ' RR-ids',(ID_D3B(I2),I2=1,ND3BID)
                WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-               CALL ERRMSG (917,0, PAR3B(IPARA,I), ' Beslisparameterfile', IOUT1)
+               call write_error_message_rtc (917,0, PAR3B(IPARA,I), ' Beslisparameterfile', IOUT1)
                RetVal = 917
            ENDIF
          ENDDO
@@ -908,12 +908,12 @@
             IF (TIS3B (IPARA,I) .LT. NTIMSH) THEN
                 TIS3B (IPARA,I) = NTIMSH
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)
             ENDIF
             IF (TIS3B (IPARA,I) .GT. 0) THEN
                 TIS3B (IPARA,I) = 0
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (923,0, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (923,0, 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 923
             ENDIF
             If (RetVal .ne. 0) Return
@@ -924,7 +924,7 @@
            IF (VARID3B(IPARA,I) .eq. '') Then
              IF (VAR3B (IPARA,I) .GT. NPAR3 .or. Var3B(Ipara,i) .le. 0) THEN
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (916, NPAR3, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (916, NPAR3, 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 916
              ENDIF
              If (RetVal .ne. 0) Return
@@ -947,7 +947,7 @@
                WRITE(IOUT1,*) ' Prediction para.id', PARPRE(IPARA,I)
                WRITE(IOUT1,*) ' Prediction id',(ID_PRE(I2),I2=1,NPRECP)
                WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-               CALL ERRMSG (917,0, PARPRE(IPARA,I), ' Beslisparameterfile', IOUT1)
+               call write_error_message_rtc (917,0, PARPRE(IPARA,I), ' Beslisparameterfile', IOUT1)
                RetVal = 917
            ENDIF
          ENDDO
@@ -957,12 +957,12 @@
             IF (TISPRE(IPARA,I) .LT. NTIMSH) THEN
                 TISPRE(IPARA,I) = NTIMSH
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (915,NTIMSH, 'Rdpara',' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (915,NTIMSH, 'Rdpara',' Beslisparameterfile', IOUT1)
             ENDIF
             IF (TISPRE(IPARA,I) .GT. 0) THEN
                 TISPRE(IPARA,I) = 0
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (923,0, 'Rdpara',  ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (923,0, 'Rdpara',  ' Beslisparameterfile', IOUT1)
                 RetVal = 923
             ENDIF
             If (RetVal .ne. 0) Return
@@ -972,12 +972,12 @@
          DO I=1,PARDIM(IPARA,3)
             IF (VARPRE(IPARA,I) .GT. NPARP .or. VarPre(Ipara,i) .le. 0) THEN
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (916, NPARP, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (916, NPARP, 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 916
             ENDIF
             IF (VARPRE(IPARA,I) .GT. NTIMHP) THEN
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (939, NTIMHP, 'Rdpara',ParaId(ipara), IOUT1)
+                call write_error_message_rtc (939, NTIMHP, 'Rdpara',ParaId(ipara), IOUT1)
                 RetVal = 939
             ENDIF
             If (RetVal .ne. 0) Return
@@ -999,7 +999,7 @@
                WRITE(IOUT1,*) ' Ext. parameter id',PAREXT(IPARA,I)(1:len_trim(ParExt(Ipara,I)))
                WRITE(IOUT1,*) ' Ext. ids',(ID_EXT(I2)(1:len_trim(ID_Ext(I2))),I2=1,NEXT+NEXTHD)
                WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-               CALL ERRMSG (917,0, PAREXT(IPARA,I), ' Beslisparameterfile', IOUT1)
+               call write_error_message_rtc (917,0, PAREXT(IPARA,I), ' Beslisparameterfile', IOUT1)
                RetVal = 917
            ENDIF
          ENDDO
@@ -1009,12 +1009,12 @@
             IF (TISEXT(IPARA,I) .LT. NTIMSH) THEN
                 TISEXT(IPARA,I) = NTIMSH
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)
             ENDIF
             IF (TISEXT(IPARA,I) .GT. 0) THEN
                 TISEXT(IPARA,I) = 0
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (923,0, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (923,0, 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 923
             ENDIF
             If (RetVal .ne. 0) Return
@@ -1024,12 +1024,12 @@
          DO I=1,PARDIM(IPARA,4)
             IF (VAREXT(IPARA,I) .GT. NPARE .or. VarExt(Ipara,i) .le. 0) THEN
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (916, NPARE, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (916, NPARE, 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 916
             ENDIF
             IF ((VAREXT(IPARA,I)+1)/2 .GT. NTIMHW) THEN
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (940, NTIMHW, 'Rdpara',ParaId(ipara), IOUT1)
+                call write_error_message_rtc (940, NTIMHW, 'Rdpara',ParaId(ipara), IOUT1)
                 RetVal = 940
             ENDIF
             If (RetVal .ne. 0) Return
@@ -1051,7 +1051,7 @@
                WRITE(IOUT1,*) ' WQ-Parameter id',PARWQ(IPARA,I)
                WRITE(IOUT1,*) ' WQ ids',(ID_SWQ(I2),I2=1,NSOBWQ)
                WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-               CALL ERRMSG (917,0, PARWQ(IPARA,I), ' Beslisparameterfile', IOUT1)
+               call write_error_message_rtc (917,0, PARWQ(IPARA,I), ' Beslisparameterfile', IOUT1)
                RetVal = 917
            ENDIF
          ENDDO
@@ -1061,12 +1061,12 @@
             IF (TISWQ (IPARA,I) .LT. NTIMSH) THEN
                 TISWQ (IPARA,I) = NTIMSH
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)
             ENDIF
             IF (TISWQ (IPARA,I) .GT. 0) THEN
                 TISWQ (IPARA,I) = 0
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (923,0, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (923,0, 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 923
             ENDIF
             If (RetVal .ne. 0) Return
@@ -1077,7 +1077,7 @@
            IF (VARIDWQ(IPARA,I) .eq. '') Then
              IF (VARWQ (IPARA,I) .GT. NPARQ .or. VarWQ (Ipara,i) .le. 0) THEN
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (916, NPARQ, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (916, NPARQ, 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 916
              ENDIF
              If (RetVal .ne. 0) Return
@@ -1100,7 +1100,7 @@
                WRITE(IOUT1,*) ' D3DFlow-parameter id',PAR3D (IPARA,I)
                WRITE(IOUT1,*) ' D3D-ids',(ID_D3D(I2),I2=1,ND3D)
                WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-               CALL ERRMSG (917,0, PAR3D(IPARA,I), ' Beslisparameterfile', IOUT1)
+               call write_error_message_rtc (917,0, PAR3D(IPARA,I), ' Beslisparameterfile', IOUT1)
                RetVal = 917
            ENDIF
          ENDDO
@@ -1110,12 +1110,12 @@
             IF (TIS3D (IPARA,I) .LT. NTIMSH) THEN
                 TIS3D (IPARA,I) = NTIMSH
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)
             ENDIF
             IF (TIS3D (IPARA,I) .GT. 0) THEN
                 TIS3D (IPARA,I) = 0
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (923,0, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (923,0, 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 923
             ENDIF
             If (RetVal .ne. 0) Return
@@ -1126,7 +1126,7 @@
            IF (VARID3D(IPARA,I) .eq. '') Then
              IF (VAR3D (IPARA,I) .GT. NPAR3D .or. Var3D(Ipara,i) .le. 0) THEN
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (916, NPAR3D, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (916, NPAR3D, 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 916
              ENDIF
              If (RetVal .ne. 0) Return
@@ -1143,12 +1143,12 @@
               IF (TISPAR(IPARA,I) .LT. NTIMSH) THEN
                   TISPAR(IPARA,I) = NTIMSH
                   WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                  CALL ERRMSG (915,NTIMSH, 'Rdpara',' Beslisparameterfile', IOUT1)
+                  call write_error_message_rtc (915,NTIMSH, 'Rdpara',' Beslisparameterfile', IOUT1)
               ENDIF
               IF (TISPAR(IPARA,I) .GE. 0) THEN
                   TISPAR(IPARA,I) = -1
                   WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                  CALL ERRMSG (923, -1, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                  call write_error_message_rtc (923, -1, 'Rdpara', ' Beslisparameterfile', IOUT1)
                   RetVal = 923
               ENDIF
               If (RetVal .ne. 0) Return
@@ -1163,12 +1163,12 @@
             IF (TISPAR(IPARA,I) .LT. NTIMSH) THEN
                 TISPAR(IPARA,I) = NTIMSH
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (915,NTIMSH, 'Rdpara', ' Beslisparameterfile', IOUT1)
             ENDIF
             IF (TISPAR(IPARA,I) .GT. 0) THEN
                 TISPAR(IPARA,I) = 0
                 WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-                CALL ERRMSG (923, 0 , 'Rdpara', ' Beslisparameterfile', IOUT1)
+                call write_error_message_rtc (923, 0 , 'Rdpara', ' Beslisparameterfile', IOUT1)
                 RetVal = 923
             ENDIF
             If (RetVal .ne. 0) Return
@@ -1190,7 +1190,7 @@
                WRITE(IOUT1,*) ' Interpolation para.id', PARInterp(IPARA,I)
                WRITE(IOUT1,*) ' InterpolationTable id',(InterpolationTableId(I2),I2=1,NrInterpTables)
                WRITE(IOUT1,*) ' Decision parameter ', PARAID(IPARA)
-               CALL ERRMSG (917,0, PARInterp (IPARA,I), ' Beslisparameterfile', IOUT1)
+               call write_error_message_rtc (917,0, PARInterp (IPARA,I), ' Beslisparameterfile', IOUT1)
                RetVal = 917
            ENDIF
          ENDDO
@@ -1228,7 +1228,7 @@
          SearchString = 'RSVP'
          Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
          If (Endfil .or. .not. success)  then
-            Call ErrMsg (974, 0, 'Rdpara', ' Unexpected end of file ',IOUT1)
+            call write_error_message_rtc (974, 0, 'Rdpara', ' Unexpected end of file ',IOUT1)
             RetVal = 974
             Return
          Endif
@@ -1238,7 +1238,7 @@
          Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
          If (.not. Success) ReadError = .true.
          IF (ReadError) then
-            Call ErrMsg (974,0,'Rdpara',' Read error during reading decision parameter file - RSVP ParseToken ',IOUT1)
+            call write_error_message_rtc (974,0,'Rdpara',' Read error during reading decision parameter file - RSVP ParseToken ',IOUT1)
             RetVal = 974
             Return
          Endif
@@ -1274,7 +1274,7 @@
 ! check that nr. bottom gates + turbine gates + spillway gates = total number of gates
          NrGates = NrBottomGates(irsv) + NrTurbines(irsv) + NrSpillways(irsv)
          If (NrGates .ne. NrsvPar) then
-             Call ErrMsg (913, 0, 'Rdpara', &
+             call write_error_message_rtc (913, 0, 'Rdpara', &
                          ' Inconsistent number of gates (total<> nr. bottom+turbine+spillway gates) ',IOUT1)
              RetVal = 913
              Return
@@ -1287,10 +1287,10 @@
 ! viz. max.lvl, initial level, expected inflow; downstream demand per link outlet, maximum flow per link outlet
          PARDIM (IPARA,7) = 3 + 2* NrOutletlinks(irsv)
          IF (PARDIM(IPARA,7) .GT. NRPAR) then
-            CALL ERRMSG (913,0,'Rdpara',' NRPAR beslisparameters',IOUT1)
+            call write_error_message_rtc (913,0,'Rdpara',' NRPAR beslisparameters',IOUT1)
             RetVal = 913
          ElseIF (PARDIM(IPARA,7) .GT. NHLP)  then
-            CALL ERRMSG (913,0,'Rdpara',' NHLP; PARDIM7',IOUT1)
+            call write_error_message_rtc (913,0,'Rdpara',' NHLP; PARDIM7',IOUT1)
             RetVal = 913
          Endif
          If (RetVal .ne. 0) Return
@@ -1335,7 +1335,7 @@
               Do I=1,NrBottomGates(Irsv)
                  Read (RecordData%Token(ReturnIndx+i),*,Err=993)   LinkOutlets(irsv,1,i)
                  If (LinkOutlets(irsv,i,1) .gt. NrOutletLinks(irsv)) then
-                    Call ErrMsg (913,0,'Rdpara',' Inconsistent outlet link number specified for bottom gate ',IOUT1)
+                    call write_error_message_rtc (913,0,'Rdpara',' Inconsistent outlet link number specified for bottom gate ',IOUT1)
                     RetVal = 913
                     Return
                  Endif
@@ -1347,7 +1347,7 @@
               Do I=1,NrTurbines(Irsv)
                  Read (RecordData%Token(ReturnIndx+i),*,Err=993)   LinkOutlets(irsv,2,i)
                  If (LinkOutlets(irsv,2,i) .gt. NrOutletLinks(irsv)) then
-                    Call ErrMsg (913,0,'Rdpara',' Inconsistent outlet link number specified for turbinegate ',IOUT1)
+                    call write_error_message_rtc (913,0,'Rdpara',' Inconsistent outlet link number specified for turbinegate ',IOUT1)
                     RetVal = 913
                     Return
                  Endif
@@ -1359,7 +1359,7 @@
               Do I=1,NrSpillways(Irsv)
                  Read (RecordData%Token(ReturnIndx+i),*,Err=993)   LinkOutlets(irsv,3,i)
                  If (LinkOutlets(irsv,3,i) .gt. NrOutletLinks(irsv)) then
-                    Call ErrMsg (913,0,'Rdpara',' Inconsistent outlet link number specified for spillwaygate ',IOUT1)
+                    call write_error_message_rtc (913,0,'Rdpara',' Inconsistent outlet link number specified for spillwaygate ',IOUT1)
                     RetVal = 913
                     Return
                  Endif
@@ -1431,7 +1431,7 @@
          ReadError = .true.
    994   continue
          IF (ReadError) then
-            Call ErrMsg (974,0,'Rdpara',' Read error during reading Reservoir decision parameter record',IOUT1)
+            call write_error_message_rtc (974,0,'Rdpara',' Read error during reading Reservoir decision parameter record',IOUT1)
             RetVal = 974
             Return
          Endif
@@ -1477,13 +1477,13 @@
          SearchString = 'PAR3'
          Success = GetRecord(In, SearchString, Endfil, idebug, Iout1, KeyUppUntilColumn)
          If (Endfil .or. .not. success) then
-            Call ErrMsg (913,0,'Rdpara',' Error in PAR3 record: Time Table end not found',IOUT1)
+            call write_error_message_rtc (913,0,'Rdpara',' Error in PAR3 record: Time Table end not found',IOUT1)
             RetVal = 913
             Return
          else
             Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)
             If (.not. success) then
-               Call ErrMsg (913,0,'Rdpara',' Error getting Table Name',IOUT1)
+               call write_error_message_rtc (913,0,'Rdpara',' Error getting Table Name',IOUT1)
                RetVal = 913
                Return
             Endif
@@ -1493,7 +1493,7 @@
                NrColumns = 1
                Success = GetTable (RTCTableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
                If (.not. success) then
-                  Call ErrMsg (913,0,'Rdpara',' Error getting Table Data' ,IOUT1)
+                  call write_error_message_rtc (913,0,'Rdpara',' Error getting Table Data' ,IOUT1)
                   RetVal = 913
                   Return
                Endif
@@ -1511,7 +1511,7 @@
 ! *********************************************************************
 !
   150 CONTINUE
-      CALL ERRMSG (902, IECODE, 'Rdpara', ' Beslispar.file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rdpara', ' Beslispar.file', IOUT1)
       RetVal = 902
       Return
 
@@ -1592,7 +1592,7 @@
              If (NSeq .lt. NPara) goto 201
          Else
             If (NSeq .lt. NPara) then
-               Call ErrMsg (951,0,'Rdpara',' No correct simulation order of decision variables can be set',IOUT1)
+               call write_error_message_rtc (951,0,'Rdpara',' No correct simulation order of decision variables can be set',IOUT1)
                RetVal = 951
                Return
             Endif
@@ -1637,7 +1637,7 @@
                WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)
                WRITE(IOUT1,*) ' Number of related decision parameters', PARDIM(IPARA,6)
                WRITE(IOUT1,*) ' Parameter id not found ', PARPAR(IPARA,IPAR)
-               CALL ERRMSG (924,0, PARAID(IPARA), ' Check 6 Decision parameter file', IOUT1)
+               call write_error_message_rtc (924,0, PARAID(IPARA), ' Check 6 Decision parameter file', IOUT1)
                RetVal = 924
 !           ELSEIF (IPARA .GT. NPAR1 .AND.
 !    *                IXDPAR(IPARA,IPAR) .GT. IPARA) THEN
@@ -1651,7 +1651,7 @@
                WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA)(1:len_trim(Paraid(ipara)))
                WRITE(IOUT1,*) ' Number of related decision parameters', PARDIM(IPARA,6)
                WRITE(IOUT1,*) ' Parameter id to be defined earlier', PARPAR(IPARA,IPAR) (1:len_trim(Parpar(ipara,ipar)))
-               CALL ERRMSG (925,0, PARAID(IPARA), ' Decision parameter file', IOUT1)
+               call write_error_message_rtc (925,0, PARAID(IPARA), ' Decision parameter file', IOUT1)
                RetVal = 925
             ENDIF
          ENDDO
@@ -1672,7 +1672,7 @@
                WRITE(IOUT1,*) ' Parameter id',PARAID(IPARA) (1:len_trim(Paraid(ipara)))
                WRITE(IOUT1,*) ' Number of related decision parameters RSVP', PARDIM(IPARA,7)
                WRITE(IOUT1,*) ' Parameter id not found ', PARRSV(IPARA,IPAR)(1:len_trim(Parrsv(ipara,ipar)))
-               CALL ERRMSG (924,0, PARAID(IPARA), ' Check 7 Decision parameter file', IOUT1)
+               call write_error_message_rtc (924,0, PARAID(IPARA), ' Check 7 Decision parameter file', IOUT1)
                RetVal = 924
             ENDIF
          ENDDO
@@ -1686,7 +1686,7 @@
          ! inverteren array SIMSEQ
          Allocate (ihelp(Npara), Stat=Allocation_Error )
          If (Allocation_Error .ne. 0) then
-            Call ERRMSG (913,0,'Rdpara',' Error allocating arrays in subroutine',IOUT1)
+            call write_error_message_rtc (913,0,'Rdpara',' Error allocating arrays in subroutine',IOUT1)
             RetVal = 913
             Return
          Endif
@@ -1715,7 +1715,7 @@
          If (Abs(NTims) .lt. (2+Abs(MxTmShift(i))) ) then
             Write(Iout1,*) ' NTIMS = ', Ntims
             Write(Iout1,*) ' i, MxTmShift(i) = ', i, 2+Abs(MxTmShift(i))
-            Call ERRMSG (913, 0, 'Rdpara', ' Mx. Time shift dimension NTIMS', IOUT1)
+            call write_error_message_rtc (913, 0, 'Rdpara', ' Mx. Time shift dimension NTIMS', IOUT1)
             RetVal = 913
          Endif
       Enddo
@@ -1723,7 +1723,7 @@
 !     If (Abs(NTims) .lt. (2+Abs(MxTmShift(9))) ) then
 !        Write(Iout1,*) ' NTIMS = ', Ntims
 !        Write(Iout1,*) ' i, MxTmShift(i) = ', 9, 2+Abs(MxTmShift(9))
-!        Call ERRMSG (913, 0, 'Rdpara', ' Mx. Time shift dimension NTIMS', IOUT1)
+!        call write_error_message_rtc (913, 0, 'Rdpara', ' Mx. Time shift dimension NTIMS', IOUT1)
 !        RetVal = 913
 !     Endif
 

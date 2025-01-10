@@ -30,32 +30,41 @@
 !
 !
 
- subroutine in2Dflowcell(xp, yp, k) ! is this point in a 2Dflowcell
-    use precision, only: dp
+module m_in2dflowcell
 
-    use m_flowgeom
-    use m_flow
-    use fm_external_forcings_data
-    use geometry_module, only: pinpok
-    use m_missing, only: jins, dmiss
+   implicit none
 
-    implicit none
+   private
 
-    real(kind=dp) :: xp, yp
-    integer :: k
+   public :: in2dflowcell
 
-    ! locals
-    integer :: n, nn, in
+contains
 
-    k = 0
-    do n = 1, ndx2D
-       nn = size(nd(n)%x)
-       if (NN > 2) then
-          call PINPOK(Xp, Yp, Nn, nd(n)%x, nd(n)%y, IN, jins, dmiss)
-          if (in == 1) then
-             k = n
-             return
-          end if
-       end if
-    end do
- end subroutine in2Dflowcell
+   subroutine in2Dflowcell(xp, yp, k) ! is this point in a 2Dflowcell
+      use precision, only: dp
+      use m_flowgeom
+      use m_flow
+      use fm_external_forcings_data
+      use geometry_module, only: pinpok
+      use m_missing, only: jins, dmiss
+
+      real(kind=dp) :: xp, yp
+      integer :: k
+
+      ! locals
+      integer :: n, nn, in
+
+      k = 0
+      do n = 1, ndx2D
+         nn = size(nd(n)%x)
+         if (NN > 2) then
+            call PINPOK(Xp, Yp, Nn, nd(n)%x, nd(n)%y, IN, jins, dmiss)
+            if (in == 1) then
+               k = n
+               return
+            end if
+         end if
+      end do
+   end subroutine in2Dflowcell
+
+end module m_in2dflowcell

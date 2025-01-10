@@ -31,41 +31,56 @@
 !
 
 !> A complete single user time step (init-run-finalize).
- subroutine flow_usertimestep(key, iresult) ! do computational flowsteps until timeuser
-    use m_flowtimes
-    use timers
-    use unstruc_messages
-    use m_partitioninfo
-    use m_timer
-    use dfm_error
-    implicit none
-    integer, intent(out) :: key !< Key number if any key was pressed in GUI.
-    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
+module m_flow_usertimestep
 
-    call timstrt('User time loop', handle_user)
+   implicit none
 
-    iresult = DFM_GENERICERROR
-    key = 0
+   private
 
-    call flow_init_usertimestep(iresult)
-    if (iresult /= DFM_NOERR) then
-       goto 888
-    end if
+   public :: flow_usertimestep
 
-    call flow_run_usertimestep(key, iresult)
-    if (iresult /= DFM_NOERR) then
-       goto 888
-    end if
+contains
 
-    call flow_finalize_usertimestep(iresult)
-    if (iresult /= DFM_NOERR) then
-       goto 888
-    end if
+   subroutine flow_usertimestep(key, iresult) ! do computational flowsteps until timeuser
+      use m_flow_run_usertimestep, only: flow_run_usertimestep
+      use m_flow_init_usertimestep, only: flow_init_usertimestep
+      use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
+      use m_flowtimes
+      use timers
+      use unstruc_messages
+      use m_partitioninfo
+      use m_timer
+      use dfm_error
 
-    call timstop(handle_user)
+      integer, intent(out) :: key !< Key number if any key was pressed in GUI.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
-    iresult = DFM_NOERR
-    return ! Return with success.
+      call timstrt('User time loop', handle_user)
 
-888 continue
- end subroutine flow_usertimestep
+      iresult = DFM_GENERICERROR
+      key = 0
+
+      call flow_init_usertimestep(iresult)
+      if (iresult /= DFM_NOERR) then
+         goto 888
+      end if
+
+      call flow_run_usertimestep(key, iresult)
+      if (iresult /= DFM_NOERR) then
+         goto 888
+      end if
+
+      call flow_finalize_usertimestep(iresult)
+      if (iresult /= DFM_NOERR) then
+         goto 888
+      end if
+
+      call timstop(handle_user)
+
+      iresult = DFM_NOERR
+      return ! Return with success.
+
+888   continue
+   end subroutine flow_usertimestep
+
+end module m_flow_usertimestep

@@ -31,93 +31,103 @@
 !
 
 !> get the intersections of a spline with all other splines
-subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
-   use precision, only: dp
-   use m_splines
-   use m_spline2curvi
-   use m_alloc
-   use stdlib_sorting, only: sort_index
-   use geometry_module, only: dbdistance
+module m_get_crosssplines
+   use m_sect3r, only: sect3r
 
    implicit none
 
-   integer, intent(in) :: num !< number of spline control points
-   real(kind=dp), dimension(num), intent(in) :: xs1, ys1 !< coordinates of spline control points
+   private
 
-   integer, intent(out) :: ncs !< number of cross splines
-   integer, dimension(mcs), intent(out) :: ics !< indices of the cross splines
-   logical, dimension(mcs), intent(out) :: Lorient !< orientation
-   real(kind=dp), dimension(mcs), intent(out) :: t !< center-spline coordinate of cross splines
-   real(kind=dp), dimension(mcs), intent(out) :: cosphi !< cos of crossing angles
+   public :: get_crosssplines
 
-   real(kind=dp), dimension(:), allocatable :: xlist, ylist
+contains
 
-   integer, dimension(mcs) :: perm ! for sorting the cross splines
-   integer, dimension(mcs) :: ics1
-   logical, dimension(mcs) :: Lorient1
+   subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
+      use precision, only: dp
+      use m_splines
+      use m_spline2curvi
+      use m_alloc
+      use stdlib_sorting, only: sort_index
 
-   integer :: idx, js, numj, numcro, numnew
+      integer, intent(in) :: num !< number of spline control points
+      real(kind=dp), dimension(num), intent(in) :: xs1, ys1 !< coordinates of spline control points
 
-   real(kind=dp) :: crp, tj, xp, yp, tt
+      integer, intent(out) :: ncs !< number of cross splines
+      integer, dimension(mcs), intent(out) :: ics !< indices of the cross splines
+      logical, dimension(mcs), intent(out) :: Lorient !< orientation
+      real(kind=dp), dimension(mcs), intent(out) :: t !< center-spline coordinate of cross splines
+      real(kind=dp), dimension(mcs), intent(out) :: cosphi !< cos of crossing angles
+
+      real(kind=dp), dimension(:), allocatable :: xlist, ylist
+
+      integer, dimension(mcs) :: perm ! for sorting the cross splines
+      integer, dimension(mcs) :: ics1
+      logical, dimension(mcs) :: Lorient1
+
+      integer :: idx, js, numj, numcro, numnew
+
+      real(kind=dp) :: crp, tj, xp, yp, tt
 
 !  allocate
-   allocate (xlist(1), ylist(1))
+      allocate (xlist(1), ylist(1))
 
 !  find the cross splines
-   ncs = 0
-   ics = 0
-   t = 1d99 ! default values will cause sorting to disregard non cross splines
-   do js = 1, mcs
-      call nump(js, numj)
+      ncs = 0
+      ics = 0
+      t = 1d99 ! default values will cause sorting to disregard non cross splines
+      do js = 1, mcs
+         call nump(js, numj)
 
 !     reallocate if necessary
-      if (numj > ubound(xlist, 1)) then
-         numnew = int(1.2d0 * dble(numj)) + 1
-         call realloc(xlist, numnew)
-         call realloc(ylist, numnew)
-      end if
+         if (numj > ubound(xlist, 1)) then
+            numnew = int(1.2d0 * dble(numj)) + 1
+            call realloc(xlist, numnew)
+            call realloc(ylist, numnew)
+         end if
 
 !     non-cross splines may only cross with cross splines visa versa
-      if ((num == 2 .and. numj == 2) .or. (num > 2 .and. numj > 2)) cycle
+         if ((num == 2 .and. numj == 2) .or. (num > 2 .and. numj > 2)) cycle
 
 !     get the intersection of the splines
-      xlist(1:numj) = xsp(js, 1:numj)
-      ylist(1:numj) = ysp(js, 1:numj)
-      call sect3r(xs1, ys1, xlist, ylist, &
-                  max(num, numj), crp, num, numj, numcro, tt, tj, xp, yp)
+         xlist(1:numj) = xsp(js, 1:numj)
+         ylist(1:numj) = ysp(js, 1:numj)
+         call sect3r(xs1, ys1, xlist, ylist, &
+                     max(num, numj), crp, num, numj, numcro, tt, tj, xp, yp)
 
-      if (abs(crp) < dtolcos) then
-         numcro = 0d0
-      end if
-
-      if (numcro == 1) then ! intersection found
-         ncs = ncs + 1
-         ics(js) = js
-         if (crp > 0d0) then
-            Lorient(js) = .false.
-         else
-            Lorient(js) = .true.
+         if (abs(crp) < dtolcos) then
+            numcro = 0d0
          end if
-         t(js) = tt
-         cosphi(js) = crp
-      end if
 
-   end do ! do js=1,mcs
+         if (numcro == 1) then ! intersection found
+            ncs = ncs + 1
+            ics(js) = js
+            if (crp > 0d0) then
+               Lorient(js) = .false.
+            else
+               Lorient(js) = .true.
+            end if
+            t(js) = tt
+            cosphi(js) = crp
+         end if
+
+      end do ! do js=1,mcs
 
 !  sort cross splines, such that they are in increasing center spline coordinate order
-   call sort_index(t, perm)
+      call sort_index(t, perm)
 
-   ics1 = ics
-   Lorient1 = Lorient
+      ics1 = ics
+      Lorient1 = Lorient
 
-   do js = 1, mcs
-      idx = perm(js)
-      ics(js) = ics1(idx)
-      Lorient(js) = Lorient1(idx)
-   end do
+      do js = 1, mcs
+         idx = perm(js)
+         ics(js) = ics1(idx)
+         Lorient(js) = Lorient1(idx)
+      end do
 
 !  deallocate
-   deallocate (xlist, ylist)
+      deallocate (xlist, ylist)
 
-   return
-end subroutine get_crosssplines
+      return
+   end subroutine get_crosssplines
+
+end module m_get_crosssplines

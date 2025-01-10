@@ -33,37 +33,49 @@
 !> Initializes OpenMP settings, when necessary.
 !! Call this once initially, or after changing the max number of OpenMP threads setting.
 !! When running in MPI-mode, OpenMP is switched off, unless (i.e., 1 OpenMP thread max).
-integer function init_openmp(maxnumthreads, mpion) result(iresult)
-#ifdef _OPENMP
-   use omp_lib
-#endif
-   use dfm_error
+module m_init_openmp
+
    implicit none
-   integer, intent(in) :: maxnumthreads !< Desired maximum number of OpenMP threads.
-   integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
 
-   iresult = DFM_NOERR
+   private
+
+   public :: init_openmp
+
+contains
+
+   integer function init_openmp(maxnumthreads, mpion) result(iresult)
+#ifdef _OPENMP
+      use omp_lib
+#endif
+      use dfm_error
+
+      integer, intent(in) :: maxnumthreads !< Desired maximum number of OpenMP threads.
+      integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
+
+      iresult = DFM_NOERR
 #ifndef _OPENMP
-   associate (maxnumthreads => maxnumthreads) ! Required to prevent compiler error for unused variable in case OpenMP is not defined
-   end associate
+      associate (maxnumthreads => maxnumthreads) ! Required to prevent compiler error for unused variable in case OpenMP is not defined
+      end associate
 #endif
 
-   if (mpion == 1) then
+      if (mpion == 1) then
 #ifdef _OPENMP
-      ! If MPI is on for this model, *and* no user-define numthreads was set, then disable OpenMP.
-      if (maxnumthreads == 0) then
-         call omp_set_num_threads(1)
-         ! TODO: AvD: else, reset to maximum? Especially in library mode when multiple models can be run after one another?
-      else
-         call omp_set_num_threads(maxnumthreads)
-      end if
+         ! If MPI is on for this model, *and* no user-define numthreads was set, then disable OpenMP.
+         if (maxnumthreads == 0) then
+            call omp_set_num_threads(1)
+            ! TODO: AvD: else, reset to maximum? Especially in library mode when multiple models can be run after one another?
+         else
+            call omp_set_num_threads(maxnumthreads)
+         end if
 #endif
-   else ! No MPI, but handle OpenMP settings:
+      else ! No MPI, but handle OpenMP settings:
 #ifdef _OPENMP
-      if (maxnumthreads > 0) then
-         call omp_set_num_threads(maxnumthreads)
-      end if
+         if (maxnumthreads > 0) then
+            call omp_set_num_threads(maxnumthreads)
+         end if
 #endif
-   end if
+      end if
 
-end function init_openmp
+   end function init_openmp
+
+end module m_init_openmp

@@ -98,6 +98,19 @@ program unstruc
    use m_editsam
    use m_editnetw
    use m_read_commandline, only: read_commandline
+   use m_flow_modelinit, only: flow_modelinit
+   use m_makelongculverts_commandline, only: makelongculverts_commandline
+   use m_makenet_sub, only: makenet
+   use m_partition_from_commandline, only: partition_from_commandline
+   use m_refine_from_commandline, only: refine_from_commandline
+   use m_resetFullFlowModel, only: resetFullFlowModel
+   use m_dobatch, only: dobatch
+   use m_generatepartitionmdufile, only: generatepartitionmdufile
+   use m_soltest, only: soltest
+   use m_start_program, only: start_program
+   use m_pressakey, only: pressakey
+   use m_fetch_operation_utils, only: set_mpi_environment_wwo_fetch_proc, finish_fetch_proc
+   use m_solve_petsc, only: startpetsc
 
    implicit none
 
@@ -115,9 +128,6 @@ program unstruc
    character(len=maxnamelen) :: md_mapfile_base !< storing the user-defined map file
    character(len=maxnamelen) :: md_flowgeomfile_base !< storing the user-defined flowgeom file
    character(len=maxnamelen) :: md_classmapfile_base !< storing the user-defined class map file
-
-   integer, external :: iget_jaopengl
-   integer, external :: flow_modelinit
 
    real(kind=dp) :: tstartall, tstopall ! just checking...
 
@@ -205,11 +215,8 @@ program unstruc
    write (sdmn, '(I4.4)') my_rank
    !write(6,*) 'my_rank =', my_rank
 
-!   call pressakey()
 #else
    numranks = 1
-   !write(6,*) 'NO MPI'
-   !call pressakey()
 #endif
 
    if (md_pressakey == 1) then

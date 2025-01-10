@@ -31,6 +31,8 @@
 !
 
 module m_del_badortholinks
+   use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
+   use m_mergecells, only: mergecells
 
    implicit none
 

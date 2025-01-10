@@ -30,6 +30,8 @@
 !
 !
 module m_fieldopt
+   use m_orthogrid, only: orthogrid
+
    implicit none
 contains
    subroutine FIELDOPT(NFLD)

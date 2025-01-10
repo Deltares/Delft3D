@@ -30,6 +30,16 @@
 !
 !
 
+module m_set_saltem_nudge
+
+   implicit none
+
+   private
+
+   public :: set_saltem_nudge
+
+contains
+
    !> fill initial salinity and temperature with nudge variables
    subroutine set_saltem_nudge()
       use m_flowgeom
@@ -38,7 +48,6 @@
       use m_nudge
       use m_missing
       use m_get_kbot_ktop
-      implicit none
 
       integer :: k, kk, KB, KT
 
@@ -62,3 +71,5 @@
       end do
 
    end subroutine set_saltem_nudge
+
+end module m_set_saltem_nudge

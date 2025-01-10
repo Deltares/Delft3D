@@ -67,7 +67,7 @@ end module
 
 !> Administration data for D-Flow FM's partitions and MPI-communication patterns.
 module m_partitioninfo
-
+   use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
    use m_tpoly
    use precision_basics, only: hp, dp
    use meshdata, only: ug_idsLen, ug_idsLongNamesLen
@@ -588,6 +588,7 @@ contains
       use network_data
       use m_alloc
       use gridoperations
+      use m_remove_masked_netcells, only: remove_masked_netcells
 
       implicit none
 
@@ -1203,6 +1204,7 @@ contains
 !>    ghost cells are masked in module variable ighostlev_nodebased
    subroutine partition_set_ghostlevels_nodebased(idmn, numlay_loc, ierror)
       use network_data
+      use m_icommon, only: common_cell_for_two_net_links
       implicit none
 
       integer, intent(in) :: idmn !< domain number
@@ -1210,8 +1212,6 @@ contains
       integer, intent(out) :: ierror !< error (1) or not (0)
 
       integer :: ilay, ic, icother, i, ip1, kk, k, L, Lp1, numcells
-
-      integer, external :: common_cell_for_two_net_links
 
       ierror = 1
 
@@ -1373,6 +1373,7 @@ contains
       use m_alloc
       use m_missing
       use m_wrildb
+      use m_filez, only: newfil
 
       implicit none
 
@@ -1753,6 +1754,7 @@ contains
       use m_polygon
       use m_alloc
       use m_reapol
+      use m_filez, only: oldfil
 
       implicit none
 
@@ -3992,6 +3994,7 @@ contains
 #ifdef HAVE_MPI
       use mpi
 #endif
+      use m_solve_petsc, only: stoppetsc
 
       implicit none
 
@@ -4022,7 +4025,7 @@ contains
       use network_data
       use m_missing
       use m_sferic, only: pi
-      use geometry_module, only: dbdistance
+      use m_dlinklength, only: dlinklength
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -4067,8 +4070,6 @@ contains
       integer :: ierror ! error (1) or not (0)
 
       logical :: Lleftfound, Lrightfound
-
-      real(kind=dp), external :: dlinklength
 
       real(kind=dp), parameter :: dtol = 1d-8
 
@@ -5123,13 +5124,12 @@ contains
    subroutine get_ghost_corners(domain_number, min_ghost_level, max_ghost_level, ghost_type, ghost_list)
       use network_data, only: numk, nmk, nod
       use m_alloc
+      use m_icommon, only: common_cell_for_two_net_links
 
       implicit none
       integer, intent(in) :: domain_number
       integer, intent(in) :: min_ghost_level, max_ghost_level, ghost_type
       type(tghost), allocatable, intent(out) :: ghost_list(:)
-
-      integer, external :: common_cell_for_two_net_links
 
       integer, pointer :: ghost_level(:)
       integer :: node, index, first_link, second_link, cell, number_of_cells, min_ghost_level_for_cell
@@ -5619,759 +5619,195 @@ contains
       end if
    end subroutine fill_geometry_arrays_crs
 
-end module m_partitioninfo
+!> set idomain values for all open boundary cells
+   subroutine set_idomain_for_all_open_boundaries()
+      use fm_external_forcings_data, only: nbndz, kez, nbndu, keu, ke1d2d
+      use m_sobekdfm, only: nbnd1d2d
+      use m_cell_geometry, only: ndx
+      use m_alloc, only: realloc
 
-subroutine pressakey()
-#ifdef HAVE_MPI
-   use mpi
-   use m_partitioninfo
-
-   implicit none
-
-   integer :: ierr
-
-   call MPI_barrier(DFM_COMM_ALLWORLD, ierr)
-
-   if (my_rank == 0) then
-      write (6, *) "press a key from rank 0..."
-      read (5, *)
-   end if
-
-   call MPI_barrier(DFM_COMM_ALLWORLD, ierr)
-#else
-   write (6, *) "press a key..."
-   read (5, *)
-#endif
-
-   return
-
-end subroutine pressakey
-
-!  print timing information to file
-subroutine print_timings(FNAM, dtime)
-#ifdef HAVE_MPI
-   use mpi
-#endif
-   use m_timer
-   use m_partitioninfo
-
-   implicit none
-
-   character(len=*), intent(in) :: FNAM !< file name
-   real(kind=dp), intent(in) :: dtime !< time
-
-   integer :: ierr
-   integer :: i, j, lenstr
-
-   logical :: Lexist
-
-   integer, parameter :: ISTRLEN = 20
-   integer :: MFILE
-
-   integer, parameter :: Ntvarlist = 13
-   integer, dimension(Ntvarlist), parameter :: itvarlist = (/1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17/)
-
-   real(kind=dp), dimension(:, :), allocatable :: t_max, t_ave, tcpu_max, tcpu_ave
-   integer :: itsol_max
-
-   integer :: jadoit
-
-   character(len=128) :: FORMATSTRING, FORMATSTRINGINT, dum
-
-!     allocate local arrays
-!      if ( my_rank.eq.0 ) then
-   allocate (t_max(3, NUMT), t_ave(3, NUMT), tcpu_max(3, NUMT), tcpu_ave(3, NUMT))
-!      end if
-
-   if (jampi == 1) then
-#ifdef HAVE_MPI
-!        reduce timings
-      call mpi_reduce(t, t_max, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
-      call mpi_reduce(t, t_ave, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_SUM, 0, DFM_COMM_DFMWORLD, ierr)
-      t_ave = t_ave / dble(ndomains)
-      call mpi_reduce(tcpu, tcpu_max, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
-      call mpi_reduce(tcpu, tcpu_ave, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_SUM, 0, DFM_COMM_DFMWORLD, ierr)
-      tcpu_ave = tcpu_ave / dble(ndomains)
-#endif
-   else
-      t_ave = t
-      tcpu_ave = tcpu
-      t_max = t
-      tcpu_max = tcpu
-   end if
-
-!     reduce number of iterations
-   if (jampi == 1) then
-#ifdef HAVE_MPI
-      call mpi_reduce(numcgits, itsol_max, 1, MPI_INTEGER, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
-#endif
-      jadoit = 0
-      if (my_rank == 0) jadoit = 1
-   else
-      itsol_max = numcgits
-      jadoit = 1
-   end if
-
-   if (jadoit == 1) then
-      inquire (FILE=FNAM, EXIST=Lexist)
-      open (newunit=MFILE, FILE=trim(FNAM), access='APPEND')
-
-      if (.not. Lexist) then
-!           print header
-         lenstr = 4
-         do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ")', advance="no")
-         end do
-         write (MFILE, '(A)', advance="no") 'time'
-
-         lenstr = 16
-         do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ")', advance="no")
-         end do
-         write (MFILE, '(A)', advance="no") 'number_of_tsteps'
-
-         do i = 1, Ntvarlist
-            lenstr = len_trim(tnams(itvarlist(i)))
-            do j = 1, ISTRLEN - (lenstr + 4)
-               write (MFILE, '(" ")', advance="no")
-            end do
-            write (MFILE, "(A, '_ave')", advance="no") trim(tnams(itvarlist(i)))
-
-            do j = 1, ISTRLEN - (lenstr + 4)
-               write (MFILE, '(" ")', advance="no")
-            end do
-            write (MFILE, "(A, '_max')", advance="no") trim(tnams(itvarlist(i)))
-
-            do j = 1, ISTRLEN - (lenstr + 8)
-               write (MFILE, '(" ")', advance="no")
-            end do
-            write (MFILE, "(A, '_CPU_ave')", advance="no") trim(tnams(itvarlist(i)))
-
-            do j = 1, ISTRLEN - (lenstr + 8)
-               write (MFILE, '(" ")', advance="no")
-            end do
-            write (MFILE, "(A, '_CPU_max')", advance="no") trim(tnams(itvarlist(i)))
-         end do
-
-         lenstr = 8
-         do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ")', advance="no")
-         end do
-         write (MFILE, "(A)", advance="no") 'cg_iters'
-         write (MFILE, *)
+      if (size(idomain) < ndx) then
+         call realloc(idomain, ndx, keepExisting=.true.)
       end if
+      call set_idomain_for_open_boundary_points(nbndz, size(kez), kez, ndx, idomain)
+      call set_idomain_for_open_boundary_points(nbndu, size(keu), keu, ndx, idomain)
+      call set_idomain_for_open_boundary_points(nbnd1d2d, size(ke1d2d), ke1d2d, ndx, idomain)
 
-!        make format strings
-      write (dum, '(I0)') ISTRLEN
-      FORMATSTRING = '(E'//trim(adjustl(dum))//'.5, $)'
-      FORMATSTRINGINT = '(I'//trim(adjustl(dum))//',   $)'
-!         write(FORMATSTRING,   '("(E", I0, ".5, $)")') ISTRLEN
-!         write(FORMATSTRINGINT,'("(I", I0, ", $)"  )') ISTRLEN
+   end subroutine set_idomain_for_all_open_boundaries
 
-!        write time
-      write (MFILE, trim(FORMATSTRING)) dtime
+!> set idomain values for a set of open boundary cells
+   subroutine set_idomain_for_open_boundary_points(number_of_boundary_points, links_array_size, &
+                                                   links_to_boundary_points, ndx, idomain)
+      use m_flowgeom, only: ln, lne2ln
 
-!        write number of timesteps
-      write (MFILE, trim(FORMATSTRINGINT)) numtsteps
+      integer, intent(in) :: number_of_boundary_points !< number of boundary points
+      integer, intent(in) :: links_array_size !< size of the links array
+      integer, intent(in) :: links_to_boundary_points(links_array_size) !< links to boundary cells
+      integer, intent(in) :: ndx !< number of flow nodes (internal + boundary)
+      integer, intent(inout) :: idomain(ndx) !< cell-based domain number
 
-!        wite timings
-      do i = 1, Ntvarlist
-         write (MFILE, FORMATSTRING) t_ave(3, itvarlist(i))
-         write (MFILE, FORMATSTRING) t_max(3, itvarlist(i))
-         write (MFILE, FORMATSTRING) tcpu_ave(3, itvarlist(i))
-         write (MFILE, FORMATSTRING) tcpu_max(3, itvarlist(i))
+      integer :: boundary_cell, boundary_point_number, internal_cell, link
+
+      do boundary_point_number = 1, number_of_boundary_points
+         link = links_to_boundary_points(boundary_point_number)
+         boundary_cell = ln(1, lne2ln(link))
+         internal_cell = ln(2, lne2ln(link))
+         idomain(boundary_cell) = idomain(internal_cell)
       end do
 
-!        write number of iterations
-      write (MFILE, FORMATSTRINGINT) itsol_max
+   end subroutine set_idomain_for_open_boundary_points
 
-      write (MFILE, *)
-
-      close (MFILE)
-   end if
-
-!     deallocate local arrays
-!      if ( my_rank.eq.0 ) then
-   if (allocated(t_max)) deallocate (t_max)
-   if (allocated(t_ave)) deallocate (t_ave)
-   if (allocated(tcpu_max)) deallocate (tcpu_max)
-   if (allocated(tcpu_ave)) deallocate (tcpu_ave)
-!      end if
-
-   return
-end subroutine print_timings
-
-!> generate partition numbering with METIS
-!!   1D links are supported now
-subroutine partition_METIS_to_idomain(Nparts, jacontiguous, method, iseed)
-   use network_data
-   use m_partitioninfo
-   use m_metis
-   use m_alloc
-   use MessageHandling
-   use unstruc_messages
-   implicit none
-
-   integer, intent(in) :: Nparts !< number of partitions
-   integer, intent(in) :: method !< partition method. 1: K-Way, 2: Recursive, 3: Mesh-dual
-   integer, intent(in) :: jacontiguous !< enforce contiguous domains (1) or not (0)
-   integer, intent(in) :: iseed !< User defined random seed, passed to METIS'option "SEED". Useful for reproducible partitionings, but only used when /= 0.
-
-   integer :: ierror
-
-   integer :: Ne ! number of elements
-   integer :: Nn ! number of nodes
-   integer, allocatable, dimension(:) :: eptr, eind ! mesh
-   integer, allocatable, dimension(:) :: vwgt ! vertex weights, dim(Ne)
-   integer, allocatable, dimension(:) :: vsize ! communication volume, dim(Ne)
-   integer :: ncommon ! number of common nodes between elements
-   real, allocatable, dimension(:) :: tpwgts ! target weight of partitions, dim(Nparts)
-   integer :: objval ! edgecut or total communication volume
-   integer, allocatable, dimension(:) :: npart ! node    partition number, dim(Nn)
-   integer :: ic, k, N, ipoint, icursize
-   integer, allocatable, dimension(:) :: ncon ! number of balancing constrains, at least 1
-   real, allocatable, dimension(:) :: ubvec ! specify the allowed load imbalance tolerance for each constraint.=1.001 when ncon=1
-   integer :: L, k1, k2
-
-   integer, allocatable, dimension(:) :: xadj_tmp
-   integer, allocatable, dimension(:) :: xadj, adjncy, adjw
-
-   integer, external :: metisopts, METIS_PartGraphKway, METIS_PartGraphRecursive, METIS_PARTMESHDUAL
-
-   ierror = 1
-
-!     check validity of objected number of subdomains
-   if (Nparts < 1) then
-      call qnerror('partition_METIS_to_idomain: number of subdomains < 1', ' ', ' ')
-      goto 1234
-   end if
-
-   !if ( netstat.eq.NETSTAT_CELLS_DIRTY ) then
-   !   call findcells(0)
-   !   call find1dcells()
-   !endif
-
-   Ne = nump1d2d
-
-!     deallocate
-   if (allocated(idomain)) deallocate (idomain)
-
-!     allocate
-   allocate (idomain(Ne), stat=ierror)
-   call aerr('idomain(Ne)', ierror, Ne)
-
-#ifdef HAVE_METIS
-!     allocate
-   allocate (tpwgts(Nparts), stat=ierror)
-   call aerr('tpwgts(Nparts)', ierror, Nparts)
-   if (method == 3) then
-      Nn = numk
-      allocate (eptr(nump1d2d + 1), eind(4 * max(Ne, Nn)), vwgt(max(Ne, Nn)), vsize(max(Ne, Nn)), npart(max(Ne, Nn)), stat=ierror)
-      call aerr('eptr(...)', ierror, nump1d2d + 1 + 7 * max(Ne, Nn))
-   else
-      allocate (vwgt(Ne), vsize(Ne), npart(Ne), ncon(1), ubvec(1), stat=ierror)
-      call aerr('vwgt(...)', ierror, 2 + 3 * Ne)
-   end if
-
-!     set default options
-   call METIS_SetDefaultOptions(opts)
-
-   if (jacontiguous == 1) then
-      if (method == 1 .or. method == 0) then ! K-way (method = 1) is the default (method = 0) now
-         ierror = metisopts(opts, "CONTIG", 1) ! enforce contiguous domains, observation: number of cells per domain becomes less homogeneous
-         if (ierror /= 0) goto 1234
-      else if (method == 2) then
-         call mess(LEVEL_WARN, 'Contiguous option is not available for Recursive Bisection method (method = 2). To enforce contiguous option, use K-way partitioning (default) method (method = 1).')
-      end if
-   end if
-!      i = metisopts(opts,"NCUTS",10)
-   ierror = metisopts(opts, "DBGLVL", 1) ! output
-   if (ierror /= 0) goto 1234
-
-   ierror = metisopts(opts, "UFACTOR", 1) ! allowed load imbalance TODO, MJ: should be an integer x, and tolerance is (1+x)/1000 according to manual, but 1+x/1000 according to us and "macros.h"
-   if (ierror /= 0) goto 1234
-
-   ierror = metisopts(opts, "NITER", 100) ! observation: increasing this number will visually improve the partitioning
-   if (ierror /= 0) goto 1234
-
-   if (iseed /= 0) then
-      ierror = metisopts(opts, "SEED", iseed) ! User-defined seed value, for reproducible partitionings.
-      if (ierror /= 0) goto 1234
-   end if
-
-   vwgt = 1 ! weights of vertices
-   vsize = 1 ! size of vertices for computing the total communication volume
-   tpwgts = 1d0 / dble(Nparts) ! desired weight for each partition
-
-!!     make mesh
-   if (method == 3) then
-      ncommon = 2 !  number of nodes shared by two cells on each side of an edge
-      ipoint = 1
-      icursize = size(eind)
-      do ic = 1, nump1d2d
-         eptr(ic) = ipoint
-         N = netcell(ic)%N
-         do k = 1, N
-!!              reallocate if necessary
-            if (ipoint > icursize) then
-               icursize = int(1.2d0 * ipoint) + 1
-               call realloc(eind, icursize, keepExisting=.true.)
-            end if
-            eind(ipoint) = netcell(ic)%nod(k)
-            ipoint = ipoint + 1
-         end do
-      end do
-      eptr(nump1d2d + 1) = ipoint
-!
-!!       make mesh arrays zero-based
-      eptr = eptr - 1
-      eind = eind - 1
-   else
-
-      ncon = 1 ! number of balancing constraints
-      ubvec = 1.001 ! allowed load imbalance tolerance
-
-!        generate adjacency structure in CSR format
-      allocate (xadj(nump1d2d + 1), stat=ierror)
-      call aerr('xadj(nump1d2d+1)', ierror, nump1d2d + 1)
-      xadj = 0
-      allocate (xadj_tmp(nump1d2d + 1), stat=ierror)
-      call aerr('xadj_tmp(nump1d2d+1)', ierror, nump1d2d + 1)
-
-!        count number of connection per vertex
-      xadj_tmp = 0
-      do L = 1, numL
-         if (lnn(L) > 1) then
-            k1 = abs(lne(1, L))
-            k2 = abs(lne(2, L))
-            xadj_tmp(k1) = xadj_tmp(k1) + 1
-            xadj_tmp(k2) = xadj_tmp(k2) + 1
-         end if
-      end do
-
-!        set startpointers
-      xadj(1) = 1
-      do k = 1, nump1d2d
-         xadj(k + 1) = xadj(k) + xadj_tmp(k)
-      end do
-
-!        set connections
-      allocate (adjncy(xadj(nump1d2d + 1) - 1), stat=ierror)
-      call aerr('adjncy(xadj(nump1d2d+1)-1)', ierror, xadj(nump1d2d + 1) - 1)
-      adjncy = 0
-
-      xadj_tmp = xadj
-      do L = 1, numL
-         if (lnn(L) > 1) then
-            k1 = abs(lne(1, L))
-            k2 = abs(lne(2, L))
-            adjncy(xadj_tmp(k1)) = k2
-            adjncy(xadj_tmp(k2)) = k1
-            xadj_tmp(k1) = xadj_tmp(k1) + 1
-            xadj_tmp(k2) = xadj_tmp(k2) + 1
-         end if
-      end do
-
-      allocate (adjw(xadj(nump1d2d + 1) - 1), stat=ierror)
-      call aerr('jadjw(xadj(nump1d2d+1)-1)', ierror, xadj(nump1d2d + 1) - 1)
-      call set_edge_weights_and_vsize_for_METIS(nump1d2d, Nparts, xadj(nump1d2d + 1) - 1, xadj, adjncy, vsize, adjw)
-
-!        make CSR arrays zero-based
-      xadj = xadj - 1
-      adjncy = adjncy - 1
-   end if
-
-   ! netstat = NETSTAT_CELLS_DIRTY
-
-   select case (method)
-   case (0, 1)
-      ierror = METIS_PartGraphKway(Ne, Ncon, xadj, adjncy, vwgt, vsize, adjw, Nparts, tpwgts, ubvec, opts, objval, idomain)
-      if (ierror /= METIS_OK .and. jacontiguous == 1) then
-         call mess(LEVEL_INFO, 'The above METIS error message is not a problem.')
-         call mess(LEVEL_INFO, 'It means that partitioning failed for k-way method with option contiguous=1')
-         call mess(LEVEL_INFO, 'because the input graph is not contiguous. Retrying partitioning now with')
-         call mess(LEVEL_INFO, 'contiguous=0.')
-         ierror = metisopts(opts, "CONTIG", 0) ! Fallback, allow non-contiguous domains in case of non-contiguous network.
-         if (ierror == 0) then ! Note: metisopts does not use METIS_OK status, but simply 0 instead.
-            ierror = METIS_PartGraphKway(Ne, Ncon, xadj, adjncy, vwgt, vsize, adjw, Nparts, tpwgts, ubvec, opts, objval, idomain)
-         else
-            call mess(LEVEL_ERROR, 'Fallback fails.')
-         end if
-      end if
-   case (2)
-      ierror = METIS_PartGraphRecursive(Ne, Ncon, xadj, adjncy, vwgt, vsize, adjw, Nparts, tpwgts, ubvec, opts, objval, idomain)
-   case (3)
-      ierror = METIS_PARTMESHDUAL(Ne, Nn, eptr, eind, vwgt, vsize, ncommon, Nparts, tpwgts, opts, objval, idomain, npart)
-   case default
-      call mess(LEVEL_ERROR, 'Unknown partitioning method number', method)
-   end select
-
-   if (ierror /= METIS_OK) then
-      call mess(LEVEL_ERROR, 'Metis returns with error code: ', ierror)
-   end if
-
-#else
-   idomain = 0
-   call mess(LEVEL_ERROR, 'This version was built without the METIS mesh partitioner support, ' &
-             //'so the option of partitioning a mesh is not available.')
-#endif
-
-1234 continue
-
-   return
-end subroutine partition_METIS_to_idomain
-
-!  set METIS options, returns error (1) or no error (0)
-integer function metisopts(opts, optionname, optionval)
-   implicit none
-
-   integer, intent(inout) :: opts(*) ! options array
-   character(len=*), intent(in) :: optionname ! option name
-   integer, intent(in) :: optionval ! option value
-#ifdef HAVE_METIS
-   integer :: i
-
-   integer, external :: metisoptions
-
-   i = metisoptions(opts, trim(optionname)//char(0), optionval)
-
-   metisopts = i
-#else
-   metisopts = 1
-#endif
-end function metisopts
-
-!> generate partition numbers from polygons, or with METIS of no polygons are present
-subroutine partition_to_idomain()
-
-   use m_polygon
-   use m_partitioninfo
-   use MessageHandling
-   use gridoperations
-   use m_getint
-
-   implicit none
-
-   integer :: japolygon
-   integer :: i, jacontiguous, method
-   integer :: NPL_save
-   integer :: ierror
-
-   character(len=100) :: message
-
-!     save polygons
-   NPL_save = NPL
-
-!     disable polygons
-   NPL = 0
-
-   call findcells(0)
-   call find1dcells()
-
-!     reenable polygons
-   NPL = NPL_save
-
-   call delete_dry_points_and_areas()
-
-   call cosphiunetcheck(1)
-
-   if (NPL > 1) then ! use the polygons
-      call generate_partitioning_from_pol()
-   else ! use metis
-      Ndomains = 0
-      do while (Ndomains < 1)
-         call getint('Number of domains', Ndomains)
-      end do
-      method = -1
-      do while (method < 0 .or. method > 3)
-         method = 1
-         call getint('Partition method? (1: K-Way, 2: Recursive bisection, 3: Mesh-dual)', method) ! default method is K-way
-      end do
-      jacontiguous = -1
-      if (method == 1 .or. method == 0) then ! K-Way (default) method enables contiguous
-         do while (jacontiguous /= 0 .and. jacontiguous /= 1)
-            jacontiguous = 1
-            call getint('Enforce contiguous domains? (0:no, 1:yes)', jacontiguous)
-         end do
-      end if
-      call partition_METIS_to_idomain(Ndomains, jacontiguous, method, 0)
-
-      japolygon = -1
-      do while (japolygon /= 1 .and. japolygon /= 0)
-         japolygon = 0
-         call getint('Generate polygon? (0: no, 1: yes)', japolygon)
-      end do
-      if (japolygon == 1) then
-!            generate partitioning polygons
-         call generate_partition_pol_from_idomain(ierror)
-
-         if (ierror == 0) then
-!               get 1D domain numbers from polygons
-            call partition_pol_to_idomain(2)
-         else
-            japolygon = 0
-         end if
-      end if
-   end if
-
-!     deallocate
-   if (allocated(numndx)) deallocate (numndx)
-
-!     allocate numndx
-   allocate (numndx(0:ndomains - 1))
-
-!     count and output number of cells
-   do i = 0, ndomains - 1
-      numndx(i) = count(idomain == i)
-      write (message, "('domain', I5, ' contains', I7, ' cells.')") i, numndx(i)
-      call mess(LEVEL_INFO, message)
-   end do
-
-!     BEGIN DEBUG
-!      other_domain=0
-!      call getint('Other domain: ', other_domain)
-!      call partition_setghost_params(9)
-!      call partition_set_ghostlevels(other_domain,numlay_cellbased+1,numlay_nodebased+1,ierror)
-!     END DEBUG
-
-   return
-end subroutine partition_to_idomain
-
-!!> get overlapping nodes (in solver only)
-!!>     {k| 1 <= ghostlev_cellbased(k) < minghostlev_s}
-!!>   overlapping nodes are put in solution vector
-!   subroutine partition_getoverlappingnodes()
-!      use m_partitioninfo
-!      use m_flowgeom, only: Ndx
-!      use m_alloc
-!      implicit none
-!
-!      integer :: iglev, k, num, nsize
-!
-!      nsize = 10  ! array size
-!
-!      if ( allocated(ioverlap) ) deallocate(ioverlap)
-!      allocate(ioverlap(nsize))
-!      ioverlap=0
-!
-!      noverlap = 0
-!
-!      num = size(idomain)
-!
-!      do k=1,num
-!         if ( idomain(k).eq.my_rank ) cycle ! ghost cells only
-!
-!!        select nodes with 1<=cell-based ghostlevel<minghostlev_s
-!         if ( ighosttype_s.eq.IGHOSTTYPE_CELLBASED ) then
-!            iglev = ighostlev_cellbased(k)
-!         else if ( ighosttype_s.eq.IGHOSTTYPE_NODEBASED ) then
-!            iglev = ighostlev_nodebased(k)
-!         else  ! combined
-!            iglev = ighostlev(k)
-!         end if
-!
-!         if ( iglev.ge.1 .and. iglev.lt.minghostlev_s ) then
-!            noverlap = noverlap+1
-!
-!!           reallocate if necessary
-!            if ( nsize.lt.noverlap ) then
-!               nsize = int(1.2d0*dble(nsize)+1d0)
-!               call realloc(ioverlap,nsize,keepExisting=.true.,fill=0)
-!            end if
-!
-!            ioverlap(noverlap) = k
-!         end if
-!      end do
-!!
-!      return
-!   end subroutine partition_getoverlappingnodes
-
-subroutine writemesg(mesg)
+!> reduce balances
+   subroutine reduce_bal(voltotal, numidx)
 #ifdef HAVE_MPI
-   use mpi
+      use mpi
 #endif
-   use m_partitioninfo
 
-   implicit none
-
-   character(len=*), intent(in) :: mesg
-
-   integer :: ierr
+      integer, intent(in) :: numidx !< which values to sum (1=discharge)
+      real(kind=dp), dimension(numidx), intent(inout) :: voltotal !< cross-section data, note: ncrs from module m_monitoring_crosssections
+      real(kind=dp), dimension(:), allocatable :: voltot_all
+      integer :: ierror
 
 #ifdef HAVE_MPI
-   call mpi_comm_rank(DFM_COMM_DFMWORLD, my_rank, ierr)
+      allocate (voltot_all(numidx))
+
+      call mpi_allreduce(voltotal, voltot_all, numidx, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
+
+      voltotal = voltot_all
+
+      if (allocated(voltot_all)) deallocate (voltot_all)
 #endif
-   flush (6)
 
-   if (my_rank == 0) then
-      write (6, *) trim(mesg)
-   end if
-
-   flush (6)
-#ifdef HAVE_MPI
-   call MPI_barrier(DFM_COMM_DFMWORLD, ierr)
-#endif
-   return
-end subroutine writemesg
-
-!> reduce balences
-subroutine reduce_bal(voltotal, numidx)
-#ifdef HAVE_MPI
-   use mpi
-#endif
-   use m_partitioninfo
-
-   implicit none
-
-   integer, intent(in) :: numidx !< which values to sum (1=discharge)
-   real(kind=dp), dimension(numidx), intent(inout) :: voltotal !< cross-section data, note: ncrs from module m_monitoring_crosssections
-   real(kind=dp), dimension(:), allocatable :: voltot_all
-   integer :: ierror
-
-#ifdef HAVE_MPI
-!     allocate
-   allocate (voltot_all(numidx))
-
-   call mpi_allreduce(voltotal, voltot_all, numidx, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-
-   voltotal = voltot_all
-
-!     deallocate
-   if (allocated(voltot_all)) deallocate (voltot_all)
-#endif
-   return
-end subroutine reduce_bal
+   end subroutine reduce_bal
 
 !> disable mirror cells that are not mirror cells in the whole model by setting kce=0
 !!    note: partition information not available yet, need to perform a manual handshake
-subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
-   use m_partitioninfo
-   use network_data
-   use m_alloc
-   use unstruc_messages
-   use geometry_module, only: dbdistance
-   use m_missing, only: dmiss
-   use m_sferic, only: jsferic, jasfer3D
-   use m_wall_clock_time
+   subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
+      use network_data
+      use m_alloc
+      use unstruc_messages
+      use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+      use m_wall_clock_time
 
 #ifdef HAVE_MPI
-   use mpi
+      use mpi
 #endif
-   implicit none
 
-   integer, intent(in) :: Nx !< number of links
-   integer, dimension(Nx), intent(inout) :: kce !< flag
-   integer, dimension(Nx), intent(in) :: ke !< boundary cells
+      integer, intent(in) :: Nx !< number of links
+      integer, dimension(Nx), intent(inout) :: kce !< flag
+      integer, dimension(Nx), intent(in) :: ke !< boundary cells
 
-   integer, intent(out) :: ierror !< error (1) or not (0)
+      integer, intent(out) :: ierror !< error (1) or not (0)
 
 #ifdef HAVE_MPI
-   real(kind=dp), dimension(:, :), allocatable :: xysnd ! send     cell-center coordinates (first x, then y)
-   real(kind=dp), dimension(:, :), allocatable :: xyrec ! recieved cell-center coordinates (first x, then y)
+      real(kind=dp), dimension(:, :), allocatable :: xysnd ! send     cell-center coordinates (first x, then y)
+      real(kind=dp), dimension(:, :), allocatable :: xyrec ! recieved cell-center coordinates (first x, then y)
 
-   integer, dimension(:, :), allocatable :: numrequest ! number of cells requested from other domains (message size)
-   integer, dimension(:), allocatable :: numrequest_loc
+      integer, dimension(:, :), allocatable :: numrequest ! number of cells requested from other domains (message size)
+      integer, dimension(:), allocatable :: numrequest_loc
 
-   integer, dimension(:), allocatable :: irequest
-   integer, dimension(:), allocatable :: kcesnd
-   integer, dimension(:), allocatable :: kcerec
-   integer, dimension(:), allocatable :: jafound
+      integer, dimension(:), allocatable :: irequest
+      integer, dimension(:), allocatable :: kcesnd
+      integer, dimension(:), allocatable :: kcerec
+      integer, dimension(:), allocatable :: jafound
 
-   integer, dimension(MPI_STATUS_SIZE) :: istat
+      integer, dimension(MPI_STATUS_SIZE) :: istat
 
-   character(len=1024) :: str
+      character(len=1024) :: str
 
-   real(kind=dp) :: xL, yL, dis
+      real(kind=dp) :: xL, yL, dis
 
-   real(kind=dp) :: t0, t1, t2, t3, timefind1, timefind2
+      real(kind=dp) :: t0, t1, t2, t3, timefind1, timefind2
 
-   integer :: Nbnd ! number of boundary links
+      integer :: Nbnd ! number of boundary links
 
-   integer :: i, L, k3, k4, num
-   integer :: idmn, other_domain
-   integer :: nrequest, itag, icount
-   integer :: numfound
-   integer :: istart
+      integer :: i, L, k3, k4, num
+      integer :: idmn, other_domain
+      integer :: nrequest, itag, icount
+      integer :: numfound
+      integer :: istart
 
-   integer :: numdisabled
+      integer :: numdisabled
 
-   real(kind=dp), parameter :: dtol = 1d-4
+      real(kind=dp), parameter :: dtol = 1d-4
 
-   call wall_clock_time(t0)
+      call wall_clock_time(t0)
 
-   ierror = 1
+      ierror = 1
 
-   itag = 2
+      itag = 2
 
 !     get subdomain numbers in netcell
-   if (npartition_pol > 0) then
-      call partition_pol_to_idomain(1, jafindcells=0)
-   end if
+      if (npartition_pol > 0) then
+         call partition_pol_to_idomain(1, jafindcells=0)
+      end if
 
 !     allocate
-   allocate (numrequest(0:ndomains - 1, 0:ndomains - 1))
-   numrequest = 0
-   allocate (numrequest_loc(0:ndomains - 1))
-   numrequest_loc = 0
-   allocate (irequest(0:2 * ndomains - 1))
+      allocate (numrequest(0:ndomains - 1, 0:ndomains - 1))
+      numrequest = 0
+      allocate (numrequest_loc(0:ndomains - 1))
+      numrequest_loc = 0
+      allocate (irequest(0:2 * ndomains - 1))
 !     allocate xysnd sufficiently large
-   allocate (xysnd(3, numL))
-   xysnd = 0d0
+      allocate (xysnd(3, numL))
+      xysnd = 0d0
 !     allocate kcesnd sufficiently large
-   call realloc(kcesnd, numL, keepExisting=.false., fill=0)
+      call realloc(kcesnd, numL, keepExisting=.false., fill=0)
 
 !     count number of requested boundary links from other subdomains
-   Nbnd = 0
-   do L = 1, numL
-      if (kce(L) == 1) then
-         Nbnd = Nbnd + 1
-         idmn = idomain(ke(L))
-         if (idmn /= my_rank .and. idmn >= 0 .and. idmn <= ndomains - 1) then
-            numrequest_loc(idmn) = numrequest_loc(idmn) + 1
-         end if
-      end if
-   end do
-
-!     globally reduce
-   call mpi_allgather(numrequest_loc, ndomains, MPI_INTEGER, numrequest, ndomains, MPI_INTEGER, DFM_COMM_DFMWORLD, ierror)
-
-!     send own ghost boundary net links to other domain
-   nrequest = 0 ! number of outgoing requests
-   istart = 1 ! start index in xysnd
-   do other_domain = 0, ndomains - 1
-      if (other_domain == my_rank) cycle
-      num = numrequest(other_domain, my_rank)
-      if (num < 1) cycle
-
-!        get link center coordinates
-      num = 0
+      Nbnd = 0
       do L = 1, numL
          if (kce(L) == 1) then
-            if (idomain(ke(L)) == other_domain) then
-               k3 = kn(1, L)
-               k4 = kn(2, L)
-               xysnd(1, istart + num) = 0.5d0 * (xk(k3) + xk(k4))
-               xysnd(2, istart + num) = 0.5d0 * (yk(k3) + yk(k4))
-               xysnd(3, istart + num) = dble(kn(3, L)) ! also send type of netlink
-               num = num + 1
+            Nbnd = Nbnd + 1
+            idmn = idomain(ke(L))
+            if (idmn /= my_rank .and. idmn >= 0 .and. idmn <= ndomains - 1) then
+               numrequest_loc(idmn) = numrequest_loc(idmn) + 1
             end if
          end if
       end do
 
+!     globally reduce
+      call mpi_allgather(numrequest_loc, ndomains, MPI_INTEGER, numrequest, ndomains, MPI_INTEGER, DFM_COMM_DFMWORLD, ierror)
+
+!     send own ghost boundary net links to other domain
+      nrequest = 0 ! number of outgoing requests
+      istart = 1 ! start index in xysnd
+      do other_domain = 0, ndomains - 1
+         if (other_domain == my_rank) cycle
+         num = numrequest(other_domain, my_rank)
+         if (num < 1) cycle
+
+!        get link center coordinates
+         num = 0
+         do L = 1, numL
+            if (kce(L) == 1) then
+               if (idomain(ke(L)) == other_domain) then
+                  k3 = kn(1, L)
+                  k4 = kn(2, L)
+                  xysnd(1, istart + num) = 0.5d0 * (xk(k3) + xk(k4))
+                  xysnd(2, istart + num) = 0.5d0 * (yk(k3) + yk(k4))
+                  xysnd(3, istart + num) = dble(kn(3, L)) ! also send type of netlink
+                  num = num + 1
+               end if
+            end if
+         end do
+
 !        send link center coordinates
-      nrequest = nrequest + 1
-      call mpi_isend(xysnd(1, istart), 3 * num, mpi_double_precision, other_domain, itag, DFM_COMM_DFMWORLD, irequest(nrequest), ierror)
+         nrequest = nrequest + 1
+         call mpi_isend(xysnd(1, istart), 3 * num, mpi_double_precision, other_domain, itag, DFM_COMM_DFMWORLD, irequest(nrequest), ierror)
 
 !        update start index
-      istart = istart + num
-   end do
+         istart = istart + num
+      end do
 
 !     recieve requests from other domains
-   timefind1 = 0d0 ! time spent in finding netlinks
-   timefind2 = 0d0 ! time spent in finding netlinks
-   istart = 1
-   do other_domain = 0, ndomains - 1
-      num = numrequest(my_rank, other_domain)
+      timefind1 = 0d0 ! time spent in finding netlinks
+      timefind2 = 0d0 ! time spent in finding netlinks
+      istart = 1
+      do other_domain = 0, ndomains - 1
+         num = numrequest(my_rank, other_domain)
 
 !        BEGIN DEBUG
 !         if ( my_rank.eq.1 .and. other_domain.eq.18 ) then
@@ -6379,54 +5815,54 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
 !         end if
 !        END DEBUG
 
-      if (num < 1) cycle
+         if (num < 1) cycle
 !        get message length
-      call mpi_probe(other_domain, itag, DFM_COMM_DFMWORLD, istat, ierror)
-      call mpi_get_count(istat, mpi_double_precision, icount, ierror)
+         call mpi_probe(other_domain, itag, DFM_COMM_DFMWORLD, istat, ierror)
+         call mpi_get_count(istat, mpi_double_precision, icount, ierror)
 
 !        check message length (safety)
-      if (icount /= 3 * num) then
-         write (str, *) 'partition_reduce_mirrorcells: icount.ne.3*num, domain: ', my_rank, ', other domain: ', other_domain, ' icount: ', icount, ', 3*num: ', 3 * num
-         call mess(LEVEL_ERROR, str)
-      end if
+         if (icount /= 3 * num) then
+            write (str, *) 'partition_reduce_mirrorcells: icount.ne.3*num, domain: ', my_rank, ', other domain: ', other_domain, ' icount: ', icount, ', 3*num: ', 3 * num
+            call mess(LEVEL_ERROR, str)
+         end if
 
 !        realloc
-      call realloc(xyrec, (/3, num/), keepExisting=.false., fill=0d0)
+         call realloc(xyrec, (/3, num/), keepExisting=.false., fill=0d0)
 
 !        recieve
-      call mpi_recv(xyrec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)
+         call mpi_recv(xyrec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)
 
 !        realloc
-      call realloc(jafound, num, keepExisting=.false., fill=0)
-      numfound = 0
-      call wall_clock_time(t2)
-      Lloop: do L = 1, numL
-         if (kce(L) /= 1) cycle ! boundary links only
-         if (idomain(ke(L)) /= my_rank) cycle ! in own domain only
+         call realloc(jafound, num, keepExisting=.false., fill=0)
+         numfound = 0
+         call wall_clock_time(t2)
+         Lloop: do L = 1, numL
+            if (kce(L) /= 1) cycle ! boundary links only
+            if (idomain(ke(L)) /= my_rank) cycle ! in own domain only
 
-         do i = 1, num
-            if (jafound(i) == 1) cycle
+            do i = 1, num
+               if (jafound(i) == 1) cycle
 
-            if (int(xyrec(3, i)) /= kn(3, L)) cycle ! check netlink type
+               if (int(xyrec(3, i)) /= kn(3, L)) cycle ! check netlink type
 
 !              get netlink coordinates
-            k3 = kn(1, L)
-            k4 = kn(2, L)
-            xL = 0.5d0 * (xk(k3) + xk(k4))
-            yL = 0.5d0 * (yk(k3) + yk(k4))
+               k3 = kn(1, L)
+               k4 = kn(2, L)
+               xL = 0.5d0 * (xk(k3) + xk(k4))
+               yL = 0.5d0 * (yk(k3) + yk(k4))
 
 !              measure distance
-            dis = dbdistance(xL, yL, xyrec(1, i), xyrec(2, i), jsferic, jasfer3D, dmiss)
-            if (dis < dtol) then ! found
-               kcesnd(istart - 1 + i) = 1
-               jafound(i) = 1
-               numfound = numfound + 1
-               if (numfound >= num) exit Lloop
-            end if
-         end do
-      end do Lloop
-      call wall_clock_time(t3)
-      timefind2 = timefind2 + t3 - t2
+               dis = dbdistance(xL, yL, xyrec(1, i), xyrec(2, i), jsferic, jasfer3D, dmiss)
+               if (dis < dtol) then ! found
+                  kcesnd(istart - 1 + i) = 1
+                  jafound(i) = 1
+                  numfound = numfound + 1
+                  if (numfound >= num) exit Lloop
+               end if
+            end do
+         end do Lloop
+         call wall_clock_time(t3)
+         timefind2 = timefind2 + t3 - t2
 
 !!        BEGIN DEBUG
 !         write(6,*) '-----------DEBUG-----------'
@@ -6447,345 +5883,223 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
 !!        END DEBUG
 
 !        send kce to other subdomains
-      nrequest = nrequest + 1
-      call mpi_isend(kcesnd(istart), num, mpi_integer, other_domain, itag, DFM_COMM_DFMWORLD, irequest(nrequest), ierror)
+         nrequest = nrequest + 1
+         call mpi_isend(kcesnd(istart), num, mpi_integer, other_domain, itag, DFM_COMM_DFMWORLD, irequest(nrequest), ierror)
 
-      istart = istart + num
-   end do ! other_domain=0,ndomains-1
+         istart = istart + num
+      end do ! other_domain=0,ndomains-1
 
 !      write(str,"('partition_reduce_mirrorcells, time spent in finding netlinks, method 1: ', G15.5, 's.')") timefind1
 !      call mess(LEVEL_INFO, trim(str))
 !      write(str,"('partition_reduce_mirrorcells, time spent in finding netlinks, method 2: ', G15.5, 's.')") timefind2
 !      call mess(LEVEL_INFO, trim(str))
 
-   numdisabled = 0
+      numdisabled = 0
 
 !     recieve kcesnd from other domains
-   do other_domain = 0, ndomains - 1
-      num = numrequest(other_domain, my_rank)
-      if (num < 1) cycle
+      do other_domain = 0, ndomains - 1
+         num = numrequest(other_domain, my_rank)
+         if (num < 1) cycle
 !        get message length
-      call mpi_probe(other_domain, itag, DFM_COMM_DFMWORLD, istat, ierror)
-      call mpi_get_count(istat, mpi_integer, icount, ierror)
+         call mpi_probe(other_domain, itag, DFM_COMM_DFMWORLD, istat, ierror)
+         call mpi_get_count(istat, mpi_integer, icount, ierror)
 
 !        check message length (safety)
-      if (icount /= num) then
-         write (str, *) 'partition_reduce_mirrorcells: icount.ne.num, domain: ', my_rank, ', other domain: ', other_domain, ' icount: ', icount, ', num: ', num
-         call mess(LEVEL_ERROR, str)
-      end if
+         if (icount /= num) then
+            write (str, *) 'partition_reduce_mirrorcells: icount.ne.num, domain: ', my_rank, ', other domain: ', other_domain, ' icount: ', icount, ', num: ', num
+            call mess(LEVEL_ERROR, str)
+         end if
 
 !        realloc
-      call realloc(kcerec, icount, keepExisting=.false., fill=0)
+         call realloc(kcerec, icount, keepExisting=.false., fill=0)
 
 !        recieve
-      call mpi_recv(kcerec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)
+         call mpi_recv(kcerec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)
 
 !        update kce
-      num = 0
-      do L = 1, numL
-         if (kce(L) == 1) then
-            if (idomain(ke(L)) == other_domain) then
-               num = num + 1
-               if (kce(L) /= kcerec(num)) then
+         num = 0
+         do L = 1, numL
+            if (kce(L) == 1) then
+               if (idomain(ke(L)) == other_domain) then
+                  num = num + 1
+                  if (kce(L) /= kcerec(num)) then
 !                     write(str, "('my_rank: ', I0, ' setting kce(',I0,') = ', I0, ' (was: ',I0,'). And ke(',I0,') = ', I0, ', with idomain(ke(L))=',I0,'.')") my_rank, L, kcerec(num), kce(L), L, ke(L), idomain(ke(L))
 !                     call mess(LEVEL_INFO, trim(str))
-                  numdisabled = numdisabled + 1
-                  kce(L) = kcerec(num)
+                     numdisabled = numdisabled + 1
+                     kce(L) = kcerec(num)
+                  end if
                end if
             end if
-         end if
+         end do
       end do
-   end do
 
 !     terminate send (safety)
-   do i = 1, nrequest
-      call mpi_wait(irequest(i), istat, ierror)
-   end do
+      do i = 1, nrequest
+         call mpi_wait(irequest(i), istat, ierror)
+      end do
 
-   if (numdisabled > 0) then
-      write (str, "('disabled ', I0, ' boundary links')") numdisabled
+      if (numdisabled > 0) then
+         write (str, "('disabled ', I0, ' boundary links')") numdisabled
+         call mess(LEVEL_INFO, trim(str))
+      end if
+
+      call wall_clock_time(t1)
+
+      write (str, "('partition_reduce_mirrorcells, elapsed time: ', G15.5, 's.')") t1 - t0
       call mess(LEVEL_INFO, trim(str))
-   end if
 
-   call wall_clock_time(t1)
-
-   write (str, "('partition_reduce_mirrorcells, elapsed time: ', G15.5, 's.')") t1 - t0
-   call mess(LEVEL_INFO, trim(str))
-
-   ierror = 0
-1234 continue
+      ierror = 0
+1234  continue
 
 !     deallocate
-   if (allocated(irequest)) deallocate (irequest)
-   if (allocated(numrequest)) deallocate (numrequest)
-   if (allocated(numrequest_loc)) deallocate (numrequest_loc)
-   if (allocated(xysnd)) deallocate (xysnd)
-   if (allocated(xyrec)) deallocate (xyrec)
-   if (allocated(kcesnd)) deallocate (kcesnd)
-   if (allocated(kcerec)) deallocate (kcerec)
-   if (allocated(jafound)) deallocate (jafound)
+      if (allocated(irequest)) deallocate (irequest)
+      if (allocated(numrequest)) deallocate (numrequest)
+      if (allocated(numrequest_loc)) deallocate (numrequest_loc)
+      if (allocated(xysnd)) deallocate (xysnd)
+      if (allocated(xyrec)) deallocate (xyrec)
+      if (allocated(kcesnd)) deallocate (kcesnd)
+      if (allocated(kcerec)) deallocate (kcerec)
+      if (allocated(jafound)) deallocate (jafound)
 
 #endif
-   return
-end subroutine partition_reduce_mirrorcells
+      return
+   end subroutine partition_reduce_mirrorcells
 
 !> see if a discharge boundary is partitioned and set japartqbnd
-subroutine set_japartqbnd()
-   use fm_external_forcings_data
-   use m_partitioninfo
+   subroutine set_japartqbnd()
+      use fm_external_forcings_data
 #ifdef HAVE_MPI
-   use mpi
+      use mpi
 #endif
-   implicit none
 
-   integer :: n, nq
-   integer :: ki
-   integer :: japartqbnd_all
+      integer :: n, nq
+      integer :: ki
+      integer :: japartqbnd_all
 
-   integer :: ierror
+      integer :: ierror
 
-   japartqbnd = 0
+      japartqbnd = 0
 
 #ifdef HAVE_MPI
 
-   mnlp: do nq = 1, nqbnd
-      do n = L1qbnd(nq), L2qbnd(nq) ! apart
-         ki = kbndu(2, n)
+      mnlp: do nq = 1, nqbnd
+         do n = L1qbnd(nq), L2qbnd(nq) ! apart
+            ki = kbndu(2, n)
 
-         if (idomain(ki) /= my_rank) then
-            japartqbnd = 1
-            exit mnlp
-         end if
-      end do
-   end do mnlp
+            if (idomain(ki) /= my_rank) then
+               japartqbnd = 1
+               exit mnlp
+            end if
+         end do
+      end do mnlp
 
 !     not all subdomains may have detected a partitioned q boundary: reduce japartqbnd
-   call mpi_allreduce(japartqbnd, japartqbnd_all, 1, mpi_integer, mpi_max, DFM_COMM_DFMWORLD, ierror)
-   japartqbnd = japartqbnd_all
+      call mpi_allreduce(japartqbnd, japartqbnd_all, 1, mpi_integer, mpi_max, DFM_COMM_DFMWORLD, ierror)
+      japartqbnd = japartqbnd_all
 
 #endif
 
-   return
-end subroutine set_japartqbnd
+   end subroutine set_japartqbnd
 
 !> update values in boundaries (these are not in ghost lists), 2D only
-subroutine update_ghostboundvals(itype, NDIM, N, var, jacheck, ierror)
-   use m_partitioninfo
-   use m_flowgeom
-   use m_alloc
-   use m_missing
-   use unstruc_messages
-   implicit none
+   subroutine update_ghostboundvals(itype, NDIM, N, var, jacheck, ierror)
+      use m_flowgeom
+      use m_alloc
+      use m_missing
+      use unstruc_messages
 
-   integer, intent(in) :: itype !< type: 0: flownode, 1: flowlink
-   integer, intent(in) :: NDIM !< number of unknowns per flownode/link
-   integer, intent(in) :: N !< number of flownodes/links
-   real(kind=dp), dimension(NDIM*N), intent(inout) :: var !< solution
-   integer, intent(in) :: jacheck !< check if boundary flowlinks are updated (1) or not (0)
-   integer, intent(out) :: ierror !< error (1) or not (0)
+      integer, intent(in) :: itype !< type: 0: flownode, 1: flowlink
+      integer, intent(in) :: NDIM !< number of unknowns per flownode/link
+      integer, intent(in) :: N !< number of flownodes/links
+      real(kind=dp), dimension(NDIM*N), intent(inout) :: var !< solution
+      integer, intent(in) :: jacheck !< check if boundary flowlinks are updated (1) or not (0)
+      integer, intent(out) :: ierror !< error (1) or not (0)
 
-   real(kind=dp), dimension(:), allocatable :: dum
+      real(kind=dp), dimension(:), allocatable :: dum
 
-   integer, dimension(:), allocatable :: Lbndmask
+      integer, dimension(:), allocatable :: Lbndmask
 
-   integer :: i, L
+      integer :: i, L
 
-   ierror = 1
+      ierror = 1
 
-   if (jacheck == 1 .and. Lnx > Lnxi) then
+      if (jacheck == 1 .and. Lnx > Lnxi) then
 !        check if all ghost boundary flowlinks are being update
-      allocate (Lbndmask(1:Lnx - Lnxi + 1))
-      Lbndmask = 0
+         allocate (Lbndmask(1:Lnx - Lnxi + 1))
+         Lbndmask = 0
 
 !        mask updated boundary flowlinks
-      do i = 1, nghostlist_u(ndomains - 1)
-         L = ighostlist_u(i)
-         if (L > Lnxi) then
-            Lbndmask(L - Lnxi + 1) = 1
-         end if
-      end do
+         do i = 1, nghostlist_u(ndomains - 1)
+            L = ighostlist_u(i)
+            if (L > Lnxi) then
+               Lbndmask(L - Lnxi + 1) = 1
+            end if
+         end do
 
 !        check if all ghost boundary flowlinks are being updated
-      do L = Lnxi + 1, Lnx ! boundary links
-         if (idomain(ln(2, L)) /= my_rank) then ! ghost link
-            if (Lbndmask(L - Lnxi + 1) /= 1) then ! not masked
-               call mess(LEVEL_ERROR, 'update_ghostboundvals: not all ghost boundary flowlinks are being updated')
-               goto 1234
+         do L = Lnxi + 1, Lnx ! boundary links
+            if (idomain(ln(2, L)) /= my_rank) then ! ghost link
+               if (Lbndmask(L - Lnxi + 1) /= 1) then ! not masked
+                  call mess(LEVEL_ERROR, 'update_ghostboundvals: not all ghost boundary flowlinks are being updated')
+                  goto 1234
+               end if
             end if
-         end if
-      end do
+         end do
 
 !        deallocate
-      if (allocated(Lbndmask)) deallocate (Lbndmask)
-   end if
+         if (allocated(Lbndmask)) deallocate (Lbndmask)
+      end if
 
 !     allocate and initialize
-   call realloc(dum, NDIM * Lnx, fill=DMISS)
+      call realloc(dum, NDIM * Lnx, fill=DMISS)
 
 !     fill internal boundary-node values with boundary values
-   if (itype == ITYPE_S .or. itype == ITYPE_Sall) then
-      do L = Lnxi + 1, Lnx
-         do i = 1, NDIM
-            dum(NDIM * (L - 1) + i) = var(NDIM * (ln(1, L) - 1) + i)
+      if (itype == ITYPE_S .or. itype == ITYPE_Sall) then
+         do L = Lnxi + 1, Lnx
+            do i = 1, NDIM
+               dum(NDIM * (L - 1) + i) = var(NDIM * (ln(1, L) - 1) + i)
+            end do
          end do
-      end do
-   else if (itype == ITYPE_U) then
-      do L = Lnxi + 1, Lnx
-         do i = 1, NDIM
-            dum(NDIM * (L - 1) + i) = var(NDIM * (L - 1) + i)
+      else if (itype == ITYPE_U) then
+         do L = Lnxi + 1, Lnx
+            do i = 1, NDIM
+               dum(NDIM * (L - 1) + i) = var(NDIM * (L - 1) + i)
+            end do
          end do
-      end do
-   else
-      call qnerror(' update_ghostboundvals: unknown ghost type', ' ', ' ')
-      goto 1234
-   end if
+      else
+         call qnerror(' update_ghostboundvals: unknown ghost type', ' ', ' ')
+         goto 1234
+      end if
 
 !     update ghost values
-   call update_ghosts(ITYPE_U, NDIM, Lnx, dum, ierror)
-   if (ierror /= 0) goto 1234
+      call update_ghosts(ITYPE_U, NDIM, Lnx, dum, ierror)
+      if (ierror /= 0) goto 1234
 
 !     copy internal boundary-node values to boundary values
-   if (itype == ITYPE_S .or. itype == ITYPE_Sall) then
-      do L = Lnxi + 1, Lnx
-         do i = 1, NDIM
-            var(NDIM * (ln(1, L) - 1) + i) = dum(NDIM * (L - 1) + i)
+      if (itype == ITYPE_S .or. itype == ITYPE_Sall) then
+         do L = Lnxi + 1, Lnx
+            do i = 1, NDIM
+               var(NDIM * (ln(1, L) - 1) + i) = dum(NDIM * (L - 1) + i)
+            end do
          end do
-      end do
-   else if (itype == ITYPE_U) then
-      do L = Lnxi + 1, Lnx
-         do i = 1, NDIM
-            var(NDIM * (L - 1) + i) = dum(NDIM * (L - 1) + i)
+      else if (itype == ITYPE_U) then
+         do L = Lnxi + 1, Lnx
+            do i = 1, NDIM
+               var(NDIM * (L - 1) + i) = dum(NDIM * (L - 1) + i)
+            end do
          end do
-      end do
-   else
-      call qnerror(' update_ghostboundvals: unknown ghost type', ' ', ' ')
-      goto 1234
-   end if
+      else
+         call qnerror(' update_ghostboundvals: unknown ghost type', ' ', ' ')
+         goto 1234
+      end if
 
-   ierror = 0
-1234 continue
+      ierror = 0
+1234  continue
 
 !     deallocate
-   if (allocated(dum)) deallocate (dum)
+      if (allocated(dum)) deallocate (dum)
 
-   return
-end subroutine update_ghostboundvals
+      return
+   end subroutine update_ghostboundvals
 
-! =================================================================================================
-! =================================================================================================
-!> Sets weights of edges and vsize on mesh that is to be partitioned by METIS
-!! If there are structures defined by polylines, then for structure related cells and edges, it gives special values to edges weights and vertex size.
-!! The purpose is to avoid structures intercross partition boundaries including ghost cells.
-!! NOTE: It uses "Ne/Nparts" as the special weights on structures, othere weight values can also be investigated.
-!! Now ONLY support structures defined by polylines. TODO: support setting special weights on structures that are defined by other ways.
-subroutine set_edge_weights_and_vsize_for_METIS(Ne, Nparts, njadj, xadj, adjncy, vsize, adjw)
-   implicit none
-   integer, intent(in) :: Ne !< Number of vertices
-   integer, intent(in) :: Nparts !< Number of partition subdomains
-   integer, intent(in) :: njadj !< Length of array adjncy
-   integer, dimension(Ne), intent(in) :: xadj !< The adjacency structure of the graph as described in Section 5.5. of METIS manual
-   integer, dimension(njadj), intent(in) :: adjncy !< The adjacency structure of the graph as described in Section 5.5. of METIS manual
-   integer, dimension(njadj), intent(inout) :: adjw !< Edge weight used to minimize edge cut (see METIS manual)
-   integer, dimension(Ne), intent(inout) :: vsize !< Vertex size used to minimize total communication volume (see METIS manual)
-
-   integer :: number_of_vertices_related_to_structures
-   integer, dimension(Ne) :: list_of_vertices_related_to_structures
-   integer :: vertex_index, vertex, higher_weight
-   integer, parameter :: DEFAULT_WEIGHT_VALUE = 1
-   integer, parameter :: INITIAL_HALO_LEVEL = 0
-
-   adjw(:) = DEFAULT_WEIGHT_VALUE
-   vsize(:) = DEFAULT_WEIGHT_VALUE
-
-   call find_netcells_for_structures(Ne, number_of_vertices_related_to_structures, list_of_vertices_related_to_structures)
-
-   if (number_of_vertices_related_to_structures > 0) then
-      higher_weight = int(Ne / Nparts)
-      do vertex_index = 1, number_of_vertices_related_to_structures
-         vertex = list_of_vertices_related_to_structures(vertex_index)
-         call set_edge_weights_and_vsize_with_halo(INITIAL_HALO_LEVEL, vertex, higher_weight, DEFAULT_WEIGHT_VALUE, &
-                                                   Ne, xadj, njadj, adjncy, adjw, vsize)
-      end do
-   end if
-end subroutine set_edge_weights_and_vsize_for_METIS
-
-!> set edge weight and vsize for vertex and associated edges with halo around structures
-recursive subroutine set_edge_weights_and_vsize_with_halo(halo_level, vertex, higher_weight, default_weight_value, &
-                                                          size_xadj, xadj, size_jadj, adjncy, adjw, vsize)
-   implicit none
-   integer, intent(in) :: halo_level !< halo_level around the structures
-   integer, intent(in) :: vertex !< vertex of the graph
-   integer, intent(in) :: higher_weight !< higher_weight to be assigned to vsize and adjw around structures
-   integer, intent(in) :: default_weight_value !< default_weight_value
-   integer, intent(in) :: size_xadj !< size of xadj array
-   integer, dimension(size_xadj), intent(in) :: xadj !< starting points for adjacency list, the adjacency structure of the graph is described in Section 5.5. of METIS manual
-   integer, intent(in) :: size_jadj !< size of adjacency list array
-   integer, dimension(size_jadj), intent(in) :: adjncy !< adjacency list, the adjacency structure of the graph is described in Section 5.5. of METIS manual
-   integer, dimension(size_jadj), intent(inout) :: adjw !< Edge weight used to minimize edge cut (see METIS manual)
-   integer, dimension(size_xadj), intent(inout) :: vsize !< Vertex size used to minimize total communication volume (see METIS manual)
-
-   integer, parameter :: MAX_HALO_LEVEL = 6 ! perhaps, it is too strong, some experiments are needed on MAX_HALO_LEVEL and MAX_GHOST_LEVEL
-   integer, parameter :: MAX_GHOST_LEVEL = 4 ! maxghostlev_sall is not defined yet at this stage
-   integer :: edge, next_halo_level, next_halo_level_higher_weight
-
-   if (halo_level <= MAX_HALO_LEVEL .and. higher_weight > default_weight_value) then
-      next_halo_level = halo_level + 1
-      if (halo_level > MAX_GHOST_LEVEL) then
-         next_halo_level_higher_weight = higher_weight / 2 ! an attemp to smooth constraints
-      else
-         next_halo_level_higher_weight = higher_weight
-      end if
-
-      if (vsize(vertex) < higher_weight) then
-         vsize(vertex) = higher_weight
-      end if
-      do edge = xadj(vertex), xadj(vertex + 1) - 1
-         if (adjw(edge) < higher_weight) then
-            adjw(edge) = higher_weight
-         end if
-         call set_edge_weights_and_vsize_with_halo(next_halo_level, adjncy(edge), next_halo_level_higher_weight, &
-                                                   default_weight_value, size_xadj, xadj, size_jadj, adjncy, adjw, vsize)
-      end do
-   end if
-end subroutine set_edge_weights_and_vsize_with_halo
-
-!> set idomain values for all open boundary cells
-subroutine set_idomain_for_all_open_boundaries()
-   use fm_external_forcings_data, only: nbndz, kez, nbndu, keu, ke1d2d
-   use m_sobekdfm, only: nbnd1d2d
-   use m_cell_geometry, only: ndx
-   use m_partitioninfo, only: idomain
-   use m_alloc, only: realloc
-   implicit none
-
-   if (size(idomain) < ndx) then
-      call realloc(idomain, ndx, keepExisting=.true.)
-   end if
-   call set_idomain_for_open_boundary_points(nbndz, size(kez), kez, ndx, idomain)
-   call set_idomain_for_open_boundary_points(nbndu, size(keu), keu, ndx, idomain)
-   call set_idomain_for_open_boundary_points(nbnd1d2d, size(ke1d2d), ke1d2d, ndx, idomain)
-
-end subroutine set_idomain_for_all_open_boundaries
-
-!> set idomain values for a set of open boundary cells
-subroutine set_idomain_for_open_boundary_points(number_of_boundary_points, links_array_size, &
-                                                links_to_boundary_points, ndx, idomain)
-   use m_flowgeom, only: ln, lne2ln
-   implicit none
-
-   integer, intent(in) :: number_of_boundary_points !< number of boundary points
-   integer, intent(in) :: links_array_size !< size of the links array
-   integer, intent(in) :: links_to_boundary_points(links_array_size) !< links to boundary cells
-   integer, intent(in) :: ndx !< number of flow nodes (internal + boundary)
-   integer, intent(inout) :: idomain(ndx) !< cell-based domain number
-
-   integer :: boundary_cell, boundary_point_number, internal_cell, link
-
-   do boundary_point_number = 1, number_of_boundary_points
-      link = links_to_boundary_points(boundary_point_number)
-      boundary_cell = ln(1, lne2ln(link))
-      internal_cell = ln(2, lne2ln(link))
-      idomain(boundary_cell) = idomain(internal_cell)
-   end do
-
-end subroutine set_idomain_for_open_boundary_points
+end module m_partitioninfo

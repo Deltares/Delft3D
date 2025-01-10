@@ -31,6 +31,11 @@
 !
 
 module m_editsam
+   use m_make_samplepath, only: make_samplepath
+   use m_make_orthocenters, only: make_orthocenters
+   use m_ispoi1, only: ispoi1
+   use m_insertsamples, only: insertsamples
+   use m_flow_initfloodfill, only: flow_initfloodfill
    use m_typevalue
    use m_selecteditmode
    use m_minmxsam

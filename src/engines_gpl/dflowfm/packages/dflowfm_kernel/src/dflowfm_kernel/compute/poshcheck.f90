@@ -30,6 +30,7 @@
 !
 !
 module m_poshcheck
+   use m_fill_onlywetlinks, only: fill_onlywetlinks
 
    implicit none
 

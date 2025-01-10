@@ -27,37 +27,49 @@
 !
 !-------------------------------------------------------------------------------
 
+module m_fill_onlywetlinks
+
+   implicit none
+
+   private
+
+   public :: fill_onlywetlinks
+
+contains
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 !> Fills array onlyWetLinks, which contains indices of flowlinks that are wet.
-subroutine fill_onlyWetLinks()
-   use m_flowgeom, only: lnx, lnx1d, lnxi, wetLinkCount, onlyWetLinks, wetLink2D, wetLinkBnd, bl, ln
-   use m_flow, only: hu, s1
-   implicit none
+   subroutine fill_onlyWetLinks()
+      use m_flowgeom, only: lnx, lnx1d, lnxi, wetLinkCount, onlyWetLinks, wetLink2D, wetLinkBnd, bl, ln
+      use m_flow, only: hu, s1
+      implicit none
 
-   integer :: L
+      integer :: L
 
-   wetLinkCount = 0
-   ! Set wetLink2D and welLinkBnd to the number of links +1. Otherwise the do loops in VOL12D will be 1 item to short for
-   ! models without a 2d mesh and no boundaries
-   wetLink2D = lnx + 1
-   wetLinkBnd = lnx + 1
-   do L = 1, lnx
-      if ((hu(L) > 0d0) .or. (s1(ln(1, L)) - bl(ln(1, L)) > 0d0) .or. (s1(ln(2, L)) - bl(ln(2, L)) > 0d0)) then
-         wetLinkCount = wetLinkCount + 1
-         onlyWetLinks(wetLinkCount) = L
-         if (L > lnx1d .and. wetLinkCount < wetLink2D) then
-            wetLink2D = wetLinkCount
+      wetLinkCount = 0
+      ! Set wetLink2D and welLinkBnd to the number of links +1. Otherwise the do loops in VOL12D will be 1 item to short for
+      ! models without a 2d mesh and no boundaries
+      wetLink2D = lnx + 1
+      wetLinkBnd = lnx + 1
+      do L = 1, lnx
+         if ((hu(L) > 0d0) .or. (s1(ln(1, L)) - bl(ln(1, L)) > 0d0) .or. (s1(ln(2, L)) - bl(ln(2, L)) > 0d0)) then
+            wetLinkCount = wetLinkCount + 1
+            onlyWetLinks(wetLinkCount) = L
+            if (L > lnx1d .and. wetLinkCount < wetLink2D) then
+               wetLink2D = wetLinkCount
+            end if
+            if (L > lnxi .and. wetLinkCount < wetLinkBnd) then
+               wetLinkBnd = wetLinkCount
+            end if
+
          end if
-         if (L > lnxi .and. wetLinkCount < wetLinkBnd) then
-            wetLinkBnd = wetLinkCount
-         end if
+      end do
+      wetLink2D = min(wetLink2D, wetLinkCount + 1)
+      wetLinkBnd = min(wetLinkBnd, wetLinkCount + 1)
 
-      end if
-   end do
-   wetLink2D = min(wetLink2D, wetLinkCount + 1)
-   wetLinkBnd = min(wetLinkBnd, wetLinkCount + 1)
+   end subroutine fill_onlyWetLinks
 
-end subroutine fill_onlyWetLinks
+end module m_fill_onlywetlinks

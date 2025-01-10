@@ -35,6 +35,18 @@
 #define no_warning_unused_variable(x) associate( x => x ); end associate
 
 module bmi
+   use m_cosphiunetcheck, only: cosphiunetcheck
+   use m_flow_run_usertimestep, only: flow_run_usertimestep
+   use m_flow_run_sometimesteps, only: flow_run_sometimesteps
+   use m_flow_init_usertimestep, only: flow_init_usertimestep
+   use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
+   use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
+   use m_resetfullflowmodel, only: resetfullflowmodel
+   use m_partition_write_domains, only: partition_write_domains
+   use m_land_change_callback, only: land_change_callback
+   use m_inidat, only: inidat
+   use m_getstructureindex, only: getstructureindex
+   use m_getlateralindex, only: getlateralindex
    use m_flow_run_single_timestep, only: flow_run_single_timestep
    use m_flow_init_single_timestep, only: flow_init_single_timestep
    use m_flow_finalize_single_timestep, only: flow_finalize_single_timestep
@@ -216,7 +228,7 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: initialize
 
       use iso_c_binding, only: c_char
-
+      use m_solve_petsc, only: startpetsc
       use unstruc_model
       use unstruc_files
       use m_partitioninfo
@@ -1078,7 +1090,7 @@ contains
       use network_data
       use m_sobekdfm
       use m_alloc
-      use string_module
+      use string_module, only: str_token
       use m_cell_geometry ! TODO: UNST-1705: temp, replace by m_flowgeom
       use unstruc_model
       use unstruc_channel_flow, only: network
@@ -1367,11 +1379,11 @@ contains
       use m_laterals, only: numlatsg, qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
       use m_laterals, only: qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
       use morphology_data_module, only: PARSOURCE_FIELD
+      use string_module, only: str_token
+      use m_init_openmp, only: init_openmp
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       type(c_ptr), value, intent(in) :: xptr
-
-      integer, external :: init_openmp
 
       character(kind=c_char), dimension(:), pointer :: x_0d_char_ptr => null()
       real(c_double), pointer :: x_0d_double_ptr
@@ -1390,6 +1402,8 @@ contains
       logical(kind=c_bool), pointer :: x_1d_logical_ptr(:)
       ! The fortran name of the attribute name
       character(len=strlen(c_var_name)) :: var_name
+      character(len=strlen(c_var_name)) :: tmp_var_name
+      character(len=strlen(c_var_name)) :: varset_name, item_name, field_name !< For parsing compound variable names.
       character(kind=c_char), dimension(:), pointer :: c_value => null()
       character(len=:), allocatable :: levels
       character(len=10) :: threadsString = ' '
@@ -1632,6 +1646,23 @@ contains
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
+      end select
+
+      ! Try to parse variable name as slash-separated id (e.g., 'laterals/sealock_A/water_discharge')
+      tmp_var_name = var_name
+      call str_token(tmp_var_name, varset_name, DELIMS='/')
+      select case (varset_name)
+      case ("laterals")
+         ! A valid group name, now parse the location id first...
+         call str_token(tmp_var_name, item_name, DELIMS='/')
+         if (len_trim(item_name) > 0) then
+            ! A valid item name, now parse the field name...
+            field_name = tmp_var_name(2:)
+            call set_compound_field(string_to_char_array(trim(varset_name),len(trim(varset_name))), &
+                                    string_to_char_array(trim(item_name),len(trim(item_name))), &
+                                    string_to_char_array(trim(field_name),len(trim(field_name))), &
+                                    xptr)
+         end if
       end select
 
       if (numconst > 0) then
@@ -2463,7 +2494,8 @@ contains
       use unstruc_channel_flow, only: network
       use m_General_Structure, only: update_widths
       use m_transport, only: NUMCONST, ISALT, ITEMP
-      use m_laterals, only: qplat
+      use m_laterals, only: qplat, incoming_lat_concentration, num_layers
+      use string_module, only: str_token
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'
       character(kind=c_char), intent(in) :: c_item_name(*) !< Name of a single item's index/location, e.g., 'Pump01'
@@ -2471,17 +2503,23 @@ contains
       type(c_ptr), value, intent(in) :: xptr !< Pointer (by value) to the C-compatible value data to be set.
 
       real(c_double), pointer :: x_0d_double_ptr
+      real(c_double), pointer :: x_1d_double_ptr(:)
       type(c_ptr) :: fieldptr ! c_ptr to the structure's parameter
 
       integer :: item_index
       logical :: is_in_network
 
       integer :: iostat
+      integer :: i_layer
+      integer :: constituent_index
 
       ! The fortran name of the attribute name
       character(len=MAXSTRLEN) :: var_name
       character(len=MAXSTRLEN) :: item_name
       character(len=MAXSTRLEN) :: field_name
+      character(len=MAXSTRLEN) :: constituent_name
+      character(len=MAXSTRLEN) :: direction_string
+
       ! Store the name
       var_name = char_array_to_string(c_var_name)
       item_name = char_array_to_string(c_item_name)
@@ -2683,12 +2721,39 @@ contains
          end if
          select case (field_name)
          case ("water_discharge")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            ! Using max(1,kmx) is a temporary solution for now.
-            qplat(max(1, kmx), item_index) = x_0d_double_ptr
+            ! this case statement can only be reached in case of 3D laterals, 
+            ! so no check on (apply_transport(item_index) == 1) is needed here
+            call c_f_pointer(xptr, x_1d_double_ptr, [num_layers])
+            do i_layer = 1,num_layers
+               qplat(i_layer,item_index) = x_1d_double_ptr(i_layer)
+            enddo
             return
          end select
-
+         
+         constituent_name = field_name
+         call str_token(constituent_name, direction_string, DELIMS='/')
+         ! set value is only possible for incoming direction
+         if (direction_string == 'incoming') then 
+            constituent_name = constituent_name(2:)
+            ! Find constituent index
+            select case (constituent_name)
+            case ('water_salinity')
+               constituent_index = ISALT
+            case ('water_temperature')
+               constituent_index = ITEMP
+            case default
+               constituent_index = find_name(const_names, constituent_name)
+               if (iconst == 0) then
+                  !        tracer not found
+                  return
+               end if
+            end select
+            call c_f_pointer(xptr, x_1d_double_ptr, [num_layers])
+            do i_layer = 1,num_layers
+               incoming_lat_concentration(i_layer,constituent_index,item_index) = x_1d_double_ptr(i_layer)
+            enddo
+            return
+         end if 
          ! NOTE: observations and crosssections are read-only!
       end select
    end subroutine set_compound_field
@@ -3724,6 +3789,7 @@ contains
       use m_netw
       use m_commandline_option
       use unstruc_model, only: md_pmethod
+      use m_partition_METIS_to_idomain, only: partition_METIS_to_idomain
 
       character(kind=c_char), intent(in) :: c_netfile_in(MAXSTRLEN)
       character(kind=c_char), intent(in) :: c_netfile_out(MAXSTRLEN)
@@ -3789,6 +3855,7 @@ contains
       use m_netw
       use m_commandline_option
       use m_reapol
+      use m_filez, only: newfil
 
       character(kind=c_char), intent(in) :: c_netfile_in(MAXSTRLEN)
       character(kind=c_char), intent(in) :: c_netfile_out(MAXSTRLEN)

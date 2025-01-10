@@ -31,10 +31,18 @@
 !
 
 !> write matlab double array to file
+module m_matlab_write_double
+
+   implicit none
+
+   private
+
+   public :: matlab_write_double
+
+contains
+
    subroutine matlab_write_double(matfile, varname, var, Ni, Nj)
       use precision, only: dp
-
-      implicit none
 
       integer :: matfile !< matlab file unit number
       character(len=*) :: varname !< variable name
@@ -57,3 +65,5 @@
       write (matfile, "('];')")
 
    end subroutine matlab_write_double
+
+end module m_matlab_write_double

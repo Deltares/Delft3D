@@ -47,12 +47,14 @@ contains
       use m_flowgeom
       use m_sferic
       use m_get_Lbot_Ltop
+      use m_lin2corx, only: lin2corx
+      use m_lin2cory, only: lin2cory
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
 
       integer :: L, k1, k2, k3, k4, k, kk, LL, Lb, Lt, kw
       integer :: m, n
       real(kind=dp) :: uLx, uLy, csk, snk, sg
-
-      real(kind=dp), external :: nod2linx, nod2liny, lin2corx, lin2cory
 
       ucnx = 0; ucny = 0
 

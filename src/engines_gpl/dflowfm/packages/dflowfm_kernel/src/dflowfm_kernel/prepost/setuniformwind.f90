@@ -27,25 +27,34 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_setuniformwind
 
- subroutine setuniformwind()
-    use precision, only: dp
-    use m_setwindstress, only: setwindstress
-    use m_wind
-    use m_sferic
-    use m_flowgeom
-    use fm_external_forcings, only: allocatewindarrays
-    implicit none
-    real(kind=dp) :: wdir
+   implicit none
 
-    jawind = 2
-    wdir = (90d0 - winddir) * dg2rd
+   private
 
-    call allocatewindarrays()
+   public :: setuniformwind
 
-    wx = windsp * cos(wdir)
-    wy = windsp * sin(wdir)
-    call setwindstress()
- end subroutine setuniformwind
+contains
+
+   subroutine setuniformwind()
+      use precision, only: dp
+      use m_setwindstress, only: setwindstress
+      use m_wind
+      use m_sferic
+      use m_flowgeom
+      use fm_external_forcings, only: allocatewindarrays
+
+      real(kind=dp) :: wdir
+
+      jawind = 2
+      wdir = (90d0 - winddir) * dg2rd
+
+      call allocatewindarrays()
+
+      wx = windsp * cos(wdir)
+      wy = windsp * sin(wdir)
+      call setwindstress()
+   end subroutine setuniformwind
+
+end module m_setuniformwind

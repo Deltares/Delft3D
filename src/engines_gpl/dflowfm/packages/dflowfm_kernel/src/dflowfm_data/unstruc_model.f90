@@ -31,6 +31,7 @@
 !> Manages the unstruc model definition for the active problem.
 module unstruc_model
 
+   use m_datum2, only: datum2
    use m_setmodind, only: setmodind
    use m_setgrainsizes, only: setgrainsizes
    use precision
@@ -75,10 +76,11 @@ module unstruc_model
    ! 1.00 (2014-09-22): first version of new permissive checking procedure. All (older) unversioned input remains accepted.
 
    integer, parameter :: ExtfileNewMajorVersion = 2
-   integer, parameter :: ExtfileNewMinorVersion = 1
+   integer, parameter :: ExtfileNewMinorVersion = 2
    ! History ExtfileNewVersion:
    ! 2.00 (2019-08-06): enabled specifying "nodeId" in a 1D network node.
    ! 2.01 (2019-12-04): optional fields targetMaskFile and targetMaskInvert for [Meteo] blocks.
+   ! 2.02 (2024-10-24): add [SourceSink] blocks.
 
    !> The version number of the 1D2DFile format: d.dd, [config_major].[config_minor], e.g., 1.03
     !!
@@ -429,13 +431,8 @@ contains
       use m_delpol
       use m_reapol
       use m_set_nod_adm
-
-      interface
-         subroutine realan(mlan, antot)
-            integer, intent(inout) :: mlan
-            integer, intent(inout), optional :: antot
-         end subroutine realan
-      end interface
+      use m_realan, only: realan
+      use m_filez, only: oldfil
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 
@@ -2563,6 +2560,8 @@ contains
 
 !> Write a model definition to a file.
    subroutine writeMDUFile(filename, istat)
+      use m_filez, only: doclose, newfil
+
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -3977,11 +3976,11 @@ contains
 !! OutputDir has been read already.
    subroutine switch_dia_file()
       use system_utils, only: makedir
+      use m_set_get_mdia, only: setmdia, getmdia
       implicit none
       integer :: mdia2, mdia, ierr
       character(len=256) :: rec
       logical :: line_copied
-      external :: getmdia, setmdia
 
       call makedir(getoutputdir()) ! No problem if it exists already.
 
@@ -4164,6 +4163,7 @@ contains
    subroutine set_output_time_vector(md_tvfil, ti_tv, ti_tv_rel)
 
       use m_flowtimes, only: tstop_user
+      use m_filez, only: oldfil
 
       implicit none
 

@@ -42,6 +42,7 @@ contains
       use m_netw
       use m_alloc
       use m_missing
+      use m_nmk_opt, only: nmk_opt
 
       implicit none
 
@@ -55,8 +56,6 @@ contains
       integer :: n1, n2, nL, nR
       integer :: n1L, n1R, n2L, n2R
       logical :: Lproceed
-
-      integer, external :: nmk_opt
 
 !  debug
 !   if ( allocated(zk) ) deallocate(zk)

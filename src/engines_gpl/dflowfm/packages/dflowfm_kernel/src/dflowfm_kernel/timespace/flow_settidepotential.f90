@@ -30,29 +30,39 @@
 !
 !
 
- subroutine flow_settidepotential(timmin)
-    use precision, only: dp
-    use m_flow
-    use m_flowgeom
-    use m_flowtimes
-    use timespace_data
-    use m_sferic
-    use unstruc_model
-    use m_equatorial
+module m_flow_settidepotential
 
-    implicit none
+   implicit none
 
-    real(kind=dp) :: timmin
-    integer :: kk
-    real(kind=dp) :: tt
+   private
 
-    call meteo_tidepotential(julrefdat, TIMmin, doodsonstart, doodsonstop, doodsoneps)
+   public :: flow_settidepotential
 
-    if (md_ident == 'equator1d') then
-       tt = 60d0 * timmin - tstart_user
-       do kk = 1, ndx
-          tidep(1, kk) = ZP * sin(om * tt - nmode * dg2rd * xz(kk))
-       end do
-    end if
+contains
 
- end subroutine flow_settidepotential
+   subroutine flow_settidepotential(timmin)
+      use precision, only: dp
+      use m_flow
+      use m_flowgeom
+      use m_flowtimes
+      use timespace_data
+      use m_sferic
+      use unstruc_model
+      use m_equatorial
+
+      real(kind=dp) :: timmin
+      integer :: kk
+      real(kind=dp) :: tt
+
+      call meteo_tidepotential(julrefdat, TIMmin, doodsonstart, doodsonstop, doodsoneps)
+
+      if (md_ident == 'equator1d') then
+         tt = 60d0 * timmin - tstart_user
+         do kk = 1, ndx
+            tidep(1, kk) = ZP * sin(om * tt - nmode * dg2rd * xz(kk))
+         end do
+      end if
+
+   end subroutine flow_settidepotential
+
+end module m_flow_settidepotential

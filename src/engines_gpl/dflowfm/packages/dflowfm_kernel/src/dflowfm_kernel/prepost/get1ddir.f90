@@ -30,49 +30,60 @@
 !
 !
 
- !> Gets the tangential direction vector for a 1D flow node,
+module m_get1ddir
+
+   implicit none
+
+   private
+
+   public :: get1ddir
+
+contains
+
+   !> Gets the tangential direction vector for a 1D flow node,
  !! based on direction of the last regular 1D link connected to it.
  !! NOTE: only makes sense when there's only one single regular 1D
  !! link connected (i.e., 1D endpoint, maybe connected with kcu=3
  !! type link to 2D grid cell).
- subroutine get1Ddir(n1, xt, yt)
-    use precision, only: dp
-    use m_flowgeom
-    use m_flow
-    use m_sferic, only: jsferic, jasfer3D
-    use m_missing, only: dmiss, dxymis
-    use geometry_module, only: normalin, normalout
+   subroutine get1Ddir(n1, xt, yt)
+      use precision, only: dp
+      use m_flowgeom
+      use m_flow
+      use m_sferic, only: jsferic, jasfer3D
+      use m_missing, only: dmiss, dxymis
+      use geometry_module, only: normalin, normalout
 
-    implicit none
-    integer, intent(in) :: n1 !< 1D flow node number
-    real(kind=dp), intent(out) :: xt, yt !< x,y component of estimated tangential vector at this 1D flow node.
+      integer, intent(in) :: n1 !< 1D flow node number
+      real(kind=dp), intent(out) :: xt, yt !< x,y component of estimated tangential vector at this 1D flow node.
 
-    integer :: n2, k, L, LL, ka, kb, k1, k2
+      integer :: n2, k, L, LL, ka, kb, k1, k2
 
-    xt = 0d0; yt = 0d0; ka = 0; kb = 0; n2 = 0
-    do k = 1, size(nd(n1)%ln)
-       LL = nd(n1)%ln(k)
-       L = abs(LL)
-       if (kcu(L) /= 3) then
-          k1 = ln(1, L); k2 = ln(2, L)
-          n2 = k2
-          if (k1 /= n1) n2 = k1
-          if (ka == 0) then
-             ka = n2
-          else
-             kb = n2
-          end if
-       end if
-    end do
-    if (kb == 0) kb = n1
+      xt = 0d0; yt = 0d0; ka = 0; kb = 0; n2 = 0
+      do k = 1, size(nd(n1)%ln)
+         LL = nd(n1)%ln(k)
+         L = abs(LL)
+         if (kcu(L) /= 3) then
+            k1 = ln(1, L); k2 = ln(2, L)
+            n2 = k2
+            if (k1 /= n1) n2 = k1
+            if (ka == 0) then
+               ka = n2
+            else
+               kb = n2
+            end if
+         end if
+      end do
+      if (kb == 0) kb = n1
 
-    if (n2 > 0) then
-       ! 1D regular channel point found: directly compute tangential channel vector
-       call normalin(xz(n1), yz(n1), xz(n2), yz(n2), xt, yt, xu(L), yu(L), jsferic, jasfer3D, dxymis)
-    else
-       ! No other 1D channel points found: estimate 1D channel direction as perpendicular to this kcu3 link
-       n2 = sum(abs(ln(1:2, L))) - n1
-       call normalout(xz(n1), yz(n1), xz(n2), yz(n2), xt, yt, jsferic, jasfer3D, dmiss, dxymis)
-    end if
+      if (n2 > 0) then
+         ! 1D regular channel point found: directly compute tangential channel vector
+         call normalin(xz(n1), yz(n1), xz(n2), yz(n2), xt, yt, xu(L), yu(L), jsferic, jasfer3D, dxymis)
+      else
+         ! No other 1D channel points found: estimate 1D channel direction as perpendicular to this kcu3 link
+         n2 = sum(abs(ln(1:2, L))) - n1
+         call normalout(xz(n1), yz(n1), xz(n2), yz(n2), xt, yt, jsferic, jasfer3D, dmiss, dxymis)
+      end if
 
- end subroutine get1Ddir
+   end subroutine get1Ddir
+
+end module m_get1ddir

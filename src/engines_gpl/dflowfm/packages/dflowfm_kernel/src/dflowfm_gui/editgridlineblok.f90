@@ -31,6 +31,19 @@
 !
 
 module m_editgridlineblok
+   use m_tekb, only: tekb
+   use m_savegrd, only: savegrd
+   use m_saveb, only: saveb
+   use m_restoreb, only: restoreb
+   use m_resetb, only: resetb
+   use m_positiveblok, only: positiveblok
+   use m_onsameline, only: onsameline
+   use m_newblockpoint, only: newblockpoint
+   use m_modgr4, only: modgr4
+   use m_modgr2, only: modgr2
+   use m_linemirror, only: linemirror
+   use m_dosmooth, only: dosmooth
+   use m_attractrepulse, only: attractrepulse
    use m_shwxyz
    use m_selecteditmode
    use m_ispoin

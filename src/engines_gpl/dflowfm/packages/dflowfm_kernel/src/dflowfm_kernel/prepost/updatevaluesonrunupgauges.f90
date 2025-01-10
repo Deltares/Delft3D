@@ -31,55 +31,65 @@
 !
 
 !< update runup values per dts
-subroutine updateValuesOnRunupGauges()
-   use precision, only: dp
-   use m_monitoring_runupgauges
-   use m_missing
-   use m_flow, only: s1, hs
-   use m_cell_geometry, only: xz, yz
-   use m_flowgeom, only: ln, bl
-   use m_flowparameters, only: epshu
+module m_updatevaluesonrunupgauges
 
    implicit none
 
-   integer :: irug
-   integer :: k1, k2
-   integer :: L, il
-   real(kind=dp) :: max_x, max_y, maxz, maxk
+   private
+
+   public :: updatevaluesonrunupgauges
+
+contains
+
+   subroutine updateValuesOnRunupGauges()
+      use precision, only: dp
+      use m_monitoring_runupgauges
+      use m_missing
+      use m_flow, only: s1, hs
+      use m_cell_geometry, only: xz, yz
+      use m_flowgeom, only: ln, bl
+      use m_flowparameters, only: epshu
+
+      integer :: irug
+      integer :: k1, k2
+      integer :: L, il
+      real(kind=dp) :: max_x, max_y, maxz, maxk
 
 !   update runup on gauge locations
-   hs = max(s1 - bl, 0d0)
-   do irug = 1, num_rugs
-      maxz = -huge(0d0)
-      max_x = dmiss
-      max_y = dmiss
-      maxk = 0
-      ! determine runup value
-      if (rug(irug)%path%lnx == 0) cycle
-      do il = 1, rug(irug)%path%lnx
-         L = abs(rug(irug)%path%ln(il))
+      hs = max(s1 - bl, 0d0)
+      do irug = 1, num_rugs
+         maxz = -huge(0d0)
+         max_x = dmiss
+         max_y = dmiss
+         maxk = 0
+         ! determine runup value
+         if (rug(irug)%path%lnx == 0) cycle
+         do il = 1, rug(irug)%path%lnx
+            L = abs(rug(irug)%path%ln(il))
 
-         k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L); k2 = ln(2, L)
 
-         if (hs(k1) > epshu .and. hs(k2) <= epshu) then
-            if (s1(k1) >= maxz) then
-               maxz = s1(k1)
-               max_x = xz(k1)
-               max_y = yz(k1)
+            if (hs(k1) > epshu .and. hs(k2) <= epshu) then
+               if (s1(k1) >= maxz) then
+                  maxz = s1(k1)
+                  max_x = xz(k1)
+                  max_y = yz(k1)
+               end if
+            elseif (hs(k2) > epshu .and. hs(k1) <= epshu) then
+               if (s1(k2) >= maxz) then
+                  maxz = s1(k2)
+                  max_x = xz(k2)
+                  max_y = yz(k2)
+               end if
             end if
-         elseif (hs(k2) > epshu .and. hs(k1) <= epshu) then
-            if (s1(k2) >= maxz) then
-               maxz = s1(k2)
-               max_x = xz(k2)
-               max_y = yz(k2)
-            end if
+         end do
+         if (rug(irug)%max_rug_height <= maxz) then
+            rug(irug)%max_rug_height = maxz ! collected at dts, written at dt_user (or longer). Reset after writing
+            rug(irug)%max_x = max_x
+            rug(irug)%max_y = max_y
          end if
       end do
-      if (rug(irug)%max_rug_height <= maxz) then
-         rug(irug)%max_rug_height = maxz ! collected at dts, written at dt_user (or longer). Reset after writing
-         rug(irug)%max_x = max_x
-         rug(irug)%max_y = max_y
-      end if
-   end do
 
-end subroutine updateValuesOnRunupGauges
+   end subroutine updateValuesOnRunupGauges
+
+end module m_updatevaluesonrunupgauges

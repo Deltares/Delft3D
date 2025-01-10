@@ -30,154 +30,164 @@
 !
 !
 
-    subroutine REALAN(MLAN, ANTOT)
-       use precision, only: dp
-       use m_polygon
-       use M_landboundary
-       use M_MISSING
-       use m_readyy
-       use m_qn_read_error
-       use m_qn_eof_error
-       implicit none
-       integer, intent(inout) :: mlan
-       integer, intent(inout), optional :: antot
+submodule(m_realan) m_realan_
 
-       integer :: i
-       integer :: ncl
-       integer :: newlin
-       integer :: nkol
-       integer :: nrow
-       integer :: ntot, n, k, kd, ku
-       real(kind=dp) :: xlr
+   implicit none
 
-       character MATR * 4, REC * 132
-       real(kind=dp) :: XL, YL, ZL
+contains
 
-       if (present(antot)) then
-          NTOT = antot
-       else
-          NTOT = 0
-       end if
+   module subroutine REALAN(MLAN, ANTOT)
+      use precision, only: dp
+      use m_polygon
+      use M_landboundary
+      use M_MISSING
+      use m_readyy
+      use m_qn_read_error
+      use m_qn_eof_error
+      use m_filez, only: doclose
 
-       if (ntot == 0) then
-          call increaselan(10000)
-       end if
+      implicit none
+      integer, intent(inout) :: mlan
+      integer, intent(inout), optional :: antot
 
-       call READYY('READING land boundary', 0d0)
-10     continue
-       read (MLAN, '(A)', end=777, ERR=887) MATR
-       if (MATR(1:1) == '*') goto 10
+      integer :: i
+      integer :: ncl
+      integer :: newlin
+      integer :: nkol
+      integer :: nrow
+      integer :: ntot, n, k, kd, ku
+      real(kind=dp) :: xlr
 
-       read (MLAN, '(A)', end=777) REC
-       read (REC, *, ERR=666) NROW, NKOL
+      character MATR * 4, REC * 132
+      real(kind=dp) :: XL, YL, ZL
 
-       NEWLIN = 0
-       do I = 1, NROW
-          if (NTOT >= MAXLAN - 1) then
-             call increaselan(NTOT + 1)
-          end if
-          read (MLAN, '(A)', end=999) REC
-          NCL = 0
-          ZL = 0
-          if (nkol == 2) then
-             read (REC, *, ERR=881) XL, YL
-          else if (nkol == 3) then
-             read (REC, *, ERR=881) XL, YL, NCL
-          else if (nkol == 4) then
-             read (REC, *, ERR=881) XL, YL, ZL, NCL
-          end if
+      if (present(antot)) then
+         NTOT = antot
+      else
+         NTOT = 0
+      end if
 
-          XLR = XL
+      if (ntot == 0) then
+         call increaselan(10000)
+      end if
 
-881       if (XL == 999.999d0 .or. XLR == 999.999d0) then
-             XL = dmiss
-             YL = dmiss
-             ZL = dmiss
-             NCL = 0
-          end if
-          if (NTOT == 0) then
-             NTOT = NTOT + 1
-             MXLAN = NTOT
-             XLAN(NTOT) = XL
-             YLAN(NTOT) = YL
-             ZLAN(NTOT) = ZL
-             NCLAN(NTOT) = NCL
-          else if (XL /= XLAN(NTOT) .or. YL /= YLAN(NTOT)) then
-             NTOT = NTOT + 1
-             MXLAN = NTOT
-             XLAN(NTOT) = XL
-             YLAN(NTOT) = YL
-             ZLAN(NTOT) = ZL
-             NCLAN(NTOT) = NCL
-          end if
-          if (mod(I, 1000) == 0) then
-             call READYY(' ', min(1d0, dble(I) / MAXLAN))
-          end if
-       end do
-       NTOT = NTOT + 1
-       MXLAN = NTOT
-       XLAN(NTOT) = dmiss
-       YLAN(NTOT) = dmiss
-       ZLAN(NTOT) = dmiss
+      call READYY('READING land boundary', 0d0)
+10    continue
+      read (MLAN, '(A)', end=777, ERR=887) MATR
+      if (MATR(1:1) == '*') goto 10
 
-       goto 10
+      read (MLAN, '(A)', end=777) REC
+      read (REC, *, ERR=666) NROW, NKOL
 
-777    continue
-       MXLAN = NTOT
-       call READYY(' ', 1d0)
-       call READYY(' ', -1d0)
-       call doclose(MLAN)
+      NEWLIN = 0
+      do I = 1, NROW
+         if (NTOT >= MAXLAN - 1) then
+            call increaselan(NTOT + 1)
+         end if
+         read (MLAN, '(A)', end=999) REC
+         NCL = 0
+         ZL = 0
+         if (nkol == 2) then
+            read (REC, *, ERR=881) XL, YL
+         else if (nkol == 3) then
+            read (REC, *, ERR=881) XL, YL, NCL
+         else if (nkol == 4) then
+            read (REC, *, ERR=881) XL, YL, ZL, NCL
+         end if
 
-       if (present(antot)) then
-          antot = NTOT
-       end if
+         XLR = XL
 
-       return
+881      if (XL == 999.999d0 .or. XLR == 999.999d0) then
+            XL = dmiss
+            YL = dmiss
+            ZL = dmiss
+            NCL = 0
+         end if
+         if (NTOT == 0) then
+            NTOT = NTOT + 1
+            MXLAN = NTOT
+            XLAN(NTOT) = XL
+            YLAN(NTOT) = YL
+            ZLAN(NTOT) = ZL
+            NCLAN(NTOT) = NCL
+         else if (XL /= XLAN(NTOT) .or. YL /= YLAN(NTOT)) then
+            NTOT = NTOT + 1
+            MXLAN = NTOT
+            XLAN(NTOT) = XL
+            YLAN(NTOT) = YL
+            ZLAN(NTOT) = ZL
+            NCLAN(NTOT) = NCL
+         end if
+         if (mod(I, 1000) == 0) then
+            call READYY(' ', min(1d0, dble(I) / MAXLAN))
+         end if
+      end do
+      NTOT = NTOT + 1
+      MXLAN = NTOT
+      XLAN(NTOT) = dmiss
+      YLAN(NTOT) = dmiss
+      ZLAN(NTOT) = dmiss
 
-       n = 1 ! remove double points in lineseg oriented files
-       xpl(n) = xlan(1); ypl(n) = ylan(1)
-       do k = 2, mxlan - 1
-          kd = k - 1; ku = k + 1
-          if (xlan(k) == dmiss .and. xlan(kd) == xlan(ku) .and. ylan(kd) == ylan(ku)) then
+      goto 10
 
-          else
-             n = n + 1
-             xpl(n) = xlan(k); ypl(n) = ylan(k)
-          end if
-       end do
-       n = n + 1
-       xpl(n) = xlan(mxlan); ypl(n) = ylan(mxlan)
+777   continue
+      MXLAN = NTOT
+      call READYY(' ', 1d0)
+      call READYY(' ', -1d0)
+      call doclose(MLAN)
 
-       npl = n
+      if (present(antot)) then
+         antot = NTOT
+      end if
 
-       return
+      return
 
-666    call QNREADERROR('SEARCHING NROWS,NCOLS, BUT GETTING', REC, MLAN)
-       MXLAN = NTOT
-       call READYY(' ', 1d0)
-       call READYY(' ', -1d0)
-       call doclose(MLAN)
-       return
+      n = 1 ! remove double points in lineseg oriented files
+      xpl(n) = xlan(1); ypl(n) = ylan(1)
+      do k = 2, mxlan - 1
+         kd = k - 1; ku = k + 1
+         if (xlan(k) == dmiss .and. xlan(kd) == xlan(ku) .and. ylan(kd) == ylan(ku)) then
 
-888    call QNREADERROR('SEARCHING COORDINATES, BUT GETTING', REC, MLAN)
-       MXLAN = NTOT
-       call READYY(' ', 1d0)
-       call READYY(' ', -1d0)
-       call doclose(MLAN)
-       return
+         else
+            n = n + 1
+            xpl(n) = xlan(k); ypl(n) = ylan(k)
+         end if
+      end do
+      n = n + 1
+      xpl(n) = xlan(mxlan); ypl(n) = ylan(mxlan)
 
-887    call QNREADERROR('EXPECTING 4 CHAR, BUT GETTING', MATR, MLAN)
-       MXLAN = NTOT
-       call READYY(' ', 1d0)
-       call READYY(' ', -1d0)
-       call doclose(MLAN)
-       return
+      npl = n
 
-999    call QNEOFERROR(MLAN)
-       MXLAN = NTOT
-       call READYY(' ', 1d0)
-       call READYY(' ', -1d0)
-       call doclose(MLAN)
-       return
+      return
 
-    end
+666   call QNREADERROR('SEARCHING NROWS,NCOLS, BUT GETTING', REC, MLAN)
+      MXLAN = NTOT
+      call READYY(' ', 1d0)
+      call READYY(' ', -1d0)
+      call doclose(MLAN)
+      return
+
+888   call QNREADERROR('SEARCHING COORDINATES, BUT GETTING', REC, MLAN)
+      MXLAN = NTOT
+      call READYY(' ', 1d0)
+      call READYY(' ', -1d0)
+      call doclose(MLAN)
+      return
+
+887   call QNREADERROR('EXPECTING 4 CHAR, BUT GETTING', MATR, MLAN)
+      MXLAN = NTOT
+      call READYY(' ', 1d0)
+      call READYY(' ', -1d0)
+      call doclose(MLAN)
+      return
+
+999   call QNEOFERROR(MLAN)
+      MXLAN = NTOT
+      call READYY(' ', 1d0)
+      call READYY(' ', -1d0)
+      call doclose(MLAN)
+      return
+
+   end subroutine REALAN
+
+end submodule m_realan_

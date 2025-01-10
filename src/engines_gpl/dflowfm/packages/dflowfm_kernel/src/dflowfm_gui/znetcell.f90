@@ -33,6 +33,7 @@
 module m_znetcell
    use m_checktrianglenetcell, only: checktrianglenetcell
    use m_getwavenr, only: getwavenr
+   use m_orthonet_compute_orientation, only: orthonet_compute_orientation
 
    implicit none
 

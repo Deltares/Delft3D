@@ -44,6 +44,7 @@ contains
       use network_data, only: ykmin, ykmax
       use messagehandling, only: LEVEL_INFO, mess
       use m_dbdistance_hk
+      use m_filez, only: doclose
       implicit none
       integer :: ierr, L, k, i, LL, LLL, LLLL, k1, k2, k3, n, j, mout
       real(kind=dp) :: beta, y0, dy, fcormin, fcormax, xx, yy

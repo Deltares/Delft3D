@@ -31,46 +31,56 @@
 !
 
 !> copy spline to resampled polygon
-subroutine copySplinesToFinePol(numk)
-   use M_SPLINES
-   use m_polygon
-   use m_missing
-   use m_sample_spline
+module m_copysplinestofinepol
 
    implicit none
 
-   integer, intent(in) :: numk !< resample factor
+   private
 
-   integer :: m, numpi, Numnew, ierror
+   public :: copysplinestofinepol
 
-   do m = 1, mcs
-      call NUMP(m, NUMPI)
+contains
 
-      if (NUMPI > 1) then
-         Numnew = 1 + (NUMPI - 1) * numk
-         if (NPL > 0 .and. xpl(max(NPL, 1)) /= DMISS) then
-            call increasepol(Numnew + 2, 1)
-            NPL = NPL + 1
-            xpl(NPL) = DMISS
-         else
-            call increasepol(Numnew + 1, 1)
+   subroutine copySplinesToFinePol(numk)
+      use M_SPLINES
+      use m_polygon
+      use m_missing
+      use m_sample_spline
+
+      integer, intent(in) :: numk !< resample factor
+
+      integer :: m, numpi, Numnew, ierror
+
+      do m = 1, mcs
+         call NUMP(m, NUMPI)
+
+         if (NUMPI > 1) then
+            Numnew = 1 + (NUMPI - 1) * numk
+            if (NPL > 0 .and. xpl(max(NPL, 1)) /= DMISS) then
+               call increasepol(Numnew + 2, 1)
+               NPL = NPL + 1
+               xpl(NPL) = DMISS
+            else
+               call increasepol(Numnew + 1, 1)
+            end if
+
+            do
+               call sample_spline(NUMPI, xsp(m, 1:NUMPI), ysp(m, 1:NUMPI), numk - 1, Numnew, xpl(NPL + 1:NPL + Numnew), ypl(NPL + 1:NPL + Numnew), ierror)
+               if (ierror == 2) then
+                  call increasepol(Numnew + 1, 1)
+               else
+                  exit
+               end if
+            end do
+            NPL = NPL + Numnew
          end if
 
-         do
-            call sample_spline(NUMPI, xsp(m, 1:NUMPI), ysp(m, 1:NUMPI), numk - 1, Numnew, xpl(NPL + 1:NPL + Numnew), ypl(NPL + 1:NPL + Numnew), ierror)
-            if (ierror == 2) then
-               call increasepol(Numnew + 1, 1)
-            else
-               exit
-            end if
-         end do
-         NPL = NPL + Numnew
-      end if
-
 !       add DMISS
-      NPL = NPL + 1
-      xpl(NPL) = DMISS
-      ypl(NPL) = DMISS
-      zpl(NPL) = DMISS
-   end do
-end subroutine copySplinesToFinePol
+         NPL = NPL + 1
+         xpl(NPL) = DMISS
+         ypl(NPL) = DMISS
+         zpl(NPL) = DMISS
+      end do
+   end subroutine copySplinesToFinePol
+
+end module m_copysplinestofinepol

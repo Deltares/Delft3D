@@ -31,21 +31,32 @@
 !
 
 !>    return x-component in link coordinate frame of vector in wall coordinate frame
-      real(kind=dp) function wall2linx(nw, i12, ux, uy)
-         use precision, only: dp
-         use m_flowgeom, only: csbw, snbw
-         use m_sferic
-         implicit none
+module m_wall2linx
 
-         integer, intent(in) :: nw !< wall element number
-         integer, intent(in) :: i12 !< left (1) or right (2) attached flowlink
-         real(kind=dp), intent(in) :: ux, uy !< vector components in wall coordinate frame
+   implicit none
 
-         if (jsferic /= 1 .or. jasfer3D /= 1) then
-            wall2linx = ux
-         else
-            wall2linx = csbw(i12, nw) * ux - snbw(i12, nw) * uy
-         end if
+   private
 
-         return
-      end function wall2linx
+   public :: wall2linx
+
+contains
+
+   real(kind=dp) function wall2linx(nw, i12, ux, uy)
+      use precision, only: dp
+      use m_flowgeom, only: csbw, snbw
+      use m_sferic
+
+      integer, intent(in) :: nw !< wall element number
+      integer, intent(in) :: i12 !< left (1) or right (2) attached flowlink
+      real(kind=dp), intent(in) :: ux, uy !< vector components in wall coordinate frame
+
+      if (jsferic /= 1 .or. jasfer3D /= 1) then
+         wall2linx = ux
+      else
+         wall2linx = csbw(i12, nw) * ux - snbw(i12, nw) * uy
+      end if
+
+      return
+   end function wall2linx
+
+end module m_wall2linx

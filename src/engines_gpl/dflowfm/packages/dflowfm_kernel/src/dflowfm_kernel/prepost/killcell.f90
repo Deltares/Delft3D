@@ -32,6 +32,7 @@
 
 !> delete cell by merging all its nodes and update administration
 module m_kill_cell
+   use m_find_surrounding_cells, only: find_surrounding_cells
    use m_teknode
 
    implicit none

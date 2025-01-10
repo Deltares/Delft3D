@@ -49,14 +49,15 @@ contains
       use m_flowtimes, only: dts
       use m_dslim
       use m_get_Lbot_Ltop
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
+      use m_nodup2linx, only: nodup2linx
+      use m_nodup2liny, only: nodup2liny
 
       integer :: L, LL, k1, k2, k, ku, kd, kku, ku2, is, ip, Lb, Lt, kkua, kkub
       integer :: n12, ib
       real(kind=dp) :: half, sl1, sl2, sl3, cf, ucxku, ucyku, ds1x, ds1y, ds2x, ds2y
       real(kind=dp) :: dsx, dsy
-
-      real(kind=dp), external :: nod2linx, nod2liny
-      real(kind=dp), external :: nodup2linx, nodup2liny
 
       if (limtypmom < 1) return
 

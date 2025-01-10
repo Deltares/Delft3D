@@ -49,6 +49,10 @@ contains
       use m_flowgeom
       use m_flowtimes
       use m_sferic
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
 
       integer :: n12, L, iad !< for link L,
       real(kind=dp) ai, ae, volu
@@ -59,8 +63,6 @@ contains
       real(kind=dp) :: cs, sn, ucin, cfl, tet, ucinx, uciny
 
       integer :: nn12
-
-      real(kind=dp), external :: lin2nodx, lin2nody, nod2linx, nod2liny
 
       ai = 0d0; ae = 0d0
       cs = csu(L)

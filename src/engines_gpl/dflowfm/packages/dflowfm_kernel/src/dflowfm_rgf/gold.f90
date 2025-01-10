@@ -30,65 +30,77 @@
 !
 !
 
-      subroutine GOLD(AX, BX, CX, TOL, XMIN, P, P2, Q, Q2, XX, YY, N, DIS)
-         use precision, only: dp
-         use m_spldist
-         implicit none
-         real(kind=dp) :: c
-         real(kind=dp) :: f0
-         real(kind=dp) :: f1
-         real(kind=dp) :: f2
-         real(kind=dp) :: f3
-         integer :: n
-         real(kind=dp) :: r
-         real(kind=dp) :: x0
-         real(kind=dp) :: x3
-         parameter(R=.61803399, C=.38196602)
+module m_gold
 
-         real(kind=dp) :: AX, BX, CX, TOL, DIS, XMIN, XX, YY, X1, X2
+   implicit none
+
+   private
+
+   public :: gold
+
+contains
+
+   subroutine GOLD(AX, BX, CX, TOL, XMIN, P, P2, Q, Q2, XX, YY, N, DIS)
+      use precision, only: dp
+      use m_spldist
+
+      real(kind=dp) :: c
+      real(kind=dp) :: f0
+      real(kind=dp) :: f1
+      real(kind=dp) :: f2
+      real(kind=dp) :: f3
+      integer :: n
+      real(kind=dp) :: r
+      real(kind=dp) :: x0
+      real(kind=dp) :: x3
+      parameter(R=.61803399, C=.38196602)
+
+      real(kind=dp) :: AX, BX, CX, TOL, DIS, XMIN, XX, YY, X1, X2
 
 !     EENDIMENSIONAAL ZOEKEN VAN 'GEBRACKED' MINIMUM
-         real(kind=dp) :: P(N), P2(N), Q(N), Q2(N)
-         X0 = AX
-         X3 = CX
-         if (abs(CX - BX) > abs(BX - AX)) then
-            X1 = BX
-            X2 = BX + C * (CX - BX)
-         else
-            X2 = BX
-            X1 = BX - C * (BX - AX)
-         end if
+      real(kind=dp) :: P(N), P2(N), Q(N), Q2(N)
+      X0 = AX
+      X3 = CX
+      if (abs(CX - BX) > abs(BX - AX)) then
+         X1 = BX
+         X2 = BX + C * (CX - BX)
+      else
+         X2 = BX
+         X1 = BX - C * (BX - AX)
+      end if
 !     F1=F(X1)
-         F1 = SPLDIST(P, P2, Q, Q2, XX, YY, X1, N)
+      F1 = SPLDIST(P, P2, Q, Q2, XX, YY, X1, N)
 !     F2=F(X2)
-         F2 = SPLDIST(P, P2, Q, Q2, XX, YY, X2, N)
-1        if (abs(X3 - X0) > TOL * (abs(X1) + abs(X2))) then
+      F2 = SPLDIST(P, P2, Q, Q2, XX, YY, X2, N)
+1     if (abs(X3 - X0) > TOL * (abs(X1) + abs(X2))) then
 !     IF(ABS(X3-X0).GT.TOL) THEN
-            if (F2 < F1) then
-               X0 = X1
-               X1 = X2
-               X2 = R * X1 + C * X3
-               F0 = F1
-               F1 = F2
-               F2 = SPLDIST(P, P2, Q, Q2, XX, YY, X2, N)
+         if (F2 < F1) then
+            X0 = X1
+            X1 = X2
+            X2 = R * X1 + C * X3
+            F0 = F1
+            F1 = F2
+            F2 = SPLDIST(P, P2, Q, Q2, XX, YY, X2, N)
 !         F2=F(X2)
-            else
-               X3 = X2
-               X2 = X1
-               X1 = R * X2 + C * X0
-               F3 = F2
-               F2 = F1
-!         F1=F(X1)
-               F1 = SPLDIST(P, P2, Q, Q2, XX, YY, X1, N)
-            end if
-            goto 1
-         end if
-         if (F1 < F2) then
-            DIS = F1
-            XMIN = X1
          else
-            DIS = F2
-            XMIN = X2
+            X3 = X2
+            X2 = X1
+            X1 = R * X2 + C * X0
+            F3 = F2
+            F2 = F1
+!         F1=F(X1)
+            F1 = SPLDIST(P, P2, Q, Q2, XX, YY, X1, N)
          end if
-         return
-      end subroutine GOLD
+         goto 1
+      end if
+      if (F1 < F2) then
+         DIS = F1
+         XMIN = X1
+      else
+         DIS = F2
+         XMIN = X2
+      end if
+      return
+   end subroutine GOLD
+
+end module m_gold

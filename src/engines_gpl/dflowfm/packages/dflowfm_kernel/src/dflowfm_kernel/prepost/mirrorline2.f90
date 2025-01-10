@@ -30,14 +30,22 @@
 !
 !
 
+module m_mirrorline2
+
+   implicit none
+
+   private
+
+   public :: mirrorline2
+
+contains
+
    subroutine MIRRORLINE2(X0, Y0, X1, Y1, X2, Y2, JA, DIS, XN, YN) ! 2*ZO VER
       use precision, only: dp
-
       use geometry_module, only: dlinedis
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
 
-      implicit none
       real(kind=dp) :: X0, Y0, X1, Y1, X2, Y2, DIS, XN, YN
       integer :: JA
 
@@ -48,3 +56,5 @@
 
       return
    end subroutine MIRRORLINE2
+
+end module m_mirrorline2

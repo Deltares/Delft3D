@@ -33,6 +33,9 @@
 module unstruc_startup
 !! Separates some startup/initialization procedures from the main program in net.f90
 
+   use m_setcoltabfile, only: setcoltabfile
+   use m_iset_jaopengl, only: iset_jaopengl
+   use m_inidepmax2, only: inidepmax2
    use m_intini
    use m_helpin
    use unstruc_ini
@@ -50,6 +53,7 @@ contains
       use m_flowparameters
       use unstruc_colors
       use unstruc_model
+      use m_filez, only: oldfil
 
       character(len=76) :: filnam
 
@@ -484,8 +488,6 @@ contains
          k = k + 1
          call IGRPALETTERGB(ICL, IRED, IGREEN, IBLUE)
       end do
-!     CALL READXYMIS(MINI)
-!     CALL READAMISS(MINI)
 
       TXLIN = ' ' ! alle drie leeg
 
@@ -513,6 +515,7 @@ contains
    end subroutine initGUI
 
    subroutine makeunstrucini(filnam, istat)
+      use m_filez, only: doclose, newfil
 
       implicit none
 

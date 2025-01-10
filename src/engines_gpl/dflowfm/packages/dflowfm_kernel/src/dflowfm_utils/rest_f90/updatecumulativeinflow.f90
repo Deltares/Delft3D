@@ -31,18 +31,30 @@
 !
 
 ! update m_wind::vextcum(:) with the realized inflow from m_wind::qextreal(:)
-subroutine updateCumulativeInflow(deltat)
-   use precision, only: dp
-   use m_wind
-   use m_flowgeom, only: ndx
+module m_updatecumulativeinflow
 
-   integer :: k
-   real(kind=dp), intent(in) :: deltat ! dt of current timestep
+   implicit none
 
-   if (jaQext == 0) return
+   private
 
-   do k = 1, ndx
-      vextcum(k) = vextcum(k) + qextreal(k) * deltat
-   end do
+   public :: updatecumulativeinflow
 
-end subroutine updateCumulativeInflow
+contains
+
+   subroutine updateCumulativeInflow(deltat)
+      use precision, only: dp
+      use m_wind
+      use m_flowgeom, only: ndx
+
+      integer :: k
+      real(kind=dp), intent(in) :: deltat ! dt of current timestep
+
+      if (jaQext == 0) return
+
+      do k = 1, ndx
+         vextcum(k) = vextcum(k) + qextreal(k) * deltat
+      end do
+
+   end subroutine updateCumulativeInflow
+
+end module m_updatecumulativeinflow

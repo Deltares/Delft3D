@@ -30,6 +30,7 @@
 !
 !
 module m_mergenodes
+   use m_givelinknum, only: givelinknum
 
    implicit none
 
@@ -37,7 +38,7 @@ contains
 
    subroutine MERGENODES(K1, K2, JA, check_connected_input) ! KNOOP 1 WORDT OPGENOMEN IN KNOOP 2
 
-      use m_netw, only: NMK, KN, NOD, KC, XK
+      use network_data, only: NMK, KN, NOD, KC, XK
       use m_missing, only: dxymis
       use gridoperations, only: OTHERNODE
 

@@ -32,70 +32,81 @@
 
 !>  regularise spline2curvi grid
 !>     note: there is an asymmetry, but this procedure is intended for regularisation only
-subroutine regularise_spline2curvigrid()
-   use precision, only: dp
-   use m_grid
-   use m_spline2curvi, only: dtolLR
-   use m_missing, only: dmiss
-   use geometry_module, only: dbdistance
-   use m_sferic, only: jsferic, jasfer3D
-   use m_get_lr
+module m_regularise_spline2curvigrid
+   use m_savegrd, only: savegrd
 
    implicit none
 
-   real(kind=dp) :: xi
-   real(kind=dp) :: dhmax, dtolLR_bak
+   private
 
-   integer :: i, j, iL, iR
-   integer :: ih
+   public :: regularise_spline2curvigrid
 
-   integer :: ierror
+contains
 
-   real(kind=dp), parameter :: FAC = 1d-1 ! regularisation parameter
+   subroutine regularise_spline2curvigrid()
+      use precision, only: dp
+      use m_grid
+      use m_spline2curvi, only: dtolLR
+      use m_missing, only: dmiss
+      use geometry_module, only: dbdistance
+      use m_sferic, only: jsferic, jasfer3D
+      use m_get_lr
 
-   call savegrd()
+      real(kind=dp) :: xi
+      real(kind=dp) :: dhmax, dtolLR_bak
 
-   ierror = 1
+      integer :: i, j, iL, iR
+      integer :: ih
+
+      integer :: ierror
+
+      real(kind=dp), parameter :: FAC = 1d-1 ! regularisation parameter
+
+      call savegrd()
+
+      ierror = 1
 
 !  store settings
-   dtolLR_bak = dtolLR
+      dtolLR_bak = dtolLR
 
 !  compute maximum mesh width and get dtolLR in the proper dimension
-   dhmax = 0d0
-   do i = 1, mc
-      do j = 1, nc - 1
-         if (xc(i, j) == DMISS .or. xc(i, j + 1) == DMISS) cycle
-         dhmax = max(dhmax, dbdistance(xc(i, j), yc(i, j), xc(i, j), yc(i, j + 1), jsferic, jasfer3D, dmiss))
+      dhmax = 0d0
+      do i = 1, mc
+         do j = 1, nc - 1
+            if (xc(i, j) == DMISS .or. xc(i, j + 1) == DMISS) cycle
+            dhmax = max(dhmax, dbdistance(xc(i, j), yc(i, j), xc(i, j), yc(i, j + 1), jsferic, jasfer3D, dmiss))
+         end do
       end do
-   end do
-   dtolLR = dtolLR * dhmax
+      dtolLR = dtolLR * dhmax
 
-   do j = 1, nc
-      i = 1
-      do while (i <= mc)
-         if (xc(i, j) /= DMISS .and. yc(i, j) /= DMISS) then
+      do j = 1, nc
+         i = 1
+         do while (i <= mc)
+            if (xc(i, j) /= DMISS .and. yc(i, j) /= DMISS) then
 !           get neighboring nodes
-            call get_LR(mc, xc(:, j), yc(:, j), i, iL, iR)
+               call get_LR(mc, xc(:, j), yc(:, j), i, iL, iR)
 
 !           regularise grid on right hand side of this node (asymmetric)
-            do ih = i + 1, iR - 1
-               xi = dble(ih - i) / dble(iR - i) * FAC
-               xc(ih, j) = (1d0 - xi) * xc(i, j) + xi * xc(iR, j)
-               yc(ih, j) = (1d0 - xi) * yc(i, j) + xi * yc(iR, j)
-            end do
-         else ! just advance pointer
-            iR = i + 1
-         end if
+               do ih = i + 1, iR - 1
+                  xi = dble(ih - i) / dble(iR - i) * FAC
+                  xc(ih, j) = (1d0 - xi) * xc(i, j) + xi * xc(iR, j)
+                  yc(ih, j) = (1d0 - xi) * yc(i, j) + xi * yc(iR, j)
+               end do
+            else ! just advance pointer
+               iR = i + 1
+            end if
 
-         i = max(iR, i + 1)
+            i = max(iR, i + 1)
+         end do
       end do
-   end do
 
-   ierror = 0
-1234 continue
+      ierror = 0
+1234  continue
 
 !  restore settings
-   dtolLR = dtolLR_bak
+      dtolLR = dtolLR_bak
 
-   return
-end subroutine regularise_spline2curvigrid
+      return
+   end subroutine regularise_spline2curvigrid
+
+end module m_regularise_spline2curvigrid

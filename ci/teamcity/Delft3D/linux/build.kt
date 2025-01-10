@@ -4,14 +4,14 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.failureConditions.*
-
 import Delft3D.template.*
+import Delft3D.step.*
 
 object LinuxBuild : BuildType({
 
     templates(
         TemplateMergeRequest,
-        TemplateMergeTarget,
+        TemplateDetermineProduct,
         TemplatePublishStatus,
         TemplateMonitorPerformance
     )
@@ -42,12 +42,12 @@ object LinuxBuild : BuildType({
     }
 
     steps {
+        mergeTargetBranch {}
         script {
             name = "Add version attributes"
             workingDir = "./src/version_includes"
             scriptContent = """
-                #!/bin/bash
-                
+                #!/usr/bin/env bash
                 echo '#define BUILD_NR "%build.vcs.number%"' > checkout_info.h
                 echo '#define BRANCH "%teamcity.build.branch%"' >> checkout_info.h
             """.trimIndent()
@@ -55,9 +55,8 @@ object LinuxBuild : BuildType({
         script {
             name = "Build"
             scriptContent = """
-                #!/bin/bash
+                #!/usr/bin/env bash
                 . /usr/share/Modules/init/bash
-                
                 source ./src/setenv.sh %toolchain%
                 
                 cmake ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=%build_configuration% -D CMAKE_BUILD_TYPE=%build_type% -B build_%build_configuration% -D CMAKE_INSTALL_PREFIX=%install_dir%
@@ -69,6 +68,7 @@ object LinuxBuild : BuildType({
         script {
             name = "Copy ESMF binaries"
             scriptContent = """
+                #!/usr/bin/env bash
                 . /usr/share/Modules/init/bash
                 
                 # Additional step to copy ESMF stuff needed by D-WAVES

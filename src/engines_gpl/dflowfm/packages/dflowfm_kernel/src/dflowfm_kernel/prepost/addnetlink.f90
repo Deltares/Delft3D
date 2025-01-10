@@ -31,6 +31,7 @@
 !
 
 module m_addnetlink
+   use m_getnetnodenr, only: getnetnodenr
 
    implicit none
 

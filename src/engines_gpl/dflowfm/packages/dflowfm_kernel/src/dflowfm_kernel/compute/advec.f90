@@ -68,6 +68,10 @@ contains
       use m_qucwen, only: qucwen
       use m_qufper, only: QufPer
       use unstruc_channel_flow, only: network
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
 
       ! locals
       integer :: L, k1, k2 ! link, nd1, nd2
@@ -98,9 +102,6 @@ contains
       real(kind=dp) :: quuk1(0:kmxx), quuk2(0:kmxx), volk1(0:kmxx), volk2(0:kmxx), sqak1(0:kmxx), sqak2(0:kmxx)
       real(kind=dp) :: quuL1(0:kmxx), quuL2(0:kmxx), volL1(0:kmxx), volL2(0:kmxx), sqaL1(0:kmxx), sqaL2(0:kmxx)
       real(kind=dp) :: sigk1(0:kmxx), sigk2(0:kmxx), siguL(0:kmxx)
-
-      real(kind=dp), external :: lin2nodx, lin2nody
-      real(kind=dp), external :: nod2linx, nod2liny
 
       real(kind=dp) :: am
       real(kind=dp) :: qv

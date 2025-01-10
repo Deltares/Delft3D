@@ -49,7 +49,7 @@ contains
       use m_waves
       use m_flow, only: jawave, flowWithoutWaves
       use m_flowgeom, only: ndx
-      implicit none
+      use m_filez, only: doclose, newfil
 
       integer :: msgbu, k
       real(kind=dp) :: uwi, Cd10, fetchL, fetchD, hsig, tsig

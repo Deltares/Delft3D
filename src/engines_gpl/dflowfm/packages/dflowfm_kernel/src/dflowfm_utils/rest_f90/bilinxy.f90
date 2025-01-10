@@ -30,6 +30,8 @@
 !
 !
 module m_bilinxy
+   use m_ludcmp, only: ludcmp
+
    implicit none
 contains
    subroutine BILINXY(X, Y, XZ, YZ, XP, YP, XP2, YP2, INI)

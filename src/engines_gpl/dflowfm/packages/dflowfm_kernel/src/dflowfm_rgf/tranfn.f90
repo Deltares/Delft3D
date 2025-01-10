@@ -30,59 +30,70 @@
 !
 !
 
-      subroutine TRANFN(X1, X2, X3, X4, &
-                        Y1, Y2, Y3, Y4, &
-                        mmax, nmax, imax, &
-                        MFAC, NFAC, XRH, YRH)
-         use precision, only: dp
-         use m_missing
-         implicit none
-         integer :: mmax, nmax, imax, mfac, nfac
-         real(kind=dp) :: X1(IMAX), X2(IMAX), X3(IMAX), X4(IMAX), XRH(MMAX, NMAX), &
-                          Y1(IMAX), Y2(IMAX), Y3(IMAX), Y4(IMAX), YRH(MMAX, NMAX), &
-                          B1R(IMAX), B2R(IMAX), A1R(IMAX), A2R(IMAX)
+module m_tranfn
 
-         integer :: I, J
-         real(kind=dp) :: A1, A2, B1, B2, D, DX, DY, AIJ, BIJ, EX, EY, XA, YA, XB, YB, DEXY
+   implicit none
+
+   private
+
+   public :: tranfn
+
+contains
+
+   subroutine TRANFN(X1, X2, X3, X4, &
+                     Y1, Y2, Y3, Y4, &
+                     mmax, nmax, imax, &
+                     MFAC, NFAC, XRH, YRH)
+      use m_abrel, only: abrel
+      use precision, only: dp
+      use m_missing
+
+      integer :: mmax, nmax, imax, mfac, nfac
+      real(kind=dp) :: X1(IMAX), X2(IMAX), X3(IMAX), X4(IMAX), XRH(MMAX, NMAX), &
+                       Y1(IMAX), Y2(IMAX), Y3(IMAX), Y4(IMAX), YRH(MMAX, NMAX), &
+                       B1R(IMAX), B2R(IMAX), A1R(IMAX), A2R(IMAX)
+
+      integer :: I, J
+      real(kind=dp) :: A1, A2, B1, B2, D, DX, DY, AIJ, BIJ, EX, EY, XA, YA, XB, YB, DEXY
 !     1,2,B VERTICALEN, 3,4,A HORIZONTALEN
 
-         call ABREL(X1, Y1, B1R, NFAC)
-         call ABREL(X2, Y2, B2R, NFAC)
-         call ABREL(X3, Y3, A1R, MFAC)
-         call ABREL(X4, Y4, A2R, MFAC)
+      call ABREL(X1, Y1, B1R, NFAC)
+      call ABREL(X2, Y2, B2R, NFAC)
+      call ABREL(X3, Y3, A1R, MFAC)
+      call ABREL(X4, Y4, A2R, MFAC)
 
 !     Dit is modified transfinite
-         do I = 2, MFAC
-            do J = 2, NFAC
-               B1 = B1R(J)
-               B2 = B2R(J)
-               A1 = A1R(I)
-               A2 = A2R(I)
-               D = 1 - (A2 - A1) * (B2 - B1)
-               AIJ = ((1 - B1) * A1 + B1 * A2) / D
-               BIJ = ((1 - A1) * B1 + A1 * B2) / D
+      do I = 2, MFAC
+         do J = 2, NFAC
+            B1 = B1R(J)
+            B2 = B2R(J)
+            A1 = A1R(I)
+            A2 = A2R(I)
+            D = 1 - (A2 - A1) * (B2 - B1)
+            AIJ = ((1 - B1) * A1 + B1 * A2) / D
+            BIJ = ((1 - A1) * B1 + A1 * B2) / D
 
-               DX = X2(J) - X1(J)
-               DY = Y2(J) - Y1(J)
-               EX = X4(I) - X3(I)
-               EY = Y4(I) - Y3(I)
+            DX = X2(J) - X1(J)
+            DY = Y2(J) - Y1(J)
+            EX = X4(I) - X3(I)
+            EY = Y4(I) - Y3(I)
 
-               XA = X1(J) + AIJ * DX
-               YA = Y1(J) + AIJ * DY
-               XB = X3(I) + BIJ * EX
-               YB = Y3(I) + BIJ * EY
+            XA = X1(J) + AIJ * DX
+            YA = Y1(J) + AIJ * DY
+            XB = X3(I) + BIJ * EX
+            YB = Y3(I) + BIJ * EY
 
-               DEXY = DX * EY - EX * DY
-               if (DEXY == 0) then
-                  XRH(I, J) = XYMIS
-                  YRH(I, J) = XYMIS
-               else
-                  XRH(I, J) = ((XA * DX + YA * DY) * EY - (XB * EX + YB * EY) * DY) / DEXY
-                  YRH(I, J) = ((XB * EX + YB * EY) * DX - (XA * DX + YA * DY) * EX) / DEXY
-               end if
+            DEXY = DX * EY - EX * DY
+            if (DEXY == 0) then
+               XRH(I, J) = XYMIS
+               YRH(I, J) = XYMIS
+            else
+               XRH(I, J) = ((XA * DX + YA * DY) * EY - (XB * EX + YB * EY) * DY) / DEXY
+               YRH(I, J) = ((XB * EX + YB * EY) * DX - (XA * DX + YA * DY) * EX) / DEXY
+            end if
 
-            end do
          end do
+      end do
 
 !     Dit is gewoon transfinite
 !     X00 = X1(1)
@@ -142,19 +153,21 @@
 !   11CONTINUE
 
 !     vul randen in
-         do I = 1, MFAC + 1
-            XRH(I, 1) = X3(I)
-            XRH(I, NFAC + 1) = X4(I)
-            YRH(I, 1) = Y3(I)
-            YRH(I, NFAC + 1) = Y4(I)
-         end do
+      do I = 1, MFAC + 1
+         XRH(I, 1) = X3(I)
+         XRH(I, NFAC + 1) = X4(I)
+         YRH(I, 1) = Y3(I)
+         YRH(I, NFAC + 1) = Y4(I)
+      end do
 
-         do J = 1, NFAC + 1
-            XRH(1, J) = X1(J)
-            XRH(MFAC + 1, J) = X2(J)
-            YRH(1, J) = Y1(J)
-            YRH(MFAC + 1, J) = Y2(J)
-         end do
+      do J = 1, NFAC + 1
+         XRH(1, J) = X1(J)
+         XRH(MFAC + 1, J) = X2(J)
+         YRH(1, J) = Y1(J)
+         YRH(MFAC + 1, J) = Y2(J)
+      end do
 
-         return
-      end subroutine TRANFN
+      return
+   end subroutine TRANFN
+
+end module m_tranfn

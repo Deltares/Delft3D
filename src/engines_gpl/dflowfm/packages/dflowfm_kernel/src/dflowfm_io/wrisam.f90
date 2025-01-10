@@ -30,6 +30,9 @@
 !
 !
 module m_wrisam
+   use m_wriarcsam, only: wriarcsam
+   use m_wriarc, only: wriarc
+
    implicit none
 contains
    subroutine WRISAM(MSAM)
@@ -40,6 +43,7 @@ contains
       use m_pharosflow
       use m_readyy
       use m_qnerror
+      use m_filez, only: doclose
 
       integer :: msam, KMOD
 

@@ -27,68 +27,75 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_setwallorientations
 
- !> set wall to flowlinks and wall to flownode oientations
- subroutine setwallorientations()
-    use precision, only: dp
-    use m_flowgeom
-    use network_data, only: xk, yk
-    use m_sferic
-    use m_alloc
-    use m_missing, only: dmiss
-    use geometry_module, only: half, spher2locvec
+   implicit none
 
-    implicit none
+   private
 
-    real(kind=dp) :: xh, yh
+   public :: setwallorientations
 
-    integer :: k1, k3, k4
-    integer :: L1, L2
-    integer :: nw
+contains
 
-    integer :: ierr
+   !> set wall to flowlinks and wall to flownode oientations
+   subroutine setwallorientations()
+      use precision, only: dp
+      use m_flowgeom
+      use network_data, only: xk, yk
+      use m_sferic
+      use m_alloc
+      use m_missing, only: dmiss
+      use geometry_module, only: half, spher2locvec
 
-    if (allocated(csbw)) deallocate (csbw)
-    if (allocated(snbw)) deallocate (snbw)
+      real(kind=dp) :: xh, yh
 
-    if (allocated(csbwn)) deallocate (csbwn)
-    if (allocated(snbwn)) deallocate (snbwn)
+      integer :: k1, k3, k4
+      integer :: L1, L2
+      integer :: nw
 
-    if (jsferic == 0 .or. jasfer3D == 0) return
+      integer :: ierr
 
-    allocate (csbw(2, mxwalls), stat=ierr); csbw = 1d0
-    call aerr('csbw(2,mxwalls)', ierr, 2 * Lnx)
-    allocate (snbw(2, mxwalls), stat=ierr); snbw = 0d0
-    call aerr('snbw(2,mxwalls)', ierr, 2 * Lnx)
+      if (allocated(csbw)) deallocate (csbw)
+      if (allocated(snbw)) deallocate (snbw)
 
-    allocate (csbwn(mxwalls), stat=ierr); csbwn = 1d0
-    call aerr('csbwn(mxwalls)', ierr, 2 * Lnx)
-    allocate (snbwn(mxwalls), stat=ierr); snbwn = 0d0
-    call aerr('snbwn(mxwalls)', ierr, 2 * Lnx)
+      if (allocated(csbwn)) deallocate (csbwn)
+      if (allocated(snbwn)) deallocate (snbwn)
 
-    do nw = 1, mxwalls
-       k1 = walls(1, nw) ! inner flownode
-       k3 = walls(2, nw) ! first corner (netnode)
-       k4 = walls(3, nw) ! second corner (netnode)
-       L1 = walls(4, nw) ! first flowlink
-       L2 = walls(5, nw) ! second flowlink
+      if (jsferic == 0 .or. jasfer3D == 0) return
+
+      allocate (csbw(2, mxwalls), stat=ierr); csbw = 1d0
+      call aerr('csbw(2,mxwalls)', ierr, 2 * Lnx)
+      allocate (snbw(2, mxwalls), stat=ierr); snbw = 0d0
+      call aerr('snbw(2,mxwalls)', ierr, 2 * Lnx)
+
+      allocate (csbwn(mxwalls), stat=ierr); csbwn = 1d0
+      call aerr('csbwn(mxwalls)', ierr, 2 * Lnx)
+      allocate (snbwn(mxwalls), stat=ierr); snbwn = 0d0
+      call aerr('snbwn(mxwalls)', ierr, 2 * Lnx)
+
+      do nw = 1, mxwalls
+         k1 = walls(1, nw) ! inner flownode
+         k3 = walls(2, nw) ! first corner (netnode)
+         k4 = walls(3, nw) ! second corner (netnode)
+         L1 = walls(4, nw) ! first flowlink
+         L2 = walls(5, nw) ! second flowlink
 
 !      compute wall midpoint coordinates
-       call half(xk(k3), yk(k3), xk(k4), yk(k4), xh, yh, jsferic, jasfer3D)
+         call half(xk(k3), yk(k3), xk(k4), yk(k4), xh, yh, jsferic, jasfer3D)
 
 !      compute orientation of flowlinks w.r.t. wall mid point
-       if (L1 > 0) then
-          call spher2locvec(xu(L1), yu(L1), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbw(1, nw), snbw(1, nw), jsferic, jasfer3D, dmiss)
-       end if
-       if (L2 > 0) then
-          call spher2locvec(xu(L2), yu(L2), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbw(2, nw), snbw(2, nw), jsferic, jasfer3D, dmiss)
-       end if
+         if (L1 > 0) then
+            call spher2locvec(xu(L1), yu(L1), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbw(1, nw), snbw(1, nw), jsferic, jasfer3D, dmiss)
+         end if
+         if (L2 > 0) then
+            call spher2locvec(xu(L2), yu(L2), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbw(2, nw), snbw(2, nw), jsferic, jasfer3D, dmiss)
+         end if
 
 !      compute orientation of flownode w.r.t. wall mid point
-       call spher2locvec(xz(k1), yz(k1), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbwn(nw), snbwn(nw), jsferic, jasfer3D, dmiss)
-    end do
+         call spher2locvec(xz(k1), yz(k1), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbwn(nw), snbwn(nw), jsferic, jasfer3D, dmiss)
+      end do
 
-    return
- end subroutine setwallorientations
+      return
+   end subroutine setwallorientations
+
+end module m_setwallorientations

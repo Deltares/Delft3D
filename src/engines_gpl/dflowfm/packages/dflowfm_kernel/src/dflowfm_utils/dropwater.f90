@@ -30,74 +30,85 @@
 !
 !
 
- !> Drop water *during* flow computation.
+module m_dropwater
+
+   implicit none
+
+   private
+
+   public :: dropwater
+
+contains
+
+   !> Drop water *during* flow computation.
  !!
  !! Use idir=1 for adding water, -1 for lowering it.
- subroutine dropwater(xp, yp, idir)
-    use precision, only: dp
-    use m_isocol
-    use m_polygon
-    use m_flowgeom
-    use m_flow
-    use m_missing, only: dmiss, JINS
-    use geometry_module, only: pinpok, dbpinpol
-    use m_set_kbot_ktop
-    use m_volsur
-    use m_flow_f0isf1
-    use m_pfiller
+   subroutine dropwater(xp, yp, idir)
+      use precision, only: dp
+      use m_isocol
+      use m_polygon
+      use m_flowgeom
+      use m_flow
+      use m_missing, only: dmiss, JINS
+      use geometry_module, only: pinpok, dbpinpol
+      use m_set_kbot_ktop
+      use m_volsur
+      use m_flow_f0isf1
+      use m_pfiller
 
-    implicit none
-    real(kind=dp), intent(in) :: xp, yp !< Clicked point, which flow node to drop. If a polygon is active, drop all contained points, independent of xp, yp.
-    integer, intent(in) :: idir !< direction (1 for up, -1 for down)
+      real(kind=dp), intent(in) :: xp, yp !< Clicked point, which flow node to drop. If a polygon is active, drop all contained points, independent of xp, yp.
+      integer, intent(in) :: idir !< direction (1 for up, -1 for down)
 
-    ! locals
-    integer :: n, nn, in, ncol
-    real(kind=dp) :: dropstep, s10
+      ! locals
+      integer :: n, nn, in, ncol
+      real(kind=dp) :: dropstep, s10
 
-    if (ndx == 0) return
+      if (ndx == 0) return
 
-    dropstep = idir * sdropstep
+      dropstep = idir * sdropstep
 
-    if (npl > 2) then
-       in = -1
-       do n = 1, ndxi
-          call DBPINPOL(xz(n), yz(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
-          if (in == 1) then
-             s10 = s1(n)
-             s1(n) = max(bl(n), s1(n) + dropstep)
-             vol0tot = vol0tot + (s1(n) - s10) * ba(n)
+      if (npl > 2) then
+         in = -1
+         do n = 1, ndxi
+            call DBPINPOL(xz(n), yz(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
+            if (in == 1) then
+               s10 = s1(n)
+               s1(n) = max(bl(n), s1(n) + dropstep)
+               vol0tot = vol0tot + (s1(n) - s10) * ba(n)
 
-             call isocol(s1(n), ncol)
-             nn = size(nd(n)%x)
-             call pfiller(nd(n)%x, nd(n)%y, nn, ncol, 30)
-          end if
-       end do
-    else
+               call isocol(s1(n), ncol)
+               nn = size(nd(n)%x)
+               call pfiller(nd(n)%x, nd(n)%y, nn, ncol, 30)
+            end if
+         end do
+      else
 
-       do n = ndxi, 1, -1
-          nn = size(nd(n)%x); if (nn == 0) cycle
-          call PINPOK(Xp, Yp, Nn, nd(n)%x, nd(n)%y, IN, jins, dmiss)
-          if (in == 1) then
-             s10 = s1(n)
-             s1(n) = max(bl(n), s1(n) + dropstep)
+         do n = ndxi, 1, -1
+            nn = size(nd(n)%x); if (nn == 0) cycle
+            call PINPOK(Xp, Yp, Nn, nd(n)%x, nd(n)%y, IN, jins, dmiss)
+            if (in == 1) then
+               s10 = s1(n)
+               s1(n) = max(bl(n), s1(n) + dropstep)
 
-             call isocol(s1(n), ncol)
-             nn = size(nd(n)%x)
-             call pfiller(nd(n)%x, nd(n)%y, nn, ncol, 30)
-             exit
-          end if
-       end do
-    end if
+               call isocol(s1(n), ncol)
+               nn = size(nd(n)%x)
+               call pfiller(nd(n)%x, nd(n)%y, nn, ncol, 30)
+               exit
+            end if
+         end do
+      end if
 
-    hs = s1 - bl
-    call volsur() ! dropwater
-    call flow_f0isf1() ! dropwater
-    volerr = 0; volerrcum = 0
+      hs = s1 - bl
+      call volsur() ! dropwater
+      call flow_f0isf1() ! dropwater
+      volerr = 0; volerrcum = 0
 
-    if (kmx > 0) then
-       call setkbotktop(1) ! dropwater
-    end if
+      if (kmx > 0) then
+         call setkbotktop(1) ! dropwater
+      end if
 
-    validateon = .false.
+      validateon = .false.
 
- end subroutine dropwater
+   end subroutine dropwater
+
+end module m_dropwater

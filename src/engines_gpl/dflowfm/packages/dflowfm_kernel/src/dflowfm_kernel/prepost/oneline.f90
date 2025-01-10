@@ -30,39 +30,51 @@
 !
 !
 
-  subroutine ONELINE(K) ! TWEE LIJNTJES WORDEN 1
-     use precision, only: dp
-     use m_delnode, only: delnode
-     use m_connect, only: connect
-     use m_netw
-     use gridoperations
-     use m_settings
-     use m_cconstants
-     implicit none
-     integer :: K
+module m_oneline
 
-     integer :: ja
-     integer :: k1
-     integer :: k2
-     integer :: l1
-     integer :: l2
-     integer :: lfa
-     integer :: nm
-     real(kind=dp) :: r0
+   implicit none
 
-     JA = 0
-     NM = NMK(K)
-     if (NM == 2) then
-        L1 = NOD(K)%LIN(1)
-        L2 = NOD(K)%LIN(2)
-        ! IF (RL(L1) .LT. RD .OR. RL(L2) .LT. RD) THEN
-        call OTHERNODE(K, L1, K1)
-        call OTHERNODE(K, L2, K2)
-        R0 = 0 !  RL(L1) + RL(L2)
-        LFA = 1
-        call DELNODE(K)
-        call CONNECT(K1, K2, LFA, R0)
-        ! ENDIF
-     end if
-     return
-  end subroutine ONELINE
+   private
+
+   public :: oneline
+
+contains
+
+   subroutine ONELINE(K) ! TWEE LIJNTJES WORDEN 1
+      use precision, only: dp
+      use m_delnode, only: delnode
+      use m_connect, only: connect
+      use m_netw
+      use gridoperations
+      use m_settings
+      use m_cconstants
+
+      integer :: K
+
+      integer :: ja
+      integer :: k1
+      integer :: k2
+      integer :: l1
+      integer :: l2
+      integer :: lfa
+      integer :: nm
+      real(kind=dp) :: r0
+
+      JA = 0
+      NM = NMK(K)
+      if (NM == 2) then
+         L1 = NOD(K)%LIN(1)
+         L2 = NOD(K)%LIN(2)
+         ! IF (RL(L1) .LT. RD .OR. RL(L2) .LT. RD) THEN
+         call OTHERNODE(K, L1, K1)
+         call OTHERNODE(K, L2, K2)
+         R0 = 0 !  RL(L1) + RL(L2)
+         LFA = 1
+         call DELNODE(K)
+         call CONNECT(K1, K2, LFA, R0)
+         ! ENDIF
+      end if
+      return
+   end subroutine ONELINE
+
+end module m_oneline

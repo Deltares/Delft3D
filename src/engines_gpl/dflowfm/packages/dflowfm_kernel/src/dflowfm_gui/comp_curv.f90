@@ -56,7 +56,6 @@ contains
       integer :: iL, iR
 
       real(kind=dp), parameter :: EPS = 1d-4
-      real(kind=dp), external :: getdx, getdy
 
       iL = max(min(int(s) + 1, num - 1), 1)
       iR = max(iL + 1, 1)

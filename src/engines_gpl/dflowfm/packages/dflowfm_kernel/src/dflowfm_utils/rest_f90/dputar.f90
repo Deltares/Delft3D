@@ -30,15 +30,27 @@
 !
 !
 
-      subroutine DPUTAR(XR, X, MMAX)
-         use precision, only: dp
-         implicit none
-         integer :: i
-         integer :: mmax
+module m_dputar
+
+   implicit none
+
+   private
+
+   public :: dputar
+
+contains
+
+   subroutine DPUTAR(XR, X, MMAX)
+      use precision, only: dp
+
+      integer :: i
+      integer :: mmax
 !     DE EERSTE IN DE TWEEDE
-         real(kind=dp) XR(MMAX), X(MMAX)
-         do I = 1, MMAX
-            X(I) = XR(I)
-         end do
-         return
-      end
+      real(kind=dp) XR(MMAX), X(MMAX)
+      do I = 1, MMAX
+         X(I) = XR(I)
+      end do
+      return
+   end
+
+end module m_dputar

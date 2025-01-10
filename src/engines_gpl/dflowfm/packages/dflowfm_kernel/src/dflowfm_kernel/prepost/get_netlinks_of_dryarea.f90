@@ -32,11 +32,20 @@
 
 ! =================================================================================================
 ! =================================================================================================
+module m_get_netlinks_of_dryarea
+
+   implicit none
+
+   private
+
+   public :: get_netlinks_of_dryarea
+
+contains
+
    subroutine get_netlinks_of_dryarea()
       use network_data, only: numl, lne
       use fm_external_forcings_data, only: kdryarea, nDryLinks
 
-      implicit none
       integer :: L, k1, k2
 
       if (allocated(kdryarea)) deallocate (kdryarea)
@@ -52,3 +61,5 @@
       end do
 
    end subroutine get_netlinks_of_dryarea
+
+end module m_get_netlinks_of_dryarea

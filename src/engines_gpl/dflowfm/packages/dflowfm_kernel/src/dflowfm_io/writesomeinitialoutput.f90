@@ -53,6 +53,7 @@ contains
       use m_reasam
       use m_datum
       use m_dbdistance_hk
+      use m_filez, only: doclose, newfil, oldfil
 
       implicit none
       integer :: k, mbalat, mwrong, L, msam, n, nf, jacheckba = 0

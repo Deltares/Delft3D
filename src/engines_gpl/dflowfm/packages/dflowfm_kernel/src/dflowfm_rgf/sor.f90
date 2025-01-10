@@ -30,58 +30,70 @@
 !
 !
 
-      subroutine SOR(A, B, C, D, E, U, RJAC, M1, N1, M2, N2)
-         use precision, only: dp
-         use m_grid
-         use m_gridsettings
-         use m_orthosettings, only: ITIN
-         implicit none
-         real(kind=dp) :: anorm
-         real(kind=dp) :: anormf
-         real(kind=dp) :: half
-         integer :: j
-         integer :: l
-         integer :: m1
-         integer :: m2
-         integer :: maxits
-         integer :: n
-         integer :: n1
-         integer :: n2
-         real(kind=dp) :: one
-         real(kind=dp) :: qtr
-         real(kind=dp) :: rjac
-         real(kind=dp) :: zero
-!     IMPLICIT real(kind=dp) ::(A-H,O-Z)
-         real(kind=dp) :: A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), D(MMAX, NMAX), E(MMAX, NMAX), U(MMAX, NMAX)
+module m_sor
 
-         parameter(ZERO=0d0, HALF=.5d0, QTR=.25d0, ONE=1d0)
-         real(kind=dp) :: RESID, OMEGA
+   implicit none
+
+   private
+
+   public :: sor
+
+contains
+
+   subroutine SOR(A, B, C, D, E, U, RJAC, M1, N1, M2, N2)
+      use precision, only: dp
+      use m_grid
+      use m_gridsettings
+      use m_orthosettings, only: ITIN
+
+      real(kind=dp) :: anorm
+      real(kind=dp) :: anormf
+      real(kind=dp) :: half
+      integer :: j
+      integer :: l
+      integer :: m1
+      integer :: m2
+      integer :: maxits
+      integer :: n
+      integer :: n1
+      integer :: n2
+      real(kind=dp) :: one
+      real(kind=dp) :: qtr
+      real(kind=dp) :: rjac
+      real(kind=dp) :: zero
+!     IMPLICIT real(kind=dp) ::(A-H,O-Z)
+      real(kind=dp) :: A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), D(MMAX, NMAX), E(MMAX, NMAX), U(MMAX, NMAX)
+
+      parameter(ZERO=0d0, HALF=.5d0, QTR=.25d0, ONE=1d0)
+      real(kind=dp) :: RESID, OMEGA
 !     WRITE (MDIA,*) 'MEGS AVAILABLE SOR ', N4*4.096*0.001,
 !      (N1+N2)*4.096*0.001d0
-         MAXITS = ITIN
-         ANORMF = ZERO
-         OMEGA = ONE
+      MAXITS = ITIN
+      ANORMF = ZERO
+      OMEGA = ONE
 
-         do N = 1, MAXITS
-            ANORM = ZERO
-            do J = max(2, M1), min(M2, MC - 1)
-               do L = max(2, N1), min(N2, NC - 1)
-                  if (IJC(J, L) == 10) then
+      do N = 1, MAXITS
+         ANORM = ZERO
+         do J = max(2, M1), min(M2, MC - 1)
+            do L = max(2, N1), min(N2, NC - 1)
+               if (IJC(J, L) == 10) then
 !              IF(MOD(J+L,2).EQ.MOD(N,2))THEN
-                     RESID = A(J, L) * U(J + 1, L) + B(J, L) * U(J - 1, L) + &
-                             C(J, L) * U(J, L + 1) + D(J, L) * U(J, L - 1) + E(J, L) * U(J, L)
-                     U(J, L) = U(J, L) - OMEGA * RESID / E(J, L)
+                  RESID = A(J, L) * U(J + 1, L) + B(J, L) * U(J - 1, L) + &
+                          C(J, L) * U(J, L + 1) + D(J, L) * U(J, L - 1) + E(J, L) * U(J, L)
+                  U(J, L) = U(J, L) - OMEGA * RESID / E(J, L)
 !              ENDIF
-                  end if
-               end do
+               end if
             end do
-            if (N == 1) then
-               OMEGA = ONE / (ONE - HALF * RJAC**2)
-            else
-               OMEGA = ONE / (ONE - QTR * RJAC**2 * OMEGA)
-            end if
-!       write(mdia,*) omega, rjac
          end do
+         if (N == 1) then
+            OMEGA = ONE / (ONE - HALF * RJAC**2)
+         else
+            OMEGA = ONE / (ONE - QTR * RJAC**2 * OMEGA)
+         end if
+!       write(mdia,*) omega, rjac
+      end do
 
-         return
-      end subroutine SOR
+      return
+   end subroutine SOR
+
+end module m_sor

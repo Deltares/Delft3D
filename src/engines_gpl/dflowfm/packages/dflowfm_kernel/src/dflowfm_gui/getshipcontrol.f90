@@ -31,6 +31,7 @@
 !
 
 module m_getshipcontrol
+   use m_tekship, only: tekship
 
    implicit none
 

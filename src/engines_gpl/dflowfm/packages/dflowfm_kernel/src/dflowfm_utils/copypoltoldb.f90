@@ -30,34 +30,45 @@
 !
 !
 
-  subroutine COPYPOLTOLDB()
-     use m_polygon
-     use M_LANDBOUNDARY
-     use M_MISSING
-     use m_delpol
-     implicit none
+module m_copypoltoldb
 
-     integer :: k
-     integer :: l
+   implicit none
 
-     L = MXLAN
-     if (L > 0) then
-        if (xlan(L) /= XYMIS) then
-           L = L + 1
-        end if
-     end if
+   private
 
-     call INCREASELAN(L + NPL)
-     if (L > 0) then
-        XLAN(L) = XYMIS; YLAN(L) = XYMIS; ZLAN(L) = XYMIS
-     end if
-     do K = 1, NPL
-        L = L + 1
-        XLAN(L) = XPL(K)
-        YLAN(L) = YPL(K)
-        ZLAN(L) = ZPL(K)
-     end do
-     MXLAN = L
-     call DELPOL()
-     return
-  end subroutine COPYPOLTOLDB
+   public :: copypoltoldb
+
+contains
+
+   subroutine COPYPOLTOLDB()
+      use m_polygon
+      use M_LANDBOUNDARY
+      use M_MISSING
+      use m_delpol
+
+      integer :: k
+      integer :: l
+
+      L = MXLAN
+      if (L > 0) then
+         if (xlan(L) /= XYMIS) then
+            L = L + 1
+         end if
+      end if
+
+      call INCREASELAN(L + NPL)
+      if (L > 0) then
+         XLAN(L) = XYMIS; YLAN(L) = XYMIS; ZLAN(L) = XYMIS
+      end if
+      do K = 1, NPL
+         L = L + 1
+         XLAN(L) = XPL(K)
+         YLAN(L) = YPL(K)
+         ZLAN(L) = ZPL(K)
+      end do
+      MXLAN = L
+      call DELPOL()
+      return
+   end subroutine COPYPOLTOLDB
+
+end module m_copypoltoldb

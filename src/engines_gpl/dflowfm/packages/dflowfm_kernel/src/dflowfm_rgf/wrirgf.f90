@@ -30,7 +30,18 @@
 !
 !
 
-      !> Write a curvilinear grid to (ascii) grd-file.
+module m_wrirgf
+   use m_wriarc, only: wriarc
+
+   implicit none
+
+   private
+
+   public :: wrirgf
+
+contains
+
+   !> Write a curvilinear grid to (ascii) grd-file.
       !! NOTE: 'new' format (RGFGrid 4.x)
       !!
       !! Format:
@@ -41,82 +52,86 @@
       !! First subsequent line without a '=' should be '0 0 0' (backwards compatibility)
       !! Next line should be mmax, nmax
       !! That ends the header, start reading coordinates in the usual fashion.
-      subroutine WRIRGF(MRGF, FILNAM)
-         use precision, only: dp
-         use m_sferic
-         use m_grid
-         use m_missing
-         use m_arcinfo
-         use m_polygon
-         use m_readyy
-         use m_firstlin
-         use m_wripol
+   subroutine WRIRGF(MRGF, FILNAM)
+      use m_wridep, only: wridep
+      use m_ecrtab, only: ecrtab
+      use precision, only: dp
+      use m_sferic
+      use m_grid
+      use m_missing
+      use m_arcinfo
+      use m_polygon
+      use m_readyy
+      use m_firstlin
+      use m_wripol
+      use m_filez, only: doclose, newfil
 
-         implicit none
-         real(kind=dp) :: half
-         integer :: ipnt, n, i, j, nfirst
-         integer :: mrgf, mdep
+      real(kind=dp) :: half
+      integer :: ipnt, n, i, j, nfirst
+      integer :: mrgf, mdep
 
-         character NAME2 * 76, FILNAM * (*)
+      character NAME2 * 76, FILNAM * (*)
 
-         IPNT = index(FILNAM, '.')
-         NAME2 = FILNAM
-         write (NAME2(IPNT + 1:), '(A)') 'enc'
+      IPNT = index(FILNAM, '.')
+      NAME2 = FILNAM
+      write (NAME2(IPNT + 1:), '(A)') 'enc'
 
-         call FIRSTLIN(MRGF)
-         if (JSFERIC == 1) then
-            write (MRGF, '(A)') 'Coordinate System=Spherical'
-         end if
-         write (MRGF, '(A,F14.3)') 'Missing Value=', XYMIS
+      call FIRSTLIN(MRGF)
+      if (JSFERIC == 1) then
+         write (MRGF, '(A)') 'Coordinate System=Spherical'
+      end if
+      write (MRGF, '(A,F14.3)') 'Missing Value=', XYMIS
 
-         write (MRGF, '(2I8)') MC, NC
-         write (MRGF, '(3I8)') 0, 0, 0 ! Backwards compatibility
-         ! CALL CORRGF(Xc,Yc,MMAX,NMAX)
-         ! CALL ISITU()
-         ! CALL WRIENC(NAME2, Xc, MC, NC, IJC, IJYES,mmax,nmax)
-         HALF = 0
-         call READYY('Writing Grid File', HALF)
-         call ECRTAB(Xc, MC, NC, MRGF, HALF, mmax, nmax)
-         HALF = 0.5d0
-         call ECRTAB(Yc, MC, NC, MRGF, HALF, mmax, nmax)
+      write (MRGF, '(2I8)') MC, NC
+      write (MRGF, '(3I8)') 0, 0, 0 ! Backwards compatibility
+      ! CALL CORRGF(Xc,Yc,MMAX,NMAX)
+      ! CALL ISITU()
+      ! CALL WRIENC(NAME2, Xc, MC, NC, IJC, IJYES,mmax,nmax)
+      HALF = 0
+      call READYY('Writing Grid File', HALF)
+      call ECRTAB(Xc, MC, NC, MRGF, HALF, mmax, nmax)
+      HALF = 0.5d0
+      call ECRTAB(Yc, MC, NC, MRGF, HALF, mmax, nmax)
 
-         call READYY(' ', -1d0)
-         call DOCLOSE(MRGF)
+      call READYY(' ', -1d0)
+      call DOCLOSE(MRGF)
 
-         write (NAME2(IPNT + 1:), '(A)') 'asc'
-         call newfil(MDEP, NAME2)
-         call wriarc(MDEP, ZC, MMAX, NMAX, MC, NC, X0, Y0, DXA, DYA, DMISS)
-         call doclose(MDEP)
+      write (NAME2(IPNT + 1:), '(A)') 'asc'
+      call newfil(MDEP, NAME2)
+      call wriarc(MDEP, ZC, MMAX, NMAX, MC, NC, X0, Y0, DXA, DYA, DMISS)
+      call doclose(MDEP)
 
-         write (NAME2(IPNT + 1:), '(A)') 'dep'
-         call newfil(MDEP, NAME2)
-         call WRIDEP(MDEP, Zc, 1, 1, mmax, nmax, mmax, nmax)
-         call doclose(MDEP)
+      write (NAME2(IPNT + 1:), '(A)') 'dep'
+      call newfil(MDEP, NAME2)
+      call WRIDEP(MDEP, Zc, 1, 1, mmax, nmax, mmax, nmax)
+      call doclose(MDEP)
 
-         if (mc * nc < -1000) then ! save grd to polygon for partitioning
-            call savepol()
-            n = 0; nfirst = 0
-            do i = 1, mc - 1
-               do j = 1, nc - 1
-                  if (xc(i, j) /= dmiss .and. xc(i + 1, j) /= dmiss .and. &
-                      xc(i, j + 1) /= dmiss .and. xc(i + 1, j + 1) /= dmiss) then
-                     if (nfirst /= 0) then
-                        n = n + 1; xpl(n) = xc(i, j); ypl(n) = yc(i, j)
-                        n = n + 1; xpl(n) = xc(i + 1, j); ypl(n) = yc(i + 1, j)
-                        n = n + 1; xpl(n) = xc(i + 1, j + 1); ypl(n) = yc(i + 1, j + 1)
-                        n = n + 1; xpl(n) = xc(i, j + 1); ypl(n) = yc(i, j + 1)
-                        n = n + 1; xpl(n) = dmiss; ypl(n) = dmiss
-                     else
-                        nfirst = 1
-                     end if
+      if (mc * nc < -1000) then ! save grd to polygon for partitioning
+         call savepol()
+         n = 0; nfirst = 0
+         do i = 1, mc - 1
+            do j = 1, nc - 1
+               if (xc(i, j) /= dmiss .and. xc(i + 1, j) /= dmiss .and. &
+                   xc(i, j + 1) /= dmiss .and. xc(i + 1, j + 1) /= dmiss) then
+                  if (nfirst /= 0) then
+                     n = n + 1; xpl(n) = xc(i, j); ypl(n) = yc(i, j)
+                     n = n + 1; xpl(n) = xc(i + 1, j); ypl(n) = yc(i + 1, j)
+                     n = n + 1; xpl(n) = xc(i + 1, j + 1); ypl(n) = yc(i + 1, j + 1)
+                     n = n + 1; xpl(n) = xc(i, j + 1); ypl(n) = yc(i, j + 1)
+                     n = n + 1; xpl(n) = dmiss; ypl(n) = dmiss
+                  else
+                     nfirst = 1
                   end if
-               end do
+               end if
             end do
-            npl = n
-            write (NAME2(IPNT:), '(A)') '_part.pol'
-            call newfil(MDEP, NAME2)
-            call wripol(mdep)
-            call restorepol()
-         end if
+         end do
+         npl = n
+         write (NAME2(IPNT:), '(A)') '_part.pol'
+         call newfil(MDEP, NAME2)
+         call wripol(mdep)
+         call restorepol()
+      end if
 
-      end subroutine WRIRGF
+   end subroutine WRIRGF
+
+end module m_wrirgf

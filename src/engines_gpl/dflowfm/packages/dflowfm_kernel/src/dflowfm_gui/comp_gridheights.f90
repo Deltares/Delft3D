@@ -32,6 +32,7 @@
 
 !> compute the grid heights at grid edges on the center spline
 module m_comp_gridheights
+   use m_get_valid_cross_splines, only: get_valid_cross_splines
 
    implicit none
 
@@ -46,8 +47,7 @@ contains
       use m_missing
       use m_splint
       use m_spline
-
-      implicit none
+      use m_splinelength_int, only: splinelength_int
 
       integer, intent(in) :: mc !< number of grid points
       real(kind=dp), dimension(Nsubmax, mc - 1), intent(out) :: eheight !< edge-based grid height for each subinterval of gridlayers
@@ -73,8 +73,6 @@ contains
 
       integer :: is, igL, igR, mfacmax, isL, isR
       integer :: i, iL, iR, j, num, NsubL, NsubR, numnew
-
-      real(kind=dp), external :: splinelength_int
 
       ierror = 1
 
@@ -173,7 +171,7 @@ contains
 
             do j = 1, Nsubmax
                nlist_loc = nlistL - j
-               call get_index(ncs, nlist_loc, ndx, idx)
+               call get_valid_cross_splines(ncs, nlist_loc, ndx, idx)
 
                if (ndx > 0) then
                   hL(j, 1:ncs) = splineprops(is)%hL(j, 1:ncs)
@@ -220,7 +218,7 @@ contains
                end if
 
                nlist_loc = nlistR - j
-               call get_index(ncs, nlist_loc, ndx, idx)
+               call get_valid_cross_splines(ncs, nlist_loc, ndx, idx)
 
                if (ndx > 0) then
                   hR(j, 1:ncs) = splineprops(is)%hR(j, 1:ncs)

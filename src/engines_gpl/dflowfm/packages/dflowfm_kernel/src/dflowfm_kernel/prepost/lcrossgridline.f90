@@ -31,42 +31,51 @@
 !
 
 !> check if a line segment crosses the gridline on the center spline
-logical function Lcrossgridline(x1, x2, j)
-   use precision, only: dp
-
-   use m_grid
-   use m_missing
-   use m_sferic, only: jsferic
-   use geometry_module, only: cross
+module m_lcrossgridline
 
    implicit none
 
-   real(kind=dp), dimension(2), intent(in) :: x1, x2 !< coordinates of begin and end point of line segment
-   integer, intent(in) :: j !< gridline index
+   private
 
-   real(kind=dp), dimension(2) :: x3, x4
+   public :: lcrossgridline
 
-   real(kind=dp) :: sL, sm, xcr, ycr, crp
+contains
 
-   integer :: i, jacross
+   logical function Lcrossgridline(x1, x2, j)
+      use precision, only: dp
+      use m_grid
+      use m_missing
+      use m_sferic, only: jsferic
+      use geometry_module, only: cross
 
-   Lcrossgridline = .false.
+      real(kind=dp), dimension(2), intent(in) :: x1, x2 !< coordinates of begin and end point of line segment
+      integer, intent(in) :: j !< gridline index
+
+      real(kind=dp), dimension(2) :: x3, x4
+
+      real(kind=dp) :: sL, sm, xcr, ycr, crp
+
+      integer :: i, jacross
+
+      Lcrossgridline = .false.
 
 !   return
 
-   do i = 1, mc - 1 ! loop over the edges
-      x3 = (/xc(i, j), yc(i, j)/)
-      x4 = (/xc(i + 1, j), yc(i + 1, j)/)
+      do i = 1, mc - 1 ! loop over the edges
+         x3 = (/xc(i, j), yc(i, j)/)
+         x4 = (/xc(i + 1, j), yc(i + 1, j)/)
 
-      if (x3(1) == DMISS .or. x4(1) == DMISS) cycle
+         if (x3(1) == DMISS .or. x4(1) == DMISS) cycle
 
-      call cross(x1(1), x1(2), x2(1), x2(2), x3(1), x3(2), x4(1), x4(2), jacross, sL, sm, xcr, ycr, crp, jsferic, dmiss)
+         call cross(x1(1), x1(2), x2(1), x2(2), x3(1), x3(2), x4(1), x4(2), jacross, sL, sm, xcr, ycr, crp, jsferic, dmiss)
 
-      if (jacross == 1) then
-         Lcrossgridline = .true.
-         return
-      end if
-   end do
+         if (jacross == 1) then
+            Lcrossgridline = .true.
+            return
+         end if
+      end do
 
-   return
-end function ! Lcrosscenterspline
+      return
+   end function ! Lcrosscenterspline
+
+end module m_lcrossgridline

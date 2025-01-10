@@ -30,27 +30,39 @@
 !
 !
 
-subroutine smooth_samples_from_GUI()
-   use m_samples
-   use m_qnerror
-   use m_getint
+module m_smooth_samples_from_gui
+
    implicit none
 
-   integer :: N
+   private
+
+   public :: smooth_samples_from_gui
+
+contains
+
+   subroutine smooth_samples_from_GUI()
+      use m_smooth_samples, only: smooth_samples
+      use m_samples
+      use m_qnerror
+      use m_getint
+
+      integer :: N
 
 !  check if samples are structured
-   if (MXSAM * MYSAM /= NS) then
-      call qnerror('Samples are not structured', ' ', ' ')
-      goto 1234
-   end if
+      if (MXSAM * MYSAM /= NS) then
+         call qnerror('Samples are not structured', ' ', ' ')
+         goto 1234
+      end if
 
-   N = 0
-   call getint('Number of smoothing iterations', N)
+      N = 0
+      call getint('Number of smoothing iterations', N)
 
-   call savesam()
-   call smooth_samples(MXSAM, MYSAM, NS, 1, N, zs, zs)
+      call savesam()
+      call smooth_samples(MXSAM, MYSAM, NS, 1, N, zs, zs)
 
-1234 continue
+1234  continue
 
-   return
-end subroutine smooth_samples_from_GUI
+      return
+   end subroutine smooth_samples_from_GUI
+
+end module m_smooth_samples_from_gui

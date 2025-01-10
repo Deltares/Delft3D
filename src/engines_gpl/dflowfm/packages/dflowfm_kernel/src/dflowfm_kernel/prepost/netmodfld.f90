@@ -32,45 +32,53 @@
 
 !> network field move
 !!   Is is assumed that there is a backup copy of the grid.
-subroutine netmodfld(xp, yp, kp)
-   use precision, only: dp
-   use m_netw
-   use m_grid
-   use m_alloc
-   use m_missing
-   use m_wearelt
-   use m_sferic
-   use geometry_module, only: dbdistance
+module m_netmodfld
 
    implicit none
 
-   real(kind=dp) :: xp, yp !< coordinates that determine the influenced region
+   private
 
-   integer :: kp !< center point index
+   public :: netmodfld
 
-   real(kind=dp) :: Dx0, Dy0, rsx, xn, yn, dist, frac
-   real(kind=dp) :: xcen, ycen
-   real(kind=dp), external :: getDx, getDy
+contains
 
-   integer :: i
+   subroutine netmodfld(xp, yp, kp)
+      use precision, only: dp
+      use m_netw
+      use m_grid
+      use m_alloc
+      use m_missing
+      use m_wearelt
+      use m_sferic
 
-   xcen = xk(kp)
-   ycen = yk(kp)
+      real(kind=dp) :: xp, yp !< coordinates that determine the influenced region
 
-   Dx0 = xp - xcen
-   Dy0 = yp - ycen
+      integer :: kp !< center point index
 
-   rsx = max(dsix, sqrt(Dx0 * Dx0 + Dy0 * Dy0))
+      real(kind=dp) :: Dx0, Dy0, rsx, xn, yn, dist, frac
+      real(kind=dp) :: xcen, ycen
 
-   do i = 1, numk
-      xn = xk(i)
-      yn = yk(i)
+      integer :: i
+
+      xcen = xk(kp)
+      ycen = yk(kp)
+
+      Dx0 = xp - xcen
+      Dy0 = yp - ycen
+
+      rsx = max(dsix, sqrt(Dx0 * Dx0 + Dy0 * Dy0))
+
+      do i = 1, numk
+         xn = xk(i)
+         yn = yk(i)
 ! intentional not in sferical coordinates
-      dist = sqrt((xn - xcen)**2 + (yn - ycen)**2)
-      frac = 0.5 * (1 + cos(min(max(dist / rsx, -1d0), 1d0) * pi))
+         dist = sqrt((xn - xcen)**2 + (yn - ycen)**2)
+         frac = 0.5 * (1 + cos(min(max(dist / rsx, -1d0), 1d0) * pi))
 
-      xk(i) = xk(i) + Dx0 * frac
-      yk(i) = yk(i) + Dy0 * frac
-   end do
+         xk(i) = xk(i) + Dx0 * frac
+         yk(i) = yk(i) + Dy0 * frac
+      end do
 
-end subroutine netmodfld
+   end subroutine netmodfld
+
+end module m_netmodfld

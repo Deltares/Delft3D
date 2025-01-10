@@ -30,23 +30,35 @@
 !
 !
 
-      subroutine NUMS(X, mmax, nmax, MC, NC)
-         use precision, only: dp
+module m_nums
+
+   implicit none
+
+   private
+
+   public :: nums
+
+contains
+
+   subroutine NUMS(X, mmax, nmax, MC, NC)
+      use precision, only: dp
 !     GEEF AANTAL SPLINES MC EN MAXIMUM AANTAL PUNTEN OP SPLINE NC
 !      USE DIMENS
-         use m_numpold
-         implicit none
-         integer :: mc, nc, mmax, nmax
-         real(kind=dp) :: X(MMAX, NMAX)
-         integer :: i, numpi
-         MC = 0
-         NC = 0
-         do I = 1, MMAX
-            call NUMPold(X, mmax, nmax, I, NUMPI)
-            if (NUMPI /= 0) then
-               MC = I
-               NC = max(NC, NUMPI)
-            end if
-         end do
-         return
-      end subroutine nums
+      use m_numpold
+
+      integer :: mc, nc, mmax, nmax
+      real(kind=dp) :: X(MMAX, NMAX)
+      integer :: i, numpi
+      MC = 0
+      NC = 0
+      do I = 1, MMAX
+         call NUMPold(X, mmax, nmax, I, NUMPI)
+         if (NUMPI /= 0) then
+            MC = I
+            NC = max(NC, NUMPI)
+         end if
+      end do
+      return
+   end subroutine nums
+
+end module m_nums

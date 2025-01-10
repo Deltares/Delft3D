@@ -31,6 +31,11 @@
 !
 
 module m_curvilineargridinpolygon
+   use m_wrirgf, only: wrirgf
+   use m_tranfn2, only: tranfn2
+   use m_andersom, only: andersom
+   use m_pillargrid, only: pillargrid
+   use m_maptopolyline, only: maptopolyline
 
    implicit none
 
@@ -56,6 +61,7 @@ contains
       use m_drawthis
       use m_qnerror
       use m_increase_grid
+      use m_filez, only: newfil
 
       real(kind=dp) :: atpfo
       real(kind=dp) :: dpok1

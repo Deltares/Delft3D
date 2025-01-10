@@ -27,64 +27,72 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> copy the spline to a polyline
-subroutine spline2poly()
-   use precision, only: dp
-   use m_splines
-   use m_spline2curvi
-   use m_gridsettings
-   use m_polygon
-   use m_missing
-   use m_delpol
+module m_spline2poly
 
    implicit none
 
-   real(kind=dp), allocatable, dimension(:) :: sc !  spline-coordinates of grid points, not used
+   private
 
-   integer :: ispline, num, numpoints, mfacmax
+   public :: spline2poly
 
-   real(kind=dp) :: hmax
+contains
 
-   call savepol()
-   call delpol()
+   subroutine spline2poly()
+      use m_make_gridline, only: make_gridline
+      use precision, only: dp
+      use m_splines
+      use m_spline2curvi
+      use m_gridsettings
+      use m_polygon
+      use m_missing
+      use m_delpol
 
-   mfacmax = mfac
+      real(kind=dp), allocatable, dimension(:) :: sc !  spline-coordinates of grid points, not used
 
-   allocate (sc(mfacmax + 1))
+      integer :: ispline, num, numpoints, mfacmax
 
-   numpoints = 0
-   do ispline = 1, mcs
+      real(kind=dp) :: hmax
+
+      call savepol()
+      call delpol()
+
+      mfacmax = mfac
+
+      allocate (sc(mfacmax + 1))
+
+      numpoints = 0
+      do ispline = 1, mcs
 !     determine the number of control points in the spline
-      call nump(ispline, num)
+         call nump(ispline, num)
 
-      if (splineprops(ispline)%id == 0) then ! center splines only
-         if (numpoints > 0) then ! add to existing polygon
+         if (splineprops(ispline)%id == 0) then ! center splines only
+            if (numpoints > 0) then ! add to existing polygon
 !           add DMISS
 !            numpoints = numpoints+mfac_loc(ispline)+1+1
-            call increasepol(numpoints + mfacmax + 2, 0)
-            npl = npl + 1
-            xpl(npl) = DMISS
-            ypl(npl) = DMISS
-         else ! no existing polygon
+               call increasepol(numpoints + mfacmax + 2, 0)
+               npl = npl + 1
+               xpl(npl) = DMISS
+               ypl(npl) = DMISS
+            else ! no existing polygon
 !            numpoints = numpoints+mfac_loc(ispline)+1
-            call increasepol(numpoints + mfacmax + 1, 0)
+               call increasepol(numpoints + mfacmax + 1, 0)
+            end if
+
+            mfac = splineprops(ispline)%mfac
+            hmax = splineprops(ispline)%hmax
+            call make_gridline(num, xsp(ispline, 1:num), ysp(ispline, 1:num), dwidth, mfacmax, mfac, hmax, xpl(npl + 1:numpoints), ypl(npl + 1:numpoints), sc, jacurv)
+            numpoints = numpoints + mfac + 1
+            npl = numpoints
          end if
+      end do
 
-         mfac = splineprops(ispline)%mfac
-         hmax = splineprops(ispline)%hmax
-         call make_gridline(num, xsp(ispline, 1:num), ysp(ispline, 1:num), dwidth, mfacmax, mfac, hmax, xpl(npl + 1:numpoints), ypl(npl + 1:numpoints), sc, jacurv)
-         numpoints = numpoints + mfac + 1
-         npl = numpoints
-      end if
-   end do
-
-   deallocate (sc)
+      deallocate (sc)
 
 !  restore
-   mfac = mfacmax
+      mfac = mfacmax
 
-   return
-end subroutine spline2poly
+      return
+   end subroutine spline2poly
+
+end module m_spline2poly

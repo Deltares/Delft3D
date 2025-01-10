@@ -30,17 +30,28 @@
 !
 !
 
-      subroutine INULARR(X, MMAX, NMAX)
-         implicit none
-         integer :: i
-         integer :: j
-         integer :: mmax
-         integer :: nmax
-         integer X(MMAX, NMAX)
-         do I = 1, MMAX
-            do J = 1, NMAX
-               X(I, J) = 0d0
-            end do
+module m_inularr
+
+   implicit none
+
+   private
+
+   public :: inularr
+
+contains
+
+   subroutine INULARR(X, MMAX, NMAX)
+      integer :: i
+      integer :: j
+      integer :: mmax
+      integer :: nmax
+      integer X(MMAX, NMAX)
+      do I = 1, MMAX
+         do J = 1, NMAX
+            X(I, J) = 0d0
          end do
-         return
-      end
+      end do
+      return
+   end
+
+end module m_inularr

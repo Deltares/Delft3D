@@ -30,22 +30,34 @@
 !
 !
 
-      subroutine ORTPRO2(X1, Y1, X2, Y2, X3, Y3, X4, Y4, TV, JA)
-         use precision, only: dp
-         implicit none
-         real(kind=dp) :: X1, Y1, X2, Y2, X3, Y3, X4, Y4, TV
-         integer :: JA
+module m_ortpro2
 
-         real(kind=dp) :: DX, DY, R2
+   implicit none
 
-         JA = -1
-         DX = X2 - X1
-         DY = Y2 - Y1
-         R2 = (DX * DX + DY * DY)
-         TV = (X3 * DX + Y3 * DY - X1 * DX - Y1 * DY) / R2
-         X4 = X1 + TV * DX
-         Y4 = Y1 + TV * DY
-         if (0d0 <= TV .and. TV <= 1d0) JA = 1
-         TV = TV * sqrt(R2)
-         return
-      end subroutine ORTPRO2
+   private
+
+   public :: ortpro2
+
+contains
+
+   subroutine ORTPRO2(X1, Y1, X2, Y2, X3, Y3, X4, Y4, TV, JA)
+      use precision, only: dp
+
+      real(kind=dp) :: X1, Y1, X2, Y2, X3, Y3, X4, Y4, TV
+      integer :: JA
+
+      real(kind=dp) :: DX, DY, R2
+
+      JA = -1
+      DX = X2 - X1
+      DY = Y2 - Y1
+      R2 = (DX * DX + DY * DY)
+      TV = (X3 * DX + Y3 * DY - X1 * DX - Y1 * DY) / R2
+      X4 = X1 + TV * DX
+      Y4 = Y1 + TV * DY
+      if (0d0 <= TV .and. TV <= 1d0) JA = 1
+      TV = TV * sqrt(R2)
+      return
+   end subroutine ORTPRO2
+
+end module m_ortpro2

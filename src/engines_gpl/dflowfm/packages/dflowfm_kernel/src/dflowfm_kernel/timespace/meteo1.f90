@@ -182,7 +182,8 @@ contains
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use MessageHandling, only: LEVEL_WARN, LEVEL_INFO, mess
       use m_qnerror
-      ! globals
+      use m_filez, only: readandchecknextrecord, readerror, zoekja, zoekopt
+
       integer, intent(in) :: minp !< File handle to already opened input file.
       integer, intent(out) :: filetype !< File type of current quantity.
       integer, intent(out) :: method !< Time-interpolation method for current quantity.
@@ -355,6 +356,8 @@ contains
    end subroutine readprovider
    !
    subroutine readTransformcoefficients(minp, transformcoef)
+      use m_filez, only: readerror, zoekopt
+      
       integer, intent(in) :: minp
       real(kind=dp), intent(out) :: transformcoef(:)
 
@@ -454,6 +457,8 @@ contains
    !! Assumes two-column data with x,y pairs.
    subroutine read1polylin(minp, xs, ys, ns, pliname, has_more_records)
       use m_alloc
+      use m_filez, only: readerror, doclose, eoferror
+
       integer, intent(inout) :: minp !< Unit number of poly file (already opened), will be closed after successful read.
       real(kind=dp), allocatable, intent(out) :: xs(:) !< x-coordinates read from file
       real(kind=dp), allocatable, intent(out) :: ys(:) !< y-coordinates read from file
@@ -783,6 +788,7 @@ contains
       use unstruc_messages
       use m_find_flownode, only: find_nearest_flownodes_kdtree
       use m_wall_clock_time
+      use m_in_flowcell, only: in_flowcell
 
       implicit none
 
@@ -5449,38 +5455,6 @@ contains
 
    end subroutine polyindexweight
    !
-   !
-   ! ==========================================================================
-   !>
-!LC: TODO remove
-!   SUBROUTINE LINEDISq(X3,Y3,X1,Y1,X2,Y2,JA,DIS,XN,YN,rl) ! = dlinesdis2
-!
-!
-!   integer          :: ja
-!   real(kind=dp) :: X1,Y1,X2,Y2,X3,Y3,DIS,XN,YN
-!   real(kind=dp) :: R2,RL,X21,Y21,X31,Y31,dbdistance
-!
-!   ! korste afstand tot lijnelement tussen eindpunten
-!   JA  = 0
-!   !X21 = getdx(x1,y1,x2,y2)
-!   !Y21 = getdy(x1,y1,x2,y2)
-!   call getdxdy(x1,y1,x2,y2,x21,y21)
-!   !X31 = getdx(x1,y1,x3,y3)
-!   !Y31 = getdy(x1,y1,x3,y3)
-!   call getdxdy(x1,y1,x3,y3,x31,y31)
-!   R2  = dbdistance(x2,y2,x1,y1)
-!   R2  = R2*R2
-!   IF (R2 .NE. 0) THEN
-!      RL  = (X31*X21 + Y31*Y21) / R2
-!      IF (0d0 .LE. RL .AND. RL .LE. 1d0) then
-!         JA = 1
-!      end if
-!      XN  = X1 + RL*(x2-x1)
-!      YN  = Y1 + RL*(y2-y1)
-!      DIS = dbdistance(x3,y3,xn,yn)
-!   end if
-!   RETURN
-!   END subroutine LINEDISq
 end module timespace_triangle ! met leading dimensions 3 of 4
 !
 !
@@ -5553,6 +5527,7 @@ contains
       use m_missing, only: dmiss
       use m_sferic, only: jsferic
       use m_partitioninfo, only: jampi
+      use m_filez, only: oldfil
 
       implicit none
 
@@ -5687,6 +5662,7 @@ contains
       use messageHandling
       use m_polygon
       use m_reapol
+      use m_filez, only: oldfil
 
       implicit none
 
@@ -5864,6 +5840,7 @@ contains
       use unstruc_messages
       use m_delpol
       use m_reapol
+      use m_filez, only: oldfil
 
       implicit none
 
@@ -6012,6 +5989,9 @@ contains
       use m_reapol
       use m_delsam
       use m_reasam
+      use m_read_samples_from_arcinfo, only: read_samples_from_arcinfo
+      use m_read_samples_from_geotiff, only: read_samples_from_geotiff
+      use m_filez, only: oldfil, doclose, newfil
 
       implicit none
 
@@ -6045,7 +6025,6 @@ contains
 
       real(kind=dp), allocatable :: xxx(:), yyy(:)
       integer, allocatable :: LnnL(:), Lorg(:)
-      logical, external :: read_samples_from_geotiff
 
       real(kind=dp) :: zz
 
@@ -6376,6 +6355,7 @@ contains
       use m_polygon
       use geometry_module, only: dbpinpol
       use m_reapol
+      use m_filez, only: oldfil
       implicit none
 
       logical :: success

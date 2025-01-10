@@ -54,8 +54,6 @@ contains
       write (DISTAN(6:), '(F17.5)') min(DIS, 1d9)
       call KTEXT(DISTAN, IWS - 24, 3, 15)
 
-      !   checkdislin()
-
       return
    end
 end module m_disdis

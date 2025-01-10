@@ -30,20 +30,30 @@
 !
 !
 
-      subroutine CHAROW(X, mmax, nmax, I1, I2, NUMSPL)
-         use precision, only: dp
-!     VERWISSEL RIJ I1 EN I2
-!      USE DIMENS
-         implicit none
-         integer :: mmax, nmax, i1, i2, numspl
-         real(kind=dp) :: X(MMAX, NMAX)
-         integer :: j
-         real(kind=dp) :: xh
+module m_charow
 
-         do J = 1, NUMSPL
-            XH = X(I1, J)
-            X(I1, J) = X(I2, J)
-            X(I2, J) = XH
-         end do
-         return
-      end subroutine charow
+   implicit none
+
+   private
+
+   public :: charow
+
+contains
+
+   subroutine CHAROW(X, mmax, nmax, I1, I2, NUMSPL)
+      use precision, only: dp
+
+      integer :: mmax, nmax, i1, i2, numspl
+      real(kind=dp) :: X(MMAX, NMAX)
+      integer :: j
+      real(kind=dp) :: xh
+
+      do J = 1, NUMSPL
+         XH = X(I1, J)
+         X(I1, J) = X(I2, J)
+         X(I2, J) = XH
+      end do
+      return
+   end subroutine charow
+
+end module m_charow

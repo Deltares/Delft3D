@@ -33,46 +33,58 @@
 !> Runs a user-timestep (do computational flowsteps until timeuser), but not the init and finalize.
 !!
 !! Should be preceded by a flow_run_usertimestep and followed by a flow_finalize_usertimestep.
-subroutine flow_run_usertimestep(key, iresult) ! do computational flowsteps until timeuser
-   use m_flow_single_timestep, only: flow_single_timestep
-   use m_get_s_key
-   use m_flowtimes
-   use unstruc_messages
-   use m_partitioninfo
-   use m_gui
-   use dfm_error
+module m_flow_run_usertimestep
+
    implicit none
-   integer, intent(out) :: key
-   integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
-   key = 0
-   iresult = DFM_GENERICERROR
+   private
 
-   do while (time0 < time_user) ! nb, outside flow_singletimestep, time0=time1 !
+   public :: flow_run_usertimestep
 
-      call flow_single_timestep(key, iresult)
-      if (iresult /= DFM_NOERR .and. iresult /= DFM_TIMESETBACK) then
-         goto 888
-      end if
+contains
 
-      if (jaGUI == 1) then ! TODO: MICHAL Another Gui call
+   subroutine flow_run_usertimestep(key, iresult) ! do computational flowsteps until timeuser
+      use m_flow_single_timestep, only: flow_single_timestep
+      use m_get_s_key
+      use m_flowtimes
+      use unstruc_messages
+      use m_partitioninfo
+      use m_gui
+      use dfm_error
 
-         call get_s_key(key)
+      integer, intent(out) :: key
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
-         if (jampi == 1) then
-            call reduce_key(key)
+      key = 0
+      iresult = DFM_GENERICERROR
+
+      do while (time0 < time_user) ! nb, outside flow_singletimestep, time0=time1 !
+
+         call flow_single_timestep(key, iresult)
+         if (iresult /= DFM_NOERR .and. iresult /= DFM_TIMESETBACK) then
+            goto 888
          end if
 
-         if (key == 1) then
-            call mess(LEVEL_INFO, 'User interrupt')
-            iresult = DFM_NOERR
-            return
+         if (jaGUI == 1) then ! TODO: MICHAL Another Gui call
+
+            call get_s_key(key)
+
+            if (jampi == 1) then
+               call reduce_key(key)
+            end if
+
+            if (key == 1) then
+               call mess(LEVEL_INFO, 'User interrupt')
+               iresult = DFM_NOERR
+               return
+            end if
          end if
-      end if
-   end do
+      end do
 
-   iresult = DFM_NOERR
-   return ! Return with success.
+      iresult = DFM_NOERR
+      return ! Return with success.
 
-888 continue
-end subroutine flow_run_usertimestep
+888   continue
+   end subroutine flow_run_usertimestep
+
+end module m_flow_run_usertimestep

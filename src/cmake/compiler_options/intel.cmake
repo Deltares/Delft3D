@@ -92,7 +92,7 @@ if (UNIX)
     set(generate_reentrancy_threaded_flag        "-reentrancy threaded")
     set(floating_point_exception_flag            "-fpe0")
     set(traceback_flag                           "-traceback")
-
+    set(heap_arrays_100_flag                     "-heap-arrays 100")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
     # Set debug flags:

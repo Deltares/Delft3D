@@ -30,11 +30,22 @@
 !
 !
 
+module m_maketekaltimes
+
+   implicit none
+
+   private
+
+   public :: maketekaltimes
+
+contains
+
    subroutine maketekaltimes()
       use precision, only: dp
       use m_flowtimes
       use time_module, only: seconds_to_datetimestring
-      implicit none
+      use m_filez, only: oldfil, doclose, newfil
+
       logical :: jawel
       integer :: minp, mout, i, k
       real(kind=dp) :: tim, a(30)
@@ -96,3 +107,5 @@
       end if
 
    end subroutine maketekaltimes
+
+end module m_maketekaltimes

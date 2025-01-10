@@ -46,6 +46,8 @@ contains
       use messagehandling
       use m_alloc
       use m_qnerror
+      use m_filez, only: oldfil, doclose
+
       implicit none
       integer :: ja
 

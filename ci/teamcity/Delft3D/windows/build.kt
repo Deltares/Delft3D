@@ -4,14 +4,12 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.failureConditions.*
-
 import Delft3D.template.*
+import Delft3D.step.*
 
 object WindowsBuild : BuildType({
-
     templates(
         TemplateMergeRequest,
-        TemplateMergeTarget,
         TemplatePublishStatus,
         TemplateMonitorPerformance
     )
@@ -44,6 +42,28 @@ object WindowsBuild : BuildType({
     }
 
     steps {
+        mergeTargetBranch {
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
+            dockerPull = true
+        }
+        python {
+            name = "Determine product by branch prefix"
+            command = script {
+                content="""
+                    if "%product%" == "dummy_value":
+                        if "merge-request" in "%teamcity.build.branch%":
+                            product = "%teamcity.pullRequest.source.branch%".split("/")[0]
+                            print(f"##teamcity[setParameter name='product' value='{product}']")
+                        else:
+                            product = "%teamcity.build.branch%".split("/")[0]
+                            print(f"##teamcity[setParameter name='product' value='{product}']")
+                """.trimIndent()
+            }
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
+        }
         script {
             name = "Add version attributes"
             workingDir = "./src/version_includes"
@@ -51,6 +71,9 @@ object WindowsBuild : BuildType({
                 echo #define BUILD_NR "%build.vcs.number%" > checkout_info.h
                 echo #define BRANCH "%teamcity.build.branch%" >> checkout_info.h
             """.trimIndent()
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
+            dockerPull = true
         }
         script {
             name = "Build"
@@ -61,6 +84,10 @@ object WindowsBuild : BuildType({
 
                 cmake --build . -j --target install --config %build_type%
             """.trimIndent()
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
+            dockerPull = true
+            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
     }
 
@@ -82,9 +109,27 @@ object WindowsBuild : BuildType({
         }
     }
 
-    requirements {
-        equals("env.VS2019INSTALLDIR", """C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional""")
-        doesNotExist("env.IFORT_COMPILER24")
-        exists("env.IFORT_COMPILER23")
+    dependencies {
+        dependency(AbsoluteId("FbcTools_FbcToolsBuildOssX64CMakeReleaseWin64")) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            artifacts {
+                artifactRules = """
+                    *.dll => %install_dir%/lib
+                    *.xsd => %install_dir%/share/drtc
+                """.trimIndent()
+            }
+        }
     }
+
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
+            }
+        }
+    }
+
 })

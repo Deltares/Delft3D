@@ -30,34 +30,46 @@
 !
 !
 
-subroutine rectan(hpr, br, hr, area, width, japerim, perim, closed)
-   use precision, only: dp
-   use m_flow, only: slotw1D
-   use m_longculverts, only: newculverts
+module m_rectan
+
    implicit none
-   integer :: japerim
-   real(kind=dp) :: hpr ! hoogte   in profiel
-   real(kind=dp) :: br ! breedte van profiel
-   real(kind=dp) :: hr ! hoogte  van profiel
-   real(kind=dp) :: area ! wet cross sectional area
-   real(kind=dp) :: width ! width at water surface
-   real(kind=dp) :: perim, hp ! wet perimeter
-   logical, intent(in) :: closed !< Whether the rectangle shape is closed (ceiling can be included in wet perimeter)
 
-   if (japerim == 1) then
-      hp = min(hpr, hr)
-   else
-      hp = hpr
-   end if
-   area = hp * br
-   width = br
-   perim = 2d0 * hp + br
-   if (hpr >= hr .and. closed .and. newculverts) then
-      perim = perim + br
-   end if
+   private
 
-   if (slotw1D > 0 .and. japerim == 0) then
-      width = width + slotw1D
-      area = area + slotw1D * hpr
-   end if
-end subroutine rectan
+   public :: rectan
+
+contains
+
+   subroutine rectan(hpr, br, hr, area, width, japerim, perim, closed)
+      use precision, only: dp
+      use m_flow, only: slotw1D
+      use m_longculverts, only: newculverts
+
+      integer :: japerim
+      real(kind=dp) :: hpr ! hoogte   in profiel
+      real(kind=dp) :: br ! breedte van profiel
+      real(kind=dp) :: hr ! hoogte  van profiel
+      real(kind=dp) :: area ! wet cross sectional area
+      real(kind=dp) :: width ! width at water surface
+      real(kind=dp) :: perim, hp ! wet perimeter
+      logical, intent(in) :: closed !< Whether the rectangle shape is closed (ceiling can be included in wet perimeter)
+
+      if (japerim == 1) then
+         hp = min(hpr, hr)
+      else
+         hp = hpr
+      end if
+      area = hp * br
+      width = br
+      perim = 2d0 * hp + br
+      if (hpr >= hr .and. closed .and. newculverts) then
+         perim = perim + br
+      end if
+
+      if (slotw1D > 0 .and. japerim == 0) then
+         width = width + slotw1D
+         area = area + slotw1D * hpr
+      end if
+   end subroutine rectan
+
+end module m_rectan

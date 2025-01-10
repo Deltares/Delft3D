@@ -33,44 +33,56 @@
 !> Initializes a new user-timestep (advances user time, sets new meteo forcing)
 !!
 !! Should be followed by a flow_run_usertimestep and a flow_finalize_usertimestep.
-subroutine flow_init_usertimestep(iresult)
-   use m_setzcs, only: setzcs
-   use m_flowtimes
-   use dfm_error
-   use MessageHandling
-   use m_flowparameters, only: janudge
-   use m_partitioninfo, only: jampi, abort_all
-   use fm_external_forcings
+module m_flow_init_usertimestep
+   use m_inctime_user, only: inctime_user
 
    implicit none
-   integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
-   iresult = DFM_GENERICERROR
+   private
 
-   call inctime_user()
+   public :: flow_init_usertimestep
 
-   tim1fld = max(time_user, tim1fld)
-   if (janudge == 1) call setzcs()
-   call set_external_forcings(tim1fld, .false., iresult) ! set field oriented forcings. boundary oriented forcings are in
-   if (iresult /= DFM_NOERR) then
-      goto 888
-   end if
+contains
 
-   ! call flow_externalinput (time_user)                 ! receive signals etc
-   iresult = DFM_NOERR
-   return ! Return with success.
+   subroutine flow_init_usertimestep(iresult)
+      use m_setzcs, only: setzcs
+      use m_flowtimes
+      use dfm_error
+      use MessageHandling
+      use m_flowparameters, only: janudge
+      use m_partitioninfo, only: jampi, abort_all
+      use fm_external_forcings
 
-888 continue
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
-   if (iresult /= DFM_NOERR) then
-      write (msgbuf, *) ' Error found in EC-module '; call err_flush()
-      if (jampi == 1) then
-         write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd; 
-         call err_flush()
-         ! Terminate all MPI processes
-         call abort_all()
+      iresult = DFM_GENERICERROR
+
+      call inctime_user()
+
+      tim1fld = max(time_user, tim1fld)
+      if (janudge == 1) call setzcs()
+      call set_external_forcings(tim1fld, .false., iresult) ! set field oriented forcings. boundary oriented forcings are in
+      if (iresult /= DFM_NOERR) then
+         goto 888
       end if
-      goto 888
-   end if
 
-end subroutine flow_init_usertimestep
+      ! call flow_externalinput (time_user)                 ! receive signals etc
+      iresult = DFM_NOERR
+      return ! Return with success.
+
+888   continue
+
+      if (iresult /= DFM_NOERR) then
+         write (msgbuf, *) ' Error found in EC-module '; call err_flush()
+         if (jampi == 1) then
+            write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd; 
+            call err_flush()
+            ! Terminate all MPI processes
+            call abort_all()
+         end if
+         goto 888
+      end if
+
+   end subroutine flow_init_usertimestep
+
+end module m_flow_init_usertimestep

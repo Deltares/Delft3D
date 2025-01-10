@@ -31,91 +31,98 @@
 !
 
 !>  compute link-based aspect ratios
-subroutine orthonet_compute_aspect(aspect)
-   use precision, only: dp
-   use m_netw
-   use m_flowgeom
-   use m_missing
-   use m_orthosettings
-   use geometry_module, only: dbdistance
-   use m_sferic, only: jsferic, jasfer3D
+module m_orthonet_compute_aspect
 
    implicit none
 
-   real(kind=dp), dimension(numL) :: aspect !< aspect-ratios at the links
+   private
 
-   real(kind=dp) :: x0, y0, x1, y1, x0_bc, y0_bc
-   real(kind=dp) :: xL, yL, xR, yR
-   real(kind=dp) :: SLR, R01, dinRy
-   real(kind=dp), allocatable, dimension(:, :) :: R ! averaged netlink length at both sides of the netlink
-   real(kind=dp), allocatable, dimension(:) :: S ! flowlink lengths
+   public :: orthonet_compute_aspect
 
-   integer :: k, kk, kkm1, kkp1, kkp2
-   integer :: klink, klinkm1, klinkp1, klinkp2, N
+contains
 
-   integer :: k0, k1, kL, kR, L
+   subroutine orthonet_compute_aspect(aspect)
+      use precision, only: dp
+      use m_netw
+      use m_flowgeom
+      use m_missing
+      use m_orthosettings
+      use geometry_module, only: dbdistance
+      use m_sferic, only: jsferic, jasfer3D
+      use m_dprodin, only: dprodin
 
-   logical, allocatable, dimension(:) :: Liscurvi ! node-based curvi-like indicator
+      real(kind=dp), dimension(numL) :: aspect !< aspect-ratios at the links
 
-   real(kind=dp) :: ortho1
+      real(kind=dp) :: x0, y0, x1, y1, x0_bc, y0_bc
+      real(kind=dp) :: xL, yL, xR, yR
+      real(kind=dp) :: SLR, R01, dinRy
+      real(kind=dp), allocatable, dimension(:, :) :: R ! averaged netlink length at both sides of the netlink
+      real(kind=dp), allocatable, dimension(:) :: S ! flowlink lengths
 
-   real(kind=dp), external :: dprodin
-   real(kind=dp), parameter :: EPS = 1d-4
+      integer :: k, kk, kkm1, kkp1, kkp2
+      integer :: klink, klinkm1, klinkp1, klinkp2, N
 
-   allocate (R(2, numL), S(numL), Liscurvi(numk))
-   R = DMISS
-   S = DMISS
+      integer :: k0, k1, kL, kR, L
+
+      logical, allocatable, dimension(:) :: Liscurvi ! node-based curvi-like indicator
+
+      real(kind=dp) :: ortho1
+      real(kind=dp), parameter :: EPS = 1d-4
+
+      allocate (R(2, numL), S(numL), Liscurvi(numk))
+      R = DMISS
+      S = DMISS
 
 !  compute parallel length S
-   do L = 1, numL
+      do L = 1, numL
 !     nodes connected by the link
-      k0 = kn(1, L)
-      k1 = kn(2, L)
+         k0 = kn(1, L)
+         k1 = kn(2, L)
 
-      if (k0 == 0 .or. k1 == 0) then ! safety
-         continue
-         cycle
-      end if
+         if (k0 == 0 .or. k1 == 0) then ! safety
+            continue
+            cycle
+         end if
 
-      x0 = xk(k0)
-      y0 = yk(k0)
+         x0 = xk(k0)
+         y0 = yk(k0)
 
-      x1 = xk(k1)
-      y1 = yk(k1)
+         x1 = xk(k1)
+         y1 = yk(k1)
 
 !     compute the link length R01
-      R01 = dbdistance(x0, y0, x1, y1, jsferic, jasfer3D, dmiss)
+         R01 = dbdistance(x0, y0, x1, y1, jsferic, jasfer3D, dmiss)
 
 !     find left cell center, if it exists
-      kL = lne(1, L) ! left cell center w.r.t. link L
+         kL = lne(1, L) ! left cell center w.r.t. link L
 
-      if (lnn(L) > 0) then
-         xL = xz(kL)
-         yL = yz(kL)
-      else
-         xL = x0
-         yL = y0
-      end if
+         if (lnn(L) > 0) then
+            xL = xz(kL)
+            yL = yz(kL)
+         else
+            xL = x0
+            yL = y0
+         end if
 
 !     find right cell center, if it exists
-      if (lnn(L) == 2) then
-         kR = lne(2, L)
-         xR = xz(kR)
-         yR = yz(kR)
-      else
+         if (lnn(L) == 2) then
+            kR = lne(2, L)
+            xR = xz(kR)
+            yR = yz(kR)
+         else
 !---------------------------------------------------------------------
 !     otherwise, make ghost node by imposing boundary condition
-         dinry = dprodin(x0, y0, x1, y1, x0, y0, xL, yL) / max(R01 * R01, EPS)
+            dinry = dprodin(x0, y0, x1, y1, x0, y0, xL, yL) / max(R01 * R01, EPS)
 
-         x0_bc = (1 - dinRy) * x0 + dinRy * x1
-         y0_bc = (1 - dinRy) * y0 + dinRy * y1
+            x0_bc = (1 - dinRy) * x0 + dinRy * x1
+            y0_bc = (1 - dinRy) * y0 + dinRy * y1
 
-         xR = 2d0 * (x0_bc) - xL
-         yR = 2d0 * (y0_bc) - yL
+            xR = 2d0 * (x0_bc) - xL
+            yR = 2d0 * (y0_bc) - yL
 !---------------------------------------------------------------------
-      end if
+         end if
 
-      SLR = dbdistance(xL, yL, xR, yR, jsferic, jasfer3D, dmiss)
+         SLR = dbdistance(xL, yL, xR, yR, jsferic, jasfer3D, dmiss)
 !      if ( R01.ne.0d0 ) then
 !         aspect(L) = SLR/R01
 !      else
@@ -123,7 +130,7 @@ subroutine orthonet_compute_aspect(aspect)
 !      end if
 
 !     store length S (normal)
-      S(L) = SLR
+         S(L) = SLR
 
 !     debug: plot circumcenters
 !      call cirr(xL,yL,31)
@@ -134,109 +141,111 @@ subroutine orthonet_compute_aspect(aspect)
 !         call movabs(xL,yL)
 !         call lnabs(x0_bc, y0_bc)
 !      end if
-   end do
+      end do
 !   call confrm(' ', ja)
 
 !---------------------------------------------------------------------
 !  quads -> mimic the curvi-grid discretization
 
 !  node-based curvi-like indicator; initialization
-   Liscurvi = .true.
+      Liscurvi = .true.
 
 !  compute normal length R
-   do k = 1, nump
-      N = netcell(k)%N
-      if (N < 3) cycle ! safety
+      do k = 1, nump
+         N = netcell(k)%N
+         if (N < 3) cycle ! safety
 
 !     repeat for all links
-      do kk = 1, N
+         do kk = 1, N
 
 !        node-based curvi-like indicator
-         if (N /= 4) Liscurvi(netcell(k)%nod(kk)) = .false.
+            if (N /= 4) Liscurvi(netcell(k)%nod(kk)) = .false.
 
-         klink = netcell(k)%lin(kk)
-         if (lnn(klink) /= 1 .and. lnn(klink) /= 2) cycle
+            klink = netcell(k)%lin(kk)
+            if (lnn(klink) /= 1 .and. lnn(klink) /= 2) cycle
 
 !        get the other links in the right numbering
-         kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
-         kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
-         kkp2 = kk + 2; if (kkp2 > N) kkp2 = kkp2 - N
+            kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
+            kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
+            kkp2 = kk + 2; if (kkp2 > N) kkp2 = kkp2 - N
 
-         klinkm1 = netcell(k)%lin(kkm1)
-         klinkp1 = netcell(k)%lin(kkp1)
-         klinkp2 = netcell(k)%lin(kkp2)
+            klinkm1 = netcell(k)%lin(kkm1)
+            klinkp1 = netcell(k)%lin(kkp1)
+            klinkp2 = netcell(k)%lin(kkp2)
 
-         R01 = dblinklength(klink)
+            R01 = dblinklength(klink)
 
-         if (R01 /= 0d0) then
-            aspect(klink) = S(klink) / R01
-         end if
+            if (R01 /= 0d0) then
+               aspect(klink) = S(klink) / R01
+            end if
 
 !        store length R (parallel)
 !         if ( N.eq.4 .and. lnn(klink).ne.1 ) then ! inner quads
-         if (N == 4) then ! quads
-            R01 = 0.5d0 * (dblinklength(klink) + dblinklength(klinkp2))
-         else
-            R01 = dblinklength(klink)
-         end if
+            if (N == 4) then ! quads
+               R01 = 0.5d0 * (dblinklength(klink) + dblinklength(klinkp2))
+            else
+               R01 = dblinklength(klink)
+            end if
 
-         if (R(1, klink) == DMISS) then ! link visited for the first time
-            R(1, klink) = R01
-         else ! link visited for the second time
-            R(2, klink) = R01
-         end if
+            if (R(1, klink) == DMISS) then ! link visited for the first time
+               R(1, klink) = R01
+            else ! link visited for the second time
+               R(2, klink) = R01
+            end if
+         end do
       end do
-   end do
 
-   if (ortho_pure == 1d0) goto 1234 ! no curvi-like discretization
+      if (ortho_pure == 1d0) goto 1234 ! no curvi-like discretization
 
-   ortho1 = 1d0 - ortho_pure
+      ortho1 = 1d0 - ortho_pure
 
 !  compute aspect ratio in the quadrilateral part of the mesh
-   do klink = 1, numL
-      if (kn(1, klink) == 0 .or. kn(2, klink) == 0) cycle ! safety
+      do klink = 1, numL
+         if (kn(1, klink) == 0 .or. kn(2, klink) == 0) cycle ! safety
 
-      if (lnn(klink) /= 2 .and. lnn(klink) /= 1) cycle
+         if (lnn(klink) /= 2 .and. lnn(klink) /= 1) cycle
 
 !     quads-only
-      if (.not. Liscurvi(kn(1, klink)) .or. .not. Liscurvi(kn(2, klink))) cycle
+         if (.not. Liscurvi(kn(1, klink)) .or. .not. Liscurvi(kn(2, klink))) cycle
 
 !      if ( netcell(lne(1,klink))%N.ne.4 .or. netcell(lne(min(2,lnn(klink)),klink))%N.ne.4 ) cycle ! quad-quad links only
 
-      if (lnn(klink) == 1) then
-         if (R(1, klink) /= 0d0 .and. R(1, klink) /= DMISS) then
-            aspect(klink) = S(klink) / R(1, klink)
+         if (lnn(klink) == 1) then
+            if (R(1, klink) /= 0d0 .and. R(1, klink) /= DMISS) then
+               aspect(klink) = S(klink) / R(1, klink)
+            else
+               continue
+            end if
          else
-            continue
+            if (R(1, klink) /= 0d0 .and. R(2, klink) /= 0d0 .and. R(1, klink) /= DMISS .and. R(2, klink) /= DMISS) then
+               aspect(klink) = ortho_pure * aspect(klink) + ortho1 * S(klink) / (0.5d0 * (R(1, klink) + R(2, klink)))
+            else
+               continue
+            end if
          end if
-      else
-         if (R(1, klink) /= 0d0 .and. R(2, klink) /= 0d0 .and. R(1, klink) /= DMISS .and. R(2, klink) /= DMISS) then
-            aspect(klink) = ortho_pure * aspect(klink) + ortho1 * S(klink) / (0.5d0 * (R(1, klink) + R(2, klink)))
-         else
-            continue
-         end if
-      end if
-   end do
+      end do
 
-1234 continue
+1234  continue
 
-   deallocate (R, S, Liscurvi)
+      deallocate (R, S, Liscurvi)
 
-contains
+   contains
 
 !  compute link length
-   real(kind=dp) function dblinklength(kk)
-      use precision, only: dp
-      use m_netw
-      use geometry_module, only: dbdistance
-      use m_missing, only: dmiss
-      use m_sferic, only: jsferic, jasfer3D
+      real(kind=dp) function dblinklength(kk)
+         use precision, only: dp
+         use m_netw
+         use geometry_module, only: dbdistance
+         use m_missing, only: dmiss
+         use m_sferic, only: jsferic, jasfer3D
 
-      implicit none
-      integer :: kk !< link number
+         implicit none
+         integer :: kk !< link number
 
-      dblinklength = dbdistance(xk(kn(1, kk)), yk(kn(1, kk)), xk(kn(2, kk)), yk(kn(2, kk)), jsferic, jasfer3D, dmiss)
+         dblinklength = dbdistance(xk(kn(1, kk)), yk(kn(1, kk)), xk(kn(2, kk)), yk(kn(2, kk)), jsferic, jasfer3D, dmiss)
 
-   end function dblinklength
+      end function dblinklength
 
-end subroutine orthonet_compute_aspect
+   end subroutine orthonet_compute_aspect
+
+end module m_orthonet_compute_aspect

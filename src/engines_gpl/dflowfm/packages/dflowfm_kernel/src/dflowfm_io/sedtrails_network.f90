@@ -132,7 +132,7 @@ contains
       use m_tpoly
       use m_partitioninfo, only: my_rank, jampi, generate_partition_pol_from_idomain
       use network_data, only: netstat, netstat_ok
-      use geometry_module, only: get_startend, dbdistance
+      use geometry_module, only: get_startend
       use m_missing
       use m_flowgeom, only: xz, yz, ndx, bl
       use m_ec_triangle, only: jagetwf, indxx, wfxx

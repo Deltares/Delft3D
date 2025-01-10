@@ -31,21 +31,32 @@
 !
 
 !>    return x-component in corner (netnode) coordinate frame of a vector in link coordinate frame
-      real(kind=dp) function lin2cory(L, i12, ux, uy)
-         use precision, only: dp
-         use m_flowgeom, only: csbn, snbn
-         use m_sferic
-         implicit none
+module m_lin2cory
 
-         integer, intent(in) :: L !< flowlink number
-         integer, intent(in) :: i12 !< left (1) or right (2) corner (netnode)
-         real(kind=dp), intent(in) :: ux, uy !< vector components in flowlink coordinate frame
+   implicit none
 
-         if (jsferic /= 1 .or. jasfer3D /= 1) then
-            lin2cory = uy
-         else
-            lin2cory = snbn(i12, L) * ux + csbn(i12, L) * uy
-         end if
+   private
 
-         return
-      end function lin2cory
+   public :: lin2cory
+
+contains
+
+   real(kind=dp) function lin2cory(L, i12, ux, uy)
+      use precision, only: dp
+      use m_flowgeom, only: csbn, snbn
+      use m_sferic
+
+      integer, intent(in) :: L !< flowlink number
+      integer, intent(in) :: i12 !< left (1) or right (2) corner (netnode)
+      real(kind=dp), intent(in) :: ux, uy !< vector components in flowlink coordinate frame
+
+      if (jsferic /= 1 .or. jasfer3D /= 1) then
+         lin2cory = uy
+      else
+         lin2cory = snbn(i12, L) * ux + csbn(i12, L) * uy
+      end if
+
+      return
+   end function lin2cory
+
+end module m_lin2cory

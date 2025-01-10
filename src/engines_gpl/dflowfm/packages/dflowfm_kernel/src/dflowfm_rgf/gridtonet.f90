@@ -30,125 +30,135 @@
 !
 !
 
-     subroutine gridtonet()
-        use precision, only: dp
-        use m_addnetpointnocheck, only: addnetpointnocheck
-        use m_confrm
-        use m_netw
-        use m_grid
-        use m_missing
-        use gridoperations
-        use m_mergenodes
-        use m_readyy
-        use m_set_nod_adm
-        implicit none
-        real(kind=dp) :: af
+module m_gridtonet
 
-        integer, allocatable :: mn(:, :)
-        integer :: k0, l0, ja, jadoorladen, i, j, k, l, ierr
+   implicit none
 
-        jadoorladen = 1
+   private
 
-        if (JADOORLADEN == 0) then
-           K0 = 0
-           L0 = 0
-        else
-           K0 = NUMK
-           L0 = NUML
-        end if
+   public :: gridtonet
 
-        K = 0
-        do I = 1, MC ! COUNT NR OF NODES
-           do J = 1, NC
-              if (Xc(I, J) /= dXYMIS) then
-                 K = K + 1
-              end if
-           end do
-        end do
+contains
 
-        !IF (K0+K .GT. SIZE(XK) ) THEN
-        call INCREASENETW(K0 + K, L0 + 4 * K)
-        !ENDIF
+   subroutine gridtonet()
+      use m_mergenodesinpolygon, only: mergenodesinpolygon
+      use precision, only: dp
+      use m_addnetpointnocheck, only: addnetpointnocheck
+      use m_confrm
+      use m_netw
+      use m_grid
+      use m_missing
+      use gridoperations
+      use m_mergenodes
+      use m_readyy
+      use m_set_nod_adm
 
-        K = K0
-        L = L0 ! COUNT MAX NR OF ATTACHED LINKS PER NODE
+      real(kind=dp) :: af
 
-        call READYY('Arranging curvilinear grid-in network', 0d0)
+      integer, allocatable :: mn(:, :)
+      integer :: k0, l0, ja, jadoorladen, i, j, k, l, ierr
 
-        if (allocated(mn)) deallocate (mn)
-        allocate (mn(mc, nc), stat=ierr); mn = 0
-        call aerr('mn(mc,nc)', ierr, mc * nc)
+      jadoorladen = 1
 
-        do I = 1, MC
-           do J = 1, NC
-              if (xc(i, j) /= dxymis) then
-                 call addnetpointnocheck(xc(i, j), yc(i, j), zc(i, j), k)
-                 mn(i, j) = k
-              end if
-           end do
-        end do
-        numk = k
+      if (JADOORLADEN == 0) then
+         K0 = 0
+         L0 = 0
+      else
+         K0 = NUMK
+         L0 = NUML
+      end if
 
-        af = 0.2d0
-        call READYY('Arranging curvilinear grid-in network', af)
+      K = 0
+      do I = 1, MC ! COUNT NR OF NODES
+         do J = 1, NC
+            if (Xc(I, J) /= dXYMIS) then
+               K = K + 1
+            end if
+         end do
+      end do
 
-        do I = 1, MC - 1
-           do J = 1, NC
-              if (mn(i, j) /= 0 .and. mn(i + 1, j) /= 0) then
-                 L = L + 1
-                 kn(1, L) = mn(i, j)
-                 kn(2, L) = mn(i + 1, j)
-                 KN(3, L) = 2
-              end if
-           end do
-        end do
+      !IF (K0+K .GT. SIZE(XK) ) THEN
+      call INCREASENETW(K0 + K, L0 + 4 * K)
+      !ENDIF
 
-        af = 0.4d0
-        call READYY('Arranging curvilinear grid-in network', af)
+      K = K0
+      L = L0 ! COUNT MAX NR OF ATTACHED LINKS PER NODE
 
-        do I = 1, MC
-           do J = 1, NC - 1
-              if (mn(i, j) /= 0 .and. mn(i, j + 1) /= 0) then
-                 L = L + 1
-                 kn(1, L) = mn(i, j)
-                 kn(2, L) = mn(i, j + 1)
-                 KN(3, L) = 2
-              end if
-           end do
-        end do
+      call READYY('Arranging curvilinear grid-in network', 0d0)
 
-        af = 0.6d0
-        call READYY('Arranging curvilinear grid-in network', af)
+      if (allocated(mn)) deallocate (mn)
+      allocate (mn(mc, nc), stat=ierr); mn = 0
+      call aerr('mn(mc,nc)', ierr, mc * nc)
 
-        numl = l
-        call setnodadm(0)
+      do I = 1, MC
+         do J = 1, NC
+            if (xc(i, j) /= dxymis) then
+               call addnetpointnocheck(xc(i, j), yc(i, j), zc(i, j), k)
+               mn(i, j) = k
+            end if
+         end do
+      end do
+      numk = k
 
-        call READYY('Arranging curvilinear grid-in network', -1d0)
+      af = 0.2d0
+      call READYY('Arranging curvilinear grid-in network', af)
 
-        ! call copydeptosam()
+      do I = 1, MC - 1
+         do J = 1, NC
+            if (mn(i, j) /= 0 .and. mn(i + 1, j) /= 0) then
+               L = L + 1
+               kn(1, L) = mn(i, j)
+               kn(2, L) = mn(i + 1, j)
+               KN(3, L) = 2
+            end if
+         end do
+      end do
 
-        if (k0 > 0) then
+      af = 0.4d0
+      call READYY('Arranging curvilinear grid-in network', af)
 
-           JA = 1
+      do I = 1, MC
+         do J = 1, NC - 1
+            if (mn(i, j) /= 0 .and. mn(i, j + 1) /= 0) then
+               L = L + 1
+               kn(1, L) = mn(i, j)
+               kn(2, L) = mn(i, j + 1)
+               KN(3, L) = 2
+            end if
+         end do
+      end do
 
-           call readyy('Merging networks', 0d0)
-           call findcells(0)
+      af = 0.6d0
+      call READYY('Arranging curvilinear grid-in network', af)
+
+      numl = l
+      call setnodadm(0)
+
+      call READYY('Arranging curvilinear grid-in network', -1d0)
+
+      ! call copydeptosam()
+
+      if (k0 > 0) then
+
+         JA = 1
+
+         call readyy('Merging networks', 0d0)
+         call findcells(0)
 
 !     merge nodes
 
-           if (tooclose > 1d-16 .and. k0 > 0) then
-              call CONFRM('MERGE NODES ? ', JA)
-              if (JA == 1) call MERGENODESINPOLYGON()
-           end if
+         if (tooclose > 1d-16 .and. k0 > 0) then
+            call CONFRM('MERGE NODES ? ', JA)
+            if (JA == 1) call MERGENODESINPOLYGON()
+         end if
 
-!     merge boundary nodes
-!      call mergenet()
+         call readyy('Merging networks', -1d0)
 
-           call readyy('Merging networks', -1d0)
-
-        end if
+      end if
 
 !     set network status
-        netstat = NETSTAT_CELLS_DIRTY
+      netstat = NETSTAT_CELLS_DIRTY
 
-     end subroutine gridtonet
+   end subroutine gridtonet
+
+end module m_gridtonet

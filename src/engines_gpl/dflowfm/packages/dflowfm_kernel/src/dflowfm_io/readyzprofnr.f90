@@ -50,7 +50,8 @@ contains
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
       use m_missing
-      implicit none
+      use m_filez, only: readerror
+
       integer :: myzprofs, iprofnr, nyz, mx
       real(kind=dp) :: yy(mx), zz(mx), width, height, zmin
 

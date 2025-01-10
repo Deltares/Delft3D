@@ -30,6 +30,10 @@
 !
 !
 module m_reasam
+   use m_xmisar, only: xmisar
+   use m_tidysamples, only: tidysamples
+   use m_misar, only: misar
+
    implicit none
 contains
    subroutine REASAM(MSAM, JADOORLADEN)
@@ -43,6 +47,7 @@ contains
       use m_readyy
       use m_qnerror
       use m_get_samples_boundingbox
+      use m_filez, only: thisisanumber, doclose
 
       integer, intent(inout) :: msam !< already opened file pointer to sample file
       integer, intent(in) :: jadoorladen !< whether to append to global set (1) or start empty (0)
@@ -55,7 +60,6 @@ contains
       real(kind=dp) :: x, y, z
       real(kind=dp) :: XX, YY, ZZ, ZZ2
       character REC * 132, TEX * 10
-      logical THISISANUMBER
 
       call SAVESAM()
       NSM = 0

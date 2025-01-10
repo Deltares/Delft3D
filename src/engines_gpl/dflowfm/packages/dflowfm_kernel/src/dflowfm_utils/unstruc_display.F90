@@ -33,6 +33,8 @@ module unstruc_display
 !! Handles all display settings and screen plotting for Unstruc
 !! (Not yet, a lot is still in REST.F90 [AvD])
 
+   use m_setcoltabfile, only: setcoltabfile
+   use m_iset_jaopengl, only: iset_jaopengl
    use m_setwynew
    use m_setwor
    use m_settextsizefac
@@ -295,6 +297,8 @@ contains
       use m_drawthis
       use m_depmax2
       use m_datum
+      use m_iget_jaopengl, only: iget_jaopengl
+      use m_filez, only: doclose, newfil
 
       character(len=*), intent(in) :: filename
 
@@ -302,7 +306,6 @@ contains
       character(len=20) :: rundat
       integer :: mfil, istat, i, KRGB(4)
       integer :: jaeps, jaland
-      integer, external :: iget_jaopengl
 
       call newfil(mfil, filename)
 
@@ -1434,405 +1437,338 @@ contains
       call IOUTSTRINGXY(1, ipos, text)
    end subroutine Write2ScrChar
 
-end module unstruc_display
+   subroutine GETINTRGB(KRGB) ! GET interacter RGB FOR NCOL
+      integer :: KRGB(4)
+      integer :: rgb
+      integer, external :: InfoGrPalette !access interacter palette info
 
-subroutine zoomshift(nshift) ! based on polygon
-   use unstruc_display
-   use m_flowtimes
-   use m_polygon
-   use m_drawthis
-   implicit none
-   integer :: nshift, i1
-   real(kind=dp) :: dr, x00, y00, dxw, dyw, rshift
+      ! grab the rgb value of the color nr
+      rgb = InfoGrPalette(KRGB(1))
 
-   nshift = nshift + 1
-   rshift = dble(nshift) / dble(numzoomshift)
-   i1 = int(rshift) + 1
-   i1 = min(i1, npl - 1)
-   dr = rshift - i1 + 1
-   x00 = (1d0 - dr) * xpl(i1) + dr * xpl(i1 + 1)
-   y00 = (1d0 - dr) * ypl(i1) + dr * ypl(i1 + 1)
-   dxw = 0.5d0 * (x2 - x1)
-   dyw = 0.5d0 * (y2 - y1)
-   x1 = x00 - dxw
-   x2 = x00 + dxw
-   y1 = y00 - dyw
-   y2 = y00 + dyw
-   call setwor(x1, y1, x2, y2)
-   ndraw(10) = 1 ! wel plotten
-end subroutine zoomshift
+      ! split into separate r, g, b channel values (0.0 - 1.0)
+      KRGB(2) = iand(rgb, z'ff')
+      KRGB(3) = iand(ishft(rgb, -8), z'ff')
+      KRGB(4) = iand(ishft(rgb, -16), z'ff')
 
-subroutine tekwindvector()
-   use m_wind
-   use m_wearelt
-   use unstruc_display
-   use m_heatfluxes
-   use m_flow
-   use m_transport
-   use m_flowgeom
-   use m_wind
-   use m_xbeach_data, only: csx, snx, itheta_view
-   use m_flowparameters, only: jawave
-   use m_missing
-   use m_statistics
-   use messagehandling
-   use m_drawthis
-   use m_gtext
+   end subroutine
 
-   implicit none
-   real(kind=dp) :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa
-   character tex * 60
-   integer :: ncol, k, kk, vlatin, vlatout, i, mout
+   subroutine SETINTRGB(KRGB) ! SAME, SET
+      integer :: KRGB(4)
+      call IGRPALETTERGB(KRGB(1), KRGB(2), KRGB(3), KRGB(4))
+   end subroutine
 
-   if (ndraw(40) == 0 .and. npdf == 0) return
+   subroutine zoomshift(nshift) ! based on polygon
+      use m_polygon, only: npl, xpl, ypl
+      use m_drawthis, only: ndraw
 
-   call thicklinetexcol(ncolln)
+      integer :: nshift, i1
+      real(kind=dp) :: dr, x00, y00, dxw, dyw, rshift
 
-   yp = 0.15 * y1 + 0.85 * y2
-   dyp = 0.025 * (y2 - y1)
+      nshift = nshift + 1
+      rshift = dble(nshift) / dble(numzoomshift)
+      i1 = int(rshift) + 1
+      i1 = min(i1, npl - 1)
+      dr = rshift - i1 + 1
+      x00 = (1d0 - dr) * xpl(i1) + dr * xpl(i1 + 1)
+      y00 = (1d0 - dr) * ypl(i1) + dr * ypl(i1 + 1)
+      dxw = 0.5d0 * (x2 - x1)
+      dyw = 0.5d0 * (y2 - y1)
+      x1 = x00 - dxw
+      x2 = x00 + dxw
+      y1 = y00 - dyw
+      y2 = y00 + dyw
+      call setwor(x1, y1, x2, y2)
+      ndraw(10) = 1 ! wel plotten
+   end subroutine zoomshift
 
-   if (npdf > 0) then
-      xp = 0.97 * x1 + 0.03 * x2
+   subroutine tekwindvector()
+      use m_flow
+      use m_transport, only: numconst, constituents
+      use m_flowgeom, only: ndxi
+      use m_xbeach_data, only: csx, snx, itheta_view
+      use m_flowparameters, only: jawave
+      use m_statistics, only: npdf, xpdf, ypdf
+      use messagehandling, only: msgbuf, msg_flush
+      use m_drawthis, only: ndraw
+      use m_gtext, only: gtext
+      use m_filez, only: doclose, newfil
+      use m_upotukinueaa, only: upotukinueaa
 
-      call newfil(mout, 'cumulative.tek')
-      write (mout, '(a)') '* Column 1 : cos ()'
-      write (mout, '(a)') '* Column 2 : fraction ()'
+      real(kind=dp) :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa
+      character tex * 60
+      integer :: ncol, k, kk, vlatin, vlatout, i, mout
 
-      msgbuf = 'BL01'
-      call msg_flush(); write (mout, '(a)') msgbuf
-      write (msgbuf, '(i4,A)') npdf, ' 2 '
-      call msg_flush(); write (mout, '(a)') msgbuf
-
-      do i = npdf - 1, 1, -1
-         yp = yp - dyp
-         tex = '                                 '
-         write (tex(1:), '(2F10.6)') ypdf(i), xpdf(i)
-         call GTEXT(tex, xp, yp, ncolln)
-         write (msgbuf, '(a)') tex
-         call msg_flush(); write (mout, '(a)') msgbuf
-      end do
-      call doclose(mout)
-   end if
-
-   if (jawind > 0) then
-      xp = 0.90 * x1 + 0.10 * x2
-      vfw = 0.1d0 * (x2 - x1) / 10d0 ! 10 m/s is 0.1*screen
-      call arrowsxy(xp, yp, windxav, windyav, vfw)
-      ws = sqrt(windxav * windxav + windyav * windyav)
-      xp = 0.97 * x1 + 0.03 * x2
-      yp = 0.25 * y1 + 0.75 * y2
-      tex = 'Wind   :             (m/s)'
-      write (tex(10:17), '(F8.3)') ws
-      call GTEXT(tex, xp, yp, ncolln)
-   end if
-
-   if (a1ini == 0d0) then
-      call resetlinesizesetc()
-      return
-   end if
-
-   yp = 0.25 * y1 + 0.75 * y2
-   xp = 0.97 * x1 + 0.03 * x2
-   if (vinraincum > 0) then
-      xp = 0.97 * x1 + 0.03 * x2
-      yp = yp - 2 * dyp
-      tex = 'Rain   :           (mm/hr)'
-      write (tex(10:17), '(F8.4)') 3600 * 1000 * qinrain / a1ini
-      call GTEXT(tex, xp, yp, ncolln)
-      yp = yp - dyp
-      tex = 'Hrain  :               (m)'
-      write (tex(10:20), '(F11.4)') vinraincum / a1ini
-      call GTEXT(tex, xp, yp, ncolln)
-   end if
-
-   if (voutevacum > 0) then
-      yp = yp - dyp
-      tex = 'Evap   :           (mm/hr)'
-      write (tex(10:17), '(F8.4)') 3600 * 1000 * qouteva / a1ini
-      call GTEXT(tex, xp, yp, ncolln)
-      yp = yp - dyp
-      tex = 'Hevap  :               (m)'
-      write (tex(10:20), '(F11.4)') voutevacum / a1ini
-      call GTEXT(tex, xp, yp, ncolln)
-   end if
-
-   if (ndraw(40) == 1) then
-
-      ncol = ncoltx
-      call thicklinetexcol(ncol)
-
-      if (vinbndcum > 0 .or. voutbndcum > 0) then
-         yp = yp - dyp
-         tex = 'HinBnd :               (m)'
-         write (tex(10:20), '(F11.4)') vinbndcum / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'HoutBnd:               (m)'
-         write (tex(10:20), '(F11.4)') - voutbndcum / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-      end if
-
-      vlatin = sum(vinlatcum(1:2))
-      vlatout = sum(voutlatcum(1:2))
-      if (vlatin > 0 .or. vlatout > 0) then
-         yp = yp - dyp
-         tex = 'HinLat :               (m)'
-         write (tex(10:20), '(F11.4)') vlatin / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'HoutLat:               (m)'
-         write (tex(10:20), '(F11.4)') - vlatout / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-      end if
-
-      if (vingrwcum > 0 .or. voutgrwcum > 0) then
-         yp = yp - dyp
-         tex = 'Hingrw :               (m)'
-         write (tex(10:20), '(F11.4)') vingrwcum / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'Houtgrw:               (m)'
-         write (tex(10:20), '(F11.4)') - voutgrwcum / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-      end if
-
-      yp = yp - dyp
-      tex = 'Htot   :               (m)'
-      write (tex(10:20), '(F11.4)') (vol1tot - vol1ini) / a1ini
-      call GTEXT(tex, xp, yp, ncol)
-
-      if (jagrw > 0) then
-         yp = yp - dyp
-         tex = 'Hgrw   :               (m)'
-         write (tex(10:20), '(F11.4)') (volgrw - volgrwini) / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-      end if
-
-      yp = yp - dyp
-      tex = 'Hini   :               (m)'
-      write (tex(10:20), '(F11.4)') vol1ini / a1ini
-      call GTEXT(tex, xp, yp, ncol)
-
-      if (jagrw > 0) then
-         yp = yp - dyp
-         tex = 'Hgrwini:               (m)'
-         write (tex(10:20), '(F11.4)') volgrwini / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-      end if
-
-      yp = yp - dyp
-      tex = 'Areatot:               (m)'
-      write (tex(10:21), '(E12.5)') a1ini
-      call GTEXT(tex, xp, yp, ncol)
-
-      if (jatem == 5) then
-         yp = yp - 2 * dyp
-         tex = 'QSUNav :              (W/m2)'
-         write (tex(10:21), '(E12.5)') Qsunav
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'QEVAav :              (W/m2)'
-         write (tex(10:21), '(E12.5)') Qevaav
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'QCONav :              (W/m2)'
-         write (tex(10:21), '(E12.5)') QCONav
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'QLongav:              (W/m2)'
-         write (tex(10:21), '(E12.5)') QLongav
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'Qfreeav:              (W/m2)'
-         write (tex(10:21), '(E12.5)') Qfreeav
-         call GTEXT(tex, xp, yp, ncol)
-
-      end if
-
-   else if (ndraw(40) == 2) then
-
-      call upotukinueaa(upot, ukin, ueaa)
-
-      ncol = ncoltx
-
-      yp = yp - 2.5 * dyp
-      tex = 'Ut0:                 (kg/(m.s2))'
-      if (upot0 + ukin0 > 1000) then
-         write (tex(8:20), '(F11.2)') ukin0 + upot0
-      else
-         write (tex(8:20), '(F11.7)') ukin0 + upot0
-      end if
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Upot :               (kg/(m.s2))'
-      if (upot > 1000) then
-         write (tex(8:20), '(F11.2)') upot
-      else
-         write (tex(8:20), '(F11.7)') upot
-      end if
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Ukin :               (kg/(m.s2))'
-      if (ukin > 1000) then
-         write (tex(8:20), '(F11.2)') ukin
-      else
-         write (tex(8:20), '(F11.7)') ukin
-      end if
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Utot :               (kg/(m.s2))'
-      if (upot + ukin > 1000) then
-         write (tex(8:20), '(F11.2)') upot + ukin
-      else
-         write (tex(8:20), '(F11.7)') upot + ukin
-      end if
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Upot/Ut0:                   ( )'
-      write (tex(8:20), '(F11.7)') upot / max(ukin0 + upot0, eps4)
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Ukin/Ut0:                   ( )'
-      write (tex(8:20), '(F11.7)') ukin / max(ukin0 + upot0, eps4)
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Utot/Ut0:                   ( )'
-      write (tex(8:20), '(F11.7)') (ukin + upot) / (ukin0 + upot0)
-      call GTEXT(tex, xp, yp, ncol)
-
-      if (jasal > 0 .or. jatem > 0) then
-         yp = yp - dyp
-         tex = 'Ueaa :               (kg/(m.s2))'
-         write (tex(8:20), '(F11.2)') ueaa
-         call GTEXT(tex, xp, yp, ncol)
-      end if
-
-   else if (ndraw(40) == 3) then
-
-      ncol = ncoltx
-      do i = 1, numconst
-         ueaa = 0d0
-         do kk = 1, ndxi
-            do k = kbot(kk), ktop(kk)
-               ueaa = ueaa + vol1(k) * constituents(i, k)
-            end do
-         end do
-
-         yp = yp - 2.5 * dyp
-         tex = 'Mass :                 (c*m3)'
-         if (ueaa > 1000) then
-            write (tex(8:20), '(F11.2)') ueaa
-         else
-            write (tex(8:20), '(F11.7)') ueaa
-         end if
-         call GTEXT(tex, xp, yp, ncol)
-
-      end do
-
-   end if
-
-   if (jawave == 4) then
-      xp = 0.90 * x1 + 0.10 * x2
-      yp = 0.85 * y1 + 0.15 * y2
+      if (ndraw(40) == 0 .and. npdf == 0) return
 
       call thicklinetexcol(ncolln)
-      call arrowsxy(xp, yp, csx(itheta_view), snx(itheta_view), 0.1d0 * (x2 - x1))
-   end if
 
-   call resetlinesizesetc()
+      yp = 0.15 * y1 + 0.85 * y2
+      dyp = 0.025 * (y2 - y1)
 
-end subroutine tekwindvector
+      if (npdf > 0) then
+         xp = 0.97 * x1 + 0.03 * x2
 
-subroutine upotukinueaa(upot, ukin, ueaa)
-   use m_flow
-   use m_flowgeom
-   use m_missing
-   implicit none
-   real(kind=dp) :: upot, ukin, ueaa
-   real(kind=dp) :: vtot, roav, zz, rhok, bmin
-   integer k, kk
+         call newfil(mout, 'cumulative.tek')
+         write (mout, '(a)') '* Column 1 : cos ()'
+         write (mout, '(a)') '* Column 2 : fraction ()'
 
-   upot = 0d0; ukin = 0d0; ueaa = 0d0; vtot = 0d0; roav = 0d0; bmin = 1d9
+         msgbuf = 'BL01'
+         call msg_flush(); write (mout, '(a)') msgbuf
+         write (msgbuf, '(i4,A)') npdf, ' 2 '
+         call msg_flush(); write (mout, '(a)') msgbuf
 
-   do kk = 1, ndx
-      bmin = min(bmin, bl(kk))
-      if (hs(kk) == 0) cycle
-      do k = kbot(kk), ktop(kk)
-         vtot = vtot + vol1(k) ! m3
-         if (jasal > 0) then
-            roav = roav + vol1(k) * rho(k) ! kg
-         else
-            roav = roav + vol1(k) * rhomean ! kg
+         do i = npdf - 1, 1, -1
+            yp = yp - dyp
+            tex = '                                 '
+            write (tex(1:), '(2F10.6)') ypdf(i), xpdf(i)
+            call GTEXT(tex, xp, yp, ncolln)
+            write (msgbuf, '(a)') tex
+            call msg_flush(); write (mout, '(a)') msgbuf
+         end do
+         call doclose(mout)
+      end if
+
+      if (jawind > 0) then
+         xp = 0.90 * x1 + 0.10 * x2
+         vfw = 0.1d0 * (x2 - x1) / 10d0 ! 10 m/s is 0.1*screen
+         call arrowsxy(xp, yp, windxav, windyav, vfw)
+         ws = sqrt(windxav * windxav + windyav * windyav)
+         xp = 0.97 * x1 + 0.03 * x2
+         yp = 0.25 * y1 + 0.75 * y2
+         tex = 'Wind   :             (m/s)'
+         write (tex(10:17), '(F8.3)') ws
+         call GTEXT(tex, xp, yp, ncolln)
+      end if
+
+      if (a1ini == 0d0) then
+         call resetlinesizesetc()
+         return
+      end if
+
+      yp = 0.25 * y1 + 0.75 * y2
+      xp = 0.97 * x1 + 0.03 * x2
+      if (vinraincum > 0) then
+         xp = 0.97 * x1 + 0.03 * x2
+         yp = yp - 2 * dyp
+         tex = 'Rain   :           (mm/hr)'
+         write (tex(10:17), '(F8.4)') 3600 * 1000 * qinrain / a1ini
+         call GTEXT(tex, xp, yp, ncolln)
+         yp = yp - dyp
+         tex = 'Hrain  :               (m)'
+         write (tex(10:20), '(F11.4)') vinraincum / a1ini
+         call GTEXT(tex, xp, yp, ncolln)
+      end if
+
+      if (voutevacum > 0) then
+         yp = yp - dyp
+         tex = 'Evap   :           (mm/hr)'
+         write (tex(10:17), '(F8.4)') 3600 * 1000 * qouteva / a1ini
+         call GTEXT(tex, xp, yp, ncolln)
+         yp = yp - dyp
+         tex = 'Hevap  :               (m)'
+         write (tex(10:20), '(F11.4)') voutevacum / a1ini
+         call GTEXT(tex, xp, yp, ncolln)
+      end if
+
+      if (ndraw(40) == 1) then
+
+         ncol = ncoltx
+         call thicklinetexcol(ncol)
+
+         if (vinbndcum > 0 .or. voutbndcum > 0) then
+            yp = yp - dyp
+            tex = 'HinBnd :               (m)'
+            write (tex(10:20), '(F11.4)') vinbndcum / a1ini
+            call GTEXT(tex, xp, yp, ncol)
+
+            yp = yp - dyp
+            tex = 'HoutBnd:               (m)'
+            write (tex(10:20), '(F11.4)') - voutbndcum / a1ini
+            call GTEXT(tex, xp, yp, ncol)
          end if
-      end do
-   end do
-   if (vtot == 0d0) then
-      return
-   end if
 
-   roav = roav / vtot ! kg/m3
+         vlatin = sum(vinlatcum(1:2))
+         vlatout = sum(voutlatcum(1:2))
+         if (vlatin > 0 .or. vlatout > 0) then
+            yp = yp - dyp
+            tex = 'HinLat :               (m)'
+            write (tex(10:20), '(F11.4)') vlatin / a1ini
+            call GTEXT(tex, xp, yp, ncol)
 
-   do kk = 1, ndx
-      if (hs(kk) == 0) cycle
-      do k = kbot(kk), ktop(kk)
-         if (kmx > 0) then
-            zz = (zws(k) + zws(k - 1)) * 0.5d0 - bmin ! m
-         else
-            zz = s1(k) - bmin
+            yp = yp - dyp
+            tex = 'HoutLat:               (m)'
+            write (tex(10:20), '(F11.4)') - vlatout / a1ini
+            call GTEXT(tex, xp, yp, ncol)
          end if
-         if (jasal > 0) then
-            rhok = rho(k)
-         else
-            rhok = rhomean
+
+         if (vingrwcum > 0 .or. voutgrwcum > 0) then
+            yp = yp - dyp
+            tex = 'Hingrw :               (m)'
+            write (tex(10:20), '(F11.4)') vingrwcum / a1ini
+            call GTEXT(tex, xp, yp, ncol)
+
+            yp = yp - dyp
+            tex = 'Houtgrw:               (m)'
+            write (tex(10:20), '(F11.4)') - voutgrwcum / a1ini
+            call GTEXT(tex, xp, yp, ncol)
          end if
-         ueaa = ueaa + vol1(k) * zz * (rho(k) - roav) ! kg.m
-         upot = upot + vol1(k) * zz * rho(k) ! kg.m
-         ukin = ukin + vol1(k) * rho(k) * (ucx(k) * ucx(k) + ucy(k) * ucy(k)) * 0.5d0 ! kg.m2/s2
-      end do
-   end do
 
-   ueaa = ueaa * ag / vtot ! kg/(m.s2)
-   upot = upot * ag / vtot
-   ukin = ukin * 0.5 / vtot
+         yp = yp - dyp
+         tex = 'Htot   :               (m)'
+         write (tex(10:20), '(F11.4)') (vol1tot - vol1ini) / a1ini
+         call GTEXT(tex, xp, yp, ncol)
 
-   if (upot0 == dmiss) upot0 = upot
-   if (ukin0 == dmiss) ukin0 = ukin
+         if (jagrw > 0) then
+            yp = yp - dyp
+            tex = 'Hgrw   :               (m)'
+            write (tex(10:20), '(F11.4)') (volgrw - volgrwini) / a1ini
+            call GTEXT(tex, xp, yp, ncol)
+         end if
 
-! upot = upot - upot0
-   !
-end subroutine upotukinueaa
+         yp = yp - dyp
+         tex = 'Hini   :               (m)'
+         write (tex(10:20), '(F11.4)') vol1ini / a1ini
+         call GTEXT(tex, xp, yp, ncol)
 
-subroutine GETINTRGB(KRGB) ! GET interacter RGB FOR NCOL
-   implicit none
-   integer :: KRGB(4)
-   integer :: rgb
-   integer, external :: InfoGrPalette !access interacter palette info
+         if (jagrw > 0) then
+            yp = yp - dyp
+            tex = 'Hgrwini:               (m)'
+            write (tex(10:20), '(F11.4)') volgrwini / a1ini
+            call GTEXT(tex, xp, yp, ncol)
+         end if
 
-   ! grab the rgb value of the color nr
-   rgb = InfoGrPalette(KRGB(1))
+         yp = yp - dyp
+         tex = 'Areatot:               (m)'
+         write (tex(10:21), '(E12.5)') a1ini
+         call GTEXT(tex, xp, yp, ncol)
 
-   ! split into separate r, g, b channel values (0.0 - 1.0)
-   KRGB(2) = iand(rgb, z'ff')
-   KRGB(3) = iand(ishft(rgb, -8), z'ff')
-   KRGB(4) = iand(ishft(rgb, -16), z'ff')
+         if (jatem == 5) then
+            yp = yp - 2 * dyp
+            tex = 'QSUNav :              (W/m2)'
+            write (tex(10:21), '(E12.5)') Qsunav
+            call GTEXT(tex, xp, yp, ncol)
 
-end subroutine
+            yp = yp - dyp
+            tex = 'QEVAav :              (W/m2)'
+            write (tex(10:21), '(E12.5)') Qevaav
+            call GTEXT(tex, xp, yp, ncol)
 
-subroutine SETINTRGB(KRGB) ! SAME, SET
-   implicit none
-   integer :: KRGB(4)
-   call IGRPALETTERGB(KRGB(1), KRGB(2), KRGB(3), KRGB(4))
-end subroutine
+            yp = yp - dyp
+            tex = 'QCONav :              (W/m2)'
+            write (tex(10:21), '(E12.5)') QCONav
+            call GTEXT(tex, xp, yp, ncol)
+
+            yp = yp - dyp
+            tex = 'QLongav:              (W/m2)'
+            write (tex(10:21), '(E12.5)') QLongav
+            call GTEXT(tex, xp, yp, ncol)
+
+            yp = yp - dyp
+            tex = 'Qfreeav:              (W/m2)'
+            write (tex(10:21), '(E12.5)') Qfreeav
+            call GTEXT(tex, xp, yp, ncol)
+
+         end if
+
+      else if (ndraw(40) == 2) then
+
+         call upotukinueaa(upot, ukin, ueaa)
+
+         ncol = ncoltx
+
+         yp = yp - 2.5 * dyp
+         tex = 'Ut0:                 (kg/(m.s2))'
+         if (upot0 + ukin0 > 1000) then
+            write (tex(8:20), '(F11.2)') ukin0 + upot0
+         else
+            write (tex(8:20), '(F11.7)') ukin0 + upot0
+         end if
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Upot :               (kg/(m.s2))'
+         if (upot > 1000) then
+            write (tex(8:20), '(F11.2)') upot
+         else
+            write (tex(8:20), '(F11.7)') upot
+         end if
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Ukin :               (kg/(m.s2))'
+         if (ukin > 1000) then
+            write (tex(8:20), '(F11.2)') ukin
+         else
+            write (tex(8:20), '(F11.7)') ukin
+         end if
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Utot :               (kg/(m.s2))'
+         if (upot + ukin > 1000) then
+            write (tex(8:20), '(F11.2)') upot + ukin
+         else
+            write (tex(8:20), '(F11.7)') upot + ukin
+         end if
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Upot/Ut0:                   ( )'
+         write (tex(8:20), '(F11.7)') upot / max(ukin0 + upot0, eps4)
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Ukin/Ut0:                   ( )'
+         write (tex(8:20), '(F11.7)') ukin / max(ukin0 + upot0, eps4)
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Utot/Ut0:                   ( )'
+         write (tex(8:20), '(F11.7)') (ukin + upot) / (ukin0 + upot0)
+         call GTEXT(tex, xp, yp, ncol)
+
+         if (jasal > 0 .or. jatem > 0) then
+            yp = yp - dyp
+            tex = 'Ueaa :               (kg/(m.s2))'
+            write (tex(8:20), '(F11.2)') ueaa
+            call GTEXT(tex, xp, yp, ncol)
+         end if
+
+      else if (ndraw(40) == 3) then
+
+         ncol = ncoltx
+         do i = 1, numconst
+            ueaa = 0d0
+            do kk = 1, ndxi
+               do k = kbot(kk), ktop(kk)
+                  ueaa = ueaa + vol1(k) * constituents(i, k)
+               end do
+            end do
+
+            yp = yp - 2.5 * dyp
+            tex = 'Mass :                 (c*m3)'
+            if (ueaa > 1000) then
+               write (tex(8:20), '(F11.2)') ueaa
+            else
+               write (tex(8:20), '(F11.7)') ueaa
+            end if
+            call GTEXT(tex, xp, yp, ncol)
+
+         end do
+
+      end if
+
+      if (jawave == 4) then
+         xp = 0.90 * x1 + 0.10 * x2
+         yp = 0.85 * y1 + 0.15 * y2
+
+         call thicklinetexcol(ncolln)
+         call arrowsxy(xp, yp, csx(itheta_view), snx(itheta_view), 0.1d0 * (x2 - x1))
+      end if
+
+      call resetlinesizesetc()
+
+   end subroutine tekwindvector
+
+end module unstruc_display
+

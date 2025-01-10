@@ -30,53 +30,66 @@
 !
 !
 
-      subroutine ADJUST(X, Y, mmax, nmax, MC, NC)
-         use precision, only: dp
-         use m_missing
-         implicit none
-         integer :: mmax, nmax, mc, nc
-         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
+module m_adjust
+   use m_nums, only: nums
+
+   implicit none
+
+   private
+
+   public :: adjust
+
+contains
+
+   subroutine ADJUST(X, Y, mmax, nmax, MC, NC)
+      use precision, only: dp
+      use m_missing
+
+      integer :: mmax, nmax, mc, nc
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
 ! TODO: Z not present, no filling with dmiss [AvD]
 !     schuif data naar links en of beneden en geef nieuwe MC,NC
 
-         integer :: i, j, ifirst, jfirst
-         real(kind=dp), allocatable :: XH(:, :), YH(:, :)
-         allocate (xh(MMAX, NMAX), YH(MMAX, NMAX))
+      integer :: i, j, ifirst, jfirst
+      real(kind=dp), allocatable :: XH(:, :), YH(:, :)
+      allocate (xh(MMAX, NMAX), YH(MMAX, NMAX))
 
-         xh = x
-         yh = y
-         x = xymis
-         y = xymis
+      xh = x
+      yh = y
+      x = xymis
+      y = xymis
 
-         IFIRST = 0
-         do I = 1, MC
-            do J = 1, NC
-               if (XH(I, J) /= XYMIS .and. IFIRST == 0) IFIRST = I
-            end do
-         end do
-
-         JFIRST = 0
+      IFIRST = 0
+      do I = 1, MC
          do J = 1, NC
-            do I = 1, MC
-               if (XH(I, J) /= XYMIS .and. JFIRST == 0) JFIRST = J
+            if (XH(I, J) /= XYMIS .and. IFIRST == 0) IFIRST = I
+         end do
+      end do
+
+      JFIRST = 0
+      do J = 1, NC
+         do I = 1, MC
+            if (XH(I, J) /= XYMIS .and. JFIRST == 0) JFIRST = J
+         end do
+      end do
+
+      if (IFIRST == 0 .or. JFIRST == 0) then
+         MC = 0
+         NC = 0
+      else
+         IFIRST = IFIRST - 1
+         JFIRST = JFIRST - 1
+         do I = 1, MC - IFIRST
+            do J = 1, NC - JFIRST
+               X(I, J) = XH(I + IFIRST, J + JFIRST)
+               Y(I, J) = YH(I + IFIRST, J + JFIRST)
             end do
          end do
+         call NUMS(X, mmax, nmax, MC, NC)
+      end if
 
-         if (IFIRST == 0 .or. JFIRST == 0) then
-            MC = 0
-            NC = 0
-         else
-            IFIRST = IFIRST - 1
-            JFIRST = JFIRST - 1
-            do I = 1, MC - IFIRST
-               do J = 1, NC - JFIRST
-                  X(I, J) = XH(I + IFIRST, J + JFIRST)
-                  Y(I, J) = YH(I + IFIRST, J + JFIRST)
-               end do
-            end do
-            call NUMS(X, mmax, nmax, MC, NC)
-         end if
+      deallocate (xh, yh)
+      return
+   end
 
-         deallocate (xh, yh)
-         return
-      end
+end module m_adjust

@@ -30,17 +30,28 @@
 !
 !
 
-      !> Writes active cross sections to a polyline file.
-      subroutine wricrs(mpol)
-         use m_crosssections
-         use m_polygon
-         use m_missing
-         use m_wripol
-         implicit none
-         integer :: mpol
+module m_wricrs
 
-         call savepol()
-         call copycrosssectionstopol()
+   implicit none
+
+   private
+
+   public :: wricrs
+
+contains
+
+   !> Writes active cross sections to a polyline file.
+   subroutine wricrs(mpol)
+      use m_copycrosssectionstopol, only: copycrosssectionstopol
+      use m_crosssections
+      use m_polygon
+      use m_missing
+      use m_wripol
+
+      integer :: mpol
+
+      call savepol()
+      call copycrosssectionstopol()
 !      npl = 0 ! Write traced polygons instead of original plis
 !      do i=1,ncrs
 !        xpl(npl+1:npl+crs(i)%len+1)=crs(i)%xk(1:crs(i)%len+1)
@@ -50,7 +61,9 @@
 !        ypl(npl) = dmiss
 !      end do
 !      if (ncrs>0) npl = npl - 1 ! remove last separator
-         call wripol(mpol)
-         call restorepol()
+      call wripol(mpol)
+      call restorepol()
 
-      end subroutine wricrs
+   end subroutine wricrs
+
+end module m_wricrs

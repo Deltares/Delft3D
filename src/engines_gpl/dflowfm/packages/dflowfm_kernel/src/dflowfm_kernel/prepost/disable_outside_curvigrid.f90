@@ -32,6 +32,7 @@
 
 !> disable network nodes/samples outside curvilinear grid
 module m_disable_outside_curvigrid
+   use m_copycurvigridboundstopol, only: copycurvigridboundstopol
 
    implicit none
 

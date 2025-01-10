@@ -33,59 +33,71 @@
 !> Fourier Analysis, copied from Delft3D:
 !! Opens and reads .fou file (md_foufile, specified in the mdu)
 !! and prepares the fourier structure
-subroutine flow_fourierinit()
-   use precision, only: fp
-   use m_fourier_analysis
-   use m_update_fourier, only: fourier_save_dry_wet_mask
-   use m_transport, only: NUMCONST, ISALT, ITEMP
-   use unstruc_model, only: md_foufile, md_tunit, getoutputdir, md_fou_step
-   use unstruc_files, only: defaultFilename
-   use m_flow, only: kmxd
-   use m_flowtimes, only: tstart_user, tstop_user, ti_his, dt_user
-   use unstruc_channel_flow, only: network
-   use m_oned_functions, only: set_ground_level_for_1d_nodes, set_max_volume_for_1d_nodes
+module m_flow_fourierinit
 
    implicit none
-   integer :: minp
-   logical :: success
-   real(kind=fp) :: ti_fou
 
-   call oldfil(minp, md_foufile)
+   private
 
-   call fouini(minp, success, md_tunit, 'S')
+   public :: flow_fourierinit
 
-   FouOutputFile = trim(getoutputdir())//defaultFilename('fou')
+contains
 
-   call alloc_fourier_analysis_arrays()
+   subroutine flow_fourierinit()
+      use precision, only: fp
+      use m_fourier_analysis
+      use m_update_fourier, only: fourier_save_dry_wet_mask
+      use m_transport, only: NUMCONST, ISALT, ITEMP
+      use unstruc_model, only: md_foufile, md_tunit, getoutputdir, md_fou_step
+      use unstruc_files, only: defaultFilename
+      use m_flow, only: kmxd
+      use m_flowtimes, only: tstart_user, tstop_user, ti_his, dt_user
+      use unstruc_channel_flow, only: network
+      use m_oned_functions, only: set_ground_level_for_1d_nodes, set_max_volume_for_1d_nodes
+      use m_filez, only: oldfil, doclose
 
-   select case (md_fou_step)
-   case (1)
-      ti_fou = -999.0_fp
-   case (0)
-      ti_fou = dt_user
-   case (2)
-      ti_fou = ti_his
-   end select
+      integer :: minp
+      logical :: success
+      real(kind=fp) :: ti_fou
 
-   call reafou(minp, md_foufile, kmxd, NUMCONST, ISALT, ITEMP, tstart_user, tstop_user, ti_fou, success)
+      call oldfil(minp, md_foufile)
 
-   if (fourierWithMask()) then
-      call fourier_save_dry_wet_mask()
-   end if
+      call fouini(minp, success, md_tunit, 'S')
 
-   if (network%loaded) then
-      if (fourierWithFb() .or. fourierWithWdog() .or. fourierWithVog()) then
-         ! If freeboard, waterdepth on ground or volume on ground is read from the *.fou file,
-         ! then need to compute groundlevel for 1d node firstly.
-         ! The groundlevel will be used to update freeboard, waterdepth on ground and volume on ground later.
-         call set_ground_level_for_1d_nodes(network)
+      FouOutputFile = trim(getoutputdir())//defaultFilename('fou')
+
+      call alloc_fourier_analysis_arrays()
+
+      select case (md_fou_step)
+      case (1)
+         ti_fou = -999.0_fp
+      case (0)
+         ti_fou = dt_user
+      case (2)
+         ti_fou = ti_his
+      end select
+
+      call reafou(minp, md_foufile, kmxd, NUMCONST, ISALT, ITEMP, tstart_user, tstop_user, ti_fou, success)
+
+      if (fourierWithMask()) then
+         call fourier_save_dry_wet_mask()
       end if
-      if (fourierWithVog()) then
-         ! If volume on ground is read from the *.fou file, then also need to compute maximal volume firstly.
-         call set_max_volume_for_1d_nodes() ! set maximal volume, it will be used to update the volume on ground level for the output
+
+      if (network%loaded) then
+         if (fourierWithFb() .or. fourierWithWdog() .or. fourierWithVog()) then
+            ! If freeboard, waterdepth on ground or volume on ground is read from the *.fou file,
+            ! then need to compute groundlevel for 1d node firstly.
+            ! The groundlevel will be used to update freeboard, waterdepth on ground and volume on ground later.
+            call set_ground_level_for_1d_nodes(network)
+         end if
+         if (fourierWithVog()) then
+            ! If volume on ground is read from the *.fou file, then also need to compute maximal volume firstly.
+            call set_max_volume_for_1d_nodes() ! set maximal volume, it will be used to update the volume on ground level for the output
+         end if
       end if
-   end if
 
-   call doclose(minp)
+      call doclose(minp)
 
-end subroutine flow_fourierinit
+   end subroutine flow_fourierinit
+
+end module m_flow_fourierinit

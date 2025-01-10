@@ -42,7 +42,7 @@ contains
 
    subroutine wribl(mout) ! write bottom level
       use M_FLOWGEOM
-      implicit none
+      use m_filez, only: doclose
 
       integer :: mout, k
 

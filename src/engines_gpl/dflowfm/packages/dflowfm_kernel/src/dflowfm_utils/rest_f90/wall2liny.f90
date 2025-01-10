@@ -31,21 +31,32 @@
 !
 
 !>    return y-component in link coordinate frame of vector in wall coordinate frame
-      real(kind=dp) function wall2liny(nw, i12, ux, uy)
-         use precision, only: dp
-         use m_flowgeom, only: csbw, snbw
-         use m_sferic
-         implicit none
+module m_wall2liny
 
-         integer, intent(in) :: nw !< wall element number
-         integer, intent(in) :: i12 !< left (1) or right (2) attached flowlink
-         real(kind=dp), intent(in) :: ux, uy !< vector components in wall coordinate frame
+   implicit none
 
-         if (jsferic /= 1 .or. jasfer3D /= 1) then
-            wall2liny = uy
-         else
-            wall2liny = snbw(i12, nw) * ux + csbw(i12, nw) * uy
-         end if
+   private
 
-         return
-      end function wall2liny
+   public :: wall2liny
+
+contains
+
+   real(kind=dp) function wall2liny(nw, i12, ux, uy)
+      use precision, only: dp
+      use m_flowgeom, only: csbw, snbw
+      use m_sferic
+
+      integer, intent(in) :: nw !< wall element number
+      integer, intent(in) :: i12 !< left (1) or right (2) attached flowlink
+      real(kind=dp), intent(in) :: ux, uy !< vector components in wall coordinate frame
+
+      if (jsferic /= 1 .or. jasfer3D /= 1) then
+         wall2liny = uy
+      else
+         wall2liny = snbw(i12, nw) * ux + csbw(i12, nw) * uy
+      end if
+
+      return
+   end function wall2liny
+
+end module m_wall2liny

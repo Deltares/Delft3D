@@ -69,6 +69,54 @@
 ! subroutines from net.F90
 !----------------------------------------------------------------------
 module m_choices
+   use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
+   use m_zerolan, only: zerolan
+   use m_stopint, only: stopint
+   use m_smooth_samples_from_gui, only: smooth_samples_from_gui
+   use m_scherm, only: scherm
+   use m_copy_sam2dots, only: copy_sam2dots
+   use m_copy_dots2sam, only: copy_dots2sam
+   use m_copytrans, only: copytrans
+   use m_copythindamstopol, only: copythindamstopol
+   use m_copysplinestofinepol, only: copysplinestofinepol
+   use m_copysamtopol, only: copysamtopol
+   use m_copypolygontosamples, only: copypolygontosamples
+   use m_copypolygontoobservations, only: copypolygontoobservations
+   use m_copypoltospline, only: copypoltospline
+   use m_copypoltoldb, only: copypoltoldb
+   use m_copynetwtopol, only: copynetwtopol
+   use m_copyldbtopol, only: copyldbtopol
+   use m_copylandboundaryto1dnetwork, only: copylandboundaryto1dnetwork
+   use m_copyfixedweirstopol, only: copyfixedweirstopol
+   use m_copycurvigridboundstopol, only: copycurvigridboundstopol
+   use m_copycrosssectionstopol, only: copycrosssectionstopol
+   use m_savegrd, only: savegrd
+   use m_mapprojections, only: mapprojections
+   use m_gridtonet, only: gridtonet
+   use m_delgrd, only: delgrd
+   use m_flow_spatietimestep, only: flow_spatietimestep
+   use m_triangulate_quadsandmore, only: triangulate_quadsandmore
+   use m_triangulatesamplestonetwork, only: triangulatesamplestonetwork
+   use m_tieldb, only: tieldb
+   use m_spline2curvi_sub, only: spline2curvi
+   use m_shift1dnetnodestoduikers, only: shift1dnetnodestoduikers
+   use m_samdif, only: samdif
+   use m_removesmalllinks, only: removesmalllinks
+   use m_regrid1d, only: regrid1d
+   use m_refinequads_casulli, only: refinequads_casulli
+   use m_refinequads, only: refinequads
+   use m_refinepolygon, only: refinepolygon
+   use m_refinecellsandfaces2, only: refinecellsandfaces2
+   use m_orthogonalisenet, only: orthogonalisenet
+   use m_merge_polylines, only: merge_polylines
+   use m_mergenodesinpolygon, only: mergenodesinpolygon
+   use m_make_dual_mesh, only: make_dual_mesh
+   use m_maketrigrid, only: maketrigrid
+   use m_makenet_sub, only: makenet
+   use m_makecoarse2finetriangleconnectioncells, only: makecoarse2finetriangleconnectioncells
+   use m_make1d2dconnections, only: make1d2dconnections
+   use m_fliplinks, only: fliplinks
+   use m_externaltrianglestoouterquads, only: externaltrianglestoouterquads
    use m_detect_ridges, only: detect_ridges
    use m_del_badortholinks, only: del_badortholinks
    use m_delnetzkabovezkuni, only: delnetzkabovezkuni
@@ -94,6 +142,8 @@ module m_choices
    use m_copynetlinkstosam
    use m_copygridtosam
    use m_copyzlintosamples
+   use m_connecthangingnodes, only: connecthangingnodes, removelinksofhangingnodes, makeZKbedlevels
+   use m_partition_to_idomain, only: partition_to_idomain
 
    implicit none
 
@@ -134,6 +184,7 @@ contains
       use m_interpdivers
       use m_derefine_mesh, only: derefine_mesh
       use m_coarsen_mesh, only: coarsen_mesh
+      use m_flow_modelinit, only: flow_modelinit
 
       implicit none
       integer :: ja, n12, ikey, mnx
@@ -142,7 +193,6 @@ contains
       integer :: maxopt, ierr
       integer, parameter :: MAXOP = 64
       character(len=40) :: OPTION(MAXOP), exp(MAXOP)
-      integer, external :: flow_modelinit
 
       if (netstat /= NETSTAT_OK) call setnodadm(0)
 
@@ -189,13 +239,10 @@ contains
             call SAVENET()
             call REFINEQUADS()
          else if (NWHAT == 12) then
-            ! CALL quadsTOTRI()
             call SAVENET()
             call REFINEQUADS_casulli()
          else if (NWHAT == 13) then
-!         CALL RELINK()
 !         CALL SAVENET()
-!         CALL REFINECELLSANDFACES() !  REFINECELLSONLY()
             call SAVENET()
             call REFINECELLSANDFACES2() !  REFINECELLSONLY()
          else if (NWHAT == 14) then

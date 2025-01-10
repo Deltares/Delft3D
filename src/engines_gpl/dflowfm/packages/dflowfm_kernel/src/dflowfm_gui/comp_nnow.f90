@@ -45,6 +45,7 @@ contains
       use m_landboundary
       use m_rechtsaf_active
       use m_qnerror
+      use m_nmk_opt, only: nmk_opt
 
       implicit none
 
@@ -61,8 +62,6 @@ contains
       integer :: L, Lp1, Lp2
 
       logical :: Lfound
-
-      integer, external :: nmk_opt
 
       if (lanseg_map(k) < 1) then
          n = nmk(k) - nmk_opt(k)

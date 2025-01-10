@@ -30,6 +30,8 @@
 !
 !
 module m_osc
+   use m_histor, only: histor
+
    implicit none
 contains
    subroutine OSC(KEY)

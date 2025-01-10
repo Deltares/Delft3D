@@ -236,7 +236,7 @@
                 CMDLINE = CMDLINE(1:len_trim(CMDLINE))  // ' ' // NAMFIL(NFILE+1)(1:LENGTH) // CHAR(0)
          ELSE
            WRITE(*,*) ' Error in Command line'
-           CALL ERRMSG (999, IECODE, NamSub, ' Error in RTC command line', IOUT1)
+           call write_error_message_rtc (999, IECODE, NamSub, ' Error in RTC command line', IOUT1)
            RetVal = 999
            Return
 !           STOP ' Error in Command line'
@@ -271,14 +271,14 @@
 ! *** Error messages
 
   555 CONTINUE
-         CALL ERRMSG (902, IECODE, NAMSUB, STRING, IOUT1)
+         call write_error_message_rtc (902, IECODE, NAMSUB, STRING, IOUT1)
          RetVal = 902
 !
    23 CONTINUE
          IF (I .GE. NFILE) THEN
             NAMFIL(17) = 'RTC_OUT.OUT'
          ELSE
-           CALL ERRMSG (902, IECODE, NAMSUB, STRING, IOUT1)
+           call write_error_message_rtc (902, IECODE, NAMSUB, STRING, IOUT1)
            RetVal = 902
          ENDIF
 !
@@ -438,7 +438,7 @@
         if (icheck .eq. 786782) then
            CoupledToDelft3D = .true.
         else
-           call ERRMSG (946, 0, 'RTC', ' Trigger-file TMP_SYNC.RUN not made by Delft3D-FLOW ', IOUT1)
+           call write_error_message_rtc (946, 0, 'RTC', ' Trigger-file TMP_SYNC.RUN not made by Delft3D-FLOW ', IOUT1)
            RtcInitialize = 946
            Return
         endif
@@ -531,9 +531,9 @@
       RtcLanguageHandle = LanguagesModelFindOrCreate(0)
       Call ReadLanguageFile (RtcLanguageHandle, IN, IDEBUG, IOUT1,RTCInitialize)
       If (RTCInitialize .eq. 981) then
-          Call Errmsg (981, 0, ' Error allocating arrays in subroutine ', ' ReadLanguage ',Iout1)
+          call write_error_message_rtc (981, 0, ' Error allocating arrays in subroutine ', ' ReadLanguage ',Iout1)
       ElseIf (RTCInitialize .eq. 972) then
-          Call ErrMsg(972, 0,'Error in language file',' ',IOUT1)
+          call write_error_message_rtc (972, 0,'Error in language file',' ',IOUT1)
       Endif
       if (RtcInitialize .ne. 0) Return
       Close(IN)
@@ -563,7 +563,7 @@
 
 !     RTC must be in SOBEK-Mode or in Delft3D-Mode
       If (.NOT. SOBEKMODE .AND. .NOT. CoupledToDelft3D) Then
-         Call ERRMSG (921, 0, ' RTC', ' RTC-Ini file', IOUT1)
+         call write_error_message_rtc (921, 0, ' RTC', ' RTC-Ini file', IOUT1)
          RTCInitialize = 921
          Return
       Endif
@@ -577,14 +577,14 @@
          Iopts = 2
          Iopt3 = 2
          IoptWq = 2
-         Call ERRMSG (953, 0, ' RTC', ' RTC-Ini file', IOUT1)
+         call write_error_message_rtc (953, 0, ' RTC', ' RTC-Ini file', IOUT1)
          RTCInitialize = 953
          Return
       Endif
 
 !     Wind is only possible together wit External Locations
       If (USEW .AND. .NOT. USEEXT) Then
-         Call ERRMSG (944, 0, ' RTC', ' RTC-Ini file', IOUT1)
+         call write_error_message_rtc (944, 0, ' RTC', ' RTC-Ini file', IOUT1)
          RTCInitialize = 944
          Return
       Endif
@@ -708,7 +708,7 @@
       success = NewTableConfar(RtcTableHandle, SetMaxTabNr, SetMaxDataNr)
       if (.not. success) then
          RtcInitialize = 929
-         Call ERRMSG (RtcInitialize, 0,' Allocating Table data',' NewTableConfAr',IOUT1)
+         call write_error_message_rtc (RtcInitialize, 0,' Allocating Table data',' NewTableConfAr',IOUT1)
          Return
       Endif
 
@@ -785,7 +785,7 @@
       If (NPar3Rsvp .gt.0) then
          RtcInitialize = AllocReservoirArrays (Iout1, NPar3Rsvp)
          If (RtcInitialize .ne. 0) then
-            Call ERRMSG (RtcInitialize, 0,' Allocating Reservoir data',' ',IOUT1)
+            call write_error_message_rtc (RtcInitialize, 0,' Allocating Reservoir data',' ',IOUT1)
             Return
          Endif
       Endif
@@ -796,7 +796,7 @@
         CALL INITCT (CMDLINE(1:len_trim(CMDLINE)), IDCNT, ISTAT)
         IF (ISTAT .LT. 0)  THEN
             WRITE (STRING,'(A, I3)') 'From INITCT: IOStatus: ', ISTAT
-            CALL ERRMSG (990, 0, ' RTC', STRING, IOUT1)
+            call write_error_message_rtc (990, 0, ' RTC', STRING, IOUT1)
             RtcInitialize = 990
             Return
         ENDIF
@@ -868,7 +868,7 @@
          Endif
 ! Check number of allocated possible datasets, at the moment linked to NParI=11
          if (NExtHd .gt. 2*NParI) then
-            Call ERRMSG (913, 0, 'Rtc',' NEXTHD datasets for external HIS files',IOUT1)
+            call write_error_message_rtc (913, 0, 'Rtc',' NEXTHD datasets for external HIS files',IOUT1)
             RtcInitialize = 913
             If (RTCInitialize .ne. 0) Return
          Endif
@@ -950,7 +950,7 @@
             Call Openfl(IN, NAMFIL(27), IOUT1, 1)
             RtcInitialize = ReadReservoirInput (RtcTableHandle, In, Iout1, Idebug, NPar3Rsvp)
             If (RtcInitialize .ne. 0) then
-               Call ERRMSG (RtcInitialize, 0,' Reservoir data ',' ',IOUT1)
+               call write_error_message_rtc (RtcInitialize, 0,' Reservoir data ',' ',IOUT1)
                Return
             Endif
             Close(In)
@@ -1046,7 +1046,7 @@
 #if (defined(USE_MATLAB))
       RTCInitialize = OpenMatlab (IdebugLun)
       If (RTCInitialize .ne. 0) then
-         Call ErrMsg (994, 0, ' MATLAB could not be started', ' ',Iout1)
+         call write_error_message_rtc (994, 0, ' MATLAB could not be started', ' ',Iout1)
          Return
       Endif
 #endif
@@ -1250,7 +1250,7 @@
           If (RTCFirstProc) then
 !           RTC eerste in initialisatiefase: komt niet voor
 !           Write(*,*) ' RTC first not possible'
-            Call ERRMSG (941, 0,' ',' ',IOUT1)
+            call write_error_message_rtc (941, 0,' ',' ',IOUT1)
             RTCInitializeEvent = 941
             Return
           else
@@ -1272,16 +1272,16 @@
           call SyncRtcFlow_Init(n2steps, lfout, ND3D > 0, i3ddat, itstart, RTMSIZ)
           If (lfout) then
             If (n2steps .eq. -1) then
-              call ERRMSG (945, 0, ' SyncRtcFlow_Init', ' Shutdown from Flow', IOUT1)
+              call write_error_message_rtc (945, 0, ' SyncRtcFlow_Init', ' Shutdown from Flow', IOUT1)
               RTCInitializeEvent = 945
             Elseif (ND3D > 0 .and. .not. commFLOWtoRTC) then
-              call ERRMSG (946, 0, ' SyncRtcFlow_Init', ' Delft3D-FLOW does not provide required quantities', IOUT1)
+              call write_error_message_rtc (946, 0, ' SyncRtcFlow_Init', ' Delft3D-FLOW does not provide required quantities', IOUT1)
               RTCInitializeEvent = 946
             Elseif (commFLOWtoRTC .and. ND3D == 0) then
-              call ERRMSG (946, 0, ' SyncRtcFlow_Init', ' Delft3D-FLOW provides data not required by RTC', IOUT1)
+              call write_error_message_rtc (946, 0, ' SyncRtcFlow_Init', ' Delft3D-FLOW provides data not required by RTC', IOUT1)
               RTCInitializeEvent = 946
             Else
-              call ERRMSG (946, 0, ' SyncRtcFlow_Init', ' Init Error', IOUT1)
+              call write_error_message_rtc (946, 0, ' SyncRtcFlow_Init', ' Init Error', IOUT1)
               RTCInitializeEvent = 946
             Endif
             Return
@@ -1382,7 +1382,7 @@
              if (idebug > 0)  Write(IDEBUG,*) ' Time_Ratio', Time_Ratio, IBUI_rem
           ELSE
              WRITE (*,*)  ITMSIZ, NRSRAI
-             Call ERRMSG (923, 0,'Predict',' ',IOUT1)
+             call write_error_message_rtc (923, 0,'Predict',' ',IOUT1)
              RTCInitializeEvent = 923
           Endif
         Endif
@@ -1599,16 +1599,16 @@
               write(iout1,*) ' after SyncRtcFlow_Init'
               If (lfout) then
                 If (n2steps .eq. -1) then
-                  call ERRMSG (945, 0, ' SyncRtcFlow_Init', ' Shutdown from Flow', IOUT1)
+                  call write_error_message_rtc (945, 0, ' SyncRtcFlow_Init', ' Shutdown from Flow', IOUT1)
                   RTCInitializeTimestep = 945
                 Elseif (ND3D > 0 .and. .not. commFLOWtoRTC) then
-                  call ERRMSG (946, 0, ' SyncRtcFlow_Init', ' Delft3D-FLOW does not provide required quantities', IOUT1)
+                  call write_error_message_rtc (946, 0, ' SyncRtcFlow_Init', ' Delft3D-FLOW does not provide required quantities', IOUT1)
                   RTCInitializeTimestep = 946
                 Elseif (ND3D == 0 .and. commFLOWtoRTC) then
-                  call ERRMSG (946, 0, ' SyncRtcFlow_Init', ' Delft3D-FLOW provides data not required by RTC', IOUT1)
+                  call write_error_message_rtc (946, 0, ' SyncRtcFlow_Init', ' Delft3D-FLOW provides data not required by RTC', IOUT1)
                   RTCInitializeTimestep = 946
                 Else
-                  call ERRMSG (946, 0, ' SyncRtcFlow_Init', ' Init Error', IOUT1)
+                  call write_error_message_rtc (946, 0, ' SyncRtcFlow_Init', ' Init Error', IOUT1)
                   RTCInitializeTimestep = 946
                 Endif
                 Return
@@ -1747,7 +1747,7 @@
                      Enddo
                      If (MatlabWq(I) .GT. NPARQ .or. MatlabWQ (i) .le. 0) Then
                          Write(IOUT1,*) ' Matlab WQ parameter ', MatlabWqParId(I)
-                         Call ERRMSG (916, NPARQ, 'Rtc', ' Matlab WQ parameterfile', IOUT1)
+                         call write_error_message_rtc (916, NPARQ, 'Rtc', ' Matlab WQ parameterfile', IOUT1)
                          RtcInitializeTimestep = 916
                          Return
                      Endif
@@ -2367,7 +2367,7 @@
            if (itmstp .eq. 1) Write(StringCmd(len_trim(StringCmd)+2:),*) 'firstrun'
            if (RunCommand .ne. '') Write(*,*) ' run command:',StringCmd(1:len_trim(StringCmd))
 			  call execute_command_line (StringCmd, wait=.true., cmdstat=iret)
-           if (iret .ne. 0) Call ERRMSG (RtcComputeTimestep, 0,' Error executing RunCommand TCN',' ComputeTimestep',IOUT1)
+           if (iret .ne. 0) call write_error_message_rtc (RtcComputeTimestep, 0,' Error executing RunCommand TCN',' ComputeTimestep',IOUT1)
 
 !get csv file with results (from TCN / external exe)
            IF (ReadCsvFile .ne. '') then
@@ -2376,7 +2376,7 @@
                IF (.NOT. FNMEXT) THEN
                    write(*,*) ' ReadCsvFile could not be found for reading TCN results', ReadCsvFile
                    write(iout1,*) ' ReadCsvFile could not be found', ReadCsvFile
-               !   Call ERRMSG (RtcComputeTimestep, 0,' Error finding CSV file from TCN',' ComputeTimestep',IOUT1)
+               !   call write_error_message_rtc (RtcComputeTimestep, 0,' Error finding CSV file from TCN',' ComputeTimestep',IOUT1)
                endif
                CsvReadId = ''
                CsvReadValue = -999.
@@ -2395,7 +2395,7 @@
  !               Write(*,*) i, CsvReadid(i), CsvReadValue(i)
                  goto 998
  9981            Continue
-                 Call ERRMSG (RtcComputeTimestep, 0,' Error reading CSV file from TCN',' ComputeTimestep',IOUT1)
+                 call write_error_message_rtc (RtcComputeTimestep, 0,' Error reading CSV file from TCN',' ComputeTimestep',IOUT1)
   999            Continue
                Close(IInCsv)
                DO IPARA=12,NPARA
@@ -2509,7 +2509,7 @@
               if (NPara>0) then
                  Allocate  ( DioResult(1, NPara), Stat=Allocation_Error )
                  If (Allocation_Error .ne. 0) then
-                    Call Errmsg (981, Allocation_Error, ' RTC', ' Error allocating arrays ', Iout1)
+                    call write_error_message_rtc (981, Allocation_Error, ' RTC', ' Error allocating arrays ', Iout1)
                     RTCFinalizeTimestep = 981
                     Return
                  Endif
@@ -2524,7 +2524,7 @@
                  HEADER = ' '
                  Allocate  ( DioResult(NTimHp,NPrecP), Stat=Allocation_Error )
                  If (Allocation_Error .ne. 0) then
-                     Call Errmsg (981, Allocation_Error, ' RTC', ' Error allocating arrays ', Iout1)
+                     call write_error_message_rtc (981, Allocation_Error, ' RTC', ' Error allocating arrays ', Iout1)
                      RTCFinalizeTimestep = 981
                      Return
                  Endif
@@ -2541,7 +2541,7 @@
                  HEADER = ' '
                  Allocate  ( DioResult(NTimHw*2,NExt+NextHd),Stat=Allocation_Error )
                  If (Allocation_Error .ne. 0) Then
-                     Call Errmsg (981, Allocation_Error, ' RTC', ' Error allocating arrays ', Iout1)
+                     call write_error_message_rtc (981, Allocation_Error, ' RTC', ' Error allocating arrays ', Iout1)
                      RTCFinalizeTimestep = 981
                      Return
                  Endif
@@ -2567,7 +2567,7 @@
                   ! use temporary DioResult array instead of Reshape
                   Allocate  ( DioResult(1,NsMsId_SBK), Stat=Allocation_Error )
                   If (Allocation_Error .ne. 0) Then
-                      Call Errmsg (981, Allocation_Error, ' RTC', ' Error allocating arrays ', Iout1)
+                      call write_error_message_rtc (981, Allocation_Error, ' RTC', ' Error allocating arrays ', Iout1)
                       RTCFinalizeTimestep = 981
                       Return
                   Endif
@@ -2593,7 +2593,7 @@
                    ! use temporary DioResult array instead of Reshape
                    Allocate  ( DioResult(7,N3BMs), Stat=Allocation_Error )
                    If (Allocation_Error .ne. 0) then
-                       Call Errmsg (981, Allocation_Error, ' RTC', ' Error allocating arrays ', Iout1)
+                       call write_error_message_rtc (981, Allocation_Error, ' RTC', ' Error allocating arrays ', Iout1)
                        RTCFinalizeTimestep = 981
                        Return
                    Endif
@@ -2881,7 +2881,7 @@
       If (OesInitialized() ) then
           success = DH_AllocInit (NsMsId_SBK, openMINode, ' ')
           If (.not. Success) then
-              Call Errmsg (981, 0, ' Error alloc.openMI-arrs in subroutine ', &
+              call write_error_message_rtc (981, 0, ' Error alloc.openMI-arrs in subroutine ', &
                                    ' InitOutCFSetpoints', Iout1)
               RetVal = 981
               Return
@@ -2918,7 +2918,7 @@
       If (OesInitialized() ) then
          success = DH_AllocInit (N3BMs, openMINode, ' ')
          If (.not. Success) then
-              Call Errmsg (981, 0, ' Error alloc.openMI-arrs in subroutine ', &
+              call write_error_message_rtc (981, 0, ' Error alloc.openMI-arrs in subroutine ', &
                                               ' InitOutRRSetpoints', Iout1)
               RetVal = 981
               Return

@@ -2410,10 +2410,10 @@ contains
 
    subroutine mba_write_bal_time_step(lunbal, timestart, timeend, datestart, dateend, overall_balance)
       use precision, only: dp
-
       use m_mass_balance_areas
       use m_fm_wq_processes, ifluxdummy => iflux
       use m_transport, only: numconst
+      use m_step_to_screen, only: seconds_to_dhms
 
       integer :: lunbal !< unit number for balance txt file
 
@@ -2423,7 +2423,6 @@ contains
       character(len=19) :: dateend !< end date of balance period
       logical :: overall_balance !< balance period: use the total begin arrays, or just the last period
 
-      character(len=20), external :: seconds_to_dhms
       character(len=:), allocatable :: units
       integer :: imbs, imba, iflux
       real(kind=dp) :: totals(2) !< totals for both columns

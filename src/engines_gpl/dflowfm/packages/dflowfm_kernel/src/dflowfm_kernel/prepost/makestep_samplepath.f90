@@ -31,123 +31,131 @@
 !
 
 ! make a step to the next sample in a sample path
-subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
-   use precision, only: dp
-   use m_samples
-   use m_samples_refine
-   use m_missing, only: dmiss, dxymis
-   use geometry_module, only: dbdistance, dcosphi
-   use m_sferic, only: jsferic, jasfer3D
-   use m_cirr
-   use m_set_col
-   use m_movabs
-   use m_lnabs
+module m_makestep_samplepath
 
    implicit none
 
-   integer, intent(in) :: ipprev !< previous sample point
-   integer, intent(in) :: ipcur !< current  sample point
-   integer, intent(out) :: ipnext !< next     sample point
-   integer, intent(inout) :: Nsub !< array size of ipsub (in), number of samples in subpath to next sample point (out)
-   integer, dimension(Nsub), intent(out) :: ipsub !< samples in subpath to next sample point
-   integer, intent(out) :: ierror !< no errors (0), need to realloc ipsub (-newsize) or other error (1)
+   private
 
-   integer :: i, j, i0, i1, j0, j1, ip, iploc, icur, jcur, num, Nsub0
-   integer :: isub, jsub, i00, i11, j00, j11, ii, ip1, ip2
+   public :: makestep_samplepath
 
-   real(kind=dp) :: dcsphi, disub, djsub, zs_ave, zs_max
-   real(kind=dp) :: Dh
+contains
 
-   integer, parameter :: Nwidth = 5 !  number of sample widths considered
+   subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
+      use precision, only: dp
+      use m_samples
+      use m_samples_refine
+      use m_missing, only: dmiss, dxymis
+      use geometry_module, only: dbdistance, dcosphi
+      use m_sferic, only: jsferic, jasfer3D
+      use m_cirr
+      use m_set_col
+      use m_movabs
+      use m_lnabs
 
-   integer :: Nlist
-   integer, dimension(2*(Nwidth + 1)) :: iplist
+      integer, intent(in) :: ipprev !< previous sample point
+      integer, intent(in) :: ipcur !< current  sample point
+      integer, intent(out) :: ipnext !< next     sample point
+      integer, intent(inout) :: Nsub !< array size of ipsub (in), number of samples in subpath to next sample point (out)
+      integer, dimension(Nsub), intent(out) :: ipsub !< samples in subpath to next sample point
+      integer, intent(out) :: ierror !< no errors (0), need to realloc ipsub (-newsize) or other error (1)
 
-   ipnext = 0
+      integer :: i, j, i0, i1, j0, j1, ip, iploc, icur, jcur, num, Nsub0
+      integer :: isub, jsub, i00, i11, j00, j11, ii, ip1, ip2
 
-   ierror = 1
+      real(kind=dp) :: dcsphi, disub, djsub, zs_ave, zs_max
+      real(kind=dp) :: Dh
 
-   Nsub0 = Nsub
+      integer, parameter :: Nwidth = 5 !  number of sample widths considered
 
-   jcur = ipcur / MXSAM + 1
-   icur = ipcur - (jcur - 1) * MXSAM
+      integer :: Nlist
+      integer, dimension(2*(Nwidth + 1)) :: iplist
 
-   i0 = max(icur - Nwidth, 1)
-   i1 = min(icur + Nwidth, MXSAM)
-   j0 = max(jcur - Nwidth, 1)
-   j1 = min(jcur + Nwidth, MYSAM)
+      ipnext = 0
 
-   zs_max = -1d99
+      ierror = 1
+
+      Nsub0 = Nsub
+
+      jcur = ipcur / MXSAM + 1
+      icur = ipcur - (jcur - 1) * MXSAM
+
+      i0 = max(icur - Nwidth, 1)
+      i1 = min(icur + Nwidth, MXSAM)
+      j0 = max(jcur - Nwidth, 1)
+      j1 = min(jcur + Nwidth, MYSAM)
+
+      zs_max = -1d99
 
 !  determine sample meshwidth
 !  i-dir
-   ip1 = i0 + (jcur - 1) * MXSAM
-   ip2 = i1 + (jcur - 1) * MXSAM
-   Dh = dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(i1 - i0), 1d0)
+      ip1 = i0 + (jcur - 1) * MXSAM
+      ip2 = i1 + (jcur - 1) * MXSAM
+      Dh = dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(i1 - i0), 1d0)
 !  j-dir
-   ip1 = icur + (j1 - 1) * MXSAM
-   ip2 = icur + (j1 - 1) * MXSAM
-   Dh = max(dh, dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(j1 - j0), 1d0))
+      ip1 = icur + (j1 - 1) * MXSAM
+      ip2 = icur + (j1 - 1) * MXSAM
+      Dh = max(dh, dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(j1 - j0), 1d0))
 
-   do i = i0, i1
-      do j = j0, j1
+      do i = i0, i1
+         do j = j0, j1
 !         if ( i.ne.i0 .and. i.ne.i1 .and. j.ne.j0 .and. j.ne.j1 ) cycle
 
-         if (i - i0 > 1 .and. i1 - i > 1 .and. j - j0 > 1 .and. j1 - j > 1) cycle
+            if (i - i0 > 1 .and. i1 - i > 1 .and. j - j0 > 1 .and. j1 - j > 1) cycle
 
-         ip = i + (j - 1) * MXSAM
+            ip = i + (j - 1) * MXSAM
 
-         if (ip == ipcur) cycle
+            if (ip == ipcur) cycle
 
 !        next sample may never have DMISS coordinates/value
-         if (xs(ip) == DMISS .or. zs(ip) == DMISS) cycle
+            if (xs(ip) == DMISS .or. zs(ip) == DMISS) cycle
 
 !        check angle with previous step
-         if (ipprev /= ipcur .and. ipprev > 0) then
-            dcsphi = dcosphi(xs(ipprev), ys(ipprev), xs(ipcur), ys(ipcur), xs(ipcur), ys(ipcur), xs(ip), ys(ip), jsferic, jasfer3D, dxymis)
+            if (ipprev /= ipcur .and. ipprev > 0) then
+               dcsphi = dcosphi(xs(ipprev), ys(ipprev), xs(ipcur), ys(ipcur), xs(ipcur), ys(ipcur), xs(ip), ys(ip), jsferic, jasfer3D, dxymis)
 
-            if (dcsphi < 0.5d0) cycle
-         end if
+               if (dcsphi < 0.5d0) cycle
+            end if
 
 !        make subbath
-         Nlist = 0
-         i00 = min(icur, i)
-         i11 = max(icur, i)
-         j00 = min(jcur, j)
-         j11 = max(jcur, j)
+            Nlist = 0
+            i00 = min(icur, i)
+            i11 = max(icur, i)
+            j00 = min(jcur, j)
+            j11 = max(jcur, j)
 
-         do isub = i00, i11
-            if (i /= icur) then
-               djsub = dble(isub - icur) / dble(i - icur) * dble(j - jcur) + jcur
-            else
-               djsub = 0d0
-            end if
-            do jsub = j00, j11
-               if (j /= jcur) then
-                  disub = dble(jsub - jcur) / dble(j - jcur) * dble(i - icur) + icur
+            do isub = i00, i11
+               if (i /= icur) then
+                  djsub = dble(isub - icur) / dble(i - icur) * dble(j - jcur) + jcur
                else
-                  disub = 0d0
+                  djsub = 0d0
                end if
-               if (abs(isub - disub) < 1d0 .or. abs(jsub - djsub) < 1d0) then
-                  Nlist = Nlist + 1
-                  iplist(Nlist) = isub + (jsub - 1) * MXSAM
-               end if
+               do jsub = j00, j11
+                  if (j /= jcur) then
+                     disub = dble(jsub - jcur) / dble(j - jcur) * dble(i - icur) + icur
+                  else
+                     disub = 0d0
+                  end if
+                  if (abs(isub - disub) < 1d0 .or. abs(jsub - djsub) < 1d0) then
+                     Nlist = Nlist + 1
+                     iplist(Nlist) = isub + (jsub - 1) * MXSAM
+                  end if
+               end do
             end do
-         end do
 
 !        compute average sample value
-         zs_ave = 0d0
-         num = 0
-         do ii = 1, Nlist
-            iploc = iplist(ii)
-            jsub = iploc / MXSAM + 1
-            isub = iploc - (jsub - 1) * MXSAM
-            if (zs(iploc) /= DMISS) then
-               num = num + 1
-               zs_ave = zs_ave + zs(iploc)
-            end if
-         end do
-         zs_ave = zs_ave / dble(max(num, 1))
+            zs_ave = 0d0
+            num = 0
+            do ii = 1, Nlist
+               iploc = iplist(ii)
+               jsub = iploc / MXSAM + 1
+               isub = iploc - (jsub - 1) * MXSAM
+               if (zs(iploc) /= DMISS) then
+                  num = num + 1
+                  zs_ave = zs_ave + zs(iploc)
+               end if
+            end do
+            zs_ave = zs_ave / dble(max(num, 1))
 
 !!       plot samples in subpath
 !        do isub=1,Nlist
@@ -161,7 +169,7 @@ subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
 !        end do
 
 !       check for maximum average sample value
-         if (zs_ave > zs_max .and. num > 1) then
+            if (zs_ave > zs_max .and. num > 1) then
 
 !           27-06-12: deactivated gradient check
 !!          gradient may not be too large
@@ -183,34 +191,36 @@ subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
 !              write(6,*)
 !           end if
 
-            ipnext = ip
-            zs_max = zs_ave
+               ipnext = ip
+               zs_max = zs_ave
 !          reallocate if necessary
-            if (Nlist > ubound(ipsub, 1)) then
-               Nsub = int(1.2d0 * dble(Nlist)) + 1
-               ierror = -Nsub
-               goto 1234
+               if (Nlist > ubound(ipsub, 1)) then
+                  Nsub = int(1.2d0 * dble(Nlist)) + 1
+                  ierror = -Nsub
+                  goto 1234
+               end if
+               Nsub = 0
+               do isub = 1, Nlist
+                  Nsub = Nsub + 1
+                  ipsub(isub) = iplist(isub)
+               end do
             end if
-            Nsub = 0
-            do isub = 1, Nlist
-               Nsub = Nsub + 1
-               ipsub(isub) = iplist(isub)
-            end do
-         end if
 
+         end do
       end do
-   end do
 
 !  plot next sample
-   if (ipnext > 0) then
-      call cirr(xs(ipnext), ys(ipnext), 31)
-      call setcol(31)
-      call movabs(xs(ipcur), ys(ipcur))
-      call lnabs(xs(ipnext), ys(ipnext))
-   end if
+      if (ipnext > 0) then
+         call cirr(xs(ipnext), ys(ipnext), 31)
+         call setcol(31)
+         call movabs(xs(ipcur), ys(ipcur))
+         call lnabs(xs(ipnext), ys(ipnext))
+      end if
 
-   ierror = 0
-1234 continue
+      ierror = 0
+1234  continue
 
-   return
-end subroutine makestep_samplepath
+      return
+   end subroutine makestep_samplepath
+
+end module m_makestep_samplepath

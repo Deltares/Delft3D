@@ -32,6 +32,7 @@
 
 !> Writes shapefiles, these shapefiles can be visualized in geographic information system (GIS) software
 module m_unc_write_shp
+   use m_get_netlinks_of_dryarea, only: get_netlinks_of_dryarea
 
    implicit none
 

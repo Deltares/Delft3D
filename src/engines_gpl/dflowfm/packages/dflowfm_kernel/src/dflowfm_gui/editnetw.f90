@@ -31,6 +31,19 @@
 !
 
 module m_editnetw
+   use m_stopint, only: stopint
+   use m_create_samples_in_triangle, only: create_samples_in_triangle
+   use m_flow_spatietimestep, only: flow_spatietimestep
+   use m_splitlink, only: splitlink
+   use m_setpoint, only: setpoint
+   use m_oneline, only: oneline
+   use m_netw2curv, only: netw2curv
+   use m_nettoland, only: nettoland
+   use m_netrotfld, only: netrotfld
+   use m_netmodfld, only: netmodfld
+   use m_netboundtocurvi, only: netboundtocurvi
+   use m_isnode, only: isnode
+   use m_insert_netline, only: insert_netline
    use m_delnode, only: delnode
    use m_delnet, only: delnet
    use m_dellink, only: dellink
@@ -555,14 +568,8 @@ contains
          ! Display node info
          NPUT = 65
       else if (KEY == 81 .or. KEY == 81 + 32) then ! Q-key
-!         call bilin_interp(numk, xk, yk, zk)          ! testing subroutine
-!         call net_delete_DMISS()
-!         call sam2net_curvi()
          key = 3 ! redraw
-
-         !     call removecell(xp,yp)
          call create_samples_in_triangle()
-         !     call fix_global_polygons(1,0)
       end if
 !
       goto 10

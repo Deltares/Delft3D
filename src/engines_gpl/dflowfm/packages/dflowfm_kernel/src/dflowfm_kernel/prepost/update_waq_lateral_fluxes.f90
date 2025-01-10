@@ -37,32 +37,43 @@
 !!
 !! The code uses similair ways to distribute discharges over layers as the calling subroutine setsorsin. Changes in the
 !! calling subroutine should also be taken over in this routine!
-subroutine update_waq_lateral_fluxes()
-   use waq
-   use m_partitioninfo, only: is_ghost_node
-   use m_flow
-   use m_flowgeom
-   use m_flowtimes
-   use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat
+module m_update_waq_lateral_fluxes
+
    implicit none
 
-   integer :: i_node, k1
-   integer :: i_lat, i_latwaq, i_layer
+   private
+
+   public :: update_waq_lateral_fluxes
+
+contains
+
+   subroutine update_waq_lateral_fluxes()
+      use waq
+      use m_partitioninfo, only: is_ghost_node
+      use m_flow
+      use m_flowgeom
+      use m_flowtimes
+      use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat
+
+      integer :: i_node, k1
+      integer :: i_lat, i_latwaq, i_layer
 
 ! Accumulate lateral discharges for waq
-   i_latwaq = 0
-   do i_lat = 1, numlatsg
-      do k1 = n1latsg(i_lat), n2latsg(i_lat)
-         i_node = nnlat(k1)
-         if (i_node > 0) then
-            if (.not. is_ghost_node(i_node)) then
-               i_latwaq = i_latwaq + 1
-               do i_layer = 1, num_layers
-                  qlatwaq(i_latwaq) = qlatwaq(i_latwaq) + dts * qqLat(i_layer, k1)
-               end do
+      i_latwaq = 0
+      do i_lat = 1, numlatsg
+         do k1 = n1latsg(i_lat), n2latsg(i_lat)
+            i_node = nnlat(k1)
+            if (i_node > 0) then
+               if (.not. is_ghost_node(i_node)) then
+                  i_latwaq = i_latwaq + 1
+                  do i_layer = 1, num_layers
+                     qlatwaq(i_latwaq) = qlatwaq(i_latwaq) + dts * qqLat(i_layer, k1)
+                  end do
+               end if
             end if
-         end if
+         end do
       end do
-   end do
 
-end subroutine update_waq_lateral_fluxes
+   end subroutine update_waq_lateral_fluxes
+
+end module m_update_waq_lateral_fluxes

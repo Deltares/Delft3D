@@ -236,8 +236,7 @@ contains
       use m_transport, only: NUMCONST_MDU, const_names, isedn, ised1, const_units
       use m_sediment, only: stmpar, jased, stm_included
       use messagehandling, only: Idlen
-      use string_module, only: replace_char
-      use netcdf_utils, only: ncu_set_att
+      use netcdf_utils, only: ncu_set_att, ncu_sanitize_name
       use MessageHandling, only: err
 
       integer, intent(out) :: num_const_items !< Number of constituent items (including sediment).
@@ -275,9 +274,7 @@ contains
 
       do num = 1, NUMCONST_MDU
          conststr = const_names(num)
-         ! Forbidden chars in NetCDF names: space, /, and more.
-         call replace_char(conststr, 32, 95) ! ' ' -> '_'
-         call replace_char(conststr, 47, 95) ! '/' -> '_'
+         call ncu_sanitize_name(conststr)
 
          constituent_unit = ''
          constituent_cumul_unit = ''
@@ -2151,7 +2148,6 @@ contains
    !! Must be called as part of flow_modelinit.
    subroutine flow_init_statistical_output_his(output_config_set, output_set)
       use m_ug_nc_attribute
-      use string_module, only: replace_char
       use m_flow
       use fm_external_forcings_data
       use m_structures

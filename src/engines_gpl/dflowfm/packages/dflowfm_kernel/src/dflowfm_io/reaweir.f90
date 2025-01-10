@@ -48,7 +48,7 @@ contains
       use m_readyy
       use m_qn_read_error
       use m_qn_eof_error
-      implicit none
+      use m_filez, only: doclose, newfil
 
       integer :: mmdd, ja
       integer :: m, n, MOUT

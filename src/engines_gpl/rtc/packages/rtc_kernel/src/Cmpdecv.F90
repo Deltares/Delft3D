@@ -311,7 +311,7 @@
            DCVVAL(IPARA+NrRsvOutputPar(ipara)+2,1) = HFirm
            If (Idebug .gt. 0) write(idebug,*) ' exit RibasimReservoir with error=',RetVal
            If (RetVal .ne. 0) then
-              Call ERRMSG (RetVal, 0,' Reservoir simulation ',' ',IOUT1)
+              call write_error_message_rtc (RetVal, 0,' Reservoir simulation ',' ',IOUT1)
               Return
            Endif
 
@@ -493,7 +493,7 @@
             success = success .and. DH_AllocInit(NParq, DllParIDWQ , ' ')
             success = success .and. DH_AllocInit(NrSbkDllMeasures, DllMEASID , ' ')
             if (.not. success) then
-               call ERRMSG (958, 0, 'RTC', ' Error allocating arrays for dll call', IOUT1)
+               call write_error_message_rtc (958, 0, 'RTC', ' Error allocating arrays for dll call', IOUT1)
             endif
             if (idebug .gt. 0) write(idebug,*) ' fill arrays for dll communication with proper data'
 !           write(*,*) ' fill arrays for dll communication with proper data'
@@ -578,7 +578,7 @@
 !                                 NrRRDllmeasures, .., rrslowon, rrslowoff, rrshighon, rrshighoff, &
             if (returncode .ne. -999) then
                 write(iout1,*) ' error calling dll ', returncode
-                CALL ERRMSG (958, 0, ' Error calling dll', ' Error calling dll', IOUT1)
+                call write_error_message_rtc (958, 0, ' Error calling dll', ' Error calling dll', IOUT1)
             else
                 if (idebug .gt. 0) then
                    write(idebug,*) ' Returned from dll Sobeks array'
@@ -683,7 +683,7 @@
       ELSEIF (PAROPER(IPARA) .EQ. 4) THEN
          IF (ABS(RHLP) .LE. .0000001) THEN
             STRING = PARAID(IPARA)
-            CALL ERRMSG (936, 0, ' Cmpdecv', STRING, IOUT1)
+            call write_error_message_rtc (936, 0, ' Cmpdecv', STRING, IOUT1)
 !           code 936 = een Warning
             IF (RHLP .GE. 0) THEN
                RHLP = 0.000001
@@ -709,7 +709,7 @@
          DCVVAL(IPARA,1) = RHLP
       ELSE
          String = 'Compute Decision Variable ' // (ParaId(Ipara)(1:len_trim(ParaId(ipara))))
-         CALL ERRMSG (994, 0, String, ' Operation only allowed using 1 argument', IOUT1)
+         call write_error_message_rtc (994, 0, String, ' Operation only allowed using 1 argument', IOUT1)
          RetVal = 994
       ENDIF
 
@@ -779,7 +779,7 @@
       ELSEIF (PAROPER(IPARA) .EQ. 15) THEN
          If (abs(Rhlp) .gt. 1) Then
               String = 'Compute decision parameter ' // (ParaId(Ipara)(1:len_trim(ParaId(ipara))))
-              CALL ERRMSG (994, 0, String, ' Argument outside allowed range', IOUT1)
+              call write_error_message_rtc (994, 0, String, ' Argument outside allowed range', IOUT1)
               RetVal = 994
               Return
          Endif
@@ -787,7 +787,7 @@
       ELSEIF (PAROPER(IPARA) .EQ. 16) THEN
          If (abs(Rhlp) .gt. 1) Then
               String = 'Compute decision parameter ' // (ParaId(Ipara)(1:len_trim(ParaId(ipara))))
-              CALL ERRMSG (994, 0, String, ' Argument outside allowed range', IOUT1)
+              call write_error_message_rtc (994, 0, String, ' Argument outside allowed range', IOUT1)
               RetVal = 994
               Return
          Endif
@@ -799,7 +799,7 @@
       ELSEIF (PAROPER(IPARA) .EQ. 17) THEN
          If (abs(Rhlp) .gt. 1) Then
               String = 'Compute decision parameter ' // (ParaId(Ipara)(1:len_trim(ParaId(ipara))))
-              CALL ERRMSG (994, 0, String, ' Argument outside allowed range', IOUT1)
+              call write_error_message_rtc (994, 0, String, ' Argument outside allowed range', IOUT1)
               RetVal = 994
               Return
          Endif
@@ -807,7 +807,7 @@
       ELSEIF (PAROPER(IPARA) .EQ. 18) THEN
          If (abs(Rhlp) .gt. 1) Then
               String = 'Compute decision parameter ' // (ParaId(Ipara)(1:len_trim(ParaId(ipara))))
-              CALL ERRMSG (994, 0, String, ' Argument outside allowed range', IOUT1)
+              call write_error_message_rtc (994, 0, String, ' Argument outside allowed range', IOUT1)
               RetVal = 994
               Return
          Endif
@@ -835,7 +835,7 @@
       ELSEIF (PAROPER(IPARA) .EQ. 25) THEN
          If (Rhlp .lt. 0.0) Then
               String = 'Compute decision parameter ' // (ParaId(Ipara)(1:len_trim(ParaId(ipara))))
-              CALL ERRMSG (994, 0, String, ' Argument outside allowed range', IOUT1)
+              call write_error_message_rtc (994, 0, String, ' Argument outside allowed range', IOUT1)
               RetVal = 994
               Return
          Endif
@@ -845,7 +845,7 @@
       ELSEIF (PAROPER(IPARA) .EQ. 27) THEN
          If (Rhlp .le. 0.0) Then
               String = 'Compute decision parameter ' // (ParaId(Ipara)(1:len_trim(ParaId(ipara))))
-              CALL ERRMSG (994, 0, String, ' Argument outside allowed range', IOUT1)
+              call write_error_message_rtc (994, 0, String, ' Argument outside allowed range', IOUT1)
               RetVal = 994
               Return
          Endif
@@ -853,7 +853,7 @@
       ELSEIF (PAROPER(IPARA) .EQ. 28) THEN
          If (Rhlp .le. 0.0) Then
               String = 'Compute decision parameter ' // (ParaId(Ipara)(1:len_trim(ParaId(ipara))))
-              CALL ERRMSG (994, 0, String, ' Argument outside allowed range', IOUT1)
+              call write_error_message_rtc (994, 0, String, ' Argument outside allowed range', IOUT1)
               RetVal = 994
               Return
          Endif
@@ -868,7 +868,7 @@
          DCVVAL(IPARA,1) = Rhlp
       ELSE
          String = 'Compute decision parameter ' // (ParaId(Ipara)(1:len_trim(ParaId(ipara))))
-         CALL ERRMSG (994, 0, String, ' unknown operation', IOUT1)
+         call write_error_message_rtc (994, 0, String, ' unknown operation', IOUT1)
          RetVal = 994
       ENDIF
 

@@ -27,6 +27,16 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_get_var_type
+
+implicit none
+
+private
+
+public :: bmi_get_var_type
+
+contains
+
 select case(var_name)
 %for var in variables:
   case("${var['name']}")
@@ -35,3 +45,5 @@ select case(var_name)
   case default
     type_name = ""
 end select
+
+end module m_bmi_get_var_type

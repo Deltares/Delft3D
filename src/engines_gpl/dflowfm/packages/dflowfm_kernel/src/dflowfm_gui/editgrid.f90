@@ -31,6 +31,10 @@
 !
 
 module m_editgrid
+   use m_savegrd, only: savegrd
+   use m_modgr1, only: modgr1
+   use m_findnm, only: findnm
+   use m_delgrd, only: delgrd
    use m_tekgrpt
    use m_selecteditmode
    use m_ispoin
@@ -194,8 +198,6 @@ contains
 !        b RINGS BELL
          call KTEXT(' B Rings Bell', 2, 6, 11)
          call OKAY(0)
-      else if (KEY == 76 .or. KEY == 76 + 32) then
-!        CALL TEKHOOK(XP,YP)
       end if
 !
       goto 10

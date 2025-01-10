@@ -27,6 +27,16 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_get_var_rank
+
+implicit none
+
+private
+
+public :: bmi_get_var_rank
+
+contains
+
   select case(var_name)
 %for var in variables:
   case("${var['name']}")
@@ -35,3 +45,5 @@
   case default
      rank = 0
   end select
+
+end module m_bmi_get_var_rank

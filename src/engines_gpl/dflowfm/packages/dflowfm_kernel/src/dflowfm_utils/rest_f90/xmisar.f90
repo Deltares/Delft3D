@@ -30,16 +30,28 @@
 !
 !
 
-      subroutine XMISAR(X, MMAX)
-         use precision, only: dp
-         use M_MISSING
-         implicit none
-         integer :: i
-         integer :: mmax
-         real(kind=dp) :: x
-         dimension X(MMAX)
-         do I = 1, MMAX
-            X(I) = XYMIS
-         end do
-         return
-      end
+module m_xmisar
+
+   implicit none
+
+   private
+
+   public :: xmisar
+
+contains
+
+   subroutine XMISAR(X, MMAX)
+      use precision, only: dp
+      use M_MISSING
+
+      integer :: i
+      integer :: mmax
+      real(kind=dp) :: x
+      dimension X(MMAX)
+      do I = 1, MMAX
+         X(I) = XYMIS
+      end do
+      return
+   end
+
+end module m_xmisar

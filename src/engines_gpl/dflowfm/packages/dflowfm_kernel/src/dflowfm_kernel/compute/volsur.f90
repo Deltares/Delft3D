@@ -86,9 +86,7 @@ contains
          a1m = 0d0
       end if
 
-      !call checkvolnan(1)
       call VOL12D(japerim) ! and add area's and volumes of 1D links
-      !call checkvolnan(2)
 
       do L = lnxi + 1, Lnx
          k1 = ln(1, L); k2 = ln(2, L)

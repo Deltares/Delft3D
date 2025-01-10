@@ -30,89 +30,100 @@
 !
 !
 
-subroutine SETCOLTABFILE(FILNAM, JASECOND)
-   use m_qnmessage
-   use m_filemenu
-   use unstruc_colors
-   use m_depmax
-   use m_depmax2
+submodule(m_setcoltabfile) m_setcoltabfile_
+
    implicit none
-   integer :: ierror
-   integer :: iblue
-   integer :: igreen
-   integer :: ihue
-   integer :: ired
-   integer :: isat
-   integer :: jahls
-   integer :: jasecond
-   integer :: k
-   integer :: light
-   integer :: minp
-   integer, parameter :: mxq = 1, mxclass = 1
-   character FILNAM * (*), FOLNAM * 86
 
-   FOLNAM = FILNAM
-   if (FILNAM(1:5) == '*.hls') then
-      MINP = 0
-      call FILEMENU(MINP, FOLNAM, ierror)
-   else
-      k = len_trim(filnam)
-      folnam(1:k) = filnam(1:k)
-      call SYSORLOCALFIL(MINP, FOLNAM, 0)
-   end if
-   if (MINP /= 0) then
-      if (index(FOLNAM, 'HLS') >= 1 .or. index(FOLNAM, 'hls') >= 1) then
-         JAHLS = 1
-      else if (index(FOLNAM, 'RGB') >= 1 .or. index(FOLNAM, 'rgb') >= 1) then
-         JAHLS = 2
+contains
+
+   module subroutine SETCOLTABFILE(FILNAM, JASECOND)
+      use m_sysorlocalfil, only: sysorlocalfil
+      use m_qnmessage
+      use m_filemenu
+      use unstruc_colors
+      use m_depmax
+      use m_depmax2
+      use m_filez, only: doclose
+
+      implicit none
+      integer :: ierror
+      integer :: iblue
+      integer :: igreen
+      integer :: ihue
+      integer :: ired
+      integer :: isat
+      integer :: jahls
+      integer :: jasecond
+      integer :: k
+      integer :: light
+      integer :: minp
+      integer, parameter :: mxq = 1, mxclass = 1
+      character FILNAM * (*), FOLNAM * 86
+
+      FOLNAM = FILNAM
+      if (FILNAM(1:5) == '*.hls') then
+         MINP = 0
+         call FILEMENU(MINP, FOLNAM, ierror)
       else
-         call QNMESSAGE('CHOOSE *.hls OR *.rgb FILE')
+         k = len_trim(filnam)
+         folnam(1:k) = filnam(1:k)
+         call SYSORLOCALFIL(MINP, FOLNAM, 0)
+      end if
+      if (MINP /= 0) then
+         if (index(FOLNAM, 'HLS') >= 1 .or. index(FOLNAM, 'hls') >= 1) then
+            JAHLS = 1
+         else if (index(FOLNAM, 'RGB') >= 1 .or. index(FOLNAM, 'rgb') >= 1) then
+            JAHLS = 2
+         else
+            call QNMESSAGE('CHOOSE *.hls OR *.rgb FILE')
+            return
+         end if
+         if (JASECOND == 0) then
+            coltabfile = folnam
+         else
+            coltabfile2 = folnam
+         end if
+
+         K = 1
+         read (MINP, *, end=999, ERR=888)
+20       continue
+         if (JAHLS == 1) then
+            read (MINP, *, end=999, ERR=888) IHUE, LIGHT, ISAT
+            IHUE = max(0, min(IHUE, 360))
+            LIGHT = max(0, min(LIGHT, 100))
+            ISAT = max(0, min(ISAT, 100))
+            if (JASECOND == 0) then
+               call IGRPALETTEHLS(NCOLS(K), IHUE, LIGHT, ISAT)
+            else
+               call IGRPALETTEHLS(NCOLS2(K), IHUE, LIGHT, ISAT)
+            end if
+         else if (JAHLS == 2) then
+            read (MINP, *, end=999, ERR=888) IRED, IGREEN, IBLUE
+            IRED = max(0, min(IRED, 255))
+            IGREEN = max(0, min(IGREEN, 255))
+            IBLUE = max(0, min(IBLUE, 255))
+            if (JASECOND == 0) then
+               call IGRPALETTERGB(NCOLS(K), IRED, IGREEN, IBLUE)
+            else
+               call IGRPALETTERGB(NCOLS2(K), IRED, IGREEN, IBLUE)
+            end if
+         end if
+         K = K + 1
+         goto 20
+999      continue
+         call doclose(MINP)
+         if (JASECOND == 0) then
+            NV = max(2, K - 2)
+            NIE = NIS + NV + 1
+         else
+            NV2 = max(2, K - 2)
+            NIE2 = NIS2 + NV2 + 1
+         end if
          return
-      end if
-      if (JASECOND == 0) then
-         coltabfile = folnam
-      else
-         coltabfile2 = folnam
-      end if
-
-      K = 1
-      read (MINP, *, end=999, ERR=888)
-20    continue
-      if (JAHLS == 1) then
-         read (MINP, *, end=999, ERR=888) IHUE, LIGHT, ISAT
-         IHUE = max(0, min(IHUE, 360))
-         LIGHT = max(0, min(LIGHT, 100))
-         ISAT = max(0, min(ISAT, 100))
-         if (JASECOND == 0) then
-            call IGRPALETTEHLS(NCOLS(K), IHUE, LIGHT, ISAT)
-         else
-            call IGRPALETTEHLS(NCOLS2(K), IHUE, LIGHT, ISAT)
-         end if
-      else if (JAHLS == 2) then
-         read (MINP, *, end=999, ERR=888) IRED, IGREEN, IBLUE
-         IRED = max(0, min(IRED, 255))
-         IGREEN = max(0, min(IGREEN, 255))
-         IBLUE = max(0, min(IBLUE, 255))
-         if (JASECOND == 0) then
-            call IGRPALETTERGB(NCOLS(K), IRED, IGREEN, IBLUE)
-         else
-            call IGRPALETTERGB(NCOLS2(K), IRED, IGREEN, IBLUE)
-         end if
-      end if
-      K = K + 1
-      goto 20
-999   continue
-      call doclose(MINP)
-      if (JASECOND == 0) then
-         NV = max(2, K - 2)
-         NIE = NIS + NV + 1
-      else
-         NV2 = max(2, K - 2)
-         NIE2 = NIS2 + NV2 + 1
+888      continue ! Read error in coltabfile, back to defaults.
+         call doclose(MINP)
       end if
       return
-888   continue ! Read error in coltabfile, back to defaults.
-      call doclose(MINP)
-   end if
-   return
-end
+   end subroutine SETCOLTABFILE
+
+end submodule m_setcoltabfile_

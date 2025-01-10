@@ -38,7 +38,6 @@ contains
 
    subroutine NETLINKVALS(MET)
       use precision, only: dp
-
       use m_makepdf
       use m_dhitext
       use m_flowgeom, only: XZ, YZ, lne2ln
@@ -54,6 +53,7 @@ contains
       use m_cconstants
       use m_makenetnodescoding
       use m_find1dcells, only: find1dcells
+      use m_topo_info, only: topo_info
 
       integer :: MET
       integer :: jacftrt
@@ -67,7 +67,6 @@ contains
       real(kind=dp) :: X3, Y3, X4, Y4
       real(kind=dp) :: xd, YD, ZD
       real(kind=dp) :: areaL, areaR, xc, yc, aa
-      real(kind=dp), external :: topo_info
 
       if (MET == 1) return
 

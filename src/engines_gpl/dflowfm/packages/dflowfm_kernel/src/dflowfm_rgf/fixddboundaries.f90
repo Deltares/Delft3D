@@ -30,50 +30,62 @@
 !
 !
 
-      subroutine FIXDDBOUNDARIES()
-         use m_grid
-         implicit none
-         integer :: i
-         integer :: m
-         integer :: m1
-         integer :: m2
-         integer :: mb(80)
-         integer :: md
-         integer :: n
-         integer :: n1
-         integer :: n2
-         integer :: nb(80)
-         integer :: nd
-         integer :: npt
+module m_fixddboundaries
 
-         do I = 1, NPT - 1, 2
-            M1 = MB(I)
-            N1 = NB(I)
-            M2 = MB(I + 1)
-            N2 = NB(I + 1)
-            if (M1 > M2 .or. N1 > N2) then
-               MB(I) = M2
-               NB(I) = N2
-               MB(I + 1) = M1
-               NB(I + 1) = N1
-            end if
-            M1 = MB(I)
-            N1 = NB(I)
-            M2 = MB(I + 1)
-            N2 = NB(I + 1)
-            MD = M2 - M1
-            ND = N2 - N1
-            if (MD > 0) then
-               N = N1
-               do m = M1, M2
-                  IJC(M, N) = -IJC(M, N)
-               end do
-            else if (ND > 0) then
-               M = M1
-               do N = N1, N2
-                  IJC(M, N) = -IJC(M, N)
-               end do
-            end if
-         end do
-         return
-      end subroutine FIXDDBOUNDARIES
+   implicit none
+
+   private
+
+   public :: fixddboundaries
+
+contains
+
+   subroutine FIXDDBOUNDARIES()
+      use m_grid
+
+      integer :: i
+      integer :: m
+      integer :: m1
+      integer :: m2
+      integer :: mb(80)
+      integer :: md
+      integer :: n
+      integer :: n1
+      integer :: n2
+      integer :: nb(80)
+      integer :: nd
+      integer :: npt
+
+      do I = 1, NPT - 1, 2
+         M1 = MB(I)
+         N1 = NB(I)
+         M2 = MB(I + 1)
+         N2 = NB(I + 1)
+         if (M1 > M2 .or. N1 > N2) then
+            MB(I) = M2
+            NB(I) = N2
+            MB(I + 1) = M1
+            NB(I + 1) = N1
+         end if
+         M1 = MB(I)
+         N1 = NB(I)
+         M2 = MB(I + 1)
+         N2 = NB(I + 1)
+         MD = M2 - M1
+         ND = N2 - N1
+         if (MD > 0) then
+            N = N1
+            do m = M1, M2
+               IJC(M, N) = -IJC(M, N)
+            end do
+         else if (ND > 0) then
+            M = M1
+            do N = N1, N2
+               IJC(M, N) = -IJC(M, N)
+            end do
+         end if
+      end do
+      return
+   end subroutine FIXDDBOUNDARIES
+
+end module m_fixddboundaries

@@ -29,13 +29,20 @@
 
 !
 !
+module m_setstruclink
 
-! =================================================================================================
-! =================================================================================================
+   implicit none
+
+   private
+
+   public :: setstruclink
+
+contains
+
    subroutine setstruclink()
 
       use m_flow
-      implicit none
+
       integer :: i, n, L, Lf, La
       !
       ! === Gates (old)
@@ -93,3 +100,5 @@
       end do
 
    end subroutine setstruclink
+
+end module m_setstruclink

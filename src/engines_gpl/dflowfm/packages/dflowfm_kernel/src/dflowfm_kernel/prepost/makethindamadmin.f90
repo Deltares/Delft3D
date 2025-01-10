@@ -30,65 +30,75 @@
 !
 !
 
-subroutine makethindamadmin()
-   use precision, only: dp
-   use m_flowgeom
-   use network_data
-   use m_alloc
-   use m_sferic, only: jsferic, jasfer3D
-   use geometry_module, only: getdxdy, duitpl, dlinedis
-   use m_missing, only: dmiss
+module m_makethindamadmin
 
    implicit none
 
-   integer :: n, kk, L, k1, k3, k4, ja, ierr
-   real(kind=dp) :: cs, sn, a, b, sig, dis, xn, yn, rrr
+   private
 
-   ! count thin dam points
-   nthd = 0
-   do n = 1, nump
-      do kk = 1, netcell(n)%n
-         L = netcell(n)%lin(kk)
-         if (lne2ln(L) == 0) then
-            nthd = nthd + 1
-         end if
-      end do
-   end do
+   public :: makethindamadmin
 
-   ! set up thin dam structure
-   if (allocated(thindam)) deallocate (thindam)
-   allocate (thindam(6, nthd), stat=ierr)
-   call aerr('thindam(6,nthd)', ierr, 6 * nthd)
+contains
 
-   nthd = 0
-   do n = 1, nump
-      do kk = 1, netcell(n)%n
-         L = netcell(n)%lin(kk)
+   subroutine makethindamadmin()
+      use precision, only: dp
+      use m_flowgeom
+      use network_data
+      use m_alloc
+      use m_sferic, only: jsferic, jasfer3D
+      use geometry_module, only: getdxdy, duitpl, dlinedis
+      use m_missing, only: dmiss
 
-         if (kn(3, L) == 0) then
-            nthd = nthd + 1
-            k1 = n
-            k3 = kn(1, L) ! netnode 1
-            k4 = kn(2, L) ! netnode 2
+      integer :: n, kk, L, k1, k3, k4, ja, ierr
+      real(kind=dp) :: cs, sn, a, b, sig, dis, xn, yn, rrr
 
-            thindam(1, nthd) = k1
-            thindam(2, nthd) = k3
-            thindam(3, nthd) = k4
-
-            call duitpl(xzw(k1), yzw(k1), xk(k3), yk(k3), xzw(k1), yzw(k1), xk(k4), yk(k4), sig, jsferic)
-            call dlinedis(xzw(k1), yzw(k1), xk(k3), yk(k3), xk(k4), yk(k4), JA, DIS, XN, YN, jsferic, jasfer3D, dmiss)
-            a = 0d0; b = 0d0
-            call getdxdy(xk(k3), yk(k3), xk(k4), yk(k4), a, b, jsferic)
-            rrr = sqrt(a * a + b * b)
-            cs = 0d0; sn = 0d0
-            if (rrr /= 0d0) then
-               cs = sig * a / rrr
-               sn = sig * b / rrr
+      ! count thin dam points
+      nthd = 0
+      do n = 1, nump
+         do kk = 1, netcell(n)%n
+            L = netcell(n)%lin(kk)
+            if (lne2ln(L) == 0) then
+               nthd = nthd + 1
             end if
-            thindam(4, nthd) = cs
-            thindam(5, nthd) = sn
-            thindam(6, nthd) = rrr
-         end if
+         end do
       end do
-   end do
-end subroutine makethindamadmin
+
+      ! set up thin dam structure
+      if (allocated(thindam)) deallocate (thindam)
+      allocate (thindam(6, nthd), stat=ierr)
+      call aerr('thindam(6,nthd)', ierr, 6 * nthd)
+
+      nthd = 0
+      do n = 1, nump
+         do kk = 1, netcell(n)%n
+            L = netcell(n)%lin(kk)
+
+            if (kn(3, L) == 0) then
+               nthd = nthd + 1
+               k1 = n
+               k3 = kn(1, L) ! netnode 1
+               k4 = kn(2, L) ! netnode 2
+
+               thindam(1, nthd) = k1
+               thindam(2, nthd) = k3
+               thindam(3, nthd) = k4
+
+               call duitpl(xzw(k1), yzw(k1), xk(k3), yk(k3), xzw(k1), yzw(k1), xk(k4), yk(k4), sig, jsferic)
+               call dlinedis(xzw(k1), yzw(k1), xk(k3), yk(k3), xk(k4), yk(k4), JA, DIS, XN, YN, jsferic, jasfer3D, dmiss)
+               a = 0d0; b = 0d0
+               call getdxdy(xk(k3), yk(k3), xk(k4), yk(k4), a, b, jsferic)
+               rrr = sqrt(a * a + b * b)
+               cs = 0d0; sn = 0d0
+               if (rrr /= 0d0) then
+                  cs = sig * a / rrr
+                  sn = sig * b / rrr
+               end if
+               thindam(4, nthd) = cs
+               thindam(5, nthd) = sn
+               thindam(6, nthd) = rrr
+            end if
+         end do
+      end do
+   end subroutine makethindamadmin
+
+end module m_makethindamadmin

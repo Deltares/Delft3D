@@ -30,25 +30,43 @@
 !
 !
 
-      subroutine MAPPRO(XX, YY, XG, YG, IZONE, NZONE, IHEM, ITYPE, JSFERIC, INIA)
-         use precision, only: dp
-         use M_MISSING
-         !use proj4
-         implicit none
-         integer :: ierr
-         integer :: ini
-         integer :: inia
-         integer :: itype
-         integer :: izone
-         integer :: jsferic
-         integer :: nzone
-         integer :: ihem
-         real(kind=dp) :: XX, YY, XG, YG
+module m_mappro
+   use m_utmgeo2, only: utmgeo2
+   use m_trarot, only: trarot
+   use m_setellips, only: setellips
+   use m_rdgeo, only: rdgeo
+   use m_mercgeo, only: mercgeo
 
-         data INI/0/
-         if (INI == 0) then
-            call SETELLIPS(3) ! WGS84
-            INI = 1
+   implicit none
+
+   private
+
+   public :: mappro
+
+contains
+
+   subroutine MAPPRO(XX, YY, XG, YG, IZONE, NZONE, IHEM, ITYPE, JSFERIC, INIA)
+      use m_geoutm, only: geoutm
+      use m_geord, only: geord
+      use m_geomerc, only: geomerc
+      use m_affine, only: affine
+      use precision, only: dp
+      use M_MISSING
+
+      integer :: ierr
+      integer :: ini
+      integer :: inia
+      integer :: itype
+      integer :: izone
+      integer :: jsferic
+      integer :: nzone
+      integer :: ihem
+      real(kind=dp) :: XX, YY, XG, YG
+
+      data INI/0/
+      if (INI == 0) then
+         call SETELLIPS(3) ! WGS84
+         INI = 1
 !         ierr = pjf90_init_plus(proj_latlon, &
 !            '+proj=latlong +datum=WGS84')
 !         ierr = pjf90_init_plus(proj_magsirwest, &
@@ -60,42 +78,38 @@
 !     +//' +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +units=m'
 !     +//' +no_defs')
 !         allocate(xp(1),yp(1))
-         end if
+      end if
 
-         XG = DXYMIS
-         YG = DXYMIS
-         if (JSFERIC == 0) then ! Cartesisch => Spherisch
-            if (ITYPE == 0) then ! except for itype = 0
-               call TRAROT(XX, YY, XG, YG)
-            else if (ITYPE == 1) then ! UTM
-!            xp(1) = xx
-!            yp(1) = yy
-!            ierr = pjf90_transform(proj_magsirwest,proj_latlon, 1, 1, xp, yp, null())
-!            xg = xp(1)*RAD_TO_DEG
-!            yg = yp(1)*RAD_TO_DEG
-               !CALL UTMGEO(XX,YY,XG,YG,IZONE,IERR) ! IZONE = input !TMP disable
-               call UTMGEO2(XX, YY, XG, YG, IZONE, IHEM) ! IZONE = input !TMP disable
-            else if (ITYPE == 2) then ! Amersfoorts
-               call RDGEO(XX, YY, XG, YG, 0)
-            else if (ITYPE == 3) then ! RD (Ofwel Parijs)
-               call RDGEO(XX, YY, XG, YG, 1)
-            else if (ITYPE == 4) then ! MERCATOR
-               call MERCGEO(XX, YY, XG, YG)
-            else if (ITYPE == -1) then ! AFFINE
-               call AFFINE(XX, YY, XG, YG, INIA)
-            end if
-         else if (JSFERIC == 1) then ! Spherisch  => Cartesisch
-            if (ITYPE == 1) then ! UTM
-               call GEOUTM(XX, YY, XG, YG, IZONE, NZONE, IERR) ! IZONE = output
-            else if (ITYPE == 2) then ! Amersfoorts
-               call GEORD(XX, YY, XG, YG, 0)
-            else if (ITYPE == 3) then ! RD (Ofwel Parijs)
-               call GEORD(XX, YY, XG, YG, 1)
-            else if (ITYPE == 4) then ! MERCATOR
-               call GEOMERC(XX, YY, XG, YG)
-            else if (ITYPE == -1) then ! AFFINE
-               call AFFINE(XX, YY, XG, YG, INIA)
-            end if
+      XG = DXYMIS
+      YG = DXYMIS
+      if (JSFERIC == 0) then ! Cartesisch => Spherisch
+         if (ITYPE == 0) then ! except for itype = 0
+            call TRAROT(XX, YY, XG, YG)
+         else if (ITYPE == 1) then ! UTM
+            call UTMGEO2(XX, YY, XG, YG, IZONE, IHEM) ! IZONE = input !TMP disable
+         else if (ITYPE == 2) then ! Amersfoorts
+            call RDGEO(XX, YY, XG, YG, 0)
+         else if (ITYPE == 3) then ! RD (Ofwel Parijs)
+            call RDGEO(XX, YY, XG, YG, 1)
+         else if (ITYPE == 4) then ! MERCATOR
+            call MERCGEO(XX, YY, XG, YG)
+         else if (ITYPE == -1) then ! AFFINE
+            call AFFINE(XX, YY, XG, YG, INIA)
          end if
-         return
-      end subroutine MAPPRO
+      else if (JSFERIC == 1) then ! Spherisch  => Cartesisch
+         if (ITYPE == 1) then ! UTM
+            call GEOUTM(XX, YY, XG, YG, IZONE, NZONE, IERR) ! IZONE = output
+         else if (ITYPE == 2) then ! Amersfoorts
+            call GEORD(XX, YY, XG, YG, 0)
+         else if (ITYPE == 3) then ! RD (Ofwel Parijs)
+            call GEORD(XX, YY, XG, YG, 1)
+         else if (ITYPE == 4) then ! MERCATOR
+            call GEOMERC(XX, YY, XG, YG)
+         else if (ITYPE == -1) then ! AFFINE
+            call AFFINE(XX, YY, XG, YG, INIA)
+         end if
+      end if
+      return
+   end subroutine MAPPRO
+
+end module m_mappro

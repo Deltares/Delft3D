@@ -38,7 +38,8 @@ contains
 
    subroutine readprofilesloc(minp)
       use m_profiles
-      implicit none
+      use m_filez, only: doclose
+
       integer :: minp
       character rec * 256
       integer :: ierr, n

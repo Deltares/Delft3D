@@ -31,14 +31,22 @@
 !
 
 !  update geometry data that may have been incorrectly computed in the ghost area
+module m_update_geom
+
+   implicit none
+
+   private
+
+   public :: update_geom
+
+contains
+
    subroutine update_geom(iphase)
       use m_partitioninfo
       use m_flowgeom
       use unstruc_channel_flow
       use m_crosssections
       use m_cross_helper
-
-      implicit none
 
       integer, intent(in) :: iphase ! phase, 0 (all), 1 (first) or 2 (second)
       integer :: ierror
@@ -57,3 +65,5 @@
 
       return
    end subroutine update_geom
+
+end module m_update_geom

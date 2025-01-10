@@ -48,6 +48,7 @@ contains
       use m_flow
       use m_flowgeom
       use unstruc_files, only: defaultFileName
+      use m_filez, only: newfil
 
       implicit none
       real(kind=dp) :: tim

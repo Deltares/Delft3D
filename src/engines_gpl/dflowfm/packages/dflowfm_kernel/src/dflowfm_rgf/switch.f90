@@ -30,23 +30,34 @@
 !
 !
 
-      subroutine SWITCH(X, Y, mmax, nmax, JN, NUMPJ)
-         use precision, only: dp
-!      USE DIMENS
-         implicit none
-         integer :: mmax, nmax, jn, numpj
-         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
+module m_switch
 
-         integer :: j
-         real(kind=dp) :: xh, yh
+   implicit none
 
-         do J = 1, NUMPJ / 2
-            XH = X(JN, J)
-            X(JN, J) = X(JN, NUMPJ - J + 1)
-            X(JN, NUMPJ - J + 1) = XH
-            YH = Y(JN, J)
-            Y(JN, J) = Y(JN, NUMPJ - J + 1)
-            Y(JN, NUMPJ - J + 1) = YH
-         end do
-         return
-      end subroutine switch
+   private
+
+   public :: switch
+
+contains
+
+   subroutine SWITCH(X, Y, mmax, nmax, JN, NUMPJ)
+      use precision, only: dp
+
+      integer :: mmax, nmax, jn, numpj
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
+
+      integer :: j
+      real(kind=dp) :: xh, yh
+
+      do J = 1, NUMPJ / 2
+         XH = X(JN, J)
+         X(JN, J) = X(JN, NUMPJ - J + 1)
+         X(JN, NUMPJ - J + 1) = XH
+         YH = Y(JN, J)
+         Y(JN, J) = Y(JN, NUMPJ - J + 1)
+         Y(JN, NUMPJ - J + 1) = YH
+      end do
+      return
+   end subroutine switch
+
+end module m_switch

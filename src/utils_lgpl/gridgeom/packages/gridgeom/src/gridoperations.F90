@@ -694,7 +694,7 @@
    use network_data
 
    use mathconsts, only: degrad_hp
-   use geometry_module, only: getdx, getdy, dcosphi, cross
+   use geometry_module, only: dcosphi, cross
    use m_missing, only : dmiss, dxymis
    use m_sferic, only: jsferic, jasfer3D
    use MessageHandling
@@ -1006,8 +1006,6 @@
    nlinkbadortho = 0
    nlinktoosmall = 0
    nlinkcross    = 0
-
-   ! call trace_netlink_polys()
 
    if ( japermout.eq.1 ) then
       if ( allocated(Lperm_new) ) deallocate(Lperm_new)
@@ -1385,7 +1383,6 @@
                         kr(1)=k1; kr(2)=k2; kr(3)=k3
                         if ( .not.iscounterclockwise(3, kr) ) cycle
 
-                        !CALL ALREADYTRI(K1,K2,K3,JA); IF (JA > 0) EXIT
                         call increasenetcells(NUMP+1, 1.2, .true.)
                         NUMP = NUMP + 1
                         call realloc(netcell(NUMP)%NOD, 3, stat=ierr, keepExisting=.false.)
@@ -1534,8 +1531,6 @@
                                     end if
                                  end if
                               end if
-
-                              !CALL ALREADYQUAD(K1,K2,K3,K4,JA) ; IF (JA > 0 ) EXIT
 
                               kr(1)=k1; kr(2)=k2; kr(3)=k3; kr(4)=k4
                               if ( .not.iscounterclockwise(4, kr) ) cycle
@@ -1714,8 +1709,6 @@
                                        end if
                                     end if
                                     end if
-
-                                    !CALL ALREADYPENTA(K1,K2,K3,K4,K5,JA) ; IF (JA > 0) EXIT
 
                                     kr(1)=k1; kr(2)=k2; kr(3)=k3; kr(4)=k4; kr(5)=k5
                                     if ( .not.iscounterclockwise(5, kr) ) cycle
@@ -1928,8 +1921,6 @@
                                              end if
                                           end if
                                           end if
-
-                                          !CALL ALREADYHEXA(K1,K2,K3,K4,K5,K6,JA) ; IF (JA > 0) EXIT
 
                                           kr(1)=k1; kr(2)=k2; kr(3)=k3; kr(4)=k4; kr(5)=k5; kr(6)=k6
                                           if ( .not.iscounterclockwise(6, kr) ) cycle
@@ -2324,7 +2315,7 @@
    !LC use m_netw
    use network_data
    use m_sferic
-   use geometry_module, only: getdxdy, dcosphi, getdx, getdy
+   use geometry_module, only: getdxdy, dcosphi
    use stdlib_sorting, only: sort_index
 
    implicit none
@@ -2349,8 +2340,6 @@
          K1 = K
       end if
 
-      !dx = getdx(xk(k1), yk(k1), xk(k2), yk(k2))
-      !dy = getdy(xk(k1), yk(k1), xk(k2), yk(k2))
       call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
       if (abs(dx) < 1d-14 .and. abs(dy) < 1d-14) then
          if (dy < 0) then
@@ -3574,7 +3563,6 @@
          if (num .ge. 3) then 
              call random_number(aa)
              ncol = 255*aa
-             !call DISPF2closed(xx,yy,num,num,ncol)
              
              if ( jatolan.eq.1 ) then
                 call INCREASELAN(MXLAN+num+2)

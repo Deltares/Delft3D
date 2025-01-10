@@ -31,32 +31,41 @@
 !
 
 !> find the start and end index of a polygon
-subroutine get_polstartend(NPL, XPL, YPL, ipol, jstart, jend)
-   use precision, only: dp
-!   use m_polygon
-   use m_missing, only: dmiss
-   use geometry_module, only: get_startend
+module m_get_polstartend
 
    implicit none
 
-   integer, intent(in) :: NPL !< polygon size
-   real(kind=dp), dimension(NPL), intent(in) :: XPL !< polygon x-coordinates
-   real(kind=dp), dimension(NPL), intent(in) :: YPL !< polygon y-coordinates
+   private
 
-   integer, intent(in) :: ipol !< index of a polygon point
-   integer, intent(out) :: jstart, jend !< start and end indices of polygon
+   public :: get_polstartend
 
-   integer :: jpoint
+contains
 
-   jpoint = 1
-   jstart = 1
-   jend = 0
-   do while ((ipol < jstart .or. ipol > jend) .and. jpoint <= NPL)
-      call get_startend(NPL - jpoint + 1, xpl(jpoint:NPL), ypl(jpoint:NPL), jstart, jend, dmiss)
-      jstart = jstart + jpoint - 1
-      jend = jend + jpoint - 1
-      jpoint = jend + 2
-   end do
+   subroutine get_polstartend(NPL, XPL, YPL, ipol, jstart, jend)
+      use precision, only: dp
+      use m_missing, only: dmiss
+      use geometry_module, only: get_startend
 
-   return
-end subroutine get_polstartend
+      integer, intent(in) :: NPL !< polygon size
+      real(kind=dp), dimension(NPL), intent(in) :: XPL !< polygon x-coordinates
+      real(kind=dp), dimension(NPL), intent(in) :: YPL !< polygon y-coordinates
+
+      integer, intent(in) :: ipol !< index of a polygon point
+      integer, intent(out) :: jstart, jend !< start and end indices of polygon
+
+      integer :: jpoint
+
+      jpoint = 1
+      jstart = 1
+      jend = 0
+      do while ((ipol < jstart .or. ipol > jend) .and. jpoint <= NPL)
+         call get_startend(NPL - jpoint + 1, xpl(jpoint:NPL), ypl(jpoint:NPL), jstart, jend, dmiss)
+         jstart = jstart + jpoint - 1
+         jend = jend + jpoint - 1
+         jpoint = jend + 2
+      end do
+
+      return
+   end subroutine get_polstartend
+
+end module m_get_polstartend

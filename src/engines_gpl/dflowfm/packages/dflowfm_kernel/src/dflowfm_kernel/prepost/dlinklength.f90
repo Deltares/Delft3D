@@ -31,25 +31,28 @@
 !
 
 !>    gives link length
-      real(kind=dp) function dLinklength(L)
-         use precision, only: dp
+submodule(m_dlinklength) m_dlinklength_
 
-         use m_netw
-         use m_missing, only: dmiss
-         use m_polygon, only: NPL, xpl, ypl, zpl
-         use m_sferic, only: jsferic, jasfer3D
-         use geometry_module, only: dbpinpol, dbdistance
-         use gridoperations
+   implicit none
 
-         implicit none
+contains
 
-         integer, intent(in) :: L !< link number
-         integer :: La, k1, k2
+   real(kind=dp) module function dLinklength(L)
+      use precision, only: dp
+      use network_data, only: xk, yk, kn
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+      use geometry_module, only: dbdistance
 
-         La = abs(L)
-         k1 = kn(1, La)
-         k2 = kn(2, La)
+      integer, intent(in) :: L !< link number
+      integer :: La, k1, k2
 
-         dLinklength = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
+      La = abs(L)
+      k1 = kn(1, La)
+      k2 = kn(2, La)
 
-      end function dLinklength
+      dLinklength = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
+
+   end function dLinklength
+
+end submodule m_dlinklength_

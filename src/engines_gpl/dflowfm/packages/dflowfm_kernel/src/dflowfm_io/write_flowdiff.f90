@@ -31,6 +31,7 @@
 !
 
 module m_write_flowdiff
+   use m_in_flowcell, only: in_flowcell
 
    implicit none
 

@@ -30,27 +30,39 @@
 !
 !
 
-      !> Performs linear interpolation between two values along a polyline.
+module m_interponpolyline
+
+   implicit none
+
+   private
+
+   public :: interponpolyline
+
+contains
+
+   !> Performs linear interpolation between two values along a polyline.
       !! The interpolation is done along a polyline at the distances
       !! measured along the consecutive polyline segments.
-      subroutine interpOnPolyline(DPL, DXS, NPL, DXS1, DXS2)
-         use precision, only: dp
-         implicit none
-         integer :: npl
-         real(kind=dp), intent(in) :: DPL(NPL) !< Accumulated distance at each point.
-         real(kind=dp), intent(out) :: DXS(NPL) !< Interpolated values of dxs1--dxs2 on polyline points.
-         real(kind=dp), intent(in) :: dxs1 !< Value at first polyline point.
-         real(kind=dp), intent(in) :: dxs2 !< Value at last polyline point.
+   subroutine interpOnPolyline(DPL, DXS, NPL, DXS1, DXS2)
+      use precision, only: dp
 
-         real(kind=dp) :: f
-         real(kind=dp) :: f1
-         integer :: n
+      integer :: npl
+      real(kind=dp), intent(in) :: DPL(NPL) !< Accumulated distance at each point.
+      real(kind=dp), intent(out) :: DXS(NPL) !< Interpolated values of dxs1--dxs2 on polyline points.
+      real(kind=dp), intent(in) :: dxs1 !< Value at first polyline point.
+      real(kind=dp), intent(in) :: dxs2 !< Value at last polyline point.
 
-         if (NPL <= 1) return
+      real(kind=dp) :: f
+      real(kind=dp) :: f1
+      integer :: n
 
-         do N = 1, NPL
-            F = DPL(N) / DPL(NPL); F1 = 1 - F
-            DXS(N) = F1 * DXS1 + F * DXS2
-         end do
+      if (NPL <= 1) return
 
-      end subroutine interpOnPolyline
+      do N = 1, NPL
+         F = DPL(N) / DPL(NPL); F1 = 1 - F
+         DXS(N) = F1 * DXS1 + F * DXS2
+      end do
+
+   end subroutine interpOnPolyline
+
+end module m_interponpolyline

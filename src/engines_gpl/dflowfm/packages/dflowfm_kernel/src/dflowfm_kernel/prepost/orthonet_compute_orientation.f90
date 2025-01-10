@@ -31,49 +31,59 @@
 !
 
 !>  compute the orientation of a cell by SVD
-subroutine orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, i)
-   use precision, only: dp
-   use m_netw
-   use m_sferic
-   use m_alloc
-   use m_qnerror
+module m_orthonet_compute_orientation
+   use m_spher2loc, only: spher2loc
+   use m_svdcmp, only: svdcmp
 
    implicit none
 
-   integer, intent(in) :: i !< netcell number
-   real(kind=dp), intent(out) :: aspect !< aspect ratio
-   real(kind=dp), intent(out) :: uu1, uu2 !< components of first orientation vector
-   real(kind=dp), intent(out) :: vv1, vv2 !< components of second orientation vector
+   private
 
-   real(kind=dp), dimension(2, 2) :: B, Jacobian ! Jacobian matrix
+   public :: orthonet_compute_orientation
 
-   integer, parameter :: M = 6 ! maximum nodes in cell
-   real(kind=dp), dimension(M, 2) :: A, R ! coefficient matrix
-   real(kind=dp), dimension(M) :: xi, eta, xminx0, yminy0, theta
-   real(kind=dp) :: x0, y0, D
+contains
 
-   integer, dimension(M) :: knodes ! indices of the nodes
+   subroutine orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, i)
+      use precision, only: dp
+      use m_netw
+      use m_sferic
+      use m_alloc
+      use m_qnerror
 
-   real(kind=dp), dimension(2, 2) :: C
+      integer, intent(in) :: i !< netcell number
+      real(kind=dp), intent(out) :: aspect !< aspect ratio
+      real(kind=dp), intent(out) :: uu1, uu2 !< components of first orientation vector
+      real(kind=dp), intent(out) :: vv1, vv2 !< components of second orientation vector
 
-   real(kind=dp), dimension(2, 2) :: UU, VV ! left and right singular vectors
-   real(kind=dp), dimension(2) :: S ! singular values
+      real(kind=dp), dimension(2, 2) :: B, Jacobian ! Jacobian matrix
 
-   integer :: j, k, N
+      integer, parameter :: M = 6 ! maximum nodes in cell
+      real(kind=dp), dimension(M, 2) :: A, R ! coefficient matrix
+      real(kind=dp), dimension(M) :: xi, eta, xminx0, yminy0, theta
+      real(kind=dp) :: x0, y0, D
 
-   real(kind=dp), parameter :: EPS = 1d-4
+      integer, dimension(M) :: knodes ! indices of the nodes
+
+      real(kind=dp), dimension(2, 2) :: C
+
+      real(kind=dp), dimension(2, 2) :: UU, VV ! left and right singular vectors
+      real(kind=dp), dimension(2) :: S ! singular values
+
+      integer :: j, k, N
+
+      real(kind=dp), parameter :: EPS = 1d-4
 
 !--------------------------------------------------------------
 !  compute the Jacobian matrix J of net cell i
 !--------------------------------------------------------------
-   N = netcell(i)%n
-   if (N > M) then
-      call qnerror('orthonet_compute_orientation: N > M', ' ', ' ')
-      return
-   end if
+      N = netcell(i)%n
+      if (N > M) then
+         call qnerror('orthonet_compute_orientation: N > M', ' ', ' ')
+         return
+      end if
 
-   knodes = 0
-   knodes(1:N) = (/(netcell(i)%nod(j), j=1, N)/)
+      knodes = 0
+      knodes(1:N) = (/(netcell(i)%nod(j), j=1, N)/)
 
 !--------------------------------------------------------------
 !  Assume (x,y)' = (x0,y0)' + Jacobian*(xi,eta)'
@@ -81,73 +91,75 @@ subroutine orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, i)
 !  (x0,y0)' is the mean of the node coordinates
 !--------------------------------------------------------------
 
-   if (jsferic == 1 .and. jasfer3D == 1) then
-      x0 = xzw(i)
-      y0 = yzw(i)
+      if (jsferic == 1 .and. jasfer3D == 1) then
+         x0 = xzw(i)
+         y0 = yzw(i)
 
-      call spher2loc(x0, y0, N, xk(knodes(1:N)), yk(knodes(1:N)), xminx0(1:N), yminy0(1:N))
-   else
-      xminx0(1:N) = (/(xk(knodes(j)), j=1, N)/)
-      yminy0(1:N) = (/(yk(knodes(j)), j=1, N)/)
+         call spher2loc(x0, y0, N, xk(knodes(1:N)), yk(knodes(1:N)), xminx0(1:N), yminy0(1:N))
+      else
+         xminx0(1:N) = (/(xk(knodes(j)), j=1, N)/)
+         yminy0(1:N) = (/(yk(knodes(j)), j=1, N)/)
 
-      x0 = sum(xminx0(1:N)) / N
-      y0 = sum(yminy0(1:N)) / N
+         x0 = sum(xminx0(1:N)) / N
+         y0 = sum(yminy0(1:N)) / N
 
-      xminx0 = xminx0 - x0
-      yminy0 = yminy0 - y0
-   end if
+         xminx0 = xminx0 - x0
+         yminy0 = yminy0 - y0
+      end if
 
-   theta(1:N) = (/(k - 1, k=1, N)/)
-   theta(1:N) = theta(1:N) / N * 2d0 * pi
+      theta(1:N) = (/(k - 1, k=1, N)/)
+      theta(1:N) = theta(1:N) / N * 2d0 * pi
 
-   xi(1:N) = cos(theta(1:N))
-   eta(1:N) = sin(theta(1:N))
+      xi(1:N) = cos(theta(1:N))
+      eta(1:N) = sin(theta(1:N))
 
-   A = 0d0
-   A(1:N, 1) = xi(1:N)
-   A(1:N, 2) = eta(1:N)
+      A = 0d0
+      A(1:N, 1) = xi(1:N)
+      A(1:N, 2) = eta(1:N)
 
-   R = 0d0
-   R(1:N, 1) = xminx0
-   R(1:N, 2) = yminy0
+      R = 0d0
+      R(1:N, 1) = xminx0
+      R(1:N, 2) = yminy0
 
 !     B = A'A
-   B = matmul(transpose(A(1:N, :)), A(1:N, :))
+      B = matmul(transpose(A(1:N, :)), A(1:N, :))
 
 !     C = inv(A'A) = inv(B)
-   D = B(1, 1) * B(2, 2) - B(1, 2) * B(2, 1) ! determinant
+      D = B(1, 1) * B(2, 2) - B(1, 2) * B(2, 1) ! determinant
 
-   if (D == 0d0) then
-      call qnerror('orthonet_compute_orientation: D==0', ' ', ' ')
-      return
-   end if
+      if (D == 0d0) then
+         call qnerror('orthonet_compute_orientation: D==0', ' ', ' ')
+         return
+      end if
 
-   B = B / D
-   C(1, 1) = B(2, 2)
-   C(2, 2) = B(1, 1)
-   C(1, 2) = -B(1, 2)
-   C(2, 1) = -B(2, 1)
+      B = B / D
+      C(1, 1) = B(2, 2)
+      C(2, 2) = B(1, 1)
+      C(1, 2) = -B(1, 2)
+      C(2, 1) = -B(2, 1)
 
 !     Jacobian = (inv(A'A)*A'*R)' = (C*A'*R)'
-   Jacobian = transpose( &
-              matmul( &
-              matmul( &
-              C, &
-              transpose(A(1:N, :)) &
-              ), &
-              R &
-              ) &
-              )
+      Jacobian = transpose( &
+                 matmul( &
+                 matmul( &
+                 C, &
+                 transpose(A(1:N, :)) &
+                 ), &
+                 R &
+                 ) &
+                 )
 !--------------------------------------------------------------
 !  compute the Singular Value Decomposition of the Jacobian matrix
 !--------------------------------------------------------------
-   UU = Jacobian
-   call svdcmp(UU, 2, 2, 2, 2, S, VV)
+      UU = Jacobian
+      call svdcmp(UU, 2, 2, 2, 2, S, VV)
 
-   aspect = min(S(1) / (S(2) + EPS), S(2) / (S(1) + EPS))
-   uu1 = UU(1, 1) * S(1)
-   vv1 = UU(2, 1) * S(1)
-   uu2 = UU(1, 2) * S(2)
-   vv2 = UU(2, 2) * S(2)
+      aspect = min(S(1) / (S(2) + EPS), S(2) / (S(1) + EPS))
+      uu1 = UU(1, 1) * S(1)
+      vv1 = UU(2, 1) * S(1)
+      uu2 = UU(1, 2) * S(2)
+      vv2 = UU(2, 2) * S(2)
 
-end subroutine orthonet_compute_orientation
+   end subroutine orthonet_compute_orientation
+
+end module m_orthonet_compute_orientation

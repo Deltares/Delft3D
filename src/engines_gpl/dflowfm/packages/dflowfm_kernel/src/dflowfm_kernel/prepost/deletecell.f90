@@ -45,6 +45,7 @@ contains
       use m_mergenodes
       use m_qnerror
       use m_find_common_node
+      use m_isconvexcell, only: isconvexcell
 
       integer, intent(in) :: k !< cell number
 !
@@ -62,8 +63,6 @@ contains
       integer :: i, iR, im1, in, j, kcell, kcell1, L, L1, L2
       integer :: kcL, kcR, Ndum
       integer :: klin, knod
-
-      integer :: isconvexcell
 
       logical :: Lnogo
 

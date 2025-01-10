@@ -22,12 +22,10 @@ object LinuxThirdPartyDownloadIntelMpi : BuildType({
     steps {
         script {
             name = "Download offline installer script"
-            id = "Download_offline_installer_script"
             scriptContent = "curl %installer_url% --output installer.sh"
         }
         script {
             name = "Execute installer script in container"
-            id = "Execute_installer_script"
             scriptContent = """
                 dnf -y install ncurses
                 
@@ -39,7 +37,6 @@ object LinuxThirdPartyDownloadIntelMpi : BuildType({
         }
         script {
             name = "Package artifacts (and override TeamCity build number)"
-            id = "Package_artifacts"
             scriptContent = """
                 export INTEL_MPI_VERSION=`basename \`readlink -f oneapi/mpi/latest\``
                 echo Intel MPI version: ${'$'}{INTEL_MPI_VERSION}

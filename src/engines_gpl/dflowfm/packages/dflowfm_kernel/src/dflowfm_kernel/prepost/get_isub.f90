@@ -30,36 +30,46 @@
 !
 !
 
-integer function get_isub(j, nfac1, j_loc) !< gets the subinterval of grid layer j
-   use m_spline2curvi
+module m_get_isub
 
    implicit none
 
-   integer, intent(in) :: j !< grid layer index
-   integer, dimension(Nsubmax), intent(in) :: nfac1 !< subinterval lengths
-   integer, intent(out) :: j_loc !< grid layer in the subinterval
+   private
 
-   integer :: isum, isub
+   public :: get_isub
 
-   j_loc = j - 1
-   if (j > sum(nfac1)) then
-      isub = 0
-      goto 1234
-   end if
+contains
 
-   isub = 1
-   isum = 1 + nfac1(isub)
-   do while (isum <= j .and. isub < Nsubmax)
-      isub = isub + 1
-      isum = isum + nfac1(isub)
-   end do
+   integer function get_isub(j, nfac1, j_loc) !< gets the subinterval of grid layer j
+      use m_spline2curvi
 
-   j_loc = j - isum + nfac1(isub)
+      integer, intent(in) :: j !< grid layer index
+      integer, dimension(Nsubmax), intent(in) :: nfac1 !< subinterval lengths
+      integer, intent(out) :: j_loc !< grid layer in the subinterval
+
+      integer :: isum, isub
+
+      j_loc = j - 1
+      if (j > sum(nfac1)) then
+         isub = 0
+         goto 1234
+      end if
+
+      isub = 1
+      isum = 1 + nfac1(isub)
+      do while (isum <= j .and. isub < Nsubmax)
+         isub = isub + 1
+         isum = isum + nfac1(isub)
+      end do
+
+      j_loc = j - isum + nfac1(isub)
 
 !  error handling
-1234 continue
+1234  continue
 
-   get_isub = isub
+      get_isub = isub
 
-   return
-end function
+      return
+   end function
+
+end module m_get_isub

@@ -31,73 +31,86 @@
 !
 
 !> Runs flow steps for a certain period (do computational flowsteps for as long as timeinterval dtrange).
-subroutine flow_run_sometimesteps(dtrange, iresult) ! do computational flowsteps for as long as timeinterval dtrange
-   use precision, only: dp
-   use m_flow_single_timestep, only: flow_single_timestep
-   use m_flowtimes
-   use unstruc_messages
-   use m_partitioninfo
-   use dfm_error
-   use m_laterals, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
-                         qqlat, qplat, get_lateral_volume_per_layer, &
-                         lateral_volume_per_layer, distribute_lateral_discharge
+module m_flow_run_sometimesteps
 
    implicit none
-   real(kind=dp), intent(in) :: dtrange
-   integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
-   integer :: key
 
-   real(kind=dp) :: timetarget
+   private
 
-   if (apply_transport_is_used) then
-      call reset_outgoing_lat_concentration()
-      call distribute_lateral_discharge(qplat, qqlat)
-   end if
+   public :: flow_run_sometimesteps
 
-   iresult = DFM_GENERICERROR
-   if (dtrange < 0) then
-      timetarget = time1 + epsilon(1d0) ! dtrange < 0 means: auto pick a *single* timestep. Enforce this with a target time *just* larger than current time.
-   else
-      timetarget = time1 + dtrange
-   end if
+contains
 
-   timetarget = min(timetarget, tstop_user)
+   subroutine flow_run_sometimesteps(dtrange, iresult) ! do computational flowsteps for as long as timeinterval dtrange
+      use m_flow_init_usertimestep, only: flow_init_usertimestep
+      use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
+      use precision, only: dp
+      use m_flow_single_timestep, only: flow_single_timestep
+      use m_flowtimes
+      use unstruc_messages
+      use m_partitioninfo
+      use dfm_error
+      use m_laterals, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
+                            qqlat, qplat, get_lateral_volume_per_layer, &
+                            lateral_volume_per_layer, distribute_lateral_discharge
 
-   do while (time1 < timetarget) ! nb, outside flow_singletimestep, time0=time1 !
+      real(kind=dp), intent(in) :: dtrange
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
+      integer :: key
+
+      real(kind=dp) :: timetarget
+
+      if (apply_transport_is_used) then
+         call reset_outgoing_lat_concentration()
+         call distribute_lateral_discharge(qplat, qqlat)
+      end if
+
+      iresult = DFM_GENERICERROR
+      if (dtrange < 0) then
+         timetarget = time1 + epsilon(1d0) ! dtrange < 0 means: auto pick a *single* timestep. Enforce this with a target time *just* larger than current time.
+      else
+         timetarget = time1 + dtrange
+      end if
+
+      timetarget = min(timetarget, tstop_user)
+
+      do while (time1 < timetarget) ! nb, outside flow_singletimestep, time0=time1 !
 
     !! INIT only in case of new user timestep
-      if (time1 >= time_user) then
-         call flow_init_usertimestep(iresult)
+         if (time1 >= time_user) then
+            call flow_init_usertimestep(iresult)
 
-         if (iresult /= DFM_NOERR) then
-            goto 888
+            if (iresult /= DFM_NOERR) then
+               goto 888
+            end if
          end if
-      end if
 
     !! RUN actual SINGLE computational timestep
-      call flow_single_timestep(key, iresult)
-      if (iresult /= DFM_NOERR) then
-         goto 888
-      end if
-
-    !! FINALIZE only when a time_user is finished
-      if (time1 >= time_user) then
-         call flow_finalize_usertimestep(iresult)
-
+         call flow_single_timestep(key, iresult)
          if (iresult /= DFM_NOERR) then
             goto 888
          end if
+
+    !! FINALIZE only when a time_user is finished
+         if (time1 >= time_user) then
+            call flow_finalize_usertimestep(iresult)
+
+            if (iresult /= DFM_NOERR) then
+               goto 888
+            end if
+         end if
+
+      end do
+
+      if (apply_transport_is_used) then
+         call finish_outgoing_lat_concentration(dtrange)
+         call get_lateral_volume_per_layer(lateral_volume_per_layer)
       end if
 
-   end do
+      iresult = DFM_NOERR
+      return ! Return with success.
 
-   if (apply_transport_is_used) then
-      call finish_outgoing_lat_concentration(dtrange)
-      call get_lateral_volume_per_layer(lateral_volume_per_layer)
-   end if
+888   continue
+   end subroutine flow_run_sometimesteps
 
-   iresult = DFM_NOERR
-   return ! Return with success.
-
-888 continue
-end subroutine flow_run_sometimesteps
+end module m_flow_run_sometimesteps

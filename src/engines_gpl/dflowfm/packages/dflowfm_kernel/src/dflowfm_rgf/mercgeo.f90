@@ -30,13 +30,25 @@
 !
 !
 
-      subroutine MERCGEO(XX, YY, XG, YG)
-         use precision, only: dp
-         use M_SFERIC
-         implicit none
-         real(kind=dp) :: XX, YY, XG, YG, FI2
-         XG = RD2DG * XX / RA
-         FI2 = atan(sinh(YY / RA))
-         YG = RD2DG * FI2
-         return
-      end subroutine MERCGEO
+module m_mercgeo
+
+   implicit none
+
+   private
+
+   public :: mercgeo
+
+contains
+
+   subroutine MERCGEO(XX, YY, XG, YG)
+      use precision, only: dp
+      use M_SFERIC
+
+      real(kind=dp) :: XX, YY, XG, YG, FI2
+      XG = RD2DG * XX / RA
+      FI2 = atan(sinh(YY / RA))
+      YG = RD2DG * FI2
+      return
+   end subroutine MERCGEO
+
+end module m_mercgeo

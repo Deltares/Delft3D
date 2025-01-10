@@ -52,6 +52,10 @@ contains
       use m_flowparameters, only: jabarrieradvection
       use m_sferic
       use m_get_Lbot_Ltop
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
       implicit none
 
       logical :: make2dh
@@ -60,9 +64,6 @@ contains
       real(kind=dp) :: uu, vv, uucx, uucy, cs, sn, hul, hsk, uin, duxdn, duydn, uhu, htrs
       real(kind=dp) :: u1correction
       real(kind=dp) :: uinx, uiny
-
-      real(kind=dp), external :: nod2linx, nod2liny
-      real(kind=dp), external :: lin2nodx, lin2nody
 
       ucxq = 0d0; ucyq = 0d0 ! zero arrays
 

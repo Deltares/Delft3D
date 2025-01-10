@@ -47,7 +47,7 @@ contains
    subroutine wricmps(fnam)
       use m_polygon
       use m_missing
-      implicit none
+      use m_filez, only: doclose, newfil
 
       character(len=*), intent(in) :: fnam !< Filename from .pli file (should have been saved just before)
       integer :: mou2, L, n, jacmps = 0

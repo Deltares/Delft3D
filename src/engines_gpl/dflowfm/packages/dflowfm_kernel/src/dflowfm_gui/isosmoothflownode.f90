@@ -53,7 +53,6 @@ contains
       end do
       nn4 = min(nn4, size(nd(k)%x))
       call isofil(nd(k)%x, nd(k)%y, zz, nn4, 0)
-      !call isocel(nd(k)%x, nd(k)%y, zz, nn4, 0)
    end subroutine isosmoothflownode
 
 end module m_isosmoothflownode

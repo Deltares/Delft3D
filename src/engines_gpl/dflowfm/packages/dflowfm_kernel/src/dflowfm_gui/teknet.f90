@@ -44,7 +44,6 @@ contains
       use m_setlinkcolour
       use m_cir
       use m_netw
-      use geometry_module, only: dbdistance
       use unstruc_display
       use m_drawthis
       use m_halt2

@@ -45,7 +45,7 @@ contains
       use m_dlnabs
       use m_missing
       use m_netw
-      use geometry_module, only: getdxdy, getdx, getdy
+      use geometry_module, only: getdxdy
       use m_sferic, only: jsferic
       use unstruc_colors ! , ONLY :NCOLWARN1, ncolhl
       use gridoperations
@@ -129,8 +129,6 @@ contains
                         call DMOVABS(XX1, YY1, ZZ1)
                         call DLNABS(XX2, YY2, ZZ2)
                      else if (MET == 4 .or. MET == 7) then
-                        ! XD = getdx (XX1, yy1, xx2, yy2)
-                        ! YD = getdy (XX1, yy1, xx2, yy2)
                         call getdxdy(XX1, yy1, xx2, yy2, xd, yd, jsferic)
                         RD = sqrt(XD * XD + YD * YD)
                         if (RD /= 0) then

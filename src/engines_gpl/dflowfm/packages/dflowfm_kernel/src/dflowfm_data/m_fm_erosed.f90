@@ -68,8 +68,6 @@ module m_fm_erosed
    real(fp), dimension(:), pointer :: ucyq_mor
    real(fp), dimension(:), pointer :: hs_mor
 
-   real(fp), dimension(:, :), pointer :: q_zeta
-
    !     stmpar
    integer, pointer :: lsed
    integer, pointer :: lsedtot

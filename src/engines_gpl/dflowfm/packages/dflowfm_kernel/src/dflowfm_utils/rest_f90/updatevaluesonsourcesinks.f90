@@ -30,37 +30,50 @@
 !
 !
 
-subroutine updateValuesOnSourceSinks(tim1)
-   use fm_external_forcings_data, only: qsrc, qsrcavg, vsrccum, vsrccum_pre, numsrc
-   use m_missing
-   use m_flowtimes, only: ti_his, time_his
-   use precision
-   use m_flowparameters, only: eps10
-   use m_alloc
+module m_updatevaluesonsourcesinks
+
    implicit none
-   real(kind=dp), intent(in) :: tim1 !< Current (new) time
 
-   real(kind=dp), save :: timprev = -1d0 ! TODO: save is unsafe, replace by using time1 and time0, also two other occurrences
-   real(kind=dp) :: timstep
-   integer :: i
+   private
 
-   if (timprev < 0d0) then
-      ! This realloc should not be needed
-      call reallocsrc(numsrc)
-   else
-      timstep = tim1 - timprev
-      ! cumulative volume from Tstart
-      do i = 1, numsrc
-         vsrccum(i) = vsrccum(i) + timstep * qsrc(i)
-      end do
+   public :: updatevaluesonsourcesinks
 
-      if (comparereal(tim1, time_his, eps10) == 0) then
+contains
+
+   subroutine updateValuesOnSourceSinks(tim1)
+      use m_reallocsrc, only: reallocsrc
+      use fm_external_forcings_data, only: qsrc, qsrcavg, vsrccum, vsrccum_pre, numsrc
+      use m_missing
+      use m_flowtimes, only: ti_his, time_his
+      use precision
+      use m_flowparameters, only: eps10
+      use m_alloc
+
+      real(kind=dp), intent(in) :: tim1 !< Current (new) time
+
+      real(kind=dp), save :: timprev = -1d0 ! TODO: save is unsafe, replace by using time1 and time0, also two other occurrences
+      real(kind=dp) :: timstep
+      integer :: i
+
+      if (timprev < 0d0) then
+         ! This realloc should not be needed
+         call reallocsrc(numsrc)
+      else
+         timstep = tim1 - timprev
+         ! cumulative volume from Tstart
          do i = 1, numsrc
-            qsrcavg(i) = (vsrccum(i) - vsrccum_pre(i)) / ti_his ! average discharge in the past His-interval
-            vsrccum_pre(i) = vsrccum(i)
+            vsrccum(i) = vsrccum(i) + timstep * qsrc(i)
          end do
-      end if
-   end if
 
-   timprev = tim1
-end subroutine updateValuesOnSourceSinks
+         if (comparereal(tim1, time_his, eps10) == 0) then
+            do i = 1, numsrc
+               qsrcavg(i) = (vsrccum(i) - vsrccum_pre(i)) / ti_his ! average discharge in the past His-interval
+               vsrccum_pre(i) = vsrccum(i)
+            end do
+         end if
+      end if
+
+      timprev = tim1
+   end subroutine updateValuesOnSourceSinks
+
+end module m_updatevaluesonsourcesinks

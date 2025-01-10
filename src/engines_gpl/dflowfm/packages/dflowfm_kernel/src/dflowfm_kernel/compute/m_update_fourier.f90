@@ -30,6 +30,7 @@
 !
 !
 module m_update_fourier
+   use m_getblu_from_bob, only: getblu_from_bob
    use m_fourier_analysis
    implicit none
    private
