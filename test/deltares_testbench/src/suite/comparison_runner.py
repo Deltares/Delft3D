@@ -257,17 +257,11 @@ class ComparisonRunner(TestSetRunner):
             table["Result"].append(w_cr.result.value)
             table["File name"].append(w_filename.name)
             table["Parameter name"].append(w_parameter.name)
-
-            is_ignored = w_cr.result == "IGNORED"
-            table["Runtime"].append(test_case_config.run_time if not is_ignored else "---")
-            table["Ratio"].append(
-                test_case_config.run_time / test_case_config.ref_run_time if not is_ignored else "---"
-            )
-            table["MaxAbsDiff"].append(w_cr.max_abs_diff if not is_ignored else "---")
-            table["MaxRelDiff"].append(w_cr.max_rel_diff if not is_ignored else "---")
-            table["Information"].append(
-                "at coordinates" + str(w_cr.max_abs_diff_coordinates) if not is_ignored else "---"
-            )
+            table["Runtime"].append(test_case_config.run_time)
+            table["Ratio"].append(test_case_config.run_time / test_case_config.ref_run_time)
+            table["MaxAbsDiff"].append(w_cr.max_abs_diff)
+            table["MaxRelDiff"].append(w_cr.max_rel_diff)
+            table["Information"].append("at coordinates" + str(w_cr.max_abs_diff_coordinates))
 
         log_table(table, logger)
         log_separator(logger)
