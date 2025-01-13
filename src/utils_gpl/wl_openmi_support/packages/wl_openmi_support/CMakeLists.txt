@@ -38,7 +38,7 @@ if(UNIX)
 endif(UNIX)
 
 # Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_bounds_flag}>")
+target_compile_options(${library_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_bounds_flag}>")
 
 # Create the folder structure in vfproj
 if (WIN32)

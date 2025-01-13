@@ -61,7 +61,7 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/ocpids.F
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+target_compile_options(${library_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_nopointers_flag}>")
 
 # Define preprocessor definitions 
 if (WIN32)
