@@ -33,30 +33,30 @@
 !>    return x-component in node coordinate frame of a vector in link coordinate frame
 module m_lin2nodx
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: lin2nodx
+   public :: lin2nodx
 
 contains
 
-      real(kind=dp) function lin2nodx(L, i12, ux, uy)
-         use precision, only: dp
-         use m_flowgeom, only: csb, snb
-         use m_sferic
+   real(kind=dp) function lin2nodx(L, i12, ux, uy)
+      use precision, only: dp
+      use m_flowgeom, only: csb, snb
+      use m_sferic
 
-         integer, intent(in) :: L !< flowlink number
-         integer, intent(in) :: i12 !< left (1) or right (2) neighboring cell
-         real(kind=dp), intent(in) :: ux, uy !< vector components in flowlink coordinate frame
+      integer, intent(in) :: L !< flowlink number
+      integer, intent(in) :: i12 !< left (1) or right (2) neighboring cell
+      real(kind=dp), intent(in) :: ux, uy !< vector components in flowlink coordinate frame
 
-         if (jsferic /= 1 .or. jasfer3D /= 1) then
-            lin2nodx = ux
-         else
-            lin2nodx = csb(i12, L) * ux - snb(i12, L) * uy
-         end if
+      if (jsferic /= 1 .or. jasfer3D /= 1) then
+         lin2nodx = ux
+      else
+         lin2nodx = csb(i12, L) * ux - snb(i12, L) * uy
+      end if
 
-         return
-      end function lin2nodx
+      return
+   end function lin2nodx
 
 end module m_lin2nodx

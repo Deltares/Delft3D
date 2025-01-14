@@ -34,78 +34,76 @@
 !!     It is assumed that there is a backup copy of the grid.
 module m_netrotfld
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: netrotfld
+   public :: netrotfld
 
 contains
 
-subroutine netrotfld(xp, yp, kp)
-   use precision, only: dp
-   use m_teknet
-   use m_confrm
-   use m_netw
-   use m_grid
-   use m_alloc
-   use m_missing
-   use m_wearelt
-   use m_sferic
-   use geometry_module, only: dbdistance
+   subroutine netrotfld(xp, yp, kp)
+      use precision, only: dp
+      use m_teknet
+      use m_confrm
+      use m_netw
+      use m_grid
+      use m_alloc
+      use m_missing
+      use m_wearelt
+      use m_sferic
 
-   real(kind=dp) :: xp, yp !< coordinates that determine the influenced region and rotation angle
+      real(kind=dp) :: xp, yp !< coordinates that determine the influenced region and rotation angle
 
-   integer :: kp !< center point index
+      integer :: kp !< center point index
 
-   real(kind=dp) :: Dx0, Dy0, rsx, xn, yn, dist, frac
-   real(kind=dp) :: Dalpha0, alpha, xcen, ycen
-   real(kind=dp), external :: getDx, getDy
+      real(kind=dp) :: Dx0, Dy0, rsx, xn, yn, dist, frac
+      real(kind=dp) :: Dalpha0, alpha, xcen, ycen
 
-   integer :: i, ja, jac
+      integer :: i, ja, jac
 
-   xcen = xk(kp)
-   ycen = yk(kp)
+      xcen = xk(kp)
+      ycen = yk(kp)
 
-   Dx0 = xp - xcen
-   Dy0 = yp - ycen
+      Dx0 = xp - xcen
+      Dy0 = yp - ycen
 
-   Dalpha0 = atan2(Dy0, Dx0)
+      Dalpha0 = atan2(Dy0, Dx0)
 
-   do
-      rsx = max(dsix, sqrt(Dx0 * Dx0 + Dy0 * Dy0))
+      do
+         rsx = max(dsix, sqrt(Dx0 * Dx0 + Dy0 * Dy0))
 
-      !  whipe out previous net image
-      ja = 0
-      call teknet(ja)
+         !  whipe out previous net image
+         ja = 0
+         call teknet(ja)
 
-      do i = 1, numk
-         xn = xk(i)
-         yn = yk(i)
-         !     intentional not in sferical coordinates
-         dist = sqrt((xn - xcen)**2 + (yn - ycen)**2)
-         frac = 0.5 * (1 + cos(min(max(dist / rsx, -1d0), 1d0) * pi))
+         do i = 1, numk
+            xn = xk(i)
+            yn = yk(i)
+            !     intentional not in sferical coordinates
+            dist = sqrt((xn - xcen)**2 + (yn - ycen)**2)
+            frac = 0.5 * (1 + cos(min(max(dist / rsx, -1d0), 1d0) * pi))
 
-         alpha = Dalpha0 * frac
+            alpha = Dalpha0 * frac
 
-         xk(i) = xcen + (xn - xcen) * cos(alpha) - (yn - ycen) * sin(alpha)
-         yk(i) = ycen + (xn - xcen) * sin(alpha) + (yn - ycen) * cos(alpha)
+            xk(i) = xcen + (xn - xcen) * cos(alpha) - (yn - ycen) * sin(alpha)
+            yk(i) = ycen + (xn - xcen) * sin(alpha) + (yn - ycen) * cos(alpha)
+         end do
+
+         call teknet(ja)
+
+         jac = 1
+         call confrm('More? ', jac)
+         if (jac == 0) then
+            call confrm('Flip rotation?', jac)
+            if (jac == 1) then
+               Dalpha0 = -Dalpha0
+            else
+               exit
+            end if
+         end if
       end do
 
-      call teknet(ja)
-
-      jac = 1
-      call confrm('More? ', jac)
-      if (jac == 0) then
-         call confrm('Flip rotation?', jac)
-         if (jac == 1) then
-            Dalpha0 = -Dalpha0
-         else
-            exit
-         end if
-      end if
-   end do
-
-end subroutine netrotfld
+   end subroutine netrotfld
 
 end module m_netrotfld

@@ -32,11 +32,11 @@
 
 module m_isflownode1d2d
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: isflownode1d2d
+   public :: isflownode1d2d
 
 contains
 

@@ -31,37 +31,36 @@
 !
 
 module m_nextcel
-use m_tegenovernodesandlink, only: tegenovernodesandlink
+   use m_tegenovernodesandlink, only: tegenovernodesandlink
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: nextcel
+   public :: nextcel
 
 contains
 
-  !   call nextcel(np,La,npb,k1b,k2b,Lb)
-  subroutine nextcel(np, LL, npa, k1a, k2a, La) ! give face, link and nodes, opposite to plakrand LL of cel np
-     use m_netw
+   !   call nextcel(np,La,npb,k1b,k2b,Lb)
+   subroutine nextcel(np, LL, npa, k1a, k2a, La) ! give face, link and nodes, opposite to plakrand LL of cel np
+      use m_netw
 
-     integer :: LL, np, La, npa, k1a, k2a
+      integer :: LL, np, La, npa, k1a, k2a
 
-     La = 0; npa = 0; k1a = 0; k2a = 0
+      La = 0; npa = 0; k1a = 0; k2a = 0
 
-     if (np == 0) return
+      if (np == 0) return
 
-     if (lne(1, LL) == np) then ! find cell behind current np, eindplaat
-        npa = lne(2, LL)
-     else if (lne(2, LL) == np) then
-        npa = lne(1, LL)
-     end if
+      if (lne(1, LL) == np) then ! find cell behind current np, eindplaat
+         npa = lne(2, LL)
+      else if (lne(2, LL) == np) then
+         npa = lne(1, LL)
+      end if
 
-     if (npa == 0) return
+      if (npa == 0) return
 
-     call tegenovernodesandlink(npa, LL, k1a, k2a, La)
+      call tegenovernodesandlink(npa, LL, k1a, k2a, La)
 
-  end subroutine nextcel
+   end subroutine nextcel
 
 end module m_nextcel

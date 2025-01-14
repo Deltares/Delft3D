@@ -34,7 +34,7 @@ module unstruc_ini
 !! Some basic routines for reading an INI file.
 !! Most work is done in startup and model modules.
 
-   use unstruc_messages
+   use messagehandling, only: err
    use properties
 
    implicit none

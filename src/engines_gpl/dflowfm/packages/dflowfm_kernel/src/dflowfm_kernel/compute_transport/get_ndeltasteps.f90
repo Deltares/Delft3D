@@ -48,14 +48,10 @@ contains
       use m_transport
       use timers
 
-      implicit none
-
       real(kind=dp) :: dt, dtmin
       real(kind=dp) :: logtwo
 
       integer :: kk, LL
-
-      real(kind=dp), external :: get_dt
 
       integer(4) :: ithndl = 0
 

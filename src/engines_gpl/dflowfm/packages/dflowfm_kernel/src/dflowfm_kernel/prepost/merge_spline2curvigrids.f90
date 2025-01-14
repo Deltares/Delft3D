@@ -33,128 +33,128 @@
 !> merge grids from spline2curvi
 module m_merge_spline2curvigrids
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: merge_spline2curvigrids
+   public :: merge_spline2curvigrids
 
 contains
 
-subroutine merge_spline2curvigrids()
-   use precision, only: dp
-   use m_grid
-   use m_alloc
-   use m_missing
-   use geometry_module, only: dbdistance, get_startend
-   use m_sferic, only: jsferic, jasfer3D
-   use m_increase_grid
+   subroutine merge_spline2curvigrids()
+      use precision, only: dp
+      use m_grid
+      use m_alloc
+      use m_missing
+      use geometry_module, only: dbdistance, get_startend
+      use m_sferic, only: jsferic, jasfer3D
+      use m_increase_grid
 
-   real(kind=dp), dimension(:, :), allocatable :: xcnew, ycnew
+      real(kind=dp), dimension(:, :), allocatable :: xcnew, ycnew
 
-   integer, dimension(2) :: iupperold, ilowerold, iupper, ilower
+      integer, dimension(2) :: iupperold, ilowerold, iupper, ilower
 
-   integer :: i, iother, ipoint
-   integer :: istart, iend, jstart, jend, jDj
-   integer :: istartother, iendother, jstartother, jendother
-   integer :: jmin, jmax, jminother, jmaxother
-   integer :: istartnew, iendnew
+      integer :: i, iother, ipoint
+      integer :: istart, iend, jstart, jend, jDj
+      integer :: istartother, iendother, jstartother, jendother
+      integer :: jmin, jmax, jminother, jmaxother
+      integer :: istartnew, iendnew
 
-   logical :: Lconnected
+      logical :: Lconnected
 
-   real(kind=dp), parameter :: dtol = 1d-6
+      real(kind=dp), parameter :: dtol = 1d-6
 
 !  allocate
-   allocate (xcnew(1, 1), ycnew(1, 1))
+      allocate (xcnew(1, 1), ycnew(1, 1))
 
-   ipoint = 1
-   jDj = 0
-   istartnew = 1
-   do while (ipoint < mc)
+      ipoint = 1
+      jDj = 0
+      istartnew = 1
+      do while (ipoint < mc)
 !     get start and end indices of this part of the first gridline
-      call get_startend(mc - ipoint + 1, xc(ipoint:mc, 1), yc(ipoint:mc, 1), istart, iend, dmiss)
-      istart = istart + ipoint - 1
-      iend = iend + ipoint - 1
+         call get_startend(mc - ipoint + 1, xc(ipoint:mc, 1), yc(ipoint:mc, 1), istart, iend, dmiss)
+         istart = istart + ipoint - 1
+         iend = iend + ipoint - 1
 
-      if (istart >= mc .or. istart >= iend) then ! done
-         exit
-      end if
+         if (istart >= mc .or. istart >= iend) then ! done
+            exit
+         end if
 
 !     see if this part is connected to another part
-      istartother = iend + 2
-      iendother = istartother + (iend - istart)
-      Lconnected = .true.
-      jmin = nc + 1
-      jmax = 0
-      jminother = nc + 1
-      jmaxother = 0
-      do i = istart, iend
+         istartother = iend + 2
+         iendother = istartother + (iend - istart)
+         Lconnected = .true.
+         jmin = nc + 1
+         jmax = 0
+         jminother = nc + 1
+         jmaxother = 0
+         do i = istart, iend
 !        get the grid sizes in j-direction
-         call get_startend(nc, xc(i, 1:nc), yc(i, 1:nc), jstart, jend, dmiss)
-         jmin = min(jmin, jstart)
-         jmax = max(jmax, jend)
+            call get_startend(nc, xc(i, 1:nc), yc(i, 1:nc), jstart, jend, dmiss)
+            jmin = min(jmin, jstart)
+            jmax = max(jmax, jend)
 
-         iother = iend + 2 + (iend - i)
+            iother = iend + 2 + (iend - i)
 
-         if (iother > mc) then ! no more grid available
-            Lconnected = .false.
-         else
-            if (dbdistance(xc(i, 1), yc(i, 1), xc(iother, 1), yc(iother, 1), jsferic, jasfer3D, dmiss) > dtol) then ! not on top of each other
+            if (iother > mc) then ! no more grid available
                Lconnected = .false.
             else
+               if (dbdistance(xc(i, 1), yc(i, 1), xc(iother, 1), yc(iother, 1), jsferic, jasfer3D, dmiss) > dtol) then ! not on top of each other
+                  Lconnected = .false.
+               else
 !              get the grid sizes in j-direction, other side
-               call get_startend(nc, xc(iother, 1:nc), yc(iother, 1:nc), jstartother, jendother, dmiss)
-               jminother = min(jminother, jstartother) ! should be 1
-               jmaxother = max(jmaxother, jendother)
+                  call get_startend(nc, xc(iother, 1:nc), yc(iother, 1:nc), jstartother, jendother, dmiss)
+                  jminother = min(jminother, jstartother) ! should be 1
+                  jmaxother = max(jmaxother, jendother)
+               end if
             end if
+         end do
+
+         iendnew = istartnew + iend - istart
+
+         if (Lconnected) then
+            ipoint = iendother + 2
+         else
+            jmaxother = 1
+            ipoint = iend + 2
          end if
-      end do
-
-      iendnew = istartnew + iend - istart
-
-      if (Lconnected) then
-         ipoint = iendother + 2
-      else
-         jmaxother = 1
-         ipoint = iend + 2
-      end if
 
 !     reallocate
-      iupperold = ubound(xcnew)
-      ilowerold = lbound(xcnew)
-      iupper = (/iendnew, max(jmax, iupperold(2))/)
-      ilower = (/1, min(2 - jmaxother, ilowerold(2))/)
-      call realloc(xcnew, iupper, ilower, keepExisting=.true., fill=DMISS)
-      call realloc(ycnew, iupper, ilower, keepExisting=.true., fill=DMISS)
+         iupperold = ubound(xcnew)
+         ilowerold = lbound(xcnew)
+         iupper = (/iendnew, max(jmax, iupperold(2))/)
+         ilower = (/1, min(2 - jmaxother, ilowerold(2))/)
+         call realloc(xcnew, iupper, ilower, keepExisting=.true., fill=DMISS)
+         call realloc(ycnew, iupper, ilower, keepExisting=.true., fill=DMISS)
 
 !     fill
-      xcnew(istartnew:iendnew, 1:jmax) = xc(istart:iend, 1:jmax)
-      ycnew(istartnew:iendnew, 1:jmax) = yc(istart:iend, 1:jmax)
-      if (Lconnected) then
-         xcnew(istartnew:iendnew, 1:2 - jmaxother:-1) = xc(iendother:istartother:-1, 1:jmaxother)
-         ycnew(istartnew:iendnew, 1:2 - jmaxother:-1) = yc(iendother:istartother:-1, 1:jmaxother)
-      end if
-      istartnew = iendnew + 2
-   end do
+         xcnew(istartnew:iendnew, 1:jmax) = xc(istart:iend, 1:jmax)
+         ycnew(istartnew:iendnew, 1:jmax) = yc(istart:iend, 1:jmax)
+         if (Lconnected) then
+            xcnew(istartnew:iendnew, 1:2 - jmaxother:-1) = xc(iendother:istartother:-1, 1:jmaxother)
+            ycnew(istartnew:iendnew, 1:2 - jmaxother:-1) = yc(iendother:istartother:-1, 1:jmaxother)
+         end if
+         istartnew = iendnew + 2
+      end do
 
 !  increase grid
-   iupper = ubound(xcnew)
-   ilower = lbound(xcnew)
-   mc = iupper(1) - ilower(1) + 1
-   nc = iupper(2) - ilower(2) + 1
-   call increasegrid(mc, nc)
+      iupper = ubound(xcnew)
+      ilower = lbound(xcnew)
+      mc = iupper(1) - ilower(1) + 1
+      nc = iupper(2) - ilower(2) + 1
+      call increasegrid(mc, nc)
 
 !  fill
-   xc = DMISS
-   yc = DMISS
-   xc(1:mc, 1:nc) = xcnew
-   yc(1:mc, 1:nc) = ycnew
+      xc = DMISS
+      yc = DMISS
+      xc(1:mc, 1:nc) = xcnew
+      yc(1:mc, 1:nc) = ycnew
 
 !  deallocate
-   if (allocated(xcnew)) deallocate (xcnew)
-   if (allocated(ycnew)) deallocate (ycnew)
+      if (allocated(xcnew)) deallocate (xcnew)
+      if (allocated(ycnew)) deallocate (ycnew)
 
-   return
-end subroutine merge_spline2curvigrids
+      return
+   end subroutine merge_spline2curvigrids
 
 end module m_merge_spline2curvigrids

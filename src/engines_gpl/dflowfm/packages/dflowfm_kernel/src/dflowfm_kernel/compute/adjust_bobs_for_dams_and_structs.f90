@@ -55,6 +55,7 @@ contains
       use m_1d_structures
       use m_compound
       use m_1d2d_fixedweirs, only: set_iadvec
+      use messagehandling, only: warn_flush
 
       implicit none
 

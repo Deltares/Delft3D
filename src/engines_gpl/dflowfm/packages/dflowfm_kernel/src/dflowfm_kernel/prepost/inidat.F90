@@ -26,18 +26,18 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-    
+
 module m_inidat
-use m_wrilan, only: wrilan
-use m_ininumbers, only: ininumbers
-use m_wrirgf, only: wrirgf
-use m_maketekaltimes, only: maketekaltimes
+   use m_wrilan, only: wrilan
+   use m_ininumbers, only: ininumbers
+   use m_wrirgf, only: wrirgf
+   use m_maketekaltimes, only: maketekaltimes
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: inidat, loadfile, savefile
+   public :: inidat, loadfile, savefile
 
 contains
 
@@ -53,7 +53,6 @@ contains
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use unstruc_messages
       use M_splines, only: increasespl, maxspl, maxsplen, readsplines
       use M_SAMPLES
       use m_commandline_option
@@ -276,7 +275,6 @@ contains
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use unstruc_messages
       use M_splines, only: increasespl, readsplines
       use M_SAMPLES
       use m_commandline_option
@@ -353,7 +351,6 @@ contains
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use unstruc_messages
       use M_splines, only: increasespl, readsplines, writesplines
       use M_SAMPLES
       use m_commandline_option
@@ -403,6 +400,5 @@ contains
          call save_displaysettings(inarg)
       end if
    end subroutine savefile
-
 
 end module m_inidat

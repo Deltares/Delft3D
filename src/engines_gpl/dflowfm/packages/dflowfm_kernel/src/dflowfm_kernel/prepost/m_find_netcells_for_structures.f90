@@ -37,21 +37,21 @@
 !! TODO: extend it to support other ways of specifying the structure location.
 module m_find_netcells_for_structures
 
-implicit none
-
-private
-
-public :: find_netcells_for_structures
-
-interface
-
-module subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
    implicit none
-   integer, intent(in) :: size_istrucells !< size of istrucells array
-   integer, intent(inout) :: nstrucells !< Number of the netcells that are related to structures
-   integer, dimension(size_istrucells), intent(inout) :: istrucells !< Indices of the netcells that are related to structures
-end subroutine find_netcells_for_structures
-   
-end interface
-    
+
+   private
+
+   public :: find_netcells_for_structures
+
+   interface
+
+      module subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
+         implicit none
+         integer, intent(in) :: size_istrucells !< size of istrucells array
+         integer, intent(inout) :: nstrucells !< Number of the netcells that are related to structures
+         integer, dimension(size_istrucells), intent(inout) :: istrucells !< Indices of the netcells that are related to structures
+      end subroutine find_netcells_for_structures
+
+   end interface
+
 end module m_find_netcells_for_structures

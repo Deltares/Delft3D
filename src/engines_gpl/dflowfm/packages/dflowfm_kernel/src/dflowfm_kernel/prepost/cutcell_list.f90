@@ -50,7 +50,6 @@ contains
       use M_NETW
       use M_FLOWGEOM
       use m_missing
-      use unstruc_messages
       use kdtree2Factory
       use m_sferic
       use m_tpoly

@@ -33,44 +33,44 @@
 !> copy curvigrid boundaries to polygon(s)
 module m_copycurvigridboundstopol
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: copycurvigridboundstopol
+   public :: copycurvigridboundstopol
 
 contains
 
-subroutine copycurvigridboundstopol()
-   use m_savegrd, only: savegrd
-   use m_gridtonet, only: gridtonet
-   use gridoperations
-   use m_copynetboundstopol
-   use m_zeronet
-   use m_restore_grd
+   subroutine copycurvigridboundstopol()
+      use m_savegrd, only: savegrd
+      use m_gridtonet, only: gridtonet
+      use gridoperations
+      use m_copynetboundstopol
+      use m_zeronet
+      use m_restore_grd
 
-   integer :: ierror
+      integer :: ierror
 
-   ierror = 1
+      ierror = 1
 
 !  save net and curvigrid
-   call SAVENET()
-   call savegrd()
+      call SAVENET()
+      call savegrd()
 
 !  delete net
-   call zeronet()
+      call zeronet()
 
-   call gridtonet()
-   call copynetboundstopol(1, 1, 0, 1)
+      call gridtonet()
+      call copynetboundstopol(1, 1, 0, 1)
 
-   ierror = 0
-1234 continue
+      ierror = 0
+1234  continue
 
 !  resore net and curvigrid
-   call restore()
-   call restoregrd()
+      call restore()
+      call restoregrd()
 
-   return
-end subroutine copycurvigridboundstopol
+      return
+   end subroutine copycurvigridboundstopol
 
 end module m_copycurvigridboundstopol

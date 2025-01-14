@@ -31,68 +31,68 @@
 !
 
 module m_ortsor
-use m_sor, only: sor
+   use m_sor, only: sor
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: ortsor
+   public :: ortsor
 
 contains
 
-      subroutine ORTSOR(XR, YR, A, B, C, D, E, ATP, M1, N1, M2, N2, &
-                        XI2, YI2, XJ2, YJ2, XO, YO, &
-                        RJAC)
-         use m_makey2, only: makey2
-         use m_bndsmt, only: bndsmt
-         use precision, only: dp
-         use unstruc_colors
-         use m_sferic
-         use m_grid
-         use m_gridsettings
-         use m_orthosettings
-         use m_drawthis
-         use m_readyy
-         use m_tek_grd
+   subroutine ORTSOR(XR, YR, A, B, C, D, E, ATP, M1, N1, M2, N2, &
+                     XI2, YI2, XJ2, YJ2, XO, YO, &
+                     RJAC)
+      use m_makey2, only: makey2
+      use m_bndsmt, only: bndsmt
+      use precision, only: dp
+      use unstruc_colors
+      use m_sferic
+      use m_grid
+      use m_gridsettings
+      use m_orthosettings
+      use m_drawthis
+      use m_readyy
+      use m_tek_grd
 
-         integer :: i
-         integer :: key
-         integer :: m1
-         integer :: m2
-         integer :: n1
-         integer :: n2
-         real(kind=dp) :: rjac
+      integer :: i
+      integer :: key
+      integer :: m1
+      integer :: m2
+      integer :: n1
+      integer :: n2
+      real(kind=dp) :: rjac
 
-         real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
-                          XI2(MMAX, NMAX), XJ2(MMAX, NMAX), &
-                          YI2(MMAX, NMAX), YJ2(MMAX, NMAX), &
-                          XO(MMAX, NMAX), YO(MMAX, NMAX), &
-                          A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), &
-                          D(MMAX, NMAX), E(MMAX, NMAX), ATP(MMAX, NMAX)
+      real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
+                       XI2(MMAX, NMAX), XJ2(MMAX, NMAX), &
+                       YI2(MMAX, NMAX), YJ2(MMAX, NMAX), &
+                       XO(MMAX, NMAX), YO(MMAX, NMAX), &
+                       A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), &
+                       D(MMAX, NMAX), E(MMAX, NMAX), ATP(MMAX, NMAX)
 
-         do I = 1, ITBND
+      do I = 1, ITBND
 
-            if (NDRAW(8) == 0) call READYY(' ', 0.25d0 + 0.75d0 * (dble(I - 1 + 0.20d0) / dble(ITBND)))
-            call SOR(A, B, C, D, E, XR, RJAC, M1, N1, M2, N2)
+         if (NDRAW(8) == 0) call READYY(' ', 0.25d0 + 0.75d0 * (dble(I - 1 + 0.20d0) / dble(ITBND)))
+         call SOR(A, B, C, D, E, XR, RJAC, M1, N1, M2, N2)
 
-            if (NDRAW(8) == 0) call READYY(' ', 0.25d0 + 0.75d0 * (dble(I - 1 + 0.60d0) / dble(ITBND)))
-            call SOR(A, B, C, D, E, YR, RJAC, M1, N1, M2, N2)
+         if (NDRAW(8) == 0) call READYY(' ', 0.25d0 + 0.75d0 * (dble(I - 1 + 0.60d0) / dble(ITBND)))
+         call SOR(A, B, C, D, E, YR, RJAC, M1, N1, M2, N2)
 
-            if (NDRAW(8) == 0) call READYY(' ', 0.25d0 + 0.75d0 * (dble(I - 1 + 1.00d0) / dble(ITBND)))
+         if (NDRAW(8) == 0) call READYY(' ', 0.25d0 + 0.75d0 * (dble(I - 1 + 1.00d0) / dble(ITBND)))
 
-            call BNDSMT(XR, YR, XI2, YI2, XJ2, YJ2, ATP, M1, N1, M2, N2)
+         call BNDSMT(XR, YR, XI2, YI2, XJ2, YJ2, ATP, M1, N1, M2, N2)
 
-            if (NDRAW(8) == 1 .and. MDESIGN /= 5) then
-               if (JSFERIC == 1) then
-                  call MAKEY2(XR, YR, XO, YO, MMAX, NMAX)
-                  call TEKGRD(XO, YO, MMAX, NMAX, M1, N1, M2, N2, NCOLDG, NDRAW(38), KEY, MC)
-               else
-                  call TEKGRD(XR, YR, MMAX, NMAX, M1, N1, M2, N2, NCOLDG, NDRAW(38), KEY, MC)
-               end if
+         if (NDRAW(8) == 1 .and. MDESIGN /= 5) then
+            if (JSFERIC == 1) then
+               call MAKEY2(XR, YR, XO, YO, MMAX, NMAX)
+               call TEKGRD(XO, YO, MMAX, NMAX, M1, N1, M2, N2, NCOLDG, NDRAW(38), KEY, MC)
+            else
+               call TEKGRD(XR, YR, MMAX, NMAX, M1, N1, M2, N2, NCOLDG, NDRAW(38), KEY, MC)
             end if
-         end do
-         return
-      end subroutine ORTSOR
+         end if
+      end do
+      return
+   end subroutine ORTSOR
 
 end module m_ortsor

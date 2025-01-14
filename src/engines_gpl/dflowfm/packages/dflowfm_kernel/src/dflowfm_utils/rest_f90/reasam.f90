@@ -30,9 +30,9 @@
 !
 !
 module m_reasam
-use m_xmisar, only: xmisar
-use m_tidysamples, only: tidysamples
-use m_misar, only: misar
+   use m_xmisar, only: xmisar
+   use m_tidysamples, only: tidysamples
+   use m_misar, only: misar
 
    implicit none
 contains

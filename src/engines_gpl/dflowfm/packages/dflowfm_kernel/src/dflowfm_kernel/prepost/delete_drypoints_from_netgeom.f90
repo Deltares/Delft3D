@@ -33,10 +33,9 @@
 !> read drypoints files and delete dry points from net geometry (netcells)
 !! Grid enclosures are handled via the jinside=-1 option.
 module m_delete_drypoints_from_netgeom
-use m_remove_masked_netcells, only: remove_masked_netcells
-use m_pol_to_cellmask, only: pol_to_cellmask
-use m_fix_global_polygons, only: fix_global_polygons
-
+   use m_remove_masked_netcells, only: remove_masked_netcells
+   use m_pol_to_cellmask, only: pol_to_cellmask
+   use m_fix_global_polygons, only: fix_global_polygons
 
    implicit none
 
@@ -51,7 +50,7 @@ contains
       use m_cutcell_list, only: cutcell_list
       use m_samples_to_cellmask2
       use m_confrm
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_sferic, only: jsferic
       use string_module
       use m_polygon, only: NPL, ZPL, savepol, restorepol

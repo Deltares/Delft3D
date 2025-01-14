@@ -32,38 +32,38 @@
 
 module m_geomerc
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: geomerc
+   public :: geomerc
 
 contains
 
-      subroutine GEOMERC(XG, YG, XX, YY)
-         use precision, only: dp
-         use M_SFERIC
+   subroutine GEOMERC(XG, YG, XX, YY)
+      use precision, only: dp
+      use M_SFERIC
 
-         real(kind=dp) :: XX, YY, XG, YG, FI2, YC, CY, F, E
-         real(kind=dp) :: a
-         real(kind=dp) :: sf
-         XX = XG * DG2RD * RA
+      real(kind=dp) :: XX, YY, XG, YG, FI2, YC, CY, F, E
+      real(kind=dp) :: a
+      real(kind=dp) :: sf
+      XX = XG * DG2RD * RA
 
-         FI2 = DG2RD * YG
-         YY = (1d0 + sin(FI2)) / cos(FI2)
-         YY = RA * log(YY)
+      FI2 = DG2RD * YG
+      YY = (1d0 + sin(FI2)) / cos(FI2)
+      YY = RA * log(YY)
 
-         A = 6378140
-         XX = XG * DG2RD * RA
-         YC = DG2RD * (90 - YG)
-         CY = cos(YC)
-         F = 298.257223d0
-         E = sqrt(2 / F - 1 / F**2)
+      A = 6378140
+      XX = XG * DG2RD * RA
+      YC = DG2RD * (90 - YG)
+      CY = cos(YC)
+      F = 298.257223d0
+      E = sqrt(2 / F - 1 / F**2)
 
-         YY = -A * log(abs(tan(YC / 2)) * ((1 + e * CY) / (1 - e * CY))**(e / 2))
-         SF = sin(YC) / sqrt(1 - E * E * CY)
+      YY = -A * log(abs(tan(YC / 2)) * ((1 + e * CY) / (1 - e * CY))**(e / 2))
+      SF = sin(YC) / sqrt(1 - E * E * CY)
 
-         return
-      end subroutine GEOMERC
+      return
+   end subroutine GEOMERC
 
 end module m_geomerc

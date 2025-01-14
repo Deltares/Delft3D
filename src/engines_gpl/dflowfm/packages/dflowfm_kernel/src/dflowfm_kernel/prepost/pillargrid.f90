@@ -33,81 +33,81 @@
 !> create pillar grid in polygon
 module m_pillargrid
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: pillargrid
+   public :: pillargrid
 
 contains
 
-subroutine pillargrid(ierror)
-   use precision, only: dp
-   use m_grid
-   use m_gridsettings
-   use m_polygon
-   use m_missing
-   use m_sferic, only: jsferic, jasfer3D
-   use geometry_module, only: dbdistance, get_startend
-   use m_increase_grid
+   subroutine pillargrid(ierror)
+      use precision, only: dp
+      use m_grid
+      use m_gridsettings
+      use m_polygon
+      use m_missing
+      use m_sferic, only: jsferic, jasfer3D
+      use geometry_module, only: dbdistance, get_startend
+      use m_increase_grid
 
-   integer, intent(out) :: ierror ! error (1) or not (0)
+      integer, intent(out) :: ierror ! error (1) or not (0)
 
-   integer :: i, j, jstart, jend, num, ipol
+      integer :: i, j, jstart, jend, num, ipol
 
-   real(kind=dp) :: R0, R1, x0, y0, x1, y1, alpha, beta
+      real(kind=dp) :: R0, R1, x0, y0, x1, y1, alpha, beta
 
-   ierror = 1
+      ierror = 1
 
-   if (NPL < 3) goto 1234
+      if (NPL < 3) goto 1234
 
 !  get the first polygon
-   call get_startend(NPL, XPL, YPL, jstart, jend, dmiss)
+      call get_startend(NPL, XPL, YPL, jstart, jend, dmiss)
 
 !  number of points in the polygon
-   num = jend - jstart + 1
-   if (num < 2) goto 1234 ! we need at least two points in the polygon
+      num = jend - jstart + 1
+      if (num < 2) goto 1234 ! we need at least two points in the polygon
 
 !  set the grid sizes
-   mc = num + 1
-   nc = nfac + 1
+      mc = num + 1
+      nc = nfac + 1
 
-   call increasegrid(mc, nc)
+      call increasegrid(mc, nc)
 
-   xc = DMISS
-   yc = DMISS
+      xc = DMISS
+      yc = DMISS
 
 !  construct the grid
-   R0 = pil_rad
-   x0 = pil_x
-   y0 = pil_y
+      R0 = pil_rad
+      x0 = pil_x
+      y0 = pil_y
 
-   do i = 1, mc
+      do i = 1, mc
 !     get the coordinates of the point on the polyline
-      ipol = jstart + i - 1
-      if (ipol > jend) ipol = ipol - num
-      x1 = xpl(ipol)
-      y1 = ypl(ipol)
+         ipol = jstart + i - 1
+         if (ipol > jend) ipol = ipol - num
+         x1 = xpl(ipol)
+         y1 = ypl(ipol)
 
 !     make the gridline from the pillar to the polygon point
-      do j = 1, nc
-         R1 = dbdistance(x0, y0, x1, y1, jsferic, jasfer3D, dmiss)
+         do j = 1, nc
+            R1 = dbdistance(x0, y0, x1, y1, jsferic, jasfer3D, dmiss)
 !        determine relative position on the gridline
 !        uniform:
-         alpha = dble(j - 1) / dble(nc - 1)
-         beta = (1d0 - alpha) * R0 / R1 + alpha
+            alpha = dble(j - 1) / dble(nc - 1)
+            beta = (1d0 - alpha) * R0 / R1 + alpha
 
-         xc(i, j) = x0 + beta * (x1 - x0)
-         yc(i, j) = y0 + beta * (y1 - y0)
-      end do ! do j=1,nc
-   end do ! do i=1,mc
+            xc(i, j) = x0 + beta * (x1 - x0)
+            yc(i, j) = y0 + beta * (y1 - y0)
+         end do ! do j=1,nc
+      end do ! do i=1,mc
 
-   ierror = 0
+      ierror = 0
 
 !  error handling
-1234 continue
+1234  continue
 
-   return
-end subroutine pillargrid
+      return
+   end subroutine pillargrid
 
 end module m_pillargrid

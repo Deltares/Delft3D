@@ -33,35 +33,35 @@
 !>    move a whole spline
 module m_movespline
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: movespline
+   public :: movespline
 
 contains
 
-      subroutine movespline(ispline, inode, xp, yp)
-         use precision, only: dp
-         use m_splines
+   subroutine movespline(ispline, inode, xp, yp)
+      use precision, only: dp
+      use m_splines
 
-         integer, intent(in) :: ispline !< spline number
-         integer, intent(in) :: inode !< spline control point
-         real(kind=dp), intent(in) :: xp, yp !< new active spline control point (np) coordinates
+      integer, intent(in) :: ispline !< spline number
+      integer, intent(in) :: inode !< spline control point
+      real(kind=dp), intent(in) :: xp, yp !< new active spline control point (np) coordinates
 
-         real(kind=dp) :: dx, dy
+      real(kind=dp) :: dx, dy
 
-         integer :: num
+      integer :: num
 
-         call nump(ispline, num)
+      call nump(ispline, num)
 
-         if (ispline > 0 .and. ispline <= maxspl .and. inode > 0 .and. inode <= num) then
-            dx = xp - xsp(ispline, inode)
-            dy = yp - ysp(ispline, inode)
-            xsp(ispline, 1:maxsplen) = xsp(ispline, 1:maxsplen) + dx
-            ysp(ispline, 1:maxsplen) = ysp(ispline, 1:maxsplen) + dy
-         end if
-         return
-      end subroutine movespline
+      if (ispline > 0 .and. ispline <= maxspl .and. inode > 0 .and. inode <= num) then
+         dx = xp - xsp(ispline, inode)
+         dy = yp - ysp(ispline, inode)
+         xsp(ispline, 1:maxsplen) = xsp(ispline, 1:maxsplen) + dx
+         ysp(ispline, 1:maxsplen) = ysp(ispline, 1:maxsplen) + dy
+      end if
+      return
+   end subroutine movespline
 
 end module m_movespline

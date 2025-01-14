@@ -31,14 +31,14 @@
 !
 module m_closeworld
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: closeworld
+   public :: closeworld
 
 contains
-    
+
    subroutine closeworld()
       use precision, only: dp
       use network_data, only: xk, yk, numk

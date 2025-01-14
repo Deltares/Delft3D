@@ -42,7 +42,8 @@ contains
    subroutine obs_on_flowgeom(iobstype)
 
       use m_observations_data, only: numobs, nummovobs, kobs, namobs
-      use unstruc_messages, only: loglevel_StdOut, LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
+      use unstruc_messages, only: loglevel_StdOut
+      use messagehandling, only: LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
       use m_flowgeom, only: ndx2D, ndxi
       use unstruc_caching, only: cache_retrieved, copy_cached_observations
 

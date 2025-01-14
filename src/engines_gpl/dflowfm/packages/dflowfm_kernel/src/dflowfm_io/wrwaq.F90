@@ -36,7 +36,6 @@ module wrwaq
 #include "config.h"
 #endif
 
-   use unstruc_files
    use precision, only: dp
 
    implicit none
@@ -44,6 +43,9 @@ module wrwaq
 contains
 
    function openwaqbinfile(filename) result(lun)
+      use messagehandling, only: LEVEL_INFO, mess
+      use unstruc_files, only: reg_file_open
+
       character(len=*), intent(in) :: filename !< Output filename.
       integer :: lun
 
@@ -63,6 +65,8 @@ contains
    end function openwaqbinfile
 
    function openasciifile(filename) result(lun)
+      use messagehandling, only: LEVEL_INFO, mess
+      use unstruc_files, only: reg_file_open
 
       character(len=*), intent(in) :: filename
       integer :: lun
@@ -328,7 +332,6 @@ end module wrwaq
 !> Module for coupling with WAQ.
 !! Currently only writing of WAQ-files.
 module waq
-   use unstruc_messages
    use m_getkbotktopmax
    use precision, only: dp
 
@@ -1349,6 +1352,7 @@ contains
 !! At the same time stores the sorted nodes of the current face in the given nodes array.
 !! In this subroutine input means "from the un-aggregated mesh" and output means "from the aggregated mesh".
    subroutine sort_edges(current_face, edges, nodes, input_edge_nodes, input_face_nodes, input_edge_faces, face_mapping_table, reverse_edge_mapping_table, node_mapping_table, output_edge_nodes)
+      use messagehandling, only: LEVEL_ERROR, mess
 
       implicit none
 
@@ -1429,6 +1433,7 @@ contains
  !! In this subroutine input means "from the un-aggregated mesh" and output means "from the aggregated mesh".
    function sort_first_two_nodes(output_face, output_edge, input_edge_nodes, input_face_nodes, input_edge_faces, face_mapping_table, reverse_edge_mapping_table, node_mapping_table) result(sorted_output_nodes)
       use m_alloc
+      use messagehandling, only: LEVEL_ERROR, mess
 
       implicit none
 
@@ -1705,6 +1710,7 @@ contains
    subroutine waq_wri_model_files()
       use m_flowgeom
       use unstruc_files, only: defaultFilename
+      use messagehandling, only: msgbuf, msg_flush
 
       implicit none
 
@@ -1763,6 +1769,7 @@ contains
       use unstruc_files, only: defaultFilename
       use m_gettaus
       use m_gettauswave
+      use messagehandling, only: msgbuf, msg_flush
       implicit none
       !
       !           Global variables
@@ -2254,6 +2261,7 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_alloc
+      use messagehandling, only: msgbuf, err_flush
       implicit none
 
       integer :: ibnd, nbnd, isrc, K, K1, K2, kk
@@ -3156,7 +3164,7 @@ contains
 
 !> Read an aggregation file (.dwq) into the global aggregation table.
    subroutine waq_read_dwq(ndxi, ndx, iapnt, filename)
-      use unstruc_files
+      use messagehandling, only: LEVEL_WARN, LEVEL_ERROR, mess
       use m_filez, only: oldfil
       implicit none
       !

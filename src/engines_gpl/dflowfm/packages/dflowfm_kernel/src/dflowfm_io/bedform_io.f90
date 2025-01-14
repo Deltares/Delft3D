@@ -34,38 +34,10 @@ module m_bedform_io
    !
    implicit none
    !
-   public fm_rdbedformpar, fm_clrbedformpar
+   public fm_rdbedformpar
    !
 contains
-   subroutine fm_clrbedformpar(bfmpar)
-      use precision
-      use m_bedform_data
-
-      implicit none
-
-      integer :: istat
-      type(bedformpar_type) :: bfmpar
-
-      if (associated(bfmpar%duneheight)) deallocate (bfmpar%duneheight, STAT=istat)
-      if (associated(bfmpar%duneheightequi)) deallocate (bfmpar%duneheightequi, STAT=istat)
-      if (associated(bfmpar%dunelength)) deallocate (bfmpar%dunelength, STAT=istat)
-      if (associated(bfmpar%qbedformx)) deallocate (bfmpar%qbedformx, STAT=istat)
-      if (associated(bfmpar%qbedformy)) deallocate (bfmpar%qbedformy, STAT=istat)
-      if (associated(bfmpar%ubedform)) deallocate (bfmpar%ubedform, STAT=istat)
-
-      if (associated(bfmpar%rksr)) deallocate (bfmpar%rksr, STAT=istat)
-      if (associated(bfmpar%rksmr)) deallocate (bfmpar%rksmr, STAT=istat)
-      if (associated(bfmpar%rksd)) deallocate (bfmpar%rksd, STAT=istat)
-
-      if (associated(bfmpar%hdpar)) deallocate (bfmpar%hdpar, STAT=istat)
-      if (associated(bfmpar%ldpar)) deallocate (bfmpar%ldpar, STAT=istat)
-      if (associated(bfmpar%kdpar)) deallocate (bfmpar%kdpar, STAT=istat)
-      if (associated(bfmpar%cdpar)) deallocate (bfmpar%cdpar, STAT=istat)
-      !
-      if (associated(bfmpar%bedformD50)) deallocate (bfmpar%bedformD50, STAT=istat)
-      if (associated(bfmpar%bedformD90)) deallocate (bfmpar%bedformD90, STAT=istat)
-   end subroutine fm_clrbedformpar
-
+   
    subroutine fm_initbedformpar(bfmpar, error)
       use precision
       use m_flowgeom

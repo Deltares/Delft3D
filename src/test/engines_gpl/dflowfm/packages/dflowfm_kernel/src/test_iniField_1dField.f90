@@ -23,6 +23,7 @@
 module test_ini_Field_1dField
     use ftnunit
     use precision
+    use messagehandling, only: resetMaxerrorLevel
 
     implicit none
     private

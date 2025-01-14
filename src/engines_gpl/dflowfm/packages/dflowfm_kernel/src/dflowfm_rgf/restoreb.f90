@@ -32,24 +32,24 @@
 
 module m_restoreb
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: restoreb
+   public :: restoreb
 
 contains
 
-      subroutine RESTOREB(NPUT)
-         use m_grid_block
+   subroutine RESTOREB(NPUT)
+      use m_grid_block
 
-         integer :: nput
+      integer :: nput
 
-         MB = MB2
-         NB = NB2
-         NPT = NPT2
-         NPUT = NPUTO
-         return
-      end subroutine restoreb
+      MB = MB2
+      NB = NB2
+      NPT = NPT2
+      NPUT = NPUTO
+      return
+   end subroutine restoreb
 
 end module m_restoreb

@@ -143,6 +143,7 @@ module m_choices
    use m_copygridtosam
    use m_copyzlintosamples
    use m_connecthangingnodes, only: connecthangingnodes, removelinksofhangingnodes, makeZKbedlevels
+   use m_partition_to_idomain, only: partition_to_idomain
 
    implicit none
 
@@ -238,13 +239,10 @@ contains
             call SAVENET()
             call REFINEQUADS()
          else if (NWHAT == 12) then
-            ! CALL quadsTOTRI()
             call SAVENET()
             call REFINEQUADS_casulli()
          else if (NWHAT == 13) then
-!         CALL RELINK()
 !         CALL SAVENET()
-!         CALL REFINECELLSANDFACES() !  REFINECELLSONLY()
             call SAVENET()
             call REFINECELLSANDFACES2() !  REFINECELLSONLY()
          else if (NWHAT == 14) then

@@ -349,6 +349,7 @@ contains
    subroutine set_wave_parameters(initialization)
       use ieee_arithmetic, only: ieee_is_nan
       use m_compute_wave_parameters, only: compute_wave_parameters
+      use unstruc_messages, only: callback_msg
 
       logical, intent(in) :: initialization !< initialization phase
 

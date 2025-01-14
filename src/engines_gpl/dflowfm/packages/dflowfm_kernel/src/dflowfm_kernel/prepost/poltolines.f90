@@ -31,50 +31,49 @@
 !
 
 module m_poltolines
-use m_setpoint, only: setpoint
+   use m_setpoint, only: setpoint
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: poltolines
+   public :: poltolines
 
 contains
 
-  subroutine POLTOLINES()
-     use m_isnode, only: isnode
-     use precision, only: dp
-     use m_connect, only: connect
-     use m_netw
-     use m_afmeting
-     use gridoperations
-     use m_cconstants
-     use m_dlength, only: dlength
+   subroutine POLTOLINES()
+      use m_isnode, only: isnode
+      use precision, only: dp
+      use m_connect, only: connect
+      use m_netw
+      use m_afmeting
+      use gridoperations
+      use m_cconstants
+      use m_dlength, only: dlength
 
-     real(kind=dp) :: ael
-     integer :: k
-     integer :: k1
-     integer :: k2
-     real(kind=dp) :: rml
-     real(kind=dp) :: zp
+      real(kind=dp) :: ael
+      integer :: k
+      integer :: k1
+      integer :: k2
+      real(kind=dp) :: rml
+      real(kind=dp) :: zp
 
-     AEL = PI * RDIAM * RDIAM / 4 ! RDIAM in mm
-     do K = 1, NPL - 1
-        call ISNODE(K1, XPL(K), YPL(K), ZP)
-        if (K1 == 0) then
-           call GIVENEWNODENUM(K1)
-           call SETPOINT(XPL(K), YPL(K), ZP, K1)
-        end if
-        call ISNODE(K2, XPL(K + 1), YPL(K + 1), ZP)
-        if (K2 == 0) then
-           call GIVENEWNODENUM(K2)
-           call SETPOINT(XPL(K + 1), YPL(K + 1), ZP, K2)
-        end if
-        RML = DLENGTH(K1, K2)
-        call CONNECT(K1, K2, LFAC, RML)
-     end do
-     return
-  end subroutine POLTOLINES
+      AEL = PI * RDIAM * RDIAM / 4 ! RDIAM in mm
+      do K = 1, NPL - 1
+         call ISNODE(K1, XPL(K), YPL(K), ZP)
+         if (K1 == 0) then
+            call GIVENEWNODENUM(K1)
+            call SETPOINT(XPL(K), YPL(K), ZP, K1)
+         end if
+         call ISNODE(K2, XPL(K + 1), YPL(K + 1), ZP)
+         if (K2 == 0) then
+            call GIVENEWNODENUM(K2)
+            call SETPOINT(XPL(K + 1), YPL(K + 1), ZP, K2)
+         end if
+         RML = DLENGTH(K1, K2)
+         call CONNECT(K1, K2, LFAC, RML)
+      end do
+      return
+   end subroutine POLTOLINES
 
 end module m_poltolines

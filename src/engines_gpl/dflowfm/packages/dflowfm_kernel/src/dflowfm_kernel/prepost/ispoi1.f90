@@ -32,77 +32,77 @@
 
 module m_ispoi1
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: ispoi1
+   public :: ispoi1
 
 contains
 
-      !> Checks whether a point is (almost) one of the polyline points.
+   !> Checks whether a point is (almost) one of the polyline points.
       !!
       !! Checks at a radius dcir around all polyline points and sets
       !! input coordinates to the exact polyline point coordinates when
       !! it is found.
-      subroutine ISPOI1(X, Y, N, XL, YL, MV)
-         use precision, only: dp
-         use m_wearelt, only: rcir
-         use m_missing, only: dmiss
-         use m_dispnode
+   subroutine ISPOI1(X, Y, N, XL, YL, MV)
+      use precision, only: dp
+      use m_wearelt, only: rcir
+      use m_missing, only: dmiss
+      use m_dispnode
 
-         integer :: i
-         integer :: ishot
-         integer :: m1
-         integer :: m2
-         integer :: ns
+      integer :: i
+      integer :: ishot
+      integer :: m1
+      integer :: m2
+      integer :: ns
 
 !     is dit een POLYGpunt?
-         integer, intent(in) :: N !< Index of last filled polyline point (npol<=maxpol)
-         real(kind=dp), intent(in) :: X(n), Y(n) !< Entire polyline coordinate arrays.
-         real(kind=dp), intent(inout) :: XL, YL !< x- and y-coordinates of the point to be checked (set to exact point coordinates when found).
-         integer, intent(out) :: MV !< The index of the polygon point (if found, otherwise 0)
+      integer, intent(in) :: N !< Index of last filled polyline point (npol<=maxpol)
+      real(kind=dp), intent(in) :: X(n), Y(n) !< Entire polyline coordinate arrays.
+      real(kind=dp), intent(inout) :: XL, YL !< x- and y-coordinates of the point to be checked (set to exact point coordinates when found).
+      integer, intent(out) :: MV !< The index of the polygon point (if found, otherwise 0)
 
-         integer :: MVOL
+      integer :: MVOL
 
-         data MVOL/0/
-         MV = 0
+      data MVOL/0/
+      MV = 0
+      ISHOT = 0
+      NS = N
+!
+666   continue
+      ! If a previous point was found in a previous call (mvol/=0)
+      ! then first search 'nearby' in poly  (500 pts to the left and right)
+      ! If this fails (goto 666 with ishot==1), reset search range to entire poly.
+      if (ISHOT == 0 .and. MVOL /= 0) then
+         M1 = max(1, MVOL - 500)
+         M2 = min(NS, MVOL + 500)
+         ISHOT = 1
+      else
+         M1 = 1
+         M2 = NS
          ISHOT = 0
-         NS = N
+      end if
 !
-666      continue
-         ! If a previous point was found in a previous call (mvol/=0)
-         ! then first search 'nearby' in poly  (500 pts to the left and right)
-         ! If this fails (goto 666 with ishot==1), reset search range to entire poly.
-         if (ISHOT == 0 .and. MVOL /= 0) then
-            M1 = max(1, MVOL - 500)
-            M2 = min(NS, MVOL + 500)
-            ISHOT = 1
-         else
-            M1 = 1
-            M2 = NS
-            ISHOT = 0
-         end if
-!
-         do I = M1, M2
-            if (X(I) /= dmiss) then
-               if (abs(XL - X(I)) < RCIR) then
-                  if (abs(YL - Y(I)) < RCIR) then
-                     XL = X(I)
-                     YL = Y(I)
-                     MV = I
-                     MVOL = MV
-                     call DISPNODE(MV)
-                     return
-                  end if
+      do I = M1, M2
+         if (X(I) /= dmiss) then
+            if (abs(XL - X(I)) < RCIR) then
+               if (abs(YL - Y(I)) < RCIR) then
+                  XL = X(I)
+                  YL = Y(I)
+                  MV = I
+                  MVOL = MV
+                  call DISPNODE(MV)
+                  return
                end if
             end if
-         end do
+         end if
+      end do
 !
-         if (ISHOT == 1) goto 666
-         MVOL = 0
-         call DISPNODE(MVOL)
-         return
-      end subroutine ISPOI1
+      if (ISHOT == 1) goto 666
+      MVOL = 0
+      call DISPNODE(MVOL)
+      return
+   end subroutine ISPOI1
 
 end module m_ispoi1

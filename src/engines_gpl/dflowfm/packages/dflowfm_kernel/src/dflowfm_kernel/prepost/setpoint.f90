@@ -32,33 +32,33 @@
 
 module m_setpoint
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setpoint
+   public :: setpoint
 
 contains
 
-  subroutine SETPOINT(XP, YP, ZP, K1)
-     use precision, only: dp
-     use m_tweedrie
-     use m_netw
-     use m_howtoview
+   subroutine SETPOINT(XP, YP, ZP, K1)
+      use precision, only: dp
+      use m_tweedrie
+      use m_netw
+      use m_howtoview
 
-     real(kind=dp) :: XP, YP, ZP
-     integer :: K1
+      real(kind=dp) :: XP, YP, ZP
+      integer :: K1
 
-     call TWEEDRIE(XP, YP, XK(K1), YK(K1), ZK(K1))
-     if (JVIEW == 1) then
-        ZK(K1) = zp ! XYZ
-     else if (JVIEW == 2) then
-        XK(K1) = XYZ
-     else if (JVIEW == 3) then
-        YK(K1) = XYZ
-     end if
-     if (KC(K1) == 0) KC(K1) = 1
-     return
-  end subroutine SETPOINT
+      call TWEEDRIE(XP, YP, XK(K1), YK(K1), ZK(K1))
+      if (JVIEW == 1) then
+         ZK(K1) = zp ! XYZ
+      else if (JVIEW == 2) then
+         XK(K1) = XYZ
+      else if (JVIEW == 3) then
+         YK(K1) = XYZ
+      end if
+      if (KC(K1) == 0) KC(K1) = 1
+      return
+   end subroutine SETPOINT
 
 end module m_setpoint

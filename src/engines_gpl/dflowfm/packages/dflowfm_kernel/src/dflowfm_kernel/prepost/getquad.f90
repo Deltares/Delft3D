@@ -32,11 +32,11 @@
 
 module m_getquad
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: getquad
+   public :: getquad
 
 contains
 

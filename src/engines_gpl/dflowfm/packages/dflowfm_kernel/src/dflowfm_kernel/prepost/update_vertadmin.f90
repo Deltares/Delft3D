@@ -35,94 +35,94 @@
 !!    update kmxn, kmxL
 module m_update_vertadmin
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: update_vertadmin
+   public :: update_vertadmin
 
 contains
 
-subroutine update_vertadmin()
-   use precision, only: dp
-   use m_partitioninfo
-   use m_flowgeom
-   use m_flow
-   use unstruc_messages
+   subroutine update_vertadmin()
+      use precision, only: dp
+      use m_partitioninfo
+      use m_flowgeom
+      use m_flow
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
 
-   character(len=128) :: mesg
+      character(len=128) :: mesg
 
-   real(kind=dp), dimension(:, :), allocatable :: dum
+      real(kind=dp), dimension(:, :), allocatable :: dum
 
-   integer :: k, L
-   integer :: ierror
+      integer :: k, L
+      integer :: ierror
 
-   ierror = 0
+      ierror = 0
 
-   if (jampi == 0) return ! intended for parallel computations only
+      if (jampi == 0) return ! intended for parallel computations only
 
-   if (kmx <= 0) return ! 3D only
+      if (kmx <= 0) return ! 3D only
 
 !  allocate dummy array
-   allocate (dum(2, Ndx))
+      allocate (dum(2, Ndx))
 
 !  bl, kmxn: filly dummy array
-   do k = 1, Ndx
-      dum(1, k) = dble(kmxn(k))
-      dum(2, k) = bl(k)
-   end do
+      do k = 1, Ndx
+         dum(1, k) = dble(kmxn(k))
+         dum(2, k) = bl(k)
+      end do
 !  udpate dummy array
-   call update_ghosts(ITYPE_SALL, 2, Ndx, dum, ierror)
-   call update_ghostboundvals(ITYPE_SALL, 2, Ndx, dum, 0, ierror)
-   if (ierror /= 0) then
-      call mess(LEVEL_INFO, 'update_vertadmin: error')
-      ierror = 1
-      goto 1234
-   end if
+      call update_ghosts(ITYPE_SALL, 2, Ndx, dum, ierror)
+      call update_ghostboundvals(ITYPE_SALL, 2, Ndx, dum, 0, ierror)
+      if (ierror /= 0) then
+         call mess(LEVEL_INFO, 'update_vertadmin: error')
+         ierror = 1
+         goto 1234
+      end if
 
 !  check bl and kmxn values
-   do k = 1, Ndx
-      if (int(dum(1, k)) /= kmxn(k)) then
-         write (mesg, "('update_vertadmin: kmxn error, k=', I7 )") k
-         call mess(LEVEL_INFO, mesg)
-         ierror = 1
-         goto 1234
-      end if
+      do k = 1, Ndx
+         if (int(dum(1, k)) /= kmxn(k)) then
+            write (mesg, "('update_vertadmin: kmxn error, k=', I7 )") k
+            call mess(LEVEL_INFO, mesg)
+            ierror = 1
+            goto 1234
+         end if
 
-      if (dum(2, k) /= bl(k)) then
-         write (mesg, "('update_vertadmin: bl error, k=', I7 )") k
-         call mess(LEVEL_INFO, mesg)
-         ierror = 1
-         goto 1234
-      end if
-   end do
+         if (dum(2, k) /= bl(k)) then
+            write (mesg, "('update_vertadmin: bl error, k=', I7 )") k
+            call mess(LEVEL_INFO, mesg)
+            ierror = 1
+            goto 1234
+         end if
+      end do
 
-   if (allocated(dum)) deallocate (dum)
-   allocate (dum(1, Lnx))
+      if (allocated(dum)) deallocate (dum)
+      allocate (dum(1, Lnx))
 
 !  kmxL: filly dummy array
-   do L = 1, Lnx
-      dum(1, L) = dble(kmxL(L))
-   end do
+      do L = 1, Lnx
+         dum(1, L) = dble(kmxL(L))
+      end do
 !  update dummy array
-   call update_ghosts(ITYPE_U, 1, Lnx, dum, ierror)
+      call update_ghosts(ITYPE_U, 1, Lnx, dum, ierror)
 
-   if (ierror /= 0) then
-      call mess(LEVEL_INFO, 'update_vertadmin: error')
-      ierror = 1
-      goto 1234
-   end if
+      if (ierror /= 0) then
+         call mess(LEVEL_INFO, 'update_vertadmin: error')
+         ierror = 1
+         goto 1234
+      end if
 
 !  update values
-   do L = 1, Lnx
-      if (int(abs(dum(1, L))) /= kmxL(L)) then
+      do L = 1, Lnx
+         if (int(abs(dum(1, L))) /= kmxL(L)) then
 !         write(mesg,"('update_vertadmin: kmxL error, L=', I7, 2I7 )") L, kmxL(L), int(dum(1,L))
 !         call mess(LEVEL_INFO, trim(mesg))
 !         ierror = 1
 
-         kmxL(L) = int(abs(dum(1, L)))
-      end if
-   end do
+            kmxL(L) = int(abs(dum(1, L)))
+         end if
+      end do
 
 !   if ( allocated(dum) ) deallocate(dum)
 !   allocate(dum(2,Lnx))
@@ -156,15 +156,15 @@ subroutine update_vertadmin()
 !      end if
 !   end do
 
-   if (ierror == 1) then
-      call mess(LEVEL_ERROR, 'update_vertadmin: vertical layer administration out of sync', ' ', ' ')
+      if (ierror == 1) then
+         call mess(LEVEL_ERROR, 'update_vertadmin: vertical layer administration out of sync', ' ', ' ')
 !     stop
-   end if
+      end if
 
-1234 continue
-   if (allocated(dum)) deallocate (dum)
+1234  continue
+      if (allocated(dum)) deallocate (dum)
 
-   return
-end subroutine update_vertadmin
+      return
+   end subroutine update_vertadmin
 
 end module m_update_vertadmin

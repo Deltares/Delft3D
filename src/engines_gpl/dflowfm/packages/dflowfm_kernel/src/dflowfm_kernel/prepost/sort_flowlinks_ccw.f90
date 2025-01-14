@@ -30,90 +30,90 @@
 !> sort flowlinks in nd%ln counterclockwise (copy-paste and modified from above)
 module m_sort_flowlinks_ccw
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: sort_flowlinks_ccw
+   public :: sort_flowlinks_ccw
 
 contains
 
-subroutine sort_flowlinks_ccw()
-   use precision, only: dp
-   use m_flowgeom, only: xz, yz, nd, Ndx, ln
-   use m_sferic
-   use m_alloc
-   use geometry_module, only: getdxdy, dcosphi, getdx, getdy
-   use stdlib_sorting, only: sort_index
+   subroutine sort_flowlinks_ccw()
+      use precision, only: dp
+      use m_flowgeom, only: xz, yz, nd, Ndx, ln
+      use m_sferic
+      use m_alloc
+      use geometry_module, only: getdxdy, dcosphi
+      use stdlib_sorting, only: sort_index
 
-   integer :: k ! node number
-   integer :: maxlin ! array size
-   real(kind=dp), dimension(:), allocatable :: arglin ! dummy array
-   integer, dimension(:), allocatable :: linnrs, inn ! dummy arrays
+      integer :: k ! node number
+      integer :: maxlin ! array size
+      real(kind=dp), dimension(:), allocatable :: arglin ! dummy array
+      integer, dimension(:), allocatable :: linnrs, inn ! dummy arrays
 
-   integer :: k1, k2, L
+      integer :: k1, k2, L
 
-   real(kind=dp) :: phi0
+      real(kind=dp) :: phi0
 
-   real(kind=dp) :: phi, dx, dy
+      real(kind=dp) :: phi, dx, dy
 
-   integer :: lnxx
+      integer :: lnxx
 
-   maxlin = 6
+      maxlin = 6
 
-   allocate (linnrs(maxlin), arglin(maxlin), inn(maxlin))
+      allocate (linnrs(maxlin), arglin(maxlin), inn(maxlin))
 
-   do k = 1, Ndx
-      lnxx = nd(k)%lnx
+      do k = 1, Ndx
+         lnxx = nd(k)%lnx
 
-      if (lnxx <= 1) cycle
+         if (lnxx <= 1) cycle
 
-      if (lnxx > maxlin) then
-         maxlin = lnxx
-         call realloc(linnrs, maxlin, keepExisting=.true.)
-         call realloc(arglin, maxlin, keepExisting=.true.)
-         call realloc(inn, maxlin, keepExisting=.true.)
-      end if
-
-      do L = 1, lnxx
-         K1 = ln(1, abs(nd(K)%ln(L))); K2 = ln(2, abs(nd(K)%ln(L)))
-         if (K2 == K) then
-            K2 = K1
-            K1 = K
+         if (lnxx > maxlin) then
+            maxlin = lnxx
+            call realloc(linnrs, maxlin, keepExisting=.true.)
+            call realloc(arglin, maxlin, keepExisting=.true.)
+            call realloc(inn, maxlin, keepExisting=.true.)
          end if
 
-         call getdxdy(xz(k1), yz(k1), xz(k2), yz(k2), dx, dy, jsferic)
-         if (abs(dx) < 1d-14 .and. abs(dy) < 1d-14) then
-            if (dy < 0) then
-               phi = -pi / 2
-            else
-               phi = pi / 2
+         do L = 1, lnxx
+            K1 = ln(1, abs(nd(K)%ln(L))); K2 = ln(2, abs(nd(K)%ln(L)))
+            if (K2 == K) then
+               K2 = K1
+               K1 = K
             end if
-         else
-            phi = atan2(dy, dx)
-         end if
-         if (L == 1) then
-            phi0 = phi
-         end if
 
-         arglin(L) = phi - phi0
-         if (arglin(L) < 0d0) arglin(L) = arglin(L) + 2d0 * pi
-      end do
+            call getdxdy(xz(k1), yz(k1), xz(k2), yz(k2), dx, dy, jsferic)
+            if (abs(dx) < 1d-14 .and. abs(dy) < 1d-14) then
+               if (dy < 0) then
+                  phi = -pi / 2
+               else
+                  phi = pi / 2
+               end if
+            else
+               phi = atan2(dy, dx)
+            end if
+            if (L == 1) then
+               phi0 = phi
+            end if
 
-      call sort_index(arglin(1:lnxx), inn(1:lnxx))
+            arglin(L) = phi - phi0
+            if (arglin(L) < 0d0) arglin(L) = arglin(L) + 2d0 * pi
+         end do
 
-      linnrs(1:lnxx) = nd(k)%ln(1:lnxx)
-      do L = 1, lnxx
-         nd(k)%ln(L) = linnrs(inn(L))
-      end do
+         call sort_index(arglin(1:lnxx), inn(1:lnxx))
 
-   end do ! do k=1,Ndx
+         linnrs(1:lnxx) = nd(k)%ln(1:lnxx)
+         do L = 1, lnxx
+            nd(k)%ln(L) = linnrs(inn(L))
+         end do
 
-   if (allocated(linnrs)) deallocate (linnrs)
-   if (allocated(arglin)) deallocate (arglin)
-   if (allocated(inn)) deallocate (inn)
+      end do ! do k=1,Ndx
 
-   return
-end subroutine sort_flowlinks_ccw
+      if (allocated(linnrs)) deallocate (linnrs)
+      if (allocated(arglin)) deallocate (arglin)
+      if (allocated(inn)) deallocate (inn)
+
+      return
+   end subroutine sort_flowlinks_ccw
 
 end module m_sort_flowlinks_ccw

@@ -32,11 +32,11 @@
 
 module m_fix_global_polygons
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: fix_global_polygons
+   public :: fix_global_polygons
 
 contains
 
@@ -50,7 +50,7 @@ contains
       use geometry_module, only: get_startend
 
       use network_data, only: numk, nump, xk, xzw, yzw
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use m_delpol
 
       implicit none

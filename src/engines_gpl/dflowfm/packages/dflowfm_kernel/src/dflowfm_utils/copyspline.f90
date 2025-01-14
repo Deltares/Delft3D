@@ -33,77 +33,77 @@
 !>    copy and move a whole spline
 module m_copyspline
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: copyspline
+   public :: copyspline
 
 contains
 
-      subroutine copyspline(ispline, inode, xp, yp)
-         use precision, only: dp
-         use m_splines
-         use m_sferic
-         use geometry_module, only: dbdistance, dcosphi
-         use m_missing, only: dmiss
-         use m_splint
-         use m_spline
-         use m_comp_curv
+   subroutine copyspline(ispline, inode, xp, yp)
+      use precision, only: dp
+      use m_splines
+      use m_sferic
+      use geometry_module, only: dbdistance, dcosphi
+      use m_missing, only: dmiss
+      use m_splint
+      use m_spline
+      use m_comp_curv
 
-         integer, intent(inout) :: ispline !< spline number
-         integer, intent(in) :: inode !< spline control point
-         real(kind=dp), intent(in) :: xp, yp !< new spline control point coordinates
+      integer, intent(inout) :: ispline !< spline number
+      integer, intent(in) :: inode !< spline control point
+      real(kind=dp), intent(in) :: xp, yp !< new spline control point coordinates
 
-         real(kind=dp), dimension(maxsplen) :: xspp, yspp, xlist, ylist
+      real(kind=dp), dimension(maxsplen) :: xspp, yspp, xlist, ylist
 
-         real(kind=dp) :: dnx, dny, dsx, dsy, curv, alphan, alphas
-         real(kind=dp) :: x0, y0, x1, y1, ds, t
+      real(kind=dp) :: dnx, dny, dsx, dsy, curv, alphan, alphas
+      real(kind=dp) :: x0, y0, x1, y1, ds, t
 
-         integer :: i, j, num
+      integer :: i, j, num
 
-         real(kind=dp), parameter :: EPS = 1d-4
+      real(kind=dp), parameter :: EPS = 1d-4
 
-         integer, parameter :: Nresample = 1
+      integer, parameter :: Nresample = 1
 
-         call nump(ispline, num)
-         if (ispline > 0 .and. ispline <= maxspl .and. inode > 0 .and. inode <= num) then
-            x0 = xsp(ispline, inode)
-            y0 = ysp(ispline, inode)
+      call nump(ispline, num)
+      if (ispline > 0 .and. ispline <= maxspl .and. inode > 0 .and. inode <= num) then
+         x0 = xsp(ispline, inode)
+         y0 = ysp(ispline, inode)
 
-            xlist(1:num) = xsp(ispline, 1:num)
-            ylist(1:num) = ysp(ispline, 1:num)
-            call spline(xlist, num, xspp)
-            call spline(ylist, num, yspp)
-            call comp_curv(num, xlist, ylist, xspp, yspp, dble(inode - 1), curv, dnx, dny, dsx, dsy)
+         xlist(1:num) = xsp(ispline, 1:num)
+         ylist(1:num) = ysp(ispline, 1:num)
+         call spline(xlist, num, xspp)
+         call spline(ylist, num, yspp)
+         call comp_curv(num, xlist, ylist, xspp, yspp, dble(inode - 1), curv, dnx, dny, dsx, dsy)
 
-            ds = dbdistance(x0, y0, xp, yp, jsferic, jasfer3D, dmiss)
-            if (jsferic == 1) then
-               ds = ds / (Ra * dg2rd)
-            end if
+         ds = dbdistance(x0, y0, xp, yp, jsferic, jasfer3D, dmiss)
+         if (jsferic == 1) then
+            ds = ds / (Ra * dg2rd)
+         end if
 
-            alphan = dcosphi(x0, y0, x0 + EPS * dnx, y0 + EPS * dny, x0, y0, xp, yp, jsferic, jasfer3D, dxymis) * ds
-            alphas = 0d0
+         alphan = dcosphi(x0, y0, x0 + EPS * dnx, y0 + EPS * dny, x0, y0, xp, yp, jsferic, jasfer3D, dxymis) * ds
+         alphas = 0d0
 
-            call newspline()
+         call newspline()
 
 !           copy and sample spline
-            call spline(xlist, num, xspp)
-            call spline(ylist, num, yspp)
-            do i = 1, num
-               do j = 1, Nresample
-                  t = dble(i - 1) + dble(j - 1) / dble(Nresample)
-                  call splint(xlist, xspp, num, t, x1)
-                  call splint(ylist, yspp, num, t, y1)
-                  call addsplinepoint(mcs, x1, y1)
-               end do
+         call spline(xlist, num, xspp)
+         call spline(ylist, num, yspp)
+         do i = 1, num
+            do j = 1, Nresample
+               t = dble(i - 1) + dble(j - 1) / dble(Nresample)
+               call splint(xlist, xspp, num, t, x1)
+               call splint(ylist, yspp, num, t, y1)
+               call addsplinepoint(mcs, x1, y1)
             end do
+         end do
 
 !           move spline
-            ispline = mcs ! activate new spline
-            call nump(ispline, num)
-            call spline(xlist, num, xspp)
-            call spline(ylist, num, yspp)
+         ispline = mcs ! activate new spline
+         call nump(ispline, num)
+         call spline(xlist, num, xspp)
+         call spline(ylist, num, yspp)
 
 !            ds = dbdistance(x0,y0,xp,yp)
 
@@ -111,15 +111,15 @@ contains
 !!            alphas = dcosphi(x0,y0,x0+EPS*dsx,y0+EPS*dsy,x0,y0,xp,yp)*ds
 !            alphas = 0d0
 
-            do i = 1, num
-               call comp_curv(num, xlist, ylist, xspp, yspp, dble(i - 1), curv, dnx, dny, dsx, dsy)
-               x1 = xsp(ispline, i) + alphan * dnx + alphas * dsx
-               y1 = ysp(ispline, i) + alphan * dny + alphas * dsy
-               xsp(ispline, i) = x1
-               ysp(ispline, i) = y1
-            end do
-         end if
-         return
-      end subroutine copyspline
+         do i = 1, num
+            call comp_curv(num, xlist, ylist, xspp, yspp, dble(i - 1), curv, dnx, dny, dsx, dsy)
+            x1 = xsp(ispline, i) + alphan * dnx + alphas * dsx
+            y1 = ysp(ispline, i) + alphan * dny + alphas * dsy
+            xsp(ispline, i) = x1
+            ysp(ispline, i) = y1
+         end do
+      end if
+      return
+   end subroutine copyspline
 
 end module m_copyspline

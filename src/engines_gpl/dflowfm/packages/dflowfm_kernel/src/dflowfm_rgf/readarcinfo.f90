@@ -31,63 +31,62 @@
 !
 
 module m_readarcinfo
-use m_reaarc, only: reaarc
+   use m_reaarc, only: reaarc
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: readarcinfo
+   public :: readarcinfo
 
 contains
 
-      subroutine REAdarcinfo(Marc, ja)
-         use M_SFERIC
-         use m_netw
-         use m_grid
-         use M_ARCINFO
-         use M_MISSING
-         use m_increase_grid
-         use m_filez, only: doclose
+   subroutine REAdarcinfo(Marc, ja)
+      use M_SFERIC
+      use m_netw
+      use m_grid
+      use M_ARCINFO
+      use M_MISSING
+      use m_increase_grid
+      use m_filez, only: doclose
 
-         integer :: Marc, JA
-         integer :: i, j
-         integer :: merr
+      integer :: Marc, JA
+      integer :: i, j
+      integer :: merr
 
-         JSFERIC = 0
-         JSFERTEK = 0
+      JSFERIC = 0
+      JSFERTEK = 0
 
-         MERR = 0
-         MC = 0
+      MERR = 0
+      MC = 0
 
-         !     CALL READYY('Reading arcinfo',0d0)
+      !     CALL READYY('Reading arcinfo',0d0)
 
-         !     CALL READYY('Reading arcinfo',1d0)
+      !     CALL READYY('Reading arcinfo',1d0)
 
-         call reaarc(marc, 1)
-         call DOCLOSE(marc)
+      call reaarc(marc, 1)
+      call DOCLOSE(marc)
 
-         mc = mca; nc = nca
+      mc = mca; nc = nca
 
-         call INCREASEGRID(MC, NC)
+      call INCREASEGRID(MC, NC)
 
-         XC = DMISS
-         YC = DMISS
+      XC = DMISS
+      YC = DMISS
 
-         do i = 1, mc
-            do j = 1, nc
-               if (d(I, J) /= dmiss) then
-                  xc(i, j) = x0 + dxa * (i - 1)
-                  yc(i, j) = y0 + dxa * (j - 1)
-                  zc(i, j) = d(i, j)
-               end if
-            end do
+      do i = 1, mc
+         do j = 1, nc
+            if (d(I, J) /= dmiss) then
+               xc(i, j) = x0 + dxa * (i - 1)
+               yc(i, j) = y0 + dxa * (j - 1)
+               zc(i, j) = d(i, j)
+            end if
          end do
+      end do
 
-         if (allocated(d)) then
-            deallocate (d); mca = 0; nca = 0
-         end if
+      if (allocated(d)) then
+         deallocate (d); mca = 0; nca = 0
+      end if
 
 !     disable grid outside selecting polygon
 !      if ( NPL.gt.0 ) then
@@ -111,8 +110,8 @@ contains
 
 !      CALL READYY(' ',-1d0)
 
-         JA = 1
+      JA = 1
 
-      end subroutine REAdarcinfo
+   end subroutine REAdarcinfo
 
 end module m_readarcinfo

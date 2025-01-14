@@ -33,30 +33,30 @@
 !>    return x-component in corner (netnode) coordinate frame of a vector in link coordinate frame
 module m_lin2corx
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: lin2corx
+   public :: lin2corx
 
 contains
 
-      real(kind=dp) function lin2corx(L, i12, ux, uy)
-         use precision, only: dp
-         use m_flowgeom, only: csbn, snbn
-         use m_sferic
+   real(kind=dp) function lin2corx(L, i12, ux, uy)
+      use precision, only: dp
+      use m_flowgeom, only: csbn, snbn
+      use m_sferic
 
-         integer, intent(in) :: L !< flowlink number
-         integer, intent(in) :: i12 !< left (1) or right (2) corner (netnode)
-         real(kind=dp), intent(in) :: ux, uy !< vector components in flowlink coordinate frame
+      integer, intent(in) :: L !< flowlink number
+      integer, intent(in) :: i12 !< left (1) or right (2) corner (netnode)
+      real(kind=dp), intent(in) :: ux, uy !< vector components in flowlink coordinate frame
 
-         if (jsferic /= 1 .or. jasfer3D /= 1) then
-            lin2corx = ux
-         else
-            lin2corx = csbn(i12, L) * ux - snbn(i12, L) * uy
-         end if
+      if (jsferic /= 1 .or. jasfer3D /= 1) then
+         lin2corx = ux
+      else
+         lin2corx = csbn(i12, L) * ux - snbn(i12, L) * uy
+      end if
 
-         return
-      end function lin2corx
+      return
+   end function lin2corx
 
 end module m_lin2corx

@@ -35,25 +35,25 @@
 !< the flag jaAllowBndAtBifurcation is true
 module m_is_1d_boundary_candidate
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: is_1d_boundary_candidate
+   public :: is_1d_boundary_candidate
 
 contains
 
-pure logical function is_1d_boundary_candidate(L, i)
-   use network_data
-   use m_flowgeom
+   pure logical function is_1d_boundary_candidate(L, i)
+      use network_data
+      use m_flowgeom
 
-   integer, intent(in) :: L !<  net link to check for boundary candidate
-   integer, intent(in) :: i !<  node to check, equals 1 or 2
+      integer, intent(in) :: L !<  net link to check for boundary candidate
+      integer, intent(in) :: i !<  node to check, equals 1 or 2
 
-   is_1d_boundary_candidate = nmk(kn(i, L)) == 1 .and. lne(i, L) < 0 .and. &
-                              (nmk(kn(3 - i, L)) == 2 .or. jaAllowBndAtBifurcation == 1)
+      is_1d_boundary_candidate = nmk(kn(i, L)) == 1 .and. lne(i, L) < 0 .and. &
+                                 (nmk(kn(3 - i, L)) == 2 .or. jaAllowBndAtBifurcation == 1)
 
-   return
-end function is_1d_boundary_candidate
+      return
+   end function is_1d_boundary_candidate
 
 end module m_is_1d_boundary_candidate

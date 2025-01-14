@@ -31,30 +31,29 @@
 !
 
 module m_getnetnodenr
-use m_isnode, only: isnode
+   use m_isnode, only: isnode
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: getnetnodenr
+   public :: getnetnodenr
 
 contains
 
-subroutine getnetnodenr(x, y, k)
-   use precision, only: dp
-   use m_missing
-   use gridoperations
-   
-   real(kind=dp) :: x, y, z
-   integer :: k
+   subroutine getnetnodenr(x, y, k)
+      use precision, only: dp
+      use m_missing
+      use gridoperations
 
-   z = dmiss
-   call ISNODE(K, X, Y, z)
-   if (k == 0) then
-      call DSETNEWPOINT(X, Y, K)
-   end if
-end subroutine getnetnodenr
+      real(kind=dp) :: x, y, z
+      integer :: k
+
+      z = dmiss
+      call ISNODE(K, X, Y, z)
+      if (k == 0) then
+         call DSETNEWPOINT(X, Y, K)
+      end if
+   end subroutine getnetnodenr
 
 end module m_getnetnodenr

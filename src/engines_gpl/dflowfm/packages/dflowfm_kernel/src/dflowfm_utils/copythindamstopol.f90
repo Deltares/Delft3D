@@ -34,26 +34,26 @@
 !! to the active polygons in xpl,...
 module m_copythindamstopol
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: copythindamstopol
+   public :: copythindamstopol
 
 contains
 
-subroutine copyThinDamsToPol()
-   use m_thindams
-   use m_polygon, only: npl
-   use m_append_crspath_to_pol
+   subroutine copyThinDamsToPol()
+      use m_thindams
+      use m_polygon, only: npl
+      use m_append_crspath_to_pol
 
-   integer :: i
+      integer :: i
 
-   npl = 0
-   do i = 1, nthd
-      call appendCRSPathToPol(thd(i))
-   end do
+      npl = 0
+      do i = 1, nthd
+         call appendCRSPathToPol(thd(i))
+      end do
 
-end subroutine copyThinDamsToPol
+   end subroutine copyThinDamsToPol
 
 end module m_copythindamstopol

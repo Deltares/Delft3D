@@ -32,11 +32,11 @@
 
 module m_in_flowcell
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: in_flowcell
+   public :: in_flowcell
 
 contains
 
@@ -45,7 +45,7 @@ contains
       use m_flowgeom
       use unstruc_display
       use m_missing, only: jins, dmiss
-      use geometry_module, only: pinpok, dbdistance
+      use geometry_module, only: pinpok
 
       real(kind=dp) :: xp, yp
       integer :: inn, k, kk, nn

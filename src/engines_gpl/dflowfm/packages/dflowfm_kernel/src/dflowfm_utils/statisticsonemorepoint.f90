@@ -32,23 +32,23 @@
 
 module m_statisticsonemorepoint
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: statisticsonemorepoint
+   public :: statisticsonemorepoint
 
 contains
 
- subroutine statisticsonemorepoint(dif)
-    use precision, only: dp
-    use m_statistics
+   subroutine statisticsonemorepoint(dif)
+      use precision, only: dp
+      use m_statistics
 
-    real(kind=dp) :: dif
-    avedif = avedif + dif
-    sqadif = sqadif + dif * dif
-    dmxdif = max(dmxdif, dif)
-    numdif = numdif + 1
- end subroutine statisticsonemorepoint
+      real(kind=dp) :: dif
+      avedif = avedif + dif
+      sqadif = sqadif + dif * dif
+      dmxdif = max(dmxdif, dif)
+      numdif = numdif + 1
+   end subroutine statisticsonemorepoint
 
 end module m_statisticsonemorepoint

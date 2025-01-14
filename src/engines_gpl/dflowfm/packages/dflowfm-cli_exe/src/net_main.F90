@@ -70,7 +70,7 @@ program unstruc
    use properties
    use m_observations_data
    use unstruc_netcdf
-   use unstruc_messages
+   use messagehandling, only: warn_flush, msgbuf
    use UNSTRUC_DISPLAY
    use M_WEARELT
    use m_flowparameters
@@ -108,6 +108,9 @@ program unstruc
    use m_generatepartitionmdufile, only: generatepartitionmdufile
    use m_soltest, only: soltest
    use m_start_program, only: start_program
+   use m_pressakey, only: pressakey
+   use m_fetch_operation_utils, only: set_mpi_environment_wwo_fetch_proc, finish_fetch_proc
+   use m_solve_petsc, only: startpetsc
 
    implicit none
 
@@ -212,11 +215,8 @@ program unstruc
    write (sdmn, '(I4.4)') my_rank
    !write(6,*) 'my_rank =', my_rank
 
-!   call pressakey()
 #else
    numranks = 1
-   !write(6,*) 'NO MPI'
-   !call pressakey()
 #endif
 
    if (md_pressakey == 1) then

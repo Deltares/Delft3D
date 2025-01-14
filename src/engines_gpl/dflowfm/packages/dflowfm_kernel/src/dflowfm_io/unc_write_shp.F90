@@ -32,8 +32,7 @@
 
 !> Writes shapefiles, these shapefiles can be visualized in geographic information system (GIS) software
 module m_unc_write_shp
-use m_get_netlinks_of_dryarea, only: get_netlinks_of_dryarea
-
+   use m_get_netlinks_of_dryarea, only: get_netlinks_of_dryarea
 
    implicit none
 
@@ -53,7 +52,7 @@ contains
       use m_thindams
       use m_sobekdfm, only: nbnd1d2d
       use m_fixedweirs, only: nfxw
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, mess
       use m_partitioninfo, only: jampi, my_rank
       use unstruc_model, only: md_dryptsfile
       implicit none

@@ -32,61 +32,60 @@
 
 module m_isnode
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: isnode
+   public :: isnode
 
 contains
 
-  subroutine ISNODE(KP, XP, YP, ZP)
-     use precision, only: dp
-     use m_netw
-     use m_wearelt, only: cr, rcir
-     use m_missing, only: dmiss
-     use m_sferic
-     use m_sferzoom
-     use m_dispnode
-     use m_dbdistance_hk
+   subroutine ISNODE(KP, XP, YP, ZP)
+      use precision, only: dp
+      use m_netw
+      use m_wearelt, only: cr, rcir
+      use m_missing, only: dmiss
+      use m_sferic
+      use m_sferzoom
+      use m_dispnode
+      use m_dbdistance_hk
 
-     integer :: KP
-     real(kind=dp) :: XP, YP, ZP
-     real(kind=dp) :: rcy, dis
-     integer :: K, KPREV
+      integer :: KP
+      real(kind=dp) :: XP, YP, ZP
+      real(kind=dp) :: rcy, dis
+      integer :: K, KPREV
 
-     if (KP < 0) then
-        KPREV = abs(KP)
-     else
-        KPREV = 0
-     end if
+      if (KP < 0) then
+         KPREV = abs(KP)
+      else
+         KPREV = 0
+      end if
 
-     if (jsfertek > 0) then
-        rcy = cr * dyh * ra * dg2rd
-        ! call setrcirxy(xp,yp,rcx,rcy)
-     end if
+      if (jsfertek > 0) then
+         rcy = cr * dyh * ra * dg2rd
+      end if
 
-     KP = 0
-     ZP = dmiss
-     do K = 1, NUMK
-        if (jsfertek > 0) then
-           call dbdistancehk(xk(k), yk(k), xp, yp, dis)
-           if (dis < rcy) then
-              kp = k
-           end if
-        else
-           if (abs(XK(k) - XP) < rcir .and. abs(YK(k) - YP) < rcir) then
-              KP = K
-           end if
-        end if
-        if (kp > 0) then
-           call DISPNODE(KP)
-           ZP = ZK(kp)
+      KP = 0
+      ZP = dmiss
+      do K = 1, NUMK
+         if (jsfertek > 0) then
+            call dbdistancehk(xk(k), yk(k), xp, yp, dis)
+            if (dis < rcy) then
+               kp = k
+            end if
+         else
+            if (abs(XK(k) - XP) < rcir .and. abs(YK(k) - YP) < rcir) then
+               KP = K
+            end if
+         end if
+         if (kp > 0) then
+            call DISPNODE(KP)
+            ZP = ZK(kp)
 !         XYZ = ZKK
-           return
-        end if
-     end do
+            return
+         end if
+      end do
 
-  end subroutine ISNODE
+   end subroutine ISNODE
 
 end module m_isnode

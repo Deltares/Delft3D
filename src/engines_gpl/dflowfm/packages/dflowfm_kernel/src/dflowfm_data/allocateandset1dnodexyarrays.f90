@@ -31,8 +31,7 @@
 !
 
 module m_allocateandset1dnodexyarrays
-use m_dcross, only: dcross
-
+   use m_dcross, only: dcross
 
    implicit none
 

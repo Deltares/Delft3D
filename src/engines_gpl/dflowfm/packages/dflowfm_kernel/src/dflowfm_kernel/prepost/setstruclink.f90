@@ -31,11 +31,11 @@
 !
 module m_setstruclink
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setstruclink
+   public :: setstruclink
 
 contains
 

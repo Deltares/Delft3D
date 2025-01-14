@@ -46,7 +46,7 @@ module unstruc_netcdf
    use m_reconstruct_cc_stokesdrift, only: reconstruct_cc_stokesdrift
    use precision
    use netcdf
-   use unstruc_messages
+   use messagehandling, only: LEVEL_WARN, mess, dbg_flush, warn_flush
    use dflowfm_version_module
    use io_ugrid
    use m_sediment
@@ -2412,7 +2412,7 @@ contains
 !> Puts global attributes in NetCDF data set.
 !! This includes: institution, Conventions, etc.
    subroutine unc_addglobalatts(ncid)
-      !use unstruc_model, only : md_ident
+      use messagehandling, only : err_flush
       integer, intent(in) :: ncid
 
       character(len=8) :: cdate
@@ -5269,6 +5269,7 @@ contains
       use m_reconstruct_sed_transports
       use m_get_ucx_ucy_eul_mag
       use m_get_cz
+      use messagehandling, only : err_flush
 
       implicit none
 
@@ -11991,7 +11992,7 @@ contains
       use netcdf_utils, only: ncu_get_att
       use m_sferic
       use m_missing
-      use unstruc_messages
+      use unstruc_messages, only: threshold_abort, MAXERRPRINT
       use MessageHandling
       use dfm_error
       use m_alloc
@@ -12409,11 +12410,11 @@ contains
          do l = 1, ncontacts
             if (contacttype(L) < 3) then
                numerr = numerr + 1
-               if (numerr <= maxerrprint) then
+               if (numerr <= MAXERRPRINT) then
                   write (msgbuf, '(a,a,a,i0,a,i0,a)') 'Error while reading net file ''', trim(filename), ''', contact type of link ', &
                      L, ' is not valid: ', contacttype(L), '. Should be >= 3.'
                   call warn_flush()
-               elseif (numerr == maxerrprint + 1) then
+               elseif (numerr == MAXERRPRINT + 1) then
                   call mess(LEVEL_WARN, 'Skipping more errors of this type...')
                end if
 
@@ -12683,7 +12684,7 @@ contains
    subroutine md5_net_file(numlstart, numlcount)
       use network_data, only: kn, numl
       use md5_checksum
-      use unstruc_messages
+      use unstruc_messages, only: loglevel_StdOut, loglevel_file
 
       integer, optional, intent(in) :: numlstart !< Start index of links to start checking. Optional, default: 1.
       integer, optional, intent(in) :: numlcount !< Total count of links to check. Optional, default: numl.
@@ -16843,7 +16844,6 @@ contains
    subroutine find_flownodesorlinks_merge(n, x, y, n_loc, n_own, iloc_own, iloc_merge, janode, jaerror2sam, inode_merge2loc)
       use precision, only: dp
       use kdtree2Factory
-      use unstruc_messages
       use m_flowgeom
       use network_data
       use m_missing, only: dmiss
@@ -16978,7 +16978,6 @@ contains
       use precision, only: dp
       use network_data, only: xzw, yzw
       use m_flowgeom, only: xu, yu
-      use unstruc_messages
       use m_missing, only: dmiss
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
@@ -18231,7 +18230,7 @@ contains
 
       use m_flow, only: kmx, ndkx
       use m_transport, only: ISED1, ISEDN, const_names
-      use unstruc_messages, only: mess, LEVEL_WARN
+      use messagehandling, only: mess, LEVEL_WARN
       use m_alloc, only: realloc
       use m_partitioninfo, only: um
       use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_S

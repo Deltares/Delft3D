@@ -34,36 +34,36 @@
 !>    net nodes at the left are preferred
 module m_rearrange_worldmesh
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: rearrange_worldmesh
+   public :: rearrange_worldmesh
 
 contains
 
-subroutine rearrange_worldmesh(xboundmin, xboundmax)
-   use precision, only: dp
-   use m_sferic
-   use network_data
+   subroutine rearrange_worldmesh(xboundmin, xboundmax)
+      use precision, only: dp
+      use m_sferic
+      use network_data
 
-   real(kind=dp), intent(in) :: xboundmin, xboundmax !< mesh bounding box x-coordinates
+      real(kind=dp), intent(in) :: xboundmin, xboundmax !< mesh bounding box x-coordinates
 
-   integer :: k
+      integer :: k
 
-   if (jsferic == 1 .and. xboundmax - xboundmin > 180d0) then
-      do k = 1, numk
-         if (xk(k) - 360d0 >= xboundmin) then
-            xk(k) = xk(k) - 360d0
-         end if
+      if (jsferic == 1 .and. xboundmax - xboundmin > 180d0) then
+         do k = 1, numk
+            if (xk(k) - 360d0 >= xboundmin) then
+               xk(k) = xk(k) - 360d0
+            end if
 
-         if (xk(k) < xboundmin) then
-            xk(k) = xk(k) + 360d0
-         end if
-      end do
-   end if
+            if (xk(k) < xboundmin) then
+               xk(k) = xk(k) + 360d0
+            end if
+         end do
+      end if
 
-   return
-end subroutine rearrange_worldmesh
+      return
+   end subroutine rearrange_worldmesh
 
 end module m_rearrange_worldmesh

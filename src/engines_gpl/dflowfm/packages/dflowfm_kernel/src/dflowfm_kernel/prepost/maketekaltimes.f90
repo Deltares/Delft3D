@@ -32,11 +32,11 @@
 
 module m_maketekaltimes
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: maketekaltimes
+   public :: maketekaltimes
 
 contains
 

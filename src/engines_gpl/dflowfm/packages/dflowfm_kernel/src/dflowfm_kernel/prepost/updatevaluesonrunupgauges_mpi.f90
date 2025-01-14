@@ -33,72 +33,72 @@
 !< Reduce runup values over domains
 module m_updatevaluesonrunupgauges_mpi
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: updatevaluesonrunupgauges_mpi
+   public :: updatevaluesonrunupgauges_mpi
 
 contains
 
-subroutine updateValuesOnRunupGauges_mpi()
-   use precision, only: dp
-   use m_monitoring_runupgauges
-   use m_partitioninfo
-   use m_timer
-   use mpi
+   subroutine updateValuesOnRunupGauges_mpi()
+      use precision, only: dp
+      use m_monitoring_runupgauges
+      use m_partitioninfo
+      use m_timer
+      use mpi
 
-   integer :: irug, ierror
-   real(kind=dp), allocatable, dimension(:, :) :: ruh
-   real(kind=dp), allocatable, dimension(:, :) :: xy, xy_red
+      integer :: irug, ierror
+      real(kind=dp), allocatable, dimension(:, :) :: ruh
+      real(kind=dp), allocatable, dimension(:, :) :: xy, xy_red
 
-   if (.not. (allocated(ruh))) then
-      allocate (ruh(2, num_rugs))
-      allocate (xy(2, num_rugs))
-      allocate (xy_red(2, num_rugs))
-   end if
-
-   ruh = 0d0 ! safety
-   xy = 0d0
-   xy_red = 0d0
-
-   do irug = 1, num_rugs
-      ruh(1, irug) = rug(irug)%max_rug_height
-   end do
-   ruh(2, :) = my_rank
-
-   ! Obtain value of maximum runup across domains, and domainnr of max value
-   if (jatimer == 1) call starttimer(IOUTPUTMPI)
-   call reduce_rug(ruh, num_rugs)
-   if (jatimer == 1) call stoptimer(IOUTPUTMPI)
-
-   ! Reduce ruh and retrieve coordinates of maximum ruh
-   do irug = 1, num_rugs
-      rug(irug)%max_rug_height = ruh(1, irug)
-      if (int(ruh(2, irug)) == my_rank) then
-         xy(1, irug) = rug(irug)%max_x
-         xy(2, irug) = rug(irug)%max_y
+      if (.not. (allocated(ruh))) then
+         allocate (ruh(2, num_rugs))
+         allocate (xy(2, num_rugs))
+         allocate (xy_red(2, num_rugs))
       end if
-   end do
 
-   ! Reduction of the sum of the coordinates, Could be mpi_reduce(rank=0)
-   if (jatimer == 1) call starttimer(IOUTPUTMPI)
-   call mpi_allreduce(xy, xy_red, 2 * num_rugs, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-   if (jatimer == 1) call stoptimer(IOUTPUTMPI)
-   if (ierror /= 0) then
-      goto 1234
-   end if
+      ruh = 0d0 ! safety
+      xy = 0d0
+      xy_red = 0d0
 
-   do irug = 1, num_rugs
-      rug(irug)%max_x = xy_red(1, irug)
-      rug(irug)%max_y = xy_red(2, irug)
-   end do
+      do irug = 1, num_rugs
+         ruh(1, irug) = rug(irug)%max_rug_height
+      end do
+      ruh(2, :) = my_rank
 
-1234 continue
-   deallocate (xy_red)
-   deallocate (xy)
-   deallocate (ruh)
+      ! Obtain value of maximum runup across domains, and domainnr of max value
+      if (jatimer == 1) call starttimer(IOUTPUTMPI)
+      call reduce_rug(ruh, num_rugs)
+      if (jatimer == 1) call stoptimer(IOUTPUTMPI)
 
-end subroutine updateValuesOnRunupGauges_mpi
+      ! Reduce ruh and retrieve coordinates of maximum ruh
+      do irug = 1, num_rugs
+         rug(irug)%max_rug_height = ruh(1, irug)
+         if (int(ruh(2, irug)) == my_rank) then
+            xy(1, irug) = rug(irug)%max_x
+            xy(2, irug) = rug(irug)%max_y
+         end if
+      end do
+
+      ! Reduction of the sum of the coordinates, Could be mpi_reduce(rank=0)
+      if (jatimer == 1) call starttimer(IOUTPUTMPI)
+      call mpi_allreduce(xy, xy_red, 2 * num_rugs, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
+      if (jatimer == 1) call stoptimer(IOUTPUTMPI)
+      if (ierror /= 0) then
+         goto 1234
+      end if
+
+      do irug = 1, num_rugs
+         rug(irug)%max_x = xy_red(1, irug)
+         rug(irug)%max_y = xy_red(2, irug)
+      end do
+
+1234  continue
+      deallocate (xy_red)
+      deallocate (xy)
+      deallocate (ruh)
+
+   end subroutine updateValuesOnRunupGauges_mpi
 
 end module m_updatevaluesonrunupgauges_mpi

@@ -31,9 +31,8 @@
 !
 
 module m_addexternalboundarypoints
-use m_a1x1a2x2, only: a1x1a2x2
-use m_mirrorcell, only: mirrorcell
-
+   use m_a1x1a2x2, only: a1x1a2x2
+   use m_mirrorcell, only: mirrorcell
 
    implicit none
 
@@ -48,7 +47,7 @@ contains
       use m_netw
       use m_flow
       use m_flowgeom
-      use unstruc_messages
+      use messagehandling, only: msgbuf, dbg_flush, err_flush
       use m_alloc
       use timespace, only: polyindexweight
       use m_missing

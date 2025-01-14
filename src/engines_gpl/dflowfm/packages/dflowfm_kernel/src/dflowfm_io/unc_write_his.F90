@@ -99,7 +99,6 @@ contains
       use unstruc_netcdf, only: unc_writeopts, unc_noforcedflush, UG_WRITE_LATLON, nccrs => crs
       use unstruc_netcdf, only: unc_add_time_coverage
       use unstruc_netcdf, only: unc_write_struc_input_coordinates
-      use unstruc_messages
       use m_map_his_precision
       use m_sferic, only: jsferic
       use m_partitioninfo

@@ -1438,35 +1438,6 @@ contains
    end subroutine set_repeatwbc
 
    ! --------------------------------------------------------------
-   ! ----------- Small subroutine to set the filenames ------------
-   ! ----------- of the boundary condition output files -----------
-   subroutine set_bcfilenames(ibnd, wp)
-
-      implicit none
-      ! input/output
-      integer, intent(in) :: ibnd
-      type(waveparamsnew), intent(inout) :: wp
-      ! internal
-      integer :: i1, i2, i3, i4, i5
-
-      if (waveSpectrumAdministration(ibnd)%repeatwbc) then
-         write (wp%Efilename, "('E_reuse_bnd_', I0, '.bcf')") ibnd
-         write (wp%qfilename, "('q_reuse_bnd_', I0, '.bcf')") ibnd
-         write (wp%nhfilename, "('nh_reuse_bnd_', I0, '.bcf')") ibnd
-      else
-         i1 = floor(real(bccount) / 10000)
-         i2 = floor(real(bccount - i1 * 10000) / 1000)
-         i3 = floor(real(bccount - i1 * 10000 - i2 * 1000) / 100)
-         i4 = floor(real(bccount - i1 * 10000 - i2 * 1000 - i3 * 100) / 10)
-         i5 = bccount - i1 * 10000 - i2 * 1000 - i3 * 100 - i4 * 10
-         wp%Efilename = 'E_series'//char(48 + i1)//char(48 + i2)//char(48 + i3)//char(48 + i4)//char(48 + i5)//'.bcf'
-         wp%qfilename = 'q_series'//char(48 + i1)//char(48 + i2)//char(48 + i3)//char(48 + i4)//char(48 + i5)//'.bcf'
-         wp%nhfilename = 'nh_series'//char(48 + i1)//char(48 + i2)//char(48 + i3)//char(48 + i4)//char(48 + i5)//'.bcf'
-      end if
-
-   end subroutine set_bcfilenames
-
-   ! --------------------------------------------------------------
    ! ----------- Merge all separate spectra into one --------------
    ! -------------- average spectrum for other use ----------------
    subroutine generate_combined_spectrum(ibnd, specinterp, combspec)

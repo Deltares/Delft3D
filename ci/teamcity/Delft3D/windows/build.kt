@@ -109,6 +109,21 @@ object WindowsBuild : BuildType({
         }
     }
 
+    dependencies {
+        dependency(AbsoluteId("FbcTools_FbcToolsBuildOssX64CMakeReleaseWin64")) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            artifacts {
+                artifactRules = """
+                    *.dll => %install_dir%/lib
+                    *.xsd => %install_dir%/share/drtc
+                """.trimIndent()
+            }
+        }
+    }
+
     features {
         dockerSupport {
             loginToRegistry = on {

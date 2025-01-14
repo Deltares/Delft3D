@@ -33,11 +33,11 @@
 !> write matlab integer array to file
 module m_matlab_write_int
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: matlab_write_int
+   public :: matlab_write_int
 
 contains
 

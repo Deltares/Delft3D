@@ -32,18 +32,18 @@
 
 module m_getdeltay
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: getdeltay
+   public :: getdeltay
 
 contains
 
    subroutine getdeltay(y, dx0, dy0) ! find dy=dx*cos(y0+0.5*dy) newton iteration
       use precision, only: dp
       use m_sferic
-      
+
       real(kind=dp) :: y, dx0, dy0, f, df, yd, c, s, phi
       integer :: k
       dy0 = dx0 * cos(dg2rd * y)

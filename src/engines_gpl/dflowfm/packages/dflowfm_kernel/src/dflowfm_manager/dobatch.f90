@@ -32,63 +32,62 @@
 
 module m_dobatch
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: dobatch
+   public :: dobatch
 
 contains
 
-subroutine dobatch() !
-   use precision, only: dp
-   use m_flow
-   use m_flowgeom
-   use unstruc_api, only: api_loadmodel, flow
+   subroutine dobatch() !
+      use precision, only: dp
+      use m_flow
+      use m_flowgeom
+      use unstruc_api, only: api_loadmodel, flow
 
-   integer :: k, ierr, mout, km(100)
-   real(kind=dp) :: q30, q31, q32, q40, q41, q42, dt_max
+      integer :: k, ierr, mout, km(100)
+      real(kind=dp) :: q30, q31, q32, q40, q41, q42, dt_max
 
-   open (newunit=mout, file='tst.out')
-   write (mout, '(a)') ' kmx     q30     q40    q31     q41     q32    q42  '
+      open (newunit=mout, file='tst.out')
+      write (mout, '(a)') ' kmx     q30     q40    q31     q41     q32    q42  '
 
-   km(1) = 1
-   km(2) = 2
-   km(3) = 3
-   km(4) = 5
-   km(5) = 8
-   km(6) = 16
-   km(7) = 32
-   km(8) = 64
-   km(9) = 128
-   km(10) = 256
-   km(11) = 512
-   km(12) = 1024
+      km(1) = 1
+      km(2) = 2
+      km(3) = 3
+      km(4) = 5
+      km(5) = 8
+      km(6) = 16
+      km(7) = 32
+      km(8) = 64
+      km(9) = 128
+      km(10) = 256
+      km(11) = 512
+      km(12) = 1024
 
-   do k = 2, 12
+      do k = 2, 12
 
-      call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 3; jaustarint = 0; if (k > 10) dt_max = 1d0
-      ierr = flow(); q30 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 3; jaustarint = 0; if (k > 10) dt_max = 1d0
+         ierr = flow(); q30 = q1(1) / 47.434
 
-      call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 4; jaustarint = 0; if (k > 10) dt_max = 1d0
-      ierr = flow(); q40 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 4; jaustarint = 0; if (k > 10) dt_max = 1d0
+         ierr = flow(); q40 = q1(1) / 47.434
 
-      call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 3; jaustarint = 1; if (k > 10) dt_max = 1d0
-      ierr = flow(); q31 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 3; jaustarint = 1; if (k > 10) dt_max = 1d0
+         ierr = flow(); q31 = q1(1) / 47.434
 
-      call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 4; jaustarint = 1; if (k > 10) dt_max = 1d0
-      ierr = flow(); q41 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 4; jaustarint = 1; if (k > 10) dt_max = 1d0
+         ierr = flow(); q41 = q1(1) / 47.434
 
-      call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 3; jaustarint = 2; if (k > 10) dt_max = 1d0
-      ierr = flow(); q32 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 3; jaustarint = 2; if (k > 10) dt_max = 1d0
+         ierr = flow(); q32 = q1(1) / 47.434
 
-      call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 4; jaustarint = 2; if (k > 10) dt_max = 1d0
-      ierr = flow(); q42 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 4; jaustarint = 2; if (k > 10) dt_max = 1d0
+         ierr = flow(); q42 = q1(1) / 47.434
 
-      write (mout, '(i8,6F8.3)') kmx, q30, q40, q31, q41, q32, q42
-   end do
-   close (mout)
-end subroutine dobatch
-
+         write (mout, '(i8,6F8.3)') kmx, q30, q40, q31, q41, q32, q42
+      end do
+      close (mout)
+   end subroutine dobatch
 
 end module m_dobatch

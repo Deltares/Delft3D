@@ -33,11 +33,11 @@
 !> add polygon and fill cutcell mask with "kc"
 module m_store_cutcellmasks
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: store_cutcellmasks
+   public :: store_cutcellmasks
 
 contains
 
@@ -45,7 +45,7 @@ contains
       use precision, only: dp
       use m_cutcells
       use m_alloc
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
 
       integer, intent(in) :: numk
       integer, dimension(numk), intent(in) :: kc

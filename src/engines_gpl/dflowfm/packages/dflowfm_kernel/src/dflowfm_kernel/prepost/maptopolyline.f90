@@ -32,35 +32,35 @@
 
 module m_maptopolyline
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: maptopolyline
+   public :: maptopolyline
 
 contains
 
-      !> Maps a list of distances to a list of points.
+   !> Maps a list of distances to a list of points.
       !! The points are placed onto a polyline at the distances measured along
       !! the consecutive polyline segments.
-      subroutine mapToPolyline(XHO, YHO, DPL, NO, XH, YH, DPLA, NPL) ! HAAL HUIDIGE PUNTEN OP
-         use precision, only: dp
-         use m_interpolateOnPolyline
+   subroutine mapToPolyline(XHO, YHO, DPL, NO, XH, YH, DPLA, NPL) ! HAAL HUIDIGE PUNTEN OP
+      use precision, only: dp
+      use m_interpolateOnPolyline
 
-         integer, intent(in) :: NO !< Nr. of polyline points.
-         integer, intent(in) :: npl !< Nr. of points to be interpolated.
-         real(kind=dp), intent(in) :: XHO(NO), YHO(NO) !< Polyline points.
-         real(kind=dp), intent(in) :: DPL(NO) !< Accumulated segment sizes along polyline.
-         real(kind=dp), intent(out) :: XH(NPL), YH(NPL) !< Output points interpolated on polyline.
-         real(kind=dp), intent(in) :: DPLA(NPL) !< Desired distances for all points.
+      integer, intent(in) :: NO !< Nr. of polyline points.
+      integer, intent(in) :: npl !< Nr. of points to be interpolated.
+      real(kind=dp), intent(in) :: XHO(NO), YHO(NO) !< Polyline points.
+      real(kind=dp), intent(in) :: DPL(NO) !< Accumulated segment sizes along polyline.
+      real(kind=dp), intent(out) :: XH(NPL), YH(NPL) !< Output points interpolated on polyline.
+      real(kind=dp), intent(in) :: DPLA(NPL) !< Desired distances for all points.
 
-         integer :: ja
-         integer :: n
+      integer :: ja
+      integer :: n
 
-         do N = 1, NPL
-            call interpolateOnPolyline(XHO, YHO, YHO, DPL, NO, XH(N), YH(N), YH(N), DPLA(N), JA)
-         end do
+      do N = 1, NPL
+         call interpolateOnPolyline(XHO, YHO, YHO, DPL, NO, XH(N), YH(N), YH(N), DPLA(N), JA)
+      end do
 
-      end subroutine mapToPolyline
+   end subroutine mapToPolyline
 
 end module m_maptopolyline

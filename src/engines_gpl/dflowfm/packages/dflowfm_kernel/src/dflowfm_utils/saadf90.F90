@@ -6529,7 +6529,7 @@ contains
 !>   it is assumed that number of rows, number of non-zero entries, number of non-zero entries in preconditioner and size of work array are set
    subroutine allocSolver(solver, ierror)
       use m_solver
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       use m_alloc
       implicit none
 

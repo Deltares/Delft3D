@@ -32,17 +32,17 @@
 
 module m_cosphiunetcheck
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: cosphiunetcheck
+   public :: cosphiunetcheck
 
-interface 
-    module subroutine cosphiunetcheck(jausererror)
-       implicit none
-       integer, intent(in) :: jausererror !< Whether or not (1/0) to topup a error message when bad ortho occurs.
-    end subroutine cosphiunetcheck
-end interface
+   interface
+      module subroutine cosphiunetcheck(jausererror)
+         implicit none
+         integer, intent(in) :: jausererror !< Whether or not (1/0) to topup a error message when bad ortho occurs.
+      end subroutine cosphiunetcheck
+   end interface
 
 end module m_cosphiunetcheck

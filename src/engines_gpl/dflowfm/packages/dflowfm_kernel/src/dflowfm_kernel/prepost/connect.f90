@@ -71,8 +71,6 @@ contains
 
       do LL = 1, LFAC
 
-         ! CALL GIVENEWLINKNUM(LNU)   ! En increase NUML als nodig
-
          if (LL == 1) then
             KL = K1
             if (LFAC > 1) then ! LUS EIGENLIJK ANDERS STARTEN

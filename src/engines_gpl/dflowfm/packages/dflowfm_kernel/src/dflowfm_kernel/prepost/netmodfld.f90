@@ -34,53 +34,51 @@
 !!   Is is assumed that there is a backup copy of the grid.
 module m_netmodfld
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: netmodfld
+   public :: netmodfld
 
 contains
 
-subroutine netmodfld(xp, yp, kp)
-   use precision, only: dp
-   use m_netw
-   use m_grid
-   use m_alloc
-   use m_missing
-   use m_wearelt
-   use m_sferic
-   use geometry_module, only: dbdistance
+   subroutine netmodfld(xp, yp, kp)
+      use precision, only: dp
+      use m_netw
+      use m_grid
+      use m_alloc
+      use m_missing
+      use m_wearelt
+      use m_sferic
 
-   real(kind=dp) :: xp, yp !< coordinates that determine the influenced region
+      real(kind=dp) :: xp, yp !< coordinates that determine the influenced region
 
-   integer :: kp !< center point index
+      integer :: kp !< center point index
 
-   real(kind=dp) :: Dx0, Dy0, rsx, xn, yn, dist, frac
-   real(kind=dp) :: xcen, ycen
-   real(kind=dp), external :: getDx, getDy
+      real(kind=dp) :: Dx0, Dy0, rsx, xn, yn, dist, frac
+      real(kind=dp) :: xcen, ycen
 
-   integer :: i
+      integer :: i
 
-   xcen = xk(kp)
-   ycen = yk(kp)
+      xcen = xk(kp)
+      ycen = yk(kp)
 
-   Dx0 = xp - xcen
-   Dy0 = yp - ycen
+      Dx0 = xp - xcen
+      Dy0 = yp - ycen
 
-   rsx = max(dsix, sqrt(Dx0 * Dx0 + Dy0 * Dy0))
+      rsx = max(dsix, sqrt(Dx0 * Dx0 + Dy0 * Dy0))
 
-   do i = 1, numk
-      xn = xk(i)
-      yn = yk(i)
+      do i = 1, numk
+         xn = xk(i)
+         yn = yk(i)
 ! intentional not in sferical coordinates
-      dist = sqrt((xn - xcen)**2 + (yn - ycen)**2)
-      frac = 0.5 * (1 + cos(min(max(dist / rsx, -1d0), 1d0) * pi))
+         dist = sqrt((xn - xcen)**2 + (yn - ycen)**2)
+         frac = 0.5 * (1 + cos(min(max(dist / rsx, -1d0), 1d0) * pi))
 
-      xk(i) = xk(i) + Dx0 * frac
-      yk(i) = yk(i) + Dy0 * frac
-   end do
+         xk(i) = xk(i) + Dx0 * frac
+         yk(i) = yk(i) + Dy0 * frac
+      end do
 
-end subroutine netmodfld
+   end subroutine netmodfld
 
 end module m_netmodfld

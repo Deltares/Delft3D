@@ -32,25 +32,25 @@
 
 module m_statisticsfinalise
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: statisticsfinalise
+   public :: statisticsfinalise
 
 contains
 
- subroutine statisticsfinalise()
-    use m_statistics
+   subroutine statisticsfinalise()
+      use m_statistics
 
-    if (numdif /= 0) then
-       avedif = avedif / numdif
-       cumavedif = cumavedif + avedif
-       rmsdif = sqrt(sqadif / numdif)
-       cumrmsdif = cumrmsdif + rmsdif
-       dmxdif = max(cumdmxdif, dmxdif)
-       numcum = numcum + 1
-    end if
- end subroutine statisticsfinalise
+      if (numdif /= 0) then
+         avedif = avedif / numdif
+         cumavedif = cumavedif + avedif
+         rmsdif = sqrt(sqadif / numdif)
+         cumrmsdif = cumrmsdif + rmsdif
+         dmxdif = max(cumdmxdif, dmxdif)
+         numcum = numcum + 1
+      end if
+   end subroutine statisticsfinalise
 
 end module m_statisticsfinalise

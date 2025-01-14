@@ -49,7 +49,7 @@ contains
       use m_netw
       use kdtree2Factory
       use m_sferic, only: jsferic, jasfer3D
-      use unstruc_messages
+      use messagehandling, only: msgbuf
       use geometry_module, only: dbdistance, crossinbox
       use m_qnerror
 

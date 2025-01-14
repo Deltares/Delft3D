@@ -33,18 +33,18 @@
 !>    gives link length
 module m_dlinklength
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: dlinklength
+   public :: dlinklength
 
-interface
+   interface
       real(kind=dp) module function dLinklength(L)
          use precision, only: dp
          implicit none
          integer, intent(in) :: L !< link number
       end function dLinklength
-end interface 
+   end interface
 
 end module m_dlinklength

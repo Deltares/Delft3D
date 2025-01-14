@@ -32,27 +32,27 @@
 
 module m_flow_setstarttime
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: flow_setstarttime
+   public :: flow_setstarttime
 
 contains
 
- subroutine flow_setstarttime() ! set flow starttime
-    use m_flowtimes
+   subroutine flow_setstarttime() ! set flow starttime
+      use m_flowtimes
 
-    time_user = tstart_user
-    time0 = tstart_user
-    time1 = tstart_user
-    dts = dt_init
-    dti = 1d0 / dts
-    dtprev = dts
-    dnt = 0
-    dnt_user = 1
-    time_split0 = tstart_user
-    time_split = tstart_user
- end subroutine
+      time_user = tstart_user
+      time0 = tstart_user
+      time1 = tstart_user
+      dts = dt_init
+      dti = 1d0 / dts
+      dtprev = dts
+      dnt = 0
+      dnt_user = 1
+      time_split0 = tstart_user
+      time_split = tstart_user
+   end subroutine
 
 end module m_flow_setstarttime

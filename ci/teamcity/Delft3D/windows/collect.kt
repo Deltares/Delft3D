@@ -76,7 +76,6 @@ object WindowsCollect : BuildType({
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
-
             artifacts {
                 artifactRules = """
                     oss_artifacts_x64_*.zip!/x64/bin/** => x64/bin
@@ -85,16 +84,15 @@ object WindowsCollect : BuildType({
                 """.trimIndent()
             }
         }
-        dependency(AbsoluteId("FbcTools_FbcToolsBuildOssX64CMakeReleaseWin64")) {
+        dependency(AbsoluteId("${DslContext.getParameter("delft3d_signing_project_root")}_Sign")) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
             artifacts {
-                buildRule = lastSuccessful()
                 artifactRules = """
-                    *.dll => x64/lib
-                    *.xsd => x64/share/drtc
+                    oss_artifacts_x64_*.zip!/x64/bin/** => x64/bin
+                    oss_artifacts_x64_*.zip!/x64/lib/** => x64/lib
                 """.trimIndent()
             }
         }

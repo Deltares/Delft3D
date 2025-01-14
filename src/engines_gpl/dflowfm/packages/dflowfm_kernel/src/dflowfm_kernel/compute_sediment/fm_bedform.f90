@@ -1013,7 +1013,6 @@ contains
       use precision
       use m_partitioninfo
       use m_timer
-      use unstruc_messages
 
       implicit none
 

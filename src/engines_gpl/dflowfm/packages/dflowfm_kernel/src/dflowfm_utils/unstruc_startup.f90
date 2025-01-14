@@ -41,7 +41,7 @@ module unstruc_startup
    use unstruc_ini
    use unstruc_files
    use properties
-   use unstruc_messages
+   use messagehandling, only: err_flush
 
    implicit none
 
@@ -488,8 +488,6 @@ contains
          k = k + 1
          call IGRPALETTERGB(ICL, IRED, IGREEN, IBLUE)
       end do
-!     CALL READXYMIS(MINI)
-!     CALL READAMISS(MINI)
 
       TXLIN = ' ' ! alle drie leeg
 

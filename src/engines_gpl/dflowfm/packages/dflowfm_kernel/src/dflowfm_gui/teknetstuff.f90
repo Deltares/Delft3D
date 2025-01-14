@@ -68,8 +68,6 @@ contains
 
       call TEKNETCELLS(NDRAW(33), 0, 1)
 
-      ! CALL TEKBOTTOM(NDRAW(27)) old net stuff
-
       if (jaHighlight == 1) then
          if (nOdmax /= 0) then
             call gtext('NETNODMax', xK(nOdmax), yK(nOdmax), 31)

@@ -88,7 +88,7 @@ contains
       call tree_create(file_name, bnd_ptr)
       call prop_file('ini', file_name, bnd_ptr, istat)
       if (istat /= 0) then
-         write(msgbuf, '(a,a,a)') 'External forcing file ''', trim(file_name), ''' could not be read'
+         write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(file_name), ''' could not be read'
          call err_flush()
          iresult = DFM_WRONGINPUT
          return
@@ -114,8 +114,8 @@ contains
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
       ! Build temporary reverse lookup table that maps boundary block # in file -> boundary condition nr in openbndsect (separate for u and z).
-      allocate(itpenzr(num_items_in_file))
-      allocate(itpenur(num_items_in_file))
+      allocate (itpenzr(num_items_in_file))
+      allocate (itpenur(num_items_in_file))
       itpenzr(:) = 0
       itpenur(:) = 0
       do ibt = 1, nbndz
@@ -162,7 +162,7 @@ contains
          case ('meteo')
             res = res .and. init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
 
-         case('sourcesink')
+         case ('sourcesink')
             res = res .and. init_sourcesink_forcings(node_ptr, base_dir, file_name, group_name)
 
          case default ! Unrecognized item in an ext block
@@ -223,10 +223,10 @@ contains
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
 
-      type(tree_data), pointer, intent(in) :: node_ptr  !< The tree node of the boundary block
-      character(len=*), intent(in) :: base_dir  !< Base directory of the ext file.
-      character(len=*), intent(in) :: file_name  !< Name of the ext file, only used in warning messages, actual data is read from node_ptr.
-      character(len=*), intent(in) :: group_name  !< Name of the block, only used in warning messages.
+      type(tree_data), pointer, intent(in) :: node_ptr !< The tree node of the boundary block
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from node_ptr.
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages.
       integer, dimension(:), intent(in) :: itpenzr !< boundary condition nr in openbndsect for z
       integer, dimension(:), intent(in) :: itpenur !< boundary condition nr in openbndsect for u
       integer, intent(inout) :: ib !< block counter for boundaries
@@ -636,10 +636,10 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_alloc, only: aerr
 
-      type(tree_data), pointer, intent(in) :: node_ptr  !< Tree structure containing the meteo block.
-      character(len=*), intent(in) :: base_dir  !< Base directory of the ext file.
-      character(len=*), intent(in) :: file_name  !< Name of the ext file, only used in warning messages, actual data is read from node_ptr.
-      character(len=*), intent(in) :: group_name  !< Name of the block, only used in warning messages.
+      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the meteo block.
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from node_ptr.
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages.
 
       logical :: res
 
@@ -940,17 +940,17 @@ contains
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
       use netcdf_utils, only: ncu_sanitize_name
 
-      type(tree_data), pointer, intent(in) :: node_ptr  !< Tree structure containing the sourcesink block.
-      character(len=*), intent(in) :: base_dir  !< Base directory of the ext file.
-      character(len=*), intent(in) :: file_name  !< Name of the ext file, only used in error messages, actual data is read from node_ptr.
-      character(len=*), intent(in) :: group_name  !< Name of the block, only used in error messages.
+      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the sourcesink block.
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from node_ptr.
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages.
 
       character(len=INI_VALUE_LEN) :: sourcesink_id
       character(len=INI_VALUE_LEN) :: sourcesink_name
       character(len=INI_VALUE_LEN) :: location_file
       character(len=INI_VALUE_LEN) :: discharge_file
       character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
-      character(len=NAMLEN) :: tmpstr 
+      character(len=NAMLEN) :: tmpstr
 
       integer :: num_coordinates
       real(kind=dp), dimension(:), allocatable :: x_coordinates
@@ -983,7 +983,7 @@ contains
          call prop_get(node_ptr, '', 'numCoordinates', num_coordinates, is_read)
          if (is_read) then
             if (num_coordinates <= 0) then
-               write(msgbuf, '(3a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
+               write (msgbuf, '(3a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
                call err_flush()
                return
             end if
@@ -995,11 +995,11 @@ contains
             end if
          end if
       end if
-      if (.not. is_read) then            
-         write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location information is incomplete or missing.'
+      if (.not. is_read) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location information is incomplete or missing.'
          call err_flush()
          return
-      end if 
+      end if
 
       ! read optional vertical profiles.
       call prop_get(node_ptr, '', 'zSource', z_range_source, num_range_points, is_read)
@@ -1007,7 +1007,7 @@ contains
 
       call prop_get(node_ptr, '', 'discharge', discharge_file, is_read)
       if (.not. is_read) then
-         write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
          call err_flush()
          return
       end if
@@ -1018,10 +1018,10 @@ contains
       ! Constituents (salinity, temperature, sediments, tracers) may have a timeseries file
       ! specifying the difference in concentration added by the source/sink.
       ! All these files are optional, so no check on 'is_read' can be present below.
-      if (NUMCONST > 0) then 
+      if (NUMCONST > 0) then
          allocate (constituent_delta_file(NUMCONST), stat=ierr)
-         do i_const = 1,NUMCONST
-            if (i_const == ISALT) then 
+         do i_const = 1, NUMCONST
+            if (i_const == ISALT) then
                call prop_get(node_ptr, '', 'salinityDelta', constituent_delta_file(i_const), is_read)
             else if (i_const == ITEMP) then
                call prop_get(node_ptr, '', 'temperatureDelta', constituent_delta_file(i_const), is_read)
@@ -1029,15 +1029,15 @@ contains
                cycle
             else
                ! tracers and sediments: remove special characters from const_name before constructing the property to read.
-               tmpstr = const_names(i_const) 
+               tmpstr = const_names(i_const)
                call ncu_sanitize_name(tmpstr)
                if (i_const >= ISED1 .and. i_const <= ISEDN) then
                   call prop_get(node_ptr, '', 'sedFrac'//trim(tmpstr)//'Delta', constituent_delta_file(i_const), is_read)
                else if (i_const >= ITRA1 .and. i_const <= ITRAN) then
                   call prop_get(node_ptr, '', 'tracer'//trim(tmpstr)//'Delta', constituent_delta_file(i_const), is_read)
                end if
-            end if 
-         end do      
+            end if
+         end do
       end if
 
       is_successful = .true.

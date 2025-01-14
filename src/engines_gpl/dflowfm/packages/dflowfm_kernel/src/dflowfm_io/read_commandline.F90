@@ -33,8 +33,7 @@
 !> Read options and files from command line
 !>  autostart/autostartstop is not filled in directly, needs to be merged with MDU-file option
 module m_read_commandline
-use m_print_help_commandline, only: print_help_commandline
-
+   use m_print_help_commandline, only: print_help_commandline
 
    implicit none
 
@@ -48,7 +47,8 @@ contains
       use m_commandline_option
       use unstruc_model
       use m_gui
-      use unstruc_messages
+      use messagehandling, only: stringtolevel
+      use unstruc_messages, only: loglevel_StdOut, loglevel_file
       use string_module, only: str_lower, str_tolower
       use m_samples_refine
       use m_partitioninfo

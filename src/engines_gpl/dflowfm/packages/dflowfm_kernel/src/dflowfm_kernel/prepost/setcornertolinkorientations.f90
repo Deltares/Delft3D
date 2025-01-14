@@ -32,60 +32,59 @@
 
 module m_setcornertolinkorientations
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: setcornertolinkorientations
+   public :: setcornertolinkorientations
 
 contains
 
- subroutine setcornertolinkorientations()
-    use precision, only: dp
-    use m_flowgeom
-    use network_data, only: xk, yk
-    use m_sferic
-    use m_alloc
-    use unstruc_messages
-    use m_missing, only: dmiss
-    use geometry_module, only: half, spher2locvec
+   subroutine setcornertolinkorientations()
+      use precision, only: dp
+      use m_flowgeom
+      use network_data, only: xk, yk
+      use m_sferic
+      use m_alloc
+      use m_missing, only: dmiss
+      use geometry_module, only: half, spher2locvec
 
-    real(kind=dp) :: xL, yL
+      real(kind=dp) :: xL, yL
 
-    integer :: k3, k4
-    integer :: L
+      integer :: k3, k4
+      integer :: L
 
-    integer :: ierr
+      integer :: ierr
 
-    real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1d-8
 
-    if (allocated(csbn)) deallocate (csbn)
-    if (allocated(snbn)) deallocate (snbn)
+      if (allocated(csbn)) deallocate (csbn)
+      if (allocated(snbn)) deallocate (snbn)
 
-    if (jsferic == 0 .or. jasfer3D == 0) return
+      if (jsferic == 0 .or. jasfer3D == 0) return
 
-    allocate (csbn(2, Lnx), stat=ierr); csbn = 1d0
-    call aerr('csbn(2,Lnx)', ierr, 2 * Lnx)
-    allocate (snbn(2, Lnx), stat=ierr); snbn = 0d0
-    call aerr('snbn(2,Lnx)', ierr, 2 * Lnx)
+      allocate (csbn(2, Lnx), stat=ierr); csbn = 1d0
+      call aerr('csbn(2,Lnx)', ierr, 2 * Lnx)
+      allocate (snbn(2, Lnx), stat=ierr); snbn = 0d0
+      call aerr('snbn(2,Lnx)', ierr, 2 * Lnx)
 
-    do L = 1, Lnx
-       k3 = lncn(1, L)
-       k4 = lncn(2, L)
+      do L = 1, Lnx
+         k3 = lncn(1, L)
+         k4 = lncn(2, L)
 
 !      compute flowlink midpoint coordinates (xL,yL)
-       call half(xk(k3), yk(k3), xk(k4), yk(k4), xL, yL, jsferic, jasfer3D)
+         call half(xk(k3), yk(k3), xk(k4), yk(k4), xL, yL, jsferic, jasfer3D)
 
-       if (yk(k3) == 90d0 .or. yk(k4) == 90d0) then
-          continue
-       end if
+         if (yk(k3) == 90d0 .or. yk(k4) == 90d0) then
+            continue
+         end if
 
 !      compute orientation w.r.t. link mid point
-       call spher2locvec(xk(k3), yk(3), 1, (/xL/), (/yL/), (/1d0/), (/0d0/), csbn(1, L), snbn(1, L), jsferic, jasfer3D, dmiss)
-       call spher2locvec(xk(k4), yk(4), 1, (/xL/), (/yL/), (/1d0/), (/0d0/), csbn(2, L), snbn(2, L), jsferic, jasfer3D, dmiss)
-    end do
+         call spher2locvec(xk(k3), yk(3), 1, (/xL/), (/yL/), (/1d0/), (/0d0/), csbn(1, L), snbn(1, L), jsferic, jasfer3D, dmiss)
+         call spher2locvec(xk(k4), yk(4), 1, (/xL/), (/yL/), (/1d0/), (/0d0/), csbn(2, L), snbn(2, L), jsferic, jasfer3D, dmiss)
+      end do
 
-    return
- end subroutine setcornertolinkorientations
+      return
+   end subroutine setcornertolinkorientations
 
 end module m_setcornertolinkorientations

@@ -31,24 +31,24 @@
 !
 
 module m_statisticsini
-use m_statisticsnewstep, only: statisticsnewstep
+   use m_statisticsnewstep, only: statisticsnewstep
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: statisticsini
+   public :: statisticsini
 
 contains
 
- subroutine statisticsini()
-    use m_statistics
+   subroutine statisticsini()
+      use m_statistics
 
-    call statisticsnewstep()
-    cumavedif = 0d0 ! for now only, cum dif with analytic sol
-    cumrmsdif = 0d0 ! for now only, cum dif with analytic sol
-    cumdmxdif = 0d0 ! for now only, cum dif with analytic sol
-    numcum = 0
- end subroutine statisticsini
+      call statisticsnewstep()
+      cumavedif = 0d0 ! for now only, cum dif with analytic sol
+      cumrmsdif = 0d0 ! for now only, cum dif with analytic sol
+      cumdmxdif = 0d0 ! for now only, cum dif with analytic sol
+      numcum = 0
+   end subroutine statisticsini
 
 end module m_statisticsini

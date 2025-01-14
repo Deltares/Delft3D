@@ -28,44 +28,44 @@
 
 module m_fm_wq_processes_sub
 
-implicit none
-
-private
-
-public :: default_fm_wq_processes, fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step, &
-    get_waqinputname
-
-interface
-
-module subroutine default_fm_wq_processes()
    implicit none
-end subroutine default_fm_wq_processes
 
-module subroutine fm_wq_processes_ini_sub()
-   implicit none
-end subroutine fm_wq_processes_ini_sub
+   private
 
-module subroutine fm_wq_processes_ini_proc()
-   implicit none
-end subroutine fm_wq_processes_ini_proc
+   public :: default_fm_wq_processes, fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step, &
+             get_waqinputname
 
-module subroutine fm_wq_processes_step(dt, time)
-   use precision, only: dp
-   implicit none
-   real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
-   real(kind=dp), intent(in) :: time !< time     for waq in seconds
-end subroutine fm_wq_processes_step
+   interface
 
-module subroutine get_waqinputname(qid, inputname, qidname)
-   !> Convert qid (from .ext file) to waq input name (split in generic qidname and specific input name).
+      module subroutine default_fm_wq_processes()
+         implicit none
+      end subroutine default_fm_wq_processes
+
+      module subroutine fm_wq_processes_ini_sub()
+         implicit none
+      end subroutine fm_wq_processes_ini_sub
+
+      module subroutine fm_wq_processes_ini_proc()
+         implicit none
+      end subroutine fm_wq_processes_ini_proc
+
+      module subroutine fm_wq_processes_step(dt, time)
+         use precision, only: dp
+         implicit none
+         real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
+         real(kind=dp), intent(in) :: time !< time     for waq in seconds
+      end subroutine fm_wq_processes_step
+
+      module subroutine get_waqinputname(qid, inputname, qidname)
+         !> Convert qid (from .ext file) to waq input name (split in generic qidname and specific input name).
     !! If the input qid is not waq input name, then the same qid is returned (and no waq input name)
-   implicit none
+         implicit none
 
-   character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'waqfunctionradsurf'.
-   character(len=*), intent(inout) :: inputname !< The trimmed waq input name, e.g., 'fluor'.
-   character(len=*), intent(inout) :: qidname !< The base input name for further use in external file analisys, e.g., 'tracerbnd'.
-end subroutine get_waqinputname
+         character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'waqfunctionradsurf'.
+         character(len=*), intent(inout) :: inputname !< The trimmed waq input name, e.g., 'fluor'.
+         character(len=*), intent(inout) :: qidname !< The base input name for further use in external file analisys, e.g., 'tracerbnd'.
+      end subroutine get_waqinputname
 
-end interface
-   
+   end interface
+
 end module m_fm_wq_processes_sub

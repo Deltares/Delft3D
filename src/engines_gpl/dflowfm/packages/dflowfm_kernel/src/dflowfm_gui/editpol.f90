@@ -71,11 +71,10 @@ contains
       use m_missing, only: dmiss
       use m_partitioninfo, only: jampi, my_rank
       use unstruc_model
-      use unstruc_display, only: numzoomshift, ndrawpol, rcir, ncoltx
+      use unstruc_display, only: numzoomshift, ndrawpol, rcir, ncoltx, zoomshift
       use m_flow, only: kmx, jasal, iturbulencemodel
       use unstruc_api
       use dfm_error
-      use unstruc_messages
       use m_helpnow
       use m_qnrgf
       use m_settings

@@ -32,18 +32,18 @@
 
 module m_realan
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: realan
+   public :: realan
 
-      interface
-         module subroutine realan(mlan, antot)
-            implicit none
-            integer, intent(inout) :: mlan
-            integer, intent(inout), optional :: antot
-         end subroutine realan
-      end interface
-      
+   interface
+      module subroutine realan(mlan, antot)
+         implicit none
+         integer, intent(inout) :: mlan
+         integer, intent(inout), optional :: antot
+      end subroutine realan
+   end interface
+
 end module m_realan

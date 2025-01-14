@@ -31,7 +31,7 @@
 !
 
 module m_addsorsin
-use m_reallocsrc, only: reallocsrc
+   use m_reallocsrc, only: reallocsrc
 
    implicit none
 
@@ -50,7 +50,7 @@ contains
       use m_GlobalParameters, only: INDTP_ALL
 
       use m_missing
-      use unstruc_messages
+      use messagehandling, only: msgbuf, warn_flush
       use dfm_error
       use geometry_module, only: normalin
       use m_sferic, only: jsferic, jasfer3D

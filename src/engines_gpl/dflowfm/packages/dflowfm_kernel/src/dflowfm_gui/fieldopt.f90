@@ -30,7 +30,7 @@
 !
 !
 module m_fieldopt
-use m_orthogrid, only: orthogrid
+   use m_orthogrid, only: orthogrid
 
    implicit none
 contains

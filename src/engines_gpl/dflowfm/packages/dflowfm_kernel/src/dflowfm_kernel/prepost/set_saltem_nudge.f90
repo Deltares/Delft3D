@@ -32,11 +32,11 @@
 
 module m_set_saltem_nudge
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: set_saltem_nudge
+   public :: set_saltem_nudge
 
 contains
 

@@ -34,11 +34,11 @@
 ! =================================================================================================
 module m_get_netlinks_of_dryarea
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: get_netlinks_of_dryarea
+   public :: get_netlinks_of_dryarea
 
 contains
 

@@ -1382,6 +1382,7 @@ contains
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
       use m_togeneral, only: togeneral
+      use unstruc_messages, only: callback_msg, loglevel_StdOut
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 

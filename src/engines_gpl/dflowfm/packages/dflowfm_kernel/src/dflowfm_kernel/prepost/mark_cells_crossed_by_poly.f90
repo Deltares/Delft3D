@@ -33,11 +33,11 @@
 !> mark the cells that are crossed by the polygon
 module m_mark_cells_crossed_by_poly
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: mark_cells_crossed_by_poly
+   public :: mark_cells_crossed_by_poly
 
 contains
 

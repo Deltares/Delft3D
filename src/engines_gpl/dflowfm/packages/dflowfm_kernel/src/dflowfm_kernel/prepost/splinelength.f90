@@ -33,57 +33,57 @@
 !> approximate spline length
 module m_splinelength
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: splinelength
+   public :: splinelength
 
 contains
 
-real(kind=dp) function splinelength(num, xspl, yspl)
-   use precision, only: dp
+   real(kind=dp) function splinelength(num, xspl, yspl)
+      use precision, only: dp
 
-   use geometry_module, only: dbdistance
-   use m_missing, only: dmiss
-   use m_sferic, only: jsferic, jasfer3D
-   use m_splinxy
-   use m_splintxy
+      use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+      use m_splinxy
+      use m_splintxy
 
-   implicit none
+      implicit none
 
-   integer, intent(in) :: num !< number of spline control points
-   real(kind=dp), dimension(num), intent(in) :: xspl, yspl !< coordinates of slpine control points
+      integer, intent(in) :: num !< number of spline control points
+      real(kind=dp), dimension(num), intent(in) :: xspl, yspl !< coordinates of slpine control points
 
-   real(kind=dp), dimension(num) :: xspl2, yspl2 !  second order derivates of spline coordinates
+      real(kind=dp), dimension(num) :: xspl2, yspl2 !  second order derivates of spline coordinates
 
-   real(kind=dp) :: xL, yL, xR, yR, tL, tR, dt
+      real(kind=dp) :: xL, yL, xR, yR, tL, tR, dt
 
-   integer :: i, j
+      integer :: i, j
 
-   integer, parameter :: NSAM = 100 ! sample factor
+      integer, parameter :: NSAM = 100 ! sample factor
 
-   call splinxy(xspl, yspl, xspl2, yspl2, num)
+      call splinxy(xspl, yspl, xspl2, yspl2, num)
 
-   tR = 0d0
-   call splintxy(xspl, yspl, xspl2, yspl2, num, tR, xR, yR)
+      tR = 0d0
+      call splintxy(xspl, yspl, xspl2, yspl2, num, tR, xR, yR)
 
-   dt = 1d0 / dble(NSAM)
+      dt = 1d0 / dble(NSAM)
 
-   splinelength = 0d0
-   do i = 1, num - 1
-      tR = dble(i - 1)
-      do j = 1, NSAM
-         tL = tR
-         xL = xR
-         yL = yR
-         tR = tR + dt
-         call splintxy(xspl, yspl, xspl2, yspl2, num, tR, xR, yR)
-         splinelength = splinelength + dbdistance(xL, yL, xR, yR, jsferic, jasfer3D, dmiss)
+      splinelength = 0d0
+      do i = 1, num - 1
+         tR = dble(i - 1)
+         do j = 1, NSAM
+            tL = tR
+            xL = xR
+            yL = yR
+            tR = tR + dt
+            call splintxy(xspl, yspl, xspl2, yspl2, num, tR, xR, yR)
+            splinelength = splinelength + dbdistance(xL, yL, xR, yR, jsferic, jasfer3D, dmiss)
+         end do
       end do
-   end do
 
-   return
-end function splinelength
+      return
+   end function splinelength
 
 end module m_splinelength

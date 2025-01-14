@@ -33,30 +33,30 @@
 !>    return y-component in link coordinate frame of a vector in corner (netnode) coordinate frame
 module m_cor2liny
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: cor2liny
+   public :: cor2liny
 
 contains
 
-      real(kind=dp) function cor2liny(L, i12, ux, uy)
-         use precision, only: dp
-         use m_flowgeom, only: csbn, snbn
-         use m_sferic
+   real(kind=dp) function cor2liny(L, i12, ux, uy)
+      use precision, only: dp
+      use m_flowgeom, only: csbn, snbn
+      use m_sferic
 
-         integer, intent(in) :: L !< flowlink number
-         integer, intent(in) :: i12 !< left (1) or right (2) neighboring corner (netnode)
-         real(kind=dp), intent(in) :: ux, uy !< vector components in corner coordinate frame
+      integer, intent(in) :: L !< flowlink number
+      integer, intent(in) :: i12 !< left (1) or right (2) neighboring corner (netnode)
+      real(kind=dp), intent(in) :: ux, uy !< vector components in corner coordinate frame
 
-         if (jsferic /= 1 .or. jasfer3D /= 1) then
-            cor2liny = uy
-         else
-            cor2liny = -snbn(i12, L) * ux + csbn(i12, L) * uy
-         end if
+      if (jsferic /= 1 .or. jasfer3D /= 1) then
+         cor2liny = uy
+      else
+         cor2liny = -snbn(i12, L) * ux + csbn(i12, L) * uy
+      end if
 
-         return
-      end function cor2liny
+      return
+   end function cor2liny
 
 end module m_cor2liny

@@ -108,7 +108,6 @@ contains
       use m_alloc
       use m_partitioninfo
       use m_timer
-      use unstruc_messages
       use m_sediment, only: jatranspvel, jased, stmpar, stm_included
       use m_waves
       use timers

@@ -33,10 +33,15 @@
 !! Messages will be printed on stdout and the diagnostics file.
 !! A buffer 'msgbuf' is available to write to.
 module unstruc_messages
-   use MessageHandling
-
+   use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, SetMessagehandling, set_msgbox_callback, mess
+   
    implicit none
 
+   private
+   
+   public :: MAXERRPRINT, threshold_abort, loglevel_file, loglevel_StdOut, &
+       initMessaging, callback_msg, unstruc_errorhandler
+   
    logical, parameter, private :: printToStdout = .true.
    integer :: threshold_abort = LEVEL_ERROR
 
@@ -45,18 +50,27 @@ module unstruc_messages
    integer :: loglevel_StdOut = LEVEL_INFO
    integer :: loglevel_file = LEVEL_INFO
 
-   integer, parameter :: maxerrprint = 50 !< Maximum number of errors of same type printed on screen (only used by some code pieces).
+   integer, parameter :: MAXERRPRINT = 50 !< Maximum number of errors of same type printed on screen (only used by some code pieces).
 
 !> The message buffer allows you to write any number of variables in any
 !! order to a character string. Call msg_flush or err_flush to output
 !! the actual message or error.
 
+   interface
+      module subroutine unstruc_errorhandler(level, message)
+         implicit none
+         integer, intent(in) :: level !< The severity level
+         character(len=*), intent(in) :: message !< log message
+      end subroutine unstruc_errorhandler
+   end interface
+    
 contains
 
 !> Initializes the MessageHandling module with the mdia file pointer.
    subroutine initMessaging(mdia)
+      use m_unstruc_guimessage, only: unstruc_guimessage
+
       integer, intent(in) :: mdia
-      external :: unstruc_errorhandler, unstruc_guimessage
 
       call SetMessagehandling(printToStdout, .false., mdia, unstruc_errorhandler, &
                               thresholdLevel_stdout=loglevel_StdOut, thresholdLevel_file=loglevel_file)

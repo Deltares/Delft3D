@@ -40,7 +40,7 @@
 !! the actual actions for a given signal are performed (typically after time
 !! step has completed).
 module dfm_signals
-use m_flow_externaloutput_direct, only: flow_externaloutput_direct
+   use m_flow_externaloutput_direct, only: flow_externaloutput_direct
 
    implicit none
 
@@ -64,7 +64,6 @@ contains
 !> Registers which specific signal numbers should be watched for.
 !! libsigwatch will 'record' these signals for us.
    subroutine dfm_add_signalwatchers()
-      use unstruc_messages
       implicit none
 
 #ifdef HAVE_SIGIWATCH
@@ -86,7 +85,6 @@ contains
 
 !> Performs the actual check whether an important signal was recently given.
    function dfm_check_signals() result(ierror)
-      use unstruc_messages
       use dfm_error
       use m_datum
       implicit none

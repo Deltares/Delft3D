@@ -32,37 +32,37 @@
 
 module m_makey2
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: makey2
+   public :: makey2
 
 contains
 
-      subroutine MAKEY2(XR, YR, XO, YO, MMAX, NMAX) ! Voor tekenen bij JSFERIC SUBROUTINE MAKEY2
-         use precision, only: dp
-         use M_SFERIC
-         use M_MISSING
+   subroutine MAKEY2(XR, YR, XO, YO, MMAX, NMAX) ! Voor tekenen bij JSFERIC SUBROUTINE MAKEY2
+      use precision, only: dp
+      use M_SFERIC
+      use M_MISSING
 
-         integer :: mmax, nmax
-         real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
-                          XO(MMAX, NMAX), YO(MMAX, NMAX), FI2
-         integer :: i, j
+      integer :: mmax, nmax
+      real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
+                       XO(MMAX, NMAX), YO(MMAX, NMAX), FI2
+      integer :: i, j
 
-         do I = 1, MMAX
-            do J = 1, NMAX
-               if (XR(I, J) /= XYMIS) then
-                  FI2 = atan(sinh(YR(I, J)))
-                  YO(I, J) = RD2DG * FI2
-                  XO(I, J) = RD2DG * XR(I, J)
-               else
-                  XO(I, J) = XYMIS
-                  YO(I, J) = XYMIS
-               end if
-            end do
+      do I = 1, MMAX
+         do J = 1, NMAX
+            if (XR(I, J) /= XYMIS) then
+               FI2 = atan(sinh(YR(I, J)))
+               YO(I, J) = RD2DG * FI2
+               XO(I, J) = RD2DG * XR(I, J)
+            else
+               XO(I, J) = XYMIS
+               YO(I, J) = XYMIS
+            end if
          end do
-         return
-      end subroutine MAKEY2
+      end do
+      return
+   end subroutine MAKEY2
 
 end module m_makey2

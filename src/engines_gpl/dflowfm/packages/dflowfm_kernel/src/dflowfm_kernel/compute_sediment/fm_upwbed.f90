@@ -45,7 +45,6 @@ contains
       use precision, only: dp
       use m_flowgeom, only: acl, snu, csu, kcu
       use m_flow, only: u1, epshu, hu
-      use unstruc_messages
       use m_sediment, only: stmpar, jabndtreatment
       use sediment_basics_module
       use m_fm_erosed, only: link1, link1sign, tratyp, kfsed, link1sign2

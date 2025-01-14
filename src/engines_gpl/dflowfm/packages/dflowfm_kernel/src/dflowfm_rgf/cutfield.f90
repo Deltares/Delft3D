@@ -32,34 +32,34 @@
 
 module m_cutfield
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: cutfield
+   public :: cutfield
 
 contains
 
-      subroutine CUTFIELD(X, Y, mmax, nmax, MC, NC)
-         use precision, only: dp
-         use m_missing
-         use m_grid_block
+   subroutine CUTFIELD(X, Y, mmax, nmax, MC, NC)
+      use precision, only: dp
+      use m_missing
+      use m_grid_block
 
-         integer :: mmax, nmax, mc, nc
-         real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
-         integer :: i, j
+      integer :: mmax, nmax, mc, nc
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
+      integer :: i, j
 
-         do I = 1, MC
-            do J = 1, NC
-               if (I >= MB(3) .and. I <= MB(4) .and. J >= NB(3) .and. J <= NB(4)) then
+      do I = 1, MC
+         do J = 1, NC
+            if (I >= MB(3) .and. I <= MB(4) .and. J >= NB(3) .and. J <= NB(4)) then
 !               mooi houwen zo
-               else
-                  X(I, J) = XYMIS
-                  Y(I, J) = 0d0
-               end if
-            end do
+            else
+               X(I, J) = XYMIS
+               Y(I, J) = 0d0
+            end if
          end do
-         return
-      end subroutine cutfield
+      end do
+      return
+   end subroutine cutfield
 
 end module m_cutfield

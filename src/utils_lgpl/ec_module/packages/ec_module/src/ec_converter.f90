@@ -3473,7 +3473,6 @@ contains
       real(hp) :: x1, y1, x2, y2
       ! locals
       real(hp) :: ddx, ddy, rr
-      ! double precision :: getdx, getdy ! TODO : all is cartesian, kernel must provide it as such
       real(hp) :: dmiss = -999d0
       !
       if (x1 == DMISS .or. x2 == DMISS .or. y1 == DMISS .or. y2 == DMISS) then

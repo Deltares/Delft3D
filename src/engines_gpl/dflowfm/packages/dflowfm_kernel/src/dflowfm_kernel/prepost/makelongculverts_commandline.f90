@@ -30,66 +30,67 @@
 !>  perform long culvert conversion from command line
 module m_makelongculverts_commandline
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: makelongculverts_commandline
+   public :: makelongculverts_commandline
 
 contains
 
-subroutine makelongculverts_commandline()
-   use unstruc_model
-   use m_readstructures
-   use string_module, only: strsplit
-   use m_longculverts
-   use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID
-   use system_utils
-   use m_set_nod_adm
+   subroutine makelongculverts_commandline()
+      use unstruc_model
+      use m_readstructures
+      use string_module, only: strsplit
+      use m_longculverts
+      use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID
+      use system_utils
+      use m_set_nod_adm
+      use messagehandling, only: IDLEN
 
-   character(len=1024) :: fnamesstring
-   character(len=:), allocatable :: converted_fnamesstring
-   character(len=:), allocatable :: converted_crsdefsstring
-   character(len=:), allocatable :: tempstring_crsdef
-   character(len=:), allocatable :: tempstring_fnames
-   character(len=:), allocatable :: tempstring_netfile
-   character(len=200), dimension(:), allocatable :: fnames
-   character(len=IdLen) :: temppath, tempname, tempext
+      character(len=1024) :: fnamesstring
+      character(len=:), allocatable :: converted_fnamesstring
+      character(len=:), allocatable :: converted_crsdefsstring
+      character(len=:), allocatable :: tempstring_crsdef
+      character(len=:), allocatable :: tempstring_fnames
+      character(len=:), allocatable :: tempstring_netfile
+      character(len=200), dimension(:), allocatable :: fnames
+      character(len=IDLEN) :: temppath, tempname, tempext
 
-   integer :: istat, ifil
+      integer :: istat, ifil
 
-   if (len_trim(md_1dfiles%structures) > 0) then
+      if (len_trim(md_1dfiles%structures) > 0) then
 
-      fnamesstring = md_1dfiles%structures
-      call strsplit(fnamesstring, 1, fnames, 1)
+         fnamesstring = md_1dfiles%structures
+         call strsplit(fnamesstring, 1, fnames, 1)
 
-      if (len_trim(md_1dfiles%cross_section_definitions) > 0) then
-         call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat, md_1dfiles%cross_section_definitions)
-      else
-         call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat)
+         if (len_trim(md_1dfiles%cross_section_definitions) > 0) then
+            call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat, md_1dfiles%cross_section_definitions)
+         else
+            call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat)
+         end if
+         do ifil = 2, size(fnames)
+            call convertLongCulvertsAsNetwork(fnames(ifil), 1, md_culvertprefix, tempstring_fnames, tempstring_crsdef, istat)
+            converted_crsdefsstring = trim(trim(converted_crsdefsstring)//', ')//tempstring_crsdef
+            converted_fnamesstring = trim(trim(converted_fnamesstring)//', ')//tempstring_fnames
+         end do
+         deallocate (fnames)
+         call setnodadm(0)
+         call finalizeLongCulvertsInNetwork()
+
+         call split_filename(md_netfile, temppath, tempname, tempext)
+         tempname = trim(md_culvertprefix)//tempname
+         tempstring_netfile = cat_filename(temppath, tempname, tempext)
+
+         call unc_write_net(tempstring_netfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
+
+         md_netfile = tempstring_netfile
+         md_1dfiles%structures = converted_fnamesstring
+         md_1dfiles%cross_section_definitions = converted_crsdefsstring
+         converted_fnamesstring = trim(trim(md_culvertprefix)//md_ident)//'.mdu'
+         call writeMDUFile(converted_fnamesstring, istat)
       end if
-      do ifil = 2, size(fnames)
-         call convertLongCulvertsAsNetwork(fnames(ifil), 1, md_culvertprefix, tempstring_fnames, tempstring_crsdef, istat)
-         converted_crsdefsstring = trim(trim(converted_crsdefsstring)//', ')//tempstring_crsdef
-         converted_fnamesstring = trim(trim(converted_fnamesstring)//', ')//tempstring_fnames
-      end do
-      deallocate (fnames)
-      call setnodadm(0)
-      call finalizeLongCulvertsInNetwork()
 
-      call split_filename(md_netfile, temppath, tempname, tempext)
-      tempname = trim(md_culvertprefix)//tempname
-      tempstring_netfile = cat_filename(temppath, tempname, tempext)
-
-      call unc_write_net(tempstring_netfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
-
-      md_netfile = tempstring_netfile
-      md_1dfiles%structures = converted_fnamesstring
-      md_1dfiles%cross_section_definitions = converted_crsdefsstring
-      converted_fnamesstring = trim(trim(md_culvertprefix)//md_ident)//'.mdu'
-      call writeMDUFile(converted_fnamesstring, istat)
-   end if
-
-end subroutine makelongculverts_commandline
+   end subroutine makelongculverts_commandline
 
 end module m_makelongculverts_commandline

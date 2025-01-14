@@ -32,29 +32,29 @@
 
 module m_nularr
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: nularr
+   public :: nularr
 
 contains
 
-      subroutine NULARR(X, MMAX, NMAX)
-         use precision, only: dp
+   subroutine NULARR(X, MMAX, NMAX)
+      use precision, only: dp
 
-         integer :: i
-         integer :: j
-         integer :: mmax
-         integer :: nmax
-         real(kind=dp) :: x
-         dimension X(MMAX, NMAX)
-         do I = 1, MMAX
-            do J = 1, NMAX
-               X(I, J) = 0d0
-            end do
+      integer :: i
+      integer :: j
+      integer :: mmax
+      integer :: nmax
+      real(kind=dp) :: x
+      dimension X(MMAX, NMAX)
+      do I = 1, MMAX
+         do J = 1, NMAX
+            X(I, J) = 0d0
          end do
-         return
-      end
+      end do
+      return
+   end
 
 end module m_nularr

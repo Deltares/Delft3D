@@ -65,7 +65,6 @@ contains
       use m_flow
       use m_wind
       use m_reduce
-      use geometry_module, only: getdx, getdy, getdxdy
       use gridoperations
 
       use m_observations_data

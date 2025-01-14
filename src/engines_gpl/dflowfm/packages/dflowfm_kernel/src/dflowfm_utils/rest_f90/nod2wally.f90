@@ -33,29 +33,29 @@
 !>    return x-component in link coordinate frame of vector in wall coordinate frame
 module m_nod2wally
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: nod2wally
+   public :: nod2wally
 
 contains
 
-      real(kind=dp) function nod2wally(nw, ux, uy)
-         use precision, only: dp
-         use m_flowgeom, only: csbwn, snbwn
-         use m_sferic
+   real(kind=dp) function nod2wally(nw, ux, uy)
+      use precision, only: dp
+      use m_flowgeom, only: csbwn, snbwn
+      use m_sferic
 
-         integer, intent(in) :: nw !< wall element number
-         real(kind=dp), intent(in) :: ux, uy !< vector components in wall coordinate frame
+      integer, intent(in) :: nw !< wall element number
+      real(kind=dp), intent(in) :: ux, uy !< vector components in wall coordinate frame
 
-         if (jsferic /= 1 .or. jasfer3D /= 1) then
-            nod2wally = uy
-         else
-            nod2wally = -snbwn(nw) * ux + csbwn(nw) * uy
-         end if
+      if (jsferic /= 1 .or. jasfer3D /= 1) then
+         nod2wally = uy
+      else
+         nod2wally = -snbwn(nw) * ux + csbwn(nw) * uy
+      end if
 
-         return
-      end function nod2wally
+      return
+   end function nod2wally
 
 end module m_nod2wally

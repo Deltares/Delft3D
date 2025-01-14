@@ -296,7 +296,6 @@ contains
       use precision
       use mathconsts
       use string_module
-      use unstruc_messages
       use m_flowtimes, only: Tudunitstr
       implicit none
       !
@@ -1295,7 +1294,6 @@ contains
    subroutine fouini(lunfou, success, time_unit_user, time_unit_kernel)
    !!--declarations----------------------------------------------------------------
       use precision
-      use unstruc_messages
       !
       implicit none
       !

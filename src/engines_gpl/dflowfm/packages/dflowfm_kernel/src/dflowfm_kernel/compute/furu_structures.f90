@@ -53,6 +53,7 @@ contains
       use unstruc_channel_flow
       use m_get_cz
       use m_distribute_linearized_3d_structure_coefficients, only: distribute_linearized_3d_structure_coefficients
+      use messagehandling, only: err_flush
 
       implicit none
 

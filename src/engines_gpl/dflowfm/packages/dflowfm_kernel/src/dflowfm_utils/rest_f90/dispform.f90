@@ -32,43 +32,43 @@
 
 module m_dispform
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: dispform
+   public :: dispform
 
 contains
 
-      subroutine DISPFORM(value, fmt)
-         use precision, only: dp
+   subroutine DISPFORM(value, fmt)
+      use precision, only: dp
 
-         integer :: n1
-         integer :: n2
-         real(kind=dp) :: value
-         character fmt * (*)
+      integer :: n1
+      integer :: n2
+      real(kind=dp) :: value
+      character fmt * (*)
 
-         fmt = '(f9.3)'
+      fmt = '(f9.3)'
 
-         if (value == 0.0) then
-            fmt = '(f9.5)'
-            return
-         end if
-
-         n1 = int(log10(abs(value)))
-
-         if (n1 <= 6 .and. n1 > 0) then
-            n2 = min(9, n1 + 3)
-            write (fmt(5:5), '(i1)') 9 - n2
-         else if (n1 >= -5 .and. n1 < 0) then
-            write (fmt(5:5), '(i1)') 6
-         else if (n1 == 0) then
-            write (fmt(5:5), '(i1)') 6
-         else
-            fmt = '(e9.3)'
-         end if
-
+      if (value == 0.0) then
+         fmt = '(f9.5)'
          return
-      end
+      end if
+
+      n1 = int(log10(abs(value)))
+
+      if (n1 <= 6 .and. n1 > 0) then
+         n2 = min(9, n1 + 3)
+         write (fmt(5:5), '(i1)') 9 - n2
+      else if (n1 >= -5 .and. n1 < 0) then
+         write (fmt(5:5), '(i1)') 6
+      else if (n1 == 0) then
+         write (fmt(5:5), '(i1)') 6
+      else
+         fmt = '(e9.3)'
+      end if
+
+      return
+   end
 
 end module m_dispform

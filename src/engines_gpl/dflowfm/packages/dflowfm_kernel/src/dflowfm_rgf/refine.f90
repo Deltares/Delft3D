@@ -30,10 +30,10 @@
 !
 !
 module m_refine
-use m_putarr, only: putarr
-use m_xyspln, only: xyspln
-use m_savegrd, only: savegrd
-use m_getspl2, only: getspl2
+   use m_putarr, only: putarr
+   use m_xyspln, only: xyspln
+   use m_savegrd, only: savegrd
+   use m_getspl2, only: getspl2
 
    implicit none
 contains

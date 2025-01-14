@@ -36,7 +36,7 @@ contains
    subroutine SPLINXY(X, Y, X2, Y2, N)
       use precision, only: dp
       use m_spline
-      
+
       integer :: n
       real(kind=dp) :: X(N), Y(N), X2(N), Y2(N)
       call SPLINE(X, N, X2)

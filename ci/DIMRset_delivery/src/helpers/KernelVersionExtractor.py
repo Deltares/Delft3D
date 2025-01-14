@@ -86,6 +86,4 @@ class KernelVersionExtractor(object):
             if any(KERNEL.name_for_extracting_revision == kernel["name"] for KERNEL in KERNELS):
                 kernel_versions[kernel["name"]] = kernel["value"]
 
-        # Overwrite the OSS_ver since this is now a TC parameter with the buildnumber that currently has the git hash.
-        kernel_versions["OSS_ver"] = build_info["number"]
         return kernel_versions

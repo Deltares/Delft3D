@@ -32,59 +32,58 @@
 
 module m_start_program
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: start_program
+   public :: start_program
 
 contains
 
-      subroutine START_PROGRAM()
-         use M_dimens
-         use M_DEVICES
-         use unstruc_files
-         use unstruc_startup
-         use dflowfm_version_module, only: base_name
-         use m_gui
-         use unstruc_messages
-         use m_helpnow
-         use m_fkeys
-         use m_menuh
-         use m_botlin
-         use m_firstlin
+   subroutine START_PROGRAM()
+      use M_dimens
+      use M_DEVICES
+      use unstruc_files
+      use unstruc_startup
+      use dflowfm_version_module, only: base_name
+      use m_gui
+      use m_helpnow
+      use m_fkeys
+      use m_menuh
+      use m_botlin
+      use m_firstlin
 
-         integer :: infofile
-         integer :: infoopsystem
-         integer :: ja
-         integer :: jscreen
-         integer :: key
-         integer :: num
-         integer :: numclargs
-         integer :: nwhat
-         character(len=8192) :: cmd
-         integer :: cmdlen
+      integer :: infofile
+      integer :: infoopsystem
+      integer :: ja
+      integer :: jscreen
+      integer :: key
+      integer :: num
+      integer :: numclargs
+      integer :: nwhat
+      character(len=8192) :: cmd
+      integer :: cmdlen
 
 !
-         WRDKEY = 'PROGRAM PURPOSE'
-         NLEVEL = 1
-         JSCREEN = 0
-         INFOFILE = 0
+      WRDKEY = 'PROGRAM PURPOSE'
+      NLEVEL = 1
+      JSCREEN = 0
+      INFOFILE = 0
 
-         call INIDIA(base_name)
+      call INIDIA(base_name)
 
-         call FIRSTLIN(MDIA)
-         call FIRSTLIN(6)
+      call FIRSTLIN(MDIA)
+      call FIRSTLIN(6)
 
-         call get_command(cmd, cmdlen)
-         write (msgbuf, '(a,a)') 'Command: ', cmd(1:cmdlen); call msg_flush()
+      call get_command(cmd, cmdlen)
+      write (msgbuf, '(a,a)') 'Command: ', cmd(1:cmdlen); call msg_flush()
 
-         if (jaGUI /= 1) return
+      if (jaGUI /= 1) return
 
 !     initialisatiefiles
-         call initProgram()
+      call initProgram()
 
-         if (jaGUI /= 1) return
+      if (jaGUI /= 1) return
 
 ! SPvdP: disabled mouse-check for mouseless buildserver
 !      JMOUSE = INFOHARDWARE(13)
@@ -96,27 +95,27 @@ contains
 !         CALL STOPINT()
 !      ENDIF
 
-         write (msgbuf, *) 'MAXIMUM NUMBER OF LINKS         : ', LMAX; call msg_flush()
-         write (msgbuf, *) 'MAXIMUM NUMBER OF NODES         : ', KMAX; call msg_flush()
-         write (msgbuf, *) 'RESOLUTION GRAPHICS SCREEN      : ', NPX, NPY; call msg_flush()
-         write (msgbuf, *) 'RESOLUTION TEXT     SCREEN      : ', IWS, IHS; call msg_flush()
-         write (msgbuf, *) 'NUMBER OF COLOURS AVAILABLE     : ', NCOLR; call msg_flush()
+      write (msgbuf, *) 'MAXIMUM NUMBER OF LINKS         : ', LMAX; call msg_flush()
+      write (msgbuf, *) 'MAXIMUM NUMBER OF NODES         : ', KMAX; call msg_flush()
+      write (msgbuf, *) 'RESOLUTION GRAPHICS SCREEN      : ', NPX, NPY; call msg_flush()
+      write (msgbuf, *) 'RESOLUTION TEXT     SCREEN      : ', IWS, IHS; call msg_flush()
+      write (msgbuf, *) 'NUMBER OF COLOURS AVAILABLE     : ', NCOLR; call msg_flush()
 
-15       continue
-         NUMCLARGS = INFOOPSYSTEM(2)
-         if (NUMCLARGS > 0 .or. INFOFILE == 1) return
-         KEY = 0
-         JA = 2
+15    continue
+      NUMCLARGS = INFOOPSYSTEM(2)
+      if (NUMCLARGS > 0 .or. INFOFILE == 1) return
+      KEY = 0
+      JA = 2
 
-         call MENUH(JA, NUM, NWHAT)
-         call BOTLIN(JA, 0, KEY)
+      call MENUH(JA, NUM, NWHAT)
+      call BOTLIN(JA, 0, KEY)
 
-         if (KEY >= 24 .and. KEY <= 26) then
-            call FKEYS(KEY)
-            goto 15
-         end if
+      if (KEY >= 24 .and. KEY <= 26) then
+         call FKEYS(KEY)
+         goto 15
+      end if
 
-         return
-      end subroutine START_PROGRAM
+      return
+   end subroutine START_PROGRAM
 
 end module m_start_program

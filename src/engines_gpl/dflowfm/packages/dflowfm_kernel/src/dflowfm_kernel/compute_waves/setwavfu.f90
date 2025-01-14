@@ -43,7 +43,6 @@ contains
    !> subroutine to compute wave forces
    subroutine setwavfu()
       use precision, only: dp
-      use unstruc_messages
       use MessageHandling
       use m_flowparameters
       use m_flowgeom

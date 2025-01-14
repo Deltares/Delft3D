@@ -42,7 +42,8 @@ contains
    subroutine read_property(prop_ptr, key, strvalue, dblvalue, is_double, typeandid, success)
       use precision, only: dp
       use properties
-      use unstruc_messages
+      use messagehandling, only: msgbuf, msg_flush
+
       type(TREE_DATA), pointer, intent(in) :: prop_ptr !< Property tree as read from a single .ini block
       character(len=*), intent(in) :: key !< Property key that should be read.
       character(len=*), intent(inout) :: strvalue !< Returned string value for requested property key.

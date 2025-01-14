@@ -32,38 +32,38 @@
 
 module m_refinelink2
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: refinelink2
+   public :: refinelink2
 
 contains
 
-  subroutine REFINELINK2(L12, K12)
-     use precision, only: dp
-     use m_netw
-     use gridoperations, only: dsetnewpoint
-     use m_new_link
+   subroutine REFINELINK2(L12, K12)
+      use precision, only: dp
+      use m_netw
+      use gridoperations, only: dsetnewpoint
+      use m_new_link
 
-     integer :: L12, K12
+      integer :: L12, K12
 
-     integer :: k1
-     integer :: k2
-     integer :: lnu
-     real(kind=dp) :: XM, YM
+      integer :: k1
+      integer :: k2
+      integer :: lnu
+      real(kind=dp) :: XM, YM
 
-     K1 = KN(1, L12); KC(K1) = 5
-     K2 = KN(2, L12); KC(K2) = 5
+      K1 = KN(1, L12); KC(K1) = 5
+      K2 = KN(2, L12); KC(K2) = 5
 
-     KN(1, L12) = 0; KN(2, L12) = 0
+      KN(1, L12) = 0; KN(2, L12) = 0
 
-     XM = 0.5d0 * (XK(K1) + XK(K2))
-     YM = 0.5d0 * (YK(K1) + YK(K2))
+      XM = 0.5d0 * (XK(K1) + XK(K2))
+      YM = 0.5d0 * (YK(K1) + YK(K2))
 
-     call DSETNEWPOINT(XM, YM, K12)
-     call NEWLINK(K1, K12, lnu) ! fast version without refinement
-     call NEWLINK(K12, K2, lnu) ! fast version without refinement
-  end subroutine REFINELINK2
+      call DSETNEWPOINT(XM, YM, K12)
+      call NEWLINK(K1, K12, lnu) ! fast version without refinement
+      call NEWLINK(K12, K2, lnu) ! fast version without refinement
+   end subroutine REFINELINK2
 
 end module m_refinelink2

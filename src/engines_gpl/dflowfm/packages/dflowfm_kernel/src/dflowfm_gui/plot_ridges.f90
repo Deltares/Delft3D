@@ -43,7 +43,6 @@ contains
       use m_samples
       use m_samples_refine
       use m_missing, only: dmiss
-      use geometry_module, only: dbdistance
       use m_set_col
       use m_movabs
       use m_lnabs

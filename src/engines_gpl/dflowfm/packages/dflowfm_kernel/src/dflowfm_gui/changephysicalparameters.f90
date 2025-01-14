@@ -31,8 +31,7 @@
 !
 
 module m_changephysicalparameters
-use m_setuniformwind, only: setuniformwind
-
+   use m_setuniformwind, only: setuniformwind
 
    implicit none
 

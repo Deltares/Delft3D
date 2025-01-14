@@ -32,18 +32,18 @@
 
 module m_setcoltabfile
 
-implicit none
-
-private
-
-public :: setcoltabfile
-
-interface
-module subroutine SETCOLTABFILE(FILNAM, JASECOND)
    implicit none
-   integer :: jasecond
-   character FILNAM * (*)
-end subroutine SETCOLTABFILE
-end interface
-    
+
+   private
+
+   public :: setcoltabfile
+
+   interface
+      module subroutine SETCOLTABFILE(FILNAM, JASECOND)
+         implicit none
+         integer :: jasecond
+         character FILNAM * (*)
+      end subroutine SETCOLTABFILE
+   end interface
+
 end module m_setcoltabfile

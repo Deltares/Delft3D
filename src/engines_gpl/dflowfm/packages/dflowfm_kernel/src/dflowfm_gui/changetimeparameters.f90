@@ -41,7 +41,7 @@ contains
       use unstruc_colors
       use unstruc_display_data
       use dflowfm_version_module, only: company, product_name
-      use unstruc_messages, only: msgbuf, msg_flush
+      use messagehandling, only: msgbuf, msg_flush
       use m_flow, only: squ2d, ndkx
       use m_helpnow
       use m_save_keys

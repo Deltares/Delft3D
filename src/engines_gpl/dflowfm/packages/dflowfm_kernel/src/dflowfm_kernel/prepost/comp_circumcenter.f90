@@ -45,7 +45,7 @@ contains
       use precision, only: dp
       use m_sferic
       use m_missing
-      use geometry_module, only: pinpok, getdxdy, getdx, getdy, cross, normalin
+      use geometry_module, only: pinpok, getdxdy, cross, normalin
       use m_qnerror
 
       integer, intent(in) :: N !< polygon dimension
@@ -101,12 +101,7 @@ contains
       rhs = 0d0
       do i = 1, N
          ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
-!      xhalf = 0.5d0*(getdx(x0,y0,xp(i),yp(i)) + getdx(x0,y0,xp(ip1),yp(ip1)))
-!      yhalf = 0.5d0*(getdy(x0,y0,xp(i),yp(i)) + getdy(x0,y0,xp(ip1),yp(ip1)))
-
          call getdxdy(x0, y0, xf(i), yf(i), xhalf, yhalf, jsferic)
-         !xhalf = getdx(x0,y0,xf(i),yf(i))
-         !yhalf = getdy(x0,y0,xf(i),yf(i))
 
          dfac = tx(i) * xhalf + ty(i) * yhalf
          rhs(1) = rhs(1) + tx(i) * dfac

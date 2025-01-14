@@ -32,31 +32,31 @@
 
 module m_putarr
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: putarr
+   public :: putarr
 
 contains
 
-      subroutine PUTARR(XR, X, MMAX, NMAX)
-         use precision, only: dp
+   subroutine PUTARR(XR, X, MMAX, NMAX)
+      use precision, only: dp
 
-         integer :: i
-         integer :: j
-         integer :: mmax
-         integer :: nmax
-         real(kind=dp) :: x
-         real(kind=dp) :: xr
+      integer :: i
+      integer :: j
+      integer :: mmax
+      integer :: nmax
+      real(kind=dp) :: x
+      real(kind=dp) :: xr
 !     DE EERSTE IN DE TWEEDE
-         dimension XR(MMAX, NMAX), X(MMAX, NMAX)
-         do I = 1, MMAX
-            do J = 1, NMAX
-               X(I, J) = XR(I, J)
-            end do
+      dimension XR(MMAX, NMAX), X(MMAX, NMAX)
+      do I = 1, MMAX
+         do J = 1, NMAX
+            X(I, J) = XR(I, J)
          end do
-         return
-      end
+      end do
+      return
+   end
 
 end module m_putarr

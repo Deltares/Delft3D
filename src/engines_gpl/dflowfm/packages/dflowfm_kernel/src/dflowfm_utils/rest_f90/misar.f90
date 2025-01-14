@@ -32,26 +32,26 @@
 
 module m_misar
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: misar
+   public :: misar
 
 contains
 
-      subroutine MISAR(H, MMAX)
-         use precision, only: dp
-         use M_MISSING
+   subroutine MISAR(H, MMAX)
+      use precision, only: dp
+      use M_MISSING
 
-         integer :: i
-         integer :: mmax
-         real(kind=dp) :: H(MMAX)
+      integer :: i
+      integer :: mmax
+      real(kind=dp) :: H(MMAX)
 
-         do I = 1, MMAX
-            H(I) = dmiss
-         end do
-         return
-      end
+      do I = 1, MMAX
+         H(I) = dmiss
+      end do
+      return
+   end
 
 end module m_misar

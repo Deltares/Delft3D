@@ -32,37 +32,37 @@
 
 module m_flow_settidepotential
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: flow_settidepotential
+   public :: flow_settidepotential
 
 contains
 
- subroutine flow_settidepotential(timmin)
-    use precision, only: dp
-    use m_flow
-    use m_flowgeom
-    use m_flowtimes
-    use timespace_data
-    use m_sferic
-    use unstruc_model
-    use m_equatorial
+   subroutine flow_settidepotential(timmin)
+      use precision, only: dp
+      use m_flow
+      use m_flowgeom
+      use m_flowtimes
+      use timespace_data
+      use m_sferic
+      use unstruc_model
+      use m_equatorial
 
-    real(kind=dp) :: timmin
-    integer :: kk
-    real(kind=dp) :: tt
+      real(kind=dp) :: timmin
+      integer :: kk
+      real(kind=dp) :: tt
 
-    call meteo_tidepotential(julrefdat, TIMmin, doodsonstart, doodsonstop, doodsoneps)
+      call meteo_tidepotential(julrefdat, TIMmin, doodsonstart, doodsonstop, doodsoneps)
 
-    if (md_ident == 'equator1d') then
-       tt = 60d0 * timmin - tstart_user
-       do kk = 1, ndx
-          tidep(1, kk) = ZP * sin(om * tt - nmode * dg2rd * xz(kk))
-       end do
-    end if
+      if (md_ident == 'equator1d') then
+         tt = 60d0 * timmin - tstart_user
+         do kk = 1, ndx
+            tidep(1, kk) = ZP * sin(om * tt - nmode * dg2rd * xz(kk))
+         end do
+      end if
 
- end subroutine flow_settidepotential
+   end subroutine flow_settidepotential
 
 end module m_flow_settidepotential

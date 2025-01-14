@@ -32,30 +32,30 @@
 
 module m_isnodedb
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: isnodedb
+   public :: isnodedb
 
 contains
 
-  subroutine ISNODEDB(KP, XP, YP)
-     use precision, only: dp
-     use m_netw
+   subroutine ISNODEDB(KP, XP, YP)
+      use precision, only: dp
+      use m_netw
 
-     integer :: KP
-     real(kind=dp) :: XP, YP, eps = 1d-6
+      integer :: KP
+      real(kind=dp) :: XP, YP, eps = 1d-6
 
-     integer :: K
-     KP = 0
-     do K = NUMK, 1, -1
-        if (abs(XP - XK(K)) < eps .and. abs(YP - YK(K)) < eps) then
-           KP = K
-           return
-        end if
-     end do
-     return
-  end subroutine ISNODEDB
+      integer :: K
+      KP = 0
+      do K = NUMK, 1, -1
+         if (abs(XP - XK(K)) < eps .and. abs(YP - YK(K)) < eps) then
+            KP = K
+            return
+         end if
+      end do
+      return
+   end subroutine ISNODEDB
 
 end module m_isnodedb

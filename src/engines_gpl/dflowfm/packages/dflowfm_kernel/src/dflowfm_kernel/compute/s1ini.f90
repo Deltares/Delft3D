@@ -64,7 +64,7 @@ contains
       real(kind=dp) :: aufu, auru, tetau
       real(kind=dp) :: ds, hsk, Qeva_ow, Qeva_icept, Qrain, Qicept, Qextk, aloc
       logical :: isGhost
-      integer :: i_layer
+      integer :: i_layer, layer_index, index_active_bottom_layer
 
       bb = 0d0
       ccr = 0d0
@@ -229,6 +229,13 @@ contains
                         qqlat(i_layer, k1) = 0d0
                      end if
                      qin(k) = qin(k) + qqlat(i_layer, k1)
+                     if (kmx > 0) then
+                        index_active_bottom_layer = kmx - kmxn(k) + 1
+                        if (i_layer >= index_active_bottom_layer) then
+                           layer_index = kbot(k) + i_layer - index_active_bottom_layer
+                           qin(layer_index) = qin(layer_index) + qqlat(i_layer, k1)
+                        end if
+                     end if
                   end do
                end do
             end do

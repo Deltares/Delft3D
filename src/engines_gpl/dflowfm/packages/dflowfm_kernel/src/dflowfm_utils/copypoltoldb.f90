@@ -32,43 +32,43 @@
 
 module m_copypoltoldb
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: copypoltoldb
+   public :: copypoltoldb
 
 contains
 
-  subroutine COPYPOLTOLDB()
-     use m_polygon
-     use M_LANDBOUNDARY
-     use M_MISSING
-     use m_delpol
+   subroutine COPYPOLTOLDB()
+      use m_polygon
+      use M_LANDBOUNDARY
+      use M_MISSING
+      use m_delpol
 
-     integer :: k
-     integer :: l
+      integer :: k
+      integer :: l
 
-     L = MXLAN
-     if (L > 0) then
-        if (xlan(L) /= XYMIS) then
-           L = L + 1
-        end if
-     end if
+      L = MXLAN
+      if (L > 0) then
+         if (xlan(L) /= XYMIS) then
+            L = L + 1
+         end if
+      end if
 
-     call INCREASELAN(L + NPL)
-     if (L > 0) then
-        XLAN(L) = XYMIS; YLAN(L) = XYMIS; ZLAN(L) = XYMIS
-     end if
-     do K = 1, NPL
-        L = L + 1
-        XLAN(L) = XPL(K)
-        YLAN(L) = YPL(K)
-        ZLAN(L) = ZPL(K)
-     end do
-     MXLAN = L
-     call DELPOL()
-     return
-  end subroutine COPYPOLTOLDB
+      call INCREASELAN(L + NPL)
+      if (L > 0) then
+         XLAN(L) = XYMIS; YLAN(L) = XYMIS; ZLAN(L) = XYMIS
+      end if
+      do K = 1, NPL
+         L = L + 1
+         XLAN(L) = XPL(K)
+         YLAN(L) = YPL(K)
+         ZLAN(L) = ZPL(K)
+      end do
+      MXLAN = L
+      call DELPOL()
+      return
+   end subroutine COPYPOLTOLDB
 
 end module m_copypoltoldb

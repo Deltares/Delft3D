@@ -32,12 +32,12 @@
 
 module m_reapol_nampli
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: reapol_nampli
-    
+   public :: reapol_nampli
+
    interface reapol_nampli
       module subroutine reapol_nampli(mpol, jadoorladen, janampl, ipli)
          implicit none
@@ -46,6 +46,6 @@ public :: reapol_nampli
          integer, intent(in) :: janampl !< Store the pli-name as crosssection name
          integer, intent(inout) :: ipli
       end subroutine reapol_nampli
-    end interface reapol_nampli
-    
+   end interface reapol_nampli
+
 end module m_reapol_nampli

@@ -38,11 +38,11 @@
 !!  caution: will overwrite nudge_rate in 1/s
 module m_set_nudgerate
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: set_nudgerate
+   public :: set_nudgerate
 
 contains
 

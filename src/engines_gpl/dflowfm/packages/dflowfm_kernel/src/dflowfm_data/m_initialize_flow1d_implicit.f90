@@ -75,7 +75,7 @@ contains
       use fm_external_forcings_data, only: nzbnd, nqbnd
       use m_fm_erosed, only: nd_mor, ln_mor
       use unstruc_channel_flow, only: network
-      use unstruc_messages
+      use messagehandling, only: msgbuf, err_flush
       use m_sediment, only: stmpar, jased, stm_included
       use m_fm_erosed, only: link1sign, link1sign2
       use m_oned_functions, only: gridpoint2cross, t_gridp2cs
@@ -482,7 +482,7 @@ contains
       use m_f1dimp
       use m_flowgeom, only: ndx, lnx, ln, nd, tnode, lnxi, lnx1Db
       use unstruc_channel_flow, only: network
-      use unstruc_messages
+      use messagehandling, only: msgbuf, err_flush
       use m_fm_erosed, only: link1sign2, ndx_mor, lnx_mor, lnxi_mor, ndxi_mor, ln_mor, nd_mor, ndkx_mor
       use m_oned_functions, only: gridpoint2cross
 
@@ -1224,7 +1224,7 @@ contains
 
       use m_f1dimp
       use unstruc_channel_flow, only: network
-      use unstruc_messages
+      use messagehandling, only: msgbuf, err_flush
 
       implicit none
 
@@ -1467,7 +1467,7 @@ contains
 
       use m_f1dimp
       use unstruc_channel_flow, only: network
-      use unstruc_messages
+      use messagehandling, only: msgbuf, err_flush
 
       implicit none
 
@@ -1622,7 +1622,7 @@ contains
       use m_f1dimp
       use m_fm_erosed, only: lsedtot, ndx_mor, frac
       use m_sediment, only: jased, stm_included
-      use unstruc_messages
+      use messagehandling, only: msgbuf, err_flush
 
       implicit none
 

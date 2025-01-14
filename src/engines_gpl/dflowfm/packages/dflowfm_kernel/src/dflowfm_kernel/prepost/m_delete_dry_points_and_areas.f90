@@ -32,16 +32,16 @@
 
 module m_delete_dry_points_and_areas
 
-implicit none
-
-private
-
-public :: delete_dry_points_and_areas
-
-interface 
-   module subroutine delete_dry_points_and_areas
    implicit none
-   end subroutine delete_dry_points_and_areas
-end interface
+
+   private
+
+   public :: delete_dry_points_and_areas
+
+   interface
+      module subroutine delete_dry_points_and_areas
+         implicit none
+      end subroutine delete_dry_points_and_areas
+   end interface
 
 end module m_delete_dry_points_and_areas

@@ -32,11 +32,11 @@
 
 module m_mirrorline2
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: mirrorline2
+   public :: mirrorline2
 
 contains
 

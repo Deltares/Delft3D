@@ -39,7 +39,7 @@ module unstruc_inifields
    use m_setinitialverticalprofile, only: setinitialverticalprofile
    use m_add_tracer, only: add_tracer
    use m_setzcs, only: setzcs
-   use unstruc_messages
+   use messagehandling, only: msgbuf, warn_flush, err_flush
    use properties
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp
@@ -1924,6 +1924,7 @@ contains
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
             else
                kb = kbot(n); kt = ktop(n)
+               call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
                do k = kb, kt
                   level_at_pressure_point = 0.5_dp * (zws(k) + zws(k - 1))
                   if (level_at_pressure_point > lower_limit .and. level_at_pressure_point < upper_limit) then

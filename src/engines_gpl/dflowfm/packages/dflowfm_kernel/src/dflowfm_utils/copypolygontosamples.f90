@@ -31,14 +31,13 @@
 !
 
 module m_copypolygontosamples
-use m_interpolate_zpl_in_polylines, only: interpolate_zpl_in_polylines
+   use m_interpolate_zpl_in_polylines, only: interpolate_zpl_in_polylines
 
+   implicit none
 
-implicit none
+   private
 
-private
-
-public :: copypolygontosamples
+   public :: copypolygontosamples
 
 contains
 

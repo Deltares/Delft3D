@@ -2579,107 +2579,6 @@ contains
 
    end subroutine advec_dir
 
-   subroutine advec_horzho_bulk(thetamean, quant, veloc, advec)
-      use precision, only: dp
-      ! advection with velocity u1 of wave turbulence, cfl with dt = dts
-      use m_sferic
-      use m_physcoef
-      use m_flowgeom
-      use m_flow
-      use m_flowtimes
-      use m_dslim
-
-      implicit none
-
-      integer :: L, k, k1, k2, ku, kl2s, kl2, kl1, kd, is, ip, limtypt, nwalls
-      real(kind=dp) :: qds, qst, half, fluxvel1, waku, sl1, sl2, sl3, wul
-      real(kind=dp) :: cf, ds2, ds1, ds, cwuL, cs, sn
-      real(kind=dp), intent(in), dimension(lnx) :: veloc
-      real(kind=dp), intent(in), dimension(ndx) :: quant
-      real(kind=dp), intent(in), dimension(ndx) :: thetamean
-      real(kind=dp), intent(out), dimension(ndx) :: advec
-
-      advec = 0d0
-      do L = 1, lnx ! upwind (supq) + limited high order (dsq), loop over link
-         k1 = ln(1, L); k2 = ln(2, L) ! linker en rechtercelnr geassocieerd aan de links
-
-         if (veloc(L) > 0) then !   ->      ds1   ds2
-            k = k1; kd = k2; is = 1; half = 1d0 - acl(L); ip = 0 !   ->   ku     k     kd
-         else !   <-      ds2   ds1
-            k = k2; kd = k1; is = -1; half = acl(L); ip = 3 !   <-   kd     k     ku
-         end if ! acL = linkse dx fractie van afstand tussen flownodes (slide 83)
-
-         fluxvel1 = is * veloc(L) * wu(L) ! snelheidsbijdrage linkse cel
-         qst = fluxvel1 * quant(k) ! cg*E voor link L, sector itheta
-         advec(kd) = advec(kd) - qst ! downwind cel krijgt bijdrage
-         advec(k) = advec(k) + qst ! centrale cel verliest bijdrage
-         limtypt = 4 ! Mon Central
-         if (limtypt > 0) then ! hogere orde, tijdstapafhankelijk door cfl
-            ku = klnup(1 + ip, L) ! pointer upwind cel horende bij link L
-
-            if (ku /= 0) then
-               kl2s = klnup(2 + ip, L); kl2 = abs(kl2s) !
-
-               if (ku < 0) then
-                  waku = quant(abs(ku)) ! pointer naar cel negatief?
-               else
-                  kl1 = ku
-                  sl1 = slnup(1 + ip, L); sl2 = slnup(2 + ip, L) ! link upwind cell weight
-                  waku = quant(kl1) * sl1 + quant(kl2) * sl2 ! gewogen gemiddelde upwind waarden
-               end if
-
-               sl3 = slnup(3 + ip, L)
-               cf = dts * abs(veloc(L)) * dxi(L)
-               cf = half * max(0d0, 1d0 - cf) ! cf  =  half* (1d0-cf)
-               ds2 = quant(kd) - quant(k) ! ds1 = voorlopende slope, ds2 = eigen slope
-               ds1 = (quant(k) - waku) * sl3
-
-               if (abs(ds2) > eps10 .and. abs(ds1) > eps10) then
-                  ds = cf * dslim(ds1, ds2, limtypt) ! reconstructie van totale slope volgens 1 van de 4 schema's
-
-                  if (abs(ds) > eps10) then ! als celgemiddelde niet volstaat
-                     qds = ds * fluxvel1 ! slope * linkse celbijdrage
-                     advec(kd) = advec(kd) - qds ! downwind cel krijgt bijdrage
-                     advec(k) = advec(k) + qds ! cel verliest bijdrage
-                  end if
-               end if
-            end if
-         end if
-      end do ! links
-
-      !  account for outflow at closed boundaries
-      do nwalls = 1, mxwalls
-         k1 = walls(1, nwalls)
-         cs = walls(8, nwalls)
-         sn = -walls(7, nwalls)
-
-         wuL = walls(9, nwalls)
-         cwuL = veloc(k1) * (cs * cos(thetamean(k1)) + sn * sin(thetamean(k1))) ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
-         fluxvel1 = cwuL * wuL
-
-         if (fluxvel1 > 0) then
-            advec(k1) = advec(k1) + fluxvel1 * quant(k1)
-         end if
-      end do
-
-! account for thin dams
-      do nwalls = 1, nthd
-         k1 = thindam(1, nwalls)
-
-         cs = thindam(5, nwalls)
-         sn = -thindam(4, nwalls)
-         wuL = thindam(6, nwalls)
-
-         cwuL = veloc(k1) * (cs * cos(thetamean(k1)) + sn * sin(thetamean(k1))) ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
-         fluxvel1 = cwuL * wuL
-
-         if (fluxvel1 > 0) then
-            advec(k1) = advec(k1) + fluxvel1 * quant(k1)
-         end if
-      end do
-
-   end subroutine advec_horzho_bulk
-
 !> reset XBeach wave data
    subroutine xbeach_reset()
       use m_xbeach_readkey ! for reset_paramfile
@@ -3305,7 +3204,7 @@ contains
       use m_physcoef, only: ag, rhomean
       use fm_external_forcings_data
       use m_alloc
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       use m_xbeach_errorhandling
       use m_missing
       use m_partitioninfo
@@ -5172,25 +5071,6 @@ contains
       end function hslt
       !
    end subroutine hpsort_eps_epw
-!
-!
-   subroutine disper_approx(h, T, k, n, C, Cg, mn)
-      use precision, only: dp
-      integer, intent(in) :: mn
-      real(kind=dp), dimension(mn), intent(in) :: h
-      real(kind=dp), intent(in) :: T
-      real(kind=dp), dimension(mn), intent(out) :: k, n, C, Cg
-
-      real(kind=dp) :: sigma, g, pi
-      g = 9.81d0
-      pi = 4.d0 * atan(1.d0)
-      sigma = 2.d0 * pi / T
-      k = sigma**2 / g * (1 - exp(-(sigma * sqrt(h / g))**(2.5)))**(-0.4)
-      C = sigma / k
-      n = 0.5d0 + k * h / sinh(2 * k * h)
-      Cg = n * C
-
-   end subroutine disper_approx
 !
    subroutine fm_surrounding_points(no_nodes, connected_nodes, no_connected_nodes, no_cells, kp, ierr)
       use m_flowgeom

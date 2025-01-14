@@ -32,28 +32,28 @@
 
 module m_inworld
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: inworld
+   public :: inworld
 
 contains
 
- subroutine inworld(xx) ! shifts x coordinates in world window, only call if jsferic == 1
-    use precision, only: dp
-    use m_missing
-    use m_sferic
-    
-    real(kind=dp) :: xx
-    if (xx /= dmiss) then
-       do while (xx < xwleft)
-          xx = xx + 360d0
-       end do
-       do while (xx > xwleft + 360d0)
-          xx = xx - 360d0
-       end do
-    end if
- end subroutine inworld
+   subroutine inworld(xx) ! shifts x coordinates in world window, only call if jsferic == 1
+      use precision, only: dp
+      use m_missing
+      use m_sferic
+
+      real(kind=dp) :: xx
+      if (xx /= dmiss) then
+         do while (xx < xwleft)
+            xx = xx + 360d0
+         end do
+         do while (xx > xwleft + 360d0)
+            xx = xx - 360d0
+         end do
+      end if
+   end subroutine inworld
 
 end module m_inworld

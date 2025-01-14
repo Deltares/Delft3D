@@ -32,89 +32,89 @@
 
 !> Refine entire current polyline from start to end.
 module m_refinepolygon
-use m_refinepolygonpart, only: refinepolygonpart
+   use m_refinepolygonpart, only: refinepolygonpart
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: refinepolygon
+   public :: refinepolygon
 
 contains
 
-      subroutine refinepolygon()
-         use m_modln2, only: modln2
-         use precision, only: dp
-         use m_typevalue
-         use m_polygon !, only: npl, dxuni
-         use m_tpoly
-         use m_sferic
-         use m_missing
-         use geometry_module, only: dbdistance, half
-         use m_delpol
+   subroutine refinepolygon()
+      use m_modln2, only: modln2
+      use precision, only: dp
+      use m_typevalue
+      use m_polygon !, only: npl, dxuni
+      use m_tpoly
+      use m_sferic
+      use m_missing
+      use geometry_module, only: dbdistance, half
+      use m_delpol
 
-         integer :: i1, i2
-         integer :: key
+      integer :: i1, i2
+      integer :: key
 
-         type(tpoly), dimension(:), allocatable :: pli, pliout ! tpoly-type polygons
+      type(tpoly), dimension(:), allocatable :: pli, pliout ! tpoly-type polygons
 
-         real(kind=dp) :: dl, xnew, ynew, znew
+      real(kind=dp) :: dl, xnew, ynew, znew
 
-         integer :: numpols, numpolsout ! number of tpoly-type polygons
-         integer :: i
-         integer :: j
-         integer :: M, NPUT
+      integer :: numpols, numpolsout ! number of tpoly-type polygons
+      integer :: i
+      integer :: j
+      integer :: M, NPUT
 
-         i1 = 1
-         i2 = npl
-         call refinepolygonpart(i1, i2, 0)
+      i1 = 1
+      i2 = npl
+      call refinepolygonpart(i1, i2, 0)
 
-         call TYPEVALUE(dxuni, key)
+      call TYPEVALUE(dxuni, key)
 
-         call pol_to_tpoly(numpols, pli, keepExisting=.false.)
-         call delpol()
+      call pol_to_tpoly(numpols, pli, keepExisting=.false.)
+      call delpol()
 
-         write (6, *) numpols
-         do i = 1, numpols
-            write (6, *) i
-            call tpoly_to_pol(pli, iselect=i)
+      write (6, *) numpols
+      do i = 1, numpols
+         write (6, *) i
+         call tpoly_to_pol(pli, iselect=i)
 !         i1 = 1
 !         i2 = NPL
 !         call refinepolygonpart(i1,i2,1)
 
 !        loop over polygon points
-            j = 1
-            do while (j < NPL)
+         j = 1
+         do while (j < NPL)
 !           get length
-               dl = dbdistance(xpl(j), ypl(j), xpl(j + 1), ypl(j + 1), jsferic, jasfer3D, dmiss)
+            dl = dbdistance(xpl(j), ypl(j), xpl(j + 1), ypl(j + 1), jsferic, jasfer3D, dmiss)
 
 !           check length
-               if (dl > dxuni) then
+            if (dl > dxuni) then
 !              compute new point coordinates
-                  call half(xpl(j), ypl(j), xpl(j + 1), ypl(j + 1), xnew, ynew, jsferic, jasfer3D)
-                  znew = DMISS
-                  if (zpl(j) /= DMISS .and. zpl(j + 1) /= DMISS) then
-                     znew = 0.5 * (zpl(j) + zpl(j + 1))
-                  end if
-!              add point
-                  call increasepol(NPL + 1, 1)
-                  NPUT = -1
-                  M = j
-                  call MODLN2(XPL, YPL, ZPL, MAXPOL, NPL, M, xnew, ynew, NPUT)
-                  ZPL(M) = znew
-               else
-                  j = j + 1
+               call half(xpl(j), ypl(j), xpl(j + 1), ypl(j + 1), xnew, ynew, jsferic, jasfer3D)
+               znew = DMISS
+               if (zpl(j) /= DMISS .and. zpl(j + 1) /= DMISS) then
+                  znew = 0.5 * (zpl(j) + zpl(j + 1))
                end if
-            end do
-
-            call pol_to_tpoly(numpolsout, pliout, keepExisting=.true.)
-            call delpol()
+!              add point
+               call increasepol(NPL + 1, 1)
+               NPUT = -1
+               M = j
+               call MODLN2(XPL, YPL, ZPL, MAXPOL, NPL, M, xnew, ynew, NPUT)
+               ZPL(M) = znew
+            else
+               j = j + 1
+            end if
          end do
 
-         call tpoly_to_pol(pliout)
-         call dealloc_tpoly(pli)
-         call dealloc_tpoly(pliout)
+         call pol_to_tpoly(numpolsout, pliout, keepExisting=.true.)
+         call delpol()
+      end do
 
-      end subroutine refinepolygon
+      call tpoly_to_pol(pliout)
+      call dealloc_tpoly(pli)
+      call dealloc_tpoly(pliout)
+
+   end subroutine refinepolygon
 
 end module m_refinepolygon

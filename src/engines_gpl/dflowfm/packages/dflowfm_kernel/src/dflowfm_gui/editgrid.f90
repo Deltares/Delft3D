@@ -198,8 +198,6 @@ contains
 !        b RINGS BELL
          call KTEXT(' B Rings Bell', 2, 6, 11)
          call OKAY(0)
-      else if (KEY == 76 .or. KEY == 76 + 32) then
-!        CALL TEKHOOK(XP,YP)
       end if
 !
       goto 10

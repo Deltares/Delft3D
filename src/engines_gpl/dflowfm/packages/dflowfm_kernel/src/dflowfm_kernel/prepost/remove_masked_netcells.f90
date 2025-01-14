@@ -32,13 +32,13 @@
 
 submodule(m_remove_masked_netcells) m_remove_masked_netcells_
 
-implicit none
+   implicit none
 
 contains
 
    !> remove "dry"masked netcells (cellmask==1) from netcell administration
    !> typically used in combination with a drypoints file (samples or polygons)
-   !> \see samples_to_cellmask and \see polygon_to_cellmask
+   !> \see polygon_to_cellmask
    !> note: we do not want to alter the netnodes and netlinks and will therefore not change kn and nod%lin
    module subroutine remove_masked_netcells()
       use network_data

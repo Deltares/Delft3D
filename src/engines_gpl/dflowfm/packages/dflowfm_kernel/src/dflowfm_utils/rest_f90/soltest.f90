@@ -32,11 +32,11 @@
 
 module m_soltest
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: soltest
+   public :: soltest
 
 contains
 
@@ -48,7 +48,6 @@ contains
       use m_update_matrix, only: update_matrix
       use m_partitioninfo
       use m_timer
-      use unstruc_messages
       use m_flowgeom
       use network_data, only: xzw
       use m_flowparameters
@@ -228,12 +227,6 @@ contains
          write (6, '(a,E9.2,a,E9.2)') ' WC-time solver   [s]: ', gettimer(1, ITOTALSOL), ' CPU-time solver   [s]: ', gettimer(0, ITOTALSOL)
          write (6, '(a,E9.2,a,E9.2)') ' WC-time MPI comm [s]: ', gettimer(1, IMPICOMM), ' CPU-time MPI comm [s]: ', gettimer(0, IMPICOMM)
       end if
-!         call mpi_barrier(DFM_COMM_DFMWORLD,ierr)
-
-!      call writemesg('Wallclock times')
-!      call printall(numt, t(3,:), tnams)
-!      call writemesg('CPU times')
-!      call printall(numt, tcpu(3,:), tnams)
 
 1234  continue
 

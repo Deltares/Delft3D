@@ -32,34 +32,34 @@
 
 module m_calibration_update
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: calibration_update
+   public :: calibration_update
 
 contains
 
-subroutine calibration_update()
-   use m_calibration
-   use m_flow, only: frcu, frcu_bkp, cfclval
-   use m_flowgeom, only: lnx, ln2lne
+   subroutine calibration_update()
+      use m_calibration
+      use m_flow, only: frcu, frcu_bkp, cfclval
+      use m_flowgeom, only: lnx, ln2lne
 
-   integer :: LF
-   integer :: L
+      integer :: LF
+      integer :: L
 
-   ! Update calibration definitions for discharge and water level dependent values
-   call update_clddata()
+      ! Update calibration definitions for discharge and water level dependent values
+      call update_clddata()
 
-   ! Update average calibration areal definitions (background calibration value = 1)
-   call update_clldata()
+      ! Update average calibration areal definitions (background calibration value = 1)
+      call update_clldata()
 
-   ! Apply calibration factor
-   do LF = 1, lnx
-      L = ln2lne(LF)
-      frcu(LF) = frcu_bkp(LF) * cfclval(L)
-   end do
+      ! Apply calibration factor
+      do LF = 1, lnx
+         L = ln2lne(LF)
+         frcu(LF) = frcu_bkp(LF) * cfclval(L)
+      end do
 
-end subroutine calibration_update
+   end subroutine calibration_update
 
 end module m_calibration_update

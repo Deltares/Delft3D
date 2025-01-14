@@ -45,7 +45,7 @@ contains
       use m_missing
       use m_netw
       use unstruc_colors, only: ncolhl
-      use geometry_module, only: getdx, getdy, getdxdy
+      use geometry_module, only: getdxdy
       use m_sferic, only: jsferic
       use m_depmax2, only: vmax => vmax2, vmin => vmin2
       use m_howtoview
@@ -97,8 +97,6 @@ contains
                      call DMOVABS(XX1, YY1, ZZ1)
                      call DLNABS(XX2, YY2, ZZ2)
                   else if (MET == 4 .or. MET == 7) then
-                     !XD = getdx (XX1, yy1, xx2, yy2)
-                     !YD = getdy (XX1, yy1, xx2, yy2)
                      call getdxdy(XX1, yy1, xx2, yy2, xd, yd, jsferic)
                      RD = sqrt(xd * xd + yd * yd)
                      if (RD /= 0) then

@@ -45,9 +45,6 @@ contains
    !
    subroutine inipointers_erosed()
       use m_fm_erosed
-      use m_flowgeom, only: lnx
-      implicit none
-      integer :: ierr
 
       if (.not. stm_included) return
 
@@ -252,9 +249,6 @@ contains
       zumod => sedtra%zumod
       rca => sedtra%rca
       statqnt => sedtra%statqnt
-
-      allocate (q_zeta(2, lnx), stat=ierr)
-      q_zeta = 0d0
 
    end subroutine inipointers_erosed
 

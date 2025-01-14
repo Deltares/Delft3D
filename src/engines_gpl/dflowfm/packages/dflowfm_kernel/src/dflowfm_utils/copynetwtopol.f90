@@ -32,34 +32,34 @@
 
 module m_copynetwtopol
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: copynetwtopol
+   public :: copynetwtopol
 
 contains
 
-subroutine copynetwtopol()
-   use m_polygon
-   use m_missing
-   use network_data
-   use unstruc_display
+   subroutine copynetwtopol()
+      use m_polygon
+      use m_missing
+      use network_data
+      use unstruc_display
 
-   integer :: n, L, k1, k2
+      integer :: n, L, k1, k2
 
-   call increasepol(3 * numl + 1000, 0)
+      call increasepol(3 * numl + 1000, 0)
 
-   n = 0
-   do L = 1, numL
-      n = n + 1; k1 = kn(1, L); xpl(n) = xk(k1); ypl(n) = yk(k1); zpl(n) = zk(k1)
-      n = n + 1; k2 = kn(2, L); xpl(n) = xk(k2); ypl(n) = yk(k2); zpl(n) = zk(k2)
-      n = n + 1; k2 = kn(2, L); xpl(n) = dmiss; ypl(n) = dmiss; zpl(n) = dmiss
-   end do
-   npl = n
-   ndrawpol = 3
-   numk = 0; numL = 0; kn = 0
+      n = 0
+      do L = 1, numL
+         n = n + 1; k1 = kn(1, L); xpl(n) = xk(k1); ypl(n) = yk(k1); zpl(n) = zk(k1)
+         n = n + 1; k2 = kn(2, L); xpl(n) = xk(k2); ypl(n) = yk(k2); zpl(n) = zk(k2)
+         n = n + 1; k2 = kn(2, L); xpl(n) = dmiss; ypl(n) = dmiss; zpl(n) = dmiss
+      end do
+      npl = n
+      ndrawpol = 3
+      numk = 0; numL = 0; kn = 0
 
-end subroutine copynetwtopol
+   end subroutine copynetwtopol
 
 end module m_copynetwtopol

@@ -31,13 +31,13 @@
 !
 
 module m_removesmalllinks
-use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
+   use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: removesmalllinks
+   public :: removesmalllinks
 
 contains
 
@@ -46,7 +46,6 @@ contains
       use precision, only: dp
       use m_netw ! 2 REMOVES SMALL TRIANGLES NEXT TO
       use M_FLOWGEOM
-      use unstruc_messages
       use geometry_module, only: dbdistance, dcosphi, dlinedis
       use m_missing, only: dmiss, dxymis
       use m_sferic, only: jsferic, jasfer3D, dtol_pole

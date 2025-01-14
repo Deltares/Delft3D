@@ -33,11 +33,11 @@
 !> write matlab double array to file
 module m_matlab_write_double
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: matlab_write_double
+   public :: matlab_write_double
 
 contains
 
