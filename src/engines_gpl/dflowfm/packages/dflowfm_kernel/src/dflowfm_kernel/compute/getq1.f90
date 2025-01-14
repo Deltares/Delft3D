@@ -33,8 +33,9 @@ module m_getq1
    implicit none
 contains
    subroutine getq1(hg, d, h1, h2, q) ! energiebehoud bovenstrooms
-      double precision :: hg, d, h1, h2, q
-      double precision :: g, t, r, tr
+      use precision, only: dp
+      real(kind=dp) :: hg, d, h1, h2, q
+      real(kind=dp) :: g, t, r, tr
 
       g = 9.81d0
       t = 2d0 * g * (h1 - h2)

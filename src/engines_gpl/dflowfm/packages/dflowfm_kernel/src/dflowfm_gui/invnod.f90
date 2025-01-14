@@ -32,17 +32,17 @@
 
 module m_invnod
 
-implicit none
+   implicit none
 
 contains
 
-      logical function INVNOD(K)
-         use m_netw, only: xk, yk
-         use m_inview
+   logical function INVNOD(K)
+      use m_netw, only: xk, yk
+      use m_inview
 
-         integer :: k
-         INVNOD = INVIEW(XK(K), YK(K))
-         return
-      end
+      integer :: k
+      INVNOD = INVIEW(XK(K), YK(K))
+      return
+   end
 
 end module m_invnod

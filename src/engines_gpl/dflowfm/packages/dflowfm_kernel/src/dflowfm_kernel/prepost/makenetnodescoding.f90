@@ -30,7 +30,7 @@
 !
 !
 module m_makenetnodescoding
-      implicit none
+   implicit none
 contains
    !> Make a coding of all net nodes for later use in net orthogonalisation,
    !! net coupling and 'poltoland' functionality.

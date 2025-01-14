@@ -30,27 +30,36 @@
 !
 !
 
- integer function ispumpon(n, s1k)
-    use fm_external_forcings_data
-    use m_missing
-    use m_structures
+module m_ispumpon
 
-    integer, intent(in) :: n
-    double precision, intent(in) :: s1k
-    ! this is for safety, check arrays before dereference
-    if (.not. allocated(pumponoff)) then
-       ispumpon = 1
-       return
-    end if
+   implicit none
 
-    if (pumponoff(1, n) == dmiss .and. pumponoff(2, n) == dmiss) then
-       ispumpon = 1; return
-    end if
-    if (pumponoff(1, n) /= dmiss .and. s1k > pumponoff(1, n)) then
-       pumponoff(5, n) = 1
-    end if
-    if (pumponoff(2, n) /= dmiss .and. s1k < pumponoff(2, n)) then
-       pumponoff(5, n) = 0
-    end if
-    ispumpon = int(pumponoff(5, n)) ! no change
- end function ispumpon
+contains
+
+   integer function ispumpon(n, s1k)
+      use precision, only: dp
+      use fm_external_forcings_data
+      use m_missing
+      use m_structures
+
+      integer, intent(in) :: n
+      real(kind=dp), intent(in) :: s1k
+      ! this is for safety, check arrays before dereference
+      if (.not. allocated(pumponoff)) then
+         ispumpon = 1
+         return
+      end if
+
+      if (pumponoff(1, n) == dmiss .and. pumponoff(2, n) == dmiss) then
+         ispumpon = 1; return
+      end if
+      if (pumponoff(1, n) /= dmiss .and. s1k > pumponoff(1, n)) then
+         pumponoff(5, n) = 1
+      end if
+      if (pumponoff(2, n) /= dmiss .and. s1k < pumponoff(2, n)) then
+         pumponoff(5, n) = 0
+      end if
+      ispumpon = int(pumponoff(5, n)) ! no change
+   end function ispumpon
+
+end module m_ispumpon

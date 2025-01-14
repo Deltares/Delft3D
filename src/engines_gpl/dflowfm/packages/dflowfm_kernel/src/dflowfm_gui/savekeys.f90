@@ -32,15 +32,15 @@
 module m_save_keys
    implicit none
 contains
-      subroutine SAVEKEYS()
-         use m_keycodes
-         
-         integer :: i
-         integer :: infoinput
+   subroutine SAVEKEYS()
+      use m_keycodes
 
-         do I = 1, MAXKEY
-            KEYCOD(I) = INFOINPUT(I)
-         end do
-         return
-      end
+      integer :: i
+      integer :: infoinput
+
+      do I = 1, MAXKEY
+         KEYCOD(I) = INFOINPUT(I)
+      end do
+      return
+   end
 end module m_save_keys

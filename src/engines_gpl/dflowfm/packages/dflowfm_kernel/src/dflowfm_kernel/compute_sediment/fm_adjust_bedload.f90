@@ -30,6 +30,16 @@
 !
 !
 
+module m_fm_adjust_bedload
+
+   implicit none
+
+   private
+
+   public :: fm_adjust_bedload
+
+contains
+
    subroutine fm_adjust_bedload(sbn, sbt, avalan, slopecor)
       use m_physcoef, only: ag
       use m_sferic, only: pi
@@ -63,10 +73,10 @@
       logical :: di50spatial
       integer :: l, Lf, k1, k2, lb, lt
 
-      double precision :: di50, phi, tphi, sbedm, depth, dzdp, dzds, bagnol, alfas
-      double precision :: delta, dmloc, ftheta, hidexploc, shield, sina, cosa, tnorm, frc, fixf
-      double precision :: sbedn, sbedt, tratio, sbedcorr, fnorm, ust2avg, slp, avflux
-      double precision :: eps = 1.0d-6
+      real(kind=dp) :: di50, phi, tphi, sbedm, depth, dzdp, dzds, bagnol, alfas
+      real(kind=dp) :: delta, dmloc, ftheta, hidexploc, shield, sina, cosa, tnorm, frc, fixf
+      real(kind=dp) :: sbedn, sbedt, tratio, sbedcorr, fnorm, ust2avg, slp, avflux
+      real(kind=dp) :: eps = 1.0d-6
       !
    !! executable statements -------------------------------------------------------
       !
@@ -264,3 +274,5 @@
       end do ! Lf
 
    end subroutine fm_adjust_bedload
+
+end module m_fm_adjust_bedload

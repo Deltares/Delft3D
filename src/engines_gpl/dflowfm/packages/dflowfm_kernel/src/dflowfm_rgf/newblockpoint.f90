@@ -30,21 +30,33 @@
 !
 !
 
-      subroutine NEWBLOCKPOINT(MP, NP, JA, IPT)
-         use m_grid_block
-         implicit none
-         integer :: mp, np, ja, ipt
+module m_newblockpoint
+
+   implicit none
+
+   private
+
+   public :: newblockpoint
+
+contains
+
+   subroutine NEWBLOCKPOINT(MP, NP, JA, IPT)
+      use m_grid_block
+
+      integer :: mp, np, ja, ipt
 !     NIEUW PUNT = 1, OUD PUNT = 0, NIEW PUNT MAAR REEDS VIER PUNTEN = -1
-         integer :: i
-         JA = 1
-         do I = 1, NPT
-            if (MP == MB(I) .and. NP == NB(I)) then
-               JA = 0
-               IPT = I
-               return
-            end if
-         end do
-         IPT = NPT + 1
-         if (NPT == 4) JA = -1
-         return
-      end subroutine newblockpoint
+      integer :: i
+      JA = 1
+      do I = 1, NPT
+         if (MP == MB(I) .and. NP == NB(I)) then
+            JA = 0
+            IPT = I
+            return
+         end if
+      end do
+      IPT = NPT + 1
+      if (NPT == 4) JA = -1
+      return
+   end subroutine newblockpoint
+
+end module m_newblockpoint

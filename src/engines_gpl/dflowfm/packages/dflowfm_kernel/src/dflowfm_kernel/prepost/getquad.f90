@@ -30,10 +30,20 @@
 !
 !
 
+module m_getquad
+
+   implicit none
+
+   private
+
+   public :: getquad
+
+contains
+
    subroutine GETQUAD(LN, K1, K2, K3N, K4N)
       use m_netw
       use gridoperations
-      implicit none
+
       integer :: LN, K1, K2, K3N, K4N
 
       integer :: k
@@ -68,3 +78,5 @@
       end do
 
    end subroutine GETQUAD
+
+end module m_getquad

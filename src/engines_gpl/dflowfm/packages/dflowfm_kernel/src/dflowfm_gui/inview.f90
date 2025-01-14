@@ -32,21 +32,22 @@
 module m_inview
    implicit none
 contains
-  logical function INVIEW(X, Y)
-     ! ZIT IK IN ZOOMGEBIED? NULLEN EN DEFAULTS NIET, IN WERELDCOORD inview3
-     use m_wearelt
-     use m_missing, only: xymis
-     use m_dproject
+   logical function INVIEW(X, Y)
+      use precision, only: dp
+      ! ZIT IK IN ZOOMGEBIED? NULLEN EN DEFAULTS NIET, IN WERELDCOORD inview3
+      use m_wearelt
+      use m_missing, only: xymis
+      use m_dproject
 
-     double precision :: x, y, xx, yy
-     
-     INVIEW = .false.
-     if (X /= XYMIS) then
-        call dPROJECT(X, Y, XX, YY, 1)
-        if (XX > X1 .and. XX < X2 .and. YY > Y1 .and. YY < Y2) then
-           INVIEW = .true.
-        end if
-     end if
-     return
-  end
+      real(kind=dp) :: x, y, xx, yy
+
+      INVIEW = .false.
+      if (X /= XYMIS) then
+         call dPROJECT(X, Y, XX, YY, 1)
+         if (XX > X1 .and. XX < X2 .and. YY > Y1 .and. YY < Y2) then
+            INVIEW = .true.
+         end if
+      end if
+      return
+   end
 end module m_inview

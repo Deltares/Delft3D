@@ -32,21 +32,22 @@
 
 module m_settextsizefac
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine SETTEXTSIZEFAC(T)
-         use unstruc_opengl
-         use m_textsize
-         implicit none
-         double precision :: t
+   subroutine SETTEXTSIZEFAC(T)
+      use precision, only: dp
+      use unstruc_opengl
+      use m_textsize
+      implicit none
+      real(kind=dp) :: t
 
-         if (InOpenGLRendering) then
-            call SetTextHeight(int(FontSize * T * TSIZE))
-         else
-            call IGRCHARSIZE(real(T * TSIZE), real(T * TSIZE))
-         end if
-      end
+      if (InOpenGLRendering) then
+         call SetTextHeight(int(FontSize * T * TSIZE))
+      else
+         call IGRCHARSIZE(real(T * TSIZE), real(T * TSIZE))
+      end if
+   end
 
 end module m_settextsizefac

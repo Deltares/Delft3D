@@ -30,30 +30,43 @@
 !
 !
 
-subroutine decaytracers()
-   use m_transport
-   use m_flowgeom
-   use m_flow
-   use m_flowtimes
-   use timers
+module m_decaytracers
 
    implicit none
 
-   double precision :: decaytime
-   integer :: i, k
+   private
 
-   integer(4) :: ithndl = 0
-   
-   if (timon) call timstrt("decaytracers", ithndl)
+   public :: decaytracers
 
-   do i = ITRA1, ITRAN
-      decaytime = decaytimetracers(i - itra1 + 1)
-      if (decaytime > 0d0) then
-         do k = 1, ndkx
-            constituents(i, k) = constituents(i, k) / (1d0 + dts / decaytime)
-         end do
-      end if
-   end do
+contains
 
-   if (timon) call timstop(ithndl)
-end subroutine decaytracers
+   subroutine decaytracers()
+      use precision, only: dp
+      use m_transport
+      use m_flowgeom
+      use m_flow
+      use m_flowtimes
+      use timers
+
+      implicit none
+
+      real(kind=dp) :: decaytime
+      integer :: i, k
+
+      integer(4) :: ithndl = 0
+
+      if (timon) call timstrt("decaytracers", ithndl)
+
+      do i = ITRA1, ITRAN
+         decaytime = decaytimetracers(i - itra1 + 1)
+         if (decaytime > 0d0) then
+            do k = 1, ndkx
+               constituents(i, k) = constituents(i, k) / (1d0 + dts / decaytime)
+            end do
+         end if
+      end do
+
+      if (timon) call timstop(ithndl)
+   end subroutine decaytracers
+
+end module m_decaytracers

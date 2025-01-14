@@ -31,32 +31,33 @@
 !
 
 module m_xbeach_avgoutput
+   use precision, only: dp
 
-   double precision, allocatable :: H_mean(:), H_var(:), H_min(:), H_max(:), H_varcross(:), H_varsquare(:) !< Sign wave height
-   double precision, allocatable :: urms_mean(:), urms_var(:), urms_max(:), urms_min(:), urms_varcross(:), urms_varsquare(:) !< orbital velocity
-   double precision, allocatable :: ust_mean(:), ust_var(:), ust_max(:), ust_min(:), ust_varcross(:), ust_varsquare(:) !< stokes drift
-   double precision, allocatable :: vst_mean(:), vst_var(:), vst_max(:), vst_min(:), vst_varcross(:), vst_varsquare(:) !<
-   double precision, allocatable :: Fx_mean(:), Fx_var(:), Fx_min(:), Fx_max(:), Fx_varcross(:), Fx_varsquare(:) !< x-comp wave forcing
-   double precision, allocatable :: Fy_mean(:), Fy_var(:), Fy_min(:), Fy_max(:), Fy_varcross(:), Fy_varsquare(:) !< y-comp wave forcing
-   double precision, allocatable :: E_mean(:), E_var(:), E_min(:), E_max(:), E_varcross(:), E_varsquare(:) !< Bulk wave energy
-   double precision, allocatable :: R_mean(:), R_var(:), R_min(:), R_max(:), R_varcross(:), R_varsquare(:) !< Bulk roller energy
-   double precision, allocatable :: D_mean(:), D_var(:), D_min(:), D_max(:), D_varcross(:), D_varsquare(:) !< Bulk wave dissipation
-   double precision, allocatable :: DR_mean(:), DR_var(:), DR_min(:), DR_max(:), DR_varcross(:), DR_varsquare(:) !< Bulk roller dissipation
-   double precision, allocatable :: s1_mean(:), s1_var(:), s1_min(:), s1_max(:), s1_varcross(:), s1_varsquare(:) !< Water level
-   double precision, allocatable :: ucx_mean(:), ucx_var(:), ucx_min(:), ucx_max(:), ucx_varcross(:), ucx_varsquare(:) !< velocity
-   double precision, allocatable :: ucy_mean(:), ucy_var(:), ucy_min(:), ucy_max(:), ucy_varcross(:), ucy_varsquare(:) !< velocity
-   double precision, allocatable :: thetamean_mean(:), thetamean_var(:), thetamean_min(:), thetamean_max(:), & !< wave direction
-      thetamean_varcross(:), thetamean_varsquare(:), &
-      thetamean_sin(:), thetamean_cos(:)
-   double precision, allocatable :: cwav_mean(:), cwav_var(:), cwav_min(:), cwav_max(:), cwav_varcross(:), cwav_varsquare(:) !< phase velocity
-   double precision, allocatable :: cgwav_mean(:), cgwav_var(:), cgwav_min(:), cgwav_max(:), cgwav_varcross(:), cgwav_varsquare(:) !< group velocity
-   double precision, allocatable :: sigmwav_mean(:), sigmwav_var(:), sigmwav_min(:), sigmwav_max(:), sigmwav_varcross(:), sigmwav_varsquare(:) !< relative freq
+   real(kind=dp), allocatable :: H_mean(:), H_var(:), H_min(:), H_max(:), H_varcross(:), H_varsquare(:) !< Sign wave height
+   real(kind=dp), allocatable :: urms_mean(:), urms_var(:), urms_max(:), urms_min(:), urms_varcross(:), urms_varsquare(:) !< orbital velocity
+   real(kind=dp), allocatable :: ust_mean(:), ust_var(:), ust_max(:), ust_min(:), ust_varcross(:), ust_varsquare(:) !< stokes drift
+   real(kind=dp), allocatable :: vst_mean(:), vst_var(:), vst_max(:), vst_min(:), vst_varcross(:), vst_varsquare(:) !<
+   real(kind=dp), allocatable :: Fx_mean(:), Fx_var(:), Fx_min(:), Fx_max(:), Fx_varcross(:), Fx_varsquare(:) !< x-comp wave forcing
+   real(kind=dp), allocatable :: Fy_mean(:), Fy_var(:), Fy_min(:), Fy_max(:), Fy_varcross(:), Fy_varsquare(:) !< y-comp wave forcing
+   real(kind=dp), allocatable :: E_mean(:), E_var(:), E_min(:), E_max(:), E_varcross(:), E_varsquare(:) !< Bulk wave energy
+   real(kind=dp), allocatable :: R_mean(:), R_var(:), R_min(:), R_max(:), R_varcross(:), R_varsquare(:) !< Bulk roller energy
+   real(kind=dp), allocatable :: D_mean(:), D_var(:), D_min(:), D_max(:), D_varcross(:), D_varsquare(:) !< Bulk wave dissipation
+   real(kind=dp), allocatable :: DR_mean(:), DR_var(:), DR_min(:), DR_max(:), DR_varcross(:), DR_varsquare(:) !< Bulk roller dissipation
+   real(kind=dp), allocatable :: s1_mean(:), s1_var(:), s1_min(:), s1_max(:), s1_varcross(:), s1_varsquare(:) !< Water level
+   real(kind=dp), allocatable :: ucx_mean(:), ucx_var(:), ucx_min(:), ucx_max(:), ucx_varcross(:), ucx_varsquare(:) !< velocity
+   real(kind=dp), allocatable :: ucy_mean(:), ucy_var(:), ucy_min(:), ucy_max(:), ucy_varcross(:), ucy_varsquare(:) !< velocity
+   real(kind=dp), allocatable :: thetamean_mean(:), thetamean_var(:), thetamean_min(:), thetamean_max(:), & !< wave direction
+                                 thetamean_varcross(:), thetamean_varsquare(:), &
+                                 thetamean_sin(:), thetamean_cos(:)
+   real(kind=dp), allocatable :: cwav_mean(:), cwav_var(:), cwav_min(:), cwav_max(:), cwav_varcross(:), cwav_varsquare(:) !< phase velocity
+   real(kind=dp), allocatable :: cgwav_mean(:), cgwav_var(:), cgwav_min(:), cgwav_max(:), cgwav_varcross(:), cgwav_varsquare(:) !< group velocity
+   real(kind=dp), allocatable :: sigmwav_mean(:), sigmwav_var(:), sigmwav_min(:), sigmwav_max(:), sigmwav_varcross(:), sigmwav_varsquare(:) !< relative freq
 
-   double precision, allocatable :: xbdsdx(:), xbdsdy(:) !< water level slope
-   double precision, allocatable :: ududx(:), udvdx(:), vdudy(:), vdvdy(:) !< advection terms velocity
-   double precision, allocatable :: visx(:), visy(:) !< viscosity
+   real(kind=dp), allocatable :: xbdsdx(:), xbdsdy(:) !< water level slope
+   real(kind=dp), allocatable :: ududx(:), udvdx(:), vdudy(:), vdvdy(:) !< advection terms velocity
+   real(kind=dp), allocatable :: visx(:), visy(:) !< viscosity
 
-   double precision :: multcum
+   real(kind=dp) :: multcum
 
    integer :: jaavgwriteall !< flags to write variables to _wav.nc files
    integer :: jaavgwriteH

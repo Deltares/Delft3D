@@ -27,6 +27,16 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_get_var_shape
+
+implicit none
+
+private
+
+public :: bmi_get_var_shape
+
+contains
+
   ! return in c memory order
   select case(var_name)
 
@@ -45,3 +55,5 @@
 %endif
 %endfor
   end select
+
+end module m_bmi_get_var_shape

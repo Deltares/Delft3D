@@ -36,32 +36,44 @@
 
 !> Manages the caching file - store and retrieve the grid-based information.
 module unstruc_caching
-   use precision
+   use precision, only: dp
    use m_observations_data, only: numobs, xobs, yobs, locTpObs, kobs, lobs
    use m_monitoring_crosssections, only: crs, tcrs, deallocCrossSections
-   !use m_crspath, only: tcrspath
-   use md5_checksum
-   use m_alloc
-   use network_data
+   use md5_checksum, only: md5length, md5file
+   use m_alloc, only: realloc
+   use network_data, only: tface, netcell
+   use string_module, only: get_version_major_minor_integer
+   use m_crspath, only: tcrspath
 
    implicit none
 
+   ! CachingFormatVersion = 1.01
+   integer, parameter :: CacheFormatMajorVersion = 1
+   integer, parameter :: CacheFormatMinorVersion = 1
+
+   ! History CachingFormatVersion:
+
+   ! 1.00 (Until Nov 2024): The cached items include observations, fixed weirs, cross sections and dry_points_and_area.
+   ! 1.01 (Dec 2024)      : Thin dams are added to caching.
+
    logical, private :: cache_success
 
-   character(len=20), dimension(4), private :: section = ['OBSERVATIONS        ', &
+   character(len=20), dimension(5), private :: section = ['OBSERVATIONS        ', &
                                                           'FIXED WEIRS         ', &
                                                           'CROSS_SECTIONS      ', &
-                                                          'DRY_POINTS_AND_AREAS']
+                                                          'DRY_POINTS_AND_AREAS', &
+                                                          'THIN_DAMS']
    integer, parameter, private :: key_obs = 1
    integer, parameter, private :: key_fixed_weirs = 2
    integer, parameter, private :: key_cross_sections = 3
    integer, parameter, private :: key_dry_points_and_areas = 4
+   integer, parameter, private :: key_thin_dams = 5
 
-   double precision, dimension(:), allocatable, private :: cache_xobs
-   double precision, dimension(:), allocatable, private :: cache_yobs
-   double precision, dimension(:), allocatable, private :: cache_xpl_fixed
-   double precision, dimension(:), allocatable, private :: cache_ypl_fixed
-   double precision, dimension(:), allocatable, private :: cache_dsl_fixed
+   real(kind=dp), dimension(:), allocatable, private :: cache_xobs
+   real(kind=dp), dimension(:), allocatable, private :: cache_yobs
+   real(kind=dp), dimension(:), allocatable, private :: cache_xpl_fixed
+   real(kind=dp), dimension(:), allocatable, private :: cache_ypl_fixed
+   real(kind=dp), dimension(:), allocatable, private :: cache_dsl_fixed
    integer, dimension(:), allocatable, private :: cache_locTpObs
    integer, dimension(:), allocatable, private :: cache_kobs
    integer, dimension(:), allocatable, private :: cache_lobs
@@ -76,14 +88,16 @@ module unstruc_caching
    integer, private :: cached_nump1d2d_dry
    integer, dimension(:, :), allocatable, private :: cached_lne_dry
    integer, dimension(:), allocatable, private :: cached_lnn_dry
-   double precision, dimension(:), allocatable, private :: cached_xzw_dry
-   double precision, dimension(:), allocatable, private :: cached_yzw_dry
-   double precision, dimension(:), allocatable, private :: cached_bottom_area_dry
-   double precision, dimension(:), allocatable, private :: cached_xz_dry
-   double precision, dimension(:), allocatable, private :: cached_yz_dry
+   real(kind=dp), dimension(:), allocatable, private :: cached_xzw_dry
+   real(kind=dp), dimension(:), allocatable, private :: cached_yzw_dry
+   real(kind=dp), dimension(:), allocatable, private :: cached_bottom_area_dry
+   real(kind=dp), dimension(:), allocatable, private :: cached_xz_dry
+   real(kind=dp), dimension(:), allocatable, private :: cached_yz_dry
    type(tface), dimension(:), allocatable, private :: cached_netcell_dry
 
-   character(len=30), parameter, private :: version_string = "D-Flow FM, cache file, 1.0"
+   type(tcrspath), dimension(:), allocatable, private :: cached_thin_dams
+
+   character(len=23), parameter, private :: version_string_prefix = "D-Flow FM, cache file, "
    character(len=md5length), private :: md5current
 
 contains
@@ -115,53 +129,67 @@ contains
 
       if (allocated(cache_cross_sections)) call deallocCrossSections(cache_cross_sections)
 
+      if (allocated(cached_thin_dams)) deallocate (cached_thin_dams)
+
       md5current = ''
 
    end subroutine default_caching
 
 !> Check that the caching file contained compatible information
-   logical function cacheRetrieved()
-      cacheRetrieved = cache_success
-   end function cacheRetrieved
+   logical function cache_retrieved()
+      cache_retrieved = cache_success
+   end function cache_retrieved
 
 !> Load the information from the caching file - if any.
-   subroutine loadCachingFile(basename, netfile, usecaching)
+   subroutine load_caching_file(base_name, net_file, use_caching)
 
-      use MessageHandling, only: LEVEL_INFO, mess
+      use MessageHandling, only: LEVEL_INFO, LEVEL_WARN, mess
 
-      character(len=*), intent(in) :: basename !< Basename to construct the name of the caching file (typically md_ident).
-      character(len=*), intent(in) :: netfile !< Full name of the network file
-      integer, intent(in) :: usecaching !< Use the cache file if possible (1) or not (0)
+      character(len=*), intent(in) :: base_name !< base_name to construct the name of the cache file (typically md_ident).
+      character(len=*), intent(in) :: net_file !< Full name of the network file
+      logical, intent(inout) :: use_caching !< Use the cache file if true. Might be reset to false if some errors forbid the use of caching.
 
       integer :: lun
       integer :: ierr
-      integer :: number, number_links, number_nodes, number_netcells
+      integer :: number, number_links, number_nodes, number_netcells, number_thin_dams
+      integer :: version_major, version_minor
       character(len=30) :: version_file
       character(len=20) :: key
+      character(len=256) :: file_name
+      character(len=256) :: msgbuf
       character(len=md5length) :: md5checksum
-      logical :: okay
       logical :: success
-      character(len=256) :: filename
 
       cache_success = .false.
 
-      if (usecaching /= 1) then
+      if (.not. use_caching) then
          call mess(LEVEL_INFO, 'Not using cache file.')
          return
       end if
 
-      filename = trim(basename)//'.cache'
+      !
+      ! Determine the MD5 checksum of the network file to use for creating new cache file
+      ! and/or for checking compatibility of existing cache file:
+      !
+      call md5file(net_file, md5current, success)
+      if (.not. success) then
+         close (lun)
+         call mess(LEVEL_WARN, 'Failed to read MD5 checksum of the network file '//trim(net_file) &
+                   //', caching is not possible. Proceeding with normal initialization.')
+         use_caching = .false.
+         return
+      end if
 
-      call mess(LEVEL_INFO, 'Reading cache file: '//trim(filename))
-      open (newunit=lun, file=trim(filename), status="old", access="stream", iostat=ierr)
+      file_name = trim(base_name)//'.cache'
+
+      call mess(LEVEL_INFO, 'Reading cache file: '//trim(file_name))
+      open (newunit=lun, file=trim(file_name), status="old", access="stream", iostat=ierr)
 
       !
       ! Apparently there is no caching file, so return without further processing
-      ! But for writing the caching file later, determine the checksum now
       !
       if (ierr /= 0) then
-         call mess(LEVEL_INFO, 'Error reading cache file')
-         call md5file(netfile, md5current, success)
+         call mess(LEVEL_INFO, 'No cache file available initially. Proceeding with normal initialization.')
          return
       end if
 
@@ -171,27 +199,39 @@ contains
       read (lun, iostat=ierr) version_file, md5checksum
 
       if (ierr /= 0) then
+         call mess(LEVEL_WARN, 'Failed to read cache file. Proceeding with normal initialization.')
          close (lun)
          return
       end if
 
-      if (version_file /= version_string) then
-         !
-         ! As there is no history of versions yet, the version in the file
-         ! should match exactly
-         !
+      if (index(version_file, version_string_prefix) == 1) then
+         version_file = adjustl(version_file(len_trim(version_string_prefix) + 1:))
+         call get_version_major_minor_integer(version_file, version_major, version_minor, success)
+         if (.not. success) then
+            close (lun)
+            call mess(LEVEL_WARN, 'Failed to read major and minor version from cache file. Proceeding with normal initialization.')
+            return
+         end if
+         if (version_major /= CacheFormatMajorVersion .or. version_minor /= CacheFormatMinorVersion) then
+            close (lun)
+            write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Cache format mismatch. Cache file contains: v', version_major, &
+               version_minor, '. Current format is: v', CacheFormatMajorVersion, CacheFormatMinorVersion, &
+               ' (must be equal). Proceeding with normal initialization.'
+            call mess(LEVEL_WARN, msgbuf)
+            return
+         end if
+      else
          close (lun)
+         call mess(LEVEL_WARN, 'Failed to read version information from cache file. Proceeding with normal initialization.')
          return
       end if
 
       !
-      ! Determine the MD5 checksum for the network file - it must match the
-      ! checksum in the cache file
+      ! MD5 checksum of the network file must match the checksum in the cache file
       !
-      call md5file(netfile, md5current, success)
-
-      if (md5checksum /= md5current .or. .not. success) then
+      if (md5checksum /= md5current) then
          close (lun)
+         call mess(LEVEL_WARN, 'The MD5 checksum of the cache file does not match the network file. Proceeding with normal initialization.')
          return
       end if
 
@@ -199,11 +239,10 @@ contains
       ! Load the observation points:
       ! Copy the node numbers when successful
       !
-      okay = .true.
-
       read (lun, iostat=ierr) key, number
 
       if (ierr /= 0 .or. key /= section(key_obs)) then
+         call mess(LEVEL_WARN, 'Failed to load observation locations from cache file (none present). Proceeding with normal initialization.')
          close (lun)
          return
       end if
@@ -215,14 +254,11 @@ contains
       call realloc(cache_lobs, number, keepExisting=.false.)
 
       if (number > 0) then
-         read (lun, iostat=ierr) cache_xobs; okay = ierr == 0
-         read (lun, iostat=ierr) cache_yobs; okay = okay .and. ierr == 0
-         read (lun, iostat=ierr) cache_locTpObs; okay = okay .and. ierr == 0
-         read (lun, iostat=ierr) cache_kobs; okay = okay .and. ierr == 0
-         read (lun, iostat=ierr) cache_lobs; okay = okay .and. ierr == 0
+         read (lun, iostat=ierr) cache_xobs, cache_yobs, cache_locTpObs, cache_kobs, cache_lobs
       end if
 
-      if (.not. okay) then
+      if (ierr /= 0) then
+         call mess(LEVEL_WARN, 'Failed to load observation locations from cache file (invalid data). Proceeding with normal initialization.')
          close (lun)
          return
       end if
@@ -234,6 +270,7 @@ contains
       read (lun, iostat=ierr) key, number, number_links
 
       if (ierr /= 0 .or. key /= section(key_fixed_weirs)) then
+         call mess(LEVEL_WARN, 'Failed to load fixed weirs from cache file (none present). Proceeding with normal initialization.')
          close (lun)
          return
       end if
@@ -245,14 +282,11 @@ contains
       call realloc(cache_dsl_fixed, number_links, keepExisting=.false.)
 
       if (number > 0) then
-         read (lun, iostat=ierr) cache_xpl_fixed; okay = ierr == 0
-         read (lun, iostat=ierr) cache_ypl_fixed; okay = okay .and. ierr == 0
-         read (lun, iostat=ierr) cache_ilink_fixed; okay = okay .and. ierr == 0
-         read (lun, iostat=ierr) cache_ipol_fixed; okay = okay .and. ierr == 0
-         read (lun, iostat=ierr) cache_dsl_fixed; okay = okay .and. ierr == 0
+         read (lun, iostat=ierr) cache_xpl_fixed, cache_ypl_fixed, cache_ilink_fixed, cache_ipol_fixed, cache_dsl_fixed
       end if
 
-      if (.not. okay) then
+      if (ierr /= 0) then
+         call mess(LEVEL_WARN, 'Failed to load fixed weirs from cache file (invalid data). Proceeding with normal initialization.')
          close (lun)
          return
       end if
@@ -264,6 +298,7 @@ contains
       read (lun, iostat=ierr) key, number, number_links
 
       if (ierr /= 0 .or. key /= section(key_cross_sections)) then
+         call mess(LEVEL_WARN, 'Failed to load cross sections from cache file (none present). Proceeding with normal initialization.')
          close (lun)
          return
       end if
@@ -271,8 +306,9 @@ contains
       allocate (cache_cross_sections(number))
       allocate (cache_linklist(number_links))
       allocate (cache_ipol(number_links))
-      call loadCachedSections(lun, cache_linklist, cache_ipol, cache_cross_sections, ierr)
+      call load_cached_cross_sections(lun, cache_linklist, cache_ipol, cache_cross_sections, ierr)
       if (ierr /= 0) then
+         call mess(LEVEL_WARN, 'Failed to load cross sections from cache file (invalid data). Proceeding with normal initialization.')
          close (lun)
          return
       end if
@@ -282,6 +318,7 @@ contains
       !
       read (lun, iostat=ierr) key, cached_nump_dry, cached_nump1d2d_dry, number_nodes, number_links, number_netcells
       if (ierr /= 0 .or. key /= section(key_dry_points_and_areas)) then
+         call mess(LEVEL_WARN, 'Failed to load dry points and areas from cache file (none present). Proceeding with normal initialization.')
          close (lun)
          return
       end if
@@ -292,25 +329,88 @@ contains
       allocate (cached_yzw_dry(number_nodes))
       allocate (cached_xz_dry(number_nodes))
       allocate (cached_yz_dry(number_nodes))
-      read (lun, iostat=ierr) cached_bottom_area_dry, cached_lne_dry, cached_lnn_dry, cached_xz_dry, cached_yz_dry, cached_xzw_dry, cached_yzw_dry; okay = ierr == 0
-      if (.not. okay) then
+      read (lun, iostat=ierr) cached_bottom_area_dry, cached_lne_dry, cached_lnn_dry, cached_xz_dry, cached_yz_dry, cached_xzw_dry, cached_yzw_dry
+      if (ierr /= 0) then
+         call mess(LEVEL_WARN, 'Failed to load dry points and areas from cache file (invalid data). Proceeding with normal initialization.')
          close (lun)
          return
       end if
       allocate (cached_netcell_dry(number_netcells))
       call load_netcell(lun, number_netcells, cached_netcell_dry, ierr)
       if (ierr /= 0) then
+         call mess(LEVEL_WARN, 'Failed to load dry points and areas from cache file (invalid netcell). Proceeding with normal initialization.')
          close (lun)
          return
       end if
 
       !
+      ! Load the information on thin dams:
+      !
+      read (lun, iostat=ierr) key, number_thin_dams
+      if (ierr /= 0 .or. key /= section(key_thin_dams)) then
+         call mess(LEVEL_WARN, 'Failed to load thin dams from cache file (none present). Proceeding with normal initialization.')
+         close (lun)
+         return
+      end if
+      if (number_thin_dams > 0) then
+         allocate (cached_thin_dams(number_thin_dams))
+         call load_thin_dams(lun, number_thin_dams, cached_thin_dams, ierr)
+         if (ierr /= 0) then
+            call mess(LEVEL_WARN, 'Failed to load thin dams from cache file (invalid data). Proceeding with normal initialization.')
+            close (lun)
+            return
+         end if
+      end if
+      !
       ! All cached values were loaded, so all is well
       !
       close (lun)
       cache_success = .true.
+      call mess(LEVEL_INFO, 'Succesfully read cache file: '//trim(file_name))
 
-   end subroutine loadCachingFile
+   end subroutine load_caching_file
+
+!> Load cached thin dams from a caching file
+   subroutine load_thin_dams(lun, number_thin_dams, thin_dams, ierr)
+      integer, intent(in) :: lun !< LU-number of the caching file
+      integer, intent(in) :: number_thin_dams !< Number of thin dams
+      type(tcrspath), dimension(:), intent(out) :: thin_dams !< Thin dams path and set of crossed flow links
+      integer, intent(out) :: ierr !< Error code
+
+      integer :: i, number_flow_links, number_polyline_points
+
+      do i = 1, number_thin_dams
+         read (lun, iostat=ierr) number_flow_links, number_polyline_points
+         if (ierr /= 0) then
+            close (lun)
+            exit
+         end if
+         read (lun, iostat=ierr) thin_dams(i)%np, thin_dams(i)%lnx
+         if (ierr /= 0) then
+            close (lun)
+            exit
+         end if
+         allocate (thin_dams(i)%xp(number_polyline_points), thin_dams(i)%yp(number_polyline_points), &
+                   thin_dams(i)%zp(number_polyline_points))
+         read (lun, iostat=ierr) thin_dams(i)%xp, thin_dams(i)%yp, thin_dams(i)%zp
+         if (ierr /= 0) then
+            close (lun)
+            exit
+         end if
+         if (thin_dams(i)%lnx > 0) then
+            allocate (thin_dams(i)%ln(number_flow_links), thin_dams(i)%indexp(number_flow_links), &
+                      thin_dams(i)%wfp(number_flow_links), thin_dams(i)%xk(2, number_flow_links), &
+                      thin_dams(i)%yk(2, number_flow_links), thin_dams(i)%iperm(number_flow_links), &
+                      thin_dams(i)%sp(number_flow_links), thin_dams(i)%wfk1k2(number_flow_links))
+            read (lun, iostat=ierr) thin_dams(i)%ln, thin_dams(i)%indexp, thin_dams(i)%wfp, thin_dams(i)%xk, &
+               thin_dams(i)%yk, thin_dams(i)%iperm, thin_dams(i)%sp, thin_dams(i)%wfk1k2
+            if (ierr /= 0) then
+               close (lun)
+               exit
+            end if
+         end if
+      end do
+   end subroutine load_thin_dams
 
 !> Load cached netcell from a caching file.
    subroutine load_netcell(lun, number_netcell, netcell, ierr)
@@ -345,7 +445,7 @@ contains
    end subroutine load_netcell
 
 !> Load cached cross sections from a caching file.
-   subroutine loadCachedSections(lun, linklist, ipol, sections, ierr)
+   subroutine load_cached_cross_sections(lun, linklist, ipol, sections, ierr)
       integer, intent(in) :: lun !< LU-number of the caching file
       integer, dimension(:), intent(out) :: linklist !< Cached list of crossed flow links
       integer, dimension(:), intent(out) :: ipol !< Cached polygon administration
@@ -402,48 +502,57 @@ contains
             exit
          end if
       end do
-   end subroutine loadCachedSections
+   end subroutine load_cached_cross_sections
 
 !> Save the link list of crossed flow links for later storage in the caching file.
-   subroutine saveLinklist(length, linklist, ipol)
+   subroutine save_link_list(length, linklist, ipol)
       integer, intent(in) :: length !< Length of the list of crossed flow links
       integer, dimension(:), intent(in) :: linklist !< List of crossed flow links to be saved
       integer, dimension(:), intent(in) :: ipol !< Polygon administration
 
       cache_linklist = linklist(1:length)
       cache_ipol = ipol(1:length)
-   end subroutine saveLinklist
+   end subroutine save_link_list
 
 !> Store the grid-based information in the caching file.
-   subroutine storeCachingFile(basename, usecaching)
-      character(len=*), intent(in) :: basename !< Basename to construct the name of the caching file (typically md_ident).
-      integer, intent(in) :: usecaching !< Write the caching file (1) or not (0) - in accordance with the user setting
+   subroutine store_caching_file(base_name, use_caching)
+      use MessageHandling, only: LEVEL_INFO, mess
+      character(len=*), intent(in) :: base_name !< base_name to construct the name of the caching file (typically md_ident).
+      logical, intent(in) :: use_caching !< Write the caching file if true - in accordance with the user setting
 
       integer :: lun
       integer :: ierr
-      character(len=256) :: filename
-
-      cache_success = .false.
+      character(len=256) :: file_name
+      character(len=30) :: version_string
 
       !
       ! If no caching should be used, dispense with writing the caching file
       !
-      if (usecaching /= 1) then
+      if (.not. use_caching) then
          return
       end if
 
-      filename = trim(basename)//'.cache'
+      !
+      ! If cache files already exist and have been loaded successfully, no need to rewrite them
+      !
+      if (cache_success) then
+         return
+      end if
 
-      open (newunit=lun, file=trim(filename), access="stream", status="old", action='read', iostat=ierr)
+      file_name = trim(base_name)//'.cache'
+
+      open (newunit=lun, file=trim(file_name), access="stream", status="old", action='read', iostat=ierr)
 
       if (ierr == 0) then
          close (lun, status="delete")
       end if
-      open (newunit=lun, file=trim(filename), access="stream")
+      open (newunit=lun, file=trim(file_name), access="stream")
 
       !
       ! Store version string and checksum (already determined at start-up)
       !
+      write (version_string, '(a,i0,".",i2.2)') version_string_prefix, CacheFormatMajorVersion, CacheFormatMinorVersion
+      call mess(LEVEL_INFO, 'Writing cache file: '//trim(file_name)//', version: '//trim(version_string))
       write (lun) version_string, md5current
 
       !
@@ -476,7 +585,7 @@ contains
          allocate (cache_ipol(0))
       end if
       write (lun) section(key_cross_sections), size(crs)
-      call storeSections(lun, crs, cache_linklist, cache_ipol)
+      call store_cross_sections(lun, crs, cache_linklist, cache_ipol)
 
       !
       ! Store the data for the dry points and areas
@@ -486,11 +595,44 @@ contains
       call store_netcell(lun, cached_netcell_dry)
 
       !
+      ! Store data for thin dams
+      !
+      write (lun) section(key_thin_dams), size(cached_thin_dams, 1)
+      call store_thin_dams(lun, cached_thin_dams)
+
+      !
       ! We are done, so close the file
       !
       close (lun)
 
-   end subroutine storeCachingFile
+   end subroutine store_caching_file
+
+!> Store thin dams to a caching file.
+   subroutine store_thin_dams(lun, thin_dams)
+      integer, intent(in) :: lun !< LU-number of the caching file
+      type(tcrspath), dimension(:), intent(in) :: thin_dams !< Thin dams path and set of crossed flow links
+
+      integer :: i, number_thin_dams, number_flow_links, number_polyline_points
+
+      number_thin_dams = size(thin_dams, 1)
+      if (number_thin_dams > 0) then
+         do i = 1, number_thin_dams
+            number_flow_links = size(thin_dams(i)%ln)
+            number_polyline_points = size(thin_dams(i)%xp)
+            write (lun) number_flow_links, number_polyline_points
+            write (lun) thin_dams(i)%np, thin_dams(i)%lnx
+            write (lun) thin_dams(i)%xp(1:number_polyline_points), thin_dams(i)%yp(1:number_polyline_points), &
+               thin_dams(i)%zp(1:number_polyline_points)
+            if (thin_dams(i)%lnx > 0) then
+               write (lun) thin_dams(i)%ln(1:number_flow_links), thin_dams(i)%indexp(1:number_flow_links), &
+                  thin_dams(i)%wfp(1:number_flow_links), thin_dams(i)%xk(1:2, 1:number_flow_links), &
+                  thin_dams(i)%yk(1:2, 1:number_flow_links), thin_dams(i)%iperm(1:number_flow_links), &
+                  thin_dams(i)%sp(1:number_flow_links), thin_dams(i)%wfk1k2(1:number_flow_links)
+            end if
+         end do
+      end if
+
+   end subroutine store_thin_dams
 
 !> Store netcell to a caching file.
    subroutine store_netcell(lun, netcell)
@@ -513,7 +655,7 @@ contains
    end subroutine store_netcell
 
 !> Store cross sections to a caching file.
-   subroutine storeSections(lun, sections, linklist, ipol)
+   subroutine store_cross_sections(lun, sections, linklist, ipol)
       integer, intent(in) :: lun !< LU-number of the caching file
       type(tcrs), dimension(:), intent(in) :: sections !< Array of cross-sections to be filled
       integer, dimension(:), intent(in) :: linklist !< List of crossed flow links
@@ -544,10 +686,10 @@ contains
             end if
          end if
       end do
-   end subroutine storeSections
+   end subroutine store_cross_sections
 
 !> Copy the cached network information for observation points.
-   subroutine copyCachedObservations(success)
+   subroutine copy_cached_observations(success)
       logical, intent(out) :: success !< The cached information was compatible if true
 
       success = .false.
@@ -570,10 +712,10 @@ contains
             lobs(1:numobs) = cache_lobs
          end if
       end if
-   end subroutine copyCachedObservations
+   end subroutine copy_cached_observations
 
 !> Copy the cached network information for cross-sections
-   subroutine copyCachedCrossSections(linklist, ipol, success)
+   subroutine copy_cached_cross_sections(linklist, ipol, success)
       integer, dimension(:), allocatable, intent(out) :: linklist !< Cached list of crossed flow links
       integer, dimension(:), allocatable, intent(out) :: ipol !< Polygon administration
       logical, intent(out) :: success !< The cached information was compatible if true
@@ -627,15 +769,16 @@ contains
             end do
          end if
       end if
-   end subroutine copyCachedCrossSections
+   end subroutine copy_cached_cross_sections
 
 !> Copy the cached information on fixed weirs.
-   subroutine copyCachedFixedWeirs(npl, xpl, ypl, number_links, iLink, iPol, dSL, success)
+   subroutine copy_cached_fixed_weirs(npl, xpl, ypl, number_links, iLink, iPol, dSL, success)
+      use precision, only: dp
       integer, intent(in) :: npl !< Number of points in the polylines making up the weirs
-      double precision, dimension(:), intent(in) :: xpl !< X-coordinates of the polyline points for the weirs
-      double precision, dimension(:), intent(in) :: ypl !< Y-coordinates of the polyline points for the weirs
+      real(kind=dp), dimension(:), intent(in) :: xpl !< X-coordinates of the polyline points for the weirs
+      real(kind=dp), dimension(:), intent(in) :: ypl !< Y-coordinates of the polyline points for the weirs
       integer, intent(out) :: number_links !< Number of flow links that was cached
-      double precision, dimension(:), intent(out) :: dSL !< Intersection distance of each flow link on polyline segments that were cached
+      real(kind=dp), dimension(:), intent(out) :: dSL !< Intersection distance of each flow link on polyline segments that were cached
       integer, dimension(:), intent(out) :: iLink !< Flow link numbers that were cached
       integer, dimension(:), intent(out) :: iPol !< Intersected polyline segment numbers that were cached
       logical, intent(out) :: success !< The cached information was compatible if true
@@ -661,17 +804,18 @@ contains
             dSL(1:number_links) = cache_dSL_fixed
          end if
       end if
-   end subroutine copyCachedFixedWeirs
+   end subroutine copy_cached_fixed_weirs
 
-!> cacheFixedWeirs:
+!> cache_fixed_weirs:
 !>     The arrays for fixed weirs are partly local - they do not reside in a
 !>     module, so explicitly store them when we have the actual data
-   subroutine cacheFixedWeirs(npl, xpl, ypl, number_links, iLink, iPol, dSL)
+   subroutine cache_fixed_weirs(npl, xpl, ypl, number_links, iLink, iPol, dSL)
+      use precision, only: dp
       integer, intent(in) :: npl !< Number of points in the polylines making up the weirs
       integer, intent(in) :: number_links !< Number of flow links that is to be cached
-      double precision, dimension(:), intent(in) :: xpl !< X-coordinates of the polyline points for the weirs
-      double precision, dimension(:), intent(in) :: ypl !< Y-coordinates of the polyline points for the weirs
-      double precision, dimension(:), intent(in) :: dSL !< Intersection distance of each flow link on polyline segments that are to be cached
+      real(kind=dp), dimension(:), intent(in) :: xpl !< X-coordinates of the polyline points for the weirs
+      real(kind=dp), dimension(:), intent(in) :: ypl !< Y-coordinates of the polyline points for the weirs
+      real(kind=dp), dimension(:), intent(in) :: dSL !< Intersection distance of each flow link on polyline segments that are to be cached
       integer, dimension(:), intent(in) :: iLink !< Flow link numbers to be cached
       integer, dimension(:), intent(in) :: iPol !< Intersected polyline segment number to be cached
 
@@ -680,19 +824,20 @@ contains
       cache_iLink_fixed = iLink(1:number_links)
       cache_iPol_fixed = iPol(1:number_links)
       cache_dSL_fixed = dSL(1:number_links)
-   end subroutine cacheFixedWeirs
+   end subroutine cache_fixed_weirs
 
 !> Copy grid information, where dry points and areas have been deleted, from cache file:
    subroutine copy_cached_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne, lnn, bottom_area, xz, yz, xzw, yzw, netcell, success)
+      use precision, only: dp
       integer, intent(out) :: nump !< Nr. of 2d netcells.
       integer, intent(out) :: nump1d2d !< nr. of 1D and 2D netcells (2D netcells come first)
       integer, dimension(:, :), intent(out) :: lne !< (2,numl) Edge administration 1=nd1 , 2=nd2, rythm of kn flow nodes between/next to which this net link lies.
       integer, dimension(:), intent(inout) :: lnn !< (numl) Nr. of cells in which link participates (ubound for non-dummy values in lne(:,L))
-      double precision, dimension(:), intent(inout) :: bottom_area !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
-      double precision, dimension(:), intent(out) :: xz !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
-      double precision, dimension(:), intent(out) :: yz !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
-      double precision, dimension(:), intent(out) :: xzw !< [m] x-coordinate, centre of gravity {"shape": ["nump"]}
-      double precision, dimension(:), intent(out) :: yzw !< [m] y-coordinate, centre of gravity {"shape": ["nump"]}
+      real(kind=dp), dimension(:), intent(inout) :: bottom_area !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), dimension(:), intent(out) :: xz !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), dimension(:), intent(out) :: yz !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), dimension(:), intent(out) :: xzw !< [m] x-coordinate, centre of gravity {"shape": ["nump"]}
+      real(kind=dp), dimension(:), intent(out) :: yzw !< [m] y-coordinate, centre of gravity {"shape": ["nump"]}
       type(tface), dimension(:), intent(inout) :: netcell !< (nump1d2d) 1D&2D net cells (nodes and links)
       logical, intent(out) :: success !< The cached information was compatible if true
 
@@ -723,17 +868,33 @@ contains
       end if
    end subroutine copy_cached_netgeom_without_dry_points_and_areas
 
+!> Copy grid information, links that have been inactivated due to thin dams, from cache file:
+   subroutine copy_cached_thin_dams(thin_dams, success)
+      type(tcrspath), dimension(:), intent(inout) :: thin_dams !< Thin dams path and set of crossed flow links
+      logical, intent(out) :: success !< The cached information was compatible if true
+
+      success = .false.
+      if (cache_success) then
+         if (.not. allocated(cached_thin_dams)) then
+            return
+         end if
+         success = .true.
+         thin_dams = cached_thin_dams
+      end if
+   end subroutine copy_cached_thin_dams
+
 !> Cache grid information, where dry points and areas have been deleted:
    subroutine cache_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne, lnn, bottom_area, xz, yz, xzw, yzw, netcell)
+      use precision, only: dp
       integer, intent(in) :: nump !< Nr. of 2d netcells.
       integer, intent(in) :: nump1d2d !< nr. of 1D and 2D netcells (2D netcells come first)
       integer, dimension(:, :), intent(in) :: lne !< (2,numl) Edge administration 1=nd1 , 2=nd2, rythm of kn flow nodes between/next to which this net link lies.
       integer, dimension(:), intent(in) :: lnn !< (numl) Nr. of cells in which link participates (ubound for non-dummy values in lne(:,L))
-      double precision, dimension(:), intent(in) :: bottom_area !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
-      double precision, dimension(:), intent(in) :: xz !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
-      double precision, dimension(:), intent(in) :: yz !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
-      double precision, dimension(:), intent(in) :: xzw !< [m] x-coordinate, centre of gravity {"shape": ["nump"]}
-      double precision, dimension(:), intent(in) :: yzw !< [m] y-coordinate, centre of gravity {"shape": ["nump"]}
+      real(kind=dp), dimension(:), intent(in) :: bottom_area !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), dimension(:), intent(in) :: xz !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), dimension(:), intent(in) :: yz !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), dimension(:), intent(in) :: xzw !< [m] x-coordinate, centre of gravity {"shape": ["nump"]}
+      real(kind=dp), dimension(:), intent(in) :: yzw !< [m] y-coordinate, centre of gravity {"shape": ["nump"]}
       type(tface), dimension(:), intent(in) :: netcell !< (nump1d2d) 1D&2D net cells (nodes and links)
       integer number_nodes
       integer number_links
@@ -754,5 +915,13 @@ contains
       cached_netcell_dry = netcell(1:number_netcells)
 
    end subroutine cache_netgeom_without_dry_points_and_areas
+
+!> Cache thin dams:
+   subroutine cache_thin_dams(thin_dams)
+      type(tcrspath), dimension(:), intent(in) :: thin_dams !< Thin dams path and set of crossed flow links
+
+      cached_thin_dams = thin_dams
+
+   end subroutine cache_thin_dams
 
 end module unstruc_caching

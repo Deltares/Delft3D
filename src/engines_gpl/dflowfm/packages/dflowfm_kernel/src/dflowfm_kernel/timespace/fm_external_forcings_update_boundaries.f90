@@ -35,6 +35,11 @@ contains
 
 !> set boundary conditions
    module subroutine set_external_forcings_boundaries(time, iresult)
+      use m_setzminmax, only: setzminmax
+      use precision, only: dp
+      use m_update_dambreak_breach, only: update_dambreak_breach
+      use m_setsigmabnds, only: setsigmabnds
+      use m_fm_thahbc
       use timers
       use m_flowtimes
       use m_flowgeom
@@ -42,7 +47,7 @@ contains
       use m_sferic
       use timespace
       use m_ship
-      use m_observations, only: updateobservationxy
+      use m_observations, only: numobs, nummovobs, updateobservationxy
       use m_timer
       use m_partitioninfo
       use m_meteo
@@ -52,14 +57,15 @@ contains
       use unstruc_channel_flow
       use m_oned_functions
       use m_obs_on_flowgeom, only: obs_on_flowgeom
+      use unstruc_messages, only: callback_msg
 
       implicit none
 
-      double precision, intent(in) :: time !< Current simulation time (s)
+      real(kind=dp), intent(in) :: time !< Current simulation time (s)
       integer, intent(out) :: iresult !< Integer error status
 
       integer :: i, n, k2, kb, L, itrac, isf
-      double precision :: dQ
+      real(kind=dp) :: dQ
 
       iresult = DFM_EXTFORCERROR
       call timstrt('External forcings boundaries', handle_extbnd)

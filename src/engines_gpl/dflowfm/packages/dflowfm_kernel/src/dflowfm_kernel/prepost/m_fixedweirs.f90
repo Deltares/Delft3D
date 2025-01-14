@@ -33,6 +33,7 @@
 !> Contains the global data for all fixed weirs.
 !! fxw is the array of cross section paths.
 module m_fixedweirs
+   use precision, only: dp
    use m_crspath
    implicit none
 
@@ -41,19 +42,19 @@ module m_fixedweirs
    integer :: nfxw = 0
    integer, allocatable :: lnfxw(:) ! Links with fixed weirs (dim=nfxw)
    integer, allocatable :: nfxwL(:) ! fixed weirs on links   (dim=Lnx)
-   double precision, allocatable :: csfxw(:) ! fixed weir direction
-   double precision, allocatable :: snfxw(:) ! fixed weir direction
-   double precision, allocatable :: crestlxw(:) ! crest length of a weir
-   double precision, allocatable :: crestlevxw(:) ! crest level of a weir
-   double precision, allocatable :: shlxw(:) ! sill height left of a weir
-   double precision, allocatable :: shrxw(:) ! sill height right of a weir
-   double precision, allocatable :: taludlxw(:) ! talud left of a weir
-   double precision, allocatable :: taludrxw(:) ! talud right of a weir
-   double precision, allocatable :: vegxw(:) ! vegetation code on a weir
-   double precision, allocatable :: weirdte(:) ! loss coeff
+   real(kind=dp), allocatable :: csfxw(:) ! fixed weir direction
+   real(kind=dp), allocatable :: snfxw(:) ! fixed weir direction
+   real(kind=dp), allocatable :: crestlxw(:) ! crest length of a weir
+   real(kind=dp), allocatable :: crestlevxw(:) ! crest level of a weir
+   real(kind=dp), allocatable :: shlxw(:) ! sill height left of a weir
+   real(kind=dp), allocatable :: shrxw(:) ! sill height right of a weir
+   real(kind=dp), allocatable :: taludlxw(:) ! talud left of a weir
+   real(kind=dp), allocatable :: taludrxw(:) ! talud right of a weir
+   real(kind=dp), allocatable :: vegxw(:) ! vegetation code on a weir
+   real(kind=dp), allocatable :: weirdte(:) ! loss coeff
    integer, allocatable :: iweirtxw(:) ! weir type
 
-   double precision :: sillheightmin = 0.0d0 ! waqua dams with both sillheights > sillheightmin go to fixedweirs.pli
+   real(kind=dp) :: sillheightmin = 0.0d0 ! waqua dams with both sillheights > sillheightmin go to fixedweirs.pli
    ! the rest goes to
 contains
 

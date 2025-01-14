@@ -35,6 +35,6 @@ module m_hardcopy
 
    integer :: NHCDEV
    integer :: NUMHCOPTS
-   integer, dimension(2,20) :: IHCOPTS
+   integer, dimension(2, 20) :: IHCOPTS
 
 end module m_hardcopy

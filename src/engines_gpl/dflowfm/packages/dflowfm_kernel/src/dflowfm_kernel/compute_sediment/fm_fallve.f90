@@ -30,6 +30,16 @@
 !
 !
 
+module m_fm_fallve
+
+   implicit none
+
+   private
+
+   public :: fm_fallve
+
+contains
+
    subroutine fm_fallve()
    !!--description-----------------------------------------------------------------
       !
@@ -88,27 +98,27 @@
       integer :: k, kk, k1, k2, L, ll, i, istat, kb, kt
       logical :: error
 
-      double precision :: cclay
-      double precision :: chezy
-      double precision :: ctot
-      double precision :: h0
-      double precision :: rhoint
-      double precision :: salint
-      double precision :: temint
-      double precision :: tka
-      double precision :: tkb
-      double precision :: tkt
-      double precision :: tshear
-      double precision :: tur_eps
-      double precision :: tur_k
-      double precision :: u
-      double precision :: um
-      double precision :: v
-      double precision :: vm
-      double precision :: w
-      double precision :: wsloc
-      double precision, dimension(:), allocatable :: z0rou
-      double precision :: thick
+      real(kind=dp) :: cclay
+      real(kind=dp) :: chezy
+      real(kind=dp) :: ctot
+      real(kind=dp) :: h0
+      real(kind=dp) :: rhoint
+      real(kind=dp) :: salint
+      real(kind=dp) :: temint
+      real(kind=dp) :: tka
+      real(kind=dp) :: tkb
+      real(kind=dp) :: tkt
+      real(kind=dp) :: tshear
+      real(kind=dp) :: tur_eps
+      real(kind=dp) :: tur_k
+      real(kind=dp) :: u
+      real(kind=dp) :: um
+      real(kind=dp) :: v
+      real(kind=dp) :: vm
+      real(kind=dp) :: w
+      real(kind=dp) :: wsloc
+      real(kind=dp), dimension(:), allocatable :: z0rou
+      real(kind=dp) :: thick
 
       character(256) :: errmsg
    !!
@@ -332,3 +342,5 @@
 
       deallocate (localpar, stat=istat)
    end subroutine fm_fallve
+
+end module m_fm_fallve

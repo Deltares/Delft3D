@@ -31,29 +31,35 @@
 !
 
 !> construct matrix for first-order upwind discretization of advection
+module m_fillsystem_advec
+
+   implicit none
+
+   private
+
+   public :: fillsystem_advec
+
+contains
+
    subroutine fillsystem_advec(ierror)
-      use m_flowgeom
+      use precision, only: dp
+      use m_flowgeom, only: ln, lnx, csu, snu, nd, ndx, ndxi
       use m_flow, only: vol1, Au
-      use m_advec
-      use m_alloc
+      use m_advec_data
       use m_qnerror
       use m_writematrix
       implicit none
 
       integer, intent(inout) :: ierror
 
-!      double precision, dimension(:,:), allocatable :: dfluxfac
-
-      double precision :: dfac
-      double precision :: ux, uy
+      real(kind=dp) :: dfac
+      real(kind=dp) :: ux, uy
 
       integer :: i, irow, irowother, idir, ishift
       integer :: ipoint, ipointdiag
       integer :: k1, k2, kk, kkother, LL
 
       ierror = 1
-
-!      call realloc(dfluxfac, (/ 2, Lnx /), keepExisting=.false., fill=0d0)
 
       ux = 1d0
       uy = 0.1d0
@@ -162,3 +168,5 @@
 
       return
    end subroutine fillsystem_advec
+
+end module m_fillsystem_advec

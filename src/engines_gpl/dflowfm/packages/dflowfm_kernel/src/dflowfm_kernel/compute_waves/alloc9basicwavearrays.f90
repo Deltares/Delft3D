@@ -30,6 +30,16 @@
 !
 !
 
+module m_alloc9basicwavearrays
+
+   implicit none
+
+   private
+
+   public :: alloc9basicwavearrays
+
+contains
+
    !----- AGPL --------------------------------------------------------------------
    !
    !  Copyright (C)  Stichting Deltares, 2017-2024.
@@ -91,3 +101,5 @@
          call aerr('cfhi_vanrijn(lnx)', ierr, lnx)
       end if
    end subroutine alloc9basicwavearrays
+
+end module m_alloc9basicwavearrays

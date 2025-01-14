@@ -31,62 +31,64 @@
 !
 
 module m_getreal
+   use precision, only: dp
 
-implicit none
+   implicit none
 
 contains
 
-      ! Now a double precision (double precision ::)
-      subroutine GETREAL(TEXT, value)
-         use m_devices
-         use M_MISSING
-         use m_helpnow
-         use m_timlin
-         use m_fkeys
-         implicit none
-         integer :: infoattribute
-         integer :: infoinput
-         integer :: ixp
-         integer :: iyp
-         integer :: key
-         integer :: nbckgr
-         integer :: nforgr
-         double precision :: val
-         double precision :: value
-         character TEXT * (*)
+   ! Now a real(kind=dp) (real(kind=dp) ::)
+   subroutine GETREAL(TEXT, value)
+      use precision, only: dp
+      use m_devices
+      use M_MISSING
+      use m_helpnow
+      use m_timlin
+      use m_fkeys
+      implicit none
+      integer :: infoattribute
+      integer :: infoinput
+      integer :: ixp
+      integer :: iyp
+      integer :: key
+      integer :: nbckgr
+      integer :: nforgr
+      real(kind=dp) :: val
+      real(kind=dp) :: value
+      character TEXT * (*)
 
-         VAL = value
-         IXP = IWS / 2
-         IYP = IHS / 2
-         NFORGR = InfoAttribute(13)
-         NBCKGR = InfoAttribute(14)
-         call INPOPUP('ON')
-20       continue
-         call ITEXTCOLOUR('BWHITE', 'RED')
-         call INHIGHLIGHT('BLUE', 'BWHITE')
-         call TIMLIN()
+      VAL = value
+      IXP = IWS / 2
+      IYP = IHS / 2
+      NFORGR = InfoAttribute(13)
+      NBCKGR = InfoAttribute(14)
+      call INPOPUP('ON')
+20    continue
+      call ITEXTCOLOUR('BWHITE', 'RED')
+      call INHIGHLIGHT('BLUE', 'BWHITE')
+      call TIMLIN()
 !      CALL INDOUBLEXYDEF(IXP,IYP,TEXT,1,VAL,6,'(F6.1)')
-         call INDOUBLEXYDEF(IXP, IYP, TEXT, 1, VAL, 12, '(F12.1)')
-         call TIMLIN()
-         KEY = InfoInput(55)
-         if (KEY >= 24 .and. KEY <= 26) then
-            NLEVEL = 3
-            WRDKEY = TEXT
-            call FKEYS(KEY)
-            if (KEY == 3) then
-               call INPOPUP('OFF')
-               call ITEXTCOLOURN(NFORGR, NBCKGR)
-               return
-            end if
-            goto 20
-         else if (KEY == 21 .or. KEY == 22) then
-            value = VAL
-         else
-            value = dmiss
+      call INDOUBLEXYDEF(IXP, IYP, TEXT, 1, VAL, 12, '(F12.1)')
+      call TIMLIN()
+      KEY = InfoInput(55)
+      if (KEY >= 24 .and. KEY <= 26) then
+         NLEVEL = 3
+         WRDKEY = TEXT
+         call FKEYS(KEY)
+         if (KEY == 3) then
+            call INPOPUP('OFF')
+            call ITEXTCOLOURN(NFORGR, NBCKGR)
+            return
          end if
-         call INPOPUP('OFF')
-         call ITEXTCOLOURN(NFORGR, NBCKGR)
-         return
-      end
+         goto 20
+      else if (KEY == 21 .or. KEY == 22) then
+         value = VAL
+      else
+         value = dmiss
+      end if
+      call INPOPUP('OFF')
+      call ITEXTCOLOURN(NFORGR, NBCKGR)
+      return
+   end
 
 end module m_getreal

@@ -30,7 +30,18 @@
 !
 !
 
+module m_fix_global_polygons
+
+   implicit none
+
+   private
+
+   public :: fix_global_polygons
+
+contains
+
    subroutine fix_global_polygons(jaalwayscopyleftright, japartpols)
+      use precision, only: dp
 
       use m_sferic
       use m_polygon
@@ -39,7 +50,7 @@
       use geometry_module, only: get_startend
 
       use network_data, only: numk, nump, xk, xzw, yzw
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use m_delpol
 
       implicit none
@@ -49,9 +60,9 @@
 
       integer :: i, j, k
 
-      double precision :: x1, x2
-      double precision :: dist, dist1, dist2
-      double precision :: xmin, xmax
+      real(kind=dp) :: x1, x2
+      real(kind=dp) :: dist, dist1, dist2
+      real(kind=dp) :: xmin, xmax
 
       integer :: jpoint, jstart, jend
       integer :: i1, i2, num, NPLnew, NPLnewest
@@ -349,3 +360,5 @@
 
       return
    end subroutine fix_global_polygons
+
+end module m_fix_global_polygons

@@ -29,16 +29,26 @@
 
 !
 !
+module m_closeworld
 
-   subroutine CLOSEWORLD()
-      use M_NETW
-      use M_SFERIC
-      use m_mergenodes
-      implicit none
+   implicit none
+
+   private
+
+   public :: closeworld
+
+contains
+
+   subroutine closeworld()
+      use precision, only: dp
+      use network_data, only: xk, yk, numk
+      use m_sferic, only: jsferic
+      use m_mergenodes, only: mergenodes
+
       integer :: K1, K2, ja
-      double precision :: xmn, xmx
+      real(kind=dp) :: xmn, xmx
 
-      if (JSFERIC == 0) return
+      if (jsferic == 0) return
 
       XMN = minval(XK(1:numk))
       XMX = maxval(XK(1:numk))
@@ -50,7 +60,7 @@
                do K2 = 1, NUMK
                   if (real(XK(K2)) == 360.0) then
                      if (abs(YK(K1) - YK(K2)) < 1d-10) then
-                        call MERGENODES(K2, K1, JA)
+                        call mergenodes(K2, K1, JA)
                         exit
                      end if
                   end if
@@ -60,4 +70,6 @@
 
       end if
 
-   end subroutine CLOSEWORLD
+   end subroutine closeworld
+
+end module m_closeworld

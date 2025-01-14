@@ -470,9 +470,9 @@ end function LanguagesModelFind_ByHandle
           ENDDO
       ENDIF
 
-!      Call Lng_Errmsg (981, 0, ' Error allocating arrays in subroutine ', ' ReadLanguage ',Iout1)
-!      Call Lng_ErrMsg(972, 0,'Error in header language file',' ',IOUT1)
-!      call Lng_ErrMsg(972, 0, ' Error in Language file', '',Iout1)
+!      Call Lng_Errmsg2 (981, 0, ' Error allocating arrays in subroutine ', ' ReadLanguage ',Iout1)
+!      Call Lng_ERRMSG2 (972, 0,'Error in header language file',' ',IOUT1)
+!      call Lng_ERRMSG2 (972, 0, ' Error in Language file', '',Iout1)
   999 Continue
 
       Return

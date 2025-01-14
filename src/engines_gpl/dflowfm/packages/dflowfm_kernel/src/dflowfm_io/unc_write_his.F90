@@ -99,7 +99,6 @@ contains
       use unstruc_netcdf, only: unc_writeopts, unc_noforcedflush, UG_WRITE_LATLON, nccrs => crs
       use unstruc_netcdf, only: unc_add_time_coverage
       use unstruc_netcdf, only: unc_write_struc_input_coordinates
-      use unstruc_messages
       use m_map_his_precision
       use m_sferic, only: jsferic
       use m_partitioninfo
@@ -111,7 +110,7 @@ contains
       use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc
       use string_module
       use m_dad
-      use m_filter, only: checkmonitor
+      use m_filter_data, only: checkmonitor
       use m_alloc
       use unstruc_channel_flow, only: network
       use simple_geometry, only: sgeom_def_geometry_variables
@@ -127,12 +126,13 @@ contains
       use m_output_config
       use MessageHandling, only: err, mess, LEVEL_WARN, LEVEL_ERROR
       use m_ug_nc_attribute, only: ug_nc_attribute
+      use unstruc_channel_flow, only: network
 
       implicit none
 
-      double precision, intent(in) :: tim !< Current time, should in fact be time1, since the data written is always s1, ucx, etc.
+      real(kind=dp), intent(in) :: tim !< Current time, should in fact be time1, since the data written is always s1, ucx, etc.
 
-      double precision, allocatable :: geom_x(:), geom_y(:)
+      real(kind=dp), allocatable :: geom_x(:), geom_y(:)
       integer, allocatable :: node_count(:)
       integer, allocatable, save :: id_tra(:)
       integer, allocatable, save :: id_hwq(:)
@@ -140,7 +140,7 @@ contains
 
       integer :: ngenstru_, n
 
-      double precision, save :: curtime_split = 0d0 ! Current time-partition that the file writer has open.
+      real(kind=dp), save :: curtime_split = 0d0 ! Current time-partition that the file writer has open.
       integer :: ntot, i, j, ierr, nNodeTot, nNodes, k1, k2, nlinks
 
       character(len=255) :: filename
@@ -158,7 +158,7 @@ contains
 
       integer :: id_twodim, nc_precision
       integer, save :: id_timebds
-      double precision, save :: time_his_prev
+      real(kind=dp), save :: time_his_prev
 
       character(len=4) :: stat_name_postfix
       character(len=11) :: stat_name_filter_postfix
@@ -373,19 +373,33 @@ contains
          ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATE, jahisgate, ngatesg, 'none', 0, id_strlendim, &
                                                   id_gatedim, id_gate_id)
 
-         if (jahisgate > 0 .and. ngategen > 0) then
-            ! Define geometry related variables
+         if (jahisgate > 0) then
             nNodeTot = 0
-            do n = 1, ngategen
-               i = gate2cgen(n)
-               nlinks = L2cgensg(i) - L1cgensg(i) + 1
-               if (nlinks > 0) then
-                  nNodes = nlinks + 1
-               else if (nlinks == 0) then
-                  nNodes = 0
-               end if
-               nNodeTot = nNodeTot + nNodes
-            end do
+            if (network%sts%numGates > 0) then ! new gate
+               do n = 1, network%sts%numGates
+                  associate (pstru => network%sts%struct(network%sts%gateIndices(n)))
+                     nlinks = pstru%numlinks
+                     if (nlinks > 0) then
+                        nNodes = nlinks + 1
+                     else if (nlinks == 0) then
+                        nNodes = 0
+                     end if
+                     nNodeTot = nNodeTot + nNodes
+                  end associate
+               end do
+            else
+               ! Define geometry related variables
+               do n = 1, ngategen
+                  i = gate2cgen(n)
+                  nlinks = L2cgensg(i) - L1cgensg(i) + 1
+                  if (nlinks > 0) then
+                     nNodes = nlinks + 1
+                  else if (nlinks == 0) then
+                     nNodes = 0
+                  end if
+                  nNodeTot = nNodeTot + nNodes
+               end do
+            end if
          end if
          ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATEGEN, jahisgate, ngategen, 'line', nNodeTot, id_strlendim, &
                                                   id_gategendim, id_gategen_id, id_gategengeom_node_count, id_gategengeom_node_coordx, id_gategengeom_node_coordy, &
@@ -1415,6 +1429,7 @@ contains
    end function get_dimid_len
 
    subroutine write_station_netcdf_variable(output_variable_item, ihisfile, it_his)
+      use precision, only: dp
       use netcdf, only: nf90_put_var
       use netcdf_utils, only: check_netcdf_error
       use m_reshape, only: reshape_implicit
@@ -1427,7 +1442,7 @@ contains
 
       integer :: local_id_var, station_id_index
       integer, allocatable :: counts(:), starts(:), positions(:)
-      double precision, allocatable :: transformed_data(:)
+      real(kind=dp), allocatable :: transformed_data(:)
 
       local_id_var = output_variable_item%id_var
 
@@ -1539,8 +1554,14 @@ contains
       structure_names = [(srcname(i), integer :: i=1, numsrc)]
       call unc_put_his_structure_names(ncid, jahissourcesink, id_srcname, structure_names)
 
-      indices = [(gate2cgen(i), integer :: i=1, ngategen)]
-      structure_names = [(cgen_ids(indices(i)), integer :: i=1, ngategen)]
+      if (network%sts%numGates > 0) then
+         indices = [(network%sts%gateIndices(i), integer :: i=1, ngategen)]
+         structure_names = [(trimexact(network%sts%struct(network%sts%gateIndices(i))%id, strlen_netcdf), integer :: i=1, ngategen)]
+      else
+         indices = [(gate2cgen(i), integer :: i=1, ngategen)]
+         structure_names = [(cgen_ids(indices(i)), integer :: i=1, ngategen)]
+      end if
+
       call unc_put_his_structure_names(ncid, jahisgate, id_gategen_id, structure_names)
 
       structure_names = [(lat_ids(i), integer :: i=1, numlatsg)]

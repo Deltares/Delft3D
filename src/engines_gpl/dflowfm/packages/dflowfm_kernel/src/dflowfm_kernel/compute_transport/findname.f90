@@ -45,7 +45,6 @@ contains
       integer :: res !< Return the index of the string in the array
       integer :: i
 
-      
       res = 0
 
       do i = 1, size(names)

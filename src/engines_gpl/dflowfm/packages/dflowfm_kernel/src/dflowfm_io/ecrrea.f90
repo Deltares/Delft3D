@@ -32,54 +32,55 @@
 module m_ecrrea
    implicit none
 contains
-      !> read from rfg grid file
-      subroutine ECRREA(X, MMAX, NMAX, MC, NC, MRGF, HALF)
-         use m_readyy
-         use m_qn_read_error
-         use m_qn_eof_error
+   !> read from rfg grid file
+   subroutine ECRREA(X, MMAX, NMAX, MC, NC, MRGF, HALF)
+      use precision, only: dp
+      use m_readyy
+      use m_qn_read_error
+      use m_qn_eof_error
 
-         character dummy * 10, REC * 132
+      character dummy * 10, REC * 132
 !     LEES RGF
-         integer, intent(in) :: MMAX, NMAX !< array sizes
-         integer, intent(in) :: mc, nc !< grid size
-         integer, intent(in) :: mrgf !< grid-file unit number
-         double precision, intent(in) :: half !< progress bar length, 0:half, 0.5:full
-         double precision :: X(MMAX, NMAX)
-         double precision :: af
-         integer :: i, j
+      integer, intent(in) :: MMAX, NMAX !< array sizes
+      integer, intent(in) :: mc, nc !< grid size
+      integer, intent(in) :: mrgf !< grid-file unit number
+      real(kind=dp), intent(in) :: half !< progress bar length, 0:half, 0.5:full
+      real(kind=dp) :: X(MMAX, NMAX)
+      real(kind=dp) :: af
+      integer :: i, j
 
-         do J = 1, NC
-            if (HALF > -1d0) then
-               AF = HALF + 0.5d0 * dble(J) / dble(NC)
-               call READYY('Reading Grid File', AF)
-            end if
-            read (MRGF, *, err=777, end=999) dummy, dummy, (X(I, J), I=1, MC)
-         end do
+      do J = 1, NC
+         if (HALF > -1d0) then
+            AF = HALF + 0.5d0 * dble(J) / dble(NC)
+            call READYY('Reading Grid File', AF)
+         end if
+         read (MRGF, *, err=777, end=999) dummy, dummy, (X(I, J), I=1, MC)
+      end do
 
-         return
+      return
 
-777      backspace (MRGF)
-         backspace (MRGF)
-         do J = 1, NC
-            if (HALF > -1d0) then
-               AF = HALF + 0.5d0 * dble(J) / dble(NC)
-               call READYY('Reading Grid File', AF)
-            end if
-            read (MRGF, '(10X,5F12.0)', err=888, end=999) (X(I, J), I=1, MC)
-         end do
+777   backspace (MRGF)
+      backspace (MRGF)
+      do J = 1, NC
+         if (HALF > -1d0) then
+            AF = HALF + 0.5d0 * dble(J) / dble(NC)
+            call READYY('Reading Grid File', AF)
+         end if
+         read (MRGF, '(10X,5F12.0)', err=888, end=999) (X(I, J), I=1, MC)
+      end do
 
-         ! where (x == 0d0) x = dxymis
+      ! where (x == 0d0) x = dxymis
 
-         return
+      return
 
-888      backspace (MRGF)
-         read (MRGF, '(A)') REC
-         call QNREADERROR('Reading Grid Coordinates but Getting', REC, MRGF)
-         return
+888   backspace (MRGF)
+      read (MRGF, '(A)') REC
+      call QNREADERROR('Reading Grid Coordinates but Getting', REC, MRGF)
+      return
 
-999      backspace (MRGF)
-         read (MRGF, '(A)') REC
-         call QNEOFERROR(MRGF)
-         return
-      end subroutine ECRREA
+999   backspace (MRGF)
+      read (MRGF, '(A)') REC
+      call QNEOFERROR(MRGF)
+      return
+   end subroutine ECRREA
 end module m_ecrrea

@@ -56,6 +56,7 @@
 #define no_warning_unused_dummy_argument(x) associate( x => x ); end associate
 
 module m_saadf
+   use precision, only: dp
    implicit none
 
    interface dnrm2XXX
@@ -65,7 +66,7 @@ module m_saadf
 contains
    subroutine amub(nrow, ncol, job, a, ja, ia, b, jb, ib,&
    &c, jc, ic, nzmax, iw, ierr)
-      use precision_basics, only: dp
+
       integer, intent(in) :: nrow, ncol, nzmax
       real(dp), intent(inout) :: a(:), b(:), c(:)
       integer, intent(inout) :: ja(:), jb(:), jc(:), ia(nrow + 1), ib(:), ic(:)&
@@ -162,7 +163,6 @@ contains
 !-----------------------------------------------------------------------
    subroutine aplb(nrow, ncol, job, a, ja, ia, b, jb, ib,&
    &c, jc, ic, nzmax, iw, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, ncol, nzmax, job
       real(dp), intent(inout) :: a(:), b(:), c(:)
@@ -257,7 +257,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine aplb1(nrow, ncol, job, a, ja, ia, b, jb, ib, c, jc, ic, nzmax, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, ncol, nzmax, job
       integer, intent(out) :: ierr
@@ -368,7 +367,6 @@ contains
 !-----------------------------------------------------------------------
    subroutine aplsb(nrow, ncol, a, ja, ia, s, b, jb, ib, c, jc, ic,&
    &nzmax, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, ncol, nzmax
       integer, intent(out) :: ierr
@@ -490,7 +488,6 @@ contains
 !-----------------------------------------------------------------------
    subroutine aplsb1(nrow, ncol, a, ja, ia, s, b, jb, ib, c, jc, ic,&
    &nzmax, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, ncol, nzmax
       integer, intent(out) :: ierr
@@ -611,7 +608,6 @@ contains
 !-----------------------------------------------------------------------
    subroutine apmbt(nrow, ncol, job, a, ja, ia, b, jb, ib,&
    &c, jc, ic, nzmax, iw, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, ncol, nzmax, job
       integer, intent(out) :: ierr
@@ -758,7 +754,6 @@ contains
 !-----------------------------------------------------------------------
    subroutine aplsbt(nrow, ncol, a, ja, ia, s, b, jb, ib,&
    &c, jc, ic, nzmax, iw, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, ncol, nzmax
       integer, intent(out) :: ierr
@@ -894,7 +889,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine diamua(nrow, job, a, ja, ia, diag, b, jb, ib)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, job
       real(dp), intent(inout) :: a(:), b(:), diag(nrow)
@@ -956,7 +950,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine amudia(nrow, job, a, ja, ia, diag, b, jb, ib)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, job
       real(dp), intent(inout) :: a(:), b(:), diag(nrow)
@@ -1015,7 +1008,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine aplsca(nrow, a, ja, ia, scal, iw)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow
       real(dp), intent(inout) :: a(:), scal
@@ -1116,7 +1108,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine apldia(nrow, job, a, ja, ia, diag, b, jb, ib, iw)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, job
       real(dp), intent(inout) :: a(:), b(:), diag(nrow)
@@ -1378,7 +1369,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine amuxe(n, x, y, na, ncol, a, ja)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, na, ncol
       real(dp), intent(inout) :: x(n), y(n), a(na, *)
@@ -1538,7 +1528,7 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine vbrmv(nr, nc, ia, ja, ka, a, kvstr, kvstc, x, b)
-      use precision_basics, only: dp
+
       integer, intent(in) :: nr, nc
       integer, intent(inout) :: ia(nr + 1), ja(:), ka(:), kvstr(nr + 1)&
       &, kvstc(:)
@@ -1781,7 +1771,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine ldsoll(n, x, y, al, jal, nlev, lev, ilev)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, nlev
       integer, intent(inout) :: jal(:), ilev(nlev + 1), lev(n)
@@ -1955,7 +1944,7 @@ contains
 ! local variables
 !
       integer k, j
-      real * 8 t
+      real(dp) t
 !-----------------------------------------------------------------------
       do k = 1, n
          x(k) = y(k)
@@ -2022,7 +2011,6 @@ contains
 
 !-----------------------------------------------------------------------
    subroutine errpr(n, y, y1, iout, msg)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, iout
       real(dp), intent(in) :: y(:), y1(:)
@@ -2040,12 +2028,13 @@ contains
       return
    end
    subroutine dcopy(n, dx, incx, dy, incy)
+      use precision, only: dp
 !
 !     copies a vector, x, to a vector, y.
 !     uses unrolled loops for increments equal to one.
 !     jack dongarra, linpack, 3/11/78.
 !
-      double precision dx(1), dy(1)
+      real(kind=dp) dx(1), dy(1)
       integer i, incx, incy, ix, iy, m, mp1, n
 !
       if (n <= 0) return
@@ -2089,13 +2078,13 @@ contains
       return
    end
 
-   double precision function ddotORG(n, dx, incx, dy, incy) result(ddot)
+   real(kind=dp) function ddotORG(n, dx, incx, dy, incy) result(ddot)
 !
 !     forms the dot product of two vectors.
 !     uses unrolled loops for increments equal to one.
 !     jack dongarra, linpack, 3/11/78.
 !
-      double precision dx(1), dy(1), dtemp
+      real(kind=dp) dx(1), dy(1), dtemp
       integer i, incx, incy, ix, iy, m, mp1, n
 !
       ddot = 0.0d0
@@ -2138,12 +2127,12 @@ contains
       return
    end
 !
-   double precision function dasum(n, dx, incx)
+   real(kind=dp) function dasum(n, dx, incx)
 !
 !     takes the sum of the absolute values.
 !     jack dongarra, linpack, 3/11/78.
 !
-      double precision dx(1), dtemp
+      real(kind=dp) dx(1), dtemp
       integer i, incx, m, mp1, n, nincx
 !
       dasum = 0.0d0
@@ -2186,7 +2175,7 @@ contains
 !     uses unrolled loops for increments equal to one.
 !     jack dongarra, linpack, 3/11/78.
 !
-      double precision dx(1), dy(1), da
+      real(kind=dp) dx(1), dy(1), da
       integer i, incx, incy, ix, iy, m, mp1, n
 !
       if (n <= 0) return
@@ -2228,19 +2217,19 @@ contains
       return
    end
 
-   double precision function dnrm2XXX_2(n, dx_2, incx)
+   real(kind=dp) function dnrm2XXX_2(n, dx_2, incx)
       integer, intent(in) :: n, incx
-      double precision, intent(in) :: dx_2(:, :)
+      real(kind=dp), intent(in) :: dx_2(:, :)
 
-      double precision, allocatable, dimension(:) :: dx
+      real(kind=dp), allocatable, dimension(:) :: dx
       dx = reshape(dx_2, [n])
       dnrm2XXX_2 = dnrm2XXX_1(n, dx, incx)
    end function dnrm2XXX_2
 
-   double precision function dnrm2XXX_1(n, dx, incx)
+   real(kind=dp) function dnrm2XXX_1(n, dx, incx)
       integer, intent(in) :: n, incx
-      double precision, intent(in) :: dx(:)
-      double precision :: cutlo, cuthi, hitest, sum, xmax, zero, one
+      real(kind=dp), intent(in) :: dx(:)
+      real(kind=dp) :: cutlo, cuthi, hitest, sum, xmax, zero, one
       integer :: next, nn, i, j
       data zero, one/0.0d0, 1.0d0/
 !
@@ -2368,7 +2357,7 @@ contains
 !     uses unrolled loops for increment equal to one.
 !     jack dongarra, linpack, 3/11/78.
 !
-      double precision da, dx(1)
+      real(kind=dp) da, dx(1)
       integer i, incx, m, mp1, n, nincx
 !
       if (n <= 0) return
@@ -2410,7 +2399,7 @@ contains
 !     uses unrolled loops for increments equal one.
 !     jack dongarra, linpack, 3/11/78.
 !
-      double precision dx(1), dy(1), dtemp
+      real(kind=dp) dx(1), dy(1), dtemp
       integer i, incx, incy, ix, iy, m, mp1, n
 !
       if (n <= 0) return
@@ -2465,7 +2454,7 @@ contains
 !     finds the index of element having max. absolute value.
 !     jack dongarra, linpack, 3/11/78.
 !
-      double precision dx(1), dmax
+      real(kind=dp) dx(1), dmax
       integer i, incx, ix, n
 !
       idamaxXXX = 0
@@ -2503,7 +2492,7 @@ contains
 !     applies a plane rotation.
 !     jack dongarra, linpack, 3/11/78.
 !
-      double precision dx(1), dy(1), dtemp, c, s
+      real(kind=dp) dx(1), dy(1), dtemp, c, s
       integer i, incx, incy, ix, iy, n
 !
       if (n <= 0) return
@@ -2540,7 +2529,7 @@ contains
 !     construct givens plane rotation.
 !     jack dongarra, linpack, 3/11/78.
 !
-      double precision da, db, c, s, roe, scale, r, z
+      real(kind=dp) da, db, c, s, roe, scale, r, z
 !
       no_warning_unused_dummy_argument(c)
 
@@ -2780,7 +2769,6 @@ contains
 ! dcsort  : sorting routine used by crsjad                             c
 !----------------------------------------------------------------------c
    subroutine csrdns(nrow, ncol, a, ja, ia, dns, ndns, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, ncol, ndns
       integer, intent(out) :: ierr
@@ -2838,7 +2826,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine dnscsr(nrow, ncol, nzmax, dns, a, ja, ia, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, ncol, nzmax
       integer, intent(out) :: ierr
@@ -2898,7 +2885,7 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine coocsr(nrow, nnz, a, ir, jc, ao, jao, iao)
-      use precision_basics, only: dp
+
       integer, intent(in) :: nrow, nnz
       real(dp), intent(inout) :: a(:), ao(:)
       integer, intent(inout) :: ir(:), jc(:), jao(:), iao(:)
@@ -2969,7 +2956,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine coicsr(n, nnz, job, a, ja, ia, iwk)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, nnz, job
       integer, intent(inout) :: ia(nnz), ja(nnz), iwk(n + 1)
@@ -3072,7 +3058,7 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine csrcoo(nrow, job, nzmax, a, ja, ia, nnz, ao, ir, jc, ierr)
-      use precision_basics, only: dp
+
       integer, intent(in) :: nrow, job, nzmax
       integer, intent(out) :: ierr
       real(dp), intent(inout) :: a(:), ao(:)
@@ -3159,7 +3145,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine csrssr(nrow, a, ja, ia, nzmax, ao, jao, iao, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, nzmax
       integer, intent(out) :: ierr
@@ -3509,7 +3494,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine xssrcsr(nrow, a, ja, ia, nzmax, ao, jao, iao, indu, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, nzmax
       integer, intent(out) :: ierr
@@ -3629,7 +3613,6 @@ contains
 !-----------------------------------------------------------------------
    subroutine csrell(nrow, a, ja, ia, maxcol, coef, jcoef, ncoef,&
    &ndiag, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, maxcol, ncoef
       integer, intent(out) :: ierr, ndiag
@@ -3706,7 +3689,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine ellcsr(nrow, coef, jcoef, ncoef, ndiag, a, ja, ia, nzmax, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, nzmax, ncoef, ndiag
       integer, intent(out) :: ierr
@@ -3773,7 +3755,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine csrmsr(n, a, ja, ia, ao, jao, wk, iwk)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n
       real(dp), intent(inout) :: a(:), ao(:), wk(n)
@@ -3884,7 +3865,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine msrcsr(n, a, ja, ao, jao, iao, wk, iwk)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n
       real(dp), intent(inout) :: a(:), ao(:), wk(n)
@@ -4012,7 +3992,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine csrcsc2(n, n2, job, ipos, a, ja, ia, ao, jao, iao)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, job, n2, ipos
       integer, intent(inout) :: ia(n + 1), iao(n2 + 1), ja(:), jao(:)
@@ -4093,7 +4072,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine csrlnk(n, a, ja, ia, link)
-      use precision_basics, only: dp
 
       real(dp), intent(inout) :: a(:)
       integer, intent(in) :: n
@@ -4247,7 +4225,6 @@ contains
 !-----------------------------------------------------------------------
    subroutine csrdia(n, idiag, job, a, ja, ia, ndiag,&
    &diag, ioff, ao, jao, iao, ind)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, ndiag
       integer, intent(inout) :: idiag
@@ -4394,7 +4371,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine diacsr(n, job, idiag, diag, ndiag, ioff, a, ja, ia)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, job, ndiag, idiag
       real(dp), intent(inout) :: diag(ndiag, idiag), a(:)
@@ -4417,7 +4393,7 @@ contains
 !         whether this entry is zero. If it is then do not include
 !         in the output matrix. Note that the test is a test for
 !         an exact arithmetic zero. Be sure that the zeros are
-!         actual zeros in double precision otherwise this would not
+!         actual zeros in real(kind=dp) otherwise this would not
 !         work.
 !
 ! idiag = integer equal to the number of diagonals to be extracted.
@@ -4764,7 +4740,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine csrbnd(n, a, ja, ia, job, abd, nabd, lowd, ml, mu, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, nabd, job
       integer, intent(out) :: ierr
@@ -4911,11 +4886,10 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine bndcsr(n, abd, nabd, lowd, ml, mu, a, ja, ia, len, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, nabd
       integer, intent(out) :: ierr
-      real(dp), intent(inout) :: a(:), abd(:,:)
+      real(dp), intent(inout) :: a(:), abd(:, :)
       integer, intent(inout) :: ia(n + 1), ja(:), len, lowd
       real(dp) :: t
       integer :: i, j, irow, ml, mu, ko
@@ -5008,7 +4982,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine csrssk(n, imod, a, ja, ia, asky, isky, nzmax, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, nzmax
       integer, intent(out) :: ierr
@@ -5126,7 +5099,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine sskssr(n, imod, asky, isky, ao, jao, iao, nzmax, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, nzmax
       integer, intent(out) :: ierr
@@ -5243,7 +5215,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine csrjad(nrow, a, ja, ia, idiag, iperm, ao, jao, iao)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow
       integer, intent(out) :: idiag
@@ -5347,7 +5318,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine jadcsr(nrow, idiag, a, ja, ia, iperm, ao, jao, iao)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, idiag
       integer, intent(inout) :: ja(:), jao(:), ia(idiag + 1), iperm(nrow)&
@@ -5612,7 +5582,6 @@ contains
 !-----end-of-cooell-----------------------------------------------------
 !-----------------------------------------------------------------------
    subroutine xcooell(n, nnz, a, ja, ia, ac, jac, nac, ner, ncmax, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, nnz, nac, ner
       integer, intent(out) :: ierr
@@ -5687,7 +5656,7 @@ contains
 !
 !  NCA     - Integer. First dimension of output arrays ca and jac.
 !
-!  A(NNZ)  - Real array. (Double precision)
+!  A(NNZ)  - Real array. (real(kind=dp))
 !            Stored entries of the sparse matrix A.
 !            NNZ is the number of nonzeros.
 !
@@ -5704,7 +5673,7 @@ contains
 !
 !  OUTPUT PARAMETERS
 !  -----------------
-!  AC(NAC,*)  - Real array. (Double precision)
+!  AC(NAC,*)  - Real array. (real(kind=dp))
 !               Stored entries of the sparse matrix A in compressed
 !               storage mode.
 !
@@ -5904,7 +5873,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine usscsr(nrow, a, ja, ia, diag, al, jal, ial, au, jau, iau)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow
       real(dp), intent(inout) :: a(:), al(:), diag(:), au(:)
@@ -5999,7 +5967,6 @@ contains
    end
 
    subroutine ssscsr(nrow, a, ja, ia, diag, al, jal, ial, au)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow
       real(dp), intent(inout) :: a(:), al(:), diag(:), au(:)
@@ -6278,7 +6245,6 @@ contains
 ! kvstmerge: Merges block partitionings, for conformal row/col pattern c
 !----------------------------------------------------------------------c
    subroutine submat(n, job, i1, i2, j1, j2, a, ja, ia, nr, nc, ao, jao, iao)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, job
       integer, intent(inout) :: i1, i2, j1, j2, nr, nc, ia(:), ja(:), jao(:)&
@@ -6921,7 +6887,7 @@ contains
 !-----------------------------------------------------------------------
    end
 !-----------------------------------------------------------------------
-   double precision function getelm(i, j, a, ja, ia, iadd, sorted)
+   real(kind=dp) function getelm(i, j, a, ja, ia, iadd, sorted)
 !-----------------------------------------------------------------------
 !     purpose:
 !     --------
@@ -6961,7 +6927,7 @@ contains
 !     noel m. nachtigal october 28, 1990 -- youcef saad jan 20, 1991.
 !-----------------------------------------------------------------------
       integer i, ia(:), iadd, j, ja(:)
-      double precision a(:)
+      real(kind=dp) a(:)
       logical sorted
 !
 !     local variables.
@@ -7138,7 +7104,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine transp(nrow, ncol, a, ja, ia, iwk, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow
       integer, intent(out) :: ierr
@@ -7479,7 +7444,7 @@ contains
 !-----------------------------------------------------------------------
    subroutine amask(nrow, ncol, a, ja, ia, jmask, imask,&
    &c, jc, ic, iw, nzmax, ierr)
-      use precision_basics, only: dp
+
       integer, intent(in) :: nrow, ncol, nzmax
       integer, intent(out) :: ierr
       real(dp), intent(inout) :: a(:), c(:)
@@ -7571,7 +7536,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine rperm(nrow, a, ja, ia, ao, jao, iao, perm, job)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, job
       integer, intent(inout) :: ja(:), ia(nrow + 1), jao(:), iao(nrow + 1)&
@@ -7797,7 +7761,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine dperm1(i1, i2, a, ja, ia, b, jb, ib, perm, ipos, job)
-      use precision_basics, only: dp
 
       integer, intent(in) :: ipos, job
       integer, intent(inout) :: i1, i2, ja(:), ia(:), jb(:), ib(:), perm(:)
@@ -7860,7 +7823,6 @@ contains
 !-----------------------------------------------------------------------
    subroutine dperm2(i1, i2, a, ja, ia, b, jb, ib, cperm, rperm, istart,&
    &ipos, job)
-      use precision_basics, only: dp
 
       integer, intent(in) :: ipos, job, istart
       integer, intent(inout) :: i1, i2, ja(:), ia(:), jb(:), ib(:), cperm(:)&
@@ -7953,7 +7915,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine dmperm(nrow, a, ja, ao, jao, perm, job)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow
       integer, intent(inout) :: ja(:), jao(:), perm(nrow), job
@@ -8018,7 +7979,6 @@ contains
 !-----------------------------------------------------------------------
 
    subroutine permsimple(n, x, XH, perm, permselect)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, perm(n), permselect
       real(dp), intent(inout) :: x(n), XH(N)
@@ -8033,7 +7993,6 @@ contains
    end
 
    subroutine permsimpleINVERSE(n, x, XH, perm, permselect)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, perm(n), permselect
       real(dp), intent(inout) :: x(n), XH(N)
@@ -8048,7 +8007,6 @@ contains
    end
 
    subroutine dvperm(n, x, perm)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n
       integer, intent(inout) :: perm(n)
@@ -8292,7 +8250,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine dscaldg(n, a, ja, ia, diag, job)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, job
       real(dp), intent(inout) :: a(:), diag(:)
@@ -8351,7 +8308,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine extbdg(n, a, ja, ia, bdiag, nblk, ao, jao, iao)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n, nblk
       real(dp), intent(inout) :: bdiag(:), a(:), ao(:)
@@ -8421,7 +8377,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine getbwd(n, a, ja, ia, ml, mu)
-      use precision_basics, only: dp
 
       integer, intent(in) :: n
       real(dp), intent(inout) :: a(:)
@@ -8902,7 +8857,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine rnrms(nrow, nrm, a, ja, ia, diag)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, nrm
       real(dp), intent(inout) :: a(:), diag(nrow)
@@ -8960,7 +8914,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine cnrms(nrow, nrm, a, ja, ia, diag)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, nrm
       real(dp), intent(inout) :: a(:), diag(nrow)
@@ -9014,7 +8967,6 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine roscal(nrow, job, nrm, a, ja, ia, diag, b, jb, ib, ierr)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, job, nrm
       integer, intent(out) :: ierr
@@ -9074,7 +9026,7 @@ contains
    end
 !-----------------------------------------------------------------------
    subroutine coscal(nrow, job, nrm, a, ja, ia, diag, b, jb, ib, ierr)
-      use precision_basics, only: dp
+
       integer, intent(in) :: nrow, job
       integer, intent(out) :: ierr
       real(dp), intent(inout) :: a(:), b(:), diag(nrow)
@@ -10471,7 +10423,6 @@ contains
    end
 
    subroutine amub_countonly(nrow, ncol, a, ja, ia, b, jb, ib, iw, len)
-      use precision_basics, only: dp
 
       integer, intent(in) :: nrow, ncol
       integer, intent(out) :: len

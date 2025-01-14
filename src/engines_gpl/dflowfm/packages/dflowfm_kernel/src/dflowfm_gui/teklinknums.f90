@@ -32,58 +32,59 @@
 
 module m_teklinknums
 
-implicit none
+   implicit none
 
 contains
 
-  subroutine TEKLINKNUMS(MET, NCOL)
-     use m_dhtext
-     use m_dhitext
-     use M_MISSING
-     use m_netw
-     use m_drawthis
-     use m_halt2
-     use m_set_col
-     use m_invnod
-     implicit none
-     integer :: MET, NCOL
+   subroutine TEKLINKNUMS(MET, NCOL)
+      use precision, only: dp
+      use m_dhtext
+      use m_dhitext
+      use M_MISSING
+      use m_netw
+      use m_drawthis
+      use m_halt2
+      use m_set_col
+      use m_invnod
+      implicit none
+      integer :: MET, NCOL
 
-     integer :: k1
-     integer :: k2
-     integer :: key
-     integer :: l
-     double precision :: vv
+      integer :: k1
+      integer :: k2
+      integer :: key
+      integer :: l
+      real(kind=dp) :: vv
 
-     double precision XP, YP, ZP
-     call SETCOL(NCOL)
-     if (MET == 2 .or. MET >= 6 .and. MET <= 8) then
-        LMOD = max(1, NUML / 100)
-        do L = 1, NUML
-           if (mod(L, LMOD) == 0) then
-              call HALT2(KEY)
-              if (KEY == 1) then
-                 return
-              end if
-           end if
-           VV = RLIN(L)
-           if (VV /= dmiss) then
-              K1 = KN(1, L)
-              K2 = KN(2, L)
-              if (K1 /= 0 .and. K2 /= 0) then
-                 if (.not. INVNOD(K1) .and. .not. INVNOD(K2)) cycle
-                 XP = 0.5d0 * (XK(K1) + XK(K2))
-                 YP = 0.5d0 * (YK(K1) + YK(K2))
-                 ZP = 0.5d0 * (ZK(K1) + ZK(K2))
-                 if (NDRAW(7) == 2 .or. NDRAW(7) == 3 .or. (NDRAW(7) >= 10 .and. ndraw(7) /= 16 .and. ndraw(7) /= 17 .and. ndraw(7) /= 18)) then
-                    call DHITEXT(int(VV), XP, YP)
-                 else
-                    call DHTEXT(VV, XP, YP, ZP)
-                 end if
-              end if
-           end if
-        end do
-     end if
-     return
-  end subroutine TEKLINKNUMS
+      real(kind=dp) XP, YP, ZP
+      call SETCOL(NCOL)
+      if (MET == 2 .or. MET >= 6 .and. MET <= 8) then
+         LMOD = max(1, NUML / 100)
+         do L = 1, NUML
+            if (mod(L, LMOD) == 0) then
+               call HALT2(KEY)
+               if (KEY == 1) then
+                  return
+               end if
+            end if
+            VV = RLIN(L)
+            if (VV /= dmiss) then
+               K1 = KN(1, L)
+               K2 = KN(2, L)
+               if (K1 /= 0 .and. K2 /= 0) then
+                  if (.not. INVNOD(K1) .and. .not. INVNOD(K2)) cycle
+                  XP = 0.5d0 * (XK(K1) + XK(K2))
+                  YP = 0.5d0 * (YK(K1) + YK(K2))
+                  ZP = 0.5d0 * (ZK(K1) + ZK(K2))
+                  if (NDRAW(7) == 2 .or. NDRAW(7) == 3 .or. (NDRAW(7) >= 10 .and. ndraw(7) /= 16 .and. ndraw(7) /= 17 .and. ndraw(7) /= 18)) then
+                     call DHITEXT(int(VV), XP, YP)
+                  else
+                     call DHTEXT(VV, XP, YP, ZP)
+                  end if
+               end if
+            end if
+         end do
+      end if
+      return
+   end subroutine TEKLINKNUMS
 
 end module m_teklinknums

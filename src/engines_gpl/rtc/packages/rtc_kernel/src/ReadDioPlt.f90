@@ -146,10 +146,10 @@ Function ReadDioPlt (inDataSet, inName, IDEBUG, ITMSTP, IOUT1, &
 !        write(Idebug,*) ' NHIS, NLOCHIS ', NHIS, NLOCHIS
 
         IF (NLOCF .GT. NLOCHIS) THEN
-            CALL ERRMSG (913, 0, NAME,' NLOCaties in HIS file',IOUT1)
+            call write_error_message_rtc (913, 0, NAME,' NLOCaties in HIS file',IOUT1)
             RetVal = 913
         ELSEIF (NHISP .GT. NHIS) THEN
-            CALL ERRMSG (913, 0, NAME,' NPARameters in HIS file',IOUT1)
+            call write_error_message_rtc (913, 0, NAME,' NPARameters in HIS file',IOUT1)
             RetVal = 913
         ENDIF
         if (RetVal .ne. 0) Return
@@ -171,7 +171,7 @@ Function ReadDioPlt (inDataSet, inName, IDEBUG, ITMSTP, IOUT1, &
         ! *** Check dimensions
         ! *********************************************************************
         ! Already done above
-        ! IF (NHISP .GT. NHIS)  CALL ERRMSG (913, 0, NAME,' NPARameters in HIS file',IOUT1)
+        ! IF (NHISP .GT. NHIS)  call write_error_message_rtc (913, 0, NAME,' NPARameters in HIS file',IOUT1)
 
         ! *********************************************************************
         ! *** In First timestep: determine conversion array mapping id's
@@ -201,7 +201,7 @@ Function ReadDioPlt (inDataSet, inName, IDEBUG, ITMSTP, IOUT1, &
             Do iloc=1,Nloc
                If (.not. FoundLoc(iloc)) then
                   MsgString = ' Desired measurement location is not available from RR/CF/WQ/EXT-results:' // Id(iloc)(1:len_trim(id(iloc)))
-                  CALL ERRMSG (973, 0, ' ReadDioPlt ', MsgString, IOUT1)
+                  call write_error_message_rtc (973, 0, ' ReadDioPlt ', MsgString, IOUT1)
                endif
             Enddo
         Endif
@@ -219,8 +219,8 @@ Function ReadDioPlt (inDataSet, inName, IDEBUG, ITMSTP, IOUT1, &
           write(*,*) 'Could not read values in RdHis'
           MsgString = DioGetLastErrorMsg()
           write(*,*) MsgString
-          if (len_trim(MsgString) .gt. 0) CALL ERRMSG (9131, 0, ' ReadDioPlt ', MsgString(1:len_trim(MsgString)), IOUT1)
-          CALL ERRMSG (9131, 0, ' ReadDioPlt ',' DIO Could not get the values from RR/Flow/3DFlow ',IOUT1)
+          if (len_trim(MsgString) .gt. 0) call write_error_message_rtc (9131, 0, ' ReadDioPlt ', MsgString(1:len_trim(MsgString)), IOUT1)
+          call write_error_message_rtc (9131, 0, ' ReadDioPlt ',' DIO Could not get the values from RR/Flow/3DFlow ',IOUT1)
           RetVal = 913
        endif
     endif
@@ -345,13 +345,13 @@ Function ReadDioPltExt (inDataSet, inName, IExtDataSet, &
         NLOCF  =  DioPltGetNLoc(inDataSet)
         NTimes =  DioPltGetNTimes(inDataSet)
         If (NTimes .gt. NTimHis) then
-           Call ERRMSG (913, 0, 'Rdpara', ' NTimHis parameter', IOUT1)
+           call write_error_message_rtc (913, 0, 'Rdpara', ' NTimHis parameter', IOUT1)
            RetVal = 913
         endif
 
         Allocate  (IDPara (NHisP), IdRead(NLocF), STAT=Allocation_Error )
         If (Allocation_Error .ne. 0) then
-            Call ErrMsg (929, Allocation_Error, ' Alloc ExtLoc Arrays', ' ', IOUT1)
+            call write_error_message_rtc (929, Allocation_Error, ' Alloc ExtLoc Arrays', ' ', IOUT1)
             RetVal = 929
         endif
         if (RetVal .ne. 0) Return
@@ -428,7 +428,7 @@ Function ReadDioPltExt (inDataSet, inName, IExtDataSet, &
     if (.not. DioPltGet(inDataSet, readValues)) then
        if (NLocf * NHisp .gt. 0) then
           write(*,*) 'Could not read values in RdHis'
-          CALL ERRMSG (974, 0, ' ReadDioPltExt ',' DIO Could not get the values from RR ',IOUT1)
+          call write_error_message_rtc (974, 0, ' ReadDioPltExt ',' DIO Could not get the values from RR ',IOUT1)
           RetVal = 974
           Return
        endif
@@ -553,7 +553,7 @@ Function ReadDioPltExtSelection (Ievent, Itmstp, Idebug, Iout1, &
 !   Find number of actual locations and parameters to get from the dataset
     Allocate  ( HisParIndex(NExtH), HisLocIndex(NExtH),STAT=Allocation_Error )
     If (Allocation_Error .ne. 0) Then
-        Call ErrMsg (929, Allocation_Error, ' AllocLocationArrays', ' ', IOUT1)
+        call write_error_message_rtc (929, Allocation_Error, ' AllocLocationArrays', ' ', IOUT1)
         RetVal = 929
         Return
     Endif
@@ -571,7 +571,7 @@ Function ReadDioPltExtSelection (Ievent, Itmstp, Idebug, Iout1, &
     NDumPar = Ipar
     Allocate  ( HisParIndx(NDumPar), HisLocIndx(NDumPar), HisTimIndx(NHisTim), STAT=Allocation_Error )
     If (Allocation_Error .ne. 0) Then
-        Call ErrMsg (929, Allocation_Error, ' AllocLocationArrays', ' ', IOUT1)
+        call write_error_message_rtc (929, Allocation_Error, ' AllocLocationArrays', ' ', IOUT1)
         RetVal = 929
         Return
     Endif
@@ -587,14 +587,14 @@ Function ReadDioPltExtSelection (Ievent, Itmstp, Idebug, Iout1, &
     IPar = HisDataSetNParLocTimes(IExtDataSet,1)
     Allocate  ( HisParIndex(IPar), STAT=Allocation_Error )
     If (Allocation_Error .ne. 0) Then
-        Call ErrMsg (929, Allocation_Error, ' AllocLocationArrays', ' ', IOUT1)
+        call write_error_message_rtc (929, Allocation_Error, ' AllocLocationArrays', ' ', IOUT1)
         RetVal = 929
         Return
     Endif
     ILoc = HisDataSetNParLocTimes(IExtDataSet,2)
     Allocate  ( HisLocIndex(ILoc), STAT=Allocation_Error )
     If (Allocation_Error .ne. 0) Then
-        Call ErrMsg (929, Allocation_Error, ' AllocLocationArrays', ' ', IOUT1)
+        call write_error_message_rtc (929, Allocation_Error, ' AllocLocationArrays', ' ', IOUT1)
         RetVal = 929
         Return
     Endif
@@ -612,12 +612,12 @@ Function ReadDioPltExtSelection (Ievent, Itmstp, Idebug, Iout1, &
                 Write(Iout1,*) ' Desired Hisfile-Parameter id=', HisParExt(iext)(1:len_trim(HisParExt(iext)))
                 Write(Iout1,*) ' Desired Hisfile- Location id=', HisLocExt(iext)(1:len_trim(HisLocExt(iext)))
              if (HisDataSet(Iext,2) .eq. 0) then
-                Call ErrMsg (959, Allocation_Error, ' ReadDioPLtExtSelection ',  HisParExt(iext) , IOUT1)
+                call write_error_message_rtc (959, Allocation_Error, ' ReadDioPLtExtSelection ',  HisParExt(iext) , IOUT1)
                 RetVal = 959
                 Return
              endif
              if (HisDataSet(Iext,3) .eq. 0) then
-                Call ErrMsg (959, Allocation_Error, ' ReadDioPltExtSelection ',  HisLocExt(iext) , IOUT1)
+                call write_error_message_rtc (959, Allocation_Error, ' ReadDioPltExtSelection ',  HisLocExt(iext) , IOUT1)
                 RetVal = 959
                 Return
              endif
@@ -627,7 +627,7 @@ Function ReadDioPltExtSelection (Ievent, Itmstp, Idebug, Iout1, &
 
     Allocate  (Values(NDumPar,NDumPar,NHisTim), STAT=Allocation_Error )
     If (Allocation_Error .ne. 0) Then
-        Call ErrMsg (929, Allocation_Error, ' Alloc ExtLoc Arrays', ' ', IOUT1)
+        call write_error_message_rtc (929, Allocation_Error, ' Alloc ExtLoc Arrays', ' ', IOUT1)
         RetVal = 929
         Return
     Endif
@@ -702,7 +702,7 @@ Function ReadDioPltExtSelection (Ievent, Itmstp, Idebug, Iout1, &
        Enddo
     Elseif (IPar .gt. 0) then
        write(*,*) 'Could not read values in ReadPltDioExtSelection'
-       Call ERRMSG (974, 0, ' ReadDioPltExtSelection ',' DIO Could not get the values from Ext HIS file',IOUT1)
+       call write_error_message_rtc (974, 0, ' ReadDioPltExtSelection ',' DIO Could not get the values from Ext HIS file',IOUT1)
        RetVal = 974
        Return
     Endif
@@ -819,7 +819,7 @@ Function WriteDioPlt3B (outDataSet, Itmstp, NameFile, Iout1, Idebug) Result(RetV
             success = success .and. Dh_AllocInit(N3BMs, LocDescr, ' ')
             success = success .and. Dh_AllocInit(NParaHis, ParNames, ' ')
             If (.not. success) then
-                Call Errmsg (981, 0, ' RTC', ' Error allocating arrays ', Iout1)
+                call write_error_message_rtc (981, 0, ' RTC', ' Error allocating arrays ', Iout1)
                 RetVal = 981
                 Return
             Endif
@@ -839,7 +839,7 @@ Function WriteDioPlt3B (outDataSet, Itmstp, NameFile, Iout1, Idebug) Result(RetV
         success = Dh_AllocInit(7, N3BMs, Dio3BResult, 0D0)
 !       Allocate  ( Dio3BResult(7,N3BMs), Stat=Allocation_Error )
         If (.not. success) then
-            Call Errmsg (981, 0, ' RTC', ' Error allocating arrays ', Iout1)
+            call write_error_message_rtc (981, 0, ' RTC', ' Error allocating arrays ', Iout1)
             RetVal = 981
             Return
         Endif
@@ -920,7 +920,7 @@ Function WriteDioPltSbk (outDataSet, Itmstp, NameFile, Iout1, Idebug)  Result(Re
             success = Success .and. Dh_AllocInit(NsMsId_SBK, LocDescr, ' ')
             success = Success .and. Dh_AllocInit(1, ParNames, ' ')
             If (.not. success) Then
-                Call Errmsg (981, 0, ' RTC', ' Error allocating arrays ', Iout1)
+                call write_error_message_rtc (981, 0, ' RTC', ' Error allocating arrays ', Iout1)
                 RetVal = 981
                 Return
             Endif
@@ -939,7 +939,7 @@ Function WriteDioPltSbk (outDataSet, Itmstp, NameFile, Iout1, Idebug)  Result(Re
 !        Allocate  ( DioSbkResult(1,NsMsId_SBK), Stat=Allocation_Error )
         success = Dh_AllocInit(1,NsMsId_SBK, DioSbkResult,0D0)
         If (.not. success) Then
-            Call Errmsg (981, 0, ' RTC', ' Error allocating arrays ', Iout1)
+            call write_error_message_rtc (981, 0, ' RTC', ' Error allocating arrays ', Iout1)
             RetVal = 981
             Return
         Endif

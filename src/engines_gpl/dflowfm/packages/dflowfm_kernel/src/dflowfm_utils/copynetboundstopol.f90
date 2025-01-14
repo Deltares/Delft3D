@@ -30,6 +30,8 @@
 !
 !
 module m_copynetboundstopol
+   use m_findel, only: findel
+
    implicit none
 contains
 !> copy the network boundaries to polygon
@@ -41,6 +43,7 @@ contains
 !! NOTE: when using the makecounterclockwise=1 option, the two net node numbers in ZPL may
 !! have been flipped to the last two indices for the polygons that were re-oriented.
    subroutine copynetboundstopol(inpol, needfindcells, makecounterclockwise, setnetstat)
+      use precision, only: dp
 
       use m_alloc
       use m_polygon
@@ -63,8 +66,8 @@ contains
                  jinside
       integer, allocatable :: jalinkvisited(:)
       integer, allocatable :: isegstart(:)
-      double precision :: xkb, ykb, zkb, SL, SL0, sl1, sl2, SM, XCR, YCR, CRP, xcg, ycg
-      double precision, allocatable :: xpn(:), ypn(:), zpn(:)
+      real(kind=dp) :: xkb, ykb, zkb, SL, SL0, sl1, sl2, SM, XCR, YCR, CRP, xcg, ycg
+      real(kind=dp), allocatable :: xpn(:), ypn(:), zpn(:)
 
       if (numL < 1) return ! nothing to do
 

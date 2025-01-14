@@ -33,17 +33,18 @@
 !> Module for maintaining (time-integral) statistics on flow quantities.
 !! NOTE: could be the successor of Fourier analysis. Just maintain some first max/avg quantities for now.
 module m_integralstats
+   use precision, only: dp
 
    integer :: is_numndvals !< Number of variables on flow nodes for which statistics are recorded.
    integer, parameter :: IDX_TAUS = 1 !< Index for mean bed shear stress
    integer, parameter :: IDX_UCM = 2 !< Index for avg cell center velocity magnitude
    integer, parameter :: IDX_HS = 3 !< Index for avg water depth
 
-   double precision, allocatable, target :: is_sumvalsnd(:, :) !< [-] Integral values on flow nodes. {"location": "face", "shape": ["is_numndvals", "ndx"]}
-   double precision, allocatable, target :: is_maxvalsnd(:, :) !< [-] Integral values on flow nodes. {"location": "face", "shape": ["is_numndvals", "ndx"]}
+   real(kind=dp), allocatable, target :: is_sumvalsnd(:, :) !< [-] Integral values on flow nodes. {"location": "face", "shape": ["is_numndvals", "ndx"]}
+   real(kind=dp), allocatable, target :: is_maxvalsnd(:, :) !< [-] Integral values on flow nodes. {"location": "face", "shape": ["is_numndvals", "ndx"]}
 
    character(len=1024), allocatable, target :: is_valnamesnd(:) !NOBMI [-] Names of the variables for which statistics are maintained {"shape": ["is_numndvals"]}
-   double precision, target :: is_dtint !< [s] total time interval since last statistics reset.  {"rank": 0}
+   real(kind=dp), target :: is_dtint !< [s] total time interval since last statistics reset.  {"rank": 0}
 
 contains
 

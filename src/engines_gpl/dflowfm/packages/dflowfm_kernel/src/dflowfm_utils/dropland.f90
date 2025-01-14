@@ -30,93 +30,94 @@
 !
 !
 module m_dropland
-use m_isocol
+   use m_isocol
 
    implicit none
 contains
- !> Drop land *during* flow computation.
+   !> Drop land *during* flow computation.
  !!
  !! Use idir=1 for adding land, -1 for lowering it.
  !! The height change is performed on net node vertical zk
  !! With a polygon active: all masked net nodes,
  !! without polygon: all corner points of flow cell underneath mouse pointer.
- subroutine dropland(xp, yp, idir)
-    use network_data, only: numk, xk, yk, zk
-    use m_polygon, only: npl, xpl, ypl, zpl
-    use m_flowgeom, only: ndx, ndxi, nd, bl
-    use m_flow
-    use unstruc_display, only: rcir
-    use m_sediment, only: jaceneqtr, mxgr, grainlay
-    use geometry_module, only: pinpok, dbpinpol
-    use m_set_kbot_ktop
-    use m_volsur
-    use m_flow_f0isf1
-    use m_set_bobs
-    use m_hlcir2
-    use m_movabs
+   subroutine dropland(xp, yp, idir)
+      use precision, only: dp
+      use network_data, only: numk, xk, yk, zk
+      use m_polygon, only: npl, xpl, ypl, zpl
+      use m_flowgeom, only: ndx, ndxi, nd, bl
+      use m_flow
+      use unstruc_display, only: rcir
+      use m_sediment, only: jaceneqtr, mxgr, grainlay
+      use geometry_module, only: pinpok, dbpinpol
+      use m_set_kbot_ktop
+      use m_volsur
+      use m_flow_f0isf1
+      use m_set_bobs
+      use m_hlcir2
+      use m_movabs
 
-    double precision, intent(in) :: xp, yp !< Clicked point, which flow node to drop. If a polygon is active, drop all contained points, independent of xp, yp.
-    integer, intent(in) :: idir !< direction (1 for up, -1 for down)
+      real(kind=dp), intent(in) :: xp, yp !< Clicked point, which flow node to drop. If a polygon is active, drop all contained points, independent of xp, yp.
+      integer, intent(in) :: idir !< direction (1 for up, -1 for down)
 
-    ! locals
-    integer :: kk, k, n, nn, in, ncol, j
-    double precision :: dropstep !< Amount to add (in meters, may be negative)
+      ! locals
+      integer :: kk, k, n, nn, in, ncol, j
+      real(kind=dp) :: dropstep !< Amount to add (in meters, may be negative)
 
-    if (ndx == 0) return
+      if (ndx == 0) return
 
-    dropstep = idir * zkdropstep
+      dropstep = idir * zkdropstep
 
-    if (npl > 2) then
-       in = -1
-       do k = 1, numk
-          call DBPINPOL(xk(k), yk(k), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
-          if (in == 1 .and. zk(k) /= dmiss) then
-             zk(k) = zk(k) + dropstep
-             if (jaceneqtr == 2 .and. jased > 0 .and. jased < 4) then
-                do j = 1, mxgr
-                   grainlay(j, k) = max(0d0, grainlay(j, k) + dropstep / mxgr)
-                end do
-             end if
-             call isocol(zk(k), ncol)
-             call movabs(xk(k), yk(k))
-             call hlcir2(rcir, ncol, 30)
-          end if
-       end do
-    else
+      if (npl > 2) then
+         in = -1
+         do k = 1, numk
+            call DBPINPOL(xk(k), yk(k), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
+            if (in == 1 .and. zk(k) /= dmiss) then
+               zk(k) = zk(k) + dropstep
+               if (jaceneqtr == 2 .and. jased > 0 .and. jased < 4) then
+                  do j = 1, mxgr
+                     grainlay(j, k) = max(0d0, grainlay(j, k) + dropstep / mxgr)
+                  end do
+               end if
+               call isocol(zk(k), ncol)
+               call movabs(xk(k), yk(k))
+               call hlcir2(rcir, ncol, 30)
+            end if
+         end do
+      else
 
-       do n = ndxi, 1, -1
-          nn = size(nd(n)%x)
-          call PINPOK(Xp, Yp, Nn, nd(n)%x, nd(n)%y, IN, jins, dmiss)
-          if (in == 1) then
-             do kk = 1, nn
-                k = nd(n)%nod(kk)
-                zk(k) = zk(k) + dropstep
-                if (jaceneqtr == 2 .and. jased > 0) then
-                   do j = 1, mxgr
-                      grainlay(j, k) = max(0d0, grainlay(j, k) + dropstep / mxgr)
-                   end do
-                end if
-                call isocol(zk(k), ncol)
-                call movabs(xk(k), yk(k))
-                call hlcir2(rcir, ncol, 30)
-             end do
-             exit
-          end if
-       end do
-    end if
+         do n = ndxi, 1, -1
+            nn = size(nd(n)%x)
+            call PINPOK(Xp, Yp, Nn, nd(n)%x, nd(n)%y, IN, jins, dmiss)
+            if (in == 1) then
+               do kk = 1, nn
+                  k = nd(n)%nod(kk)
+                  zk(k) = zk(k) + dropstep
+                  if (jaceneqtr == 2 .and. jased > 0) then
+                     do j = 1, mxgr
+                        grainlay(j, k) = max(0d0, grainlay(j, k) + dropstep / mxgr)
+                     end do
+                  end if
+                  call isocol(zk(k), ncol)
+                  call movabs(xk(k), yk(k))
+                  call hlcir2(rcir, ncol, 30)
+               end do
+               exit
+            end if
+         end do
+      end if
 
-    call setbobs()
-    s1 = max(bl, s1); s0 = s1; s00 = s1
+      call setbobs()
+      s1 = max(bl, s1); s0 = s1; s00 = s1
 
-    hs = s1 - bl
-    call volsur() ! dropland
-    call flow_f0isf1() ! dropland
-    volerr = 0; volerrcum = 0
+      hs = s1 - bl
+      call volsur() ! dropland
+      call flow_f0isf1() ! dropland
+      volerr = 0; volerrcum = 0
 
-    if (kmx > 0) then
-       call setkbotktop(1) ! dropland
-    end if
+      if (kmx > 0) then
+         call setkbotktop(1) ! dropland
+      end if
 
-    ! NOTE: vol1tot cumulation now contains an error: new bl's have not been accounted for...
- end subroutine dropland
+      ! NOTE: vol1tot cumulation now contains an error: new bl's have not been accounted for...
+   end subroutine dropland
 end module m_dropland

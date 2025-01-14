@@ -30,20 +30,33 @@
 !
 !
 
-  subroutine GAANWESTARTEN(L, K1, KN316, JASTART)
-     use M_NETW
-     implicit none
-     integer :: L, K1, KN316, JASTART, J
+module m_gaanwestarten
+   use m_gaanwestoppen, only: gaanwestoppen
 
-     JASTART = 0
-     if (KN(3, L) /= KN316) return
+   implicit none
 
-     do J = 1, 2
-        K1 = KN(J, L)
-        call GAANWESTOPPEN(K1, KN316, JASTART)
-        if (JASTART == 1) then
-           return
-        end if
-     end do
+   private
 
-  end subroutine GAANWESTARTEN
+   public :: gaanwestarten
+
+contains
+
+   subroutine GAANWESTARTEN(L, K1, KN316, JASTART)
+      use M_NETW
+
+      integer :: L, K1, KN316, JASTART, J
+
+      JASTART = 0
+      if (KN(3, L) /= KN316) return
+
+      do J = 1, 2
+         K1 = KN(J, L)
+         call GAANWESTOPPEN(K1, KN316, JASTART)
+         if (JASTART == 1) then
+            return
+         end if
+      end do
+
+   end subroutine GAANWESTARTEN
+
+end module m_gaanwestarten

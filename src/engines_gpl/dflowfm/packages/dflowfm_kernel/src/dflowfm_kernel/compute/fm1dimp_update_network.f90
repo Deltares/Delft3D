@@ -35,6 +35,7 @@ contains
 !> Updates the variables of flow1d implicit solver that
 !change every time step
    subroutine fm1dimp_update_network(iresult)
+      use precision, only: dp
 
       use m_f1dimp, only: f1dimppar, reallocate_fill
       use unstruc_channel_flow, only: network
@@ -66,9 +67,9 @@ contains
       real, dimension(:, :), pointer :: att
       real, dimension(:, :), pointer :: of
 
-      double precision, dimension(:), pointer :: bedlevel
+      real(kind=dp), dimension(:), pointer :: bedlevel
 
-      double precision, dimension(:, :), pointer :: hlev
+      real(kind=dp), dimension(:, :), pointer :: hlev
 
 !!
 !! POINT

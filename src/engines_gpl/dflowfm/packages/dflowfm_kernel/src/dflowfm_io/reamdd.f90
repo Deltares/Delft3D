@@ -30,43 +30,56 @@
 !
 !
 
-      subroutine REAMDD(MMDD, RD1, MC, NC, JA)
-         use m_readyy
-         use m_qn_read_error
-         use m_qn_eof_error
-         implicit none
+module m_reamdd
 
-         integer :: mmdd, mc, nc, ja
-         double precision :: RD1(MC, NC)
-         integer :: m, n
-         double precision :: af
+   implicit none
 
-         character REC * 132
-         call READYY('Reading md-Dept File', 0d0)
-5        continue
-         read (MMDD, '(A)', end=999) REC
-         if (REC(1:1) == '*') goto 5
-         backspace (MMDD)
+   private
 
-         do N = 1, NC
-            AF = dble(N) / dble(NC)
-            call READYY('Reading md-Dept File', AF)
-            read (MMDD, *, end=999, ERR=888) (RD1(M, N), M=1, MC)
-         end do
-         call READYY('Reading md-Dept File', -1d0)
-         call DOCLOSE(MMDD)
-         JA = 1
-         return
+   public :: reamdd
 
-999      continue
-         call QNEOFERROR(MMDD)
-         call READYY('Reading md-Dept File', -1d0)
-         call DOCLOSE(MMDD)
-         JA = 0
-         return
+contains
 
-888      call QNREADERROR('Reading, DD Depth File With Wrong Dimensions', ' ', MMDD)
-         call READYY('Reading md-Dept File', -1d0)
-         call DOCLOSE(MMDD)
-         JA = 0
-      end subroutine REAMDD
+   subroutine REAMDD(MMDD, RD1, MC, NC, JA)
+      use precision, only: dp
+      use m_readyy
+      use m_qn_read_error
+      use m_qn_eof_error
+      use m_filez, only: doclose
+
+      integer :: mmdd, mc, nc, ja
+      real(kind=dp) :: RD1(MC, NC)
+      integer :: m, n
+      real(kind=dp) :: af
+
+      character REC * 132
+      call READYY('Reading md-Dept File', 0d0)
+5     continue
+      read (MMDD, '(A)', end=999) REC
+      if (REC(1:1) == '*') goto 5
+      backspace (MMDD)
+
+      do N = 1, NC
+         AF = dble(N) / dble(NC)
+         call READYY('Reading md-Dept File', AF)
+         read (MMDD, *, end=999, ERR=888) (RD1(M, N), M=1, MC)
+      end do
+      call READYY('Reading md-Dept File', -1d0)
+      call DOCLOSE(MMDD)
+      JA = 1
+      return
+
+999   continue
+      call QNEOFERROR(MMDD)
+      call READYY('Reading md-Dept File', -1d0)
+      call DOCLOSE(MMDD)
+      JA = 0
+      return
+
+888   call QNREADERROR('Reading, DD Depth File With Wrong Dimensions', ' ', MMDD)
+      call READYY('Reading md-Dept File', -1d0)
+      call DOCLOSE(MMDD)
+      JA = 0
+   end subroutine REAMDD
+
+end module m_reamdd

@@ -273,6 +273,32 @@ class NetcdfComparer(IComparer):
         nc_var: NetCdfVariable,
     ) -> ComparisonResult:
         """Compare Netcdf variable based on dimensions of the left file."""
+        if nc_var.left.dtype == np.dtype("S1"):
+            return self._compare_strings(parameter, left_nc_root, variable_name, nc_var)
+        else:
+            return self._compare_floats(parameter, left_nc_root, variable_name, nc_var)
+
+    def _compare_strings(
+        self,
+        parameter: Parameter,
+        left_nc_root: nc.Dataset,
+        variable_name: str,
+        nc_var: NetCdfVariable,
+    ) -> ComparisonResult:
+        left_strings = nc.chartostring(nc_var.left[:])
+        right_strings = nc.chartostring(nc_var.right[:])
+        result = ComparisonResult()
+        result.passed = np.array_equal(left_strings, right_strings)
+        result.result = "OK" if result.passed else "NOK"
+        return result
+
+    def _compare_floats(
+        self,
+        parameter: Parameter,
+        left_nc_root: nc.Dataset,
+        variable_name: str,
+        nc_var: NetCdfVariable,
+    ) -> ComparisonResult:
         reference_values = ReferenceValues(float(np.min(nc_var.left[:])), float(np.max(nc_var.left[:])))
         if nc_var.left.ndim == 1:
             result = self._compare_1d_arrays(nc_var)

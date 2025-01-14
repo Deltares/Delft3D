@@ -30,29 +30,41 @@
 !
 !
 
-      subroutine DATUM2(DATE)
-         use unstruc_display, only: jadatetime
-         use system_utils, only: FILESEP
-         use m_dateandtimenow
-         implicit none
-         integer :: iyear, month, iday, ihour, minute, isecnd
-         character DATE * 20
+module m_datum2
+
+   implicit none
+
+   private
+
+   public :: datum2
+
+contains
+
+   subroutine DATUM2(DATE)
+      use unstruc_display, only: jadatetime
+      use system_utils, only: FILESEP
+      use m_dateandtimenow
+      implicit none
+      integer :: iyear, month, iday, ihour, minute, isecnd
+      character DATE * 20
 
 !              1  4  7   11 14 17
 
-         if (jadatetime == 0) then
-            DATE = FILESEP
-         else
-            DATE = '_yymmddhhmmss'//FILESEP
+      if (jadatetime == 0) then
+         DATE = FILESEP
+      else
+         DATE = '_yymmddhhmmss'//FILESEP
 
-            call dateandtimenow(iyear, month, iday, ihour, minute, isecnd)
+         call dateandtimenow(iyear, month, iday, ihour, minute, isecnd)
 
-            write (DATE(2:3), '(I2.2)') IYEAR - 2000
-            write (DATE(4:5), '(I2.2)') month
-            write (DATE(6:7), '(I2.2)') iday
-            write (DATE(8:9), '(I2.2)') Ihour
-            write (DATE(10:11), '(I2.2)') minute
-            write (DATE(12:13), '(I2.2)') isecnd
-         end if
-         return
-      end
+         write (DATE(2:3), '(I2.2)') IYEAR - 2000
+         write (DATE(4:5), '(I2.2)') month
+         write (DATE(6:7), '(I2.2)') iday
+         write (DATE(8:9), '(I2.2)') Ihour
+         write (DATE(10:11), '(I2.2)') minute
+         write (DATE(12:13), '(I2.2)') isecnd
+      end if
+      return
+   end
+
+end module m_datum2

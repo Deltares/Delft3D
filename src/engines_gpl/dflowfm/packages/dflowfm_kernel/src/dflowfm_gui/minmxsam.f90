@@ -32,99 +32,101 @@
 
 module m_minmxsam
 
-implicit none
+   implicit none
 
 contains
 
- subroutine minmxsam()
+   subroutine minmxsam()
+      use precision, only: dp
 
-    use m_samples, only: ns, xs, ys, zs
-    use m_missing, only: dmiss
-    use m_isoscaleunit
-    use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, dv=>dv2, val=>val2, nv=>nv2, jaauto=>jaauto2
-    use m_paramtext
-    use m_inview
+      use m_samples, only: ns, xs, ys, zs
+      use m_missing, only: dmiss
+      use m_isoscaleunit
+      use m_depmax2, only: vmax => vmax2, vmin => vmin2, dv => dv2, val => val2, nv => nv2, jaauto => jaauto2
+      use m_paramtext
+      use m_inview
 
-    double precision :: rmin, rmax
-    character(len=256) :: buffer
-    integer :: k, i
+      real(kind=dp) :: rmin, rmax
+      character(len=256) :: buffer
+      integer :: k, i
 
-    if (jaauto > 0) then
-       rmin = 1d30
-       rmax = -1d30
+      if (jaauto > 0) then
+         rmin = 1d30
+         rmax = -1d30
 
-       do k = 1, ns
-          if (zs(k) == DMISS) cycle
-          if (inview(xs(k), ys(k))) then
-             if (zs(k) < rmin) then
-                rmin = zs(k)
-             end if
-             if (zs(k) > rmax) then
-                rmax = zs(k)
-             end if
-          end if
-       end do
-       vmax = rmax
-       vmin = rmin
-       dv = vmax - vmin
-       do i = 1, nv
-          val(i) = vmin + (i - 1) * dv / (nv - 1)
-       end do
-    end if
+         do k = 1, ns
+            if (zs(k) == DMISS) cycle
+            if (inview(xs(k), ys(k))) then
+               if (zs(k) < rmin) then
+                  rmin = zs(k)
+               end if
+               if (zs(k) > rmax) then
+                  rmax = zs(k)
+               end if
+            end if
+         end do
+         vmax = rmax
+         vmin = rmin
+         dv = vmax - vmin
+         do i = 1, nv
+            val(i) = vmin + (i - 1) * dv / (nv - 1)
+         end do
+      end if
 
-    !Samples have the same unit of the displayed values
-    write (buffer, '(a,a)') 'Samples                              ', UNIT(1)
-    call PARAMTEXT(buffer, 2)
+      !Samples have the same unit of the displayed values
+      write (buffer, '(a,a)') 'Samples                              ', UNIT(1)
+      call PARAMTEXT(buffer, 2)
 
- end subroutine minmxsam
+   end subroutine minmxsam
 
- subroutine minmxarc()
+   subroutine minmxarc()
+      use precision, only: dp
 
-    use m_arcinfo
-    use m_missing
-    use m_isoscaleunit
-    use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, dv=>dv2, val=>val2, nv=>nv2, jaauto=>jaauto2
-    use m_paramtext
-    use m_inview
+      use m_arcinfo
+      use m_missing
+      use m_isoscaleunit
+      use m_depmax2, only: vmax => vmax2, vmin => vmin2, dv => dv2, val => val2, nv => nv2, jaauto => jaauto2
+      use m_paramtext
+      use m_inview
 
-    implicit none
+      implicit none
 
-    double precision :: rmin, rmax, x, y, z
-    character(len=256) :: buffer
-    integer :: m, n, i
+      real(kind=dp) :: rmin, rmax, x, y, z
+      character(len=256) :: buffer
+      integer :: m, n, i
 
-    if (jaauto > 0) then
-       rmin = 1d30
-       rmax = -1d30
+      if (jaauto > 0) then
+         rmin = 1d30
+         rmax = -1d30
 
-       do n = 1, nca
-          do m = 1, mca
+         do n = 1, nca
+            do m = 1, mca
 
-             x = x0 + dxa * (m - 1)
-             y = y0 + dya * (n - 1)
-             z = dble(d(m, n))
-             if (inview(x, y) .and. z /= dmiss) then
-                if (z < rmin) then
-                   rmin = z
-                end if
-                if (z > rmax) then
-                   rmax = z
-                end if
-             end if
-          end do
-       end do
-       vmax = rmax
-       vmin = rmin
-       dv = vmax - vmin
-       do i = 1, nv
-          val(i) = vmin + (i - 1) * dv / (nv - 1)
-       end do
-    end if
+               x = x0 + dxa * (m - 1)
+               y = y0 + dya * (n - 1)
+               z = dble(d(m, n))
+               if (inview(x, y) .and. z /= dmiss) then
+                  if (z < rmin) then
+                     rmin = z
+                  end if
+                  if (z > rmax) then
+                     rmax = z
+                  end if
+               end if
+            end do
+         end do
+         vmax = rmax
+         vmin = rmin
+         dv = vmax - vmin
+         do i = 1, nv
+            val(i) = vmin + (i - 1) * dv / (nv - 1)
+         end do
+      end if
 
-    !Samples have the same unit of the displayed values
-    write (buffer, '(a,a)') 'Samples                              ', UNIT(1)
-    call PARAMTEXT(buffer, 2)
+      !Samples have the same unit of the displayed values
+      write (buffer, '(a,a)') 'Samples                              ', UNIT(1)
+      call PARAMTEXT(buffer, 2)
 
- end subroutine minmxarc
+   end subroutine minmxarc
 
 end module m_minmxsam

@@ -26,7 +26,7 @@ class FolderIndex:
                     calculated.add(component)
 
         component = list(calculated)[0] if len(calculated) == 1 else None
-        self.changes_with_component.append(f"{component} : {changed_file_path}")
+        self.changes_with_component.append(f"{component or 'all'} : {changed_file_path}")
         return component or "all"
 
     def get_scope(self, json_dict_path: str, file_changes_list: List[str]) -> str:
@@ -79,16 +79,23 @@ if __name__ == "__main__":
     parser.add_argument(
         "-t", type=str, dest="token", required=True, help="The private access token to access the gitlab API."
     )
+    parser.add_argument(
+        "-f", type=str, dest="file", required=True, help="The location of the repo folder definition json."
+    )
 
     args = parser.parse_args()
-    merge_branch = args.merge_branch
-    token = args.token
+    merge_branch: str = args.merge_branch
+    token: str = args.token
+    json_file: str = args.file
+
+    # The gitlab api requires _ instead of the - of the git branch.
+    merge_branch = merge_branch.replace("merge-requests", "merge_requests")
 
     api = GitlabApi()
     changes = api.get_file_changes(merge_branch, token)
 
     indexer = FolderIndex()
-    component = indexer.get_scope("ci/teamcity/Dimr_TestbenchMatrix/repo_index.json", changes)
+    component = indexer.get_scope(json_file, changes)
 
     changes_string = "\n".join(indexer.changes_with_component)
     print(f"Determined scope: {component}\n----------- CHANGES -----------\n{changes_string}")

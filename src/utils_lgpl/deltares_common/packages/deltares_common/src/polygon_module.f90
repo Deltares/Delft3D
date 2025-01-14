@@ -279,5 +279,64 @@ subroutine ipon(xpoly, ypoly, n, xp, yp, inout) ! should use pinpok from geometr
     endif
   100 continue
 end subroutine ipon
+    
+!> Read the poly file and return the x and y coordinates.
+   subroutine read_poly_from_tekalfile(filename, xs, ys, ns, success)
+      use precision, only: dp
+      use m_alloc, only: reallocP
+      use messagehandling, only: err, IdLen
+
+      character(len=*), intent(in) :: filename!< Name of the poly file to read.
+      real(kind = dp), pointer, dimension(:), intent(out) :: xs(:) !< x-coordinates read from file
+      real(kind = dp), pointer, dimension(:), intent(out) :: ys(:) !< y-coordinates read from file
+      integer, intent(out) :: ns !< Number of pli-points read
+      logical, intent(out) :: success !< Success status of the read operation.
+      
+      character(len=Idlen) :: rec
+      integer :: minp 
+      integer :: k
+      integer :: ierr
+
+      ns = 0
+
+      success = .true.
+      open (newunit=minp, file=filename, iostat=ierr)
+      if (ierr /= 0) then
+         call err('File: unable to open ', trim(filename), ' ')
+         return
+      end if
+
+      rec(1:1) = '*'
+      do while (rec(1:1) == '*')
+         read (minp, '(a)', end=999) rec
+      end do
+
+      read (minp, '(a)', end=999) rec
+      read (rec, *, err=888) ns
+
+      call reallocP(xs, ns, keepExisting=.false.)
+      call reallocP(ys, ns, keepExisting=.false.)
+
+      do k = 1, ns
+         read (minp, '(a)', end=999) rec
+         read (rec, *, err=777) xs(k), ys(k)
+      end do
+
+      close(minp)
+      return
+
+999   call err('Unexpected end of file in ', trim(filename))
+      success =  .false.
+      return
+
+888   call err('Reading nrows but getting ', rec, ' in file ''' // trim(filename) // '''.')
+      success =  .false.
+      return
+
+777   call err('Reading x, y  but getting ', rec, ' in file ''' // trim(filename) // '''.')
+      success =  .false.
+      return
+
+   end subroutine read_poly_from_tekalfile
 
 end module polygon_module

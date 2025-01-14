@@ -30,75 +30,78 @@
 !
 !
 module m_get_prof_1D_min
+   use m_pipemin
+
    implicit none
 contains
-subroutine getprof_1D_min(L, hpr, area, width) ! pressurepipe
-   use m_flowgeom
-   use unstruc_channel_flow
+   subroutine getprof_1D_min(L, hpr, area, width) ! pressurepipe
+      use precision, only: dp
+      use m_flowgeom
+      use unstruc_channel_flow
 
-   integer :: L
-   double precision :: hpr ! hoogte in profiel
-   double precision :: area ! wet cross sectional area
-   double precision :: width ! width at water surface
+      integer :: L
+      real(kind=dp) :: hpr ! hoogte in profiel
+      real(kind=dp) :: area ! wet cross sectional area
+      real(kind=dp) :: width ! width at water surface
 
-   double precision :: profw ! width  of profile
-   double precision :: profh ! height of profile
-   double precision :: area2, width2 ! second prof i.c. interpolation
-   double precision :: alfa, hh
-   integer :: LL, ka, kb, itp
+      real(kind=dp) :: profw ! width  of profile
+      real(kind=dp) :: profh ! height of profile
+      real(kind=dp) :: area2, width2 ! second prof i.c. interpolation
+      real(kind=dp) :: alfa, hh
+      integer :: LL, ka, kb, itp
 
-   area = 0d0; width = 0d0
+      area = 0d0; width = 0d0
 
-   LL = L
-   if (L > lnxi) then ! for 1D boundary links, refer to attached link
-      LL = LBND1D(L)
-   end if
+      LL = L
+      if (L > lnxi) then ! for 1D boundary links, refer to attached link
+         LL = LBND1D(L)
+      end if
 
-   if (abs(kcu(ll)) == 1 .and. network%loaded) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
-      call GetCSParsTotal(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, width, CS_TYPE_MIN)
-      return
-   end if
+      if (abs(kcu(ll)) == 1 .and. network%loaded) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
+         call GetCSParsTotal(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, width, CS_TYPE_MIN)
+         return
+      end if
 
-   if (prof1D(1, LL) >= 0) then ! direct profile based upon link value
-      ka = 0; kb = 0 ! do not use profiles
-      profw = prof1D(1, LL)
-      profh = prof1D(2, LL)
-      itp = prof1D(3, LL)
-   else
-      ka = -prof1D(1, LL); kb = -prof1D(2, LL)
-      profw = profiles1D(ka)%width
-      profh = profiles1D(ka)%height
-      itp = profiles1D(ka)%ityp
-   end if
+      if (prof1D(1, LL) >= 0) then ! direct profile based upon link value
+         ka = 0; kb = 0 ! do not use profiles
+         profw = prof1D(1, LL)
+         profh = prof1D(2, LL)
+         itp = prof1D(3, LL)
+      else
+         ka = -prof1D(1, LL); kb = -prof1D(2, LL)
+         profw = profiles1D(ka)%width
+         profh = profiles1D(ka)%height
+         itp = profiles1D(ka)%ityp
+      end if
 
 ! negative = closed
-   if (itp == -1) then ! pipe
-      call pipemin(hpr, profw, area, width)
-   else if (itp < 0) then ! closed rest
-      hh = hpr - profh
-      if (hh > 0d0) then
-         width = profw
-         area = hh * width
-      end if
-   end if
-
-   if (ka /= 0 .and. kb /= ka) then ! interpolate in profiles
-      area2 = 0d0; width2 = 0d0
-      profw = profiles1D(kb)%width
-      profh = profiles1D(kb)%height
-      itp = profiles1D(kb)%ityp
-      alfa = prof1d(3, LL)
       if (itp == -1) then ! pipe
-         call pipemin(hpr, profw, area2, width2)
-      else ! rest
+         call pipemin(hpr, profw, area, width)
+      else if (itp < 0) then ! closed rest
          hh = hpr - profh
          if (hh > 0d0) then
-            width2 = profw
-            area2 = hh * width2
+            width = profw
+            area = hh * width
          end if
       end if
-      area = (1d0 - alfa) * area + alfa * area2
-      width = (1d0 - alfa) * width + alfa * width2
-   end if
-end subroutine getprof_1D_min
+
+      if (ka /= 0 .and. kb /= ka) then ! interpolate in profiles
+         area2 = 0d0; width2 = 0d0
+         profw = profiles1D(kb)%width
+         profh = profiles1D(kb)%height
+         itp = profiles1D(kb)%ityp
+         alfa = prof1d(3, LL)
+         if (itp == -1) then ! pipe
+            call pipemin(hpr, profw, area2, width2)
+         else ! rest
+            hh = hpr - profh
+            if (hh > 0d0) then
+               width2 = profw
+               area2 = hh * width2
+            end if
+         end if
+         area = (1d0 - alfa) * area + alfa * area2
+         width = (1d0 - alfa) * width + alfa * width2
+      end if
+   end subroutine getprof_1D_min
 end module m_get_prof_1D_min

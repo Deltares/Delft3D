@@ -32,26 +32,26 @@
 
 !
 module m_setwy
-use m_setwynew
+   use m_setwynew
 
-
-implicit none
+   implicit none
 
 contains
 
-      subroutine SETWY(X1, Y1, X2)
-         use m_inqasp
-         use m_sferic
-         implicit none
-         double precision :: x1, x2, y1
-         double precision :: asp, x, y, dy
+   subroutine SETWY(X1, Y1, X2)
+      use precision, only: dp
+      use m_inqasp
+      use m_sferic
+      implicit none
+      real(kind=dp) :: x1, x2, y1
+      real(kind=dp) :: asp, x, y, dy
 
-         call INQASP(asp)
-         x = 0.5 * (x1 + x2)
-         dy = (x2 - x1) * asp
-         y = y1 + dy / 2
-         call SETWYnew(x, y, dy)
-         return
-      end
+      call INQASP(asp)
+      x = 0.5 * (x1 + x2)
+      dy = (x2 - x1) * asp
+      y = y1 + dy / 2
+      call SETWYnew(x, y, dy)
+      return
+   end
 
 end module m_setwy

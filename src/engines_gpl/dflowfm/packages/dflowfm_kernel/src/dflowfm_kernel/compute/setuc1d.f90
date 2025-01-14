@@ -26,11 +26,22 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+module m_setuc1d
+
+   implicit none
+
+   private
+
+   public :: setuc1d
+
+contains
+
    subroutine setuc1d()
       use m_netw
       use m_flow
       use m_flowgeom
       use m_get_prof_1D
+      use precision, only: dp
       implicit none
 
       integer, parameter :: JACSTOT = 0 !< 0 for computing the total area
@@ -39,29 +50,29 @@
 
       integer :: L, LL, La, n, nx, ja1D
 
-      double precision :: q_net_in !< [m3/s] sum of inflowing Q minus sum of outflowing Q over links of node n
-      double precision :: q_in !< [m3/s] sum of inflowing Q over links of node n
-      double precision :: q_out !< [m3/s] sum of outflowing Q over links of node n
-      double precision :: qu_in !< [m4/s2] sum of Q*u over inflowing links of node n
-      double precision :: qu_out !< [m4/s2] sum of Q*u over outflowing links of node n (u = Q/A)
-      double precision :: qu2_in !< [m5/s3] sum of Q*u**2 over inflowing links of node n
-      double precision :: qu2_out !< [m5/s3] sum of Q*u**2 over outflowing links of node n (u = Q/A)
-      double precision :: uc !< [m/s] representative velocity magnitude at node n
+      real(kind=dp) :: q_net_in !< [m3/s] sum of inflowing Q minus sum of outflowing Q over links of node n
+      real(kind=dp) :: q_in !< [m3/s] sum of inflowing Q over links of node n
+      real(kind=dp) :: q_out !< [m3/s] sum of outflowing Q over links of node n
+      real(kind=dp) :: qu_in !< [m4/s2] sum of Q*u over inflowing links of node n
+      real(kind=dp) :: qu_out !< [m4/s2] sum of Q*u over outflowing links of node n (u = Q/A)
+      real(kind=dp) :: qu2_in !< [m5/s3] sum of Q*u**2 over inflowing links of node n
+      real(kind=dp) :: qu2_out !< [m5/s3] sum of Q*u**2 over outflowing links of node n (u = Q/A)
+      real(kind=dp) :: uc !< [m/s] representative velocity magnitude at node n
 
       integer :: L1 !< index of first link
       integer :: k !< node index: 1 for link start node, and 2 for link end node
-      double precision :: h !< [m] local water depth
-      double precision :: half_link_length !< [m] half link length
-      double precision :: u !< [m/s] velocity
-      double precision :: q !< [m3/s] discharge
-      double precision :: perim !< [m] dummy variable for wetted perimeter
-      double precision :: flow_cs_area !< [m2] cross-sectional flow area
-      double precision :: total_cs_area !< [m2] cross-sectional total (flow + storage) area
-      double precision :: link_surface_area !< [m2] surface area of half link
-      double precision :: surface_area !< [m2] total surface area of node -- equal to a1(n)
-      double precision :: flow_width !< [m] surface width of flow area
-      double precision :: total_width !< [m] surface width of total (flow + storage) area
-      double precision :: dzw_dt !< [m/s] water level change rate
+      real(kind=dp) :: h !< [m] local water depth
+      real(kind=dp) :: half_link_length !< [m] half link length
+      real(kind=dp) :: u !< [m/s] velocity
+      real(kind=dp) :: q !< [m3/s] discharge
+      real(kind=dp) :: perim !< [m] dummy variable for wetted perimeter
+      real(kind=dp) :: flow_cs_area !< [m2] cross-sectional flow area
+      real(kind=dp) :: total_cs_area !< [m2] cross-sectional total (flow + storage) area
+      real(kind=dp) :: link_surface_area !< [m2] surface area of half link
+      real(kind=dp) :: surface_area !< [m2] total surface area of node -- equal to a1(n)
+      real(kind=dp) :: flow_width !< [m] surface width of flow area
+      real(kind=dp) :: total_width !< [m] surface width of total (flow + storage) area
+      real(kind=dp) :: dzw_dt !< [m/s] water level change rate
 
       if (kmx /= 0 .or. lnx1D == 0) return
 
@@ -209,9 +220,11 @@
                end if
             end do
 
-            alpha_mom_1D(n) = qu_in / max(1e-20, qu_out)
-            alpha_ene_1D(n) = qu2_in / max(1e-20, qu2_out)
+            alpha_mom_1D(n) = qu_in / max(1e-20_dp, qu_out)
+            alpha_ene_1D(n) = qu2_in / max(1e-20_dp, qu2_out)
          end do
       end if
 
    end subroutine setuc1d
+
+end module m_setuc1d

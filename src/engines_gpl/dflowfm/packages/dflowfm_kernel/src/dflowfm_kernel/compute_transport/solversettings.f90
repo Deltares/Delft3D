@@ -31,6 +31,16 @@
 !
 
 !> default solver settings
+module m_solversettings
+
+   implicit none
+
+   private
+
+   public :: solversettings
+
+contains
+
    subroutine SolverSettings(solver, numrows, numnonzeros)
       use m_solver
       implicit none
@@ -60,3 +70,5 @@
 
       solver%jabcgstab = 1
    end subroutine SolverSettings
+
+end module m_solversettings

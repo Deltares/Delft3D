@@ -30,6 +30,16 @@
 !
 !
 
+module m_apply_sediment_bc
+
+   implicit none
+
+   private
+
+   public :: apply_sediment_bc
+
+contains
+
    !> apply sediment boundary conditions
    subroutine apply_sediment_bc()
       use m_flowgeom
@@ -131,3 +141,5 @@
       end do
       !
    end subroutine apply_sediment_bc
+
+end module m_apply_sediment_bc

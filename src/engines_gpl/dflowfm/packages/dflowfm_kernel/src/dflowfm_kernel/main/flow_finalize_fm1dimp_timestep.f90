@@ -32,20 +32,26 @@
 
 !> Updates the flow variables of FM when the Sobek-RE kernel is used.
 
-!This function cannot be in the <fm1dimp> module because it uses FM variables and
-!while the kernel of FM depends on the <fm1dimp> module, the opposite is not true.
+module m_flow_finalize_fm1dimp_timestep
 
-subroutine flow_finalize_fm1dimp_timestep()
+   implicit none
+
+   private
+
+   public :: flow_finalize_fm1dimp_timestep
+
+contains
+
+   subroutine flow_finalize_fm1dimp_timestep()
+      use precision, only: dp
 
 !
 !MODULES
 !
 
-   use m_flow, only: s1, u1, s0, au, qa
-   use m_fm_erosed, only: ndx_mor, lnx_mor, ln_mor
-   use m_f1dimp, only: f1dimppar
-
-   implicit none
+      use m_flow, only: s1, u1, s0, au, qa
+      use m_fm_erosed, only: ndx_mor, lnx_mor, ln_mor
+      use m_f1dimp, only: f1dimppar
 
 !
 !DECLARATION
@@ -53,58 +59,60 @@ subroutine flow_finalize_fm1dimp_timestep()
 
 !pointer
 
-   integer, pointer :: ngrid
+      integer, pointer :: ngrid
 
-   integer, dimension(:), pointer :: grd_sre_fm
-   integer, dimension(:), pointer :: grd_fm_sre
+      integer, dimension(:), pointer :: grd_sre_fm
+      integer, dimension(:), pointer :: grd_fm_sre
 
-   integer, dimension(:, :), pointer :: grd_fmL_sre
-   integer, dimension(:, :), pointer :: grd_fmLb_sre
+      integer, dimension(:, :), pointer :: grd_fmL_sre
+      integer, dimension(:, :), pointer :: grd_fmLb_sre
 
-   real, dimension(:), pointer :: x
+      real, dimension(:), pointer :: x
 
-   real, dimension(:, :), pointer :: waoft
+      real, dimension(:, :), pointer :: waoft
 
-   double precision, dimension(:, :), pointer :: hpack
-   double precision, dimension(:, :), pointer :: qpack
+      real(kind=dp), dimension(:, :), pointer :: hpack
+      real(kind=dp), dimension(:, :), pointer :: qpack
 
 !locals
 
-   integer :: L, n1, n2, idx_sre, kndx
+      integer :: L, n1, n2, idx_sre, kndx
 
 !
 !SET POINTERS
 !
 
 !dependent on gridpoints
-   x => f1dimppar%x
-   waoft => f1dimppar%waoft
-   hpack => f1dimppar%hpack
-   qpack => f1dimppar%qpack
-   ngrid => f1dimppar%ngrid
-   grd_sre_fm => f1dimppar%grd_sre_fm
-   grd_fm_sre => f1dimppar%grd_fm_sre
-   grd_fmL_sre => f1dimppar%grd_fmL_sre
-   grd_fmLb_sre => f1dimppar%grd_fmLb_sre
+      x => f1dimppar%x
+      waoft => f1dimppar%waoft
+      hpack => f1dimppar%hpack
+      qpack => f1dimppar%qpack
+      ngrid => f1dimppar%ngrid
+      grd_sre_fm => f1dimppar%grd_sre_fm
+      grd_fm_sre => f1dimppar%grd_fm_sre
+      grd_fmL_sre => f1dimppar%grd_fmL_sre
+      grd_fmLb_sre => f1dimppar%grd_fmLb_sre
 
 !
 !UPDATE
 !
 
-   do kndx = 1, ndx_mor !loop on FM nodes
-      idx_sre = grd_fm_sre(kndx)
+      do kndx = 1, ndx_mor !loop on FM nodes
+         idx_sre = grd_fm_sre(kndx)
 
-      s0(kndx) = hpack(idx_sre, 1)
-      s1(kndx) = hpack(idx_sre, 3)
-   end do
+         s0(kndx) = hpack(idx_sre, 1)
+         s1(kndx) = hpack(idx_sre, 3)
+      end do
 
-   do L = 1, lnx_mor
-      n1 = grd_fm_sre(ln_mor(1, L))
-      n2 = grd_fm_sre(ln_mor(2, L))
-      u1(L) = 0.5 * qpack(n1, 3) / waoft(n1, 3) + 0.5 * qpack(n2, 3) / waoft(n2, 3)
-      au(L) = 0.5 * waoft(n1, 3) + 0.5 * waoft(n2, 3)
-      !q1(L)=au(L)*u1(L)
-      qa(L) = au(L) * u1(L)
-   end do
+      do L = 1, lnx_mor
+         n1 = grd_fm_sre(ln_mor(1, L))
+         n2 = grd_fm_sre(ln_mor(2, L))
+         u1(L) = 0.5 * qpack(n1, 3) / waoft(n1, 3) + 0.5 * qpack(n2, 3) / waoft(n2, 3)
+         au(L) = 0.5 * waoft(n1, 3) + 0.5 * waoft(n2, 3)
+         !q1(L)=au(L)*u1(L)
+         qa(L) = au(L) * u1(L)
+      end do
 
-end subroutine flow_finalize_fm1dimp_timestep
+   end subroutine flow_finalize_fm1dimp_timestep
+
+end module m_flow_finalize_fm1dimp_timestep

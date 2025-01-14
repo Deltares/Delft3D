@@ -30,35 +30,47 @@
 !
 !
 
- !> add polygon to global polygons
- subroutine addtopol(XCRA, YCRA, NCRA)
-    use m_polygon
-    use m_alloc
-    use m_missing
-    implicit none
+module m_addtopol
 
-    integer, intent(in) :: NCRA
-    double precision, dimension(NCRA), intent(in) :: XCRA, YCRA
+   implicit none
 
-    integer :: i
+   private
 
-    if (NCRA <= 0) return
+   public :: addtopol
 
-    call increasepol(NPL + NCRA + 1, 1)
+contains
 
-    if (NPL > 0 .and. NCRA > 0) then
-       NPL = NPL + 1
-       xpl(NPL) = DMISS
-       ypl(NPL) = DMISS
-       zpl(NPL) = DMISS
-    end if
+   !> add polygon to global polygons
+   subroutine addtopol(XCRA, YCRA, NCRA)
+      use precision, only: dp
+      use m_polygon
+      use m_alloc
+      use m_missing
 
-    do i = 1, NCRA
-       NPL = NPL + 1
-       xpl(NPL) = XCRA(i)
-       ypl(NPL) = YCRA(i)
-       zpl(NPL) = DMISS
-    end do
+      integer, intent(in) :: NCRA
+      real(kind=dp), dimension(NCRA), intent(in) :: XCRA, YCRA
 
-    return
- end subroutine addtopol
+      integer :: i
+
+      if (NCRA <= 0) return
+
+      call increasepol(NPL + NCRA + 1, 1)
+
+      if (NPL > 0 .and. NCRA > 0) then
+         NPL = NPL + 1
+         xpl(NPL) = DMISS
+         ypl(NPL) = DMISS
+         zpl(NPL) = DMISS
+      end if
+
+      do i = 1, NCRA
+         NPL = NPL + 1
+         xpl(NPL) = XCRA(i)
+         ypl(NPL) = YCRA(i)
+         zpl(NPL) = DMISS
+      end do
+
+      return
+   end subroutine addtopol
+
+end module m_addtopol

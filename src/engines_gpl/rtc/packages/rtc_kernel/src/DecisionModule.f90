@@ -205,7 +205,7 @@
       success = success .and. DH_AllocInit(NDecv, ParTyp,'Internal')
 
       If (.not. success)  then
-         Call ErrMsg (929, 1, ' AllocDecisionArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 1, ' AllocDecisionArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif
@@ -218,7 +218,7 @@
       success = success .and. DH_AllocInit(NDecv, Nqpar, VarIdWQ ,'')
       success = success .and. DH_AllocInit(NDecv, 1, VarIdInterpolationTable ,'')
       If (.not. success)  then
-         Call ErrMsg (929, 1, ' AllocDecisionArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 1, ' AllocDecisionArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif
@@ -255,7 +255,7 @@
       success = success .and. DH_AllocInit(NDecv, Par3TableIndex ,0)
       success = success .and. DH_AllocInit(NDecv, SimSeq ,0)
       If (.not. success)  then
-         Call ErrMsg (929, 1, ' AllocDecisionArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 1, ' AllocDecisionArrays', ' ', IOUT1)
          RetVal = 929
          Return
       EndIf
@@ -267,7 +267,7 @@
       success = success .and. DH_AllocInit(NDecv, Nqpar, 2, CfWQ ,0D0)
       success = success .and. DH_AllocInit(NDecv, Ndpar, 2, CfPar,0D0)
       If (.not. success)  then
-         Call ErrMsg (929, 1, ' AllocDecisionArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 1, ' AllocDecisionArrays', ' ', IOUT1)
          RetVal = 929
          Return
       EndIf
@@ -275,7 +275,7 @@
       success = DH_AllocInit(NDecv, NTims, DcvVal, 0D0)
 
       If (.not. success)  then
-         Call ErrMsg (929, 1, ' AllocDecisionArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 1, ' AllocDecisionArrays', ' ', IOUT1)
          RetVal = 929
          Return
       EndIf

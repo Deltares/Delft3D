@@ -31,9 +31,17 @@
 !
 
 !> write matlab integer array to file
-   subroutine matlab_write_int(matfile, varname, var, Ni, Nj)
+module m_matlab_write_int
 
-      implicit none
+   implicit none
+
+   private
+
+   public :: matlab_write_int
+
+contains
+
+   subroutine matlab_write_int(matfile, varname, var, Ni, Nj)
 
       integer :: matfile !< matlab file unit number
       character(len=*) :: varname !< variable name
@@ -56,3 +64,5 @@
       write (matfile, "('];')")
 
    end subroutine matlab_write_int
+
+end module m_matlab_write_int

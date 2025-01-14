@@ -34,11 +34,12 @@ module m_makesr
 contains
 
    subroutine MAKESR(AR, S0, S1, SR, MFAC)
+      use precision, only: dp
       integer :: mfac
-      double precision :: ar, s0, s1
-      double precision :: SR(MFAC + 1)
+      real(kind=dp) :: ar, s0, s1
+      real(kind=dp) :: SR(MFAC + 1)
 
-      double precision :: ds, fac
+      real(kind=dp) :: ds, fac
       integer :: k
       DS = 1
       SR(1) = 0

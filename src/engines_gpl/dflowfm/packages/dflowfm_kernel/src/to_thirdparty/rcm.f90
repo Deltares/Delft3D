@@ -35,6 +35,7 @@
 !! of the unstructured flow solver.
 !<
 module m_rcm
+   use precision, only: dp
    implicit none
 contains
    function adj_bandwidth(node_num, adj_num, adj_row, adj)
@@ -2667,7 +2668,7 @@ contains
 !
 !    Input, integer   N, the number of objects.
 !
-!    Input/output, DOUBLE PRECISION ::   A(2,N), the array to be permuted.
+!    Input/output, real(kind=dp) ::   A(2,N), the array to be permuted.
 !
 !    Input, integer   P(N), the permutation.  P(I) = J means
 !    that the I-th element of the output array should be the J-th
@@ -2680,8 +2681,8 @@ contains
       integer n
       integer, parameter :: ndim = 2
 
-      double precision :: a(ndim, n)
-      double precision :: a_temp(ndim)
+      real(kind=dp) :: a(ndim, n)
+      real(kind=dp) :: a_temp(ndim)
       integer ierror
       integer iget
       integer iput
@@ -2775,7 +2776,7 @@ contains
 !
 !    Input, integer   M, N, the number of rows and columns.
 !
-!    Input, DOUBLE PRECISION ::   A(M,N), an M by N matrix to be printed.
+!    Input, real(kind=dp) ::   A(M,N), an M by N matrix to be printed.
 !
 !    Input, integer   ILO, JLO, the first row and column to print.
 !
@@ -2789,7 +2790,7 @@ contains
       integer m
       integer n
 
-      double precision :: a(m, n)
+      real(kind=dp) :: a(m, n)
       character(len=14) ctemp(incx)
       integer i
       integer i2hi
@@ -2874,7 +2875,7 @@ contains
 !
 !    Input, integer   M, N, the number of rows and columns.
 !
-!    Input, DOUBLE PRECISION ::   A(M,N), an M by N matrix to be printed.
+!    Input, real(kind=dp) ::   A(M,N), an M by N matrix to be printed.
 !
 !    Input, integer   ILO, JLO, the first row and column to print.
 !
@@ -2888,7 +2889,7 @@ contains
       integer m
       integer n
 
-      double precision :: a(m, n)
+      real(kind=dp) :: a(m, n)
       character(len=14) ctemp(incx)
       integer i
       integer i2
@@ -4273,7 +4274,7 @@ contains
 !
 !    Input, integer   TRIANGLE_NUM, the number of triangles.
 !
-!    Output, DOUBLE PRECISION ::   NODE_XY(2,NODE_NUM), the coordinates of the
+!    Output, real(kind=dp) ::   NODE_XY(2,NODE_NUM), the coordinates of the
 !    nodes.
 !
 !    Output, integer   TRIANGLE_NODE(3,TRIANGLE_NUM), lists the
@@ -4290,7 +4291,7 @@ contains
       integer triangle_num
       integer, parameter :: triangle_order = 3
 
-      double precision :: node_xy(dim_num, node_num)
+      real(kind=dp) :: node_xy(dim_num, node_num)
       integer triangle_neighbor(3, triangle_num)
       integer triangle_node(triangle_order, triangle_num)
 
@@ -5102,7 +5103,7 @@ contains
 !
 !    Input, integer   TRIANGLE_NUM, the number of triangles.
 !
-!    Output, DOUBLE PRECISION ::   NODE_XY(2,NODE_NUM), the coordinates of
+!    Output, real(kind=dp) ::   NODE_XY(2,NODE_NUM), the coordinates of
 !    the nodes.
 !
 !    Output, integer   TRIANGLE_NODE(6,TRIANGLE_NUM), lists the
@@ -5122,7 +5123,7 @@ contains
       integer triangle_num
       integer, parameter :: triangle_order = 6
 
-      double precision :: node_xy(dim_num, node_num)
+      real(kind=dp) :: node_xy(dim_num, node_num)
       integer triangle_neighbor(3, triangle_num)
       integer triangle_node(triangle_order, triangle_num)
 
@@ -5234,6 +5235,7 @@ contains
 end module m_rcm
 
 module Solve_Real_Poly
+   use precision, only: dp
 ! CACM Algorithm 493 by Jenkins & Traub
 
 ! Compliments of netlib   Sat Jul 26 11:57:43 EDT 1986
@@ -5242,29 +5244,29 @@ module Solve_Real_Poly
 ! Date: 2003-06-02  Time: 10:42:22
 
    implicit none
-   integer, parameter :: dp = selected_real_kind(14, 60)
+   integer, parameter :: dp_14_60 = selected_real_kind(14, 60)
 
 ! COMMON /global/ p, qp, k, qk, svk, sr, si, u, v, a, b, c, d, a1,  &
 !    a2, a3, a6, a7, e, f, g, h, szr, szi, lzr, lzi, eta, are, mre, n, nn
 
-   double precision, allocatable, save :: p(:), qp(:), k(:), qk(:), svk(:)
-   double precision, save :: sr, si, u, v, a, b, c, d, a1, a2, a3, a6, &
-      a7, e, f, g, h, szr, szi, lzr, lzi
+   real(kind=dp), allocatable, save :: p(:), qp(:), k(:), qk(:), svk(:)
+   real(kind=dp), save :: sr, si, u, v, a, b, c, d, a1, a2, a3, a6, &
+                          a7, e, f, g, h, szr, szi, lzr, lzi
    real, save :: eta, are, mre
    integer, save :: n, nn
 
    private
-   public :: dp, rpoly
+   public :: dp_14_60, rpoly
 
 contains
 
    subroutine rpoly(op, degree, zeror, zeroi, fail)
 
 ! Finds the zeros of a real polynomial
-! op  - double precision vector of coefficients in order of
+! op  - real(kind=dp) vector of coefficients in order of
 !       decreasing powers.
 ! degree   - integer degree of polynomial.
-! zeror, zeroi - output double precision vectors of real and imaginary parts
+! zeror, zeroi - output real(kind=dp) vectors of real and imaginary parts
 !                of the zeros.
 ! fail  - output logical parameter, true only if leading coefficient is zero
 !         or if rpoly has found fewer than degree zeros.
@@ -5274,17 +5276,17 @@ contains
 ! of the arrays in the common area and in the following declarations.
 ! The subroutine uses single precision calculations for scaling, bounds and
 ! error calculations.  All calculations for the iterations are done in
-! double precision.
+! real(kind=dp).
 
-      double precision, intent(IN) :: op(:)
+      real(kind=dp), intent(IN) :: op(:)
       integer, intent(IN OUT) :: degree
-      double precision, intent(OUT) :: zeror(:), zeroi(:)
+      real(kind=dp), intent(OUT) :: zeror(:), zeroi(:)
       logical, intent(OUT) :: fail
 
-      double precision, allocatable :: temp(:)
+      real(kind=dp), allocatable :: temp(:)
       real, allocatable :: pt(:)
 
-      double precision :: t, aa, bb, cc, factor
+      real(kind=dp) :: t, aa, bb, cc, factor
       real :: lo, MAX, MIN, xx, yy, cosr, sinr, xxx, x, sc, bnd, &
               xm, ff, df, dx, infin, smalno, base
       integer :: cnt, nz, i, j, jj, l, nm1
@@ -5297,7 +5299,7 @@ contains
 !         1.d0+eta is greater than 1.
 ! infiny  the largest floating-point number.
 ! smalno  the smallest positive floating-point number if the exponent range
-!         differs in single and double precision then smalno and infin should
+!         differs in single and real(kind=dp) then smalno and infin should
 !         indicate the smaller range.
 ! base    the base of the floating-point number system used.
 
@@ -5518,7 +5520,7 @@ contains
       integer, intent(IN) :: l2
       integer, intent(OUT) :: nz
 
-      double precision :: svu, svv, ui, vi, s
+      real(kind=dp) :: svu, svv, ui, vi, s
       real :: betas, betav, oss, ovv, ss, vv, ts, tv, ots, otv, tvv, tss
       integer :: type, j, iflag
       logical :: vpass, spass, vtry, stry
@@ -5628,11 +5630,11 @@ contains
 ! uu,vv - coefficients of starting quadratic
 ! nz - number of zero found
 
-      double precision, intent(IN) :: uu
-      double precision, intent(IN) :: vv
+      real(kind=dp), intent(IN) :: uu
+      real(kind=dp), intent(IN) :: vv
       integer, intent(OUT) :: nz
 
-      double precision :: ui, vi
+      real(kind=dp) :: ui, vi
       real :: mp, omp, ee, relstp, t, zm
       integer :: type, i, j
       logical :: tried
@@ -5717,10 +5719,10 @@ contains
 ! nz    - number of zero found
 ! iflag - flag to indicate a pair of zeros near real axis.
 
-      double precision, intent(IN OUT) :: sss
+      real(kind=dp), intent(IN OUT) :: sss
       integer, intent(OUT) :: nz, iflag
 
-      double precision :: pv, kv, t, s
+      real(kind=dp) :: pv, kv, t, s
       real :: ms, mp, omp, ee
       integer :: i, j
 
@@ -5853,7 +5855,7 @@ contains
 
       integer, intent(IN) :: type
 
-      double precision :: temp
+      real(kind=dp) :: temp
       integer :: i
 
       if (type /= 3) then
@@ -5895,10 +5897,10 @@ contains
 ! using the scalars computed in calcsc.
 
       integer, intent(IN) :: type
-      double precision, intent(OUT) :: uu
-      double precision, intent(OUT) :: vv
+      real(kind=dp), intent(OUT) :: uu
+      real(kind=dp), intent(OUT) :: vv
 
-      double precision :: a4, a5, b1, b2, c1, c2, c3, c4, temp
+      real(kind=dp) :: a4, a5, b1, b2, c1, c2, c3, c4, temp
 
 ! Use formulas appropriate to setting of type.
       if (type /= 3) then
@@ -5937,10 +5939,10 @@ contains
 ! quotient in q and the remainder in a,b.
 
       integer, intent(IN) :: nn
-      double precision, intent(IN) :: u, v, p(nn)
-      double precision, intent(OUT) :: q(nn), a, b
+      real(kind=dp), intent(IN) :: u, v, p(nn)
+      real(kind=dp), intent(OUT) :: q(nn), a, b
 
-      double precision :: c
+      real(kind=dp) :: c
       integer :: i
 
       b = p(1)
@@ -5963,10 +5965,10 @@ contains
 ! larger zero if the zeros are real and both zeros are complex.
 ! The smaller real zero is found directly from the product of the zeros c/a.
 
-      double precision, intent(IN) :: a, b1, c
-      double precision, intent(OUT) :: sr, si, lr, li
+      real(kind=dp), intent(IN) :: a, b1, c
+      real(kind=dp), intent(OUT) :: sr, si, lr, li
 
-      double precision :: b, d, e
+      real(kind=dp) :: b, d, e
 
       if (a /= 0.d0) GO TO 20
       sr = 0.d0

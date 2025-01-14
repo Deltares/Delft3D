@@ -33,14 +33,14 @@
 !     -------------------------------------------------------------------
 module m_fullscreen
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine FULLSCREEN()
-         use m_view_port
-         call viewport(0.0, 0.0, 1.0, 1.0)
-         return
-      end
+   subroutine FULLSCREEN()
+      use m_view_port
+      call viewport(0.0, 0.0, 1.0, 1.0)
+      return
+   end
 
 end module m_fullscreen

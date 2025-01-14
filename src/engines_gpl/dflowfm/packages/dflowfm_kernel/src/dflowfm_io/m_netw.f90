@@ -27,41 +27,9 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
-!----- AGPL --------------------------------------------------------------------
-!
-!  Copyright (C)  Stichting Deltares, 2017-2024.
-!
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).
-!
-!  Delft3D is free software: you can redistribute it and/or modify
-!  it under the terms of the GNU Affero General Public License as
-!  published by the Free Software Foundation version 3.
-!
-!  Delft3D  is distributed in the hope that it will be useful,
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!  GNU Affero General Public License for more details.
-!
-!  You should have received a copy of the GNU Affero General Public License
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
-!
-!  contact: delft3d.support@deltares.nl
-!  Stichting Deltares
-!  P.O. Box 177
-!  2600 MH Delft, The Netherlands
-!
-!  All indications and logos of, and references to, "Delft3D",
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
-!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!
-!-------------------------------------------------------------------------------
-!
-!
 module m_netw
 
+   use m_clearflowmodelinputs, only: clearflowmodelinputs
    use network_data
    use m_alloc
    implicit none
@@ -69,9 +37,10 @@ module m_netw
 contains
 
    subroutine loadNetwork(filename, istat, jadoorladen)
-
+      use precision, only: dp
+      use m_closeworld, only: closeworld
       use unstruc_netcdf, only: unc_read_net, unc_write_net, md5_net_file
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, mess
       use m_missing
       use gridoperations
       use m_network, only: admin_network
@@ -88,7 +57,7 @@ contains
       integer :: iDumk
       integer :: iDuml
 
-      ! double precision, allocatable, save :: zkold(:)
+      ! real(kind=dp), allocatable, save :: zkold(:)
 
       integer :: K0, L0, NUMKN, NUMLN
       logical :: jawel

@@ -30,7 +30,19 @@
 !
 !
 
+module m_copypolygontosamples
+   use m_interpolate_zpl_in_polylines, only: interpolate_zpl_in_polylines
+
+   implicit none
+
+   private
+
+   public :: copypolygontosamples
+
+contains
+
    subroutine COPYPOLYGONTOSAMPLES()
+      use precision, only: dp
       use M_SAMPLES
       use M_POLYGON
       use m_missing
@@ -40,9 +52,8 @@
       use m_sferic, only: jsferic, jasfer3D
       use m_delpol
 
-      implicit none
       integer :: k, n, KU, KUU, KKN, KK
-      double precision :: RX1, RY1, RX2, RY2, V, R, A, B, DL, DR, WIDL, WIDR
+      real(kind=dp) :: RX1, RY1, RX2, RY2, V, R, A, B, DL, DR, WIDL, WIDR
 
 !  interpolate missing zpl values in polylines, if possible
       call interpolate_zpl_in_polylines()
@@ -194,3 +205,5 @@
       NS = N
       call delpol()
    end subroutine COPYPOLYGONTOSAMPLES
+
+end module m_copypolygontosamples

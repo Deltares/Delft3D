@@ -30,12 +30,25 @@
 !
 !
 
-double precision function rho_Unesco(sal, temp)
-   use m_dens_unes
+module m_rho_unesco
+
    implicit none
-   double precision :: saL, temp
-   double precision :: rhods, rhodt
 
-   call dens_unes(temp, sal, rho_Unesco, rhods, rhodt)
+   private
 
-end function rho_Unesco
+   public :: rho_unesco
+
+contains
+
+   real(kind=dp) function rho_Unesco(sal, temp)
+      use precision, only: dp
+      use m_dens_unes
+      implicit none
+      real(kind=dp) :: saL, temp
+      real(kind=dp) :: rhods, rhodt
+
+      call dens_unes(temp, sal, rho_Unesco, rhods, rhodt)
+
+   end function rho_Unesco
+
+end module m_rho_unesco

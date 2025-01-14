@@ -106,7 +106,7 @@ if (WIN32)
                           "tecio.lib")
 
     message(STATUS "Setting target_compile_definitions in windows")
-    target_compile_definitions(${executable_name} PRIVATE "WIN32;HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC")
+    target_compile_definitions(${executable_name} PRIVATE "WIN32")
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")

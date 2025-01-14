@@ -32,36 +32,36 @@
 
 module m_makepdf
 
-implicit none
+   implicit none
 
 contains
 
-  subroutine makepdf(r, n)
-     use m_statistics
-     
-     integer :: n
-     real :: r(n), s
-     integer :: k, L
-     if (n == 0) return
-     xpdf = 0d0
-     do L = 1, n
-        do k = 1, npdf
-           if (r(L) >= ypdf(k)) then
-              xpdf(k) = xpdf(k) + 1d0
-              exit
-           end if
-        end do
-     end do
+   subroutine makepdf(r, n)
+      use m_statistics
 
-     s = 0
-     do k = 1, npdf
-        s = s + xpdf(k)
-     end do
-     if (s == 0) return
-     xpdf = xpdf / s
-     do k = 2, npdf
-        xpdf(k) = xpdf(k) + xpdf(k - 1)
-     end do
-  end subroutine makepdf
+      integer :: n
+      real :: r(n), s
+      integer :: k, L
+      if (n == 0) return
+      xpdf = 0d0
+      do L = 1, n
+         do k = 1, npdf
+            if (r(L) >= ypdf(k)) then
+               xpdf(k) = xpdf(k) + 1d0
+               exit
+            end if
+         end do
+      end do
+
+      s = 0
+      do k = 1, npdf
+         s = s + xpdf(k)
+      end do
+      if (s == 0) return
+      xpdf = xpdf / s
+      do k = 2, npdf
+         xpdf(k) = xpdf(k) + xpdf(k - 1)
+      end do
+   end subroutine makepdf
 
 end module m_makepdf

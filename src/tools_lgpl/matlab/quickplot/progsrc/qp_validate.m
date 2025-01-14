@@ -604,9 +604,9 @@ try
                                     idx={1};
                                     if P(p).DimFlag(T_)
                                         if P(p).DimFlag(M_) || P(p).DimFlag(N_)
-                                            idx={P(p).Size(T_) idx{:}};
+                                            idx=[{P(p).Size(T_)} idx(:)'];
                                         else
-                                            idx={1:min(10,P(p).Size(T_)) idx{:}};
+                                            idx=[{1:min(10,P(p).Size(T_))} idx(:)'];
                                         end
                                     end
                                 end
@@ -833,9 +833,11 @@ try
                                         if showfig
                                             include_figure(logid2,reffile(4:end));
                                         end
+                                        % if work file is equal to reference file, delete the work file
+                                        delete(checkf)
                                     else
                                         if showfig
-                                            include_diff_figures(logid2,{reffile(4:end),['work/' checkf],diffimg{:}},Color);
+                                            include_diff_figures(logid2,[{reffile(4:end)},{['work/' checkf]},diffimg(:)'],Color);
                                         end
                                         lgcolor=Color.Failed;
                                         lgresult=[FAILED ': Log file results differ.'];
@@ -865,6 +867,12 @@ try
             end
         end
         d3d_qp('closefile');
+        figs = get_nondialogs;
+        if ~isempty(figs)
+            fprintf('%i figure(s) not properly closed.',length(figs));
+            ui_message('warning','%i figure(s) not properly closed.',length(figs))
+            d3d_qp('closeallfig')
+        end
         if ~isempty(logid2)
             if ~isempty(Crash)
                 write_log(logid2,color_write(protected(Crash.message),Color.Failed,true));

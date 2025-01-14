@@ -31,24 +31,36 @@
 !
 
 !> Update the cumulative flow analysis parameters and compute the flow Courant number, just before writing to the netcdf file
-subroutine updateFlowAnalysisParameters()
-   use m_flow
-   use m_flowgeom
-   use m_flowtimes
-   use m_flowparameters, only: jamapFlowAnalysis
+module m_update_flowanalysis_parameters
 
    implicit none
 
-   integer :: n
+   private
 
-   if (jamapFlowAnalysis == 0) then
-      return
-   end if
+   public :: updateFlowAnalysisParameters
 
-   do n = 1, ndx
-      negativeDepths_cum(n) = negativeDepths_cum(n) + negativeDepths(n)
-      noiterations_cum(n) = noiterations_cum(n) + noiterations(n)
-      limitingTimestepEstimation_cum(n) = limitingTimestepEstimation_cum(n) + limitingTimestepEstimation(n)
-      flowCourantNumber(n) = flowCourantNumber(n) * dts
-   end do
-end subroutine updateFlowAnalysisParameters
+contains
+
+   subroutine updateFlowAnalysisParameters()
+      use m_flow
+      use m_flowgeom
+      use m_flowtimes
+      use m_flowparameters, only: jamapFlowAnalysis
+
+      implicit none
+
+      integer :: n
+
+      if (jamapFlowAnalysis == 0) then
+         return
+      end if
+
+      do n = 1, ndx
+         negativeDepths_cum(n) = negativeDepths_cum(n) + negativeDepths(n)
+         noiterations_cum(n) = noiterations_cum(n) + noiterations(n)
+         limitingTimestepEstimation_cum(n) = limitingTimestepEstimation_cum(n) + limitingTimestepEstimation(n)
+         flowCourantNumber(n) = flowCourantNumber(n) * dts
+      end do
+   end subroutine updateFlowAnalysisParameters
+
+end module m_update_flowanalysis_parameters

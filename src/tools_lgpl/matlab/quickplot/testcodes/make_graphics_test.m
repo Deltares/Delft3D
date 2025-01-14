@@ -1,0 +1,1 @@
+mcc('-m','-v','graphics_test.m')

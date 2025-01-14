@@ -62,9 +62,9 @@ typedef struct {
  ********************************************************************/
 char * chkGetString(const mxArray * mxA, const char * StrName)
 {
-   const int *dimarray;
-   int StrLen = -1;
-   int ndims = mxGetNumberOfDimensions(mxA);
+   const mwSize *dimarray;
+   size_t StrLen = -1;
+   size_t ndims = mxGetNumberOfDimensions(mxA);
    if (mxIsChar(mxA) & (ndims == 2)) {
       dimarray = mxGetDimensions(mxA);
       if (dimarray[0]==1)
@@ -89,11 +89,11 @@ char * chkGetString(const mxArray * mxA, const char * StrName)
 /********************************************************************
  *      Check and get positive integer
  ********************************************************************/
-int chkGetPosInt(const mxArray * mxA)
+size_t chkGetPosInt(const mxArray * mxA)
 {
-   const int *dimarray;
-   int Value = -1;
-   int ndims = mxGetNumberOfDimensions(mxA);
+   const mwSize *dimarray;
+   size_t Value = -1;
+   size_t ndims = mxGetNumberOfDimensions(mxA);
    if (mxIsDouble(mxA) & !mxIsComplex(mxA) & (ndims == 2)) {
       dimarray = mxGetDimensions(mxA);
       if ((dimarray[0]==1) & (dimarray[1]==1)) {
@@ -110,7 +110,7 @@ int chkGetPosInt(const mxArray * mxA)
  ********************************************************************/
 PAVIFILESTRUCT GetAVI(const mxArray * mxA)
 {
-   int pavih = chkGetPosInt(mxA);
+   size_t pavih = chkGetPosInt(mxA);
    if (pavih < 0)
       mexErrMsgTxt("Invalid AVI handle.");
 
@@ -136,8 +136,8 @@ const mxArray *prhs[]  // Array of right hand side arguments
 )
 {
    int i;
-   int ndims, d;
-   const int *dimarray;
+   size_t ndims, d;
+   const mwSize *dimarray;
    LPBYTE vals, frame;
 
    char str[256];
@@ -194,7 +194,7 @@ const mxArray *prhs[]  // Array of right hand side arguments
             pavifil->bitinf       = NULL;
          }
 
-         int pavih = (int) pavifil;
+         size_t pavih = (size_t) pavifil;
          plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);
          *mxGetPr(plhs[0])=(double)(pavih);
       }
@@ -211,7 +211,7 @@ const mxArray *prhs[]  // Array of right hand side arguments
          mxArray * val;
 
          // Color resolution ...
-         int bits = chkGetPosInt(prhs[1]);
+         size_t bits = chkGetPosInt(prhs[1]);
          if (bits != 8 && bits != 24 && bits != 32)
             mexErrMsgTxt("Invalid colour depth");
          //
@@ -289,7 +289,7 @@ const mxArray *prhs[]  // Array of right hand side arguments
             val = mxGetField(prhs[2], 0, "Parameters");
             if (val != NULL) {
                vals = (LPBYTE)mxGetData(val);
-               int nel = mxGetNumberOfElements(val);
+               size_t nel = mxGetNumberOfElements(val);
                xcompvars.lpState = (void *) calloc(nel,sizeof(BYTE));
                frame = (LPBYTE)xcompvars.lpState;
                for (i=0; i<xcompvars.cbState; i++) {
@@ -434,18 +434,18 @@ const mxArray *prhs[]  // Array of right hand side arguments
                mexErrMsgTxt("Invalid number of input arguments.");
             else {
                // Frame rate (fps) ...
-               int fps = chkGetPosInt(prhs[2]);
+               size_t fps = chkGetPosInt(prhs[2]);
                if (fps<=0)
                   mexErrMsgTxt("Invalid frame rate");
                // Frame size ...
-               int height = chkGetPosInt(prhs[3]);
+               size_t height = chkGetPosInt(prhs[3]);
                if (height<=0)
                   mexErrMsgTxt("Invalid frame height");
-               int width = chkGetPosInt(prhs[4]);
+               size_t width = chkGetPosInt(prhs[4]);
                if (width<=0)
                   mexErrMsgTxt("Invalid frame width");
                // Color resolution ...
-               int bits = chkGetPosInt(prhs[5]);
+               size_t bits = chkGetPosInt(prhs[5]);
                int NClrs = 0;
                if (bits == 8) {
                   if (nrhs != 8)
@@ -643,7 +643,7 @@ const mxArray *prhs[]  // Array of right hand side arguments
                mexErrMsgTxt("Invalid number of input arguments.");
             else {
                // Frame iframe ...
-               int iframe = chkGetPosInt(prhs[3]);
+               size_t iframe = chkGetPosInt(prhs[3]);
                if (iframe<=0)
                   mexErrMsgTxt("Invalid frame iframe");
                iframe = iframe-1; // first frame is zero
@@ -772,7 +772,7 @@ const mxArray *prhs[]  // Array of right hand side arguments
          }
       }
 
-      int pavih = (int) pavifil;
+      size_t pavih = (size_t) pavifil;
       plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);
       *mxGetPr(plhs[0])=(double)(pavih);
    }

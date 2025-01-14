@@ -32,14 +32,15 @@
 
 module m_getrcir
 
-implicit none
+   implicit none
 
 contains
 
-  double precision function GETRCIR()
-     use m_wearelt
+   real(kind=dp) function GETRCIR()
+      use precision, only: dp
+      use m_wearelt
 
-     GETRCIR = RCIR
-  end function GETRCIR
+      GETRCIR = RCIR
+   end function GETRCIR
 
 end module m_getrcir

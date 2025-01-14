@@ -32,7 +32,7 @@
 module m_helpc
 
    implicit none
-   integer, parameter :: MAXHLP=2000
+   integer, parameter :: MAXHLP = 2000
    character(len=80) :: HLPTXT(MAXHLP)
    integer :: numtxt
 

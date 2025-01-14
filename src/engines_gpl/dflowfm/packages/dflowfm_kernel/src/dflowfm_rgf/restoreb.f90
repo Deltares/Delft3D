@@ -30,14 +30,26 @@
 !
 !
 
-      subroutine RESTOREB(NPUT)
-         use m_grid_block
-         implicit none
-         integer :: nput
+module m_restoreb
 
-         MB = MB2
-         NB = NB2
-         NPT = NPT2
-         NPUT = NPUTO
-         return
-      end subroutine restoreb
+   implicit none
+
+   private
+
+   public :: restoreb
+
+contains
+
+   subroutine RESTOREB(NPUT)
+      use m_grid_block
+
+      integer :: nput
+
+      MB = MB2
+      NB = NB2
+      NPT = NPT2
+      NPUT = NPUTO
+      return
+   end subroutine restoreb
+
+end module m_restoreb

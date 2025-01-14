@@ -34,17 +34,18 @@ module m_getxy
 contains
 !>     zoek TT in X,Y, en XT,YT met dezelfde afstand geeft als SSQ
    subroutine GETXY(T, X, X2, Y, Y2, imax, N, NT, SSQ, XT, YT, TT, H)
+      use precision, only: dp
       use m_golddis
       use m_splintxy
 
       integer :: imax, n, nt
-      double precision :: ssq, xt, yt
-      double precision :: X(imax), Y(imax), X2(imax), Y2(imax), T(imax)
-      double precision, intent(in) :: H !< for curvature adapted meshing
+      real(kind=dp) :: ssq, xt, yt
+      real(kind=dp) :: X(imax), Y(imax), X2(imax), Y2(imax), T(imax)
+      real(kind=dp), intent(in) :: H !< for curvature adapted meshing
 
-      double precision, intent(out) :: TT
+      real(kind=dp), intent(out) :: TT
 
-      double precision :: ax, bx, cx, tol, dis
+      real(kind=dp) :: ax, bx, cx, tol, dis
 
       AX = T(1)
       CX = T(NT)

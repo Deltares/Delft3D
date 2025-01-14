@@ -317,7 +317,7 @@
         Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
         if (.not. Success) ReadError = .true.
         IF (ReadError) then
-           Call ErrMsg (974,0,'Rdpara',' Read error during reading reservoir datafile - HAVC ParseToken ',IOUT1)
+           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - HAVC ParseToken ',IOUT1)
            RetVal = 974
            Return
         Endif
@@ -372,7 +372,7 @@
    991  Continue
         ReadError = .true.
    992  Continue
-        IF (ReadError) Call ErrMsg (974,0,'ReadRsv',' Read error during reading RTC Reservoir input HAVC',IOUT1)
+        IF (ReadError) call write_error_message_rtc (974,0,'ReadRsv',' Read error during reading RTC Reservoir input HAVC',IOUT1)
      Enddo
  211 CONTINUE
      If (teller .lt. NRsv) then
@@ -471,7 +471,7 @@
         Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
         if (.not. Success) ReadError = .true.
         IF (ReadError) then
-           Call ErrMsg (974,0,'Rdpara',' Read error during reading reservoir datafile - HEDG ParseToken ',IOUT1)
+           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - HEDG ParseToken ',IOUT1)
            RetVal = 974
            Return
         Endif
@@ -545,7 +545,7 @@
    993  Continue
         ReadError = .true.
    994  Continue
-        IF (ReadError) Call ErrMsg (974,0,'ReadRsv',' Read error during reading RTC Reservoir input HEDG',IOUT1)
+        IF (ReadError) call write_error_message_rtc (974,0,'ReadRsv',' Read error during reading RTC Reservoir input HEDG',IOUT1)
      Enddo
 2121 CONTINUE
      If (teller .lt. Nrsv) then
@@ -595,7 +595,7 @@
         Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
         if (.not. Success) ReadError = .true.
         IF (ReadError) then
-           Call ErrMsg (974,0,'Rdpara',' Read error during reading reservoir datafile - BOTG ParseToken ',IOUT1)
+           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - BOTG ParseToken ',IOUT1)
            RetVal = 974
            Return
         Endif
@@ -642,7 +642,7 @@
             Enddo
           Endif
         Endif
-        IF (ReadError) Call ErrMsg (974,0,'ReadRsv',' Read error during reading RTC Reservoir input BOTG',IOUT1)
+        IF (ReadError) call write_error_message_rtc (974,0,'ReadRsv',' Read error during reading RTC Reservoir input BOTG',IOUT1)
      Enddo
 2111 CONTINUE
      If (teller .lt. NRsv) then
@@ -682,7 +682,7 @@
         Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
         if (.not. Success) ReadError = .true.
         IF (ReadError) then
-           Call ErrMsg (974,0,'Rdpara',' Read error during reading reservoir datafile - TURB ParseToken ',IOUT1)
+           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - TURB ParseToken ',IOUT1)
            RetVal = 974
            Return
         Endif
@@ -733,7 +733,7 @@
             Enddo
           Endif
         Endif
-        IF (ReadError) Call ErrMsg (974,0,'ReadRsv',' Read error during reading RTC Reservoir input TURB',IOUT1)
+        IF (ReadError) call write_error_message_rtc (974,0,'ReadRsv',' Read error during reading RTC Reservoir input TURB',IOUT1)
      Enddo
 2112 CONTINUE
      If (teller .lt. NRsv) then
@@ -771,7 +771,7 @@
         Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
         if (.not. Success) ReadError = .true.
         IF (ReadError) then
-           Call ErrMsg (974,0,'Rdpara',' Read error during reading reservoir datafile - SPIL ParseToken ',IOUT1)
+           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - SPIL ParseToken ',IOUT1)
            RetVal = 974
            Return
         Endif
@@ -818,7 +818,7 @@
             Enddo
           Endif
         Endif
-        IF (ReadError) Call ErrMsg (974,0,'ReadRsv',' Read error during reading RTC Reservoir input SPIL',IOUT1)
+        IF (ReadError) call write_error_message_rtc (974,0,'ReadRsv',' Read error during reading RTC Reservoir input SPIL',IOUT1)
      Enddo
 2113 CONTINUE
      If (teller .lt. NRsv) then
@@ -955,7 +955,7 @@
         Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
         if (.not. Success) ReadError = .true.
         IF (ReadError) then
-           Call ErrMsg (974,0,'Rdpara',' Read error during reading reservoir datafile - QHRE ParseToken ',IOUT1)
+           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - QHRE ParseToken ',IOUT1)
            RetVal = 974
            Return
         Endif
@@ -1092,7 +1092,7 @@
    995  Continue
         ReadError = .true.
    996  Continue
-        IF (ReadError) Call ErrMsg (974,0,'ReadRsv',' Read error during reading RTC Reservoir input QHRE',IOUT1)
+        IF (ReadError) call write_error_message_rtc (974,0,'ReadRsv',' Read error during reading RTC Reservoir input QHRE',IOUT1)
 
 
 ! *********************************************************************
@@ -1214,7 +1214,7 @@
 
 
      150 CONTINUE
-         Call ErrMsg (974, 1, ' Read error in ReadReservoirInput',' ',Iout1)
+         call write_error_message_rtc (974, 1, ' Read error in ReadReservoirInput',' ',Iout1)
          RetVal = 974
 
      Return

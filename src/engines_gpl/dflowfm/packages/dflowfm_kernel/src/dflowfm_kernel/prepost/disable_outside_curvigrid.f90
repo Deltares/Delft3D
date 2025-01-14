@@ -31,63 +31,77 @@
 !
 
 !> disable network nodes/samples outside curvilinear grid
-subroutine disable_outside_curvigrid(Nk, Ns, xk, yk, xs, ys, imaskk, imasks)
-   use m_grid
-   use m_polygon
-   use m_missing
-   use geometry_module, only: dbpinpol
-   use m_delpol
+module m_disable_outside_curvigrid
+   use m_copycurvigridboundstopol, only: copycurvigridboundstopol
 
    implicit none
 
-   integer, intent(in) :: Nk !< number of network nodes
-   integer, intent(in) :: Ns !< number of samples
+   private
 
-   double precision, dimension(Nk), intent(in) :: xk, yk !< network node coordinates
-   double precision, dimension(Ns), intent(in) :: xs, ys !< sample  coordinates
-   integer, dimension(Nk), intent(out) :: imaskk !< network nodes inside curvigrid (1) or not (0)
-   integer, dimension(Ns), intent(out) :: imasks !< samples       inside curvigrid (1) or not (0)
+   public :: disable_outside_curvigrid
 
-   integer :: i
-   integer :: in
+contains
 
-   integer :: ierror
+   subroutine disable_outside_curvigrid(Nk, Ns, xk, yk, xs, ys, imaskk, imasks)
+      use precision, only: dp
+      use m_grid
+      use m_polygon
+      use m_missing
+      use geometry_module, only: dbpinpol
+      use m_delpol
 
-   ierror = 1
+      implicit none
 
-   imaskk = 0
-   imasks = 0
+      integer, intent(in) :: Nk !< number of network nodes
+      integer, intent(in) :: Ns !< number of samples
+
+      real(kind=dp), dimension(Nk), intent(in) :: xk, yk !< network node coordinates
+      real(kind=dp), dimension(Ns), intent(in) :: xs, ys !< sample  coordinates
+      integer, dimension(Nk), intent(out) :: imaskk !< network nodes inside curvigrid (1) or not (0)
+      integer, dimension(Ns), intent(out) :: imasks !< samples       inside curvigrid (1) or not (0)
+
+      integer :: i
+      integer :: in
+
+      integer :: ierror
+
+      ierror = 1
+
+      imaskk = 0
+      imasks = 0
 
 !  store polygon
-   call savepol()
+      call savepol()
 
 !  delete polygon
-   call delpol()
+      call delpol()
 
 !  copy curvigrid boundaries to polygon
-   call copycurvigridboundstopol()
+      call copycurvigridboundstopol()
 
-   in = -1
+      in = -1
 
-   do i = 1, Nk
-      call dbpinpol(xk(i), yk(i), in, dmiss, JINS, NPL, xpl, ypl, zpl)
-      if (in == 1) then
-         imaskk(i) = 1
-      end if
-   end do
+      do i = 1, Nk
+         call dbpinpol(xk(i), yk(i), in, dmiss, JINS, NPL, xpl, ypl, zpl)
+         if (in == 1) then
+            imaskk(i) = 1
+         end if
+      end do
 
-   do i = 1, Ns
-      call dbpinpol(xs(i), ys(i), in, dmiss, JINS, NPL, xpl, ypl, zpl)
-      if (in == 1) then
-         imasks(i) = 1
-      end if
-   end do
+      do i = 1, Ns
+         call dbpinpol(xs(i), ys(i), in, dmiss, JINS, NPL, xpl, ypl, zpl)
+         if (in == 1) then
+            imasks(i) = 1
+         end if
+      end do
 
-   ierror = 0
-1234 continue
+      ierror = 0
+1234  continue
 
 !  restore polygon
-   call restorepol()
+      call restorepol()
 
-   return
-end subroutine disable_outside_curvigrid
+      return
+   end subroutine disable_outside_curvigrid
+
+end module m_disable_outside_curvigrid

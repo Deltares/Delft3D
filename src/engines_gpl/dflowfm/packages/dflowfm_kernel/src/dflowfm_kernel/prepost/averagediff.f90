@@ -30,22 +30,34 @@
 !
 !
 
-      !> Computes the average segment size at polyline points.
+module m_averagediff
+
+   implicit none
+
+   private
+
+   public :: averagediff
+
+contains
+
+   !> Computes the average segment size at polyline points.
       !! by averaging between left and right neighbouring points at each point.
-      subroutine averageDiff(DPL, DDX, NPL)
-         implicit none
-         integer :: npl !< Nr. of polyline points.
-         double precision, intent(in) :: DPL(NPL) !< Accumulated distance at each point
-         double precision, intent(out) :: DDX(NPL) !< Output average segment size.
+   subroutine averageDiff(DPL, DDX, NPL)
+      use precision, only: dp
+      integer :: npl !< Nr. of polyline points.
+      real(kind=dp), intent(in) :: DPL(NPL) !< Accumulated distance at each point
+      real(kind=dp), intent(out) :: DDX(NPL) !< Output average segment size.
 
-         integer :: n
+      integer :: n
 
-         DDX = 0d0
-         DDX(1) = 1d0 * (DPL(2) - DPL(1))
-         DDX(NPL) = 1d0 * (DPL(NPL) - DPL(NPL - 1))
+      DDX = 0d0
+      DDX(1) = 1d0 * (DPL(2) - DPL(1))
+      DDX(NPL) = 1d0 * (DPL(NPL) - DPL(NPL - 1))
 
-         do N = 2, NPL - 1
-            DDX(N) = 0.5d0 * (DPL(N + 1) - DPL(N - 1))
-         end do
+      do N = 2, NPL - 1
+         DDX(N) = 0.5d0 * (DPL(N + 1) - DPL(N - 1))
+      end do
 
-      end subroutine averageDiff
+   end subroutine averageDiff
+
+end module m_averagediff

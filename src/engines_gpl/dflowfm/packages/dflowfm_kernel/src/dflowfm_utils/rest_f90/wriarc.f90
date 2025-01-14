@@ -30,29 +30,41 @@
 !
 !
 
-      subroutine WRIARC(MARC, data_array, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
-         use m_writearcinfoheader
-         use precision, only: dp
-         implicit none
-         real(kind=dp) :: dmiss
-         integer :: mmax
-         integer :: nmax
-         real(kind=dp), dimension(MMAX, NMAX) :: data_array
-         real(kind=dp) :: dx, dy
-         integer :: i
-         integer :: j
-         integer :: marc
-         integer :: mc
+module m_wriarc
 
-         integer :: nc
+   implicit none
 
-         real(kind=dp) :: x0
-         real(kind=dp) :: y0
+   private
 
-         call WRITEARCINFOHEADER(MARC, MC, NC, X0, Y0, DX, DY, dmiss)
+   public :: wriarc
 
-         do J = NC, 1, -1
-            write (MARC, '(15000F10.2)') (data_array(I, J), I=1, MC)
-         end do
-         return
-      end
+contains
+
+   subroutine WRIARC(MARC, data_array, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
+      use m_writearcinfoheader
+      use precision, only: dp
+
+      real(kind=dp) :: dmiss
+      integer :: mmax
+      integer :: nmax
+      real(kind=dp), dimension(MMAX, NMAX) :: data_array
+      real(kind=dp) :: dx, dy
+      integer :: i
+      integer :: j
+      integer :: marc
+      integer :: mc
+
+      integer :: nc
+
+      real(kind=dp) :: x0
+      real(kind=dp) :: y0
+
+      call WRITEARCINFOHEADER(MARC, MC, NC, X0, Y0, DX, DY, dmiss)
+
+      do J = NC, 1, -1
+         write (MARC, '(15000F10.2)') (data_array(I, J), I=1, MC)
+      end do
+      return
+   end
+
+end module m_wriarc

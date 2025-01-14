@@ -30,13 +30,24 @@
 !
 !
 
-      subroutine INULAR(X, MMAX)
-         implicit none
-         integer :: i
-         integer :: mmax
-         integer X(MMAX)
-         do I = 1, MMAX
-            X(I) = 0d0
-         end do
-         return
-      end
+module m_inular
+
+   implicit none
+
+   private
+
+   public :: inular
+
+contains
+
+   subroutine INULAR(X, MMAX)
+      integer :: i
+      integer :: mmax
+      integer X(MMAX)
+      do I = 1, MMAX
+         X(I) = 0d0
+      end do
+      return
+   end
+
+end module m_inular

@@ -30,15 +30,25 @@
 !
 !
 
+module m_comp_gravinput
+
+   implicit none
+
+   private
+
+   public :: comp_GravInput
+
+contains
+
    !> compute Graviational Input from tidal forces and SAL
    subroutine comp_GravInput()
+      use precision, only: dp
       use m_flowgeom
       use m_flow
-      use unstruc_messages
       use m_partitioninfo
       implicit none
 
-      double precision :: force, dfac
+      real(kind=dp) :: force, dfac
 
       integer :: L, k, k1, k2
       logical :: Ldoit1, Ldoit2
@@ -113,3 +123,5 @@
 
       return
    end subroutine comp_GravInput
+
+end module m_comp_gravinput

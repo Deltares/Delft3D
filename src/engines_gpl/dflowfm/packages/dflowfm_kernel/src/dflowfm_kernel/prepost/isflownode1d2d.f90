@@ -30,16 +30,25 @@
 !
 !
 
+module m_isflownode1d2d
+
+   implicit none
+
+   private
+
+   public :: isflownode1d2d
+
+contains
+
    subroutine isflownode1D2D(xp, yp, kk)
+      use precision, only: dp
       use m_flowgeom
       use unstruc_display
       use m_missing, only: dmiss, jins
       use geometry_module, only: pinpok, dbdistance
       use m_sferic, only: jsferic, jasfer3D
 
-      implicit none
-
-      double precision :: xp, yp, dis
+      real(kind=dp) :: xp, yp, dis
       integer :: inn, k, kk, nn
 
       kk = 0
@@ -64,3 +73,5 @@
       end do
 
    end subroutine isflownode1D2D
+
+end module m_isflownode1d2d

@@ -30,19 +30,24 @@
 !
 !
 module m_wrisam
+   use m_wriarcsam, only: wriarcsam
+   use m_wriarc, only: wriarc
+
    implicit none
 contains
    subroutine WRISAM(MSAM)
+      use precision, only: dp
       use M_SAMPLES
       use M_ARCINFO
       use M_MISSING, only: DMISS
       use m_pharosflow
       use m_readyy
       use m_qnerror
+      use m_filez, only: doclose
 
       integer :: msam, KMOD
 
-      double precision :: af
+      real(kind=dp) :: af
       integer :: i
 
       call READYY('Writing Samples File', 0d0)

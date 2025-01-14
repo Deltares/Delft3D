@@ -7,9 +7,6 @@ set(library_name wave)
 add_library(${library_name} SHARED  ${library_files}
                                     ${rc_version_file})
 
-# Set additional compilation properties
-target_compile_options(${library_name} PRIVATE "${extend_source132_flag}")
-
 # Set dependencies on windows
 if (WIN32)
     set(library_dependencies    wave_data

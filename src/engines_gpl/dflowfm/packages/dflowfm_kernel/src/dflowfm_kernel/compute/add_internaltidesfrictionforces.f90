@@ -31,22 +31,34 @@
 !
 
 !> add internal tides friction forces to adve
+module m_add_internaltidesfrictionforces
+   use m_comp_gradc, only: comp_gradC
+
+   implicit none
+
+   private
+
+   public :: add_InternalTidesFrictionForces
+
+contains
+
    subroutine add_InternalTidesFrictionForces()
+      use precision, only: dp
       use m_flowgeom
       use m_flow
       use m_flowtimes
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       use m_partitioninfo
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
       implicit none
 
-      double precision :: GradHinUc, dum, Lambda, dfac
-      double precision :: dumx1, dumy1, dumx2, dumy2
-      double precision :: diss
+      real(kind=dp) :: GradHinUc, dum, Lambda, dfac
+      real(kind=dp) :: dumx1, dumy1, dumx2, dumy2
+      real(kind=dp) :: diss
 
       integer :: k, k1, k2, L
       integer :: ierror
-
-      double precision, external :: nod2linx, nod2liny
 
 !     compute water depth gradient, based on cell-centered date
       hs = s1 - bl
@@ -132,3 +144,5 @@
 
       return
    end subroutine add_InternalTidesFrictionForces
+
+end module m_add_internaltidesfrictionforces

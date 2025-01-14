@@ -116,8 +116,9 @@ contains
 
    !> Update the stat_output of an item, depending on the operation_type.
    elemental subroutine update_statistical_output(item, dts)
+      use precision, only: dp
       type(t_output_variable_item), intent(inout) :: item !< statistical output item to update
-      double precision, intent(in) :: dts !< current timestep
+      real(kind=dp), intent(in) :: dts !< current timestep
 
       if (item%operation_type == SO_MIN .or. item%operation_type == SO_MAX) then ! max/min of moving average requested
          call update_moving_average_data(item%moving_average_data, item%source_input, dts)
@@ -173,12 +174,13 @@ contains
 
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
+      use precision, only: dp
       use m_statistical_output_types, only: process_data_interface_double
       use MessageHandling, only: mess, LEVEL_WARN
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
       type(t_output_quantity_config), intent(in) :: output_config !< Output quantity config linked to this output item, a copy will be stored in the new output item
-      double precision, pointer, dimension(:), intent(in) :: data_pointer !< Pointer to output quantity data ("source input")
+      real(kind=dp), pointer, dimension(:), intent(in) :: data_pointer !< Pointer to output quantity data ("source input")
       procedure(process_data_interface_double), optional, pointer, intent(in) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
 
       type(t_output_variable_item) :: item ! new item to be added

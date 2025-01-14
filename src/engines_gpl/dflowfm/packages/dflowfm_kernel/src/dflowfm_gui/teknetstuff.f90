@@ -31,16 +31,16 @@
 !
 
 module m_teknetstuff
-use m_tekpreviousnet
-use m_teknodevals
-use m_teknodenums
+   use m_tekpreviousnet
+   use m_teknodevals
+   use m_teknodenums
 
-
-implicit none
+   implicit none
 
 contains
 
    subroutine TEKNETSTUFF(key)
+      use precision, only: dp
       use m_teknetcells
       use m_teknet
       use m_teklinkvals
@@ -51,7 +51,7 @@ contains
       use m_drawthis
       use m_gtext
       implicit none
-      double precision :: XP, YP
+      real(kind=dp) :: XP, YP
       integer :: key, K1, K2
 
       if (NDRAW(7) >= 2) call TEKLINKVALS(NDRAW(11))
@@ -67,8 +67,6 @@ contains
       if (NDRAW(8) >= 2) call TEKNODENUMS(NDRAW(19), NCOLDN)
 
       call TEKNETCELLS(NDRAW(33), 0, 1)
-
-      ! CALL TEKBOTTOM(NDRAW(27)) old net stuff
 
       if (jaHighlight == 1) then
          if (nOdmax /= 0) then

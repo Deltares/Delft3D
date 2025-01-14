@@ -30,6 +30,17 @@
 !
 !
 module unstruc_api
+   use m_updatevaluesonsourcesinks, only: updatevaluesonsourcesinks
+   use m_updatebalance, only: updatebalance
+   use m_flow_usertimestep, only: flow_usertimestep
+   use m_flow_externaloutput, only: flow_externaloutput
+   use m_updatevaluesonrunupgauges_mpi, only: updatevaluesonrunupgauges_mpi
+   use m_updatevaluesonrunupgauges, only: updatevaluesonrunupgauges
+   use m_updatevaluesonlaterals, only: updatevaluesonlaterals
+   use m_resetfullflowmodel, only: resetfullflowmodel
+   use m_inidat, only: inidat, loadfile, savefile
+   use m_write_some_final_output, only: write_some_final_output
+   use m_writecdcoeffs, only: writeCdcoeffs
    use m_plotnu
    use m_choices
    use m_flowtimes
@@ -39,7 +50,7 @@ module unstruc_api
 
    implicit none
 
-   double precision :: cpuall0
+   real(kind=dp) :: cpuall0
 contains
 
 !> Initializes global program/core data, not specific to a particular model.
@@ -105,10 +116,13 @@ contains
       use m_monitoring_crosssections
       use unstruc_model
       use m_qn_read_error
+      use m_filez, only: oldfil, doclose, newfil
+      use m_upotukinueaa, only: upotukinueaa
+
       implicit none
       integer :: ierr, minp, mout, L1, istat, i
       integer :: MODE, NUM, NWHAT, KEY
-      double precision :: QQQ, upot, ukin, ueaa
+      real(kind=dp) :: QQQ, upot, ukin, ueaa
       character(len=*) :: batfile
       character(len=256) :: rec, filnam, basemdu, tex
 
@@ -192,7 +206,7 @@ contains
    integer function flow() result(iresult)
       use dfm_error
       use unstruc_display
-      use unstruc_messages
+      use messagehandling, only: warn_flush
       use unstruc_display
       use unstruc_model
       integer :: jastop
@@ -210,7 +224,7 @@ contains
          call warn_flush()
       end if
 
-      call writesomefinaloutput()
+      call write_some_final_output()
 
       if (jagui > 0) then
          call plotnu(md_ident)
@@ -252,7 +266,8 @@ contains
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use m_statistical_output, only: update_source_input, update_statistical_output
       use m_wall_clock_time
-      integer, external :: flow_modelinit
+      use m_flow_modelinit, only: flow_modelinit
+
       integer :: timerHandle, inner_timerhandle
 
       !call inidia('api')

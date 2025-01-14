@@ -32,7 +32,7 @@
 
 module m_linktypetoint
 
-implicit none
+   implicit none
 
 contains
 

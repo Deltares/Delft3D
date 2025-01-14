@@ -32,17 +32,17 @@
 module m_restore_grd
    implicit none
 contains
-     subroutine restoregrd()
-        use m_grid
-        use m_increase_grid
+   subroutine restoregrd()
+      use m_grid
+      use m_increase_grid
 
-        if (allocated(xch)) then
-           call increasegrid(mch, nch)
-           xc = xch
-           yc = ych
-           zc = zch
-           mc = mch
-           nc = nch
-        end if
-     end subroutine restoregrd
+      if (allocated(xch)) then
+         call increasegrid(mch, nch)
+         xc = xch
+         yc = ych
+         zc = zch
+         mc = mch
+         nc = nch
+      end if
+   end subroutine restoregrd
 end module m_restore_grd

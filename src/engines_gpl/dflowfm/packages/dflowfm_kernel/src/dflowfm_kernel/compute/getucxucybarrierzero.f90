@@ -32,34 +32,44 @@
 
 ! =================================================================================================
 ! =================================================================================================
-  subroutine getucxucybarrierzero(Lf, ku, ucxku, ucyku)
-     use m_flow
-     use m_flowgeom
-     implicit none
+module m_getucxucybarrierzero
 
-     integer :: ku, L, LL, Ls, n12, Lf
-     double precision :: ucxku, ucyku, ww, ac1, cs, sn
-     double precision, external :: lin2nodx, lin2nody
+   implicit none
 
-     ucxku = 0d0; ucyku = 0d0
+contains
 
-     do LL = 1, nd(ku)%lnx
-        Ls = nd(ku)%ln(LL); L = abs(Ls)
-        if (Ls < 0) then
-           ac1 = acL(L)
-           n12 = 1
-        else
-           ac1 = 1d0 - acL(L)
-           n12 = 2
-        end if
-        ww = ac1 * dx(L) * wu(L)
-        cs = ww * csu(L); sn = ww * snu(L)
-        if (L /= Lf) then
-           ucxku = ucxku + lin2nodx(L, n12, cs, sn) * u1(L)
-           ucyku = ucyku + lin2nody(L, n12, cs, sn) * u1(L)
-        end if
-     end do
-     ucxku = ucxku / ba(ku)
-     ucyku = ucyku / ba(ku)
+   subroutine getucxucybarrierzero(Lf, ku, ucxku, ucyku)
+      use precision, only: dp
+      use m_flow
+      use m_flowgeom
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+      implicit none
 
-  end subroutine getucxucybarrierzero
+      integer :: ku, L, LL, Ls, n12, Lf
+      real(kind=dp) :: ucxku, ucyku, ww, ac1, cs, sn
+
+      ucxku = 0d0; ucyku = 0d0
+
+      do LL = 1, nd(ku)%lnx
+         Ls = nd(ku)%ln(LL); L = abs(Ls)
+         if (Ls < 0) then
+            ac1 = acL(L)
+            n12 = 1
+         else
+            ac1 = 1d0 - acL(L)
+            n12 = 2
+         end if
+         ww = ac1 * dx(L) * wu(L)
+         cs = ww * csu(L); sn = ww * snu(L)
+         if (L /= Lf) then
+            ucxku = ucxku + lin2nodx(L, n12, cs, sn) * u1(L)
+            ucyku = ucyku + lin2nody(L, n12, cs, sn) * u1(L)
+         end if
+      end do
+      ucxku = ucxku / ba(ku)
+      ucyku = ucyku / ba(ku)
+
+   end subroutine getucxucybarrierzero
+
+end module m_getucxucybarrierzero

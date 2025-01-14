@@ -32,66 +32,67 @@
 
 module m_teknodenums
 
-implicit none
+   implicit none
 
 contains
 
- subroutine TEKNODENUMS(MET, NCOL)
-    use m_dhtext
-    use m_dhitext
-    use M_MISSING
-    use m_netw
-    use m_drawthis
-    use m_halt2
-    use m_set_col
-    use m_invnod
-    implicit none
-    integer :: MET, NCOL
-    integer :: k
-    integer :: k1
-    integer :: k2
-    integer :: key
-    integer :: l
-    integer :: n
-    double precision X, Y, Z
-    
-    call SETCOL(NCOL)
-    KMOD = max(1, NUMK / 100)
-    do K = 1, NUMK
-       if (.not. INVNOD(K)) cycle
-       X = XK(K)
-       Y = YK(K)
-       Z = ZK(K)
+   subroutine TEKNODENUMS(MET, NCOL)
+      use precision, only: dp
+      use m_dhtext
+      use m_dhitext
+      use M_MISSING
+      use m_netw
+      use m_drawthis
+      use m_halt2
+      use m_set_col
+      use m_invnod
+      implicit none
+      integer :: MET, NCOL
+      integer :: k
+      integer :: k1
+      integer :: k2
+      integer :: key
+      integer :: l
+      integer :: n
+      real(kind=dp) X, Y, Z
 
-       if (mod(K, KMOD) == 0) then
-          call HALT2(KEY)
-          if (KEY == 1) then
-             return
-          end if
-       end if
+      call SETCOL(NCOL)
+      KMOD = max(1, NUMK / 100)
+      do K = 1, NUMK
+         if (.not. INVNOD(K)) cycle
+         X = XK(K)
+         Y = YK(K)
+         Z = ZK(K)
 
-       if (RNOD(K) /= dmiss) then
-          if (MET == 2 .or. MET >= 6) then
-             if (NDRAW(8) == 2 .or. NDRAW(8) == 3 .or. NDRAW(8) == 5) then
-                call DHITEXT(int(RNOD(K)), X, Y)
-             else if (MET == 4) then
-                do N = 1, NMK(K)
-                   L = NOD(K)%LIN(N)
-                   K1 = KN(1, L)
-                   K2 = KN(2, L)
-                   X = 0.5d0 * (XK(K1) + 0.5d0 * XK(K2))
-                   Y = 0.5d0 * (YK(K1) + 0.5d0 * YK(K2))
-                   Z = 0.5d0 * (ZK(K1) + 0.5d0 * ZK(K2))
-                   call DHITEXT(L, X, Y)
-                end do
-             else
-                call dHTEXT(dble(RNOD(K)), X, Y, Z)
-             end if
-          end if
-       end if
-    end do
+         if (mod(K, KMOD) == 0) then
+            call HALT2(KEY)
+            if (KEY == 1) then
+               return
+            end if
+         end if
 
-    return
- end subroutine TEKNODENUMS
+         if (RNOD(K) /= dmiss) then
+            if (MET == 2 .or. MET >= 6) then
+               if (NDRAW(8) == 2 .or. NDRAW(8) == 3 .or. NDRAW(8) == 5) then
+                  call DHITEXT(int(RNOD(K)), X, Y)
+               else if (MET == 4) then
+                  do N = 1, NMK(K)
+                     L = NOD(K)%LIN(N)
+                     K1 = KN(1, L)
+                     K2 = KN(2, L)
+                     X = 0.5d0 * (XK(K1) + 0.5d0 * XK(K2))
+                     Y = 0.5d0 * (YK(K1) + 0.5d0 * YK(K2))
+                     Z = 0.5d0 * (ZK(K1) + 0.5d0 * ZK(K2))
+                     call DHITEXT(L, X, Y)
+                  end do
+               else
+                  call dHTEXT(dble(RNOD(K)), X, Y, Z)
+               end if
+            end if
+         end if
+      end do
+
+      return
+   end subroutine TEKNODENUMS
 
 end module m_teknodenums

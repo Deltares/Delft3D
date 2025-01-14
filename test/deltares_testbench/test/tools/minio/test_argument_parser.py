@@ -81,14 +81,14 @@ def test_push__only_required(
     arg_parser: argparse.ArgumentParser,
 ) -> None:
     # Arrange, Act
-    argv = ["push", "-c=path/to/config", "-n=foo", "--issue-id=FOO-123", path_type_flag]
+    argv = ["push", "-c=path/to/config", "-n=foo", "--issue-id=FO0-123", path_type_flag]
     args = arg_parser.parse_args(argv)
 
     # Assert
     assert args.config == "path/to/config"
     assert args.test_case_name == "foo"
     assert args.path_type == path_type
-    assert args.issue_id == "FOO-123"
+    assert args.issue_id == "FO0-123"
     assert_push_defaults(args)
 
 
@@ -130,15 +130,26 @@ def test_push__optional_arguments(
     assert getattr(args, attr_name) == attr_value
 
 
+@pytest.mark.parametrize(
+    "issue_id",
+    ["FOO", "FOO-", "FOO-O123", "FOo-123"],
+)
+def test_push__invalid_issue_id(issue_id: str, arg_parser: argparse.ArgumentParser) -> None:
+    # Arrange, Act, Assert
+    argv = ["push", "-c=path/to/config", "-n=foo", "--case", f"--issue-id={issue_id}"]
+    with pytest.raises(SystemExit):  # argparse calls `exit` on parse errors. Very annoying.
+        arg_parser.parse_args(argv)
+
+
 def test_update_refs__required_only(arg_parser: argparse.ArgumentParser) -> None:
     # Arrange, Act
-    argv = ["update-references", "-c=path/to/config", "-n=foo", "--issue-id=FOO-123"]
+    argv = ["update-references", "-c=path/to/config", "-n=foo", "--issue-id=FO0-123"]
     args = arg_parser.parse_args(argv)
 
     # Assert
     assert args.config == "path/to/config"
     assert args.test_case_name == "foo"
-    assert args.issue_id == "FOO-123"
+    assert args.issue_id == "FO0-123"
     assert_update_refs_defaults(args)
 
 
@@ -152,6 +163,17 @@ def test_update_refs__required_only__long_opts(arg_parser: argparse.ArgumentPars
     assert args.test_case_name == "foo"
     assert args.issue_id == "FOO-123"
     assert_update_refs_defaults(args)
+
+
+@pytest.mark.parametrize(
+    "issue_id",
+    ["FOO", "FOO-", "FOO-O123", "FOo-123"],
+)
+def test_update_refs__invalid_issue_id(issue_id: str, arg_parser: argparse.ArgumentParser) -> None:
+    # Arrange, Act, Assert
+    argv = ["update-references", "-c=path/to/config", "-n=foo", "--case", f"--issue-id={issue_id}"]
+    with pytest.raises(SystemExit):  # argparse calls `exit` on parse errors. Very annoying.
+        arg_parser.parse_args(argv)
 
 
 @pytest.mark.parametrize(

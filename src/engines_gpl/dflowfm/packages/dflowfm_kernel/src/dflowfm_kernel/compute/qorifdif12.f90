@@ -33,10 +33,11 @@ module m_qorifdif12
    implicit none
 contains
    subroutine qorifdif12(hg, d, a, h1, h2, qd)
+      use precision, only: dp
       use m_getq1
       use m_getq3
-      double precision :: hg, d, a, h1, h2, qd
-      double precision :: ql, qr
+      real(kind=dp) :: hg, d, a, h1, h2, qd
+      real(kind=dp) :: ql, qr
 
       call getq1(hg, d, h1, h2, ql)
       call getq3(hg, a, h1, h2, qr)

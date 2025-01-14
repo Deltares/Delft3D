@@ -31,20 +31,32 @@
 !
 
 !> perform actions in batch
-subroutine refine_from_commandline()
-   use network_data
-   use m_partitioninfo
-   use unstruc_netcdf, only: unc_write_net
-   use m_samples_refine
+module m_refine_from_commandline
+
    implicit none
 
-   character(len=128) :: filnam
+   private
 
-   call REFINECELLSANDFACES2()
+   public :: refine_from_commandline
 
-   filnam = 'outdtmax120dxmin1500_net.nc'
-   write (filnam(9:11), '(i3.3)') int(dt_maxcour)
-   write (filnam(17:20), '(i4.4)') int(dx_mincour)
-   call unc_write_net(trim(filnam))
+contains
 
-end subroutine refine_from_commandline
+   subroutine refine_from_commandline()
+      use m_refinecellsandfaces2, only: refinecellsandfaces2
+      use network_data
+      use m_partitioninfo
+      use unstruc_netcdf, only: unc_write_net
+      use m_samples_refine
+
+      character(len=128) :: filnam
+
+      call REFINECELLSANDFACES2()
+
+      filnam = 'outdtmax120dxmin1500_net.nc'
+      write (filnam(9:11), '(i3.3)') int(dt_maxcour)
+      write (filnam(17:20), '(i4.4)') int(dx_mincour)
+      call unc_write_net(trim(filnam))
+
+   end subroutine refine_from_commandline
+
+end module m_refine_from_commandline

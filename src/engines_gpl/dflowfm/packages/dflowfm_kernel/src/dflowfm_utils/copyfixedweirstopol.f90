@@ -32,16 +32,28 @@
 
 !> Copy the original polygons that define the current fixed weirs
 !! to the active polygons in xpl,...
-subroutine copyFixedWeirsToPol()
-   use m_fixedweirs
-   use m_polygon
-   use m_append_crspath_to_pol
+module m_copyfixedweirstopol
+
    implicit none
-   integer :: i
 
-   npl = 0
-   do i = 1, nfxw
-      call appendCRSPathToPol(fxw(i))
-   end do
+   private
 
-end subroutine copyFixedWeirsToPol
+   public :: copyfixedweirstopol
+
+contains
+
+   subroutine copyFixedWeirsToPol()
+      use m_fixedweirs
+      use m_polygon
+      use m_append_crspath_to_pol
+
+      integer :: i
+
+      npl = 0
+      do i = 1, nfxw
+         call appendCRSPathToPol(fxw(i))
+      end do
+
+   end subroutine copyFixedWeirsToPol
+
+end module m_copyfixedweirstopol

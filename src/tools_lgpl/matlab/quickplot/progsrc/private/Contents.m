@@ -89,7 +89,6 @@
 %   trim2rst                    - Extract Delft3D-FLOW restart file from TRIM-file.
 %   ui_type                     - Simple selection dialog.
 %   ui_typeandname              - Selection dialog with name specification.
-%   uigetfolder                 - Standard Windows browse for folder dialog box.
 %   writeavi                    - MEX interface to Windows AVI functions.
 %
 % QuickPlot file dependent routines

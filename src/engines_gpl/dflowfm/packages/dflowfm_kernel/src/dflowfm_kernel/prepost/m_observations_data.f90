@@ -27,21 +27,22 @@
 !
 !-------------------------------------------------------------------------------
 
-!> This module holds data used for observation stations that are used to monitor flow data at fixed and 
+!> This module holds data used for observation stations that are used to monitor flow data at fixed and
 !! moving points in the domain.
 !! In arrays: (1:numobs = normal or fixed observation stations, numobs+1:numobs+nummovobs = moving observation stations)
 module m_observations_data
    use messagehandling, only: Idlen
+   use precision, only: dp
 
    implicit none
 
    integer :: numobs = 0 !< nr of observation stations
    integer :: nummovobs = 0 !< nr of *moving* observation stations
-   double precision, allocatable :: xobs(:) !< x-coord of observation points (1:numobs = normal obs from *.xyn and *.ini files, numobs+1:numobs+nummovobs = moving obs)
-   double precision, allocatable :: yobs(:) !< y-coord of observation points
-   double precision, allocatable, target :: xyobs(:) !< xy-coord of *moving* observation points (work array for meteo)
-   double precision, allocatable :: smxobs(:) !< maximum waterlevel of observation points
-   double precision, allocatable :: cmxobs(:) !< maximum 2D flow velocity of observation points, 3D: maximum over all layers and time
+   real(kind=dp), allocatable :: xobs(:) !< x-coord of observation points (1:numobs = normal obs from *.xyn and *.ini files, numobs+1:numobs+nummovobs = moving obs)
+   real(kind=dp), allocatable :: yobs(:) !< y-coord of observation points
+   real(kind=dp), allocatable, target :: xyobs(:) !< xy-coord of *moving* observation points (work array for meteo)
+   real(kind=dp), allocatable :: smxobs(:) !< maximum waterlevel of observation points
+   real(kind=dp), allocatable :: cmxobs(:) !< maximum 2D flow velocity of observation points, 3D: maximum over all layers and time
    integer, allocatable :: kobs(:) !< node nrs of ACTIVE observation points
    integer, allocatable :: lobs(:) !< flowlink nrs of active observation points
    ! NOTE: kobs is not maintained here (so also not after deleteObservation, etc.) All done once by obs_on_flowgrid.
@@ -52,7 +53,8 @@ module m_observations_data
    integer :: mxls !< Unit nr hisdump to excel
    integer :: jafahrenheit = 0 !< Output in Celsius, otherwise Fahrenheit
 
-   double precision, dimension(:, :), allocatable, target :: valobs !< work array with 2d and 3d values stored at observation stations, dim(numobs+nummovobs, MAXNUMVALOBS2D+MAXNUMVALOBS3D*max(kmx,1)+MAXNUMVALOBS3Dw*(max(kmx,1)+1))
+   real(kind=dp) :: valobs_last_update_time !< Time at which the valobs array was last updated.
+   real(kind=dp), dimension(:, :), allocatable, target :: valobs !< work array with 2d and 3d values stored at observation stations, dim(numobs+nummovobs, MAXNUMVALOBS2D+MAXNUMVALOBS3D*max(kmx,1)+MAXNUMVALOBS3Dw*(max(kmx,1)+1))
 
    integer :: MAXNUMVALOBS2D ! maximum number of outputted values at observation stations
    integer :: MAXNUMVALOBS3D ! maximum number of outputted values at observation stations, 3D layer centers
@@ -257,6 +259,6 @@ module m_observations_data
    integer :: IPNT_FIXFAC1
    integer :: IPNT_HIDEXP1
    integer :: IPNT_MFLUFF1
-   
+
 end module m_observations_data
 

@@ -28,8 +28,16 @@
 !-------------------------------------------------------------------------------
 
 module fm_external_forcings
+   use m_make_mirrorcells, only: make_mirrorcells
+   use m_in2dflowcell, only: in2dflowcell
+   use m_count_links, only: count_links
+   use m_add_bndtracer, only: add_bndtracer
+   use m_addopenbndsection, only: addopenbndsection
+   use m_setwindstress, only: setwindstress
+   use m_setsigmabnds, only: setsigmabnds
    use precision_basics, only: hp, dp
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname
+   use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
    implicit none
 
    private
@@ -92,7 +100,6 @@ contains
 !> print_error_message
    subroutine print_error_message(time_in_seconds)
       use m_ec_message, only: dumpECMessageStack
-      use MessageHandling, only: LEVEL_WARN, mess
       use unstruc_messages, only: callback_msg
 
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when doing this action
@@ -115,6 +122,7 @@ contains
       use m_flowparameters, only: eps10
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
+      use m_tauwavefetch, only: tauwavefetch
 
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when setting wind data
       integer, intent(out) :: iresult !< Error indicator
@@ -415,7 +423,6 @@ contains
       use timespace ! not on the flow admin.
       use m_sferic
       use m_alloc
-      use unstruc_messages
       use m_ship
       use properties
       use m_transport
@@ -425,6 +432,7 @@ contains
       use system_utils, only: split_filename
       use unstruc_files, only: resolvePath
       use m_qnerror
+      use m_filez, only: oldfil, doclose
 
       implicit none
 
@@ -626,7 +634,6 @@ contains
       use timespace, only: NODE_ID, POLY_TIM
       use tree_data_types
       use tree_structures
-      use messageHandling
       use m_flowgeom, only: rrtol
       use fm_external_forcings_data, only: transformcoef
       use system_utils
@@ -824,7 +831,6 @@ contains
       use timespace
       use m_sferic
       use m_alloc
-      use unstruc_messages
       use m_ship
       use properties
       use m_transport
@@ -1253,7 +1259,6 @@ contains
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
       use string_module, only: strcmpi
       use timespace_parameters, only: uniform, bcascii, spaceandtime
-      use unstruc_messages
 
       implicit none
 
@@ -1416,7 +1421,6 @@ contains
       use fm_external_forcings_data
       use m_transport
       use m_sediment, only: stm_included
-      use unstruc_messages
       use m_missing
       use m_find_name, only: find_name
 
@@ -1634,6 +1638,8 @@ contains
       use timers, only: timstop, timstrt
       use unstruc_inifields, only: initialize_initial_fields
       use m_qnerror
+      use m_flow_init_structurecontrol, only: flow_init_structurecontrol
+      use m_setzminmax, only: setzminmax
 
       integer, intent(out) :: iresult
 
@@ -1642,7 +1648,6 @@ contains
       integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx, itrac
       integer, parameter :: N4 = 6
       character(len=256) :: rec
-      logical, external :: flow_init_structurecontrol
       integer :: tmp_nbndu, tmp_nbndt, tmp_nbndn
 
       iresult = DFM_NOERR
@@ -1683,8 +1688,6 @@ contains
       inivel = 0 ! no initial velocity field loaded
       inivelx = 0
       inively = 0
-
-      call initialize_ec_module()
 
       ! First initialize new-style StructureFile quantities.
       if (.not. flow_init_structurecontrol()) then
@@ -1748,6 +1751,7 @@ contains
             xbndz(k) = xe(L) ! xz(kb)
             ybndz(k) = ye(L) ! yz(kb)
             zbndz0(k) = dmiss
+            zbndz(k) = dmiss
             xy2bndz(:, k) = xyen(:, L)
 
             kbndz(1, k) = kb
@@ -2307,7 +2311,7 @@ contains
       use m_sediment, only: mxgr, grainlay, uniformerodablethickness, jagrainlayerthicknessspecified
       use m_transport, only: numconst_mdu, numconst
       use m_mass_balance_areas, only: mbaname, nomba, mbadef, mbadefdomain
-      use m_partitioninfo, only: jampi, idomain, my_rank, reduce_int_sum
+      use m_partitioninfo, only: jampi, idomain, my_rank, reduce_int_sum, set_japartqbnd
       use m_crosssections, only: cs_type_normal, getcsparstotal
       use m_trachy, only: trachy_resistance
       use m_structures, only: check_model_has_structures_across_partitions
@@ -2315,6 +2319,7 @@ contains
       use m_get_kbot_ktop
       use m_get_prof_1D
       use mathconsts, only: pi
+      use m_filez, only: doclose
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar

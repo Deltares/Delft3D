@@ -32,41 +32,42 @@
 
 module m_mtext
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine MTEXT(TEX, X, Y, NCOL)
-         use unstruc_colors
-         use m_box_nop
-         use m_fbox_nop
-         use m_set_col
-         use m_draw_text
+   subroutine MTEXT(TEX, X, Y, NCOL)
+      use precision, only: dp
+      use unstruc_colors
+      use m_box_nop
+      use m_fbox_nop
+      use m_set_col
+      use m_draw_text
 
-         double precision :: heigth
-         integer :: l
-         integer :: ncol
-         double precision :: w1
-         double precision :: width
-         double precision :: x
-         double precision :: xt
-         double precision :: y
-         double precision :: yt
+      real(kind=dp) :: heigth
+      integer :: l
+      integer :: ncol
+      real(kind=dp) :: w1
+      real(kind=dp) :: width
+      real(kind=dp) :: x
+      real(kind=dp) :: xt
+      real(kind=dp) :: y
+      real(kind=dp) :: yt
 !     grafische text op RELATIEVE grafische posities + achtergrondje
-         real INFOGRAPHICS, IGRCHARLENGTH
-         character TEX * (*)
-         L = len_trim(TEX)
-         WIDTH = IGRCHARLENGTH(TEX(1:L)) * INFOGRAPHICS(3)
-         W1 = IGRCHARLENGTH(TEX(1:1)) * INFOGRAPHICS(3)
-         HEIGTH = INFOGRAPHICS(4)
-         XT = X1 + X * (X2 - X1)
-         YT = Y1 + Y * (Y2 - Y1)
-         call SETCOL(KLSCL)
-         call FBOXnop(XT - WIDTH / 2, YT - HEIGTH / 2, XT + WIDTH / 2 + w1 / 2, YT + HEIGTH / 2)
-         call SETCOL(NCOL)
-         call BOXnop(XT - WIDTH / 2, YT - HEIGTH / 2, XT + WIDTH / 2 + w1 / 2, YT + HEIGTH / 2)
-         call DRAWTEXT(real(XT + W1 / 2 - WIDTH / 2), real(YT), TEX)
-         return
-      end
+      real INFOGRAPHICS, IGRCHARLENGTH
+      character TEX * (*)
+      L = len_trim(TEX)
+      WIDTH = IGRCHARLENGTH(TEX(1:L)) * INFOGRAPHICS(3)
+      W1 = IGRCHARLENGTH(TEX(1:1)) * INFOGRAPHICS(3)
+      HEIGTH = INFOGRAPHICS(4)
+      XT = X1 + X * (X2 - X1)
+      YT = Y1 + Y * (Y2 - Y1)
+      call SETCOL(KLSCL)
+      call FBOXnop(XT - WIDTH / 2, YT - HEIGTH / 2, XT + WIDTH / 2 + w1 / 2, YT + HEIGTH / 2)
+      call SETCOL(NCOL)
+      call BOXnop(XT - WIDTH / 2, YT - HEIGTH / 2, XT + WIDTH / 2 + w1 / 2, YT + HEIGTH / 2)
+      call DRAWTEXT(real(XT + W1 / 2 - WIDTH / 2), real(YT), TEX)
+      return
+   end
 
 end module m_mtext

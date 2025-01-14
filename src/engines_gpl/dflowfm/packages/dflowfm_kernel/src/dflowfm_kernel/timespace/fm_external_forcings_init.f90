@@ -76,9 +76,10 @@ contains
       character(len=:), allocatable :: file_name
       integer, allocatable :: itpenzr(:), itpenur(:)
 
+      iresult = DFM_NOERR
       file_name = trim(external_force_file_name)
       if (len_trim(file_name) <= 0) then
-         iresult = DFM_NOERR
+         ! empty line in MDU is allowed: exit without error
          return
       end if
 
@@ -86,6 +87,12 @@ contains
 
       call tree_create(file_name, bnd_ptr)
       call prop_file('ini', file_name, bnd_ptr, istat)
+      if (istat /= 0) then
+         write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(file_name), ''' could not be read'
+         call err_flush()
+         iresult = DFM_WRONGINPUT
+         return
+      end if
 
       ! check FileVersion
       major = 1
@@ -96,7 +103,7 @@ contains
             //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
             '. Ignoring this file.'
          call err_flush()
-         res = .false.
+         iresult = DFM_WRONGINPUT
          return
       end if
 
@@ -107,7 +114,8 @@ contains
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
       ! Build temporary reverse lookup table that maps boundary block # in file -> boundary condition nr in openbndsect (separate for u and z).
-      allocate (itpenzr(num_items_in_file), itpenur(num_items_in_file))
+      allocate (itpenzr(num_items_in_file))
+      allocate (itpenur(num_items_in_file))
       itpenzr(:) = 0
       itpenur(:) = 0
       do ibt = 1, nbndz
@@ -153,6 +161,9 @@ contains
 
          case ('meteo')
             res = res .and. init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
+
+         case ('sourcesink')
+            res = res .and. init_sourcesink_forcings(node_ptr, base_dir, file_name, group_name)
 
          case default ! Unrecognized item in an ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
@@ -212,14 +223,14 @@ contains
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
 
-      type(tree_data), pointer, intent(in) :: node_ptr
-      character(len=*), intent(in) :: base_dir
-      character(len=*), intent(in) :: file_name
-      character(len=*), intent(in) :: group_name
-      integer, dimension(:), intent(in) :: itpenzr
-      integer, dimension(:), intent(in) :: itpenur
-      integer, intent(inout) :: ib
-      integer, intent(inout) :: ibqh
+      type(tree_data), pointer, intent(in) :: node_ptr !< The tree node of the boundary block
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from node_ptr.
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages.
+      integer, dimension(:), intent(in) :: itpenzr !< boundary condition nr in openbndsect for z
+      integer, dimension(:), intent(in) :: itpenur !< boundary condition nr in openbndsect for u
+      integer, intent(inout) :: ib !< block counter for boundaries
+      integer, intent(inout) :: ibqh !< block counter for qh boundaries
       logical :: res
 
       integer, dimension(1) :: target_index
@@ -501,10 +512,11 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use timespace, only: selectelset_internal_nodes
 
-      type(tree_data), pointer, intent(in) :: node_ptr
-      character(len=*), intent(in) :: base_dir
-      integer, intent(in) :: block_number
-      integer, intent(in) :: major
+      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the lateral block.
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
+      integer, intent(in) :: block_number !< Number of the block, only used in error message.
+      integer, intent(in) :: major !< Major version number of ext-file
+
       character(len=INI_VALUE_LEN) :: loc_id
       integer :: loc_spec_type, num_coordinates
       character(len=INI_VALUE_LEN) :: node_id, branch_id, location_file, item_type
@@ -624,10 +636,11 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_alloc, only: aerr
 
-      type(tree_data), pointer, intent(in) :: node_ptr
-      character(len=*), intent(in) :: base_dir
-      character(len=*), intent(in) :: file_name
-      character(len=*), intent(in) :: group_name
+      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the meteo block.
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from node_ptr.
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages.
+
       logical :: res
 
       integer, allocatable :: mask(:)
@@ -917,6 +930,119 @@ contains
       end if
 
    end function init_meteo_forcings
+
+   !> Read sourcesink blocks from new external forcings file.
+   function init_sourcesink_forcings(node_ptr, base_dir, file_name, group_name) result(is_successful)
+      use messageHandling, only: err_flush, msgbuf
+      use tree_data_types, only: tree_data
+      use properties, only: prop_get
+      use unstruc_files, only: resolvePath
+      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
+      use netcdf_utils, only: ncu_sanitize_name
+
+      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the sourcesink block.
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from node_ptr.
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages.
+
+      character(len=INI_VALUE_LEN) :: sourcesink_id
+      character(len=INI_VALUE_LEN) :: sourcesink_name
+      character(len=INI_VALUE_LEN) :: location_file
+      character(len=INI_VALUE_LEN) :: discharge_file
+      character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
+      character(len=NAMLEN) :: tmpstr
+
+      integer :: num_coordinates
+      real(kind=dp), dimension(:), allocatable :: x_coordinates
+      real(kind=dp), dimension(:), allocatable :: y_coordinates
+      ! only constant profiles (1 value) or linear profiles (2 values) are allowed
+      integer, parameter :: num_range_points = 2
+      real(kind=dp), dimension(num_range_points) :: z_range_source
+      real(kind=dp), dimension(num_range_points) :: z_range_sink
+      real(kind=dp) :: area
+      integer :: i_const
+      integer :: ierr
+      logical :: is_successful
+      logical :: is_read
+
+      is_successful = .false.
+
+      sourcesink_id = ' '
+      call prop_get(node_ptr, '', 'id', sourcesink_id, is_read)
+      if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''id'' is missing.'
+         call err_flush()
+         return
+      end if
+      call prop_get(node_ptr, '', 'name', sourcesink_name, is_read)
+
+      call prop_get(node_ptr, '', 'locationFile', location_file, is_read)
+      if (is_read) then
+         call resolvePath(location_file, base_dir)
+      else
+         call prop_get(node_ptr, '', 'numCoordinates', num_coordinates, is_read)
+         if (is_read) then
+            if (num_coordinates <= 0) then
+               write (msgbuf, '(3a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
+               call err_flush()
+               return
+            end if
+            allocate (x_coordinates(num_coordinates), stat=ierr)
+            call prop_get(node_ptr, '', 'xCoordinates', x_coordinates, num_coordinates, is_read)
+            if (is_read) then
+               allocate (y_coordinates(num_coordinates), stat=ierr)
+               call prop_get(node_ptr, '', 'yCoordinates', y_coordinates, num_coordinates, is_read)
+            end if
+         end if
+      end if
+      if (.not. is_read) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location information is incomplete or missing.'
+         call err_flush()
+         return
+      end if
+
+      ! read optional vertical profiles.
+      call prop_get(node_ptr, '', 'zSource', z_range_source, num_range_points, is_read)
+      call prop_get(node_ptr, '', 'zSink', z_range_sink, num_range_points, is_read)
+
+      call prop_get(node_ptr, '', 'discharge', discharge_file, is_read)
+      if (.not. is_read) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+         call err_flush()
+         return
+      end if
+
+      ! read optional value 'area' to compute the momentum released
+      call prop_get(node_ptr, '', 'area', area, is_read)
+
+      ! Constituents (salinity, temperature, sediments, tracers) may have a timeseries file
+      ! specifying the difference in concentration added by the source/sink.
+      ! All these files are optional, so no check on 'is_read' can be present below.
+      if (NUMCONST > 0) then
+         allocate (constituent_delta_file(NUMCONST), stat=ierr)
+         do i_const = 1, NUMCONST
+            if (i_const == ISALT) then
+               call prop_get(node_ptr, '', 'salinityDelta', constituent_delta_file(i_const), is_read)
+            else if (i_const == ITEMP) then
+               call prop_get(node_ptr, '', 'temperatureDelta', constituent_delta_file(i_const), is_read)
+            else if (i_const == ISPIR) then
+               cycle
+            else
+               ! tracers and sediments: remove special characters from const_name before constructing the property to read.
+               tmpstr = const_names(i_const)
+               call ncu_sanitize_name(tmpstr)
+               if (i_const >= ISED1 .and. i_const <= ISEDN) then
+                  call prop_get(node_ptr, '', 'sedFrac'//trim(tmpstr)//'Delta', constituent_delta_file(i_const), is_read)
+               else if (i_const >= ITRA1 .and. i_const <= ITRAN) then
+                  call prop_get(node_ptr, '', 'tracer'//trim(tmpstr)//'Delta', constituent_delta_file(i_const), is_read)
+               end if
+            end if
+         end do
+      end if
+
+      is_successful = .true.
+
+   end function init_sourcesink_forcings
 
    !> Get several target grid properties for a given location type.
    !!

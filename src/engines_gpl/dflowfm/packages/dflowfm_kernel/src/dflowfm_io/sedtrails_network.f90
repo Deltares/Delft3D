@@ -126,12 +126,13 @@ contains
    ! set mask to determine which sedtrails xk,yk points lie on present grid
    ! determine interpolation weights to transfer data from flowgeom to sedtrails output
    subroutine sedtrails_get_grid_on_network()
+      use precision, only: dp
       use m_sedtrails_data
       use m_polygon
       use m_tpoly
       use m_partitioninfo, only: my_rank, jampi, generate_partition_pol_from_idomain
       use network_data, only: netstat, netstat_ok
-      use geometry_module, only: get_startend, dbdistance
+      use geometry_module, only: get_startend
       use m_missing
       use m_flowgeom, only: xz, yz, ndx, bl
       use m_ec_triangle, only: jagetwf, indxx, wfxx
@@ -150,9 +151,9 @@ contains
 
       integer, allocatable :: indices(:)
       integer, allocatable :: sedtrails_idom(:)
-      double precision, allocatable :: dumout(:)
+      real(kind=dp), allocatable :: dumout(:)
       type(tpoly), dimension(:), allocatable :: pli
-      double precision, dimension(6) :: transformcoef ! don't override externalforcing setting
+      real(kind=dp), dimension(6) :: transformcoef ! don't override externalforcing setting
 
       transformcoef = 0d0
 

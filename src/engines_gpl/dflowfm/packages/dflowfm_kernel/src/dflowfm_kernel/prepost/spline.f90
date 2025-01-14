@@ -34,12 +34,13 @@ module m_spline
 contains
 
    subroutine SPLINE(Y, N, Y2)
+      use precision, only: dp
       integer :: i
       integer :: k
       integer :: n
-      double precision :: Y(N), Y2(N)
-      double precision, allocatable :: U(:)
-      double precision :: P
+      real(kind=dp) :: Y(N), Y2(N)
+      real(kind=dp), allocatable :: U(:)
+      real(kind=dp) :: P
 
       allocate (U(N))
 

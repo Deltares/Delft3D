@@ -32,32 +32,32 @@
 
 module m_setgrafmod
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine SETGRAFMOD()
-         use m_devices
-         implicit none
-         integer :: infoscreen
-         integer :: infoscreenmode
-         integer :: mode
+   subroutine SETGRAFMOD()
+      use m_devices
+      implicit none
+      integer :: infoscreen
+      integer :: infoscreenmode
+      integer :: mode
 
-         MODE = INFOSCREEN(1)
-         IWS = INFOSCREEN(2)
-         IHS = INFOSCREEN(3)
-         NPX = INFOSCREEN(4)
-         NPY = INFOSCREEN(5)
-         NCOLR = INFOSCREENMODE(6, MODE)
-         NDEV = MODE
+      MODE = INFOSCREEN(1)
+      IWS = INFOSCREEN(2)
+      IHS = INFOSCREEN(3)
+      NPX = INFOSCREEN(4)
+      NPY = INFOSCREEN(5)
+      NCOLR = INFOSCREENMODE(6, MODE)
+      NDEV = MODE
 
-         call ISCREENMODEOPTIONS(1, iws)
-         call ISCREENMODEOPTIONS(2, ihs)
+      call ISCREENMODEOPTIONS(1, iws)
+      call ISCREENMODEOPTIONS(2, ihs)
 
 !     IF (NOPSYS .EQ. 1) THEN
 
 !     ENDIF
-         return
-      end
+      return
+   end
 
 end module m_setgrafmod

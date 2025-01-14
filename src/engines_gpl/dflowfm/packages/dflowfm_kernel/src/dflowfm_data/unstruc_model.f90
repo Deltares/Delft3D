@@ -31,11 +31,14 @@
 !> Manages the unstruc model definition for the active problem.
 module unstruc_model
 
+   use m_datum2, only: datum2
+   use m_setmodind, only: setmodind
+   use m_setgrainsizes, only: setgrainsizes
    use precision
    use properties
    use tree_data_types
    use tree_structures
-   use unstruc_messages
+   use messagehandling, only: LEVEL_INFO,LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
    use m_globalparameters, only: t_filenames
    use time_module, only: ymd2modified_jul, datetimestring_to_seconds
    use dflowfm_version_module, only: getbranch_dflowfm
@@ -73,10 +76,11 @@ module unstruc_model
    ! 1.00 (2014-09-22): first version of new permissive checking procedure. All (older) unversioned input remains accepted.
 
    integer, parameter :: ExtfileNewMajorVersion = 2
-   integer, parameter :: ExtfileNewMinorVersion = 1
+   integer, parameter :: ExtfileNewMinorVersion = 2
    ! History ExtfileNewVersion:
    ! 2.00 (2019-08-06): enabled specifying "nodeId" in a 1D network node.
    ! 2.01 (2019-12-04): optional fields targetMaskFile and targetMaskInvert for [Meteo] blocks.
+   ! 2.02 (2024-10-24): add [SourceSink] blocks.
 
    !> The version number of the 1D2DFile format: d.dd, [config_major].[config_minor], e.g., 1.03
     !!
@@ -238,7 +242,7 @@ module unstruc_model
    integer :: md_exportnet_bedlevel = 0 !< Export interpreted bed levels after initialization (1) or not (0)
    integer :: md_cutcells = 0
    integer :: npolf = 0 !< nr of polygonplotfiles saved with n key in editpol
-   integer :: md_usecaching = 1 !< Use the caching file if it exists (1) or not (0)
+   logical :: md_usecaching !< Use and/or generate cache file if true
 
    integer :: md_convertlongculverts = 0 !< convert culverts (and exit program) yes (1) or no (0)
    character(len=128) :: md_culvertprefix = ' ' !< prefix for generating long culvert files
@@ -368,7 +372,7 @@ contains
 
       md_cfgfile = ' '
 
-      md_usecaching = 1 !< Use the caching file if it exists (1) or not (0)
+      md_usecaching = .true. !< Use and/or generate cache file if true
 
       ! The following settings are intentionally *not* reset for each model.
       !md_snapshot_seqnr  = 0 ! not handy in practice, it destroys previous plots without warning
@@ -427,13 +431,9 @@ contains
       use m_delpol
       use m_reapol
       use m_set_nod_adm
-
-      interface
-         subroutine realan(mlan, antot)
-            integer, intent(inout) :: mlan
-            integer, intent(inout), optional :: antot
-         end subroutine realan
-      end interface
+      use m_realan, only: realan
+      use m_filez, only: oldfil
+      use unstruc_messages, only: threshold_abort
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 
@@ -467,7 +467,7 @@ contains
       end if
 
       ! load the caching file - if there is any
-      call loadCachingFile(md_ident, md_netfile, md_usecaching)
+      call load_caching_file(md_ident, md_netfile, md_usecaching)
 
       ! read and proces dflow1d model
       ! This routine is still used for Morphology model with network in INI-File (Willem Ottevanger)
@@ -708,7 +708,7 @@ contains
       use m_xbeach_avgoutput
       use unstruc_netcdf, only: UNC_CONV_CFOLD, UNC_CONV_UGRID, unc_set_ncformat, unc_set_nccompress, unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
       use dfm_error
-      use MessageHandling
+      use unstruc_messages, only: unstruc_errorhandler, loglevel_StdOut
       use system_utils, only: split_filename
       use m_commandline_option, only: iarg_usecaching
       use m_subsidence, only: sdu_update_s1
@@ -728,6 +728,8 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_map_his_precision
       use m_qnerror
+      use m_densfm, only: densfm
+      use messagehandling, only: msgbuf, err_flush, warn_flush
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -744,14 +746,13 @@ contains
       integer :: jadum
       real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
       character(len=200), dimension(:), allocatable :: fnames
-      real(kind=dp), external :: densfm
       real(kind=dp) :: tim
       real(kind=dp) :: sumlaycof
       real(kind=dp), parameter :: tolSumLay = 1d-12
       integer, parameter :: maxLayers = 300
       integer :: major, minor
       integer :: ignore_value
-      external :: unstruc_errorhandler
+
       istat = 0 ! Success
 
 ! Put .mdu file into a property tree
@@ -840,10 +841,17 @@ contains
       call prop_get(md_ptr, 'geometry', 'Cutcelllist', md_cutcelllist, success)
       call prop_get(md_ptr, 'geometry', 'IniFieldFile', md_inifieldfile, success)
 
-      call prop_get(md_ptr, 'geometry', 'UseCaching', md_usecaching, success)
+      call prop_get(md_ptr, 'geometry', 'UseCaching', md_usecaching, success, value_parsed)
+      if (success .and. .not. value_parsed) then
+         call mess(LEVEL_ERROR, 'Did not recognise UseCaching value. It must be 0 or 1.')
+      end if
       ! Merge cmd line switches with mdu file settings
       if (iarg_usecaching /= -1) then
-         md_usecaching = iarg_usecaching
+         if (iarg_usecaching == 0) then
+            md_usecaching = .false.
+         else if (iarg_usecaching == 1) then
+            md_usecaching = .true.
+         end if
       end if
 
       call prop_get(md_ptr, 'geometry', 'FixedWeirFile', md_fixedweirfile, success)
@@ -1753,10 +1761,7 @@ contains
             ja_timestep_auto_visc = 1
          end if
       end if
-      ! if (success .and. ibuf /= 1) then
-      !   write(msgbuf, '(a,i0,a)') 'MDU [time] AutoTimestep=', ibuf, ' is deprecated, timestep always automatic. Use DtMax instead.'
-      !   call warn_flush()
-      ! endif
+
       call prop_get(md_ptr, 'time', 'AutoTimestepNoStruct', ja_timestep_nostruct, success)
       call prop_get(md_ptr, 'time', 'AutoTimestepNoQout', ja_timestep_noqout, success)
 
@@ -2037,6 +2042,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', jamapfw, success)
       call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', jamapspir, success)
       call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', jamapnumlimdt, success)
+      call prop_get(md_ptr, 'output', 'Wrixyz_numlimdt', write_numlimdt_file, success)
       call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', jamaptaucurrent, success)
       call prop_get(md_ptr, 'output', 'Wrimap_z0', jamapz0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_salinity', jamapsal, success)
@@ -2471,15 +2477,6 @@ contains
          jashp_fxw = 0
       end if
 
-      ! Switch on rst boundaries if jawave==3 and restartinterval>0
-      ! For now here, and temporarily commented
-      !if (jarstbnd==0 .and. jawave==3 .and. ti_rst>eps10) then
-      !   write (msgbuf, '(a)') 'MDU settings specify that writing restart files is requested, and switch off writing boundary data to the restart file. ' &
-      !      //'A coupling with SWAN is specified as well. To correctly restart a SWAN+FM model, boundary restart data are required. Switching Wrirst_bnd to 1.'
-      !   call warn_flush()
-      !   jarstbnd=1
-      !endif
-
       if (jagui == 0) then
          ! If obsolete entries are used in the mdu-file, return with that error code.
          call check_file_tree_for_deprecated_keywords(md_ptr, deprecated_mdu_keywords, ierror, prefix='While reading '''//trim(filename)//'''', excluded_chapters=['model'])
@@ -2553,6 +2550,8 @@ contains
 
 !> Write a model definition to a file.
    subroutine writeMDUFile(filename, istat)
+      use m_filez, only: doclose, newfil
+
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -2666,7 +2665,7 @@ contains
       call prop_set(prop_ptr, 'geometry', 'ProfdefFile', trim(md_profdeffile), 'Channel profile definition file *_profdefinition.def with definition for all profile numbers')
       call prop_set(prop_ptr, 'geometry', 'ProfdefxyzFile', trim(md_profdefxyzfile), 'Channel profile definition file _profdefinition.def with definition for all profile numbers')
       call prop_set(prop_ptr, 'geometry', 'IniFieldFile', trim(md_inifieldfile), 'Initial values and parameter fields file')
-      call prop_set(prop_ptr, 'geometry', 'UseCaching', md_usecaching, 'Use caching for geometrical/network-related items (0: no, 1: yes)')
+      call prop_set(prop_ptr, 'geometry', 'UseCaching', merge(1, 0, md_usecaching), 'Use caching for geometrical/network-related items (0: no, 1: yes)')
 
       call prop_set(prop_ptr, 'geometry', 'Uniformwidth1D', wu1Duni, 'Uniform width for channel profiles not specified by profloc')
       if (writeall .or. hh1Duni /= 3d3) then
@@ -3812,6 +3811,10 @@ contains
          end if
          call prop_set(prop_ptr, 'output', 'NcWriteLatLon', ibuf, 'Write extra lat-lon coordinates for all projected coordinate variables in each NetCDF file (for CF-compliancy).')
       end if
+      if (writeall .or. write_numlimdt_file) then
+         call prop_set(prop_ptr, 'output', 'Wrixyz_numlimdt', merge(1, 0, write_numlimdt_file), &
+                       'Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file (1: yes, 0: no).')
+      end if
       if (writeall .or. len_trim(unc_metadatafile) > 0) then
          call prop_set(prop_ptr, 'output', 'MetaDataFile', unc_metadatafile, 'Metadata NetCDF file with user-defined global dataset attributes (*_meta.nc).')
       end if
@@ -3963,11 +3966,14 @@ contains
 !! OutputDir has been read already.
    subroutine switch_dia_file()
       use system_utils, only: makedir
+      use m_set_get_mdia, only: setmdia, getmdia
+      use unstruc_messages, only: initMessaging
+      
       implicit none
+      
       integer :: mdia2, mdia, ierr
       character(len=256) :: rec
       logical :: line_copied
-      external :: getmdia, setmdia
 
       call makedir(getoutputdir()) ! No problem if it exists already.
 
@@ -4150,6 +4156,7 @@ contains
    subroutine set_output_time_vector(md_tvfil, ti_tv, ti_tv_rel)
 
       use m_flowtimes, only: tstop_user
+      use m_filez, only: oldfil
 
       implicit none
 

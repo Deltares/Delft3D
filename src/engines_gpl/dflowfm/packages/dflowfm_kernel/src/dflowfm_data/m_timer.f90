@@ -31,11 +31,12 @@
 !
 
 module m_timer
+   use precision, only: dp
    implicit none
    integer, parameter :: jatimer = 1 !< time parallel solver (1) or not (0)
    integer, parameter :: NUMT = 29 !< number of timings
-   double precision, dimension(3, NUMT) :: t !< wall-clock timings, (1,:): start, (2,:): end, (3,:): sum
-   double precision, dimension(3, NUMT) :: tcpu !< CPU        timings, (1,:): start, (2,:): end, (3,:): sum
+   real(kind=dp), dimension(3, NUMT) :: t !< wall-clock timings, (1,:): start, (2,:): end, (3,:): sum
+   real(kind=dp), dimension(3, NUMT) :: tcpu !< CPU        timings, (1,:): start, (2,:): end, (3,:): sum
    integer, dimension(NUMT) :: itstat !< timer status, 0: not timing (stopped), 1: timing (started)
 
    integer :: numtsteps !< number of time steps
@@ -117,12 +118,13 @@ contains
 
 !> start the timer
    subroutine starttimer(itvar)
+      use precision, only: dp
       use m_wall_clock_time
       implicit none
 
       integer, intent(in) :: itvar !< timer number
 
-      double precision :: tloc
+      real(kind=dp) :: tloc
 
 !     check status
       if (itstat(itvar) /= 0) then
@@ -142,14 +144,15 @@ contains
 
 !> stop the timer
    subroutine stoptimer(itvar)
+      use precision, only: dp
       use MessageHandling
       use m_wall_clock_time
 
       implicit none
       integer, intent(in) :: itvar !< timer number
 
-      double precision :: tloc
-      double precision, parameter :: dtol = 1d-3 !< timer tolerance
+      real(kind=dp) :: tloc
+      real(kind=dp), parameter :: dtol = 1d-3 !< timer tolerance
 
 !     check status
       if (itstat(itvar) /= 1) then
@@ -177,7 +180,8 @@ contains
    end subroutine stoptimer
 
    !> get timer value
-   double precision function gettimer(itype, itvar)
+   real(kind=dp) function gettimer(itype, itvar)
+      use precision, only: dp
       implicit none
       integer, intent(in) :: itype !< timer type, cpu-time (0) or wall-clock time (other)
       integer, intent(in) :: itvar !< timer number

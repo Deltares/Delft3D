@@ -38,6 +38,6 @@ module m_locatora
    real(dp) :: XA
    real(dp) :: YA
    integer :: JMOUSE
-   integer :: JASHOW 
+   integer :: JASHOW
 
 end module m_locatora

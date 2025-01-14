@@ -31,6 +31,7 @@
 !
 
 module m_flowparameters
+   use precision, only: dp
    use m_sediment, only: jased
    use m_missing
 
@@ -76,32 +77,32 @@ module m_flowparameters
 
    integer :: jacorioconstant = 0 !< 0=default, 1=Coriolis constant in sferic models anyway,2=beta plane, both in cart. and spher. coor.
 
-   double precision :: Oceaneddyamp = 0.0d0 !< Amplitude of testcase Oceaneddy, negative = anticyclone
+   real(kind=dp) :: Oceaneddyamp = 0.0d0 !< Amplitude of testcase Oceaneddy, negative = anticyclone
 
-   double precision :: Oceaneddyvel = 0.0d0 !< Velocity of testcase Oceaneddy, negative = anticyclone
+   real(kind=dp) :: Oceaneddyvel = 0.0d0 !< Velocity of testcase Oceaneddy, negative = anticyclone
 
-   double precision :: Oceaneddysizefrac = 0.05d0 !< Length scale relative to diagonal domain size
+   real(kind=dp) :: Oceaneddysizefrac = 0.05d0 !< Length scale relative to diagonal domain size
 
-   double precision :: Oceaneddysize = 0.0d0 !< Length scale relative to diagonal domain size
+   real(kind=dp) :: Oceaneddysize = 0.0d0 !< Length scale relative to diagonal domain size
 
-   double precision :: Oceaneddyxoff = 0.0d0 !< relative domain size xoffset from centre
+   real(kind=dp) :: Oceaneddyxoff = 0.0d0 !< relative domain size xoffset from centre
 
-   double precision :: Oceaneddyyoff = 0.0d0 !< relative domain size yoffset from centre
+   real(kind=dp) :: Oceaneddyyoff = 0.0d0 !< relative domain size yoffset from centre
 
-   double precision :: Corioadamsbashfordfac = 0.5d0 !< Coriolis Adams Bashforth , 0d0 = explicit, 0.5 = AB
+   real(kind=dp) :: Corioadamsbashfordfac = 0.5d0 !< Coriolis Adams Bashforth , 0d0 = explicit, 0.5 = AB
 
-   double precision :: Barocadamsbashfordfac = .5d0 !< Baroclinic Adams Bashforth , 0d0 = explicit, 0.5 = AB
+   real(kind=dp) :: Barocadamsbashfordfac = .5d0 !< Baroclinic Adams Bashforth , 0d0 = explicit, 0.5 = AB
 
-   double precision :: hhtrshcor !< if > 0 safety for hu/hs in corio for now, ==0
+   real(kind=dp) :: hhtrshcor !< if > 0 safety for hu/hs in corio for now, ==0
 
-   double precision :: trshcorio !< below this depth coriolis force scaled down linearly to 0
+   real(kind=dp) :: trshcorio !< below this depth coriolis force scaled down linearly to 0
 
    integer :: jatidep !< use tide potential forcing yes no
 
    integer :: jaselfal !< use self attraction and loading yes no
    integer :: jaSELFALcorrectWLwithIni !< correct water level with initial water level in SAL
 
-   double precision :: doodsonstart, doodsonstop, doodsoneps
+   real(kind=dp) :: doodsonstart, doodsonstop, doodsoneps
 
    integer :: jatrt !< Trtrou = #Y# --> 1 , Trtrou = #N# --> 0  (Delft3D style input)
 
@@ -204,12 +205,12 @@ module m_flowparameters
 
    integer :: izbndpos !< 0 : waterlevel boundary location as in D3DFLOW, 1=on network boundary, 2=on specified boundary polyline
 
-   double precision :: blmeanbelow !<  : if not -999d0, below this level the cell centre bedlevel is the mean of surrouding netnodes
-   double precision :: blminabove !<  : if not -999d0, above this level the cell centre bedlevel is the min of surrouding netnodes
-   double precision :: blmin !<  : lowest bedlevel point in model
+   real(kind=dp) :: blmeanbelow !<  : if not -999d0, below this level the cell centre bedlevel is the mean of surrouding netnodes
+   real(kind=dp) :: blminabove !<  : if not -999d0, above this level the cell centre bedlevel is the min of surrouding netnodes
+   real(kind=dp) :: blmin !<  : lowest bedlevel point in model
 
-   double precision :: upot0 = -999d0 !<  : initial potential energy
-   double precision :: ukin0 = -999d0 !<  : initial potential energy
+   real(kind=dp) :: upot0 = -999d0 !<  : initial potential energy
+   real(kind=dp) :: ukin0 = -999d0 !<  : initial potential energy
 
    integer :: jaupdbndbl !< Update bl at boundary (1 = update, 0 = no update)
    integer :: jaupdbobbl1d !< Update bl and bobs for 1d network (call to setbobs_1d only at initialization)
@@ -221,8 +222,8 @@ module m_flowparameters
    integer :: iproftypuni !< 1 : circle, 2 : rectan, 3 = rectan R=H, negative = closed for rain and grw
    integer :: iproftypuni5 !< idem, for streetinlets
    integer :: iproftypuni7 !< idem for roofgutterpipes
-   double precision :: slotw2D !< minimum slotwidth 2D
-   double precision :: slotw1D !< minimum slotwidth 1D
+   real(kind=dp) :: slotw2D !< minimum slotwidth 2D
+   real(kind=dp) :: slotw1D !< minimum slotwidth 1D
 
    integer :: jaconveyance2D !< 1 : yes, 0 : no
    integer :: jaconveyance3D = 0 !< 1 : yes, 0 : no
@@ -236,18 +237,18 @@ module m_flowparameters
    integer :: filterorder !< order of filter
    integer :: jacheckmonitor !< compute and output "checkerboard" mode monitor
 
-   double precision :: Uniformhu !< Uniformhu for arjen's membranes
-   double precision :: bedslope !< bed inclination testcases
-   double precision :: bedslopedir = 45d0 !< bed inclination dir (deg)
-   double precision :: bedwidth = 100d0 !< width of channel
-   double precision :: bedwaveamplitude = 0d0 !< bed testcases
-   double precision :: bedwavelength = 0d0 !< bed testcases
+   real(kind=dp) :: Uniformhu !< Uniformhu for arjen's membranes
+   real(kind=dp) :: bedslope !< bed inclination testcases
+   real(kind=dp) :: bedslopedir = 45d0 !< bed inclination dir (deg)
+   real(kind=dp) :: bedwidth = 100d0 !< width of channel
+   real(kind=dp) :: bedwaveamplitude = 0d0 !< bed testcases
+   real(kind=dp) :: bedwavelength = 0d0 !< bed testcases
 
-   double precision :: Slopedrop2D !< Apply losses for 'rain from the roof', only if local bottom slope > Slopedrop2D, only for Slopedrop2D  > 0.0
+   real(kind=dp) :: Slopedrop2D !< Apply losses for 'rain from the roof', only if local bottom slope > Slopedrop2D, only for Slopedrop2D  > 0.0
    logical :: drop1D !< Apply losses for all 1d links,
-   double precision :: drop2D !< Apply losses in 2D if downwind z below bob + 2/3 hu
-   double precision :: drop3D !< Apply losses in 3D if downwind z below bob + 2/3 hu
-   double precision :: zwsbtol = 0d0 !< zws(kb0) = bl - zwsbtol
+   real(kind=dp) :: drop2D !< Apply losses in 2D if downwind z below bob + 2/3 hu
+   real(kind=dp) :: drop3D !< Apply losses in 3D if downwind z below bob + 2/3 hu
+   real(kind=dp) :: zwsbtol = 0d0 !< zws(kb0) = bl - zwsbtol
    integer :: keepzlayeringatbed = 2 !< only for z, 0=thin bed layer
    !< 1= : bedlayer=zlayer
    !< 2= : 0.5*(z2+z0), z0 being floor level layer 1, z2 being ceiling layer 2
@@ -263,9 +264,9 @@ module m_flowparameters
    !< 4= : sig = dble(LL-Lb+1) / dble(LLbc-Lb+1), uniform independent of L,R
    integer :: keepzlay1bedvol = 0 !< 1=: Correct bed volumes for keepzlayeringatbed=1
    !< 0=: default, consistent volumes transport and baroclinic terms
-   double precision :: cflmx !< max Courant nr ()
-   double precision :: cflw !< wave velocity fraction, total courant vel = u + cflw*wavevelocity
-   double precision :: teta0 !< 1.00d0   ! .52      ! uniform teta in horizontal (),
+   real(kind=dp) :: cflmx !< max Courant nr ()
+   real(kind=dp) :: cflw !< wave velocity fraction, total courant vel = u + cflw*wavevelocity
+   real(kind=dp) :: teta0 !< 1.00d0   ! .52      ! uniform teta in horizontal (),
    integer :: ivariableteta !< 0=fully implicit,   1=teta constant,        2=variable teta
                                                         !! (set teta=1.0)      (set teta=0.51->0.99)   (set teta<0)
    integer :: japiaczek33 = 1 ! testing 1 2
@@ -288,54 +289,54 @@ module m_flowparameters
    integer :: ifixedweirscheme1D2D !< 0 = use regular fixedweirscheme also on 1D2D links, 1 = iterative 1d2d lateral coupling on 1D2D links
    integer :: ifxedweirfrictscheme !< 0 = friction based on hu, 1 = friction based on subgrid weirfriction scheme
    integer :: jasetadjacentbobs = 0 !< also lift adjacent bobs and bl of kadecel
-   double precision :: fixedweircontraction !< flow width = flow width*fixedweircontraction
-   double precision :: fixedweirtopwidth !< , e.g. 4.00 (m)
-   double precision :: fixedweirtopfrictcoef !< if .ne. dmiss, use this friction coefficient on top width
-   double precision :: fixedweirtalud !< , e.g. 4 ( ) for 1 to 4 talud
-   double precision :: waquaweirthetaw = 0.6d0 !< , e.g. 0.6
-   double precision :: huweirregular = 0.0d0 !< For Tabellenboek and Villemonte:
+   real(kind=dp) :: fixedweircontraction !< flow width = flow width*fixedweircontraction
+   real(kind=dp) :: fixedweirtopwidth !< , e.g. 4.00 (m)
+   real(kind=dp) :: fixedweirtopfrictcoef !< if .ne. dmiss, use this friction coefficient on top width
+   real(kind=dp) :: fixedweirtalud !< , e.g. 4 ( ) for 1 to 4 talud
+   real(kind=dp) :: waquaweirthetaw = 0.6d0 !< , e.g. 0.6
+   real(kind=dp) :: huweirregular = 0.0d0 !< For Tabellenboek and Villemonte:
    !< hu <  huweirregular : true flow area
    !< hu >= huweirregular : flow area as if no weir present
-   double precision :: sini !< uniform initial waterlevel (m),     (uniform bottom level = zkuni)
-   double precision :: waterdepthini1D !< uniform initial depth (m)
-   double precision :: uini !< uniform initial velociy    (m/s),
-   double precision :: salini !< uniform initial sal        (ppt)
-   double precision :: deltasalinity = -999d0 !< uniform initial sal        (ppt)
-   double precision :: Sal0abovezlev !< sal=0 above lev= zlev      (m)
-   double precision :: temini !< uniform initial temp       (degC)
-   double precision :: spirini !< uniform initial spirint    (m/s)
+   real(kind=dp) :: sini !< uniform initial waterlevel (m),     (uniform bottom level = zkuni)
+   real(kind=dp) :: waterdepthini1D !< uniform initial depth (m)
+   real(kind=dp) :: uini !< uniform initial velociy    (m/s),
+   real(kind=dp) :: salini !< uniform initial sal        (ppt)
+   real(kind=dp) :: deltasalinity = -999d0 !< uniform initial sal        (ppt)
+   real(kind=dp) :: Sal0abovezlev !< sal=0 above lev= zlev      (m)
+   real(kind=dp) :: temini !< uniform initial temp       (degC)
+   real(kind=dp) :: spirini !< uniform initial spirint    (m/s)
 
-   double precision :: zbnd !< for now only, uniform waterlevel on boundary
-   double precision :: zkdropstep !< Amount of bottomlevel to be added with dropland (m)
-   double precision :: sdropstep !< Amount of water to be added with dropwater (m)
+   real(kind=dp) :: zbnd !< for now only, uniform waterlevel on boundary
+   real(kind=dp) :: zkdropstep !< Amount of bottomlevel to be added with dropland (m)
+   real(kind=dp) :: sdropstep !< Amount of water to be added with dropwater (m)
 
-   double precision, parameter :: eps4 = 1d-4 !< min au in poshchk
-   double precision, parameter :: eps6 = 1d-6 !<
-   double precision, parameter :: eps8 = 1d-8 !< implicit diffusion
-   double precision, parameter :: eps10 = 1d-10 !<
-   double precision, parameter :: eps20 = 1d-20 !< faclax
-   double precision :: epshsdif = 1d-2 !< hs < epshsdif: no vertical diffusion if hs < epshsdif
-   double precision :: s01max !< water level threshold (m) between s0 and s1 in validation routine
-   double precision :: u01max !< velocity threshold (m/s) between u0 and u1 in validation routine
-   double precision :: umagmax !< velocity threshold (m/s) for velocity magnitude in validation routine
-   double precision :: s01warn !< warning level water level (m) between s0 in validation routine
-   double precision :: u01warn !< warning level velocity (m/s) between u0 in validation routine
-   double precision :: umagwarn !< warning level velocity (m/s) for velocity magnitude in validation routine
-   double precision :: sscmax !< error level concentration (kg/m3) for velocity magnitude in validation routine
+   real(kind=dp), parameter :: eps4 = 1d-4 !< min au in poshchk
+   real(kind=dp), parameter :: eps6 = 1d-6 !<
+   real(kind=dp), parameter :: eps8 = 1d-8 !< implicit diffusion
+   real(kind=dp), parameter :: eps10 = 1d-10 !<
+   real(kind=dp), parameter :: eps20 = 1d-20 !< faclax
+   real(kind=dp) :: epshsdif = 1d-2 !< hs < epshsdif: no vertical diffusion if hs < epshsdif
+   real(kind=dp) :: s01max !< water level threshold (m) between s0 and s1 in validation routine
+   real(kind=dp) :: u01max !< velocity threshold (m/s) between u0 and u1 in validation routine
+   real(kind=dp) :: umagmax !< velocity threshold (m/s) for velocity magnitude in validation routine
+   real(kind=dp) :: s01warn !< warning level water level (m) between s0 in validation routine
+   real(kind=dp) :: u01warn !< warning level velocity (m/s) between u0 in validation routine
+   real(kind=dp) :: umagwarn !< warning level velocity (m/s) for velocity magnitude in validation routine
+   real(kind=dp) :: sscmax !< error level concentration (kg/m3) for velocity magnitude in validation routine
    ! See also m_flowtimes::dtminbreak
 
    ! parameters controlling flooding/drying/solving
    integer :: testdryflood !< Flag for testing alternative drying flooding algoritm; 0 = standard, 1 =Delft3D-FLOW
    integer :: testfixedweirs !< Flag for fixed weir options; 0 = original Villemonte approach, 1 = Sieben2007
-   double precision :: epshu !< minimum waterdepth for setting hu>0
-   double precision :: epshs !< minimum waterdepth for setting cfu
-   double precision :: epsz0 !< minimum value for roughness height
-   double precision :: chkhuexpl !< only for step_explicit:  check computed flux beneath this waterdepth
-   double precision :: chkadvd !< check advection  for 'drying' below this (upwind) waterdepth
-   double precision :: chkdifd !< check diffusion, only for jatransportautotimestepdiff== 1
-   double precision :: chkwndd !< check windstress for 'drying' below this waterdepth
-   double precision :: chktempdep !< check heatfluxes for 'drying' below this waterdepth
-   double precision :: trsh_u1Lb = 0.0d0
+   real(kind=dp) :: epshu !< minimum waterdepth for setting hu>0
+   real(kind=dp) :: epshs !< minimum waterdepth for setting cfu
+   real(kind=dp) :: epsz0 !< minimum value for roughness height
+   real(kind=dp) :: chkhuexpl !< only for step_explicit:  check computed flux beneath this waterdepth
+   real(kind=dp) :: chkadvd !< check advection  for 'drying' below this (upwind) waterdepth
+   real(kind=dp) :: chkdifd !< check diffusion, only for jatransportautotimestepdiff== 1
+   real(kind=dp) :: chkwndd !< check windstress for 'drying' below this waterdepth
+   real(kind=dp) :: chktempdep !< check heatfluxes for 'drying' below this waterdepth
+   real(kind=dp) :: trsh_u1Lb = 0.0d0
    integer :: jposhchk !< check for positive waterdepth; 0 = no
                                                         !!                               -1 = 1.0*dts, only check for dry cells and report back, restart Nested Newton, not timestep.
                                                         !!                                1 = 0.7*dts, just redo
@@ -351,7 +352,7 @@ module m_flowparameters
 
    integer :: mdump ! dump file unit nr
 
-   double precision :: hwetbed !< for case wetbed
+   real(kind=dp) :: hwetbed !< for case wetbed
 
    integer :: javau !< vert. adv. u1   : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL
 
@@ -406,9 +407,9 @@ module m_flowparameters
 
    integer :: jaJunction1D !< at 1D junctions: 0 = 2D mom Perot, 1 = same as along the 1D channels
 
-   double precision :: Eddyviscositybedfacmax !< eddyviscosityatbed = min(eddyviscosityatbed, eddyviscosityatbedfacmax*eddyviscosityatbed+1 )
+   real(kind=dp) :: Eddyviscositybedfacmax !< eddyviscosityatbed = min(eddyviscosityatbed, eddyviscosityatbedfacmax*eddyviscosityatbed+1 )
 
-   double precision :: Eddyviscositysurfacmax !< eddyviscosityatbed = min(eddyviscosityatsur, eddyviscosityatseufacmax*eddyviscosityatsur-1 )
+   real(kind=dp) :: Eddyviscositysurfacmax !< eddyviscosityatbed = min(eddyviscosityatsur, eddyviscosityatseufacmax*eddyviscosityatsur-1 )
 
    integer :: jaqaisq1 = 0 !< 1 : qa = q1, 0 : qa = au*u1
 
@@ -420,25 +421,25 @@ module m_flowparameters
 
    integer :: inivel !< initial velocity (1) or not (0)
 
-   double precision :: cffacver = 0d0 !< switch to low order at high cf in constituent transport vertical, 1d0=yes, 0d0 = no
+   real(kind=dp) :: cffacver = 0d0 !< switch to low order at high cf in constituent transport vertical, 1d0=yes, 0d0 = no
 
-   double precision :: cffachormom = 1d0 !< switch to low order at high cf in horizontal mom. transport, 1d0=yes, 0d0 = no
+   real(kind=dp) :: cffachormom = 1d0 !< switch to low order at high cf in horizontal mom. transport, 1d0=yes, 0d0 = no
 
-   double precision :: cfexphormom = 1d0 !< exponent of same
+   real(kind=dp) :: cfexphormom = 1d0 !< exponent of same
 
-   double precision :: cfconhormom = 0d0 !< constant of same
+   real(kind=dp) :: cfconhormom = 0d0 !< constant of same
 
-   double precision :: cffachu = 1d0 !< switch to low order at high cf in sethu, 1d0=yes, 0d0 = no
+   real(kind=dp) :: cffachu = 1d0 !< switch to low order at high cf in sethu, 1d0=yes, 0d0 = no
 
-   double precision :: cfexphu = 1d0 !< exponent of same
+   real(kind=dp) :: cfexphu = 1d0 !< exponent of same
 
-   double precision :: toplayminthick !< minimum top layer thickness (m)
+   real(kind=dp) :: toplayminthick !< minimum top layer thickness (m)
 
-   double precision :: botlayminthick !< minimum bot layer thickness (m)
+   real(kind=dp) :: botlayminthick !< minimum bot layer thickness (m)
 
-   double precision :: uniformsalinityabovez = -999d0 !< above this level uniform inisaltop (m) dmiss==do not use
+   real(kind=dp) :: uniformsalinityabovez = -999d0 !< above this level uniform inisaltop (m) dmiss==do not use
 
-   double precision :: uniformsalinitybelowz = -999d0 !< below this level uniform inisal    (m) dmiss==do not use
+   real(kind=dp) :: uniformsalinitybelowz = -999d0 !< below this level uniform inisal    (m) dmiss==do not use
 
    integer :: jbasqbnddownwindhs !< 0 : original hu on qbnd, 1 = downwind hs on qbnd
 
@@ -446,7 +447,7 @@ module m_flowparameters
 
    integer :: maxitverticalforestertem !< 100, max iterations vertical forester
 
-   double precision :: salmax !< filter if sal > maxsal
+   real(kind=dp) :: salmax !< filter if sal > maxsal
 
    integer :: jaupwindsrc !< 1st-order upwind advection (1) or higher-order (0)
 
@@ -526,7 +527,8 @@ module m_flowparameters
    integer :: jamapucmag !< velocity vector magnitude to map file, 0: no, 1: yes
    integer :: jamapucqvec !< velocity vectors (discharge based) to map file, 0: no, 1: yes
    integer :: jamapww1 !< upward velocity on flow link to map file, 0: no, 1: yes
-   integer :: jamapnumlimdt !< num limdt to map file, 0: no, 1: yes
+   integer :: jamapnumlimdt !< Write the total number of times a cell was Courant limiting to map file, 0: no, 1: yes
+   logical :: write_numlimdt_file !< Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file
    integer :: jamaptaucurrent !< shear stress to map file, 0: no, 1: yes
    integer :: jamapz0 !< roughness heights to map file, 0: no, 1: yes
    integer :: jamap_chezy_elements !< chezy roughness in flow elements to map file, 0: no, 1: yes
@@ -587,7 +589,7 @@ module m_flowparameters
 ! Write partition domain file
    integer :: japartdomain !< Write a separate netcdf file for partition domain info., 0: no, 1: yes
 
-   double precision :: epswetout !< Waterdepth threshold, above which a cell counts as 'wet'. For output purposes.
+   real(kind=dp) :: epswetout !< Waterdepth threshold, above which a cell counts as 'wet'. For output purposes.
 
 ! Write shape files
    integer :: jashp_crs !< Write a shape file for cross sections
@@ -622,16 +624,16 @@ module m_flowparameters
    character(len=128), dimension(NPARMS_INT), parameter :: iparmsnam = [character(len=128) :: 'ilutype', 'nlevel']
    integer, dimension(NPARMS_INT) :: iparms
 
-   integer, parameter :: NPARMS_DBL = 1 !< for parms solver, number of double precision parameters
+   integer, parameter :: NPARMS_DBL = 1 !< for parms solver, number of real(kind=dp) parameters
    integer, parameter :: IPARMS_DTOL = 1
    character(len=128), dimension(NPARMS_DBL), parameter :: dparmsnam = [character(len=128) :: 'dtol']
-   double precision, dimension(NPARMS_DBL) :: dparms
+   real(kind=dp), dimension(NPARMS_DBL) :: dparms
 
 ! parameters for nudging
-   double precision :: Tnudgeuni = 3600d0 !< uniform nudge relaxation time
+   real(kind=dp) :: Tnudgeuni = 3600d0 !< uniform nudge relaxation time
 
 ! parameters for internal tides dissipation
-   double precision :: ITcap !< limit to Internal Tides Dissipation / area (J/(m^2 s))
+   real(kind=dp) :: ITcap !< limit to Internal Tides Dissipation / area (J/(m^2 s))
 
 ! Advection modelling at barriers
    integer :: jabarrieradvection = 1
@@ -1009,6 +1011,7 @@ contains
       jamapucqvec = 0
       jamapww1 = 1
       jamapnumlimdt = 1
+      write_numlimdt_file = .false.
       jamaptaucurrent = 1
       jamapz0 = 0
       jamap_chezy_elements = 0

@@ -30,45 +30,57 @@
 !
 !
 
-subroutine comp_sinktot()
-   use m_transport
-   use m_flow, only: vol1, kmx
-   use m_flowgeom, only: ndx
-   use m_flowtimes, only: dts
-   use m_sediment
-   use timers
+module m_comp_sinktot
 
    implicit none
 
-   integer :: k, j, ll
+   private
 
-   integer(4) :: ithndl =  0
-   
-   if (.not. stm_included) return
-   if (mxgr == 0) return
-   if (timon) call timstrt("comp_sinktot", ithndl)
+   public :: comp_sinktot
 
-   if (kmx < 1) then ! 2D
-      do k = 1, ndx
-         do j = ISED1, ISEDN
-            ll = j - ISED1 + 1
-            sinksetot(j, k) = sinksetot(j, k) + vol1(k) * sedtra%sinkse(k, ll) * constituents(j, k) * dts
-            if (stmpar%morpar%flufflyr%iflufflyr > 0) then
-               sinkftot(j, k) = sinkftot(j, k) + vol1(k) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, k) * dts
-            end if
+contains
+
+   subroutine comp_sinktot()
+      use m_transport
+      use m_flow, only: vol1, kmx
+      use m_flowgeom, only: ndx
+      use m_flowtimes, only: dts
+      use m_sediment
+      use timers
+
+      implicit none
+
+      integer :: k, j, ll
+
+      integer(4) :: ithndl = 0
+
+      if (.not. stm_included) return
+      if (mxgr == 0) return
+      if (timon) call timstrt("comp_sinktot", ithndl)
+
+      if (kmx < 1) then ! 2D
+         do k = 1, ndx
+            do j = ISED1, ISEDN
+               ll = j - ISED1 + 1
+               sinksetot(j, k) = sinksetot(j, k) + vol1(k) * sedtra%sinkse(k, ll) * constituents(j, k) * dts
+               if (stmpar%morpar%flufflyr%iflufflyr > 0) then
+                  sinkftot(j, k) = sinkftot(j, k) + vol1(k) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, k) * dts
+               end if
+            end do
          end do
-      end do
-   else ! 3D
-      do k = 1, ndx
-         do j = ISED1, ISEDN
-            ll = j - ISED1 + 1
-            sinksetot(j, k) = sinksetot(j, k) + vol1(sedtra%kmxsed(k, ll)) * sedtra%sinkse(k, ll) * constituents(j, sedtra%kmxsed(k, ll)) * dts
-            if (stmpar%morpar%flufflyr%iflufflyr > 0) then
-               sinkftot(j, k) = sinkftot(j, k) + vol1(sedtra%kmxsed(k, ll)) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, sedtra%kmxsed(k, ll)) * dts
-            end if
+      else ! 3D
+         do k = 1, ndx
+            do j = ISED1, ISEDN
+               ll = j - ISED1 + 1
+               sinksetot(j, k) = sinksetot(j, k) + vol1(sedtra%kmxsed(k, ll)) * sedtra%sinkse(k, ll) * constituents(j, sedtra%kmxsed(k, ll)) * dts
+               if (stmpar%morpar%flufflyr%iflufflyr > 0) then
+                  sinkftot(j, k) = sinkftot(j, k) + vol1(sedtra%kmxsed(k, ll)) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, sedtra%kmxsed(k, ll)) * dts
+               end if
+            end do
          end do
-      end do
-   end if
+      end if
 
-   if (timon) call timstop(ithndl)
-end subroutine comp_sinktot
+      if (timon) call timstop(ithndl)
+   end subroutine comp_sinktot
+
+end module m_comp_sinktot

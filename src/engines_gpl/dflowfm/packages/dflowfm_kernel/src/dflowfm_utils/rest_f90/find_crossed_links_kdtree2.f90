@@ -37,6 +37,7 @@ contains
 !---------------------------------------------------------------
 !> find links crossed by polyline with kdtree2
    subroutine find_crossed_links_kdtree2(treeinst, NPL, xpl, ypl, itype, nLinks, jaboundarylinks, numcrossedLinks, iLink, iPol, dSL, ierror)
+      use precision, only: dp
       use network_data, only: numL, kn, xk, yk
       use m_flowgeom
       use kdtree2Factory
@@ -51,7 +52,7 @@ contains
 
       type(kdtree_instance), intent(inout) :: treeinst
       integer, intent(in) :: NPL !< polyline length
-      double precision, dimension(NPL), intent(in) :: xpl, ypl !< polyline node coordinates
+      real(kind=dp), dimension(NPL), intent(in) :: xpl, ypl !< polyline node coordinates
       integer, intent(in) :: itype !< netlinks (1: cross with dual link, 3: cross with netlink itself) or flowlinks(2)
       integer, intent(in) :: nLinks !< number of links ( Lnx for flowlinks, numL for netlinks)
       integer, intent(in) :: jaboundarylinks !< include boundary links:
@@ -61,21 +62,21 @@ contains
       integer, intent(out) :: numcrossedLinks !< number of crossed flowlinks
       integer, dimension(nLinks), intent(inout) :: iLink !< crossed flowlinks
       integer, dimension(nLinks), intent(inout) :: iPol !< polygon section
-      double precision, dimension(nLinks), intent(inout) :: dSL !< polygon section cross location
+      real(kind=dp), dimension(nLinks), intent(inout) :: dSL !< polygon section cross location
       integer, intent(out) :: ierror !< ierror (1) or not (0)
 
-      double precision, dimension(:), allocatable :: x, y
+      real(kind=dp), dimension(:), allocatable :: x, y
 
       integer, dimension(:), allocatable :: ipolsection
-      double precision :: dmaxpollen, dlinlen, R2search
+      real(kind=dp) :: dmaxpollen, dlinlen, R2search
       integer :: num
       integer, parameter :: jakdtree = 1
       integer, parameter :: MAXFIND = 100
       integer, parameter :: MINTREESIZE = 0
 
-      double precision :: SL, SM, XCR, YCR, CRP
-      double precision :: xa, ya, xb, yb, af
-      double precision :: xc, yc, xd, yd
+      real(kind=dp) :: SL, SM, XCR, YCR, CRP
+      real(kind=dp) :: xa, ya, xb, yb, af
+      real(kind=dp) :: xc, yc, xd, yd
       integer :: i, k, L, N1, N2, NN
       integer :: jacros, kint
       integer :: LnxiORLnx

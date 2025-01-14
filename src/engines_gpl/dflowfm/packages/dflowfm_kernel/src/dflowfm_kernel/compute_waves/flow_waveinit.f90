@@ -30,6 +30,17 @@
 !
 !
 
+module m_flow_waveinit
+   use m_xbeachwaves, only: allocstatsolverarrays
+
+   implicit none
+
+   private
+
+   public :: flow_waveinit
+
+contains
+
    subroutine flow_waveinit
       use m_flow
       use m_flowgeom
@@ -51,6 +62,7 @@
       use dfm_error
       use m_delsam
       use m_reasam
+      use m_filez, only: oldfil, doclose
 
       implicit none
 
@@ -363,3 +375,5 @@
          end if
       end if
    end subroutine flow_waveinit
+
+end module m_flow_waveinit

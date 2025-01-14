@@ -1,6 +1,6 @@
 <!--
     default testCases
-    -->
+-->
     <defaultTestCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <testCase name="dwaq_default">
             <programs>
@@ -42,6 +42,27 @@
             <!-- Used in testcase e03_f02_c00_hydro and e03_f07_c00_hydro, which are just input for actual tests -->
             <location ref="reference_results" type="reference">
                 <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+
+        <testCase name="plct_default">
+            <programs>
+                <program ref="plct">
+                    <arguments>
+                        <argument>-inifile</argument>
+                        <argument>plct.ini</argument>
+                        <argument>-validation</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <!-- PLCT only runs on Windows -->
+                <from>win64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>

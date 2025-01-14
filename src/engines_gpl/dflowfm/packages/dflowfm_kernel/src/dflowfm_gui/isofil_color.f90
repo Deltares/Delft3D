@@ -30,10 +30,11 @@
 !
 !
 module m_isofil_color
-    implicit none
+   implicit none
 contains
-    
-    subroutine isofil_color(X, Y, Z, n4, NCOLR, VAL, NCOLS, NV)
+
+   subroutine isofil_color(X, Y, Z, n4, NCOLR, VAL, NCOLS, NV)
+      use precision, only: dp
       use m_topix
       use m_drawthis
       use m_sub_polygon
@@ -42,9 +43,9 @@ contains
       use m_ptabs
 
       integer :: n4, ncolr
-      double precision :: X(n4), Y(n4), Z(n4)
+      real(kind=dp) :: X(n4), Y(n4), Z(n4)
 
-      double precision :: dzn, frac
+      real(kind=dp) :: dzn, frac
       integer :: i, ih, j, j1, j2
       integer :: ncol
       integer :: npics
@@ -53,12 +54,12 @@ contains
       integer :: nx3
       integer :: ny1
       integer :: ny3
-      double precision :: zmax
-      double precision :: zmin
-      double precision :: znex
-      double precision :: znow
-      double precision :: DX(12), DY(12), DZ(12), XH(12), YH(12)
-      double precision :: VAL(256)
+      real(kind=dp) :: zmax
+      real(kind=dp) :: zmin
+      real(kind=dp) :: znex
+      real(kind=dp) :: znow
+      real(kind=dp) :: DX(12), DY(12), DZ(12), XH(12), YH(12)
+      real(kind=dp) :: VAL(256)
       integer :: NCOLS(256), NV
 
       do I = 1, n4

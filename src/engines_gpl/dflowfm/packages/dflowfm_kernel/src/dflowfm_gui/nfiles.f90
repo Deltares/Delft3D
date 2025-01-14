@@ -32,7 +32,7 @@
 
 module m_nfiles
 
-implicit none
+   implicit none
 
 contains
 
@@ -77,6 +77,34 @@ contains
       use m_reablu
       use m_reabl
       use m_readadcircnet
+      use m_reajanet, only: reajanet
+      use m_read_restart_from_map, only: read_restart_from_map
+      use m_rearst, only: rearst
+      use m_wriblu, only: wriblu
+      use m_wribl, only: wribl
+      use m_wricmps, only: wricmps
+      use m_wrirstfileold, only: WRIRSTfileold
+      use m_wriswan, only: WRIswan
+      use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
+      use m_inidat, only: inidat
+      use m_partition_write_domains, only: partition_write_domains
+      use m_resetFullFlowModel, only: resetFullFlowModel
+      use m_resetflow, only: resetflow
+      use m_readarcinfo, only: readarcinfo
+      use m_reagrid, only: reagrid
+      use m_wrirgf, only: wrirgf
+      use m_parsekerst, only: parsekerst
+      use m_read_land_boundary_netcdf, only: read_land_boundary_netcdf
+      use m_read_samples_from_arcinfo, only: read_samples_from_arcinfo
+      use m_read_samples_from_dem, only: read_samples_from_dem
+      use m_read_samples_from_geotiff, only: read_samples_from_geotiff
+      use m_stopint, only: stopint
+      use m_wrilan, only: wrilan
+      use m_wricrs, only: wricrs
+      use m_reapol_nampli, only: reapol_nampli
+      use m_realan, only: realan
+      use m_filez, only: doclose, newfil, message
+      use m_tecplot, only: ini_tecplot, wrinet_tecplot
 
       integer :: NUM, NWHAT, KEY
       integer :: ja, ierr
@@ -86,14 +114,6 @@ contains
       integer :: i, ierror
       integer :: ipli
       logical :: jawel
-      logical, external :: read_samples_from_geotiff
-
-      interface
-         subroutine realan(mlan, antot)
-            integer, intent(inout) :: mlan
-            integer, intent(inout), optional :: antot
-         end subroutine realan
-      end interface
 
       character FILNAM * 86
 
@@ -339,8 +359,8 @@ contains
             else
                ja = 0
             end if
-         ipli=0
-         CALL reapol_nampli(MLAN, ja,1,ipli) ! Read pol/pli as crs
+            ipli = 0
+            call reapol_nampli(MLAN, ja, 1, ipli) ! Read pol/pli as crs
             call pol_to_crosssections(xpl, ypl, npl, names=nampli)
             if (NPL > 0) call delpol()
             call MESSAGE('YOU LOADED ', filnam, ' ')

@@ -31,11 +31,22 @@
 !
 
 !< get jaopengl module variable
-integer function iget_jaopengl()
-   use unstruc_opengl, only: jaopengl
+module m_iget_jaopengl
+
    implicit none
 
-   iget_jaopengl = jaopengl
+   private
 
-   return
-end function iget_jaopengl
+   public :: iget_jaopengl
+
+contains
+
+   integer function iget_jaopengl()
+      use unstruc_opengl, only: jaopengl
+
+      iget_jaopengl = jaopengl
+
+      return
+   end function iget_jaopengl
+
+end module m_iget_jaopengl
