@@ -27,8 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
 module m_structure_parameters
    use precision_basics, only: dp
 
