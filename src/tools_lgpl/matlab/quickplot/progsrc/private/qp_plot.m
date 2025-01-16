@@ -778,7 +778,7 @@ else
     quivopt={};
 end
 
-if isequal(quivopt,{'automatic'})
+if isequal(quivopt,{'automatic'}) && ~strcmp(Parent,'loaddata')
     del2=0;
     if isfield(data,'X')
         del2 = del2 + (maxx-minx).^2/npnt;
