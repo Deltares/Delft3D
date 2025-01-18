@@ -147,10 +147,6 @@ subroutine update_wavecond(sr,wavetime)
                          & timhr, sr%refjulday, errorstring)
       endif
       !
-      do i=1,sr%nbound
-
-      enddo
-      !
    elseif (unibest) then
       if (varbound) then
         !call skcoma(luniwp    )

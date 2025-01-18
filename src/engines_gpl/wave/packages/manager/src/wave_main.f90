@@ -186,7 +186,7 @@ function wave_master_init(mode_in, mdw_file) result(retval)
    !
    ! Read mdw file
    !
-   call read_swan(mdw_file, swan_run, wavedata)
+   call read_dwaves_mdw(mdw_file, swan_run, wavedata)
    !
    n_swan_grids = swan_run%nnest
    if (wavedata%mode/=stand_alone .and. swan_run%flowgridfile/=' ') then
