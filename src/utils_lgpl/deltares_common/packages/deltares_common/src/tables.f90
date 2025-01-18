@@ -985,9 +985,14 @@ contains
                   ! Normal data column
                   !
                   table%parameters(ipar)%name = cfield(2)
-                  if (trim(cfield(2)) == 'Direction' .or. trim(cfield(2)) == 'WindDir') then ! for dwaves
-                     table%parameters(ipar)%cyclicity = CHKVAR_CYCL
-                  end if
+                  !
+                  select case (trim(cfield(2)))
+                     case ('Direction', 'WindDir')
+                        table%parameters(ipar)%cyclicity = CHKVAR_CYCL
+                     case default
+                        ! default okay
+                  end select
+                  !
                   table%parameters(ipar)%unit = cfield(4)
                   table%parameters(ipar)%interpolation = table%interpolation
                end if
