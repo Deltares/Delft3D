@@ -28,10 +28,11 @@ object LinuxBuild : BuildType({
     """.trimIndent()
 
     params {
+        param("intel_oneapi_version", "2023")
+        param("intel_fortran_compiler", "ifort")
         param("generator", """"Unix Makefiles"""")
         param("install_dir", "build_all/install")
         param("build_type", "Release")
-        param("toolchain", "intel23")
         param("build_configuration", "all")
     }
 
@@ -55,15 +56,21 @@ object LinuxBuild : BuildType({
         script {
             name = "Build"
             scriptContent = """
-                #!/usr/bin/env bash
-                . /usr/share/Modules/init/bash
-                source ./src/setenv.sh %toolchain%
+                #!/bin/bash
+                set -eo pipefail
+                . /opt/intel/oneapi/setvars.sh
+                export LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64:${'$'}{LD_LIBRARY_PATH}
+                export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:${'$'}{PKG_CONFIG_PATH}
+                export FC=mpiifort CXX=mpicxx CC=mpiicx
                 
                 cmake ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=%build_configuration% -D CMAKE_BUILD_TYPE=%build_type% -B build_%build_configuration% -D CMAKE_INSTALL_PREFIX=%install_dir%
                 
                 cd build_%build_configuration%
                 cmake --build . -j --target install --config %build_type%
             """.trimIndent()
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:oneapi-%intel_oneapi_version%-%intel_fortran_compiler%-release"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerRunParameters = "--rm"
         }
         script {
             name = "Copy ESMF binaries"
@@ -76,15 +83,30 @@ object LinuxBuild : BuildType({
                 
                 ESMFRWG=`which ESMF_RegridWeightGen`
                 LIBESMF=`ldd ${'$'}{ESMFRWG} | grep libesmf.so | awk '{print ${'$'}3}'`
+                LIBCILKRTS=`ldd ${'$'}{ESMFRWG} | grep libcilkrts.so | awk '{print ${'$'}3}'`
                 
                 cp -rf ${'$'}{ESMFRWG}                                         %install_dir%/bin                               &>/dev/null
                 cp -rf ${'$'}{LIBESMF}                                         %install_dir%/lib                               &>/dev/null
+                cp -rf ${'$'}{LIBCILKRTS}                                      %install_dir%/lib                               &>/dev/null
             """.trimIndent()
         }
     }
 
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
+            }
+        }
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
+            }
+        }
+    }
+
     failureConditions {
-        executionTimeoutMin = 1800
+        executionTimeoutMin = 60
         errorMessage = true
         failOnText {
             conditionType = BuildFailureOnText.ConditionType.REGEXP

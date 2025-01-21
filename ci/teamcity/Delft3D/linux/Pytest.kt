@@ -72,6 +72,11 @@ object LinuxPyTest : BuildType({
                 dockerRegistryId = "DOCKER_REGISTRY_DELFT3D"
             }
         }
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
+            }
+        }
         xmlReport {
             reportType = XmlReport.XmlReportType.JUNIT
             rules = """

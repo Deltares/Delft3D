@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1.4
 
 ARG INTEL_ONEAPI_VERSION=2024
+ARG BUILDTOOLS_IMAGE_TAG=oneapi-${INTEL_ONEAPI_VERSION}
 
-FROM containers.deltares.nl/delft3d-dev/delft3d-buildtools:oneapi-${INTEL_ONEAPI_VERSION} AS base
+FROM containers.deltares.nl/delft3d-dev/delft3d-buildtools:${BUILDTOOLS_IMAGE_TAG} AS base
 
 ARG INTEL_FORTRAN_COMPILER=ifort
 ARG INTEL_ONEAPI_VERSION=2024
@@ -11,87 +12,98 @@ ARG DEBUG=0
 FROM base AS compression-libs
 
 ARG DEBUG
-RUN <<"EOF-compression-libs"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-compression-libs"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
-
-mkdir -p /tmp/apps
-cat << EOT | xargs -n1 -P3 -I% bash -c 'wget -q -O - % | tar -xzf - -C /tmp/apps/'
-    https://github.com/madler/zlib/archive/refs/tags/v1.3.1.tar.gz 
-    https://swprojects.dkrz.de/redmine/attachments/download/453/libaec-0.3.2.tar.gz
-    https://github.com/facebook/zstd/archive/refs/tags/v1.5.6.tar.gz
-EOT
 
 export CC=icx CXX=icpx
 [[ $DEBUG = "0" ]] && CFLAGS="-O3" || CFLAGS="-g -O0"
 CXXFLAGS="$CFLAGS"
 export CFLAGS CXXFLAGS
 
-for build_dir in "zlib-1.3.1" "libaec-0.3.2"; do
-    pushd /tmp/apps/$build_dir
-    ./configure
+for BASEDIR_URL in \
+    'zlib-1.3.1,https://github.com/madler/zlib/archive/refs/tags/v1.3.1.tar.gz' \
+    'libaec-0.3.2,https://swprojects.dkrz.de/redmine/attachments/download/453/libaec-0.3.2.tar.gz' \
+    'zstd-1.5.6,https://github.com/facebook/zstd/archive/refs/tags/v1.5.6.tar.gz'
+do
+    BASEDIR="${BASEDIR_URL%%,*}"
+    URL="${BASEDIR_URL#*,}"
+    if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+        echo "CACHED ${BASEDIR}"
+    else
+        echo "Fetching ${URL}..."
+        wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src/'
+    fi
+
+    pushd "/var/cache/src/${BASEDIR}"
+    [[ -f configure ]] && ./configure
     make -j8
     make install
     popd
 done
-
-pushd /tmp/apps/zstd-1.5.6
-make -j8 
-make install
-popd
-
-rm -rf /tmp/apps
 EOF-compression-libs
 
 FROM base AS uuid
 
 ARG DEBUG
-RUN <<"EOF-uuid"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-uuid"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps
-wget -q -O - https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.40/util-linux-2.40.2.tar.gz \
-    | tar -xzf - -C /tmp/apps
+URL='https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.40/util-linux-2.40.2.tar.gz'
+BASEDIR=$(basename -s '.tar.gz' "$URL")
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
 export CC=icx
 [[ $DEBUG = "0" ]] && CFLAGS="-O3" || CFLAGS="-g -O0"
 export CFLAGS
 
-pushd /tmp/apps/util-linux-2.40.2
+pushd "/var/cache/src/${BASEDIR}"
 ./configure --prefix=/usr/local --disable-all-programs --enable-libuuid
 make -j8
 make install
 popd
-
-rm -rf /tmp/apps
 EOF-uuid
 
 FROM base AS metis
 
 ARG DEBUG
-RUN <<"EOF-metis"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-metis"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-export GKLIB_COMMIT_ID=8bd6bad750b2b0d90800c632cf18e8ee93ad72d7
-mkdir -p /tmp/apps
-cat << EOT | xargs -n1 -P2 -I% bash -c 'wget -q -O - % | tar -xzf - -C /tmp/apps/'
-    https://github.com/KarypisLab/METIS/archive/refs/tags/v5.2.1.tar.gz
-    https://github.com/KarypisLab/GKlib/archive/${GKLIB_COMMIT_ID}.tar.gz
-EOT
+GKLIB_COMMIT_ID='8bd6bad750b2b0d90800c632cf18e8ee93ad72d7'
+for BASEDIR_URL in \
+    'METIS-5.2.1,https://github.com/KarypisLab/METIS/archive/refs/tags/v5.2.1.tar.gz' \
+    "GKlib-${GKLIB_COMMIT_ID},https://github.com/KarypisLab/GKlib/archive/${GKLIB_COMMIT_ID}.tar.gz"
+do
+    BASEDIR="${BASEDIR_URL%%,*}"
+    URL="${BASEDIR_URL#*,}"
+    if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+        echo "CACHED ${BASEDIR}"
+    else
+        echo "Fetching ${URL}..."
+        wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    fi
+done
 
-pushd /tmp/apps/GKlib-$GKLIB_COMMIT_ID
+pushd "/var/cache/src/GKlib-${GKLIB_COMMIT_ID}"
 if [[ $DEBUG = "0" ]]; then
-    make config prefix=/usr/local cc=icx debug=$DEBUG_OPT gdb=$DEBUG_OPT
+    make config prefix=/usr/local cc=icx
 else
     make config prefix=/usr/local cc=icx debug=1 gdb=1
 fi
 make -j8
 make install
+
 popd
 
-pushd /tmp/apps/METIS-5.2.1
+pushd "/var/cache/src/METIS-5.2.1"
 if [[ $DEBUG = "0" ]]; then
     make config prefix=/usr/local cc=icx shared=1
 else
@@ -100,54 +112,64 @@ fi
 make -j8
 make install
 popd
-
-rm -rf /tmp/apps
 EOF-metis
 
 FROM base AS expat
 
 ARG DEBUG
-RUN <<"EOF-expat"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-expat"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps
-wget -q -O - https://github.com/libexpat/libexpat/archive/refs/tags/R_2_6_2.tar.gz \
-    | tar -xzf - -C /tmp/apps
+URL='https://github.com/libexpat/libexpat/archive/refs/tags/R_2_6_2.tar.gz'
+BASEDIR='libexpat-R_2_6_2/expat'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
 [[ $DEBUG = "0" ]] && FLAGS="-O3 -DNDEBUG -fPIC" || FLAGS="-g -O0 -fPIC"
 
-
-pushd /tmp/apps/libexpat-R_2_6_2/expat
+pushd "/var/cache/src/${BASEDIR}"
 ./buildconf.sh
 ./configure CC=icx CXX=icpx CFLAGS="$FLAGS" CXXFLAGS="$FLAGS"
 make -j8
 make install
 popd
-
-rm -rf /tmp/apps
 EOF-expat
 
 FROM base AS xerces-c
 
 ARG DEBUG
-RUN <<"EOF-xerces-c"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-xerces-c"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps
-wget -q -O - https://dlcdn.apache.org/xerces/c/3/sources/xerces-c-3.2.5.tar.gz \
-    | tar -xzf - -C /tmp/apps
+URL='https://github.com/apache/xerces-c/archive/refs/tags/v3.2.5.tar.gz'
+BASEDIR='xerces-c-3.2.5'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
-[[ $DEBUG = "0" ]] && FLAGS="-O3 -DNDEBUG -fPIC" || FLAGS="-g -O0 -fPIC"
-
-pushd /tmp/apps/xerces-c-3.2.5
-./configure CC=icx CXX=icpx CFLAGS="$FLAGS" CXXFLAGS="$FLAGS"
+mkdir "/var/cache/src/${BASEDIR}/build"
+pushd "/var/cache/src/${BASEDIR}/build"
+if [[ "$DEBUG" = "0" ]]; then
+    cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
+        -DCMAKE_C_FLAGS="-O3 -DNDEBUG -fPIC" -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fPIC" \
+        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release
+else
+    cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
+        -DCMAKE_C_FLAGS="-g -O0 -fPIC" -DCMAKE_CXX_FLAGS="-g -O0 -fPIC" \
+        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Debug
+fi
 make -j8
 make install
 popd
-
-rm -rf /tmp/apps
 EOF-xerces-c
 
 FROM base AS petsc
@@ -156,20 +178,25 @@ ARG INTEL_FORTRAN_COMPILER
 ARG INTEL_ONEAPI_VERSION
 ARG DEBUG
 
-RUN <<"EOF-petsc"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-petsc"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps
-wget -q -O - https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.19.0.tar.gz \
-    | tar -xzf - -C /tmp/apps
+URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.19.0.tar.gz'
+BASEDIR=$(basename -s '.tar.gz' "$URL")
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
 MPIFC="mpi${INTEL_FORTRAN_COMPILER}"
 [[ ${INTEL_ONEAPI_VERSION} = "2024" ]] && [[ ${INTEL_FORTRAN_COMPILER} = "ifort" ]] \
     && FFLAGS="-diag-disable=10448" || FFLAGS=""
 [[ $DEBUG = "0" ]] && FLAGS="-O3" || FLAGS="-g -O0"
 
-pushd /tmp/apps/petsc-3.19.0
+pushd "/var/cache/src/${BASEDIR}"
 ./configure \
     --prefix=/usr/local \
     --with-cc=mpiicx --with-cxx=mpiicpx --with-fc=$MPIFC \
@@ -178,8 +205,6 @@ pushd /tmp/apps/petsc-3.19.0
 make
 make install
 popd
-
-rm -rf /tmp/apps
 EOF-petsc
 
 FROM base AS curl
@@ -188,15 +213,20 @@ ARG DEBUG
 
 COPY --from=compression-libs --link /usr/local/ /usr/local/
 
-RUN <<"EOF-curl"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-curl"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps
-wget -q -O - https://curl.se/download/curl-8.9.1.tar.gz \
-    | tar -xzf - -C /tmp/apps
+URL='https://curl.se/download/curl-8.9.1.tar.gz'
+BASEDIR=$(basename -s '.tar.gz' "$URL")
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
-pushd /tmp/apps/curl-8.9.1
+pushd "/var/cache/src/${BASEDIR}"
 if [[ $DEBUG = "0" ]]; then
     ./configure CC=icx CFLAGS="-O3" CPPFLAGS="-DNDEBUG" --with-openssl --with-zlib --with-zstd
 else
@@ -205,8 +235,6 @@ fi
 make -j8
 make install
 popd
-
-rm -rf /tmp/apps
 EOF-curl
 
 FROM base AS sqlite3
@@ -215,15 +243,20 @@ ARG DEBUG
 
 COPY --from=compression-libs --link /usr/local/ /usr/local/
 
-RUN <<"EOF-sqlite3"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-sqlite3"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps
-wget -q -O - https://www.sqlite.org/2024/sqlite-autoconf-3460100.tar.gz \
-    | tar -xzf - -C /tmp/apps
+URL='https://www.sqlite.org/2024/sqlite-autoconf-3460100.tar.gz'
+BASEDIR=$(basename -s '.tar.gz' "$URL")
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
-pushd /tmp/apps/sqlite-autoconf-3460100
+pushd "/var/cache/src/${BASEDIR}"
 if [[ $DEBUG = "0" ]]; then
     ./configure CC=icx CFLAGS="-O3 -DNDEBUG"
 else
@@ -232,8 +265,6 @@ fi
 make -j8
 make install
 popd
-
-rm -rf /tmp/apps
 EOF-sqlite3
 
 FROM base AS tiff
@@ -242,16 +273,21 @@ ARG DEBUG
 
 COPY --from=compression-libs --link /usr/local/ /usr/local/
 
-RUN <<"EOF-tiff"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-tiff"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps
-wget -q -O - https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz \
-    | tar -xzf - -C /tmp/apps
+URL='https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz'
+BASEDIR=$(basename -s '.tar.gz' "$URL")
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
-mkdir -p /tmp/apps/tiff-4.6.0/build
-pushd /tmp/apps/tiff-4.6.0/build
+mkdir -p "/var/cache/src/${BASEDIR}/build"
+pushd "/var/cache/src/${BASEDIR}/build"
 if [[ $DEBUG = "0" ]]; then
     cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
         -DCMAKE_C_FLAGS="-O3 -DNDEBUG" -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG" \
@@ -264,8 +300,6 @@ fi
 make -j8
 make install
 popd
-
-rm -rf /tmp/apps
 EOF-tiff
 
 FROM base AS hdf5
@@ -275,18 +309,23 @@ ARG INTEL_FORTRAN_COMPILER
 
 COPY --from=compression-libs --link /usr/local/ /usr/local/
 
-RUN <<"EOF-hdf5"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-hdf5"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps
-wget -q -O - https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_2.tar.gz \
-    | tar -xzf - -C /tmp/apps
+URL='https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_2.tar.gz'
+BASEDIR='hdf5-hdf5-1_14_2'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
 MPIFC="mpi${INTEL_FORTRAN_COMPILER}"
 [[ $DEBUG = "0" ]] && BUILD_MODE="production" || BUILD_MODE="debug"
 
-pushd /tmp/apps/hdf5-hdf5-1_14_2
+pushd "/var/cache/src/${BASEDIR}"
 ./configure CC=mpiicx CXX=mpiicpx FC=$MPIFC \
     --prefix=/usr/local \
     --enable-build-mode=$BUILD_MODE \
@@ -297,8 +336,6 @@ pushd /tmp/apps/hdf5-hdf5-1_14_2
 make -j -l6
 make install
 popd
-
-rm -rf /tmp/apps/
 EOF-hdf5
 
 FROM base AS netcdf
@@ -309,18 +346,23 @@ ARG INTEL_FORTRAN_COMPILER
 COPY --from=hdf5 --link /usr/local/ /usr/local/
 COPY --from=curl --link /usr/local/ /usr/local/
 
-RUN <<"EOF-netcdf-c"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-netcdf-c"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps/
-wget -q -O - https://downloads.unidata.ucar.edu/netcdf-c/4.9.2/netcdf-c-4.9.2.tar.gz \
-    | tar -xzf - -C /tmp/apps/
+URL='https://downloads.unidata.ucar.edu/netcdf-c/4.9.2/netcdf-c-4.9.2.tar.gz'
+BASEDIR=$(basename -s '.tar.gz' "$URL")
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
 [[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
 
-mkdir -p /tmp/apps/netcdf-c-4.9.2/build
-pushd /tmp/apps/netcdf-c-4.9.2/build
+mkdir -p "/var/cache/src/${BASEDIR}/build"
+pushd "/var/cache/src/${BASEDIR}/build"
 cmake .. \
     -DCMAKE_C_COMPILER=mpiicx \
     -DCMAKE_CXX_COMPILER=mpiicpx \
@@ -334,17 +376,20 @@ cmake .. \
 make -j8
 make install
 popd
-
-rm -rf /tmp/apps
 EOF-netcdf-c
 
-RUN <<"EOF-netcdf-fortran"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-netcdf-fortran"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps
-wget -q -O - https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v4.6.1.tar.gz \
-    | tar -xzf - -C /tmp/apps
+URL='https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v4.6.1.tar.gz'
+BASEDIR='netcdf-fortran-4.6.1'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
 export LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH
 export HDF5_PLUGIN_PATH=/usr/local/lib
@@ -353,7 +398,7 @@ export HDF5_PLUGIN_PATH=/usr/local/lib
     || FLAGS="-O0 -g"
 MPIFC="mpi${INTEL_FORTRAN_COMPILER}"
 
-pushd /tmp/apps/netcdf-fortran-4.6.1
+pushd "/var/cache/src/${BASEDIR}"
 ./configure CC=mpiicx CXX=mpiicpx FC=$MPIFC F90=$MPIFC F77=$MPIFC \
     CFLAGS="$FLAGS" CXXFLAGS="$FLAGS" CPPFLAGS="$FLAGS" \
     FCFLAGS="$FLAGS" FFLAGS="$FLAGS" F77FLAGS="$FLAGS" F90FLAGS="$FLAGS" \
@@ -362,8 +407,6 @@ pushd /tmp/apps/netcdf-fortran-4.6.1
 make -j8
 make install
 popd
-
-rm -rf /tmp/apps
 EOF-netcdf-fortran
 
 FROM base AS proj
@@ -374,18 +417,23 @@ COPY --from=tiff --link /usr/local/ /usr/local/
 COPY --from=sqlite3 --link /usr/local/ /usr/local/
 COPY --from=curl --link /usr/local/ /usr/local/
 
-RUN <<"EOF-proj"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-proj"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps
-wget -q -O - https://download.osgeo.org/proj/proj-9.2.0.tar.gz \
-    | tar -xzf - -C /tmp/apps
+URL='https://download.osgeo.org/proj/proj-9.2.0.tar.gz'
+BASEDIR=$(basename -s '.tar.gz' "$URL")
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
 [[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
 
-mkdir -p /tmp/apps/proj-9.2.0/build
-pushd /tmp/apps/proj-9.2.0/build
+mkdir -p "/var/cache/src/${BASEDIR}/build"
+pushd "/var/cache/src/${BASEDIR}/build"
 cmake .. \
     -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
@@ -396,8 +444,6 @@ cmake .. \
 cmake --build . --config $BUILD_TYPE -j 8
 cmake --build . --target install
 popd
-
-rm -rf /tmp/apps
 EOF-proj
 
 FROM base AS gdal
@@ -409,16 +455,21 @@ COPY --from=xerces-c --link /usr/local/ /usr/local/
 COPY --from=netcdf --link /usr/local/ /usr/local/
 COPY --from=proj --link /usr/local/ /usr/local/
 
-RUN <<"EOF-gdal"
+RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-gdal"
 set -eo pipefail
 . /opt/intel/oneapi/setvars.sh
 
-mkdir -p /tmp/apps
-wget -q -O - https://github.com/OSGeo/gdal/releases/download/v3.9.2/gdal-3.9.2.tar.gz \
-    | tar -xzf - -C /tmp/apps
+URL='https://github.com/OSGeo/gdal/releases/download/v3.9.2/gdal-3.9.2.tar.gz'
+BASEDIR=$(basename -s '.tar.gz' "$URL")
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+fi
 
-mkdir -p /tmp/apps/gdal-3.9.2/build
-pushd /tmp/apps/gdal-3.9.2/build
+mkdir -p "/var/cache/src/${BASEDIR}/build"
+pushd "/var/cache/src/${BASEDIR}/build"
 
 [[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
 
@@ -436,8 +487,6 @@ cmake --build . --config $BUILD_TYPE -j 8
 cmake --build . --target install
 
 popd
-
-rm -rf /tmp/apps
 EOF-gdal
 
 FROM base AS all
