@@ -49,7 +49,6 @@ contains
       use timers
       use m_string_utils, only: index_in_array
       use m_logger_helper, only: set_log_unit_number
-      use m_wind, only: jawind, jarain
 
       integer :: ierr_sub !< error status
       integer :: ierr_eho !< error status
@@ -384,7 +383,7 @@ contains
       use unstruc_files
       use m_flowtimes
       use timers
-      use m_wind, only: jawind, jarain
+      use m_wind, only: jawind, jarain, solrad_available
       use date_time_utils, only: compute_reference_day
       use m_logger_helper, only: set_log_unit_number
 
