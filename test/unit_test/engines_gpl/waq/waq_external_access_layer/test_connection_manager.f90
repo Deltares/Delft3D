@@ -168,11 +168,11 @@ contains
     end subroutine
 
     subroutine test_get_connection_by_exchange_name()
-        type(connection_manager) :: connections
+        type(connection_manager) :: connections 
         type(connection_data), allocatable :: new_connection
         type(connection_data), pointer :: new_connection_pointer
         type(connection_data), pointer :: found_connection_correct_name
-        type(connection_data), pointer :: found_connection_incorrect_name
+        type(connection_data), pointer :: found_connection_incorrect_name => NULL()
         character(*), parameter :: exchange_name = "TO_DELWAQ|WASTE|1|FLOW"
 
         ! arrange
@@ -181,11 +181,11 @@ contains
 
         ! act
         found_connection_correct_name => connections%get_connection_by_exchange_name(exchange_name)
-        !found_connection_incorrect_name => connections%get_connection_by_exchange_name("incorrect_name")
+        found_connection_incorrect_name => connections%get_connection_by_exchange_name("incorrect_name")
 
         ! assert
         call assert_true(associated(found_connection_correct_name), 'connection should be found')
-        !call assert_false(associated(found_connection_incorrect_name), 'connection should not be found')
+        call assert_false(associated(found_connection_incorrect_name), 'connection should not be found')
 
         ! found_connection_correct_name should be a reference to the connection (not a copy)
         found_connection_correct_name%subst_name = "abc"
