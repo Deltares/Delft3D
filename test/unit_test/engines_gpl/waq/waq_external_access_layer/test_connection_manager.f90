@@ -172,9 +172,11 @@ contains
         type(connection_data), allocatable :: new_connection
         type(connection_data), pointer :: new_connection_pointer
         type(connection_data), pointer :: found_connection_correct_name
-        type(connection_data), pointer :: found_connection_incorrect_name => NULL()
+        type(connection_data), pointer :: found_connection_incorrect_name
         character(*), parameter :: exchange_name = "TO_DELWAQ|WASTE|1|FLOW"
 
+        nullify(found_connection_incorrect_name)
+        
         ! arrange
         new_connection = create_default_connection(exchange_name)
         new_connection_pointer => connections%add_connection(new_connection)
