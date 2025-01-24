@@ -90,7 +90,7 @@ contains
    module subroutine average_concentrations_for_laterals(num_const, kmx, kmxn, cell_volume, constituents, dt)
 
       use m_alloc, only: aerr
-      use m_get_kbot_ktop
+      use m_get_kbot_ktop, only: getkbotktop
 
       integer, intent(in) :: num_const !< Number or constituents.
       integer, intent(in) :: kmx !< Number of layers (0 means 2D computation).
@@ -103,17 +103,17 @@ contains
       integer :: i_layer
       integer :: iostat
 
-      real(kind=dp), allocatable, dimension(:) :: total_volume !< Placeholder of total lateral-volume per layer 
+      real(kind=dp), allocatable, dimension(:) :: total_volume !< Placeholder of total lateral-volume per layer
       real(kind=dp), allocatable, dimension(:, :, :) :: total_time_weighted_quantity !< Placeholder of accumulated quantity (mass and/or temperature) weighted by time, for each layer, lateral and constituent
 
       allocate (total_volume(num_layers), stat=iostat)
       call aerr('total_volume', iostat, num_layers, 'average_concentrations_for_laterals')
       allocate (total_time_weighted_quantity(num_layers, num_const, numlatsg), stat=iostat)
-      call aerr('total_time_weighted_quantity', iostat, num_layers*num_const*numlatsg, 'average_concentrations_for_laterals')
+      call aerr('total_time_weighted_quantity', iostat, num_layers * num_const * numlatsg, 'average_concentrations_for_laterals')
 
       do i_lat = 1, numlatsg
          total_volume(:) = 0.0_dp
-         total_time_weighted_quantity(:,:,:) = 0.0_dp
+         total_time_weighted_quantity(:, :, :) = 0.0_dp
          do k1 = n1latsg(i_lat), n2latsg(i_lat)
             i_node = nnlat(k1)
             if (i_node > 0) then
@@ -130,7 +130,7 @@ contains
                      total_volume(i_layer) = total_volume(i_layer) + cell_volume(k)
                      do i_const = 1, num_const
                         total_time_weighted_quantity(i_layer, i_const, i_lat) = total_time_weighted_quantity(i_layer, i_const, i_lat) + &
-                                                                     dt * cell_volume(k) * constituents(i_const, k)
+                                                                                dt * cell_volume(k) * constituents(i_const, k)
                      end do
                      i_layer = i_layer + 1
                   end do
@@ -139,7 +139,7 @@ contains
          end do
          do i_layer = 1, num_layers
             if (total_volume(i_layer) > 0) then
-               outgoing_lat_concentration(i_layer, :, i_lat) = outgoing_lat_concentration(i_layer, :, i_lat) + & 
+               outgoing_lat_concentration(i_layer, :, i_lat) = outgoing_lat_concentration(i_layer, :, i_lat) + &
                                                                total_time_weighted_quantity(i_layer, :, i_lat) / total_volume(i_layer)
             else
                outgoing_lat_concentration(i_layer, :, i_lat) = 0.0_dp
@@ -152,15 +152,16 @@ contains
    ! Add lateral input contribution to the load being transported
    module subroutine add_lateral_load_and_sink(transport_load, transport_sink, cell_volume, dtol)
       use m_transportdata, only: numconst
-      real(kind=dp), dimension(:, :), intent(inout) :: transport_load !< Load being transported into domain. 
-                                                                      !< Sign-convention: positive means load being transported into model.
-      real(kind=dp), dimension(:, :), intent(inout) :: transport_sink !< Load being transported out. 
-                                                                      !< Sign-convention: positive means load being transported out.
+      use m_flow, only: kbot, kmx, kmxn
+      real(kind=dp), dimension(:, :), intent(inout) :: transport_load !< Load being transported into domain.
+      !< Sign-convention: positive means load being transported into model.
+      real(kind=dp), dimension(:, :), intent(inout) :: transport_sink !< Load being transported out.
+      !< Sign-convention: positive means load being transported out.
       real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3]
       real(kind=dp), intent(in) :: dtol !< cut off value for cell_volume, to prevent division by zero
 
       real(kind=dp) :: delta_cell_volume, qlat
-      integer :: i_const, i_lateral, i_cell, k1, i_layer
+      integer :: i_const, i_lateral, i_cell, k1, i_layer, cell_layer_index, index_active_bottom_layer
 
       do i_layer = 1, num_layers
          do i_const = 1, numconst
@@ -172,16 +173,37 @@ contains
                   ! only multiply transport_load with concentration.
                   qlat = qqlat(i_layer, k1)
                   if (comparereal(qlat, 0._dp, eps10) > 0) then
-                     transport_load(i_const, i_cell) = transport_load(i_const, i_cell) &
-                                                     + delta_cell_volume * qlat * incoming_lat_concentration(1, i_const, i_lateral)
+                     if (kmx==0) then
+                        transport_load(i_const, i_cell) = transport_load(i_const, i_cell) &
+                                                       + delta_cell_volume * qlat * incoming_lat_concentration(i_layer, i_const, i_lateral)
+                       
+                     else 
+                        index_active_bottom_layer = kmx - kmxn(i_cell) + 1
+                        if (i_layer >= index_active_bottom_layer) then
+                           cell_layer_index = kbot(i_cell) + i_layer - index_active_bottom_layer
+                           delta_cell_volume = 1._dp / max(cell_volume(cell_layer_index), dtol)
+                           transport_load(i_const, cell_layer_index) = transport_load(i_const, cell_layer_index) &
+                                                       + delta_cell_volume * qlat * incoming_lat_concentration(i_layer, i_const, i_lateral)
+                        end if
+                     end if
                   else
-                  ! Sink sign-convention: positive means flux going out of model, hence the negative sign here
-                     transport_sink(i_const, i_cell) = transport_sink(i_const, i_cell) - delta_cell_volume * qlat
+                     if (kmx==0) then
+                        ! Sink sign-convention: positive means flux going out of model, hence the negative sign here
+                        transport_sink(i_const, i_cell) = transport_sink(i_const, i_cell) - delta_cell_volume * qlat
+                     else
+                        index_active_bottom_layer = kmx - kmxn(i_cell) + 1
+                        if (i_layer >= index_active_bottom_layer) then
+                           cell_layer_index = kbot(i_cell) + i_layer - index_active_bottom_layer
+                           delta_cell_volume = 1._dp / max(cell_volume(cell_layer_index), dtol)
+                           transport_sink(i_const, cell_layer_index) = transport_sink(i_const, cell_layer_index) - delta_cell_volume * qlat
+                        end if
+                     end if
                   end if
                end do
             end do
          end do
       end do
+
    end subroutine add_lateral_load_and_sink
 
    !> Compute water volume per layer in each lateral.
@@ -190,7 +212,7 @@ contains
    module subroutine get_lateral_volume_per_layer(lateral_volume_per_layer)
 
       use m_flow, only: vol1, kmx, kmxn
-      use m_get_kbot_ktop
+      use m_get_kbot_ktop, only: getkbotktop
 
       real(kind=dp), dimension(:, :), intent(out) :: lateral_volume_per_layer !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
 
@@ -236,7 +258,7 @@ contains
    module subroutine distribute_lateral_discharge(provided_lateral_discharge, lateral_discharge_per_layer_lateral_cell)
 
       use m_flow, only: vol1, kmx, kmxn
-      use m_get_kbot_ktop
+      use m_get_kbot_ktop, only: getkbotktop
 
       real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per layer
       real(kind=dp), dimension(:, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge per layer

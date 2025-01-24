@@ -30,7 +30,15 @@
 !
 !
 
+module m_tekpolygon
+   use m_sincosdis, only: sincosdis
+
+   implicit none
+
+contains
+
    subroutine tekpolygon()
+      use precision, only: dp
       use m_rcirc
       use m_polygon
       use unstruc_display
@@ -45,7 +53,7 @@
       implicit none
 
       integer :: k, kk, key, k2
-      double precision :: a, b, x, y, z, s, c, d, dx, dy, dc, dl, dr, dxL, dyL, dxR, dyR, sL, sR, dcxR, dcyR, dcxL, dcyL
+      real(kind=dp) :: a, b, x, y, z, s, c, d, dx, dy, dc, dl, dr, dxL, dyL, dxR, dyR, sL, sR, dcxR, dcyR, dcxL, dcyL
 
       if (ndrawpol == 2) then
 
@@ -167,3 +175,5 @@
 
       end if
    end subroutine tekpolygon
+
+end module m_tekpolygon

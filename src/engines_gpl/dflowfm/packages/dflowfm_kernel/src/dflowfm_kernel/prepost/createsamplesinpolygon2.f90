@@ -30,10 +30,21 @@
 !
 !
 
+module m_createsamplesinpolygon2
+   use m_darean, only: darean
+
+   implicit none
+
+   private
+
+   public :: createsamplesinpolygon2
+
+contains
+
    subroutine CREATESAMPLESINPOLYGON2()
+      use precision, only: dp
       use m_ec_triangle
       use network_data, only: TRIANGLESIZEFAC
-      !use m_netw
       use M_SAMPLES
       use M_MISSING
       use m_sferic
@@ -42,11 +53,6 @@
       use m_polygon
       use m_qnerror
 
-      implicit none
-
-      !integer          :: NPL
-      !double precision :: XPL(NPL), YPL(NPL)
-
       integer :: ierr
       integer :: in
       integer :: n
@@ -54,8 +60,8 @@
       integer :: ns1, NPL1
       integer :: ntx, I
 
-      double precision :: TRIAREA, SAFESIZE
-      double precision :: AREPOL, DLENPOL, DLENAV, DLENMX, XP, YP, xplmin, xplmax, yplmin, yplmax
+      real(kind=dp) :: TRIAREA, SAFESIZE
+      real(kind=dp) :: AREPOL, DLENPOL, DLENAV, DLENMX, XP, YP, xplmin, xplmax, yplmin, yplmax
 
       if (NPL <= 2) return
 
@@ -137,3 +143,5 @@
 
       return
    end subroutine CREATESAMPLESINPOLYGON2
+
+end module m_createsamplesinpolygon2

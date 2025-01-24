@@ -61,7 +61,7 @@
         Success = DH_AllocInit(NFil, NamFil,'')
         Success = Success .and. DH_AllocInit(NFil, InxFil,0)
         If (.not. success) then
-           Call ErrMsg (911, 1, '  Error allocating arrays in InitFiles', ' ', IOUT1)
+           call write_error_message_rtc (911, 1, '  Error allocating arrays in InitFiles', ' ', IOUT1)
            RetVal = 911
         Endif
 
@@ -85,7 +85,7 @@
       Logical                         :: FNMEXT
 
       Inquire (FILE = NAME, EXIST = FNMEXT)
-      If (.NOT. FNMEXT) Call ERRMSG (911, 0, '  Openfl', NAME, IOUT1)
+      If (.NOT. FNMEXT) call write_error_message_rtc (911, 0, '  Openfl', NAME, IOUT1)
       If (IOPT .EQ. 1) Then
 !        OPEN(IN, FILE=NAME, STATUS='OLD')
 !

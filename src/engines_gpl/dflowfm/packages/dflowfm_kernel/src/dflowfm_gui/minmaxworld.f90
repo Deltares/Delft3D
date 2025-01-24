@@ -31,34 +31,36 @@
 !
 
 module m_minmaxworld
+   use m_setwynew
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine MINMAXWORLD(XMI, YMI, XMA, YMA)
-         ! ASPECT RATIO VAN HET DEFAULTGEBIED GOED ZETTEN
-         use m_inqasp
-         use m_wearelt
-         
-         double precision :: XMI, YMI, XMA, YMA, ASPECT, XC, YC, DY, dx
-         XMIN = XMI
-         YMIN = YMI
-         XMAX = XMA
-         YMAX = YMA
-         DX = XMAX - XMIN
-         DY = YMAX - YMIN
-         XC = XMIN + DX / 2
-         YC = YMIN + DY / 2
-         DX = 1.2 * DX
-         DY = 1.2 * DY
-         call INQASP(ASPECT)
-         if (DY < ASPECT * DX) then
-            DY = ASPECT * DX
-         end if
+   subroutine MINMAXWORLD(XMI, YMI, XMA, YMA)
+      use precision, only: dp
+      ! ASPECT RATIO VAN HET DEFAULTGEBIED GOED ZETTEN
+      use m_inqasp
+      use m_wearelt
 
-         call SETWYNEW(XC, YC, DY)
-         return
-      end
+      real(kind=dp) :: XMI, YMI, XMA, YMA, ASPECT, XC, YC, DY, dx
+      XMIN = XMI
+      YMIN = YMI
+      XMAX = XMA
+      YMAX = YMA
+      DX = XMAX - XMIN
+      DY = YMAX - YMIN
+      XC = XMIN + DX / 2
+      YC = YMIN + DY / 2
+      DX = 1.2 * DX
+      DY = 1.2 * DY
+      call INQASP(ASPECT)
+      if (DY < ASPECT * DX) then
+         DY = ASPECT * DX
+      end if
+
+      call SETWYNEW(XC, YC, DY)
+      return
+   end
 
 end module m_minmaxworld

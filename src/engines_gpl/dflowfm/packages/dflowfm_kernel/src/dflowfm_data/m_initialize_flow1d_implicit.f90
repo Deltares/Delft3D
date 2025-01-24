@@ -36,6 +36,8 @@
 !> <flow1d_implicit> and only has access to the variables in that project.
 
 module m_initialize_flow1d_implicit
+   use m_flow_sedmorinit, only: flow_sedmorinit
+   use m_init_1dinfo, only: init_1dinfo
 
 contains
 
@@ -73,7 +75,7 @@ contains
       use fm_external_forcings_data, only: nzbnd, nqbnd
       use m_fm_erosed, only: nd_mor, ln_mor
       use unstruc_channel_flow, only: network
-      use unstruc_messages
+      use messagehandling, only: msgbuf, err_flush
       use m_sediment, only: stmpar, jased, stm_included
       use m_fm_erosed, only: link1sign, link1sign2
       use m_oned_functions, only: gridpoint2cross, t_gridp2cs
@@ -480,7 +482,7 @@ contains
       use m_f1dimp
       use m_flowgeom, only: ndx, lnx, ln, nd, tnode, lnxi, lnx1Db
       use unstruc_channel_flow, only: network
-      use unstruc_messages
+      use messagehandling, only: msgbuf, err_flush
       use m_fm_erosed, only: link1sign2, ndx_mor, lnx_mor, lnxi_mor, ndxi_mor, ln_mor, nd_mor, ndkx_mor
       use m_oned_functions, only: gridpoint2cross
 
@@ -787,6 +789,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
    subroutine inifm1dimp_faap(iresult)
+      use precision, only: dp
 
       use m_f1dimp
       use m_flowgeom, only: ndx, bai_mor, ba, bl, dx, lnx, dxi, acl, wu, snu, csu, wu_mor, wcx1, wcx2, wcy1, wcy2, kcu, wcl, lnxi, griddim
@@ -819,13 +822,13 @@ contains
 
       integer :: kl, kd, k1
 
-      double precision, allocatable, dimension(:, :) :: bodsed_o
-      double precision, allocatable, dimension(:, :) :: thlyr_o
-      double precision, allocatable, dimension(:, :) :: sedshort_o
-      double precision, allocatable, dimension(:, :) :: svfrac_o
-      double precision, allocatable, dimension(:, :) :: preload_o
+      real(kind=dp), allocatable, dimension(:, :) :: bodsed_o
+      real(kind=dp), allocatable, dimension(:, :) :: thlyr_o
+      real(kind=dp), allocatable, dimension(:, :) :: sedshort_o
+      real(kind=dp), allocatable, dimension(:, :) :: svfrac_o
+      real(kind=dp), allocatable, dimension(:, :) :: preload_o
 
-      double precision, allocatable, dimension(:, :, :) :: msed_o
+      real(kind=dp), allocatable, dimension(:, :, :) :: msed_o
 
 !----------------------------------------
 !BEGIN POINT
@@ -1066,6 +1069,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
    subroutine inifm1dimp_fic(iresult)
+      use precision, only: dp
 
       use m_f1dimp
       use m_flowgeom, only: ndx, ndxi, wu, nd
@@ -1084,8 +1088,8 @@ contains
 
       real, dimension(:, :), pointer :: waoft
 
-      double precision, dimension(:, :), pointer :: hpack
-      double precision, dimension(:, :), pointer :: qpack
+      real(kind=dp), dimension(:, :), pointer :: hpack
+      real(kind=dp), dimension(:, :), pointer :: qpack
 
 !
 !output
@@ -1099,9 +1103,9 @@ contains
 
       integer :: kd, idx_fm, k1, idx_sre, idx_l1, idx_l2, k2, kn, kl, n1, n2, L, idx_n
 
-      real :: swaoft
+      integer :: swaoft
 
-      double precision :: wu_int, au_int
+      real(kind=dp) :: wu_int, au_int
 
 !----------------------------------------
 !BEGIN POINT
@@ -1220,7 +1224,7 @@ contains
 
       use m_f1dimp
       use unstruc_channel_flow, only: network
-      use unstruc_messages
+      use messagehandling, only: msgbuf, err_flush
 
       implicit none
 
@@ -1463,7 +1467,7 @@ contains
 
       use m_f1dimp
       use unstruc_channel_flow, only: network
-      use unstruc_messages
+      use messagehandling, only: msgbuf, err_flush
 
       implicit none
 
@@ -1618,7 +1622,7 @@ contains
       use m_f1dimp
       use m_fm_erosed, only: lsedtot, ndx_mor, frac
       use m_sediment, only: jased, stm_included
-      use unstruc_messages
+      use messagehandling, only: msgbuf, err_flush
 
       implicit none
 

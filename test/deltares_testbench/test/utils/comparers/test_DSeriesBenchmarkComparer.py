@@ -7,6 +7,7 @@ import pytest
 
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.comparers.d_series_benchmark_comparer import DSeriesBenchmarkComparer
+from src.utils.comparers.end_result import EndResult
 from src.utils.logging.console_logger import ConsoleLogger
 from src.utils.logging.log_level import LogLevel
 from src.utils.xml_config_parser import XmlConfigParser
@@ -118,7 +119,7 @@ class TestDSeriesBenchmarkComparer:
 
         # Through a loop go through all the values check that their equality is True and that the name exists in the csv
         for parameter in param_results:
-            if parameter[3].result != "OK":
+            if parameter[3].result != EndResult.OK:
                 output = False
             if parameter[2].name not in test:
                 output = False

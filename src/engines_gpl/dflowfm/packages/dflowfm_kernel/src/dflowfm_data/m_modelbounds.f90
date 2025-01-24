@@ -35,15 +35,16 @@
 !!
 !! Note: x/y or lat/lon pairs may be set to dmiss if they are not applicable.
 module m_modelbounds
-   double precision :: mb_xmin !< Smallest x-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_xmax !< Largest  x-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_ymin !< Smallest y-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_ymax !< Largest  y-value (of 2D cell vertices/1D nodes).
+   use precision, only: dp
+   real(kind=dp) :: mb_xmin !< Smallest x-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_xmax !< Largest  x-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_ymin !< Smallest y-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_ymax !< Largest  y-value (of 2D cell vertices/1D nodes).
 
-   double precision :: mb_lonmin !< Smallest longitude-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_lonmax !< Largest  longitude-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_latmin !< Smallest latitude-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_latmax !< Largest  latitude-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_lonmin !< Smallest longitude-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_lonmax !< Largest  longitude-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_latmin !< Smallest latitude-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_latmax !< Largest  latitude-value (of 2D cell vertices/1D nodes).
 
 contains
 

@@ -36,68 +36,81 @@
 !! Lat and Long are in decimal degrees.
 !! Written by Chuck Gantz- chuck.gantz@globalstar.com
 !! BY: Chuck Gantz, http://www.gpsy.com/gpsinfo/geotoutm/gantz/LatLong-UTMconversion.cpp
-    subroutine utmgeo2(xutm, yutm, xgeo, ygeo, IZONE, ihem)
-       use m_sferic
-       use m_ellips
-       implicit none
-!     xutm    i    double precision ::    easting (UTM)
-!     yutm    i    double precision ::    northing (UTM)
+module m_utmgeo2
+
+   implicit none
+
+   private
+
+   public :: utmgeo2
+
+contains
+
+   subroutine utmgeo2(xutm, yutm, xgeo, ygeo, IZONE, ihem)
+      use precision, only: dp
+      use m_sferic
+      use m_ellips
+
+!     xutm    i    real(kind=dp) ::    easting (UTM)
+!     yutm    i    real(kind=dp) ::    northing (UTM)
 !     Izone   i    integer   Izone (UTM)
 !     Ihem    i    integer hemisphere (0=north, 1 = south)
-!     a       i    double precision ::    semi-major axis of ellipsoid
-!     e       i    double precision ::    excentricity of ellipsoid
-!     xgeo    o    double precision ::    longitude (geographical coordinate)
-!     ygeo    o    double precision ::    lattitude (geographical coordinate)
+!     a       i    real(kind=dp) ::    semi-major axis of ellipsoid
+!     e       i    real(kind=dp) ::    excentricity of ellipsoid
+!     xgeo    o    real(kind=dp) ::    longitude (geographical coordinate)
+!     ygeo    o    real(kind=dp) ::    lattitude (geographical coordinate)
 !
-       double precision :: xutm, yutm, ygeo, xgeo
-       integer :: Izone, ihem
+      real(kind=dp) :: xutm, yutm, ygeo, xgeo
+      integer :: Izone, ihem
 
-       double precision :: k0 = 0.9996
-       double precision :: eccSquared
-       double precision :: eccPrimeSquared; 
-       double precision :: e1
-       double precision :: N1, T1, C1, R1, D, M
-       double precision :: LongOrigin
-       double precision :: mu, phi1, phi1Rad
-       double precision :: x, y
-       integer :: ZoneNumber
-       integer :: NorthernHemisphere !1 for northern hemispher, 0 for southern
+      real(kind=dp) :: k0 = 0.9996
+      real(kind=dp) :: eccSquared
+      real(kind=dp) :: eccPrimeSquared; 
+      real(kind=dp) :: e1
+      real(kind=dp) :: N1, T1, C1, R1, D, M
+      real(kind=dp) :: LongOrigin
+      real(kind=dp) :: mu, phi1, phi1Rad
+      real(kind=dp) :: x, y
+      integer :: ZoneNumber
+      integer :: NorthernHemisphere !1 for northern hemispher, 0 for southern
 
-       eccSquared = e * e
-       e1 = (1 - sqrt(1 - eccSquared)) / (1 + sqrt(1 - eccSquared))
-       ZoneNumber = izone
-       NorthernHemisphere = ihem
-       x = xutm - 500000.0 !remove 500,000 meter offset for longitude
-       y = yutm
+      eccSquared = e * e
+      e1 = (1 - sqrt(1 - eccSquared)) / (1 + sqrt(1 - eccSquared))
+      ZoneNumber = izone
+      NorthernHemisphere = ihem
+      x = xutm - 500000.0 !remove 500,000 meter offset for longitude
+      y = yutm
 
-       if (ihem == 0) then
-          y = y - 10000000.0 !remove 10,000,000 meter offset used for southern hemisphere
-       end if
+      if (ihem == 0) then
+         y = y - 10000000.0 !remove 10,000,000 meter offset used for southern hemisphere
+      end if
 
-       LongOrigin = (ZoneNumber - 1) * 6 - 180 + 3 !  //+3 puts origin in middle of zone
+      LongOrigin = (ZoneNumber - 1) * 6 - 180 + 3 !  //+3 puts origin in middle of zone
 
-       eccPrimeSquared = (eccSquared) / (1 - eccSquared)
+      eccPrimeSquared = (eccSquared) / (1 - eccSquared)
 
-       M = y / k0
-       mu = M / (a * (1 - eccSquared / 4 - 3 * eccSquared * eccSquared / 64 - 5 * eccSquared * eccSquared * eccSquared / 256))
+      M = y / k0
+      mu = M / (a * (1 - eccSquared / 4 - 3 * eccSquared * eccSquared / 64 - 5 * eccSquared * eccSquared * eccSquared / 256))
 
-       phi1Rad = mu + (3 * e1 / 2 - 27 * e1 * e1 * e1 / 32) * sin(2 * mu) &
-                 + (21 * e1 * e1 / 16 - 55 * e1 * e1 * e1 * e1 / 32) * sin(4 * mu) &
-                 + (151 * e1 * e1 * e1 / 96) * sin(6 * mu)
-       phi1 = phi1Rad * rd2dg
+      phi1Rad = mu + (3 * e1 / 2 - 27 * e1 * e1 * e1 / 32) * sin(2 * mu) &
+                + (21 * e1 * e1 / 16 - 55 * e1 * e1 * e1 * e1 / 32) * sin(4 * mu) &
+                + (151 * e1 * e1 * e1 / 96) * sin(6 * mu)
+      phi1 = phi1Rad * rd2dg
 
-       N1 = a / sqrt(1 - eccSquared * sin(phi1Rad) * sin(phi1Rad))
-       T1 = tan(phi1Rad) * tan(phi1Rad)
-       C1 = eccPrimeSquared * cos(phi1Rad) * cos(phi1Rad)
-       R1 = a * (1 - eccSquared) / (1 - eccSquared * sin(phi1Rad) * sin(phi1Rad))**1.5d0
-       D = x / (N1 * k0)
+      N1 = a / sqrt(1 - eccSquared * sin(phi1Rad) * sin(phi1Rad))
+      T1 = tan(phi1Rad) * tan(phi1Rad)
+      C1 = eccPrimeSquared * cos(phi1Rad) * cos(phi1Rad)
+      R1 = a * (1 - eccSquared) / (1 - eccSquared * sin(phi1Rad) * sin(phi1Rad))**1.5d0
+      D = x / (N1 * k0)
 
-       ygeo = phi1Rad - (N1 * tan(phi1Rad) / R1) * (D * D / 2 - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * eccPrimeSquared) * D * D * D * D / 24 &
-                                                    + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * eccPrimeSquared - 3 * C1 * C1) * D * D * D * D * D * D / 720)
-       ygeo = ygeo * rd2dg
+      ygeo = phi1Rad - (N1 * tan(phi1Rad) / R1) * (D * D / 2 - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * eccPrimeSquared) * D * D * D * D / 24 &
+                                                   + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * eccPrimeSquared - 3 * C1 * C1) * D * D * D * D * D * D / 720)
+      ygeo = ygeo * rd2dg
 
-       xgeo = (D - (1 + 2 * T1 + C1) * D * D * D / 6 + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * eccPrimeSquared + 24 * T1 * T1) &
-               * D * D * D * D * D / 120) / cos(phi1Rad)
-       xgeo = LongOrigin + xgeo * rd2dg
+      xgeo = (D - (1 + 2 * T1 + C1) * D * D * D / 6 + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * eccPrimeSquared + 24 * T1 * T1) &
+              * D * D * D * D * D / 120) / cos(phi1Rad)
+      xgeo = LongOrigin + xgeo * rd2dg
 
-    end subroutine utmgeo2
+   end subroutine utmgeo2
+
+end module m_utmgeo2

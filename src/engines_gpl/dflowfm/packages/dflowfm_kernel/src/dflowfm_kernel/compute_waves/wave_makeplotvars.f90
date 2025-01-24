@@ -30,6 +30,16 @@
 !
 !
 
+module m_wave_makeplotvars
+
+   implicit none
+
+   private
+
+   public :: wave_makeplotvars
+
+contains
+
    subroutine wave_makeplotvars
       use m_waves, only: ustokes, ust_mag, fwav_mag, ustx_cc, usty_cc
       use m_flowparameters, only: jawave
@@ -63,7 +73,7 @@
       end do
       ust_mag = hypot(ustx_cc, usty_cc)
 
-      if (jawave == 3 .or. jawave == 4 .or. jawave == 6) then
+      if (jawave == 3 .or. jawave == 4 .or. jawave == 6 .or. jawave == 7) then
          do L = 1, lnx
             call getLbotLtop(L, Lb, Lt)
             do LL = Lb, Lt
@@ -96,3 +106,5 @@
       return
 
    end subroutine wave_makeplotvars
+
+end module m_wave_makeplotvars

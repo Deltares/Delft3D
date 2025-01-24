@@ -30,39 +30,52 @@
 !
 !
 
- subroutine doaddksources() ! add k sources
-    use m_flow
-    use m_flowtimes
-    implicit none
+module m_doaddksources
 
-    integer :: n, k, kk, kk2
-    double precision :: qsrck, dvoli, dtol = 1d-4
+   implicit none
 
-    do n = 1, numsrc
-       if (ksrc(2, n) == 0 .and. ksrc(5, n) == 0) cycle ! due to initialisation
+   private
 
-       if (arsrc(n) == 0) cycle
-       kk = ksrc(1, n) ! 2D pressure cell nr FROM
-       kk2 = ksrc(4, n) ! 2D pressure cell nr TO
-       qsrck = qsrc(n)
+   public :: doaddksources
 
-       if (kk > 0) then ! FROM Point
-          k = ksrc(2, n); dvoli = 1d0 / max(vol1(k), dtol)
-          if (qsrck > 0) then ! FROM k to k2
-             turkinepsws(1, k) = turkinepsws(1, k) - dts * qsrck * dvoli * turkinepsws(1, k)
-          else if (qsrck < 0) then ! FROM k2 to k
-             turkinepsws(1, k) = turkinepsws(1, k) - dts * qsrck * dvoli * 0.5d0 * (qsrck / arsrc(n))**2
-          end if
-       end if
+contains
 
-       if (kk2 > 0) then ! TO Point
-          k = ksrc(5, n); dvoli = 1d0 / max(vol1(k), dtol)
-          if (qsrck > 0) then
-             turkinepsws(1, k) = turkinepsws(1, k) + dts * qsrck * dvoli * 0.5d0 * (qsrck / arsrc(n))**2
-          else if (qsrck < 0) then
-             turkinepsws(1, k) = turkinepsws(1, k) + dts * qsrck * dvoli * turkinepsws(1, k)
-          end if
-       end if
+   subroutine doaddksources() ! add k sources
+      use precision, only: dp
+      use m_flow
+      use m_flowtimes
+      implicit none
 
-    end do
- end subroutine doaddksources
+      integer :: n, k, kk, kk2
+      real(kind=dp) :: qsrck, dvoli, dtol = 1d-4
+
+      do n = 1, numsrc
+         if (ksrc(2, n) == 0 .and. ksrc(5, n) == 0) cycle ! due to initialisation
+
+         if (arsrc(n) == 0) cycle
+         kk = ksrc(1, n) ! 2D pressure cell nr FROM
+         kk2 = ksrc(4, n) ! 2D pressure cell nr TO
+         qsrck = qsrc(n)
+
+         if (kk > 0) then ! FROM Point
+            k = ksrc(2, n); dvoli = 1d0 / max(vol1(k), dtol)
+            if (qsrck > 0) then ! FROM k to k2
+               turkinepsws(1, k) = turkinepsws(1, k) - dts * qsrck * dvoli * turkinepsws(1, k)
+            else if (qsrck < 0) then ! FROM k2 to k
+               turkinepsws(1, k) = turkinepsws(1, k) - dts * qsrck * dvoli * 0.5d0 * (qsrck / arsrc(n))**2
+            end if
+         end if
+
+         if (kk2 > 0) then ! TO Point
+            k = ksrc(5, n); dvoli = 1d0 / max(vol1(k), dtol)
+            if (qsrck > 0) then
+               turkinepsws(1, k) = turkinepsws(1, k) + dts * qsrck * dvoli * 0.5d0 * (qsrck / arsrc(n))**2
+            else if (qsrck < 0) then
+               turkinepsws(1, k) = turkinepsws(1, k) + dts * qsrck * dvoli * turkinepsws(1, k)
+            end if
+         end if
+
+      end do
+   end subroutine doaddksources
+
+end module m_doaddksources

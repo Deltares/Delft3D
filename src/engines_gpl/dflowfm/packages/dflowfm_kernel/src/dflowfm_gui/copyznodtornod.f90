@@ -32,56 +32,57 @@
 
 module m_copyznodtornod
 
-implicit none
+   implicit none
 
 contains
 
- subroutine copyznodtornod() ! for smooth plotting only
-    use m_flowgeom
-    use m_flow
-    use m_netw
+   subroutine copyznodtornod() ! for smooth plotting only
+      use precision, only: dp
+      use m_flowgeom
+      use m_flow
+      use m_netw
+      use m_znod
 
-    integer :: k, kk, kkk, n, nn, ierr, ja
-    real, allocatable, save :: rn(:)
-    double precision :: znn
-    double precision :: znod
+      integer :: k, kk, kkk, n, nn, ierr, ja
+      real, allocatable, save :: rn(:)
+      real(kind=dp) :: znn
 
-    ja = 0
-    if (.not. allocated(rn)) then
-       ja = 1
-    else if (size(rn) < numk) then
-       deallocate (rn); ja = 1
-    end if
-    if (ja == 1) then
-       allocate (rn(numk), stat=ierr)
-       call aerr('rn(numk)', ierr, numk); rn = 0d0
-       do n = 1, ndx2d
-          nn = size(nd(n)%nod)
-          do kk = 1, nn
-             kkk = nd(n)%nod(kk)
-             rn(kkk) = rn(kkk) + ba(n)
-          end do
-       end do
-    end if
+      ja = 0
+      if (.not. allocated(rn)) then
+         ja = 1
+      else if (size(rn) < numk) then
+         deallocate (rn); ja = 1
+      end if
+      if (ja == 1) then
+         allocate (rn(numk), stat=ierr)
+         call aerr('rn(numk)', ierr, numk); rn = 0d0
+         do n = 1, ndx2d
+            nn = size(nd(n)%nod)
+            do kk = 1, nn
+               kkk = nd(n)%nod(kk)
+               rn(kkk) = rn(kkk) + ba(n)
+            end do
+         end do
+      end if
 
-    rnod = 0d0
-    do n = 1, ndx2d
-       znn = znod(n)
-       if (znn /= 0d0) then
-          nn = size(nd(n)%nod)
-          do kk = 1, nn
-             kkk = nd(n)%nod(kk)
-             rnod(kkk) = rnod(kkk) + real(znn * ba(n))
-          end do
-       end if
-    end do
+      rnod = 0d0
+      do n = 1, ndx2d
+         znn = znod(n)
+         if (znn /= 0d0) then
+            nn = size(nd(n)%nod)
+            do kk = 1, nn
+               kkk = nd(n)%nod(kk)
+               rnod(kkk) = rnod(kkk) + real(znn * ba(n))
+            end do
+         end if
+      end do
 
-    do k = 1, numk
-       if (rn(k) > 0) then
-          rnod(k) = rnod(k) / rn(k)
-       end if
-    end do
+      do k = 1, numk
+         if (rn(k) > 0) then
+            rnod(k) = rnod(k) / rn(k)
+         end if
+      end do
 
- end subroutine copyznodtornod
+   end subroutine copyznodtornod
 
 end module m_copyznodtornod

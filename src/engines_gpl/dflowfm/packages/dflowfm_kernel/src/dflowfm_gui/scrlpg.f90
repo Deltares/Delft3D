@@ -31,23 +31,31 @@
 !
 
 !
-      subroutine SCRLPG(HLPTXT, NUMTXT, NUMTOP, NUMCHC, IH)
-         use m_page
-         implicit none
-         integer :: ih
-         integer :: numchc
-         integer :: numtop
-         integer :: numtxt
+module m_scrlpg
+
+   implicit none
+
+contains
+
+   subroutine SCRLPG(HLPTXT, NUMTXT, NUMTOP, NUMCHC, IH)
+      use m_page
+      implicit none
+      integer :: ih
+      integer :: numchc
+      integer :: numtop
+      integer :: numtxt
 !     Display choiceline and one page, take care, numchc <= numtxt
-         character HLPTXT(NUMTXT) * (*)
+      character HLPTXT(NUMTXT) * (*)
 !
-         if (NUMCHC < NUMTOP) then
-            NUMTOP = NUMCHC
-         else if (NUMCHC >= NUMTOP + IH) then
-            NUMTOP = NUMCHC - IH + 1
-         end if
+      if (NUMCHC < NUMTOP) then
+         NUMTOP = NUMCHC
+      else if (NUMCHC >= NUMTOP + IH) then
+         NUMTOP = NUMCHC - IH + 1
+      end if
 !
-         call PAGE(HLPTXT, NUMTXT, NUMTOP, IH)
+      call PAGE(HLPTXT, NUMTXT, NUMTOP, IH)
 !
-         return
-      end
+      return
+   end
+
+end module m_scrlpg

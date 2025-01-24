@@ -41,7 +41,7 @@ contains
         use pinpok_mod
         use random_generator
         use m_stop_exit
-        use m_get_index
+        use m_get_index, only: get_index
 
         implicit none
 
@@ -135,7 +135,7 @@ contains
 
         avgmass = totmass / (npart_pol * npart_fact)  ! average mass per particle
 
-        isub = get_index (nosubs, subst, fract) ! find proper index
+        isub = get_index(nosubs, subst, fract) ! find proper index
         substance_found = isub >= 0
         if (.not. substance_found) go to 940
         !

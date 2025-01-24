@@ -30,27 +30,37 @@
 !
 !
 
-      subroutine SETWINDOW(NSC, X1, Y1, X2, Y2, DXH, DYH)
-         use m_dscreens
-         use m_view_port
-         implicit none
-         double precision :: dx
-         double precision :: dxh
-         double precision :: dy
-         double precision :: dyh
-         integer :: nsc
-         double precision :: x1
-         double precision :: x2
-         double precision :: y1
-         double precision :: y2
+module m_setwindow
+   use m_setwor
 
-         call viewport(real(X1SC(NSC)), real(Y1SC(NSC)), real(X2SC(NSC)), real(Y2SC(NSC)))
-         DX = (X2 - X1) * 0.1d0
-         DY = (Y2 - Y1) * 0.1d0
-         DXH = DX / 2d0
-         DYH = DY / 2d0
-         !    CALL IGRUNITS( real(X1-DX),real(Y1-DY),real(X2+DX),real(Y2+DY) )
-         call setwor(X1 - DX, Y1 - DY, X2 + DX, Y2 + DY)
+   implicit none
 
-         return
-      end
+contains
+
+   subroutine SETWINDOW(NSC, X1, Y1, X2, Y2, DXH, DYH)
+      use precision, only: dp
+      use m_dscreens
+      use m_view_port
+      implicit none
+      real(kind=dp) :: dx
+      real(kind=dp) :: dxh
+      real(kind=dp) :: dy
+      real(kind=dp) :: dyh
+      integer :: nsc
+      real(kind=dp) :: x1
+      real(kind=dp) :: x2
+      real(kind=dp) :: y1
+      real(kind=dp) :: y2
+
+      call viewport(real(X1SC(NSC)), real(Y1SC(NSC)), real(X2SC(NSC)), real(Y2SC(NSC)))
+      DX = (X2 - X1) * 0.1d0
+      DY = (Y2 - Y1) * 0.1d0
+      DXH = DX / 2d0
+      DYH = DY / 2d0
+      !    CALL IGRUNITS( real(X1-DX),real(Y1-DY),real(X2+DX),real(Y2+DY) )
+      call setwor(X1 - DX, Y1 - DY, X2 + DX, Y2 + DY)
+
+      return
+   end
+
+end module m_setwindow

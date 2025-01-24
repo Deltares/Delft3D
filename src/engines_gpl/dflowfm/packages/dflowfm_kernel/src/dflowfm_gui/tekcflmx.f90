@@ -30,17 +30,25 @@
 !
 !
 
- subroutine tekcflmx()
-    use m_rcirc
-    use m_flowgeom
-    use m_flow
-    use m_flowtimes
-    use m_htext
-    use m_set_col
-    implicit none
-    if (kkcflmx /= 0) then
-       call setcol(31)
-       call rcirc(xz(kkcflmx), yz(kkcflmx))
-       call HTEXT(dtsc, xz(kkcflmx), yz(kkcflmx))
-    end if
- end subroutine tekcflmx
+module m_tekcflmx
+
+   implicit none
+
+contains
+
+   subroutine tekcflmx()
+      use m_rcirc
+      use m_flowgeom
+      use m_flow
+      use m_flowtimes
+      use m_htext
+      use m_set_col
+      implicit none
+      if (kkcflmx /= 0) then
+         call setcol(31)
+         call rcirc(xz(kkcflmx), yz(kkcflmx))
+         call HTEXT(dtsc, xz(kkcflmx), yz(kkcflmx))
+      end if
+   end subroutine tekcflmx
+
+end module m_tekcflmx

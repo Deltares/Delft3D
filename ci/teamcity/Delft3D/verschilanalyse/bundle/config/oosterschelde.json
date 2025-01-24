@@ -1,0 +1,30 @@
+{
+    "output_directory": "verschillentool_output",
+    "models": [
+        {
+            "name": "oosterschelde",
+            "his_config": {
+                "his_1": "/p/devops-dsc/verschilanalyse/reference/oosterschelde/dflowfm2d-oosterschelde-j19_6-v2a/computations/hist/2016/DFM_OUTPUT_Oosterschelde/Oosterschelde_0000_his.nc",
+                "his_2": "/p/devops-dsc/verschilanalyse/input/oosterschelde/dflowfm2d-oosterschelde-j19_6-v2a/computations/hist/2016/DFM_OUTPUT_Oosterschelde/Oosterschelde_0000_his.nc",
+                "his_variable_list": [
+                    "waterlevel",
+                    "velocity_magnitude"
+                ],
+                "his_output_as_xlsx": true,
+                "his_generate_plots_of_maximum_difference": true,
+                "his_save_plots_for_every_station": false
+            },
+            "map_config": {
+                "map_1": "/p/devops-dsc/verschilanalyse/reference/oosterschelde/dflowfm2d-oosterschelde-j19_6-v2a/computations/hist/2016/DFM_OUTPUT_Oosterschelde/Oosterschelde_0*_map.nc",
+                "map_2": "/p/devops-dsc/verschilanalyse/input/oosterschelde/dflowfm2d-oosterschelde-j19_6-v2a/computations/hist/2016/DFM_OUTPUT_Oosterschelde/Oosterschelde_0*_map.nc",
+                "map_variable_list": [
+                    "mesh2d_s1",
+                    "mesh2d_ucmag"
+                ],
+                "map_output_as_xlsx": true,
+                "map_generate_plots_of_maximum_difference": true,
+                "map_save_plots_for_every_timestep": false
+            }
+        }
+    ]
+}

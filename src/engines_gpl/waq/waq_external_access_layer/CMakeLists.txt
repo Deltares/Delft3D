@@ -13,6 +13,6 @@ target_link_libraries(${library_name} ${oss_dependencies} ${CMAKE_DL_LIBS})
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")
-target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
+target_compile_options(${library_name} PRIVATE ${waq_default_flags})
 
 set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)

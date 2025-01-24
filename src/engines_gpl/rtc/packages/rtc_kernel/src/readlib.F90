@@ -636,8 +636,8 @@
 !C    STRING = input string
 !C    SEARCH = search string
 !C    ITYPE  = type of search; 1=string, 2=real, 3=integer
-!C    NAMSUB = parameter used in call ERRMSG if error message occurs
-!C    FILSUB = parameter used in call ERRMSG if error message occurs
+!C    NAMSUB = parameter used in call write_error_message_rtc if error message occurs
+!C    FILSUB = parameter used in call write_error_message_rtc if error message occurs
 !C    IOUT1  = unit nr. of output (message) file
 !C    CHARRS = output character variable
 !C    REALRS = output real value
@@ -726,8 +726,8 @@
 !C    STRING = input string
 !C    SEARCH = search string
 !C    ITYPE  = type of search; 1=string, 2=real, 3=integer
-!C    NAMSUB = parameter used in call ERRMSG if error message occurs
-!C    FILSUB = parameter used in call ERRMSG if error message occurs
+!C    NAMSUB = parameter used in call write_error_message_rtc if error message occurs
+!C    FILSUB = parameter used in call write_error_message_rtc if error message occurs
 !C    IOUT1  = unit nr. of output (message) file
 !C    CHARRS = output character variable
 !C    REALRS = output real value
@@ -832,8 +832,8 @@
 !    STRING = input string
 !    SEARCH = search string
 !    ITYPE  = type of search; 1=string, 2=real, 3=integer, 4=double precision
-!    NAMSUB = parameter used in call ERRMSG if error message occurs
-!    FILSUB = parameter used in call ERRMSG if error message occurs
+!    NAMSUB = parameter used in call write_error_message_rtc if error message occurs
+!    FILSUB = parameter used in call write_error_message_rtc if error message occurs
 !    IOUT1  = unit nr. of output (message) file
 !    CHARRS = output character variable
 !    REALRS = output real value
@@ -930,8 +930,8 @@
 !C     SEARCH = search string
 !C     ITYPE  = type of output variables: 1= char, 2=real, 3=integer
 !C              so, all variables read are of the same type
-!C     NAMSUB = parameter used in call ERRMSG if error message occurs
-!C     FILSUB = parameter used in call ERRMSG if error message occurs
+!C     NAMSUB = parameter used in call write_error_message_rtc if error message occurs
+!C     FILSUB = parameter used in call write_error_message_rtc if error message occurs
 !C     IOUT1  = unit nr. of output (message) file
 !C     CHARRS = output variables of type char
 !C     REALRS = output variables of type real
@@ -1037,8 +1037,8 @@
 !C     SEARCH = search string
 !C     ITYPE  = type of output variables: 1= char, 2=real, 3=integer
 !C              so, all variables read are of the same type
-!C     NAMSUB = parameter used in call ERRMSG if error message occurs
-!C     FILSUB = parameter used in call ERRMSG if error message occurs
+!C     NAMSUB = parameter used in call write_error_message_rtc if error message occurs
+!C     FILSUB = parameter used in call write_error_message_rtc if error message occurs
 !C     IOUT1  = unit nr. of output (message) file
 !C     CHARRS = output variables of type char
 !C     REALRS = output variables of type real
@@ -1163,8 +1163,8 @@
 !C     SEARCH = search string
 !C     ITYPE  = type of output variables: 1= char, 2=real, 3=integer
 !C              so, all variables read are of the same type
-!C     NAMSUB = parameter used in call ERRMSG if error message occurs
-!C     FILSUB = parameter used in call ERRMSG if error message occurs
+!C     NAMSUB = parameter used in call write_error_message_rtc if error message occurs
+!C     FILSUB = parameter used in call write_error_message_rtc if error message occurs
 !C     IOUT1  = unit nr. of output (message) file
 !C     CHARRS = output variables of type char
 !C     REALRS = output variables of type real

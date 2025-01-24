@@ -30,6 +30,8 @@
 !
 !
 module m_fkeys
+   use m_histor, only: histor
+
    implicit none
 contains
    subroutine FKEYS(KEY)

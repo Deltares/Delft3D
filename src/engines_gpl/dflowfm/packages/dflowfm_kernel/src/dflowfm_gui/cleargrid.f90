@@ -32,18 +32,18 @@
 
 module m_cleargrid
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine cleargrid()
-         use m_grid
-         use unstruc_colors
-         use m_drawthis
-         use m_tek_grd
-         implicit none
-         integer :: key
-         call tekgrd(XC, YC, MMAX, NMAX, 1, 1, mc, nc, 0, ndraw(38), key, MC)
-      end subroutine cleargrid
+   subroutine cleargrid()
+      use m_grid
+      use unstruc_colors
+      use m_drawthis
+      use m_tek_grd
+      implicit none
+      integer :: key
+      call tekgrd(XC, YC, MMAX, NMAX, 1, 1, mc, nc, 0, ndraw(38), key, MC)
+   end subroutine cleargrid
 
 end module m_cleargrid

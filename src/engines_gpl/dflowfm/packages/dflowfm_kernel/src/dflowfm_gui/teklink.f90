@@ -30,33 +30,35 @@
 !
 !
 module m_tek_link
+   use m_setlinkcolour
+
    implicit none
 contains
-  subroutine TEKLINK(L, NCOL)
-     use m_netw, only: kn, yk, xk
-     use unstruc_colors
-     use m_set_col
-     use m_movabs
-     use m_lnabs
-     use m_ptabs
+   subroutine TEKLINK(L, NCOL)
+      use m_netw, only: kn, yk, xk
+      use unstruc_colors
+      use m_set_col
+      use m_movabs
+      use m_lnabs
+      use m_ptabs
 
-     integer :: L, NCOL
-     integer :: k1
-     integer :: k2
+      integer :: L, NCOL
+      integer :: k1
+      integer :: k2
 
-     call SETLINKCOLOUR(L, NCOL)
+      call SETLINKCOLOUR(L, NCOL)
 
-     K1 = KN(1, L)
-     K2 = KN(2, L)
-     if (K1 /= 0 .and. K2 /= 0) then
-        call MOVABS(XK(K1), YK(K1))
-        call LNABS(XK(K2), YK(K2))
-        if (NCOL > 0) then
-           call SETCOL(NCOLNN)
-           call PTABS(XK(K1), YK(K1))
-           call PTABS(XK(K2), YK(K2))
-        end if
-     end if
-     return
-  end subroutine TEKLINK
+      K1 = KN(1, L)
+      K2 = KN(2, L)
+      if (K1 /= 0 .and. K2 /= 0) then
+         call MOVABS(XK(K1), YK(K1))
+         call LNABS(XK(K2), YK(K2))
+         if (NCOL > 0) then
+            call SETCOL(NCOLNN)
+            call PTABS(XK(K1), YK(K1))
+            call PTABS(XK(K2), YK(K2))
+         end if
+      end if
+      return
+   end subroutine TEKLINK
 end module m_tek_link

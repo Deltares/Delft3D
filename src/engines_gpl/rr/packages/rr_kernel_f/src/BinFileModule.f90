@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -100,7 +100,7 @@ contains
     Logical     success
     Integer     teller, iOW, iCall, in
     Integer     iNode, iKind, iNr
-    Character(CharIdLength) idNode
+    Character(CharIdLength) idNode, FileName
     Integer iDebug, iOut1, infile1, infile2, infile3, infile4, infile5, infile6
     Integer SetMaxTabNr, SetMaxDataNr
     Character(Len=FilCharIdLength)            :: boundCondFile
@@ -304,6 +304,23 @@ contains
          Call CloseGP(infile2)
          Call CloseGP(infile3)
          Call CloseGP(infile4)
+      elseif (CleanRRFiles) then      ! also clean when no paved nodes are used
+         FileName = ConfFil_get_namFil(5)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,2)  !paved.3b_cleaned
+         Call CloseGP(infile1)
+         FileName = ConfFil_get_namFil(6)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile2, FileName, 1,2)  !paved.sto_cleaned
+         Call CloseGP(infile2)
+         FileName = ConfFil_get_namFil(7)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile3, FileName, 1,2)  !paved.dwa_cleaned
+         Call CloseGP(infile3)
+         FileName = ConfFil_get_namFil(8)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile4, FileName, 1,2)  !paved.tbl_cleaned
+         Call CloseGP(infile4)
       Endif
 
     ! record 6: unpaved area data
@@ -325,6 +342,31 @@ contains
          Call CloseGP(infile4)
          Call CloseGP(infile5)
          Call CloseGP(infile6)
+      elseif (CleanRRFiles) then      ! also clean when no unpaved nodes are used
+         FileName = ConfFil_get_namFil(15)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,2)  !unpaved.3b_cleaned
+         Call CloseGP(infile1)
+         FileName = ConfFil_get_namFil(16)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile2, FileName, 1,2)  !unpaved.sto_cleaned
+         Call CloseGP(infile2)
+         FileName = ConfFil_get_namFil(21)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile3, FileName, 1,2)  !unpaved.alf_cleaned
+         Call CloseGP(infile3)
+         FileName = ConfFil_get_namFil(31)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile4, FileName, 1,2)  !unpaved.inf_cleaned
+         Call CloseGP(infile4)
+         FileName = ConfFil_get_namFil(33)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile4, FileName, 1,2)  !unpaved.sep_cleaned
+         Call CloseGP(infile4)
+         FileName = ConfFil_get_namFil(34)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile4, FileName, 1,2)  !unpaved.tbl_cleaned
+         Call CloseGP(infile4)
       Endif
 
     ! record 7: greenhouse area data
@@ -338,6 +380,19 @@ contains
          Call CloseGP(infile1)
          Call CloseGP(infile2)
          Call CloseGP(infile3)
+      elseif (CleanRRFiles) then      ! also clean when no greenhouse nodes are used
+         FileName = ConfFil_get_namFil(35)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,2)  !greenhse.3b_cleaned
+         Call CloseGP(infile1)
+         FileName = ConfFil_get_namFil(36)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile2, FileName, 1,2)  !greenhse.rf_cleaned
+         Call CloseGP(infile2)
+         FileName = ConfFil_get_namFil(48)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile3, FileName, 1,2)  !greenhse.sil_cleaned
+         Call CloseGP(infile3)
       Endif
 
     ! record 8: open water data
@@ -350,11 +405,29 @@ contains
          Call CloseGP(infile1)
          Call CloseGP(infile2)
          Call CloseGP(infile3)
+      elseif (CleanRRFiles) then      ! also clean when no RR open water nodes are used
+         FileName = ConfFil_get_namFil(49)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,2)  !openwate.3b_cleaned
+         Call CloseGP(infile1)
+         FileName = ConfFil_get_namFil(50)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile2, FileName, 1,2)  !openwate.sep_cleaned
+         Call CloseGP(infile2)
+         FileName = ConfFil_get_namFil(51)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile3, FileName, 1,2)  !openwate.tbl_cleaned
+         Call CloseGP(infile3)
       Endif
     ! open water precipitation only
       If (ncowrain .gt. 0) then
          Call Openfl (infile1, ConfFil_get_namFil(49),1,1) !openwate.3b
          call OpenwaterPrecip_readAsciiInput (infile1)
+         Call CloseGP(infile1)
+      elseif (CleanRRFiles) then      ! also clean when no RR open precipitation is used, cleaned file may already exist (append!)
+         FileName = ConfFil_get_namFil(49)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,3)  !openwate.3b_cleaned
          Call CloseGP(infile1)
       Endif
 
@@ -371,6 +444,23 @@ contains
          Call CloseGP(infile2)
          Call CloseGP(infile3)
          Call CloseGP(infile4)
+      elseif (CleanRRFiles) then      ! also clean when no RR structure nodes are used
+         FileName = ConfFil_get_namFil(52)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,2)  !struct3b.dat_cleaned
+         Call CloseGP(infile1)
+         FileName = ConfFil_get_namFil(53)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile2, FileName, 1,2)  !struct3b.def_cleaned
+         Call CloseGP(infile2)
+         FileName = ConfFil_get_namFil(54)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile3, FileName, 1,2)  !contr3b.def_cleaned
+         Call CloseGP(infile3)
+         FileName = ConfFil_get_namFil(55)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile4, FileName, 1,2)  !struct3b.tbl_cleaned
+         Call CloseGP(infile4)
       Endif
 
     ! record 10: boundary data
@@ -380,17 +470,10 @@ contains
 !       tmpfile = "tmp_ini.ini"
         call RRConnections_ini
     else
-
       Call Openfl (infile1, ConfFil_get_namFil(2),1,1)  !file met knopen in schematisatie
       Call RRConnections (infile1)
       Call CloseGP (infile1)
     endif
-
-
-
-
-
-
 
 
       If (ncboun .gt. 0) then
@@ -402,6 +485,11 @@ contains
              if (boundCondFile == ' ') then
                 boundCondFile = 'BoundaryConditions.bc'
              endif
+             If (CleanRRFiles) then
+                Call Openfl (infile1, boundCondFile,1,1) !boundaryconditions.bc file
+                call CleanBoundaryConditionsbcFile (infile1)
+                Call CloseGP(infile1)
+             Endif
 
 !GP          ! removed; if dll_mode, boundaryconditions.bc file should be present and read, otherwise error
 !                old code did not switch back to old bound3b.3b file, but did not read anything and used 0 values as boundary)
@@ -413,7 +501,6 @@ contains
                 ! This lets the old boundary being used.
 !GP             dll_mode = .false.
 !GP          endif
-
          else
              !record 10 (boundaries) rechtstreeks uit ASCII
              Call Openfl (infile1, ConfFil_get_namFil(56),1,1) !bound3b.dat
@@ -422,7 +509,20 @@ contains
              Call CloseGP(infile1)
              Call CloseGP(infile2)
          endif
-
+      elseif (CleanRRFiles) then      ! also clean when no RR boundary nodes are used
+         FileName = ConfFil_get_namFil(56)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,2)  !bound3b.dat_cleaned
+         Call CloseGP(infile1)
+         FileName = ConfFil_get_namFil(57)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile2, FileName, 1,2)  !bound3b.tbl_cleaned
+         Call CloseGP(infile2)
+         ! pm boundaryconditions file
+         !FileName = ConfFil_get_namFil(122)
+         !FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         !Call Openfl (infile1, FileName, 1,2)  !boundarycondition.bc_cleaned
+         !Call CloseGP(infile1)
       Endif
 !
       if (idebug .ne. 0) then
@@ -453,6 +553,23 @@ contains
           Call CloseGP(infile2)
           Call CloseGP(infile3)
           Call CloseGP(infile4)
+      elseif (CleanRRFiles) then      ! also clean when no NWRW nodes are used
+         FileName = ConfFil_get_namFil(10)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,2)  !pluvius.3b_cleaned
+         Call CloseGP(infile1)
+         FileName = ConfFil_get_namFil(11)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile2, FileName, 1,2)  !pluvius.alg_cleaned
+         Call CloseGP(infile2)
+         FileName = ConfFil_get_namFil(9)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile3, FileName, 1,2)  !pluvius.dwa_cleaned
+         Call CloseGP(infile3)
+         FileName = ConfFil_get_namFil(106)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile4, FileName, 1,2)  !pluvius.tbl_cleaned
+         Call CloseGP(infile4)
       endif
 
 !August 1998: Add records RWZI and Industry
@@ -465,6 +582,15 @@ contains
          call RWZI_readAscii (infile1, infile2)
          Call CloseGP(infile1)
          Call CloseGP(infile2)
+      elseif (CleanRRFiles) then      ! also clean when no RWZI/WWTP nodes are used
+         FileName = ConfFil_get_namFil(59)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,2)  !rwzi.dat_cleaned
+         Call CloseGP(infile1)
+         FileName = ConfFil_get_namFil(60)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile2, FileName, 1,2)  !rwzi.tbl_cleaned
+         Call CloseGP(infile2)
       Endif
 
     ! record 14: Industry
@@ -474,6 +600,15 @@ contains
          Call Openfl (infile2, ConfFil_get_namFil(77),1,1)  !industry.tbl
          call Industry_readAsciiInput (infile1, infile2)
          Call CloseGP(infile1)
+         Call CloseGP(infile2)
+      elseif (CleanRRFiles) then      ! also clean when no Industry nodes are used
+         FileName = ConfFil_get_namFil(61)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,2)  !industry.3b_cleaned
+         Call CloseGP(infile1)
+         FileName = ConfFil_get_namFil(77)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile2, FileName, 1,2)  !industry.tbl_cleaned
          Call CloseGP(infile2)
       Endif
 
@@ -489,6 +624,11 @@ contains
 !        close(infile2)
 !        close(infile3)
 !        close(infile4)
+      elseif (CleanRRFiles) then      ! also clean when no Sacramento nodes are used
+         FileName = ConfFil_get_namFil(44)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,2)  !sacrmnto.3b_cleaned
+         Call CloseGP(infile1)
       Endif
       call Sacramento_confAr3
 
@@ -513,6 +653,11 @@ contains
          Call Openfl (infile1, ConfFil_get_namFil(44),1,1) ! all data is added to the file Sacramento.3b
          call RRRunoffNode_readAscii (infile1)
          Call CloseGP(infile1)
+      elseif (CleanRRFiles) then      ! also clean when no RR_Runoff nodes are used (note: file also used for Sacramento; open with append option)
+         FileName = ConfFil_get_namFil(44)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,3)  !sacrmnto.3b_cleaned
+         Call CloseGP(infile1)
       Endif
       call RRRunoffNode_confAr3
 
@@ -525,6 +670,11 @@ contains
       If (ncBifur .gt. 0) then
          Call Openfl (infile1, ConfFil_get_namFil(44),1,1)  !link file, met optioneel bifurcation information
          call RRBifurcation_ReadAsciiInput (infile1)
+         Call CloseGP(infile1)
+      elseif (CleanRRFiles) then      ! also clean when no Bifurcations nodes are used (note: file also used for Sacrmamento nodes, open in append mode
+         FileName = ConfFil_get_namFil(44)
+         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+         Call Openfl (infile1, FileName, 1,3)  !sacrmnto.3b_cleaned
          Call CloseGP(infile1)
       Endif
 

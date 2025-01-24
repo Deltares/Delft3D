@@ -33,30 +33,30 @@
 !
 module m_cls1
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine CLS1()
-         use unstruc_colors
-         use unstruc_display_data
-         use m_drawthis
-         use m_fbox_nop
-         use m_set_col
+   subroutine CLS1()
+      use unstruc_colors
+      use unstruc_display_data
+      use m_drawthis
+      use m_fbox_nop
+      use m_set_col
 
-         call IGRAREACLEAR()
+      call IGRAREACLEAR()
 
-         if (NDRAW(10) == 2) then
-            call IGRPALETTERGB(2, NREDP, NGREENP, NBLUEP)
-         else
-            call IGRPALETTERGB(2, NREDS, NGREENS, NBLUES)
-         end if
+      if (NDRAW(10) == 2) then
+         call IGRPALETTERGB(2, NREDP, NGREENP, NBLUEP)
+      else
+         call IGRPALETTERGB(2, NREDS, NGREENS, NBLUES)
+      end if
 
-         call SETCOL(2)
+      call SETCOL(2)
 
-         call FBOXnop(X1, Y1, X2, Y2)
+      call FBOXnop(X1, Y1, X2, Y2)
 
-         return
-      end
+      return
+   end
 
 end module m_cls1

@@ -32,8 +32,14 @@ def make_object(
     last_modified: datetime = datetime.min.replace(tzinfo=timezone.utc),
     is_delete_marker: bool = False,
     etag: Optional[str] = None,
+    tags: Optional[dict[str, str]] = None,
 ) -> MinioObject:
     version_id = version_id or uuid4().hex
+    new_tags = None
+    if tags is not None:
+        new_tags = Tags()
+        for k, v in tags.items():
+            new_tags[k] = v
 
     return MinioObject(
         bucket_name=bucket_name,
@@ -42,6 +48,7 @@ def make_object(
         last_modified=last_modified,
         is_delete_marker=is_delete_marker,
         etag=etag,
+        tags=new_tags,
     )
 
 
@@ -1111,7 +1118,7 @@ class TestMinioRewinder:
         assert minio_objects_equal(conflict.latest_version, new_object)
         assert conflict.latest_version.tags == (tags if add_tags else None)
         assert conflict.update_type == Operation.CREATE
-        minio_client.get_object_tags.call_count == int(add_tags)
+        assert minio_client.get_object_tags.call_count == int(add_tags)
 
     @pytest.mark.parametrize("add_tags", [pytest.param(True, id="add_tags"), pytest.param(False, id="skip_tags")])
     def test_detect_conflicts__object_didnt_exist_but_is_now_a_delete_marker__no_conflict(
@@ -1354,3 +1361,152 @@ class TestMinioRewinder:
         assert sum(1 for elem in conflicts if elem.update_type == Operation.CREATE) == create_count
         assert sum(1 for elem in conflicts if elem.update_type == Operation.UPDATE) == update_count
         assert sum(1 for elem in conflicts if elem.update_type == Operation.REMOVE) == remove_count
+
+    def test_list_objects__latest_exclude_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/bar.txt", version_id="2", last_modified=now, is_delete_marker=True),
+        ]
+
+        # Act
+        obj, *other_objects = list(rewinder.list_objects(prefix))
+
+        # Assert
+        assert not other_objects
+        assert obj.object_name == "case_data/foo.txt"
+        assert obj.version_id == "2"
+        assert obj.last_modified == now
+
+    def test_list_objects__latest_include_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/bar.txt", version_id="2", last_modified=now, is_delete_marker=True),
+        ]
+
+        # Act
+        objects = sorted(rewinder.list_objects(prefix, include_delete_markers=True), key=lambda obj: obj.object_name)
+
+        # Assert
+        assert len(objects) == 2
+        bar_obj, foo_obj = objects
+
+        assert foo_obj.version_id == "2"
+        assert not foo_obj.is_delete_marker
+        assert bar_obj.version_id == "2"
+        assert bar_obj.is_delete_marker
+
+    def test_list_objects__rewind_exclude_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object(
+                "case_data/bar.txt", version_id="2", last_modified=now - timedelta(hours=2), is_delete_marker=True
+            ),
+            make_object("case_data/bar.txt", version_id="3", last_modified=now),
+        ]
+
+        # Act
+        obj, *other_objects = sorted(
+            rewinder.list_objects(prefix, timestamp=now - timedelta(hours=1)),
+            key=lambda obj: obj.object_name or "",
+        )
+
+        # Assert
+        assert not other_objects
+
+        assert obj.version_id == "1"
+        assert obj.last_modified == now - timedelta(days=1)
+
+    def test_list_objects__rewind_include_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object(
+                "case_data/bar.txt", version_id="2", last_modified=now - timedelta(hours=2), is_delete_marker=True
+            ),
+            make_object("case_data/bar.txt", version_id="3", last_modified=now),
+        ]
+
+        # Act
+        objects = sorted(
+            rewinder.list_objects(
+                prefix,
+                timestamp=now - timedelta(hours=1),
+                include_delete_markers=True,
+            ),
+            key=lambda obj: obj.object_name or "",
+        )
+
+        # Assert
+        assert len(objects) == 2
+        bar_obj, foo_obj = objects
+
+        assert foo_obj.version_id == "1"
+        assert not foo_obj.is_delete_marker
+        assert bar_obj.version_id == "2"
+        assert bar_obj.is_delete_marker
+
+    def test_list_objects__add_tags(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now),
+        ]
+        tags = Tags()
+        tags["issue-id"] = "FOO-123"
+        client.get_object_tags.return_value = tags
+
+        # Act
+        obj, *other_objects = rewinder.list_objects(prefix, add_tags=True)
+
+        # Assert
+        assert not other_objects
+        assert obj.tags is not None
+        assert obj.tags["issue-id"] == "FOO-123"
+
+    def test_list_objects__add_tags__missing_tag(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now),
+        ]
+        client.get_object_tags.return_value = None
+
+        # Act
+        obj, *other_objects = rewinder.list_objects(prefix, add_tags=True)
+
+        # Assert
+        assert not other_objects
+        assert obj.tags is None

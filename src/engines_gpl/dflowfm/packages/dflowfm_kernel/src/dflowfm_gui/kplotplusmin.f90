@@ -30,28 +30,30 @@
 !
 !
 module m_k_plot_plus_min
+   use m_textflow
+
    implicit none
 contains
-     subroutine KPLOTPLUSMIN(IPM)
-        use M_FLOWGEOM, only: ntheta
-        use M_FLOW, only: kmx, kplotfrombedorsurface, kplot, jawave
-        use m_xbeach_data, only: itheta_view
+   subroutine KPLOTPLUSMIN(IPM)
+      use M_FLOWGEOM, only: ntheta
+      use M_FLOW, only: kmx, kplotfrombedorsurface, kplot, jawave
+      use m_xbeach_data, only: itheta_view
 
-        integer :: IP, IPM
+      integer :: IP, IPM
 
-        if (kmx >= 1) then
+      if (kmx >= 1) then
 
-           ip = ipm
-           if (kplotfrombedorsurface /= 1) then
-              ip = -1 * ipm
-           end if
+         ip = ipm
+         if (kplotfrombedorsurface /= 1) then
+            ip = -1 * ipm
+         end if
 
-           KPLOT = KPLOT + ip
-           kplot = max(1, min(kplot, kmx))
+         KPLOT = KPLOT + ip
+         kplot = max(1, min(kplot, kmx))
 
-           call TEXTFLOW()
-        else if (jawave == 4) then
-           itheta_view = max(min(itheta_view + sign(1, ipm), ntheta), 1)
-        end if
-     end subroutine KPLOTPLUSMIN
+         call TEXTFLOW()
+      else if (jawave == 4) then
+         itheta_view = max(min(itheta_view + sign(1, ipm), ntheta), 1)
+      end if
+   end subroutine KPLOTPLUSMIN
 end module m_k_plot_plus_min

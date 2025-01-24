@@ -30,7 +30,18 @@
 !
 !
 
+module m_wave_comp_stokes_velocities
+
+   implicit none
+
+   private
+
+   public :: wave_comp_stokes_velocities
+
+contains
+
    subroutine wave_comp_stokes_velocities()
+      use precision, only: dp
       use m_flowparameters
       use m_flowgeom
       use m_flow, only: hu, hs
@@ -40,14 +51,14 @@
       use m_partitioninfo
       implicit none
 
-      double precision :: Mu, Mv, massflux_max, mnorm, mangle ! link-based and link-oriented wave-induced volume fluxes
-      double precision :: gammal, hwavL, hstokes, huL, deltahmin
-      double precision, allocatable :: mx(:), my(:)
+      real(kind=dp) :: Mu, Mv, massflux_max, mnorm, mangle ! link-based and link-oriented wave-induced volume fluxes
+      real(kind=dp) :: gammal, hwavL, hstokes, huL, deltahmin
+      real(kind=dp), allocatable :: mx(:), my(:)
 
       integer :: k1, k2, L, k
       integer :: ierror ! error (1) or not (0)
 
-      double precision :: ac1, ac2
+      real(kind=dp) :: ac1, ac2
 
       ierror = 1
 
@@ -150,3 +161,5 @@
 1234  continue
       return
    end subroutine wave_comp_stokes_velocities
+
+end module m_wave_comp_stokes_velocities

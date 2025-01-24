@@ -32,11 +32,12 @@
 
 module m_changenumericalparameters4
 
-implicit none
+   implicit none
 
 contains
 
    subroutine CHANGENUMERICALPARAMETERS4()
+      use precision, only: dp
       use m_flow
       use m_flowgeom
       use unstruc_colors
@@ -57,7 +58,7 @@ contains
 !
       integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key
       integer :: nbut, imp, inp
-      double precision :: h1, h5, h7, w1, w5, w7
+      real(kind=dp) :: h1, h5, h7, w1, w5, w7
 
       NLEVEL = 4
 !   OPTION( 1) = 'vicouv_filter                    (m2/s)' ; it(2* 1) = 6

@@ -30,12 +30,28 @@
 !
 !
 
-   subroutine MAKENET(japaramscreen)
+module m_makenet_sub
+   use m_pol2netparams, only: pol2netparams
+   use m_del_grid_outside_pol, only: del_grid_outside_pol
+   use m_getdeltay, only: getdeltay
+   use m_mergenodesinpolygon, only: mergenodesinpolygon
 
+   implicit none
+
+   private
+
+   public :: makenet
+
+contains
+
+   subroutine MAKENET(japaramscreen)
+      use precision, only: dp
+      use m_dellink, only: dellink
+      use m_addmaze, only: addmaze
       use m_makenetparameters
       use m_netw
       use m_makenet ! NTYP ANGLE SIZE THICK NRX NRY
-      use m_grid, only:nc, mc, xc, yc
+      use m_grid, only: nc, mc, xc, yc
       use m_missing, only: dmiss, jins
       use m_sferic
       use geometry_module, only: pinpok
@@ -46,17 +62,16 @@
       use m_set_nod_adm
       use m_increase_grid
       use m_dbdistance_hk
-
-      implicit none
+      use m_filez, only: doclose, newfil
 
       integer, intent(in) :: japaramscreen !< Load parameter screen or not (1/0)
-      double precision :: ael, cs, dx, dy, hs
+      real(kind=dp) :: ael, cs, dx, dy, hs
       integer :: in, jn, k0, l0, m, mh, n, nh, nn, numkn, numln, jaklaar, jafive, L, k1, k2, n12, i, k, LL, mou2
-      double precision :: siz
-      double precision :: sn
-      double precision :: xplmax, xplmin, xx, yplmax, yplmin, yy, asp, c, phi, dphi, dxt, rr, f, rl, dd, z2, zbn
+      real(kind=dp) :: siz
+      real(kind=dp) :: sn
+      real(kind=dp) :: xplmax, xplmin, xx, yplmax, yplmin, yy, asp, c, phi, dphi, dxt, rr, f, rl, dd, z2, zbn
 
-      double precision :: X(8), Y(8), Z(8), XD, YD
+      real(kind=dp) :: X(8), Y(8), Z(8), XD, YD
       character(len=20) :: fnam
 
       if (japaramscreen == 1) then
@@ -393,3 +408,5 @@
 
       return
    end subroutine MAKENET
+
+end module m_makenet_sub

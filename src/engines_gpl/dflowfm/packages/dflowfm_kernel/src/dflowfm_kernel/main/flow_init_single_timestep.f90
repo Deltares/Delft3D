@@ -31,41 +31,53 @@
 !
 
 !> Initializes a single computational timestep, call this prior to flow_perform_single_timestep.
-subroutine flow_init_single_timestep(iresult)
-   use timers
-   use m_flow
-   use m_flowgeom
-   use m_flowtimes
-   use m_timer
-   use dfm_error
+module m_flow_init_single_timestep
+
    implicit none
 
-   integer, parameter :: JAZWS0 = 0
-   logical, parameter :: SET_HU = .true.
-   logical, parameter :: USE_U1 = .true.
-   integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
+   private
 
-   iresult = DFM_GENERICERROR
+   public :: flow_init_single_timestep
 
-   if (lnx == 0) then
-      iresult = DFM_MODELNOTINITIALIZED
-      goto 888
-   end if
+contains
 
-   call timstrt('Time steps', handle_steps)
+   subroutine flow_init_single_timestep(iresult)
+      use m_flow_initimestep
+      use timers
+      use m_flow
+      use m_flowgeom
+      use m_flowtimes
+      use m_timer
+      use dfm_error
 
-   if (jatimer == 1) call starttimer(ITIMESTEP)
+      integer, parameter :: JAZWS0 = 0
+      logical, parameter :: SET_HU = .true.
+      logical, parameter :: USE_U1 = .true.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
-   call flow_initimestep(JAZWS0, SET_HU, USE_U1, iresult) ! initialise timestep
+      iresult = DFM_GENERICERROR
 
-   if (iresult /= DFM_NOERR) then
-      goto 888
-   end if
+      if (lnx == 0) then
+         iresult = DFM_MODELNOTINITIALIZED
+         goto 888
+      end if
 
-   iresult = DFM_NOERR
-   return ! Return with success
+      call timstrt('Time steps', handle_steps)
 
-888 continue
-   ! Error
+      if (jatimer == 1) call starttimer(ITIMESTEP)
 
-end subroutine flow_init_single_timestep
+      call flow_initimestep(JAZWS0, SET_HU, USE_U1, iresult) ! initialise timestep
+
+      if (iresult /= DFM_NOERR) then
+         goto 888
+      end if
+
+      iresult = DFM_NOERR
+      return ! Return with success
+
+888   continue
+      ! Error
+
+   end subroutine flow_init_single_timestep
+
+end module m_flow_init_single_timestep

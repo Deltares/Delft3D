@@ -31,24 +31,35 @@
 !
 
 !> find common neighboring cell of two links (0: no cell found)
-integer function common_cell_for_two_net_links(L1, L2)
-   use network_data, only: lnn, lne
+module m_icommon
+
    implicit none
 
-   integer, intent(in) :: L1, L2 !< net link numbers
+   private
 
-   integer :: i, j
+   public :: common_cell_for_two_net_links
 
-   common_cell_for_two_net_links = 0
+contains
 
-   do i = 1, lnn(L1)
-      do j = 1, lnn(L2)
-         if (lne(i, L1) == lne(j, L2)) then
-            common_cell_for_two_net_links = lne(i, L1)
-            exit
-         end if
+   integer function common_cell_for_two_net_links(L1, L2)
+      use network_data, only: lnn, lne
+
+      integer, intent(in) :: L1, L2 !< net link numbers
+
+      integer :: i, j
+
+      common_cell_for_two_net_links = 0
+
+      do i = 1, lnn(L1)
+         do j = 1, lnn(L2)
+            if (lne(i, L1) == lne(j, L2)) then
+               common_cell_for_two_net_links = lne(i, L1)
+               exit
+            end if
+         end do
       end do
-   end do
 
-   return
-end function common_cell_for_two_net_links
+      return
+   end function common_cell_for_two_net_links
+
+end module m_icommon

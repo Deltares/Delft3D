@@ -30,16 +30,30 @@
 !
 !
 
-  subroutine addnetpointnocheck(XP, YP, ZP, K1)
-     use m_netw
-     implicit none
-     double precision :: xp, yp, ZP
-     integer :: k1
-     numk = numk + 1
-     k1 = numk
-     xk(k1) = xp
-     yk(k1) = yp
-     ZK(K1) = ZP
-     kc(k1) = 1
-     return
-  end subroutine addnetpointnocheck
+module m_addnetpointnocheck
+
+   implicit none
+
+   private
+
+   public :: addnetpointnocheck
+
+contains
+
+   subroutine addnetpointnocheck(XP, YP, ZP, K1)
+      use precision, only: dp
+      use m_netw
+
+      real(kind=dp) :: xp, yp, ZP
+      integer :: k1
+
+      numk = numk + 1
+      k1 = numk
+      xk(k1) = xp
+      yk(k1) = yp
+      ZK(K1) = ZP
+      kc(k1) = 1
+
+   end subroutine addnetpointnocheck
+
+end module m_addnetpointnocheck

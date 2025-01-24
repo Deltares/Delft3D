@@ -451,7 +451,6 @@ module m_ec_module
          type(tEcFileReader)   , pointer :: fileReaderPtr  => null() !< 
          
          logical                   :: success
-         integer, external         :: findname
          type (tEcMask)            :: srcmask
          logical                   :: res
          integer                   :: i, itgt

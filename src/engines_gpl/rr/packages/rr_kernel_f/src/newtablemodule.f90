@@ -1,39 +1,31 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-
- ! Last changed
-! by:               $Author:: Schrier           $
-! at:               $Modtime:: 16-12-97 12:44p  $
 !
-! current revision: $Revision:: 13              $
-!
-! Geert Prinsen
-!
-! September 2002
+! originally developed GPrinsen September 2002
 ! integration of RR and RTC version of NewTableModule
 !   - unification of NewTableConfAr
 !   - messages without using Messagemodule
@@ -493,7 +485,7 @@ end function newTablesModelFind_ByHandle
 !     Read new line as long as it is necessary
    10 read (lu,'(a)',iostat=ios) line
       actlen = Len_Trim(line)
-      if (idebug .gt. 0) write(idebug,'(A,A)') ' Getrecord line =',line(1:actlen)
+      if (idebug .ne. 0) write(idebug,'(A,A)') ' Getrecord line =',line(1:actlen)
       nrecr = nrecr + 1
       eof = ios.ne.0
       if ( eof ) goto 20
@@ -518,7 +510,7 @@ end function newTablesModelFind_ByHandle
                  else
                     start = (StartPos .le. KeyUppOption)
                  endif
-                 if (idebug .gt. 0) write(idebug,*) ' Start recording; Found keyword ',Keyupp, &
+                 if (idebug .ne. 0) write(idebug,*) ' Start recording; Found keyword ',Keyupp, &
                                                     ' at position', iposl, ' token nr ', ReturnIndx, &
                                                     ' StartPos   ', StartPos
                  iposl = StartPos
@@ -532,8 +524,8 @@ end function newTablesModelFind_ByHandle
       if ( start .and. .not.stopr ) then
 !         Check for space // keylow
           iposr = index(line(iposl:),space_keylow)
-          if (Idebug .gt. 0) write(idebug,*) ' check space_keylow found position', iposr
-          if (Idebug .gt. 0) write(idebug,'(A,A)') ' space_keylow =', keylow
+          if (Idebug .ne. 0) write(idebug,*) ' check space_keylow found position', iposr
+          if (Idebug .ne. 0) write(idebug,'(A,A)') ' space_keylow =', keylow
           if ( iposr .gt. 0 ) then
               ! check if position is valid for KeyLow (it should be a separate token!)
               if (.not. ParseTokenArrayWithKeywords (Line(iposl:ActLen), ScanToTk, RecordData, &
@@ -541,9 +533,9 @@ end function newTablesModelFind_ByHandle
                  ! always returns true
               if (Getkey (KeyLow, IStart, RecordData, NumberOfTokens, ReturnIndx, ParseTokenCaseSensitive)) then
                  StartPos = RecordData%StartPositionOfToken(ReturnIndx)
-                 if (Idebug .gt. 0) write(idebug,*) ' GetKey keylow found position', StartPos
-                 if (Idebug .gt. 0) write(idebug,'(A,1X,A)') ' Line(Startpos:)', Line(StartPos:)
-                 if (idebug .gt. 0) write(idebug,*) ' Stop recording; Found keyword ',Keylow, &
+                 if (Idebug .ne. 0) write(idebug,*) ' GetKey keylow found position', StartPos
+                 if (Idebug .ne. 0) write(idebug,'(A,1X,A)') ' Line(Startpos:)', Line(StartPos:)
+                 if (idebug .ne. 0) write(idebug,*) ' Stop recording; Found keyword ',Keylow, &
                                                     ' at position', iposr, ' token nr ', ReturnIndx, &
                                                     ' StartPos   ', StartPos
                  iposr = StartPos
@@ -561,7 +553,7 @@ end function newTablesModelFind_ByHandle
                                                 NumberOfTokens, ParseTokenCaseSensitive) ) Return
               if (Getkey (KeyLow, IStart, RecordData, NumberOfTokens, ReturnIndx, ParseTokenCaseSensitive)) then
                  StartPos = RecordData%StartPositionOfToken(ReturnIndx)
-                 if (idebug .gt. 0) write(idebug,*) ' Stop recording; Found keyword ',Keylow, &
+                 if (idebug .ne. 0) write(idebug,*) ' Stop recording; Found keyword ',Keylow, &
                                                     ' at position', iposr, ' token nr ', ReturnIndx, &
                                                     ' StartPos   ', StartPos
                  iposr = StartPos + Len_Trim(KeyLow)  ! was + 4
@@ -586,7 +578,7 @@ end function newTablesModelFind_ByHandle
              Return
           endif
           if ( toklen .gt. 0 ) then
-              if (idebug .gt. 0) write(idebug,*) ' store line from ',iposl,' to ',iposr, Line(iposl:iposr)
+              if (idebug .ne. 0) write(idebug,*) ' store line from ',iposl,' to ',iposr, Line(iposl:iposr)
               buffer(nbuf+1:nbuf+toklen) = line(iposl:iposr)
               nbuf = nbuf + toklen + 1
           endif
@@ -602,7 +594,7 @@ end function newTablesModelFind_ByHandle
       endif
       keyact = keyupp
 
-      if (idebug .gt. 0) write(idebug,*) ' Get Record to Buffer ', buffer(1:500)
+      if (idebug .ne. 0) write(idebug,*) ' Get Record to Buffer ', buffer(1:500)
       GetRecordGeneral = .true.
 
       return
@@ -747,8 +739,8 @@ end function newTablesModelFind_ByHandle
       Endif
 
 ! find keyword TBLE and tble in buffer; nog eens verificatie dat het voorkomt
-      if (idebug .gt. 0) write(idebug,*) ' Get Table with ', NrColumns, ' columns'
-      if (idebug .gt. 0) write(idebug,*) ' from Buffer ', buffer(1:500)
+      if (idebug .ne. 0) write(idebug,*) ' Get Table with ', NrColumns, ' columns'
+      if (idebug .ne. 0) write(idebug,*) ' from Buffer ', buffer(1:500)
       Ileft  =  INDEX(Buffer(ILeftBuf:IRightBuf), 'TBLE')
       Iright =  INDEX(Buffer(iLeftBuf:IRightBuf), 'tble')
       TabYesNo = (ileft .gt. 0 .and. iright .gt. ileft)
@@ -763,7 +755,7 @@ end function newTablesModelFind_ByHandle
          LocalNrRows = Max (1, MyOwnCntStr (klteken, buffer(ILeftBuf:IRightBuf)) ) + 1
       Endif
 !     NB LocalRows = aantal < tekens + 1, ivm mogelijke extra rij bij cyclische tabel
-      if (idebug .gt. 0) write(idebug,*) ' GetTable LocalNrRows=', LocalNrRows
+      if (idebug .ne. 0) write(idebug,*) ' GetTable LocalNrRows=', LocalNrRows
       Allocate   ( RLocal (LocalNrRows, NrColumns), Stat=Allocation_Error )
       If (Allocation_Error .ne. 0) then
         call SetMessage(LEVEL_FATAL, 'Error allocating arrays in subroutine GetTableFRomBuffer')
@@ -796,12 +788,12 @@ end function newTablesModelFind_ByHandle
                  Idum1 = ileft + ipos - 1
                  Idum2 = Index (buffer(idum:idum1), puntkomma)
                  Idum2 = ileft + idum2 - 1
-                 if (idebug .gt. 0) then
+                 if (idebug .ne. 0) then
                    write(idebug,*) ' Table read string positions ', ileft, idum1, idum2, iright
                    Write(idebug,*) buffer(idum2-10:idum2+9)
                  Endif
                  read (buffer(idum2-10:idum2+9),'(I4,5(1X,I2))' )  iyear, imonth, iday, ihour, iminute, isecond
-                 if (idebug .gt. 0) write(idebug,*) iyear, imonth, iday, ihour, iminute, isecond
+                 if (idebug .ne. 0) write(idebug,*) iyear, imonth, iday, ihour, iminute, isecond
 ! ARS XXXX May 21, 2002: check correctness date/time; IHour =0..23, IMinute = 0..59
                 If (IMinute .ge. 60) then
                     IMinute = 0
@@ -825,8 +817,8 @@ end function newTablesModelFind_ByHandle
                     Return
                  endif
                  ileft  =  idum2+10
-                 if (idebug .gt. 0) write(idebug,*) ' Get data positions ', ileft, idum1-1, NrColumns
-                 if (idebug .gt. 0) write (idebug,'(A)') buffer(ileft:idum1-1)
+                 if (idebug .ne. 0) write(idebug,*) ' Get data positions ', ileft, idum1-1, NrColumns
+                 if (idebug .ne. 0) write (idebug,'(A)') buffer(ileft:idum1-1)
                  read (buffer(ileft:),*) (Rlocal(NrData,i),i=1,NrColumns)
                  ileft = idum1 + 1
                 model%FirstFreeData  = model%FirstFreeData + NrColumns
@@ -863,7 +855,7 @@ end function newTablesModelFind_ByHandle
                          teken .eq. dubbelpunt .or. teken .eq. puntkomma .or. &
                                                        teken .eq. quote) buffer(idum:idum) = ' '
                  Enddo
-                 If (Idebug .gt. 0) Write(idebug,*) Buffer(ileft:iright)
+                 If (Idebug .ne. 0) Write(idebug,*) Buffer(ileft:iright)
                  Read (buffer(ileft:),*) ( model%TableDateTime(model%FirstFreeDateTime+NrData-1,IndexYear),&
                                             model%TableDateTime(model%FirstFreeDateTime+NrData-1,IndexMonth),&
                                              model%TableDateTime(model%FirstFreeDateTime+NrData-1,IndexDay),&
@@ -941,7 +933,7 @@ end function newTablesModelFind_ByHandle
       endif
 
 
-      if (idebug .gt. 0) then
+      if (idebug .ne. 0) then
          write(idebug,*) ' TableNr ', TableNr
          write(idebug,*) ' length of table ', model%Ntab(TableNr,IndexNTabElements)
          write(idebug,*) ' first position datetime ', model%Ntab(TableNr,IndexFirstDateTime)
@@ -980,9 +972,9 @@ end function newTablesModelFind_ByHandle
          IDate2 = SetDate (model%TableDateTime(j,IndexYear), model%TableDateTime(j,IndexMonth), model%TableDateTime(j,IndexDay))
          ITime2 = SetTime (model%TableDateTime(j,IndexHour), model%TableDateTime(j,IndexMinute), model%TableDateTime(j,IndexSecond))
          JulianDate2 = Julian (idate2,itime2)
-         If (idebug .gt. 0) write(idebug,*) ' Check Periodicity Juliandates ', JulianDate1, JulianDate2
+         If (idebug .ne. 0) write(idebug,*) ' Check Periodicity Juliandates ', JulianDate1, JulianDate2
          CheckPeriod = ( 86400. * (JulianDate2-JulianDate1) )
-         If (idebug .gt. 0) write(idebug,*) ' CheckPeriod ', CheckPeriod
+         If (idebug .ne. 0) write(idebug,*) ' CheckPeriod ', CheckPeriod
          PeriodError = .false.
          ! periode >= 1 maand; afwijking tot 1 dag toegestaan
          ! periode >= 1 dag; afwijking tot 1 uur
@@ -998,7 +990,7 @@ end function newTablesModelFind_ByHandle
          If (PeriodError) then
 ! Bij cyclische tabel: als periode niet klopt met lengte tabel voeg einddatum toe met identieke waarde
 ! Compute and set date in array; from starttime, determine how many days in the period (no check on hours!!)
-            if (idebug .gt. 0) then
+            if (idebug .ne. 0) then
                write(idebug,*) ' Table will be extended'
                write(idebug,*) ' TableNr ', TableNr
             endif
@@ -1010,7 +1002,7 @@ end function newTablesModelFind_ByHandle
             IMinute= model%TableDateTime(j,IndexMinute)
             ISecond= model%TableDateTime(j,IndexSecond)
             j = model%NTab(TableNr,IndexPeriodic) / 86400
-            if (idebug .gt. 0) then
+            if (idebug .ne. 0) then
                write(idebug,*) ' Initial IYear, IMonth, IDay, IHour, IMinute, ISecond'
                write(idebug,'(6I5)')  IYear, IMonth, IDay, IHour, IMinute, ISecond
             endif
@@ -1045,7 +1037,7 @@ end function newTablesModelFind_ByHandle
             JulianDate2 = Julian (idate2,itime1)
             Call GregorSbk (JulianDate2,  IYear, IMonth, IDay, IHour, IMinute, ISecond)
             j = model%Ntab(TableNr,IndexFirstDateTime) + model%NTab(TableNr,IndexNTabElements)-1
-            if (idebug .gt. 0) then
+            if (idebug .ne. 0) then
                write(idebug,*) ' Final IYear, IMonth, IDay, IHour, IMinute, ISecond'
                write(idebug,'(6I5)')  IYear, IMonth, IDay, IHour, IMinute, ISecond
             endif
@@ -1057,7 +1049,7 @@ end function newTablesModelFind_ByHandle
             model%TableDateTime(j,IndexSecond)= ISecond
 ! Copy last data already done
 ! Extra debug
-            if (idebug .gt. 0) then
+            if (idebug .ne. 0) then
                write(idebug,*) ' Table is extended'
                write(idebug,*) ' TableNr ', TableNr
                write(idebug,*) ' length of table ', model%Ntab(TableNr,IndexNTabElements)
@@ -1178,7 +1170,7 @@ end function newTablesModelFind_ByHandle
 
 
 ! Extra debug
-      if (idebug .gt. 0) then
+      if (idebug .ne. 0) then
          write(idebug,*) ' Table is reduced'
          write(idebug,*) ' TableNr ', TabelNr
          write(idebug,*) ' length of table ', model%Ntab(TabelNr,IndexNTabElements)
@@ -1275,7 +1267,7 @@ end function newTablesModelFind_ByHandle
             DateTimeOutsideTable = (RowNr .eq. model%NTab(TabelNr,IndexNTabElements) .or. RowNr .eq. 1)
       endif
 
-      if (idebug .gt. 0) then
+      if (idebug .ne. 0) then
          write(idebug,*) ' TabelNr ', TabelNr
          write(idebug,*) ' Column  ', ColumnNr
          write(idebug,*) ' length of table ', model%Ntab(TabelNr,IndexNTabElements)
@@ -1294,7 +1286,7 @@ end function newTablesModelFind_ByHandle
          ProgramError = GenerateMessage ( 3 , 'Table Data index too large' , '   ', ' ' , Iout1)
          call SetMessage(LEVEL_FATAL, 'GetNewValue called with table index too high')
       Endif
-      if (idebug .gt. 0)  write(idebug,*) ' Index in DataArray ', i, model%TableData(i)
+      if (idebug .ne. 0)  write(idebug,*) ' Index in DataArray ', i, model%TableData(i)
 
       if (DateTimeOutsideTable) then
          if (model%NTab(TabelNr,IndexPeriodic) .eq. 0) then
@@ -1371,10 +1363,10 @@ end function newTablesModelFind_ByHandle
       JulianDate3 = Julian (idate3,itime3)
       Ratio = (JulianDate3-JulianDate1) / (JulianDate2-JulianDate1)
       if (JulianDate3 .lt. 0 .or. Ratio .gt. 1 .or. Ratio .lt. 0) then
-          if (idebug .gt. 0)  write(idebug,*) ' Error: Julian Date negative or Ratio invalid; put ratio=0'
+          if (idebug .ne. 0)  write(idebug,*) ' Error: Julian Date negative or Ratio invalid; put ratio=0'
           Ratio = 0.0
       endif
-      if (idebug .gt. 0) then
+      if (idebug .ne. 0) then
          write(idebug,*) ' Interpolatie ', i, model%TableData(i), i1, model%TableData(i1)
          write(idebug,*) ' JulianDates  ', JulianDate1, JulianDate2, JulianDate3
          write(idebug,*) ' Ratio        ', Ratio
@@ -1444,14 +1436,14 @@ end function newTablesModelFind_ByHandle
           Ready = .true.
       end if
       DateTimeOutsideTable = Ready
-      if (idebug .gt. 0)  then
+      if (idebug .ne. 0)  then
         write(idebug,*) ' SetRowNr called with RowNr=', RowNr
         write(idebug,*) ' DateTimeOutsideTable=',DateTimeOutsideTable
       endif
 
       If (.not. Ready) then
 
-         if (idebug .gt. 0)  write(idebug,*) ' Vooraf: FirstPos LastPos LastIndexFound', &
+         if (idebug .ne. 0)  write(idebug,*) ' Vooraf: FirstPos LastPos LastIndexFound', &
                                               FirstPos, LastPos, Ipos, model%Ntab(TabelNr,IndexLastRowUsed)
 
 ! Search only if CurrentDate and Time within table range; At the moment always simple linear search
@@ -1521,7 +1513,7 @@ end function newTablesModelFind_ByHandle
 !     if (NTab(TabelNr,5) .eq. 0 .or. .not. DateTimeOutsideTable) NTab(TabelNr,6) = RowNr
       if (.not. DateTimeOutsideTable) model%NTab(TabelNr,IndexLastRowUsed) = RowNr
 
-      if (idebug .gt. 0) then
+      if (idebug .ne. 0) then
          Ipos  = max (model%NTab(TabelNr,IndexFirstDateTime), model%NTab(TabelNr,IndexFirstDateTime) + model%NTab(TabelNr,IndexLastRowUsed) - 1)
          write(idebug,*) ' End of SetRowNr'
          write(idebug,*) ' FirstPos LastPos IPos LastIndexFound', FirstPos, LastPos, Ipos, model%Ntab(TabelNr,IndexLastRowUsed)
@@ -1582,7 +1574,7 @@ end function newTablesModelFind_ByHandle
       IYear  = CurrentDate%Year
       IMonth = CurrentDate%Month
 
-      if (idebug .gt. 0) then
+      if (idebug .ne. 0) then
          write(idebug,*) ' SetCycRowNr called with RowNr=', RowNr
          write(idebug,*) ' CurrentDate ', CurrentDate%day, CurrentDate%month, CurrentDate%year
          write(idebug,*) ' CurrentTime ', CurrentTime%hour, CurrentTime%minute, CurrentTime%second
@@ -1596,7 +1588,7 @@ end function newTablesModelFind_ByHandle
       Annual   =  .false.
       if (model%Ntab(TabelNr,IndexPeriodic) .eq.  31536000)  Annual = .true.
       DPeriod = model%NTab(TabelNr,IndexPeriodic) /86400.0D0
-      if (idebug .gt. 0) then
+      if (idebug .ne. 0) then
          write (idebug,*) ' Set Dperiod =', Dperiod, model%NTab(TabelNr,IndexPeriodic), 86400
          write (idebug,*) ' Dcurrent  DPeriod DEnd =', DCurrent, DPeriod, DEnd
       endif
@@ -1608,7 +1600,7 @@ end function newTablesModelFind_ByHandle
          Do while (doorgaan)
             DCurrent = DCurrent + DPeriod
             If (annual) then
-                if (idebug .gt. 0) write(Idebug,*) ' check annual'
+                if (idebug .ne. 0) write(Idebug,*) ' check annual'
                 If (LeapYear(Iyear) .and. IMonth .le. 2) then
                    Dcurrent = Dcurrent + 1.0D0     ! extra dag erbij tellen
                 elseIf (LeapYear(Iyear+1) .and. IMonth .ge. 3) then
@@ -1617,14 +1609,14 @@ end function newTablesModelFind_ByHandle
                 IYear = IYear + 1
             Endif
             Doorgaan = (DCurrent .lt. 0)
-            If (Idebug .gt. 0) write(Idebug,*) ' Doorgaan1?=',Doorgaan, DCurrent, DEnd, DPeriod
+            If (Idebug .ne. 0) write(Idebug,*) ' Doorgaan1?=',Doorgaan, DCurrent, DEnd, DPeriod
          Enddo
       else
          ! datum valt na einde tabel
          Do while (doorgaan)
             DCurrent = DCurrent - DPeriod
             If (annual) then
-                if (idebug .gt. 0) write(Idebug,*) ' check annual'
+                if (idebug .ne. 0) write(Idebug,*) ' check annual'
                 If (LeapYear(Iyear) .and. IMonth .ge. 3) then
                    Dcurrent = Dcurrent - 1.0D0     ! extra dag eraf halen
                 elseIf (LeapYear(Iyear-1) .and. IMonth .le. 2) then
@@ -1645,21 +1637,21 @@ end function newTablesModelFind_ByHandle
 !        call SetMessage(LEVEL_FATAL, 'Internal Search Error Periodic Table')
 !     Endif
 
-      if (idebug .gt. 0) then
+      if (idebug .ne. 0) then
          write (idebug,*) ' After Check annual: Dcurrent  DPeriod =', DCurrent, DPeriod
       endif
 
       JulianDate3 = JulianDate1 + DCurrent
       Call GregorSbk (JulianDate3, CurrentDate%year, CurrentDate%month , CurrentDate%day, &
                                  CurrentTime%hour  , CurrentTime%minute, CurrentTime%second)
-      if (idebug .gt. 0) then
+      if (idebug .ne. 0) then
          Write(idebug,*) ' JulianDate3', JulianDate3, ' Using Gregor found CurrentDate/Time: '
          write(idebug,*) ' CurrentDate ', CurrentDate%day, CurrentDate%month, CurrentDate%year
          write(idebug,*) ' CurrentTime ', CurrentTime%hour, CurrentTime%minute, CurrentTime%second
       endif
       Call SetRownr (modelHandle, TabelNr, Rownr, CurrentDate, CurrentTime, Outside, Idebug, UseLastIndexFound)
 
-      if (idebug .gt. 0) then
+      if (idebug .ne. 0) then
          IPos         = model%NTab(TabelNr,IndexFirstDateTime) + model%NTab(TabelNr,IndexLastRowUsed) - 1
          if (IPos .le. 0) ipos = 1
          write(idebug,*) ' End of SetCycRowNr'
@@ -1741,7 +1733,7 @@ end function newTablesModelFind_ByHandle
             model%TableData (idum) = Rlocal(j,i)
          Enddo
       Enddo
-      if (idebug .gt. 0) then
+      if (idebug .ne. 0) then
          write(idebug,*) ' TableNr ', TableNr
          write(idebug,*) ' length of table ', model%Ntab(TableNr,IndexNTabElements)
          write(idebug,*) ' first position datetime ', model%Ntab(TableNr,IndexFirstDateTime)
@@ -1840,7 +1832,7 @@ end function newTablesModelFind_ByHandle
       if (id  .ne. ' ') then
          call SetMessage(LEVEL_INFO, 'Object-id  : '//trim(id))
       endif
-      
+
       if (nm  .ne. ' ') then
          call SetMessage(LEVEL_INFO, 'Object-name: '//trim(nm))
       endif
@@ -1992,7 +1984,7 @@ end function newTablesModelFind_ByHandle
 
 
 
- 
+
 
   !  Subroutine WriteMessage (Iout1, Messg)
   !

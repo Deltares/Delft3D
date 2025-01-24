@@ -47,3 +47,4 @@ src/**/FortranCInterface.h
 # ignore generated doxygen documentation
 /doxy_output
 /ci/DIMRset_delivery/venv/**
+/ci/teamcity/Delft3D/target/**

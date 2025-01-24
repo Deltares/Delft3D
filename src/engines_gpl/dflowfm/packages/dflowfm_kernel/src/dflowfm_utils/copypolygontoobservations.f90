@@ -30,13 +30,24 @@
 !
 !
 
+module m_copypolygontoobservations
+
+   implicit none
+
+   private
+
+   public :: copypolygontoobservations
+
+contains
+
    subroutine copyPolygonToObservations()
       use m_observations, only: addObservation
       use M_POLYGON
-      implicit none
 
       integer :: n
       do N = 1, NPL
          call addObservation(XPL(N), YPL(N))
       end do
    end subroutine copyPolygonToObservations
+
+end module m_copypolygontoobservations

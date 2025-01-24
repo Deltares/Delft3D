@@ -30,38 +30,39 @@
 !
 !
 module m_dminmax
-    contains
-    
-      subroutine DMINMAX(X, MXLAN, XMIN, XMAX, MAXLAN)
-         use m_missing, only: dmiss
-         implicit none
-         integer :: i
-         integer :: maxlan
-         integer :: mxlan
-         double precision :: xmax
-         double precision :: xmin
-         double precision :: xx
+contains
+
+   subroutine DMINMAX(X, MXLAN, XMIN, XMAX, MAXLAN)
+      use precision, only: dp
+      use m_missing, only: dmiss
+      implicit none
+      integer :: i
+      integer :: maxlan
+      integer :: mxlan
+      real(kind=dp) :: xmax
+      real(kind=dp) :: xmin
+      real(kind=dp) :: xx
 !     BEPAAL MINIMUM EN MAXIMUM VAN EEN EENDIMENSIONALE ARRAY
-         double precision, intent(inout) :: X(MAXLAN)
+      real(kind=dp), intent(inout) :: X(MAXLAN)
 
-         if (MXLAN == 0) then
-            XMIN = 0
-            XMAX = 0
-            return
-         end if
-
-         XMIN = 10d20
-         XMAX = -10d20
-         do I = 1, MXLAN
-            XX = X(I)
-            if (XX /= dmiss) then
-               XMIN = min(XMIN, XX)
-               XMAX = max(XMAX, XX)
-            end if
-         end do
-         if (XMIN == 10d20) XMIN = 0
-         if (XMAX == -10d20) XMAX = 0
+      if (MXLAN == 0) then
+         XMIN = 0
+         XMAX = 0
          return
-      end
+      end if
+
+      XMIN = 10d20
+      XMAX = -10d20
+      do I = 1, MXLAN
+         XX = X(I)
+         if (XX /= dmiss) then
+            XMIN = min(XMIN, XX)
+            XMAX = max(XMAX, XX)
+         end if
+      end do
+      if (XMIN == 10d20) XMIN = 0
+      if (XMAX == -10d20) XMAX = 0
+      return
+   end
 
 end module m_dminmax

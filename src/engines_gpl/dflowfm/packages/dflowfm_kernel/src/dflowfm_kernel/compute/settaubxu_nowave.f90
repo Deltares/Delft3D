@@ -30,7 +30,18 @@
 !
 !
 
+module m_settaubxu_nowave
+
+   implicit none
+
+   private
+
+   public :: settaubxu_nowave
+
+contains
+
    subroutine settaubxu_nowave(use_u1)
+      use precision, only: dp
       use m_flowgeom
       use m_flow
       use m_physcoef
@@ -41,8 +52,8 @@
       logical, intent(in) :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave`
 
       integer :: L, Lb, Lt
-      double precision :: cz, cwall, rz, umod2
-      double precision, pointer :: velocity_pointer(:)
+      real(kind=dp) :: cz, cwall, rz, umod2
+      real(kind=dp), pointer :: velocity_pointer(:)
 
       taubxu = 0d0
 
@@ -71,3 +82,5 @@
       end do
 
    end subroutine
+
+end module m_settaubxu_nowave

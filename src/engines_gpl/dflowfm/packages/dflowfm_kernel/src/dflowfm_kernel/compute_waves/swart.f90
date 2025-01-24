@@ -30,23 +30,36 @@
 !
 !
 
-subroutine Swart(Tsig, uorbu, z00, fw, ustw2)
+module m_swart
 
    implicit none
-   double precision :: Tsig, uorbu, z00, fw, ustw2
-   double precision :: astar
 
-   if (uorbu == 0d0) then
-      fw = 0d0; ustw2 = 0d0; return
-   end if
+   private
 
-   astar = Tsig * uorbu / z00
-   if (astar > 296.088d0) then ! 30pipi
-      fw = 0.00251d0 * exp(14.1d0 / (astar**0.19d0)) ! astar=Tuorb/z00
-   else
-      fw = 0.3d0
-   end if
+   public :: swart
 
-   ustw2 = 0.5d0 * fw * uorbu * uorbu
+contains
 
-end subroutine Swart
+   subroutine Swart(Tsig, uorbu, z00, fw, ustw2)
+      use precision, only: dp
+
+      implicit none
+      real(kind=dp) :: Tsig, uorbu, z00, fw, ustw2
+      real(kind=dp) :: astar
+
+      if (uorbu == 0d0) then
+         fw = 0d0; ustw2 = 0d0; return
+      end if
+
+      astar = Tsig * uorbu / z00
+      if (astar > 296.088d0) then ! 30pipi
+         fw = 0.00251d0 * exp(14.1d0 / (astar**0.19d0)) ! astar=Tuorb/z00
+      else
+         fw = 0.3d0
+      end if
+
+      ustw2 = 0.5d0 * fw * uorbu * uorbu
+
+   end subroutine Swart
+
+end module m_swart

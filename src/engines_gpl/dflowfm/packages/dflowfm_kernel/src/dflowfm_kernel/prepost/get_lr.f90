@@ -33,59 +33,60 @@ module m_get_lr
    implicit none
 contains
 !> get left and right neighboring grid layer points
-subroutine get_LR(mc, xc, yc, i, iL, iR)
+   subroutine get_LR(mc, xc, yc, i, iL, iR)
+      use precision, only: dp
 
-   use m_missing, only: dmiss
-   use m_spline2curvi
-   use geometry_module, only: dbdistance
-   use m_sferic, only: jsferic, jasfer3D
+      use m_missing, only: dmiss
+      use m_spline2curvi
+      use geometry_module, only: dbdistance
+      use m_sferic, only: jsferic, jasfer3D
 
-   integer, intent(in) :: mc !< grid layer size
-   double precision, dimension(mc), intent(in) :: xc, yc !< grid layer point coordinates
-   integer, intent(in) :: i !< grid layer point
+      integer, intent(in) :: mc !< grid layer size
+      real(kind=dp), dimension(mc), intent(in) :: xc, yc !< grid layer point coordinates
+      integer, intent(in) :: i !< grid layer point
 
-   integer, intent(out) :: iL, iR ! left and right neighboring grid layer points
+      integer, intent(out) :: iL, iR ! left and right neighboring grid layer points
 
-!   double precision, parameter                  :: dtolLR = 1d-1
+!   real(kind=dp), parameter                  :: dtolLR = 1d-1
 
-   integer :: jstart, jend, jacirc_loc
+      integer :: jstart, jend, jacirc_loc
 
 !  check for circular connectivity
-   jacirc_loc = jacirc
+      jacirc_loc = jacirc
 
-   jstart = 1
-   jend = mc
+      jstart = 1
+      jend = mc
 
 !  grid points may be on top of each other: find left neighboring point
-   iL = i
-   do while (dbdistance(xc(iL), yc(iL), xc(i), yc(i), jsferic, jasfer3D, dmiss) <= dtolLR)
-      if (jacirc_loc == 0) then
-         if (iL - 1 < 1) exit
-      else
-         if (iL - 1 < jstart) then
-            iL = jend + 1
-            jacirc_loc = 0 ! only once
+      iL = i
+      do while (dbdistance(xc(iL), yc(iL), xc(i), yc(i), jsferic, jasfer3D, dmiss) <= dtolLR)
+         if (jacirc_loc == 0) then
+            if (iL - 1 < 1) exit
+         else
+            if (iL - 1 < jstart) then
+               iL = jend + 1
+               jacirc_loc = 0 ! only once
+            end if
          end if
-      end if
-      if (xc(iL - 1) == DMISS .or. yc(iL - 1) == DMISS) exit
-      iL = iL - 1
-   end do
+         if (xc(iL - 1) == DMISS .or. yc(iL - 1) == DMISS) exit
+         iL = iL - 1
+      end do
 
 !  find right neighboring node
-   iR = i
-   do while (dbdistance(xc(iR), yc(iR), xc(i), yc(i), jsferic, jasfer3D, dmiss) <= dtolLR)
-      if (jacirc_loc == 0) then
-         if (iR + 1 > mc) exit
-      else
-         if (iR + 1 > jend) then
-            iR = jstart - 1
-            jacirc_loc = 0 ! only once
+      iR = i
+      do while (dbdistance(xc(iR), yc(iR), xc(i), yc(i), jsferic, jasfer3D, dmiss) <= dtolLR)
+         if (jacirc_loc == 0) then
+            if (iR + 1 > mc) exit
+         else
+            if (iR + 1 > jend) then
+               iR = jstart - 1
+               jacirc_loc = 0 ! only once
+            end if
          end if
-      end if
-      if (xc(iR + 1) == DMISS .or. yc(iR + 1) == DMISS) exit
-      iR = iR + 1
-   end do
+         if (xc(iR + 1) == DMISS .or. yc(iR + 1) == DMISS) exit
+         iR = iR + 1
+      end do
 
-   return
-end subroutine get_LR
+      return
+   end subroutine get_LR
 end module m_get_lr

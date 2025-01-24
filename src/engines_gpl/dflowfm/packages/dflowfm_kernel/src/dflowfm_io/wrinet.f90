@@ -34,6 +34,7 @@ module m_wrinet
 contains
    subroutine WRINET(MNET)
       use m_netw
+      use m_filez, only: doclose
 
       integer :: MNET
 

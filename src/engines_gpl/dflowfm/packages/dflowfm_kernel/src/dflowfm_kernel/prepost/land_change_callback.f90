@@ -32,24 +32,35 @@
 
 !> Updates derived bathymetry arrays, after zk values have been changed.
 !! This routine updates the entire grid, so call this once after a (series of) zk update(s).
-subroutine land_change_callback()
-   use m_flowgeom
-   use m_flow
-   use m_set_kbot_ktop
-   use m_volsur
-   use m_flow_f0isf1
-   use m_set_bobs
+module m_land_change_callback
+
    implicit none
 
-   hs = s1 - bl
-   call setbobs()
-   s1 = bl + hs; s0 = s1; s00 = s1
+   private
 
-   call volsur() ! dropland_zk
-   call flow_f0isf1() ! dropland_zk
-   volerr = 0; volerrcum = 0
+   public :: land_change_callback
 
-   if (kmx > 0) then
-      call setkbotktop(1) ! dropland_zk
-   end if
-end subroutine land_change_callback
+contains
+
+   subroutine land_change_callback()
+      use m_flowgeom
+      use m_flow
+      use m_set_kbot_ktop
+      use m_volsur
+      use m_flow_f0isf1
+      use m_set_bobs
+
+      hs = s1 - bl
+      call setbobs()
+      s1 = bl + hs; s0 = s1; s00 = s1
+
+      call volsur() ! dropland_zk
+      call flow_f0isf1() ! dropland_zk
+      volerr = 0; volerrcum = 0
+
+      if (kmx > 0) then
+         call setkbotktop(1) ! dropland_zk
+      end if
+   end subroutine land_change_callback
+
+end module m_land_change_callback

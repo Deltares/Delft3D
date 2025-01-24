@@ -31,28 +31,29 @@
 !
 
 module m_anchorcls
+   use m_setxor
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine ANCHORCLS()
-         use unstruc_colors
-         use m_locatora
-         use m_disdis
-         use m_set_col
+   subroutine ANCHORCLS()
+      use unstruc_colors
+      use m_locatora
+      use m_disdis
+      use m_set_col
 
-         implicit none
+      implicit none
 !     ZET ANCHOR NA CLEARSCREEN
 
-         call SETXOR(1)
-         call SETCOL(KLANK)
-         call IGrMARKER(real(XA), real(YA), 2)
-         call SETXOR(0)
+      call SETXOR(1)
+      call SETCOL(KLANK)
+      call IGrMARKER(real(XA), real(YA), 2)
+      call SETXOR(0)
 
-         call DISDIS()
+      call DISDIS()
 
-         return
-      end
+      return
+   end
 
 end module m_anchorcls

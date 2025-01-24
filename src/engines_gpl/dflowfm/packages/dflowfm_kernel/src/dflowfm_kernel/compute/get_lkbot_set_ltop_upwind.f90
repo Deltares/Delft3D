@@ -31,22 +31,30 @@
 !
 !> Get 3D flow link and node indices for a given "2D" flow link based on given upwind node.
 !! Also sets global Lbot array.
-subroutine get_lkbot_set_ltop_upwind(link, upstream_cell, upstream_cell_index, Lb, kb, kt)
-   use m_flow, only: Lbot, ktop, Ltop
-   use m_turbulence, only: ln0
+module m_get_lkbot_set_ltop_upwind
 
    implicit none
 
-   integer, intent(in) :: link ! flow link index
-   integer, intent(in) :: upstream_cell ! upstream flow node
-   integer, intent(in) :: upstream_cell_index ! index in flowlink to flownode array
-   integer, intent(out) :: Lb ! 3D flow link index at bed
-   integer, intent(out) :: kb ! 3D flow node index at bed
-   integer, intent(out) :: kt ! 3D flow node index at top
+contains
 
-   Lb = Lbot(link)
-   kt = ktop(upstream_cell)
-   kb = min(ln0(upstream_cell_index, Lb), kt)
-   Ltop(link) = Lb + kt - kb
+   subroutine get_lkbot_set_ltop_upwind(link, upstream_cell, upstream_cell_index, Lb, kb, kt)
+      use m_flow, only: Lbot, ktop, Ltop
+      use m_turbulence, only: ln0
 
-end subroutine get_lkbot_set_ltop_upwind
+      implicit none
+
+      integer, intent(in) :: link ! flow link index
+      integer, intent(in) :: upstream_cell ! upstream flow node
+      integer, intent(in) :: upstream_cell_index ! index in flowlink to flownode array
+      integer, intent(out) :: Lb ! 3D flow link index at bed
+      integer, intent(out) :: kb ! 3D flow node index at bed
+      integer, intent(out) :: kt ! 3D flow node index at top
+
+      Lb = Lbot(link)
+      kt = ktop(upstream_cell)
+      kb = min(ln0(upstream_cell_index, Lb), kt)
+      Ltop(link) = Lb + kt - kb
+
+   end subroutine get_lkbot_set_ltop_upwind
+
+end module m_get_lkbot_set_ltop_upwind

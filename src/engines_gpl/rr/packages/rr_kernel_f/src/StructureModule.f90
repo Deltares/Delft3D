@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -414,6 +414,9 @@ contains
     REAL                 RDUM(32)
     Character(len=CharIdLength) CDUM(32), TableName
     Logical Success
+    Character(Len=CharIdLength)  FileName
+    Character(Len=1000000)       KeepBufString
+    Integer                      IoUnit, LenString, ipos
 
     Type Weir
         Integer wt,rt
@@ -472,7 +475,19 @@ contains
     SwlvTable = .false.
     InstTable = .false.
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input RR structures
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(52)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !struct3b.dat_cleaned
+        Write(*,*) ' Cleaning struct3b.dat to file:', FileName
+        Write(iout1,*) ' Cleaning struct3b.dat to file:', FileName
+   endif
+! *********************************************************************
 ! Read STRUCT3B.DAT file
+! *********************************************************************
    call SetMessage(LEVEL_DEBUG, 'Read Struct3b.Dat file')
    if (idebug .ne. 0) write(idebug,*) ' Read struct3b.Dat file'
    Endfil = .false.
@@ -495,6 +510,9 @@ contains
          if (AlreadyRead(index)) then
            call SetMessage(LEVEL_ERROR, 'Data for Structure node '//Cdum(1)(1:Len_trim(Cdum(1)))//' double in datafile Struct.Dat')
          else
+! cleaning RR files
+          If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
           AlreadyRead(index) = .true.
           StrNam(index) = inod
           teller = teller + 1
@@ -542,7 +560,22 @@ contains
                              ' Some structures not present in Struct3B.Dat file')
     Endif
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for struct.def
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(53)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !struct3b.def_cleaned
+        Write(*,*) ' Cleaning struct3b.def to file:', FileName
+        Write(iout1,*) ' Cleaning struct3b.def to file:', FileName
+   endif
+! *********************************************************************
 ! Read Struct3b.Def file
+! *********************************************************************
      Endfil = .false.
      Err969 = .false.
      teller = 0
@@ -567,6 +600,10 @@ contains
           if (Istru .gt. 0) then
              if (ReferencetoDefinition(istru) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'Structure Definition '//name(1:Len_trim(Name))//' double in datafile Struct.Def')
+               Occurs = .false.  ! om verdere verwerking te stoppen
+             else
+ !             cleaning RR files
+               If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
              endif
           endif
 
@@ -1013,8 +1050,22 @@ contains
     If (err969)  call ErrMsgStandard (972, 0, ' Not enough Structure data found', &
                                       ' Some Structure Definitions not present in STRUCT3B.Def file')
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for contr3b.def
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(54)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !contr3b.def_cleaned
+        Write(*,*) ' Cleaning contr3b.def to file:', FileName
+        Write(iout1,*) ' Cleaning contr3b.def to file:', FileName
+   endif
+! *********************************************************************
 ! read contr3b.def
+! *********************************************************************
     call SetMessage(LEVEL_DEBUG, 'Read Contr3b.Def file')
     if (idebug .ne. 0) write(idebug,*) ' Read Contr3b.Def file'
     teller = 0
@@ -1039,6 +1090,10 @@ contains
           if (Istru .gt. 0) then
              if (ReferencetoDefinition(istru) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'Controller Definition '//name(1:Len_trim(Name))//' double in datafile Contr3b.Def')
+               Occurs = .false.  ! om verdere verwerking te stoppen
+             else
+ !             cleaning RR files
+               If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
              endif
           endif
 
@@ -1216,11 +1271,26 @@ contains
     If (err969)  call ErrMsgStandard (972, 0, ' Not enough Structure data found', &
                                       ' Some Controller Definitions not present in Contr3B.Def file')
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for struct3b.tbl
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(55)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !struct3b.tbl_cleaned
+        Write(*,*) ' Cleaning struct3b.tbl to file:', FileName
+        Write(iout1,*) ' Cleaning struct3b.tbl to file:', FileName
+   endif
+
+! *********************************************************************
 ! Read struct3b.tbl: de tabellen met switch on/off levels van kunstwerken (SWLV records)
 !                    de tabellen met initial settings van weir/gate       (INST records)
 !                    de tabellen met time controller weir/gate/pump       (INST records)
 ! records kunnen over meerdere regels verspreid staan!!
+! *********************************************************************
     if (idebug .ne. 0) write(idebug,*) ' Read Structb.Tbl file'
     Do istru = 1, ncstru
        StrRefOnOffTable(istru) = 0
@@ -1237,6 +1307,12 @@ contains
        Success = GetRecord(Infile4, 'SWLV', Endfil, idebug, Iout1) ! get record van keyword SWLV tot swlv, zet in buffer
        If (.not. Success) Goto 3111
        IF (ENDFIL) GOTO 3111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Write(*,*) 'local buffer StructureModule to small'
+           Write(iout1,*) 'local buffer StructureModule to small'
+           GOTO 3111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        If (.not. Success) Goto 3111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -1246,16 +1322,44 @@ contains
           NrColumns = 0
           Occurs = (Istru .gt. 0)
           if (Istru .gt. 0) then
-             if (StrRefOnOffTable(istru) .gt. 0) then
-                call SetMessage(LEVEL_ERROR, 'Structure On-Off Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Struct3b.Tbl')
-             endif
              if (StrTyp(istru) .eq. 1 .or. StrTyp(istru) .eq. 8) NrColumns = 8   ! pump table
              if (StrTyp(istru) .eq. 6 .or. StrTyp(istru) .eq. 7) NrColumns = 2   ! weir/orifice table
+             if (StrRefOnOffTable(istru) .gt. 0) then
+                call SetMessage(LEVEL_ERROR, 'Structure On-Off Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Struct3b.Tbl')
+                NrColumns = 0     ! om verdere verwerking uit te zetten
+             endif
           endif
           if (occurs .and. NrColumns .gt. 0) then
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
             Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
             If (.not. Success) Goto 3111
+! clean RR files
+            If (CleanRRFiles) then
+               ! use KeepBufString to write to file
+               ! first till TBLE
+               ! then till < characters
+               ! then till the end of the buffer string
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                  KeepBufString(1:) = KeepBufString(ipos+5:)
+               else
+                  ! error: no TBLE found
+                    call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+               endif
+ 1041          continue
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                  KeepBufString(1:) = KeepBufString(ipos+3:)
+                  goto 1041
+               else
+                  ! write remaining part
+                  write(Iounit,'(A)') KeepBufString (1:lenstring)
+               endif
+            Endif
 ! Set references
             Do istru = 1, ncstru
               if (StringComp(TblOnOffDef(istru), TableName, CaseSensitive) )  StrRefOnOffTable(istru) = TableNr
@@ -1275,6 +1379,11 @@ contains
        Success = GetRecord(Infile4, 'INST', Endfil, idebug, Iout1)    ! get record van keyword INST tot inst, zet in buffer
        If (.not. Success) Goto 4111
        IF (ENDFIL) GOTO 4111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Write(*,*) 'local buffer StructureModule to small'
+           GOTO 4111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', if table defined
        If (.not. Success) Goto 4111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -1287,6 +1396,7 @@ contains
           if (Istru .gt. 0) then
              if (StrRefInitTable(istru) .gt. 0) then
                 call SetMessage(LEVEL_ERROR, 'Structure Initial Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Struct3b.Tbl')
+                occurs = .false.  ! om verdere verwerking uit te zetten
              endif
           endif
 !         Als niet als Initial table gebruikt, test of tabel als time controller gebruikt wordt
@@ -1297,6 +1407,7 @@ contains
             if (Istru .gt. 0) then
                if (StrRefTimeTable(istru) .gt. 0) then
                   call SetMessage(LEVEL_ERROR, 'Structure TimeController Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Struct3b.Tbl')
+                  occurs = .false.  ! om verdere verwerking uit te zetten
                endif
             endif
           endif
@@ -1305,6 +1416,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
             Success = GetTable (TableHandle, TableName, NrColumns, TableNr, Idebug, Iout1)
             If (.not. Success) Goto 4111
+! clean RR files
+            If (CleanRRFiles) then
+               ! use KeepBufString to write to file
+               ! first till TBLE
+               ! then till < characters
+               ! then till the end of the buffer string
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                  KeepBufString(1:) = KeepBufString(ipos+5:)
+               else
+                  ! error: no TBLE found
+                    call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+               endif
+ 1051          continue
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                  KeepBufString(1:) = KeepBufString(ipos+3:)
+                  goto 1051
+               else
+                  ! write remaining part
+                  write(Iounit,'(A)') KeepBufString (1:lenstring)
+               endif
+            Endif
 ! Set references
             Do istru = 1, ncstru
               if (StringComp(TblInitDef(istru), TableName, CaseSensitive) )  StrRefInitTable(istru) = TableNr
@@ -1315,6 +1453,9 @@ contains
        Call SKPCOM (Infile4, ENDFIL,'ODS')
      Enddo
 4111 Continue
+
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
 ! Check of alle referenties naar tabellen opgelost
     Err969 = .false.
@@ -5042,9 +5183,9 @@ IMPLICIT NONE
     Integer     INODE, IStr, Iout6, Ievent
     Real        QFlw
     CHARACTER(len=3) MONTH(12)
-    
+
            if (.not. associated(QSTRMX)) return  ! If there is nothing, do nothing
-    
+
 ! flow in m3/s
            QFLW = QSTRMX(ISTR,IEVENT)
            WRITE(IOUT6,1010) IEVENT, EventStartDateTime(IEVENT,1),MONTH(EventStartDateTime(IEVENT,2)), &

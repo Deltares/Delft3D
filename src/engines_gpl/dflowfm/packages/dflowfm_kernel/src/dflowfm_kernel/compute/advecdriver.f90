@@ -30,51 +30,67 @@
 !
 !
 
- subroutine advecdriver()
-    use m_flowtimes
-    use m_flow
-    use m_flowgeom
-    use m_setucxcuy_leastsquare, only: reconst2nd
-    implicit none
+module m_advecdriver
+   use m_setextforcechkadvec, only: setextforcechkadvec
+   use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
 
-    double precision :: dta, das, ds
-    integer :: L, k1, k2, k
+   implicit none
 
-    if (itstep == 3) then
+   private
 
-       if (.not. allocated(adve0)) then
-          allocate (adve0(lnkx))
-       end if
+   public :: advecdriver
 
-       dta = 0.7d0 * dts / cflmx
-       das = dta / dts
-       do k = 1, 2
+contains
 
-          adve = 0d0
+   subroutine advecdriver()
+      use precision, only: dp
+      use m_advec, only: advec
+      use m_flowtimes
+      use m_flow
+      use m_flowgeom
+      use m_setucxcuy_leastsquare, only: reconst2nd
+      implicit none
 
-          call advec()
-          if (k == 1) then
-             adve0 = adve
-          end if
-          do L = 1, lnx
-             k1 = ln(1, L); k2 = ln(2, L)
-             ds = ag * dxi(L) * (s0(k2) - s0(k1))
-             u1(L) = (u1(L) * (1d0 - das) + u0(L) * das - dta * (adve(L) + ds)) / (1d0 + dta * advi(L))
-          end do
-          if (iperot == -1) then
-             call reconst2nd()
-          end if
-          call setucxucyucxuucyunew()
+      real(kind=dp) :: dta, das, ds
+      integer :: L, k1, k2, k
 
-       end do
-       ! adve = teta0*adve + (1d0-teta0)*adve0
-       ! u1 = u0
+      if (itstep == 3) then
 
-    else
+         if (.not. allocated(adve0)) then
+            allocate (adve0(lnkx))
+         end if
 
-       call advec() ! advection term, must be called after set-umod and cell velocity updates
+         dta = 0.7d0 * dts / cflmx
+         das = dta / dts
+         do k = 1, 2
 
-    end if
+            adve = 0d0
 
-    call setextforcechkadvec() ! set external forcings and check explicit part adve
- end subroutine advecdriver
+            call advec()
+            if (k == 1) then
+               adve0 = adve
+            end if
+            do L = 1, lnx
+               k1 = ln(1, L); k2 = ln(2, L)
+               ds = ag * dxi(L) * (s0(k2) - s0(k1))
+               u1(L) = (u1(L) * (1d0 - das) + u0(L) * das - dta * (adve(L) + ds)) / (1d0 + dta * advi(L))
+            end do
+            if (iperot == -1) then
+               call reconst2nd()
+            end if
+            call setucxucyucxuucyunew()
+
+         end do
+         ! adve = teta0*adve + (1d0-teta0)*adve0
+         ! u1 = u0
+
+      else
+
+         call advec() ! advection term, must be called after set-umod and cell velocity updates
+
+      end if
+
+      call setextforcechkadvec() ! set external forcings and check explicit part adve
+   end subroutine advecdriver
+
+end module m_advecdriver

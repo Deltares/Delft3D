@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -560,6 +560,11 @@ contains
     Character(CharIdLength), Pointer, save ::  DWADEF2(:)
     Logical Success
 
+    Character(Len=CharIdLength)  FileName
+    Character(Len=1000000)       KeepBufString
+    Integer                      IoUnit, LenString, ipos
+
+
      Success = Dh_AllocInit (Nplv, DwaDef, ' ')
      Success = success .and. Dh_AllocInit (Nplv, DwaDef2, ' ')
      Success = success .and. Dh_AllocInit (NcPluvDwa, DwaTabDef, ' ')
@@ -580,7 +585,19 @@ contains
     found = .false.
     iOut1 = ConfFil_get_iOut1()
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(10)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !pluvius.3b_cleaned
+        Write(*,*) ' Cleaning pluvius.3b to file:', FileName
+        Write(iout1,*) ' Cleaning pluvius.3b to file:', FileName
+   endif
+! *********************************************************************
 ! Read Pluvius.3B file
+! *********************************************************************
     call SetMessage(LEVEL_DEBUG, 'Read Pluvius.3b file')
     endfil = .false.
     teller = 0
@@ -602,6 +619,9 @@ contains
           if (AlreadyRead(iplv)) then
            call SetMessage(LEVEL_ERROR, 'Data for NWRW node '//id(1:Len_trim(id))//' double in datafile Pluvius.3B')
           else
+           ! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
            teller = teller + 1
            AlreadyRead(iplv) = .true.
            PLVNAM(iplv) = index
@@ -804,7 +824,22 @@ contains
                             ' Some NWRW-nodes from schematisation not present in Pluvius.3B file')
     Endif
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for pluvius.dwa
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(9)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !pluvius.dwa_cleaned
+        Write(*,*) ' Cleaning Pluvius.dwa to file:', FileName
+        Write(iout1,*) ' Cleaning Pluvius.dwa to file:', FileName
+   endif
+! *********************************************************************
 !Pluvius.Dwa file
+! *********************************************************************
 ! first determine number records (=DWA-definitions) in DWA file
     endfil = .false.
     Allow = .false.
@@ -854,7 +889,11 @@ contains
            Occurs = (Iplv .gt. 0)
            if (Iplv .gt. 0) then
               if (ReferenceToDWADEF(iplv) .gt. 0) then
-               call SetMessage(LEVEL_ERROR, 'DWA Definition '//name(1:Len_trim(Name))//' double in datafile Pluvius.Dwa')
+                 call SetMessage(LEVEL_ERROR, 'DWA Definition '//name(1:Len_trim(Name))//' double in datafile Pluvius.Dwa')
+                 Occurs = .false. ! om verdere verwerking te stoppen
+              else
+!                cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
            ! test DWA companies
@@ -862,7 +901,11 @@ contains
            Occurs = occurs .or. (Iplv .gt. 0)
            if (Iplv .gt. 0) then
               if (ReferenceToDWADEF2(iplv) .gt. 0) then
-               call SetMessage(LEVEL_ERROR, 'DWA Definition '//name(1:Len_trim(Name))//' double in datafile Pluvius.Dwa')
+                 call SetMessage(LEVEL_ERROR, 'DWA Definition '//name(1:Len_trim(Name))//' double in datafile Pluvius.Dwa')
+                 Occurs = .false. ! om verdere verwerking te stoppen
+              else
+!                cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
 
@@ -924,8 +967,23 @@ contains
     Enddo
     If (Err969) call ErrMsgStandard (972, 0, ' Not enough data for NWRW-nodes found', &
                                      ' Some DWA-definitions not present in NWRW data files')
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
-!Pluvius.Tbl file
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for Pluvius.tbl
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(106)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !Pluvius.tbl_cleaned
+        Write(*,*) ' Cleaning Pluvius.tbl file:', FileName
+        Write(iout1,*) ' Cleaning Pluvius.tbl file:', FileName
+   endif
+
+! **************************************
+! Pluvius.Tbl file
+! **************************************
     call SetMessage(LEVEL_DEBUG, 'Read Pluvius.tbl file')
     if (idebug .ne. 0) write(idebug,*) ' Read Pluvius.Tbl file'
 !   Vector/Array initialisation
@@ -938,6 +996,12 @@ contains
     Do while (.not. endfil)
        Success = GetRecord(Infile4, 'DW_T', Endfil, idebug, Iout1)  ! get record van keyword DW_T tot dw_t, zet in buffer
        IF (ENDFIL) GOTO 5111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Write(*,*) 'local buffer NWRWModule too small'
+           Write(iout1,*) 'local buffer NWRWModule too small'
+           GOTO 5111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        IF (.not. Success) GOTO 5111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -948,7 +1012,8 @@ contains
           NrColumns = 1
           if (IPlv .gt. 0) then
              if ( AlreadyRead (iPlv) ) then
-               call SetMessage(LEVEL_ERROR, 'NWRW DWA table Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Pluvius.Tbl')
+                 call SetMessage(LEVEL_ERROR, 'NWRW DWA table Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Pluvius.Tbl')
+                 NrColumns = 0  ! to prevent further processing
              endif
              AlreadyRead (iPlv) = .true.
           endif
@@ -957,6 +1022,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
              Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
              IF (.not. Success) GOTO 5111
+! clean RR files
+             If (CleanRRFiles) then
+               ! use KeepBufString to write to file
+               ! first till TBLE
+               ! then till < characters
+               ! then till the end of the buffer string
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                  KeepBufString(1:) = KeepBufString(ipos+5:)
+               else
+                  ! error: no TBLE found
+                    call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+               endif
+ 1041          continue
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                  KeepBufString(1:) = KeepBufString(ipos+3:)
+                  goto 1041
+               else
+                  ! write remaining part
+                  write(Iounit,'(A)') KeepBufString (1:lenstring)
+               endif
+             Endif
 ! Set references
              Do iDwa=1, NcPluvDwa
                 if ( (DWAOPT(iDwa) .eq. 5) .and. &
@@ -979,10 +1071,13 @@ contains
     If (Err969) call ErrMsgStandard (972, 0, ' Not enough data for NWRW-nodes found', &
                                      ' Some DWA-Table definitions not present in NWRW table data file')
 
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
 
-
-
-!Pluvius.Alg file
+! RR cleaning ALG file: to do  (PLVG, PLVA, PLGR records)  TODO
+! **************************************
+! Pluvius.Alg file
+! **************************************
 !Pluvius.Alg file, PLVG record
     Allow = .false.
     endfil = .false.
@@ -1300,6 +1395,10 @@ contains
     Character(CharIdLength), Pointer, save ::  DWADEF(:), DWATabDef(:), SpecialDefinitionRead(:)
     Character(CharIdLength), Pointer, save ::  DWADEF2(:)
 
+    Character(Len=CharIdLength)  FileName
+    Character(Len=1000000)       KeepBufString
+    Integer                      IoUnit, LenString, ipos
+
     Success = Dh_AllocInit (Nplv, DwaDef, ' ')
     Success = success .and. Dh_AllocInit (Nplv, DwaDef2, ' ')
     Success = success .and. Dh_AllocInit (NcPluvDwa, DwaTabDef, ' ')
@@ -1321,7 +1420,19 @@ contains
     ReadError = .false.
     iOut1 = ConfFil_get_iOut1()
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(10)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !pluvius.3b_cleaned
+        Write(*,*) ' Cleaning pluvius.3b to file:', FileName
+        Write(iout1,*) ' Cleaning pluvius.3b to file:', FileName
+   endif
+! *********************************************************************
 ! Read Pluvius.3B file
+! *********************************************************************
 
     call SetMessage(LEVEL_DEBUG, 'Read Pluvius.3b file')
     endfil = .false.
@@ -1351,6 +1462,9 @@ contains
           if (AlreadyRead(iplv)) then
             call SetMessage(LEVEL_ERROR, 'Data for NWRW node '//id(1:Len_trim(id))//' double in datafile Pluvius.3B')
           else
+           ! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
            teller = teller + 1
            AlreadyRead(iplv) = .true.
            PLVNAM(iplv) = index
@@ -1455,7 +1569,23 @@ contains
        call ErrMsgStandard (972, 0, ' ReadError reading NWRW data from Pluvius.3B file; 1/more items in record are missing', ' ')
     Endif
 
+! cleaning RR files
+    If (CleanRRFiles) Call closeGP (Iounit)
+
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for pluvius.dwa
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(9)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !pluvius.dwa_cleaned
+        Write(*,*) ' Cleaning Pluvius.dwa to file:', FileName
+        Write(iout1,*) ' Cleaning Pluvius.dwa to file:', FileName
+   endif
+! *********************************************************************
 !Pluvius.Dwa file
+! *********************************************************************
 ! first determine number records (=DWA-definitions) in DWA file
     endfil = .false.
     ReadError = .false.
@@ -1503,7 +1633,11 @@ contains
            Occurs = (Iplv .gt. 0)
            if (Iplv .gt. 0) then
               if (ReferenceToDWADEF(iplv) .gt. 0) then
-                call SetMessage(LEVEL_ERROR, 'DWA Definition '//name(1:Len_trim(Name))//' double in datafile Pluvius.Dwa')
+                 call SetMessage(LEVEL_ERROR, 'DWA Definition '//name(1:Len_trim(Name))//' double in datafile Pluvius.Dwa')
+                 Occurs = .false. ! om verdere verwerking te stoppen
+              else
+!                cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
            ! companies
@@ -1511,7 +1645,11 @@ contains
            Occurs = occurs .or. (Iplv .gt. 0)
            if (Iplv .gt. 0) then
               if (ReferenceToDWADEF2(iplv) .gt. 0) then
-                call SetMessage(LEVEL_ERROR, 'DWA Definition '//name(1:Len_trim(Name))//' double in datafile Pluvius.Dwa')
+                 call SetMessage(LEVEL_ERROR, 'DWA Definition '//name(1:Len_trim(Name))//' double in datafile Pluvius.Dwa')
+                 Occurs = .false. ! om verdere verwerking te stoppen
+              else
+!                cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
 
@@ -1573,7 +1711,23 @@ contains
        call ErrMsgStandard (972, 0, ' ReadError reading NWRW data from Pluvius.DWA file', ' ')
     Endif
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for Pluvius.tbl
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(106)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !Pluvius.tbl_cleaned
+        Write(*,*) ' Cleaning Pluvius.tbl file:', FileName
+        Write(iout1,*) ' Cleaning Pluvius.tbl file:', FileName
+   endif
+
+! **************************************
 !Pluvius.Tbl file
+! **************************************
     call SetMessage(LEVEL_INFO, 'Read Pluvius.tbl file')
     if (idebug .ne. 0) write(idebug,*) ' Read Pluvius.Tbl file'
 
@@ -1586,6 +1740,11 @@ contains
     Do while (.not. endfil)
        Success = GetRecord(Infile4, 'DW_T', Endfil, idebug, Iout1)     ! get record van keyword DW_T tot dw_t, zet in buffer
        IF (ENDFIL) GOTO 5111
+       IF (.not. Success .and. CleanRRFiles)   then
+           Write(*,*) 'local buffer NWRWModule too small'
+           Write(iout1,*) 'local buffer NWRWModule too small'
+           GOTO 5111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        IF (.not. Success) GOTO 5111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -1605,6 +1764,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
              Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
              IF (.not. Success) GOTO 5111
+! clean RR files
+             If (CleanRRFiles) then
+               ! use KeepBufString to write to file
+               ! first till TBLE
+               ! then till < characters
+               ! then till the end of the buffer string
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                  KeepBufString(1:) = KeepBufString(ipos+5:)
+               else
+                  ! error: no TBLE found
+                    call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+               endif
+ 1041          continue
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                  KeepBufString(1:) = KeepBufString(ipos+3:)
+                  goto 1041
+               else
+                  ! write remaining part
+                  write(Iounit,'(A)') KeepBufString (1:lenstring)
+               endif
+             Endif
 ! Set references
              Do iDwa=1, NcPluvDwa
                 if ( (DWAOPT(iDwa) .eq. 5) .and. &
@@ -1628,7 +1814,13 @@ contains
                                      ' Some DWA-Table definitions not present in NWRW table data file')
 
 
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
+
+! RR cleaning ALG file: to do  (PLVG, PLVA, PLGR records)  TODO
+! *********************************************************************
 !Pluvius.Alg file, PLVG record
+! *********************************************************************
     endfil = .false.
     ReadError = .false.
     call SetMessage(LEVEL_DEBUG, 'Read Pluvius.Alg file - PLVG')

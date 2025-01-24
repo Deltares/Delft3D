@@ -31,15 +31,16 @@ module m_golddis
    implicit none
 contains
    subroutine GOLDDIS(AX, BX, CX, TOL, P, P2, Y, Y2, N, XMIN, DIS, SSQ, H)
+      use precision, only: dp
       use m_getdis
-      
-      integer :: n
-      double precision :: P(N), P2(N), Y(N), Y2(N)
-      double precision :: ax, bx, cx, tol, xmin, dis, ssq
-      double precision, intent(in) :: H !< for curvature adapted meshing
 
-      double precision, parameter :: R = .61803399d0, C = .38196602d0
-      double precision :: x0, x1, x2, x3, f0, f1, f2, f3, d1, d2
+      integer :: n
+      real(kind=dp) :: P(N), P2(N), Y(N), Y2(N)
+      real(kind=dp) :: ax, bx, cx, tol, xmin, dis, ssq
+      real(kind=dp), intent(in) :: H !< for curvature adapted meshing
+
+      real(kind=dp), parameter :: R = .61803399d0, C = .38196602d0
+      real(kind=dp) :: x0, x1, x2, x3, f0, f1, f2, f3, d1, d2
 
 !     Eendimensionaal zoeken van 'gebracked' minimum
       X0 = AX

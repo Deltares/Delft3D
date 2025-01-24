@@ -30,13 +30,22 @@
 !
 !
 
+module m_deleteselectedobservations
+
+   implicit none
+
+   private
+
+   public :: deleteselectedobservations
+
+contains
+
    subroutine deleteSelectedObservations()
       use m_confrm
       use m_observations, only: numobs, xobs, yobs, deleteobservation, deleteobservations, purgeobservations
       use m_polygon, only: npl, xpl, ypl
       use m_missing, only: dmiss, jins
       use geometry_module, only: pinpok
-      implicit none
 
       integer :: i
       integer :: inhul
@@ -64,3 +73,5 @@
       return
 
    end subroutine deleteSelectedObservations
+
+end module m_deleteselectedobservations

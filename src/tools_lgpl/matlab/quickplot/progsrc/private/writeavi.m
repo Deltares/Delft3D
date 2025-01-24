@@ -43,7 +43,9 @@ function varargout=writeavi(varargin)
 %   $HeadURL$
 %   $Id$
 
-%   Compile using Visual Studio 6.0:
-%   > mex writeavi.cpp vfw32.lib user32.lib
 %#mex
-error('Missing MEX-file WRITEAVI');
+try
+    D = writeavi_precompiled
+catch
+    error('Missing MEX-file "writeavi"');
+end

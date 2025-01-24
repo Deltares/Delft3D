@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -252,6 +252,10 @@ contains
   Integer, Pointer :: ReferenceToDefinition(:)
   Logical Success
 !
+    Character(Len=CharIdLength)  FileName
+    Character(Len=1000000)       KeepBufString
+    Integer                      IoUnit, LenString, ipos
+!
   integer       ileft, iright, ipoint, NrQHPoints, idum1
   Character(len=1) Klteken
   REAL          qhrelation_q(MaxQHPoints),qhrelation_h(MaxQHPoints)
@@ -295,8 +299,20 @@ contains
   endif
 ! eind initialisatie
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(5)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !paved.3b_cleaned
+        Write(*,*) ' Cleaning paved.3b to file:', FileName
+        Write(iout1,*) ' Cleaning paved.3b to file:', FileName
+   endif
 
+! *********************************************************************
 ! Read paved.3b file
+! *********************************************************************
   call SetMessage(LEVEL_DEBUG, 'Read Paved.3b file')
   Endfil = .false.
   teller = 0
@@ -318,6 +334,9 @@ contains
        if (alreadyRead(ivhg)) then
          call SetMessage(LEVEL_ERROR, 'Data for paved node '//id(1:Len_trim(id))//' double in datafile Paved.3B')
        else
+! cleaning RR files
+        If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
         teller = teller + 1
         AlreadyRead(ivhg) = .true.
         Q2VMAX(ivhg,1) = 0.0
@@ -468,8 +487,23 @@ contains
         call ErrMsgStandard (972, 0, ' Not enough Paved data found', &
                              ' Some paved nodes in netwerk schematisation are not present in Paved.3b file')
     Endif
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for paved.sto
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(6)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !paved.sto_cleaned
+        Write(*,*) ' Cleaning Paved.sto to file:', FileName
+        Write(iout1,*) ' Cleaning Paved.sto to file:', FileName
+   endif
+
+! *********************************************************************
 ! Read paved.sto file
+! *********************************************************************
   call SetMessage(LEVEL_DEBUG, 'Read Paved.sto file')
   Endfil = .false.
   teller = 0
@@ -493,6 +527,10 @@ contains
       if (Ivhg .gt. 0) then
          if (ReferenceToDefinition(ivhg) .gt. 0) then
            call SetMessage(LEVEL_ERROR, 'Storage Definition '//name(1:Len_trim(Name))//' double in datafile Paved.Sto')
+           Occurs = .false. ! om verdere verwerking te stoppen
+         else
+!          cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
          endif
       endif
 !     Verwerk storage definitie
@@ -545,8 +583,23 @@ contains
    If (Err969) call ErrMsgStandard (972, 0, ' Not enough Paved data found', &
                               ' Some storage Definitions not present in Paved.Sto file')
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for paved.dwa
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(7)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !paved.dwa_cleaned
+        Write(*,*) ' Cleaning Paved.dwa to file:', FileName
+        Write(iout1,*) ' Cleaning Paved.dwa to file:', FileName
+   endif
+
+! *********************************************************************
 ! Read paved.dwa file
+! *********************************************************************
   Endfil = .false.
   call SetMessage(LEVEL_DEBUG, 'Read Paved.dwa file')
   teller = 0
@@ -570,6 +623,10 @@ contains
       if (Ivhg .gt. 0) then
          if (ReferenceToDefinition(ivhg) .gt. 0) then
            call SetMessage(LEVEL_ERROR, 'DWA Definition '//name(1:Len_trim(Name))//' double in datafile Paved.Dwa')
+           Occurs = .false. ! om verdere verwerking te stoppen
+         else
+!          cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
          endif
       endif
 !     Verwerk DWA definitie
@@ -630,10 +687,25 @@ contains
     If (Err969) call ErrMsgStandard (972, 0, ' Not enough Paved data found', &
                                      ' Some DWA-definitions not present in Paved.dwa file')
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
 ! read paved.tbl file: tabellen 'QC_T' met sewer pump capacity als functie van tijd
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for paved.tnl
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(8)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !paved.tbl_cleaned
+        Write(*,*) ' Cleaning Paved.tbl to file:', FileName
+        Write(iout1,*) ' Cleaning Paved.tbl to file:', FileName
+   endif
+
+! *********************************************************************
 ! QC_T records, alleen als QC_TTable = .true.
+! *********************************************************************
     endfil = .not. QC_TTable
     if (.not. endfil) call SetMessage(LEVEL_DEBUG, 'Read Paved.Tbl file')
     if (idebug .ne. 0) write(idebug,*) ' QC_TTable =', QC_TTable, Endfil
@@ -642,6 +714,12 @@ contains
        Success = GetRecord(Infile4, 'QC_T', Endfil, idebug, Iout1)     ! get record van keyword QC_T tot qc_t, zet in buffer
        IF (.not. success) GOTO 3111
        IF (ENDFIL) GOTO 3111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Write(*,*) 'local buffer PavedModule to small, QC_T record'
+           Write(iout1,*) 'local buffer PavedModule to small, QC_T record'
+           GOTO 3111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        IF (.not. success) GOTO 3111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -659,6 +737,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
             Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
             IF (.not. success) GOTO 3111
+! clean RR files
+            If (CleanRRFiles) then
+               ! use KeepBufString to write to file
+               ! first till TBLE
+               ! then till < characters
+               ! then till the end of the buffer string
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                  KeepBufString(1:) = KeepBufString(ipos+5:)
+               else
+                  ! error: no TBLE found
+                    call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+               endif
+ 1041          continue
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                  KeepBufString(1:) = KeepBufString(ipos+3:)
+                  goto 1041
+               else
+                  ! write remaining part
+                  write(Iounit,'(A)') KeepBufString (1:lenstring)
+               endif
+            Endif
 ! Set references
             Do ivhg = 1, nrvhg
               If (StringComp(TblDef(Ivhg), TableName, CaseSensitive) )  then
@@ -702,6 +807,12 @@ contains
        Success = GetRecord(Infile4, 'QHTB', Endfil, idebug, Iout1)    ! get record van keyword QHTB tot inst, zet in buffer
        IF (.not. success) GOTO 6111
        IF (ENDFIL) GOTO 6111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Write(*,*) 'local buffer PavedModule to small, QHTB record'
+           Write(iout1,*) 'local buffer PavedModule to small, QHTB record'
+           GOTO 6111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', if table defined
        IF (.not. success) GOTO 6111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -736,6 +847,33 @@ contains
                    call ErrMsgStandard (969, 0, ' QHrelation  hvalues should be increasing, but they are not! Adjust qh-relation ', QHDefinition(ivhg))
                 endif
              enddo
+! clean RR files
+             If (CleanRRFiles) then
+                ! use KeepBufString to write to file
+                ! first till TBLE
+                ! then till < characters
+                ! then till the end of the buffer string
+                lenstring = len_trim(KeepBufString)
+                ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+                if (ipos .gt. 0) then
+                   write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                   KeepBufString(1:) = KeepBufString(ipos+5:)
+                else
+                   ! error: no TBLE found
+                     call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+                endif
+ 1051           continue
+                lenstring = len_trim(KeepBufString)
+                ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+                if (ipos .gt. 0) then
+                   write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                   KeepBufString(1:) = KeepBufString(ipos+3:)
+                   goto 1051
+                else
+                   ! write remaining part
+                   write(Iounit,'(A)') KeepBufString (1:lenstring)
+                endif
+             Endif
 ! Set references
              Do ivhg = 1, ncvhg
                If (StringComp(QHDefinition(Ivhg), TableName, CaseSensitive))  Then
@@ -769,7 +907,7 @@ contains
        endif
     Enddo
 
-    If (Err969) call ErrMsgStandard (972, 0, ' Not enough unpaved data found', &
+    If (Err969) call ErrMsgStandard (972, 0, ' Not enough paved data found', &
                                      ' Some Table Definitions not present in Paved.Tbl file')
 
 ! End March 2004 Taiwan: Qh-relations

@@ -115,6 +115,35 @@
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="dflowfm_restart_platform">
+            <programs>
+                <program ref="execute_singularity" seq="1">
+                    <arguments>
+                        <argument>-p</argument>
+                        <argument>2</argument>
+                        <argument>run_dimr.sh</argument>
+                        <argument>-m</argument>
+                        <argument>dimr.xml</argument>
+                    </arguments>
+                </program>
+                <program ref="execute_singularity" seq="2">
+                    <arguments>
+                        <argument>-p</argument>
+                        <argument>2</argument>
+                        <argument>run_dimr.sh</argument>
+                        <argument>-m</argument>
+                        <argument>dimr_restart.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
                 <from>lnx64</from>
             </location>
             <location ref="cases" type="input">

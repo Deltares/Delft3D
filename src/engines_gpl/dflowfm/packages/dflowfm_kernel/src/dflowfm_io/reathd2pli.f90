@@ -30,42 +30,55 @@
 !
 !
 
- subroutine reathd2pli(mthd, mout) ! convert d3d obs file to model independent
-    use m_grid
-    implicit none
-    integer :: mthd, mout
-    character(len=132) :: rec
-    character(len=1) :: uv
-    integer :: m, n, m2, n2, mn, mx, nn, nx, i
+module m_reathd2pli
 
-10  read (mthd, '(a)', end=999) rec
+   implicit none
 
-    read (rec, *) m, n, m2, n2, uv
+   private
 
-    write (mout, '(a)') 'Line'
-    write (mout, '(a)') ' 2 2'
+   public :: reathd2pli
 
-    if (index(rec, 'u') > 0 .or. index(rec, 'U') > 0) then
+contains
 
-       nn = min(n, n2); nx = max(n, n2)
-       write (mout, *) xc(m, nn - 1), yc(m, nn - 1)
-       do i = nn, nx
-          write (mout, *) xc(m, i), yc(m, i)
-       end do
+   subroutine reathd2pli(mthd, mout) ! convert d3d obs file to model independent
+      use m_grid
+      use m_filez, only: doclose
 
-    else
+      integer :: mthd, mout
+      character(len=132) :: rec
+      character(len=1) :: uv
+      integer :: m, n, m2, n2, mn, mx, nn, nx, i
 
-       mn = min(m, m2); mx = max(m, m2)
-       write (mout, *) xc(mn - 1, n), yc(mn - 1, n)
-       do i = mn, mx
-          write (mout, *) xc(i, n), yc(i, n)
-       end do
+10    read (mthd, '(a)', end=999) rec
 
-    end if
+      read (rec, *) m, n, m2, n2, uv
 
-    goto 10
+      write (mout, '(a)') 'Line'
+      write (mout, '(a)') ' 2 2'
 
-999 call doclose(mthd)
-    call doclose(mout)
+      if (index(rec, 'u') > 0 .or. index(rec, 'U') > 0) then
 
- end subroutine reathd2pli
+         nn = min(n, n2); nx = max(n, n2)
+         write (mout, *) xc(m, nn - 1), yc(m, nn - 1)
+         do i = nn, nx
+            write (mout, *) xc(m, i), yc(m, i)
+         end do
+
+      else
+
+         mn = min(m, m2); mx = max(m, m2)
+         write (mout, *) xc(mn - 1, n), yc(mn - 1, n)
+         do i = mn, mx
+            write (mout, *) xc(i, n), yc(i, n)
+         end do
+
+      end if
+
+      goto 10
+
+999   call doclose(mthd)
+      call doclose(mout)
+
+   end subroutine reathd2pli
+
+end module m_reathd2pli

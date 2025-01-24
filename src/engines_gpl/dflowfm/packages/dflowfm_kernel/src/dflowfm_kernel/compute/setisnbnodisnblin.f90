@@ -26,11 +26,21 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+module m_setisnbnodisnblin
+
+   implicit none
+
+   private
+
+   public :: setisnbnodisnblin
+
+contains
+
    subroutine setisnbnodisnblin()
       use m_flow
       use m_flowgeom
-      use m_netw
-      implicit none
+      use m_netw, only: kc
+
       integer :: L, LL, LLL, LLLa, L1, L2, L1a, L2a, n, nx, ja1D
 
       if (allocated(isnbnod)) deallocate (isnbnod)
@@ -105,3 +115,5 @@
       deallocate (isnbnod) ! no time now to make efficient version
 
    end subroutine setisnbnodisnblin
+
+end module m_setisnbnodisnblin

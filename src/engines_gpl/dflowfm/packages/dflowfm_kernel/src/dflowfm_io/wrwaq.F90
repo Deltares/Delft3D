@@ -36,13 +36,16 @@ module wrwaq
 #include "config.h"
 #endif
 
-   use unstruc_files
+   use precision, only: dp
 
    implicit none
 
 contains
 
    function openwaqbinfile(filename) result(lun)
+      use messagehandling, only: LEVEL_INFO, mess
+      use unstruc_files, only: reg_file_open
+
       character(len=*), intent(in) :: filename !< Output filename.
       integer :: lun
 
@@ -62,6 +65,8 @@ contains
    end function openwaqbinfile
 
    function openasciifile(filename) result(lun)
+      use messagehandling, only: LEVEL_INFO, mess
+      use unstruc_files, only: reg_file_open
 
       character(len=*), intent(in) :: filename
       integer :: lun
@@ -130,7 +135,7 @@ contains
       !           Global variables
       !
       integer, intent(in) :: num_exchanges !< Nr. of linkages (pointers) between computational cells.
-      double precision, intent(in) :: lenex(2, num_exchanges) !< Dispersion half-lengths of computational cells, segment
+      real(kind=dp), intent(in) :: lenex(2, num_exchanges) !< Dispersion half-lengths of computational cells, segment
    !! centre to exchange point. (2 values: from/to direction)
       logical, intent(in) :: ascii !< Produce ascii file or not (then binary).
       character(*), intent(in) :: filename !< Output filename.
@@ -174,7 +179,7 @@ contains
       !
       integer, intent(in) :: nosegl !< Nr. of segment per layer.
       integer, intent(in) :: num_layers !< Nr. of layers.
-      double precision, dimension(:), intent(in) :: srf !< Horizontal surfaces of computational cells. (size nosegl)
+      real(kind=dp), dimension(:), intent(in) :: srf !< Horizontal surfaces of computational cells. (size nosegl)
       logical, intent(in) :: ascii !< Produce ascii file or not (then binary).
       character(*), intent(in) :: filename !< Output filename.
       character(256) :: fileold !< Old output filename.
@@ -223,6 +228,8 @@ contains
 
 !> Write ASCII attributes file for WAQ.
    subroutine wrwaqatr(nosegl, num_layers, kmk1, kmk2, filename)
+      use m_filez, only: newfil
+
       implicit none
       integer, intent(in) :: nosegl !< Nr. of segments per layer
       integer, intent(in) :: num_layers !< Nr. of layers
@@ -281,7 +288,7 @@ contains
       !
       integer, intent(in) :: itim !< Time for new data block
       integer, intent(in) :: nquant !< Size of quant(ity) array.
-      double precision, dimension(:), intent(in) :: quant !< Quantity array to be written.
+      real(kind=dp), dimension(:), intent(in) :: quant !< Quantity array to be written.
       logical, intent(in) :: ascii !< Produce ascii file or not (then binary).
       character(*), intent(in) :: filename !< Output filename (only used if lunout not connected yet).
       integer, intent(inout) :: lunout !< File pointer for output file. Used if already connected,
@@ -325,7 +332,8 @@ end module wrwaq
 !> Module for coupling with WAQ.
 !! Currently only writing of WAQ-files.
 module waq
-   use unstruc_messages
+   use m_getkbotktopmax
+   use precision, only: dp
 
    implicit none
 
@@ -370,15 +378,15 @@ module waq
       integer, allocatable :: nosega(:) ! no of segments aggregated into WAQ segments
       integer, allocatable :: kmk1(:) ! First WAQ segment features at start of calculation (1 is active 0 is not)
       integer, allocatable :: kmk2(:) ! Second WAQ segment features at start of calculation (1 surface, 3 bottom, 0 both, 2 neither)
-      double precision, allocatable :: horsurf(:) ! horizontal surfaces of segments
-      double precision, allocatable :: vol(:) ! WAQ (aggregated) volumes
-      double precision, allocatable :: vel(:) ! WAQ (aggregated) velocities
-      double precision, allocatable :: sal(:) ! WAQ (aggregated) salinity
-      double precision, allocatable :: tem(:) ! WAQ (aggregated) temperature
-      double precision, allocatable :: tau(:) ! WAQ (aggregated) taus
-      double precision, allocatable :: vdf(:) ! WAQ (aggregated) vertical diffusion
-      double precision, allocatable :: qag(:) ! WAQ (aggregated) flux
-      double precision, allocatable :: area(:) ! WAQ (aggregated) exchange areas
+      real(kind=dp), allocatable :: horsurf(:) ! horizontal surfaces of segments
+      real(kind=dp), allocatable :: vol(:) ! WAQ (aggregated) volumes
+      real(kind=dp), allocatable :: vel(:) ! WAQ (aggregated) velocities
+      real(kind=dp), allocatable :: sal(:) ! WAQ (aggregated) salinity
+      real(kind=dp), allocatable :: tem(:) ! WAQ (aggregated) temperature
+      real(kind=dp), allocatable :: tau(:) ! WAQ (aggregated) taus
+      real(kind=dp), allocatable :: vdf(:) ! WAQ (aggregated) vertical diffusion
+      real(kind=dp), allocatable :: qag(:) ! WAQ (aggregated) flux
+      real(kind=dp), allocatable :: area(:) ! WAQ (aggregated) exchange areas
       character(256) :: flhoraggr !  Name of input aggregation file
       character(256) :: flvertaggr !  Name of input aggregation file
    end type gd_waqpar
@@ -391,9 +399,8 @@ module waq
 contains
 
    subroutine reset_waq()
-!
-!! executable statements -------------------------------------------------------
-!
+      use m_filez, only: doclose
+
       implicit none
 
       call close_and_reset(waqpar%lunvol)
@@ -432,6 +439,8 @@ contains
       use unstruc_model
       use time_module, only: ymd2jul
       use m_dateandtimenow
+      use m_timdat, only: timdat
+      use m_filez, only: doclose, newfil
 
       implicit none
       !
@@ -443,9 +452,9 @@ contains
       character tex * 80, datetime * 20
       integer :: i, ibnd, isrc, kk1, kk2
       integer :: itdate, julday, idatum, itijd, iyea, imon, iday, ihou, imin, isec
-      double precision :: anl
-      double precision :: x1, y1, x2, y2
-      double precision, parameter :: rmissval = -999.0d0
+      real(kind=dp) :: anl
+      real(kind=dp) :: x1, y1, x2, y2
+      real(kind=dp), parameter :: rmissval = -999.0d0
       !
    !! executable statements -------------------------------------------------------
       !
@@ -732,7 +741,7 @@ contains
       integer, dimension(:), allocatable :: edge_type, aggregated_edge_type !< Edge type array to be written to the NetCDF file.
       integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
       logical :: success !< Helper variable.
-      double precision :: startTime, endTime !< Timers.
+      real(kind=dp) :: startTime, endTime !< Timers.
 
       ierr = UG_NOERR
 
@@ -1135,7 +1144,7 @@ contains
       integer, dimension(2) :: faces !< Helper array.
       integer, dimension(:, :), allocatable :: input_edge_output_faces !< Helper array.
       integer, dimension(:), allocatable :: face_edge_count, nodes !< Helper arrays.
-      double precision :: area !< Output of subroutine comp_masscenter (not used here).
+      real(kind=dp) :: area !< Output of subroutine comp_masscenter (not used here).
       integer :: counterclockwise !< Output of subroutine comp_masscenter (not used here).
 
       success = .false.
@@ -1343,6 +1352,7 @@ contains
 !! At the same time stores the sorted nodes of the current face in the given nodes array.
 !! In this subroutine input means "from the un-aggregated mesh" and output means "from the aggregated mesh".
    subroutine sort_edges(current_face, edges, nodes, input_edge_nodes, input_face_nodes, input_edge_faces, face_mapping_table, reverse_edge_mapping_table, node_mapping_table, output_edge_nodes)
+      use messagehandling, only: LEVEL_ERROR, mess
 
       implicit none
 
@@ -1423,6 +1433,7 @@ contains
  !! In this subroutine input means "from the un-aggregated mesh" and output means "from the aggregated mesh".
    function sort_first_two_nodes(output_face, output_edge, input_edge_nodes, input_face_nodes, input_edge_faces, face_mapping_table, reverse_edge_mapping_table, node_mapping_table) result(sorted_output_nodes)
       use m_alloc
+      use messagehandling, only: LEVEL_ERROR, mess
 
       implicit none
 
@@ -1571,6 +1582,7 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use m_missing, only: dmiss, dxymis
       use geometry_module, only: normalout
+      use m_filez, only: doclose, newfil
 
       implicit none
       !
@@ -1580,7 +1592,7 @@ contains
       integer :: ibnd, isrc, ilat, k1, kk, nopenbndsectnonempty
       integer :: lunbnd
       character(len=255) :: filename
-      double precision :: x1, y1, x2, y2, xn, yn
+      real(kind=dp) :: x1, y1, x2, y2, xn, yn
       character(len=20) :: sectionname
       !
    !! executable statements -------------------------------------------------------
@@ -1698,6 +1710,7 @@ contains
    subroutine waq_wri_model_files()
       use m_flowgeom
       use unstruc_files, only: defaultFilename
+      use messagehandling, only: msgbuf, msg_flush
 
       implicit none
 
@@ -1756,11 +1769,12 @@ contains
       use unstruc_files, only: defaultFilename
       use m_gettaus
       use m_gettauswave
+      use messagehandling, only: msgbuf, msg_flush
       implicit none
       !
       !           Global variables
       !
-      double precision, intent(in) :: time !< Current simulation time
+      real(kind=dp), intent(in) :: time !< Current simulation time
       !
       !           Local variables
       !
@@ -1861,6 +1875,7 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_alloc
+      use m_filez, only: oldfil
       implicit none
 
       integer :: i, kb, kt, ktx, vaglay
@@ -2246,6 +2261,7 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_alloc
+      use messagehandling, only: msgbuf, err_flush
       implicit none
 
       integer :: ibnd, nbnd, isrc, K, K1, K2, kk
@@ -2422,15 +2438,15 @@ contains
       !           Global variables
       !
       integer, intent(in) :: lnx !< nr of flow links (internal + boundary)
-      double precision, intent(in) :: dx(lnx) !< link length (m)
-      double precision, intent(in) :: acl(lnx) !< left dx fraction, 0<=alfacl<=1
+      real(kind=dp), intent(in) :: dx(lnx) !< link length (m)
+      real(kind=dp), intent(in) :: acl(lnx) !< left dx fraction, 0<=alfacl<=1
       character(len=*), intent(in) :: filename !< Output filename.
       !
       !           Local variables
       !
       integer :: L, ip, kk
       integer, allocatable :: noqa(:)
-      double precision, allocatable :: lenex(:, :) !< Length table: 'half' dx length from cell center to interface.
+      real(kind=dp), allocatable :: lenex(:, :) !< Length table: 'half' dx length from cell center to interface.
    !! lenex(1,:) = dx for left/1st  cell to interface
    !! lenex(2,:) = dx for right/2nd cell to interface
       !
@@ -2500,7 +2516,7 @@ contains
       !
       integer, intent(in) :: ndxi !< nr of internal flowcells (internal = 2D + 1D)
       integer, intent(in) :: ndx !< nr of flow nodes (internal + boundary)
-      double precision, intent(in) :: ba(ndx) !< bottom area (m2), if < 0 use table in node type
+      real(kind=dp), intent(in) :: ba(ndx) !< bottom area (m2), if < 0 use table in node type
       character(len=*), intent(in) :: filename !< Output filename.
       !
       !           Local variables
@@ -2573,8 +2589,8 @@ contains
       !
       integer :: i, k, kb, kt, ktx, kk, k1, k2, LL, L, lb, Lt, num = 0, jacheck = 0
 
-      double precision, save, allocatable :: dv(:), dv1(:)
-      double precision :: errvol
+      real(kind=dp), save, allocatable :: dv(:), dv1(:)
+      real(kind=dp) :: errvol
       !
    !! executable statements -------------------------------------------------------
       !
@@ -2921,8 +2937,8 @@ contains
       !           Local variables
       !
       integer :: i, k, kb, kt, ktx, kk
-      double precision :: vdfmin ! help variable for WAQ minimum vertical diffusion for aggregated layers in this column
-      double precision :: volsum ! help variable for WAQ summed volume for aggregated layers in this column
+      real(kind=dp) :: vdfmin ! help variable for WAQ minimum vertical diffusion for aggregated layers in this column
+      real(kind=dp) :: volsum ! help variable for WAQ summed volume for aggregated layers in this column
       !
    !! executable statements -------------------------------------------------------
       !
@@ -3148,7 +3164,8 @@ contains
 
 !> Read an aggregation file (.dwq) into the global aggregation table.
    subroutine waq_read_dwq(ndxi, ndx, iapnt, filename)
-      use unstruc_files
+      use messagehandling, only: LEVEL_WARN, LEVEL_ERROR, mess
+      use m_filez, only: oldfil
       implicit none
       !
       !           Global variables

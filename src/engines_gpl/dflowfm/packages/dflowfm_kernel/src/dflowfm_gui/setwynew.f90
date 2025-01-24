@@ -30,62 +30,71 @@
 !
 !
 
-      subroutine SETWYnew(X, Y, DY)
+module m_setwynew
+   use m_xydisformat
+
+   implicit none
+
+contains
+
+   subroutine SETWYnew(X, Y, DY)
+      use precision, only: dp
 !     Set zoomwindow limits at proper aspect ratio
-         use m_inqasp
-         use m_wearelt
-         use m_sferic
-         use m_sferzoom
-         use unstruc_display
-         use m_dproject
+      use m_setwor
+      use m_inqasp
+      use m_wearelt
+      use m_sferic
+      use m_sferzoom
+      use m_dproject
 
-         implicit none
-         double precision :: asp, x, y, dy, dx, XA, Y1A, y2a
+      real(kind=dp) :: asp, x, y, dy, dx, XA, Y1A, y2a
 
-         FAC = 1
-         call INQASP(ASP)
-         DY = max(DY, 1d-8)
-         dyh = dy
+      FAC = 1
+      call INQASP(ASP)
+      DY = max(DY, 1d-8)
+      dyh = dy
 
-         if (JSFERTEK >= 1) then
-            DY = min(DY, 180d0)
-            X = max(-360.0d0, min(X, 360.0d0))
-            Y = max(-89.9d0, min(Y, 89.9d0))
-         end if
+      if (JSFERTEK >= 1) then
+         DY = min(DY, 180d0)
+         X = max(-360.0d0, min(X, 360.0d0))
+         Y = max(-89.9d0, min(Y, 89.9d0))
+      end if
 
-         Y0 = Y
-         X0 = X
+      Y0 = Y
+      X0 = X
 
-         Y1 = Y - DY / 2
-         Y2 = Y + DY / 2
+      Y1 = Y - DY / 2
+      Y2 = Y + DY / 2
 
-         if (JSFERTEK >= 1) then
-            FAC = 1d0
-            call dPROJECT(X, Y1, XA, Y1A, 1)
-            call dPROJECT(X, Y2, XA, Y2A, 1)
-            if (Y2 - Y1 > 1e-10) FAC = (Y2 - Y1) / (Y2A - Y1A)
-         end if
+      if (JSFERTEK >= 1) then
+         FAC = 1d0
+         call dPROJECT(X, Y1, XA, Y1A, 1)
+         call dPROJECT(X, Y2, XA, Y2A, 1)
+         if (Y2 - Y1 > 1e-10) FAC = (Y2 - Y1) / (Y2A - Y1A)
+      end if
 
-         DX = DY / ASP
-         X1 = X - DX / 2
-         X2 = X + DX / 2
+      DX = DY / ASP
+      X1 = X - DX / 2
+      X2 = X + DX / 2
 
-         X1W = X1
-         Y1W = Y1
-         X2W = X2
-         Y2W = Y2
+      X1W = X1
+      Y1W = Y1
+      X2W = X2
+      Y2W = Y2
 
-         if (JSFERTEK >= 1) then
-            X1 = X1 - X0 ! SCHERMPJE ROND 0,0
-            X2 = X2 - X0
-            Y1 = Y1 - Y0
-            Y2 = Y2 - Y0
-         end if
+      if (JSFERTEK >= 1) then
+         X1 = X1 - X0 ! SCHERMPJE ROND 0,0
+         X2 = X2 - X0
+         Y1 = Y1 - Y0
+         Y2 = Y2 - Y0
+      end if
 
-         call SETWOR(X1, Y1, X2, Y2)
+      call SETWOR(X1, Y1, X2, Y2)
 
-         RCIR = CR * dx
-         DSIX = dx / 6
-         call XYDISFORMAT()
-         return
-      end
+      RCIR = CR * dx
+      DSIX = dx / 6
+      call XYDISFORMAT()
+      return
+   end
+
+end module m_setwynew

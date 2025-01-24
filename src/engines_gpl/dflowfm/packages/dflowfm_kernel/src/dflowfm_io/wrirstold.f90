@@ -30,6 +30,16 @@
 !
 !
 
+module m_wrirstold
+
+   implicit none
+
+   private
+
+   public :: WRIRSTold
+
+contains
+
    subroutine WRIRSTold(MOUT)
       use M_FLOWTIMES
       use M_FLOW
@@ -39,7 +49,8 @@
       use unstruc_netcdf, only: unc_write_net
       use m_transport
       use m_get_kbot_ktop
-      implicit none
+      use m_filez, only: doclose, newfil
+
       integer :: MOUT, k, kk, kb, kt
 
       ! WRITE(MOUT,'(a,2x,F25.14,2i10,a)') REFDAT, TIME1,  NDX, LNX, ' (refdat, timsec, ndx, lnx)'
@@ -89,3 +100,5 @@
       end if
 
    end subroutine WRIRSTold
+
+end module m_wrirstold

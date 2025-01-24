@@ -30,6 +30,47 @@
 !
 !
 module m_flow_flowinit
+   use m_statisticsini, only: statisticsini
+   use m_setzminmax, only: setzminmax
+   use m_flow_settidepotential, only: flow_settidepotential
+   use m_set_saltem_nudge, only: set_saltem_nudge
+   use m_set_nudgerate, only: set_nudgerate
+   use m_setvelocityfield, only: setvelocityfield
+   use m_setupwslopes, only: setupwslopes
+   use m_setstruclink, only: setstruclink
+   use m_setpillars, only: setpillars
+   use m_setinitialverticalprofile, only: setinitialverticalprofile
+   use m_setfixedweirs, only: setfixedweirs
+   use m_setbobs_fixedweirs, only: setbobs_fixedweirs
+   use m_flow_setstarttime, only: flow_setstarttime
+   use m_flow_initfloodfill, only: flow_initfloodfill
+   use m_fill_valobs, only: fill_valobs
+   use m_fill_onlywetlinks, only: fill_onlywetlinks
+   use m_check_structures_and_fixed_weirs, only: check_structures_and_fixed_weirs
+   use m_thacker2d, only: thacker2d
+   use m_thacker1d, only: thacker1d
+   use m_coriolistilt, only: coriolistilt
+   use m_wave_uorbrlabda, only: wave_uorbrlabda
+   use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
+   use m_tauwavehk, only: tauwavehk
+   use m_tauwave, only: tauwave
+   use m_setwavmubnd, only: setwavmubnd
+   use m_setwavfu, only: setwavfu
+   use m_inisolver_advec, only: inisolver_advec
+   use m_setzcs, only: setzcs
+   use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
+   use m_setsigmabnds, only: setsigmabnds
+   use m_setship, only: setship
+   use m_sets01zbnd, only: sets01zbnd
+   use m_setrho, only: setrho
+   use m_setiadvpure1d, only: setiadvpure1d
+   use m_furusobekstructures
+   use m_filter
+   use m_adjust_bobs_for_dams_and_structs, only: adjust_bobs_for_dams_and_structs
+   use m_addlink1d, only: addlink1D
+   use m_a1vol1tot, only: a1vol1tot
+   use m_rearst, only: rearst
+   use m_read_restart_from_map, only: read_restart_from_map
    use m_inifcori
    use m_inidensconstants
    use m_alloc_jacobi
@@ -56,11 +97,12 @@ contains
    !> Initialise flow model time dependent parameters
  !! @return Integer error status (0) if succesful.
    integer function flow_flowinit() result(error)
+      use precision, only: dp
       use m_flowgeom
       use m_flow
       use m_flowtimes
       use m_sferic
-      use unstruc_model, only: md_netfile, md_input_specific, md_restartfile
+      use unstruc_model, only: md_netfile, md_input_specific, md_restartfile, md_obsfile
       use m_reduce, only: nodtot, lintot
       use m_transport
       use dfm_error
@@ -82,15 +124,19 @@ contains
       use m_set_kbot_ktop
       use m_ini_sferic
       use m_volsur
+      use m_meteo, only: initialize_ec_module
+      use m_observations, only: read_moving_stations
+      use m_solve_guus, only: reducept
+      use m_upotukinueaa, only: upotukinueaa
 
       implicit none
 
       integer :: ierror
       logical :: jawelrestart
 
-      double precision :: upot, ukin, ueaa
+      real(kind=dp) :: upot, ukin, ueaa
 
-      double precision, allocatable :: weirdte_save(:)
+      real(kind=dp), allocatable :: weirdte_save(:)
 
       error = DFM_NOERR
 
@@ -152,6 +198,8 @@ contains
 
       call setkbotktop(1) ! prior to correctblforzlayerpoints, setting kbot
 
+      call initialize_ec_module()
+
       call mess(LEVEL_INFO, 'Start initializing external forcings...')
       call timstrt('Initialise external forcings', handle_iniext)
       error = flow_initexternalforcings() ! this is the general hook-up to wind and boundary conditions
@@ -162,6 +210,9 @@ contains
          return
       end if
       call mess(LEVEL_INFO, 'Done initializing external forcings.')
+
+      ! it has to be called after EC module initialization
+      call read_moving_stations(md_obsfile)
 
       call set_ihorvic_related_to_horizontal_viscosity()
       call redimension_summ_arrays_in_crs()
@@ -616,6 +667,7 @@ contains
       use m_samples, only: NS, restoresam, savesam
       use MessageHandling, only: LEVEL_WARN, mess
       use m_reasam
+      use m_filez, only: oldfil
 
       implicit none
 
@@ -779,6 +831,7 @@ contains
       use dfm_error
       use m_set_bobs
       use m_flow_obsinit
+      use m_filez, only: oldfil
 
       implicit none
 
@@ -876,6 +929,7 @@ contains
 
 !> initialize discharge boundaries
    subroutine initialize_values_at_discharge_boundaries()
+      use precision, only: dp
       use m_flowparameters, only: epshu
       use fm_external_forcings_data, only: nqbnd, L1qbnd, L2qbnd, kbndu
       use m_flowgeom, only: bob
@@ -889,8 +943,8 @@ contains
 
       logical :: dry
 
-      double precision :: bob_local_min
-      double precision :: bob_global_min
+      real(kind=dp) :: bob_local_min
+      real(kind=dp) :: bob_global_min
 
       do discharge_boundary = 1, nqbnd
          dry = .true.
@@ -1018,6 +1072,7 @@ contains
 
 !> correction_s1_for_atmospheric_pressure
    subroutine correction_s1_for_atmospheric_pressure()
+      use precision, only: dp
       use m_physcoef, only: ag, rhomean
       use m_flowgeom, only: ndxi
       use m_flow, only: s1
@@ -1025,10 +1080,10 @@ contains
 
       implicit none
 
-      double precision, parameter :: ZERO_AMBIENT_PRESSURE = 0d0
+      real(kind=dp), parameter :: ZERO_AMBIENT_PRESSURE = 0d0
 
       integer :: cell
-      double precision :: ds
+      real(kind=dp) :: ds
 
       if (japatm > OFF .and. PavIni > ZERO_AMBIENT_PRESSURE) then
          do cell = 1, ndxi
@@ -1095,6 +1150,7 @@ contains
 
 !> include_ground_water
    subroutine include_ground_water()
+      use precision, only: dp
       use m_grw
       use m_cell_geometry, only: ndx
       use m_flow, only: hs
@@ -1106,8 +1162,8 @@ contains
       implicit none
 
       integer :: cell
-      double precision :: hunsat
-      double precision :: fac
+      real(kind=dp) :: hunsat
+      real(kind=dp) :: fac
 
       if (jagrw <= OFF) then
          return
@@ -1226,6 +1282,7 @@ contains
 
 !> set wave modelling
    subroutine set_wave_modelling()
+      use precision, only: dp
       use m_flowparameters, only: jawave, flowWithoutWaves, waveforcing, jawavestokes
       use m_flow, only: hs, hu, kmx
       use mathconsts, only: sqrt2_hp
@@ -1245,14 +1302,14 @@ contains
       integer :: right_node
       integer :: ierror
 
-      double precision :: hw
-      double precision :: tw
-      double precision :: csw
-      double precision :: snw
-      double precision :: uorbi
-      double precision :: rkw
-      double precision :: ustt
-      double precision :: hh
+      real(kind=dp) :: hw
+      real(kind=dp) :: tw
+      real(kind=dp) :: csw
+      real(kind=dp) :: snw
+      real(kind=dp) :: uorbi
+      real(kind=dp) :: rkw
+      real(kind=dp) :: ustt
+      real(kind=dp) :: hh
 
       if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flowWithoutWaves) then
          ! Normal situation: use wave info in FLOW
@@ -1264,8 +1321,10 @@ contains
             hwav = hwavcom
          end if
          hwav = min(hwav, gammax * hs)
+         twav = twavcom
          !
          if (jawave == 7) then
+            !
             call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
                                & sxwav, sywav, mxwav, mywav, &
                                & distot, dsurf, dwcap, &
@@ -1283,7 +1342,7 @@ contains
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave == SWAN_NETCDF) .and. flowWithoutWaves) then
+      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flowWithoutWaves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
@@ -1320,11 +1379,11 @@ contains
             call tauwave()
          end if
       end if
-
    end subroutine set_wave_modelling
 
 !> initialize_salinity_from_bottom_or_top
    subroutine initialize_salinity_from_bottom_or_top()
+      use precision, only: dp
       use m_flowparameters, only: jasal, inisal2D, uniformsalinitybelowz, Sal0abovezlev, salmax
       use m_flow, only: kmx, kmxn, sa1, satop, sabot, zws
       use m_cell_geometry, only: ndx
@@ -1342,8 +1401,8 @@ contains
       integer :: top_cell
       integer :: cell3D
 
-      double precision :: rr
-      double precision :: zz
+      real(kind=dp) :: rr
+      real(kind=dp) :: zz
 
       if (jasal <= OFF) then
          return
@@ -1555,6 +1614,7 @@ contains
       use m_sediment, only: stm_included
       use m_turbulence, only: rhowat
       use m_get_kbot_ktop
+      use m_setrho, only: setrhokk
 
       implicit none
 
@@ -1581,6 +1641,7 @@ contains
 
 !> apply hardcoded specific input
    subroutine apply_hardcoded_specific_input()
+      use precision, only: dp
       use m_netw
       use m_flowgeom
       use m_flow
@@ -1597,6 +1658,10 @@ contains
       use m_ini_sferic
       use m_set_bobs
       use m_get_czz0
+      use m_rho_eckart, only: rho_eckart
+      use m_corioliskelvin, only: corioliskelvin, oceaneddy
+      use m_model_specific, only: equatorial, poiseuille
+      use m_filez, only: newfil
 
       implicit none
 
@@ -1606,15 +1671,13 @@ contains
       integer :: k, L, k1, k2, n, jw, msam
       integer :: kb, kt, LL
 
-      double precision :: xzmin, xzmax, yzmin, yzmax
-      double precision :: xx1, yy1, xx2, yy2, ux1, uy1, ux2, uy2, csl, snl
-      double precision :: fout, foutk, dis, dmu, var, rho1, zi, zido, ziup, saldo, salup
-      double precision :: xx, yy, zz, ux, uy, pin, xli, slope, cs, cz, z00
-      double precision :: r, eer, r0, dep, Rossby, amp, csth, sqghi, snth
-      double precision :: rr, rmx, x0, y0, dxx, dyy, ucmk, phi, dphi
-      double precision :: xm, ym
-
-      double precision, external :: rho_Eckart
+      real(kind=dp) :: xzmin, xzmax, yzmin, yzmax
+      real(kind=dp) :: xx1, yy1, xx2, yy2, ux1, uy1, ux2, uy2, csl, snl
+      real(kind=dp) :: fout, foutk, dis, dmu, var, rho1, zi, zido, ziup, saldo, salup
+      real(kind=dp) :: xx, yy, zz, ux, uy, pin, xli, slope, cs, cz, z00
+      real(kind=dp) :: r, eer, r0, dep, Rossby, amp, csth, sqghi, snth
+      real(kind=dp) :: rr, rmx, x0, y0, dxx, dyy, ucmk, phi, dphi
+      real(kind=dp) :: xm, ym
 
       call dminmax(xz, ndx, xzmin, xzmax, ndx)
       call dminmax(xk, numk, xkmin, xkmax, numk)
@@ -2300,6 +2363,7 @@ contains
 
 !> restore au and q1 for 3D case for the first write into a history file
    subroutine restore_au_q1_3D_for_1st_history_record()
+      use precision, only: dp
       use m_flow, only: q1, LBot, kmx, kmxL
       use fm_external_forcings_data, only: fusav, rusav, ausav, ncgen
       use m_flowgeom, only: lnx
@@ -2307,7 +2371,7 @@ contains
       implicit none
 
       integer :: i_q1_v, i_q1_0
-      double precision, allocatable :: fu_temp(:, :), ru_temp(:, :), au_temp(:, :)
+      real(kind=dp), allocatable :: fu_temp(:, :), ru_temp(:, :), au_temp(:, :)
 
       if (kmx > 0) then
          if (ncgen > 0) then

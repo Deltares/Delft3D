@@ -33,7 +33,7 @@ class TestBenchParameterParser:
 
         settings = TestBenchSettings()
 
-        # Store path of Testbench.py into os environment
+        # Store path of TestBench.py into os environment
         script_path, script_name = os.path.split(os.path.abspath(__file__))
 
         settings.test_bench_root = script_path

@@ -31,23 +31,33 @@
 !
 
 !> convert quadrilaterals, pentagons and hexagons to triangles
-subroutine triangulate_cells()
-   use m_netw
-   use m_new_link
+module m_triangulate_cells
 
    implicit none
 
-   integer :: k, k0, k1, kk, Lnew, N
+   private
 
-   do k = 1, nump ! loop over the cells
-      N = netcell(k)%n
-      if (N < 4) cycle
+   public :: triangulate_cells
+
+contains
+
+   subroutine triangulate_cells()
+      use m_netw
+      use m_new_link
+
+      integer :: k, k0, k1, kk, Lnew, N
+
+      do k = 1, nump ! loop over the cells
+         N = netcell(k)%n
+         if (N < 4) cycle
 !     make the triangles by connecting the 3rd, 4th, etc. node to the first one
-      k0 = netcell(k)%nod(1)
-      do kk = 3, N - 1
-         k1 = netcell(k)%nod(kk)
-         call newlink(k0, k1, Lnew)
+         k0 = netcell(k)%nod(1)
+         do kk = 3, N - 1
+            k1 = netcell(k)%nod(kk)
+            call newlink(k0, k1, Lnew)
+         end do
       end do
-   end do
 
-end subroutine triangulate_cells
+   end subroutine triangulate_cells
+
+end module m_triangulate_cells

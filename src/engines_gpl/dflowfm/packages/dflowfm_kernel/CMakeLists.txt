@@ -32,9 +32,6 @@ get_fortran_source_files(${dflowfm_gui_path} dflowfm_gui)
 set(dflowfm_io_path ${src_path}/dflowfm_io)
 get_fortran_source_files(${dflowfm_io_path} dflowfm_io)
 
-list(REMOVE_ITEM dflowfm_io ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/io_openfoam.f90
-                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/read_forcings.f90)
-
 set(dflowfm_kernel_path ${src_path}/dflowfm_kernel)
 set(dflowfm_kernel_compute_path ${dflowfm_kernel_path}/compute)
 set(dflowfm_kernel_compute_hydrology_path ${dflowfm_kernel_path}/compute_hydrology)
@@ -65,8 +62,6 @@ get_fortran_source_files(${dflowfm_kernel_path}/main dflowfm_kernel_main)
 get_fortran_source_files(${dflowfm_kernel_path}/model_specific dflowfm_kernel_model_specific)
 get_fortran_source_files(${dflowfm_kernel_prepost_path} dflowfm_kernel_prepost)
 get_fortran_source_files(${dflowfm_kernel_timespace_path} dflowfm_kernel_timespace)
-
-list(REMOVE_ITEM dflowfm_kernel_compute_waves_surfbeat ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_waves_surfbeat_path}/xbeach_wave_boundary_init.f90)
 
 # Gather source files
 set(dflowfm_manager_path ${src_path}/dflowfm_manager/)
@@ -122,108 +117,67 @@ target_link_libraries(${library_name} PRIVATE
     additional_compiler_warnings
 )
 
+target_link_libraries(${library_name} PRIVATE
+                      deltares_common
+                      deltares_common_c
+                      deltares_common_mpi
+                      dhydrology_kernel
+                      ec_module
+                      flow1d
+                      flow1d_core
+                      flow1d_io
+                      flow1d_implicit
+                      gridgeom
+                      ice_data
+                      ice_io
+                      io_netcdf
+                      io_netcdf_data
+                      kdtree_wrapper
+                      kdtree2
+                      fortrangis
+                      libsigwatch
+                      md5digest
+                      md5
+                      metis
+                      metisoptions
+                      morphology_data
+                      morphology_io
+                      morphology_kernel
+                      morphology_plugins_c
+                      netcdf4
+                      netcdff
+                      polypack
+                      trachytopes_io
+                      trachytopes_kernel
+                      triangle_c
+                      waq_definition
+                      wq_processes
+                      waq_process
+                      waq_hyd_data
+                      waq_utils_c
+                      waq_utils_f
+                      spherepack
+)
+
 # Add dependencies
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
 
-    set(oss_dependencies    deltares_common
-                            deltares_common_c
-                            deltares_common_mpi
-                            dhydrology_kernel
-                            ec_module
-                            flow1d
-                            flow1d_core
-                            flow1d_io
-                            flow1d_implicit
-                            gridgeom
-                            ice_data
-                            ice_io
-                            io_netcdf
-                            io_netcdf_data
-                            kdtree_wrapper
-                            kdtree2
-                            fortrangis
-                            libsigwatch
-                            md5digest
-                            md5
-                            metis
-                            metisoptions
-                            morphology_data
-                            morphology_io
-                            morphology_kernel
-                            morphology_plugins_c
-                            netcdf4
-                            netcdff
-                            polypack
-                            trachytopes_io
-                            trachytopes_kernel
-                            triangle_c
-                            waq_definition
-                            wq_processes
-                            waq_process
-                            waq_hyd_data
-                            waq_utils_c
-                            waq_utils_f
-                            interacter_stub)
-
-    target_link_libraries(${library_name} PRIVATE ${oss_dependencies}
-         PkgConfig::PETSC
-         uuid
+    target_link_libraries(${library_name} PRIVATE
+                          interacter_stub
+                          PkgConfig::PETSC
+                          uuid
     )
-
 endif(UNIX)
 
 if (WIN32)
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         deltares_common_mpi
-                         dhydrology_kernel
-                         ec_module
-                         flow1d
-                         flow1d_core
-                         flow1d_io
-                         flow1d_implicit
-                         gridgeom
-                         ice_data
-                         ice_io
-                         io_netcdf
-                         io_netcdf_data
-                         kdtree_wrapper
-                         kdtree2
-                         fortrangis
-                         libsigwatch
-                         md5digest
-                         md5
-                         metis
-                         metisoptions
-                         morphology_data
-                         morphology_io
-                         morphology_kernel
-                         morphology_plugins_c
-                         netcdf4
-                         netcdff
-                         petsc
-                         polypack
-                         trachytopes_io
-                         trachytopes_kernel
-                         triangle_c
-                         waq_definition
-                         waq_process
-                         waq_hyd_data
-                         waq_utils_c
-                         waq_utils_f
-                         wq_processes
-    )
-
     if(NOT WITH_INTERACTER)
-        set(oss_dependencies ${oss_dependencies} interacter_stub)
+        target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
-    target_link_libraries(${library_name} PRIVATE
-                          ${oss_dependencies}
-    )
+    target_link_libraries(${library_name} PRIVATE petsc)
 
     include_directories(${petsc_path})
 endif(WIN32)
@@ -239,12 +193,15 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
 
 set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/partition.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/pressakey.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/print_timings.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/partition_METIS_to_idomain.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/m_gui.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/menuv1.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/setwor.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/viewport.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/read_commandline.F90
-                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/writesomefinaloutput.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/write_some_final_output.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/wrwaq.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/tecplot.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/unc_write_his.F90
@@ -272,31 +229,28 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/scherm.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_shapefile.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_display.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_errorhandler.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_opengl.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/rest_f90/dcross.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/rest_f90/read_samples_from_geotiff.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_waves_path}/fetch_proc.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
-
 # Define preprocessor definitions
 if (WIN32)
     set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
     if(WITH_INTERACTER)
         # Add HAVE_DISPLAY=1
-        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_TECPLOT;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
+        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_TECPLOT;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
     else()
-        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_TECPLOT;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=0")
+        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_TECPLOT;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=0")
     endif()
 
     add_warnings_as_errors_post_build_windows(${library_name})
 endif(WIN32)
 
 if (UNIX)
-    target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC")
+    target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
 endif(UNIX)
 
 # Create the folder structure in vfproj

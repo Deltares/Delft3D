@@ -30,9 +30,20 @@
 !
 !
 
+module m_setucxucy_mor
+
+   implicit none
+
+   private
+
+   public :: setucxucy_mor
+
+contains
+
    ! =================================================================================================
    ! =================================================================================================
    subroutine setucxucy_mor(u1_loc)
+      use precision, only: dp
       use m_flowgeom
       use m_flow
       use m_fm_erosed, only: ucxq_mor, ucyq_mor
@@ -42,17 +53,18 @@
       use m_flowparameters, only: jabarrieradvection, flow_solver
       use m_sferic
       use m_get_Lbot_Ltop
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
       implicit none
-      double precision, dimension(lnkx), intent(in) :: u1_loc
+      real(kind=dp), dimension(lnkx), intent(in) :: u1_loc
 
       integer :: L, KK, k1, k2, k, Lb, Lt, LL, nn, n, kt, kb, kbk, k2k
       integer :: itpbn
-      double precision :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, hul, dzz, uin
-      double precision :: dischcorrection
-      double precision :: uinx, uiny
-
-      double precision, external :: nod2linx, nod2liny
-      double precision, external :: lin2nodx, lin2nody
+      real(kind=dp) :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, hul, dzz, uin
+      real(kind=dp) :: dischcorrection
+      real(kind=dp) :: uinx, uiny
 
       ucxq_mor = 0d0; ucyq_mor = 0d0 ! zero arrays
       ucx_mor = 0d0; ucy_mor = 0d0
@@ -467,3 +479,5 @@
       end do
 
    end subroutine setucxucy_mor
+
+end module m_setucxucy_mor

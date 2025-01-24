@@ -30,26 +30,34 @@
 !
 !
 
-      subroutine TEKPREVIOUSNET(NCOL)
-         use m_dmovabs
-         use m_dlnabs
-         use m_netw
-         use m_drawthis
-         use m_set_col
-         implicit none
-         integer :: NCOL
-         integer :: k1
-         integer :: k2
-         integer :: l
+module m_tekpreviousnet
 
-         if (NDRAW(16) <= 0) return
-         call SETCOL(NCOL)
-         do L = 1, NUML0
-            K1 = KN0(1, L)
-            K2 = KN0(2, L)
-            if (K1 /= 0 .and. K2 /= 0) then
-               call DMOVABS(XK0(K1), YK0(K1), ZK0(K1))
-               call DLNABS(XK0(K2), YK0(K2), ZK0(K2))
-            end if
-         end do
-      end subroutine TEKPREVIOUSNET
+   implicit none
+
+contains
+
+   subroutine TEKPREVIOUSNET(NCOL)
+      use m_dmovabs
+      use m_dlnabs
+      use m_netw
+      use m_drawthis
+      use m_set_col
+      implicit none
+      integer :: NCOL
+      integer :: k1
+      integer :: k2
+      integer :: l
+
+      if (NDRAW(16) <= 0) return
+      call SETCOL(NCOL)
+      do L = 1, NUML0
+         K1 = KN0(1, L)
+         K2 = KN0(2, L)
+         if (K1 /= 0 .and. K2 /= 0) then
+            call DMOVABS(XK0(K1), YK0(K1), ZK0(K1))
+            call DLNABS(XK0(K2), YK0(K2), ZK0(K2))
+         end if
+      end do
+   end subroutine TEKPREVIOUSNET
+
+end module m_tekpreviousnet

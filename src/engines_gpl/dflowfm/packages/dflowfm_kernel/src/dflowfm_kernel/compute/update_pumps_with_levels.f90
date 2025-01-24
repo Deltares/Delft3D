@@ -30,48 +30,60 @@
 !
 !
 
-subroutine update_pumps_with_levels()
+module m_update_pumps_with_levels
 
-   use m_flowgeom
-   use m_flow
-   use m_missing
-   use m_structures
-   use unstruc_channel_flow
-   use m_pump
-   use m_partitioninfo
+   implicit none
 
-   integer :: ierr, n
+   private
 
-   !Pump with levels, SOBEK style, outside OpenMP region
-   ! TODO: merge water level calculations with dambreak
-   if (nPumpsWithLevels > 0) then
+   public :: update_pumps_with_levels
 
-      ! Initialize
-      pumpAveraging = 0.0d0
-      waterLevelsPumpLeft = 0.0d0
-      waterLevelsPumpRight = 0.0d0
+contains
 
-      ! Compute sumQuantitiesByWeight and sumWeights for the suction side
-      !LC: TODO, do the average only over open links
-      ierr = getAverageQuantityFromLinks(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(1, :), pumpAveraging, 0)
-      if (ierr /= 0) success = .false.
+   subroutine update_pumps_with_levels()
 
-      do n = 1, npumpsg
-         if (pumpAveraging(2, n) > 0.0d0) then
-            waterLevelsPumpLeft(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
-         end if
-      end do
+      use m_flowgeom
+      use m_flow
+      use m_missing
+      use m_structures
+      use unstruc_channel_flow
+      use m_pump
+      use m_partitioninfo
 
-      ! Compute sumQuantitiesByWeight and sumWeights for the delivery side
-      ierr = getAverageQuantityFromLinks(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(2, :), pumpAveraging, 0)
-      if (ierr /= 0) success = .false.
+      integer :: ierr, n
 
-      do n = 1, npumpsg
-         if (pumpAveraging(2, n) > 0.0d0) then
-            waterLevelsPumpRight(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
-         end if
-      end do
+      !Pump with levels, SOBEK style, outside OpenMP region
+      ! TODO: merge water level calculations with dambreak
+      if (nPumpsWithLevels > 0) then
 
-   end if
+         ! Initialize
+         pumpAveraging = 0.0d0
+         waterLevelsPumpLeft = 0.0d0
+         waterLevelsPumpRight = 0.0d0
 
-end subroutine update_pumps_with_levels
+         ! Compute sumQuantitiesByWeight and sumWeights for the suction side
+         !LC: TODO, do the average only over open links
+         ierr = getAverageQuantityFromLinks(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(1, :), pumpAveraging, 0)
+         if (ierr /= 0) success = .false.
+
+         do n = 1, npumpsg
+            if (pumpAveraging(2, n) > 0.0d0) then
+               waterLevelsPumpLeft(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
+            end if
+         end do
+
+         ! Compute sumQuantitiesByWeight and sumWeights for the delivery side
+         ierr = getAverageQuantityFromLinks(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(2, :), pumpAveraging, 0)
+         if (ierr /= 0) success = .false.
+
+         do n = 1, npumpsg
+            if (pumpAveraging(2, n) > 0.0d0) then
+               waterLevelsPumpRight(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
+            end if
+         end do
+
+      end if
+
+   end subroutine update_pumps_with_levels
+
+end module m_update_pumps_with_levels

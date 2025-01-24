@@ -30,28 +30,37 @@
 !
 !
 
-      subroutine SETWOR(XW1, YW1, XW2, YW2)
-         use unstruc_opengl
-#ifdef HAVE_OPENGL
-         use IFOPNGL, only: GL_PROJECTION, GL_MODELVIEW, fglMatrixMode, fglLoadIdentity, fglOrtho
-#endif
-         implicit none
-         double precision :: XW1, YW1, XW2, YW2
-         if (XW1 == XW2 .or. YW1 == YW2) then
-            XW2 = XW1 + 1
-            YW2 = YW1 + 1
-         end if
+module m_setwor
 
-         if (InOpenGLRendering) then
+   implicit none
+
+contains
+
+   subroutine SETWOR(XW1, YW1, XW2, YW2)
+      use unstruc_opengl
+      use precision, only: dp
 #ifdef HAVE_OPENGL
-            !  CALL fglDisable(GL_DEPTH_TEST) ! no depth
-            call fglMatrixMode(GL_PROJECTION)
-            call fglLoadIdentity()
-            call fglOrtho(XW1, XW2, YW1, YW2, 0, 1)
-            call fglMatrixMode(GL_MODELVIEW)
+      use IFOPNGL, only: GL_PROJECTION, GL_MODELVIEW, fglMatrixMode, fglLoadIdentity, fglOrtho
 #endif
-         else
-            call IGrUnits(real(XW1), real(YW1), real(XW2), real(YW2))
-         end if
-         return
-      end
+      implicit none
+      real(kind=dp) :: XW1, YW1, XW2, YW2
+      if (XW1 == XW2 .or. YW1 == YW2) then
+         XW2 = XW1 + 1
+         YW2 = YW1 + 1
+      end if
+
+      if (InOpenGLRendering) then
+#ifdef HAVE_OPENGL
+         !  CALL fglDisable(GL_DEPTH_TEST) ! no depth
+         call fglMatrixMode(GL_PROJECTION)
+         call fglLoadIdentity()
+         call fglOrtho(real(XW1, dp), real(XW2, dp), real(YW1, dp), real(YW2, dp), real(0, dp), real(1, dp))
+         call fglMatrixMode(GL_MODELVIEW)
+#endif
+      else
+         call IGrUnits(real(XW1), real(YW1), real(XW2), real(YW2))
+      end if
+      return
+   end
+
+end module m_setwor

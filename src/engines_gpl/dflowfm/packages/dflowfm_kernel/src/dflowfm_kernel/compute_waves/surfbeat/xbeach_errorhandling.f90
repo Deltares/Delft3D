@@ -35,7 +35,6 @@ module m_xbeach_errorhandling
 
 contains
    subroutine xbeach_errorhandler()
-      use unstruc_messages
       use unstruc_files
       use unstruc_netcdf, only: unc_closeall
       implicit none

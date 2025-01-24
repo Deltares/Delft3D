@@ -30,131 +30,132 @@
 !
 !
 
- !> this module contains the real flow times, only to be managed by setting times in module m_usertimes
+!> this module contains the real flow times, only to be managed by setting times in module m_usertimes
 module m_flowtimes
+   use precision, only: dp
    implicit none
 
    character(len=8) :: refdat !< Reference date (e.g., '20090101'). All times (tstart_user, tend_user, etc.) are w.r.t. to this date.
    integer :: julrefdat !< will be set by calling settimespacerefdat
-   double precision :: refdate_mjd !< Reference date as modified Julian date
+   real(kind=dp) :: refdate_mjd !< Reference date as modified Julian date
    integer :: irefdate !< Reference date (e.g., 20090101)
-   double precision :: Tzone !< Data Sources in GMT are interrogated with time in minutes since refdat-Tzone*60
+   real(kind=dp) :: Tzone !< Data Sources in GMT are interrogated with time in minutes since refdat-Tzone*60
    character(len=42) :: Tudunitstr !< Complete UDunitstring for the time variable written as a unit attribute into various NetCDF output files
    integer, parameter :: tunit = 1 !< Times to EC-module are in seconds
-   double precision :: Timjan !< time in hours of refdat relative to Januari 1 of the same year
-   double precision :: dt_user !< User specified time step (s) for external forcing update.
-   double precision :: dt_nodal !< User specified time step (s) for nodal factors update.
-   double precision :: dt_max !< Computational timestep limit by user.
-   double precision :: dt_init !< dt of first timestep, if not specified, use dt_max, if that also not specified, use 1 s
+   real(kind=dp) :: Timjan !< time in hours of refdat relative to Januari 1 of the same year
+   real(kind=dp) :: dt_user !< User specified time step (s) for external forcing update.
+   real(kind=dp) :: dt_nodal !< User specified time step (s) for nodal factors update.
+   real(kind=dp) :: dt_max !< Computational timestep limit by user.
+   real(kind=dp) :: dt_init !< dt of first timestep, if not specified, use dt_max, if that also not specified, use 1 s
 
    integer :: ja_timestep_auto !< Use CFL-based dt (with dt_max as upper bound)
    integer :: ja_timestep_auto_visc !< Use explicit time step restriction based on viscosity term
    integer :: ja_timestep_nostruct !< Exclude (structure) links without advection from the time step limitation
    integer :: ja_timestep_noqout !< Exclude negative qin term from timestep limitation.
-   double precision :: tstart_user !< User specified time start (s) w.r.t. refdat
-   double precision :: tstart_tlfsmo_user !< User specified start time of tlfsmo (s) w.r.t. refdat
-   double precision :: tstop_user !< User specified time stop  (s) w.r.t. refdat
-   double precision :: time_user !< Next time of external forcings update (steps increment by dt_user).
+   real(kind=dp) :: tstart_user !< User specified time start (s) w.r.t. refdat
+   real(kind=dp) :: tstart_tlfsmo_user !< User specified start time of tlfsmo (s) w.r.t. refdat
+   real(kind=dp) :: tstop_user !< User specified time stop  (s) w.r.t. refdat
+   real(kind=dp) :: time_user !< Next time of external forcings update (steps increment by dt_user).
 
-   double precision :: dts !< internal computational timestep (s)
-   double precision :: dtsc !< max timstep of limiting point kkcflmx, zero if larger than dt_max
-   double precision :: dtfacmax !< max dts increase factor
-   double precision :: dti !< inverse  computational timestep (1/s)
-   double precision :: dtprev !< previous computational timestep (s)  (1s is a bit like sobek)
-   double precision :: dtmin !< dt < dtmin : surely crashed
-   double precision :: dtminbreak !< smallest allowed timestep (in s), checked on a sliding average of several timesteps in validation routine.
-   double precision :: dtminhis !< smallest timestep within most recent his interval
-   double precision :: tfac !< time unit in seconds
-   double precision, allocatable :: tvalswindow(:) !< (NUMDTWINDOWSIZE) Time1 values in a moving time window to compute sliding average dt
+   real(kind=dp) :: dts !< internal computational timestep (s)
+   real(kind=dp) :: dtsc !< max timstep of limiting point kkcflmx, zero if larger than dt_max
+   real(kind=dp) :: dtfacmax !< max dts increase factor
+   real(kind=dp) :: dti !< inverse  computational timestep (1/s)
+   real(kind=dp) :: dtprev !< previous computational timestep (s)  (1s is a bit like sobek)
+   real(kind=dp) :: dtmin !< dt < dtmin : surely crashed
+   real(kind=dp) :: dtminbreak !< smallest allowed timestep (in s), checked on a sliding average of several timesteps in validation routine.
+   real(kind=dp) :: dtminhis !< smallest timestep within most recent his interval
+   real(kind=dp) :: tfac !< time unit in seconds
+   real(kind=dp), allocatable :: tvalswindow(:) !< (NUMDTWINDOWSIZE) Time1 values in a moving time window to compute sliding average dt
    integer, parameter :: NUMDTWINDOWSIZE = 100 !< Number of time steps to include in the sliding average, don't set this too optimistic to avoid too fast simulation breaks.
    integer :: idtwindow_start !< Current start index in tvalswindow(:) array. This array is filled in a cyclic order, with never more than NUMDTWINDOWSIZE time values.
-   double precision :: time0 !< current   julian (s) of s0
-   double precision :: time1 !< current   julian (s) of s1  ! and of course, time1 = time0 + dt
-   double precision :: tim1bnd !< last time boundary signals were given
-   double precision :: tim1fld !< last time field    signals were given
+   real(kind=dp) :: time0 !< current   julian (s) of s0
+   real(kind=dp) :: time1 !< current   julian (s) of s1  ! and of course, time1 = time0 + dt
+   real(kind=dp) :: tim1bnd !< last time boundary signals were given
+   real(kind=dp) :: tim1fld !< last time field    signals were given
    integer :: jatimestepanalysis = 0
-   double precision, allocatable :: dtcell(:) !< time step per cell based on CFL (s), size:ndkx
-   double precision, allocatable :: time_wetground(:) !< Cumulative time when water is above ground level, size: ndxi (now only for 1d, later also for 2d)
+   real(kind=dp), allocatable :: dtcell(:) !< time step per cell based on CFL (s), size:ndkx
+   real(kind=dp), allocatable :: time_wetground(:) !< Cumulative time when water is above ground level, size: ndxi (now only for 1d, later also for 2d)
 
    !TODO: use in the trachytopes this variable and fully remove reading from rdtrt
-   double precision :: dt_trach !< DtTrt Trachytope roughness update time interval (s)
+   real(kind=dp) :: dt_trach !< DtTrt Trachytope roughness update time interval (s)
 
-   double precision :: dnt_user !< counter for nr of user steps    ( )
-   double precision :: dnt !< number of timesteps ( )
-   double precision :: dnums1it !< total nr of non-linear continuity iterations
+   real(kind=dp) :: dnt_user !< counter for nr of user steps    ( )
+   real(kind=dp) :: dnt !< number of timesteps ( )
+   real(kind=dp) :: dnums1it !< total nr of non-linear continuity iterations
 
-   double precision :: fhr !< Factor sec hrs
-   double precision :: fday !< Factor sec day
+   real(kind=dp) :: fhr !< Factor sec hrs
+   real(kind=dp) :: fday !< Factor sec day
 
-   double precision :: ti_map !< map interval (s)
-   double precision :: ti_maps !< Start of map output period (as assigned in mdu-file) (s)
-   double precision :: ti_mape !< End   of map output period (as assigned in mdu-file) (s)
-   double precision :: ti_his !< history interval (s)
-   double precision :: ti_hiss !< Start of his output period (as assigned in mdu-file) (s)
-   double precision :: ti_hise !< End   of his output period (as assigned in mdu-file) (s)
-   double precision :: ti_wav !< averaging interval spatial wave quantities (s)
-   double precision :: ti_wavs !< averaging interval spatial wave quantities
-   double precision :: ti_wave !< averaging interval spatial wave quantities
-   double precision :: ti_com !< com file interval (s)
-   double precision :: ti_coms !< Start of com file output period (as assigned in mdu-file) (s)
-   double precision :: ti_come !< End   of com file output period (as assigned in mdu-file) (s)
-   double precision :: ti_sed !< averaging interval sedmor quantities (s)
-   double precision :: ti_seds !< averaging interval sedmor quantities
-   double precision :: ti_sede !< averaging interval sedmor quantities
-   double precision :: ti_st !< averaging interval sedtrails quantities (s)
-   double precision :: ti_sts !< averaging interval sedtrails wave quantities
-   double precision :: ti_ste !< averaging interval sedtrails wave quantities
-   double precision :: ti_xls !< history interval (s) xls
-   double precision :: ti_rst !< restart interval (s)
-   double precision :: ti_rsts !< Start of restart output period (as assigned in mdu-file) (s)
-   double precision :: ti_rste !< End   of restart output period (as assigned in mdu-file) (s)
-   double precision :: ti_mba !< Time step for mass balance area output
-   double precision :: ti_waq !< Interval between output in delwaq files (s).
-   double precision :: ti_waqs !< Start of WAQ output period
-   double precision :: ti_waqe !< End   of WAQ output period
+   real(kind=dp) :: ti_map !< map interval (s)
+   real(kind=dp) :: ti_maps !< Start of map output period (as assigned in mdu-file) (s)
+   real(kind=dp) :: ti_mape !< End   of map output period (as assigned in mdu-file) (s)
+   real(kind=dp) :: ti_his !< history interval (s)
+   real(kind=dp) :: ti_hiss !< Start of his output period (as assigned in mdu-file) (s)
+   real(kind=dp) :: ti_hise !< End   of his output period (as assigned in mdu-file) (s)
+   real(kind=dp) :: ti_wav !< averaging interval spatial wave quantities (s)
+   real(kind=dp) :: ti_wavs !< averaging interval spatial wave quantities
+   real(kind=dp) :: ti_wave !< averaging interval spatial wave quantities
+   real(kind=dp) :: ti_com !< com file interval (s)
+   real(kind=dp) :: ti_coms !< Start of com file output period (as assigned in mdu-file) (s)
+   real(kind=dp) :: ti_come !< End   of com file output period (as assigned in mdu-file) (s)
+   real(kind=dp) :: ti_sed !< averaging interval sedmor quantities (s)
+   real(kind=dp) :: ti_seds !< averaging interval sedmor quantities
+   real(kind=dp) :: ti_sede !< averaging interval sedmor quantities
+   real(kind=dp) :: ti_st !< averaging interval sedtrails quantities (s)
+   real(kind=dp) :: ti_sts !< averaging interval sedtrails wave quantities
+   real(kind=dp) :: ti_ste !< averaging interval sedtrails wave quantities
+   real(kind=dp) :: ti_xls !< history interval (s) xls
+   real(kind=dp) :: ti_rst !< restart interval (s)
+   real(kind=dp) :: ti_rsts !< Start of restart output period (as assigned in mdu-file) (s)
+   real(kind=dp) :: ti_rste !< End   of restart output period (as assigned in mdu-file) (s)
+   real(kind=dp) :: ti_mba !< Time step for mass balance area output
+   real(kind=dp) :: ti_waq !< Interval between output in delwaq files (s).
+   real(kind=dp) :: ti_waqs !< Start of WAQ output period
+   real(kind=dp) :: ti_waqe !< End   of WAQ output period
    logical :: wrwaqon = .false. !< Waq output was initialised
-   double precision :: ti_waqproc !< Time step for water quality processes
+   real(kind=dp) :: ti_waqproc !< Time step for water quality processes
 
-   double precision :: ti_classmap !< class map interval (s)
-   double precision :: ti_classmaps !< Start of class map output period (as assigned in mdu-file) (s)
-   double precision :: ti_classmape !< End   of class map output period (as assigned in mdu-file) (s)
-   double precision, allocatable, target :: map_classes_s1(:) !< classes for water level
-   double precision, allocatable, target :: map_classes_hs(:) !< classes for water depth
-   double precision, allocatable, target :: map_classes_ucmag(:) !< classes for the magnitude of the velocity
-   double precision, allocatable, target :: map_classes_ucdir(:) !< classes for the direction of the velocity
-   double precision :: map_classes_ucdirstep !< step size of classes for the direction of the velocity
-   double precision :: ti_stat !< Interval between simulation statistics output (s).
-   double precision :: ti_timings !< (parallel) timings output interval
-   double precision :: ti_split !< Time interval for time splitting: time after which new his/map file will be created (e.g. montly), see also the unit below.
+   real(kind=dp) :: ti_classmap !< class map interval (s)
+   real(kind=dp) :: ti_classmaps !< Start of class map output period (as assigned in mdu-file) (s)
+   real(kind=dp) :: ti_classmape !< End   of class map output period (as assigned in mdu-file) (s)
+   real(kind=dp), allocatable, target :: map_classes_s1(:) !< classes for water level
+   real(kind=dp), allocatable, target :: map_classes_hs(:) !< classes for water depth
+   real(kind=dp), allocatable, target :: map_classes_ucmag(:) !< classes for the magnitude of the velocity
+   real(kind=dp), allocatable, target :: map_classes_ucdir(:) !< classes for the direction of the velocity
+   real(kind=dp) :: map_classes_ucdirstep !< step size of classes for the direction of the velocity
+   real(kind=dp) :: ti_stat !< Interval between simulation statistics output (s).
+   real(kind=dp) :: ti_timings !< (parallel) timings output interval
+   real(kind=dp) :: ti_split !< Time interval for time splitting: time after which new his/map file will be created (e.g. montly), see also the unit below.
                                                   !! Default is 0 to have no time-splitting of output files.
    character(len=1) :: ti_split_unit !< Unit for time splitting interval: Y: years, M: months, D: days, h:hours, m: minutes, s: seconds.
-   double precision, allocatable :: ti_mpt(:) !< times for writing map-files (s), possibly non-equidistant in time
-   double precision, allocatable :: ti_mpt_rel(:) !< times for writing map-files (s) relative to current time, possibly non-equidistant in time
-   double precision, allocatable :: ti_ctv(:) !< times for writing com-files (s), possibly non-equidistant in time
-   double precision, allocatable :: ti_ctv_rel(:) !< times for writing com-files (s) relative to current time, possibly non-equidistant in time
-   double precision :: tmini !< Initial time for updating map/his/rst
+   real(kind=dp), allocatable :: ti_mpt(:) !< times for writing map-files (s), possibly non-equidistant in time
+   real(kind=dp), allocatable :: ti_mpt_rel(:) !< times for writing map-files (s) relative to current time, possibly non-equidistant in time
+   real(kind=dp), allocatable :: ti_ctv(:) !< times for writing com-files (s), possibly non-equidistant in time
+   real(kind=dp), allocatable :: ti_ctv_rel(:) !< times for writing com-files (s) relative to current time, possibly non-equidistant in time
+   real(kind=dp) :: tmini !< Initial time for updating map/his/rst
 
-   double precision :: time_choice !< Time consisting the next time_user / time_map
-   double precision :: time_out !< Next time for output in the most general sense (map, his, etc.)
-   double precision :: time_map !< Map output interval
-   double precision :: time_com !< Com output interval
-   double precision :: time_wav !< Time-avg'd output interval xb JRE
-   double precision :: time_sed !< Time-avg'd output interval sedmor
-   double precision :: time_st !< Time-avg'd output interval sedtrails
-   double precision :: time_his !< Next time for his output
-   double precision :: time_xls !< Next time for his output
-   double precision :: time_rst !< Next time for restart output
-   double precision :: time_classmap !< Next time for class map output
-   double precision :: time_waq !< Next time for delwaq output
-   double precision :: time_waqset !< Next time to reset the quantitis for waq
-   double precision :: time_waqproc !< Next time to calcualate waq processes
-   double precision :: time_mba !< Next time to process mass balances
-   double precision :: time_stat !< Next time for simulation statistics output
-   double precision :: time_timings !< Next time for timings output
-   double precision :: time_split !< Next time for a new time-split output file.
-   double precision :: time_split0 !< Start time for the current time-split output file.
-   double precision :: time_fetch !< next time fetchlength will be established
-   double precision :: tifetch = 0 !< fetchlength comp. interval
+   real(kind=dp) :: time_choice !< Time consisting the next time_user / time_map
+   real(kind=dp) :: time_out !< Next time for output in the most general sense (map, his, etc.)
+   real(kind=dp) :: time_map !< Map output interval
+   real(kind=dp) :: time_com !< Com output interval
+   real(kind=dp) :: time_wav !< Time-avg'd output interval xb JRE
+   real(kind=dp) :: time_sed !< Time-avg'd output interval sedmor
+   real(kind=dp) :: time_st !< Time-avg'd output interval sedtrails
+   real(kind=dp) :: time_his !< Next time for his output
+   real(kind=dp) :: time_xls !< Next time for his output
+   real(kind=dp) :: time_rst !< Next time for restart output
+   real(kind=dp) :: time_classmap !< Next time for class map output
+   real(kind=dp) :: time_waq !< Next time for delwaq output
+   real(kind=dp) :: time_waqset !< Next time to reset the quantitis for waq
+   real(kind=dp) :: time_waqproc !< Next time to calcualate waq processes
+   real(kind=dp) :: time_mba !< Next time to process mass balances
+   real(kind=dp) :: time_stat !< Next time for simulation statistics output
+   real(kind=dp) :: time_timings !< Next time for timings output
+   real(kind=dp) :: time_split !< Next time for a new time-split output file.
+   real(kind=dp) :: time_split0 !< Start time for the current time-split output file.
+   real(kind=dp) :: time_fetch !< next time fetchlength will be established
+   real(kind=dp) :: tifetch = 0 !< fetchlength comp. interval
 
    integer :: it_map !< Nr of snapshots presently in map file
    integer :: it_wav !< Nr of snapshots presently in time-avg'd wave output file JRE
@@ -181,8 +182,8 @@ module m_flowtimes
    integer :: handle_fetch !< timer handle for externalforcings fetch model
    integer :: handle_extra(90) !< timer handles for extra timers
 
-   double precision :: dsetb !< number of setbacks ()
-   double precision :: walltime0 !< wall time at start of timeloop (s)
+   real(kind=dp) :: dsetb !< number of setbacks ()
+   real(kind=dp) :: walltime0 !< wall time at start of timeloop (s)
 
    character(len=20) :: rundat0 !< start and end date (wallclock) of computer run
    character(len=20) :: rundat2 !< start and end date (wallclock) of computer run format = _yymmddhhmmss
@@ -191,15 +192,15 @@ module m_flowtimes
    character(len=14) :: Stopdatetime = ' ' !< optional replacement of Tstop_user
    integer :: jarestart !< use restart yes/no, 1/0
 
-   double precision :: tlfsmo = 0d0 !< fourier bnd smoothing times
-   double precision :: alfsmo = 1d0 !< fourier bnd smoothing weight factor
+   real(kind=dp) :: tlfsmo = 0d0 !< fourier bnd smoothing times
+   real(kind=dp) :: alfsmo = 1d0 !< fourier bnd smoothing weight factor
    integer :: keepstbndonoutflow = 0 !< keep them on outflow = 1
 
-   double precision :: Tspinupturblogprof = 0d0 !< From Tstart to Tstart+Tspinupturblogprof, Turbulent profiles based on log profiles
+   real(kind=dp) :: Tspinupturblogprof = 0d0 !< From Tstart to Tstart+Tspinupturblogprof, Turbulent profiles based on log profiles
    !< 0d0 = No
-   double precision :: alfaspin
-   double precision :: dt_UpdateRoughness !< Update interval for time dependent roughness values (from frictFile).
-   double precision :: times_update_roughness(2) !< Time window for wich the current time dependent roughness values (from FrictFile) are valid.
+   real(kind=dp) :: alfaspin
+   real(kind=dp) :: dt_UpdateRoughness !< Update interval for time dependent roughness values (from frictFile).
+   real(kind=dp) :: times_update_roughness(2) !< Time window for wich the current time dependent roughness values (from FrictFile) are valid.
 
 contains
 

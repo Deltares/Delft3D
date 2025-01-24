@@ -43,7 +43,8 @@ module m_statistical_output_types
       !!       if %source_input must point to newly allocated memory, that is the time to do it once,
       !!       and should never be reallocated after that.
       subroutine process_data_interface_double(data_pointer)
-         double precision, pointer, dimension(:), intent(inout) :: data_pointer !< pointer to function in-output data
+         use precision, only: dp
+         real(kind=dp), pointer, dimension(:), intent(inout) :: data_pointer !< pointer to function in-output data
       end subroutine process_data_interface_double
    end interface
 

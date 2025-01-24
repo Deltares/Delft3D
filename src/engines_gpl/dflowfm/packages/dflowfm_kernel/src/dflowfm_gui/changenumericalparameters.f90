@@ -31,10 +31,10 @@
 !
 
 module m_changenumericalparameters
-use m_confrm
+   use m_iadvecini, only: iadvecini
+   use m_confrm
 
-
-implicit none
+   implicit none
 
 contains
 

@@ -30,35 +30,45 @@
 !
 !
 
-      ! Now a double precision (double precision ::)
-      subroutine SHOWREAL(TEXT, value)
-         use m_devices
-         use m_helpnow
-         implicit none
-         integer :: infoattribute
-         integer :: ixp
-         integer :: iyp
-         integer :: len
-         integer :: nbckgr
-         integer :: nforgr
-         double precision :: val
-         double precision :: value
-         character TEXT * (*)
-         
-         VAL = value
-         IXP = IWS / 2
-         IYP = IHS / 2
-         NFORGR = InfoAttribute(13)
-         NBCKGR = InfoAttribute(14)
-         LEN = len_trim(TEXT)
-         call INPOPUP('ON')
-         call ITEXTCOLOUR('BWHITE', 'BLUE')
+module m_showreal
+   use precision, only: dp
+
+   implicit none
+
+contains
+
+   ! Now a real(kind=dp) (real(kind=dp) ::)
+   subroutine SHOWREAL(TEXT, value)
+      use precision, only: dp
+      use m_devices
+      use m_helpnow
+      implicit none
+      integer :: infoattribute
+      integer :: ixp
+      integer :: iyp
+      integer :: len
+      integer :: nbckgr
+      integer :: nforgr
+      real(kind=dp) :: val
+      real(kind=dp) :: value
+      character TEXT * (*)
+
+      VAL = value
+      IXP = IWS / 2
+      IYP = IHS / 2
+      NFORGR = InfoAttribute(13)
+      NBCKGR = InfoAttribute(14)
+      LEN = len_trim(TEXT)
+      call INPOPUP('ON')
+      call ITEXTCOLOUR('BWHITE', 'BLUE')
 !      CALL IWINOPEN(IXP,IYP,LEN+8,1)
-         call IWINOPEN(IXP, IYP, LEN + 11, 1)
-         call ITEXTCOLOUR('BBLUE', 'BWHITE')
-         call IWINOUTSTRINGXY(1, 1, TEXT)
+      call IWINOPEN(IXP, IYP, LEN + 11, 1)
+      call ITEXTCOLOUR('BBLUE', 'BWHITE')
+      call IWINOUTSTRINGXY(1, 1, TEXT)
 !      CALL IWINOUTDOUBLEXY(1+LEN,1,VALUE,'(F8.1)')
-         call IWINOUTDOUBLEXY(1 + LEN, 1, value, '(F11.1)')
-         call ITEXTCOLOURN(NFORGR, NBCKGR)
-         return
-      end
+      call IWINOUTDOUBLEXY(1 + LEN, 1, value, '(F11.1)')
+      call ITEXTCOLOURN(NFORGR, NBCKGR)
+      return
+   end
+
+end module m_showreal

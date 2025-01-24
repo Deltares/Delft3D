@@ -30,43 +30,49 @@
 !
 !
 
-      subroutine XYDISFORMAT()
-         use m_sferic
-         use m_wearelt
-         use m_depmax
-         use m_locatora
-         use m_disfor
+module m_xydisformat
 
-         implicit none
+   implicit none
 
-         integer :: ix
-         integer :: ixmax
-         integer :: ixmin
-         integer :: ixy
-         integer :: iy
-         integer :: iymax
-         integer :: iymin
-         integer :: izmax
-         integer :: izmin
-         integer :: ndec
-         integer :: nxy
-         integer :: nz
+contains
 
-         ZFORM = '(F7.1)'
+   subroutine XYDISFORMAT()
+      use m_sferic
+      use m_wearelt
+      use m_depmax
+      use m_locatora
+      use m_disfor
 
-         xlc = max(x1, min(x2, xlc))
-         ylc = max(y1, min(y2, ylc))
+      implicit none
 
-         IXMIN = int(log10(max(1d-6, abs(X1))))
-         IXMAX = int(log10(max(1d-6, abs(X2))))
-         IYMIN = int(log10(max(1d-6, abs(Y1))))
-         IYMAX = int(log10(max(1d-6, abs(Y2))))
-         IZMIN = int(log10(max(1d0, abs(VMIN))))
-         IZMAX = int(log10(max(1d0, abs(VMAX))))
+      integer :: ix
+      integer :: ixmax
+      integer :: ixmin
+      integer :: ixy
+      integer :: iy
+      integer :: iymax
+      integer :: iymin
+      integer :: izmax
+      integer :: izmin
+      integer :: ndec
+      integer :: nxy
+      integer :: nz
 
-         IX = max(IXMIN, IXMAX)
-         IY = max(IYMIN, IYMAX)
-         IXY = max(IX, IY)
+      ZFORM = '(F7.1)'
+
+      xlc = max(x1, min(x2, xlc))
+      ylc = max(y1, min(y2, ylc))
+
+      IXMIN = int(log10(max(1d-6, abs(X1))))
+      IXMAX = int(log10(max(1d-6, abs(X2))))
+      IYMIN = int(log10(max(1d-6, abs(Y1))))
+      IYMAX = int(log10(max(1d-6, abs(Y2))))
+      IZMIN = int(log10(max(1d0, abs(VMIN))))
+      IZMAX = int(log10(max(1d0, abs(VMAX))))
+
+      IX = max(IXMIN, IXMAX)
+      IY = max(IYMIN, IYMAX)
+      IXY = max(IX, IY)
 
 !     -------------------
 !     1 VOOR +-
@@ -74,19 +80,21 @@
 !     1 VOOR LOG(100) = 2
 !     -------------------
 
-         NXY = IXY + 4
-         NDEC = 10 - NXY
-         if (NDEC >= 0) then
-            XYFORM = '(F10.1)'
-            write (XYFORM(6:6), '(I1)') NDEC
-         else
-            XYFORM = '(E10.3)'
-         end if
+      NXY = IXY + 4
+      NDEC = 10 - NXY
+      if (NDEC >= 0) then
+         XYFORM = '(F10.1)'
+         write (XYFORM(6:6), '(I1)') NDEC
+      else
+         XYFORM = '(E10.3)'
+      end if
 
-         DISFORM = 'F17.5'
+      DISFORM = 'F17.5'
 
-         NZ = IZMAX + 3
-         write (ZFORM(5:5), '(I1)') max(0, 9 - NZ)
+      NZ = IZMAX + 3
+      write (ZFORM(5:5), '(I1)') max(0, 9 - NZ)
 
-         return
-      end
+      return
+   end
+
+end module m_xydisformat

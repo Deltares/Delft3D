@@ -63,11 +63,6 @@ if (WIN32)
     target_compile_options(${library_name} PRIVATE "${heap_arrays_one_flag}")
 endif(WIN32)
 
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
-
-
 set(src_path src)
 # Set additional compilation properties
 set_source_files_properties(${fortran_version_file}
@@ -92,10 +87,6 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
 
     set(oss_dependencies io_netcdf)
     target_link_libraries(${library_name} ${oss_dependencies})
-
-    # Set additional compilation properties, specific for Debug mode
-    target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-    target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
     # Create the folder structure in vfproj
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${src_path}/io_netcdf_api.F90)

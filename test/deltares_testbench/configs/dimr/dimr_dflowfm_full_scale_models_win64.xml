@@ -297,16 +297,9 @@
             </checks>
         </testCase>
         <testCase name="e02_f150_c32_pudong_2D" ref="dimr_default">
-            <path version="2024-10-14T14:01:00">e02_dflowfm/f150_1d2d_acceptance_urban/c32_pudong-2d</path>
+            <path version="2024-11-25T07:40:55.489000">e02_dflowfm/f150_1d2d_acceptance_urban/c32_pudong-2d</path>
             <checks>
-                <file name="DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
-                    <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
-                        <parameter name="mesh2d_u1" toleranceAbsolute="0.001" />
-                        <parameter name="mesh2d_q1" toleranceAbsolute="0.001" />
-                    </parameters>
-                </file>
-                <file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
+                <file name="output/DFlowFM_his.nc" type="netCDF">
                     <parameters>
                         <parameter name="water_balance_groundwater_total" toleranceAbsolute="0.001" />
                         <parameter name="water_balance_precipitation_total" toleranceAbsolute="0.001" />

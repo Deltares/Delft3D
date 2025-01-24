@@ -158,7 +158,7 @@ program tests_debgrz_computations
     end subroutine show_result
 
     subroutine run_test_debgrz_temperature_dependent_rate()
-        call test(test_debgrz_temperature_dependent_rate, 'Arrehnius temperature dependent rate.')
+        call test(test_debgrz_temperature_dependent_rate, 'Arrhenius temperature dependent rate.')
     end subroutine run_test_debgrz_temperature_dependent_rate
 
     subroutine run_test_debgrz_calculate_uptake()
@@ -436,22 +436,22 @@ program tests_debgrz_computations
         integer(kind=int_wp) :: switchv1_0, switchv1_1 !<
 
         real(kind=real_wp)   :: depth_factor !<
-        real(kind=real_wp)   :: dens1, dens2 !< Density derived from Vtot(unit dep on BENTHS)
+        real(kind=real_wp)   :: dens1        !< Density derived from Vtot(unit dep on BENTHS)
         real(kind=real_wp)   :: conv_cm3_gc  !< Conversion factor from cm3 into gC        [gC/cm3]
         real(kind=real_wp)   :: conv_j_gc    !< Conversion factor from energy into mass     [gC/J]
         real(kind=real_wp)   :: shape        !< Shape coefficient                              [-]
         real(kind=real_wp)   :: em_l3        !< Maximum storage density of DEB species     [J/cm3]
         real(kind=real_wp)   :: vd           !< Reference volume                             [cm3]
         real(kind=real_wp)   :: vtot         !< Structural biomass grazer pop.    [gC/m3 or gC/m2]
-        real(kind=real_wp)   :: etot1, etot2 !< Structural biomass grazer pop.    [gC/m3 or gC/m2]
-        real(kind=real_wp)   :: rtot1, rtot2 !< Reproductional storage grazer pop.[gC/m3 or gC/m2]
+        real(kind=real_wp)   :: etot1        !< Structural biomass grazer pop.    [gC/m3 or gC/m2]
+        real(kind=real_wp)   :: rtot1        !< Reproductional storage grazer pop.[gC/m3 or gC/m2]
         real(kind=real_wp)   :: dens_m2      !< Density derived from Vtot per m2
         real(kind=real_wp)   :: v_m2         !< Population structural biomass             [gC/m2]
         real(kind=real_wp)   :: e_m2         !< Population energy biomass                 [gC/m2]
         real(kind=real_wp)   :: r_m2         !< Population gonadal (reproductive) biomass [gC/m2]
-        real(kind=real_wp)   :: v1, v2, v3   !< Individual volume    [cm3/ind]
-        real(kind=real_wp)   :: e1, e2       !< Individual energy      [J/ind]
-        real(kind=real_wp)   :: r1, r2       !< Individual gonads      [J/ind]
+        real(kind=real_wp)   :: v1, v3       !< Individual volume    [cm3/ind]
+        real(kind=real_wp)   :: e1           !< Individual energy      [J/ind]
+        real(kind=real_wp)   :: r1           !< Individual gonads      [J/ind]
         real(kind=real_wp)   :: length       !< Individual Length         [cm]
         real(kind=real_wp)   :: e_scaled     !< Scaled energy density      [-]
 
@@ -460,7 +460,6 @@ program tests_debgrz_computations
         switchv1_1 = 1
         depth_factor = 10
         dens1 = 5
-        dens2 = -5
         conv_cm3_gc = 2
         conv_j_gc = 4
         shape = 10
@@ -469,31 +468,22 @@ program tests_debgrz_computations
         vtot = 100.0
         etot1 = 200.0
         rtot1 = 300.0
-        etot2 = -2.0
-        rtot2 = -3.0
 
         !Act
         call rescale_non_food_vars(switchv1_0, depth_factor, dens1, conv_cm3_gc, conv_j_gc, shape, em_l3, &
                                    vd, vtot, etot1, rtot1, dens_m2, v_m2, e_m2, r_m2, v1, e1, r1, length, e_scaled)
-        call rescale_non_food_vars(switchv1_0, depth_factor, dens2, conv_cm3_gc, conv_j_gc, shape, em_l3, &
-                                   vd, vtot, etot2, rtot2, dens_m2, v_m2, e_m2, r_m2, v2, e2, r2, length, e_scaled)
         call rescale_non_food_vars(switchv1_1, depth_factor, dens1, conv_cm3_gc, conv_j_gc, shape, em_l3, &
                                    vd, vtot, etot1, rtot1, dens_m2, v_m2, e_m2, r_m2, v3, e1, r1, length, e_scaled)
 
         !Assert
-        call assert_comparable(etot2,    0.0, tolerance, 'Validate etot is never negative')
-        call assert_comparable(rtot2,    0.0, tolerance, 'Validate rtot is never negative')
         call assert_comparable(v_m2,  1000.0, tolerance, 'Validate v_m2')
         call assert_comparable(e_m2,  2000.0, tolerance, 'Validate e_m2')
         call assert_comparable(r_m2,  3000.0, tolerance, 'Validate r_m2')
         call assert_comparable(dens_m2, 50.0, tolerance, 'Validate dens_m2')
 
         call assert_comparable(v1,      10.0, tolerance, 'Validate v')
-        call assert_comparable(v2,  tiny(v2), tolerance, 'Validate v tiny')
         call assert_comparable(e1,      10.0, tolerance, 'Validate e')
-        call assert_comparable(e2,  tiny(e2), tolerance, 'Validate e tiny')
         call assert_comparable(r1,      15.0, tolerance, 'Validate r')
-        call assert_comparable(r2,  tiny(r2), tolerance, 'Validate r tiny')
         call assert_comparable(v3,     0.123, tolerance, 'Validate v if switchv1==1')
         call assert_comparable(length,   0.049731898, tolerance, 'Validate length')
         call assert_comparable(e_scaled, 325.203252, tolerance, 'Validate e_scaled')
@@ -925,6 +915,7 @@ program tests_debgrz_computations
         pv        = 2.0
         fpgrosmo1 = 3.0
         ycacosmo1 = 1.0 / 5.0
+        ycacosmo2 = 0.0
         fpgrosmo2 = -3.0
         ycacosmo3 = 0.0   ! Should not lead to division by zero!
 

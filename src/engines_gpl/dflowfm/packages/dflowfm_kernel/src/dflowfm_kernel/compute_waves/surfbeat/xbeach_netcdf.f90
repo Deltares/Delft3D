@@ -134,13 +134,14 @@ module m_xbeach_netcdf
 contains
 
    subroutine xbeach_write_stats(tim)
+      use precision, only: dp
       use m_flowparameters, only: jawave, jaavgwavquant, eps10, jamombal
       use m_flowtimes, only: ti_wav, ti_wavs, ti_wave, tstop_user, time_wav
       use precision_basics
 
       implicit none
 
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
       integer :: ierr
 
       ierr = 1
@@ -169,6 +170,7 @@ contains
    end subroutine
 
    subroutine unc_write_wav(tim)
+      use precision, only: dp
       use m_flow
       use m_flowtimes
       use unstruc_netcdf
@@ -176,7 +178,7 @@ contains
       use unstruc_files, only: defaultFilename
       implicit none
 
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
 
       type(t_unc_wavids), save :: wavids
       integer :: ierr
@@ -213,6 +215,7 @@ contains
    end subroutine unc_write_wav
 
    subroutine unc_write_wav_filepointer_ugrid(wavids, tim)
+      use precision, only: dp
       use io_ugrid
       use unstruc_netcdf
       use m_xbeach_avgoutput
@@ -226,7 +229,7 @@ contains
       implicit none
 
       type(t_unc_wavids), intent(inout) :: wavids
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
 
       integer :: k
       integer :: ndim
@@ -235,7 +238,7 @@ contains
 
       integer :: jabndnd_
 
-      double precision, allocatable, dimension(:) :: temp
+      real(kind=dp), allocatable, dimension(:) :: temp
 
       if (jaavgwriteall > 0 .or. jaavgwriteH > 0 .or. jaavgwriteUrms > 0 .or. jaavgwriteDir > 0) then
          allocate (temp(ndx), stat=ierr)
@@ -509,6 +512,7 @@ contains
 
 !> Writes time-averaged spatial wave output to an already opened netCDF dataset.
    subroutine unc_write_wav_filepointer(imapfile, tim)
+      use precision, only: dp
       use m_flow
       use m_flowtimes
       use m_flowgeom
@@ -550,7 +554,7 @@ contains
 
       integer :: itim, k
 
-      double precision, allocatable :: temp(:)
+      real(kind=dp), allocatable :: temp(:)
       allocate (temp(1:ndx), stat=ierr)
 
       ! Use nr of dimensions in netCDF file a quick check whether vardefs were written
@@ -943,6 +947,7 @@ contains
 !! Construct averages for netcdf output
 !! (Re)allocation in flow_waveinit
    subroutine xbeach_makeaverages(dt)
+      use precision, only: dp
       use m_flow
       use m_flowgeom
       use m_flowtimes
@@ -951,17 +956,19 @@ contains
       use m_alloc
       use m_sferic
       use m_get_ucx_ucy_eul_mag
+      use m_linkstocentercartcomp
+
       implicit none
 
-      double precision, intent(in) :: dt ! timestep
-      double precision :: mult
+      real(kind=dp), intent(in) :: dt ! timestep
+      real(kind=dp) :: mult
       integer :: ierr, k
       integer :: jaeulervel_
 
-      double precision :: vis(2)
-      double precision, allocatable :: tvar_sin(:)
-      double precision, allocatable :: tvar_cos(:)
-      double precision, allocatable :: oldmean(:), ust_cc(:), vst_cc(:), ux(:), uy(:), ucmag_(:)
+      real(kind=dp) :: vis(2)
+      real(kind=dp), allocatable :: tvar_sin(:)
+      real(kind=dp), allocatable :: tvar_cos(:)
+      real(kind=dp), allocatable :: oldmean(:), ust_cc(:), vst_cc(:), ux(:), uy(:), ucmag_(:)
 
       ierr = 1
       call realloc(tvar_sin, ndx, stat=ierr, keepExisting=.false., fill=0d0)
@@ -1583,15 +1590,17 @@ contains
    end subroutine
 
    subroutine xbeach_mombalance
+      use precision, only: dp
       ! calculates some terms to construct momentum balances
       ! still not sure about this one, discuss with Dano and use with caution for now
       use m_xbeach_avgoutput
       use m_flowgeom, only: ndx
+      use m_xbeachwaves_getcellcentergradients, only: getcellcentergradients
 
       implicit none
 
       integer :: k
-      double precision, allocatable :: ducxdx_(:), ducxdy_(:), ducydx_(:), ducydy_(:)
+      real(kind=dp), allocatable :: ducxdx_(:), ducxdy_(:), ducydx_(:), ducydy_(:)
 
       if (.not. allocated(ducydx_)) then
          allocate (ducxdx_(1:ndx), ducxdy_(1:ndx), ducydx_(1:ndx), ducydy_(1:ndx))

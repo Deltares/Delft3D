@@ -30,25 +30,33 @@
 !
 !
 
-      subroutine RECTANGLE(x1, y1, x2, y2)
-         use unstruc_opengl
-         use m_pfiller_core
-         implicit none
-         real x1, y1, x2, y2
-         real x(4), y(4)
+module m_rectangle
 
-         if (InOpenGLRendering) then
-            x(1) = x1
-            x(2) = x2
-            x(3) = x2
-            x(4) = x1
-            y(1) = y1
-            y(2) = y1
-            y(3) = y2
-            y(4) = y2
-            call PFILLERCORE(x, y, 4)
-         else
-            call IGRRECTANGLE(x1, y1, x2, y2)
-         end if
+   implicit none
 
-      end subroutine
+contains
+
+   subroutine RECTANGLE(x1, y1, x2, y2)
+      use unstruc_opengl
+      use m_pfiller_core
+      implicit none
+      real x1, y1, x2, y2
+      real x(4), y(4)
+
+      if (InOpenGLRendering) then
+         x(1) = x1
+         x(2) = x2
+         x(3) = x2
+         x(4) = x1
+         y(1) = y1
+         y(2) = y1
+         y(3) = y2
+         y(4) = y2
+         call PFILLERCORE(x, y, 4)
+      else
+         call IGRRECTANGLE(x1, y1, x2, y2)
+      end if
+
+   end subroutine
+
+end module m_rectangle

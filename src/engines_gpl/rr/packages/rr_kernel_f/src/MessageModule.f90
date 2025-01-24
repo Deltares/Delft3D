@@ -66,8 +66,8 @@ contains
     write(ISCREN, *)
     write(ISCREN, *)
     write(ISCREN, *)
-    write(ISCREN, *) spaties // '    Copyright (c) 2023              DELTARES        '
-    write(ISCREN, *) spaties // "    Rainfall-Runoff Module          Version 3.216.69"
+    write(ISCREN, *) spaties // '    Copyright (c) 2024              DELTARES        '
+    write(ISCREN, *) spaties // "    Rainfall-Runoff Module          Version 3.216.71"
     write(ISCREN, *)
 
     write(ISCREN, *)

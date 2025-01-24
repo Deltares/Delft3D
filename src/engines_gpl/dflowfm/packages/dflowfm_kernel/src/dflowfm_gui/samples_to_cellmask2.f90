@@ -31,54 +31,62 @@
 !
 
 ! update cellmask from samples
-subroutine samples_to_cellmask2()
-
-   use network_data
-   use m_samples
-   use m_missing, only: dmiss
-   use geometry_module ! , only: pinpok
+module m_samples_to_cellmask2
 
    implicit none
 
-   integer :: i, in, k, kk, n, nn, num
+contains
 
-   if (allocated(cellmask)) deallocate (cellmask)
-   allocate (cellmask(nump1d2d)); cellmask = 0
+   subroutine samples_to_cellmask2()
 
-   zs(1:ns) = 1
+      use network_data
+      use m_samples
+      use m_missing, only: dmiss
+      use geometry_module ! , only: pinpok
 
-   call increasepol(6 * nump, 0)
-   npl = 0
+      implicit none
 
-   do k = 1, nump
-      nn = netcell(k)%N
-      if (nn < 1) cycle
+      integer :: i, in, k, kk, n, nn, num
 
-      do n = 1, nn
-         kk = netcell(k)%nod(n)
-         npl = npl + 1
-         xpl(npl) = xk(kk)
-         ypl(npl) = yk(kk)
-         zpl(npl) = 1d0
+      if (allocated(cellmask)) deallocate (cellmask)
+      allocate (cellmask(nump1d2d)); cellmask = 0
+
+      zs(1:ns) = 1
+
+      call increasepol(6 * nump, 0)
+      npl = 0
+
+      do k = 1, nump
+         nn = netcell(k)%N
+         if (nn < 1) cycle
+
+         do n = 1, nn
+            kk = netcell(k)%nod(n)
+            npl = npl + 1
+            xpl(npl) = xk(kk)
+            ypl(npl) = yk(kk)
+            zpl(npl) = 1d0
+         end do
+         npl = npl + 1; xpl(npl) = dmiss; ypl(npl) = dmiss; zpl(npl) = dmiss
+
       end do
-      npl = npl + 1; xpl(npl) = dmiss; ypl(npl) = dmiss; zpl(npl) = dmiss
 
-   end do
+      in = -1
 
-   in = -1
+      do i = 1, NS !  generate cell mask
 
-   do i = 1, NS !  generate cell mask
+         !call dbpinpol(xs(i), ys(i), in, dmiss, 1, NPL, xpl, ypl, zpl) ! ALS JE VOOR VEEL PUNTEN MOET NAGAAN OF ZE IN POLYGON ZITTEN
 
-      !call dbpinpol(xs(i), ys(i), in, dmiss, 1, NPL, xpl, ypl, zpl) ! ALS JE VOOR VEEL PUNTEN MOET NAGAAN OF ZE IN POLYGON ZITTEN
+         call dbpinpol_optinside_perpol2(xs(i), ys(i), 0, 0, in, num, dmiss, 1, NPL, xpl, ypl, zpl)
+         ! call pinpok(xs(i), ys(i), nn, xx, yy, in, jins, dmiss)
 
-      call dbpinpol_optinside_perpol2(xs(i), ys(i), 0, 0, in, num, dmiss, 1, NPL, xpl, ypl, zpl)
-      ! call pinpok(xs(i), ys(i), nn, xx, yy, in, jins, dmiss)
+         if (ipolyfound > 0) then
+            cellmask(ipolyfound) = 1
+         end if
 
-      if (ipolyfound > 0) then
-         cellmask(ipolyfound) = 1
-      end if
+      end do
 
-   end do
+      return
+   end subroutine samples_to_cellmask2
 
-   return
-end subroutine samples_to_cellmask2
+end module m_samples_to_cellmask2

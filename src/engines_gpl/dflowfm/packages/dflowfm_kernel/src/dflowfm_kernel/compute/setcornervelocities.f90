@@ -30,127 +30,138 @@
 !
 !
 
- subroutine setcornervelocities() ! set corner related velocity x- and y components
+module m_setcornervelocities
 
-    use m_flow
-    use m_netw
-    use m_flowgeom
-    use m_sferic
-    use m_get_Lbot_Ltop
+   implicit none
 
-    implicit none
+   private
 
-    integer :: L, k1, k2, k3, k4, k, kk, LL, Lb, Lt, kw
-    integer :: m, n
-    double precision :: uLx, uLy, csk, snk, sg
+   public :: setcornervelocities
 
-    double precision, external :: nod2linx, nod2liny, lin2corx, lin2cory
+contains
 
-    ucnx = 0; ucny = 0
+!> set corner related velocity x- and y components
+   subroutine setcornervelocities()
+      use precision, only: dp
+      use m_flow
+      use m_flowgeom
+      use m_sferic
+      use m_get_Lbot_Ltop
+      use m_lin2corx, only: lin2corx
+      use m_lin2cory, only: lin2cory
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
 
-    if (kmx == 0) then
+      integer :: L, k1, k2, k3, k4, k, kk, LL, Lb, Lt, kw
+      integer :: m, n
+      real(kind=dp) :: uLx, uLy, csk, snk, sg
 
-       if (jacomp <= 1) then
+      ucnx = 0; ucny = 0
 
-          do L = lnx1D + 1, lnx
-             k1 = ln(1, L); k2 = ln(2, L)
-             k3 = lncn(1, L); k4 = lncn(2, L)
-             if (jasfer3D == 0) then
-                uLx = 0.5d0 * (ucx(k1) + ucx(k2))
-                uLy = 0.5d0 * (ucy(k1) + ucy(k2))
-             else
-                uLx = 0.5d0 * (nod2linx(L, 1, ucx(k1), ucy(k1)) + nod2linx(L, 2, ucx(k2), ucy(k2)))
-                uLy = 0.5d0 * (nod2liny(L, 1, ucx(k1), ucy(k1)) + nod2liny(L, 2, ucx(k2), ucy(k2)))
-             end if
+      if (kmx == 0) then
 
-             ucnx(k3) = ucnx(k3) + uLx * wcnx3(L)
-             ucny(k3) = ucny(k3) + uLy * wcny3(L)
-             ucnx(k4) = ucnx(k4) + uLx * wcnx4(L)
-             ucny(k4) = ucny(k4) + uLy * wcny4(L)
-          end do
+         if (jacomp <= 1) then
 
-       else ! use banf instead
+            do L = lnx1D + 1, lnx
+               k1 = ln(1, L); k2 = ln(2, L)
+               k3 = lncn(1, L); k4 = lncn(2, L)
+               if (jasfer3D == 0) then
+                  uLx = 0.5d0 * (ucx(k1) + ucx(k2))
+                  uLy = 0.5d0 * (ucy(k1) + ucy(k2))
+               else
+                  uLx = 0.5d0 * (nod2linx(L, 1, ucx(k1), ucy(k1)) + nod2linx(L, 2, ucx(k2), ucy(k2)))
+                  uLy = 0.5d0 * (nod2liny(L, 1, ucx(k1), ucy(k1)) + nod2liny(L, 2, ucx(k2), ucy(k2)))
+               end if
 
-          do m = 1, mxban ! bz based on netnodes area
-             k = nban(1, m)
-             n = nban(2, m)
-             ucnx(k) = ucnx(k) + banf(m) * ucx(n)
-             ucny(k) = ucny(k) + banf(m) * ucy(n)
-          end do
-          ucnx = ucnx / ban
-          ucny = ucny / ban
+               ucnx(k3) = ucnx(k3) + uLx * wcnx3(L)
+               ucny(k3) = ucny(k3) + uLy * wcny3(L)
+               ucnx(k4) = ucnx(k4) + uLx * wcnx4(L)
+               ucny(k4) = ucny(k4) + uLy * wcny4(L)
+            end do
 
-       end if
+         else ! use banf instead
 
-       do kw = 1, nrcnw ! cornervelocities aligned with closed walls
-          csk = cscnw(kw)
-          snk = sncnw(kw)
-          k = kcnw(kw)
-          sg = csk * ucnx(k) + snk * ucny(k)
-          ucnx(k) = sg * csk
-          ucny(k) = sg * snk
-       end do
+            do m = 1, mxban ! bz based on netnodes area
+               k = nban(1, m)
+               n = nban(2, m)
+               ucnx(k) = ucnx(k) + banf(m) * ucx(n)
+               ucny(k) = ucny(k) + banf(m) * ucy(n)
+            end do
+            ucnx = ucnx / ban
+            ucny = ucny / ban
 
-    else
+         end if
 
-       if (jased > 0 .and. jased < 4) then
-          ustbc = 0d0
-       end if
+         do kw = 1, nrcnw ! cornervelocities aligned with closed walls
+            csk = cscnw(kw)
+            snk = sncnw(kw)
+            k = kcnw(kw)
+            sg = csk * ucnx(k) + snk * ucny(k)
+            ucnx(k) = sg * csk
+            ucny(k) = sg * snk
+         end do
 
-       if (jacomp == jacomp) then ! for now in 3D use org method
+      else
 
-          do LL = lnx1D + 1, lnx
-             if (abs(kcu(LL)) == 2) then
-                call getLbotLtop(LL, Lb, Lt)
-                do L = Lb, Lt
-                   k1 = ln(1, L); k2 = ln(2, L)
-                   k3 = lncn(1, L); k4 = lncn(2, L)
-                   if (jasfer3D == 0) then
-                      uLx = 0.5d0 * (ucx(k1) + ucx(k2))
-                      uLy = 0.5d0 * (ucy(k1) + ucy(k2))
-                   else
-                      uLx = 0.5d0 * (nod2linx(LL, 1, ucx(k1), ucy(k1)) + nod2linx(LL, 2, ucx(k2), ucy(k2)))
-                      uLy = 0.5d0 * (nod2liny(LL, 1, ucx(k1), ucy(k1)) + nod2liny(LL, 2, ucx(k2), ucy(k2)))
-                   end if
+         if (jased > 0 .and. jased < 4) then
+            ustbc = 0d0
+         end if
 
-                   ucnx(k3) = ucnx(k3) + uLx * wcnx3(LL)
-                   ucny(k3) = ucny(k3) + uLy * wcny3(LL)
-                   ucnx(k4) = ucnx(k4) + uLx * wcnx4(LL)
-                   ucny(k4) = ucny(k4) + uLy * wcny4(LL)
-                   if (L == Lb) then
-                      k3 = lncn(1, LL); k4 = lncn(2, LL)
-                      ucnx(k3) = ucnx(k3) + uLx * wcnx3(LL)
-                      ucny(k3) = ucny(k3) + uLy * wcny3(LL)
-                      ucnx(k4) = ucnx(k4) + uLx * wcnx4(LL)
-                      ucny(k4) = ucny(k4) + uLy * wcny4(LL)
-                      if (jased > 0 .and. jased < 4) then
-                         ustbc(k3) = ustbc(k3) + ustb(LL) * wcLn(1, LL)
-                         ustbc(k4) = ustbc(k4) + ustb(LL) * wcLn(2, LL)
-                      end if
-                   end if
-                end do
-             end if
-          end do
+         if (jacomp == jacomp) then ! for now in 3D use org method
 
-       else
+            do LL = lnx1D + 1, lnx
+               if (abs(kcu(LL)) == 2) then
+                  call getLbotLtop(LL, Lb, Lt)
+                  do L = Lb, Lt
+                     k1 = ln(1, L); k2 = ln(2, L)
+                     k3 = lncn(1, L); k4 = lncn(2, L)
+                     if (jasfer3D == 0) then
+                        uLx = 0.5d0 * (ucx(k1) + ucx(k2))
+                        uLy = 0.5d0 * (ucy(k1) + ucy(k2))
+                     else
+                        uLx = 0.5d0 * (nod2linx(LL, 1, ucx(k1), ucy(k1)) + nod2linx(LL, 2, ucx(k2), ucy(k2)))
+                        uLy = 0.5d0 * (nod2liny(LL, 1, ucx(k1), ucy(k1)) + nod2liny(LL, 2, ucx(k2), ucy(k2)))
+                     end if
 
-       end if
+                     ucnx(k3) = ucnx(k3) + uLx * wcnx3(LL)
+                     ucny(k3) = ucny(k3) + uLy * wcny3(LL)
+                     ucnx(k4) = ucnx(k4) + uLx * wcnx4(LL)
+                     ucny(k4) = ucny(k4) + uLy * wcny4(LL)
+                     if (L == Lb) then
+                        k3 = lncn(1, LL); k4 = lncn(2, LL)
+                        ucnx(k3) = ucnx(k3) + uLx * wcnx3(LL)
+                        ucny(k3) = ucny(k3) + uLy * wcny3(LL)
+                        ucnx(k4) = ucnx(k4) + uLx * wcnx4(LL)
+                        ucny(k4) = ucny(k4) + uLy * wcny4(LL)
+                        if (jased > 0 .and. jased < 4) then
+                           ustbc(k3) = ustbc(k3) + ustb(LL) * wcLn(1, LL)
+                           ustbc(k4) = ustbc(k4) + ustb(LL) * wcLn(2, LL)
+                        end if
+                     end if
+                  end do
+               end if
+            end do
 
-       do kw = 1, nrcnw ! cornervelocities aligned with closed walls
-          kk = kcnw(kw)
-          csk = cscnw(kw)
-          snk = sncnw(kw)
-          do k = kbotc(kk), kbotc(kk) + kmxc(kk) - 1
-             sg = csk * ucnx(k) + snk * ucny(k)
-             ucnx(k) = sg * csk
-             ucny(k) = sg * snk
-          end do
-          sg = csk * ucnx(kk) + snk * ucny(kk)
-          ucnx(kk) = sg * csk
-          ucny(kk) = sg * snk
-       end do
+         else
 
-    end if
+         end if
 
- end subroutine setcornervelocities
+         do kw = 1, nrcnw ! cornervelocities aligned with closed walls
+            kk = kcnw(kw)
+            csk = cscnw(kw)
+            snk = sncnw(kw)
+            do k = kbotc(kk), kbotc(kk) + kmxc(kk) - 1
+               sg = csk * ucnx(k) + snk * ucny(k)
+               ucnx(k) = sg * csk
+               ucny(k) = sg * snk
+            end do
+            sg = csk * ucnx(kk) + snk * ucny(kk)
+            ucnx(kk) = sg * csk
+            ucny(kk) = sg * snk
+         end do
 
+      end if
+
+   end subroutine setcornervelocities
+
+end module m_setcornervelocities

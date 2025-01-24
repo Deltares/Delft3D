@@ -32,27 +32,27 @@
 
 module m_polyline
 
-implicit none
+   implicit none
 
 contains
 
-    subroutine POLYLINE(XR, YR, N)
-       use unstruc_opengl, only: InOpenGLRendering
-       use m_movabs_nop
-       use m_lnabs_nop
+   subroutine POLYLINE(XR, YR, N)
+      use unstruc_opengl, only: InOpenGLRendering
+      use m_movabs_nop
+      use m_lnabs_nop
 
-       integer :: n, I
-       real xr(N), yr(N)
+      integer :: n, I
+      real xr(N), yr(N)
 
-       if (InOpenGLRendering) then
-          call MOVABSNOP(dble(XR(1)), dble(YR(1)))
-          do I = 2, N
-             call LNABSNOP(dble(XR(I)), dble(YR(I)))
-          end do
-       else
-          call IGRPOLYLINE(XR, YR, N)
-       end if
+      if (InOpenGLRendering) then
+         call MOVABSNOP(dble(XR(1)), dble(YR(1)))
+         do I = 2, N
+            call LNABSNOP(dble(XR(I)), dble(YR(I)))
+         end do
+      else
+         call IGRPOLYLINE(XR, YR, N)
+      end if
 
-    end subroutine
+   end subroutine
 
 end module m_polyline

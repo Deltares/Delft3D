@@ -30,7 +30,15 @@
 !
 !
 
+module m_teknetcells
+   use m_orthonet_compute_orientation, only: orthonet_compute_orientation
+
+   implicit none
+
+contains
+
    subroutine teknetcells(netwhat, jahalt, jacol)
+      use precision, only: dp
       use m_minmxnetcells
       use m_isosmoothnet
       use m_isocol
@@ -45,7 +53,7 @@
       use m_missing
       use m_partitioninfo
       use m_alloc
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, mess
       use m_sferic, only: jsferic, dg2rd
       use gridoperations
       use m_vfac
@@ -56,16 +64,16 @@
       use m_pfiller
       use m_set_col
       use m_inview
+      use m_znetcell
+      use m_coarsening_info, only: coarsening_info
 
       implicit none
 
       integer, intent(in) :: netwhat, jahalt, jacol
-      double precision :: xx(6), yy(6), aspect, uu1, vv1, uu2, vv2
-      double precision :: xfac
+      real(kind=dp) :: xx(6), yy(6), aspect, uu1, vv1, uu2, vv2
+      real(kind=dp) :: xfac
       integer :: k, kk, ja, ncol, nodemode, nn
       integer :: ntopology, numcellstoplot
-      double precision, external :: znetcell
-      double precision, external :: coarsening_info
 
       if (netwhat <= 1) return
 
@@ -239,3 +247,5 @@
       end if
 
    end subroutine TEKNETCELLS
+
+end module m_teknetcells

@@ -30,7 +30,7 @@
 !
 !
 
-   !>  pointer data
+!>  pointer data
 module m_fm_erosed
    use precision
    use bedcomposition_module
@@ -67,8 +67,6 @@ module m_fm_erosed
    real(fp), dimension(:), pointer :: ucxq_mor
    real(fp), dimension(:), pointer :: ucyq_mor
    real(fp), dimension(:), pointer :: hs_mor
-
-   real(fp), dimension(:, :), pointer :: q_zeta
 
    !     stmpar
    integer, pointer :: lsed

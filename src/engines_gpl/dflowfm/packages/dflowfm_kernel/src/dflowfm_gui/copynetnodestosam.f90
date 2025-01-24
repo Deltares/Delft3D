@@ -32,57 +32,57 @@
 
 module m_copynetnodestosam
 
-implicit none
+   implicit none
 
 contains
 
- subroutine copynetnodestosam(jarnod)
+   subroutine copynetnodestosam(jarnod)
 
-    use m_samples, only: ns, xs, ys, zs, increasesam
-    use m_netw, only: kc, numk, rnod, xk, yk, zk
-    use m_missing, only: dmiss, jins
-    use m_polygon, only: NPL, xpl, ypl, zpl
-    use geometry_module, only: dbpinpol
+      use m_samples, only: ns, xs, ys, zs, increasesam
+      use m_netw, only: kc, numk, rnod, xk, yk, zk
+      use m_missing, only: dmiss, jins
+      use m_polygon, only: NPL, xpl, ypl, zpl
+      use geometry_module, only: dbpinpol
 
-    integer :: in, k, n, jarnod
-    real :: r
+      integer :: in, k, n, jarnod
+      real :: r
 
-    in = -1
-    k = ns
+      in = -1
+      k = ns
 
-    KC = 0
-    do n = 1, numk
-       if (jarnod == 1) then
-          r = rnod(n)
-       else
-          r = zk(n)
-       end if
+      KC = 0
+      do n = 1, numk
+         if (jarnod == 1) then
+            r = rnod(n)
+         else
+            r = zk(n)
+         end if
 
-       if (r /= dmiss) then
-          call DBPINPOL(XK(n), YK(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
-          if (IN == 1) then
-             KC(N) = 1
-             K = K + 1
-          end if
-       end if
-    end do
+         if (r /= dmiss) then
+            call DBPINPOL(XK(n), YK(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
+            if (IN == 1) then
+               KC(N) = 1
+               K = K + 1
+            end if
+         end if
+      end do
 
-    call INCREASESAM(k)
+      call INCREASESAM(k)
 
-    K = NS
-    do n = 1, numk
-       if (KC(N) == 1) then
-          k = k + 1
-          xs(k) = xk(n); ys(k) = yk(n)
-          if (jarnod == 1) then
-             zs(k) = rnod(n)
-          else
-             zs(k) = zk(n)
-          end if
-       end if
-    end do
-    ns = k
+      K = NS
+      do n = 1, numk
+         if (KC(N) == 1) then
+            k = k + 1
+            xs(k) = xk(n); ys(k) = yk(n)
+            if (jarnod == 1) then
+               zs(k) = rnod(n)
+            else
+               zs(k) = zk(n)
+            end if
+         end if
+      end do
+      ns = k
 
- end subroutine copynetnodestosam
+   end subroutine copynetnodestosam
 
 end module m_copynetnodestosam

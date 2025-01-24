@@ -32,28 +32,28 @@
 
 module m_copywaterlevelstosamples
 
-implicit none
+   implicit none
 
 contains
 
- subroutine copywaterlevelstosamples()
-    use m_samples, only: ns, xs, ys, zs, increasesam
-    use m_flowgeom, only: ndx, xz, yz
-    use m_flow, only: hs
-    use unstruc_display_data, only: wetplot
+   subroutine copywaterlevelstosamples()
+      use m_samples, only: ns, xs, ys, zs, increasesam
+      use m_flowgeom, only: ndx, xz, yz
+      use m_flow, only: hs
+      use unstruc_display_data, only: wetplot
+      use m_znod
 
-    integer :: k, n
-    double precision, external :: znod
+      integer :: k, n
 
-    k = 0
-    do n = 1, ndx
-       if (hs(n) >= wetplot) then
-          k = k + 1
-          call increasesam(k)
-          xs(k) = xz(n); ys(k) = yz(n); zs(k) = znod(n)
-       end if
-    end do
-    ns = k
- end subroutine copywaterlevelstosamples
+      k = 0
+      do n = 1, ndx
+         if (hs(n) >= wetplot) then
+            k = k + 1
+            call increasesam(k)
+            xs(k) = xz(n); ys(k) = yz(n); zs(k) = znod(n)
+         end if
+      end do
+      ns = k
+   end subroutine copywaterlevelstosamples
 
 end module m_copywaterlevelstosamples

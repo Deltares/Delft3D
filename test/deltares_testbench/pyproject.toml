@@ -20,9 +20,9 @@ authors = [
     # Among others.
 ]
 
-requires-python = ">= 3.9"
+requires-python = ">= 3.11"
 dependencies = [
-    "netCDF4 ~= 1.6",
+    "netCDF4 ~= 1.7.2",
     "lxml ~= 5.1",
     "pyarrow ~= 16.1", # Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0)
     "pandas ~= 2.0",
@@ -39,7 +39,6 @@ dev = [
     "pytest ~= 8.0",
     "pytest-mock ~= 3.12",
     "ruff ~= 0.4",
-    "tomli ~= 2.0",
     "requests ~= 2.32",
 ]
 
@@ -48,7 +47,7 @@ dev = [
 [tool.ruff]
 line-length = 120
 indent-width = 4
-target-version = "py39"
+target-version = "py311"
 exclude = [
     ".mypy_cache",
     ".pytest_cache",

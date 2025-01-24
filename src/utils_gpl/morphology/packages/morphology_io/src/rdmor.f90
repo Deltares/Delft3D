@@ -694,6 +694,8 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
     use table_handles
     use handles
     use message_module
+    use dfparall, only: parll
+    
     implicit none
 !    
     type(tree_data)               , pointer, intent(inout)  :: mor_ptr
@@ -709,6 +711,7 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
 !    
     character(256)                                          :: errmsg
     character(80)                                           :: bndname
+    character(256)                                          :: txtput1
     logical                                                 :: found
     integer                                                 :: i, j
     type(tree_data)                            , pointer    :: morbound_ptr
@@ -746,10 +749,16 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
             end if
         enddo
         if (.not.found) then
-            errmsg = 'Unknown boundary "'//trim(bndname)//'" in '//trim(filmor)
-            call write_error(errmsg, unit=lundia)
-            error = .true.
-            return
+            if (parll) then
+               txtput1 = 'Boundary "'//trim(bndname)//'" in '//trim(filmor)// ' not found. As this is a parallel run, it must be in another partition.'
+               write (lundia, '(a)') txtput1
+               cycle
+            else    
+               errmsg = 'Unknown boundary "'//trim(bndname)//'" in '//trim(filmor)
+               call write_error(errmsg, unit=lundia)
+               error = .true.
+               return
+            endif
         end if
         !
         ! Read bed boundary condition for open boundary

@@ -30,25 +30,38 @@
 !
 !
 
- subroutine addclosed_2D_walls()
-    use m_flowgeom
-    use m_flow
-    use m_missing
+module m_addclosed_2d_walls
 
-    implicit none
+   implicit none
 
-    integer :: n, k1
-    double precision :: bl1, aa1, hh1
+   private
 
-    do n = 1, mxwalls
-       k1 = walls(1, n)
-       bl1 = walls(13, n)
-       aa1 = walls(17, n)
-       hh1 = s1(k1) - bl1
-       a1(k1) = a1(k1) + aa1
-       if (hh1 > 0d0) then
-          vol1(k1) = vol1(k1) + aa1 * hh1
-       end if
-    end do
+   public :: addclosed_2D_walls
 
- end subroutine addclosed_2D_walls
+contains
+
+   subroutine addclosed_2D_walls()
+      use precision, only: dp
+      use m_flowgeom
+      use m_flow
+      use m_missing
+
+      implicit none
+
+      integer :: n, k1
+      real(kind=dp) :: bl1, aa1, hh1
+
+      do n = 1, mxwalls
+         k1 = walls(1, n)
+         bl1 = walls(13, n)
+         aa1 = walls(17, n)
+         hh1 = s1(k1) - bl1
+         a1(k1) = a1(k1) + aa1
+         if (hh1 > 0d0) then
+            vol1(k1) = vol1(k1) + aa1 * hh1
+         end if
+      end do
+
+   end subroutine addclosed_2D_walls
+
+end module m_addclosed_2d_walls

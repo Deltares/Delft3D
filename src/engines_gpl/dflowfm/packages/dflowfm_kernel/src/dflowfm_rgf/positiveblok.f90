@@ -30,39 +30,51 @@
 !
 !
 
-      subroutine POSITIVEBLOK()
-         use m_grid_block
-         implicit none
-         integer :: mh, nh, m1, n1, m2, n2, i
+module m_positiveblok
 
-         if (NPT <= 1) return
+   implicit none
+
+   private
+
+   public :: positiveblok
+
+contains
+
+   subroutine POSITIVEBLOK()
+      use m_grid_block
+
+      integer :: mh, nh, m1, n1, m2, n2, i
+
+      if (NPT <= 1) return
 
 !     IF (ITYPE .EQ. 1) THEN
-         if (MB(2) < MB(1)) then
-            MH = MB(1)
-            MB(1) = MB(2)
-            MB(2) = MH
-         end if
-         if (NB(2) < NB(1)) then
-            NH = NB(1)
-            NB(1) = NB(2)
-            NB(2) = NH
-         end if
+      if (MB(2) < MB(1)) then
+         MH = MB(1)
+         MB(1) = MB(2)
+         MB(2) = MH
+      end if
+      if (NB(2) < NB(1)) then
+         NH = NB(1)
+         NB(1) = NB(2)
+         NB(2) = NH
+      end if
 !     ENDIF
 
-         M1 = MB(1)
-         N1 = NB(1)
-         M2 = MB(2)
-         N2 = NB(2)
-         do I = 1, NPT
-            M1 = min(MB(I), M1)
-            N1 = min(NB(I), N1)
-            M2 = max(MB(I), M2)
-            N2 = max(NB(I), N2)
-         end do
-         MB(3) = M1
-         NB(3) = N1
-         MB(4) = M2
-         NB(4) = N2
-         return
-      end subroutine positiveblok
+      M1 = MB(1)
+      N1 = NB(1)
+      M2 = MB(2)
+      N2 = NB(2)
+      do I = 1, NPT
+         M1 = min(MB(I), M1)
+         N1 = min(NB(I), N1)
+         M2 = max(MB(I), M2)
+         N2 = max(NB(I), N2)
+      end do
+      MB(3) = M1
+      NB(3) = N1
+      MB(4) = M2
+      NB(4) = N2
+      return
+   end subroutine positiveblok
+
+end module m_positiveblok

@@ -1122,7 +1122,7 @@ void Dimr::receive(const char* name,
                         throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: Dimr::receive: set_var function not defined while processing %s", name);
                     }
                     (dllSetVar)(name, (const void*)transferValuePtr);
-                    if (compType == COMP_TYPE_RTC || COMP_TYPE_ZSF) {
+                    if (compType == COMP_TYPE_RTC || compType == COMP_TYPE_ZSF) {
                         // target = rtc
                         // SetVar(name, value) sets variable named "name" to "value" at the current time (t = n)
                         // But, in case of IMPLICIT method, this should be the next time (t = n + 1)
@@ -1957,6 +1957,7 @@ void Dimr::connectLibs(void) {
 
         if (componentsList.components[i].type == COMP_TYPE_DEFAULT_BMI ||
             componentsList.components[i].type == COMP_TYPE_FM ||
+            componentsList.components[i].type == COMP_TYPE_ZSF ||
             componentsList.components[i].type == COMP_TYPE_COSUMO_BMI) {
             componentsList.components[i].dllGetVarShape = (BMI_GETVARSHAPE)GETPROCADDRESS(dllhandle, BmiGetVarShapeEntryPoint);
             if (componentsList.components[i].dllGetVarShape == NULL) {

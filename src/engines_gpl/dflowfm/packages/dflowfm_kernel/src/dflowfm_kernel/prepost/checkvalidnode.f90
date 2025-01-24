@@ -31,53 +31,64 @@
 !
 
 !> check if new node is valid
-subroutine checkvalidnode(node, i, j, lconflict)
-
-   use m_grid
-   use m_missing
+module m_checkvalidnode
 
    implicit none
 
-   integer, intent(in) :: node !< node
-   integer, intent(in) :: i, j !< indices
+   private
 
-   logical, intent(out) :: lconflict !< .false. if valid, .true. otherwise
+   public :: checkvalidnode
 
-   integer :: iL, iR, jB, jT
-   integer, dimension(2) :: low, upp ! dimensions of ijc
+contains
 
-   if (ijc(i, j) /= node .and. ijc(i, j) > 0) then ! conflict
-      lconflict = .true.
-      return
-   end if
+   subroutine checkvalidnode(node, i, j, lconflict)
+
+      use m_checkgridline, only: checkgridline
+      use m_grid
+      use m_missing
+
+      integer, intent(in) :: node !< node
+      integer, intent(in) :: i, j !< indices
+
+      logical, intent(out) :: lconflict !< .false. if valid, .true. otherwise
+
+      integer :: iL, iR, jB, jT
+      integer, dimension(2) :: low, upp ! dimensions of ijc
+
+      if (ijc(i, j) /= node .and. ijc(i, j) > 0) then ! conflict
+         lconflict = .true.
+         return
+      end if
 
 ! check the four possible connections for conflicts
 
-   low = lbound(ijc)
-   upp = ubound(ijc)
+      low = lbound(ijc)
+      upp = ubound(ijc)
 
-   iL = i - 1
-   if (iL >= low(1)) then
-      if (ijc(iL, j) > 0) call checkgridline(node, ijc(iL, j), lconflict)
-      if (lconflict) return
-   end if
+      iL = i - 1
+      if (iL >= low(1)) then
+         if (ijc(iL, j) > 0) call checkgridline(node, ijc(iL, j), lconflict)
+         if (lconflict) return
+      end if
 
-   iR = i + 1
-   if (iR <= upp(1)) then
-      if (ijc(iR, j) > 0) call checkgridline(node, ijc(iR, j), lconflict)
-      if (lconflict) return
-   end if
+      iR = i + 1
+      if (iR <= upp(1)) then
+         if (ijc(iR, j) > 0) call checkgridline(node, ijc(iR, j), lconflict)
+         if (lconflict) return
+      end if
 
-   jB = j - 1
-   if (jB >= low(2)) then
-      if (ijc(i, jB) > 0) call checkgridline(node, ijc(i, jB), lconflict)
-      if (lconflict) return
-   end if
+      jB = j - 1
+      if (jB >= low(2)) then
+         if (ijc(i, jB) > 0) call checkgridline(node, ijc(i, jB), lconflict)
+         if (lconflict) return
+      end if
 
-   jT = j + 1
-   if (jT <= upp(2)) then
-      if (ijc(i, jT) > 0) call checkgridline(node, ijc(i, jT), lconflict)
-      if (lconflict) return
-   end if
+      jT = j + 1
+      if (jT <= upp(2)) then
+         if (ijc(i, jT) > 0) call checkgridline(node, ijc(i, jT), lconflict)
+         if (lconflict) return
+      end if
 
-end subroutine
+   end subroutine
+
+end module m_checkvalidnode

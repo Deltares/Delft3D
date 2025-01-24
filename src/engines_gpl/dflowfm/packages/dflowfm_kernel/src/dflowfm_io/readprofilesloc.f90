@@ -30,33 +30,42 @@
 !
 !
 
- subroutine readprofilesloc(minp)
-    use m_profiles
-    implicit none
-    integer :: minp
-    character rec * 256
-    integer :: ierr, n
+module m_readprofilesloc
 
-    minproflocnr = 99999999; maxproflocnr = 0
+   implicit none
 
-    n = 0
-10  read (minp, '(a)', end=999) rec
-    if (rec(1:1) == '*') goto 10
-    n = n + 1
-    goto 10
+contains
 
-999 rewind (minp)
-    allocate (xpr(n), ypr(n), zpr(n), npr(n), stat=ierr)
+   subroutine readprofilesloc(minp)
+      use m_profiles
+      use m_filez, only: doclose
 
-    n = 0
-20  read (minp, '(a)', end=888) rec
-    if (rec(1:1) == '*') goto 20
-    n = n + 1
-    read (rec, *) xpr(n), ypr(n), npr(n)
+      integer :: minp
+      character rec * 256
+      integer :: ierr, n
 
-    goto 20
+      minproflocnr = 99999999; maxproflocnr = 0
 
-888 call doclose(minp)
-    nproflocs = n
+      n = 0
+10    read (minp, '(a)', end=999) rec
+      if (rec(1:1) == '*') goto 10
+      n = n + 1
+      goto 10
 
- end subroutine readprofilesloc
+999   rewind (minp)
+      allocate (xpr(n), ypr(n), zpr(n), npr(n), stat=ierr)
+
+      n = 0
+20    read (minp, '(a)', end=888) rec
+      if (rec(1:1) == '*') goto 20
+      n = n + 1
+      read (rec, *) xpr(n), ypr(n), npr(n)
+
+      goto 20
+
+888   call doclose(minp)
+      nproflocs = n
+
+   end subroutine readprofilesloc
+
+end module m_readprofilesloc

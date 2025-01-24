@@ -49,20 +49,17 @@ add_library(${netcdf_library_name} ${fortran_sources})
 target_compile_options(${netcdf_library_name} PRIVATE ${file_preprocessor_flag})
 target_link_libraries(${netcdf_library_name} PRIVATE no_compiler_warnings)
 
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${netcdf_library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${netcdf_library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
-
 # Set dependencies
 set(oss_dependencies netcdf4)
 target_link_libraries(${netcdf_library_name} PRIVATE ${oss_dependencies})
 
 if (WIN32)
-   target_compile_options(${netcdf_library_name} PRIVATE "${heap_arrays_100_flag}")
+  target_compile_options(${netcdf_library_name} PRIVATE "SHELL:${heap_arrays_100_flag}")
 endif(WIN32)
 
 if(UNIX)
     target_compile_options(${netcdf_library_name} PRIVATE ${c_compiler_flags})
+    target_compile_options(${netcdf_library_name} PRIVATE "SHELL:${heap_arrays_100_flag}")
     set(Fortran_MODULE_DIRECTORY ${LIBRARY_OUTPUT_DIRECTORY}) 
 endif()
 

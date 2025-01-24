@@ -31,16 +31,17 @@
 !
 
 module m_kml_parameters
+   use precision, only: dp
    implicit none
 
    integer :: kml_janet !< Whether or not (1/0) to export flat view of 2D+1D grid (faster)
    integer :: kml_jadepth !< Whether or not (1/0) to export bathymetry view of grid cells (nicer).
    integer :: kml_jadepth3d !< Whether or not (1/0) to export bathymetry view in 3D.
-   double precision :: kml_altfact !< Altitude exaggeration factor: altitude differences are multiplied by this.
+   real(kind=dp) :: kml_altfact !< Altitude exaggeration factor: altitude differences are multiplied by this.
    integer :: kml_jaoffsetzk !< Whether or not (1/0) to offset all altitudes with deepest zk-value.
-   double precision :: kml_useroffset !< Additional user offset for altitude values.
-   double precision :: kml_dmiss !< Dummy altitude to replace missing zk values.
-   double precision :: kml_zmin, kml_zmax !< Min/max values used for color scaling.
+   real(kind=dp) :: kml_useroffset !< Additional user offset for altitude values.
+   real(kind=dp) :: kml_dmiss !< Dummy altitude to replace missing zk values.
+   real(kind=dp) :: kml_zmin, kml_zmax !< Min/max values used for color scaling.
 
 contains
 

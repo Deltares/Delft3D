@@ -334,7 +334,7 @@ Required:
 \end{guilist}
 Optional:
 \begin{guilist}
-	\item[\texttt{-{}-allow-create-delete -t}] Allow the addition or removal of files in MinIO. If this is not specified the tool will only update existing files in MinIO.
+	\item[\texttt{-{}-allow-create-and-delete -t}] Allow the addition or removal of files in MinIO. If this is not specified the tool will only update existing files in MinIO.
 \end{guilist}
 
 
@@ -471,7 +471,7 @@ Here is an example launch.json that has multiple configurations.
             "name": "Launch testbench",
             "type": "debugpy",
             "request": "launch",
-            "program": "Testbench.py",
+            "program": "TestBench.py",
             "console": "integratedTerminal",
             "args": [
                 ...

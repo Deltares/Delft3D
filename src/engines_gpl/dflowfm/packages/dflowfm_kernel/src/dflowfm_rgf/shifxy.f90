@@ -30,49 +30,60 @@
 !
 !
 
-      !> Operates on active grid from m_grid directly!
-      subroutine SHIFXY(IS, JS, MP, NP)
+module m_shifxy
 
-         !     XH,     YH,     mmax, nmax, MC,     NC, IS,     JS,     MP,     NP        )
-         use m_missing
-         use m_grid
-         use geometry_module, only: pinpok
-         use m_increase_grid
+   implicit none
 
-         implicit none
-         integer :: is, js, mp, np
+   private
 
-         integer :: i, j
+   public :: shifxy
+
+contains
+
+   !> Operates on active grid from m_grid directly!
+   subroutine SHIFXY(IS, JS, MP, NP)
+
+      !     XH,     YH,     mmax, nmax, MC,     NC, IS,     JS,     MP,     NP        )
+      use m_missing
+      use m_grid
+      use geometry_module, only: pinpok
+      use m_increase_grid
+
+      integer :: is, js, mp, np
+
+      integer :: i, j
 !     schuif data naar rechts of boven of beide en geef nieuwe MC,NC
 
-         MC = MC + IS
-         NC = NC + JS
+      MC = MC + IS
+      NC = NC + JS
 
-         call increasegrid(mc, nc)
+      call increasegrid(mc, nc)
 
-         MP = MP + IS
-         NP = NP + JS
+      MP = MP + IS
+      NP = NP + JS
 
-         do J = NC, 1 + JS, -1
-            do I = MC, 1 + IS, -1
-               Xc(I, J) = Xc(I - IS, J - JS)
-               Yc(I, J) = Yc(I - IS, J - JS)
-               Zc(I, J) = Zc(I - IS, J - JS)
-            end do
+      do J = NC, 1 + JS, -1
+         do I = MC, 1 + IS, -1
+            Xc(I, J) = Xc(I - IS, J - JS)
+            Yc(I, J) = Yc(I - IS, J - JS)
+            Zc(I, J) = Zc(I - IS, J - JS)
          end do
-         if (IS == 1) then
-            do J = 1, NC
-               Xc(1, J) = XYMIS
-               Yc(1, J) = XYMIS
-               Zc(1, J) = XYMIS
-            end do
-         end if
-         if (JS == 1) then
-            do I = 1, MC
-               Xc(I, 1) = XYMIS
-               Yc(I, 1) = XYMIS
-               Zc(I, 1) = XYMIS
-            end do
-         end if
-         return
-      end subroutine shifxy
+      end do
+      if (IS == 1) then
+         do J = 1, NC
+            Xc(1, J) = XYMIS
+            Yc(1, J) = XYMIS
+            Zc(1, J) = XYMIS
+         end do
+      end if
+      if (JS == 1) then
+         do I = 1, MC
+            Xc(I, 1) = XYMIS
+            Yc(I, 1) = XYMIS
+            Zc(I, 1) = XYMIS
+         end do
+      end if
+      return
+   end subroutine shifxy
+
+end module m_shifxy

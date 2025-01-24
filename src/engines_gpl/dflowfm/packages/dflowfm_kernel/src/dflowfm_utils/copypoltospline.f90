@@ -31,30 +31,41 @@
 !
 
 !> copy polygon to spline
-  subroutine COPYPOLTOSPLINE()
-     use m_polygon
-     use m_splines
-     use m_missing
-     use geometry_module, only: get_startend
-     use m_delpol
-     implicit none
+module m_copypoltospline
 
-     integer :: jstart, jend, jpoint
+   implicit none
 
-     jpoint = 1
-     do while (jpoint <= NPL)
-        call get_startend(NPL - jpoint + 1, xpl(jpoint:NPL), ypl(jpoint:NPL), jstart, jend, dmiss)
+   private
 
-        jstart = jstart + jpoint - 1
-        jend = jend + jpoint - 1
+   public :: copypoltospline
 
-        if (jend - jstart + 1 > 1) then
-           call addSplinePoints(mcs + 1, xpl(jstart:jend), ypl(jstart:jend))
-        end if
+contains
 
-        jpoint = jend + 1
-     end do
-     call delpol()
+   subroutine COPYPOLTOSPLINE()
+      use m_polygon
+      use m_splines
+      use m_missing
+      use geometry_module, only: get_startend
+      use m_delpol
 
-     return
-  end subroutine COPYPOLTOSPLINE
+      integer :: jstart, jend, jpoint
+
+      jpoint = 1
+      do while (jpoint <= NPL)
+         call get_startend(NPL - jpoint + 1, xpl(jpoint:NPL), ypl(jpoint:NPL), jstart, jend, dmiss)
+
+         jstart = jstart + jpoint - 1
+         jend = jend + jpoint - 1
+
+         if (jend - jstart + 1 > 1) then
+            call addSplinePoints(mcs + 1, xpl(jstart:jend), ypl(jstart:jend))
+         end if
+
+         jpoint = jend + 1
+      end do
+      call delpol()
+
+      return
+   end subroutine COPYPOLTOSPLINE
+
+end module m_copypoltospline

@@ -32,19 +32,20 @@
 module m_box_nop
    implicit none
 contains
-      subroutine BOXnop(XB1, YB1, XB2, YB2)
-         use m_movabs_nop
-         use m_lnabs_nop
-         
-         double precision :: xb1
-         double precision :: xb2
-         double precision :: yb1
-         double precision :: yb2
-         call MOVABSnop(XB1, YB1)
-         call LNABSnop(XB2, YB1)
-         call LNABSnop(XB2, YB2)
-         call LNABSnop(XB1, YB2)
-         call LNABSnop(XB1, YB1)
-         return
-      end
+   subroutine BOXnop(XB1, YB1, XB2, YB2)
+      use precision, only: dp
+      use m_movabs_nop
+      use m_lnabs_nop
+
+      real(kind=dp) :: xb1
+      real(kind=dp) :: xb2
+      real(kind=dp) :: yb1
+      real(kind=dp) :: yb2
+      call MOVABSnop(XB1, YB1)
+      call LNABSnop(XB2, YB1)
+      call LNABSnop(XB2, YB2)
+      call LNABSnop(XB1, YB2)
+      call LNABSnop(XB1, YB1)
+      return
+   end
 end module m_box_nop

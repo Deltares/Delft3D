@@ -30,7 +30,20 @@
 !
 !
 
+module m_externaltrianglestoouterquads
+   use m_setpoint, only: setpoint
+   use m_getquad, only: getquad
+
+   implicit none
+
+   private
+
+   public :: externaltrianglestoouterquads
+
+contains
+
    subroutine externaltrianglestoouterquads()
+      use precision, only: dp
 
       use m_netw
       use m_polygon
@@ -48,11 +61,11 @@
       integer :: kp
       integer :: l
       integer :: lnu
-      double precision :: xp
-      double precision :: yp
-      double precision :: zp
+      real(kind=dp) :: xp
+      real(kind=dp) :: yp
+      real(kind=dp) :: zp
 
-      double precision :: XL, YL, ZL = 0d0
+      real(kind=dp) :: XL, YL, ZL = 0d0
 
       do L = 1, NUML
          K1 = KN(1, L); K2 = KN(2, L)
@@ -75,3 +88,5 @@
       end do
 
    end subroutine externaltrianglestoouterquads
+
+end module m_externaltrianglestoouterquads

@@ -30,68 +30,77 @@
 !
 !
 
-subroutine getseg1D(hpr, wu2, dz, ai, frcn, ifrctyp, wid, ar, conv, perim, jaconv) ! copy of above routine dressed out for 1D
-   use m_get_cz
+module m_getseg1d
+
    implicit none
-   double precision, intent(in) :: hpr, wu2, dz, ai, frcn
-   double precision, intent(out) :: wid, ar, conv, perim !
-   integer, intent(in) :: ifrctyp, jaconv
-   double precision :: d83 = 2.666666d0, d16 = 0.166666d0, d23 = 0.666666d0
-   double precision :: hp2, Cz, cman, hav
-   double precision :: d38 = 0.375d0, d14 = 0.25d0
-   integer :: L
 
-   ! for jaconv >= 1, this routine gets 1D conveyance
-   ! this constant value, (1+(dz/dy)**2)**0.25 is computed once and is volume cell based instead of link based
+contains
 
-   if (ai < 1d-3) then
-      wid = wu2
-      ar = wid * hpr
-   else if (hpr < dz) then
-      wid = wu2 * hpr / dz
-      ar = 0.5d0 * wid * hpr
-   else
-      wid = wu2
-      hp2 = hpr - dz
-      ar = wid * 0.5d0 * (hpr + hp2)
-   end if
+   subroutine getseg1D(hpr, wu2, dz, ai, frcn, ifrctyp, wid, ar, conv, perim, jaconv) ! copy of above routine dressed out for 1D
+      use precision, only: dp
+      use m_get_cz
+      implicit none
+      real(kind=dp), intent(in) :: hpr, wu2, dz, ai, frcn
+      real(kind=dp), intent(out) :: wid, ar, conv, perim !
+      integer, intent(in) :: ifrctyp, jaconv
+      real(kind=dp) :: d83 = 2.666666d0, d16 = 0.166666d0, d23 = 0.666666d0
+      real(kind=dp) :: hp2, Cz, cman, hav
+      real(kind=dp) :: d38 = 0.375d0, d14 = 0.25d0
+      integer :: L
 
-   if (jaconv == 0) then
-      return
-   else if (frcn == 0d0) then
-      conv = 0d0; return
-   else if (jaconv == 1) then ! hydraulic radius type
+      ! for jaconv >= 1, this routine gets 1D conveyance
+      ! this constant value, (1+(dz/dy)**2)**0.25 is computed once and is volume cell based instead of link based
 
       if (ai < 1d-3) then
-         perim = wid
+         wid = wu2
+         ar = wid * hpr
       else if (hpr < dz) then
-         perim = sqrt(wid * wid + hpr * hpr)
+         wid = wu2 * hpr / dz
+         ar = 0.5d0 * wid * hpr
       else
-         perim = sqrt(wid * wid + (hpr - hp2) * (hpr - hp2))
+         wid = wu2
+         hp2 = hpr - dz
+         ar = wid * 0.5d0 * (hpr + hp2)
       end if
 
-   else if (jaconv >= 2) then ! 1D analytic conveyance type
-      if (ifrctyp == 1) then
-         cman = frcn
-      else
+      if (jaconv == 0) then
+         return
+      else if (frcn == 0d0) then
+         conv = 0d0; return
+      else if (jaconv == 1) then ! hydraulic radius type
+
          if (ai < 1d-3) then
-            hav = hpr
+            perim = wid
          else if (hpr < dz) then
-            hav = 0.5d0 * hpr
+            perim = sqrt(wid * wid + hpr * hpr)
          else
-            hav = hpr - 0.5d0 * dz
+            perim = sqrt(wid * wid + (hpr - hp2) * (hpr - hp2))
          end if
-         call getcz(hav, frcn, ifrctyp, Cz, L)
-         cman = hav**d16 / Cz
-      end if
 
-      if (ai < 1d-3) then ! see sysdoc 5 1D conveyance
-         conv = (ar * hpr**d23) / (cman)
-      else if (hpr < dz) then
-         conv = (d38 * hpr**d83) / (cman * ai * (1d0 + ai * ai)**d14)
-      else
-         conv = (d38 * (hpr**d83 - hp2**d83)) / (cman * ai * (1d0 + ai * ai)**d14)
-      end if
+      else if (jaconv >= 2) then ! 1D analytic conveyance type
+         if (ifrctyp == 1) then
+            cman = frcn
+         else
+            if (ai < 1d-3) then
+               hav = hpr
+            else if (hpr < dz) then
+               hav = 0.5d0 * hpr
+            else
+               hav = hpr - 0.5d0 * dz
+            end if
+            call getcz(hav, frcn, ifrctyp, Cz, L)
+            cman = hav**d16 / Cz
+         end if
 
-   end if
-end subroutine getseg1D
+         if (ai < 1d-3) then ! see sysdoc 5 1D conveyance
+            conv = (ar * hpr**d23) / (cman)
+         else if (hpr < dz) then
+            conv = (d38 * hpr**d83) / (cman * ai * (1d0 + ai * ai)**d14)
+         else
+            conv = (d38 * (hpr**d83 - hp2**d83)) / (cman * ai * (1d0 + ai * ai)**d14)
+         end if
+
+      end if
+   end subroutine getseg1D
+
+end module m_getseg1d

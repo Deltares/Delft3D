@@ -27,64 +27,9 @@ module m_concentration_calculations
     implicit none
 
     private
-    public :: calculate_concentrations_from_derivatives, calculate_concentrations_from_mass
+    public :: calculate_concentrations_from_mass
 
 contains
-
-    !> Calculates concentrations from derivatives, and zeroes these derivatives
-    subroutine calculate_concentrations_from_derivatives(conc, deriv, amass2, num_cells, num_substances_total, &
-            substance_i, nsys, dmps, intopt, isdmp)
-
-        real(kind = real_wp), intent(inout) :: conc(num_substances_total, *)   !< First order term
-        real(kind = real_wp), intent(inout) :: deriv(*)         !< Right hand side matrix
-        real(kind = real_wp), intent(inout) :: amass2(num_substances_total, *) !< Mass accumulation array
-        real(kind = real_wp), intent(inout) :: dmps(*)          !< Dumped segment fluxes if intopt>7
-
-        integer(kind = int_wp), intent(in) :: num_cells    !< Number of cells or segments
-        integer(kind = int_wp), intent(in) :: num_substances_total    !< Total number of systems
-        integer(kind = int_wp), intent(in) :: substance_i     !< Index of considered system
-        integer(kind = int_wp), intent(in) :: nsys     !< Number of systems to take
-        integer(kind = int_wp), intent(in) :: intopt   !< Integration suboptions
-        integer(kind = int_wp), intent(in) :: isdmp(*) !< Indeces dumped segments
-
-        ! Local variables
-        integer(kind = int_wp) :: i, ip, j, ntot, iset, cell_i
-        integer(kind = int_wp) :: ithandl = 0
-
-        if (timon) call timstrt ("calculate_concentrations_from_derivatives", ithandl)
-
-        ! Calculate concentrations
-        iset = 1
-        if (mod(intopt, 16) < 8) then
-            do cell_i = 1, num_cells
-                do i = substance_i, substance_i + nsys - 1
-                    amass2(i, 2) = amass2(i, 2) + conc (i, cell_i) * deriv(iset)
-                    conc  (i, cell_i) = deriv (iset)
-                    iset = iset + 1
-                end do
-            end do
-        else
-            do cell_i = 1, num_cells
-                ip = isdmp(cell_i)
-                j = (ip - 1) * num_substances_total
-                do i = substance_i, substance_i + nsys - 1
-                    amass2(i, 2) = amass2(i, 2) + conc(i, cell_i) * deriv(iset)
-                    if (ip > 0) then
-                        dmps(j + i) = dmps(j + i) + conc(i, cell_i) * deriv(iset)
-                    endif
-                    conc  (i, cell_i) = deriv (iset)
-                    iset = iset + 1
-                end do
-            end do
-        endif
-        ! Zero the derivative
-        ntot = num_substances_total * num_cells
-        do i = 1, ntot
-            deriv(i) = 0.0
-        end do
-
-        if (timon) call timstop (ithandl)
-    end subroutine calculate_concentrations_from_derivatives
 
     !> Restores concentration array after mass has changed by process routines
     subroutine calculate_concentrations_from_mass(num_substances_transported, num_substances_total, &

@@ -29,22 +29,27 @@
 
 !
 !
+module m_unstruc_guimessage
 
-!----------------------------------------------------------------------
-! subroutines from either net.F90 or rest.F90 that are still needed
-!   without the GUI
-!----------------------------------------------------------------------
+   implicit none
+
+   private
+
+   public :: unstruc_guimessage
+
+contains
 !> Shows a message in a GUI dialog (Interacter only).
 !! This routine is supposed to be called from the utility modules,
 !! such as gridgeom, as a callback.
 !!
 !! NOTE: this subroutine is dflowfm's implementation of the MHCallBack::messagebox_iface interface.
-subroutine unstruc_guimessage(msg)
-   use unstruc_messages
-   use m_qnerror
-   implicit none
-   character(len=*) :: msg !< Message string
+   subroutine unstruc_guimessage(msg)
+      use m_qnerror
 
-   call qnerror(msg, ' ', ' ')
+      character(len=*), intent(in) :: msg !< Message string
 
-end subroutine unstruc_guimessage
+      call qnerror(msg, ' ', ' ')
+
+   end subroutine unstruc_guimessage
+
+end module m_unstruc_guimessage

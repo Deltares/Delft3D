@@ -32,56 +32,55 @@
 
 module m_minmxnetcells
 
-implicit none
+   implicit none
 
 contains
 
-subroutine MINMXNETCELLS()
+   subroutine MINMXNETCELLS()
+      use precision, only: dp
 
-   use m_netw
-   use m_flowgeom, only: xz, yz
-   use m_missing, only: dmiss
-   use m_depmax
-   use m_inview
-   
-   integer :: i
-   integer :: k
-   double precision :: rd
-   double precision :: rmax
-   double precision :: rmin
+      use m_netw
+      use m_flowgeom, only: xz, yz
+      use m_missing, only: dmiss
+      use m_depmax
+      use m_inview
 
-   double precision, external :: znetcell
+      integer :: i
+      integer :: k
+      real(kind=dp) :: rd
+      real(kind=dp) :: rmax
+      real(kind=dp) :: rmin
 
-   if (JAAUTO > 0) then
-      RMIN = 1.0d30
-      NODMIN = 0
-      RMAX = -1.0d30
-      NODMAX = 0
-      do K = 1, max(NUMP, nump1d2d)
-         if (INVIEW(XZ(K), YZ(K))) then
-            RD = RLIN(K)
-            if (rd /= dmiss) then
-               if (RD < RMIN) then
-                  RMIN = RD
-                  netcelMIN = K
-               end if
-               if (RD > RMAX) then
-                  RMAX = RD
-                  netcelMAX = K
+      if (JAAUTO > 0) then
+         RMIN = 1.0d30
+         NODMIN = 0
+         RMAX = -1.0d30
+         NODMAX = 0
+         do K = 1, max(NUMP, nump1d2d)
+            if (INVIEW(XZ(K), YZ(K))) then
+               RD = RLIN(K)
+               if (rd /= dmiss) then
+                  if (RD < RMIN) then
+                     RMIN = RD
+                     netcelMIN = K
+                  end if
+                  if (RD > RMAX) then
+                     RMAX = RD
+                     netcelMAX = K
+                  end if
                end if
             end if
-         end if
+         end do
+         VMAX = RMAX
+         VMIN = RMIN
+      end if
+
+      DV = VMAX - VMIN
+      do I = 1, NV
+         VAL(I) = VMIN + (I - 1) * DV / (NV - 1)
       end do
-      VMAX = RMAX
-      VMIN = RMIN
-   end if
 
-   DV = VMAX - VMIN
-   do I = 1, NV
-      VAL(I) = VMIN + (I - 1) * DV / (NV - 1)
-   end do
-
-   return
-end subroutine MINMXNETCELLS
+      return
+   end subroutine MINMXNETCELLS
 
 end module m_minmxnetcells

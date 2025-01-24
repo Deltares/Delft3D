@@ -30,14 +30,22 @@
 !
 !
 
-  subroutine VIEWCYCLE(KEY)
-     use m_howtoview
-     use m_perspx
-     implicit none
-     integer :: KEY
-     
-     JVIEW = JVIEW + 1
-     if (JVIEW > JAV) JVIEW = 1
-     KEY = 3
-     return
-  end subroutine VIEWCYCLE
+module m_viewcycle
+
+   implicit none
+
+contains
+
+   subroutine VIEWCYCLE(KEY)
+      use m_howtoview
+      use m_perspx
+      implicit none
+      integer :: KEY
+
+      JVIEW = JVIEW + 1
+      if (JVIEW > JAV) JVIEW = 1
+      KEY = 3
+      return
+   end subroutine VIEWCYCLE
+
+end module m_viewcycle

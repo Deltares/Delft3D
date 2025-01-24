@@ -86,7 +86,7 @@
    <testCases>
       <!-- ======================================================================== -->
       <testCase name="c01_harlingen" ref="dimr_trunk">
-         <path version="2024-07-01T14:45:00">e02_dflowfm/f092_tutorial_course_models/c01_harlingen</path>
+         <path version="2024-08-28T13:10:00">e02_dflowfm/f092_tutorial_course_models/c01_harlingen</path>
          <maxRunTime>60.0</maxRunTime> <!-- seconds -->
          <checks>
             <file name="dflowfmoutput/001_map.nc" type="NETCDF">

@@ -35,24 +35,33 @@
 !! on it, based on current water depth.
 !! By default, hu(L) is returned when no structure is present, or when the
 !! setting ChangeVelocityAtStructures is off (0).
-pure function get_hpr_nostruc(L) result(hpr)
-   use m_flowgeom, only: bob, bob0
-   use m_flow, only: hu, u1
-   use m_flowparameters, only: changeVelocityAtStructures
-   implicit none
-   integer, intent(in) :: L !< Flow link number
-   double precision :: hpr !< Hydraulic radius for current water depth.
+module m_get_hpr_nostruc
 
-   hpr = hu(L)
-   if (changeVelocityAtStructures) then
-      if (bob(1, L) /= bob0(1, L) .or. bob(1, L) /= bob0(1, L)) then
-         if (u1(L) > 0d0) then
-            ! In case of structure links Hu is the waterdepth at the crest. We want to use the waterdepth
-            ! with respect to the channel bed level for a correct flow area of the channel
-            hpr = hu(L) + bob(1, L) - bob0(1, L)
-         else
-            hpr = hu(L) + bob(2, L) - bob0(2, L)
+   implicit none
+
+contains
+
+   pure function get_hpr_nostruc(L) result(hpr)
+      use precision, only: dp
+      use m_flowgeom, only: bob, bob0
+      use m_flow, only: hu, u1
+      use m_flowparameters, only: changeVelocityAtStructures
+      implicit none
+      integer, intent(in) :: L !< Flow link number
+      real(kind=dp) :: hpr !< Hydraulic radius for current water depth.
+
+      hpr = hu(L)
+      if (changeVelocityAtStructures) then
+         if (bob(1, L) /= bob0(1, L) .or. bob(1, L) /= bob0(1, L)) then
+            if (u1(L) > 0d0) then
+               ! In case of structure links Hu is the waterdepth at the crest. We want to use the waterdepth
+               ! with respect to the channel bed level for a correct flow area of the channel
+               hpr = hu(L) + bob(1, L) - bob0(1, L)
+            else
+               hpr = hu(L) + bob(2, L) - bob0(2, L)
+            end if
          end if
       end if
-   end if
-end function get_hpr_nostruc
+   end function get_hpr_nostruc
+
+end module m_get_hpr_nostruc

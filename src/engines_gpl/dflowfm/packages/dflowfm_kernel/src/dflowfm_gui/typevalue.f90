@@ -30,11 +30,18 @@
 !
 !
 
+module m_typevalue
+
+   implicit none
+
+contains
+
    subroutine TYPEVALUE(RD, KEY)
+      use precision, only: dp
       use M_DEVICES
       implicit none
-      double precision :: rdin
-      double precision :: RD
+      real(kind=dp) :: rdin
+      real(kind=dp) :: RD
       integer :: KEY
       integer :: infoinput
 
@@ -49,3 +56,5 @@
       call INPOPUP('OFF')
       return
    end subroutine TYPEVALUE
+
+end module m_typevalue

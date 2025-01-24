@@ -37,7 +37,7 @@ contains
 
       integer :: l1
       integer :: l2
-      character * (*) OPTION
+      character(len=*) OPTION
       integer NR
       L1 = index(OPTION, '(')
       L2 = index(OPTION, ')')

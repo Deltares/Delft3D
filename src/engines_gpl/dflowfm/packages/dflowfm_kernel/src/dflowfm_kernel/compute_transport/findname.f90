@@ -29,25 +29,29 @@
 
 !
 !
-
-!> find index of string in array of strings
-integer function findname(N, snames, sname)
+module m_find_name
    implicit none
+   private
 
-   integer, intent(in) :: N
-   character(len=*), dimension(N), intent(in) :: snames
-   character(len=*), intent(in) :: sname
+   public :: find_name
 
-   integer :: i
+contains
+   !> Find index of name in array of names
+   pure function find_name(names, name) result(res)
+      implicit none
 
-   findname = 0
+      character(len=*), dimension(:), intent(in) :: names !< Array of names to search
+      character(len=*), intent(in) :: name !< Name to search for
+      integer :: res !< Return the index of the string in the array
+      integer :: i
 
-   do i = 1, N
-      if (trim(sname) == trim(snames(i))) then
-         findname = i
-         return
-      end if
-   end do
+      res = 0
 
-   return
-end function findname
+      do i = 1, size(names)
+         if (trim(name) == trim(names(i))) then
+            res = i
+            return
+         end if
+      end do
+   end function find_name
+end module m_find_name

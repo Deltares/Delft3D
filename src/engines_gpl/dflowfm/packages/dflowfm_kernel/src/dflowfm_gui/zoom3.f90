@@ -30,18 +30,26 @@
 !
 !
 
-      subroutine ZOOM3(KEY, NPUT)
-         use m_wearelt
-         use m_locatora
-         use m_zoomin
+submodule(m_zoom3) m_zoom3_
 
-         implicit none
-         integer :: key
-         integer :: nput
+   implicit none
 
-         XLC = (X1 + X2) / 2
-         YLC = (Y1 + Y2) / 2
-         call IMOUSECURSORXYG(real(XLC), real(YLC))
-         call ZOOMIN(KEY, NPUT)
-         return
-      end
+contains
+
+   module subroutine ZOOM3(KEY, NPUT)
+      use m_wearelt
+      use m_locatora
+      use m_zoomin
+
+      implicit none
+      integer :: key
+      integer :: nput
+
+      XLC = (X1 + X2) / 2
+      YLC = (Y1 + Y2) / 2
+      call IMOUSECURSORXYG(real(XLC), real(YLC))
+      call ZOOMIN(KEY, NPUT)
+      return
+   end subroutine ZOOM3
+
+end submodule m_zoom3_

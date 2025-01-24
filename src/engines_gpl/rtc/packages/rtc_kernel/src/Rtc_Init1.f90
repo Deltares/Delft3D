@@ -281,7 +281,7 @@
              success = success .and. Dh_AllocInit(NrHisLoc, LocDescr, ' ')
              success = success .and. Dh_AllocInit(NrHisPar, ParNames, ' ')
              If (.not. success) then
-                 Call ErrMsg (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
+                 call write_error_message_rtc (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
                  RetVal = 929
                  Return
              EndIf
@@ -338,7 +338,7 @@
              success = success .and. Dh_AllocInit(NrHisLoc, LocDescr, ' ')
              success = success .and. Dh_AllocInit(NrHisPar, ParNames, ' ')
              If (.not. success) then
-                 Call ErrMsg (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
+                 call write_error_message_rtc (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
                  RetVal = 929
                  Return
              EndIf
@@ -380,7 +380,7 @@
              success = Dh_AllocInit(NrHisLoc, LocNames, ' ')
              success = success .and. Dh_AllocInit(NrHisPar, ParNames, ' ')
              If (.not. success) then
-                 Call ErrMsg (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
+                 call write_error_message_rtc (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
                  RetVal = 929
                  Return
              EndIf
@@ -409,7 +409,7 @@
              success = Dh_AllocInit(NrHisLoc, LocNames, ' ')
              success = success .and. Dh_AllocInit(NrHisPar, ParNames, ' ')
              If (.not. success) then
-                 Call ErrMsg (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
+                 call write_error_message_rtc (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
                  RetVal = 929
                  Return
              EndIf
@@ -446,7 +446,7 @@
            success = success .and. Dh_AllocInit(NrHisLoc, LocDescr, ' ')
            success = success .and. Dh_AllocInit(NrHisPar, ParNames, ' ')
            If (.not. success) then
-              Call ErrMsg (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
+              call write_error_message_rtc (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
               RetVal = 929
               Return
            EndIf

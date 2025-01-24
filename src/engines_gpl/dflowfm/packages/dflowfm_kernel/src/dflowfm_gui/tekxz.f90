@@ -30,17 +30,25 @@
 !
 !
 
-      subroutine TEKXZ(NCOL)
-         use m_dcirr
-         use m_netw
-         use M_FLOWGEOM
-         implicit none
-         integer :: NCOL
-         integer :: n
+module m_tekxz
 
-         do N = 1, NUMP
-            call DCIRR(xz(n), yz(n), YZw(N), NCOL)
-         end do
+   implicit none
 
-         return
-      end subroutine TEKXZ
+contains
+
+   subroutine TEKXZ(NCOL)
+      use m_dcirr
+      use m_netw
+      use M_FLOWGEOM
+      implicit none
+      integer :: NCOL
+      integer :: n
+
+      do N = 1, NUMP
+         call DCIRR(xz(n), yz(n), YZw(N), NCOL)
+      end do
+
+      return
+   end subroutine TEKXZ
+
+end module m_tekxz

@@ -1,5 +1,6 @@
 from helpers.KernelData import KernelData
 from helpers.ToolData import ToolData
+from enum import Enum
 
 # All kernels for which the versions are set in the configuration parameters of 2.Dimr_collector_release
 KERNELS = [
@@ -30,18 +31,13 @@ TESTCASE_GROUPS = [
     "D-Waves",
 ]
 
-
-# The TeamCity build type id for 2.Dimr_collector_release
-DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID = "Dimr_DimrCollector"
-
-# The TeamCity build type id for 2.b DIMR collector release signed
-DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID = "Dimr_DimrCollectors_2bDimrCollectorReleaseSigned"
-
-# The TeamCity build type id for 3.Deliver DIMR to NGHS
-DIMR_TO_NGHS_BUILD_TYPE_ID = "DIMR_To_NGHS"
-
-# The TeamCity build type id for Status of Release Testbench
-DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID = "Dimr_DimrTestbenchRelease_StatusOfDailyTestbench"
+class TEAMCITY_IDS(Enum):
+    DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID = "Dimr_DimrCollector"
+    DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID = "Dimr_DimrCollectors_2bDimrCollectorReleaseSigned"
+    DIMR_TO_NGHS_BUILD_TYPE_ID = "DIMR_To_NGHS" 
+    DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID = "Dimr_DimrTestbenchRelease_StatusOfDailyTestbench"
+    DIMR_TESTBENCH_RELEASE_TESTS_LINUX = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsLinux"
+    DIMR_TESTBENCH_RELEASE_TESTS_WINDOWS = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsWindows"
 
 # Path to Windows version artifact on TeamCity
 PATH_TO_WINDOWS_VERSION_ARTIFACT = "version/dimr_version_release_x64.txt"

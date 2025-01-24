@@ -31,6 +31,7 @@
 
 ! Processing data obtained from nearfield models like COSUMO inside D-Flow FM
 module m_nearfield
+   use m_reallocsrc, only: reallocsrc
    use iso_c_binding
    use precision
    use MessageHandling

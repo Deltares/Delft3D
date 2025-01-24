@@ -31,75 +31,76 @@
 !
 
 module m_chadep
-use m_kcir
-use m_disval1
+   use m_typevalue
+   use m_kcir
+   use m_disval1
 
-
-implicit none
+   implicit none
 
 contains
 
-      subroutine CHADEP(XP, YP, RD, KEY)
-         use M_MISSING
-         use m_disput
-         use m_help
-         implicit none
-         double precision :: XP, YP, RD
-         integer :: KEY
+   subroutine CHADEP(XP, YP, RD, KEY)
+      use precision, only: dp
+      use M_MISSING
+      use m_disput
+      use m_help
+      implicit none
+      real(kind=dp) :: XP, YP, RD
+      integer :: KEY
 
-         double precision :: f
-         double precision :: fac
-         integer :: jplus
-         double precision :: rdol
-         character WRDKEY * 40
-         WRDKEY = 'CHANGE SCALAR VALUE'
-         RDOL = RD
-         JPLUS = 0
-         call DISPUT(21)
-10       continue
+      real(kind=dp) :: f
+      real(kind=dp) :: fac
+      integer :: jplus
+      real(kind=dp) :: rdol
+      character WRDKEY * 40
+      WRDKEY = 'CHANGE SCALAR VALUE'
+      RDOL = RD
+      JPLUS = 0
+      call DISPUT(21)
+10    continue
+      call DISVAL1(RD)
+      call KCIR(XP, YP, RD)
+      call INKEYEVENT(KEY)
+
+      if (KEY == 171) then
+         call HELP(WRDKEY, 3)
+      else if (KEY == 45 .or. KEY == 160) then
+         if (RD == dmiss) RD = 6.9d0
+         if (JPLUS /= -1) then
+            FAC = 1d0
+            F = max(.001d0, .01d0 * RD)
+         end if
+         RD = RD - F * FAC
+         FAC = FAC * 1.01d0
+         JPLUS = -1
+      else if (KEY == 43 .or. KEY == 162) then
+         if (RD == dmiss) RD = 6.9d0
+         if (JPLUS /= 1) then
+            FAC = 1d0
+            F = max(.001d0, .01d0 * RD)
+         end if
+         RD = RD + F * FAC
+         FAC = FAC * 1.01d0
+         JPLUS = 1
+      else if (KEY == 32) then
+         call TYPEVALUE(RD, KEY)
          call DISVAL1(RD)
          call KCIR(XP, YP, RD)
-         call INKEYEVENT(KEY)
-
-         if (KEY == 171) then
-            call HELP(WRDKEY, 3)
-         else if (KEY == 45 .or. KEY == 160) then
-            if (RD == dmiss) RD = 6.9d0
-            if (JPLUS /= -1) then
-               FAC = 1d0
-               F = max(.001d0, .01d0 * RD)
-            end if
-            RD = RD - F * FAC
-            FAC = FAC * 1.01d0
-            JPLUS = -1
-         else if (KEY == 43 .or. KEY == 162) then
-            if (RD == dmiss) RD = 6.9d0
-            if (JPLUS /= 1) then
-               FAC = 1d0
-               F = max(.001d0, .01d0 * RD)
-            end if
-            RD = RD + F * FAC
-            FAC = FAC * 1.01d0
-            JPLUS = 1
-         else if (KEY == 32) then
-            call TYPEVALUE(RD, KEY)
-            call DISVAL1(RD)
-            call KCIR(XP, YP, RD)
-            return
-         else if (KEY == 68 .or. KEY == 68 + 32 .or. KEY == 143) then
-            RD = dmiss
-            call DISVAL1(RD)
-            call KCIR(XP, YP, RD)
-            return
-         else if (KEY == 27) then
-            RD = RDOL
-            call DISVAL1(RD)
-            call KCIR(XP, YP, RD)
-            return
-         else if (KEY /= 254 .and. KEY /= 257) then
-            return
-         end if
-         goto 10
-      end subroutine CHADEP
+         return
+      else if (KEY == 68 .or. KEY == 68 + 32 .or. KEY == 143) then
+         RD = dmiss
+         call DISVAL1(RD)
+         call KCIR(XP, YP, RD)
+         return
+      else if (KEY == 27) then
+         RD = RDOL
+         call DISVAL1(RD)
+         call KCIR(XP, YP, RD)
+         return
+      else if (KEY /= 254 .and. KEY /= 257) then
+         return
+      end if
+      goto 10
+   end subroutine CHADEP
 
 end module m_chadep

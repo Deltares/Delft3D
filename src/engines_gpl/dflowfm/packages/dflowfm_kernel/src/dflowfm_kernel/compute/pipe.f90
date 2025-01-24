@@ -30,11 +30,18 @@
 !
 !
 
-subroutine pipe(hpr, dia, area, width, japerim, perim) ! half open part
-   use m_sferic
-   use m_flow, only: slotw1D
+module m_pipe
+
+   implicit none
+
+contains
+
+   subroutine pipe(hpr, dia, area, width, japerim, perim) ! half open part
+      use m_sferic
+      use m_flow, only: slotw1D
 !
 ! this subroutine computes wetted circle surface as function
+      use precision, only: dp
 ! of diameter d and waterdepth dpt, as an option (if jd=1) it can compute
 ! the derivative da(dpt)/ddpt and (if jw=1) it can also compute the wetted
 ! perimeter
@@ -47,40 +54,42 @@ subroutine pipe(hpr, dia, area, width, japerim, perim) ! half open part
 !  jd    I, compute dwdd if jd=1
 !  jw    I, compute wtp if jw=1
 !  sl    I, slotbreedte
-   implicit none
-   integer, intent(in) :: japerim
-   double precision, intent(in) :: dia, hpr
-   double precision, intent(out) :: area, width, perim
+      implicit none
+      integer, intent(in) :: japerim
+      real(kind=dp), intent(in) :: dia, hpr
+      real(kind=dp), intent(out) :: area, width, perim
 
 ! Local variables
 
-   double precision :: are, fi, r, sq
+      real(kind=dp) :: are, fi, r, sq
 
-   r = 0.5 * dia
-   are = r - hpr
-   if (hpr < r) then
-      fi = acos(are / r)
-      sq = sqrt(hpr * (dia - hpr))
-      area = fi * r * r - sq * are
-      width = 2 * sq
-      if (japerim == 1) perim = 2 * fi * r
-   else
-      area = 0.5d0 * pi * r * r + (hpr - r) * dia
-      width = dia
-      if (japerim == 1) then
-         if (hpr < dia) then
-            fi = acos(are / r)
-            sq = sqrt(hpr * (dia - hpr))
-            area = fi * r * r - sq * are
-            perim = 2 * fi * r
-         else
-            area = pi * r * r
-            perim = twopi * r
+      r = 0.5 * dia
+      are = r - hpr
+      if (hpr < r) then
+         fi = acos(are / r)
+         sq = sqrt(hpr * (dia - hpr))
+         area = fi * r * r - sq * are
+         width = 2 * sq
+         if (japerim == 1) perim = 2 * fi * r
+      else
+         area = 0.5d0 * pi * r * r + (hpr - r) * dia
+         width = dia
+         if (japerim == 1) then
+            if (hpr < dia) then
+               fi = acos(are / r)
+               sq = sqrt(hpr * (dia - hpr))
+               area = fi * r * r - sq * are
+               perim = 2 * fi * r
+            else
+               area = pi * r * r
+               perim = twopi * r
+            end if
          end if
       end if
-   end if
-   if (slotw1D > 0 .and. japerim == 0) then
-      width = width + slotw1D
-      area = area + slotw1D * hpr
-   end if
-end subroutine pipe
+      if (slotw1D > 0 .and. japerim == 0) then
+         width = width + slotw1D
+         area = area + slotw1D * hpr
+      end if
+   end subroutine pipe
+
+end module m_pipe

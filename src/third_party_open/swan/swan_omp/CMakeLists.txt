@@ -83,7 +83,7 @@ set_source_files_properties(${checkout_src_root}/third_party_open/swan/src/ocpid
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set additional compilation properties, specific for Debug mode
-target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+target_compile_options(${executable_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_nopointers_flag}>")
 
 # Define preprocessor definitions
 if (WIN32)

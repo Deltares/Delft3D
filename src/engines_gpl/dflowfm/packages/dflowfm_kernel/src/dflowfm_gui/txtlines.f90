@@ -30,22 +30,31 @@
 !
 !
 
-      subroutine TXTLINES()
-         use m_mtext
-         use m_devices
-         use m_textlines
-         implicit none
-         integer :: i
+module m_txtlines
 
-         call IGRCHARSIZE(real(TXSIZE), real(TXSIZE))
+   implicit none
 
-         do i = 1, 3
-            if (len_trim(TXLIN(i)) > 0) then
-               call MTEXT(TXLIN(i), TXXpos, TXYpos + 0.04d0 * (4 - i), 3)
-            end if
-         end do
+contains
 
-         call SETTEXTSIZE()
+   subroutine TXTLINES()
+      use m_settextsize
+      use m_mtext
+      use m_devices
+      use m_textlines
+      implicit none
+      integer :: i
 
-         return
-      end
+      call IGRCHARSIZE(real(TXSIZE), real(TXSIZE))
+
+      do i = 1, 3
+         if (len_trim(TXLIN(i)) > 0) then
+            call MTEXT(TXLIN(i), TXXpos, TXYpos + 0.04d0 * (4 - i), 3)
+         end if
+      end do
+
+      call SETTEXTSIZE()
+
+      return
+   end
+
+end module m_txtlines

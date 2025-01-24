@@ -30,23 +30,30 @@
 !
 !
 
+module m_removecoincidingtriangles
+
+   implicit none
+
+   private
+
+   public :: removecoincidingtriangles
+
+contains
+
    subroutine REMOVECOINCIDINGTRIANGLES()
+      use precision, only: dp
       use m_netw ! 2 REMOVES SMALL TRIANGLES NEXT TO
       use M_FLOWGEOM
-      use unstruc_messages
       use m_sferic
       use geometry_module, only: getdxdy
       use gridoperations
       use m_mergenodes
-      implicit none
 
-      double precision :: DX2, DY2, DX3, DY3, DEN
+      real(kind=dp) :: DX2, DY2, DX3, DY3, DEN
       integer :: K1, K2, K3, KDUM, N, L, LL, JA, IERR
 
-      double precision, allocatable :: XNW(:), YNW(:)
+      real(kind=dp), allocatable :: XNW(:), YNW(:)
       integer, allocatable :: NNW(:, :)
-
-      double precision, external :: getdx, getdy
 
       call FINDCELLS(3)
 
@@ -64,11 +71,7 @@
             k3 = kdum
          end if
 
-         !dx2 = getdx(XK(K1), YK(K1), XK(K2), YK(K2)) ! AvD: TODO: getdx toepassen
-         !dy2 = getdy(XK(K1), YK(K1), XK(K2), YK(K2))
          call getdxdy(XK(K1), YK(K1), XK(K2), YK(K2), dx2, dy2, jsferic)
-         !dx3 = getdx(XK(K1), YK(K1), XK(K3), YK(K3))
-         !dy3 = getdy(XK(K1), YK(K1), XK(K3), YK(K3))
          call getdxdy(XK(K1), YK(K1), XK(K3), YK(K3), dx3, dy3, jsferic)
          den = dy2 * dx3 - dy3 * dx2
          if (DEN == 0d0) then
@@ -94,3 +97,5 @@
 
       deallocate (XNW, YNW, NNW)
    end subroutine REMOVECOINCIDINGTRIANGLES
+
+end module m_removecoincidingtriangles

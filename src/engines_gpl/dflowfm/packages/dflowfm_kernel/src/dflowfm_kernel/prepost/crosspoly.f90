@@ -33,6 +33,7 @@ module m_crosspoly
    implicit none
 contains
    subroutine crosspoly(xa, ya, xb, yb, xpl, ypl, npl, XM, YM, CRPM, JA, isec, distanceStartPolygon)
+      use precision, only: dp
 
       use m_missing
       use m_sferic, only: jsferic, jasfer3D
@@ -41,14 +42,14 @@ contains
       integer :: npl, ja
       integer, intent(out) :: isec !< crossed polyline section (>0) or not crossed (0)
       !locals
-      double precision :: xa, xb, ya, yb, xm, ym, crpm
-      double precision :: xpl(npl), ypl(npl)
-      double precision, intent(inout) :: distanceStartPolygon !< distance from the start point of the polygon
+      real(kind=dp) :: xa, xb, ya, yb, xm, ym, crpm
+      real(kind=dp) :: xpl(npl), ypl(npl)
+      real(kind=dp), intent(inout) :: distanceStartPolygon !< distance from the start point of the polygon
 
       integer :: jacros
       integer :: k
       integer :: ku
-      double precision :: XP1, YP1, XP2, YP2, sl, sm, XCR, YCR, CRP, currentSegmentLength
+      real(kind=dp) :: XP1, YP1, XP2, YP2, sl, sm, XCR, YCR, CRP, currentSegmentLength
 
       isec = 0
       JA = 0

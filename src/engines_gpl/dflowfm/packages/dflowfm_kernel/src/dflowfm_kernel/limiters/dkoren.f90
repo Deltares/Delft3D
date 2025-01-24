@@ -33,9 +33,10 @@ module m_dkoren
    implicit none
 contains
 
-   double precision function dkoren(d1, d2) ! nog naar kijken
+   real(kind=dp) function dkoren(d1, d2) ! nog naar kijken
+      use precision, only: dp
 
-   double precision d1, d2, r
+      real(kind=dp) d1, d2, r
       if (d1 * d2 > 0d0) then
          r = d2 / d1
          dkoren = max(0d0, min(r + r, min((1d0 + r + r) / 3d0, 2d0)))

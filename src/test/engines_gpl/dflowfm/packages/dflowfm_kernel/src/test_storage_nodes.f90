@@ -47,9 +47,7 @@ subroutine test_storage_nodes_nodeID_table
     use m_partitioninfo, only: jampi
     use network_data, only: numk
     use ifport
-    !
-    ! Externals
-    integer, external :: flow_modelinit
+    use m_resetfullflowmodel, only: resetfullflowmodel
     !
     ! Locals
     integer, parameter                           :: N_StorageNodes = 1

@@ -40,12 +40,6 @@ module m_xbeach_filefunctions
    integer, save :: errorfileid
    integer, save :: warningfileid
 
-   interface check_file_length
-      module procedure check_file_length_1D
-      module procedure check_file_length_2D
-      module procedure check_file_length_3D
-   end interface check_file_length
-
    procedure(distributeloginterface), pointer :: distributelog => null()
 
    abstract interface
@@ -143,25 +137,6 @@ contains
       end if
 
    end subroutine start_logfiles
-
-   subroutine close_logfiles
-
-      close (logfileid)
-      close (errorfileid, STATUS='DELETE')
-      close (warningfileid)
-
-   end subroutine close_logfiles
-
-   subroutine get_logfileid(lid, eid, wid)
-
-      implicit none
-      integer, intent(out) :: lid, eid, wid
-
-      lid = logfileid
-      eid = errorfileid
-      wid = warningfileid
-
-   end subroutine get_logfileid
 
    subroutine progress_indicator(initialize, curper, dper, dt)
       use precision_basics, only: dp
@@ -1169,17 +1144,6 @@ contains
 
    end subroutine writelog_afaiaaa
 
-   subroutine assignlogdelegate_internal(fPtr)
-      use iso_c_binding
-      type(c_funptr), value :: fPtr
-
-      distributelog => null()
-      if (c_associated(fPtr)) then
-         call c_f_procpointer(fPtr, distributelog)
-      end if
-
-   end subroutine assignlogdelegate_internal
-
    subroutine check_file_exist(filename, exist, forceclose)
       use m_xbeach_errorhandling
       implicit none
@@ -1214,75 +1178,6 @@ contains
          end if
       end if
    end subroutine check_file_exist
-
-   subroutine check_file_length_1D(fname, d1)
-      use m_xbeach_errorhandling
-
-      implicit none
-      character(*) :: fname
-      integer, intent(in) :: d1
-      integer :: fid, iost
-      integer :: i
-      real, dimension(:), allocatable :: dat
-
-      allocate (dat(d1))
-      open (newunit=fid, file=trim(fname))
-      read (fid, *, iostat=iost) (dat(i), i=1, d1)
-      if (iost /= 0) then
-         call writelog('sle', '', 'Error processing file ''', trim(fname), '''. File may be too short or contains invalid values.', &
-                       ' Terminating simulation')
-         call xbeach_errorhandler()
-      end if
-      close (fid)
-      deallocate (dat)
-
-   end subroutine check_file_length_1D
-
-   subroutine check_file_length_2D(fname, d1, d2)
-      use m_xbeach_errorhandling
-
-      implicit none
-      character(*) :: fname
-      integer, intent(in) :: d1, d2
-      integer :: fid, iost
-      integer :: i, j
-      real, dimension(:, :), allocatable :: dat
-
-      allocate (dat(d1, d2))
-      open (newunit=fid, file=trim(fname))
-      read (fid, *, iostat=iost) ((dat(i, j), i=1, d1), j=1, d2)
-      if (iost /= 0) then
-         call writelog('sle', '', 'Error processing file ''', trim(fname), '''. File may be too short or contains invalid values.', &
-                       ' Terminating simulation')
-         call xbeach_errorhandler()
-      end if
-      close (fid)
-      deallocate (dat)
-
-   end subroutine check_file_length_2D
-
-   subroutine check_file_length_3D(fname, d1, d2, d3)
-      use m_xbeach_errorhandling
-
-      implicit none
-      character(*) :: fname
-      integer, intent(in) :: d1, d2, d3
-      integer :: fid, iost
-      integer :: i, j, k
-      real, dimension(:, :, :), allocatable :: dat
-
-      allocate (dat(d1, d2, d3))
-      open (newunit=fid, file=trim(fname))
-      read (fid, *, iostat=iost) (((dat(i, j, k), i=1, d1), j=1, d2), k=1, d3)
-      if (iost /= 0) then
-         call writelog('esl', 'Error processing file ''', trim(fname), '''. File may be too short or contains invalid values.', &
-                       ' Terminating simulation')
-         call xbeach_errorhandler()
-      end if
-      close (fid)
-      deallocate (dat)
-
-   end subroutine check_file_length_3D
 
    subroutine checkbcfilelength(tstop, instat, filename, nspectrumloc, filetype, nonh)
 

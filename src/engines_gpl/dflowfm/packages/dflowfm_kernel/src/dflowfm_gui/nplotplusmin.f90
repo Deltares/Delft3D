@@ -30,29 +30,31 @@
 !
 !
 module m_n_plot_plus_min
+   use m_textflow
+
    implicit none
 contains
-     subroutine nPLOTPLUSMIN(IPM)
-        use M_FLOW, only: nplot, kmx, ktop, kbot, kplot
-        use m_cell_geometry, only: ndx
+   subroutine nPLOTPLUSMIN(IPM)
+      use M_FLOW, only: nplot, kmx, ktop, kbot, kplot
+      use m_cell_geometry, only: ndx
 
-        integer :: IPM, NRLAY
+      integer :: IPM, NRLAY
 
-        if (IPM == 1) then
+      if (IPM == 1) then
 !         nPLOT = MIN(nPLOT+1,ndx)
-           nplot = nplot + 1
-           if (nplot > Ndx) nplot = nplot - Ndx
-        else if (ipm == -1) then
+         nplot = nplot + 1
+         if (nplot > Ndx) nplot = nplot - Ndx
+      else if (ipm == -1) then
 !         nPLOT = MAX(nPLOT-1,1)
-           nplot = nplot - 1
-           if (nplot < 1) nplot = nplot + Ndx
-        else
-           nplot = ipm
-        end if
-        if (kmx > 0) then
-           NRLAY = KTOP(NPLOT) - KBOT(NPLOT) + 1
-           KPLOT = max(1, min(KPLOT, NRLAY))
-        end if
-        call TEXTFLOW()
-     end subroutine nPLOTPLUSMIN
+         nplot = nplot - 1
+         if (nplot < 1) nplot = nplot + Ndx
+      else
+         nplot = ipm
+      end if
+      if (kmx > 0) then
+         NRLAY = KTOP(NPLOT) - KBOT(NPLOT) + 1
+         KPLOT = max(1, min(KPLOT, NRLAY))
+      end if
+      call TEXTFLOW()
+   end subroutine nPLOTPLUSMIN
 end module m_n_plot_plus_min

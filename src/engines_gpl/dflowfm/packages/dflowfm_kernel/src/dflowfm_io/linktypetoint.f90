@@ -30,6 +30,12 @@
 !
 !
 
+module m_linktypetoint
+
+   implicit none
+
+contains
+
    !> Parses a link type/mesh contact's type string into an integer
    !! that can be used to compare agains kn(3,:) codes.
    !!
@@ -56,3 +62,5 @@
       end select
 
    end function linkTypeToInt
+
+end module m_linktypetoint

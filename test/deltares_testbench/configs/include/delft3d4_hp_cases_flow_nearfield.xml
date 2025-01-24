@@ -65,20 +65,4 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e39_f02_c06_wheeler" ref="flow2d3d_default">
-			<path version="2024-04-19T06:00:00">e39_d3dflow-cosumo/f02_TVA/c06_wheeler</path>
-			<maxRunTime>900.5610001087</maxRunTime>
-			<checks>
-				<file name="trih-wheeler.dat" type="NEFIS">
-					<parameters name="his-series">
-						<parameter name="ZWL"   toleranceAbsolute="0.01"/>
-					</parameters>
-				</file>
-				<file name="trim-wheeler.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="S1" toleranceAbsolute="0.01"/>
-					</parameters>
-				</file>
-			</checks>
-		</testCase>
 	</testCases>

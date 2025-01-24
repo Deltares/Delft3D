@@ -29,7 +29,11 @@
 
 !
 !
+module m_timespaceinitialfield_mpi
 
+   implicit none
+
+contains
    !> perform interpolation on rank 0 only (and save some memory with multiple ranks on one node)
    !>   note: only methods "4" (in polygon) and "5" (trangulation) supported, averaging (method "6") not supported
    function timespaceinitialfield_mpi(x, y, z, N, filename, filetype, method, operand, transformcoef, iprimpos, kc) result(success)
@@ -44,19 +48,19 @@
       logical :: success
 
       integer, intent(in) :: N !< data size
-      double precision, dimension(N), intent(in) :: x(N) !< x-coordinates
-      double precision, dimension(N), intent(in) :: y(N) !< y-coordinates
-      double precision, dimension(N), intent(out) :: z(N) !< interpolated values
+      real(kind=dp), dimension(N), intent(in) :: x(N) !< x-coordinates
+      real(kind=dp), dimension(N), intent(in) :: y(N) !< y-coordinates
+      real(kind=dp), dimension(N), intent(out) :: z(N) !< interpolated values
       integer, dimension(N), intent(in) :: kc(N) !< 0=no, 1 = yes
 
       character(*), intent(in) :: filename !< name of data file
       integer, intent(in) :: filetype !< file type
       integer, intent(in) :: method !< interpolation method, only "4" and "5" supported
       character(1), intent(in) :: operand !< override, add
-      double precision, dimension(NTRANSFORMCOEF), intent(in) :: transformcoef !< Transformation coefficients
+      real(kind=dp), dimension(NTRANSFORMCOEF), intent(in) :: transformcoef !< Transformation coefficients
       integer, intent(in) :: iprimpos !< only needed for averaging, but not supported
 
-      double precision, dimension(:), allocatable :: xall, yall, zall
+      real(kind=dp), dimension(:), allocatable :: xall, yall, zall
 
       integer, dimension(:), allocatable :: nums, offset, kcall
 
@@ -123,3 +127,5 @@
 
       return
    end function timespaceinitialfield_mpi
+
+end module m_timespaceinitialfield_mpi

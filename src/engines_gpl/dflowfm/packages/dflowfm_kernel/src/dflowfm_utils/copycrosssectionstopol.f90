@@ -32,19 +32,31 @@
 
 !> Copy the original polygons that define the current cross sections
 !! to the active polygons in xpl,...
-subroutine copyCrossSectionsToPol()
-   use m_monitoring_crosssections
-   use m_polygon
-   use m_alloc
-   use m_append_crspath_to_pol
+module m_copycrosssectionstopol
+
    implicit none
-   integer :: i
 
-   npl = 0
-   call realloc(nampli, ncrs, fill=' ')
-   do i = 1, ncrs
-      nampli(i) = crs(i)%name
-      call appendCRSPathToPol(crs(i)%path)
-   end do
+   private
 
-end subroutine copyCrossSectionsToPol
+   public :: copycrosssectionstopol
+
+contains
+
+   subroutine copyCrossSectionsToPol()
+      use m_monitoring_crosssections
+      use m_polygon
+      use m_alloc
+      use m_append_crspath_to_pol
+
+      integer :: i
+
+      npl = 0
+      call realloc(nampli, ncrs, fill=' ')
+      do i = 1, ncrs
+         nampli(i) = crs(i)%name
+         call appendCRSPathToPol(crs(i)%path)
+      end do
+
+   end subroutine copyCrossSectionsToPol
+
+end module m_copycrosssectionstopol

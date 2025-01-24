@@ -234,7 +234,7 @@ contains
       call fglMatrixMode(GL_PROJECTION)
       call fglLoadIdentity()
 
-      call fglOrtho(X1, X2, Y1, Y2, 0, 1) ! world coordinates extent
+      call fglOrtho(real(X1, dp), real(X2, dp), real(Y1, dp), real(Y2, dp), real(0, dp), real(1, dp)) ! world coordinates extent
       call fglMatrixMode(GL_MODELVIEW)
 
       ! clear the screen
@@ -250,7 +250,7 @@ contains
          b = nbluep / 255d0
       end if
 
-      call fglClearColor(r, g, b, 0) ! screen background
+      call fglClearColor(real(r, sp), real(g, sp), real(b, sp), real(0, sp)) ! screen background
 
       call fglClear(GL_COLOR_BUFFER_BIT)
 
@@ -264,7 +264,7 @@ contains
       use M_DEVICES
       use user32
       implicit none
-      integer(1) :: res 
+      integer(1) :: res
 
       if (jaOpenGL == 0) then
          return
@@ -286,7 +286,7 @@ contains
       use M_DEVICES
       implicit none
       integer(HANDLE) :: ptr_bytes
-      integer(1) :: res 
+      integer(1) :: res
 
       type(T_BITMAPINFO) bmi
 
@@ -330,7 +330,7 @@ contains
 #ifdef HAVE_OPENGL
       use IFWINA ! renamed symbols to avoid conflicts
       implicit none
-      integer(1) :: res 
+      integer(1) :: res
       integer :: pixelFormat, error_code
       type(T_PixelFormatDescriptor) pfd
 
@@ -376,14 +376,14 @@ contains
 
 #ifdef HAVE_OPENGL
       integer(HANDLE) :: font
-      integer(1) :: res 
+      integer(1) :: res
 
       ! prepare the font to render text in
       font = CreateFont(height, 0, 0, 0, & ! font size
                         FW_NORMAL, & ! bold
-                        .false., & ! italic
-                        .false., & ! underline
-                        .false., & ! strikout
+                        0, & ! italic
+                        0, & ! underline
+                        0, & ! strikout
                         ANSI_CHARSET, &
                         OUT_TT_PRECIS, &
                         CLIP_DEFAULT_PRECIS, &
@@ -396,20 +396,6 @@ contains
 !    res = SelectObject(hdc, prevFont) ! select old font again
       res = DeleteObject(font) ! delete temporary font
 
-#endif
-   end subroutine
-
-   subroutine DeInitializeOpenGl
-#ifdef HAVE_OPENGL
-      use IFWINA
-      implicit none
-      integer(1) :: res 
-
-      res = DeleteObject(hbitmap)
-      res = fwglMakeCurrent(NULL, NULL)
-      res = fwglDeleteContext(HRC)
-      res = DeleteDC(memDC)
-      res = ReleaseDC(HWND, HDC)
 #endif
    end subroutine
 

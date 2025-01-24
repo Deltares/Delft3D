@@ -367,7 +367,7 @@
    integer                             :: idim
    real(kind=hp)                       :: rd
    real(kind=hp)                       :: slo(NDIM)
-   real(kind=hp)                       :: xp, yp, zp(NDIM), xpmin, xpmax,ypmin, ypmax
+   real(kind=hp)                       :: xp, yp, xpmin, xpmax,ypmin, ypmax
    real(kind=hp)                       :: XL(3),YL(3)
    real(kind=hp), allocatable          :: xx(:), yy(:) , zz(:,:)
    integer      , allocatable          :: ind(:)
@@ -383,7 +383,10 @@
    type(kdtree_instance)               :: sampletree
    integer                             :: numsam, ii, k1, jakdtree2
    real(kind=hp)                       :: R2Search, dist2, cof1, cof2
-
+   real(kind=hp), allocatable, dimension(:) :: zp
+   
+   allocate(zp(NDIM))
+   
    jakdtree2 = jakdtree
 
    jakc = 0

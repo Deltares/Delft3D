@@ -30,17 +30,26 @@
 !
 !
 
-      subroutine SMALLSCREEN()
-         use m_screenarea
-         use m_view_port
+module m_smallscreen
 
-         implicit none
-         double precision :: xright
-         double precision :: ytop
+   implicit none
 
-         YTOP = max(0.95d0, 1 - YBOT)
-         XRIGHT = max(0.90d0, 1 - XLEFT)
-         call viewport(real(XLEFT), real(YBOT), real(XRIGHT), real(YTOP))
+contains
 
-         return
-      end
+   subroutine SMALLSCREEN()
+      use precision, only: dp
+      use m_screenarea
+      use m_view_port
+
+      implicit none
+      real(kind=dp) :: xright
+      real(kind=dp) :: ytop
+
+      YTOP = max(0.95d0, 1 - YBOT)
+      XRIGHT = max(0.90d0, 1 - XLEFT)
+      call viewport(real(XLEFT), real(YBOT), real(XRIGHT), real(YTOP))
+
+      return
+   end
+
+end module m_smallscreen

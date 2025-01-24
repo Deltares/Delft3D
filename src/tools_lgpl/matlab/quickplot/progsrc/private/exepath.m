@@ -32,4 +32,8 @@ function D = exepath
 %   $Id$
 
 %#mex
-error('Missing MEX-file EXEPATH');
+try
+    D = exepath_precompiled
+catch
+    error('Missing MEX-file "exepath"');
+end

@@ -30,37 +30,49 @@
 !
 !
 
-  recursive subroutine WALK1D(K1, IBR, NRL, JASTOP, KN316)
+module m_walk1d
 
-     use m_netw
-     use gridoperations
+   implicit none
 
-     implicit none
-     integer :: K1, K2, IBR, NRL, JASTOP, KN316
+   private
 
-     integer :: KK, L, KA
+   public :: walk1d
 
-     JASTOP = 0
-     do KK = 1, NMK(K1)
-        L = NOD(K1)%LIN(KK)
-        if (LC(L) == 0 .and. KN(3, L) == KN316) then
+contains
 
-           call OTHERNODE(K1, L, K2)
-           call GAANWESTOPPEN(K2, KN316, JASTOP)
+   recursive subroutine WALK1D(K1, IBR, NRL, JASTOP, KN316)
 
-           LC(L) = IBR; NRL = NRL + 1
-           LIB(NRL) = L; K1BR(NRL) = K1; IBN(NRL) = IBR; NRLB(L) = NRL
+      use m_gaanwestoppen, only: gaanwestoppen
+      use m_netw
+      use gridoperations
 
-           if (JASTOP == 1) then
-              return
-           end if
+      integer :: K1, K2, IBR, NRL, JASTOP, KN316
 
-           KA = K2
-           call WALK1D(KA, IBR, NRL, JASTOP, KN316)
+      integer :: KK, L, KA
 
-           if (JASTOP == 1) then
-              return
-           end if
-        end if
-     end do
-  end subroutine WALK1D
+      JASTOP = 0
+      do KK = 1, NMK(K1)
+         L = NOD(K1)%LIN(KK)
+         if (LC(L) == 0 .and. KN(3, L) == KN316) then
+
+            call OTHERNODE(K1, L, K2)
+            call GAANWESTOPPEN(K2, KN316, JASTOP)
+
+            LC(L) = IBR; NRL = NRL + 1
+            LIB(NRL) = L; K1BR(NRL) = K1; IBN(NRL) = IBR; NRLB(L) = NRL
+
+            if (JASTOP == 1) then
+               return
+            end if
+
+            KA = K2
+            call WALK1D(KA, IBR, NRL, JASTOP, KN316)
+
+            if (JASTOP == 1) then
+               return
+            end if
+         end if
+      end do
+   end subroutine WALK1D
+
+end module m_walk1d

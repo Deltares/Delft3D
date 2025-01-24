@@ -30,6 +30,21 @@
 !
 !
 
+module m_compute_wave_forcing_rhs
+   use m_xbeachwaves, only: xbeach_waves, xbeach_flow_bc, xbeach_wave_compute_flowforcing2D, xbeach_apply_wave_bc, xbeach_wave_bc, xbeach_wave_compute_flowforcing3D
+   use m_wave_makeplotvars, only: wave_makeplotvars
+   use m_tauwave, only: tauwave
+   use m_setwavmubnd, only: setwavmubnd
+   use m_setwavfu, only: setwavfu
+
+   implicit none
+
+   private
+
+   public :: compute_wave_forcing_rhs
+
+contains
+
    subroutine compute_wave_forcing_RHS()
       use m_xbeach_data
       use m_waves
@@ -107,3 +122,5 @@
 1234  continue
       return
    end subroutine compute_wave_forcing_RHS
+
+end module m_compute_wave_forcing_rhs

@@ -30,6 +30,19 @@
 !
 !
 module m_draw_nu
+   use m_txtlines
+   use m_textflow
+   use m_teksorsin
+   use m_teksam
+   use m_tekrai
+   use m_tekprofs
+   use m_tekpolygon
+   use m_teknetstuff
+   use m_teknet
+   use m_teklan
+   use m_tekflowstuff
+   use m_smallscreen
+   use m_showbitmap
    use m_plot
    use m_netnodevals
    use m_netlinkvals

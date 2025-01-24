@@ -30,41 +30,53 @@
 !
 !
 
-      subroutine CLOSENETBNDLINK(XP1, YP1, N1)
-         use m_netw
-         use geometry_module, only: dlinedis
-         use m_missing, only: dmiss
-         use m_sferic, only: jsferic, jasfer3D
+module m_closenetbndlink
 
-         implicit none
-         integer :: n1
-         double precision :: xp1
-         double precision :: yp1
+   implicit none
 
-         double precision :: dismin
-         integer :: ja
-         integer :: k1
-         integer :: k2
-         integer :: l
-         double precision :: xa, ya, xb, yb, dis, xn, yn
+   private
 
-         N1 = 0
-         DISMIN = 9e+33
-         do L = 1, NUML
-            if (LNN(L) == 1) then
-               K1 = KN(1, L); K2 = KN(2, L)
-               XA = XK(K1)
-               YA = YK(K1)
-               XB = XK(K2)
-               YB = YK(K2)
-               call dLINEDIS(XP1, YP1, XA, YA, XB, YB, JA, DIS, XN, YN, jsferic, jasfer3D, dmiss)
-               if (JA == 1) then
-                  if (DIS < DISMIN) then
-                     N1 = L
-                     DISMIN = DIS
-                  end if
+   public :: closenetbndlink
+
+contains
+
+   subroutine CLOSENETBNDLINK(XP1, YP1, N1)
+      use precision, only: dp
+      use m_netw
+      use geometry_module, only: dlinedis
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+
+      integer :: n1
+      real(kind=dp) :: xp1
+      real(kind=dp) :: yp1
+
+      real(kind=dp) :: dismin
+      integer :: ja
+      integer :: k1
+      integer :: k2
+      integer :: l
+      real(kind=dp) :: xa, ya, xb, yb, dis, xn, yn
+
+      N1 = 0
+      DISMIN = 9e+33
+      do L = 1, NUML
+         if (LNN(L) == 1) then
+            K1 = KN(1, L); K2 = KN(2, L)
+            XA = XK(K1)
+            YA = YK(K1)
+            XB = XK(K2)
+            YB = YK(K2)
+            call dLINEDIS(XP1, YP1, XA, YA, XB, YB, JA, DIS, XN, YN, jsferic, jasfer3D, dmiss)
+            if (JA == 1) then
+               if (DIS < DISMIN) then
+                  N1 = L
+                  DISMIN = DIS
                end if
             end if
-         end do
+         end if
+      end do
 
-      end subroutine CLOSENETBNDLINK
+   end subroutine CLOSENETBNDLINK
+
+end module m_closenetbndlink

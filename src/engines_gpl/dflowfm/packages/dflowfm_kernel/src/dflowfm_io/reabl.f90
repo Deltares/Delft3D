@@ -30,29 +30,38 @@
 !
 !
 
- subroutine reabl(mout) ! read bottom level
-    use m_flowgeom
-    use M_samples
-    use m_missing
-    use m_delsam
-    use m_reasam
-    use m_qn_read_error
-    use m_interpdivers
-    implicit none
-    integer :: mout
-    character(len=256) :: rec
+module m_reabl
 
-    call reasam(mout, 0)
+   implicit none
 
-    bl = dmiss
+contains
 
-    call interpdivers(1)
+   subroutine reabl(mout) ! read bottom level
+      use m_flowgeom
+      use M_samples
+      use m_missing
+      use m_delsam
+      use m_reasam
+      use m_qn_read_error
+      use m_interpdivers
+      use m_filez, only: doclose
 
-    call delsam(-1) ! deallocate
+      integer :: mout
+      character(len=256) :: rec
 
-    return
+      call reasam(mout, 0)
 
-888 call qnreaderror('trying to read nr of internal flow nodes but getting', rec, mout)
-    call doclose(mout)
+      bl = dmiss
 
- end subroutine reabl
+      call interpdivers(1)
+
+      call delsam(-1) ! deallocate
+
+      return
+
+888   call qnreaderror('trying to read nr of internal flow nodes but getting', rec, mout)
+      call doclose(mout)
+
+   end subroutine reabl
+
+end module m_reabl

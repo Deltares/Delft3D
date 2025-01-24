@@ -30,49 +30,59 @@
 !
 !
 
- subroutine reanumlimdt()
-    use m_flowgeom
-    use m_GlobalParameters, only: INDTP_ALL
-    use MessageHandling, only: IdLen
+module m_reanumlimdt
 
-    use m_flow
-    use m_partitioninfo
-    use m_samples
-    use m_find_flownode, only: find_nearest_flownodes
+   implicit none
 
-    implicit none
+   private
 
-    character(len=IdLen) :: name, nams
-    logical :: jawel
-    integer :: mlim, k, kk, jakdtree = 1, jaoutside = 0
-    integer, allocatable :: knum(:)
+   public :: reanumlimdt
 
-    if (jampi == 0) then
-       name = 'prev_numlimdt.xyz'
-    else
-       name = 'prev_numlimdt'//'_'//trim(sdmn)//'.xyz'
-    end if
-    inquire (file=name, exist=jawel)
-    if (jawel) then
+contains
 
-       call oldfil(mlim, trim(name))
-       call increasesam(ndx)
-       kk = 0
-       do k = 1, ndx
-          kk = kk + 1
-          read (mlim, *, end=999) xs(kk), ys(kk), zs(kk)
-       end do
-999    continue
-       call doclose(mlim)
-       allocate (knum(ndx)); knum = 0
-       kk = kk - 1
-       call find_nearest_flownodes(kk, xs, ys, nams, knum, jakdtree, jaoutside, INDTP_ALL)
-       do k = 1, kk
-          if (knum(k) > 0) then
-             numlimdt(knum(k)) = zs(k)
-          end if
-       end do
+   subroutine reanumlimdt()
+      use m_flowgeom
+      use m_GlobalParameters, only: INDTP_ALL
+      use MessageHandling, only: IdLen
+      use m_flow
+      use m_partitioninfo
+      use m_samples
+      use m_find_flownode, only: find_nearest_flownodes
+      use m_filez, only: oldfil, doclose
 
-       deallocate (xs, ys, zs, knum)
-    end if
- end subroutine reanumlimdt
+      character(len=IdLen) :: name, nams
+      logical :: jawel
+      integer :: mlim, k, kk, jakdtree = 1, jaoutside = 0
+      integer, allocatable :: knum(:)
+
+      if (jampi == 0) then
+         name = 'prev_numlimdt.xyz'
+      else
+         name = 'prev_numlimdt'//'_'//trim(sdmn)//'.xyz'
+      end if
+      inquire (file=name, exist=jawel)
+      if (jawel) then
+
+         call oldfil(mlim, trim(name))
+         call increasesam(ndx)
+         kk = 0
+         do k = 1, ndx
+            kk = kk + 1
+            read (mlim, *, end=999) xs(kk), ys(kk), zs(kk)
+         end do
+999      continue
+         call doclose(mlim)
+         allocate (knum(ndx)); knum = 0
+         kk = kk - 1
+         call find_nearest_flownodes(kk, xs, ys, nams, knum, jakdtree, jaoutside, INDTP_ALL)
+         do k = 1, kk
+            if (knum(k) > 0) then
+               numlimdt(knum(k)) = zs(k)
+            end if
+         end do
+
+         deallocate (xs, ys, zs, knum)
+      end if
+   end subroutine reanumlimdt
+
+end module m_reanumlimdt

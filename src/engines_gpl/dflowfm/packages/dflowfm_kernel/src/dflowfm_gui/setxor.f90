@@ -31,15 +31,23 @@
 !
 
 !
-      subroutine SETXOR(I)
-         implicit none
-         integer :: i
+module m_setxor
+
+   implicit none
+
+contains
+
+   subroutine SETXOR(I)
+      implicit none
+      integer :: i
 !
-         if (I == 1) then
-            call IGRPLOTMODE('E')
-         else if (I == 0) then
-            call IGRPLOTMODE('N')
-         end if
+      if (I == 1) then
+         call IGRPLOTMODE('E')
+      else if (I == 0) then
+         call IGRPLOTMODE('N')
+      end if
 !
-         return
-      end
+      return
+   end
+
+end module m_setxor

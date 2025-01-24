@@ -30,6 +30,7 @@
 !
 !
 module m_update_fourier
+   use m_getblu_from_bob, only: getblu_from_bob
    use m_fourier_analysis
    implicit none
    private
@@ -41,6 +42,7 @@ contains
 
 !> update module array energy head eh
    subroutine update_eh()
+      use precision, only: dp
       use m_fourier_analysis, only: eh
       use m_flow, only: s1, ucx, ucy
       use m_flowgeom, only: ndx
@@ -51,7 +53,7 @@ contains
 
       integer :: k !< flow node index
       integer :: ierr !< error flag
-      double precision :: twogi !< 1/(2*g)
+      real(kind=dp) :: twogi !< 1/(2*g)
 
       call realloc(eh, ndx, stat=ierr)
       call aerr('eh(ndx)', ierr, ndx)
@@ -66,6 +68,7 @@ contains
 !! first make sure the size is correct
 !! then fill using getblu_from_bob
    subroutine update_wl_at_links()
+      use precision, only: dp
       use m_fourier_analysis, only: sul
       use m_flow, only: hu
       use m_flowgeom, only: lnx
@@ -76,7 +79,7 @@ contains
       integer :: L !< flow link index
       integer :: iup !< dummy upwind node index
       integer :: ierr !< error flag
-      double precision :: blu !< bed level at flow link
+      real(kind=dp) :: blu !< bed level at flow link
 
       call realloc(sul, lnx, stat=ierr)
       call aerr('sul(lnx)', ierr, lnx)
@@ -90,6 +93,7 @@ contains
 
 !> prepare all quantities needed by the Fourier analysis and perform Fourier computation
    subroutine update_fourier(ti_fou)
+      use precision, only: dp
       use m_fourier_analysis
       use m_flowtimes, only: time0
       use m_flow, only: ndkx, workx, worky, ucmag, jaeulervel
@@ -97,7 +101,7 @@ contains
       use m_oned_functions, only: updateFreeboard, updateDepthOnGround, updateVolOnGround
       use m_get_ucx_ucy_eul_mag
 
-      double precision, intent(in) :: ti_fou !< Fourier time step
+      real(kind=dp), intent(in) :: ti_fou !< Fourier time step
 
       if (.not. fourierIsActive()) then
          return

@@ -50,6 +50,12 @@
 !
 !!--declarations----------------------------------------------------------------
 
+module m_fm_thahbc
+
+   implicit none
+
+contains
+
    subroutine fm_thahbc()
 
       use fm_external_forcings_data
@@ -114,6 +120,7 @@
    end subroutine fm_thahbc
 
    subroutine thconst(iconst, nbnd, zbnd, kbnd, tht, thz)
+      use precision, only: dp
 
       use m_transport
       use mathconsts, only: pi_hp
@@ -128,9 +135,9 @@
 
       integer, intent(in) :: iconst, nbnd
       integer, intent(in) :: kbnd(5, nbnd)
-      double precision, intent(inout) :: zbnd(nbnd * kmxd), tht(nbnd), thz(nbnd * kmxd)
+      real(kind=dp), intent(inout) :: zbnd(nbnd * kmxd), tht(nbnd), thz(nbnd * kmxd)
 
-      double precision :: thfactor, rettim, q
+      real(kind=dp) :: thfactor, rettim, q
       integer :: i, j, l, lf, m, n, lb, lt, ki
 
       if (nbnd == 0) then
@@ -177,3 +184,4 @@
       end do
    end subroutine
 
+end module m_fm_thahbc

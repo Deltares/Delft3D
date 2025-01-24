@@ -30,37 +30,47 @@
 !
 !
 
- subroutine reablu(mout) ! read bottom level u points
-    use M_FLOWGEOM
-    use m_qnerror
-    use m_qn_read_error
-    use m_set_bobs
-    implicit none
-    integer :: mout
-    character(len=256) :: rec
+module m_reablu
 
-    integer :: L, L1
-    integer :: lnxr
-    double precision :: rd
-    read (mout, '(a)') rec
-    L1 = index(rec, '=') + 1
-    read (rec(L1:), *, err=888) lnxr
-    if (lnxr /= lnx) then
-       call doclose(mout)
-       call qnerror('nr of flowlinks read .ne. nr of flowlinks', ' ', ' ')
-       return
-    end if
+   implicit none
 
-    do L = 1, lnx
-       read (mout, *) rd, rd, blu(L)
-    end do
-    call doclose(mout)
+contains
 
-    call setbobs()
+   subroutine reablu(mout) ! read bottom level u points
+      use precision, only: dp
+      use M_FLOWGEOM
+      use m_qnerror
+      use m_qn_read_error
+      use m_set_bobs
+      use m_filez, only: doclose
 
-    return
+      integer :: mout
+      character(len=256) :: rec
 
-888 call qnreaderror('trying to read nr of flowlinks but getting', rec, mout)
-    call doclose(mout)
+      integer :: L, L1
+      integer :: lnxr
+      real(kind=dp) :: rd
+      read (mout, '(a)') rec
+      L1 = index(rec, '=') + 1
+      read (rec(L1:), *, err=888) lnxr
+      if (lnxr /= lnx) then
+         call doclose(mout)
+         call qnerror('nr of flowlinks read .ne. nr of flowlinks', ' ', ' ')
+         return
+      end if
 
- end subroutine reablu
+      do L = 1, lnx
+         read (mout, *) rd, rd, blu(L)
+      end do
+      call doclose(mout)
+
+      call setbobs()
+
+      return
+
+888   call qnreaderror('trying to read nr of flowlinks but getting', rec, mout)
+      call doclose(mout)
+
+   end subroutine reablu
+
+end module m_reablu

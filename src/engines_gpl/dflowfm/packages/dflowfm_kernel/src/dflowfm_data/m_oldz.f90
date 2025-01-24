@@ -34,6 +34,7 @@
 !---------------------------------------------------------------------------------------------------------------------------------
 ! net.f90
 module m_oldz
+   use precision, only: dp
    implicit none
-   double precision :: OZ = 999
+   real(kind=dp) :: OZ = 999
 end module m_oldz

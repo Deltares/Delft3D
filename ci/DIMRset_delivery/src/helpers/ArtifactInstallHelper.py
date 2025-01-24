@@ -1,14 +1,36 @@
 import os
-from shutil import unpack_archive
 from typing import List
+import tarfile
 
 from helpers.SshClient import SshClient
 from lib.TeamCity import TeamCity
 from settings.general_settings import NETWORK_BASE_PATH, LINUX_ADDRESS
-from settings.teamcity_settings import DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID
+from settings.teamcity_settings import TEAMCITY_IDS
 from settings.teamcity_settings import NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT
 from settings.teamcity_settings import NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT
 
+def extract_tar(tar_path: str, target_path: str):
+    """
+    Extracts a tar archive to a target path.
+
+
+    Parameters
+    ----------
+    tar_path: str
+        The path to the tar archive.
+    target_path: str
+        The path to extract the tar archive to.
+
+    Notes
+    -----
+    - The function removes the unix permission bits when on Windows. as the permission bits are not supported on Windows.
+    """
+    with tarfile.open(tar_path, "r:gz") as tar:
+        for member in tar.getmembers():
+            # Strip the Unix permission bits when on Windows
+            if os.name == 'nt':
+                member.mode = None
+            tar.extract(member, path=target_path)
 
 class ArtifactInstallHelper(object):
     """ Class responsible for downloading, unpacking and installing the DIMR artifacts. """
@@ -30,7 +52,7 @@ class ArtifactInstallHelper(object):
     def download_artifacts_to_network_drive(self) -> None:
         """ Downloads the DIMR artifacts to the network drive. """
         latest_dimr_collector_release_signed_build_id = self.__teamcity.get_latest_build_id_for_build_type_id(
-            build_type_id=DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID)
+            build_type_id=TEAMCITY_IDS.DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID.value)
         artifact_names = \
             self.__teamcity.get_build_artifact_names(build_id=latest_dimr_collector_release_signed_build_id)
 
@@ -87,7 +109,8 @@ class ArtifactInstallHelper(object):
             with open(artifact_path, 'wb') as f:
                 f.write(artifact)
             print(f"Unpacking {artifact_to_download}...")
-            unpack_archive(artifact_path, extract_dir=file_path)
+
+            extract_tar(artifact_path, file_path)
             print(f"Deleting {artifact_to_download}...")
             os.remove(artifact_path)
             print(f"Successfully downloaded {artifact_to_download}.")

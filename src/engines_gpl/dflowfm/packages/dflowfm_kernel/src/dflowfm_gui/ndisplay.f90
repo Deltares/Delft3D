@@ -31,8 +31,14 @@
 !
 
 module m_ndisplay
+   use m_zoom3, only: zoom3
+   use m_setcoltabfile, only: setcoltabfile
+   use m_checknetwork, only: checknetwork
+   use m_add_tracer, only: add_tracer
+   use m_textparameters
+   use m_setwy
 
-implicit none
+   implicit none
 
 contains
 
@@ -57,6 +63,7 @@ contains
       use m_paramtext
       use m_tek_num_netcells
       use m_set_branch_lc
+      use m_filez, only: oldfil, doclose, message
 
       integer :: ium
       integer :: maxopt
@@ -70,7 +77,7 @@ contains
       integer :: ierror
       integer :: numopt
       integer, parameter :: MAXOP = 64
-      character * 40 OPTION(MAXOP), exp(MAXOP)
+      character(len=40) :: OPTION(MAXOP), exp(MAXOP)
 
 1234  continue
 

@@ -27,6 +27,16 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_set_var
+
+implicit none
+
+private
+
+public :: bmi_set_var
+
+contains
+
   select case(var_name)
 %for var in variables:
   case("${var['name']}")
@@ -44,3 +54,5 @@
      ${var['name']}${dimstr(":"*var['rank'])} = x_${var['rank']}d_${var['type']}_ptr
 %endfor
   end select
+
+end module m_bmi_set_var

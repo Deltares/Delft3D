@@ -30,6 +30,8 @@
 !
 !
 module m_reapol
+   use m_reapol_nampli, only: reapol_nampli
+
    implicit none
 contains
    subroutine reapol(mpol, jadoorladen)

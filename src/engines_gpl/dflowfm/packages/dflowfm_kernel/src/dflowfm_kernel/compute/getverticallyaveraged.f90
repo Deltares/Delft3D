@@ -30,22 +30,31 @@
 !
 !
 
-subroutine getverticallyaveraged(sal, mx)
-   use m_flow
-   use m_flowgeom
-   use m_get_kbot_ktop
-   implicit none
-   double precision :: sal(mx)
-   integer :: n, k, kb, kt, mx
+module m_getverticallyaveraged
 
-   do n = 1, ndx
-      call getkbotktop(n, kb, kt)
-      sal(n) = 0d0
-      if (vol1(n) > 0) then
-         do k = kb, kt
-            sal(n) = sal(n) + sal(k) * vol1(k)
-         end do
-         sal(n) = sal(n) / vol1(n)
-      end if
-   end do
-end subroutine getverticallyaveraged
+   implicit none
+
+contains
+
+   subroutine getverticallyaveraged(sal, mx)
+      use precision, only: dp
+      use m_flow
+      use m_flowgeom
+      use m_get_kbot_ktop
+      implicit none
+      integer :: n, k, kb, kt, mx
+      real(kind=dp) :: sal(mx)
+
+      do n = 1, ndx
+         call getkbotktop(n, kb, kt)
+         sal(n) = 0d0
+         if (vol1(n) > 0) then
+            do k = kb, kt
+               sal(n) = sal(n) + sal(k) * vol1(k)
+            end do
+            sal(n) = sal(n) / vol1(n)
+         end if
+      end do
+   end subroutine getverticallyaveraged
+
+end module m_getverticallyaveraged

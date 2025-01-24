@@ -31,6 +31,7 @@
 !
 
 module m_sobekdfm !
+   use precision, only: dp
    implicit none
 
    private
@@ -48,14 +49,14 @@ module m_sobekdfm !
    ! 1D2D boundary definitions for a dedicated 1D2D SOBEK -- D-Flow FM coupling
    integer, public :: n1d2dbnd = 0 !< number of 1d2d boundary segments
    integer, public :: nbnd1d2d !< 1d2d boundary points dimension
-   double precision, public, allocatable :: xbnd1d2d(:) !< 1d2d boundary points xcor
-   double precision, public, allocatable :: ybnd1d2d(:) !< 1d2d boundary points ycor
-   double precision, public, allocatable, target :: zbnd1d2d1(:) !< [m] 1d2d boundary points 1d water level at new time level {"shape": ["nbnd1d2d"]}
-   double precision, public, allocatable, target :: zbnd1d2d0(:) !< [m] 1d2d boundary points 1d water level at previous time level {"shape": ["nbnd1d2d"]}
-   double precision, public, allocatable, target :: zcrest1d2d(:) !< [m] 1d2d helper array with crest levels {"shape": ["nbnd1d2d"]}
+   real(kind=dp), public, allocatable :: xbnd1d2d(:) !< 1d2d boundary points xcor
+   real(kind=dp), public, allocatable :: ybnd1d2d(:) !< 1d2d boundary points ycor
+   real(kind=dp), public, allocatable, target :: zbnd1d2d1(:) !< [m] 1d2d boundary points 1d water level at new time level {"shape": ["nbnd1d2d"]}
+   real(kind=dp), public, allocatable, target :: zbnd1d2d0(:) !< [m] 1d2d boundary points 1d water level at previous time level {"shape": ["nbnd1d2d"]}
+   real(kind=dp), public, allocatable, target :: zcrest1d2d(:) !< [m] 1d2d helper array with crest levels {"shape": ["nbnd1d2d"]}
    integer, public, allocatable, target :: edgenumbers1d2d(:) !< [m] 1d2d helper array with edge numbers {"shape": ["nbnd1d2d"]}
 
-   double precision, public, allocatable :: xy2bnd1d2d(:, :) !< 1d2d boundary 'external tolerance point'
+   real(kind=dp), public, allocatable :: xy2bnd1d2d(:, :) !< 1d2d boundary 'external tolerance point'
    integer, public, allocatable, target :: kbnd1d2d(:, :) !< [-] 1d2d boundary points index array  {"shape": ["5","nbnd1d2d"]}
                                                         !! 1,* = index in s1 boundary point
                                                         !! 2,* = index in s1 first point on the inside
@@ -69,39 +70,39 @@ module m_sobekdfm !
                                                         !!                        6 = waterlevel outflow
                                                         !! 5,* = member of boundary number somuch of this type
 
-   double precision, save, allocatable, public :: b1ds(:)
-   double precision, save, allocatable, public :: b1dq(:)
-   double precision, save, allocatable, public :: d1d(:)
-   double precision, save, allocatable, public :: b_2di(:)
-   double precision, save, allocatable, public :: b_2dv(:)
-   double precision, save, allocatable, public :: d_2dv(:)
-   double precision, save, allocatable, public :: s0_2d(:)
-   double precision, save, allocatable, public :: b_i(:)
-   double precision, save, allocatable, public :: s0_1d(:)
-   double precision, save, allocatable, public :: s1_2d(:)
-   double precision, save, allocatable, public, target :: width_1d(:) !< [m] width 1D SOBEK channel --2D FM coupling  {"shape": ["nbnd1d2d"]}
-   double precision, save, allocatable, public :: CFL(:)
-   double precision, save, allocatable, public :: sb_1d2d(:)
+   real(kind=dp), save, allocatable, public :: b1ds(:)
+   real(kind=dp), save, allocatable, public :: b1dq(:)
+   real(kind=dp), save, allocatable, public :: d1d(:)
+   real(kind=dp), save, allocatable, public :: b_2di(:)
+   real(kind=dp), save, allocatable, public :: b_2dv(:)
+   real(kind=dp), save, allocatable, public :: d_2dv(:)
+   real(kind=dp), save, allocatable, public :: s0_2d(:)
+   real(kind=dp), save, allocatable, public :: b_i(:)
+   real(kind=dp), save, allocatable, public :: s0_1d(:)
+   real(kind=dp), save, allocatable, public :: s1_2d(:)
+   real(kind=dp), save, allocatable, public, target :: width_1d(:) !< [m] width 1D SOBEK channel --2D FM coupling  {"shape": ["nbnd1d2d"]}
+   real(kind=dp), save, allocatable, public :: CFL(:)
+   real(kind=dp), save, allocatable, public :: sb_1d2d(:)
    integer, save, allocatable, public :: FlowCond(:) !< flow condition 0: closed, 1: free flow 1D to 2D, 2: free flow from 2D to 1D, 3: submerged flow
-   double precision, save, allocatable, public, target :: qzeta_1d2d(:) !< [m3 s-1] 1d2d output array via BMI for qzeta in 1D SOBEK--2D FM coupling  {"shape": ["nbnd1d2d"]}
-   double precision, save, allocatable, public, target :: qlat_1d2d(:) !< [m3 s-1] 1d2d output array via BMI for qlat in 1D SOBEK--2D FM coupling  {"shape": ["nbnd1d2d"]}
-   double precision, save, allocatable, public, target :: qtotal_1d2d(:) !< [m3 s-1] 1d2d output array via BMI for qlat in 1D SOBEK--2D FM coupling  {"shape": ["nbnd1d2d"]}
+   real(kind=dp), save, allocatable, public, target :: qzeta_1d2d(:) !< [m3 s-1] 1d2d output array via BMI for qzeta in 1D SOBEK--2D FM coupling  {"shape": ["nbnd1d2d"]}
+   real(kind=dp), save, allocatable, public, target :: qlat_1d2d(:) !< [m3 s-1] 1d2d output array via BMI for qlat in 1D SOBEK--2D FM coupling  {"shape": ["nbnd1d2d"]}
+   real(kind=dp), save, allocatable, public, target :: qtotal_1d2d(:) !< [m3 s-1] 1d2d output array via BMI for qlat in 1D SOBEK--2D FM coupling  {"shape": ["nbnd1d2d"]}
 
    integer, parameter :: n4 = 5
-   double precision, save, private :: kdx_i_2d
-   double precision, save, private :: kdx_I_1d
+   real(kind=dp), save, private :: kdx_i_2d
+   real(kind=dp), save, private :: kdx_I_1d
    logical, save, public :: sbkdfm_new_timestep
    logical, save, public :: sbkdfm_first_timestep
 
    !TODO JNg: verliescoefficienten ce en cw implementeren
-   double precision, parameter :: ce = 1d0
-   double precision, parameter :: cw = 1d0
-   double precision :: dx_1d2d
-   double precision, public :: sbkdfm_umin
-   double precision :: sbkdfm_relax = 0.1d0
+   real(kind=dp), parameter :: ce = 1d0
+   real(kind=dp), parameter :: cw = 1d0
+   real(kind=dp) :: dx_1d2d
+   real(kind=dp), public :: sbkdfm_umin
+   real(kind=dp) :: sbkdfm_relax = 0.1d0
    integer :: sbkdfm_umin_method
-   double precision, parameter :: dryingAccur = 1d-4
-   double precision :: sbkdfm_minimal_1d2d_embankment !< Minimal crest height of 1D2D SOBEK-DFM embankments (height, not level).
+   real(kind=dp), parameter :: dryingAccur = 1d-4
+   real(kind=dp) :: sbkdfm_minimal_1d2d_embankment !< Minimal crest height of 1D2D SOBEK-DFM embankments (height, not level).
 
 contains
 
@@ -184,6 +185,7 @@ contains
 
    !> Set flooding thresholds for 1d2d interfaces/boundaries
    subroutine sethu_1d2d()
+      use precision, only: dp
 
       use m_flowparameters
       use m_flowgeom
@@ -192,8 +194,8 @@ contains
       integer :: ibnd
       integer :: k2
       integer :: L
-      double precision :: s0_up
-      double precision :: zs
+      real(kind=dp) :: s0_up
+      real(kind=dp) :: zs
 
       do ibnd = 1, nbnd1d2d
          k2 = kbnd1d2d(2, ibnd)
@@ -334,6 +336,7 @@ contains
 
 !
    subroutine compute_1d2d_coefficients()
+      use precision, only: dp
 
       use m_reduce
       use m_flowparameters
@@ -346,23 +349,23 @@ contains
 
       integer :: kb, k2, L
       integer :: ibnd
-      double precision :: f
-      double precision :: alfa_1d
-      double precision :: beta_1d
-      double precision :: alfa_2d
-      double precision :: beta_2d
-      double precision :: zs
-      double precision :: dx_uI
-      double precision :: dx_I
-      double precision :: q_1d2d
-      double precision :: s1_1d
-      double precision :: s0_up
-      double precision :: s0_down
-      double precision :: u_2d1d
-      double precision :: u_c
-      double precision :: s_cI
-      double precision :: alfa_sf
-      double precision :: dir
+      real(kind=dp) :: f
+      real(kind=dp) :: alfa_1d
+      real(kind=dp) :: beta_1d
+      real(kind=dp) :: alfa_2d
+      real(kind=dp) :: beta_2d
+      real(kind=dp) :: zs
+      real(kind=dp) :: dx_uI
+      real(kind=dp) :: dx_I
+      real(kind=dp) :: q_1d2d
+      real(kind=dp) :: s1_1d
+      real(kind=dp) :: s0_up
+      real(kind=dp) :: s0_down
+      real(kind=dp) :: u_2d1d
+      real(kind=dp) :: u_c
+      real(kind=dp) :: s_cI
+      real(kind=dp) :: alfa_sf
+      real(kind=dp) :: dir
 
       ! Program code
 

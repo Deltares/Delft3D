@@ -25,4 +25,4 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/flow2d3d)
 
 # Change project flags at the end of this file
-target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
+target_compile_options(${library_name} PRIVATE ${qauto_threaded_flags})

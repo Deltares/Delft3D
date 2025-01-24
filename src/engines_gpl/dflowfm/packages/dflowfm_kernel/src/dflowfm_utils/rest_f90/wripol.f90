@@ -33,13 +33,14 @@ module m_wripol
    implicit none
 contains
    subroutine WRIPOL(MPOL)
+      use precision, only: dp
       use M_POLYGON
       use m_missing
       use m_wrildb
 
       integer :: mpol, numnampli
       integer :: NCLAN(0)
-      double precision :: ZSH(0)
+      real(kind=dp) :: ZSH(0)
 
       if (NPL <= 0) return
       numnampli = size(nampli)

@@ -31,89 +31,10 @@
 !
 
 module interp
+
    implicit none
+   
 contains
-   subroutine linear_interp_2d(X, nx, Y, ny, Z, xx, yy, zz, method, exception)
-      use precision_basics, only: dp
-
-      implicit none
-      ! input/output
-      integer, intent(in) :: nx, ny
-      real(dp), dimension(nx), intent(in) :: X
-      real(dp), dimension(ny), intent(in) :: Y
-      real(dp), dimension(nx, ny), intent(in) :: Z
-      real(dp), intent(in) :: xx, yy
-      real(dp), intent(out) :: zz
-      character(len=*), intent(in) :: method
-      real(dp), intent(in) :: exception
-      ! internal
-      integer, dimension(4) :: ind
-      real(dp), dimension(2) :: yint
-      real(dp) :: modx, mody, disx, disy
-      logical :: interpX, interpY
-
-      ! does the interpolation point fall within the data?
-      if (xx >= minval(X) .and. xx <= maxval(X)) then
-         interpX = .true.
-      else
-         interpX = .false.
-      end if
-      if (yy >= minval(Y) .and. yy <= maxval(Y)) then
-         interpY = .true.
-      else
-         interpY = .false.
-      end if
-
-      if (interpX .and. interpY) then
-         ! find rank position xx in X direction
-         ind(1) = minloc(X, 1, X >= xx)
-         ind(2) = maxloc(X, 1, X <= xx)
-         ! find rank position yy in Y direction
-         ind(3) = minloc(Y, 1, Y >= yy)
-         ind(4) = maxloc(Y, 1, Y <= yy)
-         ! distance between X points and Y points
-         disx = X(ind(1)) - X(ind(2))
-         disy = Y(ind(3)) - Y(ind(4))
-         ! relative position of (xx,yy) on disx,disy
-         if (disx > 0.d0) then
-            modx = (xx - X(ind(2))) / disx
-         else
-            modx = 0.d0 ! xx corresponds exactly to X point
-         end if
-         if (disy > 0.d0) then
-            mody = (yy - Y(ind(4))) / disy
-         else
-            mody = 0.d0 ! yy corresponds exactly to Y point
-         end if
-         ! interpolate the correct Y value, based on two nearest X intersects
-         ! if disy==0 then only single interpolation needed. This could also be done for X,
-         ! but since this is used by waveparams and the interp angles (Y) are more often equal
-         ! this is probably faster.
-         if (disy > 0.d0) then
-            yint(1) = (1.d0 - modx) * Z(ind(2), ind(3)) + modx * Z(ind(1), ind(3))
-            yint(2) = (1.d0 - modx) * Z(ind(2), ind(4)) + modx * Z(ind(1), ind(4))
-            zz = (1.d0 - mody) * yint(2) + mody * yint(1)
-         else
-            zz = (1.d0 - modx) * Z(ind(2), ind(3)) + modx * Z(ind(1), ind(3))
-         end if
-      else
-         select case (method)
-         case ('interp')
-            zz = exception
-         case ('extendclosest')
-            ! find closest X point
-            ind(1) = minloc(abs(X - xx), 1)
-            ! find closest Y point
-            ind(3) = minloc(abs(Y - yy), 1)
-            ! external value given that of closest point
-            zz = Z(ind(1), ind(3))
-         case default
-            zz = exception
-         end select
-      end if
-
-   end subroutine linear_interp_2d
-
 !
 ! NAME
 !    linear_interp
@@ -318,55 +239,6 @@ contains
          end if
       end do
    end subroutine grmap
-
-   subroutine grmap2(f1, cellsz1i, n1, f2, cellsz2, n2, iref, &
-                   & w, np)
-  !!--description-----------------------------------------------------------------
-      !
-      ! compute interpolated values for all points on grid 1 given reference table
-      ! for grid 2; this works the other way round from GRMAP. Assumption is that
-      ! grid 2 is much finer than grid 1. For each point in grid 2 we know the
-      ! surrounding points in grid 1 and the related weights. Instead of using this to
-      ! interpolate from 1 to 2 we now integrate from 2 to 1 using the same weights.
-      !
-      !
-  !!--pseudo code and references--------------------------------------------------
-      ! NONE
-  !!--declarations----------------------------------------------------------------
-      use precision_basics, only: dp
-
-      implicit none
-      !
-      ! Global variables
-      !
-      integer, intent(in) :: n1
-      integer, intent(in) :: n2
-      integer, intent(in) :: np
-      integer, dimension(np, n2), intent(in) :: iref
-      real(dp), dimension(n1) :: f1
-      real(dp), dimension(n1), intent(in) :: cellsz1i !array with 1/cell size
-      real(dp), intent(in) :: cellsz2
-      real(dp), dimension(n2), intent(in) :: f2
-      real(dp), dimension(np, n2), intent(in) :: w
-      !
-      ! Local variables
-      !
-      integer :: i1
-      integer :: i2
-      integer :: ip
-      !
-  !! executable statements -------------------------------------------------------
-      !
-      do ip = 1, np
-         do i2 = 1, n2
-            i1 = iref(ip, i2)
-            if (i1 > 0) then
-               !f2(i2) = f2(i2) + w(ip, i2)*f1(i1)
-               f1(i1) = f1(i1) + w(ip, i2) * f2(i2) * cellsz2 * cellsz1i(i1)
-            end if
-         end do
-      end do
-   end subroutine grmap2
 
    subroutine ipon(xq, yq, n, xp, yp, inout)
       !--description----------------------------------------------------------------

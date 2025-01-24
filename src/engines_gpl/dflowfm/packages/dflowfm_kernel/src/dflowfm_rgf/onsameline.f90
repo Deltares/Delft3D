@@ -30,23 +30,35 @@
 !
 !
 
-      subroutine ONSAMELINE(IPT, MP, NP, JA)
-         use m_grid_block
-         implicit none
-         integer :: mp, np, ja, ipt
-         integer :: md, nd
+module m_onsameline
 
-         JA = 1
-         if (ITYPE == 1) then
-            if (IPT == 1 .and. MB(2) /= 0) then
-               MD = MP - MB(2)
-               ND = NP - NB(2)
-               if (MD /= 0 .and. ND /= 0) JA = 0
-            else if (IPT == 2) then
-               MD = MP - MB(1)
-               ND = NP - NB(1)
-               if (MD /= 0 .and. ND /= 0) JA = 0
-            end if
+   implicit none
+
+   private
+
+   public :: onsameline
+
+contains
+
+   subroutine ONSAMELINE(IPT, MP, NP, JA)
+      use m_grid_block
+
+      integer :: mp, np, ja, ipt
+      integer :: md, nd
+
+      JA = 1
+      if (ITYPE == 1) then
+         if (IPT == 1 .and. MB(2) /= 0) then
+            MD = MP - MB(2)
+            ND = NP - NB(2)
+            if (MD /= 0 .and. ND /= 0) JA = 0
+         else if (IPT == 2) then
+            MD = MP - MB(1)
+            ND = NP - NB(1)
+            if (MD /= 0 .and. ND /= 0) JA = 0
          end if
-         return
-      end subroutine onsameline
+      end if
+      return
+   end subroutine onsameline
+
+end module m_onsameline

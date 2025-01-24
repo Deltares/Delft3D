@@ -30,7 +30,17 @@
 !
 !
 
-   double precision function znetcell(k)
+module m_znetcell
+   use m_checktrianglenetcell, only: checktrianglenetcell
+   use m_getwavenr, only: getwavenr
+   use m_orthonet_compute_orientation, only: orthonet_compute_orientation
+
+   implicit none
+
+contains
+
+   real(kind=dp) function znetcell(k)
+      use precision, only: dp
 
       use unstruc_display
       use m_netw
@@ -43,9 +53,9 @@
       implicit none
 
       integer :: k, k1, k2, k3, ja
-      double precision :: uu1, vv1, uu2, vv2 ! not used here
-      double precision :: phimin, phimax
-      double precision :: xx1, yy1, zz1, xx2, yy2, zz2, xx3, yy3, zz3, xy, R3, XN, YN, ZN, DEPTH, TSIG, SLOPE, RK
+      real(kind=dp) :: uu1, vv1, uu2, vv2 ! not used here
+      real(kind=dp) :: phimin, phimax
+      real(kind=dp) :: xx1, yy1, zz1, xx2, yy2, zz2, xx3, yy3, zz3, xy, R3, XN, YN, ZN, DEPTH, TSIG, SLOPE, RK
 
       znetcell = DMISS
 
@@ -109,3 +119,5 @@
       end if
 
    end function znetcell
+
+end module m_znetcell

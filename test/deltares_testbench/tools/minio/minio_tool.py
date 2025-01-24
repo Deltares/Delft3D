@@ -1,7 +1,7 @@
 import difflib
 import itertools
 import shutil
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import ClassVar, Dict, Iterator, List, Mapping, Optional, TextIO, Tuple
@@ -123,7 +123,10 @@ class MinioTool:
         if not self.__build_and_execute_plan(local_dir, minio_prefix, allow_create_and_delete):
             return  # No changes were made.
 
-        self.__update_configs(test_case.name, configs)
+        # Add extra millisecond just to be safe.
+        new_version = self.__max_last_modified(minio_prefix) + timedelta(milliseconds=1)
+
+        self.__update_configs(test_case.name, new_version, configs)
 
     def update_references(
         self, name_filter: str, config_glob: Optional[str] = None, local_dir: Optional[Path] = None
@@ -171,7 +174,10 @@ class MinioTool:
         if not self.__build_and_execute_plan(local_dir, minio_prefix, allow_create_and_delete=False):
             return  # No changes were made.
 
-        self.__update_configs(test_case.name, configs)
+        # Add extra millisecond just to be safe.
+        new_version = self.__max_last_modified(minio_prefix) + timedelta(milliseconds=1)
+
+        self.__update_configs(test_case.name, new_version, configs)
 
     def pull(
         self,
@@ -268,16 +274,11 @@ class MinioTool:
             return False
 
         self._rewinder.execute_plan(plan)
+
         return True
 
     def __ignore_conflicts(self, minio_prefix: S3Path, timestamp: datetime) -> bool:
         """See if there has been any changes to the data in MinIO between `timestamp` and `now`."""
-        # Verify that version timestamp is in the past.
-        now = datetime.now(timezone.utc)
-        if now < timestamp:
-            seconds = (timestamp - now).total_seconds()
-            raise MinioToolError(f"Test case path has version timestamp {seconds:.2f}s in the future")
-
         conflicts = self._rewinder.detect_conflicts(minio_prefix, timestamp, add_tags_to_latest=True)
         if conflicts:
             self.__print_conflicts(conflicts, minio_prefix, timestamp)
@@ -286,10 +287,8 @@ class MinioTool:
 
         return True
 
-    def __update_configs(self, test_case_name: str, configs: List[Path]) -> bool:
+    def __update_configs(self, test_case_name: str, new_version: datetime, configs: List[Path]) -> bool:
         """Update config with new timestamp for test case `test_case_name`."""
-        # Set timestamp at least 1 minute in the future to avoid clock skew issues.
-        new_version = utils.ceil_dt(datetime.now(timezone.utc) + timedelta(minutes=1), timedelta(minutes=1))
         new_configs = self._test_case_writer.config_updates({test_case_name: new_version}, configs)
 
         # Compare old configs with new configs.
@@ -301,6 +300,20 @@ class MinioTool:
         self.__save_new_configs(new_configs)
         print("Applied changes to config files.")
         return True
+
+    def __max_last_modified(self, minio_prefix: S3Path) -> datetime:
+        """Compute the maximum `last_modified` of the latest objects in MinIO.
+
+        Notes
+        -----
+        https://blog.min.io/strict-consistency-hard-requirement-for-primary-storage/
+        This method is called right after we've uploaded new objects to MinIO. According to the
+        MinIO blog, the `list_objects` operation has strong read-after-write consistency.
+        This means that `list_objects` is guaranteed to return the latest versions of all
+        of the objects we've just written.
+        """
+        latest_objects = self._rewinder.list_objects(minio_prefix, include_delete_markers=True)
+        return max(obj.last_modified for obj in latest_objects if obj.last_modified is not None)
 
     def __download(
         self,

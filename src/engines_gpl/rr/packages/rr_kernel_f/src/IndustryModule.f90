@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -175,6 +175,9 @@ contains
     Character(CharIdLength), Pointer :: DEMDEF(:),DISDEF(:)
     Logical       , Pointer :: AlreadyRead(:)
     Logical success
+    Character(Len=CharIdLength)  FileName
+    Character(Len=1000000)       KeepBufString
+    Integer                      IoUnit, LenString, ipos
 
 
     iOut1 = ConfFil_get_iOut1()
@@ -199,7 +202,19 @@ contains
 
 !   TableType = 8
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input Industry
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(61)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !wwtp.3b
+        Write(*,*) ' Cleaning industry.3b to file:', FileName
+        Write(iout1,*) ' Cleaning industry.3b to file:', FileName
+   endif
+! *********************************************************************
 ! read file industry.3b
+! *********************************************************************
     call SetMessage(LEVEL_DEBUG, 'Read Industry.3b file')
     Endfil = .false.
     teller = 0
@@ -221,6 +236,8 @@ contains
          if (AlreadyRead(index)) then
            call SetMessage(LEVEL_ERROR, 'Data for Industry node '//id(1:Len_trim(id))//' double in datafile Industry.3B')
          else
+! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
            AlreadyRead(index) = .true.
            teller = teller + 1
 ! demand table id
@@ -290,7 +307,22 @@ contains
                              ' Some industry nodes in schematisation not found in Industry.3B file')
     Endif
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for industry.tbl
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(77)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !industry.tbl
+        Write(*,*) ' Cleaning industry.tbl to file:', FileName
+        Write(iout1,*) ' Cleaning industry.tbl:', FileName
+   endif
+! *********************************************************************
 ! read Industry.tbl; industrial demands
+! *********************************************************************
     call SetMessage(LEVEL_DEBUG, 'Read Industry.tbl file: Demands')
     if (idebug .ne. 0) write(idebug,*) ' Read Industry.Tbl file'
 !   Vector/Array initialisation
@@ -302,6 +334,12 @@ contains
     Do while (.not. endfil)
        Success = GetRecord(Infile2, 'DEMD', Endfil, idebug, Iout1)  ! get record van keyword DEMD tot demd, zet in buffer
        IF (ENDFIL) GOTO 5111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Write(*,*) 'local buffer IndustryModule too small, DEMD record'
+           Write(iout1,*) 'local buffer IndustryModule too small, DEMD record'
+           GOTO 5111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        If (.not. Success) Goto 5111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -313,6 +351,7 @@ contains
           if (IIndus .gt. 0) then
              if ( IndDemTable(iIndus) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'Industry Demand table Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Industry.Tbl')
+               NrColumns = 0     ! om verdere verwerking uit te zetten
              endif
           endif
 !         Verwerken tabel definitie
@@ -320,6 +359,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
              Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
              If (.not. Success) Goto 5111
+! clean RR files
+             If (CleanRRFiles) then
+               ! use KeepBufString to write to file
+               ! first till TBLE
+               ! then till < characters
+               ! then till the end of the buffer string
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                  KeepBufString(1:) = KeepBufString(ipos+5:)
+               else
+                  ! error: no TBLE found
+                    call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+               endif
+ 1041          continue
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                  KeepBufString(1:) = KeepBufString(ipos+3:)
+                  goto 1041
+               else
+                  ! write remaining part
+                  write(Iounit,'(A)') KeepBufString (1:lenstring)
+               endif
+             Endif
 ! Set references
              Do iIndus=1, NcIndus
                 if (StringComp (DemDef(IIndus), TableName, CaseSensitive) )  IndDemTable(iIndus) = TableNr
@@ -331,7 +397,9 @@ contains
 5111 Continue
 
 
+! *********************************************************************
 ! read Industry.tbl; industrial discharges
+! *********************************************************************
     Rewind(inFile2)
     call SetMessage(LEVEL_DEBUG, 'Read Industry.tbl file: Discharges')
     Endfil = .false.
@@ -339,6 +407,12 @@ contains
     Do while (.not. endfil)
        Success = GetRecord(Infile2, 'DISC', Endfil, idebug, Iout1)     ! get record van keyword DISC tot disc, zet in buffer
        IF (ENDFIL) GOTO 6111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Write(*,*) 'local buffer IndustryModule too small, DISC record'
+           Write(iOut1,*) 'local buffer IndustryModule too small, DISC record'
+           GOTO 6111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        If (.not. Success) Goto 6111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -350,6 +424,7 @@ contains
           if (IIndus .gt. 0) then
              if ( IndDisTable(iIndus) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'Industry Discharge table Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Industry.Tbl')
+               NrColumns = 0     ! om verdere verwerking uit te zetten
              endif
           endif
 !         Verwerken tabel definitie
@@ -357,6 +432,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
             Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
             If (.not. Success) Goto 6111
+! clean RR files
+            If (CleanRRFiles) then
+              ! use KeepBufString to write to file
+              ! first till TBLE
+              ! then till < characters
+              ! then till the end of the buffer string
+              lenstring = len_trim(KeepBufString)
+              ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+              if (ipos .gt. 0) then
+                 write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                 KeepBufString(1:) = KeepBufString(ipos+5:)
+              else
+                 ! error: no TBLE found
+                   call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+              endif
+ 1051         continue
+              lenstring = len_trim(KeepBufString)
+              ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+              if (ipos .gt. 0) then
+                 write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                 KeepBufString(1:) = KeepBufString(ipos+3:)
+                 goto 1051
+              else
+                 ! write remaining part
+                 write(Iounit,'(A)') KeepBufString (1:lenstring)
+              endif
+            Endif
 ! Set references
             Do iIndus=1, NcIndus
                if (StringComp (DisDef(IIndus), TableName, CaseSensitive) )  IndDisTable(iIndus) = TableNr
@@ -367,6 +469,10 @@ contains
      Enddo
 6111 Continue
 
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
+
+! check if all table references resolved
     Err969 = .false.
     Do iIndus=1,NcIndus
        If (IndDemTable(Iindus) .eq. 0 .and. DemDef(iindus) .ne. '')  then
@@ -713,7 +819,7 @@ contains
   Subroutine Industry_DeAllocateArrays
 
     if (Allocated(IndustryDat)) DeAllocate(IndustryDat)
-   
+
   Return
   End subroutine Industry_DeallocateArrays
 

@@ -31,15 +31,37 @@
 !
 
 module m_editpol
-use m_plotnu
-use m_kcir
+   use m_stopint, only: stopint
+   use m_pol2curvi_tri, only: pol2curvi_tri
+   use m_pol2curvi, only: pol2curvi
+   use m_dropzout, only: dropzout
+   use m_dropwater, only: dropwater
+   use m_dropk, only: dropk
+   use m_copypol, only: copypol
+   use m_flow_spatietimestep, only: flow_spatietimestep
+   use m_refinepolygonpart, only: refinepolygonpart
+   use m_poltonet, only: poltonet
+   use m_poltolines, only: poltolines
+   use m_poltoland, only: poltoland
+   use m_modln2, only: modln2
+   use m_mergepoly, only: mergepoly
+   use m_makepanelxy, only: makepanelxy
+   use m_ispoi1, only: ispoi1
+   use m_flippo, only: flippo
+   use m_droptracer, only: droptracer
+   use m_wearel
+   use m_viewcycle
+   use m_typevalue
+   use m_selecteditmode
+   use m_plotnu
+   use m_kcir
 
-
-implicit none
+   implicit none
 
 contains
 
    subroutine EDITPOL(MODE, KEY, NETFLOW)
+      use precision, only: dp
       use m_confrm
       use m_cir
       use m_choices
@@ -49,11 +71,10 @@ contains
       use m_missing, only: dmiss
       use m_partitioninfo, only: jampi, my_rank
       use unstruc_model
-      use unstruc_display, only: numzoomshift, ndrawpol, rcir, ncoltx
+      use unstruc_display, only: numzoomshift, ndrawpol, rcir, ncoltx, zoomshift
       use m_flow, only: kmx, jasal, iturbulencemodel
       use unstruc_api
       use dfm_error
-      use unstruc_messages
       use m_helpnow
       use m_qnrgf
       use m_settings
@@ -71,6 +92,8 @@ contains
       use m_hlcir
       use m_dropland
       use m_movabs
+      use m_ispolystartend, only: ispolystartend
+      use m_filez, only: newnewfil
 
       integer :: jaquit, jazoomshift, nshift
       integer :: k
@@ -84,10 +107,9 @@ contains
 
       integer :: MODE, KEY, NETFLOW
       integer :: newmode, mout
-      double precision :: xp, yp, RD
+      real(kind=dp) :: xp, yp, RD
       integer :: iresult
       integer :: ja4
-      logical, external :: ispolystartend
       character TEX * 26, fnam * 255
 
       if (jampi == 1) then

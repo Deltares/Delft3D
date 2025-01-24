@@ -30,20 +30,28 @@
 !
 !
 
- double precision function zcorn(k) ! get various values at flow cell corners
-    use m_flow
-    use m_flowgeom
-    use m_drawthis
-    implicit none
+module m_zcorn
 
-    integer :: k, nodval
+   implicit none
 
-    nodval = ndraw(31)
-    if (nodval == 2) then
-       zcorn = ucnx(k)
-    else if (nodval == 3) then
-       zcorn = ucny(k)
-    else if (nodval == 4) then
-       zcorn = sqrt(ucnx(k) * ucnx(k) + ucny(k) * ucny(k))
-    end if
- end function zcorn
+contains
+
+   real(kind=dp) function zcorn(k) ! get various values at flow cell corners
+      use precision, only: dp
+      use m_flowgeom
+      use m_drawthis
+      implicit none
+
+      integer :: k, nodval
+
+      nodval = ndraw(31)
+      if (nodval == 2) then
+         zcorn = ucnx(k)
+      else if (nodval == 3) then
+         zcorn = ucny(k)
+      else if (nodval == 4) then
+         zcorn = sqrt(ucnx(k) * ucnx(k) + ucny(k) * ucny(k))
+      end if
+   end function zcorn
+
+end module m_zcorn

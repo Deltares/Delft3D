@@ -30,87 +30,97 @@
 !
 !
 
-      subroutine SHOWBITMAP(jainterpolate)
-         use m_pixcount
-         use M_WEARELT
-         use M_BITMAP
-         use m_drawthis
-         use m_halt2
-         use m_krec5
-         use m_bilinxy
-         use m_set_col
-         implicit none
-         integer :: i
-         integer :: ini
-         integer :: j
-         integer :: k
-         integer :: key
-         integer :: nko
-         double precision :: xd
-         double precision :: xs
-         double precision :: xx
-         double precision :: xx2
-         double precision :: yd
-         double precision :: ys
-         double precision :: yy
-         double precision :: yy2
-         double precision :: zs
-         integer :: jainterpolate
+module m_showbitmap
 
-         call IGRCOLOURMODEL(24)
+   implicit none
 
-         INI = 1
-         XX = 2
-         YY = 2
-         call BILINXY(XB, YB, XP, YP, XX, YY, XX2, YY2, INI)
-         if (INI == -1) return
-         INI = 0
+contains
 
-         XD = (XP(2) - XP(1)) / (XB(2) - XB(1))
-         YD = (YP(3) - YP(1)) / (YB(3) - YB(1))
-         XD = XD / 2
-         YD = YD / 2
+   subroutine SHOWBITMAP(jainterpolate)
+      use precision, only: dp
+      use m_rectangle
+      use m_pixcount
+      use M_WEARELT
+      use M_BITMAP
+      use m_drawthis
+      use m_halt2
+      use m_krec5
+      use m_bilinxy
+      use m_set_col
+      implicit none
+      integer :: i
+      integer :: ini
+      integer :: j
+      integer :: k
+      integer :: key
+      integer :: nko
+      real(kind=dp) :: xd
+      real(kind=dp) :: xs
+      real(kind=dp) :: xx
+      real(kind=dp) :: xx2
+      real(kind=dp) :: yd
+      real(kind=dp) :: ys
+      real(kind=dp) :: yy
+      real(kind=dp) :: yy2
+      real(kind=dp) :: zs
+      integer :: jainterpolate
 
-         do J = NXP, 1, -1
-            call HALT2(KEY)
-            if (KEY == 1) then
-               call IGRCOLOURMODEL(8)
-               return
-            end if
-            NKO = -1
-            do I = 1, MXP
-               K = (NXP - J) * MXP + I
-               XX = dble(I - 1)
-               YY = dble(J - 1)
-               call BILINXY(XB, YB, XP, YP, XX, YY, XX2, YY2, INI)
+      call IGRCOLOURMODEL(24)
 
-               if (jainterpolate == 1) then
-                  xs = xx2
-                  ys = yy2
-                  zs = 1e-6 * ipix(k)
-                  call pixcount(xs, ys, zs, 1)
-               end if
+      INI = 1
+      XX = 2
+      YY = 2
+      call BILINXY(XB, YB, XP, YP, XX, YY, XX2, YY2, INI)
+      if (INI == -1) return
+      INI = 0
 
-               if (XX2 > X1 .and. XX2 < X2 .and. YY2 > Y1 .and. YY2 < Y2) then
-                  if (NKO /= IPIX(K)) then
-                     call SETCOL(IPIX(K))
-                     NKO = IPIX(K)
-                  end if
-                  if (NDRAW(10) == 0) then
-                     call RECTANGLE(real(XX2 - XD), real(YY2 - YD), real(XX2 + XD), real(YY2 + YD))
-                     ! CALL IGRMOVETO(XX2-XD,YY2-YD)
-                     ! CALL IGrRECTANGLEREL(XD*2,YD*2)
-                  else
-                     call KREC5(XX2, YY2, XD, YD)
-                  end if
-               end if
-            end do
-         end do
-         call IGRCOLOURMODEL(8)
+      XD = (XP(2) - XP(1)) / (XB(2) - XB(1))
+      YD = (YP(3) - YP(1)) / (YB(3) - YB(1))
+      XD = XD / 2
+      YD = YD / 2
 
-         if (jainterpolate == 1) then
-            call pixcount(xs, ys, zs, 2)
+      do J = NXP, 1, -1
+         call HALT2(KEY)
+         if (KEY == 1) then
+            call IGRCOLOURMODEL(8)
+            return
          end if
+         NKO = -1
+         do I = 1, MXP
+            K = (NXP - J) * MXP + I
+            XX = dble(I - 1)
+            YY = dble(J - 1)
+            call BILINXY(XB, YB, XP, YP, XX, YY, XX2, YY2, INI)
 
-         return
-      end
+            if (jainterpolate == 1) then
+               xs = xx2
+               ys = yy2
+               zs = 1e-6 * ipix(k)
+               call pixcount(xs, ys, zs, 1)
+            end if
+
+            if (XX2 > X1 .and. XX2 < X2 .and. YY2 > Y1 .and. YY2 < Y2) then
+               if (NKO /= IPIX(K)) then
+                  call SETCOL(IPIX(K))
+                  NKO = IPIX(K)
+               end if
+               if (NDRAW(10) == 0) then
+                  call RECTANGLE(real(XX2 - XD), real(YY2 - YD), real(XX2 + XD), real(YY2 + YD))
+                  ! CALL IGRMOVETO(XX2-XD,YY2-YD)
+                  ! CALL IGrRECTANGLEREL(XD*2,YD*2)
+               else
+                  call KREC5(XX2, YY2, XD, YD)
+               end if
+            end if
+         end do
+      end do
+      call IGRCOLOURMODEL(8)
+
+      if (jainterpolate == 1) then
+         call pixcount(xs, ys, zs, 2)
+      end if
+
+      return
+   end
+
+end module m_showbitmap

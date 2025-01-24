@@ -16,10 +16,6 @@ add_library(${fortranc_library_name} ${fortranc_sources})
 
 target_link_libraries(${fortranc_library_name} PRIVATE no_compiler_warnings)
 
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${fortranc_library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${fortranc_library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
-
 target_include_directories(${fortranc_library_name} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 # Create the folder structure in project
@@ -75,10 +71,6 @@ endif(WIN32)
 target_compile_definitions(${fortrangis_library_name} INTERFACE HAVE_PROJ)
 target_compile_definitions(${fortrangis_library_name} INTERFACE HAVE_SHAPELIB)
 target_compile_definitions(${fortrangis_library_name} INTERFACE HAVE_GDAL)
-
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${fortrangis_library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${fortrangis_library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
 # Create the folder structure in vfproj
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${fortranc_sources})

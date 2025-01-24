@@ -399,7 +399,7 @@ module geometry_module
       end function dbdistance
 
       !
-      ! getdx
+      !> getdx
       !
       double precision function getdx(x1,y1,x2,y2, jsferic)
 
@@ -442,7 +442,7 @@ module geometry_module
       end function getdx
 
       !
-      ! getdy
+      !> getdy
       !
       double precision function getdy(x1,y1,x2,y2, jsferic)
       
@@ -595,13 +595,6 @@ module geometry_module
       call getdxdy(x1,y1,x2,y2,x21,y21,jsferic)
       call getdxdy(x3,y3,x4,y4,x43,y43,jsferic)
       call getdxdy(x1,y1,x3,y3,x31,y31,jsferic)
-
-      !X21 =  getdx(x1,y1,x2,y2)
-      !Y21 =  getdy(x1,y1,x2,y2)
-      !X43 =  getdx(x3,y3,x4,y4)
-      !Y43 =  getdy(x3,y3,x4,y4)
-      !X31 =  getdx(x1,y1,x3,y3)
-      !Y31 =  getdy(x1,y1,x3,y3)
 
       DET =  X43*Y21 - Y43*X21
 
@@ -1912,7 +1905,6 @@ module geometry_module
       double precision, intent(in)  :: x3, y3 !< Point that is considered 'inside'.
       double precision, intent(out) :: xn, yn !< Output normal vector
       integer,          intent(out) :: jaflip !< Indicates whether normal was flipped (1) or not (0).
-      double precision, external :: dprodin
 
       double precision, dimension(1) :: xnloc, ynloc
       double precision               :: xref, yref
@@ -1922,11 +1914,6 @@ module geometry_module
 
       call normalout(x1,y1,x2,y2,xn,yn, jsferic, jasfer3D, dmiss, dxymis)
       jaflip = 0
-      !din  = dprodin(x1, y1, x1+xn, y1+yn, x1, y1, x3, y3)
-      !if (din > 0d0) then   ! Check whether normal vector points really outward
-      !   xn = -xn           ! Using the previously stored internal point x4.
-      !   yn = -yn
-      !end if
 
       if ( jsferic == 1 .and. jasfer3D == 1 ) then
          !   x4 = x1+xn
@@ -2092,8 +2079,6 @@ module geometry_module
 
       integer                                       :: i, ip1
 
-      double precision, external                    :: getdx, getdy
-
       double precision, parameter                   :: dtol=1d-8
 
       area = 0d0
@@ -2138,14 +2123,8 @@ module geometry_module
          xc = 0.5d0*(dx0 + dx1)
          yc = 0.5d0*(dy0 + dy1)
 
-         ! xc = 0.5d0*(getdx(x0,y0,x(i),y(i)) + getdx(x0,y0,x(ip1),y(ip1)))
-         ! yc = 0.5d0*(getdy(x0,y0,x(i),y(i)) + getdy(x0,y0,x(ip1),y(ip1)))
-
          call getdxdy(x(i), y(i), x(ip1), y(ip1), dx0, dy0, jsferic)
          dsx = dy0 ; dsy = -dx0
-
-         !dsx =  getdy(x(i), y(i), x(ip1), y(ip1))
-         !dsy = -getdx(x(i), y(i), x(ip1), y(ip1))
 
          xds  = xc*dsx+yc*dsy
          area = area + 0.5d0*xds
@@ -2219,9 +2198,6 @@ module geometry_module
       double precision                              :: sx, sy, sz
 
       integer                                       :: i, ip1, iter
-
-
-      !   double precision, external                    :: getdx, getdy
 
       integer,          parameter                   :: MAXITER=100
       double precision, parameter                   :: dtol=1d-8
@@ -2742,7 +2718,6 @@ module geometry_module
                      endif
                      ! ds   = -alf*dotp(xccf - xe3,yccf - ye3, tex, tey)  ! - sign not present in given formula
                      ! call cirr(xccf,yccf,31)
-                     ! call waitesc()
                   endif
                enddo
                if (k > 1 .and. abs(xccf-xccfo) < eps .and. abs(yccf-yccfo) < eps) then
