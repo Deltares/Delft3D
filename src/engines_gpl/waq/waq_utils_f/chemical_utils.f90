@@ -53,12 +53,12 @@ contains
         real(kind = real_wp), intent(in)  :: temp
         real(kind = real_wp)              :: cl
 
-        real(kind = real_wp)              :: density
+        real(kind = real_wp)              :: density, salcorr
 
-        density = 1000. + 0.7 * sal / (1 - sal / 1000.) &
-                  - 0.0061 * (temp - 4.0) * (temp - 4.0)
-
-        cl = max( 0.0_real_wp, sal - sal0 ) * density / gtcl
+        salcorr = max( 0.0_real_wp, sal - sal0 )
+        density = ( 1000.0 - 0.0061 * (temp - 4.0)**2 ) / &
+                  ( 1.0 - 0.7 * salcorr / 1000.0 )
+        cl = salcorr * density / gtcl
 
     end function chlorinity_from_sal
 
