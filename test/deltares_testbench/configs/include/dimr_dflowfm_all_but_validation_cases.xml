@@ -90,7 +90,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f002_c103_3D_channel" ref="dflowfm_default">
-      <path version="2025-01-24T12:12:00">e02_dflowfm/f002_1D2D/e02_f002_c103_3D_channel</path>
+      <path version="2025-01-24T15:20:46.563000">e02_dflowfm/f002_1D2D/e02_f002_c103_3D_channel</path>
       <maxRunTime>120.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
