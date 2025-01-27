@@ -96,7 +96,6 @@ contains
         ! to turn a waste load partially on or off works also works for outlets.
         ! (General manipulation of inlet/outlet pairs requires further consideration though
         ! as we have a chicken-and-egg problem.)
-
         call delwaq_user_drtc_control (num_waste_loads, wasteloads, num_substances_total, num_substances_transported, num_cells, &
                 itime, conc, syname, lunrep)
 
@@ -726,8 +725,66 @@ contains
 
         !       local declarations
 
-        integer :: i, n
-
+        integer :: i, j, n, ifilt, ierr, endoffile
+        integer, save :: nfilt
+        integer :: file_unit
+        integer, allocatable, save :: nsource(:), ntarget(:)
+        character(len = 17) :: file_filter   ! file name of the filter factors for substances in load
+        character(len = 20), allocatable :: subs_source(:), target_source(:)
+        real, allocatable, save :: filter_factor(:)
+        real :: old_load, fact_sub
+        logical  :: exi   !
+        logical, save :: first = .true.
+        ! is there a filterfactor file? then read the factore and allocate the set factors
+        if (first) then
+!            first = .false. 
+            file_filter = "filterfactors.csv"
+            inquire (file = file_filter, exist = exi)
+            if (exi) then
+                write(88, *)' Found filterfile : ',file_filter
+                open(newunit = file_unit, file = file_filter)
+                read(file_unit, * ) nfilt
+                allocate(subs_source(nfilt))
+                allocate(target_source(nfilt))
+                allocate(filter_factor(nfilt))
+                allocate(nsource(nfilt))
+                allocate(ntarget(nfilt))
+            else
+                write(88, *) ' Filterfile not found, assume none'
+            endif
+        ! now the csv can be read for the filter factors
+            do i = 1, nfilt
+                read(file_unit, *, iostat = ierr) subs_source(i),target_source(i), filter_factor(i)
+                do n = 1, num_substances_transported
+                    if (syname(n) == subs_source(i)) then
+                        nsource(i) = n
+                    endif
+                    if (syname(n) == target_source(i)) then
+                        ntarget(i) = n
+                    endif
+                enddo
+                write(88, *)' names found, source: ', syname(nsource(i)), ', target: ', syname(ntarget(i)), ', factor: ', filter_factor(i)
+            enddo
+            if (ierr /= 0) then
+                write(88, *) 'Error reading filterfile '
+            endif
+            
+        endif
+        if (first) write(88,*)' Conversion substances file read, setting filter factors'
+!               Moving flux example from a substance from one to the other (filtering) of the loads
+!               Doing it here because without the BMI RTC coupling the set_factor variable is not defined or allocated.
+!               Flows remain the same, so we filter only the loads of the substance that are in the csv filter file
+!               The factors should reflect the stoichiometry, using the reduction of the algea (that is what is set up for,
+!               but is basically generic, end therefore up to the user, example:
+!               GREEN PON 0.2
+!               GREEN POP 0.04
+!               DIATS PON 0.25
+!               load(pon) = load(pon) + 0.2*load(green)*reduction
+        if (first) then
+            do i = 1, nfilt
+                write(*,'(95a)') ' Substance loop for filter: from ', syname(nsource(i)), ', to target ',syname(ntarget(i))
+            enddo
+        endif
         do i = 1, num_waste_loads
             !
             ! Set the flow or a specific substance
@@ -739,12 +796,45 @@ contains
                 if (wls(i)%set_factor(1) /= 0.0) then
                     wls(i)%flow = wls(i)%flow * wls(i)%set_factor(1)
                     wls(i)%loads(1:n) = wls(i)%loads(1:n) * wls(i)%set_factor(2:n + 1)
+                    if (first) then
+                        first = .false. 
+                        write(88, *) ' Factor and new load: ', wls(i)%set_factor(2:n + 1), wls(i)%loads(1:n)
+                    endif   
                 else
                     wls(i)%flow = 1.0e-20   ! Avoid zero, because then the waste load magic kicks in
                     wls(i)%loads(:) = 0.0       ! Set the concentrations in the waste load to zero, so
                 endif
+            else
+                ! RTC not invoked, so here we can use the provided filter in the csv file and apply the provided filter values
+                if ( nfilt > 0) then
+                    if (first) write(88, *)' new target loads (old vs new) :'
+                    do ifilt = 1, nfilt
+                        ! adding to source due to filter, adding is not the problem, but for each source all filters need to be added 
+                        ! to ensure that the remain load is correct to maintain mass balance
+                        old_load =  wls(i)%loads(ntarget(ifilt))
+                        wls(i)%loads(ntarget(ifilt)) = wls(i)%loads(ntarget(ifilt)) + wls(i)%loads(nsource(ifilt)) * filter_factor(ifilt)
+                        if (first) write(88, *)' Check: ', syname(ntarget(ifilt)), ': ', old_load, wls(i)%loads(ntarget(ifilt))
+                    enddo
+                    ! for each substance source, reduce the original load - this also means a target may not be present as a source.
+                    do n = 1, num_substances_transported
+                        fact_sub = 0.0
+                        do j = 1, nfilt
+                            if (syname(n) == syname(nsource(j))) then
+                                fact_sub = fact_sub + filter_factor(j)
+                            endif
+                        enddo
+                        if (fact_sub > 1 ) then
+                            write(88,  *) 'Total of filterfactors for ',syname(n), ' larger than 1, not allowed.'
+                            stop
+                        endif
+                        
+                        wls(i)%loads(n) = wls(i)%loads(n) * (1 - fact_sub)
+                        if (first) write(88, *) syname(n), 'factor: ', fact_sub, ' New source loads: ', wls(i)%loads(n)
+                    enddo
+                endif
             endif
         enddo
+        if (first) first = .false.
 
     end subroutine delwaq_user_drtc_control
 
