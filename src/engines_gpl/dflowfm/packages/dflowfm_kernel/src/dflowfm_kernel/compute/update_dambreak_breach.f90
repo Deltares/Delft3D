@@ -41,29 +41,29 @@ module m_update_dambreak_breach
    public :: allocate_and_initialize_dambreak_data
 
    ! time varying, can be get/set via BMI interface
-   real(kind=dp), allocatable, target, public :: breachDepthDambreak(:) !< the dambreak breach width (as a level)
-   real(kind=dp), allocatable, target, public :: breachWidthDambreak(:) !< the dambreak breach width (as a level)
-   real(kind=dp), allocatable, target, public :: waterLevelsDambreakUpStream(:) !< the water levels computed each time step upstream
-   real(kind=dp), allocatable, target, public :: waterLevelsDambreakDownStream(:) !< the water levels computed each time step downstream
+   real(kind=dp), dimension(:), allocatable, target, public :: breachDepthDambreak !< the dambreak breach width (as a level)
+   real(kind=dp), dimension(:), allocatable, target, public :: breachWidthDambreak !< the dambreak breach width (as a level)
+   real(kind=dp), dimension(:), allocatable, target, public :: waterLevelsDambreakUpStream !< the water levels computed each time step upstream
+   real(kind=dp), dimension(:), allocatable, target, public :: waterLevelsDambreakDownStream !< the water levels computed each time step downstream
 
-   real(kind=dp), allocatable, public :: normalVelocityDambreak(:) !< dambreak normal velocity
-   real(kind=dp), allocatable, public :: breachWidthDerivativeDambreak(:) !< breach width derivatives
-   real(kind=dp), allocatable, public :: waterLevelJumpDambreak(:) !< water level jumps
+   real(kind=dp), dimension(:), allocatable, public :: normalVelocityDambreak !< dambreak normal velocity
+   real(kind=dp), dimension(:), allocatable, public :: breachWidthDerivativeDambreak !< breach width derivatives
+   real(kind=dp), dimension(:), allocatable, public :: waterLevelJumpDambreak !< water level jumps
    
-   real(kind=dp), allocatable :: dambreakAveraging(:, :) !< (1,:) weight averaged values of waterlevel per dambreaklink
-                                                         !! (2,:) weight per dambreaklink
+   real(kind=dp), dimension(:,:), allocatable :: dambreakAveraging   !< (1,:) weight averaged values of waterlevel per dambreaklink
+                                                                     !! (2,:) weight per dambreaklink
    ! Upstream water level
    integer, public :: nDambreakLocationsUpstream !< nr of dambreak signals with locations upstream
-   integer, allocatable, public :: dambreakLocationsUpstreamMapping(:) !< mapping of dambreak locations upstream
-   integer, allocatable, public :: dambreakLocationsUpstream(:) !< store cell ids for water level locations upstream
+   integer, dimension(:), allocatable, public :: dambreakLocationsUpstreamMapping !< mapping of dambreak locations upstream
+   integer, dimension(:), allocatable, public :: dambreakLocationsUpstream !< store cell ids for water level locations upstream
    integer, public :: nDambreakAveragingUpstream !< nr of dambreak signals upstream with averaging
-   integer, allocatable, public :: dambreakAveragingUpstreamMapping(:) !< mapping of dambreak averaging upstream
+   integer, dimension(:), allocatable, public :: dambreakAveragingUpstreamMapping !< mapping of dambreak averaging upstream
    ! Downstream water level
    integer, public :: nDambreakLocationsDownstream !< nr of dambreak signals with locations downstream
-   integer, allocatable, public :: dambreakLocationsDownstreamMapping(:) !< mapping of dambreak locations downstream
-   integer, allocatable, public :: dambreakLocationsDownstream(:) !< store cell ids for water level locations downstream
+   integer, dimension(:), allocatable, public :: dambreakLocationsDownstreamMapping !< mapping of dambreak locations downstream
+   integer, dimension(:), allocatable, public :: dambreakLocationsDownstream !< store cell ids for water level locations downstream
    integer, public :: nDambreakAveragingDownstream !< nr of dambreak signals downstream with averaging
-   integer, allocatable, public :: dambreakAveragingDownstreamMapping(:) !< mapping of dambreak averaging in the dambreak arrays
+   integer, dimension(:), allocatable, public :: dambreakAveragingDownstreamMapping !< mapping of dambreak averaging in the dambreak arrays
 
    contains
 
