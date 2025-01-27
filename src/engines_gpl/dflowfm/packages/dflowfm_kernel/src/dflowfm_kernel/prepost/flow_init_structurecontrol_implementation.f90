@@ -297,7 +297,8 @@ contains
    subroutine allocate_structure_arrays(nstr, widths, lftopol, pumpidx, gateidx, cdamidx, cgenidx, dambridx)
       use precision_basics, only: dp
       use m_alloc, only: realloc
-      use fm_external_forcings_data, only: dambreakLinksEffectiveLength, dambreakLinksActualLength, dambreakPolygons
+      use fm_external_forcings_data, only: dambreakPolygons
+      use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksEffectiveLength, dambreakLinksActualLength
       use network_data, only: numl
 
       integer, intent(in) :: nstr !< nstr is the number of (potential) structures
@@ -375,8 +376,7 @@ contains
 
       use m_flowgeom, only: ln, kcu, wu, lncn, snu, csu
       use m_inquire_flowgeom, only: findnode
-      use fm_external_forcings_data, only: dambreakLinksEffectiveLength, &
-                                           kdambreak, LStartBreach, &
+      use fm_external_forcings_data, only: kdambreak, LStartBreach, &
                                            dambreak_ids, activeDambreakLinks, &
                                            dambreakLevelsAndWidthsFromTable, &
                                            dambreaks, ndambreaklinks
@@ -386,6 +386,7 @@ contains
                                           dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &
                                           dambreakAveragingDownstreamMapping, nDambreakLocationsDownstream, nDambreakAveragingDownstream
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
+      use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksEffectiveLength
       use m_alloc, only: realloc
 
       integer, intent(in) :: ndambreaksignals !< ndambreaksignals is the number of dambreak signals.
@@ -619,6 +620,8 @@ contains
                                           dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &
                                           dambreakAveragingDownstreamMapping, nDambreakLocationsDownstream, nDambreakAveragingDownstream
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
+      use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksEffectiveLength, dambreakLinksActualLength 
+
 
 
       implicit none

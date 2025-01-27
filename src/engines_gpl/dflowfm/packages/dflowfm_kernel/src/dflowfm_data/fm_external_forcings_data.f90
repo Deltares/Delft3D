@@ -345,8 +345,6 @@ module fm_external_forcings_data
    character(len=128), allocatable, target :: pump_ids(:) !< the pumps ids
 
    ! Dambreak
-   real(kind=dp), allocatable :: dambreakLinksEffectiveLength(:) !< dambreak maximum flow widths
-   real(kind=dp), allocatable :: dambreakLinksActualLength(:) !< dambreak actual flow widths
    integer, allocatable :: dambreaks(:) !< store the dambreaks indexes among all structures
    integer :: ndambreaklinks !< nr of dambreak links
    integer :: ndambreaksignals !< nr of dambreak signals
