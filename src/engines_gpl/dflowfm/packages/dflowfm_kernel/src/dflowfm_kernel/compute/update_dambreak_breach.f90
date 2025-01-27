@@ -40,8 +40,12 @@ module m_update_dambreak_breach
    public :: update_dambreak_breach
    public :: allocate_dambreak_data
 
+   ! time varying, can be get/set via BMI interface
+   real(kind=dp), allocatable, target, public :: breachDepthDambreak(:) !< the dambreak breach width (as a level)
+   real(kind=dp), allocatable, target, public :: breachWidthDambreak(:) !< the dambreak breach width (as a level)
    real(kind=dp), allocatable, target, public :: waterLevelsDambreakUpStream(:) !< the water levels computed each time step upstream
    real(kind=dp), allocatable, target, public :: waterLevelsDambreakDownStream(:) !< the water levels computed each time step downstream
+
    real(kind=dp), allocatable, public :: normalVelocityDambreak(:) !< dambreak normal velocity
    real(kind=dp), allocatable, public :: breachWidthDerivativeDambreak(:) !< breach width derivatives
    real(kind=dp), allocatable, public :: waterLevelJumpDambreak(:) !< water level jumps
@@ -74,8 +78,7 @@ module m_update_dambreak_breach
       use m_partitioninfo, only: getAverageQuantityFromLinks
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_dambreakLevelsAndWidthsFromTable
       use fm_external_forcings_data, only: success, ndambreaklinks, ndambreaksignals, &
-         dambreaks, breachWidthDambreak, breachDepthDambreak, &
-         dambreakLevelsAndWidthsFromTable, &
+         dambreaks, dambreakLevelsAndWidthsFromTable, &
          LStartBreach, L1dambreaksg, L2dambreaksg, kdambreak, activeDambreakLinks, &
          nDambreakLocationsUpstream, dambreakLocationsUpstream, &
          dambreakLocationsUpstreamMapping, nDambreakAveragingUpstream, dambreakAverigingUpstreamMapping, &

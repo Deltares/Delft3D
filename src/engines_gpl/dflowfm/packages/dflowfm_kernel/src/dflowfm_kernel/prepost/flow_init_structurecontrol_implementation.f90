@@ -377,12 +377,12 @@ contains
       use m_inquire_flowgeom, only: findnode
       use fm_external_forcings_data, only: dambreakLinksEffectiveLength, &
                                            kdambreak, LStartBreach, &
-                                           breachDepthDambreak, breachWidthDambreak, dambreak_ids, activeDambreakLinks, &
+                                           dambreak_ids, activeDambreakLinks, &
                                            dambreakLevelsAndWidthsFromTable, dambreakLocationsUpstreamMapping, &
                                            dambreakLocationsUpstream, dambreakAverigingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
                                            dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, dambreakAverigingDownstreamMapping, &
                                            nDambreakLocationsDownstream, nDambreakAveragingDownstream, dambreaks, ndambreaklinks
-      use m_update_dambreak_breach, only: allocate_dambreak_data
+      use m_update_dambreak_breach, only: allocate_dambreak_data, breachDepthDambreak, breachWidthDambreak
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_alloc, only: realloc
 
@@ -617,7 +617,7 @@ contains
       use m_read_property, only: read_property
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
-      use m_update_dambreak_breach, only: allocate_dambreak_data
+      use m_update_dambreak_breach, only: allocate_dambreak_data, breachDepthDambreak, breachWidthDambreak
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
 
       implicit none

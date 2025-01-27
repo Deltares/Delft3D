@@ -345,10 +345,6 @@ module fm_external_forcings_data
    character(len=128), allocatable, target :: pump_ids(:) !< the pumps ids
 
    ! Dambreak
-   !time varying
-   real(kind=dp), allocatable, target :: breachDepthDambreak(:) !< the dambreak breach width (as a level)
-   real(kind=dp), allocatable, target :: breachWidthDambreak(:) !< the dambreak breach width (as a level)
-   !constant in time
    real(kind=dp), allocatable :: dambreakLinksEffectiveLength(:) !< dambreak maximum flow widths
    real(kind=dp), allocatable :: dambreakLinksActualLength(:) !< dambreak actual flow widths
    integer, allocatable :: dambreaks(:) !< store the dambreaks indexes among all structures
