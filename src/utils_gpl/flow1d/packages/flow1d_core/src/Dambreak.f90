@@ -30,6 +30,7 @@
    !-------------------------------------------------------------------------------
 
    use m_GlobalParameters, only: Idlen, gravity
+   use precision, only: dp
 
    implicit none
 
@@ -41,41 +42,41 @@
    integer, parameter, public :: BREACH_GROWTH_TIMESERIES = 3
    
    type, public :: t_dambreak
-      double precision :: startLocationX
-      double precision :: startLocationY
-      integer          :: algorithm
-      double precision :: crestLevelIni
-      double precision :: breachWidthIni
-      double precision :: crestLevelMin
-      double precision :: timeToBreachToMaximumDepth
-      double precision :: dischargecoeff
-      double precision :: f1
-      double precision :: f2
-      double precision :: ucrit
-      double precision :: t0
-      integer          :: materialtype                      =  1 !for algorithm BREACH_GROWTH_VDKNAAP, default material type is clay
-      double precision :: endTimeFirstPhase
-      double precision :: breachWidthDerivative             = -1.0d0
-      double precision :: waterLevelJumpDambreak            = -1.0d0	
-      double precision :: waterLevelUpstreamLocationX       = -999d0 
-      double precision :: waterLevelUpstreamLocationY       = -999d0
-      double precision :: waterLevelDownstreamLocationX     = -999d0	
-      double precision :: waterLevelDownstreamLocationY     = -999d0
+      real(kind=dp) :: startLocationX
+      real(kind=dp) :: startLocationY
+      integer       :: algorithm
+      real(kind=dp) :: crestLevelIni
+      real(kind=dp) :: breachWidthIni
+      real(kind=dp) :: crestLevelMin
+      real(kind=dp) :: timeToBreachToMaximumDepth
+      real(kind=dp) :: dischargecoeff
+      real(kind=dp) :: f1
+      real(kind=dp) :: f2
+      real(kind=dp) :: ucrit
+      real(kind=dp) :: t0
+      integer       :: materialtype                      =  1 !for algorithm BREACH_GROWTH_VDKNAAP, default material type is clay
+      real(kind=dp) :: endTimeFirstPhase
+      real(kind=dp) :: breachWidthDerivative             = -1.0d0
+      real(kind=dp) :: waterLevelJumpDambreak            = -1.0d0	
+      real(kind=dp) :: waterLevelUpstreamLocationX       = -999d0 
+      real(kind=dp) :: waterLevelUpstreamLocationY       = -999d0
+      real(kind=dp) :: waterLevelDownstreamLocationX     = -999d0	
+      real(kind=dp) :: waterLevelDownstreamLocationY     = -999d0
       character(IdLen) :: waterLevelUpstreamNodeId          = ''
       character(IdLen) :: waterLevelDownstreamNodeId        = ''
       character(IdLen) :: levelsAndWidths                   = ''
 
       ! State variables, not to be read
-      integer          :: phase
-      double precision :: width
-      double precision :: crl
-      double precision :: aCoeff
-      double precision :: bCoeff
-      double precision :: maximumAllowedWidth = - 1.0d0
+      integer       :: phase
+      real(kind=dp) :: width
+      real(kind=dp) :: crl
+      real(kind=dp) :: aCoeff
+      real(kind=dp) :: bCoeff
+      real(kind=dp) :: maximumAllowedWidth = - 1.0d0
 
    end type
 
-   double precision, parameter :: hoursToSeconds = 3600.0d0
+   real(kind=dp), parameter :: hoursToSeconds = 3600.0d0
 
    private
 
@@ -87,26 +88,26 @@
 
 
    type(t_dambreak), pointer, intent(inout) :: dambreak      ! dambreak settings for a single dambreak
-   double precision, intent(in)             :: s1m1          ! waterlevel at upstream link from dambreak position
-   double precision, intent(in)             :: s1m2          ! waterlevel at downstream link from dambreak position
-   double precision, intent(in)             :: u0            ! normal velocity at dambreak position
-   double precision, intent(in)             :: time1         ! current time
-   double precision, intent(in)             :: dt            ! timestep
-   double precision, intent(in)             :: maximumWidth  ! maximum width
+   real(kind=dp), intent(in)             :: s1m1          ! waterlevel at upstream link from dambreak position
+   real(kind=dp), intent(in)             :: s1m2          ! waterlevel at downstream link from dambreak position
+   real(kind=dp), intent(in)             :: u0            ! normal velocity at dambreak position
+   real(kind=dp), intent(in)             :: time1         ! current time
+   real(kind=dp), intent(in)             :: dt            ! timestep
+   real(kind=dp), intent(in)             :: maximumWidth  ! maximum width
 
    !locals
-   double precision :: smax
-   double precision :: smin
-   double precision :: hmx
-   double precision :: hmn
-   double precision :: deltaLevel
-   double precision :: breachWidth
-   double precision :: actualMaximumWidth
-   double precision :: timeFromBreaching
-   double precision :: timeFromFirstPhase
-   double precision :: widthIncrement
-   double precision :: waterLevelJumpDambreak
-   double precision :: breachWidthDerivative
+   real(kind=dp) :: smax
+   real(kind=dp) :: smin
+   real(kind=dp) :: hmx
+   real(kind=dp) :: hmn
+   real(kind=dp) :: deltaLevel
+   real(kind=dp) :: breachWidth
+   real(kind=dp) :: actualMaximumWidth
+   real(kind=dp) :: timeFromBreaching
+   real(kind=dp) :: timeFromFirstPhase
+   real(kind=dp) :: widthIncrement
+   real(kind=dp) :: waterLevelJumpDambreak
+   real(kind=dp) :: breachWidthDerivative
 
    ! form initial timestep
    timeFromBreaching = time1 - dambreak%t0
