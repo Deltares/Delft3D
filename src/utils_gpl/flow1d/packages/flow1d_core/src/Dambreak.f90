@@ -69,10 +69,11 @@
       ! State variables, not to be read
       integer       :: phase
       real(kind=dp) :: width
+      real(kind=dp) :: maximumWidth ! the maximum dambreak width (from pli file)
       real(kind=dp) :: crl
       real(kind=dp) :: aCoeff
       real(kind=dp) :: bCoeff
-      real(kind=dp) :: maximumAllowedWidth = - 1.0d0
+      real(kind=dp) :: maximumAllowedWidth = - 1.0d0 ! only relevant for breach growth algorithm BREACH_GROWTH_VDKNAAP
 
    end type
 
@@ -83,7 +84,7 @@
    contains
    !> This routine sets dambreak%crl and dambreak%width, these varuables are needed
    !! in the actual dambreak computation in dflowfm_kernel
-   subroutine prepareComputeDambreak(dambreak, s1m1, s1m2, u0, time1, dt, maximumWidth)
+   subroutine prepareComputeDambreak(dambreak, s1m1, s1m2, u0, time1, dt)
    use ieee_arithmetic, only: ieee_is_nan
 
 
@@ -93,7 +94,6 @@
    real(kind=dp), intent(in)             :: u0            ! normal velocity at dambreak position
    real(kind=dp), intent(in)             :: time1         ! current time
    real(kind=dp), intent(in)             :: dt            ! timestep
-   real(kind=dp), intent(in)             :: maximumWidth  ! maximum width
 
    !locals
    real(kind=dp) :: smax
@@ -155,7 +155,7 @@
          deltaLevel = (gravity*waterLevelJumpDambreak)**1.5d0
          timeFromFirstPhase = time1 - dambreak%endTimeFirstPhase
          
-         if (dambreak%width < maximumWidth .and. (.not.ieee_is_nan(u0)) .and. dabs(u0) > dambreak%ucrit) then
+         if (dambreak%width < dambreak%maximumWidth .and. (.not.ieee_is_nan(u0)) .and. dabs(u0) > dambreak%ucrit) then
             breachWidthDerivative = (dambreak%f1*dambreak%f2/log(10D0)) * &
                              (deltaLevel/(dambreak%ucrit*dambreak%ucrit)) * &
                              (1.0/(1.0 + (dambreak%f2*gravity*timeFromFirstPhase/(dambreak%ucrit*hoursToSeconds)))) 
@@ -171,10 +171,10 @@
    endif
 
    ! in vdKnaap(2000) the maximum allowed branch width is limited (see sobek manual and setCoefficents subroutine below)
-   if (dambreak%maximumAllowedWidth > 0d0) then
-      actualMaximumWidth = min(dambreak%maximumAllowedWidth, maximumWidth)
+   if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
+      actualMaximumWidth = min(dambreak%maximumAllowedWidth, dambreak%maximumWidth)
    else
-      actualMaximumWidth = maximumWidth
+      actualMaximumWidth = dambreak%maximumWidth
    endif
 
    !width cannot exceed the width of the snapped polyline

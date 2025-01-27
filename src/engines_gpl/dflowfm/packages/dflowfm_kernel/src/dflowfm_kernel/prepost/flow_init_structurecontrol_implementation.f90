@@ -376,7 +376,7 @@ contains
       use m_flowgeom, only: ln, kcu, wu, lncn, snu, csu
       use m_inquire_flowgeom, only: findnode
       use fm_external_forcings_data, only: dambreakLinksEffectiveLength, &
-                                           maximumDambreakWidths, kdambreak, LStartBreach, &
+                                           kdambreak, LStartBreach, &
                                            breachDepthDambreak, breachWidthDambreak, dambreak_ids, activeDambreakLinks, &
                                            dambreakLevelsAndWidthsFromTable, dambreakLocationsUpstreamMapping, &
                                            dambreakLocationsUpstream, dambreakAverigingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
@@ -408,7 +408,6 @@ contains
 
       ndambreaklinks = l2dambreaksg(ndambreaksignals)
 
-      call realloc(maximumDambreakWidths, ndambreaksignals, fill=0.0_dp)
       call realloc(kdambreak, [3, ndambreaklinks], fill=0)
       call realloc(dambreaks, ndambreaksignals, fill=0)
       call realloc(LStartBreach, ndambreaksignals, fill=-1)
@@ -463,6 +462,7 @@ contains
                ! set initial phase, width, crest level, coefficents if algorithm is 1
                dambreak%phase = 0
                dambreak%width = 0.0_dp
+               dambreak%maximumWidth = 0.0_dp
                dambreak%crl = dambreak%crestLevelIni
                if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
@@ -579,7 +579,7 @@ contains
                   end if
 
                   ! Sum the length of the intersected flow links (required to bound maximum breach width)
-                  maximumDambreakWidths(n) = maximumDambreakWidths(n) + dambreakLinksEffectiveLength(k)
+                  dambreak%maximumWidth = dambreak%maximumWidth + dambreakLinksEffectiveLength(k)
                end do
 
                ! Now we can deallocate the polygon
@@ -1691,9 +1691,6 @@ contains
 
          call allocate_dambreak_data(ndambreaklinks) 
          
-         if (allocated(maximumDambreakWidths)) deallocate (maximumDambreakWidths)
-         allocate (maximumDambreakWidths(ndambreaksignals))
-         maximumDambreakWidths = 0.0_dp
          if (allocated(kdambreak)) deallocate (kdambreak)
          allocate (kdambreak(3, ndambreaklinks), stat=ierr) ! the last row stores the actual
          ! kdambreak is an integer array? This is flow_init_structurecontrol_old so will be removed soon
@@ -1829,6 +1826,7 @@ contains
                ! set initial phase, width, crest level, coefficents if algorithm is 1
                network%sts%struct(istrtmp)%dambreak%phase = 0
                network%sts%struct(istrtmp)%dambreak%width = 0.0_dp
+               network%sts%struct(istrtmp)%dambreak%maximumWidth = 0.0_dp
                network%sts%struct(istrtmp)%dambreak%crl = network%sts%struct(istrtmp)%dambreak%crestLevelIni
                if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
@@ -1966,7 +1964,7 @@ contains
                end if
 
                ! Sum the length of the intersected flow links (required to bound maximum breach width)
-               maximumDambreakWidths(n) = maximumDambreakWidths(n) + dambreakLinksEffectiveLength(k)
+               network%sts%struct(istrtmp)%dambreak%maximumWidth = network%sts%struct(istrtmp)%dambreak%maximumWidth + dambreakLinksEffectiveLength(k)
             end do
 
             ! Now we can deallocate the polygon

@@ -74,7 +74,7 @@ module m_update_dambreak_breach
       use m_partitioninfo, only: getAverageQuantityFromLinks
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_dambreakLevelsAndWidthsFromTable
       use fm_external_forcings_data, only: success, ndambreaklinks, ndambreaksignals, &
-         dambreaks, maximumDambreakWidths, breachWidthDambreak, breachDepthDambreak, &
+         dambreaks, breachWidthDambreak, breachDepthDambreak, &
          dambreakLevelsAndWidthsFromTable, &
          LStartBreach, L1dambreaksg, L2dambreaksg, kdambreak, activeDambreakLinks, &
          nDambreakLocationsUpstream, dambreakLocationsUpstream, &
@@ -193,7 +193,7 @@ module m_update_dambreak_breach
                if (istru /= 0) then
                   if (network%sts%struct(istru)%dambreak%algorithm == BREACH_GROWTH_VDKNAAP .or. network%sts%struct(istru)%dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
                      ! Compute the breach width
-                     call prepareComputeDambreak(network%sts%struct(istru)%dambreak, waterLevelsDambreakUpStream(n), waterLevelsDambreakDownStream(n), normalVelocityDambreak(n), startTime, deltaTime, maximumDambreakWidths(n))
+                     call prepareComputeDambreak(network%sts%struct(istru)%dambreak, waterLevelsDambreakUpStream(n), waterLevelsDambreakDownStream(n), normalVelocityDambreak(n), startTime, deltaTime)
                   end if
                   if (network%sts%struct(istru)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES .and. startTime > network%sts%struct(istru)%dambreak%t0) then
                      !Time in the tim file is relative to the start time
