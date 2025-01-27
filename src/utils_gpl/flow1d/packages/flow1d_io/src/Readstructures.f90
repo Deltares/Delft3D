@@ -845,7 +845,8 @@ module m_readstructures
    !> Read the dambreak specific data for a dambreak structure.
    !! The common fields for the structure (e.g. x/yCoordinates) must have been read elsewhere.
    subroutine readDambreak(dambr, md_ptr, st_id, forcinglist, success)
-   
+      use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
+      
       type(t_dambreak), pointer,    intent(inout) :: dambr       !< Dambreak structure to be read into.
       type(tree_data), pointer,     intent(in   ) :: md_ptr      !< ini tree pointer with user input.
       character(IdLen),             intent(in   ) :: st_id       !< Structure character Id.
@@ -873,7 +874,7 @@ module m_readstructures
       success = success .and. check_input_result(localsuccess, st_id, 'CrestLevelIni')
       if (.not. success) return
          
-      if (dambr%algorithm == 2) then
+      if (dambr%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
          
          call prop_get(md_ptr, 'Structure', 'BreachWidthIni', dambr%breachWidthIni, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'BreachWidthIni')
@@ -914,7 +915,7 @@ module m_readstructures
       endif
       
       ! get the name of the tim file 
-      if (dambr%algorithm == 3) then
+      if (dambr%algorithm == BREACH_GROWTH_TIMESERIES) then
          ! UNST-3308: NOTE that only the .tim filename is read below. It is NOT added to the network%forcinglist.
          !            All time-space handling of the dambreak is still done in kernel.
          
