@@ -1,14 +1,10 @@
-export ESMF_DIR=<ESMF_TOP_LEVEL_DIRECTORY> # Update to be the actual directory that contains the esmf makefile, example: /cygdrive/c/Checkouts/esmf-8.8.0
-export ESMF_COMM=mpiuni # we do not use esmf mpi support, so use this stub
+export ESMF_DIR=/cygdrive/c/Checkouts/esmf-8.8.0
+export ESMF_COMM=mpiuni # we do not need mpi per se
 export ESMF_OPTLEVEL=2
 export ESMF_NETCDF=split
 export ESMF_NETCDF_INCLUDE=/usr/include
 export ESMF_NETCDF_LIBPATH=/usr/lib
+export ESMF_NETCDF_LIBS="-lpioc -lnetcdff -lnetcdf" # -lpioc will be added automatically after -lnetcdf, but it uses netcdf so it should come before. This hack places it both before and after.
 export ESMF_INSTALL_PREFIX=install
 export ESMF_CXXSTD=sysdefault # some C++ libraries require gcc posix extensions, specifically the sigaction definition
-export ESMF_PIO=OFF # The PIO cmake fails with Could NOT find MPISERIAL_C
 export ESMF_RANLIB=true # ranlib does not work during the install stage, use this no-op
-export ESMF_COMPILER=gfortran
-export ESMF_F90=gfortran
-export ESMF_C=gcc
-export ESMF_CXX=g++
