@@ -33,7 +33,7 @@ module m_new_link
    implicit none
 contains
    subroutine NEWLINK(K1, K2, LNU) ! no checks
-      use m_netw
+      use network_data, only: kn, lmax, numk, numl, kn3typ
       use unstruc_colors, only: ncoldn
       use gridoperations, only: increasenetw
       use m_tek_link
