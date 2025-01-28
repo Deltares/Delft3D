@@ -21,7 +21,7 @@ object TemplateDetermineProduct : Template({
                         if "merge-request" in "%teamcity.build.branch%":
                             product = "%teamcity.pullRequest.source.branch%".split("/")[0]
                         else:
-                            product = "testbench-%teamcity.build.branch%".split("/")[0]
+                            product = "%teamcity.build.branch%".split("/")[0]
                         print(f"##teamcity[setParameter name='product' value='{product}-testbench']")
                         print(f"##teamcity[buildNumber '{product}: %build.vcs.number%']")
                 """.trimIndent()

@@ -18,14 +18,14 @@ def csv_to_dict(csv_table_path: str) -> Dict[str, List[str]]:
 
 
 # Function to filter values based on the 'this' list
-def filter_config(csv_table_path: str, csv_data: Dict[str, List], branch_name: str) -> List[str]:
+def filter_config(csv_table_path: str, csv_data: Dict[str, List], product: str) -> List[str]:
     """Filter the dict with the branch name and return a list of matches."""
-    if branch_name not in csv_data:
-        raise ValueError(f"Branch name '{branch_name}' does not exist in file {csv_table_path}.")
+    if product not in csv_data:
+        raise ValueError(f"Branch name '{product}' does not exist in file {csv_table_path}.")
 
     config_names = csv_data["#name"]
     config_values = csv_data["#config"]
-    this_values = csv_data[branch_name]
+    this_values = csv_data[product]
 
     # Filtered list based on 'this' values being "TRUE"
 
@@ -52,16 +52,16 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    branch_name = args.component
+    product = args.component
     csv_table_path = args.csv_file_path
     value_filter = args.value_filter
 
-    if branch_name == "main":
-        branch_name = "all"
+    if product == "main-testbench":
+        product = "all-testbench"
 
     with open(csv_table_path, mode="r", newline="") as csv_data:
         branch_config_dict = csv_to_dict(csv_table_path)
 
-    filtered_configs = filter_config(csv_table_path, branch_config_dict, branch_name)
+    filtered_configs = filter_config(csv_table_path, branch_config_dict, product)
     matrix_list = ",".join([config for config in filtered_configs if value_filter in config])
     print(f"##teamcity[setParameter name='matrix_list_{value_filter}' value='{matrix_list}']")

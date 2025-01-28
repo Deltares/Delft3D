@@ -1,4 +1,4 @@
-#name,#config,all-testbench,none,fm-suite,d3d4-suite,fm-testbench,rr-testbench,waq-testbench,part-testbench,wave-testbench,swan-testbench,d3d4-testbench,qp,tc-testbench,#comment
+#name,#config,all-testbench,none-testbench,fm-suite,d3d4-suite,fm-testbench,rr-testbench,waq-testbench,part-testbench,wave-testbench,swan-testbench,d3d4-testbench,qp-testbench,tc-testbench,#comment
 fm 1d parallel,dimr/dimr_dflowfm_1D_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 1d,dimr/dimr_dflowfm_1d_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 1d parallel,dimr/dimr_dflowfm_1D_win64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
