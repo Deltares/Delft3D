@@ -38,7 +38,7 @@ module unstruc_model
    use properties
    use tree_data_types
    use tree_structures
-   use messagehandling, only: LEVEL_INFO,LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
+   use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
    use m_globalparameters, only: t_filenames
    use time_module, only: ymd2modified_jul, datetimestring_to_seconds
    use dflowfm_version_module, only: getbranch_dflowfm
@@ -689,7 +689,7 @@ contains
       use fm_external_forcings_data, only: dambreakWideningString, dambreakWidening, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind ! ,                  only : icdtyp, cdb, wdb,
-      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
+      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
       use m_sferic, only: anglat, anglon, jasfer3D
       use m_physcoef
       use m_alloc
@@ -730,6 +730,7 @@ contains
       use m_qnerror
       use m_densfm, only: densfm
       use messagehandling, only: msgbuf, err_flush, warn_flush
+      use geometry_module, only: INTERNAL_NETLINKS_EDGE, ALL_NETLINKS_LOOP
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -996,6 +997,13 @@ contains
       call prop_get(md_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters)
       call prop_get(md_ptr, 'geometry', 'stripMesh', strip_mesh)
       call prop_get(md_ptr, 'geometry', 'Dcenterinside', Dcenterinside)
+      call prop_get(md_ptr, 'geometry', 'Circumcenter', circumcenter_method)
+      if (circumcenter_method < INTERNAL_NETLINKS_EDGE .or. circumcenter_method > ALL_NETLINKS_LOOP) then
+         call mess(LEVEL_ERROR, '"[geometry] Circumcenter" expects an integer between 1 and 3.')
+      end if
+      if (circumcenter_method == INTERNAL_NETLINKS_EDGE) then
+         call mess(LEVEL_WARN, '"[geometry] Circumcenter = 1" will be deprecated and will be removed in future. Please update this in your model. "Circumcenter = 2" is the improved current inplementation using internal net links only. "Circumcenter = 3" is a stricter implemention considering also the net links on the outline of the grid. The new options may require an update of your grid.')
+      end if
       call prop_get(md_ptr, 'geometry', 'PartitionFile', md_partitionfile, success)
       if (jampi == 1 .and. md_japartition /= 1) then
          if (len_trim(md_partitionfile) < 1) then
@@ -2576,7 +2584,7 @@ contains
       use m_flowtimes
       use m_flowparameters
       use m_wind
-      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
+      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
       use m_physcoef
       use unstruc_netcdf, only: unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
@@ -2601,6 +2609,7 @@ contains
       use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
       use m_map_his_precision
       use m_datum
+      use geometry_module, only: INTERNAL_NETLINKS_EDGE
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -2802,6 +2811,9 @@ contains
       end if
       if (writeall .or. (Dcenterinside /= 1d0)) then
          call prop_set(prop_ptr, 'geometry', 'Dcenterinside', Dcenterinside, 'Limit cell center (1.0: in cell, 0.0: on c/g)')
+      end if
+      if (writeall .or. (circumcenter_method /= INTERNAL_NETLINKS_EDGE)) then
+         call prop_set(prop_ptr, 'geometry', 'Circumcenter', circumcenter_method, 'Computation of circumcenter (iterate each edge - 1=internal netlinks; iterate each loop - 2=internal netlinks, 3=all netlinks)')
       end if
       if (writeall .or. (bamin > 1d-6)) then
          call prop_set(prop_ptr, 'geometry', 'Bamin', Bamin, 'Minimum grid cell area, in combination with cut cells')
@@ -3968,9 +3980,9 @@ contains
       use system_utils, only: makedir
       use m_set_get_mdia, only: setmdia, getmdia
       use unstruc_messages, only: initMessaging
-      
+
       implicit none
-      
+
       integer :: mdia2, mdia, ierr
       character(len=256) :: rec
       logical :: line_copied
