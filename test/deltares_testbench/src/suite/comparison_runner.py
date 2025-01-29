@@ -100,7 +100,7 @@ class ComparisonRunner(TestSetRunner):
             table["Parameter"].append(str(parameter.name))
             if(parameter.location != None):
                 table["Location"].append(str(parameter.location))
-            
+
             if compare_result.result != EndResult.ERROR:
                 table["Result"].append(compare_result.result.value)
                 table["MaxAbsDiff"].append(compare_result.max_abs_diff)
@@ -116,7 +116,7 @@ class ComparisonRunner(TestSetRunner):
                 failed = True
                 if(parameter.location == None): 
                     table["Location"].append(compare_result.max_abs_diff_coordinates)
-                
+
         log_table(table, composite_logger)
 
         if self.settings.teamcity and error:
