@@ -98,7 +98,7 @@ class ComparisonRunner(TestSetRunner):
             table["Test case name"].append(testcase_name)
             table["Filename"].append(file_check.name)
             table["Parameter"].append(str(parameter.name))
-            if parameter.location is not None:
+            if not (parameter.location is None and compare_result.result == EndResult.NOK):
                 table["Location"].append(str(parameter.location))
 
             if compare_result.result != EndResult.ERROR:
