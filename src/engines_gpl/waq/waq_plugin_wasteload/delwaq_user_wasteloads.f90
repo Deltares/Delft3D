@@ -737,7 +737,7 @@ contains
         logical, save :: first = .true.
         ! is there a filterfactor file? then read the factore and allocate the set factors
         if (first) then
-!            first = .false. 
+            first = .false. 
             file_filter = "filterfactors.csv"
             inquire (file = file_filter, exist = exi)
             if (exi) then
@@ -749,6 +749,8 @@ contains
                 allocate(filter_factor(nfilt))
                 allocate(nsource(nfilt))
                 allocate(ntarget(nfilt))
+                nsource = 0
+                ntarget = 0
             else
                 write(88, *) ' Filterfile not found, assume none'
             endif
@@ -763,10 +765,15 @@ contains
                         ntarget(i) = n
                     endif
                 enddo
+                if (nsource(i) == 0 .or. ntarget(i) == 0) then
+                    write(lunrep, *) ' Source or target substance not in substances list'
+                    stop
+                endif
                 write(88, *)' names found, source: ', syname(nsource(i)), ', target: ', syname(ntarget(i)), ', factor: ', filter_factor(i)
             enddo
             if (ierr /= 0) then
-                write(88, *) 'Error reading filterfile '
+                write(lunrep, *) 'Error reading filterfile '
+                stop
             endif
             
         endif
@@ -796,42 +803,52 @@ contains
                 if (wls(i)%set_factor(1) /= 0.0) then
                     wls(i)%flow = wls(i)%flow * wls(i)%set_factor(1)
                     wls(i)%loads(1:n) = wls(i)%loads(1:n) * wls(i)%set_factor(2:n + 1)
-                    if (first) then
-                        first = .false. 
-                        write(88, *) ' Factor and new load: ', wls(i)%set_factor(2:n + 1), wls(i)%loads(1:n)
-                    endif   
+                    write(88, *) ' n, Factor (2:n+1) and load (1:n): ',n ,  wls(i)%set_factor(2:n + 1), wls(i)%loads(1:n)
+                    if ( nfilt > 0) then
+                        if (first) write(88, *)' new target loads (old vs new) :'
+                        do ifilt = 1, nfilt
+                            ! adding  source due to filter to the target substance (stoechemetry), adding is not the problem, but for each source all filters need to be added 
+                            ! to ensure that the remain load is correct to maintain mass balance
+                            old_load =  wls(i)%loads(ntarget(ifilt))
+                            wls(i)%loads(ntarget(ifilt)) = wls(i)%loads(ntarget(ifilt)) + wls(i)%loads(nsource(ifilt)) * filter_factor(ifilt) * wls(i)%set_factor(1 + nsource(ifilt))
+                            write(88, *)' Check: ', syname(ntarget(ifilt)), ': ', old_load, wls(i)%loads(ntarget(ifilt))
+                        enddo
+                    ! for each substance source, reduce the original load - this also means a target may not be present as a source.
+                    endif
+
                 else
                     wls(i)%flow = 1.0e-20   ! Avoid zero, because then the waste load magic kicks in
                     wls(i)%loads(:) = 0.0       ! Set the concentrations in the waste load to zero, so
                 endif
             else
+!                write(88, *)'in if else allocated set factor'
                 ! RTC not invoked, so here we can use the provided filter in the csv file and apply the provided filter values
-                if ( nfilt > 0) then
-                    if (first) write(88, *)' new target loads (old vs new) :'
-                    do ifilt = 1, nfilt
+!                if ( nfilt > 0) then
+!                    if (first) write(88, *)' new target loads (old vs new) :'
+!                    do ifilt = 1, nfilt
                         ! adding to source due to filter, adding is not the problem, but for each source all filters need to be added 
                         ! to ensure that the remain load is correct to maintain mass balance
-                        old_load =  wls(i)%loads(ntarget(ifilt))
-                        wls(i)%loads(ntarget(ifilt)) = wls(i)%loads(ntarget(ifilt)) + wls(i)%loads(nsource(ifilt)) * filter_factor(ifilt)
-                        if (first) write(88, *)' Check: ', syname(ntarget(ifilt)), ': ', old_load, wls(i)%loads(ntarget(ifilt))
-                    enddo
+!                         old_load =  wls(i)%loads(ntarget(ifilt))
+!                        wls(i)%loads(ntarget(ifilt)) = wls(i)%loads(ntarget(ifilt)) + wls(i)%loads(nsource(ifilt)) * filter_factor(ifilt)
+!                        if (first) write(88, *)' Check: ', syname(ntarget(ifilt)), ': ', old_load, wls(i)%loads(ntarget(ifilt))
+!                    enddo
                     ! for each substance source, reduce the original load - this also means a target may not be present as a source.
-                    do n = 1, num_substances_transported
-                        fact_sub = 0.0
-                        do j = 1, nfilt
-                            if (syname(n) == syname(nsource(j))) then
-                                fact_sub = fact_sub + filter_factor(j)
-                            endif
-                        enddo
-                        if (fact_sub > 1 ) then
-                            write(88,  *) 'Total of filterfactors for ',syname(n), ' larger than 1, not allowed.'
-                            stop
-                        endif
+!                    do n = 1, num_substances_transported
+!                        fact_sub = 0.0
+!                        do j = 1, nfilt
+!                            if (syname(n) == syname(nsource(j))) then
+!                                fact_sub = fact_sub + filter_factor(j)
+!                            endif
+!                        enddo
+!                        if (fact_sub > 1 ) then
+!                            write(88,  *) 'Total of filterfactors for ',syname(n), ' larger than 1, not allowed.'
+!                            stop
+!                        endif
                         
-                        wls(i)%loads(n) = wls(i)%loads(n) * (1 - fact_sub)
-                        if (first) write(88, *) syname(n), 'factor: ', fact_sub, ' New source loads: ', wls(i)%loads(n)
-                    enddo
-                endif
+ !                       wls(i)%loads(n) = wls(i)%loads(n) * (1 - fact_sub)
+ !                       if (first) write(88, *) syname(n), 'factor: ', fact_sub, ' New source loads: ', wls(i)%loads(n)
+  !                  enddo
+   !             endif
             endif
         enddo
         if (first) first = .false.
