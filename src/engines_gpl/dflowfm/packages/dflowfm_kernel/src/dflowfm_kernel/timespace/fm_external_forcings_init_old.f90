@@ -52,7 +52,7 @@ contains
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
       use m_structures, only: jaoldstr
       use m_meteo
-      use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
+      use m_sediment, only: sedh, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
       use m_transport, only: ised1, const_names, constituents, itrac2const
       use m_mass_balance_areas, only: mbaname, nomba, mbadef, nammbalen
       use mass_balance_areas_routines, only: get_mbainputname
@@ -480,10 +480,10 @@ contains
                   if (success) then
                      do kk = 1, Ndx
                         if (viuh(kk) /= dmiss) then
-                           sed(iconst - ISED1 + 1, kk) = viuh(kk)
+                           constituents(iconst, kk) = viuh(kk)
                            call getkbotktop(kk, kb, kt)
                            do k = kb, kb + kmxn(kk) - 1
-                              sed(iconst - ISED1 + 1, k) = sed(iconst - ISED1 + 1, kk) ! fill array with vertically uniform values
+                              constituents(iconst, k) = constituents(iconst, kk) ! fill array with vertically uniform values
                            end do
                         end if
                      end do
@@ -504,7 +504,7 @@ contains
                   allocate (tt(1:ndkx))
                   tt = dmiss
                   call setinitialverticalprofile(tt, ndkx, filename); success = .true.
-                  sed(iconst - ISED1 + 1, :) = tt
+                  constituents(iconst, :) = tt
                   deallocate (tt)
                end if
 
@@ -518,7 +518,7 @@ contains
                   allocate (tt(1:ndkx))
                   tt = dmiss
                   call setinitialverticalprofilesigma(tt, ndkx, filename); success = .true.
-                  sed(iconst - ISED1 + 1, :) = tt
+                  constituents(iconst, :) = tt
                   deallocate (tt)
                end if
 

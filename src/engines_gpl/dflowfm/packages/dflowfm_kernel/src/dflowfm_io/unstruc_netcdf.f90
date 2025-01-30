@@ -13801,7 +13801,6 @@ contains
             if (um%nbnd_read > 0) then
                call read_sediment(constituents, '_bnd', imapfile, 1, um%nbnd_read, it_read, um, um%ndxi_own)
             end if !um%nbnd_read > 0
-            sed = constituents(ISED1:ISEDN, :)
          end if !lsedsus
 
          ! morbl

@@ -152,7 +152,7 @@ contains
                   if (constituents(isalt, k) > salimax) then
                      constituents(isalt, k) = salimax
                      limmax = limmax + 1
-                     sed(ll,kb:kt) = 0d0
+                     constituents(ISED1 + ll - 1, kb:kt) = 0d0
                   end if
                end do
             end if
@@ -166,6 +166,7 @@ contains
             end do
          end do
 
+                endif
          if (limmax /= 0) then
             write (msgbuf, *) 'Max. salinity limited, number of cells Limmax = ', limmax; call msg_flush()
          end if

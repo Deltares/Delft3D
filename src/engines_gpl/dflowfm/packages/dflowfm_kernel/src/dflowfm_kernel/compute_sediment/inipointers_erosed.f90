@@ -52,7 +52,6 @@ contains
       dzbdt => mtd%dzbdt
       seddif => mtd%seddif
       blchg => mtd%blchg
-      !sed => mtd%sed
       ws => mtd%ws
       uau => mtd%uau
 
