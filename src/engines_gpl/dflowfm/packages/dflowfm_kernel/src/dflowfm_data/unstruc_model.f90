@@ -1408,6 +1408,7 @@ contains
 
       call prop_get(md_ptr, 'physics', 'NFEntrainmentMomentum', NFEntrainmentMomentum)
 
+      md_dambreak_widening_method = ''
       call prop_get(md_ptr, 'physics', 'BreachGrowth', md_dambreak_widening_method)
       call str_lower(md_dambreak_widening_method)
       select case (md_dambreak_widening_method)
