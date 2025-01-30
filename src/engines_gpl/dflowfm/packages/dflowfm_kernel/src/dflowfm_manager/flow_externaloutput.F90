@@ -145,21 +145,22 @@ contains
                end if
             end if
 
-            if (jamapFlowAnalysis > 0) then
-               ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
-               call updateFlowAnalysisParameters()
+            if (jaeverydt == 0 .or. (comparereal(time1, ti_maps, eps10) == 0)) then
+               if (jamapFlowAnalysis > 0) then
+                  ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
+                  call updateFlowAnalysisParameters()
+               end if
+
+               call wrimap(tim)
+
+               if (jamapFlowAnalysis > 0) then
+                  ! Reset the interval related flow analysis arrays
+                  negativeDepths = 0
+                  noiterations = 0
+                  limitingTimestepEstimation = 0
+                  flowCourantNumber = 0d0
+               end if
             end if
-
-            call wrimap(tim)
-
-            if (jamapFlowAnalysis > 0) then
-               ! Reset the interval related flow analysis arrays
-               negativeDepths = 0
-               noiterations = 0
-               limitingTimestepEstimation = 0
-               flowCourantNumber = 0d0
-            end if
-
             if (comparereal(time_map, ti_mape, eps10) == 0) then
                time_map = tstop_user + 1
             else
