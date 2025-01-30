@@ -411,11 +411,9 @@ contains
       use m_partitioninfo
       use fm_external_forcings_data, only: numsrc
       use m_flowparameters, only: jambawritetxt, jambawritecsv, jambawritenetcdf, jambawritecsv, jambawritetxt
-      use m_flowtimes, only: refdate_mjd
       use m_transport, only: numconst
       use m_sediment, only: stm_included
       use m_fm_erosed, only: lsedtot, iflufflyr
-      use time_module, only: mjd2date
 
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
 
@@ -426,15 +424,6 @@ contains
       logical :: overall_balance !< balance period: use the total begin arrays, or just the last period
 
       timembaend = time
-
-      datembastart = ""
-      if (mjd2date(refdate_mjd + timembastart / 86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
-         write (datembastart, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
-      end if
-      datembaend = ""
-      if (mjd2date(refdate_mjd + timembaend / 86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
-         write (datembaend, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
-      end if
 
 !  New total volumes and masses
       call mba_sum(nombs, nomba, mbadefdomain, mbavolumeend, mbamassend)
@@ -496,6 +485,10 @@ contains
       if (write_balance) then
          overall_balance = .false.
          call mba_prepare_values(overall_balance)
+         if (jambawritetxt == 1 .or. jambawritecsv == 1) then
+            call mba_datestr(timembastart, datembastart)
+            call mba_datestr(timembaend, datembaend)
+         end if
          if (jambawritetxt == 1) then
             call mba_write_bal_time_step(lunmbabal, timembastart, timembaend, datembastart, datembaend, overall_balance)
          end if
@@ -535,33 +528,40 @@ contains
 
    end subroutine mba_update
 
+   subroutine mba_datestr(time, datestr)
+      use m_flowtimes, only : refdate_mjd
+      use time_module, only : mjd2date
+   
+      double precision, intent(in) :: time !< time     for waq in seconds
+      character(len=19), intent(out) :: datestr !< date/time represented as string
+
+      integer :: iyear !< year
+      integer :: imonth !< month number
+      integer :: iday !< day number
+      integer :: ihour !< hours
+      integer :: imin !< minutes
+      double precision :: sec !< (fractional) seconds
+
+      datestr = ""
+      if (mjd2date(refdate_mjd + time/86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
+         write(datestr, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
+      end if
+   end subroutine mba_datestr
+
    subroutine mba_final(time)
       use precision, only: dp
       use m_mass_balance_areas
       use m_fm_wq_processes
       use m_partitioninfo
       use m_flowparameters, only: jambawritetxt, jambawritenetcdf
-      use m_flowtimes, only: refdate_mjd
-      use time_module, only: mjd2date
 
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
 
-      integer :: iyear, imonth, iday, ihour, imin
-      real(kind=dp) :: sec
       character(len=19) :: datembastart, datembaend
       logical :: write_balance !< flag specifying whether balance should be written
       logical :: overall_balance !< balance period: use the total begin arrays, or just the last period
 
       timembaend = time
-
-      datembastart = ""
-      if (mjd2date(refdate_mjd + timembastarttot / 86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
-         write (datembastart, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
-      end if
-      datembaend = ""
-      if (mjd2date(refdate_mjd + timembaend / 86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
-         write (datembaend, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
-      end if
 
       write_balance = .true.
       if (jampi == 1) then
@@ -572,6 +572,8 @@ contains
          overall_balance = .true.
          call mba_prepare_values(overall_balance)
          if (jambawritetxt == 1) then
+            call mba_datestr(timembastart, datembastart)
+            call mba_datestr(timembaend, datembaend)
             write (lunmbabal, 1000)
             call mba_write_bal_time_step(lunmbabal, timembastarttot, timembaend, datembastart, datembaend, overall_balance)
          end if
@@ -2063,14 +2065,14 @@ contains
          end do
 
          ! change in bed mass
-         call add_value_change(fluxes, imbf, sum(mbabedmassbegin(ised, :)), sum(mbabedmassend(ised, :)))
+         call add_value_change(fluxes, imbf, sum(p_mbabedmassbegin(ised, :)), sum(mbabedmassend(ised, :)) )
 
          ! change in bed shortage mass
-         call add_value_change(fluxes, imbf, sum(mbabedshortmassbegin(ised, :)), sum(mbabedshortmassend(ised, :)))
+         call add_value_change(fluxes, imbf, sum(p_mbabedshortmassbegin(ised, :)), sum(mbabedshortmassend(ised, :)))
 
          if (ised <= lsed .and. iflufflyr > 0) then
             ! fluff layer
-            call add_value_change(fluxes, imbf, sum(mbafluffmassbegin(ised, :)), sum(mbafluffmassend(ised, :)))
+            call add_value_change(fluxes, imbf, sum(p_mbafluffmassbegin(ised, :)), sum(mbafluffmassend(ised, :)))
          end if
       end if
 

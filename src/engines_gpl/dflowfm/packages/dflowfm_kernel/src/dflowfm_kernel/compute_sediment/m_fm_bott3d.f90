@@ -1580,7 +1580,7 @@ contains
 
       use m_flow, only: kmx, hs
       use m_flowgeom, only: ndx
-      use m_transport, only: constituents, itra1, itran, isalt
+      use m_transport, only: constituents, itra1, itran, isalt, ised1
       use m_sediment, m_sediment_sed => sed
       use m_fm_erosed, only: blchg
       use m_flowparameters, only: epshs, jasal
@@ -1592,7 +1592,7 @@ contains
    !! Local variables
    !!
 
-      integer :: k, ll, kb, kt, kk, itrac
+      integer :: k, ll, l, kb, kt, kk, itrac
 
       real(kind=dp) :: hsk
       real(kind=dp) :: ddp
@@ -1611,7 +1611,9 @@ contains
             botcrit = 0.95 * hsk
             ddp = hsk / max(hsk - blchg(k), botcrit)
             do ll = 1, stmpar%lsedsus
+               l = ISED1 + ll - 1
                m_sediment_sed(ll, k) = m_sediment_sed(ll, k) * ddp
+               constituents(l,k) = constituents(l,k) * ddp
             end do !ll
             !
             if (jasal > 0) then
@@ -1626,6 +1628,7 @@ contains
          end do !k
       else !kmx==0
          do ll = 1, stmpar%lsedsus ! works for sigma only
+            l = ISED1 + ll - 1
             do k = 1, ndx
                hsk = hs(k)
                if (hsk < epshs) cycle
@@ -1634,6 +1637,7 @@ contains
                call getkbotktop(k, kb, kt)
                do kk = kb, kt
                   m_sediment_sed(ll, kk) = m_sediment_sed(ll, kk) * ddp
+                  constituents(l,kk) = constituents(l,kk) * ddp
                end do !kk
             end do !k
          end do !ll
