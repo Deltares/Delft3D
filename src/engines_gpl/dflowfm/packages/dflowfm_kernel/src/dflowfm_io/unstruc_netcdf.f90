@@ -4632,13 +4632,13 @@ contains
                      call getkbotktop(kk, kb, kt)
                      call getlayerindices(kk, nlayb, nrlay)
                      do k = kb, kt
-                        work1(k - kb + nlayb, kk) = sed(j - ISED1 + 1, k)
+                        work1(k - kb + nlayb, kk) = constituents(ISED1 + j - 1, k)
                      end do !k
                   end do !kk
                   ierr = nf90_put_var(irstfile, id_sf1(j - ISED1 + 1), work1(1:kmx, 1:ndxi), (/1, 1, itim/), (/kmx, ndxi, 1/))
                else !2D
                   do kk = 1, ndxi
-                     dum(kk) = sed(j - ISED1 + 1, kk)
+                     dum(kk) = constituents(ISED1 + j - 1, kk)
                   end do !kk
                   ierr = nf90_put_var(irstfile, id_sf1(j - ISED1 + 1), dum, (/1, itim/), (/ndxi, 1/))
                end if !kmx
@@ -4657,12 +4657,12 @@ contains
                         call getkbotktop(kk, kb, kt)
                         call getlayerindices(kk, nlayb, nrlay)
                         do k = kb, kt
-                           work1(k - kb + nlayb, i) = sed(j - ISED1 + 1, k)
+                           work1(k - kb + nlayb, i) = constituents(ISED1 + j - 1, k)
                         end do !k
                      end do !kk
                      ierr = nf90_put_var(irstfile, id_sf1_bnd(j - ISED1 + 1), work1(1:kmx, 1:ndxbnd), (/1, 1, itim/), (/kmx, ndxbnd, 1/))
                   else !2D
-                     dum = sed(j - ISED1 + 1, ndxi + 1:ndx)
+                     dum = constituents(ISED1 + j - 1, ndxi + 1:ndx)
                      ierr = nf90_put_var(irstfile, id_sf1_bnd(j - ISED1 + 1), dum, (/1, itim/), (/ndxbnd, 1/))
                   end if !kmx
                end do !j

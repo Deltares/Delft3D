@@ -180,10 +180,7 @@ contains
                   fluxfac = (sigdifi(j) * vicwws(k) + difsed(j) + ozmid) * dtbazi
                end if
 
-!           BEGIN DEBUG
-!            fluxfac = dt_loc * (difsed(j)) *ba(kk) / ( 0.5d0*(zws(k+1) - zws(k-1)) )  ! m3
-!           END DEBUG
-
+            b(n,j)   = b(n,j)   + fluxfac*dvol1i
                b(n, j) = b(n, j) + fluxfac * dvol1i
                c(n, j) = c(n, j) - fluxfac * dvol1i
 
@@ -192,9 +189,6 @@ contains
 
 !           advection
                if (thetavert(j) > 0d0) then ! semi-implicit, use central scheme
-                  ! BEGIN DEBUG
-                  ! if ( .false. .and. thetavert(j).gt.0d0 ) then ! semi-implicit, use central scheme
-                  ! END DEBUG
 
                   if (jased > 0 .and. jaimplicitfallvelocity == 0) then ! explicit fallvelocity
                      if (jased < 4) then
@@ -218,6 +212,7 @@ contains
                if (jased > 0 .and. jaimplicitfallvelocity == 1) then
                   fluxfac = 0d0
                   if (jased > 3) then
+                     ! if (k<sedtra%kmxsed(kk,j-ISED1+1)) cycle     this would be consistent
                      if (j >= ISED1 .and. j <= ISEDN) then
                         fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
                      else
@@ -253,18 +248,6 @@ contains
 
             sed(j, kb:kt) = sol(1:kt - kb + 1)
             sed(j, kt + 1:ktx) = sed(j, kt)
-
-!        BEGIN DEBUG
-!         do k=kb,kt
-!            if ( j.eq.1 .and. ( sed(j,k).gt.30.0001 .or. sed(j,k).lt.-0.0001 ) ) then
-!               continue
-!               write(6,*) 'kk=', kk, 'lay=', k-kb+1
-!               write(6,*) 'rhs=', rhs(j,k)
-!               write(6,*) 'sed=', sed(j,k)
-!               call qnerror(' ', ' ', ' ')
-!            end if
-!         end do
-!        END DEBUG
 
          end do
 

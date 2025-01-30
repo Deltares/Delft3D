@@ -186,7 +186,7 @@ contains
          !
          if (kmx > 0) then ! 3D
             call getkbotktop(k, kb, kt)
-         else ! 2D or quasi 2D
+         else ! 2D or quasi 3D
             kb = k
             kt = k + 1
          end if
@@ -263,6 +263,7 @@ contains
                if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + constituents(ISED1+ll-1, kk)
             end do
             !
+      if (kmx > 1) then      ! what about kmx=1?
             do ll = 1, lsed
                !
                do i = 1, npar

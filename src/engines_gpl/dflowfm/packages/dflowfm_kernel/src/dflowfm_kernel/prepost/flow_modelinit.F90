@@ -492,9 +492,9 @@ contains
       call timstop(handle_extra(31)) ! end set fcru mor
 
 ! Initialise debug array
-      !if (jawritedebug) then
-      !  call init_debugarr(lnx,stmpar%lsedtot)
-      !endif
+      if (jawritedebug) then
+         call init_debugarr(lnx,stmpar%lsedtot)
+      end if
 
       if (nfxw > 0) then
          allocate (weirdte_save(nfxw), STAT=ierr)

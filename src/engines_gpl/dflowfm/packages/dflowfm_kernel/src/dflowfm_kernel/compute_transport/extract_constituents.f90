@@ -182,7 +182,7 @@ contains
       ! When a cell become dries, keep track of the mass in the water column in ssccum array. This will be accounted
       ! for in the bottom update when the cell becomes wet again. This prevents large concentration gradients and exploding bed levels.
       if (stm_included) then
-         if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor * tfac) then
+         !if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor * tfac) then
             if (ISED1 > 0) then
                do ll = 1, mxgr
                   do k = 1, ndx
@@ -194,7 +194,7 @@ contains
                   end do
                end do
             end if
-         end if
+         !end if
       end if
 
       if (timon) call timstop(ithndl)
