@@ -56,7 +56,7 @@
     private ErrMsgLib2
     private MyFndFrst
     private MyOwnLentrim
-!   private MyOwnCntStr     !is used in NewTables, dus niet private
+!   private MyOwnCntStr     !is used in NewTables_rtc, dus niet private
 
     contains
 

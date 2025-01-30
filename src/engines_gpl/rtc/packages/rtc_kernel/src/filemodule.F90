@@ -201,7 +201,7 @@
 ! *** Output: MaxNumber (should be initialised before calling this routine!!)
 ! **********************************************************************
 
-      use NewTables
+      use NewTables_rtc
       use ParseToken
 
       Integer                         :: In, IOut1, Idebug, Iopt
@@ -265,7 +265,7 @@
 ! *** Output: MaxNumber (should be initialised before calling this routine!!)
 ! **********************************************************************
 
-      use NewTables
+      use NewTables_rtc
       use ParseToken
 
       Integer                         :: In, IOut1, Idebug, Iopt
@@ -336,7 +336,7 @@
 ! *** If CheckArray(i)=false: find maximum number after keywordArray()
 ! **********************************************************************
 
-      use NewTables
+      use NewTables_rtc
       use ParseToken
 
       Integer                         :: In, IOut1, Idebug, Iopt

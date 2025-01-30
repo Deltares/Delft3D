@@ -32,7 +32,7 @@
       Use DecisionModule
       Use MeasureModule
       Use OtherData
-      Use NewTables
+      Use NewTables_rtc
 
 
       Integer Ievent, ItmStp, Idebug, Iout1

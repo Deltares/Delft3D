@@ -54,7 +54,7 @@
       Use LocationDataModule
       Use DecisionModule
       Use ReservoirModule
-      Use NewTables
+      Use NewTables_rtc
       Use MeasureModule
       Use OtherData
       Use Readlib
@@ -659,7 +659,7 @@
       Use LocationDataModule
       Use DecisionModule
       Use ReservoirModule
-      Use NewTables
+      Use NewTables_rtc
       Use MeasureModule
       Use OtherData
 
@@ -724,7 +724,7 @@
       Use LocationDataModule
       Use DecisionModule
       Use ReservoirModule
-      Use NewTables
+      Use NewTables_rtc
       Use MeasureModule
       Use OtherData
 

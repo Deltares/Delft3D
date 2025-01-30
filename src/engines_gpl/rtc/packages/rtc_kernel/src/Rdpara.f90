@@ -49,7 +49,7 @@
 
       Use ParameterModule
       Use ReservoirModule
-      Use NewTables
+      Use NewTables_rtc
       Use DH_Alloc
       Use ParseToken
       Use LocationDataModule

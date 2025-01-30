@@ -52,7 +52,7 @@
       Use DecisionModule
       Use MeasureModule
       Use OtherData
-      Use NewTables
+      Use NewTables_rtc
       Use ParseToken
       Use ReadLib
 
@@ -71,7 +71,7 @@
       Integer        TyValue, NaValue, StartSubRecord, EndSubRecord, NrRRMSSubRecords, iSubRecord
       Logical        MeasureInActive
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError
@@ -636,7 +636,7 @@
       Use LocationDataModule
       Use DecisionModule
       Use MeasureModule
-      Use NewTables
+      Use NewTables_rtc
       Use ParseToken
       Use ReadLib
 
@@ -652,7 +652,7 @@
       INTEGER       IDEBUG, IN, IOUT1,Ilen
       INTEGER       IMEAS, IPARA, IECODE, I3LOC, I3B, ILOC
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError

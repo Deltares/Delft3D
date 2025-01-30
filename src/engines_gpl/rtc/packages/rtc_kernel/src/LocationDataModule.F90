@@ -179,7 +179,7 @@
 ! *** WNDVEL= wind velocity array
 ! *** WindInterpVel= true means linear interpolation velocity ; false means block data (default=block data)
 ! *** WindInterpDir= true means linear interpolation direction; false means block data (default=block data)
-! *** WindTable  = WindTable Nr in case of use of the NewTablesModule
+! *** WindTable  = WindTable Nr in case of use of the NewTables_rtc
 ! ***                 (iwind,1) velocity table
 ! ***                 (iwind,2) direction table
 
@@ -564,7 +564,7 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
+      Use NewTables_rtc
       Use ParseToken
       Use ReadLib
 
@@ -582,7 +582,7 @@
       CHARACTER*999               :: STRING
       INTEGER                     :: IDEBUG, IOUT1, IN, ISBK, IECODE
 !
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, success
@@ -780,7 +780,7 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
+      Use NewTables_rtc
       Use ParseToken
       Use ReadLib
 
@@ -799,7 +799,7 @@
       CHARACTER(len=CharIdLength) :: IDNODE, Name  !, CDUM(NHLP)
       CHARACTER*999               :: STRING
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, Success
@@ -930,7 +930,7 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
+      Use NewTables_rtc
       Use ParseToken
 
       Integer RetVal
@@ -943,7 +943,7 @@
       CHARACTER*999               :: STRING
       INTEGER                     :: IDEBUG, IOUT1, IN, ID3D, IECODE
 !
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, success
@@ -1083,7 +1083,7 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
+      Use NewTables_rtc
       Use ParseToken
       Use ReadLib
 
@@ -1101,7 +1101,7 @@
       CHARACTER*999               :: STRING
       INTEGER                     :: IDEBUG, IN, IOUT1, IPRECP, IPRE, IECODE
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, Success
@@ -1230,7 +1230,7 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
+      Use NewTables_rtc
       Use ParseToken
       Use FileModule
       Use ReadLib
@@ -1250,7 +1250,7 @@
       CHARACTER(len=CharIdLength) :: IDNODE, Name, HisFile, HisParameter, HisLocation   ! CDUM(NHLP)
       CHARACTER*999               :: STRING
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, Success

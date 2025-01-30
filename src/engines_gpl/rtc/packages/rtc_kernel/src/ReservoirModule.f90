@@ -27,7 +27,7 @@
 
     Module ReservoirModule
 
-    use NewTables
+    use NewTables_rtc
 ! nav ARS 11505 (RR)
 ! Nov 2003 Taiwan
     use Dh_alloc
@@ -259,7 +259,7 @@
 
      Logical, pointer, save :: AlreadyRead(:), AlreadyRead2(:), AlreadyRead3(:)
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError

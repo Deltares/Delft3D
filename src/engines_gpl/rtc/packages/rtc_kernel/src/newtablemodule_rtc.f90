@@ -43,7 +43,7 @@
 ! July 2004
 !   - mechanism for multiple SobekTimeTableStore
 
-module NewTables
+module NewTables_rtc
 
 use ParseToken
 use ReadLib
@@ -2117,5 +2117,5 @@ end function newTablesModelFind_ByHandle
   End Subroutine WriteMessage
 
 
-end module NewTables
+end module NewTables_rtc
 

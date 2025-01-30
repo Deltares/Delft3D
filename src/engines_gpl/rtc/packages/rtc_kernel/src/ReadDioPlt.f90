@@ -487,7 +487,7 @@ Function ReadDioPltExtSelection (Ievent, Itmstp, Idebug, Iout1, &
     Use DecisionModule
     Use MeasureModule
     Use OtherData
-    Use NewTables
+    Use NewTables_rtc
     Use ReadLib
 
     implicit none

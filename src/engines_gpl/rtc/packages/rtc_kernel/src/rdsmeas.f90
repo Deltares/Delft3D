@@ -52,7 +52,7 @@
       Use DecisionModule
       Use MeasureModule
       Use OtherData
-      Use NewTables
+      Use NewTables_rtc
       Use ParseToken
       Use ReadLib
       Use ExternalDLLModule
@@ -70,7 +70,7 @@
       INTEGER        IDEBUG, IOUT1, IN, IMEAS, IPARA, ISBK, IECODE, I
       INTEGER        NSMEASI
 !
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Integer        NaValue, StartSubRecord, EndSubRecord, NrSbmsSubRecords, iSubRecord
@@ -900,7 +900,7 @@
       Use DecisionModule
       Use MeasureModule
       Use OtherData
-      Use NewTables
+      Use NewTables_rtc
       Use ParseToken
       Use ReadLib
 
@@ -914,7 +914,7 @@
       INTEGER       IDEBUG, IOUT1, IN, IMEAS, IPARA, ISBK, IECODE, I
       INTEGER       NSMEASI
 !
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError
