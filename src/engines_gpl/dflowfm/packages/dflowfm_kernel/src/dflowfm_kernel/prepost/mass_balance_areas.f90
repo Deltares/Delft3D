@@ -816,7 +816,7 @@ contains
             end do
          end do
 
-         ! Note: mbafluxsorsin updated in fill_constitents ... uses always dts
+         ! Note: mbafluxsorsin updated in fill_constituents ... uses always dts
       end do
 
       if (timon) call timstop(ithndl)
