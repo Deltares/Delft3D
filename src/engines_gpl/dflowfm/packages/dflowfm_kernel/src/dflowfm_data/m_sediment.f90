@@ -38,6 +38,7 @@ module m_sediment
    use m_waves
    implicit none
 
+    !real(fp), dimension(:,:), pointer      :: sed      !< sediment concentration
    !-------------------------------------------------- new sediment transport and morphology
    type mortmpdummy
       real(fp), dimension(:), pointer :: uau !< velocity asymmetry in u points

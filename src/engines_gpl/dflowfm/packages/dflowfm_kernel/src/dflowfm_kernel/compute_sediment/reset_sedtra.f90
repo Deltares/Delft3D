@@ -36,6 +36,7 @@ module m_reset_sedtra
 
    private
 
+      !deallocate(mtd%sed)
    public :: reset_sedtra
 
 contains

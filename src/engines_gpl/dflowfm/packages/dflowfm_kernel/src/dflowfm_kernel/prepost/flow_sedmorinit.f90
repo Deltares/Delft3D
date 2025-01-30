@@ -290,7 +290,6 @@ contains
          deallocate (mtd%uau)
 
          deallocate (mtd%seddif)
-         deallocate (mtd%sed)
          deallocate (mtd%ws)
          deallocate (mtd%blchg)
 
@@ -302,7 +301,6 @@ contains
       allocate (mtd%dzbdt(ndx_mor))
       allocate (mtd%uau(lnx))
       allocate (mtd%seddif(stmpar%lsedsus, ndkx_mor))
-      allocate (mtd%sed(stmpar%lsedsus, ndkx_mor))
       allocate (mtd%ws(ndkx_mor, stmpar%lsedsus))
       allocate (mtd%blchg(Ndx_mor))
       allocate (mtd%messages)
@@ -311,18 +309,14 @@ contains
       mtd%dzbdt = 0.0_fp
       mtd%uau = 0.0_fp
       mtd%seddif = 0.0_fp
-      mtd%sed = 0.0_fp
       mtd%ws = 0.0_fp
       mtd%blchg = 0.0_fp
       !
       ! Array for transport.f90
       mxgr = stmpar%lsedsus
-      if (allocated(sed)) deallocate (sed)
       if (allocated(ssccum)) deallocate (ssccum)
       if (stmpar%lsedsus > 0) then
-         allocate (sed(stmpar%lsedsus, Ndkx))
-         allocate (ssccum(stmpar%lsedsus, Ndkx))
-         sed = 0d0
+         allocate (ssccum(stmpar%lsedsus, Ndx))
          ssccum = 0d0
       end if
       !

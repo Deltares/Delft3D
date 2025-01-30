@@ -50,7 +50,7 @@ contains
    !!--declarations----------------------------------------------------------------
       use precision
       use m_physcoef, only: ee, ag, sag, vonkar, backgroundsalinity, backgroundwatertemperature, vismol
-      use m_sediment, only: stmpar, mtd, sed
+      use m_sediment, only: stmpar, mtd
       use m_flowtimes, only: time1
       use m_flowgeom, only: ndx, ln, bl, wcl, lnx
       use m_flow, only: iturbulencemodel, kmx, zws, ucxq, ucyq, ucz, s1, z0urou, ucx_mor, ucy_mor
@@ -158,8 +158,9 @@ contains
          z0rou(k2) = z0rou(k2) + wcl(2, L) * z0urou(L)
       end do
 
+      if (s1(k)-bl(k)<=epshs) cycle
       do k = 1, ndx
-         if (s1(k) - bl(k) < epshs) cycle
+         if (s1(k) - bl(k) <= epshs) cycle
          !
          h0 = s1(k) - bl(k)
          chezy = sag * log(h0 / ee / max(epsz0, z0rou(k))) / vonkar ! consistency with getczz0
@@ -181,10 +182,11 @@ contains
          end if
          !
          ! loop over the interfaces in the vertical
+         ! This does not work for kmx==1
          !
          if (kmx > 0) then ! 3D
             call getkbotktop(k, kb, kt)
-         else ! 2D
+         else ! 2D or quasi 2D
             kb = k
             kt = k + 1
          end if
@@ -192,7 +194,7 @@ contains
          do kk = kb, kt - 1
             ! HK: is this better than first establish fallvelocity in a cell, next interpolate to interfaces?
 
-            if (kmx > 0) then ! 3D
+            if (kmx > 1) then ! 3D
                tka = zws(kk + 1) - zws(kk) ! thickness above
                tkb = zws(kk) - zws(kk - 1) ! thickness below
                tkt = tka + tkb
@@ -257,8 +259,8 @@ contains
             ctot = 0d0
             cclay = 0d0
             do ll = 1, lsed
-               ctot = ctot + sed(ll, kk)
-               if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + sed(ll, kk)
+               ctot = ctot + constituents(ISED1+ll-1, kk)
+               if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + constituents(ISED1+ll-1, kk)
             end do
             !
             do ll = 1, lsed
@@ -282,7 +284,7 @@ contains
                dll_reals(WS_RP_SALIN) = real(salint, hp)
                dll_reals(WS_RP_TEMP) = real(temint, hp)
                dll_reals(WS_RP_RHOWT) = real(rhoint, hp)
-               dll_reals(WS_RP_CFRCB) = real(sed(ll, kk), hp)
+               dll_reals(WS_RP_CFRCB) = real(constituents(ISED1+ll-1, kk), hp)
                dll_reals(WS_RP_CTOT) = real(ctot, hp)
                dll_reals(WS_RP_KTUR) = real(tur_k, hp)
                dll_reals(WS_RP_EPTUR) = real(tur_eps, hp)

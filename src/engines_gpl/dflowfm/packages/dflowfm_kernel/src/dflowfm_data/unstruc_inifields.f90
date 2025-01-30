@@ -1207,7 +1207,7 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
-      use m_sediment, only: stm_included, sed, jased, sedh
+      use m_sediment, only: stm_included, jased, sedh
       use m_transportdata, only: ISED1, const_names, itrac2const, constituents
       use m_fm_wq_processes, only: wqbotnames, wqbot
       use m_find_name, only: find_name
@@ -1297,8 +1297,8 @@ contains
             end if
             if (iconst > 0) then
                target_location_type = UNC_LOC_S3D
-               indx = iconst - ised1 + 1
-               target_array_3d => sed
+               indx = iconst
+               target_array_3d => constituents
             else
                call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', getting unknown sediment fraction '''//trim(qid_specific)//''' from QUANTITY '''//trim(qid)//'''.')
                success = .false.
@@ -1387,8 +1387,8 @@ contains
             if (iconst > 0) then
                target_array = dmiss
                target_location_type = UNC_LOC_3DV
-               target_array_3d => sed
-               indx = iconst - ISED1 + 1
+               target_array_3d => constituents
+               indx = iconst
             else
                call mess(LEVEL_WARN, 'Error in initial fields: initialverticalsedfracprofile, sedimentfraction '''// &
                          trim(qid_specific)//''' not found.')
@@ -1407,8 +1407,8 @@ contains
                allocate (target_array(1:ndkx))
                target_array = dmiss
                target_location_type = UNC_LOC_3DV
-               target_array_3d => sed
-               indx = iconst - ISED1 + 1
+               target_array_3d => constituents
+               indx = iconst
             end if
          end if
 

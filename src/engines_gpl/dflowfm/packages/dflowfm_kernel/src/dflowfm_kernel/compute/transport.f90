@@ -419,6 +419,15 @@ contains
          end if
       end if
 
+          if (jased > 0 .and. .not. stm_included) then
+          !
+          ! we removed sed from the morfo module code, so we need this:
+          if (jased > 0 .and. stm_included) then
+             do j = 1, stmpar%lsedsus
+                jj = ISED1+j-1
+                constituents(jj,kb) = constituents(jj,ki)
+             end do
+          end if
       do k = 1, 0 !  ndxi ! for test selectiveZ.mdu
          if (xz(k) > 270) then
             do kk = kbot(k), ktop(k)

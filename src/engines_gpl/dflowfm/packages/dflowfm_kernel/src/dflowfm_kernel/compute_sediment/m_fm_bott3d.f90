@@ -1611,7 +1611,7 @@ contains
             botcrit = 0.95 * hsk
             ddp = hsk / max(hsk - blchg(k), botcrit)
             do ll = 1, stmpar%lsedsus
-               m_sediment_sed(ll, k) = m_sediment_sed(ll, k) * ddp
+               constituents(ISED1+ll-1, k) = constituents(ISED1+ll-1, k) * ddp
             end do !ll
             !
             if (jasal > 0) then
@@ -1633,7 +1633,7 @@ contains
                ddp = hsk / max(hsk - blchg(k), botcrit)
                call getkbotktop(k, kb, kt)
                do kk = kb, kt
-                  m_sediment_sed(ll, kk) = m_sediment_sed(ll, kk) * ddp
+                  constituents(ISED1+ll-1, kk) = constituents(ISED1+ll-1, kk) * ddp
                end do !kk
             end do !k
          end do !ll
@@ -1665,12 +1665,6 @@ contains
          end if !ITRA1>0
          !
       end if !kmx==0
-      
-      if (stmpar%lsedsus>0) then
-         do ll = 1,stmpar%lsedsus
-            constituents(ISED1+ll-1,:) = m_sediment_sed(ll,:)
-         end do
-      end if
 
    end subroutine fm_update_concentrations_after_bed_level_update
 
