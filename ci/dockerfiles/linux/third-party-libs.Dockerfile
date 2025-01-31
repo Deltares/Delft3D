@@ -162,11 +162,11 @@ pushd "/var/cache/src/${BASEDIR}/build"
 if [[ "$DEBUG" = "0" ]]; then
     cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
         -DCMAKE_C_FLAGS="-O3 -DNDEBUG -fPIC" -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fPIC" \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release
 else
     cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
         -DCMAKE_C_FLAGS="-g -O0 -fPIC" -DCMAKE_CXX_FLAGS="-g -O0 -fPIC" \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Debug
+        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Debug
 fi
 make -j8
 make install
@@ -292,11 +292,11 @@ pushd "/var/cache/src/${BASEDIR}/build"
 if [[ $DEBUG = "0" ]]; then
     cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
         -DCMAKE_C_FLAGS="-O3 -DNDEBUG" -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG" \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release
 else
     cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
         -DCMAKE_C_FLAGS="-g -O0" -DCMAKE_CXX_FLAGS="-g -O0" \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Debug
+        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Debug
 fi
 make -j8
 make install
@@ -368,6 +368,8 @@ cmake .. \
     -DCMAKE_C_COMPILER=mpiicx \
     -DCMAKE_CXX_COMPILER=mpiicpx \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DCMAKE_INSTALL_LIBDIR=lib \
     -DENABLE_PARALLEL4=ON \
     -DZLIB_INCLUDE_DIR=/usr/local/include \
     -DZLIB_LIBRARY=/usr/local/lib/libz.so \
@@ -392,7 +394,7 @@ else
     wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
 fi
 
-export LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 export HDF5_PLUGIN_PATH=/usr/local/lib
 [[ $DEBUG = "0" ]] \
     && FLAGS="-O3 -DNDEBUG -mcmodel=large" \
@@ -438,6 +440,8 @@ pushd "/var/cache/src/${BASEDIR}/build"
 cmake .. \
     -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DCMAKE_INSTALL_LIBDIR=lib \
     -DSQLITE3_INCLUDE_DIR=/usr/local/include \
     -DSQLITE3_LIBRARY=/usr/local/lib/libsqlite3.so \
     -DEXE_SQLITE3=/usr/local/bin/sqlite3 \
@@ -477,13 +481,15 @@ pushd "/var/cache/src/${BASEDIR}/build"
 cmake .. \
     -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DCMAKE_INSTALL_LIBDIR=lib \
     -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
     -DGDAL_USE_MYSQL=OFF -DGDAL_USE_SQLITE3=ON \
     -DGDAL_USE_HDF5=ON -DGDAL_USE_NETCDF=ON \
     -DGDAL_USE_EXPAT=ON -DGDAL_USE_XERCESC=ON \
     -DGDAL_USE_ZSTD=ON -DGDAL_USE_ZLIB=ON \
     -DGDAL_USE_TIFF=ON
-    
+
 cmake --build . --config $BUILD_TYPE -j 8
 cmake --build . --target install
 
@@ -528,4 +534,5 @@ FROM base AS all
 COPY --from=uuid --link /usr/local /usr/local/
 COPY --from=metis --link /usr/local /usr/local/
 COPY --from=petsc --link /usr/local/ /usr/local/
+COPY --from=netcdf --link /usr/local /usr/local/
 COPY --from=gdal --link /usr/local/ /usr/local/
