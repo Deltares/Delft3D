@@ -48,6 +48,7 @@ contains
       use m_flowtimes
       use m_hydrology_data
       use horton
+      use m_wind, only: jarain, rain
 
       real(kind=dp), parameter :: mmphr_to_mps = 1d-3 / 3600d0
 

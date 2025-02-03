@@ -49,7 +49,8 @@ contains
       use m_restore_keys
       use m_help
       use m_highlight_form_line
-
+      use m_wind, only: jaqin, jaevap, evap
+      
       integer :: numpar, numfld, numparactual, numfldactual
       parameter(NUMPAR=22, NUMFLD=2 * NUMPAR)
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)

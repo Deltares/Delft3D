@@ -31,7 +31,6 @@
 !
 
 module m_flow_allocflow
-   use m_polygonlayering, only: polygonlayering
 
    implicit none
 
@@ -66,6 +65,10 @@ contains
       use m_get_zlayer_indices
       use m_get_zlayer_indices_bobL
       use m_filez, only: oldfil
+      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, clou, rain, evap, tair, heatsrc, heatsrc0, & 
+         longwave, patm, rhum, qrad, tbed, rhoair, qext, qextreal, vextcum, cdwcof
+      use m_nudge, only: nudge_tem, nudge_sal, nudge_time, nudge_rate
+      use m_polygonlayering, only: polygonlayering
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn

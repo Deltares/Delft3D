@@ -1456,6 +1456,7 @@ contains
       use m_transport, only: constituents
       use m_flowgeom, only: bl, lnx, bl_min
       use m_flow
+      use m_wind, only: wx, wy
       implicit none
 
       real(kind=fp), intent(in) :: time0 !< Current time [seconds]

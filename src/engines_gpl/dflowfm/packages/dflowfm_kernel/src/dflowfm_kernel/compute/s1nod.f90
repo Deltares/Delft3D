@@ -60,6 +60,7 @@ contains
       use iso_c_utils, only: MAXSTRINGLEN
       use m_fm_icecover, only: ice_apply_pressure, ice_p
       use m_qnerror
+      use m_wind, only: japatm, patm, pavbnd
 
       integer :: n
       integer :: kb, k2, L, k, LL, itpbn

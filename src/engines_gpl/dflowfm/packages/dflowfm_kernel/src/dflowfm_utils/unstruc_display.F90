@@ -1492,6 +1492,7 @@ contains
       use m_gtext, only: gtext
       use m_filez, only: doclose, newfil
       use m_upotukinueaa, only: upotukinueaa
+      use m_wind, only: jawind, windxav, windyav
 
       real(kind=dp) :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa
       character tex * 60

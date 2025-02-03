@@ -31,28 +31,80 @@
 !
 
 module m_update_dambreak_breach
+   use precision, only: dp
 
    implicit none
 
    private
 
    public :: update_dambreak_breach
+   public :: allocate_and_initialize_dambreak_data
 
-contains
+   ! time varying, can be get/set via BMI interface
+   real(kind=dp), dimension(:), allocatable, target, public :: breachDepthDambreak !< the dambreak breach width (as a level)
+   real(kind=dp), dimension(:), allocatable, target, public :: breachWidthDambreak !< the dambreak breach width (as a level)
+   real(kind=dp), dimension(:), allocatable, target, public :: waterLevelsDambreakUpStream !< the water levels computed each time step upstream
+   real(kind=dp), dimension(:), allocatable, target, public :: waterLevelsDambreakDownStream !< the water levels computed each time step downstream
+
+   real(kind=dp), dimension(:), allocatable, public :: normalVelocityDambreak !< dambreak normal velocity
+   real(kind=dp), dimension(:), allocatable, public :: breachWidthDerivativeDambreak !< breach width derivatives
+   real(kind=dp), dimension(:), allocatable, public :: waterLevelJumpDambreak !< water level jumps
+   
+   real(kind=dp), dimension(:,:), allocatable :: dambreakAveraging   !< (1,:) weight averaged values of waterlevel per dambreaklink
+                                                                     !! (2,:) weight per dambreaklink
+   ! Upstream water level
+   integer, public :: nDambreakLocationsUpstream !< nr of dambreak signals with locations upstream
+   integer, dimension(:), allocatable, public :: dambreakLocationsUpstreamMapping !< mapping of dambreak locations upstream
+   integer, dimension(:), allocatable, public :: dambreakLocationsUpstream !< store cell ids for water level locations upstream
+   integer, public :: nDambreakAveragingUpstream !< nr of dambreak signals upstream with averaging
+   integer, dimension(:), allocatable, public :: dambreakAveragingUpstreamMapping !< mapping of dambreak averaging upstream
+   ! Downstream water level
+   integer, public :: nDambreakLocationsDownstream !< nr of dambreak signals with locations downstream
+   integer, dimension(:), allocatable, public :: dambreakLocationsDownstreamMapping !< mapping of dambreak locations downstream
+   integer, dimension(:), allocatable, public :: dambreakLocationsDownstream !< store cell ids for water level locations downstream
+   integer, public :: nDambreakAveragingDownstream !< nr of dambreak signals downstream with averaging
+   integer, dimension(:), allocatable, public :: dambreakAveragingDownstreamMapping !< mapping of dambreak averaging in the dambreak arrays
+
+   contains
+
+   subroutine allocate_and_initialize_dambreak_data(ndambreaksignals)
+      use m_alloc, only: realloc
+
+      integer, intent(in) :: ndambreaksignals
+     
+      call realloc(waterLevelsDambreakUpstream, ndambreaksignals)
+      call realloc(waterLevelsDambreakDownstream, ndambreaksignals)
+      call realloc(normalVelocityDambreak, ndambreaksignals)
+      call realloc(breachWidthDerivativeDambreak, ndambreaksignals)
+      call realloc(waterLevelJumpDambreak, ndambreaksignals)
+      call realloc(dambreakAveraging, [2,ndambreaksignals])
+      call realloc(dambreakLocationsUpstreamMapping, ndambreaksignals, fill=0)
+      call realloc(dambreakLocationsUpstream, ndambreaksignals, fill=0)
+      call realloc(dambreakAveragingUpstreamMapping, ndambreaksignals, fill=0)
+      call realloc(dambreakLocationsDownstreamMapping, ndambreaksignals, fill=0)
+      call realloc(dambreakLocationsDownstream, ndambreaksignals, fill=0)
+      call realloc(dambreakAveragingDownstreamMapping, ndambreaksignals, fill=0)
+      nDambreakLocationsUpstream = 0
+      nDambreakAveragingUpstream = 0
+      nDambreakLocationsDownstream = 0
+      nDambreakAveragingDownstream = 0
+
+   end subroutine allocate_and_initialize_dambreak_data
 
    subroutine update_dambreak_breach(startTime, deltaTime)
       use precision, only: dp
-
-      use m_flowgeom
-      use m_flow
-      use m_missing
-      use m_structures
-      use unstruc_channel_flow
-      use m_Dambreak
-      use m_partitioninfo
-      use m_meteo
-      use fm_external_forcings_data
-      use m_flowtimes
+      use m_flowgeom, only: wu
+      use m_flow, only: s1, hu, au, u1
+      use m_missing, only: dmiss
+      use unstruc_channel_flow, only: network
+      use m_Dambreak, only: prepareComputeDambreak
+      use m_partitioninfo, only: getAverageQuantityFromLinks
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_dambreakLevelsAndWidthsFromTable
+      use fm_external_forcings_data, only: success, ndambreaklinks, ndambreaksignals, &
+         dambreaks, dambreakLevelsAndWidthsFromTable, &
+         LStartBreach, L1dambreaksg, L2dambreaksg, kdambreak, activeDambreakLinks
+      use m_dambreak, only: BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
+      use m_flowtimes, only: irefdate, tunit, tzone
 
       implicit none
 
@@ -73,13 +125,12 @@ contains
          !
          ! Initialize
          !
-         dambreakAveraging = 0.0d0
-         waterLevelsDambreakUpStream = 0.0d0
-         waterLevelsDambreakDownStream = 0.0d0
-         normalVelocityDambreak = 0.0d0
-         breachWidthDerivativeDambreak = 0.0d0
-         waterLevelJumpDambreak = 0.0d0
-
+         dambreakAveraging(:,:) = 0.0d0
+         waterLevelsDambreakUpStream(:) = 0.0d0
+         waterLevelsDambreakDownStream(:) = 0.0d0
+         normalVelocityDambreak(:) = 0.0d0
+         breachWidthDerivativeDambreak(:) = 0.0d0
+         waterLevelJumpDambreak(:) = 0.0d0
          !
          ! Upstream water level
          !
@@ -91,7 +142,7 @@ contains
          if (nDambreakAveragingUpstream > 0) then
 
             ! Compute sumQuantitiesByWeight upstream
-            ierr = getAverageQuantityFromLinks(L1dambreaksg(dambreakAverigingUpstreamMapping(1:nDambreakAveragingUpstream)), L2dambreaksg(dambreakAverigingUpstreamMapping(1:nDambreakAveragingUpstream)), wu, kdambreak(3, :), s1, kdambreak(1, :), dambreakAveraging, 0, &
+            ierr = getAverageQuantityFromLinks(L1dambreaksg(dambreakAveragingUpstreamMapping(1:nDambreakAveragingUpstream)), L2dambreaksg(dambreakAveragingUpstreamMapping(1:nDambreakAveragingUpstream)), wu, kdambreak(3, :), s1, kdambreak(1, :), dambreakAveraging, 0, &
                                                hu, dmiss, activeDambreakLinks, 0)
 
             if (ierr /= 0) then
@@ -102,9 +153,9 @@ contains
             if (ndambreaklinks > 0) then
                do n = 1, nDambreakAveragingUpstream
                   if (dambreakAveraging(2, n) > 0.0d0) then
-                     waterLevelsDambreakUpStream(dambreakAverigingUpstreamMapping(n)) = dambreakAveraging(1, n) / dambreakAveraging(2, n)
-                  else if (abs(startTime - network%sts%struct(dambreaks(dambreakAverigingUpstreamMapping(n)))%dambreak%T0) < 1d-10) then
-                     waterLevelsDambreakUpStream(dambreakAverigingUpstreamMapping(n)) = s1(kdambreak(1, LStartBreach(dambreakAverigingUpstreamMapping(n))))
+                     waterLevelsDambreakUpStream(dambreakAveragingUpstreamMapping(n)) = dambreakAveraging(1, n) / dambreakAveraging(2, n)
+                  else if (abs(startTime - network%sts%struct(dambreaks(dambreakAveragingUpstreamMapping(n)))%dambreak%T0) < 1d-10) then
+                     waterLevelsDambreakUpStream(dambreakAveragingUpstreamMapping(n)) = s1(kdambreak(1, LStartBreach(dambreakAveragingUpstreamMapping(n))))
                   else
                      continue
                   end if
@@ -123,7 +174,7 @@ contains
          if (nDambreakAveragingDownstream > 0) then
 
             ! Compute sumQuantitiesByWeight downstream
-            ierr = getAverageQuantityFromLinks(L1dambreaksg(dambreakAverigingDownstreamMapping(1:nDambreakAveragingDownstream)), L2dambreaksg(dambreakAverigingDownstreamMapping(1:nDambreakAveragingDownstream)), wu, kdambreak(3, :), s1, kdambreak(2, :), dambreakAveraging, 0, &
+            ierr = getAverageQuantityFromLinks(L1dambreaksg(dambreakAveragingDownstreamMapping(1:nDambreakAveragingDownstream)), L2dambreaksg(dambreakAveragingDownstreamMapping(1:nDambreakAveragingDownstream)), wu, kdambreak(3, :), s1, kdambreak(2, :), dambreakAveraging, 0, &
                                                hu, dmiss, activeDambreakLinks, 0)
 
             if (ierr /= 0) then
@@ -134,9 +185,9 @@ contains
             if (ndambreaklinks > 0) then
                do n = 1, nDambreakAveragingDownstream
                   if (dambreakAveraging(2, n) > 0.0d0) then
-                     waterLevelsDambreakDownStream(dambreakAverigingDownstreamMapping(n)) = dambreakAveraging(1, n) / dambreakAveraging(2, n)
-                  else if (abs(startTime - network%sts%struct(dambreaks(dambreakAverigingDownstreamMapping(n)))%dambreak%T0) < 1d-10) then
-                     waterLevelsDambreakDownStream(dambreakAverigingDownstreamMapping(n)) = s1(kdambreak(2, LStartBreach(dambreakAverigingDownstreamMapping(n))))
+                     waterLevelsDambreakDownStream(dambreakAveragingDownstreamMapping(n)) = dambreakAveraging(1, n) / dambreakAveraging(2, n)
+                  else if (abs(startTime - network%sts%struct(dambreaks(dambreakAveragingDownstreamMapping(n)))%dambreak%T0) < 1d-10) then
+                     waterLevelsDambreakDownStream(dambreakAveragingDownstreamMapping(n)) = s1(kdambreak(2, LStartBreach(dambreakAveragingDownstreamMapping(n))))
                   else
                      continue
                   end if
@@ -162,11 +213,11 @@ contains
             do n = 1, ndambreaksignals
                istru = dambreaks(n)
                if (istru /= 0) then
-                  if (network%sts%struct(istru)%dambreak%algorithm == 1 .or. network%sts%struct(istru)%dambreak%algorithm == 2) then
+                  if (network%sts%struct(istru)%dambreak%algorithm == BREACH_GROWTH_VDKNAAP .or. network%sts%struct(istru)%dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
                      ! Compute the breach width
-                     call prepareComputeDambreak(network%sts%struct(istru)%dambreak, waterLevelsDambreakUpStream(n), waterLevelsDambreakDownStream(n), normalVelocityDambreak(n), startTime, deltaTime, maximumDambreakWidths(n))
+                     call prepareComputeDambreak(network%sts%struct(istru)%dambreak, waterLevelsDambreakUpStream(n), waterLevelsDambreakDownStream(n), normalVelocityDambreak(n), startTime, deltaTime)
                   end if
-                  if (network%sts%struct(istru)%dambreak%algorithm == 3 .and. startTime > network%sts%struct(istru)%dambreak%t0) then
+                  if (network%sts%struct(istru)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES .and. startTime > network%sts%struct(istru)%dambreak%t0) then
                      !Time in the tim file is relative to the start time
                      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_dambreakLevelsAndWidthsFromTable, irefdate, tzone, tunit, startTime - network%sts%struct(istru)%dambreak%t0)
                      ! NOTE: AvD: the code above works correctly, but is dangerous:

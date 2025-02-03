@@ -57,9 +57,10 @@ contains
       use m_hydrology_data, only: jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
       use m_mass_balance_areas
       use m_partitioninfo
+      use m_wind, only: jaqin, jaqext, jaevap, jarain, heatsrc, heatsrc0, rain, rainuni, evap, tair, qextreal
       use m_laterals, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
                             apply_transport
-
+  
       integer :: L, k1, k2, k, LL, kt, idim, imba, i_lat, i_node
       real(kind=dp) :: aufu, auru, tetau
       real(kind=dp) :: ds, hsk, Qeva_ow, Qeva_icept, Qrain, Qicept, Qextk, aloc

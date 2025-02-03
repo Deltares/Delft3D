@@ -49,6 +49,8 @@ contains
       use m_physcoef, only: backgroundsalinity
       use m_get_kbot_ktop
       use m_get_link1
+      use m_wind, only: japatm, jaevap, longwave_available, relativewind, tair, wx, wy, rhum, clou, patm, heatsrc0, qrad, &
+         solrad_available, tbed, rhoair, longwave, evap, cdwcof
 
       implicit none
 

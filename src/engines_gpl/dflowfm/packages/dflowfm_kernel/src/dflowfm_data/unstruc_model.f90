@@ -246,6 +246,7 @@ module unstruc_model
 
    integer :: md_convertlongculverts = 0 !< convert culverts (and exit program) yes (1) or no (0)
    character(len=128) :: md_culvertprefix = ' ' !< prefix for generating long culvert files
+   character(len=128) :: md_dambreak_widening_method  !< method for dambreak widening
 
 !   map file output format
    integer, parameter :: NUMFORMATS = 4
@@ -686,7 +687,7 @@ contains
       use m_flowgeom !,              only : wu1Duni, bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
-      use fm_external_forcings_data, only: dambreakWideningString, dambreakWidening, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM
+      use m_adjust_bobs_on_dambreak_breach, only: dambreakWidening, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind ! ,                  only : icdtyp, cdb, wdb,
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
@@ -1415,16 +1416,17 @@ contains
 
       call prop_get(md_ptr, 'physics', 'NFEntrainmentMomentum', NFEntrainmentMomentum)
 
-      call prop_get(md_ptr, 'physics', 'BreachGrowth', dambreakWideningString)
-      call str_lower(dambreakWideningString)
-      select case (dambreakWideningString)
+      md_dambreak_widening_method = ''
+      call prop_get(md_ptr, 'physics', 'BreachGrowth', md_dambreak_widening_method)
+      call str_lower(md_dambreak_widening_method)
+      select case (md_dambreak_widening_method)
       case ('symmetric')
          dambreakWidening = DBW_SYMM
       case ('proportional')
          dambreakWidening = DBW_PROP
       case ('symmetric-asymmetric', '')
          dambreakWidening = DBW_SYMM_ASYMM
-         dambreakWideningString = 'symmetric-asymmetric'
+         md_dambreak_widening_method = 'symmetric-asymmetric'
       case default
          call mess(LEVEL_ERROR, 'Invalid value specified for breach growth.')
       end select
@@ -3416,7 +3418,7 @@ contains
       end if
 
       if (ndambreaklinks > 0) then
-         call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(dambreakWideningString), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
+         call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
       if (writeall .or. jased > 0) then
