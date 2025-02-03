@@ -31,10 +31,10 @@ elif [[ $INTEL_ONEAPI_VERSION = "2024" ]]; then
     MPI_DEVEL_VERSION="2021.13"
 fi
 
-dnf update -y
-dnf install -y epel-release
+dnf update --assumeyes
+dnf install --assumeyes epel-release
 dnf config-manager --set-enabled powertools
-dnf install -y \
+dnf install --assumeyes \
     which binutils patchelf diffutils procps m4 make gcc-toolset-14 \
     openssl openssl-devel wget perl python3 \
     intel-oneapi-compiler-dpcpp-cpp-${COMPILER_DPCPP_CPP_VERSION} \
@@ -44,14 +44,14 @@ dnf install -y \
 
 if [[ $INTEL_ONEAPI_VERSION = "2023" ]]; then
     # For some reason, in oneapi 2023, the latest symlink is not set correctly.
-    ln -s --force -T /opt/intel/oneapi/mpi/2021.13 /opt/intel/oneapi/mpi/latest 
+    ln --symbolic --force --no-target-directory /opt/intel/oneapi/mpi/2021.13 /opt/intel/oneapi/mpi/latest
 fi
 EOF
 
 # Build autotools, because some libraries require recent versions of it.
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 for URL in \
     'https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.xz' \
@@ -63,12 +63,12 @@ do
         echo "CACHED ${BASEDIR}"
     else
         echo "Fetching ${BASEDIR}.tar.xz..."
-        wget -q -O - "$URL" | tar -xJf - -C '/var/cache/src/'
+        wget --quiet --output-document=- "$URL" | tar --extract --xz --file=- --directory='/var/cache/src/'
     fi
 
     pushd "/var/cache/src/${BASEDIR}"
     ./configure CC=icx CXX=icpx FC=ifx CFLAGS="-O3" CXXFLAGS="-O3" FCFLAGS="-O3"
-    make -j8
+    make --jobs=8
     make install
     popd
 done
@@ -77,7 +77,7 @@ EOF
 # CMake
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/Kitware/CMake/releases/download/v3.30.3/cmake-3.30.3.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
@@ -85,14 +85,14 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${BASEDIR}.tar.gz..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 export CC=icx CXX=icpx CFLAGS="-O3" CXXFLAGS="-O3"
 
 pushd /var/cache/src/cmake-3.30.3
 ./bootstrap --parallel=8
-make -j8
+make --jobs=8
 make install
 popd
 EOF
