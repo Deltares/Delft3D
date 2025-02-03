@@ -106,6 +106,7 @@ object WindowsTest : BuildType({
                 call :kill_program mpiexec.exe
                 call :kill_program hydra_pmi_proxy.exe
                 call :kill_program mormerge.exe
+                call :kill_program d_hydro.exe
                 set errorlevel=0
                 goto :eof
                 
