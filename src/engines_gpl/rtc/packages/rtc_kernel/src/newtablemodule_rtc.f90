@@ -43,10 +43,10 @@
 ! July 2004
 !   - mechanism for multiple SobekTimeTableStore
 
-module NewTables
+module NewTables_rtc
 
-use ParseToken
-use ReadLib
+use ParseToken_rtc
+use ReadLib_rtc
 use Dh_Alloc
 
 implicit none
@@ -476,7 +476,7 @@ end function newTablesModelFind_ByHandle
       character*(linlen) line
       logical            start , stopr
 
-! Additional variables for ParseToken
+! Additional variables for ParseToken_rtc
       Integer ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical ParseTokenCaseSensitive
       Type (TokenArray) RecordData
@@ -713,7 +713,7 @@ end function newTablesModelFind_ByHandle
       Integer IDate1, IDate2, ITime1, ITime2, icount, Allocation_Error
       Double precision JulianDate1, JulianDate2, Julian
 
-! May 2002; Additional variables for ParseToken
+! May 2002; Additional variables for ParseToken_rtc
       Integer           NumberOfTokens
       Type (TokenArray) TempData
       Character*1000    String
@@ -773,7 +773,7 @@ end function newTablesModelFind_ByHandle
       Iright =  INDEX(Buffer(iLeftBuf:IRightBuf), 'tble')
       TabYesNo = (ileft .gt. 0 .and. iright .gt. ileft)
 !     CntStr = aantal keren '<' in de ingelezen tabel
-!     difference between CntStr and MyOwnCntStr, both from ReadLib, is the use of intrinsic Len_trim or not
+!     difference between CntStr and MyOwnCntStr, both from ReadLib_rtc, is the use of intrinsic Len_trim or not
 !     the intrinsic Len_trim routine of Compaq 6.1 Visual Fortran fails for very long strings with a stack overflow
 !     MyOwnLenTrim still works fine, also for long strings, but is fo course somewhat slower
 !     the test value of 5.0E5 works ok for 1 GlobalWind definition on my NT PC 512 Mb Ram
@@ -2117,5 +2117,5 @@ end function newTablesModelFind_ByHandle
   End Subroutine WriteMessage
 
 
-end module NewTables
+end module NewTables_rtc
 

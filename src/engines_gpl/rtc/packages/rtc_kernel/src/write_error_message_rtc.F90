@@ -43,10 +43,10 @@
 
       Use ParameterModule
       Use FileModule
-      Use LanguageModule
+      Use LanguageModule_rtc
       Use OtherData
       Use SyncRtcFlow
-      Use ReadLib
+      Use ReadLib_rtc
 
       INTEGER       IOUT1, IECODE, ICODE
       CHARACTER*(*) NAMSUB

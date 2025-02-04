@@ -25,9 +25,9 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-    Module ParseToken
+    Module ParseToken_rtc
 
-    use ReadLib
+    use ReadLib_rtc
 !  Module based on ParseToken VB code, received from JanJaapBrinkman March 2002
 
     implicit none
@@ -46,7 +46,7 @@
     Type TokenArray
       Logical       IsEnclosedByQuotes (MaxTk)
 !     Character*256 Token (MaxTk)   ! now limited to max. Sobek token length of 80 char
-      Character*80  Token (MaxTk)
+      Character(len=80) Token (MaxTk)
       Integer       StartPositionOfToken(MaxTk)
     End Type
 
@@ -80,14 +80,14 @@
 !--------------------------------------------------------------------
 !     Own routine
 !     FindFirstPos: Finds position of first occurrence of string A in string B
-!     Diff. with FndFrst from Readlib: String B may be a blank (' ')
+!     Diff. with FndFrst from Readlib_rtc: String B may be a blank (' ')
 !--------------------------------------------------------------------
 
    Integer Function FindFirstPos (STRNGA, STRNGB, WithSpaces)
 
    implicit none
    
-   Character*(*) STRNGA, STRNGB
+   Character(len=*) STRNGA, STRNGB
    Logical WithSpaces
 
    INTEGER I, IPOS, LA, LB
@@ -134,7 +134,7 @@
 
     implicit none
     
-    Character*(*)      Buffr
+    Character(len=*)   Buffr
     type (TokenArray)  ResultArr
     integer            ScanToTk, NumberOfTokens, NumTk
     Logical            CaseSensitive
@@ -146,7 +146,7 @@
 
 
 !   Separators: space, quote, double quote, comma
-    Character*1 cSpace, cSepQ, cSepDQ, cSepC
+    Character(len=1) cSpace, cSepQ, cSepDQ, cSepC
 !   Local copy of input string
     Character(Len=MaxStrLength) LocalBuffer
 
@@ -281,7 +281,7 @@
   integer      i, Start, NrOfTokens, ReturnIndex
   Character(*) FindToken
 ! maximale lengte zoekstring (keyword) 10 karakters (meestal is 2 of 4 genoeg)
-  Character*10 LocalFindToken, CheckToken
+  Character(len=10) LocalFindToken, CheckToken
   Logical CaseSensitive
   Integer      LocalStart, LenCheck, LenFind
 ! Integer      Idebug
@@ -340,7 +340,7 @@
   integer      i, Start, NrOfTokens, ReturnIndex
   Character(*) FindToken
 ! maximale lengte zoekstring (keyword) 10 karakters (meestal is 2 of 4 genoeg)
-  Character*10 LocalFindToken, CheckToken
+  Character(len=10) LocalFindToken, CheckToken
   Logical CaseSensitive
   Integer      LocalStart, LenCheck, LenFind
 ! Integer      Idebug
@@ -832,4 +832,4 @@
    End Function Set3DCharVariablesRunningIndex3
 
 
-   End Module ParseToken
+   End Module ParseToken_rtc

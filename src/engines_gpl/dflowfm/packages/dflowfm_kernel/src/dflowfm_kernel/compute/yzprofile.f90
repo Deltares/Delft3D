@@ -40,7 +40,7 @@ module m_yzprofile
 
 contains
 
-   subroutine yzprofile(hpr, ka, itp, area, width, japerim, frcn, ifrctyp, perim, cfhi)
+   subroutine yzprofile(hpr, ka, itp, area, width, japerim, frcn, friction_type, perim, cfhi)
       use precision, only: dp
       use m_getseg1d
       use m_profiles, only: profiles1d
@@ -60,7 +60,7 @@ contains
       real(kind=dp) :: frcn ! user defined friction coefficient
       real(kind=dp) :: bl1, bl2, b21 ! bottom levels segment, b21, diff of bl1,bl2, always > 0
       real(kind=dp) :: wu2, ai, aconv, per
-      integer :: ifrctyp ! user defined frcition type
+      integer :: friction_type ! user defined frcition type
       integer :: k, numseg, jac
 
       numseg = size(profiles1D(ka)%y) - 1
@@ -89,7 +89,7 @@ contains
             b21 = BL2 - BL1
             wu2 = abs(profiles1D(ka)%y(k) - profiles1D(ka)%y(k + 1))
             ai = b21 / wu2
-            call getseg1D(hpr2, wu2, b21, ai, frcn, ifrctyp, wid, ar, conv, per, jac)
+            call getseg1D(hpr2, wu2, b21, ai, frcn, friction_type, wid, ar, conv, per, jac)
             width = width + wid
             area = area + ar
             if (jac == 2) then

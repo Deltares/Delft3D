@@ -43,9 +43,7 @@ contains
       integer :: nfld
       integer, parameter :: MAXOP = 64
       integer :: nwhat2, maxopt, i
-      character(len=40) OPTION(MAXOP), exp(MAXOP)
-      exp(1) = 'MENU 10                                 '
-      exp(2) = 'GRID EDIT OPTIONS                       '
+      character(len=40) OPTION(MAXOP)
       MAXOPT = 22
       do I = 1, MAXOPT
          OPTION(I) = FIELDOP(I)

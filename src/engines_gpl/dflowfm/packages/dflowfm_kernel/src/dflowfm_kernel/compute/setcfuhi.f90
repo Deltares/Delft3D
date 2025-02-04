@@ -40,15 +40,15 @@ module m_setcfuhi
 
 contains
 
-!> set friction coefficients g/C2 etc
-!! sqrt(g/C2) in both in 2D and in 3D
+   !> set friction coefficients g/C2 etc
+   !! sqrt(g/C2) in both in 2D and in 3D
    subroutine setcfuhi()
       use precision, only: dp
       use m_flowtimes
       use m_flow
       use m_flowgeom, only: lnx, lnx1d
       use m_missing
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
 
       ! locals
       real(kind=dp) :: h0, cz, frcn
@@ -78,7 +78,7 @@ contains
                   end if
                   frcn = frcu(L)
                   if (frcn > 0d0) then
-                     call getcz(h0, frcn, ifrcutp(L), cz, L)
+                     cz = get_chezy(h0, frcn, u1(L), v(L), ifrcutp(L))
                      cfuhi(L) = ag / (h0 * cz * cz)
                      z0ucur(L) = h0 * exp(-1d0 - vonkar * cz / sag)
                   else

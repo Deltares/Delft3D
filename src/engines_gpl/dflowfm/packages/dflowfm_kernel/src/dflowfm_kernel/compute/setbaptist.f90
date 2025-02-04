@@ -44,7 +44,7 @@ contains
       use precision, only: dp
       use m_flow
       use m_flowgeom, only: ln, lnx
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
 
       integer :: L, k1, k2
       real(kind=dp) :: ap, Cz, Czb, Czr, rnL, diaL, stemhL, gamhg, Cda, areastem, umag, fac, facL, Cdaleaf
@@ -56,7 +56,7 @@ contains
 
          if (hu(L) > 0 .and. rnL > densvegminbap) then ! overwrite cfuhi on veg locations with 2D Baptist
             if (jaBaptist <= 2) then ! compute Baptist on board
-               call getcz(hu(L), frcu(L), ifrcutp(L), Czb, L) ! standard Chezy coeff
+               Czb = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L)) ! standard Chezy coeff
                if (diaveg(k1) > 0 .and. diaveg(k2) > 0) then
                   diaL = 0.5d0 * (diaveg(k1) + diaveg(k2))
                else

@@ -25,7 +25,7 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-    module LanguageModule
+    module LanguageModule_rtc
 
 ! August 2004: updated for multiple use
 
@@ -297,8 +297,8 @@ end function LanguagesModelFind_ByHandle
         ! ***  IN     = file unit number of input file
         ! *********************************************************************
 
-      use ParseToken
-      use ReadLib
+      use ParseToken_rtc
+      use ReadLib_rtc
 
       integer         , intent(in) :: modelHandle, in, Idebug, Iout1
 
@@ -311,11 +311,11 @@ end function LanguagesModelFind_ByHandle
       Integer       dummy
       Logical       Success
 
-! Additional variables for ParseToken
+! Additional variables for ParseToken_rtc
       Integer        ScanToTk, IStart, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError
       Type (TokenArray) RecordData
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 
 ! *********************************************************************
 ! *** check header of file
@@ -326,10 +326,10 @@ end function LanguagesModelFind_ByHandle
       ReadError = .true.     ! default value = true
       Ireturncode = 972
 
-! Parsetoken settings
+! Parsetoken_rtc settings
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
 
 ! read file
@@ -487,7 +487,7 @@ end function LanguagesModelFind_ByHandle
       !                 Als het language array voor dit item niet gevuld, geef de oorspronkelijke string terug
       !--------------------------------------------------------------------
 
-      use ReadLib
+      use ReadLib_rtc
 
       integer         , intent(in) :: modelHandle
 
@@ -559,4 +559,4 @@ end function LanguagesModelFind_ByHandle
 
 
 
-    END Module LanguageModule
+    END Module LanguageModule_rtc

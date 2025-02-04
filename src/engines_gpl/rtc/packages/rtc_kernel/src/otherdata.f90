@@ -89,7 +89,7 @@
 ! ***
 ! ***  SetSequenceDecisionParameters = yes = set by RTC
 ! ***                                  no  = set by user in input file (backwards compatible)
-! ***  WindUseTableModule = yes = use NewTablesModule for wind tables
+! ***  WindUseTableModule = yes = use NewTables_rtc for wind tables
 ! ***                       no  = do not, = old method
 ! ***  ReduceWindTable    = yes = reduce length of Wind Table if possible (default)
 ! ***                       no  = do not
@@ -168,7 +168,7 @@
 
       LOGICAL            WithoutSobekCString
 
-! *** Variable to pass active language read from INI file to LanguageModule
+! *** Variable to pass active language read from INI file to LanguageModule_rtc
       Integer            ActiveLanguage
 
       Logical            OnMatlabErrorQuit

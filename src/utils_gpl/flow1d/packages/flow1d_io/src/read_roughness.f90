@@ -99,7 +99,7 @@ contains
             call prop_get(md_ptr, 'GlobalValues', 'roughnessType', def_type, success)
          endif
          if (.not. success) then
-            def_type = R_Chezy
+            def_type = R_CHEZY
             default = 45
          endif
       endif

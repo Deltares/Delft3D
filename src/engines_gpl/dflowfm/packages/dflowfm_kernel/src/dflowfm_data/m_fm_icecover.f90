@@ -298,6 +298,7 @@ contains
       use m_physcoef, only: vonkar
       use physicalconsts, only: CtoKelvin
       use m_heatfluxes, only: cpw
+      use m_wind, only: tair
       use ieee_arithmetic, only: ieee_is_nan
       implicit none
       !

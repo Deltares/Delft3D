@@ -47,13 +47,14 @@ contains
       use m_flowparameters
       use m_flow, only: rhomean, ag, hu, jaconveyance2D, u1, v, frcu, ifrcutp, z0urou, cfuhi, ifrctypuni, frcuni, taubxu, taubu
       use m_flowgeom
-      use m_physcoef, only: rhomean, ee, sag, vonkar
+      use m_physcoef, only: rhomean, sag, vonkar
       use m_waves
       use m_bedform, only: bfmpar
       use m_vegetation
       use m_trachy, only: trachy_resistance
       use unstruc_display
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
+      use mathconsts, only: ee
 
       implicit none
 
@@ -123,9 +124,9 @@ contains
          ! get current related roughness height
          !
          if (frcu(L) > 0d0) then
-            call getcz(huL, dble(frcu(L)), ifrcutp(L), cz, L)
+            cz = get_chezy(huL, dble(frcu(L)), u1(L), v(L), ifrcutp(L))
          else
-            call getcz(huL, frcuni, ifrctypuni, cz, L)
+            cz = get_chezy(huL, frcuni, u1(L), v(L), ifrctypuni)
          end if
          z0 = huL / (ee * (exp(vonkar * cz / sag) - 1d0))
 

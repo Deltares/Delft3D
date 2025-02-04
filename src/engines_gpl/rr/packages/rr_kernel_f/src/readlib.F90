@@ -25,7 +25,7 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
- ! DOC
+! DOC
 !
 !  readlib.f90  Subroutines for flexible reading from file; = module version  of old Readlib.Lib
 !

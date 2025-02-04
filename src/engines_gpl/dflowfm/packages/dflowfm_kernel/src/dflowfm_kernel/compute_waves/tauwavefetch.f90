@@ -542,6 +542,7 @@ contains
       use m_flowgeom
       use m_flow
       use m_sferic, only: pi
+      use m_wind, only: wx, wy
 
       integer :: link, k1, k2
       real(kind=dp), dimension(:), allocatable :: wxc, wyc

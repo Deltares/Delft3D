@@ -1640,6 +1640,7 @@ contains
       use m_qnerror
       use m_flow_init_structurecontrol, only: flow_init_structurecontrol
       use m_setzminmax, only: setzminmax
+      use m_bnd, only: alloc_bnd, dealloc_bndarr
 
       integer, intent(out) :: iresult
 

@@ -48,10 +48,11 @@ contains
       use precision, only: dp
       use m_xbeach_data
       use m_waves
-      use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flowwithoutwaves, epshu, wx, wy, ag, hs, waveforcing
+      use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flowwithoutwaves, epshu, ag, hs, waveforcing
       use m_flowgeom, only: bl, lnx, ln, csu, snu, ndx
       use mathconsts, only: sqrt2_hp
       use m_transform_wave_physics, only: transform_wave_physics_hp
+      use m_wind, only: wx, wy
 
       integer :: k1, k2, k, L
       integer :: ierror

@@ -36,13 +36,14 @@ module m_getseg1d
 
 contains
 
-   subroutine getseg1D(hpr, wu2, dz, ai, frcn, ifrctyp, wid, ar, conv, perim, jaconv) ! copy of above routine dressed out for 1D
+   subroutine getseg1D(hpr, wu2, dz, ai, frcn, friction_type, wid, ar, conv, perim, jaconv) ! copy of above routine dressed out for 1D
       use precision, only: dp
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
+      use m_flow, only: u1, v
       implicit none
       real(kind=dp), intent(in) :: hpr, wu2, dz, ai, frcn
       real(kind=dp), intent(out) :: wid, ar, conv, perim !
-      integer, intent(in) :: ifrctyp, jaconv
+      integer, intent(in) :: friction_type, jaconv
       real(kind=dp) :: d83 = 2.666666d0, d16 = 0.166666d0, d23 = 0.666666d0
       real(kind=dp) :: hp2, Cz, cman, hav
       real(kind=dp) :: d38 = 0.375d0, d14 = 0.25d0
@@ -78,7 +79,7 @@ contains
          end if
 
       else if (jaconv >= 2) then ! 1D analytic conveyance type
-         if (ifrctyp == 1) then
+         if (friction_type == 1) then
             cman = frcn
          else
             if (ai < 1d-3) then
@@ -88,7 +89,7 @@ contains
             else
                hav = hpr - 0.5d0 * dz
             end if
-            call getcz(hav, frcn, ifrctyp, Cz, L)
+            Cz = get_chezy(hav, frcn, u1(L), v(L), friction_type)
             cman = hav**d16 / Cz
          end if
 

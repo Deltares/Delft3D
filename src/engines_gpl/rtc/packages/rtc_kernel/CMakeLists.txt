@@ -18,7 +18,7 @@ set_source_files_properties(
                    src/filemodule.F90
                    src/LocationDataModule.F90  # no preprocessot needed, should be .f90
                    src/OpenMatlab.F90
-                   src/readlib.F90
+                   src/readlib_rtc.F90
                    src/rtc_matlab_module.F90
                    src/Rtc_Rdini.F90
                    PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")

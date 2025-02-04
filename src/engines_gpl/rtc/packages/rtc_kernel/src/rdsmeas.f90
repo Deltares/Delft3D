@@ -52,9 +52,9 @@
       Use DecisionModule
       Use MeasureModule
       Use OtherData
-      Use NewTables
-      Use ParseToken
-      Use ReadLib
+      Use NewTables_rtc
+      Use ParseToken_rtc
+      Use ReadLib_rtc
       Use ExternalDLLModule
 
       implicit none
@@ -70,7 +70,7 @@
       INTEGER        IDEBUG, IOUT1, IN, IMEAS, IPARA, ISBK, IECODE, I
       INTEGER        NSMEASI
 !
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Integer        NaValue, StartSubRecord, EndSubRecord, NrSbmsSubRecords, iSubRecord
@@ -83,9 +83,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 9999  ! Scan up to Token 9999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 
       IF (IDEBUG .GT. 0) WRITE (IDEBUG,1)
     1 FORMAT (' Rdsmeas')
@@ -187,7 +187,7 @@
          Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
          if (.not. Success) ReadError = .true.
          IF (ReadError) then
-             ErrorString = ' Read error during reading RTC measures ParseToken for CF module ' // &
+             ErrorString = ' Read error during reading RTC measures ParseToken_rtc for CF module ' // &
                             String(1:len_trim(String))
              call write_error_message_rtc (974,0,'RdSBMs',ErrorString,IOUT1)
              RetVal = 974
@@ -900,9 +900,9 @@
       Use DecisionModule
       Use MeasureModule
       Use OtherData
-      Use NewTables
-      Use ParseToken
-      Use ReadLib
+      Use NewTables_rtc
+      Use ParseToken_rtc
+      Use ReadLib_rtc
 
       Integer :: RetVal
 
@@ -914,7 +914,7 @@
       INTEGER       IDEBUG, IOUT1, IN, IMEAS, IPARA, ISBK, IECODE, I
       INTEGER       NSMEASI
 !
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError
@@ -924,9 +924,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 
       IF (IDEBUG .GT. 0) WRITE (IDEBUG,1)
     1 FORMAT (' Rdsmeas_OldFormat')

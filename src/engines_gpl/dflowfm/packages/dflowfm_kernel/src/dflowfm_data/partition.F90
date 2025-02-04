@@ -4483,9 +4483,8 @@ contains
    function getAverageQuantityFromLinks(startLinks, endLinks, weights, indsWeight, quantity, indsQuantity, results, quantityType, &
                                         firstFilter, firstFilterValue, secondFilter, secondFilterValue) result(ierr)
 
-      use mpi
-      use fm_external_forcings_data
-      use m_timer
+      use mpi, only: MPI_DOUBLE_PRECISION, MPI_SUM
+      use m_timer, only: jatimer, starttimer, stoptimer, IMPIREDUCE
 
       !inputs
       integer, intent(in), dimension(:) :: startLinks !< start indexes [1,nsegments]

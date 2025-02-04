@@ -27,7 +27,7 @@
 
     Module ReservoirModule
 
-    use NewTables
+    use NewTables_rtc
 ! nav ARS 11505 (RR)
 ! Nov 2003 Taiwan
     use Dh_alloc
@@ -232,8 +232,8 @@
 !                   number of decision variables NDecV
 !                   number of reservoirs NRsv
 ! *********************************************************************
-    use ParseToken
-    use ReadLib
+    use ParseToken_rtc
+    use ReadLib_rtc
 
      Integer :: RetVal
 
@@ -259,7 +259,7 @@
 
      Logical, pointer, save :: AlreadyRead(:), AlreadyRead2(:), AlreadyRead3(:)
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError
@@ -271,7 +271,7 @@
       ScanToTk = 999   ! Scan up to Token 999
       ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 
 
      success = DH_AllocInit(Nrsv*MaxSameGates, AlreadyRead, .false.)
@@ -334,7 +334,7 @@
 !           number of interpolation values, levels, areas, volumes
             teller = teller + 1
             AlreadyRead(ihav) = .true.
-            ! Find length of table, using routine CntStr from Readlib; routine counts number of times '<' in buffer
+            ! Find length of table, using routine CntStr from Readlib_rtc; routine counts number of times '<' in buffer
             HavTableLength(Ihav) = Max (1, CntStr(klteken, String(1:nbuf)) )
             If (HavTableLength(Ihav) .gt. InterpLength) then
                 HavTableLength(Ihav) = InterpLength
@@ -479,7 +479,7 @@
         ReadError = ReadError .and. .not. &
             SetOneVariable('id',IStart, RecordData, NumberOfTokens, ParseTokenSearchCaseSensitive, Name)
 !       Read HEDG definition: determine number of interpolation values, read percentage and release
-        ! Find length of table, using routine CntStr from Readlib; routine counts number of times '<' in buffer
+        ! Find length of table, using routine CntStr from Readlib_rtc; routine counts number of times '<' in buffer
         TableLength = Max (1, CntStr(klteken, String(1:nbuf)) )
 !       Table is automatically extended with a zero level and release percentage, so check length on InterpLength-1
         If (TableLength .gt. InterpLength-1) then
@@ -584,7 +584,7 @@
      Call SKPCOM (INfile, ENDFIL,'ODS')
      if (idebug .gt. 0) write(idebug,*) ' Read BOTG records'
      Do while (.not. endfil)
-!       Read record using ParseToken
+!       Read record using ParseToken_rtc
         SearchString = 'BOTG'
         ReadError    = .false.
         Success = GetRecord (Infile, SearchString, Endfil, Idebug, Iout1, KeyUppUntilColumn)
@@ -595,7 +595,7 @@
         Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
         if (.not. Success) ReadError = .true.
         IF (ReadError) then
-           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - BOTG ParseToken ',IOUT1)
+           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - BOTG ParseToken_rtc ',IOUT1)
            RetVal = 974
            Return
         Endif
@@ -671,7 +671,7 @@
      if (idebug .gt. 0) write(idebug,*) ' Read TURB records'
      Call SKPCOM (INfile, ENDFIL,'ODS')
      Do while (.not. endfil)
-!       Read using ParseToken
+!       Read using ParseToken_rtc
         SearchString = 'TURB'
         ReadError    = .false.
         Success = GetRecord (Infile, SearchString, Endfil, Idebug, Iout1, KeyUppUntilColumn)
@@ -682,7 +682,7 @@
         Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
         if (.not. Success) ReadError = .true.
         IF (ReadError) then
-           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - TURB ParseToken ',IOUT1)
+           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - TURB ParseToken_rtc ',IOUT1)
            RetVal = 974
            Return
         Endif
@@ -760,7 +760,7 @@
      Call SKPCOM (INfile, ENDFIL,'ODS')
      if (idebug .gt. 0) write(idebug,*) ' Read SPIL records'
      Do while (.not. endfil)
-!       Read input using ParseToken
+!       Read input using ParseToken_rtc
         SearchString = 'SPIL'
         ReadError    = .false.
         Success = GetRecord (Infile, SearchString, Endfil, Idebug, Iout1, KeyUppUntilColumn)
@@ -771,7 +771,7 @@
         Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
         if (.not. Success) ReadError = .true.
         IF (ReadError) then
-           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - SPIL ParseToken ',IOUT1)
+           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - SPIL ParseToken_rtc ',IOUT1)
            RetVal = 974
            Return
         Endif
@@ -955,7 +955,7 @@
         Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
         if (.not. Success) ReadError = .true.
         IF (ReadError) then
-           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - QHRE ParseToken ',IOUT1)
+           call write_error_message_rtc (974,0,'Rdpara',' Read error during reading reservoir datafile - QHRE ParseToken_rtc ',IOUT1)
            RetVal = 974
            Return
         Endif
@@ -963,7 +963,7 @@
         ReadError = ReadError .and. .not. &
             SetOneVariable('id',IStart, RecordData, NumberOfTokens, ParseTokenSearchCaseSensitive, Name)
 !       Read QHRE definition: number of interpolation values, levels, maximum flows
-        ! Find length of table, using routine CntStr from Readlib; routine counts number of times '<' in buffer
+        ! Find length of table, using routine CntStr from Readlib_rtc; routine counts number of times '<' in buffer
         TableLength = Max (1, CntStr(klteken, String(1:nbuf)) )
         If (TableLength .gt. InterpLength) then
             TableLength = InterpLength

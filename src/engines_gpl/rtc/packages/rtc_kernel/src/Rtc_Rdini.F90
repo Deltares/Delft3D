@@ -50,7 +50,7 @@
       Use ReservoirModule
       Use OtherData
       Use MeasureModule
-      Use ReadLib
+      Use ReadLib_rtc
       Use ExternalDLLModule
 
 ! voor gebruik current dir functie (PC only)

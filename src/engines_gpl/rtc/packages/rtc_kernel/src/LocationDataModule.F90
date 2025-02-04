@@ -179,7 +179,7 @@
 ! *** WNDVEL= wind velocity array
 ! *** WindInterpVel= true means linear interpolation velocity ; false means block data (default=block data)
 ! *** WindInterpDir= true means linear interpolation direction; false means block data (default=block data)
-! *** WindTable  = WindTable Nr in case of use of the NewTablesModule
+! *** WindTable  = WindTable Nr in case of use of the NewTables_rtc
 ! ***                 (iwind,1) velocity table
 ! ***                 (iwind,2) direction table
 
@@ -564,9 +564,9 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
-      Use ParseToken
-      Use ReadLib
+      Use NewTables_rtc
+      Use ParseToken_rtc
+      Use ReadLib_rtc
 
       Integer RetVal
 
@@ -582,7 +582,7 @@
       CHARACTER*999               :: STRING
       INTEGER                     :: IDEBUG, IOUT1, IN, ISBK, IECODE
 !
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, success
@@ -592,9 +592,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 
 
       IF (IDEBUG .GT. 0) WRITE (IDEBUG,1)
@@ -629,7 +629,7 @@
         IF (IDEBUG .GT. 0) WRITE(IDEBUG,*)  STRING(1:len_trim(String))
 ! skip regel als hij niet begint met juist keyword
         IF (STRING(1:4) .EQ. 'SBKO') Then
-!         Read data using ParseToken
+!         Read data using ParseToken_rtc
           BackSpace(IN)
           SearchString = 'SBKO'
           ReadError = .false.
@@ -780,9 +780,9 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
-      Use ParseToken
-      Use ReadLib
+      Use NewTables_rtc
+      Use ParseToken_rtc
+      Use ReadLib_rtc
 
       Integer RetVal
 
@@ -799,7 +799,7 @@
       CHARACTER(len=CharIdLength) :: IDNODE, Name  !, CDUM(NHLP)
       CHARACTER*999               :: STRING
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, Success
@@ -809,9 +809,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 
       IF (IDEBUG .GT. 0) WRITE (IDEBUG,1)
     1 FORMAT (' RDL_3B')
@@ -836,7 +836,7 @@
          READ(IN,'(A)',END=21,ERR=150,IOSTAT=IECODE)  STRING
 ! skip regel als hij niet begint met juist keyword
          IF (STRING(1:3) .EQ. '3BO') THEN
-!          Read data using ParseToken
+!          Read data using ParseToken_rtc
            BackSpace(IN)
            SearchString = '3BO'
            ReadError = .false.
@@ -930,8 +930,8 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
-      Use ParseToken
+      Use NewTables_rtc
+      Use ParseToken_rtc
 
       Integer RetVal
 
@@ -943,7 +943,7 @@
       CHARACTER*999               :: STRING
       INTEGER                     :: IDEBUG, IOUT1, IN, ID3D, IECODE
 !
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, success
@@ -953,9 +953,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 
 
       IF (IDEBUG .GT. 0) WRITE (IDEBUG,1)
@@ -979,7 +979,7 @@
         IF (IDEBUG .GT. 0) WRITE(IDEBUG,*)  STRING(1:len_trim(String))
 ! skip regel als hij niet begint met juist keyword
         IF (STRING(1:4) .EQ. 'D3DO') Then
-!         Read data using ParseToken
+!         Read data using ParseToken_rtc
           BackSpace(IN)
           SearchString = 'D3DO'
           ReadError = .false.
@@ -1083,9 +1083,9 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
-      Use ParseToken
-      Use ReadLib
+      Use NewTables_rtc
+      Use ParseToken_rtc
+      Use ReadLib_rtc
 
       Integer RetVal
 
@@ -1101,7 +1101,7 @@
       CHARACTER*999               :: STRING
       INTEGER                     :: IDEBUG, IN, IOUT1, IPRECP, IPRE, IECODE
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, Success
@@ -1111,9 +1111,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 !
       IF (IDEBUG .GT. 0) WRITE (IDEBUG,1)
     1 FORMAT (' RDL_PR')
@@ -1140,7 +1140,7 @@
          READ(IN,'(A)',END=21,ERR=150,IOSTAT=IECODE)  STRING
 ! skip regel als hij niet begint met juist keyword
          IF (STRING(1:4) .EQ. 'PREC') Then
-!          Read data using ParseToken
+!          Read data using ParseToken_rtc
            BackSpace(IN)
            SearchString = 'PREC'
            ReadError = .false.
@@ -1230,10 +1230,10 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
-      Use ParseToken
+      Use NewTables_rtc
+      Use ParseToken_rtc
       Use FileModule
-      Use ReadLib
+      Use ReadLib_rtc
       use Dio_Plt_Rw
 
       Integer :: RetVal
@@ -1250,7 +1250,7 @@
       CHARACTER(len=CharIdLength) :: IDNODE, Name, HisFile, HisParameter, HisLocation   ! CDUM(NHLP)
       CHARACTER*999               :: STRING
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, Success
@@ -1262,9 +1262,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 !
       CaseSensitive = .false.
 
@@ -1293,7 +1293,7 @@
          READ(IN,'(A)',END=21,ERR=150,IOSTAT=IECODE)  STRING
 ! skip regel als hij niet begint met juist keyword
          IF (STRING(1:3) .EQ. 'EXT') Then
-!          Read data using ParseToken
+!          Read data using ParseToken_rtc
            BackSpace(IN)
            SearchString = 'EXT'
            ReadError = .false.
@@ -1358,7 +1358,7 @@
          READ(IN,'(A)',END=221,ERR=150,IOSTAT=IECODE)  STRING
 ! skip regel als hij niet begint met juist keyword
          IF (STRING(1:4) .EQ. 'HEXT') Then
-!          Read data using ParseToken
+!          Read data using ParseToken_rtc
            BackSpace(IN)
            SearchString = 'HEXT'
            ReadError = .false.
@@ -1501,7 +1501,7 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 !
-      Use ReadLib
+      Use ReadLib_rtc
 
       Integer :: RetVal
 
@@ -1576,7 +1576,7 @@
 
       Function CheckIdsMatlab_oldversion (IdString, Iout1, fullstring)  result(RetVal)
 
-      use ReadLib
+      use ReadLib_rtc
 
       Integer :: RetVal
 
@@ -1646,7 +1646,7 @@
 !    Additionally: also , is allowed (string separator in Matlab, used in getting multiple strings from Matlab)
 
 
-      use ReadLib
+      use ReadLib_rtc
 
       Integer :: RetVal
 

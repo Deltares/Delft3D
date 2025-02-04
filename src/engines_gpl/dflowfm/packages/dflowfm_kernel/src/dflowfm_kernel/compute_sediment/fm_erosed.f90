@@ -69,14 +69,14 @@ contains
       ! NONE
    !!--declarations----------------------------------------------------------------
       use precision
-      use mathconsts, only: pi
+      use mathconsts, only: pi, ee
       use bedcomposition_module
       use morphology_data_module
       use sediment_basics_module
-      use m_physcoef, only: ag, vonkar, sag, ee, backgroundsalinity, backgroundwatertemperature, vismol
+      use m_physcoef, only: ag, vonkar, sag, backgroundsalinity, backgroundwatertemperature, vismol, frcuni, ifrctypuni
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
-      use m_flow, only: s0, s1, u1, kmx, zws, hs, &
+      use m_flow, only: s0, s1, u1, v, kmx, zws, hs, &
                         iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
@@ -87,7 +87,6 @@ contains
       use dfparall
       use m_alloc
       use m_missing
-      use m_physcoef, only: frcuni, ifrctypuni
       use m_turbulence, only: vicwws, turkinepsws, rhowat
       use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
@@ -115,7 +114,7 @@ contains
       use m_debug
       use m_sand_mud
       use m_get_kbot_ktop
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
       !
       implicit none
       !
@@ -416,13 +415,13 @@ contains
                   czu = 1d0 / (cfuhi(L) * max(hu(L), epshu))
                   czu = sqrt(czu * ag)
                else
-                  call getcz(hu(L), frcuni, ifrctypuni, czu, L)
+                  czu = get_chezy(hu(L), frcuni, u1(L), v(L), ifrctypuni)
                end if
             else
                if (frcu_mor(L) > 0) then
-                  call getcz(hu(L), frcu_mor(L), ifrcutp(L), czu, L)
+                  czu = get_chezy(hu(L), frcu_mor(L), u1(L), v(L), ifrcutp(L))
                else
-                  call getcz(hu(L), frcuni, ifrctypuni, czu, L)
+                  czu = get_chezy(hu(L), frcuni, u1(L), v(L), ifrctypuni)
                end if
             end if
             !

@@ -201,8 +201,8 @@
 ! *** Output: MaxNumber (should be initialised before calling this routine!!)
 ! **********************************************************************
 
-      use NewTables
-      use ParseToken
+      use NewTables_rtc
+      use ParseToken_rtc
 
       Integer                         :: In, IOut1, Idebug, Iopt
       CHARACTER(len=FileCharIdLength) :: FileName
@@ -214,7 +214,7 @@
       Logical								  :: FnmExt, success
 
       Integer        i, ReadValue
-! Additional variables for ParseToken
+! Additional variables for ParseToken_rtc
       Integer           ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical           ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive
       Type (TokenArray) RecordData
@@ -265,8 +265,8 @@
 ! *** Output: MaxNumber (should be initialised before calling this routine!!)
 ! **********************************************************************
 
-      use NewTables
-      use ParseToken
+      use NewTables_rtc
+      use ParseToken_rtc
 
       Integer                         :: In, IOut1, Idebug, Iopt
       CHARACTER(len=FileCharIdLength) :: FileName
@@ -278,7 +278,7 @@
       Logical                         :: FnmExt, success
 
       Integer        i, ReadValue
-! Additional variables for ParseToken
+! Additional variables for ParseToken_rtc
       Integer           ScanToTk, IStart, jStart, ReturnIndx, NumberOfTokens
       Logical           ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive
       Type (TokenArray) RecordData
@@ -336,8 +336,8 @@
 ! *** If CheckArray(i)=false: find maximum number after keywordArray()
 ! **********************************************************************
 
-      use NewTables
-      use ParseToken
+      use NewTables_rtc
+      use ParseToken_rtc
 
       Integer                         :: In, IOut1, Idebug, Iopt
       CHARACTER(len=FileCharIdLength) :: FileName
@@ -350,7 +350,7 @@
       Logical                         :: FnmExt, success
 
       Integer        i, ReadValue
-! Additional variables for ParseToken
+! Additional variables for ParseToken_rtc
       Integer           ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical           ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive
       Type (TokenArray) RecordData

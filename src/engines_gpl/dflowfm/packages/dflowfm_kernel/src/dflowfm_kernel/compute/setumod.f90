@@ -40,11 +40,11 @@ module m_setumod
 
 contains
 
-!> set cell center Perot velocities at nodes
-!! set Perot based friction velocities umod at u point
-!! set tangential velocities at u point
-!! set velocity gradient at u point
-!! set corner based Perot velocities
+   !> set cell center Perot velocities at nodes
+   !! set Perot based friction velocities umod at u point
+   !! set tangential velocities at u point
+   !! set velocity gradient at u point
+   !! set corner based Perot velocities
    subroutine setumod(jazws0)
       use precision, only: dp
       use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
@@ -62,7 +62,7 @@ contains
       use m_drawthis
       use m_get_kbot_ktop
       use m_get_Lbot_Ltop
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
       use m_horvic
       use m_horvic3
       use m_cor2linx, only: cor2linx
@@ -364,7 +364,7 @@ contains
 
                      vicL = 0d0
                      if (Elder > 0d0) then !  add Elder
-                        call getcz(hu(L), frcu(L), ifrcutp(L), Cz, L)
+                        Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
                         vicL = vicL + Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L) * v(L)) ! vonkar*sag/(6*Cz) = 0.009
                      end if
 

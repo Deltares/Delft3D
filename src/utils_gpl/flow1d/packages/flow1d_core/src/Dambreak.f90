@@ -29,82 +29,87 @@
    !  
    !-------------------------------------------------------------------------------
 
-   use m_GlobalParameters
-   use m_struc_helper
+   use m_GlobalParameters, only: Idlen, gravity
+   use precision, only: dp
 
    implicit none
 
    public prepareComputeDambreak
    public setCoefficents
 
+   integer, parameter, public :: BREACH_GROWTH_VDKNAAP = 1
+   integer, parameter, public :: BREACH_GROWTH_VERHEIJVDKNAAP = 2
+   integer, parameter, public :: BREACH_GROWTH_TIMESERIES = 3
+   
    type, public :: t_dambreak
-      double precision :: startLocationX
-      double precision :: startLocationY
-      integer          :: algorithm
-      double precision :: crestLevelIni
-      double precision :: breachWidthIni
-      double precision :: crestLevelMin
-      double precision :: timeToBreachToMaximumDepth
-      double precision :: dischargecoeff
-      double precision :: f1
-      double precision :: f2
-      double precision :: ucrit
-      double precision :: t0
-      integer          :: materialtype                      =  1 !for algorithm 1, default matrerial type is clay
-      double precision :: endTimeFirstPhase
-      double precision :: breachWidthDerivative             = -1.0d0
-      double precision :: waterLevelJumpDambreak            = -1.0d0	
-      double precision :: waterLevelUpstreamLocationX       = -999d0 
-      double precision :: waterLevelUpstreamLocationY       = -999d0
-      double precision :: waterLevelDownstreamLocationX     = -999d0	
-      double precision :: waterLevelDownstreamLocationY     = -999d0
+      real(kind=dp) :: startLocationX
+      real(kind=dp) :: startLocationY
+      integer       :: algorithm
+      real(kind=dp) :: crestLevelIni
+      real(kind=dp) :: breachWidthIni
+      real(kind=dp) :: crestLevelMin
+      real(kind=dp) :: timeToBreachToMaximumDepth
+      real(kind=dp) :: dischargecoeff
+      real(kind=dp) :: f1
+      real(kind=dp) :: f2
+      real(kind=dp) :: ucrit
+      real(kind=dp) :: t0
+      integer       :: materialtype                      =  1 !for algorithm BREACH_GROWTH_VDKNAAP, default material type is clay
+      real(kind=dp) :: endTimeFirstPhase
+      real(kind=dp) :: breachWidthDerivative             = -1.0d0
+      real(kind=dp) :: waterLevelJumpDambreak            = -1.0d0	
+      real(kind=dp) :: waterLevelUpstreamLocationX       = -999d0 
+      real(kind=dp) :: waterLevelUpstreamLocationY       = -999d0
+      real(kind=dp) :: waterLevelDownstreamLocationX     = -999d0	
+      real(kind=dp) :: waterLevelDownstreamLocationY     = -999d0
       character(IdLen) :: waterLevelUpstreamNodeId          = ''
       character(IdLen) :: waterLevelDownstreamNodeId        = ''
-      character(IdLen):: levelsAndWidths                   = ''
+      character(IdLen) :: levelsAndWidths                   = ''
 
       ! State variables, not to be read
-      integer          :: phase
-      double precision :: width
-      double precision :: crl
-      double precision :: aCoeff
-      double precision :: bCoeff
-      double precision :: maximumAllowedWidth = - 1.0d0
+      integer       :: phase
+      real(kind=dp) :: width
+      real(kind=dp) :: maximumWidth ! the maximum dambreak width (from pli file)
+      real(kind=dp) :: crl
+      real(kind=dp) :: aCoeff
+      real(kind=dp) :: bCoeff
+      real(kind=dp) :: maximumAllowedWidth = - 1.0d0 ! only relevant for breach growth algorithm BREACH_GROWTH_VDKNAAP
 
    end type
-   
-   double precision, parameter :: hoursToSeconds = 3600.0d0
+
+   real(kind=dp), parameter :: hoursToSeconds = 3600.0d0
 
    private
 
    contains
-
-   subroutine prepareComputeDambreak(dambreak, s1m1, s1m2, u0, time1, dt, maximumWidth)
+   !> This routine sets dambreak%crl and dambreak%width, these varuables are needed
+   !! in the actual dambreak computation in dflowfm_kernel
+   subroutine prepareComputeDambreak(dambreak, s1m1, s1m2, u0, time1, dt)
    use ieee_arithmetic, only: ieee_is_nan
 
 
-   type(t_dambreak), pointer, intent(inout) :: dambreak
-   double precision, intent(in)             :: s1m1
-   double precision, intent(in)             :: s1m2
-   double precision, intent(in)             :: u0
-   double precision, intent(in)             :: time1
-   double precision, intent(in)             :: dt
-   double precision, intent(in)             :: maximumWidth
+   type(t_dambreak), pointer, intent(inout) :: dambreak      ! dambreak settings for a single dambreak
+   real(kind=dp), intent(in)             :: s1m1          ! waterlevel at upstream link from dambreak position
+   real(kind=dp), intent(in)             :: s1m2          ! waterlevel at downstream link from dambreak position
+   real(kind=dp), intent(in)             :: u0            ! normal velocity at dambreak position
+   real(kind=dp), intent(in)             :: time1         ! current time
+   real(kind=dp), intent(in)             :: dt            ! timestep
 
    !locals
-   double precision :: smax
-   double precision :: smin
-   double precision :: hmx
-   double precision :: hmn
-   double precision :: deltaLevel
-   double precision :: breachWidth
-   double precision :: actualMaximumWidth
-   double precision :: timeFromBreaching
-   double precision :: timeFromFirstPhase
-   double precision :: widthIncrement
-   double precision :: waterLevelJumpDambreak
-   double precision :: breachWidthDerivative
+   real(kind=dp) :: smax
+   real(kind=dp) :: smin
+   real(kind=dp) :: hmx
+   real(kind=dp) :: hmn
+   real(kind=dp) :: deltaLevel
+   real(kind=dp) :: breachWidth
+   real(kind=dp) :: actualMaximumWidth
+   real(kind=dp) :: timeFromBreaching
+   real(kind=dp) :: timeFromFirstPhase
+   real(kind=dp) :: widthIncrement
+   real(kind=dp) :: waterLevelJumpDambreak
+   real(kind=dp) :: breachWidthDerivative
 
-   ! form intial timestep
+   ! form initial timestep
    timeFromBreaching = time1 - dambreak%t0
    breachWidthDerivative = 0.d0
    waterLevelJumpDambreak = 0.d0
@@ -114,8 +119,8 @@
    if (timeFromBreaching < 0) return
    
    !vdKnaap(2000) formula: to do: implement table 
-   if(dambreak%algorithm == 1) then     
-
+   if(dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then   
+   
       ! The linear part
       if (timeFromBreaching < dambreak%timeToBreachToMaximumDepth ) then
          dambreak%crl    = dambreak%crestLevelIni - timeFromBreaching / dambreak%timeToBreachToMaximumDepth * (dambreak%crestLevelIni - dambreak%crestLevelMin)
@@ -132,7 +137,7 @@
       
 
    ! Verheij-vdKnaap(2002) formula
-   else if (dambreak%algorithm == 2) then  
+   else if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
 
       if (time1 <= dambreak%endTimeFirstPhase) then
       ! phase 1: lowering
@@ -150,7 +155,7 @@
          deltaLevel = (gravity*waterLevelJumpDambreak)**1.5d0
          timeFromFirstPhase = time1 - dambreak%endTimeFirstPhase
          
-         if (dambreak%width < maximumWidth .and. (.not.ieee_is_nan(u0)) .and. dabs(u0) > dambreak%ucrit) then
+         if (dambreak%width < dambreak%maximumWidth .and. (.not.ieee_is_nan(u0)) .and. dabs(u0) > dambreak%ucrit) then
             breachWidthDerivative = (dambreak%f1*dambreak%f2/log(10D0)) * &
                              (deltaLevel/(dambreak%ucrit*dambreak%ucrit)) * &
                              (1.0/(1.0 + (dambreak%f2*gravity*timeFromFirstPhase/(dambreak%ucrit*hoursToSeconds)))) 
@@ -166,10 +171,10 @@
    endif
 
    ! in vdKnaap(2000) the maximum allowed branch width is limited (see sobek manual and setCoefficents subroutine below)
-   if (dambreak%maximumAllowedWidth > 0d0) then
-      actualMaximumWidth = min(dambreak%maximumAllowedWidth, maximumWidth)
+   if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
+      actualMaximumWidth = min(dambreak%maximumAllowedWidth, dambreak%maximumWidth)
    else
-      actualMaximumWidth = maximumWidth
+      actualMaximumWidth = dambreak%maximumWidth
    endif
 
    !width cannot exceed the width of the snapped polyline
@@ -184,7 +189,7 @@
 
    type(t_dambreak), pointer, intent(inout) :: dambreak
 
-   if (dambreak%algorithm == 1) then
+   if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
       ! clay
       if (dambreak%materialtype == 1) then 
          dambreak%aCoeff = 20
@@ -196,7 +201,7 @@
          dambreak%bCoeff = 522
          dambreak%maximumAllowedWidth = 200 !meters
       endif
-   else if (dambreak%algorithm == 2) then
+   else if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
          dambreak%endTimeFirstPhase = dambreak%t0 + dambreak%timeToBreachToMaximumDepth 
    endif
 
