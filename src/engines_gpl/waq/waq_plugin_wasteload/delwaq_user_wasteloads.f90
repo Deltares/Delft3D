@@ -26,6 +26,7 @@ module delwaq_user_wasteloads
     use m_logger_helper, only : stop_with_error
     use m_open_waq_files
     use m_string_utils
+    use rd_token, only : gettoken
     use delwaq_loads, wsl => wasteloads   ! This will be available via the argument list
     use waq_plugin_wasteload_version_module
 
@@ -728,22 +729,41 @@ contains
         integer :: i, j, n, ifilt, ierr, endoffile
         integer, save :: nfilt
         integer :: file_unit
+        integer :: load_number
         integer, allocatable, save :: nsource(:), ntarget(:)
         character(len = 17) :: file_filter   ! file name of the filter factors for substances in load
+        character(len = 256) ::  buffer ! to buffer lines from the csv filter file
         character(len = 20), allocatable :: subs_source(:), target_source(:)
-        real, allocatable, save :: filter_factor(:)
+        real, allocatable, save :: filter_factor(:), filterload(:)
         real :: old_load, fact_sub
         logical  :: exi   !
         logical, save :: first = .true.
         ! is there a filterfactor file? then read the factore and allocate the set factors
         if (first) then
             first = .false. 
+            i = 999
             file_filter = "filterfactors.csv"
             inquire (file = file_filter, exist = exi)
             if (exi) then
+                allocate(filterload(num_waste_loads))
                 write(88, *)' Found filterfile : ',file_filter
                 open(newunit = file_unit, file = file_filter)
-                read(file_unit, * ) nfilt
+                do i = 1, num_waste_loads
+                    read(file_unit, *, iostat = ierr )load_number, filterload(i)
+                    write(88, *) ' Load number: ',load_number, ', filtervalue: ', filterload(i)
+                   if (ierr /= 0) then
+                       write(lunrep, *) 'Error reading filterfile '
+                       stop
+                   endif
+                enddo
+                read(file_unit,*) buffer
+                n = index(buffer, ';')
+                if (index(buffer,'; ') == 1) then
+                    read(file_unit, * ) nfilt
+                else
+                    read(buffer, * ) nfilt
+                endif
+                    
                 allocate(subs_source(nfilt))
                 allocate(target_source(nfilt))
                 allocate(filter_factor(nfilt))
@@ -786,7 +806,7 @@ contains
 !               GREEN PON 0.2
 !               GREEN POP 0.04
 !               DIATS PON 0.25
-!               load(pon) = load(pon) + 0.2*load(green)*reduction
+!               load(pon) = load(pon) + 0.2*load(green)*reduction, where the reduction is (1 - filtervalue) if filtervalue is 1 then there is no reduction and transfer
         if (first) then
             do i = 1, nfilt
                 write(*,'(95a)') ' Substance loop for filter: from ', syname(nsource(i)), ', to target ',syname(ntarget(i))
@@ -803,56 +823,40 @@ contains
                 if (wls(i)%set_factor(1) /= 0.0) then
                     wls(i)%flow = wls(i)%flow * wls(i)%set_factor(1)
                     wls(i)%loads(1:n) = wls(i)%loads(1:n) * wls(i)%set_factor(2:n + 1)
-                    write(88, *) ' n, Factor (2:n+1) and load (1:n): ',n ,  wls(i)%set_factor(2:n + 1), wls(i)%loads(1:n)
-                    if ( nfilt > 0) then
-                        if (first) write(88, *)' new target loads (old vs new) :'
-                        do ifilt = 1, nfilt
+         !           write(88, *) ' n, Factor (2:n+1) and load (1:n): ',n ,  wls(i)%set_factor(2:n + 1), wls(i)%loads(1:n)
+         !           if ( nfilt > 0) then
+         !               if (first) write(88, *)' new target loads (old vs new) :'
+         !               do ifilt = 1, nfilt
                             ! adding  source due to filter to the target substance (stoechemetry), adding is not the problem, but for each source all filters need to be added 
-                            ! to ensure that the remain load is correct to maintain mass balance
-                            old_load =  wls(i)%loads(ntarget(ifilt))
-                            wls(i)%loads(ntarget(ifilt)) = wls(i)%loads(ntarget(ifilt)) + wls(i)%loads(nsource(ifilt)) * filter_factor(ifilt) * wls(i)%set_factor(1 + nsource(ifilt))
-                            write(88, *)' Check: ', syname(ntarget(ifilt)), ': ', old_load, wls(i)%loads(ntarget(ifilt))
-                        enddo
+                            ! to ensure that the remain load is correct to maintain mass balance.
+                            ! TODO: question to verify is the index of set_factor in relation to that of the loads
+         !                   old_load =  wls(i)%loads(ntarget(ifilt))
+         !                   wls(i)%loads(ntarget(ifilt)) = wls(i)%loads(ntarget(ifilt)) + wls(i)%loads(nsource(ifilt)) * filter_factor(ifilt) * wls(i)%set_factor(1 + nsource(ifilt))
+         !                   write(88, *)' Check: ', syname(ntarget(ifilt)), ': ', old_load, wls(i)%loads(ntarget(ifilt))
+         !               enddo
                     ! for each substance source, reduce the original load - this also means a target may not be present as a source.
-                    endif
+         !           endif
 
                 else
                     wls(i)%flow = 1.0e-20   ! Avoid zero, because then the waste load magic kicks in
                     wls(i)%loads(:) = 0.0       ! Set the concentrations in the waste load to zero, so
                 endif
             else
-!                write(88, *)'in if else allocated set factor'
-                ! RTC not invoked, so here we can use the provided filter in the csv file and apply the provided filter values
-!                if ( nfilt > 0) then
-!                    if (first) write(88, *)' new target loads (old vs new) :'
-!                    do ifilt = 1, nfilt
-                        ! adding to source due to filter, adding is not the problem, but for each source all filters need to be added 
-                        ! to ensure that the remain load is correct to maintain mass balance
-!                         old_load =  wls(i)%loads(ntarget(ifilt))
-!                        wls(i)%loads(ntarget(ifilt)) = wls(i)%loads(ntarget(ifilt)) + wls(i)%loads(nsource(ifilt)) * filter_factor(ifilt)
-!                        if (first) write(88, *)' Check: ', syname(ntarget(ifilt)), ': ', old_load, wls(i)%loads(ntarget(ifilt))
-!                    enddo
-                    ! for each substance source, reduce the original load - this also means a target may not be present as a source.
-!                    do n = 1, num_substances_transported
-!                        fact_sub = 0.0
-!                        do j = 1, nfilt
-!                            if (syname(n) == syname(nsource(j))) then
-!                                fact_sub = fact_sub + filter_factor(j)
-!                            endif
-!                        enddo
-!                        if (fact_sub > 1 ) then
-!                            write(88,  *) 'Total of filterfactors for ',syname(n), ' larger than 1, not allowed.'
-!                            stop
-!                        endif
-                        
- !                       wls(i)%loads(n) = wls(i)%loads(n) * (1 - fact_sub)
- !                       if (first) write(88, *) syname(n), 'factor: ', fact_sub, ' New source loads: ', wls(i)%loads(n)
-  !                  enddo
-   !             endif
+                if ( nfilt > 0) then
+                    if (first) write(88, *)' new target loads (old vs new) :'
+                    do ifilt = 1, nfilt
+                        ! adding  source due to filter to the target substance (stoechemetry), adding is not the problem, but for each source all filters need to be added 
+                        ! to ensure that the remain load is correct to maintain mass balance.
+                        ! TODO: question to verify is the index of set_factor in relation to that of the loads
+                        old_load =  wls(i)%loads(ntarget(ifilt))
+                        wls(i)%loads(ntarget(ifilt)) = wls(i)%loads(ntarget(ifilt)) + wls(i)%loads(nsource(ifilt)) * filter_factor(ifilt) * (1.0 - filterload(i))
+                        write(88, '(a6,1x,a20,1x, 4(f5.1,1x))')'Check:', syname(ntarget(ifilt)), old_load, wls(i)%loads(ntarget(ifilt)), filter_factor(ifilt), filterload(i)
+                    enddo
+                ! for each substance source, reduce the original load - this also means a target may not be present as a source.
+                endif
             endif
         enddo
         if (first) first = .false.
-
     end subroutine delwaq_user_drtc_control
 
 end module delwaq_user_wasteloads
