@@ -35,7 +35,7 @@ dnf update --assumeyes
 dnf install --assumeyes epel-release
 dnf config-manager --set-enabled powertools
 dnf install --assumeyes \
-    which binutils patchelf diffutils procps m4 make \
+    which binutils patchelf diffutils procps m4 make gcc-toolset-14-gcc \
     openssl openssl-devel wget perl python3 \
     intel-oneapi-compiler-dpcpp-cpp-${COMPILER_DPCPP_CPP_VERSION} \
     intel-oneapi-compiler-fortran-${COMPILER_FORTRAN_VERSION} \
