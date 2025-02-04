@@ -455,7 +455,7 @@ contains
       integer :: i, np, nlink
 
       ! If there is nothing to be cached, do not even try to read (D3DFMIQ-2193)
-      if (size(linklist) == 0) then
+      if (size(sections) == 0) then
          ierr = 0
          return
       end if
