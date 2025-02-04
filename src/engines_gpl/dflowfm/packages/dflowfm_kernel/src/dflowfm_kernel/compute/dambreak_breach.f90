@@ -30,7 +30,7 @@
 !
 !
 
-module m_update_dambreak_breach
+module m_dambreak_breach
    use precision, only: dp
 
    implicit none
@@ -268,4 +268,4 @@ module m_update_dambreak_breach
       end if
    end subroutine update_dambreak_breach
 
-end module m_update_dambreak_breach
+end module m_dambreak_breach

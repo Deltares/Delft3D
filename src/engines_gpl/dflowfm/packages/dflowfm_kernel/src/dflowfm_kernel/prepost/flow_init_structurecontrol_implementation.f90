@@ -380,7 +380,7 @@ contains
                                            dambreak_ids, activeDambreakLinks, &
                                            dambreakLevelsAndWidthsFromTable, &
                                            dambreaks, ndambreaklinks
-      use m_update_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
+      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
                                           dambreakLocationsUpstreamMapping, dambreakLocationsUpstream, &
                                           dambreakAveragingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
                                           dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &
@@ -614,7 +614,7 @@ contains
       use m_read_property, only: read_property
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
-      use m_update_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
+      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
                                           dambreakLocationsUpstreamMapping, dambreakLocationsUpstream, &
                                           dambreakAveragingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
                                           dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &

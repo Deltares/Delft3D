@@ -49,7 +49,7 @@ contains
       use m_compound
       use m_GlobalParameters
       use m_longculverts, only: nlongculverts, longculverts, newculverts
-      use m_update_dambreak_breach, only: waterLevelsDambreakUpStream, waterLevelsDambreakDownStream, normalVelocityDambreak, & 
+      use m_dambreak_breach, only: waterLevelsDambreakUpStream, waterLevelsDambreakDownStream, normalVelocityDambreak, & 
             breachWidthDerivativeDambreak, waterLevelJumpDambreak
       use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksActualLength
 
