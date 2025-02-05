@@ -56,9 +56,6 @@ if __name__ == "__main__":
     csv_table_path = args.csv_file_path
     value_filter = args.value_filter
 
-    if product == "main-testbench":
-        product = "all-testbench"
-
     with open(csv_table_path, mode="r", newline="") as csv_data:
         branch_config_dict = csv_to_dict(csv_table_path)
 

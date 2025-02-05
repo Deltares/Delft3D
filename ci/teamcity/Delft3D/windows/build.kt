@@ -56,10 +56,10 @@ object WindowsBuild : BuildType({
                             product = "%teamcity.pullRequest.source.branch%".split("/")[0]
                         else:
                             product = "%teamcity.build.branch%".split("/")[0]
-                        if product == "main":
+                        if "%teamcity.build.branch.is_default%" == "true":
                             product = "all"
                         print(f"##teamcity[setParameter name='product' value='{product}-testbench']")
-                        print(f"##teamcity[buildNumber '{product}: %build.vcs.number%']")
+                        print(f"##teamcity[buildNumber '{product}-testbench: %build.vcs.number%']")
                 """.trimIndent()
             }
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"

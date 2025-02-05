@@ -74,6 +74,7 @@ object Trigger : BuildType({
                                 </revision>
                             </revisions>
                             <properties>
+                                <property name="product" value="%product%"/>
                                 <property name="configfile" value="%matrix_list_lnx64%"/>
                             </properties>
                             <snapshot-dependencies>
@@ -111,6 +112,7 @@ object Trigger : BuildType({
                                 </revision>
                             </revisions>
                             <properties>
+                                <property name="product" value="%product%"/>
                                 <property name="configfile" value="%matrix_list_win64%"/>
                             </properties>
                             <snapshot-dependencies>
