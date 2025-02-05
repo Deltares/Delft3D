@@ -396,7 +396,7 @@ module m_fill_valobs
                
                
                if (model_is_3D()) then
-                  ! make temporary arry with cellcentres
+                  ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
                   do j = 2, ndkx
                       ueux(j) = 0.5d0 * (zws(j) + zws(j - 1))
                   end do
@@ -443,7 +443,8 @@ module m_fill_valobs
                   end if
                end if
                if (jahisvelocity > 0) then
-                  valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
+                  call interpolate_horizontal (ucmag,i,IPNT_UMAG)         
+!                 valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
                end if
                valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
 
