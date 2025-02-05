@@ -1,15 +1,18 @@
 # syntax=docker/dockerfile:1.4
 
 ARG INTEL_ONEAPI_VERSION=2024
-ARG INTEL_FORTRAN_COMPILER=ifort
-ARG DEBUG=0
 ARG BUILDTOOLS_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-buildtools
 ARG BUILDTOOLS_IMAGE_TAG=oneapi-${INTEL_ONEAPI_VERSION}
 
 ARG BUILDTOOLS_IMAGE_PATH=${BUILDTOOLS_IMAGE_URL}:${BUILDTOOLS_IMAGE_TAG}
-ARG CACHE_ID_SUFFIX=cache-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${DEBUG}-${BUILDTOOLS_IMAGE_PATH}
 
 FROM ${BUILDTOOLS_IMAGE_PATH} AS base
+
+ARG INTEL_ONEAPI_VERSION
+ARG INTEL_FORTRAN_COMPILER=ifort
+ARG DEBUG=0
+ARG BUILDTOOLS_IMAGE_PATH
+ARG CACHE_ID_SUFFIX=cache-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${DEBUG}-${BUILDTOOLS_IMAGE_PATH}
 
 FROM base AS compression-libs
 
@@ -551,6 +554,11 @@ export ESMF_NETCDF=split
 export ESMF_NETCDF_INCLUDE=/usr/local/include
 export ESMF_NETCDF_LIBPATH=/usr/local/lib
 export ESMF_INSTALL_PREFIX=/usr/local
+export ESMF_INSTALL_BINDIR=bin
+export ESMF_INSTALL_LIBDIR=lib
+export ESMF_INSTALL_HEADERDIR=include
+export ESMF_INSTALL_MODDIR=include
+export ESMF_INSTALL_DOCDIR=doc
 export ESMF_CXXSTD=sysdefault
 
 make --jobs=8
@@ -559,6 +567,8 @@ popd
 EOF-esmf
 
 FROM base AS all
+
+#ENV LD_LIBRARY_PATH=/usr/local/lib:/opt/intel/oneapi/compiler/latest/lib
 
 COPY --from=uuid --link /usr/local /usr/local/
 COPY --from=metis --link /usr/local /usr/local/
