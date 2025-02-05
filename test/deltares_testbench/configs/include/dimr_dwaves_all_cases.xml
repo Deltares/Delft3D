@@ -324,7 +324,7 @@
         </testCase>
 		<!-- ======================================================================== -->
         <testCase name="e04_f05_c01_nest" ref="dimr_trunk">
-            <path version="2024-01-12T07:40:00">e04_wave/f05-nest/c01</path>
+            <path version="2025-02-05T15:35:30.011000">e04_wave/f05-nest/c01</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-inlet-inlet.nc" type="NETCDF">
