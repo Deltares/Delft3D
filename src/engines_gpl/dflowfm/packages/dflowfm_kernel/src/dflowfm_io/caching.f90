@@ -140,9 +140,28 @@ contains
       cache_retrieved = cache_success
    end function cache_retrieved
 
-!> Load the information from the caching file - if any.
+!> Load the information from the caching file - if any - and synchronize across partitions.
    subroutine load_caching_file(base_name, net_file, use_caching)
+      use m_partitioninfo, only: my_rank, logical_and_across_partitions
+      use messagehandling, only: LEVEL_WARN, mess
+      
+      character(len=*), intent(in) :: base_name !< base_name to construct the name of the cache file (typically md_ident).
+      character(len=*), intent(in) :: net_file !< Full name of the network file
+      logical, intent(inout) :: use_caching !< Use the cache file if true. Might be reset to false if some errors forbid the use of caching.
+      
+      logical :: all_cache_success
+      
+      call load_caching_file_single_partition(base_name, net_file, use_caching)
+      
+      call logical_and_across_partitions(cache_success, all_cache_success)
+      if (cache_success .and. .not. all_cache_success) then
+          call mess(LEVEL_WARN, 'Some partitions failed to load cache file. Proceeding with normal initialization.')
+          cache_success = .false.
+      end if
+   end subroutine load_caching_file
 
+!> Load the information from the caching file - if any.
+   subroutine load_caching_file_single_partition(base_name, net_file, use_caching)
       use MessageHandling, only: LEVEL_INFO, LEVEL_WARN, mess
 
       character(len=*), intent(in) :: base_name !< base_name to construct the name of the cache file (typically md_ident).
@@ -368,7 +387,7 @@ contains
       cache_success = .true.
       call mess(LEVEL_INFO, 'Successfully read cache file: '//trim(file_name))
 
-   end subroutine load_caching_file
+   end subroutine load_caching_file_single_partition
 
 !> Load cached thin dams from a caching file
    subroutine load_thin_dams(lun, number_thin_dams, thin_dams, ierr)

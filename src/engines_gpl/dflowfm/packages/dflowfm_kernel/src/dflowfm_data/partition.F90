@@ -6008,4 +6008,28 @@ contains
       return
    end subroutine update_ghostboundvals
 
+!> perform a logical AND across all partitions
+   subroutine logical_and_across_partitions(val, allval)
+      use messagehandling, only: LEVEL_FATAL, mess
+#ifdef HAVE_MPI
+      use mpi
+#endif
+      logical, intent(in) :: val !< partition specific value
+      logical, intent(out) :: allval !< reduced value across all partitions
+      
+      integer :: ierror !< error
+      
+      ierror = 0
+      if (jampi) then
+#ifdef HAVE_MPI
+         call mpi_allreduce(val, allval, 1, MPI_LOGICAL, MPI_LAND, DFM_COMM_DFMWORLD, ierror)
+#endif
+      else
+         ! there is only one val, so it can keep its value
+      end if
+      if (ierror /= 0) then
+         call mess(LEVEL_FATAL, 'MPI error while performing allreduce on logical')
+      end if
+   end subroutine logical_and_across_partitions
+
 end module m_partitioninfo
