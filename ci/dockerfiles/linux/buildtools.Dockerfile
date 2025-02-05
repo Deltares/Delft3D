@@ -43,6 +43,8 @@ dnf install --assumeyes \
     intel-oneapi-mpi-devel-${MPI_DEVEL_VERSION}
 
 if [[ $INTEL_ONEAPI_VERSION = "2023" ]]; then
+    # libtool does not compile otherwise
+    dnf install --assumeyes intel-oneapi-compiler-dpcpp-cpp-runtime-${COMPILER_DPCPP_CPP_VERSION}
     # For some reason, in oneapi 2023, the latest symlink is not set correctly.
     ln --symbolic --force --no-target-directory /opt/intel/oneapi/mpi/2021.13 /opt/intel/oneapi/mpi/latest
 fi
