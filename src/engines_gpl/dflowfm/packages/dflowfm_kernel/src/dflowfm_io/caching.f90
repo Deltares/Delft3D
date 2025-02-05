@@ -142,7 +142,7 @@ contains
 
 !> Load the information from the caching file - if any - and synchronize across partitions.
    subroutine load_caching_file(base_name, net_file, use_caching)
-      use m_partitioninfo, only: my_rank, logical_and_across_partitions
+      use m_partitioninfo, only: logical_and_across_partitions
       use messagehandling, only: LEVEL_WARN, mess
       
       character(len=*), intent(in) :: base_name !< base_name to construct the name of the cache file (typically md_ident).
