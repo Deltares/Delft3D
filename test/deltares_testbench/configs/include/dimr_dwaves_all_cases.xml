@@ -382,7 +382,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c03_SWANDCSM" ref="dimr_trunk">
-            <path version="2024-01-12T07:40:00">e04_wave/f09-SWANDCSM/c03</path>
+            <path version="2025-02-05T15:11:12.350000">e04_wave/f09-SWANDCSM/c03</path>
             <maxRunTime>600.0</maxRunTime>
             <checks>
                 <file name="wavm-Waves.nc" type="NETCDF">
