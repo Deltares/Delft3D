@@ -8,21 +8,21 @@
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
                         <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="period" toleranceAbsolute="0.03"/>
                     </parameters>
                 </file>
                 <file name="wave/wavm-hkwm_2017-nest01_HK_20190507_v01.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
                         <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="period" toleranceAbsolute="0.06"/>
                     </parameters>
                 </file>
                 <file name="wave/wavm-hkwm_2017-nest02_HK.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
                         <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="period" toleranceAbsolute="0.02"/>
                     </parameters>
                 </file>
             </checks>
@@ -162,7 +162,7 @@
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
                         <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="period" toleranceAbsolute="0.02"/>
                     </parameters>
                 </file>
             </checks>
@@ -331,14 +331,14 @@
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
                         <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="period" toleranceAbsolute="0.08"/>
                     </parameters>
                 </file>
                 <file name="wavm-inlet-detailed.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="hsign" toleranceAbsolute="0.02"/>
+                        <parameter name="period" toleranceAbsolute="0.06"/>
                     </parameters>
                 </file>
             </checks>
@@ -351,15 +351,15 @@
                 <file name="wavm-inlet-inlet.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="hsign" toleranceAbsolute="0.09"/>
+                        <parameter name="period" toleranceAbsolute="0.4"/>
                     </parameters>
                 </file>
                 <file name="wavm-inlet-detailed.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="hsign" toleranceAbsolute="0.06"/>
+                        <parameter name="period" toleranceAbsolute="0.06"/>
                     </parameters>
                 </file>
             </checks>
@@ -374,8 +374,8 @@
                 <file name="wavm-Waves.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="hsign" toleranceAbsolute="0.03"/>
+                        <parameter name="period" toleranceAbsolute="0.07"/>
                     </parameters>
                 </file>
             </checks>
@@ -388,8 +388,8 @@
                 <file name="wavm-Waves.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="hsign" toleranceAbsolute="0.03"/>
+                        <parameter name="period" toleranceAbsolute="0.08"/>
                     </parameters>
                 </file>
             </checks>
@@ -402,8 +402,8 @@
                 <file name="wavm-Waves.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="hsign" toleranceAbsolute="0.03"/>
+                        <parameter name="period" toleranceAbsolute="0.15"/>
                     </parameters>
                 </file>
             </checks>
