@@ -87,6 +87,7 @@ contains
    module subroutine startpetsc()
 #ifdef HAVE_PETSC
       use m_petsc
+      use petscmpi, only: PETSC_COMM_WORLD
       use mpi, only: mpi_comm_dup
       use m_flowparameters, only: Icgsolver
       use m_partitioninfo, only: DFM_COMM_DFMWORLD, jampi
@@ -111,6 +112,7 @@ contains
 #ifdef HAVE_PETSC
       use mpi, only: mpi_comm_free
       use m_petsc
+      use petscmpi, only: PETSC_COMM_WORLD
       use m_flowparameters, only: Icgsolver
       use m_partitioninfo, only: jampi
 
@@ -134,6 +136,7 @@ contains
       use m_partitioninfo
       use petsc
       use m_petsc
+      use petscmpi, only: PETSC_COMM_WORLD
       use MessageHandling
       use stdlib_sorting, only: sort_index
 
@@ -570,6 +573,7 @@ contains
       use m_reduce
       use m_partitioninfo
       use m_petsc
+      use petscmpi, only: PETSC_COMM_WORLD
       use MessageHandling
 
       integer, intent(in) :: iprecnd !< preconditioner type, 0:default, 1: none, 2:incomplete Cholesky, 3:Cholesky, 4:GAMG (doesn't work)
@@ -646,6 +650,7 @@ contains
       use m_reduce
       use m_partitioninfo
       use m_petsc
+      use petscmpi, only: PETSC_COMM_WORLD
 
       integer, intent(in) :: japipe !< use pipelined CG (1) or not (0)
 
