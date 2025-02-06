@@ -982,7 +982,6 @@ contains
       integer                       :: minp,istat, ipli 
       character(5)                  :: numstr 
 
-      numintobs = numintobs + 1
       call oldfil(minp, filename)
       ipli = 0
       call reapol_nampli(minp, 0, 1, ipli)

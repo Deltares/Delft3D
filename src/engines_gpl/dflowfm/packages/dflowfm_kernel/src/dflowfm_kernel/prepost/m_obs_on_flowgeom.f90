@@ -227,6 +227,10 @@ contains
          call find_nearest_flowlinks(xobs_tmp0(1:nloctypeAll), yobs_tmp0(1:nloctypeAll), lobs_tmp0(1:nloctypeAll))
          do i = 1, nloctypeAll
             kobs(ixy2obs0(i)) = kobs_tmp0(i)
+            ! Interpolated station outside grod take nearest flownode!
+            if ((intobs(i) == 1) .and. (kobs_tmp0(i) == 0)) then
+                call find_nearest_flownodes(1, xobs_tmp0(i), yobs_tmp0(i), namobs_tmp0(i), kobs_tmp0(i), jakdtree, 1, INDTP_ALL)
+            end if
             lobs(ixy2obs0(i)) = lobs_tmp0(i)
          end do
       end if

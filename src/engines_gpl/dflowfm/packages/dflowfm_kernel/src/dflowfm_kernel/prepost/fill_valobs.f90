@@ -440,7 +440,8 @@ module m_fill_valobs
                      valobs(i, IPNT_RHOP + klay - 1) = setrhofixedp(kk, 0d0)
                      valobs(i, IPNT_RHO + klay - 1) = rho(kk)
                   else
-                     valobs(i, IPNT_RHOP + klay - 1) = rho(kk)
+                     call interpolate_horizontal (rho,i,IPNT_RHOP) 
+ !                    valobs(i, IPNT_RHOP + klay - 1) = rho(kk)
                   end if
                end if
                if (jahisvelocity > 0) then

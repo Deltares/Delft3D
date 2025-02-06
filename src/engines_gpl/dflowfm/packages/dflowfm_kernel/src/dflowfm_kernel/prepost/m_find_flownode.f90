@@ -149,6 +149,7 @@ contains
       use gridoperations
       use geometry_module, only: dbdistance, pinpok
       use m_wall_clock_time
+!     use m_observations_data, only: intobs
 
       implicit none
 
