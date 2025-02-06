@@ -25,9 +25,9 @@
 			<location name="local">
 				<root>./data/engines</root>
 			</location>
-            <location name="tools">
-                <root>./tools</root>
-            </location>
+			<location name="tools">
+				<root>./tools</root>
+			</location>
 		</locations>
 	</config>
 

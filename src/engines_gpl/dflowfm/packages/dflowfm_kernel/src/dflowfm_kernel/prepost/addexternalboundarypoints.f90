@@ -47,7 +47,7 @@ contains
       use m_netw
       use m_flow
       use m_flowgeom
-      use unstruc_messages
+      use messagehandling, only: msgbuf, dbg_flush, err_flush
       use m_alloc
       use timespace, only: polyindexweight
       use m_missing

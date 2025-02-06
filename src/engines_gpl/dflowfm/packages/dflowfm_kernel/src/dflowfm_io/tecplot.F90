@@ -143,7 +143,6 @@ contains
 !>  write net to Tecplot file
    subroutine wrinet_tecplot(FNAM)
       use network_data
-      use unstruc_messages
       use m_partitioninfo
       use m_qnerror
 

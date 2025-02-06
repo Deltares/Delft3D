@@ -69,6 +69,7 @@ contains
       use m_get_link1
       use m_links_to_centers, only: links_to_centers
       use m_setrho, only: setrhofixedp
+      use m_wind, only: wx, wy, jawind, japatm, patm, jarain, rain, airdensity, tair, rhum, clou
 
       implicit none
 
@@ -105,8 +106,10 @@ contains
          allocate (wa(1:2, 1:max(kmx, 1)))
       end if
 
-      ! get velocities here (and not at velocity writing) in in case gettaus needs them
-      call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, jahisvelocity)
+      ! get velocities here (and not at velocity writing)
+      if (jahistaucurrent > 0 .or. jahisvelocity > 0 .or. jahisvelvec > 0) then
+         call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, jahisvelocity)
+      end if
 
       if (jahistaucurrent > 0) then
          if ((jawave == 0 .or. flowWithoutWaves)) then

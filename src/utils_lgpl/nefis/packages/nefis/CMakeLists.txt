@@ -63,6 +63,8 @@ endif ()
 ###############
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
 if ( ${configuration_type} STREQUAL "DELFT3D4" OR 
+     ${configuration_type} STREQUAL "D3D4-TESTBENCH" OR
+     ${configuration_type} STREQUAL "D3D4-SUITE" OR
      ${configuration_type} STREQUAL "TOOLS" )    
     set(library_name nefis_dll)
 

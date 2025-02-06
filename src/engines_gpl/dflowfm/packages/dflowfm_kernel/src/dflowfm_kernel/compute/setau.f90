@@ -53,7 +53,7 @@ contains
       use m_partitioninfo
       use m_timer
       use m_longculverts
-      use precision_basics
+      use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksActualLength
 
       integer :: n, nq, L, k2
       integer :: ng, Lnu, LL, iup, k

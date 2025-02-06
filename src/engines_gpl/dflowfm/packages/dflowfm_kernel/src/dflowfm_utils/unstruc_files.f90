@@ -57,10 +57,6 @@ module unstruc_files
 
 contains
 
-   subroutine init_unstruc_files()
-
-   end subroutine init_unstruc_files
-
 !> Registers in the filenames list that a file is opened.
 !! Use this instead of directly writing in the list (automatic realloc).
 !! The actual open is not performed here.
@@ -383,6 +379,7 @@ contains
 !! number. File-open attempts will not continue indefinitely (program may stop).
    subroutine inidia(basename)
       use unstruc_model
+      use unstruc_messages, only: initMessaging
 
       character(len=*) :: basename
 

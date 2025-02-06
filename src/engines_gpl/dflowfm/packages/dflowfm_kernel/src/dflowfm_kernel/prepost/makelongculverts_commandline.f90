@@ -46,6 +46,7 @@ contains
       use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID
       use system_utils
       use m_set_nod_adm
+      use messagehandling, only: IDLEN
 
       character(len=1024) :: fnamesstring
       character(len=:), allocatable :: converted_fnamesstring
@@ -54,7 +55,7 @@ contains
       character(len=:), allocatable :: tempstring_fnames
       character(len=:), allocatable :: tempstring_netfile
       character(len=200), dimension(:), allocatable :: fnames
-      character(len=IdLen) :: temppath, tempname, tempext
+      character(len=IDLEN) :: temppath, tempname, tempext
 
       integer :: istat, ifil
 

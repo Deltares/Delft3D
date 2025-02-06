@@ -46,7 +46,7 @@ contains
    subroutine inctime_split(tim)
       use precision, only: dp
       use m_flowtimes
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, mess
       use m_date_time_from_ref_date, only: date_time_from_ref_date
 
       real(kind=dp), intent(in) :: tim !< Current time, used to checked whether an increment is necessary at all.

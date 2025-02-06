@@ -56,7 +56,7 @@ contains
       use precision, only: dp
       use network_data
       use m_flowgeom
-      use unstruc_messages
+      use messagehandling, only: msgbuf, dbg_flush
       use m_alloc
       use m_partitioninfo, only: idomain, iglobal_s
       use m_readyy

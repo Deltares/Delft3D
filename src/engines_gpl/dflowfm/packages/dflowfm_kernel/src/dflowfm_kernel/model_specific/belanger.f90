@@ -43,8 +43,8 @@ contains
       use m_physcoef
       use fm_external_forcings_data
       use m_flowgeom, only: xz, bl, dxi, ln
-      use m_flow, only: s1, iadvec
-      use m_get_cz
+      use m_flow, only: s1, iadvec, u1, v
+      use m_get_chezy, only: get_chezy
       use m_movabs
       use m_lnabs
 
@@ -69,7 +69,7 @@ contains
       ! slope = 1d-4
 
       hav = 0.5 * (h0 + h1)
-      call getcz(hav, frcuni, ifrctypuni, Chezy, L)
+      Chezy = get_chezy(hav, frcuni, u1(L), v(L), ifrctypuni)
       cf = ag / Chezy**2
 
       q = 1500d0 / 50d0

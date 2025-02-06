@@ -75,6 +75,7 @@ contains
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use m_structure_parameters
       use m_flow_f0isf1
+      use m_wind, only: jaqext
 
       integer, intent(out) :: iresult
 

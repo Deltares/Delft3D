@@ -36,7 +36,7 @@ module m_filez
 
    private
 
-   public :: oldfil, readandchecknextrecord, readerror, thisisanumber, zoekal, &
+   public :: oldfil, readandchecknextrecord, readerror, thisisanumber, &
              zoekdouble, zoekinteger, zoekja, zoekopt, doclose, numbersonline, newfil, message, &
              newnewfil, error, eoferror
 
@@ -67,14 +67,6 @@ module m_filez
          logical :: thisisanumber
          character(len=*), intent(in) :: rec
       end function thisisanumber
-
-      module subroutine zoekal(minp, rec, text, ja)
-         implicit none
-         integer, intent(in) :: minp
-         character(len=*), intent(out) :: rec
-         character(len=*), intent(in) :: text
-         integer, intent(out) :: ja
-      end subroutine zoekal
 
       module subroutine zoekdouble(minp, key, val, ja)
          use precision, only: dp

@@ -296,7 +296,6 @@ contains
       use precision
       use mathconsts
       use string_module
-      use unstruc_messages
       use m_flowtimes, only: Tudunitstr
       implicit none
       !
@@ -1295,7 +1294,6 @@ contains
    subroutine fouini(lunfou, success, time_unit_user, time_unit_kernel)
    !!--declarations----------------------------------------------------------------
       use precision
-      use unstruc_messages
       !
       implicit none
       !
@@ -1458,6 +1456,7 @@ contains
       use m_transport, only: constituents
       use m_flowgeom, only: bl, lnx, bl_min
       use m_flow
+      use m_wind, only: wx, wy
       implicit none
 
       real(kind=fp), intent(in) :: time0 !< Current time [seconds]

@@ -48,7 +48,6 @@ contains
       use precision, only: dp
       use m_polygon
       use m_missing
-      use unstruc_messages
       use network_data
       use gridoperations
       use unstruc_display, only: minmxns

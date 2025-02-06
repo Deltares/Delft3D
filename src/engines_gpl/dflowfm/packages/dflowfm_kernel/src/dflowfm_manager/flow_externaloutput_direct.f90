@@ -48,7 +48,7 @@ contains
    subroutine flow_externaloutput_direct()
       use m_wrirst, only: wrirst
       use m_flowtimes
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, msgbuf, mess, warn_flush, msg_flush
       use time_module, only: datetime_to_string
       use m_date_time_from_ref_date, only: date_time_from_ref_date
       use m_wrimap

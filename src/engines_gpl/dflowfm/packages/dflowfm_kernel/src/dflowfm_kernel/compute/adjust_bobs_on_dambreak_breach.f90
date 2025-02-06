@@ -32,20 +32,28 @@
 
 !> Calculate the links affected by the dam break and sets bobs accordingly
 module m_adjust_bobs_on_dambreak_breach
+   use precision, only: dp
 
    implicit none
 
    private
 
    public :: adjust_bobs_on_dambreak_breach
+   integer, parameter, public :: DBW_SYMM = 1 !< symmetrical dambreak widening (limited width in case of asymmetric starting link placement)
+   integer, parameter, public :: DBW_PROP = 2 !< dambreak wideining proportional to left/right dam length
+   integer, parameter, public :: DBW_SYMM_ASYMM = 3 !< symmetrical dambreak widening until left/right runs out of space then continues one sided
+   integer, public :: dambreakWidening = DBW_SYMM_ASYMM !< method for dambreak widening
+
+   real(kind=dp), dimension(:), allocatable, public :: dambreakLinksEffectiveLength !< dambreak maximum flow widths
+   real(kind=dp), dimension(:), allocatable, public :: dambreakLinksActualLength !< dambreak actual flow widths
 
 contains
 
    subroutine adjust_bobs_on_dambreak_breach(width, maxwidth, crl, startingLink, L1, L2, strucid)
       use precision, only: dp
 
-      use m_flowgeom
-      use fm_external_forcings_data
+      use m_flowgeom, only: bob, bob0
+      use fm_external_forcings_data, only: kdambreak, activeDambreakLinks
       use MessageHandling
 
       implicit none

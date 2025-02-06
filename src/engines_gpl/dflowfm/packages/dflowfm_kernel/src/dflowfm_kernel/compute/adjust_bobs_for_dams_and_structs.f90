@@ -55,6 +55,7 @@ contains
       use m_1d_structures
       use m_compound
       use m_1d2d_fixedweirs, only: set_iadvec
+      use messagehandling, only: warn_flush
 
       implicit none
 
@@ -169,7 +170,7 @@ contains
             if (istru /= 0 .and. L1dambreaksg(n) <= L2dambreaksg(n)) then
                ! Update the crest/bed levels
                call adjust_bobs_on_dambreak_breach(network%sts%struct(istru)%dambreak%width, &
-                                                 & maximumDambreakWidths(n), &
+                                                 & network%sts%struct(istru)%dambreak%maximumWidth, &
                                                  & network%sts%struct(istru)%dambreak%crl, &
                                                  & LStartBreach(n), &
                                                  & L1dambreaksg(n), &

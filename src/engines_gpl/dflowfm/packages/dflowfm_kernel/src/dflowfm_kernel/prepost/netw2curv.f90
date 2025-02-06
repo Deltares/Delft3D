@@ -49,7 +49,6 @@ contains
       use m_grid
       use m_alloc
       use m_missing
-      use unstruc_messages
       use gridoperations
       use m_set_nod_adm
 

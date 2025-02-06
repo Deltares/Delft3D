@@ -38,7 +38,7 @@ module m_flow_trachyupdate
 contains
 
    subroutine flow_trachyupdate()
-      use unstruc_messages
+      use messagehandling, only: msgbuf, LEVEL_ERROR, mess, err_flush
       use unstruc_files, only: mdia
       use m_flow, only: kmx, u1, ucx_mor, ucy_mor, cftrt, hu, hs, frcu, ifrcutp, cftrtfac, jacftrtfac, lnkx
       use m_flowgeom, only: ndx, lnx, lnx1d, lne2ln, ln2lne, nd, bob, bl

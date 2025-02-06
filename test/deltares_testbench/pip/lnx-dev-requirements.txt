@@ -37,7 +37,7 @@ mypy==1.11.1
     # via deltares-testbench (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
-netcdf4==1.7.1.post2
+netcdf4==1.7.2
     # via deltares-testbench (pyproject.toml)
 numpy==1.26.4
     # via

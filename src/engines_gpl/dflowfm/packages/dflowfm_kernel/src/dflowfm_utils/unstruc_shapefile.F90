@@ -40,9 +40,10 @@ module unstruc_shapefile
 #ifdef HAVE_SHAPELIB
    use precision, only: dp
    use shapelib
-   use unstruc_messages
    use unstruc_files, only: defaultFilename
    use m_partitioninfo, only: my_rank, jampi
+   use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
+   
    implicit none
 
 contains

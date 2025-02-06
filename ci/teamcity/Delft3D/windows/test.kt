@@ -20,7 +20,7 @@ object WindowsTest : BuildType({
     )
 
     name = "Test"
-    buildNumberPattern = "%build.vcs.number%"
+    buildNumberPattern = "%product%: %build.vcs.number%"
 
     artifactRules = """
         test\deltares_testbench\data\cases\**\*.pdf      => pdf
@@ -51,6 +51,7 @@ object WindowsTest : BuildType({
             options = processor.configs.zip(processor.labels) { config, label -> label to config },
             display = ParameterDisplay.PROMPT
         )
+        param("product", "unknown")
         checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
@@ -106,6 +107,7 @@ object WindowsTest : BuildType({
                 call :kill_program mpiexec.exe
                 call :kill_program hydra_pmi_proxy.exe
                 call :kill_program mormerge.exe
+                call :kill_program d_hydro.exe
                 set errorlevel=0
                 goto :eof
                 

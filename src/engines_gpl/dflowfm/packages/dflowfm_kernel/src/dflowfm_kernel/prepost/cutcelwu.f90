@@ -52,7 +52,7 @@ contains
       use kdtree2Factory
       use m_missing, only: dmiss, jins
       use m_cutcells
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use m_polygon, only: NPL, xpl, ypl, zpl
       use geometry_module, only: dbpinpol, dbdistance
       use m_sferic, only: jsferic, jasfer3D

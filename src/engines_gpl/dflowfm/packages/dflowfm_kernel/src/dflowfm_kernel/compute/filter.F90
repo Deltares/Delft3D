@@ -47,7 +47,7 @@ contains
       use m_filter_data
       use m_solver
       use m_alloc
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       use unstruc_model, only: md_netfile
       use dfm_error
       use m_alloc
@@ -423,7 +423,7 @@ contains
 
 !> add element to row
    subroutine add_rowelem(jA, A, N, j, val, num)
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       implicit none
 
       integer, intent(in) :: N !< array length
@@ -474,7 +474,7 @@ contains
       use m_flowgeom, only: Lnx
       use m_flow, only: kmx, u0, plotlin, adve
       use m_flowtimes, only: Dts
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       use m_saad, only: jasafe, amuxXXX, solveSystem
       use m_partitioninfo, only: jampi, update_ghosts, ITYPE_U, reduce_int1_max
       use m_timer

@@ -101,7 +101,7 @@ contains
 !! \param  arr 2D array with raster elevation data (in dem_info\%elevUnitOfMeasure units).
    subroutine read_dem_file(filename, dem_info, xarr, yarr, arr)
       use precision, only: dp
-      use unstruc_messages
+      use messagehandling, only: msgbuf, msg_flush
       use m_filez, only: message
 
       character(len=*), intent(in) :: filename
@@ -301,7 +301,7 @@ contains
 !! \param arr(:,:) 2D array to store elevation raster data in.
    subroutine read_dem_data(fp, dem_info, arr)
       use precision, only: dp
-      use unstruc_messages
+      use messagehandling, only: msgbuf, msg_flush
       use m_readyy
       integer, intent(in) :: fp
       type(DEMInfo), intent(inout) :: dem_info

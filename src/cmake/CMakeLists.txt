@@ -196,10 +196,21 @@ set(tools_gpl_configuration "TOOLS_GPL")
 set(drr_configuration "DRR")
 set(rtc_configuration "RTC")
 
+# Combined (multi-component) configurations for running specific testbenches
+# These are equivalent to our branch-prefixes
+set(testbench-all_configuration "ALL-TESTBENCH")
+set(testbench-fm_configuration "FM-TESTBENCH")
+set(testbench-d3d4_configuration "D3D4-TESTBENCH")
+set(testbench-rr_configuration "RR-TESTBENCH")
+set(testbench-waq_configuration "WAQ-TESTBENCH")
+set(testbench-part_configuration "PART-TESTBENCH")
+set(testbench-wave_configuration "WAVE-TESTBENCH")
+set(testbench-tc_configuration "TC-TESTBENCH")
+
 # Combined (multi-component) configurations
+# For products that we release
 set(fm-suite_configuration "FM-SUITE")
 set(d3d4-suite_configuration "D3D4-SUITE")
-set(all_configuration "ALL")
 
 # Determine the configuration to make
 if(NOT (${configuration_type} STREQUAL ${tests_configuration}
@@ -216,11 +227,18 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${rtc_configuration}
      OR ${configuration_type} STREQUAL ${fm-suite_configuration}
      OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
-     OR ${configuration_type} STREQUAL ${all_configuration}))
+     OR ${configuration_type} STREQUAL ${testbench-all_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-fm_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-d3d4_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-rr_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-waq_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-part_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-wave_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-tc_configuration}))
    message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
 endif()
 
-### Basic configurations
+### Component configurations
 
 # Tests configuration
 if(${configuration_type} STREQUAL ${tests_configuration})
@@ -295,7 +313,57 @@ if(${configuration_type} STREQUAL ${drr_configuration})
     include(configurations/components/drr_configuration.cmake)
 endif()
 
-### Composed configurations
+### Composed configurations for testbenches
+
+# ALL configuration
+if(${configuration_type} STREQUAL ${testbench-all_configuration})
+    message(STATUS "Generating solution for all testbenches ...")
+    include(configurations/testbench/all_configuration.cmake)
+endif()
+
+# FM configuration
+if(${configuration_type} STREQUAL ${testbench-fm_configuration})
+    message(STATUS "Generating solution for fm testbench ...")
+    include(configurations/testbench/fm_configuration.cmake)
+endif()
+
+# D3D4 configuration
+if(${configuration_type} STREQUAL ${testbench-d3d4_configuration})
+    message(STATUS "Generating solution for d3d4 testbench ...")
+    include(configurations/testbench/d3d4_configuration.cmake)
+endif()
+
+# RR configuration
+if(${configuration_type} STREQUAL ${testbench-rr_configuration})
+    message(STATUS "Generating solution for rr testbench ...")
+    include(configurations/testbench/rr_configuration.cmake)
+endif()
+
+# WAQ configuration
+if(${configuration_type} STREQUAL ${testbench-waq_configuration})
+    message(STATUS "Generating solution for waq testbench ...")
+    include(configurations/testbench/waq_configuration.cmake)
+endif()
+
+# PART configuration
+if(${configuration_type} STREQUAL ${testbench-part_configuration})
+    message(STATUS "Generating solution for part testbench ...")
+    include(configurations/testbench/part_configuration.cmake)
+endif()
+
+# WAVE configuration
+if(${configuration_type} STREQUAL ${testbench-wave_configuration})
+    message(STATUS "Generating solution for wave testbench ...")
+    include(configurations/testbench/wave_configuration.cmake)
+endif()
+
+# TC configuration
+if(${configuration_type} STREQUAL ${testbench-tc_configuration})
+    message(STATUS "Generating solution for tc testbench ...")
+    include(configurations/testbench/tc_configuration.cmake)
+endif()
+
+### Composed configurations for releases
 
 # Delft3D-FM suite configuration (dimr, dflowfm, dwaq, dwaves, and some tools)
 if(${configuration_type} STREQUAL ${fm-suite_configuration})
@@ -307,10 +375,4 @@ endif()
 if(${configuration_type} STREQUAL ${d3d4-suite_configuration})
     message(STATUS "Generating solution for Delft3D4 ...")
     include(configurations/suites/d3d4_configuration.cmake)
-endif()
-
-# ALL configuration
-if(${configuration_type} STREQUAL ${all_configuration})
-    message(STATUS "Generating solution for all (open-source) projects in OSS tree ...")
-    include(configurations/testbenches/all_configuration.cmake)
 endif()

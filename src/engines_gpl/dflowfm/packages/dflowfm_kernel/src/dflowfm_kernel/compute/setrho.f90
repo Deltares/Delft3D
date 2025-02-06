@@ -80,7 +80,6 @@ contains
       use sediment_basics_module, only: has_advdiff
       use m_transport
       use m_turbulence, only: rhowat
-      use unstruc_messages, only: mess, LEVEL_ERROR
       use m_densfm, only: densfm
 
       implicit none
@@ -163,7 +162,7 @@ contains
       use m_transport, only: constituents, ised1, itra1, itran
       use m_turbulence, only: rhowat
       use sediment_basics_module, only: has_advdiff
-      use unstruc_messages, only: LEVEL_ERROR, mess
+      use messagehandling, only: LEVEL_ERROR, mess
       use unstruc_model, only: check_positive_value
 
       implicit none

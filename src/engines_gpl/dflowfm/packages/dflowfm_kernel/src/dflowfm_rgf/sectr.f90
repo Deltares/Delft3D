@@ -53,7 +53,7 @@ contains
       use m_chacol, only: chacol
       use precision, only: dp
       use unstruc_colors
-      use unstruc_messages
+      use messagehandling, only: LEVEL_DEBUG, msgbuf, mess, dbg_flush
       use unstruc_display
       use m_splint
       use m_spline

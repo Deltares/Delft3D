@@ -44,7 +44,7 @@ contains
       use m_flowgeom, only: lnx1d, kcu, wu1D2D, hh1D2D, lnx, lnx1D
       use m_inquire_flowgeom
       use properties
-      use unstruc_messages
+      use messagehandling, only: msgbuf, warn_flush, IDLEN, err_flush, msg_flush
       use timespace
       use unstruc_model, only: File1D2DLinkMajorVersion, File1D2DLinkMinorVersion
       use m_linktypetoint
@@ -59,8 +59,8 @@ contains
       integer :: numblocks
       integer :: i
 
-      character(len=IdLen) :: contactId
-      character(len=IdLen) :: contactType
+      character(len=IDLEN) :: contactId
+      character(len=IDLEN) :: contactType
       integer :: icontactType
 
       logical :: success

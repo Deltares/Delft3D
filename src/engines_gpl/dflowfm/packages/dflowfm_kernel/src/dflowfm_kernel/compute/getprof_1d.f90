@@ -45,7 +45,7 @@ contains
       use unstruc_channel_flow
       use m_cross_helper
       use precision_basics
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
 
       integer :: L, japerim, calcConv
       real(kind=dp) :: hprL !< hoogte in profiel
@@ -62,7 +62,7 @@ contains
 
       real(kind=dp) :: frcn, cz, cf, conv, af_sub(3), perim_sub(3), cz_sub(3)
       real(kind=dp) :: q_sub(3) ! discharge per segment
-      integer :: LL, ka, kb, itp, itpa, ifrctyp, ibndsect
+      integer :: LL, ka, kb, itp, itpa, friction_type, ibndsect
       integer :: k1, k2
       integer :: jacustombnd1d
       real(kind=dp) :: u1L, q1L, s1L, dpt, factor, maxflowwidth
@@ -177,7 +177,7 @@ contains
          itp = prof1D(3, LL)
          if (japerim == 1) then
             frcn = frcu(LL)
-            ifrctyp = ifrcutp(LL)
+            friction_type = ifrcutp(LL)
          end if
       else
          ka = -prof1D(1, LL); kb = -prof1D(2, LL)
@@ -191,10 +191,10 @@ contains
             if (profiles1D(ka)%frccf /= dmiss .and. profiles1D(kb)%frccf /= dmiss .and. &
                 profiles1D(ka)%frctp == profiles1D(kb)%frctp) then
                frcn = (1d0 - alfa) * profiles1D(ka)%frccf + alfa * profiles1D(kb)%frccf
-               ifrctyp = profiles1D(ka)%frctp
+               friction_type = profiles1D(ka)%frctp
             else
                frcn = frcu(LL)
-               ifrctyp = ifrcutp(LL)
+               friction_type = ifrcutp(LL)
             end if
          end if
 
@@ -212,7 +212,7 @@ contains
       else if (abs(itp) == 3) then ! rectan, peri=wu
          call rectan2D(hpr, profw, profh, area, width, japerim, perim)
       else if (abs(itp) == 100 .or. abs(itp) == 101) then !                          itp >= 100, yzprof
-         call yzprofile(hpr, ka, itp, area, width, japerim, frcn, ifrctyp, perim, cf)
+         call yzprofile(hpr, ka, itp, area, width, japerim, frcn, friction_type, perim, cf)
       end if
 
       if (ka /= 0 .and. kb /= ka) then ! interpolate in profiles
@@ -224,7 +224,7 @@ contains
             ! doe hier backup cf
             if (frcn > 0) then
                hydrad = area / perim ! hydraulic radius
-               call getcz(hydrad, frcn, ifrctyp, cz, L)
+               cz = get_chezy(hydrad, frcn, u1(L), v(L), friction_type)
                cf = ag / (hydrad * cz * cz) ! see note on 2D conveyance in sysdoc5
             else
                cf = 0d0
@@ -238,7 +238,7 @@ contains
          else if (abs(itp) == 3) then ! rectan, peri=wu
             call rectan2D(hpr, profw, profh, area2, width2, japerim, perim2)
          else if (abs(itp) == 100 .or. abs(itp) == 101) then ! >= 10, conveyance approach
-            call yzprofile(hpr, kb, itp, area2, width2, japerim, frcn, ifrctyp, perim2, cf2)
+            call yzprofile(hpr, kb, itp, area2, width2, japerim, frcn, friction_type, perim2, cf2)
          end if
          area = (1d0 - alfa) * area + alfa * area2
          width = (1d0 - alfa) * width + alfa * width2
@@ -271,7 +271,7 @@ contains
 
             if (frcn > 0) then
                hydrad = area / perim ! hydraulic radius
-               call getcz(hydrad, frcn, ifrctyp, cz, L)
+               cz = get_chezy(hydrad, frcn, u1(L), v(L), friction_type)
                cfuhi(L) = ag / (hydrad * cz * cz) ! see note on 2D conveyance in sysdoc5
             else
                cfuhi(L) = 0d0
@@ -279,7 +279,7 @@ contains
 
             if (jagrounlay > 0) then
                if (grounlay(LL) > 0) then
-                  call getcz(hydrad, frcuni1Dgrounlay, ifrctyp, czg, L)
+                  czg = get_chezy(hydrad, frcuni1Dgrounlay, u1(L), v(L), friction_type)
                   alfg = wigr(LL) / perim
                   cfuhi(L) = (ag / hydrad) * (alfg / czg**2 + (1d0 - alfg) / cz**2)
                end if

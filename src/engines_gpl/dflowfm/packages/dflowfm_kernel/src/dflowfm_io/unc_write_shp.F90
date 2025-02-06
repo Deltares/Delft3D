@@ -52,7 +52,7 @@ contains
       use m_thindams
       use m_sobekdfm, only: nbnd1d2d
       use m_fixedweirs, only: nfxw
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, mess
       use m_partitioninfo, only: jampi, my_rank
       use unstruc_model, only: md_dryptsfile
       implicit none

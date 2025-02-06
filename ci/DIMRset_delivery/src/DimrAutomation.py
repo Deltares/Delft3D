@@ -51,7 +51,6 @@ class DimrAutomation(object):
         """Runs the actual DIMR release automation steps."""
         self.__assert_preconditions()
         self.__get_kernel_versions()  # This step is crucial for the script to run, do not comment this one out!
-        self.__update_public_wiki()
         self.__download_and_install_artifacts()
         self.__git_client.tag_commit(
             self.__kernel_versions["OSS_ver"], f"DIMRset_{self.__dimr_version}"
@@ -59,6 +58,7 @@ class DimrAutomation(object):
         self.__pin_and_tag_builds()
         self.__update_excel_sheet()
         self.__prepare_email()
+        self.__update_public_wiki()
 
     def __assert_preconditions(self) -> None:
         """Asserts some preconditions are met before the script is fully run."""

@@ -46,7 +46,7 @@ contains
       use m_alloc
       use m_missing
       use m_fm_wq_processes
-      use unstruc_messages
+      use messagehandling, only: msgbuf, LEVEL_ERROR, mess, warn_flush
       use m_find_name, only: find_name
 
       character(len=*), intent(in) :: tracnam

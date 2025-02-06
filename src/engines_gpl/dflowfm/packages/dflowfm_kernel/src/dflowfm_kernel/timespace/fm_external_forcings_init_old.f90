@@ -28,7 +28,7 @@
 !-------------------------------------------------------------------------------
 
 submodule(fm_external_forcings) fm_external_forcings_init_old
-   use fm_external_forcings_data
+   use fm_external_forcings_data, only: have_laterals_in_external_forcings_file
    use m_setfixedweirscheme3onlink, only: setfixedweirscheme3onlink
 
    implicit none
@@ -1025,7 +1025,7 @@ contains
                   jaqin = 1
                end if
 
-            else if (num_lat_ini_blocks == 0 .and. qid(1:16) == 'lateraldischarge') then
+            else if (.not. have_laterals_in_external_forcings_file() .and. qid(1:16) == 'lateraldischarge') then
 
                call ini_alloc_laterals()
 
@@ -1382,6 +1382,7 @@ contains
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
       use m_togeneral, only: togeneral
+      use unstruc_messages, only: callback_msg, loglevel_StdOut
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
@@ -1545,8 +1546,8 @@ contains
          end do
       end if
 
-      ! Allow laterals from old ext, even when new structures file is present (but only when *no* [Lateral]s were in new extforce file).
-      if (num_lat_ini_blocks == 0 .and. numlatsg > 0) then
+      ! Allow laterals from old ext, even when new extfile is present (but only when *no* [Lateral]s were in new extforce file).
+      if (.not. have_laterals_in_external_forcings_file() .and. numlatsg > 0) then
          call realloc(balat, numlatsg, keepExisting=.false., fill=0d0)
          call realloc(qplat, [max(1, kmx), numlatsg], keepExisting=.false., fill=0d0)
          call realloc(apply_transport, numlatsg, fill=0)

@@ -785,7 +785,7 @@ contains
       use m_GlobalParameters, only: INDTP_2D
       use m_partitioninfo
       use kdtree2Factory
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use m_find_flownode, only: find_nearest_flownodes_kdtree
       use m_wall_clock_time
       use m_in_flowcell, only: in_flowcell
@@ -4963,31 +4963,6 @@ contains
    !
    ! ==========================================================================
    !>
-   subroutine minmax_h(x, n, xmin, xmax) !   BEPAAL MINIMUM EN MAXIMUM VAN EEN EENDIMENSIONALE ARRAY
-      use precision
-      implicit none
-
-      ! Global variables
-
-      integer, intent(in) :: n
-      real(kind=dp), dimension(n), intent(in) :: x
-      real(kind=dp) :: xmax
-      real(kind=dp) :: xmin
-
-      integer :: i
-
-      xmin = 1e30
-      xmax = -1e30
-
-      do i = 1, n
-         xmin = min(xmin, x(i))
-         xmax = max(xmax, x(i))
-      end do
-   end subroutine minmax_h
-   !
-   !
-   ! ==========================================================================
-   !>
    subroutine get_extend2D(n, m, x, y, kcs, x_dummy, y_dummy)
 
       real(kind=dp), dimension(:, :) :: x
@@ -5220,81 +5195,6 @@ contains
       dist_min = sqrt(dist_min)
 
    end subroutine find_nearest1D_missing_value
-   !
-   !
-   ! ==========================================================================
-   !>
-   subroutine xxpolyint(xs, ys, zs, kcs, ns, & ! interpolate in a polyline like way
-                        x, y, z, kx, mnx, jintp, xyen, indxn, wfn)
-
-      implicit none
-
-      ! Global variables
-      integer, intent(in) :: ns !< Dimension of polygon OR LINE BOUNDARY
-      real(kind=dp), dimension(:), intent(in) :: xs !< polyline point coordinates
-      real(kind=dp), dimension(:), intent(in) :: ys
-      real(kind=dp), dimension(:), intent(in) :: zs !< Values at all points. Dimension: ns*kx
-      integer, dimension(:), intent(in) :: kcs !< polyline mask
-
-      integer, intent(in) :: mnx !< Dimension of target points
-      integer, intent(in) :: kx !< #values at each point (vectormax)
-      real(kind=dp), dimension(:), intent(in) :: x !< Grid points (where to interpolate to)
-      real(kind=dp), dimension(:), intent(in) :: y
-      real(kind=dp), dimension(kx*mnx), intent(out) :: z !< Output array for interpolated values. Dimension: mnx*kx
-      integer, intent(in) :: jintp !< (Re-)interpolate if 1 (otherwise use index weights)
-
-      real(kind=dp), dimension(:, :), intent(in) :: xyen !< cellsize / tol
-      integer, dimension(:, :), intent(inout), optional :: indxn !< pli segment is identified by its first node nr.
-      real(kind=dp), dimension(:, :), intent(inout), optional :: wfn !< If present, get weight index and factor
-
-      ! locals
-
-      real(kind=dp) :: wL, wR
-      integer :: m, k, kL, kR, jgetw
-
-      jgetw = 0 ! niets met gewichten, doe interpolatie
-      if (present(indxn) .and. jintp == 1) jgetw = 1 ! haal gewichten       doe interpolatie , gebruik gewichten
-      if (present(indxn) .and. jintp == 0) jgetw = 2 !                      doe interpolatie , gebruik gewichten
-
-      do m = 1, mnx
-
-         if (jgetw <= 1) then
-            !call polyindexweight( x(m), y(m), xs, ys, kcs, ns, xyen(:,m), k1, rl)    ! interpolate in a polyline like way
-            call polyindexweight(x(m), y(m), xyen(1, m), xyen(2, m), xs, ys, kcs, ns, kL, wL, kR, wR) ! interpolate in a polyline like way
-            !call findtri_indices_weights (x(n),y( n), xs, ys, ns, zp, indxp)     ! zoeken bij 0 en 1
-            if (jgetw == 1) then ! zetten bij 1
-               indxn(1, m) = kL
-               wfn(1, m) = wL
-               indxn(2, m) = kR
-               wfn(2, m) = wR
-            end if
-         elseif (jgetw == 2) then ! halen bij 2, je hoeft niet te zoeken
-            kL = indxn(1, m)
-            wL = wfn(1, m)
-            kR = indxn(2, m)
-            wR = wfn(2, m)
-         end if
-
-         ! Now do the actual interpolation of data zs -> z
-         if (kL > 0) then
-            if (kR > 0) then
-               do k = 1, kx
-                  z(kx * (m - 1) + k) = wL * zs(kx * (kL - 1) + k) + wR * zs(kx * (kR - 1) + k)
-               end do
-            else ! Just left point
-               do k = 1, kx
-                  z(kx * (m - 1) + k) = wL * zs(kx * (kL - 1) + k)
-               end do
-            end if
-         else if (kR > 0) then
-            do k = 1, kx
-               z(kx * (m - 1) + k) = wR * zs(kx * (kR - 1) + k)
-            end do
-         end if
-      end do
-
-   end subroutine xxpolyint
-
    !
    ! ==========================================================================
    !>
@@ -5837,7 +5737,7 @@ contains
       use m_alloc
       use m_missing
       use dfm_error
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, mess
       use m_delpol
       use m_reapol
       use m_filez, only: oldfil
@@ -6313,39 +6213,6 @@ contains
       end if
 
    end subroutine bilinarcinfo
-
-   subroutine bilinarcinfocheck(x, y, z, landsea)
-      use m_arcinfo
-      use m_missing
-      real(kind=dp), intent(in) :: x, y
-      real(kind=dp), intent(out) :: z
-      integer, intent(out) :: landsea
-      real(kind=dp) :: dm, dn, am, an, zmx, zmn
-      integer :: m, n
-
-      dm = (x - x0) / dxa; m = int(dm); am = dm - m; m = m + 1
-      dn = (y - y0) / dya; n = int(dn); an = dn - n; n = n + 1
-      z = dmiss
-      landsea = 0
-      if (m < mca .and. n < nca .and. m >= 1 .and. n >= 1) then
-         z = am * an * d(m + 1, n + 1) + &
-             (1d0 - am) * an * d(m, n + 1) + &
-             (1d0 - am) * (1d0 - an) * d(m, n) + &
-             am * (1d0 - an) * d(m + 1, n)
-         zmx = dble(max(d(m + 1, n + 1), d(m, n + 1), d(m, n), d(m + 1, n)))
-         zmn = dble(min(d(m + 1, n + 1), d(m, n + 1), d(m, n), d(m + 1, n)))
-         if (zmn > 0d0) then ! land
-            landsea = 3
-         else if (zmx < 0d0) then ! sea
-            landsea = 2
-         else ! coastline
-            landsea = 1
-         end if
-
-      end if
-
-   end subroutine bilinarcinfocheck
-
    !
    !
    ! ==========================================================================
@@ -6414,7 +6281,6 @@ module m_meteo
    use m_ship
    use fm_external_forcings_data
    use processes_input, only: num_time_functions, funame, funinp, nosfunext, sfunname, sfuninp
-   use unstruc_messages
    use m_observations_data, only: xyobs
    use string_module
    use m_sediment, only: stm_included, stmpar
@@ -7173,6 +7039,7 @@ contains
    !> Construct and initialize a new Instance of the EC-module.
    subroutine initialize_ec_module()
       use m_sferic
+      use unstruc_messages, only: callback_msg
       implicit none
       ! FM re-initialize call: First destroy the EC-module instance.
       if (associated(ecInstancePtr)) then

@@ -922,7 +922,6 @@ contains
          use m_orthosettings
          use m_missing
          use m_alloc
-         use unstruc_messages
          use unstruc_colors, only: ncolhl
          use m_tek_link
 
@@ -2309,7 +2308,6 @@ contains
          use m_netw
          use m_sferic
          use m_missing
-         use unstruc_messages
          use m_inverse_map
          use unstruc_display
          use unstruc_colors
@@ -2665,7 +2663,6 @@ contains
          use precision, only: dp
          use m_netw
          use m_orthosettings
-         use unstruc_messages
          use m_alloc
          use m_inverse_map
 

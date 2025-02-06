@@ -45,7 +45,7 @@ contains
       use m_flowgeom, only: Lnx
       use fm_external_forcings_data, only: ncgensg, kcgen, L1cgensg, L2cgensg, cgen_ids
       use m_fixedweirs, only: nfxw, lnfxw
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
 
       integer, dimension(:), allocatable :: links_used_by_structures
       integer, dimension(:), allocatable :: links_used_by_weirs

@@ -44,7 +44,7 @@ contains
       use precision, only: dp
       use m_missing
       use m_sferic
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use kdtree2Factory
       use m_wall_clock_time
 

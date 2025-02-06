@@ -47,7 +47,6 @@ contains
       use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
       use m_flowtimes
       use timers
-      use unstruc_messages
       use m_partitioninfo
       use m_timer
       use dfm_error

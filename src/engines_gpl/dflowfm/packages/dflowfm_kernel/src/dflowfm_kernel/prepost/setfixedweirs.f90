@@ -51,7 +51,6 @@ contains
       use m_alloc
       use unstruc_model
       use timespace
-      use unstruc_messages
       use m_fixedweirs
       use kdtree2Factory
       use m_sferic

@@ -70,7 +70,7 @@ contains
       use M_MISSING
       use unstruc_api
       use dfm_error
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       use gridoperations
       use m_mergenodes
       use unstruc_display, only: nhlNetNode

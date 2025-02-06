@@ -48,7 +48,7 @@ contains
    subroutine flow_validatestate(iresult)
       use m_flow_externaloutput_direct, only: flow_externaloutput_direct
       use precision, only: dp
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, msgbuf, mess, warn_flush
       use m_flow
       use m_flowgeom
       use m_flowparameters

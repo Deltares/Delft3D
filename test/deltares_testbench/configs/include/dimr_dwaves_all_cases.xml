@@ -423,4 +423,28 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
+		<testCase name="e04_f11_c01_timevar" ref="dimr_trunk">
+            <path version="2025-01-22T07:40:00">e04_wave/f11-wave_dir_interpolation/c01_timevar</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="wavm-tst.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="dir" toleranceAbsolute="0.1"/>
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <!-- ======================================================================== -->
+	    <testCase name="e04_f11_c02_spacevar" ref="dimr_trunk">
+            <path version="2025-01-22T07:40:00">e04_wave/f11-wave_dir_interpolation/c02_spacevar</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="wavm-tst.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="dir" toleranceAbsolute="0.1"/>
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <!-- ======================================================================== -->
     </testCases>

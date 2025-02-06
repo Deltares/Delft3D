@@ -1327,7 +1327,7 @@ contains
       ! Return a pointer to the variable
       use unstruc_model
       use m_partitioninfo, only: jampi
-      use MessageHandling
+      use unstruc_messages, only: loglevel_file, loglevel_stdout, initMessaging
       use iso_c_binding, only: c_double, c_char, c_bool, c_loc, c_f_pointer
       use m_laterals, only: numlatsg, qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
       use m_laterals, only: qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
@@ -1823,7 +1823,6 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: dfm_add_features
       use iso_c_binding, only: c_double, c_int, c_char, c_loc, c_f_pointer
       use iso_c_utils
-      use unstruc_messages
       use m_polygon
       use dfm_error
       use kdtree2Factory
@@ -1940,6 +1939,8 @@ contains
       use iso_c_binding, only: c_double, c_char, c_loc
       use iso_c_utils
       use fm_external_forcings_data
+      use m_update_dambreak_breach, only: waterLevelsDambreakUpStream, waterLevelsDambreakDownStream, &
+            breachDepthDambreak, breachWidthDambreak
       use m_observations
       use m_monitoring_crosssections
       use m_strucs
@@ -1947,7 +1948,6 @@ contains
       use m_1d_structures
       use m_wind
       use unstruc_channel_flow, only: network
-      use unstruc_messages
       use m_transport, only: NUMCONST, constituents, const_names, ISALT, ITEMP, ITRA1
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use string_module, only: str_tolower
@@ -2440,7 +2440,6 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: set_compound_field
       use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
       use iso_c_utils
-      use unstruc_messages
       use m_strucs
       use m_1d_structures
       use m_wind

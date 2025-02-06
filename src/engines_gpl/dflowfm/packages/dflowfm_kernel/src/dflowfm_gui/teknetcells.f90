@@ -53,7 +53,7 @@ contains
       use m_missing
       use m_partitioninfo
       use m_alloc
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, mess
       use m_sferic, only: jsferic, dg2rd
       use gridoperations
       use m_vfac

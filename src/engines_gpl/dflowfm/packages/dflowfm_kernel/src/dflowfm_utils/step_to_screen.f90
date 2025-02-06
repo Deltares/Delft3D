@@ -49,7 +49,7 @@ contains
       use precision
       use Timers
       use m_flowtimes
-      use unstruc_messages
+      use messagehandling, only: msgbuf, mess, msg_flush
 !
 ! Local variables
 !

@@ -926,7 +926,6 @@ contains
 !> find original cell numbers for the current subset of cells.
 !! Typically used for reconstructing the global cell numbers for all cells in the current partition.
    subroutine find_original_cell_numbers(L2Lorg, Lne_org, iorg)
-      use unstruc_messages
       use network_data, only: nump, nump1d2d, numL, lnn, lne, numl1d, netcell, xzw, yzw
       use m_flowgeom, only: xz, yz
       use unstruc_channel_flow, only: network
@@ -1093,7 +1092,7 @@ contains
 !             and "s"-type ghosts are cell-based only
    subroutine partition_set_ghostlevels(idmn, numlay_cell, numlay_node, jaboundary, ierror)
       use network_data, only: nump1d2d
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       implicit none
 
       integer, intent(in) :: idmn !< domain number
@@ -1365,99 +1364,6 @@ contains
 
       return
    end subroutine partition_cleanup
-
-!> write ghostcell information to file
-   subroutine write_ghosts(FNAM)
-      use network_data, only: xzw, yzw
-      use m_flowgeom, only: xu, yu
-      use m_alloc
-      use m_missing
-      use m_wrildb
-      use m_filez, only: newfil
-
-      implicit none
-
-      character(len=*), intent(in) :: FNAM
-
-      character(len=64), dimension(:), allocatable :: nampli
-
-      real(kind=dp), dimension(:), allocatable :: xpl, ypl
-
-      integer, dimension(:), allocatable :: ipl
-
-      integer :: ndmn, nums, numu, num, numnampli, NPL, MPOL
-
-      integer :: i, j
-      integer :: ic, Lf
-
-!     get the number of domains in the water-level ghost list
-      ndmn = size(nghostlist_s) - 1
-!     get the number of water-level ghost nodes
-      nums = nghostlist_s(ndmn - 1)
-!     get the number of domains in the velocity ghost list
-      ndmn = size(nghostlist_u) - 1
-!     get the number of velocity ghost links
-      numu = nghostlist_u(ndmn - 1)
-
-      num = nums + numu + 1
-
-      allocate (xpl(num), ypl(num), ipl(num), nampli(1))
-
-!     fill polygon with ghostcell information
-
-      NPL = 0
-      numnampli = 0
-
-!     water-level ghost nodes
-      numnampli = numnampli + 1
-      if (numnampli > size(nampli)) call realloc(nampli, int(1.2d0 * dble(numnampli) + 1d0), keepExisting=.true., fill='')
-      nampli(numnampli) = 'water-level'
-
-      do i = 0, ubound(nghostlist_s, 1)
-         do j = nghostlist_s(i - 1) + 1, nghostlist_s(i)
-            NPL = NPL + 1
-            ic = ighostlist_s(j)
-            xpl(NPL) = xzw(ic)
-            ypl(NPL) = yzw(ic)
-            ipl(NPL) = i
-         end do
-      end do
-
-!     add dmiss
-      if (NPL > 0) then
-         NPL = NPL + 1
-         xpl(NPL) = DMISS
-         ypl(NPL) = DMISS
-         ipl(NPL) = 0
-      end if
-
-!     velocity ghost links
-      numnampli = numnampli + 1
-      if (numnampli > size(nampli)) call realloc(nampli, int(1.2d0 * dble(numnampli) + 1d0), keepExisting=.true., fill='')
-      nampli(numnampli) = 'velocity'
-
-      do i = 0, ubound(nghostlist_u, 1)
-         do j = nghostlist_u(i - 1) + 1, nghostlist_u(i)
-            NPL = NPL + 1
-            Lf = abs(ighostlist_u(j))
-            xpl(NPL) = xu(Lf)
-            ypl(NPL) = yu(Lf)
-            ipl(NPL) = i
-         end do
-      end do
-
-!     write polygon
-      call newfil(MPOL, FNAM)
-      call wrildb(MPOL, xpl, ypl, NPL, ipl, NPL, xpl, 0, nampli, 64, numnampli)
-
-!     deallocate
-      if (allocated(xpl)) deallocate (xpl)
-      if (allocated(ypl)) deallocate (ypl)
-      if (allocated(ipl)) deallocate (ipl)
-      if (allocated(nampli)) deallocate (nampli)
-
-      return
-   end subroutine write_ghosts
 
 !  allocate and initialize tghost-type
    subroutine alloc_tghost(ghost, Nmax, Nmin)
@@ -2108,7 +2014,7 @@ contains
 !> fix orientation of send flow-links, opposite orientation will have negative indices
    subroutine partition_fixorientation_ghostlist(ierror)
       use m_flowgeom, only: Lnx, Lnxi, csu, snu, Ln, Ndx
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       implicit none
 
       character(len=128) :: message
@@ -2921,7 +2827,7 @@ contains
    subroutine partition_make_globalnumbers(ierror)
       use m_flowgeom, only: Ndxi, Ndx, Ln, Lnxi, Lnx
       use m_alloc
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       implicit none
 
       integer, intent(out) :: ierror
@@ -3555,7 +3461,7 @@ contains
 !>   reduce: take global cell with lowest dist
    subroutine reduce_kobs(N, kobs, xobs, yobs, jaoutside)
       use m_flowgeom, only: xz, yz, nd
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       use geometry_module, only: pinpok, dbdistance
       use m_missing, only: jins, dmiss
       use m_sferic, only: jsferic, jasfer3D
@@ -4577,9 +4483,8 @@ contains
    function getAverageQuantityFromLinks(startLinks, endLinks, weights, indsWeight, quantity, indsQuantity, results, quantityType, &
                                         firstFilter, firstFilterValue, secondFilter, secondFilterValue) result(ierr)
 
-      use mpi
-      use fm_external_forcings_data
-      use m_timer
+      use mpi, only: MPI_DOUBLE_PRECISION, MPI_SUM
+      use m_timer, only: jatimer, starttimer, stoptimer, IMPIREDUCE
 
       !inputs
       integer, intent(in), dimension(:) :: startLinks !< start indexes [1,nsegments]
@@ -4684,7 +4589,7 @@ contains
       use m_polygon
       use m_tpoly
       use m_sferic
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, mess
       use gridoperations
       use m_copynetboundstopol
       implicit none
@@ -5685,7 +5590,7 @@ contains
    subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
       use network_data
       use m_alloc
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
@@ -6006,7 +5911,7 @@ contains
       use m_flowgeom
       use m_alloc
       use m_missing
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
 
       integer, intent(in) :: itype !< type: 0: flownode, 1: flowlink
       integer, intent(in) :: NDIM !< number of unknowns per flownode/link
@@ -6101,5 +6006,30 @@ contains
 
       return
    end subroutine update_ghostboundvals
+
+!> perform a logical AND across all partitions
+   subroutine logical_and_across_partitions(val, allval)
+      use messagehandling, only: LEVEL_FATAL, mess
+#ifdef HAVE_MPI
+      use mpi
+#endif
+      logical, intent(in) :: val !< partition specific value
+      logical, intent(out) :: allval !< reduced value across all partitions
+      
+      integer :: ierror !< error
+      
+      ierror = 0
+      allval = val
+      if (jampi) then
+#ifdef HAVE_MPI
+         call mpi_allreduce(val, allval, 1, MPI_LOGICAL, MPI_LAND, DFM_COMM_DFMWORLD, ierror)
+#endif
+      else
+         ! there is only one val, so it can keep its value
+      end if
+      if (ierror /= 0) then
+         call mess(LEVEL_FATAL, 'mpi_allreduce failed in logical_and_across_partitions')
+      end if
+   end subroutine logical_and_across_partitions
 
 end module m_partitioninfo

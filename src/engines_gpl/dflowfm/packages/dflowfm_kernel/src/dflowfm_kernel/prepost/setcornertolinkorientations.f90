@@ -46,7 +46,6 @@ contains
       use network_data, only: xk, yk
       use m_sferic
       use m_alloc
-      use unstruc_messages
       use m_missing, only: dmiss
       use geometry_module, only: half, spher2locvec
 

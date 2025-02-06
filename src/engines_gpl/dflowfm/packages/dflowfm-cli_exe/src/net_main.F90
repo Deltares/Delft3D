@@ -70,7 +70,7 @@ program unstruc
    use properties
    use m_observations_data
    use unstruc_netcdf
-   use unstruc_messages
+   use messagehandling, only: warn_flush, msgbuf
    use UNSTRUC_DISPLAY
    use M_WEARELT
    use m_flowparameters

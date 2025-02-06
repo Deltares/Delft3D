@@ -10,6 +10,7 @@ import pytest
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.config.types.file_type import FileType
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.number_text_comparer import NumberTextComparer
 from test.utils.test_logger import TestLogger
 
@@ -40,7 +41,7 @@ class TestNumberTextComparer:
         # perform a set of asserts on the result structure
         assert result_structure.passed
         assert not result_structure.error
-        assert result_structure.result == "OK"
+        assert result_structure.result == EndResult.OK
         assert result_structure.max_abs_diff == 0.0
         assert result_structure.max_abs_diff_coordinates == ()
         assert pytest.approx(result_structure.max_rel_diff) == 0.0
@@ -59,7 +60,7 @@ class TestNumberTextComparer:
         # perform a set of asserts on the result structure
         assert not result_structure.passed
         assert not result_structure.error
-        assert result_structure.result == "NOK"
+        assert result_structure.result == EndResult.NOK
         assert result_structure.max_abs_diff == 100.0
         assert result_structure.max_abs_diff_coordinates == (51,)
         assert pytest.approx(result_structure.max_rel_diff) == 0.004644202966531087
@@ -78,7 +79,7 @@ class TestNumberTextComparer:
         # perform a set of asserts on the result structure
         assert not result_structure.passed
         assert not result_structure.error
-        assert result_structure.result == "NOK"
+        assert result_structure.result == EndResult.NOK
         assert is_nan(result_structure.max_abs_diff)
         assert result_structure.max_abs_diff_coordinates == (4, 4)
         assert pytest.approx(result_structure.max_rel_diff) == 1.0

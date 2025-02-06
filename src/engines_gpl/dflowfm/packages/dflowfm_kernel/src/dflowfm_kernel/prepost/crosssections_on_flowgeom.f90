@@ -43,7 +43,6 @@ contains
       use m_flowgeom, only: Lnx
       use m_missing
       use kdtree2Factory
-      use unstruc_messages
       use dfm_error
       use unstruc_channel_flow
       use m_inquire_flowgeom

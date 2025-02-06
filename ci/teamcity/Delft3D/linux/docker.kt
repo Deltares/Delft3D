@@ -16,7 +16,7 @@ object LinuxDocker : BuildType({
     )
 
     name = "Docker Build"
-    buildNumberPattern = "%build.vcs.number%"
+    buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
     description = "Build DIMRset Linux container."
 
     vcs {

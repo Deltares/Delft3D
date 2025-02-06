@@ -16,6 +16,7 @@ from src.config.parameter import Parameter
 from src.config.skip_line import SkipLine
 from src.config.test_case_failure import TestCaseFailure
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.i_comparer import IComparer
 from src.utils.logging.i_logger import ILogger
 
@@ -127,7 +128,7 @@ class NumberTextComparer(IComparer):
                                     leftData[2],
                                     rightData[2],
                                 )
-                                result.result = "NOK"
+                                result.result = EndResult.NOK
                                 break
 
             # Make the absolute difference in maxDiff relative, by dividing by (max_ref_value-min_ref_value).

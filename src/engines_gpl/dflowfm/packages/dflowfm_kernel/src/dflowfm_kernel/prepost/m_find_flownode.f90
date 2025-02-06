@@ -40,7 +40,7 @@ contains
 !> Find for each input point the nearest flow node, given a set of points [xx, yy].
    subroutine find_nearest_flownodes(n, xx, yy, names, node_nrs_nearest, jakdtree, jaoutside, iLocTp)
       use precision, only: dp
-      use unstruc_messages
+      use messagehandling, only: msgbuf, msg_flush, IDLEN
       use m_partitioninfo
       use m_flowgeom
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
@@ -55,7 +55,7 @@ contains
       integer, intent(in) :: n !< number of points
       real(kind=dp), dimension(n), intent(in) :: xx !< x-coordinate of input points
       real(kind=dp), dimension(n), intent(in) :: yy !< y-coordinate of input points
-      character(len=IdLen), dimension(n), intent(in) :: names !< names of points
+      character(len=IDLEN), dimension(n), intent(in) :: names !< names of points
       integer, dimension(n), intent(inout) :: node_nrs_nearest !< associated flow node numbers, if any found.
       integer, intent(inout) :: jakdtree !< use kdtree (1) or not (other)
       integer, intent(in) :: jaoutside !< allow outside cells (for 1D) (1) or not (0)
@@ -145,7 +145,7 @@ contains
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
       use kdtree2Factory
       use m_sferic
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use gridoperations
       use geometry_module, only: dbdistance, pinpok
       use m_wall_clock_time

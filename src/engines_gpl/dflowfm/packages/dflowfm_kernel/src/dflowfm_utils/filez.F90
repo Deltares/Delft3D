@@ -118,27 +118,6 @@ contains
       minp = 0
    end subroutine doclose
 
-   module subroutine zoekal(minp, rec, text, ja)
-      use messagehandling, only: LEVEL_INFO, mess
-      implicit none
-      integer, intent(in) :: minp
-      character(len=*), intent(out) :: rec
-      character(len=*), intent(in) :: text
-      integer, intent(out) :: ja
-
-      rewind (minp)
-10    continue
-      read (minp, '(a)', end=999) rec
-      if (index(rec, text) /= 0) then
-         call mess(LEVEL_INFO, 'found keyword: ', text)
-         ja = 1
-         return
-      end if
-      goto 10
-999   continue
-      ja = 0
-   end subroutine zoekal
-
 !> Opens a new file for writing (and reading).
 !! When file already exists, it will be overwritten.
 !! When access is denied, program stops with an error message.
@@ -244,56 +223,6 @@ contains
          end if
       end do
    end function iwordlength
-
-   subroutine nummer12(rec, i1, i2, num)
-!!--description-----------------------------------------------------------------
-! NONE
-!!--pseudo code and references--------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
-      implicit none
-!
-! Global variables
-!
-      character(len=*), intent(in) :: rec
-      integer, intent(out) :: i1
-      integer, intent(out) :: i2
-      integer, intent(out) :: num
-!
-!
-! Local variables
-!
-      integer :: i
-      integer :: len_trim
-      integer :: k
-      integer :: knul
-      integer :: l
-      character(6) :: form
-!
-!
-!! executable statements -------------------------------------------------------
-!
-      !
-      !     GEEFT GETAL EN POSITIE VAN EERSTE EN LAATSTE CIJFER UIT AANEENGESLOTEN REEKS
-      l = len_trim(rec) !EERSTE NUMMER MOET NUL ZIJN
-      i1 = 0
-      i2 = 0
-      do i = 1, l
-         k = index('0123456789', rec(i:i))
-         knul = index('0', rec(i:i))
-         if (i1 == 0 .and. knul /= 0) i1 = i
-         if (i1 /= 0 .and. k /= 0) i2 = i
-         if (i1 /= 0 .and. i2 /= 0) then
-            form = '(I8.8)'
-            write (form(3:3), '(I1)') i2 - i1 + 1
-            write (form(5:5), '(I1)') i2 - i1 + 1
-            read (rec(i1:i2), form) num
-         end if
-         if (i1 /= 0 .and. index(' ', rec(i:i)) /= 0) then
-            return
-         end if
-      end do
-   end subroutine nummer12
 
    module function numbersonline(rec)
 
@@ -441,28 +370,6 @@ contains
          if (ic >= 65 .and. ic < 90) word(i:i) = char(ic + 32)
       end do
    end subroutine lowcas
-
-!> Searches for a keyword in file and returns the text value.
-!! 'key=text'
-   subroutine zoekval(minp, key, val, ja)
-      implicit none
-      integer, intent(in) :: minp !< File pointer
-      character(*), intent(in) :: key
-      character(*), intent(out) :: val !<
-      integer, intent(out) :: ja !< Whether key was found or not.
-
-      character(len=255) :: rec, key2
-      integer :: l1
-
-      key2 = trim(key)
-      call zoekja(minp, rec, key2, ja)
-      if (ja == 1) then
-         l1 = index(rec, '=') + 1
-         read (rec(l1:), *) val
-      else
-         return
-      end if
-   end subroutine zoekval
 
    module subroutine zoekinteger(minp, key, val, ja)
       implicit none

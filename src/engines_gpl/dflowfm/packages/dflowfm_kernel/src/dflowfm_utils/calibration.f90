@@ -45,7 +45,6 @@ module m_calibration
    public clddata
    public read_cldfile
    public read_cllfile
-   public clr_clddata
    public update_clddata
    public calibration_backup_frcu
 
@@ -115,7 +114,7 @@ contains
 
    subroutine read_cldfile(md_cldfile, clddata, phase)
       use precision, only: dp
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess, errmsg
       use m_missing, only: dmiss, intmiss
       use unstruc_files, only: mdia
       use system_utils, only: exifil
@@ -281,7 +280,7 @@ contains
             call mess(LEVEL_INFO, '    Number of other definitions               = ', ncldnrm)
             call mess(LEVEL_INFO, '    ____________________________________________________________')
             call mess(LEVEL_INFO, '    Total number of definitions               = ', ncld)
-            call mess(LEVEL_INFO, '*** Succesfully read calibration definition input ')
+            call mess(LEVEL_INFO, '*** Successfully read calibration definition input ')
          end if
 
          close (luntmp)
@@ -470,7 +469,7 @@ contains
 
    subroutine read_cllfile(md_cllfile, clddata, phase)
       use precision, only: dp
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess, errmsg
       use m_missing, only: intmiss
       use unstruc_files, only: mdia
       use system_utils, only: exifil
@@ -599,7 +598,7 @@ contains
                if (icll > icll_found) then
                   call mess(LEVEL_INFO, '    of which not connected     = ', icll - icll_found)
                end if
-               call mess(LEVEL_INFO, '*** Succesfully read calibration area definition input')
+               call mess(LEVEL_INFO, '*** Successfully read calibration area definition input')
             end if
 
             goto 9999
@@ -749,7 +748,6 @@ contains
 
    subroutine update_clddata()
       use precision, only: dp
-      use unstruc_messages
       use m_monitoring_crosssections
       use m_observations_data, only: valobs, IPNT_S1
 
@@ -859,22 +857,5 @@ contains
       frcu_bkp = frcu
 
    end subroutine calibration_backup_frcu
-
-   subroutine clr_clddata(clddata)
-      use unstruc_messages
-
-      type(cldtype), intent(inout) :: clddata
-      integer :: istat
-
-      if (allocated(clddata%cldtable_q)) deallocate (clddata%cldtable_q, STAT=istat)
-      if (allocated(clddata%cldtable_zs)) deallocate (clddata%cldtable_zs, STAT=istat)
-      ! TO DO: add others -> and where to connect deallocate in FM ?
-
-      if (istat /= 0) then
-         errmsg = 'clr_clddata: memory deallocation error'
-         call mess(LEVEL_ERROR, errmsg)
-      end if
-
-   end subroutine clr_clddata
 
 end module

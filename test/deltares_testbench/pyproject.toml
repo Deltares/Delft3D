@@ -22,7 +22,7 @@ authors = [
 
 requires-python = ">= 3.11"
 dependencies = [
-    "netCDF4 ~= 1.6",
+    "netCDF4 ~= 1.7.2",
     "lxml ~= 5.1",
     "pyarrow ~= 16.1", # Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0)
     "pandas ~= 2.0",

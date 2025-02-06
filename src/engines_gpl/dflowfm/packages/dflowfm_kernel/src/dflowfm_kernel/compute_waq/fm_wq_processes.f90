@@ -37,7 +37,6 @@ contains
       use m_getkbotktopmax
       use m_fm_wq_processes
       use m_alloc
-      use unstruc_messages
       use m_flow, only: kmx
       use m_flowgeom, only: Ndxi
       use fm_external_forcings_data
@@ -50,7 +49,6 @@ contains
       use timers
       use m_string_utils, only: index_in_array
       use m_logger_helper, only: set_log_unit_number
-      use m_wind, only: jawind, jarain
 
       integer :: ierr_sub !< error status
       integer :: ierr_eho !< error status
@@ -375,7 +373,6 @@ contains
       use m_wq_processes_pmsa_size
       use bloom_data_vtrans
       use m_alloc
-      use unstruc_messages
       use m_flow, only: kmx
       use m_flowgeom, only: Ndxi, ba
       use m_flowparameters, only: jasal, jatem, jawave, jawaveSwartDelwaq
@@ -386,7 +383,7 @@ contains
       use unstruc_files
       use m_flowtimes
       use timers
-      use m_wind, only: jawind, jarain
+      use m_wind, only: jawind, jarain, solrad_available
       use date_time_utils, only: compute_reference_day
       use m_logger_helper, only: set_log_unit_number
 
@@ -910,7 +907,7 @@ contains
       use m_flowgeom
       use m_partitioninfo
       use unstruc_model
-      use unstruc_messages
+      use unstruc_messages, only: loglevel_StdOut, callback_msg
       use timespace
       use m_flow
       use m_meteo
@@ -1260,7 +1257,7 @@ contains
       use m_fm_wq_processes
       use m_alloc
       use m_missing
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       use m_find_name, only: find_name
       implicit none
 
@@ -1703,7 +1700,6 @@ contains
       use m_flowparameters, only: eps10
       use m_fm_wq_processes
       use m_transport, only: constituents
-      use unstruc_messages
       use precision_basics
       use timers
 

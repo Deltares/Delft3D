@@ -132,7 +132,6 @@ contains
       use netcdf_utils, only: ncu_get_att
       use m_sferic
       use m_missing
-      use unstruc_messages
       use MessageHandling
       use dfm_error
       use m_alloc
@@ -604,7 +603,6 @@ contains
    end subroutine unc_write_sedtrails_filepointer
 
    subroutine sedtrails_loadNetwork(filename, istat, jadoorladen)
-      use unstruc_messages
       use m_missing
       use m_alloc
       use m_partitioninfo, only: jampi

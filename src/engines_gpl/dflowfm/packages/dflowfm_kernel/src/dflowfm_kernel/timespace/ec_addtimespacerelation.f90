@@ -53,6 +53,7 @@ contains
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
       use timespace_read, only: maxnamelen
       use precision, only: dp
+      use unstruc_messages, only: callback_msg
 
       character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
       real(kind=dp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.

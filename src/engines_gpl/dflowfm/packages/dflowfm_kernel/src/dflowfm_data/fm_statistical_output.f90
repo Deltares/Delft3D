@@ -630,6 +630,78 @@ contains
 
    end subroutine add_station_wqbot3D_output_items
 
+   !> add output config for sediment transports on observation stations
+   !! the transpunit is known during model initialisation
+   subroutine add_station_sedtrans_configs(output_config_set)
+   
+      use m_ug_nc_attribute, only: ug_nc_attribute
+      use netcdf_utils, only: ncu_set_att
+      use m_sediment, only: stmpar
+      
+      implicit none
+      
+      type(t_output_quantity_config_set), intent(inout) :: output_config_set
+      
+      character(len=idlen) :: transpunit
+      type(ug_nc_attribute) :: atts(4)
+      
+      call ncu_set_att(atts(1), 'geometry', 'station_geom')
+      
+      transpunit = ''
+      
+      select case (stmpar%morpar%moroutput%transptype)
+        case (0)
+            transpunit = 'kg s-1 m-1'
+        case (1)
+            transpunit = 'm3 s-1 m-1'
+        case (2)
+            transpunit = 'm3 s-1 m-1'
+      end select
+        
+      call add_output_config(output_config_set, IDX_HIS_SBCX, &
+                             'wrihis_sediment', 'sbcx', &
+                             'Current related bedload transport, x-component', &
+                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
+      call add_output_config(output_config_set, IDX_HIS_SBCY, &
+                             'wrihis_sediment', 'sbcy', &
+                             'Current related bedload transport, y-component', &
+                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
+      call add_output_config(output_config_set, IDX_HIS_SBWX, &
+                             'wrihis_sediment', 'sbwx', &
+                             'Wave related bedload transport, x-component', &
+                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
+      call add_output_config(output_config_set, IDX_HIS_SBWY, &
+                             'wrihis_sediment', 'sbwy', &
+                             'Wave related bedload transport, y-component', &
+                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
+      call add_output_config(output_config_set, IDX_HIS_SSWX, &
+                             'wrihis_sediment', 'sswx', &
+                             'Wave related suspended transport, x-component', &
+                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
+      call add_output_config(output_config_set, IDX_HIS_SSWY, &
+                             'wrihis_sediment', 'sswy', &
+                             'Wave related suspended transport, y-component', &
+                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
+      call add_output_config(output_config_set, IDX_HIS_SSCX, &
+                             'wrihis_sediment', 'sscx', &
+                             'Current related suspended transport, x-component', &
+                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
+      call add_output_config(output_config_set, IDX_HIS_SSCY, &
+                             'wrihis_sediment', 'sscy', &
+                             'Current related suspended transport, y-component', &
+                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
+      
+      output_config_set%configs(IDX_HIS_SBCX)%input_value = '1'
+      output_config_set%configs(IDX_HIS_SBCY)%input_value = '1'
+      output_config_set%configs(IDX_HIS_SBWX)%input_value = '1'
+      output_config_set%configs(IDX_HIS_SBWY)%input_value = '1'      
+      output_config_set%configs(IDX_HIS_SSCX)%input_value = '1'
+      output_config_set%configs(IDX_HIS_SSCY)%input_value = '1'
+      output_config_set%configs(IDX_HIS_SSWX)%input_value = '1'
+      output_config_set%configs(IDX_HIS_SSWY)%input_value = '1'
+      
+   end subroutine add_station_sedtrans_configs
+   
    !> Set all possible statistical quantity items in the quantity configuration sets.
    subroutine default_fm_statistical_output()
       use netcdf, only: nf90_int
@@ -640,7 +712,6 @@ contains
       use m_output_config, only: id_nc_byte, id_nc_char, id_nc_short, id_nc_int, id_nc_float, id_nc_double
 
       type(ug_nc_attribute) :: atts(4)
-      character(len=25) :: transpunit
 
       config_set_his%count = 0
       config_set_map%count = 0
@@ -1470,38 +1541,6 @@ contains
                              'wrihis_sediment', 'taub', &
                              'Bed shear stress for morphology', &
                              '', 'Pa', UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=station_nc_dims_2D)
-      call add_output_config(config_set_his, IDX_HIS_SBCX, &
-                             'wrihis_sediment', 'sbcx', &
-                             'Current related bedload transport, x-component', &
-                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
-      call add_output_config(config_set_his, IDX_HIS_SBCY, &
-                             'wrihis_sediment', 'sbcy', &
-                             'Current related bedload transport, y-component', &
-                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
-      call add_output_config(config_set_his, IDX_HIS_SBWX, &
-                             'wrihis_sediment', 'sbwx', &
-                             'Wave related bedload transport, x-component', &
-                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
-      call add_output_config(config_set_his, IDX_HIS_SBWY, &
-                             'wrihis_sediment', 'sbwy', &
-                             'Wave related bedload transport, y-component', &
-                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
-      call add_output_config(config_set_his, IDX_HIS_SSWX, &
-                             'wrihis_sediment', 'sswx', &
-                             'Wave related suspended transport, x-component', &
-                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
-      call add_output_config(config_set_his, IDX_HIS_SSWY, &
-                             'wrihis_sediment', 'sswy', &
-                             'Wave related suspended transport, y-component', &
-                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
-      call add_output_config(config_set_his, IDX_HIS_SSCX, &
-                             'wrihis_sediment', 'sscx', &
-                             'Current related suspended transport, x-component', &
-                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
-      call add_output_config(config_set_his, IDX_HIS_SSCY, &
-                             'wrihis_sediment', 'sscy', &
-                             'Current related suspended transport, y-component', &
-                             '', transpunit, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
 
       ! Bed composition variables
       call add_output_config(config_set_his, IDX_HIS_MSED, &
@@ -2164,6 +2203,7 @@ contains
       use m_dad, only: dad_included, dadpar
       use m_laterals, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
       use m_sferic, only: jsferic
+      use m_wind, only: japatm, jawind, jarain, ja_airdensity, ja_computed_airdensity, clou, rhum
       use, intrinsic :: iso_c_binding
 
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.
@@ -2177,7 +2217,7 @@ contains
       integer, allocatable, dimension(:) :: idx_his_hwq
       integer, allocatable, dimension(:) :: idx_constituents_crs, idx_tracers_stations
       integer, allocatable, dimension(:) :: idx_wqbot_stations, idx_wqbot3D_stations
-
+      
       ntot = numobs + nummovobs
       !
       ! Mass balance variables
@@ -2655,6 +2695,7 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAUB), valobs(1:ntot, IPNT_TAUB))
             end if
             if (stmpar%lsedtot > 0) then
+               call add_station_sedtrans_configs(output_config_set)
                if (stmpar%morpar%moroutput%sbcuv) then
                   function_pointer => calculate_sediment_SBC
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBCX), null(), function_pointer)

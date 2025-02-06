@@ -44,7 +44,7 @@ contains
       use m_netw
       use m_flowgeom
       use m_flow
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
 
       integer :: L, k1, k2
       character(len=*) tex

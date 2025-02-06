@@ -42,7 +42,6 @@ contains
 
    subroutine generatePartitionMDUFile(filename, filename_new)
       use unstruc_model
-      use unstruc_messages
       use m_partitioninfo
       use string_module
 

@@ -44,7 +44,7 @@ contains
 
    subroutine add_tracer(tracer_name, iconst)
       use m_transport
-      use unstruc_messages
+      use messagehandling, only: mess, LEVEL_INFO, LEVEL_ERROR
       use m_meteo, only: numtracers, trnames
       use m_find_name, only: find_name
       implicit none

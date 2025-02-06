@@ -83,7 +83,7 @@
       Use SyncRtcFlow
       Use MeasureModule
       Use ParameterModule
-      Use Readlib
+      Use Readlib_rtc
 
       implicit none
 

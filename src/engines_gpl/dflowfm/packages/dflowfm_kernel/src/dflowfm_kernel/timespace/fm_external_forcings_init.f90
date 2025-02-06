@@ -41,7 +41,7 @@ contains
       use properties, only: get_version_number, prop_file
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
-      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, thrtt, num_lat_ini_blocks
+      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, thrtt, set_lateral_count_in_external_forcings_file
       use m_flowgeom, only: ba
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat
       use string_module, only: str_tolower
@@ -197,7 +197,7 @@ contains
 
       call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_name)//'''')
 
-      num_lat_ini_blocks = numlatsg !save number of laterals to module variable
+      call set_lateral_count_in_external_forcings_file(numlatsg) !save number of laterals to module variable
 
       call tree_destroy(bnd_ptr)
       if (allocated(thrtt)) then

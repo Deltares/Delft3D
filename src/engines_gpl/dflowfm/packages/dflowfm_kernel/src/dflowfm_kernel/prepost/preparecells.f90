@@ -48,7 +48,6 @@ contains
       use unstruc_display, only: jareinitialize
       use gridoperations
       use m_save_ugrid_state, only: contactnlinks, netlink2contact, contact1d2didx
-      use unstruc_messages
       use m_qnerror
 
       character(len=*), intent(in) :: md_netfile !< net filename

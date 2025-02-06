@@ -53,7 +53,6 @@ contains
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use unstruc_messages
       use M_splines, only: increasespl, maxspl, maxsplen, readsplines
       use M_SAMPLES
       use m_commandline_option
@@ -276,7 +275,6 @@ contains
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use unstruc_messages
       use M_splines, only: increasespl, readsplines
       use M_SAMPLES
       use m_commandline_option
@@ -353,7 +351,6 @@ contains
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use unstruc_messages
       use M_splines, only: increasespl, readsplines, writesplines
       use M_SAMPLES
       use m_commandline_option

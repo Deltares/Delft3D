@@ -26,15 +26,10 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-!
-!
-
-! unstruc.f90
 module fm_external_forcings_data
-   use m_wind
-   use m_nudge
-   use m_bnd
+   use precision, only: dp
+   use m_bnd, only: bndtype
+   
    implicit none
 
    logical :: success !< want je wil maar liever succes
@@ -350,25 +345,7 @@ module fm_external_forcings_data
    character(len=128), allocatable, target :: pump_ids(:) !< the pumps ids
 
    ! Dambreak
-   !time varying
-   real(kind=dp), allocatable, target :: waterLevelsDambreakUpStream(:) !< the water levels computed each time step upstream
-   real(kind=dp), allocatable, target :: waterLevelsDambreakDownStream(:) !< the water levels computed each time step downstream
-   real(kind=dp), allocatable, target :: breachDepthDambreak(:) !< the dambreak breach width (as a level)
-   real(kind=dp), allocatable, target :: breachWidthDambreak(:) !< the dambreak breach width (as a level)
-   real(kind=dp), allocatable :: normalVelocityDambreak(:) !< dambreak normal velocity
-   real(kind=dp), allocatable :: dambreakAveraging(:, :) !< to avoid allocations/deallocations
-   real(kind=dp), allocatable :: breachWidthDerivativeDambreak(:) !< breach width derivatives
-   real(kind=dp), allocatable :: waterLevelJumpDambreak(:) !< water level jumps
-   !constant in time
-   real(kind=dp), allocatable :: maximumDambreakWidths(:) !< the total dambreak width (from pli file)
-   real(kind=dp), allocatable :: dambreakLinksEffectiveLength(:) !< dambreak maximum flow widths
-   real(kind=dp), allocatable :: dambreakLinksActualLength(:) !< dambreak actual flow widths
    integer, allocatable :: dambreaks(:) !< store the dambreaks indexes among all structures
-   integer, parameter :: DBW_SYMM = 1 !< symmetrical dambreak widening (limited width in case of asymmetric starting link placement)
-   integer, parameter :: DBW_PROP = 2 !< dambreak wideining proportional to left/right dam length
-   integer, parameter :: DBW_SYMM_ASYMM = 3 !< symmetrical dambreak widening until left/right runs out of space then continues one sided
-   integer :: dambreakWidening = DBW_SYMM_ASYMM !< method for dambreak widening
-   character(len=128) :: dambreakWideningString = 'symmetric-asymmetric' !< method for dambreak widening (string for input processing)
    integer :: ndambreaklinks !< nr of dambreak links
    integer :: ndambreaksignals !< nr of dambreak signals
    integer, allocatable :: L1dambreaksg(:) !< first dambreak link for each signal
@@ -378,18 +355,6 @@ module fm_external_forcings_data
    integer, allocatable :: kdambreak(:, :) !< dambreak links index array
    real(kind=dp), allocatable, target :: dambreakLevelsAndWidthsFromTable(:) !< dambreak widths and heights
    character(len=128), allocatable, target :: dambreak_ids(:) !< the dambreak ids
-   ! Upstream water level
-   integer :: nDambreakLocationsUpstream !< nr of dambreak signals with locations upstream
-   integer, allocatable :: dambreakLocationsUpstreamMapping(:) !< mapping of dambreak locations upstream
-   integer, allocatable :: dambreakLocationsUpstream(:) !< store cell ids for water level locations upstream
-   integer :: nDambreakAveragingUpstream !< nr of dambreak signals upstream with averaging
-   integer, allocatable :: dambreakAverigingUpstreamMapping(:) !< mapping of dambreak averaging upstream
-   ! Downstream water level
-   integer :: nDambreakLocationsDownstream !< nr of dambreak signals with locations downstream
-   integer, allocatable :: dambreakLocationsDownstreamMapping(:) !< mapping of dambreak locations downstream
-   integer, allocatable :: dambreakLocationsDownstream(:) !< store cell ids for water level locations downstream
-   integer :: nDambreakAveragingDownstream !< nr of dambreak signals downstream with averaging
-   integer, allocatable :: dambreakAverigingDownstreamMapping(:) !< mapping of dambreak averaging in the dambreak arrays
 
    type polygon
       real(kind=dp), dimension(:), allocatable :: xp, yp
@@ -471,7 +436,10 @@ module fm_external_forcings_data
 
    real(kind=dp), allocatable, target :: sah(:) ! temp
    real(kind=dp), allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness
-   integer :: num_lat_ini_blocks
+
+   integer, private :: num_lat_ini_blocks !< Number of [Lateral] blocks in a loaded new external forcings file.
+   public :: have_laterals_in_external_forcings_file, set_lateral_count_in_external_forcings_file
+
    logical :: tair_available, dewpoint_available
    real(kind=dp), allocatable, target :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
    integer :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
@@ -527,5 +495,20 @@ contains
       numsrc_nf = 0
 
    end subroutine default_fm_external_forcing_data
+
+   !> Determines if there are lateral forcing blocks in the new external forcings data.
+   !! The underlying new external forcings file must have been read before calling this function.
+   pure function have_laterals_in_external_forcings_file() result(have_laterals)
+      logical :: have_laterals
+      
+      have_laterals = num_lat_ini_blocks > 0
+   end function have_laterals_in_external_forcings_file
+
+   !> Sets the number of lateral forcing blocks in the new external forcings file.
+   subroutine set_lateral_count_in_external_forcings_file(num_lat)
+      integer, intent(in) :: num_lat
+
+      num_lat_ini_blocks = num_lat
+   end subroutine set_lateral_count_in_external_forcings_file
 
 end module fm_external_forcings_data

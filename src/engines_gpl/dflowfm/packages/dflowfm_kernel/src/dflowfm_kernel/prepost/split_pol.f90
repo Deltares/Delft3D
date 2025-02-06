@@ -45,7 +45,7 @@ contains
       use m_tpoly
       use m_alloc
       use m_missing
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, mess
       use m_wrildb
       use m_addtopol, only: addtopol
       use m_filez, only: doclose, newfil

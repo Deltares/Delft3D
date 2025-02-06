@@ -47,7 +47,7 @@ contains
       use m_flow_single_timestep, only: flow_single_timestep
       use m_get_s_key
       use m_flowtimes
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use m_partitioninfo
       use m_gui
       use dfm_error

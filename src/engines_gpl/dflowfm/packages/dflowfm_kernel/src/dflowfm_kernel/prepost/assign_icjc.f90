@@ -49,7 +49,6 @@ contains
       use m_grid
       use m_alloc
       use m_missing
-      use unstruc_messages
       use m_polygon, only: NPL, xpl, ypl, zpl
       use geometry_module, only: pinpok, dbpinpol, get_startend
       use m_find_common_node

@@ -493,7 +493,6 @@ contains
       use m_flowgeom
       use m_flowtimes
       use messagehandling
-      use unstruc_messages
       use unstruc_channel_flow
       use m_1d_structures
       use m_cross_helper

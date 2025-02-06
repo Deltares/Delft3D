@@ -64,7 +64,6 @@ contains
 !> Registers which specific signal numbers should be watched for.
 !! libsigwatch will 'record' these signals for us.
    subroutine dfm_add_signalwatchers()
-      use unstruc_messages
       implicit none
 
 #ifdef HAVE_SIGIWATCH
@@ -86,7 +85,6 @@ contains
 
 !> Performs the actual check whether an important signal was recently given.
    function dfm_check_signals() result(ierror)
-      use unstruc_messages
       use dfm_error
       use m_datum
       implicit none

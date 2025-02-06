@@ -50,7 +50,7 @@ contains
       use m_cutcell_list, only: cutcell_list
       use m_samples_to_cellmask2
       use m_confrm
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_sferic, only: jsferic
       use string_module
       use m_polygon, only: NPL, ZPL, savepol, restorepol

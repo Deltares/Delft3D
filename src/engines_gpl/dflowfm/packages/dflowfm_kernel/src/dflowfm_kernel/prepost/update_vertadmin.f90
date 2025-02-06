@@ -48,7 +48,7 @@ contains
       use m_partitioninfo
       use m_flowgeom
       use m_flow
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
 
       character(len=128) :: mesg
 

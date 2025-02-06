@@ -52,7 +52,6 @@ contains
 !---------------------------------------------------------
       use m_netw
       use m_grid
-      use unstruc_messages
       use m_missing
       use m_find_common_node
 

@@ -708,20 +708,6 @@ contains
 
       end subroutine write_points_
 
-      subroutine write_faces_(mout)
-         use network_data
-         integer, intent(in) :: mout !< File unit nr for output.
-
-         integer :: k
-         write (strtmp, '(i10)') numk
-         write (mout, '(a)') adjustl(strtmp)
-         write (mout, '(a)') '('
-         do k = 1, numk
-            write (mout, '(a,3(f25.16),a)') '(', xk(k), yk(k), zk(k), ')'
-         end do
-         write (mout, '(a)') ')'
-
-      end subroutine write_faces_
    end subroutine foam_write_polymesh
 
 end module io_openfoam

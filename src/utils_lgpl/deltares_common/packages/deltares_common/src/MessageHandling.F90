@@ -136,9 +136,9 @@ module MessageHandling
    integer,parameter, public     :: LEVEL_ERROR = 4
    integer,parameter, public     :: LEVEL_FATAL = 5
    integer,parameter, public     :: LEVEL_NONE  = 6
-   integer,parameter, public     :: Idlen = 256  !< Max string length of Ids. Recommended to use one character less for the actual Id, to allow for a null char at the end, when interfacing with C.
-   integer,parameter, public     :: max_level = 5
-   character(len=12), dimension(max_level), private    :: level_prefix = (/'** DEBUG  : ',  &
+   integer,parameter, public     :: IDLEN = 256  !< Max string length of Ids. Recommended to use one character less for the actual Id, to allow for a null char at the end, when interfacing with C.
+   integer,parameter, public     :: MAX_LEVEL = 5
+   character(len=12), dimension(MAX_LEVEL), private    :: level_prefix = (/'** DEBUG  : ',  &
                                                                            '** INFO   : ',  &
                                                                            '** WARNING: ',  &
                                                                            '** ERROR  : ',  &

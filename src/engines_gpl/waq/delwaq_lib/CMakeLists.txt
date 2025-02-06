@@ -53,7 +53,7 @@ if(UNIX)
 endif(UNIX)
 
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")
-target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
+target_compile_options(${library_name} PRIVATE ${waq_default_flags})
 
 target_include_directories(${library_name} PRIVATE ${version_include_dir})
 set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)

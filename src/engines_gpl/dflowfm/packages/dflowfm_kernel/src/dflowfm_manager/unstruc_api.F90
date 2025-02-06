@@ -206,7 +206,7 @@ contains
    integer function flow() result(iresult)
       use dfm_error
       use unstruc_display
-      use unstruc_messages
+      use messagehandling, only: warn_flush
       use unstruc_display
       use unstruc_model
       integer :: jastop

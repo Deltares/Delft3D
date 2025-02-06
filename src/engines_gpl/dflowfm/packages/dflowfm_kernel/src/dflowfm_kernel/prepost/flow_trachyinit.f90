@@ -51,7 +51,7 @@ contains
    subroutine flow_trachyinit()
       use grid_dimens_module
       use network_data, only: numl, lne, xk, yk, kn, lnn
-      use unstruc_model ! (contains md_ptr)
+      use messagehandling, only: LEVEL_FATAL, LEVEL_ERROR, mess, setmessage
       use m_flowparameters
       use m_flowgeom
       use m_physcoef, only: ifrctypuni
@@ -64,7 +64,7 @@ contains
       use unstruc_files, only: mdia
       use m_bedform, only: bfmpar
       use m_sediment
-      use unstruc_messages
+      use unstruc_messages, only: threshold_abort
       use trachytopes_data_module, only: TRACHY_UNDEFINED, TRACHY_NOT_IN_SUBDOMAIN ! = -99999, -77777
       use m_monitoring_crosssections, only: crs, ncrs
       use m_observations_data, only: namobs, numobs

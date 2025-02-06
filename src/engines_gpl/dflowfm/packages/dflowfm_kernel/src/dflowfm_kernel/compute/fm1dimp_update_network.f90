@@ -48,7 +48,7 @@ contains
 !
 
 !output
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !local
       integer :: kd

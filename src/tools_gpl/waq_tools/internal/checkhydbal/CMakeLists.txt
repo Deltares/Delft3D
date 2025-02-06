@@ -48,7 +48,7 @@ endif(WIN32)
 
 # Define how the files should be structured within Visual Studio
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/checkhydbal)
-target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")
+target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 # Set post-build step
 # internal use only - not part of the DIMR set

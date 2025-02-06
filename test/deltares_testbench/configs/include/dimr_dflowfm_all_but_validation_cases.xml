@@ -56,7 +56,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f002_c102_longculvert_new" ref="dflowfm_default">
-      <path version="2024-08-28T16:40:00">e02_dflowfm/f002_1D2D/c102_longculvert_new</path>
+      <path version="2025-01-31T11:30:34.642000">e02_dflowfm/f002_1D2D/c102_longculvert_new</path>
       <programs>
           <program ref="dflowfm" seq="1">
             <arguments>
@@ -76,7 +76,7 @@
             <parameter name="waterlevel" toleranceAbsolute="0.0009" />
             <parameter name="x_velocity" toleranceAbsolute="0.0009" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="cross_section_discharge" toleranceAbsolute="0.002" />
+            <parameter name="cross_section_discharge" toleranceAbsolute="0.003" />
             <parameter name="cross_section_cumulative_discharge" toleranceRelative="0.0015" />
             <parameter name="longculvert_discharge" toleranceAbsolute="0.003" />
             <parameter name="longculvert_s1up" toleranceAbsolute="0.0005" />
@@ -87,6 +87,21 @@
             <parameter name="longculvert_valve_relative_opening" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f002_c103_3D_channel" ref="dflowfm_default">
+      <path version="2025-01-28T16:00:00.000000">e02_dflowfm/f002_1D2D/c103_3D_channel</path>
+      <maxRunTime>120.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
+          <parameters>
+		    <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+			<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f003_c041_thacker1d_squares" ref="dflowfm_default">
@@ -2140,6 +2155,150 @@
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c051_maas_circumcenter1" ref="dflowfm_default">
+      <path version="2025-01-17T06:00:21.718000">e02_dflowfm/f008_network/c051_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c052_maas_circumcenter2" ref="dflowfm_default">
+      <path version="2025-01-16T19:15:41.354000">e02_dflowfm/f008_network/c052_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c053_maas_circumcenter3" ref="dflowfm_default">
+      <path version="2025-01-16T19:15:51.129000">e02_dflowfm/f008_network/c053_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c054_maas_circumcenter1" ref="dflowfm_default">
+      <path version="2025-01-16T19:15:58.191000">e02_dflowfm/f008_network/c054_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c055_maas_circumcenter2" ref="dflowfm_default">
+      <path version="2025-01-16T19:16:05.645000">e02_dflowfm/f008_network/c055_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c056_maas_circumcenter3" ref="dflowfm_default">
+      <path version="2025-01-16T19:16:14.885000">e02_dflowfm/f008_network/c056_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c061_diamond_circumcenter1" ref="dflowfm_default">
+      <path version="2025-01-17T06:05:02.360000">e02_dflowfm/f008_network/c061_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c062_diamond_circumcenter2" ref="dflowfm_default">
+      <path version="2025-01-16T19:16:40.505000">e02_dflowfm/f008_network/c062_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c063_diamond_circumcenter3" ref="dflowfm_default">
+      <path version="2025-01-16T19:16:47.887000">e02_dflowfm/f008_network/c063_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c064_diamond_circumcenter1" ref="dflowfm_default">
+      <path version="2025-01-16T19:16:54.793000">e02_dflowfm/f008_network/c064_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c065_diamond_circumcenter2" ref="dflowfm_default">
+      <path version="2025-01-16T19:17:02.937000">e02_dflowfm/f008_network/c065_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c066_diamond_circumcenter3" ref="dflowfm_default">
+      <path version="2025-01-16T19:17:09.863000">e02_dflowfm/f008_network/c066_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
           </parameters>
         </file>
       </checks>

@@ -39,7 +39,7 @@ module unstruc_inifields
    use m_setinitialverticalprofile, only: setinitialverticalprofile
    use m_add_tracer, only: add_tracer
    use m_setzcs, only: setzcs
-   use unstruc_messages
+   use messagehandling, only: msgbuf, warn_flush, err_flush
    use properties
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp
@@ -1715,9 +1715,9 @@ contains
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
 
-      use m_flow, only: s1, hs, evap, h_unsat
+      use m_flow, only: s1, hs, h_unsat
       use m_flowgeom, only: ndxi, ndx, bl
-      use m_wind, only: jaevap
+      use m_wind, only: jaevap, evap
 
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: infiltcap, DFM_HYD_INFILT_CONST, &

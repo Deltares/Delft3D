@@ -43,7 +43,7 @@ contains
 
    subroutine calibration_init()
       use m_calibration
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       use unstruc_model, only: md_cldfile, md_cllfile
       use m_flowgeom, only: lnx, lnx1d
       use m_flow, only: ifrcutp, ifrctypuni

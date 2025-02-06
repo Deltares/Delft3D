@@ -45,7 +45,7 @@ contains
       use precision, only: dp
       use m_cutcells
       use m_alloc
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
 
       integer, intent(in) :: numk
       integer, dimension(numk), intent(in) :: kc

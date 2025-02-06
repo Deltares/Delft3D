@@ -46,7 +46,7 @@ contains
       use m_flowgeom, only: ndx
       use m_flowtimes
       use m_flowparameters, only: write_numlimdt_file
-      use unstruc_messages, only: msgbuf, msg_flush
+      use messagehandling, only: msgbuf, msg_flush
       use m_timer
       use m_partitioninfo, only: jampi, numranks, my_rank
       use m_monitoring_crosssections, only: crs, ncrs

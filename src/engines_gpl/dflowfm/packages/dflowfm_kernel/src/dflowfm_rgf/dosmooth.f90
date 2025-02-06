@@ -47,7 +47,7 @@ contains
       use m_gridsettings
       use m_grid
       use unstruc_colors
-      use unstruc_messages
+      use messagehandling, only: msgbuf, dbg_flush
       use m_smeerfunctie
       use m_drawthis
       use m_grid_block

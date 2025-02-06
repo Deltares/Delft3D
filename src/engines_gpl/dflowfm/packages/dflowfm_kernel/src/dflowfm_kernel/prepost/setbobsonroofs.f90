@@ -47,7 +47,6 @@ contains
       use m_flow
       use m_missing
       use unstruc_model
-      use unstruc_messages
       use kdtree2Factory
       use m_sferic
       use m_polygon

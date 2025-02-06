@@ -629,7 +629,6 @@ contains
 
    subroutine conjugategradientSAAD(righthandside, s1, ndx, its, jaini, jadosafe, ierror)
       use m_reduce
-! use unstruc_messages
       use m_saad, only: jasafe, nn, ngs, iao, sol, rhs, ao, jao, cgsaad
       use m_flowgeom, only: kfs
       use MessageHandling
@@ -959,7 +958,7 @@ contains
 
    subroutine conjugategradient(s1, ndx, ipre)
       use m_reduce
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
 
       implicit none
       integer :: ndx, ipre
@@ -1106,7 +1105,7 @@ contains
 
    subroutine conjugategradient_omp_threadsafe(s1, ndx, ipre)
       use m_reduce
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
 
       implicit none
       integer :: ndx
@@ -1267,7 +1266,7 @@ contains
 
    subroutine conjugategradient_omp(s1, ndx, ipre)
       use m_reduce
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
 
       implicit none
       integer :: ndx
@@ -1677,7 +1676,7 @@ contains
    subroutine reducept(Ndx, Lnx)
       ! this subroutine finds an elimination order for Gaussian elimination based upon minimum degree algorithm
       use m_reduce
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_flowparameters, only: icgsolver, ipre, Noderivedtypes
       use m_partitioninfo
       use m_readyy
@@ -1873,7 +1872,6 @@ contains
 
    subroutine conjugategradient_MPI(s1, ndx, ipre, nocgiter_loc, ierror)
       use m_reduce
-! use unstruc_messages
 ! BEGIN MPI
 #ifdef HAVE_MPI
       use mpi
@@ -2394,7 +2392,7 @@ contains
       use m_reduce
       use m_saad, only: tol, ipar, fpar, nn, iao, sol, rhs, cgsaad
       use m_flowgeom, only: kfs
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_timer
       use m_flowparameters, only: jalogsolverconvergence
       use mpi

@@ -27,31 +27,40 @@
 !
 !-------------------------------------------------------------------------------
 
+submodule(unstruc_messages) m_unstruc_errorhandler
+
+   implicit none
+
+contains
 !> Performs a clean program stop upon errors.
 !! This routine is automatically called from the MessageHandling module.
-subroutine unstruc_errorhandler(level)
-   use unstruc_messages, only: threshold_abort
-   use unstruc_files, only: mdia, close_all_files
-   use dfm_error, only: dfm_genericerror
+   module subroutine unstruc_errorhandler(level, message)
+      use unstruc_files, only: mdia, close_all_files
+      use dfm_error, only: dfm_genericerror
 #ifdef HAVE_MPI
-   use mpi
-   use m_partitioninfo, only: DFM_COMM_ALLWORLD, jampi
+      use mpi
+      use m_partitioninfo, only: DFM_COMM_ALLWORLD, jampi
 #endif
-   implicit none
-   integer, intent(in) :: level
-   integer :: ierr
 
-   ierr = 0
+      integer, intent(in) :: level !< The severity level
+      character(len=*), intent(in) :: message !< log message
 
-   if (level >= threshold_abort) then
-      call close_all_files()
-      close (mdia)
-      mdia = 0
+      integer :: ierr
+
+      associate (message => message)
+      end associate
+
+      if (level >= threshold_abort) then
+         call close_all_files()
+         close (mdia)
+         mdia = 0
 #ifdef HAVE_MPI
-      if (jampi == 1) then
-         call MPI_Abort(DFM_COMM_ALLWORLD, DFM_GENERICERROR, ierr)
+         if (jampi == 1) then
+            call MPI_Abort(DFM_COMM_ALLWORLD, DFM_GENERICERROR, ierr)
+         end if
+#endif
+         stop
       end if
-#endif
-      stop
-   end if
-end subroutine unstruc_errorhandler
+   end subroutine unstruc_errorhandler
+
+end submodule m_unstruc_errorhandler

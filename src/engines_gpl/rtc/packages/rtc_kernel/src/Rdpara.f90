@@ -49,13 +49,13 @@
 
       Use ParameterModule
       Use ReservoirModule
-      Use NewTables
+      Use NewTables_rtc
       Use DH_Alloc
-      Use ParseToken
+      Use ParseToken_rtc
       Use LocationDataModule
       Use DecisionModule
       Use OtherData
-      Use ReadLib
+      Use ReadLib_rtc
 
       Implicit None
 
@@ -92,7 +92,7 @@
       Character*4    SearchString
       Logical        SearchPar2, success
 
-! Additional variables for ParseToken
+! Additional variables for ParseToken_rtc
       Integer           ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical           ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError
       Type (TokenArray) RecordData
@@ -105,9 +105,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 9999  ! Scan up to Token 9999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 !
       IF (IDEBUG .GT. 0) WRITE (IDEBUG,1)
     1 FORMAT (' Rdpara')
@@ -392,7 +392,7 @@
 ! *********************************************************************
 ! Aantal Sobek, 3B, precipitation, externe lokaties; beslisparameters
 ! *********************************************************************
-! use Getrecord and ParseToken
+! use Getrecord and ParseToken_rtc
          Backspace(in)
          ReadError = .false.
          SearchString = 'PARA'
@@ -418,13 +418,13 @@
          Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
          If (.not. Success) ReadError = .true.
          IF (ReadError) then
-            call write_error_message_rtc (974,0,'Rdpara',' Read error during reading decision parameter file - PARA-PAR2 ParseToken ',IOUT1)
+            call write_error_message_rtc (974,0,'Rdpara',' Read error during reading decision parameter file - PARA-PAR2 ParseToken_rtc ',IOUT1)
             RetVal = 974
             Return
          Endif
          If (Idebug .gt. 0) then
             Write(Idebug,'(A)') String(1:len_trim(String))
-            Write(Idebug,*) ' Results of ParseToken '
+            Write(Idebug,*) ' Results of ParseToken_rtc '
             Write(idebug,*) ' Nr  StartPos  Quotes Token '
             Do i=1,NumberofTokens
                write(idebug,'(I3,I5,L,1X,A)') i, RecordData%StartPositionOfToken(i), &
@@ -1221,7 +1221,7 @@
          PARDIM (IPARA,5) = 0
          PARDIM (IPARA,6) = 0
          PARDIM (IPARA,8) = 0
-! test using GetRecord and ParseToken
+! test using GetRecord and ParseToken_rtc
          Backspace(in)
          iStart = 1
          ReadError = .false.
@@ -1238,13 +1238,13 @@
          Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
          If (.not. Success) ReadError = .true.
          IF (ReadError) then
-            call write_error_message_rtc (974,0,'Rdpara',' Read error during reading decision parameter file - RSVP ParseToken ',IOUT1)
+            call write_error_message_rtc (974,0,'Rdpara',' Read error during reading decision parameter file - RSVP ParseToken_rtc ',IOUT1)
             RetVal = 974
             Return
          Endif
          If (Idebug .gt. 0) then
             Write(Idebug,'(A)') String(1:len_trim(String))
-            Write(Idebug,*) ' Results of ParseToken '
+            Write(Idebug,*) ' Results of ParseToken_rtc '
             Write(idebug,*) ' Nr  StartPos  Quotes Token '
             Do i=1,NumberofTokens
                write(idebug,'(I3,I5,L,1X,A)') i, RecordData%StartPositionOfToken(i), &

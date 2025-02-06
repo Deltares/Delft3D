@@ -60,7 +60,7 @@ contains
       use unstruc_api
       use m_snappol
       use dfm_error
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess, IDLEN
       use gridoperations
       use unstruc_display, only: idisLink, dis_info_1d_link, nhlFlowLink
       use m_inquire_flowgeom
@@ -93,7 +93,7 @@ contains
       integer, dimension(:), allocatable :: ipoLout ! testing, for snappol
 
       character TEX * 26
-      character(len=IdLen) :: strucid
+      character(len=IDLEN) :: strucid
       integer :: iresult
 
       TEX = ' Edit FLOW            '

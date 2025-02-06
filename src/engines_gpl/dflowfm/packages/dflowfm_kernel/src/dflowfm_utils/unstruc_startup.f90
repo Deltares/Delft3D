@@ -41,7 +41,7 @@ module unstruc_startup
    use unstruc_ini
    use unstruc_files
    use properties
-   use unstruc_messages
+   use messagehandling, only: err_flush
 
    implicit none
 

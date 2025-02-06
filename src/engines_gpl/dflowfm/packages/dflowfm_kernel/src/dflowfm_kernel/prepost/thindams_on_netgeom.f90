@@ -48,7 +48,7 @@ contains
       use m_crspath_on_netgeom, only: crspath_on_netgeom
       use m_thindams, only: thd, nthd, crspath_on_singlelink
       use network_data, only: numl, kn, npl, xpl, ypl, xk, yk, kn
-      use unstruc_messages, only: mess, LEVEL_INFO
+      use messagehandling, only: LEVEL_INFO, mess
       use m_alloc, only: realloc
       use kdtree2Factory, only: treeglob
       use m_wall_clock_time, only: wall_clock_time

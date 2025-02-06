@@ -67,14 +67,14 @@ contains
       use m_partitioninfo
       use m_sethu
       use fm_external_forcings, only: calculate_wind_stresses, set_external_forcings_boundaries
-      use m_wind, only: update_wind_stress_each_time_step
+      use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
       use m_fm_icecover, only: update_icecover
       implicit none
 
       integer, intent(in) :: jazws0
       logical, intent(in) :: set_hu !< Flag for updating `hu` (.true.) or not (.false.) in subroutine `calculate_hu_au_and_advection_for_dams_weirs` (`sethu`).
       logical, intent(in) :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave`
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
       integer :: ierror
       real(kind=dp), parameter :: MMPHR_TO_MPS = 1d-3 / 3600d0
 

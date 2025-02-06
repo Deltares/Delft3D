@@ -37,6 +37,7 @@ module fm_external_forcings
    use m_setsigmabnds, only: setsigmabnds
    use precision_basics, only: hp, dp
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname
+   use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
    implicit none
 
    private
@@ -99,7 +100,6 @@ contains
 !> print_error_message
    subroutine print_error_message(time_in_seconds)
       use m_ec_message, only: dumpECMessageStack
-      use MessageHandling, only: LEVEL_WARN, mess
       use unstruc_messages, only: callback_msg
 
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when doing this action
@@ -423,7 +423,6 @@ contains
       use timespace ! not on the flow admin.
       use m_sferic
       use m_alloc
-      use unstruc_messages
       use m_ship
       use properties
       use m_transport
@@ -635,7 +634,6 @@ contains
       use timespace, only: NODE_ID, POLY_TIM
       use tree_data_types
       use tree_structures
-      use messageHandling
       use m_flowgeom, only: rrtol
       use fm_external_forcings_data, only: transformcoef
       use system_utils
@@ -833,7 +831,6 @@ contains
       use timespace
       use m_sferic
       use m_alloc
-      use unstruc_messages
       use m_ship
       use properties
       use m_transport
@@ -1262,7 +1259,6 @@ contains
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
       use string_module, only: strcmpi
       use timespace_parameters, only: uniform, bcascii, spaceandtime
-      use unstruc_messages
 
       implicit none
 
@@ -1425,7 +1421,6 @@ contains
       use fm_external_forcings_data
       use m_transport
       use m_sediment, only: stm_included
-      use unstruc_messages
       use m_missing
       use m_find_name, only: find_name
 
@@ -1645,6 +1640,7 @@ contains
       use m_qnerror
       use m_flow_init_structurecontrol, only: flow_init_structurecontrol
       use m_setzminmax, only: setzminmax
+      use m_bnd, only: alloc_bnd, dealloc_bndarr
 
       integer, intent(out) :: iresult
 

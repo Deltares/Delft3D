@@ -50,7 +50,7 @@
       Use ParameterModule
       Use LocationDataModule
       Use OtherData
-      Use ReadLib
+      Use ReadLib_rtc
 
       implicit none
       

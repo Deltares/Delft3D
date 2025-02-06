@@ -267,15 +267,15 @@ contains
    !> Allocates and initializes all "valstruct"(:,:) arrays.
    !! Used for history output and/or restart file output for hydraulic structures.
    subroutine init_structure_hisvalues()
-      use fm_external_forcings_data, only: ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, ndambreaksignals
+      use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, ndambreaksignals
       use m_alloc
       use m_flowtimes, only: ti_rst
       use m_longculverts, only: nlongculverts
       implicit none
 
-      if ((ti_rst > 0 .or. jahispump > 0) .and. network%sts%numpumps > 0) then
+      if ((ti_rst > 0 .or. jahispump > 0) .and. npumpsg > 0) then
          if (allocated(valpump)) deallocate (valpump)
-         allocate (valpump(NUMVALS_PUMP, network%sts%numpumps))
+         allocate (valpump(NUMVALS_PUMP, npumpsg))
          valpump = 0.0_dp
       end if
       if (ti_rst > 0 .or. jahiscgen > 0) then
@@ -950,26 +950,6 @@ contains
 
    end function get_number_of_geom_nodes
 
-!> Gets total number of geometry nodes for a given structure type and total number of the structures.
-!! Geometry nodes can be used in a (multi-) polyline representation of the placement
-!! of structures on flow links.
-   integer function get_total_number_of_geom_nodes(istrtypein, nstru)
-      use m_1d_structures
-      implicit none
-      integer, intent(in) :: istrtypein !< The type of the structure. May differ from the struct%type, for example:
-      !< an orifice should be called with istrtypein = ST_ORIFICE, whereas its struct(istru)%type = ST_GENERAL_ST.
-      integer, intent(in) :: nstru !< Total number of structures of this structure type
-
-      integer :: i, nNodes
-
-      get_total_number_of_geom_nodes = 0
-      do i = 1, nstru
-         nNodes = get_number_of_geom_nodes(istrtypein, i)
-         get_total_number_of_geom_nodes = get_total_number_of_geom_nodes + nNodes
-      end do
-
-   end function get_total_number_of_geom_nodes
-
 !> Get the total number of structures of a certain type
    function get_number_of_structures(struc_type_id) result(number_of_structures)
       use m_GlobalParameters
@@ -1140,72 +1120,6 @@ contains
          end do
       end if
    end subroutine get_geom_coordinates_of_structure
-
-!> Gets geometry coordinates of a generalstructure that was read from an old ext file.
-!! (this is either a generalstructure, gate or weir)
-!! Geometry coordinates are aligned along the structure's polyline orientation,
-!! and can be used in a polyline representation of the placement of structures on flow links.
-   subroutine get_geom_coordinates_of_generalstructure_oldext(i, nNodes, x, y)
-      use m_alloc
-      use fm_external_forcings_data, only: kcgen, L1cgensg, L2cgensg
-      use m_flowgeom, only: lncn
-      use network_data, only: xk, yk
-      implicit none
-      integer, intent(in) :: i !< Structure index for this structure type.
-      integer, intent(in) :: nNodes !< Number of geometry nodes in this structure.
-      real(kind=dp), allocatable, intent(out) :: x(:) !< x-coordinates of the structure (will be reallocated when needed)
-      real(kind=dp), allocatable, intent(out) :: y(:) !< y-coordinates of the structure (will be reallocated when needed)
-
-      integer :: L, L0, k1, k2, k3, k4, k
-      real(kind=dp) :: dtmp
-
-      if (nNodes > 0) then
-         call realloc(x, nNodes)
-         call realloc(y, nNodes)
-
-         L0 = L1cgensg(i)
-         L = abs(kcgen(3, L0))
-         k1 = lncn(1, L)
-         k2 = lncn(2, L)
-         x(1) = xk(k1)
-         x(2) = xk(k2)
-         y(1) = yk(k1)
-         y(2) = yk(k2)
-
-         k = 3
-         do L0 = L1cgensg(i) + 1, L2cgensg(i)
-            L = abs(kcgen(3, L0))
-            k3 = lncn(1, L)
-            k4 = lncn(2, L)
-            if (L0 == 2) then
-               if (k1 == k3 .or. k1 == k4) then
-                  dtmp = x(2)
-                  x(2) = x(1)
-                  x(1) = dtmp
-                  dtmp = y(2)
-                  y(2) = y(1)
-                  y(1) = dtmp
-               end if
-            end if
-            if (k1 == k3) then
-               x(k) = xk(k4)
-               y(k) = yk(k4)
-            else if (k1 == k4) then
-               x(k) = xk(k3)
-               y(k) = yk(k3)
-            else if (k2 == k3) then
-               x(k) = xk(k4)
-               y(k) = yk(k4)
-            else if (k2 == k4) then
-               x(k) = xk(k3)
-               y(k) = yk(k3)
-            end if
-            k1 = k3
-            k2 = k4
-            k = k + 1
-         end do
-      end if
-   end subroutine get_geom_coordinates_of_generalstructure_oldext
 
 !> Fills in the geometry arrays of a structure type for history output
    subroutine fill_geometry_arrays_structure(struc_type_id, nstru, nNodesStru, nodeCountStru, geomXStru, geomYStru)

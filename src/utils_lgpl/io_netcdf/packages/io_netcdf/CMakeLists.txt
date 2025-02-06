@@ -77,7 +77,10 @@ set_source_files_properties(${fortran_version_file}
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
 if ( ${configuration_type} STREQUAL "DFLOWFM" OR
      ${configuration_type} STREQUAL "DELFT3D4" OR
-     ${configuration_type} STREQUAL "ALL" OR
+     ${configuration_type} STREQUAL "FM-SUITE" OR
+     ${configuration_type} STREQUAL "D3D4-SUITE" OR
+     ${configuration_type} STREQUAL "ALL-TESTBENCH" OR
+     ${configuration_type} STREQUAL "FM-TESTBENCH" OR
      ${configuration_type} STREQUAL "TOOLS" )
     set(library_name io_netcdf_dll)
     set(library_renamed libio_netcdf.so)

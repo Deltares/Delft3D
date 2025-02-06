@@ -399,19 +399,5 @@ contains
 #endif
    end subroutine
 
-   subroutine DeInitializeOpenGl
-#ifdef HAVE_OPENGL
-      use IFWINA
-      implicit none
-      integer(1) :: res
-
-      res = DeleteObject(hbitmap)
-      res = fwglMakeCurrent(NULL, NULL)
-      res = fwglDeleteContext(HRC)
-      res = DeleteDC(memDC)
-      res = ReleaseDC(HWND, HDC)
-#endif
-   end subroutine
-
 end module unstruc_opengl
 

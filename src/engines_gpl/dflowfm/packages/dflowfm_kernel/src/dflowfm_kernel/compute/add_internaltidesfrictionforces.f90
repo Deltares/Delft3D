@@ -47,7 +47,7 @@ contains
       use m_flowgeom
       use m_flow
       use m_flowtimes
-      use unstruc_messages
+      use messagehandling, only: LEVEL_ERROR, mess
       use m_partitioninfo
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny

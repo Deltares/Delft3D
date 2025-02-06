@@ -55,7 +55,6 @@ contains
       use m_alloc
       use m_missing, only: dmiss
       use unstruc_netcdf, only: crs
-      use unstruc_messages
 #ifdef HAVE_PROJ
       use coordinate_reference_system, only: transform_coordinates, WGS84_PROJ_STRING
       use proj6

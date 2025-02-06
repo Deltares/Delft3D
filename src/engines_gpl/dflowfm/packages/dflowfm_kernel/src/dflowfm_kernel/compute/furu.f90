@@ -60,6 +60,7 @@ contains
       use fm_manhole_losses, only: calculate_manhole_losses
       use m_get_Lbot_Ltop
       use m_ispumpon
+      use mathconsts, only: ee
 
       implicit none
 

@@ -12,6 +12,7 @@ from src.suite.test_set_runner import TestSetRunner
 from src.utils.common import get_default_logging_folder_path, log_header, log_separator, log_table
 from src.utils.comparers.comparer_factory import ComparerFactory
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.i_comparer import IComparer
 from src.utils.logging.composite_logger import CompositeLogger
 from src.utils.logging.file_logger import FileLogger
@@ -99,8 +100,8 @@ class ComparisonRunner(TestSetRunner):
             table["Parameter"].append(str(parameter.name))
             table["Location"].append(str(parameter.location))
 
-            if compare_result.result != "ERROR":
-                table["Result"].append(compare_result.result)
+            if compare_result.result != EndResult.ERROR:
+                table["Result"].append(compare_result.result.value)
                 table["MaxAbsDiff"].append(compare_result.max_abs_diff)
                 table["MaxRelDiff"].append(compare_result.max_rel_diff)
             else:
@@ -110,7 +111,7 @@ class ComparisonRunner(TestSetRunner):
                 error = True
                 error_variables.append(str(parameter.name))
 
-            if compare_result.result == "NOK":
+            if compare_result.result == EndResult.NOK:
                 failed = True
 
         log_table(table, composite_logger)
@@ -151,10 +152,10 @@ class ComparisonRunner(TestSetRunner):
         result = ComparisonResult()
 
         if file_check.presence == PresenceType.ABSENT:
-            result.result = "NOK" if file_exists else "OK"
+            result.result = EndResult.NOK if file_exists else EndResult.OK
 
         if file_check.presence == PresenceType.PRESENT:
-            result.result = "OK" if file_exists else "NOK"
+            result.result = EndResult.OK if file_exists else EndResult.NOK
 
         return [(test_case_config.name, file_check, parameter, result)]
 
@@ -233,11 +234,9 @@ class ComparisonRunner(TestSetRunner):
             # account that a lower maxAbsDiff for a NOK is worse than a higher
             # maxAbsDiff for an OK.
             # That is: the result always has priority over the maxAbsDiff.
-            # We make use here of the fact that 'ERROR' < 'NOK' < 'OK',
-            #  lexicographically.
 
             maxAbsDiff_worst = 0.0
-            result_worst = "OK"
+            result_worst = EndResult.OK
             i_worst = -1
             for i, (_, _, _, comparison_result) in enumerate(tc_results):
                 if comparison_result.result < result_worst or (
@@ -255,20 +254,14 @@ class ComparisonRunner(TestSetRunner):
             _, w_filename, w_parameter, w_cr = worst_result
 
             table["Test case name"].append(test_case_config.name)
-            table["Result"].append(w_cr.result)
+            table["Result"].append(w_cr.result.value)
             table["File name"].append(w_filename.name)
             table["Parameter name"].append(w_parameter.name)
-
-            is_ignored = w_cr.result == "IGNORED"
-            table["Runtime"].append(test_case_config.run_time if not is_ignored else "---")
-            table["Ratio"].append(
-                test_case_config.run_time / test_case_config.ref_run_time if not is_ignored else "---"
-            )
-            table["MaxAbsDiff"].append(w_cr.max_abs_diff if not is_ignored else "---")
-            table["MaxRelDiff"].append(w_cr.max_rel_diff if not is_ignored else "---")
-            table["Information"].append(
-                "at coordinates" + str(w_cr.max_abs_diff_coordinates) if not is_ignored else "---"
-            )
+            table["Runtime"].append(test_case_config.run_time)
+            table["Ratio"].append(test_case_config.run_time / test_case_config.ref_run_time)
+            table["MaxAbsDiff"].append(w_cr.max_abs_diff)
+            table["MaxRelDiff"].append(w_cr.max_rel_diff)
+            table["Information"].append("at coordinates" + str(w_cr.max_abs_diff_coordinates))
 
         log_table(table, logger)
         log_separator(logger)
@@ -279,7 +272,7 @@ class ComparisonRunner(TestSetRunner):
         comparison_result.max_rel_diff = 0.0
         comparison_result.passed = False
         comparison_result.error = True
-        comparison_result.result = "ERROR"
+        comparison_result.result = EndResult.ERROR
         result = TestCaseResult(test_case_config, run_data)
         result.results.append((test_case_config.name, FileCheck(), Parameter(), comparison_result))
 

@@ -46,7 +46,7 @@ contains
       use m_flowgeom, only: Lnx, lne2ln
       use m_missing
       use kdtree2Factory
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use dfm_error
       use m_inquire_flowgeom
       use m_alloc

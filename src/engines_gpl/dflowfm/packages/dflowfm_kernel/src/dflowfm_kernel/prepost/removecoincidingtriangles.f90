@@ -44,7 +44,6 @@ contains
       use precision, only: dp
       use m_netw ! 2 REMOVES SMALL TRIANGLES NEXT TO
       use M_FLOWGEOM
-      use unstruc_messages
       use m_sferic
       use geometry_module, only: getdxdy
       use gridoperations

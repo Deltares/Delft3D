@@ -2,7 +2,7 @@
 
 There are currently three dockerfiles in this directory:
 1. `buildtools.Dockerfile`
-2. `dependencies.Dockerfile`
+2. `third-party-libs.Dockerfile`
 3. `dimrset.Dockerfile`
 
 To run these build instructions and build the docker images, you should
@@ -56,10 +56,10 @@ docker push containers.deltares.nl/delft3d-dev/delft3d-buildtools:$TAG
 - [Harbor](https://containers.deltares.nl/harbor/projects/21/repositories/delft3d-buildtools/artifacts-tab)
 
 
-## Dependencies
-The `dependencies.Dockerfile` contains build instructions to build the `dependencies` container image.
+## Third-party-libs
+The `third-party-libs.Dockerfile` contains build instructions to build the `third-party-libs` container image.
 The image uses the `buildtools` image as a base image. You can control which version of the intel compilers
-are used to compile all of the dependencies using build arguments.
+are used to compile all of the third-party-libs using build arguments.
 
 The software in the delft3d repository uses lots of third party libraries. The source code of some libraries are
 'vendored' in `src/third_party_open` (There are also compiled binaries and libraries for Windows there).
@@ -76,11 +76,11 @@ so they need to be installed in the environment. These include:
 
 Note: Some of these libraries require other third party libraries themselves. So this list is not complete.
 
-The `dependencies` container image is built on the `buildtools` image. So it includes everything from
+The `third-party-libs` container image is built on the `buildtools` image. So it includes everything from
 `buildtools`. In addition it should include all the third party libraries required to start building the
 software in this repository.
 
-The build instructions in the `dependencies.Dockerfile` fetch the source code, configure, build and 
+The build instructions in the `third-party-libs.Dockerfile` fetch the source code, configure, build and 
 install the third party libraries one by one. Each library has its own configuration options, but most of
 the time the build steps consists of setting a few environment variables so the right compiler is used, and:
 ```bash
@@ -112,7 +112,7 @@ involving third party libraries. In addition, aggressive compiler optimizations 
 ### Build
 From the delft3d repository root:
 ```bash
-docker build . -f ci/dockerfiles/linux/dependencies.Dockerfile -t localhost/dependencies:$TAG \
+docker build . -f ci/dockerfiles/linux/third-party-libs.Dockerfile -t localhost/third-party-libs:$TAG \
     --build-arg INTEL_ONEAPI_VERSION=2024 \
     --build-arg INTEL_FORTRAN_COMPILER=ifort \
     --build-arg DEBUG=0
@@ -121,21 +121,21 @@ Note: Passing the build arguments is not necessary if the default value is requi
 
 ### Push
 ```bash
-docker tag localhost/dependencies:$TAG containers.deltares.nl/delft3d-dev/delft3d-dependencies:$TAG
+docker tag localhost/third-party-libs:$TAG containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:$TAG
 docker login --username=$USERNAME --password=$TOKEN containers.deltares.nl
-docker push containers.deltares.nl/delft3d-dev/delft3d-dependencies:$TAG
+docker push containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:$TAG
 ```
 
 ### Links
 
-- [Harbor](https://containers.deltares.nl/harbor/projects/21/repositories/delft3d-dependencies/artifacts-tab)
+- [Harbor](https://containers.deltares.nl/harbor/projects/21/repositories/delft3d-third-party-libs/artifacts-tab)
 
 ## Dimrset
 The `dimrset.Dockerfile` contains build instructions to build the `dimrset` container image. 
 It uses a 'base' minimal almalinux 8 image copied from [dockerhub](https://hub.docker.com/_/almalinux) and 
 pushed to our own [Harbor registry](https://containers.deltares.nl/harbor/projects/21/repositories/almalinux/artifacts-tab).
 
-The build instructions in this file use the `dependencies` build image to compile the delft3d software. The resulting
+The build instructions in this file use the `third-party-libs` build image to compile the delft3d software. The resulting
 binaries and libraries are installed to an 'install' directory, along with all of the third party libraries. The resulting
 install directory should contain everything needed to run the delft3d software. Therefore, we can copy the install
 directory to the minimal almalinux 8 image, and the resulting binaries should still work.
@@ -150,8 +150,8 @@ The dockerfile has three build argument:
 - `INTEL_FORTRAN_COMPILER` (default value: `ifort`)
 - `DEBUG` (default value: `0`)
 
-The build arguments are the same as the ones used in the `dependencies` image. The build arguments are used to select 
-a suitable version of the `dependencies` image (One that contains the right version of the compilers and libraries).
+The build arguments are the same as the ones used in the `third-party-libs` image. The build arguments are used to select 
+a suitable version of the `third-party-libs` image (One that contains the right version of the compilers and libraries).
 
 ### Build
 From the delft3d repository root:

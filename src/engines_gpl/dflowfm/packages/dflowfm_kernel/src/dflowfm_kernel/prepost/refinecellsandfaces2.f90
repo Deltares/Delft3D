@@ -55,13 +55,13 @@ contains
       use m_write_illegal_cells_to_pol, only: write_illegal_cells_to_pol
       use m_confrm
       use m_change_samples_refine_param
-      use m_netw
+      use network_data, only: nump, numl, netcell, kc, netstat, netstat_cells_dirty, keepcircumcenters, numk
       use m_samples
       use m_samples_refine
       use m_ec_interpolationsettings
       use m_missing
       use m_alloc
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use m_gui
       use kdtree2Factory
       use m_sferic
@@ -578,7 +578,7 @@ contains
          use m_ec_basic_interpolation, only: averaging2, TerrorInfo, triinterp2
          use m_sferic, only: jsferic, jasfer3D
          use geometry_module, only: dbdistance, comp_masscenter
-
+         use network_data, only: tooclose
          implicit none
 
          integer, intent(in) :: ic !< polygon nr
@@ -962,6 +962,7 @@ contains
          use geometry_module, only: getcircumcenter
          use m_find_common_node
          use m_new_link
+         use network_data, only: kn3typ, kn, xk, yk, lnn, dcenterinside, circumcenter_method, xzw, yzw
 
          implicit none
 
@@ -1175,7 +1176,7 @@ contains
                end if
 
 !           compute circumcenter without hanging nodes
-               call getcircumcenter(Np, xp, yp, LnnL, xz, yz, jsferic, jasfer3D, jglobe, jins, dmiss, dxymis, dcenterinside)
+               call getcircumcenter(Np, xp, yp, LnnL, xz, yz, jsferic, jasfer3D, jglobe, jins, dmiss, dxymis, dcenterinside, circumcenter_method)
 
                if (jsferic == 1) then
                   call comp_middle_latitude(ymin, ymax, ynew, ierr)
@@ -1260,6 +1261,7 @@ contains
          ! we can't use m_netw because it overwrites cellmask, redefine variable before using m_netw
          !use m_netw
          use m_plotdots
+         use network_data, only: xzw, yzw, kn, xk, yk
 
          implicit none
 

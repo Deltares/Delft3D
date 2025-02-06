@@ -21,8 +21,6 @@
                     <skipline>Dimr</skipline>
                 </file>
                 -->
-                <file name="rr/3b_bal.out" type="NUMBERTEXT">
-                </file>
                 <file name="rr/3b_gener.out" type="NUMBERTEXT">
                     <skipline>Run datum</skipline>
                 </file>

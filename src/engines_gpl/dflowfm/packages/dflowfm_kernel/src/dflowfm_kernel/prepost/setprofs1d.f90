@@ -51,7 +51,6 @@ contains
       use m_netw
       use m_profiles
       use m_missing
-      use unstruc_messages
       use m_partitioninfo
       use stdlib_sorting, only: sort_index
       use geometry_module, only: dbdistance

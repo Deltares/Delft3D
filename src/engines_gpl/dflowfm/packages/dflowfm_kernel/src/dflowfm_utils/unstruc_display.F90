@@ -68,7 +68,6 @@ contains
 
    subroutine load_displaysettings(filename)
       use properties
-      use unstruc_messages
       use dflowfm_version_module
       use m_missing
       use M_RAAITEK
@@ -85,6 +84,7 @@ contains
       use m_vfac
       use m_drawthis
       use m_depmax2
+      use messagehandling, only: LEVEL_DEBUG, LEVEL_ERROR, mess
 
       character(len=*), intent(in) :: filename
 
@@ -278,7 +278,6 @@ contains
 
    subroutine save_displaysettings(filename)
       use properties
-      use unstruc_messages
       use dflowfm_version_module
       use m_missing
       use M_RAAITEK
@@ -1493,6 +1492,7 @@ contains
       use m_gtext, only: gtext
       use m_filez, only: doclose, newfil
       use m_upotukinueaa, only: upotukinueaa
+      use m_wind, only: jawind, windxav, windyav
 
       real(kind=dp) :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa
       character tex * 60

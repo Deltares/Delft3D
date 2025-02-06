@@ -55,6 +55,7 @@ module m_flow_geominit
    use m_makethindamadmin, only: makethindamadmin
    use m_iadvecini, only: iadvecini
    use m_getdxofconnectedkcu1, only: getdxofconnectedkcu1
+    use m_wind, only: jawindpartialdry
 
    implicit none
 
@@ -98,7 +99,6 @@ contains
       use m_ship
       use kdtree2Factory
       use m_gui
-      use unstruc_messages
       use string_module
       use m_plotdots
       use geometry_module, only: dbdistance, normalin, normalout, half, duitpl, dlinedis
@@ -112,7 +112,6 @@ contains
       use m_flowtimes, only: handle_extra
       use Timers
       use m_structures
-      use unstruc_messages
       use m_find_flownode, only: find_nearest_flownodes_kdtree
       use m_turbulence, only: ln0
       use m_drawthis

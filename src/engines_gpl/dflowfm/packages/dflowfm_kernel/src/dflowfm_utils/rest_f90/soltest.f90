@@ -48,7 +48,6 @@ contains
       use m_update_matrix, only: update_matrix
       use m_partitioninfo
       use m_timer
-      use unstruc_messages
       use m_flowgeom
       use network_data, only: xzw
       use m_flowparameters

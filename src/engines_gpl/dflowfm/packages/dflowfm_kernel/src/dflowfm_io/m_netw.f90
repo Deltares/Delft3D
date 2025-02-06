@@ -40,7 +40,7 @@ contains
       use precision, only: dp
       use m_closeworld, only: closeworld
       use unstruc_netcdf, only: unc_read_net, unc_write_net, md5_net_file
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, mess
       use m_missing
       use gridoperations
       use m_network, only: admin_network

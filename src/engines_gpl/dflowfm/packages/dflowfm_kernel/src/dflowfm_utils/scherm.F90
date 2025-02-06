@@ -47,7 +47,8 @@ contains
       use m_grid
       use m_arcinfo
       use m_samples
-      use unstruc_messages
+      use messagehandling, only: msgbuf, msg_flush
+
       use m_helpnow
 
       integer :: i

@@ -46,7 +46,7 @@ contains
       use precision, only: dp
       use m_netw
       use kdtree2Factory
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use m_sferic
       use m_missing
       use m_polygon, only: NPL, xpl, ypl, zpl

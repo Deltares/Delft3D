@@ -97,7 +97,6 @@ module swan_input
    use wave_data
    use handles
    use table_handles
-   use rdsec_module
    !
    integer, parameter :: SWAN_MODE_EXE = 0
    integer, parameter :: SWAN_MODE_LIB = 1
@@ -427,7 +426,7 @@ contains
 !
 !
 !==============================================================================
-   subroutine read_swan(filnam, sr, wavedata)
+   subroutine read_dwaves_mdw(filnam, sr, wavedata)
       implicit none
       !
       character(*) :: filnam
@@ -475,7 +474,7 @@ contains
 999   continue
       write (*, '(a)') '*** ERROR: While reading file ''waves_alone''.'
       call wavestop(1, '*** ERROR: While reading file ''waves_alone''.')
-   end subroutine read_swan
+   end subroutine read_dwaves_mdw
 !
 !
 !==============================================================================

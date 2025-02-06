@@ -965,8 +965,18 @@ contains
       logical :: is1dugridnetwork
       integer :: lengthofnetworkname
       integer :: nsigma
-      double precision :: depth_c
       character(len=ug_idsLen) :: waterlevelname_, bldepthname_
+
+      if (present(waterlevelname)) then
+         waterlevelname_ = waterlevelname
+      else
+         waterlevelname_ = 's1' !default value
+      end if
+      if (present(bldepthname)) then
+         bldepthname_ = bldepthname
+      else
+         bldepthname_ = 'bldepth' !default value
+      end if
 
       lengthofnetworkname = 0
       offset = 0
@@ -1214,79 +1224,10 @@ contains
 
       ! Layers
       if (add_layer_var) then
-
-         if (present(waterlevelname)) then
-            waterlevelname_ = waterlevelname
-         else
-            waterlevelname_ = 's1' !default value
-         end if
-         if (present(bldepthname)) then
-            bldepthname_ = bldepthname
-         else
-            bldepthname_ = 'bldepth' !default value
-         end if
-
-         ! Write mesh layer distribution (mesh-global, not per face)
-!      select case(layerType)
-         if (layerType == LAYERTYPE_OCEANSIGMA .or. layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
-            ierr = nf90_def_var(ncid, prefix//'_layer_sigma', nf90_double, meshids%dimids(mdim_layer), meshids%varids(mid_layersigma))
-            ierr = nf90_def_var(ncid, prefix//'_interface_sigma', nf90_double, meshids%dimids(mdim_interface), meshids%varids(mid_interfacesigma))
-            ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma), 'standard_name', 'ocean_sigma_coordinate')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'standard_name', 'ocean_sigma_coordinate')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma), 'long_name', 'Sigma coordinate of layer centres')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'long_name', 'Sigma coordinate of layer interfaces')
-            ! See http://cfconventions.org/cf-conventions/cf-conventions.html#dimensionless-vertical-coordinate
-            ! and http://cfconventions.org/cf-conventions/cf-conventions.html#_ocean_sigma_coordinate for info about formula_terms attribute for sigma coordinates.
-
-            if (layerType == LAYERTYPE_OCEANSIGMA) then
-               ! Only for pure sigma coordinates: these vars contain the formula terms, for ocean_sigma_z, see further below.
-
-               ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma), 'formula_terms', 'sigma: '//prefix//'_layer_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_waterdepth') ! TODO: AvD: do we define this only on faces?
-               ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'formula_terms', 'sigma: '//prefix//'_interface_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_waterdepth') ! TODO: AvD: do we define this only on faces?
-               ! TODO: UNST-5711, Wrong waterdepth above to be replaced by correct bldepth variable, but then also taking time dependency of bldepth into account.
-               !ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma),     'formula_terms', 'sigma: '//prefix//'_layer_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'/trim(bldepthname_)) ! TODO: AvD: do we define this only on faces?
-               !ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'formula_terms', 'sigma: '//prefix//'_interface_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'/trim(bldepthname_)) ! TODO: AvD: do we define this only on faces?
-               ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma), 'computed_standard_name', 'altitude')
-               ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'computed_standard_name', 'altitude')
-            end if
-         end if
-         if (layertype == LAYERTYPE_Z .or. layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
-            ierr = nf90_def_var(ncid, prefix//'_layer_z', nf90_double, meshids%dimids(mdim_layer), meshids%varids(mid_layerz))
-            ierr = nf90_def_var(ncid, prefix//'_interface_z', nf90_double, meshids%dimids(mdim_interface), meshids%varids(mid_interfacez))
-            ierr = nf90_put_att(ncid, meshids%varids(mid_layerz), 'standard_name', 'altitude')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacez), 'standard_name', 'altitude')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_layerz), 'long_name', 'Vertical coordinate of layer centres')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacez), 'long_name', 'Vertical coordinate of layer interfaces')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_layerz), 'units', 'm')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacez), 'units', 'm')
-         end if
-         if (layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
-            ! See http://cfconventions.org/cf-conventions/cf-conventions.html#_ocean_sigma_over_z_coordinate
-
-            ierr = nf90_def_var(ncid, prefix//'_sigmazdepth', nf90_double, meshids%varids(mid_sigmazdepth))
-            ierr = nf90_put_att(ncid, meshids%varids(mid_sigmazdepth), 'standard_name', "Transition depth from sigma above to z below")
-            ierr = nf90_put_att(ncid, meshids%varids(mid_sigmazdepth), 'units', "m")
-            ierr = nf90_put_att(ncid, meshids%varids(mid_sigmazdepth), 'positive', "down")
-
-            ierr = nf90_def_var(ncid, prefix//'_layer_sigma_z', nf90_double, meshids%dimids(mdim_layer), meshids%varids(mid_layerzs))
-            ierr = nf90_def_var(ncid, prefix//'_interface_sigma_z', nf90_double, meshids%dimids(mdim_interface), meshids%varids(mid_interfacezs))
-            ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs), 'standard_name', 'ocean_sigma_z_coordinate')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'standard_name', 'ocean_sigma_z_coordinate')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs), 'long_name', 'Sigma/Z coordinate of layer centres')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'long_name', 'Sigma/Z coordinate of layer interfaces')
-
-            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'formula_terms', 'sigma: '//prefix//'_interface_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'//trim(bldepthname_)//' depth_c: '//prefix//'_sigmazdepth zlev: '//prefix//'_interface_z ') ! TODO: AvD: do we define this only on faces?
-            ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs), 'formula_terms', 'sigma: '//prefix//'_layer_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'//trim(bldepthname_)//' depth_c: '//prefix//'_sigmazdepth zlev: '//prefix//'_layer_z ') ! TODO: AvD: do we define this only on faces?
-            ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs), 'units', 'm')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'units', 'm')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs), 'computed_standard_name', 'altitude')
-            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'computed_standard_name', 'altitude')
-
-         end if
-         if (layertype /= LAYERTYPE_OCEAN_SIGMA_Z .and. layertype /= LAYERTYPE_Z .and. layerType /= LAYERTYPE_OCEANSIGMA) then
-            ierr = UG_INVALID_LAYERS
-            goto 888
-         end if
+          call ug_define_mesh_layer_arrays(ncid, prefix, meshids, layertype, waterlevelname_, bldepthname_, ierr)
+          if (ierr /= UG_NOERR) then
+              goto 888
+          endif
       end if
 
 ! TODO: AvD: add the following (resolution may be difficult)
@@ -1533,54 +1474,7 @@ contains
 
       ! Layers
       if (add_layer_var) then
-
-         if (associated(interface_zs) .and. layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
-            depth_c = -interface_zs(num_layers + 1 - nsigma) ! z pos -> depth pos down
-         end if
-
-         if (associated(interface_zs) .and. (meshids%varids(mid_sigmazdepth) /= -1) .and. (nsigma > 0)) then
-            ierr = nf90_put_var(ncid, meshids%varids(mid_sigmazdepth), depth_c)
-         end if
-
-         ! Write mesh layer distribution (mesh-global, not per face)
-         ! "[zs] variable should contain sigma(k)*depth_c for the layers where sigma is defined and zlev(k) for the other layers"
-         ! "zlev(k) is defined for the nlayer - nsigma deeper layers"
-         ! "The parameter sigma(k) is defined only for the nsigma layers nearest the ocean surface"
-
-         if (num_layers > 0) then
-            if (associated(layer_zs)) then
-               if (meshids%varids(mid_layerzs) > 0) then
-                  ierr = nf90_put_var(ncid, meshids%varids(mid_layerzs), layer_zs(1:num_layers - nsigma), start=(/1/))
-                  ierr = nf90_put_var(ncid, meshids%varids(mid_layerzs), layer_zs(num_layers - nsigma + 1:num_layers) * depth_c, start=(/num_layers - nsigma + 1/))
-               end if
-               if (meshids%varids(mid_layerz) > 0) then
-                  ierr = nf90_put_var(ncid, meshids%varids(mid_layerz), layer_zs(1:num_layers - nsigma))
-               end if
-               if (meshids%varids(mid_layersigma) > 0) then
-                  ierr = nf90_put_var(ncid, meshids%varids(mid_layersigma), layer_zs(num_layers - nsigma + 1:num_layers), start=(/num_layers - nsigma + 1/))
-               end if
-            end if ! layer_zs
-
-            if (associated(interface_zs)) then
-               if (meshids%varids(mid_interfacezs) > 0) then
-                  ! Combined z-sigma variable
-                  ierr = nf90_put_var(ncid, meshids%varids(mid_interfacezs), interface_zs(1:num_layers - nsigma + 1), start=(/1/))
-                  ierr = nf90_put_var(ncid, meshids%varids(mid_interfacezs), interface_zs(num_layers - nsigma + 2:num_layers + 1) * depth_c, start=(/num_layers - nsigma + 2/))
-               end if
-               if (meshids%varids(mid_interfacez) > 0) then
-                  ! Z-layers (also partly, when in combined ocean_sigma_z)
-                  ierr = nf90_put_var(ncid, meshids%varids(mid_interfacez), interface_zs(1:num_layers - nsigma + 1))
-               end if
-               if (meshids%varids(mid_interfacesigma) > 0) then
-                  if (num_layers == nsigma) then ! only sigma-layers
-                     ierr = nf90_put_var(ncid, meshids%varids(mid_interfacesigma), interface_zs(1:num_layers + 1), start=(/1/))
-                  else ! sigma-layers (also partly, when in combined ocean_sigma_z)
-                     ierr = nf90_put_var(ncid, meshids%varids(mid_interfacesigma), interface_zs(num_layers - nsigma + 2:num_layers + 1), start=(/num_layers - nsigma + 2/))
-                  end if
-               end if
-            end if ! interface_zs
-         end if ! num_layers
-
+         call ug_write_mesh_layer_arrays(ncid, meshids, ierr, num_layers, layertype, layer_zs, interface_zs, nsigma)
       end if
 
       ! Check for any remaining native NetCDF errors
@@ -1600,6 +1494,138 @@ contains
 
    end function ug_write_mesh_arrays
 
+   subroutine ug_define_mesh_layer_arrays(ncid, prefix, meshids, layertype, waterlevelname_, bldepthname_, ierr)
+      character(len=ug_idsLen), intent(in) :: bldepthname_ !< Bed level depth variable name for sigma and sigma-z coordinates, should be without the mesh prefix, for example: "bldepth".
+      integer, intent(inout) :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer, optional, intent(in) :: layertype !< Type of vertical layering in the mesh. One of LAYERTYPE_* parameters. Optional, only used if num_layers >= 1.
+      type(t_ug_mesh), intent(inout) :: meshids !< UGRID mesh variable.
+      integer, intent(in) :: ncid !< Already opened NetCDF id to put global attributes into.
+      character(len=*), intent(in) :: prefix !< Domain specific prefix for all dimensions and variables.
+      character(len=ug_idsLen), intent(in) :: waterlevelname_ !< Water level variable name for sigma and sigma-z coordinates, should be without the mesh prefix, for example: "s1".
+
+      ! Write mesh layer distribution (mesh-global, not per face)
+      if (layerType == LAYERTYPE_OCEANSIGMA .or. layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
+         ierr = nf90_def_var(ncid, prefix//'_layer_sigma', nf90_double, meshids%dimids(mdim_layer), meshids%varids(mid_layersigma))
+         ierr = nf90_def_var(ncid, prefix//'_interface_sigma', nf90_double, meshids%dimids(mdim_interface), meshids%varids(mid_interfacesigma))
+         ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma), 'standard_name', 'ocean_sigma_coordinate')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'standard_name', 'ocean_sigma_coordinate')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma), 'long_name', 'Sigma coordinate of layer centres')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'long_name', 'Sigma coordinate of layer interfaces')
+         ! See http://cfconventions.org/cf-conventions/cf-conventions.html#dimensionless-vertical-coordinate
+         ! and http://cfconventions.org/cf-conventions/cf-conventions.html#_ocean_sigma_coordinate for info about formula_terms attribute for sigma coordinates.
+
+         if (layerType == LAYERTYPE_OCEANSIGMA) then
+            ! Only for pure sigma coordinates: these vars contain the formula terms, for ocean_sigma_z, see further below.
+
+            ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma), 'formula_terms', 'sigma: '//prefix//'_layer_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_waterdepth') ! TODO: AvD: do we define this only on faces?
+            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'formula_terms', 'sigma: '//prefix//'_interface_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_waterdepth') ! TODO: AvD: do we define this only on faces?
+            ! TODO: UNST-5711, Wrong waterdepth above to be replaced by correct bldepth variable, but then also taking time dependency of bldepth into account.
+            !ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma),     'formula_terms', 'sigma: '//prefix//'_layer_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'/trim(bldepthname_)) ! TODO: AvD: do we define this only on faces?
+            !ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'formula_terms', 'sigma: '//prefix//'_interface_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'/trim(bldepthname_)) ! TODO: AvD: do we define this only on faces?
+            ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma), 'computed_standard_name', 'altitude')
+            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'computed_standard_name', 'altitude')
+         end if
+      end if
+      if (layertype == LAYERTYPE_Z .or. layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
+         ierr = nf90_def_var(ncid, prefix//'_layer_z', nf90_double, meshids%dimids(mdim_layer), meshids%varids(mid_layerz))
+         ierr = nf90_def_var(ncid, prefix//'_interface_z', nf90_double, meshids%dimids(mdim_interface), meshids%varids(mid_interfacez))
+         ierr = nf90_put_att(ncid, meshids%varids(mid_layerz), 'standard_name', 'altitude')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacez), 'standard_name', 'altitude')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_layerz), 'long_name', 'Vertical coordinate of layer centres')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacez), 'long_name', 'Vertical coordinate of layer interfaces')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_layerz), 'units', 'm')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacez), 'units', 'm')
+      end if
+      if (layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
+         ! See http://cfconventions.org/cf-conventions/cf-conventions.html#_ocean_sigma_over_z_coordinate
+
+         ierr = nf90_def_var(ncid, prefix//'_sigmazdepth', nf90_double, meshids%varids(mid_sigmazdepth))
+         ierr = nf90_put_att(ncid, meshids%varids(mid_sigmazdepth), 'standard_name', "Transition depth from sigma above to z below")
+         ierr = nf90_put_att(ncid, meshids%varids(mid_sigmazdepth), 'units', "m")
+         ierr = nf90_put_att(ncid, meshids%varids(mid_sigmazdepth), 'positive', "down")
+
+         ierr = nf90_def_var(ncid, prefix//'_layer_sigma_z', nf90_double, meshids%dimids(mdim_layer), meshids%varids(mid_layerzs))
+         ierr = nf90_def_var(ncid, prefix//'_interface_sigma_z', nf90_double, meshids%dimids(mdim_interface), meshids%varids(mid_interfacezs))
+         ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs), 'standard_name', 'ocean_sigma_z_coordinate')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'standard_name', 'ocean_sigma_z_coordinate')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs), 'long_name', 'Sigma/Z coordinate of layer centres')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'long_name', 'Sigma/Z coordinate of layer interfaces')
+
+         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'formula_terms', 'sigma: '//prefix//'_interface_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'//trim(bldepthname_)//' depth_c: '//prefix//'_sigmazdepth zlev: '//prefix//'_interface_z ') ! TODO: AvD: do we define this only on faces?
+         ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs), 'formula_terms', 'sigma: '//prefix//'_layer_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'//trim(bldepthname_)//' depth_c: '//prefix//'_sigmazdepth zlev: '//prefix//'_layer_z ') ! TODO: AvD: do we define this only on faces?
+         ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs), 'units', 'm')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'units', 'm')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs), 'computed_standard_name', 'altitude')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'computed_standard_name', 'altitude')
+
+      end if
+      if (layertype /= LAYERTYPE_OCEAN_SIGMA_Z .and. layertype /= LAYERTYPE_Z .and. layerType /= LAYERTYPE_OCEANSIGMA) then
+         ierr = UG_INVALID_LAYERS
+      else
+         ierr = UG_NOERR
+      end if
+   end subroutine ug_define_mesh_layer_arrays
+   
+   subroutine ug_write_mesh_layer_arrays(ncid, meshids, ierr, num_layers, layertype, layer_zs, interface_zs, nsigma)
+      integer, intent(inout) :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      real(kind=dp), optional, pointer, intent(in) :: interface_zs(:) !< Vertical coordinates of the mesh layers' interface (z or sigma or z-sigma combined). Optional, only used if num_layers >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
+      integer, optional, intent(in) :: layertype !< Type of vertical layering in the mesh. One of LAYERTYPE_* parameters. Optional, only used if num_layers >= 1.
+      real(kind=dp), optional, pointer, intent(in) :: layer_zs(:)     !< Vertical coordinates of the mesh layers' center (z or sigma or z-sigma combined). Optional, only used if num_layers >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
+      type(t_ug_mesh), intent(inout) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: ncid              !< Already opened NetCDF id to put global attributes into.
+      integer, optional, intent(in) :: nsigma !< Number of sigma layers
+      integer, optional, intent(in) :: num_layers !< Number of vertical layers in the mesh. Optional.
+
+      double precision :: depth_c
+   
+      if (associated(interface_zs) .and. layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
+         depth_c = -interface_zs(num_layers + 1 - nsigma) ! z pos -> depth pos down
+      end if
+
+      if (associated(interface_zs) .and. (meshids%varids(mid_sigmazdepth) /= -1) .and. (nsigma > 0)) then
+         ierr = nf90_put_var(ncid, meshids%varids(mid_sigmazdepth), depth_c)
+      end if
+
+      ! Write mesh layer distribution (mesh-global, not per face)
+      ! "[zs] variable should contain sigma(k)*depth_c for the layers where sigma is defined and zlev(k) for the other layers"
+      ! "zlev(k) is defined for the nlayer - nsigma deeper layers"
+      ! "The parameter sigma(k) is defined only for the nsigma layers nearest the ocean surface"
+
+      if (num_layers > 0) then
+         if (associated(layer_zs)) then
+            if (meshids%varids(mid_layerzs) > 0) then
+               ierr = nf90_put_var(ncid, meshids%varids(mid_layerzs), layer_zs(1:num_layers - nsigma), start=(/1/))
+               ierr = nf90_put_var(ncid, meshids%varids(mid_layerzs), layer_zs(num_layers - nsigma + 1:num_layers) * depth_c, start=(/num_layers - nsigma + 1/))
+            end if
+            if (meshids%varids(mid_layerz) > 0) then
+               ierr = nf90_put_var(ncid, meshids%varids(mid_layerz), layer_zs(1:num_layers - nsigma))
+            end if
+            if (meshids%varids(mid_layersigma) > 0) then
+               ierr = nf90_put_var(ncid, meshids%varids(mid_layersigma), layer_zs(num_layers - nsigma + 1:num_layers), start=(/num_layers - nsigma + 1/))
+            end if
+         end if ! layer_zs
+
+         if (associated(interface_zs)) then
+            if (meshids%varids(mid_interfacezs) > 0) then
+               ! Combined z-sigma variable
+               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacezs), interface_zs(1:num_layers - nsigma + 1), start=(/1/))
+               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacezs), interface_zs(num_layers - nsigma + 2:num_layers + 1) * depth_c, start=(/num_layers - nsigma + 2/))
+            end if
+            if (meshids%varids(mid_interfacez) > 0) then
+               ! Z-layers (also partly, when in combined ocean_sigma_z)
+               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacez), interface_zs(1:num_layers - nsigma + 1))
+            end if
+            if (meshids%varids(mid_interfacesigma) > 0) then
+               if (num_layers == nsigma) then ! only sigma-layers
+                  ierr = nf90_put_var(ncid, meshids%varids(mid_interfacesigma), interface_zs(1:num_layers + 1), start=(/1/))
+               else ! sigma-layers (also partly, when in combined ocean_sigma_z)
+                  ierr = nf90_put_var(ncid, meshids%varids(mid_interfacesigma), interface_zs(num_layers - nsigma + 2:num_layers + 1), start=(/num_layers - nsigma + 2/))
+               end if
+            end if
+         end if ! interface_zs
+      end if ! num_layers
+   end subroutine ug_write_mesh_layer_arrays
+   
 !
 ! -- Reading-related routines ---------------------------------------------
 !

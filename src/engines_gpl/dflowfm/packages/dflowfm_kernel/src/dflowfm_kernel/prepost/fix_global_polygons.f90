@@ -50,7 +50,7 @@ contains
       use geometry_module, only: get_startend
 
       use network_data, only: numk, nump, xk, xzw, yzw
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use m_delpol
 
       implicit none

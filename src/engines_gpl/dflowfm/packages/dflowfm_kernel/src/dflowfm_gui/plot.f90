@@ -44,7 +44,7 @@ contains
    subroutine PLOT(NOPEN)
       use string_module
       use unstruc_colors
-      use unstruc_messages, only: msgbuf, msg_flush
+      use messagehandling, only: msgbuf, msg_flush
       use unstruc_model, only: md_ident, md_snapshotdir, md_snapshot_seqnr
       use unstruc_opengl, only: jaopengl
       use m_hardcopy

@@ -47,7 +47,6 @@ contains
       use m_flowtimes ! Two stages: 1 = collect elsets for which data is provided
       use m_flowgeom !             2 = add relations between elsets and their providers
       use unstruc_model
-      use unstruc_messages
       use unstruc_files
       use timespace
       use m_missing

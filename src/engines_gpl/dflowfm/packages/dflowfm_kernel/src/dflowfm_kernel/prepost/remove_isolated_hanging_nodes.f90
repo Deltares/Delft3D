@@ -44,7 +44,7 @@ contains
 
    subroutine remove_isolated_hanging_nodes(linkbrother, num)
       use m_netw
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_find_common_node
 
       integer, dimension(numL), intent(inout) :: linkbrother !< brotherlink, that shares a (hanging) node, dim: numL

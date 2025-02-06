@@ -45,7 +45,7 @@ contains
    subroutine REARST(Mrst, JA)
       use precision, only: dp
       use unstruc_model
-      use UNSTRUC_MESSAGES
+      use messagehandling, only: msgbuf, msg_flush
       use M_FLOWTIMES
       use M_FLOW
       use M_FLOWGEOM

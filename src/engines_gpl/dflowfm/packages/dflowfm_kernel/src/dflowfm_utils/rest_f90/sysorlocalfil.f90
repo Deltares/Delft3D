@@ -42,7 +42,6 @@ contains
 
    subroutine SYSORLOCALFIL(LUNID, FILNAM, MUSTBE)
       use string_module, only: find_first_char
-      use unstruc_messages
       use unstruc_files
       use m_filez, only: oldfil
 

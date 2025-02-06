@@ -75,7 +75,6 @@ contains
       use m_flow, only: kmx, jasal, iturbulencemodel
       use unstruc_api
       use dfm_error
-      use unstruc_messages
       use m_helpnow
       use m_qnrgf
       use m_settings

@@ -56,7 +56,7 @@ contains
       use m_xbeach_data, only: Lwave
       use m_fm_icecover, only: ice_p, fm_ice_update_press, ice_apply_pressure, ice_reduce_waves, ice_af, ice_apply_friction, ice_frctp, ice_frcuni, FRICT_AS_DRAG_COEFF
       use m_get_Lbot_Ltop
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
       use m_links_to_centers, only: links_to_centers
 
       integer :: L, LL, Lb, Lt, k1, k2, kt1, kt2
@@ -288,7 +288,7 @@ contains
       if (jasecflow > 0) then ! Secondary Flow
 
          do LL = 1, lnx
-            call getcz(hu(LL), frcu(LL), ifrcutp(LL), czusf(LL), LL) ! calculating chezy coefficient on the flow links
+            czusf(LL) = get_chezy(hu(LL), frcu(LL), u1(LL), v(LL), ifrcutp(LL)) ! calculating chezy coefficient on the flow links
          end do
 
          if (kmx < 2) then

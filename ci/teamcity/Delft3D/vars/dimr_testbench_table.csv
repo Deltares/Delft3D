@@ -1,4 +1,4 @@
-#name,#config,all,none,fm-suite,d3d4-suite,fm,rr,waq,part,wave,swan,d3d4,qp,tc,#comment
+#name,#config,all-testbench,none-testbench,fm-suite,d3d4-suite,fm-testbench,rr-testbench,waq-testbench,part-testbench,wave-testbench,swan-testbench,d3d4-testbench,qp-testbench,tc-testbench,#comment
 fm 1d parallel,dimr/dimr_dflowfm_1D_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 1d,dimr/dimr_dflowfm_1d_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 1d parallel,dimr/dimr_dflowfm_1D_win64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
@@ -30,8 +30,8 @@ fm dwaves,dimr/dimr_dflowfm_dwaves_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FA
 fm dwaves tutorial,dimr/dimr_dflowfm_dwaves_tutorial_course_win64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves,dimr/dimr_dflowfm_dwaves_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm full-scale,dimr/dimr_dflowfm_full_scale_models_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm hyd,dimr/dimr_dflowfm_hyd_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,
-fm hyd,dimr/dimr_dflowfm_hyd_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,
+fm hyd,dimr/dimr_dflowfm_hyd_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm hyd,dimr/dimr_dflowfm_hyd_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm lim-waves,dimr/dimr_dflowfm_lim_waves_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Do NOT run for wave branch, as this is an FM wave function. Case names mention waq, but that is not used."
 fm lim-waves,dimr/dimr_dflowfm_lim_waves_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Do NOT run for wave branch, as this is an FM wave function. Case names mention waq, but that is not used."
 fm parallel,dimr/dimr_dflowfm_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
@@ -72,8 +72,8 @@ drr unpaved,dimr/dimr_drr_unpaved_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FA
 drr unpaved,dimr/dimr_drr_unpaved_win64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 drr walrus,dimr/dimr_drr_walrus_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 drr walrus,dimr/dimr_drr_walrus_win64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-dwaq drtc,dimr/dimr_dwaq_drtc_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-dwaq drtc,dimr/dimr_dwaq_drtc_win64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+dwaq drtc,dimr/dimr_dwaq_drtc_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,
+dwaq drtc,dimr/dimr_dwaq_drtc_win64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,
 dwaves,dimr/dimr_dwaves_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 dwaves,dimr/dimr_dwaves_win64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 dpart structured,dwaq_dpart/lnx64/dpart_structured.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,

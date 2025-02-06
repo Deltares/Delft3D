@@ -142,7 +142,8 @@ contains
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_get_name, tree_get_data_string
-      use unstruc_messages, only: threshold_abort, level_fatal, level_error, level_warn, mess
+      use unstruc_messages, only: threshold_abort
+      use messagehandling, only: LEVEL_FATAL, LEVEL_ERROR, LEVEL_WARN, mess
       use string_module, only: strcmpi
 
       implicit none

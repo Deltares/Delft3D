@@ -16,6 +16,7 @@ import src.utils.plot_differences as plot
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.i_comparer import IComparer
 from src.utils.logging.i_logger import ILogger
 
@@ -251,7 +252,7 @@ class NetcdfComparer(IComparer):
             logger.error(str(e))
             result.error = True
 
-        if result.result == "NOK":
+        if result.result == EndResult.NOK:
             if nc_var.left.ndim == 1:
                 logger.info(f"Plotting of 1d-array not yet supported, variable name: {variable_name}")
             if nc_var.left.ndim == 2 and self._enable_plotting:
@@ -289,7 +290,7 @@ class NetcdfComparer(IComparer):
         right_strings = nc.chartostring(nc_var.right[:])
         result = ComparisonResult()
         result.passed = np.array_equal(left_strings, right_strings)
-        result.result = "OK" if result.passed else "NOK"
+        result.result = EndResult.OK if result.passed else EndResult.NOK
         return result
 
     def _compare_floats(

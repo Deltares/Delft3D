@@ -189,7 +189,7 @@ contains
 
 !> Reads observation rug and adds them to the normal rug adm
    subroutine load_runup_gauges(file_name, append)
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, LEVEL_ERROR, mess
 
       implicit none
       character(len=*), intent(in) :: file_name !< File containing the observation rug. Either a *_rug.pli.
