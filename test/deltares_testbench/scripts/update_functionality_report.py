@@ -3,19 +3,28 @@ import os
 import sys
 from datetime import datetime
 
+import pytz
+
+# Define the timezone for the Netherlands
+netherlands_tz = pytz.timezone("Europe/Amsterdam")
+
 global _script_dir
 
 
-def add_to_svn(doc_dir):
-    # SVN add the directory doc_dir
-    to_execute = "svn add %s" % doc_dir
-    ret_value = 1
-    # ret_value = subprocess.call(to_execute)
-    print("Return value:%d, Command: %s" % (ret_value, to_execute))
-    return ret_value
+def inplace_change(s: str, old_string: str, new_string: str) -> str:
+    """
+    Replace occurrences of a substring within a string with a new substring.
 
+    Args:
+        s (str): The original string.
+        old_string (str): The substring to be replaced.
+        new_string (str): The substring to replace with.
 
-def inplace_change(s, old_string, new_string):
+    Returns
+    -------
+        str: The modified string with the old substring replaced by the new substring.
+            If the old substring is not found, the original string is returned.
+    """
     if old_string in s:
         f = s.replace(old_string, new_string)
         return f
@@ -23,9 +32,24 @@ def inplace_change(s, old_string, new_string):
         return s
 
 
-def subs_in_file(file_name, src, dst):
+def subs_in_file(file_name: str, src: str, dst: str) -> None:
+    """
+    Replace occurrences of a substring in a .tex file.
+
+    This function reads the content of a .tex file, replaces all occurrences
+    of the source substring (src) with the destination substring (dst), and
+    writes the modified content back to the file.
+
+    Args:
+        file_name (str): The path to the .tex file.
+        src (str): The substring to be replaced.
+        dst (str): The substring to replace with.
+
+    Returns
+    -------
+        None
+    """
     if file_name.endswith(".tex"):
-        #        print("\t%s" % file_name)
         s = open(file_name).read()
         s = inplace_change(s, src, dst)
         f = open(file_name, "w")
@@ -34,7 +58,28 @@ def subs_in_file(file_name, src, dst):
         f.close()
 
 
-def recursive_walk(folder):
+def recursive_walk(folder: str) -> None:
+    """
+    Recursively walks through the given folder, generates documentation files, and organizes them into a LaTeX.
+
+    Args:
+        folder (str): The path to the folder to walk through.
+
+    This function performs the following steps:
+    1. Creates a "functionalities/chapters" directory inside the given folder if it doesn't exist.
+    2. Creates a "testcases.tex" file inside the "functionalities/chapters" directory.
+    3. Iterates through the items in the given folder:
+        - Skips items containing ".svn".
+        - Skips items that do not start with "f" or contain "fxx".
+        - Creates a "doc" directory inside each valid item if it doesn't exist.
+        - Copies a template functionality report directory to the "doc" directory.
+        - Creates a "testcases.tex" file inside the "doc/chapters" directory.
+        - Adds a PART section to the main "testcases.tex" file for each valid item.
+        - Iterates through the sub-items of each valid item:
+            - Skips sub-items containing "cxx" or that do not start with "c".
+            - If the sub-item is a directory, adds a CHAPTER section to both the item's "testcases.tex" file
+              and the main "testcases.tex" file.
+    """
     global _script_dir
     e_name = os.path.basename(os.path.normpath(folder))
     functionalities_dir = os.path.join(folder, "doc", "functionalities", "chapters")
@@ -69,9 +114,8 @@ def recursive_walk(folder):
             f1.write("% Automatic generated file\n")
             f1.write("%\n")
             f1.close()
-            #
+
             # Separtion of functionalities by added a PART in the document
-            #
             f1 = open(funcs_tex, "a")
             part_name = f_name.replace("_", " ")
             dst = "\part{\\newline %s}\n" % (part_name)
@@ -79,16 +123,14 @@ def recursive_walk(folder):
             f1.write("\\adjustptc\n\\parttoc\n\\newpage\n%\n")
             f1.close()
 
-            #
             c_names = os.listdir(f_name)
             for c_name in c_names:
                 if c_name.find("cxx") != -1 or c_name[0] != "c":
                     continue  # do not generate documentation
                 if os.path.isdir(os.path.join(os.getcwd(), f_name, c_name)):
                     print("\t%s" % c_name)
-                    #
+
                     # for each functionality
-                    #
                     f1 = open(func_tex, "a")
                     chp = c_name.replace("_", " ")
                     dst = "\chapter{%s}\n" % chp
@@ -99,9 +141,8 @@ def recursive_walk(folder):
                     f1.write(dst)
                     f1.write("%\n")
                     f1.close()
-                    #
+
                     # all functionalities in one document
-                    #
                     f1 = open(funcs_tex, "a")
                     chp = c_name.replace("_", " ")
                     dst = "\chapter{%s}\n" % chp
@@ -112,11 +153,24 @@ def recursive_walk(folder):
                     f1.write(dst)
                     f1.write("%\n")
                     f1.close()
-            #
-            # rtn = add_to_svn(doc_dir)
 
 
-def main(argv):
+def main(argv: list[str]) -> None:
+    """
+    Batch process and remove side TOC in HTML files.
+
+    The function processes command-line arguments to determine the source directory
+    (either relative or absolute) and performs a recursive walk to process HTML files.
+    It prints the script directory, start directory, and working directory for reference.
+    If the given directory does not exist, it prints an error message and exits.
+
+    Args:
+        argv (list[str]): List of command-line arguments.
+
+    Returns
+    -------
+        None
+    """
     global _script_dir
 
     parser = argparse.ArgumentParser(description="Batch process to remove side toc in HTML-files")
@@ -154,19 +208,18 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    start_time = datetime.now()
+    start_time = datetime.now(netherlands_tz)
     print("Start: %s\n" % start_time)
 
     filename = "update_functionality_report.log"
     if os.path.exists(filename):
         os.remove(filename)
     print("Listing is written to: %s" % filename)
-    # sys.stdout = open(filename, "a")
 
     main(sys.argv[0:])
 
     sys.stdout = sys.__stdout__
 
     print("\nStart: %s" % start_time)
-    print("End  : %s" % datetime.now())
+    print("End  : %s" % datetime.now(netherlands_tz))
     print("Klaar")

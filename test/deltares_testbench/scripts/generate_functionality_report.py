@@ -161,17 +161,15 @@ def main(argv: list) -> int:
     path_list = funcs_path.split(os.sep)
     engine_dir = path_list[-4]
     engine_dir = os.path.join(_start_dir, engine_dir)
-    #
+
     # Generate the functionalities document
-    #
     if os.path.exists(funcs_path):
         um_dir, um_doc = os.path.split(funcs_path)
         error_funcs_doc = gdoc.generate_pdf(um_dir, um_doc)
 
     error_funcdoc = 0
-    #
+
     # Generate the functionality documents
-    #
     f_names = os.listdir(engine_dir)
     for f_name in f_names:
         if f_name.find("fxx") == -1:

@@ -1,11 +1,3 @@
-"""
-Author: Jan Mooiman
-E-Mail: jan.mooiman@deltares.nl
-Date  : 14 sep 2017
-
-Generate validation and funcionality documentation by specifying the engine directory
-"""
-
 import argparse
 import os  # file exists
 import subprocess  # needed to run a subprocess and catch the result
@@ -13,6 +5,10 @@ import sys  # system
 from datetime import date, datetime, timedelta
 
 import generate_latex_doc as gdoc  # gdoc: Generate DOCument
+import pytz
+
+# Define the timezone for the Netherlands
+netherlands_tz = pytz.timezone("Europe/Amsterdam")
 
 _d1 = 0  # reference date (i.e. today)
 _d2 = 0  # reference date minus delta (delta = one day)
@@ -26,11 +22,29 @@ _start_dir = "not set"
 _svnexe = "not set"
 
 
-def is_exe(fpath):
+def is_exe(fpath: str) -> bool:
+    """Check if the file at the given path is executable.
+
+    Args:
+        fpath (str): The file path.
+
+    Returns
+    -------
+        bool: True if the file is executable, False otherwise.
+    """
     return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
 
-def which(program):
+def which(program: str) -> str:
+    """Locate a program file in the system's PATH.
+
+    Args:
+        program (str): The name of the program to locate.
+
+    Returns
+    -------
+        str: The path to the program if found, None otherwise.
+    """
     fpath, fname = os.path.split(program)
     if fpath:
         if is_exe(program):
@@ -45,7 +59,13 @@ def which(program):
     return None
 
 
-def check_installation():
+def check_installation() -> int:
+    """Check the installation of required executables.
+
+    Returns
+    -------
+        int: 0 if all required executables are found, 1 otherwise.
+    """
     global _bibtex
     global _initexmf
     global _makeindex
@@ -81,7 +101,16 @@ def check_installation():
     print("Using svn      : %s" % _svnexe)
 
 
-def run_make_index(u_doc):
+def run_make_index(u_doc: str) -> int:
+    """Run the makeindex command on the given document.
+
+    Args:
+        u_doc (str): The document to process.
+
+    Returns
+    -------
+        int: The return value of the subprocess call.
+    """
     log_file = open(os.devnull, "w")
     to_execute = '"%s" %s' % (_makeindex, u_doc)
     print(to_execute)
@@ -90,12 +119,21 @@ def run_make_index(u_doc):
     return ret_value
 
 
-def main(argv):
+def main(argv: list) -> int:
+    """Generate report.
+
+    Args:
+        argv (list): List of command-line arguments.
+
+    Returns
+    -------
+        int: The maximum error code encountered during the process.
+    """
     global _d1, _d2
     global _start_dir
 
-    _d1 = date.today() - timedelta(days=1)
-    _d2 = date.today() + timedelta(days=1)
+    _d1 = datetime.now(netherlands_tz) - timedelta(days=1)
+    _d2 = datetime.now(netherlands_tz) + timedelta(days=1)
 
     parser = argparse.ArgumentParser(description="Batch process to generate validation and functionality document")
     # run_mode_group = parser.add_mutually_exclusive_group(required=False)
@@ -132,12 +170,11 @@ def main(argv):
 
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    start_time = datetime.now()
+    start_time = datetime.now(netherlands_tz)
 
     print("Start: %s\n" % start_time)
 
     main(sys.argv[0:])
 
     print("\nStart: %s" % start_time)
-    print("End  : %s" % datetime.now())
-    print("Klaar")
+    print("End  : %s" % datetime.now(netherlands_tz))

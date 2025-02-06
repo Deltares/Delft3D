@@ -297,7 +297,17 @@ def generate_pdf(u_dir: str, u_doc: str) -> int:
     return 0
 
 
-def main(argv):
+def main(argv: list[str]) -> int:
+    """
+    Process command-line arguments and generate the PDF document.
+
+    Args:
+        argv (list): List of command-line arguments.
+
+    Returns
+    -------
+        int: Returns 0 if successful, otherwise returns 1.
+    """
     global _d1, _d2
     global _start_dir
     global _draft, _force
