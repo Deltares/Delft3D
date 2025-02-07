@@ -19,52 +19,31 @@ repo_gpgcheck=1
 gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
 EOT
 
-
 dnf update --assumeyes
 dnf install --assumeyes epel-release
 dnf config-manager --set-enabled powertools
 dnf install --assumeyes \
-    which binutils patchelf diffutils procps m4 make \
+    which binutils patchelf diffutils procps m4 make gcc gcc-c++ \
     openssl openssl-devel wget perl python3
 
 if [[ $INTEL_ONEAPI_VERSION = "2023" ]]; then
-    dnf install --assumeyes \
-    intel-oneapi-common-licensing-2023.2.0 \
-    intel-oneapi-common-vars-2023.2.0 \
-    intel-oneapi-compiler-dpcpp-cpp-2023.2.1 \
-    intel-oneapi-libdpstd-devel-2022.2.0 \
-    intel-oneapi-compiler-fortran-common-2023.2.1 \
-    intel-oneapi-compiler-fortran-runtime-2023.2.1 \
-    intel-oneapi-compiler-shared-2023.2.1 \
-    intel-oneapi-compiler-fortran-2023.2.1 \
-    intel-oneapi-condaindex-2023.2.0 \
-    intel-oneapi-mkl-2023.2.0 \
-    intel-oneapi-mkl-common-devel-2023.2.0 \
-    intel-oneapi-mkl-devel-2023.2.0 \
-    intel-oneapi-mpi-2021.10.0 \
-    intel-oneapi-mpi-devel-2021.10.0
+    ONEAPI_VERSION_FULL="2023.2.0"
+    MKL_DEVEL_VERSION="2023.2.0"
+    MPI_DEVEL_VERSION="2021.10.0"
 elif [[ $INTEL_ONEAPI_VERSION = "2024" ]]; then
-    dnf install --assumeyes \
-    intel-oneapi-common-licensing-2024.2.1 \
-    intel-oneapi-common-oneapi-vars-2024.2.1 \
-    intel-oneapi-common-vars-2024.2.1 \
-    intel-oneapi-compiler-dpcpp-cpp-2024.2.1 \
-    intel-oneapi-dpcpp-cpp-2024.2-2024.2.1 \
-    intel-oneapi-libdpstd-devel-2022.6.1 \
-    intel-oneapi-compiler-fortran-common-2024.2-2024.2.1 \
-    intel-oneapi-compiler-fortran-runtime-2024.2.1 \
-    intel-oneapi-compiler-shared-2024.2-2024.2.1 \
-    intel-oneapi-compiler-fortran-2024.2.1 \
-    intel-oneapi-mkl-classic-devel-2024.2.2 \
-    intel-oneapi-mkl-sycl-devel-2024.2.2 \
-    intel-oneapi-mkl-devel-2024.2.2 \
-    intel-oneapi-mpi-2021.13.1 \
-    intel-oneapi-mpi-devel-2021.13.1
+    ONEAPI_VERSION_FULL="2024.2.1"
+    MKL_DEVEL_VERSION="2024.2.2"
+    MPI_DEVEL_VERSION="2021.13.1"
 fi
 
+dnf install --assumeyes \
+    intel-oneapi-common-vars-${ONEAPI_VERSION_FULL} \
+    intel-oneapi-compiler-dpcpp-cpp-${ONEAPI_VERSION_FULL} \
+    intel-oneapi-compiler-fortran-${ONEAPI_VERSION_FULL} \
+    intel-oneapi-mkl-devel-${MKL_DEVEL_VERSION} \
+    intel-oneapi-mpi-devel-${MPI_DEVEL_VERSION}
+
 if [[ $INTEL_ONEAPI_VERSION = "2023" ]]; then
-    # ifx: error #10417: Problem setting up the Intel(R) Compiler compilation environment. Requires 'install path' setting gathered from 'gcc'
-    dnf install --assumeyes gcc gcc-c++
     # For some reason, in oneapi 2023, the latest symlink is not set correctly.
     ln --symbolic --force --no-target-directory /opt/intel/oneapi/mpi/2021.13 /opt/intel/oneapi/mpi/latest
 fi
