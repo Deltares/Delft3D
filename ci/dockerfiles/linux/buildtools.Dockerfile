@@ -32,9 +32,9 @@ dnf install --assumeyes \
 # For Intel oneAPI, explicitly list the common-vars version, otherwise some much newer versions of packages will also be installed
 # as dependencies. Furthure, do not use intel 2023.2.1, since the dependencies of mkl 2023.2.0 will then also install the C++
 # runtime of the C++ compiler for 2023.2.0, duplicating the one of 2023.2.1 and increasing the image size.
-# We cannot install mpi 2023.10 with oneAPI 2023, since then petsc does not build. Therefore, we use the same version as will oneAPI 2024.
+# We cannot install mpi 2023.10 with oneAPI 2023, since then petsc does not build. Therefore, we use a newer version and a corresponding common-vars.
 if [[ $INTEL_ONEAPI_VERSION = "2023" ]]; then
-    COMMON_VARS_VERSION="2023.2.0"
+    COMMON_VARS_VERSION="2024.2.1"
     COMPILER_DPCPP_CPP_VERSION="2023.2.0"
     COMPILER_FORTRAN_VERSION="2023.2.0"
     MKL_DEVEL_VERSION="2023.2.0"
