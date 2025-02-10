@@ -1231,7 +1231,7 @@ contains
       if (idensform > 0 .and. jaRichardsononoutput > 0) then
          if (allocated(rich)) deallocate (rich)
          allocate (rich(lnkx), stat=ierr)
-         call aerr('rich(lnkx)', ierr, ndkx); rich = 0d0
+         call aerr('rich(lnkx)', ierr, lnkx); rich = 0d0
       else
          jaRichardsononoutput = 0
       end if

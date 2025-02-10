@@ -1153,7 +1153,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'Tlfsmo', Tlfsmo)
       call prop_get(md_ptr, 'numerics', 'Keepstbndonoutflow', keepstbndonoutflow)
       call prop_get(md_ptr, 'numerics', 'Diffusiononbnd', jadiffusiononbnd)
-      call prop_get(md_ptr, 'numerics', 'Tspinupturblogprof', Tspinupturblogprof)
+      call prop_get(md_ptr, 'numerics', 'tSpinupTurbLogProf', t_spinup_turb_log_prof)
       call prop_get(md_ptr, 'numerics', 'Logprofatubndin', jaLogprofatubndin)
       call prop_get(md_ptr, 'numerics', 'Logprofkepsbndin', jaLogprofkepsbndin)
 
@@ -2454,8 +2454,8 @@ contains
       end if
 
       ! Some combined validation checks of model settings:
-      if (len_trim(md_restartfile) > 0 .and. Tspinupturblogprof > 0d0) then
-         write (msgbuf, '(a,f9.3,a)') 'You start from a restartfile and also have a non-zero Tspinupturblogprof'
+      if (len_trim(md_restartfile) > 0 .and. t_spinup_turb_log_prof > 0d0) then
+         write (msgbuf, '(a,f9.3,a)') 'You start from a restartfile and also have a non-zero tSpinupTurbLogProf'
          call warn_flush()
       end if
 
@@ -3072,8 +3072,8 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Diffusiononbnd', jadiffusiononbnd, 'On open boundaries, 0 switches off horizontal diffusion Default = 1')
       end if
 
-      if (writeall .or. Tspinupturblogprof > 0d0) then
-         call prop_set(prop_ptr, 'numerics', 'Tspinupturblogprof', Tspinupturblogprof, 'During Tspinup force log profiles to avoid almost zero vertical eddy viscosity')
+      if (writeall .or. t_spinup_turb_log_prof > 0d0) then
+         call prop_set(prop_ptr, 'numerics', 'tSpinupTurbLogProf', t_spinup_turb_log_prof, 'During Tspinup force log profiles to avoid almost zero vertical eddy viscosity')
       end if
       if (writeall .or. jaLogprofatubndin /= 1) then
          call prop_set(prop_ptr, 'numerics', 'Logprofatubndin', jaLogprofatubndin, 'ubnds inflow: 0=uniform U1, 1 = log U1, 2 = user3D')

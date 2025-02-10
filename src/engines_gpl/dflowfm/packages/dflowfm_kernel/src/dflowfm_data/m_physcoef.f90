@@ -196,8 +196,8 @@ contains
       idensform = 2 !< 0 = no, 1 = Eckart, 2 = UNESCO
       limiterhordif = 2 !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
 
-      Stanton = 0.0013 !< coeff for convective  heat flux, if negative , take wind Cd
-      Dalton = 0.0013 !< coeff for evaporative heat flux, if negative , take wind Cd
+      Stanton = 0.0013_dp !< coeff for convective  heat flux, if negative , take wind Cd
+      Dalton = 0.0013_dp !< coeff for evaporative heat flux, if negative , take wind Cd
 
       Jadelvappos = 0 !< only positive forced evaporation fluxes
 
