@@ -31,7 +31,6 @@ if (WIN32)
                             io_netcdf
                             io_netcdf_data
                             nefis
-                            netcdf
                             netcdff)
     target_link_libraries(${library_name} ${oss_dependencies})
 
@@ -59,7 +58,6 @@ if (UNIX)
                             io_netcdf
                             io_netcdf_data
                             nefis
-                            netcdf
                             netcdff)
 
     target_link_libraries(${library_name} ${oss_dependencies})

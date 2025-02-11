@@ -12,7 +12,6 @@ create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src)
                             gridgeom
                             io_netcdf
                             io_netcdf_data
-                            netcdf
                             netcdff)
 
 

@@ -61,7 +61,6 @@ if (UNIX)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdf
                         netcdff)
 
     target_link_libraries(${library_name} ${oss_dependencies})
