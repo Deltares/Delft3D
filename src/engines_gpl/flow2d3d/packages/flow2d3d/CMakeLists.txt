@@ -165,7 +165,7 @@ if (WIN32)
                             "comdlg32.lib"
                             "gdi32.lib"
                             "winspool.lib"
-    )
+                            "netcdf.lib")
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")

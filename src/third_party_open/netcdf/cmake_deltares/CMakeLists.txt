@@ -12,13 +12,20 @@ include_directories("${library_path}/${netcdf_version}/include")
 set(c_sources ${source_path}/nf_lib.c)
 
 # Add library
-add_library(netcdf ${c_sources})
+add_library(netcdf_c_extension ${c_sources})
 
-target_link_libraries(netcdf PRIVATE no_compiler_warnings)
+target_link_libraries(netcdf_c_extension PRIVATE no_compiler_warnings)
+
+if(UNIX)
+    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
+    target_link_libraries(netcdf_c_extension PRIVATE PkgConfig::NETCDF)
+elseif(WIN32)
+    target_link_libraries(netcdf_c_extension PRIVATE "netcdf.lib")
+endif(UNIX)
 
 # Create the folder structure in vfproj
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${c_sources} )
-set_target_properties (netcdf PROPERTIES FOLDER third_party_open)
+set_target_properties (netcdf_c_extension PROPERTIES FOLDER third_party_open)
 
 set(fortran_sources ${source_path}/module_netcdf4_nc_interfaces.f90
 					${source_path}/module_netcdf4_nf_interfaces.F90
@@ -50,7 +57,7 @@ target_compile_options(${netcdf_library_name} PRIVATE ${file_preprocessor_flag})
 target_link_libraries(${netcdf_library_name} PRIVATE no_compiler_warnings)
 
 # Set dependencies
-set(oss_dependencies netcdf)
+set(oss_dependencies netcdf_c_extension)
 target_link_libraries(${netcdf_library_name} PRIVATE ${oss_dependencies})
 target_compile_options(${netcdf_library_name} PRIVATE "SHELL:${heap_arrays_100_flag}")
 

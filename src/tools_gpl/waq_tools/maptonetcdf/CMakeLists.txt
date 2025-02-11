@@ -54,6 +54,9 @@ if (WIN32)
                             PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
 
+    target_link_libraries(${executable_name}
+                          "netcdf.lib")
+
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
