@@ -380,10 +380,8 @@ contains
                                            dambreakLevelsAndWidthsFromTable, &
                                            dambreaks, ndambreaklinks, dambreakLinksEffectiveLength
       use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
-                                          dambreakLocationsUpstreamMapping, dambreakLocationsUpstream, &
-                                          dambreakAveragingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
-                                          dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &
-                                          dambreakAveragingDownstreamMapping, nDambreakLocationsDownstream, nDambreakAveragingDownstream
+                                          add_dambreaklocation_upstream, add_dambreaklocation_downstream, &
+                                          add_averaging_upstream_signal, add_averaging_downstream_signal
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_alloc, only: realloc
 
@@ -480,20 +478,15 @@ contains
                            ''' in dambreak ''', trim(dambreak_ids(n)), '''.'
                         call err_flush()
                      else
-                        nDambreakLocationsUpstream = nDambreakLocationsUpstream + 1
-                        dambreakLocationsUpstreamMapping(nDambreakLocationsUpstream) = n
-                        dambreakLocationsUpstream(nDambreakLocationsUpstream) = k
+                        call add_dambreaklocation_upstream(n,k)
                      end if
                   else if (xla /= dmiss .and. yla /= dmiss) then
                      call incells(xla, yla, k)
                      if (k > 0) then
-                        nDambreakLocationsUpstream = nDambreakLocationsUpstream + 1
-                        dambreakLocationsUpstreamMapping(nDambreakLocationsUpstream) = n
-                        dambreakLocationsUpstream(nDambreakLocationsUpstream) = k
+                        call add_dambreaklocation_upstream(n,k)                        
                      end if
                   else
-                     nDambreakAveragingUpstream = nDambreakAveragingUpstream + 1
-                     dambreakAveragingUpstreamMapping(nDambreakAveragingUpstream) = n
+                     call add_averaging_upstream_signal(n)
                   end if
                end if
 
@@ -509,20 +502,15 @@ contains
                            ''' in dambreak ''', trim(dambreak_ids(n)), '''.'
                         call err_flush()
                      else
-                        nDambreakLocationsDownstream = nDambreakLocationsDownstream + 1
-                        dambreakLocationsDownstreamMapping(nDambreakLocationsDownstream) = n
-                        dambreakLocationsDownstream(nDambreakLocationsDownstream) = k
+                        call add_dambreaklocation_downstream(n,k)
                      end if
                   else if (xla /= dmiss .and. yla /= dmiss) then
                      call incells(xla, yla, k)
                      if (k > 0) then
-                        nDambreakLocationsDownstream = nDambreakLocationsDownstream + 1
-                        dambreakLocationsDownstreamMapping(nDambreakLocationsDownstream) = n
-                        dambreakLocationsDownstream(nDambreakLocationsDownstream) = k
+                        call add_dambreaklocation_downstream(n,k)
                      end if
                   else
-                     nDambreakAveragingDownstream = nDambreakAveragingDownstream + 1
-                     dambreakAveragingDownstreamMapping(nDambreakAveragingDownstream) = n
+                     call add_averaging_downstream_signal(n)
                   end if
                end if
 
@@ -613,14 +601,10 @@ contains
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
       use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
-                                          dambreakLocationsUpstreamMapping, dambreakLocationsUpstream, &
-                                          dambreakAveragingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
-                                          dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &
-                                          dambreakAveragingDownstreamMapping, nDambreakLocationsDownstream, nDambreakAveragingDownstream
+         add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
+         add_averaging_downstream_signal
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use fm_external_forcings_data, only: dambreakLinksEffectiveLength, dambreakLinksActualLength
-
-
 
       implicit none
       logical :: status
@@ -1821,20 +1805,15 @@ contains
                            ''' in dambreak ''', trim(strid), '''.'
                         call err_flush()
                      else
-                        nDambreakLocationsUpstream = nDambreakLocationsUpstream + 1
-                        dambreakLocationsUpstreamMapping(nDambreakLocationsUpstream) = n
-                        dambreakLocationsUpstream(nDambreakLocationsUpstream) = k
+                        call add_dambreaklocation_upstream(n,k)
                      end if
                   else if (xla /= dmiss .and. yla /= dmiss) then
                      call incells(xla, yla, k)
                      if (k > 0) then
-                        nDambreakLocationsUpstream = nDambreakLocationsUpstream + 1
-                        dambreakLocationsUpstreamMapping(nDambreakLocationsUpstream) = n
-                        dambreakLocationsUpstream(nDambreakLocationsUpstream) = k
+                        call add_dambreaklocation_upstream(n,k)
                      end if
                   else
-                     nDambreakAveragingUpstream = nDambreakAveragingUpstream + 1
-                     dambreakAveragingUpstreamMapping(nDambreakAveragingUpstream) = n
+                     call add_averaging_upstream_signal(n)
                   end if
                end if
 
@@ -1850,20 +1829,15 @@ contains
                            ''' in dambreak ''', trim(strid), '''.'
                         call err_flush()
                      else
-                        nDambreakLocationsDownstream = nDambreakLocationsDownstream + 1
-                        dambreakLocationsDownstreamMapping(nDambreakLocationsDownstream) = n
-                        dambreakLocationsDownstream(nDambreakLocationsDownstream) = k
+                        call add_dambreaklocation_downstream(n,k)
                      end if
                   else if (xla /= dmiss .and. yla /= dmiss) then
                      call incells(xla, yla, k)
                      if (k > 0) then
-                        nDambreakLocationsDownstream = nDambreakLocationsDownstream + 1
-                        dambreakLocationsDownstreamMapping(nDambreakLocationsDownstream) = n
-                        dambreakLocationsDownstream(nDambreakLocationsDownstream) = k
+                        call add_dambreaklocation_downstream(n,k)
                      end if
                   else
-                     nDambreakAveragingDownstream = nDambreakAveragingDownstream + 1
-                     dambreakAveragingDownstreamMapping(nDambreakAveragingDownstream) = n
+                     call add_averaging_downstream_signal(n)
                   end if
                end if
 

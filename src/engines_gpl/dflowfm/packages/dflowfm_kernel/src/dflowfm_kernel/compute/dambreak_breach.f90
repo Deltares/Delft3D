@@ -40,31 +40,37 @@ module m_dambreak_breach
    public :: adjust_bobs_on_dambreak_breach
    public :: allocate_and_initialize_dambreak_data
    public :: update_dambreak_breach
-
+   public :: add_dambreaklocation_upstream
+   public :: add_dambreaklocation_downstream
+   public :: add_averaging_upstream_signal
+   public :: add_averaging_downstream_signal
+   
    ! time varying, can be get/set via BMI interface
    real(kind=dp), dimension(:), allocatable, target, public :: breachDepthDambreak !< the dambreak breach width (as a level)
    real(kind=dp), dimension(:), allocatable, target, public :: breachWidthDambreak !< the dambreak breach width (as a level)
    real(kind=dp), dimension(:), allocatable, target, public :: waterLevelsDambreakUpStream !< the water levels computed each time step upstream
    real(kind=dp), dimension(:), allocatable, target, public :: waterLevelsDambreakDownStream !< the water levels computed each time step downstream
 
+   ! this information can be moved to t_dambreak, will be done in UNST-8588
    real(kind=dp), dimension(:), allocatable, public :: normalVelocityDambreak !< dambreak normal velocity
    real(kind=dp), dimension(:), allocatable, public :: breachWidthDerivativeDambreak !< breach width derivatives
    real(kind=dp), dimension(:), allocatable, public :: waterLevelJumpDambreak !< water level jumps
    
+   ! Upstream water level
+   integer :: nDambreakLocationsUpstream !< nr of dambreak signals with locations upstream
+   integer, dimension(:), allocatable :: dambreakLocationsUpstreamMapping !< mapping of dambreak locations upstream
+   integer, dimension(:), allocatable :: dambreakLocationsUpstream !< store cell ids for water level locations upstream
+   integer :: nDambreakAveragingUpstream !< nr of dambreak signals upstream with averaging
+   integer, dimension(:), allocatable :: dambreakAveragingUpstreamMapping !< mapping of dambreak averaging upstream
+   ! Downstream water level
+   integer :: nDambreakLocationsDownstream !< nr of dambreak signals with locations downstream
+   integer, dimension(:), allocatable :: dambreakLocationsDownstreamMapping !< mapping of dambreak locations downstream
+   integer, dimension(:), allocatable :: dambreakLocationsDownstream !< store cell ids for water level locations downstream
+   integer :: nDambreakAveragingDownstream !< nr of dambreak signals downstream with averaging
+   integer, dimension(:), allocatable :: dambreakAveragingDownstreamMapping !< mapping of dambreak averaging in the dambreak arrays
+   
    real(kind=dp), dimension(:,:), allocatable :: dambreakAveraging   !< (1,:) weight averaged values of waterlevel per dambreaklink
                                                                      !! (2,:) weight per dambreaklink
-   ! Upstream water level
-   integer, public :: nDambreakLocationsUpstream !< nr of dambreak signals with locations upstream
-   integer, dimension(:), allocatable, public :: dambreakLocationsUpstreamMapping !< mapping of dambreak locations upstream
-   integer, dimension(:), allocatable, public :: dambreakLocationsUpstream !< store cell ids for water level locations upstream
-   integer, public :: nDambreakAveragingUpstream !< nr of dambreak signals upstream with averaging
-   integer, dimension(:), allocatable, public :: dambreakAveragingUpstreamMapping !< mapping of dambreak averaging upstream
-   ! Downstream water level
-   integer, public :: nDambreakLocationsDownstream !< nr of dambreak signals with locations downstream
-   integer, dimension(:), allocatable, public :: dambreakLocationsDownstreamMapping !< mapping of dambreak locations downstream
-   integer, dimension(:), allocatable, public :: dambreakLocationsDownstream !< store cell ids for water level locations downstream
-   integer, public :: nDambreakAveragingDownstream !< nr of dambreak signals downstream with averaging
-   integer, dimension(:), allocatable, public :: dambreakAveragingDownstreamMapping !< mapping of dambreak averaging in the dambreak arrays
 
    contains
 
@@ -92,6 +98,7 @@ module m_dambreak_breach
 
    end subroutine allocate_and_initialize_dambreak_data
 
+   !< TODO UNST-8587:: add API documentation
    subroutine update_dambreak_breach(startTime, deltaTime)
       use precision, only: dp
       use m_flowgeom, only: wu
@@ -269,6 +276,7 @@ module m_dambreak_breach
       end if
    end subroutine update_dambreak_breach
 
+   !< update the crest/bed levels for dambreak breach
    subroutine adjust_bobs_on_dambreak_breach(width, maxwidth, crl, startingLink, L1, L2, strucid)
       use precision, only: dp
 
@@ -287,7 +295,7 @@ module m_dambreak_breach
       integer, intent(in) :: startingLink !< index of first link that breaches
       integer, intent(in) :: L1 !< last flow link on the "left"
       integer, intent(in) :: L2 !< last flow link on the "right"
-      character(len=*), intent(in) :: strucid !< name of the dambreak structure
+      character(len=*), intent(in) :: strucid !< name of the dambreak structure, only used in warning message
 
       ! local variables
       integer :: k !< index of the dambreak flow link (range L1 to L2)
@@ -400,5 +408,49 @@ module m_dambreak_breach
       end if
 
    end subroutine adjust_bobs_on_dambreak_breach
+
+   !< store upstream dambreak information
+   subroutine add_dambreaklocation_upstream(n_signal, k_node)
+   
+      integer, intent(in) :: n_signal !< number of current dambreak signal
+      integer, intent(in) :: k_node !< node number for current dambreak
+   
+      nDambreakLocationsUpstream = nDambreakLocationsUpstream + 1
+      dambreakLocationsUpstreamMapping(nDambreakLocationsUpstream) = n_signal
+      dambreakLocationsUpstream(nDambreakLocationsUpstream) = k_node
+   
+   end subroutine add_dambreaklocation_upstream
+
+   !< store downstream dambreak information 
+   subroutine add_dambreaklocation_downstream(n_signal, k_node)
+   
+      integer, intent(in) :: n_signal !< number of current dambreak signal
+      integer, intent(in) :: k_node !< node number for current dambreak
+   
+      nDambreakLocationsDownstream = nDambreakLocationsDownstream + 1
+      dambreakLocationsDownstreamMapping(nDambreakLocationsDownstream) = n_signal
+      dambreakLocationsDownstream(nDambreakLocationsDownstream) = k_node
+   
+   end subroutine add_dambreaklocation_downstream
+
+   !< add upstream signal for averaging
+   subroutine add_averaging_upstream_signal(n_signal)
+
+      integer, intent(in) :: n_signal !< number of current dambreak signal
+
+      nDambreakAveragingUpstream = nDambreakAveragingUpstream + 1
+      dambreakAveragingUpstreamMapping(nDambreakAveragingUpstream) = n_signal
+
+   end subroutine add_averaging_upstream_signal
+
+   !< add downstream signal for averaging
+   subroutine add_averaging_downstream_signal(n_signal)
+
+      integer, intent(in) :: n_signal !< number of current dambreak signal
+
+      nDambreakAveragingDownstream = nDambreakAveragingDownstream + 1
+      dambreakAveragingDownstreamMapping(nDambreakAveragingDownstream) = n_signal
+
+   end subroutine add_averaging_downstream_signal
 
 end module m_dambreak_breach
