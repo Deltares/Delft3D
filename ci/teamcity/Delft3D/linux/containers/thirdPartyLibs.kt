@@ -24,7 +24,7 @@ object LinuxThirdPartyLibs : BuildType({
 
     params {
         param("intel_oneapi_version", "2023")
-        param("reverse.dep.${LinuxBuildTools.id}.intel_oneapi_version", "2023")
+        param("reverse.dep.${LinuxBuildTools.id}.intel_oneapi_version", "%intel_oneapi_version%")
         param("intel_fortran_compiler", "ifort")
         param("build_type", "release")
         param("harbor_repo", "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs")
