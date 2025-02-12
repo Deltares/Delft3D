@@ -18,7 +18,7 @@ object TemplateDocumentationCheckout : Template({
             }
             command = file {
                 filename = "test/deltares_testbench/thirdparty/scripts/download_from_s3.py"
-                scriptArguments = "--access_key %s3_dsctestbench_accesskey% --secret_key %s3_dsctestbench_secret% --engine_dir %engine_dir% --iso_time %TIME_ISO_8601%""
+                scriptArguments = "--access_key %s3_dsctestbench_accesskey% --secret_key %s3_dsctestbench_secret% --engine_dir %engine_dir% --iso_time %TIME_ISO_8601%"
             }
         }
     }
