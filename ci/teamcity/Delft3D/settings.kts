@@ -31,6 +31,7 @@ project {
     template(TemplateMonitorPerformance)
     template(TemplateFailureCondition)
     template(TemplateDocumentationBuild)
+    template(TemplateSetTimeVariable)
     template(TemplateDocumentationCheckout)
     template(TemplateDocumentationUpdateInfrastructure)
     template(TemplateDocumentationGenerateFunctionality)

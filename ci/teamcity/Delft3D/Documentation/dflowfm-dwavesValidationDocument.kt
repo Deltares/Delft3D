@@ -10,6 +10,7 @@ import Delft3D.template.*
 object DflowfmDwavesValidationDocument : BuildType({
     templates(
         TemplateDocumentationBuild,
+        TemplateSetTimeVariable,
         TemplateDocumentationCheckout,
         TemplateDocumentationUpdateInfrastructure,
         TemplateDocumentationGenerateFunctionality,
@@ -25,6 +26,6 @@ object DflowfmDwavesValidationDocument : BuildType({
     }
 
     steps {
-        stepsOrder = arrayListOf("CHECKOUT_TESTBENCH_CASES_FROM_MINIO", "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT", "GENERATE_FUNCTIONALITY_REPORT", "GENERATE_REPORT")
+        stepsOrder = arrayListOf("SET_TIME_VARIABLE", "CHECKOUT_TESTBENCH_CASES_FROM_MINIO", "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT", "GENERATE_FUNCTIONALITY_REPORT", "GENERATE_REPORT")
     }
 })

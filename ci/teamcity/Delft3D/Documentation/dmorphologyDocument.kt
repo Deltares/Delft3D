@@ -10,6 +10,7 @@ import Delft3D.template.*
 object DMorphologyValidationDocument : BuildType({
     templates(
         TemplateDocumentationBuild,
+        TemplateSetTimeVariable,
         TemplateDocumentationCheckout,
         TemplateDocumentationUpdateInfrastructure,
         TemplateDocumentationGenerateReport)
@@ -22,6 +23,6 @@ object DMorphologyValidationDocument : BuildType({
     }
 
     steps {
-        stepsOrder = arrayListOf("CHECKOUT_TESTBENCH_CASES_FROM_MINIO", "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT", "GENERATE_REPORT")
+        stepsOrder = arrayListOf("SET_TIME_VARIABLE", "CHECKOUT_TESTBENCH_CASES_FROM_MINIO", "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT", "GENERATE_REPORT")
     }
 })
