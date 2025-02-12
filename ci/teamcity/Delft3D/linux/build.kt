@@ -70,6 +70,7 @@ object LinuxBuild : BuildType({
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
+            dockerPull = true
         }
     }
 
