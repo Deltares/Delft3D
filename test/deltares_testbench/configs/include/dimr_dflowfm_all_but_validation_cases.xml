@@ -4779,6 +4779,20 @@
         </file>
       </checks>
     </testCase>
+     <testCase name="e02_f022_c17_bedslope_effect_slope022" ref="dflowfm_default">
+      <path version="2024-10-22T16:40:00">e02_dflowfm/f022_morphology_2D/c17_bedslope_effect_slope022</path>
+      <maxRunTime>30.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/str_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sbn" toleranceAbsolute="0.000001" />
+            <parameter name="mesh2d_sbt" toleranceAbsolute="0.000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
      <testCase name="e02_f022_c18_bedslope_effect_slope044" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f022_morphology_2D/c18_bedslope_effect_slope044</path>
       <maxRunTime>15000.0000000</maxRunTime>
