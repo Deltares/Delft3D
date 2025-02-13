@@ -826,6 +826,8 @@ contains
          deallocate (locTpObs)
          deallocate (obs2OP)
          deallocate (intobs)
+         deallocate (neighbour_nodes_obs)
+         deallocate (neighbour_weights_obs)
       end if
 
       call dealloc(network%obs) ! deallocate obs (defined in *.ini file)
@@ -841,7 +843,10 @@ contains
       allocate (locTpObs(capacity_))
       allocate (obs2OP(capacity_))
       allocate (intobs(capacity_))
+      allocate (neighbour_nodes_obs(3, capacity_))
+      allocate (neighbour_weights_obs(3, capacity_))
 
+      
       kobs = -999
       lobs = -999
 

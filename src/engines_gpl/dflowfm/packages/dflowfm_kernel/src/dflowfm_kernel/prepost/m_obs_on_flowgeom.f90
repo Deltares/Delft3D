@@ -81,10 +81,12 @@ contains
             call find_flownodes_and_links_for_all_observation_stations(numobs + 1, numobs + nummovobs)
          end if
       else
-         ! No cache, so process all requested observation points.
-         call find_flownodes_and_links_for_all_observation_stations(n1, n2)
+         ! No cache, so process all requested observation points (only if there are observation point to process).
+         if (n2 - n1 >= 0) then 
+             call find_flownodes_and_links_for_all_observation_stations(n1, n2)
 
-         call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs)
+             call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs)
+         end if
       end if
 
       if (loglevel_StdOut == LEVEL_DEBUG) then
@@ -133,6 +135,8 @@ contains
       character(len=IdLen), allocatable :: namobs_tmp0(:), namobs_tmp1(:), namobs_tmp2(:)
       integer :: nloctype1D, nloctype2D, nloctypeAll
       type(t_ObservationPoint), pointer :: pOPnt
+      
+      
 
       ntotal = nend - nstart + 1
       if (ntotal <= 0) then
@@ -227,10 +231,6 @@ contains
          call find_nearest_flowlinks(xobs_tmp0(1:nloctypeAll), yobs_tmp0(1:nloctypeAll), lobs_tmp0(1:nloctypeAll))
          do i = 1, nloctypeAll
             kobs(ixy2obs0(i)) = kobs_tmp0(i)
-            ! Interpolated station outside grod take nearest flownode!
-            if ((intobs(i) == 1) .and. (kobs_tmp0(i) == 0)) then
-                call find_nearest_flownodes(1, xobs_tmp0(i), yobs_tmp0(i), namobs_tmp0(i), kobs_tmp0(i), jakdtree, 1, INDTP_ALL)
-            end if
             lobs(ixy2obs0(i)) = lobs_tmp0(i)
          end do
       end if
@@ -279,19 +279,19 @@ contains
       integer      , dimension(3,n_start:n_end),intent(inout) :: neighbour_nodes_obs    ! Table of nearby flow node numbers for each station
       real(kind=dp), dimension(3,n_start:n_end),intent(inout) :: neighbour_weights_obs  ! Table of interpolation weights for nearby flow node numbers for each station
       
-      integer                                         :: jdla, i
+      integer                                         :: jdla, i, jagetwf_org
       real(kind=dp), allocatable                      :: dummyZ (:)
       real(kind=dp), allocatable                      :: dumout (:)
       
       ! Create arrays with dummy z values(samples and output, needto deallocate?)
       call realloc(dummyZ,ndx2d             , keepexisting=.false., fill=dmiss)
       call realloc(dumout,numobs + nummovobs, keepexisting=.false., fill=dmiss)
-           
+      
       ! interpolate
+      jagetwf_org = jagetwf
       jdla     = 1
       jagetwf  = 1
-      
-            
+           
       call realloc(indxx, (/3, numobs + nummovobs/), keepexisting=.false., fill=0)
       call realloc(wfxx, (/3, numobs + nummovobs/), keepexisting=.false., fill=0d0)
             
@@ -301,7 +301,9 @@ contains
       do i = 1, numobs + nummovobs
          neighbour_nodes_obs  (:, i) = indxx(:, i)
          neighbour_weights_obs(:, i) = wfxx (:, i)
-      end do  
+      end do
+      
+      jagetwf = jagetwf_org
 
   end subroutine  init_interpolation_data_for_all_observation_stations
   

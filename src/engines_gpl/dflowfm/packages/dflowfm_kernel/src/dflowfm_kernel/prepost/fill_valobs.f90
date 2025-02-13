@@ -211,16 +211,63 @@ module m_fill_valobs
          
             if (nshiptxy > 0) then
                if (allocated(zsp)) then
-                  valobs(i, IPNT_S1) = valobs(i, IPNT_S1) + zsp(k)
+!                 valobs(i, IPNT_S1) = valobs(i, IPNT_S1) + zsp(k)
+                  valobs(i, IPNT_S1) = (s1 (neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+                                        s1 (neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
+                                        s1 (neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) ) + &
+                                       (zsp(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+                                        zsp(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
+                                        zsp(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) )                   
                end if
             end if
 
-            valobs(i, IPNT_HS) = s1(k) - bl(k)
-
-            valobs(i, IPNT_BL) = bl(k)
-
-            valobs(i, IPNT_CMX) = cmxobs(i)
+!           valobs(i, IPNT_HS) = s1(k) - bl(k)
+            valobs(i, IPNT_HS) = (s1(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+                                  s1(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
+                                  s1(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) ) - &
+                                 (bl(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+                                  bl(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
+                                  bl(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) )
+           
+!           valobs(i, IPNT_BL) = bl(k)
+            valobs(i, IPNT_BL) = bl(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+                                 bl(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
+                                 bl(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i)
             
+!           Dont know what cmxobs is.           
+            valobs(i, IPNT_CMX) = cmxobs(i)
+
+            ! For now here: interpolate velocities, salinity and temperature (not within loop from kb to ke, taken care of in interpolate horizontal)
+            if (jahisvelocity > 0 .or. jahisvelvec > 0) then
+               call interpolate_horizontal (ueux,i,IPNT_UCX)
+               call interpolate_horizontal (ueuy,i,IPNT_UCY) 
+            end if
+            
+            if (jahisvelocity > 0) then
+               call interpolate_horizontal (ucmag,i,IPNT_UMAG)         
+            end if
+            
+            if (model_is_3D()) then
+            ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
+            ! (mis)use ueux to store cel cntres and salinity etc. noy used as ueux after this 
+                do j = 2, ndkx
+                   ueux(j) = 0.5d0 * (zws(j) + zws(j - 1))
+                end do
+                call interpolate_horizontal (ueux,i,IPNT_ZCS)  
+            end if
+            
+            if (jasal > 0) then
+               ueux = constituents(isalt,:)
+               call interpolate_horizontal (ueux,i,IPNT_SA1)
+            end if
+            
+            if (jatem > 0) then
+               ueux = constituents(itemp,:)
+               call interpolate_horizontal (ueux,i,IPNT_TEM1)
+            end if 
+
+!           From here back to normal (snapping in stead of interpolating)           
+
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0d0
                valobs(i, IPNT_wy) = 0d0
@@ -388,22 +435,17 @@ module m_fill_valobs
             do kk = kb, kt
                klay = kk - kb + nlayb
   
-               if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-                  call interpolate_horizontal (ueux,i,IPNT_UCX)
-                  call interpolate_horizontal (ueuy,i,IPNT_UCY) 
+!              if (jahisvelocity > 0 .or. jahisvelvec > 0) then
+!                 call interpolate_horizontal (ueux,i,IPNT_UCX)
+!                 call interpolate_horizontal (ueuy,i,IPNT_UCY) 
 !                  valobs(i, IPNT_UCX + klay - 1) = ueux(kk)
 !                  valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
-               end if
+!              end if
                
                
-               if (model_is_3D()) then
-                  ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
-                  do j = 2, ndkx
-                      ueux(j) = 0.5d0 * (zws(j) + zws(j - 1))
-                  end do
-                  call interpolate_horizontal (ueux,i,IPNT_ZCS)  
-!                 valobs(i, IPNT_ZCS + klay - 1) = 0.5d0 * (zws(kk) + zws(kk - 1))
-               end if
+!              if (model_is_3D()) then
+!                valobs(i, IPNT_ZCS + klay - 1) = 0.5d0 * (zws(kk) + zws(kk - 1))
+!              end if
 
                if (jawave > 0 .and. .not. flowWithoutWaves) then
                   if (hs(k) > epshu) then
@@ -421,17 +463,17 @@ module m_fill_valobs
                    valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
                end if
                
-               if (jasal > 0) then
+!              if (jasal > 0) then
                    ! (mis)use ueux to store salinities
-                  ueux = constituents(isalt,:)
-                  call interpolate_horizontal (ueux,i,IPNT_SA1)
+!                  ueux = constituents(isalt,:)
+!                  call interpolate_horizontal (ueux,i,IPNT_SA1)
 !                  valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
-               end if
-               if (jatem > 0) then
-                   ueux = constituents(itemp,:)
-                   call interpolate_horizontal (ueux,i,IPNT_TEM1)
+!              end if
+!              if (jatem > 0) then
+!                  ueux = constituents(itemp,:)
+!                  call interpolate_horizontal (ueux,i,IPNT_TEM1)
 !                  valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
-               end if
+!              end if
                if (jahistur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
@@ -441,13 +483,12 @@ module m_fill_valobs
                      valobs(i, IPNT_RHO + klay - 1) = rho(kk)
                   else
                      call interpolate_horizontal (rho,i,IPNT_RHOP) 
- !                    valobs(i, IPNT_RHOP + klay - 1) = rho(kk)
                   end if
                end if
-               if (jahisvelocity > 0) then
-                  call interpolate_horizontal (ucmag,i,IPNT_UMAG)         
+!               if (jahisvelocity > 0) then
+!                  call interpolate_horizontal (ucmag,i,IPNT_UMAG)         
 !                 valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
-               end if
+!               end if
                valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
 
                if (kmx == 0) then
