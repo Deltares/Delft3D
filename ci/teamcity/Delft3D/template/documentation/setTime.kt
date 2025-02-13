@@ -12,6 +12,7 @@ object TemplateSetTimeVariable : Template({
     params {
         // Environment variables that are overwritten in the build.
         param("env.TIME_ISO_8601", "")
+        param("GIT_HEAD_TIME", "")
     }
 
     steps {

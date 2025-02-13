@@ -15,4 +15,4 @@ REM Set the TeamCity parameter
 echo ##teamcity[setParameter name='env.TIME_ISO_8601' value='%GIT_HEAD_TIME%']
 
 REM Remove the variable
-set GIT_HEAD_TIME=
+@REM set GIT_HEAD_TIME=
