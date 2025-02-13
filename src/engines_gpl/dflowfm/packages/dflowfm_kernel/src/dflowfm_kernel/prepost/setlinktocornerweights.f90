@@ -57,14 +57,14 @@ contains
       integer :: k, L, ierr, nx
       integer :: k1, k2, k3, k4
       integer :: ka, kb, LL
-    wcnx3 = 0
-    wcny3 = 0
-    wcnx4 = 0
-    wcny4 = 0
+      wcnx3 = 0
+      wcny3 = 0
+      wcnx4 = 0
+      wcny4 = 0
 
-    !if (kmx > 0 .and. jased > 0 .and. jased < 4) then
-    wcLn = 0
-    !endif
+      !if (kmx > 0 .and. jased > 0 .and. jased < 4) then
+      wcLn = 0
+      !endif
 
       !if (kmx > 0 .and. jased > 0 .and. jased < 4) then
       if (allocated(wcLn)) deallocate (wcLn)
@@ -72,7 +72,7 @@ contains
       call aerr('wcLn(2,lnx)', ierr, lnx)
       !endif
 
-    jacorner = 0
+      jacorner = 0
       nx = 0
       do L = lnx1D + 1, lnx
          k3 = lncn(1, L); k4 = lncn(2, L)
@@ -205,19 +205,19 @@ contains
          end if
       end do
 
-    if (nrcnw > size(kcnw)) then
-       if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
-       allocate (cscnw(nrcnw), stat=ierr); 
-       call aerr('cscnw(nrcnw)', ierr, nrcnw)
-       allocate (sncnw(nrcnw), stat=ierr); 
-       call aerr('sncnw(nrcnw)', ierr, nrcnw)
-       allocate (kcnw(nrcnw), stat=ierr); 
-       call aerr(' kcnw(nrcnw)', ierr, nrcnw)
-       allocate (nwalcnw(2, nrcnw), stat=ierr); 
-       call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
-       allocate (sfcnw(nrcnw), stat=ierr); 
-       call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
-    end if
+      if (nrcnw > size(kcnw)) then
+         if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
+         allocate (cscnw(nrcnw), stat=ierr); 
+         call aerr('cscnw(nrcnw)', ierr, nrcnw)
+         allocate (sncnw(nrcnw), stat=ierr); 
+         call aerr('sncnw(nrcnw)', ierr, nrcnw)
+         allocate (kcnw(nrcnw), stat=ierr); 
+         call aerr(' kcnw(nrcnw)', ierr, nrcnw)
+         allocate (nwalcnw(2, nrcnw), stat=ierr); 
+         call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
+         allocate (sfcnw(nrcnw), stat=ierr); 
+         call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
+      end if
 
       if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
       allocate (cscnw(nrcnw), stat=ierr); cscnw = 0
@@ -267,50 +267,50 @@ contains
 
       end do
 
-    if (ja_Perot_weight_update == 0) then
-       deallocate (wcnxy, acn, jacorner)
-    end if
+      if (ja_Perot_weight_update == 0) then
+         deallocate (wcnxy, acn, jacorner)
+      end if
 
    end subroutine setlinktocornerweights
 
- subroutine allocatelinktocornerweights() ! allocate corner related link x- and y weights
-    use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, wcnxy, jacorner
-    use m_netw, only: numk
-    use m_alloc
+   subroutine allocatelinktocornerweights() ! allocate corner related link x- and y weights
+      use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, wcnxy, jacorner
+      use m_netw, only: numk
+      use m_alloc
 
-    implicit none
+      implicit none
 
-    integer ierr
+      integer ierr
 
-    if (allocated(wcnx3)) deallocate (wcnx3, wcny3, wcnx4, wcny4)
-    if (allocated(wcnxy)) deallocate (wcnxy)
-    allocate (wcnx3(lnx), stat=ierr); 
-    call aerr('wcnx3(lnx) ', ierr, lnx)
-    allocate (wcny3(lnx), stat=ierr); 
-    call aerr('wcny3(lnx) ', ierr, lnx)
-    allocate (wcnx4(lnx), stat=ierr); 
-    call aerr('wcnx4(lnx) ', ierr, lnx)
-    allocate (wcny4(lnx), stat=ierr); 
-    call aerr('wcny4(lnx) ', ierr, lnx)
-    if (allocated(wcLn)) deallocate (wcLn)
-    allocate (wcLn(2, lnx), stat=ierr); 
-    call aerr('wcLn(2,lnx)', ierr, lnx)
-    allocate (wcnxy(3, numk), stat=ierr); 
-    call aerr('wcnxy(3,numk)', ierr, 3 * numk)
-    allocate (jacorner(numk), stat=ierr)
-    call aerr('jacorner(numk)', ierr, numk)
+      if (allocated(wcnx3)) deallocate (wcnx3, wcny3, wcnx4, wcny4)
+      if (allocated(wcnxy)) deallocate (wcnxy)
+      allocate (wcnx3(lnx), stat=ierr); 
+      call aerr('wcnx3(lnx) ', ierr, lnx)
+      allocate (wcny3(lnx), stat=ierr); 
+      call aerr('wcny3(lnx) ', ierr, lnx)
+      allocate (wcnx4(lnx), stat=ierr); 
+      call aerr('wcnx4(lnx) ', ierr, lnx)
+      allocate (wcny4(lnx), stat=ierr); 
+      call aerr('wcny4(lnx) ', ierr, lnx)
+      if (allocated(wcLn)) deallocate (wcLn)
+      allocate (wcLn(2, lnx), stat=ierr); 
+      call aerr('wcLn(2,lnx)', ierr, lnx)
+      allocate (wcnxy(3, numk), stat=ierr); 
+      call aerr('wcnxy(3,numk)', ierr, 3 * numk)
+      allocate (jacorner(numk), stat=ierr)
+      call aerr('jacorner(numk)', ierr, numk)
 
-    if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
-    allocate (cscnw(nrcnw), stat=ierr); 
-    call aerr('cscnw(nrcnw)', ierr, nrcnw)
-    allocate (sncnw(nrcnw), stat=ierr); 
-    call aerr('sncnw(nrcnw)', ierr, nrcnw)
-    allocate (kcnw(nrcnw), stat=ierr); 
-    call aerr(' kcnw(nrcnw)', ierr, nrcnw)
-    allocate (nwalcnw(2, nrcnw), stat=ierr); 
-    call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
-    allocate (sfcnw(nrcnw), stat=ierr); 
-    call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
+      if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
+      allocate (cscnw(nrcnw), stat=ierr); 
+      call aerr('cscnw(nrcnw)', ierr, nrcnw)
+      allocate (sncnw(nrcnw), stat=ierr); 
+      call aerr('sncnw(nrcnw)', ierr, nrcnw)
+      allocate (kcnw(nrcnw), stat=ierr); 
+      call aerr(' kcnw(nrcnw)', ierr, nrcnw)
+      allocate (nwalcnw(2, nrcnw), stat=ierr); 
+      call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
+      allocate (sfcnw(nrcnw), stat=ierr); 
+      call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
 
- end subroutine allocatelinktocornerweights
+   end subroutine allocatelinktocornerweights
 end module m_setlinktocornerweights

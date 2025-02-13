@@ -31,22 +31,22 @@
 !
 module m_setlinktocenterweights
 
-    use m_flow
-    use m_netw
-    use m_flowgeom
-    use m_sferic
-    use m_longculverts
-    use m_flowparameters, only: ja_Perot_weight_update
+   use m_flow
+   use m_netw
+   use m_flowgeom
+   use m_sferic
+   use m_longculverts
+   use m_flowparameters, only: ja_Perot_weight_update
 
-    implicit none
+   implicit none
 
-    double precision :: wud, wuL1, wuL2, cs, sn
-    integer :: L, n, kk, n12, lnxmax
-    integer :: k1, k2, LL
-    integer :: ilongc, L1dlink
+   double precision :: wud, wuL1, wuL2, cs, sn
+   integer :: L, n, kk, n12, lnxmax
+   integer :: k1, k2, LL
+   integer :: ilongc, L1dlink
    private
 
-    double precision :: aa1, wcw, alf
+   double precision :: aa1, wcw, alf
    public :: setlinktocenterweights
 
 contains
@@ -248,13 +248,13 @@ contains
 
       end do
 
-    if (ja_Perot_weight_update == 0) then 
-       deallocate (wcxy)
-       deallocate (wc)
-       if (allocated(wwL)) then 
-          deallocate (wwL)
-       end if 
-    end if 
+      if (ja_Perot_weight_update == 0) then
+         deallocate (wcxy)
+         deallocate (wc)
+         if (allocated(wwL)) then
+            deallocate (wwL)
+         end if
+      end if
 
       kfs = 0
 
