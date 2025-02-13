@@ -40,7 +40,7 @@ module m_flow_geominit
    use m_sort_flowlinks_ccw, only: sort_flowlinks_ccw
    use m_setwallorientations, only: setwallorientations
    use m_setprofs1d, only: setprofs1d
-   use m_setlinktocornerweights, only: setlinktocornerweights
+   use m_setlinktocornerweights, only: setlinktocornerweights, allocatelinktocornerweights
    use m_setlinktocenterweights, only: setlinktocenterweights
    use m_setcornertolinkorientations, only: setcornertolinkorientations
    use m_setcentertolinkorientations, only: setcentertolinkorientations
@@ -70,7 +70,7 @@ contains
       use precision, only: dp
       use m_cutcell_list, only: cutcell_list
       use m_checknetwork, only: checknetwork
-      use m_allocate_linktocenterweights, only: allocate_linktocenterweights
+      use m_allocate_linktocenterweights, only: allocatelinktocenterweights
       use m_add_boundarynetcells, only: add_boundarynetcells
       use m_addexternalboundarypoints, only: addexternalboundarypoints
       use m_xbeachwaves, only: xbeach_makethetagrid
@@ -1075,8 +1075,8 @@ contains
 
       call setcornertolinkorientations()
 
-    call allocate_linktocornerweights()
-    call set_linktocornerweights()
+    call allocatelinktocornerweights()
+    call setlinktocornerweights()
 
       do n = ndx2D + 1, ndxi
          call allocateandset1Dnodexyarrays(n) ! na  csu en snu
@@ -1250,8 +1250,8 @@ contains
 
       call setwallorientations()
 
-    call allocate_linktocenterweights()
-    call set_linktocenterweights()
+    call allocatelinktocenterweights()
+    call setlinktocenterweights()
 
 !-------------------------------------------------- CELL CORNER RELATED -----------------------------------------------
 

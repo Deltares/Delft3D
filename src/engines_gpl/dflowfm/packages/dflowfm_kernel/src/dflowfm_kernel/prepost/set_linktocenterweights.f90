@@ -31,13 +31,13 @@
 !
 module m_setlinktocenterweights
 
-   implicit none
     use m_flow
     use m_netw
     use m_flowgeom
     use m_sferic
     use m_longculverts
     use m_flowparameters, only: ja_Perot_weight_update
+
     implicit none
 
     double precision :: wud, wuL1, wuL2, cs, sn
@@ -66,12 +66,7 @@ contains
       integer :: k1, k2, LL
       integer :: ilongc, L1dlink
 
-
       real(kind=dp) :: aa1, wcw, alf
-      real(kind=dp), allocatable :: wwL(:)
-
-      real(kind=dp), allocatable :: wcxy(:, :) ! center weight factors (2,ndx) , only for normalising
-      real(kind=dp), allocatable :: wc(:) ! center weight factors (ndx)   , only for normalising
 
       wcx1 = 0
       wcy1 = 0

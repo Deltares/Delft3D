@@ -41,6 +41,7 @@ module m_setlinktocornerweights
     integer :: k1, k2, k3, k4
     integer :: ka, kb, LL
    public :: setlinktocornerweights
+   public :: allocatelinktocornerweights
 
 contains
 
@@ -60,9 +61,6 @@ contains
       integer :: k, L, ierr, nx
       integer :: k1, k2, k3, k4
       integer :: ka, kb, LL
-
-      real(kind=dp), allocatable :: wcnxy(:, :) ! corner weight factors (2,numk) , only for normalising
-      integer, dimension(:), allocatable :: jacorner ! corner node (1) or not (0), dim(numk)
 
       if (allocated(wcnx3)) deallocate (wcnx3, wcny3, wcnx4, wcny4)
       if (allocated(wcnxy)) deallocate (wcnxy)
@@ -281,7 +279,7 @@ contains
 
    end subroutine setlinktocornerweights
 
- subroutine allocate_linktocornerweights() ! allocate corner related link x- and y weights
+ subroutine allocatelinktocornerweights() ! allocate corner related link x- and y weights
     use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, wcnxy, jacorner
     use m_netw, only: numk
     use m_alloc
@@ -320,5 +318,5 @@ contains
     allocate (sfcnw(nrcnw), stat=ierr); 
     call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
 
- end subroutine allocate_linktocornerweights
+ end subroutine allocatelinktocornerweights
 end module m_setlinktocornerweights
