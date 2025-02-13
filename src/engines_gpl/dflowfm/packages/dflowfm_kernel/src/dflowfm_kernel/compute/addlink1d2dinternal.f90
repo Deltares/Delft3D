@@ -47,14 +47,14 @@ contains
       use unstruc_channel_flow, only: network
       use m_get_link_area_wid2D
       use m_get_prof2d
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
       use m_get_hpr_nostruc
 
       implicit none
 
       integer :: japerim, L
 
-      integer :: k1, k2, jaconv, ifrctyp
+      integer :: k1, k2, jaconv, friction_type
       real(kind=dp) :: hpr1, ar1, wid1, hpr2, ar2, wid2, aru, widu, aconvu
       real(kind=dp) :: dx1, dx2, frcn, BL1, BL2, b21, wu2, ai
       real(kind=dp) :: beta, deltaa, hyr, Cz
@@ -97,11 +97,11 @@ contains
 
             hpr1 = get_hpr_nostruc(L)
             frcn = frcu(L)
-            ifrctyp = ifrcutp(L)
+            friction_type = ifrcutp(L)
             if (jaconveyance2D > 0) then
 
                jaconv = min(2, jaconveyance2D)
-               call getprof2d(hpr1, wu2, b21, ai, frcn, ifrctyp, widu, aru, aconvu, jaconv, beta, deltaa, hyr)
+               call getprof2d(hpr1, wu2, b21, ai, frcn, friction_type, widu, aru, aconvu, jaconv, beta, deltaa, hyr, L)
 
                if (frcn > 0) then
                   cfuhi(L) = aifu(L) * ag * aconvu
@@ -112,7 +112,7 @@ contains
             else
                au(L) = hpr1 * wu(L)
                if (frcn > 0) then
-                  call getcz(hu(L), frcn, ifrctyp, Cz, L)
+                Cz = get_chezy(hu(L), frcn, u1(L), v(L), friction_type)
                   cfuhi(L) = ag / (hu(L) * Cz * Cz)
                else
                   cfuhi(L) = 0d0

@@ -481,8 +481,8 @@ contains
 !        numlimdt(kkcflmx) = numlimdt(kkcflmx) + 1
 !    endif
 
-!    if (dts > dtfacmax*dtprev) then
-!        dts = dtfacmax*dtprev
+!    if (dts > dt_fac_max*dtprev) then
+!        dts = dt_fac_max*dtprev
 !        nsteps = ceiling((time_user-time0) / dts)
 !        ! New timestep dts would be rounded down to same dtprev (undesired, so use nsteps-1)
 !        if (nsteps == ceiling((time_user-time0) / dtprev)) then
@@ -507,7 +507,7 @@ contains
          kkcflmx = 0 ! SPvdP: safety, was undefined but could be used later
       end if
 
-! if (jatimestepanalysis == 1) then
+! if (ja_time_step_analysis == 1) then
 !    if (mout == 0) then
 !       call newfil(mout, trim(md_ident)//'.steps')
 !       write(mout, '(A)')  'time0/60, dts, dtsc, kkcflmx, kcflmx-kbot(kkcflmx)+1, vol1(kcflmx), squ2D(kcflmx), squ(kcflmx), sqi(kcflmx) '

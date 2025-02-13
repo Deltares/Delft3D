@@ -31,7 +31,6 @@
 !
 
 module m_flow_allocflow
-   use m_polygonlayering, only: polygonlayering
 
    implicit none
 
@@ -66,6 +65,10 @@ contains
       use m_get_zlayer_indices
       use m_get_zlayer_indices_bobL
       use m_filez, only: oldfil
+      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, clou, rain, evap, tair, heatsrc, heatsrc0, & 
+         longwave, patm, rhum, qrad, tbed, rhoair, qext, qextreal, vextcum, cdwcof
+      use m_nudge, only: nudge_tem, nudge_sal, nudge_time, nudge_rate
+      use m_polygonlayering, only: polygonlayering
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -567,9 +570,7 @@ contains
       call aerr('uqcx(ndkx) , uqcy(ndkx)', ierr, 2 * ndkx); uqcx = 0; uqcy = 0
       allocate (ucxq(ndkx), ucyq(ndkx), stat=ierr)
       call aerr('ucxq(ndkx) , ucyq(ndkx)', ierr, 2 * ndkx); ucxq = 0; ucyq = 0
-      if (jamapucvec == 1 .or. jamapucmag == 1 .or. jahisvelocity == 1 .or. len_trim(md_foufile) > 0 .or. allocated(map_classes_ucmag) .or. jahistaucurrent > 0) then
-         call realloc(ucmag, ndkx, keepExisting=.false.)
-      end if
+      call realloc(ucmag, ndkx, keepExisting=.false.)
       allocate (qin(ndkx), vih(ndkx), stat=ierr)
       call aerr('qin (ndkx) , vih (ndkx)', ierr, 2 * ndkx); qin = 0; vih = 0
       allocate (dvxc(ndkx), dvyc(ndkx), stat=ierr)
@@ -1230,7 +1231,7 @@ contains
       if (idensform > 0 .and. jaRichardsononoutput > 0) then
          if (allocated(rich)) deallocate (rich)
          allocate (rich(lnkx), stat=ierr)
-         call aerr('rich(lnkx)', ierr, ndkx); rich = 0d0
+         call aerr('rich(lnkx)', ierr, lnkx); rich = 0d0
       else
          jaRichardsononoutput = 0
       end if

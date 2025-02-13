@@ -571,7 +571,7 @@ contains
             n1 = pstor%grid_point
             if (n1 <= 0) cycle
             if (bl(n1) < pstor%storage_area%x(1)) then
-               call setmessage(LEVEL_WARN, 'At node '//trim(network%nds%node(i)%id)//' the bedlevel is below the bedlevel of the assigned storage area.')
+               call setmessage(LEVEL_WARN, 'At node '//trim(pstor%node_id)//' the bedlevel is below the bedlevel of the assigned storage area.')
                write (msgbuf, '(''The bedlevel (due to invert levels of incoming channels/pipes) = '', g14.2, '' and the bottom level of the storage area is '', g14.2)') &
                   bl(n1), pstor%storage_area%x(1)
                call setmessage(-LEVEL_WARN, msgbuf)

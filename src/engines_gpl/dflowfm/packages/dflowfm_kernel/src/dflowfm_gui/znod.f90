@@ -49,12 +49,13 @@ contains
       use m_transportdata
       use m_observations_data
       use m_flowparameters, only: ispirparopt
-      use m_wind, only: jawind
+      use m_wind, only: japatm, patm, rain, rhum, tbed, tair, clou, qrad
       use unstruc_display_data, only: grwhydopt
       use m_drawthis
       use m_get_equilibrium_transport_rates
       use m_get_tau
-
+      use m_nudge, only: nudge_rate
+      
       implicit none
 
       integer :: kk, k, nodval, L

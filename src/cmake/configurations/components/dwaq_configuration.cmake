@@ -19,7 +19,7 @@ add_target_with_subdirectory(install_waq ${install_waq_module})
 
 #intel MPI & MKL
 if(WIN32)
-   if(${configuration_type} STREQUAL ${dwaq_configuration})
+   if(${configuration_type} STREQUAL ${dwaq_configuration} OR (${configuration_type} STREQUAL ${testbench-waq_configuration}) OR (${configuration_type} STREQUAL ${testbench-part_configuration}) OR (${configuration_type} STREQUAL ${testbench-tc_configuration}))
         message(STATUS "Intel MPI & MKL")
         list(APPEND CMAKE_MESSAGE_INDENT "   ")
 

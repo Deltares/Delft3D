@@ -66,10 +66,10 @@ program tests_connection_manager
         end select
     else
         write (*, *) "No test specified, running all tests"
-        !call runtests(call_test_add_connection)
-        !call runtests(call_test_get_connection_by_exchange_name)
+        call runtests(call_test_add_connection)
+        call runtests(call_test_get_connection_by_exchange_name)
         call runtests(call_test_get_incoming_connections_by_category)
-        !call runtests(call_test_add_multiple_connections)
+        call runtests(call_test_add_multiple_connections)
     end if
 
     call runtests_final()
@@ -168,13 +168,16 @@ contains
     end subroutine
 
     subroutine test_get_connection_by_exchange_name()
-        type(connection_manager) :: connections
+        type(connection_manager) :: connections 
         type(connection_data), allocatable :: new_connection
         type(connection_data), pointer :: new_connection_pointer
         type(connection_data), pointer :: found_connection_correct_name
         type(connection_data), pointer :: found_connection_incorrect_name
         character(*), parameter :: exchange_name = "TO_DELWAQ|WASTE|1|FLOW"
 
+        nullify(found_connection_correct_name)
+        nullify(found_connection_incorrect_name)
+        
         ! arrange
         new_connection = create_default_connection(exchange_name)
         new_connection_pointer => connections%add_connection(new_connection)
@@ -236,6 +239,8 @@ contains
         type(connection_data), allocatable :: new_connection
 
         real(kind=dp), pointer :: dummy_pointer
+        
+        nullify(dummy_pointer)
 
         new_connection = connection_data( &
                          exchange_name=exchange_name, &

@@ -93,6 +93,7 @@ contains
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
       use m_sediment, only: stm_included, stmpar
+      use m_wind, only: japatm, jawind
       implicit none
 
       integer :: i, i0, numfracs, nlyrs

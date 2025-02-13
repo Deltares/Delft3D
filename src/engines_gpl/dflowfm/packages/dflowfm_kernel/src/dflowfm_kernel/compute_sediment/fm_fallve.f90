@@ -49,7 +49,7 @@ contains
       !              Fall velocity at layer interfaces.
    !!--declarations----------------------------------------------------------------
       use precision
-      use m_physcoef, only: ee, ag, sag, vonkar, backgroundsalinity, backgroundwatertemperature, vismol
+      use m_physcoef, only: ag, sag, vonkar, backgroundsalinity, backgroundwatertemperature, vismol
       use m_sediment, only: stmpar, mtd, sed
       use m_flowtimes, only: time1
       use m_flowgeom, only: ndx, ln, bl, wcl, lnx
@@ -65,6 +65,7 @@ contains
       use m_fm_erosed, only: taub, sedtyp
       use flocculation, only: get_tshear_tdiss
       use m_get_kbot_ktop
+      use mathconsts, only: ee
       !
       implicit none
       !

@@ -25,16 +25,13 @@ if [%3] EQU [] (
 set srcfile=%1
 set destfile=%2
 set wfile=%3
-if [%4] EQU [] (
-    set addflags=-m bilinear
-) else (
-    if [%4] EQU [CARTESIAN] (
-        set addflags=-m bilinear --src_type ESMF --dst_type ESMF 
-    )
+set addflags=--method bilinear
+if [%4] EQU [CARTESIAN] (
+    set addflags=%addflags% --src_loc corner --dst_loc corner
 )
 
 set defaultflags=--ignore_unmapped
-set arguments=%defaultflags% %addflags% -s %srcfile% -d %destfile% -w %wfile%
+set arguments=%defaultflags% %addflags% --source %srcfile% --destination %destfile% --weight %wfile%
 
 set PATH=%exedir%;%PATH%
 

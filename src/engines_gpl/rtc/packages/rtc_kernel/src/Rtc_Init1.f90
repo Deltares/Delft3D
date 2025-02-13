@@ -51,7 +51,7 @@
 ! *********************************************************************
 
       Use ParameterModule
-      Use LanguageModule
+      Use LanguageModule_rtc
       Use FileModule
       Use LocationDataModule
       Use DecisionModule

@@ -64,17 +64,17 @@ contains
       jagrw = 0 !< include ground water
       jaintercept2D = 0 !< 1 = uniform, 2 = spatially variable
       !Hinterceptionlayer          !< thickness of interception layer in  (m) only if infiltrationmodel == 1
-      Conductivity = 0d-4 !< non dimensionless K conductivity   saturated (m/s), Q = K*A*i (m3/s)
-      Unsatfac = 1.0d0 !< reduction factor for conductivity in unsaturated zone
+      Conductivity = 0.0_dp !< non dimensionless K conductivity   saturated (m/s), Q = K*A*i (m3/s)
+      Unsatfac = 1.0_dp !< reduction factor for conductivity in unsaturated zone
 
-      h_aquiferuni = 20d0 !< uniform height of carrying layer
-      h_unsatini = 0.2 !< initial level groundwater is bedlevel - h_unsatini
-      sgrwini = -999d0 !< initial level groundwater. If specified, h_unsatini wiil not be used
-      bgrwuni = -999d0 !< initial level groundwater. If specified, h_unsatini wiil not be used
-      h_capillair = 0.5 !< Capillary rising height (m)
-      h_transfer = 0.1d0 !< uniform thickness (numerical) transfer zone grw <-> openw
+      h_aquiferuni = 20.0_dp !< uniform height of carrying layer
+      h_unsatini = 0.2_dp !< initial level groundwater is bedlevel - h_unsatini
+      sgrwini = -999.0_dp !< initial level groundwater. If specified, h_unsatini wiil not be used
+      bgrwuni = -999.0_dp !< initial level groundwater. If specified, h_unsatini wiil not be used
+      h_capillair = 0.5_dp !< Capillary rising height (m)
+      h_transfer = 0.1_dp !< uniform thickness (numerical) transfer zone grw <-> openw
 
-      porosgrw = 0.25d0 !< porosity of soil = Vair / (Vsoil+Vair)  , or,
+      porosgrw = 0.25_dp !< porosity of soil = Vair / (Vsoil+Vair)  , or,
       !< porosity of soil = (Rhoparticle - Rhobulk) / Rhoparticle
       ! Remaining of variables is handled in reset_grw()
       call reset_grw()

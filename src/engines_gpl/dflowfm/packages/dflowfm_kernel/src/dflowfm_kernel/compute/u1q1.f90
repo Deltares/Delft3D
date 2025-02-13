@@ -49,6 +49,7 @@ contains
       use m_timer
       use unstruc_channel_flow
       use m_1d_structures
+      use m_wind, only: jaqin
 
       implicit none
 

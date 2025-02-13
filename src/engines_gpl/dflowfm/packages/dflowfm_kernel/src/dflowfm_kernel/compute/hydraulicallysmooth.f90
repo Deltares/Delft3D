@@ -29,45 +29,45 @@
 
 !
 !
-
 module m_hydraulicallysmooth
-
    implicit none
+   private
+
+   public :: hydraulicallysmooth
 
 contains
 
-   subroutine hydraulicallysmooth(umod, h, sqcf)
+   pure function hydraulicallysmooth(umod, h) result(sqcf)
+      use m_physcoef, only: viskin, vonkar
       use precision, only: dp
-      use m_physcoef
-      use m_flow
       implicit none
-      real(kind=dp) :: umod, h, sqcf
-      real(kind=dp) :: r, rv = 123.8d0, e = 8.84d0, eps = 1d-2, s, sd, er, ers
+
+      real(kind=dp), intent(in) :: umod
+      real(kind=dp), intent(in) :: h
+      real(kind=dp) :: sqcf
+
+      real(kind=dp), parameter :: rv = 123.8_dp, e = 8.84_dp, eps = 1e-2_dp
+      real(kind=dp) :: r, s, sd, er, ers
 
       r = umod * h / viskin ! Local re-number:
-      r = max(r, 0.001d0)
-      er = e * r
+      r = max(r, 1e-3_dp)
       if (r < rv) then ! Viscous sublayer:
          s = sqrt(r)
       else
-
-         s = 12d0 ! In log-layer; initial trial for s:
-100      continue
-         sd = s
-         ers = max(er / sd, 1.0001d0)
-         s = log(ers) / vonkar
-
-         if (abs(sd - s) > (eps * s)) then
-            go to 100 ! Convergence criterium:
-         end if
+         s = 12.0_dp ! In log-layer; initial trial for s:
+         sd = 0.0_dp
+         er = e * r
+         do while (abs(sd - s) > (eps * s))
+            sd = s
+            ers = max(er / sd, 1.0001e0_dp)
+            s = log(ers) / vonkar
+         end do
       end if
 
-      if (s > 0d0) then
-         sqcf = 1d0 / s
+      if (s > 0.0_dp) then
+         sqcf = 1.0_dp / s
       else
-         sqcf = 0d0
+         sqcf = 0.0_dp
       end if
-
-   end subroutine hydraulicallysmooth
-
+   end function hydraulicallysmooth
 end module m_hydraulicallysmooth

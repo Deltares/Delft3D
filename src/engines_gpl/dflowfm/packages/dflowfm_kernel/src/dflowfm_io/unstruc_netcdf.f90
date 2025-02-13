@@ -1600,7 +1600,9 @@ contains
          ! Write work array.
          ! Internal 2dv horizontal flowlinks. Horizontal position: edges in 1d mesh. Vertical position: layer centers.
          if (id_var(1) > 0 .and. lnx1d > 0) then
-            ierr = nf90_put_var(ncid, id_var(1), workU3D(1:kmx, 1:lnx1d), start=(/1, 1, id_tsp%idx_curtime/), count=(/kmx, lnx1d, 1/))
+            if (size(id_tsp%edgetoln, 1) > 0) then
+               ierr = nf90_put_var(ncid, id_var(1), workU3D(1:kmx, id_tsp%edgetoln(:)), start=(/1, 1, id_tsp%idx_curtime/), count=(/kmx, size(id_tsp%edgetoln, 1), 1/))
+            end if
          end if
          lnx2d = lnx - lnx1d ! TODO: AvD: now also includes 1D bnds, dont want that.
          ! Internal and external 3d horizontal flowlinks (and 2dv external flowlinks). Horizontal position: edges in 2d mesh. Vertical position: layer centers.
@@ -1612,7 +1614,7 @@ contains
             ! Number of netlinks can be > number of flowlinks, if there are closed edges.
             numl2d = numl - numl1d
             ! Write default_value on all remaining edges in 2d mesh (i.e. closed edges).
-            ierr = nf90_put_var(ncid, id_var(2), (/default_value/), start=(/1, lnx2d + 1, id_tsp%idx_curtime/), count=(/kmx, numl2d - lnx2d, 1/), map=(/0/)) ! Use map = 0 to write a single value on multiple edges in file.
+            ierr = nf90_put_var(ncid, id_var(2), (/default_value/), start=(/1, lnx2d + 1, id_tsp%idx_curtime/), count=(/kmx, numl2d - lnx2d, 1/), map=(/0,0,0/)) ! Use map = 0 to write a single value on multiple edges in file.
          end if
 
       case (UNC_LOC_W) ! Vertical velocity point location on all layer interfaces.
@@ -2412,7 +2414,7 @@ contains
 !> Puts global attributes in NetCDF data set.
 !! This includes: institution, Conventions, etc.
    subroutine unc_addglobalatts(ncid)
-      use messagehandling, only : err_flush
+      use messagehandling, only: err_flush
       integer, intent(in) :: ncid
 
       character(len=8) :: cdate
@@ -5268,8 +5270,9 @@ contains
       use m_reconstruct_ucz
       use m_reconstruct_sed_transports
       use m_get_ucx_ucy_eul_mag
-      use m_get_cz
-      use messagehandling, only : err_flush
+      use m_get_chezy, only: get_chezy
+      use messagehandling, only: err_flush
+      use m_nudge, only: nudge_rate, nudge_tem, nudge_sal
 
       implicit none
 
@@ -7664,7 +7667,7 @@ contains
       if (jamap_chezy_links > 0) then
          do LL = 1, lnx
             if (frcu(LL) > 0d0) then
-               call getcz(hu(LL), frcu(LL), ifrcutp(LL), czu(LL), LL) ! in gettaus czu is calculated but not stored
+               czu(LL) = get_chezy(hu(LL), frcu(LL), u1(LL), v(LL), ifrcutp(LL)) ! in gettaus czu is calculated but not stored
             end if
          end do
       end if
@@ -8010,7 +8013,7 @@ contains
       use m_reconstruct_ucz
       use m_reconstruct_sed_transports
       use m_get_ucx_ucy_eul_mag
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
 
       implicit none
 
@@ -9857,7 +9860,7 @@ contains
          if (jamap_chezy_links > 0) then
             do LL = 1, lnx
                if (frcu(LL) > 0d0) then
-                  call getcz(hu(LL), frcu(LL), ifrcutp(LL), czu(LL), LL)
+                  czu(LL) = get_chezy(hu(LL), frcu(LL), u1(LL), v(LL), ifrcutp(LL))
                end if
             end do
          end if
@@ -13219,7 +13222,7 @@ contains
       call readyy('Reading map data', 0.10d0)
 
       iostat = 0
-      call datetimestring_to_seconds(restartdatetime(1:14), refdat, trefdat_rst, iostat) ! result: refdatnew in seconds  w.r.t. absolute MDU refdat
+      call datetimestring_to_seconds(restart_date_time(1:14), refdat, trefdat_rst, iostat) ! result: refdatnew in seconds  w.r.t. absolute MDU refdat
       mdu_has_date = (iostat == 0)
 
       if (nt_read == 1 .and. .not. mdu_has_date) then
@@ -13227,9 +13230,9 @@ contains
          ! only a single time snapshot in file: directly use it.
          it_read = 1
       else
-         ! Restart from *_map.nc and select time snapshot based on MDU RestartDateTime value.
+         ! Restart from *_map.nc and select time snapshot based on MDU restartDateTime value.
          if (.not. mdu_has_date) then
-            call mess(LEVEL_WARN, 'Missing RestartDateTime in MDU file. Will not read from map file '''//trim(filename)//'''.')
+            call mess(LEVEL_WARN, 'Missing restartDateTime in MDU file. Will not read from map file '''//trim(filename)//'''.')
             ierr = DFM_WRONGINPUT
             goto 999
          end if
@@ -13252,7 +13255,7 @@ contains
          call check_error(ierr, 'time')
          call readyy('Reading map data', 0.20d0)
 
-         ! Find last map time <= restartdatetime
+         ! Find last map time <= restart_date_time
          it_read = 0
          do L = nt_read, 1, -1
             if (maptimes(L) + trefdat_map <= trefdat_rst) then
@@ -13261,11 +13264,11 @@ contains
             end if
          end do
 
-         ! If no map time was found <= restartdatetime, issue warning
+         ! If no map time was found <= restart_date_time, issue warning
          if (it_read == 0) then
             ! TODO: warning
             ! And stop, because no suitable restart time found.
-            call mess(LEVEL_WARN, 'No suitable restart time found in '''//trim(filename)//''' for requested RestartDateTime='//trim(restartdatetime)//'.')
+            call mess(LEVEL_WARN, 'No suitable restart time found in '''//trim(filename)//''' for requested restartDateTime='//trim(restart_date_time)//'.')
             ierr = DFM_WRONGINPUT
             goto 999
          end if
@@ -15221,7 +15224,23 @@ contains
 
       n1d2dcontacts = 0
 
-      call unc_write_1D_flowgeom_ugrid(id_tsp, ncid, jabndnd_, jafou_, ja2D_, contacts, contacttype, n1d2dcontacts)
+      if (jafullgridoutput == 0) then
+         unc_writeopts = ior(unc_writeopts, UG_WRITE_LYRVAR)
+      else
+         unc_writeopts = iand(unc_writeopts, not(UG_WRITE_LYRVAR))
+      end if
+
+      waterlevelname = 's1'
+      bldepthname = 'bldepth'
+      if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
+         if (jafou_) then
+            waterlevelname = 's1max'
+         end if
+      end if
+
+      ! note: unc_writeopts, waterlevelname, and bldepthname are module variables
+      ! and as such implicitly passed to unc_write_1D_flowgeom_ugrid
+      call unc_write_1D_flowgeom_ugrid(id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
       numk2d = 0
       ndx1d = ndxi - ndx2d
       if (ndx2d > 0 .and. ja2D_) then ! 2D flow geometry
@@ -15294,20 +15313,6 @@ contains
          ! face_nodes does not need to be re-mapped: 2d cells come first
          ! TODO: AvD: lnx1d+1:lnx includes open bnd links, which may *also* be 1D boundaries (don't want that in mesh2d)
          ! note edge_faces does not need re-indexing, cell number are flow variables and 2d comes first
-
-         if (jafullgridoutput == 0) then
-            unc_writeopts = ior(unc_writeopts, UG_WRITE_LYRVAR)
-         else
-            unc_writeopts = iand(unc_writeopts, not(UG_WRITE_LYRVAR))
-         end if
-
-         waterlevelname = 's1'
-         bldepthname = 'bldepth'
-         if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
-            if (jafou_) then
-               waterlevelname = 's1max'
-            end if
-         end if
 
          ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids2d, mesh2dname, 2, UG_LOC_EDGE + UG_LOC_FACE, numk2d, numl2d, ndx2d, numNodes, &
                                      edge_nodes, face_nodes, edge_faces, null(), null(), x2dn, y2dn, xue, yue, xz(1:ndx2d), yz(1:ndx2d), &
@@ -15458,7 +15463,7 @@ contains
    end subroutine unc_write_flowgeom_filepointer_ugrid
 
 !> Writes the unstructured 1D flow geometry in UGRID format to an already opened netCDF dataset for use in the dfm volume tool.
-   subroutine unc_write_1D_flowgeom_ugrid(id_tsp, ncid, jabndnd, jafou, ja2D, contacts_, contacttype_, numcontacts)
+   subroutine unc_write_1D_flowgeom_ugrid(id_tsp, ncid, jabndnd, jafou, ja2D, layer_count, layer_type, layer_zs, interface_zs, contacts_, contacttype_, numcontacts)
       use precision, only: dp
 
       use m_flowgeom
@@ -15479,9 +15484,13 @@ contains
 
       integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
       type(t_unc_timespace_id), intent(inout) :: id_tsp !< Set of time and space related variable id's
+      real(kind=dp), optional, pointer, intent(in) :: interface_zs(:) !< layer interface coordinates
       integer, optional, intent(in) :: jabndnd !< Whether to include boundary nodes (1) or not (0). Default: no.
       logical, optional, intent(in) :: jaFou !< Whether this flowgeom writing is part of a Fourier file or not (affects 3D layer writing)
       logical, optional, intent(in) :: ja2D !< Whether to include the 2D grid (default = .true.)
+      integer, optional, intent(in) :: layer_count !< number of layers
+      integer, optional, intent(in) :: layer_type !< layer distribution
+      real(kind=dp), optional, pointer, intent(in) :: layer_zs(:) !< layer centre coordinates
       integer, optional, intent(out) :: numcontacts !< Output variable that will be filled with the number of contacts
       integer, optional, intent(out), allocatable :: contacts_(:, :) !< output contacts array
       integer, optional, intent(out), allocatable :: contacttype_(:) !< output contact type array
@@ -15491,15 +15500,17 @@ contains
       integer :: last_1d !< Last 1D node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
       integer :: n1d_write !< Number of 1D nodes to write.
       integer :: ndx1d !< Number of internal 1D nodes.
+      integer :: layer_count_ !< number of layers (local variable)
+      integer :: layer_type_ !< layer distribution (local variable)
+      real(kind=dp), pointer :: interface_zs_(:) !< layer interface coordinates (local variable)
+      real(kind=dp), pointer :: layer_zs_(:) !< layer centre coordinates (local variable)
 
       integer :: nn
       integer, allocatable :: edge_nodes(:, :), face_nodes(:, :), edge_type(:), contacts(:, :)
-      integer :: layer_count, layer_type
    !! Geometry options
       integer, parameter :: LAYERTYPE_OCEAN_SIGMA = 1 !< Dimensionless vertical ocean sigma coordinate.
       integer, parameter :: LAYERTYPE_Z = 2 !< Vertical coordinate for fixed z-layers.
       integer, parameter :: LAYERTYPE_OCEAN_SIGMA_Z = 3 !< Combined Z-Sigma layers
-      real(kind=dp), dimension(:), pointer :: layer_zs => null(), interface_zs => null()
       logical :: jafou_
       logical :: ja2D_
 !   type(t_crs) :: pj
@@ -15560,6 +15571,17 @@ contains
       else
          ja2D_ = .false.
       end if
+      if (present(layer_count) .and. present(layer_type) .and. present(layer_zs) .and. present(interface_zs)) then
+         layer_count_ = layer_count
+         layer_type_ = layer_type
+         layer_zs_ => layer_zs
+         interface_zs_ => interface_zs
+      else
+         layer_count_ = 0
+         layer_type_ = -1
+         layer_zs_ => null()
+         interface_zs_ => null()
+      end if
 
       ! Put dataset in define mode (possibly again) to add dimensions and variables.
       ierr = nf90_redef(ncid)
@@ -15573,9 +15595,6 @@ contains
       if (jsferic == 1) then
          crs%epsg_code = 4326
       end if
-
-      layer_count = 0
-      layer_type = -1
 
       n1d_write = last_1d - ndx2d
       ndx1d = ndxi - ndx2d
@@ -15690,7 +15709,7 @@ contains
             if (associated(meshgeom1d%ngeopointx)) then
                ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids1d, mesh1dname, 1, UG_LOC_NODE + UG_LOC_EDGE, n1d_write, n1dedges, 0, 0, &
                                            edge_nodes, face_nodes, null(), null(), null(), x1dn, y1dn, xu(id_tsp%edgetoln(:)), yu(id_tsp%edgetoln(:)), xz(1:1), yz(1:1), &
-                                           crs, -999, dmiss, start_index, layer_count, layer_type, layer_zs, interface_zs, &
+                                           crs, -999, dmiss, start_index, layer_count_, layer_type_, layer_zs_, interface_zs_, &
                                            id_tsp%network1d, network1dname, meshgeom1d%nnodex, meshgeom1d%nnodey, nnodeids, nnodelongnames, &
                                            meshgeom1d%nedge_nodes(1, :), meshgeom1d%nedge_nodes(2, :), nbranchids, nbranchlongnames, meshgeom1d%nbranchlengths, meshgeom1d%nbranchgeometrynodes, meshgeom1d%nbranches, &
                                            meshgeom1d%ngeopointx, meshgeom1d%ngeopointy, meshgeom1d%ngeometry, &
@@ -15701,7 +15720,7 @@ contains
             else
                ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids1d, mesh1dname, 1, UG_LOC_NODE + UG_LOC_EDGE, n1d_write, n1dedges, 0, 0, &
                                            edge_nodes, face_nodes, null(), null(), null(), x1dn, y1dn, x1du, y1du, xz(1:1), yz(1:1), &
-                                           crs, -999, dmiss, start_index, layer_count, layer_type, layer_zs, interface_zs, writeopts=unc_writeopts)
+                                           crs, -999, dmiss, start_index, layer_count_, layer_type_, layer_zs_, interface_zs_, writeopts=unc_writeopts)
                ! NOTE: UNST-5477: this call is not valid yet for 3D models with ocean_sigma_z combined layering
             end if
          end if
@@ -15798,13 +15817,6 @@ contains
 
       if (allocated(edge_type)) then
          deallocate (edge_type)
-      end if
-      ! TODO: AvD: also edge_type for 1D
-      if (associated(layer_zs)) then
-         deallocate (layer_zs)
-      end if
-      if (associated(interface_zs)) then
-         deallocate (interface_zs)
       end if
       if (allocated(contacts)) then
          deallocate (contacts)

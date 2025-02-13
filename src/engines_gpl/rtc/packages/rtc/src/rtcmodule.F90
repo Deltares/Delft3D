@@ -60,14 +60,14 @@
 ! **********************************************************************
       Use ParameterModule
       Use FileModule
-      Use LanguageModule
+      Use LanguageModule_rtc
       Use LocationDataModule
       Use DecisionModule
       Use ReservoirModule
       Use MeasureModule
       Use OtherData
       Use SyncRtcFlow
-      Use ReadLib
+      Use ReadLib_rtc
       Use ExternalDLLModule
       Use system_utils, only: FILESEP
       Use time_module, only: mjd2date, jul2mjd, ymd2jul
@@ -154,7 +154,7 @@
   contains
 
     Subroutine Set_Commandline()
-!     Use ReadLib
+!     Use ReadLib_rtc
 
       implicit none
 

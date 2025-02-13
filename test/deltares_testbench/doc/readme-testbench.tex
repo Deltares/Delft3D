@@ -234,14 +234,14 @@ Running the testbench requires parameters to be supplied on the command-line. Th
 \begin{itemize}
 \item Use visual studio code and a launch.json that is located within a .vscode folder. More info here: \autoref{sssec:vscodelaunch}.
 \item Run using the provided bat script in the doc folder using standard parameters. More info here: \autoref{sssec:batrun}
-\item Run from a terminal using the python command and providing parameters to testbench.py. More info here: \autoref{sssec:commandrun}
+\item Run from a terminal using the python command and providing parameters to TestBench.py. More info here: \autoref{sssec:commandrun}
 \end{itemize}
 All available command-line parameters and their explanation are located here: \autoref{ssec:cmdparam}
 
 \subsubsection{Visual studio code}
 \label{sssec:vscodelaunch}
 Create a .vscode folder in the deltares\_testbench folder and inside it a launch.json with the code in \autoref{fig:launchjson}.
-When you press the F5 key now vscode will run testbench.py with the parameters under args. Make sure to replace <your username> with your deltares username credentials to be able to download testcases.
+When you press the F5 key now vscode will run TestBench.py with the parameters under args. Make sure to replace <your username> with your deltares username credentials to be able to download testcases.
 \begin{figure}[H]
 \centering
 \begin{lstlisting}[style=json]
@@ -252,7 +252,7 @@ When you press the F5 key now vscode will run testbench.py with the parameters u
             "name": "Launch testbench",
             "type": "python",
             "request": "launch",
-            "program": "Testbench.py",
+            "program": "TestBench.py",
             "console": "integratedTerminal",
             "args": [
                 "--username",
@@ -281,7 +281,7 @@ The bat file to run the testbench is located here: \dir{doc/example\_scripts/run
 \subsubsection{Command line}
 \label{sssec:commandrun}
 It is possible to run the testbench directly from the command-line. Once again make sure you run in the virtual environment setup from the installation section.
-You can run the testbench script by going into the \dir{delft3d/test/deltares\_testbench} folder with the command prompt. After that run the command \command{python testbench.py -{}-interactive -{}-compare -{}-config <config file> -{}-log-level DEBUG}. Replace <config file> with the config file you wish to run. For example \dir{configs/dimr/dimr\_dflowfm\_win64.xml}. There are more parameters available. They can be viewed here: \autoref{ssec:cmdparam}.
+You can run the testbench script by going into the \dir{delft3d/test/deltares\_testbench} folder with the command prompt. After that run the command \command{python TestBench.py -{}-interactive -{}-compare -{}-config <config file> -{}-log-level DEBUG}. Replace <config file> with the config file you wish to run. For example \dir{configs/dimr/dimr\_dflowfm\_win64.xml}. There are more parameters available. They can be viewed here: \autoref{ssec:cmdparam}.
 
 \subsection{Testbench parameters}
 \label{ssec:cmdparam}
@@ -423,7 +423,7 @@ Use the access key as your username and the secret key as your password to downl
 \label{sssec:credentials}
 The introduction of MinIO changed the credentials that you need to supply to download cases/references to an access key system. Instructions on how to setup MinIO access keys can be found here: \autoref{sssec:miniokeys}.
 
-The testbench now uses the AWSConfigProvider to locate MinIO keys from a file called credentials (no extension) inside the .aws directory under the user folder: \dir{C:/users/<user>/.aws/}. This file can be automatically created and filled by running the testbench.py in interactive mode. Fill in the correct credentials to access MinIO. The testbench will then prompt you to create a credentials file if it doesn't exist on the specified location yet. It is possible to create the file at the correct location and filling it manually following this layout:
+The testbench now uses the AWSConfigProvider to locate MinIO keys from a file called credentials (no extension) inside the .aws directory under the user folder: \dir{C:/users/<user>/.aws/}. This file can be automatically created and filled by running the TestBench.py in interactive mode. Fill in the correct credentials to access MinIO. The testbench will then prompt you to create a credentials file if it doesn't exist on the specified location yet. It is possible to create the file at the correct location and filling it manually following this layout:
 \begin{Verbatim}
 [default]
 aws_access_key_id = <your_access_key>
@@ -544,8 +544,8 @@ Some basic configuration parameters are located under the config section. A basi
 \label{fig:xmlconfig}
 \end{figure}
 \begin{description}
-\item[LocalPaths] describe the location that cases and references are downloaded into, and also where the engines are located locally. These are used by the testbench.py directly.
-\item[locations] describe what credentials will be used and where to download testcase and reference data from. The \command{\{server\_base\_url\}} is injected with the default url defined by testbench.py. The locations are referenced by the defaulttestcases to download from allowing for multiple sources of data. \autoref{sssec:defaulttest}
+\item[LocalPaths] describe the location that cases and references are downloaded into, and also where the engines are located locally. These are used by the TestBench.py directly.
+\item[locations] describe what credentials will be used and where to download testcase and reference data from. The \command{\{server\_base\_url\}} is injected with the default url defined by TestBench.py. The locations are referenced by the defaulttestcases to download from allowing for multiple sources of data. \autoref{sssec:defaulttest}
 \end{description}
 
 \newpage
@@ -666,7 +666,7 @@ DefaultTestCases are used as a way to set common settings for testcases. This te
 \begin{description}
 \item[programs] a link to programs to determine which program to run when referenced to this defaultTestCase. An argument can be passed for the command-line from here too. In this example script we use the same program, but add a differenet argument for the defaultTestCase to run. A program that needs to run a testcase needs to be reachable with a defaultTestCase, this means that 3 programs need 3 defaultTestCases.
 \item[arguments] additional arguments for running the program, that can be differentiated by using a different defaultTestCase instead of needing a different program too.
-\item[location] a reference to the location to save results of a run and a reference to locate the testcase to be run. The type determines what it is used for by the testbench.py.
+\item[location] a reference to the location to save results of a run and a reference to locate the testcase to be run. The type determines what it is used for by the TestBench.py.
 \item[maxRunTime] the total time in seconds that cases linked to this defaultTestCase can run for. When this time is exceeded it will be shutdown by the testbench. This can be overwritten by the testcase itself.
 \end{description}
 \subsubsection{testCases}
@@ -757,7 +757,7 @@ The testbench accepts various parameters, most of which can be viewed in the exa
  </localPaths> & & \\
  <locations> & & wrapper for locations of source data \\
   <location> & name & to be referenced by a program for downloading data \\
-   <credential> & ref & references which credentials to be used, command-line is used for user input with testbench.py \\
+   <credential> & ref & references which credentials to be used, command-line is used for user input with TestBench.py \\
    <root> & & The url for checkout or local location of source files \\
   </location> & & \\
  </locations> & & \\

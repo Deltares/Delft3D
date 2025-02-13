@@ -140,6 +140,7 @@ module m_nfl_data
     character                                      :: slash              !< Directory separator, platform dependent
     character(6)                                   :: uniqueid           !< 6 capitals, randomly set in initialization phase
     character(MAXSTRLEN), target                   :: runid              !< As obtained from D-Flow FM
+    integer                                        :: runid_length       !< store runid_length received by the BMI
     character(MAXSTRLEN)                           :: infile             !< name of (XML) input/config file
     character(MAXSTRLEN), dimension(3)             :: filename           !< 1: FF2NF file name
                                                                          !< 2: NF2FF file name

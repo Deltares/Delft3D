@@ -3212,7 +3212,8 @@ contains
       use m_waves, only: ustokes, vstokes
       use network_data
       use geometry_module
-
+      use m_wind, only: jawind
+      
       implicit none
 
       integer :: ierror

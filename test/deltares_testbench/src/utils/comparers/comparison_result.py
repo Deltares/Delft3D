@@ -1,3 +1,6 @@
+from src.utils.comparers.end_result import EndResult
+
+
 class ComparisonResult:
     """Comparison result class.
 
@@ -11,7 +14,9 @@ class ComparisonResult:
     def __init__(self, error: bool = False) -> None:
         self.passed = None
         self.error = error
-        self.result = ""
+        self.result: EndResult = EndResult.NOK
+        if self.error:
+            self.result = EndResult.ERROR
         self.max_abs_diff = 0.0
         self.max_abs_diff_values = (0.0, 0.0)  # Left and right.
         self.max_abs_diff_coordinates = ()
@@ -28,15 +33,15 @@ class ComparisonResult:
         """Determine if the maximum absolute or relative difference exceeds the specified tolerances."""
         if self.error:
             self.passed = False
-            self.result = "ERROR"
+            self.result = EndResult.ERROR
         elif maxAbsDiffTolerance is not None and maxRelDiffTolerance is not None:
             # The line below used to contain "and" instead of "or". "or" seems more useful
             if self.max_abs_diff <= maxAbsDiffTolerance or self.max_rel_diff <= maxRelDiffTolerance:
                 self.passed = True
-                self.result = "OK"
+                self.result = EndResult.OK
             else:
                 self.passed = False
-                self.result = "NOK"
+                self.result = EndResult.NOK
         elif (
             (maxAbsDiffTolerance is not None and self.max_abs_diff <= maxAbsDiffTolerance)
             or (maxRelDiffTolerance is not None and self.max_rel_diff <= maxRelDiffTolerance)
@@ -44,7 +49,7 @@ class ComparisonResult:
             or (self.max_rel_diff == 0.0)
         ):
             self.passed = True
-            self.result = "OK"
+            self.result = EndResult.OK
         else:
             self.passed = False
-            self.result = "NOK"
+            self.result = EndResult.NOK

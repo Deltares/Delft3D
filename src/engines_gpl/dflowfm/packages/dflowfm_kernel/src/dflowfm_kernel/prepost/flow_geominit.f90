@@ -55,6 +55,7 @@ module m_flow_geominit
    use m_makethindamadmin, only: makethindamadmin
    use m_iadvecini, only: iadvecini
    use m_getdxofconnectedkcu1, only: getdxofconnectedkcu1
+    use m_wind, only: jawindpartialdry
 
    implicit none
 

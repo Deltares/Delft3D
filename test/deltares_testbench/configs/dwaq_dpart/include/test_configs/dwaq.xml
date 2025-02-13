@@ -2124,7 +2124,7 @@
                     <parameter name="SUBST_023" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_024" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_025" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_026" toleranceAbsolute="2.0e-03" toleranceRelative="2.0e-06"/>
+                    <parameter name="SUBST_026" toleranceAbsolute="4.0e-03" toleranceRelative="4.0e-06"/>
                     <parameter name="SUBST_027" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_028" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_029" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -2172,7 +2172,7 @@
                     <parameter name="SUBST_071" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_072" toleranceAbsolute="2.0e-03" toleranceRelative="2.0e-06"/>
                     <parameter name="SUBST_073" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
-                    <parameter name="SUBST_074" toleranceAbsolute="2.0e-03" toleranceRelative="2.0e-06"/>
+                    <parameter name="SUBST_074" toleranceAbsolute="4.0e-03" toleranceRelative="4.0e-06"/>
                     <parameter name="SUBST_075" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_076" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_077" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>

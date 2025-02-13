@@ -6,7 +6,7 @@ if (WIN32)
     # Set global Fortran compiler flags that apply for each Fortran project
     # Disable diagnostic indicating that ifort is deprecated (10448)
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
-    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP /Qdiag-disable:10448")
+    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP /Qdiag-disable:10448 /assume recursion")
 
     # Set global C/C++ compiler flags that apply for each C/C++ project
     string(APPEND CMAKE_C_FLAGS " /MP")
@@ -68,7 +68,7 @@ if (UNIX)
     set(CMAKE_C_FLAGS_DEBUG                      "-g -O0")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO             "-g -O2")
     set(CMAKE_C_FLAGS_RELEASE                    "-O2")
-    set(CMAKE_Fortran_FLAGS                      "-fPIC -diag-disable 10448")
+    set(CMAKE_Fortran_FLAGS                      "-fPIC -diag-disable 10448 -assume recursion")
     set(CMAKE_Fortran_FLAGS_RELEASE              "-O2")
     set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO       "-g -O2")
     set(CMAKE_Fortran_FLAGS_DEBUG                "-g -O0")
@@ -97,7 +97,7 @@ if (UNIX)
     string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${check_pointers_flag} ${floating_point_exception_flag}")
 endif(UNIX)
 
-set(qauto_threaded_flags ${automatic_local_variable_storage_flag} ${generate_reentrancy_threaded_flag})
+set(qauto_threaded_flags "SHELL:${automatic_local_variable_storage_flag}" "SHELL:${generate_reentrancy_threaded_flag}")
 set(waq_default_flags ${file_preprocessor_flag} ${traceback_flag})
 
 # Define the custom flag about code coverage with a default value of OFF

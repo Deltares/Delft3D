@@ -58,11 +58,11 @@ contains
       use m_physcoef, only: ag, rhomean, vismol
       use m_flowgeom, only: ndxi, ndx, lnx, lnxi, ln, wcl, bl
       use m_flowparameters, only: epshs, jawave, flowWithoutWaves
-      use m_flow, only: frcu, ifrcutp, hu, u1, s1, ucx_mor, ucy_mor, lnkx
+      use m_flow, only: frcu, ifrcutp, hu, u1, v, s1, ucx_mor, ucy_mor, lnkx
       use m_flowtimes
       use m_waves
       use m_get_kbot_ktop
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
       !
       implicit none
       !
@@ -147,7 +147,7 @@ contains
       do L = 1, lnx
          k1 = ln(1, L); k2 = ln(2, L)
          if (frcu(L) > 0) then
-            call getcz(hu(L), frcu(L), ifrcutp(L), czu, L)
+            czu = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
          end if
          czn(k1) = czn(k1) + wcl(1, L) * czu
          czn(k2) = czn(k2) + wcl(2, L) * czu

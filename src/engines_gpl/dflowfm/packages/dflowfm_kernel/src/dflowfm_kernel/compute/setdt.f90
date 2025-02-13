@@ -100,8 +100,8 @@ contains
 
 !  account for user time step
       if (ja_timestep_auto >= 1) then
-         if (dts > dtfacmax * dtprev) then
-            dts = dtfacmax * dtprev
+         if (dts > dt_fac_max * dtprev) then
+            dts = dt_fac_max * dtprev
             nsteps = ceiling((time_user - time0) / dts)
             ! New timestep dts would be rounded down to same dtprev (undesired, so use nsteps-1)
             if (1000 * dtprev > time_user - time0) then

@@ -48,7 +48,7 @@ contains
       use m_flowtimes
       use m_missing
       use m_sobekdfm
-
+      use m_wind, only: japatm, pavbnd, patm
       use m_fm_icecover, only: ice_apply_pressure, ice_p
 
       implicit none

@@ -140,9 +140,28 @@ contains
       cache_retrieved = cache_success
    end function cache_retrieved
 
-!> Load the information from the caching file - if any.
+!> Load the information from the caching file - if any - and synchronize across partitions.
    subroutine load_caching_file(base_name, net_file, use_caching)
+      use m_partitioninfo, only: logical_and_across_partitions
+      use messagehandling, only: LEVEL_WARN, mess
+      
+      character(len=*), intent(in) :: base_name !< base_name to construct the name of the cache file (typically md_ident).
+      character(len=*), intent(in) :: net_file !< Full name of the network file
+      logical, intent(inout) :: use_caching !< Use the cache file if true. Might be reset to false if some errors forbid the use of caching.
+      
+      logical :: all_cache_success
+      
+      call load_caching_file_single_partition(base_name, net_file, use_caching)
+      
+      call logical_and_across_partitions(cache_success, all_cache_success)
+      if (cache_success .and. .not. all_cache_success) then
+          call mess(LEVEL_WARN, 'Some partitions failed to load cache file. Proceeding with normal initialization.')
+          cache_success = .false.
+      end if
+   end subroutine load_caching_file
 
+!> Load the information from the caching file - if any.
+   subroutine load_caching_file_single_partition(base_name, net_file, use_caching)
       use MessageHandling, only: LEVEL_INFO, LEVEL_WARN, mess
 
       character(len=*), intent(in) :: base_name !< base_name to construct the name of the cache file (typically md_ident).
@@ -366,9 +385,9 @@ contains
       !
       close (lun)
       cache_success = .true.
-      call mess(LEVEL_INFO, 'Succesfully read cache file: '//trim(file_name))
+      call mess(LEVEL_INFO, 'Successfully read cache file: '//trim(file_name))
 
-   end subroutine load_caching_file
+   end subroutine load_caching_file_single_partition
 
 !> Load cached thin dams from a caching file
    subroutine load_thin_dams(lun, number_thin_dams, thin_dams, ierr)
@@ -455,7 +474,7 @@ contains
       integer :: i, np, nlink
 
       ! If there is nothing to be cached, do not even try to read (D3DFMIQ-2193)
-      if (size(linklist) == 0) then
+      if (size(sections) == 0) then
          ierr = 0
          return
       end if
@@ -621,8 +640,10 @@ contains
             number_polyline_points = size(thin_dams(i)%xp)
             write (lun) number_flow_links, number_polyline_points
             write (lun) thin_dams(i)%np, thin_dams(i)%lnx
+            if (number_polyline_points > 0) then
             write (lun) thin_dams(i)%xp(1:number_polyline_points), thin_dams(i)%yp(1:number_polyline_points), &
                thin_dams(i)%zp(1:number_polyline_points)
+            end if
             if (thin_dams(i)%lnx > 0) then
                write (lun) thin_dams(i)%ln(1:number_flow_links), thin_dams(i)%indexp(1:number_flow_links), &
                   thin_dams(i)%wfp(1:number_flow_links), thin_dams(i)%xk(1:2, 1:number_flow_links), &

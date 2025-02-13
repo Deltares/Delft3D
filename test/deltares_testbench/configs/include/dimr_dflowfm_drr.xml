@@ -56,12 +56,12 @@
                 </file>
                 <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="water_balance_laterals_in" toleranceAbsolute="0.0001" />
+                        <parameter name="water_balance_laterals_in" toleranceRelative="0.0000001" />
                     </parameters>
                 </file>
                 <file name="rr/rrbalans.his" type="HIS">
                     <parameters>
-                        <parameter name="Boundaries out" location="Total RR system" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries out" location="Total RR system" toleranceRelative="0.0000001" />
                    </parameters>
                 </file> 
             </checks>
@@ -77,12 +77,12 @@
                 </file>
                 <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="water_balance_laterals_in" toleranceAbsolute="0.0001" />
+                        <parameter name="water_balance_laterals_in" toleranceRelative="0.0000001" />
                     </parameters>
                 </file>
                 <file name="rr/rrbalans.his" type="HIS">
                     <parameters>
-                        <parameter name="Boundaries out" location="Total RR system" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries out" location="Total RR system" toleranceRelative="0.0000001" />
                    </parameters>
                 </file> 
             </checks>

@@ -278,7 +278,7 @@ contains
          if (time >= times_update_roughness(2)) then
             ! Shift the time dependent roughness values and collect the values for the new time instance
             times_update_roughness(1) = times_update_roughness(2)
-            times_update_roughness(2) = times_update_roughness(2) + dt_UpdateRoughness ! (e.g., 86400 s)
+            times_update_roughness(2) = times_update_roughness(2) + dt_update_roughness ! (e.g., 86400 s)
             call shiftTimeDependentRoughnessValues(network%rgs)
             ! The next gettimespace call will automatically read and fill new values in prgh%timeDepValues(:,2).
             success = success .and. ec_gettimespacevalue(ecInstancePtr, item_frcutim, irefdate, tzone, tunit, times_update_roughness(2))

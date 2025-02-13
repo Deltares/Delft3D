@@ -9,7 +9,7 @@ set(executable_name calcage)
 add_executable(${executable_name} ${source})
 
 # Set additional compilation properties
-target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")
+target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})

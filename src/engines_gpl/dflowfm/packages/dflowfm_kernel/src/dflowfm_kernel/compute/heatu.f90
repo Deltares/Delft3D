@@ -44,6 +44,8 @@ contains
       use m_flowgeom
       use m_sferic
       use m_get_kbot_ktop
+      use m_wind, only: heatsrc0
+      
       implicit none
 
       real(kind=dp) :: timhr

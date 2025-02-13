@@ -150,8 +150,8 @@ subroutine trisim (numdom, nummap, context_id, fsm_flags, runid, &
        return
     endif
     !
-    call gdp_dealloc(gdp)
-    deallocate(gdp, stat=ierr)
+    !call gdp_dealloc(gdp)
+    !deallocate(gdp, stat=ierr)
     !
     ! Finish using a semaphore
     ! Related psemnefis is in tricom.f90
@@ -228,8 +228,8 @@ integer function trisim_finalize(gdp)
        return
     endif
     !
-    call gdp_dealloc(gdp)
-    deallocate(gdp, stat=ierr)
+    !call gdp_dealloc(gdp)
+    !deallocate(gdp, stat=ierr)
     !
     ! Finish using a semaphore
     ! Related psemnefis is in tricom.f90

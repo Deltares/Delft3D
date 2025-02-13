@@ -46,7 +46,7 @@ contains
       implicit none
 
 !output
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !----------------------------------------
 !BEGIN CALC
@@ -114,7 +114,7 @@ contains
 !output
 !
 
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !
 !local
@@ -515,7 +515,7 @@ contains
 !output
 !
 
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !
 !local
@@ -814,7 +814,7 @@ contains
 !output
 !
 
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !
 !local
@@ -1095,7 +1095,7 @@ contains
 !output
 !
 
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !
 !local
@@ -1246,7 +1246,7 @@ contains
 !output
 !
 
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !
 !local
@@ -1379,7 +1379,7 @@ contains
 !output
 !
 
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !
 !local
@@ -1491,7 +1491,7 @@ contains
 !output
 !
 
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !
 !local
@@ -1638,7 +1638,7 @@ contains
 !output
 !
 
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !
 !local

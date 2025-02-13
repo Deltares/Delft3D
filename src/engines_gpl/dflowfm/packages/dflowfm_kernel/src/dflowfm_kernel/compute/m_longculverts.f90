@@ -62,7 +62,7 @@ module m_longculverts
       integer :: numlinks !< Number of links of the long culvert
       integer, dimension(:), allocatable :: netlinks !< Net link numbers of the long culvert
       integer, dimension(:), allocatable :: flowlinks !< Flow link numbers of the long culvert
-      integer :: ifrctyp = -999 !< Friction type
+      integer :: friction_type = -999 !< Friction type
       integer :: allowed_flowdir !< Allowed flowdir:
       !< 0 all directions
       !< 1 only positive flow
@@ -302,9 +302,9 @@ contains
 
             call prop_get(str_ptr, '', 'frictionType', typestr, success)
             if (.not. success) then
-               longculverts(nlongculverts)%ifrctyp = -999
+               longculverts(nlongculverts)%friction_type = -999
             else
-               call frictionTypeStringToInteger(typestr, longculverts(nlongculverts)%ifrctyp)
+               call frictionTypeStringToInteger(typestr, longculverts(nlongculverts)%friction_type)
             end if
             call tree_create_node(block_ptr, 'frictionType', node_ptr)
             call tree_put_data(node_ptr, transfer(typestr, node_value), 'STRING')
@@ -547,7 +547,7 @@ contains
                   ! Use top (#2) of tabulated cross section definition to derive width and height
                   longculverts(nlongculverts)%width = network%CSDefinitions%Cs(iref)%totalwidth(2)
                   longculverts(nlongculverts)%height = network%CSDefinitions%Cs(iref)%height(2)
-                  longculverts(nlongculverts)%ifrctyp = network%CSDefinitions%Cs(iref)%frictiontype(1)
+                  longculverts(nlongculverts)%friction_type = network%CSDefinitions%Cs(iref)%frictiontype(1)
                   longculverts(nlongculverts)%friction_value = network%CSDefinitions%Cs(iref)%frictionvalue(1)
                end if
             else !these values are no longer in the structures.ini after conversion
@@ -571,9 +571,9 @@ contains
                end if
                call prop_get(str_ptr, '', 'frictionType', typestr, success)
                if (.not. success) then
-                  longculverts(nlongculverts)%ifrctyp = -999
+                  longculverts(nlongculverts)%friction_type = -999
                else
-                  call frictionTypeStringToInteger(typestr, longculverts(nlongculverts)%ifrctyp)
+                  call frictionTypeStringToInteger(typestr, longculverts(nlongculverts)%friction_type)
                end if
                call prop_get(str_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value, success)
                if (.not. success) then
@@ -797,8 +797,8 @@ contains
          do LL = 1, longculverts(ilongc)%numlinks
             Lf = abs(longculverts(ilongc)%flowlinks(LL))
             if (Lf > 0) then
-               if (longculverts(ilongc)%ifrctyp > 0) then
-                  ifrcutp(Lf) = longculverts(ilongc)%ifrctyp
+               if (longculverts(ilongc)%friction_type > 0) then
+                  ifrcutp(Lf) = longculverts(ilongc)%friction_type
                   if (longculverts(ilongc)%friction_value > 0) then
                      frcu(Lf) = longculverts(ilongc)%friction_value
                   end if

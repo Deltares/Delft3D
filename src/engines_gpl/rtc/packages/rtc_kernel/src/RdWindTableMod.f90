@@ -50,8 +50,8 @@
       Use ParameterModule
       Use LocationDataModule
       Use OtherData
-      Use NewTables
-      Use ReadLib
+      Use NewTables_rtc
+      Use ReadLib_rtc
 
       implicit none
       

@@ -1,0 +1,71 @@
+# Use the  Windows Server Core 2022 image form ICT.
+FROM containers.deltares.nl/base_windows_containers/server:ltsc2022
+
+# Restore the default Windows shell for correct batch processing.
+SHELL ["cmd", "/S", "/C"]
+
+# Download the VS19 bootstrapper from https://aka.ms/vs/16/release/vs_community.exe
+# This one is cached on a fileshare because the curl commando is not stable
+ADD vs_community.exe C:/
+
+# Install visual studio with workloads, excluding workloads and components with known issues.
+RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart --nocache \
+    --installPath "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community" \
+    --add Microsoft.VisualStudio.Workload.NativeDesktop;includeRecommended \
+    --add Microsoft.VisualStudio.Component.Windows10SDK.18362 \
+    --add Microsoft.VisualStudio.Component.VC.ATLMFC \
+    --add Microsoft.VisualStudio.Component.VC.CLI.Support \
+    --remove Microsoft.VisualStudio.Component.Windows10SDK.10240 \
+    --remove Microsoft.VisualStudio.Component.Windows10SDK.10586 \
+    --remove Microsoft.VisualStudio.Component.Windows10SDK.14393 \
+    --remove Microsoft.VisualStudio.Component.Windows81SDK \
+    || IF "%ERRORLEVEL%"=="3010" EXIT 0)
+
+# Set powershell as shell
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
+
+# Enable long pathnames
+RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
+
+# Install the Intel toolkits
+ADD w_fortran-compiler_p_2023.1.0.46351_offline.exe C:/
+RUN Start-Process -FilePath "C:\w_fortran-compiler_p_2023.1.0.46351_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-p=NEED_VS2019_INTEGRATION=1", "-s" -Wait
+
+ADD w_onemkl_p_2023.1.0.46356_offline.exe C:/
+RUN Start-Process -FilePath "C:\w_onemkl_p_2023.1.0.46356_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-p=NEED_VS2019_INTEGRATION=1", "-s" -Wait
+
+ADD w_mpi_oneapi_p_2021.9.0.43421_offline.exe C:/
+RUN Start-Process -FilePath "C:\w_mpi_oneapi_p_2021.9.0.43421_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-s" -Wait
+
+# RUN Remove intel and visual studio executables
+RUN Remove-Item C:\*.exe"
+
+# Install CMake
+ADD cmake-3.30.1-windows-x86_64.msi C:\\cmake-3.30.1-windows-x86_64.msi
+RUN Start-Process msiexec -Wait -ArgumentList '/i C:\\cmake-3.30.1-windows-x86_64.msi /qn'
+RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\CMake\\bin')
+RUN Remove-Item C:\\cmake-3.30.1-windows-x86_64.msi
+
+RUN setx /M PATH $($Env:PATH + ';C:\Program Files (x86)\\Intel\\oneAPI\\compiler\\2023.1.0\\windows\\bin\\intel64')
+RUN setx /M PATH $($Env:PATH + ';C:\\Program Files (x86)\\Intel\\oneAPI\\compiler\\2023.1.0\\windows\\bin')
+
+ENV ONEAPI_ROOT="C:\\Program Files (x86)\\Intel\\oneAPI\\"
+ENV VS2019INSTALLDIR="C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\"
+
+# Download and install Python 3.11.0
+ADD https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe C:\\python-3.11.0-amd64.exe
+RUN Start-Process C:\\python-3.11.0-amd64.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -Wait
+RUN Remove-Item C:\\python-3.11.0-amd64.exe
+RUN New-Item -ItemType SymbolicLink -Path 'C:\\Program Files\\Python311\\python3.exe' -Target 'C:\\Program Files\\Python311\\python.exe'
+
+# Download and install git
+ADD https://github.com/git-for-windows/git/releases/download/v2.46.2.windows.1/Git-2.46.2-64-bit.exe C:\\Git-2.46.2-64-bit.exe
+RUN Start-Process -FilePath "C:\\Git-2.46.2-64-bit.exe" -ArgumentList "/SILENT" -Wait
+RUN Remove-Item C:\\Git-2.46.2-64-bit.exe
+RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\Git\\usr\\bin')
+
+# Copy the setup script into the container
+COPY set-env-vs2019.cmd C:\\set-env-vs2019.cmd
+
+# Set the default command to run the setup script
+CMD ["cmd", "/S", "/C", "C:\\set-env-vs2019.cmd"]

@@ -46,7 +46,8 @@ contains
       use m_flow
       use m_physcoef
       use m_get_Lbot_Ltop
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
+      use mathconsts, only: ee
       implicit none
 
       logical, intent(in) :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave`
@@ -68,7 +69,7 @@ contains
          if (Lt < Lb) cycle
          if (hu(L) > epshu) then
             if (frcu(L) > 0d0) then ! input, or result from trachytopes
-               call getcz(hu(L), frcu(L), ifrcutp(L), cz, L)
+               cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
                z0urou(L) = max(1d-200, hu(L) * exp(-1d0 - vonkar * cz / sag)) ! getczz0
                rz = max(hu(Lb), epshu) / ee / z0urou(L) ! cz/sag, jaustarint=1, compatible with getustbcfuhi
                cz = log(rz) / vonkar

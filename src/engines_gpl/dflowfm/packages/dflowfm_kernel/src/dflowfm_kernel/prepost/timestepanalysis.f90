@@ -63,7 +63,7 @@ contains
          numlimdt(kkcflmx) = numlimdt(kkcflmx) + 1
       end if
 
-      if (jatimestepanalysis == 1) then
+      if (ja_time_step_analysis == 1) then
          if (mout == 0) then
             call newfil(mout, trim(md_ident)//'.steps')
             write (mout, '(A)') 'time0/60, dts, dtsc, kkcflmx, kcflmx-kbot(kkcflmx)+1, vol1(kcflmx), squ2D(kcflmx), squ(kcflmx), sqi(kcflmx) '

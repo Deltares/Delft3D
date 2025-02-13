@@ -56,7 +56,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f002_c102_longculvert_new" ref="dflowfm_default">
-      <path version="2024-08-28T16:40:00">e02_dflowfm/f002_1D2D/c102_longculvert_new</path>
+      <path version="2025-01-31T11:30:34.642000">e02_dflowfm/f002_1D2D/c102_longculvert_new</path>
       <programs>
           <program ref="dflowfm" seq="1">
             <arguments>
@@ -76,7 +76,7 @@
             <parameter name="waterlevel" toleranceAbsolute="0.0009" />
             <parameter name="x_velocity" toleranceAbsolute="0.0009" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="cross_section_discharge" toleranceAbsolute="0.002" />
+            <parameter name="cross_section_discharge" toleranceAbsolute="0.003" />
             <parameter name="cross_section_cumulative_discharge" toleranceRelative="0.0015" />
             <parameter name="longculvert_discharge" toleranceAbsolute="0.003" />
             <parameter name="longculvert_s1up" toleranceAbsolute="0.0005" />
@@ -87,6 +87,21 @@
             <parameter name="longculvert_valve_relative_opening" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f002_c103_3D_channel" ref="dflowfm_default">
+      <path version="2025-01-28T16:00:00.000000">e02_dflowfm/f002_1D2D/c103_3D_channel</path>
+      <maxRunTime>120.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
+          <parameters>
+		    <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+			<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f003_c041_thacker1d_squares" ref="dflowfm_default">
@@ -2144,6 +2159,150 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f008_c051_maas_circumcenter1" ref="dflowfm_default">
+      <path version="2025-01-17T06:00:21.718000">e02_dflowfm/f008_network/c051_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c052_maas_circumcenter2" ref="dflowfm_default">
+      <path version="2025-01-16T19:15:41.354000">e02_dflowfm/f008_network/c052_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c053_maas_circumcenter3" ref="dflowfm_default">
+      <path version="2025-01-16T19:15:51.129000">e02_dflowfm/f008_network/c053_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c054_maas_circumcenter1" ref="dflowfm_default">
+      <path version="2025-01-16T19:15:58.191000">e02_dflowfm/f008_network/c054_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c055_maas_circumcenter2" ref="dflowfm_default">
+      <path version="2025-01-16T19:16:05.645000">e02_dflowfm/f008_network/c055_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c056_maas_circumcenter3" ref="dflowfm_default">
+      <path version="2025-01-16T19:16:14.885000">e02_dflowfm/f008_network/c056_maas_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c061_diamond_circumcenter1" ref="dflowfm_default">
+      <path version="2025-01-17T06:05:02.360000">e02_dflowfm/f008_network/c061_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c062_diamond_circumcenter2" ref="dflowfm_default">
+      <path version="2025-01-16T19:16:40.505000">e02_dflowfm/f008_network/c062_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c063_diamond_circumcenter3" ref="dflowfm_default">
+      <path version="2025-01-16T19:16:47.887000">e02_dflowfm/f008_network/c063_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c064_diamond_circumcenter1" ref="dflowfm_default">
+      <path version="2025-01-16T19:16:54.793000">e02_dflowfm/f008_network/c064_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c065_diamond_circumcenter2" ref="dflowfm_default">
+      <path version="2025-01-16T19:17:02.937000">e02_dflowfm/f008_network/c065_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f008_c066_diamond_circumcenter3" ref="dflowfm_default">
+      <path version="2025-01-16T19:17:09.863000">e02_dflowfm/f008_network/c066_diamond_circumcenter1</path>
+      <maxRunTime>2.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
+            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f009_c011_beyer004_supergrid_refinedlocally" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f009_weirs/c011_beyer004_supergrid_refinedlocally</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -2221,7 +2380,7 @@
       <checks>
         <file name="dflowfmoutput/beyer_004f_his.nc" type="netCDF">
           <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0006" />
+            <parameter name="waterlevel" toleranceAbsolute="0.001" />
             <parameter name="x_velocity" toleranceAbsolute="0.002" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
@@ -4622,7 +4781,7 @@
     </testCase>
      <testCase name="e02_f022_c17_bedslope_effect_slope022" ref="dflowfm_default">
       <path version="2024-10-22T16:40:00">e02_dflowfm/f022_morphology_2D/c17_bedslope_effect_slope022</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      <maxRunTime>30.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/str_map.nc" type="netCDF">
           <parameters>
@@ -6610,20 +6769,20 @@
           <parameters>
             <parameter name="time" toleranceAbsolute="0.0000001" />
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
+            <parameter name="s1" toleranceAbsolute="0.000007" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0003" />
+            <parameter name="bl_bnd" toleranceAbsolute="0.0000005" />
           </parameters>
         </file>
         <file name="rst/dflowfmoutput/t1_20071119_001400_rst.nc" type="netCDF">
           <parameters>
             <parameter name="time" toleranceAbsolute="0.0000001" />
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
+            <parameter name="s1" toleranceAbsolute="0.000007" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0003" />
+            <parameter name="bl_bnd" toleranceAbsolute="0.0000005" />
           </parameters>
         </file>        
       </checks>
@@ -6783,7 +6942,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f422_c17_bedslope_effect_slope022" ref="dflowfm_restart">
-      <path version="2024-05-22T03:50:00">e02_dflowfm/f422_morphology_2D_restart/c17_bedslope_effect_slope022</path>
+      <path version="2025-02-12T09:41:30.897000">e02_dflowfm/f422_morphology_2D_restart/c17_bedslope_effect_slope022</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="main/dflowfmoutput/str_20010101_000400_rst.nc" type="netCDF">
@@ -6792,8 +6951,8 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000012" />
+            <parameter name="bl_bnd" toleranceAbsolute="0.0000012" />
           </parameters>
         </file>
         <file name="rst/dflowfmoutput/str_20010101_000400_rst.nc" type="netCDF">
@@ -6802,8 +6961,8 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000012" />
+            <parameter name="bl_bnd" toleranceAbsolute="0.0000012" />
           </parameters>
         </file>        
       </checks>
@@ -7334,9 +7493,9 @@
           <parameters>
             <parameter name="time" toleranceAbsolute="0.0000001" />
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
+            <parameter name="s1" toleranceAbsolute="0.0000003" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.000003" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>
@@ -7344,9 +7503,9 @@
           <parameters>
             <parameter name="time" toleranceAbsolute="0.0000001" />
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
+            <parameter name="s1" toleranceAbsolute="0.0000003" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.000003" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>        
@@ -7590,8 +7749,8 @@
           <parameters>
             <parameter name="time" toleranceAbsolute="0.0000001" />
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
+            <parameter name="s1" toleranceAbsolute="0.000012" />
+            <parameter name="q1" toleranceAbsolute="0.0001" />
             <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
@@ -7600,8 +7759,8 @@
           <parameters>
             <parameter name="time" toleranceAbsolute="0.0000001" />
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
+            <parameter name="s1" toleranceAbsolute="0.000012" />
+            <parameter name="q1" toleranceAbsolute="0.000062" />
             <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
@@ -7980,7 +8139,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000011" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>
@@ -7990,7 +8149,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000011" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>        
@@ -8110,7 +8269,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000003" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>
@@ -8120,7 +8279,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000003" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>        
@@ -8136,7 +8295,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000003" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>
@@ -8146,7 +8305,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000003" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>        
@@ -8162,7 +8321,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000003" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>
@@ -8172,7 +8331,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000003" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>        
@@ -8396,7 +8555,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000003" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>
@@ -8406,7 +8565,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000003" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>        

@@ -52,9 +52,9 @@
       Use DecisionModule
       Use MeasureModule
       Use OtherData
-      Use NewTables
-      Use ParseToken
-      Use ReadLib
+      Use NewTables_rtc
+      Use ParseToken_rtc
+      Use ReadLib_rtc
 
       implicit none
 
@@ -71,7 +71,7 @@
       Integer        TyValue, NaValue, StartSubRecord, EndSubRecord, NrRRMSSubRecords, iSubRecord
       Logical        MeasureInActive
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError
@@ -79,9 +79,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 9999  ! Scan up to Token 60
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 !
       RetVal = 0
 
@@ -151,7 +151,7 @@
            Success = ParseTokenArrayWithKeywords (String, ScanToTk, RecordData, NumberOfTokens, ParseTokenReadCaseSensitive)
            If (.not. Success) ReadError = .true.
            IF (ReadError) then
-              ErrorString = ' Read error during reading RTC measures with ParseToken for RR module' // STRING(1:len_trim(String))
+              ErrorString = ' Read error during reading RTC measures with ParseToken_rtc for RR module' // STRING(1:len_trim(String))
               call write_error_message_rtc (974,0,'Rd3BMs',ErrorString, IOUT1)
               RetVal = 920
               Return
@@ -636,9 +636,9 @@
       Use LocationDataModule
       Use DecisionModule
       Use MeasureModule
-      Use NewTables
-      Use ParseToken
-      Use ReadLib
+      Use NewTables_rtc
+      Use ParseToken_rtc
+      Use ReadLib_rtc
 
       implicit none
 
@@ -652,7 +652,7 @@
       INTEGER       IDEBUG, IN, IOUT1,Ilen
       INTEGER       IMEAS, IPARA, IECODE, I3LOC, I3B, ILOC
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError
@@ -660,9 +660,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 60
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 !
       RetVal = 0
 
@@ -818,7 +818,7 @@
            If (.not. Success) ReadError = .true.
 !           If (Idebug .gt. 0) then
 !              Write(Idebug,'(A)') String(1:len_trim(String))
-!              Write(Idebug,*) ' Results of ParseToken in Rd3bMs_oldformat '
+!              Write(Idebug,*) ' Results of ParseToken_rtc in Rd3bMs_oldformat '
 !              Write(idebug,*) ' Nr  StartPos  Quotes Token '
 !              Do i=1,NumberofTokens
 !                 write(idebug,'(I3,I5,L,1X,A)') i, RecordData%StartPositionOfToken(i), &

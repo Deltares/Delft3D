@@ -48,7 +48,7 @@ contains
       real(kind=dp), intent(in) :: time1 !t^{n+1}
 
 !output
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !local
       integer :: k, ktab, nq, n, L

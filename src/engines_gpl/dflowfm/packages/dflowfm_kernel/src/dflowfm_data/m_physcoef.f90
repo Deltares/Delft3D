@@ -67,14 +67,12 @@ module m_physcoef
 
    integer :: ifrctypuni !< 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D)
    real(kind=dp) :: frcunilin !<60.    ! 6      ! 66     ! uniform friction coeff
-   real(kind=dp) :: umodlin !< linear friction umod , ifrctyp 4,5,6
+   real(kind=dp) :: umodlin !< linear friction umod, friction type 4,5,6
 
    real(kind=dp) :: wall_ks !< vertical wall nIKURADSE ROUGHNESSs (m)
    real(kind=dp) :: wall_z0 !< z0 for vertical walls, ~= Ks/30    (m)
-                                              !! z0 for bottom follows from ifrctyp==3 and z0=frcuni
+                            !! z0 for bottom follows from friction type R_WHITE_COLEBROOK and z0=frcuni
    real(kind=dp) :: z0 !< z0
-   real(kind=dp) :: ee !< natural e
-   real(kind=dp) :: ee9 !< natural e/c9of1
 
    real(kind=dp) :: vicouv !< constant horizontal eddy viscosity   (m2/s) mom
    real(kind=dp) :: dicouv !< constant horizontal eddy diffusivity (m2/s) sal, sed
@@ -152,8 +150,6 @@ contains
       sag = sqrt(ag)
       vonkar = 0.41_dp ! von Karman constant ()
       vonkarw = 0.40_dp ! von Karman constant for wind ()
-      ee = exp(1.0_dp) ! natural e ()
-      ee9 = 9.0_dp * ee !
       frcuni = 0.023_dp ! 60.    ! 6      ! 66     ! uniform friction coeff
       frcuni1D = 0.023_dp ! 60.    ! 6      ! 66     ! uniform friction coeff
       frcuni1D2D = 0.023_dp ! 60.    ! 6      ! 66     ! uniform friction coeff
@@ -161,7 +157,7 @@ contains
       frcmax = 0.0_dp
       ifrctypuni = 1 ! 0=chezy, 1=manning, 2=white colebrook (D3D), 3=white colebrook (WAQUA)
       frcunilin = 0.0_dp !
-      umodlin = 1.0_dp ! linear friction umod , ifrctyp 4,5,6
+      umodlin = 1.0_dp ! linear friction umod, friction type 4,5,6
       wall_ks = 0.0_dp ! vertical wall nIKURADSE ROUGHNESSs (m)
       vicouv = 0.1_dp ! constant horizontal eddy viscosity (m2/s) mom
       dicouv = 0.1_dp ! constant horizontal eddy diffusivity (m2/s) sal, sed
@@ -200,8 +196,8 @@ contains
       idensform = 2 !< 0 = no, 1 = Eckart, 2 = UNESCO
       limiterhordif = 2 !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
 
-      Stanton = 0.0013 !< coeff for convective  heat flux, if negative , take wind Cd
-      Dalton = 0.0013 !< coeff for evaporative heat flux, if negative , take wind Cd
+      Stanton = 0.0013_dp !< coeff for convective  heat flux, if negative , take wind Cd
+      Dalton = 0.0013_dp !< coeff for evaporative heat flux, if negative , take wind Cd
 
       Jadelvappos = 0 !< only positive forced evaporation fluxes
 

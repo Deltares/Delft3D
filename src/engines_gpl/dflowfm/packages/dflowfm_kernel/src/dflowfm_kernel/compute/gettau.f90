@@ -60,7 +60,7 @@ contains
       use m_flowgeom
       use m_flow
       use m_waves
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
       !
       ! Parameters
       integer, intent(in) :: n !< Flow node number
@@ -85,7 +85,7 @@ contains
          LL = abs(nd(n)%ln(nn))
          frcn = frcu(LL)
          if (frcn > 0d0 .and. hu(LL) > 0d0) then
-            call getcz(hu(LL), frcn, ifrcutp(LL), cz, LL)
+            cz = get_chezy(hu(LL), frcn, u1(LL), v(LL), ifrcutp(LL))
             cf = ag / (cz * cz)
             ar = au(LL) * dx(LL)
             wa = wa + ar ! area  weigthed

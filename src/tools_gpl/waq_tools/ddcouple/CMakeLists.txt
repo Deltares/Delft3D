@@ -25,7 +25,7 @@ target_link_libraries(${executable_name} ${oss_dependencies})
 # Define how the files should be structured within Visual Studio
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/ddcouple)
 
-target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")
+target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 if (WIN32)
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)

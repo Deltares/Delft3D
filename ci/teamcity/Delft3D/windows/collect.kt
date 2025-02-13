@@ -16,7 +16,7 @@ object WindowsCollect : BuildType({
     )
 
     name = "Collect"
-    buildNumberPattern = "%build.vcs.number%"
+    buildNumberPattern = "%dep.${WindowsBuild.id}.product%: %build.vcs.number%"
     description = "DIMRset collector for Linux."
 
     allowExternalStatus = true

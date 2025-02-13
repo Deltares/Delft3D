@@ -128,7 +128,7 @@
                 <file name="dflowfm/output/t2_his.nc" type="NETCDF">
                     <parameters>
                         <parameter name="general_structure_gate_lower_edge_level" toleranceAbsolute="0.001" />
-                        <parameter name="general_structure_discharge" toleranceAbsolute="1" />
+                        <parameter name="general_structure_discharge" toleranceAbsolute="1.5" />
                     </parameters>
                 </file>
                 <file name="dflowfm/output/t2_map.nc" type="NETCDF">

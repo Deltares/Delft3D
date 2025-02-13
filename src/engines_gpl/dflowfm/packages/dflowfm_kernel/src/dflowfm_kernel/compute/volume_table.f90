@@ -829,7 +829,7 @@ contains
    end subroutine writeVolumeTables
 
    !> Read the volume tables from a previously saved binary file.
-   !> The function returns .true. when succesfull, otherwise .false. is returned
+   !> The function returns .true. when successful, otherwise .false. is returned
    logical function readVolumeTables()
 
       use m_flowgeom

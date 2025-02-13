@@ -73,7 +73,7 @@ contains
       OPTION(i) = 'Current time                        (s) '; it(2 * i) = 6; i = i + 1
       OPTION(i) = 'Smoothing time boundaries Tlfsmo    (s) '; it(2 * i) = 6; i = i + 1
       OPTION(i) = 'Dtfacmax                            ( ) '; it(2 * i) = 6; i = i + 1
-      OPTION(i) = 'Tspinupturblogprof                  ( ) '; it(2 * i) = 6; i = i + 1
+      OPTION(i) = 'tSpinupTurbLogProf                  ( ) '; it(2 * i) = 6; i = i + 1
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -174,8 +174,8 @@ contains
       call IFormPutDouble(2 * i, dt_init, '(F10.3)'); i = i + 1
       call IFormPutDouble(2 * i, time1, '(F10.3)'); i = i + 1
       call IFormPutDouble(2 * i, Tlfsmo, '(F10.3)'); i = i + 1
-      call IFormPutDouble(2 * i, Dtfacmax, '(F10.3)'); i = i + 1
-      call IFormPutDouble(2 * i, Tspinupturblogprof, '(F10.3)'); i = i + 1
+      call IFormPutDouble(2 * i, dt_fac_max, '(F10.3)'); i = i + 1
+      call IFormPutDouble(2 * i, t_spinup_turb_log_prof, '(F10.3)'); i = i + 1
 
       ! Display the form with numeric fields left justified
       ! and set the initial field to number 2
@@ -227,8 +227,8 @@ contains
             call IFormGetDouble(2 * i, dt_init); i = i + 1
             call IFormGetDouble(2 * i, Time1); i = i + 1
             call IFormGetDouble(2 * i, Tlfsmo); i = i + 1
-            call IFormGetDouble(2 * i, Dtfacmax); i = i + 1
-            call IFormGetDouble(2 * i, Tspinupturblogprof); i = i + 1
+            call IFormGetDouble(2 * i, dt_fac_max); i = i + 1
+            call IFormGetDouble(2 * i, t_spinup_turb_log_prof); i = i + 1
 
             if (dt_max > dt_user) then
                dt_max = dt_user

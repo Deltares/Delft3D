@@ -57,7 +57,7 @@ contains
       use unstruc_api
       use m_makenet
       use m_sferic, only: jsferic, jasfer3D
-      use network_data, only: NUMITCOURANT, CONNECT1DEND, imake1d2dtype, I1D2DTP_1TO1, I1D2DTP_1TON_EMB, I1D2DTP_1TON_LAT, I1D2DTP_LONG
+      use network_data, only: NUMITCOURANT, CONNECT1DEND, imake1d2dtype, I1D2DTP_1TO1, I1D2DTP_1TON_EMB, I1D2DTP_1TON_LAT, I1D2DTP_LONG, circumcenter_method
       use m_missing, only: jadelnetlinktyp
       use m_flowparameters, only: jalimnor
       implicit none
@@ -226,6 +226,8 @@ contains
                   md_dryptsfile = trim(svals(ikey))
                else if (trim(Skeys(ikey)) == 'smoothiters') then
                   NUMITCOURANT = ivals(ikey)
+               else if (trim(Skeys(ikey)) == 'circumcenter') then
+                  circumcenter_method = ivals(ikey)
                end if
             end do
 

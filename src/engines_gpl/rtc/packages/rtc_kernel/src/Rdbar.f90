@@ -98,7 +98,7 @@
       Use LocationDataModule
       Use SyncRtcFlow
       Use DH_Alloc
-      Use ReadLib
+      Use ReadLib_rtc
 
       implicit none
 
@@ -360,7 +360,7 @@
 !
 !-----------------------------------------------------------------------
 
-      Use ReadLib
+      Use ReadLib_rtc
 
       implicit none
       

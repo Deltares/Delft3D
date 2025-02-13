@@ -55,7 +55,7 @@ contains
 
       integer :: japerim, L
 
-      integer :: k1, k2, k3, k4, jaconv, ifrctyp
+      integer :: k1, k2, k3, k4, jaconv, friction_type
       real(kind=dp) :: hpr1, ar1, wid1, hpr2, ar2, wid2, aru, widu, aconvu
       real(kind=dp) :: dx1, dx2, frcn, BL1, BL2, b21, wu2, ai
       real(kind=dp) :: beta, bt2, deltaa, hyr, uucn, ucna, bob1, bob2, hsmall
@@ -105,7 +105,7 @@ contains
 
          if (jaconveyance2D > 0) then
 
-            frcn = frcu(L); ifrctyp = ifrcutp(L)
+            frcn = frcu(L); friction_type = ifrcutp(L)
 
             jaconv = jaconveyance2D
 
@@ -172,7 +172,7 @@ contains
 
             end if
 
-            call getprof2d(hpr1, wu2, b21, ai, frcn, ifrctyp, widu, aru, aconvu, jaconv, beta, deltaa, hyr)
+            call getprof2d(hpr1, wu2, b21, ai, frcn, friction_type, widu, aru, aconvu, jaconv, beta, deltaa, hyr, L)
 
             if (frcn > 0) then
                cfuhi(L) = aifu(L) * ag * aconvu

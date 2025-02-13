@@ -6,7 +6,7 @@
 import datetime
 import os
 import tempfile
-from typing import AnyStr, List, Tuple
+from typing import List, Tuple
 
 import netCDF4 as nc
 import numpy as np
@@ -18,6 +18,7 @@ from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.config.types.file_type import FileType
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.logging.i_logger import ILogger
 
 
@@ -74,7 +75,7 @@ class TestNetcdfComparer:
         # perform a set of asserts on the result structure
         assert not resultstruc.passed
         assert not resultstruc.error
-        assert resultstruc.result == "NOK"
+        assert resultstruc.result == EndResult.NOK
         assert pytest.approx(resultstruc.max_abs_diff) == 0.01983249918399
         assert resultstruc.max_abs_diff_coordinates == (1, 0)
         assert pytest.approx(resultstruc.max_rel_diff) == 0.21672465466549
@@ -161,17 +162,17 @@ class TestNetcdfComparer:
         return fc
 
     def assert_comparison_passed(self, results: List[Tuple[str, FileCheck, Parameter, ComparisonResult]]) -> None:
-        self.assert_comparison_result_equals(results, True, "OK")
+        self.assert_comparison_result_equals(results, True, EndResult.OK)
 
     def assert_comparison_failed(self, results: List[Tuple[str, FileCheck, Parameter, ComparisonResult]]) -> None:
-        self.assert_comparison_result_equals(results, False, "NOK")
+        self.assert_comparison_result_equals(results, False, EndResult.NOK)
 
     def assert_comparison_result_equals(
-        self, results: List[Tuple[str, FileCheck, Parameter, ComparisonResult]], passed: bool, message: AnyStr
+        self, results: List[Tuple[str, FileCheck, Parameter, ComparisonResult]], passed: bool, result: EndResult
     ) -> None:
-        result = results[0][3]
-        assert result.passed == passed
-        assert result.result == message
+        comparison_result = results[0][3]
+        assert comparison_result.passed == passed
+        assert comparison_result.result == result
 
     @staticmethod
     def make_string_dataset(

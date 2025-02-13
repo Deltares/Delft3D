@@ -280,7 +280,7 @@ contains
             call mess(LEVEL_INFO, '    Number of other definitions               = ', ncldnrm)
             call mess(LEVEL_INFO, '    ____________________________________________________________')
             call mess(LEVEL_INFO, '    Total number of definitions               = ', ncld)
-            call mess(LEVEL_INFO, '*** Succesfully read calibration definition input ')
+            call mess(LEVEL_INFO, '*** Successfully read calibration definition input ')
          end if
 
          close (luntmp)
@@ -598,7 +598,7 @@ contains
                if (icll > icll_found) then
                   call mess(LEVEL_INFO, '    of which not connected     = ', icll - icll_found)
                end if
-               call mess(LEVEL_INFO, '*** Succesfully read calibration area definition input')
+               call mess(LEVEL_INFO, '*** Successfully read calibration area definition input')
             end if
 
             goto 9999

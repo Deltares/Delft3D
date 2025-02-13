@@ -75,7 +75,7 @@ contains
         integer(kind = int_wp), allocatable :: ipntloc(:)
         integer(kind = int_wp) :: ia_dummy(1)
         logical :: ldummy, ldumm2
-        real(kind = real_wp), allocatable :: ra_dummy(:)
+        real(kind = real_wp) :: ra_dummy(1)
         integer(kind = int_wp) :: ithandl = 0
 
         if (timon) call timstrt ("dlwqta", ithandl)

@@ -133,8 +133,6 @@ contains
                      elseif (stemheight_convention == UPWARD_FROM_BED) then
                         h1 = zws(k) - zws(kbot(kk) - 1)
                         h0 = zws(k - 1) - zws(kbot(kk) - 1)
-                     else
-                        call mess(LEVEL_ERROR, 'Invalid value for [veg] StemheightConvention. Use either 1 or 2.')
                      end if
                      if (h1 <= stemh) then
                         diaveg(k) = diaveg(kk)

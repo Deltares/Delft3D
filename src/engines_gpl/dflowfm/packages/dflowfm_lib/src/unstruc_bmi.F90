@@ -302,11 +302,6 @@ contains
       MAXLAN = 500
       MAXPOL = MAXLAN
 
-      !call start()
-      !call resetFullFlowModel()
-      !call loadmodel(config_file)
-      !call init_core() ! All done in inidat()
-
       call INIDAT()
       call api_loadmodel(config_file)
 
@@ -901,7 +896,7 @@ contains
       character(len=strlen(c_var_name)) :: var_name
 
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
-      shape = (/0, 0, 0, 0, 0, 0/)
+      shape = [0, 0, 0, 0, 0, 0]
 
       ! NOTE: report the shape below in row-major order (so, C-style, not FORTRAN-style)
       select case (var_name)
@@ -993,7 +988,7 @@ contains
          return
       case ("runid")
          shape(1) = 1
-         shape(2) = len(md_ident)
+         shape(2) = len_trim(md_ident)
          return
       end select
 
@@ -1313,7 +1308,7 @@ contains
          iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
-         call realloc(const_t, (/ndkx, numconst/), keepExisting=.true.)
+         call realloc(const_t, [ndkx, numconst], keepExisting=.true.)
          do k = 1, ndkx
             const_t(k, iconst) = constituents(iconst, k)
          end do
@@ -1502,38 +1497,38 @@ contains
          end do
          return
       case ("sourcesinks/COSUMO/nf_q_source_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          return
       case ("sourcesinks/COSUMO/nf_q_source")
-         call c_f_pointer(xptr, x_1d_double_ptr, (/nf_num_dif/))
+         call c_f_pointer(xptr, x_1d_double_ptr, [nf_num_dif])
          nf_q_source => x_1d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_q_intake_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          return
       case ("sourcesinks/COSUMO/nf_q_intake")
-         call c_f_pointer(xptr, x_1d_double_ptr, (/nf_num_dif/))
+         call c_f_pointer(xptr, x_1d_double_ptr, [nf_num_dif])
          nf_q_intake => x_1d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_const_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          nf_numconst = x_1d_int_ptr(2)
          return
       case ("sourcesinks/COSUMO/nf_const")
-         call c_f_pointer(xptr, x_2d_double_ptr, (/nf_num_dif, nf_numconst/))
+         call c_f_pointer(xptr, x_2d_double_ptr, [nf_num_dif, nf_numconst])
          nf_const => x_2d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_intake_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          nf_numintake = x_1d_int_ptr(2)
          i = x_1d_int_ptr(3)
@@ -1542,13 +1537,13 @@ contains
          end if
          return
       case ("sourcesinks/COSUMO/nf_intake")
-         call c_f_pointer(xptr, x_3d_double_ptr, (/nf_num_dif, nf_numintake, 3/))
+         call c_f_pointer(xptr, x_3d_double_ptr, [nf_num_dif, nf_numintake, 3])
          nf_intake => x_3d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_sink_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          nf_numsink = x_1d_int_ptr(2)
          i = x_1d_int_ptr(3)
@@ -1557,13 +1552,13 @@ contains
          end if
          return
       case ("sourcesinks/COSUMO/nf_sink")
-         call c_f_pointer(xptr, x_3d_double_ptr, (/nf_num_dif, nf_numsink, 6/))
+         call c_f_pointer(xptr, x_3d_double_ptr, [nf_num_dif, nf_numsink, 6])
          nf_sink => x_3d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_sour_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          nf_numsour = x_1d_int_ptr(2)
          i = x_1d_int_ptr(3)
@@ -1572,29 +1567,29 @@ contains
          end if
          return
       case ("sourcesinks/COSUMO/nf_sour")
-         call c_f_pointer(xptr, x_3d_double_ptr, (/nf_num_dif, nf_numsour, 8/))
+         call c_f_pointer(xptr, x_3d_double_ptr, [nf_num_dif, nf_numsour, 8])
          nf_sour => x_3d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_const_operator_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_numconst = x_1d_int_ptr(1)
          nf_namlen = x_1d_int_ptr(2)
          allocate (character(nf_namlen) :: nf_const_operator(nf_numconst))
          return
       case ("sourcesinks/COSUMO/nf_const_operator")
-         call c_f_pointer(xptr, x_1d_char_ptr, (/nf_numconst * nf_namlen/))
+         call c_f_pointer(xptr, x_1d_char_ptr, [nf_numconst * nf_namlen])
          nf_const_operator = transfer(x_1d_char_ptr, nf_const_operator)
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_src_mom_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          return
       case ("sourcesinks/COSUMO/nf_src_mom")
-         call c_f_pointer(xptr, x_1d_logical_ptr, (/nf_num_dif/))
+         call c_f_pointer(xptr, x_1d_logical_ptr, [nf_num_dif])
          nf_src_mom => x_1d_logical_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
@@ -1611,9 +1606,9 @@ contains
          if (len_trim(item_name) > 0) then
             ! A valid item name, now parse the field name...
             field_name = tmp_var_name(2:)
-            call set_compound_field(string_to_char_array(trim(varset_name),len(trim(varset_name))), &
-                                    string_to_char_array(trim(item_name),len(trim(item_name))), &
-                                    string_to_char_array(trim(field_name),len(trim(field_name))), &
+            call set_compound_field(string_to_char_array(trim(varset_name), len(trim(varset_name))), &
+                                    string_to_char_array(trim(item_name), len(trim(item_name))), &
+                                    string_to_char_array(trim(field_name), len(trim(field_name))), &
                                     xptr)
          end if
       end select
@@ -1622,17 +1617,12 @@ contains
          iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
-         call c_f_pointer(xptr, x_1d_double_ptr, (/ndkx/))
+         call c_f_pointer(xptr, x_1d_double_ptr, [ndkx])
          do i = 1, ndkx
             constituents(iconst, i) = x_1d_double_ptr(i)
          end do
          return
       end if
-      !select case(var_name)
-      !case('debugLevel')
-      !        call c_f_pointer(xptr, x_1d_double_ptr, (/ 1 /))
-      !        call setMessageHandling(thresholdLevel = nint(x_1d_double_ptr(1)), prefix_logging = "dflow1d")
-      !end select
 
    end subroutine set_var
 
@@ -1678,28 +1668,13 @@ contains
       ! Store the name
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
 
-      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+      call c_f_pointer(xptr, x_1d_double_ptr, [c_count(1)])
 
       include 'bmi_set_var_slice.inc'
 
       ! custom overrides
       select case (var_name)
       case ("ucx")
-         !cell = netcell(index)
-         !
-         !do edgeIndex = 1, cell%n
-         !    ! calculate edge angle
-         !    linkX1 = XK(KN(1,edgeIndex))
-         !    linkX2 = XK(KN(2,edgeIndex))
-         !    linkY1 = YK(KN(1,edgeIndex))
-         !    linkY2 = YK(KN(2,edgeIndex))
-         !
-         !    angle = atan((linkY2 - linkY1) / (linkX2 - linkX1))
-         !
-         !    u0(cell%lin(edgeIndex)) = value * cos(angle)
-         !    u1(cell%lin(edgeIndex)) = value * cos(angle)
-         !end do
-
          ! convert it to the velocity increment on cell interfaces
 
          ! update u0 - velocity at cell edges
@@ -1712,12 +1687,6 @@ contains
          ! 1. A - angle of the link, relative to the X axis (or calculate it from the link coordinates = atan((y2-y1)/(x2-x1))
          ! 2. for Y component: V_link += Uy * sin(A)
          ! 3. for X component: V_link += Ux * cos(A)
-
-         !ucx(index + 1) = value
-         !case("ucy")
-         ! convert it to the velocity increment on cell interfaces
-
-         !ucy(index + 1) = value
       case ("unorm")
          ! u1(index + 1) = value
          u1(c_start(1) + 1:c_start(1) + c_count(1)) = x_1d_double_ptr(1:c_count(1))
@@ -1733,7 +1702,7 @@ contains
          return
 
       case ("TcrEro")
-         call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
+         call c_f_pointer(xptr, x_2d_double_ptr, [c_count(1), c_count(2)])
          k = size(stmpar%trapar%par, 2) ! equivalent to stmpar%lsedtot
          if (.not. allocated(TcrEro)) then
             allocate (TcrEro(ndx, k))
@@ -1758,7 +1727,7 @@ contains
          return
 
       case ("TcrSed")
-         call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
+         call c_f_pointer(xptr, x_2d_double_ptr, [c_count(1), c_count(2)])
          k = size(stmpar%trapar%par, 2) ! equivalent to stmpar%lsedtot
          if (.not. allocated(TcrSed)) then
             allocate (TcrSed(ndx, k))
@@ -1787,7 +1756,7 @@ contains
          iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
-         call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+         call c_f_pointer(xptr, x_1d_double_ptr, [c_count(1)])
          do i = 1, c_count(1)
             constituents(iconst, c_start(1) + i) = x_1d_double_ptr(i)
          end do
@@ -1939,6 +1908,8 @@ contains
       use iso_c_binding, only: c_double, c_char, c_loc
       use iso_c_utils
       use fm_external_forcings_data
+      use m_update_dambreak_breach, only: waterLevelsDambreakUpStream, waterLevelsDambreakDownStream, &
+                                          breachDepthDambreak, breachWidthDambreak
       use m_observations
       use m_monitoring_crosssections
       use m_strucs
@@ -2671,19 +2642,19 @@ contains
          end if
          select case (field_name)
          case ("water_discharge")
-            ! this case statement can only be reached in case of 3D laterals, 
+            ! this case statement can only be reached in case of 3D laterals,
             ! so no check on (apply_transport(item_index) == 1) is needed here
             call c_f_pointer(xptr, x_1d_double_ptr, [num_layers])
-            do i_layer = 1,num_layers
-               qplat(i_layer,item_index) = x_1d_double_ptr(i_layer)
-            enddo
+            do i_layer = 1, num_layers
+               qplat(i_layer, item_index) = x_1d_double_ptr(i_layer)
+            end do
             return
          end select
-         
+
          constituent_name = field_name
          call str_token(constituent_name, direction_string, DELIMS='/')
          ! set value is only possible for incoming direction
-         if (direction_string == 'incoming') then 
+         if (direction_string == 'incoming') then
             constituent_name = constituent_name(2:)
             ! Find constituent index
             select case (constituent_name)
@@ -2699,11 +2670,11 @@ contains
                end if
             end select
             call c_f_pointer(xptr, x_1d_double_ptr, [num_layers])
-            do i_layer = 1,num_layers
-               incoming_lat_concentration(i_layer,constituent_index,item_index) = x_1d_double_ptr(i_layer)
-            enddo
+            do i_layer = 1, num_layers
+               incoming_lat_concentration(i_layer, constituent_index, item_index) = x_1d_double_ptr(i_layer)
+            end do
             return
-         end if 
+         end if
          ! NOTE: observations and crosssections are read-only!
       end select
    end subroutine set_compound_field
@@ -3076,7 +3047,7 @@ contains
          size1(1) = 1
          valuet = value
          xptr = c_loc(valuet) ! To pass on this subroutine argument to set_var_slice as a C pointer
-         call set_var_slice(c_var_name, (/index/), size1, xptr)
+         call set_var_slice(c_var_name, [index], size1, xptr)
       end select
 
    end subroutine set_1d_double_at_index
@@ -3246,210 +3217,6 @@ contains
       end do
    end function get_flow_elem_max_nbs
 
-! Geometry dll functions
-
-!LC: TODO REMOVE
-!subroutine triang(cptr_sx, cptr_sy, cptr_sv, c_numS, cptr_dx, cptr_dy, c_numD, cptr_res) bind(C, name="triang")
-!    !DEC$ ATTRIBUTES DLLEXPORT :: triang
-!    use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
-!    use unstruc_model
-!    use m_samples
-!    use m_sferic, only: jsferic
-!    use m_missing, only: dmiss, JINS
-!    use m_polygon, only: NPL, xpl, ypl, zpl
-!    use m_ec_basic_interpolation, only: triinterp2
-!
-!    implicit none
-!
-!    ! parameters
-!    type(c_ptr), intent(in)                 :: cptr_sx      ! samples x, y, values
-!    type(c_ptr), intent(in)                 :: cptr_sy
-!    type(c_ptr), intent(in)                 :: cptr_sv
-!    integer(c_int), intent(in)              :: c_numS       ! num samples
-!    type(c_ptr), intent(in)                 :: cptr_dx      ! destinations x, y
-!    type(c_ptr), intent(in)                 :: cptr_dy
-!    integer(c_int), intent(in)              :: c_numD       ! num destination points
-!    type(c_ptr), intent(inout)              :: cptr_res     ! return values (ptr to double array)
-!
-!    ! local variables
-!    integer                                 :: numS
-!    integer                                 :: numD
-!    integer                                 :: jdla = 1
-!    real(c_double), pointer                 :: ptr(:)
-!    real(c_double), pointer                 :: dx(:)
-!    real(c_double), pointer                 :: dy(:)
-!    real(c_double), pointer                 :: dRes(:)
-!
-!    numS = c_numS
-!    numD = c_numD
-!
-!    ! (re)allocate sample arrays
-!    if (allocated(XS)) then
-!        deallocate(XS,YS,ZS)
-!    end if
-!    allocate(XS(numS), YS(numS), ZS(numS))
-!
-!    ! copy ptr's to fortran arrays
-!    call c_f_pointer(cptr_sx, ptr, (/numS/))
-!    XS(:) = ptr
-!
-!    call c_f_pointer(cptr_sy, ptr, (/numS/))
-!    YS(:) = ptr
-!
-!    call c_f_pointer(cptr_sv, ptr, (/numS/))
-!    ZS(:) = ptr
-!
-!    call c_f_pointer(cptr_dx, dx, (/numD/))
-!    call c_f_pointer(cptr_dy, dy, (/numD/))
-!    call c_f_pointer(cptr_res, dRes, (/numD/))
-!
-!    ! set max stuff
-!    NS = numS
-!    NSMAX = numS
-!
-!    ! assign 'missing value' to all elements of dRes
-!    dRes = DMISS
-!
-!    ! call triangulate
-!    call triinterp2(dx, dy, dRes, numD, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, NPL, MXSAM, MYSAM, xpl, ypl, zpl)
-!
-!end subroutine triang
-
-!LC: TODO REMOVE
-!subroutine averaging(cptr_sx, cptr_sy, cptr_sv, c_nums, cptr_cx, cptr_cy, cptr_cxx, cptr_cyy, cptr_cnp, c_numc, c_n6, cptr_res, cptr_meth, cptr_nmin, cptr_csize) bind(C, name="averaging")
-!    !DEC$ ATTRIBUTES DLLEXPORT :: averaging
-!    use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
-!    use unstruc_model
-!    use m_sferic, only: jsferic, jasfer3D
-!    use m_missing
-!    use m_ec_interpolationsettings
-!    use kdtree2Factory
-!    use m_polygon, only: NPL, xpl, ypl, zpl
-!    use m_ec_basic_interpolation, only: AVERAGING2
-!
-!    implicit none
-!
-!    ! parameters
-!    type(c_ptr),    intent(in)                 :: cptr_sx      ! samples x, y, values
-!    type(c_ptr),    intent(in)                 :: cptr_sy
-!    type(c_ptr),    intent(in)                 :: cptr_sv
-!    integer(c_int), intent(in)                 :: c_nums       ! number of samples
-!    type(c_ptr),    intent(in)                 :: cptr_cx      ! destination cell center x, y
-!    type(c_ptr),    intent(in)                 :: cptr_cy
-!    type(c_ptr),    intent(in)                 :: cptr_cxx     ! destination cell corner x, y
-!    type(c_ptr),    intent(in)                 :: cptr_cyy
-!    type(c_ptr),    intent(in)                 :: cptr_cnp     ! destination cell corner array lengths
-!    integer(c_int), intent(in)                 :: c_numc       ! number of destination cells
-!    integer(c_int), intent(in)                 :: c_n6         ! max. cell corner array length
-!    type(c_ptr),    intent(inout)              :: cptr_res     ! return values (ptr to double array)
-!    integer(c_int), intent(in)                 :: cptr_meth    ! averaging method
-!    integer(c_int), intent(in)                 :: cptr_nmin    ! minimum nr of samples for avaraging
-!    real(c_double), intent(in)                 :: cptr_csize   ! relative search cell size
-!
-!    ! local variables
-!    real(c_double), pointer                 :: sx(:)
-!    real(c_double), pointer                 :: sy(:)
-!    real(c_double), pointer                 :: svtmp(:)
-!    integer                                 :: nums
-!    real(c_double), pointer                 :: cx(:)
-!    real(c_double), pointer                 :: cy(:)
-!    real(c_double), pointer                 :: cxtmp(:)
-!    real(c_double), pointer                 :: cytmp(:)
-!    integer, pointer                        :: cnp(:)
-!    integer                                 :: numc
-!    integer                                 :: n6
-!    real(c_double), pointer                 :: res(:)
-!    real(kind=dp), allocatable           :: sv(:,:)
-!    integer, allocatable                    :: ipsam(:)
-!    real(kind=dp), allocatable           :: cz(:,:)
-!    real(kind=dp), allocatable           :: cxx(:,:)
-!    real(kind=dp), allocatable           :: cyy(:,:)
-!    integer                                 :: meth
-!    integer                                 :: nmin
-!    real(kind=dp)                        :: csize
-!    integer                                 :: i, j, k, IAVtmp, NUMMINtmp, INTTYPEtmp, ierr
-!    real(kind=dp)                        :: RCELtmp
-!
-!    ! cache interpolation settings
-!    IAVtmp = IAV
-!    NUMMINtmp = NUMMIN
-!    INTTYPEtmp = INTERPOLATIONTYPE
-!    RCELtmp = RCEL
-!
-!    ! assign ranges and settings
-!    nums = c_nums
-!    numc = c_numc
-!    n6 = c_n6
-!    meth = cptr_meth
-!    nmin = cptr_nmin
-!    csize = cptr_csize
-!
-!    !assign pointers
-!    call c_f_pointer(cptr_sx, sx, (/nums/))
-!    call c_f_pointer(cptr_sy, sy, (/nums/))
-!    call c_f_pointer(cptr_sv, svtmp, (/nums/))
-!    call c_f_pointer(cptr_cx, cx, (/numc/))
-!    call c_f_pointer(cptr_cy, cy, (/numc/))
-!    call c_f_pointer(cptr_cxx, cxtmp, (/n6*numc/))
-!    call c_f_pointer(cptr_cyy, cytmp, (/n6*numc/))
-!    call c_f_pointer(cptr_cnp, cnp, (/numc/))
-!    call c_f_pointer(cptr_res, res, (/numc/))
-!
-!    !allocate & copy to 2d arrays
-!    allocate(sv(1, nums), ipsam(nums), cz(1,numc), cxx(n6, numc), cyy(n6, numc))
-!
-!    sv(1,:) = svtmp(:)
-!    ipsam(:) = 1
-!    k = 1
-!    do i = 1, numc
-!       cz(1,i) = DMISS
-!       do j=1,n6
-!          cxx(j, i) = cxtmp(k)
-!          cyy(j, i) = cytmp(k)
-!          k = k + 1
-!       end do
-!    end do
-!
-!    if(meth > 0 .and. meth < 8) then
-!       IAV = meth
-!    else
-!       goto 1234
-!    end if
-!
-!    if(nmin > 0) then
-!       NUMMIN = nmin
-!    else
-!       goto 1234
-!    end if
-!
-!    if(csize > 0 .and. csize < 10) then
-!       RCEL = csize
-!    else
-!       goto 1234
-!    end if
-!
-!    INTERPOLATIONTYPE = 2
-!
-!    call build_kdtree(treeglob, nums, sx, sy, ierr, jsferic, dmiss)
-!    call averaging2(1, nums, sx, sy, sv, ipsam, cx, cy, cz, numc, cxx, cyy, n6, cnp, 1, &
-!                    dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl)
-!
-!    call delete_kdtree2(treeglob)
-!
-!    !copy values back
-!    res(:) = cz(1,:)
-!
-!1234 continue
-!
-!    !unroll & cleanup
-!    IAV = IAVtmp
-!    NUMMIN = NUMMINtmp
-!    INTERPOLATIONTYPE = INTTYPEtmp
-!    RCEL = RCELtmp
-!    deallocate(sv, ipsam, cz, cxx, cyy)
-!
-!end subroutine averaging
-
 ! Further custom api functions
 
    subroutine find_cells(c_net_file, c_numCells, c_maxPerCell, cptr_netElemNode) bind(C, name="find_cells")
@@ -3559,9 +3326,9 @@ contains
       allocate (xin(c_Nin), yin(c_Nin))
 
       !     copy pointers to fortran array
-      call c_f_pointer(cptr_xin, ptr, (/c_Nin/))
+      call c_f_pointer(cptr_xin, ptr, [c_Nin])
       xin(:) = ptr
-      call c_f_pointer(cptr_yin, ptr, (/c_Nin/))
+      call c_f_pointer(cptr_yin, ptr, [c_Nin])
       yin(:) = ptr
 
       ! xin, yin arrays store the coordinates of the feature and are terminated with a dmiss value.
@@ -3878,8 +3645,8 @@ contains
 
       ierr = 0
 
-      call c_f_pointer(c_xVerticesCoordinates, xVerticesCoordinates, (/numberOfInputVertices/))
-      call c_f_pointer(c_yVerticesCoordinates, yVerticesCoordinates, (/numberOfInputVertices/))
+      call c_f_pointer(c_xVerticesCoordinates, xVerticesCoordinates, [numberOfInputVertices])
+      call c_f_pointer(c_yVerticesCoordinates, yVerticesCoordinates, [numberOfInputVertices])
 
       if (allocated(indexes)) then
          deallocate (indexes)

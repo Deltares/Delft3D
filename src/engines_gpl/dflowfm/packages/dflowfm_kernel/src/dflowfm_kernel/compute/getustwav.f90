@@ -45,6 +45,7 @@ contains
       use m_physcoef
       use m_xbeach_data, only: R, cwav, gammaxxb, roller
       use m_get_Lbot_Ltop
+      use mathconsts, only: ee
 
       integer, intent(in) :: LL
       real(kind=dp), intent(in) :: z00 ! current only z0
