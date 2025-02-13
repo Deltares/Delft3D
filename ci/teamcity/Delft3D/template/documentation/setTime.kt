@@ -17,10 +17,11 @@ object TemplateSetTimeVariable : Template({
 
     steps {
         script {
-            name = "Set time variable step."
+            name = "Set time variable step"
             id = "SET_TIME_VARIABLE"
-            val script = File(DslContext.baseDir, "windows/scripts/setTimeParam.bat")
-            scriptContent = Util.readScript(script)
+            scriptContent = """
+                call windows/scripts/setTimeParam.bat
+            """.trimIndent()
         }
     }
 })
