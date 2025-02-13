@@ -32,6 +32,8 @@ def download_file(client, bucket, key, local_path, last_modified, version_id=Non
 def download_batch(client, bucket, objects, local, prefix):
     for obj in objects:
         key = obj.object_name
+        if "doc" not in key:
+            continue
         local_path = os.path.join(local, os.path.relpath(key, prefix))
         try:
             # Convert obj.last_modified to offset-naive datetime
