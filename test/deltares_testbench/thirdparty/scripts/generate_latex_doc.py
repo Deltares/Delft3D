@@ -50,7 +50,7 @@ def run_pdflatex(u_doc: str, pdflatex_exe: str) -> int:
         int: The return value of the subprocess call, indicating the success or failure of the pdflatex command.
     """
     log_file = open(u_doc + ".log", "w")
-    to_execute = '"%s" --pool-size=5000000 -shell-escape -interaction=nonstopmode %s' % (pdflatex_exe, u_doc)
+    to_execute = '"%s" -synctex=1 -interaction=nonstopmode -shell-escape %s' % (pdflatex_exe, u_doc)
     print(to_execute)
     ret_value = subprocess.call(to_execute, stdout=log_file, stderr=subprocess.STDOUT)
     log_file.close()
