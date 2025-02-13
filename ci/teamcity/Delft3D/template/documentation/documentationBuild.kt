@@ -40,5 +40,9 @@ object TemplateDocumentationBuild : Template({
             buildType = "Dimr_DimrCollector"
             branchFilter = "+:<default>"
         }
+    }    
+    
+    failureConditions {
+        executionTimeoutMin = 180
     }
 })
