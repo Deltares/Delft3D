@@ -54,8 +54,8 @@ contains
       use m_lin2cory, only: lin2cory
 
       real(kind=dp) :: ax, ay, wuL, wud, csa, sna
-      integer :: k, L, ierr, nx
-      integer :: k1, k2, k3, k4
+      integer :: k, L, nx
+      integer :: k3, k4
       integer :: ka, kb, LL
       wcnx3 = 0
       wcny3 = 0
@@ -67,9 +67,7 @@ contains
       !endif
 
       !if (kmx > 0 .and. jased > 0 .and. jased < 4) then
-      if (allocated(wcLn)) deallocate (wcLn)
-      allocate (wcLn(2, lnx), stat=ierr); wcLn = 0
-      call aerr('wcLn(2,lnx)', ierr, lnx)
+      wcLn = 0
       !endif
 
       jacorner = 0
@@ -78,12 +76,9 @@ contains
          k3 = lncn(1, L); k4 = lncn(2, L)
          nx = max(nx, k3, k4)
       end do
-      allocate (wcnxy(3, numk), stat=ierr); wcnxy = 0
-      call aerr('wcnxy(3,numk)', ierr, 3 * numk)
+      wcnxy = 0
 
-      allocate (jacorner(numk), stat=ierr)
       jacorner = 0
-      call aerr('jacorner(numk)', ierr, numk)
 
       do L = lnx1D + 1, lnx
          if (abs(kcu(L)) == 1) then
@@ -140,36 +135,6 @@ contains
 !    wcnxy(2,k4) = wcnxy(2,k4) + lin2cory(L,2,ax,ay)
       end do
 
-! count number of attached and closed boundary links, and store it temporarily in jacorner
-      jacorner = 0
-      do L = 1, numL
-         if ((kn(3, L) == 2 .and. lnn(L) == 1 .and. lne2ln(L) <= 0)) then
-            k1 = kn(1, L)
-            k2 = kn(2, L)
-            jacorner(k1) = jacorner(k1) + 1
-            jacorner(k2) = jacorner(k2) + 1
-         end if
-      end do
-
-! post-process corner indicator: use ALL boundary nodes, and project on closed boundary later
-!   used to be: nmk(k) - int(wcnxy (3,k)) == 2
-      do k = 1, numk
-         if (jacorner(k) >= 1) then
-            jacorner(k) = 1
-         else
-            jacorner(k) = 0
-         end if
-      end do
-
-      ! exclude all nodes with a disabled netlink attached from the projection
-      do L = 1, numL
-         if (kn(3, L) == 0) then
-            k1 = kn(1, L)
-            k2 = kn(2, L)
-            jacorner(k1) = 0
-            jacorner(k2) = 0
-         end if
-      end do
 
       do L = lnx1D + 1, lnx
          if (abs(kcu(L)) == 1) cycle
@@ -196,41 +161,11 @@ contains
 
       end do
 
-      nrcnw = 0
-      do k = 1, numk ! set up admin for corner velocity alignment at closed walls
-
-!    if ( nmk(k) - int(wcnxy (3,k)) == 2 ) then ! two more netlinks than flowlinks to this corner
-         if (jacorner(k) == 1) then
-            nrcnw = nrcnw + 1 ! cnw = cornerwall point (netnode)
-         end if
-      end do
-
-      if (nrcnw > size(kcnw)) then
-         if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
-         allocate (cscnw(nrcnw), stat=ierr); 
-         call aerr('cscnw(nrcnw)', ierr, nrcnw)
-         allocate (sncnw(nrcnw), stat=ierr); 
-         call aerr('sncnw(nrcnw)', ierr, nrcnw)
-         allocate (kcnw(nrcnw), stat=ierr); 
-         call aerr(' kcnw(nrcnw)', ierr, nrcnw)
-         allocate (nwalcnw(2, nrcnw), stat=ierr); 
-         call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
-         allocate (sfcnw(nrcnw), stat=ierr); 
-         call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
-      end if
-
-      if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
-      allocate (cscnw(nrcnw), stat=ierr); cscnw = 0
-      call aerr('cscnw(nrcnw)', ierr, nrcnw)
-      allocate (sncnw(nrcnw), stat=ierr); sncnw = 0
-      call aerr('sncnw(nrcnw)', ierr, nrcnw)
-      allocate (kcnw(nrcnw), stat=ierr); kcnw = 0
-      call aerr(' kcnw(nrcnw)', ierr, nrcnw)
-      allocate (nwalcnw(2, nrcnw), stat=ierr); nwalcnw = 0
-      call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
-      allocate (sfcnw(nrcnw), stat=ierr); sfcnw = 0
-      call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
-
+      cscnw = 0
+      sncnw = 0
+      kcnw = 0
+      nwalcnw = 0
+      sfcnw = 0
       nrcnw = 0
       do k = 1, numk ! set up admin for corner velocity alignment at closed walls
 
@@ -274,14 +209,16 @@ contains
    end subroutine setlinktocornerweights
 
    subroutine allocatelinktocornerweights() ! allocate corner related link x- and y weights
-      use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, wcnxy, jacorner
-      use m_netw, only: numk
+      use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, wcnxy, jacorner, lne2ln
+      use m_netw, only: numk, numl, kn, lnn
       use m_alloc
 
       implicit none
 
       integer ierr
-
+      integer :: k, L
+      integer :: k1, k2
+      
       if (allocated(wcnx3)) deallocate (wcnx3, wcny3, wcnx4, wcny4)
       if (allocated(wcnxy)) deallocate (wcnxy)
       allocate (wcnx3(lnx), stat=ierr); 
@@ -300,6 +237,46 @@ contains
       allocate (jacorner(numk), stat=ierr)
       call aerr('jacorner(numk)', ierr, numk)
 
+! count number of attached and closed boundary links, and store it temporarily in jacorner
+      jacorner = 0
+      do L = 1, numL
+         if ((kn(3, L) == 2 .and. lnn(L) == 1 .and. lne2ln(L) <= 0)) then
+            k1 = kn(1, L)
+            k2 = kn(2, L)
+            jacorner(k1) = jacorner(k1) + 1
+            jacorner(k2) = jacorner(k2) + 1
+         end if
+      end do
+
+! post-process corner indicator: use ALL boundary nodes, and project on closed boundary later
+!   used to be: nmk(k) - int(wcnxy (3,k)) == 2
+      do k = 1, numk
+         if (jacorner(k) >= 1) then
+            jacorner(k) = 1
+         else
+            jacorner(k) = 0
+         end if
+      end do
+
+      ! exclude all nodes with a disabled netlink attached from the projection
+      do L = 1, numL
+         if (kn(3, L) == 0) then
+            k1 = kn(1, L)
+            k2 = kn(2, L)
+            jacorner(k1) = 0
+            jacorner(k2) = 0
+         end if
+      end do
+
+      nrcnw = 0
+      do k = 1, numk ! set up admin for corner velocity alignment at closed walls
+
+!    if ( nmk(k) - int(wcnxy (3,k)) == 2 ) then ! two more netlinks than flowlinks to this corner
+         if (jacorner(k) == 1) then
+            nrcnw = nrcnw + 1 ! cnw = cornerwall point (netnode)
+         end if
+      end do
+      
       if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
       allocate (cscnw(nrcnw), stat=ierr); 
       call aerr('cscnw(nrcnw)', ierr, nrcnw)
