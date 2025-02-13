@@ -8,11 +8,22 @@ IF ERRORLEVEL 1 (
 
 REM Get the commit time of the current commit
 git show -s --format=%%ci HEAD > temp.txt
+IF ERRORLEVEL 1 (
+    echo Failed to get the commit time. Please check your Git repository.
+    exit /b 1
+)
+
 SET /P GIT_HEAD_TIME=<temp.txt
 DEL temp.txt
+
+REM Check if GIT_HEAD_TIME is set
+IF NOT DEFINED GIT_HEAD_TIME (
+    echo Failed to set GIT_HEAD_TIME. Please check the script.
+    exit /b 1
+)
 
 REM Set the TeamCity parameter
 echo ##teamcity[setParameter name='env.TIME_ISO_8601' value='%GIT_HEAD_TIME%']
 
 REM Remove the variable
-@REM set GIT_HEAD_TIME=
+SET GIT_HEAD_TIME=
