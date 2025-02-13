@@ -1272,7 +1272,7 @@ contains
          sdu_update_s1 = 0
       end if
 
-      call prop_get(md_ptr, 'numerics', 'PerotType', iPerot)
+      call prop_get(md_ptr, 'numerics', 'PerotType', iperot)
       call prop_get(md_ptr, 'numerics', 'PerotWeightUpdate', ja_Perot_weight_update, success)
 
       call prop_get(md_ptr, 'numerics', 'Oceaneddysizefrac', Oceaneddysizefrac)
@@ -3288,7 +3288,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm', epsmaxlevm, 'Stop criterium for Nested Newton loop in non-linear iteration')
       end if
 
-      call prop_set(prop_ptr, 'numerics', 'PerotType', iPerot)
+      call prop_set(prop_ptr, 'numerics', 'PerotType', iperot)
       call prop_set(prop_ptr, 'numerics', 'PerotWeightUpdate', ja_Perot_weight_update, 'Perot weight update for 1D nodes (0: no (default), 1: yes)')
 
       if (Oceaneddyamp > 0d0) then

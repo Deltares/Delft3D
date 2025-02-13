@@ -483,7 +483,7 @@ contains
                else
                   JA = 1
                end if
-               if (iPerot == -1) then
+               if (iperot == -1) then
                   call reconst2nd()
                end if
                call setucxucyucxuucyunew() ! reconstruct cell center velocities
