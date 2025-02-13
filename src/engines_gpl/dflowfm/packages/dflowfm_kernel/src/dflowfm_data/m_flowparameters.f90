@@ -674,7 +674,10 @@ contains
       ! 5 : uc*Vc     = sum(u dxa W hu ), Vc = dxa W hu based volume in cell
       ! 6 : as 5, also for Coriolis
 
-      ja_Perot_weight_update = 0 ! update Perot weights for 1D nodes (0: no (default), 1: yes)
+      integer, parameter :: PEROT_STATIC = 0 ! Initialise Perot weights once 
+      integer, parameter :: PEROT_UPDATE = 1 ! Initialise Perot weights every time-step
+
+      ja_Perot_weight_update = PEROT_STATIC ! update Perot weights for 1D nodes (0: no (default), 1: yes)
 
       icorio = 5 ! Coriolis weigthing
       ! (Tx,Ty) = tangential unit vector at u-point

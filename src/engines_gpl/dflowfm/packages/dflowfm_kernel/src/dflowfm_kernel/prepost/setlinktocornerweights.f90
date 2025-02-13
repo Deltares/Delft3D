@@ -267,7 +267,7 @@ contains
 
       end do
 
-      if (ja_Perot_weight_update == 0) then
+      if (ja_Perot_weight_update == PEROT_STATIC) then
          deallocate (wcnxy, acn, jacorner)
       end if
 

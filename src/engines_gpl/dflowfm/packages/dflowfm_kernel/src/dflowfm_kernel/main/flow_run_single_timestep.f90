@@ -114,7 +114,7 @@ contains
 
       return ! Return with success
 
-      if (ja_Perot_weight_update == 1) then
+      if (ja_Perot_weight_update == PEROT_UPDATE) then
          call setlinktocornerweights()
          call setlinktocenterweights()
       end if
