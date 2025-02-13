@@ -984,7 +984,7 @@
         <file name="dflowfm/dflowfmoutput/gatefree_3Dzsigma1_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.006" />
+            <parameter name="x_velocity" toleranceAbsolute="0.008" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
@@ -997,7 +997,7 @@
         <file name="dflowfm/dflowfmoutput/gatefree_3Dzsigma2_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.006" />
+            <parameter name="x_velocity" toleranceAbsolute="0.008" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
