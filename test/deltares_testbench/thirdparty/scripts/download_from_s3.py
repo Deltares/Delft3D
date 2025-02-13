@@ -23,16 +23,18 @@ local_dir = f"./{args.engine_dir}"
 
 def download_file(client, bucket, key, local_path, last_modified, version_id=None):
     os.makedirs(os.path.dirname(local_path), exist_ok=True)
-    if not os.path.exists(local_path):
-        client.fget_object(bucket, key, local_path, version_id=version_id)
-        print(f"Downloaded file: {local_path} (Last Modified: {last_modified})")
-    else:
-        print(f"File already exists: {local_path} (Skipping download)")
+    client.fget_object(bucket, key, local_path, version_id=version_id)
+    print(f"Downloaded file: {local_path} (Last Modified: {last_modified})")
 
 def download_batch(client, bucket, objects, local, prefix):
     for obj in objects:
         key = obj.object_name
         local_path = os.path.join(local, os.path.relpath(key, prefix))
+        if os.path.exists(local_path):
+            local_last_modified = datetime.fromtimestamp(os.path.getmtime(local_path))
+            if local_last_modified >= obj.last_modified:
+                print(f"File already up-to-date: {local_path} (Skipping download)")
+                continue
         try:
             download_file(client, bucket, key, local_path, obj.last_modified, obj.version_id)
         except S3Error as e:
