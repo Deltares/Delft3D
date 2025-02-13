@@ -65,7 +65,7 @@ RUN Remove-Item C:\\Git-2.46.2-64-bit.exe
 RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\Git\\usr\\bin')
 
 # Copy the setup script into the container
-COPY set-env.cmd C:\\set-env.cmd
+COPY set-env-vs2019.cmd C:\\set-env-vs2019.cmd
 
 # Set the default command to run the setup script
-CMD ["cmd", "/S", "/C", "C:\\set-env.cmd"]
+CMD ["cmd", "/S", "/C", "C:\\set-env-vs2019.cmd"]

@@ -16,7 +16,7 @@ object WindowsBuildEnvironment : BuildType({
         TemplateMonitorPerformance
     )
 
-    name = "Delft3D build environment container"
+    name = "Delft3D build environment intel 2023 container"
     buildNumberPattern = "%build.vcs.number%"
     description = "Delft3D Windows build container."
 
@@ -53,7 +53,7 @@ object WindowsBuildEnvironment : BuildType({
             name = "Docker build dhydro"
             commandType = build {
                 source = file {
-                    path = "ci/dockerfiles/windows/Dockerfile-dhydro"
+                    path = "ci/dockerfiles/windows/Dockerfile-dhydro-vs2019-i23"
                 }
                 contextDir = "ci/dockerfiles/windows"
                 platform = DockerCommandStep.ImagePlatform.Windows
@@ -68,8 +68,15 @@ object WindowsBuildEnvironment : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
+                """.trimIndent()
+            }
+        }
+        dockerCommand {
+            name = "Docker push"
+            commandType = push {
+                namesAndTags = """
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
                 """.trimIndent()
             }
             enabled = "%trigger.type%" == "vcs"
