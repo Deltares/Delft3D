@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from minio import Minio
 from minio.error import S3Error
 
@@ -28,18 +28,19 @@ def download_file(client, bucket, key, local_path, last_modified, version_id=Non
         print(f"Created directory: {dir_path}")
     if not os.path.exists(local_path):
         client.fget_object(bucket, key, local_path, version_id=version_id)
-    # print(f"Downloaded file: {local_path} (Last Modified: {last_modified})")
 
 def download_batch(client, bucket, objects, local, prefix):
     for obj in objects:
         key = obj.object_name
         local_path = os.path.join(local, os.path.relpath(key, prefix))
-        if os.path.exists(local_path):
-            local_last_modified = datetime.fromtimestamp(os.path.getmtime(local_path))
-            if local_last_modified >= obj.last_modified:
-                # print(f"File already up-to-date: {local_path} (Skipping download)")
-                continue
         try:
+            # Convert obj.last_modified to offset-naive datetime
+            obj_last_modified_naive = obj.last_modified.replace(tzinfo=None)
+            if os.path.exists(local_path):
+                local_last_modified = datetime.fromtimestamp(os.path.getmtime(local_path), tz=timezone.utc)
+                local_last_modified_naive = local_last_modified.replace(tzinfo=None)
+                if local_last_modified_naive >= obj_last_modified_naive:
+                    continue
             download_file(client, bucket, key, local_path, obj.last_modified, obj.version_id)
         except S3Error as e:
             print(f"Error occurred: {e}")
