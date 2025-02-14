@@ -138,6 +138,7 @@ contains
       end if
       !
       if (.not. error) then
+         write(mdia, '(A,ES20.11E3)') 'TIME1 = ',time1
          spinup = time1 < tstart_user + stmpar%morpar%tmor * tfac
          call dredge(ndx, lsedtot, spinup, cdryb, bl_ave, 1.0_fp, &
                      & dbodsd, kfsed, s1, time1 / 3600_hp, morhr, dadpar, error, &
