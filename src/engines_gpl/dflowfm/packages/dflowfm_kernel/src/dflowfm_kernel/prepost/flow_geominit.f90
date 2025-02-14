@@ -40,7 +40,8 @@ module m_flow_geominit
    use m_sort_flowlinks_ccw, only: sort_flowlinks_ccw
    use m_setwallorientations, only: setwallorientations
    use m_setprofs1d, only: setprofs1d
-   use m_setlinktocornerweights, only: setlinktocornerweights, allocatelinktocornerweights
+   use m_allocatelinktocornerweights, only: allocatelinktocornerweights
+   use m_setlinktocornerweights, only: setlinktocornerweights
    use m_setlinktocenterweights, only: setlinktocenterweights
    use m_setcornertolinkorientations, only: setcornertolinkorientations
    use m_setcentertolinkorientations, only: setcentertolinkorientations
