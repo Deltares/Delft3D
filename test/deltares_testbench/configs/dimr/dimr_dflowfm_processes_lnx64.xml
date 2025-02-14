@@ -160,7 +160,7 @@
         <from>teamcity_artifacts/x64/bin</from>
       </location>
       <location ref="reference_results" type="reference">
-        <from>win64</from>
+        <from>lnx64</from>
       </location>
       <maxRunTime>3600.0</maxRunTime>
       <!-- seconds -->
