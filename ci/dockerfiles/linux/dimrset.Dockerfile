@@ -22,7 +22,7 @@ export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 export FC=mpi${INTEL_FORTRAN_COMPILER} CXX=mpicxx CC=mpiicx
 
-mkdir /delft3d
+mkdir --parents /delft3d
 cmake ./src/cmake -G "Unix Makefiles" -B build \
     -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
     -DCONFIGURATION_TYPE=all \

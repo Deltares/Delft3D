@@ -171,7 +171,7 @@ else
     wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
-mkdir "/var/cache/src/${BASEDIR}/build"
+mkdir --parents "/var/cache/src/${BASEDIR}/build"
 pushd "/var/cache/src/${BASEDIR}/build"
 if [[ "$DEBUG" = "0" ]]; then
     cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
@@ -305,7 +305,7 @@ else
     wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
-mkdir -p "/var/cache/src/${BASEDIR}/build"
+mkdir --parents "/var/cache/src/${BASEDIR}/build"
 pushd "/var/cache/src/${BASEDIR}/build"
 if [[ $DEBUG = "0" ]]; then
     cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
@@ -382,7 +382,7 @@ fi
 
 [[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
 
-mkdir -p "/var/cache/src/${BASEDIR}/build"
+mkdir --parents "/var/cache/src/${BASEDIR}/build"
 pushd "/var/cache/src/${BASEDIR}/build"
 cmake .. \
     -DCMAKE_C_COMPILER=mpiicx \
@@ -456,7 +456,7 @@ fi
 
 [[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
 
-mkdir -p "/var/cache/src/${BASEDIR}/build"
+mkdir --parents "/var/cache/src/${BASEDIR}/build"
 pushd "/var/cache/src/${BASEDIR}/build"
 cmake .. \
     -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
@@ -495,7 +495,7 @@ else
     wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
-mkdir -p "/var/cache/src/${BASEDIR}/build"
+mkdir --parents "/var/cache/src/${BASEDIR}/build"
 pushd "/var/cache/src/${BASEDIR}/build"
 
 [[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
