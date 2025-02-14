@@ -80,7 +80,7 @@ do
 
     pushd "/var/cache/src/${BASEDIR}"
     ./configure CC=icx CXX=icpx FC=ifx CFLAGS="-O3" CXXFLAGS="-O3" FCFLAGS="-O3"
-    make --jobs=8
+    make --jobs=$(nproc)
     make install
     popd
 done
@@ -103,8 +103,8 @@ fi
 export CC=icx CXX=icpx CFLAGS="-O3" CXXFLAGS="-O3"
 
 pushd /var/cache/src/cmake-3.30.3
-./bootstrap --parallel=8
-make --jobs=8
+./bootstrap --parallel=$(nproc)
+make --jobs=$(nproc)
 make install
 popd
 EOF

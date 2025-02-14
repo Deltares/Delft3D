@@ -4,13 +4,12 @@ ADD intel /opt/intel
 
 ADD dimrset /opt/dimrset
 
-RUN dnf -y update \
-  && dnf -y install libgomp libfabric \
+RUN dnf --assumeyes update \
+  && dnf --assumeyes install libgomp libfabric \
   && dnf clean all
 
 ENV LD_LIBRARY_PATH=/opt/dimrset/lib:/opt/intel/mpi/lib
 ENV PATH=/opt/dimrset/bin:/opt/intel/mpi/bin:$PATH
-#ENV I_MPI_FABRICS=shm
 ENV OMP_NUM_THREADS=1
 
 ARG GIT_COMMIT=unknown

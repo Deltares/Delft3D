@@ -44,7 +44,7 @@ do
 
     pushd "/var/cache/src/${BASEDIR}"
     [[ -f configure ]] && ./configure
-    make --jobs=8
+    make --jobs=$(nproc)
     make install
     popd
 done
@@ -74,7 +74,7 @@ export CFLAGS
 
 pushd "/var/cache/src/${BASEDIR}"
 ./configure --prefix=/usr/local --disable-all-programs --enable-libuuid
-make --jobs=8
+make --jobs=$(nproc)
 make install
 popd
 EOF-uuid
@@ -109,7 +109,7 @@ if [[ $DEBUG = "0" ]]; then
 else
     make config prefix=/usr/local cc=icx debug=1 gdb=1
 fi
-make --jobs=8
+make --jobs=$(nproc)
 make install
 
 popd
@@ -120,7 +120,7 @@ if [[ $DEBUG = "0" ]]; then
 else
     make config prefix=/usr/local cc=icx shared=1 debug=1 gdb=1
 fi
-make --jobs=8
+make --jobs=$(nproc)
 make install
 popd
 EOF-metis
@@ -148,7 +148,7 @@ fi
 pushd "/var/cache/src/${BASEDIR}"
 ./buildconf.sh
 ./configure CC=icx CXX=icpx CFLAGS="$FLAGS" CXXFLAGS="$FLAGS"
-make --jobs=8
+make --jobs=$(nproc)
 make install
 popd
 EOF-expat
@@ -182,7 +182,7 @@ else
         -DCMAKE_C_FLAGS="-g -O0 -fPIC" -DCMAKE_CXX_FLAGS="-g -O0 -fPIC" \
         -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Debug
 fi
-make --jobs=8
+make --jobs=$(nproc)
 make install
 popd
 EOF-xerces-c
@@ -249,7 +249,7 @@ if [[ $DEBUG = "0" ]]; then
 else
     ./configure CC=icx CFLAGS="-O0" --enable-debug --with-openssl --with-zlib --with-zstd
 fi
-make --jobs=8
+make --jobs=$(nproc)
 make install
 popd
 EOF-curl
@@ -280,7 +280,7 @@ if [[ $DEBUG = "0" ]]; then
 else
     ./configure CC=icx CFLAGS="-g -O0" CPPFLAGS="-DSQLITE_DEBUG"
 fi
-make --jobs=8
+make --jobs=$(nproc)
 make install
 popd
 EOF-sqlite3
@@ -316,7 +316,7 @@ else
         -DCMAKE_C_FLAGS="-g -O0" -DCMAKE_CXX_FLAGS="-g -O0" \
         -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Debug
 fi
-make --jobs=8
+make --jobs=$(nproc)
 make install
 popd
 EOF-tiff
@@ -353,7 +353,7 @@ pushd "/var/cache/src/${BASEDIR}"
     --enable-parallel \
     --with-zlib=/usr/local/include,/usr/local/lib \
     --with-szlib=/usr/local
-make --jobs=8
+make --jobs=$(nproc)
 make install
 popd
 EOF-hdf5
@@ -396,7 +396,7 @@ cmake .. \
     -DSzip_INCLUDE_DIRS=/usr/local/include \
     -DSzip_RELEASE_LIBRARY=/usr/local/lib/libsz.so
 
-make --jobs=8
+make --jobs=$(nproc)
 make install
 popd
 EOF-netcdf-c
@@ -427,7 +427,7 @@ pushd "/var/cache/src/${BASEDIR}"
     FCFLAGS="$FLAGS" FFLAGS="$FLAGS" F77FLAGS="$FLAGS" F90FLAGS="$FLAGS" \
     --enable-large-file-tests --with-pic
 
-make --jobs=8
+make --jobs=$(nproc)
 make install
 popd
 EOF-netcdf-fortran
@@ -467,7 +467,7 @@ cmake .. \
     -DSQLITE3_LIBRARY=/usr/local/lib/libsqlite3.so \
     -DEXE_SQLITE3=/usr/local/bin/sqlite3 \
     -DENABLE_TIFF=ON
-cmake --build . --config $BUILD_TYPE --parallel 8
+cmake --build . --config $BUILD_TYPE --parallel $(nproc)
 cmake --build . --target install
 popd
 EOF-proj
@@ -512,7 +512,7 @@ cmake .. \
     -DGDAL_USE_ZSTD=ON -DGDAL_USE_ZLIB=ON \
     -DGDAL_USE_TIFF=ON
 
-cmake --build . --config $BUILD_TYPE --parallel 8
+cmake --build . --config $BUILD_TYPE --parallel $(nproc)
 cmake --build . --target install
 
 popd
@@ -567,7 +567,7 @@ else
     export ESMF_BOPT=g
 fi
 
-make --jobs=8
+make --jobs=$(nproc)
 make install
 popd
 EOF-esmf

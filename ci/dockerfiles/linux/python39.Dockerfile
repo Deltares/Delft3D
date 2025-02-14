@@ -5,16 +5,16 @@ ENV PIP_NO_CACHE_DIR=1
 
 # Install system dependencies and clean up packages afterwards
 RUN <<"EOF"
-    dnf update -y 
-    dnf install -y python39
+    dnf update --assumeyes
+    dnf install --assumeyes python39
     dnf clean all
-    rm -rf /var/cache/dnf
+    rm --recursive --force /var/cache/dnf
 EOF
 
 # Install pip
-RUN <<"EOF" 
+RUN <<"EOF"
     curl https://bootstrap.pypa.io/get-pip.py | python3.9 -
-    python3.9 -m pip install --upgrade pip
+    python3.9 --module pip install --upgrade pip
 EOF
 
 CMD [ "python3.9" ]

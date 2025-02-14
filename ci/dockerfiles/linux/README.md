@@ -203,12 +203,10 @@ Then, run the `third-party-tools` image while mounting the Delft3D source code:
 ```bash
 sudo docker run --interactive --tty --volume  <DELFT_3D_REPO_PATH>:/checkouts/delft3d localhost/third-party-libs:<THIRD_PARTY_TAG>
 ```
-This command will give you a bash prompt that has all third-party-dependencies and compilers available. To build the fm-suite,
-run the following commands:
+This command will give you a bash prompt that has all third-party-dependencies and compilers available. The environment is set
+by the .bashrc file that is available for the root user. To build the fm-suite, run the following commands:
 ```bash
 cd /checkouts/delft3d
-source /opt/intel/oneapi/setvars.sh
-export FC=mpiifx CXX=mpicxx CC=mpiicx
 cmake -S ./src/cmake -B build_fm-suite_debug -D CONFIGURATION_TYPE:STRING=fm-suite -D CMAKE_INSTALL_PREFIX=./install_fm-suite_debug/ -D CMAKE_BUILD_TYPE=Debug
 cmake --build build_fm-suite_debug
 cmake --install build_fm-suite_debug

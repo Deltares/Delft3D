@@ -28,7 +28,7 @@ cmake ./src/cmake -G "Unix Makefiles" -B build \
     -DCONFIGURATION_TYPE=all \
     -DCMAKE_INSTALL_PREFIX=/delft3d
 
-cmake --build build --parallel 8 --target install --config ${BUILD_TYPE}
+cmake --build build --parallel $(nproc) --target install --config ${BUILD_TYPE}
 EOF
 
 FROM containers.deltares.nl/delft3d-dev/almalinux:8.10-minimal
