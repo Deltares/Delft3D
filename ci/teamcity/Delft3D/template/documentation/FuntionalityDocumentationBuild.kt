@@ -34,9 +34,15 @@ object TemplateFunctionalityDocumentation : Template({
     }
 
     triggers {
-        finishBuildTrigger {
-            buildType = "Dimr_DimrCollector"
+        schedule {
+            schedulingPolicy = weekly {
+                dayOfWeek = ScheduleTrigger.DAY.Sunday
+                hour = 0
+                minute = 0
+            }
             branchFilter = "+:<default>"
+            triggerBuild = always()
+            withPendingChangesOnly = false
         }
     }    
     
