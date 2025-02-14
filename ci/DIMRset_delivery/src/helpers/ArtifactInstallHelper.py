@@ -9,28 +9,36 @@ from settings.teamcity_settings import TEAMCITY_IDS
 from settings.teamcity_settings import NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT
 from settings.teamcity_settings import NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT
 
-def extract_tar(tar_path: str, target_path: str):
-    """
-    Extracts a tar archive to a target path.
 
+def extract_archive(archive_path: str, target_path: str):
+    """
+    Extracts a tar or zip archive to a target path.
 
     Parameters
     ----------
-    tar_path: str
-        The path to the tar archive.
+    archive_path: str
+        The path to the archive (tar or zip).
     target_path: str
-        The path to extract the tar archive to.
+        The path to extract the archive to.
 
     Notes
     -----
-    - The function removes the unix permission bits when on Windows. as the permission bits are not supported on Windows.
+    - The function removes the Unix permission bits when on Windows, as the permission bits are not supported on Windows.
     """
-    with tarfile.open(tar_path, "r:gz") as tar:
-        for member in tar.getmembers():
-            # Strip the Unix permission bits when on Windows
-            if os.name == 'nt':
-                member.mode = None
-            tar.extract(member, path=target_path)
+    if archive_path.endswith(".tar.gz") or archive_path.endswith(".tgz"):
+        with tarfile.open(archive_path, "r:gz") as tar:
+            for member in tar.getmembers():
+                # Strip the Unix permission bits when on Windows
+                if os.name == "nt":
+                    member.mode = None
+                tar.extract(member, path=target_path)
+    elif archive_path.endswith(".zip"):
+        with zipfile.ZipFile(archive_path, "r") as zip_ref:
+            zip_ref.extractall(target_path)
+    else:
+        raise ValueError(
+            "Unsupported archive format. Only .tar.gz, .tgz, and .zip are supported."
+        )
 
 class ArtifactInstallHelper(object):
     """ Class responsible for downloading, unpacking and installing the DIMR artifacts. """
@@ -110,7 +118,7 @@ class ArtifactInstallHelper(object):
                 f.write(artifact)
             print(f"Unpacking {artifact_to_download}...")
 
-            extract_tar(artifact_path, file_path)
+            extract_archive(artifact_path, file_path)
             print(f"Deleting {artifact_to_download}...")
             os.remove(artifact_path)
             print(f"Successfully downloaded {artifact_to_download}.")
