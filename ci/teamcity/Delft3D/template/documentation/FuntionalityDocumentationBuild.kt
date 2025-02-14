@@ -6,15 +6,13 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
 
 
-object TemplateDocumentationBuild : Template({
-    name = "Generate validation and functionality reports"
-    description = "This build configuration generates validation and functionality reports for the Delft3D engine."
+object TemplateFunctionalityDocumentation : Template({
+    name = "Generate functionality report"
+    description = "This build configuration generates functionality reports for the Delft3D engine."
     buildNumberPattern = "%build.vcs.number%"
 
     artifactRules = """
         %engine_dir%/*.log=>logging
-        %engine_dir%/doc/validation/*.pdf=>pdf
-        %engine_dir%/doc/validation/*.log=>logging
         %engine_dir%/doc/functionalities/*.pdf=>pdf
         %engine_dir%/doc/functionalities/*.log=>logging
         %engine_dir%/*/doc/*.pdf=>pdf/functionality

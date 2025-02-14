@@ -7,16 +7,14 @@ import jetbrains.buildServer.configs.kotlin.failureConditions.*
 
 import Delft3D.template.*
 
-object DflowfmValidationDocument : BuildType({
+object ValidationDocumentDflowfm : BuildType({
     templates(
-        TemplateDocumentationBuild,
+        TemplateValidationDocumentation,
         TemplateSetTimeVariable,
         TemplateDocumentationCheckout,
-        TemplateDocumentationUpdateInfrastructure,
-        TemplateDocumentationGenerateFunctionality,
-        TemplateDocumentationGenerateReport)
+        TemplateDocumentationGenerateValidationReport)
 
-    name = "D-Flow FM - Validation and Functionality document (Latex/PDF)"
+    name = "D-Flow FM - Validation document (Latex/PDF)"
 
     params {
         param("engine_dir", "e02_dflowfm")
@@ -24,6 +22,6 @@ object DflowfmValidationDocument : BuildType({
     }
     
     steps {
-        stepsOrder = arrayListOf("SET_TIME_VARIABLE", "CHECKOUT_TESTBENCH_CASES_FROM_MINIO", "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT", "GENERATE_FUNCTIONALITY_REPORT", "GENERATE_REPORT")
+        stepsOrder = arrayListOf("SET_TIME_VARIABLE", "CHECKOUT_TESTBENCH_CASES_FROM_MINIO", "GENERATE_REPORT")
     }
 })

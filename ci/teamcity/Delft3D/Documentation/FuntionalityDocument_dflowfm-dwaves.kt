@@ -7,16 +7,15 @@ import jetbrains.buildServer.configs.kotlin.failureConditions.*
 
 import Delft3D.template.*
 
-object DflowfmDwavesValidationDocument : BuildType({
+object FunctionalityDocumentDflowfmDwaves : BuildType({
     templates(
-        TemplateDocumentationBuild,
+        TemplateFunctionalityDocumentation,
         TemplateSetTimeVariable,
         TemplateDocumentationCheckout,
         TemplateDocumentationUpdateInfrastructure,
-        TemplateDocumentationGenerateFunctionality,
-        TemplateDocumentationGenerateReport)
+        TemplateDocumentationGenerateFunctionality)
 
-    name = "D-Flow FM, D-Waves - Validation and Functionality document (Latex/PDF)"
+    name = "D-Flow FM, D-Waves - Functionality document (Latex/PDF)"
 
 
 
@@ -26,6 +25,6 @@ object DflowfmDwavesValidationDocument : BuildType({
     }
 
     steps {
-        stepsOrder = arrayListOf("SET_TIME_VARIABLE", "CHECKOUT_TESTBENCH_CASES_FROM_MINIO", "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT", "GENERATE_FUNCTIONALITY_REPORT", "GENERATE_REPORT")
+        stepsOrder = arrayListOf("SET_TIME_VARIABLE", "CHECKOUT_TESTBENCH_CASES_FROM_MINIO", "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT", "GENERATE_FUNCTIONALITY_REPORT")
     }
 })

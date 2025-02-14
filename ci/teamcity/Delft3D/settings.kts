@@ -30,12 +30,13 @@ project {
     template(TemplatePublishStatus)
     template(TemplateMonitorPerformance)
     template(TemplateFailureCondition)
-    template(TemplateDocumentationBuild)
+    template(TemplateValidationDocumentation)
+    template(TemplateFunctionalityDocumentation)
     template(TemplateSetTimeVariable)
     template(TemplateDocumentationCheckout)
     template(TemplateDocumentationUpdateInfrastructure)
     template(TemplateDocumentationGenerateFunctionality)
-    template(TemplateDocumentationGenerateReport)
+    template(TemplateDocumentationGenerateValidationReport)
 
     subProject {
         id("Linux")
@@ -94,15 +95,23 @@ project {
         id("Documentation")
         name = "Documentation"
 
-        buildType(DflowfmValidationDocument)
-        buildType(DflowfmDwavesValidationDocument)
-        buildType(DMorphologyValidationDocument)
-        buildType(DWaqValidationDocument)
+        buildType(ValidationDocumentDflowfm)
+        buildType(ValidationDocumentDflowfmDwaves)
+        buildType(ValidationDocumentDMorphology)
+        buildType(ValidationDocumentDWaq)
+        buildType(FunctionalityDocumentDflowfm)
+        buildType(FunctionalityDocumentDflowfmDwaves)
+        buildType(FunctionalityDocumentDMorphology)
+        buildType(FunctionalityDocumentDWaq)
         buildTypesOrder = arrayListOf(
-            DflowfmValidationDocument,
-            DflowfmDwavesValidationDocument,
-            DMorphologyValidationDocument,
-            DWaqValidationDocument
+            ValidationDocumentDflowfm,
+            ValidationDocumentDflowfmDwaves,
+            ValidationDocumentDMorphology,
+            ValidationDocumentDWaq,
+            FunctionalityDocumentDflowfm,
+            FunctionalityDocumentDflowfmDwaves,
+            FunctionalityDocumentDMorphology,
+            FunctionalityDocumentDWaq
         )
     }
 

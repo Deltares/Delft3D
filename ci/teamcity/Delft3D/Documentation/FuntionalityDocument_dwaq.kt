@@ -7,16 +7,15 @@ import jetbrains.buildServer.configs.kotlin.failureConditions.*
 
 import Delft3D.template.*
 
-object DWaqValidationDocument : BuildType({
+object FunctionalityDocumentDWaq : BuildType({
     templates(
-        TemplateDocumentationBuild,
+        TemplateFunctionalityDocumentation,
         TemplateSetTimeVariable,
         TemplateDocumentationCheckout,
         TemplateDocumentationUpdateInfrastructure,
-        TemplateDocumentationGenerateFunctionality,
-        TemplateDocumentationGenerateReport)
+        TemplateDocumentationGenerateFunctionality)
 
-    name = "D-Water Quality- Validation and Functionality document (Latex/PDF)"
+    name = "D-Water Quality- Functionality document (Latex/PDF)"
 
     params {
         param("engine_dir", "e03_waq")
@@ -24,6 +23,6 @@ object DWaqValidationDocument : BuildType({
     }
     
     steps {
-        stepsOrder = arrayListOf("SET_TIME_VARIABLE", "CHECKOUT_TESTBENCH_CASES_FROM_MINIO", "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT", "GENERATE_FUNCTIONALITY_REPORT", "GENERATE_REPORT")
+        stepsOrder = arrayListOf("SET_TIME_VARIABLE", "CHECKOUT_TESTBENCH_CASES_FROM_MINIO", "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT", "GENERATE_FUNCTIONALITY_REPORT")
     }
 })

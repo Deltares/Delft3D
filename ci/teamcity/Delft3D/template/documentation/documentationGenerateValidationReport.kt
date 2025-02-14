@@ -6,7 +6,7 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
 
 
-object TemplateDocumentationGenerateReport : Template({
+object TemplateDocumentationGenerateValidationReport : Template({
     name = "Generate report step."
 
     steps {
