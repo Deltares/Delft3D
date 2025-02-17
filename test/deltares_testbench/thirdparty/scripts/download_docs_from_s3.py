@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from minio import Minio
 from minio.error import S3Error
 
@@ -13,55 +13,55 @@ parser.add_argument("--engine_dir", required=True, help="Engine directory")
 parser.add_argument("--iso_time", required=True, help="ISO8601 time to filter files")
 args = parser.parse_args()
 
-# Set up Minio client with connection pooling
-client = Minio("s3.deltares.nl", access_key=args.access_key, secret_key=args.secret_key, secure=True)
 
-# Download files from MinIO
-bucket_name = "dsc-testbench"
-prefix = f"cases/{args.engine_dir}"
-local_dir = f"./{args.engine_dir}"
-
-def download_file(client, bucket, key, local_path, last_modified, version_id=None):
+def download_file(minio_client, bucket, key, local_path, version_id=None):
     dir_path = os.path.dirname(local_path)
     if not os.path.exists(dir_path):
         os.makedirs(dir_path, exist_ok=True)
         print(f"Download directory: {dir_path}")
     if not os.path.exists(local_path):
-        client.fget_object(bucket, key, local_path, version_id=version_id)
+        minio_client.fget_object(bucket, key, local_path, version_id=version_id)
 
-def download_batch(client, bucket, objects, local, prefix):
+def download(minio_client, bucket, objects, local, prefix):
     for obj in objects:
         key = obj.object_name
-        if "doc" not in key:
-            continue
         local_path = os.path.join(local, os.path.relpath(key, prefix))
         try:
-            # Convert obj.last_modified to offset-naive datetime
-            obj_last_modified_naive = obj.last_modified.replace(tzinfo=None)
-            if os.path.exists(local_path):
-                local_last_modified = datetime.fromtimestamp(os.path.getmtime(local_path), tz=timezone.utc)
-                local_last_modified_naive = local_last_modified.replace(tzinfo=None)
-                if local_last_modified_naive >= obj_last_modified_naive:
-                    continue
-            download_file(client, bucket, key, local_path, obj.last_modified, obj.version_id)
+            download_file(minio_client, bucket, key, local_path, obj.version_id)
         except S3Error as e:
             print(f"Error occurred: {e}")
 
-def download_from_minio(bucket: str, prefix: str, local: str, iso_time: str) -> None:
+def download_from_minio(minio_client, bucket: str, prefix: str, local: str, iso_time: str) -> None:
     objects = list(client.list_objects(bucket, prefix=prefix, recursive=True, include_version=True))
     filter_time = datetime.fromisoformat(iso_time)
     
-    # Filter objects based on the last modified time
-    filtered_objects = [obj for obj in objects if obj.is_latest and obj.last_modified <= filter_time]
+    # Further filter objects based on key content
+    filtered_objects = [obj for obj in objects if "doc" in obj.object_name]
     
-    # Batch processing
-    batch_size = 50
-    for i in range(0, len(filtered_objects), batch_size):
-        batch = filtered_objects[i:i + batch_size]
-        download_batch(client, bucket, batch, local, prefix)
+    # Create a dictionary to store the latest version of each object before or on the filter_time
+    latest_objects = {}
+    for obj in filtered_objects:
+        key = obj.object_name
+        if obj.last_modified is not None and obj.last_modified <= filter_time:
+            if key not in latest_objects or obj.last_modified > latest_objects[key].last_modified:
+                latest_objects[key] = obj
+    
+    # Filter out objects where the latest version has a delete marker
+    final_objects = [obj for obj in latest_objects.values() if not obj.is_delete_marker]
+
+    # Download the filtered objects
+    download(minio_client, bucket, final_objects, local, prefix)
 
 try:
-    download_from_minio(bucket_name, prefix, local_dir, args.iso_time)
+    # Set up Minio client with connection pooling
+    client = Minio("s3.deltares.nl", access_key=args.access_key, secret_key=args.secret_key, secure=True)
+
+    # Download files from MinIO
+    bucket_name = "dsc-testbench"
+    prefix = f"cases/{args.engine_dir}"
+    local_dir = f"./{args.engine_dir}"
+
+    download_from_minio(client, bucket_name, prefix, local_dir, args.iso_time)
 except S3Error as e:
     print(f"Error occurred: {e}")
     sys.exit(1)
