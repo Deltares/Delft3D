@@ -297,8 +297,7 @@ contains
    subroutine allocate_structure_arrays(nstr, widths, lftopol, pumpidx, gateidx, cdamidx, cgenidx, dambridx)
       use precision_basics, only: dp
       use m_alloc, only: realloc
-      use fm_external_forcings_data, only: dambreakPolygons
-      use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksEffectiveLength, dambreakLinksActualLength
+      use fm_external_forcings_data, only: dambreakPolygons, dambreakLinksEffectiveLength, dambreakLinksActualLength
       use network_data, only: numl
 
       integer, intent(in) :: nstr !< nstr is the number of (potential) structures
@@ -379,14 +378,13 @@ contains
       use fm_external_forcings_data, only: kdambreak, LStartBreach, &
                                            dambreak_ids, activeDambreakLinks, &
                                            dambreakLevelsAndWidthsFromTable, &
-                                           dambreaks, ndambreaklinks
+                                           dambreaks, ndambreaklinks, dambreakLinksEffectiveLength
       use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
                                           dambreakLocationsUpstreamMapping, dambreakLocationsUpstream, &
                                           dambreakAveragingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
                                           dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &
                                           dambreakAveragingDownstreamMapping, nDambreakLocationsDownstream, nDambreakAveragingDownstream
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
-      use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksEffectiveLength
       use m_alloc, only: realloc
 
       integer, intent(in) :: ndambreaksignals !< ndambreaksignals is the number of dambreak signals.
@@ -620,7 +618,7 @@ contains
                                           dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &
                                           dambreakAveragingDownstreamMapping, nDambreakLocationsDownstream, nDambreakAveragingDownstream
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
-      use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksEffectiveLength, dambreakLinksActualLength 
+      use fm_external_forcings_data, only: dambreakLinksEffectiveLength, dambreakLinksActualLength
 
 
 

@@ -54,11 +54,10 @@ contains
       use m_partitioninfo, only: jampi, idomain, my_rank, reduce_at_all, reduce_wwssav_all
       use m_timer, only: jatimer, starttimer, stoptimer, IMPIREDUCE
       use m_longculverts, only: reduceFlowAreaAtLongculverts
-      use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksActualLength
       use fm_external_forcings_data, only: ndambreaksignals, L1dambreaksg, L2dambreaksg, kdambreak, &
          ngatesg, L1gatesg, L2gatesg, kgate, zgate, ncgensg, zcgen, L1cgensg, L2cgensg, kcgen, &
          nklep, lklep, nvalv, lvalv, valv, nqbnd, L1qbnd, L2qbnd, kbndu, huqbnd, wwssav_all, japartqbnd, &
-         zbndq, qbndhutrs, at_all
+         zbndq, qbndhutrs, at_all, dambreakLinksActualLength
 
       integer :: n, nq, L, k2
       integer :: ng, Lnu, LL, iup, k
