@@ -687,7 +687,7 @@ contains
       use m_flowgeom !,              only : wu1Duni, bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
-      use m_adjust_bobs_on_dambreak_breach, only: dambreakWidening, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM
+      use m_Dambreak, only: dambreakWidening, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind ! ,                  only : icdtyp, cdb, wdb,
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method

@@ -274,7 +274,7 @@ module m_dambreak_breach
 
       use m_flowgeom, only: bob, bob0
       use fm_external_forcings_data, only: kdambreak, activeDambreakLinks, dambreakLinksEffectiveLength, dambreakLinksActualLength
-      use m_adjust_bobs_on_dambreak_breach, only: dambreakWidening, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM
+      use m_Dambreak, only: dambreakWidening, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM
       
       use MessageHandling, only: msgbuf, LEVEL_WARN, SetMessage
 

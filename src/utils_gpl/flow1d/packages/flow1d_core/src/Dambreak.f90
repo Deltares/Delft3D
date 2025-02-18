@@ -40,7 +40,12 @@
    integer, parameter, public :: BREACH_GROWTH_VDKNAAP = 1
    integer, parameter, public :: BREACH_GROWTH_VERHEIJVDKNAAP = 2
    integer, parameter, public :: BREACH_GROWTH_TIMESERIES = 3
-   
+
+   integer, parameter, public :: DBW_SYMM = 1 !< symmetrical dambreak widening (limited width in case of asymmetric starting link placement)
+   integer, parameter, public :: DBW_PROP = 2 !< dambreak wideining proportional to left/right dam length
+   integer, parameter, public :: DBW_SYMM_ASYMM = 3 !< symmetrical dambreak widening until left/right runs out of space then continues one sided
+   integer, public :: dambreakWidening = DBW_SYMM_ASYMM !< method for dambreak widening
+
    type, public :: t_dambreak
       real(kind=dp) :: startLocationX
       real(kind=dp) :: startLocationY
