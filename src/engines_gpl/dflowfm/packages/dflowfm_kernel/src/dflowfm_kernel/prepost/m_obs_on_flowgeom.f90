@@ -61,6 +61,7 @@ contains
       elseif (iobstype == 1) then
          ! Only moving stations
          n1 = numobs + 1
+         n2 = numobs + nummovobs 
       else
          ! All stations
          n1 = 1
