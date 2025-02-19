@@ -6,11 +6,24 @@ signtool = (
     "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.22621.0\\x64\\signtool.exe"
 )
 
+developer_promt = (
+    "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat"
+)
+
 
 def has_signtool():
     try:
         result = subprocess.run(
-            [signtool, "verify", "/?"], capture_output=True, text=True, shell=True
+            [
+                developer_promt,
+                "&&",
+                signtool,
+                "verify",
+                "/?",
+            ],
+            capture_output=True,
+            text=True,
+            shell=True,
         )
         if result.returncode == 0:
             return True
@@ -25,7 +38,14 @@ def has_signtool():
 def get_signing_authority(filepath):
     try:
         result = subprocess.run(
-            [signtool, "verify", "/pa", filepath],
+            [
+                developer_promt,
+                "&&",
+                signtool,
+                "verify",
+                "/pa",
+                filepath,
+            ],
             capture_output=True,
             text=True,
             shell=True,
@@ -49,7 +69,9 @@ def get_actual_files(directory) -> list:
     return actual_files
 
 
-def is_signing_correct(actual_files, files_that_should_be_signed, files_that_should_not_be_signed):
+def is_signing_correct(
+    actual_files, files_that_should_be_signed, files_that_should_not_be_signed
+):
     files_signed_correctly = True
 
     for file in actual_files:
@@ -57,13 +79,17 @@ def is_signing_correct(actual_files, files_that_should_be_signed, files_that_sho
         signing_status = get_signing_authority(filepath)
 
         if file in files_that_should_be_signed:
-            if signing_status != "Verified":
+            if signing_status == "Verified":
+                print(f"File is correctly signed: {file}")
+            else:
                 print(f"File should be signed but is not: {file}")
                 files_signed_correctly = False
         elif file in files_that_should_not_be_signed:
             if signing_status == "Verified":
                 print(f"File should not be signed but is: {file}")
                 files_signed_correctly = False
+            else:
+                print(f"File is correctly not signed: {file}")
 
     return files_signed_correctly
 
@@ -111,21 +137,27 @@ if __name__ == "__main__":
 
     if len(sys.argv) != 2:
         print("Usage: python script.py <directory>")
+        sys.exit(1)
     else:
         directory = sys.argv[1]
 
         # Load the JSON file
-        with open("ci/DIMRset_delivery/src/DIMRset-binaries.json", "r") as f:
-            files_to_check = json.load(f)
+        try:
+            with open("ci/DIMRset_delivery/src/DIMRset-binaries.json", "r") as f:
+                files_to_check = json.load(f)
+        except Exception as e:
+            print(f"Error loading JSON file: {e}")
+            sys.exit(1)
 
         files_that_should_be_signed = files_to_check["Signed"]
         files_that_should_not_be_signed = files_to_check["Not signed"]
         expected_files = files_that_should_be_signed + files_that_should_not_be_signed
         actual_files = get_actual_files(directory)
+
         if not is_directory_correct(actual_files, expected_files):
-            print(
-                "All expected files are present in the directory and the directory does not contain any extra files."
-            )
+            print("Directory check failed: Missing or extra files detected.")
+            sys.exit(1)
+
         if has_signtool():
             if not is_signing_correct(
                 actual_files,
@@ -133,10 +165,14 @@ if __name__ == "__main__":
                 files_that_should_not_be_signed,
             ):
                 print("Some files are not correctly signed")
+                sys.exit(1)
         else:
             print(
                 "signtool is required to run this script. Please ensure it is installed and available in the PATH."
             )
+            sys.exit(1)
+
         print(
             "All files are correctly signed and the directory contains all expected files."
         )
+        sys.exit(0)
