@@ -1,77 +1,293 @@
 {
     "Signed": [
-        "bin\\agrhyd.exe",
-        "bin\\ddcouple.exe",
-        "bin\\delpar.exe",
-        "bin\\delwaq.exe",
-        "bin\\dflowfm-cli.exe",
-        "bin\\dfmoutput.exe",
-        "bin\\dfm_volume_tool.exe",
-        "bin\\dimr.exe",
-        "bin\\mormerge.exe",
-        "bin\\mpiexec.exe",
-        "bin\\swan_mpi.exe",
-        "bin\\swan_omp.exe",
-        "bin\\waqmerge.exe",
-        "bin\\waqpb_export.exe",
-        "bin\\waqpb_import.exe",
-        "bin\\wave.exe",
-        "bin\\cpuinfo.exe",
-        "bin\\ESMF_RegridWeightGen.exe",
-        "bin\\hydra_bstrap_proxy.exe",
-        "bin\\hydra_pmi_proxy.exe",
-        "bin\\hydra_service.exe",
-        "bin\\IMB-MPI1.exe",
-        "bin\\IMB-NBC.exe",
-        "bin\\IMB-RMA.exe",
-        "bin\\impi_info.exe",
-        "bin\\maptonetcdf.exe",
-        "lib\\delwaq.dll",
-        "lib\\dflowfm.dll",
-        "lib\\dimr.dll",
-        "lib\\ec_module.dll",
-        "lib\\FBCTools_BMI.dll",
-        "lib\\waq_plugin_wasteload.dll",
-        "lib\\wave.dll",
-        "lib\\rr_dll.dll",
-        "lib\\cilkrts20.dll",
-        "lib\\cosumo_bmi.dll",
-        "lib\\gridgeom.dll",
-        "lib\\ifdlg100.dll",
-        "lib\\impi.dll",
-        "lib\\io_netcdf.dll",
-        "lib\\libchkp.dll",
-        "lib\\libfabric.dll",
-        "lib\\libicaf.dll",
-        "lib\\libifcoremd.dll",
-        "lib\\libifcoremdd.dll",
-        "lib\\libifcorert.dll",
-        "lib\\libifcorertd.dll",
-        "lib\\libifportmd.dll",
-        "lib\\libiomp5md.dll",
-        "lib\\libiompstubs5md.dll",
-        "lib\\libirngmd.dll",
-        "lib\\libmmd.dll",
-        "lib\\libmmdd.dll",
-        "lib\\libmpi_ilp64.dll",
-        "lib\\mkl_avx.2.dll",
-        "lib\\mkl_avx2.2.dll",
-        "lib\\mkl_avx512.2.dll",
-        "lib\\mkl_core.2.dll",
-        "lib\\mkl_def.2.dll",
-        "lib\\mkl_intel_thread.2.dll",
-        "lib\\mkl_sequential.2.dll",
-        "lib\\msvcp100.dll",
-        "lib\\msvcp140.dll",
-        "lib\\msvcp90.dll",
-        "lib\\msvcr100.dll",
-        "lib\\msvcr90.dll",
-        "lib\\plugin_culvert.dll",
-        "lib\\plugin_delftflow_traform.dll",
-        "lib\\svml_dispmd.dll",
-        "lib\\vcomp100.dll",
-        "lib\\vcruntime140.dll",
-        "lib\\vcruntime140_1.dll"
+        {
+            "file": "bin\\agrhyd.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\ddcouple.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\delpar.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\delwaq.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\dflowfm-cli.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\dfmoutput.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\dfm_volume_tool.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\dimr.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\mormerge.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\mpiexec.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\swan_mpi.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\swan_omp.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\waqmerge.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\waqpb_export.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\waqpb_import.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\wave.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\cpuinfo.exe",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "bin\\ESMF_RegridWeightGen.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\hydra_bstrap_proxy.exe",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "bin\\hydra_pmi_proxy.exe",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "bin\\hydra_service.exe",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "bin\\IMB-MPI1.exe",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "bin\\IMB-NBC.exe",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "bin\\IMB-RMA.exe",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "bin\\impi_info.exe",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "bin\\maptonetcdf.exe",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\delwaq.dll",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\dflowfm.dll",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\dimr.dll",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\ec_module.dll",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\FBCTools_BMI.dll",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\waq_plugin_wasteload.dll",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\wave.dll",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\rr_dll.dll",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cilkrts20.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\cosumo_bmi.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\gridgeom.dll",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\ifdlg100.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\impi.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\io_netcdf.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libchkp.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libfabric.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libicaf.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libifcoremd.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libifcoremdd.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libifcorert.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libifcorertd.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libifportmd.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libiomp5md.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libiompstubs5md.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libirngmd.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libmmd.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libmmdd.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libmpi_ilp64.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_avx.2.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_avx2.2.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_avx512.2.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_core.2.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_def.2.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_intel_thread.2.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_sequential.2.dll",
+            "Issued to": "Intel Corporation"
+        },
+        {
+            "file": "lib\\msvcp100.dll",
+            "Issued to": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\msvcp140.dll",
+            "Issued to": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\msvcp90.dll",
+            "Issued to": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\msvcr100.dll",
+            "Issued to": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\msvcr90.dll",
+            "Issued to": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\plugin_culvert.dll",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\plugin_delftflow_traform.dll",
+            "Issued to": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\svml_dispmd.dll",
+            "Issued to": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\vcomp100.dll",
+            "Issued to": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\vcruntime140.dll",
+            "Issued to": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\vcruntime140_1.dll",
+            "Issued to": "Microsoft Corporation"
+        }
     ],
     "Not signed": [
         "bin\\tclkitsh852.exe",
@@ -159,4 +375,3 @@
         "lib\\proj_6_1.dll"
     ]
 }
-

@@ -74,13 +74,13 @@ def get_actual_files(directory) -> list:
 def check_signing_status(
     file,
     directory,
-    files_that_should_be_signed,
+    files_that_should_be_signed_with_issued_to,
     files_that_should_not_be_signed,
     developer_promt,
 ) -> tuple:
     filepath = os.path.join(directory, file)
     signing_status = get_signing_authority(filepath, developer_promt)
-    if file in files_that_should_be_signed:
+    if file in [item["file"] for item in files_that_should_be_signed_with_issued_to]:
         if "Verified" in signing_status:
             return f"File is correctly signed: {file} by {signing_status}", True
         else:
@@ -98,7 +98,7 @@ def check_signing_status(
 
 def is_signing_correct(
     actual_files,
-    files_that_should_be_signed,
+    files_that_should_be_signed_with_issued_to,
     files_that_should_not_be_signed,
     developer_promt,
 ) -> bool:
@@ -110,7 +110,7 @@ def is_signing_correct(
                 check_signing_status,
                 file,
                 directory,
-                files_that_should_be_signed,
+                files_that_should_be_signed_with_issued_to,
                 files_that_should_not_be_signed,
                 developer_promt,
             )
@@ -178,7 +178,9 @@ if __name__ == "__main__":
             print(f"Error loading JSON file: {e}")
             sys.exit(1)
 
-        files_that_should_be_signed = files_to_check["Signed"]
+        files_that_should_be_signed = [
+            item["file"] for item in files_to_check["Signed"]
+        ]
         files_that_should_not_be_signed = files_to_check["Not signed"]
         expected_files = files_that_should_be_signed + files_that_should_not_be_signed
         actual_files = get_actual_files(directory)
@@ -188,9 +190,10 @@ if __name__ == "__main__":
             sys.exit(1)
 
         if has_signtool(developer_promt):
+            files_that_should_be_signed_with_issued_to = files_to_check["Signed"]
             if not is_signing_correct(
                 actual_files,
-                files_that_should_be_signed,
+                files_that_should_be_signed_with_issued_to,
                 files_that_should_not_be_signed,
                 developer_promt,
             ):
