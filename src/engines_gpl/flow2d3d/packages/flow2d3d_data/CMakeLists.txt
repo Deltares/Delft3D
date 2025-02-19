@@ -95,8 +95,7 @@ if (UNIX)
     set(oss_dependencies ${oss_dependencies_general}
                          netcdff)
 
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
+    target_link_libraries(${library_name} ${oss_dependencies})
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 if (WIN32)
