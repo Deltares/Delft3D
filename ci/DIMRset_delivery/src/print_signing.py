@@ -1,17 +1,17 @@
 import json
 import os
 import subprocess
+import sys
+from concurrent.futures import ThreadPoolExecutor
 
 signtool = (
     "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.22621.0\\x64\\signtool.exe"
 )
 
-developer_promt = (
-    "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat"
-)
+developer_promt = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat"
 
 
-def has_signtool():
+def has_signtool() -> bool:
     try:
         result = subprocess.run(
             [
@@ -35,7 +35,7 @@ def has_signtool():
         return False
 
 
-def get_signing_authority(filepath):
+def get_signing_authority(filepath) -> str:
     try:
         result = subprocess.run(
             [
@@ -69,27 +69,46 @@ def get_actual_files(directory) -> list:
     return actual_files
 
 
+def check_signing_status(
+    file, directory, files_that_should_be_signed, files_that_should_not_be_signed
+) -> tuple:
+    filepath = os.path.join(directory, file)
+    signing_status = get_signing_authority(filepath)
+    if file in files_that_should_be_signed:
+        if signing_status == "Verified":
+            return f"File is correctly signed: {file}", True
+        else:
+            return f"File should be signed but is not: {file}", False
+    elif file in files_that_should_not_be_signed:
+        if signing_status == "Verified":
+            return f"File should not be signed but is: {file}", False
+        else:
+            return f"File is correctly not signed: {file}", True
+    return "", True
+
+
 def is_signing_correct(
     actual_files, files_that_should_be_signed, files_that_should_not_be_signed
-):
+) -> bool:
     files_signed_correctly = True
 
-    for file in actual_files:
-        filepath = os.path.join(directory, file)
-        signing_status = get_signing_authority(filepath)
-
-        if file in files_that_should_be_signed:
-            if signing_status == "Verified":
-                print(f"File is correctly signed: {file}")
-            else:
-                print(f"File should be signed but is not: {file}")
+    with ThreadPoolExecutor() as executor:
+        signing_statuses = [
+            executor.submit(
+                check_signing_status,
+                file,
+                directory,
+                files_that_should_be_signed,
+                files_that_should_not_be_signed,
+            )
+            for file in actual_files
+        ]
+        for signing_status in signing_statuses:
+            message, status = signing_status.result()
+            if message:
+                print(message)
+            if not status:
                 files_signed_correctly = False
-        elif file in files_that_should_not_be_signed:
-            if signing_status == "Verified":
-                print(f"File should not be signed but is: {file}")
-                files_signed_correctly = False
-            else:
-                print(f"File is correctly not signed: {file}")
 
     return files_signed_correctly
 
@@ -133,15 +152,11 @@ def is_directory_correct(actual_files, expected_files) -> bool:
 
 
 if __name__ == "__main__":
-    import sys
-
     if len(sys.argv) != 2:
         print("Usage: python script.py <directory>")
         sys.exit(1)
     else:
         directory = sys.argv[1]
-
-        # Load the JSON file
         try:
             with open("ci/DIMRset_delivery/src/DIMRset-binaries.json", "r") as f:
                 files_to_check = json.load(f)
