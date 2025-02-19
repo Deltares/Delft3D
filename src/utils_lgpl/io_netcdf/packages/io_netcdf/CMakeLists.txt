@@ -28,20 +28,15 @@ set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/io_netcdf)
 target_include_directories(${library_name}  PRIVATE ${version_include_dir} ${rc_dir})
 
 if(UNIX)
-    target_link_directories(${library_name}
-            INTERFACE
-            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-
     # Add dependency
     set(oss_dependencies deltares_common
                          io_netcdf_data
                          fortrangis
+                         PkgConfig::NETCDF
                          netcdff)
     target_compile_definitions(${library_name} PRIVATE LINUX64)
-    target_link_libraries(${library_name} ${oss_dependencies}
-         PkgConfig::NETCDF)
-    include_directories(${CMAKE_BINARY_DIR}/netcdff)
+    target_link_libraries(${library_name} ${oss_dependencies})
+    target_link_directories(${library_name} PUBLIC ${NETCDF_LIBDIR})
 endif(UNIX)
 
 if (WIN32)
@@ -53,7 +48,6 @@ if (WIN32)
     set(oss_dependencies deltares_common
                         fortrangis
                         io_netcdf_data
-                        netcdf4
                         netcdff)
     target_compile_definitions(${library_name} PRIVATE WIN64)
 

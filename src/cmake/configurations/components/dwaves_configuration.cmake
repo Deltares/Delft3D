@@ -106,8 +106,6 @@ if(NOT TARGET swan)
     add_subdirectory(${checkout_src_root}/${swan_omp_module} swan_omp)
 endif()
 
-
-
 if(UNIX)
     # install
     add_subdirectory(${checkout_src_root}/${install_wave_module} install_wave)

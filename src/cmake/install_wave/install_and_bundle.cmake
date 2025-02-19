@@ -1,12 +1,3 @@
-set(BUILD_LIBRARIES
-   ${CMAKE_INSTALL_PREFIX}/lib/libwave.so
-)
-set(THIRDPARTY_x64_LIB_FOLDERS
-  ${CMAKE_INSTALL_PREFIX}
-  ${CMAKE_INSTALL_PREFIX}/bin
-  ${CMAKE_INSTALL_PREFIX}/lib
-  ${CMAKE_INSTALL_PREFIX}/share
-)
 function(gp_resolved_file_type_override resolved_file type_var)
   set(${type_var} local PARENT_SCOPE)
 endfunction()
@@ -23,7 +14,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/../functions.cmake)
 
 set(BU_CHMOD_BUNDLE_ITEMS 1)
 
-fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/wave" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
+fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/wave" "${CMAKE_INSTALL_PREFIX}/lib/libwave.so" "")
+fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/ESMF_RegridWeightGen" "" "")
 
 set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")
 set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")

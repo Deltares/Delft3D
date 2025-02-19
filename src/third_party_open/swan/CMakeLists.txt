@@ -43,8 +43,7 @@ if (UNIX)
 endif(UNIX)
 
 if (WIN32)
-    set(oss_dependencies    netcdf4
-                            netcdff)
+    set(oss_dependencies netcdff)
     target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${mpi_module_path}

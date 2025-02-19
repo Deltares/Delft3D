@@ -26,7 +26,7 @@ we want to compile from source code can't be built using the outdated versions o
 
 
 Note: This container image is quite large. The 2023 version of the intel packages alone will push
-the image size to about 9 GiB (uncompressed). The 2024 version of the intel packages are somewhat
+the image size to about 8 GiB (uncompressed). The 2024 version of the intel packages are somewhat
 smaller. The image containing the oneapi 2024 Intel packages should be about 7 GiB
 
 ### Build arguments
@@ -41,15 +41,15 @@ image.
 ### Build
 From the delft3d repository root:
 ```bash
-docker build . -f ci/dockerfiles/linux/buildtools.Dockerfile -t localhost/buildtools:$TAG --build-arg INTEL_ONEAPI_VERSION=2024
+sudo docker build . -f ci/dockerfiles/linux/buildtools.Dockerfile -t localhost/buildtools:$TAG --build-arg INTEL_ONEAPI_VERSION=2024
 ```
 Note: Passing the build arguments is not necessary if the default value is required.
 
 ### Push
 ```bash
-docker tag localhost/buildtools:$TAG containers.deltares.nl/delft3d-dev/delft3d-buildtools:$TAG
-docker login --username=$USERNAME --password=$TOKEN containers.deltares.nl
-docker push containers.deltares.nl/delft3d-dev/delft3d-buildtools:$TAG
+sudo docker tag localhost/buildtools:$TAG containers.deltares.nl/delft3d-dev/delft3d-buildtools:$TAG
+sudo docker login --username=$USERNAME --password=$TOKEN containers.deltares.nl
+sudo docker push containers.deltares.nl/delft3d-dev/delft3d-buildtools:$TAG
 ```
 
 ### Links
@@ -73,6 +73,7 @@ so they need to be installed in the environment. These include:
 - PROJ
 - GDAL
 - PETSc
+- ESMF
 
 Note: Some of these libraries require other third party libraries themselves. So this list is not complete.
 
@@ -90,10 +91,12 @@ make install
 ```
 
 ### Build arguments
-The dockerfile has three build argument:
+The dockerfile has several build arguments:
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
 - `INTEL_FORTRAN_COMPILER` (default value: `ifort`)
 - `DEBUG` (default value: `0`)
+- `BUILDTOOLS_IMAGE_URL` (default value: `containers.deltares.nl/delft3d-dev/delft3d-buildtools`)
+- `BUILDTOOLS_IMAGE_TAG` (default value: `oneapi-${INTEL_ONEAPI_VERSION}`)
 
 The `INTEL_ONEAPI_VERSION` build argument is used to select the right `buildtools` image. Valid values are
 `2023` and `2024`.
@@ -109,10 +112,15 @@ the resulting binaries. This can be helpful during debugging especially when the
 involving third party libraries. In addition, aggressive compiler optimizations are turned off. Any value other than `0` will turn on the
 `DEBUG` flag.
 
+The `BUILDTOOLS_IMAGE_URL` points to the repository where the `buildtools` images are located. This URL can be set
+to `localhost/buildtools` when you would like to use a `buildtools` image that was built locally.
+
+The `BUILDTOOLS_IMAGE_TAG` ensures that the `third-party-libs` image is based on the `buildtools` image with that tag.
+
 ### Build
 From the delft3d repository root:
 ```bash
-docker build . -f ci/dockerfiles/linux/third-party-libs.Dockerfile -t localhost/third-party-libs:$TAG \
+sudo docker build . -f ci/dockerfiles/linux/third-party-libs.Dockerfile -t localhost/third-party-libs:$TAG \
     --build-arg INTEL_ONEAPI_VERSION=2024 \
     --build-arg INTEL_FORTRAN_COMPILER=ifort \
     --build-arg DEBUG=0
@@ -121,9 +129,9 @@ Note: Passing the build arguments is not necessary if the default value is requi
 
 ### Push
 ```bash
-docker tag localhost/third-party-libs:$TAG containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:$TAG
-docker login --username=$USERNAME --password=$TOKEN containers.deltares.nl
-docker push containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:$TAG
+sudo docker tag localhost/third-party-libs:$TAG containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:$TAG
+sudo docker login --username=$USERNAME --password=$TOKEN containers.deltares.nl
+sudo docker push containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:$TAG
 ```
 
 ### Links
@@ -166,10 +174,57 @@ Note: Passing the build arguments is not necessary if the default value is requi
 
 ### Push
 ```bash
-docker tag localhost/dimrset:$TAG containers.deltares.nl/delft3d-dev/delft3d-dimrset:$TAG
-docker login --username=$USERNAME --password=$TOKEN containers.deltares.nl
-docker push containers.deltares.nl/delft3d-dev/delft3d-dimrset:$TAG
+sudo docker tag localhost/dimrset:$TAG containers.deltares.nl/delft3d-dev/delft3d-dimrset:$TAG
+sudo docker login --username=$USERNAME --password=$TOKEN containers.deltares.nl
+sudo docker push containers.deltares.nl/delft3d-dev/delft3d-dimrset:$TAG
 ```
 
 ### Links
 - [Harbor](https://containers.deltares.nl/harbor/projects/21/repositories/delft3d-dimrset/artifacts-tab)
+
+# Building software locally in a docker container
+These containers were created to reduce the dependency on the environment of the TeamCity servers,
+but they can also be used to build and run our software locally. Assuming a Windows system, we require
+WSL2 to be installed to run linux. This can be any distribution that supports docker (the default WSL2 Ubuntu
+was tested).
+
+Install docker on your Linux distribution. On Ubuntu, this is done by following
+[these steps to install docker using apt](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
+Then, log in to the repository locally. Go to containers.deltares.nl, log in, go to your user profile in the top right,
+and copy the CLI secret. Then, on Ubuntu run
+```bash
+sudo docker login --username=$USERNAME --password=$TOKEN containers.deltares.nl
+```
+where USERNAME is your e-mail address and TOKEN is the CLI secret that was copied from harbor.
+
+Next, check out the Delft3D repository on Ubuntu. If you would like to build the Delft3D repo inside docker, but
+you have made no changes to the docker files, you can simply pull the pre-built containers to your machine.
+To receive the third-party-libs container, which is necessary for building Delft3D, you run
+```bash
+sudo docker pull containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:oneapi-2024-ifx-release
+```
+
+If you have made changes to the dockerfiles, you may need to build the `buildtools` and `third-party-libs` images locally.
+Go to the Delft3D root and run
+```bash
+sudo docker build . --file ci/dockerfiles/linux/buildtools.Dockerfile --tag localhost/buildtools:<BUILD_TOOLS_TAG> --build-arg INTEL_ONEAPI_VERSION=2024
+sudo docker build . --file ci/dockerfiles/linux/third-party-libs.Dockerfile --tag localhost/third-party-libs:<THIRD_PARTY_TAG> \
+    --build-arg INTEL_ONEAPI_VERSION=2024 --build-arg INTEL_FORTRAN_COMPILER=ifx --build-arg DEBUG=0 \
+    --build-arg BUILDTOOLS_IMAGE_URL=localhost/buildtools --build-arg BUILDTOOLS_IMAGE_TAG=<BUILD_TOOLS_TAG>
+```
+Here, the `<BUILD_TOOLS_TAG>` and `<THIRD_PARTY_TAG>` can be the same, and can reflect the issue number or branch that you are working on.
+Then, run the `third-party-tools` image while mounting the Delft3D source code:
+```bash
+sudo docker run --interactive --tty --volume  <DELFT_3D_REPO_PATH>:/checkouts/delft3d localhost/third-party-libs:<THIRD_PARTY_TAG>
+```
+This command will give you a bash prompt that has all third-party-dependencies and compilers available. The environment is set
+by the .bashrc file that is available for the root user. To build the fm-suite, run the following commands:
+```bash
+cd /checkouts/delft3d
+cmake -S ./src/cmake -B build_fm-suite_debug -D CONFIGURATION_TYPE:STRING=fm-suite -D CMAKE_INSTALL_PREFIX=./install_fm-suite_debug/ -D CMAKE_BUILD_TYPE=Debug
+cmake --build build_fm-suite_debug
+cmake --install build_fm-suite_debug
+```
+This should allow you to build the binaries. Since this folder was mounted from Ubuntu in WSL2, the resulting binaries will be located there.
+Note that these will be written there with root privileges (since sudo was used), and sudo will be required again to remove these directories.
+Afterwards, the resulting binaries can be run within a clean almalinux 8 image if the install was successful.

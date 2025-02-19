@@ -74,7 +74,6 @@ if (UNIX)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdf4
                         netcdff)
 
     add_definitions(-DHAVE_FC_FORM_BINARY)

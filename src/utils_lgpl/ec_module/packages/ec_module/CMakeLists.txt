@@ -25,7 +25,6 @@ add_library(${library_name} ${meteo_sources} ${sources})
                          kdtree_wrapper
                          io_netcdf
                          io_netcdf_data
-                         netcdf4
                          netcdff)
 
 

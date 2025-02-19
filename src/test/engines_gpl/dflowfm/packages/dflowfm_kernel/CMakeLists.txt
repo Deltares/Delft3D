@@ -39,7 +39,6 @@ if(UNIX)
                             morphology_io
                             morphology_kernel
                             morphology_plugins_c
-                            netcdf4
                             netcdff
                             polypack
                             trachytopes_io
@@ -88,7 +87,6 @@ if(WIN32)
                          morphology_io
                          morphology_kernel
                          morphology_plugins_c
-                         netcdf4
                          netcdff
                          petsc
                          polypack

@@ -27,7 +27,6 @@ if (UNIX)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
                          netcdff)
 
     target_link_libraries(${executable_name}
@@ -40,7 +39,6 @@ if (WIN32)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
                          netcdff)
 
     target_link_libraries(${executable_name} ${oss_dependencies})

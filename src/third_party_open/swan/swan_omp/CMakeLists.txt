@@ -32,8 +32,7 @@ target_link_libraries(${executable_name} PRIVATE no_compiler_warnings)
 
 # Set dependencies
 if (WIN32)
-    set(exe_dependencies netcdf4
-                         netcdff)
+    set(exe_dependencies netcdff)
 
     target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
 

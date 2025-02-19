@@ -6,6 +6,7 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.failureConditions.*
 import Delft3D.template.*
 import Delft3D.step.*
+import Delft3D.linux.containers.*
 
 object LinuxBuild : BuildType({
 
@@ -56,40 +57,17 @@ object LinuxBuild : BuildType({
         script {
             name = "Build"
             scriptContent = """
-                #!/bin/bash
+                #!/usr/bin/env bash
                 set -eo pipefail
-                . /opt/intel/oneapi/setvars.sh
-                export LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64:${'$'}{LD_LIBRARY_PATH}
-                export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:${'$'}{PKG_CONFIG_PATH}
-                export FC=mpi%intel_fortran_compiler% CXX=mpicxx CC=mpiicx
-                
-                cmake ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=%product% -D CMAKE_BUILD_TYPE=%build_type% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install
-                
-                cd build_%product%
-                cmake --build . -j --target install --config %build_type%
+                source /root/.bashrc
+
+                cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=%product% -D CMAKE_BUILD_TYPE=%build_type% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install
+                cmake --build build_%product% --parallel --target install --config %build_type%
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:oneapi-%intel_oneapi_version%-%intel_fortran_compiler%-release"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
-        }
-        script {
-            name = "Copy ESMF binaries"
-            scriptContent = """
-                #!/usr/bin/env bash
-                . /usr/share/Modules/init/bash
-                
-                # Additional step to copy ESMF stuff needed by D-WAVES
-                module load esmf/7.0.0beta_intel2023.1.0
-                
-                ESMFRWG=`which ESMF_RegridWeightGen`
-                LIBESMF=`ldd ${'$'}{ESMFRWG} | grep libesmf.so | awk '{print ${'$'}3}'`
-                LIBCILKRTS=`ldd ${'$'}{ESMFRWG} | grep libcilkrts.so | awk '{print ${'$'}3}'`
-                
-                cp -rf ${'$'}{ESMFRWG}    build_%product%/install/bin &>/dev/null
-                cp -rf ${'$'}{LIBESMF}    build_%product%/install/lib &>/dev/null
-                cp -rf ${'$'}{LIBCILKRTS} build_%product%/install/lib &>/dev/null
-            """.trimIndent()
         }
     }
 
@@ -102,6 +80,15 @@ object LinuxBuild : BuildType({
         dockerSupport {
             loginToRegistry = on {
                 dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
+            }
+        }
+    }
+
+    dependencies {
+        dependency(LinuxThirdPartyLibs) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
         }
     }

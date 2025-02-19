@@ -45,32 +45,12 @@ echo     ERROR: Executable does not exist: $regridexec >>esmf_sh.log
 echo     ************************************************************** >>esmf_sh.log
 }
 
-
-
     # Get the location of this script and ESMF_RegridWeightGen
 workdir=`pwd`
 scriptdirname=`readlink \-f \$0`
 scriptdir=`dirname $scriptdirname`
 D3D_HOME=$scriptdir/..
 regridexec=$D3D_HOME/bin/ESMF_RegridWeightGen
-# ESMF_regrid is build with old compilers etc.
-# share/esmf optionally contains some library-versions especially for running this version of ESMF_regrid,
-# both for RedHat 6.* and 7.*
-
-if [ -f "/etc/redhat-release" ]; then
-  grepOS=`cat /etc/redhat-release | grep -i "release 6"`
-  if [ "$grepOS" != "" ]; then
-    echo "RH 6: Using RH 6 libraries" >>esmf_sh.log
-    export LD_LIBRARY_PATH=$D3D_HOME/share/delft3d/esmf/lnx64/bin:$D3D_HOME/lib:$LD_LIBRARY_PATH 
-  else
-    echo "using RH 7 libraries" >>esmf_sh.log
-    export LD_LIBRARY_PATH=$D3D_HOME/share/delft3d/esmf/lnx64/bin_COS7:$D3D_HOME/lib:$LD_LIBRARY_PATH 
-  fi
-else
-  echo "ERROR: ESMF_RegridWeightGen_in_Delft3D-WAVE.sh only implemented for CentOS 6 and 7."
-  exit
-fi
-
 
 echo Executing batchscript "ESMF_RegridWeightGen_in_Delft3D-WAVE.sh" for Delft3D-WAVE >>esmf_sh.log
 echo This script is located in directory $scriptdir >>esmf_sh.log
@@ -85,18 +65,13 @@ fi
 srcfile=$1
 destfile=$2
 wfile=$3
-if [ "$4" == '' ]; then
-    addflags='-m bilinear'
-else
-    if [ "$4" == 'CARTESIAN' ]; then
-        addflags='-m bilinear --src_type ESMF --dst_type ESMF'
-    else
-        addflags=''
-    fi
+addflags='--method bilinear'
+if [ "$4" == 'CARTESIAN' ]; then
+    addflags="$addflags --src_loc corner --dst_loc corner"
 fi
 
 defaultflags=--ignore_unmapped
-arguments="$defaultflags $addflags -s $srcfile -d $destfile -w $wfile"
+arguments="$defaultflags $addflags --source $srcfile --destination $destfile --weight $wfile"
 
     # Remove output file
 if [ -f $wfile ]; then

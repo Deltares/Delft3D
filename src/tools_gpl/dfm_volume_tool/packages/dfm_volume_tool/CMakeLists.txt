@@ -29,7 +29,6 @@ if (UNIX)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
                          netcdff
                          dfm_api_access)
 
@@ -46,7 +45,6 @@ if (WIN32)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
                          netcdff
                          dfm_api_access)
 
