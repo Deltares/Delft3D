@@ -1574,7 +1574,6 @@ contains
    end subroutine fm_apply_bed_boundary_condition
 
    !< Update concentrations in water column to conserve mass because of bottom update
-   !! This needs to happen in work array sed, not constituents, because of copying back and forth later on
    subroutine fm_update_concentrations_after_bed_level_update()
       use precision, only: dp
 

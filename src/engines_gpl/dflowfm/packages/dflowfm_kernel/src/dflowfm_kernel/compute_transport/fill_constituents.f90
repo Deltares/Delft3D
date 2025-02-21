@@ -55,7 +55,7 @@ contains
       use m_mass_balance_areas, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_sferic, only: jsferic, fcorio
-      use m_flowtimes, only: dts, time1, tstart_user, tfac
+      use m_flowtimes, only: dts
       use m_flowparameters, only: janudge, jasecflow, jatem, jaequili, epshu, epshs, testdryflood, icorio
       use m_laterals, only: add_lateral_load_and_sink, apply_transport_is_used
       use m_missing, only: dmiss
