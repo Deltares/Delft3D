@@ -40,7 +40,7 @@ module m_ade2d
    
     contains
     
-    subroutine fm_ade2d(thevar, qadv, sour, sink, limityp, ierror)
+    subroutine fm_ade2d(thevar, uadv, qadv, sour, sink, limityp, ierror)
       use m_transport, only: dxiau
       use m_flowgeom, only: Ndx, Lnx, ln, ba ! static mesh information
       use m_flow, only: Ndkx, Lnkx, kbot, ktop, Lbot, Ltop, kmxn, kmxL
@@ -58,6 +58,7 @@ module m_ade2d
       integer, parameter, dimension(NUMCONST) :: JAUPDATECONST = 1 !< update constituent (1) or not (0)
       
       real(kind=dp), dimension(1, ndx), intent(inout) :: thevar !< variable to be tranported
+      real(kind=dp), dimension(lnx), intent(in) :: uadv
       real(kind=dp), dimension(lnx), intent(in) :: qadv
       real(kind=dp), dimension(ndx), intent(in) :: sour
       real(kind=dp), dimension(ndx), intent(in) :: sink
@@ -83,7 +84,6 @@ module m_ade2d
       integer, dimension(:), allocatable :: jabfupdate
       integer, dimension(:), allocatable :: jabfhorupdate
       integer, dimension(:), allocatable :: nbfdeltasteps
-      !real(kind=dp), dimension(lnx), allocatable :: uadv
       real(kind=dp), dimension(:), allocatable :: bfsumhorflux, dumx, dumy
 
       integer :: L
@@ -126,7 +126,7 @@ module m_ade2d
 
 !  compute horizontal fluxes, explicit part
       call comp_dxiAu()
-      call comp_fluxhor3D(NUMCONST, limityp, Ndx, Lnx, qadv, qadv, bfsqi, ba, kbot, Lbot, Ltop, kmxn, kmxL, thevar, difsedubf, sigdifibf, dumL, BFNSUBSTEPS, jabfhorupdate, nbfdeltasteps, jaupdateconst, fluxhorbf, dumx, dumy, 1, dxiAu)
+      call comp_fluxhor3D(NUMCONST, limityp, Ndx, Lnx, uadv, qadv, bfsqi, ba, kbot, Lbot, Ltop, kmxn, kmxL, thevar, difsedubf, sigdifibf, dumL, BFNSUBSTEPS, jabfhorupdate, nbfdeltasteps, jaupdateconst, fluxhorbf, dumx, dumy, 1, dxiAu)
       call comp_sumhorflux(1, 0, Lnkx, Ndkx, Lbot, Ltop, fluxhorbf, bfsumhorflux)
       call solve_2D(1, Ndx, ba, kbot, ktop, bfsumhorflux, fluxverbf, const_sourbf, const_sinkbf, 1, jabfupdate, nbfdeltasteps, thevar, rhsbf)
       ierror = 0
