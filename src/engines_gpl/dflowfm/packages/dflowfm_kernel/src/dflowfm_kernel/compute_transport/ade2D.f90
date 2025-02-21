@@ -74,9 +74,7 @@ module m_ade2d
       real(kind=dp), dimension(:), allocatable :: sigdifibf
 
       real, dimension(:), allocatable :: dumL
-      real(kind=dp), dimension(:), allocatable :: bfsq
       real(kind=dp), dimension(:), allocatable :: bfsqi
-      real(kind=dp), dimension(:), allocatable :: bfsqu
 
       real(kind=dp), dimension(:, :), allocatable :: const_sourbf ! sources in transport, dim(NUMCONST,Ndkx)
       real(kind=dp), dimension(:, :), allocatable :: const_sinkbf ! linear term of sinks in transport, dim(NUMCONST,Ndkx)
@@ -97,8 +95,6 @@ module m_ade2d
       call realloc(jabfupdate, ndx, keepExisting=.true., fill=1) !Mask array for the 2D part, true for all.
       call realloc(jabfhorupdate, lnx, keepExisting=.true., fill=1)
       call realloc(nbfdeltasteps, ndx, keepExisting=.true., fill=1) !It is only used if NSUBSTEPS>1, which is not the case.
-      call realloc(bfsq, ndx, keepExisting=.true., fill=0d0)
-      call realloc(bfsqu, ndx, keepExisting=.true., fill=0d0)
       call realloc(bfsqi, ndx, keepExisting=.true., fill=0d0)
 
       call realloc(fluxhorbf, (/1, Lnx/), keepExisting=.true., fill=0d0)
@@ -123,14 +119,8 @@ module m_ade2d
       do L = 1, Lnx
          k1 = ln(1, L)
          k2 = ln(2, L)
-         bfsq(k1) = bfsq(k1) - min(qadv(L), 0d0)
-         bfsq(k2) = bfsq(k2) + max(qadv(L), 0d0)
-
          bfsqi(k1) = bfsqi(k1) - min(qadv(L), 0d0)
          bfsqi(k2) = bfsqi(k2) + max(qadv(L), 0d0)
-
-         bfsqu(k1) = bfsqu(k1) + max(qadv(L), 0d0)
-         bfsqu(k2) = bfsqu(k2) - min(qadv(L), 0d0)
       end do
 
       const_sourbf=RESHAPE(sour,shape=(/1, ndx/))
