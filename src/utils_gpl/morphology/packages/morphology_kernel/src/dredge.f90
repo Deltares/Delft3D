@@ -348,22 +348,14 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
     real(fp)                        :: z_dredge
     type(dredtype),         pointer :: pdredge  
 
-    write(lundia, '(A)') '--------- Dredging ---------'
     do ia = 1, dadpar%nadred + dadpar%nasupl
        pdredge => dadpar%dredge_prop(ia)
        dadpar%voldred(ia,:) = 0.0_fp
-       write(lundia, '(A7,I4,A2,A)') 'Dredge', ia, ': ',trim(pdredge%name)
        !
        ! If not in a dredging interval then go to next dredge/nourishment area
        !
-       if (.not. pdredge%active) then
-           write(lundia, '(A)') '  Not active.'
-           cycle
-       end if
-       if (pdredge%npnt == 0 .and. pdredge%itype /= DREDGETYPE_NOURISHMENT) then
-           write(lundia, '(A)') '  Zero points.'
-           cycle
-       end if
+       if (.not. pdredge%active) cycle
+       if (pdredge%npnt == 0 .and. pdredge%itype /= DREDGETYPE_NOURISHMENT) cycle
        !
        ! Maximum dredging volume depends on morphological time step.
        ! Although during the initial period morfac is arbitrary,
@@ -391,7 +383,6 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
           !
           maxvol = -999.0_fp
        end if
-       write(lundia, '(A,ES20.11E3)') '  Dredg max volume: ',maxvol
        !
        if (pdredge%dumplimited) then
           maxdumpvol = 0.0_fp
@@ -406,7 +397,6 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
           else
              maxvol = min(maxvol, maxdumpvol)
           end if
-          write(lundia, '(A,ES20.11E3)') '  Dump lim volume : ',maxvol
        end if
        !
        if (pdredge%itype == DREDGETYPE_NOURISHMENT) then
@@ -419,10 +409,8 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
              maxvol = min(pdredge%totalvolsupl,maxvol)
              pdredge%totalvolsupl = pdredge%totalvolsupl-maxvol
           end if
-          write(lundia, '(A,ES20.11E3)') '  Supplied volume : ',maxvol
           do lsed = 1, lsedtot
              dadpar%voldred(ia,lsed) = 0.01_fp*dadpar%percsupl(pdredge%idx_type,lsed)*maxvol
-             write(lundia, '(A,ES20.11E3,A,I0)') '  Supplied volume : ',dadpar%voldred(ia,lsed),' of fraction ',lsed
           end do
           cycle
        end if
@@ -473,7 +461,6 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
        end do
        !
        if (.not.pdredge%in1domain) then
-          write(lundia, '(A)') '  ---- MPI1 ----'
           !
           ! communicate dredge data among domains
           !
@@ -656,8 +643,6 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
              requiredvolume = 0.0_fp
           end if
        end select
-       write(lundia, '(A,ES20.11E3)') '  Available volume: ',availvolume
-       write(lundia, '(A,ES20.11E3)') '  Required volume : ',requiredvolume
        !
        if (ploughed) then
            dadpar%tim_ploughed(ia) = dadpar%tim_ploughed(ia) + dt
@@ -671,7 +656,6 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
        !-----------------------------------------------------------------------
        ! Perform dredging
        !
-       write(lundia, '(A)') '  Perform dredging'
        if (comparereal(maxvol,0.0_fp) == 0) then
           !
           ! No dredging capacity, reset all dredging amounts to zero.
@@ -1211,8 +1195,6 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
           dadpar%dzdred(nm_abs)     = 0.0_fp
        end do
     end do
-    write(lundia, '(A)') '----------------------------'
-    write(lundia, '(A)') ' '
     
 end subroutine calculate_dredging
 
