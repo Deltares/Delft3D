@@ -9,6 +9,15 @@ file_structure_json = "ci/DIMRset_delivery/src/DIMRset-binaries.json"
 
 
 def is_signtool_available(developer_promt: str) -> bool:
+    """
+    Checks if the 'signtool' is available in the given developer prompt.
+
+    Args:
+        developer_promt (str): The command to open the developer prompt.
+
+    Returns:
+        bool: True if 'signtool' is available, False otherwise.
+    """
     try:
         result = subprocess.run(
             [
@@ -33,6 +42,17 @@ def is_signtool_available(developer_promt: str) -> bool:
 
 
 def verify_signing_authority(filepath: str, developer_promt: str) -> tuple:
+    """
+    Verifies the signing authority of a given file using the specified developer prompt.
+
+    Args:
+        filepath (str): The path to the file to be verified.
+        developer_promt (str): The developer prompt command to be used for verification.
+
+    Returns:
+        tuple: A tuple containing the verification status ("Verified" or "Not Verified")
+               and the issuer name if verified, or an error message if an exception occurs.
+    """
     try:
         result = subprocess.run(
             [
@@ -62,6 +82,15 @@ def verify_signing_authority(filepath: str, developer_promt: str) -> tuple:
 
 
 def get_actual_files(directory: str) -> list:
+    """
+    Recursively retrieves a list of relative file paths for all .dll and .exe files in the given directory.
+
+    Args:
+        directory (str): The root directory to search for files.
+
+    Returns:
+        list: A list of relative file paths for .dll and .exe files found in the directory.
+    """
     actual_files = []
     for root, dirs, files in os.walk(directory):
         for file in files:
@@ -79,6 +108,19 @@ def validate_signing_status(
     files_that_should_not_be_signed: str,
     developer_promt: str,
 ) -> tuple:
+    """
+    Validate the signing status of a file.
+
+    Args:
+        file (str): The name of the file to validate.
+        directory (str): The directory where the file is located.
+        files_that_should_be_signed_with_issued_to (str): List of files that should be signed with a specific issuer.
+        files_that_should_not_be_signed (str): List of files that should not be signed.
+        developer_promt (str): Prompt for the developer.
+
+    Returns:
+        tuple: A message indicating the validation result and a boolean indicating if the validation was successful.
+    """
     filepath = os.path.join(directory, file)
     status, issued_to = verify_signing_authority(filepath, developer_promt)
     if file in [item["file"] for item in files_that_should_be_signed_with_issued_to]:
@@ -113,6 +155,16 @@ def is_signing_correct(
     files_that_should_not_be_signed: list,
     developer_promt: str,
 ) -> bool:
+    """
+    Checks if the signing status of files is correct.
+    Args:
+        actual_files (list): List of files to check.
+        files_that_should_be_signed_with_issued_to (list): List of files that should be signed with "issued to".
+        files_that_should_not_be_signed (list): List of files that should not be signed.
+        developer_promt (str): Developer prompt for signing validation.
+    Returns:
+        bool: True if all files are signed correctly, False otherwise.
+    """
     files_signed_correctly = True
 
     with ThreadPoolExecutor() as executor:
@@ -138,6 +190,14 @@ def is_signing_correct(
 
 
 def validate_directory_contents(actual_files: list, expected_files: list) -> bool:
+    """
+    Validates the contents of a directory by comparing the actual files against the expected files.
+    Args:
+        actual_files (list): A list of filenames that are actually present in the directory.
+        expected_files (list): A list of filenames that are expected to be present in the directory.
+    Returns:
+        bool: True if all expected files are present and there are no extra files, False otherwise.
+    """
     files_complete_and_valid = True
     missing_files = []
     extra_files = []
