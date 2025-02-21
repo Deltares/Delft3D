@@ -289,10 +289,6 @@
             "Issued to": "Microsoft Corporation"
         },
         {
-            "file": "bin\\tclkitsh852.exe",
-            "Issued to": "Stichting Deltares"
-        },
-        {
             "file": "lib\\cygaec-0.dll",
             "Issued to": "Stichting Deltares"
         },
@@ -622,6 +618,6 @@
         }
     ],
     "Not signed": [
-
+        "bin\\tclkitsh852.exe"
     ]
 }
