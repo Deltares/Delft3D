@@ -89,30 +89,13 @@ contains
             constituents(ISPIR, k) = spirint(k)
          end if
 
-         if (ISED1 /= 0) then
+         if (ISED1 /= 0 .and. .not. stm_included) then
             do jsed = 1, mxgr
                iconst = ISED1 + jsed - 1
                constituents(iconst, k) = sed(jsed, k)
             end do
          end if
       end do
-
-      ! maybe this part is not necessary anymore if we set sed to zero in extract_constituents
-      if (stm_included) then
-         if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor * tfac) then
-            if (ISED1 /= 0) then
-               do k = 1, ndx
-                  if (hs(k) <= stmpar%morpar%sedthr) then ! in erosed: hs > sedthr kfsed=1
-                     do jsed = 1, mxgr
-                        iconst = ISED1 + jsed - 1
-                        call getkbotktop(k, kb, kt)
-                        constituents(iconst, kb:kt) = 0.0_dp
-                     end do
-                  end if
-               end do
-            end if
-         end if
-      end if
 
       difsedu = 0.0_dp; difsedw = 0.0_dp; sigdifi = 0.0_dp
 

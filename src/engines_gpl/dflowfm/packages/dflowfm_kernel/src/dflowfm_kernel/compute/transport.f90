@@ -57,7 +57,7 @@ contains
       use m_flowtimes
       use m_flowparameters, only: jadiagnostictransport
       use m_physcoef, only: idensform, difmolsal
-      use m_transport, only: NUMCONST, constituents, ISALT, ITEMP
+      use m_transport, only: NUMCONST, constituents, ISALT, ITEMP, ised1
       use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
       use m_dlimitercentral
       use m_dslim
@@ -68,7 +68,7 @@ contains
       integer :: L, k, k1, k2, kb, n
 
       real(kind=dp) :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
-      integer :: j, ki, jastep, kk
+      integer :: j, jj, ki, jastep, kk
       integer :: LL, Lb, Lt, kt, km
 
       real(kind=dp) :: flx(mxgr) !< sed erosion flux (kg/s)                 , dimension = mxgr
@@ -405,9 +405,16 @@ contains
                   constituents(itemp, kb) = constituents(itemp, ki)
                end if
                if (jased > 0) then
-                  do j = 1, mxgr
-                     sed(j, kb) = sed(j, ki)
-                  end do
+                  if (.not. stm_included) then
+                     do j = 1, mxgr
+                        sed(j, kb) = sed(j, ki)
+                     end do
+                  else
+                     do j = 1, stmpar%lsedsus
+                        jj = ised1 + j - 1
+                        constituents(jj, kb) = constituents(jj, ki)
+                     end do
+                  end if
                end if
             end if
          end do
@@ -418,18 +425,6 @@ contains
             call getverticallyaveraged(sa1, ndkx)
          end if
       end if
-
-      do k = 1, 0 !  ndxi ! for test selectiveZ.mdu
-         if (xz(k) > 270) then
-            do kk = kbot(k), ktop(k)
-               if (zws(kk) < -5d0) then
-                  constituents(isalt, kk) = 30d0
-               else
-                  constituents(isalt, kk) = 0d0
-               end if
-            end do
-         end if
-      end do
 
       if (numconst > 0 .and. apply_transport_is_used) then
          call average_concentrations_for_laterals(numconst, kmx, kmxn, vol1, constituents, dts)
