@@ -5,9 +5,10 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 
 signtool = "signtool.exe"
+file_structure_json = "ci/DIMRset_delivery/src/DIMRset-binaries.json"
 
 
-def has_signtool(developer_promt) -> bool:
+def is_signtool_available(developer_promt: str) -> bool:
     try:
         result = subprocess.run(
             [
@@ -31,7 +32,7 @@ def has_signtool(developer_promt) -> bool:
         return False
 
 
-def get_signing_authority(filepath, developer_promt) -> tuple:
+def verify_signing_authority(filepath: str, developer_promt: str) -> tuple:
     try:
         result = subprocess.run(
             [
@@ -60,7 +61,7 @@ def get_signing_authority(filepath, developer_promt) -> tuple:
         return f"Error: {e}"
 
 
-def get_actual_files(directory) -> list:
+def get_actual_files(directory: str) -> list:
     actual_files = []
     for root, dirs, files in os.walk(directory):
         for file in files:
@@ -71,15 +72,15 @@ def get_actual_files(directory) -> list:
     return actual_files
 
 
-def check_signing_status(
-    file,
-    directory,
-    files_that_should_be_signed_with_issued_to,
-    files_that_should_not_be_signed,
-    developer_promt,
+def validate_signing_status(
+    file: str,
+    directory: str,
+    files_that_should_be_signed_with_issued_to: str,
+    files_that_should_not_be_signed: str,
+    developer_promt: str,
 ) -> tuple:
     filepath = os.path.join(directory, file)
-    status, issued_to = get_signing_authority(filepath, developer_promt)
+    status, issued_to = verify_signing_authority(filepath, developer_promt)
     if file in [item["file"] for item in files_that_should_be_signed_with_issued_to]:
         if status == "Verified":
             for item in files_that_should_be_signed_with_issued_to:
@@ -107,17 +108,17 @@ def check_signing_status(
 
 
 def is_signing_correct(
-    actual_files,
-    files_that_should_be_signed_with_issued_to,
-    files_that_should_not_be_signed,
-    developer_promt,
+    actual_files: list,
+    files_that_should_be_signed_with_issued_to: list,
+    files_that_should_not_be_signed: list,
+    developer_promt: str,
 ) -> bool:
     files_signed_correctly = True
 
     with ThreadPoolExecutor() as executor:
         signing_statuses = [
             executor.submit(
-                check_signing_status,
+                validate_signing_status,
                 file,
                 directory,
                 files_that_should_be_signed_with_issued_to,
@@ -136,7 +137,7 @@ def is_signing_correct(
     return files_signed_correctly
 
 
-def is_directory_correct(actual_files, expected_files) -> bool:
+def validate_directory_contents(actual_files: list, expected_files: list) -> bool:
     files_complete_and_valid = True
     missing_files = []
     extra_files = []
@@ -174,6 +175,25 @@ def is_directory_correct(actual_files, expected_files) -> bool:
     return files_complete_and_valid
 
 
+def print_example_json_file_structure() -> None:
+    print("Example JSON file structure:{")
+    print('    "Signed": [')
+    print("        {")
+    print('            "file": "file_1.exe",')
+    print('            "Issued to": "party A"')
+    print("        },")
+    print("        {")
+    print('            "file": "file_2.dll",')
+    print('            "Issued to": "Party B"')
+    print("        }")
+    print("    ],")
+    print('    "Not signed": [')
+    print('        "file_3.dll",')
+    print('        "lib\\file_4.dll"')
+    print("    ]")
+    print("}")
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: python script.py <developer_promt> <directory>")
@@ -182,24 +202,29 @@ if __name__ == "__main__":
         developer_promt = sys.argv[1]
         directory = sys.argv[2]
         try:
-            with open("ci/DIMRset_delivery/src/DIMRset-binaries.json", "r") as f:
+            with open(file_structure_json, "r") as f:
                 files_to_check = json.load(f)
         except Exception as e:
             print(f"Error loading JSON file: {e}")
             sys.exit(1)
-
-        files_that_should_be_signed = [
-            item["file"] for item in files_to_check["Signed"]
-        ]
-        files_that_should_not_be_signed = files_to_check["Not signed"]
+        try:
+            files_that_should_be_signed = [
+                item["file"] for item in files_to_check["Signed"]
+            ]
+            files_that_should_not_be_signed = files_to_check["Not signed"]
+        except Exception as e:
+            print(f"Error parsing JSON file: {file_structure_json}")
+            print(f"Error: {e}")
+            print_example_json_file_structure()
+            sys.exit(1)
         expected_files = files_that_should_be_signed + files_that_should_not_be_signed
         actual_files = get_actual_files(directory)
 
-        if not is_directory_correct(actual_files, expected_files):
+        if not validate_directory_contents(actual_files, expected_files):
             print("Directory check failed: Missing or extra files detected.")
             sys.exit(1)
 
-        if has_signtool(developer_promt):
+        if is_signtool_available(developer_promt):
             files_that_should_be_signed_with_issued_to = files_to_check["Signed"]
             if not is_signing_correct(
                 actual_files,
