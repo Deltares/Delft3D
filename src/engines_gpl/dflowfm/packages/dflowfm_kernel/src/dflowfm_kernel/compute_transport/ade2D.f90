@@ -135,8 +135,7 @@ module m_ade2d
       end do
 
       do k = 1, Ndx
-         dvoli = 1d0 / max(vol1(k), epshu * ba(k))
-         const_sourbf(1, k) = sour(k) - thevar(1, k) * bfsq(k) * dvoli
+         const_sourbf(1, k) = sour(k)
          const_sinkbf(1, k) = sink(k)
       end do
 
