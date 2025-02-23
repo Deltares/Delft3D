@@ -636,7 +636,6 @@ contains
             kb = ln(1, L); ki = ln(2, L)
             dh(1, kb) = dh(1, ki)
          end do
-         !call fm_advecbedform(dh, ubedformu, qbedformn, sour, sink, 4, ierror)
          call fm_ade2d(dh, ubedformu, qbedformn, sour, sink, 4, ierror)
       end do
       !
