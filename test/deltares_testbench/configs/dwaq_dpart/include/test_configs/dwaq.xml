@@ -9660,14 +9660,21 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c30_mortality_salinity" ref="dwaq_default">
-        <path version="2024-05-13T15:50:00">e03_waq/f12_protist/c30_mortality_salinity</path>
+        <path version="2025-02-18T19:00:00">e03_waq/f12_protist/c30_mortality_salinity</path>
         <checks>
-            <file name="dwaq/mortality_protist_salinity.lsp" type="NUMBERTEXT">
-                   <skipline> Deltares, DELWAQ Version</skipline>
-                   <skipline> Execution start:</skipline>
-                   <skipline> Using process definition file</skipline>
-                   <skipline> Version number                :</skipline>
-                   <skipline> Serial                        :</skipline>
+            <file name="dwaq/mortality_protist_salinity_his.nc" type="netCDF">
+                <parameters>
+                    <parameter name="MrtRT_C1" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-04"/>
+                    <parameter name="MrtRT_C2" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-04"/>
+                    <parameter name="MrtRT_D1" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-04"/>
+                    <parameter name="MrtRT_D2" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-04"/>
+                    <parameter name="MrtRT_G1" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-04"/>
+                    <parameter name="MrtRT_G2" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-04"/>
+                    <parameter name="MrtRT_N1" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-04"/>
+                    <parameter name="MrtRT_N2" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-04"/>
+                    <parameter name="MrtRT_Z1" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-04"/>
+                    <parameter name="MrtRT_Z2" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-04"/>
+                </parameters>
             </file>
         </checks>
     </testCase>
