@@ -1068,7 +1068,7 @@
 				<parameters>
 					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
 					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_q1" toleranceRelative="0.00001" />
 				</parameters>
 			</file>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="netCDF">
