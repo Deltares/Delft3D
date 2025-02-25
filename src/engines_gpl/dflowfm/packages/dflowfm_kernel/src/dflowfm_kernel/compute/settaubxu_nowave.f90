@@ -53,7 +53,7 @@ contains
       logical, intent(in) :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave`
 
       integer :: L, Lb, Lt
-      real(kind=dp) :: cz, cwall, rz, umod2
+      real(kind=dp) :: cz, cwall, umod2
       real(kind=dp), pointer :: velocity_pointer(:)
 
       taubxu = 0d0
@@ -71,8 +71,6 @@ contains
             if (frcu(L) > 0d0) then ! input, or result from trachytopes
                cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
                z0urou(L) = max(1d-200, hu(L) * exp(-1d0 - vonkar * cz / sag)) ! getczz0
-               ! rz = max(hu(Lb), epshu) / ee / z0urou(L) ! cz/sag, jaustarint=1, compatible with getustbcfuhi
-               ! cz = log(rz) / vonkar
                cwall = 1d0 / (cz**2)
                umod2 = velocity_pointer(Lb) * velocity_pointer(Lb) + v(Lb) * v(Lb)
                taubxu(L) = rhomean * cwall * umod2 ! Note that taubxu for 3D without waves is based on bottom layer velocity, whereas
