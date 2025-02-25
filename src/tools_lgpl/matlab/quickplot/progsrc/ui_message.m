@@ -298,16 +298,32 @@ else
             if strcmp(get(gcbf,'SelectionType'),'open')
                 S = get(gcbo,'string');
                 v = get(gcbo,'value');
-                s = S{v};
-                if strncmp(s,'http://',7)
-                    web(s,'-browser')
-                elseif strncmp(s,'In ',3) && ~isempty(strfind(s,' at line ')) && ~isstandalone
-                    i = strfind(s,' at line ');
-                    file = s(4:i-1);
-                    line = sscanf(s(i+9:end),'%i',1);
-                    file = which(file);
+                thisLine = S{v};
+                if strncmp(thisLine,'http://',7)
+                    web(thisLine,'-browser')
+                elseif ~isstandalone
+                    if v == 1
+                        prevLine = '';
+                    else
+                        prevLine = S{v-1};
+                    end
+                    if strncmp(thisLine,'In ',3) && ~isempty(strfind(thisLine,' at line '))
+                        locationLine = thisLine;
+                    elseif strncmp(prevLine,'In ',3) && ~isempty(strfind(prevLine,' at line '))
+                        locationLine = prevLine;
+                    else
+                        % nothing to do
+                        return
+                    end
+                    i = strfind(locationLine,' at line ');
+                    fileName = locationLine(4:i-1);
+                    lineNr = sscanf(locationLine(i+9:end),'%i',1);
+                    fileName = which(fileName);
                     %#exclude opentoline
-                    opentoline(file,line,0)
+                    opentoline(fileName,lineNr,0)
+                else
+                    % nothing to do
+                    return
                 end
             end
         case 'clear'
