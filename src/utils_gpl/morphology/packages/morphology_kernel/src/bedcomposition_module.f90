@@ -142,6 +142,9 @@ type bedcomp_settings
                               !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
                               !  4: base layer composition and thickness constant (no change whatsoever)
                               !  5: base lyaer composition is updated, but thickness is kept constant
+   integer :: active_layer_diffusion !  switch for applying diffusion in the active layer model
+                                     !   0: no diffusion (default)
+                                     !   1: x-y-diffusion file
     !
     ! pointers
     !
@@ -159,6 +162,7 @@ type bedcomp_settings
     ! logicals
     !
     logical :: exchlyr    !  flag for use of exchange layer (underlayer bookkeeping system)
+    logical :: any_active_layer_diffusion !  Flag set to true if any method for applying diffusion to the active layer is on
     !
     ! characters
     !
@@ -1976,6 +1980,8 @@ function initmorlyr(this) result (istat)
     settings%theulyr        = rmissval
     settings%thlalyr        = rmissval
     settings%updbaselyr     = 1
+    settings%any_active_layer_diffusion = .false.
+    settings%active_layer_diffusion = 0
     !
     nullify(settings%kdiff)
     nullify(settings%phi)
@@ -2295,6 +2301,8 @@ function bedcomp_getpointer_logical_scalar(this, variable, val) result (istat)
        val => this%settings%exchlyr
     case ('track_mass_shortage')
        val => this%settings%morlyrnum%track_mass_shortage
+    case ('any_active_layer_diffusion')
+       val => this%settings%any_active_layer_diffusion
     case default
        val => NULL()
     end select
@@ -2356,6 +2364,8 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
        val => this%settings%nmub
     case ('base_layer_updating_type','updbaselyr')
        val => this%settings%updbaselyr
+    case ('active_layer_diffusion')
+       val => this%settings%active_layer_diffusion
     case default
        val => NULL()
     end select

@@ -118,7 +118,7 @@ contains
    !!
 
       cmpupd => stmpar%morpar%cmpupd
-      any_active_layer_diffusion => stmpar%morpar%any_active_layer_diffusion
+      any_active_layer_diffusion => stmpar%morlyr%settings%any_active_layer_diffusion
 
    !!
    !! Execute

@@ -637,13 +637,6 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
             return
         end if
     endselect
-    !
-    ! === flag for applying diffusion to active layer
-    !
-    call prop_get(mor_ptr, 'Morphology', 'IALDiff', morpar%active_layer_diffusion)
-    if (morpar%active_layer_diffusion>0) then
-        morpar%any_active_layer_diffusion=.true.
-    endif
     
 	   
 end subroutine read_morphology_properties
@@ -1350,7 +1343,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     integer                                , pointer :: morfactable
     integer                                , pointer :: nxx
     integer                                , pointer :: nmudfrac
-    integer                                , pointer :: active_layer_diffusion
     integer                , dimension(:)  , pointer :: sedtyp
     integer                , dimension(:)  , pointer :: tratyp
     real(fp)                               , pointer :: morfac
@@ -1420,7 +1412,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     logical                                , pointer :: l_suscor    
     logical                                , pointer :: upwindbedload
     logical                                , pointer :: pure1d_mor
-    logical                                , pointer :: any_active_layer_diffusion
     character(256)                         , pointer :: bcmfilnam
     character(256)                         , pointer :: flsthetsd
     character(20)          , dimension(:)  , pointer :: namsed
@@ -1554,8 +1545,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     bermslopefac        => morpar%bermslopefac
     bermslopegamma      => morpar%bermslopegamma
     bermslopedepth      => morpar%bermslopedepth
-    any_active_layer_diffusion => morpar%any_active_layer_diffusion
-    active_layer_diffusion => morpar%active_layer_diffusion
     !
     ! output values to file
     !
@@ -1856,19 +1845,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
        txtput1 = '   Depth switch wetslope to dryslope'
        write (lundia, '(2a,e20.4)') txtput1, ':', hswitch
     end if
-    if (any_active_layer_diffusion) then
-       txtput1 = 'Diffusion in active layer model activated'
-       select case(active_layer_diffusion)
-       case(1)
-          txtput2 = '   Const. in polygon'
-       case default
-          txtput2 = '                   ?'
-       endselect
-       write (lundia, '(3a)') txtput1, ':', txtput2
-    else
-        txtput1 = 'Diffusion in active layer model deactivated'
-        write (lundia, '(a)') txtput1
-    endif
     !
     ! Numerics
     !

@@ -95,6 +95,7 @@ contains
       !
       logical, pointer :: exchlyr
       logical, pointer :: track_shortage
+      logical, pointer :: any_active_layer_diffusion
       real(fp), pointer :: bed
       real(fp), pointer :: minmass
       real(fp), pointer :: theulyr
@@ -106,6 +107,7 @@ contains
       real(fp), dimension(:, :), pointer :: kdiff
       real(fp), dimension(:), pointer :: zdiff
       integer, pointer :: idiffusion
+      integer, pointer :: active_layer_diffusion
       integer, pointer :: iporosity
       integer, pointer :: iunderlyr
       integer, pointer :: maxwarn
@@ -118,6 +120,7 @@ contains
       integer, pointer :: ttlform
       integer, pointer :: telform
       integer, pointer :: updbaselyr
+      integer, pointer :: IALDiff
       type(handletype), pointer :: bcmfile
       type(cmpbndtype), dimension(:), pointer :: cmpbnd
       character(256), pointer :: bcmfilnam
@@ -155,6 +158,8 @@ contains
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IPorosity', iporosity)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'Ndiff', ndiff)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IDiffusion', idiffusion)
+      if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'active_layer_diffusion', active_layer_diffusion)
+      if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'any_active_layer_diffusion', any_active_layer_diffusion)
       if (istat /= 0) then
          errmsg = 'Memory problem in RDMORLYR'
          call write_error(errmsg, unit=lundia)
@@ -393,6 +398,25 @@ contains
             end if
          end if
          !
+         ! Diffusion in active-layer model
+         !
+         call prop_get(mor_ptr, 'Underlayer', 'IALDiff', active_layer_diffusion)
+         if (active_layer_diffusion>0) then
+             any_active_layer_diffusion=.true.
+         endif
+         if (any_active_layer_diffusion) then
+            txtput1 = 'Diffusion in active layer model activated'
+            select case(active_layer_diffusion)
+            case(1)
+               txtput2 = '   Const. in polygon'
+            case default
+               txtput2 = '                   ?'
+            endselect
+            write (lundia, '(3a)') txtput1, ':', txtput2
+         else
+             txtput1 = 'Diffusion in active layer model deactivated'
+             write (lundia, '(a)') txtput1
+         endif
       case default
       end select
       !
