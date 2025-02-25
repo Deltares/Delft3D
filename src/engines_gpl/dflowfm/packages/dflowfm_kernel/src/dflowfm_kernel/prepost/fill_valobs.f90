@@ -71,6 +71,7 @@ module m_fill_valobs
       use m_links_to_centers, only: links_to_centers
       use m_setrho, only: setrhofixedp
       use m_wind, only: wx, wy, jawind, japatm, patm, jarain, rain, airdensity, tair, rhum, clou
+      use fm_location_types
 
       implicit none
 
@@ -80,7 +81,6 @@ module m_fill_valobs
       real(kind=dp) :: wavfac
       real(kind=dp) :: dens, prsappr, drhodz, rhomea
       real(kind=dp) :: ux, uy, um
-!      real(kind=dp) :: valtmp
       real(kind=dp), allocatable :: wa(:, :)
       real(kind=dp), allocatable :: frac(:, :)
       real(kind=dp), allocatable :: poros(:)
@@ -100,7 +100,8 @@ module m_fill_valobs
       end if
 
       if (.not. allocated(tmp_interp)) then
-         call realloc(tmp_interp, ndkx, keepExisting=.false., fill=0d0)
+         ! Allocate as 2D arry for water levels etc.
+         call realloc(tmp_interp, ndx, keepExisting=.false., fill=0d0)
       end if
 
       !
@@ -211,68 +212,58 @@ module m_fill_valobs
 
             ! It is taken care of in subroutine reduce_valobs for parallel computation.
 
-            valobs(i, IPNT_S1) = s1(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
-                                 s1(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + &
-                                 s1(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i)
+!            valobs(i, IPNT_S1) = s1(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+!                                 s1(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + &
+!                                 s1(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i)
+            call interpolate_horizontal (s1,i,IPNT_S1,UNC_LOC_S)
 
             if (nshiptxy > 0) then
                if (allocated(zsp)) then
-!                 valobs(i, IPNT_S1) = valobs(i, IPNT_S1) + zsp(k)
-                  valobs(i, IPNT_S1) = (s1 (neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
-                                        s1 (neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + &
-                                        s1 (neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) ) + &
-                                       (zsp(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
-                                        zsp(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + &
-                                        zsp(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) )
+                  tmp_interp = s1 + zsp
+                  call interpolate_horizontal (tmp_interp,i,IPNT_S1,UNC_LOC_S)
                end if
             end if
+           
+            tmp_interp = s1 - bl
+            call interpolate_horizontal (tmp_interp,i,IPNT_HS,UNC_LOC_S)
+            
+            call interpolate_horizontal (bl        ,i,IPNT_HS,UNC_LOC_S)
 
-!           valobs(i, IPNT_HS) = s1(k) - bl(k)
-            valobs(i, IPNT_HS) = (s1(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
-                                  s1(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + &
-                                  s1(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) ) - &
-                                 (bl(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
-                                  bl(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + &
-                                  bl(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) )
-
-!           valobs(i, IPNT_BL) = bl(k)
-            valobs(i, IPNT_BL) = bl(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
-                                 bl(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + &
-                                 bl(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i)
-
-!           Dont know what cmxobs is.
             valobs(i, IPNT_CMX) = cmxobs(i)
 
             ! For now here: interpolate velocities, salinity and temperature (not within loop from kb to ke, taken care of in interpolate horizontal)
+            ! First       : allocate tmp_interp for 3D quantities
+            call realloc(tmp_interp, ndkx, keepExisting=.false., fill=0d0)
+            
             if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-               call interpolate_horizontal (ueux,i,IPNT_UCX)
-               call interpolate_horizontal (ueuy,i,IPNT_UCY)
+               call interpolate_horizontal (ueux,i,IPNT_UCX,UNC_LOC_S3D)
+               call interpolate_horizontal (ueuy,i,IPNT_UCY,UNC_LOC_S3D)
             end if
 
             if (jahisvelocity > 0) then
-               call interpolate_horizontal (ucmag,i,IPNT_UMAG)
+               call interpolate_horizontal (ucmag,i,IPNT_UMAG,UNC_LOC_S3D)
             end if
-
+            
             if (model_is_3D()) then
             ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
             ! (mis)use ueux to store cel cntres and salinity etc. noy used as ueux after this
                 do j = 2, ndkx
                    tmp_interp(j) = 0.5d0 * (zws(j) + zws(j - 1))
                 end do
-                call interpolate_horizontal (tmp_interp,i,IPNT_ZCS)
+                call interpolate_horizontal (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)
             end if
 
             if (jasal > 0) then
                tmp_interp = constituents(isalt,:)
-               call interpolate_horizontal (tmp_interp,i,IPNT_SA1)
+               call interpolate_horizontal (tmp_interp,i,IPNT_SA1,UNC_LOC_S3D)
             end if
 
             if (jatem > 0) then
                tmp_interp = constituents(itemp,:)
-               call interpolate_horizontal (tmp_interp,i,IPNT_TEM1)
+               call interpolate_horizontal (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
             end if
 
-!           From here back to normal (snapping in stead of interpolating)
+!           From here back to normal (snapping in stead of interpolating, do not fill valobs in case of interpolating)
             if (intobs(i) == 0) then
                if (jawind > 0) then
                   valobs(i, IPNT_wx) = 0d0
@@ -488,7 +479,7 @@ module m_fill_valobs
                         valobs(i, IPNT_RHOP + klay - 1) = setrhofixedp(kk, 0d0)
                         valobs(i, IPNT_RHO + klay - 1) = rho(kk)
                      else
-                        call interpolate_horizontal (rho,i,IPNT_RHOP)
+                        call interpolate_horizontal (rho,i,IPNT_RHOP,UNC_LOC_S3D)
                      end if
                   end if
 !                  if (jahisvelocity > 0) then
@@ -660,7 +651,7 @@ module m_fill_valobs
       return
    end subroutine fill_valobs
 
-   subroutine interpolate_horizontal (rarray,istat,IPNT)
+   subroutine interpolate_horizontal (rarray,istat,IPNT,locType)
 
       ! Interpolate (horizontally, within a computational layer) to a position from 3 surrounding snapped points
       ! earray ca be constituents or
@@ -670,8 +661,9 @@ module m_fill_valobs
       use m_observations_data
       use m_get_kbot_ktop
       use m_get_layer_indices
+      use fm_location_types
 
-      integer      , intent(in)                       :: istat, IPNT
+      integer      , intent(in)                       :: istat, IPNT,locType
       real(kind=dp), intent(in), allocatable          :: rarray (:)
 
       real(kind=dp)                                   :: value
@@ -680,7 +672,7 @@ module m_fill_valobs
       integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), iwght, kstart, kstop, pntnr, klay
 
       do iwght = 1, 3
-          if (model_is_3D()) then
+          if (model_is_3D() .and. locType == UNC_LOC_S3D) then
               call getkbotktop    (neighbour_nodes_obs(iwght,istat), kb_tmp(iwght), kt_tmp(iwght))
               call getlayerindices(neighbour_nodes_obs(iwght,istat), nlayb_tmp(iwght), nrlay_tmp(iwght))
 
