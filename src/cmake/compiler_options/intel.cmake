@@ -6,7 +6,7 @@ if (WIN32)
     # Set global Fortran compiler flags that apply for each Fortran project
     # Disable diagnostic indicating that ifort is deprecated (10448)
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
-    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP /Qdiag-disable:10448")
+    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP /Qdiag-disable:10448 /assume:recursion")
 
     # Set global C/C++ compiler flags that apply for each C/C++ project
     string(APPEND CMAKE_C_FLAGS " /MP")
@@ -68,7 +68,7 @@ if (UNIX)
     set(CMAKE_C_FLAGS_DEBUG                      "-g -O0")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO             "-g -O2")
     set(CMAKE_C_FLAGS_RELEASE                    "-O2")
-    set(CMAKE_Fortran_FLAGS                      "-fPIC -diag-disable 10448")
+    set(CMAKE_Fortran_FLAGS                      "-fPIC -diag-disable 10448 -assume recursion")
     set(CMAKE_Fortran_FLAGS_RELEASE              "-O2")
     set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO       "-g -O2")
     set(CMAKE_Fortran_FLAGS_DEBUG                "-g -O0")

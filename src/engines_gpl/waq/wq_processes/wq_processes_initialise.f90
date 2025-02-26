@@ -256,6 +256,7 @@ contains
         allitems%maxsize = 0
         procesdef%current_size = 0
         procesdef%maxsize = 0
+        nullify(procesdef%procesprops)
         old_items%current_size = 0
         old_items%maxsize = 0
 
@@ -739,9 +740,6 @@ contains
 
         call setdvp (num_dispersion_arrays, idpnt, num_dispersion_arrays_new, idpnw, num_substances_transported, num_dispersion_arrays_extra, dsto)
         call setdvp (num_velocity_arrays, ivpnt, num_velocity_arrays_new, ivpnw, num_substances_transported, num_velocity_arrays_extra, vsto)
-
-        ! set grid for processes
-        procesdef%procesprops%grid = 1
 
         ! write proces work file
         num_processes_activated = 0

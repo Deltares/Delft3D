@@ -270,7 +270,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c52_mortality_coliform_bacteria" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c52_mortality_coliform_bacteria</path>
+        <path version="2025-01-31T08:23:35.210000">e03_waq/f09_validation_water_quality_delwaq/c52_mortality_coliform_bacteria</path>
         <checks>
             <file name="dwaq/coliform_val.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -458,39 +458,14 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c101_saturation_option1_0d" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c101_saturation_option1_0d</path>
+        <path version="2025-01-30T15:29:56.926000">e03_waq/f09_validation_water_quality_delwaq/c101_saturation_option1_0d</path>
         <checks>
             <file name="dwaq/separate_9segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-            <file name="dwaq/separate_9segments.hda" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-        </checks>
-    </testCase>
-    <testCase name="e03_f09_c102_saturation_option2_0d" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c102_saturation_option2_0d</path>
-        <checks>
-            <file name="dwaq/separate_9segments.ada" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <!-- <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/> Cl: No longer calculated -->
                     <parameter name="SUBST_005" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
@@ -500,7 +475,32 @@
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <!-- <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/> Cl: No longer calculated -->
+                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e03_f09_c102_saturation_option2_0d" ref="dwaq_default">
+        <path version="2025-01-30T15:29:59.013000">e03_waq/f09_validation_water_quality_delwaq/c102_saturation_option2_0d</path>
+        <checks>
+            <file name="dwaq/separate_9segments.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <!-- <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/> Cl: No longer calculated -->
+                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="dwaq/separate_9segments.hda" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <!-- <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/> Cl: No longer calculated -->
                     <parameter name="SUBST_005" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>

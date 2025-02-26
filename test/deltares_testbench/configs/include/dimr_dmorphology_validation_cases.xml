@@ -174,4 +174,26 @@
         </file> 
       </checks>
     </testCase>
+    <testCase name="e02_f022_c101_duneadvection" ref="dflowfm_default">
+      <path version="2025-02-24T13:43:54.742000">e02_dflowfm/f022_morphology_2D/c101_duneadvection</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_duneheight" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase>
+    <testCase name="e02_f022_c102_dunediffusion" ref="dflowfm_default">
+      <path version="2025-02-24T13:47:31.996000">e02_dflowfm/f022_morphology_2D/c102_dunediffusion</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_duneheight" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file> 
+      </checks>
+    </testCase>
   </testCases>

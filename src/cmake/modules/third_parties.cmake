@@ -58,15 +58,12 @@ set(solvesaphe_module ${third_party_open_path}/solveSAPHE/${cmake_directory})
 # spherepack
 set(spherepack_module ${third_party_open_path}/spherepack/${cmake_directory})
 
+#intel redist
+set(intelredist_module ${third_party_open_path}/intelredist)
+
 if(WIN32)
-	#intel redist
-	set(intelredist_module ${third_party_open_path}/intelredist)
-	
-	set(Tecplot_module ${third_party_open_path}/Tecplot)
-	
-	set(GISInternals_module ${third_party_open_path}/GISInternals)
-	
-	set(pthreads_module ${third_party_open_path}/pthreads)
-		
-	set(expat_module ${third_party_open_path}/expat)
+    set(Tecplot_module ${third_party_open_path}/Tecplot)
+    set(GISInternals_module ${third_party_open_path}/GISInternals)
+    set(pthreads_module ${third_party_open_path}/pthreads)
+    set(expat_module ${third_party_open_path}/expat)
 endif(WIN32)

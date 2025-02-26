@@ -62,12 +62,10 @@ target_link_libraries(${executable_name} PRIVATE
                       dflowfm_kernel
                       gridgeom
                       deltares_common
+                      netcdff
 )
 
 if(UNIX)
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-
     message(STATUS "Setting target_compile_definitions in Unix")
     target_compile_definitions(${executable_name} PRIVATE "HAVE_DISPLAY=0;HAVE_MPI;HAVE_PETSC")
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
@@ -83,11 +81,8 @@ endif(WIN32)
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/net_main.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-
-
-target_link_libraries(${executable_name} PRIVATE netcdf)
-
 if (WIN32)
+    target_link_libraries(${executable_name} PRIVATE netcdf)
     include_directories(${mpi_module_path}
                         ${petsc_libdir}
                         ${tecplot_path}

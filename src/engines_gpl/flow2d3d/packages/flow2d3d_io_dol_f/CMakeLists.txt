@@ -44,22 +44,15 @@ set(oss_dependencies_general    deltares_common
                                 morphology_kernel)
 # Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
     set(oss_dependencies ${oss_dependencies_general}
                          netcdff)
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF)
+    )
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdf4
                         netcdff)
 
 endif(WIN32)

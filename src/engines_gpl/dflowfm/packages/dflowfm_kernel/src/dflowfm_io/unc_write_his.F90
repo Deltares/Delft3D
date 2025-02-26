@@ -475,7 +475,7 @@ contains
             call check_netcdf_error(nf90_def_dim(ihisfile, 'ndred', dadpar%dredge_dimension_length, id_dreddim))
             call check_netcdf_error(nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim))
             call definencvar(ihisfile, id_dred_name, nf90_char, (/id_strlendim, id_dreddim/), 'dredge_area_name', 'dredge area identifier')
-            call definencvar(ihisfile, id_dump_name, nf90_char, (/id_strlendim, id_dreddim/), 'dump_area_name', 'dump area identifier')
+            call definencvar(ihisfile, id_dump_name, nf90_char, (/id_strlendim, id_dumpdim/), 'dump_area_name', 'dump area identifier')
          end if
 
          if (jacheckmonitor == 1) then
@@ -591,9 +591,9 @@ contains
                case (UNC_LOC_LATERAL)
                   call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_latdim, id_timedim/), var_name, var_long_name, config%unit, 'lateral_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_DREDGE)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_dreddim, id_timedim/), var_name, var_long_name, config%unit, 'dredge_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_dreddim, id_timedim/), var_name, var_long_name, config%unit, 'dredge_area_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_DUMP)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_dumpdim, id_timedim/), var_name, var_long_name, config%unit, 'dump_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_dumpdim, id_timedim/), var_name, var_long_name, config%unit, 'dump_area_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_DRED_LINK)
                   call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_dredlinkdim, id_sedtotdim, id_timedim/), var_name, var_long_name, config%unit, 'dredge_link_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_STATION)

@@ -6,13 +6,6 @@ file(GLOB source    src/*.f90
 add_executable(${executable_name} ${source})
 
 if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
     set(oss_dependencies    deltares_common
                             deltares_common_c
                             deltares_common_mpi
@@ -24,13 +17,9 @@ if(UNIX)
                             kdtree_wrapper
                             kdtree2)
 
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-
     target_link_libraries(${executable_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+    )
 
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
@@ -45,7 +34,6 @@ if(WIN32)
                          io_netcdf_data
                          kdtree_wrapper
                          kdtree2
-                         netcdf4
                          netcdff)
 
     target_link_directories(${executable_name} PRIVATE

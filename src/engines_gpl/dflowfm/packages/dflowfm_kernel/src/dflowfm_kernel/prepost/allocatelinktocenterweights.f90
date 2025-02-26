@@ -28,26 +28,32 @@
 !-------------------------------------------------------------------------------
 
 !
-!
+!> @file allocatelinktocenterweights.f90
+!! Subroutines for allocating center related link x- and y weights.
 module m_allocate_linktocenterweights
 
    implicit none
 
    private
 
-   public :: allocate_linktocenterweights
+   public :: allocatelinktocenterweights
 
 contains
 
-   subroutine allocate_linktocenterweights() ! allocate center related linkxy weights
+   !> allocate center related linkxy weights
+   subroutine allocatelinktocenterweights()
 
       use m_flowgeom
       use m_alloc
 
       integer :: ierr
 
-      if (allocated(wcx1)) deallocate (wcx1, wcy1, wcx2, wcy2)
+      if (allocated(wcx1)) deallocate (wcx1)
+      if (allocated(wcy1)) deallocate (wcy1)
+      if (allocated(wcx2)) deallocate (wcx2)
+      if (allocated(wcy2)) deallocate (wcy2)
       if (allocated(wcL)) deallocate (wcL)
+      if (allocated(wc)) deallocate (wc)
 
       allocate (wcx1(lnx), stat=ierr); 
       call aerr('wcx1(lnx)', ierr, lnx)
@@ -59,7 +65,9 @@ contains
       call aerr('wcy2(lnx)', ierr, lnx)
       allocate (wcL(2, Lnx), stat=ierr); 
       call aerr('wcL  (2,Lnx)', ierr, 2 * Lnx)
+      allocate (wc(ndx), stat=ierr); 
+      call aerr('wc     (ndx)', ierr, ndx)
 
-   end subroutine allocate_linktocenterweights
+   end subroutine allocatelinktocenterweights
 
 end module m_allocate_linktocenterweights

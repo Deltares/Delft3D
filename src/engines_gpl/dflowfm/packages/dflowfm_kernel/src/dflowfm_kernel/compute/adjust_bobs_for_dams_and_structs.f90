@@ -32,7 +32,7 @@
 
 module m_adjust_bobs_for_dams_and_structs
    use m_switchiadvnearlink, only: switchiadvnearlink
-   use m_adjust_bobs_on_dambreak_breach, only: adjust_bobs_on_dambreak_breach
+   use m_dambreak_breach, only: adjust_bobs_on_dambreak_breach
 
    implicit none
 

@@ -22,8 +22,11 @@
 !!  rights reserved.
 module m_satco2
     use m_waq_precision
+    use chemical_utils, only: chlorinity_from_sal
 
     implicit none
+    private
+    public :: satco2
 
 contains
 
@@ -34,127 +37,103 @@ contains
         !>\file
         !>       Saturation concentration carbon dioxide
 
-        !
-        !     Description of the module :
-        !
-        !        General water quality module for DELWAQ:
-        !        COMPUTATION OF CARBON DIOXIDE SATURATION CONCENTRATION
-        !
-        ! Name    T   L I/O   Description                                   Units
-        ! ----    --- -  -    -------------------                            ----
-        ! CL2     R*4 1 I concentration of chloride                        [kg/m3]
-        ! CO2SAT  R*4 1 0 saturation concentration                          [g/m3]
-        ! PAPCO2  R*4 1 0 partial CO2 pressure                             [g/m3]
-        ! SAL     R*4 1 I Salinity                                           [ppt]
-        ! SWITCH  I*4 1 I Switch for formulation options                       [-]
-        ! TEMP    R*4 1 I ambient temperature                                 [xC]
-
-        !     Logical Units : -
-
-        !     Modules called : -
-
-        !     Name     Type   Library
-        !     ------   -----  ------------
-
         use m_logger_helper, only : stop_with_error, get_log_unit_number
-        USE PHYSICALCONSTS, ONLY : CtoKelvin
-        IMPLICIT NONE
+        use physicalconsts, only : ctokelvin
+        implicit none
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(*), increm(*), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
-        !     Local declarations
+        !     local declarations
         !
-        INTEGER(kind = int_wp) :: SWITCH, LUNREP, ISEG, IP1, &
-                IP2, IP3, IP4, IP5, IP6
-        REAL(kind = real_wp) :: CL2, TEMP, TEMPA, SAL, PAPCO2, &
-                RION, RKCO2, TEMP2, PART1, PART2, &
-                CO2SAT, A1, A2, A3, B1, &
-                B2, B3
-        PARAMETER (A1 = -58.0931, &
-                A2 = 90.5069, &
-                A3 = 22.2940, &
-                B1 = 0.027766, &
-                B2 = -0.025888, &
-                B3 = 0.0050578)
-        !
+        integer(kind = int_wp) :: lunrep, iseg, ip1, ip2, ip3, ip4, ip5, ip6
+        real(kind = real_wp)   :: co2sat            ! Saturation concentration                          [g/m3]
+        real(kind = real_wp)   :: papco2            ! Partial CO2 pressure                              [g/m3]
+        real(kind = real_wp)   :: sal               ! Salinity                                           [ppt]
+        integer(kind = int_wp) :: switch            ! Switch for formulation options                       [-]
+        real(kind = real_wp)   :: temp              ! ambient temperature                                 [xC]
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        !
-        DO ISEG = 1, num_cells
+        real(kind = real_wp) :: cl2, tempa, rion, rkco2, temp2, part1, part2, &
+                a1, a2, a3, b1, b2, b3
+        parameter (a1 = -58.0931, &
+                a2 = 90.5069, &
+                a3 = 22.2940, &
+                b1 = 0.027766, &
+                b2 = -0.025888, &
+                b3 = 0.0050578)
 
-            CL2 = process_space_real(IP1) / 1000.
-            TEMP = process_space_real(IP2)
-            SWITCH = NINT(process_space_real(IP3))
-            SAL = process_space_real(IP4)
-            PAPCO2 = process_space_real(IP5)
+        ip1 = ipoint(1)
+        ip2 = ipoint(2)
+        ip3 = ipoint(3)
+        ip4 = ipoint(4)
+        ip5 = ipoint(5)
 
-            IF (SWITCH == 1) THEN
+        do iseg = 1, num_cells
 
-                ! === REAERATION CO2 ==================================================
+            temp = process_space_real(ip1)
+            switch = nint(process_space_real(ip2))
+            sal = process_space_real(ip3)
+            papco2 = process_space_real(ip4)
+
+            if (switch == 1) then
+
+                ! === reaeration co2 ==================================================
                 !
-                !     SATURATION CONCENTRATION CO2 = PARTIAL PRESSURE CO2 IN ATMOSPHERE
-                !     (ASSUMED MOL/L)              * REACTION CONSTANT
+                !     saturation concentration co2 = partial pressure co2 in atmosphere
+                !     (assumed mol/l)              * reaction constant
                 !
-                !     PARTIAL PRESSURE = 10**-3.5 ATM (PAG. 180)
+                !     partial pressure = 10**-3.5 atm (pag. 180)
                 !
-                !     REACTION CONSTANT KCO2 = FUNCTION (ABS.TEMPERATURE,CHLORINITY)
-                !     ABS. TEMP  = 273.15 + TEMPD (MODEL TEMP. IN DEGREES CELSIUS)
-                !     CHLORINITY = 0.001*CL (CL IS MODEL CONC. CL- IN MG/L)
+                !     reaction constant kco2 = function (abs.temperature,chlorinity)
+                !     abs. temp  = 273.15 + tempd (model temp. in degrees celsius)
+                !     chlorinity = 0.001*cl (cl is model conc. cl- in mg/l)
                 !
-                !     REF.: AQUATIC CHEMISTRY,  STUMM & MORGAN, WILEY & SONS, 1981
+                !     ref.: aquatic chemistry,  stumm & morgan, wiley & sons, 1981
                 !
                 ! =====================================================================
 
-                TEMPA = TEMP + real(CtoKelvin)
-                RION = 0.147E-02 + 0.3592E-01 * CL2 + 0.68E-04 * CL2**2
-                RKCO2 = 10.0**(-(- 0.238573E+04 / TEMPA + 0.140184E+02 - &
-                        0.152642E-01 * TEMPA + RION * (0.28569 - 0.6167E-05 * TEMPA)))
+                cl2 = chlorinity_from_sal( sal, temp ) / 1000.
+                tempa = temp + real(ctokelvin)
+                rion = 0.147e-02 + 0.3592e-01 * cl2 + 0.68e-04 * cl2**2
+                rkco2 = 10.0**(-(- 0.238573e+04 / tempa + 0.140184e+02 - &
+                        0.152642e-01 * tempa + rion * (0.28569 - 0.6167e-05 * tempa)))
 
-            ELSEIF (SWITCH == 2) THEN
+            elseif (switch == 2) then
                 !
-                !        Weiss volgen Monteiro (CISR)
+                !        weiss volgen monteiro (cisr)
                 !
-                TEMP2 = (TEMP + 273.) / 100.
-                PART1 = A1 + A2 / TEMP2 + A3 * LOG(TEMP2)
-                PART2 = SAL * (B1 + B2 * TEMP2 + B3 * TEMP2 * TEMP2)
-                RKCO2 = EXP(PART1 + PART2)
+                temp2 = (temp + 273.) / 100.
+                part1 = a1 + a2 / temp2 + a3 * log(temp2)
+                part2 = sal * (b1 + b2 * temp2 + b3 * temp2 * temp2)
+                rkco2 = exp(part1 + part2)
                 !
-            ELSE
-                CALL get_log_unit_number(LUNREP)
-                WRITE(LUNREP, *) 'ERROR in SATCO2'
-                WRITE(LUNREP, *) 'Illegal option for CO2 saturation formula'
-                WRITE(LUNREP, *) 'Option in input:', SWITCH
-                WRITE(*, *) ' ERROR in SATCO2'
-                WRITE(*, *) ' Illegal option for CO2 saturation formula'
-                WRITE(*, *) ' Option in input:', SWITCH
-                CALL stop_with_error()
-            ENDIF
+            else
+                call get_log_unit_number(lunrep)
+                write(lunrep, *) 'Error in SATCO2'
+                write(lunrep, *) 'Invalid option for CO2 saturation formula'
+                write(lunrep, *) 'Option in input:', switch
+                write(*, *) ' Error in satco2'
+                write(*, *) ' Invalid option for CO2 saturation formula'
+                write(*, *) ' Option in input:', switch
+                call stop_with_error()
+            endif
 
-            !     Output of calculated saturation
+            !     output of calculated saturation
 
-            CO2SAT = PAPCO2 * RKCO2 * 1000. * 44.
-            process_space_real (IP6) = CO2SAT
-            !
-            !jvb  ENDIF
-            !
-            IP1 = IP1 + INCREM (1)
-            IP2 = IP2 + INCREM (2)
-            IP3 = IP3 + INCREM (3)
-            IP4 = IP4 + INCREM (4)
-            IP5 = IP5 + INCREM (5)
-            IP6 = IP6 + INCREM (6)
-            !
+            co2sat = papco2 * rkco2 * 1000. * 44.
+            process_space_real (ip5) = co2sat
+
+            ip1 = ip1 + increm (1)
+            ip2 = ip2 + increm (2)
+            ip3 = ip3 + increm (3)
+            ip4 = ip4 + increm (4)
+            ip5 = ip5 + increm (5)
+
         end do
-        !
-        RETURN
-        !
-    END
+
+        return
+
+    end subroutine satco2
 
 end module m_satco2

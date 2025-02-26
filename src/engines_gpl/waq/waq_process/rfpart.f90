@@ -22,8 +22,11 @@
 !!  rights reserved.
 module m_rfpart
     use m_waq_precision
+    use chemical_utils, only: chlorinity_from_sal
 
     implicit none
+    private
+    public :: rfpart
 
 contains
 
@@ -34,196 +37,184 @@ contains
         use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         !>\file
-        !>       Reprofunctions for HM partition coefficients
+        !>       Reprofunctions for heavy metal partition coefficients
 
-        !
-        ! Name    T   L I/O   Description                                   Units
-        ! ----    --- -  -    -------------------                            ----
-        ! ALK     R*4 1 I     alkalinity                                 [mole/m3]
-        ! CCL     R*4 1 I     chloride concentration                      [gCl/m3]
-        ! CECIM1  R*4 1 I     cation exchange capacity of IM1            [eq/kgDW]
-        ! CECIM2  R*4 1 I     cation exchange capacity of IM2            [eq/kgDW]
-        ! CECIM3  R*4 1 I     cation exchange capacity of IM3            [eq/kgDW]
-        ! DOC     R*4 1 I     dissolve organic carbon concentration        [gC/m3]
-        ! KPIM1   R*4 1 O     partition coefficient for IM1              [m3/kgDW]
-        ! KPIM2   R*4 1 O     partition coefficient for IM2              [m3/kgDW]
-        ! KPIM3   R*4 1 O     partition coefficient for IM3              [m3/kgDW]
-        ! KP0     R*4 1 -     reference partition coefficient            [m3/kgDW]
-        ! PH      R*4 1 I     acidity                                          [-]
-        ! AC      R*4 1 I     coefficient a for reprofunction            [various]
-        ! BC      R*4 1 I     coefficient b for reprofunction            [various]
-        ! CC      R*4 1 I     coefficient c for reprofunction            [various]
-        ! DC      R*4 1 I     coefficient d for reprofunction            [various]
-        ! GC      R*4 1 I     coefficient g for reprofunction            [various]
-        ! LC      R*4 1 I     coefficient l for reprofunction            [various]
-        ! MC      R*4 1 I     coefficient m for reprofunction            [various]
-        ! NC      R*4 1 I     coefficient n for reprofunction            [various]
-        ! OC      R*4 1 I     coefficient o for reprofunction            [various]
-        ! IVERSN  I*4 1 -     option parameter for reprofunction               [-]
-        !                     (0=no repro, 1=Rine repro, 2=North Sea repro)
-        !
-        !     Logical Units : -
-        !
-        !     Modules called : -
-        !
-        !     Name     Type   Library
-        !     ------   -----  ------------
-        !
-        IMPLICIT NONE
+        implicit none
         !
         !     declaration of arguments
         !
-        INTEGER(kind = int_wp) :: num_cells, NOFLUX, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), &
-                IEXPNT(4, *), IKNMRK(*)
-        REAL(kind = real_wp) :: process_space_real(*), FL(*)
+        integer(kind = int_wp) :: num_cells, noflux, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+        integer(kind = int_wp) :: ipoint(*), increm(*), &
+                iexpnt(4, *), iknmrk(*)
+        real(kind = real_wp) :: process_space_real(*), fl(*)
         !
         !     local declarations
         !
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
-                IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, &
-                IP19, IP20
-        INTEGER(kind = int_wp) :: IFLUX, ISEG
-        !
-        INTEGER(kind = int_wp) :: IVERSN
-        INTEGER(kind = int_wp) :: LUNREP
-        !
-        REAL(kind = real_wp) :: PH, ALK, CCL, DOC, &
-                CECIM1, CECIM2, CECIM3, &
-                AC, BC, CC, DC, LC, GC, &
-                MC, NC, OC, &
-                LOGALK, LOGCCL, LOGDOC, LOGKP0
-        !
-        REAL(kind = real_wp) :: KPIM1, KPIM2, KPIM3, KP0
-        !
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        IP10 = IPOINT(10)
-        IP11 = IPOINT(11)
-        IP12 = IPOINT(12)
-        IP13 = IPOINT(13)
-        IP14 = IPOINT(14)
-        IP15 = IPOINT(15)
-        IP16 = IPOINT(16)
-        IP17 = IPOINT(17)
-        IP18 = IPOINT(18)
-        IP19 = IPOINT(19)
-        IP20 = IPOINT(20)
-        !
-        IFLUX = 0
-        !
-        DO ISEG = 1, num_cells
+        integer(kind = int_wp) :: ip1, ip2, ip3, ip4, ip5, ip6, ip7, ip8, ip9, ip10, &
+                ip11, ip12, ip13, ip14, ip15, ip16, ip17, ip18, &
+                ip19, ip20, ip21
+        integer(kind = int_wp) :: iflux, iseg
 
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                !
-                PH = process_space_real(IP1)
-                ALK = process_space_real(IP2)
-                CCL = process_space_real(IP3)
-                DOC = process_space_real(IP4)
-                CECIM1 = process_space_real(IP5)
-                CECIM2 = process_space_real(IP6)
-                CECIM3 = process_space_real(IP7)
-                AC = process_space_real(IP8)
-                BC = process_space_real(IP9)
-                CC = process_space_real(IP10)
-                DC = process_space_real(IP11)
-                GC = process_space_real(IP13)
-                LC = process_space_real(IP12)
-                MC = process_space_real(IP14)
-                NC = process_space_real(IP15)
-                OC = process_space_real(IP16)
-                IVERSN = NINT (process_space_real(IP17))
-                !
-                IF (ALK < 1.0) ALK = 1.0
-                IF (CCL < 1.0) CCL = 1.0
-                IF (DOC < 0.1) DOC = 0.1
-                !
-                !           Calculation of partition coefficients depending on switch
-                !
-                IF (IVERSN == 1) THEN
+        integer(kind = int_wp) :: lunrep
 
-                    !              "Rhine" function
+        real(kind = real_wp)   :: alk         ! alkalinity                                 [mole/m3]
+        real(kind = real_wp)   :: sal         ! salinity                                      [g/kg]
+        real(kind = real_wp)   :: temp        ! temperature                                     [oC]
+        real(kind = real_wp)   :: cecim1      ! cation exchange capacity of IM1            [eq/kgDW]
+        real(kind = real_wp)   :: cecim2      ! cation exchange capacity of IM2            [eq/kgDW]
+        real(kind = real_wp)   :: cecim3      ! cation exchange capacity of IM3            [eq/kgDW]
+        real(kind = real_wp)   :: doc         ! dissolve organic carbon concentration        [gC/m3]
+        real(kind = real_wp)   :: kpim1       ! partition coefficient for IM1              [m3/kgDW]
+        real(kind = real_wp)   :: kpim2       ! partition coefficient for IM2              [m3/kgDW]
+        real(kind = real_wp)   :: kpim3       ! partition coefficient for IM3              [m3/kgDW]
+        real(kind = real_wp)   :: kp0         ! reference partition coefficient            [m3/kgDW]
+        real(kind = real_wp)   :: ph          ! acidity                                          [-]
+        real(kind = real_wp)   :: ac          ! coefficient a for reprofunction            [various]
+        real(kind = real_wp)   :: bc          ! coefficient b for reprofunction            [various]
+        real(kind = real_wp)   :: cc          ! coefficient c for reprofunction            [various]
+        real(kind = real_wp)   :: dc          ! coefficient d for reprofunction            [various]
+        real(kind = real_wp)   :: gc          ! coefficient g for reprofunction            [various]
+        real(kind = real_wp)   :: lc          ! coefficient l for reprofunction            [various]
+        real(kind = real_wp)   :: mc          ! coefficient m for reprofunction            [various]
+        real(kind = real_wp)   :: nc          ! coefficient n for reprofunction            [various]
+        real(kind = real_wp)   :: oc          ! coefficient o for reprofunction            [various]
+        integer(kind = int_wp) :: iversn      ! option parameter for reprofunction               [-]
+                                              ! (0=no repro, 1=Rine repro, 2=North Sea repro)
 
-                    LOGALK = LOG10(ALK)
-                    LOGCCL = LOG10(CCL)
-                    LOGDOC = LOG10(DOC)
-                    LOGKP0 = AC + BC * PH + CC * (PH**2) + DC * LOGALK + GC * LOGCCL + &
-                            LC * LOGDOC + MC * PH * LOGALK + NC * PH * LOGALK * LOGALK + &
-                            OC * PH * PH * LOGALK
-                    KP0 = 10.0**LOGKP0
+        real(kind = real_wp) :: ccl, logalk, logccl, logdoc, logkp0
 
-                    KPIM1 = KP0 * (CECIM1 / 0.0002)
-                    KPIM2 = KP0 * (CECIM2 / 0.0002)
-                    KPIM3 = KP0 * (CECIM3 / 0.0002)
+        ip1 = ipoint(1)
+        ip2 = ipoint(2)
+        ip3 = ipoint(3)
+        ip4 = ipoint(4)
+        ip5 = ipoint(5)
+        ip6 = ipoint(6)
+        ip7 = ipoint(7)
+        ip8 = ipoint(8)
+        ip9 = ipoint(9)
+        ip10 = ipoint(10)
+        ip11 = ipoint(11)
+        ip12 = ipoint(12)
+        ip13 = ipoint(13)
+        ip14 = ipoint(14)
+        ip15 = ipoint(15)
+        ip16 = ipoint(16)
+        ip17 = ipoint(17)
+        ip18 = ipoint(18)
+        ip19 = ipoint(19)
+        ip20 = ipoint(20)
+        ip21 = ipoint(21)
+
+        iflux = 0
+
+        do iseg = 1, num_cells
+
+            if (btest(iknmrk(iseg), 0)) then
+
+                ph = process_space_real(ip1)
+                alk = process_space_real(ip2)
+                sal = process_space_real(ip3)
+                doc = process_space_real(ip4)
+                cecim1 = process_space_real(ip5)
+                cecim2 = process_space_real(ip6)
+                cecim3 = process_space_real(ip7)
+                ac = process_space_real(ip8)
+                bc = process_space_real(ip9)
+                cc = process_space_real(ip10)
+                dc = process_space_real(ip11)
+                gc = process_space_real(ip13)
+                lc = process_space_real(ip12)
+                mc = process_space_real(ip14)
+                nc = process_space_real(ip15)
+                oc = process_space_real(ip16)
+                iversn = nint (process_space_real(ip17))
+                temp = process_space_real(ip18)
+                ccl = chlorinity_from_sal( sal, temp )
+
+                if (alk < 1.0) alk = 1.0
+                if (ccl < 1.0) ccl = 1.0
+                if (doc < 0.1) doc = 0.1
+                !
+                !           calculation of partition coefficients depending on switch
+                !
+                if (iversn == 1) then
+
+                    !              "rhine" function
+
+                    logalk = log10(alk)
+                    logccl = log10(ccl)
+                    logdoc = log10(doc)
+                    logkp0 = ac + bc * ph + cc * (ph**2) + dc * logalk + gc * logccl + &
+                            lc * logdoc + mc * ph * logalk + nc * ph * logalk * logalk + &
+                            oc * ph * ph * logalk
+                    kp0 = 10.0**logkp0
+
+                    kpim1 = kp0 * (cecim1 / 0.0002)
+                    kpim2 = kp0 * (cecim2 / 0.0002)
+                    kpim3 = kp0 * (cecim3 / 0.0002)
+
+                elseif (iversn == 2) then
+
+                    !              "north sea" function
+
+                    kp0 = (10.0**ac) * (10.0**(bc * ph)) * &
+                            ((1800. * ccl + cc)**dc)
+                    kpim1 = kp0 * cecim1 * 1000.
+                    kpim2 = kp0 * cecim2 * 1000.
+                    kpim3 = kp0 * cecim3 * 1000.
                     !
-                ELSEIF (IVERSN == 2) THEN
-
-                    !              "North Sea" function
-
-                    KP0 = (10.0**AC) * (10.0**(BC * PH)) * &
-                            ((1800. * CCL + CC)**DC)
-                    KPIM1 = KP0 * CECIM1 * 1000.
-                    KPIM2 = KP0 * CECIM2 * 1000.
-                    KPIM3 = KP0 * CECIM3 * 1000.
-                    !
-                ELSE
+                else
 
                     !              switch for function out of range
 
-                    CALL get_log_unit_number(LUNREP)
-                    WRITE(LUNREP, *) 'ERROR in RFPART'
-                    WRITE(LUNREP, *) 'Illegal option for repro function partition coefficient'
-                    WRITE(LUNREP, *) 'Option in input:', IVERSN
-                    WRITE(*, *) ' ERROR in RFPART'
-                    WRITE(*, *) ' Illegal option for repro function partition coefficient'
-                    WRITE(*, *) ' Option in input:', IVERSN
-                    CALL stop_with_error()
+                    call get_log_unit_number(lunrep)
+                    write(lunrep, *) 'Error in rfpart'
+                    write(lunrep, *) 'Invalid option for repro function partition coefficient'
+                    write(lunrep, *) 'Option in input:', iversn
+                    write(*, *) ' Error in rfpart'
+                    write(*, *) ' Invalid option for repro function partition coefficient'
+                    write(*, *) ' Option in input:', iversn
+                    call stop_with_error()
 
-                ENDIF
+                endif
                 !
-                !           Output of module
+                !           output of module
                 !
-                process_space_real(IP18) = KPIM1
-                process_space_real(IP19) = KPIM2
-                process_space_real(IP20) = KPIM3
+                process_space_real(ip18) = kpim1
+                process_space_real(ip19) = kpim2
+                process_space_real(ip20) = kpim3
                 !
-                !        End active cells block
+                !        end active cells block
                 !
-            ENDIF
+            endif
 
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + INCREM (1)
-            IP2 = IP2 + INCREM (2)
-            IP3 = IP3 + INCREM (3)
-            IP4 = IP4 + INCREM (4)
-            IP5 = IP5 + INCREM (5)
-            IP6 = IP6 + INCREM (6)
-            IP7 = IP7 + INCREM (7)
-            IP8 = IP8 + INCREM (8)
-            IP9 = IP9 + INCREM (9)
-            IP10 = IP10 + INCREM (10)
-            IP11 = IP11 + INCREM (11)
-            IP12 = IP12 + INCREM (12)
-            IP13 = IP13 + INCREM (13)
-            IP14 = IP14 + INCREM (14)
-            IP15 = IP15 + INCREM (15)
-            IP16 = IP16 + INCREM (16)
-            IP17 = IP17 + INCREM (17)
-            IP18 = IP18 + INCREM (18)
-            IP19 = IP19 + INCREM (19)
-            IP20 = IP20 + INCREM (20)
-            !
-        ENDDO
-        !
-        RETURN
-        !
-    END
+            iflux = iflux + noflux
+            ip1 = ip1 + increm (1)
+            ip2 = ip2 + increm (2)
+            ip3 = ip3 + increm (3)
+            ip4 = ip4 + increm (4)
+            ip5 = ip5 + increm (5)
+            ip6 = ip6 + increm (6)
+            ip7 = ip7 + increm (7)
+            ip8 = ip8 + increm (8)
+            ip9 = ip9 + increm (9)
+            ip10 = ip10 + increm (10)
+            ip11 = ip11 + increm (11)
+            ip12 = ip12 + increm (12)
+            ip13 = ip13 + increm (13)
+            ip14 = ip14 + increm (14)
+            ip15 = ip15 + increm (15)
+            ip16 = ip16 + increm (16)
+            ip17 = ip17 + increm (17)
+            ip18 = ip18 + increm (18)
+            ip19 = ip19 + increm (19)
+            ip20 = ip20 + increm (20)
+            ip21 = ip21 + increm (21)
+
+        enddo
+
+        return
+
+    end subroutine rfpart
 
 end module m_rfpart

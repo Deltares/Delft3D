@@ -110,7 +110,7 @@ contains
          u1_tmp = u1
          u1 = u0
          hs = s0 - bl
-         if (iperot == -1) then
+         if (Perot_type == NOT_DEFINED) then
             call reconst2nd()
          end if
          if (newcorio == 1) then
@@ -121,7 +121,7 @@ contains
          u1 = u1_tmp
          deallocate (u1_tmp)
       else
-         if (iperot == -1) then
+         if (Perot_type == NOT_DEFINED) then
             call reconst2nd()
          end if
          if (newcorio == 1) then
@@ -145,7 +145,7 @@ contains
          do L = Lb, Lt
             k1 = ln(1, L); k2 = ln(2, L)
 
-            if (iperot /= -1) then
+            if (Perot_type /= NOT_DEFINED) then
                if (jasfer3D == 1) then
                   v(L) = acL(LL) * (-sn * nod2linx(LL, 1, ucx(k1), ucy(k1)) + cs * nod2liny(LL, 1, ucx(k1), ucy(k1))) + &
                          (1d0 - acL(LL)) * (-sn * nod2linx(LL, 2, ucx(k2), ucy(k2)) + cs * nod2liny(LL, 2, ucx(k2), ucy(k2)))

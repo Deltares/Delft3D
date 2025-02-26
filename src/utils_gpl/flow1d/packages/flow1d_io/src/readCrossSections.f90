@@ -191,8 +191,8 @@ module m_readCrossSections
          pCrs%itabDef             = iref
          pCrs%tabDef              => network%CSDefinitions%CS(iref)
          
-         pCrs%shift = pCrs%shift + pCrs%tabDef%bedLevel
          call SetParsCross(network%CSDefinitions%CS(iref), network%crs%cross(inext))
+         pCrs%shift = pCrs%shift + pCrs%tabDef%bedLevel
          pCrs => network%crs%cross(inext)
          
          allocate(pCrs%frictionTypePos(pCrs%tabDef%frictionSectionsCount))        !< Friction type for positive flow direction

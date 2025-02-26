@@ -14,16 +14,6 @@ create_target(
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${version_include_dir})
 
-if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-endif(UNIX)
-
-
 set(oss_dependencies    deltares_common
                         io_netcdf
                         io_netcdf_data

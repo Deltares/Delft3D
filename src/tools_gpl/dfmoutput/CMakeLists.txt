@@ -27,7 +27,6 @@ if (UNIX)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
                          netcdff)
 
     target_link_libraries(${executable_name}
@@ -40,16 +39,12 @@ if (WIN32)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
                          netcdff)
 
     target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 
 if(UNIX)
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-
     message(STATUS "Setting target_compile_definitions in Unix")
    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 

@@ -1908,8 +1908,8 @@ contains
       use iso_c_binding, only: c_double, c_char, c_loc
       use iso_c_utils
       use fm_external_forcings_data
-      use m_update_dambreak_breach, only: waterLevelsDambreakUpStream, waterLevelsDambreakDownStream, &
-                                          breachDepthDambreak, breachWidthDambreak
+      use m_dambreak_breach, only: waterLevelsDambreakUpStream, waterLevelsDambreakDownStream, &
+            breachDepthDambreak, breachWidthDambreak
       use m_observations
       use m_monitoring_crosssections
       use m_strucs

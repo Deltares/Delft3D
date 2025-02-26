@@ -1617,7 +1617,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     if (noutletlinks > 0) then
        !
        istat = 0
-       if (istat == 0) call realloc(dredgepar%link_percentage, (/nalink+noutletlinks,lsedtot/), fill = 100.0_fp, stat = istat)
+       if (istat == 0) call realloc(dredgepar%link_percentage, (/nalink+noutletlinks,lsedtot/), fill = 0.0_fp, stat = istat)
        if (istat == 0) call realloc(dredgepar%link_distance, nalink+noutletlinks, fill = 0.0_fp, stat = istat)
        if (istat == 0) call realloc(dredgepar%link_sum, (/nalink+noutletlinks,lsedtot/), fill = 0.0_fp, stat = istat)
        if (istat == 0) call realloc(dredgepar%voldump, (/nadump+1,lsedtot/), fill = 0.0_fp, stat = istat)
@@ -1664,6 +1664,18 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
           if (pdredge%outletlink>0) then
              link_def(pdredge%outletlink,1) = i
              link_def(pdredge%outletlink,2) = nadump
+             !
+             ! determine the percentage that is dumped outside the model
+             !
+             do lsed = 1, lsedtot
+                sumperc = 0.0_fp
+                do j = 1, nalink
+                   if (link_def(j,1) /= i) cycle
+                   sumperc = sumperc + link_percentage(j,lsed)
+                enddo
+                !
+                link_percentage(pdredge%outletlink,lsed) = 100.0_fp - sumperc
+             enddo
           endif
        enddo
        !

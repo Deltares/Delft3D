@@ -259,7 +259,7 @@
             </checks>
         </testCase>		
         <testCase name="e02_f150_c31_pudong-1d" ref="dimr_default">
-            <path version="2024-03-22T19:40:00">e02_dflowfm/f150_1d2d_acceptance_urban/c31_pudong-1d/dimr_model</path>
+            <path version="2025-02-16T14:23:58.743000">e02_dflowfm/f150_1d2d_acceptance_urban/c31_pudong-1d/dimr_model</path>
             <checks>
                 <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
                     <parameters>
@@ -309,7 +309,7 @@
             <maxRunTime>1200.0</maxRunTime> <!-- seconds -->
         </testCase>	
         <testCase name="e02_f150_c34_additional_flow_analysis" ref="dimr_default">
-            <path version="2024-01-11T16:30:00">e02_dflowfm/f150_1d2d_acceptance_urban/c34_additional_flow_analysis/dimr_model</path>
+            <path version="2025-02-16T14:26:47.939000">e02_dflowfm/f150_1d2d_acceptance_urban/c34_additional_flow_analysis/dimr_model</path>
             <checks>
                 <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
                     <parameters>

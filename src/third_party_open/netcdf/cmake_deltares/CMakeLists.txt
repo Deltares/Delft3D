@@ -12,13 +12,15 @@ include_directories("${library_path}/${netcdf_version}/include")
 set(c_sources ${source_path}/nf_lib.c)
 
 # Add library
-add_library(netcdf4 ${c_sources})
+add_library(netcdf_c_extension ${c_sources})
 
-target_link_libraries(netcdf4 PRIVATE no_compiler_warnings)
+target_link_libraries(netcdf_c_extension PRIVATE no_compiler_warnings)
+
+target_link_libraries(netcdf_c_extension PRIVATE "netcdf.lib")
 
 # Create the folder structure in vfproj
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${c_sources} )
-set_target_properties (netcdf4 PROPERTIES FOLDER third_party_open)
+set_target_properties (netcdf_c_extension PROPERTIES FOLDER third_party_open)
 
 set(fortran_sources ${source_path}/module_netcdf4_nc_interfaces.f90
 					${source_path}/module_netcdf4_nf_interfaces.F90
@@ -50,27 +52,16 @@ target_compile_options(${netcdf_library_name} PRIVATE ${file_preprocessor_flag})
 target_link_libraries(${netcdf_library_name} PRIVATE no_compiler_warnings)
 
 # Set dependencies
-set(oss_dependencies netcdf4)
+set(oss_dependencies netcdf_c_extension)
 target_link_libraries(${netcdf_library_name} PRIVATE ${oss_dependencies})
-
-if (WIN32)
-  target_compile_options(${netcdf_library_name} PRIVATE "SHELL:${heap_arrays_100_flag}")
-endif(WIN32)
-
-if(UNIX)
-    target_compile_options(${netcdf_library_name} PRIVATE ${c_compiler_flags})
-    target_compile_options(${netcdf_library_name} PRIVATE "SHELL:${heap_arrays_100_flag}")
-    set(Fortran_MODULE_DIRECTORY ${LIBRARY_OUTPUT_DIRECTORY}) 
-endif()
+target_compile_options(${netcdf_library_name} PRIVATE "SHELL:${heap_arrays_100_flag}")
 
 # Create the folder structure in vfproj
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${fortran_sources} )
 set_target_properties (${netcdf_library_name} PROPERTIES FOLDER third_party_open)
 
-if (WIN32)
-	message(STATUS ${netcdf_version} " binary dir is ${library_path}/netCDF 4.6.1/bin/")
-	install (DIRECTORY ${library_path}netCDF\ 4.6.1/bin/ DESTINATION lib
-	FILES_MATCHING
-	PATTERN "*.dll"
-	)
-endif()
+message(STATUS ${netcdf_version} " binary dir is ${library_path}/netCDF 4.6.1/bin/")
+install (DIRECTORY ${library_path}netCDF\ 4.6.1/bin/ DESTINATION lib
+FILES_MATCHING
+PATTERN "*.dll"
+)

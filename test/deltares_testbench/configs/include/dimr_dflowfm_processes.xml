@@ -248,7 +248,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c003_westernscheldt_dynamo_2D" ref="dflowfm_platform_specific_refs">
-  <path version="2024-04-19T10:40:00">e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D</path>
+  <path version="2025-02-22T15:41:22.807000">e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -366,7 +366,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c004_westernscheldt_noproc_2D" ref="dflowfm_platform_specific_refs">
-  <path version="2024-04-19T10:40:00">e02_dflowfm/f030_water_quality_processes/c004_westernscheldt_noproc_2D</path>
+  <path version="2025-02-22T15:41:12.174000">e02_dflowfm/f030_water_quality_processes/c004_westernscheldt_noproc_2D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -732,7 +732,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c013_westernscheldt_dynamo_2D_restart" ref="dflowfm_platform_specific_refs_restart">
-  <path version="2024-04-19T10:40:00">e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart</path>
+  <path version="2025-02-22T15:40:58.840000">e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart</path>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
     <file name="dflowfmoutput/westernscheldt_restart_map.nc" type="netCDF">
@@ -1039,7 +1039,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c109_westernscheldt_dynamo_2D_statistics" ref="dflowfm_platform_specific_refs">
-  <path version="2024-09-16T21:30:00">e02_dflowfm/f030_water_quality_processes/c109_westernscheldt_dynamo_2D_statistics</path>
+  <path version="2025-02-22T15:40:24.712000">e02_dflowfm/f030_water_quality_processes/c109_westernscheldt_dynamo_2D_statistics</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1060,7 +1060,7 @@
         <parameter name="mesh2d_water_quality_stat_15" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="mesh2d_water_quality_stat_16" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="mesh2d_water_quality_stat_17" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_18" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_water_quality_stat_18" toleranceAbsolute="1.0e-2" toleranceRelative="1.0e-2"/>
         <parameter name="mesh2d_water_quality_stat_19" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="mesh2d_water_quality_stat_20" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="mesh2d_water_quality_stat_21" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>

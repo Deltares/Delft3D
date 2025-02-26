@@ -24,27 +24,16 @@ target_link_libraries(${library_name} PRIVATE no_compiler_warnings)
 
 # Add dependencies
 if (UNIX)
- # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
     target_link_libraries(${library_name} PRIVATE
-         PkgConfig::NETCDF
          netcdff)
-
-    message (${CMAKE_BINARY_DIR}/netcdff)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
-                        ${version_include_dir}
-                        ${CMAKE_BINARY_DIR}/netcdff)
+                        ${version_include_dir})
 
     add_definitions(-DHAVE_CONFIG_H=1)
 endif(UNIX)
 
 if (WIN32)
-    set(oss_dependencies    netcdf4
-                            netcdff)
+    set(oss_dependencies netcdff)
     target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${mpi_module_path}

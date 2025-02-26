@@ -28,18 +28,18 @@
 !-------------------------------------------------------------------------------
 
 !
-!
+!> @file setlinktocenterweights.f90
+!! Subroutine for allocating center related link x- and y weights.
 module m_setlinktocenterweights
 
    implicit none
-
-   private
 
    public :: setlinktocenterweights
 
 contains
 
-   subroutine setlinktocenterweights() ! set center related linkxy weights
+   !> set center related linkxy weights
+   subroutine setlinktocenterweights()
       use precision, only: dp
       use m_flow
       use m_netw
@@ -50,36 +50,27 @@ contains
       use m_lin2nody, only: lin2nody
 
       real(kind=dp) :: wud, wuL1, wuL2, cs, sn
-      integer :: L, ierr, n, kk, n12, lnxmax
+      integer :: L, n, kk, n12, lnxmax
       integer :: k1, k2, LL
       integer :: ilongc, L1dlink
 
       real(kind=dp) :: aa1, wcw, alf
-      real(kind=dp), allocatable :: wwL(:)
-
-      real(kind=dp), allocatable :: wcxy(:, :) ! center weight factors (2,ndx) , only for normalising
-      real(kind=dp), allocatable :: wc(:) ! center weight factors (ndx)   , only for normalising
+      real(kind=dp), dimension(2, ndx) :: wcxy !< center weight factors (2,ndx) , only for normalising
 
       wcx1 = 0
       wcy1 = 0
       wcx2 = 0
       wcy2 = 0
       wcL = 0
-
-      if (allocated(wcxy)) deallocate (wcxy)
-      allocate (wcxy(2, ndx), stat=ierr); wcxy = 0
-      call aerr('wcxy (2,ndx)', ierr, 2 * ndx)
-      allocate (wc(ndx), stat=ierr); wc = 0
-      call aerr('wc     (ndx)', ierr, ndx)
+      wcxy = 0
+      wc = 0
 
       do L = 1, lnx
 
          if (kcu(L) == 3) cycle ! no contribution from 1D2D internal links
 
          k1 = ln(1, L); k2 = ln(2, L) !left and right node
-         wud = wu(L) * dx(L) !flow surface area
-!    cs   = csu(L)
-!    sn   = snu(L)
+         wud = wu(L) * dx(L) !flow surface area at link
 
          wuL1 = acl(L) * wud ! 2d center factor
          wcL(1, L) = wuL1
@@ -240,10 +231,14 @@ contains
 
       end do
 
-      deallocate (wcxy, wc)
-      if (allocated(wwL)) deallocate (wwL)
+      if (Perot_weight_update == PEROT_STATIC) then
+         deallocate (wc)
+         if (allocated(wwL)) then
+            deallocate (wwL)
+         end if
+      end if
 
-      kfs = 0
+      !kfs = 0
 
    end subroutine setlinktocenterweights
 

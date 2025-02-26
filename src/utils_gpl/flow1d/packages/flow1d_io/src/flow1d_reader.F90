@@ -57,7 +57,6 @@ module m_flow1d_reader
       type(t_filenames), intent(inout):: filenames
       type(t_network), intent(inout)  :: network
       
-      type(tree_data), pointer        :: md_ptr
       integer                         :: maxErrorLevel
       logical                         :: success
       
@@ -116,10 +115,6 @@ module m_flow1d_reader
         call SetMessage(LEVEL_INFO, 'Reading Storage Nodes Done')
         call timstop(timerReadStorgNodes)
      end if
-
-      
-     ! log timings
-     call tree_destroy(md_ptr)
      
      ! Stop in case of errors
      maxErrorLevel = getMaxErrorLevel()
@@ -128,8 +123,6 @@ module m_flow1d_reader
      endif
      
      call SetMessage(LEVEL_INFO, 'All 1D-Reading Done')
-
-     call tree_destroy(md_ptr)
 
    end subroutine read_1d_attributes
  

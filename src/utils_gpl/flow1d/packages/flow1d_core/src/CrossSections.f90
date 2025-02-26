@@ -829,6 +829,7 @@ subroutine SetParsCross(CrossDef, cross)
             bedLevel = Crossdef%z(j)
          endif
       enddo
+      bedlevel = bedlevel + Crossdef%bedlevel
       cross%surfaceLevel = cross%shift + surflevel
       cross%bedLevel     = cross%shift + bedlevel
    else

@@ -1614,7 +1614,7 @@ contains
             ! Number of netlinks can be > number of flowlinks, if there are closed edges.
             numl2d = numl - numl1d
             ! Write default_value on all remaining edges in 2d mesh (i.e. closed edges).
-            ierr = nf90_put_var(ncid, id_var(2), (/default_value/), start=(/1, lnx2d + 1, id_tsp%idx_curtime/), count=(/kmx, numl2d - lnx2d, 1/), map=(/0/)) ! Use map = 0 to write a single value on multiple edges in file.
+            ierr = nf90_put_var(ncid, id_var(2), (/default_value/), start=(/1, lnx2d + 1, id_tsp%idx_curtime/), count=(/kmx, numl2d - lnx2d, 1/), map=(/0,0,0/)) ! Use map = 0 to write a single value on multiple edges in file.
          end if
 
       case (UNC_LOC_W) ! Vertical velocity point location on all layer interfaces.

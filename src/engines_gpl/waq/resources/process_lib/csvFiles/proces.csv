@@ -14,7 +14,7 @@ procid,procco,procfo,procnm
 "TempMode  ",123,"TMODE     ","Modelled temperature conversion and limitation    "
 "Temperatur",123,"TEMPER    ","Temperature and heat exchange                     "
 "VarSal    ",123,"VARSAL    ","Salinity in case of constant river discharge      "
-"Salinchlor",123,"SALCHL    ","Conversion of salinity into chloride or vv        "
+"Salinchlor",123,"SALCHL    ","Conversion of chloride into salinity              "
 "Veloc     ",123,"VELOC     ","Horizontal flow velocity                          "
 "ResTim    ",123,"RESTIM    ","Residence time                                    "
 "VertDisp  ",  3,"STOX3D    ","Vertical dispersion (segment -> exchange)         "

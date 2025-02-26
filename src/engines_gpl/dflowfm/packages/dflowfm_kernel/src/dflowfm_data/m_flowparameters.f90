@@ -58,14 +58,23 @@ module m_flowparameters
    !< bed level of the channel.
    integer :: lincontin !< 0 = no, 1 = yes linear continuity
 
-   integer :: iPerot !< Perot weigthing type of cell center velocities ucx, ucy
-                                                        !! in vectoren:
+   integer :: Perot_type !< Perot weigthing type of cell center velocities ucx, ucy
+                                                        !! in vectors:
                                                         !! 0 : uc*sum(w) = sum (u W)
                                                         !! 1 : uc*A      = sum(u dxa W)
                                                         !! 2 : uc*A*hs   = sum(u dxa W hu ), ie waterdepth dependent
-                                                        !! 2 : uc*V      = sum(q dxa      ), ie waterdepth dependent
-                                                        !! 3 : uc*A*humx = sum(u dxa W hu ), humx = max(hu)
-                                                        !! 4 : uc*A*humx = sum(u dxa W hu ), humx = max(hu)
+   ! To do: Check unused options (UNST-8641)
+   ! 2 : uc*V      = sum(q dxa      ), ie waterdepth dependent
+   ! 3 : uc*A*humx = sum(u dxa W hu ), humx = max(hu)
+   ! 4 : uc*A*humx = sum(u dxa W hu ), humx = max(hu)
+   ! 5 : uc*Vc     = sum(u dxa W hu ), Vc = dxa W hu based volume in cell
+   ! 6 : as 5, also for Coriolis
+   integer, parameter :: NOT_DEFINED = -1
+   integer, parameter :: PEROT_WIDTH_BASED = 0 !< uc*sum(w) = sum (u W)
+   integer, parameter :: PEROT_AREA_BASED = 1 !< uc*A      = sum(u dxa W)
+   integer, parameter :: PEROT_VOLUME_BASED = 2 ! uc*A*hs   = sum(u dxa W hu ), ie waterdepth dependent
+
+   integer :: Perot_weight_update !> Perot weight update for 1D nodes (0: no (default), 1: yes)
 
    integer :: jacomp = 1 !! same now for netnodes, 0 = default, 1 = use cs, sn in weighting, 2=regular scalar x,y interpolation based on banf
 
@@ -642,6 +651,9 @@ module m_flowparameters
    ! parameter for secondary flow
    integer :: ispirparopt ! for visualization
 
+   integer, parameter :: PEROT_STATIC = 0 ! Initialise Perot weights once
+   integer, parameter :: PEROT_UPDATE = 1 ! Initialise Perot weights every time-step
+
 contains
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For a reinit prior to flow computation, only call reset_flowparameters() instead.
@@ -661,16 +673,9 @@ contains
       !< bed level of the channel.
       lincontin = 0 ! 0 = no, 1 = yes linear continuity
 
-      iPerot = 1 ! Perot weigthing type of cell center velocities ucx, ucy
-      ! in vectoren:
-      ! 0 : uc*sum(w) = sum (u W)
-      ! 1 : uc*A      = sum(u dxa W)
-      ! 2 : uc*A*hs   = sum(u dxa W hu ), ie waterdepth dependent
-      ! 2 : uc*V      = sum(q dxa      ), ie waterdepth dependent
-      ! 3 : uc*A*humx = sum(u dxa W hu ), humx = max(hu)
-      ! 4 : uc*A*humx = sum(u dxa W hu ), humx = max(hu)
-      ! 5 : uc*Vc     = sum(u dxa W hu ), Vc = dxa W hu based volume in cell
-      ! 6 : as 5, also for Coriolis
+      Perot_type = PEROT_AREA_BASED ! Perot weighting type of cell center velocities ucx, ucy
+
+      Perot_weight_update = PEROT_STATIC ! update Perot weights for 1D nodes (0: no (default), 1: yes)
 
       icorio = 5 ! Coriolis weigthing
       ! (Tx,Ty) = tangential unit vector at u-point

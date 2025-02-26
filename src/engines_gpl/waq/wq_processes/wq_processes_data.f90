@@ -77,7 +77,6 @@ module processes_input
     ! num_velocity_arrays is from block 4 (can be deleted?), num_velocity_arrays_new is from processes
 
     integer(KIND = int_wp) :: num_velocity_arrays_new
-    real   (KIND = real_wp), allocatable :: velonw(:, :)     !< New velocity array
     integer(KIND = int_wp), allocatable :: ivpnt (:)      !< pointer to original velo
     real   (KIND = real_wp), allocatable :: velo  (:, :)     !< Original velocities
     integer(KIND = int_wp) :: num_velocity_arrays_extra           !< Nr. of calculated velocities

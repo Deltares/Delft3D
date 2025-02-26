@@ -49,6 +49,10 @@ contains
       use m_step_reduce_transport_morpho, only: step_reduce_transport_morpho
       use m_step_reduce_hydro, only: step_reduce_hydro
       use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
+      use m_setlinktocornerweights, only: setlinktocornerweights
+      use m_setlinktocenterweights, only: setlinktocenterweights
+      use m_getcellsurface1d, only: getcellsurface1d
+
       use m_flow
       use timers
       use m_flowgeom
@@ -112,10 +116,10 @@ contains
          iresult = DFM_NOERR
       end if
 
-      return ! Return with success
-
-888   continue
-      ! Error
+      if (Perot_weight_update == PEROT_UPDATE) then
+         call getcellsurface1d(ba, bai)
+         call setlinktocenterweights()
+      end if
 
    end subroutine flow_run_single_timestep
 

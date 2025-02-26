@@ -185,7 +185,6 @@ module unstruc_model
    real(kind=dp) :: md_thetav_waq = 0d0 !< thetav for waq
    real(kind=dp) :: md_dt_waqproc = 0d0 !< processes time step
    real(kind=dp) :: md_dt_waqbal = 0d0 !< mass balance output time step (old)
-   integer :: md_flux_int = 1 !< process fluxes integration option (1: WAQ, 2: D-Flow FM)
 
    ! TODO: reading for trachytopes is still within rdtrt, below was added for partitioning (when no initialization)
    character(len=4) :: md_trtrfile = ' ' !< Variable that stores information if trachytopes are used ('Y') or not ('N')
@@ -687,7 +686,7 @@ contains
       use m_flowgeom !,              only : wu1Duni, bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
-      use m_adjust_bobs_on_dambreak_breach, only: dambreakWidening, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM
+      use m_Dambreak, only: set_dambreak_widening_method
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind ! ,                  only : icdtyp, cdb, wdb,
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
@@ -1238,7 +1237,7 @@ contains
          jalimnor = 1
       end if
 
-      call prop_get(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection); 
+      call prop_get(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection);
       call prop_get(md_ptr, 'numerics', 'HorizontalMomentumFilter', jafilter)
       !call prop_get(md_ptr, 'numerics', 'filter'          , jafilter)
       !call prop_get(md_ptr, 'numerics', 'filterorder'     , filterorder)
@@ -1272,7 +1271,8 @@ contains
          sdu_update_s1 = 0
       end if
 
-      call prop_get(md_ptr, 'numerics', 'PerotType', iperot)
+      call prop_get(md_ptr, 'numerics', 'PerotType', Perot_type)
+      call prop_get(md_ptr, 'numerics', 'PerotWeightUpdate', Perot_weight_update, success)
 
       call prop_get(md_ptr, 'numerics', 'Oceaneddysizefrac', Oceaneddysizefrac)
       call prop_get(md_ptr, 'numerics', 'Oceaneddysize', Oceaneddysize)
@@ -1419,17 +1419,7 @@ contains
       md_dambreak_widening_method = ''
       call prop_get(md_ptr, 'physics', 'BreachGrowth', md_dambreak_widening_method)
       call str_lower(md_dambreak_widening_method)
-      select case (md_dambreak_widening_method)
-      case ('symmetric')
-         dambreakWidening = DBW_SYMM
-      case ('proportional')
-         dambreakWidening = DBW_PROP
-      case ('symmetric-asymmetric', '')
-         dambreakWidening = DBW_SYMM_ASYMM
-         md_dambreak_widening_method = 'symmetric-asymmetric'
-      case default
-         call mess(LEVEL_ERROR, 'Invalid value specified for breach growth.')
-      end select
+      call set_dambreak_widening_method(md_dambreak_widening_method)
 
       ierror = DFM_NOERR
       call fm_ice_read(md_ptr, ierror)
@@ -2410,7 +2400,6 @@ contains
       call prop_get(md_ptr, 'processes', 'AdditionalHistoryOutputFile', md_ehofile, success)
       call prop_get(md_ptr, 'processes', 'StatisticsFile', md_sttfile, success)
       call prop_get(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
-      call prop_get(md_ptr, 'processes', 'ProcessFluxIntegration', md_flux_int, success)
       call prop_get(md_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr)
       call prop_get(md_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr)
       call prop_get(md_ptr, 'processes', 'SubstanceDensityCoupling', JaSubstancedensitycoupling)
@@ -3287,6 +3276,9 @@ contains
          call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm', epsmaxlevm, 'Stop criterium for Nested Newton loop in non-linear iteration')
       end if
 
+      call prop_set(prop_ptr, 'numerics', 'PerotType', Perot_type)
+      call prop_set(prop_ptr, 'numerics', 'PerotWeightUpdate', Perot_weight_update, 'Perot weight update for 1D nodes (0: no (default), 1: yes)')
+
       if (Oceaneddyamp > 0d0) then
          call prop_set(prop_ptr, 'numerics', 'Oceaneddysizefrac', Oceaneddysizefrac)
          call prop_set(prop_ptr, 'numerics', 'Oceaneddysize', Oceaneddysize)
@@ -3304,8 +3296,9 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'FlowSolver', trim(md_flow_solver), 'Flow solver.')
+      call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
 
-! Physics
+      ! Physics
       call prop_set(prop_ptr, 'physics', 'UnifFrictCoef', frcuni, 'Uniform friction coefficient (0: no friction)')
       call prop_set(prop_ptr, 'physics', 'UnifFrictType', ifrctypuni, 'Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: idem, WAQUA style)')
       call prop_set(prop_ptr, 'physics', 'UnifFrictCoef1D', frcuni1D, 'Uniform friction coefficient in 1D links (0: no friction)')
@@ -3944,7 +3937,6 @@ contains
       call prop_set(prop_ptr, 'processes', 'StatisticsFile', trim(md_sttfile), 'statistics file')
       call prop_set(prop_ptr, 'processes', 'ThetaVertical', md_thetav_waq, 'theta vertical for waq')
       call prop_set(prop_ptr, 'processes', 'DtProcesses', md_dt_waqproc, 'waq processes time step')
-      call prop_set(prop_ptr, 'processes', 'ProcessFluxIntegration', md_flux_int, 'Process fluxes integration option (1: WAQ, 2: D-Flow FM)')
       call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
       call prop_set(prop_ptr, 'processes', 'SubstanceDensityCoupling', jaSubstancedensitycoupling, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')

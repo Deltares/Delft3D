@@ -355,6 +355,8 @@ module fm_external_forcings_data
    integer, allocatable :: kdambreak(:, :) !< dambreak links index array
    real(kind=dp), allocatable, target :: dambreakLevelsAndWidthsFromTable(:) !< dambreak widths and heights
    character(len=128), allocatable, target :: dambreak_ids(:) !< the dambreak ids
+   real(kind=dp), dimension(:), allocatable, public :: dambreakLinksEffectiveLength !< dambreak maximum flow widths
+   real(kind=dp), dimension(:), allocatable, public :: dambreakLinksActualLength !< dambreak actual flow widths
 
    type polygon
       real(kind=dp), dimension(:), allocatable :: xp, yp

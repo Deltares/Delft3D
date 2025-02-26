@@ -42,12 +42,10 @@ if(UNIX)
    target_include_directories(${executable_name} 
                                PRIVATE  
                                ${header_path}
-                               ${NETCDF_INCLUDEDIR}
                               "${dimr_lib_path}/include"
                               "${expat_include_path}")
 
-    target_link_libraries(${executable_name} ${oss_dependencies} ${CMAKE_DL_LIBS}) 
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    target_link_libraries(${executable_name} ${oss_dependencies} ${CMAKE_DL_LIBS})
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)

@@ -1,7 +1,33 @@
+!! Copyright (C)  Stichting Deltares, 2011-2024.
+!!
+!! This program is free software: you can redistribute it and/or modify
+!! it under the terms of the GNU General Public License as published by
+!! the Free Software Foundation version 3.
+!!
+!! This program is distributed in the hope that it will be useful,
+!! but WITHOUT ANY WARRANTY; without even the implied warranty of
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! GNU General Public License for more details.
+!!
+!! You should have received a copy of the GNU General Public License
+!! along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!!
+!! contact: delft3d.support@deltares.nl
+!! Stichting Deltares
+!! P.O. Box 177
+!! 2600 MH Delft, The Netherlands
+!!
+!! All indications and logos of, and references to, "Delft3D" and "Deltares"
+!! are registered trademarks of Stichting Deltares, and remain the property of
+!! Stichting Deltares. All rights reserved.
 module m_salchl
     use m_waq_precision
+    use chemical_utils, only: salinity_from_chloride
+    use m_logger_helper, only : stop_with_error, get_log_unit_number
 
     implicit none
+    private
+    public :: salchl
 
 contains
 
@@ -9,87 +35,36 @@ contains
             noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
             num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
-        !>       Converts salinity into chloride or vice versa (Aquatic Chemistry 2nd ed 1981 p567)
+        !>       Converts chloride into salinity (Aquatic Chemistry 2nd ed 1981 p567)
+        !
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(*), increm(*), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        !----- GPL ---------------------------------------------------------------------
-        !
-        !  Copyright (C)  Stichting Deltares, 2011-2024.
-        !
-        !  This program is free software: you can redistribute it and/or modify
-        !  it under the terms of the GNU General Public License as published by
-        !  the Free Software Foundation version 3.
-        !
-        !  This program is distributed in the hope that it will be useful,
-        !  but WITHOUT ANY WARRANTY; without even the implied warranty of
-        !  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        !  GNU General Public License for more details.
-        !
-        !  You should have received a copy of the GNU General Public License
-        !  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-        !
-        !  contact: delft3d.support@deltares.nl
-        !  Stichting Deltares
-        !  P.O. Box 177
-        !  2600 MH Delft, The Netherlands
-        !
-        !  All indications and logos of, and references to, "Delft3D" and "Deltares"
-        !  are registered trademarks of Stichting Deltares, and remain the property of
-        !  Stichting Deltares. All rights reserved.
-        !
-        !-------------------------------------------------------------------------------
-        !
-        !
-        !-------------------------------------------------------------------------------
-        !
-        !     Description of the module :
-        !
-        ! Name    T   L I/O   Description                                  Units
-        ! ----    --- -  -    -------------------                           ----
-        ! CL      R*4 1 I/O  chloride concentration                         [g/m3]
-        ! SAL     R*4 1 I/O  salinity                                       [g/kg]
-        ! SAL0    R*4 1 I    salinity at zero chloride                      [g/kg]
-        ! GTCL    R*4 1 I    ratio of salinity and chloride                 [g/g]
-        ! TEMP    R*4 1 I    ambient temperature                            [oC]
-        ! DENS    R*4 1 -    densioty of water with dissolved salt          [kg/m3]
-        ! SWSALCL R*4 1 I    option: 0 SAL simulated, 1 CL simulated
-        !
-        !   Logical Units : -
-        !   Modules called : -
+        real(kind = real_wp) :: cl         ! chloride concentration                         [g/m3]
+        real(kind = real_wp) :: sal        ! salinity                                       [g/kg]
+        real(kind = real_wp) :: sal0       ! salinity at zero chloride                      [g/kg]
+        real(kind = real_wp) :: gtcl       ! ratio of salinity and chloride                 [g/g]
+        real(kind = real_wp) :: temp       ! ambient temperature                            [oC]
+        real(kind = real_wp) :: dens       ! density of water with dissolved salt           [kg/m3]
+        real(kind = real_wp) :: swsalcl    ! option: 0 SAL simulated, 1 CL simulated
+        integer(kind = int_wp) :: iseg, ip1, ip2, ip3, ip4, ip5, iflux
+        integer(kind = int_wp) :: lunrep
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
-        !
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
-        !
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-        !
-        REAL(kind = real_wp) :: CL, SAL, SAL0, GTCL, TEMP, DENS, SWSALCL
-        integer(kind = int_wp) :: iseg
-        !
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        !
-        IFLUX = 0
-        DO ISEG = 1, num_cells
+        ip1 = ipoint(1)
+        ip2 = ipoint(2)
+        ip3 = ipoint(3)
+        ip4 = ipoint(4)
+        ip5 = ipoint(5)
 
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+        iflux = 0
+        do iseg = 1, num_cells
+
+            if (btest(iknmrk(iseg), 0)) then
                 !
-                SAL = process_space_real(IP1)
-                CL = process_space_real(IP2)
-                GTCL = process_space_real(IP3)
-                TEMP = process_space_real(IP4)
-                SAL0 = process_space_real(IP5)
-                SWSALCL = process_space_real(IP6)
+                cl = process_space_real(ip1)
+                temp = process_space_real(ip2)
+                swsalcl = process_space_real(ip3)
                 !
                 !***********************************************************************
                 !**** Processes connected to the normalization RIZA method
@@ -100,46 +75,40 @@ contains
                 !     basic relation sal-chlorinity: sal = 0.03 +1.805*chlor/density
                 !     density = f(temp and salt concentration)
                 !
-                IF (NINT(SWSALCL) == 1) THEN
-                    DENS = 1000. + 0.7 * CL / 1000 * GTCL &
-                            - 0.0061 * (TEMP - 4.0) * (TEMP - 4.0)
-                    SAL = CL * GTCL / DENS + SAL0
-                    !
-                ELSE
-                    DENS = 1000. + 0.7 * SAL / (1 - SAL / 1000.) &
-                            - 0.0061 * (TEMP - 4.0) * (TEMP - 4.0)
-                    !
-                    IF (SAL <= SAL0) THEN
-                        SAL = 0.0
-                    ELSE
-                        SAL = SAL - SAL0
-                    ENDIF
-                    !
-                    !     g/m3 = (g/kg)*(kg/m3)/(g/g)
-                    !
-                    CL = SAL * DENS / GTCL
-                ENDIF
+                !     Note: gtcl and sal0 are fixed to 1.805 and 0.03 respectively
+                !           Chlorinity expressed in g/m3, temperature in degrees C
                 !
-                process_space_real (IP7) = DENS
-                process_space_real (IP8) = SAL
-                process_space_real (IP9) = CL
+                !     Note: the switch is maintained to make sure that incorrect use is caught
+                !           Of old the routine allowed the reverse conversion via this switch.
                 !
-            ENDIF
-            !
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + INCREM (1)
-            IP2 = IP2 + INCREM (2)
-            IP3 = IP3 + INCREM (3)
-            IP4 = IP4 + INCREM (4)
-            IP5 = IP5 + INCREM (5)
-            IP6 = IP6 + INCREM (6)
-            IP7 = IP7 + INCREM (7)
-            IP8 = IP8 + INCREM (8)
-            IP9 = IP9 + INCREM (9)
-            !
+                if (nint(swsalcl) == 1) then
+                    call salinity_from_chloride( cl, temp, sal, dens )
+                else
+                    call get_log_unit_number(lunrep)
+                    write(lunrep, *) 'Error in SALCHL'
+                    write(lunrep, *) 'Obsolete option for conversion - only the value 1 is allowed'
+                    write(lunrep, *) 'Option in input:', swsalcl
+                    write(*, *) 'Error in SALCHL'
+                    write(*, *) 'Obsolete option for conversion - only the value 1 is allowed'
+                    write(*, *) 'Option in input:', swsalcl
+                    call stop_with_error()
+                endif
+
+                process_space_real (ip4) = dens
+                process_space_real (ip5) = sal
+
+            endif
+
+            iflux = iflux + noflux
+            ip1 = ip1 + increm (1)
+            ip2 = ip2 + increm (2)
+            ip3 = ip3 + increm (3)
+            ip4 = ip4 + increm (4)
+            ip5 = ip5 + increm (5)
+
         end do
-        !
-        RETURN
-    END
+
+        return
+    end subroutine salchl
 
 end module m_salchl

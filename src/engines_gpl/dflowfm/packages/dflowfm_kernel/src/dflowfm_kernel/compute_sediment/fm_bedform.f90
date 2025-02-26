@@ -304,6 +304,7 @@ contains
       use m_alloc
       use message_module
       use m_get_Lbot_Ltop
+      use m_ade2d, only: fm_ade2d
       !
       implicit none
       !
@@ -635,7 +636,7 @@ contains
             kb = ln(1, L); ki = ln(2, L)
             dh(1, kb) = dh(1, ki)
          end do
-         call fm_advecbedform(dh, ubedformu, qbedformn, sour, sink, 4, ierror)
+         call fm_ade2d(dh, ubedformu, qbedformn, sour, sink, 4, ierror)
       end do
       !
       dts = dtsori
@@ -1003,112 +1004,5 @@ contains
 1234  continue
 
    end subroutine fm_calksc
-
-   subroutine fm_advecbedform(thevar, uadv, qadv, bedform_sour, bedform_sink, limityp, ierror)
-      use m_transport
-      use m_flowgeom, only: Ndx, Lnx, ln, ba ! static mesh information
-      use m_flow, only: Ndkx, Lnkx, kbot, ktop, Lbot, Ltop, kmxn, kmxL, vol1, epshu
-      use m_transport
-      use m_alloc
-      use precision
-      use m_partitioninfo
-      use m_timer
-
-      implicit none
-
-      integer, parameter :: BFNSUBSTEPS = 1
-
-      real(kind=dp), dimension(1, ndx), intent(inout) :: thevar !< variable to be tranported
-      real(kind=dp), dimension(lnx), intent(in) :: qadv
-      real(kind=dp), dimension(lnx), intent(in) :: uadv
-      real(kind=dp), dimension(ndx), intent(in) :: bedform_sour
-      real(kind=dp), dimension(ndx), intent(in) :: bedform_sink
-      integer, intent(in) :: limityp !< limiter type (>0) or upwind (0)
-      integer, intent(out) :: ierror !< error (1) or not (0)
-
-      real(kind=dp) :: dvoli
-      integer :: k1, k2
-
-      real(kind=dp), dimension(:, :), allocatable :: fluxhorbf ! horizontal fluxes
-      real(kind=dp), dimension(:, :), allocatable :: fluxverbf ! vertical   fluxes
-
-      real(kind=dp), dimension(:), allocatable :: difsedubf ! sum of molecular and user-specified diffusion coefficient
-      real(kind=dp), dimension(:), allocatable :: difsedwbf ! sum of molecular and user-specified diffusion coefficient
-      real(kind=dp), dimension(:), allocatable :: sigdifibf
-
-      real, dimension(:), allocatable :: dumL
-      real(kind=dp), dimension(:), allocatable :: bfsq
-      real(kind=dp), dimension(:), allocatable :: bfsqi
-      real(kind=dp), dimension(:), allocatable :: bfsqu
-
-      real(kind=dp), dimension(:, :), allocatable :: const_sourbf ! sources in transport, dim(NUMCONST,Ndkx)
-      real(kind=dp), dimension(:, :), allocatable :: const_sinkbf ! linear term of sinks in transport, dim(NUMCONST,Ndkx)
-
-!  work arrays
-      real(kind=dp), dimension(:, :), allocatable :: rhsbf ! right-hand side, dim(NUMCONST,Ndkx)
-      integer, dimension(:), allocatable :: jabfupdate
-      integer, dimension(:), allocatable :: jabfhorupdate
-      integer, dimension(:), allocatable :: nbfdeltasteps
-
-      real(kind=dp), dimension(:), allocatable :: bfsumhorflux, dumx, dumy
-
-      integer :: k, L
-
-      ierror = 1
-
-!  allocate
-      call realloc(jabfupdate, ndx, keepExisting=.true., fill=1) !Mask array for the 2D part, true for all.
-      call realloc(jabfhorupdate, lnx, keepExisting=.true., fill=1)
-      call realloc(nbfdeltasteps, ndx, keepExisting=.true., fill=1) !It is only used if NSUBSTEPS>1, which is not the case.
-      call realloc(bfsq, ndx, keepExisting=.true., fill=0d0)
-      call realloc(bfsqu, ndx, keepExisting=.true., fill=0d0)
-      call realloc(bfsqi, ndx, keepExisting=.true., fill=0d0)
-
-      call realloc(fluxhorbf, (/1, Lnx/), keepExisting=.true., fill=0d0)
-      call realloc(fluxverbf, (/1, Ndx/), keepExisting=.true., fill=0d0)
-
-      call realloc(difsedubf, 1, keepExisting=.true., fill=0d0)
-      call realloc(difsedwbf, 1, keepExisting=.true., fill=0d0)
-      call realloc(sigdifibf, 1, keepExisting=.true., fill=0d0)
-
-      allocate (dumL(1:lnkx), stat=ierror); dumL = 0.0
-
-      call realloc(const_sourbf, (/1, Ndx/), keepExisting=.true., fill=0d0)
-      call realloc(const_sinkbf, (/1, Ndx/), keepExisting=.true., fill=0d0)
-      call realloc(rhsbf, (/1, Ndx/), keepExisting=.true., fill=0d0)
-
-      call realloc(bfsumhorflux, Ndx, keepExisting=.true., fill=0d0)
-      call realloc(dumx, Ndx, keepExisting=.true., fill=0d0)
-      call realloc(dumy, Ndx, keepExisting=.true., fill=0d0)
-
-!  construct advective velocity field --> uadv, qadv, mind the orientation (>0 from ln(1,L) to ln(2,L))
-      do L = 1, Lnx
-         k1 = ln(1, L)
-         k2 = ln(2, L)
-         bfsq(k1) = bfsq(k1) - min(qadv(L), 0d0)
-         bfsq(k2) = bfsq(k2) + max(qadv(L), 0d0)
-
-         bfsqi(k1) = bfsqi(k1) - min(qadv(L), 0d0)
-         bfsqi(k2) = bfsqi(k2) + max(qadv(L), 0d0)
-
-         bfsqu(k1) = bfsqu(k1) + max(qadv(L), 0d0)
-         bfsqu(k2) = bfsqu(k2) - min(qadv(L), 0d0)
-      end do
-
-      do k = 1, Ndx
-         dvoli = 1d0 / max(vol1(k), epshu * ba(k))
-         const_sourbf(1, k) = bedform_sour(k) - thevar(1, k) * bfsq(k) * dvoli
-         const_sinkbf(1, k) = bedform_sink(k)
-      end do
-
-!  compute horizontal fluxes, explicit part
-      call comp_dxiAu()
-      call comp_fluxhor3D(1, limityp, Ndx, Lnx, uadv, qadv, bfsqi, ba, kbot, Lbot, Ltop, kmxn, kmxL, thevar, difsedubf, sigdifibf, dumL, BFNSUBSTEPS, jabfhorupdate, nbfdeltasteps, (/1/), fluxhorbf, dumx, dumy, 1, dxiAu)
-      call comp_sumhorflux(1, 0, Lnkx, Ndkx, Lbot, Ltop, fluxhorbf, bfsumhorflux)
-      call solve_2D(1, Ndx, ba, kbot, ktop, bfsumhorflux, fluxverbf, const_sourbf, const_sinkbf, 1, jabfupdate, nbfdeltasteps, thevar, rhsbf)
-      ierror = 0
-1234  continue
-      return
-   end subroutine fm_advecbedform
 
 end module m_calbedform

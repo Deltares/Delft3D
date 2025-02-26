@@ -31,8 +31,6 @@ target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 if(UNIX)
         target_include_directories(${executable_name} PRIVATE ${version_include_dir})
-        message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-        target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
         target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif(UNIX)
 

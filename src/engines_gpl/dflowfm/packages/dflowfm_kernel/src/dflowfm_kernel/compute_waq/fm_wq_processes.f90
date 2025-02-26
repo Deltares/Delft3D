@@ -273,9 +273,6 @@ contains
       if (.not. allocated(dsto)) then
          allocate (dsto(0))
       end if
-      if (.not. allocated(velonw)) then
-         allocate (velonw(0, 0))
-      end if
       if (.not. allocated(velx)) then
          allocate (velx(0, 0))
       end if
@@ -794,9 +791,8 @@ contains
       call realloc(process_space_int, process_space_int_len, keepExisting=.false., fill=0)
       call realloc(increm, process_space_int_len, keepExisting=.false., fill=0)
 
-      !     allocate deriv and velonw arrays
+      !     allocate deriv array - holds all derivatives
       call realloc(deriv, [num_cells, num_substances_total], keepExisting=.false., fill=0.0d0) !< Model derivatives (= stochi(num_substances_total ,noflux) * flux(noflux, num_cells))
-      call realloc(velonw, [num_velocity_arrays_new, num_exchanges_z_dir], keepExisting=.false., fill=0.0)
 
       !     Determine size of a array from process system and num_cells/num_exchanges_z_dir, and allocate it
       call wq_processes_pmsa_size(lunlsp, num_cells, num_exchanges_z_dir, sizepmsa)
@@ -1305,7 +1301,6 @@ contains
       use m_fm_wq_processes
       use m_wq_processes_proces
       use m_mass_balance_areas
-      use unstruc_model, only: md_flux_int
       use m_flow, only: vol1
       use timers
 
@@ -1328,7 +1323,6 @@ contains
       end if
 
       if (timon) call timstrt("fm_wq_processes_step", ithand0)
-      flux_int = md_flux_int
 
       !     copy data from D-FlowFM to WAQ
       if (timon) call timstrt("copy_data_from_fm_to_wq_processes", ithand1)
@@ -1349,9 +1343,9 @@ contains
                                num_processes_activated, num_fluxes, process_space_int, prvnio, promnr, iflux, increm, process_space_real(ipoiflux), flxdmp, stochi, &
                                ibflag, bloom_status_ind, bloom_ind, amass, num_substances_transported, isfact, itfact, iexpnt, iknmrk, num_exchanges_u_dir, &
                                num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, process_space_real(ipoiarea), num_dispersion_arrays_new, idpnew, dispnw, num_dispersion_arrays_extra, dspx, &
-                               dsto, num_velocity_arrays_new, ivpnw, velonw, num_velocity_arrays_extra, process_space_real(ipoivelx), vsto, mbadefdomain(kbx:ktx), &
+                               dsto, num_velocity_arrays_new, ivpnw, num_velocity_arrays_extra, process_space_real(ipoivelx), vsto, mbadefdomain(kbx:ktx), &
                                process_space_real(ipoidefa), prondt, prvvar, prvtyp, vararr, varidx, arrpoi, arrknd, arrdm1, &
-                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf), flux_int)
+                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf))
 
       ! copy data from WAQ to D-FlowFM
       if (timon) call timstrt("copy_data_from_wq_processes_to_fm", ithand2)

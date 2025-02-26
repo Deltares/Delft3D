@@ -29,7 +29,6 @@ if (UNIX)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
                          netcdff
                          dfm_api_access)
 
@@ -46,7 +45,6 @@ if (WIN32)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
                          netcdff
                          dfm_api_access)
 
@@ -54,9 +52,6 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-
     message(STATUS "Setting target_compile_definitions in Unix")
    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 
@@ -73,8 +68,6 @@ set_source_files_properties(${fortran_version_file}
 
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/dfm_volume_tool_main.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
-
-target_link_libraries(${executable_name} netcdf)
 
 if (WIN32)
     include_directories(${tecplot_path}

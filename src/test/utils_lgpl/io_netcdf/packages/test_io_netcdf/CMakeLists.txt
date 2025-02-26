@@ -7,12 +7,9 @@ add_executable(${executable_name} ${source})
 set(oss_dependencies    fortrangis
                         ftnunit
                         io_netcdf
-                        netcdf4
-                        netcdff)
+)
 
 if (UNIX)
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
     target_link_libraries(${executable_name} ${oss_dependencies})
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)

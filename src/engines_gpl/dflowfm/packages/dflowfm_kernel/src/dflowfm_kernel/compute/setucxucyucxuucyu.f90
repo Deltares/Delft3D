@@ -44,11 +44,13 @@ contains
       use precision, only: dp
       use m_setuc1d, only: setuc1d
       use m_flowgeom
-      use m_flow
-      use m_sobekdfm
+      use m_flow, only: au_nostrucs, ucxq, ucyq, ucx, ucy, u1, u0, q1, hu, kmx, ln0, kmxl, hs, kbot, ktop, lbot, ltop, nbnduxy, struclink, zws, ducxdx, ducxdy, ducydx, ducydy, ucxu, ucyu, kmxn, kmxd, qa
+      use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
       use m_sediment, only: jased, stm_included
-      use m_missing
-      use m_flowparameters, only: jabarrieradvection
+      use fm_external_forcings_data, only: nbndz, nbndu, kbndu, kbndn, nbndt, kbndz, kbndt, kbnduxy, nbndn, zbndn, zbndt, zbnduxyval, zbnduxy
+      use m_missing, only: dmiss
+      use m_turbulence, only: rho
+      use m_flowparameters, only: jabarrieradvection, jasedtrails, jamapucmag, jamapucvec, Perot_type, NOT_DEFINED, changeVelocityAtStructures, jacstbnd, jaZerozbndinflowadvection, JaZlayercenterbedvel, PEROT_VOLUME_BASED, epshs, limtypmom, jarhoxu
       use m_sferic
       use m_get_Lbot_Ltop
       use m_lin2nodx, only: lin2nodx
@@ -64,7 +66,7 @@ contains
       real(kind=dp) :: dischcorrection
       real(kind=dp) :: uinx, uiny, u1L
 
-      if (iperot /= -1) then
+      if (Perot_type /= NOT_DEFINED) then
          ucxq = 0d0; ucyq = 0d0 ! zero arrays
          ucx = 0d0; ucy = 0d0
 
@@ -170,7 +172,7 @@ contains
                if (hs(k) > 0d0) then
                   ucxq(k) = ucxq(k) / hs(k)
                   ucyq(k) = ucyq(k) / hs(k)
-                  if (iperot == 2) then
+                  if (Perot_type == PEROT_VOLUME_BASED) then
                      ucx(k) = ucxq(k)
                      ucy(k) = ucyq(k)
                   end if
@@ -192,7 +194,7 @@ contains
                         ucxq(k) = ucxq(k) / dzz
                         ucyq(k) = ucyq(k) / dzz
                      end if
-                     if (iperot == 2) then
+                     if (Perot_type == PEROT_VOLUME_BASED) then
                         ucx(k) = ucxq(k)
                         ucy(k) = ucyq(k)
                      end if

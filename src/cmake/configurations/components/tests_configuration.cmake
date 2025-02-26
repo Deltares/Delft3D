@@ -145,9 +145,11 @@ if(WIN32)
 endif(WIN32)
 
 # netcdf
-if(NOT TARGET netcdff)
-    add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-endif()
+if(WIN32)
+    if(NOT TARGET netcdff)
+        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
+    endif()
+endif(WIN32)
 
 # io_netcdf
 if(NOT TARGET io_netcdf)

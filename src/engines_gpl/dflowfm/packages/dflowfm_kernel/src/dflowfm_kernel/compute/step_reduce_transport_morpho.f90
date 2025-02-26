@@ -78,8 +78,14 @@ contains
       use m_fm_erosed_sub, only: fm_erosed
 
       numnodneg = 0
-      if (wrwaqon .and. allocated(qsrcwaq)) then
-         qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
+      if (wrwaqon) then
+         ! store current cumulative qsrc and qlat for waq at the beginning of this time step
+         if (allocated(qsrcwaq)) then
+            qsrcwaq0 = qsrcwaq
+         end if
+         if (allocated(qlatwaq)) then
+            qlatwaq0 = qlatwaq
+         end if
       end if
 
 !-----------------------------------------------------------------------------------------------

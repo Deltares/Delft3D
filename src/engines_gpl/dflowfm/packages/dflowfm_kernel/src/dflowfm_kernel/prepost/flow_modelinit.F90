@@ -72,7 +72,7 @@ contains
       use timers
       use m_flowgeom, only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
       use waq, only: reset_waq
-      use m_flow, only: kmx, kmxn, jasecflow, iperot, taubxu, ucxq, ucyq, fvcoro, vol1
+      use m_flow, only: kmx, kmxn, jasecflow, Perot_type, taubxu, ucxq, ucyq, fvcoro, vol1
       use m_flowtimes
       use m_laterals, only: numlatsg
       use network_data, only: NETSTAT_CELLS_DIRTY
@@ -84,7 +84,7 @@ contains
       use unstruc_files, only: mdia
       use unstruc_netcdf
       use MessageHandling
-      use m_flowparameters, only: jawave, jatrt, jacali, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE
+      use m_flowparameters, only: jawave, jatrt, jacali, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE, NOT_DEFINED
       use dfm_error
       use m_fm_wq_processes, only: jawaqproc
       use m_vegetation
@@ -364,7 +364,7 @@ contains
       end if
       call timstop(handle_extra(16)) ! netlink tree 1
 
-      if (iperot == -1) then
+      if (Perot_type == NOT_DEFINED) then
          call reconst2ndini()
       end if
 

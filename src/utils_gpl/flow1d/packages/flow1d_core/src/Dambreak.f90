@@ -36,11 +36,17 @@
 
    public prepareComputeDambreak
    public setCoefficents
+   public set_dambreak_widening_method
 
    integer, parameter, public :: BREACH_GROWTH_VDKNAAP = 1
    integer, parameter, public :: BREACH_GROWTH_VERHEIJVDKNAAP = 2
    integer, parameter, public :: BREACH_GROWTH_TIMESERIES = 3
-   
+
+   integer, parameter, public :: DBW_SYMM = 1 !< symmetrical dambreak widening (limited width in case of asymmetric starting link placement)
+   integer, parameter, public :: DBW_PROP = 2 !< dambreak wideining proportional to left/right dam length
+   integer, parameter, public :: DBW_SYMM_ASYMM = 3 !< symmetrical dambreak widening until left/right runs out of space then continues one sided
+   integer, public :: dambreakWidening = DBW_SYMM_ASYMM !< method for dambreak widening
+
    type, public :: t_dambreak
       real(kind=dp) :: startLocationX
       real(kind=dp) :: startLocationY
@@ -206,5 +212,29 @@
    endif
 
    end subroutine setCoefficents
+
+   !< set variable dambreakWidening, returns string with the method name
+   subroutine set_dambreak_widening_method(method_string)
+      use MessageHandling, only: mess, LEVEL_ERROR
+
+      character(len=*), intent(inout) :: method_string  !< method for dambreak widening
+
+      select case (method_string)
+      case('')
+         ! default settings if no method is specified
+         dambreakWidening = DBW_SYMM_ASYMM
+         method_string = 'symmetric-asymmetric'         
+      case ('symmetric')
+         dambreakWidening = DBW_SYMM
+      case ('proportional')
+         dambreakWidening = DBW_PROP
+      case ('symmetric-asymmetric')
+         dambreakWidening = DBW_SYMM_ASYMM
+      case default
+         ! error message if invalid method is specified
+         call mess(LEVEL_ERROR, 'Invalid method specified for breach growth.')
+      end select
+      
+   end subroutine set_dambreak_widening_method
 
    end

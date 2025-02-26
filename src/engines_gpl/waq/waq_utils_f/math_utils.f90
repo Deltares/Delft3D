@@ -59,4 +59,5 @@ contains
         end do
 
     end subroutine greatest_common_divisor
+
 end module math_utils

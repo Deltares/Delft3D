@@ -32,8 +32,7 @@ target_link_libraries(${executable_name} PRIVATE no_compiler_warnings)
 
 # Set dependencies
 if (WIN32)
-    set(exe_dependencies netcdf4
-                         netcdff)
+    set(exe_dependencies netcdff)
 
     target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
 
@@ -55,14 +54,7 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
     target_link_libraries(${executable_name} PRIVATE
-         PkgConfig::NETCDF
          netcdff)
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"

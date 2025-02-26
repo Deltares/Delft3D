@@ -26,8 +26,7 @@ include_directories(${include_path}
                     ${d_hydro_lib_include_path}
                     ${version_include_dir})
 
-if (UNIX)    
-    include_directories(${NETCDF_INCLUDEDIR}) 
+if (UNIX)
     add_definitions(-DD3D_PLUGIN_EXT=".so")
 endif(UNIX)
 
@@ -53,8 +52,7 @@ if(UNIX)
                               "${d_hydro_lib_path}/include"
                               "${expat_include_path}")
 
-    target_link_libraries(${executable_name} ${oss_dependencies}) 
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    target_link_libraries(${executable_name} ${oss_dependencies})
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)

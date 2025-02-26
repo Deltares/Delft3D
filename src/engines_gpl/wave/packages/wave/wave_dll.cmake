@@ -22,7 +22,6 @@ if (WIN32)
                                 wave_kernel
                                 wave_manager
                                 nefis
-                                netcdf4
                                 netcdff
                                 triangle_c
                                 swan

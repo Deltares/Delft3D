@@ -44,24 +44,15 @@ set(oss_dependencies_general control_lib
                              
 # Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
     set(oss_dependencies ${oss_dependencies_general} netcdff)
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         )
+    )
     add_definitions(-DHAVE_CONFIG_H)   
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdf4
                         netcdff)
 
     target_link_libraries(${library_name} ${oss_dependencies})

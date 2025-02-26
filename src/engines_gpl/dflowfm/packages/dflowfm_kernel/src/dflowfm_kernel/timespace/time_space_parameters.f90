@@ -174,6 +174,33 @@ contains
 
    end function get_default_method_for_file_type
 
+   !> Checks and updates the method in case the interpolationMethod
+   !! linearSpaceTime (weightfactors) was requested and if that is not
+   !! yet supported for the given file type.
+   !!
+   !! Mainly used to hide EC-module inconsistencies from the user.
+   !! For example: uniform timeseries must always have interpolation type SPACEANDTIME.
+   subroutine update_method_with_weightfactor_fallback(file_type, method)
+      implicit none
+      character(len=*), intent(in) :: file_type !< File type string.
+      integer, intent(inout) :: method !< Interpolation method integer (will keep its original value if no updated is needed).
+
+      if (method /= WEIGHTFACTORS) then
+         ! Only fix weightfactors method, other wrong input methods are true
+         ! user input errors and should lead to an error message.
+         return
+      end if
+
+      select case (str_tolower(trim(file_type)))
+      case ('arcinfo')
+         method = SPACEANDTIME
+      case ('uniform', 'unimagdir')
+         method = SPACEANDTIME
+      end select
+
+   end subroutine update_method_with_weightfactor_fallback
+
+
    subroutine update_method_in_case_extrapolation(method, is_extrapolation_allowed)
       implicit none
       integer, intent(inout) :: method !< method integer

@@ -21,9 +21,7 @@ if(UNIX)
                               "${dimr_lib_path}/include"
                               "${expat_include_path}")
 
-
-    target_link_libraries(${executable_name} ${oss_dependencies}) 
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    target_link_libraries(${executable_name} ${oss_dependencies})
     
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)

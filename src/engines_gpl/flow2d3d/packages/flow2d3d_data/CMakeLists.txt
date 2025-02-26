@@ -51,8 +51,6 @@ if (UNIX)
     #produce a config.h to be included
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)
     set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
-
-    include_directories(${NETCDF_INCLUDEDIR})
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 
@@ -94,23 +92,14 @@ set(oss_dependencies_general    delftio
                                 morphology_plugins_c)
 # Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
     set(oss_dependencies ${oss_dependencies_general}
                          netcdff)
 
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-         PkgConfig::NETCDF)
+    target_link_libraries(${library_name} ${oss_dependencies})
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdf4
                         netcdff)
 endif(WIN32)
 

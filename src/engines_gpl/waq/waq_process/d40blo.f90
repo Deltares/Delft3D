@@ -23,11 +23,13 @@
 module m_d40blo
     use m_waq_precision
     use m_set_effi
+    use chemical_utils, only: chlorinity_from_sal
 
     implicit none
+    private
+    public :: d40blo
 
 contains
-
 
     subroutine d40blo (process_space_real, fl, ipoint, increm, num_cells, &
             noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
@@ -85,7 +87,7 @@ contains
         !     BLSTEP  R*4   1             Time step Bloom (days)
         !     CHLORO  R     1             Total chlorophyl in algae (mg/m3)
         !     CGROUP  R     NGRO          Algae species group biomass (gC/m3)
-        !     CL      R     1             Chlorinity (gCl/m3)
+        !     SAL     R     1             Salinity (g/kg) - item
         !     DEPTHW  R     1             Depth (m)
         !     DAYLEN  R     1             Day length (h)
         !     DELTAT  R     1             Time step DELWAQ (d)
@@ -505,7 +507,7 @@ contains
                     DAYLEN = process_space_real(IP8) * 24.
                     DEPTHW = DEPTH
                     IF (BLDEP>0.) DEPTHW = BLDEP
-                    CL = process_space_real(IP22)
+                    CL = chlorinity_from_saL( process_space_real(IP22), temper )
 
                     DO IALG = 1, NTYP_A
 
@@ -639,7 +641,7 @@ contains
                 DELTAT = process_space_real(IP19)
                 SWBLOOMOUT = NINT(process_space_real(IP20))
                 CALL BLOUTC(SWBLOOMOUT)
-                CL = process_space_real(IP22)
+                CL = chlorinity_from_saL( process_space_real(IP22), temper )
                 VOLUME = process_space_real(IP23)
                 TIC = MAX(0.0, process_space_real(IP25))
                 CO2 = MAX(0.0, process_space_real(IP26))

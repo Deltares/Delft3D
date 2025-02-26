@@ -40,6 +40,7 @@ module m_flow_geominit
    use m_sort_flowlinks_ccw, only: sort_flowlinks_ccw
    use m_setwallorientations, only: setwallorientations
    use m_setprofs1d, only: setprofs1d
+   use m_allocatelinktocornerweights, only: allocatelinktocornerweights
    use m_setlinktocornerweights, only: setlinktocornerweights
    use m_setlinktocenterweights, only: setlinktocenterweights
    use m_setcornertolinkorientations, only: setcornertolinkorientations
@@ -55,7 +56,7 @@ module m_flow_geominit
    use m_makethindamadmin, only: makethindamadmin
    use m_iadvecini, only: iadvecini
    use m_getdxofconnectedkcu1, only: getdxofconnectedkcu1
-    use m_wind, only: jawindpartialdry
+   use m_wind, only: jawindpartialdry
 
    implicit none
 
@@ -70,7 +71,7 @@ contains
       use precision, only: dp
       use m_cutcell_list, only: cutcell_list
       use m_checknetwork, only: checknetwork
-      use m_allocate_linktocenterweights, only: allocate_linktocenterweights
+      use m_allocate_linktocenterweights, only: allocatelinktocenterweights
       use m_add_boundarynetcells, only: add_boundarynetcells
       use m_addexternalboundarypoints, only: addexternalboundarypoints
       use m_xbeachwaves, only: xbeach_makethetagrid
@@ -121,6 +122,7 @@ contains
       use m_ini_sferic
       use m_set_bobs
       use m_cosphiu, only: cosphiu
+      use m_getcellsurface1d, only: getcellsurface1d
 
       implicit none
 
@@ -150,7 +152,7 @@ contains
       integer :: icn ! corner stuff
       integer :: kk1, kk2, kk3 ! banf stuff
       real(kind=dp) :: dlength, dlenmx, dxorgL
-      real(kind=dp) :: rrr, cs, sn, dis, xn, yn, xt, yt, rl, sf, hdx, alfa, dxlim, dxlink
+      real(kind=dp) :: rrr, cs, sn, dis, xn, yn, xt, yt, rl, sf, alfa, dxlim, dxlink
       real(kind=dp) :: phase
       real(kind=dp) :: xref, yref
       integer :: jaend
@@ -940,12 +942,6 @@ contains
                   WU(L) = (1d0 - ALFA) * PROFILES1D(KA)%WIDTH + ALFA * PROFILES1D(KB)%WIDTH
                end if
             end if
-            hdx = 0.5d0 * dx(L)
-            if (kcu(L) /= 3) then
-               ! TODO: UNST-6592: consider excluding ghost links here and do an mpi_allreduce sum later
-               if (k1 > ndx2d) ba(k1) = ba(k1) + hdx * wu(L) ! todo, on 1d2d nodes, choose appropriate wu1DUNI = min ( wu1DUNI, intersected 2D face)
-               if (k2 > ndx2d) ba(k2) = ba(k2) + hdx * wu(L)
-            end if
          else
             wu(L) = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss) ! set 2D link width
          end if
@@ -955,11 +951,6 @@ contains
          ! WU of orphan 1D2D links must come from neighbouring partition.
          call update_ghosts(ITYPE_U, 1, lnx, wu, ierror, ignore_orientation=.true.)
       end if
-
-      do L = lnxi + 1, Lnx
-         k1 = ln(1, L); k2 = ln(2, L)
-         ba(k1) = ba(k2) ! set bnd ba to that of inside point
-      end do
 
       k = 0 ! count MAX nr of 1D endpoints, dir zijn dead ends
       do L = 1, lnx
@@ -995,10 +986,7 @@ contains
       end do
       mx1Dend = k
 
-      do k = 1, mx1Dend
-         k1 = n1Dend(k)
-         ba(k1) = 2d0 * ba(k1)
-      end do
+      call getcellsurface1d(ba, bai)
 
       ! fraction of dist(nd1->edge) to link lenght dx
       call readyy('geominit', 0.94d0)
@@ -1058,7 +1046,13 @@ contains
          end if
       end do
 
-      do n = 1, ndx
+      do n = 1, ndx2D ! internal 2d nodes
+         if (ba(n) > 0d0) then
+            bai(n) = 1d0 / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
+         end if
+      end do
+
+      do n = ndx1Db + 1, ndx ! boundary 2d nodes
          if (ba(n) > 0d0) then
             bai(n) = 1d0 / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
          end if
@@ -1073,10 +1067,9 @@ contains
 
       call setcentertolinkorientations()
 
-      ! call setlinktocenterweights()
-
       call setcornertolinkorientations()
 
+      call allocatelinktocornerweights()
       call setlinktocornerweights()
 
       do n = ndx2D + 1, ndxi
@@ -1181,7 +1174,7 @@ contains
             walls(2, nw) = k3 ! first wall corner
             walls(3, nw) = k4 ! second wall corner
 
-            if (iPerot == -1) then
+            if (Perot_type == NOT_DEFINED) then
                nwx = nd(k1)%nwx
                if (nd(k1)%nwx == 0) then
                   allocate (nd(k1)%nw(1))
@@ -1251,7 +1244,7 @@ contains
 
       call setwallorientations()
 
-      call allocate_linktocenterweights()
+      call allocatelinktocenterweights()
       call setlinktocenterweights()
 
 !-------------------------------------------------- CELL CORNER RELATED -----------------------------------------------

@@ -35,25 +35,16 @@ set(oss_dependencies_general delftio
                              
 # Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
     set(oss_dependencies ${oss_dependencies_general})
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+    )
     add_definitions(-DHAVE_CONFIG_H)    
 endif(UNIX)
 
 if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies_general}
-                                            netcdf4
                                             netcdff)
 endif(WIN32)
 

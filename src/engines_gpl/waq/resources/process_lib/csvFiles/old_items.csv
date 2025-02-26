@@ -1,7 +1,8 @@
 old_name,new_name,old_default,configuration,serial,action_type
-"Chloride  ","Salinchlor",    0.00000    ,"          ",2012032801,         1
+"Chloride  ","n.a.      ",    7.00000    ,"          ",2025012001,         5
 "Chloride  ","SWSalCl   ",    0.00000    ,"          ",2012032801,         6
-"Salin     ","Salinchlor",    0.00000    ,"          ",2012032801,         1
+"Chloride  ","Salinity  ",    0.00000    ,"          ",2025021701,         6
+"Salin     ","SalinChlor",    0.00000    ,"          ",2012032801,         1
 "Salin     ","SWSalCl   ",    1.00000    ,"          ",2012032801,         6
 "DetC      ","POC1      ",    0.00000    ,"          ",2012032801,         2
 "DetN      ","PON1      ",    0.00000    ,"          ",2012032801,         2
