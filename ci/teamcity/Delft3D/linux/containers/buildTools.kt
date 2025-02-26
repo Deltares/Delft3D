@@ -23,7 +23,7 @@ object LinuxBuildTools : BuildType({
     }
 
     params {
-        param("intel_oneapi_version", "2023")
+        param("intel_oneapi_version", "2024")
         param("harbor_repo", "containers.deltares.nl/delft3d-dev/delft3d-buildtools")
 
         // Environment variables that must be overwritten in the build.
