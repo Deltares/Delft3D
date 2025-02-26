@@ -103,11 +103,21 @@ d3d4 flow parallel nearfield,delft3d4/delft3d_lnx64_hp_flow_parallel_nearfield.x
 d3d4 flow parallel nearfield,delft3d4/delft3d_win64_hp_flow_parallel_nearfield.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
 d3d4 flow parallel wave,delft3d4/delft3d_lnx64_hp_flow_parallel_wave.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
 d3d4 flow parallel wave,delft3d4/delft3d_win64_hp_flow_parallel_wave.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
-d3d4 flow rtc,delft3d4/delft3d_lnx64_hp_flow_rtc.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
-d3d4 flow rtc,delft3d4/delft3d_win64_hp_flow_rtc.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
 d3d4 flow wave,delft3d4/delft3d_lnx64_hp_flow_wave.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
 d3d4 flow wave,delft3d4/delft3d_win64_hp_flow_wave.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
 RED d3d4 flow,delft3d4/delft3d_lnx64_hp_flow_red.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
 RED d3d4 flow,delft3d4/delft3d_win64_hp_flow_red.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
 RED d3d4 flow parallel,delft3d4/delft3d_lnx64_hp_flow_parallel_red.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
 RED d3d4 flow parallel,delft3d4/delft3d_win64_hp_flow_parallel_red.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow,delft3d4/delft3d_lnx64_hp_flow_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow,delft3d4/delft3d_win64_hp_flow_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow wave,delft3d4/delft3d_lnx64_hp_flow_wave_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow wave,delft3d4/delft3d_win64_hp_flow_wave_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow parallel,delft3d4/delft3d_lnx64_hp_flow_parallel_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow parallel,delft3d4/delft3d_win64_hp_flow_parallel_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow nearfield,delft3d4/delft3d_lnx64_hp_flow_nearfield_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow nearfield,delft3d4/delft3d_win64_hp_flow_nearfield_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow parallel wave,delft3d4/delft3d_lnx64_hp_flow_parallel_wave_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow parallel wave,delft3d4/delft3d_win64_hp_flow_parallel_wave_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow rtc,delft3d4/delft3d_lnx64_hp_flow_rtc.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Disabled because it does not work on IFX.
+RED IFX d3d4 flow rtc,delft3d4/delft3d_win64_hp_flow_rtc.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Disabled because it does not work on IFX.

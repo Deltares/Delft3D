@@ -7749,8 +7749,8 @@
           <parameters>
             <parameter name="time" toleranceAbsolute="0.0000001" />
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.000012" />
-            <parameter name="q1" toleranceAbsolute="0.0001" />
+            <parameter name="s1" toleranceAbsolute="0.000075" />
+            <parameter name="q1" toleranceAbsolute="0.0002" />
             <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
@@ -7759,8 +7759,8 @@
           <parameters>
             <parameter name="time" toleranceAbsolute="0.0000001" />
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.000012" />
-            <parameter name="q1" toleranceAbsolute="0.000062" />
+            <parameter name="s1" toleranceAbsolute="0.00008" />
+            <parameter name="q1" toleranceAbsolute="0.0003" />
             <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>

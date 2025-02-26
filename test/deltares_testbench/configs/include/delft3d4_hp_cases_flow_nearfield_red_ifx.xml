@@ -25,8 +25,8 @@
 				
 				-->
 	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
-		<testCase name="e39_f01_c02_nf_2dis_simple_zlayers" ref="flow2d3d_default">
-			<path version="2024-04-19T06:00:00">e39_d3dflow-cosumo/f01_general/c02_nf_2dis_simple_zlayers</path>
+		<testCase name="e39_f01_c01_nf_2dis_simple_sigma" ref="flow2d3d_default">
+			<path version="2024-04-19T06:00:00">e39_d3dflow-cosumo/f01_general/c01_nf_2dis_simple_sigma</path>
 			<maxRunTime>38.5610001087</maxRunTime>
 			<checks>
 				<file name="trih-2dis.dat" type="NEFIS">

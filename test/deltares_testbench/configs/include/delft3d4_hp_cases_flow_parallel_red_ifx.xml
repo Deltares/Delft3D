@@ -25,39 +25,45 @@
 				
 				-->
 	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
-		<testCase name="e23_f27_c10-wave_klopman_wfc" ref="flow2d3d_default">
-			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f27_zmodel_updates/c10-wave_klopman_wfc</path>
-			<programs>
-				<program ref="FLOW2D3D_WAVE">
-					<arguments>
-						<argument>3</argument>
-						<argument>config_d_hydro.xml</argument>
-						<argument>-w</argument>
-						<argument>wfc40.mdw</argument>
-					</arguments>
-				</program>
-			</programs>
-			<maxRunTime>18.5449998379</maxRunTime>
+		<testCase name="e01_f06_c04-l06" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f06_ols/c04-l06</path>
+			<maxRunTime>19.2969999313</maxRunTime>
 			<checks>
-				<file name="trih-QH40.dat" type="NEFIS">
+				<file name="trih-000.dat" type="NEFIS">
 					<parameters name="his-series">
 						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
 						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
 						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
 					</parameters>
 				</file>
-				<file name="trim-QH40.dat" type="NEFIS">
+				<file name="trim-000.dat" type="NEFIS">
 					<parameters name="map-series">
 						<parameter name="S1" toleranceAbsolute="0.0001"/>
 						<parameter name="U1" toleranceAbsolute="0.0001"/>
 						<parameter name="V1" toleranceAbsolute="0.0001"/>
 					</parameters>
 				</file>
-				<file name="wavm-wfc40.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="DIR" toleranceAbsolute="400.0"/>
-						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
-						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+				<file name="trih-000.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="MNSTAT" toleranceAbsolute="0.0001"/>
+						<parameter name="XYSTAT" toleranceAbsolute="0.0001"/>
+					</parameters>
+					<parameters name="his-const">
+						<parameter name="MNTRA" toleranceAbsolute="0.0001"/>
+						<parameter name="NAMTRA" toleranceAbsolute="0.0001"/>
+						<parameter name="XYTRA" toleranceAbsolute="0.0001"/>
+					</parameters>
+					<parameters name="his-series">
+						<parameter name="ATR" toleranceAbsolute="0.0001"/>
+						<parameter name="CTR" toleranceAbsolute="0.0001"/>
+						<parameter name="DTR" toleranceAbsolute="0.0001"/>
+						<parameter name="FLTR" toleranceAbsolute="0.0001"/>
+					</parameters>
+					<parameters name="his-sed-series">
+						<parameter name="SBTR" toleranceAbsolute="0.0001"/>
+						<parameter name="SBTRC" toleranceAbsolute="0.0001"/>
+						<parameter name="SSTR" toleranceAbsolute="0.0001"/>
+						<parameter name="SSTRC" toleranceAbsolute="0.0001"/>
 					</parameters>
 				</file>
 			</checks>

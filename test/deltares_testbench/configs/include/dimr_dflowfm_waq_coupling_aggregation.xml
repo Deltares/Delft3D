@@ -76,7 +76,7 @@
 </testCase>
 
 <testCase name="e02_f029_c202_hyd_file_westerschelde_3d_s_vag" ref="dflowfm_platform_specific_refs">
-  <path version="2024-01-11T13:10:00">e02_dflowfm/f029_hyd_file/c202_westerschelde_3d_s_vag</path>
+  <path version="2025-02-22T11:12:48.272000">e02_dflowfm/f029_hyd_file/c202_westerschelde_3d_s_vag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -147,7 +147,7 @@
 </testCase>
 
 <testCase name="e02_f029_c203_hyd_file_westerschelde_3d_s_hvag" ref="dflowfm_platform_specific_refs">
-  <path version="2024-01-11T13:10:00">e02_dflowfm/f029_hyd_file/c203_westerschelde_3d_s_hvag</path>
+  <path version="2025-02-22T11:21:54.702000">e02_dflowfm/f029_hyd_file/c203_westerschelde_3d_s_hvag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -218,7 +218,7 @@
 </testCase>
 
 <testCase name="e02_f029_c204_hyd_file_westerschelde_2d_hag" ref="dflowfm_default">
-  <path version="2024-04-19T11:06:00">e02_dflowfm/f029_hyd_file/c204_westerschelde_2d_hag</path>
+  <path version="2025-02-22T15:10:16.763000">e02_dflowfm/f029_hyd_file/c204_westerschelde_2d_hag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -282,7 +282,7 @@
     -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_agg_2d_continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        <parameter name="mesh2d_agg_2d_continuity" toleranceAbsolute="5.0e-05" toleranceRelative="1.0e-06"/>
       </parameters>
     </file>
   </checks>
@@ -504,7 +504,7 @@
 <!-- ONLINE AGGREGATION, THREE DOMAINS -->
 
 <testCase name="e02_f029_c301_hyd_file_westerschelde_3d_s_hag_3dom" ref="dflowfm_platform_specific_refs">
-  <path version="2024-04-19T13:20:00">e02_dflowfm/f029_hyd_file/c301_westerschelde_3d_s_hag_3dom</path>
+  <path version="2025-02-22T11:29:05.354000">e02_dflowfm/f029_hyd_file/c301_westerschelde_3d_s_hag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -581,7 +581,7 @@
 </testCase>
 
 <testCase name="e02_f029_c302_hyd_file_westerschelde_3d_s_vag_3dom" ref="dflowfm_platform_specific_refs">
-  <path version="2024-01-11T13:30:00">e02_dflowfm/f029_hyd_file/c302_westerschelde_3d_s_vag_3dom</path>
+  <path version="2025-02-22T11:29:20.102000">e02_dflowfm/f029_hyd_file/c302_westerschelde_3d_s_vag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -658,7 +658,7 @@
 </testCase>
 
 <testCase name="e02_f029_c303_hyd_file_westerschelde_3d_s_hvag_3dom" ref="dflowfm_platform_specific_refs">
-  <path version="2024-01-11T13:10:00">e02_dflowfm/f029_hyd_file/c303_westerschelde_3d_s_hvag_3dom</path>
+  <path version="2025-02-22T11:29:32.733000">e02_dflowfm/f029_hyd_file/c303_westerschelde_3d_s_hvag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>

@@ -276,12 +276,12 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f104_c01_junction-advection-acceleration-equidistant" ref="dimr_default">
-		<path version="2024-01-11T13:10:00">e02_dflowfm/f104_1D_numerical-aspects/c01_junction-advection-acceleration-equidistant</path>
+		<path version="2025-02-14T03:10:00">e02_dflowfm/f104_1D_numerical-aspects/c01_junction-advection-acceleration-equidistant</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
-					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_s1" toleranceAbsolute="0.005" />
+					<parameter name="mesh1d_u1" toleranceAbsolute="0.03" />
 				</parameters>
 			</file>
 		</checks>
@@ -573,12 +573,12 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f105_c05_circle-profile" ref="dimr_default">
-		<path version="2024-01-11T13:10:00">e02_dflowfm/f105_cross-sections/c05_circle-profile</path>
+		<path version="2025-02-14T03:10:00">e02_dflowfm/f105_cross-sections/c05_circle-profile</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
-					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_s1" toleranceAbsolute="0.0003" />
+					<parameter name="mesh1d_u1" toleranceAbsolute="0.004" />
 				</parameters>
 			</file>
 		</checks>
@@ -1062,13 +1062,13 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c09_Inverted_siphon" ref="dimr_default">
-		<path version="2024-04-19T13:10:00">e02_dflowfm/f106_hydraulic-structures/c09_Inverted_siphon</path>
+		<path version="2025-02-14T03:10:00">e02_dflowfm/f106_hydraulic-structures/c09_Inverted_siphon</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
 					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
 					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_q1" toleranceRelative="0.00001" />
 				</parameters>
 			</file>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="netCDF">

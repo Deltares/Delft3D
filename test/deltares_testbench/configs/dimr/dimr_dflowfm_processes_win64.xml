@@ -151,5 +151,5 @@
   <!--
   testCases
   -->
-  <xi:include href="../include/dflowfm_processes.xml"/>
+  <xi:include href="../include/dimr_dflowfm_processes.xml"/>
 </deltaresTestbench_v3>

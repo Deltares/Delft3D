@@ -27,9 +27,9 @@ object WindowsBuild : BuildType({
     """.trimIndent()
 
     params {
-        param("intel_fortran_compiler", "ifort")
-        param("container.tag", "vs2019-oneapi2023")
-        param("generator", """"Visual Studio 16 2019"""")
+        param("intel_fortran_compiler", "ifx")
+        param("container.tag", "vs2022-intel2024")
+        param("generator", """"Visual Studio 17 2022"""")
         param("enable_code_coverage_flag", "OFF")
         param("env.PATH", """%env.PATH%;"C:/Program Files/CMake/bin/"""")
         param("build_type", "Release")
