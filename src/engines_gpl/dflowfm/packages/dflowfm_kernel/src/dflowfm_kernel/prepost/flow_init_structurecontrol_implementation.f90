@@ -1974,7 +1974,7 @@ contains
       real(kind=dp), dimension(:), intent(inout) :: teta !< Theta-values of time integration for all flow links.
 
       ! set teta to 1 for a
-      integer :: i, nn, n12, kk, LL, L
+      integer :: i, nn, n12, kk, LL
       do i = 1, num_links
          do nn = 1, 2
             n12 = ln(nn, abs(links(i)))
