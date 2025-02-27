@@ -21,140 +21,140 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_valpoi
-    use m_waq_precision
-    use m_string_utils
+   use m_waq_precision
+   use m_string_utils
 
-    implicit none
+   implicit none
+
+   integer(kind=int_wp), parameter, public :: nopred = 6
+   integer, parameter, private :: nzoek = 20
+   character(len=nzoek), private :: predef(nopred) = [character(len=nzoek) :: &
+                                                      'VOLUME', &
+                                                      'ITIME', &
+                                                      'IDT', &
+                                                      'DELT', &
+                                                      'ITSTRT', &
+                                                      'ITSTOP']
 
 contains
 
+   subroutine valpoi(num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                     num_time_functions, constants, paname, funame, sfname, &
+                     valnam, ivalip, line)
+      !     Function            : sets pointers for process parametrs
 
-    SUBROUTINE VALPOI (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, SYNAME, num_constants, &
-            num_time_functions, constants, PANAME, FUNAME, SFNAME, &
-            VALNAM, IVALIP, LINE)
-        !     FUNCTION            : sets pointers for process parametrs
+      use m_waq_data_structure
+      use timers !   performance timers
 
-        use m_waq_data_structure
-        use timers       !   performance timers
+      integer(kind=int_wp), intent(in) :: num_substances_total !< Total number of substances
+      integer(kind=int_wp), intent(in) :: num_spatial_parameters !< Number of parameters
+      integer(kind=int_wp), intent(in) :: num_spatial_time_fuctions !< Number of segment functions
+      integer(kind=int_wp), intent(in) :: num_constants !< Number of constants used
+      integer(kind=int_wp), intent(in) :: num_time_functions !< Number of functions ( user )
+      integer(kind=int_wp), intent(out) :: ivalip !< Pointer in SSA.
 
-        INTEGER(kind = int_wp), intent(in) :: num_substances_total   !< Total number of substances
-        INTEGER(kind = int_wp), intent(in) :: num_spatial_parameters    !< Number of parameters
-        INTEGER(kind = int_wp), intent(in) :: num_spatial_time_fuctions  !< Number of segment functions
-        INTEGER(kind = int_wp), intent(in) :: num_constants  !< Number of constants used
-        INTEGER(kind = int_wp), intent(in) :: num_time_functions   !< Number of functions ( user )
-        INTEGER(kind = int_wp), intent(out) :: IVALIP  !< Pointer in SSA.
+      character(len=*), intent(in) :: valnam !< Name of variable in question
+      character(len=*), intent(out) :: line !< Report line
 
-        CHARACTER(len = *), intent(in) :: VALNAM  !< Name of variable in question
-        CHARACTER(len = *), intent(out) :: LINE    !< Report line
+      character(len=*), intent(in) :: syname(num_substances_total) !< Constant names
+      character(len=*), intent(in) :: paname(num_spatial_parameters) !< Parameter names
+      character(len=*), intent(in) :: funame(num_time_functions) !< Function names
+      character(len=*), intent(in) :: sfname(num_spatial_time_fuctions) !< Segment function names
 
-        CHARACTER(len = *), intent(in) :: SYNAME(num_substances_total)  !< Constant names
-        CHARACTER(len = *), intent(in) :: PANAME(num_spatial_parameters)   !< Parameter names
-        CHARACTER(len = *), intent(in) :: FUNAME(num_time_functions)  !< Function names
-        CHARACTER(len = *), intent(in) :: SFNAME(num_spatial_time_fuctions) !< Segment function names
+      type(t_waq_item), intent(in) :: constants !< delwaq constants list
+      !
+      !     Local
+      !
+      integer(kind=int_wp) :: isys, isfun, ipa, ifun, ico
+      integer(kind=int_wp) :: ithndl = 0
 
-        type(t_waq_item), intent(in) :: constants       !< delwaq constants list
-        !
-        !     Local
-        !
-        INTEGER(kind = int_wp) :: NZOEK, ISYS, ISFUN, IPA, IFUN, ICO
-        PARAMETER   (NZOEK = 20)
-        integer(kind = int_wp), PARAMETER :: NOPRED = 6
-        CHARACTER(NZOEK) PREDEF(NOPRED)
-        integer(kind = int_wp) :: ithndl = 0
-
-        if (timon) call timstrt("valpoi", ithndl)
-        !
-        PREDEF(1) = 'VOLUME'
-        PREDEF(2) = 'ITIME'
-        PREDEF(3) = 'IDT'
-        PREDEF(4) = 'DELT'
-        PREDEF(5) = 'ITSTRT'
-        PREDEF(6) = 'ITSTOP'
-        !
-        !
-        !     determine how VAL is modelled
-        !
-        !     Predefined ?
-        !
-        IVALIP = index_in_array(VALNAM(:NZOEK), PREDEF)
-        IF (IVALIP == 1) THEN
-            WRITE(LINE, '(A)') '       Using DELWAQ volume'
-            GOTO 800
-        ENDIF
-        IF (IVALIP == 2) THEN
-            WRITE(LINE, '(A)') '       Using DELWAQ time'
-            GOTO 800
-        ENDIF
-        IF (IVALIP == 3) THEN
-            WRITE(LINE, '(A)') '       Using DELWAQ timestep'
-            GOTO 800
-        ENDIF
-        IF (IVALIP == 4) THEN
-            WRITE(LINE, '(A)') '       Using DELWAQ timestep in days'
-            GOTO 800
-        ENDIF
-        IF (IVALIP == 5) THEN
-            WRITE(LINE, '(A)') '       Using DELWAQ start time'
-            GOTO 800
-        ENDIF
-        IF (IVALIP == 6) THEN
-            WRITE(LINE, '(A)') '       Using DELWAQ stop time'
-            GOTO 800
-        ENDIF
-        !
-        !     as model variable ?
-        !
-        ISYS = index_in_array(VALNAM(:NZOEK), SYNAME)
-        IF (ISYS > 0) THEN
-            WRITE(LINE, '(A,I3)') '       Using substance nr ', ISYS
-            IVALIP = NOPRED + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + ISYS
-            GOTO 800
-        ENDIF
-        !
-        !     as segment function ?
-        !
-        ISFUN = index_in_array(VALNAM (:NZOEK), SFNAME)
-        IF (ISFUN > 0) THEN
-            WRITE(LINE, '(A,I3)') '       Using segment function nr', ISFUN
-            IVALIP = NOPRED + num_constants + num_spatial_parameters + num_time_functions + ISFUN
-            GOTO 800
-        ENDIF
-        !
-        !     as function ?
-        !
-        IFUN = index_in_array(VALNAM (:NZOEK), FUNAME)
-        IF (IFUN > 0) THEN
-            WRITE(LINE, '(A,I3)') '       Using function nr', IFUN
-            IVALIP = NOPRED + num_constants + num_spatial_parameters + IFUN
-            GOTO 800
-        ENDIF
-        !
-        !     as parameter ?
-        !
-        IPA = index_in_array(VALNAM (:NZOEK), PANAME)
-        IF (IPA > 0) THEN
-            WRITE(LINE, '(A,I3)') '       Using parameter nr', IPA
-            IVALIP = NOPRED + num_constants + IPA
-            GOTO 800
-        ENDIF
-        !
-        !     as constant ?
-        !
-        ico = constants%find(valnam)
-        if (ico > 0) then
-            write(line, '(a,i3,a,g13.6)') '       Using constant nr', ico, ' with value:', constants%constant(ico)
-            ivalip = nopred + ico
-            goto 800
-        endif
-        !
-        !     not found
-        !
-        IVALIP = -1
-        !
-        800 CONTINUE
-        !
-        if (timon) call timstop(ithndl)
-        RETURN
-    END
+      if (timon) call timstrt("VALPOI", ithndl)
+      !
+      !
+      !
+      !     determine how VAL is modelled
+      !
+      !     Predefined ?
+      !
+      ivalip = index_in_array(valnam(:nzoek), predef)
+      if (ivalip == 1) then
+         write (line, '(A)') '       Using DELWAQ volume'
+         goto 800
+      end if
+      if (ivalip == 2) then
+         write (line, '(A)') '       Using DELWAQ time'
+         goto 800
+      end if
+      if (ivalip == 3) then
+         write (line, '(A)') '       Using DELWAQ timestep'
+         goto 800
+      end if
+      if (ivalip == 4) then
+         write (line, '(A)') '       Using DELWAQ timestep in days'
+         goto 800
+      end if
+      if (ivalip == 5) then
+         write (line, '(A)') '       Using DELWAQ start time'
+         goto 800
+      end if
+      if (ivalip == 6) then
+         write (line, '(A)') '       Using DELWAQ stop time'
+         goto 800
+      end if
+      !
+      !     as model variable ?
+      !
+      isys = index_in_array(valnam(:nzoek), syname)
+      if (isys > 0) then
+         write (line, '(A,I3)') '       Using substance nr ', isys
+         ivalip = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + isys
+         goto 800
+      end if
+      !
+      !     as segment function ?
+      !
+      isfun = index_in_array(valnam(:nzoek), sfname)
+      if (isfun > 0) then
+         write (line, '(A,I3)') '       Using segment function nr', isfun
+         ivalip = nopred + num_constants + num_spatial_parameters + num_time_functions + isfun
+         goto 800
+      end if
+      !
+      !     as function ?
+      !
+      ifun = index_in_array(valnam(:nzoek), funame)
+      if (ifun > 0) then
+         write (line, '(A,I3)') '       Using function nr', ifun
+         ivalip = nopred + num_constants + num_spatial_parameters + ifun
+         goto 800
+      end if
+      !
+      !     as parameter ?
+      !
+      ipa = index_in_array(valnam(:nzoek), paname)
+      if (ipa > 0) then
+         write (line, '(A,I3)') '       Using parameter nr', ipa
+         ivalip = nopred + num_constants + ipa
+         goto 800
+      end if
+      !
+      !     as constant ?
+      !
+      ico = constants%find(valnam)
+      if (ico > 0) then
+         write (line, '(a,i3,a,g13.6)') '       Using constant nr', ico, ' with value:', constants%constant(ico)
+         ivalip = nopred + ico
+         goto 800
+      end if
+      !
+      !     not found
+      !
+      ivalip = -1
+      !
+800   continue
+      !
+      if (timon) call timstop(ithndl)
+      return
+   end
 
 end module m_valpoi
