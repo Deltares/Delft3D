@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 SIGNTOOL = "signtool.exe"
 
@@ -81,7 +82,7 @@ def verify_signing_authority(filepath: str, developer_prompt: str) -> tuple:
         return f"Error: {e}"
 
 
-def get_actual_files(directory: str) -> list:
+def get_actual_files(directory: str) -> list[Path]:
     """
     Recursively retrieves a list of relative file paths for all .dll and .exe files in the given directory.
 
@@ -91,21 +92,19 @@ def get_actual_files(directory: str) -> list:
     Returns:
         list: A list of relative file paths for .dll and .exe files found in the directory.
     """
-    actual_files = []
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.lower().endswith((".dll", ".exe")):
-                filepath = os.path.join(root, file)
-                relative_filepath = os.path.relpath(filepath, directory)
-                actual_files.append(relative_filepath)
-    return actual_files
+    directory = Path(directory)
+    return [
+        path.relative_to(directory)
+        for path in directory.glob("**/*")
+        if path.suffix.lower() in (".dll", ".exe")
+    ]
 
 
 def validate_signing_status(
     file: str,
     directory: str,
-    files_that_should_be_signed_with_issued_to: list[str],
-    files_that_should_not_be_signed: list[str],
+    files_that_should_be_signed_with_issued_to: list,
+    files_that_should_not_be_signed: list[Path],
     developer_prompt: str,
 ) -> tuple:
     """
@@ -149,16 +148,21 @@ def validate_signing_status(
     return "", True
 
 
+def signing_is_valid(
+    filepath: str, developer_prompt: str, expected_issued_to: str = ""
+) -> bool:
+    status, issued_to = verify_signing_authority(filepath, developer_prompt)
+    return status == "Verified" and expected_issued_to == issued_to
+
+
 def is_signing_correct(
-    actual_files: list[str],
-    files_that_should_be_signed_with_issued_to: list[str],
-    files_that_should_not_be_signed: list[str],
+    files_that_should_be_signed_with_issued_to: list,
+    files_that_should_not_be_signed: list[Path],
     developer_prompt: str,
 ) -> bool:
     """
     Checks if the signing status of files is correct.
     Args:
-        actual_files (list): List of files to check.
         files_that_should_be_signed_with_issued_to (list): List of files that should be signed with "issuedTo".
         files_that_should_not_be_signed (list): List of files that should not be signed.
         developer_prompt (str): Developer prompt for signing validation.
@@ -166,31 +170,29 @@ def is_signing_correct(
         bool: True if all files are signed correctly, False otherwise.
     """
     files_signed_correctly = True
+    for expected_signed_file in files_that_should_be_signed_with_issued_to:
+        filepath = os.path.join(directory, expected_signed_file["file"])
+        if signing_is_valid(
+            filepath, developer_prompt, expected_signed_file["issuedTo"]
+        ):
+            print(f"File is correctly signed: {filepath}")
+        else:
+            files_signed_correctly = False
+            print(f"File is not correctly signed: {filepath}")
 
-    with ThreadPoolExecutor() as executor:
-        signing_statuses = [
-            executor.submit(
-                validate_signing_status,
-                file,
-                directory,
-                files_that_should_be_signed_with_issued_to,
-                files_that_should_not_be_signed,
-                developer_prompt,
-            )
-            for file in actual_files
-        ]
-        for signing_status in signing_statuses:
-            message, status = signing_status.result()
-            if message:
-                print(message)
-            if not status:
-                files_signed_correctly = False
+    for expected_unsigned_file in files_that_should_not_be_signed:
+        filepath = os.path.join(directory, expected_unsigned_file)
+        if not signing_is_valid(filepath, developer_prompt):
+            print(f"File is correctly not signed: {expected_unsigned_file}")
+        else:
+            files_signed_correctly = False
+            print(f"File is signed but should not be: {expected_unsigned_file}")
 
     return files_signed_correctly
 
 
 def validate_directory_contents(
-    actual_files: list[str], expected_files: list[str]
+    actual_files: list[Path], expected_files: list[Path]
 ) -> bool:
     """
     Validates the contents of a directory by comparing the actual files against the expected files.
@@ -200,29 +202,8 @@ def validate_directory_contents(
     Returns:
         bool: True if all expected files are present and there are no extra files, False otherwise.
     """
-    files_complete_and_valid = True
-    missing_files = []
-    extra_files = []
-
-    for expected_file in expected_files:
-        found = False
-        for actual_file in actual_files:
-            if expected_file in actual_file:
-                found = True
-                break
-        if not found:
-            missing_files.append(expected_file)
-            files_complete_and_valid = False
-
-    for actual_file in actual_files:
-        found = False
-        for expected_file in expected_files:
-            if expected_file in actual_file:
-                found = True
-                break
-        if not found:
-            extra_files.append(actual_file)
-            files_complete_and_valid = False
+    missing_files = set(expected_files) - set(actual_files)
+    extra_files = set(actual_files) - set(expected_files)
 
     if missing_files:
         print("Missing files:")
@@ -234,7 +215,7 @@ def validate_directory_contents(
         for file in extra_files:
             print(file)
 
-    return files_complete_and_valid
+    return not missing_files and not extra_files
 
 
 def print_example_json_file_structure() -> None:
@@ -289,9 +270,11 @@ if __name__ == "__main__":
 
     try:
         files_that_should_be_signed = [
-            item["file"] for item in files_to_check["signed"]
+            Path(item["file"]) for item in files_to_check["signed"]
         ]
-        files_that_should_not_be_signed = files_to_check["notSigned"]
+        files_that_should_not_be_signed = [
+            Path(file) for file in files_to_check["notSigned"]
+        ]
     except Exception as e:
         print(f"Error parsing JSON file: {file_structure_json}")
         print(f"Error: {e}")
@@ -305,18 +288,18 @@ if __name__ == "__main__":
         print("Directory check failed: Missing or extra files detected.")
         sys.exit(1)
 
-    print(     "Directory check passed: All expected files are present and in the right structure."
+    print(
+        "Directory check passed: All expected files are present and in the right structure."
     )
 
     if not is_signtool_available(developer_prompt):
         print(
-            "signtool is required to run this script. Please ensure it is installed and available in the PATH."
+            "Signtool is required to run this script. Please ensure it is installed and available in the PATH."
         )
         sys.exit(1)
 
     files_that_should_be_signed_with_issued_to = files_to_check["signed"]
     if not is_signing_correct(
-        actual_files,
         files_that_should_be_signed_with_issued_to,
         files_that_should_not_be_signed,
         developer_prompt,
