@@ -89,7 +89,7 @@ persistent buffered
 % check if file is in buffer
 if isstandalone
     qpdir = qp_basedir('exe');
-    matlabdir = [qpdir, filesep, '..', filesep, '..', filesep, 'delf3d_matlab'];
+    matlabdir = [qpdir, filesep, '..', filesep, '..', filesep, 'delft3d_matlab'];
     % should we also check private?
     fullFileName = [matlabdir, filesep, fileName];
 else
