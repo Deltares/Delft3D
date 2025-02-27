@@ -54,7 +54,11 @@ object WindowsCollect : BuildType({
             name = "Verify (un)signed binaries and directory structure"
             command = file {
                 filename = "ci/DIMRset_delivery/src/validate_signing.py"
-                scriptArguments = "\"ci\\DIMRset_delivery\\src\\%product%-binaries.json\" \"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat\" \"x64\""
+                scriptArguments = """
+                    "ci\\DIMRset_delivery\\src\\%dep.${WindowsBuild.id}.product%-binaries.json" 
+                    "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat" 
+                    "x64"
+                """.trimIndent()
             }
             conditions {
                 equals("dep.${WindowsBuild.id}.product", "fm-suite")
