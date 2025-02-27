@@ -217,6 +217,7 @@ set(testbench-waq_configuration "WAQ-TESTBENCH")
 set(testbench-part_configuration "PART-TESTBENCH")
 set(testbench-wave_configuration "WAVE-TESTBENCH")
 set(testbench-tc_configuration "TC-TESTBENCH")
+set(testbench-qp_configuration "QP-TESTBENCH")
 
 # Combined (multi-component) configurations
 # For products that we release
@@ -245,7 +246,8 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${testbench-waq_configuration}
      OR ${configuration_type} STREQUAL ${testbench-part_configuration}
      OR ${configuration_type} STREQUAL ${testbench-wave_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-tc_configuration}))
+     OR ${configuration_type} STREQUAL ${testbench-tc_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-qp_configuration}))
    message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
 endif()
 
@@ -372,6 +374,12 @@ endif()
 if(${configuration_type} STREQUAL ${testbench-tc_configuration})
     message(STATUS "Generating solution for tc testbench ...")
     include(configurations/testbench/tc_configuration.cmake)
+endif()
+
+# QUICKPLOT configuration
+if(${configuration_type} STREQUAL ${testbench-qp_configuration})
+    message(STATUS "Generating solution for QUICKPLOT testbench ...")
+    include(configurations/testbench/qp_configuration.cmake)
 endif()
 
 ### Composed configurations for releases
