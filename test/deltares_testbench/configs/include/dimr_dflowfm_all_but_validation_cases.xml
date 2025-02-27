@@ -203,7 +203,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c080_chezy_uniform" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f004_bottomfriction/c080_chezy_uniform</path>
+      <path version="2025-02-27T15:36:42.803000">e02_dflowfm/f004_bottomfriction/c080_chezy_uniform</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -224,7 +224,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c081_chezy_uniform_trachytopes" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f004_bottomfriction/c081_chezy_uniform_trachytopes</path>
+      <path version="2025-02-27T15:59:07.211000">e02_dflowfm/f004_bottomfriction/c081_chezy_uniform_trachytopes</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -243,7 +243,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c083_trachytopes_spatially_varying_25" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f004_bottomfriction/c083_trachytopes_spatially_varying_25</path>
+      <path version="2025-02-27T16:04:12.368000">e02_dflowfm/f004_bottomfriction/c083_trachytopes_spatially_varying_25</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -262,7 +262,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c084_trachytopes_spatially_varying_50" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f004_bottomfriction/c084_trachytopes_spatially_varying_50</path>
+      <path version="2025-02-27T16:09:22.374000">e02_dflowfm/f004_bottomfriction/c084_trachytopes_spatially_varying_50</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -357,7 +357,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c089_trachytopes_spatially_varying_50" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f004_bottomfriction/c089_trachytopes_spatially_varying_50</path>
+      <path version="2025-02-27T16:16:20.841000">e02_dflowfm/f004_bottomfriction/c089_trachytopes_spatially_varying_50</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -378,7 +378,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c090_trachytopes_spatially_varying_50_momsol" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f004_bottomfriction/c090_trachytopes_spatially_varying_50_momsol</path>
+      <path version="2025-02-27T16:18:51.558000">e02_dflowfm/f004_bottomfriction/c090_trachytopes_spatially_varying_50_momsol</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -397,7 +397,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c091_chezy_trachytopes_discharge_dependent" ref="dflowfm_default">
-      <path version="2024-03-22T19:40:00">e02_dflowfm/f004_bottomfriction/c091_chezy_trachytopes_discharge_dependent</path>
+      <path version="2025-02-27T16:21:07.399000">e02_dflowfm/f004_bottomfriction/c091_chezy_trachytopes_discharge_dependent</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -418,7 +418,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c092_chezy_trachytopes_waterlevel_dependent" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f004_bottomfriction/c092_chezy_trachytopes_waterlevel_dependent</path>
+      <path version="2025-02-27T16:23:48.200000">e02_dflowfm/f004_bottomfriction/c092_chezy_trachytopes_waterlevel_dependent</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -456,7 +456,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c095_chezy_trachytopes_waterlevel_dependent_dt" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f004_bottomfriction/c095_chezy_trachytopes_waterlevel_dependent_dt</path>
+      <path version="2025-02-27T16:27:11.112000">e02_dflowfm/f004_bottomfriction/c095_chezy_trachytopes_waterlevel_dependent_dt</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_map.nc" type="netCDF">
