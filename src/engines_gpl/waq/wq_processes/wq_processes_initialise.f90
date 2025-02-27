@@ -115,7 +115,6 @@ contains
         real(kind = real_wp) :: verspe = 1.0    ! version bloom.spe file
         integer(kind = int_wp), parameter :: novarm = 15000   ! max number of variables overall
         integer(kind = int_wp), parameter :: nbprm = 1750    ! max number of processes
-        integer(kind = int_wp), parameter :: nopred = 6       ! number of pre-defined variables
         integer(kind = int_wp) :: open_shared_library
 
         integer(kind = int_wp) :: noqtt            ! total number of exhanges

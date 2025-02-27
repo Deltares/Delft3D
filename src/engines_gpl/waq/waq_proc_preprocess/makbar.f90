@@ -81,6 +81,7 @@ contains
         character(len = 20) :: valnam ! variable name
         character(len = 50) :: valtxt ! variable description
         character(len = 100) :: line   ! line buffer for output
+        character(len = 100) :: line_input   ! line buffer for reporting input
         character(len = 20), dimension(mismax) :: misnam ! name missing variables
         character(len = 50), dimension(mismax) :: mistxt ! description missing variables
 
@@ -94,10 +95,12 @@ contains
         integer(kind = int_wp) :: iact    ! index in active list
         integer(kind = int_wp) :: nmis    ! actual number of missing variables
         integer(kind = int_wp) :: imis    ! index number of missing variables
+        integer(kind = int_wp) :: ico     ! index number of specified constant
         integer(kind = int_wp) :: i_star  ! index of * in name
         integer(kind = int_wp) :: ithndl = 0
 
-        logical :: iok ! indicates if its ok
+        logical :: iok         ! indicates if its ok
+        logical :: write_name  ! write the name only once
 
         type(procesprop), pointer :: proc1 ! process description
         type(procesprop), pointer :: proc2 ! description second process
@@ -113,6 +116,7 @@ contains
         do iproc = 1, num_processes_activated
 
             proc1 => procesdef%procesprops(iproc)
+
             if (proc1%sfrac_type == SFRAC_DUPLICATED_ORIGINAL) then
                 !
                 ! prevent the original version of duplicated processes from showing up in
@@ -140,22 +144,33 @@ contains
             ! check input items
 
             do i_input = 1, proc1%no_input
+                write_name = .true.
 
                 if (proc1%input_item(i_input)%type == IOTYPE_SEGMENT_INPUT) then
 
-                    if (.not.is_missing(proc1%input_item(i_input)%actdef)) cycle
                     valnam = proc1%input_item(i_input)%name
                     valtxt = proc1%input_item(i_input)%item%text
-                    write(line, '(4a)') '       [', valnam, '] ', valtxt
-                    call write_log_message(line)
 
                     10          continue
 
                     ! specified in input?
 
+                    line_input = ' '
                     call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
                             num_time_functions, constants, paname, funame, sfname, &
-                            valnam, ivalip, line)
+                            valnam, ivalip, line_input)
+
+                    if (.not.is_missing(proc1%input_item(i_input)%actdef) .and. ivalip == -1) then
+                        cycle
+                    else
+                        if ( write_name ) then
+                            write(line, '(4a)') '       [', valnam, '] ', valtxt
+                            call write_log_message(line)
+                            write_name = .false.
+                        endif
+
+                        line = line_input
+                    endif
 
                     ! output of previous proces ? , is this switched on , switch it on
 
@@ -194,6 +209,17 @@ contains
                             endif
 
                         enddo
+                    else
+                        ! check that the constant does NOT have a missing value (but: only constants)
+
+                        ico = ivalip - nopred
+                        if ( ico >= 1 .and. ico <= num_constants ) then
+                            if ( is_missing(constants%constant(ico)) ) then
+                                write(line, '(a)') '       ERROR: constant has missing value - specify a value other than -999'
+                                proc1%linvok = .false.
+                            endif
+                        endif
+
                     endif
                     if (ivalip == -1) then
 

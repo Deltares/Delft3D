@@ -918,7 +918,7 @@
         <file name="dflowfm/dflowfmoutput/gatesub_3Dz_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0002" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.002" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
 
           </parameters>

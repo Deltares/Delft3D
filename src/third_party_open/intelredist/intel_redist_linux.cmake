@@ -6,4 +6,5 @@ install (DIRECTORY ${mkl_path} DESTINATION lib
   PATTERN "libmkl_def*.so*"
   PATTERN "libmkl_intel_thread.so*"
   PATTERN "libmkl_sequential.so*"
+  PATTERN "intel64" EXCLUDE
 )
