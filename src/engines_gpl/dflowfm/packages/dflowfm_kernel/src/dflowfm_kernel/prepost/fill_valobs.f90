@@ -227,7 +227,7 @@ module m_fill_valobs
             tmp_interp = s1 - bl
             call interpolate_horizontal (tmp_interp,i,IPNT_HS,UNC_LOC_S)
             
-            call interpolate_horizontal (bl        ,i,IPNT_HS,UNC_LOC_S)
+            call interpolate_horizontal (bl        ,i,IPNT_BL,UNC_LOC_S)
 
             valobs(i, IPNT_CMX) = cmxobs(i)
 
@@ -276,6 +276,7 @@ module m_fill_valobs
                      valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
                   end do
                end if
+               
                if (jaPATM > 0 .and. allocated(patm)) then
                   valobs(i, IPNT_PATM) = PATM(k)
                end if
