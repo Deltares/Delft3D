@@ -9,9 +9,11 @@ import Delft3D.verschilanalyse.ReportVerschilanalyse
 
 object StartVerschilanalyse : BuildType({
     name = "Start verschilanalyse models"
+    maxRunningBuilds = 1
 
     vcs {
         root(DslContext.settingsRoot)
+        cleanCheckout = true
     }
 
     params {

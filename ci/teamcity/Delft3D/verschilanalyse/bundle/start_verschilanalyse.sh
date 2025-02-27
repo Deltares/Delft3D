@@ -79,7 +79,6 @@ export REPORT_DIR="${VAHOME}/report"
 DELFT3D_SIF="${HOME}/.cache/verschilanalyse/delft3dfm.sif"
 
 module purge
-module load aws
 module load apptainer/1.2.5
 
 # Clean-up report dir
@@ -87,8 +86,11 @@ rm -rf "$REPORT_DIR"
 mkdir -p "${REPORT_DIR}/logs"
 
 # Get latest input data from MinIO.
-aws --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
-    s3 sync --delete --no-progress "${BUCKET}/input/" "${VAHOME}/input/"
+srun --nodes=1 --ntasks=1 --cpus-per-task=4 --partition=4vcpu \
+    docker run --rm --volume="${HOME}/.aws:/root/.aws:ro" --volume="${VAHOME}/input:/data" \
+    docker.io/amazon/aws-cli:2.22.7 \
+    --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
+    s3 sync --delete --no-progress "${BUCKET}/input/" /data
 
 # Download reference output data.
 SYNC_REFS_JOB_ID=$(sbatch --parsable ./jobs/sync_model_references.sh)

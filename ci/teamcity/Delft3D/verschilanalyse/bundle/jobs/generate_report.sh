@@ -40,5 +40,8 @@ rm -rf !(report.zip)
 popd
 
 # Upload report dir to MinIO.
-aws --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
-    s3 sync --delete --no-progress "$REPORT_DIR" "${BUCKET}/${OUTPUT_PREFIX}/report"
+docker run --rm \
+    --volume="${HOME}/.aws:/root/.aws:ro" --volume="${REPORT_DIR}:/data:ro" \
+    docker.io/amazon/aws-cli:2.22.7 \
+    --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
+    s3 sync --delete --no-progress /data "${BUCKET}/${OUTPUT_PREFIX}/report"

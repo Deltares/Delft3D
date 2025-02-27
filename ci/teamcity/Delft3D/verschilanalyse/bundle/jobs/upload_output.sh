@@ -43,7 +43,10 @@ find "${VAHOME}/input" -mindepth 1 -maxdepth 1 -type d '!' -empty -print0 \
     | xargs -0 -P8 -I'{}' bash -c 'zip_output "{}"'
 
 # Upload the archives to MinIO.
-aws --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
-    s3 sync --delete --no-progress "$TMP_ARCHIVE_DIR" "${BUCKET}/${OUTPUT_PREFIX}/output"
+docker run --rm \
+    --volume="${HOME}/.aws:/root/.aws:ro" --volume="${TMP_ARCHIVE_DIR}:/data:ro" \
+    docker.io/amazon/aws-cli:2.22.7 \
+    --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
+    s3 sync --delete --no-progress /data "${BUCKET}/${OUTPUT_PREFIX}/output"
 
 rm -rf "$TMP_ARCHIVE_DIR"

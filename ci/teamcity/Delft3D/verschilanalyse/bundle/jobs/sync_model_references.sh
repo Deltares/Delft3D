@@ -28,8 +28,11 @@ export -f unzip_references
 rm -rf "$REFERENCE_DIR"
 mkdir -p "$ARCHIVE_DIR" "$REFERENCE_DIR"
 
-aws --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
-    s3 sync --delete --no-progress "${BUCKET}/${REFERENCE_PREFIX}" "$ARCHIVE_DIR"
+docker run --rm \
+    --volume="${HOME}/.aws:/root/.aws:ro" --volume="${ARCHIVE_DIR}:/data" \
+    docker.io/amazon/aws-cli:2.22.7 \
+    --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
+    s3 sync --delete --no-progress "${BUCKET}/${REFERENCE_PREFIX}" /data
 
 find "$ARCHIVE_DIR" -iname '*.zip' -print0 \
     | xargs -0 -I'{}' -P8 bash -c 'unzip_references "{}"'

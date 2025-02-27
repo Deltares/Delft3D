@@ -18,10 +18,6 @@ if [[ \
     exit 1
 fi
 
-# Purge the `aws` module. For some reason it breaks curl.
-# It replaces the openssl library with a version that doesn't have the same symbols.
-module purge
-
 curl --fail --silent --show-error -X POST \
     --header "Authorization: Bearer $(cat "${HOME}/.teamcity/verschilanalyse-token")" \
     --header "Accept: application/json" \
