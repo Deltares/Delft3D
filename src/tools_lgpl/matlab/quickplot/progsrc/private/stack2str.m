@@ -71,14 +71,15 @@ for i = 1:stacklen
         p = [p filesep];
     end
     i2 = i2+1;
-    str{i2} = sprintf('In %s%s%s at line %i',p,f,fcn,stack(i).line);
     try
         lineStr = getline([p,f,'.m'],stack(i).line);
+        str{i2} = sprintf('In %s%s%s at line %i:',p,f,fcn,stack(i).line);
         i2 = i2+1;
-        str{i2} = lineStr;
+        str{i2} = ['  ', strtrim(lineStr)];
     catch
         % couldn't find the line ... don't trigger and error while
-        % processing and error
+        % processing and error ... just write the same line without colon
+        str{i2} = sprintf('In %s%s%s at line %i',p,f,fcn,stack(i).line);
     end
 end
 str(i2+1:end) = [];
@@ -114,7 +115,11 @@ else
     fileListing = getfile(fullFileName);
     if isempty(i)
         % create new record
-        i = length(buffered.fileNames) + 1;
+        if isempty(buffered)
+            i = 1;
+        else
+            i = length(buffered.fileNames) + 1;
+        end
         buffered.fileNames{i} = fullFileName;
     else
         % overwrite previous record
