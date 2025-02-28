@@ -1,6 +1,7 @@
 import os
-from typing import List
 import tarfile
+import zipfile
+from typing import List
 
 from helpers.SshClient import SshClient
 from lib.TeamCity import TeamCity
