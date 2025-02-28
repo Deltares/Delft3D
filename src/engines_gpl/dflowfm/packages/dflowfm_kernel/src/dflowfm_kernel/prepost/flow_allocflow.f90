@@ -1133,7 +1133,9 @@ contains
          heatsrc0 = 0d0
 
          if (jatem > 1) then ! also heat modelling involved
-            if (allocated(tair)) deallocate (tair, rhum, clou)
+            if (allocated(tair)) deallocate (tair)
+            if (allocated(rhum)) deallocate (rhum)
+            if (allocated(clou)) deallocate (clou)
             allocate (tair(ndx), rhum(ndx), clou(ndx), stat=ierr)
             call aerr('tair(ndx), rhum(ndx), clou(ndx)', ierr, 3 * ndx)
             tair = BACKGROUND_AIR_TEMPERATURE
