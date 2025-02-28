@@ -701,6 +701,7 @@ for ivar = 1:nvars
             sicvar = Factor*icvar;
             %
             vDims  = Info.Dimension;
+            cInfo  = nc.Dataset(icvar);
             cvDims = nc.Dataset(icvar).Dimension;
             cvSize = nc.Dataset(icvar).Size;
             if nc.Dataset(icvar).Nctype==2
@@ -753,25 +754,40 @@ for ivar = 1:nvars
                 case 'aux-time'
                     Info.AuxTime = [Info.AuxTime sicvar];
                 case 'label'
-                    if isempty(Info.Attribute)
+                    % We have to be careful with label dimensions. We don't
+                    % want to use just any label dimension as station since
+                    % in that case we may end up using, for instance,
+                    % sediment names as station names
+                    if isempty(cInfo.Attribute)
                         cf_role = '';
                     else
-                        Attribs = {Info.Attribute.Name};
+                        Attribs = {cInfo.Attribute.Name};
                         cf_role_attrib = strcmpi('cf_role',Attribs);
                         if any(cf_role_attrib)
-                            cf_role = Info.Attribute(cf_role_attrib).Value;
+                            cf_role = cInfo.Attribute(cf_role_attrib).Value;
                         else
                             cf_role = '';
                         end
                     end
                     AcceptedStationNames = {'cross_section_name','cross_section_id','station_name','station_id','dredge_area_name','dump_area_name','area_id'};
-                    if sicvar>0 % don't use auto detect label dimensions as station ... this will trigger sediment names to be used as station name for map-files
+                    if strcmp(cInfo.Name, Info.Name)
+                        % don't use a label dimension for the variable
+                        % itself ... it's better to link it to coordinates
+                        % or index
+                    elseif sicvar>0
+                        % if the label dimension is explicitly listed as
+                        % "coordinate", it can/should be used
                         Info.Station = [Info.Station sicvar];
                     elseif ismember(cf_role,cfLocationIds)
-                        Info.Station = [Info.Station -sicvar];
+                        % if the label dimension has the appropriate
+                        % cf_role set, we may use it ...
+                        Info.Station = [Info.Station sicvar];
                     elseif ismember(nc.Dataset(-sicvar).Name,AcceptedStationNames)
+                        % if the name matches one of the accepted station
+                        % names, we may use it ...
                         Info.Station = [Info.Station sicvar];
                     else
+                        % all other label dimensions map to subfields
                         if CHARDIM==1
                             sfdim = nc.Dataset(icvar).Dimid(2);
                         else
@@ -794,6 +810,8 @@ for ivar = 1:nvars
     % For every dimension I may have multiple (auxiliary) coordinates. How
     % to deal with that?
     %
+    Info.Station
+    {nc.Dataset(abs(Info.Station)).Name}
     if isempty(Info.Time) && ~isempty(Info.AuxTime)
         Info.Time = Info.AuxTime;
         Info.AuxTime = [];
