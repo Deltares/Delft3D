@@ -1345,7 +1345,9 @@ subroutine GetCSParsFlowCross(cross, dpt, flowArea, wetPerimeter, flowWidth, max
       maxFlowWidth1 = flowWidth
    case (CS_YZ_PROF)
       ! Also in case a conveyance table is time dependent, the geometry remains constant, so no need for interpolation of time dependent conveyance tables is required.
-      call YZProfile(dpt, cross%convtab1, 0, flowArea, flowWidth, maxFlowWidth1, wetPerimeter)
+      if (associated(cross%convtab1)) then
+         call YZProfile(dpt, cross%convtab1, 0, flowArea, flowWidth, maxFlowWidth1, wetPerimeter)
+      endif
    case default
       call SetMessage(LEVEL_ERROR, 'INTERNAL ERROR: Unknown type of cross section')
    end select
