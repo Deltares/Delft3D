@@ -39,7 +39,10 @@ module m_fm_advec_diff_2d
    public :: fm_advec_diff_2d
    
     contains
-    
+     
+    !> 2D advection-diffusion equation solver with sources and sinks of one constituent.
+    !  It reworks the input to use the 3D computation of the fluxes, which is made for a  
+    !  several constituents.
     subroutine fm_advec_diff_2d(var, uadv, qadv, sour, sink, limityp, ierror)
       use m_transport, only: dxiau
       use m_flowgeom, only: ndx, lnx, ln, ba 
