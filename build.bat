@@ -10,7 +10,7 @@ set vs=0
 set coverage=
 set build_type=Debug
 set keep_build=
-set compiler=ifort
+set compiler=ifx
 
 rem Non-argument variables
 set generator=
