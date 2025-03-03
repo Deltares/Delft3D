@@ -40,7 +40,7 @@ module m_fm_advec_diff_2d
    
     contains
     
-    subroutine fm_advec_diff_2d(thevar, uadv, qadv, sour, sink, limityp, ierror)
+    subroutine fm_advec_diff_2d(var, uadv, qadv, sour, sink, limityp, ierror)
       use m_transport, only: dxiau
       use m_flowgeom, only: ndx, lnx, ln, ba ! static mesh information
       use m_flow, only: ndkx, lnkx, kbot, ktop, lbot, ltop, kmxn, kmxL
@@ -53,11 +53,11 @@ module m_fm_advec_diff_2d
    
       implicit none
 
-      integer, parameter :: NSUBSTEPS = 1
-      integer, parameter :: NUMCONST = 1
+      integer, parameter :: NSUBSTEPS = 1 !< number of substeps
+      integer, parameter :: NUMCONST = 1 !< number of constituents
       integer, parameter, dimension(NUMCONST) :: JAUPDATECONST = 1 !< update constituent (1) or not (0)
       
-      real(kind=dp), dimension(1, ndx), intent(inout) :: thevar !< variable to be tranported
+      real(kind=dp), dimension(1, ndx), intent(inout) :: var !< variable to be tranported
       real(kind=dp), dimension(lnx), intent(in) :: uadv
       real(kind=dp), dimension(lnx), intent(in) :: qadv
       real(kind=dp), dimension(ndx), intent(in) :: sour
@@ -123,9 +123,9 @@ module m_fm_advec_diff_2d
 
 !  compute horizontal fluxes, explicit part
       call comp_dxiAu()
-      call comp_fluxhor3D(NUMCONST, limityp, ndx, lnx, uadv, qadv, sqi, ba, kbot, lbot, ltop, kmxn, kmxL, thevar, dif, sigdif, duml, NSUBSTEPS, jahorupdate, ndeltasteps, jaupdateconst, fluxhor, dumx, dumy, 1, dxiAu)
+      call comp_fluxhor3D(NUMCONST, limityp, ndx, lnx, uadv, qadv, sqi, ba, kbot, lbot, ltop, kmxn, kmxL, var, dif, sigdif, duml, NSUBSTEPS, jahorupdate, ndeltasteps, jaupdateconst, fluxhor, dumx, dumy, 1, dxiAu)
       call comp_sumhorflux(1, 0, lnkx, ndkx, lbot, ltop, fluxhor, sumhorflux)
-      call solve_2D(1, ndx, ba, kbot, ktop, sumhorflux, fluxver, const_sour, const_sink, 1, jaupdate, ndeltasteps, thevar, rhs)
+      call solve_2D(1, ndx, ba, kbot, ktop, sumhorflux, fluxver, const_sour, const_sink, 1, jaupdate, ndeltasteps, var, rhs)
       ierror = 0
 1234  continue
       return
