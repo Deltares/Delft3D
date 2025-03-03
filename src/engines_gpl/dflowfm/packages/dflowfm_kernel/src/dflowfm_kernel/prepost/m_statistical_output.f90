@@ -25,8 +25,8 @@
 module m_statistical_output
 
    use MessageHandling
-   use m_output_config
-   use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set, SO_NONE, SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
+   use m_output_config, only: t_output_quantity_config
+   use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set, process_data_interface_double, SO_NONE, SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
    use m_read_statistical_output
    use m_temporal_statistics
    use precision, only: dp
@@ -36,10 +36,10 @@ module m_statistical_output
 
    private
 
-   public realloc
-   public dealloc
-   public update_statistical_output, update_source_input, add_stat_output_items, &
-      initialize_statistical_output, reset_statistical_output, finalize_average
+   public :: realloc, dealloc
+   public :: update_statistical_output, update_source_input, add_stat_output_items, &
+             initialize_statistical_output, reset_statistical_output, finalize_average
+   public :: t_output_variable_set, t_output_variable_item, t_output_quantity_config, process_data_interface_double
 
    !> Realloc memory cross-section definition or cross-sections
    interface realloc
@@ -67,7 +67,7 @@ contains
          crop_ = crop
       end if
 
-      if (crop_ .and. output_set%count < output_set%capacity) then
+      if (crop_ .and. (output_set%count < output_set%capacity .or. .not. allocated(output_set%statout))) then
          allocate (new_statout(output_set%count))
          new_statout(1:output_set%count) = output_set%statout(1:output_set%count)
          call move_alloc(new_statout, output_set%statout)
@@ -85,7 +85,6 @@ contains
             allocate (output_set%statout(output_set%capacity))
          end if
       end if
-
    end subroutine reallocate_output_set
 
    subroutine deallocate_output_set(output_set)
@@ -175,7 +174,6 @@ contains
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
       use precision, only: dp
-      use m_statistical_output_types, only: process_data_interface_double
       use MessageHandling, only: mess, LEVEL_WARN
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
