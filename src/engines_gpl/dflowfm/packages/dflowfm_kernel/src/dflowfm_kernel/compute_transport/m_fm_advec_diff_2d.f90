@@ -53,7 +53,7 @@ module m_fm_advec_diff_2d
    
       implicit none
 
-      integer, parameter :: BFNSUBSTEPS = 1
+      integer, parameter :: NSUBSTEPS = 1
       integer, parameter :: NUMCONST = 1
       integer, parameter, dimension(NUMCONST) :: JAUPDATECONST = 1 !< update constituent (1) or not (0)
       
@@ -67,48 +67,48 @@ module m_fm_advec_diff_2d
 
       integer :: k1, k2
 
-      real(kind=dp), dimension(:, :), allocatable :: fluxhorbf ! horizontal fluxes
-      real(kind=dp), dimension(:, :), allocatable :: fluxverbf ! vertical   fluxes
+      real(kind=dp), dimension(:, :), allocatable :: fluxhor ! horizontal fluxes
+      real(kind=dp), dimension(:, :), allocatable :: fluxver ! vertical   fluxes
 
-      real(kind=dp), dimension(:), allocatable :: difsedubf ! sum of molecular and user-specified diffusion coefficient
-      real(kind=dp), dimension(:), allocatable :: sigdifibf
+      real(kind=dp), dimension(:), allocatable :: dif ! sum of molecular and user-specified diffusion coefficient
+      real(kind=dp), dimension(:), allocatable :: sigdif
 
       real, dimension(:), allocatable :: dumL
-      real(kind=dp), dimension(:), allocatable :: bfsqi
+      real(kind=dp), dimension(:), allocatable :: sqi
 
-      real(kind=dp), dimension(:, :), allocatable :: const_sourbf ! sources in transport, dim(NUMCONST,Ndkx)
-      real(kind=dp), dimension(:, :), allocatable :: const_sinkbf ! linear term of sinks in transport, dim(NUMCONST,Ndkx)
+      real(kind=dp), dimension(:, :), allocatable :: const_sour ! sources in transport, dim(NUMCONST,Ndkx)
+      real(kind=dp), dimension(:, :), allocatable :: const_sink ! linear term of sinks in transport, dim(NUMCONST,Ndkx)
 
 !  work arrays
-      real(kind=dp), dimension(:, :), allocatable :: rhsbf ! right-hand side, dim(NUMCONST,Ndkx)
-      integer, dimension(:), allocatable :: jabfupdate
-      integer, dimension(:), allocatable :: jabfhorupdate
-      integer, dimension(:), allocatable :: nbfdeltasteps
-      real(kind=dp), dimension(:), allocatable :: bfsumhorflux, dumx, dumy
+      real(kind=dp), dimension(:, :), allocatable :: rhs ! right-hand side, dim(NUMCONST,Ndkx)
+      integer, dimension(:), allocatable :: jaupdate
+      integer, dimension(:), allocatable :: jahorupdate
+      integer, dimension(:), allocatable :: ndeltasteps
+      real(kind=dp), dimension(:), allocatable :: sumhorflux, dumx, dumy
 
       integer :: L
 
       ierror = 1
 
 !  allocate
-      call realloc(jabfupdate, ndx, keepExisting=.true., fill=1) !Mask array for the 2D part, true for all.
-      call realloc(jabfhorupdate, lnx, keepExisting=.true., fill=1)
-      call realloc(nbfdeltasteps, ndx, keepExisting=.true., fill=1) !It is only used if NSUBSTEPS>1, which is not the case.
-      call realloc(bfsqi, ndx, keepExisting=.true., fill=0d0)
+      call realloc(jaupdate, ndx, keepExisting=.true., fill=1) !Mask array for the 2D part, true for all.
+      call realloc(jahorupdate, lnx, keepExisting=.true., fill=1)
+      call realloc(ndeltasteps, ndx, keepExisting=.true., fill=1) !It is only used if NSUBSTEPS>1, which is not the case.
+      call realloc(sqi, ndx, keepExisting=.true., fill=0d0)
 
-      call realloc(fluxhorbf, (/1, Lnx/), keepExisting=.true., fill=0d0)
-      call realloc(fluxverbf, (/1, Ndx/), keepExisting=.true., fill=0d0)
+      call realloc(fluxhor, (/1, Lnx/), keepExisting=.true., fill=0d0)
+      call realloc(fluxver, (/1, Ndx/), keepExisting=.true., fill=0d0)
 
-      call realloc(difsedubf, 1, keepExisting=.true., fill=0d0)
-      call realloc(sigdifibf, 1, keepExisting=.true., fill=0d0)
+      call realloc(dif, 1, keepExisting=.true., fill=0d0)
+      call realloc(sigdif, 1, keepExisting=.true., fill=0d0)
 
       allocate (dumL(1:lnkx), stat=ierror); dumL = 0.0
 
-      call realloc(const_sourbf, (/1, Ndx/), keepExisting=.true., fill=0d0)
-      call realloc(const_sinkbf, (/1, Ndx/), keepExisting=.true., fill=0d0)
-      call realloc(rhsbf, (/1, Ndx/), keepExisting=.true., fill=0d0)
+      call realloc(const_sour, (/1, Ndx/), keepExisting=.true., fill=0d0)
+      call realloc(const_sink, (/1, Ndx/), keepExisting=.true., fill=0d0)
+      call realloc(rhs, (/1, Ndx/), keepExisting=.true., fill=0d0)
 
-      call realloc(bfsumhorflux, Ndx, keepExisting=.true., fill=0d0)
+      call realloc(sumhorflux, Ndx, keepExisting=.true., fill=0d0)
       call realloc(dumx, Ndx, keepExisting=.true., fill=0d0)
       call realloc(dumy, Ndx, keepExisting=.true., fill=0d0)
 
@@ -117,18 +117,18 @@ module m_fm_advec_diff_2d
       do L = 1, Lnx
          k1 = ln(1, L)
          k2 = ln(2, L)
-         bfsqi(k1) = bfsqi(k1) - min(qadv(L), 0d0)
-         bfsqi(k2) = bfsqi(k2) + max(qadv(L), 0d0)
+         sqi(k1) = sqi(k1) - min(qadv(L), 0d0)
+         sqi(k2) = sqi(k2) + max(qadv(L), 0d0)
       end do
 
-      const_sourbf=RESHAPE(sour,shape=(/1, ndx/))
-      const_sinkbf=RESHAPE(sink,shape=(/1, ndx/))
+      const_sour=RESHAPE(sour,shape=(/1, ndx/))
+      const_sink=RESHAPE(sink,shape=(/1, ndx/))
 
 !  compute horizontal fluxes, explicit part
       call comp_dxiAu()
-      call comp_fluxhor3D(NUMCONST, limityp, Ndx, Lnx, uadv, qadv, bfsqi, ba, kbot, Lbot, Ltop, kmxn, kmxL, thevar, difsedubf, sigdifibf, dumL, BFNSUBSTEPS, jabfhorupdate, nbfdeltasteps, jaupdateconst, fluxhorbf, dumx, dumy, 1, dxiAu)
-      call comp_sumhorflux(1, 0, Lnkx, Ndkx, Lbot, Ltop, fluxhorbf, bfsumhorflux)
-      call solve_2D(1, Ndx, ba, kbot, ktop, bfsumhorflux, fluxverbf, const_sourbf, const_sinkbf, 1, jabfupdate, nbfdeltasteps, thevar, rhsbf)
+      call comp_fluxhor3D(NUMCONST, limityp, Ndx, Lnx, uadv, qadv, sqi, ba, kbot, Lbot, Ltop, kmxn, kmxL, thevar, dif, sigdif, dumL, NSUBSTEPS, jahorupdate, ndeltasteps, jaupdateconst, fluxhor, dumx, dumy, 1, dxiAu)
+      call comp_sumhorflux(1, 0, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
+      call solve_2D(1, Ndx, ba, kbot, ktop, sumhorflux, fluxver, const_sour, const_sink, 1, jaupdate, ndeltasteps, thevar, rhs)
       ierror = 0
 1234  continue
       return
