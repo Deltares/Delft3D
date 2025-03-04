@@ -128,7 +128,7 @@ contains
          jalimitdtdiff = 0
       end select
 
-      if (numconst > 0 .or. bfmpar%lfbedfrm) call alloc_transport(.false.)
+      if (numconst > 0 .or. bfmpar%lfbedfrm .or. stmpar%morlyr%settings%any_active_layer_diffusion) call alloc_transport(.false.)
 
       if (ISALT > 0) then
          if (javasal == 6) then
