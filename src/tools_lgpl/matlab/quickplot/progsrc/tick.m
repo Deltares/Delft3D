@@ -250,7 +250,7 @@ for i=1:length(ax)
         if datefrmt
             if strcmp(get(handle,[ax(i) 'tickmode']),'auto') || strcmp(tckmode,'autoticks')
                 if strcmp(frmt,'autodate')
-                    [tck,frmt]=Local_datetick(handle,ax(i));
+                    [tck,frmt,FirstLabel]=Local_datetick(handle,ax(i));
                 else
                     tck=Local_datetick(handle,ax(i));
                 end
@@ -265,7 +265,7 @@ for i=1:length(ax)
         end
     end
     if strcmp(frmt,'autodate')
-        [dummytck,frmt]=Local_datetick(handle,ax(i));
+        [dummytck,frmt,FirstLabel]=Local_datetick(handle,ax(i));
     end
     Local_tick(handle,ax(i),tck,frmt,scaling,DecSep,Language,SkipNLabels,FirstLabel)
 end
@@ -466,7 +466,7 @@ for i=length(perc):-1:1
         otherwise
             error(['Invalid date format: ''',frm,dfrm,'''.'])
     end
-end;
+end
 Frmt(Frmt==' ')=[]; % remove blanks
 Len(Len==0)=[];     % remove zeros
 
@@ -591,7 +591,7 @@ if nargin>3 && ischar(FirstLabel)
 end
 
 
-function [ticks,format]=Local_datetick(handle,ax)
+function [ticks,format,format1]=Local_datetick(handle,ax)
 %Similar to DATETICK with the addition of the handle argument
 limmanual = strcmp(get(handle,[ax 'limmode']),'manual');
 if limmanual
@@ -602,7 +602,7 @@ else
         lim = get(handle,[ax 'lim']);
     end
 end
-[ticks,format] = bestscale(lim);
+[ticks,format,format1] = bestscale(lim);
 if ~limmanual && length(ticks)>1
     set(handle,[ax 'lim'],[min(lim(1),min(ticks)) max(lim(2),max(ticks))]);
 else
@@ -610,87 +610,104 @@ else
 end
 
 
-function [ticks,format] = bestscale(lim)
+function [ticks,format,format1] = bestscale(lim)
 %BESTSCALE Returns ticks for "best" scale.
-ntickpref=5;
+ntickpref = 5;
 
-dlim=lim(2)-lim(1);
-if dlim==0
+dlim = lim(2)-lim(1);
+if dlim == 0
     ticks = lim(1);
-    format = 'date: %D %3O %Y %H:%2.2m:%02.0s';
-    return
+    format = '%D %3O %Y %H:%2.2m:%02.0s';
+    format1 = format;
+else
+    dt = [365  91   30   14  7  2  1 1/2 1/4 1/8 1/12 1/24 1/48  1/72  1/96  1/144 1/288 1/720 1/1440 1/2880 1/4320 1/5760 1/8640 1/17280 1/43200 1/86400];
+    %     yr  qrtr mnth 2wk wk 2dy dy 12h 6h  3h   2h   1h  30min 20min 15min 10min 5min  2min   1min    30s    20s   15s     10s     5s      2s      1s
+    ntick = dlim./dt;
+    ntick(ntick == 0) = eps;
+    fnc = ntick+(ntickpref^2)./ntick;
+    [fncmn, i] = min(fnc);
+
+    dnum = lim(1);
+    dvec = datevec(dnum);
+    switch i
+        case 1 % year
+            nyr = [100 50 25 20 10 5 4 2 1];
+            dt = nyr*365.25;
+            ntick = dlim./dt;
+            ntick(ntick == 0) = eps;
+            fnc = ntick + (ntickpref^2)./ntick;
+            [fncmn, i] = min(fnc);
+
+            nyr = nyr(i);
+            styr = ceil(dvec(1)/nyr)*nyr;
+            dvec = [styr 1 1 0 0 0];
+            dvecstep = [nyr 0 0 0 0 0];
+            format = '%Y';
+            format1 = format;
+
+        case 2 % quarter
+            stqrt = mod(ceil((dvec(2)-3)/3)*3,12) + 1;
+            dvec = [dvec(1) stqrt 1 0 0 0];
+            dvecstep = [0 3 0 0 0 0];
+            format = 'Q%Q %Y';
+            format1 = format;
+
+        case 3 % month
+            dvec = [dvec(1:2) 1 0 0 0];
+            dvecstep = [0 1 0 0 0 0];
+            format = '%O';
+            format1 = '%O %Y';
+
+        case {4, 5} % 2wk, wk
+            dvec = [dvec(1:3) 0 0 0];
+            dvecstep = [0 0 dt(i) 0 0 0];
+            format = '%D %3O';
+            format1 = '%D %3O %Y';
+
+        case {6, 7} % 2dy, dy
+            dvec = [dvec(1:3) 0 0 0];
+            dvecstep = [0 0 dt(i) 0 0 0];
+            format = '%D %3O';
+            format1 = '%D %3O %Y';
+
+        case {8, 9, 10, 11, 12} % 12,6,3,2,1 hours
+            ii = 7;
+            %
+            nhr = [12 6 3 2 1];
+            nhr = nhr(i-ii);
+            sthr = rem(ceil(dvec(4)/nhr)*nhr-1,24) + 1;
+            dvec = [dvec(1:3) sthr 0 0];
+            dvecstep = [0 0 0 nhr 0 0];
+            format = '%Hh';
+            format1 = '%D %3O %Y %Hh';
+
+        case {13, 14, 15, 16, 17, 18, 19} % 30,20,15,10,5,2,1 minutes
+            ii = 12;
+            %
+            nmn = [30 20 15 10 5 2 1];
+            nmn = nmn(i-ii);
+            stmn = rem(ceil(dvec(5)/nmn)*nmn-1,60) + 1;
+            dvec = [dvec(1:4) stmn 0];
+            dvecstep = [0 0 0 0 nmn 0];
+            format = '%H:%2.2m';
+            format1 = '%D %3O %Y %H:%2.2m';
+
+        case {20, 21, 22, 23, 24, 25, 26} % 30,20,15,10,5,2,1 seconds
+            ii = 19;
+            %
+            nsc = [30 20 15 10 5 2 1];
+            nsc = nsc(i-ii);
+            stsc = rem(ceil(dvec(6)/nsc)*nsc-1,60) + 1;
+            dvec = [dvec(1:5) stsc];
+            dvecstep = [0 0 0 0 0 nsc];
+            format = '%H:%2.2m:%02.0s';
+            format1 = '%D %3O %Y %H:%2.2m:%02.0s';
+    end
+
+    ticks = repmat(dvec,11,1) + repmat((0:10)',1,6).*repmat(dvecstep,11,1);
+    ticks = datenum(ticks(:,1), ticks(:,2), ticks(:,3), ticks(:,4), ticks(:,5), ticks(:,6))';
+    ticks = unique(ticks);
+    ticks(ticks > lim(2)) = [];
+    ticks = ticks + datenum(dvecstep(1), dvecstep(2), dvecstep(3), dvecstep(4), dvecstep(5), dvecstep(6))/10000;
 end
-dt=[365  91   30   14  7  2  1 1/2 1/4 1/8 1/12 1/24 1/48  1/72  1/96  1/144 1/288 1/720 1/1440 1/2880 1/4320 1/5760 1/8640 1/17280 1/43200 1/86400];
-%   yr  qrtr mnth 2wk wk 2dy dy 12h 6h  3h   2h   1h  30min 20min 15min 10min 5min  2min   1min    30s    20s   15s     10s     5s      2s      1s
-ntick=dlim./dt;
-ntick(ntick==0)=eps;
-fnc=ntick+(ntickpref^2)./ntick;
-[fncmn,i]=min(fnc);
-
-dnum=lim(1);
-dvec=datevec(dnum);
-switch i
-    case 1 % year
-        nyr=[100 50 25 20 10 5 4 2 1];
-        dt=nyr*365.25;
-        ntick=dlim./dt;
-        ntick(ntick==0)=eps;
-        fnc=ntick+(ntickpref^2)./ntick;
-        [fncmn,i]=min(fnc);
-
-        nyr=nyr(i);
-        styr=ceil(dvec(1)/nyr)*nyr;
-        dvec=[styr 1 1 0 0 0];
-        dvecstep=[nyr 0 0 0 0 0];
-        format='date:%Y';
-    case 2 % quarter
-        stqrt=mod(ceil((dvec(2)-3)/3)*3,12)+1;
-        dvec=[dvec(1) stqrt 1 0 0 0];
-        dvecstep=[0 3 0 0 0 0];
-        format='date:Q%Q %Y';
-    case 3 % month
-        dvec=[dvec(1:2) 1 0 0 0];
-        dvecstep=[0 1 0 0 0 0];
-        format='date:%O';
-    case {4,5} % 2wk, wk
-        dvec=[dvec(1:3) 0 0 0];
-        dvecstep=[0 0 dt(i) 0 0 0];
-        format='date:%D %3O';
-    case {6,7} % 2dy, dy
-        dvec=[dvec(1:3) 0 0 0];
-        dvecstep=[0 0 dt(i) 0 0 0];
-        format='date:%D %3O';
-    case {8,9,10,11,12} % 12,6,3,2,1 hours
-        ii=7;
-        %
-        nhr=[12 6 3 2 1];
-        nhr=nhr(i-ii);
-        sthr=rem(ceil(dvec(4)/nhr)*nhr-1,24)+1;
-        dvec=[dvec(1:3) sthr 0 0];
-        dvecstep=[0 0 0 nhr 0 0];
-        format='date:%Hh';
-    case {13,14,15,16,17,18,19} % 30,20,15,10,5,2,1 minutes
-        ii=12;
-        %
-        nmn=[30 20 15 10 5 2 1];
-        nmn=nmn(i-ii);
-        stmn=rem(ceil(dvec(5)/nmn)*nmn-1,60)+1;
-        dvec=[dvec(1:4) stmn 0];
-        dvecstep=[0 0 0 0 nmn 0];
-        format='date:%H:%2.2m';
-    case {20,21,22,23,24,25,26} % 30,20,15,10,5,2,1 seconds
-        ii=19;
-        %
-        nsc=[30 20 15 10 5 2 1];
-        nsc=nsc(i-ii);
-        stsc=rem(ceil(dvec(6)/nsc)*nsc-1,60)+1;
-        dvec=[dvec(1:5) stsc];
-        dvecstep=[0 0 0 0 0 nsc];
-        format='date:%H:%2.2m:%02.0s';
-end
-
-ticks=repmat(dvec,11,1)+repmat((0:10)',1,6).*repmat(dvecstep,11,1);
-ticks=datenum(ticks(:,1),ticks(:,2),ticks(:,3),ticks(:,4),ticks(:,5),ticks(:,6))';
-ticks=unique(ticks);
-ticks(ticks>lim(2))=[];
-ticks=ticks+datenum(dvecstep(1),dvecstep(2),dvecstep(3),dvecstep(4),dvecstep(5),dvecstep(6))/10000;
+format = ['date:', format];
