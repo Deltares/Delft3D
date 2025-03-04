@@ -56,8 +56,8 @@ module m_statistical_output_types
       integer :: operation_type !< Specifies the kind of operation to perform on the output variable.
       integer :: id_var !< NetCDF variable ID, to be set and used by actual writing functions.
       real(dp), pointer, dimension(:) :: stat_output !< Array that is to be written to the Netcdf file. In case the current values are
-                                                                                         !! required this variable points to the basic variable (e.g. s1).
-                                                                                         !! Otherwise during the simulation the intermediate results are stored.
+                                                     !! required this variable points to the basic variable (e.g. s1).
+                                                     !! Otherwise during the simulation the intermediate results are stored.
       real(dp), pointer, dimension(:) :: source_input !< The (possibly transformed) data over which statistics are gathered
       procedure(process_data_interface_double), nopass, pointer :: source_input_function_pointer => null() !< Function pointer for operation that needs to be performed to produce source_input
       real(dp) :: time_step_sum !< Sum of time steps since the last output interval, used for average calculation
