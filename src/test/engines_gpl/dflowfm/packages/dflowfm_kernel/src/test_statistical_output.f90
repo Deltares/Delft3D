@@ -28,7 +28,7 @@ module test_statistical_output
    implicit none
    private
 
-   real(kind=dp), parameter :: test_tolerance = 1e-3_dp
+   real(kind=dp), parameter :: test_tolerance = 1e-5_dp
 
    public :: tests_statistical_output
 
@@ -128,7 +128,7 @@ contains
       output_set = create_simple_output_variable_set(source_input)
       output_set%statout(1)%source_input_function_pointer => process_data_doubler
       call update_source_input(output_set)
-      call assert_comparable(output_set%statout(1)%source_input, [2.0_dp, 4.0_dp, 6.0_dp], 1e-5_dp, '')
+      call assert_comparable(output_set%statout(1)%source_input, [2.0_dp, 4.0_dp, 6.0_dp], test_tolerance, '')
    end subroutine test_update_source_input
 
    subroutine test_update_statistical_output_average()
@@ -142,8 +142,8 @@ contains
       source_input = [2.0_dp, 1.0_dp, 0.0_dp]
       call update_statistical_output(output_item, time_step)
 
-      call assert_comparable(output_item%stat_output, [2.0_dp, 6.0_dp, -6.0_dp], 1e-5_dp, '')
-      call assert_comparable(output_item%time_step_sum, 4.0_dp, 1e-5_dp, '')
+      call assert_comparable(output_item%stat_output, [2.0_dp, 6.0_dp, -6.0_dp], test_tolerance, '')
+      call assert_comparable(output_item%time_step_sum, 4.0_dp, test_tolerance, '')
    end subroutine test_update_statistical_output_average
 
    subroutine test_update_statistical_output_max()
@@ -157,7 +157,7 @@ contains
       source_input = [2.0_dp, 1.0_dp, 0.0_dp]
       call update_statistical_output(output_item, time_step)
 
-      call assert_comparable(output_item%stat_output, [2.0_dp, 1.0_dp, 0.0_dp], 1e-5_dp, '')
+      call assert_comparable(output_item%stat_output, [2.0_dp, 1.0_dp, 0.0_dp], test_tolerance, '')
    end subroutine test_update_statistical_output_max
 
    subroutine test_update_statistical_output_min()
@@ -171,7 +171,7 @@ contains
       source_input = [2.0_dp, 1.0_dp, 0.0_dp]
       call update_statistical_output(output_item, time_step)
 
-      call assert_comparable(output_item%stat_output, [-1.0_dp, 1.0_dp, -3.0_dp], 1e-5_dp, '')
+      call assert_comparable(output_item%stat_output, [-1.0_dp, 1.0_dp, -3.0_dp], test_tolerance, '')
    end subroutine test_update_statistical_output_min
 
    subroutine test_finalize_average()
@@ -186,7 +186,7 @@ contains
       call update_statistical_output(output_item, time_step)
       call finalize_average(output_item)
 
-      call assert_comparable(output_item%stat_output, [0.5_dp, 1.0_dp, -1.5_dp], 1e-5_dp, '')
+      call assert_comparable(output_item%stat_output, [0.5_dp, 1.0_dp, -1.5_dp], test_tolerance, '')
    end subroutine test_finalize_average
 
    subroutine test_add_stat_output_items()
