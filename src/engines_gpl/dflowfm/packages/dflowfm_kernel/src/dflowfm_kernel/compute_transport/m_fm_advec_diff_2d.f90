@@ -102,28 +102,28 @@ module m_fm_advec_diff_2d
 
       !allocate
       call realloc(jaupdate   , ndx, keepExisting=.true., fill=1) !update all flownodes
-      call realloc(ndeltasteps, ndx, keepExisting=.true., fill=1) !it is only used if `NSUBSTEPS`>1, which is not the case.
       call realloc(jahorupdate, lnx, keepExisting=.true., fill=1) !update all horizontal fluxes
+      call realloc(ndeltasteps, ndx, keepExisting=.true., fill=1) !it is only used if `NSUBSTEPS`>1, which is not the case.
 
-      call realloc(dummy , 1, keepExisting=.true., fill=0d0) !no diffusion (it is not used anyway because we pass the optional input `const_diff`)
+      call realloc(dummy , 1, keepExisting=.true., fill=0.0_dp) !no diffusion (it is not used anyway because we pass the optional input `const_diff`)
       
-      call realloc(fluxhor, (/1, lnx/), keepExisting=.true., fill=0d0)
+      call realloc(fluxhor, (/1, lnx/), keepExisting=.true., fill=0.0_dp)
       
-      call realloc(fluxver, (/1, ndx/), keepExisting=.true., fill=0d0)
-      call realloc(rhs    , (/1, ndx/), keepExisting=.true., fill=0d0)
+      call realloc(fluxver, (/1, ndx/), keepExisting=.true., fill=0.0_dp)
+      call realloc(rhs    , (/1, ndx/), keepExisting=.true., fill=0.0_dp)
       
       allocate (duml(1:lnkx), stat=ierror); duml = 0.0
 
-      call realloc(sumhorflux, ndx, keepExisting=.true., fill=0d0)
-      call realloc(dummy_ndx , ndx, keepExisting=.true., fill=0d0)
-      call realloc(sqi       , ndx, keepExisting=.true., fill=0d0)
+      call realloc(sumhorflux, ndx, keepExisting=.true., fill=0.0_dp)
+      call realloc(dummy_ndx , ndx, keepExisting=.true., fill=0.0_dp)
+      call realloc(sqi       , ndx, keepExisting=.true., fill=0.0_dp)
 
       !construct `sqi`
       do l = 1, lnx
          k1 = ln(1, l)
          k2 = ln(2, l)
-         sqi(k1) = sqi(k1) - min(qadv(l), 0d0)
-         sqi(k2) = sqi(k2) + max(qadv(l), 0d0)
+         sqi(k1) = sqi(k1) - min(qadv(l), 0.0_dp)
+         sqi(k2) = sqi(k2) + max(qadv(l), 0.0_dp)
       end do
 
       !reshape (we only have one constituent)
