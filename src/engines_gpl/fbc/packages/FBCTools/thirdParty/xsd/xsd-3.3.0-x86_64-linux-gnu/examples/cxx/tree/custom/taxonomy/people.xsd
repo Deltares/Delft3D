@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/custom/taxonomy/people.xsd
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:ppl="http://www.codesynthesis.com/people"
+            targetNamespace="http://www.codesynthesis.com/people">
+
+  <xsd:complexType name="person">
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="superman">
+    <xsd:complexContent>
+      <xsd:extension base="ppl:person">
+        <xsd:attribute name="can-fly" type="xsd:boolean" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="batman">
+    <xsd:complexContent>
+      <xsd:extension base="ppl:superman">
+        <xsd:attribute name="wing-span" type="xsd:unsignedInt" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="catalog">
+    <xsd:sequence>
+      <xsd:element name="person" type="ppl:person" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:element name="catalog" type="ppl:catalog"/>
+
+</xsd:schema>

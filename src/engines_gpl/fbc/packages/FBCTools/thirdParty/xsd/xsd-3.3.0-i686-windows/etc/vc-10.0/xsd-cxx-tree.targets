@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="CXX_Tree_Mapping_Rule">
+      <Targets>XsdCompile</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="CXX_Tree_Mapping_Rule"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="XsdCompile"
+    BeforeTargets="$(CXX_Tree_Mapping_RuleBeforeTargets)"
+    AfterTargets="$(CXX_Tree_Mapping_RuleAfterTargets)"
+    Condition="'@(CXX_Tree_Mapping_Rule)' != ''"
+    DependsOnTargets="$(CXX_Tree_Mapping_RuleDependsOn);XsdOutputDir"
+    Outputs="%(CXX_Tree_Mapping_Rule.OutDir)\%(CXX_Tree_Mapping_Rule.Filename)%(CXX_Tree_Mapping_Rule.HeaderSuffix);%(CXX_Tree_Mapping_Rule.OutDir)\%(CXX_Tree_Mapping_Rule.Filename)%(CXX_Tree_Mapping_Rule.SourceSuffix)"
+    Inputs="%(CXX_Tree_Mapping_Rule.Identity);%(CXX_Tree_Mapping_Rule.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <CXX_Tree_Mapping_Rule
+        Remove="@(CXX_Tree_Mapping_Rule)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <CXX_Tree_Mapping_Rule_tlog
+        Include="%(CXX_Tree_Mapping_Rule.OutDir)\%(CXX_Tree_Mapping_Rule.Filename)%(CXX_Tree_Mapping_Rule.HeaderSuffix);%(CXX_Tree_Mapping_Rule.OutDir)\%(CXX_Tree_Mapping_Rule.Filename)%(CXX_Tree_Mapping_Rule.SourceSuffix)"
+        Condition="'%(CXX_Tree_Mapping_Rule.OutDir)\%(CXX_Tree_Mapping_Rule.Filename)%(CXX_Tree_Mapping_Rule.HeaderSuffix);%(CXX_Tree_Mapping_Rule.OutDir)\%(CXX_Tree_Mapping_Rule.Filename)%(CXX_Tree_Mapping_Rule.SourceSuffix)' != '' and '%(CXX_Tree_Mapping_Rule.ExcludedFromBuild)' != 'true'">
+        <Source>@(CXX_Tree_Mapping_Rule, '|')</Source>
+      </CXX_Tree_Mapping_Rule_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(CXX_Tree_Mapping_Rule.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(CXX_Tree_Mapping_Rule_tlog)' != '' and '%(CXX_Tree_Mapping_Rule_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(CXX_Tree_Mapping_Rule_tlog.Source);@(CXX_Tree_Mapping_Rule_tlog-&gt;'%(Fullpath)')" />
+    <CXX_Tree_Mapping_Rule
+      Condition="'@(CXX_Tree_Mapping_Rule)' != '' and '%(CXX_Tree_Mapping_Rule.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(CXX_Tree_Mapping_Rule.CommandLineTemplate)"
+      ProprietaryLicense="%(CXX_Tree_Mapping_Rule.ProprietaryLicense)"
+      GenInline="%(CXX_Tree_Mapping_Rule.GenInline)"
+      GenForward="%(CXX_Tree_Mapping_Rule.GenForward)"
+      GenSerialization="%(CXX_Tree_Mapping_Rule.GenSerialization)"
+      SupParsing="%(CXX_Tree_Mapping_Rule.SupParsing)"
+      GenPolymorphic="%(CXX_Tree_Mapping_Rule.GenPolymorphic)"
+      PolymorphicTypeAll="%(CXX_Tree_Mapping_Rule.PolymorphicTypeAll)"
+      GenOstream="%(CXX_Tree_Mapping_Rule.GenOstream)"
+      GenDoxygen="%(CXX_Tree_Mapping_Rule.GenDoxygen)"
+      GenComparison="%(CXX_Tree_Mapping_Rule.GenComparison)"
+      GenDefaultCtor="%(CXX_Tree_Mapping_Rule.GenDefaultCtor)"
+      GenFromBaseCtor="%(CXX_Tree_Mapping_Rule.GenFromBaseCtor)"
+      GenDetach="%(CXX_Tree_Mapping_Rule.GenDetach)"
+      GenWildcard="%(CXX_Tree_Mapping_Rule.GenWildcard)"
+      GenElementType="%(CXX_Tree_Mapping_Rule.GenElementType)"
+      GenElementMap="%(CXX_Tree_Mapping_Rule.GenElementMap)"
+      GenIntellisense="%(CXX_Tree_Mapping_Rule.GenIntellisense)"
+      OutDir="%(CXX_Tree_Mapping_Rule.OutDir)"
+      HeaderSuffix="%(CXX_Tree_Mapping_Rule.HeaderSuffix)"
+      SourceSuffix="%(CXX_Tree_Mapping_Rule.SourceSuffix)"
+      InlineSuffix="%(CXX_Tree_Mapping_Rule.InlineSuffix)"
+      ForwardSuffix="%(CXX_Tree_Mapping_Rule.ForwardSuffix)"
+      NamespaceMap="%(CXX_Tree_Mapping_Rule.NamespaceMap)"
+      PolymorphicType="%(CXX_Tree_Mapping_Rule.PolymorphicType)"
+      RootElement="%(CXX_Tree_Mapping_Rule.RootElement)"
+      ExportSymbol="%(CXX_Tree_Mapping_Rule.ExportSymbol)"
+      HxxPrologue="%(CXX_Tree_Mapping_Rule.HxxPrologue)"
+      HxxEpilogue="%(CXX_Tree_Mapping_Rule.HxxEpilogue)"
+      CharType="%(CXX_Tree_Mapping_Rule.CharType)"
+      CharEncoding="%(CXX_Tree_Mapping_Rule.CharEncoding)"
+      TypeNaming="%(CXX_Tree_Mapping_Rule.TypeNaming)"
+      FunctionNaming="%(CXX_Tree_Mapping_Rule.FunctionNaming)"
+      AdditionalOptions="%(CXX_Tree_Mapping_Rule.AdditionalOptions)"
+      Inputs="%(CXX_Tree_Mapping_Rule.Identity)" />
+  </Target>
+  <Target
+    Name="XsdClean"
+    BeforeTargets="CoreCppClean"
+    AfterTargets="_PrepareForClean"
+    Condition="'@(CXX_Tree_Mapping_Rule)' != ''">
+    <PropertyGroup>
+      <XsdCleanFilePatternsToDelete>@(CXX_Tree_Mapping_Rule->Metadata('OutDir')->Distinct())\@(CXX_Tree_Mapping_Rule->Metadata('Filename')->Distinct())@(CXX_Tree_Mapping_Rule->Metadata('HeaderSuffix')->Distinct());@(CXX_Tree_Mapping_Rule->Metadata('OutDir')->Distinct())\@(CXX_Tree_Mapping_Rule->Metadata('Filename')->Distinct())@(CXX_Tree_Mapping_Rule->Metadata('SourceSuffix')->Distinct());@(CXX_Tree_Mapping_Rule->Metadata('OutDir')->Distinct())\@(CXX_Tree_Mapping_Rule->Metadata('Filename')->Distinct())@(CXX_Tree_Mapping_Rule->Metadata('InlineSuffix')->Distinct());@(CXX_Tree_Mapping_Rule->Metadata('OutDir')->Distinct())\@(CXX_Tree_Mapping_Rule->Metadata('Filename')->Distinct())@(CXX_Tree_Mapping_Rule->Metadata('ForwardSuffix')->Distinct())</XsdCleanFilePatternsToDelete>
+    </PropertyGroup>
+    <ItemGroup>
+      <CoreCppClean>
+        <FilePatternsToDelete
+          Condition="'%(CoreCppClean.FilePatternsToDelete)' != ''">%(CoreCppClean.FilePatternsToDelete);$(XsdCleanFilePatternsToDelete)</FilePatternsToDelete>
+        <FilePatternsToDelete
+          Condition="'%(CoreCppClean.FilePatternsToDelete)' == ''">$(XsdCleanFilePatternsToDelete)</FilePatternsToDelete>
+      </CoreCppClean>
+    </ItemGroup>
+  </Target>
+  <Target
+    Name="XsdOutputDir"
+    Condition="'@(CXX_Tree_Mapping_Rule)' != ''">
+    <MakeDir Directories="@(CXX_Tree_Mapping_Rule->Metadata('OutDir')->Distinct()->ClearMetadata())" />
+  </Target>
+</Project>

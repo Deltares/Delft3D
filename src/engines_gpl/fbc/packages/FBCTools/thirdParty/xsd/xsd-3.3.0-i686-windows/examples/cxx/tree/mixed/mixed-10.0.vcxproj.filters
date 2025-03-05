@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{590B5830-837E-4D7F-984C-173456EE7E70}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{3B7C0CD8-48D5-4244-A1FB-B60D510C2359}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Schema Files">
+      <UniqueIdentifier>{ba06cc21-c20a-4656-89ab-0a7b56f50871}</UniqueIdentifier>
+      <Extensions>xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="driver.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="text.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="text.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="text.xsd">
+      <Filter>Schema Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

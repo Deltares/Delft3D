@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/parser/wildcard/email.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<eml:message xmlns:eml="http://www.codesynthesis.com/email"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://www.codesynthesis.com/email email.xsd"
+             eml:thread-id="123456789">
+
+  <to>Jane Doe &lt;jane@doe.com></to>
+  <from>John Doe &lt;john@doe.com></from>
+  <subject>Surfing pictures</subject>
+
+  <eml:text>
+Hi Jane,
+
+Here are cool pictures of me surfing.
+
+Cheers,
+John
+  </eml:text>
+
+  <eml:binary name="pic1.jpg" mime="image/jpeg">YmFzZTY0IGJpbmFyeQ==</eml:binary>
+  <eml:binary name="pic2.jpg" mime="image/jpeg">YmFzZTY0IGJpbmFyeQ==</eml:binary>
+
+</eml:message>

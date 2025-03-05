@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compression", "compression-7.1.vcproj", "{AA385EB4-7352-4865-9C5C-9F0DE7BA0060}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{AA385EB4-7352-4865-9C5C-9F0DE7BA0060}.Debug.ActiveCfg = Debug|Win32
+		{AA385EB4-7352-4865-9C5C-9F0DE7BA0060}.Debug.Build.0 = Debug|Win32
+		{AA385EB4-7352-4865-9C5C-9F0DE7BA0060}.Release.ActiveCfg = Release|Win32
+		{AA385EB4-7352-4865-9C5C-9F0DE7BA0060}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

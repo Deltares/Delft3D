@@ -1,0 +1,320 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="CodeSynthesis XSD Compiler C++/Tree Mapping Rules"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="C++/Tree Mapping Rule"
+			DisplayName="C++/Tree Mapping Rule"
+			CommandLine="xsd.exe cxx-tree [AllOptions] [AdditionalOptions] [Inputs]"
+			Outputs="[$OutDir]\$(InputName)[$HeaderSuffix];[$OutDir]\$(InputName)[$SourceSuffix]"
+			FileExtensions="*.xsd"
+			ExecutionDescription="xsd cxx-tree [Inputs]"
+			ShowOnlyRuleProperties="false"
+			>
+			<Properties>
+				<StringProperty
+					Name="OutDir"
+					DisplayName="Output Directory"
+					Category="Output"
+					Description="Output directory for the generated files"
+					Switch="--output-dir [value]"
+					DefaultValue="."
+				/>
+				<BooleanProperty
+					Name="ProprietaryLicense"
+					DisplayName="Proprietary License"
+					Category="Licensing"
+					Description="Indicate that the generated code is licensed under a proprietary license instead of the GPL."
+					Switch="--proprietary-license"
+				/>
+				<StringProperty
+					Name="HeaderSuffix"
+					DisplayName="C++ Header Suffix "
+					Category="Output"
+					Description="Generated C++ header file suffix"
+					Switch="--hxx-suffix [value]"
+					DefaultValue=".hxx"
+				/>
+				<StringProperty
+					Name="SourceSuffix"
+					DisplayName="C++ Source Suffix"
+					Category="Output"
+					Description="Generated C++ source file suffix"
+					Switch="--cxx-suffix [value]"
+					DefaultValue=".cxx"
+				/>
+				<StringProperty
+					Name="InlineSuffix"
+					DisplayName="C++ Inline Suffix"
+					Category="Output"
+					Description="Generated C++ inline file suffix"
+					Switch="--ixx-suffix [value]"
+					DefaultValue=".ixx"
+				/>
+				<StringProperty
+					Name="ForwardSuffix"
+					DisplayName="C++ Forward Declaration Suffix"
+					Category="Output"
+					Description="Generated C++ forward declaration file suffix"
+					Switch="--fwd-suffix [value]"
+					DefaultValue="-fwd.hxx"
+				/>
+				<EnumProperty
+					Name="CharType"
+					DisplayName="Char Type"
+					PropertyPageName="Code Generation"
+					Description="Character type to be used in the generated code."
+					>
+					<Values>
+						<EnumValue
+							Value="0"
+							DisplayName="char"
+						/>
+						<EnumValue
+							Value="1"
+							Switch="--char-type wchar_t"
+							DisplayName="wchar_t"
+						/>
+					</Values>
+				</EnumProperty>
+				<EnumProperty
+					Name="CharEncoding"
+					DisplayName="Char Encoding"
+					PropertyPageName="Code Generation"
+					Description="Character encoding to be used bu the generated code."
+					>
+					<Values>
+						<EnumValue
+							Value="0"
+							DisplayName="UTF-8 (char)/UTF-16 (wchar_t)"
+						/>
+						<EnumValue
+							Value="1"
+							Switch="--char-encoding iso8859-1"
+							DisplayName="ISO-8859-1"
+						/>
+						<EnumValue
+							Value="2"
+							Switch="--char-encoding lcp"
+							DisplayName="Xerces-C++ local code page"
+						/>
+						<EnumValue
+							Value="3"
+							Switch="--char-encoding custom"
+							DisplayName="Custom encoding"
+						/>
+					</Values>
+				</EnumProperty>
+				<StringProperty
+					Name="NamespaceMap"
+					DisplayName="Namespace Map"
+					PropertyPageName="Code Generation"
+					Description="Map XML Schema namespaces to C++ namespaces by specifying a comma-separated list of mapping rules in the form &lt;xml-ns&gt;=&lt;cxx-ns&gt; where &lt;xml-ns&gt; stands for an XML Schema namespace and &lt;cxx-ns&gt; - for a C++ namespace."
+					Switch="--namespace-map [value]"
+					Delimited="true"
+					Delimiters=","
+				/>
+				<BooleanProperty
+					Name="GenInline"
+					DisplayName="Generate Inline"
+					PropertyPageName="Code Generation"
+					Description="Generate simple functions inline. This option triggers creation of the inline file."
+					Switch="--generate-inline"
+				/>
+				<BooleanProperty
+					Name="GenForward"
+					DisplayName="Generate Forward"
+					PropertyPageName="Code Generation"
+					Description="Generate a separate header file with forward declarations for the types being generated."
+					Switch="--generate-forward"
+				/>
+				<BooleanProperty
+					Name="GenSerialization"
+					DisplayName="Generate Serialization"
+					PropertyPageName="Code Generation"
+					Description="Generate serialization functions. Serialization functions convert the object model back to XML."
+					Switch="--generate-serialization"
+				/>
+				<BooleanProperty
+					Name="SupParsing"
+					DisplayName="Suppress Parsing"
+					PropertyPageName="Code Generation"
+					Description="Suppress generation of the parsing functions and constructors."
+					Switch="--suppress-parsing"
+				/>
+				<BooleanProperty
+					Name="GenPolymorphic"
+					DisplayName="Generate Polymorphic"
+					PropertyPageName="Code Generation"
+					Description="Generate polymorphism-aware code. Specify this option if you use substitution groups or xsi:type."
+					Switch="--generate-polymorphic"
+				/>
+				<StringProperty
+					Name="PolymorphicType"
+					DisplayName="Polymorphic Types"
+					PropertyPageName="Code Generation"
+					Description="Treat specified comma-separated list of types as roots of polymorphic type hierarchies."
+					Switch="--polymorphic-type [value]"
+					Delimited="true"
+					Delimiters=","
+				/>
+				<BooleanProperty
+					Name="PolymorphicTypeAll"
+					DisplayName="All Types Polymorphic"
+					PropertyPageName="Code Generation"
+					Description="Indicate that all types should be treated as polymorphic."
+					Switch="--polymorphic-type-all"
+				/>
+				<BooleanProperty
+					Name="GenOstream"
+					DisplayName="Generate Ostream"
+					PropertyPageName="Code Generation"
+					Description="Generate ostream insertion operators for generated types. This allows to easily print a fragment or the whole object model for debugging or logging."
+					Switch="--generate-ostream"
+				/>
+				<BooleanProperty
+					Name="GenDoxygen"
+					DisplayName="Generate Doxygen"
+					PropertyPageName="Code Generation"
+					Description="Generate documentation comments suitable for extraction by the Doxygen documentation system."
+					Switch="--generate-doxygen"
+				/>
+				<BooleanProperty
+					Name="GenComparison"
+					DisplayName="Generate Comparison"
+					PropertyPageName="Code Generation"
+					Description="Generate comparison operators for complex types."
+					Switch="--generate-comparison"
+				/>
+				<BooleanProperty
+					Name="GenDefaultCtor"
+					DisplayName="Generate Default Constructors"
+					PropertyPageName="Code Generation"
+					Description="Generate default constructors even for types that have required members."
+					Switch="--generate-default-ctor"
+				/>
+				<BooleanProperty
+					Name="GenFromBaseCtor"
+					DisplayName="Generate From-Base Constructors"
+					PropertyPageName="Code Generation"
+					Description="Generate constructors that expect an instance of a base type followed by all required members."
+					Switch="--generate-from-base-ctor"
+				/>
+				<BooleanProperty
+					Name="GenDetach"
+					DisplayName="Generate Detach"
+					PropertyPageName="Code Generation"
+					Description="Generate detach functions for required elements and attributes."
+					Switch="--generate-detach"
+				/>
+				<BooleanProperty
+					Name="GenWildcard"
+					DisplayName="Generate Wildcard"
+					PropertyPageName="Code Generation"
+					Description="Generate accessors and modifiers as well as parsing and serialization code for XML Schema wildcards (any and anyAttribute)."
+					Switch="--generate-wildcard"
+				/>
+				<BooleanProperty
+					Name="GenElementType"
+					DisplayName="Generate Element Types"
+					PropertyPageName="Code Generation"
+					Description="Generate types instead of parsing and serialization functions for root elements."
+					Switch="--generate-element-type"
+				/>
+				<BooleanProperty
+					Name="GenElementMap"
+					DisplayName="Generate Element Map"
+					PropertyPageName="Code Generation"
+					Description="Generate a root element map that allows uniform parsing and serialization of multiple root elements."
+					Switch="--generate-element-map"
+				/>
+				<BooleanProperty
+					Name="GenIntellisense"
+					DisplayName="Generate IntelliSense"
+					PropertyPageName="Code Generation"
+					Description="Generate workarounds for IntelliSense bugs in Visual Studio 2005 (8.0)."
+					Switch="--generate-intellisense"
+					DefaultValue="true"
+				/>
+				<EnumProperty
+					Name="TypeNaming"
+					DisplayName="Type Naming"
+					PropertyPageName="Code Generation"
+					Description="Specify the type naming convention that should be used in the generated code."
+					>
+					<Values>
+						<EnumValue
+							Value="0"
+							DisplayName="K&amp;R"
+						/>
+						<EnumValue
+							Value="1"
+							Switch="--type-naming java"
+							DisplayName="Java"
+						/>
+						<EnumValue
+							Value="2"
+							Switch="--type-naming ucc"
+							DisplayName="Upper Camel Case"
+						/>
+					</Values>
+				</EnumProperty>
+				<EnumProperty
+					Name="FunctionNaming"
+					DisplayName="Function Naming"
+					PropertyPageName="Code Generation"
+					Description="Specify the function naming convention that should be used in the generated code."
+					>
+					<Values>
+						<EnumValue
+							Value="0"
+							DisplayName="K&amp;R"
+						/>
+						<EnumValue
+							Value="1"
+							Switch="--function-naming java"
+							DisplayName="Java"
+						/>
+						<EnumValue
+							Value="2"
+							Switch="--function-naming lcc"
+							DisplayName="Lower Camel Case"
+						/>
+					</Values>
+				</EnumProperty>
+				<StringProperty
+					Name="RootElement"
+					DisplayName="Root Element"
+					PropertyPageName="Code Generation"
+					Description="Treat only specified comma-separated list of elements as document roots."
+					Switch="--root-element [value]"
+					Delimited="true"
+					Delimiters=","
+				/>
+				<StringProperty
+					Name="ExportSymbol"
+					DisplayName="Export Symbol"
+					PropertyPageName="Code Generation"
+					Description="Insert the specified symbol in places where DLL export/import control statements (__declspec(dllexport/dllimport)) are necessary."
+					Switch="--export-symbol [value]"
+				/>
+				<StringProperty
+					Name="HxxPrologue"
+					DisplayName="Header Prologue File"
+					PropertyPageName="Code Generation"
+					Description="Insert the contents of the file specified at the beginning of the header file."
+					Switch="--hxx-prologue-file [value]"
+				/>
+				<StringProperty
+					Name="HxxEpilogue"
+					DisplayName="Header Epilogue File"
+					PropertyPageName="Code Generation"
+					Description="Insert the contents of the file specified at the end of the header file."
+					Switch="--hxx-epilogue-file [value]"
+				/>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

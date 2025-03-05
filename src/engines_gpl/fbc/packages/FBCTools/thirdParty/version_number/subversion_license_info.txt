@@ -1,0 +1,6 @@
+See:
+.\bin\win32\license\subversion.licence
+.\bin\win32\license\OpenSSL.licence
+.\bin\win32\license\Neon.license
+.\bin\win32\license\CyrusSASL.license
+.\bin\win32\license\APR_and_Serf.license

@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{426B0A1E-659E-40E5-B93B-EF76EBBE0C0A}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{42AF0399-9A66-43B2-94AA-DBF9BEEF1E92}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Inline Files">
+      <UniqueIdentifier>{0e336f4b-1f4c-4838-9a6a-183c80df8b67}</UniqueIdentifier>
+      <Extensions>ixx</Extensions>
+    </Filter>
+    <Filter Include="Schema Files">
+      <UniqueIdentifier>{228a47a0-93d7-4c99-9486-a589705ee401}</UniqueIdentifier>
+      <Extensions>xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="driver.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wildcard-custom.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wildcard.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="wildcard-custom.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wildcard.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="wildcard.ixx">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="wildcard.xsd">
+      <Filter>Schema Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

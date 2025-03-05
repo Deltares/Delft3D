@@ -1,0 +1,3470 @@
+%!PS
+%%Title: C++/Tree Mapping Getting Started Guide
+%%Creator: html2ps version 1.0 beta5
+%%EndComments
+save
+2000 dict begin
+/d {bind def} bind def
+/D {def} d
+/t true D
+/f false D
+/FL [/Times-Roman
+/Times-Italic
+/Times-Bold
+/Times-BoldItalic
+/Courier
+/Courier-Oblique
+/Courier-Bold
+/Courier-BoldOblique
+/Helvetica
+/Helvetica-Oblique
+/Helvetica-Bold
+/Helvetica-BoldOblique] D
+/WF t D
+/WI 0 D
+/F 1 D
+/IW 471 F div D
+/IL 621 F div D
+/PS 791 D
+/EF [0 1 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 2 2] D
+/EZ [12 10 19 17 15 13 12 11 12 12 12 12 12 12 12 12 12 12 12 12 12 12 8 8] D
+/Ey [0 0 2 2 2 2 2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0] D
+/EG [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1] D
+/Tm [1 1 0.8 0.8 0.8 0.8 0.8 0.8 0 0 0 0 0 0 0.5 1 1 1 1 0 0 1.3 0 0] D
+/Bm [1 1 0.5 0.5 0.5 0.5 0.5 0.5 0 0 0 0 0 0 0.5 1 1 1 1 0 0 1 0 0] D
+/Lm [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 2 2 0 0 2 0 0 0] D
+/Rm [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0] D
+/EU [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 0 0] D
+/NO f D
+/YY [[{()}{ h }][{ h }{()}][{()}{()}]] D
+/ZZ [[{ (April 2010) }{ Pn }][{ Pn }{ (April 2010) }][{ Ti }{ Ti }]] D
+/Ts EZ 0 get D
+/TU f D
+/Xp t D
+/AU f D
+/SN 0 D
+/Cf t D
+/Tp t D
+/Fe f D
+/TI 2 Ts mul D
+/Fm 14 D
+/xL 71 D
+/xR 71 D
+/yL 706 D
+/yR 706 D
+/Wl 471 F div D
+/Wr 471 F div D
+/hL 621 F div D
+/hR 621 F div D
+/FE {newpath Fm neg Fm M CP BB IW Fm add Fm L IW Fm add IL Fm add neg L CP BB
+ Fm neg IL Fm add neg L closepath} D
+/LA {PM 0 eq{/IW Wl D /IL hL D}{/IW Wr D /IL hR D}ie /W IW D /LL W D /LS W D
+ TU PM 0 eq and{IW 56 F div add SA{Sf div}if 0 translate}
+ {PM 0 eq{xL yL}{xR yR}ie translate F SA{Sf mul}if dup scale
+ CS CF FS Cf{CA CL get VC}if /Bb f D}ie 0 0 M
+ TF not Tc or {Cf{gsave SA{1 Sf div dup scale}if Cb VC FE fill grestore}if}if}D
+/Pi 0 Ts mul D
+/SG [0.8 1 1] D
+/Ab 15 D
+/J 0 D
+/Tc t D
+/NH 6 D
+/Nf f D
+/Pa f D
+/LH 1.2 D
+/XR f D
+/Xr {/pN E D ( [p ) WB pN WB (] )WB} D
+/Db [16#FF 16#FF 16#FF] D
+/Dt [16#00 16#00 16#00] D
+/eA f D
+/Fi f D
+/bT f D
+/Lc t D
+/Dl [16#00 16#00 16#00] D
+/LX f D
+/Br 0.25 D
+/IA ([IMAGE]) D
+/DS {/PF f D()WB NL NP()pop RC ZF} D
+/Gb f D
+/Mb t D
+/Hc [16#00 16#00 16#00] D
+/Bl 3 D
+/MI -15.6 D
+/DX (DRAFT) D
+/Di 0 D
+/Tt 113.385826771654 D
+/Th { (
+) 2 Al()BR (
+  ) 0 1 -1 H()4 FZ (C++/Tree Mapping) ES()EH (
+  ) 0 1 -1 H()4 FZ (Getting Started Guide) ES()EH (
+  ) 0 1 -1 H ( ) EH (
+  ) 0 1 -1 H ( ) EH (
+  ) 0 1 -1 H ( ) EH (
+  ) 0 1 -1 H ( ) EH (
+  ) 0 1 -1 H ( ) EH (
+  ) 0 1 -1 H ( ) EH (
+) Ea()BR (
+  ) 0 P (Copyright © 2005-2010 CODE SYNTHESIS TOOLS CC) EP (
+
+  ) 0 P (Permission is granted to copy, distribute and/or modify this
+     document under the terms of the
+     ) R0 2 A (GNU Free
+     Documentation License, version 1.2) EA (; with no Invariant Sections,
+     no Front-Cover Texts and no Back-Cover Texts.
+  ) EP (
+
+  ) 0 P (This document is available in the following formats:
+     ) R1 2 A (XHTML) EA (,
+     ) R2 2 A (PDF) EA (, and
+     ) R3 2 A (PostScript) EA (.) EP()} D
+/tH {()0 1 -1 H (Table of Contents) EH()} D
+/FD 2 D
+/Dy 2 D
+/cD [16#F0 16#F0 16#F0] D
+/FW 0.6 D
+/FU [16#00 16#00 16#00] D
+/ET {/RM f D /A0 3 D /PN SN D /OU t D /Ou t D /W IW D /LL W D D1
+ Ms not TP and{Ip}if /TF f D} D
+
+%-- End of variable part --
+/MySymbol 10 dict dup begin
+ /FontType 3 D /FontMatrix [.001 0 0 .001 0 0 ] D /FontBBox [25 -10 600 600] D
+ /Encoding 256 array D 0 1 255{Encoding exch /.notdef put}for
+ Encoding (e) 0 get /euro put
+ /Metrics 2 dict D Metrics begin
+  /.notdef 0 D
+  /euro 651 D
+ end
+ /BBox 2 dict D BBox begin
+  /.notdef [0 0 0 0] D
+  /euro [25 -10 600 600] D
+ end
+ /CharacterDefs 2 dict D CharacterDefs begin
+  /.notdef {} D
+  /euro{newpath 114 600 moveto 631 600 lineto 464 200 lineto 573 200 lineto
+   573 0 lineto -94 0 lineto 31 300 lineto -10 300 lineto closepath clip
+   50 setlinewidth newpath 656 300 moveto 381 300 275 0 360 arc stroke
+   -19 350 moveto 600 0 rlineto -19 250 moveto 600 0 rlineto stroke}d
+ end
+ /BuildChar{0 begin
+  /char E D /fontdict E D /charname fontdict /Encoding get char get D
+  fontdict begin
+   Metrics charname get 0 BBox charname get aload pop setcachedevice
+   CharacterDefs charname get exec
+  end
+ end}D
+ /BuildChar load 0 3 dict put /UniqueID 1 D
+end
+definefont pop
+
+/Cd {aload length 2 idiv dup dict begin {D} repeat currentdict end} D
+/EX {EC cvx exec} D
+/DU {} d
+/BB {pop pop}d
+/ie {ifelse} d
+/E {exch} d
+/M {moveto} d
+/R {rmoveto} d
+/L {lineto} d
+/RL {rlineto} d
+/CP {currentpoint} d
+/SW {stringwidth} d
+/GI {getinterval} d
+/PI {putinterval} d
+/Sg {setgray} d
+/LW {setlinewidth} d
+/S {dup () ne OU and{0 Co R AT 3 eq LB and HF not and A1 0 ne A2 0 ne or and
+ {A2 0 32 A1 0 6 -1 roll awidthshow}{show}ie 0 Co neg R}{pop}ie
+ OU PH 3 eq or{/Ms t D}if} D
+/U {OU{gsave CP currentfont /FontInfo get /UnderlinePosition get
+ 0 E currentfont /FontMatrix get dtransform E pop add newpath M dup SW pop
+ CJ 0 RL stroke grestore}if} D
+/B {OU Br 0 gt and{CP Ts neg Ts .33 mul R gsave 0 Sg
+ CP newpath Ts Br mul 0 360 arc closepath UI 2 mod 0 eq{stroke}{fill}ie
+ grestore M CP E Ts Br 1 add mul sub E BB /Ms t D}if}D
+/NP {Ms TP not or PA and OU and{TP{OR}if f1{mF k2 /mF E D /YC 0 D}if
+ TP TU not PM 0 eq or and{showpage}if DU Ip TE not{LA}if 0.6 LW
+ /CI 0 D /TP t D /Hs f D /hl 6 D /Hv 6 D /HI hi D /Ms f D}if Bs XO BO M} D
+/Np {LE sub CP E pop gt PL 0 eq and{NP}if}D
+/Ip {/PN PN 1 add D /Pn RM{1}{4}ie PN Ns D /PM PN SN sub 2 mod D} D
+/GP {E dup 3 -1 roll get PN 1 add 2 mod get dup type /integertype eq
+ {get 0 get}{E pop}ie}d
+/Fc {dup 2 GP exec SW pop /S1 E D dup 1 GP exec SW pop /S2 E D 0 GP exec SW
+ pop /S3 E D S1 0 gt{S2 2 mul S1 add S3 2 mul S1 add 2 copy lt{E}if pop}{0}ie
+ S2 S3 add 2 copy lt{E}if pop IW .9 mul div dup 1 gt{1 E div}{pop 1}ie}D
+/OR {Df{Sd}if tp not{gsave SA{1 Sf div dup scale}if Fe{Cf{FU VC}if FW LW
+ 1 setlinejoin FE stroke}if /YO {60 F div dup 40 gt{pop 40}if}D /cs CS D
+ /cf CF D /CF 0 D /pf PF D /PF f D /Fn FN D /At AT D /AT 0 D /FN EF Hf 1 add
+ get D Fz Fs FS ZZ Fc Fz mul Fs FS EU Hf 1 add get dup type /arraytype eq
+ Cf and{VC}{pop 0 Sg}ie IW IL neg YO sub M ZZ 1 GP exec dup SW pop neg 0 R Sh
+ 0 IL neg YO sub M ZZ 0 GP exec Sh ZZ 2 GP exec dup SW pop IW E sub 2 div
+ IL neg YO sub M Sh Fz Fs FS NO{/AW IW Pn SW pop sub D AW 2 div IL neg YO sub
+ S1 0 gt S2 AW .45 mul gt or S3 AW .45 mul gt or{Fz 2 mul sub}if M Pn Sh}if
+ EU Hf get dup type /arraytype eq Cf and{VC}{pop 0 Sg}ie YY Fc /FN EF Hf get D
+ Hz mul HS FS IW YO M YY 1 GP exec dup SW pop neg 0 R Sh 0 YO M YY 0 GP exec Sh
+ YY 2 GP exec dup SW pop IW E sub 2 div YO M Sh /FN Fn D /AT At D t Pb XO SZ
+ SL get neg R /PF pf D grestore /CF 0 D cs cf FS}if}D
+/Sh {dup () ne{CP Hz 4 div sub BB show CP CS add BB}{pop}ie}D
+/Pb {/OU E D /Ou OU D /PB t D 0 0 M Ba{/Sa save D /BP t D /Fl t D RC /PL 0 D
+ /PH 0 D /W IW D /LE IL .7 mul D /EO 0 D SI ZF /YA 0 D /BO 0 D /C1 () D
+ BA 0 Ts neg R Bb{Xl Yl Xh Yh}if Bb CP Sa restore M
+ {/Yh E D /Xh E D /Yl E D /Xl E D}if /Fl t D}if
+ BL /OU t D /HM f D /Ou t D /PB f D} D
+/Bs {/BP Ba not D}D
+/reencodeISO {
+ dup dup findfont dup length dict begin{1 index /FID ne{D}{pop pop}ie}forall
+ /Encoding ISOLatin1Encoding D currentdict end definefont} D
+/ISOLatin1Encoding [
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/space/exclam/quotedbl/numbersign/dollar/percent/ampersand/quoteright
+/parenleft/parenright/asterisk/plus/comma/hyphen/period/slash
+/zero/one/two/three/four/five/six/seven/eight/nine/colon/semicolon
+/less/equal/greater/question/at/A/B/C/D/E/F/G/H/I/J/K/L/M/N
+/O/P/Q/R/S/T/U/V/W/X/Y/Z/bracketleft/backslash/bracketright
+/asciicircum/underscore/quoteleft/a/b/c/d/e/f/g/h/i/j/k/l/m
+/n/o/p/q/r/s/t/u/v/w/x/y/z/braceleft/bar/braceright/asciitilde
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/space/exclamdown/cent/sterling/currency/yen/brokenbar
+/section/dieresis/copyright/ordfeminine/guillemotleft/logicalnot
+/hyphen/registered/macron/degree/plusminus/twosuperior/threesuperior
+/acute/mu/paragraph/periodcentered/cedilla/onesuperior/ordmasculine
+/guillemotright/onequarter/onehalf/threequarters/questiondown
+/Agrave/Aacute/Acircumflex/Atilde/Adieresis/Aring/AE/Ccedilla
+/Egrave/Eacute/Ecircumflex/Edieresis/Igrave/Iacute/Icircumflex
+/Idieresis/Eth/Ntilde/Ograve/Oacute/Ocircumflex/Otilde/Odieresis
+/multiply/Oslash/Ugrave/Uacute/Ucircumflex/Udieresis/Yacute
+/Thorn/germandbls/agrave/aacute/acircumflex/atilde/adieresis
+/aring/ae/ccedilla/egrave/eacute/ecircumflex/edieresis/igrave
+/iacute/icircumflex/idieresis/eth/ntilde/ograve/oacute/ocircumflex
+/otilde/odieresis/divide/oslash/ugrave/uacute/ucircumflex/udieresis
+/yacute/thorn/ydieresis
+] D
+[128/backslash 129/parenleft 130/parenright 141/circumflex 142/tilde
+143/perthousand 144/dagger 145/daggerdbl 146/Ydieresis 147/scaron 148/Scaron
+149/oe 150/OE 151/guilsinglleft 152/guilsinglright 153/quotesinglbase
+154/quotedblbase 155/quotedblleft 156/quotedblright 157/endash 158/emdash
+159/trademark]
+aload length 2 idiv 1 1 3 -1 roll{pop ISOLatin1Encoding 3 1 roll put}for
+/colorimage where{pop}{
+ /colorimage {
+  pop pop /Pr E D {/Cv Pr D /Gr Cv length 3 idiv string D 0 1 Gr length 1 sub
+   {Gr E dup /i E 3 mul D Cv i get 0.299 mul Cv i 1 add get 0.587 mul add
+    Cv i 2 add get 0.114 mul add cvi put}for Gr} image} D
+}ie
+/pdfmark where{pop}{userdict /pdfmark /cleartomark load put}ie
+WF{FL{reencodeISO D}forall}{4 1 FL length 1 sub{FL E get reencodeISO D}for}ie
+/Symbol dup dup findfont dup length dict begin
+ {1 index /FID ne{D}{pop pop}ie}forall /Encoding [Encoding aload pop]
+ dup 128 /therefore put D currentdict end definefont D
+
+/SF {/CS E D SZ SL CS put FO SL FN put /YI CS LH neg mul D dup ST cvs ( ) join
+ CS ST cvs join C1 E join ( NF ) join /C1 E D CS NF /Wf WF FN 0 gt or D
+ /BW Wf{( ) SW pop}{0}ie D}D
+/NF {/cS E D /cF E D cF 0 ge{FL cF get}{cF -1 eq{/Symbol}{/MySymbol}ie}ie
+ findfont cS scalefont setfont} D
+/FS {CF or /CF E D FR SL CF put CF CF 0 ge{FN 4 mul add}if E SF} D
+/PC {SH /BP f D fin not GL not and{NL}if /HM t D /LL LS D} D
+/BS {/TX E D Wf{/fin f D /CW 0 D /LK 0 D /SC 0 D
+ /RT TX D {RT ( ) search{/NW E D pop /RT E D /WH NW SW pop D CW WH add LL gt
+ {TX SC LK SC sub 1 sub NN GI GL{SH cF cS OC
+ 2 copy cS ne E cF ne or{NF}{pop pop}ie}{PC /CW WH BW add D}ie
+ /SC LK D}
+ {GL{JC}if
+ /CW CW WH add BW add D /HM t D}ie /GL f D /Ph f D
+ /LK LK NW length 1 add add D}{pop exit}ie}loop
+ /fin t D TX SC LK SC sub GI SH RT () ne{GL not{CC}if}if
+ /LC TX length D /WH RT SW pop D CW WH add Hy{HC SW pop add}if LL gt
+ {RT GL{SH cF cS OC 2 copy cS ne E cF ne or{NF}{pop pop}ie
+ Hy{/Ph t D}if /LL LS D}{NL /LL LS D SH}ie}
+ {RT PC Hy{CC}if /Ph Ph Hy or D}ie RT () ne{/GL t D /HM t D}if}
+ {TX SW pop LL le{TX SH}{/NW () D 0 2 TX length 1 sub
+ {/CW E D TX 0 CW GI dup SW pop LL gt{pop NW SH /HM t D NL/LL W XO sub MR sub D
+ /CW CW 2 sub NN D /TX TX CW TX length CW sub GI D TX BS exit}
+ {/NW E D}ie}for}ie}ie /HM t D}D
+/CC {C0 length 0 gt{JC}if /C0 [C1 L1 YA YB Mf NS NB TB AF Bw] D
+ /C1 () D /L0 L1 D /YA 0 D /YB 0 D /Mf 0 D /NS 0 D /NB 0 D}D
+/JC {C0 aload length 0 gt{pop pop pop NB add /NB E D NS add /NS E D
+ dup Mf gt{/Mf E D}{pop}ie dup YB gt{/YB E D}{pop}ie
+ dup YA gt{/YA E D}{pop}ie pop C1 join /C1 E D /C0 [] D}if}D
+/OC {C0 length 0 gt{C1 L1 L0 sub YA YB Mf NS NB TB AF Bw GL C0 aload pop
+ /Bw E D /AF E D /TB E D /NB E D /NS E D /Mf E D /YB E D /YA E D /C0 [] D
+ /L1 E D /C1 E D Ph{HC SH}if NL /GL E D /Bw E D /AF E D /TB E D /NB E D /NS E D
+ /Mf E D /YB E D /YA E D /L1 E D /LL W L1 sub XO sub MR sub WH sub D /CW 0 D
+ C1 E join /C1 E D}if}D
+/BT {/LB t D dup length string copy RS dup dup () ne E ( ) ne and
+ {/CI 0 D /LS LL D /LL W L1 sub XO sub MR sub D BS}
+ {dup ( ) eq{/GL f D}if dup () eq L1 0 eq or{pop}{SH /BP f D /Ph f D}ie}ie
+ /LB f D} D
+/BL {CP E pop XO E M} D
+/NL {JC /GL f D /SK W XO sub MR sub L1 sub TB{Bw add}if D
+ /YA LF{Mf HM Fl not and PF or{LH mul}if}{0 /LF t D}ie YA 2 copy lt{E}if pop D
+ C1 () ne{/FB YB Mf SA{Sf mul}if 4 div 2 copy lt{E}if pop D}if Fl{/Ya YA D}if
+ CP E pop YA sub YB sub LE neg lt Fl not and PB not and{NP}if NT TL BL
+ OU PF not and PB or{/RE L1 TB{Bw sub}if
+ W XO sub MR sub div YA YB add LE BO add div 2 copy lt{E}if pop D
+ RE 1 gt{BL 1 RE div dup scale}if}if
+ AT 2 le{SK AT mul 2 div YA neg R}if
+ AT 3 eq{0 YA neg R TB{/NB NB 1 sub D /NS NS 1 sub D}if /NB NB 1 sub NN D
+ /A3 NS 6 mul NB add D NS NB add 0 eq
+  {/A1 0 D /A2 0 D}
+  {NS 0 eq{/A1 SK NB div dup J gt{pop 0}if D /A2 0 D}{J A3 mul SK lt
+   {/A1 J D /A2 SK J NB mul sub NS div dup Ab gt{/A1 0 D pop 0}if D}
+   {/A1 SK A3 div D /A2 A1 6 mul D}ie}ie}ie /A1 A1 NN D /A2 A2 NN D}if
+ AT 4 eq{0 YA neg R PH 2 le{PD 0 lt{/PD L1 D}if PD M1 gt{/M1 PD D}if
+ L1 PD sub M2 gt{/M2 L1 PD sub D}if}{DV ID 1 sub get 0 ge{Lo 0 R}if}ie}if
+ F0 cF ne Cs cS ne or{F0 Cs NF}if
+ /ms Ms D /Ms f D CP FB sub
+ C1 cvx exec XO EO sub L1 add TB{BW sub}if dup LM gt{/LM E D}{pop}ie
+ PH 0 eq PH 4 eq or Ms and{HF not{/PO t D /AH t D}if
+ BB CP YA add E AT 3 eq LB and{A1 sub}if TB{BW sub}if E BB}
+ {pop pop}ie Ms HM PH 3 eq and or{/BP f D /Fl f D}if
+ /Lo 0 D /L1 0 D /F0 cF D /Cs cS D BP not{0 YB NN neg R}if
+ OU f1 and mF not and{k2 /f1 f D}if
+ OU PF not and PB or{RE 1 gt{RE dup scale}if}if /Ms ms Ms or D
+ /C1 AF{(Cp )}{()}ie D /YA 0 D /YB 0 D BL
+ AT 4 eq LB not and PH 3 ge and
+ {ID DV length lt{DV ID get dup 0 ge{DO E sub /Lo E D /L1 Lo D}{pop}ie
+ /ID ID 1 add D}if}if /T t D CD{/LN LN 1 add D PD}if
+ /PD -1 D /NS 0 D /NB 0 D /TB f D /Ph f D /Mf 0 D /HM f D} D
+/RS {/TM E D /CN 0 D TM{10 eq{TM CN ( ) PI}if /CN CN 1 add D}forall
+ /CN 0 D /BK HM EN and{0}{1}ie D TM
+ {dup 32 ne{TM CN 3 2 roll put /CN CN 1 add D /BK 0 D}
+ {pop BK 0 eq{TM CN 32 put /CN CN 1 add D}if /BK 1 D}ie}forall
+ TM 0 CN GI dup dup () ne E ( ) ne and
+ {dup CN 1 sub get 32 eq{/EN f D}{/EN t D}ie}if} D
+/join {2 copy length E length add string dup 4 2 roll 2 index 0 3 index
+ PI E length E PI}d
+/WR {(\n) search{dup () ne BP not or
+ {Li 4 le CP E pop YI Li mul add LE add 0 lt and PL 0 eq and{NP}if
+ SH NL pop /Li Li 1 sub D WR}{pop pop WR}ie}{SH}ie /CI 0 D /BP f D} D
+/SH {dup dup () ne E ( ) ne and PF or CS Mf gt and{/Mf CS D}if
+ T not Wf and{( ) E join /T t D}if dup BP{/MF CS D}if
+ AT 3 eq{2 copy length dup 0 gt{/NB E NB add D
+ {( ) search{/NS NS 1 add D pop pop}{pop exit}ie}loop}{pop pop}ie}if
+ CD PD 0 lt and{dup DC search{SW pop /PD E L1 add D pop pop}{pop}ie}if
+ 0 Np dup SW pop L1 add /L1 E D dup () ne
+ {C1 (\() join E join (\)) join AU AF and UF or Wf and{( U ) join}if
+ sF{( s ) join}if ( S ) join
+ /C1 E D dup length 1 sub get 32 eq /TB E D /Bw BW D}{pop pop}ie} D
+/BG {AI LG BC add add 0 eq} D
+/ON {OU{Ty AR AI NN get dup 1 add Ln Ns Ty 2 mod 0 eq{(.  )}{(\)  )}ie join
+ dup SW pop neg 0 R CP E 0 lt{0 E M}{pop}ie CP BB show /Ms t D}if} D
+/Ln {AR AI 3 -1 roll put}D
+/SP {dup CI lt BP not and{dup CI sub 0 E R /CI E D}{pop}ie} D
+/BN {PF{WR /HM f D}{BT NL}ie} D
+/NN {dup 0 lt{pop 0}if} D
+/h {(h) HI ST cvs join cvx exec dup 1 get E Nf{0 get E join}{pop}ie} D
+/H {/fn FN D /Hi E 1 add D 1 sub /HL E D /H2 HL 2 add D /GS EZ H2 get D
+ E Tm H2 get GS mul BE dup 0 gt{1 sub}{pop EG H2 get dup 0 lt{pop AT}if}ie NA
+ WW Np /SL SL 1 add D /FN EF H2 get D GS Ey H2 get FS
+ EU H2 get Sc Hs not HL Hl lt and Hs HL hl lt and or Hi 0 eq or
+ {/HI Hi D /Hs t D /hl HL D /Hv HL D}if HL Hl lt{/hi Hi D}if
+ Nf HI 0 gt and{(h) Hi ST cvs join cvx exec 0 get WB}if
+ /HF t D /AH f D /PO f D} D
+/EH {Bm H2 get GS mul BE OA /SL SL 1 sub NN D /CF 0 D /FN fn D
+ SZ SL get FR SL get FS /HF f D /GS Ts D ()Ec} D
+/P {E PF{WR}{PO{EP}{BN}ie Ts 4 mul Np AE not{Tm 0 get Ts mul neg SP}if
+ dup 0 ge AH and{Pi Pd}if}ie 1 sub dup 0 lt{pop AV AL get}if /AT E D /PO t D} D
+/EP {PF{WR}{BN Ts 4 mul Np}ie AE not{Bm 0 get Ts mul neg SP}if
+ /AT AV AL get D /PO f D} D
+/BE {E PO{EP}{BN}ie Ts 4 mul Np neg SP} D
+/HR {/Aw W EO sub D /RW E dup 0 gt{Aw mul}{neg}ie dup Aw gt{pop Aw}if D /RZ E D
+ E BN Ts neg SP 1 sub 2 div Aw RW sub mul EO add CP E pop M PF{0 Ps neg R}if
+ 0 Np OU{gsave RZ LW Cf{Hc VC}{0 Sg}ie CP BB RW 0 RL CP BB stroke grestore}if
+ /CI 0 D /BP f D PF not{Ts neg SP}if /Ms t D} D
+/AD {I NL EG 14 get dup 0 lt{pop AT}if NA /AE t D Tm 14 get Ts mul neg SP
+ Cf{EU 14 get dup -1 eq{pop CA CL get}if Sc}if} D
+/DA {BN ()ES OA /AE f D ()Ec Bm 14 get Ts mul neg SP} D
+/PR {/MW E D /Li E D Tm 1 get Ps mul BE 0 NA /FN Fp D /PF t D SI /SL SL 1 add D
+ /CF 0 D Ps CS mul Ts div MW WC mul CS mul Ts div dup LL gt PL 0 eq and
+ {LL div div}{pop}ie Ey 1 get FS CP E pop LE add YI neg div cvi dup Li lt
+ AH and{4 lt YI Li mul 5 mul LE add 0 gt or PL 0 eq and{NP}if}{pop}ie
+ EU 1 get Sc /GS Ps D}D
+/RP {WR NL () /PF f D SI /FN 0 D ES Bm 1 get Ps mul neg SP OA /GS Ts D} D
+/SI {/XO Lm 15 get BC NN mul Lm 16 get AI UI sub NN mul add
+ Lm 17 get UI NN mul add Lm 20 get LG NN mul add Ts mul
+ PF{Lm 1 get Ps mul add}if EO add D
+ /MR Rm 15 get BC NN mul Rm 16 get AI UI sub NN mul add
+ Rm 17 get UI NN mul add Rm 20 get LG NN mul add Ts mul
+ PF{Rm 1 get Ps mul add}if D /LL W XO sub MR sub D} D
+/DT {/cC E D BN /LG LG 1 sub D SI /LG LG 1 add D WW 2 div Np BL} D
+/DD {WB Cc 0 eq cC 0 eq and L1 0 eq or Lm 20 get Ts mul L1 sub TB{BW add}if
+ Ts 2 div lt or NL /LF E D SI BL /cC 0 D} D
+/DL {Dc LG Cc put /Cc E D BG{Tm 18 get Ts mul BE}{BN}ie /LG LG 1 add D BL} D
+/LD {BN LG 0 gt{/LG LG 1 sub D}if /Cc Dc LG get D SI
+ BG{()Bm 18 get Ts mul BE}if BL} D
+/UL {BG{Tm 17 get Ts mul BE}{BN}ie NR AI NN 0 put /UI UI 1 add D
+ /AI AI 1 add D SI BL} D
+/LU {BN /UI UI 1 sub D /AI AI 1 sub D SI BG{()Bm 17 get Ts mul BE}if BL} D
+/OL {E BG{Tm 16 get Ts mul BE}{BN}ie TR AI NN Ty put /Ty E D NR AI NN 1 put
+ /AI AI 1 add D SI BL 1 Ln} D
+/LO {BN /AI AI 1 sub D /Ty TR AI get D SI BG{()Bm 16 get Ts mul BE}if BL} D
+/LI {E BN -1 SP /BP f D /CI 0 D 0 Np NR AI 1 sub NN get 1 eq
+ {dup dup 0 gt E 4 le and{/Ty E D}{pop}ie
+ /L1 L1 Ty AR AI NN get Ns SW pop XO sub dup 0 lt{pop 0}if add D ( ON )}
+ {pop ( B )}ie C1 E join /C1 E D CS Mf gt{/Mf CS D}if BL} D
+/BQ {Tm 15 get Ts mul BE /BC BC 1 add D SI BL} D
+/QB {Bm 15 get Ts mul BE /BC BC 1 sub D SI BL} D
+/Al {E EP 1 sub dup 0 lt{pop AV AL get}if NA} D
+/Ea {EP OA} D
+/WB {PF{WR}{BT}ie} D
+/F1 {WB /FN 0 D CS 0 FS} D
+/F2 {WB /FN WI D CS 0 FS} D
+/HY {/Hy t D WB /Hy f D} D
+/YH {WB} D
+/A {/LT E D LT 1 eq{/RN E D}if /Lh E D WB /C1 C1 ( Cp ) join D
+ Lc AF not and{Cl Sc}if /AF t D} D
+/EA {Lc AF and{Ec}{WB}ie TL Pa AF and Lh 0 ne and
+ {( \() Lh join (\)) join /AF f D WB}if /AF f D} D
+/TL {C1 ( Tl ) apa /C1 E D} d
+/apa {AF OU and Lh 0 ne LT 1 eq or and{LT 1 eq{RN ( /) E ST cvs join}
+ {(\() Lh join (\)) join}ie E join join}{pop}ie} d
+/Cp {/Xc CP /Yc E D D} D
+/SS {Cf{dup 0 ge{EU E get dup -1 eq{pop CA CL get}if}{pop CA CL get}ie Sc}
+ {pop}ie SZ SL get /SL SL 1 add D} D
+/I {WB 8 SS 1 FS} D
+/EM {WB 8 SS /CF CF 1 xor D 0 FS} D
+/BD {WB 9 SS 2 FS} D
+/TT {WB 10 SS /FN Fp D 0 FS} D
+/KB {WB 11 SS /FN Fp D 2 FS} D
+/CT {WB 12 SS 1 FS} D
+/SM {WB 13 SS /FN Fp D 0 FS} D
+/Q {/QL QL 1 add D QO QL 2 mod get La get join WB} D
+/EQ {QC QL 2 mod get La get join WB /QL QL 1 sub D} D
+/RO {WB -1 SS /CF 0 D 0 FS} D
+/SY {WB -1 SS -1 FS} D
+/MY {WB -1 SS -2 FS} D
+/ES {WB /SL SL 1 sub NN D /CF 0 D /FN FO SL get D SZ SL get FR SL get FS ()Ec}D
+/FZ {3 sub 1.2 E exp GS mul E WB TL /C1 C1 ( Cp ) join D /SL SL 1 add D 0 FS} D
+/Ef {WB TL ()ES /C1 C1 ( Cp ) join D} D
+/BZ {dup /Bf E D FZ}D
+/Sc {dup -1 ne Cf and{/CL CL 1 add D dup 0 eq{pop [0 0 0]}if
+ dup CA E CL E put VS ( VC ) join C1 E join /C1 E D}{pop}ie} D
+/Ec {WB Cf{/CL CL 1 sub NN D CA CL get VS ( VC ) join C1 E join /C1 E D}if} D
+/VS {dup type /arraytype eq{([) E {ST cvs join ( ) join}forall (]) join}if} D
+/VC {{255 div}forall setrgbcolor} D
+/Sl {dup type /integertype ne{Ds}if /La E D WB}d
+/UN {WB /UF t D} D
+/NU {WB /UF f D} D
+/SE {WB /sF t D} D
+/XE {WB /sF f D} D
+/sM {/C1 C1 ( k1 ) join D}d
+/eM {/C1 C1 ( k2 ) join D}d
+/k1 {/YC CP E pop Ts add D /mF t D /f1 t D}d
+/k2 {gsave 3 LW -9 CP E pop Ts 0.2 mul sub M -9 YC L stroke grestore /mF f D}d
+/Ac {/AC E D WB}d
+/Ca {eA{( \()join AC join(\) )join}if WB}d
+/s {OU{gsave 0 CS .25 mul R dup SW pop CJ 0 RL stroke grestore}if}D
+/CJ {AT 3 eq LB and{E dup dup length 1 sub A1 mul E
+ {( ) search{pop pop E A2 add E}{pop exit}ie}loop 3 -1 roll add
+ W CP pop sub 2 copy gt{E}if pop}if}D
+/So {/Co E D} D
+/SO {C1 Yo ST cvs join ( So ) join /C1 E D (j) SW pop 2 div Pd} D
+/Se {E WB CS E div Pd}D
+/Pd {dup type /stringtype eq{SW pop}if dup /L1 E L1 add D
+ ST cvs ( 0 R ) join C1 E join /C1 E D} D
+/Sp {0.35 CO} D
+/Sb {-0.2 CO} D
+/CO {OV Io Yo put /Yo E CS mul Yo add D /Io Io 1 add D -1.5 Io mul 3 add FZ SO
+ CS Yo add dup YA gt{/YA E D}{pop}ie
+ Yo neg dup YB gt{/YB E D}{pop}ie} D
+/Es {ES /Io Io 1 sub NN D /Yo OV Io get D SO} D
+/SB {/N2 0 D 0 1 NI{/N E D{IX N2 get 0 lt{/N2 N2 1 add D}{exit}ie}loop
+ /K WS N get FC N get mul D /NY AY N2 get D /BV NY array D
+ 0 1 NY 1 sub{/TM K string D currentfile TM readhexstring pop pop BV E TM put}
+ for BM N BV put /N2 N2 1 add D}for} D
+/IC [{/MA E D /MB 0 D}{2 div /MA E D /MB MA D}{/MB E CS sub D /MA CS D}
+ {pop /MA YS AB mul D /MB 1 AB sub YS mul D}{pop /MA 0 D /MB 0 D}] D
+/IP {BV N get /N N 1 add D} D
+/II {/K E D IX K get 0 lt{/EC E D}if /TY E D
+ TY 4 eq{/Y E D /X E D}if TY 3 eq{/AB E D}if
+ /XW AX K get D /YW AY K get D /IS SG IT K get get D /XS XW IS mul D
+ /YS YW IS mul D YS IC TY get exec /MA MA Fl not{3 add}if D} D
+/IM {II /ty TY D /xs XS D /ys YS D /ya YA D /yb YB D /ma MA D /mb MB D /k K D
+ /ec EC D /BP f D /CI 0 D WB TL L1 xs add dup XO add MR add W gt
+ {pop /ma ma Fl{3 add}if D NL /YA ma D /YB mb D /YS ys D /L1 xs D}
+ {/L1 E D ma YA gt{/YA ma D}if mb YB gt{/YB mb D}if}ie /TB f D
+ OU{CP E pop YS sub LE neg lt Fl not and PB not and{NP /YA ma D /YB mb D}if
+ /BP f D ty ST cvs ( ) join IX k get 0 lt{(\() join ec join (\) ) join}if
+ k ST cvs join ty 3 eq{AB ST cvs ( ) join E join}if
+ ty 4 eq{X ST cvs ( ) join Y ST cvs join ( ) join E join}if C1 E join
+ ( DI ) join FP 2 eq FP 1 eq AF and or{( FM ) join}if
+ ( Il Cp ) apa /C1 E D /EN f D}if /HM t D /T f D} D
+/DI {II /Xc CP /Yc E D D /YN YW neg D /HM t D /CI 0 D /K2 IX K get D gsave
+ TY 4 eq{OX X IS mul add OY FY add YS sub Y IS mul sub}
+ {/FY YS D CP MB sub 2 copy /OY E D /OX E D}ie
+ translate K2 0 ge{/DP AZ K2 get D /BV BM K2 get D XS YS scale /N 0 D XW YW DP
+ [XW 0 0 YN 0 YW] {IP} FC K2 get 1 eq{image}{f 3 colorimage}ie}
+ {EX}ie grestore XS 0 R /Ms t D} D
+/FM {gsave 0 Sg CP MB sub translate XS neg 0 M 0 YS RL XS 0 RL 0 YS neg RL
+ XS neg 0 RL stroke grestore} D
+/NA {/AT E D /AL AL 1 add D AV AL AT put} D
+/OA {AL 0 gt{/AL AL 1 sub D /AT AV AL get D}if} D
+/D1 {/BR {CP E pop E BN Mb{CP E pop eq{0 YI R}if}{pop}ie} D
+ /Sn {OU{C1 E ST cvs join ( Ld ) join /C1 E D}{pop}ie} D} D
+/D1 {/BR {BN} D /Sn {OU {C1 E ST cvs join ( Ld ) join /C1 E D} {pop} ie} D} D
+/TC {/TF t D /ML 0 D HN{SW pop dup ML gt{/ML E D}{pop}ie}forall NP /RM RM not D
+ RC /OU Tc D Ep /PN 0 D Ms not TP and{Ip}if /W IW ML sub Ts sub D
+ /A0 0 D TH{/BR {( ) join BT} D /Sn {pop} D /Au () D}if} D
+/TN {0 eq{E EA PF HF or not XR and{HN E get Xr}{pop}ie}
+ {OU{Tn 0 ge{() BN}if /Tn E D}{pop}ie WB}ie} D
+/NT {OU LB not and Tn 0 ge and{PL 0 eq{Ms not{CS CF FS}if CP dup
+ /y E YA sub D W 9 sub CS -1.8 mul XO L1 add 2 add{y M (.) show}for
+ HN Tn get dup SW pop IW E sub y M show CP BB M}if /Tn -1 D}if} D
+/Ld {/DN E D HN DN Pn put [/View [/XYZ -4 Fl{PS}{CP YA add US E pop}ie null]
+ /Dest DN ST cvs cvn /DEST pdfmark} D
+/C {ND 1 eq{1 sub}if TI mul /XO E D NL Nf not{pop()}if 0 3 -1 roll 1 A} D
+/OP {BP not{NP}if PN 2 mod 0 eq{/Ms t D NP}if}D
+/Ep {Xp PN 2 mod 0 eq and OU and{/Pn (-) D showpage /PM 1 D LA}if}D
+/Dg [73 86 88 76 67 68 77] D
+/Rd [0 [1 1 0][2 1 0][3 1 0][2 1 1][1 1 1][2 2 1][3 3 1][4 4 1][2 1 2]] D
+/Ns {/m E D /c E 32 mul D /j m 1000 idiv D /p j 12 add string D
+ c 96 le m 0 gt and{c 32 le {/i 0 D /d 77 D /l 100 D /m m j 1000 mul sub D
+  j -1 1 {pop p i d c add put /i i 1 add D}for
+  4 -2 0 {/j E D /n m l idiv D /m m n l mul sub D /d Dg j get D
+   n 0 gt {/x Rd n get D x 0 get -1 1 {pop p i d c add put /i i 1 add D}for
+   p i x 1 get sub Dg x 2 get j add get c add put}if /l l 10 idiv D
+  }for p 0 i GI}
+  {/i ST length 1 sub D m {1 sub dup 0 ge{dup 26 mod c add 1 add
+   ST i 3 -1 roll put 26 idiv dup 0 eq{pop exit}if}if /i i 1 sub D}loop
+   ST i ST length i sub GI}ie}
+ {m p cvs}ie} D
+/US {matrix currentmatrix matrix defaultmatrix matrix invertmatrix
+ matrix concatmatrix transform} D
+/GB {Gb{US}if}D
+/Tl {/Rn E D Xc CP pop ne{
+ [/Rect [Xc 1 sub Yc cS 0.25 mul sub GB CP E 1 add E cS 0.85 mul add GB]
+  /Subtype /Link /Border [0 0 Cf Lc and LX and AU or{0}{1}ie] Rn type
+  /nametype eq {/Dest Rn}{/Action [/Subtype /URI /URI Rn] Cd}ie
+  /ANN pdfmark}if} D
+/Il {/Rn E D [/Rect [Xc Yc GB Xc XS add Yc YS add GB] /Subtype /Link
+ /Border [0 0 0] Rn type /nametype eq{/Dest Rn}
+ {/Action [/Subtype /URI /URI Rn] Cd}ie /ANN pdfmark} D
+/XP {[{/Z Bz 2 div D Z 0 R Z Z RL Z neg Z RL Z neg Z neg RL Z Z neg RL
+ Fi cH 1 eq and{fill}if} {Bz 0 RL 0 Bz RL Bz neg 0 RL 0 Bz neg RL
+ Fi cH 1 eq and{fill}if} {0 -5 R Bz 0 RL 0 21 RL Bz neg 0 RL 0 -21 RL}]} D
+/MS {/Sm E D WB}D
+/O {BN()0 Sm BX} D
+/BX {/Bt E D Bt 2 lt{/Ch E D CS 0.8 mul}{11 mul}ie W XO sub MR sub
+ 2 copy gt{E}if pop /HZ E D Bt 2 eq{Fi not{pop()}if ( )E join /Ft E D TT
+ /PF t D /MW 1 D /Li 1 D /Fw Ft SW pop D Fw HZ gt{/HZ Fw 8 add D}if
+ HZ ST cvs( )join}{WB Ch ST cvs( )join}ie L1 HZ add XO add MR add W gt{NL}if
+ Bt 2 eq{Ft ES Fw neg HM{CS sub}if Pd}if Bt ST cvs join( Bx )join
+ Bt 2 eq HM and{CS Pd}if C1 E join /C1 E D /L1 L1 HZ add D /T f D
+ ( ) Pd /PF f D Bt 2 lt{YA CS .8 mul lt{/YA CS .8 mul D}if}
+ {YB 5 lt{/YB 5 D}if YA 21 lt{/YA 21 D}if}ie /CI 0 D} D
+/Bx {dup 2 eq{E /Bz E D}{E /cH E D /Bz CS .8 mul D}ie
+ OU {gsave 0 Sg XP E get exec stroke grestore}{pop}ie Bz 0 R /Ms t D}D
+/SD {FD 4 mul Dy add DZ NF newpath 0 0 M DX t charpath pathbbox
+ 3 -1 roll sub /DY E D E dup /X1 E D sub WM mul WX DY mul add WM DG mul E div
+ /DF E D /DR WX DF mul DY mul WM div 2 div D} d
+/Sd {gsave 0 IL Di mul neg translate IL IW atan Di 0 eq{neg}if rotate
+ FD 4 mul Dy add DZ NF DR X1 sub DY 2 div neg M cD VC DX show grestore} d
+/Pt {/tp t D Tp{NP /Pn (TP) D 0 Tt neg R Th BN NP Ep ET RC ZF}if /tp f D} D
+/RC {/AI 0 D /LG 0 D /BC 0 D /UI 0 D /PF f D /Cc 0 D /cC 0 D /Dc 10 array D
+ /NR [0 1 9{pop 0}for] D /La Ds D /AR 10 array D /TR 10 array D /AV 30 array D
+ SI /AL -1 D /AT A0 D AT NA /OV 9 array D /Yo 0 D /Co 0 D /Io 0 D /Hy f D
+ /Ph f D /CL -1 D Ct Sc}D
+/ZF {/FR [0 1 30{pop 0}for] D /SZ [0 1 30{pop 0}for] D /FO [0 1 30{pop 0}for] D
+ /SL 0 D /CF 0 D /FN 0 D 0 Ts SF}D
+/QO [[(\234)(\233)(\253\240)(\232)(\273)(\253)][(')(`)(\253\240)(\231)(\273)(\253)]] D
+/QC [[(\234)(\234)(\240\273)(\233)(\253)(\273)][(')(')(\240\273)(`)(\253)(\273)]] D
+/Hf EF length 2 sub D
+/Hz EZ Hf get D
+/HS Ey Hf get D
+/Fz EZ Hf 1 add get D
+/Fs Ey Hf 1 add get D
+/LE IL D
+/Ps EZ 1 get D
+/Fp EF 1 get D
+/XO 0 D
+/YI 0 D
+/CI 0 D
+/FP 0 D
+/WW Ts 7 mul D
+/Mf 0 D
+/YA 0 D
+/YB 0 D
+/Cs Ts D
+/GS Ts D
+/F0 0 D
+/NS 0 D
+/NB 0 D
+/N 0 D
+/C0 [] D
+/C1 () D
+/Lo 0 D
+/L1 0 D
+/LM 0 D
+/PH 0 D
+/EC 0 D
+/Lh 0 D
+/LT 0 D
+/CH 1 string D
+/ST 16 string D
+/CA 9 array D
+/HC (\255) D
+/HM f D
+/PF f D
+/EN f D
+/TB f D
+/UF f D
+/sF f D
+/AE f D
+/AF f D
+/BP t D
+/CD f D
+/PA t D
+/GL f D
+/T t D
+/HF f D
+/AH f D
+/SA f D
+/PB f D
+/f1 f D
+/mF f D
+/OX 0 D
+/OY 0 D
+/FY 0 D
+/EO 0 D
+/FB 0 D
+/PL 0 D
+/Bw 0 D
+/PD -1 D
+/TP f D
+/tp f D
+/TH t D
+/Ty 4 D
+/Tn -1 D
+/Fl t D
+/LB t D
+/PM 1 D
+/Ms f D
+/Ba f D
+/Bb f D
+/Hl 3 D
+/hl 6 D
+/Hv 6 D
+/Hs f D
+/HI 0 D
+/hi 0 D
+/PO t D
+/TE f D
+/LF t D
+/BO 0 D
+/Sm 1 D
+/Bf 3 D
+/A1 0 D
+/A2 0 D
+/Ds 1 D
+/QL -1 D
+/Cb Db D
+/Ct Dt D
+/Cl Dl D
+[/Creator (html2ps version 1.0 beta5) /Author () /Keywords (xsd, xml, schema, c++, mapping, data, binding, parsing, serialization, validation) /Subject ()
+ /Title (C++/Tree Mapping Getting Started Guide) /DOCINFO pdfmark
+/ND 1 D
+/HN [(1) (1) (1) (1) (1) (1) (1) (2) (2) (3) (3) (5) (6) (7) (8) (11) (13) (15)
+(16) (16) (16) (17) (17) (20) (22) (24) (26) (29) (??) (31) (32) (34) (36)
+(37) (38) (1) (1) (1) (1) (2) (2) (3) (3) (5) (6) (7) (8) (11) (13) (15)
+(16) (16) (16) (17) (17) (20) (22) (24) (26) (29) (31) (32) (34) (36) (37)
+(38)] D
+/h0 [()(Table of Contents)] D
+/h1 [(1\240\240)(Preface)] D
+/h2 [(1.1\240\240)(About This Document)] D
+/h3 [(1.2\240\240)(More Information)] D
+/h4 [(2\240\240)(1 Introduction)] D
+/h5 [(2.1\240\240)(1.1 Mapping Overview)] D
+/h6 [(2.2\240\240)(1.2 Benefits)] D
+/h7 [(3\240\240)(2 Hello World Example)] D
+/h8 [(3.1\240\240)(2.1 Writing XML Document and Schema)] D
+/h9 [(3.2\240\240)(2.2 Translating Schema to C++)] D
+/h10 [(3.3\240\240)(2.3 Implementing Application Logic)] D
+/h11 [(3.4\240\240)(2.4 Compiling and Running)] D
+/h12 [(3.5\240\240)(2.5 Adding Serialization)] D
+/h13 [(3.6\240\240)(2.6 Selecting Naming Convention)] D
+/h14 [(3.7\240\240)(2.7 Generating Documentation)] D
+/h15 [(4\240\240)(3 Overall Mapping Configuration)] D
+/h16 [(4.1\240\240)(3.1 Character Type and Encoding)] D
+/h17 [(4.2\240\240)(3.2 Support for Polymorphism)] D
+/h18 [(4.3\240\240)(3.3 Namespace Mapping)] D
+/h19 [(4.4\240\240)(3.4 Thread Safety)] D
+/h20 [(5\240\240)(4 Working with Object Models)] D
+/h21 [(5.1\240\240)(4.1 Attribute and Element Cardinalities)] D
+/h22 [(5.2\240\240)(4.2 Accessing the Object Model)] D
+/h23 [(5.3\240\240)(4.3 Modifying the Object Model)] D
+/h24 [(5.4\240\240)(4.4 Creating the Object Model from Scratch)] D
+/h25 [(5.5\240\240)(4.5 Mapping for the Built-in XML Schema Types)] D
+/h26 [(6\240\240)(5 Parsing)] D
+/h27 [(6.1\240\240)(5.1 XML Schema Validation and Searching)] D
+/h28 [(6.2\240\240)(5.2 Error Handling)] D
+/h29 [(7\240\240)(6 Serialization)] D
+/h30 [(7.1\240\240)(6.1 Namespace and Schema Information)] D
+/h31 [(7.2\240\240)(6.2 Error Handling)] D
+/Hr [35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56
+57 58 59 60 61 62 63 64 65]D
+/HV [1 2 2 1 2 2 1 2 2 2 2 2 2 2 1 2 2 2 2 1 2 2 2 2 2 1 2 2 1 2 2]D
+/Cn [2 0 0 2 0 0 7 0 0 0 0 0 0 0 4 0 0 0 0 5 0 0 0 0 0 2 0 0 2 0 0]D
+Hr length 0 gt{[/PageMode /UseOutlines /DOCVIEW pdfmark}if
+/Hn 1 D
+0 1 Hr length 1 sub{
+ /Bn E D [Cn Bn get dup 0 gt{/Count E HV Bn get Bl ge{neg}if}{pop}ie
+ /Dest Hr Bn get dup abs ST cvs cvn E 0 ge{(h)Hn ST cvs join cvx exec
+ dup 1 get E Nf{0 get E join}{pop}ie /Hn Hn 1 add D}{()}ie
+ /Title E dup length 255 gt{0 255 getinterval}if /OUT pdfmark}for
+ZF /FN Fp D Ps 0 FS /WC Wf{( )}{<A1A1>}ie SW pop D
+ET RC ZF
+/Df f D
+/R0 (http://www.codesynthesis.com/licenses/fdl-1.2.txt) D
+/R1 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/guide/index.xhtml) D
+/R2 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/guide/cxx-parser-guide.pdf) D
+/R3 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/guide/cxx-parser-guide.ps) D
+/R1 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/) D
+/R2 (http://wiki.codesynthesis.com/Tree/Customization_guide) D
+/R3 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/dbxml/) D
+/R4 (http://wiki.codesynthesis.com/Tree/FAQ) D
+/R5 (http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml) D
+/R6 (http://www.codesynthesis.com/mailman/listinfo/xsd-users) D
+/R7 (http://www.codesynthesis.com/pipermail/xsd-users/) D
+/R8 (http://www.w3.org/TR/xmlschema-0/) D
+/R9 (http://www.doxygen.org/) D
+/R10 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/hello/html/annotated.html) D
+/R11 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#2.11) D
+/R12 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#2.8) D
+/R13 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#2.5) D
+/R14 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#2.9) D
+/R15 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#3) D
+/R16 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#3.3) D
+/R17 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#4) D
+/R18 (http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#4.4) D
+/TS {
+ tables E get /table E D
+ table aload pop /rdesc E D /cdesc E D /tdesc E D
+ tdesc aload pop /capalg E D /caption E D /rules E D /frame E D /nfoot E D
+  /nhead E D /ncol E D /nrow E D /border E D /twid E D /units E D /talign E D
+  /flow E D /clear E D /tclass E D pop pop
+ /w W D /eps 0.1 D /OU f D /PL 1 D
+ /FN EF 21 get D EZ 21 get Ey 21 get FS
+ 0 1 1{
+  /pass E D
+  0 1 nrow{
+   /irow E D
+   /cells rdesc irow get 6 get D
+   0 1 ncol{
+    /icol E D
+    /cell cells icol get D
+    cell 0 ne{
+     cell aload pop /ang E D /CB E D pop pop pop
+     /DV E D /bot E D /top E D /right E D /left E D /nowrap E D /valign E D
+     /dp E D /align E D /rspan E D /cspan E D /cclass E D /ctype E D /cmax E D
+     /cmin E D /proc E D
+     rspan 0 eq{/rspan nrow irow sub 1 add D}if
+     cspan 0 eq{/cspan ncol icol sub 1 add D}if
+     pass 0 eq cspan 1 eq and pass 1 eq cspan 1 gt and or{
+      /W 1e5 D /LL W D /PH 1 D
+      ctype 1 eq{() BD}if
+      RC align NA
+      AT 4 eq{/CD t D /DC dp D /LN 0 D /M1 0 D /M2 0 D}{/CD f D}ie
+      0 0 M /LM 0 D proc exec BN
+      AT 4 eq{
+       LN array astore cell 15 3 -1 roll put
+       cdesc icol get dup dup 5 get M1 lt{5 M1 put}{5 get /M1 E D}ie
+       dup 6 get M2 lt{6 M2 put}{6 get /M2 E D}ie
+       /LM M1 M2 add D
+      }if
+      /CD f D
+      ang 0 ne{/LM CP E pop neg D}if
+      /thiswid LM left add right add eps add D
+      /oldmin 0 D /oldmax 0 D
+      0 1 cspan 1 sub{
+       icol add cdesc E get dup 2 get /oldmax E oldmax add D
+       1 get /oldmin E oldmin add D
+      }for
+      thiswid oldmax ge{
+       0 1 cspan 1 sub{
+        icol add cdesc E get dup 2 E 2 get oldmax 0 eq
+         {pop thiswid cspan div}{thiswid mul oldmax div}ie
+        put
+       }for
+      }if
+      nowrap 1 eq{
+       thiswid oldmin ge{
+        0 1 cspan 1 sub{
+         icol add cdesc E get dup 1 E 1 get oldmin 0 eq
+          {pop thiswid cspan div}{thiswid mul oldmin div}ie
+         put
+        }for
+       }if
+      }{
+       /W 0 D /LL W D /PH 2 D
+       ctype 1 eq{() ES () BD}if
+       0 0 M /LM 0 D RC proc exec BN
+       /thiswid LM left add right add eps add D
+       thiswid oldmin ge{
+        0 1 cspan 1 sub{
+         icol add cdesc E get dup 1 E 1 get oldmin 0 eq
+          {pop thiswid cspan div}{thiswid mul oldmin div}ie
+         put
+        }for
+       }if
+      }ie
+      ctype 1 eq{() ES}if
+     }if
+    }if
+   }for
+  }for
+ }for
+ /tmin 0 D /tmax 0 D
+ 0 1 ncol{
+  cdesc E get dup 1 get E 2 get 2 copy gt{pop dup}if
+  tmax add /tmax E D tmin add /tmin E D
+ }for
+ twid 0 lt{twid neg IW gt{IW neg}{twid}ie /twid E D}if
+ tdesc 0 twid neg tmin 2 copy lt{E}if pop put
+ tdesc 1 twid neg tmax 2 copy lt{E}if pop put
+ /W w D /LL W D /OU t D /PH 0 D /PL 0 D
+} D
+/PT {
+ /PL PL 1 add D
+ tables E get /table E D Tm 21 get Ts mul BE
+ PL 2 ge{save}if
+ /SL SL 1 add D /FN EF 21 get D EZ 21 get Ey 21 get FS
+ table aload pop /rdesc E D /cdesc E D /tdesc E D
+ tdesc aload pop /capalg E D /caption E D /rules E D /frame E D /nfoot E D
+  /nhead E D /ncol E D /nrow E D /border E D /twid E D /units E D /talign E D
+  /flow E D /clear E D /tclass E D /tmax E D /tmin E D
+ /w W D /xo XO D /mr MR D /ll LL D /lg LG D /ai AI D /bc BC D /nr NR D /ar AR D
+ /tr TR D /ui UI D /ph PH D /a0 A0 D /pf PF D /at AT D /av AV D /al AL D
+ /Le LE D /la La D
+ talign 0 lt{/talign AL 0 gt{AV AL get}{A0 2 le{A0}{0}ie}ie D}if
+ ph 1 eq ph 2 eq or{
+  NL ph 1 eq{tmax}{tmin}ie dup XO add LM gt{/LM E XO add D}{pop}ie LM E
+ }{
+  /PH 3 D /LE 1e5 D RC %ZF
+  border 0 gt{/border 1 D}if
+  /twidth 0 D /avail W xo sub D
+  twid 0 eq{0 1 ncol{cdesc E get dup 2 get E 3 get dup 0 gt{div neg dup twid lt
+   {/twid E D}{pop}ie}{pop pop}ie}for}if
+  /twid twid dup 0 lt{neg avail 2 copy gt{E}if pop}{avail mul}ie D
+  /OK t D 0 1 ncol{cdesc E get dup 1 get E 3 get twid mul gt{/OK f D}if}for
+  0 1 ncol{
+   cdesc E get dup 1 get /colmin E D dup 3 get /cwid E twid mul D dup
+   tmax avail le{2 get}if
+   tmin avail le tmax avail gt and{
+    dup 2 get E 1 get dup 3 1 roll sub avail tmin sub mul tmax tmin sub div add
+   }if
+   tmin avail gt{1 get}if
+   0 E colmin cwid lt OK and{pop cwid}if dup /twidth E twidth add D put
+  }for
+  /OU f D CP
+  tmin twid le{
+   0 1 ncol{cdesc E get dup 0 get twidth div twid mul 0 E put}for
+   /twidth twid D
+  }if
+  CP printcap CP E pop sub /caphig E D pop
+  0 1 1{
+   /pass E D
+   0 1 nrow{
+    /irow E D
+    /cells rdesc irow get 6 get D
+    0 1 ncol{
+     /icol E D
+     /cell cells icol get D
+     cell 0 ne{
+      cell aload pop /ang E D /CB E D pop pop pop
+      /DV E D /bot E D /top E D /right E D /left E D /nowrap E D /valign E D
+      /dp E D /align E D /rspan E D /cspan E D /cclass E D /ctype E D /cmax E D
+      /cmin E D /proc E D
+      rspan 0 eq{/rspan nrow irow sub 1 add D}if
+      cspan 0 eq{/cspan ncol icol sub 1 add D}if
+      /W 0 D
+      0 1 cspan 1 sub{icol add cdesc E get 0 get /W E W add D}for
+      pass 0 eq rspan 1 eq and pass 1 eq rspan 1 gt and or{
+       ctype 1 eq{() BD}if
+       /W W left sub right sub D /XO 0 D /EO 0 D SI
+       /A0 align D RC align NA
+       AT 4 eq{
+        /DC dp D /DO 0 D /ID 1 D
+        0 1 DV length 1 sub{DV E get dup DO gt{/DO E D}{pop}ie}for
+        /Lo DO DV 0 get sub D /L1 Lo D
+       }if
+       0 0 M /BP t D /Fl t D /MF 0 D /FB 0 D
+       proc exec T not{/CI 0 D}if BN 0 FB neg R MF 0 eq{/MF CS D}if
+       CP /thishig E neg bot add top add CI add D pop
+       ang 0 ne{/thishig LM bot add top add D}if
+       cell 16 MF put cell 17 Ya put cell 18 thishig put
+       valign 4 eq{
+        /below thishig Ya sub D
+        rdesc irow get dup dup 4 get Ya lt
+         {4 Ya put}{4 get /Ya E D}ie
+        dup 5 get below lt{5 below put}{5 get /below E D}ie
+        /thishig Ya below add D
+       }if
+       ctype 1 eq{()ES}if
+       /oldhig 0 D
+       0 1 rspan 1 sub{
+        irow add rdesc E get 0 get /oldhig E oldhig add D
+       }for
+       thishig oldhig ge{
+        0 1 rspan 1 sub{
+         irow add rdesc E get dup 0 E 0 get oldhig 0 eq
+          {pop thishig rspan div}{thishig mul oldhig div}ie
+         put
+        }for
+       }if
+      }if
+     }if
+    }for
+   }for
+  }for M RC %ZF
+  /thight 0 D /racc 0 D /maxh 0 D /brk 0 D /rbeg nhead nfoot add D
+  0 1 nrow{
+   rdesc E get dup 0 get dup /thight E thight add D
+   brk 0 eq{/racc E D}{/racc E racc add D}ie
+   racc maxh gt{/maxh racc D}if 2 get /brk E D
+  }for
+  ph 3 ge{thight caphig add E}if
+  ph 0 eq ph 4 eq or{
+   /PH 4 D /LE Le D /OU Ou D /yoff 0 D /headsz 0 D
+   0 1 nhead 1 sub{rdesc E get 0 get headsz add /headsz E D}for
+   /footsz 0 D
+   0 1 nfoot 1 sub{rdesc E nhead add get 0 get footsz add /footsz E D}for
+   /ahig LE BO add MI add D /maxh maxh headsz add footsz add D
+   /thight thight headsz add footsz add D
+   tmin avail gt maxh ahig gt or
+    {/Sf avail tmin div dup ahig maxh div gt{pop ahig maxh div}if D /SA t D}
+    {/Sf 1 D}ie
+   tclass 1 eq thight LE 15 sub gt and
+    {/SA t D LE 15 sub thight div dup Sf lt{/Sf E D}{pop}ie}if
+   SA{Sf Sf scale /ll ll Sf div D /xo xo Sf div D /LE LE Sf div D
+    /mr mr Sf div D /BO BO Sf div D /ahig ahig Sf div D}if
+   nhead nfoot add getwid
+   LE CP E pop add capalg 0 eq{caphig sub}if
+   bT{f}{dup thight lt thight ahig lt and}ie
+   E headsz sub footsz sub rwid lt or{NP}if
+   capalg 0 eq{printcap -8 SP}if
+   CP /ycur E D pop
+   printhead
+   rbeg 1 nrow{/row E D row
+    getwid
+    ycur yoff add rwid sub footsz sub LE add 0 lt
+    {nfoot 0 gt{printfoot}if Tf NP /rbeg irow1 D
+     Ba{MI /MI MI SA{Sf div}if D MI SP /MI E D}if
+     CP /ycur E D pop /yoff 0 D printhead}if
+    irow1 printrow
+   }for
+   printfoot /row row 1 add D Tf
+   0 ycur yoff add M
+   capalg 1 eq{/EO 0 D SI -3 SP printcap}if
+   Sf 1 lt{1 Sf div dup scale /ll ll Sf mul D /xo xo Sf mul D /LE LE Sf mul D
+    /mr mr Sf mul D /BO BO Sf mul D /SA f D}if
+   /EO 0 D
+  }if
+ }ie
+ /W w D /XO xo D /MR mr D /LL ll D /LG lg D /AI ai D /BC bc D /NR nr D /AR ar D
+ /TR tr D /UI ui D /PH ph D /A0 a0 D /PF pf D /AT at D /AV av D /AL al D
+ /La la D
+ /SL SL 1 sub NN D /CF 0 D /FN 0 D SZ SL get FR SL get FS Wf not{()F2}if
+ PL 2 ge{Ms E restore Ms or /Ms E D PH 1 eq PH 2 eq or
+  {/LM E D}if PH 3 ge{/CI 0 D NL 0 E neg R}if
+ }if
+ /PL PL 1 sub D /CI 0 D /BP f D /PO f D () Bm 21 get Ts mul BE BL %CF CS SF
+} D
+/printcap{
+ capalg 0 ge{
+  SA{/W w Sf div D}
+   {talign 1 eq{/XO xo ll twidth sub 2 div add D}if
+    talign 2 eq{/XO xo ll twidth sub add D}if
+    /W XO twidth add D
+   }ie /XO xo D /LL W XO sub MR sub D
+  /PA f D /Fl capalg 0 eq D
+  1 NA BL caption exec BN OA /PA t D
+ }if
+} D
+/getwid{
+ /irow1 E D
+ /irow2 irow1 D
+ /rwid 0 D
+ {rdesc irow2 get dup 0 get rwid add /rwid E D 2 get 0 eq
+  {exit}{/irow2 irow2 1 add D}ie
+ }loop
+} D
+/printrow{
+ /xoff ll twidth PL 2 ge{Sf div}if sub talign mul 2 div D
+ /xleft xoff xo add D
+ /irow E D
+ /cells rdesc irow get 6 get D
+ 0 1 ncol{
+  /icol E D
+  /cell cells icol get D
+  cell 0 ne{
+   cell aload pop /ang E D /CB E D /cvsize E D /above E D /fontsz E D
+   /DV E D /bot E D /top E D /right E D /left E D /nowrap E D /valign E D
+   /dp E D /align E D /rspan E D /cspan E D /cclass E D /ctype E D /cmax E D
+   /cmin E D /proc E D
+   rspan 0 eq{/rspan nrow irow sub 1 add D}if
+   cspan 0 eq{/cspan ncol icol sub 1 add D}if
+   /width 0 D
+   0 1 cspan 1 sub{icol add cdesc E get 0 get /width E width add D}for
+   /rhight rdesc irow get 0 get D
+   /hight rhight D
+   1 1 rspan 1 sub{irow add rdesc E get 0 get /hight E hight add D}for
+   /W xo xoff add width add right sub D
+   ang 0 ne{/W xo xoff add hight add right sub D}if
+   /EO xo xoff add left add D SI
+   Cf{
+    gsave CB VC xo xoff add ycur yoff add M
+    0 hight neg RL width 0 RL 0 hight RL width neg 0 RL fill
+    grestore
+   }if
+   ctype 1 eq{() BD}if
+   /A0 align D RC
+   AT 4 eq{
+    /DC dp D /ID 1 D /DO cdesc icol get 5 get D /Lo DO DV 0 get sub D /L1 Lo D
+   }if
+   ang 0 ne{
+    gsave ang 90 eq
+     {xoff ycur add hight cvsize sub 2 div sub ycur hight sub xoff sub}
+     {xoff ycur sub width add hight cvsize sub 2 div add ycur xoff add}ie
+    translate ang rotate
+   }if
+   valign 3 le{0 ycur yoff add top sub
+    hight cvsize sub valign 1 sub mul 2 div sub M}
+   {0 ycur yoff add top sub above add rdesc irow get 4 get sub M}ie
+   /PA f D /BP t D /Fl t D
+   BL proc exec BN
+   ang 0 ne{grestore}if
+   /PA t D
+   ctype 1 eq{() ES}if
+  }if
+  /xoff xoff cdesc icol get 0 get add D
+ }for
+ /yoff yoff rhight sub D
+} D
+/printhead {0 1 nhead 1 sub{printrow}for} D
+/printfoot {nhead 1 nhead nfoot add 1 sub{printrow}for} D
+/Tf {
+ OU{rules 2 ge{/yoff 0 D
+   gsave 0 Sg
+   [0 1 nhead 1 sub{}for rbeg 1 row 1 sub{}for nhead 1 nhead nfoot add 1 sub{}for]{
+    /irow E D
+    /xoff ll twidth PL 2 ge{Sf div}if sub talign mul 2 div D
+    /cells rdesc irow get 6 get D
+    0 1 ncol{
+     /icol E D
+     /cell cells icol get D
+     cell 0 ne{
+      /rspan cell 6 get D
+      /cspan cell 5 get D
+      rspan 0 eq{/rspan nrow irow sub 1 add D}if
+      cspan 0 eq{/cspan ncol icol sub 1 add D}if
+      /width 0 D
+      0 1 cspan 1 sub{icol add cdesc E get 0 get /width E width add D}for
+      /rhight rdesc irow get 0 get D
+      /hight rhight D
+      1 1 rspan 1 sub{irow add rdesc E get 0 get /hight E hight add D}for
+      xo xoff add width add ycur yoff add M
+      0 hight neg icol cspan add 1 sub ncol lt
+       {cdesc icol 1 add get 4 get dup rules 3 le{1 eq}{pop t}ie
+        {1 eq{0.8}{0.3}ie
+        LW RL CP stroke M}{pop R}ie}{R}ie
+      irow nhead nfoot add 1 sub ne nfoot 0 eq or
+       {irow rspan add 1 sub nrow lt
+       {rdesc irow rspan add get 3 get}{nfoot 0 eq{0}{1}ie}ie
+       dup rules 2 mod 0 eq{1 eq}{pop t}ie
+       {1 eq irow rspan add nhead eq or irow rspan add row eq nfoot 0 gt and or
+        {0.8}{0.3}ie LW width neg 0 RL CP stroke M}{pop}ie}if
+     }if
+     /xoff xoff cdesc icol get 0 get add D
+    }for
+    /yoff yoff rhight sub D
+   }forall
+   grestore
+   /Ms t D
+  }if
+  frame 1 gt{
+   gsave
+   1 LW 0 Sg
+   xleft ycur M CP BB
+   0 yoff frame 5 eq frame 7 ge or{RL}{R}ie
+   twidth 0 frame 3 eq frame 4 eq or frame 8 ge or{RL}{R}ie CP BB
+   0 yoff neg frame 6 ge{RL}{R}ie
+   twidth neg 0 frame 2 eq frame 4 eq or frame 8 ge or{RL}{R}ie
+   closepath stroke
+   grestore
+   /Ms t D
+  }if
+ }if
+} D
+/tables [[[0 0 0 0 0 -1 0 0 1 55 2 0 0 9 5 {()} -1]
+ [[0 0 0 0 0 0 0][0 0 0 0 0 0 0][0 0 0 0 0 0 0]]
+ [[0 0 0 0 0 0 [[{()1 Sl()WB(XML Schema type)} 0 0 1 0 1 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(Alias in the )SM(xml_schema)ES( names)HY(pace)YH()} 0 0 1 0 1 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(C++ type
+    )} 0 0 1 0 1 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(fixed-length inte)HY(gral)YH( types
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(byte)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(byte)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(signed\240char)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(unsigned)HY(Byte)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(unsigned_byte)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(unsigned\240char)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(short)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(short_)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(short)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(unsigned)HY(Short)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(unsigned_short)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(unsigned\240short)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(int)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(int_)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(int)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(unsignedInt)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(unsigned_int)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(unsigned\240int)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(long)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(long_)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(long\240long)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(unsigned)HY(Long)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(unsigned_long)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(unsigned\240long\240long)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(arbi)HY(trary)YH(-length inte)HY(gral)YH( types
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(integer)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(integer)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(long\240long)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(nonPos)HY(i)HY(tiveIn)HY(te)HY(ger)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(non_posi)HY(tive)YH(_integer)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(long\240long)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(nonNeg)HY(a)HY(tiveIn)HY(te)HY(ger)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(non_nega)HY(tive)YH(_integer)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(unsigned long\240long)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(posi)HY(tiveIn)HY(te)HY(ger)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(posi)HY(tive)YH(_integer)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(unsigned long\240long)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(nega)HY(tiveIn)HY(te)HY(ger)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(nega)HY(tive)YH(_integer)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(long\240long)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(boolean types
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(boolean)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(boolean)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(bool)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(fixed-preci)HY(sion)YH( float)HY(ing)YH(-point types
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(float)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(float_)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(float)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(double)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(double_)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(double)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(arbi)HY(trary)YH(-preci)HY(sion)YH( float)HY(ing)YH(-point types
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(decimal)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(decimal)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(double)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(string types
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(string)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(string)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(std::basic_string)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(normal)HY(ized)HY(String)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(normal)HY(ized)YH(_string)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(string)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(token)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(token)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type\240derived\240from\240)SM(normal)HY(ized)YH(_string)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(Name)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(name)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(token)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(NMTOKEN)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(nmtoken)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(token)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(NMTO)HY(KENS)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(nmto)HY(kens)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(sequence<nmtoken>)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(NCName)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(ncname)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(name)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(language)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(language)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(token)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(qual)HY(i)HY(fied)YH( name
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(QName)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(qname)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::qname)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(ID/IDREF types
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(ID)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(id)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(ncname)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(IDREF)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(idref)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(ncname)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(IDREFS)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(idrefs)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(sequence<idref>)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(URI types
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(anyURI)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(uri)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(std::basic_string)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(binary types
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(base64Binary)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(base64_binary)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::base64_binary)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(hexBi)HY(nary)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(hex_binary)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::hex_binary)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(date/time types
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(date)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(date)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::date)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(date)HY(Time)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(date_time)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::date_time)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(dura)HY(tion)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(dura)HY(tion)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::dura)HY(tion)YH()ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(gDay)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(gday)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::gday)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(gMonth)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(gmonth)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::gmonth)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(gMon)HY(th)HY(Day)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(gmonth_day)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::gmonth_day)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(gYear)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(gyear)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::gyear)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(gYear)HY(Month)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(gyear_month)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::gyear_month)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(time)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(time)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(xml_schema::time)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB(entity types
+    )} 0 0 1 0 3 1 1 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+0
+0
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(ENTITY)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(entity)ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(name)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+[0 0 0 0 0 0 [[{()1 Sl()WB()SM(ENTI)HY(TIES)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB()SM(enti)HY(ties)YH()ES()} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+[{()1 Sl()WB(type derived from )SM(sequence<entity>)ES(
+    )} 0 0 0 0 1 1 0 (.) 2 0 4 4 2 6 0 0 0 0 Db 0 ]
+]]
+]]
+] D
+0 1 0{TS}for RC ZF
+/Ba f D /BO 0 D Bs
+/UR (/home/boris/work/xsd/xsd/documentation/cxx/tree/guide/index.xhtml) D
+/Ti (C++/Tree Mapping Getting Started Guide) D
+/Au () D
+/Df f D
+/ME [] D
+Pt
+/BO 0 D TC /Ba f D Bs /AU f D /UR () D RC ZF
+ tH WB
+ND 1 gt{Ts 3 mul Np 0()0 C()BD(C++/Tree Mapping Getting Started Guide)ES()0 1 TN()EA()BN}if
+1 NH le{35(1\240\240)1 C(Preface)WB 3 Sn()35 1 TN()EA()BN}if
+2 NH le{36(1.1\240\240)2 C(About)WB 4 Sn( This Docu)HY(ment)YH()36 1 TN()EA()BN}if
+2 NH le{37(1.2\240\240)2 C(More)WB 5 Sn( Infor)HY(ma)HY(tion)YH()37 1 TN()EA()BN}if
+1 NH le{38(2\240\240)1 C(1)WB 6 Sn( Intro)HY(duc)HY(tion)YH()38 1 TN()EA()BN}if
+2 NH le{39(2.1\240\240)2 C(1.1)WB 7 Sn( Mapping Overview)39 1 TN()EA()BN}if
+2 NH le{40(2.2\240\240)2 C(1.2)WB 8 Sn( Bene)HY(fits)YH()40 1 TN()EA()BN}if
+1 NH le{41(3\240\240)1 C(2)WB 9 Sn( Hello World Example)41 1 TN()EA()BN}if
+2 NH le{42(3.1\240\240)2 C(2.1)WB 10 Sn( Writing XML Docu)HY(ment)YH( and Schema)42 1 TN()EA()BN}if
+2 NH le{43(3.2\240\240)2 C(2.2)WB 11 Sn( Trans)HY(lat)HY(ing)YH( Schema to C++)43 1 TN()EA()BN}if
+2 NH le{44(3.3\240\240)2 C(2.3)WB 12 Sn( Imple)HY(ment)HY(ing)YH( Appli)HY(ca)HY(tion)YH( Logic)44 1 TN()EA()BN}if
+2 NH le{45(3.4\240\240)2 C(2.4)WB 13 Sn( Compil)HY(ing)YH( and Running)45 1 TN()EA()BN}if
+2 NH le{46(3.5\240\240)2 C(2.5)WB 14 Sn( Adding Seri)HY(al)HY(iza)HY(tion)YH()46 1 TN()EA()BN}if
+2 NH le{47(3.6\240\240)2 C(2.6)WB 15 Sn( Select)HY(ing)YH( Naming Conven)HY(tion)YH()47 1 TN()EA()BN}if
+2 NH le{48(3.7\240\240)2 C(2.7)WB 16 Sn( Gener)HY(at)HY(ing)YH( Docu)HY(men)HY(ta)HY(tion)YH()48 1 TN()EA()BN}if
+1 NH le{49(4\240\240)1 C(3)WB 17 Sn( Overall Mapping Config)HY(u)HY(ra)HY(tion)YH()49 1 TN()EA()BN}if
+2 NH le{50(4.1\240\240)2 C(3.1)WB 18 Sn( Char)HY(ac)HY(ter)YH( Type and Encod)HY(ing)YH()50 1 TN()EA()BN}if
+2 NH le{51(4.2\240\240)2 C(3.2)WB 19 Sn( Support for Poly)HY(mor)HY(phism)YH()51 1 TN()EA()BN}if
+2 NH le{52(4.3\240\240)2 C(3.3)WB 20 Sn( Names)HY(pace)YH( Mapping)52 1 TN()EA()BN}if
+2 NH le{53(4.4\240\240)2 C(3.4)WB 21 Sn( Thread Safety)53 1 TN()EA()BN}if
+1 NH le{54(5\240\240)1 C(4)WB 22 Sn( Working with Object Models)54 1 TN()EA()BN}if
+2 NH le{55(5.1\240\240)2 C(4.1)WB 23 Sn( Attribute and Element Cardi)HY(nal)HY(i)HY(ties)YH()55 1 TN()EA()BN}if
+2 NH le{56(5.2\240\240)2 C(4.2)WB 24 Sn( Access)HY(ing)YH( the Object Model)56 1 TN()EA()BN}if
+2 NH le{57(5.3\240\240)2 C(4.3)WB 25 Sn( Modi)HY(fy)HY(ing)YH( the Object Model)57 1 TN()EA()BN}if
+2 NH le{58(5.4\240\240)2 C(4.4)WB 26 Sn( Creat)HY(ing)YH( the Object Model from Scratch)58 1 TN()EA()BN}if
+2 NH le{59(5.5\240\240)2 C(4.5)WB 27 Sn( Mapping for the Built-in XML Schema Types)59 1 TN()EA()BN}if
+1 NH le{60(6\240\240)1 C(5)WB 29 Sn( Parsing)60 1 TN()EA()BN}if
+2 NH le{61(6.1\240\240)2 C(5.1)WB 30 Sn( XML Schema Vali)HY(da)HY(tion)YH( and Search)HY(ing)YH()61 1 TN()EA()BN}if
+2 NH le{62(6.2\240\240)2 C(5.2)WB 31 Sn( Error Handling)62 1 TN()EA()BN}if
+1 NH le{63(7\240\240)1 C(6)WB 32 Sn( Seri)HY(al)HY(iza)HY(tion)YH()63 1 TN()EA()BN}if
+2 NH le{64(7.1\240\240)2 C(6.1)WB 33 Sn( Names)HY(pace)YH( and Schema Infor)HY(ma)HY(tion)YH()64 1 TN()EA()BN}if
+2 NH le{65(7.2\240\240)2 C(6.2)WB 34 Sn( Error Handling)65 1 TN()EA()BN}if
+/OU t D /Cb Db D NP Ep ET 
+/Cb Db D /Ct [16#00 16#00 16#00] D /Cl [16#00 16#00 16#00] D /CL -1 D Ct Sc
+
+/Ba f D /BO 0 D Bs
+/UR (/home/boris/work/xsd/xsd/documentation/cxx/tree/guide/index.xhtml) D
+/Ti (C++/Tree Mapping Getting Started Guide) D
+/Au () D
+/Df f D
+/ME [] D
+
+NP RC ZF
+()1 Sl()WB 0 Sn(
+
+)BR()WB 1 Sn(  )BR()WB 2 Sn(
+  
+
+  )0 1 0 H(Preface)WB 35 Sn()WB 3 Sn()EA()EH(
+
+  )0 2 1 H(About)WB 36 Sn()WB 4 Sn( This Docu)HY(ment)YH()EA()EH(
+
+  )0 P(The goal of this docu)HY(ment)YH( is to provide you with an under)HY(stand)HY(ing)YH( of
+     the C++/Tree program)HY(ming)YH( model and allow you to effi)HY(ciently)YH( eval)HY(u)HY(ate)YH(
+     XSD against your project's tech)HY(ni)HY(cal)YH( require)HY(ments)YH(. As such, this
+     docu)HY(ment)YH( is intended for C++ devel)HY(op)HY(ers)YH( and soft)HY(ware)YH( archi)HY(tects)YH(
+     who are looking for an XML process)HY(ing)YH( solu)HY(tion)YH(. For a more in-depth
+     descrip)HY(tion)YH( of the C++/Tree mapping refer to the
+     )R1 2 A(C++/Tree
+     Mapping User Manual)EA(.)EP(
+
+  )0 P(Prior expe)HY(ri)HY(ence)YH( with XML and C++ is required to under)HY(stand)YH( this
+     docu)HY(ment)YH(. Basic under)HY(stand)HY(ing)YH( of XML Schema is advan)HY(ta)HY(geous)YH( but
+     not expected or required.
+  )EP(
+
+
+  )0 2 2 H(More)WB 37 Sn()WB 5 Sn( Infor)HY(ma)HY(tion)YH()EA()EH(
+
+  )0 P(Beyond this guide, you may also find the follow)HY(ing)YH( sources of
+     infor)HY(ma)HY(tion)YH( useful:)EP(
+
+  )UL(    )-1 LI()R1 2 A(C++/Tree
+        Mapping User Manual)EA(
+
+    )-1 LI()R2 2 A(C++/Tree
+        Mapping Customiza)HY(tion)YH( Guide)EA(
+
+    )-1 LI()R3 2 A(C++/Tree
+        Mapping and Berke)HY(ley)YH( DB XML Inte)HY(gra)HY(tion)YH( Guide)EA(
+
+    )-1 LI()R4 2 A(C++/Tree
+        Mapping Frequently Asked Ques)HY(tions)YH( \201FAQ\202)EA(
+
+    )-1 LI()R5 2 A(XSD
+        Compiler Command Line Manual)EA(
+
+    )-1 LI(The )SM(exam)HY(ples)YH(/cxx/tree/)ES( direc)HY(tory)YH( in the XSD
+        distri)HY(bu)HY(tion)YH( contains a collec)HY(tion)YH( of exam)HY(ples)YH( and a README
+        file with an overview of each example.
+
+    )-1 LI(The )SM(README)ES( file in the XSD distri)HY(bu)HY(tion)YH( explains
+        how to compile the exam)HY(ples)YH( on various plat)HY(forms)YH(.
+
+    )-1 LI(The )R6 2 A(xsd-users)EA(
+        mailing list is the place to ask tech)HY(ni)HY(cal)YH( ques)HY(tions)YH( about XSD and the C++/Parser mapping.
+        Further)HY(more)YH(, the )R7 2 A(archives)EA(
+        may already have answers to some of your ques)HY(tions)YH(.
+
+  )LU(
+
+  
+
+  )0 1 3 H(1)WB 38 Sn()WB 6 Sn( Intro)HY(duc)HY(tion)YH()EA()EH(
+
+  )0 P(Welcome to CodeSyn)HY(the)HY(sis)YH( XSD and the C++/Tree mapping. XSD is a
+     cross-plat)HY(form)YH( W3C XML Schema to C++ data binding compiler. C++/Tree
+     is a W3C XML Schema to C++ mapping that repre)HY(sents)YH( the data stored
+     in XML as a stat)HY(i)HY(cally)YH(-typed, vocab)HY(u)HY(lary)YH(-specific object model.
+  )EP(
+
+  )0 2 4 H(1.1)WB 39 Sn()WB 7 Sn( Mapping Overview)EA()EH(
+
+  )0 P(Based on a formal descrip)HY(tion)YH( of an XML vocab)HY(u)HY(lary)YH( \201schema\202, the
+     C++/Tree mapping produces a tree-like data struc)HY(ture)YH( suit)HY(able)YH( for
+     in-memory process)HY(ing)YH(. The core of the mapping consists of C++
+     classes that consti)HY(tute)YH( the object model and are derived from
+     types defined in XML Schema as well as XML parsing and
+     seri)HY(al)HY(iza)HY(tion)YH( code.)EP(
+
+  )0 P(Besides the core features, C++/Tree provide a number of addi)HY(tional)YH(
+     mapping elements that can be useful in some appli)HY(ca)HY(tions)YH(. These
+     include seri)HY(al)HY(iza)HY(tion)YH( and extrac)HY(tion)YH( to/from formats others than
+     XML, such as unstruc)HY(tured)YH( text \201useful for debug)HY(ging)YH(\202 and binary
+     repre)HY(sen)HY(ta)HY(tions)YH( such as XDR and CDR for high-speed data process)HY(ing)YH(,
+     inte)HY(gra)HY(tion)YH( with XML databases such as Berke)HY(ley)YH( DB XML, and auto)HY(matic)YH(
+     docu)HY(men)HY(ta)HY(tion)YH( gener)HY(a)HY(tion)YH(. The C++/Tree mapping also provides a wide
+     range of mech)HY(a)HY(nisms)YH( for control)HY(ling)YH( and customiz)HY(ing)YH( the gener)HY(ated)YH(
+     code.)EP(
+
+   )0 P(A typical appli)HY(ca)HY(tion)YH( that uses C++/Tree for XML process)HY(ing)YH( usually
+      performs the follow)HY(ing)YH( three steps: it first reads \201parses\202 an XML
+      docu)HY(ment)YH( to an in-memory object model, it then performs some useful
+      compu)HY(ta)HY(tions)YH( on that object model which may involve modi)HY(fi)HY(ca)HY(tion)YH(
+      of the model, and finally it may write \201seri)HY(al)HY(ize)YH(\202 the modi)HY(fied)YH(
+      object model back to XML.)EP(
+
+  )0 P(The next chapter presents a simple appli)HY(ca)HY(tion)YH( that performs these
+     three steps. The follow)HY(ing)YH( chap)HY(ters)YH( show how to use the C++/Tree
+     mapping in more detail.)EP(
+
+  )0 2 5 H(1.2)WB 40 Sn()WB 8 Sn( Bene)HY(fits)YH()EA()EH(
+
+  )0 P(Tradi)HY(tional)YH( XML access APIs such as Docu)HY(ment)YH( Object Model \201DOM\202
+     or Simple API for XML \201SAX\202 have a number of draw)HY(backs)YH( that
+     make them less suit)HY(able)YH( for creat)HY(ing)YH( robust and main)HY(tain)HY(able)YH(
+     XML process)HY(ing)YH( appli)HY(ca)HY(tions)YH(. These draw)HY(backs)YH( include:
+  )EP(
+
+  )UL(    )-1 LI(Generic repre)HY(sen)HY(ta)HY(tion)YH( of XML in terms of elements, attributes,
+        and text forces an appli)HY(ca)HY(tion)YH( devel)HY(oper)YH( to write a substan)HY(tial)YH(
+        amount of bridg)HY(ing)YH( code that iden)HY(ti)HY(fies)YH( and trans)HY(forms)YH( pieces
+        of infor)HY(ma)HY(tion)YH( encoded in XML to a repre)HY(sen)HY(ta)HY(tion)YH( more suit)HY(able)YH(
+        for consump)HY(tion)YH( by the appli)HY(ca)HY(tion)YH( logic.
+
+    )-1 LI(String-based flow control defers error detec)HY(tion)YH( to runtime.
+        It also reduces code read)HY(abil)HY(ity)YH( and main)HY(tain)HY(abil)HY(ity)YH(.
+
+    )-1 LI(Lack of type safety because the data is repre)HY(sented)YH( as text.
+
+    )-1 LI(Result)HY(ing)YH( appli)HY(ca)HY(tions)YH( are hard to debug, change, and
+        main)HY(tain)YH(.
+  )LU(
+
+  )0 P(In contrast, stat)HY(i)HY(cally)YH(-typed, vocab)HY(u)HY(lary)YH(-specific object model
+     produced by the C++/Tree mapping allows you to operate in your
+     domain terms instead of the generic elements, attributes, and
+     text. Static typing helps catch errors at compile-time rather
+     than at run-time. Auto)HY(matic)YH( code gener)HY(a)HY(tion)YH( frees you for more
+     inter)HY(est)HY(ing)YH( tasks \201such as doing some)HY(thing)YH( useful with the
+     infor)HY(ma)HY(tion)YH( stored in the XML docu)HY(ments)YH(\202 and mini)HY(mizes)YH( the
+     effort needed to adapt your appli)HY(ca)HY(tions)YH( to changes in the
+     docu)HY(ment)YH( struc)HY(ture)YH(. To summa)HY(rize)YH(, the C++/Tree object model has
+     the follow)HY(ing)YH( key advan)HY(tages)YH( over generic XML access APIs:)EP(
+
+  )UL(    )-1 LI()BD(Ease of use.)ES( The gener)HY(ated)YH( code hides all the complex)HY(ity)YH(
+        asso)HY(ci)HY(ated)YH( with parsing and seri)HY(al)HY(iz)HY(ing)YH( XML. This includes navi)HY(gat)HY(ing)YH(
+        the struc)HY(ture)YH( and convert)HY(ing)YH( between the text repre)HY(sen)HY(ta)HY(tion)YH( and
+        data types suit)HY(able)YH( for manip)HY(u)HY(la)HY(tion)YH( by the appli)HY(ca)HY(tion)YH(
+        logic.
+
+    )-1 LI()BD(Natural repre)HY(sen)HY(ta)HY(tion)YH(.)ES( The object repre)HY(sen)HY(ta)HY(tion)YH( allows
+         you to access the XML data using your domain vocab)HY(u)HY(lary)YH( instead
+         of generic elements, attributes, and text.
+
+    )-1 LI()BD(Concise code.)ES( With the object repre)HY(sen)HY(ta)HY(tion)YH( the
+        appli)HY(ca)HY(tion)YH( imple)HY(men)HY(ta)HY(tion)YH( is simpler and thus easier
+        to read and under)HY(stand)YH(.
+
+    )-1 LI()BD(Safety.)ES( The gener)HY(ated)YH( object model is stat)HY(i)HY(cally)YH(
+        typed and uses func)HY(tions)YH( instead of strings to access the
+        infor)HY(ma)HY(tion)YH(. This helps catch program)HY(ming)YH( errors at compile-time
+        rather than at runtime.
+
+    )-1 LI()BD(Main)HY(tain)HY(abil)HY(ity)YH(.)ES( Auto)HY(matic)YH( code gener)HY(a)HY(tion)YH( mini)HY(mizes)YH( the
+        effort needed to adapt the appli)HY(ca)HY(tion)YH( to changes in the
+        docu)HY(ment)YH( struc)HY(ture)YH(. With static typing, the C++ compiler
+        can pin-point the places in the client code that need to be
+        changed.
+
+    )-1 LI()BD(Compat)HY(i)HY(bil)HY(ity)YH(.)ES( Sequences of elements are repre)HY(sented)YH( in
+        the object model as contain)HY(ers)YH( conform)HY(ing)YH( to the stan)HY(dard)YH( C++
+        sequence require)HY(ments)YH(. This makes it possi)HY(ble)YH( to use stan)HY(dard)YH(
+        C++ algo)HY(rithms)YH( on the object repre)HY(sen)HY(ta)HY(tion)YH( and frees you from
+        learn)HY(ing)YH( yet another container inter)HY(face)YH(, as is the case with
+        DOM.
+
+    )-1 LI()BD(Effi)HY(ciency)YH(.)ES( If the appli)HY(ca)HY(tion)YH( makes repet)HY(i)HY(tive)YH( use
+        of the data extracted from XML, then the C++/Tree object model
+        is more effi)HY(cient)YH( because the navi)HY(ga)HY(tion)YH( is performed using
+        func)HY(tion)YH( calls rather than string compar)HY(isons)YH( and the XML
+        data is extracted only once. Further)HY(more)YH(, the runtime memory
+        usage is reduced due to more effi)HY(cient)YH( data storage
+        \201for instance, storing numeric data as inte)HY(gers)YH( instead of
+        strings\202 as well as the static knowl)HY(edge)YH( of cardi)HY(nal)HY(ity)YH(
+        constraints.
+  )LU(
+
+
+  
+
+
+  )0 1 6 H(2)WB 41 Sn()WB 9 Sn( Hello World Example)EA()EH(
+
+  )0 P(In this chapter we will examine how to parse, access, modify, and
+     seri)HY(al)HY(ize)YH( a very simple XML docu)HY(ment)YH( using the XSD-gener)HY(ated)YH(
+     C++/Tree object model. The code presented in this chapter is
+     based on the )SM(hello)ES( example which can be found in
+     the )SM(exam)HY(ples)YH(/cxx/tree/)ES( direc)HY(tory)YH( of the XSD
+     distri)HY(bu)HY(tion)YH(.)EP(
+
+  )0 2 7 H(2.1)WB 42 Sn()WB 10 Sn( Writing XML Docu)HY(ment)YH( and Schema)EA()EH(
+
+  )0 P(First, we need to get an idea about the struc)HY(ture)YH(
+     of the XML docu)HY(ments)YH( we are going to process. Our
+     )SM(hello.xml)ES(, for example, could look like this:)EP(
+
+  ) 10 28 PR(<?xml version="1.0"?>
+<hello>
+
+  <greeting>Hello</greeting>
+
+  <name>sun</name>
+  <name>moon</name>
+  <name>world</name>
+
+</hello>)RP(
+
+  )0 P(Then we can write a descrip)HY(tion)YH( of the above XML in the
+     XML Schema language and save it into )SM(hello.xsd)ES(:)EP(
+
+  ) 13 70 PR(<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:complexType name="hello_t">
+    <xs:sequence>
+      <xs:element name="greeting" type="xs:string"/>
+      <xs:element name="name" type="xs:string" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="hello" type="hello_t"/>
+
+</xs:schema>)RP(
+
+  )0 P(Even if you are not famil)HY(iar)YH( with XML Schema, it
+     should be easy to connect decla)HY(ra)HY(tions)YH( in )SM(hello.xsd)ES(
+     to elements in )SM(hello.xml)ES(. The )SM(hello_t)ES( type
+     is defined as a sequence of the nested )SM(greet)HY(ing)YH()ES( and
+     )SM(name)ES( elements. Note that the term sequence in XML
+     Schema means that elements should appear in a partic)HY(u)HY(lar)YH( order
+     as opposed to appear)HY(ing)YH( multi)HY(ple)YH( times. The )SM(name)ES(
+     element has its )SM(maxOc)HY(curs)YH()ES( prop)HY(erty)YH( set to
+     )SM(unbounded)ES( which means it can appear multi)HY(ple)YH( times
+     in an XML docu)HY(ment)YH(. Finally, the glob)HY(ally)YH(-defined )SM(hello)ES(
+     element prescribes the root element for our vocab)HY(u)HY(lary)YH(. For an
+     easily-approach)HY(able)YH( intro)HY(duc)HY(tion)YH( to XML Schema refer to
+     )R8 2 A(XML Schema Part 0:
+     Primer)EA(.)EP(
+
+  )0 P(The above schema is a spec)HY(i)HY(fi)HY(ca)HY(tion)YH( of our XML vocab)HY(u)HY(lary)YH(; it tells
+     every)HY(body)YH( what valid docu)HY(ments)YH( of our XML-based language should look
+     like. We can also update our )SM(hello.xml)ES( to include the
+     infor)HY(ma)HY(tion)YH( about the schema so that XML parsers can vali)HY(date)YH(
+     our docu)HY(ment)YH(:)EP(
+
+      ) 11 60 PR(<?xml version="1.0"?>
+<hello xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="hello.xsd">
+
+  <greeting>Hello</greeting>
+
+  <name>sun</name>
+  <name>moon</name>
+  <name>world</name>
+
+</hello>)RP(
+
+
+  )0 P(The next step is to compile the schema to gener)HY(ate)YH( the object
+     model and parsing func)HY(tions)YH(.)EP(
+
+  )0 2 8 H(2.2)WB 43 Sn()WB 11 Sn( Trans)HY(lat)HY(ing)YH( Schema to C++)EA()EH(
+
+  )0 P(Now we are ready to trans)HY(late)YH( our )SM(hello.xsd)ES( to C++.
+     To do this we invoke the XSD compiler from a termi)HY(nal)YH( \201UNIX\202 or
+     a command prompt \201Windows\202:
+  )EP(
+
+  ) 1 24 PR($ xsd cxx-tree hello.xsd)RP(
+
+  )0 P(The XSD compiler produces two C++ files: )SM(hello.hxx)ES( and
+     )SM(hello.cxx)ES(. The follow)HY(ing)YH( code frag)HY(ment)YH( is taken from
+     )SM(hello.hxx)ES(; it should give you an idea about what gets
+     gener)HY(ated)YH(:
+  )EP(
+
+  ) 45 60 PR(class hello_t
+{
+public:
+  // greeting
+  //
+  typedef xml_schema::string greeting_type;
+
+  const greeting_type&
+  greeting \201\202 const;
+
+  greeting_type&
+  greeting \201\202;
+
+  void
+  greeting \201const greeting_type& x\202;
+
+  // name
+  //
+  typedef xml_schema::string name_type;
+  typedef xsd::sequence<name_type> name_sequence;
+  typedef name_sequence::iterator name_iterator;
+  typedef name_sequence::const_iterator name_const_iterator;
+
+  const name_sequence&
+  name \201\202 const;
+
+  name_sequence&
+  name \201\202;
+
+  void
+  name \201const name_sequence& s\202;)WR(
+
+  // Constructor.
+  //
+  hello_t \201const greeting_type&\202;
+
+  ...
+
+};
+
+std::auto_ptr<hello_t>
+hello \201const std::string& uri\202;
+
+std::auto_ptr<hello_t>
+hello \201std::istream&\202;)RP(
+
+  )0 P(The )SM(hello_t)ES( C++ class corre)HY(sponds)YH( to the
+     )SM(hello_t)ES( XML Schema type. For each element
+     in this type a set of C++ type defi)HY(ni)HY(tions)YH( as well as
+     acces)HY(sor)YH( and modi)HY(fier)YH( func)HY(tions)YH( are gener)HY(ated)YH( inside the
+     )SM(hello_t)ES( class. Note that the type defi)HY(ni)HY(tions)YH(
+     and member func)HY(tions)YH( for the )SM(greet)HY(ing)YH()ES( and
+     )SM(name)ES( elements are differ)HY(ent)YH( because of the
+     cardi)HY(nal)HY(ity)YH( differ)HY(ences)YH( between these two elements
+     \201)SM(greet)HY(ing)YH()ES( is a required single element and
+     )SM(name)ES( is a sequence of elements\202.)EP(
+
+  )0 P(The )SM(xml_schema::string)ES( type used in the type
+     defi)HY(ni)HY(tions)YH( is a C++ class provided by the XSD runtime
+     that corre)HY(sponds)YH( to built-in XML Schema type
+     )SM(string)ES(. The )SM(xml_schema::string)ES(
+     is based on )SM(std::string)ES( and can be used as
+     such. Simi)HY(larly)YH(, the )SM(sequence)ES( class template
+     that is used in the )SM(name_sequence)ES( type
+     defi)HY(ni)HY(tion)YH( is based on and has the same inter)HY(face)YH( as
+     )SM(std::vector)ES(. The mapping between the built-in
+     XML Schema types and C++ types is described in more detail in
+     )0 27 1 A(Section 4.5, "Mapping for the Built-in XML Schema
+     Types")27 0 TN TL()Ec /AF f D(. The )SM(hello_t)ES( class also includes a
+     construc)HY(tor)YH( with an initial)HY(izer)YH( for the required
+     )SM(greet)HY(ing)YH()ES( element as its argu)HY(ment)YH(.)EP(
+
+  )0 P(The )SM(hello)ES( over)HY(loaded)YH( global func)HY(tions)YH( corre)HY(spond)YH(
+     to the )SM(hello)ES( global element in XML Schema. A
+     global element in XML Schema is a valid docu)HY(ment)YH( root.
+     By default XSD gener)HY(ated)YH( a set of parsing func)HY(tions)YH( for each
+     global element defined in XML Schema \201this can be over)HY(rid)HY(den)YH(
+     with the )SM(--root-element-*)ES( options\202. For more
+     infor)HY(ma)HY(tion)YH( on parsing func)HY(tions)YH( see )0 29 1 A(Chapter 5,
+     "Parsing")29 0 TN TL()Ec /AF f D(.)EP(
+
+  )0 2 9 H(2.3)WB 44 Sn()WB 12 Sn( Imple)HY(ment)HY(ing)YH( Appli)HY(ca)HY(tion)YH( Logic)EA()EH(
+
+  )0 P(At this point we have all the parts we need to do some)HY(thing)YH( useful
+     with the infor)HY(ma)HY(tion)YH( stored in our XML docu)HY(ment)YH(:
+  )EP(
+
+  ) 25 62 PR(#include <iostream>
+#include "hello.hxx"
+
+using namespace std;
+
+int
+main \201int argc, char* argv[]\202
+{
+  try
+  {
+    auto_ptr<hello_t> h \201hello \201argv[1]\202\202;
+
+    for \201hello_t::name_const_iterator i \201h->name \201\202.begin \201\202\202;
+         i != h->name \201\202.end \201\202;
+         ++i\202
+    {
+      cerr << h->greeting \201\202 << ", " << *i << "!" << endl;
+    }
+  }
+  catch \201const xml_schema::exception& e\202
+  {
+    cerr << e << endl;
+    return 1;
+  }
+})RP(
+
+  )0 P(The first part of our appli)HY(ca)HY(tion)YH( calls one of the parsing
+     func)HY(tions)YH( to parser an XML file spec)HY(i)HY(fied)YH( in the command line.
+     We then use the returned object model to iterate over names
+     and print a greet)HY(ing)YH( line for each of them. Finally, we
+     catch and print the )SM(xml_schema::excep)HY(tion)YH()ES(
+     excep)HY(tion)YH( in case some)HY(thing)YH( goes wrong. This excep)HY(tion)YH(
+     is the root of the excep)HY(tion)YH( hier)HY(ar)HY(chy)YH( used by the
+     XSD-gener)HY(ated)YH( code.
+  )EP(
+
+
+  )0 2 10 H(2.4)WB 45 Sn()WB 13 Sn( Compil)HY(ing)YH( and Running)EA()EH(
+
+  )0 P(After saving our appli)HY(ca)HY(tion)YH( from the previ)HY(ous)YH( section in
+     )SM(driver.cxx)ES(, we are ready to compile our first
+     program and run it on the test XML docu)HY(ment)YH(. On a UNIX
+     system this can be done with the follow)HY(ing)YH( commands:
+  )EP(
+
+  ) 6 43 PR($ c++ -I.../libxsd -c driver.cxx hello.cxx
+$ c++ -o driver driver.o hello.o -lxerces-c
+$ ./driver hello.xml
+Hello, sun!
+Hello, moon!
+Hello, world!)RP(
+
+  )0 P(Here )SM(.../libxsd)ES( repre)HY(sents)YH( the path to the
+     )SM(libxsd)ES( direc)HY(tory)YH( in the XSD distri)HY(bu)HY(tion)YH(.
+     Note also that we are required to link our appli)HY(ca)HY(tion)YH(
+     with the Xerces-C++ library because the gener)HY(ated)YH( code
+     uses it as the under)HY(ly)HY(ing)YH( XML parser.)EP(
+
+  )0 2 11 H(2.5)WB 46 Sn()WB 14 Sn( Adding Seri)HY(al)HY(iza)HY(tion)YH()EA()EH(
+
+  )0 P(While parsing and access)HY(ing)YH( the XML data may be every)HY(thing)YH(
+     you need, there are appli)HY(ca)HY(tions)YH( that require creat)HY(ing)YH( new
+     or modi)HY(fy)HY(ing)YH( exist)HY(ing)YH( XML docu)HY(ments)YH(. By default XSD does
+     not produce seri)HY(al)HY(iza)HY(tion)YH( code. We will need to request
+     it with the )SM(--gener)HY(ate)YH(-seri)HY(al)HY(iza)HY(tion)YH()ES( options:)EP(
+
+  ) 1 49 PR($ xsd cxx-tree --generate-serialization hello.xsd)RP(
+
+  )0 P(If we now examine the gener)HY(ated)YH( )SM(hello.hxx)ES( file,
+     we will find a set of over)HY(loaded)YH( seri)HY(al)HY(iza)HY(tion)YH( func)HY(tions)YH(,
+     includ)HY(ing)YH( the follow)HY(ing)YH( version:)EP(
+
+  ) 5 45 PR(void
+hello \201std::ostream&,
+       const hello_t&,
+       const xml_schema::namespace_infomap& =
+         xml_schema::namespace_infomap \201\202\202;
+)RP(
+
+  )0 P(Just like with parsing func)HY(tions)YH(, XSD gener)HY(ates)YH( seri)HY(al)HY(iza)HY(tion)YH(
+     func)HY(tions)YH( for each global element unless instructed other)HY(wise)YH(
+     with one of the )SM(--root-element-*)ES( options. For more
+     infor)HY(ma)HY(tion)YH( on seri)HY(al)HY(iza)HY(tion)YH( func)HY(tions)YH( see )0 32 1 A(Chapter 6,
+     "Seri)HY(al)HY(iza)HY(tion)YH(")32 0 TN TL()Ec /AF f D(.)EP(
+
+  )0 P(We first examine an appli)HY(ca)HY(tion)YH( that modi)HY(fies)YH( an exist)HY(ing)YH(
+     object model and seri)HY(al)HY(izes)YH( it back to XML:)EP(
+
+  ) 34 50 PR(#include <iostream>
+#include "hello.hxx"
+
+using namespace std;
+
+int
+main \201int argc, char* argv[]\202
+{
+  try
+  {
+    auto_ptr<hello_t> h \201hello \201argv[1]\202\202;
+
+    // Change the greeting phrase.
+    //
+    h->greeting \201"Hi"\202;
+
+    // Add another entry to the name sequence.
+    //
+    h->name \201\202.push_back \201"mars"\202;
+
+    // Serialize the modified object model to XML.
+    //
+    xml_schema::namespace_infomap map;
+    map[""].name = "";
+    map[""].schema = "hello.xsd";
+
+    hello \201cout, *h, map\202;
+  }
+  catch \201const xml_schema::exception& e\202
+  {
+    cerr << e << endl;)WR(
+    return 1;
+  }
+})RP(
+
+  )0 P(First, our appli)HY(ca)HY(tion)YH( parses an XML docu)HY(ment)YH( and obtains its
+     object model as in the previ)HY(ous)YH( example. Then it changes the
+     greet)HY(ing)YH( string and adds another entry to the list of names.
+     Finally, it seri)HY(al)HY(izes)YH( the object model back to XML by calling
+     the seri)HY(al)HY(iza)HY(tion)YH( func)HY(tion)YH(.)EP(
+
+  )0 P(The first argu)HY(ment)YH( we pass to the seri)HY(al)HY(iza)HY(tion)YH( func)HY(tion)YH( is
+     )SM(cout)ES( which results in the XML being written to
+     the stan)HY(dard)YH( output for us to inspect. We could have also
+     written the result to a file or memory buffer by creat)HY(ing)YH( an
+     instance of )SM(std::ofstream)ES( or )SM(std::ostringstream)ES(
+     and passing it instead of )SM(cout)ES(. The second argu)HY(ment)YH( is the
+     object model we want to seri)HY(al)HY(ize)YH(. The final argu)HY(ment)YH( is an optional
+     names)HY(pace)YH( infor)HY(ma)HY(tion)YH( map for our vocab)HY(u)HY(lary)YH(. It captures infor)HY(ma)HY(tion)YH(
+     such as names)HY(paces)YH(, names)HY(pace)YH( prefixes to which they should be mapped,
+     and schemas asso)HY(ci)HY(ated)YH( with these names)HY(paces)YH(. If we don't provide
+     this argu)HY(ment)YH( then generic names)HY(pace)YH( prefixes \201)SM(p1)ES(,
+     )SM(p2)ES(, etc.\202 will be auto)HY(mat)HY(i)HY(cally)YH( assigned to XML names)HY(paces)YH(
+     and no schema infor)HY(ma)HY(tion)YH( will be added to the result)HY(ing)YH( docu)HY(ment)YH(
+     \201see )0 32 1 A(Chapter 6, "Seri)HY(al)HY(iza)HY(tion)YH(")32 0 TN TL()Ec /AF f D( for details\202.
+     In our case, the prefix \201map key\202 and names)HY(pace)YH( name are empty
+     because our vocab)HY(u)HY(lary)YH( does not use XML names)HY(paces)YH(.)EP(
+
+  )0 P(If we now compile and run this appli)HY(ca)HY(tion)YH( we will see the
+     output as shown in the follow)HY(ing)YH( listing:)EP(
+
+  ) 12 60 PR(<?xml version="1.0"?>
+<hello xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="hello.xsd">
+
+  <greeting>Hi</greeting>
+
+  <name>sun</name>
+  <name>moon</name>
+  <name>world</name>
+  <name>mars</name>
+
+</hello>)RP(
+
+  )0 P(We can also create and seri)HY(al)HY(ize)YH( an object model from scratch
+     as shown in the follow)HY(ing)YH( example:)EP(
+
+  ) 33 43 PR(#include <iostream>
+#include <fstream>
+#include "hello.hxx"
+
+using namespace std;
+
+int
+main \201int argc, char* argv[]\202
+{
+  try
+  {
+    hello_t h \201"Hi"\202;
+
+    hello_t::name_sequence& ns \201h.name \201\202\202;
+
+    ns.push_back \201"Jane"\202;
+    ns.push_back \201"John"\202;
+
+    // Serialize the object model to XML.
+    //
+    xml_schema::namespace_infomap map;
+    map[""].name = "";
+    map[""].schema = "hello.xsd";
+
+    std::ofstream ofs \201argv[1]\202;
+    hello \201ofs, h, map\202;
+  }
+  catch \201const xml_schema::exception& e\202
+  {
+    cerr << e << endl;
+    return 1;)WR(
+  }
+})RP(
+
+  )0 P(In this example we used the gener)HY(ated)YH( construc)HY(tor)YH( to create
+     an instance of type )SM(hello_t)ES(. To reduce typing,
+     we obtained a refer)HY(ence)YH( to the name sequence which we then
+     used to add a few names. The seri)HY(al)HY(iza)HY(tion)YH( part is iden)HY(ti)HY(cal)YH(
+     to the previ)HY(ous)YH( example except this time we are writing to
+     a file. If we compile and run this program, it produces the
+     follow)HY(ing)YH( XML file:)EP(
+
+  ) 10 60 PR(<?xml version="1.0"?>
+<hello xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="hello.xsd">
+
+  <greeting>Hi</greeting>
+
+  <name>Jane</name>
+  <name>John</name>
+
+</hello>)RP(
+
+  )0 2 12 H(2.6)WB 47 Sn()WB 15 Sn( Select)HY(ing)YH( Naming Conven)HY(tion)YH()EA()EH(
+
+  )0 P(By default XSD uses the so-called K&R \201Kernighan and Ritchie\202
+     iden)HY(ti)HY(fier)YH( naming conven)HY(tion)YH( in the gener)HY(ated)YH( code. In this
+     conven)HY(tion)YH( both type and func)HY(tion)YH( names are in lower case and
+     words are sepa)HY(rated)YH( by under)HY(scores)YH(. If your appli)HY(ca)HY(tion)YH( code or
+     schemas use a differ)HY(ent)YH( nota)HY(tion)YH(, you may want to change the
+     naming conven)HY(tion)YH( used in the gener)HY(ated)YH( code for consis)HY(tency)YH(.
+     XSD supports a set of widely-used naming conven)HY(tions)YH(
+     that you can select with the )SM(--type-naming)ES( and
+     )SM(--func)HY(tion)YH(-naming)ES( options. You can also further
+     refine one of the prede)HY(fined)YH( conven)HY(tions)YH( or create a completely
+     custom naming scheme by using the  )SM(--*-regex)ES( options.)EP(
+
+  )0 P(As an example, let's assume that our "Hello World" appli)HY(ca)HY(tion)YH(
+     uses the so-called upper-camel-case naming conven)HY(tion)YH( for types
+     \201that is, each word in a type name is capi)HY(tal)HY(ized)YH(\202 and the K&R
+     conven)HY(tion)YH( for func)HY(tion)YH( names. Since K&R is the default
+     conven)HY(tion)YH( for both type and func)HY(tion)YH( names, we only need to
+     change the type naming scheme:)EP(
+
+  ) 1 42 PR($ xsd cxx-tree --type-naming ucc hello.xsd)RP(
+
+  )0 P(The )SM(ucc)ES( argu)HY(ment)YH( to the )SM(--type-naming)ES(
+     options stands for upper-camel-case. If we now examine the
+     gener)HY(ated)YH( )SM(hello.hxx)ES(, we will see the follow)HY(ing)YH(
+     changes compared to the decla)HY(ra)HY(tions)YH( shown in the previ)HY(ous)YH(
+     sections:)EP(
+
+  ) 45 57 PR(class Hello_t
+{
+public:
+  // greeting
+  //
+  typedef xml_schema::String GreetingType;
+
+  const GreetingType&
+  greeting \201\202 const;
+
+  GreetingType&
+  greeting \201\202;
+
+  void
+  greeting \201const GreetingType& x\202;
+
+  // name
+  //
+  typedef xml_schema::String NameType;
+  typedef xsd::sequence<NameType> NameSequence;
+  typedef NameSequence::iterator NameIterator;
+  typedef NameSequence::const_iterator NameConstIterator;
+
+  const NameSequence&
+  name \201\202 const;
+
+  NameSequence&
+  name \201\202;
+
+  void
+  name \201const NameSequence& s\202;)WR(
+
+  // Constructor.
+  //
+  Hello_t \201const GreetingType&\202;
+
+  ...
+
+};
+
+std::auto_ptr<Hello_t>
+hello \201const std::string& uri\202;
+
+std::auto_ptr<Hello_t>
+hello \201std::istream&\202;)RP(
+
+  )0 P(Notice that the type names in the )SM(xml_schema)ES( names)HY(pace)YH(,
+     for example )SM(xml_schema::String)ES(, now also use the
+     upper-camel-case naming conven)HY(tion)YH(. The only thing that we may
+     be unhappy about in the above code is the )SM(_t)ES(
+     suffix in )SM(Hello_t)ES(. If we are not in a posi)HY(tion)YH(
+     to change the schema, we can )EM(touch-up)ES( the )SM(ucc)ES(
+     conven)HY(tion)YH( with a custom trans)HY(la)HY(tion)YH( rule using the
+     )SM(--type-regex)ES( option:)EP(
+
+  ) 1 72 PR($ xsd cxx-tree --type-naming ucc --type-regex '/ \201.+\202_t/\200u$1/' hello.xsd)RP(
+
+  )0 P(This results in the follow)HY(ing)YH( changes to the gener)HY(ated)YH( code:)EP(
+
+  ) 45 57 PR(class Hello
+{
+public:
+  // greeting
+  //
+  typedef xml_schema::String GreetingType;
+
+  const GreetingType&
+  greeting \201\202 const;
+
+  GreetingType&
+  greeting \201\202;
+
+  void
+  greeting \201const GreetingType& x\202;
+
+  // name
+  //
+  typedef xml_schema::String NameType;
+  typedef xsd::sequence<NameType> NameSequence;
+  typedef NameSequence::iterator NameIterator;
+  typedef NameSequence::const_iterator NameConstIterator;
+
+  const NameSequence&
+  name \201\202 const;
+
+  NameSequence&
+  name \201\202;
+
+  void
+  name \201const NameSequence& s\202;)WR(
+
+  // Constructor.
+  //
+  Hello \201const GreetingType&\202;
+
+  ...
+
+};
+
+std::auto_ptr<Hello>
+hello \201const std::string& uri\202;
+
+std::auto_ptr<Hello>
+hello \201std::istream&\202;)RP(
+
+  )0 P(For more detailed infor)HY(ma)HY(tion)YH( on the )SM(--type-naming)ES(,
+     )SM(--func)HY(tion)YH(-naming)ES(, )SM(--type-regex)ES(, and
+     other )SM(--*-regex)ES( options refer to the NAMING
+     CONVEN)HY(TION)YH( section in the )R5 2 A(XSD
+     Compiler Command Line Manual)EA(.)EP(
+
+  )0 2 13 H(2.7)WB 48 Sn()WB 16 Sn( Gener)HY(at)HY(ing)YH( Docu)HY(men)HY(ta)HY(tion)YH()EA()EH(
+
+  )0 P(While our object model is quite simple, real-world vocab)HY(u)HY(lar)HY(ies)YH(
+     can be quite complex with hundreds of types, elements, and
+     attributes. For such vocab)HY(u)HY(lar)HY(ies)YH( figur)HY(ing)YH( out which types
+     provide which member func)HY(tions)YH( by study)HY(ing)YH( the gener)HY(ated)YH(
+     source code or schemas can be a daunt)HY(ing)YH( task. To provide
+     appli)HY(ca)HY(tion)YH( devel)HY(op)HY(ers)YH( with a more acces)HY(si)HY(ble)YH( way of
+     under)HY(stand)HY(ing)YH( the gener)HY(ated)YH( object models, the XSD compiler
+     can be instructed to produce source code with docu)HY(men)HY(ta)HY(tion)YH(
+     comments in the Doxygen format. Then the source code can be
+     processed with the )R9 2 A(Doxygen)EA(
+     docu)HY(men)HY(ta)HY(tion)YH( system to extract this infor)HY(ma)HY(tion)YH( and produce
+     docu)HY(men)HY(ta)HY(tion)YH( in various formats.
+  )EP(
+
+  )0 P(In this section we will see how to gener)HY(ate)YH( docu)HY(men)HY(ta)HY(tion)YH(
+     for our "Hello World" vocab)HY(u)HY(lary)YH(. To show)HY(case)YH( the full power
+     of the XSD docu)HY(men)HY(ta)HY(tion)YH( facil)HY(i)HY(ties)YH(, we will first docu)HY(ment)YH(
+     our schema. The XSD compiler will then trans)HY(fer)YH(
+     this infor)HY(ma)HY(tion)YH( from the schema to the gener)HY(ated)YH( code and
+     then to the object model docu)HY(men)HY(ta)HY(tion)YH(. Note that the
+     docu)HY(men)HY(ta)HY(tion)YH( in the schema is not required for XSD to
+     gener)HY(ate)YH( useful docu)HY(men)HY(ta)HY(tion)YH(. Below you will find
+     our )SM(hello.xsd)ES( with added docu)HY(men)HY(ta)HY(tion)YH(:)EP(
+
+  ) 43 69 PR(<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:complexType name="hello_t">
+
+    <xs:annotation>
+      <xs:documentation>
+        The hello_t type consists of a greeting phrase and a
+        collection of names to which this greeting applies.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:sequence>
+
+      <xs:element name="greeting" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            The greeting element contains the greeting phrase
+            for this hello object.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+
+      <xs:element name="name" type="xs:string" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            The name elements contains names to be greeted.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+
+    </xs:sequence>)WR(
+  </xs:complexType>
+
+  <xs:element name="hello" type="hello_t">
+    <xs:annotation>
+      <xs:documentation>
+        The hello element is a root of the Hello XML vocabulary.
+        Every conforming document should start with this element.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+</xs:schema>)RP(
+
+  )0 P(The first step in obtain)HY(ing)YH( the docu)HY(men)HY(ta)HY(tion)YH( is to recom)HY(pile)YH(
+     our schema with the )SM(--gener)HY(ate)YH(-doxygen)ES( option:)EP(
+
+  ) 1 68 PR($ xsd cxx-tree --generate-serialization --generate-doxygen hello.xsd)RP(
+
+  )0 P(Now the gener)HY(ated)YH( )SM(hello.hxx)ES( file contains comments
+     in the Doxygen format. The next step is to process this file
+     with the Doxygen docu)HY(men)HY(ta)HY(tion)YH( system. If your project does
+     not use Doxygen then you first need to create a config)HY(u)HY(ra)HY(tion)YH(
+     file for your project:)EP(
+
+  ) 1 26 PR($ doxygen -g hello.doxygen)RP(
+
+  )0 P(You only need to perform this step once. Now we can gener)HY(ate)YH(
+     the docu)HY(men)HY(ta)HY(tion)YH( by execut)HY(ing)YH( the follow)HY(ing)YH( command in the
+     direc)HY(tory)YH( with the gener)HY(ated)YH( source code:)EP(
+
+  ) 1 23 PR($ doxygen hello.doxygen)RP(
+
+  )0 P(While the gener)HY(ated)YH( docu)HY(men)HY(ta)HY(tion)YH( can be useful as is, we can
+     go one step further and link \201using the Doxygen tags mech)HY(a)HY(nism)YH(\202
+     the docu)HY(men)HY(ta)HY(tion)YH( for our object model with the docu)HY(men)HY(ta)HY(tion)YH(
+     for the XSD runtime library which defines C++ classes for the
+     built-in XML Schema types. This way we can seam)HY(lessly)YH( browse
+     between docu)HY(men)HY(ta)HY(tion)YH( for the )SM(hello_t)ES( class which
+     is gener)HY(ated)YH( by the XSD compiler and the )SM(xml_schema::string)ES(
+     class which is defined in the XSD runtime library. The Doxygen
+     config)HY(u)HY(ra)HY(tion)YH( file for the XSD runtime is provided with the XSD
+     distri)HY(bu)HY(tion)YH(.)EP(
+
+  )0 P(You can view the result of the steps described in this section
+     on the )R10 2 A(Hello
+     Example Docu)HY(men)HY(ta)HY(tion)YH()EA( page.)EP(
+
+  
+
+
+  )0 1 14 H(3)WB 49 Sn()WB 17 Sn( Overall Mapping Config)HY(u)HY(ra)HY(tion)YH()EA()EH(
+
+  )0 P(The C++/Tree mapping has a number of config)HY(u)HY(ra)HY(tion)YH( param)HY(e)HY(ters)YH( that
+     deter)HY(mine)YH( the overall prop)HY(er)HY(ties)YH( and behav)HY(ior)YH( of the gener)HY(ated)YH( code.
+     Config)HY(u)HY(ra)HY(tion)YH( param)HY(e)HY(ters)YH( are spec)HY(i)HY(fied)YH( with the XSD command line
+     options. This chapter describes config)HY(u)HY(ra)HY(tion)YH( aspects that are most
+     commonly encoun)HY(tered)YH( by appli)HY(ca)HY(tion)YH( devel)HY(op)HY(ers)YH(. These include:
+     the char)HY(ac)HY(ter)YH( type that is used by the gener)HY(ated)YH( code, handling of
+     vocab)HY(u)HY(lar)HY(ies)YH( that use XML Schema poly)HY(mor)HY(phism)YH(, XML Schema to C++
+     names)HY(pace)YH( mapping, and thread safety. For more ways to config)HY(ure)YH(
+     the gener)HY(ated)YH( code refer to the
+     )R5 2 A(XSD
+     Compiler Command Line Manual)EA(.
+  )EP(
+
+  )0 2 15 H(3.1)WB 50 Sn()WB 18 Sn( Char)HY(ac)HY(ter)YH( Type and Encod)HY(ing)YH()EA()EH(
+
+  )0 P(The C++/Tree mapping has built-in support for two char)HY(ac)HY(ter)YH( types:
+    )SM(char)ES( and )SM(wchar_t)ES(. You can select the
+    char)HY(ac)HY(ter)YH( type with the )SM(--char-type)ES( command line
+    option. The default char)HY(ac)HY(ter)YH( type is )SM(char)ES(. The
+    char)HY(ac)HY(ter)YH( type affects all string and string-based types that
+    are used in the mapping. These include the string-based built-in
+    XML Schema types, excep)HY(tion)YH( types, stream types, etc.)EP(
+
+  )0 P(Another aspect of the mapping that depends on the char)HY(ac)HY(ter)YH( type
+     is char)HY(ac)HY(ter)YH( encod)HY(ing)YH(. For the )SM(char)ES( char)HY(ac)HY(ter)YH( type
+     the default encod)HY(ing)YH( is UTF-8. Other supported encod)HY(ings)YH( are
+     ISO-8859-1, Xerces-C++ Local Code Page \201LPC\202, as well as
+     custom encod)HY(ings)YH(. You can select which encod)HY(ing)YH( should be used
+     in the object model with the )SM(--char-encod)HY(ing)YH()ES( command
+     line option.)EP(
+
+  )0 P(For the )SM(wchar_t)ES( char)HY(ac)HY(ter)YH( type the encod)HY(ing)YH( is
+     auto)HY(mat)HY(i)HY(cally)YH( selected between UTF-16 and UTF-32/UCS-4 depend)HY(ing)YH(
+     on the size of the )SM(wchar_t)ES( type. On some plat)HY(forms)YH(
+     \201for example, Windows with Visual C++ and AIX with IBM XL C++\202
+     )SM(wchar_t)ES( is 2 bytes long. For these plat)HY(forms)YH( the
+     encod)HY(ing)YH( is UTF-16. On other plat)HY(forms)YH( )SM(wchar_t)ES( is 4 bytes
+     long and UTF-32/UCS-4 is used.)EP(
+
+  )0 P(Note also that the char)HY(ac)HY(ter)YH( encod)HY(ing)YH( that is used in the object model
+     is inde)HY(pen)HY(dent)YH( of the encod)HY(ings)YH( used in input and output XML. In fact,
+     all three \201object mode, input XML, and output XML\202 can have differ)HY(ent)YH(
+     encod)HY(ings)YH(.)EP(
+
+  )0 2 16 H(3.2)WB 51 Sn()WB 19 Sn( Support for Poly)HY(mor)HY(phism)YH()EA()EH(
+
+  )0 P(By default XSD gener)HY(ates)YH( non-poly)HY(mor)HY(phic)YH( code. If your vocab)HY(u)HY(lary)YH(
+     uses XML Schema poly)HY(mor)HY(phism)YH( in the form of )SM(xsi:type)ES(
+     and/or substi)HY(tu)HY(tion)YH( groups, then you will need to compile
+     your schemas with the )SM(--gener)HY(ate)YH(-poly)HY(mor)HY(phic)YH()ES( option
+     to produce poly)HY(mor)HY(phism)YH(-aware code. For more infor)HY(ma)HY(tion)YH( on
+     working with poly)HY(mor)HY(phic)YH( object models, refer to
+     )R11 2 A(Section 2.11,
+     "Mapping for )SM(xsi:type)ES( and Substi)HY(tu)HY(tion)YH( Groups")EA( in
+     the C++/Tree Mapping User Manual.)EP(
+
+  )0 2 17 H(3.3)WB 52 Sn()WB 20 Sn( Names)HY(pace)YH( Mapping)EA()EH(
+
+  )0 P(XSD maps XML names)HY(paces)YH( spec)HY(i)HY(fied)YH( in the )SM(target)HY(Names)HY(pace)YH()ES(
+     attribute in XML Schema to one or more nested C++ names)HY(paces)YH(. By
+     default, a names)HY(pace)YH( URI is mapped to a sequence of C++ names)HY(pace)YH(
+     names by remov)HY(ing)YH( the proto)HY(col)YH( and host parts and split)HY(ting)YH( the
+     rest into a sequence of names with )SM('/')ES( as the name
+     sepa)HY(ra)HY(tor)YH(.)EP(
+
+  )0 P(The default mapping of names)HY(pace)YH( URIs to C++ names)HY(paces)YH(
+     can be altered using the )SM(--names)HY(pace)YH(-map)ES( and
+     )SM(--names)HY(pace)YH(-regex)ES( compiler options. For example,
+     to map names)HY(pace)YH( URI )SM(http://www.codesyn)HY(the)HY(sis)YH(.com/my)ES( to
+     C++ names)HY(pace)YH( )SM(cs::my)ES(, we can use the follow)HY(ing)YH( option:)EP(
+
+  ) 1 54 PR(--namespace-map http://www.codesynthesis.com/my=cs::my)RP(
+
+  )0 P(A vocab)HY(u)HY(lary)YH( without a names)HY(pace)YH( is mapped to the global scope. This
+     also can be altered with the above options by using an empty name
+     for the XML names)HY(pace)YH(:)EP(
+
+  ) 1 19 PR(--namespace-map =cs)RP(
+
+  )0 2 18 H(3.4)WB 53 Sn()WB 21 Sn( Thread Safety)EA()EH(
+
+  )0 P(XSD-gener)HY(ated)YH( code is thread-safe in the sense that you can
+     use differ)HY(ent)YH( instan)HY(ti)HY(a)HY(tions)YH( of the object model in several
+     threads concur)HY(rently)YH(. This is possi)HY(ble)YH( due to the gener)HY(ated)YH(
+     code not relying on any writable global vari)HY(ables)YH(. If you need
+     to share the same object between several threads then you will
+     need to provide some form of synchro)HY(niza)HY(tion)YH(. One approach would
+     be to use the gener)HY(ated)YH( code customiza)HY(tion)YH( mech)HY(a)HY(nisms)YH( to embed
+     synchro)HY(niza)HY(tion)YH( prim)HY(i)HY(tives)YH( into the gener)HY(ated)YH( C++ classes. For more
+     infor)HY(ma)HY(tion)YH( on gener)HY(ated)YH( code customiza)HY(tion)YH( refer to the
+     )R2 2 A(C++/Tree
+     Mapping Customiza)HY(tion)YH( Guide)EA(.)EP(
+
+  )0 P(If you also would like to call parsing and/or seri)HY(al)HY(iza)HY(tion)YH(
+     func)HY(tions)YH( from several threads poten)HY(tially)YH( concur)HY(rently)YH(, then
+     you will need to make sure the Xerces-C++ runtime is initial)HY(ized)YH(
+     and termi)HY(nated)YH( only once. The easiest way to do this is to
+     initial)HY(ize)YH(/termi)HY(nate)YH( Xerces-C++ from )SM(main\201\202)ES( when
+     there are no threads yet/anymore:)EP(
+
+  ) 13 56 PR(#include <xercesc/util/PlatformUtils.hpp>
+
+int
+main \201\202
+{
+  xercesc::XMLPlatformUtils::Initialize \201\202;
+
+  {
+    // Start/terminate threads and parse/serialize here.
+  }
+
+  xercesc::XMLPlatformUtils::Terminate \201\202;
+})RP(
+
+  )0 P(Because you initial)HY(ize)YH( the Xerces-C++ runtime your)HY(self)YH( you should
+     also pass the )SM(xml_schema::flags::dont_initial)HY(ize)YH()ES( flag
+     to parsing and seri)HY(al)HY(iza)HY(tion)YH( func)HY(tions)YH(. See )0 29 1 A(Chapter 5,
+     "Parsing")29 0 TN TL()Ec /AF f D( and )0 32 1 A(Chapter 6, "Seri)HY(al)HY(iza)HY(tion)YH(")32 0 TN TL()Ec /AF f D( for
+     more infor)HY(ma)HY(tion)YH(.)EP(
+
+
+  
+
+
+  )0 1 19 H(4)WB 54 Sn()WB 22 Sn( Working with Object Models)EA()EH(
+
+  )0 P(As we have seen in the previ)HY(ous)YH( chap)HY(ters)YH(, the XSD compiler gener)HY(ates)YH(
+     a C++ class for each type defined in XML Schema. Together these classes
+     consti)HY(tute)YH( an object model for an XML vocab)HY(u)HY(lary)YH(. In this chapter we
+     will take a closer look at differ)HY(ent)YH( elements that comprise an
+     object model class as well as how to create, access, and modify
+     object models.)EP(
+
+  )0 P(In this and subse)HY(quent)YH( chap)HY(ters)YH( we will use the follow)HY(ing)YH( schema
+     that describes a collec)HY(tion)YH( of person records. We save it in
+     )SM(people.xsd)ES(:)EP(
+
+  ) 30 71 PR(<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:simpleType name="gender_t">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="male"/>
+      <xs:enumeration value="female"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="person_t">
+    <xs:sequence>
+      <xs:element name="first-name" type="xs:string"/>
+      <xs:element name="middle-name" type="xs:string" minOccurs="0"/>
+      <xs:element name="last-name" type="xs:string"/>
+      <xs:element name="gender" type="gender_t"/>
+      <xs:element name="age" type="xs:short"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:unsignedInt" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="people_t">
+    <xs:sequence>
+      <xs:element name="person" type="person_t" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="people" type="people_t"/>
+
+</xs:schema>)RP(
+
+  )0 P(A sample XML instance to go along with this schema is saved
+     in )SM(people.xml)ES(:)EP(
+
+  ) 20 61 PR(<?xml version="1.0"?>
+<people xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="people.xsd">
+
+  <person id="1">
+    <first-name>John</first-name>
+    <last-name>Doe</last-name>
+    <gender>male</gender>
+    <age>32</age>
+  </person>
+
+  <person id="2">
+    <first-name>Jane</first-name>
+    <middle-name>Mary</middle-name>
+    <last-name>Doe</last-name>
+    <gender>female</gender>
+    <age>28</age>
+  </person>
+
+</people>)RP(
+
+  )0 P(Compil)HY(ing)YH( )SM(people.xsd)ES( with the XSD compiler results
+     in three gener)HY(ated)YH( C++ classes: )SM(gender_t)ES(,
+     )SM(person_t)ES(, and )SM(people_t)ES(.
+     The )SM(gender_t)ES( class is modelled after the C++
+     )SM(enum)ES( type. Its defi)HY(ni)HY(tion)YH( is presented below:)EP(
+
+  ) 17 41 PR(class gender_t: public xml_schema::string
+{
+public:
+  enum value
+  {
+    male,
+    female
+  };
+
+  gender_t \201value\202;
+  gender_t \201const xml_schema::string&\202;
+
+  gender_t&
+  operator= \201value\202;
+
+  operator value \201\202 const;
+};)RP(
+
+  )0 P(The follow)HY(ing)YH( listing shows how we can use this type:)EP(
+
+  ) 19 41 PR(gender_t m \201gender_t::male\202;
+gender_t f \201"female"\202;
+
+if \201m == "female" || f == gender_t::male\202
+{
+  ...
+}
+
+switch \201m\202
+{
+case gender_t::male:
+  {
+    ...
+  }
+case gender_t::female:
+  {
+    ...
+  }
+})RP(
+
+  )0 P(The other two classes will be exam)HY(ined)YH( in detail in the subse)HY(quent)YH(
+     sections.)EP(
+
+  )0 2 20 H(4.1)WB 55 Sn()WB 23 Sn( Attribute and Element Cardi)HY(nal)HY(i)HY(ties)YH()EA()EH(
+
+  )0 P(As we have seen in the previ)HY(ous)YH( chap)HY(ters)YH(, XSD gener)HY(ates)YH( a differ)HY(ent)YH(
+     set of type defi)HY(ni)HY(tions)YH( and member func)HY(tions)YH( for elements with
+     differ)HY(ent)YH( cardi)HY(nal)HY(i)HY(ties)YH(. The C++/Tree mapping divides all the possi)HY(ble)YH(
+     element and attribute cardi)HY(nal)HY(i)HY(ties)YH( into three cardi)HY(nal)HY(ity)YH( classes:
+     )EM(one)ES(, )EM(optional)ES(, and )EM(sequence)ES(.)EP(
+
+  )0 P(The )EM(one)ES( cardi)HY(nal)HY(ity)YH( class covers all elements that should
+     occur exactly once as well as required attributes. In our
+     example, the )SM(first-name)ES(, )SM(last-name)ES(,
+     )SM(gender)ES(, and )SM(age)ES( elements as well as
+     the )SM(id)ES( attribute belong to this cardi)HY(nal)HY(ity)YH( class.
+     The follow)HY(ing)YH( code frag)HY(ment)YH( shows type defi)HY(ni)HY(tions)YH( as well as the
+     acces)HY(sor)YH( and modi)HY(fier)YH( func)HY(tions)YH( that are gener)HY(ated)YH( for the
+     )SM(gender)ES( element in the )SM(person_t)ES( class:)EP(
+
+  ) 15 31 PR(class person_t
+{
+  // gender
+  //
+  typedef gender_t gender_type;
+
+  const gender_type&
+  gender \201\202 const;
+
+  gender_type&
+  gender \201\202;
+
+  void
+  gender \201const gender_type&\202;
+};)RP(
+
+  )0 P(The )SM(gender_type)ES( type is an alias for the element's type.
+     The first two acces)HY(sor)YH( func)HY(tions)YH( return read-only \201constant\202 and
+     read-write refer)HY(ences)YH( to the element's value, respec)HY(tively)YH(. The
+     modi)HY(fier)YH( func)HY(tion)YH( sets the new value for the element.)EP(
+
+  )0 P(The )EM(optional)ES( cardi)HY(nal)HY(ity)YH( class covers all elements that
+     can occur zero or one time as well as optional attributes. In our
+     example, the )SM(middle-name)ES( element belongs to this
+     cardi)HY(nal)HY(ity)YH( class. The follow)HY(ing)YH( code frag)HY(ment)YH( shows the type
+     defi)HY(ni)HY(tions)YH( as well as the acces)HY(sor)YH( and modi)HY(fier)YH( func)HY(tions)YH( that
+     are gener)HY(ated)YH( for this element in the )SM(person_t)ES( class:)EP(
+
+  ) 19 63 PR(class person_t
+{
+  // middle-name
+  //
+  typedef xml_schema::string middle_name_type;
+  typedef xsd::optional<middle_name_type> middle_name_optional;
+
+  const middle_name_optional&
+  middle_name \201\202 const;
+
+  middle_name_optional&
+  middle_name \201\202;
+
+  void
+  middle_name \201const middle_name_type&\202;
+
+  void
+  middle_name \201const middle_name_optional&\202;
+};)RP(
+
+  )0 P(As with the )SM(gender)ES( element, )SM(middle_name_type)ES(
+     is an alias for the element's type. The )SM(middle_name_optional)ES(
+     type is a container for the element's optional value. It can be queried
+     for the pres)HY(ence)YH( of the value using the )SM(present\201\202)ES( func)HY(tion)YH(.
+     The value itself can be retrieved using the )SM(get\201\202)ES(
+     acces)HY(sor)YH( and set using the )SM(set\201\202)ES( modi)HY(fier)YH(. The container
+     can be reverted to the value not present state with the call to the
+     )SM(reset\201\202)ES( func)HY(tion)YH(. The follow)HY(ing)YH( example shows how we
+     can use this container:)EP(
+
+  ) 9 42 PR(person_t::middle_name_optional n \201"John"\202;
+
+if \201n.preset \201\202\202
+{
+  cout << n.get \201\202 << endl;
+}
+
+n.set \201"Jane"\202;
+n.reset \201\202;)RP(
+
+
+  )0 P(Unlike the )EM(one)ES( cardi)HY(nal)HY(ity)YH( class, the acces)HY(sor)YH( func)HY(tions)YH(
+     for the )EM(optional)ES( class return read-only \201constant\202 and
+     read-write refer)HY(ences)YH( to the container instead of the element's
+     value directly. The modi)HY(fier)YH( func)HY(tions)YH( set the new value for the
+     element.)EP(
+
+  )0 P(Finally, the )EM(sequence)ES( cardi)HY(nal)HY(ity)YH( class covers all elements
+     that can occur more than once. In our example, the
+     )SM(person)ES( element in the )SM(people_t)ES( type
+     belongs to this cardi)HY(nal)HY(ity)YH( class. The follow)HY(ing)YH( code frag)HY(ment)YH( shows
+     the type defi)HY(ni)HY(tions)YH( as well as the acces)HY(sor)YH( and modi)HY(fier)YH( func)HY(tions)YH(
+     that are gener)HY(ated)YH( for this element in the )SM(people_t)ES(
+     class:)EP(
+
+  ) 18 64 PR(class people_t
+{
+  // person
+  //
+  typedef person_t person_type;
+  typedef xsd::sequence<person_type> person_sequence;
+  typedef person_sequence::iterator person_iterator;
+  typedef person_sequence::const_iterator person_const_iterator;
+
+  const person_sequence&
+  person \201\202 const;
+
+  person_sequence&
+  person \201\202;
+
+  void
+  person \201const person_sequence&\202;
+};)RP(
+
+  )0 P(Iden)HY(ti)HY(cal)YH( to the other cardi)HY(nal)HY(ity)YH( classes, )SM(person_type)ES(
+     is an alias for the element's type. The )SM(person_sequence)ES(
+     type is a sequence container for the element's values. It is based
+     on and has the same inter)HY(face)YH( as )SM(std::vector)ES( and
+     there)HY(fore)YH( can be used in similar ways. The )SM(person_iter)HY(a)HY(tor)YH()ES(
+     and )SM(person_const_iter)HY(a)HY(tor)YH()ES( types are read-only
+     \201constant\202 and read-write iter)HY(a)HY(tors)YH( for the )SM(person_sequence)ES(
+     container.)EP(
+
+  )0 P(Similar to the )EM(optional)ES( cardi)HY(nal)HY(ity)YH( class, the
+     acces)HY(sor)YH( func)HY(tions)YH( for the )EM(sequence)ES( class return
+     read-only \201constant\202 and read-write refer)HY(ences)YH( to the sequence
+     container. The modi)HY(fier)YH( func)HY(tions)YH( copies the entries from
+     the passed sequence.)EP(
+
+  )0 P(For complex schemas with many levels of nested compos)HY(i)HY(tors)YH(
+     \201)SM(xs:choice)ES( and )SM(xs:sequence)ES(\202 it can
+     be hard to deduce the cardi)HY(nal)HY(ity)YH( class of a partic)HY(u)HY(lar)YH( element.
+     The gener)HY(ated)YH( Doxygen docu)HY(men)HY(ta)HY(tion)YH( can greatly help with
+     this task. For each element and attribute the docu)HY(men)HY(ta)HY(tion)YH(
+     clearly iden)HY(ti)HY(fies)YH( its cardi)HY(nal)HY(ity)YH( class. Alter)HY(na)HY(tively)YH(, you
+     can study the gener)HY(ated)YH( header files to find out the cardi)HY(nal)HY(ity)YH(
+     class of a partic)HY(u)HY(lar)YH( attribute or element. In the next sections
+     we will examine how to access and modify infor)HY(ma)HY(tion)YH( stored in
+     an object model using acces)HY(sor)YH( and modi)HY(fier)YH( func)HY(tions)YH( described
+     in this section.)EP(
+
+
+  )0 2 21 H(4.2)WB 56 Sn()WB 24 Sn( Access)HY(ing)YH( the Object Model)EA()EH(
+
+  )0 P(In this section we will learn how to get to the infor)HY(ma)HY(tion)YH(
+     stored in the object model for our person records vocab)HY(u)HY(lary)YH(.
+     The follow)HY(ing)YH( appli)HY(ca)HY(tion)YH( accesses and prints the contents
+     of the )SM(people.xml)ES( file:)EP(
+
+  ) 36 70 PR(#include <iostream>
+#include "people.hxx"
+
+using namespace std;
+
+int
+main \201\202
+{
+  auto_ptr<people_t> ppl \201people \201"people.xml"\202\202;
+
+  // Iterate over individual person records.
+  //
+  people_t::person_sequence& ps \201ppl->person \201\202\202;
+
+  for \201people_t::person_iterator i \201ps.begin \201\202\202; i != ps.end \201\202; ++i\202
+  {
+    person_t& p \201*i\202;
+
+    // Print names: first-name and last-name are required elements,
+    // middle-name is optional.
+    //
+    cout << "name:   " << p.first_name \201\202 << " ";
+
+    if \201p.middle_name \201\202.present \201\202\202
+      cout << p.middle_name \201\202.get \201\202 << " ";
+
+    cout << p.last_name \201\202 << endl;
+
+    // Print gender, age, and id which are all required.
+    //
+    cout << "gender: " << p.gender \201\202 << endl)WR(
+         << "age:    " << p.age \201\202 << endl
+         << "id:     " << p.id \201\202 << endl
+         << endl;
+  }
+})RP(
+
+  )0 P(This code shows common patterns of access)HY(ing)YH( elements and attributes
+     with differ)HY(ent)YH( cardi)HY(nal)HY(ity)YH( classes. For the sequence element
+     \201)SM(person)ES( in )SM(people_t)ES(\202 we first obtain a
+     refer)HY(ence)YH( to the container and then iterate over indi)HY(vid)HY(ual)YH(
+     records. The values of elements and attributes with the
+     )EM(one)ES( cardi)HY(nal)HY(ity)YH( class \201)SM(first-name)ES(,
+     )SM(last-name)ES(, )SM(gender)ES(, )SM(age)ES(,
+     and )SM(id)ES(\202 can be obtained directly by calling the
+     corre)HY(spond)HY(ing)YH( acces)HY(sor)YH( func)HY(tions)YH(. For the optional element
+     )SM(middle-name)ES( we first check if the value is present
+     and only then call )SM(get\201\202)ES( to retrieve it.)EP(
+
+  )0 P(Note that when we want to reduce typing by creat)HY(ing)YH( a vari)HY(able)YH(
+     repre)HY(sent)HY(ing)YH( a frag)HY(ment)YH( of the object model that we are currently
+     working with \201)SM(ps)ES( and )SM(p)ES( above\202, we obtain
+     a refer)HY(ence)YH( to that frag)HY(ment)YH( instead of making a poten)HY(tially)YH(
+     expen)HY(sive)YH( copy. This is gener)HY(ally)YH( a good rule to follow when
+     creat)HY(ing)YH( high-perfor)HY(mance)YH( appli)HY(ca)HY(tions)YH(.)EP(
+
+  )0 P(If we run the above appli)HY(ca)HY(tion)YH( on our sample
+     )SM(people.xml)ES(, the output looks as follows:)EP(
+
+  ) 9 21 PR(name:   John Doe
+gender: male
+age:    32
+id:     1
+
+name:   Jane Mary Doe
+gender: female
+age:    28
+id:     2)RP(
+
+
+  )0 2 22 H(4.3)WB 57 Sn()WB 25 Sn( Modi)HY(fy)HY(ing)YH( the Object Model)EA()EH(
+
+  )0 P(In this section we will learn how to modify the infor)HY(ma)HY(tion)YH(
+     stored in the object model for our person records vocab)HY(u)HY(lary)YH(.
+     The follow)HY(ing)YH( appli)HY(ca)HY(tion)YH( changes the contents of the
+     )SM(people.xml)ES( file:)EP(
+
+  ) 43 70 PR(#include <iostream>
+#include "people.hxx"
+
+using namespace std;
+
+int
+main \201\202
+{
+  auto_ptr<people_t> ppl \201people \201"people.xml"\202\202;
+
+  // Iterate over individual person records and increment
+  // the age.
+  //
+  people_t::person_sequence& ps \201ppl->person \201\202\202;
+
+  for \201people_t::person_iterator i \201ps.begin \201\202\202; i != ps.end \201\202; ++i\202
+  {
+    // Alternative way: i->age \201\202++;
+    //
+    i->age \201i->age \201\202 + 1\202;
+  }
+
+  // Add middle-name to the first record and remove it from
+  // the second.
+  //
+  person_t& john \201ps[0]\202;
+  person_t& jane \201ps[1]\202;
+
+  john.middle_name \201"Mary"\202;
+  jane.middle_name \201\202.reset \201\202;
+)WR(
+  // Add another John record.
+  //
+  ps.push_back \201john\202;
+
+  // Serialize the modified object model to XML.
+  //
+  xml_schema::namespace_infomap map;
+  map[""].name = "";
+  map[""].schema = "people.xsd";
+
+  people \201cout, *ppl, map\202;
+})RP(
+
+  )0 P(The first modi)HY(fi)HY(ca)HY(tion)YH( the above appli)HY(ca)HY(tion)YH( performs is iter)HY(at)HY(ing)YH(
+     over person records and incre)HY(ment)HY(ing)YH( the age value. This code
+     frag)HY(ment)YH( shows how to modify the value of a required attribute
+     or element. The next modi)HY(fi)HY(ca)HY(tion)YH( shows how to set a new value
+     for the optional )SM(middle-name)ES( element as well
+     as clear its value. Finally the example adds a copy of the
+     John Doe record to the )SM(person)ES( element sequence.)EP(
+
+  )0 P(Note that in this case using refer)HY(ences)YH( for the )SM(ps)ES(,
+     )SM(john)ES(, and )SM(jane)ES( vari)HY(ables)YH( is no longer
+     a perfor)HY(mance)YH( improve)HY(ment)YH( but a require)HY(ment)YH( for the appli)HY(ca)HY(tion)YH(
+     to func)HY(tion)YH( correctly. If we hadn't used refer)HY(ences)YH(, all our changes
+     would have been made on copies without affect)HY(ing)YH( the object model.)EP(
+
+  )0 P(If we run the above appli)HY(ca)HY(tion)YH( on our sample )SM(people.xml)ES(,
+     the output looks as follows:)EP(
+
+  ) 28 61 PR(<?xml version="1.0"?>
+<people xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="people.xsd">
+
+  <person id="1">
+    <first-name>John</first-name>
+    <middle-name>Mary</middle-name>
+    <last-name>Doe</last-name>
+    <gender>male</gender>
+    <age>33</age>
+  </person>
+
+  <person id="2">
+    <first-name>Jane</first-name>
+    <last-name>Doe</last-name>
+    <gender>female</gender>
+    <age>29</age>
+  </person>
+
+  <person id="1">
+    <first-name>John</first-name>
+    <middle-name>Mary</middle-name>
+    <last-name>Doe</last-name>
+    <gender>male</gender>
+    <age>33</age>
+  </person>
+
+</people>)RP(
+
+
+  )0 2 23 H(4.4)WB 58 Sn()WB 26 Sn( Creat)HY(ing)YH( the Object Model from Scratch)EA()EH(
+
+  )0 P(In this section we will learn how to create a new object model
+     for our person records vocab)HY(u)HY(lary)YH(. The follow)HY(ing)YH( appli)HY(ca)HY(tion)YH(
+     recre)HY(ates)YH( the content of the orig)HY(i)HY(nal)YH( )SM(people.xml)ES(
+     file:)EP(
+
+  ) 42 48 PR(#include <iostream>
+#include "people.hxx"
+
+using namespace std;
+
+int
+main \201\202
+{
+  people_t ppl;
+  people_t::person_sequence& ps \201ppl.person \201\202\202;
+
+  // Add the John Doe record.
+  //
+  ps.push_back \201
+    person_t \201"John",         // first-name
+              "Doe",          // last-name
+              gender_t::male, // gender
+              32,             // age
+              1\202\202;
+
+  // Add the Jane Doe record.
+  //
+  ps.push_back \201
+    person_t \201"Jane",           // first-name
+              "Doe",            // last-name
+              gender_t::female, // gender
+              28,               // age
+              2\202\202;              // id
+
+  // Add middle name to the Jane Doe record.
+  //)WR(
+  person_t& jane \201ps.back \201\202\202;
+  jane.middle_name \201"Mary"\202;
+
+  // Serialize the object model to XML.
+  //
+  xml_schema::namespace_infomap map;
+  map[""].name = "";
+  map[""].schema = "people.xsd";
+
+  people \201cout, ppl, map\202;
+})RP(
+
+  )0 P(The only new part in the above appli)HY(ca)HY(tion)YH( is the calls
+     to the )SM(people_t)ES( and )SM(person_t)ES(
+     construc)HY(tors)YH(. As a general rule, for each C++ class
+     XSD gener)HY(ates)YH( a construc)HY(tor)YH( with initial)HY(iz)HY(ers)YH(
+     for each element and attribute belong)HY(ing)YH( to the )EM(one)ES(
+     cardi)HY(nal)HY(ity)YH( class. For our vocab)HY(u)HY(lary)YH(, the follow)HY(ing)YH(
+     construc)HY(tors)YH( are gener)HY(ated)YH(:)EP(
+
+  ) 13 35 PR(class person_t
+{
+  person_t \201const first_name_type&,
+            const last_name_type&,
+            const gender_type&,
+            const age_type&,
+            const id_type&\202;
+};
+
+class people_t
+{
+  people_t \201\202;
+};)RP(
+
+  )0 P(Note also that we set the )SM(middle-name)ES( element
+     on the Jane Doe record by obtain)HY(ing)YH( a refer)HY(ence)YH( to that record
+     in the object model and setting the )SM(middle-name)ES(
+     value on it. This is a general rule that should be followed
+     in order to obtain the best perfor)HY(mance)YH(: if possi)HY(ble)YH(,
+     direct modi)HY(fi)HY(ca)HY(tions)YH( to the object model should be preferred
+     to modi)HY(fi)HY(ca)HY(tions)YH( on tempo)HY(raries)YH( with subse)HY(quent)YH( copying. The
+     follow)HY(ing)YH( code frag)HY(ment)YH( shows a seman)HY(ti)HY(cally)YH( equiv)HY(a)HY(lent)YH( but
+     slightly slower version:)EP(
+
+  ) 11 46 PR(// Add the Jane Doe record.
+//
+person_t jane \201"Jane",           // first-name
+               "Doe",            // last-name
+               gender_t::female, // gender
+               28,               // age
+               2\202;               // id
+
+jane.middle_name \201"Mary"\202;
+
+ps.push_back \201jane\202;)RP(
+
+  )0 P(We can also go one step further to reduce copying and improve
+     the perfor)HY(mance)YH( of our appli)HY(ca)HY(tion)YH( by using the non-copying
+    )SM(push_back\201\202)ES( func)HY(tion)YH( which assumes owner)HY(ship)YH(
+     of the passed objects:)EP(
+
+  ) 19 47 PR(// Add the John Doe record.
+//
+auto_ptr<person_t> john_p \201
+  new person_t \201"John",           // first-name
+                "Doe",            // last-name
+                gender_t::male,   // gender
+                32,               // age
+                1\202\202;
+ps.push_back \201john_p\202; // assumes ownership
+
+// Add the Jane Doe record.
+//
+auto_ptr<person_t> jane_p \201
+  new person_t \201"Jane",           // first-name
+                "Doe",            // last-name
+                gender_t::female, // gender
+                28,               // age
+                2\202\202;              // id
+ps.push_back \201jane_p\202; // assumes ownership)RP(
+
+  )0 P(For more infor)HY(ma)HY(tion)YH( on the non-copying modi)HY(fier)YH( func)HY(tions)YH( refer to
+     )R12 2 A(Section
+     2.8, "Mapping for Local Elements and Attributes")EA( in the C++/Tree Mapping
+     User Manual. The above appli)HY(ca)HY(tion)YH( produces the follow)HY(ing)YH( output:)EP(
+
+  ) 20 61 PR(<?xml version="1.0" ?>
+<people xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="people.xsd">
+
+  <person id="1">
+    <first-name>John</first-name>
+    <last-name>Doe</last-name>
+    <gender>male</gender>
+    <age>32</age>
+  </person>
+
+  <person id="2">
+    <first-name>Jane</first-name>
+    <middle-name>Mary</middle-name>
+    <last-name>Doe</last-name>
+    <gender>female</gender>
+    <age>28</age>
+  </person>
+
+</people>)RP(
+
+  )0 2 24 H(4.5)WB 59 Sn()WB 27 Sn( Mapping for the Built-in XML Schema Types)EA()EH(
+
+  )0 P(Our person record vocab)HY(u)HY(lary)YH( uses several built-in XML Schema
+     types: )SM(string)ES(, )SM(short)ES(, and
+     )SM(unsignedInt)ES(. Until now we haven't talked about
+     the mapping of built-in XML Schema types to C++ types and how
+     to work with them. This section provides an overview
+     of the built-in types. For more detailed infor)HY(ma)HY(tion)YH( refer
+     to )R13 2 A(Section
+     2.5, "Mapping for Built-in Data Types")EA( in the C++/Tree Mapping
+     User Manual.)EP(
+
+  )0 P(In XML Schema, built-in types are defined in the XML Schema names)HY(pace)YH(.
+     By default, the C++/Tree mapping maps this names)HY(pace)YH( to C++
+     names)HY(pace)YH( )SM(xml_schema)ES( \201this mapping can be altered
+     with the )SM(--names)HY(pace)YH(-map)ES( option\202. The follow)HY(ing)YH( table
+     summa)HY(rizes)YH( the mapping of XML Schema built-in types to C++ types:)EP(
+
+  
+  )0 PT(
+
+  )0 P(As you can see from the table above a number of built-in
+     XML Schema types are mapped to funda)HY(men)HY(tal)YH( C++ types such
+     as )SM(int)ES( or )SM(bool)ES(. All string-based
+     XML Schema types are mapped to C++ types that are derived
+     from either )SM(std::string)ES( or
+     )SM(std::wstring)ES(, depend)HY(ing)YH( on the char)HY(ac)HY(ter)YH(
+     type selected. For access and modi)HY(fi)HY(ca)HY(tion)YH( purposes these
+     types can be treated as )SM(std::string)ES(. A number
+     of built-in types, such as )SM(qname)ES(, the binary
+     types, and the date/time types do not have suit)HY(able)YH(
+     funda)HY(men)HY(tal)YH( or stan)HY(dard)YH( C++ types to map to. As a result,
+     these types are imple)HY(mented)YH( from scratch in the XSD runtime.
+     For more infor)HY(ma)HY(tion)YH( on their inter)HY(faces)YH( refer to
+     )R13 2 A(Section
+     2.5, "Mapping for Built-in Data Types")EA( in the C++/Tree Mapping
+     User Manual.)EP(
+
+
+  
+
+
+  )0 1 25 H(5)WB 60 Sn()WB 29 Sn( Parsing)EA()EH(
+
+  )0 P(We have already seen how to parse XML to an object model in this guide
+     before. In this chapter we will discuss the parsing topic in more
+     detail.)EP(
+
+  )0 P(By default, the C++/Tree mapping provides a total of 14 over)HY(loaded)YH(
+     parsing func)HY(tions)YH(. They differ in the input methods used to
+     read XML as well as the error report)HY(ing)YH( mech)HY(a)HY(nisms)YH(. It is also possi)HY(ble)YH(
+     to gener)HY(ate)YH( types for root elements instead of parsing and seri)HY(al)HY(iza)HY(tion)YH(
+     func)HY(tions)YH(. This may be useful if your XML vocab)HY(u)HY(lary)YH( has multi)HY(ple)YH(
+     root elements. For more infor)HY(ma)HY(tion)YH( on element types refer to
+     )R14 2 A(Section
+     2.9, "Mapping for Global Elements")EA( in the C++/Tree Mapping User
+     Manual.)EP(
+
+
+  )0 P(In this section we will discuss the most commonly used versions of
+     the parsing func)HY(tions)YH(. For a compre)HY(hen)HY(sive)YH( descrip)HY(tion)YH( of parsing
+     refer to )R15 2 A(Chapter
+     3, "Parsing")EA( in the C++/Tree Mapping User Manual. For the )SM(people)ES(
+     global element from our person record vocab)HY(u)HY(lary)YH(, we will concen)HY(trate)YH(
+     on the follow)HY(ing)YH( three parsing func)HY(tions)YH(:)EP(
+
+  ) 15 71 PR(std::auto_ptr<people_t>
+people \201const std::string& uri,
+        xml_schema::flags f = 0,
+        const xml_schema::properties& p = xml_schema::properties \201\202\202;
+
+std::auto_ptr<people_t>
+people \201std::istream& is,
+        xml_schema::flags f = 0,
+        const xml_schema::properties& p = xml_schema::properties \201\202\202;
+
+std::auto_ptr<people_t>
+people \201std::istream& is,
+        const std::string& resource_id,
+        xml_schema::flags f = 0,
+        const xml_schema::properties& p = ::xml_schema::properties \201\202\202;)RP(
+
+  )0 P(The first func)HY(tion)YH( parses a local file or a URI. We have already
+     used this parsing func)HY(tion)YH( in the previ)HY(ous)YH( chap)HY(ters)YH(. The second
+     and third func)HY(tions)YH( read XML from a stan)HY(dard)YH( input stream. The
+     last func)HY(tion)YH( also requires a resource id. This id is used to
+     iden)HY(tify)YH( the XML docu)HY(ment)YH( being parser in diag)HY(nos)HY(tics)YH(  messages
+     as well as to resolve rela)HY(tive)YH( paths to other docu)HY(ments)YH( \201for example,
+     schemas\202 that might be refer)HY(enced)YH( from the XML docu)HY(ment)YH(.)EP(
+
+  )0 P(The last two argu)HY(ments)YH( to all three parsing func)HY(tions)YH( are parsing
+     flags and prop)HY(er)HY(ties)YH(. The flags argu)HY(ment)YH( provides a number of ways
+     to fine-tune the parsing process. The prop)HY(er)HY(ties)YH( argu)HY(ment)YH( allows
+     to pass addi)HY(tional)YH( infor)HY(ma)HY(tion)YH( to the parsing func)HY(tions)YH(. We will
+     use these two argu)HY(ments)YH( in )0 30 1 A(Section 5.1, "XML Schema
+     Vali)HY(da)HY(tion)YH( and Search)HY(ing)YH(")30 0 TN TL()Ec /AF f D( below. The follow)HY(ing)YH( example shows
+     how we can use the above parsing func)HY(tions)YH(:)EP(
+
+  ) 17 65 PR(using std::auto_ptr;
+
+// Parse a local file or URI.
+//
+auto_ptr<people_t> p1 \201people \201"people.xml"\202\202;
+auto_ptr<people_t> p2 \201people \201"http://example.com/people.xml"\202\202;
+
+// Parse a local file via ifstream.
+//
+std::ifstream ifs \201"people.xml"\202;
+auto_ptr<people_t> p3 \201people \201ifs, "people.xml"\202\202;
+
+// Parse an XML string.
+//
+std::string str \201"..."\202; // XML in a string.
+std::istringstream iss \201str\202;
+auto_ptr<people_t> p4 \201people \201iss\202\202;)RP(
+
+
+  )0 2 26 H(5.1)WB 61 Sn()WB 30 Sn( XML Schema Vali)HY(da)HY(tion)YH( and Search)HY(ing)YH()EA()EH(
+
+  )0 P(The C++/Tree mapping relies on the under)HY(ly)HY(ing)YH( Xerces-C++ XML
+     parser for full XML docu)HY(ment)YH( vali)HY(da)HY(tion)YH(. The XML Schema
+     vali)HY(da)HY(tion)YH( is enabled by default and can be disabled by
+     passing the )SM(xml_schema::flags::dont_vali)HY(date)YH()ES(
+     flag to the parsing func)HY(tions)YH(, for example:)EP(
+
+  ) 2 59 PR(auto_ptr<people_t> p \201
+  people \201"people.xml", xml_schema::flags::dont_validate\202\202;)RP(
+
+  )0 P(Even when XML Schema vali)HY(da)HY(tion)YH( is disabled, the gener)HY(ated)YH(
+     code still performs a number of checks to prevent
+     construc)HY(tion)YH( of an incon)HY(sis)HY(tent)YH( object model \201for example, an
+     object model with missing required attributes or elements\202.)EP(
+
+  )0 P(When XML Schema vali)HY(da)HY(tion)YH( is enabled, the XML parser needs
+     to locate a schema to vali)HY(date)YH( against. There are several
+     methods to provide the schema loca)HY(tion)YH( infor)HY(ma)HY(tion)YH( to the
+     parser. The easiest and most commonly used method is to
+     specify schema loca)HY(tions)YH( in the XML docu)HY(ment)YH( itself
+     with the )SM(schemaLo)HY(ca)HY(tion)YH()ES( or
+     )SM(noNames)HY(paceSchemaLo)HY(ca)HY(tion)YH()ES( attributes, for example:)EP(
+
+  ) 4 74 PR(<?xml version="1.0" ?>
+<people xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="people.xsd"
+        xsi:schemaLocation="http://www.w3.org/XML/1998/namespace xml.xsd">)RP(
+
+  )0 P(As you might have noticed, we used this method in all the sample XML
+     docu)HY(ments)YH( presented in this guide up until now. Note that the
+     schema loca)HY(tions)YH( spec)HY(i)HY(fied)YH( with these two attributes are rela)HY(tive)YH(
+     to the docu)HY(ment)YH('s path unless they are abso)HY(lute)YH( URIs \201that is
+     start with )SM(http://)ES(, )SM(file://)ES(, etc.\202.
+     In partic)HY(u)HY(lar)YH(, if you specify just file names as your schema
+     loca)HY(tions)YH(, as we did above, then the schemas should reside in
+     the same direc)HY(tory)YH( as the XML docu)HY(ment)YH( itself.)EP(
+
+  )0 P(Another method of provid)HY(ing)YH( the schema loca)HY(tion)YH( infor)HY(ma)HY(tion)YH(
+     is via the )SM(xml_schema::prop)HY(er)HY(ties)YH()ES( argu)HY(ment)YH(, as
+     shown in the follow)HY(ing)YH( example:)EP(
+
+  ) 5 74 PR(xml_schema::properties props;
+props.no_namespace_schema_location \201"people.xsd"\202;
+props.schema_location \201"http://www.w3.org/XML/1998/namespace", "xml.xsd"\202;
+
+auto_ptr<people_t> p \201people \201"people.xml", 0, props\202\202;)RP(
+
+  )0 P(The schema loca)HY(tions)YH( provided with this method over)HY(rides)YH(
+     those spec)HY(i)HY(fied)YH( in the XML docu)HY(ment)YH(. As with the previ)HY(ous)YH(
+     method, the schema loca)HY(tions)YH( spec)HY(i)HY(fied)YH( this way are
+     rela)HY(tive)YH( to the docu)HY(ment)YH('s path unless they are abso)HY(lute)YH( URIs.
+     In partic)HY(u)HY(lar)YH(, if you want to use local schemas that are
+     not related to the docu)HY(ment)YH( being parsed, then you will
+     need to use the )SM(file://)ES( URI. The follow)HY(ing)YH(
+     example shows how to use schemas that reside in the current
+     working direc)HY(tory)YH(:)EP(
+
+  ) 19 55 PR(#include <unistd.h> // getcwd
+#include <limits.h> // PATH_MAX
+
+char cwd[PATH_MAX];
+if \201getcwd \201cwd, PATH_MAX\202 == 0\202
+{
+  // Buffer too small?
+}
+
+xml_schema::properties props;
+
+props.no_namespace_schema_location \201
+  "file:///" + std::string \201cwd\202 + "people.xsd"\202;
+
+props.schema_location \201
+  "http://www.w3.org/XML/1998/namespace",
+  "file:///" + std::string \201cwd\202 + "xml.xsd"\202;
+
+auto_ptr<people_t> p \201people \201"people.xml", 0, props\202\202;)RP(
+
+  )0 P(A third method is the most useful if you are plan)HY(ning)YH( to parse
+     several XML docu)HY(ments)YH( of the same vocab)HY(u)HY(lary)YH(. In that case
+     it may be bene)HY(fi)HY(cial)YH( to pre-parse and cache the schemas in
+     the XML parser which can then be used to parse all docu)HY(ments)YH(
+     without re-parsing the schemas. For more infor)HY(ma)HY(tion)YH( on
+     this method refer to the )SM(caching)ES( example in the
+     )SM(exam)HY(ples)YH(/cxx/tree/)ES( direc)HY(tory)YH( of the XSD
+     distri)HY(bu)HY(tion)YH(. It is also possi)HY(ble)YH( to convert the schemas into
+     a pre-compiled binary repre)HY(sen)HY(ta)HY(tion)YH( and embed this  repre)HY(sen)HY(ta)HY(tion)YH(
+     directly into the appli)HY(ca)HY(tion)YH( executable. With this approach your
+     appli)HY(ca)HY(tion)YH( can perform XML Schema vali)HY(da)HY(tion)YH( without depend)HY(ing)YH( on
+     any exter)HY(nal)YH( schema files. For more infor)HY(ma)HY(tion)YH( on how to achieve
+     this refer to the )SM(embed)HY(ded)YH()ES( example in the
+     )SM(exam)HY(ples)YH(/cxx/tree/)ES( direc)HY(tory)YH( of the XSD distri)HY(bu)HY(tion)YH(.)EP(
+
+  )0 P(When the XML parser cannot locate a schema for the
+     XML docu)HY(ment)YH(, the vali)HY(da)HY(tion)YH( fails and XML docu)HY(ment)YH(
+     elements and attributes for which schema defi)HY(ni)HY(tions)YH( could
+     not be located are reported in the diag)HY(nos)HY(tics)YH(. For
+     example, if we remove the )SM(noNames)HY(paceSchemaLo)HY(ca)HY(tion)YH()ES(
+     attribute in )SM(people.xml)ES( from the previ)HY(ous)YH( chapter,
+     then we will get the follow)HY(ing)YH( diag)HY(nos)HY(tics)YH( if we try to parse
+     this file with vali)HY(da)HY(tion)YH( enabled:)EP(
+
+  ) 8 74 PR(people.xml:2:63 error: no declaration found for element 'people'
+people.xml:4:18 error: no declaration found for element 'person'
+people.xml:4:18 error: attribute 'id' is not declared for element 'person'
+people.xml:5:17 error: no declaration found for element 'first-name'
+people.xml:6:18 error: no declaration found for element 'middle-name'
+people.xml:7:16 error: no declaration found for element 'last-name'
+people.xml:8:13 error: no declaration found for element 'gender'
+people.xml:9:10 error: no declaration found for element 'age')RP(
+
+  )0 2 27 H(5.2)WB 62 Sn()WB 31 Sn( Error Handling)EA()EH(
+
+  )0 P(The parsing func)HY(tions)YH( offer a number of ways to handle error condi)HY(tions)YH(
+     with the C++ excep)HY(tions)YH( being the most commonly used mech)HY(a)HY(nism)YH(. All
+     C++/Tree excep)HY(tions)YH( derive from common base )SM(xml_schema::excep)HY(tion)YH()ES(
+     which in turn derives from )SM(std::excep)HY(tion)YH()ES(. The easiest
+     way to uniformly handle all possi)HY(ble)YH( C++/Tree excep)HY(tions)YH( and print
+     detailed infor)HY(ma)HY(tion)YH( about the error is to catch and print
+     )SM(xml_schema::excep)HY(tion)YH()ES(, as shown in the follow)HY(ing)YH(
+     example:)EP(
+
+  ) 8 47 PR(try
+{
+  auto_ptr<people_t> p \201people \201"people.xml"\202\202;
+}
+catch \201const xml_schema::exception& e\202
+{
+  cerr << e << endl;
+})RP(
+
+  )0 P(Each indi)HY(vid)HY(ual)YH( C++/Tree excep)HY(tion)YH( also allows you to obtain
+     error details program)HY(mat)HY(i)HY(cally)YH(. For example, the
+     )SM(xml_schema::parsing)ES( excep)HY(tion)YH( is thrown when
+     the XML parsing and vali)HY(da)HY(tion)YH( in the under)HY(ly)HY(ing)YH( XML parser
+     fails. It encap)HY(su)HY(lates)YH( various diag)HY(nos)HY(tics)YH( infor)HY(ma)HY(tion)YH(
+     such as the file name, line and column numbers, as well as the
+     error or warning message for each entry. For more infor)HY(ma)HY(tion)YH(
+     about this and other excep)HY(tions)YH( that can be thrown during
+     parsing, refer to
+     )R16 2 A(Section
+     3.3, "Error Handling")EA( in the C++/Tree Mapping
+     User Manual.)EP(
+
+  )0 P(Note that if you are parsing )SM(std::istream)ES( on which
+     excep)HY(tions)YH( are not enabled, then you will need to check the
+     stream state after the call to the parsing func)HY(tion)YH( in order
+     to detect any possi)HY(ble)YH( stream fail)HY(ures)YH(, for example:)EP(
+
+  ) 15 50 PR(std::ifstream ifs \201"people.xml"\202;
+
+if \201ifs.fail \201\202\202
+{
+  cerr << "people.xml: unable to open" << endl;
+  return 1;
+}
+
+auto_ptr<people_t> p \201people \201ifs, "people.xml"\202\202;
+
+if \201ifs.fail \201\202\202
+{
+  cerr << "people.xml: read error" << endl;
+  return 1;
+})RP(
+
+  )0 P(The above example can be rewrit)HY(ten)YH( to use excep)HY(tions)YH( as
+     shown below:)EP(
+
+  ) 13 66 PR(try
+{
+  std::ifstream ifs;
+  ifs.exceptions \201std::ifstream::badbit | std::ifstream::failbit\202;
+  ifs.open \201"people.xml"\202;
+
+  auto_ptr<people_t> p \201people \201ifs, "people.xml"\202\202;
+}
+catch \201const std::ifstream::failure&\202
+{
+  cerr << "people.xml: unable to open or read error" << endl;
+  return 1;
+})RP(
+
+
+  
+
+
+  )0 1 28 H(6)WB 63 Sn()WB 32 Sn( Seri)HY(al)HY(iza)HY(tion)YH()EA()EH(
+
+  )0 P(We have already seen how to seri)HY(al)HY(ize)YH( an object model back to XML
+     in this guide before. In this chapter we will discuss the
+     seri)HY(al)HY(iza)HY(tion)YH( topic in more detail.)EP(
+
+  )0 P(By default, the C++/Tree mapping provides a total of 8 over)HY(loaded)YH(
+     seri)HY(al)HY(iza)HY(tion)YH( func)HY(tions)YH(. They differ in the output methods used to write
+     XML as well as the error report)HY(ing)YH( mech)HY(a)HY(nisms)YH(. It is also possi)HY(ble)YH( to
+     gener)HY(ate)YH( types for root elements instead of parsing and seri)HY(al)HY(iza)HY(tion)YH(
+     func)HY(tions)YH(. This may be useful if your XML vocab)HY(u)HY(lary)YH( has multi)HY(ple)YH(
+     root elements. For more infor)HY(ma)HY(tion)YH( on element types refer to
+     )R14 2 A(Section
+     2.9, "Mapping for Global Elements")EA( in the C++/Tree Mapping User
+     Manual.)EP(
+
+
+  )0 P(In this section we will discuss the most commonly
+     used version of seri)HY(al)HY(iza)HY(tion)YH( func)HY(tions)YH(. For a compre)HY(hen)HY(sive)YH( descrip)HY(tion)YH(
+     of seri)HY(al)HY(iza)HY(tion)YH( refer to
+     )R17 2 A(Chapter
+     4, "Seri)HY(al)HY(iza)HY(tion)YH(")EA( in the C++/Tree Mapping User Manual. For the
+     )SM(people)ES( global element from our person record vocab)HY(u)HY(lary)YH(,
+     we will concen)HY(trate)YH( on the follow)HY(ing)YH( seri)HY(al)HY(iza)HY(tion)YH( func)HY(tion)YH(:)EP(
+
+  ) 7 50 PR(void
+people \201std::ostream& os,
+        const people_t& x,
+        const xml_schema::namespace_infomap& map =
+          xml_schema::namespace_infomap \201\202,
+        const std::string& encoding = "UTF-8",
+        xml_schema::flags f = 0\202;)RP(
+
+  )0 P(This func)HY(tion)YH( seri)HY(al)HY(izes)YH( the object model passed as the second
+     argu)HY(ment)YH( to the stan)HY(dard)YH( output stream passed as the first
+     argu)HY(ment)YH(. The third argu)HY(ment)YH( is a names)HY(pace)YH( infor)HY(ma)HY(tion)YH( map
+     which we will discuss in more detail in the next section.
+     The fourth argu)HY(ment)YH( is a char)HY(ac)HY(ter)YH( encod)HY(ing)YH( that the result)HY(ing)YH(
+     XML docu)HY(ment)YH( should be in. Possi)HY(ble)YH( valid values for this
+     argu)HY(ment)YH( are "US-ASCII", "ISO8859-1", "UTF-8", "UTF-16BE",
+     "UTF-16LE", "UCS-4BE", and "UCS-4LE". Finally, the flags
+     argu)HY(ment)YH( allows fine-tuning of the seri)HY(al)HY(iza)HY(tion)YH( process.
+     The follow)HY(ing)YH( example shows how we can use the above seri)HY(al)HY(iza)HY(tion)YH(
+     func)HY(tion)YH(:)EP(
+
+  ) 19 34 PR(people_t& p = ...
+
+xml_schema::namespace_infomap map;
+map[""].schema = "people.xsd";
+
+// Serialize to stdout.
+//
+people \201std::cout, p, map\202;
+
+// Serialize to a file.
+//
+std::ofstream ofs \201"people.xml"\202;
+people \201ofs, p, map\202;
+
+// Serialize to a string.
+//
+std::ostringstream oss;
+people \201oss, p, map\202;
+std::string xml \201oss.str \201\202\202;)RP(
+
+
+  )0 2 29 H(6.1)WB 64 Sn()WB 33 Sn( Names)HY(pace)YH( and Schema Infor)HY(ma)HY(tion)YH()EA()EH(
+
+  )0 P(While XML seri)HY(al)HY(iza)HY(tion)YH( can be done just from the object
+     model alone, it is often desir)HY(able)YH( to assign mean)HY(ing)HY(ful)YH(
+     prefixes to XML names)HY(paces)YH( used in the vocab)HY(u)HY(lary)YH( as
+     well as to provide the schema loca)HY(tion)YH( infor)HY(ma)HY(tion)YH(.
+     This is accom)HY(plished)YH( by passing the names)HY(pace)YH( infor)HY(ma)HY(tion)YH(
+     map to the seri)HY(al)HY(iza)HY(tion)YH( func)HY(tion)YH(. The key in this map is
+     a names)HY(pace)YH( prefix that should be assigned to an XML names)HY(pace)YH(
+     spec)HY(i)HY(fied)YH( in the )SM(name)ES( vari)HY(able)YH( of the
+     map value. You can also assign an optional schema loca)HY(tion)YH( for
+     this names)HY(pace)YH( in the )SM(schema)ES( vari)HY(able)YH(. Based
+     on each key-value entry in this map, the seri)HY(al)HY(iza)HY(tion)YH(
+     func)HY(tion)YH( adds two attributes to the result)HY(ing)YH( XML docu)HY(ment)YH(:
+     the names)HY(pace)YH(-prefix mapping attribute and schema loca)HY(tion)YH(
+     attribute. The empty prefix indi)HY(cates)YH( that the names)HY(pace)YH(
+     should be mapped without a prefix. For example, the follow)HY(ing)YH(
+     map:)EP(
+
+  ) 7 55 PR(xml_schema::namespace_infomap map;
+
+map[""].name = "http://www.example.com/example";
+map[""].schema = "example.xsd";
+
+map["x"].name = "http://www.w3.org/XML/1998/namespace";
+map["x"].schema = "xml.xsd";)RP(
+
+  )0 P(Results in the follow)HY(ing)YH( XML docu)HY(ment)YH(:)EP(
+
+  ) 7 68 PR(<?xml version="1.0" ?>
+<example
+  xmlns="http://www.example.com/example"
+  xmlns:x="http://www.w3.org/XML/1998/namespace"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.example.com/example example.xsd
+                      http://www.w3.org/XML/1998/namespace xml.xsd">)RP(
+
+  )0 P(The empty names)HY(pace)YH( indi)HY(cates)YH( that the vocab)HY(u)HY(lary)YH( has no target
+     names)HY(pace)YH(. For example, the follow)HY(ing)YH( map results in only the
+     )SM(noNames)HY(paceSchemaLo)HY(ca)HY(tion)YH()ES( attribute being added:)EP(
+
+  ) 4 34 PR(xml_schema::namespace_infomap map;
+
+map[""].name = "";
+map[""].schema = "example.xsd";)RP(
+
+  )0 2 30 H(6.2)WB 65 Sn()WB 34 Sn( Error Handling)EA()EH(
+
+  )0 P(Similar to the parsing func)HY(tions)YH(, the seri)HY(al)HY(iza)HY(tion)YH( func)HY(tions)YH( offer a
+     number of ways to handle error condi)HY(tions)YH( with the C++ excep)HY(tions)YH( being
+     the most commonly used mech)HY(a)HY(nisms)YH(. As with parsing, the easiest way to
+     uniformly handle all possi)HY(ble)YH( seri)HY(al)HY(iza)HY(tion)YH( excep)HY(tions)YH( and print
+     detailed infor)HY(ma)HY(tion)YH( about the error is to catch and print
+     )SM(xml_schema::excep)HY(tion)YH()ES(:)EP(
+
+ ) 13 38 PR(try
+{
+  people_t& p = ...
+
+  xml_schema::namespace_infomap map;
+  map[""].schema = "people.xsd";
+
+  people \201std::cout, p, map\202\202;
+}
+catch \201const xml_schema::exception& e\202
+{
+  cerr << e << endl;
+})RP(
+
+  )0 P(The most commonly encoun)HY(tered)YH( seri)HY(al)HY(iza)HY(tion)YH( excep)HY(tion)YH( is
+     )SM(xml_schema::seri)HY(al)HY(iza)HY(tion)YH()ES(. It is thrown
+     when the XML seri)HY(al)HY(iza)HY(tion)YH( in the under)HY(ly)HY(ing)YH( XML writer
+     fails. It encap)HY(su)HY(lates)YH( various diag)HY(nos)HY(tics)YH( infor)HY(ma)HY(tion)YH(
+     such as the file name, line and column numbers, as well as the
+     error or warning message for each entry. For more infor)HY(ma)HY(tion)YH(
+     about this and other excep)HY(tions)YH( that can be thrown during
+     seri)HY(al)HY(iza)HY(tion)YH(, refer to
+     )R18 2 A(Section
+     4.4, "Error Handling")EA( in the C++/Tree Mapping
+     User Manual.)EP(
+
+  )0 P(Note that if you are seri)HY(al)HY(iz)HY(ing)YH( to )SM(std::ostream)ES( on
+     which excep)HY(tions)YH( are not enabled, then you will need to check the
+     stream state after the call to the seri)HY(al)HY(iza)HY(tion)YH( func)HY(tion)YH( in order
+     to detect any possi)HY(ble)YH( stream fail)HY(ures)YH(, for example:)EP(
+
+  ) 15 47 PR(std::ofstream ofs \201"people.xml"\202;
+
+if \201ofs.fail \201\202\202
+{
+  cerr << "people.xml: unable to open" << endl;
+  return 1;
+}
+
+people \201ofs, p, map\202\202;
+
+if \201ofs.fail \201\202\202
+{
+  cerr << "people.xml: write error" << endl;
+  return 1;
+})RP(
+
+  )0 P(The above example can be rewrit)HY(ten)YH( to use excep)HY(tions)YH( as
+     shown below:)EP(
+
+  ) 13 66 PR(try
+{
+  std::ofstream ofs;
+  ofs.exceptions \201std::ofstream::badbit | std::ofstream::failbit\202;
+  ofs.open \201"people.xml"\202;
+
+  people \201ofs, p, map\202\202;
+}
+catch \201const std::ofstream::failure&\202
+{
+  cerr << "people.xml: unable to open or write error" << endl;
+  return 1;
+})RP(
+
+  )BR(
+)BR(
+
+)WB NL
+/TE t D NP TU PM 0 eq and{/Pn () D showpage}if end restore

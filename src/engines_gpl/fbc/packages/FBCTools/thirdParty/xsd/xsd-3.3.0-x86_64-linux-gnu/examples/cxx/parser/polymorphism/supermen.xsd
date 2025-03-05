@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/parser/polymorphism/supermen.xsd
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <xsd:complexType name="person">
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!-- substitution group root -->
+  <xsd:element name="person" type="person"/>
+
+
+  <xsd:complexType name="superman">
+    <xsd:complexContent>
+      <xsd:extension base="person">
+        <xsd:attribute name="can-fly" type="xsd:boolean" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:element name="superman" type="superman" substitutionGroup="person"/>
+
+  <xsd:complexType name="batman">
+    <xsd:complexContent>
+      <xsd:extension base="superman">
+        <xsd:attribute name="wing-span" type="xsd:unsignedInt" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="supermen">
+    <xsd:sequence>
+      <xsd:element ref="person" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:element name="supermen" type="supermen"/>
+
+</xsd:schema>

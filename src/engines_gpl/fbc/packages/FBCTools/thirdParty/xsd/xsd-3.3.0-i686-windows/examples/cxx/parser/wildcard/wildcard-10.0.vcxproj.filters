@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{F05001BC-BAEB-4D9D-89E4-D19B208F34BF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{CDCB25B7-BCBA-4C74-828E-09B2D7860485}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Schema Files">
+      <UniqueIdentifier>{1b27359f-6508-4bb0-96ed-b5a3fdb228c6}</UniqueIdentifier>
+      <Extensions>xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="driver.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="email-pskel.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="email-pskel.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="email.xsd">
+      <Filter>Schema Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

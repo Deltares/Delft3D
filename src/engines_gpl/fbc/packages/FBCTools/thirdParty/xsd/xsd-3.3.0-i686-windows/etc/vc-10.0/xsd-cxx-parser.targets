@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="CXX_Parser_Mapping_Rule">
+      <Targets>XsdCompile</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="CXX_Parser_Mapping_Rule"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="XsdCompile"
+    BeforeTargets="$(CXX_Parser_Mapping_RuleBeforeTargets)"
+    AfterTargets="$(CXX_Parser_Mapping_RuleAfterTargets)"
+    Condition="'@(CXX_Parser_Mapping_Rule)' != ''"
+    DependsOnTargets="$(CXX_Parser_Mapping_RuleDependsOn);XsdOutputDir"
+    Outputs="%(CXX_Parser_Mapping_Rule.OutDir)\%(CXX_Parser_Mapping_Rule.Filename)%(CXX_Parser_Mapping_Rule.SkelFileSuffix)%(CXX_Parser_Mapping_Rule.HeaderSuffix);%(CXX_Parser_Mapping_Rule.OutDir)\%(CXX_Parser_Mapping_Rule.Filename)%(CXX_Parser_Mapping_Rule.SkelFileSuffix)%(CXX_Parser_Mapping_Rule.SourceSuffix)"
+    Inputs="%(CXX_Parser_Mapping_Rule.Identity);%(CXX_Parser_Mapping_Rule.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <CXX_Parser_Mapping_Rule
+        Remove="@(CXX_Parser_Mapping_Rule)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <CXX_Parser_Mapping_Rule_tlog
+        Include="%(CXX_Parser_Mapping_Rule.OutDir)\%(CXX_Parser_Mapping_Rule.Filename)%(CXX_Parser_Mapping_Rule.SkelFileSuffix)%(CXX_Parser_Mapping_Rule.HeaderSuffix);%(CXX_Parser_Mapping_Rule.OutDir)\%(CXX_Parser_Mapping_Rule.Filename)%(CXX_Parser_Mapping_Rule.SkelFileSuffix)%(CXX_Parser_Mapping_Rule.SourceSuffix)"
+        Condition="'%(CXX_Parser_Mapping_Rule.OutDir)\%(CXX_Parser_Mapping_Rule.Filename)%(CXX_Parser_Mapping_Rule.SkelFileSuffix)%(CXX_Parser_Mapping_Rule.HeaderSuffix);%(CXX_Parser_Mapping_Rule.OutDir)\%(CXX_Parser_Mapping_Rule.Filename)%(CXX_Parser_Mapping_Rule.SkelFileSuffix)%(CXX_Parser_Mapping_Rule.SourceSuffix)' != '' and '%(CXX_Parser_Mapping_Rule.ExcludedFromBuild)' != 'true'">
+        <Source>@(CXX_Parser_Mapping_Rule, '|')</Source>
+      </CXX_Parser_Mapping_Rule_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(CXX_Parser_Mapping_Rule.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(CXX_Parser_Mapping_Rule_tlog)' != '' and '%(CXX_Parser_Mapping_Rule_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(CXX_Parser_Mapping_Rule_tlog.Source);@(CXX_Parser_Mapping_Rule_tlog-&gt;'%(Fullpath)')" />
+    <CXX_Parser_Mapping_Rule
+      Condition="'@(CXX_Parser_Mapping_Rule)' != '' and '%(CXX_Parser_Mapping_Rule.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(CXX_Parser_Mapping_Rule.CommandLineTemplate)"
+      ProprietaryLicense="%(CXX_Parser_Mapping_Rule.ProprietaryLicense)"
+      GenInline="%(CXX_Parser_Mapping_Rule.GenInline)"
+      GenValidation="%(CXX_Parser_Mapping_Rule.GenValidation)"
+      SupValidation="%(CXX_Parser_Mapping_Rule.SupValidation)"
+      GenPolymorphic="%(CXX_Parser_Mapping_Rule.GenPolymorphic)"
+      OutDir="%(CXX_Parser_Mapping_Rule.OutDir)"
+      HeaderSuffix="%(CXX_Parser_Mapping_Rule.HeaderSuffix)"
+      SourceSuffix="%(CXX_Parser_Mapping_Rule.SourceSuffix)"
+      InlineSuffix="%(CXX_Parser_Mapping_Rule.InlineSuffix)"
+      SkelFileSuffix="%(CXX_Parser_Mapping_Rule.SkelFileSuffix)"
+      NamespaceMap="%(CXX_Parser_Mapping_Rule.NamespaceMap)"
+      TypeMap="%(CXX_Parser_Mapping_Rule.TypeMap)"
+      SkelTypeSuffix="%(CXX_Parser_Mapping_Rule.SkelTypeSuffix)"
+      ExportSymbol="%(CXX_Parser_Mapping_Rule.ExportSymbol)"
+      HxxPrologue="%(CXX_Parser_Mapping_Rule.HxxPrologue)"
+      HxxEpilogue="%(CXX_Parser_Mapping_Rule.HxxEpilogue)"
+      CharType="%(CXX_Parser_Mapping_Rule.CharType)"
+      CharEncoding="%(CXX_Parser_Mapping_Rule.CharEncoding)"
+      XMLParser="%(CXX_Parser_Mapping_Rule.XMLParser)"
+      AdditionalOptions="%(CXX_Parser_Mapping_Rule.AdditionalOptions)"
+      Inputs="%(CXX_Parser_Mapping_Rule.Identity)" />
+  </Target>
+  <Target
+    Name="XsdClean"
+    BeforeTargets="CoreCppClean"
+    AfterTargets="_PrepareForClean"
+    Condition="'@(CXX_Parser_Mapping_Rule)' != ''">
+    <PropertyGroup>
+      <XsdCleanFilePatternsToDelete>@(CXX_Parser_Mapping_Rule->Metadata('OutDir')->Distinct())\@(CXX_Parser_Mapping_Rule->Metadata('Filename')->Distinct())@(CXX_Parser_Mapping_Rule->Metadata('SkelFileSuffix')->Distinct())@(CXX_Parser_Mapping_Rule->Metadata('HeaderSuffix')->Distinct());@(CXX_Parser_Mapping_Rule->Metadata('OutDir')->Distinct())\@(CXX_Parser_Mapping_Rule->Metadata('Filename')->Distinct())@(CXX_Parser_Mapping_Rule->Metadata('SkelFileSuffix')->Distinct())@(CXX_Parser_Mapping_Rule->Metadata('SourceSuffix')->Distinct());@(CXX_Parser_Mapping_Rule->Metadata('OutDir')->Distinct())\@(CXX_Parser_Mapping_Rule->Metadata('Filename')->Distinct())@(CXX_Parser_Mapping_Rule->Metadata('SkelFileSuffix')->Distinct())@(CXX_Parser_Mapping_Rule->Metadata('InlineSuffix')->Distinct());</XsdCleanFilePatternsToDelete>
+    </PropertyGroup>
+    <ItemGroup>
+      <CoreCppClean>
+        <FilePatternsToDelete
+          Condition="'%(CoreCppClean.FilePatternsToDelete)' != ''">%(CoreCppClean.FilePatternsToDelete);$(XsdCleanFilePatternsToDelete)</FilePatternsToDelete>
+        <FilePatternsToDelete
+          Condition="'%(CoreCppClean.FilePatternsToDelete)' == ''">$(XsdCleanFilePatternsToDelete)</FilePatternsToDelete>
+      </CoreCppClean>
+    </ItemGroup>
+  </Target>
+  <Target
+    Name="XsdOutputDir"
+    Condition="'@(CXX_Parser_Mapping_Rule)' != ''">
+    <MakeDir Directories="@(CXX_Parser_Mapping_Rule->Metadata('OutDir')->Distinct()->ClearMetadata())" />
+  </Target>
+</Project>

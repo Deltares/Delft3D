@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9AB5F296-2836-4A71-A39E-8D63EECB86D8}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{CDC85F55-DEE6-4EB3-9B72-1CBDDA21CFBE}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Inline Files">
+      <UniqueIdentifier>{69c0bc69-f38e-42f7-8c11-cd6c1a121574}</UniqueIdentifier>
+      <Extensions>ixx</Extensions>
+    </Filter>
+    <Filter Include="Schema Files">
+      <UniqueIdentifier>{bad36e63-36c2-4233-87a2-68af084d612a}</UniqueIdentifier>
+      <Extensions>xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="driver.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="order.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="double-custom.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="order.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="double-custom.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xml-schema.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="order.ixx">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="order.xsd">
+      <Filter>Schema Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

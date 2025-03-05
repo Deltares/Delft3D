@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{1B970E5F-EBC0-44A7-A542-7EBFADBF1573}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{B49CCB93-BC13-4222-A005-6785C8220E30}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Schema Files">
+      <UniqueIdentifier>{408b97b6-8a71-4f5b-976a-dc6c59b92362}</UniqueIdentifier>
+      <Extensions>xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="driver.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="supermen-pimpl.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="supermen-pskel.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="supermen-pimpl.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="supermen-pskel.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="supermen.xsd">
+      <Filter>Schema Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

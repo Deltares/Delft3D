@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/xpath/people.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<ppl:directory xmlns:ppl="http://www.codesynthesis.com/people"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://www.codesynthesis.com/people people.xsd">
+
+  <person>
+    <first-name>John</first-name>
+    <last-name>Doe</last-name>
+    <gender>male</gender>
+    <age>32</age>
+  </person>
+
+  <person>
+    <first-name>Jane</first-name>
+    <last-name>Doe</last-name>
+    <gender>female</gender>
+    <age>28</age>
+  </person>
+
+</ppl:directory>

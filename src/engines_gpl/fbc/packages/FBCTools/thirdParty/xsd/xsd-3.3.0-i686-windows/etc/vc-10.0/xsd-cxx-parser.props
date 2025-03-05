@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(CXX_Parser_Mapping_RuleBeforeTargets)' == '' and '$(CXX_Parser_Mapping_RuleAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <CXX_Parser_Mapping_RuleBeforeTargets>Midl</CXX_Parser_Mapping_RuleBeforeTargets>
+    <CXX_Parser_Mapping_RuleAfterTargets>CustomBuild</CXX_Parser_Mapping_RuleAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <CXX_Parser_Mapping_RuleDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(CXX_Parser_Mapping_RuleDependsOn)</CXX_Parser_Mapping_RuleDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <CXX_Parser_Mapping_Rule>
+      <ProprietaryLicense>False</ProprietaryLicense>
+      <GenInline>False</GenInline>
+      <GenValidation>False</GenValidation>
+      <SupValidation>False</SupValidation>
+      <GenPolymorphic>False</GenPolymorphic>
+      <OutDir>.</OutDir>
+      <HeaderSuffix>.hxx</HeaderSuffix>
+      <SourceSuffix>.cxx</SourceSuffix>
+      <InlineSuffix>.ixx</InlineSuffix>
+      <SkelFileSuffix>-pskel</SkelFileSuffix>
+      <SkelTypeSuffix>_pskel</SkelTypeSuffix>
+      <CharType>0</CharType>
+      <CharEncoding>0</CharEncoding>
+      <XMLParser>0</XMLParser>
+      <CommandLineTemplate>xsd.exe cxx-parser [AllOptions] [AdditionalOptions] [Inputs]</CommandLineTemplate>
+      <ExecutionDescription>xsd cxx-parser %(Identity)</ExecutionDescription>
+      <ShowOnlyRuleProperties>false</ShowOnlyRuleProperties>
+    </CXX_Parser_Mapping_Rule>
+  </ItemDefinitionGroup>
+</Project>

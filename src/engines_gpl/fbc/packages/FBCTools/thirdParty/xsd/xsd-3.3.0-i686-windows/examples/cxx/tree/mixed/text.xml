@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/text/text.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<text xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="text.xsd">
+
+The first paragraph of this text talks about <a href="http://en.wikipedia.org/wiki/time">time</a>.
+  
+And this paragraph talks about <a href="http://en.wikipedia.org/wiki/space">space</a>.
+
+</text>

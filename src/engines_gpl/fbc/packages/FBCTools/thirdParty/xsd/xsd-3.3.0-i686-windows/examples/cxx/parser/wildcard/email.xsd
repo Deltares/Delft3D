@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/parser/wildcard/email.xsd
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:eml="http://www.codesynthesis.com/email"
+            targetNamespace="http://www.codesynthesis.com/email">
+
+  <!-- Predefined envolop body types. -->
+
+  <xsd:element name="text" type="xsd:string"/>
+
+  <xsd:complexType name="binary">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:base64Binary">
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="mime" type="xsd:string" use="required"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <xsd:element name="binary" type="eml:binary"/>
+
+  <!-- Predefined envelop attributes. -->
+
+  <xsd:attribute name="thread-id" type="xsd:unsignedInt"/>
+
+
+  <xsd:complexType name="envelope">
+    <xsd:sequence>
+      <xsd:element name="to" type="xsd:string"/>
+      <xsd:element name="from" type="xsd:string"/>
+      <xsd:element name="subject" type="xsd:string"/>
+
+      <!-- Extensible envelope body. -->
+
+      <xsd:any namespace="##targetNamespace" processContents="strict"
+               maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:anyAttribute namespace="##targetNamespace" processContents="strict"/>
+  </xsd:complexType>
+
+  <xsd:element name="message" type="eml:envelope"/>
+
+</xsd:schema>

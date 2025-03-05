@@ -1,0 +1,2690 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+  <title>C++/Tree Mapping Getting Started Guide</title>
+
+  <meta name="copyright" content="&copy; 2005-2010 Code Synthesis Tools CC"/>
+  <meta name="keywords" content="xsd,xml,schema,c++,mapping,data,binding,parsing,serialization,validation"/>
+  <meta name="description" content="C++/Tree Mapping Getting Started Guide"/>
+
+  <link rel="stylesheet" type="text/css" href="../../../default.css" />
+
+<style type="text/css">
+  pre {
+    padding    : 0 0 0 0em;
+    margin     : 0em 0em 0em 0;
+
+    font-size  : 102%
+  }
+
+  body {
+    min-width: 48em;
+  }
+
+  h1 {
+    font-weight: bold;
+    font-size: 200%;
+    line-height: 1.2em;
+  }
+
+  h2 {
+    font-weight : bold;
+    font-size   : 150%;
+
+    padding-top : 0.8em;
+  }
+
+  h3 {
+    font-size   : 140%;
+    padding-top : 0.8em;
+  }
+
+  /* Adjust indentation for three levels. */
+  #container {
+    max-width: 48em;
+  }
+
+  #content {
+    padding: 0 0.1em 0 4em;
+    /*background-color: red;*/
+  }
+
+  #content h1 {
+    margin-left: -2.06em;
+  }
+
+  #content h2 {
+    margin-left: -1.33em;
+  }
+
+  /* Title page */
+
+  #titlepage {
+    padding: 2em 0 1em 0;
+    border-bottom: 1px solid black;
+  }
+
+  #titlepage .title {
+    font-weight: bold;
+    font-size: 200%;
+    text-align: center;
+  }
+
+  #titlepage #first-title {
+    padding: 1em 0 0.4em 0;
+  }
+
+  #titlepage #second-title {
+    padding: 0.4em 0 2em 0;
+  }
+
+  /* Lists */
+  ul.list li {
+    padding-top      : 0.3em;
+    padding-bottom   : 0.3em;
+  }
+
+  div.img {
+    text-align: center;
+    padding: 2em 0 2em 0;
+  }
+
+  /*  */
+  dl dt {
+    padding   : 0.8em 0 0 0;
+  }
+
+  /* Built-in table */
+  #builtin {
+    margin: 2em 0 2em 0;
+
+    border-collapse   : collapse;
+    border            : 1px solid;
+    border-color      : #000000;
+
+    font-size        : 11px;
+    line-height      : 14px;
+  }
+
+  #builtin th, #builtin td {
+    border: 1px solid;
+    padding           : 0.9em 0.9em 0.7em 0.9em;
+  }
+
+  #builtin th {
+    background : #cde8f6;
+  }
+
+  #builtin td {
+    text-align: left;
+  }
+
+  /* TOC */
+  table.toc {
+    border-style      : none;
+    border-collapse   : separate;
+    border-spacing    : 0;
+
+    margin            : 0.2em 0 0.2em 0;
+    padding           : 0 0 0 0;
+  }
+
+  table.toc tr {
+    padding           : 0 0 0 0;
+    margin            : 0 0 0 0;
+  }
+
+  table.toc * td, table.toc * th {
+    border-style      : none;
+    margin            : 0 0 0 0;
+    vertical-align    : top;
+  }
+
+  table.toc * th {
+    font-weight       : normal;
+    padding           : 0em 0.1em 0em 0;
+    text-align        : left;
+    white-space       : nowrap;
+  }
+
+  table.toc * table.toc th {
+    padding-left      : 1em;
+  }
+
+  table.toc * td {
+    padding           : 0em 0 0em 0.7em;
+    text-align        : left;
+  }
+</style>
+
+
+</head>
+
+<body>
+<div id="container">
+  <div id="content">
+
+  <div class="noprint">
+
+  <div id="titlepage">
+    <div class="title" id="first-title">C++/Tree Mapping</div>
+    <div class="title" id="second-title">Getting Started Guide</div>
+
+  <p>Copyright &copy; 2005-2010 CODE SYNTHESIS TOOLS CC</p>
+
+  <p>Permission is granted to copy, distribute and/or modify this
+     document under the terms of the
+     <a href="http://www.codesynthesis.com/licenses/fdl-1.2.txt">GNU Free
+     Documentation License, version 1.2</a>; with no Invariant Sections,
+     no Front-Cover Texts and no Back-Cover Texts.
+  </p>
+
+  <p>This document is available in the following formats:
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/guide/index.xhtml">XHTML</a>,
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/guide/cxx-tree-guide.pdf">PDF</a>, and
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/guide/cxx-tree-guide.ps">PostScript</a>.</p>
+
+  </div>
+
+  <h1>Table of Contents</h1>
+
+  <table class="toc">
+    <tr>
+      <th></th><td><a href="#0">Preface</a>
+        <table class="toc">
+          <tr><th></th><td><a href="#0.1">About This Document</a></td></tr>
+          <tr><th></th><td><a href="#0.2">More Information</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>1</th><td><a href="#1">Introduction</a>
+        <table class="toc">
+          <tr><th>1.1</th><td><a href="#1.1">Mapping Overview</a></td></tr>
+          <tr><th>1.2</th><td><a href="#1.2">Benefits</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>2</th><td><a href="#2">Hello World Example</a>
+        <table class="toc">
+          <tr><th>2.1</th><td><a href="#2.1">Writing XML Document and Schema</a></td></tr>
+          <tr><th>2.2</th><td><a href="#2.2">Translating Schema to C++</a></td></tr>
+          <tr><th>2.3</th><td><a href="#2.3">Implementing Application Logic</a></td></tr>
+          <tr><th>2.4</th><td><a href="#2.4">Compiling and Running</a></td></tr>
+	  <tr><th>2.5</th><td><a href="#2.5">Adding Serialization</a></td></tr>
+	  <tr><th>2.6</th><td><a href="#2.6">Selecting Naming Convention</a></td></tr>
+	  <tr><th>2.7</th><td><a href="#2.7">Generating Documentation</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>3</th><td><a href="#3">Overall Mapping Configuration</a>
+        <table class="toc">
+          <tr><th>3.1</th><td><a href="#3.1">Character Type and Encoding</a></td></tr>
+          <tr><th>3.2</th><td><a href="#3.2">Support for Polymorphism </a></td></tr>
+          <tr><th>3.3</th><td><a href="#3.3">Namespace Mapping</a></td></tr>
+          <tr><th>3.4</th><td><a href="#3.4">Thread Safety</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>4</th><td><a href="#4">Working with Object Models</a>
+        <table class="toc">
+          <tr><th>4.1</th><td><a href="#4.1">Attribute and Element Cardinalities</a></td></tr>
+          <tr><th>4.2</th><td><a href="#4.2">Accessing the Object Model</a></td></tr>
+          <tr><th>4.3</th><td><a href="#4.3">Modifying the Object Model</a></td></tr>
+          <tr><th>4.4</th><td><a href="#4.4">Creating the Object Model from Scratch</a></td></tr>
+	  <tr><th>4.5</th><td><a href="#4.5">Mapping for the Built-in XML Schema Types</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>5</th><td><a href="#5">Parsing</a>
+        <table class="toc">
+          <tr><th>5.1</th><td><a href="#5.1">XML Schema Validation and Searching</a></td></tr>
+          <tr><th>5.2</th><td><a href="#5.2">Error Handling</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>6</th><td><a href="#6">Serialization</a>
+        <table class="toc">
+          <tr><th>6.1</th><td><a href="#6.1">Namespace and Schema Information</a></td></tr>
+          <tr><th>6.2</th><td><a href="#6.2">Error Handling</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+  </table>
+  </div>
+
+  <h1><a name="0">Preface</a></h1>
+
+  <h2><a name="0.1">About This Document</a></h2>
+
+  <p>The goal of this document is to provide you with an understanding of
+     the C++/Tree programming model and allow you to efficiently evaluate
+     XSD against your project's technical requirements. As such, this
+     document is intended for C++ developers and software architects
+     who are looking for an XML processing solution. For a more in-depth
+     description of the C++/Tree mapping refer to the
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/">C++/Tree
+     Mapping User Manual</a>.</p>
+
+  <p>Prior experience with XML and C++ is required to understand this
+     document. Basic understanding of XML Schema is advantageous but
+     not expected or required.
+  </p>
+
+
+  <h2><a name="0.2">More Information</a></h2>
+
+  <p>Beyond this guide, you may also find the following sources of
+     information useful:</p>
+
+  <ul class="list">
+    <li><a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/">C++/Tree
+        Mapping User Manual</a></li>
+
+    <li><a href="http://wiki.codesynthesis.com/Tree/Customization_guide">C++/Tree
+        Mapping Customization Guide</a></li>
+
+    <li><a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/dbxml/">C++/Tree
+        Mapping and Berkeley DB XML Integration Guide</a></li>
+
+    <li><a href="http://wiki.codesynthesis.com/Tree/FAQ">C++/Tree
+        Mapping Frequently Asked Questions (FAQ)</a></li>
+
+    <li><a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+        Compiler Command Line Manual</a></li>
+
+    <li>The <code>examples/cxx/tree/</code> directory in the XSD
+        distribution contains a collection of examples and a README
+        file with an overview of each example.</li>
+
+    <li>The <code>README</code> file in the XSD distribution explains
+        how to compile the examples on various platforms.</li>
+
+    <li>The <a href="http://www.codesynthesis.com/mailman/listinfo/xsd-users">xsd-users</a>
+        mailing list is the place to ask technical questions about XSD and the C++/Parser mapping.
+        Furthermore, the <a href="http://www.codesynthesis.com/pipermail/xsd-users/">archives</a>
+        may already have answers to some of your questions.</li>
+
+  </ul>
+
+  <!-- Introduction -->
+
+  <h1><a name="1">1 Introduction</a></h1>
+
+  <p>Welcome to CodeSynthesis XSD and the C++/Tree mapping. XSD is a
+     cross-platform W3C XML Schema to C++ data binding compiler. C++/Tree
+     is a W3C XML Schema to C++ mapping that represents the data stored
+     in XML as a statically-typed, vocabulary-specific object model.
+  </p>
+
+  <h2><a name="1.1">1.1 Mapping Overview</a></h2>
+
+  <p>Based on a formal description of an XML vocabulary (schema), the
+     C++/Tree mapping produces a tree-like data structure suitable for
+     in-memory processing. The core of the mapping consists of C++
+     classes that constitute the object model and are derived from
+     types defined in XML Schema as well as XML parsing and
+     serialization code.</p>
+
+  <p>Besides the core features, C++/Tree provide a number of additional
+     mapping elements that can be useful in some applications. These
+     include serialization and extraction to/from formats others than
+     XML, such as unstructured text (useful for debugging) and binary
+     representations such as XDR and CDR for high-speed data processing,
+     integration with XML databases such as Berkeley DB XML, and automatic
+     documentation generation. The C++/Tree mapping also provides a wide
+     range of mechanisms for controlling and customizing the generated
+     code.</p>
+
+   <p>A typical application that uses C++/Tree for XML processing usually
+      performs the following three steps: it first reads (parses) an XML
+      document to an in-memory object model, it then performs some useful
+      computations on that object model which may involve modification
+      of the model, and finally it may write (serialize) the modified
+      object model back to XML.</p>
+
+  <p>The next chapter presents a simple application that performs these
+     three steps. The following chapters show how to use the C++/Tree
+     mapping in more detail.</p>
+
+  <h2><a name="1.2">1.2 Benefits</a></h2>
+
+  <p>Traditional XML access APIs such as Document Object Model (DOM)
+     or Simple API for XML (SAX) have a number of drawbacks that
+     make them less suitable for creating robust and maintainable
+     XML processing applications. These drawbacks include:
+  </p>
+
+  <ul class="list">
+    <li>Generic representation of XML in terms of elements, attributes,
+        and text forces an application developer to write a substantial
+        amount of bridging code that identifies and transforms pieces
+        of information encoded in XML to a representation more suitable
+        for consumption by the application logic.</li>
+
+    <li>String-based flow control defers error detection to runtime.
+        It also reduces code readability and maintainability.</li>
+
+    <li>Lack of type safety because the data is represented as text.</li>
+
+    <li>Resulting applications are hard to debug, change, and
+        maintain.</li>
+  </ul>
+
+  <p>In contrast, statically-typed, vocabulary-specific object model
+     produced by the C++/Tree mapping allows you to operate in your
+     domain terms instead of the generic elements, attributes, and
+     text. Static typing helps catch errors at compile-time rather
+     than at run-time. Automatic code generation frees you for more
+     interesting tasks (such as doing something useful with the
+     information stored in the XML documents) and minimizes the
+     effort needed to adapt your applications to changes in the
+     document structure. To summarize, the C++/Tree object model has
+     the following key advantages over generic XML access APIs:</p>
+
+  <ul class="list">
+    <li><b>Ease of use.</b> The generated code hides all the complexity
+        associated with parsing and serializing XML. This includes navigating
+        the structure and converting between the text representation and
+        data types suitable for manipulation by the application
+        logic.</li>
+
+    <li><b>Natural representation.</b> The object representation allows
+         you to access the XML data using your domain vocabulary instead
+         of generic elements, attributes, and text.</li>
+
+    <li><b>Concise code.</b> With the object representation the
+        application implementation is simpler and thus easier
+        to read and understand.</li>
+
+    <li><b>Safety.</b> The generated object model is statically
+        typed and uses functions instead of strings to access the
+        information. This helps catch programming errors at compile-time
+        rather than at runtime.</li>
+
+    <li><b>Maintainability.</b> Automatic code generation minimizes the
+        effort needed to adapt the application to changes in the
+        document structure. With static typing, the C++ compiler
+        can pin-point the places in the client code that need to be
+        changed.</li>
+
+    <li><b>Compatibility.</b> Sequences of elements are represented in
+        the object model as containers conforming to the standard C++
+        sequence requirements. This makes it possible to use standard
+        C++ algorithms on the object representation and frees you from
+        learning yet another container interface, as is the case with
+        DOM.</li>
+
+    <li><b>Efficiency.</b> If the application makes repetitive use
+        of the data extracted from XML, then the C++/Tree object model
+        is more efficient because the navigation is performed using
+        function calls rather than string comparisons and the XML
+        data is extracted only once. Furthermore, the runtime memory
+        usage is reduced due to more efficient data storage
+        (for instance, storing numeric data as integers instead of
+        strings) as well as the static knowledge of cardinality
+        constraints.</li>
+  </ul>
+
+
+  <!-- Hello World Parser -->
+
+
+  <h1><a name="2">2 Hello World Example</a></h1>
+
+  <p>In this chapter we will examine how to parse, access, modify, and
+     serialize a very simple XML document using the XSD-generated
+     C++/Tree object model. The code presented in this chapter is
+     based on the <code>hello</code> example which can be found in
+     the <code>examples/cxx/tree/</code> directory of the XSD
+     distribution.</p>
+
+  <h2><a name="2.1">2.1 Writing XML Document and Schema</a></h2>
+
+  <p>First, we need to get an idea about the structure
+     of the XML documents we are going to process. Our
+     <code>hello.xml</code>, for example, could look like this:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;hello>
+
+  &lt;greeting>Hello&lt;/greeting>
+
+  &lt;name>sun&lt;/name>
+  &lt;name>moon&lt;/name>
+  &lt;name>world&lt;/name>
+
+&lt;/hello>
+  </pre>
+
+  <p>Then we can write a description of the above XML in the
+     XML Schema language and save it into <code>hello.xsd</code>:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  &lt;xs:complexType name="hello_t">
+    &lt;xs:sequence>
+      &lt;xs:element name="greeting" type="xs:string"/>
+      &lt;xs:element name="name" type="xs:string" maxOccurs="unbounded"/>
+    &lt;/xs:sequence>
+  &lt;/xs:complexType>
+
+  &lt;xs:element name="hello" type="hello_t"/>
+
+&lt;/xs:schema>
+  </pre>
+
+  <p>Even if you are not familiar with XML Schema, it
+     should be easy to connect declarations in <code>hello.xsd</code>
+     to elements in <code>hello.xml</code>. The <code>hello_t</code> type
+     is defined as a sequence of the nested <code>greeting</code> and
+     <code>name</code> elements. Note that the term sequence in XML
+     Schema means that elements should appear in a particular order
+     as opposed to appearing multiple times. The <code>name</code>
+     element has its <code>maxOccurs</code> property set to
+     <code>unbounded</code> which means it can appear multiple times
+     in an XML document. Finally, the globally-defined <code>hello</code>
+     element prescribes the root element for our vocabulary. For an
+     easily-approachable introduction to XML Schema refer to
+     <a href="http://www.w3.org/TR/xmlschema-0/">XML Schema Part 0:
+     Primer</a>.</p>
+
+  <p>The above schema is a specification of our XML vocabulary; it tells
+     everybody what valid documents of our XML-based language should look
+     like. We can also update our <code>hello.xml</code> to include the
+     information about the schema so that XML parsers can validate
+     our document:</p>
+
+      <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;hello xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="hello.xsd">
+
+  &lt;greeting>Hello&lt;/greeting>
+
+  &lt;name>sun&lt;/name>
+  &lt;name>moon&lt;/name>
+  &lt;name>world&lt;/name>
+
+&lt;/hello>
+      </pre>
+
+
+  <p>The next step is to compile the schema to generate the object
+     model and parsing functions.</p>
+
+  <h2><a name="2.2">2.2 Translating Schema to C++</a></h2>
+
+  <p>Now we are ready to translate our <code>hello.xsd</code> to C++.
+     To do this we invoke the XSD compiler from a terminal (UNIX) or
+     a command prompt (Windows):
+  </p>
+
+  <pre class="terminal">
+$ xsd cxx-tree hello.xsd
+  </pre>
+
+  <p>The XSD compiler produces two C++ files: <code>hello.hxx</code> and
+     <code>hello.cxx</code>. The following code fragment is taken from
+     <code>hello.hxx</code>; it should give you an idea about what gets
+     generated:
+  </p>
+
+  <pre class="c++">
+class hello_t
+{
+public:
+  // greeting
+  //
+  typedef xml_schema::string greeting_type;
+
+  const greeting_type&amp;
+  greeting () const;
+
+  greeting_type&amp;
+  greeting ();
+
+  void
+  greeting (const greeting_type&amp; x);
+
+  // name
+  //
+  typedef xml_schema::string name_type;
+  typedef xsd::sequence&lt;name_type> name_sequence;
+  typedef name_sequence::iterator name_iterator;
+  typedef name_sequence::const_iterator name_const_iterator;
+
+  const name_sequence&amp;
+  name () const;
+
+  name_sequence&amp;
+  name ();
+
+  void
+  name (const name_sequence&amp; s);
+
+  // Constructor.
+  //
+  hello_t (const greeting_type&amp;);
+
+  ...
+
+};
+
+std::auto_ptr&lt;hello_t>
+hello (const std::string&amp; uri);
+
+std::auto_ptr&lt;hello_t>
+hello (std::istream&amp;);
+  </pre>
+
+  <p>The <code>hello_t</code> C++ class corresponds to the
+     <code>hello_t</code> XML Schema type. For each element
+     in this type a set of C++ type definitions as well as
+     accessor and modifier functions are generated inside the
+     <code>hello_t</code> class. Note that the type definitions
+     and member functions for the <code>greeting</code> and
+     <code>name</code> elements are different because of the
+     cardinality differences between these two elements
+     (<code>greeting</code> is a required single element and
+     <code>name</code> is a sequence of elements).</p>
+
+  <p>The <code>xml_schema::string</code> type used in the type
+     definitions is a C++ class provided by the XSD runtime
+     that corresponds to built-in XML Schema type
+     <code>string</code>. The <code>xml_schema::string</code>
+     is based on <code>std::string</code> and can be used as
+     such. Similarly, the <code>sequence</code> class template
+     that is used in the <code>name_sequence</code> type
+     definition is based on and has the same interface as
+     <code>std::vector</code>. The mapping between the built-in
+     XML Schema types and C++ types is described in more detail in
+     <a href="#4.5">Section 4.5, "Mapping for the Built-in XML Schema
+     Types"</a>. The <code>hello_t</code> class also includes a
+     constructor with an initializer for the required
+     <code>greeting</code> element as its argument.</p>
+
+  <p>The <code>hello</code> overloaded global functions correspond
+     to the <code>hello</code> global element in XML Schema. A
+     global element in XML Schema is a valid document root.
+     By default XSD generated a set of parsing functions for each
+     global element defined in XML Schema (this can be overridden
+     with the <code>--root-element-*</code> options). For more
+     information on parsing functions see <a href="#5">Chapter 5,
+     "Parsing"</a>.</p>
+
+  <h2><a name="2.3">2.3 Implementing Application Logic</a></h2>
+
+  <p>At this point we have all the parts we need to do something useful
+     with the information stored in our XML document:
+  </p>
+
+  <pre class="c++">
+#include &lt;iostream>
+#include "hello.hxx"
+
+using namespace std;
+
+int
+main (int argc, char* argv[])
+{
+  try
+  {
+    auto_ptr&lt;hello_t> h (hello (argv[1]));
+
+    for (hello_t::name_const_iterator i (h->name ().begin ());
+         i != h->name ().end ();
+         ++i)
+    {
+      cerr &lt;&lt; h->greeting () &lt;&lt; ", " &lt;&lt; *i &lt;&lt; "!" &lt;&lt; endl;
+    }
+  }
+  catch (const xml_schema::exception&amp; e)
+  {
+    cerr &lt;&lt; e &lt;&lt; endl;
+    return 1;
+  }
+}
+  </pre>
+
+  <p>The first part of our application calls one of the parsing
+     functions to parser an XML file specified in the command line.
+     We then use the returned object model to iterate over names
+     and print a greeting line for each of them. Finally, we
+     catch and print the <code>xml_schema::exception</code>
+     exception in case something goes wrong. This exception
+     is the root of the exception hierarchy used by the
+     XSD-generated code.
+  </p>
+
+
+  <h2><a name="2.4">2.4 Compiling and Running</a></h2>
+
+  <p>After saving our application from the previous section in
+     <code>driver.cxx</code>, we are ready to compile our first
+     program and run it on the test XML document. On a UNIX
+     system this can be done with the following commands:
+  </p>
+
+  <pre class="terminal">
+$ c++ -I.../libxsd -c driver.cxx hello.cxx
+$ c++ -o driver driver.o hello.o -lxerces-c
+$ ./driver hello.xml
+Hello, sun!
+Hello, moon!
+Hello, world!
+  </pre>
+
+  <p>Here <code>.../libxsd</code> represents the path to the
+     <code>libxsd</code> directory in the XSD distribution.
+     Note also that we are required to link our application
+     with the Xerces-C++ library because the generated code
+     uses it as the underlying XML parser.</p>
+
+  <h2><a name="2.5">2.5 Adding Serialization</a></h2>
+
+  <p>While parsing and accessing the XML data may be everything
+     you need, there are applications that require creating new
+     or modifying existing XML documents. By default XSD does
+     not produce serialization code. We will need to request
+     it with the <code>--generate-serialization</code> options:</p>
+
+  <pre class="terminal">
+$ xsd cxx-tree --generate-serialization hello.xsd
+  </pre>
+
+  <p>If we now examine the generated <code>hello.hxx</code> file,
+     we will find a set of overloaded serialization functions,
+     including the following version:</p>
+
+  <pre class="c++">
+void
+hello (std::ostream&amp;,
+       const hello_t&amp;,
+       const xml_schema::namespace_infomap&amp; =
+         xml_schema::namespace_infomap ());
+
+  </pre>
+
+  <p>Just like with parsing functions, XSD generates serialization
+     functions for each global element unless instructed otherwise
+     with one of the <code>--root-element-*</code> options. For more
+     information on serialization functions see <a href="#6">Chapter 6,
+     "Serialization"</a>.</p>
+
+  <p>We first examine an application that modifies an existing
+     object model and serializes it back to XML:</p>
+
+  <pre class="c++">
+#include &lt;iostream>
+#include "hello.hxx"
+
+using namespace std;
+
+int
+main (int argc, char* argv[])
+{
+  try
+  {
+    auto_ptr&lt;hello_t> h (hello (argv[1]));
+
+    // Change the greeting phrase.
+    //
+    h->greeting ("Hi");
+
+    // Add another entry to the name sequence.
+    //
+    h->name ().push_back ("mars");
+
+    // Serialize the modified object model to XML.
+    //
+    xml_schema::namespace_infomap map;
+    map[""].name = "";
+    map[""].schema = "hello.xsd";
+
+    hello (cout, *h, map);
+  }
+  catch (const xml_schema::exception&amp; e)
+  {
+    cerr &lt;&lt; e &lt;&lt; endl;
+    return 1;
+  }
+}
+  </pre>
+
+  <p>First, our application parses an XML document and obtains its
+     object model as in the previous example. Then it changes the
+     greeting string and adds another entry to the list of names.
+     Finally, it serializes the object model back to XML by calling
+     the serialization function.</p>
+
+  <p>The first argument we pass to the serialization function is
+     <code>cout</code> which results in the XML being written to
+     the standard output for us to inspect. We could have also
+     written the result to a file or memory buffer by creating an
+     instance of <code>std::ofstream</code> or <code>std::ostringstream</code>
+     and passing it instead of <code>cout</code>. The second argument is the
+     object model we want to serialize. The final argument is an optional
+     namespace information map for our vocabulary. It captures information
+     such as namespaces, namespace prefixes to which they should be mapped,
+     and schemas associated with these namespaces. If we don't provide
+     this argument then generic namespace prefixes (<code>p1</code>,
+     <code>p2</code>, etc.) will be automatically assigned to XML namespaces
+     and no schema information will be added to the resulting document
+     (see <a href="#6">Chapter 6, "Serialization"</a> for details).
+     In our case, the prefix (map key) and namespace name are empty
+     because our vocabulary does not use XML namespaces.</p>
+
+  <p>If we now compile and run this application we will see the
+     output as shown in the following listing:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;hello xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="hello.xsd">
+
+  &lt;greeting>Hi&lt;/greeting>
+
+  &lt;name>sun&lt;/name>
+  &lt;name>moon&lt;/name>
+  &lt;name>world&lt;/name>
+  &lt;name>mars&lt;/name>
+
+&lt;/hello>
+  </pre>
+
+  <p>We can also create and serialize an object model from scratch
+     as shown in the following example:</p>
+
+  <pre class="c++">
+#include &lt;iostream>
+#include &lt;fstream>
+#include "hello.hxx"
+
+using namespace std;
+
+int
+main (int argc, char* argv[])
+{
+  try
+  {
+    hello_t h ("Hi");
+
+    hello_t::name_sequence&amp; ns (h.name ());
+
+    ns.push_back ("Jane");
+    ns.push_back ("John");
+
+    // Serialize the object model to XML.
+    //
+    xml_schema::namespace_infomap map;
+    map[""].name = "";
+    map[""].schema = "hello.xsd";
+
+    std::ofstream ofs (argv[1]);
+    hello (ofs, h, map);
+  }
+  catch (const xml_schema::exception&amp; e)
+  {
+    cerr &lt;&lt; e &lt;&lt; endl;
+    return 1;
+  }
+}
+  </pre>
+
+  <p>In this example we used the generated constructor to create
+     an instance of type <code>hello_t</code>. To reduce typing,
+     we obtained a reference to the name sequence which we then
+     used to add a few names. The serialization part is identical
+     to the previous example except this time we are writing to
+     a file. If we compile and run this program, it produces the
+     following XML file:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;hello xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="hello.xsd">
+
+  &lt;greeting>Hi&lt;/greeting>
+
+  &lt;name>Jane&lt;/name>
+  &lt;name>John&lt;/name>
+
+&lt;/hello>
+  </pre>
+
+  <h2><a name="2.6">2.6 Selecting Naming Convention</a></h2>
+
+  <p>By default XSD uses the so-called K&amp;R (Kernighan and Ritchie)
+     identifier naming convention in the generated code. In this
+     convention both type and function names are in lower case and
+     words are separated by underscores. If your application code or
+     schemas use a different notation, you may want to change the
+     naming convention used in the generated code for consistency.
+     XSD supports a set of widely-used naming conventions
+     that you can select with the <code>--type-naming</code> and
+     <code>--function-naming</code> options. You can also further
+     refine one of the predefined conventions or create a completely
+     custom naming scheme by using the  <code>--*-regex</code> options.</p>
+
+  <p>As an example, let's assume that our "Hello World" application
+     uses the so-called upper-camel-case naming convention for types
+     (that is, each word in a type name is capitalized) and the K&amp;R
+     convention for function names. Since K&amp;R is the default
+     convention for both type and function names, we only need to
+     change the type naming scheme:</p>
+
+  <pre class="terminal">
+$ xsd cxx-tree --type-naming ucc hello.xsd
+  </pre>
+
+  <p>The <code>ucc</code> argument to the <code>--type-naming</code>
+     options stands for upper-camel-case. If we now examine the
+     generated <code>hello.hxx</code>, we will see the following
+     changes compared to the declarations shown in the previous
+     sections:</p>
+
+  <pre class="c++">
+class Hello_t
+{
+public:
+  // greeting
+  //
+  typedef xml_schema::String GreetingType;
+
+  const GreetingType&amp;
+  greeting () const;
+
+  GreetingType&amp;
+  greeting ();
+
+  void
+  greeting (const GreetingType&amp; x);
+
+  // name
+  //
+  typedef xml_schema::String NameType;
+  typedef xsd::sequence&lt;NameType> NameSequence;
+  typedef NameSequence::iterator NameIterator;
+  typedef NameSequence::const_iterator NameConstIterator;
+
+  const NameSequence&amp;
+  name () const;
+
+  NameSequence&amp;
+  name ();
+
+  void
+  name (const NameSequence&amp; s);
+
+  // Constructor.
+  //
+  Hello_t (const GreetingType&amp;);
+
+  ...
+
+};
+
+std::auto_ptr&lt;Hello_t>
+hello (const std::string&amp; uri);
+
+std::auto_ptr&lt;Hello_t>
+hello (std::istream&amp;);
+  </pre>
+
+  <p>Notice that the type names in the <code>xml_schema</code> namespace,
+     for example <code>xml_schema::String</code>, now also use the
+     upper-camel-case naming convention. The only thing that we may
+     be unhappy about in the above code is the <code>_t</code>
+     suffix in <code>Hello_t</code>. If we are not in a position
+     to change the schema, we can <em>touch-up</em> the <code>ucc</code>
+     convention with a custom translation rule using the
+     <code>--type-regex</code> option:</p>
+
+  <pre class="terminal">
+$ xsd cxx-tree --type-naming ucc --type-regex '/ (.+)_t/\u$1/' hello.xsd
+  </pre>
+
+  <p>This results in the following changes to the generated code:</p>
+
+  <pre class="c++">
+class Hello
+{
+public:
+  // greeting
+  //
+  typedef xml_schema::String GreetingType;
+
+  const GreetingType&amp;
+  greeting () const;
+
+  GreetingType&amp;
+  greeting ();
+
+  void
+  greeting (const GreetingType&amp; x);
+
+  // name
+  //
+  typedef xml_schema::String NameType;
+  typedef xsd::sequence&lt;NameType> NameSequence;
+  typedef NameSequence::iterator NameIterator;
+  typedef NameSequence::const_iterator NameConstIterator;
+
+  const NameSequence&amp;
+  name () const;
+
+  NameSequence&amp;
+  name ();
+
+  void
+  name (const NameSequence&amp; s);
+
+  // Constructor.
+  //
+  Hello (const GreetingType&amp;);
+
+  ...
+
+};
+
+std::auto_ptr&lt;Hello>
+hello (const std::string&amp; uri);
+
+std::auto_ptr&lt;Hello>
+hello (std::istream&amp;);
+  </pre>
+
+  <p>For more detailed information on the <code>--type-naming</code>,
+     <code>--function-naming</code>, <code>--type-regex</code>, and
+     other <code>--*-regex</code> options refer to the NAMING
+     CONVENTION section in the <a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+     Compiler Command Line Manual</a>.</p>
+
+  <h2><a name="2.7">2.7 Generating Documentation</a></h2>
+
+  <p>While our object model is quite simple, real-world vocabularies
+     can be quite complex with hundreds of types, elements, and
+     attributes. For such vocabularies figuring out which types
+     provide which member functions by studying the generated
+     source code or schemas can be a daunting task. To provide
+     application developers with a more accessible way of
+     understanding the generated object models, the XSD compiler
+     can be instructed to produce source code with documentation
+     comments in the Doxygen format. Then the source code can be
+     processed with the <a href="http://www.doxygen.org">Doxygen</a>
+     documentation system to extract this information and produce
+     documentation in various formats.
+  </p>
+
+  <p>In this section we will see how to generate documentation
+     for our "Hello World" vocabulary. To showcase the full power
+     of the XSD documentation facilities, we will first document
+     our schema. The XSD compiler will then transfer
+     this information from the schema to the generated code and
+     then to the object model documentation. Note that the
+     documentation in the schema is not required for XSD to
+     generate useful documentation. Below you will find
+     our <code>hello.xsd</code> with added documentation:</p>
+
+  <pre class="xml">
+&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  &lt;xs:complexType name="hello_t">
+
+    &lt;xs:annotation>
+      &lt;xs:documentation>
+        The hello_t type consists of a greeting phrase and a
+        collection of names to which this greeting applies.
+      &lt;/xs:documentation>
+    &lt;/xs:annotation>
+
+    &lt;xs:sequence>
+
+      &lt;xs:element name="greeting" type="xs:string">
+        &lt;xs:annotation>
+          &lt;xs:documentation>
+            The greeting element contains the greeting phrase
+            for this hello object.
+          &lt;/xs:documentation>
+        &lt;/xs:annotation>
+      &lt;/xs:element>
+
+      &lt;xs:element name="name" type="xs:string" maxOccurs="unbounded">
+        &lt;xs:annotation>
+          &lt;xs:documentation>
+            The name elements contains names to be greeted.
+          &lt;/xs:documentation>
+        &lt;/xs:annotation>
+      &lt;/xs:element>
+
+    &lt;/xs:sequence>
+  &lt;/xs:complexType>
+
+  &lt;xs:element name="hello" type="hello_t">
+    &lt;xs:annotation>
+      &lt;xs:documentation>
+        The hello element is a root of the Hello XML vocabulary.
+        Every conforming document should start with this element.
+      &lt;/xs:documentation>
+    &lt;/xs:annotation>
+  &lt;/xs:element>
+
+&lt;/xs:schema>
+  </pre>
+
+  <p>The first step in obtaining the documentation is to recompile
+     our schema with the <code>--generate-doxygen</code> option:</p>
+
+  <pre class="terminal">
+$ xsd cxx-tree --generate-serialization --generate-doxygen hello.xsd
+  </pre>
+
+  <p>Now the generated <code>hello.hxx</code> file contains comments
+     in the Doxygen format. The next step is to process this file
+     with the Doxygen documentation system. If your project does
+     not use Doxygen then you first need to create a configuration
+     file for your project:</p>
+
+  <pre class="terminal">
+$ doxygen -g hello.doxygen
+  </pre>
+
+  <p>You only need to perform this step once. Now we can generate
+     the documentation by executing the following command in the
+     directory with the generated source code:</p>
+
+  <pre class="terminal">
+$ doxygen hello.doxygen
+  </pre>
+
+  <p>While the generated documentation can be useful as is, we can
+     go one step further and link (using the Doxygen tags mechanism)
+     the documentation for our object model with the documentation
+     for the XSD runtime library which defines C++ classes for the
+     built-in XML Schema types. This way we can seamlessly browse
+     between documentation for the <code>hello_t</code> class which
+     is generated by the XSD compiler and the <code>xml_schema::string</code>
+     class which is defined in the XSD runtime library. The Doxygen
+     configuration file for the XSD runtime is provided with the XSD
+     distribution.</p>
+
+  <p>You can view the result of the steps described in this section
+     on the <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/hello/html/annotated.html">Hello
+     Example Documentation</a> page.</p>
+
+  <!-- Chapater 3 -->
+
+
+  <h1><a name="3">3 Overall Mapping Configuration</a></h1>
+
+  <p>The C++/Tree mapping has a number of configuration parameters that
+     determine the overall properties and behavior of the generated code.
+     Configuration parameters are specified with the XSD command line
+     options. This chapter describes configuration aspects that are most
+     commonly encountered by application developers. These include:
+     the character type that is used by the generated code, handling of
+     vocabularies that use XML Schema polymorphism, XML Schema to C++
+     namespace mapping, and thread safety. For more ways to configure
+     the generated code refer to the
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+     Compiler Command Line Manual</a>.
+  </p>
+
+  <h2><a name="3.1">3.1 Character Type and Encoding</a></h2>
+
+  <p>The C++/Tree mapping has built-in support for two character types:
+    <code>char</code> and <code>wchar_t</code>. You can select the
+    character type with the <code>--char-type</code> command line
+    option. The default character type is <code>char</code>. The
+    character type affects all string and string-based types that
+    are used in the mapping. These include the string-based built-in
+    XML Schema types, exception types, stream types, etc.</p>
+
+  <p>Another aspect of the mapping that depends on the character type
+     is character encoding. For the <code>char</code> character type
+     the default encoding is UTF-8. Other supported encodings are
+     ISO-8859-1, Xerces-C++ Local Code Page (LPC), as well as
+     custom encodings. You can select which encoding should be used
+     in the object model with the <code>--char-encoding</code> command
+     line option.</p>
+
+  <p>For the <code>wchar_t</code> character type the encoding is
+     automatically selected between UTF-16 and UTF-32/UCS-4 depending
+     on the size of the <code>wchar_t</code> type. On some platforms
+     (for example, Windows with Visual C++ and AIX with IBM XL C++)
+     <code>wchar_t</code> is 2 bytes long. For these platforms the
+     encoding is UTF-16. On other platforms <code>wchar_t</code> is 4 bytes
+     long and UTF-32/UCS-4 is used.</p>
+
+  <p>Note also that the character encoding that is used in the object model
+     is independent of the encodings used in input and output XML. In fact,
+     all three (object mode, input XML, and output XML) can have different
+     encodings.</p>
+
+  <h2><a name="3.2">3.2 Support for Polymorphism</a></h2>
+
+  <p>By default XSD generates non-polymorphic code. If your vocabulary
+     uses XML Schema polymorphism in the form of <code>xsi:type</code>
+     and/or substitution groups, then you will need to compile
+     your schemas with the <code>--generate-polymorphic</code> option
+     to produce polymorphism-aware code. For more information on
+     working with polymorphic object models, refer to
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#2.11">Section 2.11,
+     "Mapping for <code>xsi:type</code> and Substitution Groups"</a> in
+     the C++/Tree Mapping User Manual.</p>
+
+  <h2><a name="3.3">3.3 Namespace Mapping</a></h2>
+
+  <p>XSD maps XML namespaces specified in the <code>targetNamespace</code>
+     attribute in XML Schema to one or more nested C++ namespaces. By
+     default, a namespace URI is mapped to a sequence of C++ namespace
+     names by removing the protocol and host parts and splitting the
+     rest into a sequence of names with <code>'/'</code> as the name
+     separator.</p>
+
+  <p>The default mapping of namespace URIs to C++ namespaces
+     can be altered using the <code>--namespace-map</code> and
+     <code>--namespace-regex</code> compiler options. For example,
+     to map namespace URI <code>http://www.codesynthesis.com/my</code> to
+     C++ namespace <code>cs::my</code>, we can use the following option:</p>
+
+  <pre class="terminal">
+--namespace-map http://www.codesynthesis.com/my=cs::my
+  </pre>
+
+  <p>A vocabulary without a namespace is mapped to the global scope. This
+     also can be altered with the above options by using an empty name
+     for the XML namespace:</p>
+
+  <pre class="terminal">
+--namespace-map =cs
+  </pre>
+
+  <h2><a name="3.4">3.4 Thread Safety</a></h2>
+
+  <p>XSD-generated code is thread-safe in the sense that you can
+     use different instantiations of the object model in several
+     threads concurrently. This is possible due to the generated
+     code not relying on any writable global variables. If you need
+     to share the same object between several threads then you will
+     need to provide some form of synchronization. One approach would
+     be to use the generated code customization mechanisms to embed
+     synchronization primitives into the generated C++ classes. For more
+     information on generated code customization refer to the
+     <a href="http://wiki.codesynthesis.com/Tree/Customization_guide">C++/Tree
+     Mapping Customization Guide</a>.</p>
+
+  <p>If you also would like to call parsing and/or serialization
+     functions from several threads potentially concurrently, then
+     you will need to make sure the Xerces-C++ runtime is initialized
+     and terminated only once. The easiest way to do this is to
+     initialize/terminate Xerces-C++ from <code>main()</code> when
+     there are no threads yet/anymore:</p>
+
+  <pre class="c++">
+#include &lt;xercesc/util/PlatformUtils.hpp>
+
+int
+main ()
+{
+  xercesc::XMLPlatformUtils::Initialize ();
+
+  {
+    // Start/terminate threads and parse/serialize here.
+  }
+
+  xercesc::XMLPlatformUtils::Terminate ();
+}
+  </pre>
+
+  <p>Because you initialize the Xerces-C++ runtime yourself you should
+     also pass the <code>xml_schema::flags::dont_initialize</code> flag
+     to parsing and serialization functions. See <a href="#5">Chapter 5,
+     "Parsing"</a> and <a href="#6">Chapter 6, "Serialization"</a> for
+     more information.</p>
+
+
+  <!-- Chapater 4 -->
+
+
+  <h1><a name="4">4 Working with Object Models</a></h1>
+
+  <p>As we have seen in the previous chapters, the XSD compiler generates
+     a C++ class for each type defined in XML Schema. Together these classes
+     constitute an object model for an XML vocabulary. In this chapter we
+     will take a closer look at different elements that comprise an
+     object model class as well as how to create, access, and modify
+     object models.</p>
+
+  <p>In this and subsequent chapters we will use the following schema
+     that describes a collection of person records. We save it in
+     <code>people.xsd</code>:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  &lt;xs:simpleType name="gender_t">
+    &lt;xs:restriction base="xs:string">
+      &lt;xs:enumeration value="male"/>
+      &lt;xs:enumeration value="female"/>
+    &lt;/xs:restriction>
+  &lt;/xs:simpleType>
+
+  &lt;xs:complexType name="person_t">
+    &lt;xs:sequence>
+      &lt;xs:element name="first-name" type="xs:string"/>
+      &lt;xs:element name="middle-name" type="xs:string" minOccurs="0"/>
+      &lt;xs:element name="last-name" type="xs:string"/>
+      &lt;xs:element name="gender" type="gender_t"/>
+      &lt;xs:element name="age" type="xs:short"/>
+    &lt;/xs:sequence>
+    &lt;xs:attribute name="id" type="xs:unsignedInt" use="required"/>
+  &lt;/xs:complexType>
+
+  &lt;xs:complexType name="people_t">
+    &lt;xs:sequence>
+      &lt;xs:element name="person" type="person_t" maxOccurs="unbounded"/>
+    &lt;/xs:sequence>
+  &lt;/xs:complexType>
+
+  &lt;xs:element name="people" type="people_t"/>
+
+&lt;/xs:schema>
+  </pre>
+
+  <p>A sample XML instance to go along with this schema is saved
+     in <code>people.xml</code>:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;people xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="people.xsd">
+
+  &lt;person id="1">
+    &lt;first-name>John&lt;/first-name>
+    &lt;last-name>Doe&lt;/last-name>
+    &lt;gender>male&lt;/gender>
+    &lt;age>32&lt;/age>
+  &lt;/person>
+
+  &lt;person id="2">
+    &lt;first-name>Jane&lt;/first-name>
+    &lt;middle-name>Mary&lt;/middle-name>
+    &lt;last-name>Doe&lt;/last-name>
+    &lt;gender>female&lt;/gender>
+    &lt;age>28&lt;/age>
+  &lt;/person>
+
+&lt;/people>
+  </pre>
+
+  <p>Compiling <code>people.xsd</code> with the XSD compiler results
+     in three generated C++ classes: <code>gender_t</code>,
+     <code>person_t</code>, and <code>people_t</code>.
+     The <code>gender_t</code> class is modelled after the C++
+     <code>enum</code> type. Its definition is presented below:</p>
+
+  <pre class="c++">
+class gender_t: public xml_schema::string
+{
+public:
+  enum value
+  {
+    male,
+    female
+  };
+
+  gender_t (value);
+  gender_t (const xml_schema::string&amp;);
+
+  gender_t&amp;
+  operator= (value);
+
+  operator value () const;
+};
+  </pre>
+
+  <p>The following listing shows how we can use this type:</p>
+
+  <pre class="c++">
+gender_t m (gender_t::male);
+gender_t f ("female");
+
+if (m == "female" || f == gender_t::male)
+{
+  ...
+}
+
+switch (m)
+{
+case gender_t::male:
+  {
+    ...
+  }
+case gender_t::female:
+  {
+    ...
+  }
+}
+  </pre>
+
+  <p>The other two classes will be examined in detail in the subsequent
+     sections.</p>
+
+  <h2><a name="4.1">4.1 Attribute and Element Cardinalities</a></h2>
+
+  <p>As we have seen in the previous chapters, XSD generates a different
+     set of type definitions and member functions for elements with
+     different cardinalities. The C++/Tree mapping divides all the possible
+     element and attribute cardinalities into three cardinality classes:
+     <em>one</em>, <em>optional</em>, and <em>sequence</em>.</p>
+
+  <p>The <em>one</em> cardinality class covers all elements that should
+     occur exactly once as well as required attributes. In our
+     example, the <code>first-name</code>, <code>last-name</code>,
+     <code>gender</code>, and <code>age</code> elements as well as
+     the <code>id</code> attribute belong to this cardinality class.
+     The following code fragment shows type definitions as well as the
+     accessor and modifier functions that are generated for the
+     <code>gender</code> element in the <code>person_t</code> class:</p>
+
+  <pre class="c++">
+class person_t
+{
+  // gender
+  //
+  typedef gender_t gender_type;
+
+  const gender_type&amp;
+  gender () const;
+
+  gender_type&amp;
+  gender ();
+
+  void
+  gender (const gender_type&amp;);
+};
+  </pre>
+
+  <p>The <code>gender_type</code> type is an alias for the element's type.
+     The first two accessor functions return read-only (constant) and
+     read-write references to the element's value, respectively. The
+     modifier function sets the new value for the element.</p>
+
+  <p>The <em>optional</em> cardinality class covers all elements that
+     can occur zero or one time as well as optional attributes. In our
+     example, the <code>middle-name</code> element belongs to this
+     cardinality class. The following code fragment shows the type
+     definitions as well as the accessor and modifier functions that
+     are generated for this element in the <code>person_t</code> class:</p>
+
+  <pre class="c++">
+class person_t
+{
+  // middle-name
+  //
+  typedef xml_schema::string middle_name_type;
+  typedef xsd::optional&lt;middle_name_type> middle_name_optional;
+
+  const middle_name_optional&amp;
+  middle_name () const;
+
+  middle_name_optional&amp;
+  middle_name ();
+
+  void
+  middle_name (const middle_name_type&amp;);
+
+  void
+  middle_name (const middle_name_optional&amp;);
+};
+  </pre>
+
+  <p>As with the <code>gender</code> element, <code>middle_name_type</code>
+     is an alias for the element's type. The <code>middle_name_optional</code>
+     type is a container for the element's optional value. It can be queried
+     for the presence of the value using the <code>present()</code> function.
+     The value itself can be retrieved using the <code>get()</code>
+     accessor and set using the <code>set()</code> modifier. The container
+     can be reverted to the value not present state with the call to the
+     <code>reset()</code> function. The following example shows how we
+     can use this container:</p>
+
+  <pre class="c++">
+person_t::middle_name_optional n ("John");
+
+if (n.preset ())
+{
+  cout &lt;&lt; n.get () &lt;&lt; endl;
+}
+
+n.set ("Jane");
+n.reset ();
+  </pre>
+
+
+  <p>Unlike the <em>one</em> cardinality class, the accessor functions
+     for the <em>optional</em> class return read-only (constant) and
+     read-write references to the container instead of the element's
+     value directly. The modifier functions set the new value for the
+     element.</p>
+
+  <p>Finally, the <em>sequence</em> cardinality class covers all elements
+     that can occur more than once. In our example, the
+     <code>person</code> element in the <code>people_t</code> type
+     belongs to this cardinality class. The following code fragment shows
+     the type definitions as well as the accessor and modifier functions
+     that are generated for this element in the <code>people_t</code>
+     class:</p>
+
+  <pre class="c++">
+class people_t
+{
+  // person
+  //
+  typedef person_t person_type;
+  typedef xsd::sequence&lt;person_type> person_sequence;
+  typedef person_sequence::iterator person_iterator;
+  typedef person_sequence::const_iterator person_const_iterator;
+
+  const person_sequence&amp;
+  person () const;
+
+  person_sequence&amp;
+  person ();
+
+  void
+  person (const person_sequence&amp;);
+};
+  </pre>
+
+  <p>Identical to the other cardinality classes, <code>person_type</code>
+     is an alias for the element's type. The <code>person_sequence</code>
+     type is a sequence container for the element's values. It is based
+     on and has the same interface as <code>std::vector</code> and
+     therefore can be used in similar ways. The <code>person_iterator</code>
+     and <code>person_const_iterator</code> types are read-only
+     (constant) and read-write iterators for the <code>person_sequence</code>
+     container.</p>
+
+  <p>Similar to the <em>optional</em> cardinality class, the
+     accessor functions for the <em>sequence</em> class return
+     read-only (constant) and read-write references to the sequence
+     container. The modifier functions copies the entries from
+     the passed sequence.</p>
+
+  <p>For complex schemas with many levels of nested compositors
+     (<code>xs:choice</code> and <code>xs:sequence</code>) it can
+     be hard to deduce the cardinality class of a particular element.
+     The generated Doxygen documentation can greatly help with
+     this task. For each element and attribute the documentation
+     clearly identifies its cardinality class. Alternatively, you
+     can study the generated header files to find out the cardinality
+     class of a particular attribute or element. In the next sections
+     we will examine how to access and modify information stored in
+     an object model using accessor and modifier functions described
+     in this section.</p>
+
+
+  <h2><a name="4.2">4.2 Accessing the Object Model</a></h2>
+
+  <p>In this section we will learn how to get to the information
+     stored in the object model for our person records vocabulary.
+     The following application accesses and prints the contents
+     of the <code>people.xml</code> file:</p>
+
+  <pre class="c++">
+#include &lt;iostream>
+#include "people.hxx"
+
+using namespace std;
+
+int
+main ()
+{
+  auto_ptr&lt;people_t> ppl (people ("people.xml"));
+
+  // Iterate over individual person records.
+  //
+  people_t::person_sequence&amp; ps (ppl->person ());
+
+  for (people_t::person_iterator i (ps.begin ()); i != ps.end (); ++i)
+  {
+    person_t&amp; p (*i);
+
+    // Print names: first-name and last-name are required elements,
+    // middle-name is optional.
+    //
+    cout &lt;&lt; "name:   " &lt;&lt; p.first_name () &lt;&lt; " ";
+
+    if (p.middle_name ().present ())
+      cout &lt;&lt; p.middle_name ().get () &lt;&lt; " ";
+
+    cout &lt;&lt; p.last_name () &lt;&lt; endl;
+
+    // Print gender, age, and id which are all required.
+    //
+    cout &lt;&lt; "gender: " &lt;&lt; p.gender () &lt;&lt; endl
+         &lt;&lt; "age:    " &lt;&lt; p.age () &lt;&lt; endl
+         &lt;&lt; "id:     " &lt;&lt; p.id () &lt;&lt; endl
+         &lt;&lt; endl;
+  }
+}
+  </pre>
+
+  <p>This code shows common patterns of accessing elements and attributes
+     with different cardinality classes. For the sequence element
+     (<code>person</code> in <code>people_t</code>) we first obtain a
+     reference to the container and then iterate over individual
+     records. The values of elements and attributes with the
+     <em>one</em> cardinality class (<code>first-name</code>,
+     <code>last-name</code>, <code>gender</code>, <code>age</code>,
+     and <code>id</code>) can be obtained directly by calling the
+     corresponding accessor functions. For the optional element
+     <code>middle-name</code> we first check if the value is present
+     and only then call <code>get()</code> to retrieve it.</p>
+
+  <p>Note that when we want to reduce typing by creating a variable
+     representing a fragment of the object model that we are currently
+     working with (<code>ps</code> and <code>p</code> above), we obtain
+     a reference to that fragment instead of making a potentially
+     expensive copy. This is generally a good rule to follow when
+     creating high-performance applications.</p>
+
+  <p>If we run the above application on our sample
+     <code>people.xml</code>, the output looks as follows:</p>
+
+  <pre class="terminal">
+name:   John Doe
+gender: male
+age:    32
+id:     1
+
+name:   Jane Mary Doe
+gender: female
+age:    28
+id:     2
+  </pre>
+
+
+  <h2><a name="4.3">4.3 Modifying the Object Model</a></h2>
+
+  <p>In this section we will learn how to modify the information
+     stored in the object model for our person records vocabulary.
+     The following application changes the contents of the
+     <code>people.xml</code> file:</p>
+
+  <pre class="c++">
+#include &lt;iostream>
+#include "people.hxx"
+
+using namespace std;
+
+int
+main ()
+{
+  auto_ptr&lt;people_t> ppl (people ("people.xml"));
+
+  // Iterate over individual person records and increment
+  // the age.
+  //
+  people_t::person_sequence&amp; ps (ppl->person ());
+
+  for (people_t::person_iterator i (ps.begin ()); i != ps.end (); ++i)
+  {
+    // Alternative way: i->age ()++;
+    //
+    i->age (i->age () + 1);
+  }
+
+  // Add middle-name to the first record and remove it from
+  // the second.
+  //
+  person_t&amp; john (ps[0]);
+  person_t&amp; jane (ps[1]);
+
+  john.middle_name ("Mary");
+  jane.middle_name ().reset ();
+
+  // Add another John record.
+  //
+  ps.push_back (john);
+
+  // Serialize the modified object model to XML.
+  //
+  xml_schema::namespace_infomap map;
+  map[""].name = "";
+  map[""].schema = "people.xsd";
+
+  people (cout, *ppl, map);
+}
+  </pre>
+
+  <p>The first modification the above application performs is iterating
+     over person records and incrementing the age value. This code
+     fragment shows how to modify the value of a required attribute
+     or element. The next modification shows how to set a new value
+     for the optional <code>middle-name</code> element as well
+     as clear its value. Finally the example adds a copy of the
+     John Doe record to the <code>person</code> element sequence.</p>
+
+  <p>Note that in this case using references for the <code>ps</code>,
+     <code>john</code>, and <code>jane</code> variables is no longer
+     a performance improvement but a requirement for the application
+     to function correctly. If we hadn't used references, all our changes
+     would have been made on copies without affecting the object model.</p>
+
+  <p>If we run the above application on our sample <code>people.xml</code>,
+     the output looks as follows:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;people xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="people.xsd">
+
+  &lt;person id="1">
+    &lt;first-name>John&lt;/first-name>
+    &lt;middle-name>Mary&lt;/middle-name>
+    &lt;last-name>Doe&lt;/last-name>
+    &lt;gender>male&lt;/gender>
+    &lt;age>33&lt;/age>
+  &lt;/person>
+
+  &lt;person id="2">
+    &lt;first-name>Jane&lt;/first-name>
+    &lt;last-name>Doe&lt;/last-name>
+    &lt;gender>female&lt;/gender>
+    &lt;age>29&lt;/age>
+  &lt;/person>
+
+  &lt;person id="1">
+    &lt;first-name>John&lt;/first-name>
+    &lt;middle-name>Mary&lt;/middle-name>
+    &lt;last-name>Doe&lt;/last-name>
+    &lt;gender>male&lt;/gender>
+    &lt;age>33&lt;/age>
+  &lt;/person>
+
+&lt;/people>
+  </pre>
+
+
+  <h2><a name="4.4">4.4 Creating the Object Model from Scratch</a></h2>
+
+  <p>In this section we will learn how to create a new object model
+     for our person records vocabulary. The following application
+     recreates the content of the original <code>people.xml</code>
+     file:</p>
+
+  <pre class="c++">
+#include &lt;iostream>
+#include "people.hxx"
+
+using namespace std;
+
+int
+main ()
+{
+  people_t ppl;
+  people_t::person_sequence&amp; ps (ppl.person ());
+
+  // Add the John Doe record.
+  //
+  ps.push_back (
+    person_t ("John",         // first-name
+              "Doe",          // last-name
+              gender_t::male, // gender
+              32,             // age
+              1));
+
+  // Add the Jane Doe record.
+  //
+  ps.push_back (
+    person_t ("Jane",           // first-name
+              "Doe",            // last-name
+              gender_t::female, // gender
+              28,               // age
+              2));              // id
+
+  // Add middle name to the Jane Doe record.
+  //
+  person_t&amp; jane (ps.back ());
+  jane.middle_name ("Mary");
+
+  // Serialize the object model to XML.
+  //
+  xml_schema::namespace_infomap map;
+  map[""].name = "";
+  map[""].schema = "people.xsd";
+
+  people (cout, ppl, map);
+}
+  </pre>
+
+  <p>The only new part in the above application is the calls
+     to the <code>people_t</code> and <code>person_t</code>
+     constructors. As a general rule, for each C++ class
+     XSD generates a constructor with initializers
+     for each element and attribute belonging to the <em>one</em>
+     cardinality class. For our vocabulary, the following
+     constructors are generated:</p>
+
+  <pre class="c++">
+class person_t
+{
+  person_t (const first_name_type&amp;,
+            const last_name_type&amp;,
+            const gender_type&amp;,
+            const age_type&amp;,
+            const id_type&amp;);
+};
+
+class people_t
+{
+  people_t ();
+};
+  </pre>
+
+  <p>Note also that we set the <code>middle-name</code> element
+     on the Jane Doe record by obtaining a reference to that record
+     in the object model and setting the <code>middle-name</code>
+     value on it. This is a general rule that should be followed
+     in order to obtain the best performance: if possible,
+     direct modifications to the object model should be preferred
+     to modifications on temporaries with subsequent copying. The
+     following code fragment shows a semantically equivalent but
+     slightly slower version:</p>
+
+  <pre class="c++">
+// Add the Jane Doe record.
+//
+person_t jane ("Jane",           // first-name
+               "Doe",            // last-name
+               gender_t::female, // gender
+               28,               // age
+               2);               // id
+
+jane.middle_name ("Mary");
+
+ps.push_back (jane);
+  </pre>
+
+  <p>We can also go one step further to reduce copying and improve
+     the performance of our application by using the non-copying
+    <code>push_back()</code> function which assumes ownership
+     of the passed objects:</p>
+
+  <pre class="c++">
+// Add the John Doe record.
+//
+auto_ptr&lt;person_t> john_p (
+  new person_t ("John",           // first-name
+                "Doe",            // last-name
+                gender_t::male,   // gender
+                32,               // age
+                1));
+ps.push_back (john_p); // assumes ownership
+
+// Add the Jane Doe record.
+//
+auto_ptr&lt;person_t> jane_p (
+  new person_t ("Jane",           // first-name
+                "Doe",            // last-name
+                gender_t::female, // gender
+                28,               // age
+                2));              // id
+ps.push_back (jane_p); // assumes ownership
+  </pre>
+
+  <p>For more information on the non-copying modifier functions refer to
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#2.8">Section
+     2.8, "Mapping for Local Elements and Attributes"</a> in the C++/Tree Mapping
+     User Manual. The above application produces the following output:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0" ?>
+&lt;people xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="people.xsd">
+
+  &lt;person id="1">
+    &lt;first-name>John&lt;/first-name>
+    &lt;last-name>Doe&lt;/last-name>
+    &lt;gender>male&lt;/gender>
+    &lt;age>32&lt;/age>
+  &lt;/person>
+
+  &lt;person id="2">
+    &lt;first-name>Jane&lt;/first-name>
+    &lt;middle-name>Mary&lt;/middle-name>
+    &lt;last-name>Doe&lt;/last-name>
+    &lt;gender>female&lt;/gender>
+    &lt;age>28&lt;/age>
+  &lt;/person>
+
+&lt;/people>
+  </pre>
+
+  <h2><a name="4.5">4.5 Mapping for the Built-in XML Schema Types</a></h2>
+
+  <p>Our person record vocabulary uses several built-in XML Schema
+     types: <code>string</code>, <code>short</code>, and
+     <code>unsignedInt</code>. Until now we haven't talked about
+     the mapping of built-in XML Schema types to C++ types and how
+     to work with them. This section provides an overview
+     of the built-in types. For more detailed information refer
+     to <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#2.5">Section
+     2.5, "Mapping for Built-in Data Types"</a> in the C++/Tree Mapping
+     User Manual.</p>
+
+  <p>In XML Schema, built-in types are defined in the XML Schema namespace.
+     By default, the C++/Tree mapping maps this namespace to C++
+     namespace <code>xml_schema</code> (this mapping can be altered
+     with the <code>--namespace-map</code> option). The following table
+     summarizes the mapping of XML Schema built-in types to C++ types:</p>
+
+  <!-- border="1" is necessary for html2ps -->
+  <table id="builtin" border="1">
+    <tr>
+      <th>XML Schema type</th>
+      <th>Alias in the <code>xml_schema</code> namespace</th>
+      <th>C++ type</th>
+    </tr>
+
+    <tr>
+      <th colspan="3">fixed-length integral types</th>
+    </tr>
+    <!-- 8-bit -->
+    <tr>
+      <td><code>byte</code></td>
+      <td><code>byte</code></td>
+      <td><code>signed&nbsp;char</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedByte</code></td>
+      <td><code>unsigned_byte</code></td>
+      <td><code>unsigned&nbsp;char</code></td>
+    </tr>
+
+    <!-- 16-bit -->
+    <tr>
+      <td><code>short</code></td>
+      <td><code>short_</code></td>
+      <td><code>short</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedShort</code></td>
+      <td><code>unsigned_short</code></td>
+      <td><code>unsigned&nbsp;short</code></td>
+    </tr>
+
+    <!-- 32-bit -->
+    <tr>
+      <td><code>int</code></td>
+      <td><code>int_</code></td>
+      <td><code>int</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedInt</code></td>
+      <td><code>unsigned_int</code></td>
+      <td><code>unsigned&nbsp;int</code></td>
+    </tr>
+
+    <!-- 64-bit -->
+    <tr>
+      <td><code>long</code></td>
+      <td><code>long_</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedLong</code></td>
+      <td><code>unsigned_long</code></td>
+      <td><code>unsigned&nbsp;long&nbsp;long</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">arbitrary-length integral types</th>
+    </tr>
+    <tr>
+      <td><code>integer</code></td>
+      <td><code>integer</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>nonPositiveInteger</code></td>
+      <td><code>non_positive_integer</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>nonNegativeInteger</code></td>
+      <td><code>non_negative_integer</code></td>
+      <td><code>unsigned long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>positiveInteger</code></td>
+      <td><code>positive_integer</code></td>
+      <td><code>unsigned long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>negativeInteger</code></td>
+      <td><code>negative_integer</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">boolean types</th>
+    </tr>
+    <tr>
+      <td><code>boolean</code></td>
+      <td><code>boolean</code></td>
+      <td><code>bool</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">fixed-precision floating-point types</th>
+    </tr>
+    <tr>
+      <td><code>float</code></td>
+      <td><code>float_</code></td>
+      <td><code>float</code></td>
+    </tr>
+    <tr>
+      <td><code>double</code></td>
+      <td><code>double_</code></td>
+      <td><code>double</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">arbitrary-precision floating-point types</th>
+    </tr>
+    <tr>
+      <td><code>decimal</code></td>
+      <td><code>decimal</code></td>
+      <td><code>double</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">string types</th>
+    </tr>
+    <tr>
+      <td><code>string</code></td>
+      <td><code>string</code></td>
+      <td>type derived from <code>std::basic_string</code></td>
+    </tr>
+    <tr>
+      <td><code>normalizedString</code></td>
+      <td><code>normalized_string</code></td>
+      <td>type derived from <code>string</code></td>
+    </tr>
+    <tr>
+      <td><code>token</code></td>
+      <td><code>token</code></td>
+      <td>type&nbsp;derived&nbsp;from&nbsp;<code>normalized_string</code></td>
+    </tr>
+    <tr>
+      <td><code>Name</code></td>
+      <td><code>name</code></td>
+      <td>type derived from <code>token</code></td>
+    </tr>
+    <tr>
+      <td><code>NMTOKEN</code></td>
+      <td><code>nmtoken</code></td>
+      <td>type derived from <code>token</code></td>
+    </tr>
+    <tr>
+      <td><code>NMTOKENS</code></td>
+      <td><code>nmtokens</code></td>
+      <td>type derived from <code>sequence&lt;nmtoken></code></td>
+    </tr>
+    <tr>
+      <td><code>NCName</code></td>
+      <td><code>ncname</code></td>
+      <td>type derived from <code>name</code></td>
+    </tr>
+    <tr>
+      <td><code>language</code></td>
+      <td><code>language</code></td>
+      <td>type derived from <code>token</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">qualified name</th>
+    </tr>
+    <tr>
+      <td><code>QName</code></td>
+      <td><code>qname</code></td>
+      <td><code>xml_schema::qname</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">ID/IDREF types</th>
+    </tr>
+    <tr>
+      <td><code>ID</code></td>
+      <td><code>id</code></td>
+      <td>type derived from <code>ncname</code></td>
+    </tr>
+    <tr>
+      <td><code>IDREF</code></td>
+      <td><code>idref</code></td>
+      <td>type derived from <code>ncname</code></td>
+    </tr>
+    <tr>
+      <td><code>IDREFS</code></td>
+      <td><code>idrefs</code></td>
+      <td>type derived from <code>sequence&lt;idref></code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">URI types</th>
+    </tr>
+    <tr>
+      <td><code>anyURI</code></td>
+      <td><code>uri</code></td>
+      <td>type derived from <code>std::basic_string</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">binary types</th>
+    </tr>
+    <tr>
+      <td><code>base64Binary</code></td>
+      <td><code>base64_binary</code></td>
+      <td><code>xml_schema::base64_binary</code></td>
+    </tr>
+    <tr>
+      <td><code>hexBinary</code></td>
+      <td><code>hex_binary</code></td>
+      <td><code>xml_schema::hex_binary</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">date/time types</th>
+    </tr>
+    <tr>
+      <td><code>date</code></td>
+      <td><code>date</code></td>
+      <td><code>xml_schema::date</code></td>
+    </tr>
+    <tr>
+      <td><code>dateTime</code></td>
+      <td><code>date_time</code></td>
+      <td><code>xml_schema::date_time</code></td>
+    </tr>
+    <tr>
+      <td><code>duration</code></td>
+      <td><code>duration</code></td>
+      <td><code>xml_schema::duration</code></td>
+    </tr>
+    <tr>
+      <td><code>gDay</code></td>
+      <td><code>gday</code></td>
+      <td><code>xml_schema::gday</code></td>
+    </tr>
+    <tr>
+      <td><code>gMonth</code></td>
+      <td><code>gmonth</code></td>
+      <td><code>xml_schema::gmonth</code></td>
+    </tr>
+    <tr>
+      <td><code>gMonthDay</code></td>
+      <td><code>gmonth_day</code></td>
+      <td><code>xml_schema::gmonth_day</code></td>
+    </tr>
+    <tr>
+      <td><code>gYear</code></td>
+      <td><code>gyear</code></td>
+      <td><code>xml_schema::gyear</code></td>
+    </tr>
+    <tr>
+      <td><code>gYearMonth</code></td>
+      <td><code>gyear_month</code></td>
+      <td><code>xml_schema::gyear_month</code></td>
+    </tr>
+    <tr>
+      <td><code>time</code></td>
+      <td><code>time</code></td>
+      <td><code>xml_schema::time</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">entity types</th>
+    </tr>
+    <tr>
+      <td><code>ENTITY</code></td>
+      <td><code>entity</code></td>
+      <td>type derived from <code>name</code></td>
+    </tr>
+    <tr>
+      <td><code>ENTITIES</code></td>
+      <td><code>entities</code></td>
+      <td>type derived from <code>sequence&lt;entity></code></td>
+    </tr>
+  </table>
+
+  <p>As you can see from the table above a number of built-in
+     XML Schema types are mapped to fundamental C++ types such
+     as <code>int</code> or <code>bool</code>. All string-based
+     XML Schema types are mapped to C++ types that are derived
+     from either <code>std::string</code> or
+     <code>std::wstring</code>, depending on the character
+     type selected. For access and modification purposes these
+     types can be treated as <code>std::string</code>. A number
+     of built-in types, such as <code>qname</code>, the binary
+     types, and the date/time types do not have suitable
+     fundamental or standard C++ types to map to. As a result,
+     these types are implemented from scratch in the XSD runtime.
+     For more information on their interfaces refer to
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#2.5">Section
+     2.5, "Mapping for Built-in Data Types"</a> in the C++/Tree Mapping
+     User Manual.</p>
+
+
+  <!-- Chapater 5 -->
+
+
+  <h1><a name="5">5 Parsing</a></h1>
+
+  <p>We have already seen how to parse XML to an object model in this guide
+     before. In this chapter we will discuss the parsing topic in more
+     detail.</p>
+
+  <p>By default, the C++/Tree mapping provides a total of 14 overloaded
+     parsing functions. They differ in the input methods used to
+     read XML as well as the error reporting mechanisms. It is also possible
+     to generate types for root elements instead of parsing and serialization
+     functions. This may be useful if your XML vocabulary has multiple
+     root elements. For more information on element types refer to
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#2.9">Section
+     2.9, "Mapping for Global Elements"</a> in the C++/Tree Mapping User
+     Manual.</p>
+
+
+  <p>In this section we will discuss the most commonly used versions of
+     the parsing functions. For a comprehensive description of parsing
+     refer to <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#3">Chapter
+     3, "Parsing"</a> in the C++/Tree Mapping User Manual. For the <code>people</code>
+     global element from our person record vocabulary, we will concentrate
+     on the following three parsing functions:</p>
+
+  <pre class="c++">
+std::auto_ptr&lt;people_t>
+people (const std::string&amp; uri,
+	xml_schema::flags f = 0,
+	const xml_schema::properties&amp; p = xml_schema::properties ());
+
+std::auto_ptr&lt;people_t>
+people (std::istream&amp; is,
+        xml_schema::flags f = 0,
+        const xml_schema::properties&amp; p = xml_schema::properties ());
+
+std::auto_ptr&lt;people_t>
+people (std::istream&amp; is,
+        const std::string&amp; resource_id,
+        xml_schema::flags f = 0,
+        const xml_schema::properties&amp; p = ::xml_schema::properties ());
+  </pre>
+
+  <p>The first function parses a local file or a URI. We have already
+     used this parsing function in the previous chapters. The second
+     and third functions read XML from a standard input stream. The
+     last function also requires a resource id. This id is used to
+     identify the XML document being parser in diagnostics  messages
+     as well as to resolve relative paths to other documents (for example,
+     schemas) that might be referenced from the XML document.</p>
+
+  <p>The last two arguments to all three parsing functions are parsing
+     flags and properties. The flags argument provides a number of ways
+     to fine-tune the parsing process. The properties argument allows
+     to pass additional information to the parsing functions. We will
+     use these two arguments in <a href="#5.1">Section 5.1, "XML Schema
+     Validation and Searching"</a> below. The following example shows
+     how we can use the above parsing functions:</p>
+
+  <pre class="c++">
+using std::auto_ptr;
+
+// Parse a local file or URI.
+//
+auto_ptr&lt;people_t> p1 (people ("people.xml"));
+auto_ptr&lt;people_t> p2 (people ("http://example.com/people.xml"));
+
+// Parse a local file via ifstream.
+//
+std::ifstream ifs ("people.xml");
+auto_ptr&lt;people_t> p3 (people (ifs, "people.xml"));
+
+// Parse an XML string.
+//
+std::string str ("..."); // XML in a string.
+std::istringstream iss (str);
+auto_ptr&lt;people_t> p4 (people (iss));
+  </pre>
+
+
+  <h2><a name="5.1">5.1 XML Schema Validation and Searching</a></h2>
+
+  <p>The C++/Tree mapping relies on the underlying Xerces-C++ XML
+     parser for full XML document validation. The XML Schema
+     validation is enabled by default and can be disabled by
+     passing the <code>xml_schema::flags::dont_validate</code>
+     flag to the parsing functions, for example:</p>
+
+  <pre class="c++">
+auto_ptr&lt;people_t> p (
+  people ("people.xml", xml_schema::flags::dont_validate));
+  </pre>
+
+  <p>Even when XML Schema validation is disabled, the generated
+     code still performs a number of checks to prevent
+     construction of an inconsistent object model (for example, an
+     object model with missing required attributes or elements).</p>
+
+  <p>When XML Schema validation is enabled, the XML parser needs
+     to locate a schema to validate against. There are several
+     methods to provide the schema location information to the
+     parser. The easiest and most commonly used method is to
+     specify schema locations in the XML document itself
+     with the <code>schemaLocation</code> or
+     <code>noNamespaceSchemaLocation</code> attributes, for example:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0" ?>
+&lt;people xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="people.xsd"
+        xsi:schemaLocation="http://www.w3.org/XML/1998/namespace xml.xsd">
+  </pre>
+
+  <p>As you might have noticed, we used this method in all the sample XML
+     documents presented in this guide up until now. Note that the
+     schema locations specified with these two attributes are relative
+     to the document's path unless they are absolute URIs (that is
+     start with <code>http://</code>, <code>file://</code>, etc.).
+     In particular, if you specify just file names as your schema
+     locations, as we did above, then the schemas should reside in
+     the same directory as the XML document itself.</p>
+
+  <p>Another method of providing the schema location information
+     is via the <code>xml_schema::properties</code> argument, as
+     shown in the following example:</p>
+
+  <pre class="c++">
+xml_schema::properties props;
+props.no_namespace_schema_location ("people.xsd");
+props.schema_location ("http://www.w3.org/XML/1998/namespace", "xml.xsd");
+
+auto_ptr&lt;people_t> p (people ("people.xml", 0, props));
+  </pre>
+
+  <p>The schema locations provided with this method overrides
+     those specified in the XML document. As with the previous
+     method, the schema locations specified this way are
+     relative to the document's path unless they are absolute URIs.
+     In particular, if you want to use local schemas that are
+     not related to the document being parsed, then you will
+     need to use the <code>file://</code> URI. The following
+     example shows how to use schemas that reside in the current
+     working directory:</p>
+
+  <pre class="c++">
+#include &lt;unistd.h> // getcwd
+#include &lt;limits.h> // PATH_MAX
+
+char cwd[PATH_MAX];
+if (getcwd (cwd, PATH_MAX) == 0)
+{
+  // Buffer too small?
+}
+
+xml_schema::properties props;
+
+props.no_namespace_schema_location (
+  "file:///" + std::string (cwd) + "people.xsd");
+
+props.schema_location (
+  "http://www.w3.org/XML/1998/namespace",
+  "file:///" + std::string (cwd) + "xml.xsd");
+
+auto_ptr&lt;people_t> p (people ("people.xml", 0, props));
+  </pre>
+
+  <p>A third method is the most useful if you are planning to parse
+     several XML documents of the same vocabulary. In that case
+     it may be beneficial to pre-parse and cache the schemas in
+     the XML parser which can then be used to parse all documents
+     without re-parsing the schemas. For more information on
+     this method refer to the <code>caching</code> example in the
+     <code>examples/cxx/tree/</code> directory of the XSD
+     distribution. It is also possible to convert the schemas into
+     a pre-compiled binary representation and embed this  representation
+     directly into the application executable. With this approach your
+     application can perform XML Schema validation without depending on
+     any external schema files. For more information on how to achieve
+     this refer to the <code>embedded</code> example in the
+     <code>examples/cxx/tree/</code> directory of the XSD distribution.</p>
+
+  <p>When the XML parser cannot locate a schema for the
+     XML document, the validation fails and XML document
+     elements and attributes for which schema definitions could
+     not be located are reported in the diagnostics. For
+     example, if we remove the <code>noNamespaceSchemaLocation</code>
+     attribute in <code>people.xml</code> from the previous chapter,
+     then we will get the following diagnostics if we try to parse
+     this file with validation enabled:</p>
+
+  <pre class="terminal">
+people.xml:2:63 error: no declaration found for element 'people'
+people.xml:4:18 error: no declaration found for element 'person'
+people.xml:4:18 error: attribute 'id' is not declared for element 'person'
+people.xml:5:17 error: no declaration found for element 'first-name'
+people.xml:6:18 error: no declaration found for element 'middle-name'
+people.xml:7:16 error: no declaration found for element 'last-name'
+people.xml:8:13 error: no declaration found for element 'gender'
+people.xml:9:10 error: no declaration found for element 'age'
+  </pre>
+
+  <h2><a name="5.2">5.2 Error Handling</a></h2>
+
+  <p>The parsing functions offer a number of ways to handle error conditions
+     with the C++ exceptions being the most commonly used mechanism. All
+     C++/Tree exceptions derive from common base <code>xml_schema::exception</code>
+     which in turn derives from <code>std::exception</code>. The easiest
+     way to uniformly handle all possible C++/Tree exceptions and print
+     detailed information about the error is to catch and print
+     <code>xml_schema::exception</code>, as shown in the following
+     example:</p>
+
+  <pre class="c++">
+try
+{
+  auto_ptr&lt;people_t> p (people ("people.xml"));
+}
+catch (const xml_schema::exception&amp; e)
+{
+  cerr &lt;&lt; e &lt;&lt; endl;
+}
+  </pre>
+
+  <p>Each individual C++/Tree exception also allows you to obtain
+     error details programmatically. For example, the
+     <code>xml_schema::parsing</code> exception is thrown when
+     the XML parsing and validation in the underlying XML parser
+     fails. It encapsulates various diagnostics information
+     such as the file name, line and column numbers, as well as the
+     error or warning message for each entry. For more information
+     about this and other exceptions that can be thrown during
+     parsing, refer to
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#3.3">Section
+     3.3, "Error Handling"</a> in the C++/Tree Mapping
+     User Manual.</p>
+
+  <p>Note that if you are parsing <code>std::istream</code> on which
+     exceptions are not enabled, then you will need to check the
+     stream state after the call to the parsing function in order
+     to detect any possible stream failures, for example:</p>
+
+  <pre class="c++">
+std::ifstream ifs ("people.xml");
+
+if (ifs.fail ())
+{
+  cerr &lt;&lt; "people.xml: unable to open" &lt;&lt; endl;
+  return 1;
+}
+
+auto_ptr&lt;people_t> p (people (ifs, "people.xml"));
+
+if (ifs.fail ())
+{
+  cerr &lt;&lt; "people.xml: read error" &lt;&lt; endl;
+  return 1;
+}
+  </pre>
+
+  <p>The above example can be rewritten to use exceptions as
+     shown below:</p>
+
+  <pre class="c++">
+try
+{
+  std::ifstream ifs;
+  ifs.exceptions (std::ifstream::badbit | std::ifstream::failbit);
+  ifs.open ("people.xml");
+
+  auto_ptr&lt;people_t> p (people (ifs, "people.xml"));
+}
+catch (const std::ifstream::failure&amp;)
+{
+  cerr &lt;&lt; "people.xml: unable to open or read error" &lt;&lt; endl;
+  return 1;
+}
+  </pre>
+
+
+  <!-- Chapater 6 -->
+
+
+  <h1><a name="6">6 Serialization</a></h1>
+
+  <p>We have already seen how to serialize an object model back to XML
+     in this guide before. In this chapter we will discuss the
+     serialization topic in more detail.</p>
+
+  <p>By default, the C++/Tree mapping provides a total of 8 overloaded
+     serialization functions. They differ in the output methods used to write
+     XML as well as the error reporting mechanisms. It is also possible to
+     generate types for root elements instead of parsing and serialization
+     functions. This may be useful if your XML vocabulary has multiple
+     root elements. For more information on element types refer to
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#2.9">Section
+     2.9, "Mapping for Global Elements"</a> in the C++/Tree Mapping User
+     Manual.</p>
+
+
+  <p>In this section we will discuss the most commonly
+     used version of serialization functions. For a comprehensive description
+     of serialization refer to
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#4">Chapter
+     4, "Serialization"</a> in the C++/Tree Mapping User Manual. For the
+     <code>people</code> global element from our person record vocabulary,
+     we will concentrate on the following serialization function:</p>
+
+  <pre class="c++">
+void
+people (std::ostream&amp; os,
+        const people_t&amp; x,
+        const xml_schema::namespace_infomap&amp; map =
+          xml_schema::namespace_infomap (),
+        const std::string&amp; encoding = "UTF-8",
+        xml_schema::flags f = 0);
+  </pre>
+
+  <p>This function serializes the object model passed as the second
+     argument to the standard output stream passed as the first
+     argument. The third argument is a namespace information map
+     which we will discuss in more detail in the next section.
+     The fourth argument is a character encoding that the resulting
+     XML document should be in. Possible valid values for this
+     argument are "US-ASCII", "ISO8859-1", "UTF-8", "UTF-16BE",
+     "UTF-16LE", "UCS-4BE", and "UCS-4LE". Finally, the flags
+     argument allows fine-tuning of the serialization process.
+     The following example shows how we can use the above serialization
+     function:</p>
+
+  <pre class="c++">
+people_t&amp; p = ...
+
+xml_schema::namespace_infomap map;
+map[""].schema = "people.xsd";
+
+// Serialize to stdout.
+//
+people (std::cout, p, map);
+
+// Serialize to a file.
+//
+std::ofstream ofs ("people.xml");
+people (ofs, p, map);
+
+// Serialize to a string.
+//
+std::ostringstream oss;
+people (oss, p, map);
+std::string xml (oss.str ());
+  </pre>
+
+
+  <h2><a name="6.1">6.1 Namespace and Schema Information</a></h2>
+
+  <p>While XML serialization can be done just from the object
+     model alone, it is often desirable to assign meaningful
+     prefixes to XML namespaces used in the vocabulary as
+     well as to provide the schema location information.
+     This is accomplished by passing the namespace information
+     map to the serialization function. The key in this map is
+     a namespace prefix that should be assigned to an XML namespace
+     specified in the <code>name</code> variable of the
+     map value. You can also assign an optional schema location for
+     this namespace in the <code>schema</code> variable. Based
+     on each key-value entry in this map, the serialization
+     function adds two attributes to the resulting XML document:
+     the namespace-prefix mapping attribute and schema location
+     attribute. The empty prefix indicates that the namespace
+     should be mapped without a prefix. For example, the following
+     map:</p>
+
+  <pre class="c++">
+xml_schema::namespace_infomap map;
+
+map[""].name = "http://www.example.com/example";
+map[""].schema = "example.xsd";
+
+map["x"].name = "http://www.w3.org/XML/1998/namespace";
+map["x"].schema = "xml.xsd";
+  </pre>
+
+  <p>Results in the following XML document:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0" ?>
+&lt;example
+  xmlns="http://www.example.com/example"
+  xmlns:x="http://www.w3.org/XML/1998/namespace"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.example.com/example example.xsd
+                      http://www.w3.org/XML/1998/namespace xml.xsd">
+  </pre>
+
+  <p>The empty namespace indicates that the vocabulary has no target
+     namespace. For example, the following map results in only the
+     <code>noNamespaceSchemaLocation</code> attribute being added:</p>
+
+  <pre class="c++">
+xml_schema::namespace_infomap map;
+
+map[""].name = "";
+map[""].schema = "example.xsd";
+  </pre>
+
+  <h2><a name="6.2">6.2 Error Handling</a></h2>
+
+  <p>Similar to the parsing functions, the serialization functions offer a
+     number of ways to handle error conditions with the C++ exceptions being
+     the most commonly used mechanisms. As with parsing, the easiest way to
+     uniformly handle all possible serialization exceptions and print
+     detailed information about the error is to catch and print
+     <code>xml_schema::exception</code>:</p>
+
+ <pre class="c++">
+try
+{
+  people_t&amp; p = ...
+
+  xml_schema::namespace_infomap map;
+  map[""].schema = "people.xsd";
+
+  people (std::cout, p, map));
+}
+catch (const xml_schema::exception&amp; e)
+{
+  cerr &lt;&lt; e &lt;&lt; endl;
+}
+  </pre>
+
+  <p>The most commonly encountered serialization exception is
+     <code>xml_schema::serialization</code>. It is thrown
+     when the XML serialization in the underlying XML writer
+     fails. It encapsulates various diagnostics information
+     such as the file name, line and column numbers, as well as the
+     error or warning message for each entry. For more information
+     about this and other exceptions that can be thrown during
+     serialization, refer to
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/#4.4">Section
+     4.4, "Error Handling"</a> in the C++/Tree Mapping
+     User Manual.</p>
+
+  <p>Note that if you are serializing to <code>std::ostream</code> on
+     which exceptions are not enabled, then you will need to check the
+     stream state after the call to the serialization function in order
+     to detect any possible stream failures, for example:</p>
+
+  <pre class="c++">
+std::ofstream ofs ("people.xml");
+
+if (ofs.fail ())
+{
+  cerr &lt;&lt; "people.xml: unable to open" &lt;&lt; endl;
+  return 1;
+}
+
+people (ofs, p, map));
+
+if (ofs.fail ())
+{
+  cerr &lt;&lt; "people.xml: write error" &lt;&lt; endl;
+  return 1;
+}
+  </pre>
+
+  <p>The above example can be rewritten to use exceptions as
+     shown below:</p>
+
+  <pre class="c++">
+try
+{
+  std::ofstream ofs;
+  ofs.exceptions (std::ofstream::badbit | std::ofstream::failbit);
+  ofs.open ("people.xml");
+
+  people (ofs, p, map));
+}
+catch (const std::ofstream::failure&amp;)
+{
+  cerr &lt;&lt; "people.xml: unable to open or write error" &lt;&lt; endl;
+  return 1;
+}
+  </pre>
+
+  </div>
+</div>
+
+</body>
+</html>

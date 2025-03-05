@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/parser/mixed/text.xsd
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <xsd:complexType name="anchor">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="href" type="xsd:string" use="required"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="text" mixed="true">
+    <xsd:sequence>
+      <xsd:element name="a" type="anchor" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:element name="text" type="text"/>
+
+</xsd:schema>
