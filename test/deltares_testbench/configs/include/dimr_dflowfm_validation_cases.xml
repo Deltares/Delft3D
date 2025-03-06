@@ -61,7 +61,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f003_c040_thacker1d_standard" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f003_advection/c040_thacker1d_standard</path>
+      <path version="2025-03-04T15:45:29.346000">e02_dflowfm/f003_advection/c040_thacker1d_standard</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/planar1d_his.nc" type="netCDF">
@@ -80,7 +80,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f003_c043_thacker2d_hexagons" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f003_advection/c043_thacker2d_hexagons</path>
+      <path version="2025-03-04T15:49:01.377000">e02_dflowfm/f003_advection/c043_thacker2d_hexagons</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/radial2d_map.nc" type="netCDF">
