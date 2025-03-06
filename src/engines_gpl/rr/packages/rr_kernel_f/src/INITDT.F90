@@ -1,31 +1,31 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
- ! Last changed
+! Last changed
 ! by:               $Author:: Schrier           $
 ! at:               $Modtime:: 15-08-97 11:31a  $
 !
@@ -338,7 +338,7 @@
            endif
            if (NCRRRunoffSCS  .gt. 0)  then
                NStartSCS = NSRMap(15) + 1
-               NSRMap(15) = NSRMap(15) + 1   ! 1  additional SCS parameter
+               NSRMap(15) = NSRMap(15) + 2   ! 1  additional SCS parameter
            endif
            if (NCRRRunoffNAM .gt. 0) then
                NStartNAM = NSRMap(15) + 1
@@ -887,6 +887,8 @@
           if (NCRRRUnoffSCS .gt. 0) then
               DSRMAP(15,NStartSCS) = TranslateString (LanguageHandle,'Max.SCS_Storage [mm]')
               UNITS (15,NStartSCS) = TranslateString (LanguageHandle,'mm')
+              DSRMAP(15,NStartSCS+1) = TranslateString (LanguageHandle,'Max.SCS_Infiltration [mm]')
+              UNITS (15,NStartSCS+1) = TranslateString (LanguageHandle,'mm')
           endif
           if (NCRRRUnoffNAM .gt. 0) then
               DSRMAP(15,NStartNAM   ) = TranslateString (LanguageHandle,'Max.D-NAM ExternalWaterLevel [m AD]')
@@ -1054,6 +1056,8 @@
           if (NCRRRUnoffSCS .gt. 0) then
               DSRMAP(15,NStartSCS) = TranslateString (LanguageHandle,'SCS_Storage [mm]')
               UNITS (15,NStartSCS) = TranslateString (LanguageHandle,'mm')
+              DSRMAP(15,NStartSCS+1) = TranslateString (LanguageHandle,'SCS_Infiltration [mm]')
+              UNITS (15,NStartSCS+1) = TranslateString (LanguageHandle,'mm')
           endif
           if (NCRRRUnoffNAM .gt. 0) then
               DSRMAP(15,NStartNAM   ) = TranslateString (LanguageHandle,'D-NAM ExternalWaterLevel [m AD]')
@@ -1642,6 +1646,7 @@
           endif
           if (NCRRRUnoffSCS .gt. 0) then
               LongDSRMAP(15,NStartSCS) = TranslateString (LanguageHandle,'Maximum SCS_Storage')
+              LongDSRMAP(15,NStartSCS+1) = TranslateString (LanguageHandle,'Maximum SCS_Infiltration')
           endif
           if (NCRRRUnoffNAM .gt. 0) then
               LongDSRMAP(15,NStartNAM   ) = TranslateString (LanguageHandle,'Maximum D-NAM External Water Level')
@@ -1763,6 +1768,7 @@
           endif
           if (NCRRRUnoffSCS .gt. 0) then
               LongDSRMAP(15,NStartSCS) = TranslateString (LanguageHandle,'SCS_Storage')
+              LongDSRMAP(15,NStartSCS+1) = TranslateString (LanguageHandle,'SCS_Infiltration')
           endif
           if (NCRRRUnoffNAM .gt. 0) then
               LongDSRMAP(15,NStartNAM   ) = TranslateString (LanguageHandle,'D-NAM External Water Level')

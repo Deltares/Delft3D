@@ -113,6 +113,7 @@ module RRRunoff
   use ParallelData, only: NrEvapStations
   use netcdfdata, only : MeteoNetCdfInput
   use Snyder_hydrograph
+  use GreenAmptInfiltration
   use Dio_plt_rw, prop_file_unused => prop_file
 
 
@@ -208,6 +209,16 @@ Integer, Pointer, SAVE :: SCS_Snyder_BF_interpolation_method(:) ! Base Flow inte
   REAL, Pointer, SAVE ::         SCS_SubSurfMax (:), SCS_SubSurfInit(:), SCS_SubSurfAct(:) , SCS_SubSurfAct0(:)
   REAL, Pointer, SAVE ::         SCS_PercSS(:)
   REAL, Pointer, SAVE ::         SCS_GWAct(:), SCS_GWAct0(:), SCS_GWOutflow(:)
+! GreenAmpt infiltration
+  Logical, Pointer, Save ::      SCS_UseGreenAmpt_Infiltration(:)
+! input
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_Ksat(:), SCS_GreenAmpt_Psi(:), SCS_GreenAmpt_theta_dmax(:)      ! Ksat in mm/hour, psi in mm, theta_dmax is dimensionless (between 0 and 1)
+! computation/output                                                                   ``
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_Lu(:), SCS_GreenAmpt_Kr(:), SCS_GreenAmpt_Tr(:)                 ! Lu in mm, Kr in 1/hour, Tr in hour
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_theta_d(:), SCS_GreenAmpt_theta_du(:)  ! theta_d and theta_du dimensionless, PondingDepth in mm
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_CumRain(:), SCS_GreenAmpt_CumInfiltration(:), SCS_GreenAmpt_InfRate(:), SCS_GreenAmpt_T(:) ! CumRain, CumInfiltration in mm, InfRate in mm/hour, T = recovery time remaining before next event (hour)
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_InfCurrentStep(:)  ! infiltration current timestep in mm
+
 
 ! NAM input parameters
 ! Parameters
@@ -561,6 +572,23 @@ contains
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_decay_rate, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_interpolation_method, 0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_STRTQ, 0E0)
+! GreenAmpt
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UseGreenAmpt_Infiltration, .false.)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Ksat, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Psi,  0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Theta_Dmax, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Lu, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Kr, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Tr, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Theta_D, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Theta_Du, 0.D0)
+!       Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UseGreenAmpt_PondingDepth, 0.D0)    use SCS_Storage instead
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_CumRain, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_CumInfiltration, 0.00001D0)   ! not at zero, ivm divide by zero
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_InfRate, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_InfCurrentStep, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_T, 0.D0)
+! BaseFlow
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UseBaseFlow, .false.)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_MaxGWCap,   0E0 )
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_InitGwCap,   0E0 )
@@ -1436,6 +1464,28 @@ contains
             Retval = RetVal + GetVAR2(STRING,' amc ',3,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
             if (found) SCS_AMC(IRRRunoffSub) = IDUM(1)
+            ! Optional Green-Ampt infiltration Sept2024
+            allow = .true.
+            found = .false.
+            Retval = RetVal + GetVAR2(STRING,' ga ',3,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                         CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+            if (found)  SCS_UseGreenAmpt_Infiltration(IRRRunoffSub) = ( IDUM(1) .eq. 1 )
+            if (SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)) then
+               allow = .false.
+               Retval = RetVal + GetVAR2(STRING,' ksat ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                                CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+               SCS_GreenAmpt_Ksat(IRRRunoffSub) = max(0.0, RDum(1))
+               Retval = RetVal + GetVAR2(STRING,' psi ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                                CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+               SCS_GreenAmpt_Psi(IRRRunoffSub) = max(0.0, RDum(1))
+               Retval = RetVal + GetVAR2(STRING,' theta_dmax ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                                CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+               SCS_GreenAmpt_theta_dmax(IRRRunoffSub) = max (0.0, RDum(1))
+               SCS_GreenAmpt_theta_dmax(IRRRunoffSub) = min (1.0, SCS_GreenAmpt_theta_dmax(IRRRunoffSub))
+               SCS_GreenAmpt_theta_d   (IRRRunoffSub) = SCS_GreenAmpt_theta_dmax(IRRRunoffSub)
+               SCS_GreenAmpt_theta_du  (IRRRunoffSub) = SCS_GreenAmpt_theta_dmax(IRRRunoffSub)
+            endif
+
             ! optional base flow parameters
             allow = .true.
             found = .false.
@@ -4619,6 +4669,8 @@ contains
    LevelError = .false.
    eps  = 1.D-7
 
+   Idebug = Conffil_get_Idebug()
+
    if (NcRRRunoffHBV .gt. 0) then
      HBV_DrySnowContent     =  HBV_InitialDrySnowContent
      HBV_FreeWaterContent   =  HBV_InitialFreeWaterContent
@@ -5510,14 +5562,24 @@ contains
      Enddo
    endif
 
-do i=1,NCRRRunoff
-   IRRRunoffSub = RRRunoff_SubIndex(i)
-   if (RRRunoff_CompOption(i) .eq. 2) then ! SCS node
-      if (SCS_UHChosen(iRRRunoffSub) .eq. 2) then ! Snyder
-         call compute_snyder_hydrograph(SHG_set%SHG(iRRRunoffSub),  AREA_RRRunoffNode(i), SCS_Snyder_Cp(iRRRunoffSub), SCS_TLag(iRRRunoffSub),timeSettings%TimestepSize/3600.)
+   do i=1,NCRRRunoff
+      IRRRunoffSub = RRRunoff_SubIndex(i)
+      if (RRRunoff_CompOption(i) .eq. 2) then ! SCS node
+         if (SCS_UHChosen(iRRRunoffSub) .eq. 2) then ! Snyder
+            call compute_snyder_hydrograph(SHG_set%SHG(iRRRunoffSub),  AREA_RRRunoffNode(i), SCS_Snyder_Cp(iRRRunoffSub), SCS_TLag(iRRRunoffSub),timeSettings%TimestepSize/3600.)
+         endif
       endif
-   endif
-enddo
+   enddo
+
+   do i=1,NCRRRunoff
+      IRRRunoffSub = RRRunoff_SubIndex(i)
+      if (RRRunoff_CompOption(i) .eq. 2) then ! SCS node
+         if (SCS_UseGreenAmpt_Infiltration(iRRRunoffSub)) then ! use GreenAmpt Infiltration
+            call SetGreenAmptConstants (SCS_GreenAmpt_Ksat(iRRRunoffSub), SCS_GreenAmpt_Psi(iRRRunoffSub), SCS_GreenAmpt_Theta_Dmax(iRRRunoffSub), &
+                 SCS_GreenAmpt_Lu(iRRRunoffSub), SCS_GreenAmpt_Kr(iRRRunoffSub), SCS_GreenAmpt_Tr(iRRRunoffSub), idebug)
+         endif
+      endif
+   enddo
 
    if (NcRRRunoffSCS .gt. 0) then
      Do i=1,NCRRRunoff
@@ -6532,6 +6594,8 @@ enddo
 ! Walrus
   Integer, external :: WalrusGet, WalrusDoStep, WalrusSet
   Integer           :: retValWalrusCall, WalrusFirst
+! GreenAmpt infiltration
+  Double precision     DepthPonding, Fprev
 
       WalrusFirst = 1
       Fract     = TimeSettings%Timestepsize / 86400.     ! fraction of day
@@ -6719,11 +6783,31 @@ enddo
             Endif
           ! Initialisations
 
+            If (SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)) then
+               Precipitation = AAFNodeRainfall(inode) * Rain(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
+               DepthPonding  = SCS_Storage0(IRRRunoffSub)
+               FPrev = SCS_GreenAmpt_CumInfiltration(IRRRunoffSub)
+               Call GreenAmpt (Precipitation/FractHour*1.D0, DepthPonding, SCS_GreenAmpt_Theta_D(IRRRunoffSub), SCS_GreenAmpt_Theta_DU(IRRRunoffSub), &
+                               SCS_GreenAmpt_CumInfiltration(IRRRunoffSub), SCS_GreenAmpt_T(IRRRunoffSub), &
+                               SCS_GreenAmpt_KSat(IRRRunoffSub), SCS_GreenAmpt_Psi(IRRRunoffSub), SCS_GreenAmpt_Theta_Dmax(IRRRunoffSub), &
+                               SCS_GreenAmpt_LU(IRRRunoffSub), SCS_GreenAmpt_Kr(IRRRunoffSub), SCS_GreenAmpt_Tr(IRRRunoffSub), &
+                               SCS_GreenAmpt_InfRate(IRRRunoffSub), Idebug, TimeSettings%Timestepsize )
+               SCS_GreenAmpt_CumRain(IRRRunoffSub) = SCS_GreenAmpt_CumRain(IRRRUnoffSub) + Precipitation
+               SCS_GreenAmpt_InfCurrentStep (IRRRunoffSub) = max (0.0D0, SCS_GreenAmpt_CumInfiltration(IRRRunoffSub)-FPrev)
+               if (idebug .gt. 0) then
+                  Write(Idebug,*) ' itmstp  RainRate RainStep CumRain InfRate Inf_currentstep CumInf Theta_DU  T'
+                  Write(Idebug,'(I5,10F10.4)') itmstp,Precipitation/FractHour, SCS_GreenAmpt_CumRain(IRRRunoffSub), &
+                                        SCS_GreenAmpt_InfRate(IRRRunoffSub), SCS_GreenAmpt_InfCurrentStep (IRRRunoffSub), &
+                                        SCS_GreenAmpt_CumInfiltration(IRRRunoffSub), SCS_GreenAmpt_Theta_DU(IRRRunoffSub), SCS_GreenAmpt_T(IRRRunoffSub)
+               endif
+            Endif
+
             If (.not. SCS_UseBaseFlow(IRRRunoffSub)) then
                ! original SCS calculations, without baseflow extensions
                Precipitation = AAFNodeRainfall(inode) * Rain(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
                SCS_Rainfall(IRRRunoffSub)= Precipitation
-               SCS_PAccum (IRRRunoffSub) = SCS_PAccum0(IRRRunoffSub) + Precipitation
+               ! subtract Infiltration already from PAccum (and PExcess)
+               SCS_PAccum (IRRRunoffSub) = SCS_PAccum0(IRRRunoffSub) + Precipitation - SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
                PAcc = SCS_PAccum(IRRRunoffSub)
                SMax = SCS_MaxRetention(IRRRunoffSub)
                if (PAcc + 0.8 * SMax .gt. 0) then
@@ -6733,7 +6817,8 @@ enddo
                endif
 
              ! available runoff current timestep
-               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub)
+             ! also subtract infiltration current timestep   (discussion point is whether to subtract it from available runoff or already from PExcess .....
+               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub) ! - SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)  ! subtracted infiltration current timestep
                SCS_AvailableRunoff(IRRRunoffSub,1) = max (0.0, SCS_AvailableRunoff(IRRRunoffSub,1))
 
                If (SCS_UHChosen(IRRRunoffSub) .eq. 0 .or. SCS_UHChosen(IRRRunoffSub) .eq. 2) then
@@ -6762,11 +6847,14 @@ enddo
 
              ! storage balance and outflow
                SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
+               if (SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)) then
+                  SCS_Storage(IRRRUnoffSub) = SCS_Storage(IRRRUnoffSub) - SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
+               endif
                QF2 = SCS_Runoff * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
                RRRunoffNode_Outflow(iRRRunoff) = QF2
 
             else
-             ! with baseflow extensions
+             ! with baseflow extensions;  do not use since not complete / not tested
                Precipitation = AAFNodeRainfall(inode) * Rain(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
                SCS_Rainfall(IRRRunoffSub)= Precipitation
                SCS_EvapRD(IRRRunoffSub)= Evap(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
@@ -6780,7 +6868,8 @@ enddo
                endif
 
              ! available runoff current timestep
-               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub)
+!              SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub)
+               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub) !- SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)  ! subtracted infiltration current timestep
                SCS_AvailableRunoff(IRRRunoffSub,1) = max (0.0, SCS_AvailableRunoff(IRRRunoffSub,1))
 
             endif
@@ -6797,6 +6886,8 @@ enddo
                Write(Idebug,*) ' Storage init  ', SCS_Storage0(IRRRunoffSub)
                Write(Idebug,*) ' Storage       ', SCS_Storage (IRRRunoffSub)
                Write(Idebug,*) ' QF2           ', QF2
+               Write(Idebug,*) ' UseGreenAmpt  ', SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)
+               Write(Idebug,*) ' InfCurrentStep', SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
             Endif
 
       elseif (RRRunoff_CompOption(IRRRunoff) .eq. 3) then

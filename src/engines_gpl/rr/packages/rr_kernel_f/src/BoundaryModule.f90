@@ -695,7 +695,7 @@ subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
    implicit none
 
    character(len=*), intent(in)    :: boundaryConditionsFile  ! file containing the lateral conditions
-   logical                         :: success
+   logical                         :: success, LTemp
 
    integer              :: istat          ! status after function call
    integer              :: i  ! loop counter
@@ -822,6 +822,13 @@ subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
          endif
       enddo
    endif
+
+! addition 27 Nov2024, to initialize on values from EC module
+
+   LTemp = RunSimultaneous
+   RunSimultaneous = .false.
+   Call RdSbk
+   RunSimultaneous = LTemp
 
 end subroutine readBoundaryConditionsInto_ec
 
