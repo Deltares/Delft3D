@@ -1,0 +1,82 @@
+
+
+============== test_view ==============
+(max-b) = 5.000000 : index = 3 
+(min-b) = 1.250000 : index = 5 
+(max-X) = 5.000000 : index = 9 
+(min-X) = 1.000000 : index = 0 
+Vec Object: 1 MPI process
+  type: nest
+  VecNest, rows=2,  structure: 
+  (0) : type=nest, rows=6 
+    Vec Object: 1 MPI process
+      type: nest
+      VecNest, rows=2,  structure: 
+      (0) : type=seq, rows=3 
+        Vec Object: 1 MPI process
+          type: seq
+        1.
+        1.
+        1.
+      (1) : type=seq, rows=3 
+        Vec Object: 1 MPI process
+          type: seq
+        2.
+        2.
+        2.
+  (1) : type=nest, rows=6 
+    Vec Object: 1 MPI process
+      type: nest
+      VecNest, rows=2,  structure: 
+      (0) : type=seq, rows=3 
+        Vec Object: 1 MPI process
+          type: seq
+        3.
+        3.
+        3.
+      (1) : type=seq, rows=3 
+        Vec Object: 1 MPI process
+          type: seq
+        5.
+        2.5
+        1.25
+
+
+============== test_axpy_dot_max ==============
+VecAXPY 
+(1) y1 = 
+Vec Object: 1 MPI process
+  type: seq
+4.
+8.
+12.
+16.
+(1) y2 = 
+Vec Object: 1 MPI process
+  type: seq
+15.
+18.
+21.
+24.
+27.
+X.Y = 1610.000000 + 0.000000i 
+X.Y = 1610.000000 + 0.000000i     norm2(Y) = 2775.000000
+(2) y1 = 
+Vec Object: 1 MPI process
+  type: seq
+4.
+9.
+14.
+19.
+(2) y2 = 
+Vec Object: 1 MPI process
+  type: seq
+25.
+30.
+35.
+40.
+45.
+X.Y = 2644.000000 + 0.000000i 
+X.Y = 2644.000000 + 0.000000i     norm2(Y) = 7029.000000
+(max-X) = 18.000000 : index = 8 
+(min-X) = 0.000000 : index = 0 

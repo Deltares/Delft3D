@@ -1,0 +1,404 @@
+#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
+      Interface
+       subroutine PetscSFBcastBegin(sf,unit,rarray,larray,op,ierr)
+          import tPetscSF
+          PetscSF :: sf
+          PetscMPIInt :: unit,op
+          type(*) :: rarray(:)
+          type(*) :: larray(:)
+          PetscErrorCode :: ierr
+        end Subroutine PetscSFBcastBegin
+
+      subroutine PetscSFBcastEnd(sf,unit,rarray,larray,op,ierr)
+          import tPetscSF
+          PetscSF :: sf
+          PetscMPIInt :: unit,op
+          type(*) :: rarray(:)
+          type(*) :: larray(:)
+          PetscErrorCode :: ierr
+        end Subroutine PetscSFBcastEnd
+              
+      subroutine PetscSFReduceBegin(sf,unit,larray,rarray,op,ierr)
+          import tPetscSF
+          PetscSF :: sf
+          PetscMPIInt :: unit,op
+          type(*) :: larray(:)
+          type(*) :: rarray(:)
+          PetscErrorCode :: ierr
+        end Subroutine PetscSFReduceBegin
+
+      subroutine PetscSFReduceEnd(sf,unit,larray,rarray,op,ierr)
+          import tPetscSF
+          PetscSF :: sf
+          PetscMPIInt :: unit,op
+          type(*) :: larray(:)
+          type(*) :: rarray(:)
+          PetscErrorCode :: ierr
+        end Subroutine PetscSFReduceEnd
+      end Interface
+#endif
+
+      Interface
+      subroutine PetscSFGetGraph(sf,nroots,nleaves,ilocal,iremote,ierr)
+          import tPetscSF,PetscSFNode
+          PetscSF :: sf
+          PetscInt :: nroots,nleaves
+          PetscInt, pointer :: ilocal(:)
+          type(PetscSFNode), pointer :: iremote(:)
+          PetscErrorCode :: ierr
+      end Subroutine PetscSFGetGraph
+
+      subroutine PetscSFGetLeafRanks(sf,niranks,iranks,ioffset,irootloc,ierr)
+          import tPetscSF
+          PetscSF :: sf
+          PetscInt :: niranks
+          PetscMPIInt, pointer :: iranks(:)
+          PetscInt, pointer :: ioffset(:),irootloc(:)
+          PetscErrorCode :: ierr
+      end Subroutine PetscSFGetLeafRanks
+
+      subroutine PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote,ierr)
+          import tPetscSF
+          PetscSF :: sf
+          PetscInt :: nranks
+          PetscMPIInt, pointer :: ranks(:)
+          PetscInt, pointer :: roffset(:),rmine(:),rremote(:)
+          PetscErrorCode :: ierr
+      end Subroutine PetscSFGetRootRanks
+      end Interface
+
+      Interface VecGetOwnershipRange
+      subroutine VecGetOwnershipRange1(x,l,h,ierr)
+       import tVec
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  l,h
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      subroutine VecGetOwnershipRange2(x,l,h,ierr)
+       import tVec
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  l(*),h
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      subroutine VecGetOwnershipRange3(x,l,h,ierr)
+       import tVec
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  l,h(*)
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+       end Interface
+
+      Interface VecMin
+      subroutine VecMin1(x,p,val,ierr)
+       import tVec
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  p
+       PetscReal, intent(out) ::  val
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      subroutine VecMin2(x,p,val,ierr)
+       import tVec
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  p(*)
+       PetscReal, intent(out) ::  val
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      end Interface
+
+      Interface VecMax
+      subroutine VecMax1(x,p,val,ierr)
+       import tVec
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  p
+       PetscReal, intent(out) ::  val
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      subroutine VecMax2(x,p,val,ierr)
+       import tVec
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  p(*)
+       PetscReal, intent(out) ::  val
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine VecScatterCreateToAll(a,b,c,z)
+       import tVec,tVecScatter
+       Vec a
+       VecScatter b
+       Vec c
+       PetscErrorCode z
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine VecScatterCreateToZero(a,b,c,z)
+       import tVec,tVecScatter
+       Vec a
+       VecScatter b
+       Vec c
+       PetscErrorCode z
+       end subroutine
+      end Interface
+
+      Interface VecCreateSeqWithArray
+        subroutine VecCreateSeqWithArray0(a,b,c,d,e,z)
+          import tVec
+          MPI_Comm a
+          integer4 b ! bs
+          PetscInt c ! length
+          PetscScalar d (*) ! array of values
+          Vec e
+          PetscErrorCode z
+        end subroutine
+        subroutine VecCreateSeqWithArray1(a,b,c,d,e,z)
+          import tVec
+          MPI_Comm a
+          integer8 b ! bs
+          PetscInt c ! length
+          PetscScalar d (*) ! array of values
+          Vec e
+          PetscErrorCode z
+        end subroutine
+      end Interface
+
+
+      Interface VecSetValuesLocal
+        subroutine VecSetValuesLocal0(a,b,c,d,e,z)
+          import tVec
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          InsertMode e ! InsertMode
+          PetscErrorCode z
+        end subroutine
+        subroutine VecSetValuesLocal11(a,b,c,d,e,z)
+          import tVec
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d ! PetscScalar
+          InsertMode e ! InsertMode
+          PetscErrorCode z
+        end subroutine
+      end interface VecSetValuesLocal
+
+      Interface VecGetValues
+        subroutine VecGetValues0(a,b,c,d,z)
+          import tVec
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine VecGetValues1(a,b,c,d,z)
+          import tVec
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine VecGetValues11(a,b,c,d,z)
+          import tVec
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+      End Interface VecGetValues
+
+      Interface VecSetValues
+        subroutine VecSetValues0(a,b,c,d,e,z)
+          import tVec
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          InsertMode e ! InsertMode
+          PetscErrorCode z
+        end subroutine
+        subroutine VecSetValues1(a,b,c,d,e,z)
+          import tVec
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          InsertMode e ! InsertMode
+          PetscErrorCode z
+        end subroutine
+        subroutine VecSetValues11(a,b,c,d,e,z)
+          import tVec
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d ! PetscScalar
+          InsertMode e ! InsertMode
+          PetscErrorCode z
+        end subroutine
+      End Interface VecSetValues
+
+      Interface VecSetValuesBlocked
+        subroutine VecSetValuesBlocked0(a,b,c,d,e,z)
+          import tVec
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          InsertMode e ! InsertMode
+          PetscErrorCode z
+        end subroutine
+        subroutine VecSetValuesBlocked1(a,b,c,d,e,z)
+          import tVec
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          InsertMode e ! InsertMode
+          PetscErrorCode z
+        end subroutine
+        subroutine VecSetValuesBlocked11(a,b,c,d,e,z)
+          import tVec
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d ! PetscScalar
+          InsertMode e ! InsertMode
+          PetscErrorCode z
+        end subroutine
+      End Interface VecSetValuesBlocked
+
+      Interface
+        Subroutine VecGetArrayF90(v,array,ierr)
+          import tVec
+          PetscScalar, pointer :: array(:)
+          PetscErrorCode ierr
+          Vec     v
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine VecRestoreArrayF90(v,array,ierr)
+          import tVec
+          PetscScalar, pointer :: array(:)
+          PetscErrorCode ierr
+          Vec     v
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine VecGetArrayReadF90(v,array,ierr)
+          import tVec
+          PetscScalar, pointer :: array(:)
+          PetscErrorCode ierr
+          Vec     v
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine VecRestoreArrayReadF90(v,array,ierr)
+          import tVec
+          PetscScalar, pointer :: array(:)
+          PetscErrorCode ierr
+          Vec     v
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine VecGetValuesSectionF90(v,s,p,va,ierr)
+          import tVec,tPetscSection
+          PetscScalar, pointer :: va(:)
+          PetscErrorCode ierr
+          Vec     v
+          PetscSection s
+          PetscInt p
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine VecRestoreValuesSectionF90(v,s,p,va,ierr)
+          import tVec,tPetscSection
+          PetscScalar, pointer :: va(:)
+          PetscErrorCode ierr
+          Vec     v
+          PetscSection s
+          PetscInt p
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine VecSetValuesSectionF90(v,s,p,va,mode,ierr)
+          import tVec,tPetscSection
+          PetscScalar, pointer :: va(:)
+          PetscErrorCode ierr
+          Vec     v
+          PetscSection s
+          PetscInt p
+          InsertMode mode
+        End Subroutine
+      End Interface
+
+! -------------------------------------------------------------
+
+      Interface
+        Subroutine VecDuplicateVecsF90(v,m,vs,ierr)
+          import tVec
+          Vec, pointer :: vs(:)
+          PetscInt m
+          PetscErrorCode ierr
+          Vec     v
+        End Subroutine
+      End Interface
+!
+!  Question: should VecDestroyVecsF90() take the m argument since
+! the array of vectors already knows how long it is? Yes, to
+! match calling sequence for C/C++.
+!
+      Interface
+        Subroutine VecDestroyVecsF90(m,vs,ierr)
+          import tVec
+          Vec, pointer :: vs(:)
+          PetscInt m
+          PetscErrorCode ierr
+        End Subroutine
+
+        Subroutine VecDestroy(a,ierr)
+          import tVec
+          Vec a
+          PetscErrorCode ierr
+        End Subroutine
+
+        subroutine VecSetType(a,b,ierr)
+         import tVec
+         Vec a
+         character(*) b
+         PetscErrorCode ierr
+       end subroutine
+
+       subroutine VecView(a,b,ierr)
+         import tVec,tPetscViewer
+         Vec a
+         PetscViewer b
+         PetscErrorCode ierr
+       end subroutine
+
+       subroutine VecScatterRemap(a,b,c,ierr)
+         import tVecScatter
+         VecScatter a ! VecScatter
+         PetscInt b (*) ! PetscInt
+         PetscInt c (*) ! PetscInt
+         PetscErrorCode ierr
+       end subroutine
+
+       subroutine VecLoad(a,b,ierr)
+         import tVec,tPetscViewer
+         Vec a
+         PetscViewer b
+         PetscErrorCode ierr
+       end subroutine
+
+      end Interface

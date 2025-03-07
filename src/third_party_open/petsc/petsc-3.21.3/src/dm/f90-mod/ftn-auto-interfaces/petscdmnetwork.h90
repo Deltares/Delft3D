@@ -1,0 +1,255 @@
+      subroutine DMNetworkGetPlex(a,b,z)
+       import tDM
+       DM a ! DM
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine DMNetworkGetPlex
+      subroutine DMNetworkGetNumSubNetworks(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetNumSubNetworks
+      subroutine DMNetworkSetNumSubNetworks(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkSetNumSubNetworks
+      subroutine DMNetworkLayoutSetUp(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMNetworkLayoutSetUp
+      subroutine DMNetworkAddSharedVertices(a,b,c,d,e,f,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e (*) ! PetscInt
+       PetscInt f (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkAddSharedVertices
+      subroutine DMNetworkGetNumVertices(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetNumVertices
+      subroutine DMNetworkGetNumEdges(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetNumEdges
+      subroutine DMNetworkGetVertexRange(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetVertexRange
+      subroutine DMNetworkGetEdgeRange(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetEdgeRange
+      subroutine DMNetworkGetGlobalEdgeIndex(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetGlobalEdgeIndex
+      subroutine DMNetworkGetGlobalVertexIndex(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetGlobalVertexIndex
+      subroutine DMNetworkGetNumComponents(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetNumComponents
+      subroutine DMNetworkGetLocalVecOffset(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetLocalVecOffset
+      subroutine DMNetworkGetGlobalVecOffset(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetGlobalVecOffset
+      subroutine DMNetworkGetEdgeOffset(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetEdgeOffset
+      subroutine DMNetworkGetVertexOffset(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetVertexOffset
+      subroutine DMNetworkAssembleGraphStructures(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMNetworkAssembleGraphStructures
+      subroutine DMNetworkDistribute(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkDistribute
+      subroutine DMNetworkIsSharedVertex(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine DMNetworkIsSharedVertex
+      subroutine DMNetworkIsGhostVertex(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine DMNetworkIsGhostVertex
+      subroutine DMNetworkHasJacobian(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscBool b ! PetscBool
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine DMNetworkHasJacobian
+      subroutine DMNetworkEdgeSetMatrix(a,b,c,z)
+       import tDM,tMat
+       DM a ! DM
+       PetscInt b ! PetscInt
+       Mat c (*) ! Mat
+       PetscErrorCode z
+       end subroutine DMNetworkEdgeSetMatrix
+      subroutine DMNetworkVertexSetMatrix(a,b,c,z)
+       import tDM,tMat
+       DM a ! DM
+       PetscInt b ! PetscInt
+       Mat c (*) ! Mat
+       PetscErrorCode z
+       end subroutine DMNetworkVertexSetMatrix
+      subroutine DMNetworkGetVertexLocalToGlobalOrdering(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMNetworkGetVertexLocalToGlobalOrdering
+      subroutine DMNetworkSetVertexLocalToGlobalOrdering(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMNetworkSetVertexLocalToGlobalOrdering
+      subroutine DMNetworkCreateIS(a,b,c,d,e,f,g,z)
+       import tIS,tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscInt e (*) ! PetscInt
+       PetscInt f (*) ! PetscInt
+       IS g ! IS
+       PetscErrorCode z
+       end subroutine DMNetworkCreateIS
+      subroutine DMNetworkCreateLocalIS(a,b,c,d,e,f,g,z)
+       import tIS,tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscInt e (*) ! PetscInt
+       PetscInt f (*) ! PetscInt
+       IS g ! IS
+       PetscErrorCode z
+       end subroutine DMNetworkCreateLocalIS
+      subroutine DMNetworkFinalizeComponents(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMNetworkFinalizeComponents
+      subroutine DMNetworkCreate(a,b,z)
+       import tDM
+       MPI_Comm a ! MPI_Comm
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine DMNetworkCreate
+      subroutine DMNetworkMonitorCreate(a,b,z)
+       import tDM
+       DM a ! DM
+       DMNetworkMonitor b ! DMNetworkMonitor
+       PetscErrorCode z
+       end subroutine DMNetworkMonitorCreate
+      subroutine DMNetworkMonitorDestroy(a,z)
+       DMNetworkMonitor a ! DMNetworkMonitor
+       PetscErrorCode z
+       end subroutine DMNetworkMonitorDestroy
+      subroutine DMNetworkMonitorPop(a,z)
+       DMNetworkMonitor a ! DMNetworkMonitor
+       PetscErrorCode z
+       end subroutine DMNetworkMonitorPop
+      subroutine DMNetworkMonitorView(a,b,z)
+       import tVec
+       DMNetworkMonitor a ! DMNetworkMonitor
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine DMNetworkMonitorView
+      subroutine DMNetworkViewSetShowRanks(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine DMNetworkViewSetShowRanks
+      subroutine DMNetworkViewSetShowGlobal(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine DMNetworkViewSetShowGlobal
+      subroutine DMNetworkViewSetShowVertices(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine DMNetworkViewSetShowVertices
+      subroutine DMNetworkViewSetShowNumbering(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine DMNetworkViewSetShowNumbering
+      subroutine DMNetworkViewSetViewRanks(a,b,z)
+       import tIS,tDM
+       DM a ! DM
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine DMNetworkViewSetViewRanks

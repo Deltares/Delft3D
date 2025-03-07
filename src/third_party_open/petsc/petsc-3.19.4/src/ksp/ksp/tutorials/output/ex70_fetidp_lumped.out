@@ -1,0 +1,52 @@
+DM Object: Material Point Swarm 4 MPI processes
+  type: swarm
+Material Point Swarm in 2 dimensions:
+  Number of particles per rank: 141829 141829 27352 27352
+.... assemble
+.... bc imposition
+.... solve
+Linear stokes_ solve converged due to CONVERGED_RTOL iterations 26
+.... max v 2.7981e-04 , dt 2.2336e+01 : [total] max v 2.7981e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... ....pop cont: adjusted 102 cells
+.... project
+.... interp
+step 1 : time 2.00e+00 
+.... assemble
+.... bc imposition
+.... solve
+Linear stokes_ solve converged due to CONVERGED_RTOL iterations 26
+.... max v 2.8751e-04 , dt 2.1738e+01 : [total] max v 2.8751e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... ....pop cont: adjusted 33 cells
+.... project
+.... interp
+step 2 : time 4.00e+00 
+.... assemble
+.... bc imposition
+.... solve
+Linear stokes_ solve converged due to CONVERGED_RTOL iterations 26
+.... max v 2.9546e-04 , dt 2.1154e+01 : [total] max v 2.9546e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... ....pop cont: adjusted 29 cells
+.... project
+.... interp
+step 3 : time 6.00e+00 
+.... assemble
+.... bc imposition
+.... solve
+Linear stokes_ solve converged due to CONVERGED_RTOL iterations 26
+.... max v 3.0363e-04 , dt 2.0584e+01 : [total] max v 3.0363e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... ....pop cont: adjusted 14 cells
+.... project
+.... interp
+step 4 : time 8.00e+00 

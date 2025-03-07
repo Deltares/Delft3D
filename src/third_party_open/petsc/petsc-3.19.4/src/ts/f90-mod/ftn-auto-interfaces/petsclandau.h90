@@ -1,0 +1,17 @@
+      subroutine DMPlexLandauDestroyVelocitySpace(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMPlexLandauDestroyVelocitySpace
+      subroutine DMPlexLandauPrintNorms(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMPlexLandauPrintNorms
+      subroutine DMPlexLandauCreateMassMatrix(a,b,z)
+       import tDM,tMat
+       DM a ! DM
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine DMPlexLandauCreateMassMatrix

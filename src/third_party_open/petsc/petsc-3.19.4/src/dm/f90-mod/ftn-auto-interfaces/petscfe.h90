@@ -1,0 +1,147 @@
+      subroutine PetscFEOpenCLSetRealType(a,b,z)
+       PetscFE a ! PetscFE
+       PetscDataType b ! PetscDataType
+       PetscErrorCode z
+       end subroutine PetscFEOpenCLSetRealType
+      subroutine PetscFEOpenCLGetRealType(a,b,z)
+       PetscFE a ! PetscFE
+       PetscDataType b ! PetscDataType
+       PetscErrorCode z
+       end subroutine PetscFEOpenCLGetRealType
+      subroutine PetscFESetFromOptions(a,z)
+       PetscFE a ! PetscFE
+       PetscErrorCode z
+       end subroutine PetscFESetFromOptions
+      subroutine PetscFEDestroy(a,z)
+       PetscFE a ! PetscFE
+       PetscErrorCode z
+       end subroutine PetscFEDestroy
+      subroutine PetscFECreate(a,b,z)
+       MPI_Comm a ! MPI_Comm
+       PetscFE b ! PetscFE
+       PetscErrorCode z
+       end subroutine PetscFECreate
+      subroutine PetscFEGetSpatialDimension(a,b,z)
+       PetscFE a ! PetscFE
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscFEGetSpatialDimension
+      subroutine PetscFESetNumComponents(a,b,z)
+       PetscFE a ! PetscFE
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscFESetNumComponents
+      subroutine PetscFEGetNumComponents(a,b,z)
+       PetscFE a ! PetscFE
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscFEGetNumComponents
+      subroutine PetscFESetTileSizes(a,b,c,d,e,z)
+       PetscFE a ! PetscFE
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscFESetTileSizes
+      subroutine PetscFEGetTileSizes(a,b,c,d,e,z)
+       PetscFE a ! PetscFE
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscFEGetTileSizes
+      subroutine PetscFEGetBasisSpace(a,b,z)
+       PetscFE a ! PetscFE
+       PetscSpace b ! PetscSpace
+       PetscErrorCode z
+       end subroutine PetscFEGetBasisSpace
+      subroutine PetscFESetBasisSpace(a,b,z)
+       PetscFE a ! PetscFE
+       PetscSpace b ! PetscSpace
+       PetscErrorCode z
+       end subroutine PetscFESetBasisSpace
+      subroutine PetscFEGetDualSpace(a,b,z)
+       PetscFE a ! PetscFE
+       PetscDualSpace b ! PetscDualSpace
+       PetscErrorCode z
+       end subroutine PetscFEGetDualSpace
+      subroutine PetscFESetDualSpace(a,b,z)
+       PetscFE a ! PetscFE
+       PetscDualSpace b ! PetscDualSpace
+       PetscErrorCode z
+       end subroutine PetscFESetDualSpace
+      subroutine PetscFEGetQuadrature(a,b,z)
+       PetscFE a ! PetscFE
+       PetscQuadrature b ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscFEGetQuadrature
+      subroutine PetscFESetQuadrature(a,b,z)
+       PetscFE a ! PetscFE
+       PetscQuadrature b ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscFESetQuadrature
+      subroutine PetscFEGetFaceQuadrature(a,b,z)
+       PetscFE a ! PetscFE
+       PetscQuadrature b ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscFEGetFaceQuadrature
+      subroutine PetscFESetFaceQuadrature(a,b,z)
+       PetscFE a ! PetscFE
+       PetscQuadrature b ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscFESetFaceQuadrature
+      subroutine PetscFECopyQuadrature(a,b,z)
+       PetscFE a ! PetscFE
+       PetscFE b ! PetscFE
+       PetscErrorCode z
+       end subroutine PetscFECopyQuadrature
+      subroutine PetscFEGetDimension(a,b,z)
+       PetscFE a ! PetscFE
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscFEGetDimension
+      subroutine PetscFEGetHeightSubspace(a,b,c,z)
+       PetscFE a ! PetscFE
+       PetscInt b ! PetscInt
+       PetscFE c ! PetscFE
+       PetscErrorCode z
+       end subroutine PetscFEGetHeightSubspace
+      subroutine PetscFERefine(a,b,z)
+       PetscFE a ! PetscFE
+       PetscFE b ! PetscFE
+       PetscErrorCode z
+       end subroutine PetscFERefine
+      subroutine PetscFECreateFromSpaces(a,b,c,d,e,z)
+       PetscSpace a ! PetscSpace
+       PetscDualSpace b ! PetscDualSpace
+       PetscQuadrature c ! PetscQuadrature
+       PetscQuadrature d ! PetscQuadrature
+       PetscFE e ! PetscFE
+       PetscErrorCode z
+       end subroutine PetscFECreateFromSpaces
+      subroutine PetscFECreateLagrange(a,b,c,d,e,f,g,z)
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscBool d ! PetscBool
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscFE g ! PetscFE
+       PetscErrorCode z
+       end subroutine PetscFECreateLagrange
+      subroutine PetscFECreateLagrangeByCell(a,b,c,d,e,f,g,z)
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       DMPolytopeType d ! DMPolytopeType
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscFE g ! PetscFE
+       PetscErrorCode z
+       end subroutine PetscFECreateLagrangeByCell
+      subroutine PetscFEGeomComplete(a,z)
+       PetscFEGeom a ! PetscFEGeom
+       PetscErrorCode z
+       end subroutine PetscFEGeomComplete

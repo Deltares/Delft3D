@@ -1,0 +1,260 @@
+      subroutine MatCoarsenApply(a,z)
+       MatCoarsen a ! MatCoarsen
+       PetscErrorCode z
+       end subroutine MatCoarsenApply
+      subroutine MatCoarsenSetAdjacency(a,b,z)
+       import tMat
+       MatCoarsen a ! MatCoarsen
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine MatCoarsenSetAdjacency
+      subroutine MatCoarsenSetStrictAggs(a,b,z)
+       MatCoarsen a ! MatCoarsen
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine MatCoarsenSetStrictAggs
+      subroutine MatCoarsenDestroy(a,z)
+       MatCoarsen a ! MatCoarsen
+       PetscErrorCode z
+       end subroutine MatCoarsenDestroy
+      subroutine MatCoarsenCreate(a,b,z)
+       MPI_Comm a ! MPI_Comm
+       MatCoarsen b ! MatCoarsen
+       PetscErrorCode z
+       end subroutine MatCoarsenCreate
+      subroutine MatCoarsenSetFromOptions(a,z)
+       MatCoarsen a ! MatCoarsen
+       PetscErrorCode z
+       end subroutine MatCoarsenSetFromOptions
+      subroutine MatCoarsenMISKSetDistance(a,b,z)
+       MatCoarsen a ! MatCoarsen
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatCoarsenMISKSetDistance
+      subroutine MatCoarsenMISKGetDistance(a,b,z)
+       MatCoarsen a ! MatCoarsen
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatCoarsenMISKGetDistance
+      subroutine MatColoringCreate(a,b,z)
+       import tMat
+       Mat a ! Mat
+       MatColoring b ! MatColoring
+       PetscErrorCode z
+       end subroutine MatColoringCreate
+      subroutine MatColoringDestroy(a,z)
+       MatColoring a ! MatColoring
+       PetscErrorCode z
+       end subroutine MatColoringDestroy
+      subroutine MatColoringSetFromOptions(a,z)
+       MatColoring a ! MatColoring
+       PetscErrorCode z
+       end subroutine MatColoringSetFromOptions
+      subroutine MatColoringSetDistance(a,b,z)
+       MatColoring a ! MatColoring
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatColoringSetDistance
+      subroutine MatColoringGetDistance(a,b,z)
+       MatColoring a ! MatColoring
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatColoringGetDistance
+      subroutine MatColoringSetMaxColors(a,b,z)
+       MatColoring a ! MatColoring
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatColoringSetMaxColors
+      subroutine MatColoringGetMaxColors(a,b,z)
+       MatColoring a ! MatColoring
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatColoringGetMaxColors
+      subroutine MatColoringApply(a,b,z)
+       import tISColoring
+       MatColoring a ! MatColoring
+       ISColoring b ! ISColoring
+       PetscErrorCode z
+       end subroutine MatColoringApply
+      subroutine MatColoringView(a,b,z)
+       import tPetscViewer
+       MatColoring a ! MatColoring
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine MatColoringView
+      subroutine MatColoringSetWeightType(a,b,z)
+       MatColoring a ! MatColoring
+       MatColoringWeightType b ! MatColoringWeightType
+       PetscErrorCode z
+       end subroutine MatColoringSetWeightType
+      subroutine MatCreateLaplacian(a,b,c,d,z)
+       import tMat
+       Mat a ! Mat
+       PetscReal b ! PetscReal
+       PetscBool c ! PetscBool
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLaplacian
+      subroutine MatPartitioningApplyND(a,b,z)
+       import tIS
+       MatPartitioning a ! MatPartitioning
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine MatPartitioningApplyND
+      subroutine MatPartitioningApply(a,b,z)
+       import tIS
+       MatPartitioning a ! MatPartitioning
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine MatPartitioningApply
+      subroutine MatPartitioningImprove(a,b,z)
+       import tIS
+       MatPartitioning a ! MatPartitioning
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine MatPartitioningImprove
+      subroutine MatPartitioningViewImbalance(a,b,z)
+       import tIS
+       MatPartitioning a ! MatPartitioning
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine MatPartitioningViewImbalance
+      subroutine MatPartitioningSetAdjacency(a,b,z)
+       import tMat
+       MatPartitioning a ! MatPartitioning
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine MatPartitioningSetAdjacency
+      subroutine MatPartitioningDestroy(a,z)
+       MatPartitioning a ! MatPartitioning
+       PetscErrorCode z
+       end subroutine MatPartitioningDestroy
+      subroutine MatPartitioningSetUseEdgeWeights(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine MatPartitioningSetUseEdgeWeights
+      subroutine MatPartitioningGetUseEdgeWeights(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine MatPartitioningGetUseEdgeWeights
+      subroutine MatPartitioningCreate(a,b,z)
+       MPI_Comm a ! MPI_Comm
+       MatPartitioning b ! MatPartitioning
+       PetscErrorCode z
+       end subroutine MatPartitioningCreate
+      subroutine MatPartitioningSetFromOptions(a,z)
+       MatPartitioning a ! MatPartitioning
+       PetscErrorCode z
+       end subroutine MatPartitioningSetFromOptions
+      subroutine MatPartitioningChacoSetGlobal(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       MPChacoGlobalType b ! MPChacoGlobalType
+       PetscErrorCode z
+       end subroutine MatPartitioningChacoSetGlobal
+      subroutine MatPartitioningChacoGetGlobal(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       MPChacoGlobalType b ! MPChacoGlobalType
+       PetscErrorCode z
+       end subroutine MatPartitioningChacoGetGlobal
+      subroutine MatPartitioningChacoSetLocal(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       MPChacoLocalType b ! MPChacoLocalType
+       PetscErrorCode z
+       end subroutine MatPartitioningChacoSetLocal
+      subroutine MatPartitioningChacoGetLocal(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       MPChacoLocalType b ! MPChacoLocalType
+       PetscErrorCode z
+       end subroutine MatPartitioningChacoGetLocal
+      subroutine MatPartitioningChacoSetCoarseLevel(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine MatPartitioningChacoSetCoarseLevel
+      subroutine MatPartitioningChacoSetEigenSolver(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       MPChacoEigenType b ! MPChacoEigenType
+       PetscErrorCode z
+       end subroutine MatPartitioningChacoSetEigenSolver
+      subroutine MatPartitioningChacoGetEigenSolver(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       MPChacoEigenType b ! MPChacoEigenType
+       PetscErrorCode z
+       end subroutine MatPartitioningChacoGetEigenSolver
+      subroutine MatPartitioningChacoSetEigenTol(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine MatPartitioningChacoSetEigenTol
+      subroutine MatPartitioningChacoGetEigenTol(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine MatPartitioningChacoGetEigenTol
+      subroutine MatPartitioningChacoSetEigenNumber(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatPartitioningChacoSetEigenNumber
+      subroutine MatPartitioningChacoGetEigenNumber(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatPartitioningChacoGetEigenNumber
+      subroutine MatPartitioningPartySetCoarseLevel(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine MatPartitioningPartySetCoarseLevel
+      subroutine MatPartitioningPartySetMatchOptimization(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine MatPartitioningPartySetMatchOptimization
+      subroutine MatPartitioningPartySetBipart(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine MatPartitioningPartySetBipart
+      subroutine MatPartitioningParmetisSetCoarseSequential(a,z)
+       MatPartitioning a ! MatPartitioning
+       PetscErrorCode z
+       end subroutine MatPartitioningParmetisSetCoarseSequential
+      subroutine MatPartitioningParmetisSetRepartition(a,z)
+       MatPartitioning a ! MatPartitioning
+       PetscErrorCode z
+       end subroutine MatPartitioningParmetisSetRepartition
+      subroutine MatPartitioningParmetisGetEdgeCut(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatPartitioningParmetisGetEdgeCut
+      subroutine MatMeshToCellGraph(a,b,c,z)
+       import tMat
+       Mat a ! Mat
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine MatMeshToCellGraph
+      subroutine MatPartitioningPTScotchSetImbalance(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine MatPartitioningPTScotchSetImbalance
+      subroutine MatPartitioningPTScotchGetImbalance(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine MatPartitioningPTScotchGetImbalance
+      subroutine MatPartitioningPTScotchSetStrategy(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       MPPTScotchStrategyType b ! MPPTScotchStrategyType
+       PetscErrorCode z
+       end subroutine MatPartitioningPTScotchSetStrategy
+      subroutine MatPartitioningPTScotchGetStrategy(a,b,z)
+       MatPartitioning a ! MatPartitioning
+       MPPTScotchStrategyType b ! MPPTScotchStrategyType
+       PetscErrorCode z
+       end subroutine MatPartitioningPTScotchGetStrategy

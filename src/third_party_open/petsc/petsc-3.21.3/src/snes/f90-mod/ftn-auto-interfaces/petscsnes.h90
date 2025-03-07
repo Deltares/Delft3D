@@ -1,0 +1,1070 @@
+      subroutine SNESCompositeGetSNES(a,b,c,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       SNES c ! SNES
+       PetscErrorCode z
+       end subroutine SNESCompositeGetSNES
+      subroutine SNESCompositeGetNumber(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESCompositeGetNumber
+      subroutine SNESCompositeSetDamping(a,b,c,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESCompositeSetDamping
+      subroutine SNESNGSSetTolerances(a,b,c,d,e,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscInt e ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESNGSSetTolerances
+      subroutine SNESNGSGetTolerances(a,b,c,d,e,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscInt e ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESNGSGetTolerances
+      subroutine SNESNGSSetSweeps(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESNGSSetSweeps
+      subroutine SNESNGSGetSweeps(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESNGSGetSweeps
+      subroutine SNESMultiblockSetFields(a,b,c,d,z)
+       import tSNES
+       SNES a ! SNES
+       character b (*) ! char
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESMultiblockSetFields
+      subroutine SNESMultiblockSetIS(a,b,c,z)
+       import tIS,tSNES
+       SNES a ! SNES
+       character b (*) ! char
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine SNESMultiblockSetIS
+      subroutine SNESMultiblockSetType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PCCompositeType b ! PCCompositeType
+       PetscErrorCode z
+       end subroutine SNESMultiblockSetType
+      subroutine SNESMultiblockSetBlockSize(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESMultiblockSetBlockSize
+      subroutine SNESNASMSetType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PCASMType b ! PCASMType
+       PetscErrorCode z
+       end subroutine SNESNASMSetType
+      subroutine SNESNASMGetType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PCASMType b ! PCASMType
+       PetscErrorCode z
+       end subroutine SNESNASMGetType
+      subroutine SNESNASMSetSubdomains(a,b,c,d,e,f,z)
+       import tVecScatter,tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       SNES c (*) ! SNES
+       VecScatter d (*) ! VecScatter
+       VecScatter e (*) ! VecScatter
+       VecScatter f (*) ! VecScatter
+       PetscErrorCode z
+       end subroutine SNESNASMSetSubdomains
+      subroutine SNESNASMGetSubdomains(a,b,c,d,e,f,z)
+       import tVecScatter,tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       SNES c (*) ! SNES
+       VecScatter d (*) ! VecScatter
+       VecScatter e (*) ! VecScatter
+       VecScatter f (*) ! VecScatter
+       PetscErrorCode z
+       end subroutine SNESNASMGetSubdomains
+      subroutine SNESNASMGetSubdomainVecs(a,b,c,d,e,f,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       Vec f ! Vec
+       PetscErrorCode z
+       end subroutine SNESNASMGetSubdomainVecs
+      subroutine SNESNASMSetComputeFinalJacobian(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESNASMSetComputeFinalJacobian
+      subroutine SNESNASMSetDamping(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESNASMSetDamping
+      subroutine SNESNASMGetDamping(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESNASMGetDamping
+      subroutine SNESNASMGetSNES(a,b,c,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       SNES c ! SNES
+       PetscErrorCode z
+       end subroutine SNESNASMGetSNES
+      subroutine SNESNASMGetNumber(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESNASMGetNumber
+      subroutine SNESNASMSetWeight(a,b,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine SNESNASMSetWeight
+      subroutine SNESNCGSetType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESNCGType b ! SNESNCGType
+       PetscErrorCode z
+       end subroutine SNESNCGSetType
+      subroutine SNESNGMRESSetRestartFmRise(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESNGMRESSetRestartFmRise
+      subroutine SNESNGMRESSetRestartType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESNGMRESRestartType b ! SNESNGMRESRestartType
+       PetscErrorCode z
+       end subroutine SNESNGMRESSetRestartType
+      subroutine SNESNGMRESSetSelectType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESNGMRESSelectType b ! SNESNGMRESSelectType
+       PetscErrorCode z
+       end subroutine SNESNGMRESSetSelectType
+      subroutine SNESNewtonTRDCGetRhoFlag(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESNewtonTRDCGetRhoFlag
+      subroutine SNESQNSetRestartType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESQNRestartType b ! SNESQNRestartType
+       PetscErrorCode z
+       end subroutine SNESQNSetRestartType
+      subroutine SNESQNSetScaleType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESQNScaleType b ! SNESQNScaleType
+       PetscErrorCode z
+       end subroutine SNESQNSetScaleType
+      subroutine SNESQNSetType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESQNType b ! SNESQNType
+       PetscErrorCode z
+       end subroutine SNESQNSetType
+      subroutine SNESNewtonTRSetNormType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       NormType b ! NormType
+       PetscErrorCode z
+       end subroutine SNESNewtonTRSetNormType
+      subroutine SNESNewtonTRSetQNType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESNewtonTRQNType b ! SNESNewtonTRQNType
+       PetscErrorCode z
+       end subroutine SNESNewtonTRSetQNType
+      subroutine SNESNewtonTRSetFallbackType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESNewtonTRFallbackType b ! SNESNewtonTRFallbackType
+       PetscErrorCode z
+       end subroutine SNESNewtonTRSetFallbackType
+      subroutine SNESVIGetActiveSetIS(a,b,c,d,z)
+       import tIS,tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       Vec c ! Vec
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine SNESVIGetActiveSetIS
+      subroutine SNESVISetVariableBounds(a,b,c,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine SNESVISetVariableBounds
+      subroutine SNESVIGetVariableBounds(a,b,c,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine SNESVIGetVariableBounds
+      subroutine SNESVIGetInactiveSet(a,b,z)
+       import tIS,tSNES
+       SNES a ! SNES
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine SNESVIGetInactiveSet
+      subroutine DMSetVI(a,b,z)
+       import tIS,tDM
+       DM a ! DM
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine DMSetVI
+      subroutine SNESVIComputeMeritFunction(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESVIComputeMeritFunction
+      subroutine SNESSetErrorIfNotConverged(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESSetErrorIfNotConverged
+      subroutine SNESGetErrorIfNotConverged(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESGetErrorIfNotConverged
+      subroutine SNESSetAlwaysComputesFinalResidual(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESSetAlwaysComputesFinalResidual
+      subroutine SNESGetAlwaysComputesFinalResidual(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESGetAlwaysComputesFinalResidual
+      subroutine SNESSetFunctionDomainError(a,z)
+       import tSNES
+       SNES a ! SNES
+       PetscErrorCode z
+       end subroutine SNESSetFunctionDomainError
+      subroutine SNESSetJacobianDomainError(a,z)
+       import tSNES
+       SNES a ! SNES
+       PetscErrorCode z
+       end subroutine SNESSetJacobianDomainError
+      subroutine SNESSetCheckJacobianDomainError(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESSetCheckJacobianDomainError
+      subroutine SNESGetCheckJacobianDomainError(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESGetCheckJacobianDomainError
+      subroutine SNESGetFunctionDomainError(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESGetFunctionDomainError
+      subroutine SNESGetJacobianDomainError(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESGetJacobianDomainError
+      subroutine SNESSetUpMatrices(a,z)
+       import tSNES
+       SNES a ! SNES
+       PetscErrorCode z
+       end subroutine SNESSetUpMatrices
+      subroutine SNESSetFromOptions(a,z)
+       import tSNES
+       SNES a ! SNES
+       PetscErrorCode z
+       end subroutine SNESSetFromOptions
+      subroutine SNESResetFromOptions(a,z)
+       import tSNES
+       SNES a ! SNES
+       PetscErrorCode z
+       end subroutine SNESResetFromOptions
+      subroutine SNESSetUseMatrixFree(a,b,c,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESSetUseMatrixFree
+      subroutine SNESGetUseMatrixFree(a,b,c,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESGetUseMatrixFree
+      subroutine SNESGetIterationNumber(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESGetIterationNumber
+      subroutine SNESSetIterationNumber(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESSetIterationNumber
+      subroutine SNESGetNonlinearStepFailures(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESGetNonlinearStepFailures
+      subroutine SNESSetMaxNonlinearStepFailures(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESSetMaxNonlinearStepFailures
+      subroutine SNESGetMaxNonlinearStepFailures(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESGetMaxNonlinearStepFailures
+      subroutine SNESGetNumberFunctionEvals(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESGetNumberFunctionEvals
+      subroutine SNESGetLinearSolveFailures(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESGetLinearSolveFailures
+      subroutine SNESSetMaxLinearSolveFailures(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESSetMaxLinearSolveFailures
+      subroutine SNESGetMaxLinearSolveFailures(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESGetMaxLinearSolveFailures
+      subroutine SNESGetLinearSolveIterations(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESGetLinearSolveIterations
+      subroutine SNESSetCountersReset(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESSetCountersReset
+      subroutine SNESSetKSP(a,b,z)
+       import tKSP,tSNES
+       SNES a ! SNES
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine SNESSetKSP
+      subroutine SNESCreate(a,b,z)
+       import tSNES
+       MPI_Comm a ! MPI_Comm
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine SNESCreate
+      subroutine SNESSetNormSchedule(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESNormSchedule b ! SNESNormSchedule
+       PetscErrorCode z
+       end subroutine SNESSetNormSchedule
+      subroutine SNESGetNormSchedule(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESNormSchedule b ! SNESNormSchedule
+       PetscErrorCode z
+       end subroutine SNESGetNormSchedule
+      subroutine SNESSetFunctionNorm(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESSetFunctionNorm
+      subroutine SNESGetFunctionNorm(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESGetFunctionNorm
+      subroutine SNESGetUpdateNorm(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESGetUpdateNorm
+      subroutine SNESGetSolutionNorm(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESGetSolutionNorm
+      subroutine SNESComputeFunction(a,b,c,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine SNESComputeFunction
+      subroutine SNESComputeMFFunction(a,b,c,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine SNESComputeMFFunction
+      subroutine SNESComputeNGS(a,b,c,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine SNESComputeNGS
+      subroutine SNESComputeJacobian(a,b,c,d,z)
+       import tVec,tSNES,tMat
+       SNES a ! SNES
+       Vec b ! Vec
+       Mat c ! Mat
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine SNESComputeJacobian
+      subroutine SNESSetUp(a,z)
+       import tSNES
+       SNES a ! SNES
+       PetscErrorCode z
+       end subroutine SNESSetUp
+      subroutine SNESReset(a,z)
+       import tSNES
+       SNES a ! SNES
+       PetscErrorCode z
+       end subroutine SNESReset
+      subroutine SNESConvergedReasonViewCancel(a,z)
+       import tSNES
+       SNES a ! SNES
+       PetscErrorCode z
+       end subroutine SNESConvergedReasonViewCancel
+      subroutine SNESSetLagPreconditioner(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESSetLagPreconditioner
+      subroutine SNESSetGridSequence(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESSetGridSequence
+      subroutine SNESGetGridSequence(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESGetGridSequence
+      subroutine SNESGetLagPreconditioner(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESGetLagPreconditioner
+      subroutine SNESSetLagJacobian(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESSetLagJacobian
+      subroutine SNESGetLagJacobian(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESGetLagJacobian
+      subroutine SNESSetLagJacobianPersists(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESSetLagJacobianPersists
+      subroutine SNESSetLagPreconditionerPersists(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESSetLagPreconditionerPersists
+      subroutine SNESSetForceIteration(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESSetForceIteration
+      subroutine SNESGetForceIteration(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESGetForceIteration
+      subroutine SNESSetTolerances(a,b,c,d,e,f,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESSetTolerances
+      subroutine SNESSetDivergenceTolerance(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESSetDivergenceTolerance
+      subroutine SNESGetTolerances(a,b,c,d,e,f,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESGetTolerances
+      subroutine SNESGetDivergenceTolerance(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESGetDivergenceTolerance
+      subroutine SNESSetTrustRegionTolerance(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESSetTrustRegionTolerance
+      subroutine SNESConverged(a,b,c,d,e,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESConverged
+      subroutine SNESMonitor(a,b,c,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESMonitor
+      subroutine SNESMonitorCancel(a,z)
+       import tSNES
+       SNES a ! SNES
+       PetscErrorCode z
+       end subroutine SNESMonitorCancel
+      subroutine SNESGetConvergedReason(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESConvergedReason b ! SNESConvergedReason
+       PetscErrorCode z
+       end subroutine SNESGetConvergedReason
+      subroutine SNESSetConvergedReason(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESConvergedReason b ! SNESConvergedReason
+       PetscErrorCode z
+       end subroutine SNESSetConvergedReason
+      subroutine SNESSetConvergenceHistory(a,b,c,d,e,z)
+       import tSNES
+       SNES a ! SNES
+       PetscReal b (*) ! PetscReal
+       PetscInt c (*) ! PetscInt
+       PetscInt d ! PetscInt
+       PetscBool e ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESSetConvergenceHistory
+      subroutine SNESConvergedReasonViewFromOptions(a,z)
+       import tSNES
+       SNES a ! SNES
+       PetscErrorCode z
+       end subroutine SNESConvergedReasonViewFromOptions
+      subroutine SNESSolve(a,b,c,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine SNESSolve
+      subroutine SNESSetSolution(a,b,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine SNESSetSolution
+      subroutine SNESGetSolution(a,b,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine SNESGetSolution
+      subroutine SNESGetSolutionUpdate(a,b,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine SNESGetSolutionUpdate
+      subroutine SNESKSPSetUseEW(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESKSPSetUseEW
+      subroutine SNESKSPGetUseEW(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESKSPGetUseEW
+      subroutine SNESKSPSetParametersEW(a,b,c,d,e,f,g,h,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscReal g ! PetscReal
+       PetscReal h ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESKSPSetParametersEW
+      subroutine SNESKSPGetParametersEW(a,b,c,d,e,f,g,h,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscReal g ! PetscReal
+       PetscReal h ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESKSPGetParametersEW
+      subroutine SNESGetKSP(a,b,z)
+       import tKSP,tSNES
+       SNES a ! SNES
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine SNESGetKSP
+      subroutine SNESSetDM(a,b,z)
+       import tSNES,tDM
+       SNES a ! SNES
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine SNESSetDM
+      subroutine SNESGetDM(a,b,z)
+       import tSNES,tDM
+       SNES a ! SNES
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine SNESGetDM
+      subroutine SNESSetNPC(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine SNESSetNPC
+      subroutine SNESGetNPC(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine SNESGetNPC
+      subroutine SNESHasNPC(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESHasNPC
+      subroutine SNESSetNPCSide(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PCSide b ! PCSide
+       PetscErrorCode z
+       end subroutine SNESSetNPCSide
+      subroutine SNESGetNPCSide(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PCSide b ! PCSide
+       PetscErrorCode z
+       end subroutine SNESGetNPCSide
+      subroutine SNESSetLineSearch(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESLineSearch b ! SNESLineSearch
+       PetscErrorCode z
+       end subroutine SNESSetLineSearch
+      subroutine SNESGetLineSearch(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESLineSearch b ! SNESLineSearch
+       PetscErrorCode z
+       end subroutine SNESGetLineSearch
+      subroutine SNESApplyNPC(a,b,c,d,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine SNESApplyNPC
+      subroutine SNESGetNPCFunction(a,b,c,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESGetNPCFunction
+      subroutine SNESLineSearchBTSetAlpha(a,b,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESLineSearchBTSetAlpha
+      subroutine SNESLineSearchBTGetAlpha(a,b,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESLineSearchBTGetAlpha
+      subroutine SNESLineSearchMonitorCancel(a,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscErrorCode z
+       end subroutine SNESLineSearchMonitorCancel
+      subroutine SNESLineSearchMonitor(a,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscErrorCode z
+       end subroutine SNESLineSearchMonitor
+      subroutine SNESLineSearchCreate(a,b,z)
+       MPI_Comm a ! MPI_Comm
+       SNESLineSearch b ! SNESLineSearch
+       PetscErrorCode z
+       end subroutine SNESLineSearchCreate
+      subroutine SNESLineSearchSetUp(a,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetUp
+      subroutine SNESLineSearchReset(a,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscErrorCode z
+       end subroutine SNESLineSearchReset
+      subroutine SNESLineSearchPreCheck(a,b,c,d,z)
+       import tVec
+       SNESLineSearch a ! SNESLineSearch
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscBool d ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESLineSearchPreCheck
+      subroutine SNESLineSearchPostCheck(a,b,c,d,e,f,z)
+       import tVec
+       SNESLineSearch a ! SNESLineSearch
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscBool e ! PetscBool
+       PetscBool f ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESLineSearchPostCheck
+      subroutine SNESLineSearchApply(a,b,c,d,e,z)
+       import tVec
+       SNESLineSearch a ! SNESLineSearch
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscReal d ! PetscReal
+       Vec e ! Vec
+       PetscErrorCode z
+       end subroutine SNESLineSearchApply
+      subroutine SNESLineSearchDestroy(a,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscErrorCode z
+       end subroutine SNESLineSearchDestroy
+      subroutine SNESLineSearchSetDefaultMonitor(a,b,z)
+       import tPetscViewer
+       SNESLineSearch a ! SNESLineSearch
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetDefaultMonitor
+      subroutine SNESLineSearchGetDefaultMonitor(a,b,z)
+       import tPetscViewer
+       SNESLineSearch a ! SNESLineSearch
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine SNESLineSearchGetDefaultMonitor
+      subroutine SNESLineSearchSetFromOptions(a,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetFromOptions
+      subroutine SNESLineSearchView(a,b,z)
+       import tPetscViewer
+       SNESLineSearch a ! SNESLineSearch
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine SNESLineSearchView
+      subroutine SNESLineSearchSetSNES(a,b,z)
+       import tSNES
+       SNESLineSearch a ! SNESLineSearch
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetSNES
+      subroutine SNESLineSearchGetSNES(a,b,z)
+       import tSNES
+       SNESLineSearch a ! SNESLineSearch
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine SNESLineSearchGetSNES
+      subroutine SNESLineSearchGetLambda(a,b,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESLineSearchGetLambda
+      subroutine SNESLineSearchSetLambda(a,b,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetLambda
+      subroutine SNESLineSearchGetTolerances(a,b,c,d,e,f,g,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscInt g ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESLineSearchGetTolerances
+      subroutine SNESLineSearchSetTolerances(a,b,c,d,e,f,g,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscInt g ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetTolerances
+      subroutine SNESLineSearchGetDamping(a,b,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESLineSearchGetDamping
+      subroutine SNESLineSearchSetDamping(a,b,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetDamping
+      subroutine SNESLineSearchGetOrder(a,b,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESLineSearchGetOrder
+      subroutine SNESLineSearchSetOrder(a,b,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetOrder
+      subroutine SNESLineSearchGetNorms(a,b,c,d,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESLineSearchGetNorms
+      subroutine SNESLineSearchSetNorms(a,b,c,d,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetNorms
+      subroutine SNESLineSearchComputeNorms(a,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscErrorCode z
+       end subroutine SNESLineSearchComputeNorms
+      subroutine SNESLineSearchSetComputeNorms(a,b,z)
+       SNESLineSearch a ! SNESLineSearch
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetComputeNorms
+      subroutine SNESLineSearchGetVecs(a,b,c,d,e,f,z)
+       import tVec
+       SNESLineSearch a ! SNESLineSearch
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       Vec f ! Vec
+       PetscErrorCode z
+       end subroutine SNESLineSearchGetVecs
+      subroutine SNESLineSearchSetVecs(a,b,c,d,e,f,z)
+       import tVec
+       SNESLineSearch a ! SNESLineSearch
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       Vec f ! Vec
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetVecs
+      subroutine SNESLineSearchGetReason(a,b,z)
+       SNESLineSearch a ! SNESLineSearch
+       SNESLineSearchReason b ! SNESLineSearchReason
+       PetscErrorCode z
+       end subroutine SNESLineSearchGetReason
+      subroutine SNESLineSearchSetReason(a,b,z)
+       SNESLineSearch a ! SNESLineSearch
+       SNESLineSearchReason b ! SNESLineSearchReason
+       PetscErrorCode z
+       end subroutine SNESLineSearchSetReason
+      subroutine MatSNESMFGetSNES(a,b,z)
+       import tSNES,tMat
+       Mat a ! Mat
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine MatSNESMFGetSNES
+      subroutine MatSNESMFSetReuseBase(a,b,z)
+       import tMat
+       Mat a ! Mat
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine MatSNESMFSetReuseBase
+      subroutine MatSNESMFGetReuseBase(a,b,z)
+       import tMat
+       Mat a ! Mat
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine MatSNESMFGetReuseBase
+      subroutine MatCreateSNESMF(a,b,z)
+       import tSNES,tMat
+       SNES a ! SNES
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateSNESMF
+      subroutine PetscConvEstDestroy(a,z)
+       import tPetscConvEst
+       PetscConvEst a ! PetscConvEst
+       PetscErrorCode z
+       end subroutine PetscConvEstDestroy
+      subroutine PetscConvEstSetFromOptions(a,z)
+       import tPetscConvEst
+       PetscConvEst a ! PetscConvEst
+       PetscErrorCode z
+       end subroutine PetscConvEstSetFromOptions
+      subroutine PetscConvEstView(a,b,z)
+       import tPetscConvEst,tPetscViewer
+       PetscConvEst a ! PetscConvEst
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscConvEstView
+      subroutine PetscConvEstGetSolver(a,b,z)
+       import tPetscConvEst
+       PetscConvEst a ! PetscConvEst
+       PetscObject b ! PetscObject
+       PetscErrorCode z
+       end subroutine PetscConvEstGetSolver
+      subroutine PetscConvEstSetSolver(a,b,z)
+       import tPetscConvEst
+       PetscConvEst a ! PetscConvEst
+       PetscObject b ! PetscObject
+       PetscErrorCode z
+       end subroutine PetscConvEstSetSolver
+      subroutine PetscConvEstSetUp(a,z)
+       import tPetscConvEst
+       PetscConvEst a ! PetscConvEst
+       PetscErrorCode z
+       end subroutine PetscConvEstSetUp
+      subroutine PetscConvEstMonitorDefault(a,b,z)
+       import tPetscConvEst
+       PetscConvEst a ! PetscConvEst
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscConvEstMonitorDefault
+      subroutine PetscConvEstGetConvRate(a,b,z)
+       import tPetscConvEst
+       PetscConvEst a ! PetscConvEst
+       PetscReal b (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscConvEstGetConvRate
+      subroutine PetscConvEstRateView(a,b,c,z)
+       import tPetscConvEst,tPetscViewer
+       PetscConvEst a ! PetscConvEst
+       PetscReal b (*) ! PetscReal
+       PetscViewer c ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscConvEstRateView
+      subroutine PetscConvEstCreate(a,b,z)
+       import tPetscConvEst
+       MPI_Comm a ! MPI_Comm
+       PetscConvEst b ! PetscConvEst
+       PetscErrorCode z
+       end subroutine PetscConvEstCreate

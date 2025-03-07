@@ -1,0 +1,199 @@
+      subroutine PetscSFCreate(a,b,z)
+       import tPetscSF
+       MPI_Comm a ! MPI_Comm
+       PetscSF b ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFCreate
+      subroutine PetscSFReset(a,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFReset
+      subroutine PetscSFSetUp(a,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFSetUp
+      subroutine PetscSFSetFromOptions(a,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFSetFromOptions
+      subroutine PetscSFSetRankOrder(a,b,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSFSetRankOrder
+      subroutine PetscSFSetGraphWithPattern(a,b,c,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscLayout b ! PetscLayout
+       PetscSFPattern c ! PetscSFPattern
+       PetscErrorCode z
+       end subroutine PetscSFSetGraphWithPattern
+      subroutine PetscSFCreateInverseSF(a,b,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscSF b ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFCreateInverseSF
+      subroutine PetscSFDuplicate(a,b,c,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscSFDuplicateOption b ! PetscSFDuplicateOption
+       PetscSF c ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFDuplicate
+      subroutine PetscSFGetLeafRange(a,b,c,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSFGetLeafRange
+      subroutine PetscSFGetRanksSF(a,b,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscSF b ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFGetRanksSF
+      subroutine PetscSFGetMultiSF(a,b,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscSF b ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFGetMultiSF
+      subroutine PetscSFCompose(a,b,c,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscSF b ! PetscSF
+       PetscSF c ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFCompose
+      subroutine PetscSFComposeInverse(a,b,c,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscSF b ! PetscSF
+       PetscSF c ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFComposeInverse
+      subroutine PetscSFConcatenate(a,b,c,d,e,f,z)
+       import tPetscSF
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscSF c (*) ! PetscSF
+       PetscSFConcatenateRootMode d ! PetscSFConcatenateRootMode
+       PetscInt e (*) ! PetscInt
+       PetscSF f ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFConcatenate
+      subroutine VecScatterSetUp(a,z)
+       import tVecScatter
+       VecScatter a ! VecScatter
+       PetscErrorCode z
+       end subroutine VecScatterSetUp
+      subroutine VecScatterGetMerged(a,b,z)
+       import tVecScatter
+       VecScatter a ! VecScatter
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine VecScatterGetMerged
+      subroutine VecScatterCopy(a,b,z)
+       import tVecScatter
+       VecScatter a ! VecScatter
+       VecScatter b ! VecScatter
+       PetscErrorCode z
+       end subroutine VecScatterCopy
+      subroutine VecScatterSetFromOptions(a,z)
+       import tVecScatter
+       VecScatter a ! VecScatter
+       PetscErrorCode z
+       end subroutine VecScatterSetFromOptions
+      subroutine VecScatterCreate(a,b,c,d,e,z)
+       import tIS,tVec,tVecScatter
+       Vec a ! Vec
+       IS b ! IS
+       Vec c ! Vec
+       IS d ! IS
+       VecScatter e ! VecScatter
+       PetscErrorCode z
+       end subroutine VecScatterCreate
+      subroutine VecScatterBegin(a,b,c,d,e,z)
+       import tVec,tVecScatter
+       VecScatter a ! VecScatter
+       Vec b ! Vec
+       Vec c ! Vec
+       InsertMode d ! InsertMode
+       ScatterMode e ! ScatterMode
+       PetscErrorCode z
+       end subroutine VecScatterBegin
+      subroutine VecScatterEnd(a,b,c,d,e,z)
+       import tVec,tVecScatter
+       VecScatter a ! VecScatter
+       Vec b ! Vec
+       Vec c ! Vec
+       InsertMode d ! InsertMode
+       ScatterMode e ! ScatterMode
+       PetscErrorCode z
+       end subroutine VecScatterEnd
+      subroutine PetscSFSetGraphFromCoordinates(a,b,c,d,e,f,g,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscReal g ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscSFSetGraphFromCoordinates
+      subroutine PetscSFSetGraphLayout(a,b,c,d,e,f,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscLayout b ! PetscLayout
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscCopyMode e ! PetscCopyMode
+       PetscInt f ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSFSetGraphLayout
+      subroutine PetscSFSetGraphSection(a,b,c,z)
+       import tPetscSF,tPetscSection
+       PetscSF a ! PetscSF
+       PetscSection b ! PetscSection
+       PetscSection c ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSFSetGraphSection
+      subroutine PetscSFCreateByMatchingIndices(a,b,c,d,e,f,g,h,i,j,k,z)
+       import tPetscSF&
+     &
+       PetscLayout a ! PetscLayout
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscInt g ! PetscInt
+       PetscInt h ! PetscInt
+       PetscInt i ! PetscInt
+       PetscSF j ! PetscSF
+       PetscSF k ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFCreateByMatchingIndices
+      subroutine PetscSFMerge(a,b,c,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscSF b ! PetscSF
+       PetscSF c ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFMerge
+      subroutine PetscSFCreateStridedSF(a,b,c,d,e,z)
+       import tPetscSF
+       PetscSF a ! PetscSF
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscSF e ! PetscSF
+       PetscErrorCode z
+       end subroutine PetscSFCreateStridedSF

@@ -1,0 +1,179 @@
+DM Object: box 1 MPI process
+  type: plex
+box in 3 dimensions:
+  Number of 0-cells per rank: 48
+  Number of 1-cells per rank: 190
+  Number of 2-cells per rank: 241
+  Number of 3-cells per rank: 98
+Labels:
+  marker: 1 strata with value/size (1 (137))
+  celltype: 4 strata with value/size (0 (48), 6 (98), 3 (241), 1 (190))
+  depth: 4 strata with value/size (0 (48), 1 (190), 2 (241), 3 (98))
+Local function:
+Vec Object: 1 MPI process
+  type: seq
+0.
+0.666667
+0.666667
+1.33333
+0.666667
+1.33333
+1.33333
+2.
+0.833333
+0.833333
+1.5
+1.5
+0.166667
+0.166667
+0.833333
+0.833333
+0.166667
+0.833333
+1.5
+0.833333
+0.208333
+0.0416667
+0.0416667
+0.333333
+0.708333
+0.708333
+1.
+0.354167
+0.333333
+0.708333
+0.708333
+1.
+1.375
+1.04167
+1.
+0.780093
+0.356771
+0.113426
+0.106771
+1.04167
+1.375
+0.356771
+0.780093
+1.02344
+0.690104
+0.5
+0.630787
+1.02344
+Initial guess
+Vec Object: potential 1 MPI process
+  type: seq
+0.5
+L_2 Error: 0.065101
+Residual:
+Vec Object: 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.18227
+0.
+0.
+Initial Residual
+Vec Object: Residual, Iterate 0 1 MPI process
+  type: seq
+0.18227
+L_2 Residual: 0.18227
+Residual:
+Vec Object: 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+-1.5711
+0.
+0.
+Au - b = Au + F(0)
+Vec Object: Residual, Iterate 0 1 MPI process
+  type: seq
+0.18227
+Linear L_2 Residual: 0.18227

@@ -1,0 +1,62 @@
+#define PETSCVEC_DLL
+#include <petscsys.h>
+
+#define NOTLIKELY -1.234567890123
+
+EXTERN_C_BEGIN
+int PETSC_VISIBILITY_PUBLIC PFApply_String(void *value,PetscInt n,PetscScalar *in,PetscScalar *out)
+{
+  PetscInt    i;
+  PetscScalar x,y,z,f = NOTLIKELY,x1 = 0,x2 = 0,x3 = 0,x4 = 0,x5 = 0;
+  PetscScalar f1  = NOTLIKELY, f2 = 0,f3 = 0,f4 = 0,f5 = 0;
+
+  (void)x;
+  (void)y;
+  (void)z;
+  (void)f;
+  (void)x1;
+  (void)x2;
+  (void)x3;
+  (void)x4;
+  (void)x5;
+  (void)f1;
+  (void)f2;
+  (void)f3;
+  (void)f4;
+  (void)f5;
+  for (i=0; i<n; i++) {
+    x1 = x = in[_NIN_*i];
+#if (_NIN_ > 1)
+    x2 = y = in[_NIN_*i+1];
+#endif
+#if (_NIN_ > 2)
+    x3 = z = in[_NIN_*i+2];
+#endif
+#if (_NIN_ > 3)
+    x4 = in[_NIN_*i+3];
+#endif
+#if (_NIN_ > 4)
+    x5 = in[_NIN_*i+4];
+#endif
+    FUNCTION;
+    if (f == NOTLIKELY) {
+      out[_NOUT_*i] = f1;
+    } else {
+      out[_NOUT_*i] = f;
+    }
+#if (_NOUT_ > 1)
+    out[_NOUT_*i+1] = f2;
+#endif
+#if (_NOUT_ > 2)
+    out[_NOUT_*i+2] = f3;
+#endif
+#if (_NOUT_ > 3)
+    out[_NOUT_*i+3] = f4;
+#endif
+#if (_NOUT_ > 4)
+    out[_NOUT_*i+4] = f5;
+#endif
+  }
+  return(0);
+}
+EXTERN_C_END

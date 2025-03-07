@@ -1,0 +1,21 @@
+include setup*.py *.toml *.cfg *.rst
+
+recursive-include demo [M,m]akefile* *.py *.pyx *.i *.[hc]
+recursive-include demo .f2py_f2cmap *.pyf *.[fF]90
+recursive-include conf *.py *.sh *.cfg
+recursive-include src  *.py *.pyx *.px[di] *.h *.c *.i *.cfg
+recursive-include test *.py
+recursive-include *    [M,m]akefile
+
+exclude src/petsc4py/PETSc.c
+exclude src/petsc4py/PETSc.h
+exclude src/petsc4py/PETSc_api.h
+
+include docs/*.html
+include docs/*.pdf
+include docs/*.info
+include docs/*.[137]
+include docs/*.rst
+recursive-include docs/usrman *
+recursive-include docs/apiref *
+recursive-include docs/source *
