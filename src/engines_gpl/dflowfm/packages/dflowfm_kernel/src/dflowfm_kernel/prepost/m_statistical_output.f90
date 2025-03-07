@@ -45,6 +45,7 @@ module m_statistical_output
    !> Realloc memory cross-section definition or cross-sections
    interface realloc
       module procedure reallocate_output_set
+      module procedure reallocate_output_set_cropped
    end interface
 
    !> Free the memory of cross-section definition or cross-sections
@@ -54,36 +55,54 @@ module m_statistical_output
 
 contains
 
-   subroutine reallocate_output_set(output_set, crop)
+   subroutine reallocate_output_set(output_set)
       use m_alloc
 
       type(t_output_variable_set), intent(inout) :: output_set !< output variable set to reallocate
-      logical, intent(in), optional :: crop !< crop output set to number of valid items
-
-      logical :: crop_
-      type(t_output_variable_item), allocatable, dimension(:) :: new_statout
-      integer :: count_to_copy
-
-      crop_ = .false.
-      if (present(crop)) then
-         crop_ = crop
-      end if
 
       ! Optimization: if the output set is already at capacity, we don't need to do anything
-      if (allocated(output_set%statout) .and. ((crop_ .and. output_set%capacity == output_set%count) .or. &
-                                               (.not. crop_ .and. output_set%capacity >= output_set%count))) then
+      if (allocated(output_set%statout) .and. output_set%capacity >= output_set%count) then
          return
       end if
 
-      if (crop_) then
-         output_set%capacity = output_set%count
-      else if (output_set%capacity == 0) then
+      if (output_set%capacity == 0) then
          output_set%capacity = 200
       end if
 
       do while (output_set%count > output_set%capacity)
          output_set%capacity = 2 * output_set%capacity
       end do
+
+      call reallocate_to_capacity(output_set)
+   end subroutine reallocate_output_set
+
+   subroutine reallocate_output_set_cropped(output_set, crop)
+      use m_alloc
+
+      type(t_output_variable_set), intent(inout) :: output_set !< output variable set to reallocate
+      logical, intent(in) :: crop !< whether to crop the output set to its current count
+
+      if (.not. crop) then
+         call reallocate_output_set(output_set)
+         return
+      end if
+
+      ! Optimization: if the output set is already at capacity, we don't need to do anything
+      if (allocated(output_set%statout) .and. output_set%capacity == output_set%count) then
+         return
+      end if
+
+      output_set%capacity = output_set%count
+
+      call reallocate_to_capacity(output_set)
+   end subroutine reallocate_output_set_cropped
+
+   !> Utility function to reallocate the statout array of an output set to its capacity
+   subroutine reallocate_to_capacity(output_set)
+      type(t_output_variable_set), intent(inout) :: output_set !< output variable set to reallocate
+
+      type(t_output_variable_item), allocatable, dimension(:) :: new_statout
+      integer :: count_to_copy
 
       if (allocated(output_set%statout)) then
          allocate (new_statout(output_set%capacity))
@@ -93,7 +112,7 @@ contains
       else
          allocate (output_set%statout(output_set%capacity))
       end if
-   end subroutine reallocate_output_set
+   end subroutine reallocate_to_capacity
 
    subroutine deallocate_output_set(output_set)
       implicit none

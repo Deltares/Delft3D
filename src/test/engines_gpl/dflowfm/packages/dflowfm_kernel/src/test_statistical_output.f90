@@ -48,11 +48,11 @@ contains
       call test(test_add_stat_output_items, 'Tests add_stat_output_items function')
    end subroutine tests_statistical_output
 
-   subroutine process_data_doubler(data_pointer)
+   subroutine double_source_input_function(data_pointer)
       use precision, only: dp
       real(kind=dp), pointer, dimension(:), intent(inout) :: data_pointer
       data_pointer = data_pointer * 2.0_dp
-   end subroutine process_data_doubler
+   end subroutine double_source_input_function
 
    function create_output_item(source_input, operation_type) result(output_item)
       real(kind=dp), target, dimension(:), intent(inout) :: source_input
@@ -116,7 +116,6 @@ contains
       type(t_output_variable_set) :: output_set
       call realloc(output_set)
       call assert_equal(allocated(output_set%statout), .true., '')
-
       call dealloc(output_set)
       call assert_equal(allocated(output_set%statout), .false., '')
    end subroutine test_dealloc
@@ -126,7 +125,7 @@ contains
       real(kind=dp), dimension(3), target :: source_input
       source_input = [1.0_dp, 2.0_dp, 3.0_dp]
       output_set = create_simple_output_variable_set(source_input)
-      output_set%statout(1)%source_input_function_pointer => process_data_doubler
+      output_set%statout(1)%source_input_function_pointer => double_source_input_function
       call update_source_input(output_set)
       call assert_comparable(output_set%statout(1)%source_input, [2.0_dp, 4.0_dp, 6.0_dp], test_tolerance, '')
    end subroutine test_update_source_input
