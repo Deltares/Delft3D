@@ -8,7 +8,7 @@ gantt
     Kick-off :20-02-2025, 1d
     Wrap up feature development :03-03-2025, 5d
     DevOps; Smoketest VA :03-03-2025, 5d
-    PT; UI smoketest :10-03-2025, 5d
+    PT; UI smoketest :17-03-2025, 5d
 
     section Integration DIMR features
     All teams; Integration of features :17-03-2025, 5d
