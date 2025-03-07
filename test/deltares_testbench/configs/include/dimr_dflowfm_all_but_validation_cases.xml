@@ -5902,10 +5902,10 @@
       </checks>
     </testCase>
     <testCase name="e02_f033_c01_statistics_boundary_discharge"  ref="dflowfm_default">
-      <path version="2025-03-07T13:05:47.975000">e02_dflowfm/f033_statistical_output/c01_statistics_boundary_discharge</path>
+      <path version="2025-03-07T16:17:06.364000">e02_dflowfm/f033_statistical_output/c01_statistics_boundary_discharge</path>
       <maxRunTime>10.0000000</maxRunTime>
       <checks>
-        <file name="output/FM_model_his.nc" type="netCDF">
+        <file name="dflowfm/output/FM_model_his.nc" type="netCDF">
           <parameters>
             <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
             <parameter name="cross_section_discharge_avg" toleranceAbsolute="0.0001" />
