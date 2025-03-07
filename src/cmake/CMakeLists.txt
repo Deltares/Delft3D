@@ -206,6 +206,7 @@ set(tools_configuration "TOOLS")
 set(tools_gpl_configuration "TOOLS_GPL")
 set(drr_configuration "DRR")
 set(rtc_configuration "RTC")
+set(fbc_configuration "FBC")
 
 # Combined (multi-component) configurations for running specific testbenches
 # These are equivalent to our branch-prefixes
@@ -237,6 +238,7 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
      OR ${configuration_type} STREQUAL ${drr_configuration}
      OR ${configuration_type} STREQUAL ${rtc_configuration}
+     OR ${configuration_type} STREQUAL ${fbc_configuration}
      OR ${configuration_type} STREQUAL ${fm-suite_configuration}
      OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
      OR ${configuration_type} STREQUAL ${testbench-all_configuration}
@@ -324,6 +326,12 @@ endif()
 if(${configuration_type} STREQUAL ${drr_configuration})
     message(STATUS "Generating solution for D-RR ...")
     include(configurations/components/drr_configuration.cmake)
+endif()
+
+# FBC configuration
+if(${configuration_type} STREQUAL ${fbc_configuration})
+    message(STATUS "Generating solution for FBC-tools ...")
+    include(configurations/components/fbc_configuration.cmake)
 endif()
 
 ### Composed configurations for testbenches

@@ -1,7 +1,7 @@
 # CMake settings
 cmake_minimum_required(VERSION 3.0.0)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/macros)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros)
 
 # Project name
 project(FBCTools)

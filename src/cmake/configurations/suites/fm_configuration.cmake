@@ -10,6 +10,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaves_configurati
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/drr_configuration.cmake)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/fbc_configuration.cmake)
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/tools_configuration.cmake)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/windows_postbuild_configuration.cmake)

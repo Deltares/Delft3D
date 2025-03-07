@@ -426,12 +426,14 @@ rem =======================
     echo   fm-suite          : D-Flow FM, D-WAQ, D-Waves, DIMR
     echo   d3d4-suite        : Delft3D-FLOW, Delft3D-WAQ, Delft3D-PART, Delft3D-WAVE
     echo   dflowfm_interacter: D-Flow FM with Interacter
+    echo   dflowfm           : D-Flow FM without Interacter
     echo   dimr              : DIMR
     echo   drr               : D-RR
     echo   dwaq              : D-WAQ
     echo   dwaves            : D-Waves
     echo   flow2d3d          : Delft3D-FLOW
     echo   swan              : SWAN
+    echo   FBC               : FBC-tools
     echo   tests
     echo   tools
     echo   tools_gpl
