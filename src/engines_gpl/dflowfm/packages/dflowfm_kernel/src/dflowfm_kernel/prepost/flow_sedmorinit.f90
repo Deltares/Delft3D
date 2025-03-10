@@ -92,7 +92,6 @@ contains
       integer, dimension(:), allocatable :: node_processed !< flag (connection) nodes processed while checking cross sections
       type(t_branch), pointer :: pbr
       integer :: outmorphopol !opposite of inmorphopol
-      real(kind=dp), dimension(:), pointer :: aldiff
 !! executable statements -------------------------------------------------------
 !
 !   activate morphology if sediment file has been specified in the mdu file
@@ -529,10 +528,11 @@ contains
           !The array read from the morphology module `rdmorlyr` is at cell centres because that routine is general
           !for D3D4 and FM, however, diffusion in FM is at links. Here we transform it.
           allocate(aldiff_links(1,lnx_mor))
-          aldiff=>stmpar%morlyr%settings%aldiff
-          do l=1,lnx_mor
-              aldiff_links(1,l)=max(aldiff(ln_mor(1,l)),aldiff(ln_mor(2,l)))
-          enddo
+          associate (aldiff=>stmpar%morlyr%settings%aldiff)
+             do l=1,lnx_mor
+                 aldiff_links(1,l)=max(aldiff(ln_mor(1,l)),aldiff(ln_mor(2,l)))
+             enddo
+          end associate !aldiff
       case default
          ! if 0, do nothing.
       end select

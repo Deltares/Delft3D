@@ -101,7 +101,6 @@ contains
       real(fp), pointer :: thlalyr
       real(fp), dimension(:), pointer :: thexlyr
       real(fp), dimension(:), pointer :: thtrlyr
-      real(fp), dimension(:), pointer :: aldiff
       real(fp), pointer :: ttlalpha
       real(fp), pointer :: ttlmin
       real(fp), dimension(:, :), pointer :: kdiff
@@ -127,7 +126,6 @@ contains
       character(256), pointer :: flcomp
       character(256), pointer :: ttlfil
       character(256), pointer :: telfil
-      character(256), pointer :: aldifffil
 !
 !! executable statements -------------------------------------------------------
 !
@@ -142,7 +140,6 @@ contains
       flcomp => morpar%flcomp
       ttlfil => morpar%ttlfil
       telfil => morpar%telfil
-      aldifffil => morpar%aldifffil
       !
       istat = bedcomp_getpointer_integer(morlyr, 'IUnderLyr', iunderlyr)
       if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'ExchLyr', exchlyr)
@@ -610,6 +607,7 @@ contains
          !
          ! Active-layer diffusion
          !
+         associate (aldiff=>morlyr%settings%aldiff, aldifffil=>morpar%aldifffil)
          select case(active_layer_diffusion)                
          case (0)
             !
@@ -626,15 +624,6 @@ contains
             !
             ! constant value or xy-val file (use of flag `ALDiff`)
             !
-            !
-            !get memory
-            istat = bedcomp_getpointer_realfp(morlyr, 'ALDiff',ALDiff)
-            if (istat /= 0) then
-               errmsg = 'Memory problem in RDMORLYR'
-               call write_error(errmsg, unit=lundia)
-               error = .true.
-               return
-            end if
             !
             !check if file or value
             aldifffil = ''
@@ -684,7 +673,8 @@ contains
             call write_error(errmsg, unit=lundia)
             error = .true.
             return
-         endselect !active_layer_diffusion        
+         endselect !active_layer_diffusion   
+         end associate !aldiff
       case default
       end select !iunderlyr
       !
