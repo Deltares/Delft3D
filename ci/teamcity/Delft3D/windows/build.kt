@@ -92,31 +92,7 @@ object WindowsBuild : BuildType({
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
-        powerShell {
-            name = "Add FBC-tools"
-            scriptMode = script {
-                content="""
-                    robocopy fbctools build_%product%\install /E /XC /XN /XO
-                """.trimIndent()
-            }
-        }
     }
-
-    dependencies {
-        dependency(AbsoluteId("FbcTools_FbcToolsBuildOssX64CMakeReleaseWin64")) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
-            }
-            artifacts {
-                artifactRules = """
-                    *.dll => fbctools/lib
-                    *.xsd => fbctools/share/drtc
-                """.trimIndent()
-            }
-        }
-    }
-
     features {
         dockerSupport {
             loginToRegistry = on {
