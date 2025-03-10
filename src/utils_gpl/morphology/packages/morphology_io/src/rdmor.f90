@@ -1386,13 +1386,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: avaltime
     real(fp)                               , pointer :: hswitch
     real(fp)                               , pointer :: dzmaxdune
-    logical                                , pointer :: bermslopetransport
-    logical                                , pointer :: bermslopebed
-    logical                                , pointer :: bermslopesus
-    real(fp)                               , pointer :: bermslope
-    real(fp)                               , pointer :: bermslopefac
-    real(fp)                               , pointer :: bermslopegamma
-    real(fp)                               , pointer :: bermslopedepth
     real(fp)                               , pointer :: suscorfac
     real(fp)              , dimension(:)   , pointer :: xx
     logical                                , pointer :: bedupd
@@ -1538,13 +1531,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     suscorfac           => morpar%suscorfac
     upwindbedload       => mornum%upwindbedload
     pure1d_mor          => mornum%pure1d
-    bermslopetransport  => morpar%bermslopetransport
-    bermslopebed        => morpar%bermslopebed
-    bermslopesus        => morpar%bermslopesus
-    bermslope           => morpar%bermslope
-    bermslopefac        => morpar%bermslopefac
-    bermslopegamma      => morpar%bermslopegamma
-    bermslopedepth      => morpar%bermslopedepth
     !
     ! output values to file
     !
