@@ -192,9 +192,6 @@ set(FBC_SUPPORT_FILES
   ${PROJECT_SOURCE_DIR}/xsd/rtcStateConfig.xsd
   ${PROJECT_SOURCE_DIR}/xsd/rtcToolsConfig.xsd
   ${PROJECT_SOURCE_DIR}/xsd/treeVector.xsd
-  ${PROJECT_SOURCE_DIR}/GPLv2.txt
-  ${PROJECT_SOURCE_DIR}/LICENSE.txt
-  ${PROJECT_SOURCE_DIR}/release_notes.txt
 )
   install(FILES ${FBC_SUPPORT_FILES} DESTINATION share/drtc)
   install(TARGETS FBCTools RUNTIME DESTINATION bin)
