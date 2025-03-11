@@ -260,7 +260,7 @@ module unstruc_netcdf
       integer :: id_viu(MAX_ID_VAR) = -1 !< Variable ID for horizontal eddy viscosity
       integer :: id_diu(MAX_ID_VAR) = -1 !< Variable ID for horizontal eddy diffusivity
       integer :: id_ww1(MAX_ID_VAR) = -1 !< Variable ID for
-      integer :: id_rho(MAX_ID_VAR) = -1 !< Variable ID for density of water
+      integer :: id_rho(MAX_ID_VAR) = -1 !< Variable ID for in-situ density of water
       integer :: id_rhop(MAX_ID_VAR) = -1 !< Variable ID for potential density of water
       integer :: id_sa1(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_tem1(MAX_ID_VAR) = -1 !< Variable ID for
@@ -1614,7 +1614,7 @@ contains
             ! Number of netlinks can be > number of flowlinks, if there are closed edges.
             numl2d = numl - numl1d
             ! Write default_value on all remaining edges in 2d mesh (i.e. closed edges).
-            ierr = nf90_put_var(ncid, id_var(2), (/default_value/), start=(/1, lnx2d + 1, id_tsp%idx_curtime/), count=(/kmx, numl2d - lnx2d, 1/), map=(/0,0,0/)) ! Use map = 0 to write a single value on multiple edges in file.
+            ierr = nf90_put_var(ncid, id_var(2), (/default_value/), start=(/1, lnx2d + 1, id_tsp%idx_curtime/), count=(/kmx, numl2d - lnx2d, 1/), map=(/0, 0, 0/)) ! Use map = 0 to write a single value on multiple edges in file.
          end if
 
       case (UNC_LOC_W) ! Vertical velocity point location on all layer interfaces.
@@ -5570,10 +5570,9 @@ contains
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ww1, nc_precision, UNC_LOC_W, 'ww1', 'upward_sea_water_velocity', 'Upward velocity on vertical interface, n-component', 'm s-1', jabndnd=jabndnd_)
             end if
             if (jamaprho > 0) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rhop, nc_precision, UNC_LOC_S3D, 'rho', 'sea_water_potential_density', 'Flow element center potential density', 'kg m-3', jabndnd=jabndnd_)
                if (density_is_pressure_dependent()) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho, nc_precision, UNC_LOC_S3D, 'density', 'sea_water_density', 'Flow element center mass density', 'kg m-3', jabndnd=jabndnd_)
-               else
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rhop, nc_precision, UNC_LOC_S3D, 'rho', 'sea_water_potential_density', 'Flow element center potential density', 'kg m-3', jabndnd=jabndnd_)
                end if
             end if
          end if
@@ -6637,10 +6636,9 @@ contains
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ww1, UNC_LOC_W, ww1, jabndnd=jabndnd_)
          end if
          if (jamaprho > 0) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rhop, UNC_LOC_S3D, rho, jabndnd=jabndnd_)
             if (density_is_pressure_dependent()) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho, UNC_LOC_S3D, rho, jabndnd=jabndnd_)
-            else
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rhop, UNC_LOC_S3D, rho, jabndnd=jabndnd_)
             end if
          end if
       end if
@@ -8274,10 +8272,9 @@ contains
                   ierr = nf90_def_var(imapfile, 'ww1', nf90_double, (/id_wdim(iid), id_flowelemdim(iid), id_timedim(iid)/), id_ww1(iid))
                end if
                if (jamaprho > 0) then
+                  ierr = nf90_def_var(imapfile, 'rho', nf90_double, (/id_laydim(iid), id_flowelemdim(iid), id_timedim(iid)/), id_rhop(iid))
                   if (density_is_pressure_dependent()) then
                      ierr = nf90_def_var(imapfile, 'density', nf90_double, (/id_laydim(iid), id_flowelemdim(iid), id_timedim(iid)/), id_rho(iid))
-                  else
-                     ierr = nf90_def_var(imapfile, 'rho', nf90_double, (/id_laydim(iid), id_flowelemdim(iid), id_timedim(iid)/), id_rhop(iid))
                   end if
                end if
                !
@@ -8316,18 +8313,17 @@ contains
                   !?elevation
                end if
                if (jamaprho > 0) then
+                  ierr = nf90_put_att(imapfile, id_rhop(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+                  ierr = nf90_put_att(imapfile, id_rhop(iid), 'standard_name', 'sea_water_potential_density')
+                  ierr = nf90_put_att(imapfile, id_rhop(iid), 'long_name', 'flow mass potential density')
+                  ierr = nf90_put_att(imapfile, id_rhop(iid), 'units', 'kg m-3')
+                  ierr = nf90_put_att(imapfile, id_rhop(iid), '_FillValue', dmiss)
                   if (density_is_pressure_dependent()) then
                      ierr = nf90_put_att(imapfile, id_rho(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
                      ierr = nf90_put_att(imapfile, id_rho(iid), 'standard_name', 'sea_water_density')
                      ierr = nf90_put_att(imapfile, id_rho(iid), 'long_name', 'flow mass density')
                      ierr = nf90_put_att(imapfile, id_rho(iid), 'units', 'kg m-3')
                      ierr = nf90_put_att(imapfile, id_rho(iid), '_FillValue', dmiss)
-                  else
-                     ierr = nf90_put_att(imapfile, id_rhop(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-                     ierr = nf90_put_att(imapfile, id_rhop(iid), 'standard_name', 'sea_water_potential_density')
-                     ierr = nf90_put_att(imapfile, id_rhop(iid), 'long_name', 'flow mass potential density')
-                     ierr = nf90_put_att(imapfile, id_rhop(iid), 'units', 'kg m-3')
-                     ierr = nf90_put_att(imapfile, id_rhop(iid), '_FillValue', dmiss)
                   end if
                end if
             end if ! kmx>0
@@ -9156,10 +9152,9 @@ contains
                ierr = unc_add_gridmapping_att(imapfile, idum, jsferic)
             end if
             if (kmx > 0) then
+                  ierr = unc_add_gridmapping_att(imapfile, (/id_ucz(iid), id_ucxa(iid), id_ucya(iid), id_ww1(iid), id_rhop(iid)/), jsferic)
                if (density_is_pressure_dependent()) then
                   ierr = unc_add_gridmapping_att(imapfile, (/id_ucz(iid), id_ucxa(iid), id_ucya(iid), id_ww1(iid), id_rho(iid)/), jsferic)
-               else
-                  ierr = unc_add_gridmapping_att(imapfile, (/id_ucz(iid), id_ucxa(iid), id_ucya(iid), id_ww1(iid), id_rhop(iid)/), jsferic)
                end if
             end if
 
@@ -9482,10 +9477,9 @@ contains
             ierr = nf90_inq_varid(imapfile, 'ucxa', id_ucxa(iid))
             ierr = nf90_inq_varid(imapfile, 'ucya', id_ucya(iid))
             ierr = nf90_inq_varid(imapfile, 'ww1', id_ww1(iid))
+             ierr = nf90_inq_varid(imapfile, 'rho', id_rhop(iid))
             if (density_is_pressure_dependent()) then
                ierr = nf90_inq_varid(imapfile, 'density', id_rho(iid))
-            else
-               ierr = nf90_inq_varid(imapfile, 'rho', id_rhop(iid))
             end if
             if (iturbulencemodel >= 3) then
                ierr = nf90_inq_varid(imapfile, 'turkin1', id_turkin1(iid))
@@ -9982,10 +9976,9 @@ contains
                      work1(k - kb + nlayb, kk) = rho(k)
                   end do
                end do
-               if (density_is_pressure_dependent()) then
+                 ierr = nf90_put_var(imapfile, id_rhop(iid), work1(1:kmx, 1:ndxndxi), start=(/1, 1, itim/), count=(/kmx, ndxndxi, 1/))
+                if (density_is_pressure_dependent()) then
                   ierr = nf90_put_var(imapfile, id_rho(iid), work1(1:kmx, 1:ndxndxi), start=(/1, 1, itim/), count=(/kmx, ndxndxi, 1/))
-               else
-                  ierr = nf90_put_var(imapfile, id_rhop(iid), work1(1:kmx, 1:ndxndxi), start=(/1, 1, itim/), count=(/kmx, ndxndxi, 1/))
                end if
             end if
 

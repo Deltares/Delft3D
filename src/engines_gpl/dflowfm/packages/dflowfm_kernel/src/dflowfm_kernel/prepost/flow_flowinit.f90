@@ -62,7 +62,6 @@ module m_flow_flowinit
    use m_setsigmabnds, only: setsigmabnds
    use m_setship, only: setship
    use m_sets01zbnd, only: sets01zbnd
-   use m_setrho, only: setrho
    use m_setiadvpure1d, only: setiadvpure1d
    use m_furusobekstructures
    use m_filter
@@ -1612,8 +1611,8 @@ contains
       use m_cell_geometry, only: ndx
       use m_sediment, only: stm_included
       use m_turbulence, only: rhowat
-      use m_get_kbot_ktop
-      use m_setrho, only: setrhokk
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_setrho, only: set_density
 
       implicit none
 
@@ -1625,7 +1624,7 @@ contains
       if (jainirho == INITIALIZE) then
          do cell = 1, ndx
             if (.not. rho_read_rst) then
-               call setrhokk(cell)
+               call set_density(cell)
             end if
             if (stm_included) then
                call getkbotktop(cell, bottom_cell, top_cell)

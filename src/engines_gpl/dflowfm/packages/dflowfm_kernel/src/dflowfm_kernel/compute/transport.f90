@@ -47,28 +47,30 @@ contains
 !! high order limited terms to uqcx, uqcy
    subroutine transport()
       use precision, only: dp
-      use m_setrho, only: setrho, setrhokk
+      use m_setrho, only: set_density, set_pressure_dependent_density
       use m_getverticallyaveraged
       use m_flowgeom
-      use m_flow
-      use Timers
-      use m_sediment
+      use m_flow, only: density_is_pressure_dependent, jasal, maxitverticalforestersal, jatem, maxitverticalforestertem, limtyptm, &
+                        limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, kbndu, nbndsd, kbndsd, &
+                        kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, &
+                        vol1, eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jabaroctimeint, jarhoxu, rho0, rho, jacreep, lbot, ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx, ktop, zws
+      use Timers, only: timstrt, timstop
+      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr
       use m_netw, only: zk
       use m_flowtimes
       use m_flowparameters, only: jadiagnostictransport
-      use m_physcoef, only: idensform, difmolsal
       use m_transport, only: NUMCONST, constituents, ISALT, ITEMP
       use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
       use m_dlimitercentral
       use m_dslim
-      use m_get_kbot_ktop
-      use m_get_Lbot_Ltop
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_get_equilibrium_transport_rates
 
       integer :: L, k, k1, k2, kb, n
 
       real(kind=dp) :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
-      integer :: j, ki, jastep, kk
+      integer :: j, ki, jastep, kk, cell_index
       integer :: LL, Lb, Lt, kt, km
 
       real(kind=dp) :: flx(mxgr) !< sed erosion flux (kg/s)                 , dimension = mxgr
@@ -222,12 +224,23 @@ contains
          samerr = sam1tot - sam0tot !  - saminbnd + samoutbnd
       end if
 
-      ! !$OMP PARALLEL DO             &
-      ! !$OMP PRIVATE(kk)
-      do kk = 1, ndx ! i
-         call setrhokk(kk)
+      !$OMP PARALLEL DO    &
+      !$OMP PRIVATE(cell_index)
+      do cell_index = 1, ndx
+         call set_density(cell_index)
       end do
-      ! !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
+
+      if (density_is_pressure_dependent()) then
+         ! rhop(:) = rho(:) ! the above, via set_density(), calculated rho is the potential density (function of salinity and temperature)
+         !$OMP PARALLEL DO    &
+         !$OMP PRIVATE(cell_index)
+         do cell_index = 1, ndx
+            ! calculate the in-situ density (function of salinity, temperature and pressure)
+            call set_pressure_dependent_density(cell_index)
+         end do
+         !$OMP END PARALLEL DO
+      end if
 
       if (stm_included) then
          !$OMP PARALLEL DO             &

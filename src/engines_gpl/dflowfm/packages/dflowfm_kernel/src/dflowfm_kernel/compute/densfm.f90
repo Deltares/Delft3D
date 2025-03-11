@@ -36,79 +36,53 @@ module m_densfm
 
    private
 
-   public :: densfm
+   public :: densfm, add_sediment_effect_to_density
+
+   interface densfm
+      module procedure calculate_density_from_salinity_and_temperature
+      module procedure calculate_density_from_salinity_temperature_and_pressure
+   end interface
 
 contains
 
-   real(kind=dp) function densfm(sal, temp, p0)
+   real(kind=dp) function calculate_density_from_salinity_and_temperature(sal, temp) result(density)
       use precision, only: dp
-      use m_physcoef
-      use m_flow
+      use m_physcoef, only: sal, temp, rhomean
+      use m_flow, only: idensform
       use m_rho_eckart, only: rho_eckart
       use m_rho_unesco, only: rho_unesco
 
-      real(kind=dp) :: sal, temp, p0
+      real(kind=dp) :: sal, temp
 
       if (idensform == 0) then ! Uniform density
-         densfm = rhomean
+         density = rhomean
          return
       else if (abs(idensform) == 1) then ! Carl Henry Eckart, 1958
-         densfm = rho_Eckart(sal, temp)
+         density = rho_Eckart(sal, temp)
       else if (abs(idensform) == 2) then ! Unesco org
-         densfm = rho_Unesco(sal, temp)
-      else if (abs(idensform) == 3) then ! Unesco83 at surface , call with 0d0 for early exit
-         densfm = rho_unesco83(sal, temp, 0d0)
-      else if (abs(idensform) == 13) then ! Unesco83 pressure dependent
-         densfm = rho_unesco83(sal, temp, p0)
-      else if (abs(idensform) == 4) then ! Teos10 at surface
-         ! densfm = rho_Teos10(sal,temp,1d5)
-      else if (abs(idensform) == 14) then ! Teos10 pressure dependent
-         ! densfm = rho_Teos10(sal,temp,p0)
+         density = rho_Unesco(sal, temp)
+      else if (abs(idensform) == 3) then ! Unesco83 at surface , call with 0.0_dp for early exit
+         density = rho_unesco83(sal, temp, 0.0_dp)
       else if (abs(idensform) == 5) then ! baroclinic instability
-         densfm = 1025d0 + 0.78d0 * (sal - 33.73d0)
+         density = 1025.0_dp + 0.78_dp * (sal - 33.73_dp)
       else if (abs(idensform) == 6) then ! For Deltares flume experiment IJmuiden , Kees Kuipers saco code 1
-         densfm = 999.904d0 + 4.8292d-2 * temp - 7.2312d-3 * temp**2 + &
-                  2.9963d-5 * temp**3 + 7.6427d-1 * sal - &
-                  3.1490d-3 * sal * temp + 3.1273d-5 * sal * temp**2
+         density = 999.904_dp + 4.8292d-2 * temp - 7.2312d-3 * temp**2 + &
+                   2.9963d-5 * temp**3 + 7.6427d-1 * sal - &
+                   3.1490d-3 * sal * temp + 3.1273d-5 * sal * temp**2
       end if
-   end function densfm
+   end function calculate_density_from_salinity_and_temperature
 
-   subroutine checkunesco83()
+   real(kind=dp) function calculate_density_from_salinity_temperature_and_pressure(sal, temp, pres) result(density)
       use precision, only: dp
-      real(kind=dp) :: sal, tem, pres, dum0, dum1, dum2, rho_u
+      use m_physcoef, only: sal, temp
+      use m_flow, only: idensform
 
-      write (*, *) 'rhounesco83 at 0 m and 10 km depth '
+      real(kind=dp) :: sal, temp, pres
 
-      sal = 30d0; tem = 30d0; pres = 0d0 * 1d5
-      dum0 = rho_unesco83(sal, tem, pres)
-
-      sal = 30d0; tem = 30d0; pres = 1d0 * 1d5
-      dum1 = rho_unesco83(sal, tem, pres)
-
-      sal = 8d0; tem = 10d0; pres = 10d0 * 1d5
-      dum2 = rho_unesco83(sal, tem, pres)
-
-      sal = 0d0; tem = 0d0; pres = 0d0 * 1d5; rho_u = rho_unesco83(sal, tem, pres)
-      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
-      sal = 0d0; tem = 0d0; pres = 1000d0 * 1d5; rho_u = rho_unesco83(sal, tem, pres)
-      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
-
-      sal = 40d0; tem = 0d0; pres = 000d0 * 1d5; rho_u = rho_unesco83(sal, tem, pres)
-      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
-      sal = 40d0; tem = 0d0; pres = 1000d0 * 1d5; rho_u = rho_unesco83(sal, tem, pres)
-      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
-
-      sal = 00d0; tem = 40d0; pres = 000d0 * 1d5; rho_u = rho_unesco83(sal, tem, pres)
-      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
-      sal = 00d0; tem = 40d0; pres = 1000d0 * 1d5; rho_u = rho_unesco83(sal, tem, pres)
-      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
-
-      sal = 40d0; tem = 40d0; pres = 000d0 * 1d5; rho_u = rho_unesco83(sal, tem, pres)
-      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
-      sal = 40d0; tem = 40d0; pres = 1000d0 * 1d5; rho_u = rho_unesco83(sal, tem, pres)
-      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
-
-   end subroutine checkunesco83
+      if (abs(idensform) == 13) then ! Unesco83 pressure dependent
+         density = rho_unesco83(sal, temp, pres)
+      end if
+   end function calculate_density_from_salinity_temperature_and_pressure
 
    real(kind=dp) function rho_unesco83(sal, temp, pres)
       use precision, only: dp
@@ -262,4 +236,93 @@ contains
       return
    end function svan
 
+   !> Adds the effect of sediment on the density of a cell
+   subroutine add_sediment_effect_to_density(rho, cell)
+      use precision, only: dp
+      use m_sediment, only: jased, jaseddenscoupling, jasubstancedensitycoupling, mxgr, rhosed, sed, stmpar, stm_included
+      use m_transport, only: constituents, ised1, itra1, itran
+      use m_turbulence, only: rhowat
+      use sediment_basics_module, only: has_advdiff
+      use messagehandling, only: LEVEL_ERROR, mess
+      use unstruc_model, only: check_positive_value
+      use m_setrho, only: RHO_MIN, RHO_MAX
+
+      implicit none
+
+      real(kind=dp), intent(inout) :: rho !< density in a cell [kg/m3]
+      integer, intent(in) :: cell !< cell index
+      real(kind=dp), parameter :: SEDIMENT_DENSITY = 2600.0_dp !< default/typical sediment density [kg/m3]
+      real(kind=dp) :: rhom !< density in a cell [kg/m3] before adding sediment effects
+      integer :: i, lsed !< loop indices
+
+      if (jased > 0 .and. stm_included) then
+         rhom = rho ! UNST-5170 for mor, only use salt+temp, not sediment effect
+         rhom = min(rhom, RHO_MAX) ! check overshoots at thin water layers
+         rhom = max(rhom, RHO_MIN) !
+         rhowat(cell) = rhom
+         if (stmpar%morpar%densin) then ! sediment density effects
+            i = ised1
+            rhom = rho
+            do lsed = 1, stmpar%lsedtot
+               if (has_advdiff(stmpar%sedpar%tratyp(lsed))) then ! has suspended component
+                  rho = rho + constituents(i, cell) * (stmpar%sedpar%rhosol(lsed) - rhom) / stmpar%sedpar%rhosol(lsed)
+                  i = i + 1
+               end if
+            end do
+         end if
+      else if (jasubstancedensitycoupling > 0) then ! for now, only works for DELWAQ sediment fractions (concentrations in g/m3 and density of SEDIMENT_DENSITY)
+         if (itra1 == 0) then
+            call mess(LEVEL_ERROR, 'SubstanceDensityCoupling was set to 1, but there are no substances.')
+         end if
+         rhom = rho
+         do i = itra1, itran
+            rho = rho + (1d-3) * constituents(i, cell) * (SEDIMENT_DENSITY - rhom) / SEDIMENT_DENSITY
+         end do
+      else if (jaseddenscoupling > 0) then ! jased < 4
+         rhom = rho
+         do i = 1, mxgr
+            call check_positive_value('rhosed', rhosed(i))
+            rho = rho + sed(i, cell) * (rhosed(i) - rhom) / rhosed(i)
+         end do
+
+      end if
+   end subroutine add_sediment_effect_to_density
+
 end module m_densfm
+
+!   subroutine checkunesco83()
+!      use precision, only: dp
+!      real(kind=dp) :: sal, tem, pres, dum0, dum1, dum2, rho_u
+!
+!      write (*, *) 'rhounesco83 at 0 m and 10 km depth '
+!
+!      sal = 30.0_dp; tem = 30.0_dp; pres = 0.0_dp * 1d5
+!      dum0 = rho_unesco83(sal, tem, pres)
+!
+!      sal = 30.0_dp; tem = 30.0_dp; pres = 1.0_dp * 1d5
+!      dum1 = rho_unesco83(sal, tem, pres)
+!
+!      sal = 8.0_dp; tem = 10.0_dp; pres = 10.0_dp * 1d5
+!      dum2 = rho_unesco83(sal, tem, pres)
+!
+!      sal = 0.0_dp; tem = 0.0_dp; pres = 0.0_dp * 1d5; rho_u = rho_unesco83(sal, tem, pres)
+!      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
+!      sal = 0.0_dp; tem = 0.0_dp; pres = 1000.0_dp * 1d5; rho_u = rho_unesco83(sal, tem, pres)
+!      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
+!
+!      sal = 40.0_dp; tem = 0.0_dp; pres = 000.0_dp * 1d5; rho_u = rho_unesco83(sal, tem, pres)
+!      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
+!      sal = 40.0_dp; tem = 0.0_dp; pres = 1000.0_dp * 1d5; rho_u = rho_unesco83(sal, tem, pres)
+!      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
+!
+!      sal = 00.0_dp; tem = 40.0_dp; pres = 000.0_dp * 1d5; rho_u = rho_unesco83(sal, tem, pres)
+!      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
+!      sal = 00.0_dp; tem = 40.0_dp; pres = 1000.0_dp * 1d5; rho_u = rho_unesco83(sal, tem, pres)
+!      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
+!
+!      sal = 40.0_dp; tem = 40.0_dp; pres = 000.0_dp * 1d5; rho_u = rho_unesco83(sal, tem, pres)
+!      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
+!      sal = 40.0_dp; tem = 40.0_dp; pres = 1000.0_dp * 1d5; rho_u = rho_unesco83(sal, tem, pres)
+!      write (*, '(4(A,F20.6))') 'sal= ', sal, ' tem= ', tem, ' pres= ', pres, ' rho= ', rho_u
+!
+!   end subroutine checkunesco83

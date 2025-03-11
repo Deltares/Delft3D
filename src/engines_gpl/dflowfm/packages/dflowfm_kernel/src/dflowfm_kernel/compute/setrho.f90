@@ -31,92 +31,90 @@
 !
 
 module m_setrho
+   use precision_basics, only: dp
 
    implicit none
 
    private
 
-   public :: setrho, setrhofixedp, setrhokk
+   public :: set_density, set_pressure_dependent_density, setrhofixedp, get_sal_and_temp, RHO_MIN, RHO_MAX
+
+   real(kind=dp), parameter :: RHO_MIN = 990.0_dp !< lower limit of density [kg/m3]
+   real(kind=dp), parameter :: RHO_MAX = 1250.0_dp !< upper limit of density [kg/m3]
 
 contains
 
-!> fill rho of one column
-   subroutine setrhokk(kk)
+   !> fill rho of one column
+   subroutine set_density(cell_index)
+      use m_densfm, only: densfm, add_sediment_effect_to_density
       use precision, only: dp
       use m_flow, only: rho, density_is_pressure_dependent, kmxn
-      use m_get_kbot_ktop
+      use m_get_kbot_ktop, only: getkbotktop
 
-      integer :: kk
-      integer :: kb, kt, k
+      integer, intent(in) :: cell_index !< horizontal cell index (1:ndx)
 
-      real(kind=dp) :: p0
+      integer :: k_bot, k_top, k
+      real(kind=dp) :: sal, temp
 
-      call getkbotktop(kk, kb, kt)
-      if (kt < kb) return
-
-      if (.not. density_is_pressure_dependent()) then
-         do k = kb, kt
-            rho(k) = setrho(k, p0)
-         end do
-      else
-         p0 = 0d0 ! surface value is 0 bar in unesco, not 1 bar
-         do k = kt, kb, -1
-            rho(k) = setrho(k, p0)
-         end do
+      call getkbotktop(cell_index, k_bot, k_top)
+      if (k_top < k_bot) then
+         return
       end if
 
-      do k = kt + 1, kb + kmxn(kk) - 1
-         rho(k) = rho(kt)
+      do k = k_bot, k_top
+         call get_sal_and_temp(cell_index, sal, temp)
+         rho(k) = densfm(sal, temp)
+         call add_sediment_effect_to_density(rho(k), k)
+         rho(k) = min(rho(k), RHO_MAX) ! check overshoots at thin water layers
+         rho(k) = max(rho(k), RHO_MIN) !
       end do
 
-   end subroutine setrhokk
+      do k = k_top + 1, k_bot + kmxn(cell_index) - 1
+         rho(k) = rho(k_top)
+      end do
 
-!> set density in a cell
-   real(kind=dp) function setrho(cell, p0)
+   end subroutine set_density
+
+   !> Fill rho of one column
+   subroutine set_pressure_dependent_density(cell_index)
       use precision, only: dp
+      use m_flow, only: rho, density_is_pressure_dependent, kmxn, zws
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_physcoef, only: Maxitpresdens, ag
+      use m_densfm, only: densfm, add_sediment_effect_to_density
 
-      use m_flow
-      use m_sediment
-      use sediment_basics_module, only: has_advdiff
-      use m_transport
-      use m_turbulence, only: rhowat
-      use m_densfm, only: densfm
+      integer, intent(in) :: cell_index !< horizontal cell index (1:ndx)
 
-      implicit none
+      real(kind=dp) :: sal, temp, cell_pressure_upper_interface, cell_pressure_lower_interface, dz
+      integer :: k_bot, k_top, k, i
 
-      integer, intent(in) :: cell !< cell number
-      real(kind=dp), intent(inout) :: p0 !< in as cell ceiling pressure, out as cell floorpressure (pascal)
-      real(kind=dp) :: rhok !< in as previous density, reduces required nr of iterations
-      real(kind=dp), parameter :: rhom_min = 990d0 !< lower limit of rhom [kg/m3]
-      real(kind=dp), parameter :: rhom_max = 1250d0 !< upper limit of rhom [kg/m3]
-      integer :: i
-      real(kind=dp) :: sal, temp, p1, dzz
-
-      call getsaltemk(cell, sal, temp)
-
-      if (.not. density_is_pressure_dependent()) then
-         setrho = densfm(sal, temp, p0)
-      else
-         dzz = zws(cell) - zws(cell - 1)
-         rhok = rho(cell)
-         do i = 1, Maxitpresdens
-            p1 = p0 + ag * dzz * rhok
-            rhok = densfm(sal, temp, 0.5d0 * (p1 + p0))
-         end do
-         setrho = rhok
-         p0 = p1
+      call getkbotktop(cell_index, k_bot, k_top)
+      if (k_top < k_bot) then
+         return
       end if
 
-      call add_sediment_effect_to_density(setrho, cell)
+      cell_pressure_upper_interface = 0.0_dp ! surface value is 0 bar in unesco, not 1 bar
+      do k = k_top, k_bot, -1
+         call get_sal_and_temp(cell_index, sal, temp)
+         dz = zws(k) - zws(k - 1)
+         do i = 1, Maxitpresdens
+            cell_pressure_lower_interface = cell_pressure_upper_interface + ag * dz * rho(k)
+            rho(k) = densfm(sal, temp, 0.5_dp * (cell_pressure_lower_interface + cell_pressure_upper_interface))
+         end do
+         cell_pressure_upper_interface = cell_pressure_lower_interface
+         call add_sediment_effect_to_density(rho(k), k)
+         rho(k) = min(rho(k), RHO_MAX) ! check overshoots at thin water layers
+         rho(k) = max(rho(k), RHO_MIN)
+      end do
 
-      setrho = min(setrho, rhom_max) ! check overshoots at thin water layers
-      setrho = max(setrho, rhom_min) !
-
-   end function setrho
+      do k = k_top + 1, k_bot + kmxn(cell_index) - 1
+         rho(k) = rho(k_top)
+      end do
+   end subroutine set_pressure_dependent_density
 
    real(kind=dp) function setrhofixedp(k, p0)
       use precision, only: dp
-      use m_densfm, only: densfm
+      use m_densfm, only: densfm, add_sediment_effect_to_density
 
       implicit none
 
@@ -125,87 +123,34 @@ contains
 
       real(kind=dp) :: sal, temp
 
-      call getsaltemk(k, sal, temp)
+      call get_sal_and_temp(k, sal, temp)
 
       setrhofixedp = densfm(sal, temp, p0)
 
       call add_sediment_effect_to_density(setrhofixedp, k)
-
    end function setrhofixedp
 
-   subroutine getsaltemk(k, sal, temp)
+   subroutine get_sal_and_temp(cell_index, sal, temp)
       use precision, only: dp
-      use m_flow
-      use m_transport
+      use m_flow, only: jasal, jatem, backgroundsalinity, backgroundwatertemperature
+      use m_transport, only: isalt, itemp, constituents
 
       implicit none
-      integer :: k
+
+      integer :: cell_index
       real(kind=dp) :: sal, temp
 
       if (jasal > 0) then
-         saL = max(0d0, constituents(isalt, k))
+         sal = max(0.0_dp, constituents(isalt, cell_index))
       else
-         saL = backgroundsalinity
+         sal = backgroundsalinity
       end if
 
       if (jatem > 0) then
-         temp = max(-5d0, constituents(itemp, k))
+         temp = max(-5.0_dp, constituents(itemp, cell_index))
       else
          temp = backgroundwatertemperature
       end if
-   end subroutine getsaltemk
-
-!> Adds the effect of sediment on the density of a cell
-   subroutine add_sediment_effect_to_density(rho, cell)
-      use precision, only: dp
-      use m_sediment, only: jased, jaseddenscoupling, jasubstancedensitycoupling, mxgr, rhosed, sed, stmpar, stm_included
-      use m_transport, only: constituents, ised1, itra1, itran
-      use m_turbulence, only: rhowat
-      use sediment_basics_module, only: has_advdiff
-      use messagehandling, only: LEVEL_ERROR, mess
-      use unstruc_model, only: check_positive_value
-
-      implicit none
-
-      real(kind=dp), intent(inout) :: rho !< density in a cell [kg/m3]
-      integer, intent(in) :: cell !< cell index
-      real(kind=dp), parameter :: rhom_min = 990d0 !< lower limit of rhom [kg/m3]
-      real(kind=dp), parameter :: rhom_max = 1250d0 !< upper limit of rhom [kg/m3]
-      real(kind=dp), parameter :: SEDIMENT_DENSITY = 2600d0 !< default/typical sediment density [kg/m3]
-      real(kind=dp) :: rhom !< density in a cell [kg/m3] before adding sediment effects
-      integer :: i, lsed !< loop indices
-
-      if (jased > 0 .and. stm_included) then
-         rhom = rho ! UNST-5170 for mor, only use salt+temp, not sediment effect
-         rhom = min(rhom, rhom_max) ! check overshoots at thin water layers
-         rhom = max(rhom, rhom_min) !
-         rhowat(cell) = rhom
-         if (stmpar%morpar%densin) then ! sediment density effects
-            i = ised1
-            rhom = rho
-            do lsed = 1, stmpar%lsedtot
-               if (has_advdiff(stmpar%sedpar%tratyp(lsed))) then ! has suspended component
-                  rho = rho + constituents(i, cell) * (stmpar%sedpar%rhosol(lsed) - rhom) / stmpar%sedpar%rhosol(lsed)
-                  i = i + 1
-               end if
-            end do
-         end if
-      else if (jasubstancedensitycoupling > 0) then ! for now, only works for DELWAQ sediment fractions (concentrations in g/m3 and density of SEDIMENT_DENSITY)
-         if (itra1 == 0) then
-            call mess(LEVEL_ERROR, 'SubstanceDensityCoupling was set to 1, but there are no substances.')
-         end if
-         rhom = rho
-         do i = itra1, itran
-            rho = rho + (1d-3) * constituents(i, cell) * (SEDIMENT_DENSITY - rhom) / SEDIMENT_DENSITY
-         end do
-      else if (jaseddenscoupling > 0) then ! jased < 4
-         rhom = rho
-         do i = 1, mxgr
-            call check_positive_value('rhosed', rhosed(i))
-            rho = rho + sed(i, cell) * (rhosed(i) - rhom) / rhosed(i)
-         end do
-
-      end if
-   end subroutine add_sediment_effect_to_density
+   end subroutine get_sal_and_temp
 
 end module m_setrho
