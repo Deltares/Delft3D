@@ -572,6 +572,14 @@ make install
 popd
 EOF-esmf
 
+FROM base AS boost
+
+RUN <<"EOF-boost" 
+set -eo pipefail
+dnf install --assumeyes epel-release
+dnf install --assumeyes boost-devel
+EOF-boost
+
 FROM base AS all
 
 RUN set -eo pipefail && \
@@ -590,3 +598,6 @@ COPY --from=petsc --link /usr/local/ /usr/local/
 COPY --from=netcdf --link /usr/local /usr/local/
 COPY --from=gdal --link /usr/local/ /usr/local/
 COPY --from=esmf --link /usr/local/ /usr/local/
+COPY --from=boost --link /usr/lib64/ /usr/lib64/
+COPY --from=boost --link /usr/include/boost/ /usr/include/boost/
+
