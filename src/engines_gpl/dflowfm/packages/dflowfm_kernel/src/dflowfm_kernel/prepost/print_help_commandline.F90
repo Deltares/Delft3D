@@ -133,7 +133,7 @@ contains
       write (*, *) '          directional=[01]'
       write (*, *) '          outsidecell=[01]'
       write (*, *) '          drypointsfile=<filename (*.pol, or cutcellpolygons.lst)>'
-      write (*, *) '          circumcenter=[123]'
+      write (*, *) '          circumcentermethod=[123]'
       write (*, *) ' '
       write (*, *) '  --make1d2dlinks[:OPTS] NETFILE [-o OUTPUTFILE]'
       write (*, *) '      Make 1d2d links for the given NETFILE and save the resulting net.'
