@@ -997,12 +997,12 @@ contains
       call prop_get(md_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters)
       call prop_get(md_ptr, 'geometry', 'stripMesh', strip_mesh)
       call prop_get(md_ptr, 'geometry', 'Dcenterinside', Dcenterinside)
-      call prop_get(md_ptr, 'geometry', 'Circumcenter', circumcenter_method)
+      call prop_get(md_ptr, 'geometry', 'circumcenterMethod', circumcenter_method, success, value_parsed)
       if (circumcenter_method < INTERNAL_NETLINKS_EDGE .or. circumcenter_method > ALL_NETLINKS_LOOP) then
-         call mess(LEVEL_ERROR, '"[geometry] Circumcenter" expects an integer between 1 and 3.')
+         call mess(LEVEL_ERROR, '"[geometry] circumcenterMethod" expects an integer between 1 and 3.')
       end if
       if (circumcenter_method == INTERNAL_NETLINKS_EDGE) then
-         call mess(LEVEL_WARN, '"[geometry] Circumcenter = 1" will be deprecated and will be removed in future. Please update this in your model. "Circumcenter = 2" is the improved current inplementation using internal net links only. "Circumcenter = 3" is a stricter implemention considering also the net links on the outline of the grid. The new options may require an update of your grid.')
+         call mess(LEVEL_WARN, '"[geometry] circumcenterMethod = 1" will be deprecated and will be removed in future. Please update this in your model. "circumcenterMethod = 2" is the improved current inplementation using internal net links only. "circumcenterMethod = 3" is a stricter implemention considering also the net links on the outline of the grid. The new options may require an update of your grid.')
       end if
       call prop_get(md_ptr, 'geometry', 'PartitionFile', md_partitionfile, success)
       if (jampi == 1 .and. md_japartition /= 1) then
@@ -2819,7 +2819,7 @@ contains
          call prop_set(prop_ptr, 'geometry', 'Dcenterinside', Dcenterinside, 'Limit cell center (1.0: in cell, 0.0: on c/g)')
       end if
       if (writeall .or. (circumcenter_method /= INTERNAL_NETLINKS_EDGE)) then
-         call prop_set(prop_ptr, 'geometry', 'Circumcenter', circumcenter_method, 'Computation of circumcenter (iterate each edge - 1=internal netlinks; iterate each loop - 2=internal netlinks, 3=all netlinks)')
+         call prop_set(prop_ptr, 'geometry', 'circumcenterMethod', circumcenter_method, 'Circumcenter computation method (iterate each edge - 1=internal netlinks; iterate each loop - 2=internal netlinks, 3=all netlinks)')
       end if
       if (writeall .or. (bamin > 1d-6)) then
          call prop_set(prop_ptr, 'geometry', 'Bamin', Bamin, 'Minimum grid cell area, in combination with cut cells')

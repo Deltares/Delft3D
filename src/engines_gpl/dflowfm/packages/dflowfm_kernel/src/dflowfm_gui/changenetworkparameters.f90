@@ -108,7 +108,7 @@ contains
       OPTION(20) = '1D2D link generation algorithm          '; IT(20 * 2) = 2
       OPTION(21) = 'Lateral algorithm search radius         '; IT(21 * 2) = 6
       OPTION(22) = 'Use middle latitude (1/0)               '; IT(22 * 2) = 2
-      OPTION(23) = 'Circumcenter (1/2/3)                    '; IT(23 * 2) = 2
+      OPTION(23) = 'Circumcenter method (1/2/3)             '; IT(23 * 2) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -158,7 +158,7 @@ contains
       HELPM(22) = &
          '1 = yes, 0 = no                                             '
       HELPM(23) = &
-         'iterate per 1=edge, 2=loop, 3=loop incl. outline            '
+         'iterate per 1=edge, 2=loop, 3=loop incl. boundary           '
 
       call SAVEKEYS()
       NUMPARACTUAL = NUMPAR

@@ -226,7 +226,7 @@ contains
                   md_dryptsfile = trim(svals(ikey))
                else if (trim(Skeys(ikey)) == 'smoothiters') then
                   NUMITCOURANT = ivals(ikey)
-               else if (trim(Skeys(ikey)) == 'circumcenter') then
+               else if (trim(Skeys(ikey)) == 'circumcentermethod') then
                   circumcenter_method = ivals(ikey)
                end if
             end do
