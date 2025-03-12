@@ -82,8 +82,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     link_directories("${PROJECT_SOURCE_DIR}/thirdParty/xerces/xerces-c-3.1.1-x86_64-windows-vc-10.0/lib/")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     include_directories("${PROJECT_SOURCE_DIR}/thirdParty/xsd/xsd-3.3.0-x86_64-linux-gnu/libxsd")
-    include_directories("${PROJECT_SOURCE_DIR}/thirdParty/xerces/xerces-c-3.1.1-x86_64-linux-gcc-3.4/include")
-    link_directories("${PROJECT_SOURCE_DIR}/thirdParty/xerces/xerces-c-3.1.1-x86_64-linux-gcc-3.4/lib/")
 endif()
 
 # Add source folder (FBCTools_static target)
