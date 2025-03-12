@@ -58,7 +58,7 @@ module network_data
    use m_dimens
    use m_landboundary
    use m_polygon
-   use geometry_module, only: INTERNAL_NETLINKS_EDGE
+   use geometry_module, only: ALL_NETLINKS_LOOP
 
    implicit none
 
@@ -157,7 +157,7 @@ module network_data
 
 !  integer                          :: jacenterinside = 1                !< Force cell center inside or not: 1 = inside, on edge ,  0 = true circumcenter
    double precision :: dcenterinside = 1d0 !< Force cell center inside cell with factor dcenterinside, 1: confined by cell edges, 0: at mass center
-   integer :: circumcenter_method = INTERNAL_NETLINKS_EDGE !< Computation of circumcenter (iterate each edge - 1=internal netlinks; iterate each loop - 2=internal netlinks, 3=all netlinks)
+   integer :: circumcenter_method = ALL_NETLINKS_LOOP !< Computation of circumcenter (iterate each edge - 1=internal netlinks; iterate each loop - 2=internal netlinks, 3=all netlinks)
 
    double precision :: removesmalllinkstrsh = 1d-1 !< 0.0 = remove no links ,  0.1 = remove links smaller than 0.1 sqrt(ba)
    !< used for removelinks, but *also* in geominit: no flow link created if dx < dxtrsh
