@@ -341,7 +341,7 @@ contains
       JOCHECKNET = 0
       zkUNI = -5d0
       dcenterinside = 1d0
-      circumcenter_method = INTERNAL_NETLINKS_EDGE
+      circumcenter_method = ALL_NETLINKS_LOOP
       removesmalllinkstrsh = 1d-1
       maxfaceallow = 4
       NUMITCOURANT = 0
