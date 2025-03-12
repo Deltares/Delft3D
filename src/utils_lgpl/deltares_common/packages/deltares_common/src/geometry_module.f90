@@ -2616,7 +2616,7 @@ contains
       double precision :: xh(num_columns), yh(num_columns)
       double precision :: SL, SM, XCR, YCR, CRP
       double precision :: xcc3, ycc3, xf, xmx, xmn
-      double precision :: eps = 1d-3
+      double precision :: eps = 1d-15
       double precision :: dfac
       integer :: jacros, in, m2, nintlinks ! nr of internal links = connected edges
 
@@ -2665,7 +2665,7 @@ contains
       else
          ! default case
          if (jsferic == 1) then
-            eps = 9d-10 ! 111km = 0-e digit.
+            eps = 1d-15 ! 111km = 0-e digit.
          end if
 
          xccf = xzw
