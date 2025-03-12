@@ -150,7 +150,6 @@ contains
             end if
 
          end do
-         ! tem1 = tem1 + 50d0 ! tkelvn
       end if
 
       if (jased > 0 .and. jased < 4) then
@@ -176,7 +175,7 @@ contains
          if (dmorfac > 0 .and. time1 >= tstart_user + TMorfspinup) then
             jamorf = 1
          end if
-         dvolbot = 0d0
+         dvolbot = 0.0_dp
 
       end if
 
@@ -188,7 +187,7 @@ contains
       if (jasal > 0) then !  compute salt error
 
          sam0tot = sam1tot
-         sam1tot = 0d0
+         sam1tot = 0.0_dp
 
          !$OMP PARALLEL DO                &
          !$OMP PRIVATE(kk,kb,kt,km,k)     &
@@ -205,7 +204,7 @@ contains
          end do
          !$OMP END PARALLEL DO
 
-         saminbnd = 0d0; samoutbnd = 0d0
+         saminbnd = 0.0_dp; samoutbnd = 0.0_dp
 
          do LL = lnxi + 1, 0 !  lnx                                ! copy on outflow
             call getLbotLtop(LL, Lb, Lt)
@@ -256,33 +255,31 @@ contains
 
       ! propagate rho
       if (jabaroctimeint == 5) then ! rho advection
-         dts = 0.5d0 * dts
+         dts = 0.5_dp * dts
          if (jarhoxu > 0) then
             rho0 = rho
          end if
          call update_constituents(1) ! do rho only
-         dts = 2.0d0 * dts
+         dts = 2.0_dp * dts
       end if
-
-! endif ! came from if (jasal > 0 .or. jatem > 0) then line 676, a jump to inside a check, I remove this check for clarity
 
       if (jarhoxu > 0 .and. jacreep == 1) then
          do LL = 1, lnx
             do L = Lbot(LL), Ltop(LL)
                k1 = ln(1, L); k2 = ln(2, L)
-               rhou(L) = 0.5d0 * (rho(k1) + rho(k2))
+               rhou(L) = 0.5_dp * (rho(k1) + rho(k2))
             end do
          end do
       end if
 
       if (jased > 0 .and. jased < 4) then
 
-         dmorfax = max(1d0, dmorfac)
+         dmorfax = max(1.0_dp, dmorfac)
 
          if (jaceneqtr == 1) then ! original cell centre equilibriumtransport approach
 
-            if (dmorfac > 0d0) then
-               blinc = 0d0
+            if (dmorfac > 0.0_dp) then
+               blinc = 0.0_dp
             end if
 
             jastep = 1 ! 1 = first hor. transport, then limiting
@@ -292,18 +289,18 @@ contains
             !$OMP REDUCTION(+:dvolbot)
             do k = 1, ndxi
                kb = kbot(k)
-               if (vol1(kb) > 0d0) then
+               if (vol1(kb) > 0.0_dp) then
 
-                  flx = 0d0
+                  flx = 0.0_dp
                   if (kmx == 0) then
                      call getequilibriumtransportrates(k, seq, wse, mxgr, hsk) ! get per flowcell and store in small array seq
                   else
                      wse = ws
-                     seq(1) = 0d0
+                     seq(1) = 0.0_dp
                   end if
 
                   dtvi = dts / vol1(kb)
-                  wsemx = 0.45d0 * vol1(kb) / (ba(k) * dts)
+                  wsemx = 0.45_dp * vol1(kb) / (ba(k) * dts)
                   do j = 1, mxgr
 
                      if (Wse(j) > wsemx) then
@@ -332,7 +329,7 @@ contains
 
                else
 
-                  sed(:, k) = 0d0
+                  sed(:, k) = 0.0_dp
 
                end if
             end do
@@ -340,7 +337,7 @@ contains
 
          else
 
-            sedi = 0d0
+            sedi = 0.0_dp
 
             !$OMP PARALLEL DO    &
             !$OMP PRIVATE(kk,flx, seq, wse, hsk,n,k,dtvi,wsemx,j,qb,dgrlay,kb) &
@@ -348,7 +345,7 @@ contains
 
             do kk = 1, mxban
 
-               flx = 0d0
+               flx = 0.0_dp
 
                call getequilibriumtransportrates(kk, seq, wse, mxgr, hsk) ! get per netnode and store in small array seq
 
@@ -359,7 +356,7 @@ contains
                if (vol1(kb) > 0 .and. hsk > 0) then
 
                   dtvi = dts / vol1(kb) ! (s/m3)
-                  wsemx = 0.45d0 * vol1(kb) / (ba(k) * dts) ! (m/s) was 0.45
+                  wsemx = 0.45_dp * vol1(kb) / (ba(k) * dts) ! (m/s) was 0.45
 
                   do j = 1, mxgr
                      if (Wse(j) > wsemx) then
@@ -369,7 +366,7 @@ contains
                      flx(j) = qb * (seq(j) - sed(j, kb)) ! (m3/s).(kg/m3) = kg/s   , positive = erosion
 
                      !  if (zk(n) > skmx(n) ) then                           ! no flux if net point above max surrouding waterlevels
-                     !     flx(j) = max( 0d0, flx(j) )
+                     !     flx(j) = max( 0.0_dp, flx(j) )
                      !  endif
 
                      sedi(j, k) = sedi(j, k) + dtvi * flx(j) ! vertical transport (s/m3)*(kg/s) = (kg/m3)
@@ -394,7 +391,7 @@ contains
             do k = 1, ndxi
                kb = kbot(k)
                do j = 1, mxgr
-                  sed(j, kb) = max(0d0, sed(j, kb) + sedi(j, k))
+                  sed(j, kb) = max(0.0_dp, sed(j, kb) + sedi(j, k))
                end do
             end do
             !$OMP END PARALLEL DO
@@ -435,10 +432,10 @@ contains
       do k = 1, 0 !  ndxi ! for test selectiveZ.mdu
          if (xz(k) > 270) then
             do kk = kbot(k), ktop(k)
-               if (zws(kk) < -5d0) then
-                  constituents(isalt, kk) = 30d0
+               if (zws(kk) < -5.0_dp) then
+                  constituents(isalt, kk) = 30.0_dp
                else
-                  constituents(isalt, kk) = 0d0
+                  constituents(isalt, kk) = 0.0_dp
                end if
             end do
          end if
