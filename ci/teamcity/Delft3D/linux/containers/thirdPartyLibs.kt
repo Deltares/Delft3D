@@ -44,10 +44,7 @@ object LinuxThirdPartyLibs : BuildType({
                     +:ci/dockerfiles/linux/buildtools.Dockerfile
                     +:ci/dockerfiles/linux/third-party-libs.Dockerfile
                 """.trimIndent()
-                branchFilter = """
-                    +:<default>
-                    +:merge-requests/*
-                """.trimIndent()
+                branchFilter = "+:<default>"
             }
         }
     }
