@@ -1,29 +1,30 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
+
 
 module Output
 
@@ -3795,7 +3796,7 @@ module Output
       Integer       IYear, Imo, Iday, IMin, ISec
       Logical       WriteOption
       CHARACTER(Len=CharIdLength) FILNAM
-      CHARACTER(len=500) NAME, LongName
+      CHARACTER(Len=500)          NAME, LongName
       CHARACTER(Len=CharIdLength) SERNAM(NMSR), UNIT(NMSR), LongSerNam(NMSR)
 
 ! DIO
@@ -4111,8 +4112,8 @@ module Output
              Enddo
            Endif
            if (idebug .ne. 0) then
-               write(Idebug,*) ' Defhis ParNames  ', ParNames
-               write(Idebug,*) ' Defhis LocIds    ', LocIds
+               write(Idebug,*) ' Defhis ParNames  ', (ParNames(i),i=1,NrSelectedSeries)
+               write(Idebug,*) ' Defhis LocIds    ', (LocIds (i),i=1,NLcMap(imap))
            Endif
            DataSet(imap) = DioPltDefine(OutName, runId, Dio_Plt_Real, parNames, LocIds)
            Call DioPltAddDescriptions (DataSet(imap), dio_plt_locs, LocDescr)
@@ -4999,7 +5000,7 @@ module Output
 ! Ievent = event number
 ! Itmstp = timestep
 
-   Integer Ievent, Lasttm, iout1
+   Integer Ievent, Lasttm
    Real    DefaultT0OutputValue
    Character(len=32) RestartVersion
 
@@ -5194,9 +5195,9 @@ module Output
 !     integer       Idebug
       Integer       NAMLNG, I, imap
       Integer       IYear, Imo, Iday, iHour, IMin, ISec, TmSize
-      CHARACTER(len=20) Name
+      CHARACTER(len=20)           Name
       CHARACTER(Len=CharIdLength) FILNAM
-      CHARACTER(len=160) Header
+      CHARACTER(len=160)         Header
 
 ! voorlopig alleen maar voor tijdstap 1; later de check inbouwen voor om de x tijdstappen
 

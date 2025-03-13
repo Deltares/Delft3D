@@ -25,8 +25,8 @@
 module m_statistical_output
 
    use MessageHandling
-   use m_output_config
-   use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set, SO_NONE, SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
+   use m_output_config, only: t_output_quantity_config
+   use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set, process_data_interface_double, SO_NONE, SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
    use m_read_statistical_output
    use m_temporal_statistics
    use precision, only: dp
@@ -36,14 +36,16 @@ module m_statistical_output
 
    private
 
-   public realloc
-   public dealloc
-   public update_statistical_output, update_source_input, add_stat_output_items, &
-      initialize_statistical_output, reset_statistical_output, finalize_average
+   public :: realloc, dealloc
+   public :: update_statistical_output, update_source_input, add_stat_output_items, &
+             initialize_statistical_output, reset_statistical_output, finalize_average
+   public :: t_output_variable_set, t_output_variable_item, t_output_quantity_config, process_data_interface_double
+   public :: SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN, SO_NONE
 
    !> Realloc memory cross-section definition or cross-sections
    interface realloc
       module procedure reallocate_output_set
+      module procedure reallocate_output_set_cropped
    end interface
 
    !> Free the memory of cross-section definition or cross-sections
@@ -53,40 +55,64 @@ module m_statistical_output
 
 contains
 
-   subroutine reallocate_output_set(output_set, crop)
+   subroutine reallocate_output_set(output_set)
       use m_alloc
 
       type(t_output_variable_set), intent(inout) :: output_set !< output variable set to reallocate
-      logical, intent(in), optional :: crop !< crop output set to number of valid items
 
-      logical :: crop_
-      type(t_output_variable_item), allocatable, dimension(:) :: new_statout
-
-      crop_ = .false.
-      if (present(crop)) then
-         crop_ = crop
+      ! Optimization: if the output set is already at capacity, we don't need to do anything
+      if (allocated(output_set%statout) .and. output_set%capacity >= output_set%count) then
+         return
       end if
 
-      if (crop_ .and. output_set%count < output_set%capacity) then
-         allocate (new_statout(output_set%count))
-         new_statout(1:output_set%count) = output_set%statout(1:output_set%count)
-         call move_alloc(new_statout, output_set%statout)
-         output_set%capacity = output_set%count
-      else
-         if (allocated(output_set%statout)) then
-            if (output_set%count > output_set%capacity) then ! only increase size if necessary
-               output_set%capacity = output_set%capacity * 2
-               allocate (new_statout(output_set%capacity))
-               new_statout(1:size(output_set%statout)) = output_set%statout
-               call move_alloc(new_statout, output_set%statout)
-            end if
-         else
-            output_set%capacity = 200
-            allocate (output_set%statout(output_set%capacity))
-         end if
+      if (output_set%capacity == 0) then
+         output_set%capacity = 200
       end if
 
+      do while (output_set%count > output_set%capacity)
+         output_set%capacity = 2 * output_set%capacity
+      end do
+
+      call reallocate_to_capacity(output_set)
    end subroutine reallocate_output_set
+
+   subroutine reallocate_output_set_cropped(output_set, crop)
+      use m_alloc
+
+      type(t_output_variable_set), intent(inout) :: output_set !< output variable set to reallocate
+      logical, intent(in) :: crop !< whether to crop the output set to its current count
+
+      if (.not. crop) then
+         call reallocate_output_set(output_set)
+         return
+      end if
+
+      ! Optimization: if the output set is already at capacity, we don't need to do anything
+      if (allocated(output_set%statout) .and. output_set%capacity == output_set%count) then
+         return
+      end if
+
+      output_set%capacity = output_set%count
+
+      call reallocate_to_capacity(output_set)
+   end subroutine reallocate_output_set_cropped
+
+   !> Utility function to reallocate the statout array of an output set to its capacity
+   subroutine reallocate_to_capacity(output_set)
+      type(t_output_variable_set), intent(inout) :: output_set !< output variable set to reallocate
+
+      type(t_output_variable_item), allocatable, dimension(:) :: new_statout
+      integer :: count_to_copy
+
+      if (allocated(output_set%statout)) then
+         allocate (new_statout(output_set%capacity))
+         count_to_copy = min(output_set%count, size(output_set%statout))
+         new_statout(1:count_to_copy) = output_set%statout(1:count_to_copy)
+         call move_alloc(new_statout, output_set%statout)
+      else
+         allocate (output_set%statout(output_set%capacity))
+      end if
+   end subroutine reallocate_to_capacity
 
    subroutine deallocate_output_set(output_set)
       implicit none
@@ -175,7 +201,6 @@ contains
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
       use precision, only: dp
-      use m_statistical_output_types, only: process_data_interface_double
       use MessageHandling, only: mess, LEVEL_WARN
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
@@ -206,9 +231,7 @@ contains
             end if
 
             output_set%count = output_set%count + 1
-            if (output_set%count > output_set%capacity) then
-               call reallocate_output_set(output_set)
-            end if
+            call realloc(output_set)
 
             item%output_config = output_config
             item%source_input => data_pointer

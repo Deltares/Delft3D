@@ -89,7 +89,7 @@ if isempty(RequestedSubset)
     RequestedSubset = repmat({':'}, 1, length(RequestDims));
 end
 for i = length(RequestDims):-1:1
-    if isequal(RequestedSubset{i},0) || isequal(RequestedSubset{i},':')
+    if isequal(RequestedSubset{i},0) || strcmp(RequestedSubset{i},':')
         idim = strcmp(RequestDims{i}, Info.Dimension);
         RequestedSubset{i} = 1:Info.Size(idim);
     end
@@ -194,6 +194,10 @@ end
 if ~isa(Data,'double') && ~isa(Data,'char') && ~isa(Data,'string')
     Data = double(Data);
 end
+% if ~isa(Data,'char') && ~isa(Data,'string')
+%     fprintf('file: %s\nvariable: %s\n',FI.Filename,FI.Dataset(varid+1).Name)
+%     fprintf('min: %g\nmax: %g\nhas NaNs: %i\n',min(Data(~isnan(Data))),max(Data(~isnan(Data))),any(isnan(Data(:))));
+% end
 %
 permuted(permuted==0)=[];
 if length(permuted)>1

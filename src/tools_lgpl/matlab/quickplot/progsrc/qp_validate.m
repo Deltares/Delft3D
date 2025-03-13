@@ -594,7 +594,7 @@ try
                                 PName=str2file(PName);
                                 CmpFile=[PName '.mat'];
                                 if PName_double
-                                    CmpFile=[PName sprintf('.(%i).mat',PName_double+1)];
+                                    CmpFile=[PName sprintf('.(%i).mat',length(PName_double)+1)];
                                 end
                                 RefFile=[sref CmpFile];
                                 WrkFile=[swrk CmpFile];

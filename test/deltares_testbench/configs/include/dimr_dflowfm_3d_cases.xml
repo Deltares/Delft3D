@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 
       <testCase name="e02_f001_c201_channel_flow_algebraic_sigma_equi_3d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c201_channel_flow_algebraic_sigma_equi_3d</path>
+      <path version="2025-02-25T16:01:00.051000">e02_dflowfm/f001_general/c201_channel_flow_algebraic_sigma_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannelflow_map.nc" type="netCDF">
@@ -13,7 +13,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f001_c202_channel_flow_algebraic_zmodel_equi_3d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c202_channel_flow_algebraic_zmodel_equi_3d</path>
+      <path version="2025-03-04T10:38:35.011000">e02_dflowfm/f001_general/c202_channel_flow_algebraic_zmodel_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannelflow_map.nc" type="netCDF">
@@ -25,7 +25,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f001_c203_channel_flow_kepsilon_sigma_equi_3d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c203_channel_flow_kepsilon_sigma_equi_3d</path>
+      <path version="2025-02-25T16:37:26.820000">e02_dflowfm/f001_general/c203_channel_flow_kepsilon_sigma_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannelflow_map.nc" type="netCDF">
@@ -37,7 +37,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f001_c204_channel_flow_kepsilon_zmodel_equi_3d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c204_channel_flow_kepsilon_zmodel_equi_3d</path>
+      <path version="2025-03-04T10:43:27.595000">e02_dflowfm/f001_general/c204_channel_flow_kepsilon_zmodel_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannelflow_map.nc" type="netCDF">
@@ -49,7 +49,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f001_c205_channel_flow_kepsilon_sigma_nonequi_3d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c205_channel_flow_kepsilon_sigma_nonequi_3d</path>
+      <path version="2025-02-27T09:56:02.810000">e02_dflowfm/f001_general/c205_channel_flow_kepsilon_sigma_nonequi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannelflow_map.nc" type="netCDF">
@@ -61,7 +61,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f001_c207_channel_flow_ktau_sigma_equi_3d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c207_channel_flow_ktau_sigma_equi_3d</path>
+      <path version="2025-02-27T10:01:03.474000">e02_dflowfm/f001_general/c207_channel_flow_ktau_sigma_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannelflow_map.nc" type="netCDF">
@@ -73,7 +73,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f001_c208_channel_flow_ktau_zmodel_equi_3d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c208_channel_flow_ktau_zmodel_equi_3d</path>
+      <path version="2025-03-04T10:45:42.010000">e02_dflowfm/f001_general/c208_channel_flow_ktau_zmodel_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannelflow_map.nc" type="netCDF">
@@ -85,7 +85,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f001_c209_channel_flow_ktau_sigma_nonequi_3d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c209_channel_flow_ktau_sigma_nonequi_3d</path>
+      <path version="2025-02-27T10:07:17.830000">e02_dflowfm/f001_general/c209_channel_flow_ktau_sigma_nonequi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannelflow_map.nc" type="netCDF">

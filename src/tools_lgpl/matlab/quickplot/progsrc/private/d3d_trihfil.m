@@ -702,9 +702,9 @@ DataProps={'location observation points'   ''   [1 6 0 0 0]  0         4     '' 
     'equilibrium concentrations' 'kg/m^3' [1 5 0 0 1] 0         1     ''       'z'   'z'       'c'     'his-sed-series' 'ZRSDEQ'   ''         'sb'     0
     'available mass in fluff layer' 'kg/m^2' [1 5 0 0 0]  0     1    ''        'z'   'z'       ''      'his-sed-series' 'MFLUFF'   ''         's'      0
     'available mass of sediment' 'kg/m^2' [1 5 0 0 0] 0         1     ''       'z'   'z'       ''      'his-sed-series' 'ZBDSED'   ''         'sb'     0
-    'bed load transport'        'm^3/s/m' [1 5 0 0 0]  0        2     'u'      'z'   'z'       ''      'his-sed-series' 'ZSBU'     'ZSBV'     'sb'     1
-    'd.a. suspended transport'  'm^3/s/m' [1 5 0 0 0]  0        2     'u'      'z'   'z'       ''      'his-sed-series' 'ZSSU'     'ZSSV'     'sb'     1
-    'total transport'           'm^3/s/m' [1 5 0 0 0]  0        2     'u'      'z'   'z'       ''      'his-sed-series' 'ZSUU'     'ZSSV'     'sb'     1
+    'bed load transport'        '*'       [1 5 0 0 0]  0        2     'u'      'z'   'z'       ''      'his-sed-series' 'ZSBU'     'ZSBV'     'sb'     1
+    'd.a. suspended transport'  '*'       [1 5 0 0 0]  0        2     'u'      'z'   'z'       ''      'his-sed-series' 'ZSSU'     'ZSSV'     'sb'     1
+    'total transport'           '*'       [1 5 0 0 0]  0        2     'u'      'z'   'z'       ''      'his-sed-series' 'ZSSU'     'ZSSV'     'sb'     1
     'source term suspended sediment fractions' ...
                                 'kg/m^3/s' [1 5 0 0 0] 0        1     ''       'z'   'z'       ''      'his-sed-series' 'ZSOURSE'  ''         's'      0
     'sink term suspended sediment fractions'   ...
@@ -1018,10 +1018,14 @@ for i=1:length(Out)
                 eUnit = 'm^3';
             case 'm3/s'
                 eUnit = 'm^3/s';
+            case 'm3/s/m'
+                eUnit = 'm^3/s/m';
             case 'kg'
                 eUnit = 'kg';
             case 'kg/s'
                 eUnit = 'kg/s';
+            case 'kg/s/m'
+                eUnit = 'kg/s/m';
             case ''
                 Info = vs_disp(FI,Out(i).Group,'SBTR');
                 eUnit = strtrim(Info.ElmUnits(2:end-1));

@@ -13,9 +13,13 @@ function print_usage_info {
     echo "Usage:   ${0##*/} [OPTIONS]..."
     echo
     echo "Command line arguments:"
-    echo "<proc_def folder>   location of proc_def and csv files subfolder (a folder named csvFiles is assumed,"
-    echo "                    e.g. . (for the current work dir), mandatory)."
-    echo "-h, --help, --usage print this help message and exit"
+    echo "<proc_def folder>    Location of proc_def and csv files subfolder (mandatory)."
+    echo "                     Use the character . to assume a subfolder with the name csvFiles."
+    echo
+    echo "-h, --help, --usage  Print this help message and exit"
+    echo
+    echo "-newtab, --newtab    This optional argument will disregard the content of any existing *.csv files."
+    echo "                     If any are found, they will be overwritten."
 }
 
 # ============
@@ -41,6 +45,12 @@ if [ -z $1 ]; then
     exit 0
 fi
 
+## Check if a second argument -newtab or --newtab is given
+newtabArg=""
+if [ $2 = -newtab ] || [ $2 = --newtab ]; then
+  newtabArg="-newtab"
+fi
+
 proc_defloc=$1
 csvloc=$proc_defloc/csvFiles
 
@@ -60,9 +70,9 @@ echo
 workdir=`pwd`
 cd $csvloc
 echo "executing:"
-echo "$bindir/waqpb_import"
+echo "$bindir/waqpb_import $newtabArg" 
 echo
-$bindir/waqpb_import
+$bindir/waqpb_import $newtabArg
 cd $workdir
 
 

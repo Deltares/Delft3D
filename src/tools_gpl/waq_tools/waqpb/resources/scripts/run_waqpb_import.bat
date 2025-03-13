@@ -19,16 +19,20 @@ set PATH=%libdir%;%bindir%;%PATH%
 rem process arguments
 set procDefLoc=%1
 set csvFilesLoc=%procDefLoc%\csvFiles
+set newtabArg =
+if [%2] EQU [-newtab] set newtabArg=-newtab
+if [%2] EQU [--newtab] set newtabArg=-newtab
 
 echo proc_def location  : %procDefLoc%
 echo csv-files location : %csvFilesLoc%
+echo newtab option : %newtabArg%
 
 rem go to csv files directory, run waqpb_import, and return
 set currentdir=%CD%
 echo Working directory: %csvFilesLoc%
 cd /d %csvFilesLoc%
-echo executing in this window: "%bindir%\waqpb_import.exe"
-"%bindir%\waqpb_import.exe"
+echo executing in this window: "%bindir%\waqpb_import.exe" %newtabArg%
+"%bindir%\waqpb_import.exe" %newtabArg%
 cd /d "%currentdir%"
 goto end
 
@@ -36,11 +40,15 @@ goto end
 echo Purpose: Sets PATH and runs waqpb_import on Windows.
 echo.
 echo Usage:
-echo run_waqpb_import.bat ^<proc_def folder^> [OPTIONS]...
+echo run_waqpb_import.bat ^<proc_def folder^> [-newtab] || [--newtab]
 echo.
-echo ^<proc_def folder^>   location of proc_def and csv files subfolder (a folder named csvFiles is assumed,
-echo                     e.g. . (for the current work dir), mandatory).
-echo -h, --help, --usage print this help message and exit
+echo ^<proc_def folder^>         Location of proc_def and csv files subfolder (mandatory).
+echo                           Use the character . for default. Then a subfolder with the name csvFiles is assumed.
+echo.
+echo -h, --help, --usage       Print this help message and exit
+echo.
+echo -newtab, --newtab         This optional argument will disregard the content of any existing *.csv files.
+echo                           If any are found, they will be overwritten.
 
 :end
 pause

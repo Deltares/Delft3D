@@ -10,6 +10,8 @@ import Delft3D.linux.containers.*
 
 object LinuxBuild : BuildType({
 
+    description = "CMake build."
+
     templates(
         TemplateMergeRequest,
         TemplateDetermineProduct,
@@ -20,7 +22,6 @@ object LinuxBuild : BuildType({
 
     name = "Build"
     buildNumberPattern = "%product%: %build.vcs.number%"
-    description = "Linux build."
 
     allowExternalStatus = true
     artifactRules = """
@@ -30,10 +31,8 @@ object LinuxBuild : BuildType({
     """.trimIndent()
 
     params {
-        param("intel_oneapi_version", "2024")
-        param("intel_fortran_compiler", "ifx")
         param("generator", """"Unix Makefiles"""")
-        select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
+        select("build_type", "%dep.${LinuxThirdPartyLibs.id}.build_type%", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
     }
 
@@ -64,7 +63,7 @@ object LinuxBuild : BuildType({
                 cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=%product% -D CMAKE_BUILD_TYPE=%build_type% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install
                 cmake --build build_%product% --parallel --target install --config %build_type%
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:UNST-8679-oneapi-%intel_oneapi_version%-%intel_fortran_compiler%-release"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
@@ -80,6 +79,15 @@ object LinuxBuild : BuildType({
         dockerSupport {
             loginToRegistry = on {
                 dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
+            }
+        }
+    }
+
+    dependencies {
+        dependency(LinuxThirdPartyLibs) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
         }
     }

@@ -8,6 +8,9 @@ import Delft3D.template.*
 import Delft3D.step.*
 
 object WindowsBuild : BuildType({
+
+    description = "CMake build."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
@@ -17,7 +20,6 @@ object WindowsBuild : BuildType({
  
     name = "Build"
     buildNumberPattern = "%product%: %build.vcs.number%"
-    description = "Windows build."
 
     allowExternalStatus = true
     artifactRules = """

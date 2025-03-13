@@ -9,6 +9,8 @@ import Delft3D.linux.thirdParty.*
 
 object LinuxDocker : BuildType({
 
+    description = "Build the Delft3D container image and an image for running the testbenches."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
@@ -17,7 +19,6 @@ object LinuxDocker : BuildType({
 
     name = "Docker Build"
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
-    description = "Build DIMRset Linux container."
 
     vcs {
         root(DslContext.settingsRoot)
@@ -66,7 +67,7 @@ object LinuxDocker : BuildType({
             """.trimIndent()
         }
         dockerCommand {
-            name = "Docker build DIMRset"
+            name = "Docker build DIMRset image"
             commandType = build {
                 source = file {
                     path = "ci/teamcity/Delft3D/linux/docker/build.Dockerfile"
@@ -86,7 +87,7 @@ object LinuxDocker : BuildType({
             }
         }
         dockerCommand {
-            name = "Docker build testbench"
+            name = "Docker build testbench image"
             commandType = build {
                 source = file {
                     path = "ci/teamcity/Delft3D/linux/docker/test.Dockerfile"

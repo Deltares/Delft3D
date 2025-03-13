@@ -13,6 +13,9 @@ import Delft3D.verschilanalyse.*
 version = "2024.12"
 
 project {
+
+    description = "contact: BlackOps (black-ops@deltares.nl)"
+
     params {
         param("delft3d-user", "robot${'$'}delft3d+delft3d-push-pull")
         password("delft3d-secret", "credentialsJSON:eb73cbd9-d17e-4bbe-ab3e-fdabe1eeddb0")
@@ -20,16 +23,20 @@ project {
         param("delft3d-dev-user", "robot${'$'}delft3d-dev+push-pull")
         password("delft3d-dev-secret", "credentialsJSON:75eb18ff-a859-4d78-aa74-206d10865c2e")
 
+        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
+        password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
+
         param("product", "dummy_value")
     }
-
-    description = "contact: BlackOps (black-ops@deltares.nl)"
 
     template(TemplateMergeRequest)
     template(TemplateDetermineProduct)
     template(TemplatePublishStatus)
     template(TemplateMonitorPerformance)
     template(TemplateFailureCondition)
+    template(TemplateValidationDocumentation)
+    template(TemplateFunctionalityDocumentation)
+    template(TemplateDownloadFromS3)
 
     subProject {
         id("Linux")
@@ -44,11 +51,11 @@ project {
         }
         subProject {
             id("BuildContainers")
-            name = "Build Containers"
+            name = "Build-environment Containers"
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
             buildTypesOrder = listOf(
-                LinuxBuildTools, 
+                LinuxBuildTools,
                 LinuxThirdPartyLibs,
             )
         }
@@ -56,15 +63,11 @@ project {
         buildType(LinuxCollect)
         buildType(LinuxDocker)
         buildType(LinuxTest)
-        buildType(LinuxBuildTestbenchContainer)
-        buildType(LinuxPyTest)
         buildTypesOrder = arrayListOf(
             LinuxBuild,
             LinuxCollect,
             LinuxDocker,
-            LinuxTest,
-            LinuxBuildTestbenchContainer,
-            LinuxPyTest
+            LinuxTest
         )
     }
 
@@ -86,20 +89,31 @@ project {
         )
     }
 
+    subProject {
+        id("Documentation")
+        name = "Documentation"
+
+        buildType(ValidationDocumentMatrix)
+        buildType(FunctionalityDocumentMatrix)
+        buildTypesOrder = arrayListOf(
+            ValidationDocumentMatrix,
+            FunctionalityDocumentMatrix
+        )
+    }
+
     subProject(VerschilanalyseProject)
 
     subProjectsOrder = arrayListOf(
         RelativeId("Linux"),
         RelativeId("Windows"),
-        VerschilanalyseProject
+        VerschilanalyseProject,
+        RelativeId("Documentation")
     )
 
     buildType(Trigger)
-    buildType(Release)
 
     buildTypesOrder = arrayListOf(
-        Trigger,
-        Release
+        Trigger
     )
 
     features {
@@ -116,6 +130,17 @@ project {
             url = "https://containers.deltares.nl/harbor/projects/21/repositories"
             userName = "%delft3d-dev-user%"
             password = "%delft3d-dev-secret%"
+        }
+        awsConnection {
+            id = "doc_download_connection"
+            name = "Deltares MinIO connection"
+            credentialsType = static {
+                accessKeyId = DslContext.getParameter("s3_dsctestbench_accesskey")
+                secretAccessKey = "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160"
+                useSessionCredentials = false
+            }
+            allowInSubProjects = true
+            allowInBuilds = true
         }
     }
 }

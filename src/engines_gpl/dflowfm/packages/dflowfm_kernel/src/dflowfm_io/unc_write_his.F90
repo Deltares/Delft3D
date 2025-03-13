@@ -260,7 +260,7 @@ contains
             end if
             ! New implementation, sedsus fraction is additional dimension
             call check_netcdf_error(nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim))
-            call definencvar(ihisfile, id_frac_name, nf90_char, (/id_strlendim, id_sedtotdim/), 'sedfrac_name', 'sediment fraction identifier')
+            call definencvar(ihisfile, id_frac_name, nf90_char, [id_strlendim, id_sedtotdim], 'sedfrac_name', 'sediment fraction identifier')
             if (jased > 0 .and. stmpar%morlyr%settings%iunderlyr == 2) then
                call check_netcdf_error(nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim))
             end if
@@ -270,11 +270,11 @@ contains
          !
          call ncu_set_att(attributes(1), 'standard_name', 'time')
          call ncu_set_att(attributes(2), 'bounds', 'time_bds')
-         call definencvar(ihisfile, id_time, nf90_double, (/id_timedim/), 'time', unit=trim(Tudunitstr), extra_attributes=attributes(1:2))
-         call definencvar(ihisfile, id_timebds, nf90_double, (/id_twodim, id_timedim/), 'time_bds', 'Time interval for each point in time.', unit=trim(Tudunitstr), extra_attributes=attributes(1:1))
+         call definencvar(ihisfile, id_time, nf90_double, [id_timedim], 'time', unit=trim(Tudunitstr), extra_attributes=attributes(1:2))
+         call definencvar(ihisfile, id_timebds, nf90_double, [id_twodim, id_timedim], 'time_bds', 'Time interval for each point in time.', unit=trim(Tudunitstr), extra_attributes=attributes(1:1))
 
          ! Size of latest timestep
-         ierr = unc_def_var_nonspatial(ihisfile, id_timestep, nf90_double, (/id_timedim/), 'timestep', '', 'latest computational timestep size in each output interval', 's')
+         ierr = unc_def_var_nonspatial(ihisfile, id_timestep, nf90_double, [id_timedim], 'timestep', '', 'latest computational timestep size in each output interval', 's')
          !
          ! Observation stations
          !
@@ -288,7 +288,7 @@ contains
 
             ! Special definition of station_id for backwards compatibility reasons..
             call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
-            call definencvar(ihisfile, id_stat_id, nf90_char, (/id_strlendim, id_statdim/), 'station_id', 'id of station', extra_attributes=attributes(1:1))
+            call definencvar(ihisfile, id_stat_id, nf90_char, [id_strlendim, id_statdim], 'station_id', 'id of station', extra_attributes=attributes(1:1))
 
             ! Define the x/y, lat/lon, and z coordinate variables for the station type.
             ierr = unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
@@ -329,8 +329,8 @@ contains
                                                   id_poly_xmid=id_src_xmid, id_poly_ymid=id_src_ymid)
          if (jahissourcesink > 0 .and. numsrc > 0) then
             call check_netcdf_error(nf90_def_dim(ihisfile, 'source_sink_points', msrc, id_srcptsdim))
-            call definencvar(ihisfile, id_srcx, nf90_double, (/id_srcdim, id_srcptsdim/), 'source_sink_x_coordinate')
-            call definencvar(ihisfile, id_srcy, nf90_double, (/id_srcdim, id_srcptsdim/), 'source_sink_y_coordinate')
+            call definencvar(ihisfile, id_srcx, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_x_coordinate')
+            call definencvar(ihisfile, id_srcy, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_y_coordinate')
             ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
          end if
 
@@ -474,14 +474,14 @@ contains
             call check_netcdf_error(nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim))
             call check_netcdf_error(nf90_def_dim(ihisfile, 'ndred', dadpar%dredge_dimension_length, id_dreddim))
             call check_netcdf_error(nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim))
-            call definencvar(ihisfile, id_dred_name, nf90_char, (/id_strlendim, id_dreddim/), 'dredge_area_name', 'dredge area identifier')
-            call definencvar(ihisfile, id_dump_name, nf90_char, (/id_strlendim, id_dumpdim/), 'dump_area_name', 'dump area identifier')
+            call definencvar(ihisfile, id_dred_name, nf90_char, [id_strlendim, id_dreddim], 'dredge_area_name', 'dredge area identifier')
+            call definencvar(ihisfile, id_dump_name, nf90_char, [id_strlendim, id_dumpdim], 'dump_area_name', 'dump area identifier')
          end if
 
          if (jacheckmonitor == 1) then
-            call definencvar(ihisfile, id_checkmon, nc_precision, (/id_laydim, id_timedim/), 'checkerboard_monitor', 'Checkerboard mode monitor', unit='m s-1')
-            call definencvar(ihisfile, id_num_timesteps, nf90_int, (/id_timedim/), 'num_timesteps')
-            call definencvar(ihisfile, id_comp_time, nc_precision, (/id_timedim/), 'comp_time')
+            call definencvar(ihisfile, id_checkmon, nc_precision, [id_laydim, id_timedim], 'checkerboard_monitor', 'Checkerboard mode monitor', unit='m s-1')
+            call definencvar(ihisfile, id_num_timesteps, nf90_int, [id_timedim], 'num_timesteps')
+            call definencvar(ihisfile, id_comp_time, nc_precision, [id_timedim], 'comp_time')
          end if
 
          ! WAQ statistic outputs are kept outside of the statistical output framework
@@ -490,7 +490,7 @@ contains
          end if
 
          if (jahisbedlev > 0 .and. model_has_obs_stations() .and. .not. stm_included) then
-            call definencvar(ihisfile, id_varb, nc_precision, (/id_statdim/), 'bedlevel', 'bottom level', unit='m', namecoord=statcoordstring)
+            call definencvar(ihisfile, id_varb, nc_precision, [id_statdim], 'bedlevel', 'bottom level', unit='m', namecoord=statcoordstring)
          end if
 
          do ivar = 1, out_variable_set_his%count
@@ -559,43 +559,43 @@ contains
 
                select case (config%location_specifier)
                case (UNC_LOC_SOSI)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_srcdim, id_timedim/), var_name, var_long_name, config%unit, 'source_sink_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_srcdim, id_timedim], var_name, var_long_name, config%unit, 'source_sink_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_RUG)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_rugdim, id_timedim/), var_name, var_long_name, config%unit, 'runup_gauge_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_rugdim, id_timedim], var_name, var_long_name, config%unit, 'runup_gauge_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_GENSTRU)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_genstrudim, id_timedim/), var_name, var_long_name, config%unit, 'general_structure_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_genstrudim, id_timedim], var_name, var_long_name, config%unit, 'general_structure_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_DAM)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_cdamdim, id_timedim/), var_name, var_long_name, config%unit, 'cdam_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_cdamdim, id_timedim], var_name, var_long_name, config%unit, 'cdam_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_PUMP)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_pumpdim, id_timedim/), var_name, var_long_name, config%unit, 'pump_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_pumpdim, id_timedim], var_name, var_long_name, config%unit, 'pump_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_GATE)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_gatedim, id_timedim/), var_name, var_long_name, config%unit, 'gate_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_gatedim, id_timedim], var_name, var_long_name, config%unit, 'gate_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_GATEGEN)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_gategendim, id_timedim/), var_name, var_long_name, config%unit, 'gategen_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_gategendim, id_timedim], var_name, var_long_name, config%unit, 'gategen_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_WEIRGEN)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_weirgendim, id_timedim/), var_name, var_long_name, config%unit, 'weirgen_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_weirgendim, id_timedim], var_name, var_long_name, config%unit, 'weirgen_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_ORIFICE)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_orifgendim, id_timedim/), var_name, var_long_name, config%unit, 'orifice_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_orifgendim, id_timedim], var_name, var_long_name, config%unit, 'orifice_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_BRIDGE)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_bridgedim, id_timedim/), var_name, var_long_name, config%unit, 'bridge_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_bridgedim, id_timedim], var_name, var_long_name, config%unit, 'bridge_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_CULVERT)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_culvertdim, id_timedim/), var_name, var_long_name, config%unit, 'culvert_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_culvertdim, id_timedim], var_name, var_long_name, config%unit, 'culvert_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_DAMBREAK)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_dambreakdim, id_timedim/), var_name, var_long_name, config%unit, 'dambreak_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_dambreakdim, id_timedim], var_name, var_long_name, config%unit, 'dambreak_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_UNIWEIR)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_uniweirdim, id_timedim/), var_name, var_long_name, config%unit, 'uniweir_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_uniweirdim, id_timedim], var_name, var_long_name, config%unit, 'uniweir_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_CMPSTRU)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_cmpstrudim, id_timedim/), var_name, var_long_name, config%unit, 'cmpstru_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_cmpstrudim, id_timedim], var_name, var_long_name, config%unit, 'cmpstru_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_LONGCULVERT)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_longculvertdim, id_timedim/), var_name, var_long_name, config%unit, 'longculvert_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_longculvertdim, id_timedim], var_name, var_long_name, config%unit, 'longculvert_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_LATERAL)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_latdim, id_timedim/), var_name, var_long_name, config%unit, 'lateral_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_latdim, id_timedim], var_name, var_long_name, config%unit, 'lateral_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_DREDGE)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_dreddim, id_timedim/), var_name, var_long_name, config%unit, 'dredge_area_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_dreddim, id_timedim], var_name, var_long_name, config%unit, 'dredge_area_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_DUMP)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_dumpdim, id_timedim/), var_name, var_long_name, config%unit, 'dump_area_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_dumpdim, id_timedim], var_name, var_long_name, config%unit, 'dump_area_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_DRED_LINK)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_dredlinkdim, id_sedtotdim, id_timedim/), var_name, var_long_name, config%unit, 'dredge_link_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_dredlinkdim, id_sedtotdim, id_timedim], var_name, var_long_name, config%unit, 'dredge_link_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_STATION)
                   if (allocated(config%nc_dim_ids)) then
                      if (config%nc_dim_ids%laydim) then
@@ -613,10 +613,10 @@ contains
                      call err('Internal error, please report: UNC_LOC_STATION variable '//trim(config%name)//' does not have nc_dim_ids set.')
                   end if
                case (UNC_LOC_OBSCRS)
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_crsdim, id_timedim/), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_crsdim, id_timedim], var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_GLOBAL)
                   if (timon) call timstrt("unc_write_his DEF bal", handle_extra(59))
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/id_timedim/), var_name, var_long_name, config%unit, "", fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_timedim], var_name, var_long_name, config%unit, "", fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                   if (timon) call timstop(handle_extra(59))
                end select
 
@@ -636,13 +636,13 @@ contains
          if (it_his == 0) then
             ! Observation stations
             do i = 1, numobs + nummovobs
-               call check_netcdf_error(nf90_put_var(ihisfile, id_stat_id, trimexact(namobs(i), strlen_netcdf), (/1, i/))) ! Extra for OpenDA-wrapper
+               call check_netcdf_error(nf90_put_var(ihisfile, id_stat_id, trimexact(namobs(i), strlen_netcdf), [1, i])) ! Extra for OpenDA-wrapper
             end do
             !
             ! Observation cross sections
             if (ncrs > 0) then
-               call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_coordx, geomXCrs, start=(/1/), count=(/nNodesCrs/)))
-               call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_coordy, geomYCrs, start=(/1/), count=(/nNodesCrs/)))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_coordx, geomXCrs, start=[1], count=[nNodesCrs]))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_coordy, geomYCrs, start=[1], count=[nNodesCrs]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_count, nodeCountCrs))
                if (allocated(geomXCrs)) deallocate (geomXCrs)
                if (allocated(geomYCrs)) deallocate (geomYCrs)
@@ -673,8 +673,8 @@ contains
                   end if
                   node_count(i) = nNodes
                   if (nNodes > 0) then
-                     call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_coordx, geom_x(1:nNodes), start=(/j/), count=(/nNodes/)))
-                     call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_coordy, geom_y(1:nNodes), start=(/j/), count=(/nNodes/)))
+                     call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_coordx, geom_x(1:nNodes), start=[j], count=[nNodes]))
+                     call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_coordy, geom_y(1:nNodes), start=[j], count=[nNodes]))
                   end if
                   j = j + nNodes
                end do
@@ -683,24 +683,24 @@ contains
 
             ! Lateral discharges
             if (jahislateral > 0 .and. numlatsg > 0) then
-               call check_netcdf_error(nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start=(/1/), count=(/nlatnd/)))
-               call check_netcdf_error(nf90_put_var(ihisfile, id_latgeom_node_coordy, geomYLat(1:nNodesLat), start=(/1/), count=(/nlatnd/)))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start=[1], count=[nlatnd]))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_latgeom_node_coordy, geomYLat(1:nNodesLat), start=[1], count=[nlatnd]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_latgeom_node_count, nodeCountLat))
             end if
 
             if (jased > 0 .and. stm_included .and. jahissed > 0 .and. ISED1 > 0) then
                do i = 1, stmpar%lsedtot
-                  call check_netcdf_error(nf90_put_var(ihisfile, id_frac_name, trimexact(stmpar%sedpar%namsed(i), strlen_netcdf), (/1, i/)))
+                  call check_netcdf_error(nf90_put_var(ihisfile, id_frac_name, trimexact(stmpar%sedpar%namsed(i), strlen_netcdf), [1, i]))
                end do
             end if
 
             if (dad_included) then
                do i = 1, dadpar%dredge_dimension_length
-                  call check_netcdf_error(nf90_put_var(ihisfile, id_dred_name, trimexact(dadpar%dredge_areas(i), strlen_netcdf), (/1, i/)))
+                  call check_netcdf_error(nf90_put_var(ihisfile, id_dred_name, trimexact(dadpar%dredge_areas(i), strlen_netcdf), [1, i]))
                end do
                !
                do i = 1, dadpar%nadump
-                  call check_netcdf_error(nf90_put_var(ihisfile, id_dump_name, trimexact(dadpar%dump_areas(i), strlen_netcdf), (/1, i/)))
+                  call check_netcdf_error(nf90_put_var(ihisfile, id_dump_name, trimexact(dadpar%dump_areas(i), strlen_netcdf), [1, i]))
                end do
             end if
 
@@ -717,10 +717,10 @@ contains
 
       if (timon) call timstrt('unc_write_his time data', handle_extra(64))
 
-      call check_netcdf_error(nf90_put_var(ihisfile, id_time, time_his, (/it_his/)))
-      call check_netcdf_error(nf90_put_var(ihisfile, id_timebds, (/time_his_prev, time_his/), (/1, it_his/)))
+      call check_netcdf_error(nf90_put_var(ihisfile, id_time, time_his, [it_his]))
+      call check_netcdf_error(nf90_put_var(ihisfile, id_timebds, [time_his_prev, time_his], [1, it_his]))
       time_his_prev = time_his
-      call check_netcdf_error(nf90_put_var(ihisfile, id_timestep, dts, (/it_his/)))
+      call check_netcdf_error(nf90_put_var(ihisfile, id_timestep, dts, [it_his]))
       if (timon) call timstop(handle_extra(64))
 
 !   Observation points (fixed+moving)
@@ -734,7 +734,7 @@ contains
       end if
       !Bottom level is written separately from statout if it is static
       if (ntot > 0 .and. .not. stm_included .and. jahisbedlev > 0) then
-         call check_netcdf_error(nf90_put_var(ihisfile, id_varb, valobs(:, IPNT_BL), start=(/1/)))
+         call check_netcdf_error(nf90_put_var(ihisfile, id_varb, valobs(:, IPNT_BL), start=[1]))
       end if
 
       ! WAQ statistic outputs are kept outside of the statistical output framework
@@ -794,14 +794,14 @@ contains
                   UNC_LOC_DREDGE, &
                   UNC_LOC_DUMP &
                   )
-               call check_netcdf_error(nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start=(/1, it_his/)))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start=[1, it_his]))
             case (UNC_LOC_STATION)
                call write_station_netcdf_variable(out_variable_set_his%statout(ivar), ihisfile, it_his)
             case (UNC_LOC_DRED_LINK)
-               call check_netcdf_error(nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start=(/1, 1, it_his/), count=(/dadpar%nalink, stmpar%lsedtot, 1/)))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start=[1, 1, it_his], count=[dadpar%nalink, stmpar%lsedtot, 1]))
             case (UNC_LOC_GLOBAL)
                if (timon) call timstrt('unc_write_his IDX data', handle_extra(67))
-               call check_netcdf_error(nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start=(/it_his/)))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start=[it_his]))
                if (timon) call timstop(handle_extra(67))
             end select
          end associate
@@ -821,10 +821,10 @@ contains
       end if
 
       if (jacheckmonitor == 1) then
-         call check_netcdf_error(nf90_put_var(ihisfile, id_checkmon, checkmonitor, start=(/1, it_his/)))
+         call check_netcdf_error(nf90_put_var(ihisfile, id_checkmon, checkmonitor, start=[1, it_his]))
 
-         call check_netcdf_error(nf90_put_var(ihisfile, id_num_timesteps, int(dnt), start=(/it_his/)))
-         call check_netcdf_error(nf90_put_var(ihisfile, id_comp_time, tim_get_wallclock(handle_steps), start=(/it_his/)))
+         call check_netcdf_error(nf90_put_var(ihisfile, id_num_timesteps, int(dnt), start=[it_his]))
+         call check_netcdf_error(nf90_put_var(ihisfile, id_comp_time, tim_get_wallclock(handle_steps), start=[it_his]))
       end if
 
       if (unc_noforcedflush == 0) then
@@ -879,7 +879,7 @@ contains
          call get_prefix_and_name_from_struc_type_id(struc_type_id, prefix, name)
 
          call check_netcdf_error(nf90_def_dim(ncid, trim(prefix), count, id_strdim))
-         call check_netcdf_error(nf90_def_var(ncid, trim(prefix)//'_name', nf90_char, (/id_strlendim, id_strdim/), id_strid))
+         call check_netcdf_error(nf90_def_var(ncid, trim(prefix)//'_name', nf90_char, [id_strlendim, id_strdim], id_strid))
          call check_netcdf_error(nf90_put_att(ncid, id_strid, 'cf_role', 'timeseries_id'))
          call check_netcdf_error(nf90_put_att(ncid, id_strid, 'long_name', 'name of '//trim(name)))
 

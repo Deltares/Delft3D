@@ -9,6 +9,8 @@ import Delft3D.step.*
 
 object LinuxCollect : BuildType({
 
+    description = "Prepping the binaries for testing/release."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
@@ -17,7 +19,6 @@ object LinuxCollect : BuildType({
 
     name = "Collect"
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
-    description = "DIMRset collector for Linux."
 
     allowExternalStatus = true
     artifactRules = """

@@ -9,6 +9,8 @@ import Delft3D.windows.*
 
 object Trigger : BuildType({
 
+    description = "This is triggered for merge-requests and will schedule the appropriate testbenches."
+
     templates(
         TemplateMergeRequest,
         TemplateDetermineProduct,

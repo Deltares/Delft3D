@@ -13,6 +13,8 @@ import CsvProcessor
 
 object WindowsTest : BuildType({
 
+    description = "Run TestBench.py on a list of testbench XML files. (This is not containerized as we'd need more Docker-pool agents.)"
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,

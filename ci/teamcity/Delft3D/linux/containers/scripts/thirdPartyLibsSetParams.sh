@@ -7,7 +7,7 @@ INTEL_ONEAPI_VERSION="${INTEL_ONEAPI_VERSION:-%intel_oneapi_version%}"
 INTEL_FORTRAN_COMPILER="${INTEL_FORTRAN_COMPILER:-%intel_fortran_compiler%}"
 
 BUILDTOOLS_IMAGE_TAG="oneapi-${INTEL_ONEAPI_VERSION}"
-IMAGE_TAG="oneapi-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${BUILD_TYPE}"
+IMAGE_TAG="oneapi-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${BUILD_TYPE,,}"
 CACHE_FROM_ARGS="--cache-from type=registry,ref=${HARBOR_REPO}:${IMAGE_TAG}-cache"
 if [[ -n "$JIRA_ISSUE_ID" ]]; then
     BUILDTOOLS_IMAGE_TAG="${JIRA_ISSUE_ID}-${BUILDTOOLS_IMAGE_TAG}"
@@ -16,7 +16,7 @@ if [[ -n "$JIRA_ISSUE_ID" ]]; then
 fi
 
 DEBUG=0
-if [[ "$BUILD_TYPE" == 'debug' ]]; then
+if [[ "$BUILD_TYPE" == 'Debug' ]]; then
     DEBUG=1
 fi
 

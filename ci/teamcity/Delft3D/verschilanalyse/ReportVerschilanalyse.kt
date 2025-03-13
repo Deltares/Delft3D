@@ -5,7 +5,8 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 
 object ReportVerschilanalyse: BuildType({
-    name = "Report verschilanalyse"
+    name = "Report"
+    description = "Report verschilanalyse outcome and send email."
 
     artifactRules = """
         ci/teamcity/Delft3D/verschilanalyse/scripts/report.zip
@@ -18,7 +19,7 @@ object ReportVerschilanalyse: BuildType({
         param("env.EMAIL_FROM", "black-ops@deltares.nl")
         param("env.EMAIL_SERVER", "smtp.directory.intra")
         param("env.EMAIL_PORT", "25")
-        param("env.EMAIL_RECIPIENTS", "black-ops@deltares.nl")
+        param("env.EMAIL_RECIPIENTS", "dflowfm-verschilanalyse@deltares.nl")
     }
 
     vcs {

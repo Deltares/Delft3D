@@ -10,6 +10,8 @@ import Delft3D.step.*
 
 object WindowsBuildEnvironmentI24 : BuildType({
 
+    description = "Build-environment container image to build our Delf3D software in."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
@@ -18,7 +20,6 @@ object WindowsBuildEnvironmentI24 : BuildType({
 
     name = "Delft3D build environment intel 2024 container"
     buildNumberPattern = "%build.vcs.number%"
-    description = "Delft3D Windows build container."
 
     params {
         param("trigger.type", "")

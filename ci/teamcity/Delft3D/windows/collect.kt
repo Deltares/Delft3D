@@ -9,6 +9,8 @@ import Delft3D.step.*
 
 object WindowsCollect : BuildType({
 
+    description = "Prepping the binaries for testing/release and verify the signing and directory structure."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
@@ -17,7 +19,6 @@ object WindowsCollect : BuildType({
 
     name = "Collect"
     buildNumberPattern = "%dep.${WindowsBuild.id}.product%: %build.vcs.number%"
-    description = "DIMRset collector for Windows."
 
     allowExternalStatus = true
     artifactRules = """

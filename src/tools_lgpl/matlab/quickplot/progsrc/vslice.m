@@ -146,6 +146,9 @@ switch v_slice
                     case 'NODE'
                         data.X = data.X(isel,:);
                         data.Y = data.Y(isel,:);
+                        if isfield(data,'Z')
+                            data.Z = data.Z(isel,:);
+                        end
                         data = rmfield(data,'EdgeNodeConnect');
                     case 'EDGE'
                         iedge = isel;

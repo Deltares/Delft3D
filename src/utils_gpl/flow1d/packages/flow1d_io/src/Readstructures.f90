@@ -817,11 +817,6 @@ module m_readstructures
             bridge%useOwnCrossSection = .true.
             bridge%pcross             => network%crs%cross(icross)
             bridge%crosssectionnr     = icross
-            if (network%crs%cross(icross)%crossType == cs_YZ_Prof) then
-               bridge%pcross%convtab1 => null()
-               call CalcConveyance(network%crs%cross(icross))
-            endif
-
          endif
          
          call prop_get(md_ptr, '', 'shift', shift, success1)

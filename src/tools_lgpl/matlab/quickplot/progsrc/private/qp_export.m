@@ -934,11 +934,16 @@ for f=1:ntim
                     hNew=hNew(end:-1:1);
                     switch Ops.presentationtype
                         case 'coloured contour lines'
-                            xy=get(hNew,'vertices');
-                            for i=1:length(xy)
+                            if length(hNew) == 1
+                                xy = {get(hNew,'vertices')};
+                                cv = {get(hNew,'facevertexcdata')};
+                            else
+                                xy = get(hNew,'vertices');
+                                cv = get(hNew,'facevertexcdata');
+                            end
+                            for i = 1:length(xy)
                                 xy{i} = xy{i}(:,1:2);
                             end
-                            cv=get(hNew,'facevertexcdata');
                             UD=get(hNew0,'userdata');
                             Thresholds=UD.XInfo.Thresholds;
                             for i=length(xy):-1:1

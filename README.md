@@ -4,7 +4,6 @@ https://oss.deltares.nl/en/web/delft3dfm/get-started#Download%20source%20code
 See section "Workflow" below in case you want to contribute to the source code.
 
 
-
 # About compiling https://git.deltares.nl/oss/delft3d
 
 #### Windows:

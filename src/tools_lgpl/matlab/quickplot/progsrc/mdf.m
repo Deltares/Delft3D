@@ -1316,10 +1316,16 @@ for i = 1:size(attfiles,1)
                     %
                     for q = 1:length(F)
                         switch F(q).FileType
-                            case {'triangulation','triangulation_magdir'}
-                                F(q).File = samples('read', F(q).FileName);
-                            case 'curvi'
+                            case {'uniform','unimagdir'}
+                                F(q).File = samples('read', F(q).FileName); % tim-file
+                            case {'svwp', 'arcinfo', 'spiderweb', 'curvi'}
                                 F(q).File = asciiwind('open', F(q).FileName);
+                            case {'triangulation', 'triangulation_magdir'}
+                                F(q).File = samples('read', F(q).FileName);
+                            case {'polyline', 'inside_polygon'}
+                                F(q).File = landboundary('read', F(q).FileName);
+                            %case 'ncgrid'
+                            %case 'ncflow'
                             otherwise
                                 ui_message('warning','Unsupported external forcing file type %s in record %i of %s', F(q).FileType, q, filename)
                         end
@@ -1442,7 +1448,7 @@ for i = 1:size(attfiles,1)
                     F = inifile('open',filename);
                 case 'Structure'
                     F = inifile('open',filename);
-                case 'FixedWeir'
+                case {'FixedWeir','LandBoundary','DryPoints'}
                     F = landboundary('read',filename);
                 otherwise
                     F = filename;
@@ -2054,6 +2060,10 @@ end
 
 
 function pf = relpath(path,file)
+fprintf(1,'processing file: %s\n', file)
+if ispc && length(file)>1 && strcmp(file(1:2),'/p') % fix path to Deltares network drive
+    file(1:2) = 'p:';
+end
 if length(file)>1 && file(2)==':'
     pf = file;
 else

@@ -10,7 +10,7 @@ import java.io.File
 
 object LinuxBuildTools : BuildType({
     name = "Build tools"
-    description = "Build the Delft3D Linux build-tools container image and push it to Harbor."
+    description = "Build-environment container image to build our Delf3D software in."
 
     templates(
         TemplatePublishStatus,

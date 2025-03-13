@@ -4882,7 +4882,8 @@ contains
          VmRzIn = OnvZone(Iovh)%Init_mm * mm2m
 
        ! max. root zone content and max. percolation
-         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
+         IRootz = NInt( DpRootz * 10)  ! nearest integer
+!        IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc. tot 100  (=index 10)
          UnsatMax = SRRZ (Ns, Irootz, 1) * 1000.   ! maximum root zone content unsat zone (mm)
          FmPeMax  = -1. * KSatCapsim(Ns) / 1000.  ! maximum capris/perc in m/day   NB FmPeMax is negatief (percolatie)
          if (idebug .ne. 0) then
@@ -4956,7 +4957,8 @@ contains
          VBo (iovh) = 0.0
          QinB(iovh) = 0.0
          ! max. root zone content and max. percolation
-         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
+         IRootz = NInt( DpRootz * 10)   ! nearest integer
+!        IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
          UnsatMax = SRRZ (Ns, Irootz, 1) * 1000.   ! maximum root zone content unsat zone (mm)
          FmPeMax  = -1. * KSatCapsim(Ns) / 1000.  ! maximum capris/perc in m/day   NB FmPeMax is negatief (percolatie)
          if (idebug .ne. 0) then
@@ -5064,7 +5066,8 @@ contains
          ! Initial unsat. soil moisture content in m
          VmRzIn = CropOnvZone(Iovh,icrop)%Init_mm * mm2m
          ! max. root zone content and max. percolation
-         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
+         IRootz = NInt( DpRootz * 10)  ! nearest integer
+!         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
          if (irootz > 0) then
             UnsatMax = SRRZ (Ns, Irootz, 1) * 1000.  ! maximum root zone content unsat zone (mm)
          else
@@ -5143,7 +5146,8 @@ contains
          VBoCrop(iovh,icrop) = 0.0
          QinBCrop(iovh,icrop) = 0.0
          ! max. root zone content and max. percolation
-         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
+         IRootz = NInt( DpRootz * 10)  ! nearest integer
+!         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
          if (irootz > 0) then
             UnsatMax = SRRZ (Ns, Irootz, 1) * 1000.0d0   ! maximum root zone content unsat zone (mm)
          else
