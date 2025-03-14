@@ -66,7 +66,12 @@ else()
     set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE} -std=c++11 -lboost_filesystem -lboost_system -lboost_date_time")
 endif()
 
+set (version_include_dir ${PROJECT_SOURCE_DIR}/../../version/)
+
 # Add project include directories
+
+include_directories("${CMAKE_SOURCE_DIR}/../version_includes")
+include_directories("${version_include_dir}")
 include_directories("${PROJECT_SOURCE_DIR}/src")
 include_directories("${PROJECT_SOURCE_DIR}/src/dataBinding")
 include_directories("${PROJECT_SOURCE_DIR}/src/optimizationProblem")
@@ -87,12 +92,13 @@ endif()
 # Add source folder (FBCTools_static target)
 add_subdirectory(src)
 
+
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 # Define FBCTools executable
-    add_executable(FBCTools src/rtcTools.cpp ${PROJECT_SOURCE_DIR}/src/version.rc)
+    add_executable(FBCTools src/rtcTools.cpp ${version_include_dir}/fbc_version.rc)
 
 # Define BMI library
-    add_library(FBCTools_BMI SHARED src/rtcToolsBMI.cpp src/bmi.h ${PROJECT_SOURCE_DIR}/src/version.rc)
+    add_library(FBCTools_BMI SHARED src/rtcToolsBMI.cpp src/bmi.h ${version_include_dir}/fbc_version.rc)
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 # Define FBCTools executable

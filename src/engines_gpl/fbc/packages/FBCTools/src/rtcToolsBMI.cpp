@@ -38,7 +38,7 @@
 #include "piDiagInterface.h"
 #include "bmi.h"
 
-#include "version.h"
+#include "fbc_version.h"
 
 #if defined _WIN32
 // Undefine min and max to avoid conflict with std::numeric_limits::{min,max}.

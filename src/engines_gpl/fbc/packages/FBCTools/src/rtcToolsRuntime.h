@@ -38,7 +38,7 @@
 #include "dataBinding/pi_timeseries.hxx"
 #include "dataBinding/rtcRuntimeConfig.hxx"
 #include "utilities/utils.h"
-#include "version.h"
+#include "fbc_version.h"
 
 #include <string>
 #include <iostream>

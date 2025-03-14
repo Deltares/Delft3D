@@ -112,7 +112,7 @@ add_library(FBCTools_static STATIC
             ${schematization_triggersSRC}
             ${timeseriesSRC}
             ${utilitiesSRC}
-            version.h
+            ${PROJECT_SOURCE_DIR}/../../version/fbc_version.h
 )
 set_target_properties (FBCTools_static PROPERTIES FOLDER engines_gpl/fbc)
 target_link_libraries(FBCTools_static PRIVATE ${LINK_LIBRARIES} ${Boost_LIBRARIES})
