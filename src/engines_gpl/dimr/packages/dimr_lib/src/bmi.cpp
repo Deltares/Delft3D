@@ -271,6 +271,11 @@ extern "C" {
 			thisDimr->log->Write(FATAL, thisDimr->my_rank, ex.message, thisDimr->configfile);
 			return ex.errorCode;
 		}
+		catch (exception & ex)
+		{
+			printf("#### ERROR: dimr update ABORT: %s\n", ex.what());
+			return Exception::ERR_UNKNOWN;
+		}
 		catch (...)
 		{
 			printf("#### ERROR: dimr update ABORT with unknown exception\n");
