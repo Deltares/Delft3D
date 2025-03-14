@@ -120,7 +120,12 @@ else
     % get hash
     cwd = pwd;
     cd(dirname)
-    [a,b] = system_plain('git -P log -n 1 -v --decorate')
+    [a,b] = system_plain('git -P log -n 10 -v --decorate')
+    [a,b] = system_plain('git -P log -n 1 -v --decorate');
+    % if we could remove -n 1, we could look for the latest hash available
+    % at the origin, but that triggers a pager to wait for keypresses. The
+    % option --no-pager before log seems to work on the command line, but
+    % not when called via system for some reason.
     if a ~= 0
         revString = 'unknown';
         repoUrl   = 'unknown';
@@ -129,11 +134,14 @@ else
         [commit, b] = strtok(b);
         [hash, b] = strtok(b);
         b = strsplit(b, local_newline);
-        hasLocalCommits = isempty(strfind(b{1}, 'origin/'))
-        % if we could remove -n 1, we could look for the latest hash available
-        % at the origin, but that triggers a pager to wait for keypresses. The
-        % option --no-pagers before log seems to work on the command line, but
-        % not when called via system for some reason.
+        
+        if ~isempty(strfind(b{1},'ref/merge-requests'))
+            % We're probably working on a merge-request ... ignore the
+            % local (merge) commit
+            hasLocalCommits = false;
+        else
+            hasLocalCommits = isempty(strfind(b{1}, 'origin/'));
+        end
 
         % get repository
         [a, b] = system_plain('git remote -v');

@@ -1,4 +1,4 @@
-function [version,hash,repo_url] = get_qpversion(sourcedir,file)
+function [version,hash,repo_url] = get_qpversion
 %GET_QPVERSION retrieve version number from quickplot
 
 %----- LGPL --------------------------------------------------------------------

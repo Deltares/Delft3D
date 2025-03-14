@@ -98,7 +98,7 @@ addpath ../../../../third_party_open/netcdf/matlab/mexnc
 addpath ../../../../third_party_open/netcdf/matlab/snctools
 
 if nargin<4
-    [qpversion,hash,repo_url] = get_qpversion(sourcedir, 'd3d_qp.m');
+    [qpversion,hash,repo_url] = get_qpversion;
     T = now;
 end
 

@@ -40,7 +40,7 @@ function make_all(release)
 curdir = pwd;
 sourcedir = [curdir,filesep,'progsrc'];
 
-[qpversion,hash,repo_url] = get_qpversion(sourcedir,'d3d_qp.m');
+[qpversion,hash,repo_url] = get_qpversion;
 T = now;
 
 if ~isempty(strfind(qpversion,'(changed)'))

@@ -68,7 +68,7 @@ end
 sourcedir=[pwd,filesep,'progsrc'];
 
 % set defaults
-[qpversion,hash,repo_url] = get_qpversion(sourcedir, 'd3d_qp.m');
+[qpversion,hash,repo_url] = get_qpversion;
 T = now;
 
 % overrule using input arguments
