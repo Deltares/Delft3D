@@ -126,19 +126,19 @@ else
         repoUrl   = 'unknown';
         hash      = 'unknown';
     else
-        [commit,b] = strtok(b);
-        [hash,b] = strtok(b);
-        b = strsplit(b,local_newline);
-        hasLocalCommits = isempty(strfind(b{1},'origin/'));
+        [commit, b] = strtok(b);
+        [hash, b] = strtok(b);
+        b = strsplit(b, local_newline);
+        hasLocalCommits = isempty(strfind(b{1}, 'origin/'))
         % if we could remove -n 1, we could look for the latest hash available
         % at the origin, but that triggers a pager to wait for keypresses. The
         % option --no-pagers before log seems to work on the command line, but
         % not when called via system for some reason.
 
         % get repository
-        [a,b] = system_plain('git remote -v');
-        [origin,b] = strtok(b);
-        [repoUrl,b] = strtok(b);
+        [a, b] = system_plain('git remote -v');
+        [origin, b] = strtok(b);
+        [repoUrl, b] = strtok(b);
 
         % git describe
         %[a,b] = system_plain(['git describe "' dirname '"']);
@@ -148,13 +148,13 @@ else
 
         % get status
         [a, b] = system_plain(['git status "' dirname '"']);
-        b = strsplit(b, local_newline);
+        b = strsplit(b, local_newline)
     
-        hasStagedChanges = check_and_list_files(b, 'Changes to be committed:', 'Staged files:\n', false);
+        hasStagedChanges = check_and_list_files(b, 'Changes to be committed:', 'Staged files:\n', false)
     
-        hasUnstagedChanges = check_and_list_files(b, 'Changes not staged for commit:', 'Modified files:\n', false);
+        hasUnstagedChanges = check_and_list_files(b, 'Changes not staged for commit:', 'Modified files:\n', false)
     
-        hasUntrackedChanges = check_and_list_files(b, 'Untracked files:', 'Untracked files:\n', true);
+        hasUntrackedChanges = check_and_list_files(b, 'Untracked files:', 'Untracked files:\n', true)
 
         % we should also check if we have local commits to be pushed.
         revString = hash(1:9);
@@ -165,45 +165,41 @@ else
     cd(cwd)
 end
 
-function needsCheck = check_and_list_files(b, checkString, printString, mexExcept)
-isCheckString = strncmp(b,checkString,length(checkString));
-needsCheck = any(isCheckString);
+function checkResult = check_and_list_files(b, checkString, printString, mexExcept)
+checkResult = false;
 TAB = sprintf('\t');
-if needsCheck
+isCheckString = strncmp(b, checkString, length(checkString));
+if any(isCheckString)
     i = find(isCheckString) + 1;
     % skip lines starting with '(use' such as
     % (use "git add <file>..." to update what will be committed)
-    i = i+1;
-    while i < length(b) && strcmp(strtok(b{i}),'(use')
-        i = i+1;
+    i = i + 1;
+    while i < length(b) && strcmp(strtok(b{i}), '(use')
+        i = i + 1;
     end
-
-    needsCheck = false;
-    checkHeaderPrinted = false;
     while i < length(b) && strcmp(b{i}(1), TAB)
         file = b{i}(2:end);
-        % skip 'modified:' if found ...
-        if strncmp(file,'modified:',9)
+        % skip 'modified:' substring if found ...
+        if strncmp(file, 'modified:', 9)
             file = strtrim(file(10:end));
         end
-        folderAndFile = strsplit(file,'/');
-        if length(folderAndFile) == 1 || strcmp(folderAndFile{1},'private')
+        folderAndFile = strsplit(file, '/');
+        if length(folderAndFile) == 1 || strcmp(folderAndFile{1}, 'private')
             % file in current folder
             % or file in private folder or below
-            if mexExcept && ~isempty(strfind(folderAndFile{end},'.mex'))
+            if mexExcept && ~isempty(strfind(folderAndFile{end}, '.mex'))
                 % we need to ignore added mex files for the build process
             else
-                needsCheck = true;
-                if ~checkHeaderPrinted
+                if ~checkResult
                     fprintf(printString);
-                    checkHeaderPrinted = true;
+                    checkResult = true;
                 end
-                fprintf(' * %s\n',file);
+                fprintf(' * %s\n', file);
             end
         end
-        i = i+1;
+        i = i + 1;
     end
-    if checkHeaderPrinted
+    if checkResult
         fprintf('\n');
     end
 end
