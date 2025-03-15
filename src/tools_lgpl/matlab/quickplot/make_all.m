@@ -47,7 +47,7 @@ if ~isempty(strfind(qpversion,'(changed)'))
     % when running on TeamCity never build (changed) code versions ...
     try
         if batchStartupOptionUsed
-            fprintf('##teamcity[buildStop comment=''Version string "%s" contains the text "(changed)".'' readdToQueue=''true'']\n', qpversion);
+            fprintf('##teamcity[buildStop comment=''Version string "%s" contains the text "(changed)".'' readdToQueue=''false'']\n', qpversion);
             return
         end
     end
