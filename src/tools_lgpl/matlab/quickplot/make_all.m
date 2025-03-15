@@ -43,11 +43,11 @@ sourcedir = [curdir,filesep,'progsrc'];
 [qpversion,hash,repo_url] = get_qpversion;
 T = now;
 
-if ~isempty(strfind(qpversion,'(changed)'))
+if contains(qpversion,'(changed)')
     % when running on TeamCity never build (changed) code versions ...
     try
         if batchStartupOptionUsed
-            fprintf('##teamcity[buildStop comment=''Version string "%s" contains the text "(changed)".'' readdToQueue=''false'']\n', qpversion);
+            fprintf('##teamcity[buildProblem description=''Version string "%s" contains the text "(changed)".'' identity=''MAKE_ALL_1'']\n', qpversion);
             return
         end
     end
