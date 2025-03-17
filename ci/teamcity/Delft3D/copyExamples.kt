@@ -43,8 +43,4 @@ object CopyExamples : BuildType({
         }
     }
 
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
-    }
-
 })

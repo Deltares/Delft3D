@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 
 EXAMPLES_DIR = Path("examples/dflowfm")
-# this dir is the source of thurth the scripts in the exampels dir in git should be removed
 APPTAINER_DIR = Path("src/scripts_lgpl/singularity")
 
 if __name__ == "__main__":
