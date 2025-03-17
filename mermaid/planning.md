@@ -20,6 +20,7 @@ gantt
     Teams; Handover validation documentation :24-03-2025, 5d
     Teams; Handover example testcases :24-03-2025, 5d
     DevOps; Starts verschil analyse :24-03-2025, 5d
+    PO's; Starts gathering release notes wiki :24-03-2025, 5d
 
     section Integration Front end
     Teams; Manuals (Installation, User, Technical reference) :31-03-2025, 5d
