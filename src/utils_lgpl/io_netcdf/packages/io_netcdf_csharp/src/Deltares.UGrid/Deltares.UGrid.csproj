@@ -87,15 +87,6 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Content Include="Lib\hdf5.dll" />
-    <Content Include="Lib\hdf5_hl.dll" />
-    <Content Include="Lib\io_netcdf_dll.dll" />
-    <Content Include="Lib\libifcoremd.dll" />
-    <Content Include="Lib\libmmd.dll" />
-    <Content Include="Lib\netcdf.dll" />
-    <Content Include="Lib\ucrtbase.dll" />
-    <Content Include="Lib\vcruntime140.dll" />
-    <Content Include="Lib\zlib1.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
