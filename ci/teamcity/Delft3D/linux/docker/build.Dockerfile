@@ -6,15 +6,11 @@ FROM ${BUILDTOOLS_IMAGE_URL}:${BUILDTOOLS_IMAGE_TAG} as buildtools
 
 FROM almalinux:8
 
-COPY --from=buildtools /opt/intel/oneapi/mpi/latest/bin /tmp/mpi-bin
-
 # We have opted to not add any mpi executables to the released installers, but we do ship the mpi libraries in the installers (done by CMake).
+# This choice was made since linux HPC clusters often offer their own specialized MPI executables.
 # Therefore, we need to add the intel mpi executables to the container image that needs to run the tests.
-RUN mkdir --parents /opt/intel/mpi/bin && \
-    mv /tmp/mpi-bin/hydra_* /opt/intel/mpi/bin/ && \
-    mv /tmp/mpi-bin/mpiexec* /opt/intel/mpi/bin/ && \
-    mv /tmp/mpi-bin/mpirun /opt/intel/mpi/bin/ && \
-    rm -rf /tmp/mpi-bin
+ARG INTEL_MPI_PATH=/opt/intel/oneapi/mpi/latest/bin
+COPY --from=buildtools ${INTEL_MPI_PATH}/hydra_* ${INTEL_MPI_PATH}/mpiexec* ${INTEL_MPI_PATH}/mpirun /opt/intel/mpi/bin/
 
 ADD dimrset /opt/dimrset
 
