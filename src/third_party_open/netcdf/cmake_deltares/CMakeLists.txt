@@ -66,6 +66,5 @@ install (FILES
 ${binary_dir}/netcdf.dll
 ${binary_dir}/hdf5_hl.dll
 ${binary_dir}/hdf5.dll
-${binary_dir}/vcruntime140.dll
 DESTINATION lib
 )
