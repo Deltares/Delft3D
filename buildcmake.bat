@@ -1,0 +1,2 @@
+cmake ./src/cmake -D CMAKE_BUILD_TYPE=Debug -T fortran=ifx -D CONFIGURATION_TYPE:STRING=dflowfm -B build_dflowfm -D CMAKE_INSTALL_PREFIX=d:\checkouts\Trunk_git\test\deltares_testbench\data\engines\teamcity_artifacts\x64\
+pause
