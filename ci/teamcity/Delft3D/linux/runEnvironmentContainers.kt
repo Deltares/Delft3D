@@ -117,6 +117,11 @@ object LinuxRunEnvironmentContainers : BuildType({
                 dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
             }
         }
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
+            }
+        }
     }
     dependencies {
         dependency(LinuxCollect) {
