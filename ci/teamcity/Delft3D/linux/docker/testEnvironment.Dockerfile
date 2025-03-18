@@ -1,4 +1,4 @@
-FROM runEnvironment
+FROM run-environment
 
 ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_NO_CACHE_DIR=1

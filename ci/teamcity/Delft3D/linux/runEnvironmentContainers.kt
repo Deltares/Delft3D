@@ -74,7 +74,7 @@ object LinuxRunEnvironmentContainers : BuildType({
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
                 namesAndTags = """
-                    runEnvironment
+                    run-environment
                     containers.deltares.nl/delft3d/delft3d-run-environment:alma8-%build.vcs.number%
                 """.trimIndent()
                 commandArgs = """
