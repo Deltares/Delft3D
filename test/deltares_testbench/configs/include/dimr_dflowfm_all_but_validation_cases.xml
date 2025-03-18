@@ -6542,7 +6542,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f422_c01_trench_VanRijn1993" ref="dflowfm_restart">
-      <path version="2024-05-22T03:49:00">e02_dflowfm/f422_morphology_2D_restart/c01_trench_VanRijn1993</path>
+      <path version="2025-03-11T16:11:12.866000">e02_dflowfm/f422_morphology_2D_restart/c01_trench_VanRijn1993</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
@@ -6568,7 +6568,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f422_c02_trench_EH" ref="dflowfm_restart">
-      <path version="2024-05-22T03:49:00">e02_dflowfm/f422_morphology_2D_restart/c02_trench_EH</path>
+      <path version="2025-03-11T16:30:57.428000">e02_dflowfm/f422_morphology_2D_restart/c02_trench_EH</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="main/dflowfmoutput/t01_20000218_003000_rst.nc" type="netCDF">
@@ -6594,7 +6594,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f422_c03_fractions" ref="dflowfm_restart">
-      <path version="2024-05-22T04:30:00">e02_dflowfm/f422_morphology_2D_restart/c03_fractions</path>
+      <path version="2025-03-11T16:35:52.706000">e02_dflowfm/f422_morphology_2D_restart/c03_fractions</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
