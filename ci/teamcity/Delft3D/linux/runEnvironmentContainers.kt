@@ -69,7 +69,7 @@ object LinuxRunEnvironmentContainers : BuildType({
             name = "Docker build run-environment image"
             commandType = build {
                 source = file {
-                    path = "ci/teamcity/Delft3D/linux/docker/build.Dockerfile"
+                    path = "ci/teamcity/Delft3D/linux/docker/runEnvironment.Dockerfile"
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
@@ -89,7 +89,7 @@ object LinuxRunEnvironmentContainers : BuildType({
             name = "Docker build testbench-environment image"
             commandType = build {
                 source = file {
-                    path = "ci/teamcity/Delft3D/linux/docker/test.Dockerfile"
+                    path = "ci/teamcity/Delft3D/linux/docker/testEnvironment.Dockerfile"
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
