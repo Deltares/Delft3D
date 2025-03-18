@@ -85,8 +85,5 @@
     <None Include="packages.config" />
     <None Include="UML\Overview.cd" />
   </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
