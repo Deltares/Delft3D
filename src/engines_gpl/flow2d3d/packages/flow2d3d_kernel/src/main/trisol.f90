@@ -47,6 +47,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     use SyncRtcFlow
     use flow2d3d_timers
     use flow_tables
+    use m_trtrou, only: trtrou
+    use m_umod, only: compute_umod
     !
     use globaldata
     !
@@ -603,6 +605,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     logical                 :: sscomp
     logical                 :: success
     character(8)            :: stage       ! First or second half time step 
+    
+    logical, parameter :: TRACHY_WAQ = .false. !do trachytopes from WAQ
 !
 !! executable statements -------------------------------------------------------
 !
@@ -2804,10 +2808,21 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        if (lftrto .and. (nst + 1)==ittrtu) then
           call timer_start(timer_trtrou, gdp)
-          call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
-                    & r(cfurou) ,rouflo    ,.false.   ,r(guu)    ,r(gvu)    , &
-                    & r(hu)     ,i(kcu)    ,r(u1)     ,r(v1)     ,r(sig)    , &
-                    & r(z0urou) ,r(deltau) ,1         ,gdp       )
+          !compute_umod(r(u1)     ,r(v1))
+          call trtrou(lundia    ,kmax      ,nmmax   , &
+                    & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                    & r(hu)     ,i(kcu)    ,r(sig)    , &
+                    & r(z0urou) ,1         ,TRACHY_WAQ,gdp%gdtrachy  , & 
+                    & umod      ,nmlb      ,nmub      ,nmlbc     , nmubc    , & 
+                    & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                    & eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                    & rksr      ,rksmr     ,rksd      ,error, & 
+                    & assoc_dxx ,nxx       ,lsedtot   ,dxx       ,i50       ,i90,       &
+                    & rhosol        )
+          !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
+          !          & r(cfurou) ,rouflo    ,.false.   ,r(guu)    ,r(gvu)    , &
+          !          & r(hu)     ,i(kcu)    ,r(u1)     ,r(v1)     ,r(sig)    , &
+          !          & r(z0urou) ,r(deltau) ,1         ,gdp       )
           call timer_stop(timer_trtrou, gdp)
        endif
        !
