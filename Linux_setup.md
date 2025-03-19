@@ -70,7 +70,6 @@ Steps:
 - Check if installation was succesful: "nf-config --all"
 
 
-
 #### Add pkgconfig files
 Several packages need to have a pkgconfig file setup to be able to find the package. These include netcdf-fortran, proj and sqlite3. To do this, make a folder pkgconfig, and place there the following files:
 
