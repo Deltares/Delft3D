@@ -1237,7 +1237,7 @@ contains
          jalimnor = 1
       end if
 
-      call prop_get(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection);
+      call prop_get(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection)
       call prop_get(md_ptr, 'numerics', 'HorizontalMomentumFilter', jafilter)
       !call prop_get(md_ptr, 'numerics', 'filter'          , jafilter)
       !call prop_get(md_ptr, 'numerics', 'filterorder'     , filterorder)
@@ -3952,28 +3952,33 @@ contains
    end subroutine writeMDUFilepointer
 
    subroutine setmd_ident(filename)
-      use m_partitioninfo
-      use MessageHandling
+      use m_partitioninfo, only: jampi, numranks, sdmn
+      use MessageHandling, only: LEVEL_ERROR, mess
       use system_utils, only: FILESEP
       use unstruc_netcdf, only: unc_meta_md_ident
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
-                                            !! in case of parallel computing, the partition number is inserted.
-      integer :: L1, L2
+                                              !! in case of parallel computing, the partition number is inserted.
+      integer :: L1, L2, runid_len
 
-! Set model identifier based on .mdu basename
+      ! Set model identifier based on .mdu basename
       L1 = index(filename, FILESEP, .true.) + 1
       L2 = index(filename, '.', .true.)
       if (L2 == 0) then
          md_ident = ' '
          md_ident_sequential = trim(md_ident) ! needed for parallel outputdir
       else
-
+         runid_len = L2 - L1
+         if (runid_len > len(md_ident)) then
+            call mess(LEVEL_ERROR, 'Your run id is too long: "'//filename(L1:L2 - 1)//'"')
+         end if
          md_ident = filename(L1:L2 - 1) ! TODO: strip off path [AvD]
-
          md_ident_sequential = trim(md_ident) ! needed for parallel outputdir
 
-         if (JAMPI == 1 .and. numranks > 1) then
+         if (jampi == 1 .and. numranks > 1) then
+            if (runid_len > (len(md_ident) - 5)) then ! account for suffix '_00XX'
+               call mess(LEVEL_ERROR, 'Your run id is too long: "'//filename(L1:L2 - 1)//'"')
+            end if
             md_ident = trim(md_ident)//'_'//sdmn ! add rank number to ident
             filename = trim(md_ident)//filename(L2:)
          end if
@@ -3981,7 +3986,7 @@ contains
          !  NOTE: The switch_dia_file() call is now in loadModel().
       end if
 
-! Pass a copy to unstruc_netcdf to avoid cyclic dependency.
+      ! Pass a copy to unstruc_netcdf to avoid cyclic dependency.
       unc_meta_md_ident = md_ident
 
    end subroutine setmd_ident
