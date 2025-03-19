@@ -1,5 +1,4 @@
 # Setting up your own Linux environment
-
 To set up your own Linux environment several steps must be taken. This can be done either on a full Linux system, or in WSL (Windows Subsystem for Linux).
 The description below is for a Ubuntu based system, the steps are similar for different distributions. Package names might vary between distributions.
 Using the Intel compiler toolchain (oneAPI) is recommended.
