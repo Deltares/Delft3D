@@ -9,7 +9,7 @@ import Delft3D.windows.*
 
 object CopyExamples : BuildType({
     id("DHydro_ExampleCases_CopyDelft3dfmExampleCases")
-    name = "Copy delft3dfm-example-cases"
+    name = "Copy delft3dfm example cases"
     description = "Copy example files to P drive"
     buildNumberPattern = "%build.vcs.number%"
 
@@ -29,7 +29,7 @@ object CopyExamples : BuildType({
         python {
             name = "Copy example files to P drive"
             command = file {
-                filename = "ci/teamcity/scripts/copy_examples.py"
+                filename = "ci/python/ci_tools/copy/copy_examples.py"
                 scriptArguments = "%DEST_DIR%"
             }
         }

@@ -110,6 +110,7 @@ project {
         """.trimIndent()
 
         buildType(TestPythonCiTools)
+        buildType(CopyExamples)
     }
 
     subProject(VerschilanalyseProject)
@@ -123,10 +124,8 @@ project {
     )
 
     buildType(Trigger)
-    buildType(CopyExamples)
     buildTypesOrder = arrayListOf(
-        Trigger,
-        CopyExamples,
+        Trigger
     )
 
     features {

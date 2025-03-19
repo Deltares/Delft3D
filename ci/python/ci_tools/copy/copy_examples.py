@@ -7,12 +7,8 @@ EXAMPLES_DIR = Path("examples/dflowfm")
 APPTAINER_DIR = Path("src/scripts_lgpl/singularity")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Copy examples to a specified location."
-    )
-    parser.add_argument(
-        "dest_dir", help="The destination directory where examples will be copied."
-    )
+    parser = argparse.ArgumentParser(description="Copy examples to a specified location.")
+    parser.add_argument("dest_dir", help="The destination directory where examples will be copied.")
     args = parser.parse_args()
 
     dest_dir = Path(args.dest_dir)
