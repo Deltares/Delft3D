@@ -32,6 +32,14 @@ if(NOT TARGET delftio)
     add_subdirectory(${checkout_src_root}/${delftio_module} delftio)
 endif()
 
+# Trachytopes
+if(NOT TARGET trachytopes_kernel)
+    add_subdirectory(${checkout_src_root}/${trachytopes_kernel_module} trachytopes_kernel)
+endif()
+if(NOT TARGET trachytopes_io)
+    add_subdirectory(${checkout_src_root}/${trachytopes_io_module} trachytopes_io)
+endif()
+
 # Third party libraries
 if(NOT TARGET kdtree2)
     add_subdirectory(${checkout_src_root}/${kdtree_module} kdtree2)
