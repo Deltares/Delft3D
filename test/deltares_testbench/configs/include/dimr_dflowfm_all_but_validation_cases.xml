@@ -105,7 +105,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f003_c041_thacker1d_squares" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f003_advection/c041_thacker1d_squares</path>
+      <path version="2025-03-04T15:53:54.743000">e02_dflowfm/f003_advection/c041_thacker1d_squares</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/planar1dsq_his.nc" type="netCDF">
@@ -124,7 +124,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f003_c042_thacker1d_triangles" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f003_advection/c042_thacker1d_triangles</path>
+      <path version="2025-03-04T15:56:34.707000">e02_dflowfm/f003_advection/c042_thacker1d_triangles</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/planar1dtr_his.nc" type="netCDF">
@@ -143,7 +143,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f003_c044_thacker2d_squares" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f003_advection/c044_thacker2d_squares</path>
+      <path version="2025-03-04T15:58:33.871000">e02_dflowfm/f003_advection/c044_thacker2d_squares</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/radial2d_map.nc" type="netCDF">
@@ -155,7 +155,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f003_c045_thacker2d_triangles" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f003_advection/c045_thacker2d_triangles</path>
+      <path version="2025-03-04T16:00:54.085000">e02_dflowfm/f003_advection/c045_thacker2d_triangles</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/radial2d_map.nc" type="netCDF">
@@ -2616,7 +2616,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c052_zandloper10m_inflowcut_villemonte" ref="dflowfm_default">
-      <path version="2025-02-27T14:06:54.496000">e02_dflowfm/f009_weirs/c052_zandloper10m_inflowcut_villemonte</path>
+      <path version="2024-01-11T16:40:00">e02_dflowfm/f009_weirs/c052_zandloper10m_inflowcut_villemonte</path>
       <maxRunTime>30.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/zandloper_cut_inflowcut_his.nc" type="netCDF">
