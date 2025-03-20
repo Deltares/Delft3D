@@ -90,10 +90,10 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
 !
 !! executable statements -------------------------------------------------------
 !
-    nroupa        => gdp%gdtrachy%nroupa
-    nttaru        => gdp%gdtrachy%nttaru
-    nttarv        => gdp%gdtrachy%nttarv
-    ntrt          => gdp%gdtrachy%ntrt
+    nroupa        => gdp%gdtrachy%gen%nroupa
+    nttaru        => gdp%gdtrachy%dir(1)%nttaru
+    nttarv        => gdp%gdtrachy%dir(2)%nttaru
+    ntrt          => gdp%gdtrachy%gen%ntrt
     !
     ! Initialize array dimensions for default empty settings
     !

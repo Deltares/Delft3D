@@ -1,4 +1,4 @@
-subroutine chktrt(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
+subroutine d3d4_chktrt(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
                 & kcu       ,kcv       , gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -181,4 +181,4 @@ subroutine chktrt(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
        enddo
     enddo
   320 continue
-end subroutine chktrt
+end subroutine d3d4_chktrt

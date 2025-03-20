@@ -1,4 +1,4 @@
-subroutine clrtrachy(istat, gdp)
+subroutine d3d4_clrtrachy(istat, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2024.                                
@@ -61,4 +61,4 @@ subroutine clrtrachy(istat, gdp)
     !
     if (associated(gdp%gdtrachy%vegh2d))      deallocate (gdp%gdtrachy%vegh2d      , STAT = istat)
     if (associated(gdp%gdtrachy%vden2d))      deallocate (gdp%gdtrachy%vden2d      , STAT = istat)
-end subroutine clrtrachy
+end subroutine d3d4_clrtrachy

@@ -1,4 +1,4 @@
-subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
+subroutine d3d4_rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
                & nmax      ,nmaxus    ,kmax      ,itimtt    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -814,4 +814,4 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
     endif
     !
  9999 continue
-end subroutine rdtrt
+end subroutine d3d4_rdtrt

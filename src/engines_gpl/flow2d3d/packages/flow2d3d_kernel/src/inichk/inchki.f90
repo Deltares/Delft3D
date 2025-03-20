@@ -159,6 +159,9 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     logical                , pointer :: solrad_read
     logical                , pointer :: swrf_file
     character(256)         , pointer :: flbdfh
+    character(256)         , pointer :: flnmD50
+    character(256)         , pointer :: flnmD90
+    logical                , pointer :: lfbedfrmrou
     real(fp), dimension(:) , pointer :: duneheight
 !
 ! Global variables
@@ -210,6 +213,8 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
                             !!   M : Manning  Z : roughness par.
     character(36) :: tgfcmp !  Description and declaration in tricom.igs
     character(4)  :: rouflo !  Description and declaration in esm_alloc_char.f90
+    
+    integer, parameter :: ddbval
 !
 ! Local variables
 !
@@ -327,8 +332,12 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     fltd        => gdp%gdtmpfil%fltd
     flbdfh      => gdp%gdbedformpar%flbdfh
     duneheight  => gdp%gdbedformpar%duneheight
+    flnmD50     => gdp%gdbedformpar%flnmD50
+    flnmD90     => gdp%gdbedformpar%flnmD90
+    lfbedfrmrou => gdp%gdbedformpar%lfbedfrmrou
     solrad_read => gdp%gdheat%solrad_read
     swrf_file   => gdp%gdheat%swrf_file
+    gdp%gdtrachy%gen%flsedprop_rqrd
     !
     icx     = 0
     icy     = 0
@@ -440,8 +449,10 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     ! CHKTRT: checks Trachytopes if defined
     !
     if (lftrto) then
-       call chktrt(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
-                 & i(kcu)    ,i(kcv)    ,gdp)
+       call chktrt(lundia    ,error     ,gdp%griddim   , & 
+                 & gdp%gdtrachy  ,flnmD50   ,flnmD90   ,lfbedfrmrou, gdp%gdprocs%sedim, ddbval)
+       !call chktrt(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
+       !          & i(kcu)    ,i(kcv)    ,gdp)
     endif
     if (error) goto 9999
     !

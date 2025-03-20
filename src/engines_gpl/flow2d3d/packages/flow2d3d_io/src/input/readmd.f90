@@ -257,6 +257,9 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     logical                       , pointer :: bedupd
     real(fp)                      , pointer :: zbot
     real(fp)                      , pointer :: ztop
+    type(trachy_type)             , pointer :: gdtrachy
+    type(griddimtype)             , pointer :: griddim
+    !mdfile_ptr
 !    type(tECHandle)               , pointer :: ECHandle
 !
 ! Global variables
@@ -341,6 +344,8 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     character(256)                        :: filic       !  File name of initial condition file
     character(256)                        :: filnam      ! File name for attribute files
     character(300)                        :: mdfrec      ! Standard rec. length in MD-file (300) 300 = 256 + a bit (field, =, ##, etc.)
+    
+    integer, parameter :: ddbval = 1 
 !
 !! executable statements -------------------------------------------------------
 !
@@ -541,6 +546,9 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     zbot                => gdp%gdzmodel%zbot
     ztop                => gdp%gdzmodel%ztop
     ascon               => gdp%gdbcdat%ascon
+    gdtrachy            => gdp%gdtrachy
+    griddim             => gdp%griddim
+    !mdfile_ptr          => gdp%mdfile_ptr
     !ECHandle            => gdp%gd_ECHandle
     !gridECItemId        => gdp%gridECItemId
     !!
@@ -824,8 +832,12 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     ! Physical Coefficients, Trachytope Roughness Description
     ! Trachytope reading should be called after rdwaqpar since the WAQOL is read in rdwaqpar.
     !
-    call rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
-             & nmax      ,nmaxus    ,kmax      ,itimtt    ,gdp       )
+    call rdtrt(lundia    ,error     ,lftrto    ,dt        , &
+             & kmax      ,itimtt    ,gdtrachy  , &
+             & griddim   ,dryflc    ,gdp%mdfile_ptr,gdp%gdwaqpar%waqol     , &
+             & ddbval    ,tunit)
+    !call rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
+    !         & nmax      ,nmaxus    ,kmax      ,itimtt    ,gdp       )
     if (error) goto 9999
     !
     ! Read bedform characteristics

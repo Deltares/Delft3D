@@ -54,6 +54,7 @@ module globaldata
                               & mornumericstype, bedbndtype, cmpbndtype, &
                               & trapar_type, sedtra_type
     use grid_dimens_module, only: griddimtype
+    use trachytopes_data_module, only: trachy_type
     !
     ! dio_plt_rw is only used for coup.igs.
     ! Both the DelftIO modules and the tree_structure modules contain
@@ -191,7 +192,8 @@ module globaldata
        type (gd_stations) , pointer :: gdstations
        type (gd_tfzeta)   , pointer :: gdtfzeta
        type (gd_tmpfil)   , pointer :: gdtmpfil
-       type (gd_trachy)   , pointer :: gdtrachy
+       !type (gd_trachy)   , pointer :: gdtrachy
+       type (trachy_type)   , pointer :: gdtrachy
        type (gd_turcoe)   , pointer :: gdturcoe
        type (message_stack), pointer :: messages
        type (bedcomp_data), pointer :: gdmorlyr

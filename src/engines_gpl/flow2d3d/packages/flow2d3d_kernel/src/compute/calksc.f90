@@ -187,9 +187,9 @@ subroutine calksc(nmmax     ,dps       ,s1        ,lsedtot   , &
     i50                     => gdp%gdmorpar%i50
     i90                     => gdp%gdmorpar%i90
     xx                      => gdp%gdmorpar%xx
-    ntrt                    => gdp%gdtrachy%ntrt
-    ittdef                  => gdp%gdtrachy%ittdef
-    rttdef                  => gdp%gdtrachy%rttdef
+    ntrt                    => gdp%gdtrachy%gen%ntrt
+    ittdef                  => gdp%gdtrachy%gen%ittdef
+    rttdef                  => gdp%gdtrachy%gen%rttdef
     !
     ! Main loop over area data
     !

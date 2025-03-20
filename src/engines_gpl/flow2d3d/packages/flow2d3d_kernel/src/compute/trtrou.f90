@@ -1,4 +1,4 @@
-subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
+subroutine d3d4_trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
                 & cfrou     ,rouflo    ,linit     ,gdis_dp   ,gdis_zet  , &
                 & huv       ,kcuv      ,uvdir     ,uvperp    ,sig       , &
                 & z0rou     ,deltadir  ,idir      ,gdp       )
@@ -971,4 +971,4 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
           endif
        enddo
     enddo
-end subroutine trtrou
+end subroutine d3d4_trtrou

@@ -111,8 +111,8 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     real(fp)                           , pointer :: thetqt
     logical                            , pointer :: use_zavg_for_qtot
     logical                            , pointer :: pcorr
-    real(fp), dimension(:,:,:)         , pointer :: rttfu
-    real(fp), dimension(:,:,:)         , pointer :: rttfv
+    real(fp), dimension(:,:)           , pointer :: rttfu
+    real(fp), dimension(:,:)           , pointer :: rttfv
     logical                            , pointer :: relxqh
     type (handletype)                  , pointer :: fbcrfile
     type (fbcrbndtype)  , dimension(:) , pointer :: fcrbnd
@@ -301,8 +301,8 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     itlfsm                => gdp%gdinttim%itlfsm
     julday                => gdp%gdinttim%julday
     time_nodal_update_bnd => gdp%gdinttim%time_nodal_update_bnd
-    rttfu                 => gdp%gdtrachy%rttfu
-    rttfv                 => gdp%gdtrachy%rttfv
+    rttfu                 => gdp%gdtrachy%dir(1)%rttfu
+    rttfv                 => gdp%gdtrachy%dir(2)%rttfu
     fbcrfile              => gdp%gdflwpar%fbcrfile
     fcrbnd                => gdp%gdflwpar%fcrbnd
     fbccorrection         => gdp%gdflwpar%fbccorrection

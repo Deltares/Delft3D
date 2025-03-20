@@ -1,4 +1,4 @@
-subroutine chktra(lundia    ,error     ,nmax      ,mmax      ,ittdef    , &
+subroutine d3d4_chktra(lundia    ,error     ,nmax      ,mmax      ,ittdef    , &
                 & ntrt      ,ittaru    ,nttaru    ,cdir      , &
                 & flsedprop_rqrd       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
@@ -165,4 +165,4 @@ subroutine chktra(lundia    ,error     ,nmax      ,mmax      ,ittdef    , &
        endif
   100  continue
     enddo
-end subroutine chktra
+end subroutine d3d4_chktra

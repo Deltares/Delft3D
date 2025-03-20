@@ -1,4 +1,4 @@
-subroutine inittrachy(gdp       )
+subroutine d3d4_inittrachy(gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2024.                                
@@ -64,4 +64,4 @@ subroutine inittrachy(gdp       )
     nullify(gdp%gdtrachy%vden2d)
     !
     gdp%gdtrachy%flsedprop_rqrd = .false. 
-end subroutine inittrachy
+end subroutine d3d4_inittrachy

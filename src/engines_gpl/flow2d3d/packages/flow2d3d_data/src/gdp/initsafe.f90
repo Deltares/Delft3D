@@ -40,6 +40,7 @@ subroutine initsafe(gdp)
     use bedcomposition_module
     use morphology_data_module
     use dredge_data_module, only: initdredge
+    use trachytopes_data_module, only: inittrachy
     !
     use globaldata
     !
@@ -92,7 +93,7 @@ subroutine initsafe(gdp)
     call initsobek     (gdp)
     call initstations  (gdp)
     call inittimers    (gdp)
-    call inittrachy    (gdp)
+    call inittrachy    (gdp%gdtrachy,2,istat)
     call inittrisol    (gdp)
     call initupdbcc    (gdp)
     call initupdbct    (gdp)

@@ -48,6 +48,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     use flow2d3d_timers
     use flow_tables
     use m_trtrou, only: trtrou
+    use trachytopes_data_module, only: trachy_type
     use m_umod, only: compute_umod
     !
     use globaldata
