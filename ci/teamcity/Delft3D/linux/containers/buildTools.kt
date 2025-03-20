@@ -59,13 +59,11 @@ object LinuxBuildTools : BuildType({
                 """.trimIndent()
             }
         }
-        if (DslContext.getParameter("environment") == "production") {
-            dockerCommand {
-                name = "Push"
-                commandType = push {
-                    namesAndTags = "%harbor_repo%:%env.IMAGE_TAG%"
-                    removeImageAfterPush = true
-                }
+        dockerCommand {
+            name = "Push"
+            commandType = push {
+                namesAndTags = "%harbor_repo%:%env.IMAGE_TAG%"
+                removeImageAfterPush = true
             }
         }
         dockerCommand {
