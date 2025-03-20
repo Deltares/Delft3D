@@ -243,10 +243,17 @@ module m_fill_valobs
             if (jahisvelocity > 0) then
                call interpolate_horizontal (ucmag,i,IPNT_UMAG,UNC_LOC_S3D)
             end if
+
+! Depth averaged velocities (dont understand why ucx is 3-dimenional but only firts ndx points are used)            
+            if (model_is_3D()) then
+               call interpolate_horizontal (ucx,i,IPNT_UCXQ,UNC_LOC_S)
+               call interpolate_horizontal (ucy,i,IPNT_UCXQ,UNC_LOC_S)
+!               valobs(i, IPNT_UCXQ) = ucx(k)
+!               valobs(i, IPNT_UCYQ) = ucy(k)
+            end if
             
             if (model_is_3D()) then
             ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
-            ! (mis)use ueux to store cel cntres and salinity etc. noy used as ueux after this
                 do j = 2, ndkx
                    tmp_interp(j) = 0.5d0 * (zws(j) + zws(j - 1))
                 end do
@@ -474,7 +481,16 @@ module m_fill_valobs
                   end do
                end if
             end if
-               
+            
+            if (jahistur > 0) then
+                 call interpolate_horizontal (vius,i,IPNT_VIU,UNC_LOC_S3D) ! UNC_LOC_W?, dit werkt niet! 
+!                valobs(i, IPNT_VIU + klay - 1) = vius(kk)
+            end if
+            
+            tmp_interp =  0.5d0 * (squ + sqi)
+            call interpolate_horizontal (tmp_interp,i,IPNT_QMAG,UNC_LOC_S3D)
+!           valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
+              
 !           From here back to normal (snapping in stead of interpolating, do not fill valobs in case of interpolating)
             if (intobs(i) == 0) then                     
                !
@@ -484,11 +500,6 @@ module m_fill_valobs
                      ii = j - IVAL_WQB1 + 1
                      valobs(i, IPNT_WQB1 + ii - 1) = wqbot(ii, kb)
                   end do
-               end if
-
-               if (model_is_3D()) then
-                  valobs(i, IPNT_UCXQ) = ucx(k)
-                  valobs(i, IPNT_UCYQ) = ucy(k)
                end if
 
                do kk = kb, kt
@@ -505,13 +516,9 @@ module m_fill_valobs
                      end if
                   end if
 
-                  if (model_is_3D()) then
-                      valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
-                  end if
-
-                  if (jahistur > 0) then
-                     valobs(i, IPNT_VIU + klay - 1) = vius(kk)
-                  end if
+ !                 if (jahistur > 0) then
+ !                    valobs(i, IPNT_VIU + klay - 1) = vius(kk)
+ !                 end if
                   
                   if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                      if (density_is_pressure_dependent()) then
@@ -521,11 +528,6 @@ module m_fill_valobs
                         call interpolate_horizontal (rho,i,IPNT_RHOP,UNC_LOC_S3D)
                      end if
                   end if
-!                  if (jahisvelocity > 0) then
-!                     call interpolate_horizontal (ucmag,i,IPNT_UMAG)
-!                    valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
-!                  end if
-                  valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
 
                   if (kmx == 0) then
                      kmx_const = 1 ! to make numbering below work
