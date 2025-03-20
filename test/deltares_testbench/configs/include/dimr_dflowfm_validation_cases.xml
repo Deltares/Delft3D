@@ -104,7 +104,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c011_waterlevel_tim_varying" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c011_waterlevel_tim_varying</path>
+      <path version="2025-03-11T16:17:45.767000">e02_dflowfm/f005_boundary_conditions/c011_waterlevel_tim_varying</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -167,7 +167,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c068_riemann_tim_1d_outer" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c068_riemann_tim_1d_outer</path>
+      <path version="2025-03-04T15:40:07.872000">e02_dflowfm/f005_boundary_conditions/c068_riemann_tim_1d_outer</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
@@ -186,7 +186,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c069_riemann_tim_2d_outer" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c069_riemann_tim_2d_outer</path>
+      <path version="2025-03-04T15:51:15.313000">e02_dflowfm/f005_boundary_conditions/c069_riemann_tim_2d_outer</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/riemann2d_his.nc" type="netCDF">

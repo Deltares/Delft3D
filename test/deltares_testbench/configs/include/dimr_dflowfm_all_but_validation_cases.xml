@@ -469,7 +469,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c010_waterlevel_tim_constant" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c010_waterlevel_tim_constant</path>
+      <path version="2025-02-27T13:12:55.032000">e02_dflowfm/f005_boundary_conditions/c010_waterlevel_tim_constant</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -482,7 +482,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c012_waterlevel_tim_mismatchstart" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c012_waterlevel_tim_mismatchstart</path>
+      <path version="2025-02-27T13:19:22.849000">e02_dflowfm/f005_boundary_conditions/c012_waterlevel_tim_mismatchstart</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -495,7 +495,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c013_waterlevel_tim_mismatchend" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c013_waterlevel_tim_mismatchend</path>
+      <path version="2025-02-27T13:25:04.124000">e02_dflowfm/f005_boundary_conditions/c013_waterlevel_tim_mismatchend</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -651,7 +651,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c030_discharge_tim_constant" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c030_discharge_tim_constant</path>
+      <path version="2025-02-27T13:51:19.997000">e02_dflowfm/f005_boundary_conditions/c030_discharge_tim_constant</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
@@ -663,7 +663,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c031_discharge_tim_varying" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c031_discharge_tim_varying</path>
+      <path version="2025-02-27T14:08:27.144000">e02_dflowfm/f005_boundary_conditions/c031_discharge_tim_varying</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
@@ -675,7 +675,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c032_discharge_tim_mismatchstart" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c032_discharge_tim_mismatchstart</path>
+      <path version="2025-02-27T14:13:58.155000">e02_dflowfm/f005_boundary_conditions/c032_discharge_tim_mismatchstart</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
@@ -687,7 +687,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c033_discharge_tim_mismatchend" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c033_discharge_tim_mismatchend</path>
+      <path version="2025-02-27T14:16:57.848000">e02_dflowfm/f005_boundary_conditions/c033_discharge_tim_mismatchend</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
@@ -837,7 +837,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c042_velocity_tim_tangential" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c042_velocity_tim_tangential</path>
+      <path version="2025-02-27T14:23:51.745000">e02_dflowfm/f005_boundary_conditions/c042_velocity_tim_tangential</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tang_map.nc" type="netCDF">
@@ -975,7 +975,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c050_neumann_tim_1d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c050_neumann_tim_1d</path>
+      <path version="2025-02-27T14:26:41.600000">e02_dflowfm/f005_boundary_conditions/c050_neumann_tim_1d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
@@ -987,7 +987,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c051_neumann_tim_2d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c051_neumann_tim_2d</path>
+      <path version="2025-02-27T14:59:35.618000">e02_dflowfm/f005_boundary_conditions/c051_neumann_tim_2d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/neumannbox_map.nc" type="netCDF">
@@ -1047,7 +1047,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c060_riemann_tim_1d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c060_riemann_tim_1d</path>
+      <path version="2025-03-04T15:19:41.586000">e02_dflowfm/f005_boundary_conditions/c060_riemann_tim_1d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
@@ -1066,7 +1066,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c061_riemann_tim_2d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c061_riemann_tim_2d</path>
+      <path version="2025-03-04T15:20:37.547000">e02_dflowfm/f005_boundary_conditions/c061_riemann_tim_2d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/riemann2d_his.nc" type="netCDF">
@@ -1123,7 +1123,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c064_riemann_bc_tim_1d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c064_riemann_bc_tim_1d</path>
+      <path version="2025-03-11T14:07:25.101000">e02_dflowfm/f005_boundary_conditions/c064_riemann_bc_tim_1d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
@@ -1142,7 +1142,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c065_riemann_bc_tim_2d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c065_riemann_bc_tim_2d</path>
+      <path version="2025-03-04T15:31:32.228000">e02_dflowfm/f005_boundary_conditions/c065_riemann_bc_tim_2d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/riemann2d_his.nc" type="netCDF">
@@ -1199,7 +1199,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c070_outflow_tim_1d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c070_outflow_tim_1d</path>
+      <path version="2025-02-27T15:41:28.596000">e02_dflowfm/f005_boundary_conditions/c070_outflow_tim_1d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
@@ -1211,7 +1211,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c071_outflow_tim_2d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c071_outflow_tim_2d</path>
+      <path version="2025-02-27T15:44:42.487000">e02_dflowfm/f005_boundary_conditions/c071_outflow_tim_2d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/neumannbox_map.nc" type="netCDF">
@@ -1428,7 +1428,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c088_qhbnd_bc_tripleboundary" ref="dflowfm_default">
-      <path version="2024-04-10T16:35:00">e02_dflowfm/f005_boundary_conditions/c088_qhbnd_bc_tripleboundary</path>
+      <path version="2025-03-11T14:38:37.017000">e02_dflowfm/f005_boundary_conditions/c088_qhbnd_bc_tripleboundary</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/testcase01_map.nc" type="netCDF">
