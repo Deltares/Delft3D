@@ -64,6 +64,7 @@ contains
       use m_get_kbot_ktop
       use m_get_czz0
       use m_setrho, only: setrhofixedp
+      use m_physcoef, only: is_density_pressure_dependent, idensform
 
       implicit none
 
@@ -303,7 +304,7 @@ contains
             end if
 
             if (jasal > 0 .and. jatem > 0 .and. idensform < 0) then
-               if (idensform == 13) then
+               if (idensform == 3 .and. is_density_pressure_dependent) then
                   do k = kb, kt
                      rhop0 = setrhofixedp(k, 0d0)
                      dijdij(k - kb + 1) = rhop0

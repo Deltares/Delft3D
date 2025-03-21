@@ -115,7 +115,8 @@ module m_physcoef
    real(kind=dp) :: clam !< eckart density parameters
    real(kind=dp) :: clam0 !< eckart density parameters
    real(kind=dp) :: alph0 !< eckart density parameters
-   integer :: idensform !< 0 = no, 1 = eckart
+   integer :: idensform !< 0 = Uniform density, 1 = Eckart, 2 = UNESCO, 3 = UNESCO83
+   logical :: is_density_pressure_dependent !< Check if density is pressure dependent
    integer :: Maxitpresdens = 1 !< max nr of density-pressure iterations
    integer :: Jarhointerfaces = 0 !< rho computed at vertical interfaces, yes=1, 0=cell center
    integer :: Jabaroczlaybed = 0 !< use fix for zlaybed yes/no
@@ -193,7 +194,8 @@ contains
 
       alph0 = 0.698_dp ! =Eckart density parameters
 
-      idensform = 2 !< 0 = no, 1 = Eckart, 2 = UNESCO
+      idensform = 2 !< 0 = no, 1 = Eckart, 2 = UNESCO, 3 = UNESCO83
+      is_density_pressure_dependent = .false.
       limiterhordif = 2 !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
 
       Stanton = 0.0013_dp !< coeff for convective  heat flux, if negative , take wind Cd
@@ -212,12 +214,4 @@ contains
       NFEntrainmentMomentum = 0
 
    end subroutine default_physcoef
-
-!> Check if density is pressure dependent
-   pure function density_is_pressure_dependent() result(res)
-      logical :: res !< Return value
-
-      res = (idensform > 10)
-   end function density_is_pressure_dependent
-
 end module m_physcoef

@@ -49,54 +49,49 @@ module m_density_formulas
    public :: rho_eckart
 contains
 
-   real(kind=dp) function calculate_density_from_salinity_and_temperature(sal, temp) result(density)
+   function calculate_density_from_salinity_and_temperature(salinity, temperature) result(density)
       use precision, only: dp
-      use m_physcoef, only: sal, temp, rhomean
+      use m_physcoef, only: rhomean
       use m_flow, only: idensform
 
-      real(kind=dp) :: sal, temp
+      real(kind=dp), intent(in) :: salinity
+      real(kind=dp), intent(in) :: temperature
+      real(kind=dp) :: density
 
-      if (idensform == 0) then ! Uniform density
+      select case (idensform)
+      case (0) ! Uniform density
          density = rhomean
-         return
-      else if (abs(idensform) == 1) then ! Carl Henry Eckart, 1958
-         density = rho_eckart(sal, temp)
-      else if (abs(idensform) == 2) then ! Unesco org
-         density = rho_unesco(sal, temp)
-      else if (abs(idensform) == 3) then ! Unesco83 at surface , call with 0.0_dp for early exit
-         density = rho_unesco83(sal, temp, 0.0_dp)
-      else if (abs(idensform) == 5) then ! baroclinic instability
-         density = 1025.0_dp + 0.78_dp * (sal - 33.73_dp)
-      else if (abs(idensform) == 6) then ! For Deltares flume experiment IJmuiden , Kees Kuipers saco code 1
-         density = 999.904_dp + 4.8292d-2 * temp - 7.2312d-3 * temp**2 + &
-                   2.9963d-5 * temp**3 + 7.6427d-1 * sal - &
-                   3.1490d-3 * sal * temp + 3.1273d-5 * sal * temp**2
-      end if
+      case (1) ! Carl Henry Eckart, 1958
+         density = rho_eckart(salinity, temperature)
+      case (2) ! Unesco org
+         density = rho_unesco(salinity, temperature)
+      case (3) ! Unesco83 at surface , call with 0.0_dp for early exit
+         density = rho_unesco83(salinity, temperature, 0.0_dp)
+      case (5) ! baroclinic instability
+         density = 1025.0_dp + 0.78_dp * (salinity - 33.73_dp)
+      case (6) ! For Deltares flume experiment IJmuiden , Kees Kuipers saco code 1
+         density = 999.904_dp + 4.8292e-2_dp * temperature - 7.2312e-3_dp * temperature**2 + &
+                   2.9963e-5_dp * temperature**3 + 7.6427e-1_dp * salinity - &
+                   3.1490e-3_dp * salinity * temperature + 3.1273e-5_dp * salinity * temperature**2
+      end select
    end function calculate_density_from_salinity_and_temperature
 
-   real(kind=dp) function calculate_density_from_salinity_temperature_and_pressure(sal, temp, pres) result(density)
+   function calculate_density_from_salinity_temperature_and_pressure(salinity, temperature, pressure) result(density)
       use precision, only: dp
-      use m_physcoef, only: sal, temp
       use m_flow, only: idensform
 
-      real(kind=dp) :: sal, temp, pres
+      real(kind=dp), intent(in) :: salinity
+      real(kind=dp), intent(in) :: temperature
+      real(kind=dp), intent(in) :: pressure
+      real(kind=dp) :: density
 
       if (abs(idensform) == 13) then ! Unesco83 pressure dependent
-         density = rho_unesco83(sal, temp, pres)
+         density = rho_unesco83(salinity, temperature, pressure)
       end if
    end function calculate_density_from_salinity_temperature_and_pressure
 
-   real(kind=dp) function rho_unesco83(sal, temp, pres)
-      use precision, only: dp
-      real(kind=dp) :: sal, temp, pres, sigma, sva
-
-      sva = svan(sal, temp, pres, sigma)
-
-      rho_unesco83 = sigma + 1d3
-
-   end function rho_unesco83
-
-   !> Specific volume anomaly (steric anomaly) based on 1980 equation
+   !> Calculate the density from the specific volume anomaly.
+   !! Specific volume anomaly (steric anomaly) based on 1980 equation
    !! of state for seawater and 1978 practerical salinity scale.
    !! references:
    !! millero, et al (1980) deep-sea res.,27a,255-264
@@ -116,61 +111,59 @@ contains
    !! t = 40 deg c, p0= 10000 decibars.
    !! check value: sigma = 59.82037  kg/m**3. for s = 40 (ipss-78) ,
    !! t = 40 deg c, p0= 10000 decibars.
-   function svan(S4, T4, P04, SIGMA)
+   function rho_unesco83(salinity, temperature, pressure) result(density)
       use precision, only: dp
-
       implicit none
-      real(dp) :: SVAN
-      real(dp), intent(IN) :: S4, T4, P04
-      real(dp), intent(OUT) :: SIGMA
-      real(dp) P4, SIG, SR, RR1, RR2, RR3, V350P, DK
-      real(dp) A4, B4, C4, D4, E4, AA1, BB1, AW, BW, K0, KW, K35, SVA
-      real(dp) GAM, PK, DVAN, DR35P
+      real(kind=dp), intent(in) :: salinity
+      real(kind=dp), intent(in) :: temperature
+      real(kind=dp), intent(in) :: pressure
+      real(kind=dp) :: density
 
-      real(dp), parameter :: R3500 = 1028.1063_dp
-      real(dp), parameter :: RR4 = 4.8314e-4_dp
-      real(dp), parameter :: DR350 = 28.106331_dp
+      real(kind=dp) :: p4, sig, sr, rr1, rr2, rr3, v350p, dk
+      real(kind=dp) :: a4, b4, c4, d4, e4, aa1, bb1, aw, bw, k0, kw, k35, sva
+      real(kind=dp) :: gam, pk, dvan, dr35p
 
-      !   rr4 is refered to as  c  in millero and poisson 1981
+      real(kind=dp), parameter :: R3500 = 1028.1063_dp
+      real(kind=dp), parameter :: RR4 = 4.8314e-4_dp
+      real(kind=dp), parameter :: DR350 = 28.106331_dp
+
+      ! RR4 is refered to as c in millero and poisson 1981
       ! convert pressure to bars and take square root salinity.
 
-      ! p4=p04/10.0_dp
-      p4 = p04 * 1e-5_dp ! p4(bar), p04(Pascal
+      ! p4=pressure/10.0_dp
+      p4 = pressure * 1e-5_dp ! p4(bar), pressure(Pascal)
 
-      sr = sqrt(abs(s4))
+      sr = sqrt(abs(salinity))
 
       ! pure water density at atmospheric pressure
       !   bigg p.h.,(1967) br. j. applied physics 8 pp 521-537.
       !
 
-      rr1 = ((((6.536332e-9_dp * t4 - 1.120083e-6_dp) * t4 + 1.001685e-4_dp) * t4 &
-              - 9.095290e-3_dp) * t4 + 6.793952e-2_dp) * t4 - 28.263737_dp
+      rr1 = ((((6.536332e-9_dp * temperature - 1.120083e-6_dp) * temperature + 1.001685e-4_dp) * temperature &
+              - 9.095290e-3_dp) * temperature + 6.793952e-2_dp) * temperature - 28.263737_dp
 
       ! seawater density atm press.
       !  coefficients involving salinity
       !  rr2 = a   in notation of millero and poisson 1981
 
-      rr2 = (((5.3875e-9_dp * t4 - 8.2467e-7_dp) * t4 + 7.6438e-5_dp) * t4 - 4.0899e-3_dp) * t4 &
+      rr2 = (((5.3875e-9_dp * temperature - 8.2467e-7_dp) * temperature + 7.6438e-5_dp) * temperature - 4.0899e-3_dp) * temperature &
             + 8.24493e-1_dp
 
       !  rr3 = b4  in notation of millero and poisson 1981
 
-      rr3 = (-1.6546e-6_dp * t4 + 1.0227e-4_dp) * t4 - 5.72466e-3_dp
+      rr3 = (-1.6546e-6_dp * temperature + 1.0227e-4_dp) * temperature - 5.72466e-3_dp
 
       !  international one-atmosphere equation of state of seawater
 
-      sig = (rr4 * s4 + rr3 * sr + rr2) * s4 + rr1
+      sig = (RR4 * salinity + rr3 * sr + rr2) * salinity + rr1
 
       ! specific volume at atmospheric pressure
 
-      v350p = 1.0_dp / r3500
-      sva = -sig * v350p / (r3500 + sig)
-      sigma = sig + dr350
+      v350p = 1.0_dp / R3500
+      sva = -sig * v350p / (R3500 + sig)
 
-      ! scale specific vol. anamoly to normally reported units
-
-      svan = sva * 1.0e+8_dp
-      if (p4 == 0.0_dp) then
+      if (pressure == 0.0_dp) then
+         density = sig + DR350 + 1e3_dp ! rho=sigma+1e3
          return
       end if
 
@@ -182,21 +175,21 @@ contains
       !-------------------------------------------------------------|
       ! compute compression terms
 
-      e4 = (9.1697e-10 * t4 + 2.0816e-8_dp) * t4 - 9.9348e-7_dp
-      bw = (5.2787e-8_dp * t4 - 6.12293e-6_dp) * t4 + 3.47718e-5_dp
-      b4 = bw + e4 * s4
+      e4 = (9.1697e-10 * temperature + 2.0816e-8_dp) * temperature - 9.9348e-7_dp
+      bw = (5.2787e-8_dp * temperature - 6.12293e-6_dp) * temperature + 3.47718e-5_dp
+      b4 = bw + e4 * salinity
 
       d4 = 1.91075e-4_dp
-      c4 = (-1.6078e-6_dp * t4 - 1.0981e-5_dp) * t4 + 2.2838e-3_dp
-      aw = ((-5.77905e-7_dp * t4 + 1.16092e-4_dp) * t4 + 1.43713e-3_dp) * t4 &
+      c4 = (-1.6078e-6_dp * temperature - 1.0981e-5_dp) * temperature + 2.2838e-3_dp
+      aw = ((-5.77905e-7_dp * temperature + 1.16092e-4_dp) * temperature + 1.43713e-3_dp) * temperature &
            - 0.1194975_dp
-      a4 = (d4 * sr + c4) * s4 + aw
+      a4 = (d4 * sr + c4) * salinity + aw
 
-      bb1 = (-5.3009e-4_dp * t4 + 1.6483e-2_dp) * t4 + 7.944e-2_dp
-      aa1 = ((-6.1670e-5_dp * t4 + 1.09987e-2_dp) * t4 - 0.603459_dp) * t4 + 54.6746
-      kw = (((-5.155288e-5_dp * t4 + 1.360477e-2_dp) * t4 - 2.327105_dp) * t4 &
-            + 148.4206_dp) * t4 - 1930.06_dp
-      k0 = (bb1 * sr + aa1) * s4 + kw
+      bb1 = (-5.3009e-4_dp * temperature + 1.6483e-2_dp) * temperature + 7.944e-2_dp
+      aa1 = ((-6.1670e-5_dp * temperature + 1.09987e-2_dp) * temperature - 0.603459_dp) * temperature + 54.6746
+      kw = (((-5.155288e-5_dp * temperature + 1.360477e-2_dp) * temperature - 2.327105_dp) * temperature &
+            + 148.4206_dp) * temperature - 1930.06_dp
+      k0 = (bb1 * sr + aa1) * salinity + kw
 
       ! evaluate pressure polynomial
       !-----------------------------------------------------|
@@ -210,10 +203,6 @@ contains
       gam = p4 / k35
       pk = 1.0_dp - gam
       sva = sva * pk + (v350p + sva) * p4 * dk / (k35 * (k35 + dk))
-
-      !  scale specific vol. anamoly to normally reported units
-
-      svan = sva * 1.0e8_dp
       v350p = v350p * pk
 
       !----------------------------------------------------------|
@@ -231,8 +220,8 @@ contains
 
       dr35p = gam / v350p
       dvan = sva / (v350p * (v350p + sva))
-      sigma = dr350 + dr35p - dvan ! rho=sigma+1e3
-   end function svan
+      density = DR350 + dr35p - dvan + 1e3_dp ! rho=sigma+1e3
+   end function rho_unesco83
 
    real(kind=dp) function rho_Eckart(sal, temp)
       use precision, only: dp

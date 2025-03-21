@@ -1612,7 +1612,7 @@ contains
       use m_turbulence, only: rhowat, potential_density, in_situ_density
       use m_get_kbot_ktop, only: getkbotktop
       use m_setrho, only: set_potential_density, set_pressure_dependent_density
-      use m_physcoef, only: density_is_pressure_dependent
+      use m_physcoef, only: is_density_pressure_dependent
 
       implicit none
 
@@ -1623,7 +1623,7 @@ contains
       do cell = 1, ndx
          if (.not. rho_read_rst) then
             call set_potential_density(potential_density, cell)
-            if (density_is_pressure_dependent()) then
+            if (is_density_pressure_dependent) then
                call set_pressure_dependent_density(in_situ_density, cell)
             end if
          end if

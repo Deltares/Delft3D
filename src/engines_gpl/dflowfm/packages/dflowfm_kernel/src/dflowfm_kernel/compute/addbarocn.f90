@@ -147,7 +147,7 @@ contains
       do k = kt, kb, -1
          dzz = zws(k) - zws(k - 1)
          pu = pd
-         if (.not. density_is_pressure_dependent()) then
+         if (.not. is_density_pressure_dependent) then
             rhosww(k - 1) = densfm(saw(k - kb), tmw(k - kb), 0d0) - rhomean
          else
             pdb = pdb + rhomean * dzz

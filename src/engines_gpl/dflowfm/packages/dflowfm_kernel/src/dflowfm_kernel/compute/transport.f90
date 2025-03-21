@@ -50,7 +50,7 @@ contains
       use m_setrho, only: set_potential_density, set_pressure_dependent_density
       use m_getverticallyaveraged
       use m_flowgeom, only: ln, ndxi, lnxi, ndx, lnx, ba, mxban, nban, banf, ban, xz
-      use m_flow, only: density_is_pressure_dependent, jasal, maxitverticalforestersal, jatem, maxitverticalforestertem, limtyptm, &
+      use m_flow, only: is_density_pressure_dependent, jasal, maxitverticalforestersal, jatem, maxitverticalforestertem, limtyptm, &
                         limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, kbndu, nbndsd, kbndsd, &
                         kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, &
                         vol1, eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jabaroctimeint, jarhoxu, rho0, potential_density, in_situ_density, rho, jacreep, lbot, ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx, ktop, zws
@@ -228,7 +228,7 @@ contains
       end do
       !$OMP END PARALLEL DO
 
-      if (density_is_pressure_dependent()) then
+      if (is_density_pressure_dependent) then
          !$OMP PARALLEL DO &
          !$OMP PRIVATE(cell_index_2d)
          do cell_index_2d = 1, ndx

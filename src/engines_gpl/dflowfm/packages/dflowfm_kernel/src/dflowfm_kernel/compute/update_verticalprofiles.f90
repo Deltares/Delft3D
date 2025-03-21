@@ -388,7 +388,7 @@ contains
 
                      dzc1 = 0.5_dp * (zws(k1u) - zws(k1 - 1)) ! vertical distance between cell centers on left side
                      if (dzc1 > 0) then
-                        if (.not. density_is_pressure_dependent()) then
+                        if (.not. is_density_pressure_dependent) then
                            drhodz1 = (rho(k1u) - rho(k1)) / dzc1
                         else
                            prsappr = ag * rhomean * (zws(ktop(ln(1, LL))) - zws(k1))
@@ -398,7 +398,7 @@ contains
 
                      dzc2 = 0.5_dp * (zws(k2u) - zws(k2 - 1)) ! vertical distance between cell centers on right side
                      if (dzc2 > 0) then
-                        if (.not. density_is_pressure_dependent()) then
+                        if (.not. is_density_pressure_dependent) then
                            drhodz2 = (rho(k2u) - rho(k2)) / dzc2
                         else
                            prsappr = ag * rhomean * (zws(ktop(ln(2, LL))) - zws(k2))
@@ -441,7 +441,7 @@ contains
 
                         if (dzc1 > 0 .and. dzc2 > 0) then
 
-                           if (.not. density_is_pressure_dependent()) then
+                           if (.not. is_density_pressure_dependent) then
                               drhodz = (rho(k1u) + rho(k2u) - rho(k1) - rho(k2)) / (dzc1 + dzc2)
                            else
                               prsappr = ag * rhomean * (zws(ktop(ln(1, LL))) - zws(k1))

@@ -1368,6 +1368,7 @@ contains
 
       call prop_get(md_ptr, 'physics', 'Idensform', idensform)
       idensform_input = idensform
+      call prop_get(md_ptr, 'physics', 'is_pressure_dependent', is_density_pressure_dependent)
 
       !call prop_get(md_ptr, 'physics', 'Baroczlaybed'   , jabaroczlaybed)
       !call prop_get(md_ptr, 'physics', 'Barocponbnd'    , jaBarocponbnd)
