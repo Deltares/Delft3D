@@ -5273,6 +5273,7 @@ contains
       use m_get_chezy, only: get_chezy
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_tem, nudge_sal
+      use m_turbulence, only: in_situ_density, potential_density
 
       implicit none
 
@@ -6636,9 +6637,9 @@ contains
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ww1, UNC_LOC_W, ww1, jabndnd=jabndnd_)
          end if
          if (jamaprho > 0) then
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_potential_density, UNC_LOC_S3D, rho, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_potential_density, UNC_LOC_S3D, potential_density, jabndnd=jabndnd_)
             if (is_density_pressure_dependent) then
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho, UNC_LOC_S3D, rho, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho, UNC_LOC_S3D, in_situ_density, jabndnd=jabndnd_)
             end if
          end if
       end if
@@ -8012,6 +8013,7 @@ contains
       use m_reconstruct_sed_transports
       use m_get_ucx_ucy_eul_mag
       use m_get_chezy, only: get_chezy
+      use m_turbulence, only: in_situ_density, potential_density
 
       implicit none
 
@@ -9973,11 +9975,19 @@ contains
                   call getkbotktop(kk, kb, kt)
                   call getlayerindices(kk, nlayb, nrlay)
                   do k = kb, kt
-                     work1(k - kb + nlayb, kk) = rho(k)
+                     work1(k - kb + nlayb, kk) = potential_density(k)
                   end do
                end do
                ierr = nf90_put_var(imapfile, id_potential_density(iid), work1(1:kmx, 1:ndxndxi), start=[1, 1, itim], count=[kmx, ndxndxi, 1])
                if (is_density_pressure_dependent) then
+                  do kk = 1, ndxndxi
+                     work1(:, kk) = dmiss ! For proper fill values in z-model runs.
+                     call getkbotktop(kk, kb, kt)
+                     call getlayerindices(kk, nlayb, nrlay)
+                     do k = kb, kt
+                        work1(k - kb + nlayb, kk) = in_situ_density(k)
+                     end do
+                  end do
                   ierr = nf90_put_var(imapfile, id_rho(iid), work1(1:kmx, 1:ndxndxi), start=[1, 1, itim], count=[kmx, ndxndxi, 1])
                end if
             end if
