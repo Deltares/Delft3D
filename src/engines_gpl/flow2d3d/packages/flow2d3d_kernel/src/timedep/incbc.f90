@@ -499,6 +499,7 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
           !
           ttfhsum = 0.0
           kcsi  = kcs(npbi, mpbi)
+          call n_and_m_to_nm(npbt, mpbt, nm, gdp)
           if (nob(4,n) > 0) then
              udir  = .true.
              vdir  = .false.
@@ -513,7 +514,6 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
              !
              ! Determine depth-averaged vegetation effect
              !
-             call n_and_m_to_nm(npbt, mpbt, nm, gdp)
              if (zmodel) then
                 k1st = kfumin(npbt, mpbt)
                 k2nd = kfumax(npbt, mpbt)
@@ -544,11 +544,11 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                 k1st = kfvmin(npbt, mpbt)
                 k2nd = kfvmax(npbt, mpbt)
                 do k = k1st, k2nd
-                   ttfhsum = ttfhsum + rttfv(npbt, mpbt, k)*dzv1(npbt, mpbt, k)
+                   ttfhsum = ttfhsum + rttfv(nm, k)*dzv1(npbt, mpbt, k)
                 enddo
              else
                 do k = 1, kmax
-                   ttfhsum = ttfhsum + rttfv(npbt, mpbt, k)*thick(k)
+                   ttfhsum = ttfhsum + rttfv(nm, k)*thick(k)
                 enddo
                 ttfhsum = ttfhsum * dpvel
              endif
