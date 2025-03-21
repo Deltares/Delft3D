@@ -3,11 +3,11 @@ from typing import Dict, List
 import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 
-from scripts.testbench_filter import csv_to_dict, filter_config
+from ci_tools.trigger.testbench_filter import csv_to_dict, filter_config
 
 
 # Sample CSV data for testing
-@pytest.fixture()
+@pytest.fixture
 def csv_data() -> str:
     csv_data = """#name,#config,all,none,fm,rr,#comment
 fm 1d parallel,dimr_dflowfm_1D_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,
@@ -17,7 +17,7 @@ fm drr,dimr_dflowfm_drr_lnx64.xml,TRUE,FALSE,TRUE,TRUE,
     return csv_data
 
 
-@pytest.fixture()
+@pytest.fixture
 def csv_dict() -> Dict[str, List[str]]:
     csv_dict = {
         "#name": ["fm 1d parallel", "fm 1d", "fm drr"],

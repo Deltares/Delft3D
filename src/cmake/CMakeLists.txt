@@ -344,12 +344,6 @@ if(${configuration_type} STREQUAL ${testbench-all_configuration} OR ${configurat
     include(configurations/testbench/all_configuration.cmake)
 endif()
 
-# FM configuration
-if(${configuration_type} STREQUAL ${testbench-fm_configuration})
-    message(STATUS "Generating solution for fm testbench ...")
-    include(configurations/testbench/fm_configuration.cmake)
-endif()
-
 # D3D4 configuration
 if(${configuration_type} STREQUAL ${testbench-d3d4_configuration})
     message(STATUS "Generating solution for d3d4 testbench ...")
@@ -395,7 +389,7 @@ endif()
 ### Composed configurations for releases
 
 # Delft3D-FM suite configuration (dimr, dflowfm, dwaq, dwaves, and some tools)
-if(${configuration_type} STREQUAL ${fm-suite_configuration})
+if(${configuration_type} STREQUAL ${fm-suite_configuration} OR ${configuration_type} STREQUAL ${testbench-fm_configuration})
     message(STATUS "Generating solution for Delft3D-FM ...")
     include(configurations/suites/fm_configuration.cmake)
 endif()

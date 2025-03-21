@@ -1,3 +1,4 @@
+import argparse
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -13,12 +14,16 @@ WATERLEVEL_MEAN_TOLERANCE = 0.0001
 
 
 class FileType(Enum):
+    """Type of output netcdf file."""
+
     HIS = "his"
     MAP = "map"
 
 
 @dataclass
 class Statistics:
+    """Statistics of a sample."""
+
     max: float
     mean: float
     rms: float
@@ -26,6 +31,8 @@ class Statistics:
 
 @dataclass
 class ModelStatistics:
+    """Contains statistics of a model run."""
+
     flow_velocity: Statistics
     water_level: Statistics
     row_count: int
@@ -62,7 +69,11 @@ def parse_dataframes(root_dir: Path, file_type: FileType) -> dict[str, ModelStat
     return result
 
 
-def write_excel_water_level(stats_per_model: dict[str, ModelStatistics], file_type: FileType) -> None:
+def write_excel_water_level(
+    output_dir: Path,
+    stats_per_model: dict[str, ModelStatistics],
+    file_type: FileType,
+) -> None:
     """Write dataframes to excel file."""
     wb = Workbook()
     ws = wb.active
@@ -85,10 +96,11 @@ def write_excel_water_level(stats_per_model: dict[str, ModelStatistics], file_ty
         if stats.rms > RMS_TOLERANCE:
             ws.cell(row=ws.max_row, column=5).fill = red_solid_fill
 
-    wb.save(f"./report/{file_type.value}_waterlevel.xlsx")
+    wb.save(str(output_dir / f"{file_type.value}_waterlevel.xlsx"))
 
 
 def write_excel_flow_velocity(
+    output_dir: Path,
     stats_per_model: dict[str, ModelStatistics],
     file_type: FileType,
 ) -> None:
@@ -114,15 +126,39 @@ def write_excel_flow_velocity(
         if stats.rms > RMS_TOLERANCE:
             ws.cell(row=ws.max_row, column=5).fill = red_solid_fill
 
-    wb.save(f"./report/{file_type.value}_flowvelocity.xlsx")
+    wb.save(str(output_dir / f"{file_type.value}_flowvelocity.xlsx"))
+
+
+def make_argument_parser() -> argparse.ArgumentParser:
+    """Make command line argument parser."""
+    parser = argparse.ArgumentParser(description="Summary the verschillentool output in a few excel files.")
+    parser.add_argument(
+        "--verschillentool-output-dir",
+        required=True,
+        type=Path,
+        help="Path to directories containing the verschillentool output.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        required=True,
+        type=Path,
+        help="Path to directory where the output excel files will be written.",
+    )
+    return parser
 
 
 if __name__ == "__main__":
-    root_dir = Path("./report/verschillentool_output")
-    if not root_dir.exists():
-        raise NotADirectoryError(f"Directory '{root_dir}' does not exist.")
+    """Command line program to summarize the verschillentool output in a few excel files."""
+    args = make_argument_parser().parse_args()
+
+    verschillentool_output_dir: Path = args.verschillentool_output_dir
+    if not verschillentool_output_dir.exists():
+        raise NotADirectoryError(f"Directory '{verschillentool_output_dir}' does not exist.")
+
+    output_dir: Path = args.output_dir
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     for file_type in FileType:
-        statistics_per_model = parse_dataframes(root_dir, file_type=file_type)
-        write_excel_flow_velocity(statistics_per_model, file_type=file_type)
-        write_excel_water_level(statistics_per_model, file_type=file_type)
+        statistics_per_model = parse_dataframes(verschillentool_output_dir, file_type=file_type)
+        write_excel_flow_velocity(output_dir, statistics_per_model, file_type=file_type)
+        write_excel_water_level(output_dir, statistics_per_model, file_type=file_type)

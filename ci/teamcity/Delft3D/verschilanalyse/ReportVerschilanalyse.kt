@@ -7,9 +7,10 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 object ReportVerschilanalyse: BuildType({
     name = "Report"
     description = "Report verschilanalyse outcome and send email."
+    maxRunningBuilds = 1
 
     artifactRules = """
-        ci/teamcity/Delft3D/verschilanalyse/scripts/report.zip
+        report.zip
     """.trimIndent()
 
     params {
@@ -30,7 +31,6 @@ object ReportVerschilanalyse: BuildType({
     steps {
         script {
             name = "Download Verschillentool report"
-            workingDir = "ci/teamcity/Delft3D/verschilanalyse/scripts"
             scriptContent = """
                 aws --endpoint-url=https://s3.deltares.nl \
                     s3 cp s3://devops-test-verschilanalyse/%report_prefix%/report.zip report.zip
@@ -45,35 +45,38 @@ object ReportVerschilanalyse: BuildType({
         }
         script {
             name = "Unzip report"
-            workingDir = "ci/teamcity/Delft3D/verschilanalyse/scripts"
             scriptContent = "unzip -d report ./report.zip"
         }
         python {
             id = "generate_summary"
             name = "Generate summary"
-            workingDir = "ci/teamcity/Delft3D/verschilanalyse/scripts"
             pythonVersion = customPython {
                 executable = "python3.11"
             }
             environment = venv {
-                requirementsFile = "requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable ./ci/python[verschilanalyse]"
             }
-            command = file {
-                filename = "generate_summary.py"
+            command = module {
+                module = "ci_tools.verschilanalyse.summarize_verschillentool_output"
+                scriptArguments = """
+                    --verschillentool-output-dir=./report/verschillentool_output
+                    --output-dir=./report
+                """.trimIndent()
             }
         }
         python {
             name = "Send email"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
-            workingDir = "ci/teamcity/Delft3D/verschilanalyse/scripts"
             pythonVersion = customPython {
                 executable = "python3.11"
             }
             environment = venv {
-                requirementsFile = "requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable ./ci/python[verschilanalyse]"
             }
-            command = file {
-                filename = "send_mail.py"
+            command = module {
+                module = "ci_tools.verschilanalyse.send_verschilanalyse_email"
                 scriptArguments = """
                     --build-id=%teamcity.build.id%
                     --status=%teamcity.build.step.status.generate_summary%

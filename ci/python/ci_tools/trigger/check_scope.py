@@ -70,6 +70,13 @@ class GitlabApi:
 
 
 if __name__ == "__main__":
+    """Set 'branch_name' parameter in teamcity based on changed files.
+
+    The 'scope' is any valid branch prefix in our Delft3D gitlab repository. e.g.
+    one of: all, none, fm, rr, waq, etc...
+    The 'scope' of a merge-request is determined by examining the changed files
+    in the head of the current branch with respect to the target branch.
+    """
     parser = argparse.ArgumentParser(description="Check the scope of changes made in the merge-request.")
 
     # Add arguments

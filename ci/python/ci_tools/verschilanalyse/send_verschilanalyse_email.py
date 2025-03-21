@@ -21,15 +21,16 @@ ATTACHMENT_PATHS = [
 
 
 def create_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--build-id", help="The teamcity build identifier of this build.")
-    parser.add_argument("--status", help="The status of the report processing step.")
-    parser.add_argument("--teamcity-server-url", help="Base url for the teamcity server instance.")
-    parser.add_argument("--build-type-id", help="Build ID that has the verschil analyse report.")
-    parser.add_argument("--email-from", help="Email address of the sender.")
-    parser.add_argument("--email-server", help="Adress of the email server.")
-    parser.add_argument("--email-port", help="Port of the email server.")
-    parser.add_argument("--email-recipients", help="List (csv) with email address recipients.")
+    """Make command line argument parser for the send_mail command."""
+    parser = argparse.ArgumentParser(description="Send the weekly verschilanalyse email.")
+    parser.add_argument("--build-id", required=True, help="The teamcity build identifier of this build.")
+    parser.add_argument("--status", required=True, help="The status of the report processing step.")
+    parser.add_argument("--teamcity-server-url", required=True, help="Base url for the teamcity server instance.")
+    parser.add_argument("--build-type-id", required=True, help="Build ID that has the verschil analyse report.")
+    parser.add_argument("--email-from", required=True, help="Email address of the sender.")
+    parser.add_argument("--email-server", required=True, help="Adress of the email server.")
+    parser.add_argument("--email-port", required=True, help="Port of the email server.")
+    parser.add_argument("--email-recipients", required=True, help="List (csv) with email address recipients.")
     return parser
 
 
@@ -112,7 +113,14 @@ def check_for_red(file_paths: list[str], sheet_name: str = "Sheet") -> list[tupl
     return sorted(rows)  # Tuples are sorted in lexicograhpical order.
 
 
-def construct_email_content(file_paths: list[str], folder_path: str, hyperlink_build: str, hyperlink_logs: str) -> str:
+def construct_email_content(
+    file_paths: list[str],
+    folder_path: str,
+    hyperlink_build: str,
+    hyperlink_logs: str,
+    build_status: str,
+) -> str:
+    """Format the email contents using HTML."""
     rows = check_for_red(file_paths)
     if build_status == "success":
         check_message = check_directories(folder_path)
@@ -176,6 +184,7 @@ def send_email(
 
 
 if __name__ == "__main__":
+    """Command line program to send the weekly verschilanalyse email."""
     parser = create_parser()
     arguments = parser.parse_args()
 
@@ -193,7 +202,9 @@ if __name__ == "__main__":
     log_url = f"{teamcity_server_url}/repository/download/{arguments.build_type_id}/{build_id}:id/report.zip"
     hyperlink_logs = f'<a href="{html.escape(log_url)}">{html.escape(link_text)}</a>'
 
-    email_content = construct_email_content(ATTACHMENT_PATHS, FOLDER_PATH, hyperlink_build, hyperlink_logs)
+    email_content = construct_email_content(
+        ATTACHMENT_PATHS, FOLDER_PATH, hyperlink_build, hyperlink_logs, build_status
+    )
 
     attached_files, attachment_errors = get_attached_files_and_errors(ATTACHMENT_PATHS)
 

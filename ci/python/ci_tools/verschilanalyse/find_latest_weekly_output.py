@@ -65,7 +65,7 @@ class VerschilAnalyseReporter:
 
 if __name__ == "__main__":
     """Command line program to find the latest weekly verschilanalyse output and report.
-    
+
     Used in TeamCity pipeline to set the `reference_prefix` parameter.
     """
     client = minio.Minio(endpoint=ENDPOINT, credentials=AWSConfigProvider())

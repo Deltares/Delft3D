@@ -11,7 +11,7 @@ def csv_to_dict(csv_table_path: str) -> Dict[str, List[str]]:
         data_dict: Dict[str, List[str]] = {header: [] for header in headers}
 
         for row in reader:
-            for header, value in zip(headers, row):
+            for header, value in zip(headers, row, strict=False):
                 data_dict[header].append(value)
 
         return data_dict
@@ -28,9 +28,10 @@ def filter_config(csv_table_path: str, csv_data: Dict[str, List], product: str) 
     this_values = csv_data[product]
 
     # Filtered list based on 'this' values being "TRUE"
-
     filtered_values = [
-        f"{config}" for name, config, this in zip(config_names, config_values, this_values) if this == "TRUE"
+        f"{config}"
+        for name, config, this in zip(config_names, config_values, this_values, strict=False)
+        if this == "TRUE"
     ]
     # Have to research how to pass {name}=>{config} through TeamCity REST API
 
@@ -38,6 +39,7 @@ def filter_config(csv_table_path: str, csv_data: Dict[str, List], product: str) 
 
 
 if __name__ == "__main__":
+    """Select which testbench configs to run based on the 'component' argument."""
     parser = argparse.ArgumentParser(description="Filter csv config values using arguments")
 
     # Add arguments
@@ -56,8 +58,7 @@ if __name__ == "__main__":
     csv_table_path = args.csv_file_path
     value_filter = args.value_filter
 
-    with open(csv_table_path, mode="r", newline="") as csv_data:
-        branch_config_dict = csv_to_dict(csv_table_path)
+    branch_config_dict = csv_to_dict(csv_table_path)
 
     filtered_configs = filter_config(csv_table_path, branch_config_dict, product)
     matrix_list = ",".join([config for config in filtered_configs if value_filter in config])
