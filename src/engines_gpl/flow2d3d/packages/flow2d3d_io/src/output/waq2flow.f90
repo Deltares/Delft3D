@@ -53,9 +53,11 @@ subroutine waq2flow(dps, mmax, nmaxus, kmax, lundia, mlb, mub, nlb, nub, gdp)
     integer                                , intent(in)  :: lundia
     real(prec), dimension(nlb:nub, mlb:mub)              :: dps    !  Description and declaration in esm_alloc_real.f90
 
-    real(fp), dimension(:,:)   , pointer :: vegh2d
-    real(fp), dimension(:,:)   , pointer :: vden2d
-    type (gd_trachy)           , pointer :: gdtrachy
+    real(fp), dimension(:)   , pointer :: vegh2d
+    real(fp), dimension(:)   , pointer :: vden2d
+    integer                  , pointer :: nmmax
+    
+    !type (gd_trachy)           , pointer :: gdtrachy
 !
 ! Local variables
 !
@@ -65,7 +67,7 @@ subroutine waq2flow(dps, mmax, nmaxus, kmax, lundia, mlb, mub, nlb, nub, gdp)
     integer, save                     :: diooutstream
     integer                           :: ierr_alloc
     integer                           :: ilumon
-    integer                           :: istep,iseg,m,n
+    integer                           :: istep,iseg,m,n,nm
     integer                           :: noseg
     integer                           :: nrtims
     integer                           :: nrvar
@@ -88,10 +90,10 @@ subroutine waq2flow(dps, mmax, nmaxus, kmax, lundia, mlb, mub, nlb, nub, gdp)
     !
     ! initialise
     !
-    gdtrachy      => gdp%gdtrachy
-    vegh2d        => gdp%gdtrachy%vegh2d
-    vden2d        => gdp%gdtrachy%vden2d
-
+    vegh2d        => gdp%gdtrachy%gen%vegh2d
+    vden2d        => gdp%gdtrachy%gen%vden2d
+    nmmax         => gdp%d%nmmax
+    
     noseg = nmaxus*mmax*kmax
     nrvar =   2
     if (first) then
@@ -159,9 +161,15 @@ subroutine waq2flow(dps, mmax, nmaxus, kmax, lundia, mlb, mub, nlb, nub, gdp)
        do m=1,mmax
           do n=1,nmaxus
              iseg=iseg+1
-             vegh2d(n,m)=parval(1,iseg)
-             vden2d(n,m)=parval(2,iseg)
+             !vegh2d(n,m)=parval(1,iseg)
+             !vden2d(n,m)=parval(2,iseg)
+          !enddo
+          !do mn=1,nmmax
+              call n_and_m_to_nm(n, m, nm, gdp)
+              vegh2d(nm)=parval(1,iseg)
+              vden2d(nm)=parval(2,iseg)
           enddo
+          
        enddo
        if (first) then
           first = .false.

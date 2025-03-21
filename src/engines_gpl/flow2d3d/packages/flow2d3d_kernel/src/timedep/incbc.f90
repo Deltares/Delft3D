@@ -223,6 +223,7 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     integer                             :: posrel         ! code denoting the position of the open boundary, related to the complete grid
     integer                             :: lb             ! lowerboundary of loopcounter
     integer                             :: ub             ! upperboundary of loopcounter
+    integer                             :: nm
     logical                             :: first          ! Flag = TRUE in case a time-dependent file is read for the 1-st time 
     logical                             :: error          ! errorstatus
     logical                             :: horiz          ! Flag=TRUE if open boundary lies parallel to x-/KSI-dir. 
@@ -512,15 +513,16 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
              !
              ! Determine depth-averaged vegetation effect
              !
+             call n_and_m_to_nm(npbt, mpbt, nm, gdp)
              if (zmodel) then
                 k1st = kfumin(npbt, mpbt)
                 k2nd = kfumax(npbt, mpbt)
                 do k = k1st, k2nd
-                   ttfhsum = ttfhsum + rttfu(npbt, mpbt, k)*dzu1(npbt, mpbt, k)
+                   ttfhsum = ttfhsum + rttfu(nm, k)*dzu1(npbt, mpbt, k)
                 enddo
              else
                 do k = 1, kmax
-                   ttfhsum = ttfhsum + rttfu(npbt, mpbt, k)*thick(k)
+                   ttfhsum = ttfhsum + rttfu(nm, k)*thick(k)
                 enddo
                 ttfhsum = ttfhsum * dpvel
              endif

@@ -2851,7 +2851,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
                     & r(hu)     ,i(kcu)    ,r(sig)    , &
                     & r(z0urou) ,1         ,TRACHY_WAQ,gdtrachy  , & 
-                    & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,nmlbc     , nmubc    , & 
+                    & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
                     & rhow      ,ag        ,vonkar    ,vicmol    , & 
                     & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
                     & rksr      ,rksmr     ,rksd      ,error, & 
@@ -2889,10 +2889,10 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        call timer_start(timer_trtrou, gdp)
        if (lftrto .and. (nst + 1)==ittrtu) then
-          call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
-                    & r(cfvrou) ,rouflo    ,.false.   ,r(gvv)    ,r(guv)    , &
-                    & r(hv)     ,i(kcv)    ,r(v1)     ,r(u1)     ,r(sig)    , &
-                    & r(z0vrou) ,r(deltav) ,2         ,gdp       )
+          !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
+          !          & r(cfvrou) ,rouflo    ,.false.   ,r(gvv)    ,r(guv)    , &
+          !          & r(hv)     ,i(kcv)    ,r(v1)     ,r(u1)     ,r(sig)    , &
+          !          & r(z0vrou) ,r(deltav) ,2         ,gdp       )
           if (itcomi > 0) then
              !
              ! Write roughness data to Communication file.
