@@ -49,7 +49,6 @@ contains
       use m_get_link_neighboring_cell_coords
       use m_movabs
       use m_lnabs
-      use stdlib_sorting, only: sort_index
 
       type(kdtree_instance), intent(inout) :: treeinst
       integer, intent(in) :: NPL !< polyline length
@@ -67,9 +66,6 @@ contains
 
       integer, intent(out) :: ierror !< ierror (1) or not (0)
 
-      integer, dimension(nLinks) :: new_index !< index of sorted iPol
-      real(kind=dp), dimension(nLinks) :: dSL_copy !< polygon section cross location
-
       real(kind=dp), dimension(:), allocatable :: x, y
 
       integer, dimension(:), allocatable :: ipolsection
@@ -86,10 +82,6 @@ contains
       integer :: jacros, kint
       integer :: LnxiORLnx
       integer :: isactive
-      integer :: Lp
-      integer :: n
-      integer :: n_start
-      integer :: n_end
 
       ierror = 1
 
@@ -240,8 +232,45 @@ contains
          end do
       end do
 
-      dSL_copy = dSL
+      call sort_crossed_links(iLink, iPol, dSL, nLinks, numcrossedLinks)
+      
+      call readyy(' ', -1d0)
 
+      call mess(LEVEL_INFO, 'done')
+
+      ierror = 0
+1234  continue
+
+!     deallocate
+      if (treeinst%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeinst)
+      if (allocated(ipolsection)) deallocate (ipolsection)
+      if (allocated(x)) deallocate (x)
+      if (allocated(y)) deallocate (y)
+
+      return
+   end subroutine find_crossed_links_kdtree2
+   
+   subroutine sort_crossed_links(iLink, iPol, dSL, nLinks, numcrossedLinks)
+      use stdlib_sorting, only: sort_index
+      use precision, only: dp
+
+      integer, dimension(nLinks), intent(in) :: iLink !< crossed flowlinks
+      integer, dimension(nLinks), intent(inout) :: iPol !< polygon section
+      real(kind=dp), dimension(nLinks), intent(inout) :: dSL !< polygon section cross location
+      integer, intent(in) :: nLinks
+      integer, intent(in) :: numcrossedLinks
+      
+      integer, dimension(nLinks) :: new_index !< index of sorted iPol
+      real(kind=dp), dimension(nLinks) :: dSL_copy !< copy of intersection length dSL
+      
+      integer :: L 
+      integer :: Lp
+      integer :: k 
+      integer :: n
+      integer :: n_start
+      integer :: n_end
+
+      dSL_copy = dSL
       Lp = iLink(1)
       n_start = 1
       do n = 1, numcrossedLinks
@@ -258,20 +287,6 @@ contains
             Lp = iLink(n)
          end if
       end do
-
-      call readyy(' ', -1d0)
-
-      call mess(LEVEL_INFO, 'done')
-
-      ierror = 0
-1234  continue
-
-!     deallocate
-      if (treeinst%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeinst)
-      if (allocated(ipolsection)) deallocate (ipolsection)
-      if (allocated(x)) deallocate (x)
-      if (allocated(y)) deallocate (y)
-
-      return
-   end subroutine find_crossed_links_kdtree2
+   end subroutine
+   
 end module m_find_crossed_links_kdtree2

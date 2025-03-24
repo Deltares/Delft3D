@@ -241,6 +241,7 @@ contains
 
          end do
          numcrossedlinks = n
+         call sort_crossed_links(iLink, iPol, dSL, Lnx, numcrossedLinks) 
       end if
       call wall_clock_time(t_extra(2, 4))
 
