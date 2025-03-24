@@ -44,6 +44,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     use precision
     use globaldata
     use dfparall
+    use m_trtrou, only: chktrt
     !
     implicit none
     !
@@ -121,6 +122,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     integer                , pointer :: lstsci
     integer                , pointer :: lsecfl
     integer                , pointer :: lsec
+    integer                , pointer :: lsedtot
     integer                , pointer :: ltur
     integer                , pointer :: kmxt
     integer                , pointer :: nlcest
@@ -147,6 +149,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     real(fp), dimension(:) , pointer :: wstcof
     integer                , pointer :: iro
     logical                , pointer :: wind
+    logical                , pointer :: spatial_bedform
     logical                , pointer :: salin
     logical                , pointer :: temp
     logical                , pointer :: wave
@@ -163,6 +166,11 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     character(256)         , pointer :: flnmD90
     logical                , pointer :: lfbedfrmrou
     real(fp), dimension(:) , pointer :: duneheight
+    real(fp), dimension(:) , pointer :: bedformD50
+    real(fp), dimension(:) , pointer :: bedformD90
+    real(fp), dimension(:) , pointer :: rksr
+    real(fp), dimension(:) , pointer :: rksmr
+    real(fp), dimension(:) , pointer :: rksd
 !
 ! Global variables
 !
@@ -243,6 +251,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     lstsci      => gdp%d%lstsci
     lsecfl      => gdp%d%lsecfl
     lsec        => gdp%d%lsec
+    lsedtot     => gdp%d%lsedtot
     ltur        => gdp%d%ltur
     kmxt        => gdp%d%kmxt
     nlcest      => gdp%d%nlcest
@@ -334,6 +343,13 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     duneheight  => gdp%gdbedformpar%duneheight
     flnmD50     => gdp%gdbedformpar%flnmD50
     flnmD90     => gdp%gdbedformpar%flnmD90
+    spatial_bedform     => gdp%gdbedformpar%spatial_bedform
+    bedformD50          => gdp%gdbedformpar%bedformD50
+    bedformD90          => gdp%gdbedformpar%bedformD90
+    rksr                => gdp%gdbedformpar%rksr
+    rksmr               => gdp%gdbedformpar%rksmr
+    rksd                => gdp%gdbedformpar%rksd
+
     lfbedfrmrou => gdp%gdbedformpar%lfbedfrmrou
     solrad_read => gdp%gdheat%solrad_read
     swrf_file   => gdp%gdheat%swrf_file

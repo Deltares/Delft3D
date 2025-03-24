@@ -297,6 +297,9 @@ subroutine compute_secundary_state(gdp       )
     use precision
     use meteo
     use flow_tables
+    use m_trtrou, only: trtrou
+    use trachytopes_data_module, only: trachy_type
+    use m_umod, only: compute_umod
     !
     use globaldata
     !
@@ -505,6 +508,7 @@ subroutine compute_secundary_state(gdp       )
     integer                              , pointer :: lstsci
     integer                              , pointer :: lsal
     integer                              , pointer :: lsed
+    integer                              , pointer :: lsedtot
     integer                              , pointer :: ltem
     integer                              , pointer :: lsecfl
     integer                              , pointer :: lsec
@@ -538,6 +542,9 @@ subroutine compute_secundary_state(gdp       )
     integer                              , pointer :: irov
     real(fp)                             , pointer :: rhow
     real(fp)                             , pointer :: ag
+    real(fp)                             , pointer :: vonkar
+    real(fp)                             , pointer :: vicmol
+    real(fp)                             , pointer :: dryflc
     real(fp)                             , pointer :: z0
     real(fp)                             , pointer :: z0v
     logical                              , pointer :: wind
@@ -553,6 +560,11 @@ subroutine compute_secundary_state(gdp       )
     logical                              , pointer :: veg3d
     include 'tri-dyn.igd'
     real(fp)      , dimension(:)         , pointer :: rhosol
+    real(fp)     , dimension(:)          , pointer :: bedformD50
+    real(fp)     , dimension(:)          , pointer :: bedformD90
+    real(fp)     , dimension(:)          , pointer :: rksr
+    real(fp)     , dimension(:)          , pointer :: rksmr
+    real(fp)     , dimension(:)          , pointer :: rksd
     integer                              , pointer :: lturi
     real(fp)                             , pointer :: grdang
     real(fp)                             , pointer :: saleqs
@@ -574,15 +586,26 @@ subroutine compute_secundary_state(gdp       )
     real(fp)                             , pointer :: anglon
     logical                              , pointer :: sferic    
     integer                              , pointer :: keva
+    
+    logical                              , pointer :: spatial_bedform
+    
+    type(trachy_type)          , pointer :: gdtrachy
 
 !
 ! Local variables
 !
+    logical                            :: error
+    logical                            :: assoc_dxx
     integer                            :: icx
     integer                            :: icy
     integer                            :: ierr
     integer                            :: itype
     integer                            :: ifirst_dens !  Flag to initialize the water density array
+    integer                            :: nxx
+    
+    integer(pntrsize)       :: umod
+    integer(pntrsize)       :: uuu
+    integer(pntrsize)       :: vvv
 
     character(256)                     :: restid_old
  
@@ -592,6 +615,9 @@ subroutine compute_secundary_state(gdp       )
     character(8)                       :: stage       ! First or second half time step 
                                                       ! Stage = 'both' means that in F0ISF1 the layering administration
                                                       ! is copied for both the U- and the V-direction
+    
+    logical, parameter :: TRACHY_WAQ = .false. !do trachytopes from WAQ
+    
 !
 !! executable statements -------------------------------------------------------
 !
@@ -623,6 +649,7 @@ subroutine compute_secundary_state(gdp       )
     lstsci              => gdp%d%lstsci
     lsal                => gdp%d%lsal
     lsed                => gdp%d%lsed
+    lsedtot             => gdp%d%lsedtot
     ltem                => gdp%d%ltem
     lsecfl              => gdp%d%lsecfl
     lsec                => gdp%d%lsec
@@ -658,6 +685,9 @@ subroutine compute_secundary_state(gdp       )
     ag                  => gdp%gdphysco%ag
     z0                  => gdp%gdphysco%z0
     z0v                 => gdp%gdphysco%z0v
+    vonkar              => gdp%gdphysco%vonkar
+    vicmol              => gdp%gdphysco%vicmol
+    dryflc              => gdp%gdnumeco%dryflc
     wind                => gdp%gdprocs%wind
     temp                => gdp%gdprocs%temp
     wave                => gdp%gdprocs%wave
@@ -857,6 +887,21 @@ subroutine compute_secundary_state(gdp       )
     sink                => gdp%gdr_i_ch%sink
     xz                  => gdp%gdr_i_ch%xz
     yz                  => gdp%gdr_i_ch%yz
+    gdtrachy            => gdp%gdtrachy
+    
+    spatial_bedform     => gdp%gdbedformpar%spatial_bedform
+    bedformD50          => gdp%gdbedformpar%bedformD50
+    bedformD90          => gdp%gdbedformpar%bedformD90
+    rksr                => gdp%gdbedformpar%rksr
+    rksmr               => gdp%gdbedformpar%rksmr
+    rksd                => gdp%gdbedformpar%rksd
+    
+    assoc_dxx=associated(gdp%gderosed%dxx)
+    nxx=0
+    if (assoc_dxx) then
+        nxx=SIZE(gdp%gderosed%dxx,2)
+    endif
+
     !
     ! First repair some output variables due to 
     ! inconsistent usage
@@ -1018,14 +1063,41 @@ subroutine compute_secundary_state(gdp       )
     !         called for U/V-direction.
     !
     if (lftrto) then
-       call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
-                 & r(cfurou) ,rouflo    ,.true.    ,r(guu)    ,r(gvu)    , &
-                 & r(hu)     ,i(kcu)    ,r(u1)     ,r(v1)     ,r(sig)    , &
-                 & r(z0urou) ,r(deltau) ,1         ,gdp       )
-       call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
-                 & r(cfvrou) ,rouflo    ,.true.    ,r(gvv)    ,r(guv)    , &
-                 & r(hv)     ,i(kcv)    ,r(v1)     ,r(u1)     ,r(sig)    , &
-                 & r(z0vrou) ,r(deltav) ,2         ,gdp       )
+          call compute_umod(nmmax , kmax , icx       , &
+                          & i(kcs)   , i(kfu)  , i(kfv)       , i(kcu)    , i(kcv), &
+                          & d(dps)   , r(s1)   , r(deltau)    , r(deltav) , &
+                          & r(u1)    , r(v1)   , r(sig), &
+                          & gdp, &
+                          !output
+                          & r(umod)   , r(uuu)  , r(vvv)) 
+          call trtrou(lundia    ,kmax      ,nmmax   , &
+                    & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                    & r(hu)     ,i(kcu)    ,r(sig)    , &
+                    & r(z0urou) ,1         ,TRACHY_WAQ,gdtrachy  , & 
+                    & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                    & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                    & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                    & rksr      ,rksmr     ,rksd      ,error, & 
+                    & assoc_dxx ,nxx       ,lsedtot   ,gdp%gderosed%dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                    & rhosol        )
+          call trtrou(lundia    ,kmax      ,nmmax   , &
+                    & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                    & r(hu)     ,i(kcu)    ,r(sig)    , &
+                    & r(z0urou) ,2         ,TRACHY_WAQ,gdtrachy  , & 
+                    & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                    & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                    & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                    & rksr      ,rksmr     ,rksd      ,error, & 
+                    & assoc_dxx ,nxx       ,lsedtot   ,gdp%gderosed%dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                    & rhosol        )
+       !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
+       !          & r(cfurou) ,rouflo    ,.true.    ,r(guu)    ,r(gvu)    , &
+       !          & r(hu)     ,i(kcu)    ,r(u1)     ,r(v1)     ,r(sig)    , &
+       !          & r(z0urou) ,r(deltau) ,1         ,gdp       )
+       !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
+       !          & r(cfvrou) ,rouflo    ,.true.    ,r(gvv)    ,r(guv)    , &
+       !          & r(hv)     ,i(kcv)    ,r(v1)     ,r(u1)     ,r(sig)    , &
+       !          & r(z0vrou) ,r(deltav) ,2         ,gdp       )
     endif
     !
     ! INITAU: calculate inital roughness heights Z0U(V)ROU

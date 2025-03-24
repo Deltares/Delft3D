@@ -48,6 +48,7 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     !
     use globaldata
     use dfparall
+    use m_rdtrt, only: rdtrt
     !use ec_module
     !
     implicit none
