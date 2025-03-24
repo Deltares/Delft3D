@@ -1366,9 +1366,9 @@ contains
       call prop_get(md_ptr, 'physics', 'BetaSpiral', spirbeta)
       call prop_get(md_ptr, 'physics', 'Equili', jaequili) ! TODO: Ottevanger/Nabi: consider changing the name of these settings: add "spiral/secondary flow" into it.
 
-      call prop_get(md_ptr, 'physics', 'Idensform', idensform)
+      call prop_get(md_ptr, 'physics', 'idensform', idensform)
       idensform_input = idensform
-      call prop_get(md_ptr, 'physics', 'is_pressure_dependent', is_density_pressure_dependent)
+      call prop_get(md_ptr, 'physics', 'thermobaricity', is_density_pressure_dependent)
 
       !call prop_get(md_ptr, 'physics', 'Baroczlaybed'   , jabaroczlaybed)
       !call prop_get(md_ptr, 'physics', 'Barocponbnd'    , jaBarocponbnd)
