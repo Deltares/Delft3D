@@ -1,73 +1,146 @@
-import argparse
 import shutil
 import sys
+from argparse import ArgumentParser, Namespace
+from enum import Enum
 from pathlib import Path
 
 EXAMPLES_DIR = Path("examples/dflowfm")
 APPTAINER_DIR = Path("src/scripts_lgpl/singularity")
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Copy examples to a specified location.")
+
+class LogLevel(Enum):
+    """Level of logging."""
+
+    NORMAL = 1
+    WARNING = 2
+    FAILURE = 3
+    ERROR = 4
+
+
+class Logger:
+    """Logger class to handle logging with optional TeamCity integration."""
+
+    def __init__(self, run_on_teamcity: bool = False) -> None:
+        self.run_on_teamcity = run_on_teamcity
+
+    def log(self, message: str, severity: LogLevel = LogLevel.NORMAL) -> None:
+        """Log a message with a severity level."""
+        if self.run_on_teamcity:
+            print(f"##teamcity[message text='{message}' status='{severity.name}']")
+        else:
+            if severity == LogLevel.NORMAL:
+                print(message)
+            else:
+                print(f"{severity.name}: {message}")
+
+
+def parse_arguments() -> Namespace:
+    """Set up argument parser and parse args to namespace.
+
+    Returns
+    -------
+        Namespace: Parsed arugments
+    """
+    parser = ArgumentParser(
+        description="Copy example cases and Apptainer scripts to the specified destination directory."
+        "If the destination directory does not exist, it will be created."
+        "If the destination directory exists, its contents will be cleared before copying."
+    )
     parser.add_argument("dest_dir", help="The destination directory where examples will be copied.")
-    args = parser.parse_args()
+    parser.add_argument("--tc_logging", help="Add additional logging for TeamCity.", action="store_true")
+    arguments = parser.parse_args()
 
-    dest_dir = Path(args.dest_dir)
+    return arguments
 
-    print(f"Copy examples to location {dest_dir}")
 
+def create_destination_directory(dest_dir: str, logger: Logger) -> int:
+    """Create_destination_directory, if the directory is already there then make sure it is empty.
+
+    Returns
+    -------
+        int: 1 if error, 0 if success
+    """
     if not dest_dir:
-        print("DEST_DIR is not defined.")
-        sys.exit(1)
+        logger.log("DEST_DIR is not defined.", LogLevel.ERROR)
+        return 1
 
     if not dest_dir.exists():
-        print("Directory does not exist, creating...")
+        logger.log("Directory does not exist, creating...")
         try:
             dest_dir.mkdir(parents=True, exist_ok=True)
         except OSError:
-            print(f"Unable to create directory - {dest_dir}")
-            sys.exit(1)
+            logger.log(f"Unable to create directory - {dest_dir}", LogLevel.ERROR)
+            return 1
     else:
-        print("Directory exists, deleting contents...")
+        logger.log(LogLevel.WARNING, "Directory exists, deleting contents...")
         try:
             for item in dest_dir.iterdir():
                 if item.is_file():
-                    print(f"Removing: {item}")
+                    logger.log(f"Removing: {item}")
                     item.unlink()
                 elif item.is_dir():
-                    print(f"Removing: {item}")
+                    logger.log(f"Removing: {item}")
                     shutil.rmtree(item)
         except OSError as e:
-            print(f"Failed to delete contents of directory - {dest_dir}: {e}")
-            sys.exit(1)
+            logger.log(f"Failed to delete contents of directory - {dest_dir}: {e}", LogLevel.ERROR)
+            return 1
+    return 0
 
-    print("Copy files from the examples directory to the destination")
+
+def copy_examples(example_directory: Path, apptainer_directory: Path, dest_dir: str, logger: Logger) -> int:
+    """Copy all files to the destination directory.
+
+    Take example cases from example_directory and the apptainer scripts from the apptainer_directory.
+    Copy all files to the destination directory.
+
+    Returns
+    -------
+        int: 1 if error, 0 if success
+    """
     h7_scripts = ["run_native_h7.sh", "submit_singularity_h7.sh"]
     exclude_patterns = ["run-all-examples-*"]
 
     try:
-        for src_file in EXAMPLES_DIR.rglob("*"):
-            if any(src_file.match(pattern) for pattern in exclude_patterns):
-                print(f"Excluding file: {src_file}")
+        for src_item in example_directory.rglob("*"):
+            if any(src_item.match(pattern) for pattern in exclude_patterns):
+                logger.log(f"Excluding file: {src_item}")
                 continue
 
-            dest_file = dest_dir / src_file.relative_to(EXAMPLES_DIR)
-            if src_file.is_file():
+            dest_file = dest_dir / src_item.relative_to(example_directory)
+            if src_item.is_file():
                 dest_file.parent.mkdir(parents=True, exist_ok=True)
-                print(f"Copying file: {src_file} to {dest_file}")
-                shutil.copy2(src_file, dest_file)
-            elif src_file.is_dir():
+                logger.log(f"Copying file: {src_item} to {dest_file}")
+                shutil.copy2(src_item, dest_file)
+            elif src_item.is_dir():
                 dest_file.mkdir(parents=True, exist_ok=True)
-                print(f"Creating directory: {dest_file}")
+                logger.log(f"Creating directory: {dest_file}")
 
         for subdir in dest_dir.iterdir():
             if subdir.is_dir():
-                for file in APPTAINER_DIR.glob("*.sh"):
+                for file in apptainer_directory.glob("*.sh"):
                     if file.name in h7_scripts:
                         dest_file = subdir / file.name
-                        print(f"Copying file: {file} to {dest_file}")
+                        logger.log(f"Copying file: {file} to {dest_file}")
                         shutil.copy2(file, dest_file)
     except shutil.Error as e:
-        print(f"Copy failed: {e}")
+        logger.log(f"Copy failed: {e}", LogLevel.ERROR)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    arguments = parse_arguments()
+    dest_dir = Path(arguments.dest_dir)
+    logger = Logger(arguments.tc_logging)
+
+    logger.log(f"Copy examples to location {dest_dir}")
+
+    logger.log("Create destination directory.")
+    if create_destination_directory(dest_dir, logger):
         sys.exit(1)
 
-    print("Copy completed.")
+    logger.log("Copy files from the examples directory to the destination.")
+    if copy_examples(EXAMPLES_DIR, APPTAINER_DIR, dest_dir, logger):
+        sys.exit(1)
+
+    logger.log("Copy completed.")

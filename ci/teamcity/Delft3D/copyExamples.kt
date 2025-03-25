@@ -30,7 +30,7 @@ object CopyExamples : BuildType({
             name = "Copy example files to P drive"
             command = file {
                 filename = "ci/python/ci_tools/example_utils/copy_examples.py"
-                scriptArguments = "%DEST_DIR%"
+                scriptArguments = "%DEST_DIR% --tc_logging"
             }
         }
     }
