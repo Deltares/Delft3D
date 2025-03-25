@@ -66,5 +66,7 @@ install (FILES
 ${binary_dir}/netcdf.dll
 ${binary_dir}/hdf5_hl.dll
 ${binary_dir}/hdf5.dll
+${binary_dir}/libcurl.dll # for Gdal
+${binary_dir}/zlib1.dll # for curl
 DESTINATION lib
 )
