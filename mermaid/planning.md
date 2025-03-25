@@ -12,8 +12,8 @@ gantt
 
     section Integration DIMR features
     All teams; Integration of features :17-03-2025, 12d
-    Robin; Release branch :28-03-2025, 1d
-    DevOps; Container check :28-03-2025, 1d
+    Robin; Release branch :31-03-2025, 1d
+    DevOps; Container check :31-03-2025, 1d
 
     section DIMR Release
     PO's; Starts gathering release notes wiki :24-03-2025, 5d
@@ -23,7 +23,7 @@ gantt
     DevOps; Starts verschil analyse :31-03-2025, 5d
 
     section Integration Front end
-    Teams; Manuals (Installation, User, Technical reference) :31-03-2025, 5d
+    Teams; Manuals (Installation, User, Technical reference) :4-04-2025, 1d
     Luca; Grid editor (1d2d) Delivery :31-03-2025, 5d
     Bert; release Quickplot+manuals :31-03-2025, 5d
     Rinske; Update Requirements anbd MVP doc :31-03-2025, 5d
