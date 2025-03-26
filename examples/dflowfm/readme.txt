@@ -3,8 +3,8 @@ These testcases are copied from: https://svn.oss.deltares.nl/repos/delft3d/trunk
 Each testcase contains:
 1. run.bat            file to run on Windows                   typically containing one line, referring to a run script belonging to a set of binaries.
 2. run.sh             file to run on Linux                     typically containing one line, referring to a run script belonging to a set of binaries.
-3. run_native_h7.sh   file to run on the Deltares h7 cluster. (For dwaq testcases, the path to dwaq libraries should be added to the script.)
-4. submit_singularity_h7.sh   file to run an Apptainer on the Deltares h7 cluster. (For dwaq testcases, the path to dwaq libraries should be added to the script.)
+3. run_native_h7.sh (Copy from https://git.deltares.nl/oss/delft3d/-/tree/main/src/scripts_lgpl/singularity) file to run on the Deltares h7 cluster. (For dwaq testcases, the path to dwaq libraries should be added to the script.)
+4. submit_singularity_h7.sh (Copy from https://git.deltares.nl/oss/delft3d/-/tree/main/src/scripts_lgpl/singularity) file to run an Apptainer on the Deltares h7 cluster. (For dwaq testcases, the path to dwaq libraries should be added to the script.)
 5. dimr_config.xml input file for DIMR. It mainly contains a reference to the mdu/mdw-file. For parallel D-Flow FM computations: the "<process>" and "<mpiCommunicator>" lines are important.
 
 
@@ -19,6 +19,4 @@ To run your own model:
 
 
 adri.mourits@deltares.nl
-edwin.spee@deltares.nl
-jan.mooiman@deltares.nl
 yvonne.olij@deltares.nl

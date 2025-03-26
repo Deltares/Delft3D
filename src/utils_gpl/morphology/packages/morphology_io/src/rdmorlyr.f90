@@ -114,6 +114,7 @@ contains
       integer, pointer :: updbaselyr
       integer, pointer :: IALDiff
       type(cmpbndtype), dimension(:), pointer :: cmpbnd
+      real(fp), parameter :: EPS=0.000000001_fp !used is `comparereal`
 !
 !! executable statements -------------------------------------------------------
 !
@@ -613,9 +614,14 @@ contains
                   !
                   ! constant value
                   !
-                  aldifffil = ' '
+                  ALDiff(1)=rmissval
                   call prop_get(mor_ptr, 'Underlayer', 'ALDiff', ALDiff(1))
-                  if (ALDiff(1) <= 0) then
+                  if (comparereal(ALDiff(1), rmissval, EPS) == 0) then
+                     errmsg = 'File in ALDiff '//trim(aldifffil)// ' not found in '//trim(filmor)
+                     call write_error(errmsg, unit=lundia)
+                     error = .true.
+                     return
+                  elseif (ALDiff(1) <= 0) then
                      errmsg = 'ALDiff should be positive in '//trim(filmor)
                      call write_error(errmsg, unit=lundia)
                      error = .true.
