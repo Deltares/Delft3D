@@ -75,7 +75,7 @@ module m_fill_valobs
 
       implicit none
 
-      integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx
+      integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx, i_tmp, kb_tmp, kt_tmp, kk_tmp
       integer :: link_id_nearest
       integer :: kmx_const, kk_const, nlyrs
       real(kind=dp) :: wavfac
@@ -90,7 +90,10 @@ module m_fill_valobs
       real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
 
       kmx_const = kmx
-      
+      if (kmx == 0) then
+         kmx_const = 1 ! to make numbering work
+      end if
+
       nlyrs = 0
 
       if (timon) call timstrt("fill_valobs", handle_extra(55))
@@ -244,10 +247,17 @@ module m_fill_valobs
             if (jahisvelocity > 0) then
                call interpolate_horizontal (ucmag,i,IPNT_UMAG,UNC_LOC_S3D)
             end if
+
+! Depth averaged velocities (dont understand why ucx is 3-dimenional but only firts ndx points are used)            
+            if (model_is_3D()) then
+!               call interpolate_horizontal (ucx,i,IPNT_UCXQ,UNC_LOC_S)
+!               call interpolate_horizontal (ucy,i,IPNT_UCYQ,UNC_LOC_S)
+!               valobs(i, IPNT_UCXQ) = ucx(k)
+!               valobs(i, IPNT_UCYQ) = ucy(k)
+            end if
             
             if (model_is_3D()) then
             ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
-            ! (mis)use ueux to store cel cntres and salinity etc. noy used as ueux after this
                 do j = 2, ndkx
                    tmp_interp(j) = 0.5d0 * (zws(j) + zws(j - 1))
                 end do
@@ -475,7 +485,83 @@ module m_fill_valobs
                   end do
                end if
             end if
-               
+            
+            if (jahistur > 0) then
+                 call interpolate_horizontal (vius,i,IPNT_VIU,UNC_LOC_S3D)  
+!                valobs(i, IPNT_VIU + klay - 1) = vius(kk)
+            end if
+            
+            tmp_interp =  0.5d0 * (squ + sqi)
+            call interpolate_horizontal (tmp_interp,i,IPNT_QMAG,UNC_LOC_S3D)
+!           valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
+     
+!           Waterkwaliteitsparameters           
+            if (IVAL_TRA1 > 0) then
+                do j = IVAL_TRA1, IVAL_TRAN
+                    ii = j - IVAL_TRA1 + 1
+                    tmp_interp = constituents(ii, :)
+                    call interpolate_horizontal (tmp_interp,i,IPNT_TRA1 + ii - 1, UNC_LOC_S3D)                   
+ !                  valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
+                 end do
+            end if
+            
+            ! Must be more elegant way of doing this
+            if (IVAL_HWQ1 > 0) then
+               do j = IVAL_HWQ1, IVAL_HWQN
+                  ii = j - IVAL_HWQ1 + 1
+                  do i_tmp = 1, 3
+                      call getkbotktop(neighbour_nodes_obs(i_tmp,i), kb_tmp, kt_tmp)
+                      do kk_tmp = kb_tmp, kt_tmp
+                         tmp_interp(kk_tmp) = waqoutputs(ii, kk_tmp - kbx + 1)
+                      end do
+                  end do
+                  call interpolate_horizontal (tmp_interp,i,IPNT_HWQ1 + ii - 1, UNC_LOC_S3D)    
+!                 valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
+               end do
+            end if
+            
+            if (IVAL_WQB3D1 > 0) then
+               do j = IVAL_WQB3D1, IVAL_WQB3DN
+                  ii = j - IVAL_WQB3D1 + 1
+                  tmp_interp = wqbot(ii, :)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_WQB3D1 + ii - 1, UNC_LOC_S3D)    
+!                  valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
+               end do
+            end if
+            
+            if (IVAL_SF1 > 0) then
+               do j = IVAL_SF1, IVAL_SFN
+                  ii = j - IVAL_SF1 + 1
+                     tmp_interp = constituents(ISED1 + ii - 1, :)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SF1 + ii - 1, UNC_LOC_S3D)             
+!                  valobs(i, IPNT_SF1 + (ii - 1) * kmx_const + klay - 1) = constituents(ISED1 + ii - 1, kk)
+               end do
+            end if
+             
+            if (kmx == 0 .and. IVAL_WS1 > 0) then
+               do j = IVAL_WS1, IVAL_WSN
+                  ii = j - IVAL_WS1 + 1
+                  tmp_interp = mtd%ws(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_WS1 + ii - 1, UNC_LOC_S3D)             
+!                 valobs(i, IPNT_WS1 + (ii - 1) * kmx_const + klay - 1) = mtd%ws(kk, ii) ! 1:lsedsus
+               end do
+            end if
+            
+            if (jased > 0 .and. .not. stm_included) then
+                 tmp_interp = sed(1,:)
+                 call interpolate_horizontal (tmp_interp,i,IPNT_SED, UNC_LOC_S3D)        
+!              valobs(i, IPNT_SED + klay - 1) = sed(1, kk)
+            end if
+            
+            if (model_is_3D()) then
+               call interpolate_horizontal (zws,i,IPNT_ZWS, UNC_LOC_W) 
+!              valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
+               if (iturbulencemodel >= 2 .and. jahistur > 0) then
+                   call interpolate_horizontal (vicwws,i,IPNT_VICWWS, UNC_LOC_W) 
+!                  valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
+               end if
+            end if
+             
 !           From here back to normal (snapping in stead of interpolating, do not fill valobs in case of interpolating)
             if (intobs(i) == 0) then                     
                !
@@ -485,11 +571,6 @@ module m_fill_valobs
                      ii = j - IVAL_WQB1 + 1
                      valobs(i, IPNT_WQB1 + ii - 1) = wqbot(ii, kb)
                   end do
-               end if
-
-               if (model_is_3D()) then
-                  valobs(i, IPNT_UCXQ) = ucx(k)
-                  valobs(i, IPNT_UCYQ) = ucy(k)
                end if
 
                do kk = kb, kt
@@ -505,14 +586,6 @@ module m_fill_valobs
                         valobs(i, IPNT_UCYST + klay - 1) = wa(2, kk_const)
                      end if
                   end if
-
-                  if (model_is_3D()) then
-                      valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
-                  end if
-
-                  if (jahistur > 0) then
-                     valobs(i, IPNT_VIU + klay - 1) = vius(kk)
-                  end if
                   
                   if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                      if (density_is_pressure_dependent()) then
@@ -522,54 +595,49 @@ module m_fill_valobs
                         call interpolate_horizontal (rho,i,IPNT_RHOP,UNC_LOC_S3D)
                      end if
                   end if
-!                  if (jahisvelocity > 0) then
-!                     call interpolate_horizontal (ucmag,i,IPNT_UMAG)
-!                    valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
-!                  end if
-                  valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
 
                   if (kmx == 0) then
                      kmx_const = 1 ! to make numbering below work
                   end if
 
-                  if (IVAL_TRA1 > 0) then
-                     do j = IVAL_TRA1, IVAL_TRAN
-                        ii = j - IVAL_TRA1 + 1
-                        valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
-                     end do
-                  end if
+!                  if (IVAL_TRA1 > 0) then
+!                     do j = IVAL_TRA1, IVAL_TRAN
+!                        ii = j - IVAL_TRA1 + 1
+!                        valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
+!                     end do
+!                  end if
 
-                  if (IVAL_HWQ1 > 0) then
-                     do j = IVAL_HWQ1, IVAL_HWQN
-                        ii = j - IVAL_HWQ1 + 1
-                        valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
-                     end do
-                  end if
+!                if (IVAL_HWQ1 > 0) then
+!                   do j = IVAL_HWQ1, IVAL_HWQN
+!                      ii = j - IVAL_HWQ1 + 1
+!                      valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
+!                    end do
+!                 end if
 
-                  if (IVAL_WQB3D1 > 0) then
-                     do j = IVAL_WQB3D1, IVAL_WQB3DN
-                        ii = j - IVAL_WQB3D1 + 1
-                        valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
-                     end do
-                  end if
+!                  if (IVAL_WQB3D1 > 0) then
+!                     do j = IVAL_WQB3D1, IVAL_WQB3DN
+!                        ii = j - IVAL_WQB3D1 + 1
+!                        valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
+!                     end do
+!                  end if
 
-                  if (IVAL_SF1 > 0) then
-                     do j = IVAL_SF1, IVAL_SFN
-                        ii = j - IVAL_SF1 + 1
-                        valobs(i, IPNT_SF1 + (ii - 1) * kmx_const + klay - 1) = constituents(ISED1 + ii - 1, kk)
-                     end do
-                  end if
+!                  if (IVAL_SF1 > 0) then
+!                     do j = IVAL_SF1, IVAL_SFN
+!                        ii = j - IVAL_SF1 + 1
+!                        valobs(i, IPNT_SF1 + (ii - 1) * kmx_const + klay - 1) = constituents(ISED1 + ii - 1, kk)
+!                     end do
+!                  end if
 
-                  if (kmx == 0 .and. IVAL_WS1 > 0) then
-                     do j = IVAL_WS1, IVAL_WSN
-                        ii = j - IVAL_WS1 + 1
-                        valobs(i, IPNT_WS1 + (ii - 1) * kmx_const + klay - 1) = mtd%ws(kk, ii) ! 1:lsedsus
-                     end do
-                  end if
+!                  if (kmx == 0 .and. IVAL_WS1 > 0) then
+!                     do j = IVAL_WS1, IVAL_WSN
+!                        ii = j - IVAL_WS1 + 1
+!                        valobs(i, IPNT_WS1 + (ii - 1) * kmx_const + klay - 1) = mtd%ws(kk, ii) ! 1:lsedsus
+!                     end do
+!                  end if
 
-                  if (jased > 0 .and. .not. stm_included) then
-                     valobs(i, IPNT_SED + klay - 1) = sed(1, kk)
-                  end if
+!                  if (jased > 0 .and. .not. stm_included) then
+!                     valobs(i, IPNT_SED + klay - 1) = sed(1, kk)
+!                  end if
                   valobs(i, IPNT_CMX) = max(valobs(i, IPNT_UCX), sqrt(ucx(kk)**2 + ucy(kk)**2))
                end do
                valobs(i, IPNT_SMX) = max(smxobs(i), s1(k))
@@ -579,9 +647,9 @@ module m_fill_valobs
                   call getlayerindices(k, nlayb, nrlay)
                   do kk = kb - 1, kt
                      klay = kk - kb + nlayb + 1
-                     valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
+!                     valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
                      if (iturbulencemodel >= 2 .and. jahistur > 0) then
-                        valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
+!                        valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                      end if
                      if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                         if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
@@ -712,7 +780,7 @@ module m_fill_valobs
       integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), iwght, kstart, kstop, pntnr, klay
 
       do iwght = 1, 3
-          if (model_is_3D() .and. locType == UNC_LOC_S3D) then
+          if (model_is_3D() .and. (locType == UNC_LOC_S3D .or. LocType == UNC_LOC_W)) then
               call getkbotktop    (neighbour_nodes_obs(iwght,istat), kb_tmp(iwght), kt_tmp(iwght))
               call getlayerindices(neighbour_nodes_obs(iwght,istat), nlayb_tmp(iwght), nrlay_tmp(iwght))
 
@@ -722,11 +790,13 @@ module m_fill_valobs
               nlayb_tmp(iwght) = 1
               nrlay_tmp(iwght) = 1
           end if
-
       end do
 
       ! Determine start and stop layer nr for interpolated values (for now only layers where 3 stations have a value)
-
+      if (LocType == UNC_LOC_W) then
+          nlayb_tmp = nlayb_tmp - 1
+      end if
+    
       kstart = minval(nlayb_tmp)
       kstop  = maxval(nlayb_tmp + nrlay_tmp - 1)
 
