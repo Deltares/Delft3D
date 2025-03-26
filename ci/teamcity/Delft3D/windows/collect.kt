@@ -62,10 +62,7 @@ object WindowsCollect : BuildType({
                 """.trimIndent()
             }
             conditions {
-                or {
-                    equals("dep.${WindowsBuild.id}.product", "fm-suite")
-                    equals("dep.${WindowsBuild.id}.product", "d3d4-suite")
-                }
+                equals("dep.${WindowsBuild.id}.product", "fm-suite,d3d4-suite")
             }
         }
     }
