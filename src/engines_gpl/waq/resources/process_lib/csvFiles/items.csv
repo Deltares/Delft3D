@@ -452,7 +452,6 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "Temp      ","x"," ",    15.0000    ,"(oC)                ","ambient water temperature                         ","volume    ","volume    "," ","                              "
 "SurTemp   ","x"," ",   -999.000    ,"(oC)                ","Surplus temperature                               ","volume    ","volume    "," ","                              "
 "dModtemp  ","x"," ",   -999.000    ,"(oC/d)              ","temperature exchange flux                         ","volume    ","volume    "," ","                              "
-"dDumVarSal","x"," ",   -999.000    ,"(-)                 ","dummy flux to access HorzDisper                   ","volume    ","volume    "," ","                              "
 "WSNoseg1  ","x"," ",   -999.000    ,"(-)                 ","workspace array no. 1                             ","volume    ","volume    "," ","                              "
 "WSNoseg2  ","x"," ",   -999.000    ,"(-)                 ","workspace array no. 2                             ","volume    ","volume    "," ","                              "
 "WSNoseg3  ","x"," ",   -999.000    ,"(-)                 ","workspace array no. 3                             ","volume    ","volume    "," ","                              "

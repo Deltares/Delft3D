@@ -13,7 +13,6 @@
 "DAYRAD    ",A,A,A,A,
 "TempMode  ", , , , ,
 "Temperatur",A,A,A,A,
-"VarSal    ", , ,A,A,
 "Salinchlor",A,A,A,A,
 "Veloc     ",A,A,A,A,
 "ResTim    ",A,A,A,A,

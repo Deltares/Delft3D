@@ -2191,7 +2191,7 @@ contains
       use fm_external_forcings_data
       use m_structures
       use m_observations_data
-      use m_physcoef, only: density_is_pressure_dependent
+      use m_physcoef, only: apply_thermobaricity
       use m_statistical_output_types, only: process_data_interface_double
       use m_transport, only: NUMCONST, itemp, isalt, ised1
       use m_sediment, only: stm_included, stmpar
@@ -2572,7 +2572,7 @@ contains
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_RHOP:IPNT_RHOP + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POTENTIAL_DENSITY), temp_pointer)
-               if (density_is_pressure_dependent()) then
+               if (apply_thermobaricity) then
                   temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_RHO:IPNT_RHO + kmx - 1)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DENSITY), temp_pointer)
                end if

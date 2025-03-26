@@ -111,11 +111,8 @@ module m_physcoef
    real(kind=dp) :: secchidepth2fraction !< (m) fraction of total absorbed by profile 2
    real(kind=dp) :: zab(2), sfr(2) !< help variables
 
-   real(kind=dp) :: cp0 !< eckart density parameters
-   real(kind=dp) :: clam !< eckart density parameters
-   real(kind=dp) :: clam0 !< eckart density parameters
-   real(kind=dp) :: alph0 !< eckart density parameters
-   integer :: idensform !< 0 = no, 1 = eckart
+   integer :: idensform !< 0 = Uniform density, 1 = Eckart, 2 = UNESCO, 3 = UNESCO83
+   logical :: apply_thermobaricity !< Check if density is pressure dependent
    integer :: Maxitpresdens = 1 !< max nr of density-pressure iterations
    integer :: Jarhointerfaces = 0 !< rho computed at vertical interfaces, yes=1, 0=cell center
    integer :: Jabaroczlaybed = 0 !< use fix for zlaybed yes/no
@@ -191,9 +188,8 @@ contains
       vicwminb = 0.0_dp ! was 0.0_dp, minimum viscosity in production terms shear and buoyancy
       xlozmidov = 0.0_dp ! Ozmidov length scale
 
-      alph0 = 0.698_dp ! =Eckart density parameters
-
-      idensform = 2 !< 0 = no, 1 = Eckart, 2 = UNESCO
+      idensform = 2 !< 0 = no, 1 = Eckart, 2 = UNESCO, 3 = UNESCO83
+      apply_thermobaricity = .false.
       limiterhordif = 2 !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
 
       Stanton = 0.0013_dp !< coeff for convective  heat flux, if negative , take wind Cd
@@ -212,12 +208,4 @@ contains
       NFEntrainmentMomentum = 0
 
    end subroutine default_physcoef
-
-!> Check if density is pressure dependent
-   pure function density_is_pressure_dependent() result(res)
-      logical :: res !< Return value
-
-      res = (idensform > 10)
-   end function density_is_pressure_dependent
-
 end module m_physcoef

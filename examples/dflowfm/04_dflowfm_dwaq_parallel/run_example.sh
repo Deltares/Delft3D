@@ -32,10 +32,10 @@ export jobName="${PWD##*/}"
 
 
 if [ "$nPart" == "1" ]; then
-    $dimrdir/lnx64/bin/run_dimr.sh -m $dimrFile
+    run_dimr.sh -m $dimrFile
 else
     cd dflowfm
-    $dimrdir/lnx64/bin/run_dflowfm.sh --partition:ndomains=$nPart:icgsolver=6 $mduFile
+    run_dflowfm.sh --partition:ndomains=$nPart:icgsolver=6 $mduFile
     cd ..
-    $dimrdir/lnx64/bin/run_dimr.sh -c $nProc -m $dimrFile
+    run_dimr.sh -c $nProc -m $dimrFile
 fi

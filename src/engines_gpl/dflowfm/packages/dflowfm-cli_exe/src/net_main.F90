@@ -111,6 +111,7 @@ program unstruc
    use m_pressakey, only: pressakey
    use m_fetch_operation_utils, only: set_mpi_environment_wwo_fetch_proc, finish_fetch_proc
    use m_solve_petsc, only: startpetsc
+   use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP
 
    implicit none
 

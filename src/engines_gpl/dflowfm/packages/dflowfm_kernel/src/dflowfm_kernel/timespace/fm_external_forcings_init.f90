@@ -231,7 +231,7 @@ contains
       integer, dimension(:), intent(in) :: itpenur !< boundary condition nr in openbndsect for u
       integer, intent(inout) :: ib !< block counter for boundaries
       integer, intent(inout) :: ibqh !< block counter for qh boundaries
-      logical :: res
+      logical :: res 
 
       integer, dimension(1) :: target_index
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
@@ -241,7 +241,8 @@ contains
       logical :: is_successful
       integer :: method, num_items_in_block, j
 
-      res = .false.
+      res = .true.
+      
       ! First check for required input:
       call prop_get(node_ptr, '', 'quantity', quantity, is_successful)
       if (.not. is_successful) then
@@ -370,8 +371,6 @@ contains
          call mess(LEVEL_ERROR, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)// &
                    '''. Check preceding log lines for details.')
       end if
-
-      res = .true.
 
    end function init_boundary_forcings
 
@@ -622,17 +621,17 @@ contains
       use m_missing, only: dmiss
       use tree_data_types, only: tree_data
       use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
-         update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
-         convert_file_type_string_to_integer
+                           update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
+                           convert_file_type_string_to_integer
       use fm_external_forcings_data, only: filetype, transformcoef, kx, tair_available, dewpoint_available
       use fm_external_forcings, only: allocatewindarrays
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use m_wind, only: airdensity, jawindstressgiven, jaspacevarcharn, ja_airdensity, japatm, jawind, jarain, &
-         jaqin, jaqext, jatair, jaclou, jarhum, solrad_available, longwave_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, &
-         ec_charnock, wcharnock, rain, qext
+                        jaqin, jaqext, jatair, jaclou, jarhum, solrad_available, longwave_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, &
+                        ec_charnock, wcharnock, rain, qext
       use m_flowgeom, only: ndx, lnx, xz, yz
       use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, &
-         itempforcingtyp
+                                  itempforcingtyp
       use timespace, only: timespaceinitialfield
       use m_meteo, only: ec_addtimespacerelation
       use dfm_error, only: DFM_NOERR

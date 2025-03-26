@@ -187,7 +187,6 @@ module process_registration
     use m_sedaap
     use m_plastc
     use m_s12tim
-    use m_varsal
     use m_respup
     use m_stox3d
     use m_mpbllm
@@ -268,7 +267,6 @@ contains
                             process_routine_info('HEATFL', HEATFL), &
                             process_routine_info('DAYRAD', DAYRAD), &
                             process_routine_info('TEMPER', TEMPER), &
-                            process_routine_info('VARSAL', VARSAL), &
                             process_routine_info('VELOC', VELOC), &
                             process_routine_info('RESTIM', RESTIM), &
                             process_routine_info('STOX3D', STOX3D), &

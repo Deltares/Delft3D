@@ -22,75 +22,76 @@
 !!  rights reserved.
 
 program test_deltares_common
-    use ftnunit
-    use test_combinepaths
-    use test_precision_basics
-    use test_hash_search
-    use test_bilin5
-    use test_distance
-    use test_string_module
-    use test_properties
-    use test_geometry_module
-    use test_time_module
-    use test_running_mean
-    use test_m_alloc
-    use test_reshape
-    use test_array_module
-    use test_date_time_from_ref_date
+   use ftnunit
+   use test_combinepaths
+   use test_precision_basics
+   use test_hash_search
+   use test_bilin5
+   use test_distance
+   use test_string_module
+   use test_properties
+   use test_geometry_module
+   use test_time_module
+   use test_running_mean
+   use test_m_alloc
+   use test_reshape
+   use test_array_module
+   use test_date_time_from_ref_date
+   use test_density_formulas
 
-    implicit none
+   implicit none
 
-    call prepareTests()
-    call runtests_init()
+   call prepareTests()
+   call runtests_init()
 
-    !
-    ! Tests for the various modules and standalone routines
-    !
-    call tests_combinepaths()
-    call tests_precision_basics()
-    call tests_hash_search()
-    call tests_bilin5()
-    call tests_distance()
-    call tests_string_module()
-    call tests_time_module()
-    !
-    call tests_properties()
-    call tests_geometry_module()
-    call tests_running_mean()
-    call tests_alloc()
-    call tests_reshape()
-    call tests_array_module()
-    call tests_date_time_from_ref_date()
-    !
-    ! Done - properly finalize
-    !
-    call runtests_final()
-    call showResult()
+   !
+   ! Tests for the various modules and standalone routines
+   !
+   call tests_combinepaths()
+   call tests_precision_basics()
+   call tests_hash_search()
+   call tests_bilin5()
+   call tests_distance()
+   call tests_string_module()
+   call tests_time_module()
+   call tests_properties()
+   call tests_geometry_module()
+   call tests_running_mean()
+   call tests_alloc()
+   call tests_reshape()
+   call tests_array_module()
+   call tests_date_time_from_ref_date()
+   call tests_density_formulas()
+   !
+   ! Done - properly finalize
+   !
+   call runtests_final()
+   call showResult()
 
 contains
 
 !> Routine to start the testing
 !! Note: This routine merely takes care that the unit tests are indeed run
-subroutine prepareTests
+   subroutine prepareTests
 
-    integer  :: lun   !< LU-number
+      integer :: lun !< LU-number
 
-    open( newunit=lun, file = 'ftnunit.run' )
-    write( lun, '(a)' ) 'ALL'
-    close( lun )
+      open (newunit=lun, file='ftnunit.run')
+      write (lun, '(a)') 'ALL'
+      close (lun)
 
-end subroutine prepareTests
+   end subroutine prepareTests
 
 !> Start the browser to show the result
 !!
-subroutine showResult
-    !character(len=1) :: answer
-    !
-    !write(*,*)     'Press ENTER ...'
-    !read(*,'(a)' ) answer
+   subroutine showResult
+      !character(len=1) :: answer
+      !
+      !write(*,*)     'Press ENTER ...'
+      !read(*,'(a)' ) answer
 
-    call system( 'ftnunit.html' )
+      call system('ftnunit.html')
 
-end subroutine showResult
+   end subroutine showResult
 
 end program test_deltares_common

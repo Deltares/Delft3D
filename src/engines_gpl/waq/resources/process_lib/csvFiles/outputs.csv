@@ -75,7 +75,6 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Temperatur","Temp      ",   2,"x",1
 "Temperatur","SurTemp   ",   3,"x",1
 "Temperatur","DelTrad   ",   4,"x",1
-"VarSal    ","Salinity  ",   1,"x",1
 "Salinchlor","RhoWater  ",   1,"x",1
 "Salinchlor","Salinity  ",   2,"x",1
 "Veloc     ","Velocity  ",   1,"x",1

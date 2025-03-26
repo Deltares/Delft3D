@@ -65,8 +65,8 @@ contains
       use m_get_zlayer_indices
       use m_get_zlayer_indices_bobL
       use m_filez, only: oldfil
-      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, clou, rain, evap, tair, heatsrc, heatsrc0, & 
-         longwave, patm, rhum, qrad, tbed, rhoair, qext, qextreal, vextcum, cdwcof
+      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, clou, rain, evap, tair, heatsrc, heatsrc0, &
+                        longwave, patm, rhum, qrad, tbed, rhoair, qext, qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_tem, nudge_sal, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
 
@@ -690,9 +690,22 @@ contains
          call aerr('ucz (ndkx)', ierr, ndkx); ucz = 0
       end if
 
-      if (allocated(rho)) deallocate (rho)
-      allocate (rho(ndkx), stat=ierr)
-      call aerr('rho (ndkx)', ierr, ndkx); rho = rhomean
+      if (allocated(potential_density)) then
+         deallocate (potential_density)
+      end if
+      allocate (potential_density(ndkx), source=rhomean, stat=ierr)
+      call aerr('potential_density (ndkx)', ierr, ndkx)
+
+      if (apply_thermobaricity) then
+         if (allocated(in_situ_density)) then
+            deallocate (in_situ_density)
+         end if
+         allocate (in_situ_density(ndkx), source=rhomean, stat=ierr)
+         call aerr('in_situ_density (ndkx)', ierr, ndkx)
+         rho => in_situ_density
+      else
+         rho => potential_density
+      end if
 
       if (stm_included) then
          if (allocated(rhowat)) deallocate (rhowat)

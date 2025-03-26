@@ -57,9 +57,10 @@ contains
       use unstruc_api
       use m_makenet
       use m_sferic, only: jsferic, jasfer3D
-      use network_data, only: NUMITCOURANT, CONNECT1DEND, imake1d2dtype, I1D2DTP_1TO1, I1D2DTP_1TON_EMB, I1D2DTP_1TON_LAT, I1D2DTP_LONG, circumcenter_method
+      use network_data, only: numitcourant, connect1dend, imake1d2dtype, I1D2DTP_1TO1, I1D2DTP_1TON_EMB, I1D2DTP_1TON_LAT, I1D2DTP_LONG, circumcenter_method
       use m_missing, only: jadelnetlinktyp
       use m_flowparameters, only: jalimnor
+      use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP
       implicit none
 
       integer :: istat !< Returned result status
@@ -225,7 +226,7 @@ contains
                else if (trim(Skeys(ikey)) == 'drypointsfile') then
                   md_dryptsfile = trim(svals(ikey))
                else if (trim(Skeys(ikey)) == 'smoothiters') then
-                  NUMITCOURANT = ivals(ikey)
+                  numitcourant = ivals(ikey)
                else if (trim(Skeys(ikey)) == 'circumcenter') then
                   circumcenter_method = ivals(ikey)
                end if
@@ -378,7 +379,7 @@ contains
 !           key-value pairs
             do ikey = 1, Nkeys
                if (trim(Skeys(ikey)) == 'connect1dend') then
-                  read (Svals(ikey), *) connect1Dend
+                  read (Svals(ikey), *) connect1dend
                else if (trim(Skeys(ikey)) == 'method') then
                   select case (str_tolower(trim(Svals(ikey))))
                   case ('1to1')

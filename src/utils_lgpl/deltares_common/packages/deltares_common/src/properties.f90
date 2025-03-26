@@ -102,6 +102,7 @@ module properties
       module procedure prop_set_integers
       module procedure prop_set_double
       module procedure prop_set_doubles
+      module procedure prop_set_logical
    end interface
 
    interface get_version_number
@@ -2821,9 +2822,29 @@ contains
          success = success_
       end if
    end subroutine prop_set_string
-   !
-   !
-   ! ====================================================================
+
+   !> Sets a logical property in the tree.
+   !! The property value is stored as a string representation.
+   subroutine prop_set_logical(tree, chapter, key, value, anno, success)
+      type(tree_data), pointer :: tree !< The property tree
+      character(*), intent(in) :: chapter !< Name of the chapter under which to store the property ('' or '*' for global)
+      character(*), intent(in) :: key !< Name of the property
+      logical, intent(in) :: value !< Value of the property
+      character(len=*), optional, intent(in) :: anno !< Optional annotation/comment
+      logical, optional, intent(out) :: success !< Returns whether the operation was successful
+      logical :: success_
+      integer :: integer_value
+      integer_value = merge(1, 0, value)
+      if (present(anno)) then
+         call prop_set_integer(tree, chapter, key, integer_value, anno=anno, success=success_)
+      else
+         call prop_set_integer(tree, chapter, key, integer_value, success=success_)
+      end if
+      if (present(success)) then
+         success = success_
+      end if
+   end subroutine prop_set_logical
+
    !> Sets a double precision array property in the tree.
    !! The property value is stored as a string representation.
    subroutine prop_set_doubles(tree, chapter, key, value, anno, success)

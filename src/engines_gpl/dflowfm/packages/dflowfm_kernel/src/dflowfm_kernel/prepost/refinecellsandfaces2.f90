@@ -871,7 +871,7 @@ contains
 
          integer :: iter, ic, kk, L, N
 
-         if (NUMITCOURANT < 1) return ! nothing to do
+         if (numitcourant < 1) return ! nothing to do
 
          if (jadirectional /= 0) then
             call qnerror('directional refinement not allowed in combination with smoothing', ' ', ' ')
@@ -882,7 +882,7 @@ contains
 !      allocate(janode(numk)
          allocate (jalin(numL))
 
-         do iter = 1, NUMITCOURANT
+         do iter = 1, numitcourant
 !        determine node refinement mask
 !         janode = 0
 

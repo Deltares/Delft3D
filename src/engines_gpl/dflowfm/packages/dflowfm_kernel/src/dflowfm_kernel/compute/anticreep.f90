@@ -50,7 +50,7 @@ contains
       use m_flowparameters
       use m_get_kbot_ktop
       use m_get_Lbot_Ltop
-      use m_dens_eck
+      use m_density_formulas, only: derivative_density_to_salinity_eckart, derivative_density_to_temperature_eckart
 
       implicit none
       real(kind=dp), allocatable, dimension(:) :: polal ! Z-coordinate horizontal layers in nm
@@ -67,7 +67,7 @@ contains
       integer, intent(in) :: L
       real(kind=dp) :: grad, grad1, grad2, cl, cr, flux, flux1
       real(kind=dp) :: zbot, ztop, zmid, zbed, farea
-      real(kind=dp) :: rhods, rhodt, temp, sal, dummy, dpbdx
+      real(kind=dp) :: drho_dsalinity, drho_dtemperature, temp, sal, dpbdx
 
       allocate (polal(0:kmx), pocol(0:kmx), polar(0:kmx), pocor(0:kmx))
       allocate (poflu(0:2 * kmx + 1), kicol(0:2 * kmx + 1), kicor(0:2 * kmx + 1))
@@ -230,8 +230,8 @@ contains
             sal = acl(L) * constituents(isalt, kl) + (1d0 - acl(L)) * constituents(isalt, kr)
             temp = backgroundwatertemperature
             if (jatem > 0) temp = acl(L) * constituents(itemp, kl) + (1d0 - acl(L)) * constituents(itemp, kr)
-            call dens_eck(temp, sal, dummy, rhods, dummy)
-            drho(kf) = drho(kf) + rhods * grad
+            drho_dsalinity = derivative_density_to_salinity_eckart(sal, temp)
+            drho(kf) = drho(kf) + drho_dsalinity * grad
             dsal(kf) = grad
          end if
 
@@ -250,8 +250,8 @@ contains
             temp = acl(L) * constituents(itemp, kl) + (1d0 - acl(L)) * constituents(itemp, kr)
             sal = backgroundsalinity
             if (jasal > 0) sal = acl(L) * constituents(isalt, kl) + (1d0 - acl(L)) * constituents(isalt, kr)
-            call dens_eck(temp, sal, dummy, dummy, rhodt)
-            drho(kf) = drho(kf) + rhodt * grad
+            drho_dtemperature = derivative_density_to_temperature_eckart(sal, temp)
+            drho(kf) = drho(kf) + drho_dtemperature * grad
             dtem(kf) = grad
          end if
       end do

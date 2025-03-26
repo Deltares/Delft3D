@@ -105,7 +105,7 @@ contains
       use m_transport, only: ISALT, ITEMP, constituents
       use m_physcoef, only: rhomean
       use m_get_kbot_ktop
-      use m_densfm, only: densfm
+      use m_density, only: calculate_density
 
       implicit none
       integer, intent(in) :: n
@@ -142,19 +142,19 @@ contains
       pd = 0d0 ! baroclinic pressure/ag
       pdb = 0d0 ! barotropic pressure/ag
 
-      rhosww(kt) = densfm(saw(kt - kb + 1), tmw(kt - kb + 1), pd) - rhomean ! rho at interface
+      rhosww(kt) = calculate_density(saw(kt - kb + 1), tmw(kt - kb + 1), pd) - rhomean ! rho at interface
 
       do k = kt, kb, -1
          dzz = zws(k) - zws(k - 1)
          pu = pd
-         if (.not. density_is_pressure_dependent()) then
-            rhosww(k - 1) = densfm(saw(k - kb), tmw(k - kb), 0d0) - rhomean
+         if (.not. apply_thermobaricity) then
+            rhosww(k - 1) = calculate_density(saw(k - kb), tmw(k - kb)) - rhomean
          else
             pdb = pdb + rhomean * dzz
             do i = 1, maxitpresdens
                pd = pu + 0.5d0 * (rhosww(k) + rhosww(k - 1)) * dzz ! start with previous step estimate
                p0d = ag * (pd + pdb) ! total pressure
-               rhosww(k - 1) = densfm(saw(k - kb), tmw(k - kb), p0d) - rhomean
+               rhosww(k - 1) = calculate_density(saw(k - kb), tmw(k - kb), p0d) - rhomean
             end do
          end if
          rhosk = 0.5d0 * (rhosww(k) + rhosww(k - 1))
