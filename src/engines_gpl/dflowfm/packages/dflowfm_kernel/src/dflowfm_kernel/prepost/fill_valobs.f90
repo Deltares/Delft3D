@@ -90,6 +90,7 @@ module m_fill_valobs
       real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
 
       kmx_const = kmx
+      
       nlyrs = 0
 
       if (timon) call timstrt("fill_valobs", handle_extra(55))
