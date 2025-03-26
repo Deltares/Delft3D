@@ -63,6 +63,9 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     use globaldata
     use string_module
     !
+    use m_rdtrt, only: dimtrt
+    use trachytopes_data_module, only: trachy_type
+    !
     implicit none
     !
     type(globdat),target :: gdp
@@ -106,6 +109,9 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     integer , pointer :: ifis
     integer , pointer :: itis
     integer , pointer :: nh_level
+    !
+    type(trachy_type)          , pointer :: gdtrachy
+    type(griddimtype)          , pointer :: griddim
 !
 ! Global variables
 !
@@ -223,6 +229,9 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     ifis      => gdp%gdrdpara%ifis
     itis      => gdp%gdrdpara%itis
     nh_level  => gdp%gdnonhyd%nh_level
+    !
+    gdtrachy  => gdp%gdtrachy
+    griddim   => gdp%griddim
     !
     ! initialize local parameters
     !
@@ -627,7 +636,9 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     !
     ! Read dimensions for trachytopes
     !
-    call dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
+    call dimtrt(lunmd    ,error     , gdtrachy   ,gdp%mdfile_ptr , &
+                & griddim)
+    !call dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
     if (error) goto 9999
     !
     !  Read dimensions for barriers

@@ -45,9 +45,9 @@ subroutine compute_umod(nmmax , kmax , icx       , &
                       & kcs   , kfu  , kfv       , kcu    , kcv, &
                       & dps   , s1   , deltau    , deltav , &
                       & u     , v    , sig, &
-                      & gdp, &
+                      & gdp   , &
                       !output
-                      &umod   , uuu  , vvv) 
+                      & umod   , uuu  , vvv) 
 !
 use precision, only: fp, prec
 !
@@ -93,6 +93,13 @@ real(fp) :: vfac
 !
 do nm=1,nmmax !loop on cell-centres
 
+   if (kcs (nm) == 0) then
+      uuu  (nm) = 0.0_fp
+      vvv  (nm) = 0.0_fp
+      umod (nm) = 0.0_fp
+      cycle
+   endif
+       
    call find_cell_centre_index(gdp,nm,icx,s1,dps,kcs,kcu,kmax,kcv,kfu,kfv,deltau,deltav,sig,&
                             & nm_u1,nm_u2,nm_v1,nm_v2,kmx,ufac,vfac)
           

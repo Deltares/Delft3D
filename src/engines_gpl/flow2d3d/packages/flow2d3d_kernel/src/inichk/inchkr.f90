@@ -387,6 +387,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     real(fp)     , dimension(:)          , pointer :: rksmr
     real(fp)     , dimension(:)          , pointer :: rksd
     logical                              , pointer :: spatial_bedform
+    real(fp), dimension(:,:)             , pointer :: dxx
+    
     type(trachy_type)          , pointer :: gdtrachy
 !
 ! Global variables
@@ -428,9 +430,9 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     character(8)                       :: stage        ! First or second half time step
                                                        ! Stage = 'both' means that in F0ISF1 the layering administration
                                                        ! is copied for both the U- and the V-direction
-    integer(pntrsize)       :: umod
-    integer(pntrsize)       :: uuu
-    integer(pntrsize)       :: vvv
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub) :: umod
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub) :: uuu
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub) :: vvv
     
     logical                 :: assoc_dxx
     logical, parameter :: TRACHY_WAQ = .false. !do trachytopes from WAQ
@@ -766,6 +768,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     rksmr               => gdp%gdbedformpar%rksmr
     rksd                => gdp%gdbedformpar%rksd
     dryflc              => gdp%gdnumeco%dryflc
+    gdtrachy            => gdp%gdtrachy
+    dxx                 => gdp%gderosed%dxx
     !
     icx     = 0
     icy     = 0
@@ -774,6 +778,11 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     nxx=0
     if (assoc_dxx) then
         nxx=SIZE(gdp%gderosed%dxx,2)
+        dxx_tmp=dxx;
+    else
+        !real(fp), dimension(nmlbc:nmubc, nxx)
+        wrk=real(fp), dimension(nmlbc:nmubc, nxx)
+        dxx_tmp=>wrk
     endif
 
     allocate(kcucopy(nmlb:nmub))
@@ -1120,18 +1129,19 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
                           & i(kcs)   , i(kfu)  , i(kfv)       , i(kcu)    , i(kcv), &
                           & d(dps)   , r(s1)   , r(deltau)    , r(deltav) , &
                           & r(u1)    , r(v1)   , r(sig), &
-                          & gdp, &
+                          & gdp      , &
                           !output
-                          & r(umod)   , r(uuu)  , r(vvv)) 
+                          & umod     , uuu     , vvv) 
+          !write(*,*) umod
           call trtrou(lundia    ,kmax      ,nmmax   , &
                     & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
                     & r(hu)     ,i(kcu)    ,r(sig)    , &
                     & r(z0urou) ,1         ,TRACHY_WAQ,gdtrachy  , & 
-                    & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                    & umod      ,nmlb      ,nmub      ,nmlb      , nmub    , & 
                     & rhow      ,ag        ,vonkar    ,vicmol    , & 
                     & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
                     & rksr      ,rksmr     ,rksd      ,error, & 
-                    & assoc_dxx ,nxx       ,lsedtot   ,gdp%gderosed%dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                    & assoc_dxx ,nxx       ,lsedtot   ,dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
                     & rhosol        )
        !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
        !          & r(cfurou) ,rouflo    ,.true.    ,r(guu)    ,r(gvu)    , &
@@ -1142,7 +1152,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
                     & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
                     & r(hu)     ,i(kcu)    ,r(sig)    , &
                     & r(z0urou) ,2         ,TRACHY_WAQ,gdtrachy  , & 
-                    & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                    & umod      ,nmlb      ,nmub      ,nmlb      ,nmub    , & 
                     & rhow      ,ag        ,vonkar    ,vicmol    , & 
                     & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
                     & rksr      ,rksmr     ,rksd      ,error, & 

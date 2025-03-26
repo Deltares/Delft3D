@@ -222,7 +222,6 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     character(36) :: tgfcmp !  Description and declaration in tricom.igs
     character(4)  :: rouflo !  Description and declaration in esm_alloc_char.f90
     
-    integer, parameter :: ddbval=1
 !
 ! Local variables
 !
