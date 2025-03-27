@@ -250,8 +250,8 @@ module m_fill_valobs
 
 ! Depth averaged velocities (dont understand why ucx is 3-dimenional but only firts ndx points are used)            
             if (model_is_3D()) then
-!               call interpolate_horizontal (ucx,i,IPNT_UCXQ,UNC_LOC_S)
-!               call interpolate_horizontal (ucy,i,IPNT_UCYQ,UNC_LOC_S)
+               call interpolate_horizontal (ucx,i,IPNT_UCXQ,UNC_LOC_S)
+               call interpolate_horizontal (ucy,i,IPNT_UCYQ,UNC_LOC_S)
 !               valobs(i, IPNT_UCXQ) = ucx(k)
 !               valobs(i, IPNT_UCYQ) = ucy(k)
             end if
@@ -500,7 +500,7 @@ module m_fill_valobs
                 do j = IVAL_TRA1, IVAL_TRAN
                     ii = j - IVAL_TRA1 + 1
                     tmp_interp = constituents(ii, :)
-                    call interpolate_horizontal (tmp_interp,i,IPNT_TRA1 + ii - 1, UNC_LOC_S3D)                   
+                    call interpolate_horizontal (tmp_interp,i,IPNT_TRA1 + (ii - 1)*kmx_const, UNC_LOC_S3D)                   
  !                  valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
                  end do
             end if
@@ -515,7 +515,7 @@ module m_fill_valobs
                          tmp_interp(kk_tmp) = waqoutputs(ii, kk_tmp - kbx + 1)
                       end do
                   end do
-                  call interpolate_horizontal (tmp_interp,i,IPNT_HWQ1 + ii - 1, UNC_LOC_S3D)    
+                  call interpolate_horizontal (tmp_interp,i,IPNT_HWQ1 + (ii - 1)*kmx_const, UNC_LOC_S3D)    
 !                 valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
                end do
             end if
@@ -559,6 +559,24 @@ module m_fill_valobs
                if (iturbulencemodel >= 2 .and. jahistur > 0) then
                    call interpolate_horizontal (vicwws,i,IPNT_VICWWS, UNC_LOC_W) 
 !                  valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
+                   
+               end if
+               if (IVAL_WS1 > 0) then
+                  do j = IVAL_WS1, IVAL_WSN
+                     ii = j - IVAL_WS1 + 1
+                     tmp_interp = mtd%ws(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_WS1 + (ii - 1) * (kmx + 1) , UNC_LOC_W) 
+ !                   valobs(i, IPNT_WS1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%ws(kb + klay - 2, ii)
+                   end do
+               end if
+               
+               if (IVAL_SEDDIF1 > 0) then
+                  do j = IVAL_SEDDIF1, IVAL_SEDDIFN
+                     ii = j - IVAL_SEDDIF1 + 1
+                     tmp_interp = mtd%seddif(:, ii)
+                      call interpolate_horizontal (tmp_interp,i,IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) , UNC_LOC_W) 
+!                     valobs(i, IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%seddif(ii, kb + klay - 2)
+                  end do
                end if
             end if
              
@@ -605,7 +623,7 @@ module m_fill_valobs
 !                        ii = j - IVAL_TRA1 + 1
 !                        valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
 !                     end do
-!                  end if
+!                 end if
 
 !                if (IVAL_HWQ1 > 0) then
 !                   do j = IVAL_HWQ1, IVAL_HWQN
@@ -663,18 +681,18 @@ module m_fill_valobs
                            valobs(i, IPNT_BRUV + klay - 1) = -ag * drhodz / rhomea
                         end if
                      end if
-                     if (IVAL_WS1 > 0) then
-                        do j = IVAL_WS1, IVAL_WSN
-                           ii = j - IVAL_WS1 + 1
-                           valobs(i, IPNT_WS1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%ws(kb + klay - 2, ii)
-                        end do
-                     end if
-                     if (IVAL_SEDDIF1 > 0) then
-                        do j = IVAL_SEDDIF1, IVAL_SEDDIFN
-                           ii = j - IVAL_SEDDIF1 + 1
-                           valobs(i, IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%seddif(ii, kb + klay - 2)
-                        end do
-                     end if
+!                     if (IVAL_WS1 > 0) then
+!                        do j = IVAL_WS1, IVAL_WSN
+!                           ii = j - IVAL_WS1 + 1
+!                           valobs(i, IPNT_WS1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%ws(kb + klay - 2, ii)
+!                        end do
+!                     end if
+!                     if (IVAL_SEDDIF1 > 0) then
+!                        do j = IVAL_SEDDIF1, IVAL_SEDDIFN
+!                           ii = j - IVAL_SEDDIF1 + 1
+!                           valobs(i, IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%seddif(ii, kb + klay - 2)
+!                        end do
+!                     end if
                   end do
 
                   if (link_id_nearest > 0) then
@@ -777,8 +795,10 @@ module m_fill_valobs
       real(kind=dp)                                   :: value
       real(kind=dp)                                   :: weighttot
 
-      integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), iwght, kstart, kstop, pntnr, klay
+      integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), iwght, kstart, kstop, pntnr, klay, oneDown
 
+      oneDown = 0
+      
       do iwght = 1, 3
           if (model_is_3D() .and. (locType == UNC_LOC_S3D .or. LocType == UNC_LOC_W)) then
               call getkbotktop    (neighbour_nodes_obs(iwght,istat), kb_tmp(iwght), kt_tmp(iwght))
@@ -792,14 +812,15 @@ module m_fill_valobs
           end if
       end do
 
-      ! Determine start and stop layer nr for interpolated values (for now only layers where 3 stations have a value)
       if (LocType == UNC_LOC_W) then
-          nlayb_tmp = nlayb_tmp - 1
+          nrlay_tmp = nrlay_tmp + 1
+          oneDown   = 1
       end if
-    
+           
+      ! Determine start and stop layer nr for interpolated values (for now only layers where 3 stations have a value
       kstart = minval(nlayb_tmp)
       kstop  = maxval(nlayb_tmp + nrlay_tmp - 1)
-
+      
       do klay = kstart, kstop
 
          value     = 0.0d0
@@ -807,7 +828,7 @@ module m_fill_valobs
 
          do iwght = 1, 3
              if ((klay >= nlayb_tmp(iwght)) .and. (klay <= nlayb_tmp(iwght) + nrlay_tmp(iwght) - 1)) then
-               pntnr     = kb_tmp(iwght) - nlayb_tmp(iwght) + klay
+               pntnr     = kb_tmp(iwght) - nlayb_tmp(iwght) + klay - oneDown
                value     = value     + rarray(pntnr)*neighbour_weights_obs(iwght,istat)
                weighttot = weighttot + neighbour_weights_obs(iwght,istat)
              end if
