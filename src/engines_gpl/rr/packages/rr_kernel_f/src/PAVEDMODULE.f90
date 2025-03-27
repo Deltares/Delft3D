@@ -305,9 +305,8 @@ contains
    if (CleanRRFiles) then
         FileName = ConfFil_get_namFil(5)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
-        Call Openfl (iounit, FileName,1,2)  !paved.3b_cleaned
-        Write(*,*) ' Cleaning paved.3b to file:', FileName
-        Write(iout1,*) ' Cleaning paved.3b to file:', FileName
+        Call Openfl (iounit, FileName,1,3)
+        Call ErrMsgStandard (999, 1, ' Cleaning Paved.3b for RR-paved input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -497,8 +496,7 @@ contains
         FileName = ConfFil_get_namFil(6)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !paved.sto_cleaned
-        Write(*,*) ' Cleaning Paved.sto to file:', FileName
-        Write(iout1,*) ' Cleaning Paved.sto to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Paved.sto for RR-paved input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -593,8 +591,7 @@ contains
         FileName = ConfFil_get_namFil(7)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !paved.dwa_cleaned
-        Write(*,*) ' Cleaning Paved.dwa to file:', FileName
-        Write(iout1,*) ' Cleaning Paved.dwa to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Paved.dwa for RR-paved input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -699,8 +696,7 @@ contains
         FileName = ConfFil_get_namFil(8)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !paved.tbl_cleaned
-        Write(*,*) ' Cleaning Paved.tbl to file:', FileName
-        Write(iout1,*) ' Cleaning Paved.tbl to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Paved.tbl for RR-paved input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -716,8 +712,7 @@ contains
        IF (ENDFIL) GOTO 3111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer PavedModule to small, QC_T record'
-           Write(iout1,*) 'local buffer PavedModule to small, QC_T record'
+           Call ErrMsgStandard (999, 3, ' Local buffer RR-Pavedmodule, QC_T record, too small', ' Input skipped')
            GOTO 3111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -809,8 +804,7 @@ contains
        IF (ENDFIL) GOTO 6111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer PavedModule to small, QHTB record'
-           Write(iout1,*) 'local buffer PavedModule to small, QHTB record'
+           Call ErrMsgStandard (999, 3, ' Local buffer RR-Pavedmodule, QHTB record, too small', ' Input skipped')
            GOTO 6111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', if table defined
@@ -1041,7 +1035,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' streetvolume ',2, ' PAVE-ReadAscii',' OPENDA file',IOUT1, &
                                               CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found paved id and streetvolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found paved id and streetvolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    BVSTR(ivhg) = Rdum(1)
                    RSLMAP1_VHG(3,ivhg,1) = BVSTR(ivhg) / AreaVh(ivhg) * 1000.
                    VHG_Tnul(3,ivhg) = RSLMAP1_vhg(3,ivhg,1)
@@ -1050,7 +1044,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' sewervolumeRWA ',2,' PAVE-ReadAscii',' OPENDA file',IOUT1, &
                                              CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found paved id and sewervolumeRWA ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found paved id and sewervolumeRWA ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    BVRL(ivhg,1) = Rdum(1)
                    RSLMAP1_VHG(1,ivhg,1) = BVRL (ivhg,1) / AreaVh(ivhg) * 1000.
                    VHG_Tnul(1,ivhg) = RSLMAP1_vhg(1,ivhg,1)
@@ -1059,7 +1053,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' sewervolumeDWA ',2,' PAVE-ReadAscii',' OPENDA file',IOUT1, &
                                              CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found paved id and sewervolumeDWA ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found paved id and sewervolumeDWA ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    BVRL(ivhg,2) = Rdum(1)
                    RSLMAP1_VHG(2,ivhg,1) = BVRL (ivhg,2) / AreaVh(ivhg) * 1000.
                    VHG_Tnul(2,ivhg) = RSLMAP1_vhg(2,ivhg,1)
@@ -1068,7 +1062,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' dynamicvolume ',2,' PAVE-ReadAscii',' OPENDA file',IOUT1, &
                                              CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found paved id and dynamicvolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found paved id and dynamicvolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    PavedVolDyn(ivhg) = Rdum(1)
                    RSLMAP1_VHG(17,ivhg,1) = PavedVolDyn(ivhg) / AreaVh(ivhg) * 1000.
                    VHG_Tnul(17,ivhg) = RSLMAP1_vhg(17,ivhg,1)
@@ -1459,7 +1453,7 @@ contains
     ELSEIF (IPluv .GT. 0) THEN
         ! no limitation of discharge to NWRW node
     ELSE
-       Write(*,*) ' Internal error Sobek-3B: CMPVHG: IOW=IBND=0'
+       Write(Iout1,*) ' Internal error Sobek-3B: CMPVHG: IOW=IBND=0'
        call ErrMsgStandard (981, 0, 'Paved node should be connected to open water/boundary/NWRW runoff node for spilling ', Id_Nod(inode))
     ENDIF
 
@@ -1609,7 +1603,7 @@ contains
          WRITE(IDEBUG,*) IVHG, INODE, IPluv, QPluv(IPluv)%totalPaved, QinPluv(IPluv)
        ENDIF
     ELSE
-       Write(*,*) ' Internal error Sobek-3B: CMPVHG: IOW=IBND=0'
+       Write(iout1,*) ' Internal error Sobek-3B: CMPVHG: IOW=IBND=0'
        call ErrMsgStandard (981, 0, 'Paved node should be connected to open water/boundary/NWRW runoff node for spilling ', Id_Nod(inode))
     ENDIF
 
@@ -2096,7 +2090,7 @@ contains
     ELSEIF (IPluv .GT. 0) THEN
         ! no limitation of discharge to NWRW node
     ELSE
-       Write(*,*) ' Internal error Sobek-3B: CMPVHG2016: IOW=IBND=0'
+       Write(Iout1,*) ' Internal error Sobek-3B: CMPVHG2016: IOW=IBND=0'
        call ErrMsgStandard (981, 0, 'Paved node should be connected to open water/boundary/NWRW runoff node for spilling ', Id_Nod(inode))
     ENDIF
 

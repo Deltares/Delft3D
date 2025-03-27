@@ -482,8 +482,7 @@ contains
         FileName = ConfFil_get_namFil(52)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !struct3b.dat_cleaned
-        Write(*,*) ' Cleaning struct3b.dat to file:', FileName
-        Write(iout1,*) ' Cleaning struct3b.dat to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Struct3b.dat for RR-structure input to file', FileName)
    endif
 ! *********************************************************************
 ! Read STRUCT3B.DAT file
@@ -570,8 +569,7 @@ contains
         FileName = ConfFil_get_namFil(53)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !struct3b.def_cleaned
-        Write(*,*) ' Cleaning struct3b.def to file:', FileName
-        Write(iout1,*) ' Cleaning struct3b.def to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Struct3b.def for RR-structure input to file', FileName)
    endif
 ! *********************************************************************
 ! Read Struct3b.Def file
@@ -1060,8 +1058,7 @@ contains
         FileName = ConfFil_get_namFil(54)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !contr3b.def_cleaned
-        Write(*,*) ' Cleaning contr3b.def to file:', FileName
-        Write(iout1,*) ' Cleaning contr3b.def to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Contr3b.def for RR-structure input to file', FileName)
    endif
 ! *********************************************************************
 ! read contr3b.def
@@ -1281,8 +1278,7 @@ contains
         FileName = ConfFil_get_namFil(55)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !struct3b.tbl_cleaned
-        Write(*,*) ' Cleaning struct3b.tbl to file:', FileName
-        Write(iout1,*) ' Cleaning struct3b.tbl to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning struct3b.tbl for RR-structure input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -1309,8 +1305,7 @@ contains
        IF (ENDFIL) GOTO 3111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer StructureModule to small'
-           Write(iout1,*) 'local buffer StructureModule to small'
+           Call ErrMsgStandard (999, 3, ' Local buffer Structuremodule SWLV record too small', ' Input skipped')
            GOTO 3111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -1381,7 +1376,7 @@ contains
        IF (ENDFIL) GOTO 4111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer StructureModule to small'
+           Call ErrMsgStandard (999, 3, ' Local buffer Structuremodule INST record too small', ' Input skipped')
            GOTO 4111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', if table defined
