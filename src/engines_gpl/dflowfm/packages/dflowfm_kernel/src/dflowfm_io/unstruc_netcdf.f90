@@ -376,6 +376,12 @@ module unstruc_netcdf
       integer :: id_sbt(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_sst(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_ssn(MAX_ID_VAR) = -1 !< Variable ID for
+      integer :: id_sbwn(MAX_ID_VAR) = -1
+      integer :: id_sbwt(MAX_ID_VAR) = -1
+      integer :: id_sswn(MAX_ID_VAR) = -1
+      integer :: id_sswt(MAX_ID_VAR) = -1
+      integer :: id_sbcn(MAX_ID_VAR) = -1
+      integer :: id_sbct(MAX_ID_VAR) = -1
       integer :: id_sourse(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_sinkse(MAX_ID_VAR) = -1
       integer :: id_scrn(MAX_ID_VAR) = -1
@@ -3651,37 +3657,49 @@ contains
          !
          select case (stmpar%morlyr%settings%iunderlyr)
          case (1)
-            ierr = nf90_def_var(irstfile, 'bodsed', nf90_double, [id_sedtotdim, id_flowelemdim, id_timedim], id_bodsed)
-            ierr = nf90_put_att(irstfile, id_bodsed, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-            ierr = nf90_put_att(irstfile, id_bodsed, 'long_name', 'Available sediment mass in the bed in flow cell center')
-            ierr = nf90_put_att(irstfile, id_bodsed, 'units', 'kg m-2')
+            if (stmpar%morpar%moroutput%bodsed) then
+               ierr = nf90_def_var(irstfile, 'bodsed', nf90_double, [id_sedtotdim, id_flowelemdim, id_timedim], id_bodsed)
+               ierr = nf90_put_att(irstfile, id_bodsed, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+               ierr = nf90_put_att(irstfile, id_bodsed, 'long_name', 'Available sediment mass in the bed in flow cell center')
+               ierr = nf90_put_att(irstfile, id_bodsed, 'units', 'kg m-2')
+            end if
 
-            ierr = nf90_def_var(irstfile, 'dpsed', nf90_double, [id_flowelemdim, id_timedim], id_dpsed)
-            ierr = nf90_put_att(irstfile, id_dpsed, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-            ierr = nf90_put_att(irstfile, id_dpsed, 'long_name', 'Sediment thickness in the bed in flow cell center')
-            ierr = nf90_put_att(irstfile, id_dpsed, 'units', 'm')
+            if (stmpar%morpar%moroutput%dpsed) then
+               ierr = nf90_def_var(irstfile, 'dpsed', nf90_double, [id_flowelemdim, id_timedim], id_dpsed)
+               ierr = nf90_put_att(irstfile, id_dpsed, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+               ierr = nf90_put_att(irstfile, id_dpsed, 'long_name', 'Sediment thickness in the bed in flow cell center')
+               ierr = nf90_put_att(irstfile, id_dpsed, 'units', 'm')
+            end if
          case (2)
-            ierr = nf90_def_var(irstfile, 'msed', nf90_double, [id_sedtotdim, id_nlyrdim, id_flowelemdim, id_timedim], id_msed)
-            ierr = nf90_put_att(irstfile, id_msed, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-            ierr = nf90_put_att(irstfile, id_msed, 'long_name', 'Available sediment mass in a layer of the bed in flow cell center')
-            ierr = nf90_put_att(irstfile, id_msed, 'units', 'kg m-2')
+            if (stmpar%morpar%moroutput%msed) then
+               ierr = nf90_def_var(irstfile, 'msed', nf90_double, [id_sedtotdim, id_nlyrdim, id_flowelemdim, id_timedim], id_msed)
+               ierr = nf90_put_att(irstfile, id_msed, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+               ierr = nf90_put_att(irstfile, id_msed, 'long_name', 'Available sediment mass in a layer of the bed in flow cell center')
+               ierr = nf90_put_att(irstfile, id_msed, 'units', 'kg m-2')
+            end if
+            
+            if (stmpar%morpar%moroutput%lyrfrac) then
+               ierr = nf90_def_var(irstfile, 'lyrfrac', nf90_double, [id_sedtotdim, id_nlyrdim, id_flowelemdim, id_timedim], id_lyrfrac)
+               ierr = nf90_put_att(irstfile, id_lyrfrac, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+               ierr = nf90_put_att(irstfile, id_lyrfrac, 'long_name', 'Volume fraction in a layer of the bed in flow cell center')
+               ierr = nf90_put_att(irstfile, id_lyrfrac, 'units', '-')
+            end if
+            
+            if (stmpar%morpar%moroutput%thlyr) then
+               ierr = nf90_def_var(irstfile, 'thlyr', nf90_double, [id_nlyrdim, id_flowelemdim, id_timedim], id_thlyr)
+               ierr = nf90_put_att(irstfile, id_thlyr, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+               ierr = nf90_put_att(irstfile, id_thlyr, 'long_name', 'Thickness of a layer of the bed in flow cell center')
+               ierr = nf90_put_att(irstfile, id_thlyr, 'units', 'm')
+            end if
 
-            ierr = nf90_def_var(irstfile, 'lyrfrac', nf90_double, [id_sedtotdim, id_nlyrdim, id_flowelemdim, id_timedim], id_lyrfrac)
-            ierr = nf90_put_att(irstfile, id_lyrfrac, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-            ierr = nf90_put_att(irstfile, id_lyrfrac, 'long_name', 'Volume fraction in a layer of the bed in flow cell center')
-            ierr = nf90_put_att(irstfile, id_lyrfrac, 'units', '-')
+            if (stmpar%morpar%moroutput%preload) then
+               ierr = nf90_def_var(irstfile, 'preload', nf90_double, [id_nlyrdim, id_flowelemdim, id_timedim], id_preload)
+               ierr = nf90_put_att(irstfile, id_preload, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+               ierr = nf90_put_att(irstfile, id_preload, 'long_name', 'Historical largest load on layer of the bed in flow cell center')
+               ierr = nf90_put_att(irstfile, id_preload, 'units', 'kg')
+            end if
 
-            ierr = nf90_def_var(irstfile, 'thlyr', nf90_double, [id_nlyrdim, id_flowelemdim, id_timedim], id_thlyr)
-            ierr = nf90_put_att(irstfile, id_thlyr, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-            ierr = nf90_put_att(irstfile, id_thlyr, 'long_name', 'Thickness of a layer of the bed in flow cell center')
-            ierr = nf90_put_att(irstfile, id_thlyr, 'units', 'm')
-
-            ierr = nf90_def_var(irstfile, 'preload', nf90_double, [id_nlyrdim, id_flowelemdim, id_timedim], id_preload)
-            ierr = nf90_put_att(irstfile, id_preload, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-            ierr = nf90_put_att(irstfile, id_preload, 'long_name', 'Historical largest load on layer of the bed in flow cell center')
-            ierr = nf90_put_att(irstfile, id_preload, 'units', 'kg')
-
-            if (stmpar%morlyr%settings%iporosity > 0) then
+            if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
                ierr = nf90_def_var(irstfile, 'porosity', nf90_double, [id_nlyrdim, id_flowelemdim, id_timedim], id_poros)
                ierr = nf90_put_att(irstfile, id_poros, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
                ierr = nf90_put_att(irstfile, id_poros, 'long_name', 'Porosity of layer of the bed in flow cell center')
@@ -4683,12 +4701,18 @@ contains
          select case (stmpar%morlyr%settings%iunderlyr)
          case (1)
             ! bodsed
-            ierr = nf90_put_var(irstfile, id_bodsed, stmpar%morlyr%state%bodsed(:, 1:ndxi), [1, 1, itim], [stmpar%lsedtot, ndxi, 1])
+            if (stmpar%morpar%moroutput%bodsed) then
+               ierr = nf90_put_var(irstfile, id_bodsed, stmpar%morlyr%state%bodsed(:, 1:ndxi), [1, 1, itim], [stmpar%lsedtot, ndxi, 1])
+            end if
             ! dpsed
-            ierr = nf90_put_var(irstfile, id_dpsed, stmpar%morlyr%state%dpsed(1:ndxi), [1, itim], [ndxi, 1])
+            if (stmpar%morpar%moroutput%dpsed) then
+               ierr = nf90_put_var(irstfile, id_dpsed, stmpar%morlyr%state%dpsed(1:ndxi), [1, itim], [ndxi, 1])
+            end if
          case (2)
             ! msed
-            ierr = nf90_put_var(irstfile, id_msed, stmpar%morlyr%state%msed(:, :, 1:ndxi), [1, 1, 1, itim], [stmpar%lsedtot, stmpar%morlyr%settings%nlyr, ndxi, 1])
+            if (stmpar%morpar%moroutput%msed) then
+               ierr = nf90_put_var(irstfile, id_msed, stmpar%morlyr%state%msed(:, :, 1:ndxi), [1, 1, 1, itim], [stmpar%lsedtot, stmpar%morlyr%settings%nlyr, ndxi, 1])
+            end if
             ! lyrfrac
             if (.not. allocated(frac)) allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx))
             frac = -999d0
@@ -4710,13 +4734,19 @@ contains
                end do
             end do
             ! thlyr
-            ierr = nf90_put_var(irstfile, id_thlyr, stmpar%morlyr%state%thlyr(:, 1:ndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxi, 1])
+            if (stmpar%morpar%moroutput%thlyr) then
+               ierr = nf90_put_var(irstfile, id_thlyr, stmpar%morlyr%state%thlyr(:, 1:ndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxi, 1])
+            end if
             ! lyrfrac
-            ierr = nf90_put_var(irstfile, id_lyrfrac, frac(:, :, 1:ndxi), [1, 1, 1, itim], [stmpar%lsedtot, stmpar%morlyr%settings%nlyr, ndxi, 1])
+            if (stmpar%morpar%moroutput%lyrfrac) then
+               ierr = nf90_put_var(irstfile, id_lyrfrac, frac(:, :, 1:ndxi), [1, 1, 1, itim], [stmpar%lsedtot, stmpar%morlyr%settings%nlyr, ndxi, 1])
+            end if
             ! preload
-            ierr = nf90_put_var(irstfile, id_preload, stmpar%morlyr%state%preload(:, 1:ndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxi, 1])
+            if (stmpar%morpar%moroutput%preload) then
+               ierr = nf90_put_var(irstfile, id_preload, stmpar%morlyr%state%preload(:, 1:ndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxi, 1])
+            end if
             ! porosity
-            if (stmpar%morlyr%settings%iporosity > 0) then
+            if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
                if (.not. allocated(poros)) allocate (poros(1:stmpar%morlyr%settings%nlyr, 1:ndx))
                poros = 1d0 - stmpar%morlyr%state%svfrac
                ierr = nf90_put_var(irstfile, id_poros, poros(:, 1:ndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxi, 1])
@@ -5846,7 +5876,7 @@ contains
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_mor_bl, nc_precision, UNC_LOC_S, 'mor_bl', '', 'Time-varying bottom level in flow cell center', 'm', dimids=[-2, -1], jabndnd=jabndnd_)
          end if
          !
-         if (jasubsupl > 0) then
+         if (jasubsupl > 0 .and stmpar%morpar%moroutput%subsupl) then
             select case (ibedlevtyp)
             case (1)
                iloc = UNC_LOC_S
@@ -5876,9 +5906,11 @@ contains
             !
             call realloc(mapids%id_dxx, [stmpar%morpar%nxx, 3], keepExisting=.false.)
             !
-            ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_morfac, nc_precision, [mapids%id_tsp%id_timedim], 'morfac', '', 'Average morphological factor over elapsed morphological time', '-')
-            ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_morft, nc_precision, [mapids%id_tsp%id_timedim], 'morft', '', 'Current morphological time', 's')
-            !
+            if (stmpar%morpar%moroutput%morfacft) then
+               ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_morfac, nc_precision, [mapids%id_tsp%id_timedim], 'morfac', '', 'Average morphological factor over elapsed morphological time', '-')
+               ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_morft, nc_precision, [mapids%id_tsp%id_timedim], 'morft', '', 'Current morphological time', 's')
+            end if
+               !
             ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_frac_name, nf90_char, [mapids%id_tsp%id_strlendim, mapids%id_tsp%id_sedtotdim], 'sedfrac_name', '', 'Sediment fraction name', '-')
             if (stmpar%lsedsus > 0) then
                ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_susfrac_name, nf90_char, [mapids%id_tsp%id_strlendim, mapids%id_tsp%id_sedsusdim], 'sussedfrac_name', '', 'Suspended sediment fraction name', '-')
@@ -5888,19 +5920,24 @@ contains
             !
             if (stmpar%lsedsus > 0) then
                !
-               if (kmx > 0) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_kmxsed, nf90_int, UNC_LOC_S, 'kmxsed', '', 'Bottom layer for sed calculations', '-', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ws, nc_precision, UNC_LOC_W, 'ws', '', 'Sediment settling velocity', 'm s-1', dimids=[-3, -2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
-               else
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ws, nc_precision, UNC_LOC_S, 'ws', '', 'Sediment settling velocity', 'm s-1', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+               if (stmpar%morpar%moroutput%ws) then
+                   if (kmx > 0) then
+                      ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_kmxsed, nf90_int, UNC_LOC_S, 'kmxsed', '', 'Bottom layer for sed calculations', '-', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+                      ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ws, nc_precision, UNC_LOC_W, 'ws', '', 'Sediment settling velocity', 'm s-1', dimids=[-3, -2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+                   else
+                      ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ws, nc_precision, UNC_LOC_S, 'ws', '', 'Sediment settling velocity', 'm s-1', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+                   end if
                end if
                !
-               if (kmx == 0) then
+               if (kmx == 0 .and. stmpar%morpar%moroutput%rsedeq) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rsedeq, nc_precision, UNC_LOC_S, 'rsedeq', '', 'Equilibrium sediment concentration', 'kg m-3', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
                end if
                !
                if (stmpar%morpar%moroutput%aks) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_aks, nc_precision, UNC_LOC_S, 'aks', '', 'Near-bed reference concentration height', 'm', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+               end if
+               !
+               if (stmpar%morpar%moroutput%rca) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rca, nc_precision, UNC_LOC_S, 'rca', '', 'Near-bed reference concentration', 'kg m-3', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
                end if
                !
@@ -5915,10 +5952,12 @@ contains
                   end if
                end if
                !
-               if (kmx > 0) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedfrac, nc_precision, UNC_LOC_S3D, 'sedfrac_concentration', '', 'Sediment concentration in flow cell', 'kg m-3', dimids=[-3, -2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
-               else
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedfrac, nc_precision, UNC_LOC_S, 'sedfrac_concentration', '', 'Sediment concentration in flow cell', 'kg m-3', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+               if (stmpar%morpar%moroutput%sedconc) then
+                  if (kmx > 0) then
+                     ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedfrac, nc_precision, UNC_LOC_S3D, 'sedfrac_concentration', '', 'Sediment concentration in flow cell', 'kg m-3', dimids=[-3, -2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+                  else
+                     ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedfrac, nc_precision, UNC_LOC_S, 'sedfrac_concentration', '', 'Sediment concentration in flow cell', 'kg m-3', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+                  end if
                end if
                !
             end if
@@ -5937,15 +5976,29 @@ contains
             end if
 
             ! default sediment transport output (suspended and bedload) on flow links
-            if (stmpar%lsedsus > 0) then
+            if (stmpar%lsedsus > 0 .and. stmpar%morpar%moroutput%ssuuvv) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ssn, nc_precision, UNC_LOC_U, 'ssn', '', 'Suspended load transport, n-component', stmpar%morpar%moroutput%unit_transport_rate, dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sst, nc_precision, UNC_LOC_U, 'sst', '', 'Suspended load transport, t-component', stmpar%morpar%moroutput%unit_transport_rate, dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
-
             end if
 
-            if (stmpar%lsedtot > 0) then
+            if (stmpar%lsedtot > 0 .and. stmpar%morpar%moroutput%sbuuvv) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbn, nc_precision, UNC_LOC_U, 'sbn', '', 'Bed load transport, n-component', stmpar%morpar%moroutput%unit_transport_rate, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbt, nc_precision, UNC_LOC_U, 'sbt', '', 'Bed load transport, t-component', stmpar%morpar%moroutput%unit_transport_rate, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
+            end if
+            
+            if (stmpar%lsedtot > 0 .and. stmpar%morpar%moroutput%sswuuvv) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswn, nc_precision, UNC_LOC_U, 'sswn', '', 'Suspended load transport due to waves, n-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswt, nc_precision, UNC_LOC_U, 'sswt', '', 'Suspended load transport due to waves, t-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+            end if
+            
+            if (stmpar%lsedtot > 0 .and. stmpar%morpar%moroutput%sbwuuvv) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwn, nc_precision, UNC_LOC_U, 'sbwn', '', 'Bed load transport due to waves, n-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwt, nc_precision, UNC_LOC_U, 'sbwt', '', 'Bed load transport due to waves, t-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
+            end if
+            
+            if (stmpar%lsedtot > 0 .and. stmpar%morpar%moroutput%sbcuuvv) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbcn, nc_precision, UNC_LOC_U, 'sbcn', '', 'Bed load transport due to currents, n-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbct, nc_precision, UNC_LOC_U, 'sbct', '', 'Bed load transport due to currents, t-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
             end if
 
             if (stmpar%morpar%moroutput%dzduuvv) then ! bedslope
@@ -6024,18 +6077,33 @@ contains
 
             select case (stmpar%morlyr%settings%iunderlyr)
             case (1)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_bodsed, nc_precision, UNC_LOC_S, 'bodsed', '', 'Available sediment mass in the bed in flow cell center', 'kg m-2', dimids=[mapids%id_tsp%id_sedtotdim, -2, -1], jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dpsed, nc_precision, UNC_LOC_S, 'dpsed', '', 'Sediment thickness in the bed in flow cell center', 'm', dimids=[-2, -1], jabndnd=jabndnd_)
-            case (2)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_msed, nc_precision, UNC_LOC_S, 'msed', '', 'Available sediment mass in a layer of the bed in flow cell center', 'kg m-2', dimids=[mapids%id_tsp%id_sedtotdim, mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thlyr, nc_precision, UNC_LOC_S, 'thlyr', '', 'Thickness of a layer of the bed in flow cell center', 'm', dimids=[mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_lyrfrac, nc_precision, UNC_LOC_S, 'lyrfrac', '', 'Volume fraction in a layer of the bed in flow cell center', '-', dimids=[mapids%id_tsp%id_sedtotdim, mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
+               if (stmpar%morpar%moroutput%bodsed) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_bodsed, nc_precision, UNC_LOC_S, 'bodsed', '', 'Available sediment mass in the bed in flow cell center', 'kg m-2', dimids=[mapids%id_tsp%id_sedtotdim, -2, -1], jabndnd=jabndnd_)
+               end if
                !
-               if (stmpar%morlyr%settings%iporosity > 0) then
+               if (stmpar%morpar%moroutput%dpsed) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dpsed, nc_precision, UNC_LOC_S, 'dpsed', '', 'Sediment thickness in the bed in flow cell center', 'm', dimids=[-2, -1], jabndnd=jabndnd_)
+               end if
+            case (2)
+               if (stmpar%morpar%moroutput%msed) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_msed, nc_precision, UNC_LOC_S, 'msed', '', 'Available sediment mass in a layer of the bed in flow cell center', 'kg m-2', dimids=[mapids%id_tsp%id_sedtotdim, mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
+               end if
+               !
+               if (stmpar%morpar%moroutput%thlyr) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thlyr, nc_precision, UNC_LOC_S, 'thlyr', '', 'Thickness of a layer of the bed in flow cell center', 'm', dimids=[mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
+               end if
+               !
+               if (stmpar%morpar%moroutput%lyrfrac) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_lyrfrac, nc_precision, UNC_LOC_S, 'lyrfrac', '', 'Volume fraction in a layer of the bed in flow cell center', '-', dimids=[mapids%id_tsp%id_sedtotdim, mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
+               end if
+               !
+               if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_poros, nc_precision, UNC_LOC_S, 'poros', '', 'Porosity of a layer of the bed in flow cell center', '-', dimids=[mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
                end if
                !
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_preload, nc_precision, UNC_LOC_S, 'preload', '', 'Historical largest load on layer of the bed in flow cell center', 'kg', dimids=[mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
+               if (stmpar%morpar%moroutput%preload) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_preload, nc_precision, UNC_LOC_S, 'preload', '', 'Historical largest load on layer of the bed in flow cell center', 'kg', dimids=[mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
+               end if
             end select
             if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedshort, nc_precision, UNC_LOC_S, 'sedshort', '', 'Sediment shortage of transport layer in flow cell center', 'kg m-2', dimids=[mapids%id_tsp%id_sedtotdim, -2, -1], jabndnd=jabndnd_)
@@ -6771,7 +6839,7 @@ contains
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_mor_bl, UNC_LOC_S, bl, jabndnd=jabndnd_)
       end if
 
-      if (jasubsupl > 0) then
+      if (jasubsupl > 0 .and. stmpar%morpar%moroutput%subsupl) then
          select case (ibedlevtyp)
          case (1)
             iloc = UNC_LOC_S
@@ -6829,24 +6897,26 @@ contains
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_kmxsed, UNC_LOC_S, toutputx, jabndnd=jabndnd_)
             end if
             !
-            call realloc(toutputx, [lnx, stmpar%lsedsus], keepExisting=.false., fill=-999d0)
-            call realloc(toutputy, [lnx, stmpar%lsedsus], keepExisting=.false., fill=-999d0)
-            do l = 1, stmpar%lsedsus
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1d0
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(sedtot2sedsus(l))
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(sedtot2sedsus(l))
+            if (stmpar%morpar%moroutput%ssuuvv) then
+               call realloc(toutputx, [lnx, stmpar%lsedsus], keepExisting=.false., fill=-999d0)
+               call realloc(toutputy, [lnx, stmpar%lsedsus], keepExisting=.false., fill=-999d0)
+               do l = 1, stmpar%lsedsus
+                  select case (stmpar%morpar%moroutput%transptype)
+                  case (0)
+                     rhol = 1d0
+                  case (1)
+                     rhol = stmpar%sedpar%cdryb(sedtot2sedsus(l))
+                  case (2)
+                     rhol = stmpar%sedpar%rhosol(sedtot2sedsus(l))
                end select
-               toutputx(:, l) = sedtra%e_ssn(:, l) / rhol
-               toutputy(:, l) = sedtra%e_sst(:, l) / rhol
-            end do
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ssn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sst, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
+                  toutputx(:, l) = sedtra%e_ssn(:, l) / rhol
+                  toutputy(:, l) = sedtra%e_sst(:, l) / rhol
+               end do
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ssn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sst, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
+            end if
          end if
-         if (stmpar%lsedtot > 0) then
+         if (stmpar%lsedtot > 0 .and. stmpar%morpar%moroutput%sbuuvv) then
             call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999d0)
             call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999d0)
             do l = 1, stmpar%lsedtot
@@ -6864,6 +6934,60 @@ contains
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbt, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
          end if
+        if (stmpar%lsedtot > 0 .and. stmpar%morpar%moroutput%sbwuuvv) then
+            call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999d0)
+            call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999d0)
+            do l = 1, stmpar%lsedtot
+               select case (stmpar%morpar%moroutput%transptype)
+               case (0)
+                  rhol = 1d0
+               case (1)
+                  rhol = stmpar%sedpar%cdryb(l)
+               case (2)
+                  rhol = stmpar%sedpar%rhosol(l)
+               end select
+               toutputx(:, l) = sedtra%e_sbwn(:, l) / rhol
+               toutputy(:, l) = sedtra%e_sbwt(:, l) / rhol
+            end do
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwt, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
+        end if
+        if (stmpar%lsedtot > 0 .and. stmpar%morpar%moroutput%sswuuvv) then
+            call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999d0)
+            call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999d0)
+            do l = 1, stmpar%lsedtot
+               select case (stmpar%morpar%moroutput%transptype)
+               case (0)
+                  rhol = 1d0
+               case (1)
+                  rhol = stmpar%sedpar%cdryb(l)
+               case (2)
+                  rhol = stmpar%sedpar%rhosol(l)
+               end select
+               toutputx(:, l) = sedtra%e_sswn(:, l) / rhol
+               toutputy(:, l) = sedtra%e_sswt(:, l) / rhol
+            end do
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswt, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
+        end if
+        if (stmpar%lsedtot > 0 .and. stmpar%morpar%moroutput%sbcuuvv) then
+            call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999d0)
+            call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999d0)
+            do l = 1, stmpar%lsedtot
+               select case (stmpar%morpar%moroutput%transptype)
+               case (0)
+                  rhol = 1d0
+               case (1)
+                  rhol = stmpar%sedpar%cdryb(l)
+               case (2)
+                  rhol = stmpar%sedpar%rhosol(l)
+               end select
+               toutputx(:, l) = sedtra%e_sbcn(:, l) / rhol
+               toutputy(:, l) = sedtra%e_sbct(:, l) / rhol
+            end do
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbcn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbct, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
+         end if
          !
          if (stmpar%morpar%moroutput%uuuvvv) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uuu, UNC_LOC_S, sedtra%uuu, jabndnd=jabndnd_)
@@ -6875,37 +6999,48 @@ contains
             call realloc(work3d, [kmx, ndxndxi, stmpar%lsedsus], keepExisting=.false., fill=dmiss)
             if (kmx > 0) then
                ! Concentrations
-               do kk = 1, ndxndxi
-                  call getkbotktop(kk, kb, kt)
-                  call getlayerindices(kk, nlayb, nrlay)
-                  do k = kb, kt
-                     work3d(k - kb + nlayb, kk, :) = constituents(ISED1:ISEDN, k)
+               if (stmpar%morpar%moroutput%sedconc) then
+                  do kk = 1, ndxndxi
+                     call getkbotktop(kk, kb, kt)
+                     call getlayerindices(kk, nlayb, nrlay)
+                     do k = kb, kt
+                        work3d(k - kb + nlayb, kk, :) = constituents(ISED1:ISEDN, k)
+                     end do
                   end do
-               end do
-               ierr = nf90_put_var(mapids%ncid, mapids%id_sedfrac(2), work3d(1:kmx, 1:ndxndxi, 1:stmpar%lsedsus), start=[1, 1, 1, itim], count=[kmx, ndxndxi, stmpar%lsedsus, 1])
-               work3d = dmiss
+                  ierr = nf90_put_var(mapids%ncid, mapids%id_sedfrac(2), work3d(1:kmx, 1:ndxndxi, 1:stmpar%lsedsus), start=[1, 1, 1, itim], count=[kmx, ndxndxi, stmpar%lsedsus, 1])
+                  work3d = dmiss
+               end if
                ! Settling velocity
-               do kk = 1, ndxndxi
-                  call getkbotktop(kk, kb, kt)
-                  call getlayerindices(kk, nlayb, nrlay)
-                  do k = kb, kt
-                     work3d(k - kb + nlayb, kk, :) = mtd%ws(k, 1:stmpar%lsedsus)
+               if (stmpar%morpar%moroutput%ws) then
+                  do kk = 1, ndxndxi
+                     call getkbotktop(kk, kb, kt)
+                     call getlayerindices(kk, nlayb, nrlay)
+                     do k = kb, kt
+                        work3d(k - kb + nlayb, kk, :) = mtd%ws(k, 1:stmpar%lsedsus)
+                     end do
                   end do
-               end do
-               ierr = nf90_put_var(mapids%ncid, mapids%id_ws(2), work3d(1:kmx, 1:ndxndxi, 1:stmpar%lsedsus), start=[1, 1, 1, itim], count=[kmx, ndxndxi, stmpar%lsedsus, 1])
+                  ierr = nf90_put_var(mapids%ncid, mapids%id_ws(2), work3d(1:kmx, 1:ndxndxi, 1:stmpar%lsedsus), start=[1, 1, 1, itim], count=[kmx, ndxndxi, stmpar%lsedsus, 1])
+               end if
             else
-               call realloc(work1d_z, [ndxndxi, stmpar%lsedsus], keepExisting=.false., fill=dmiss)
-               work1d_z = transpose(constituents(ISED1:ISEDN, :)) ! avoid array slice on stack
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedfrac, UNC_LOC_S, work1d_z, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ws, UNC_LOC_S, mtd%ws, jabndnd=jabndnd_)
+               if (stmpar%morpar%moroutput%sedconc) then
+                  call realloc(work1d_z, [ndxndxi, stmpar%lsedsus], keepExisting=.false., fill=dmiss)
+                  work1d_z = transpose(constituents(ISED1:ISEDN, :)) ! avoid array slice on stack
+                  ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedfrac, UNC_LOC_S, work1d_z, jabndnd=jabndnd_)
+               end if
+               if (stmpar%morpar%moroutput%ws) then
+                  ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ws, UNC_LOC_S, mtd%ws, jabndnd=jabndnd_)
+               end if
             end if
 !
-            if (kmx == 0) then
+            if (kmx == 0 .and. stmpar%morpar%moroutput%rsedeq) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rsedeq, UNC_LOC_S, sedtra%rsedeq, jabndnd=jabndnd_)
             end if
 !
             if (stmpar%morpar%moroutput%aks) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_aks, UNC_LOC_S, sedtra%aks, jabndnd=jabndnd_)
+            end if
+!
+            if (stmpar%morpar%moroutput%rca) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rca, UNC_LOC_S, sedtra%rca, jabndnd=jabndnd_)
             end if
 !
@@ -7133,19 +7268,22 @@ contains
             sedtra%sytot = sytotori
          end if
          !
-         ! Time averaged transports, could probably be more concise...
-         !morstarthyd = tstart_user + stmpar%morpar%tmor*tfac        ! seconds
-         dmorft = stmpar%morpar%morft - stmpar%morpar%morft0 ! days since morstart
-         dmorfs = dmorft * 86400.0d0 ! seconds
-         mortime = stmpar%morpar%morft * 86400d0 ! seconds*morfac since tstart_user
-         if (stmpar%morpar%hydrt > stmpar%morpar%hydrt0) then
-            moravg = dmorft / (stmpar%morpar%hydrt - stmpar%morpar%hydrt0)
-         else
-            moravg = 0d0
-         end if
+         !morfac and morft
+         if (stmpar%morpar%moroutput%morfacft) then
+            ! Time averaged transports, could probably be more concise...
+            !morstarthyd = tstart_user + stmpar%morpar%tmor*tfac        ! seconds
+            dmorft = stmpar%morpar%morft - stmpar%morpar%morft0 ! days since morstart
+            dmorfs = dmorft * 86400.0d0 ! seconds
+            mortime = stmpar%morpar%morft * 86400d0 ! seconds*morfac since tstart_user
+            if (stmpar%morpar%hydrt > stmpar%morpar%hydrt0) then
+               moravg = dmorft / (stmpar%morpar%hydrt - stmpar%morpar%hydrt0)
+            else
+               moravg = 0d0
+            end if
          !
-         ierr = nf90_put_var(mapids%ncid, mapids%id_morfac, moravg, [itim])
-         ierr = nf90_put_var(mapids%ncid, mapids%id_morft, mortime, [itim])
+            ierr = nf90_put_var(mapids%ncid, mapids%id_morfac, moravg, [itim])
+            ierr = nf90_put_var(mapids%ncid, mapids%id_morft, mortime, [itim])
+         end if
          !
          if (stmpar%morpar%moroutput%cumavg) then
             ! Bedload components
@@ -7242,11 +7380,19 @@ contains
 !
          select case (stmpar%morlyr%settings%iunderlyr)
          case (1)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_bodsed, UNC_LOC_S, stmpar%morlyr%state%bodsed, locdim=2, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dpsed, UNC_LOC_S, stmpar%morlyr%state%dpsed, jabndnd=jabndnd_)
+            if (stmpar%morpar%moroutput%bodsed) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_bodsed, UNC_LOC_S, stmpar%morlyr%state%bodsed, locdim=2, jabndnd=jabndnd_)
+            end if
+            if (stmpar%morpar%moroutput%dpsed) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dpsed, UNC_LOC_S, stmpar%morlyr%state%dpsed, jabndnd=jabndnd_)
+            end if
          case (2)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_msed, UNC_LOC_S, stmpar%morlyr%state%msed, locdim=3, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thlyr, UNC_LOC_S, stmpar%morlyr%state%thlyr, locdim=2, jabndnd=jabndnd_)
+            if (stmpar%morpar%moroutput%msed) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_msed, UNC_LOC_S, stmpar%morlyr%state%msed, locdim=3, jabndnd=jabndnd_)
+            end if
+            if (stmpar%morpar%moroutput%thlyr) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thlyr, UNC_LOC_S, stmpar%morlyr%state%thlyr, locdim=2, jabndnd=jabndnd_)
+            end if
             !
             if (.not. allocated(frac)) allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx))
             frac = -999d0
@@ -7267,15 +7413,20 @@ contains
                   end if
                end do
             end do
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_lyrfrac, UNC_LOC_S, frac, locdim=3, jabndnd=jabndnd_)
+            
+            if (stmpar%morpar%moroutput%lyrfrac) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_lyrfrac, UNC_LOC_S, frac, locdim=3, jabndnd=jabndnd_)
+            end if
             !
-            if (stmpar%morlyr%settings%iporosity > 0) then
+            if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
                if (.not. allocated(poros)) allocate (poros(1:stmpar%morlyr%settings%nlyr, 1:ndx))
                poros = 1d0 - stmpar%morlyr%state%svfrac
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_poros, UNC_LOC_S, poros, locdim=2, jabndnd=jabndnd_)
             end if
             !
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_preload, UNC_LOC_S, stmpar%morlyr%state%preload, locdim=2, jabndnd=jabndnd_)
+            if (stmpar%morpar%moroutput%preload) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_preload, UNC_LOC_S, stmpar%morlyr%state%preload, locdim=2, jabndnd=jabndnd_)
+            end if
          case default
             ! do nothing
          end select
@@ -8641,17 +8792,19 @@ contains
                !
                ! fall velocity
                if (stmpar%lsedsus > 0) then
-                  if (kmx > 0) then
-                     ierr = nf90_def_var(imapfile, 'ws', nf90_double, [id_laydim(iid), id_flowelemdim(iid), id_sedsusdim(iid), id_timedim(iid)], id_ws(iid))
-                  else ! '2D' fall velocity, ref fm_erosed(), to check...
-                     ierr = nf90_def_var(imapfile, 'ws', nf90_double, [id_flowelemdim(iid), id_sedsusdim(iid), id_timedim(iid)], id_ws(iid))
+                  if (stmpar%morpar%moroutput%ws) then
+                     if (kmx > 0) then
+                        ierr = nf90_def_var(imapfile, 'ws', nf90_double, [id_laydim(iid), id_flowelemdim(iid), id_sedsusdim(iid), id_timedim(iid)], id_ws(iid))
+                     else ! '2D' fall velocity, ref fm_erosed(), to check...
+                        ierr = nf90_def_var(imapfile, 'ws', nf90_double, [id_flowelemdim(iid), id_sedsusdim(iid), id_timedim(iid)], id_ws(iid))
+                     end if
+                     ierr = nf90_put_att(imapfile, id_ws(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+                     ierr = nf90_put_att(imapfile, id_ws(iid), 'long_name', 'Sediment settling velocity')
+                     ierr = nf90_put_att(imapfile, id_ws(iid), 'units', 'm s-1')
                   end if
-                  ierr = nf90_put_att(imapfile, id_ws(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-                  ierr = nf90_put_att(imapfile, id_ws(iid), 'long_name', 'Sediment settling velocity')
-                  ierr = nf90_put_att(imapfile, id_ws(iid), 'units', 'm s-1')
                   !
                   ! equilibrium concentration, 2D only
-                  if (kmx == 0) then
+                  if (kmx == 0 .and. stmpar%morpar%moroutput%rsedeq) then
                      ierr = nf90_def_var(imapfile, 'rsedeq', nf90_double, [id_flowelemdim(iid), id_sedsusdim(iid), id_timedim(iid)], id_rsedeq(iid))
                      ierr = nf90_put_att(imapfile, id_rsedeq(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
                      ierr = nf90_put_att(imapfile, id_rsedeq(iid), 'long_name', 'Equilibrium sediment concentration')
@@ -8664,7 +8817,9 @@ contains
                      ierr = nf90_put_att(imapfile, id_aks(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
                      ierr = nf90_put_att(imapfile, id_aks(iid), 'long_name', 'Near-bed reference concentration height')
                      ierr = nf90_put_att(imapfile, id_aks(iid), 'units', 'm')
-
+                  end if
+                  !
+                  if (stmpar%morpar%moroutput%rca) then
                      ierr = nf90_def_var(imapfile, 'rca', nf90_double, [id_flowelemdim(iid), id_sedsusdim(iid), id_timedim(iid)], id_rca(iid))
                      ierr = nf90_put_att(imapfile, id_rca(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
                      ierr = nf90_put_att(imapfile, id_rca(iid), 'long_name', 'Near-bed reference concentration')
@@ -8850,32 +9005,40 @@ contains
 
                select case (stmpar%morlyr%settings%iunderlyr)
                case (1)
-                  ierr = nf90_def_var(imapfile, 'bodsed', nf90_double, [id_sedtotdim(iid), id_flowelemdim(iid), id_timedim(iid)], id_bodsed(iid))
-                  ierr = nf90_put_att(imapfile, id_bodsed(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-                  ierr = nf90_put_att(imapfile, id_bodsed(iid), 'long_name', 'available sediment in the bed in flow cell center')
-                  ierr = nf90_put_att(imapfile, id_bodsed(iid), 'units', 'kg m-2')
-
-                  ierr = nf90_def_var(imapfile, 'dpsed', nf90_double, [id_flowelemdim(iid), id_timedim(iid)], id_dpsed(iid))
-                  ierr = nf90_put_att(imapfile, id_dpsed(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-                  ierr = nf90_put_att(imapfile, id_dpsed(iid), 'long_name', 'sediment thickness in the bed in flow cell center')
-                  ierr = nf90_put_att(imapfile, id_dpsed(iid), 'units', 'm')
+                  if (stmpar%morpar%moroutput%bodsed) then
+                     ierr = nf90_def_var(imapfile, 'bodsed', nf90_double, [id_sedtotdim(iid), id_flowelemdim(iid), id_timedim(iid)], id_bodsed(iid))
+                     ierr = nf90_put_att(imapfile, id_bodsed(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+                     ierr = nf90_put_att(imapfile, id_bodsed(iid), 'long_name', 'available sediment in the bed in flow cell center')
+                     ierr = nf90_put_att(imapfile, id_bodsed(iid), 'units', 'kg m-2')
+                  end if
+                  
+                  if (stmpar%morpar%moroutput%dpsed) then
+                     ierr = nf90_def_var(imapfile, 'dpsed', nf90_double, [id_flowelemdim(iid), id_timedim(iid)], id_dpsed(iid))
+                     ierr = nf90_put_att(imapfile, id_dpsed(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+                     ierr = nf90_put_att(imapfile, id_dpsed(iid), 'long_name', 'sediment thickness in the bed in flow cell center')
+                     ierr = nf90_put_att(imapfile, id_dpsed(iid), 'units', 'm')
+                  end if
                case (2)
-                  ierr = nf90_def_var(imapfile, 'msed', nf90_double, [id_sedtotdim(iid), id_nlyrdim(iid), id_flowelemdim(iid), id_timedim(iid)], id_msed(iid))
-                  ierr = nf90_put_att(imapfile, id_msed(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-                  ierr = nf90_put_att(imapfile, id_msed(iid), 'long_name', 'available sediment in a layer of the bed in flow cell center')
-                  ierr = nf90_put_att(imapfile, id_msed(iid), 'units', 'kg m-2')
+                  if (stmpar%morpar%moroutput%msed) then
+                     ierr = nf90_def_var(imapfile, 'msed', nf90_double, [id_sedtotdim(iid), id_nlyrdim(iid), id_flowelemdim(iid), id_timedim(iid)], id_msed(iid))
+                     ierr = nf90_put_att(imapfile, id_msed(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+                     ierr = nf90_put_att(imapfile, id_msed(iid), 'long_name', 'available sediment in a layer of the bed in flow cell center')
+                     ierr = nf90_put_att(imapfile, id_msed(iid), 'units', 'kg m-2')
+                  end if
 
-                  ierr = nf90_def_var(imapfile, 'lyrfrac', nf90_double, [id_sedtotdim(iid), id_nlyrdim(iid), id_flowelemdim(iid), id_timedim(iid)], id_lyrfrac(iid))
-                  ierr = nf90_put_att(imapfile, id_lyrfrac(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-                  ierr = nf90_put_att(imapfile, id_lyrfrac(iid), 'long_name', 'volume fraction in a layer of the bed in flow cell center')
-                  ierr = nf90_put_att(imapfile, id_lyrfrac(iid), 'units', '-')
+                  if (stmpar%morpar%moroutput%lyrfrac) then
+                     ierr = nf90_def_var(imapfile, 'lyrfrac', nf90_double, [id_sedtotdim(iid), id_nlyrdim(iid), id_flowelemdim(iid), id_timedim(iid)], id_lyrfrac(iid))
+                     ierr = nf90_put_att(imapfile, id_lyrfrac(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+                     ierr = nf90_put_att(imapfile, id_lyrfrac(iid), 'long_name', 'volume fraction in a layer of the bed in flow cell center')
+                     ierr = nf90_put_att(imapfile, id_lyrfrac(iid), 'units', '-')
+                  end if
 
                   ierr = nf90_def_var(imapfile, 'thlyr', nf90_double, [id_nlyrdim(iid), id_flowelemdim(iid), id_timedim(iid)], id_thlyr(iid))
                   ierr = nf90_put_att(imapfile, id_thlyr(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
                   ierr = nf90_put_att(imapfile, id_thlyr(iid), 'long_name', 'thickness of a layer of the bed in flow cell center')
                   ierr = nf90_put_att(imapfile, id_thlyr(iid), 'units', 'm')
 
-                  if (stmpar%morlyr%settings%iporosity > 0) then
+                  if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
                      ierr = nf90_def_var(imapfile, 'poros', nf90_double, [id_nlyrdim(iid), id_flowelemdim(iid), id_timedim(iid)], id_poros(iid))
                      ierr = nf90_put_att(imapfile, id_poros(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
                      ierr = nf90_put_att(imapfile, id_poros(iid), 'long_name', 'porosity of a layer of the bed in flow cell center')
@@ -9498,10 +9661,12 @@ contains
             ierr = nf90_inq_varid(imapfile, 'nBedLayers', id_nlyrdim(iid))
 
             if (stmpar%lsedsus > 0) then
-               ierr = nf90_inq_varid(imapfile, 'ws', id_ws(iid))
+               if (stmpar%morpar%moroutput%ws) then
+                  ierr = nf90_inq_varid(imapfile, 'ws', id_ws(iid))
+               end if
                !
                ! equilibrium concentration, 2D only
-               if (kmx == 0) then
+               if (kmx == 0 .and. stmpar%morpar%moroutput%rsedeq) then
                   ierr = nf90_inq_varid(imapfile, 'rsedeq', id_rsedeq(iid))
                end if
 
@@ -9517,6 +9682,9 @@ contains
 
                if (stmpar%morpar%moroutput%aks) then
                   ierr = nf90_inq_varid(imapfile, 'aks', id_aks(iid))
+               end if
+               
+               if (stmpar%morpar%moroutput%rca) then
                   ierr = nf90_inq_varid(imapfile, 'rca', id_rca(iid))
                end if
                !
@@ -9582,13 +9750,24 @@ contains
 
             select case (stmpar%morlyr%settings%iunderlyr)
             case (1)
-               ierr = nf90_inq_varid(imapfile, 'bodsed', id_bodsed(iid))
-               ierr = nf90_inq_varid(imapfile, 'dpsed', id_dpsed(iid))
+               if (stmpar%morpar%moroutput%bodsed) then
+                  ierr = nf90_inq_varid(imapfile, 'bodsed', id_bodsed(iid))
+               end if
+               if (stmpar%morpar%moroutput%dpsed) then
+                  ierr = nf90_inq_varid(imapfile, 'dpsed', id_dpsed(iid))
+               end if
             case (2)
-               ierr = nf90_inq_varid(imapfile, 'msed', id_msed(iid))
-               ierr = nf90_inq_varid(imapfile, 'lyrfrac', id_lyrfrac(iid))
+               if (stmpar%morpar%moroutput%msed) then
+                  ierr = nf90_inq_varid(imapfile, 'msed', id_msed(iid))
+               end if
+               
+               if (stmpar%morpar%moroutput%lyrfrac) then
+                  ierr = nf90_inq_varid(imapfile, 'lyrfrac', id_lyrfrac(iid))
+               end if
+               
                ierr = nf90_inq_varid(imapfile, 'thlyr', id_thlyr(iid))
-               if (stmpar%morlyr%settings%iporosity > 0) then
+               
+               if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
                   ierr = nf90_inq_varid(imapfile, 'poros', id_poros(iid))
                end if
             end select
@@ -10258,17 +10437,19 @@ contains
 
          if (jased > 0 .and. stm_included) then
             if (stmpar%lsedsus > 0) then
-               if (kmx > 0) then
-                  do kk = 1, ndxndxi
-                     call getkbotktop(kk, kb, kt)
-                     ierr = nf90_put_var(imapfile, id_ws(iid), mtd%ws(kb:kt, :), [1, kk, 1, itim], [kt - kb + 1, 1, stmpar%lsedsus, 1])
-                  end do
-               else
-                  ierr = nf90_put_var(imapfile, id_ws(iid), mtd%ws, [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
+               if (stmpar%morpar%moroutput%ws) then
+                  if (kmx > 0) then
+                     do kk = 1, ndxndxi
+                        call getkbotktop(kk, kb, kt)
+                        ierr = nf90_put_var(imapfile, id_ws(iid), mtd%ws(kb:kt, :), [1, kk, 1, itim], [kt - kb + 1, 1, stmpar%lsedsus, 1])
+                     end do
+                  else
+                     ierr = nf90_put_var(imapfile, id_ws(iid), mtd%ws, [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
+                  end if
                end if
                !
                ! equilibrium concentration, 2D only
-               if (kmx == 0) then
+               if (kmx == 0 .and. stmpar%morpar%moroutput%rsedeq) then
                   ierr = nf90_put_var(imapfile, id_rsedeq(iid), sedtra%rsedeq(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
                end if
 
@@ -10284,6 +10465,9 @@ contains
 
                if (stmpar%morpar%moroutput%aks) then
                   ierr = nf90_put_var(imapfile, id_aks(iid), sedtra%aks(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
+               end if
+               
+               if (stmpar%morpar%moroutput%rca) then
                   ierr = nf90_put_var(imapfile, id_rca(iid), sedtra%rca(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
                end if
                !
@@ -10495,8 +10679,12 @@ contains
 
             select case (stmpar%morlyr%settings%iunderlyr)
             case (1)
-               ierr = nf90_put_var(imapfile, id_bodsed(iid), stmpar%morlyr%state%bodsed(:, 1:ndxndxi), [1, 1, itim], [stmpar%lsedtot, ndxndxi, 1])
-               ierr = nf90_put_var(imapfile, id_dpsed(iid), stmpar%morlyr%state%dpsed(1:ndxndxi), [1, itim], [ndxndxi, 1])
+               if (stmpar%morpar%moroutput%bodsed) then
+                  ierr = nf90_put_var(imapfile, id_bodsed(iid), stmpar%morlyr%state%bodsed(:, 1:ndxndxi), [1, 1, itim], [stmpar%lsedtot, ndxndxi, 1])
+               end if
+               if (stmpar%morpar%moroutput%dpsed) then
+                  ierr = nf90_put_var(imapfile, id_dpsed(iid), stmpar%morlyr%state%dpsed(1:ndxndxi), [1, itim], [ndxndxi, 1])
+               end if
             case (2)
                !
                ! Calculate values for lyrfrac and porosity
@@ -10529,11 +10717,15 @@ contains
                !
                ! Avoid stack overflow issues with large models
                do l = 1, stmpar%lsedtot
-                  ierr = nf90_put_var(imapfile, id_msed(iid), stmpar%morlyr%state%msed(l, :, 1:ndxndxi), [l, 1, 1, itim], [1, stmpar%morlyr%settings%nlyr, ndxndxi, 1])
-                  ierr = nf90_put_var(imapfile, id_lyrfrac(iid), frac(l, :, 1:ndxndxi), [l, 1, 1, itim], [1, stmpar%morlyr%settings%nlyr, ndxndxi, 1])
+                  if (stmpar%morpar%moroutput%msed) then
+                     ierr = nf90_put_var(imapfile, id_msed(iid), stmpar%morlyr%state%msed(l, :, 1:ndxndxi), [l, 1, 1, itim], [1, stmpar%morlyr%settings%nlyr, ndxndxi, 1])
+                  end if
+                  if (stmpar%morpar%moroutput%lyrfrac) then
+                     ierr = nf90_put_var(imapfile, id_lyrfrac(iid), frac(l, :, 1:ndxndxi), [l, 1, 1, itim], [1, stmpar%morlyr%settings%nlyr, ndxndxi, 1])
+                  end if
                end do
                ierr = nf90_put_var(imapfile, id_thlyr(iid), stmpar%morlyr%state%thlyr(:, 1:ndxndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxndxi, 1])
-               if (stmpar%morlyr%settings%iporosity > 0) then
+               if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
                   ierr = nf90_put_var(imapfile, id_poros(iid), poros(:, 1:ndxndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxndxi, 1])
                end if
             end select
@@ -13883,7 +14075,7 @@ contains
                      end if
                   end do
                   call check_error(ierr, 'msed')
-               else
+               else !!ZT: why is the else condition here?
                   !
                   ierr = nf90_inq_varid(imapfile, 'lyrfrac', id_lyrfrac)
                   if (ierr == nf90_noerr) then

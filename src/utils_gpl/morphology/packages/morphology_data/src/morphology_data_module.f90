@@ -290,6 +290,14 @@ type moroutputtype
     logical :: blave
     logical :: bamor
     logical :: wumor
+    !
+    logical :: subsupl
+    logical :: bodsed
+    logical :: dpsed
+    logical :: thlyr
+    logical :: preload
+    logical :: sedconc
+    logical :: morfacft
 end type moroutputtype
 
 !
@@ -1718,7 +1726,7 @@ subroutine initmoroutput(moroutput, def)
     moroutput%avgintv      = -999d0
     moroutput%morstats     = .false.
     !
-    moroutput%aks           = no
+    moroutput%aks           = no !!should be true in default?
     moroutput%cumavg        = no
     moroutput%dg            = no
     moroutput%dgsd          = no
@@ -1761,6 +1769,15 @@ subroutine initmoroutput(moroutput, def)
     moroutput%blave         = no
     moroutput%bamor         = no
     moroutput%wumor         = no
+    !
+    moroutput%subsupl       = no  !subsidence and uplift
+    moroutput%bodsed        = yes !same as msed? sediment mass
+    moroutput%dpsed         = yes !same as lyrfrac? volume fraction
+    moroutput%thlyr         = no  !thickness of layer
+    moroutput%preload       = no  !historical largest load/preload
+    moroutput%sedconc       = yes !sediment concentration
+    moroutput%morfacft      = yes!morfac and morft
+    
 end subroutine initmoroutput
 
 
