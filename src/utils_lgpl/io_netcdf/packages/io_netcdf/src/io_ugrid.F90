@@ -46,6 +46,7 @@ module io_ugrid
    use m_ug_mesh
    use m_ug_network
    use m_ug_contacts
+   use netcdf_utils, only: ncu_ensure_data_mode, ncu_ensure_define_mode, ncu_restore_mode
    use precision, only: dp
 
    implicit none
@@ -254,14 +255,13 @@ contains
       character(len=8) :: cdate
       character(len=10) :: ctime
       character(len=5) :: czone
-      integer :: wasInDefine
+      logical :: wasInDefine
 
       ierr = UG_NOERR
       wasInDefine = 0
 
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) wasInDefine = 1 ! Was still in define mode.
-      if (ierr /= nf90_noerr .and. ierr /= nf90_eindefine) then
+      ierr = ncu_ensure_define_mode(ncid, wasInDefine)
+      if (ierr /= nf90_noerr) then
          ug_messagestr = 'Could not put global attributes in NetCDF'
          return
       end if
@@ -278,9 +278,8 @@ contains
       ierr = nf90_put_att(ncid, nf90_global, 'Conventions', trim(UG_CONV_CF)//' '//trim(UG_CONV_UGRID)//' '//trim(UG_CONV_DELTARES))
 
       ! Leave the dataset in the same mode as we got it.
-      if (wasInDefine == 0) then
-         ierr = nf90_enddef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, wasInDefine)
+      
    end function ug_addglobalatts
 
 ! -- COORDINATES ------------
@@ -691,6 +690,7 @@ contains
    function ug_def_var(ncid, id_var, id_dims, itype, iloctype, mesh_name, var_name, standard_name, long_name, &
                        units, cell_method, cell_measures, crs, ifill, dfill, writeopts, do_deflate) result(ierr)
       use precision, only: sp
+      use netcdf_utils, only: ncu_ensure_define_mode, ncu_restore_mode
 
       integer, intent(in) :: ncid          !< NetCDF dataset id
       integer, intent(out) :: id_var        !< Created NetCDF variable id.
@@ -712,21 +712,16 @@ contains
       integer :: ierr          !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       character(len=len_trim(mesh_name)) :: prefix
-      integer :: wasInDefine
+      logical :: wasInDefine
       logical :: add_latlon
 
       logical :: do_deflate_
 
       ierr = UG_SOMEERR
 
-      wasInDefine = 0
+      ierr = ncu_ensure_define_mode(ncid, wasInDefine)
 
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) then
-         wasInDefine = 1 ! Was still in define mode.
-      end if
-
-      if (ierr /= nf90_noerr .and. ierr /= nf90_eindefine) then
+      if (ierr /= nf90_noerr) then
          goto 888
       end if
 
@@ -836,10 +831,7 @@ contains
          ierr = nf90_put_att(ncid, id_var, '_FillValue', real(dfill, sp))
       end if
 
-      ! Leave the dataset in the same mode as we got it.
-      if (wasInDefine == 0) then
-         ierr = nf90_enddef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, wasInDefine)
 
       ! Check for any remaining native NetCDF errors
       if (ierr /= nf90_noerr) then
@@ -954,7 +946,7 @@ contains
       real(kind=dp), allocatable :: edgelonbnd(:, :), edgelatbnd(:, :), facelonbnd(:, :), facelatbnd(:, :)
       integer :: maxnv, k, n
       character(len=len_trim(meshName)) :: prefix
-      integer :: wasInDefine
+      logical :: wasInDefine
       logical :: add_edge_face_connectivity !< Specifies whether edge_face_connectivity should be added.
       logical :: add_face_edge_connectivity !< Specifies whether face_edge_connectivity should be added.
       logical :: add_face_face_connectivity !< Specifies whether face_face_connectivity should be added.
@@ -987,8 +979,7 @@ contains
       ierr = UG_SOMEERR
       wasInDefine = 0
 
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) wasInDefine = 1 ! Was still in define mode.
+      ierr = ncu_ensure_define_mode(ncid, wasInDefine)
 
       prefix = trim(meshName)
 
@@ -1135,11 +1126,11 @@ contains
 #endif
       end if
 
-      !ierr = nf90_def_var(inetfile, 'NetLinkType', nf90_int, id_netlinkdim, id_netlinktype)
-      !ierr = nf90_put_att(inetfile, id_netlinktype, 'long_name',    'type of netlink')
-      !ierr = nf90_put_att(inetfile, id_netlinktype, 'valid_range',   (/ 0, 4 /))
-      !ierr = nf90_put_att(inetfile, id_netlinktype, 'flag_values',   (/ 0, 1, 2, 3, 4 /))
-      !ierr = nf90_put_att(inetfile, id_netlinktype, 'flag_meanings', 'closed_link_between_2D_nodes link_between_1D_nodes link_between_2D_nodes embedded_1D2D_link 1D2D_link')
+      !ierr = nf90_def_var(ncid, 'NetLinkType', nf90_int, id_netlinkdim, id_netlinktype)
+      !ierr = nf90_put_att(ncid, id_netlinktype, 'long_name',    'type of netlink')
+      !ierr = nf90_put_att(ncid, id_netlinktype, 'valid_range',   (/ 0, 4 /))
+      !ierr = nf90_put_att(ncid, id_netlinktype, 'flag_values',   (/ 0, 1, 2, 3, 4 /))
+      !ierr = nf90_put_att(ncid, id_netlinktype, 'flag_meanings', 'closed_link_between_2D_nodes link_between_1D_nodes link_between_2D_nodes embedded_1D2D_link 1D2D_link')
 
       ! Edges
       if (dim == 1 .or. ug_checklocation(dataLocs, UG_LOC_EDGE)) then
@@ -1483,9 +1474,7 @@ contains
       end if
 
       ! Leave the dataset in the same mode as we got it.
-      if (wasInDefine == 1) then
-         ierr = nf90_redef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, wasInDefine)
 
       ierr = UG_NOERR
       return ! Return with success
@@ -3335,17 +3324,14 @@ contains
       integer, intent(in) :: edge_type(:) !< Edge type variable to be written to the NetCDF file.
 
       integer :: id_edgetype !< Variable ID for edge type variable.
-      integer :: was_in_define_mode
+      logical :: was_in_define_mode
       integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
 
       ierr = UG_NOERR
 
       ! Put netcdf file in define mode.
       was_in_define_mode = 0
-      ierr = nf90_redef(igeomfile)
-      if (ierr == nf90_eindefine) then
-         was_in_define_mode = 1 ! If was still in define mode.
-      end if
+      ierr = ncu_ensure_define_mode(igeomfile, was_in_define_mode)
       ierr = UG_NOERR
 
       ! Define edge type variable.
@@ -3361,9 +3347,7 @@ contains
       ierr = nf90_put_var(igeomfile, id_edgetype, edge_type)
 
       ! Leave the dataset in the same mode as we got it.
-      if (was_in_define_mode == 1) then
-         ierr = nf90_redef(igeomfile)
-      end if
+      ierr = ncu_restore_mode(igeomfile, was_in_define_mode)
 
    end subroutine write_edge_type_variable
 
@@ -3696,7 +3680,7 @@ contains
       integer :: ierr
 
       !locals
-      integer :: wasInDefine
+      logical :: wasInDefine
       character(len=len_trim(networkName)) :: prefix
       character(len=256) :: buffer
 
@@ -3704,10 +3688,7 @@ contains
 
       ierr = UG_SOMEERR
       wasInDefine = 0
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) then
-         wasInDefine = 1 ! Was still in define mode.
-      end if
+      ierr = ncu_ensure_define_mode(ncid, wasInDefine)
 
       !Dimensions
       ierr = nf90_def_dim(ncid, prefix//'_nEdges', nBranches, netids%dimids(ntdim_1dedges))
@@ -3806,9 +3787,7 @@ contains
       ierr = nf90_put_att(ncid, netids%varids(ntid_1dbranchtype), 'mesh', prefix)
       ierr = nf90_put_att(ncid, netids%varids(ntid_1dbranchtype), 'location', 'edge')
 
-      if (wasInDefine == 0) then
-         ierr = nf90_enddef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, wasInDefine)
 
    end function ug_create_1d_network_v1
 
@@ -3860,7 +3839,7 @@ contains
       integer :: ierr
 
       !locals
-      integer :: wasInDefine
+      logical :: wasInDefine
       character(len=len_trim(meshname)) :: prefix
       character(len=nf90_max_name) :: buffer
 
@@ -3868,10 +3847,7 @@ contains
 
       ierr = UG_SOMEERR
       wasInDefine = 0
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) then
-         wasInDefine = 1 ! Was still in define mode.
-      end if
+      ierr = ncu_ensure_define_mode(ncid, wasInDefine)
 
       !define dim
       ! This dimension might already be defined, check first if it is present
@@ -3959,9 +3935,7 @@ contains
          end if
       end if
 
-      if (wasInDefine == 0) then
-         ierr = nf90_enddef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, wasInDefine)
 
    end function ug_create_1d_mesh_v2
 
@@ -3972,17 +3946,15 @@ contains
       type(t_ug_mesh), intent(inout) :: meshids
       character(len=*), intent(in) :: meshname
       character(len=len_trim(meshname)) :: prefix
-      integer :: ierr, wasInDefine
-
+      integer :: ierr
+      logical :: wasInDefine
+      
       prefix = trim(meshname)
 
       ierr = UG_SOMEERR
 
       wasInDefine = 0
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) then
-         wasInDefine = 1 ! Was still in define mode.
-      end if
+      ierr = ncu_ensure_define_mode(ncid, wasInDefine)
 
       ierr = nf90_inq_dimid(ncid, 'strLengthIds', meshids%dimids(mdim_idstring))
       if (ierr /= UG_NOERR) then
@@ -4022,9 +3994,7 @@ contains
          ierr = nf90_put_att(ncid, meshids%varids(mid_face_longnames), 'long_name', 'Long name of mesh faces')
       end if
 
-      if (wasInDefine == 0) then
-         ierr = nf90_enddef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, wasInDefine)
 
    end function ug_def_mesh_ids
 
@@ -4037,15 +4007,13 @@ contains
       character(len=len_trim(linkmeshname)) :: prefix
       type(t_ug_contacts), intent(inout) :: contactids
       character(len=nf90_max_name) :: locationType1, locationType2, mesh1, mesh2
-      integer :: ierr, wasInDefine
+      integer :: ierr
+      logical :: wasInDefine
       integer, optional :: start_index
 
       ierr = UG_SOMEERR
       wasInDefine = 0
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) then
-         wasInDefine = 1 ! Was still in define mode.
-      end if
+      ierr = ncu_ensure_define_mode(ncid, wasInDefine)
 
       prefix = trim(linkmeshname)
       !define dim
@@ -4111,9 +4079,7 @@ contains
       ierr = nf90_put_att(ncid, contactids%varids(cid_compositemesh), 'meshes', trim(mesh1)//' '//trim(mesh2))
       ierr = nf90_put_att(ncid, contactids%varids(cid_compositemesh), 'mesh_contact', prefix)
 
-      if (wasInDefine == 0) then
-         ierr = nf90_enddef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, wasInDefine)
 
    end function ug_def_mesh_contact
 !> Writes edge nodes
@@ -4127,13 +4093,12 @@ contains
       integer :: ierr                     !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       character(len=len_trim(meshName)) :: prefix
-      integer :: wasInDefine
+      logical :: wasInDefine
 
       ierr = UG_SOMEERR
       wasInDefine = 0
 
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) wasInDefine = 1 ! Was still in define mod
+      ierr = ncu_ensure_define_mode(ncid, wasInDefine)
 
       prefix = trim(meshName)
 
@@ -4166,9 +4131,7 @@ contains
       end if
 
       ! Leave the dataset in the same mode as we got it.
-      if (wasInDefine == 1) then
-         ierr = nf90_redef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, wasInDefine)
 
       ierr = UG_NOERR
       return ! Return with success
@@ -5095,12 +5058,11 @@ contains
       character(len=nf90_max_name) :: name
       integer, dimension(nf90_max_dims) :: dimmap, outdimids
 
-      logical :: wasInDefineMode
+      logical :: wasInDefine
 
       ierr = UG_SOMEERR
 
-      ierr = nf90_redef(ncidout) !open NetCDF in define mode
-      wasInDefineMode = (ierr == nf90_eindefine) ! Was already in define mode.
+      ierr = ncu_ensure_define_mode(ncidin, wasInDefine)
 
       !copy dimensions
       do i = ntdim_start + 1, ntdim_end - 1
@@ -5160,9 +5122,7 @@ contains
       end do
 
       ! Leave the dataset in the same mode as we got it.
-      if (.not. wasInDefineMode) then
-         ierr = nf90_enddef(ncidout)
-      end if
+      ierr = ncu_restore_mode(ncidin, wasInDefine)
 
    end function ug_clone_network_definition
 
@@ -5179,12 +5139,12 @@ contains
       integer, dimension(nf90_max_var_dims) :: dimids, dimsizes
       character(len=nf90_max_name) :: name
 
-      logical :: wasInDefineMode
+      logical :: wasInDefine
 
       ierr = UG_SOMEERR
 
       ierr = nf90_enddef(ncidout) ! end definition phase
-      wasInDefineMode = (ierr /= nf90_enotindefine) ! Was in define mode.
+      wasInDefine = (ierr /= nf90_enotindefine) ! Was in define mode.
 
       do i = ntid_start + 1, ntid_end - 1
          if (netidsin%varids(i) /= -1) then
@@ -5222,9 +5182,7 @@ contains
       end do
 
       ! Leave the dataset in the same mode as we got it.
-      if (wasInDefineMode) then
-         ierr = nf90_redef(ncidout)
-      end if
+      ierr = ncu_restore_mode(ncidin, wasInDefine)
 
    end function ug_clone_network_data
 
@@ -5250,12 +5208,11 @@ contains
       character(len=nf90_max_name) :: varname, dimname
       integer, dimension(nf90_max_dims) :: outdimids
 
-      logical :: wasInDefineMode
+      logical :: wasInDefine
 
       ierr = UG_SOMEERR
 
-      ierr = nf90_redef(ncidout) !open NetCDF in define mode
-      wasInDefineMode = (ierr == nf90_eindefine) ! Was already in define mode.
+      ierr = ncu_ensure_define_mode(ncidin, wasInDefine)
 
       !copy dimensions
       do i = cdim_start + 1, cdim_end - 1
@@ -5320,9 +5277,7 @@ contains
       end do
 
       ! Leave the dataset in the same mode as we got it.
-      if (.not. wasInDefineMode) then
-         ierr = nf90_enddef(ncidout)
-      end if
+      ierr = ncu_restore_mode(ncidin, wasInDefine)
 
    end function ug_clone_contact_definition
 

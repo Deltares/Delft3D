@@ -196,9 +196,33 @@ pure function ncu_format_to_cmode(iformatnumber) result(cmode)
 end function ncu_format_to_cmode
 
 
+!> Check whether an open NetCDF dataset is using classic (NetCDF3) format.
+!!
+!! Returns .false. if the dataset is not open.
+!! Returns .false. if the dataset is using NetCDF4 in classic format.
+function ncu_has_format_classic(ncid) result(res)
+   integer, intent(in) :: ncid !< ID of the NetCDF dataset
+   logical             :: res  !< Whether the dataset uses nf90_format_classic. If the dataset is not open or could not be inquired for another reason, .false. is returned.
+
+   integer :: ierr
+   integer :: used_format
+
+   ierr = nf90_inquire(ncid, formatNum = used_format)
+
+   res = ierr == nf90_noerr .AND. used_format == nf90_format_classic
+
+end function ncu_has_format_classic
+
+
 !> Puts a NetCDF dataset into define mode, if it isn't so already.
-!! Returns the original mode, such that the caller can later put back this
-!! dataset into its original mode.
+!! Stores the original mode, such that the caller can later put back this
+!! dataset into its original mode (using ncu_restore_mode()).
+!!
+!! Takes care of NetCDF4/non-classic datasets, which do not need explicit
+!! data/define mode.
+!!
+!! If define mode has failed, an error is returned, but the nf90_eindefine
+!! is intentionally not being returned.
 !!
 !! @see ncu_restore_mode
 function ncu_ensure_define_mode(ncid, originally_in_define) result(ierr)
@@ -209,22 +233,33 @@ function ncu_ensure_define_mode(ncid, originally_in_define) result(ierr)
    integer :: ierrloc
 
    ierr = nf90_noerr
-
-   ! Put dataset in define mode (possibly again)
-   originally_in_define = .false.
-
+   
    ierrloc = nf90_redef(ncid)
-   if (ierrloc == nf90_eindefine) then
-      originally_in_define = .true.
+   if (.not. ncu_has_format_classic(ncid)) then
+      ! NetCDF4/non-classic dataset, no need to put in define mode explicitly.
+      originally_in_define = .true. ! Dummy value, NetCDF4 driver takes care of this, no need to restore.
+      return
    else
-      ierr = ierrloc ! Some other error occurred
+      ! Put dataset in define mode (possibly again)
+      originally_in_define = .false.
+      if (ierrloc == nf90_eindefine) then
+         originally_in_define = .true.
+      else 
+         ierr = ierrloc ! Some other error occurred
+      end if
    end if
 end function ncu_ensure_define_mode
 
 
 !> Puts a NetCDF dataset into data mode, if it isn't so already.
 !! Returns the original mode, such that the caller can later put back this
-!! dataset into its original mode.
+!! dataset into its original mode (using ncu_restore_mode()).
+!!
+!! Takes care of NetCDF4/non-classic datasets, which do not need explicit
+!! data/define mode.
+!!
+!! If data mode has failed, an error is returned, but the nf90_enotindefine
+!! is intentionally not being returned.
 !!
 !! @see ncu_restore_mode
 function ncu_ensure_data_mode(ncid, originally_in_define) result(ierr)
@@ -235,15 +270,21 @@ function ncu_ensure_data_mode(ncid, originally_in_define) result(ierr)
    integer :: ierrloc
 
    ierr = nf90_noerr
-
-   ! Put dataset in data mode (possibly again)
-   originally_in_define = .true.
-
    ierrloc = nf90_enddef(ncid)
-   if (ierrloc == nf90_enotindefine) then
-      originally_in_define = .false.
+   
+   if (.not. ncu_has_format_classic(ncid)) then
+      ! NetCDF4/non-classic dataset, no need to put in data mode explicitly.
+      originally_in_define = .false. ! Dummy value, NetCDF4 driver takes care of this, no need to restore.
+      return
    else
-      ierr = ierrloc ! Some other error occurred
+      ! Put dataset in data mode (possibly again)
+      originally_in_define = .true.
+
+      if (ierrloc == nf90_enotindefine) then
+         originally_in_define = .false.
+      else
+         ierr = ierrloc ! Some other error occurred
+      end if
    end if
 end function ncu_ensure_data_mode
 
@@ -261,21 +302,25 @@ function ncu_restore_mode(ncid, originally_in_define) result(ierr)
 
    ierr = nf90_noerr
 
-   ! Leave the dataset in the same mode as we got it.
-   if (originally_in_define) then
-      ! Attempt define mode
-      ierrloc = nf90_redef(ncid)
-      if (ierrloc /= nf90_eindefine) then
-         ierr = ierrloc ! Some error occurred
-      end if
+   if (.not. ncu_has_format_classic(ncid)) then
+      ! NetCDF4 dataset, no need to restore define or data mode.
+      return
    else
-      ! Attempt data mode
-      ierrloc = nf90_enddef(ncid)
-      if (ierrloc /= nf90_enotindefine) then
-         ierr = ierrloc ! Some error occurred
+      ! Leave the dataset in the same mode as we got it.
+      if (originally_in_define) then
+         ! Attempt define mode
+         ierrloc = nf90_redef(ncid)
+         if (ierrloc /= nf90_eindefine) then
+            ierr = ierrloc ! Some error occurred
+         end if
+      else
+         ! Attempt data mode
+         ierrloc = nf90_enddef(ncid)
+         if (ierrloc /= nf90_enotindefine) then
+            ierr = ierrloc ! Some error occurred
+         end if
       end if
    end if
-
 end function ncu_restore_mode
 
 
