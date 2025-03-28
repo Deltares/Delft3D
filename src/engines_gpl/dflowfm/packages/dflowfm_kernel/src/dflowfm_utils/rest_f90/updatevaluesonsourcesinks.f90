@@ -57,7 +57,7 @@ contains
 
       if (timprev < 0d0) then
          ! This realloc should not be needed
-         call reallocsrc(numsrc)
+         call reallocsrc(numsrc, 0)
       else
          timstep = tim1 - timprev
          ! cumulative volume from Tstart

@@ -78,9 +78,12 @@ contains
       use m_flow_trachy_needs_update
       use m_set_frcu_mor
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
+      use m_transportdata, only: numconst
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
+      
+      integer :: i_const
 
       call timstrt('External forcings', handle_ext)
 
@@ -170,6 +173,12 @@ contains
          ! qstss must be an argument when calling ec_gettimespacevalue.
          ! It might be reallocated after initialization (when coupled to Cosumo).
          success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, qstss)
+
+         !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds, qstss)
+         call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_discharge, time_in_seconds)
+         do i_const = 1,numconst
+            call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_constituent_delta(i_const), time_in_seconds)
+         end do
       end if
 
       if (jasubsupl > 0) then

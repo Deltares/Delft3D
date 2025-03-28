@@ -36,7 +36,7 @@ module fm_external_forcings
    use m_setwindstress, only: setwindstress
    use m_setsigmabnds, only: setsigmabnds
    use precision_basics, only: hp, dp
-   use fm_external_forcings_utils, only: get_tracername, get_sedfracname
+   use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
    use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
    implicit none
 
@@ -1257,6 +1257,7 @@ contains
    function adduniformtimerelation_objects(qid, location_file, objtype, objid, paramname, paramvalue, targetindex, vectormax, targetarray) result(success)
       !use fm_external_forcings_data, no1=>qid, no2=>filetype, no3=>operand, no4 => success
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
+      use m_transportdata, only: NAMLEN
       use string_module, only: strcmpi
       use timespace_parameters, only: uniform, bcascii, spaceandtime
 
@@ -1273,7 +1274,8 @@ contains
       logical :: success !< Return value. Whether relation was added successfully.
       real(kind=dp), intent(inout), target :: targetarray(:) !< The target array in which the value(s) will be stored. Either now with scalar, or later via ec_gettimespacevalue() calls.
 
-      character(len=256) :: valuestring, fnam
+      character(len=256) :: valuestring, fnam, qid_base
+      character(len=NAMLEN) :: const_name
       real(kind=dp) :: valuedble
       real(kind=dp) :: xdum(1), ydum(1)
       integer :: kdum(1)
@@ -1322,7 +1324,9 @@ contains
             write (msgbuf, '(a,a,a,a,a)') 'Control for ', trim(objtype), ''''//trim(objid)//''', ', paramname, ' set to REALTIME.'
             call dbg_flush()
          else
-            if (fm_ext_force_name_to_ec_item('', '', '', qid, multuniptr, intptr, intptr, intptr, dbleptr, dbleptr, dbleptr, dbleptr)) then
+            qid_base = qid
+            call get_constituent_name(qid, const_name, qid_base)
+            if (fm_ext_force_name_to_ec_item('', '', '', const_name, qid_base, multuniptr, intptr, intptr, intptr, dbleptr, dbleptr, dbleptr, dbleptr)) then
                success = .true.
             else
                success = .false.
