@@ -61,7 +61,7 @@ class ExcelHelper(object):
         row.append("OSS")                                           # Column F (FlowFM)
         row.append(self.__kernel_versions["OSS_ver"])               # Column G (OSS)
         row.append("DRR now in GitLab")                             # Column H (RR)
-        row.append(self.__kernel_versions["RTCTools_ver"])          # Column I (FBC)
+        row.append("FBC now in GitLab")                             # Column I (FBC)
         row.append(self.__parser.get_percentage_total_passing())    # Column J (Percentage passing)
         row.append(self.__parser.get_total_tests())                 # Column K (Total Number of          cases)
         row.append(self.__parser.get_total_passing())               # Column L (      Number of green    cases)
