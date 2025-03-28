@@ -82,6 +82,7 @@ object LinuxRuntimeContainers : BuildType({
                     --no-cache
                     --build-arg GIT_COMMIT=%build.vcs.number%
                     --build-arg GIT_BRANCH=%teamcity.build.branch%
+                    --build-arg BUILDTOOLS_IMAGE_TAG=%dep.${LinuxBuildTools.id}.env.IMAGE_TAG%
                 """.trimIndent()
             }
         }
@@ -97,7 +98,6 @@ object LinuxRuntimeContainers : BuildType({
                 commandArgs = """
                     --build-arg GIT_COMMIT=%build.vcs.number%
                     --build-arg GIT_BRANCH=%teamcity.build.branch%
-                    --build-arg BUILDTOOLS_IMAGE_TAG=%dep.${LinuxBuildTools.id}.env.IMAGE_TAG%
                 """.trimIndent()
             }
         }
