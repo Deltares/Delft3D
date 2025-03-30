@@ -94,6 +94,7 @@ contains
 
       integer, parameter :: KEEP_PLI_NAMES = 1
       integer :: number_of_plis
+      logical :: include_fixed_weir_below_bob ! Tabellenboek or Villemonte weirs add weirs with a minimal height of 0.1 m even if they lie below the bob levels
 
       if (len_trim(md_fixedweirfile) == 0) then
          ifixedweirscheme = 0
@@ -104,6 +105,8 @@ contains
       if (ifixedweirscheme == 8) jatabellenboekorvillemonte = 1
       if (ifixedweirscheme == 9) jatabellenboekorvillemonte = 2
 
+      include_fixed_weir_below_bob = (ifixedweirscheme == 8 .or. ifixedweirscheme == 9)
+      
       call readyy('Setfixedweirs', 0d0)
 
       allocate (ihu(lnx)); ihu = 0
@@ -173,10 +176,10 @@ contains
       kint = max(lnxi / 1000, 1)
 
       call wall_clock_time(t_extra(1, 3))
-      allocate (iLink(Lnx))
-      allocate (iLcr(Lnx)); Ilcr = 0
-      allocate (ipol(Lnx))
-      allocate (dSL(Lnx))
+      allocate (iLink(NPL))
+      allocate (iLcr(NPL)); Ilcr = 0
+      allocate (ipol(NPL))
+      allocate (dSL(NPL))
       if (cache_retrieved()) then
          ierror = 0
          call copy_cached_fixed_weirs(npl, xpl, ypl, numcrossedLinks, iLink, iPol, dSL, success)
@@ -184,7 +187,7 @@ contains
          success = .false.
       end if
       if (.not. success) then
-         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, 2, Lnx, 2, numcrossedLinks, iLink, iPol, dSL, ierror)
+         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, 2, NPL, 2, numcrossedLinks, iLink, iPol, dSL, ierror)
          call cache_fixed_weirs(npl, xpl, ypl, numcrossedLinks, iLink, iPol, dSL)
       end if
       call wall_clock_time(t_extra(2, 3))
@@ -279,7 +282,7 @@ contains
 
          ! if ( (zc > bobL .and. zc > zcrest(L)) .or. ( (ifixedweirscheme == 8 .or. ifixedweirscheme == 9) .and. ifirstweir(L) == 1) ) then   ! For Villemonte and Tabellenboek fixed weirs under bed level are also possible
 
-         if ((zc > bobL .and. zc > zcrest(L)) .or. ifirstweir(L) == 1) then ! For Villemonte and Tabellenboek fixed weirs under bed level are also possible
+         if (((zc > bobL .or. include_fixed_weir_below_bob) .and. zc > zcrest(L)) .or. ifirstweir(L) == 1) then ! For Villemonte and Tabellenboek fixed weirs under bed level are also possible
 
             ! Set whether this is the first time that for this link weir values are set:
             ! As a result, only the first fixed weir under the bed level is used
