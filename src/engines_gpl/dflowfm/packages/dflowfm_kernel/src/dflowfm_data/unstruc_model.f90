@@ -1633,7 +1633,7 @@ contains
       call prop_get(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
       call prop_get(md_ptr, 'waves', 'fbreak', fbreak) ! factor for adjusting wave breaking contribution to tke
       if (ftauw < 0.0_dp) then
-         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: ftauw<0.0_dp, reset to 0.0. Bed shear stress due to waves switched off.')
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: ftauw<0.0, reset to 0.0. Bed shear stress due to waves switched off.')
          ftauw = 0.0_dp
       end if
       if (fwfac < 0.0_dp) then
@@ -2767,8 +2767,8 @@ contains
       call prop_set(prop_ptr, 'geometry', '', '', '6: at nodes, face levels max. of cell-center values')
 
       if (writeall .or. (blmeanbelow /= -999.0_dp)) then
-         call prop_set(prop_ptr, 'geometry', 'Blmeanbelow', blmeanbelow, 'If not -999.0_dp, below this level the cell center bed level is the mean of surrouding net nodes')
-         call prop_set(prop_ptr, 'geometry', 'Blminabove', blminabove, 'If not -999.0_dp, above this level the cell center bed level is the min. of surrouding net nodes')
+         call prop_set(prop_ptr, 'geometry', 'Blmeanbelow', blmeanbelow, 'If not -999.0, below this level the cell center bed level is the mean of surrouding net nodes')
+         call prop_set(prop_ptr, 'geometry', 'Blminabove', blminabove, 'If not -999.0, above this level the cell center bed level is the min. of surrouding net nodes')
       end if
       if (writeall .or. grounlayuni > 0.0_dp) then
          call prop_set(prop_ptr, 'geometry', 'Groundlayerthickness', grounlayuni, 'Only in pipes: groundlayer thickness (m) ')
@@ -2944,7 +2944,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Corioconstant', jacorioconstant, '0=default, 1=Coriolis constant in sferic models anyway,2=beta plane, both in cart. and spher. coord.')
       end if
       if (writeall .or. Corioadamsbashfordfac /= 0.5_dp) then
-         call prop_set(prop_ptr, 'numerics', 'Corioadamsbashfordfac', Corioadamsbashfordfac, '0=No, 0.5.0_dp=AdamsBashford, only for Newcorio=1)')
+         call prop_set(prop_ptr, 'numerics', 'Corioadamsbashfordfac', Corioadamsbashfordfac, '0=No, 0.5=AdamsBashford, only for Newcorio=1)')
       end if
       if (writeall .or. hhtrshcor > 0) then
          call prop_set(prop_ptr, 'numerics', 'Coriohhtrsh', hhtrshcor, '0=default=no safety in hu/hus weightings, only for Newcorio=1)')
@@ -2973,10 +2973,10 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Vertadvtypmom3onbnd', javau3onbnd, 'vert. adv. u1 bnd UpwimpL: 0=follow javau , 1 = on bnd, 2= on and near bnd')
       end if
       if (writeall .or. cffacver /= 0.0_dp) then
-         call prop_set(prop_ptr, 'numerics', 'Cffacver', Cffacver, 'Factor for including (1-CFL) in HO term vertical   (0.0_dp: no, 1.0_dp: yes)')
+         call prop_set(prop_ptr, 'numerics', 'Cffacver', Cffacver, 'Factor for including (1-CFL) in HO term vertical   (0: no, 1: yes)')
       end if
       if (writeall .or. cffachormom /= 1.0_dp) then
-         call prop_set(prop_ptr, 'numerics', 'Cffachormom', Cffachormom, 'Factor for including (1-CFL) in HO term horizontal mom (0.0_dp: no, 1.0_dp: yes)')
+         call prop_set(prop_ptr, 'numerics', 'Cffachormom', Cffachormom, 'Factor for including (1-CFL) in HO term horizontal mom (0: no, 1: yes)')
       end if
       if (writeall .or. cfexphormom /= 1.0_dp) then
          call prop_set(prop_ptr, 'numerics', 'Cfexphormom', Cfexphormom, 'exponent for including (1-CFL) in HO term horizontal mom )')
@@ -2986,7 +2986,7 @@ contains
       end if
 
       if (writeall .or. cffachu /= 1.0_dp) then
-         call prop_set(prop_ptr, 'numerics', 'Cffachu', Cffachu, 'Factor for including (1-CFL) in sethu (0.0_dp: no, 1.0_dp: yes)')
+         call prop_set(prop_ptr, 'numerics', 'Cffachu', Cffachu, 'Factor for including (1-CFL) in sethu (0: no, 1: yes)')
       end if
       if (writeall .or. cfexphu /= 1.0_dp) then
          call prop_set(prop_ptr, 'numerics', 'Cfexphu', Cfexphu, 'exp for including (1-CFL) in sethu')
@@ -3179,7 +3179,7 @@ contains
             call prop_set(prop_ptr, 'numerics', trim(iparmsnam(i)), iparms(i), '0: parms-default')
          end do
          do i = 1, NPARMS_DBL
-            call prop_set(prop_ptr, 'numerics', trim(dparmsnam(i)), dparms(i), '0.0_dp: parms-default')
+            call prop_set(prop_ptr, 'numerics', trim(dparmsnam(i)), dparms(i), '0: parms-default')
          end do
       end if
 
@@ -3383,7 +3383,7 @@ contains
 
          if (writeall .or. (tempmax /= dmiss .or. tempmin /= 0.0_dp)) then
             call prop_set(prop_ptr, 'physics', 'Tempmax', Tempmax, 'Limit the temperature')
-            call prop_set(prop_ptr, 'physics', 'Tempmin', Tempmin, 'Limit the temperature, if -999, tempmin=(-0.0575.0_dp - 2.154996d-4*sal)*sal')
+            call prop_set(prop_ptr, 'physics', 'Tempmin', Tempmin, 'Limit the temperature, if -999, tempmin=(-0.0575 - 2.154996d-4*sal)*sal')
          end if
          if (writeall .or. Jaallowcoolingbelowzero /= 0) then
             call prop_set(prop_ptr, 'physics', 'Allowcoolingbelowzero', Jaallowcoolingbelowzero, '0 = no, 1 = yes')
@@ -3414,7 +3414,7 @@ contains
       call prop_set(prop_ptr, 'physics', 'SecondaryFlow', jasecflow, 'Secondary flow (0: no, 1: yes)')
 
       if (writeall .or. (jasecflow > 0)) then
-         call prop_set(prop_ptr, 'physics', 'BetaSpiral', spirbeta, 'Weight factor of the spiral flow intensity on flow dispersion stresses (0.0_dp = disabled)')
+         call prop_set(prop_ptr, 'physics', 'BetaSpiral', spirbeta, 'Weight factor of the spiral flow intensity on flow dispersion stresses (0 = disabled)')
       end if
       if (writeall .or. jaequili > 0) then
          call prop_set(prop_ptr, 'physics', 'Equili', jaequili, 'Equilibrium spiral flow intensity (0: no, 1: yes)')
@@ -3460,11 +3460,11 @@ contains
                call prop_set(prop_ptr, 'sediment', 'UniformErodablethickness', Uniformerodablethickness, 'Uniform erodable layer thickness (m)')
                call prop_set(prop_ptr, 'sediment', 'Numintverticaleinstein', Numintverticaleinstein, 'Number of vertical intervals in Einstein integrals ( ) ')
                call prop_set(prop_ptr, 'sediment', 'Jaceneqtr', jaceneqtr, '1=equilibriumtransport at cell centre, 2= at netnode (default) ( ) ')
-               call prop_set(prop_ptr, 'sediment', 'Morfac ', Dmorfac, 'Morphological acceleration factor (), bottom updates active for morfac > 0, 1.0_dp=realtime, etc')
+               call prop_set(prop_ptr, 'sediment', 'Morfac ', Dmorfac, 'Morphological acceleration factor (), bottom updates active for morfac > 0, 1.0=realtime, etc')
                call prop_set(prop_ptr, 'sediment', 'TMorfspinup', Tmorfspinup, 'Spin up time for morphological adaptations (s)')
-               call prop_set(prop_ptr, 'sediment', 'Alfabed', alfabed, 'Calibration par bed      load, default=1.0_dp ( ) ')
-               call prop_set(prop_ptr, 'sediment', 'Alfasus', alfasus, 'Calibration par suspended load, default=1.0_dp ( ) ')
-               call prop_set(prop_ptr, 'sediment', 'Crefcav', crefcav, 'Calibration par only in jased==3, default=20.0_dp ( ) ')
+               call prop_set(prop_ptr, 'sediment', 'Alfabed', alfabed, 'Calibration par bed      load, default=1.0 ( ) ')
+               call prop_set(prop_ptr, 'sediment', 'Alfasus', alfasus, 'Calibration par suspended load, default=1.0 ( ) ')
+               call prop_set(prop_ptr, 'sediment', 'Crefcav', crefcav, 'Calibration par only in jased==3, default=20.0 ( ) ')
             end if
          end if
       end if
@@ -3505,7 +3505,7 @@ contains
          call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', Cdb(1:2), 'Wind drag coefficients (may be overridden by space-varying input)')
       end if
       if (writeall .or. relativewind > 0.0_dp) then
-         call prop_set(prop_ptr, 'wind', 'Relativewind', relativewind, 'Wind speed relative to top-layer water speed*relativewind, 0.0_dp=no relative wind, 1.0_dp=using full top layer speed)')
+         call prop_set(prop_ptr, 'wind', 'Relativewind', relativewind, 'Wind speed relative to top-layer water speed*relativewind, 0.0=no relative wind, 1.0=using full top layer speed)')
       end if
       if (writeall .or. kmx == 0 .and. jawindhuorzwsbased == 0 .or. kmx > 0 .and. jawindhuorzwsbased == 0) then
          call prop_set(prop_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased, 'Wind hu or zws based , 0 = hu, 1 = zws ')
