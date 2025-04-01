@@ -311,7 +311,6 @@ contains
             end if
 
             dzm = max(dzm, 1d-2)
-            ! toplayminthick = 0.01.0_dp  ! 0.5.0_dp*dzm
             mxlayz = mx
             kmx = mx ! repair code
             laymx(1) = mx
