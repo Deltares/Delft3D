@@ -59,12 +59,9 @@ if (UNIX)
     target_link_libraries(${fortrangis_library_name} INTERFACE PkgConfig::PROJ PkgConfig::GDAL)
 endif(UNIX)
 if (WIN32)
-    # GDAL comes pre-compiled on Windows
-    target_link_libraries(${fortrangis_library_name} INTERFACE "gdal_i.lib")
-    target_link_libraries(${fortrangis_library_name} PRIVATE PROJ::proj "sqlite3.lib" "ole32.lib" "shell32.lib")
-
-    target_include_directories(${fortrangis_library_name} INTERFACE ${gisinternals_path})
-    target_link_directories(${fortrangis_library_name} INTERFACE ${sqlite3_path}/lib ${gisinternals_path})
+   target_link_libraries(${fortrangis_library_name} PRIVATE PROJ::proj)
+   find_package(gdal REQUIRED HINTS "${src_path}/../gdal")
+   target_link_libraries(${fortrangis_library_name} PRIVATE GDAL::GDAL)
 endif(WIN32)
 
 # Propagate preprocessor variable definitions to any other package that uses fortrangis.
@@ -75,4 +72,3 @@ target_compile_definitions(${fortrangis_library_name} INTERFACE HAVE_GDAL)
 # Create the folder structure in vfproj
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${fortranc_sources})
 set_target_properties (${fortrangis_library_name} PROPERTIES FOLDER third_party_open/fortrangis)
-
