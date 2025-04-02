@@ -231,7 +231,7 @@ contains
       integer, dimension(:), intent(in) :: itpenur !< boundary condition nr in openbndsect for u
       integer, intent(inout) :: ib !< block counter for boundaries
       integer, intent(inout) :: ibqh !< block counter for qh boundaries
-      logical :: res 
+      logical :: res
 
       integer, dimension(1) :: target_index
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
@@ -242,7 +242,7 @@ contains
       integer :: method, num_items_in_block, j
 
       res = .true.
-      
+
       ! First check for required input:
       call prop_get(node_ptr, '', 'quantity', quantity, is_successful)
       if (.not. is_successful) then

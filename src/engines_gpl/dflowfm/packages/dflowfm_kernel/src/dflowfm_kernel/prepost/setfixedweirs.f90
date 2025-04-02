@@ -96,7 +96,7 @@ contains
       integer, parameter :: KEEP_PLI_NAMES = 1
       integer :: number_of_plis
       logical :: include_fixed_weir_below_bob ! Tabellenboek or Villemonte weirs add weirs with a minimal height of 0.1 m even if they lie below the bob levels
-      real(kind=dp) :: zt  ! temporary variable for swapping toe heights
+      real(kind=dp) :: zt ! temporary variable for swapping toe heights
       real(kind=dp) :: dzs ! temporary variable for swapping minimum sill heights
 
       if (len_trim(md_fixedweirfile) == 0) then
@@ -109,7 +109,7 @@ contains
       if (ifixedweirscheme == 9) jatabellenboekorvillemonte = 2
 
       include_fixed_weir_below_bob = (jatabellenboekorvillemonte > 0)
-      
+
       call readyy('Setfixedweirs', 0d0)
 
       allocate (ihu(lnx)); ihu = 0
@@ -177,7 +177,7 @@ contains
       end if
 
       kint = max(lnxi / 1000, 1)
-      num_intersections = MAX(NPL, lnx)
+      num_intersections = max(NPL, lnx)
 
       call wall_clock_time(t_extra(1, 3))
       allocate (iLink(num_intersections))
@@ -248,7 +248,7 @@ contains
 
          end do
          numcrossedlinks = n
-         call sort_crossed_links(iLink, iPol, dSL, Lnx, numcrossedLinks) 
+         call sort_crossed_links(iLink, iPol, dSL, Lnx, numcrossedLinks)
       end if
       call wall_clock_time(t_extra(2, 4))
 
@@ -451,47 +451,47 @@ contains
                !if (jawriteDFMinterpretedvalues > 0) then
                !   if (jakol45 == 2) then
                !       write (mout, '(18(f24.4), 2(i6))') xu(L), yu(L), bob(1, L), fixedweircontraction * wu(L), xk(k3), yk(k3), xk(k4), yk(k4), crestlen(L), zcrest(L), taludu(L), taludd(L), vegetat(L), iweirtyp(L), ztoeu(L), ztoed(L), dzsilld(L), dzsillu(L), iadv(L), L
-               !   else 
+               !   else
                !       write (mout, '(8(f24.4)) ') xu(L), yu(L), bob(1, L), fixedweircontraction * wu(L), xk(k3), yk(k3), xk(k4), yk(k4)
-               !   end if    
+               !   end if
                !end if
             else
                nh = nh + 1 ! just raised bobs
             end if
-         !else
-            !if (ifirstweir(L) == 0 .and. jakol45 == 2) then !  .and. (ifixedweirscheme == 8 .or. ifixedweirscheme == 9) ) then   !  only for fixed weirs under the bed level for Tabellenboek or Villemonte and not for the first time that a fixed weir is set on this link
-            !   ! check for larger ground height height values if at this link already a fixed weir exist
-            !
-            !   !
-            !   ! check whether crestlevel is higher
-            !   !
-            !   if (zc > zcrest(L)) then
-            !      zcrest(L) = zc
-            ! !! write (msgbuf,'(a,i5,f10.3)') 'Higher crest level: ', L,  zcrest(L); call msg_flush()
-            !   end if
-            !   if (jakol45 /= 0) then
-            !      call normalout(XPL(k), YPL(k), XPL(k + 1), YPL(k + 1), xn, yn, jsferic, jasfer3D, dmiss, dxymis) ! test EdG
-            !      zhu = (1d0 - sl) * dzl(k) + sl * dzl(k + 1)
-            !      zhd = (1d0 - sl) * dzR(k) + sl * dzR(k + 1)
-            !      if (xn * csu(L) + yn * snu(L) < 0d0) then ! check left/right
-            !         zh = zhd; zhd = zhu; zhu = zh
-            !      end if
-            !      !
-            !      ! Check whether toe is lower. If so, also adjust toe level and the ground height
-            !      ! If ground height is smaller than 1 cm, then this neglected
-            !      !
-            !      if (zc - zhu < ztoeu(L) .and. zhu > 0.01) then
-            !         ztoeu(L) = zc - zhu
-            !         dzsillu(L) = zcrest(L) - ztoeu(L)
-            !!! write (msgbuf,'(a,i5,f10.3)') 'Larger sill up:     ', L,  dzsillu(L); call msg_flush()
-            !      end if
-            !      if (zc - zhd < ztoed(L) .and. zhd > 0.01) then
-            !         ztoed(L) = zc - zhd
-            !         dzsilld(L) = zcrest(L) - ztoed(L)
-            !!! write (msgbuf,'(a,i5,f10.3)') 'Larger sill down:   ', L, dzsilld(L); call msg_flush()
-            !      end if
-            !   end if
-            !end if
+         else
+            if (ifirstweir(L) == 0 .and. jakol45 == 2) then !  .and. (ifixedweirscheme == 8 .or. ifixedweirscheme == 9) ) then   !  only for fixed weirs under the bed level for Tabellenboek or Villemonte and not for the first time that a fixed weir is set on this link
+               ! check for larger ground height height values if at this link already a fixed weir exist
+
+               !
+               ! check whether crestlevel is higher
+               !
+               if (zc > zcrest(L)) then
+                  zcrest(L) = zc
+             !! write (msgbuf,'(a,i5,f10.3)') 'Higher crest level: ', L,  zcrest(L); call msg_flush()
+               end if
+               if (jakol45 /= 0) then
+                  call normalout(XPL(k), YPL(k), XPL(k + 1), YPL(k + 1), xn, yn, jsferic, jasfer3D, dmiss, dxymis) ! test EdG
+                  zhu = (1d0 - sl) * dzl(k) + sl * dzl(k + 1)
+                  zhd = (1d0 - sl) * dzR(k) + sl * dzR(k + 1)
+                  if (xn * csu(L) + yn * snu(L) < 0d0) then ! check left/right
+                     zh = zhd; zhd = zhu; zhu = zh
+                  end if
+                  !
+                  ! Check whether toe is lower. If so, also adjust toe level and the ground height
+                  ! If ground height is smaller than 1 cm, then this neglected
+                  !
+                  if (zc - zhu < ztoeu(L) .and. zhu > 0.01) then
+                     ztoeu(L) = zc - zhu
+                     dzsillu(L) = zcrest(L) - ztoeu(L)
+            !! write (msgbuf,'(a,i5,f10.3)') 'Larger sill up:     ', L,  dzsillu(L); call msg_flush()
+                  end if
+                  if (zc - zhd < ztoed(L) .and. zhd > 0.01) then
+                     ztoed(L) = zc - zhd
+                     dzsilld(L) = zcrest(L) - ztoed(L)
+            !! write (msgbuf,'(a,i5,f10.3)') 'Larger sill down:   ', L, dzsilld(L); call msg_flush()
+                  end if
+               end if
+            end if
          end if
     !! write (msgbuf,'(a,2i5,7f10.3)') 'Projected fixed weir', L, iweirtyp(L), zcrest(L), ztoeu(L), dzsillu(L),ztoed(L),dzsilld(L),taludu(L),taludd(L); call msg_flush()
 
@@ -621,18 +621,18 @@ contains
             wu(L) = wu(L) * fixedweircontraction ! TODO: EdG/HK: this will be wrong if MULTIPLE fixed weirs are snapped onto the same flow link (repeated multiplication by fixedweircontraction)
          end if
       end do
-      
+
       if (jawriteDFMinterpretedvalues > 0) then
          do i = 1, nfxw
             L = lnfxw(i)
             k3 = lncn(1, L); k4 = lncn(2, L)
             if (L > 0) then
-               write (mout, '(18(f24.4), i6)') xu(L), yu(L), bob(1, L), wu(L), xk(k3), yk(k3), xk(k4), yk(k4), crestlevxw(i), shlxw(i), shrxw(i), crestlxw(i), taludlxw(i), taludrxw(i), vegxw(i), iweirtxw(i), csu(L), snu(L), L 
-            end if 
+               write (mout, '(18(f24.4), i6)') xu(L), yu(L), bob(1, L), wu(L), xk(k3), yk(k3), xk(k4), yk(k4), crestlevxw(i), shlxw(i), shrxw(i), crestlxw(i), taludlxw(i), taludrxw(i), vegxw(i), iweirtxw(i), csu(L), snu(L), L
+            end if
          end do
          call doclose(mout)
       end if
-      
+
       deallocate (ihu, csh, snh, zcrest, dzsillu, dzsilld, crestlen, taludu, taludd, vegetat, iweirtyp, ztoeu, ztoed)
       if (jatabellenboekorvillemonte == 0 .and. jashp_fxw == 0 .and. allocated(shlxw)) then
          deallocate (shlxw, shrxw, crestlevxw, crestlxw, taludlxw, taludrxw, vegxw, iweirtxw)

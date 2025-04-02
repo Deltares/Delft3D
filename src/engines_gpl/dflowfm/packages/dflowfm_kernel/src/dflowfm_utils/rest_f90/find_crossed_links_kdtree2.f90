@@ -270,21 +270,21 @@ contains
 
       dSL_copy = dSL
       n_start = 1
-      do n = 1,numcrossedLinks 
+      do n = 1, numcrossedLinks
          do n_end = n_start, numcrossedLinks - 1
-             if (iLink(n_end + 1) > iLink(n_start)) then 
-                 exit 
-             end if 
+            if (iLink(n_end + 1) > iLink(n_start)) then
+               exit
+            end if
          end do
          call sort_index(iPol(n_start:n_end), new_index(n_start:n_end))
          do k = n_start, n_end
             dSL(k) = dSL_copy(n_start - 1 + new_index(k))
          end do
          n_start = n_end + 1
-         if (n_start > numcrossedLinks) then 
-             exit
-         end if 
-      end do 
+         if (n_start > numcrossedLinks) then
+            exit
+         end if
+      end do
    end subroutine
 
 end module m_find_crossed_links_kdtree2
