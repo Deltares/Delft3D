@@ -38,7 +38,10 @@ def get_doc_file_list_from_minio(
     objects = list(minio_client.list_objects(bucket, prefix=prefix, recursive=True, include_version=True))
 
     # Further filter objects based on key content
-    filtered_objects = [obj for obj in objects if "/doc/" in obj.object_name]
+    filtered_objects = [obj for obj in objects if
+        "/doc/" in obj.object_name or
+        ".tex" in obj.object_name
+    ]
 
     # Create a dictionary to store the latest version of each object before or on the filter_time
     latest_objects = {}
