@@ -141,7 +141,6 @@ source_group("Resources" FILES
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/dflowfm)
 if (WIN32)
-    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000" )
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
