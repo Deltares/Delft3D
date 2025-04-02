@@ -4327,7 +4327,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f019_c020_thatcherharleman" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f019_transport/c020_thatcherharleman</path>
+      <path version="2025-04-02T12:03:28.187000">e02_dflowfm/f019_transport/c020_thatcherharleman</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -4341,7 +4341,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f019_c080_1Dchannel_explicit_horizontal_dispersion" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f019_transport/c080_1Dchannel_explicit_horizontal_dispersion</path>
+      <path version="2025-04-02T12:17:50.810000">e02_dflowfm/f019_transport/c080_1Dchannel_explicit_horizontal_dispersion</path>
       <maxRunTime>300.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/test_0_map.nc" type="netCDF">

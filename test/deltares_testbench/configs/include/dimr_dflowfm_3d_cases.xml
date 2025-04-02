@@ -232,7 +232,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c014_erosilt_density_effect_3d" ref="dflowfm_default">
-     <path version="2024-07-01T11:13:24">e02_dflowfm/f019_transport/c014_erosilt_density_effect_3d</path>
+     <path version="2025-04-02T12:00:26.577000">e02_dflowfm/f019_transport/c014_erosilt_density_effect_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="output/tst_his.nc" type="netCDF">
@@ -249,7 +249,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c021_thatcherharleman3D" ref="dflowfm_default">
-     <path version="2024-01-11T16:40:00">e02_dflowfm/f019_transport/c021_thatcherharleman3D</path>
+     <path version="2025-04-02T12:04:47.980000">e02_dflowfm/f019_transport/c021_thatcherharleman3D</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -278,7 +278,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c031_lock_exchange_300m_sigma_3d" ref="dflowfm_default">
-     <path version="2024-01-11T16:40:00">e02_dflowfm/f019_transport/c031_lock_exchange_300m_sigma_3d</path>
+     <path version="2025-04-02T12:21:21.752000">e02_dflowfm/f019_transport/c031_lock_exchange_300m_sigma_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
@@ -292,7 +292,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c032_lock_exchange_300m_zmodel_3d" ref="dflowfm_default">
-     <path version="2024-01-11T16:40:00">e02_dflowfm/f019_transport/c032_lock_exchange_300m_zmodel_3d</path>
+     <path version="2025-04-02T12:24:00.074000">e02_dflowfm/f019_transport/c032_lock_exchange_300m_zmodel_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
@@ -306,7 +306,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c040_vertical_mixing_layer_3d" ref="dflowfm_default">
-     <path version="2024-01-11T16:40:00">e02_dflowfm/f019_transport/c040_vertical_mixing_layer_3d</path>
+     <path version="2025-04-02T12:09:28.216000">e02_dflowfm/f019_transport/c040_vertical_mixing_layer_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/sp_his.nc" type="netCDF">
@@ -321,7 +321,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c041_tidal_flume_sigma_3d" ref="dflowfm_default">
-     <path version="2024-01-11T16:40:00">e02_dflowfm/f019_transport/c041_tidal_flume_sigma_3d</path>
+     <path version="2025-04-02T12:10:56.998000">e02_dflowfm/f019_transport/c041_tidal_flume_sigma_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tfs_his.nc" type="netCDF">
@@ -336,7 +336,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c042_tidal_flume_zmodel_3d" ref="platform_specific">
-     <path version="2024-01-11T13:10:00">e02_dflowfm/f019_transport/c042_tidal_flume_zmodel_3d</path>
+     <path version="2025-04-02T12:13:12.292000">e02_dflowfm/f019_transport/c042_tidal_flume_zmodel_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tfz_his.nc" type="netCDF">
@@ -352,7 +352,7 @@
     </testCase>
 
     <testCase name="e02_f019_c043_tidal_flume_zsigma_3d" ref="dflowfm_default">
-     <path version="2024-01-11T16:40:00">e02_dflowfm/f019_transport/c043_tidal_flume_zsigma_3d</path>
+     <path version="2025-04-02T12:14:57.330000">e02_dflowfm/f019_transport/c043_tidal_flume_zsigma_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tfzs_his.nc" type="netCDF">
@@ -561,7 +561,7 @@
     </testCase>
 
     <testCase name="e02_f018_c030_zlayers_sigmatemp" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f018_boundar_conditions_3d/c030_zlayers_sigmatemp</path>
+      <path version="2025-04-02T09:03:47.930000">e02_dflowfm/f018_boundar_conditions_3d/c030_zlayers_sigmatemp</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/test_map.nc" type="netCDF">
@@ -581,7 +581,7 @@
     </testCase>
 
     <testCase name="e02_f019_c033_lock_exchange_300m_unst_3d" ref="platform_specific">
-      <path version="2024-08-26T13:00:00">e02_dflowfm/f019_transport/c033_lock_exchange_300m_unst_3d</path>
+      <path version="2025-04-02T12:25:23.879000">e02_dflowfm/f019_transport/c033_lock_exchange_300m_unst_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
