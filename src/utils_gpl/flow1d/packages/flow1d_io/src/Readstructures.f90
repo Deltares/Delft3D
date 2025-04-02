@@ -275,7 +275,7 @@ module m_readstructures
             case (ST_CULVERT)
                call readCulvert(pstru%culvert, network, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_BRIDGE)
-               if (major /= StructureFileMajorVersion) then
+               if (major < 3) then
                   call SetMessage(LEVEL_ERROR, 'The file version in ' // structureFile //' should be at least 3.0 or higher' )
                   call SetMessage(-LEVEL_ERROR, 'when using bridges (parameter bedLevel must be changed to a shift).' )
                else
