@@ -67,7 +67,7 @@ contains
       use m_find_crossed_links_kdtree2
       use m_filez, only: oldfil, doclose, newfil
       use precision_basics, only: comparereal
-      
+
       integer :: k, kk, n1, n2, n, L, LL, jacros, minp, kint, ierr, nh, nhh, i, Lf
       integer :: jaweir, Lastfoundk, kf, kL, Lnt, nna, nnb, k3, k4
       integer, allocatable :: ihu(:)
@@ -285,7 +285,7 @@ contains
 
          ! if ( (zc > bobL .and. zc > zcrest(L)) .or. ( (ifixedweirscheme == 8 .or. ifixedweirscheme == 9) .and. ifirstweir(L) == 1) ) then   ! For Villemonte and Tabellenboek fixed weirs under bed level are also possible
 
-         if (((comparereal(zc,bobL) == 1 .or. include_fixed_weir_below_bob) .and. comparereal(zc,zcrest(L))==1 ) .or. ifirstweir(L) == 1) then ! For Villemonte and Tabellenboek fixed weirs under bed level are also possible
+         if (((comparereal(zc, bobL) == 1 .or. include_fixed_weir_below_bob) .and. comparereal(zc, zcrest(L)) == 1) .or. ifirstweir(L) == 1) then ! For Villemonte and Tabellenboek fixed weirs under bed level are also possible
 
             ! Set whether this is the first time that for this link weir values are set:
             ! As a result, only the first fixed weir under the bed level is used
