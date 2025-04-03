@@ -968,7 +968,7 @@ contains
       integer :: ierr
       logical :: is_successful
       logical :: is_read
-      logical :: have_location_file
+      logical :: have_location_file, have_location_coordinates
 
       is_successful = .false.
 
@@ -999,8 +999,9 @@ contains
                call prop_get(node_ptr, '', 'yCoordinates', y_coordinates, num_coordinates, is_read)
             end if
          end if
+         have_location_coordinates = is_read
       end if
-      if (.not. is_read) then
+      if (.not. have_location_file .and. .not. have_location_coordinates) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location information is incomplete or missing.'
          call err_flush()
          return
