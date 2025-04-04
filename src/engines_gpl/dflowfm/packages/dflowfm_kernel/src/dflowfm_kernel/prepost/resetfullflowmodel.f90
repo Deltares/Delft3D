@@ -102,7 +102,8 @@ contains
       call default_kml_parameters()
 
       call default_physcoef()
-
+      call calculate_derived_physcoef()
+      
       call default_sferic()
 
       call default_grw()
@@ -120,6 +121,7 @@ contains
       call dealloc(network) ! flow1d
 
       call default_heatfluxes()
+      call calculate_derived_coefficients_heatfluxes()
 
       call default_sediment() ! stm_included not defined yet
 
@@ -132,6 +134,7 @@ contains
       call default_fm_wq_processes()
 
       call default_turbulence()
+      call calculate_derived_coefficients_turbulence()
 
       call default_flowgeom()
 

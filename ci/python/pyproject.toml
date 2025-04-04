@@ -1,0 +1,100 @@
+[project]
+name = "ci-tools"
+version = "0.1.0"
+description = "A Python package that contains Python scripts used in the Delft3D TeamCity project."
+readme = "README.md"
+authors = [
+    { name = "black-ops", email = "black-ops@deltares.nl" }
+]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "mypy~=1.15.0",
+    "pyfakefs~=5.7.4",
+    "pytest~=8.3.4",
+    "pytest-mock~=3.14.0",
+    "ruff~=0.9.2",
+]
+verschilanalyse = [
+    "openpyxl~=3.1.5",
+    "types-openpyxl~=3.1.5",
+    "pandas~=2.2.3",
+    "pandas-stubs~=2.2.3",
+    "minio~=7.2.15",
+]
+all = ["ci-tools[verschilanalyse,dev]"]
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Ruff settings (linting and formatting).
+# https://docs.astral.sh/ruff/settings/
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py311"
+exclude = [
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.ruff.lint]
+# Error codes: https://docs.astral.sh/ruff/rules/#legend
+# List of error codes, or prefixes of error codes. For instance `E1` matches codes E100-E199.
+select = [
+    "I",  # import ordering
+    "E",  # pycodestyle errors
+    "W",  # Warnings
+    "F",  # pyflakes errors
+    "D",  # pydocstyle errors
+    "B",  # flake8-bugbear common bugs
+    "A",  # flake8-builtins warns against shadowing builtins
+    "N",  # pep8-naming conventions
+    "ANN", # flake8-annotations
+    "DTZ", # flake8-datetimez, for datetime and timezone bugs.
+    "PT", # flake8-pytest-style
+]
+ignore = [
+    "ANN1",  # These type annotation violations are deprecated.
+    "D100",  # Ignore missing docstrings for modules.
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "D1",  # Don't care about docstrings in unit tests.
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"  # https://numpydoc.readthedocs.io/en/latest/format.html
+
+# Mypy settings (type checking)
+# https://mypy.readthedocs.io/en/stable/config_file.html
+[tool.mypy]
+exclude = [
+    ".venv",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+]
+warn_unused_configs = true
+warn_return_any = true
+pretty = true
+show_error_context = true
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests"
+]

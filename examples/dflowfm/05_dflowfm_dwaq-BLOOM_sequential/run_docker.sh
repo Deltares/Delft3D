@@ -1,41 +1,19 @@
 #!/bin/bash
-# To start Dimr, execute this script
 
-# stop after an error occured:
-set -e
+# Initialize variables
+image="containers.deltares.nl/delft3d/delft3dfm:daily"  # Default value
+mount_cmd="type=bind,source=$(pwd),target=/mnt/example"
+work_dir="/mnt/example"
+example_script="./run_example.sh"
 
-# Set numbers of hosts and cores per host
-nNodes=1
-nProc=1
+# Parse command-line arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --image) image="$2"; shift ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+    shift
+done
 
-# set DIMR version to be used inside DOCKER: 
-dimrdir=/opt/delft3dfm_latest
-export PROC_DEF_DIR=$dimrdir/lnx64/share/delft3d
-
-# DOCKER: no queue selection
-#
-
-nPart=$((nNodes * nProc))
-
-# DIMR input-file; must already exist!
-dimrFile=dimr_config.xml
-
-# Replace number of processes in DIMR file
-PROCESSSTR="$(seq -s " " 0 $((nPart-1)))"
-sed -i "s/\(<process.*>\)[^<>]*\(<\/process.*\)/\1$PROCESSSTR\2/" $dimrFile
-
-# Read MDU file from DIMR-file
-mduFile="$(sed -n 's/\r//; s/<inputFile>\(.*\).mdu<\/inputFile>/\1/p' $dimrFile)".mdu
-
-# jobName: $FOLDERNAME
-export jobName="${PWD##*/}"
-
-
-if [ "$nPart" == "1" ]; then
-    $dimrdir/lnx64/bin/run_dimr.sh -m $dimrFile
-else
-    cd dflowfm
-    $dimrdir/lnx64/bin/run_dflowfm.sh --partition:ndomains=$nPart:icgsolver=6 $mduFile
-    cd ..
-    $dimrdir/lnx64/bin/run_dimr.sh --dockerparallel -c $nProc -m $dimrFile
-fi
+# Run the Docker command with the image parameter
+docker run --rm --mount $mount_cmd --workdir $work_dir $image $example_script

@@ -112,10 +112,6 @@ if (WIN32)
     message(STATUS "library directory ${petsc_libdir}")
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
-    # Set the GDAL path
-    set(gisinternals_path ${checkout_src_root}/third_party_open/GISInternals/release-1911-x64/lib)
-    message(STATUS "gisinternals set to ${gisinternals_path}")
-
     # Set the SQLITE3 path
     set(sqlite3_path ${checkout_src_root}/third_party_open/sqlite3/sqlite-3.44.0)
     message(STATUS "sqlite3 set to ${sqlite3_path}")
@@ -344,12 +340,6 @@ if(${configuration_type} STREQUAL ${testbench-all_configuration} OR ${configurat
     include(configurations/testbench/all_configuration.cmake)
 endif()
 
-# FM configuration
-if(${configuration_type} STREQUAL ${testbench-fm_configuration})
-    message(STATUS "Generating solution for fm testbench ...")
-    include(configurations/testbench/fm_configuration.cmake)
-endif()
-
 # D3D4 configuration
 if(${configuration_type} STREQUAL ${testbench-d3d4_configuration})
     message(STATUS "Generating solution for d3d4 testbench ...")
@@ -395,7 +385,7 @@ endif()
 ### Composed configurations for releases
 
 # Delft3D-FM suite configuration (dimr, dflowfm, dwaq, dwaves, and some tools)
-if(${configuration_type} STREQUAL ${fm-suite_configuration})
+if(${configuration_type} STREQUAL ${fm-suite_configuration} OR ${configuration_type} STREQUAL ${testbench-fm_configuration})
     message(STATUS "Generating solution for Delft3D-FM ...")
     include(configurations/suites/fm_configuration.cmake)
 endif()

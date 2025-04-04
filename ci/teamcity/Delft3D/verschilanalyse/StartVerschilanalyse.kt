@@ -72,19 +72,19 @@ object StartVerschilanalyse : BuildType({
 
     steps {
         python {
-            name = "Update references to the for the latest successful weekly verschilanalyse"
+            name = "Use the latest weekly verschilanalyse output as reference"
             conditions { 
                 equals("use_latest_weekly_reference_output", "true")
             }
-            workingDir = "ci/teamcity/Delft3D/verschilanalyse/scripts"
             pythonVersion = customPython {
                 executable = "python3.11"
             }
             environment = venv {
-                requirementsFile = "requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable ./ci/python[verschilanalyse]"
             }
-            command = file {
-                filename = "find_latest_weekly_output.py"
+            command = module {
+                module = "ci_tools.verschilanalyse.find_latest_weekly_output"
             }
         }
         sshUpload { 

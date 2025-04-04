@@ -2396,8 +2396,6 @@ contains
          else
             if (ja_airdensity == 1) then
                call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword computedAirdensity = 1 in mdu-file.')
-            elseif (jaroro > 1) then
-               call mess(LEVEL_ERROR, 'Keyword RhoairRhowater > 1 is not allowed in combination with keyword computedAirdensity = 1 in mdu-file.')
             else
                allocate (airdensity(ndx), stat=ierr)
                call aerr('airdensity(ndx)', ierr, ndx)

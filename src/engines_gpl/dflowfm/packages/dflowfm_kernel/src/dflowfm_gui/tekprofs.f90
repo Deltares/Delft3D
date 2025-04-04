@@ -63,7 +63,9 @@ contains
       use m_depmax2, only: vmax => vmax2, vmin => vmin2
       use m_get_kbot_ktop
       use m_get_czz0
-      use m_setrho, only: setrhofixedp
+      use m_density, only: density_at_cell
+      use m_physcoef, only: apply_thermobaricity, idensform
+      use m_density_formulas, only: DENSITY_OPTION_UNESCO83
 
       implicit none
 
@@ -303,9 +305,9 @@ contains
             end if
 
             if (jasal > 0 .and. jatem > 0 .and. idensform < 0) then
-               if (idensform == 13) then
+               if (idensform == DENSITY_OPTION_UNESCO83 .and. apply_thermobaricity) then
                   do k = kb, kt
-                     rhop0 = setrhofixedp(k, 0d0)
+                     rhop0 = density_at_cell(k, 0d0)
                      dijdij(k - kb + 1) = rhop0
                   end do
                   call getvminmax(5, vmin, vmax, dijdij(1:km), km)
@@ -364,7 +366,7 @@ contains
             do k = kb, kt - 1
                kk = k - kb + 1
                prsappr = ag * rhomean * (zws(kt) - zws(k))
-               drhodz = (setrhofixedp(k + 1, prsappr) - setrhofixedp(k, prsappr)) / (0.5d0 * (zws(k + 1) - zws(k - 1)))
+               drhodz = (density_at_cell(k + 1, prsappr) - density_at_cell(k, prsappr)) / (0.5d0 * (zws(k + 1) - zws(k - 1)))
                rhomea = 0.5d0 * (rho(k + 1) + rho(k))
                dijdij(kk) = -ag * drhodz / rhomea
             end do

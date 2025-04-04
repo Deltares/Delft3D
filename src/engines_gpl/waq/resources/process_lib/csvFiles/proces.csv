@@ -13,7 +13,6 @@ procid,procco,procfo,procnm
 "DAYRAD    ",123,"DAYRAD    ","Irradiance over the day                           "
 "TempMode  ",123,"TMODE     ","Modelled temperature conversion and limitation    "
 "Temperatur",123,"TEMPER    ","Temperature and heat exchange                     "
-"VarSal    ",123,"VARSAL    ","Salinity in case of constant river discharge      "
 "Salinchlor",123,"SALCHL    ","Conversion of chloride into salinity              "
 "Veloc     ",123,"VELOC     ","Horizontal flow velocity                          "
 "ResTim    ",123,"RESTIM    ","Residence time                                    "

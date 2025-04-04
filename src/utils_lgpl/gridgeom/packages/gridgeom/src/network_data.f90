@@ -164,7 +164,7 @@ module network_data
 
    integer :: maxfaceallow = 4 !< Nr. of faces allowed in removesmallflowlinks
 
-   integer :: NUMITCOURANT = 5 !< Nr. of smooth. iter. in Courant network (need samples).
+   integer :: numitcourant = 5 !< Nr. of smooth. iter. in Courant network (need samples).
 
    double precision :: SMALLESTSIZEINCOURANT = 100d0 !< Smallest cellsize generated in Courant network.
 
@@ -182,7 +182,7 @@ module network_data
 
    double precision :: TOOCLOSE = 0.001d0 !< Network points closer than tooclose are merged
 
-   double precision :: CONNECT1DEND = 0d0 !< Merge 1D endpoint ti closest branch point
+   double precision :: connect1dend = 0d0 !< Merge 1D endpoint ti closest branch point
 
    double precision :: Unidx1D = 100d0 !< Uniform 1D dx in copylandboundaryto1Dnetw
 
@@ -344,7 +344,7 @@ contains
       circumcenter_method = INTERNAL_NETLINKS_EDGE
       removesmalllinkstrsh = 1d-1
       maxfaceallow = 4
-      NUMITCOURANT = 0
+      numitcourant = 0
       SMALLESTSIZEINCOURANT = 100d0
       TRIAREAREMFRAC = 0.2d0
       linmin = 0
@@ -358,7 +358,7 @@ contains
       cosphiutrsh = 0.5d0
       CORNERCOS = 0.25d0
       TOOCLOSE = 0.001d0
-      CONNECT1DEND = 0d0
+      connect1dend = 0d0
       Unidx1D = 100d0
       makeorthocenters = 0
       strip_mesh = 0

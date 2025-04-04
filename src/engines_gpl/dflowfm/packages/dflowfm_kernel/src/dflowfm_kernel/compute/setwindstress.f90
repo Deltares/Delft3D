@@ -43,19 +43,19 @@ contains
    subroutine setwindstress()
       use precision, only: dp
       use m_setcdwcoefficient, only: setcdwcoefficient
-      use m_flowgeom
-      use m_flow
-      use m_wind
+      use m_flowgeom, only: ln, lnx, snu, csu 
+      use m_flow, only: jamapwind, wind_stress_water_density_option, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
+          viskinair, ag, vonkarw, u1, ltop, v, jatem, jamapwindstress, kmx, ustw
+      use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, wx, wy, relativewind, &
+          jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, airdensity
       use m_fm_icecover, only: fm_ice_drag_effect, ice_modify_winddrag, ICE_WINDDRAG_NONE, ice_af
-      implicit none
+
       real(kind=dp) :: uwi, cdw, tuwi, roro, wxL, wyL, uL, vL, uxL, uyL, ust, ust2, tau, z0w, roa, row
       real(kind=dp) :: local_ice_af
-      integer :: L, numwav, k ! windstuff
+      integer :: L, numwav, k 
 
       windxav = 0d0
       windyav = 0d0
-
-      ! wdsu_x = 0.155d0 ; wdsu_y = 0d0 ! testcase wx=10
 
       if (jawindstressgiven > 0) then
 
@@ -65,7 +65,7 @@ contains
                wy = 0d0
             end if
             do L = 1, lnx
-               if (jaroro > 0) then
+               if (wind_stress_water_density_option > 0) then
                   k = ln(2, L)
                   wdsu(L) = (wdsu_x(L) * csu(L) + wdsu_y(L) * snu(L)) / rho(ktop(k))
                else
@@ -123,12 +123,9 @@ contains
                if (jatem == 5) then
                   cdwcof(L) = cdw
                end if
-               if (jaroro > 0) then
+               if (wind_stress_water_density_option > 0) then
                   k = ln(2, L)
                   row = rho(ktop(k))
-                  if (jaroro > 1) then
-                     roa = roair(k)
-                  end if
                end if
                if (ja_airdensity + ja_computed_airdensity > 0) then
                   k = ln(2, L)

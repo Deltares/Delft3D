@@ -41,7 +41,7 @@ object Trigger : BuildType({
         python {
             name = "Retrieve Linux Testbench XMLs from CSV"
             command = file {
-                filename = "ci/teamcity/scripts/testbench_filter.py"
+                filename = "ci/python/ci_tools/trigger/testbench_filter.py"
                 scriptArguments = "-n %product% -f %testbench_table% -v lnx64"
             }
         }
@@ -49,7 +49,7 @@ object Trigger : BuildType({
         python {
             name = "Retrieve Windows Testbench XMLs from CSV"
             command = file {
-                filename = "ci/teamcity/scripts/testbench_filter.py"
+                filename = "ci/python/ci_tools/trigger/testbench_filter.py"
                 scriptArguments = "-n %product% -f %testbench_table% -v win64"
             }
         }

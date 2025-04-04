@@ -132,6 +132,7 @@ class EmailHelper(object):
         path_to_output_folder = os.path.join(current_dir, RELATIVE_PATH_TO_OUTPUT_FOLDER)
         path_to_email_template = os.path.join(path_to_output_folder, f"DIMRset_{self.__dimr_version}.html")
         
+        print(f"Saved email html to {path_to_email_template}")
         if not os.path.exists(path_to_output_folder):
             os.makedirs(path_to_output_folder)
 

@@ -13,11 +13,10 @@
 set dimrdir=\\directory.intra\PROJECT\d-hydro\dimrset\latest
 
 cd dflowfm
-set PATH=%dimrdir%\x64\lib;%PATH%
-call %dimrdir%\x64\bin\dflowfm-cli.exe --partition:ndomains=3:icgsolver=6 f34_BLOOM.mdu
+call "%dimrdir%\x64\bin\run_dflowfm.bat" "--partition:ndomains=3:icgsolver=6" f34_BLOOM.mdu
 cd ..
 
-call %dimrdir%\x64\bin\run_dimr_parallel.bat 3 dimr_config.xml
+call "%dimrdir%\x64\bin\run_dimr_parallel.bat" 3 dimr_config.xml
 
 
     rem To prevent the DOS box from disappearing immediately: remove the rem on the following line

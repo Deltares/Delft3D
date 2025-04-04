@@ -68,8 +68,9 @@ contains
       use m_get_ucx_ucy_eul_mag
       use m_get_link1
       use m_links_to_centers, only: links_to_centers
-      use m_setrho, only: setrhofixedp
+      use m_density, only: density_at_cell
       use m_wind, only: wx, wy, jawind, japatm, patm, jarain, rain, airdensity, tair, rhum, clou
+      use m_turbulence, only: in_situ_density, potential_density
 
       implicit none
 
@@ -407,11 +408,9 @@ contains
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
                if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
-                  if (density_is_pressure_dependent()) then
-                     valobs(i, IPNT_RHOP + klay - 1) = setrhofixedp(kk, 0d0)
-                     valobs(i, IPNT_RHO + klay - 1) = rho(kk)
-                  else
-                     valobs(i, IPNT_RHOP + klay - 1) = rho(kk)
+                  valobs(i, IPNT_RHOP + klay - 1) = potential_density(kk)
+                  if (apply_thermobaricity) then
+                     valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
                   end if
                end if
                if (jahisvelocity > 0) then
@@ -476,9 +475,9 @@ contains
                   end if
                   if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
-                        if (density_is_pressure_dependent()) then
+                        if (apply_thermobaricity) then
                            prsappr = ag * rhomean * (zws(kt) - zws(kk))
-                           drhodz = (setrhofixedp(kk + 1, prsappr) - setrhofixedp(kk, prsappr)) / max(0.5d0 * (zws(kk + 1) - zws(kk - 1)), epshs)
+                           drhodz = (density_at_cell(kk + 1, prsappr) - density_at_cell(kk, prsappr)) / max(0.5d0 * (zws(kk + 1) - zws(kk - 1)), epshs)
                         else
                            drhodz = (rho(kk + 1) - rho(kk)) / max(0.5d0 * (zws(kk + 1) - zws(kk - 1)), epshs)
                         end if

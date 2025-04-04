@@ -95,10 +95,6 @@ endif(UNIX)
 source_group(TREE ${checkout_src_root}/third_party_open/swan FILES ${executable_files})
 set_target_properties (${executable_name} PROPERTIES FOLDER third_party_open/swan_mpi)
 
-if (WIN32)
-    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
-endif(WIN32)
-
 # Set post-build step
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})

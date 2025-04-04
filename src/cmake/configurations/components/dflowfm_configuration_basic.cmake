@@ -148,6 +148,11 @@ if(NOT TARGET FLAP)
     add_subdirectory(${checkout_src_root}/${FLAP_module} FLAP)
 endif()
 
+if(WIN32)
+   if (NOT TARGET gdal)
+      add_subdirectory(${checkout_src_root}/${gdal_module} gdal)
+   endif()
+endif(WIN32)
 # fortrangis
 if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)

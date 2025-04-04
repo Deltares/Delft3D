@@ -62,7 +62,6 @@ module m_flow_flowinit
    use m_setsigmabnds, only: setsigmabnds
    use m_setship, only: setship
    use m_sets01zbnd, only: sets01zbnd
-   use m_setrho, only: setrho
    use m_setiadvpure1d, only: setiadvpure1d
    use m_furusobekstructures
    use m_filter
@@ -72,7 +71,6 @@ module m_flow_flowinit
    use m_rearst, only: rearst
    use m_read_restart_from_map, only: read_restart_from_map
    use m_inifcori
-   use m_inidensconstants
    use m_alloc_jacobi
 
    implicit none
@@ -128,6 +126,7 @@ contains
       use m_observations, only: read_moving_stations
       use m_solve_guus, only: reducept
       use m_upotukinueaa, only: upotukinueaa
+      use m_density_formulas, only: DENSITY_OPTION_UNIFORM
 
       implicit none
 
@@ -166,8 +165,6 @@ contains
          jaselfal = OFF
       end if
 
-      call inidensconstants() ! Some density parameters
-
       if (ti_waq > 0d0 .and. max(limtypmom, limtypsa, limtypTM) <= 0) then
          call qnerror('DELWAQ requires at least one limiter (Numerical Parameters). DELWAQ output disabled for now.', ' ', ' ')
          ti_waq = 0d0
@@ -181,7 +178,7 @@ contains
       call initialize_sediment()
 
       if (jasal == OFF .and. jatem == OFF .and. jased == OFF) then
-         idensform = OFF
+         idensform = DENSITY_OPTION_UNIFORM
       end if
 
       volerror(:) = 0d0
@@ -1607,13 +1604,13 @@ contains
 
 !> initialise_density_at_cell_centres
    subroutine initialise_density_at_cell_centres()
-      use m_flowparameters, only: jainirho
       use m_flow, only: kmxn, rho_read_rst
       use m_cell_geometry, only: ndx
       use m_sediment, only: stm_included
-      use m_turbulence, only: rhowat
-      use m_get_kbot_ktop
-      use m_setrho, only: setrhokk
+      use m_turbulence, only: rhowat, potential_density, in_situ_density
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_density, only: set_potential_density, set_pressure_dependent_density
+      use m_physcoef, only: apply_thermobaricity
 
       implicit none
 
@@ -1622,20 +1619,20 @@ contains
       integer :: top_cell
       integer :: cell3D
 
-      if (jainirho == INITIALIZE) then
-         do cell = 1, ndx
-            if (.not. rho_read_rst) then
-               call setrhokk(cell)
+      do cell = 1, ndx
+         if (.not. rho_read_rst) then
+            call set_potential_density(potential_density, cell)
+            if (apply_thermobaricity) then
+               call set_pressure_dependent_density(in_situ_density, cell)
             end if
-            if (stm_included) then
-               call getkbotktop(cell, bottom_cell, top_cell)
-               do cell3D = top_cell + 1, bottom_cell + kmxn(cell) - 1
-                  rhowat(cell3D) = rhowat(top_cell) ! UNST-5170
-               end do
-            end if
-         end do
-      end if
-
+         end if
+         if (stm_included) then
+            call getkbotktop(cell, bottom_cell, top_cell)
+            do cell3D = top_cell + 1, bottom_cell + kmxn(cell) - 1
+               rhowat(cell3D) = rhowat(top_cell) ! UNST-5170
+            end do
+         end if
+      end do
    end subroutine initialise_density_at_cell_centres
 
 !> apply hardcoded specific input
@@ -1657,7 +1654,7 @@ contains
       use m_ini_sferic
       use m_set_bobs
       use m_get_czz0
-      use m_rho_eckart, only: rho_eckart
+      use m_density_formulas, only: calculate_density_eckart
       use m_corioliskelvin, only: corioliskelvin, oceaneddy
       use m_model_specific, only: equatorial, poiseuille
       use m_filez, only: newfil
@@ -1820,7 +1817,7 @@ contains
                call getkbotktop(k, kb, kt)
                do kk = kb, kt
                   sa1(kk) = 10d0
-                  rho1 = rho_Eckart(sa1(kk), backgroundwatertemperature)
+                  rho1 = calculate_density_eckart(sa1(kk), backgroundwatertemperature)
                end do
             else
                !s1(k) = bl(k) + 0.5d0*( s1(k)-bl(k) )*sqrt(rho1/998.200)   ! rho = 1020 etc

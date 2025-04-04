@@ -271,7 +271,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e38_f01_c25_mod3_FM_long" ref="dimr_trunk">
-            <path version="2024-02-07T15:00:00">e38_dflowfm-cosumo/f01_general/c25_mod3_FM_long</path>
+            <path version="2025-04-01T14:46:24.414000">e38_dflowfm-cosumo/f01_general/c25_mod3_FM_long</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
                     <parameters>
@@ -286,7 +286,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e38_f01_c26_mod3_FM_long" ref="dimr_trunk">
-            <path version="2024-02-07T15:00:00">e38_dflowfm-cosumo/f01_general/c26_mod3_FM_long</path>
+            <path version="2025-04-01T14:47:14.411000">e38_dflowfm-cosumo/f01_general/c26_mod3_FM_long</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
                     <parameters>
@@ -301,7 +301,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e38_f01_c27_mod3_FM_long" ref="dimr_trunk">
-            <path version="2024-02-07T15:00:00">e38_dflowfm-cosumo/f01_general/c27_mod3_FM_long</path>
+            <path version="2025-04-01T14:48:02.606000">e38_dflowfm-cosumo/f01_general/c27_mod3_FM_long</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
                     <parameters>
@@ -316,7 +316,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e38_f01_c28_mod3_FM_entrainment_momentum" ref="dimr_trunk">
-            <path version="2024-02-07T15:00:00">e38_dflowfm-cosumo/f01_general/c28_mod3_FM_entrainment_momentum</path>
+            <path version="2025-04-01T14:48:50.942000">e38_dflowfm-cosumo/f01_general/c28_mod3_FM_entrainment_momentum</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
                     <parameters>
@@ -331,7 +331,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e38_f01_c29_mod3_FM_entrainment_momentum" ref="dimr_trunk">
-            <path version="2024-02-07T15:00:00">e38_dflowfm-cosumo/f01_general/c29_mod3_FM_entrainment_momentum</path>
+            <path version="2025-04-01T14:49:35.775000">e38_dflowfm-cosumo/f01_general/c29_mod3_FM_entrainment_momentum</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
                     <parameters>
@@ -346,7 +346,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e38_f01_c30_mod3_FM_entrainment_momentum" ref="dimr_trunk">
-            <path version="2024-02-07T15:10:00">e38_dflowfm-cosumo/f01_general/c30_mod3_FM_entrainment_momentum</path>
+            <path version="2025-04-01T14:50:15.371000">e38_dflowfm-cosumo/f01_general/c30_mod3_FM_entrainment_momentum</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
                     <parameters>

@@ -4,6 +4,8 @@ ADD intel /opt/intel
 
 ADD dimrset /opt/dimrset
 
+ADD example /example
+
 RUN dnf --assumeyes update \
   && dnf --assumeyes install libgomp libfabric \
   && dnf clean all
@@ -16,3 +18,7 @@ ARG GIT_COMMIT=unknown
 ARG GIT_BRANCH=unknown
 LABEL delft3d-git-commit=$GIT_COMMIT
 LABEL delft3d-git-branch=$GIT_BRANCH
+
+WORKDIR /example
+
+CMD ["./run_example.sh"]

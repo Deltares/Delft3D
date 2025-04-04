@@ -19,8 +19,6 @@ COPY test/deltares_testbench/test/ /data/test/
 COPY test/deltares_testbench/tools/ /data/tools/
 COPY test/deltares_testbench/thirdparty/ /data/thirdparty/
 COPY test/deltares_testbench/pyproject.toml test/deltares_testbench/TestBench.py /data/
-COPY ci/teamcity/scripts/ /data/scripts/
-COPY ci/teamcity/test/ /data/test/scripts/
 
 # Set the default command to run pytest
 CMD python3.9 -m pytest

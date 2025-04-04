@@ -204,7 +204,7 @@ end function get_proj_string_from_epsg
    !> Transforms the given coordinates using the provided coordinate transformation.
    !! This subroutine uses the proj library for coordinate transformations.
    subroutine transform(coord_trans, src_x, src_y, dst_x, dst_y)
-      use proj6
+      use proj
 
       implicit none
 
@@ -239,7 +239,7 @@ end function get_proj_string_from_epsg
    !> Transforms the given coordinates from the given source coordinate system to the given destination coordinate system.
    ! This subroutine uses the proj library for coordinate transformations.
    subroutine transform_coordinates(src_proj_string, dst_proj_string, src_x, src_y, dst_x, dst_y)
-      use proj6
+      use proj
 
       implicit none
 

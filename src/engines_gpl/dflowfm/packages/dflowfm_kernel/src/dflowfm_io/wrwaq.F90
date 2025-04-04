@@ -809,6 +809,7 @@ contains
    subroutine write_face_domain_number_variable(igeomfile, meshids, meshName, idomain)
 
       use io_ugrid
+      use netcdf_utils, only: ncu_ensure_define_mode
 
       implicit none
 
@@ -818,17 +819,13 @@ contains
       integer, intent(in) :: idomain(:) !< Face domainnumber variable to be written to the NetCDF file.
 
       integer :: id_facedomainnumber !< Variable ID for face domain number variable.
-      integer :: was_in_define_mode
+      logical :: was_in_define_mode
       integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
 
       ierr = UG_NOERR
 
       ! Put netcdf file in define mode.
-      was_in_define_mode = 0
-      ierr = nf90_redef(igeomfile)
-      if (ierr == nf90_eindefine) then
-         was_in_define_mode = 1 ! If was still in define mode.
-      end if
+      ierr = ncu_ensure_define_mode(igeomfile, was_in_define_mode)
       ierr = UG_NOERR
 
       ! Define face domain number variable.
@@ -842,9 +839,7 @@ contains
       ierr = nf90_put_var(igeomfile, id_facedomainnumber, idomain)
 
       ! Leave the dataset in the same mode as we got it.
-      if (was_in_define_mode == 1) then
-         ierr = nf90_redef(igeomfile)
-      end if
+      ierr = ncu_restore_mode(igeomfile, was_in_define_mode)
 
    end subroutine write_face_domain_number_variable
 
@@ -852,7 +847,8 @@ contains
    subroutine write_face_global_number_variable(igeomfile, meshids, meshName, iglobal_s)
 
       use io_ugrid
-
+      use netcdf_utils, only: ncu_ensure_define_mode
+      
       implicit none
 
       integer, intent(in) :: igeomfile !< file pointer to netcdf file to write to.
@@ -861,18 +857,12 @@ contains
       integer, intent(in) :: iglobal_s(:) !< Global face number variable to be written to the NetCDF file.
 
       integer :: id_faceglobalnumber !< Variable ID for global face number variable.
-      integer :: was_in_define_mode
+      logical :: was_in_define_mode
       integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
 
       ierr = UG_NOERR
 
-      ! Put netcdf file in define mode.
-      was_in_define_mode = 0
-      ierr = nf90_redef(igeomfile)
-      if (ierr == nf90_eindefine) then
-         was_in_define_mode = 1 ! If was still in define mode.
-      end if
-      ierr = UG_NOERR
+      ierr = ncu_ensure_define_mode(igeomfile, was_in_define_mode)
 
       ! Define global face number variable.
       ierr = ug_def_var(igeomfile, id_faceglobalnumber, (/meshids%dimids(mdim_face)/), nf90_int, UG_LOC_FACE, &
@@ -885,9 +875,8 @@ contains
       ierr = nf90_put_var(igeomfile, id_faceglobalnumber, iglobal_s)
 
       ! Leave the dataset in the same mode as we got it.
-      if (was_in_define_mode == 1) then
-         ierr = nf90_redef(igeomfile)
-      end if
+      ierr = ncu_restore_mode(igeomfile, was_in_define_mode)
+      
    end subroutine write_face_global_number_variable
 
 !> Creates and initializes mesh geometry that contains the 2D (layered) unstructured network and edge type array.

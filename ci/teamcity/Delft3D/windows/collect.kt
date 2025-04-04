@@ -95,7 +95,7 @@ object WindowsCollect : BuildType({
                 artifactRules = """
                     oss_artifacts_x64_*.zip!/x64/bin/** => x64/bin
                     oss_artifacts_x64_*.zip!/x64/lib/** => x64/lib
-                    oss_artifacts_x64_*.zip!/x64/share/** => x64/share
+                    ?:oss_artifacts_x64_*.zip!/x64/share/** => x64/share
                 """.trimIndent()
             }
         }
