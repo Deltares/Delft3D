@@ -59,7 +59,7 @@ contains
       inquire (FILE=FILNAM, EXIST=JA)
       if (JA) then
          call OLDFIL(LUNID, FILNAM)
-         write (msgbuf, '(2A)') 'Using Local File', FILNAM; call msg_flush()
+         write (msgbuf, '(2A)') 'Using Local File ', FILNAM; call msg_flush()
       else
 
          FULNAM = PATHDI
