@@ -57,7 +57,8 @@ contains
 !> (re)initialize valobs and set pointers for observation stations
    subroutine init_valobs()
       implicit none
-
+ 
+      
       call init_valobs_pointers()
 
       call alloc_valobs()
