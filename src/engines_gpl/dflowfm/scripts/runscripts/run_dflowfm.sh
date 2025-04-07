@@ -136,6 +136,6 @@ set_omp_threads
 
 echo "$D3D_HOME/bin/dflowfm --nodisplay --autostartstop --processlibrary $procfile --bloomspecies $spefile $dfmoptions"
 #ldd $D3D_HOME/bin/dflowfm
-$D3D_HOME/bin/dflowfm --nodisplay --autostartstop --processlibrary $procfile --bloomspecies $spefile $dfmoptions
+$D3D_HOME/bin/dflowfm --nodisplay --autostartstop $dfmoptions
 
 

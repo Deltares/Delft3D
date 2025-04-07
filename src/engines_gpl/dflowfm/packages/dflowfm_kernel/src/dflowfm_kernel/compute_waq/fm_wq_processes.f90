@@ -49,11 +49,13 @@ contains
       use timers
       use m_string_utils, only: index_in_array
       use m_logger_helper, only: set_log_unit_number
+      use system_utils, only: split_filename
 
       integer :: ierr_sub !< error status
       integer :: ierr_eho !< error status
-      character(256) :: cerr !< error message
 
+      character(256) :: cerr !< error message
+      character(len=256) :: exe_fullpath, share_dir, exe_name 
       ! Other
       integer(4) :: nosys_eho, notot_eho, nocons_eho
       integer(4) :: i
@@ -78,7 +80,12 @@ contains
       proc_dllso_file = md_oplfile
       bloom_file = md_blmfile
       statistics_file = md_sttfile
-
+      
+      ! Get executable directory
+      call get_command_argument(0, exe_fullpath, status=ierr)
+      call split_filename(exe_fullpath, share_dir, exe_name)
+      share_dir = trim(share_dir)//'../share/delft3d/'
+      
       ! check if substance file exists
       inquire (file=substance_file, exist=Lsub)
       if (.not. Lsub) then
@@ -107,10 +114,15 @@ contains
       if (proc_def_file /= ' ') then
          inquire (file=proc_def_file, exist=Lpdf)
          if (.not. Lpdf) then
-            call mess(LEVEL_ERROR, 'Process library file does not exist: ', trim(proc_def_file))
+            call mess(LEVEL_WARN, 'Process library file does not exist: ', trim(proc_def_file))
+            proc_def_file = trim(share_dir)//'proc_def.dat'
+            inquire (file=proc_def_file, exist=Lpdf)
+            if (Lpdf) then
+               call mess(LEVEL_INFO, 'Using default Process library file: ', trim(proc_def_file))
+            else 
+               call mess(LEVEL_ERROR, 'No process library file specified. Use commandline argument --processlibrary "<path>/<name>"')
+            end if
          end if
-      else
-         call mess(LEVEL_ERROR, 'No process library file specified. Use commandline argument --processlibrary "<path>/<name>"')
       end if
 
       ! check if open process dll/so file exists
@@ -120,12 +132,19 @@ contains
             call mess(LEVEL_ERROR, 'Open process library dll/so file does not exist: ', trim(proc_dllso_file))
          end if
       end if
-
+      
       ! check if bloom file exists
       if (bloom_file /= ' ') then
          inquire (file=bloom_file, exist=Lblm)
          if (.not. Lblm) then
-            call mess(LEVEL_ERROR, 'BLOOM species definition file specified, but does not exist: ', trim(bloom_file))
+            call mess(LEVEL_WARN, 'BLOOM species definition file does not exist: ', trim(bloom_file))
+            bloom_file = trim(share_dir)//'proc_def.dat'
+            inquire (file=bloom_file, exist=Lblm)
+            if (Lblm) then
+               call mess(LEVEL_INFO, 'Using default BLOOM species definition file: ', trim(bloom_file))
+            else 
+               call mess(LEVEL_ERROR, 'No BLOOM species definition file specified. Use commandline argument --bloomspecies "<path>/<name>"')
+            end if
          end if
       end if
 
