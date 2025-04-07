@@ -70,6 +70,9 @@
 	    <!-- ======================================================================== --> 
         <testCase name="e108(drr)_f03(walrus)_c02_Aa-en-Maas-regression-test" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c02_Aa-en-Maas-regression-test</path>
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
                     <parameters>
