@@ -48,6 +48,8 @@ module m_debgrz_output
         real(kind=real_wp) :: e_scaled      !< Scaled energy density      [-]
         real(kind=real_wp) :: harvest       !< Total harvested biomass[gWW/d]
         real(kind=real_wp) :: spawn         !< Total spawned biomass  [gWW/d]
+        real(kind=real_wp) :: ddmf          !< Density dependent mortality
+                                            !< factor                     [-]
         real(kind=real_wp) :: grossgr       !< Gross growth         [gC/m2/d]
         real(kind=real_wp) :: nettgr        !< Net growth           [gC/m2/d]
         real(kind=real_wp) :: dens_out      !< Nr of individuals     [#/m2/d]
@@ -85,12 +87,13 @@ module m_debgrz_output
         process_space_real(iparray(input_count+13)) = this%e_scaled
         process_space_real(iparray(input_count+14)) = this%harvest
         process_space_real(iparray(input_count+15)) = this%spawn
-        process_space_real(iparray(input_count+16)) = this%grossgr
-        process_space_real(iparray(input_count+17)) = this%nettgr
-        process_space_real(iparray(input_count+18)) = this%dens_out
-        process_space_real(iparray(input_count+19)) = this%c_balance
-        process_space_real(iparray(input_count+20)) = this%n_balance
-        process_space_real(iparray(input_count+21)) = this%p_balance
+        process_space_real(iparray(input_count+16)) = this%ddmf
+        process_space_real(iparray(input_count+17)) = this%grossgr
+        process_space_real(iparray(input_count+18)) = this%nettgr
+        process_space_real(iparray(input_count+19)) = this%dens_out
+        process_space_real(iparray(input_count+20)) = this%c_balance
+        process_space_real(iparray(input_count+21)) = this%n_balance
+        process_space_real(iparray(input_count+22)) = this%p_balance
     end subroutine update_pmsa
 
 end module m_debgrz_output

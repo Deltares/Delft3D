@@ -112,7 +112,6 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
     integer, external                             :: open_datdef
     integer, external                             :: neferr
     real(fp)   , dimension(:,:,:)  , allocatable  :: rbuff3
-    character(10)                                 :: transpunit
     character(16)                                 :: grnam6
     character(16)                                 :: grnam7
     character(256)                                :: errmsg      ! Character var. containing the errormessage to be written to file. The message depends on the error. 
@@ -185,19 +184,11 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
        !
        ! map-avg-series
        !
-       select case(moroutput%transptype)
-       case (0)
-          transpunit = 'kg/(s m)'
-       case (1)
-          transpunit = 'm3/(s m)'
-       case (2)
-          transpunit = 'm3/(s m)'
-       end select
-       call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBUUA', ' ', io_prec    , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Average bed-load transport u-direction (u point)', unit=transpunit, acl='u')
-       call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBVVA', ' ', io_prec    , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Average bed-load transport v-direction (v point)', unit=transpunit, acl='v')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBUUA', ' ', io_prec    , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Average bed-load transport u-direction (u point)', unit=moroutput%unit_transport_rate, acl='u')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBVVA', ' ', io_prec    , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Average bed-load transport v-direction (v point)', unit=moroutput%unit_transport_rate, acl='v')
        if (lsed > 0) then
-          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSUUA', ' ', io_prec , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Average suspended-load transport u-direction (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSVVA', ' ', io_prec , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Average suspended-load transport v-direction (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSUUA', ' ', io_prec , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Average suspended-load transport u-direction (u point)', unit=moroutput%unit_transport_rate, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSVVA', ' ', io_prec , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Average suspended-load transport v-direction (v point)', unit=moroutput%unit_transport_rate, acl='v')
        endif
        !
        group6%grp_dim = iddim_group

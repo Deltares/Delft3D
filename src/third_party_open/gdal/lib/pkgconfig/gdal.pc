@@ -1,0 +1,17 @@
+CONFIG_VERSION=3.11.0dev
+CONFIG_INST_PREFIX=c:/checkouts/gdal/install
+CONFIG_INST_LIBS=-LIBPATH:c:/checkouts/gdal/install/lib gdal
+CONFIG_INST_CFLAGS=-Ic:/checkouts/gdal/install/include
+CONFIG_INST_DATA=c:/checkouts/gdal/install/share/gdal
+prefix=${CONFIG_INST_PREFIX}
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${exec_prefix}/include
+datadir=${CONFIG_INST_DATA}
+
+Name: libgdal
+Description: Geospatial Data Abstraction Library
+Version: ${CONFIG_VERSION}
+Libs: ${CONFIG_INST_LIBS}
+Libs.private: wbemuuid ws2_32 C:/checkouts/netcdf-c-4.9.2/install/lib/netcdf.lib C:/checkouts/hdf5-hdf5-1_14_2/install/lib/hdf5_hl.lib C:/share/VS15/x64/lib/zlib.lib C:/checkouts/hdf5-hdf5-1_14_2/install/lib/hdf5.lib legacy_stdio_definitions.lib odbccp32.lib C:/share/VS15/x64/lib/libcurl_imp.lib psapi C:/checkouts/proj/lib/proj.lib D:/checkouts/Trunk_git/src/third_party_open/..//third_party_open/sqlite3/sqlite-3.44.0/lib/sqlite3.lib
+Cflags: ${CONFIG_INST_CFLAGS}

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by ICT (Stichting Deltares) -->
+<schema xmlns:rtc="http://www.wldelft.nl/fews" xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.wldelft.nl/fews" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<include schemaLocation="rtcSharedTypes.xsd"/>
+	<element name="rtcScenarioTreeConfig" type="rtc:RtcScenarioTreeConfigComplexType"/>
+	<complexType name="RtcScenarioTreeConfigComplexType">
+		<sequence>
+			<element name="general" type="rtc:GeneralComplexType">
+				<annotation>
+					<documentation>meta data of scenario tree</documentation>
+				</annotation>
+			</element>
+			<element name="branch" type="rtc:TreeBranchComplexType" maxOccurs="unbounded">
+				<annotation>
+					<documentation>branch definitions for nBranch branches</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="GeneralComplexType">
+		<sequence>
+			<element name="nBranch" type="integer">
+				<annotation>
+					<documentation>number of branches in the scenario tree</documentation>
+				</annotation>
+			</element>
+			<element name="nStepTotal" type="integer">
+				<annotation>
+					<documentation>number of dimensions in the input vector from the optimizer for one controlled variable over all branches, nStepTotal is less equal than nBranch*nStepBranch</documentation>
+				</annotation>
+			</element>
+			<element name="nStepBranch" type="integer">
+				<annotation>
+					<documentation>number of simulation time steps in a branch</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="TreeBranchComplexType">
+		<sequence>
+			<element name="index" type="integer" maxOccurs="unbounded">
+				<annotation>
+					<documentation>index (starting at 0) to the input vector from the optimizer, number of indices should be equal to the number of control time steps nOutput, highest index must be nInput-1</documentation>
+				</annotation>
+			</element>
+		</sequence>
+		<attribute name="probability" type="float" use="required">
+			<annotation>
+				<documentation>probability of branch in the range between 0 and 1, the sum over all branches should be equal to 1</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="ensembleMemberIndex" type="int" use="optional">
+			<annotation>
+				<documentation>index (starting at 0) to ensemble member in disturbance ensemble, if not supplied we expect the number of ensembles equal to the number of branches</documentation>
+			</annotation>
+		</attribute>
+	</complexType>
+</schema>

@@ -4,8 +4,8 @@
         {
             "name": "dcsm_0_5nm",
             "his_config": {
-                "his_1": "/p/devops-dsc/verschilanalyse/reference/dcsm_0_5nm/computations/hist/2013-2017_structure_ini_aangepast/DFM_OUTPUT_DCSM-FM_0_5nm/DCSM-FM_0_5nm_0000_his.nc",
-                "his_2": "/p/devops-dsc/verschilanalyse/input/dcsm_0_5nm/computations/hist/2013-2017_structure_ini_aangepast/DFM_OUTPUT_DCSM-FM_0_5nm/DCSM-FM_0_5nm_0000_his.nc",
+                "his_1": "/data/reference/dcsm_0_5nm/computations/hist/2013-2017_structure_ini_aangepast/DFM_OUTPUT_DCSM-FM_0_5nm/DCSM-FM_0_5nm_0000_his.nc",
+                "his_2": "/data/input/dcsm_0_5nm/computations/hist/2013-2017_structure_ini_aangepast/DFM_OUTPUT_DCSM-FM_0_5nm/DCSM-FM_0_5nm_0000_his.nc",
                 "his_variable_list": [
                     "waterlevel",
                     "velocity_magnitude"
@@ -15,8 +15,8 @@
                 "his_save_plots_for_every_station": false
             },
             "map_config": {
-                "map_1": "/p/devops-dsc/verschilanalyse/reference/dcsm_0_5nm/computations/hist/2013-2017_structure_ini_aangepast/DFM_OUTPUT_DCSM-FM_0_5nm/DCSM-FM_0_5nm_0*_map.nc",
-                "map_2": "/p/devops-dsc/verschilanalyse/input/dcsm_0_5nm/computations/hist/2013-2017_structure_ini_aangepast/DFM_OUTPUT_DCSM-FM_0_5nm/DCSM-FM_0_5nm_0*_map.nc",
+                "map_1": "/data/reference/dcsm_0_5nm/computations/hist/2013-2017_structure_ini_aangepast/DFM_OUTPUT_DCSM-FM_0_5nm/DCSM-FM_0_5nm_0*_map.nc",
+                "map_2": "/data/input/dcsm_0_5nm/computations/hist/2013-2017_structure_ini_aangepast/DFM_OUTPUT_DCSM-FM_0_5nm/DCSM-FM_0_5nm_0*_map.nc",
                 "map_variable_list": [
                     "mesh2d_s1",
                     "mesh2d_ucmag"

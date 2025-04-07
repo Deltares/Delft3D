@@ -399,8 +399,8 @@ subroutine debgrz(process_space_real , fl , ipoint , increm , num_cells , noflux
                             iv%tn, iv%tp, dres, dnres, dpres)
 
         call calculate_mortality(&
-                            iv%rmor_ref, iv%cmor, iv%conv_j_gc, iv%conv_cm3_gc, iv%rhrv_ref, iv%chrv, &
-                            iv%tn, iv%tp, ov%length, ov%v, ov%e, ov%r, rmor, rhrv, dmor, dnmor, dpmor, kT, pv)
+                            iv%rmor_ref, iv%vtot, iv%ddmfk, iv%cmor, iv%conv_j_gc, iv%conv_cm3_gc, iv%rhrv_ref, iv%chrv, &
+                            iv%tn, iv%tp, ov%length, ov%v, ov%e, ov%r, rmor, ov%ddmf, rhrv, dmor, dnmor, dpmor, kT, pv)
 
         call assign_fluxes(&
                             fl, iflux, av, iv%depth, dens_m2, iv%frdetbot, &

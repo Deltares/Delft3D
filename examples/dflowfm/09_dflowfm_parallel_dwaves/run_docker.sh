@@ -16,4 +16,4 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Run the Docker command with the image parameter
-docker run --rm --mount $mount_cmd --workdir $work_dir $image $example_script
+docker run --shm-size 4G --rm --mount $mount_cmd --workdir $work_dir $image $example_script

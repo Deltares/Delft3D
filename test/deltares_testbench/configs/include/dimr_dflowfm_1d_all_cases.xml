@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 
 	<testCase name="e02_f010_c100_dambreak_VerheijvdKnaap" ref="dimr_default">
-		<path version="2024-10-08T13:41:00">e02_dflowfm/f010_structures/c100_dambreak_VerheijvdKnaap</path>
+		<path version="2025-02-11T10:18:45.987000">e02_dflowfm/f010_structures/c100_dambreak_VerheijvdKnaap</path>
 		<checks>
 			<file name="DFM_OUTPUT_DikeBreachTest15s_FMadjusted/DikeBreachTest15s_FMadjusted_map.nc" type="netCDF">
 				<parameters>
@@ -13,7 +13,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f010_c102_T1_normal_noCustomPoints" ref="dimr_default">
-		<path version="2024-01-11T11:50:00">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T1_normal_noCustomPoints</path>
+		<path version="2025-02-11T10:20:02.165000">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T1_normal_noCustomPoints</path>
 		<checks>
 			<file name="DFM_OUTPUT_Dambreak_normalGRID_noWLpoints/Dambreak_normalGRID_noWLpoints_map.nc" type="netCDF">
 				<parameters>
@@ -31,7 +31,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f010_c102_T2_normal_customPoints" ref="dimr_default">
-		<path version="2024-01-11T11:50:00">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T2_normal_customPoints</path>
+		<path version="2025-02-11T10:23:26.347000">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T2_normal_customPoints</path>
 		<checks>
 			<file name="DFM_OUTPUT_Dambreak_normalGRID_customWLpoints/Dambreak_normalGRID_customWLpoints_map.nc" type="netCDF">
 				<parameters>
@@ -49,7 +49,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f010_c102_T3_refined_noCustomPoints" ref="dimr_default">
-		<path version="2024-01-11T11:50:00">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T3_refined_noCustomPoints</path>
+		<path version="2025-02-11T10:33:40.911000">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T3_refined_noCustomPoints</path>
 		<checks>
 			<file name="DFM_OUTPUT_Dambreak_refinedGRID_noWLpoints/Dambreak_refinedGRID_noWLpoints_map.nc" type="netCDF">
 				<parameters>

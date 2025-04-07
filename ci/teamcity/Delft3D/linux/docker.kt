@@ -66,6 +66,12 @@ object LinuxDocker : BuildType({
                 chmod a+x intel/mpi/bin/*
             """.trimIndent()
         }
+        script {
+            name = "Copy example to docker directory"
+            scriptContent = """
+                mkdir ./example && cp -r examples/dflowfm/08_dflowfm_sequential_dwaves/* ./example
+            """.trimIndent()
+        }
         dockerCommand {
             name = "Docker build DIMRset image"
             commandType = build {

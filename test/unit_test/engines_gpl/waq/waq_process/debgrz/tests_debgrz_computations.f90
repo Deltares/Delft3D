@@ -967,29 +967,37 @@ program tests_debgrz_computations
     end subroutine test_debgrz_calculate_shell_formation_fluxes
 
     subroutine test_debgrz_calculate_mortality()
-        real(kind=real_wp) :: rmor_ref1, rmor_ref2   !< Reference mortality rate grazers           [1/d]
-        real(kind=real_wp) :: cmor                   !< Length-dep coefficient mortality rate      [1/d]
-        real(kind=real_wp) :: conv_j_gc              !< Conversion factor from energy into mass   [gC/J]
-        real(kind=real_wp) :: conv_cm3_gc            !< Conversion factor from cm3 into gC      [gC/cm3]
-        real(kind=real_wp) :: rhrv_ref1, rhrv_ref2   !< Reference  harvesting rate grazers         [1/d]
-        real(kind=real_wp) :: chrv                   !< Length-dep coefficient harvesting rate     [1/d]
-        real(kind=real_wp) :: tp                     !< P:C ratio grazers                        [gP/gC]
-        real(kind=real_wp) :: tn                     !< N:C ratio grazers                        [gN/gC]
-        real(kind=real_wp) :: length                 !< Individual Length                           [cm]
-        real(kind=real_wp) :: v                      !< Individual volume                      [cm3/ind]
-        real(kind=real_wp) :: e                      !< Individual energy                        [J/ind]
-        real(kind=real_wp) :: r                      !< Individual gonads                        [J/ind]
-        real(kind=real_wp) :: kt                     !< Temperature_dependent_rate
-        real(kind=real_wp) :: pv1, pv2               !< Overhead costs per volume              [J/ind/d]
-        real(kind=real_wp) :: rmor1, rmor2, rmor3    !< Mortality rate
-        real(kind=real_wp) :: rhrv1, rhrv2, rhrv3    !< Overhead costs per volume              [J/ind/d]
-        real(kind=real_wp) :: dmor1, dmor2, dmor3    !< Mortality difference for carbon        [gC/m3/d]
-        real(kind=real_wp) :: dnmor1, dnmor2, dnmor3 !< Mortality difference for nitrogen      [gN/m3/d]
-        real(kind=real_wp) :: dpmor1, dpmor2, dpmor3 !< Mortality difference for phosphorus    [gP/m3/d]
+        real(kind=real_wp) :: rmor_ref1, rmor_ref2                   !< Reference mortality rate grazers           [1/d]
+        real(kind=real_wp) :: vtot                                   !< Structural biomass grazer pop.  [gC/m3 or gC/m2]
+        real(kind=real_wp) :: ddmfk1, ddmfk2, ddmfk3                 !< Half concentration for density dependent 
+                                                                     !< mortality factor                [gC/m3 or gC/m2]
+        real(kind=real_wp) :: cmor                                   !< Length-dep coefficient mortality rate      [1/d]
+        real(kind=real_wp) :: conv_j_gc                              !< Conversion factor from energy into mass   [gC/J]
+        real(kind=real_wp) :: conv_cm3_gc                            !< Conversion factor from cm3 into gC      [gC/cm3]
+        real(kind=real_wp) :: rhrv_ref1, rhrv_ref2                   !< Reference  harvesting rate grazers         [1/d]
+        real(kind=real_wp) :: chrv                                   !< Length-dep coefficient harvesting rate     [1/d]
+        real(kind=real_wp) :: tp                                     !< P:C ratio grazers                        [gP/gC]
+        real(kind=real_wp) :: tn                                     !< N:C ratio grazers                        [gN/gC]
+        real(kind=real_wp) :: length                                 !< Individual Length                           [cm]
+        real(kind=real_wp) :: v                                      !< Individual volume                      [cm3/ind]
+        real(kind=real_wp) :: e                                      !< Individual energy                        [J/ind]
+        real(kind=real_wp) :: r                                      !< Individual gonads                        [J/ind]
+        real(kind=real_wp) :: kt                                     !< Temperature_dependent_rate
+        real(kind=real_wp) :: pv1, pv2                               !< Overhead costs per volume              [J/ind/d]
+        real(kind=real_wp) :: rmor1, rmor2, rmor3, rmor4, rmor5      !< Mortality rate
+        real(kind=real_wp) :: ddmf1, ddmf2, ddmf3, ddmf4, ddmf5      !< Density dependent mortality factor           [-]
+        real(kind=real_wp) :: rhrv1, rhrv2, rhrv3, rhrv4, rhrv5      !< Overhead costs per volume              [J/ind/d]
+        real(kind=real_wp) :: dmor1, dmor2, dmor3, dmor4, dmor5      !< Mortality difference for carbon        [gC/m3/d]
+        real(kind=real_wp) :: dnmor1, dnmor2, dnmor3, dnmor4, dnmor5 !< Mortality difference for nitrogen      [gN/m3/d]
+        real(kind=real_wp) :: dpmor1, dpmor2, dpmor3, dpmor4, dpmor5 !< Mortality difference for phosphorus    [gP/m3/d]
 
         ! Arrange
         rmor_ref1   = 0.55e-2
         rmor_ref2   = 0.55
+        vtot        = 0.01
+        ddmfk1      = 0.0
+        ddmfk2      = 0.01
+        ddmfk3      = 0.02
         cmor        = 0.5
         conv_j_gc   = 0.1
         conv_cm3_gc = 0.3
@@ -1007,32 +1015,53 @@ program tests_debgrz_computations
         pv2         = -10
 
         ! Act
-        call calculate_mortality(rmor_ref1, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref1, chrv, tn, tp, &
-        length, v, e, r, rmor1, rhrv1, dmor1, dnmor1, dpmor1, kt, pv1)
-        call calculate_mortality(rmor_ref1, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref1, chrv, tn, tp, &
-        length, v, e, r, rmor2, rhrv2, dmor2, dnmor2, dpmor2, kt, pv2)
-        call calculate_mortality(rmor_ref2, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref2, chrv, tn, tp, &
-        length, v, e, r, rmor3, rhrv3, dmor3, dnmor3, dpmor3, kt, pv2)
+        call calculate_mortality(rmor_ref1, vtot, ddmfk1, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref1, chrv, tn, tp, &
+        length, v, e, r, rmor1, ddmf1, rhrv1, dmor1, dnmor1, dpmor1, kt, pv1)
+        call calculate_mortality(rmor_ref1, vtot, ddmfk1, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref1, chrv, tn, tp, &
+        length, v, e, r, rmor2, ddmf2, rhrv2, dmor2, dnmor2, dpmor2, kt, pv2)
+        call calculate_mortality(rmor_ref2, vtot, ddmfk1, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref2, chrv, tn, tp, &
+        length, v, e, r, rmor3, ddmf3, rhrv3, dmor3, dnmor3, dpmor3, kt, pv2)
+        call calculate_mortality(rmor_ref2, vtot, ddmfk2, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref2, chrv, tn, tp, &
+        length, v, e, r, rmor4, ddmf4, rhrv4, dmor4, dnmor4, dpmor4, kt, pv2)
+        call calculate_mortality(rmor_ref2, vtot, ddmfk3, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref2, chrv, tn, tp, &
+        length, v, e, r, rmor5, ddmf5, rhrv5, dmor5, dnmor5, dpmor5, kt, pv2)
 
 
         ! Assert
         call assert_comparable(rmor1,    0.4763139E-02, tolerance, 'Validate rmor: Mortality rate, pv > 0')
+        call assert_comparable(ddmf1,              1.0, tolerance, 'Validate ddmf: Density dependent mortality factor, pv > 0')
         call assert_comparable(rhrv1,    0.2700000E-01, tolerance, 'Validate rhrv: Overhead costs per volume, pv > 0')
         call assert_comparable(dmor1,    0.1571836E-01, tolerance, 'Validate dmor: Mortality difference for carbon, pv > 0')
         call assert_comparable(dnmor1,   0.3143672E-02, tolerance, 'Validate dnmor: Mortality difference for nitrogen, pv > 0')
         call assert_comparable(dpmor1,   0.1571836E-02, tolerance, 'Validate dpmor: Mortality difference for phosphorus, pv > 0')
 
         call assert_comparable(rmor2,    0.4763139E-02, tolerance, 'Validate rmor: Mortality rate, pv < 0, rmor and rhrv not modified with min function')
+        call assert_comparable(ddmf2,              1.0, tolerance, 'Validate ddmf: Density dependent mortality factor, pv < 0, rmor and rhrv not modified with min function')
         call assert_comparable(rhrv2,    0.2700000E-01, tolerance, 'Validate rhrv: Overhead costs per volume, pv < 0, rmor and rhrv not modified with min function')
         call assert_comparable(dmor2,    0.1571836E-01, tolerance, 'Validate dmor: Mortality difference for carbon, pv < 0, rmor and rhrv not modified with min function')
         call assert_comparable(dnmor2,   0.3143672E-02, tolerance, 'Validate dnmor: Mortality difference for nitrogen, pv < 0, rmor and rhrv not modified with min function')
         call assert_comparable(dpmor2,   0.1571836E-02, tolerance, 'Validate dpmor: Mortality difference for phosphorus, pv < 0, rmor and rhrv not modified with min function')
 
-        call assert_comparable(rmor3,    0.333333, tolerance, 'Validate rmor: Mortality rate, pv < 0, rmor and rhrv modified with min function')
-        call assert_comparable(rhrv3,         0.0, tolerance, 'Validate rhrv: Overhead costs per volume, pv < 0, rmor and rhrv modified with min function')
-        call assert_comparable(dmor3,         1.1, tolerance, 'Validate dmor: Mortality difference for carbon, pv < 0, rmor and rhrv modified with min function')
-        call assert_comparable(dnmor3,       0.22, tolerance, 'Validate dnmor: Mortality difference for nitrogen, pv < 0, rmor and rhrv modified with min function')
-        call assert_comparable(dpmor3,       0.11, tolerance, 'Validate dpmor: Mortality difference for phosphorus, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(rmor3,         0.333333, tolerance, 'Validate rmor: Mortality rate, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(ddmf3,              1.0, tolerance, 'Validate ddmf: Density dependent mortality factor, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(rhrv3,              0.0, tolerance, 'Validate rhrv: Overhead costs per volume, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(dmor3,              1.1, tolerance, 'Validate dmor: Mortality difference for carbon, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(dnmor3,            0.22, tolerance, 'Validate dnmor: Mortality difference for nitrogen, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(dpmor3,            0.11, tolerance, 'Validate dpmor: Mortality difference for phosphorus, pv < 0, rmor and rhrv modified with min function')
+
+        call assert_comparable(rmor4,        0.2381570, tolerance, 'Validate rmor: Mortality rate, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(ddmf4,              0.5, tolerance, 'Validate ddmf: Density dependent mortality factor, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(rhrv4,    9.5176339E-02, tolerance, 'Validate rhrv: Overhead costs per volume, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(dmor4,        0.7859181, tolerance, 'Validate dmor: Mortality difference for carbon, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(dnmor4,       0.1571836, tolerance, 'Validate dnmor: Mortality difference for nitrogen, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(dpmor4,   7.8591816E-02, tolerance, 'Validate dpmor: Mortality difference for phosphorus, pv < 0, rmor and rhrv modified with min function')
+
+        call assert_comparable(rmor5,        0.1587713, tolerance, 'Validate rmor: Mortality rate, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(ddmf5,        0.3333333, tolerance, 'Validate ddmf: Density dependent mortality factor, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(rhrv5,        0.1745620, tolerance, 'Validate rhrv: Overhead costs per volume, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(dmor5,        0.5239455, tolerance, 'Validate dmor: Mortality difference for carbon, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(dnmor5,       0.1047891, tolerance, 'Validate dnmor: Mortality difference for nitrogen, pv < 0, rmor and rhrv modified with min function')
+        call assert_comparable(dpmor5,   5.2394547E-02, tolerance, 'Validate dpmor: Mortality difference for phosphorus, pv < 0, rmor and rhrv modified with min function')
 
     end subroutine test_debgrz_calculate_mortality
 end program tests_debgrz_computations

@@ -33,6 +33,7 @@
 module m_sedtrails_netcdf
    use m_sedtrails_data
    use unstruc_netcdf
+   use netcdf_utils, only: ncu_ensure_define_mode, ncu_ensure_data_mode, ncu_restore_mode
 
    implicit none
 
@@ -309,7 +310,7 @@ contains
                  id_flowelemxcc, id_flowelemycc, &
                  id_flowelemdomain, id_flowelemglobalnr
 
-      integer :: jaInDefine
+      logical :: jaInDefine
 
       jaInDefine = 0
 
@@ -321,14 +322,12 @@ contains
       ndxndxi = numk
 
       ! Put dataset in define mode (possibly again) to add dimensions and variables.
-      ierr = nf90_redef(igeomfile)
-      if (ierr == nf90_eindefine) jaInDefine = 1 ! Was still in define mode.
-      if (ierr /= nf90_noerr .and. ierr /= nf90_eindefine) then
+      ierr = ncu_ensure_define_mode(igeomfile, jaInDefine)
+      if (ierr /= nf90_noerr) then
          call mess(LEVEL_ERROR, 'sedtrails_unc_write_flowgeom_filepointer::Could not put header in sedtrails geometry file.')
          call check_error(ierr)
          return
       end if
-
       ierr = nf90_def_dim(igeomfile, 'nNodes', ndxndxi, id_flowelemdim)
 
       ! Net nodes
@@ -366,9 +365,7 @@ contains
       end if
 
       ! Leave the dataset in the same mode as we got it.
-      if (jaInDefine == 1) then
-         ierr = nf90_redef(igeomfile)
-      end if
+      ierr = ncu_restore_mode(igeomfile, jaInDefine)
 
    end subroutine sedtrails_unc_write_flowgeom_filepointer
 

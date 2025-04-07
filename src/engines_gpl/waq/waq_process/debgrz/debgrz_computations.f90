@@ -705,10 +705,13 @@ module m_debgrz_computations
 
     !> Natural mortality and harvesting (only former comes back into the system as detritus)
     !! These added fractions cannot be larger than one (minus the material used for maintenance, at Pv<0)
-    subroutine calculate_mortality(rmor_ref, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref, chrv, tn, tp, &
-                        length, v, e, r, rmor, rhrv, dmor, dnmor, dpmor, kt, pv)
+    subroutine calculate_mortality(rmor_ref, vtot, ddmfk, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref, chrv, &
+                        tn, tp, length, v, e, r, rmor, ddmf, rhrv, dmor, dnmor, dpmor, kt, pv)
 
         real(kind=real_wp), intent(in   ) :: rmor_ref    !< Reference mortality rate grazers           [1/d]
+        real(kind=real_wp), intent(in   ) :: vtot        !< Structural biomass grazer pop.  [gC/m3 or gC/m2]
+        real(kind=real_wp), intent(in   ) :: ddmfk       !< Halfrate concentration for density dependent 
+                                                         !< mortality factor                [gC/m3 or gC/m2]
         real(kind=real_wp), intent(in   ) :: cmor        !< Length-dep coefficient mortality rate      [1/d]
         real(kind=real_wp), intent(in   ) :: conv_j_gc   !< Conversion factor from energy into mass   [gC/J]
         real(kind=real_wp), intent(in   ) :: conv_cm3_gc !< Conversion factor from cm3 into gC      [gC/cm3]
@@ -723,6 +726,7 @@ module m_debgrz_computations
         real(kind=real_wp), intent(in   ) :: kt          !< Temperature_dependent_rate
         real(kind=real_wp), intent(in   ) :: pv          !< Overhead costs per volume              [J/ind/d]
         real(kind=real_wp), intent(  out) :: rmor        !< Mortality rate
+        real(kind=real_wp), intent(  out) :: ddmf        !< Density dependent mortality factor           [-]
         real(kind=real_wp), intent(  out) :: rhrv        !< Overhead costs per volume              [J/ind/d]
         real(kind=real_wp), intent(  out) :: dmor        !< Mortality difference for carbon        [gC/m3/d]
         real(kind=real_wp), intent(  out) :: dnmor       !< Mortality difference for nitrogen      [gN/m3/d]
@@ -737,7 +741,13 @@ module m_debgrz_computations
         v_gc = v*conv_cm3_gc
         x = (pvmin*conv_j_gc)/v_gc
 
-        rmor  = rmor_ref * (length**cmor) * kt
+        if(ddmfk > 0.) then
+           ddmf = vtot/(vtot + ddmfk)
+        else
+           ddmf = 1.
+        end if
+
+        rmor  = rmor_ref * (length**cmor) * ddmf * kt
         rmor  = min(rmor,     (1. + (pvmin*conv_j_gc)/(v*conv_cm3_gc)))
         rhrv  = rhrv_ref * (length**chrv)
         rhrv  = min(rhrv,     (1. - rmor + (pvmin*conv_j_gc)/(v*conv_cm3_gc)))

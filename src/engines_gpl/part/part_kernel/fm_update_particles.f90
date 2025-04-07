@@ -224,7 +224,7 @@ contains
             else
                 if (uw0low > 0.0_wp) then
                     time_up = (1.0_wp - hpart(ipart)) / uw0low
-                else
+                elseif (uw0low < 0.0_wp) then
                     time_low = -hpart(ipart) / uw0low
                 endif
             endif

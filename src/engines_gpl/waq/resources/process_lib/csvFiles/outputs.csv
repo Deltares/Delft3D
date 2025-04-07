@@ -3989,13 +3989,14 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRZ_M  ","M_Escaled ",  13,"x",1
 "DEBGRZ_M  ","M_Harvst  ",  14,"x",1
 "DEBGRZ_M  ","M_Spawn   ",  15,"x",1
-"DEBGRZ_M  ","M_GrossGr ",  16,"x",1
-"DEBGRZ_M  ","M_NetGr   ",  17,"x",1
-"DEBGRZ_M  ","M_Nind    ",  18,"x",1
-"DEBGRZ_M  ","M_Cbal    ",  19,"x",1
-"DEBGRZ_M  ","M_Nbal    ",  20,"x",1
-"DEBGRZ_M  ","M_Pbal    ",  21,"x",1
-"DEBGRZ_M  ","M_DoSpawn ",  22,"x",1
+"DEBGRZ_M  ","M_ddmf    ",  16,"x",1
+"DEBGRZ_M  ","M_GrossGr ",  17,"x",1
+"DEBGRZ_M  ","M_NetGr   ",  18,"x",1
+"DEBGRZ_M  ","M_Nind    ",  19,"x",1
+"DEBGRZ_M  ","M_Cbal    ",  20,"x",1
+"DEBGRZ_M  ","M_Nbal    ",  21,"x",1
+"DEBGRZ_M  ","M_Pbal    ",  22,"x",1
+"DEBGRZ_M  ","M_DoSpawn ",  23,"x",1
 "DEBGRZ_Z  ","Z_TotBiom ",   1,"x",1
 "DEBGRZ_Z  ","Z_Bio     ",   2,"x",1
 "DEBGRZ_Z  ","Z_TotAFDW ",   3,"x",1
@@ -4011,13 +4012,14 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRZ_Z  ","Z_Escaled ",  13,"x",1
 "DEBGRZ_Z  ","Z_Harvst  ",  14,"x",1
 "DEBGRZ_Z  ","Z_Spawn   ",  15,"x",1
-"DEBGRZ_Z  ","Z_GrossGr ",  16,"x",1
-"DEBGRZ_Z  ","Z_NetGr   ",  17,"x",1
-"DEBGRZ_Z  ","Z_Nind    ",  18,"x",1
-"DEBGRZ_Z  ","Z_Cbal    ",  19,"x",1
-"DEBGRZ_Z  ","Z_Nbal    ",  20,"x",1
-"DEBGRZ_Z  ","Z_Pbal    ",  21,"x",1
-"DEBGRZ_Z  ","Z_DoSpawn ",  22,"x",1
+"DEBGRZ_Z  ","Z_ddmf    ",  16,"x",1
+"DEBGRZ_Z  ","Z_GrossGr ",  17,"x",1
+"DEBGRZ_Z  ","Z_NetGr   ",  18,"x",1
+"DEBGRZ_Z  ","Z_Nind    ",  19,"x",1
+"DEBGRZ_Z  ","Z_Cbal    ",  20,"x",1
+"DEBGRZ_Z  ","Z_Nbal    ",  21,"x",1
+"DEBGRZ_Z  ","Z_Pbal    ",  22,"x",1
+"DEBGRZ_Z  ","Z_DoSpawn ",  23,"x",1
 "DEBGRZ_G3 ","G3_TotBiom",   1,"x",1
 "DEBGRZ_G3 ","G3_Biomass",   2,"x",1
 "DEBGRZ_G3 ","G3_TotAFDW",   3,"x",1
@@ -4033,13 +4035,14 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRZ_G3 ","G3_Escaled",  13,"x",1
 "DEBGRZ_G3 ","G3_Harvst ",  14,"x",1
 "DEBGRZ_G3 ","G3_Spawn  ",  15,"x",1
-"DEBGRZ_G3 ","G3_GrossGr",  16,"x",1
-"DEBGRZ_G3 ","G3_NetGr  ",  17,"x",1
-"DEBGRZ_G3 ","G3_Nind   ",  18,"x",1
-"DEBGRZ_G3 ","G3_Cbal   ",  19,"x",1
-"DEBGRZ_G3 ","G3_Nbal   ",  20,"x",1
-"DEBGRZ_G3 ","G3_Pbal   ",  21,"x",1
-"DEBGRZ_G3 ","G3_DoSpawn",  22,"x",1
+"DEBGRZ_G3 ","G3_ddmf   ",  16,"x",1
+"DEBGRZ_G3 ","G3_GrossGr",  17,"x",1
+"DEBGRZ_G3 ","G3_NetGr  ",  18,"x",1
+"DEBGRZ_G3 ","G3_Nind   ",  19,"x",1
+"DEBGRZ_G3 ","G3_Cbal   ",  20,"x",1
+"DEBGRZ_G3 ","G3_Nbal   ",  21,"x",1
+"DEBGRZ_G3 ","G3_Pbal   ",  22,"x",1
+"DEBGRZ_G3 ","G3_DoSpawn",  23,"x",1
 "DEBGRZ_G4 ","G4_TotBiom",   1,"x",1
 "DEBGRZ_G4 ","G4_Biomass",   2,"x",1
 "DEBGRZ_G4 ","G4_TotAFDW",   3,"x",1
@@ -4055,13 +4058,14 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRZ_G4 ","G4_Escaled",  13,"x",1
 "DEBGRZ_G4 ","G4_Harvst ",  14,"x",1
 "DEBGRZ_G4 ","G4_Spawn  ",  15,"x",1
-"DEBGRZ_G4 ","G4_GrossGr",  16,"x",1
-"DEBGRZ_G4 ","G4_NetGr  ",  17,"x",1
-"DEBGRZ_G4 ","G4_Nind   ",  18,"x",1
-"DEBGRZ_G4 ","G4_Cbal   ",  19,"x",1
-"DEBGRZ_G4 ","G4_Nbal   ",  20,"x",1
-"DEBGRZ_G4 ","G4_Pbal   ",  21,"x",1
-"DEBGRZ_G4 ","G4_DoSpawn",  22,"x",1
+"DEBGRZ_G4 ","G4_ddmf   ",  16,"x",1
+"DEBGRZ_G4 ","G4_GrossGr",  17,"x",1
+"DEBGRZ_G4 ","G4_NetGr  ",  18,"x",1
+"DEBGRZ_G4 ","G4_Nind   ",  19,"x",1
+"DEBGRZ_G4 ","G4_Cbal   ",  20,"x",1
+"DEBGRZ_G4 ","G4_Nbal   ",  21,"x",1
+"DEBGRZ_G4 ","G4_Pbal   ",  22,"x",1
+"DEBGRZ_G4 ","G4_DoSpawn",  23,"x",1
 "DEBGRZ_G5 ","G5_TotBiom",   1,"x",1
 "DEBGRZ_G5 ","G5_Biomass",   2,"x",1
 "DEBGRZ_G5 ","G5_TotAFDW",   3,"x",1
@@ -4077,13 +4081,14 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRZ_G5 ","G5_Escaled",  13,"x",1
 "DEBGRZ_G5 ","G5_Harvst ",  14,"x",1
 "DEBGRZ_G5 ","G5_Spawn  ",  15,"x",1
-"DEBGRZ_G5 ","G5_GrossGr",  16,"x",1
-"DEBGRZ_G5 ","G5_NetGr  ",  17,"x",1
-"DEBGRZ_G5 ","G5_Nind   ",  18,"x",1
-"DEBGRZ_G5 ","G5_Cbal   ",  19,"x",1
-"DEBGRZ_G5 ","G5_Nbal   ",  20,"x",1
-"DEBGRZ_G5 ","G5_Pbal   ",  21,"x",1
-"DEBGRZ_G5 ","G5_DoSpawn",  22,"x",1
+"DEBGRZ_G5 ","G5_ddmf   ",  16,"x",1
+"DEBGRZ_G5 ","G5_GrossGr",  17,"x",1
+"DEBGRZ_G5 ","G5_NetGr  ",  18,"x",1
+"DEBGRZ_G5 ","G5_Nind   ",  19,"x",1
+"DEBGRZ_G5 ","G5_Cbal   ",  20,"x",1
+"DEBGRZ_G5 ","G5_Nbal   ",  21,"x",1
+"DEBGRZ_G5 ","G5_Pbal   ",  22,"x",1
+"DEBGRZ_G5 ","G5_DoSpawn",  23,"x",1
 "IM_Floceq ","SPMratioem",   1,"x",1
 "AttribOut ","Attribute ",   1,"x",1
 "CalTemp   ","Temp      ",   1,"x",1
@@ -5280,13 +5285,14 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRP_M  ","M_Escaled ",  13,"x",1
 "DEBGRP_M  ","M_Harvst  ",  14,"x",1
 "DEBGRP_M  ","M_Spawn   ",  15,"x",1
-"DEBGRP_M  ","M_GrossGr ",  16,"x",1
-"DEBGRP_M  ","M_NetGr   ",  17,"x",1
-"DEBGRP_M  ","M_Nind    ",  18,"x",1
-"DEBGRP_M  ","M_Cbal    ",  19,"x",1
-"DEBGRP_M  ","M_Nbal    ",  20,"x",1
-"DEBGRP_M  ","M_Pbal    ",  21,"x",1
-"DEBGRP_M  ","M_DoSpawn ",  22,"x",1
+"DEBGRP_M  ","M_ddmf    ",  16,"x",1
+"DEBGRP_M  ","M_GrossGr ",  17,"x",1
+"DEBGRP_M  ","M_NetGr   ",  18,"x",1
+"DEBGRP_M  ","M_Nind    ",  19,"x",1
+"DEBGRP_M  ","M_Cbal    ",  20,"x",1
+"DEBGRP_M  ","M_Nbal    ",  21,"x",1
+"DEBGRP_M  ","M_Pbal    ",  22,"x",1
+"DEBGRP_M  ","M_DoSpawn ",  23,"x",1
 "DEBGRP_Z  ","Z_TotBiom ",   1,"x",1
 "DEBGRP_Z  ","Z_Bio     ",   2,"x",1
 "DEBGRP_Z  ","Z_TotAFDW ",   3,"x",1
@@ -5302,13 +5308,14 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRP_Z  ","Z_Escaled ",  13,"x",1
 "DEBGRP_Z  ","Z_Harvst  ",  14,"x",1
 "DEBGRP_Z  ","Z_Spawn   ",  15,"x",1
-"DEBGRP_Z  ","Z_GrossGr ",  16,"x",1
-"DEBGRP_Z  ","Z_NetGr   ",  17,"x",1
-"DEBGRP_Z  ","Z_Nind    ",  18,"x",1
-"DEBGRP_Z  ","Z_Cbal    ",  19,"x",1
-"DEBGRP_Z  ","Z_Nbal    ",  20,"x",1
-"DEBGRP_Z  ","Z_Pbal    ",  21,"x",1
-"DEBGRP_Z  ","Z_DoSpawn ",  22,"x",1
+"DEBGRP_Z  ","Z_ddmf    ",  16,"x",1
+"DEBGRP_Z  ","Z_GrossGr ",  17,"x",1
+"DEBGRP_Z  ","Z_NetGr   ",  18,"x",1
+"DEBGRP_Z  ","Z_Nind    ",  19,"x",1
+"DEBGRP_Z  ","Z_Cbal    ",  20,"x",1
+"DEBGRP_Z  ","Z_Nbal    ",  21,"x",1
+"DEBGRP_Z  ","Z_Pbal    ",  22,"x",1
+"DEBGRP_Z  ","Z_DoSpawn ",  23,"x",1
 "DEBGRP_G3 ","G3_TotBiom",   1,"x",1
 "DEBGRP_G3 ","G3_Biomass",   2,"x",1
 "DEBGRP_G3 ","G3_TotAFDW",   3,"x",1
@@ -5324,13 +5331,14 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRP_G3 ","G3_Escaled",  13,"x",1
 "DEBGRP_G3 ","G3_Harvst ",  14,"x",1
 "DEBGRP_G3 ","G3_Spawn  ",  15,"x",1
-"DEBGRP_G3 ","G3_GrossGr",  16,"x",1
-"DEBGRP_G3 ","G3_NetGr  ",  17,"x",1
-"DEBGRP_G3 ","G3_Nind   ",  18,"x",1
-"DEBGRP_G3 ","G3_Cbal   ",  19,"x",1
-"DEBGRP_G3 ","G3_Nbal   ",  20,"x",1
-"DEBGRP_G3 ","G3_Pbal   ",  21,"x",1
-"DEBGRP_G3 ","G3_DoSpawn",  22,"x",1
+"DEBGRP_G3 ","G3_ddmf   ",  16,"x",1
+"DEBGRP_G3 ","G3_GrossGr",  17,"x",1
+"DEBGRP_G3 ","G3_NetGr  ",  18,"x",1
+"DEBGRP_G3 ","G3_Nind   ",  19,"x",1
+"DEBGRP_G3 ","G3_Cbal   ",  20,"x",1
+"DEBGRP_G3 ","G3_Nbal   ",  21,"x",1
+"DEBGRP_G3 ","G3_Pbal   ",  22,"x",1
+"DEBGRP_G3 ","G3_DoSpawn",  23,"x",1
 "DEBGRP_G4 ","G4_TotBiom",   1,"x",1
 "DEBGRP_G4 ","G4_Biomass",   2,"x",1
 "DEBGRP_G4 ","G4_TotAFDW",   3,"x",1
@@ -5346,13 +5354,14 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRP_G4 ","G4_Escaled",  13,"x",1
 "DEBGRP_G4 ","G4_Harvst ",  14,"x",1
 "DEBGRP_G4 ","G4_Spawn  ",  15,"x",1
-"DEBGRP_G4 ","G4_GrossGr",  16,"x",1
-"DEBGRP_G4 ","G4_NetGr  ",  17,"x",1
-"DEBGRP_G4 ","G4_Nind   ",  18,"x",1
-"DEBGRP_G4 ","G4_Cbal   ",  19,"x",1
-"DEBGRP_G4 ","G4_Nbal   ",  20,"x",1
-"DEBGRP_G4 ","G4_Pbal   ",  21,"x",1
-"DEBGRP_G4 ","G4_DoSpawn",  22,"x",1
+"DEBGRP_G4 ","G4_ddmf   ",  16,"x",1
+"DEBGRP_G4 ","G4_GrossGr",  17,"x",1
+"DEBGRP_G4 ","G4_NetGr  ",  18,"x",1
+"DEBGRP_G4 ","G4_Nind   ",  19,"x",1
+"DEBGRP_G4 ","G4_Cbal   ",  20,"x",1
+"DEBGRP_G4 ","G4_Nbal   ",  21,"x",1
+"DEBGRP_G4 ","G4_Pbal   ",  22,"x",1
+"DEBGRP_G4 ","G4_DoSpawn",  23,"x",1
 "DEBGRP_G5 ","G5_TotBiom",   1,"x",1
 "DEBGRP_G5 ","G5_Biomass",   2,"x",1
 "DEBGRP_G5 ","G5_TotAFDW",   3,"x",1
@@ -5368,10 +5377,11 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRP_G5 ","G5_Escaled",  13,"x",1
 "DEBGRP_G5 ","G5_Harvst ",  14,"x",1
 "DEBGRP_G5 ","G5_Spawn  ",  15,"x",1
-"DEBGRP_G5 ","G5_GrossGr",  16,"x",1
-"DEBGRP_G5 ","G5_NetGr  ",  17,"x",1
-"DEBGRP_G5 ","G5_Nind   ",  18,"x",1
-"DEBGRP_G5 ","G5_Cbal   ",  19,"x",1
-"DEBGRP_G5 ","G5_Nbal   ",  20,"x",1
-"DEBGRP_G5 ","G5_Pbal   ",  21,"x",1
-"DEBGRP_G5 ","G5_DoSpawn",  22,"x",1
+"DEBGRP_G5 ","G5_ddmf   ",  16,"x",1
+"DEBGRP_G5 ","G5_GrossGr",  17,"x",1
+"DEBGRP_G5 ","G5_NetGr  ",  18,"x",1
+"DEBGRP_G5 ","G5_Nind   ",  19,"x",1
+"DEBGRP_G5 ","G5_Cbal   ",  20,"x",1
+"DEBGRP_G5 ","G5_Nbal   ",  21,"x",1
+"DEBGRP_G5 ","G5_Pbal   ",  22,"x",1
+"DEBGRP_G5 ","G5_DoSpawn",  23,"x",1

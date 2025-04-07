@@ -24,20 +24,18 @@
 
     <component name="myNameDFlowFM">
         <library>dflowfm</library>
-        <process>0</process>
-        <mpiCommunicator>DFM_COMM_DFMWORLD</mpiCommunicator>
-        <workingDir>dflowfm</workingDir>
+        <workingDir>fm</workingDir>
         <inputFile>weirtimeseries.mdu</inputFile>
     </component>
     <component name="myNameWave">
         <library>wave</library>
-        <workingDir>dwaves</workingDir>
+        <workingDir>wave</workingDir>
         <!-- component specific -->
         <inputFile>weir.mdw</inputFile>
     </component>
     <component name="myNameRTC">
         <library>FBCTools_BMI</library>
-        <workingDir>drtc</workingDir>
+        <workingDir>rtc</workingDir>
         <!-- component specific -->
         <inputFile>.</inputFile>
     </component>
@@ -55,7 +53,7 @@
         <targetComponent>myNameDFlowFM</targetComponent>
         <item>
             <sourceName>output_weir_crest_level</sourceName>
-            <targetName>weirs/weir01/crest_level</targetName>
+            <targetName>weirs/weir01/crestlevel</targetName>
         </item>
     </coupler>
 </dimrConfig>

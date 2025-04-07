@@ -4,8 +4,8 @@
         {
             "name": "grevelingen",
             "his_config": {
-                "his_1": "/p/devops-dsc/verschilanalyse/reference/grevelingen/dflowfm2d-grevelingen-j19_6-v2a/computations/hist/stormperiode_2013_fxw_aangepast/DFM_OUTPUT_Grevelingen/Grevelingen_0000_his.nc",
-                "his_2": "/p/devops-dsc/verschilanalyse/input/grevelingen/dflowfm2d-grevelingen-j19_6-v2a/computations/hist/stormperiode_2013_fxw_aangepast/DFM_OUTPUT_Grevelingen/Grevelingen_0000_his.nc",
+                "his_1": "/data/reference/grevelingen/dflowfm2d-grevelingen-j19_6-v2a/computations/hist/stormperiode_2013_fxw_aangepast/DFM_OUTPUT_Grevelingen/Grevelingen_0000_his.nc",
+                "his_2": "/data/input/grevelingen/dflowfm2d-grevelingen-j19_6-v2a/computations/hist/stormperiode_2013_fxw_aangepast/DFM_OUTPUT_Grevelingen/Grevelingen_0000_his.nc",
                 "his_variable_list": [
                     "waterlevel",
                     "velocity_magnitude"
@@ -15,8 +15,8 @@
                 "his_save_plots_for_every_station": false
             },
             "map_config": {
-                "map_1": "/p/devops-dsc/verschilanalyse/reference/grevelingen/dflowfm2d-grevelingen-j19_6-v2a/computations/hist/stormperiode_2013_fxw_aangepast/DFM_OUTPUT_Grevelingen/Grevelingen_0*_map.nc",
-                "map_2": "/p/devops-dsc/verschilanalyse/input/grevelingen/dflowfm2d-grevelingen-j19_6-v2a/computations/hist/stormperiode_2013_fxw_aangepast/DFM_OUTPUT_Grevelingen/Grevelingen_0*_map.nc",
+                "map_1": "/data/reference/grevelingen/dflowfm2d-grevelingen-j19_6-v2a/computations/hist/stormperiode_2013_fxw_aangepast/DFM_OUTPUT_Grevelingen/Grevelingen_0*_map.nc",
+                "map_2": "/data/input/grevelingen/dflowfm2d-grevelingen-j19_6-v2a/computations/hist/stormperiode_2013_fxw_aangepast/DFM_OUTPUT_Grevelingen/Grevelingen_0*_map.nc",
                 "map_variable_list": [
                     "mesh2d_s1",
                     "mesh2d_ucmag"

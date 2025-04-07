@@ -46,7 +46,7 @@ contains
    function read_commandline() result(istat)
       use m_commandline_option
       use unstruc_model
-      use m_gui
+      use m_gui, only: jagui
       use messagehandling, only: stringtolevel
       use unstruc_messages, only: loglevel_StdOut, loglevel_file
       use string_module, only: str_lower, str_tolower
