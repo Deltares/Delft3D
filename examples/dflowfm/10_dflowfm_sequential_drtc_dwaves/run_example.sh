@@ -3,16 +3,17 @@
 
 # stop after an error occured:
 set -e
- 
+
 # Set numbers of hosts and cores per host
 nNodes=1
 nProc=1
 
-# set DIMR version to be used
-dimrdir=/p/d-hydro/dimrset/latest
+# set DIMR version to be used inside DOCKER: 
+dimrdir=/opt/delft3dfm_latest
+export PROC_DEF_DIR=$dimrdir/lnx64/share/delft3d
 
-# select queue; one of : normal-e3-c7 , normal-e5-c7
-queue=normal-e3-c7
+# DOCKER: no queue selection
+#
 
 nPart=$((nNodes * nProc))
 
@@ -31,10 +32,10 @@ export jobName="${PWD##*/}"
 
 
 if [ "$nPart" == "1" ]; then
-    $dimrdir/lnx64/bin/run_dimr.sh -m $dimrFile
+    run_dimr.sh -m $dimrFile
 else
-    cd fm
-    $dimrdir/lnx64/bin/run_dflowfm.sh --partition:ndomains=$nPart:icgsolver=6 $mduFile
+    cd dflowfm
+    run_dflowfm.sh --partition:ndomains=$nPart:icgsolver=6 $mduFile
     cd ..
-    $dimrdir/lnx64/bin/run_dimr.sh -c $nProc -m $dimrFile
+    run_dimr.sh -c $nProc -m $dimrFile
 fi
