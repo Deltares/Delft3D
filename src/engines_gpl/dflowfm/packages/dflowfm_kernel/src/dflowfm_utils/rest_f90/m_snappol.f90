@@ -135,7 +135,7 @@ contains
       end do
 
 !    snap polygon (note: xout and yout are temporary arrays)
-      call find_crossed_links_kdtree2(treeglob, Nin, xout, yout, itype, Lnx, 1, NumLinks, iLink, iPol, dSL, ierror)
+      call find_crossed_links_kdtree2(treeglob, Nin, xout, yout, itype, Lnx, BOUNDARY_ALL, NumLinks, iLink, iPol, dSL, ierror)
       if (ierror /= 0 .or. NumLinks == 0) goto 1234
 
 !    sort crossed flowlinks in increasing polyline order

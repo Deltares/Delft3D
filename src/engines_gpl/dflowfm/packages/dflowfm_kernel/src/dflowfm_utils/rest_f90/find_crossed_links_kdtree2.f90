@@ -37,6 +37,10 @@ module m_find_crossed_links_kdtree2
    integer, parameter :: ITYPE_NETLINK = 3
    integer, parameter :: ITYPE_FLOWLINK_1D_DUAL = 4
    
+   integer, parameter :: BOUNDARY_NONE = 0
+   integer, parameter :: BOUNDARY_ALL = 1
+   integer, parameter :: BOUNDARY_2D = 2
+   
 contains
 !---------------------------------------------------------------
 ! the following subroutines use kdtree2
