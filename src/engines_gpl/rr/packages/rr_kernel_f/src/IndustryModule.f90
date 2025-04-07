@@ -209,8 +209,7 @@ contains
         FileName = ConfFil_get_namFil(61)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !wwtp.3b
-        Write(*,*) ' Cleaning industry.3b to file:', FileName
-        Write(iout1,*) ' Cleaning industry.3b to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Industry.3b for RR-Industry input to file', FileName)
    endif
 ! *********************************************************************
 ! read file industry.3b
@@ -317,8 +316,7 @@ contains
         FileName = ConfFil_get_namFil(77)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !industry.tbl
-        Write(*,*) ' Cleaning industry.tbl to file:', FileName
-        Write(iout1,*) ' Cleaning industry.tbl:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Industry.tbl for RR-Industry input to file', FileName)
    endif
 ! *********************************************************************
 ! read Industry.tbl; industrial demands
@@ -336,8 +334,7 @@ contains
        IF (ENDFIL) GOTO 5111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer IndustryModule too small, DEMD record'
-           Write(iout1,*) 'local buffer IndustryModule too small, DEMD record'
+           Call ErrMsgStandard (999, 3, ' Local buffer RR-Industrymodule DEMD record too small', ' Input skipped')
            GOTO 5111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -409,8 +406,7 @@ contains
        IF (ENDFIL) GOTO 6111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer IndustryModule too small, DISC record'
-           Write(iOut1,*) 'local buffer IndustryModule too small, DISC record'
+           Call ErrMsgStandard (999, 3, ' Local buffer RR-Industrymodule DISC record too small', ' Input skipped')
            GOTO 6111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found

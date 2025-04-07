@@ -33,8 +33,7 @@ set(proj_module ${checkout_src_root}/third_party_open/proj)
 
 # netcdf
 set(netcdf_module ${third_party_open_path}/netcdf/${cmake_directory})
-set(netcdf_version "netCDF 4.6.1")
-
+set(netcdf_version "netcdf-c-4.9.2")
 # polypack
 set(polypack_module ${third_party_open_path}/polypack)
 
@@ -61,9 +60,15 @@ set(spherepack_module ${third_party_open_path}/spherepack/${cmake_directory})
 #intel redist
 set(intelredist_module ${third_party_open_path}/intelredist)
 
+set(gdal_module ${third_party_open_path}/gdal)
+set(zlib_module ${third_party_open_path}/zlib)
+set(curl_module ${third_party_open_path}/curl)
+set(hdf5_module ${third_party_open_path}/hdf5)
+set(microsoftredist_module ${third_party_open_path}/microsoftredist)
+
+
 if(WIN32)
     set(Tecplot_module ${third_party_open_path}/Tecplot)
-    set(GISInternals_module ${third_party_open_path}/GISInternals)
     set(pthreads_module ${third_party_open_path}/pthreads)
     set(expat_module ${third_party_open_path}/expat)
 endif(WIN32)

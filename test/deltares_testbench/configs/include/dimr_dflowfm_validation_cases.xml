@@ -61,7 +61,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f003_c040_thacker1d_standard" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f003_advection/c040_thacker1d_standard</path>
+      <path version="2025-03-04T15:45:29.346000">e02_dflowfm/f003_advection/c040_thacker1d_standard</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/planar1d_his.nc" type="netCDF">
@@ -80,7 +80,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f003_c043_thacker2d_hexagons" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f003_advection/c043_thacker2d_hexagons</path>
+      <path version="2025-03-04T15:49:01.377000">e02_dflowfm/f003_advection/c043_thacker2d_hexagons</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/radial2d_map.nc" type="netCDF">
@@ -104,7 +104,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c011_waterlevel_tim_varying" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c011_waterlevel_tim_varying</path>
+      <path version="2025-03-11T16:17:45.767000">e02_dflowfm/f005_boundary_conditions/c011_waterlevel_tim_varying</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -167,7 +167,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c068_riemann_tim_1d_outer" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c068_riemann_tim_1d_outer</path>
+      <path version="2025-03-04T15:40:07.872000">e02_dflowfm/f005_boundary_conditions/c068_riemann_tim_1d_outer</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
@@ -186,7 +186,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c069_riemann_tim_2d_outer" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c069_riemann_tim_2d_outer</path>
+      <path version="2025-03-04T15:51:15.313000">e02_dflowfm/f005_boundary_conditions/c069_riemann_tim_2d_outer</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/riemann2d_his.nc" type="netCDF">
@@ -295,7 +295,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c010_beyer004_supergrid_standard" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f009_weirs/c010_beyer004_supergrid_standard</path>
+      <path version="2025-02-25T11:54:25.432000">e02_dflowfm/f009_weirs/c010_beyer004_supergrid_standard</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/beyer_004a_his.nc" type="netCDF">
@@ -321,7 +321,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c024_beyer004_contr10_empirical" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f009_weirs/c024_beyer004_contr10_empirical</path>
+      <path version="2025-03-04T15:50:00">e02_dflowfm/f009_weirs/c024_beyer004_contr10_empirical</path>
       <maxRunTime>10.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/beyer_004vil_his.nc" type="netCDF">
@@ -334,7 +334,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c030_zandloper30m" ref="dflowfm_default">
-      <path version="2024-08-06T10:25:00">e02_dflowfm/f009_weirs/c030_zandloper30m</path>
+      <path version="2025-03-06T16:30:32.688000">e02_dflowfm/f009_weirs/c030_zandloper30m</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/zandloper_his.nc" type="netCDF">
@@ -353,7 +353,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c040_beyer044_standard" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f009_weirs/c040_beyer044_standard</path>
+      <path version="2025-03-06T10:35:18.509000">e02_dflowfm/f009_weirs/c040_beyer044_standard</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/beyer_044_his.nc" type="netCDF">
@@ -372,7 +372,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c010_gate_sub" ref="dflowfm_default">
-      <path version="2024-01-11T16:00:00">e02_dflowfm/f010_structures/c010_gate_sub</path>
+      <path version="2025-03-10T14:11:43.843000">e02_dflowfm/f010_structures/c010_gate_sub</path>
       <maxRunTime>25.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/gatesub_his.nc" type="netCDF">

@@ -47,7 +47,7 @@ module m_flow ! flow arrays-999
 
    ! 3D parameters
    integer :: kmx !< nr of 3d layers, increasing in positive upward direction
-                                                        !! if kmx==0 then 2D code. if kmx==1 then 3D code
+                  !! if kmx==0 then 2D code. if kmx==1 then 3D code
    integer :: kmx1 !< kmx + 1, for dimensioning arrays that used to be (0:kmax)
    integer :: kmxd !< dim of kmx, >= 1
    integer :: ndkx !< dim of 3d flow nodes (internal + boundary)

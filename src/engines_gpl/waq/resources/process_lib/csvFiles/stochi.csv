@@ -5,9 +5,6 @@ stocfl,stocsu,stocsc
 "dTempHtfl ","NatTemp   ",   1.00000
 "dTempHtfl2","NatTemp   ",   0.00000
 "dModTemp  ","ModTemp   ",   1.00000
-"dDumVarSal","FrCon     ",   0.00000
-"dDumVarSal","FrFlow    ",   0.00000
-"dDumVarSal","SalBnd    ",   0.00000
 "dDumRestim","Continuity",   0.00000
 "dDumVerDis","OXY       ",   0.00000
 "dDumHorDis","OXY       ",   0.00000

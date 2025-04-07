@@ -580,7 +580,6 @@ contains
       real(kind=dp), dimension(:, :), allocatable :: work
       real(kind=dp), dimension(:), allocatable :: work2
       real(kind=dp), dimension(:), allocatable :: wghtfac
-      character(len=10) :: transpunit
       character(len=75) :: var1, var2
       character(len=150) :: descr1, descr2
 
@@ -622,16 +621,8 @@ contains
             ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, sedids%id_dmsedcum, nf90_double, UNC_LOC_S, 'dmsedcum', 'net sedimentation flux over time interval', '', 'kg m-2', dimids=(/-2, sedids%id_tsp%id_sedtotdim, -1/))
          end if
          !
-         select case (stmpar%morpar%moroutput%transptype)
-         case (0)
-            transpunit = 'kg/(s m)'
-         case (1)
-            transpunit = 'm3/(s m)'
-         case (2)
-            transpunit = 'm3/(s m)'
-         end select
-         stmpar%morpar%moroutput%statunt(3) = trim(transpunit) ! bed load
-         stmpar%morpar%moroutput%statunt(4) = trim(transpunit) ! suspended load
+         stmpar%morpar%moroutput%statunt(3) = trim(stmpar%morpar%moroutput%unit_transport_rate) ! bed load
+         stmpar%morpar%moroutput%statunt(4) = trim(stmpar%morpar%moroutput%unit_transport_rate) ! suspended load
          !
          ! Conditional defs based on requested output. This can be improved, I guess... Runtime variable definition would be nice to have :)
          !

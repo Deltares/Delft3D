@@ -92,7 +92,6 @@ subroutine wrmorst(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
     real(fp)   , dimension(:,:,:)   , allocatable  :: rbuff3
     character(256)                                 :: errmsg
     character(64)                                  :: name
-    character(10)                                  :: transpunit
 !
 !! executable statements -------------------------------------------------------
 !
@@ -123,16 +122,8 @@ subroutine wrmorst(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
            call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DMSEDCUM', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Accumulated net sedimentation flux', unit='kg/m2', acl='z')
         endif
         !
-        select case(moroutput%transptype)
-        case (0)
-           transpunit = 'kg/(s m)'
-        case (1)
-           transpunit = 'm3/(s m)'
-        case (2)
-           transpunit = 'm3/(s m)'
-        end select
-        moroutput%statunt(3) = transpunit ! bed load
-        moroutput%statunt(4) = transpunit ! suspended load
+        moroutput%statunt(3) = moroutput%unit_transport_rate ! bed load
+        moroutput%statunt(4) = moroutput%unit_transport_rate ! suspended load
         do iq = 1,4
             if (moroutput%statflg(1,iq)>0) then
                 call local_def(moroutput%statflg(:,iq),moroutput%statqnt(iq),moroutput%statnam(iq),moroutput%statunt(iq))

@@ -67,7 +67,7 @@ contains
     write(ISCREN, *)
     write(ISCREN, *)
     write(ISCREN, *) spaties // '    Copyright (c) 2025              DELTARES        '
-    write(ISCREN, *) spaties // "    Rainfall-Runoff Module          Version 3.216.73"
+    write(ISCREN, *) spaties // "    Rainfall-Runoff Module          Version 3.216.75"
     write(ISCREN, *)
 
     write(ISCREN, *)
@@ -228,7 +228,7 @@ contains
                icode .ne. 969 .and.  &
                 icode .ne. 974 .and. icode .ne. 975 .and. icode .ne. 977 .and. &
                  icode .ne. 978 .and. icode .ne. 979 .and. icode .ne. 982 .and. &
-                  icode .ne. 994 .and. icode .ne. 995) then
+                  icode .ne. 994 .and. icode .ne. 995 .and. icode .ne. 999) then
          Write (IFLRTN,'(I5)') Icode
          if (IdControlModule .ge. 0) Call CrashCt (IdControlModule, .true.)
        endif
@@ -930,6 +930,21 @@ contains
       STRING(3) = TranslateString (LanguageHandle,STRING(3))
       MESSG = CONSTR (STRING, 3)
       call SetMessage(LEVEL_FATAL, Messg)
+    ELSEIF (ICODE .EQ. 999) THEN
+      STRING(1) = STR1
+      STRING(2) = STR2
+      STRING(1) = TranslateString (LanguageHandle,STRING(1))
+      STRING(2) = TranslateString (LanguageHandle,STRING(2))
+      MESSG = CONSTR (STRING(1), 2)
+      if (IECode .eq. 1) then
+          call SetMessage(LEVEL_INFO, Messg)
+      elseif (IECode .eq. 2) then
+          call SetMessage(LEVEL_WARN, Messg)
+      elseif (IECode .eq. 3) then
+          call SetMessage(LEVEL_ERROR, Messg)
+      elseif (IECode .eq. 4) then
+          call SetMessage(LEVEL_FATAL, Messg)
+      endif
     ENDIF
 ! request KJ March 2024 to add message also to return code file
     if (Icode .ne. 909 .and. &
@@ -940,7 +955,7 @@ contains
             icode .ne. 969 .and.  &
              icode .ne. 974 .and. icode .ne. 975 .and. icode .ne. 977 .and. &
               icode .ne. 978 .and. icode .ne. 979 .and. icode .ne. 982 .and. &
-               icode .ne. 994 .and. icode .ne. 995) then
+               icode .ne. 994 .and. icode .ne. 995 .and. icode .ne. 999) then
          write(iflrtn,'(A)') Messg
     endif
 999 Continue

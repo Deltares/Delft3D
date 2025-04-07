@@ -89,7 +89,7 @@ contains
 !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
       use m_flowparameters, only: jawave, jahistaucurrent, jatem, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur
-      use m_flow, only: iturbulencemodel, idensform, kmx, density_is_pressure_dependent
+      use m_flow, only: iturbulencemodel, idensform, kmx, apply_thermobaricity
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
       use m_sediment, only: stm_included, stmpar
@@ -370,7 +370,7 @@ contains
       end if
       if (jasal > 0 .or. jatem > 0 .or. jased > 0) then
          i = i + 1; IVAL_RHOP = i
-         if (density_is_pressure_dependent()) then
+         if (apply_thermobaricity) then
             i = i + 1; IVAL_RHO = i
          end if
       end if

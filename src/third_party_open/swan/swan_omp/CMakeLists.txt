@@ -91,7 +91,6 @@ source_group(TREE ${checkout_src_root}/third_party_open/swan FILES ${executable_
 set_target_properties (${executable_name} PROPERTIES FOLDER third_party_open/swan_omp)
 
 if (WIN32)
-    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 

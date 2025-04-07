@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
      module PMInterface
@@ -32,7 +32,7 @@
 
     ! variables voor de interface met de Process Manager
       implicit none
-    
+
       Integer       PmcNMsg, RtnCode
       Parameter    (PmcNMsg = 3)
       Logical       UsePm
@@ -132,12 +132,12 @@
       Header = 'TAB Sub R 1 ' // quote // PmcMsgTable(1)(1:Len_trim(PmcMsgTable(1))) // quote
 
       PmSuccess = .false.
-      write(*,*) ' Msg1 ', PmcMsgTable(1)(1:100)
-      write(*,*) ' Msg2 ', PmcMsgTable(2)(1:100)
+!      write(*,*) ' Msg1 ', PmcMsgTable(1)(1:100)
+!      write(*,*) ' Msg2 ', PmcMsgTable(2)(1:100)
 
 !     Do While (.not. PmSuccess)
 !       Call Pmc_Msg_Rd (PmcMsgTable, PmcMsgIden, PmcNmsg, PmcRetIden, RtnCode)
-        Write(*,*) ' Pmc_Msg_Rd RtnCode', Rtncode
+!        Write(*,*) ' Pmc_Msg_Rd RtnCode', Rtncode
 !       If (PmcRetIden(1:Len_trim(PmcRetIden)) .eq. PmStringTimestep(1:Len_trim(PmStringTimestep))) then
 !         Write(*,*) ' Found PmcRetIden', PmcRetIden(1:20)
 !         Write(*,*) ' Read ModflowTimestep'
@@ -150,9 +150,8 @@
 !         Call GpSleep(10)
 !       endif
 !     Enddo
-
 !     ModflowTimestep = Pmc_RealArray(1)
-      Write(*,*) ' ModflowTimestep = ', ModflowTimestep
+!      Write(*,*) ' ModflowTimestep = ', ModflowTimestep
 
       Return
       End Subroutine GetModflowTimestep
@@ -181,7 +180,7 @@
       Header(i:i) = quote
 
       PmSuccess = .false.
-      Write(*,*) ' Pmc_Msg_Rd RtnCode', Rtncode
+!      Write(*,*) ' Pmc_Msg_Rd RtnCode', Rtncode
       PmSuccess = .true.
 
       End Subroutine GetModflowHeads
@@ -211,12 +210,12 @@
       Header(i:i) = quote
 
 
-          Write(*,*) ' Write ModflowFluxes'
+!          Write(*,*) ' Write ModflowFluxes'
 
 !         Call Pmc_Wr_Hdr(Header)
-          Write(*,*) ' Header=',Header
+!          Write(*,*) ' Header=',Header
 
-          Write(*,*) ' Tijd ', Time
+!          Write(*,*) ' Tijd ', Time
 !         Call Pmc_Wr_C (ModflowIds,NrLocations)
 !         Do i=1, NrLocations
 !            Pmc_RealArray(i) = Time

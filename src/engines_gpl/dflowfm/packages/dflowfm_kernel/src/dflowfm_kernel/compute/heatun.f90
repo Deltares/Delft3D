@@ -31,42 +31,49 @@
 !
 
 module m_heatun
-   use m_qsun_nominal
+   use m_qsun_nominal, only: qsun_nominal
 
    implicit none
 
 contains
 
    subroutine heatun(n, timhr, qsno)
-      use m_flow
-      use m_flowgeom
+      use precision, only: dp, comparereal, fp
+      use physicalconsts, only: stf
+      use m_physcoef, only: ag, rhomean, backgroundsalinity, dalton, epshstem, stanton, sfr, Soiltempthick, &
+          BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, Secchidepth2, surftempsmofac, &
+          jadelvappos, zab
+      use m_heatfluxes, only: em, albedo, cpa, tkelvn, jaSecchisp, Secchisp, jamapheatflux, rcpi, &
+          fwind, Qtotmap, Qsunmap, Qevamap, Qconmap, Qlongmap, Qfrevamap, Qfrconmap, Qsunav, Qlongav, Qconav, &
+          Qevaav, Qfrconav, Qfrevaav
+      use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
+      use m_flowparameters, only: jahisheatflux, jatem, ja_solar_radiation_factor
+      use m_missing, only: dmiss
+      use m_flowgeom, only: ba, nd, ln, yz, xz
       use m_sferic, only: jsferic
-      use precision, only: comparereal, fp
       use m_flowtimes, only: dts
-      use m_heatfluxes
       use m_transport, only: constituents, itemp, isalt
-      use m_fm_icecover, only: ja_icecover, ice_af, ice_albedo, ice_h, ice_t, snow_albedo, snow_h, snow_t, qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
-      use m_physcoef, only: backgroundsalinity
-      use m_get_kbot_ktop
-      use m_get_link1
-      use m_wind, only: japatm, jaevap, longwave_available, relativewind, tair, wx, wy, rhum, clou, patm, heatsrc0, qrad, &
-         solrad_available, tbed, rhoair, longwave, evap, cdwcof
-
-      implicit none
+      use m_fm_icecover, only: ja_icecover, ice_af, ice_albedo, ice_h, ice_t, snow_albedo, snow_h, snow_t, &
+          qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_link1, only: getlink1
+      use m_wind, only: japatm, jaevap, longwave_available, relativewind, tair, wx, wy, rhum, clou, patm, &
+          heatsrc0, qrad, solrad_available, tbed, rhoair, longwave, evap, cdwcof, airdensity, ja_airdensity, &
+          ja_computed_airdensity
 
       real(kind=dp), intent(in) :: timhr, qsno
       integer, intent(in) :: n
 
       integer :: k, kb, kt, k2, L, LL, j, j2, ncols
-      real(kind=dp) :: qsn, qsun, qsnom, presn, tairn, twatn, twatK, rhumn, cloun, windn
+      real(kind=dp) :: qsn, qsun, qsnom, presn, tairn, twatn, twatK, rhumn, cloun, windn, air_density
       real(kind=dp) :: ce, ch, qwmx, qahu, tl, Qcon, Qeva, Qlong, pvtamx, pvtwmx, pvtahu, delvap
       real(kind=dp) :: dexp, zlo, zup, explo, expup, ratio, rcpiba, qheat, atot
 
       real(kind=dp) :: w(20), Qfree, b, gred, wfree, Qfrcon, Qfreva, rhoa0, rhoa10
 
-      real(kind=dp) :: pr2 = .49d0, xnuair = 16d-6, cfree = 0.14d0
+      real(kind=dp) :: pr2 = 0.49_dp, xnuair = 16.0e-06_dp, cfree = 0.14_dp
 
-      real(kind=dp) :: rdry = 287.05d-2, rvap = 461.495d-2, evafac = 1d0
+      real(kind=dp) :: rdry = 287.05e-02_dp, rvap = 461.495e-02_dp, evafac = 1.0_dp
 
       real(kind=dp) :: hlc, arn, wxL, wyL, bak2, twatb
 
@@ -80,20 +87,20 @@ contains
       real(kind=dp), parameter :: MIN_THICK = 0.001_fp !< threshold thickness for ice/snow to overrule the underlying layer (m)
 
       if (ja_icecover /= ICECOVER_NONE) then
-         afrac = 1d0 - ice_af(n)
+         afrac = 1.0_dp - ice_af(n)
       else
-         afrac = 1d0
+         afrac = 1.0_dp
       end if
 
-      presn = 1d-2 * BACKGROUND_AIR_PRESSURE ! Air pressure (mbar)
-      rhumn = 1d-2 * BACKGROUND_HUMIDITY ! ( )
-      cloun = 1d-2 * BACKGROUND_CLOUDINESS ! ( )
+      presn = 1.0e-2_dp * BACKGROUND_AIR_PRESSURE ! Air pressure (mbar)
+      rhumn = 1.0e-2_dp * BACKGROUND_HUMIDITY ! ( )
+      cloun = 1.0e-2_dp * BACKGROUND_CLOUDINESS ! ( )
       ce = Dalton ! Dalton  number = 1.50e-3 (Gill, 1982)           evaporative flux
       ch = Stanton ! Stanton number = 1.45e-3 (Friehe&Schmitt, 1976) convective heat flux
-      qsun = 0d0
+      qsun = 0.0_dp
       qsnom = qsno
       call getlink1(n, L)
-      if (relativewind > 0d0) then
+      if (relativewind > 0.0_dp) then
          wxL = wx(L) - relativewind * ucx(ktop(n))
          wyL = wy(L) - relativewind * ucy(ktop(n))
       else
@@ -105,7 +112,7 @@ contains
       call getkbotktop(n, kb, kt)
 
       twatn = constituents(itemp, kt)
-      if (surftempsmofac > 0d0) then
+      if (surftempsmofac > 0.0_dp) then
          arn = ba(n)
          twatn = twatn * arn
          do LL = 1, nd(n)%lnx
@@ -117,7 +124,7 @@ contains
                arn = arn + bak2
             end if
          end do
-         if (arn > 0d0) then
+         if (arn > 0.0_dp) then
             twatn = twatn / arn
          end if
       end if
@@ -126,7 +133,7 @@ contains
 
       if (jatem == 3) then ! excess
 
-         hlc = 4.48d0 + 0.049d0 * twatn + fwind * (3.5d0 + 2.05d0 * windn) * (1.12d0 + 0.018d0 * twatn + 0.00158d0 * twatn**2)
+         hlc = 4.48_dp + 0.049_dp * twatn + fwind * (3.5_dp + 2.05_dp * windn) * (1.12_dp + 0.018_dp * twatn + 0.00158_dp * twatn**2)
 
          qheat = -hlc * (twatn - tairn)
          rcpiba = rcpi * ba(n)
@@ -162,8 +169,8 @@ contains
             tsurf = twatn
          end if
 
-         rhumn = min(1d0, max(0d0, 1d-2 * rhum(n)))
-         cloun = min(1d0, max(0d0, 1d-2 * clou(n)))
+         rhumn = min(1.0_dp, max(0.0_dp, 1.0e-2_dp * rhum(n)))
+         cloun = min(1.0_dp, max(0.0_dp, 1.0e-2_dp * clou(n)))
 
          if (japatm > 0) then
             presn = 1d-2 * patm(n)
@@ -175,27 +182,27 @@ contains
                   qrad(n) = qrad(n) * solar_radiation_factor(n) ! qrad is adjusted (and not qsun) as it is used in fm_wq_processes
                end if
             end if
-            qsun = qrad(n) * (1d0 - albedo)
+            qsun = qrad(n) * (1.0_dp - albedo)
          else ! Calculate solar radiation from cloud coverage specified in file
             if (jsferic == 1) then
                call qsun_nominal(xz(n), yz(n), timhr, qsnom)
             end if
-            if (qsnom > 0d0) then
-               qsun = qsnom * (1d0 - 0.40d0 * cloun - 0.38d0 * cloun * cloun) * (1d0 - albedo)
+            if (qsnom > 0.0_dp) then
+               qsun = qsnom * (1.0_dp - 0.40_dp * cloun - 0.38_dp * cloun * cloun) * (1.0_dp - albedo)
             else
-               qsun = 0d0
+               qsun = 0.0_dp
             end if
          end if
 
          rcpiba = rcpi * ba(n)
          qsn = qsun * rcpiba
 
-         if (qsn > 0d0) then
+         if (qsn > 0.0_dp) then
 
             if (kmx > 0) then ! distribute incoming radiation over water column
-               ! zab  = (min(0.5d0*hs(n) ,Secchidepth)) / 1.7d0
+               ! zab  = (min(0.5_dp*hs(n) ,Secchidepth)) / 1.7_dp
 
-               if (Secchidepth2 > 0d0) then
+               if (Secchidepth2 > 0.0_dp) then
                   j2 = 2
                else
                   j2 = 1
@@ -204,24 +211,24 @@ contains
                do j = j2, 1, -1
 
                   if (j == 1 .and. jaSecchisp > 0) then
-                     zab(1) = Secchisp(n) / 1.7d0
+                     zab(1) = Secchisp(n) / 1.7_dp
                   end if
 
-                  zlo = 0d0
-                  explo = 1d0
+                  zlo = 0.0_dp
+                  explo = 1.0_dp
 
                   do k = kt, kb, -1
                      zup = zlo
                      expup = explo
                      zlo = zws(kt) - zws(k - 1)
                      ratio = zlo / zab(j)
-                     if (ratio > 4d0) then !  .or. k.eq.kb) then
-                        explo = 0.0
+                     if (ratio > 4.0_dp) then !  .or. k.eq.kb) then
+                        explo = 0.0_dp
                      else
                         explo = exp(-ratio)
                      end if
                      dexp = expup - explo
-                     if (dexp > 0d0) then
+                     if (dexp > 0.0_dp) then
                         heatsrc0(k) = heatsrc0(k) + sfr(j) * qsn * dexp * afrac
                      else
                         exit
@@ -235,18 +242,18 @@ contains
 
          end if
 
-         if (kmx > 0 .and. Soiltempthick > 0) then
-            if (qsn > 0d0) then
+         if (kmx > 0 .and. Soiltempthick > 0.0_dp) then
+            if (qsn > 0.0_dp) then
                qsunsoil = qsun * explo
             else
-               qsunsoil = 0d0
+               qsunsoil = 0.0_dp
             end if
-            watsoiltransfer = 1d0 / (0.5d0 * Soiltempthick) ! thermalcond sand = 0.15 -> 4 for dry -> saturated, [W/mK]
+            watsoiltransfer = 1.0_dp / (0.5_dp * Soiltempthick) ! thermalcond sand = 0.15 -> 4 for dry -> saturated, [W/mK]
             twatb = constituents(itemp, kb)
             qwatsoil = watsoiltransfer * (twatb - tbed(n))
             heatsrc0(kb) = heatsrc0(kb) - rcpiba * qwatsoil * afrac
             rdtsdz = rcpi * dts / Soiltempthick
-            tbed(n) = (tbed(n) + rdtsdz * (qsunsoil + watsoiltransfer * twatb)) / (1d0 + watsoiltransfer * rdtsdz)
+            tbed(n) = (tbed(n) + rdtsdz * (qsunsoil + watsoiltransfer * twatb)) / (1.0_dp + watsoiltransfer * rdtsdz)
          end if
 
          ! PVTWMX = PVapour at TWater and MaX relative humidity
@@ -256,21 +263,21 @@ contains
 
          pvtahu = rhumn * pvtamx ! vapour pressure in air remote (eal)
 
-         qwmx = (0.62d0 * pvtwmx) / (presn - 0.38d0 * pvtwmx) ! specific humidity of air remote and
-         qahu = (0.62d0 * pvtahu) / (presn - 0.38d0 * pvtahu) ! saturated air near water surface; eq.(A.9)+(A.10):
+         qwmx = (0.62_dp * pvtwmx) / (presn - 0.38_dp * pvtwmx) ! specific humidity of air remote and
+         qahu = (0.62_dp * pvtahu) / (presn - 0.38_dp * pvtahu) ! saturated air near water surface; eq.(A.9)+(A.10):
 
-         tl = 2.5d6 - 2.3d3 * tsurf ! latent heat tl; eq.(A.19.b): (J/kg)
+         tl = 2.5e6_dp - 2.3e3_dp * tsurf ! latent heat tl; eq.(A.19.b): (J/kg)
 
-         if (Stanton < 0) then ! if specified negative, use windspeed dependent Cd coeff
+         if (Stanton < 0.0_dp) then ! if specified negative, use windspeed dependent Cd coeff
             ch = abs(Stanton) * cdwcof(L)
          end if
-         if (Dalton < 0) then ! if specified negative, use windspeed dependent Cd coeff
+         if (Dalton < 0.0_dp) then ! if specified negative, use windspeed dependent Cd coeff
             ce = abs(Dalton) * cdwcof(L)
          end if
 
          delvap = qwmx - qahu ! D3D, both positive and negative evaporation, cannot be correct
          if (jadelvappos == 1) then
-            delvap = max(0d0, delvap) ! DPM, DFM This must be positive, otherwise heat is pumped into water
+            delvap = max(0.0_dp, delvap) ! DPM, DFM This must be positive, otherwise heat is pumped into water
          end if ! causing air to cool down below prescribed temperature, immedia. and
 
          ! change parameters for ice modelling
@@ -278,40 +285,37 @@ contains
          if (ja_icecover == ICECOVER_SEMTNER) then
             if (ice_h(n) > MIN_THICK) then
                ! in case of ice (and snow) overrule the Stanton number (convective heat flux)
-               ch = 0.00232d0
+               ch = 0.00232_dp
             end if
          end if
+         
+         if (ja_airdensity > 0 .or. ja_computed_airdensity > 0) then
+            air_density = airdensity(n)
+         else
+            air_density = rhoair
+         end if
 
-         Qeva = -ce * rhoair * windn * delvap * tl ! heat loss of water by evaporation eq.(A.19.a); Dalton number is ce:
+         Qeva = -ce * air_density * windn * delvap * tl ! heat loss of water by evaporation eq.(A.19.a); Dalton number is ce:
 
-         Qcon = -ch * rcpa * windn * (tsurf - tairn) ! heat loss of water by convection eq.(A.23); Stanton number is ch:
+         Qcon = -ch * air_density * cpa * windn * (tsurf - tairn) ! heat loss of water by convection eq.(A.23); Stanton number is ch:
 
          twatK = tsurf + tkelvn
          if (longwave_available) then
             Qlong = em * (longwave(n) - stf * (twatK**4)) ! difference between prescribed long wave downward flux and calculated upward flux
          else
-            Qlong = -em * stf * (twatK**4) * (0.39d0 - 0.05d0 * sqrt(pvtahu)) ! heat loss by effective infrared back radiation hl, restricted by
-            Qlong = Qlong * (1d0 - 0.6d0 * cloun**2) !  presence of clouds and water vapour in air; eq.(A.22):
+            Qlong = -em * stf * (twatK**4) * (0.39_dp - 0.05_dp * sqrt(pvtahu)) ! heat loss by effective infrared back radiation hl, restricted by
+            Qlong = Qlong * (1.0_dp - 0.6_dp * cloun**2) !  presence of clouds and water vapour in air; eq.(A.22):
          end if
 
-         Qfree = 0d0; Qfrcon = 0d0; Qfreva = 0d0 ! Contribution by free convection:
+         Qfree = 0.0_dp; Qfrcon = 0.0_dp; Qfreva = 0.0_dp ! Contribution by free convection:
          rhoa0 = ((presn - pvtwmx) / rdry + pvtwmx / rvap) / (Tsurf + Tkelvn)
          rhoa10 = ((presn - pvtahu) / rdry + pvtahu / rvap) / (Tairn + Tkelvn)
-         if (jaroro > 0) then
-            if (jaroro == 2) then
-               roair(n) = rhoa0
-            else if (jaroro == 3) then
-               roair(n) = rhoa10
-            else if (jaroro == 4) then
-               roair(n) = 0.5d0 * (rhoa10 + rhoa0)
-            end if
-         end if
-         gred = 2d0 * ag * (rhoa10 - rhoa0) / (rhoa0 + rhoa10)
-         if (gred > 0d0) then ! Ri= (gred/DZ)/ (du/dz)2, Ri>0.25 stable
+         gred = 2.0_dp * ag * (rhoa10 - rhoa0) / (rhoa0 + rhoa10)
+         if (gred > 0.0_dp) then ! Ri= (gred/DZ)/ (du/dz)2, Ri>0.25 stable
             wfree = gred * xnuair / pr2
-            wfree = cfree * wfree**0.33333333d0
-            Qfrcon = min(0d0, -rcpa * wfree * (tsurf - tairn) * evafac) ! Free convective sensible heat loss:
-            Qfreva = min(0d0, -wfree * (qwmx - qahu) * tl * evafac * (rhoa0 + rhoa10) * 0.5d0) ! Free convective latent/evaporation heat loss:
+            wfree = cfree * wfree**0.33333333_dp
+            Qfrcon = min(0.0_dp, -air_density * cpa * wfree * (tsurf - tairn) * evafac) ! Free convective sensible heat loss:
+            Qfreva = min(0.0_dp, -wfree * (qwmx - qahu) * tl * evafac * (rhoa0 + rhoa10) * 0.5_dp) ! Free convective latent/evaporation heat loss:
             Qfree = Qfrcon + Qfreva
          end if
 
@@ -329,7 +333,7 @@ contains
                !
                ! Compute Qlong_ice (NB. Delft3D-FLOW definition is used, with opposite sign, so that
                ! algorithm in preprocess_icecover remains identical to the one for Delft3D-FLOW
-               Qlong_ice = em * stf * (0.39d0 - 0.05d0 * sqrt(pvtahu)) * (1d0 - 0.6d0 * cloun**2)
+               Qlong_ice = em * stf * (0.39_dp - 0.05_dp * sqrt(pvtahu)) * (1.0_dp - 0.6_dp * cloun**2)
                !
                qh_air2ice(n) = qsun + qheat
                !
@@ -369,15 +373,15 @@ contains
 
          !if (ti_xls > 0) then
 
-         Atot = 0d0 ! these 2 lines outside loop
-         w = 0d0 ! array of spatially averaged output
+         Atot = 0.0_dp ! these 2 lines outside loop
+         w = 0.0_dp ! array of spatially averaged output
 
          b = ba(n) ! Spatially averaged time series output :
          atot = atot + b ! Total area
-         w(1) = timhr / 24d0 ! Time in days
+         w(1) = timhr / 24.0_dp ! Time in days
          w(2) = w(2) + b * tairn ! tair
          w(3) = w(3) + b * constituents(itemp, kt) ! Twatn, SST
-         if (soiltempthick > 0d0) then
+         if (soiltempthick > 0.0_dp) then
             w(4) = w(4) + b * tbed(n) ! tbed
          end if
          w(5) = w(5) + b * (qsun + qheat) ! qtot
@@ -393,34 +397,10 @@ contains
          w(15) = w(15) + b * presn ! pres
 
          ncols = 15
-         if (Atot > 0d0) then
+         if (Atot > 0.0_dp) then
             w(2:ncols) = w(2:ncols) / Atot
          end if
          Qsunav = w(6); Qlongav = w(7); Qconav = w(8); Qevaav = w(9); Qfrconav = w(10); Qfrevaav = w(11)
-
-         !if (lunadh == 00) then
-         !    call newfil(lunadh, trim(md_ident)//'Spatially_Averaged_Heatfluxes.tek')
-         !    write(lunadh,'(a)') '* column  1: minut :'
-         !    write(lunadh,'(a)') '* column  2: T_air :'
-         !    write(lunadh,'(a)') '* column  3: SST   :'
-         !    write(lunadh,'(a)') '* column  4: T_bed :'
-         !    write(lunadh,'(a)') '* column  5: Q_tot :'
-         !    write(lunadh,'(a)') '* column  6: Qsun  : input solar radiation   '
-         !    write(lunadh,'(a)') '* column  7: Qlw   : back radiation'
-         !    write(lunadh,'(a)') '* column  8: Qcon  : convection'
-         !    write(lunadh,'(a)') '* column  9: Qeva  : evaporation'
-         !    write(lunadh,'(a)') '* column 10: Qfrconav : free convection'
-         !    write(lunadh,'(a)') '* column 11: Qfrevaav : free evaporation'
-         !    write(lunadh,'(a)') '* column 12: Wind  :'
-         !    write(lunadh,'(a)') '* column 13: Rhum  :'
-         !    write(lunadh,'(a)') '* column 14: Clou  :'
-         !    write(lunadh,'(a)') '* column 15: Pres  :'
-         !    write(lunadh,'(a)') 'BL01'
-         !    write(lunadh,'(a)') '105125   15 '
-         !endif
-         !write(lunadh,'(20(1x,g12.6))') ( w(i), i = 1,ncols )
-         !endif
-
       end if
 
    contains
@@ -430,8 +410,8 @@ contains
          use precision, only: dp
          real(kind=dp) :: temp !< temperature (degC)
 
-         saturation_pressure = 10d0**((0.7859d0 + 0.03477d0 * temp) / (1d0 + 0.00412d0 * temp))
-         ! 6.1121d0*exp( (18.678d0 - (temp/234.5d0))*(temp/(257.14d0+temp) ) )  ! Buck
+         saturation_pressure = 10.0_dp**((0.7859_dp + 0.03477_dp * temp) / (1.0_dp + 0.00412_dp * temp))
+         ! 6.1121_dp*exp( (18.678_dp - (temp/234.5_dp))*(temp/(257.14_dp+temp) ) )  ! Buck
       end function saturation_pressure
 
    end subroutine heatun

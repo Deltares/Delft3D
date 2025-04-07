@@ -832,6 +832,8 @@ end subroutine deallocstructure
       integer, dimension(:),           intent(in   ) :: links    !< (numlinks) The flow link numbers affected by this structure.
       double precision, dimension(:),  intent(in   ) :: wu       !< (numlinks) The width of the flow links affected by this structure.
       integer                                        :: istat    !< Result status (0 if successful).
+      
+      character(len=16) :: struct_type
 
       istat = 0
       allocate(struct%linknumbers(numlinks), struct%fu(numlinks), struct%ru(numlinks), struct%au(numlinks), struct%u0(numlinks), struct%u1(numlinks))
@@ -844,7 +846,7 @@ end subroutine deallocstructure
       struct%u1 = 0d0
       
       select case(struct%type)
-      case (ST_GENERAL_ST) ! REMARK: for version 2 files weirs, orifices and gates are implemented as general structures
+      case (ST_GENERAL_ST) ! REMARK: for version 2 files weirs, orifices and gates are implemented as general structures.
          allocate(struct%generalst%widthcenteronlink(numlinks), struct%generalst%gateclosedfractiononlink(numlinks), struct%generalst%sOnCrest(numlinks), struct%generalst%state(3,numlinks))
          struct%generalst%sOnCrest(1:numlinks) = 0d0
          struct%generalst%state = 0
@@ -854,10 +856,14 @@ end subroutine deallocstructure
          struct%generalst%au = 0d0
          allocate(struct%generalst%gateclosedfractiononlink(numlinks))
          struct%generalst%gateclosedfractiononlink = 0d0
-      case (ST_CULVERT, ST_UNI_WEIR, ST_ORIFICE, ST_GATE, ST_WEIR, ST_PUMP, ST_BRIDGE)
+      case (ST_PUMP)
+         ! Pump is supported on multiple flow links. Needs no additional initialization here.
+         continue
+      case (ST_CULVERT, ST_UNI_WEIR, ST_ORIFICE, ST_GATE, ST_WEIR, ST_BRIDGE)
          if (numlinks > 1) then
             istat = 1
-            call setmessage(LEVEL_ERROR, 'Multiple links for culvert structures is not supported, check structure'//trim(struct%id))
+            call GetStrucType_from_int(struct%type, struct_type)
+            call setmessage(LEVEL_ERROR, 'Multiple links for '// trim(struct_type) //' structures is not supported, check structure '//trim(struct%id))
          endif
       case (ST_DAMBREAK)
          ! NOTE: flow1d currently does not contain any special computations for dambreak on multiple flow links (2D grid).

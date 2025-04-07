@@ -160,8 +160,6 @@ module m_flowparameters
 
    integer :: jacreep !< Include anti-creep calculation, (0=no, 1=yes)
 
-   integer :: jainirho !< Initialise rho at start at flowinit (otherwise first step without barocl)
-
    integer :: jasecflow !< 0: no, 1: yes
 
    integer :: japillar !< 0: no, 1: yes
@@ -730,8 +728,6 @@ contains
       japillar = 0 ! include pillar (0=no, 1=yes)
 
       jaequili = 0 ! equilibrium secondary flow (0=no, 1=yes)
-
-      jainirho = 1 ! Initialise rho at start at flowinit (otherwise first step without barocl)
 
       jacreep = 0 ! Include anti-creep calculation, (0=no, 1=yes)
 

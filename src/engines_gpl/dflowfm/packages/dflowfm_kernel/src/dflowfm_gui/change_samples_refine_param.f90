@@ -43,7 +43,7 @@ contains
       use dflowfm_version_module, only: company, product_name
       use m_samples_refine
       use m_ec_interpolationsettings, only: interpolationtype
-      use network_data, only: NUMITCOURANT
+      use network_data, only: numitcourant
       use m_helpnow
       use m_save_keys
       use m_restore_keys
@@ -96,7 +96,7 @@ contains
       OPTION(13) = 'USE SAMPLES OUTSIDE CELL (1) OR NOT (0)   '; IT(13 * 2) = 2
       OPTION(14) = 'Number of non-interactive refine cycles ()'; IT(14 * 2) = 2
       OPTION(15) = 'Interpolationtype 2 or 4                ()'; IT(15 * 2) = 2
-      OPTION(16) = 'Numitcourant smoothing cycles           ()'; IT(16 * 2) = 2
+      OPTION(16) = 'numitcourant smoothing cycles           ()'; IT(16 * 2) = 2
 
       HELPM(1) = 'INTEGER VALUE <                                             '
       HELPM(2) = '                                                            '

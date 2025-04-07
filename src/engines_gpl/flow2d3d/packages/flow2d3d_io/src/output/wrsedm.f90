@@ -162,7 +162,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     real(fp)   , dimension(:,:)    , allocatable  :: rbuff2
     real(fp)   , dimension(:,:,:)  , allocatable  :: rbuff3
     character(3)                                  :: sednr
-    character(10)                                 :: transpunit
     character(16)                                 :: dxname
     character(256)                                :: errmsg      ! Character var. containing the errormessage to be written to file. The message depends on the error. 
     character(64)                                 :: dxdescr
@@ -268,14 +267,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
        !
        ! Define elements 
        !
-       select case(moroutput%transptype)
-       case (0)
-          transpunit = 'kg/(s m)'
-       case (1)
-          transpunit = 'm3/(s m)'
-       case (2)
-          transpunit = 'm3/(s m)'
-       end select
        if (lsed > 0) then
           if (moroutput%ws) then
               call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'WS', ' ', io_prec        , 4, dimids=(/iddim_n, iddim_m, iddim_kmaxout, iddim_lsed/), longname='Settling velocity per layer', unit='m/s', acl='z')
@@ -298,44 +289,44 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'USTAR', ' ', io_prec     , 2, dimids=(/iddim_n, iddim_m/), longname='Bed shear velocity U* (zeta point)', unit='m/s', acl='z')
        endif
        if (moroutput%sbcuv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (zeta point)', unit=transpunit, acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
        endif
        if (moroutput%sbcuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (u point)', unit=moroutput%unit_transport_rate, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (v point)', unit=moroutput%unit_transport_rate, acl='v')
        endif
        if (moroutput%sbwuv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (zeta point)', unit=transpunit, acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
        endif
        if (moroutput%sbwuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (u point)', unit=moroutput%unit_transport_rate, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (v point)', unit=moroutput%unit_transport_rate, acl='v')
        endif
        if (moroutput%sswuv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (zeta point)', unit=transpunit, acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport v-direction due to waves (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport v-direction due to waves (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
        endif
        if (moroutput%sswuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Suspended transport v-direction due to waves (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (u point)', unit=moroutput%unit_transport_rate, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Suspended transport v-direction due to waves (v point)', unit=moroutput%unit_transport_rate, acl='v')
        endif
        if (lsedtot > 0 .and. moroutput%sbuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBUU', ' ', io_prec         , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBVV', ' ', io_prec         , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBUU', ' ', io_prec         , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction (u point)', unit=moroutput%unit_transport_rate, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBVV', ' ', io_prec         , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction (v point)', unit=moroutput%unit_transport_rate, acl='v')
        endif
        if (lsed > 0) then
           if (moroutput%seddif) then
              call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SEDDIF', ' ', io_prec      , 4, dimids=(/iddim_n , iddim_m, iddim_kmaxout, iddim_lsed/), longname='Vertical sediment diffusion (zeta point)', unit='m2/s', acl='z')
           endif
           if (moroutput%ssuuvv) then
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSUU', ' ', io_prec      , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Suspended-load transport u-direction (u point)', unit=transpunit, acl='u')
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSVV', ' ', io_prec      , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Suspended-load transport v-direction (v point)', unit=transpunit, acl='v')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSUU', ' ', io_prec      , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Suspended-load transport u-direction (u point)', unit=moroutput%unit_transport_rate, acl='u')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSVV', ' ', io_prec      , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Suspended-load transport v-direction (v point)', unit=moroutput%unit_transport_rate, acl='v')
           endif
           if (moroutput%suvcor) then
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SUCOR', ' ', io_prec  , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Near-bed transport correction u-direction (u point)', unit=transpunit, acl='u')
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SVCOR', ' ', io_prec  , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Near-bed transport correction v-direction (v point)', unit=transpunit, acl='v')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SUCOR', ' ', io_prec  , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Near-bed transport correction u-direction (u point)', unit=moroutput%unit_transport_rate, acl='u')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SVCOR', ' ', io_prec  , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Near-bed transport correction v-direction (v point)', unit=moroutput%unit_transport_rate, acl='v')
           endif
           if (moroutput%sourcesink) then
              call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SOURSE', ' ', io_prec , 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Source term suspended sediment fractions', unit='kg/(m3 s)', acl='z')

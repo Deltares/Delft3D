@@ -40,35 +40,56 @@ module m_flow_allocflow
 
 contains
 
-   subroutine flow_allocflow() ! initialise flow model time independent parameters
+   !> initialise flow model time independent parameters
+   subroutine flow_allocflow() 
       use precision, only: dp
       use m_netw, only: kn
-      use m_flowgeom
-      use m_flow
-      use m_flowtimes
-      use m_missing
-      use unstruc_model
+      use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
+      use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
+          limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop,&
+          kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
+          numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, jaorgFloorlevtoplaydef, dztop, dztopuniabovez, &
+          sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
+          kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
+          dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
+          uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
+          uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
+          qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, jabaroctimeint, &
+          jacreep, dpbdx0, rho0, jabarocterm, rvdn, grn, jarhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
+          workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
+          spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
+          limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, epstke, epseps, &
+          turkinepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, &
+          v, ucxu, ucyu, hu, huvli, au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, &
+          frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
+          salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
+          jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
+          rich, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
+          jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
+      use m_flowtimes, only: dtcell, time_wetground, ja_timestep_auto, ja_timestep_nostruct, ti_waq
+      use m_missing, only: dmiss
+      use unstruc_model, only: md_netfile, md_vertplizfile
       use m_netw, only: numk, numl
-      use m_alloc
-      use m_waves
-      use fm_external_forcings_data, only: nbndw
-      use m_sediment
-      use m_ship
-      use m_sferic
-      use m_partitioninfo
-      use m_integralstats
-      use unstruc_channel_flow
-      use m_bedform
+      use m_alloc, only: aerr, realloc
+      use m_sediment, only: stm_included, jased, sed, grainlay, mxgr, sdupq, jaceneqtr, blinc, sedi
+      use m_ship, only: nshiptxy, zsp0, zspc, zspc0, v0ship, v1ship, qinship, shl, shb, shd, stuw, stuwmx, roer, fstuw, froer, roermx
+      use m_sferic, only: jsferic
+      use m_partitioninfo, only: jampi, reduce_double_min
+      use m_integralstats, only: is_numndvals, is_maxvalsnd, is_sumvalsnd, is_valnamesnd
+      use unstruc_channel_flow, only: network
+      use m_bedform, only: bfm_included, bfmpar
       use m_fm_erosed, only: ucxq_mor, ucyq_mor, hs_mor
       use m_hydrology, only: jadhyd, alloc_hydrology, init_hydrology
-      use m_qnerror
-      use m_get_zlayer_indices
-      use m_get_zlayer_indices_bobL
+      use m_qnerror, only: qnerror
+      use m_get_zlayer_indices, only: getzlayerindices
+      use m_get_zlayer_indices_bobL, only: getzlayerindicesbobL
       use m_filez, only: oldfil
-      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, clou, rain, evap, tair, heatsrc, heatsrc0, & 
-         longwave, patm, rhum, qrad, tbed, rhoair, qext, qextreal, vextcum, cdwcof
+      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, clou, rain, evap, tair, heatsrc, heatsrc0, &
+         longwave, patm, rhum, qrad, tbed, qext, qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_tem, nudge_sal, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
+      use m_turbulence, only: potential_density, in_situ_density
+      use m_physcoef, only: apply_thermobaricity
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -81,11 +102,6 @@ contains
       logical :: jawel
 
       if (ndx == 0) return
-
-! if ( jampi.eq.1 ) then
-!!   synchronise bed level
-!    call update_ghosts(ITYPE_SALL, 1, Ndx, bl, ierror)
-! end if
 
       call ilowercase(md_netfile) ! INTERACTOR!
 
@@ -690,9 +706,22 @@ contains
          call aerr('ucz (ndkx)', ierr, ndkx); ucz = 0
       end if
 
-      if (allocated(rho)) deallocate (rho)
-      allocate (rho(ndkx), stat=ierr)
-      call aerr('rho (ndkx)', ierr, ndkx); rho = rhomean
+      if (allocated(potential_density)) then
+         deallocate (potential_density)
+      end if
+      allocate (potential_density(ndkx), source=rhomean, stat=ierr)
+      call aerr('potential_density (ndkx)', ierr, ndkx)
+
+      if (apply_thermobaricity) then
+         if (allocated(in_situ_density)) then
+            deallocate (in_situ_density)
+         end if
+         allocate (in_situ_density(ndkx), source=rhomean, stat=ierr)
+         call aerr('in_situ_density (ndkx)', ierr, ndkx)
+         rho => in_situ_density
+      else
+         rho => potential_density
+      end if
 
       if (stm_included) then
          if (allocated(rhowat)) deallocate (rhowat)
@@ -1166,13 +1195,6 @@ contains
             allocate (cdwcof(lnx), stat=ierr)
             call aerr('cdwcof(lnx)', ierr, lnx)
             cdwcof = 0d0
-
-            if (jaroro > 1) then ! save rhoair for windstress
-               if (allocated(roair)) deallocate (roair)
-               allocate (roair(ndx), stat=ierr)
-               call aerr('roair(ndx)', ierr, ndx)
-               roair = rhoair
-            end if
 
             if (jamapheatflux > 0 .or. jahisheatflux > 0) then ! his or map output
                if (allocated(qsunmap)) deallocate (Qsunmap, Qevamap, Qconmap, Qlongmap, Qfrevamap, Qfrconmap)

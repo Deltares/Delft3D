@@ -449,7 +449,7 @@
             READ(STRING(POS1+1:),*) NetCdfTimestep
             Call UpperC (NetCdfTimestep(1:1))
             Call LowerC (NetCdfTimestep(2:))
-            GenerateNetCdfOutput = (idum .eq. 1) .or. (idum .eq. -1)
+! March2025 switched-off   GenerateNetCdfOutput = (idum .eq. 1) .or. (idum .eq. -1)
          ELSEIF (STRING(1:POS1-1) .EQ. 'GENERATENETCDFOUTPUT')  THEN
             READ(STRING(POS1+1:),*) Idum     ! 0 = false, 1 or -1 = true
             GenerateNetCdfOutput = (idum .eq. 1) .or. (idum .eq. -1)

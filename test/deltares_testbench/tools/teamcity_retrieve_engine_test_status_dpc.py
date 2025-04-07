@@ -31,7 +31,6 @@ PROJECTS_URL = f"{REST_API_URL}/projects/id:"
 TEST_OCCURRENCES = "./testOccurrences"
 HEADER_FMT = "{:>20s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s}  ---  {:24s} (#{:s})"
 
-
 class TestResultSummary(object):
     """A class to store summary data for test results."""
 
@@ -300,7 +299,8 @@ def get_test_result_list(
     for case_info in engine_cases.list:
         identifier = case_info.identifier
 
-        url = f"{BASE_URL}/httpAuth/app/rest/builds?locator=buildType:(id:{identifier}),defaultFilter:false,branch:<default>&count=1&fields=count,build(number,statistics,status,statusText,testOccurrences,agent,lastChange,tags(tag),pinned,revisions(revision))"
+        url = f"{BASE_URL}/httpAuth/app/rest/builds?locator=buildType:(id:{identifier}),defaultFilter:false,branch:{branch},number:{commit}&count=1&fields=count,build(number,statistics,status,statusText,testOccurrences,agent,lastChange,tags(tag),pinned,revisions(revision))"
+
         case_req = get_request(url, username, password)
         if not text_in_xml_message(case_req.text):
             return 1
@@ -640,6 +640,8 @@ def create_argument_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("-o", "--output", help="Output filename.", dest="out_put")
     parser.add_argument("-b", "--build_config", help="Build configuration ID", dest="build_config")
+    parser.add_argument("-c", "--commit", help="Commit ID or build number", dest="commit")
+    parser.add_argument("-B", "--branch", help="Branch name", dest="branch")
     parser.add_argument("-u", "--username", help="Username for accessing TeamCity.", dest="username")
     parser.add_argument(
         "-p",
@@ -692,6 +694,10 @@ if __name__ == "__main__":
         given_build_config = bconfig.split(",")
     if args.out_put:
         out_put = args.out_put
+    if args.commit:
+        commit = args.commit
+    if args.branch:
+        branch = args.branch
     if args.interactive:
         interactive = args.interactive
     else:

@@ -5,7 +5,6 @@ outfpr,outffl,outfnm,outfdo
 "HeatBal2  ","dTempHtfl2",   1,"x"
 "SelfCool  ","dModtemp  ",   1,"x"
 "Temperatur","dModtemp  ",   1,"x"
-"VarSal    ","dDumVarSal",   1,"x"
 "ResTim    ","dDumResTim",   1,"x"
 "VertDisp  ","dDumVerDis",   1,"x"
 "HorzDisper","dDumHorDis",   1,"x"

@@ -7,7 +7,6 @@ from helpers.ToolData import ToolData
 KERNELS = [
     KernelData(name_for_extracting_revision="DIMRset_ver", name_for_email="DIMRset"),
     KernelData(name_for_extracting_revision="OSS_ver", name_for_email="OSS"),
-    KernelData(name_for_extracting_revision="RTCTools_ver", name_for_email="FBC"),
 ]
 
 # All tools for which a version should be extracted from the Version.txt artifact for creating the SVN log message

@@ -822,11 +822,15 @@ subroutine defnewgrp_core(fds, ifile, gname, gdp, filnam, grpdim, errlog)
           nefisunit = '[ HOUR  ]'
        case ('J/m2')
           nefisunit = '[  J/M2 ]'
+       case ('kg')
+          nefisunit = '[  KG   ]'
+       case ('kg/s', 'kg s-1')
+          nefisunit = '[  KG/S ]'
        case ('kg/m2')
           nefisunit = '[ KG/M2 ]'
        case ('kg/m3')
           nefisunit = '[ KG/M3 ]'
-       case ('kg/(s m)')
+       case ('kg/(s m)', 'kg s-1 m-1')
           nefisunit = '[ KG/S/M]'
        case ('kg/(m3 s)')
           nefisunit = '[KG/M3/S]'
@@ -844,9 +848,11 @@ subroutine defnewgrp_core(fds, ifile, gname, gdp, filnam, grpdim, errlog)
           nefisunit = '[  M/S2 ]'
        case ('m2/s')
           nefisunit = '[  M2/S ]'
-       case ('m3/s')
+       case ('m3')
+          nefisunit = '[  M3   ]'
+       case ('m3/s', 'm3 s-1')
           nefisunit = '[  M3/S ]'
-       case ('m3/(s m)')
+       case ('m3/(s m)', 'm3 s-1 m-1')
           nefisunit = '[ M3/S/M]'
        case ('mm/h')
           nefisunit = '[  MM/H ]'

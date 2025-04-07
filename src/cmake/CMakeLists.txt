@@ -112,10 +112,6 @@ if (WIN32)
     message(STATUS "library directory ${petsc_libdir}")
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
-    # Set the GDAL path
-    set(gisinternals_path ${checkout_src_root}/third_party_open/GISInternals/release-1911-x64/lib)
-    message(STATUS "gisinternals set to ${gisinternals_path}")
-
     # Set the SQLITE3 path
     set(sqlite3_path ${checkout_src_root}/third_party_open/sqlite3/sqlite-3.44.0)
     message(STATUS "sqlite3 set to ${sqlite3_path}")

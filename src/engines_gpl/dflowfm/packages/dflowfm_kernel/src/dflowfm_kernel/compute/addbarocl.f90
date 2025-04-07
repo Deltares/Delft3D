@@ -161,7 +161,7 @@ contains
       use m_flowtimes
       use m_transport, only: ISALT, ITEMP, constituents
       use m_physcoef, only: rhomean
-      use m_densfm, only: densfm
+      use m_density, only: calculate_density
 
       implicit none
       integer, intent(in) :: LL, Lb, Lt
@@ -247,14 +247,14 @@ contains
             saw0 = 2d0 * constituents(isalt, k) - saw1
             tmw0 = 2d0 * constituents(itemp, k) - tmw1
 
-            if (.not. density_is_pressure_dependent()) then
-               rhow0 = densfm(saw0, tmw0, 0d0) - rhomean
+            if (.not. apply_thermobaricity) then
+               rhow0 = calculate_density(saw0, tmw0) - rhomean
             else
                pdb = (zws(ktz) - zws(kz - 1)) * rhomean
                rvk = rvdn(k + 1) + 0.5d0 * dzz * (rhosww(k) + rhosww(k - 1))
                do i = 1, maxitpresdens
                   p0d = ag * (rvk + pdb) ! total pressure
-                  rhow0 = densfm(saw0, tmw0, p0d) - rhomean
+                  rhow0 = calculate_density(saw0, tmw0, p0d) - rhomean
                   rvk = rvdn(k + 1) + 0.5d0 * dzz * (rhosww(k) + rhow0)
                end do
             end if

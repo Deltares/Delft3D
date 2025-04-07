@@ -204,6 +204,7 @@ contains
       use m_drawthis
       use m_startdir
       use m_initscreen
+      use system_utils, only: split_filename
 
       implicit none
       integer :: i, INTINIT, ISTAT, maxarctiler, maxsamarcr
@@ -224,6 +225,8 @@ contains
 
       character(len=76) :: filnam
       character(len=180) :: inifilename
+      character(len=256) :: exe_fullpath, exe_dir, exe_name 
+      character(:), allocatable :: ini_install_path
 
       type(tree_data), pointer :: ini_ptr !< Unstruc.ini settings in tree_data
 
@@ -241,15 +244,22 @@ contains
 
       call readIniFile(inifilename, ini_ptr, errmsg=msgbuf, istat=istat)
       if (istat /= 0) then
-         ! make default unstruc.ini, try again
-         call makeunstrucini(filnam, istat)
-         if (istat == 0) then
-            call readIniFile(inifilename, ini_ptr, errmsg=msgbuf, istat=istat)
-            if (istat /= 0) then
+         ! try reading unstruc.ini from install directory
+         call get_command_argument(0, exe_fullpath, status=istat)
+         call split_filename(exe_fullpath, exe_dir, exe_name)
+         ini_install_path = trim(exe_dir)//'../share/interacter/'//trim(inifilename)
+         call readIniFile(ini_install_path, ini_ptr, errmsg=msgbuf, istat=istat)
+         if (istat /= 0) then
+            ! make default unstruc.ini, try again
+            call makeunstrucini(filnam, istat)
+            if (istat == 0) then
+               call readIniFile(inifilename, ini_ptr, errmsg=msgbuf, istat=istat)
+               if (istat /= 0) then
+                  call err_flush()
+               end if
+            else
                call err_flush()
             end if
-         else
-            call err_flush()
          end if
       end if
 
@@ -317,7 +327,12 @@ contains
       call prop_get(ini_ptr, 'isocol', 'COLTABFILE', coltabfile)
       inquire (file=trim(coltabfile), exist=jawel)
       if (.not. jawel) then
-         coltabfile = 'ISOCOLOUR.hls'
+         ! try reading unstruc.ini from install directory
+         coltabfile = trim(exe_dir)//'../share/interacter/ISOCOLOUR.hls'
+         inquire (file=trim(coltabfile), exist=jawel)
+         if (.not. jawel) then !set to default
+            coltabfile = 'ISOCOLOUR.hls'
+         end if
       end if
 
       coltabfile2 = coltabfile

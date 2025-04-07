@@ -57,7 +57,6 @@ contains
       use unstruc_netcdf, only: crs
 #ifdef HAVE_PROJ
       use coordinate_reference_system, only: transform_coordinates, WGS84_PROJ_STRING
-      use proj6
 #endif
 
       integer :: ierr !< Result status (DFM_NOERR if successful)

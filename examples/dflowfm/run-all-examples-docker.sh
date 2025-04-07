@@ -1,33 +1,25 @@
 #!/bin/bash
 
-IMAGE="containers.deltares.nl/delft3d/legacy/delft3dfm:latest"
+# Initialize variables
+image="containers.deltares.nl/delft3d/delft3dfm:daily"  # Default value
 
-MPI_DIR=/opt/apps/intelmpi/2021.10.0/mpi/2021.10.0
-PATH=$MPI_DIR/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/intel/mpi/bin:/opt/intel/mpi/libfabric/bin
-LD_LIBRARY_PATH=$MPI_DIR/lib:$MPI_DIR/lib/release:/opt/intel/mpi/lib:/opt/intel/mpi/libfabric/lib
+# Parse command-line arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --image) image="$2"; shift ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+    shift
+done
 
-# Pull the Docker image
-docker pull $IMAGE
-
-# List all subfolders in the current directory and run the script if it exists
-for dir in */; do
-    echo "Checking folder: $dir"
+# Loop through each subdirectory
+for dir in */ ; do
+    # Check if run_docker.sh exists in the subdirectory
     if [ -f "$dir/run_docker.sh" ]; then
-		cd $dir
-		echo "##teamcity[testStarted name='$dir' captureStandardOutput='true']"
-		docker run \
-			-v "$(pwd):/data" \
-			-v "$MPI_DIR:$MPI_DIR" \
-			-v "/usr/:/host" \
-			-e PATH=$PATH \
-			-e LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
-			-e FI_PROVIDER_PATH=/opt/intel/mpi/libfabric/lib/prov \
-			-e I_MPI_FABRICS=shm \
-			--shm-size 8G \
-			$IMAGE
-		echo "##teamcity[testFinished name='$dir']"
-		cd ..
+        echo "Found run_docker.sh in $dir. Executing..."
+        # Run the script
+        (cd "$dir" && ./run_docker.sh --image "$image")
     else
-        echo "No run script in $(pwd)"
+        echo "No run_docker.sh found in $dir."
     fi
 done

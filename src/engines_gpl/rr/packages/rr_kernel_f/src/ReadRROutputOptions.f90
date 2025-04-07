@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
         Subroutine ReadRROutputOptions (InputFileName, MaxSeriesPerMap, NMAP)
@@ -50,16 +50,16 @@
 
   use DH_Alloc
   use RR_PROPERTIES
-  !use dio_prop !all the prop_get stuff is defined here too. 
+  !use dio_prop !all the prop_get stuff is defined here too.
   !prop_seems to defined in properties, in dio-prop.F90 and propert.f90
-  
+
   use Readlib
   use Conf_Fil
   use Network
 
 
   IMPLICIT NONE
- 
+
     Character(Len=FilCharIdLength) InputFileName
 
     Logical       success
@@ -68,8 +68,8 @@
 
 
 !  Get info from Ini file
-    Call LowerC(InputFileName)
-    Call Prop_file (InputFileName)
+!   Call LowerC(InputFileName)     ! causes file-not-found error on LINUX
+!20-3 Switch off, all output default on   Call Prop_file (InputFileName)
 
 ! fill with default values, if nothing specified
     Success = DH_AllocInit (MaxSeriesPerMap(1), OutputPaved, -1)

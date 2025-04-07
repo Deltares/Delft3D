@@ -27,15 +27,19 @@ object TestPythonCiTools : BuildType({
 
     vcs {
         root(DslContext.settingsRoot)
+        excludeDefaultBranchChanges = true  // Only include changes made within the branch of this build.
         cleanCheckout = true
     }
 
     triggers {
-        vcs { // Trigger builds python files inside the 'ci' folder are modified.
+        vcs { 
+            // Trigger this build only if there are changes to the files matching these rules.
+            // Absolute paths match paths relative to the VCS root.
+            // See: https://www.jetbrains.com/help/teamcity/configuring-vcs-triggers.html#General+Syntax
             triggerRules = """
-                +:ci/python/**/*.py
-                +:ci/python/pyproject.toml
-                +:ci/python/uv.lock
+                +:/ci/python/**/*.py
+                +:/ci/python/pyproject.toml
+                +:/ci/python/uv.lock
             """.trimIndent()
             branchFilter = "+:merge-requests/*"
         }
