@@ -654,11 +654,14 @@ contains
          call realloc(xyobs, 2 * (nummovobs + capacity_))
          call realloc(kobs, numobs + nummovobs + capacity_)
          call realloc(lobs, numobs + nummovobs + capacity_)
+         call realloc(neighbour_nodes_obs, [3, numobs + nummovobs + capacity_])
+         call realloc(neighbour_weights_obs, [3, numobs + nummovobs + capacity_])
          call realloc(namobs, numobs + nummovobs + capacity_)
          call realloc(smxobs, numobs + nummovobs + capacity_)
          call realloc(cmxobs, numobs + nummovobs + capacity_)
          call realloc(locTpObs, numobs + nummovobs + capacity_)
          call realloc(obs2OP, numobs + nummovobs + capacity_)
+         call realloc(intobs, numobs + nummovobs + capacity_)
       end if
 
       ! Before adding new normal observation station:
@@ -674,6 +677,7 @@ contains
             cmxobs(i + 1) = cmxobs(i)
             locTpObs(i + 1) = locTpObs(i)
             obs2OP(i + 1) = obs2OP(i)
+            intobs(i + 1) = intobs(i)
          end do
          numobs = numobs + 1
          inew = numobs
@@ -685,6 +689,7 @@ contains
       ! Add the actual station (moving or static)
       xobs(inew) = x
       yobs(inew) = y
+      intobs(inew) = 0
       namobs(inew) = name_
       kobs(inew) = -999 ! Cell number is set elsewhere
       lobs(inew) = -999 ! Flow link number is set elsewhere
@@ -789,6 +794,7 @@ contains
             k = k + 1
             xobs(k) = xobs(i)
             yobs(k) = yobs(i)
+            intobs(k) = intobs(i)
             kobs(k) = kobs(i)
             lobs(k) = lobs(i)
             namobs(k) = namobs(i)
@@ -819,6 +825,9 @@ contains
          deallocate (cmxobs)
          deallocate (locTpObs)
          deallocate (obs2OP)
+        deallocate (intobs)
+         deallocate (neighbour_nodes_obs)
+         deallocate (neighbour_weights_obs)
       end if
 
       call dealloc(network%obs) ! deallocate obs (defined in *.ini file)
@@ -833,6 +842,9 @@ contains
       allocate (cmxobs(capacity_))
       allocate (locTpObs(capacity_))
       allocate (obs2OP(capacity_))
+      allocate (intobs(capacity_))
+      allocate (neighbour_nodes_obs(3, capacity_))
+      allocate (neighbour_weights_obs(3, capacity_))
 
       kobs = -999
       lobs = -999
@@ -866,12 +878,15 @@ contains
          tok = index(filename, '.xy')
          if (tok > 0) then
             call loadObservations_from_xyn(filename)
-         else
-            tok = index(filename, '.ini')
-            if (tok > 0) then
-               call readObservationPoints(network, filename)
-               call addObservation_from_ini(network, filename)
-            end if
+         end if
+         tok = index(filename, '.pli')
+         if (tok > 0) then
+             call loadObservations_from_pli(filename)
+        end if
+         tok = index(filename, '.ini')
+         if (tok > 0) then
+            call readObservationPoints(network, filename)
+            call addObservation_from_ini(network, filename)
          end if
       else
          call mess(LEVEL_ERROR, "Observation file '"//trim(filename)//"' not found!")
@@ -944,4 +959,28 @@ contains
 
    end subroutine saveObservations
 
+   subroutine loadObservations_from_pli(filename)
+      
+      use m_filez,   only: oldfil
+      use m_polygon
+      use m_reapol_nampli, only: reapol_nampli
+      
+
+      implicit none
+      character(len=*), intent(in) :: filename
+      
+      ! locals
+      integer                       :: minp,istat, ipli 
+      character(5)                  :: numstr 
+
+      call oldfil(minp, filename)
+      ipli = 0
+      call reapol_nampli(minp, 0, 1, ipli)
+      
+      do istat = 1, npl
+          write(numstr,'(i4.4)') istat
+          call addObservation(xpl(istat), ypl(istat), trim(nampli(1))//'_'//numstr)
+          intobs(numobs) = 1
+      end do
+   end subroutine loadObservations_from_pli
 end module m_observations

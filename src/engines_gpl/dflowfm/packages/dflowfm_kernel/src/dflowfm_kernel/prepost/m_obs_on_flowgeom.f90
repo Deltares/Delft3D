@@ -41,7 +41,7 @@ contains
 !! Results are stored in `m_observations` state arrays.
    subroutine obs_on_flowgeom(iobstype)
 
-      use m_observations_data, only: numobs, nummovobs, kobs, namobs
+      use m_observations_data, only: numobs, nummovobs, kobs, namobs, neighbour_nodes_obs, neighbour_weights_obs
       use unstruc_messages, only: loglevel_StdOut
       use messagehandling, only: LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
       use m_flowgeom, only: ndx2D, ndxi
@@ -53,7 +53,7 @@ contains
 
       integer :: n1, n2, iobs
       logical :: cache_success
-
+      
       if (iobstype == 0) then
          ! Only normal stations
          n1 = 1
@@ -81,9 +81,13 @@ contains
          if ((iobstype == 1 .or. iobstype == 2) .and. nummovobs > 0) then
             call find_flownodes_and_links_for_all_observation_stations(numobs + 1, numobs + nummovobs)
          end if
-      else
-         ! No cache, so process all requested observation points.
-         call find_flownodes_and_links_for_all_observation_stations(n1, n2)
+    else
+         ! No cache, so process all requested observation points (only if there are observation point to process).
+         if (n2 - n1 >= 0) then 
+             call find_flownodes_and_links_for_all_observation_stations(n1, n2)
+
+             call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs)
+         end if
       end if
 
       if (loglevel_StdOut == LEVEL_DEBUG) then
@@ -252,4 +256,54 @@ contains
 
    end subroutine find_flownodes_and_links_for_all_observation_stations
 
+  subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end,neighbour_nodes_obs,neighbour_weights_obs)
+      
+      use m_observations_data      , only: xobs, yobs, numobs, nummovobs  
+      use m_flowgeom               , only: xz, yz, ndx2d
+      use m_missing                , only: dmiss
+      use m_sferic                 , only: jsferic, jasfer3D
+      use fm_external_forcings_data, only: transformcoef
+      use m_polygon                , only: npl, xpl, ypl, zpl
+      use m_samples                , only: mxsam, mysam 
+      use precision                , only: dp
+      use m_alloc
+      
+      use m_ec_basic_interpolation, only: triinterp2
+      ! use m_ec_triangle, only: jagetwf
+      use m_ec_triangle, only: jagetwf, indxx, wfxx
+ 
+      
+      integer      ,                            intent(in)    :: n_start !< Starting index of obs
+      integer      ,                            intent(in)    :: n_end   !< Ending index of obs
+      integer      , dimension(3,n_start:n_end),intent(inout) :: neighbour_nodes_obs    ! Table of nearby flow node numbers for each station
+      real(kind=dp), dimension(3,n_start:n_end),intent(inout) :: neighbour_weights_obs  ! Table of interpolation weights for nearby flow node numbers for each station
+      
+      integer                                         :: jdla, i, jagetwf_org
+      real(kind=dp), allocatable                      :: dummyZ (:)
+      real(kind=dp), allocatable                      :: dumout (:)
+      
+      ! Create arrays with dummy z values(samples and output, needto deallocate?)
+      call realloc(dummyZ,ndx2d             , keepexisting=.false., fill=dmiss)
+      call realloc(dumout,numobs + nummovobs, keepexisting=.false., fill=dmiss)
+      
+      ! interpolate
+      jagetwf_org = jagetwf
+      jdla     = 1
+      jagetwf  = 1
+           
+      call realloc(indxx, (/3, numobs + nummovobs/), keepexisting=.false., fill=0)
+      call realloc(wfxx, (/3, numobs + nummovobs/), keepexisting=.false., fill=0d0)
+            
+      call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx2d), yz(1:ndx2d), dummyZ, ndx2d, dmiss, jsferic, 1   , &
+                                jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef)
+      
+      do i = 1, numobs + nummovobs
+         neighbour_nodes_obs  (:, i) = indxx(:, i)
+         neighbour_weights_obs(:, i) = wfxx (:, i)
+      end do
+      
+      jagetwf = jagetwf_org
+
+  end subroutine  init_interpolation_data_for_all_observation_stations
+  
 end module m_obs_on_flowgeom
