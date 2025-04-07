@@ -113,6 +113,7 @@ module properties
    public :: prop_file, prop_inifile, prop_write_xmlfile, prop_write_inifile, prop_get_alloc_string
    public :: node_value, tree_data, tree_get_name, tree_create, tree_create_node, tree_put_data, tree_get_node_by_name, tree_get_data_ptr, tree_remove_child_by_name
    public :: tree_destroy, tree_add_node, tree_disconnect_node, tree_get_data_string, tree_num_nodes, tree_traverse_level, tree_count_nodes_byname, tree_fold, tree_traverse, maxlen
+   public :: visit_tree
 
 contains
    ! ====================================================================
@@ -1827,23 +1828,23 @@ contains
          success = success_
       end if
    end subroutine prop_get_alloc_string
-   !
-   !
-   ! ====================================================================
-   subroutine visit_tree(tree, direction)
-      type(TREE_DATA), pointer :: tree
+
+   !> Marks a tree node and its entire subtree as visited.
+   !! Can be used later to check visit count or properties that have not been
+   !! read at all.
+   subroutine visit_tree(tree, mode)
+      type(TREE_DATA), pointer :: tree !< The current node/root of the tree that should be visited.
+      integer, intent(in) :: mode !< Mode: 1 = visit, -1 = unvisit (will decrement visit count).
+
       character(len=1), dimension(0) :: data
       logical :: stop
-      integer, intent(in) :: direction
-      if (direction > 0) then
+      if (mode > 0) then
          call tree_traverse(tree, node_visit, data, stop)
       else
          call tree_traverse(tree, node_unvisit, data, stop)
       end if
    end subroutine visit_tree
-   !
-   !
-   ! ====================================================================
+
    subroutine node_visit(node, data, stop)
       use TREE_DATA_TYPES
       type(TREE_DATA), pointer :: node

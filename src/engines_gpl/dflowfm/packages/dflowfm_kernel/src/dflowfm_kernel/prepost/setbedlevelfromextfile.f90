@@ -57,8 +57,6 @@ contains
       use dfm_error
       use unstruc_netcdf
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-      use fm_deprecated_keywords, only: deprecated_ext_keywords
-      use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       use m_delpol
       use m_timespaceinitialfield_mpi
@@ -232,9 +230,6 @@ contains
          if (mext /= 0) then
             rewind (mext)
          end if
-
-         call check_file_tree_for_deprecated_keywords(inifield_ptr, deprecated_ext_keywords, istat, prefix='While reading ''' &
-                                                      //trim(md_inifieldfile)//'''')
 
          ! Clean up *.ini file.
          call tree_destroy(inifield_ptr)

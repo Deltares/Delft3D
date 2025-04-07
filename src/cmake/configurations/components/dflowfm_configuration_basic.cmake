@@ -50,9 +50,6 @@ endif()
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_base.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_dflowfm_online_coupling.cmake)
 
-
-
-
 # Morphology
 if(NOT TARGET morphology_plugins_c)
     add_subdirectory(${checkout_src_root}/${morphology_plugins_c_module} morphology_plugins_c)

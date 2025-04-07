@@ -1,3 +1,5 @@
+#define no_warning_unused_dummy_argument(x) associate( x => x ); end associate
+
 !> Module that contains general functions to check for deprecated keywords
 module m_deprecation
    implicit none
@@ -93,6 +95,21 @@ contains
       keyword = get_keyword(chapter, key, set, OBSOLETE)
       res = keyword%deprecation_level /= UNDEFINED
    end function is_obsolete
+
+   !> Check if a keyword should lead to warning when given by user but not used by program.
+   !! Typically, this is the case for non-user settings/technical metadata that the user should not change.
+   function needs_usage_warning(chapter, key) result(res)
+      use string_module, only: strcmpi
+      character(len=*), intent(in) :: chapter !< Chapter name
+      character(len=*), intent(in) :: key !< Keyword name
+      logical :: res !< whether the keyword needs a warning when not used by program.
+
+      no_warning_unused_dummy_argument(key)
+
+      ! General::fileVersion/fileType may not have been read, but that is not up to the user.
+      res = .not. strcmpi(chapter, "General")
+
+   end function needs_usage_warning
 
    !> Retrieve optional additional information for a keyword.
    subroutine print_additional_keyword_information(chapter, key, set, prefix)
@@ -201,7 +218,7 @@ contains
                         num_obsolete = num_obsolete + 1
                         call mess(LEVEL_ERROR, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//' is obsolete.')
                         call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
-                     else
+                     else if (needs_usage_warning(trim(chapter_name), trim(node_name))) then
                         ! keyword unknown, or known keyword that was not accessed because of the reading was switched off by the value of another keyword
                         call mess(LEVEL_WARN, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//'='//trim(node_string)//' was in file, but not used. Check possible typo.')
                      end if

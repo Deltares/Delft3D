@@ -592,8 +592,7 @@ contains
         FileName = ConfFil_get_namFil(10)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !pluvius.3b_cleaned
-        Write(*,*) ' Cleaning pluvius.3b to file:', FileName
-        Write(iout1,*) ' Cleaning pluvius.3b to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Pluvius.3b for RR-NWRW Urban input to file', FileName)
    endif
 ! *********************************************************************
 ! Read Pluvius.3B file
@@ -834,8 +833,7 @@ contains
         FileName = ConfFil_get_namFil(9)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !pluvius.dwa_cleaned
-        Write(*,*) ' Cleaning Pluvius.dwa to file:', FileName
-        Write(iout1,*) ' Cleaning Pluvius.dwa to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Pluvius.dwa for RR-NWRW Urban input to file', FileName)
    endif
 ! *********************************************************************
 !Pluvius.Dwa file
@@ -977,8 +975,7 @@ contains
         FileName = ConfFil_get_namFil(106)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !Pluvius.tbl_cleaned
-        Write(*,*) ' Cleaning Pluvius.tbl file:', FileName
-        Write(iout1,*) ' Cleaning Pluvius.tbl file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Pluvius.tbl for RR-NWRW Urban input to file', FileName)
    endif
 
 ! **************************************
@@ -998,8 +995,7 @@ contains
        IF (ENDFIL) GOTO 5111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer NWRWModule too small'
-           Write(iout1,*) 'local buffer NWRWModule too small'
+           Call ErrMsgStandard (999, 3, ' Local buffer RR-NWRWmodule DW_T record too small', ' Input skipped')
            GOTO 5111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -1427,8 +1423,7 @@ contains
         FileName = ConfFil_get_namFil(10)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !pluvius.3b_cleaned
-        Write(*,*) ' Cleaning pluvius.3b to file:', FileName
-        Write(iout1,*) ' Cleaning pluvius.3b to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Pluvius.3b for RR-NWRW Urban input to file', FileName)
    endif
 ! *********************************************************************
 ! Read Pluvius.3B file
@@ -1561,7 +1556,7 @@ contains
     enddo
  21 Continue
     If (teller .lt. NcPluv)  Then
-       Write(*,*) ' Read ', Teller, ' Expected', ncPluv
+!       Write(*,*) ' Read ', Teller, ' Expected', ncPluv
        call ErrMsgStandard (972, 0, ' Not enough data for all NWRW-nodes in schematisation found', &
                             ' Some NWRW-nodes from schematisation not present in Pluvius.3B file')
     Endif
@@ -1580,8 +1575,7 @@ contains
         FileName = ConfFil_get_namFil(9)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !pluvius.dwa_cleaned
-        Write(*,*) ' Cleaning Pluvius.dwa to file:', FileName
-        Write(iout1,*) ' Cleaning Pluvius.dwa to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Pluvius.dwa for RR-NWRW Urban input to file', FileName)
    endif
 ! *********************************************************************
 !Pluvius.Dwa file
@@ -1721,8 +1715,7 @@ contains
         FileName = ConfFil_get_namFil(106)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !Pluvius.tbl_cleaned
-        Write(*,*) ' Cleaning Pluvius.tbl file:', FileName
-        Write(iout1,*) ' Cleaning Pluvius.tbl file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Pluvius.tbl for RR-NWRW Urban input to file', FileName)
    endif
 
 ! **************************************
@@ -1741,8 +1734,7 @@ contains
        Success = GetRecord(Infile4, 'DW_T', Endfil, idebug, Iout1)     ! get record van keyword DW_T tot dw_t, zet in buffer
        IF (ENDFIL) GOTO 5111
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer NWRWModule too small'
-           Write(iout1,*) 'local buffer NWRWModule too small'
+           Call ErrMsgStandard (999, 3, ' Local buffer RR-NWRWmodule, DW_T record, too small', ' Input skipped')
            GOTO 5111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found

@@ -78,9 +78,12 @@ contains
       use m_flow_trachy_needs_update
       use m_set_frcu_mor
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
+      use m_transportdata, only: numconst
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
+      
+      integer :: i_const
 
       call timstrt('External forcings', handle_ext)
 
@@ -170,6 +173,12 @@ contains
          ! qstss must be an argument when calling ec_gettimespacevalue.
          ! It might be reallocated after initialization (when coupled to Cosumo).
          success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, qstss)
+
+         !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds, qstss)
+         call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_discharge, time_in_seconds)
+         do i_const = 1,numconst
+            call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_constituent_delta(i_const), time_in_seconds)
+         end do
       end if
 
       if (jasubsupl > 0) then
@@ -652,7 +661,7 @@ contains
 
    end subroutine retrieve_rainfall
 
-!> update_network_data
+   !> update_network_data
    subroutine update_network_data(time_in_seconds)
       use precision, only: dp
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
@@ -676,6 +685,12 @@ contains
       if (network%sts%numOrifices > 0) then
          call get_timespace_value_by_item(item_orifice_crestLevel, time_in_seconds)
          call get_timespace_value_by_item(item_orifice_gateLowerEdgeLevel, time_in_seconds)
+      end if
+
+      if (network%sts%numGates > 0) then
+         call get_timespace_value_by_item(item_gate_crestLevel, time_in_seconds)
+         call get_timespace_value_by_item(item_gate_gateLowerEdgeLevel, time_in_seconds)
+         call get_timespace_value_by_item(item_gate_gateOpeningWidth, time_in_seconds)
       end if
 
       if (network%sts%numGeneralStructures > 0) then

@@ -166,8 +166,7 @@ module Rwzi
         FileName = ConfFil_get_namFil(59)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !wwtp.3b_cleaned
-        Write(*,*) ' Cleaning wwtp.3b to file:', FileName
-        Write(iout1,*) ' Cleaning wwtp.3b to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning wwtp.3b for RR-wwtp input to file', FileName)
    endif
 ! *********************************************************************
 ! read wwtp.3b
@@ -242,8 +241,7 @@ module Rwzi
         FileName = ConfFil_get_namFil(60)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !wwtp.tbl_cleaned
-        Write(*,*) ' Cleaning wwtp.tbl to file:', FileName
-        Write(iout1,*) ' Cleaning wwtp.tbl:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning wwtp.tbl for RR-wwtp input to file', FileName)
    endif
 ! *********************************************************************
 ! read wwtp.tbl
@@ -259,8 +257,7 @@ module Rwzi
         IF (ENDFIL) GOTO 3111
         Success = GetStringFromBuffer (KeepBufString)
         IF (.not. Success .and. CleanRRFiles)   then
-            Write(*,*) 'local buffer RWZIModule too small'
-            Write(iout1,*) 'local buffer RWZIModule too small'
+            Call ErrMsgStandard (999, 3, ' Local buffer RWZIodule MEAS record too small', ' Input skipped')
             GOTO 3111
         Endif
         Success = GetTableName (TabYesNo, TableName, ' id ', Iout1) ! get table name via keyword ' id ', TabYesNo=TBLE found

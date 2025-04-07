@@ -62,10 +62,10 @@ module m_xbeach_data
    real(kind=dp), allocatable :: E(:) !< bulk wave energy in nodes
    real(kind=dp), allocatable :: DR(:) !< Bulk roller dissipation
    real(kind=dp), allocatable :: R(:) !< Bulk roller energy
-   real(kind=dp), allocatable :: thet(:, :) !< centre angle dir bin in each node
+   real(kind=dp), allocatable, target :: thet(:, :) !< centre angle dir bin in each node
    real(kind=dp), allocatable :: costh(:, :)
    real(kind=dp), allocatable :: sinth(:, :)
-   real(kind=dp), allocatable :: thet_s(:, :)
+   real(kind=dp), allocatable, target :: thet_s(:, :)
    real(kind=dp), allocatable :: sinth_s(:, :)
    real(kind=dp), allocatable :: costh_s(:, :)
    real(kind=dp), allocatable :: Sxx(:) !< Radiation stresses
@@ -160,8 +160,8 @@ module m_xbeach_data
    !< Relaxated depth and velocities
    real(kind=dp), dimension(:), allocatable :: hhw !< mode dependent water depth
    real(kind=dp), dimension(:), allocatable :: hhws !< depth with relaxation, singledir
-   real(kind=dp), dimension(:), allocatable :: ucxws !< ucx with relaxation, singledir
-   real(kind=dp), dimension(:), allocatable :: ucyws !< ucy with relaxation, singledir
+   real(kind=dp), dimension(:), allocatable, target :: ucxws !< ucx with relaxation, singledir
+   real(kind=dp), dimension(:), allocatable, target :: ucyws !< ucy with relaxation, singledir
    real(kind=dp), dimension(:), allocatable :: hhwwci !< depth with relaxation, wci
    real(kind=dp), dimension(:), allocatable :: km !< wave number k with wci
    real(kind=dp), dimension(:), allocatable :: umwci !< ucx with relaxation,  wci
