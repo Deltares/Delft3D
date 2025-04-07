@@ -126,7 +126,7 @@ contains
             ipol = 0
             allocate (dSL(Lnx))
             dSL = 0d0
-            call find_crossed_links_kdtree2(treeglob, num, xx, yy, 2, Lnx, 1, intersection_count, iLink, ipol, dSL, ierror)
+            call find_crossed_links_kdtree2(treeglob, num, xx, yy, ITYPE_FLOWLINK, Lnx, 1, intersection_count, iLink, ipol, dSL, ierror)
 
             call save_link_list(intersection_count, iLink, ipol)
          end if

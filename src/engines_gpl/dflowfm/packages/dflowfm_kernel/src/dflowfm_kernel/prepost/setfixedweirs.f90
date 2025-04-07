@@ -190,7 +190,7 @@ contains
          success = .false.
       end if
       if (.not. success) then
-         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, 2, num_intersections, 2, intersection_count, iLink, iPol, dSL, ierror)
+         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, num_intersections, 2, intersection_count, iLink, iPol, dSL, ierror)
          call cache_fixed_weirs(npl, xpl, ypl, intersection_count, iLink, iPol, dSL)
       end if
       call wall_clock_time(t_extra(2, 3))

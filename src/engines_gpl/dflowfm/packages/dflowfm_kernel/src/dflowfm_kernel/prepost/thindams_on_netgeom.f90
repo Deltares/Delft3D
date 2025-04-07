@@ -53,7 +53,7 @@ contains
       use kdtree2Factory, only: treeglob
       use m_wall_clock_time, only: wall_clock_time
       use m_delpol, only: delpol
-      use m_find_crossed_links_kdtree2, only: find_crossed_links_kdtree2
+      use m_find_crossed_links_kdtree2, only: find_crossed_links_kdtree2, ITYPE_NETLINK_DUAL
       use m_get_link_neighboring_cell_coords, only: get_link_neighboringcellcoords
       use m_append_crspath_to_pol, only: appendCRSPathToPol
       use unstruc_caching, only: cache_retrieved, cache_thin_dams, copy_cached_thin_dams
@@ -114,7 +114,7 @@ contains
                end if
             end do
 
-            call find_crossed_links_kdtree2(treeglob, NPL, xpl, ypl, 1, numL, 0, intersection_count, iLink, iPol, dSL, ierror)
+            call find_crossed_links_kdtree2(treeglob, NPL, xpl, ypl, ITYPE_NETLINK_DUAL, numL, 0, intersection_count, iLink, iPol, dSL, ierror)
             if (ierror /= 0) then
                !          disable kdtree
                jakdtree = 0

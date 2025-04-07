@@ -123,7 +123,7 @@ contains
          allocate (dSL(Lnx))
          dSL = 0d0
          ! use itype 3, as we want crossing the edge, not the connection between adjoint cells
-         call find_crossed_links_kdtree2(treeglob, num, xx, yy, 3, Lnx, 1, intersection_count, iLink, ipol, dSL, ierror)
+         call find_crossed_links_kdtree2(treeglob, num, xx, yy, ITYPE_NETLINK, Lnx, 1, intersection_count, iLink, ipol, dSL, ierror)
 
          !call save_link_list( intersection_count, iLink, ipol )   to do caching
          !endif

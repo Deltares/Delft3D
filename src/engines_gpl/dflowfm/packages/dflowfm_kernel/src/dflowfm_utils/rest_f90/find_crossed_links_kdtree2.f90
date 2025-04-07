@@ -31,6 +31,12 @@
 !
 module m_find_crossed_links_kdtree2
    implicit none
+   
+   integer, parameter :: ITYPE_NETLINK_DUAL = 1
+   integer, parameter :: ITYPE_FLOWLINK = 2
+   integer, parameter :: ITYPE_NETLINK = 3
+   integer, parameter :: ITYPE_FLOWLINK_1D_DUAL = 4
+   
 contains
 !---------------------------------------------------------------
 ! the following subroutines use kdtree2

@@ -54,7 +54,7 @@ contains
       use network_data, only: numl, lne, maxpoly
       use timespace, only: read1polylin
       use kdtree2Factory, only: treeglob
-      use m_find_crossed_links_kdtree2, only: find_crossed_links_kdtree2
+      use m_find_crossed_links_kdtree2, only: find_crossed_links_kdtree2, ITYPE_NETLINK
       use m_filez, only: oldfil
 
       integer, intent(in) :: size_istrucells !< size of istrucells array
@@ -136,7 +136,7 @@ contains
          end if
          nstru_read2 = nstru_read2 + 1
 
-         call find_crossed_links_kdtree2(treeglob, npl_tmp, xpl_tmp, ypl_tmp, 3, numL, 1, nstrulinks, istrulinks, iPol_tmp, dSL_tmp, ierror)
+         call find_crossed_links_kdtree2(treeglob, npl_tmp, xpl_tmp, ypl_tmp, ITYPE_NETLINK, numL, 1, nstrulinks, istrulinks, iPol_tmp, dSL_tmp, ierror)
          if (ierror /= 0) then
             write (msgbuf, '(a, a, a)') 'Error occurs when finding crossed polyline of structure ''', trim(strid), '''.'
             call warn_flush()

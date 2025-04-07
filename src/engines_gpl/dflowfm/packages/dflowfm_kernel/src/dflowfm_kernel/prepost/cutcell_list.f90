@@ -390,7 +390,7 @@ contains
          end do
 
 !       find crossed links
-         call find_crossed_links_kdtree2(kdtree, num, x, y, 3, numL, 1, intersection_count, iLink, iPol, dsL, ierror)
+         call find_crossed_links_kdtree2(kdtree, num, x, y, ITYPE_NETLINK, numL, 1, intersection_count, iLink, iPol, dsL, ierror)
          deallocate (x, y)
          if (ierror /= 0) goto 1234
 

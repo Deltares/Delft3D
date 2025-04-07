@@ -1866,7 +1866,7 @@ contains
          ipol = 0
          allocate (dSL(Lnx))
          dSL = 0
-         call find_crossed_links_kdtree2(treeglob, npl, xpl, ypl, 2, Lnx, 0, nxln, iLnx, ipol, dSL, iresult)
+         call find_crossed_links_kdtree2(treeglob, npl, xpl, ypl, ITYPE_FLOWLINK, Lnx, 0, nxln, iLnx, ipol, dSL, iresult)
          if (iresult /= DFM_NOERR) then
             goto 888
          end if

@@ -116,7 +116,7 @@ contains
          if (japol == 0) then
             kc = 0
             allocate (iLink(Lnx), ipol(Lnx), dSL(Lnx))
-            call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, 4, Lnx, 1, intersection_count, iLink, iPol, dSL, ierror)
+            call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK_1D_DUAL, Lnx, 1, intersection_count, iLink, iPol, dSL, ierror)
             do LL = 1, intersection_count
                L = ilink(LL)
                kc(ln(1, L)) = 1; kc(ln(2, L)) = 1

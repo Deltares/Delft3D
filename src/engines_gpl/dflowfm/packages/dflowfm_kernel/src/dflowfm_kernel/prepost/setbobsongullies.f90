@@ -77,7 +77,7 @@ contains
       if (jakdtree == 1) then
          call wall_clock_time(t0)
          allocate (iLink(Lnx), ipol(Lnx), dSL(Lnx))
-         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, 2, numL, 0, intersection_count, iLink, iPol, dSL, ierror)
+         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, numL, 0, intersection_count, iLink, iPol, dSL, ierror)
          numLL = intersection_count
          if (ierror /= 0) then !   check if kdtree was succesfull, disable if not so
             deallocate (iLink, ipoL, dSL)
