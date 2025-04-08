@@ -229,11 +229,10 @@ contains
 
       end do
 
-      if (Perot_weight_update == PEROT_STATIC) then
-         deallocate (wc)
-         if (allocated(wwL)) then
-            deallocate (wwL)
-         end if
+      if (Perot_weight_update == PEROT_STATIC) then 
+         if (allocated(wc)) deallocate (wc)
+         if (allocated(wwL)) deallocate (wwL)
+         if (allocated(wcxy)) deallocate (wcxy)
       end if
 
    end subroutine setlinktocenterweights
