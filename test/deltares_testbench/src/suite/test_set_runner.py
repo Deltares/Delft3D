@@ -132,12 +132,12 @@ class TestSetRunner(ABC):
         """
         n_testcases = len(self.__settings.configs_to_run)
 
+        if n_testcases < 1:
+            self.__logger.error("There are no test cases to run.")
+            sys.exit(1)
+
         config_process_count = sum(config.process_count for config in self.__settings.configs_to_run)
         max_processes = min(config_process_count, multiprocessing.cpu_count())
-
-        if max_processes < 1:
-            print("Max_processes is less than 1. Exiting program.")
-            sys.exit(0)
 
         self.__logger.info(f"Creating {max_processes} processes to run test cases on.")
         process_manager = multiprocessing.Manager()
