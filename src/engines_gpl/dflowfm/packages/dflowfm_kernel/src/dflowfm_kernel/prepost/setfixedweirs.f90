@@ -376,7 +376,7 @@ contains
                k3 = lncn(1, L); k4 = lncn(2, L)
                wu(L) = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss) ! set 2D link width
 
-               wu(L) = wu(L) * abs(xn * csu(L) + yn * snu(L)) ! projected length of fixed weir
+               wu(L) = wu(L) * abs(xn * csu(L) + yn * snu(L)) * fixedweircontraction ! projected length of fixed weir
 
                if (jakol45 == 2) then ! use local type definition
                   !
@@ -588,13 +588,6 @@ contains
             taludrxw(nfxw) = taludd(L)
             vegxw(nfxw) = vegetat(L)
             iweirtxw(nfxw) = iweirtyp(L)
-         end if
-      end do
-
-      do i = 1, nfxw
-         L = lnfxw(i)
-         if (L > 0) then
-            wu(L) = wu(L) * fixedweircontraction ! TODO: EdG/HK: this will be wrong if MULTIPLE fixed weirs are snapped onto the same flow link (repeated multiplication by fixedweircontraction)
          end if
       end do
 
