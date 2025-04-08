@@ -1516,39 +1516,61 @@ contains
 
 !> initialize salinity, temperature, sediment on boundary
    subroutine initialize_salinity_temperature_on_boundary()
+      use m_flowtimes, only: keepstbndonoutflow
       use m_flowparameters, only: jasal, jatem
-      use m_flowgeom, only: ln, lnx, lnxi
-      use m_flow, only: sa1, q1, tem1
-      use m_get_Lbot_Ltop
+      use m_flowgeom, only: ln
+      use m_flow, only: sa1, q1, tem1, kbnds, kbndtm, kmxd, nbnds, nbndtm, zbnds, zbndtm
+      use m_get_Lbot_Ltop, only: getlbotltop
 
       implicit none
 
       integer :: link
       integer :: bottom_link
       integer :: top_link
-      integer :: link3D
+      integer :: link_3D
 
-      integer :: boundary_cell
-      integer :: internal_cell
+      integer :: boundary_cell, internal_cell
+      integer :: i_boundary, i_zbnd
 
-      do link = lnxi + 1, lnx ! copy on outflow
-         call getLbotLtop(link, bottom_link, top_link)
-         if (top_link < bottom_link) then
-            cycle
-         end if
-         do link3D = bottom_link, top_link
-            if (q1(link3D) <= 0d0) then
-               boundary_cell = ln(1, link3D)
-               internal_cell = ln(2, link3D)
-               if (jasal > OFF) then
+      if (jasal /= OFF) then
+         do i_boundary = 1, nbnds
+            link = kbnds(3, i_boundary)
+            call getLbotLtop(link, bottom_link, top_link)
+            if (top_link < bottom_link) then
+               cycle
+            end if
+            do link_3D = bottom_link, top_link
+               boundary_cell = ln(1, link_3D)
+               internal_cell = ln(2, link_3D)
+               if (q1(link_3D) >= 0 .or. keepstbndonoutflow == 1) then
+                  i_zbnd = kmxd * (i_boundary - 1) + link_3D - bottom_link + 1
+                  sa1(boundary_cell) = zbnds(i_zbnd)
+               else
                   sa1(boundary_cell) = sa1(internal_cell)
                end if
-               if (jatem > OFF) then
+            end do 
+         end do 
+      end if ! jasal
+
+      if (jatem /= OFF) then
+         do i_boundary = 1, nbndtm
+            link = kbndtm(3, i_boundary)
+            call getLbotLtop(link, bottom_link, top_link)
+            if (top_link < bottom_link) then
+               cycle
+            end if
+            do link_3D = bottom_link, top_link
+               boundary_cell = ln(1, link_3D)
+               internal_cell = ln(2, link_3D)
+               if (q1(link_3D) >= 0 .or. keepstbndonoutflow == 1) then
+                  i_zbnd = kmxd * (i_boundary - 1) + link_3D - bottom_link + 1
+                  tem1(boundary_cell) = zbndtm(i_zbnd)
+               else
                   tem1(boundary_cell) = tem1(internal_cell)
                end if
-            end if
-         end do
-      end do
+            end do 
+         end do 
+      end if ! jatem
 
    end subroutine initialize_salinity_temperature_on_boundary
 
