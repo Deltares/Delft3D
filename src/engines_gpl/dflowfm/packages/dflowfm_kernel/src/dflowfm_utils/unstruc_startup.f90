@@ -53,29 +53,12 @@ contains
       use m_flowparameters
       use unstruc_colors
       use unstruc_model
-      use m_filez, only: oldfil
-
-      character(len=76) :: filnam
-
-      logical :: jawel
 
       call initSysEnv() ! Init paths
 
       call initGUI(1) ! READINI + INTINI
 
-      ! Read hlp file
-      FILNAM = trim(base_name)//'.hlp'
-      inquire (FILE=FILNAM, EXIST=JAWEL)
-      if (JAWEL) then
-         call oldfil(MHLP, FILNAM)
-      end if
-      if (mhlp < 1) then
-         call SYSFIL(MHLP, FILNAM)
-      end if
-
       call HELPIN() ! TODO: help module? [AvD]
-
-      !CALL IUPPERCASE(product_name)
 
       call SETCOLTABFILE(coltabfile, 0)
       call SETCOLTABFILE(coltabfile2, 1)
@@ -205,6 +188,8 @@ contains
       use m_startdir
       use m_initscreen
       use system_utils, only: split_filename
+      use unstruc_files, only: mhlp
+      use m_filez, only: oldfil
 
       implicit none
       integer :: i, INTINIT, ISTAT, maxarctiler, maxsamarcr
@@ -226,7 +211,7 @@ contains
       character(len=76) :: filnam
       character(len=180) :: inifilename
       character(len=256) :: exe_fullpath, exe_dir, exe_name 
-      character(:), allocatable :: ini_install_path
+      character(:), allocatable :: full_path
 
       type(tree_data), pointer :: ini_ptr !< Unstruc.ini settings in tree_data
 
@@ -241,14 +226,16 @@ contains
             inifilename = inifilename(2:)
          end if
       end if
-
+      ! Get executable directory
+      call get_command_argument(0, exe_fullpath, status=istat)
+      call split_filename(exe_fullpath, exe_dir, exe_name)
+      exe_dir = trim(exe_dir)//'../share/interacter/'
+      
       call readIniFile(inifilename, ini_ptr, errmsg=msgbuf, istat=istat)
       if (istat /= 0) then
          ! try reading unstruc.ini from install directory
-         call get_command_argument(0, exe_fullpath, status=istat)
-         call split_filename(exe_fullpath, exe_dir, exe_name)
-         ini_install_path = trim(exe_dir)//'../share/interacter/'//trim(inifilename)
-         call readIniFile(ini_install_path, ini_ptr, errmsg=msgbuf, istat=istat)
+         full_path = trim(exe_dir)//trim(inifilename)
+         call readIniFile(full_path, ini_ptr, errmsg=msgbuf, istat=istat)
          if (istat /= 0) then
             ! make default unstruc.ini, try again
             call makeunstrucini(filnam, istat)
@@ -324,17 +311,17 @@ contains
       CROSHRSZ = .01 ! size of crosshair cursor relative to screen size
 
       ! Color scheme isolines
+      coltabfile = 'ISOCOLOUR.hls'
       call prop_get(ini_ptr, 'isocol', 'COLTABFILE', coltabfile)
       inquire (file=trim(coltabfile), exist=jawel)
       if (.not. jawel) then
          ! try reading unstruc.ini from install directory
-         coltabfile = trim(exe_dir)//'../share/interacter/ISOCOLOUR.hls'
+         coltabfile = trim(exe_dir)//'ISOCOLOUR.hls'
          inquire (file=trim(coltabfile), exist=jawel)
-         if (.not. jawel) then !set to default
+         if (.not. jawel) then !set back to default
             coltabfile = 'ISOCOLOUR.hls'
          end if
       end if
-
       coltabfile2 = coltabfile
 
       call get_req_integer(ini_ptr, 'isocol', 'AUTO', JAAUTO)
@@ -526,7 +513,21 @@ contains
          maxsamarc = maxsamarcr * maxsamarcr
       end if
 
-      return
+      ! read hlp file
+      filnam = trim(base_name)//'.hlp'
+      inquire (file=filnam, exist=jawel)
+      if (jawel) then
+         call oldfil(mhlp, filnam)
+      else
+         full_path = trim(exe_dir)//trim(filnam)
+         inquire (file=full_path, exist=jawel)    
+         if (jawel) then
+            call oldfil(mhlp, full_path)
+         else
+            call sysfil(mhlp, filnam)
+         end if
+      end if
+      
    end subroutine initGUI
 
    subroutine makeunstrucini(filnam, istat)
@@ -544,97 +545,98 @@ contains
       call newfil(mout, filnam)
       if (mout < 0) then
          istat = 0
-         write (mout, '(a)') '[program]                                                                   '
-         write (mout, '(a)') 'Ident = #Unstruc 1.00.11#                                                   '
-         write (mout, '(a)') '                                                                            '
-         write (mout, '(a)') '[screen]           (screen type on pc, screen dimension on unix)            '
-         write (mout, '(a)') 'JVGA=2             JVGA = 1, vga: JVGA  = 2, supervga:  (only on DOS)       '
-         write (mout, '(a)') 'NXPIX=1600         preferred hor. and ver. resolution of initial screen     '
-         write (mout, '(a)') 'NYPIX=1000                                                                  '
-         write (mout, '(a)') 'NTXCOLS=100         number of columns and rows TEXT screen                  '
-         write (mout, '(a)') 'NTXROWS=50                                                                  '
-         write (mout, '(a)') '                                                                            '
-         write (mout, '(a)') '[GRAFCOL]          colors in graphic screens                                '
-         write (mout, '(a)') 'NCOLDG=31          DESIGN GRID                                              '
-         write (mout, '(a)') 'NCOLRG=212         PREVIOUS STATE GRID                                      '
-         write (mout, '(a)') 'NCOLDN=3           DESIGN NET                                               '
-         write (mout, '(a)') 'NCOLRN=211         PREVIOUS STATE NET                                       '
-         write (mout, '(a)') 'NCOLNN=205         NETNODES                                                 '
-         write (mout, '(a)') 'NCOLSP=204         SPLINES                                                  '
-         write (mout, '(a)') 'NCOLLN=120         LAND BOUNDARY  OR 203 IF YOU LIKE PINK                   '
-         write (mout, '(a)') 'NCOLTX=210         POLYGON                                                  '
-         write (mout, '(a)') 'NCOLCRS=230        CROSS SECTIONS                                           '
-         write (mout, '(a)') 'NCOLTHD=231        THIN DAMS                                                '
-         write (mout, '(a)') 'NCOLTDK=232        THIN DYKES                                               '
-         write (mout, '(a)') 'NCOLWARN1=191      WARNING 1                                                '
-         write (mout, '(a)') 'NCOLWARN2=31       WARNING 2                                                '
-         write (mout, '(a)') 'NCOLHL=31          HIGHLIGHT NODES/LINKS                                    '
-         write (mout, '(a)') '                                                                            '
-         write (mout, '(a)') 'KLVEC=4            VECTORS 110                                              '
-         write (mout, '(a)') 'KLAXS=31           AXIS                                                     '
-         write (mout, '(a)') 'KLSCL=221          ISOSCALE LEGEND                                          '
-         write (mout, '(a)') 'KLTEX=3            NUMBERS                                                  '
-         write (mout, '(a)') 'KLFRA=31           FRAME                                                    '
-         write (mout, '(a)') 'KLSAM=31           SAMPLE MONOCOLOR                                         '
-         write (mout, '(a)') 'KLOBS=227          OBSERVATION POINTS                                       '
-         write (mout, '(a)') 'KLZM=31            ZOOMWINDOW                                               '
-         write (mout, '(a)') 'KLANK=31           ANCHOR                                                   '
-         write (mout, '(a)') '                                                                            '
-         write (mout, '(a)') 'RGBVALUES=\           # COLORNUMBER  RED  GREEN  BLUE                       '
-         write (mout, '(a)') '210    3    3    3 \                                                        '
-         write (mout, '(a)') '211    1  128  255 \  # NCOLRN = SHOW ALL LINKS/prev net                    '
-         write (mout, '(a)') '212  255  160  192 \  # NCOLRG = prev grid                                  '
-         write (mout, '(a)') '210  200  200  200 \  # NCOLTX = POLYGON                                    '
-         write (mout, '(a)') '230   32  176    0 \  # NCOLCRS = CROSS SECTIONS                            '
-         write (mout, '(a)') '231  255    0    0 \  # NCOLTHD = THIN DAMS                                 '
-         write (mout, '(a)') '232  255  106    0 \  # NCOLTDK = THIN DYKES                                '
-         write (mout, '(a)') '227    0  200  200 \  # KLOBS = OBS.STATIONS                                '
-         write (mout, '(a)') '203    0  255  255 \  # NCOLLN = LAND BOUNDARY                              '
-         write (mout, '(a)') '204  255  255  150    # NCOLSP = SPLINES                                    '
-         write (mout, '(a)') '205  204  255  102    # NCOLSP = SPLINES                                    '
-         write (mout, '(a)') '                      # KLVEC  = VECTORS                                    '
-         write (mout, '(a)') '                                                                            '
-         write (mout, '(a)') '# RED GREEN, BLUE VALUES FOR SCREEN AND FOR PLOTTING                        '
-         write (mout, '(a)') 'NREDS  =100                                                                 '
-         write (mout, '(a)') 'NGREENS=100                                                                 '
-         write (mout, '(a)') 'NBLUES =100                                                                 '
-         write (mout, '(a)') 'NREDP  =140                                                                 '
-         write (mout, '(a)') 'NGREENP=140                                                                 '
-         write (mout, '(a)') 'NBLUEP =140                                                                 '
-         write (mout, '(a)') '                                                                            '
-         write (mout, '(a)') '                                                                            '
-         write (mout, '(a)') '[ISOCOL]           (for colorscheme isolines)                               '
-         write (mout, '(a)') 'AUTO   = 1         (0,1)      autoscale off or on                           '
-         write (mout, '(a)') 'NV     = 19        number of isolines                                       '
-         write (mout, '(a)') 'VMIN   = 1         minimum isoline value (only to be used if JAAUTO = 0)    '
-         write (mout, '(a)') 'VMAX   = 0         maximum isoline value (only to be used if JAAUTO = 0)    '
-         write (mout, '(a)') 'NIS    = 46        INDEX FIRST ISOLINE COLOUR <1, 250>                      '
-         write (mout, '(a)') 'NIE    = 224       INDEX LAST  ISOLINE COLOUR <NIS+NV, 254>                 '
-         write (mout, '(a)') '                                                                            '
-         write (mout, '(a)') '[TEXT]             (for display of ''numbers'')                               '
-         write (mout, '(a)') 'TSIZE=0.50                                                                  '
-         write (mout, '(a)') '                                                                            '
-         write (mout, '(a)') '[HARDCOPYOPTIONS]                                                           '
-         write (mout, '(a)') 'IHCOPTS = \                                                                 '
-         write (mout, '(a)') '1     1200 \       # bitmap x resolution                                    '
-         write (mout, '(a)') '2     900  \       # bitmap y resolution                                    '
-         write (mout, '(a)') '5     1    \       # IHCOPTS(1,I), IHCOPTS(2,I) 0:portrait 1:landscape      '
-         write (mout, '(a)') '7     0    \       # postscript: 0 = coloured lines, 1 =black lines         '
-         write (mout, '(a)') '9     1    \       # thinnest lines                                         '
-         write (mout, '(a)') '25    1    \       # device fill 0:no, 1:yes                                '
-         write (mout, '(a)') '18    0    \       # no hpgl replay info                                    '
-         write (mout, '(a)') '19    3    \       # hp-gl,pcl,epson escape seqences (0=no,3=yes)           '
-         write (mout, '(a)') '22    1    \       # encapsulated postscript 0:no, 1:yes                    '
-         write (mout, '(a)') '23    8    \       # number of bitplanes                                    '
-         write (mout, '(a)') '26    2    \       # pcx:0, bmp:1,uncompressed, bmp:2,compressed            '
-         write (mout, '(a)') '6     0            # 0:keep colours, 1:invert colours                       '
-         write (mout, '(a)') '                                                                            '
-         write (mout, '(a)') '[display]                                                                   '
-         write (mout, '(a)') 'NTEK             = 10    # Nr of user timesteps between two redraws         '
-         write (mout, '(a)') 'PLOTTOFILE       = 0     # Produce harcopy (1) or not (0)                   '
-         write (mout, '(a)') 'JAOPENGL         = 1     # 1 : use OpenGL, 0 : use Interacter               '
-         write (mout, '(a)') 'JAFULLBOTTOMLINE = 0     # Full explanation yes/no                          '
-
+         write (mout, '(a)') '[program]                                                               '
+         write (mout, '(a)') 'Ident = #Unstruc 1.00.11#                                               '
+         write (mout, '(a)') '                                                                        '
+         write (mout, '(a)') '[screen]           (screen type on pc, screen dimension on unix)        '
+         write (mout, '(a)') 'JVGA=2             JVGA = 1, vga: JVGA  = 2, supervga:  (only on DOS)   '
+         write (mout, '(a)') 'NXPIX=1600         preferred hor. and ver. resolution of initial screen '
+         write (mout, '(a)') 'NYPIX=1000                                                              '
+         write (mout, '(a)') 'NTXCOLS=100         number of columns and rows TEXT screen              '
+         write (mout, '(a)') 'NTXROWS=50                                                              '
+         write (mout, '(a)') '                                                                        '
+         write (mout, '(a)') '[GRAFCOL]          colors in graphic screens                            '
+         write (mout, '(a)') 'NCOLDG=31          DESIGN GRID                                          '
+         write (mout, '(a)') 'NCOLRG=212         PREVIOUS STATE GRID                                  '
+         write (mout, '(a)') 'NCOLDN=3           DESIGN NET                                           '
+         write (mout, '(a)') 'NCOLRN=211         PREVIOUS STATE NET                                   '
+         write (mout, '(a)') 'NCOLNN=205         NETNODES                                             '
+         write (mout, '(a)') 'NCOLSP=204         SPLINES                                              '
+         write (mout, '(a)') 'NCOLLN=120         LAND BOUNDARY  OR 203 IF YOU LIKE PINK               '
+         write (mout, '(a)') 'NCOLTX=210         TEXTLINES                                            '
+         write (mout, '(a)') 'NCOLPL=221         POLYGON                                              '
+         write (mout, '(a)') 'NCOLCRS=230        CROSS SECTIONS                                       '
+         write (mout, '(a)') 'NCOLTHD=231        THIN DAMS                                            '
+         write (mout, '(a)') 'NCOLFXW=232        FIXED WEIRS                                          '
+         write (mout, '(a)') 'NCOLWARN1=191      WARNING 1                                            '
+         write (mout, '(a)') 'NCOLWARN2=31       WARNING 2                                            '
+         write (mout, '(a)') 'NCOLHL=31          HIGHLIGHT NODES/LINKS                                '
+         write (mout, '(a)') '                                                                        '
+         write (mout, '(a)') 'KLVEC=4            VECTORS 110                                          '
+         write (mout, '(a)') 'KLAXS=220          AXIS                                                 '
+         write (mout, '(a)') 'KLSCL=219          ISOSCALE LEGEND                                      '
+         write (mout, '(a)') 'KLTEX=3            NUMBERS                                              '
+         write (mout, '(a)') 'KLFRA=31           FRAME                                                '
+         write (mout, '(a)') 'KLSAM=31           SAMPLE MONOCOLOR                                     '
+         write (mout, '(a)') 'KLOBS=227          OBSERVATION POINTS                                   '
+         write (mout, '(a)') 'KLZM=31            ZOOMWINDOW                                           '
+         write (mout, '(a)') 'KLANK=31           ANCHOR                                               '
+         write (mout, '(a)') 'KLPROF=222         PROFILES                                             '
+         write (mout, '(a)') '                                                                        '
+         write (mout, '(a)') 'RGBVALUES=\           # COLORNUMBER  RED  GREEN  BLUE                   '
+         write (mout, '(a)') '210    3    3    3 \                                                    '
+         write (mout, '(a)') '211    1  128  255 \  # NCOLRN = SHOW ALL LINKS/prev net                '
+         write (mout, '(a)') '212  255  160  192 \  # NCOLRG = prev grid                              '
+         write (mout, '(a)') '210  200  200  200 \  # NCOLTX = POLYGON                                '
+         write (mout, '(a)') '230   32  176    0 \  # NCOLCRS = CROSS SECTIONS                        '
+         write (mout, '(a)') '231  255    0    0 \  # NCOLTHD = THIN DAMS                             '
+         write (mout, '(a)') '232  255  106    0 \  # NCOLTDK = THIN DYKES                            '
+         write (mout, '(a)') '227    0  200  200 \  # KLOBS = OBS.STATIONS                            '
+         write (mout, '(a)') '203    0  255  255 \  # NCOLLN = LAND BOUNDARY                          '
+         write (mout, '(a)') '204  255  255  150    # NCOLSP = SPLINES                                '
+         write (mout, '(a)') '205  204  255  102    # NCOLSP = SPLINES                                '
+         write (mout, '(a)') '                      # KLVEC  = VECTORS                                '
+         write (mout, '(a)') '                                                                        '
+         write (mout, '(a)') '# RED GREEN, BLUE VALUES FOR SCREEN AND FOR PLOTTING                    '
+         write (mout, '(a)') 'NREDS  =100                                                             '
+         write (mout, '(a)') 'NGREENS=100                                                             '
+         write (mout, '(a)') 'NBLUES =100                                                             '
+         write (mout, '(a)') 'NREDP  =140                                                             '
+         write (mout, '(a)') 'NGREENP=140                                                             '
+         write (mout, '(a)') 'NBLUEP =140                                                             '
+         write (mout, '(a)') '                                                                        '
+         write (mout, '(a)') '                                                                        '
+         write (mout, '(a)') '[ISOCOL]           (for colorscheme isolines)                           '
+         write (mout, '(a)') 'AUTO   = 1         (0,1)      autoscale off or on                       '
+         write (mout, '(a)') 'NV     = 19        number of isolines                                   '
+         write (mout, '(a)') 'VMIN   = 1         minimum isoline value (only to be used if JAAUTO = 0)'
+         write (mout, '(a)') 'VMAX   = 0         maximum isoline value (only to be used if JAAUTO = 0)'
+         write (mout, '(a)') 'NIS    = 46        INDEX FIRST ISOLINE COLOUR <1, 250>                  '
+         write (mout, '(a)') 'NIE    = 224       INDEX LAST  ISOLINE COLOUR <NIS+NV, 254>             '
+         write (mout, '(a)') '                                                                        '
+         write (mout, '(a)') '[TEXT]             (for display of ''numbers'')                         '
+         write (mout, '(a)') 'TSIZE=0.50                                                              '
+         write (mout, '(a)') '                                                                        '
+         write (mout, '(a)') '[HARDCOPYOPTIONS]                                                       '
+         write (mout, '(a)') 'IHCOPTS = \                                                             '
+         write (mout, '(a)') '1     1200 \       # bitmap x resolution                                '
+         write (mout, '(a)') '2     900  \       # bitmap y resolution                                '
+         write (mout, '(a)') '5     1    \       # IHCOPTS(1,I), IHCOPTS(2,I) 0:portrait 1:landscape  '
+         write (mout, '(a)') '7     0    \       # postscript: 0 = coloured lines, 1 =black lines     '
+         write (mout, '(a)') '9     1    \       # thinnest lines                                     '
+         write (mout, '(a)') '25    1    \       # device fill 0:no, 1:yes                            '
+         write (mout, '(a)') '18    0    \       # no hpgl replay info                                '
+         write (mout, '(a)') '19    3    \       # hp-gl,pcl,epson escape seqences (0=no,3=yes)       '
+         write (mout, '(a)') '22    1    \       # encapsulated postscript 0:no, 1:yes                '
+         write (mout, '(a)') '23    8    \       # number of bitplanes                                '
+         write (mout, '(a)') '26    2    \       # pcx:0, bmp:1,uncompressed, bmp:2,compressed        '
+         write (mout, '(a)') '6     0            # 0:keep colours, 1:invert colours                   '
+         write (mout, '(a)') '                                                                        '
+         write (mout, '(a)') '[display]                                                               '
+         write (mout, '(a)') 'NTEK             = 10    # Nr of user timesteps between two redraws     '
+         write (mout, '(a)') 'PLOTTOFILE       = 0     # Produce hardcopy (1) or not (0)              '
+         write (mout, '(a)') 'JAOPENGL         = 1     # 1 : use OpenGL, 0 : use Interacter           '
+         write (mout, '(a)') 'JAFULLBOTTOMLINE = 0     # Full explanation yes/no                      ' 
       end if
 
       call doclose(mout)
