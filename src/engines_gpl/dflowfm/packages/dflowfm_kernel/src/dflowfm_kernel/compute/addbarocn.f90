@@ -138,7 +138,7 @@ contains
       pd = 0.0_dp ! baroclinic pressure/ag
       pdb = 0.0_dp ! barotropic pressure/ag
 
-      rhosww(kt) = calculate_density(saw(kt - kb + 1), tmw(kt - kb + 1), pd) - rhomean ! rho at interface
+      rhosww(kt) = calculate_density(saw(kt - kb + 1), tmw(kt - kb + 1)) - rhomean ! rho at interface
 
       do k = kt, kb, -1
          dzz = zws(k) - zws(k - 1)

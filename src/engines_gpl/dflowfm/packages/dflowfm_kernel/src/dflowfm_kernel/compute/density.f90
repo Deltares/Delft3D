@@ -90,7 +90,7 @@ contains
       case (DENSITY_OPTION_UNESCO83)
          density = calculate_density_unesco83(salinity, temperature, pressure)
       case default
-         call mess(LEVEL_ERROR, 'Unknown pressure-dependent (thermobaricity = on) density formula. Found idensform = ', idensform)
+         call mess(LEVEL_ERROR, 'Unknown pressure-dependent density formula. Found idensform = ', idensform)
       end select
    end function calculate_density_from_salinity_temperature_and_pressure
 
