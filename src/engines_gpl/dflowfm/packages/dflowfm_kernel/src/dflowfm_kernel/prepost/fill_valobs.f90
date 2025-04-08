@@ -280,7 +280,7 @@ contains
             ! Horizontal and vertical viscosity
             if (jahistur > 0) then   
                call interpolate_horizontal (vius,i,IPNT_VIU,UNC_LOC_S3D)
-               if (iturbulencemodel >= 2) then
+               if (iturbulencemodel >= 2 .and. model_is_3D()) then
                   call interpolate_horizontal (vicwws,i,IPNT_VICWWS, UNC_LOC_W)
                end if      
             end if
@@ -703,7 +703,7 @@ contains
          do iwght = 1, 3
              if ((klay >= nlayb_tmp(iwght)) .and. (klay <= nlayb_tmp(iwght) + nrlay_tmp(iwght) - 1)) then
                pntnr     = kb_tmp(iwght) - nlayb_tmp(iwght) + klay - oneDown
-               value     = value     + rarray(pntnr)*neighbour_weights_obs(iwght,istat)
+                value     = value     + rarray(pntnr)*neighbour_weights_obs(iwght,istat)
                weighttot = weighttot + neighbour_weights_obs(iwght,istat)
              end if
          end do
