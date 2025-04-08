@@ -336,7 +336,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c042_tidal_flume_zmodel_3d" ref="platform_specific">
-     <path version="2025-04-07T10:09:32.767000">e02_dflowfm/f019_transport/c042_tidal_flume_zmodel_3d</path>
+     <path version="2025-04-08T11:42:37.740000">e02_dflowfm/f019_transport/c042_tidal_flume_zmodel_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tfz_his.nc" type="netCDF">
@@ -581,7 +581,7 @@
     </testCase>
 
     <testCase name="e02_f019_c033_lock_exchange_300m_unst_3d" ref="platform_specific">
-      <path version="2025-04-02T12:25:23.879000">e02_dflowfm/f019_transport/c033_lock_exchange_300m_unst_3d</path>
+      <path version="2025-04-08T11:42:01.690000">e02_dflowfm/f019_transport/c033_lock_exchange_300m_unst_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
