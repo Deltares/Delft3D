@@ -59,9 +59,8 @@ contains
       integer :: ka, kb, LL
       integer :: krcnw ! counter for cn points attached to 2 closed walls
       
-      if (.not. allocated(wcnxy)) then
-         allocate(wcnxy(3,numk))
-      end if
+      allocate(wcnxy(3,numk))
+      
       wcnxy = 0
       wcnx3 = 0
       wcny3 = 0
@@ -180,8 +179,6 @@ contains
          deallocate (acn, jacorner)
       end if
       
-      deallocate(wcnxy) ! we do not check for allocation for a local variable
-
    end subroutine setlinktocornerweights
 
 end module m_setlinktocornerweights
