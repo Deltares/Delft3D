@@ -65,8 +65,8 @@ set libdir=%D3D_HOME%\lib
 
     rem Run
 set PATH=%sharedir%;%libdir%
-echo executing: "%exedir%\dflowfm-cli.exe" --autostartstop" %*
-                "%exedir%\dflowfm-cli.exe" --autostartstop" %*
+echo executing: "%exedir%\dflowfm-cli.exe" --autostartstop %*
+                "%exedir%\dflowfm-cli.exe" --autostartstop %*
 
 goto end
 
