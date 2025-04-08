@@ -296,6 +296,7 @@ end type moroutputtype
 ! sediment transport and morphology numerical settings
 !
 type mornumericstype
+    logical :: block_sediment_at_structures ! block sediment at structures
     logical :: pure1d                   ! temporary switch for 1D treatment in FM
     logical :: upwindbedload            ! switch for upwind bedload in UPWBED
     logical :: laterallyaveragedbedload ! bedload transport laterally averaged in UPWBED
@@ -1574,6 +1575,7 @@ subroutine nullmorpar(morpar)
     !
     call initmoroutput(morpar%moroutput)
     !
+    morpar%mornum%block_sediment_at_structures = .false.
     morpar%mornum%pure1d                   = .false.
     morpar%mornum%upwindbedload            = .true.
     morpar%mornum%laterallyaveragedbedload = .false.

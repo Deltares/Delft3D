@@ -190,6 +190,10 @@ contains
 
          call fm_bed_boundary_conditions(timhr)
 
+         if (stmpar%morpar%mornum%block_sediment_at_structures) then
+            
+         end if 
+
          call fm_change_in_sediment_thickness(dtmor)
 
          call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac)
@@ -1817,6 +1821,30 @@ contains
 
    end subroutine fm_blchg_no_cmpupd
 
+   !> Block sediment at structures 
+   subroutine fm_block_sediment_at_structures()
+      use precision, only: dp
+      use m_flowgeom, only: iadv, lnx
+      use m_fm_erosed, only: lsedtot, e_sbn, duneavalan
+      use m_sediment, only: avalflux
+      
+      integer Lf ! flow link 
+      integer lsed ! sediment counter
+      
+      do Lf = 1, lnx
+         if (iadv(Lf) == 22) then 
+            do lsed = 1, lsedtot
+               e_sbn(Lf, lsed) = 0.0_dp
+            end do 
+            if (duneavalan) then
+               do lsed = 1, lsedtot
+                  avalflux(Lf, lsed) = 0.0_dp
+               end do 
+            end if 
+         end if 
+      end do   
+   end subroutine fm_block_sediment_at_structures
+   
    !> Update bottom elevation
    subroutine fm_update_bed_level(dtmor)
       use precision, only: dp

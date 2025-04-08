@@ -805,6 +805,7 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
         case default 
             mornum%fluxlim = FLUX_LIMITER_NONE  
     end select
+    call prop_get(mor_ptr, 'Numerics', 'BlockSedimentAtStructures', mornum%block_sediment_at_structures)
            
 end subroutine read_morphology_numerical_settings
 
@@ -1400,6 +1401,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: suscorfac
     real(fp)              , dimension(:)   , pointer :: xx
     logical                                , pointer :: bedupd
+    logical                                , pointer :: block_sediment_at_structures
     logical                                , pointer :: cmpupd
     logical                                , pointer :: eqmbcsand
     logical                                , pointer :: eqmbcmud
@@ -1542,6 +1544,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     suscorfac           => morpar%suscorfac
     upwindbedload       => mornum%upwindbedload
     pure1d_mor          => mornum%pure1d
+    block_sediment_at_structures => mornum%block_sediment_at_structures
     !
     ! output values to file
     !
@@ -1861,6 +1864,12 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
        txtput2 = '                  NO'
     end if
     write (lundia, '(3a)') txtput1, ':', txtput2 
+    txtput1 = '   Block sediment at structures'
+    if (block_sediment_at_structures) then
+       txtput2 = '                 YES'
+    else
+       txtput2 = '                  NO'
+    end if
     !
     if (morpar%bermslopetransport) then
        txtput1 = 'Berm slope adjustment mechanism activated'
