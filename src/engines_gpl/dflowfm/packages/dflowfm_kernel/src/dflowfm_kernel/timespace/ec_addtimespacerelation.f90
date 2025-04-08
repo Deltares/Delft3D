@@ -50,7 +50,8 @@ contains
       use string_module, only: str_upper
       use timespace_parameters
       use timespace
-      use fm_external_forcings_utils, only: get_tracername, get_sedfracname
+      use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
+      use m_transportdata, only : NAMLEN
       use timespace_read, only: maxnamelen
       use precision, only: dp
       use unstruc_messages, only: callback_msg
@@ -127,6 +128,7 @@ contains
       logical :: success
       logical :: quiet_
       character(len=NAMTRACLEN) :: trname, sfname, qidname
+      character(len=NAMLEN) :: constituent_name
       character(len=20) :: waqinput
       integer, external :: findname
       type(tEcMask) :: srcmask
@@ -182,6 +184,7 @@ contains
       call get_tracername(name, trname, qidname)
       call get_sedfracname(name, sfname, qidname)
       call get_waqinputname(name, waqinput, qidname)
+      call get_constituent_name(name, constituent_name, qidname)
       target_name = qidname
 
       call clearECMessage()
@@ -191,14 +194,17 @@ contains
       ! ============================================================
       location = filename
       if (ec_filetype == provFile_bc) then
-         if (.not. ecCreateInitializeBCFileReader(ecInstancePtr, forcingfile, location, qidname, &
+         ! NOTE: In .bc files, the quantity name must include a tracer/sedfrac/waq function/constituent name, so use original name:
+         if (.not. ecCreateInitializeBCFileReader(ecInstancePtr, forcingfile, location, name, &
                                                   refdate_mjd, tzone, ec_second, fileReaderId)) then
 
             if (.not. quiet_) then
                message = dumpECMessageStack(LEVEL_WARN, callback_msg)
             end if
-            message = 'Boundary '''//trim(qidname)//''', location='''//trim(location)//''', file='''//trim(forcingfile)//''' failed!'
+            message = 'Adding time-space-relation for forcing '''//trim(name)//''', location='''//trim(location)//''', file='''//trim(forcingfile)//''' failed!'
             call mess(LEVEL_ERROR, message)
+            
+            goto 1234
          end if
       else
          !success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile, dtnodal=dtnodal)
@@ -327,7 +333,7 @@ contains
       ! Construct the target field and the target item
       ! ==============================================
       ! determine which target item (id) will be created, and which FM data array has to be used
-      if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, qidname, &
+      if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
                                              targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
                                              dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
          return
@@ -433,7 +439,7 @@ contains
       converterId = ecCreateConverter(ecInstancePtr)
 
       select case (target_name)
-      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin', 'pump', 'valve1D', 'damlevel', 'gateloweredgelevel', 'generalstructure', 'lateral_discharge', 'dambreakLevelsAndWidths')
+      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin', 'pump', 'valve1D', 'damlevel', 'gateloweredgelevel', 'generalstructure', 'lateral_discharge', 'dambreakLevelsAndWidths', 'sourcesink_discharge', 'sourcesink_constituentDelta')
          ! for the FM 'target' arrays, the index is provided by the caller
          if (.not. present(targetIndex)) then
             message = 'Internal program error: missing targetIndex for quantity '''//trim(target_name)

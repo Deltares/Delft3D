@@ -42,7 +42,7 @@ module m_setcoltabfile
       module subroutine SETCOLTABFILE(FILNAM, JASECOND)
          implicit none
          integer :: jasecond
-         character FILNAM * (*)
+         character(len=*), intent(in) :: filnam
       end subroutine SETCOLTABFILE
    end interface
 

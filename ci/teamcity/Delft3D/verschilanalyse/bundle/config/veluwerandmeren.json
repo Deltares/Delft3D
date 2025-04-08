@@ -4,8 +4,8 @@
         {
             "name": "veluwerandmeren",
             "his_config": {
-                "his_1": "/p/devops-dsc/verschilanalyse/reference/veluwerandmeren/dflowfm2d-vrm-hr2023_6-v1a/computations/hist/storm-dec-2013_2021-04/DFM_OUTPUT_vrm-hr2023_6-v1a_storm-dec-2013/vrm-hr2023_6-v1a_storm-dec-2013_0000_his.nc",
-                "his_2": "/p/devops-dsc/verschilanalyse/input/veluwerandmeren/dflowfm2d-vrm-hr2023_6-v1a/computations/hist/storm-dec-2013_2021-04/DFM_OUTPUT_vrm-hr2023_6-v1a_storm-dec-2013/vrm-hr2023_6-v1a_storm-dec-2013_0000_his.nc",
+                "his_1": "/data/reference/veluwerandmeren/dflowfm2d-vrm-hr2023_6-v1a/computations/hist/storm-dec-2013_2021-04/DFM_OUTPUT_vrm-hr2023_6-v1a_storm-dec-2013/vrm-hr2023_6-v1a_storm-dec-2013_0000_his.nc",
+                "his_2": "/data/input/veluwerandmeren/dflowfm2d-vrm-hr2023_6-v1a/computations/hist/storm-dec-2013_2021-04/DFM_OUTPUT_vrm-hr2023_6-v1a_storm-dec-2013/vrm-hr2023_6-v1a_storm-dec-2013_0000_his.nc",
                 "his_variable_list": [
                     "waterlevel",
                     "velocity_magnitude"
@@ -15,8 +15,8 @@
                 "his_save_plots_for_every_station": false
             },
             "map_config": {
-                "map_1": "/p/devops-dsc/verschilanalyse/reference/veluwerandmeren/dflowfm2d-vrm-hr2023_6-v1a/computations/hist/storm-dec-2013_2021-04/DFM_OUTPUT_vrm-hr2023_6-v1a_storm-dec-2013/vrm-hr2023_6-v1a_storm-dec-2013_0*_map.nc",
-                "map_2": "/p/devops-dsc/verschilanalyse/input/veluwerandmeren/dflowfm2d-vrm-hr2023_6-v1a/computations/hist/storm-dec-2013_2021-04/DFM_OUTPUT_vrm-hr2023_6-v1a_storm-dec-2013/vrm-hr2023_6-v1a_storm-dec-2013_0*_map.nc",
+                "map_1": "/data/reference/veluwerandmeren/dflowfm2d-vrm-hr2023_6-v1a/computations/hist/storm-dec-2013_2021-04/DFM_OUTPUT_vrm-hr2023_6-v1a_storm-dec-2013/vrm-hr2023_6-v1a_storm-dec-2013_0*_map.nc",
+                "map_2": "/data/input/veluwerandmeren/dflowfm2d-vrm-hr2023_6-v1a/computations/hist/storm-dec-2013_2021-04/DFM_OUTPUT_vrm-hr2023_6-v1a_storm-dec-2013/vrm-hr2023_6-v1a_storm-dec-2013_0*_map.nc",
                 "map_variable_list": [
                     "mesh2d_s1",
                     "mesh2d_ucmag"

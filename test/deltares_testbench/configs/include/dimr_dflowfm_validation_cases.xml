@@ -295,7 +295,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c010_beyer004_supergrid_standard" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f009_weirs/c010_beyer004_supergrid_standard</path>
+      <path version="2025-02-25T11:54:25.432000">e02_dflowfm/f009_weirs/c010_beyer004_supergrid_standard</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/beyer_004a_his.nc" type="netCDF">
@@ -321,7 +321,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c024_beyer004_contr10_empirical" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f009_weirs/c024_beyer004_contr10_empirical</path>
+      <path version="2025-03-04T15:50:00">e02_dflowfm/f009_weirs/c024_beyer004_contr10_empirical</path>
       <maxRunTime>10.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/beyer_004vil_his.nc" type="netCDF">
@@ -334,7 +334,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c030_zandloper30m" ref="dflowfm_default">
-      <path version="2024-08-06T10:25:00">e02_dflowfm/f009_weirs/c030_zandloper30m</path>
+      <path version="2025-03-06T16:30:32.688000">e02_dflowfm/f009_weirs/c030_zandloper30m</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/zandloper_his.nc" type="netCDF">
@@ -353,7 +353,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c040_beyer044_standard" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f009_weirs/c040_beyer044_standard</path>
+      <path version="2025-03-06T10:35:18.509000">e02_dflowfm/f009_weirs/c040_beyer044_standard</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/beyer_044_his.nc" type="netCDF">
@@ -372,7 +372,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c010_gate_sub" ref="dflowfm_default">
-      <path version="2024-01-11T16:00:00">e02_dflowfm/f010_structures/c010_gate_sub</path>
+      <path version="2025-03-10T14:11:43.843000">e02_dflowfm/f010_structures/c010_gate_sub</path>
       <maxRunTime>25.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/gatesub_his.nc" type="netCDF">

@@ -32,6 +32,11 @@ module fm_external_forcings_utils
    use m_fm_wq_processes_sub, only: get_waqinputname
    use precision_basics, only: hp
    implicit none
+   private
+   public :: split_qid
+   public :: get_tracername
+   public :: get_sedfracname
+   public :: get_constituent_name
 
 contains
 
@@ -59,6 +64,10 @@ contains
          return
       end if
       call get_mbainputname(qid, qid_specific, qid_base)
+      if (qid_base /= qid) then
+         return
+      end if
+      call get_constituent_name(qid, qid_specific, qid_base)
       if (qid_base /= qid) then
          return
       end if
@@ -137,4 +146,37 @@ contains
          end if
       end if
    end subroutine get_sedfracname
+
+   !> Convert quantity (from .ext file) to constituent name (split in generic base_quantity and specific constituent_name).
+   !! If the original_quantity does not involve consituents, then the passed base_quantity is unchanged (and empty constituent name).
+   !! For example: 'sourcesink_salinityDelta' -> 'sourcesink_constituentDelta', 'salinity'.
+   !!
+   !! This subroutine currently only covers source sinks, because they are the only external forcings that generalize on
+   !! constituents. Other external forcings are handled in get_tracername, get_sedfracname, etc.
+   subroutine get_constituent_name(original_quantity, constituent_name, base_quantity)
+      use string_module, only: strcmpi
+      implicit none
+
+      character(len=*), intent(in) :: original_quantity !< Original quantity id, e.g., 'sourcesink_salinityDelta'.
+      character(len=*), intent(out) :: constituent_name !< The trimmed constituent name, e.g., 'salinity', or 'sand', or 'fluor'. Empty '' if not a constituent.
+      character(len=*), intent(out) :: base_quantity !< The base quantity name for further use in external forcing, e.g., 'sourcesink_constituentDelta'. Unchanged original_quantity if not a constituent.
+
+      integer :: quantity_length
+      integer :: index_prefix_end, index_suffix_start
+
+      constituent_name = ''
+
+      quantity_length = len_trim(original_quantity)
+      index_prefix_end = min(len_trim('sourcesink_'), quantity_length)
+      index_suffix_start = max(1, quantity_length - len_trim('Delta') + 1)
+
+      if (strcmpi(original_quantity(1:index_prefix_end), 'sourcesink_') &
+         .and. strcmpi(original_quantity(index_suffix_start:quantity_length), 'Delta')) then
+         base_quantity = 'sourcesink_constituentDelta'
+         constituent_name = original_quantity(index_prefix_end + 1:index_suffix_start - 1)
+      end if
+
+      return
+   end subroutine get_constituent_name
+
 end module fm_external_forcings_utils

@@ -248,7 +248,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c003_westernscheldt_dynamo_2D" ref="dflowfm_platform_specific_refs">
-  <path version="2025-02-28T10:40:00">e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D</path>
+  <path version="2025-03-19T12:48:53.833000">e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -366,7 +366,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c004_westernscheldt_noproc_2D" ref="dflowfm_platform_specific_refs">
-  <path version="2025-02-28T10:40:00">e02_dflowfm/f030_water_quality_processes/c004_westernscheldt_noproc_2D</path>
+  <path version="2025-03-20T13:41:53.135000">e02_dflowfm/f030_water_quality_processes/c004_westernscheldt_noproc_2D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -484,7 +484,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c011_frisianinlet_dynamo_restart" ref="dflowfm_platform_specific_refs_restart">
-  <path version="2024-01-11T13:10:00">e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
+  <path version="2025-03-19T12:49:00.400000">e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_dynamo_restart_map.nc" type="netCDF">
       <parameters>
@@ -592,7 +592,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c012_frisianinlet_BLOOM_restart" ref="dflowfm_default_restart">
-  <path version="2024-04-04T10:54:29">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
+  <path version="2025-03-19T12:49:05.793000">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_restart_map.nc" type="netCDF">
       <parameters>
@@ -732,7 +732,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c013_westernscheldt_dynamo_2D_restart" ref="dflowfm_platform_specific_refs_restart">
-  <path version="2025-02-28T10:40:00">e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart</path>
+  <path version="2025-03-19T12:52:11.393000">e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart</path>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
     <file name="dflowfmoutput/westernscheldt_restart_map.nc" type="netCDF">

@@ -4,8 +4,8 @@
         {
             "name": "rmm",
             "his_config": {
-                "his_1": "/p/devops-dsc/verschilanalyse/reference/rmm/computations/test/tbd_202402/results/RMM_VZM_0000_his.nc",
-                "his_2": "/p/devops-dsc/verschilanalyse/input/rmm/computations/test/tbd_202402/results/RMM_VZM_0000_his.nc",
+                "his_1": "/data/reference/rmm/computations/test/tbd_202402/results/RMM_VZM_0000_his.nc",
+                "his_2": "/data/input/rmm/computations/test/tbd_202402/results/RMM_VZM_0000_his.nc",
                 "his_variable_list": [
                     "waterlevel",
                     "velocity_magnitude"
@@ -15,8 +15,8 @@
                 "his_save_plots_for_every_station": false
             },
             "map_config": {
-                "map_1": "/p/devops-dsc/verschilanalyse/reference/rmm/computations/test/tbd_202402/results/RMM_VZM_0*_map.nc",
-                "map_2": "/p/devops-dsc/verschilanalyse/input/rmm/computations/test/tbd_202402/results/RMM_VZM_0*_map.nc",
+                "map_1": "/data/reference/rmm/computations/test/tbd_202402/results/RMM_VZM_0*_map.nc",
+                "map_2": "/data/input/rmm/computations/test/tbd_202402/results/RMM_VZM_0*_map.nc",
                 "map_variable_list": [
                     "mesh2d_s1",
                     "mesh2d_ucmag"

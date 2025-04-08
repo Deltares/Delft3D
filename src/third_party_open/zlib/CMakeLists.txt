@@ -1,0 +1,5 @@
+add_custom_target(zlib)
+set_target_properties(zlib PROPERTIES FOLDER third_party_open)
+if (WIN32)
+	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/bin/zlib.dll DESTINATION lib)
+endif(WIN32)

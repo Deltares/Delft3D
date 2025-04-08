@@ -1,11 +1,12 @@
 #! /bin/bash
 #SBATCH --job-name=va-gen-report
-#SBATCH --output=/p/devops-dsc/verschilanalyse/logs/va-gen-report-%j.out
 #SBATCH --time=04:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --partition=16vcpu
 #SBATCH --cpus-per-task=16
+#SBATCH --partition=16vcpu_spot
+#SBATCH --account=verschilanalyse
+#SBATCH --qos=verschilanalyse
 
 set -eo pipefail
 
@@ -26,8 +27,8 @@ docker login \
 
 # Run verschillentool (all configs).
 find config -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \
-    --volume="${VAHOME}/input:${VAHOME}/input:ro" \
-    --volume="${VAHOME}/reference:${VAHOME}/reference:ro" \
+    --volume="${VAHOME}/input:/data/input:ro" \
+    --volume="${VAHOME}/reference:/data/reference:ro" \
     --volume="${PWD}/{}:/app/{}:ro" \
     --volume="${REPORT_DIR}/verschillentool_output:/app/verschillentool_output" \
     containers.deltares.nl/delft3d/verschillentool:rename-station --config "{}" ';'

@@ -154,9 +154,6 @@ module m_sediment
 contains
 
    subroutine default_sediment()
-      use m_physcoef
-      implicit none
-
       mxgr = 0
       mxgrKrone = 0
 

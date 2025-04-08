@@ -380,8 +380,6 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     txtput1 = 'DtTrt'
     write (msgtmp, '(a,a,f7.3,a)') txtput1,': ',rtimtt*d3d_tunit,' seconds'
     call SetMessage(LEVEL_INFO, msgtmp)
-    write (msgtmp, '(a,a,i5,a)') txtput1,': every ',itimtt,' timesteps'
-    call SetMessage(LEVEL_INFO, msgtmp)
     !
     ! Trtdef: trachytope definition file (must exist, no default)
     !

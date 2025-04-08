@@ -530,9 +530,8 @@ module m_readstructures
       call prop_get(md_ptr, '', 'dischargeCoeff', uniweir%dischargecoeff, success1)
       success = success .and. check_input_result(success1, st_id, 'dischargeCoeff')
       
+      txt = 'both'
       call prop_get(md_ptr, '', 'allowedFlowDir', txt, success1)
-      success = success .and. check_input_result(success1, st_id, 'allowedFlowDir')
-      
       uniweir%allowedflowdir = allowedFlowDirToInt(txt)
       
       call prop_get(md_ptr, '', 'numLevels', uniweir%yzcount, success1) 
@@ -654,9 +653,9 @@ module m_readstructures
       culvert%pcross         => network%crs%cross(icross)
       culvert%crosssectionnr = icross
       
+      txt = 'both'
       call prop_get(md_ptr, '', 'allowedFlowDir', txt, success1)
-      success = success .and. check_input_result(success1, st_id, 'allowedFlowDir')
-      if (success) culvert%allowedflowdir = allowedFlowDirToInt(txt)
+      culvert%allowedflowdir = allowedFlowDirToInt(txt)
       
       call prop_get(md_ptr, '', 'length', culvert%length, success1) 
       success = success .and. check_input_result(success1, st_id, 'length')
@@ -773,9 +772,9 @@ module m_readstructures
       bridge%inletlosscoeff     = 0.0_dp
       bridge%outletlosscoeff    = 0.0_dp
 
+      txt = 'both'
       call prop_get(md_ptr, 'structure', 'allowedFlowDir', txt, success1)
-      success = success .and. check_input_result(success1, st_id, 'allowedFlowDir')
-      if (success) bridge%allowedflowdir = allowedFlowDirToInt(txt)
+      bridge%allowedflowdir = allowedFlowDirToInt(txt)
       
       ! Make distinction between a pillar bridge and a standard bridge
       
@@ -841,7 +840,7 @@ module m_readstructures
    !! The common fields for the structure (e.g. x/yCoordinates) must have been read elsewhere.
    subroutine readDambreak(dambr, md_ptr, st_id, forcinglist, success)
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
-      
+   
       type(t_dambreak), pointer,    intent(inout) :: dambr       !< Dambreak structure to be read into.
       type(tree_data), pointer,     intent(in   ) :: md_ptr      !< ini tree pointer with user input.
       character(IdLen),             intent(in   ) :: st_id       !< Structure character Id.

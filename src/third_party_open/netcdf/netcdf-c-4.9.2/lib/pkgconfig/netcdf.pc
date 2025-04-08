@@ -1,0 +1,13 @@
+prefix=C:/checkouts/netcdf-c-4.9.2/install
+exec_prefix=C:/checkouts/netcdf-c-4.9.2/install
+libdir=C:/checkouts/netcdf-c-4.9.2/install/lib
+includedir=C:/checkouts/netcdf-c-4.9.2/install/include
+ccompiler=C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.42.34433/bin/Hostx64/x64/cl.exe
+
+Name: netCDF
+Description: NetCDF Client Library for C
+URL: https://www.unidata.ucar.edu/netcdf
+Version: 4.9.2
+Libs: -L${libdir} -lnetcdf
+Libs.private: -lhdf5-shared -lhdf5_hl-shared -lzlib -lCURL::libcurl
+Cflags: -I${includedir}

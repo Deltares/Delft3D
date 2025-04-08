@@ -18,7 +18,6 @@ object FunctionalityDocumentMatrix : BuildType({
     val engineOptions = listOf(
         "dflowfm:e02_dflowfm",
         "dflowfm-dwaves:e100_dflowfm-dwaves",
-        "dmorphology:e02_dflowfm",
         "dwaq:e03_waq"
     )
 
