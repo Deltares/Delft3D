@@ -53,11 +53,7 @@ contains
       integer :: L, n, kk, n12, lnxmax
       integer :: k1, k2, LL
       integer :: ilongc, L1dlink
-      real(kind=dp) :: aa1, wcw, alf
-              
-      if (.not. allocated(wcxy)) then
-         allocate(wcxy(2, ndx))
-      end if
+      real(kind=dp) :: aa1, wcw, alf           
 
       wcx1 = 0
       wcy1 = 0

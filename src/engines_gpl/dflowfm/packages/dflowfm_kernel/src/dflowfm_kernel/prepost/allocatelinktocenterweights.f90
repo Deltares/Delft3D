@@ -47,7 +47,8 @@ contains
       use m_alloc
 
       integer :: ierr
-
+      
+      if (allocated(wcxy)) deallocate(wcxy)
       if (allocated(wcx1)) deallocate (wcx1)
       if (allocated(wcy1)) deallocate (wcy1)
       if (allocated(wcx2)) deallocate (wcx2)
@@ -55,6 +56,7 @@ contains
       if (allocated(wcL)) deallocate (wcL)
       if (allocated(wc)) deallocate (wc)
 
+      allocate(wcxy(2, ndx))
       allocate (wcx1(lnx), stat=ierr); 
       call aerr('wcx1(lnx)', ierr, lnx)
       allocate (wcy1(lnx), stat=ierr); 
