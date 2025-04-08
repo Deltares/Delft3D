@@ -134,7 +134,7 @@ class TestSetRunner(ABC):
 
         if n_testcases < 1:
             self.__logger.error("There are no test cases to run.")
-            sys.exit(1)
+            raise ValueError("ERROR: There are no test cases to run in the XML.")
 
         config_process_count = sum(config.process_count for config in self.__settings.configs_to_run)
         max_processes = min(config_process_count, multiprocessing.cpu_count())
