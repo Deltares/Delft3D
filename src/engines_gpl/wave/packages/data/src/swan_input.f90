@@ -3341,7 +3341,7 @@ contains
          if (sr%whitecap == 2) then
             line = 'GEN3 WESTH'
          else
-            line = 'GEN3'
+            line = 'GEN3 KOMEN'
          end if
          if (sr%windgrowth) then
              line = trim(line) // ' DRAG WU'
