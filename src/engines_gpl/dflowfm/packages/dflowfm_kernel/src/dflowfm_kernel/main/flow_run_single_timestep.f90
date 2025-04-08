@@ -49,7 +49,6 @@ contains
       use m_step_reduce_transport_morpho, only: step_reduce_transport_morpho
       use m_step_reduce_hydro, only: step_reduce_hydro
       use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
-      use m_setlinktocornerweights, only: setlinktocornerweights
       use m_setlinktocenterweights, only: setlinktocenterweights
       use m_getcellsurface1d, only: getcellsurface1d
 

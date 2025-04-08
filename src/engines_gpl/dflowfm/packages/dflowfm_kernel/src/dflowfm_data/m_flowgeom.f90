@@ -158,6 +158,7 @@ module m_flowgeom
    real(kind=dp), dimension(:), allocatable :: wcny3 !< link weights (lnx) for corner velocities k3
    real(kind=dp), dimension(:), allocatable :: wcnx4 !< link weights (lnx) for corner velocities k4
    real(kind=dp), dimension(:), allocatable :: wcny4 !< link weights (lnx) for corner velocities k4
+   real(kind=dp), dimension(:, :), allocatable :: wcxy !< center weight factors (2,ndx) , only for normalising
 
    real(kind=dp), dimension(:, :), allocatable :: csb !< cosine orientation from left/right neighboring flownode to flowlink, left/right as ln
    real(kind=dp), dimension(:, :), allocatable :: snb !< sine   orientation from left/right neighboring flownode to flowlink, left/right as ln

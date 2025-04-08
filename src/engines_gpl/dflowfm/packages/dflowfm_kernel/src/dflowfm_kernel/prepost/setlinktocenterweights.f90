@@ -53,9 +53,11 @@ contains
       integer :: L, n, kk, n12, lnxmax
       integer :: k1, k2, LL
       integer :: ilongc, L1dlink
-
       real(kind=dp) :: aa1, wcw, alf
-      real(kind=dp), dimension(2, ndx) :: wcxy !< center weight factors (2,ndx) , only for normalising
+              
+      if (.not. allocated(wcxy)) then
+         allocate(wcxy(2, ndx))
+      end if
 
       wcx1 = 0
       wcy1 = 0
@@ -237,8 +239,6 @@ contains
             deallocate (wwL)
          end if
       end if
-
-      !kfs = 0
 
    end subroutine setlinktocenterweights
 
