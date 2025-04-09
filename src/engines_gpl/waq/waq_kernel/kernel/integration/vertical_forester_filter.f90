@@ -21,17 +21,16 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_vertical_forester_filter
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
-    private
-    public :: vertical_forester_filter
+   private
+   public :: vertical_forester_filter
 
 contains
 
-
-    !> Forester filter for the vertical.
+   !> Forester filter for the vertical.
     !! Then loops over the number of horizontal segments and over the
     !! the number of active substances are made. All these verticals
     !! are filtered at most MAXFIL times.
@@ -63,104 +62,104 @@ contains
     !! original code. Because we work with half distances, it is 0.5
     !! here.
     !!  A maximum/minimum of DD remains.
-    subroutine vertical_forester_filter(lunut, num_substances_transported, num_substances_total, num_cells, num_exchanges_z_dir, &
-            num_layers_grid, conc, aleng, nowarn)
+   subroutine vertical_forester_filter(lunut, num_substances_transported, num_substances_total, num_cells, num_exchanges_z_dir, &
+                                       num_layers_grid, conc, aleng, nowarn)
 
-        use timers
+      use timers
 
-        integer(kind = int_wp), intent(in) :: lunut  !< Unit number of log file
-        integer(kind = int_wp), intent(in) :: num_substances_transported  !< Number of active substances
-        integer(kind = int_wp), intent(in) :: num_substances_total  !< Number of substances
-        integer(kind = int_wp), intent(in) :: num_cells  !< Number of cells or segments
-        integer(kind = int_wp), intent(in) :: num_exchanges_z_dir   !<  Number of exchanges in vertical direction
-        integer(kind = int_wp), intent(inout) :: nowarn !< Number of warnings sent to the log file
-        integer(kind = int_wp), intent(in) :: num_layers_grid   !< ????
+      integer(kind=int_wp), intent(in) :: lunut !< Unit number of log file
+      integer(kind=int_wp), intent(in) :: num_substances_transported !< Number of active substances
+      integer(kind=int_wp), intent(in) :: num_substances_total !< Number of substances
+      integer(kind=int_wp), intent(in) :: num_cells !< Number of cells or segments
+      integer(kind=int_wp), intent(in) :: num_exchanges_z_dir !<  Number of exchanges in vertical direction
+      integer(kind=int_wp), intent(inout) :: nowarn !< Number of warnings sent to the log file
+      integer(kind=int_wp), intent(in) :: num_layers_grid !< ????
 
-        real(kind = real_wp), intent(inout) :: conc(num_substances_total, num_cells) !< Array with concentrations of all substances at all cells
-        real(kind = real_wp), intent(in) :: aleng(2, num_exchanges_z_dir)     !< Mixing length
+      real(kind=real_wp), intent(inout) :: conc(num_substances_total, num_cells) !< Array with concentrations of all substances at all cells
+      real(kind=real_wp), intent(in) :: aleng(2, num_exchanges_z_dir) !< Mixing length
 
-        ! Local variables
-        real(kind = real_wp) :: dd, dr, dr1, dr2, dz1, dz2, coef
+      ! Local variables
+      real(kind=real_wp) :: dd, dr, dr1, dr2, dz1, dz2, coef
 
-        integer(kind = int_wp) :: cell_i, substance_i, ifilt, il, is, ilu, ifil, ild, ilay
-        integer(kind = int_wp) :: nhor, maxfil
-        integer(kind = int_wp) :: ithandl = 0
+      integer(kind=int_wp) :: cell_i, substance_i, ifilt, il, is, ilu, ifil, ild, ilay
+      integer(kind=int_wp) :: nhor, maxfil
+      integer(kind=int_wp) :: ithandl = 0
 
-        if (timon) call timstrt ("vertical_forester_filter", ithandl)
+      if (timon) call timstrt("vertical_forester_filter", ithandl)
 
-        dd = 1.0e-02
-        maxfil = 100
+      dd = 1.0e-02
+      maxfil = 100
 
-        ! only for structured 3d
-        if (num_layers_grid <= 1) goto 9999
-        nhor = num_cells / num_layers_grid
-        ! for all horizontal segments
-        do cell_i = 1, nhor
-            ! for all active substances
-            do substance_i = 1, num_substances_transported
-                ! do until maximum iteration or untill satisfied
-                do ifilt = 1, maxfil
-                    ifil = 0
-                    il = cell_i
-                    ilu = il - nhor
-                    ild = il + nhor
-                    do ilay = 2, num_layers_grid - 1
-                        il = il + nhor
-                        ilu = ilu + nhor
-                        ild = ild + nhor
-                        dr1 = conc(substance_i, il) - conc(substance_i, ilu)
-                        dr2 = conc(substance_i, il) - conc(substance_i, ild)
-                        ! test for local maximum
-                        if (dr1 >  dd .and. dr2 >  dd) then
-                            ifil = 1
-                            if (dr1 > dr2) then
-                                dr = min (0.5 * dr1, dr2)
-                                dz1 = aleng(1, ilu)
-                                dz2 = aleng(2, ilu)
-                                coef = min (dz1, dz2, 0.5) * dr
-                                conc(substance_i, ilu) = conc(substance_i, ilu) + coef / dz1
-                                conc(substance_i, il) = conc(substance_i, il) - coef / dz2
-                            else
-                                dr = min (dr1, 0.5 * dr2)
-                                dz1 = aleng(1, il)
-                                dz2 = aleng(2, il)
-                                coef = min (dz1, dz2, 0.5) * dr
-                                conc(substance_i, il) = conc(substance_i, il) - coef / dz1
-                                conc(substance_i, ild) = conc(substance_i, ild) + coef / dz2
-                            endif
-                        endif
-                        ! test for local minimum
-                        if (dr1 < -dd .and. dr2 < -dd) then
-                            ifil = 1
-                            if (dr1 < dr2) then
-                                dr = max (0.5 * dr1, dr2)
-                                dz1 = aleng(1, ilu)
-                                dz2 = aleng(2, ilu)
-                                coef = min (dz1, dz2, 0.5) * dr
-                                conc(substance_i, ilu) = conc(substance_i, ilu) + coef / dz1
-                                conc(substance_i, il) = conc(substance_i, il) - coef / dz2
-                            else
-                                dr = max (dr1, 0.5 * dr2)
-                                dz1 = aleng(1, il)
-                                dz2 = aleng(2, il)
-                                coef = min (dz1, dz2, 0.5) * dr
-                                conc(substance_i, il) = conc(substance_i, il) - coef / dz1
-                                conc(substance_i, ild) = conc(substance_i, ild) + coef / dz2
-                            endif
-                        endif
-                    end do
-                    if (ifil == 0) goto 30
-                end do
-                if (ifil == 1) then
-                    if (nowarn < 1000) write (lunut, 1010) substance_i, cell_i, ilay
-                    nowarn = nowarn + 1
-                endif
-                30 continue
+      ! only for structured 3d
+      if (num_layers_grid <= 1) goto 9999
+      nhor = num_cells / num_layers_grid
+      ! for all horizontal segments
+      do cell_i = 1, nhor
+         ! for all active substances
+         do substance_i = 1, num_substances_transported
+            ! do until maximum iteration or untill satisfied
+            do ifilt = 1, maxfil
+               ifil = 0
+               il = cell_i
+               ilu = il - nhor
+               ild = il + nhor
+               do ilay = 2, num_layers_grid - 1
+                  il = il + nhor
+                  ilu = ilu + nhor
+                  ild = ild + nhor
+                  dr1 = conc(substance_i, il) - conc(substance_i, ilu)
+                  dr2 = conc(substance_i, il) - conc(substance_i, ild)
+                  ! test for local maximum
+                  if (dr1 > dd .and. dr2 > dd) then
+                     ifil = 1
+                     if (dr1 > dr2) then
+                        dr = min(0.5 * dr1, dr2)
+                        dz1 = aleng(1, ilu)
+                        dz2 = aleng(2, ilu)
+                        coef = min(dz1, dz2, 0.5) * dr
+                        conc(substance_i, ilu) = conc(substance_i, ilu) + coef / dz1
+                        conc(substance_i, il) = conc(substance_i, il) - coef / dz2
+                     else
+                        dr = min(dr1, 0.5 * dr2)
+                        dz1 = aleng(1, il)
+                        dz2 = aleng(2, il)
+                        coef = min(dz1, dz2, 0.5) * dr
+                        conc(substance_i, il) = conc(substance_i, il) - coef / dz1
+                        conc(substance_i, ild) = conc(substance_i, ild) + coef / dz2
+                     end if
+                  end if
+                  ! test for local minimum
+                  if (dr1 < -dd .and. dr2 < -dd) then
+                     ifil = 1
+                     if (dr1 < dr2) then
+                        dr = max(0.5 * dr1, dr2)
+                        dz1 = aleng(1, ilu)
+                        dz2 = aleng(2, ilu)
+                        coef = min(dz1, dz2, 0.5) * dr
+                        conc(substance_i, ilu) = conc(substance_i, ilu) + coef / dz1
+                        conc(substance_i, il) = conc(substance_i, il) - coef / dz2
+                     else
+                        dr = max(dr1, 0.5 * dr2)
+                        dz1 = aleng(1, il)
+                        dz2 = aleng(2, il)
+                        coef = min(dz1, dz2, 0.5) * dr
+                        conc(substance_i, il) = conc(substance_i, il) - coef / dz1
+                        conc(substance_i, ild) = conc(substance_i, ild) + coef / dz2
+                     end if
+                  end if
+               end do
+               if (ifil == 0) goto 30
             end do
-        end do
+            if (ifil == 1) then
+               if (nowarn < 1000) write (lunut, 1010) substance_i, cell_i, ilay
+               nowarn = nowarn + 1
+            end if
+30          continue
+         end do
+      end do
 
-        9999 if (timon) call timstop (ithandl)
-        1010 FORMAT (' WARNING: Forester filter max. iterations reached for substance: ', &
-                I2, '; segment: ', I6, '; layer: ', I2, ' !')
-    end subroutine vertical_forester_filter
+9999  if (timon) call timstop(ithandl)
+1010  format(' WARNING: Forester filter max. iterations reached for substance: ', &
+             I2, '; segment: ', I6, '; layer: ', I2, ' !')
+   end subroutine vertical_forester_filter
 end module m_vertical_forester_filter

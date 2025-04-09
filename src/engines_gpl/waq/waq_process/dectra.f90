@@ -21,55 +21,54 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dectra
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine dectra(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
 
-    subroutine dectra (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !>\file
+      !>       General decayable tracer proces
 
-        !>\file
-        !>       General decayable tracer proces
+      !
+      !     Description of the module :
+      !
+      ! Name    T   L I/O   Description                                    Units
+      ! ----    --- -  -    -------------------                             ----
+      ! conctr  R*4 1 I concentration tracer ( 1st order decay )            g/m3
+      ! decayr  R*4 1 I decay rate tracer                                    1/d
+      ! fdecay  R*4 1 O flux first order decay on tracer                  g/m3/d
 
-        !
-        !     Description of the module :
-        !
-        ! Name    T   L I/O   Description                                    Units
-        ! ----    --- -  -    -------------------                             ----
-        ! conctr  R*4 1 I concentration tracer ( 1st order decay )            g/m3
-        ! decayr  R*4 1 I decay rate tracer                                    1/d
-        ! fdecay  R*4 1 O flux first order decay on tracer                  g/m3/d
+      implicit none
 
-        implicit none
+      real(kind=real_wp) :: process_space_real(*), fl(*)
+      integer(kind=int_wp) :: ipoint(2), increm(2), num_cells, noflux, &
+                              iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        real(kind = real_wp) :: process_space_real  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(2), increm(2), num_cells, noflux, &
-                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      integer(kind=int_wp) :: ipnt(2), iflux, iseg
+      real(kind=real_wp) :: conctr, decayr, fdecay
 
-        integer(kind = int_wp) :: ipnt(2), iflux, iseg
-        real(kind = real_wp) :: conctr, decayr, fdecay
+      ipnt = ipoint
+      iflux = 0
 
-        ipnt = ipoint
-        iflux = 0
+      do iseg = 1, num_cells
+         if (btest(iknmrk(iseg), 0)) then
+            conctr = process_space_real(ipnt(1))
+            decayr = process_space_real(ipnt(2))
 
-        do iseg = 1, num_cells
-            if (btest(iknmrk(iseg), 0)) then
-                conctr = process_space_real(ipnt(1))
-                decayr = process_space_real(ipnt(2))
-
-                !           Calculate decay
-                fdecay = decayr * conctr
-                fl(1 + iflux) = fdecay
-            end if
-            iflux = iflux + noflux
-            ipnt = ipnt + increm
-        end do
-        !
-        return
-    end
+            !           Calculate decay
+            fdecay = decayr * conctr
+            fl(1 + iflux) = fdecay
+         end if
+         iflux = iflux + noflux
+         ipnt = ipnt + increm
+      end do
+      !
+      return
+   end
 
 end module m_dectra

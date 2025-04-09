@@ -21,24 +21,23 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-
 module grid_utils
 
-    use m_waq_precision
-    use m_error_status
-    use timers
-    use rd_token
-    use m_logger_helper, only : stop_with_error
+   use m_waq_precision
+   use m_error_status
+   use timers
+   use rd_token
+   use m_logger_helper, only: stop_with_error
 
-    implicit none
+   implicit none
 
-    private
-    public :: read_multiple_grids
+   private
+   public :: read_multiple_grids
 
 contains
 
-    subroutine read_multiple_grids(file_unit_list, num_cells, num_substances_total, num_substances_part, num_layers, &
-            gridps, num_cells_bottom, num_grids, syname, status)
+   subroutine read_multiple_grids(file_unit_list, num_cells, num_substances_total, num_substances_part, num_layers, &
+                                  gridps, num_cells_bottom, num_grids, syname, status)
 
         !!  Reads optional multiple grids
         !!
@@ -57,361 +56,361 @@ contains
         !!     Logical units  : file_unit_list(29) = unit formatted output file
         !!                      file_unit_list( 2) = unit intermediate file (system)
 
-        use m_grid_utils_external        !   for the storage of contraction grids
+      use m_grid_utils_external !   for the storage of contraction grids
 
-        integer(kind = int_wp), intent(inout) :: file_unit_list   (*)          !< array with unit numbers
-        integer(kind = int_wp), intent(in) :: num_cells              !< number of computational volumes
-        integer(kind = int_wp), intent(in) :: num_substances_total              !< total number of substances
-        integer(kind = int_wp), intent(in) :: num_substances_part             !< total number of particle-substances
-        integer(kind = int_wp), intent(out) :: num_layers              !< number of layers
-        type(GridPointerColl) :: GridPs            !< collection of grids
-        integer(kind = int_wp), intent(out) :: num_cells_bottom              !< number of additional bottom volumes
-        integer(kind = int_wp), intent(out) :: num_grids             !< number of grids
-        character(len=20), intent(in) :: syname(num_substances_total)     !< names of the substances
+      integer(kind=int_wp), intent(inout) :: file_unit_list(*) !< array with unit numbers
+      integer(kind=int_wp), intent(in) :: num_cells !< number of computational volumes
+      integer(kind=int_wp), intent(in) :: num_substances_total !< total number of substances
+      integer(kind=int_wp), intent(in) :: num_substances_part !< total number of particle-substances
+      integer(kind=int_wp), intent(out) :: num_layers !< number of layers
+      type(GridPointerColl) :: GridPs !< collection of grids
+      integer(kind=int_wp), intent(out) :: num_cells_bottom !< number of additional bottom volumes
+      integer(kind=int_wp), intent(out) :: num_grids !< number of grids
+      character(len=20), intent(in) :: syname(num_substances_total) !< names of the substances
 
-        type(error_status), intent(inout) :: status !< current error status
+      type(error_status), intent(inout) :: status !< current error status
 
-        logical :: read_input    ! is input expected?
-        logical :: newinput      ! is it the newer type of grid input ?
-        logical :: multigrid     ! is the multiple grid feature used ?
-        type(t_grid) :: aGrid         ! a single grid
-        character(len=255) :: ctoken        ! the character token that is read
-        integer(kind = int_wp) :: itoken         ! the integer token that is read
-        integer(kind = int_wp) :: isysg(num_substances_total)   ! grid number to be used per substance
-        integer(kind = int_wp) :: isyst(num_substances_total)   ! time step multiplier per substance
-        integer(kind = int_wp) :: iseg           ! loop counter computational volumes
-        integer(kind = int_wp) :: i_base_grid    ! the system base grid number (mostly 1)
-        integer(kind = int_wp) :: i_bottom_grid  ! the system bed grid number
-        logical :: zmodel        ! if true, it is a z-layer model
-        integer(kind = int_wp) :: itype          ! returned type of input token
-        integer(kind = int_wp) :: ierr2          ! error count in this routine
-        integer(kind = int_wp) :: nosegl         ! number of computational volumes per layer
-        integer(kind = int_wp) :: nolay_tmp      ! temp number of layers
-        integer(kind = int_wp) :: nosegl_bottom  ! number of segments per layer (required in read_grid)
-        integer(kind = int_wp) :: igrid          ! a grid number in the collection
-        integer(kind = int_wp) :: noseg2         ! number of additional bed cells
-        integer(kind = int_wp) :: kseg           ! volume number counter
-        integer(kind = int_wp) :: ilay           ! layer counter
-        integer(kind = int_wp) :: isys           ! substance number
-        integer(kind = int_wp) :: nosss          ! total number of volumes inclusive bed cells
-        integer(kind = int_wp) :: ioff           ! help variable for array offset
-        integer(kind = int_wp) :: iseg2          ! counter for bed cells
-        integer(kind = int_wp) :: iref           ! help variable to contain the reference grid
-        integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("grid", ithndl)
+      logical :: read_input ! is input expected?
+      logical :: newinput ! is it the newer type of grid input ?
+      logical :: multigrid ! is the multiple grid feature used ?
+      type(t_grid) :: aGrid ! a single grid
+      character(len=255) :: ctoken ! the character token that is read
+      integer(kind=int_wp) :: itoken ! the integer token that is read
+      integer(kind=int_wp) :: isysg(num_substances_total) ! grid number to be used per substance
+      integer(kind=int_wp) :: isyst(num_substances_total) ! time step multiplier per substance
+      integer(kind=int_wp) :: iseg ! loop counter computational volumes
+      integer(kind=int_wp) :: i_base_grid ! the system base grid number (mostly 1)
+      integer(kind=int_wp) :: i_bottom_grid ! the system bed grid number
+      logical :: zmodel ! if true, it is a z-layer model
+      integer(kind=int_wp) :: itype ! returned type of input token
+      integer(kind=int_wp) :: ierr2 ! error count in this routine
+      integer(kind=int_wp) :: nosegl ! number of computational volumes per layer
+      integer(kind=int_wp) :: nolay_tmp ! temp number of layers
+      integer(kind=int_wp) :: nosegl_bottom ! number of segments per layer (required in read_grid)
+      integer(kind=int_wp) :: igrid ! a grid number in the collection
+      integer(kind=int_wp) :: noseg2 ! number of additional bed cells
+      integer(kind=int_wp) :: kseg ! volume number counter
+      integer(kind=int_wp) :: ilay ! layer counter
+      integer(kind=int_wp) :: isys ! substance number
+      integer(kind=int_wp) :: nosss ! total number of volumes inclusive bed cells
+      integer(kind=int_wp) :: ioff ! help variable for array offset
+      integer(kind=int_wp) :: iseg2 ! counter for bed cells
+      integer(kind=int_wp) :: iref ! help variable to contain the reference grid
+      integer(kind=int_wp) :: ithndl = 0
+      if (timon) call timstrt("grid", ithndl)
 
-        num_layers = 1
-        nosegl = num_cells / num_layers
-        num_grids = 1
-        newinput = .false.
-        zmodel = .false.
-        read_input = .false.
-        multigrid = .false.
-        nosegl_bottom = nosegl
+      num_layers = 1
+      nosegl = num_cells / num_layers
+      num_grids = 1
+      newinput = .false.
+      zmodel = .false.
+      read_input = .false.
+      multigrid = .false.
+      nosegl_bottom = nosegl
 
-        ! Always add base grid to the collection of grids
-        aGrid%name = 'Base grid'
-        aGrid%num_cells = num_cells
-        aGrid%noseg_lay = num_cells / num_layers
-        aGrid%iref = 1
-        aGrid%name_ref = ' '
-        aGrid%itype = BaseGrid
-        aGrid%space_var_nolay = .FALSE.
-        aGrid%num_layers = num_layers
-        aGrid%nolay_var => null()
-        allocate (aGrid%iarray(num_cells))
-        do iseg = 1, num_cells
-            agrid%iarray(iseg) = iseg
-        enddo
-        i_base_grid = GridPs%add(aGrid)
-        i_bottom_grid = 0
-        GridPs%base_grid = i_base_grid
-        GridPs%bottom_grid = i_bottom_grid
+      ! Always add base grid to the collection of grids
+      aGrid%name = 'Base grid'
+      aGrid%num_cells = num_cells
+      aGrid%noseg_lay = num_cells / num_layers
+      aGrid%iref = 1
+      aGrid%name_ref = ' '
+      aGrid%itype = BaseGrid
+      aGrid%space_var_nolay = .false.
+      aGrid%num_layers = num_layers
+      aGrid%nolay_var => null()
+      allocate (aGrid%iarray(num_cells))
+      do iseg = 1, num_cells
+         agrid%iarray(iseg) = iseg
+      end do
+      i_base_grid = GridPs%add(aGrid)
+      i_bottom_grid = 0
+      GridPs%base_grid = i_base_grid
+      GridPs%bottom_grid = i_bottom_grid
 
-        isysg = i_base_grid
-        isyst = 1
+      isysg = i_base_grid
+      isyst = 1
 
-        ! Read number of multiple grids
-        do
-            if (gettoken(ctoken, itoken, itype, ierr2) > 0) goto 1000
+      ! Read number of multiple grids
+      do
+         if (gettoken(ctoken, itoken, itype, ierr2) > 0) goto 1000
 
-            if (itype == 2) then                    ! integer
-                if (.not. read_input) then             ! no multigrid, integer
-                    write (file_unit, 2000)                ! is meant for print-out
-                    push = .true.                         ! grid, so push on the
-                    exit                                  ! stack again
-                else
-                    if (.not. newinput) then            ! old way of dealing with
-                        if (num_grids == 1) then          ! multiple grids expects
-                            num_grids = itoken + 1             ! the number of added grids
-                            write (file_unit, 2010) num_grids   ! after the multigrid keyword
-                            if (num_grids == 1) exit       ! no additional grids
-                        else
-                            if (num_grids == gridps%current_size) then
-                                do isys = 1, num_substances_total - num_substances_part
-                                    if (gettoken(isysg(isys), ierr2) > 0) goto 1000
-                                    if (gettoken(isyst(isys), ierr2) > 0) goto 1000
-                                enddo
-                                do isys = num_substances_total - num_substances_part + 1, num_substances_total
-                                    isysg(isys) = 1
-                                    isyst(isys) = 1
-                                enddo
-                                exit
-                            endif
-                        endif
-                    else
-                        push = .true.                      ! an integer may end the
-                        exit                               ! input processing but it
-                    endif                                 ! should be available later on.
-                    cycle
-                endif
-            endif
+         if (itype == 2) then ! integer
+            if (.not. read_input) then ! no multigrid, integer
+               write (file_unit, 2000) ! is meant for print-out
+               push = .true. ! grid, so push on the
+               exit ! stack again
+            else
+               if (.not. newinput) then ! old way of dealing with
+                  if (num_grids == 1) then ! multiple grids expects
+                     num_grids = itoken + 1 ! the number of added grids
+                     write (file_unit, 2010) num_grids ! after the multigrid keyword
+                     if (num_grids == 1) exit ! no additional grids
+                  else
+                     if (num_grids == gridps%current_size) then
+                        do isys = 1, num_substances_total - num_substances_part
+                           if (gettoken(isysg(isys), ierr2) > 0) goto 1000
+                           if (gettoken(isyst(isys), ierr2) > 0) goto 1000
+                        end do
+                        do isys = num_substances_total - num_substances_part + 1, num_substances_total
+                           isysg(isys) = 1
+                           isyst(isys) = 1
+                        end do
+                        exit
+                     end if
+                  end if
+               else
+                  push = .true. ! an integer may end the
+                  exit ! input processing but it
+               end if ! should be available later on.
+               cycle
+            end if
+         end if
 
-            if (.not. multigrid) then                  ! still no multigrid chosen
-                select case (ctoken)                   ! number of layers necessary here
-                case ('NOLAY')                         ! Deal with number of layers
-                    if (gettoken(num_layers, ierr2) > 0) goto 1000
-                    write (file_unit, 2020) num_layers
-                case ('MULTIGRID')                     ! Deal with multiple grids
-                    multigrid = .true.                 ! Allow an integer to give
-                    read_input = .true.                ! number of additional grids
-                    if (gettoken(ctoken, itoken, itype, ierr2) > 0) goto 1000
-                    push = .true.
-                    if (itype == 1) newinput = .true.
-                    write (file_unit, 2040)
-                case default
-                    write (file_unit, 2030) trim(ctoken)
-                    goto 1000
-                end select
-                cycle
-            endif
-
-            select case (ctoken)
-            case ('ZMODEL')
-                newinput = .true.
-                zmodel = .true.
-
-            case ('NOLAY')
-                ! Keyword 'NOLAY' must precede grid definitions
-                if (GridPs%current_size > 1) then
-                    write(file_unit, 2050)
-                    goto 1000
-                endif
-                if (gettoken(nolay_tmp, ierr2) > 0) goto 1000
-                write (file_unit, 2020) nolay_tmp
-
-                ! z model temp do not do this here but at the end of the routine
-                nosegl_bottom = num_cells / nolay_tmp
-                if (.not. zmodel) then
-                    num_layers = nolay_tmp
-                    nosegl = num_cells / num_layers
-                    if (nosegl * num_layers /= num_cells) then
-                        write (file_unit, 2060)
-                        goto 1000
-                    endif
-                    GridPs%Pointers(i_base_grid)%noseg_lay = nosegl
-                    GridPs%Pointers(i_base_grid)%num_layers = num_layers
-                endif
-
-            case ('BOTTOMGRID', 'BEDGRID')
-                aGrid%itype = Bottomgrid
-
-                call read_grid(file_unit_list, aGrid, GridPs, .false., nosegl_bottom, status)
-                igrid = GridPs%add(aGrid)
-
-                if (GridPs%bottom_grid /= 0) then
-                    write (file_unit, 2070)
-                    call status%increase_warning_count()
-                else
-                    GridPs%bottom_grid = igrid
-                endif
-
-            case ('PROCESSGRID')
-                aGrid%itype = ProcessGrid
-                call read_grid (file_unit_list, aGrid, GridPs, .false., nosegl_bottom, status)
-                igrid = GridPs%add(aGrid)
-
-            case ('SUBGRID')
-                aGrid%itype = ProcessGrid
-                call read_grid (file_unit_list, aGrid, GridPs, .false., nosegl_bottom, status)
-                igrid = GridPs%add(aGrid)
-
-            case ('NOBOTTOMLAY')
-                call read_nobottomlay (GridPs, status)
-
-            case ('SUBSTANCE_PROCESSGRID')
-                newinput = .true.
-                call read_sub_procgrid(num_substances_total - num_substances_part, syname, GridPs, isysg, status)
-
-            case ('PROCESS_TIMESTEP_MULTIPLIER')
-                newinput = .true.
-                call read_proc_time   (num_substances_total - num_substances_part, syname, isyst, status)
-
-            case ('END_MULTIGRID')             ! this keyword ends the
-                exit                              ! sequence of new input processing
-
+         if (.not. multigrid) then ! still no multigrid chosen
+            select case (ctoken) ! number of layers necessary here
+            case ('NOLAY') ! Deal with number of layers
+               if (gettoken(num_layers, ierr2) > 0) goto 1000
+               write (file_unit, 2020) num_layers
+            case ('MULTIGRID') ! Deal with multiple grids
+               multigrid = .true. ! Allow an integer to give
+               read_input = .true. ! number of additional grids
+               if (gettoken(ctoken, itoken, itype, ierr2) > 0) goto 1000
+               push = .true.
+               if (itype == 1) newinput = .true.
+               write (file_unit, 2040)
             case default
-                if (.not. newinput) then
-                    aGrid%itype = ProcessGrid
-                    push = .true.
-
-                    call read_grid (file_unit_list, aGrid, GridPs, .true., nosegl_bottom, status)
-                    igrid = GridPs%add(aGrid)
-                    exit
-                else
-                    write (file_unit, 2030) trim(ctoken)
-                    goto 1000
-                endif
-
+               write (file_unit, 2030) trim(ctoken)
+               goto 1000
             end select
+            cycle
+         end if
 
-        enddo
+         select case (ctoken)
+         case ('ZMODEL')
+            newinput = .true.
+            zmodel = .true.
 
-        num_grids = GridPs%current_size
+         case ('NOLAY')
+            ! Keyword 'NOLAY' must precede grid definitions
+            if (GridPs%current_size > 1) then
+               write (file_unit, 2050)
+               goto 1000
+            end if
+            if (gettoken(nolay_tmp, ierr2) > 0) goto 1000
+            write (file_unit, 2020) nolay_tmp
 
-        ! Expand with layers in the base grid
-        do igrid = 1, num_grids
-            if (igrid == GridPs%bottom_grid) cycle
+            ! z model temp do not do this here but at the end of the routine
+            nosegl_bottom = num_cells / nolay_tmp
+            if (.not. zmodel) then
+               num_layers = nolay_tmp
+               nosegl = num_cells / num_layers
+               if (nosegl * num_layers /= num_cells) then
+                  write (file_unit, 2060)
+                  goto 1000
+               end if
+               GridPs%Pointers(i_base_grid)%noseg_lay = nosegl
+               GridPs%Pointers(i_base_grid)%num_layers = num_layers
+            end if
 
-            noseg2 = GridPs%Pointers(igrid)%noseg_lay
+         case ('BOTTOMGRID', 'BEDGRID')
+            aGrid%itype = Bottomgrid
 
-            if (.not. GridPs%Pointers(igrid)%space_var_nolay) then
-                kseg = nosegl + 1
-                do ilay = 2, num_layers
-                    ioff = (ilay - 1) * noseg2
-                    do iseg = 1, nosegl
-                        GridPs%Pointers(igrid)%iarray(kseg) = &
-                                GridPs%Pointers(igrid)%iarray(iseg) + ioff
-                        kseg = kseg + 1
-                    enddo
-                enddo
-                noseg2 = noseg2 * num_layers
-                GridPs%Pointers(igrid)%num_cells = noseg2
-            endif
-            if (igrid /= 1) write(file_unit, 2080) igrid, GridPs%Pointers(igrid)%num_cells
+            call read_grid(file_unit_list, aGrid, GridPs, .false., nosegl_bottom, status)
+            igrid = GridPs%add(aGrid)
 
-        enddo
-
-        ! add the bottom segments to the total segments, set num_cells_bottom
-        num_cells_bottom = 0
-        i_bottom_grid = GridPs%bottom_grid
-        if (i_bottom_grid > 0) then
-            num_cells_bottom = GridPs%Pointers(i_bottom_grid)%num_cells
-            GridPs%Pointers(i_base_grid)%num_cells = num_cells + num_cells_bottom
-        endif
-        nosss = num_cells + num_cells_bottom
-
-        ! make pointers to final grid
-        do igrid = 1, num_grids
-            allocate(GridPs%Pointers(igrid)%finalpointer(nosss))
-            if (igrid == i_base_grid) then
-                do iseg = 1, nosss
-                    GridPs%Pointers(igrid)%finalpointer(iseg) = iseg
-                enddo
-            elseif (igrid == i_bottom_grid) then
-                GridPs%Pointers(igrid)%finalpointer(1:num_cells) = 0
-                do iseg2 = 1, num_cells_bottom
-                    GridPs%Pointers(igrid)%finalpointer(num_cells + iseg2) = iseg2
-                enddo
-            elseif(GridPs%Pointers(igrid)%itype == BottomGrid) then
-                GridPs%Pointers(igrid)%finalpointer = 0
-                iref = GridPs%Pointers(igrid)%iref
-                do iseg = 1, nosss
-                    iseg2 = GridPs%Pointers(iref)%finalpointer(iseg)
-                    if (iseg2 > 0) then
-                        GridPs%Pointers(igrid)%finalpointer(iseg) = GridPs%Pointers(igrid)%iarray(iseg2)
-                    endif
-                enddo
+            if (GridPs%bottom_grid /= 0) then
+               write (file_unit, 2070)
+               call status%increase_warning_count()
             else
-                GridPs%Pointers(igrid)%finalpointer = 0
-                iref = GridPs%Pointers(igrid)%iref
-                do iseg = 1, num_cells
-                    iseg2 = GridPs%Pointers(iref)%finalpointer(iseg)
-                    if (iseg2 > 0) then
-                        GridPs%Pointers(igrid)%finalpointer(iseg) = GridPs%Pointers(igrid)%iarray(iseg2)
-                    endif
-                enddo
-            endif
-        enddo
+               GridPs%bottom_grid = igrid
+            end if
 
-        ! z-model
-        if (zmodel .and. nolay_tmp /= 1) num_layers = nolay_tmp
+         case ('PROCESSGRID')
+            aGrid%itype = ProcessGrid
+            call read_grid(file_unit_list, aGrid, GridPs, .false., nosegl_bottom, status)
+            igrid = GridPs%add(aGrid)
 
-        ! Write grid to system file
-        do igrid = 1, num_grids
-            if (igrid == GridPs%bottom_grid) then
-                write(file_unit_list(2)) GridPs%Pointers(iGrid)%num_cells, &
-                        -GridPs%Pointers(iGrid)%num_layers, &
-                        GridPs%Pointers(iGrid)%finalpointer
+         case ('SUBGRID')
+            aGrid%itype = ProcessGrid
+            call read_grid(file_unit_list, aGrid, GridPs, .false., nosegl_bottom, status)
+            igrid = GridPs%add(aGrid)
+
+         case ('NOBOTTOMLAY')
+            call read_nobottomlay(GridPs, status)
+
+         case ('SUBSTANCE_PROCESSGRID')
+            newinput = .true.
+            call read_sub_procgrid(num_substances_total - num_substances_part, syname, GridPs, isysg, status)
+
+         case ('PROCESS_TIMESTEP_MULTIPLIER')
+            newinput = .true.
+            call read_proc_time(num_substances_total - num_substances_part, syname, isyst, status)
+
+         case ('END_MULTIGRID') ! this keyword ends the
+            exit ! sequence of new input processing
+
+         case default
+            if (.not. newinput) then
+               aGrid%itype = ProcessGrid
+               push = .true.
+
+               call read_grid(file_unit_list, aGrid, GridPs, .true., nosegl_bottom, status)
+               igrid = GridPs%add(aGrid)
+               exit
             else
-                write(file_unit_list(2)) GridPs%Pointers(iGrid)%num_cells, &
-                        GridPs%Pointers(iGrid)%iref, &
-                        GridPs%Pointers(iGrid)%finalpointer
-            endif
-        enddo
-        do igrid = 1, num_grids
-            ierr2 = gridps%pointers(igrid)%write(file_unit_list(2))
-        enddo
+               write (file_unit, 2030) trim(ctoken)
+               goto 1000
+            end if
 
-        ! Read per substance grid and time
+         end select
 
-        if (.not. newinput .and. read_input) then
-            write(file_unit, 2090)
-            do isys = 1, num_substances_total - num_substances_part
-                if (gettoken(isysg(isys), ierr2) > 0) goto 1000
-                if (gettoken(isyst(isys), ierr2) > 0) goto 1000
-                write(file_unit, 2100) isys, isysg(isys), isyst(isys)
-                if (isysg(isys) < 1      .or. &
-                        isysg(isys) > num_grids) then
-                    write(file_unit, 2110) isysg(isys)
-                    call status%increase_error_count()
-                endif
-                if (isyst(isys) < 1) then
-                    write(file_unit, 2120) isyst(isys)
-                    call status%increase_error_count()
-                endif
-            enddo
-            do isys = num_substances_total - num_substances_part + 1, num_substances_total
-                isysg(isys) = 1
-                isyst(isys) = 1
-            enddo
-        endif
+      end do
 
-        ! Write substance info to system file
+      num_grids = GridPs%current_size
 
-        write(file_unit_list(2)) isysg
-        write(file_unit_list(2)) isyst
+      ! Expand with layers in the base grid
+      do igrid = 1, num_grids
+         if (igrid == GridPs%bottom_grid) cycle
 
-        if (timon) call timstop(ithndl)
-        return
+         noseg2 = GridPs%Pointers(igrid)%noseg_lay
 
-        1000 continue
-        write(file_unit, 2130)
-        call status%increase_error_count()
+         if (.not. GridPs%Pointers(igrid)%space_var_nolay) then
+            kseg = nosegl + 1
+            do ilay = 2, num_layers
+               ioff = (ilay - 1) * noseg2
+               do iseg = 1, nosegl
+                  GridPs%Pointers(igrid)%iarray(kseg) = &
+                     GridPs%Pointers(igrid)%iarray(iseg) + ioff
+                  kseg = kseg + 1
+               end do
+            end do
+            noseg2 = noseg2 * num_layers
+            GridPs%Pointers(igrid)%num_cells = noseg2
+         end if
+         if (igrid /= 1) write (file_unit, 2080) igrid, GridPs%Pointers(igrid)%num_cells
 
-        if (timon) call timstop(ithndl)
-        return
+      end do
 
-        2000 format (/' NO process decomposition selected')
-        2010 format (/' Multiple grid option selected process decomposition will be used', &
-                /' Number of grids               :', I10)
-        2020 format (' Number of layers in base grid :', I10)
-        2030 format (/' ERROR, unrecognized token: ', A)
-        2040 format (/' Reading MULTIGRID information')
-        2050 format (/' ERROR, keyword ''NOLAY'' must preceed the GRID definitions')
-        2060 format (/' ERROR, nr of segments/nr of layers is no integer.')
-        2070 format (/' WARNING, bottomgrid already defined, first definition prevails!')
-        2080 format (' Number of segments in sub-grid', I4, ' equals:', i10)
-        2090 format (/' Reading substance grid and process-time information')
-        2100 format (' For substance:', I7, ' using grid :', I7, &
-                ' maximum process time step multiplier :', I7)
-        2110 format (/' ERROR, grid number out of range:', I7)
-        2120 format (/' ERROR, process step out of range:', I7)
-        2130 format (/' ERROR, reading sub-grids information.')
+      ! add the bottom segments to the total segments, set num_cells_bottom
+      num_cells_bottom = 0
+      i_bottom_grid = GridPs%bottom_grid
+      if (i_bottom_grid > 0) then
+         num_cells_bottom = GridPs%Pointers(i_bottom_grid)%num_cells
+         GridPs%Pointers(i_base_grid)%num_cells = num_cells + num_cells_bottom
+      end if
+      nosss = num_cells + num_cells_bottom
 
-    end subroutine read_multiple_grids
+      ! make pointers to final grid
+      do igrid = 1, num_grids
+         allocate (GridPs%Pointers(igrid)%finalpointer(nosss))
+         if (igrid == i_base_grid) then
+            do iseg = 1, nosss
+               GridPs%Pointers(igrid)%finalpointer(iseg) = iseg
+            end do
+         elseif (igrid == i_bottom_grid) then
+            GridPs%Pointers(igrid)%finalpointer(1:num_cells) = 0
+            do iseg2 = 1, num_cells_bottom
+               GridPs%Pointers(igrid)%finalpointer(num_cells + iseg2) = iseg2
+            end do
+         elseif (GridPs%Pointers(igrid)%itype == BottomGrid) then
+            GridPs%Pointers(igrid)%finalpointer = 0
+            iref = GridPs%Pointers(igrid)%iref
+            do iseg = 1, nosss
+               iseg2 = GridPs%Pointers(iref)%finalpointer(iseg)
+               if (iseg2 > 0) then
+                  GridPs%Pointers(igrid)%finalpointer(iseg) = GridPs%Pointers(igrid)%iarray(iseg2)
+               end if
+            end do
+         else
+            GridPs%Pointers(igrid)%finalpointer = 0
+            iref = GridPs%Pointers(igrid)%iref
+            do iseg = 1, num_cells
+               iseg2 = GridPs%Pointers(iref)%finalpointer(iseg)
+               if (iseg2 > 0) then
+                  GridPs%Pointers(igrid)%finalpointer(iseg) = GridPs%Pointers(igrid)%iarray(iseg2)
+               end if
+            end do
+         end if
+      end do
 
-    subroutine read_sub_procgrid(num_substances_total, syname, GridPs, isysg, status)
+      ! z-model
+      if (zmodel .and. nolay_tmp /= 1) num_layers = nolay_tmp
+
+      ! Write grid to system file
+      do igrid = 1, num_grids
+         if (igrid == GridPs%bottom_grid) then
+            write (file_unit_list(2)) GridPs%Pointers(iGrid)%num_cells, &
+               -GridPs%Pointers(iGrid)%num_layers, &
+               GridPs%Pointers(iGrid)%finalpointer
+         else
+            write (file_unit_list(2)) GridPs%Pointers(iGrid)%num_cells, &
+               GridPs%Pointers(iGrid)%iref, &
+               GridPs%Pointers(iGrid)%finalpointer
+         end if
+      end do
+      do igrid = 1, num_grids
+         ierr2 = gridps%pointers(igrid)%write(file_unit_list(2))
+      end do
+
+      ! Read per substance grid and time
+
+      if (.not. newinput .and. read_input) then
+         write (file_unit, 2090)
+         do isys = 1, num_substances_total - num_substances_part
+            if (gettoken(isysg(isys), ierr2) > 0) goto 1000
+            if (gettoken(isyst(isys), ierr2) > 0) goto 1000
+            write (file_unit, 2100) isys, isysg(isys), isyst(isys)
+            if (isysg(isys) < 1 .or. &
+                isysg(isys) > num_grids) then
+               write (file_unit, 2110) isysg(isys)
+               call status%increase_error_count()
+            end if
+            if (isyst(isys) < 1) then
+               write (file_unit, 2120) isyst(isys)
+               call status%increase_error_count()
+            end if
+         end do
+         do isys = num_substances_total - num_substances_part + 1, num_substances_total
+            isysg(isys) = 1
+            isyst(isys) = 1
+         end do
+      end if
+
+      ! Write substance info to system file
+
+      write (file_unit_list(2)) isysg
+      write (file_unit_list(2)) isyst
+
+      if (timon) call timstop(ithndl)
+      return
+
+1000  continue
+      write (file_unit, 2130)
+      call status%increase_error_count()
+
+      if (timon) call timstop(ithndl)
+      return
+
+2000  format(/' NO process decomposition selected')
+2010  format(/' Multiple grid option selected process decomposition will be used', &
+              /' Number of grids               :', I10)
+2020  format(' Number of layers in base grid :', I10)
+2030  format(/' ERROR, unrecognized token: ', A)
+2040  format(/' Reading MULTIGRID information')
+2050  format(/' ERROR, keyword ''NOLAY'' must preceed the GRID definitions')
+2060  format(/' ERROR, nr of segments/nr of layers is no integer.')
+2070  format(/' WARNING, bottomgrid already defined, first definition prevails!')
+2080  format(' Number of segments in sub-grid', I4, ' equals:', i10)
+2090  format(/' Reading substance grid and process-time information')
+2100  format(' For substance:', I7, ' using grid :', I7, &
+             ' maximum process time step multiplier :', I7)
+2110  format(/' ERROR, grid number out of range:', I7)
+2120  format(/' ERROR, process step out of range:', I7)
+2130  format(/' ERROR, reading sub-grids information.')
+
+   end subroutine read_multiple_grids
+
+   subroutine read_sub_procgrid(num_substances_total, syname, GridPs, isysg, status)
         !!  read the SUBSTANCE_PROCESSGRID information and update the isysg array
         !!
         !!  several input possibilities exist:
@@ -419,86 +418,86 @@ contains
         !!      - a series of substances IDs indicating that those will work on the mentioned grid
         !!          then a grid name is required, to specify the grid where the substances work on.
 
-        use m_string_utils
-        use m_grid_utils_external
+      use m_string_utils
+      use m_grid_utils_external
 
-        integer(kind = int_wp), intent(in) :: num_substances_total          !< nr of substances
-        character(20), intent(in) :: syname(num_substances_total) !< substance names
-        type(GridPointerColl), intent(in) :: GridPs        !< collection of all grid definitions
-        integer(kind = int_wp), intent(inout) :: isysg (num_substances_total)  !< process gridnr of substances
-        type(error_status), intent(inout) :: status !< current error status
+      integer(kind=int_wp), intent(in) :: num_substances_total !< nr of substances
+      character(20), intent(in) :: syname(num_substances_total) !< substance names
+      type(GridPointerColl), intent(in) :: GridPs !< collection of all grid definitions
+      integer(kind=int_wp), intent(inout) :: isysg(num_substances_total) !< process gridnr of substances
+      type(error_status), intent(inout) :: status !< current error status
 
-        integer(kind = int_wp) :: itoken            ! integer token from input
-        integer(kind = int_wp) :: idummy            ! dummy which content is not used
-        real(kind = real_wp) :: adummy            ! dummy which content is not used
-        character(len = 255) :: ctoken           ! character token from input
-        character :: cdummy           ! dummy which content is not used
-        integer(kind = int_wp) :: itype             ! type of input to be needded
-        integer(kind = int_wp) :: ierr2             ! local error indication
-        integer(kind = int_wp) :: sysused(num_substances_total)    ! work array substance selection
-        integer(kind = int_wp) :: isys              ! index substance
-        integer(kind = int_wp) :: i_grid            ! index grid in collection
-        integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("read_sub_procgrid", ithndl)
+      integer(kind=int_wp) :: itoken ! integer token from input
+      integer(kind=int_wp) :: idummy ! dummy which content is not used
+      real(kind=real_wp) :: adummy ! dummy which content is not used
+      character(len=255) :: ctoken ! character token from input
+      character :: cdummy ! dummy which content is not used
+      integer(kind=int_wp) :: itype ! type of input to be needded
+      integer(kind=int_wp) :: ierr2 ! local error indication
+      integer(kind=int_wp) :: sysused(num_substances_total) ! work array substance selection
+      integer(kind=int_wp) :: isys ! index substance
+      integer(kind=int_wp) :: i_grid ! index grid in collection
+      integer(kind=int_wp) :: ithndl = 0
+      if (timon) call timstrt("read_sub_procgrid", ithndl)
 
-        sysused = 0
-        write (file_unit, 2000)
+      sysused = 0
+      write (file_unit, 2000)
 
-        ! read input
-        do
-            if (gettoken(ctoken, ierr2) > 0) goto 1000
+      ! read input
+      do
+         if (gettoken(ctoken, ierr2) > 0) goto 1000
 
-            select case (ctoken)
-            case ('ALL')
-                ! use all substances
-                sysused = 1
-                write (file_unit, 2030)
+         select case (ctoken)
+         case ('ALL')
+            ! use all substances
+            sysused = 1
+            write (file_unit, 2030)
 
-            case default
-                ! use this substance
-                isys = index_in_array(ctoken(:20), syname)
-                if (isys > 0) then
-                    sysused(isys) = 1
-                    write (file_unit, 2040) syname(isys)
-                else
-                    i_grid = GridPs%find_column(ctoken)
-                    if (i_grid > 0) then                       ! use this grid, input is ready
-                        write (file_unit, 2050) trim(ctoken)
-                        exit
-                    else                                            ! unrecognised token
-                        write (file_unit, 2020) trim(ctoken)
-                        goto 1000
-                    endif
-                endif
+         case default
+            ! use this substance
+            isys = index_in_array(ctoken(:20), syname)
+            if (isys > 0) then
+               sysused(isys) = 1
+               write (file_unit, 2040) syname(isys)
+            else
+               i_grid = GridPs%find_column(ctoken)
+               if (i_grid > 0) then ! use this grid, input is ready
+                  write (file_unit, 2050) trim(ctoken)
+                  exit
+               else ! unrecognised token
+                  write (file_unit, 2020) trim(ctoken)
+                  goto 1000
+               end if
+            end if
 
-            end select
+         end select
 
-        enddo
+      end do
 
-        ! update the isysg array for all substances used in this block
-        do isys = 1, num_substances_total
-            if (sysused(isys) == 1) isysg(isys) = i_grid
-        enddo
+      ! update the isysg array for all substances used in this block
+      do isys = 1, num_substances_total
+         if (sysused(isys) == 1) isysg(isys) = i_grid
+      end do
 
-        if (timon) call timstop(ithndl)
-        return
+      if (timon) call timstop(ithndl)
+      return
 
-        1000 write (file_unit, 2010)
-        call status%increase_error_count()
+1000  write (file_unit, 2010)
+      call status%increase_error_count()
 
-        if (timon) call timstop(ithndl)
-        return
+      if (timon) call timstop(ithndl)
+      return
 
-        2000 format (/' Reading SUBSTANCE_PROCESSGRID information:')
-        2010 format (' ERROR, reading SUBSTANCE_PROCESSGRID information.')
-        2020 format (' ERROR, unrecognized token: ', A)
-        2030 format (' Processgrid will be used for ALL substances')
-        2040 format (' Processgrid will be used for substance: ', A)
-        2050 format (' Processgrid for these substances is: ', A)
+2000  format(/' Reading SUBSTANCE_PROCESSGRID information:')
+2010  format(' ERROR, reading SUBSTANCE_PROCESSGRID information.')
+2020  format(' ERROR, unrecognized token: ', A)
+2030  format(' Processgrid will be used for ALL substances')
+2040  format(' Processgrid will be used for substance: ', A)
+2050  format(' Processgrid for these substances is: ', A)
 
-    end subroutine read_sub_procgrid
+   end subroutine read_sub_procgrid
 
-    subroutine read_grid(file_unit_list, aGrid, GridPs, oldproc, nosegl_bottom, status)
+   subroutine read_grid(file_unit_list, aGrid, GridPs, oldproc, nosegl_bottom, status)
 
         !!  Reads a grid definition
         !!
@@ -519,342 +518,342 @@ contains
         !!          The routine checks that every cell of this new grid contains at least one cell
         !!          of the reference grid.
 
-        use m_open_waq_files
-        use m_grid_utils_external     !   for the storage of contraction grids
-        integer(kind = int_wp), intent(inout) :: file_unit_list(*)         !< unit numbers used
-        type(t_grid), intent(inout) :: aGrid         !< collection off all grid definitions
-        type(GridPointerColl), intent(in) :: GridPs        !< collection off all grid definitions
-        logical, intent(in) :: oldproc       !< true if old processing
-        integer(kind = int_wp), intent(in) :: nosegl_bottom  !< number of segments expected for bottom
+      use m_open_waq_files
+      use m_grid_utils_external !   for the storage of contraction grids
+      integer(kind=int_wp), intent(inout) :: file_unit_list(*) !< unit numbers used
+      type(t_grid), intent(inout) :: aGrid !< collection off all grid definitions
+      type(GridPointerColl), intent(in) :: GridPs !< collection off all grid definitions
+      logical, intent(in) :: oldproc !< true if old processing
+      integer(kind=int_wp), intent(in) :: nosegl_bottom !< number of segments expected for bottom
 
-        type(error_status), intent(inout) :: status !< current error status
+      type(error_status), intent(inout) :: status !< current error status
 
-        integer(kind = int_wp) :: itype         ! type of input that was obtained
-        integer(kind = int_wp) :: itoken        ! integer token from input
-        integer(kind = int_wp) :: idummy        ! dummy which content is not used
-        character(len = 255) :: ctoken       ! character token from input
-        integer(kind = int_wp) :: ierr2         ! local error indication
-        integer(kind = int_wp) :: i_base_grid   ! index base grid in collection
-        integer(kind = int_wp) :: i_grid        ! index grid in collection
-        integer(kind = int_wp) :: num_rows          ! num_rows
-        integer(kind = int_wp) :: num_columns          ! num_columns
-        integer(kind = int_wp) :: num_cells         ! number of segments
-        integer(kind = int_wp) :: noseg2        ! number of segments in sub grid
-        integer(kind = int_wp) :: noseg_lay     ! number of segments per layer
-        integer(kind = int_wp) :: noseg_fil     ! number of segments in file
-        integer(kind = int_wp) :: noseg_input   ! number of segments in input
-        integer(kind = int_wp) :: iseg          ! index segment number
-        integer(kind = int_wp) :: iseg2         ! second index segment number
-        integer(kind = int_wp) :: num_layers         ! number of layers
-        integer(kind = int_wp), allocatable :: iwork(:)      ! work array
-        integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("read_grid", ithndl)
+      integer(kind=int_wp) :: itype ! type of input that was obtained
+      integer(kind=int_wp) :: itoken ! integer token from input
+      integer(kind=int_wp) :: idummy ! dummy which content is not used
+      character(len=255) :: ctoken ! character token from input
+      integer(kind=int_wp) :: ierr2 ! local error indication
+      integer(kind=int_wp) :: i_base_grid ! index base grid in collection
+      integer(kind=int_wp) :: i_grid ! index grid in collection
+      integer(kind=int_wp) :: num_rows ! num_rows
+      integer(kind=int_wp) :: num_columns ! num_columns
+      integer(kind=int_wp) :: num_cells ! number of segments
+      integer(kind=int_wp) :: noseg2 ! number of segments in sub grid
+      integer(kind=int_wp) :: noseg_lay ! number of segments per layer
+      integer(kind=int_wp) :: noseg_fil ! number of segments in file
+      integer(kind=int_wp) :: noseg_input ! number of segments in input
+      integer(kind=int_wp) :: iseg ! index segment number
+      integer(kind=int_wp) :: iseg2 ! second index segment number
+      integer(kind=int_wp) :: num_layers ! number of layers
+      integer(kind=int_wp), allocatable :: iwork(:) ! work array
+      integer(kind=int_wp) :: ithndl = 0
+      if (timon) call timstrt("read_grid", ithndl)
 
-        i_base_grid = GridPs%base_grid
-        num_cells = GridPs%pointers(i_base_grid)%num_cells
-        noseg_lay = GridPs%pointers(i_base_grid)%noseg_lay
+      i_base_grid = GridPs%base_grid
+      num_cells = GridPs%pointers(i_base_grid)%num_cells
+      noseg_lay = GridPs%pointers(i_base_grid)%noseg_lay
 
-        ! set default, type is already set in calling routine (bottomgrid, processgrid, subgrid )
-        aGrid%name = ' '
-        aGrid%num_cells = 0
-        aGrid%noseg_lay = 0
-        aGrid%iref = i_base_grid         ! default, may be overridden
-        aGrid%name_ref = ' '
-        aGrid%iarray => null()
-        aGrid%space_var_nolay = .false.
-        aGrid%num_layers = 1                  ! default, may be overridden
-        aGrid%nolay_var => null()
-        if (gettoken(ctoken, ierr2) > 0) goto 1000    ! get name
-        aGrid%name = ctoken
-        write (file_unit, 2000) aGrid%name
-        if (oldproc) then
-            if (gettoken(agrid%iref, ierr2) > 0) goto 1000
-            agrid%name_ref = gridps%pointers(agrid%iref)%name
-        endif
+      ! set default, type is already set in calling routine (bottomgrid, processgrid, subgrid )
+      aGrid%name = ' '
+      aGrid%num_cells = 0
+      aGrid%noseg_lay = 0
+      aGrid%iref = i_base_grid ! default, may be overridden
+      aGrid%name_ref = ' '
+      aGrid%iarray => null()
+      aGrid%space_var_nolay = .false.
+      aGrid%num_layers = 1 ! default, may be overridden
+      aGrid%nolay_var => null()
+      if (gettoken(ctoken, ierr2) > 0) goto 1000 ! get name
+      aGrid%name = ctoken
+      write (file_unit, 2000) aGrid%name
+      if (oldproc) then
+         if (gettoken(agrid%iref, ierr2) > 0) goto 1000
+         agrid%name_ref = gridps%pointers(agrid%iref)%name
+      end if
 
-        do
+      do
 
-            if (gettoken(ctoken, itoken, itype, ierr2) > 0) goto 1000
-            if (itype == 1) then                              ! it is a string
-                select case (ctoken)
+         if (gettoken(ctoken, itoken, itype, ierr2) > 0) goto 1000
+         if (itype == 1) then ! it is a string
+            select case (ctoken)
 
-                case ('NOLAY')
-                    if (gettoken(aGrid%num_layers, ierr2) > 0) goto 1000
-                    write (file_unit, 2010) aGrid%num_layers
+            case ('NOLAY')
+               if (gettoken(aGrid%num_layers, ierr2) > 0) goto 1000
+               write (file_unit, 2010) aGrid%num_layers
 
-                case ('NOAGGREGATION')
-                    allocate (aGrid%iarray(num_cells))
-                    do iseg = 1, num_cells
-                        aGrid%iarray(iseg) = iseg
-                    end do
-                    exit                                         ! input for the grid is ready
+            case ('NOAGGREGATION')
+               allocate (aGrid%iarray(num_cells))
+               do iseg = 1, num_cells
+                  aGrid%iarray(iseg) = iseg
+               end do
+               exit ! input for the grid is ready
 
-                case ('AGGREGATIONFILE')                      ! it is the filename keyword
-                    if (gettoken(ctoken, ierr2) > 0) goto 1000
-                    call open_waq_files (file_unit_list(33), ctoken, 33, 1, ierr2)
-                    if (ierr2 /= 0) goto 1000
-                    read  (file_unit_list(33), *) num_rows, num_columns, noseg_fil, idummy, idummy
-                    write (file_unit, 2020) ctoken, num_rows, num_columns, noseg_fil
-                    if (noseg_fil /= noseg_lay) then
-                        write (file_unit, 2030) noseg_fil, noseg_lay
-                        goto 1000
-                    endif
-                    allocate (aGrid%iarray(num_cells))
-                    read  (file_unit_list(33), *) (aGrid%iarray(iseg), iseg = 1, noseg_fil)
-                    close (file_unit_list(33))
-                    exit                                         ! input for the grid is ready
+            case ('AGGREGATIONFILE') ! it is the filename keyword
+               if (gettoken(ctoken, ierr2) > 0) goto 1000
+               call open_waq_files(file_unit_list(33), ctoken, 33, 1, ierr2)
+               if (ierr2 /= 0) goto 1000
+               read (file_unit_list(33), *) num_rows, num_columns, noseg_fil, idummy, idummy
+               write (file_unit, 2020) ctoken, num_rows, num_columns, noseg_fil
+               if (noseg_fil /= noseg_lay) then
+                  write (file_unit, 2030) noseg_fil, noseg_lay
+                  goto 1000
+               end if
+               allocate (aGrid%iarray(num_cells))
+               read (file_unit_list(33), *) (aGrid%iarray(iseg), iseg=1, noseg_fil)
+               close (file_unit_list(33))
+               exit ! input for the grid is ready
 
-                case ('BOTTOMGRID_FROM_ATTRIBUTES')       ! it is the filename keyword
-                    allocate (aGrid%iarray(num_cells))
-                    call read_attributes_for_bottomgrid(file_unit, aGrid%iarray, nosegl_bottom, status)
-                    exit
+            case ('BOTTOMGRID_FROM_ATTRIBUTES') ! it is the filename keyword
+               allocate (aGrid%iarray(num_cells))
+               call read_attributes_for_bottomgrid(file_unit, aGrid%iarray, nosegl_bottom, status)
+               exit
 
-                case ('REFERENCEGRID')
-                    if (gettoken(ctoken, ierr2) > 0) goto 1000
-                    aGrid%name_ref = ctoken
-                    write (file_unit, 2040) aGrid%name_ref
-                    i_grid = GridPs%find_column(aGrid%name_ref)
-                    if (i_grid > 0) then
-                        aGrid%iref = i_grid
-                    else
-                        write (file_unit, 2050)
-                        call status%increase_error_count()
-                    endif
-                    noseg_lay = GridPs%pointers(aGrid%iref)%noseg_lay
+            case ('REFERENCEGRID')
+               if (gettoken(ctoken, ierr2) > 0) goto 1000
+               aGrid%name_ref = ctoken
+               write (file_unit, 2040) aGrid%name_ref
+               i_grid = GridPs%find_column(aGrid%name_ref)
+               if (i_grid > 0) then
+                  aGrid%iref = i_grid
+               else
+                  write (file_unit, 2050)
+                  call status%increase_error_count()
+               end if
+               noseg_lay = GridPs%pointers(aGrid%iref)%noseg_lay
 
-                case default
-                    write (file_unit, 2060) trim(ctoken)          ! ERROR, token not recognised
-                    goto 1000
+            case default
+               write (file_unit, 2060) trim(ctoken) ! ERROR, token not recognised
+               goto 1000
 
-                end select
-            else                                                  ! it was an integer.
-                allocate (aGrid%iarray(num_cells))
-                aGrid%iarray(1) = itoken                           ! this integer is first pointer
-                do iseg = 2, noseg_lay
-                    if (gettoken(aGrid%iarray(iseg), ierr2) > 0) goto 1000
-                    if (aGrid%iarray(iseg) > noseg_lay) then
-                        write (file_unit, 2070) aGrid%iarray(iseg)
-                        call status%increase_error_count()
-                    endif
-                enddo
-                exit                                               ! input for the grid is ready
-            endif
+            end select
+         else ! it was an integer.
+            allocate (aGrid%iarray(num_cells))
+            aGrid%iarray(1) = itoken ! this integer is first pointer
+            do iseg = 2, noseg_lay
+               if (gettoken(aGrid%iarray(iseg), ierr2) > 0) goto 1000
+               if (aGrid%iarray(iseg) > noseg_lay) then
+                  write (file_unit, 2070) aGrid%iarray(iseg)
+                  call status%increase_error_count()
+               end if
+            end do
+            exit ! input for the grid is ready
+         end if
 
-        enddo
+      end do
 
-        ! Determine nr of segments in aggregated pointer
-        noseg2 = 0
-        allocate(iwork(num_cells))
-        iwork = 0
-        do iseg = 1, noseg_lay
-            iseg2 = aGrid%iarray(iseg)
-            if (iseg2 > 0) then
-                noseg2 = max(noseg2, iseg2)
-                iwork(iseg2) = iwork(iseg2) + 1
-            endif
-        enddo
-        do iseg2 = 1, noseg2
-            if (iwork(iseg2) == 0) then
-                write (file_unit, 2080) iseg2
-                call status%increase_error_count()
-            endif
-        enddo
-        aGrid%noseg_lay = noseg2
-        deallocate(iwork)
+      ! Determine nr of segments in aggregated pointer
+      noseg2 = 0
+      allocate (iwork(num_cells))
+      iwork = 0
+      do iseg = 1, noseg_lay
+         iseg2 = aGrid%iarray(iseg)
+         if (iseg2 > 0) then
+            noseg2 = max(noseg2, iseg2)
+            iwork(iseg2) = iwork(iseg2) + 1
+         end if
+      end do
+      do iseg2 = 1, noseg2
+         if (iwork(iseg2) == 0) then
+            write (file_unit, 2080) iseg2
+            call status%increase_error_count()
+         end if
+      end do
+      aGrid%noseg_lay = noseg2
+      deallocate (iwork)
 
-        if (timon) call timstop(ithndl)
-        return
+      if (timon) call timstop(ithndl)
+      return
 
-        1000 continue
-        write(file_unit, 2090)
-        call status%increase_error_count()
-        return
+1000  continue
+      write (file_unit, 2090)
+      call status%increase_error_count()
+      return
 
-        2000 format (' Name of this grid is: ', A)
-        2010 format (' Number of layers for this grid:', I10)
-        2020 format (' Aggregationfile     : ', A, &
-                /' Matrix (', I5, 'x', I5, ') of ', I7, ' elements.')
-        2030 format (' ERROR, nr of cells in aggregation file is: ', I10, &
-                /'        nr of hor. cells in simulation is:  ', I10)
-        2040 format (' Reference grid for this grid  : ', A)
-        2050 format (/' ERROR, reference grid not defined.')
-        2060 format (/' ERROR, unrecognized token: ', A)
-        2070 format (/' ERROR, segment in sub-grid out of range:', I15)
-        2080 format (/' ERROR, segment in sub-grid not defined:', I15)
-        2090 format (/' ERROR, reading GRID information.')
-    end subroutine read_grid
+2000  format(' Name of this grid is: ', A)
+2010  format(' Number of layers for this grid:', I10)
+2020  format(' Aggregationfile     : ', A, &
+             /' Matrix (', I5, 'x', I5, ') of ', I7, ' elements.')
+2030  format(' ERROR, nr of cells in aggregation file is: ', I10, &
+             /'        nr of hor. cells in simulation is:  ', I10)
+2040  format(' Reference grid for this grid  : ', A)
+2050  format(/' ERROR, reference grid not defined.')
+2060  format(/' ERROR, unrecognized token: ', A)
+2070  format(/' ERROR, segment in sub-grid out of range:', I15)
+2080  format(/' ERROR, segment in sub-grid not defined:', I15)
+2090  format(/' ERROR, reading GRID information.')
+   end subroutine read_grid
 
-    subroutine read_attributes_for_bottomgrid(file_unit, iarray, nosegl, status)
-        use m_extract_waq_attribute
+   subroutine read_attributes_for_bottomgrid(file_unit, iarray, nosegl, status)
+      use m_extract_waq_attribute
 
-        integer(kind = int_wp) :: file_unit, nosegl
-        integer(kind = int_wp), dimension(:) :: iarray
+      integer(kind=int_wp) :: file_unit, nosegl
+      integer(kind=int_wp), dimension(:) :: iarray
 
-        type(error_status), intent(inout) :: status !< current error status
+      type(error_status), intent(inout) :: status !< current error status
 
-        integer(kind = int_wp) :: i, j, nkopt, ikopt1, ikopt2, ierr2, lunbin, iover, ikdef, idummy
-        integer(kind = int_wp) :: num_cells, nopt, nover, attrib, active, iknm1, iknm2, iknmrk, ivalk, iseg
-        integer(kind = int_wp), allocatable, dimension(:) :: iamerge  !!  composite attribute array
+      integer(kind=int_wp) :: i, j, nkopt, ikopt1, ikopt2, ierr2, lunbin, iover, ikdef, idummy
+      integer(kind=int_wp) :: num_cells, nopt, nover, attrib, active, iknm1, iknm2, iknmrk, ivalk, iseg
+      integer(kind=int_wp), allocatable, dimension(:) :: iamerge !!  composite attribute array
         !!  array with indicators whether attributes are already set
-        integer(kind = int_wp), allocatable, dimension(:) :: ikmerge
-        integer(kind = int_wp), allocatable, dimension(:) :: ikenm  !!  array with attributes of an input block
-        integer(kind = int_wp), allocatable, dimension(:) :: iread   !!  array to read attributes
-        character(len = 255) :: filename
+      integer(kind=int_wp), allocatable, dimension(:) :: ikmerge
+      integer(kind=int_wp), allocatable, dimension(:) :: ikenm !!  array with attributes of an input block
+      integer(kind=int_wp), allocatable, dimension(:) :: iread !!  array to read attributes
+      character(len=255) :: filename
 
-        num_cells = size(iarray)
-        allocate (iamerge(num_cells))
-        allocate (ikmerge(10))
-        allocate (iread(num_cells))
-        iarray = 0
-        ikmerge = 0
-        iamerge = 0
-        iread = 0
+      num_cells = size(iarray)
+      allocate (iamerge(num_cells))
+      allocate (ikmerge(10))
+      allocate (iread(num_cells))
+      iarray = 0
+      ikmerge = 0
+      iamerge = 0
+      iread = 0
 
-        if (gettoken(nkopt, ierr2) > 0) goto 900
+      if (gettoken(nkopt, ierr2) > 0) goto 900
 
-        do i = 1, nkopt                                      !   read those blocks
+      do i = 1, nkopt !   read those blocks
 
-            if (gettoken(nopt, ierr2) > 0) goto 900
-            allocate (ikenm(nopt))
-            do j = 1, nopt                                        !   get the attribute numbers
-                if (gettoken(ikenm(j), ierr2) > 0) goto 900
-            enddo
+         if (gettoken(nopt, ierr2) > 0) goto 900
+         allocate (ikenm(nopt))
+         do j = 1, nopt !   get the attribute numbers
+            if (gettoken(ikenm(j), ierr2) > 0) goto 900
+         end do
 
-            if (gettoken(ikopt1, ierr2) > 0) goto 900      !   the file option for this info
-            if (ikopt1 == 0) then                             !   binary file
-                if (gettoken(filename, ierr2) > 0) goto 910    !   the name of the binary file
-                open(newunit = lunbin, file = filename, status = 'old', access = 'stream', iostat = ierr2)
-                if (ierr2 == 0) then
-                    read  (lunbin, iostat = ierr2) (iread(j), j = 1, num_cells)
-                    close (lunbin)
-                    if (ierr2 /= 0) then
-                        write (file_unit, 2010) trim(filename)
-                    endif
-                else
-                    write (file_unit, 2020) trim(filename)
-                endif
+         if (gettoken(ikopt1, ierr2) > 0) goto 900 !   the file option for this info
+         if (ikopt1 == 0) then !   binary file
+            if (gettoken(filename, ierr2) > 0) goto 910 !   the name of the binary file
+            open (newunit=lunbin, file=filename, status='old', access='stream', iostat=ierr2)
+            if (ierr2 == 0) then
+               read (lunbin, iostat=ierr2) (iread(j), j=1, num_cells)
+               close (lunbin)
+               if (ierr2 /= 0) then
+                  write (file_unit, 2010) trim(filename)
+               end if
             else
-                if (gettoken(ikopt2, ierr2) > 0) goto 900   !   second option
+               write (file_unit, 2020) trim(filename)
+            end if
+         else
+            if (gettoken(ikopt2, ierr2) > 0) goto 900 !   second option
 
-                select case (ikopt2)
+            select case (ikopt2)
 
-                case (1)                                      !   no defaults
-                    do j = 1, num_cells
-                        if (gettoken(iread(j), ierr2) > 0) goto 900
-                    enddo
+            case (1) !   no defaults
+               do j = 1, num_cells
+                  if (gettoken(iread(j), ierr2) > 0) goto 900
+               end do
 
-                case (2)                                      !   default with overridings
-                    if (gettoken(ikdef, ierr2) > 0) goto 900
-                    if (gettoken(nover, ierr2) > 0) goto 900
-                    do iseg = 1, num_cells
-                        iread(iseg) = ikdef
-                    enddo
-                    if (nover > 0) then
-                        do j = 1, nover
-                            if (gettoken(iover, ierr2) > 0) goto 900
-                            if (gettoken(idummy, ierr2) > 0) goto 900
-                            if (iover < 1 .or. iover > num_cells) then
-                                write (file_unit, 2030) j, iover
-                                call status%increase_error_count()
-                            else
-                                iread(iover) = idummy
-                            endif
-                        enddo
-                    endif
-
-                case default
-                    write (file_unit, 2040) ikopt2
-                    call status%increase_error_count()
-
-                end select
-            endif
-
-            ! Merge file buffer with attributes array in memory
-            do iknm2 = 1, nopt
-                iknm1 = ikenm(iknm2)
-
-                ! see if merged already
-                if (ikmerge(iknm1) /= 0) then
-                    write (file_unit, 2260) iknm2, iknm1
-                    call status%increase_error_count()
-                    exit
-                endif
-
-                ! see if valid
-                if (iknm1 <= 0 .or. iknm1 > 10) then
-                    if (iknm1 == 0) then
-                        write (file_unit, 2270) iknm2
+            case (2) !   default with overridings
+               if (gettoken(ikdef, ierr2) > 0) goto 900
+               if (gettoken(nover, ierr2) > 0) goto 900
+               do iseg = 1, num_cells
+                  iread(iseg) = ikdef
+               end do
+               if (nover > 0) then
+                  do j = 1, nover
+                     if (gettoken(iover, ierr2) > 0) goto 900
+                     if (gettoken(idummy, ierr2) > 0) goto 900
+                     if (iover < 1 .or. iover > num_cells) then
+                        write (file_unit, 2030) j, iover
                         call status%increase_error_count()
-                        exit
-                    else
-                        write (file_unit, 2280) iknm1, iknm2
-                        call status%increase_error_count()
-                        exit
-                    endif
-                endif
+                     else
+                        iread(iover) = idummy
+                     end if
+                  end do
+               end if
 
-                ! Merge for this attribute
-                ikmerge(iknm1) = 1
-                iknmrk = 10**(iknm1 - 1)
-                do iseg = 1, num_cells
-                    call extract_waq_attribute(iknm2, iread(iseg), ivalk)
-                    iamerge(iseg) = iamerge(iseg) + iknmrk * ivalk
-                enddo
-            enddo
-            deallocate (ikenm)
-        enddo
+            case default
+               write (file_unit, 2040) ikopt2
+               call status%increase_error_count()
 
-        ! Extract the information we need
-        do i = 1, num_cells
-            call extract_waq_attribute(1, iamerge(i), active)
-            call extract_waq_attribute(2, iamerge(i), attrib)
-            if (active == 1 .and. (attrib == 0 .or. attrib == 3)) then
-                iarray(i) = 1 + mod(i - 1, nosegl)
-            endif
-        enddo
+            end select
+         end if
 
-        ! We read the number of time-dependent attributes - there should be none
-        if (gettoken(nopt, ierr2) > 0) goto 900   !   second option
-        if (nopt /= 0) then
-            write(file_unit, 2050)
-            goto 900
-        endif
+         ! Merge file buffer with attributes array in memory
+         do iknm2 = 1, nopt
+            iknm1 = ikenm(iknm2)
 
-        return
+            ! see if merged already
+            if (ikmerge(iknm1) /= 0) then
+               write (file_unit, 2260) iknm2, iknm1
+               call status%increase_error_count()
+               exit
+            end if
 
-        ! Handle errors
-        900 continue
-        if (ierr2 > 0) then
-            call status%increase_error_count()
-        end if
+            ! see if valid
+            if (iknm1 <= 0 .or. iknm1 > 10) then
+               if (iknm1 == 0) then
+                  write (file_unit, 2270) iknm2
+                  call status%increase_error_count()
+                  exit
+               else
+                  write (file_unit, 2280) iknm1, iknm2
+                  call status%increase_error_count()
+                  exit
+               end if
+            end if
 
-        if (ierr2 == 3) call stop_with_error()
-        write(file_unit, 2000)
-        return
+            ! Merge for this attribute
+            ikmerge(iknm1) = 1
+            iknmrk = 10**(iknm1 - 1)
+            do iseg = 1, num_cells
+               call extract_waq_attribute(iknm2, iread(iseg), ivalk)
+               iamerge(iseg) = iamerge(iseg) + iknmrk * ivalk
+            end do
+         end do
+         deallocate (ikenm)
+      end do
 
-        910 continue
-        if (ierr2 > 0) then
-            call status%increase_error_count()
-        end if
-        if (ierr2 == 3) call stop_with_error()
-        write(file_unit, 2001)
+      ! Extract the information we need
+      do i = 1, num_cells
+         call extract_waq_attribute(1, iamerge(i), active)
+         call extract_waq_attribute(2, iamerge(i), attrib)
+         if (active == 1 .and. (attrib == 0 .or. attrib == 3)) then
+            iarray(i) = 1 + mod(i - 1, nosegl)
+         end if
+      end do
 
-        return
+      ! We read the number of time-dependent attributes - there should be none
+      if (gettoken(nopt, ierr2) > 0) goto 900 !   second option
+      if (nopt /= 0) then
+         write (file_unit, 2050)
+         goto 900
+      end if
 
-        2000 format(/, ' ERROR. Unexpected value in attributes file - should be an integer')
-        2001 format(/, ' ERROR. Reading name of binary attributes file')
-        2010 format(/, ' ERROR. Reading binary attributes file - too few data?', /, 'File: ', a)
-        2020 format(/, ' ERROR. Opening binary attributes file - incorrect name?', /, 'File: ', a)
-        2030 format(/, ' ERROR. Overriding out of bounds - overriding: ', i0, ' - segment: ', i0)
-        2040 format(/, ' ERROR. Unknown option for attributes: ', i0)
-        2050 format(/, ' ERROR. The number of time-dependent attributes should be zero - limitation in the implementation')
-        2260 format (/ ' ERROR, Pointer of contribution ', I6, ' mapped to attribute', I6, ' already specified.')
-        2270 format (/ ' ERROR, Pointer of contribution ', I6, ' zero.')
-        2280 format (/ ' ERROR, Pointer of contribution ', I6, '=', I6, ' is out of range(1-10).')
+      return
 
-    end subroutine read_attributes_for_bottomgrid
+      ! Handle errors
+900   continue
+      if (ierr2 > 0) then
+         call status%increase_error_count()
+      end if
 
-    subroutine read_proc_time(num_substances_total, syname, isyst, status)
+      if (ierr2 == 3) call stop_with_error()
+      write (file_unit, 2000)
+      return
+
+910   continue
+      if (ierr2 > 0) then
+         call status%increase_error_count()
+      end if
+      if (ierr2 == 3) call stop_with_error()
+      write (file_unit, 2001)
+
+      return
+
+2000  format(/, ' ERROR. Unexpected value in attributes file - should be an integer')
+2001  format(/, ' ERROR. Reading name of binary attributes file')
+2010  format(/, ' ERROR. Reading binary attributes file - too few data?', /, 'File: ', a)
+2020  format(/, ' ERROR. Opening binary attributes file - incorrect name?', /, 'File: ', a)
+2030  format(/, ' ERROR. Overriding out of bounds - overriding: ', i0, ' - segment: ', i0)
+2040  format(/, ' ERROR. Unknown option for attributes: ', i0)
+2050  format(/, ' ERROR. The number of time-dependent attributes should be zero - limitation in the implementation')
+2260  format(/' ERROR, Pointer of contribution ', I6, ' mapped to attribute', I6, ' already specified.')
+2270  format(/' ERROR, Pointer of contribution ', I6, ' zero.')
+2280  format(/' ERROR, Pointer of contribution ', I6, '=', I6, ' is out of range(1-10).')
+
+   end subroutine read_attributes_for_bottomgrid
+
+   subroutine read_proc_time(num_substances_total, syname, isyst, status)
         !!  read the PROCESS_TIMESTEP_MULTIPLIER information update the isyst array
         !!
         !! several input possibilities exist:
@@ -862,80 +861,80 @@ contains
         !!      - a series of substances IDs indicating that those will work with the multiplier
         !!          then the time multiplier to be used is required
 
-        use m_string_utils
+      use m_string_utils
 
-        integer(kind = int_wp), intent(in) :: num_substances_total           !< nr of substances
-        character(20), intent(in) :: syname(num_substances_total)  !< substance names
-        integer(kind = int_wp), intent(inout) :: isyst (num_substances_total)   !< process timestep multiplier
-        type(error_status), intent(inout) :: status !< current error status
+      integer(kind=int_wp), intent(in) :: num_substances_total !< nr of substances
+      character(20), intent(in) :: syname(num_substances_total) !< substance names
+      integer(kind=int_wp), intent(inout) :: isyst(num_substances_total) !< process timestep multiplier
+      type(error_status), intent(inout) :: status !< current error status
 
-        character(len = 255) :: ctoken           ! character token from input
-        integer(kind = int_wp) :: itype             ! type of input that was provided
-        integer(kind = int_wp) :: ierr2             ! local error indication
-        integer(kind = int_wp) :: sysused(num_substances_total)    ! work array substance selection
-        integer(kind = int_wp) :: isys              ! index substance
-        integer(kind = int_wp) :: idtmult           ! timestep multiplier
-        integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("read_proc_time", ithndl)
+      character(len=255) :: ctoken ! character token from input
+      integer(kind=int_wp) :: itype ! type of input that was provided
+      integer(kind=int_wp) :: ierr2 ! local error indication
+      integer(kind=int_wp) :: sysused(num_substances_total) ! work array substance selection
+      integer(kind=int_wp) :: isys ! index substance
+      integer(kind=int_wp) :: idtmult ! timestep multiplier
+      integer(kind=int_wp) :: ithndl = 0
+      if (timon) call timstrt("read_proc_time", ithndl)
 
-        sysused = 0
-        write (file_unit, 2000)
+      sysused = 0
+      write (file_unit, 2000)
 
-        ! read input
-        do
-            if (gettoken(ctoken, idtmult, itype, ierr2) > 0) goto 1000
-            if (itype == 1) then
-                select case (ctoken)
-                case ('ALL')
-                    ! use all substances
-                    sysused = 1
-                    write (file_unit, 2030)
+      ! read input
+      do
+         if (gettoken(ctoken, idtmult, itype, ierr2) > 0) goto 1000
+         if (itype == 1) then
+            select case (ctoken)
+            case ('ALL')
+               ! use all substances
+               sysused = 1
+               write (file_unit, 2030)
 
-                case default
-                    isys = index_in_array(ctoken(1:20), syname(:num_substances_total))
-                    if (isys > 0) then                      ! use this substance
-                        sysused(isys) = 1
-                        write (file_unit, 2040) syname(isys)
-                    else                                         ! unrecognised token
-                        write (file_unit, 2020) trim(ctoken)
-                        goto 1000
-                    endif
-                end select
+            case default
+               isys = index_in_array(ctoken(1:20), syname(:num_substances_total))
+               if (isys > 0) then ! use this substance
+                  sysused(isys) = 1
+                  write (file_unit, 2040) syname(isys)
+               else ! unrecognised token
+                  write (file_unit, 2020) trim(ctoken)
+                  goto 1000
+               end if
+            end select
 
-            else
-                ! time multiplier read
-                write (file_unit, 2050) idtmult
-                exit
+         else
+            ! time multiplier read
+            write (file_unit, 2050) idtmult
+            exit
 
-            endif
+         end if
 
-        enddo
+      end do
 
-        ! update the isyst array for all substances used in this block
-        do isys = 1, num_substances_total
-            if (sysused(isys) == 1) isyst(isys) = idtmult
-        enddo
+      ! update the isyst array for all substances used in this block
+      do isys = 1, num_substances_total
+         if (sysused(isys) == 1) isyst(isys) = idtmult
+      end do
 
-        if (timon) call timstop(ithndl)
-        return
+      if (timon) call timstop(ithndl)
+      return
 
-        1000 continue
-        write(file_unit, 2010)
-        call status%increase_error_count()
+1000  continue
+      write (file_unit, 2010)
+      call status%increase_error_count()
 
-        if (timon) call timstop(ithndl)
-        return
+      if (timon) call timstop(ithndl)
+      return
 
-        2000 format (/' Reading PROCESS_TIMESTEP_MULTIPLIER information:')
-        2010 format (' ERROR, reading PROCESS_TIMESTEP_MULTIPLIER information.')
-        2020 format (' ERROR, unrecognized token: ', A)
-        2030 format (' Timestep will be used for ALL substances')
-        2040 format (' Timestep will be used for substance: ', A)
-        2050 format (' Timestep multiplier for these substances is: ', I10)
+2000  format(/' Reading PROCESS_TIMESTEP_MULTIPLIER information:')
+2010  format(' ERROR, reading PROCESS_TIMESTEP_MULTIPLIER information.')
+2020  format(' ERROR, unrecognized token: ', A)
+2030  format(' Timestep will be used for ALL substances')
+2040  format(' Timestep will be used for substance: ', A)
+2050  format(' Timestep multiplier for these substances is: ', I10)
 
-    end subroutine read_proc_time
+   end subroutine read_proc_time
 
-    subroutine read_nobottomlay(GridPs, status)
+   subroutine read_nobottomlay(GridPs, status)
         !!  Reads the number of bed layers per sediment column
         !!
         !!  Several options exist:
@@ -947,195 +946,195 @@ contains
         !!         Using the INPUTGRID feature specifies the number of layers for anonther
         !!         grid than the BOTTOMGRID. This grid then is expanded to the BOTTOMGRID.
 
-        use m_grid_utils_external
+      use m_grid_utils_external
 
-        type(GridPointerColl), intent(inout) :: GridPs     !< collection off all grid definitions
-        type(error_status), intent(inout) :: status !< current error status
+      type(GridPointerColl), intent(inout) :: GridPs !< collection off all grid definitions
+      type(error_status), intent(inout) :: status !< current error status
 
-        type(t_grid) :: aGrid                ! a single grid
-        integer(kind = int_wp) :: itoken                ! integer token from input
-        integer(kind = int_wp) :: idummy                ! dummy which content is not used
-        real(kind = real_wp) :: adummy                ! dummy which content is not used
-        character(len = 255) :: ctoken               ! character token from input
-        character :: cdummy               ! dummy which content is not used
-        integer(kind = int_wp) :: i_base_grid           ! index base grid in collection
-        integer(kind = int_wp) :: i_bottom_grid         ! index bottom grid in collection
-        integer(kind = int_wp) :: iseg                  ! segment index
-        integer(kind = int_wp) :: iseg2                 ! segment index
-        integer(kind = int_wp) :: input_grid            ! index input grid in collection
-        integer(kind = int_wp) :: itype                 ! type of input to be needded
-        integer(kind = int_wp) :: ierr2                 ! local error indication
-        integer(kind = int_wp) :: iref                  ! index reference grid in collection
-        integer(kind = int_wp) :: noseg_lay             ! number of segments per layer
-        integer(kind = int_wp) :: noseg_input           ! number of segments in input
-        integer(kind = int_wp) :: noseg_grid            ! number of segments in all layers
-        integer(kind = int_wp) :: num_layers                 ! number of layers
-        integer(kind = int_wp) :: max_nolay             ! max number of layers in space_var_nolay
-        integer(kind = int_wp) :: ilay                  ! index layers
-        integer(kind = int_wp), pointer :: new_pointer(:)        ! new grid pointer on expanded bottom grid
-        integer(kind = int_wp), allocatable :: bottom_matrix(:, :)    ! new grid on expanded bottom grid
-        integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("read_nobottomlay", ithndl)
+      type(t_grid) :: aGrid ! a single grid
+      integer(kind=int_wp) :: itoken ! integer token from input
+      integer(kind=int_wp) :: idummy ! dummy which content is not used
+      real(kind=real_wp) :: adummy ! dummy which content is not used
+      character(len=255) :: ctoken ! character token from input
+      character :: cdummy ! dummy which content is not used
+      integer(kind=int_wp) :: i_base_grid ! index base grid in collection
+      integer(kind=int_wp) :: i_bottom_grid ! index bottom grid in collection
+      integer(kind=int_wp) :: iseg ! segment index
+      integer(kind=int_wp) :: iseg2 ! segment index
+      integer(kind=int_wp) :: input_grid ! index input grid in collection
+      integer(kind=int_wp) :: itype ! type of input to be needded
+      integer(kind=int_wp) :: ierr2 ! local error indication
+      integer(kind=int_wp) :: iref ! index reference grid in collection
+      integer(kind=int_wp) :: noseg_lay ! number of segments per layer
+      integer(kind=int_wp) :: noseg_input ! number of segments in input
+      integer(kind=int_wp) :: noseg_grid ! number of segments in all layers
+      integer(kind=int_wp) :: num_layers ! number of layers
+      integer(kind=int_wp) :: max_nolay ! max number of layers in space_var_nolay
+      integer(kind=int_wp) :: ilay ! index layers
+      integer(kind=int_wp), pointer :: new_pointer(:) ! new grid pointer on expanded bottom grid
+      integer(kind=int_wp), allocatable :: bottom_matrix(:, :) ! new grid on expanded bottom grid
+      integer(kind=int_wp) :: ithndl = 0
+      if (timon) call timstrt("read_nobottomlay", ithndl)
 
-        ! check bottom grid
-        i_base_grid = GridPs%base_grid
-        i_bottom_grid = GridPs%bottom_grid
+      ! check bottom grid
+      i_base_grid = GridPs%base_grid
+      i_bottom_grid = GridPs%bottom_grid
 
-        if (i_bottom_grid == 0) then
+      if (i_bottom_grid == 0) then
 
-            ! bottom grid not defined yet, add default bottom grid equals base grid 2d
-            aGrid%name = 'Bottom grid'
-            aGrid%num_cells = 0
-            aGrid%noseg_lay = GridPs%Pointers(i_base_grid)%noseg_lay
-            aGrid%iref = i_base_grid
-            aGrid%name_ref = GridPs%Pointers(i_base_grid)%name
-            aGrid%itype = BottomGrid
-            aGrid%space_var_nolay = .FALSE.
-            aGrid%num_layers = 0
-            aGrid%nolay_var => NULL()
-            Allocate (aGrid%iarray(GridPs%Pointers(i_base_grid)%num_cells))
-            do iseg = 1, GridPs%Pointers(i_base_grid)%noseg_lay
-                aGrid%iarray(iseg) = iseg
-            enddo
-            i_bottom_grid = GridPs%add(aGrid)
-            GridPs%bottom_grid = i_bottom_grid
-        endif
+         ! bottom grid not defined yet, add default bottom grid equals base grid 2d
+         aGrid%name = 'Bottom grid'
+         aGrid%num_cells = 0
+         aGrid%noseg_lay = GridPs%Pointers(i_base_grid)%noseg_lay
+         aGrid%iref = i_base_grid
+         aGrid%name_ref = GridPs%Pointers(i_base_grid)%name
+         aGrid%itype = BottomGrid
+         aGrid%space_var_nolay = .false.
+         aGrid%num_layers = 0
+         aGrid%nolay_var => null()
+         allocate (aGrid%iarray(GridPs%Pointers(i_base_grid)%num_cells))
+         do iseg = 1, GridPs%Pointers(i_base_grid)%noseg_lay
+            aGrid%iarray(iseg) = iseg
+         end do
+         i_bottom_grid = GridPs%add(aGrid)
+         GridPs%bottom_grid = i_bottom_grid
+      end if
 
-        ! read input
-        input_grid = i_bottom_grid
-        do
+      ! read input
+      input_grid = i_bottom_grid
+      do
+         if (gettoken(ctoken, ierr2) > 0) goto 1000
+         select case (ctoken)
+
+         case ('DEFAULT')
+            if (gettoken(num_layers, ierr2) > 0) goto 1000
+            GridPs%Pointers(input_grid)%num_layers = num_layers
+            write (file_unit, 2050) num_layers
+            GridPs%Pointers(input_grid)%num_cells = num_layers * GridPs%Pointers(input_grid)%noseg_lay
+            exit
+
+         case ('INPUTGRID')
             if (gettoken(ctoken, ierr2) > 0) goto 1000
-            select case (ctoken)
+            write (file_unit, 2010) trim(ctoken)
+            input_grid = GridPs%find_column(ctoken)
+            if (input_grid == 0) then
+               write (file_unit, 2020) ! ERROR, input grid not defined
+               goto 1000
+            end if
+            noseg_input = GridPs%Pointers(input_grid)%noseg_lay
+            GridPs%Pointers(input_grid)%space_var_nolay = .true.
+            allocate (GridPs%Pointers(input_grid)%nolay_var(noseg_input))
+            noseg_grid = 0
+            do iseg = 1, noseg_input
+               if (gettoken(num_layers, ierr2) > 0) goto 1000
+               GridPs%Pointers(input_grid)%nolay_var(iseg) = num_layers
+               noseg_grid = noseg_grid + num_layers
+            end do
+            GridPs%Pointers(input_grid)%num_cells = noseg_grid
+            exit
 
-            case ('DEFAULT')
-                if (gettoken(num_layers, ierr2) > 0) goto 1000
-                GridPs%Pointers(input_grid)%num_layers = num_layers
-                write (file_unit, 2050) num_layers
-                GridPs%Pointers(input_grid)%num_cells = num_layers * GridPs%Pointers(input_grid)%noseg_lay
-                exit
+         case ('ALL')
+            write (file_unit, 2060)
+            noseg_input = GridPs%Pointers(input_grid)%noseg_lay
+            GridPs%Pointers(input_grid)%space_var_nolay = .true.
+            allocate (GridPs%Pointers(input_grid)%nolay_var(noseg_input))
+            noseg_grid = 0
+            do iseg = 1, noseg_input
+               if (gettoken(num_layers, ierr2) > 0) goto 1000
+               GridPs%Pointers(input_grid)%nolay_var(iseg) = num_layers
+               noseg_grid = noseg_grid + num_layers
+            end do
+            GridPs%Pointers(input_grid)%num_cells = noseg_grid
+            exit
 
-            case ('INPUTGRID')
-                if (gettoken(ctoken, ierr2) > 0) goto 1000
-                write (file_unit, 2010) trim(ctoken)
-                input_grid = GridPs%find_column(ctoken)
-                if (input_grid == 0) then
-                    write (file_unit, 2020)                       ! ERROR, input grid not defined
-                    goto 1000
-                endif
-                noseg_input = GridPs%Pointers(input_grid)%noseg_lay
-                GridPs%Pointers(input_grid)%space_var_nolay = .TRUE.
-                allocate(GridPs%Pointers(input_grid)%nolay_var(noseg_input))
-                noseg_grid = 0
-                do iseg = 1, noseg_input
-                    if (gettoken(num_layers, ierr2) > 0) goto 1000
-                    GridPs%Pointers(input_grid)%nolay_var(iseg) = num_layers
-                    noseg_grid = noseg_grid + num_layers
-                enddo
-                GridPs%Pointers(input_grid)%num_cells = noseg_grid
-                exit
+         case default
+            write (file_unit, 2030) trim(ctoken) ! ERROR, token not recognised
+            goto 1000
 
-            case ('ALL')
-                write (file_unit, 2060)
-                noseg_input = GridPs%Pointers(input_grid)%noseg_lay
-                GridPs%Pointers(input_grid)%space_var_nolay = .TRUE.
-                allocate(GridPs%Pointers(input_grid)%nolay_var(noseg_input))
-                noseg_grid = 0
-                do iseg = 1, noseg_input
-                    if (gettoken(num_layers, ierr2) > 0) goto 1000
-                    GridPs%Pointers(input_grid)%nolay_var(iseg) = num_layers
-                    noseg_grid = noseg_grid + num_layers
-                enddo
-                GridPs%Pointers(input_grid)%num_cells = noseg_grid
-                exit
+         end select
 
-            case default
-                write (file_unit, 2030) trim(ctoken)             ! ERROR, token not recognised
-                goto 1000
+      end do
 
-            end select
+      ! if input grid .ne. bottom grid then expand to bottom grid (could be over a multiple reference?)
 
-        enddo
+      if (input_grid /= i_bottom_grid) then
+         max_nolay = maxval(GridPs%Pointers(input_grid)%nolay_var)
+         do ! loop till the bottom grid is reached
+            iref = GridPs%Pointers(input_grid)%iref
+            if (iref <= 1) then
+               write (file_unit, 2040) ! ERROR, input grid has no refrence to the bottom grid
+               goto 1000
+            end if
+            noseg_lay = GridPs%Pointers(iref)%noseg_lay
+            GridPs%Pointers(iref)%space_var_nolay = .true.
+            allocate (GridPs%Pointers(iref)%nolay_var(noseg_lay))
+            GridPs%Pointers(iref)%nolay_var = GridPs%Pointers(iref)%num_layers
+            noseg_grid = 0
+            do iseg = 1, noseg_lay
+               itype = GridPs%Pointers(input_grid)%iarray(iseg)
+               if (itype > 0) then
+                  GridPs%Pointers(iref)%nolay_var(iseg) = GridPs%Pointers(input_grid)%nolay_var(itype)
+                  noseg_grid = noseg_grid + GridPs%Pointers(input_grid)%nolay_var(itype)
+               end if
+            end do
+            GridPs%Pointers(iref)%num_cells = noseg_grid
 
-        ! if input grid .ne. bottom grid then expand to bottom grid (could be over a multiple reference?)
+            ! expand pointers over the layers
+            allocate (bottom_matrix(GridPs%Pointers(input_grid)%noseg_lay, max_nolay))
+            bottom_matrix = 0
+            iseg2 = 0
+            do ilay = 1, max_nolay
+               do iseg = 1, GridPs%Pointers(input_grid)%noseg_lay
+                  if (GridPs%Pointers(input_grid)%nolay_var(iseg) >= ilay) then
+                     iseg2 = iseg2 + 1
+                     bottom_matrix(iseg, ilay) = iseg2
+                  end if
+               end do
+            end do
 
-        if (input_grid /= i_bottom_grid) then
-            max_nolay = maxval(GridPs%Pointers(input_grid)%nolay_var)
-            do ! loop till the bottom grid is reached
-                iref = GridPs%Pointers(input_grid)%iref
-                if(iref <= 1) then
-                    write (file_unit, 2040)                          ! ERROR, input grid has no refrence to the bottom grid
-                    goto 1000
-                endif
-                noseg_lay = GridPs%Pointers(iref)%noseg_lay
-                GridPs%Pointers(iref)%space_var_nolay = .TRUE.
-                allocate(GridPs%Pointers(iref)%nolay_var(noseg_lay))
-                GridPs%Pointers(iref)%nolay_var = GridPs%Pointers(iref)%num_layers
-                noseg_grid = 0
-                do iseg = 1, noseg_lay
-                    itype = GridPs%Pointers(input_grid)%iarray(iseg)
-                    if (itype > 0) then
-                        GridPs%Pointers(iref)%nolay_var(iseg) = GridPs%Pointers(input_grid)%nolay_var(itype)
-                        noseg_grid = noseg_grid + GridPs%Pointers(input_grid)%nolay_var(itype)
-                    endif
-                enddo
-                GridPs%Pointers(iref)%num_cells = noseg_grid
+            allocate (new_pointer(noseg_grid))
+            iseg2 = 0
+            do ilay = 1, max_nolay
+               do iseg = 1, noseg_lay
+                  itype = GridPs%Pointers(input_grid)%iarray(iseg)
+                  if (itype > 0) then
+                     if (GridPs%Pointers(input_grid)%nolay_var(itype) >= ilay) then
+                        iseg2 = iseg2 + 1
+                        new_pointer(iseg2) = bottom_matrix(itype, ilay)
+                     end if
+                  end if
+               end do
+            end do
+            deallocate (GridPs%Pointers(input_grid)%iarray)
+            GridPs%Pointers(input_grid)%iarray => new_pointer
+            nullify (new_pointer)
+            deallocate (bottom_matrix)
 
-                ! expand pointers over the layers
-                allocate(bottom_matrix(GridPs%Pointers(input_grid)%noseg_lay, max_nolay))
-                bottom_matrix = 0
-                iseg2 = 0
-                do ilay = 1, max_nolay
-                    do iseg = 1, GridPs%Pointers(input_grid)%noseg_lay
-                        if (GridPs%Pointers(input_grid)%nolay_var(iseg) >= ilay) then
-                            iseg2 = iseg2 + 1
-                            bottom_matrix(iseg, ilay) = iseg2
-                        endif
-                    enddo
-                enddo
+            ! exit if bottom grid else go to next reference
 
-                allocate(new_pointer(noseg_grid))
-                iseg2 = 0
-                do ilay = 1, max_nolay
-                    do iseg = 1, noseg_lay
-                        itype = GridPs%Pointers(input_grid)%iarray(iseg)
-                        if (itype > 0) then
-                            if (GridPs%Pointers(input_grid)%nolay_var(itype) >= ilay) then
-                                iseg2 = iseg2 + 1
-                                new_pointer(iseg2) = bottom_matrix(itype, ilay)
-                            endif
-                        endif
-                    enddo
-                enddo
-                deallocate(GridPs%Pointers(input_grid)%iarray)
-                GridPs%Pointers(input_grid)%iarray => new_pointer
-                nullify(new_pointer)
-                deallocate(bottom_matrix)
+            input_grid = iref
+            if (input_grid == i_bottom_grid) exit
+         end do
+      end if
 
-                ! exit if bottom grid else go to next reference
+      if (timon) call timstop(ithndl)
+      return
 
-                input_grid = iref
-                if (input_grid == i_bottom_grid) exit
-            enddo
-        endif
+1000  continue
+      write (file_unit, 2000)
+      call status%increase_error_count()
+      if (timon) call timstop(ithndl)
+      return
 
-        if (timon) call timstop(ithndl)
-        return
+2000  format(/' ERROR, reading NOBOTTOMLAY information.')
+2010  format(/' Space varying number of bottom layers:', &
+              /' Defined on grid: ', A)
+2020  format(/' ERROR, input grid not defined.')
+2030  format(/' ERROR, unrecognized token: ', A)
+2040  format(/' ERROR, input grid has no refrence to the bottom grid')
+2050  format(/' Default number of bottom layers:', I10)
+2060  format(/' Space varying number of bottom layers defined on bottom grid')
 
-        1000 continue
-        write(file_unit, 2000)
-        call status%increase_error_count()
-        if (timon) call timstop(ithndl)
-        return
-
-        2000 format (/' ERROR, reading NOBOTTOMLAY information.')
-        2010 format (/' Space varying number of bottom layers:', &
-                /' Defined on grid: ', A)
-        2020 format (/' ERROR, input grid not defined.')
-        2030 format (/' ERROR, unrecognized token: ', A)
-        2040 format (/' ERROR, input grid has no refrence to the bottom grid')
-        2050 format (/' Default number of bottom layers:', I10)
-        2060 format (/' Space varying number of bottom layers defined on bottom grid')
-
-    end subroutine read_nobottomlay
+   end subroutine read_nobottomlay
 
 end module grid_utils

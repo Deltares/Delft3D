@@ -21,18 +21,17 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_substance_dependent_arrays
-    use m_waq_precision
-    use timers
+   use m_waq_precision
+   use timers
 
-    implicit none
+   implicit none
 
-    private
-    public :: create_substance_dependent_flow_and_diffusion_array
+   private
+   public :: create_substance_dependent_flow_and_diffusion_array
 
 contains
 
-
-    !> Creates the arrays with substance dependent flow (flowtot) and diffusion (disptot)
+   !> Creates the arrays with substance dependent flow (flowtot) and diffusion (disptot)
     !! This routine takes 3 times as much computation time than the more complicated
     !! calculate_theta routine.
     !! The only reason for that is that the 2 dimensional indices of
@@ -44,70 +43,70 @@ contains
     !! processor of my portable this takes 60/2 = 30 ms per time step or 7 seconds for
     !! 240 time steps for the test computation. If the 2 indeces are interchanged, only
     !! 4.5 Mb should be transported, which costs only 360 ms for the test.
-    subroutine create_substance_dependent_flow_and_diffusion_array(substance_i, num_substances_transported, &
-            num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, area, flow, flowtot, num_velocity_arrays, ivpnt, &
-            velo, disp, disptot, num_dispersion_arrays, idpnt, &
-            disper, mixlen)
+   subroutine create_substance_dependent_flow_and_diffusion_array(substance_i, num_substances_transported, &
+                                                                  num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, area, flow, flowtot, num_velocity_arrays, ivpnt, &
+                                                                  velo, disp, disptot, num_dispersion_arrays, idpnt, &
+                                                                  disper, mixlen)
 
-        integer(kind = int_wp), intent(in) :: substance_i                !< Current active substance
-        integer(kind = int_wp), intent(in) :: num_substances_transported    !< Number of active substances
-        integer(kind = int_wp), intent(in) :: num_exchanges                 !< Number of exchanges
-        integer(kind = int_wp), intent(in) :: num_exchanges_u_dir           !< Number of exchanges in first direction
-        integer(kind = int_wp), intent(in) :: num_exchanges_v_dir           !< Number of exchanges in second direction
-        real(kind = real_wp), intent(in) :: area(num_exchanges)           !< Exchange surface areas (dim: num_exchanges)
-        real(kind = real_wp), intent(in) :: flow(num_exchanges)     !< Flows accross exchange surfs (dim: num_exchanges)
-        real(kind = real_wp), intent(out) :: flowtot(num_exchanges) !< Flows plus additional velos. (dim: num_exchanges)
-        integer(kind = int_wp), intent(in) :: num_velocity_arrays              !< Number  of additional velos.
-        integer(kind = int_wp), intent(in) :: ivpnt(num_substances_transported) !< Pointer systems to velocities (dim: num_substances_transported)
-        real(kind = real_wp), intent(in) :: velo(num_velocity_arrays, num_exchanges)   !< Additional velocity array (dim: num_velocity_arrays*num_exchanges)
-        real(kind = real_wp), intent(in) :: disp(3)             !< Dispersion in 3 directions
-        real(kind = real_wp), intent(out) :: disptot(num_exchanges)!< Dispersion plus additional dipers. (dim: num_exchanges)
-        integer(kind = int_wp), intent(in) :: num_dispersion_arrays              !< Number  of additional dispers.
-        integer(kind = int_wp), intent(in) :: idpnt(num_substances_transported)        !< Pointer systems to dispersions (dim: num_substances_transported)
-        real(kind = real_wp), intent(in) :: disper(num_dispersion_arrays, num_exchanges) !< Additional dispersion array (dim: num_dispersion_arrays*num_exchanges)
-        real(kind = real_wp), intent(in) :: mixlen(num_exchanges)         !< Area / length
+      integer(kind=int_wp), intent(in) :: substance_i !< Current active substance
+      integer(kind=int_wp), intent(in) :: num_substances_transported !< Number of active substances
+      integer(kind=int_wp), intent(in) :: num_exchanges !< Number of exchanges
+      integer(kind=int_wp), intent(in) :: num_exchanges_u_dir !< Number of exchanges in first direction
+      integer(kind=int_wp), intent(in) :: num_exchanges_v_dir !< Number of exchanges in second direction
+      real(kind=real_wp), intent(in) :: area(num_exchanges) !< Exchange surface areas (dim: num_exchanges)
+      real(kind=real_wp), intent(in) :: flow(num_exchanges) !< Flows accross exchange surfs (dim: num_exchanges)
+      real(kind=real_wp), intent(out) :: flowtot(num_exchanges) !< Flows plus additional velos. (dim: num_exchanges)
+      integer(kind=int_wp), intent(in) :: num_velocity_arrays !< Number  of additional velos.
+      integer(kind=int_wp), intent(in) :: ivpnt(num_substances_transported) !< Pointer systems to velocities (dim: num_substances_transported)
+      real(kind=real_wp), intent(in) :: velo(num_velocity_arrays, num_exchanges) !< Additional velocity array (dim: num_velocity_arrays*num_exchanges)
+      real(kind=real_wp), intent(in) :: disp(3) !< Dispersion in 3 directions
+      real(kind=real_wp), intent(out) :: disptot(num_exchanges) !< Dispersion plus additional dipers. (dim: num_exchanges)
+      integer(kind=int_wp), intent(in) :: num_dispersion_arrays !< Number  of additional dispers.
+      integer(kind=int_wp), intent(in) :: idpnt(num_substances_transported) !< Pointer systems to dispersions (dim: num_substances_transported)
+      real(kind=real_wp), intent(in) :: disper(num_dispersion_arrays, num_exchanges) !< Additional dispersion array (dim: num_dispersion_arrays*num_exchanges)
+      real(kind=real_wp), intent(in) :: mixlen(num_exchanges) !< Area / length
 
-        ! Local variables
-        integer(kind = int_wp) :: iq !< Current edge
-        integer(kind = int_wp) :: iv !< Index for additional volume
-        integer(kind = int_wp) :: id !< Index for additional dispersion
+      ! Local variables
+      integer(kind=int_wp) :: iq !< Current edge
+      integer(kind=int_wp) :: iv !< Index for additional volume
+      integer(kind=int_wp) :: id !< Index for additional dispersion
 
-        integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("create_substance_dependent_flow_and_diffusion_array", ithandl)
+      integer(kind=int_wp) :: ithandl = 0
+      if (timon) call timstrt("create_substance_dependent_flow_and_diffusion_array", ithandl)
 
-        iv = ivpnt(substance_i)
-        id = idpnt(substance_i)
+      iv = ivpnt(substance_i)
+      id = idpnt(substance_i)
 
-        if (iv == 0) then
-            flowtot = flow
-        else
-            do iq = 1, num_exchanges
-                flowtot(iq) = flow(iq) + velo(iv, iq) * area(iq)
-            end do
-        end if
+      if (iv == 0) then
+         flowtot = flow
+      else
+         do iq = 1, num_exchanges
+            flowtot(iq) = flow(iq) + velo(iv, iq) * area(iq)
+         end do
+      end if
 
-        if (id == 0) then
-            do iq = 1, num_exchanges_u_dir
-                disptot(iq) = disp(1) * mixlen(iq)
-            end do
-            do iq = num_exchanges_u_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir
-                disptot(iq) = disp(2) * mixlen(iq)
-            end do
-            do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges
-                disptot(iq) = disp(3) * mixlen(iq)
-            end do
-        else
-            do iq = 1, num_exchanges_u_dir
-                disptot(iq) = (disp(1) + disper(id, iq)) * mixlen(iq)
-            end do
-            do iq = num_exchanges_u_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir
-                disptot(iq) = (disp(2) + disper(id, iq)) * mixlen(iq)
-            end do
-            do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges
-                disptot(iq) = (disp(3) + disper(id, iq)) * mixlen(iq)
-            end do
-        end if
+      if (id == 0) then
+         do iq = 1, num_exchanges_u_dir
+            disptot(iq) = disp(1) * mixlen(iq)
+         end do
+         do iq = num_exchanges_u_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir
+            disptot(iq) = disp(2) * mixlen(iq)
+         end do
+         do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges
+            disptot(iq) = disp(3) * mixlen(iq)
+         end do
+      else
+         do iq = 1, num_exchanges_u_dir
+            disptot(iq) = (disp(1) + disper(id, iq)) * mixlen(iq)
+         end do
+         do iq = num_exchanges_u_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir
+            disptot(iq) = (disp(2) + disper(id, iq)) * mixlen(iq)
+         end do
+         do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges
+            disptot(iq) = (disp(3) + disper(id, iq)) * mixlen(iq)
+         end do
+      end if
 
-        if (timon) call timstop (ithandl)
-    end subroutine create_substance_dependent_flow_and_diffusion_array
+      if (timon) call timstop(ithandl)
+   end subroutine create_substance_dependent_flow_and_diffusion_array
 end module m_substance_dependent_arrays

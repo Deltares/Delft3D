@@ -21,112 +21,112 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module error_handling
-    use m_waq_precision
-    use m_error_status
+   use m_waq_precision
+   use m_error_status
 
-    implicit none
+   implicit none
 
 contains
 
-    subroutine check_error(cdummy, iwidth, iblock, ierr2, status)
+   subroutine check_error(cdummy, iwidth, iblock, ierr2, status)
 
-        !< Handles delimiter lines and errors during read of the DELWAQ input file
-        !< Logical units     : file_unit = unitnumber output log-file
-        !<                     ILUN  = array with input unit nr's stack
+      !< Handles delimiter lines and errors during read of the DELWAQ input file
+      !< Logical units     : file_unit = unitnumber output log-file
+      !<                     ILUN  = array with input unit nr's stack
 
-        use m_logger_helper, only : stop_with_error
-        use rd_token
-        use timers       !   performance timers
+      use m_logger_helper, only: stop_with_error
+      use rd_token
+      use timers !   performance timers
 
-        character(len=*), intent(inout) :: cdummy !< character that may contain block end
+      character(len=*), intent(inout) :: cdummy !< character that may contain block end
 
-        integer(kind = int_wp), intent(in) :: iblock !< number of the input block
-        integer(kind = int_wp), intent(inout) :: ierr2  !< accumulative nr of errors
-        integer(kind = int_wp), intent(in) :: iwidth !< width of the output file
-        type(error_status), intent(inout) :: status !< current error status
+      integer(kind=int_wp), intent(in) :: iblock !< number of the input block
+      integer(kind=int_wp), intent(inout) :: ierr2 !< accumulative nr of errors
+      integer(kind=int_wp), intent(in) :: iwidth !< width of the output file
+      type(error_status), intent(inout) :: status !< current error status
 
-        character(1) :: character_output ! to convert block number to character
+      character(1) :: character_output ! to convert block number to character
 
-        integer(kind = int_wp) :: idummy ! argument for token reading
-        integer(kind = int_wp) :: int_output  ! return value gettoken
-        integer(kind = int_wp) :: ithndl = 0
-        integer(kind = int_wp) :: itype  ! argument for token reading
+      integer(kind=int_wp) :: idummy ! argument for token reading
+      integer(kind=int_wp) :: int_output ! return value gettoken
+      integer(kind=int_wp) :: ithndl = 0
+      integer(kind=int_wp) :: itype ! argument for token reading
 
-        real(kind = real_wp) :: rdummy ! argument for token reading
+      real(kind=real_wp) :: rdummy ! argument for token reading
 
-        if (timon) call timstrt("check_error", ithndl)
+      if (timon) call timstrt("check_error", ithndl)
 
-        ! First round of dealing with ierr2
-        select case (ierr2)
-        case (0)               !   look for end of block
-            int_output = gettoken (cdummy, idummy, rdummy, itype, ierr2)
+      ! First round of dealing with ierr2
+      select case (ierr2)
+      case (0) !   look for end of block
+         int_output = gettoken(cdummy, idummy, rdummy, itype, ierr2)
 
-            ! End of block already found?
-            if ( cdummy(1:1) == '#' ) then
-                ierr2 = 2
-            endif
-        case (1)               !   with error
-            write (file_unit, 2030) iblock
-            call status%increase_error_count()
-            ierr2 = 0
-        case (2)               !   normal end of block found
-        case (3)               !   fatal
-            write (file_unit, 2030) iblock
-            write (file_unit, 2040) status%ierr
-            call stop_with_error()
-        end select
+         ! End of block already found?
+         if (cdummy(1:1) == '#') then
+            ierr2 = 2
+         end if
+      case (1) !   with error
+         write (file_unit, 2030) iblock
+         call status%increase_error_count()
+         ierr2 = 0
+      case (2) !   normal end of block found
+      case (3) !   fatal
+         write (file_unit, 2030) iblock
+         write (file_unit, 2040) status%ierr
+         call stop_with_error()
+      end select
 
-        ! Second round of dealing with ierr2
-        select case (ierr2)
-        case (0)               !   look for end of block
-            call status%increase_error_count()
-            write (file_unit, 2010) iblock
-            do while (ierr2 == 0)
-                int_output = gettoken (cdummy, idummy, rdummy, itype, ierr2)
-            enddo
-        case (3)               !   fatal
+      ! Second round of dealing with ierr2
+      select case (ierr2)
+      case (0) !   look for end of block
+         call status%increase_error_count()
+         write (file_unit, 2010) iblock
+         do while (ierr2 == 0)
+            int_output = gettoken(cdummy, idummy, rdummy, itype, ierr2)
+         end do
+      case (3) !   fatal
+         write (file_unit, 2020) iblock
+         write (file_unit, 2040) status%ierr
+         call stop_with_error()
+      end select
+
+      if (ierr2 == 2) then !   end block found check number
+         write (character_output, '(i1)') iblock
+         if (character_output /= cdummy(2:2)) then
             write (file_unit, 2020) iblock
-            write (file_unit, 2040) status%ierr
-            call stop_with_error()
-        end select
-
-        if (ierr2 == 2) then          !   end block found check number
-            write (character_output, '(i1)') iblock
-            if (character_output /= cdummy(2:2)) then
-                write (file_unit, 2020) iblock
-                call status%increase_error_count()
-                write (file_unit, 2040) status%ierr
-                call stop_with_error()
-            endif
-        ELSE                              !   error reading
             call status%increase_error_count()
-            write (file_unit, 2030) iblock
             write (file_unit, 2040) status%ierr
             call stop_with_error()
-        endif
+         end if
+      else !   error reading
+         call status%increase_error_count()
+         write (file_unit, 2030) iblock
+         write (file_unit, 2040) status%ierr
+         call stop_with_error()
+      end if
 
-        ! normal end (can be with error)
-        if (iwidth == 5) then
-            write (file_unit, 2050) iblock
-        else
-            write (file_unit, 2060) iblock
-        endif
-        ierr2 = 0
-        if (timon) call timstop(ithndl)
-        return
+      ! normal end (can be with error)
+      if (iwidth == 5) then
+         write (file_unit, 2050) iblock
+      else
+         write (file_unit, 2060) iblock
+      end if
+      ierr2 = 0
+      if (timon) call timstop(ithndl)
+      return
 
-        2010 format (/' ERROR. Too many and/or invalid data in block', I4, ' !!', &
-                ' Check input file !!', /)
-        2020 format (/' ERROR. End card of block', I4, ' not found !!', &
-                ' Check input file !!', /)
-        2030 format (/' ERROR. Reading block', I4, ' !!', &
-                ' Check input file !!', /)
-        2040 format (' Number of ERRORS during read of input file:', I5, ' !!', / &
-                ' Further processing impossible.', /, &
-                ' *************** EXECUTION HALTED !! ***************')
-        2050 format (/1X, 59('*'), ' B L O C K -', I2, ' ', 5('*')/)
-        2060 format (/1X, 109('*'), ' B L O C K -', I2, ' ', 5('*')/)
+2010  format(/' ERROR. Too many and/or invalid data in block', I4, ' !!', &
+              ' Check input file !!',/)
+2020  format(/' ERROR. End card of block', I4, ' not found !!', &
+              ' Check input file !!',/)
+2030  format(/' ERROR. Reading block', I4, ' !!', &
+              ' Check input file !!',/)
+2040  format(' Number of ERRORS during read of input file:', I5, ' !!', / &
+             ' Further processing impossible.', /, &
+             ' *************** EXECUTION HALTED !! ***************')
+2050  format(/1x, 59('*'), ' B L O C K -', I2, ' ', 5('*')/)
+2060  format(/1x, 109('*'), ' B L O C K -', I2, ' ', 5('*')/)
 
-    end subroutine check_error
+   end subroutine check_error
 
 end module error_handling

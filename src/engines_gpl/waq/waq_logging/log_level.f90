@@ -24,13 +24,13 @@
 !> enumeration for logging levels
 module m_log_level
 
-    !> enum specifing the supported logging levels
-    enum, bind(c)
-        enumerator :: no_logging = 0
-        enumerator :: error_level = 1
-        enumerator :: warning_level = 2
-        enumerator :: info_level = 3
-        enumerator :: debug_level = 4
-    end enum
+   !> enum specifing the supported logging levels
+   enum, bind(c)
+      enumerator :: no_logging = 0
+      enumerator :: error_level = 1
+      enumerator :: warning_level = 2
+      enumerator :: info_level = 3
+      enumerator :: debug_level = 4
+   end enum
 
 end module m_log_level

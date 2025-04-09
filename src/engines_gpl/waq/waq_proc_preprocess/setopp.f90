@@ -21,86 +21,85 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_setopp
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine setopp(procesdef, outputs, ioff)
 
-    subroutine setopp (procesdef, outputs, ioff)
+      !>/File
+      !>      sets processes for requested output
 
-        !>/File
-        !>      sets processes for requested output
+      use m_logger_helper
+      use timers !< performance timers
+      use processet !< processet definitions
+      use results, only: OutputPointers !< output definitions
+      implicit none
 
-        use m_logger_helper
-        use timers         !< performance timers
-        use processet      !< processet definitions
-        use results, only : OutputPointers         !< output definitions
-        implicit none
+      ! declaration of arguments
 
-        ! declaration of arguments
+      type(procespropcoll) :: procesdef !< all processes
+      type(OutputPointers) :: outputs !< output structure
+      integer(kind=int_wp) :: ioff !< offset to process output in waq data space
 
-        type(procespropcoll) :: procesdef       !< all processes
-        type(OutputPointers) :: outputs         !< output structure
-        integer(kind = int_wp) :: ioff            !< offset to process output in waq data space
+      ! local decalarations
 
-        ! local decalarations
+      integer(kind=int_wp) :: num_processes_activated ! number of processes
+      integer(kind=int_wp) :: iproc ! loop counter processes
+      type(procesprop), pointer :: proc ! process description
+      character(len=100) :: line ! line buffer for output
+      integer(kind=int_wp) :: ioutput ! index output item
+      integer(kind=int_wp) :: iou ! loop counter output variable
+      integer(kind=int_wp) :: ithndl = 0 ! handle for performance timer
+      if (timon) call timstrt("setopp", ithndl)
 
-        integer(kind = int_wp) :: num_processes_activated           ! number of processes
-        integer(kind = int_wp) :: iproc           ! loop counter processes
-        type(procesprop), pointer :: proc            ! process description
-        character(len = 100) :: line            ! line buffer for output
-        integer(kind = int_wp) :: ioutput         ! index output item
-        integer(kind = int_wp) :: iou             ! loop counter output variable
-        integer(kind = int_wp) :: ithndl = 0      ! handle for performance timer
-        if (timon) call timstrt("setopp", ithndl)
+      ! set process on if output is requested and input ok
 
-        ! set process on if output is requested and input ok
+      write (line, '(a)') '# locating processes for requested output'
+      call write_log_message(line)
+      line = ' '
+      call write_log_message(line)
 
-        write(line, '(a)') '# locating processes for requested output'
-        call write_log_message(line)
-        line = ' '
-        call write_log_message(line)
+      num_processes_activated = procesdef%current_size
 
-        num_processes_activated = procesdef%current_size
+      do iou = 1, outputs%current_size
 
-        do iou = 1, outputs%current_size
+         ! is the output undefined ( pointer -1 ) or from a proces
 
-            ! is the output undefined ( pointer -1 ) or from a proces
+         if (outputs%pointers(iou) == -1 .or. outputs%pointers(iou) > ioff) then
+            outputs%pointers(iou) = -1
+            do iproc = 1, num_processes_activated
+               proc => procesdef%procesprops(iproc)
+               if (proc%linvok) then
+                  call zoekio(outputs%names(iou), proc%no_output, proc%output_item, 20, ioutput, IOTYPE_SEGMENT_OUTPUT)
+                  if (ioutput > 0) then
+                     if (.not. proc%active) then
 
-            if (outputs%pointers(iou) == -1 .or. outputs%pointers(iou) > ioff) then
-                outputs%pointers(iou) = -1
-                do iproc = 1, num_processes_activated
-                    proc => procesdef%procesprops(iproc)
-                    if (proc%linvok) then
-                        call zoekio (outputs%names(iou), proc%no_output, proc%output_item, 20, ioutput, IOTYPE_SEGMENT_OUTPUT)
-                        if (ioutput > 0) then
-                            if (.not. proc%active) then
+                        ! turn proces on
 
-                                ! turn proces on
+                        proc%active = .true.
 
-                                proc%active = .true.
+                        write (line, '(5a)') ' switching [', proc%name(1:10), '] on for output [', outputs%names(iou) (1:20), ']'
+                        call write_log_message(line)
+                        line = ' '
+                        call write_log_message(line)
+                     end if
 
-                                write (line, '(5a)') ' switching [', proc%name(1:10), '] on for output [', outputs%names(iou)(1:20), ']'
-                                call write_log_message(line)
-                                line = ' '
-                                call write_log_message(line)
-                            endif
+                     goto 300
+                  end if
 
-                            goto 300
-                        endif
+               end if
 
-                    endif
+            end do
+         end if
 
-                end do
-            endif
+300      continue
+      end do
 
-            300 continue
-        end do
-
-        if (timon) call timstop(ithndl)
-        return
-    end
+      if (timon) call timstop(ithndl)
+      return
+   end
 
 end module m_setopp

@@ -21,148 +21,145 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_prpagg
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine PRPAGG(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_properties
+      use m_extract_waq_attribute
 
-    subroutine PRPAGG   (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_properties
-        use m_extract_waq_attribute
+      !>\file
+      !>       Properties of aggregated particles (one TRW particle and one suspended solids particle)
 
+      !
+      !     Description of the module :
+      !
+      !     Calculate the properties of the combined particles and then
+      !     calculate the sedimentation velocity and the critical shear stress
+      !     based on the combined particle's physical properties
+      !
+      ! Name            T   Index   Description                                   Units
+      ! ----            --- -       -------------------                            ----
+      ! DIAMETER1       R*4 1   diameter of the tyre particles                       [um]
+      ! DENSITY1        R*4 2   density of the tyre particles                     [kg/m3]
+      ! DIAMETER2       R*4 3   diameter of the sediment particles                   [um]
+      ! DENSITY2        R*4 4   density of the sediment particles                 [kg/m3]
+      ! BIOFILM_THK     R*4 5   thickness of the biofilm                             [um]
+      ! BIOFILM_DENSITY R*4 6   density of the biofilm                            [kg/m3]
+      !
+      ! SETTLE_VEL      R*4 1   settling velocity                                   [m/d]
+      ! TCR_SEDIM       R*4 2   critical shear stress for sedimentation              [Pa]
+      !
+      ! nov 2021 Jos van Gils added a loop over the fractions, to avoid long lists of processes and to speed up ...
 
-        !>\file
-        !>       Properties of aggregated particles (one TRW particle and one suspended solids particle)
+      implicit none
 
-        !
-        !     Description of the module :
-        !
-        !     Calculate the properties of the combined particles and then
-        !     calculate the sedimentation velocity and the critical shear stress
-        !     based on the combined particle's physical properties
-        !
-        ! Name            T   Index   Description                                   Units
-        ! ----            --- -       -------------------                            ----
-        ! DIAMETER1       R*4 1   diameter of the tyre particles                       [um]
-        ! DENSITY1        R*4 2   density of the tyre particles                     [kg/m3]
-        ! DIAMETER2       R*4 3   diameter of the sediment particles                   [um]
-        ! DENSITY2        R*4 4   density of the sediment particles                 [kg/m3]
-        ! BIOFILM_THK     R*4 5   thickness of the biofilm                             [um]
-        ! BIOFILM_DENSITY R*4 6   density of the biofilm                            [kg/m3]
-        !
-        ! SETTLE_VEL      R*4 1   settling velocity                                   [m/d]
-        ! TCR_SEDIM       R*4 2   critical shear stress for sedimentation              [Pa]
-        !
-        ! nov 2021 Jos van Gils added a loop over the fractions, to avoid long lists of processes and to speed up ...
+      real(kind=real_wp) :: process_space_real(*), fl(*)
+      integer(kind=int_wp) :: ipoint(*), increm(*), num_cells, noflux, &
+                              iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      !
+      !   local declarations
+      !
+      integer(kind=int_wp) :: iseg, ikmrk1, ikmrk2, itel, num_exchanges, iq, ifrom, ipp
+      real(kind=real_wp) :: diameter1, density1, diameter2, density2, biofilm_thk, biofilm_density
+      real(kind=real_wp) :: combined_diameter, combined_density, new_shape_factor
+      real(kind=real_wp) :: settle_vel, tcr_sedim
 
-        implicit none
+      integer(kind=int_wp) :: ipnt(500)
+      integer(kind=int_wp), parameter :: ip_nTRWP = 1
+      integer(kind=int_wp), parameter :: ip_nIM = 2
+      integer(kind=int_wp), parameter :: ip_BioFilmThk = 3
+      integer(kind=int_wp), parameter :: ip_BioFilmDen = 4
+      integer(kind=int_wp), parameter :: ip_lastsingle = 4
 
-        real(kind = real_wp) :: process_space_real  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(*), increm(*), num_cells, noflux, &
-                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-        !
-        !   local declarations
-        !
-        integer(kind = int_wp) :: iseg, ikmrk1, ikmrk2, itel, num_exchanges, iq, ifrom, ipp
-        real(kind = real_wp) :: diameter1, density1, diameter2, density2, biofilm_thk, biofilm_density
-        real(kind = real_wp) :: combined_diameter, combined_density, new_shape_factor
-        real(kind = real_wp) :: settle_vel, tcr_sedim
+      integer(kind=int_wp) :: ntrwp, itrwp, nsusp, isusp, nitem, offset
 
-        integer(kind = int_wp) :: ipnt(500)
-        integer(kind = int_wp), parameter :: ip_nTRWP = 1
-        integer(kind = int_wp), parameter :: ip_nIM = 2
-        integer(kind = int_wp), parameter :: ip_BioFilmThk = 3
-        integer(kind = int_wp), parameter :: ip_BioFilmDen = 4
-        integer(kind = int_wp), parameter :: ip_lastsingle = 4
+      ntrwp = process_space_real(ipoint(ip_ntrwp))
+      nsusp = process_space_real(ipoint(ip_nim))
+      nitem = 4 + 2 * ntrwp + 2 * nsusp + 3 * ntrwp * nsusp !
 
-        integer(kind = int_wp) :: ntrwp, itrwp, nsusp, isusp, nitem, offset
+      !
+      !  Note: we only need to do this once, no looping over the segments
+      !  as all particles of the same size class have the same properties
 
-        ntrwp = process_space_real(ipoint(ip_ntrwp))
-        nsusp = process_space_real(ipoint(ip_nim))
-        nitem = 4 + 2 * ntrwp + 2 * nsusp + 3 * ntrwp * nsusp !
+      ipnt(1:nitem) = ipoint(1:nitem)
 
-        !
-        !  Note: we only need to do this once, no looping over the segments
-        !  as all particles of the same size class have the same properties
+      do iseg = 1, num_cells
+         call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+         if (ikmrk1 == 1) then
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            if (ikmrk2 <= 4) then ! surface water
 
-        ipnt(1:nitem) = ipoint(1:nitem)
+               ! input independentt of fractions
+               biofilm_thk = process_space_real(ipnt(ip_BioFilmThk))
+               biofilm_density = process_space_real(ipnt(ip_BioFilmDen))
 
-        do iseg = 1, num_cells
-            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            if (ikmrk1==1) then
-                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
-                if (ikmrk2<=4) then   ! surface water
+               ! loop over active fractions, IM are inner loop
+               itel = 0
+               do itrwp = 1, ntrwp
+                  do isusp = 1, nsusp
 
-                    ! input independentt of fractions
-                    biofilm_thk = process_space_real(ipnt(ip_BioFilmThk))
-                    biofilm_density = process_space_real(ipnt(ip_BioFilmDen))
+                     itel = itel + 1
+                     diameter1 = process_space_real(ipnt(ip_lastsingle + itrwp))
+                     density1 = process_space_real(ipnt(ip_lastsingle + ntrwp + itrwp))
+                     diameter2 = process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + isusp))
+                     density2 = process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + nsusp + isusp))
 
-                    ! loop over active fractions, IM are inner loop
-                    itel = 0
-                    do itrwp = 1, ntrwp
-                        do isusp = 1, nsusp
+                     call add_biofilm(diameter1, density1, biofilm_thk, biofilm_density)
+                     call combine_particles(diameter1, diameter2, density1, density2, &
+                                            combined_diameter, combined_density, new_shape_factor)
+                     call calculate_sedim(combined_diameter, combined_density, new_shape_factor, settle_vel, tcr_sedim)
 
-                            itel = itel + 1
-                            diameter1 = process_space_real(ipnt(ip_lastsingle + itrwp))
-                            density1 = process_space_real(ipnt(ip_lastsingle + ntrwp + itrwp))
-                            diameter2 = process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + isusp))
-                            density2 = process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + nsusp + isusp))
+                     process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + 2 * nsusp + itel)) = settle_vel
+                     process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + 2 * nsusp + ntrwp * nsusp + itel)) = tcr_sedim
+                  end do
+               end do
 
-                            call add_biofilm(diameter1, density1, biofilm_thk, biofilm_density)
-                            call combine_particles(diameter1, diameter2, density1, density2, &
-                                    combined_diameter, combined_density, new_shape_factor)
-                            call calculate_sedim(combined_diameter, combined_density, new_shape_factor, settle_vel, tcr_sedim)
+            end if
+         end if
+         ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
 
-                            process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + 2 * nsusp + itel)) = settle_vel
-                            process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + 2 * nsusp + ntrwp * nsusp + itel)) = tcr_sedim
-                        enddo
-                    enddo
+      end do
 
-                endif
-            endif
-            ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
+      ! addition for use in 3D
 
-        enddo
-
-        ! addition for use in 3D
-
-        num_exchanges = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
-        offset = ip_lastsingle + 2 * ntrwp + 2 * nsusp + 2 * ntrwp * nsusp
-        ipnt(1:nitem) = ipoint(1:nitem)
-        do IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
+      num_exchanges = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
+      offset = ip_lastsingle + 2 * ntrwp + 2 * nsusp + 2 * ntrwp * nsusp
+      ipnt(1:nitem) = ipoint(1:nitem)
+      do IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
+         itel = 0
+         do itrwp = 1, ntrwp
+            do isusp = 1, nsusp
+               itel = itel + 1
+               process_space_real(ipnt(offset + itel)) = 0.0
+            end do
+         end do
+         ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
+      end do
+      do IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges
+         ifrom = IEXPNT(1, IQ)
+         !
+         !       Sedimentation velocity from segment to exchange-area
+         !
+         if (ifrom > 0) then
             itel = 0
             do itrwp = 1, ntrwp
-                do isusp = 1, nsusp
-                    itel = itel + 1
-                    process_space_real(ipnt(offset + itel)) = 0.0
-                enddo
-            enddo
-            ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
-        enddo
-        do  IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges
-            ifrom = IEXPNT(1, IQ)
-            !
-            !       Sedimentation velocity from segment to exchange-area
-            !
-            IF (ifrom > 0) THEN
-                itel = 0
-                do itrwp = 1, ntrwp
-                    do isusp = 1, nsusp
-                        itel = itel + 1
-                        ipp = ip_lastsingle + 2 * ntrwp + 2 * nsusp + itel
-                        settle_vel = process_space_real(ipoint(ipp) + (ifrom - 1) * increm(ipp))
-                        process_space_real(ipnt(offset + itel)) = settle_vel
-                    enddo
-                enddo
-            ENDIF
-            ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
-        enddo
+               do isusp = 1, nsusp
+                  itel = itel + 1
+                  ipp = ip_lastsingle + 2 * ntrwp + 2 * nsusp + itel
+                  settle_vel = process_space_real(ipoint(ipp) + (ifrom - 1) * increm(ipp))
+                  process_space_real(ipnt(offset + itel)) = settle_vel
+               end do
+            end do
+         end if
+         ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
+      end do
 
-    end
-
+   end
 
 end module m_prpagg

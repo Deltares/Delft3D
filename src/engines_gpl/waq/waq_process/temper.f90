@@ -21,247 +21,246 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_temper
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine temper(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_extract_waq_attribute
 
-    subroutine temper (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_extract_waq_attribute
+      !>\file
+      !>       Exchange of excess temperature at the surface (Sweers)
 
-        !>\file
-        !>       Exchange of excess temperature at the surface (Sweers)
+      implicit none
 
-        IMPLICIT NONE
+      !     arguments
 
-        !     arguments
+      real(kind=real_wp) :: process_space_real(*) ! in/out input-output array space to be adressed with IPOINT/INCREM
+      real(kind=real_wp) :: FL(*) ! in/out flux array
+      integer(kind=int_wp) :: IPOINT(*) ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+      integer(kind=int_wp) :: INCREM(*) ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+      integer(kind=int_wp) :: num_cells ! in     number of segments
+      integer(kind=int_wp) :: NOFLUX ! in     total number of fluxes (increment in FL array)
+      integer(kind=int_wp) :: IEXPNT(4, *) ! in     exchange pointer table
+      integer(kind=int_wp) :: IKNMRK(*) ! in     segment features array
+      integer(kind=int_wp) :: num_exchanges_u_dir ! in     number of exchanges in first direction
+      integer(kind=int_wp) :: num_exchanges_v_dir ! in     number of exchanges in second direction
+      integer(kind=int_wp) :: num_exchanges_z_dir ! in     number of exchanges in third direction
+      integer(kind=int_wp) :: num_exchanges_bottom_dir ! in     number of exchanges in fourth direction
 
-        REAL(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
-        REAL(kind = real_wp) :: FL(*)              ! in/out flux array
-        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
-        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
-        INTEGER(kind = int_wp) :: num_cells              ! in     number of segments
-        INTEGER(kind = int_wp) :: NOFLUX             ! in     total number of fluxes (increment in FL array)
-        INTEGER(kind = int_wp) :: IEXPNT(4, *)        ! in     exchange pointer table
-        INTEGER(kind = int_wp) :: IKNMRK(*)          ! in     segment features array
-        INTEGER(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
-        INTEGER(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
-        INTEGER(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
-        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
+      !     from process_space_real array
 
-        !     from process_space_real array
+      real(kind=real_wp) :: MTEMP ! 1  in  Modelled temperature                                [oC]
+      real(kind=real_wp) :: TMPNAT ! 2  in  natural temperature of ambient water                [oC]
+      real(kind=real_wp) :: DEPTH ! 3  in  actual depth of the water column                     [m]
+      real(kind=real_wp) :: VWIND ! 4  in  wind speed at 10 m above surface                   [m/s]
+      real(kind=real_wp) :: CP ! 5  in  specific heat (default 4183.0)                 [J/kg/oC]
+      real(kind=real_wp) :: DELT ! 6  in  DELWAQ process time step                             [d]
+      integer(kind=int_wp) :: ISWTMP ! 7  in  DELWAQ process time step                             [d]
+      real(kind=real_wp) :: FACTRC ! 8  in  Factor on rate constant                              [d]
+      real(kind=real_wp) :: ZEROFL ! 9  in  Zeroth-order flux                                 [oC/d]
+      integer(kind=int_wp) :: SWTEMPDF !10  in  switch temperature increase on tidal flats           (-)
+      integer(kind=int_wp) :: SWEMERSION !11  in  switch indicating submersion(0) or emersion(1)       (-)
+      real(kind=real_wp) :: LOCSEDDEPT !12  in  Sediment layer depth to bottom of segment            (m)
+      real(kind=real_wp) :: THSEDDT !13  in  thickness sed. layer subjected to temp. change       (m)
+      real(kind=real_wp) :: RAD !14  in  actual irradiance over the day                    (W/m2)
+      real(kind=real_wp) :: RADMAX !15  in  maximal irradiance                                (W/m2)
+      real(kind=real_wp) :: RTRADMAX !16  in  max. rate temp. increase tidal flats              (oC/d)
+      real(kind=real_wp) :: DELTRADMAX !17  in  max. temp. increase tidal flats radiation           (oC)
+      real(kind=real_wp) :: DELTEV !18  in  temperature decrease evaporation tidal flats        (oC)
+      real(kind=real_wp) :: DELTRAD !19  i/o temperature increase previous step                  (oC)
+      real(kind=real_wp) :: WEXCH !20  out Rate constant for surplus temperature exchange       [d]
+      real(kind=real_wp) :: TTEMP !21  out Total temperature                                   [oC]
+      real(kind=real_wp) :: ETEMP !22  out EXCESS! temperature                                 [oC]
 
-        REAL(kind = real_wp) :: MTEMP              ! 1  in  Modelled temperature                                [oC]
-        REAL(kind = real_wp) :: TMPNAT             ! 2  in  natural temperature of ambient water                [oC]
-        REAL(kind = real_wp) :: DEPTH              ! 3  in  actual depth of the water column                     [m]
-        REAL(kind = real_wp) :: VWIND              ! 4  in  wind speed at 10 m above surface                   [m/s]
-        REAL(kind = real_wp) :: CP                 ! 5  in  specific heat (default 4183.0)                 [J/kg/oC]
-        REAL(kind = real_wp) :: DELT               ! 6  in  DELWAQ process time step                             [d]
-        INTEGER(kind = int_wp) :: ISWTMP             ! 7  in  DELWAQ process time step                             [d]
-        REAL(kind = real_wp) :: FACTRC             ! 8  in  Factor on rate constant                              [d]
-        REAL(kind = real_wp) :: ZEROFL             ! 9  in  Zeroth-order flux                                 [oC/d]
-        INTEGER(kind = int_wp) :: SWTEMPDF           !10  in  switch temperature increase on tidal flats           (-)
-        INTEGER(kind = int_wp) :: SWEMERSION         !11  in  switch indicating submersion(0) or emersion(1)       (-)
-        REAL(kind = real_wp) :: LOCSEDDEPT         !12  in  Sediment layer depth to bottom of segment            (m)
-        REAL(kind = real_wp) :: THSEDDT            !13  in  thickness sed. layer subjected to temp. change       (m)
-        REAL(kind = real_wp) :: RAD                !14  in  actual irradiance over the day                    (W/m2)
-        REAL(kind = real_wp) :: RADMAX             !15  in  maximal irradiance                                (W/m2)
-        REAL(kind = real_wp) :: RTRADMAX           !16  in  max. rate temp. increase tidal flats              (oC/d)
-        REAL(kind = real_wp) :: DELTRADMAX         !17  in  max. temp. increase tidal flats radiation           (oC)
-        REAL(kind = real_wp) :: DELTEV             !18  in  temperature decrease evaporation tidal flats        (oC)
-        REAL(kind = real_wp) :: DELTRAD            !19  i/o temperature increase previous step                  (oC)
-        REAL(kind = real_wp) :: WEXCH              !20  out Rate constant for surplus temperature exchange       [d]
-        REAL(kind = real_wp) :: TTEMP              !21  out Total temperature                                   [oC]
-        REAL(kind = real_wp) :: ETEMP              !22  out EXCESS! temperature                                 [oC]
+      !     fluxes
 
-        !     fluxes
+      real(kind=real_wp) :: WFLUX ! 1      excess temperature flux                           [oC/d]
 
-        REAL(kind = real_wp) :: WFLUX              ! 1      excess temperature flux                           [oC/d]
+      !     local decalrations
 
-        !     local decalrations
+      real(kind=real_wp), parameter :: P1 = 0.00158 ! coefficient in heat exchange
+      real(kind=real_wp), parameter :: P2 = 0.018 ! coefficient in heat exchange
+      real(kind=real_wp), parameter :: P3 = 1.12 ! coefficient in heat exchange
+      real(kind=real_wp), parameter :: P4 = 0.049 ! coefficient in heat exchange
+      real(kind=real_wp), parameter :: P5 = 4.48 ! coefficient in heat exchange
+      real(kind=real_wp), parameter :: P6 = 2.05 ! coefficient in heat exchange
+      real(kind=real_wp), parameter :: P7 = 3.5 ! coefficient in heat exchange
+      real(kind=real_wp), parameter :: C1 = 1000.0 ! coefficient in density of water
+      real(kind=real_wp), parameter :: C2 = 0.088 ! coefficient in density of water
+      real(kind=real_wp), parameter :: C3 = 86400. ! conversion, seconds in one day
+      real(kind=real_wp) :: RHOW ! density of the water                                    [kg/m3]
+      real(kind=real_wp) :: HCAPAC ! Heat capacity of water                                [J/m3/oC]
+      real(kind=real_wp) :: FWIND ! wind factor in heat exchange
+      real(kind=real_wp) :: TREQ ! equilibrium temperature increse due to solar radiation     [oC]
+      real(kind=real_wp) :: RTRAD ! rate of temperature increase due to solar radiation      [oC/d]
 
-        REAL(kind = real_wp), PARAMETER :: P1 = 0.00158       ! coefficient in heat exchange
-        REAL(kind = real_wp), PARAMETER :: P2 = 0.018         ! coefficient in heat exchange
-        REAL(kind = real_wp), PARAMETER :: P3 = 1.12          ! coefficient in heat exchange
-        REAL(kind = real_wp), PARAMETER :: P4 = 0.049         ! coefficient in heat exchange
-        REAL(kind = real_wp), PARAMETER :: P5 = 4.48          ! coefficient in heat exchange
-        REAL(kind = real_wp), PARAMETER :: P6 = 2.05          ! coefficient in heat exchange
-        REAL(kind = real_wp), PARAMETER :: P7 = 3.5           ! coefficient in heat exchange
-        REAL(kind = real_wp), PARAMETER :: C1 = 1000.0        ! coefficient in density of water
-        REAL(kind = real_wp), PARAMETER :: C2 = 0.088         ! coefficient in density of water
-        REAL(kind = real_wp), PARAMETER :: C3 = 86400.        ! conversion, seconds in one day
-        REAL(kind = real_wp) :: RHOW               ! density of the water                                    [kg/m3]
-        REAL(kind = real_wp) :: HCAPAC             ! Heat capacity of water                                [J/m3/oC]
-        REAL(kind = real_wp) :: FWIND              ! wind factor in heat exchange
-        REAL(kind = real_wp) :: TREQ               ! equilibrium temperature increse due to solar radiation     [oC]
-        REAL(kind = real_wp) :: RTRAD              ! rate of temperature increase due to solar radiation      [oC/d]
+      integer(kind=int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
+                              IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, IP19, IP20, &
+                              IP21, IP22, IP23
+      integer(kind=int_wp) :: IFLUX, ISEG, IKMRK2
 
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
-                IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, IP19, IP20, &
-                IP21, IP22, IP23
-        INTEGER(kind = int_wp) :: IFLUX, ISEG, IKMRK2
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
+      IP6 = IPOINT(6)
+      IP7 = IPOINT(7)
+      IP8 = IPOINT(8)
+      IP9 = IPOINT(9)
+      IP10 = IPOINT(10)
+      IP11 = IPOINT(11)
+      IP12 = IPOINT(12)
+      IP13 = IPOINT(13)
+      IP14 = IPOINT(14)
+      IP15 = IPOINT(15)
+      IP16 = IPOINT(16)
+      IP17 = IPOINT(17)
+      IP18 = IPOINT(18)
+      IP19 = IPOINT(19)
+      IP20 = IPOINT(20)
+      IP21 = IPOINT(21)
+      IP22 = IPOINT(22)
+      IP23 = IPOINT(23)
+      !
+      IFLUX = 0
+      do ISEG = 1, num_cells
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        IP10 = IPOINT(10)
-        IP11 = IPOINT(11)
-        IP12 = IPOINT(12)
-        IP13 = IPOINT(13)
-        IP14 = IPOINT(14)
-        IP15 = IPOINT(15)
-        IP16 = IPOINT(16)
-        IP17 = IPOINT(17)
-        IP18 = IPOINT(18)
-        IP19 = IPOINT(19)
-        IP20 = IPOINT(20)
-        IP21 = IPOINT(21)
-        IP22 = IPOINT(22)
-        IP23 = IPOINT(23)
-        !
-        IFLUX = 0
-        DO ISEG = 1, num_cells
+         MTEMP = process_space_real(IP1)
+         TMPNAT = process_space_real(IP2)
+         ISWTMP = nint(process_space_real(IP7))
 
-            MTEMP = process_space_real(IP1)
-            TMPNAT = process_space_real(IP2)
-            ISWTMP = NINT(process_space_real(IP7))
+         !        What is the modelled temperature
 
-            !        What is the modelled temperature
+         if (ISWTMP == 0) then
+            TTEMP = MTEMP
+            ETEMP = TTEMP - TMPNAT
+         else
+            ETEMP = MTEMP
+            TTEMP = ETEMP + TMPNAT
+         end if
+         WEXCH = 0.0
+         WFLUX = 0.0
+         DELTRAD = 0.0
 
-            IF (ISWTMP == 0) THEN
-                TTEMP = MTEMP
-                ETEMP = TTEMP - TMPNAT
-            ELSE
-                ETEMP = MTEMP
-                TTEMP = ETEMP + TMPNAT
-            ENDIF
-            WEXCH = 0.0
-            WFLUX = 0.0
-            DELTRAD = 0.0
-
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                !
-                !           Heat exchange only for top layer segments
-                !
-                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
-                IF (IKMRK2==0 .OR. IKMRK2==1) THEN
-                    !
-                    DEPTH = process_space_real(IP3)
-                    VWIND = process_space_real(IP4)
-                    CP = process_space_real(IP5)
-                    DELT = process_space_real(IP6)
-                    FACTRC = process_space_real(IP8)
-                    ZEROFL = process_space_real(IP9)
-
-                    RHOW = C1 - C2 * TTEMP
-                    HCAPAC = CP * RHOW
-                    !
-                    !                   wind function source E&Z deviates from Sweers
-                    !
-                    FWIND = 0.75 * (P7 + P6 * VWIND)
-                    !
-                    !                   heat exchange coefficient (W/m^2/C) = J/m^2/C/s
-                    !
-                    WEXCH = P5 + P4 * TTEMP + FWIND * &
-                            (P3 + P2 * TTEMP + P1 * TTEMP * TTEMP)
-                    !
-                    !              heat exchange coefficient = 1/d
-                    !
-                    WEXCH = WEXCH / DEPTH / HCAPAC * C3 * FACTRC
-                    !
-                    WFLUX = - WEXCH * ETEMP + ZEROFL
-                    !
-                    IF (ETEMP > 0.0) THEN
-                        !
-                        !                 Limitation of FL(1) to amount of excess temperature present
-                        !
-                        WFLUX = MAX (- ETEMP / DELT, WFLUX)
-                    ENDIF
-                ENDIF
-            ENDIF
-
-            !        Temperature increase due to emersion
-
-            SWTEMPDF = NINT(process_space_real(IP10))
-
-            IF (SWTEMPDF == 1) THEN
-
-                SWEMERSION = NINT(process_space_real(IP11))
-
-                IF (SWEMERSION == 1) THEN
-
-                    LOCSEDDEPT = process_space_real(IP12)
-                    THSEDDT = process_space_real(IP13)
-
-                    IF (LOCSEDDEPT <= THSEDDT) THEN
-
-                        DELT = process_space_real(IP6)
-                        RAD = process_space_real(IP14)
-                        RADMAX = process_space_real(IP15)
-                        RTRADMAX = process_space_real(IP16)
-                        DELTRADMAX = process_space_real(IP17)
-                        DELTEV = process_space_real(IP18)
-                        DELTRAD = process_space_real(IP19)
-
-                        TREQ = DELTRADMAX * RAD / RADMAX
-                        RTRAD = RTRADMAX * RAD / RADMAX
-                        DELTRAD = MIN(DELT * RTRAD + DELTRAD, TREQ)
-
-                        TTEMP = TMPNAT + DELTRAD - DELTEV
-
-                    ENDIF
-
-                ENDIF
-
-            ENDIF
+         if (btest(IKNMRK(ISEG), 0)) then
             !
-            !        Output flux, temp, surtemp, heat exchage and temperature increase due to radiation
+            !           Heat exchange only for top layer segments
             !
-            FL(1 + IFLUX) = WFLUX
-            process_space_real (IP20) = WEXCH
-            process_space_real (IP21) = TTEMP
-            process_space_real (IP22) = ETEMP
-            process_space_real (IP23) = DELTRAD
-            !
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + INCREM (1)
-            IP2 = IP2 + INCREM (2)
-            IP3 = IP3 + INCREM (3)
-            IP4 = IP4 + INCREM (4)
-            IP5 = IP5 + INCREM (5)
-            IP6 = IP6 + INCREM (6)
-            IP7 = IP7 + INCREM (7)
-            IP8 = IP8 + INCREM (8)
-            IP9 = IP9 + INCREM (9)
-            IP10 = IP10 + INCREM (10)
-            IP11 = IP11 + INCREM (11)
-            IP12 = IP12 + INCREM (12)
-            IP13 = IP13 + INCREM (13)
-            IP14 = IP14 + INCREM (14)
-            IP15 = IP15 + INCREM (15)
-            IP16 = IP16 + INCREM (16)
-            IP17 = IP17 + INCREM (17)
-            IP18 = IP18 + INCREM (18)
-            IP19 = IP19 + INCREM (19)
-            IP20 = IP20 + INCREM (20)
-            IP21 = IP21 + INCREM (21)
-            IP22 = IP22 + INCREM (22)
-            IP23 = IP23 + INCREM (23)
-            !
-        end do
-        !
-        RETURN
-        !
-    END
+            call extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+            if (IKMRK2 == 0 .or. IKMRK2 == 1) then
+               !
+               DEPTH = process_space_real(IP3)
+               VWIND = process_space_real(IP4)
+               CP = process_space_real(IP5)
+               DELT = process_space_real(IP6)
+               FACTRC = process_space_real(IP8)
+               ZEROFL = process_space_real(IP9)
+
+               RHOW = C1 - C2 * TTEMP
+               HCAPAC = CP * RHOW
+               !
+               !                   wind function source E&Z deviates from Sweers
+               !
+               FWIND = 0.75 * (P7 + P6 * VWIND)
+               !
+               !                   heat exchange coefficient (W/m^2/C) = J/m^2/C/s
+               !
+               WEXCH = P5 + P4 * TTEMP + FWIND * &
+                       (P3 + P2 * TTEMP + P1 * TTEMP * TTEMP)
+               !
+               !              heat exchange coefficient = 1/d
+               !
+               WEXCH = WEXCH / DEPTH / HCAPAC * C3 * FACTRC
+               !
+               WFLUX = -WEXCH * ETEMP + ZEROFL
+               !
+               if (ETEMP > 0.0) then
+                  !
+                  !                 Limitation of FL(1) to amount of excess temperature present
+                  !
+                  WFLUX = max(-ETEMP / DELT, WFLUX)
+               end if
+            end if
+         end if
+
+         !        Temperature increase due to emersion
+
+         SWTEMPDF = nint(process_space_real(IP10))
+
+         if (SWTEMPDF == 1) then
+
+            SWEMERSION = nint(process_space_real(IP11))
+
+            if (SWEMERSION == 1) then
+
+               LOCSEDDEPT = process_space_real(IP12)
+               THSEDDT = process_space_real(IP13)
+
+               if (LOCSEDDEPT <= THSEDDT) then
+
+                  DELT = process_space_real(IP6)
+                  RAD = process_space_real(IP14)
+                  RADMAX = process_space_real(IP15)
+                  RTRADMAX = process_space_real(IP16)
+                  DELTRADMAX = process_space_real(IP17)
+                  DELTEV = process_space_real(IP18)
+                  DELTRAD = process_space_real(IP19)
+
+                  TREQ = DELTRADMAX * RAD / RADMAX
+                  RTRAD = RTRADMAX * RAD / RADMAX
+                  DELTRAD = min(DELT * RTRAD + DELTRAD, TREQ)
+
+                  TTEMP = TMPNAT + DELTRAD - DELTEV
+
+               end if
+
+            end if
+
+         end if
+         !
+         !        Output flux, temp, surtemp, heat exchage and temperature increase due to radiation
+         !
+         FL(1 + IFLUX) = WFLUX
+         process_space_real(IP20) = WEXCH
+         process_space_real(IP21) = TTEMP
+         process_space_real(IP22) = ETEMP
+         process_space_real(IP23) = DELTRAD
+         !
+         IFLUX = IFLUX + NOFLUX
+         IP1 = IP1 + INCREM(1)
+         IP2 = IP2 + INCREM(2)
+         IP3 = IP3 + INCREM(3)
+         IP4 = IP4 + INCREM(4)
+         IP5 = IP5 + INCREM(5)
+         IP6 = IP6 + INCREM(6)
+         IP7 = IP7 + INCREM(7)
+         IP8 = IP8 + INCREM(8)
+         IP9 = IP9 + INCREM(9)
+         IP10 = IP10 + INCREM(10)
+         IP11 = IP11 + INCREM(11)
+         IP12 = IP12 + INCREM(12)
+         IP13 = IP13 + INCREM(13)
+         IP14 = IP14 + INCREM(14)
+         IP15 = IP15 + INCREM(15)
+         IP16 = IP16 + INCREM(16)
+         IP17 = IP17 + INCREM(17)
+         IP18 = IP18 + INCREM(18)
+         IP19 = IP19 + INCREM(19)
+         IP20 = IP20 + INCREM(20)
+         IP21 = IP21 + INCREM(21)
+         IP22 = IP22 + INCREM(22)
+         IP23 = IP23 + INCREM(23)
+         !
+      end do
+      !
+      return
+      !
+   end
 
 end module m_temper

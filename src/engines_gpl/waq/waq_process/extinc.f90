@@ -21,235 +21,234 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_extinc
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine extinc(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !>\file
+      !>       Calculation total and partial extinction coefficients
 
-    subroutine extinc (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        !>\file
-        !>       Calculation total and partial extinction coefficients
+      !
+      !     This module calculates the total and partial extinction coeffcients,
+      !     optionally with additional module UITZICHT
+      !     In input DOC has replaced DisHum for UITZICHT
+      !
+      !     Logical Units : -
 
-        !
-        !     This module calculates the total and partial extinction coeffcients,
-        !     optionally with additional module UITZICHT
-        !     In input DOC has replaced DisHum for UITZICHT
-        !
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
+      !     ------   -----  ------------
+      !
+      implicit none
+      !
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(41), INCREM(41), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      !
+      !     Local declaration
+      !
+      real(kind=dp) :: A1 ! R*8 1 I specific ext. inorganic suspended matter 1  [m2/gDM]
+      real(kind=dp) :: A2 ! R*8 1 I specific ext. inorganic suspended matter 2  [m2/gDM]
+      real(kind=dp) :: A3 ! R*8 1 I specific ext. inorganic suspended matter 3  [m2/gDM]
+      real(kind=dp) :: EXT ! R*8 1 O total extinction                               [1/m]
+      real(kind=dp) :: EXTIM ! R*8 1 O calculated extinction IM                       [1/m]
+      real(kind=dp) :: EXTPOC ! R*8 1 O extinction POC                                 [1/m]
+      real(kind=dp) :: EXTDOC ! R*8 1 O extinction DOC                                 [1/m]
+      real(kind=dp) :: EXT0 ! R*8 1 I background extinction                          [1/m]
+      real(kind=dp) :: EXTBL ! R*8 1 I extinction algae (Bloom)                       [1/m]
+      real(kind=dp) :: EXTDYN ! R*8 1 I extinction algae (Dynamo)                      [1/m]
+      real(kind=dp) :: EXTPRO ! R*8 1 I extinction algae (Protist)                     [1/m]
+      real(kind=dp) :: EXTALG ! R*8 1 I extinction algae                                [1/m]
+      real(kind=dp) :: EXTMAC ! R*8 1 I extinction macrophytes                         [1/m]
+      real(kind=dp) :: EXTSAL ! R*8 1 O extinction DOC for fresh water fraction        [1/m]
+      real(kind=dp) :: AIM1 ! R*8 1 I suspended solids  fraction 1                [gDM/m3]
+      real(kind=dp) :: AIM2 ! R*8 1 I suspended solids  fraction 2                [gDM/m3]
+      real(kind=dp) :: AIM3 ! R*8 1 I suspended solids  fraction 3                [gDM/m3]
+      real(kind=dp) :: POC1 ! R*8 1 I fast decomposing detritus                    [gC/m3]
+      real(kind=dp) :: POC2 ! R*8 1 I medium decomposing detritus                  [gC/m3]
+      real(kind=dp) :: POC3 ! R*8 1 I slow decomposing detritus                    [gC/m3]
+      real(kind=dp) :: POC4 ! R*8 1 I refractory detritus                          [gC/m3]
+      integer(kind=int_wp) :: SW_UIT ! Extinction by UITZICHT on (1) or Off (0)              [-]
+      real(kind=dp) :: DOC ! R*8 1 I dissolved organic carbon                     [gC/m3]
+      real(kind=dp) :: ADOC ! R*8 1 I Specific extinction of DOC                   [m2/gC]
+      real(kind=dp) :: DIEP1 ! R*8 1 I argument UITZICHT
+      real(kind=dp) :: DIEP2 ! R*8 1 I argument UITZICHT
+      real(kind=dp) :: CORCHL ! R*8 1 I argument UITZICHT
+      real(kind=dp) :: C_DET ! R*8 1 I argument UITZICHT
+      real(kind=dp) :: C_GL1 ! R*8 1 I argument UITZICHT
+      real(kind=dp) :: C_GL2 ! R*8 1 I argument UITZICHT
+      real(kind=dp) :: HELHUM ! R*8 1 I argument UITZICHT
+      real(kind=dp) :: TAU ! R*8 1 I argument UITZICHT
+      real(kind=dp) :: ANGLE ! R*8 1 I argument UITZICHT
+      real(kind=dp) :: DETCDM ! R*8 1 I dry matter carbon ratio detritus              [g/g]
+      real(kind=dp) :: XTSAL0 ! R*8 1 I extra VL extinction at Salinity = 0           [1/m]
+      real(kind=dp) :: SALMAX ! R*8 1 I salinity value for extra extinction = 0      [g/kg]
+      real(kind=dp) :: SALIN ! R*8 1 I actual salinity                              [g/kg]
+      real(kind=dp) :: APOC1 ! R*8 1 I specific extintion POC1                [1/m/(G/M3)]
+      real(kind=dp) :: APOC2 ! R*8 1 I specific extintion POC2                [1/m/(G/M3)]
+      real(kind=dp) :: APOC3 ! R*8 1 I specific extintion POC3                [1/m/(G/M3)]
+      real(kind=dp) :: APOC4 ! R*8 1 I specific extintion POC4                [1/m/(G/M3)]
+      !
+      real(kind=dp) :: CHLORP, DETRIC, GLOEIR, AH_380
+      real(kind=dp) :: SECCHI, D_1, EXTP_D, EXTDET, EXTGL, EXTHUM
+      integer(kind=int_wp) :: IFLUX, ISEG
+      !
+      integer(kind=int_wp) :: IPNT(41)
+      integer(kind=int_wp) :: NR_MES
+      save NR_MES
+      data NR_MES/0/
+      !
+      IPNT = IPOINT
+      IFLUX = 0
+      !
+      do ISEG = 1, num_cells
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
-        !
-        IMPLICIT NONE
-        !
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(41), INCREM(41), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-        !
-        !     Local declaration
-        !
-        REAL(kind = dp) :: A1      ! R*8 1 I specific ext. inorganic suspended matter 1  [m2/gDM]
-        REAL(kind = dp) :: A2      ! R*8 1 I specific ext. inorganic suspended matter 2  [m2/gDM]
-        REAL(kind = dp) :: A3      ! R*8 1 I specific ext. inorganic suspended matter 3  [m2/gDM]
-        REAL(kind = dp) :: EXT     ! R*8 1 O total extinction                               [1/m]
-        REAL(kind = dp) :: EXTIM   ! R*8 1 O calculated extinction IM                       [1/m]
-        REAL(kind = dp) :: EXTPOC  ! R*8 1 O extinction POC                                 [1/m]
-        REAL(kind = dp) :: EXTDOC  ! R*8 1 O extinction DOC                                 [1/m]
-        REAL(kind = dp) :: EXT0    ! R*8 1 I background extinction                          [1/m]
-        REAL(kind = dp) :: EXTBL   ! R*8 1 I extinction algae (Bloom)                       [1/m]
-        REAL(kind = dp) :: EXTDYN  ! R*8 1 I extinction algae (Dynamo)                      [1/m]
-        REAL(kind = dp) :: EXTPRO  ! R*8 1 I extinction algae (Protist)                     [1/m]
-        REAL(kind = dp) :: EXTALG  ! R*8 1 I extinction algae                                [1/m]
-        REAL(kind = dp) :: EXTMAC  ! R*8 1 I extinction macrophytes                         [1/m]
-        REAL(kind = dp) :: EXTSAL  ! R*8 1 O extinction DOC for fresh water fraction        [1/m]
-        REAL(kind = dp) :: AIM1    ! R*8 1 I suspended solids  fraction 1                [gDM/m3]
-        REAL(kind = dp) :: AIM2    ! R*8 1 I suspended solids  fraction 2                [gDM/m3]
-        REAL(kind = dp) :: AIM3    ! R*8 1 I suspended solids  fraction 3                [gDM/m3]
-        REAL(kind = dp) :: POC1    ! R*8 1 I fast decomposing detritus                    [gC/m3]
-        REAL(kind = dp) :: POC2    ! R*8 1 I medium decomposing detritus                  [gC/m3]
-        REAL(kind = dp) :: POC3    ! R*8 1 I slow decomposing detritus                    [gC/m3]
-        REAL(kind = dp) :: POC4    ! R*8 1 I refractory detritus                          [gC/m3]
-        INTEGER(kind = int_wp) :: SW_UIT  ! Extinction by UITZICHT on (1) or Off (0)              [-]
-        REAL(kind = dp) :: DOC     ! R*8 1 I dissolved organic carbon                     [gC/m3]
-        REAL(kind = dp) :: ADOC    ! R*8 1 I Specific extinction of DOC                   [m2/gC]
-        REAL(kind = dp) :: DIEP1   ! R*8 1 I argument UITZICHT
-        REAL(kind = dp) :: DIEP2   ! R*8 1 I argument UITZICHT
-        REAL(kind = dp) :: CORCHL  ! R*8 1 I argument UITZICHT
-        REAL(kind = dp) :: C_DET   ! R*8 1 I argument UITZICHT
-        REAL(kind = dp) :: C_GL1   ! R*8 1 I argument UITZICHT
-        REAL(kind = dp) :: C_GL2   ! R*8 1 I argument UITZICHT
-        REAL(kind = dp) :: HELHUM  ! R*8 1 I argument UITZICHT
-        REAL(kind = dp) :: TAU     ! R*8 1 I argument UITZICHT
-        REAL(kind = dp) :: ANGLE   ! R*8 1 I argument UITZICHT
-        REAL(kind = dp) :: DETCDM  ! R*8 1 I dry matter carbon ratio detritus              [g/g]
-        REAL(kind = dp) :: XTSAL0  ! R*8 1 I extra VL extinction at Salinity = 0           [1/m]
-        REAL(kind = dp) :: SALMAX  ! R*8 1 I salinity value for extra extinction = 0      [g/kg]
-        REAL(kind = dp) :: SALIN   ! R*8 1 I actual salinity                              [g/kg]
-        REAL(kind = dp) :: APOC1   ! R*8 1 I specific extintion POC1                [1/m/(G/M3)]
-        REAL(kind = dp) :: APOC2   ! R*8 1 I specific extintion POC2                [1/m/(G/M3)]
-        REAL(kind = dp) :: APOC3   ! R*8 1 I specific extintion POC3                [1/m/(G/M3)]
-        REAL(kind = dp) :: APOC4   ! R*8 1 I specific extintion POC4                [1/m/(G/M3)]
-        !
-        REAL(kind = dp) :: CHLORP, DETRIC, GLOEIR, AH_380
-        REAL(kind = dp) :: SECCHI, D_1, EXTP_D, EXTDET, EXTGL, EXTHUM
-        INTEGER(kind = int_wp) :: IFLUX, ISEG
-        !
-        INTEGER(kind = int_wp) :: IPNT(41)
-        INTEGER(kind = int_wp) :: NR_MES
-        SAVE     NR_MES
-        DATA     NR_MES / 0 /
-        !
-        IPNT = IPOINT
-        IFLUX = 0
-        !
-        DO ISEG = 1, num_cells
-
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                !
-                A1 = process_space_real(IPNT(1))
-                A2 = process_space_real(IPNT(2))
-                A3 = process_space_real(IPNT(3))
-                APOC1 = process_space_real(IPNT(4))
-                EXT0 = process_space_real(IPNT(5))
-                EXTBL = process_space_real(IPNT(6))
-                EXTDYN = process_space_real(IPNT(7))
-                EXTPRO = process_space_real(IPNT(8))
-                EXTMAC = process_space_real(IPNT(9))
-                AIM1 = process_space_real(IPNT(10))
-                AIM2 = process_space_real(IPNT(11))
-                AIM3 = process_space_real(IPNT(12))
-                POC1 = process_space_real(IPNT(13))
-                POC2 = process_space_real(IPNT(14))
-                SW_UIT = NINT(process_space_real(IPNT(15)))
-                DOC = process_space_real(IPNT(16))
-                ADOC = process_space_real(IPNT(17))
-                DIEP1 = process_space_real(IPNT(18))
-                DIEP2 = process_space_real(IPNT(19))
-                CORCHL = process_space_real(IPNT(20))
-                C_DET = process_space_real(IPNT(21))
-                C_GL1 = process_space_real(IPNT(22))
-                C_GL2 = process_space_real(IPNT(23))
-                HELHUM = process_space_real(IPNT(24))
-                TAU = process_space_real(IPNT(25))
-                ANGLE = process_space_real(IPNT(26))
-                DETCDM = process_space_real(IPNT(27))
-                XTSAL0 = process_space_real(IPNT(28))
-                SALIN = process_space_real(IPNT(29))
-                SALMAX = process_space_real(IPNT(30))
-                APOC2 = process_space_real(IPNT(31))
-                APOC3 = process_space_real(IPNT(32))
-                APOC4 = process_space_real(IPNT(33))
-                POC3 = process_space_real(IPNT(34))
-                POC4 = process_space_real(IPNT(35))
-                !
-                IF (SW_UIT==0) THEN
-                    !
-                    !  calculate extinction coefficients - no UITZICHT
-                    !
-                    EXTIM = A1 * AIM1 + A2 * AIM2 + A3 * AIM3
-                    EXTPOC = APOC1 * POC1 + APOC2 * POC2 + APOC3 * POC3 + APOC4 * POC4
-                    EXTDOC = ADOC * DOC
-                    EXTALG = EXTBL + EXTDYN + EXTPRO
-                    SALIN = MIN(SALIN, SALMAX)
-                    SALIN = MAX(SALIN, 0.0_dp)
-                    EXTSAL = XTSAL0 * (1.0 - SALIN / SALMAX)
-                    EXT = EXT0 + EXTIM + EXTPOC + EXTDOC + EXTALG + EXTMAC &
-                            + EXTSAL
-                    !
-                    IF (EXT < 1.0E-20) THEN
-                        IF (NR_MES < 25) THEN
-                            NR_MES = NR_MES + 1
-                            WRITE(*, *) ' WARNING : zero or negative extinction'
-                            WRITE(*, *) ' Extinction due to inorganic matter:', EXTIM
-                            WRITE(*, *) ' Extinction due to organic matter  :', EXTPOC
-                            WRITE(*, *) ' Extinction due to algae           :', EXTALG
-                            WRITE(*, *) ' Background extinction             :', EXT0
-                            WRITE(*, *) ' Extinction by macrophytes         :', EXTMAC
-                            WRITE(*, *) ' In segment number                 :', ISEG
-                            WRITE(*, *) ' Background extinction is assumed.'
-                        ENDIF
-                        IF (NR_MES == 25) THEN
-                            NR_MES = NR_MES + 1
-                            WRITE(*, *) ' 25 WARNINGS on extinction'
-                            WRITE(*, *) ' Further messages on extinction surpressed'
-                        ENDIF
-                        IF (EXT0 < 1.E-20) THEN
-                            EXT = 1.E-15
-                        ELSE
-                            EXT = EXT0
-                        ENDIF
-                    ENDIF
-                    !
-                ELSE
-                    !
-                    !  calculate extinction coefficients - with UITZICHT
-                    !
-                    CHLORP = 0.0
-                    DETRIC = MAX (0.0_dp, DETCDM * (POC1 + POC2 + POC3 + POC4))
-                    AH_380 = DOC * ADOC
-                    GLOEIR = AIM1 + AIM2 + AIM3
-                    !
-                    !  total extinction coefficient exclusive of algae, macrophytes and background
-                    !
-                    CALL UIT_ZI(DIEP1, DIEP2, ANGLE, C_GL1, C_GL2, &
-                            C_DET, HELHUM, TAU, CORCHL, CHLORP, &
-                            DETRIC, GLOEIR, AH_380, SECCHI, D_1, &
-                            EXT, EXTP_D, .FALSE.)
-                    !
-                    !  total extinction coefficient of detritus
-                    !
-                    CALL UIT_ZI(DIEP1, DIEP2, ANGLE, C_GL1, C_GL2, &
-                            C_DET, HELHUM, TAU, CORCHL, CHLORP, &
-                            0.0, GLOEIR, AH_380, SECCHI, D_1, &
-                            EXTDET, EXTP_D, .FALSE.)
-                    EXTDET = EXT - EXTDET
-                    !
-                    !  total extinction coefficient of inorganic sediment
-                    !
-                    CALL UIT_ZI(DIEP1, DIEP2, ANGLE, C_GL1, C_GL2, &
-                            C_DET, HELHUM, TAU, CORCHL, CHLORP, &
-                            DETRIC, 0.0, AH_380, SECCHI, D_1, &
-                            EXTGL, EXTP_D, .FALSE.)
-                    EXTGL = EXT - EXTGL
-                    !
-                    !  total extinction coefficient of DOC (humic acids)
-                    !
-                    CALL UIT_ZI(DIEP1, DIEP2, ANGLE, C_GL1, C_GL2, &
-                            C_DET, HELHUM, TAU, CORCHL, CHLORP, &
-                            DETRIC, GLOEIR, 0.0, SECCHI, D_1, &
-                            EXTHUM, EXTP_D, .FALSE.)
-                    EXTHUM = EXT - EXTHUM
-                    !
-                    EXTIM = EXTGL
-                    EXTPOC = EXTDET
-                    EXTDOC = EXTHUM
-                    EXTSAL = 0.0
-                    EXT = EXT0 + EXT + EXTALG + EXTMAC
-                    !
-                ENDIF
-                !
-                process_space_real(IPNT(36)) = EXT
-                process_space_real(IPNT(37)) = EXTIM
-                process_space_real(IPNT(38)) = EXTPOC
-                process_space_real(IPNT(39)) = EXTDOC
-                process_space_real(IPNT(40)) = EXTALG
-                process_space_real(IPNT(41)) = EXTSAL
-                !
-            ENDIF
+         if (btest(IKNMRK(ISEG), 0)) then
             !
-            IFLUX = IFLUX + NOFLUX
-            IPNT = IPNT + INCREM
+            A1 = process_space_real(IPNT(1))
+            A2 = process_space_real(IPNT(2))
+            A3 = process_space_real(IPNT(3))
+            APOC1 = process_space_real(IPNT(4))
+            EXT0 = process_space_real(IPNT(5))
+            EXTBL = process_space_real(IPNT(6))
+            EXTDYN = process_space_real(IPNT(7))
+            EXTPRO = process_space_real(IPNT(8))
+            EXTMAC = process_space_real(IPNT(9))
+            AIM1 = process_space_real(IPNT(10))
+            AIM2 = process_space_real(IPNT(11))
+            AIM3 = process_space_real(IPNT(12))
+            POC1 = process_space_real(IPNT(13))
+            POC2 = process_space_real(IPNT(14))
+            SW_UIT = nint(process_space_real(IPNT(15)))
+            DOC = process_space_real(IPNT(16))
+            ADOC = process_space_real(IPNT(17))
+            DIEP1 = process_space_real(IPNT(18))
+            DIEP2 = process_space_real(IPNT(19))
+            CORCHL = process_space_real(IPNT(20))
+            C_DET = process_space_real(IPNT(21))
+            C_GL1 = process_space_real(IPNT(22))
+            C_GL2 = process_space_real(IPNT(23))
+            HELHUM = process_space_real(IPNT(24))
+            TAU = process_space_real(IPNT(25))
+            ANGLE = process_space_real(IPNT(26))
+            DETCDM = process_space_real(IPNT(27))
+            XTSAL0 = process_space_real(IPNT(28))
+            SALIN = process_space_real(IPNT(29))
+            SALMAX = process_space_real(IPNT(30))
+            APOC2 = process_space_real(IPNT(31))
+            APOC3 = process_space_real(IPNT(32))
+            APOC4 = process_space_real(IPNT(33))
+            POC3 = process_space_real(IPNT(34))
+            POC4 = process_space_real(IPNT(35))
             !
-        end do
-        !
-        RETURN
-        !
-    END
+            if (SW_UIT == 0) then
+               !
+               !  calculate extinction coefficients - no UITZICHT
+               !
+               EXTIM = A1 * AIM1 + A2 * AIM2 + A3 * AIM3
+               EXTPOC = APOC1 * POC1 + APOC2 * POC2 + APOC3 * POC3 + APOC4 * POC4
+               EXTDOC = ADOC * DOC
+               EXTALG = EXTBL + EXTDYN + EXTPRO
+               SALIN = min(SALIN, SALMAX)
+               SALIN = max(SALIN, 0.0_dp)
+               EXTSAL = XTSAL0 * (1.0 - SALIN / SALMAX)
+               EXT = EXT0 + EXTIM + EXTPOC + EXTDOC + EXTALG + EXTMAC &
+                     + EXTSAL
+               !
+               if (EXT < 1.0e-20) then
+                  if (NR_MES < 25) then
+                     NR_MES = NR_MES + 1
+                     write (*, *) ' WARNING : zero or negative extinction'
+                     write (*, *) ' Extinction due to inorganic matter:', EXTIM
+                     write (*, *) ' Extinction due to organic matter  :', EXTPOC
+                     write (*, *) ' Extinction due to algae           :', EXTALG
+                     write (*, *) ' Background extinction             :', EXT0
+                     write (*, *) ' Extinction by macrophytes         :', EXTMAC
+                     write (*, *) ' In segment number                 :', ISEG
+                     write (*, *) ' Background extinction is assumed.'
+                  end if
+                  if (NR_MES == 25) then
+                     NR_MES = NR_MES + 1
+                     write (*, *) ' 25 WARNINGS on extinction'
+                     write (*, *) ' Further messages on extinction surpressed'
+                  end if
+                  if (EXT0 < 1.e-20) then
+                     EXT = 1.e-15
+                  else
+                     EXT = EXT0
+                  end if
+               end if
+               !
+            else
+               !
+               !  calculate extinction coefficients - with UITZICHT
+               !
+               CHLORP = 0.0
+               DETRIC = max(0.0_dp, DETCDM * (POC1 + POC2 + POC3 + POC4))
+               AH_380 = DOC * ADOC
+               GLOEIR = AIM1 + AIM2 + AIM3
+               !
+               !  total extinction coefficient exclusive of algae, macrophytes and background
+               !
+               call UIT_ZI(DIEP1, DIEP2, ANGLE, C_GL1, C_GL2, &
+                           C_DET, HELHUM, TAU, CORCHL, CHLORP, &
+                           DETRIC, GLOEIR, AH_380, SECCHI, D_1, &
+                           EXT, EXTP_D, .false.)
+               !
+               !  total extinction coefficient of detritus
+               !
+               call UIT_ZI(DIEP1, DIEP2, ANGLE, C_GL1, C_GL2, &
+                           C_DET, HELHUM, TAU, CORCHL, CHLORP, &
+                           0.0, GLOEIR, AH_380, SECCHI, D_1, &
+                           EXTDET, EXTP_D, .false.)
+               EXTDET = EXT - EXTDET
+               !
+               !  total extinction coefficient of inorganic sediment
+               !
+               call UIT_ZI(DIEP1, DIEP2, ANGLE, C_GL1, C_GL2, &
+                           C_DET, HELHUM, TAU, CORCHL, CHLORP, &
+                           DETRIC, 0.0, AH_380, SECCHI, D_1, &
+                           EXTGL, EXTP_D, .false.)
+               EXTGL = EXT - EXTGL
+               !
+               !  total extinction coefficient of DOC (humic acids)
+               !
+               call UIT_ZI(DIEP1, DIEP2, ANGLE, C_GL1, C_GL2, &
+                           C_DET, HELHUM, TAU, CORCHL, CHLORP, &
+                           DETRIC, GLOEIR, 0.0, SECCHI, D_1, &
+                           EXTHUM, EXTP_D, .false.)
+               EXTHUM = EXT - EXTHUM
+               !
+               EXTIM = EXTGL
+               EXTPOC = EXTDET
+               EXTDOC = EXTHUM
+               EXTSAL = 0.0
+               EXT = EXT0 + EXT + EXTALG + EXTMAC
+               !
+            end if
+            !
+            process_space_real(IPNT(36)) = EXT
+            process_space_real(IPNT(37)) = EXTIM
+            process_space_real(IPNT(38)) = EXTPOC
+            process_space_real(IPNT(39)) = EXTDOC
+            process_space_real(IPNT(40)) = EXTALG
+            process_space_real(IPNT(41)) = EXTSAL
+            !
+         end if
+         !
+         IFLUX = IFLUX + NOFLUX
+         IPNT = IPNT + INCREM
+         !
+      end do
+      !
+      return
+      !
+   end
 
 end module m_extinc

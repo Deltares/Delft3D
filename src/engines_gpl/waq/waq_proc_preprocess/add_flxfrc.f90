@@ -21,366 +21,365 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_add_flxfrc
-    use m_waq_precision
-    use m_string_utils
+   use m_waq_precision
+   use m_string_utils
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine add_flxfrc(lunrep, procesdef, allitems, sfracs, no_act, &
+                         actlst, nbpr)
+
+      ! add the fluxes to the fractions by adding a distribution process
 
-    subroutine add_flxfrc(lunrep, procesdef, allitems, sfracs, no_act, &
-            actlst, nbpr)
+      use m_logger_helper, only: stop_with_error
+      use ProcesSet
+      use timers !   performance timers
 
-        ! add the fluxes to the fractions by adding a distribution process
+      implicit none
 
-        use m_logger_helper, only : stop_with_error
-        use ProcesSet
-        use timers       !   performance timers
+      ! decalaration of arguments
 
-        implicit none
+      integer(kind=int_wp) :: lunrep ! report file
+      type(procespropcoll) :: procesdef ! the process definition
+      type(itempropcoll) :: allitems ! all items of the proces system
+      type(sfracsprop) :: sfracs ! substance fraction properties
+      integer(kind=int_wp) :: no_act ! number of active processes
+      character(len=*) :: actlst(*) ! active processes names
+      integer(kind=int_wp) :: nbpr ! number of processes
 
-        ! decalaration of arguments
+      ! local declaration
 
-        integer(kind = int_wp) :: lunrep          ! report file
-        type(procespropcoll) :: procesdef       ! the process definition
-        type(itempropcoll) :: allitems        ! all items of the proces system
-        type(sfracsprop) :: sfracs          ! substance fraction properties
-        integer(kind = int_wp) :: no_act          ! number of active processes
-        character(len = *) :: actlst(*)       ! active processes names
-        integer(kind = int_wp) :: nbpr            ! number of processes
+      type(procesprop), pointer :: proc ! single process
+      type(procesprop) :: procn ! process to be added
+      type(itemprop) :: item ! one item
+      integer(kind=int_wp) :: num_processes_activated ! number of processes
+      integer(kind=int_wp) :: iproc ! loop counter processes
+      integer(kind=int_wp) :: iproc_new ! index inserted process
+      integer(kind=int_wp) :: isfrac ! index substance fractions
+      integer(kind=int_wp) :: isfrac_2 ! index substance fractions
+      integer(kind=int_wp) :: nfrac ! number fractions in substance fraction
+      integer(kind=int_wp) :: nlink ! number of linked substance fractions
+      integer(kind=int_wp) :: ilink ! index of linked substance fractions
+      integer(kind=int_wp) :: linklst(sfracs%nsfrac) ! index linked substance fractions
+      character(len=20) :: basnam ! base name substance fractions
+      integer(kind=int_wp) :: istochi ! index stochi
+      integer(kind=int_wp) :: istochi_2 ! index stochi
+      integer(kind=int_wp) :: isfrac_positive ! fraction to be used if flux is positive
+      integer(kind=int_wp) :: isfrac_negative ! fraction to be used if flux is negative
+      integer(kind=int_wp) :: iret ! index in collection
+      integer(kind=int_wp) :: ifrac ! fraction number
+      character(len=3) :: suffix ! suffix
+      integer(kind=int_wp) :: ierr_alloc ! error indication
+      integer(kind=int_wp) :: ithndl = 0
+      if (timon) call timstrt("add_flxfrc", ithndl)
 
-        ! local declaration
+      ! loop over the processes
 
-        type(procesprop), pointer :: proc            ! single process
-        type(procesprop) :: procn           ! process to be added
-        type(itemprop) :: item            ! one item
-        integer(kind = int_wp) :: num_processes_activated           ! number of processes
-        integer(kind = int_wp) :: iproc           ! loop counter processes
-        integer(kind = int_wp) :: iproc_new       ! index inserted process
-        integer(kind = int_wp) :: isfrac          ! index substance fractions
-        integer(kind = int_wp) :: isfrac_2        ! index substance fractions
-        integer(kind = int_wp) :: nfrac           ! number fractions in substance fraction
-        integer(kind = int_wp) :: nlink           ! number of linked substance fractions
-        integer(kind = int_wp) :: ilink           ! index of linked substance fractions
-        integer(kind = int_wp) :: linklst(sfracs%nsfrac) ! index linked substance fractions
-        character(len = 20) :: basnam          ! base name substance fractions
-        integer(kind = int_wp) :: istochi         ! index stochi
-        integer(kind = int_wp) :: istochi_2       ! index stochi
-        integer(kind = int_wp) :: isfrac_positive ! fraction to be used if flux is positive
-        integer(kind = int_wp) :: isfrac_negative ! fraction to be used if flux is negative
-        integer(kind = int_wp) :: iret            ! index in collection
-        integer(kind = int_wp) :: ifrac           ! fraction number
-        character(len = 3) :: suffix          ! suffix
-        integer(kind = int_wp) :: ierr_alloc      ! error indication
-        integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("add_flxfrc", ithndl)
+      num_processes_activated = procesdef%current_size
+      do iproc = 1, num_processes_activated
+
+         proc => procesdef%procesprops(iproc)
+
+         ! check for fluxes on substances with fractions
+
+         do isfrac = 1, sfracs%nsfrac
+
+            nfrac = sfracs%nfrac(isfrac)
+            basnam = sfracs%name(isfrac)
+            nlink = 0
+            if (sfracs%linked(isfrac) /= 0) then
+               do isfrac_2 = 1, sfracs%nsfrac
+                  if (isfrac_2 /= isfrac) then
+                     if (sfracs%linked(isfrac_2) == sfracs%linked(isfrac)) then
+                        nlink = nlink + 1
+                        linklst(nlink) = isfrac_2
+                     end if
+                  end if
+               end do
+            end if
 
-        ! loop over the processes
+            do istochi = 1, proc%no_fluxstochi
+
+               ! skip dummy rules, factor equal zero
 
-        num_processes_activated = procesdef%current_size
-        do iproc = 1, num_processes_activated
+               if (abs(proc%fluxstochi(istochi)%scale) > 1e-10) then
 
-            proc => procesdef%procesprops(iproc)
-
-            ! check for fluxes on substances with fractions
+                  if (string_equals(basnam(1:10), proc%fluxstochi(istochi)%substance)) then
 
-            do isfrac = 1, sfracs%nsfrac
+                     ! flux found, check if flux has to be split
+
+                     if (procesdef%procesprops(iproc)%sfrac_type == SFRAC_SPLITFLUX) then
+
+                        ! check which fraction is used for the split
+
+                        if (proc%fluxstochi(istochi)%scale > 0.0) then
 
-                nfrac = sfracs%nfrac(isfrac)
-                basnam = sfracs%name(isfrac)
-                nlink = 0
-                if (sfracs%linked(isfrac) /= 0) then
-                    do isfrac_2 = 1, sfracs%nsfrac
-                        if (isfrac_2 /= isfrac) then
-                            if (sfracs%linked(isfrac_2) == sfracs%linked(isfrac)) then
-                                nlink = nlink + 1
-                                linklst(nlink) = isfrac_2
-                            endif
-                        endif
-                    enddo
-                endif
+                           ! for positive flux, check if the fraction is linked with flux with negative stochi on the same flux, best is equal scale, all this is speculation
+
+                           isfrac_negative = isfrac
+                           isfrac_positive = 0
+                           do istochi_2 = 1, proc%no_fluxstochi
+                              if (istochi_2 == istochi) cycle
+                              if (proc%fluxstochi(istochi_2)%ioitem == proc%fluxstochi(istochi)%ioitem) then
+                                 do ilink = 1, nlink
+                                    if (string_equals(sfracs%name(linklst(ilink)) (1:10), proc%fluxstochi(istochi_2)%substance)) then
+                                       if (abs(proc%fluxstochi(istochi_2)%scale + proc%fluxstochi(istochi)%scale) < 1e-20) then
+
+                                          ! same flux same -scale, set fraction and exit link loop
 
-                do istochi = 1, proc%no_fluxstochi
+                                          isfrac_positive = linklst(ilink)
+                                          goto 10
 
-                    ! skip dummy rules, factor equal zero
+                                       elseif (proc%fluxstochi(istochi_2)%scale < -1e-20) then
 
-                    if (abs(proc%fluxstochi(istochi)%scale) > 1e-10) then
+                                          ! same flux other scale set fraction if not already set and keep looking
 
-                        if (string_equals(basnam(1:10), proc%fluxstochi(istochi)%substance)) then
-
-                            ! flux found, check if flux has to be split
-
-                            if (procesdef%procesprops(iproc)%sfrac_type == SFRAC_SPLITFLUX) then
-
-                                ! check which fraction is used for the split
-
-                                if (proc%fluxstochi(istochi)%scale > 0.0) then
-
-                                    ! for positive flux, check if the fraction is linked with flux with negative stochi on the same flux, best is equal scale, all this is speculation
-
-                                    isfrac_negative = isfrac
-                                    isfrac_positive = 0
-                                    do istochi_2 = 1, proc%no_fluxstochi
-                                        if (istochi_2 == istochi) cycle
-                                        if (proc%fluxstochi(istochi_2)%ioitem ==  proc%fluxstochi(istochi)%ioitem) then
-                                            do ilink = 1, nlink
-                                                if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
-                                                    if (abs(proc%fluxstochi(istochi_2)%scale + proc%fluxstochi(istochi)%scale) < 1e-20) then
-
-                                                        ! same flux same -scale, set fraction and exit link loop
-
-                                                        isfrac_positive = linklst(ilink)
-                                                        goto 10
-
-                                                    elseif (proc%fluxstochi(istochi_2)%scale < -1e-20) then
-
-                                                        ! same flux other scale set fraction if not already set and keep looking
-
-                                                        if (isfrac_positive == 0) then
-                                                            isfrac_positive = linklst(ilink)
-                                                        endif
-
-                                                    endif
-                                                endif
-                                            enddo
-                                        endif
-                                    enddo
-                                    10                      continue
-
-                                    ! if not found look for any flux with linked negative stochi
-
-                                    if (isfrac_positive == 0) then
-                                        do istochi_2 = 1, proc%no_fluxstochi
-                                            if (istochi_2 == istochi) cycle
-                                            do ilink = 1, nlink
-                                                if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
-                                                    if (proc%fluxstochi(istochi_2)%scale < -1e-20) then
-
-                                                        isfrac_positive = linklst(ilink)
-                                                        goto 20
-
-                                                    endif
-                                                endif
-                                            enddo
-                                        enddo
-                                        20                         continue
-                                    endif
-
-                                    if (isfrac_positive == 0) then
-                                        isfrac_positive = isfrac
-                                    endif
-
-                                elseif (proc%fluxstochi(istochi)%scale < 0.0) then
-
-                                    ! negative flux, check if the fraction is linked with flux with negative stochi
-
-                                    isfrac_positive = isfrac
-                                    isfrac_negative = 0
-                                    do istochi_2 = 1, proc%no_fluxstochi
-                                        if (istochi_2 == istochi) cycle
-                                        if (proc%fluxstochi(istochi_2)%ioitem ==  proc%fluxstochi(istochi)%ioitem) then
-                                            do ilink = 1, nlink
-                                                if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
-                                                    if (abs(proc%fluxstochi(istochi_2)%scale + proc%fluxstochi(istochi)%scale) < 1e-20) then
-
-                                                        ! same flux same -scale, set fraction and exit link loop
-
-                                                        isfrac_negative = linklst(ilink)
-                                                        goto 30
-
-                                                    elseif (proc%fluxstochi(istochi_2)%scale > 1e-20) then
-
-                                                        ! same flux other scale set fraction if not already set and keep looking
-
-                                                        if (isfrac_negative == 0) then
-                                                            isfrac_negative = linklst(ilink)
-                                                        endif
-
-                                                    endif
-                                                endif
-                                            enddo
-                                        endif
-                                    enddo
-                                    30                      continue
-
-                                    ! if not found look for any flux with linked negative stochi
-
-                                    if (isfrac_negative == 0) then
-                                        do istochi_2 = 1, proc%no_fluxstochi
-                                            if (istochi_2 == istochi) cycle
-                                            do ilink = 1, nlink
-                                                if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
-                                                    if (proc%fluxstochi(istochi_2)%scale > 1e-20) then
-
-                                                        isfrac_negative = linklst(ilink)
-                                                        goto 40
-
-                                                    endif
-                                                endif
-                                            enddo
-                                        enddo
-                                        40                         continue
-                                    endif
-
-                                    if (isfrac_negative == 0) then
-                                        isfrac_negative = isfrac
-                                    endif
-
-                                endif
-
-                                ! construct split process
-
-                                procn%name = 'FRC_' // trim(proc%fluxstochi(istochi)%ioitem) // '*' // basnam
-                                procn%routine = 'FLXFRC'
-                                procn%text = 'split a flux into fractions'
-                                procn%swtransp = 123
-                                procn%type = PROCESTYPE_FLUX
-                                procn%sfrac_type = 0
-                                procn%no_input = 2 + 2 * nfrac
-                                procn%no_output = 0
-                                procn%no_fluxoutput = nfrac
-                                procn%no_fluxstochi = nfrac
-                                procn%no_dispstochi = 0
-                                procn%no_velostochi = 0
-                                allocate(procn%input_item(procn%no_input), procn%fluxoutput(procn%no_fluxoutput), &
-                                        procn%fluxstochi(procn%no_fluxstochi), stat = ierr_alloc)
-                                if (ierr_alloc /= 0) then
-                                    write(lunrep, *) 'error allocating work array in routine add_flxfrc:', ierr_alloc
-                                    write(lunrep, *) 'array length:', procn%no_input, procn%no_fluxoutput, procn%no_fluxstochi
-                                    write(*, *) 'error allocating array:', ierr_alloc
-                                    call stop_with_error()
-                                endif
-
-                                ! input on segments
-
-                                procn%input_item(1)%name = 'nfrac_' // basnam
-                                procn%input_item(1)%type = iotype_segment_input
-                                procn%input_item(1)%actdef = nfrac
-                                procn%input_item(1)%indx = 1
-                                procn%input_item(1)%ip_val = 0
-                                item%name = procn%input_item(1)%name
-                                iret = itempropcollfind(allitems, item)
-                                if (iret <= 0) then
-                                    item%text = procn%input_item(1)%name
-                                    item%default = nfrac
-                                    item%waqtype = waqtype_none
-                                    iret = itempropcolladd(allitems, item)
-                                endif
-                                procn%input_item(1)%item => allitems%itemproppnts(iret)%pnt
-
-                                procn%input_item(2)%name = proc%fluxstochi(istochi)%ioitem
-                                procn%input_item(2)%type = iotype_segment_input
-                                procn%input_item(2)%actdef = -999.0
-                                procn%input_item(2)%indx = 2
-                                procn%input_item(2)%ip_val = 0
-                                item%name = procn%input_item(2)%name
-                                iret = itempropcollfind(allitems, item)
-                                if (iret <= 0) then
-                                    item%text = procn%input_item(2)%name
-                                    item%default = -999.0
-                                    item%waqtype = waqtype_none
-                                    iret = itempropcolladd(allitems, item)
-                                endif
-                                procn%input_item(2)%item => allitems%itemproppnts(iret)%pnt
-
-                                do ifrac = 1, nfrac
-                                    if (ifrac < 100) then
-                                        write(suffix, '(i2.2)') ifrac
-                                    else
-                                        write(suffix, '(i3.3)') ifrac
-                                    endif
-                                    procn%input_item(2 + ifrac)%name = 'fr' // trim(sfracs%name(isfrac_positive)) // suffix
-                                    procn%input_item(2 + ifrac)%type = iotype_segment_input
-                                    procn%input_item(2 + ifrac)%actdef = 0.0
-                                    procn%input_item(2 + ifrac)%indx = 2 + ifrac
-                                    procn%input_item(2 + ifrac)%ip_val = 0
-                                    item%name = procn%input_item(2 + ifrac)%name
-                                    iret = itempropcollfind(allitems, item)
-                                    if (iret <= 0) then
-                                        item%text = procn%input_item(2 + ifrac)%name
-                                        item%default = 0.0
-                                        item%waqtype = waqtype_none
-                                        iret = itempropcolladd(allitems, item)
-                                    endif
-                                    procn%input_item(2 + ifrac)%item => allitems%itemproppnts(iret)%pnt
-                                enddo
-
-                                do ifrac = 1, nfrac
-                                    if (ifrac < 100) then
-                                        write(suffix, '(i2.2)') ifrac
-                                    else
-                                        write(suffix, '(i3.3)') ifrac
-                                    endif
-                                    procn%input_item(2 + nfrac + ifrac)%name = 'fr' // trim(sfracs%name(isfrac_negative)) // suffix
-                                    procn%input_item(2 + nfrac + ifrac)%type = iotype_segment_input
-                                    procn%input_item(2 + nfrac + ifrac)%actdef = 0.0
-                                    procn%input_item(2 + nfrac + ifrac)%indx = 2 + nfrac + ifrac
-                                    procn%input_item(2 + nfrac + ifrac)%ip_val = 0
-                                    item%name = procn%input_item(2 + nfrac + ifrac)%name
-                                    iret = itempropcollfind(allitems, item)
-                                    if (iret <= 0) then
-                                        item%text = procn%input_item(2 + nfrac + ifrac)%name
-                                        item%default = 0.0
-                                        item%waqtype = waqtype_none
-                                        iret = itempropcolladd(allitems, item)
-                                    endif
-                                    procn%input_item(2 + nfrac + ifrac)%item => allitems%itemproppnts(iret)%pnt
-                                enddo
-
-                                ! split fluxes and stochi
-
-                                do ifrac = 1, nfrac
-                                    if (ifrac < 100) then
-                                        write(suffix, '(i2.2)') ifrac
-                                    else
-                                        write(suffix, '(i3.3)') ifrac
-                                    endif
-                                    procn%fluxoutput(ifrac)%name = trim(proc%fluxstochi(istochi)%ioitem) // '*' // trim(basnam) // suffix
-                                    procn%fluxoutput(ifrac)%type = iotype_segment_output
-                                    procn%fluxoutput(ifrac)%actdef = 0.0
-                                    procn%fluxoutput(ifrac)%indx = ifrac
-                                    procn%fluxoutput(ifrac)%ip_val = 0
-                                    item%name = procn%fluxoutput(ifrac)%name
-                                    iret = itempropcollfind(allitems, item)
-                                    if (iret <= 0) then
-                                        item%text = procn%fluxoutput(ifrac)%name
-                                        item%default = -999.
-                                        item%waqtype = waqtype_none
-                                        iret = itempropcolladd(allitems, item)
-                                    endif
-                                    procn%fluxoutput(ifrac)%item => allitems%itemproppnts(iret)%pnt
-
-                                    procn%fluxstochi(ifrac)%type = STOCHITYPE_FLUX
-                                    procn%fluxstochi(ifrac)%ioitem = procn%fluxoutput(ifrac)%name
-                                    procn%fluxstochi(ifrac)%substance = trim(basnam) // suffix
-                                    procn%fluxstochi(ifrac)%subindx = 0
-                                    procn%fluxstochi(ifrac)%scale = proc%fluxstochi(istochi)%scale
-
-                                enddo
-
-                                ! insert process at the end
-
-                                iproc_new = procespropcolladd(procesdef, procn)
-                                no_act = no_act + 1
-                                actlst(no_act) = procn%name
-                                nbpr = nbpr + 1
-                                write(lunrep, 2000) ' adding splitflux process [', procn%name, ']'
-
-                                ! repointer proc, the procespropcolladd makes this necessary
-
-                                proc => procesdef%procesprops(iproc)
-
-                            endif
-                        endif
-                    endif
-                enddo
-            enddo
-        enddo
-
-        if (timon) call timstop(ithndl)
-        return
-        2000 format (3a)
-    end
+                                          if (isfrac_positive == 0) then
+                                             isfrac_positive = linklst(ilink)
+                                          end if
+
+                                       end if
+                                    end if
+                                 end do
+                              end if
+                           end do
+10                         continue
+
+                           ! if not found look for any flux with linked negative stochi
+
+                           if (isfrac_positive == 0) then
+                              do istochi_2 = 1, proc%no_fluxstochi
+                                 if (istochi_2 == istochi) cycle
+                                 do ilink = 1, nlink
+                                    if (string_equals(sfracs%name(linklst(ilink)) (1:10), proc%fluxstochi(istochi_2)%substance)) then
+                                       if (proc%fluxstochi(istochi_2)%scale < -1e-20) then
+
+                                          isfrac_positive = linklst(ilink)
+                                          goto 20
+
+                                       end if
+                                    end if
+                                 end do
+                              end do
+20                            continue
+                           end if
+
+                           if (isfrac_positive == 0) then
+                              isfrac_positive = isfrac
+                           end if
+
+                        elseif (proc%fluxstochi(istochi)%scale < 0.0) then
+
+                           ! negative flux, check if the fraction is linked with flux with negative stochi
+
+                           isfrac_positive = isfrac
+                           isfrac_negative = 0
+                           do istochi_2 = 1, proc%no_fluxstochi
+                              if (istochi_2 == istochi) cycle
+                              if (proc%fluxstochi(istochi_2)%ioitem == proc%fluxstochi(istochi)%ioitem) then
+                                 do ilink = 1, nlink
+                                    if (string_equals(sfracs%name(linklst(ilink)) (1:10), proc%fluxstochi(istochi_2)%substance)) then
+                                       if (abs(proc%fluxstochi(istochi_2)%scale + proc%fluxstochi(istochi)%scale) < 1e-20) then
+
+                                          ! same flux same -scale, set fraction and exit link loop
+
+                                          isfrac_negative = linklst(ilink)
+                                          goto 30
+
+                                       elseif (proc%fluxstochi(istochi_2)%scale > 1e-20) then
+
+                                          ! same flux other scale set fraction if not already set and keep looking
+
+                                          if (isfrac_negative == 0) then
+                                             isfrac_negative = linklst(ilink)
+                                          end if
+
+                                       end if
+                                    end if
+                                 end do
+                              end if
+                           end do
+30                         continue
+
+                           ! if not found look for any flux with linked negative stochi
+
+                           if (isfrac_negative == 0) then
+                              do istochi_2 = 1, proc%no_fluxstochi
+                                 if (istochi_2 == istochi) cycle
+                                 do ilink = 1, nlink
+                                    if (string_equals(sfracs%name(linklst(ilink)) (1:10), proc%fluxstochi(istochi_2)%substance)) then
+                                       if (proc%fluxstochi(istochi_2)%scale > 1e-20) then
+
+                                          isfrac_negative = linklst(ilink)
+                                          goto 40
+
+                                       end if
+                                    end if
+                                 end do
+                              end do
+40                            continue
+                           end if
+
+                           if (isfrac_negative == 0) then
+                              isfrac_negative = isfrac
+                           end if
+
+                        end if
+
+                        ! construct split process
+
+                        procn%name = 'FRC_'//trim(proc%fluxstochi(istochi)%ioitem)//'*'//basnam
+                        procn%routine = 'FLXFRC'
+                        procn%text = 'split a flux into fractions'
+                        procn%swtransp = 123
+                        procn%type = PROCESTYPE_FLUX
+                        procn%sfrac_type = 0
+                        procn%no_input = 2 + 2 * nfrac
+                        procn%no_output = 0
+                        procn%no_fluxoutput = nfrac
+                        procn%no_fluxstochi = nfrac
+                        procn%no_dispstochi = 0
+                        procn%no_velostochi = 0
+                        allocate (procn%input_item(procn%no_input), procn%fluxoutput(procn%no_fluxoutput), &
+                                  procn%fluxstochi(procn%no_fluxstochi), stat=ierr_alloc)
+                        if (ierr_alloc /= 0) then
+                           write (lunrep, *) 'error allocating work array in routine add_flxfrc:', ierr_alloc
+                           write (lunrep, *) 'array length:', procn%no_input, procn%no_fluxoutput, procn%no_fluxstochi
+                           write (*, *) 'error allocating array:', ierr_alloc
+                           call stop_with_error()
+                        end if
+
+                        ! input on segments
+
+                        procn%input_item(1)%name = 'nfrac_'//basnam
+                        procn%input_item(1)%type = iotype_segment_input
+                        procn%input_item(1)%actdef = nfrac
+                        procn%input_item(1)%indx = 1
+                        procn%input_item(1)%ip_val = 0
+                        item%name = procn%input_item(1)%name
+                        iret = itempropcollfind(allitems, item)
+                        if (iret <= 0) then
+                           item%text = procn%input_item(1)%name
+                           item%default = nfrac
+                           item%waqtype = waqtype_none
+                           iret = itempropcolladd(allitems, item)
+                        end if
+                        procn%input_item(1)%item => allitems%itemproppnts(iret)%pnt
+
+                        procn%input_item(2)%name = proc%fluxstochi(istochi)%ioitem
+                        procn%input_item(2)%type = iotype_segment_input
+                        procn%input_item(2)%actdef = -999.0
+                        procn%input_item(2)%indx = 2
+                        procn%input_item(2)%ip_val = 0
+                        item%name = procn%input_item(2)%name
+                        iret = itempropcollfind(allitems, item)
+                        if (iret <= 0) then
+                           item%text = procn%input_item(2)%name
+                           item%default = -999.0
+                           item%waqtype = waqtype_none
+                           iret = itempropcolladd(allitems, item)
+                        end if
+                        procn%input_item(2)%item => allitems%itemproppnts(iret)%pnt
+
+                        do ifrac = 1, nfrac
+                           if (ifrac < 100) then
+                              write (suffix, '(i2.2)') ifrac
+                           else
+                              write (suffix, '(i3.3)') ifrac
+                           end if
+                           procn%input_item(2 + ifrac)%name = 'fr'//trim(sfracs%name(isfrac_positive))//suffix
+                           procn%input_item(2 + ifrac)%type = iotype_segment_input
+                           procn%input_item(2 + ifrac)%actdef = 0.0
+                           procn%input_item(2 + ifrac)%indx = 2 + ifrac
+                           procn%input_item(2 + ifrac)%ip_val = 0
+                           item%name = procn%input_item(2 + ifrac)%name
+                           iret = itempropcollfind(allitems, item)
+                           if (iret <= 0) then
+                              item%text = procn%input_item(2 + ifrac)%name
+                              item%default = 0.0
+                              item%waqtype = waqtype_none
+                              iret = itempropcolladd(allitems, item)
+                           end if
+                           procn%input_item(2 + ifrac)%item => allitems%itemproppnts(iret)%pnt
+                        end do
+
+                        do ifrac = 1, nfrac
+                           if (ifrac < 100) then
+                              write (suffix, '(i2.2)') ifrac
+                           else
+                              write (suffix, '(i3.3)') ifrac
+                           end if
+                           procn%input_item(2 + nfrac + ifrac)%name = 'fr'//trim(sfracs%name(isfrac_negative))//suffix
+                           procn%input_item(2 + nfrac + ifrac)%type = iotype_segment_input
+                           procn%input_item(2 + nfrac + ifrac)%actdef = 0.0
+                           procn%input_item(2 + nfrac + ifrac)%indx = 2 + nfrac + ifrac
+                           procn%input_item(2 + nfrac + ifrac)%ip_val = 0
+                           item%name = procn%input_item(2 + nfrac + ifrac)%name
+                           iret = itempropcollfind(allitems, item)
+                           if (iret <= 0) then
+                              item%text = procn%input_item(2 + nfrac + ifrac)%name
+                              item%default = 0.0
+                              item%waqtype = waqtype_none
+                              iret = itempropcolladd(allitems, item)
+                           end if
+                           procn%input_item(2 + nfrac + ifrac)%item => allitems%itemproppnts(iret)%pnt
+                        end do
+
+                        ! split fluxes and stochi
+
+                        do ifrac = 1, nfrac
+                           if (ifrac < 100) then
+                              write (suffix, '(i2.2)') ifrac
+                           else
+                              write (suffix, '(i3.3)') ifrac
+                           end if
+                           procn%fluxoutput(ifrac)%name = trim(proc%fluxstochi(istochi)%ioitem)//'*'//trim(basnam)//suffix
+                           procn%fluxoutput(ifrac)%type = iotype_segment_output
+                           procn%fluxoutput(ifrac)%actdef = 0.0
+                           procn%fluxoutput(ifrac)%indx = ifrac
+                           procn%fluxoutput(ifrac)%ip_val = 0
+                           item%name = procn%fluxoutput(ifrac)%name
+                           iret = itempropcollfind(allitems, item)
+                           if (iret <= 0) then
+                              item%text = procn%fluxoutput(ifrac)%name
+                              item%default = -999.
+                              item%waqtype = waqtype_none
+                              iret = itempropcolladd(allitems, item)
+                           end if
+                           procn%fluxoutput(ifrac)%item => allitems%itemproppnts(iret)%pnt
+
+                           procn%fluxstochi(ifrac)%type = STOCHITYPE_FLUX
+                           procn%fluxstochi(ifrac)%ioitem = procn%fluxoutput(ifrac)%name
+                           procn%fluxstochi(ifrac)%substance = trim(basnam)//suffix
+                           procn%fluxstochi(ifrac)%subindx = 0
+                           procn%fluxstochi(ifrac)%scale = proc%fluxstochi(istochi)%scale
+
+                        end do
+
+                        ! insert process at the end
+
+                        iproc_new = procespropcolladd(procesdef, procn)
+                        no_act = no_act + 1
+                        actlst(no_act) = procn%name
+                        nbpr = nbpr + 1
+                        write (lunrep, 2000) ' adding splitflux process [', procn%name, ']'
+
+                        ! repointer proc, the procespropcolladd makes this necessary
+
+                        proc => procesdef%procesprops(iproc)
+
+                     end if
+                  end if
+               end if
+            end do
+         end do
+      end do
+
+      if (timon) call timstop(ithndl)
+      return
+2000  format(3a)
+   end
 
 end module m_add_flxfrc

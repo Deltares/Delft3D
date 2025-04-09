@@ -21,138 +21,137 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_densed
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine densed(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_extract_waq_attribute
 
-    subroutine densed (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_extract_waq_attribute
+      !>\file
+      !>       Denitrification in sediment
 
-        !>\file
-        !>       Denitrification in sediment
+      !
+      !     Description of the module :
+      !
+      !        General water quality module for DELWAQ:
+      !
+      ! Name    T   L I/O   Description                                    Units
+      ! ----    --- -  -    -------------------                            ----
+      ! CRTEMP  R*4 1 I critical temperature for both processes             [xC]
+      ! DEPTH   R*4 1 I depth                                                [m]
+      ! DENR    R*4 1 I zeroth order denitrification rate              [gN/m2/d]
+      ! DENRC   R*4 1 I firstt order denitrification rate                  [m/d]
+      ! DENTC   R*4 1 I temperature coefficient for denitrif.                [-]
+      ! FL (1)  R*4 1 O denitrification flux                           [gN/m3/d]
+      ! NO3     R*4 1 I nitrate concentration                            [gN/m3]
+      ! TEMP    R*4 1 I ambient temperature                                 [xC]
+      ! TEMP20  R*4 1 L ambient temperature - stand. temp (20)              [xC]
+      ! TEMPC   R*4 1 L temperatuur coefficient                              [-]
 
-        !
-        !     Description of the module :
-        !
-        !        General water quality module for DELWAQ:
-        !
-        ! Name    T   L I/O   Description                                    Units
-        ! ----    --- -  -    -------------------                            ----
-        ! CRTEMP  R*4 1 I critical temperature for both processes             [xC]
-        ! DEPTH   R*4 1 I depth                                                [m]
-        ! DENR    R*4 1 I zeroth order denitrification rate              [gN/m2/d]
-        ! DENRC   R*4 1 I firstt order denitrification rate                  [m/d]
-        ! DENTC   R*4 1 I temperature coefficient for denitrif.                [-]
-        ! FL (1)  R*4 1 O denitrification flux                           [gN/m3/d]
-        ! NO3     R*4 1 I nitrate concentration                            [gN/m3]
-        ! TEMP    R*4 1 I ambient temperature                                 [xC]
-        ! TEMP20  R*4 1 L ambient temperature - stand. temp (20)              [xC]
-        ! TEMPC   R*4 1 L temperatuur coefficient                              [-]
+      !     Logical Units : -
 
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
+      !     ------   -----  ------------
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
+      implicit real(A - H, J - Z)
+      implicit integer(I)
 
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      logical TMPOPT
+      !
+      IN1 = INCREM(1)
+      IN2 = INCREM(2)
+      IN3 = INCREM(3)
+      IN4 = INCREM(4)
+      IN5 = INCREM(5)
+      IN6 = INCREM(6)
+      IN7 = INCREM(7)
+      !
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
+      IP6 = IPOINT(6)
+      IP7 = IPOINT(7)
+      !
+      if (IN1 == 0 .and. IN3 == 0 .and. IN4 == 0 .and. &
+          IN5 == 0 .and. IN6 == 0) then
+         DENR = process_space_real(IP1)
+         TEMP = process_space_real(IP5)
+         CRTEMP = process_space_real(IP6)
+         if (TEMP <= CRTEMP) then
+            TEMFAK = 0.0
+         else
+            DENRC = process_space_real(IP3)
+            DENTC = process_space_real(IP4)
+            TEMP20 = TEMP - 20.0
+            TEMFAK = DENRC * DENTC**TEMP20
+         end if
+         TMPOPT = .false.
+      else
+         TMPOPT = .true.
+      end if
+      !
+      IFLUX = 0
+      do ISEG = 1, num_cells
 
-        LOGICAL  TMPOPT
-        !
-        IN1 = INCREM(1)
-        IN2 = INCREM(2)
-        IN3 = INCREM(3)
-        IN4 = INCREM(4)
-        IN5 = INCREM(5)
-        IN6 = INCREM(6)
-        IN7 = INCREM(7)
-        !
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        !
-        IF (IN1 == 0 .AND. IN3 == 0 .AND. IN4 == 0 .AND. &
-                IN5 == 0 .AND. IN6 == 0) THEN
-            DENR = process_space_real(IP1)
-            TEMP = process_space_real(IP5)
-            CRTEMP = process_space_real(IP6)
-            IF (TEMP <= CRTEMP) THEN
-                TEMFAK = 0.0
-            ELSE
-                DENRC = process_space_real(IP3)
-                DENTC = process_space_real(IP4)
-                TEMP20 = TEMP - 20.0
-                TEMFAK = DENRC * DENTC ** TEMP20
-            ENDIF
-            TMPOPT = .FALSE.
-        ELSE
-            TMPOPT = .TRUE.
-        ENDIF
-        !
-        IFLUX = 0
-        DO ISEG = 1, num_cells
+         if (btest(IKNMRK(ISEG), 0)) then
+            call extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+            if ((IKMRK2 == 0) .or. (IKMRK2 == 3)) then
+               !
+               if (TMPOPT) then
+                  DENR = process_space_real(IP1)
+                  TEMP = process_space_real(IP5)
+                  CRTEMP = process_space_real(IP6)
+                  if (TEMP <= CRTEMP) then
+                     TEMFAK = 0.0
+                  else
+                     DENRC = process_space_real(IP3)
+                     DENTC = process_space_real(IP4)
+                     TEMP20 = TEMP - 20.0
+                     TEMFAK = DENRC * DENTC**TEMP20
+                  end if
+               end if
+               !
+               NO3 = max(0.0, process_space_real(IP2))
+               DEPTH = process_space_real(IP7)
 
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
-                IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
-                    !
-                    IF (TMPOPT) THEN
-                        DENR = process_space_real(IP1)
-                        TEMP = process_space_real(IP5)
-                        CRTEMP = process_space_real(IP6)
-                        IF (TEMP <= CRTEMP) THEN
-                            TEMFAK = 0.0
-                        ELSE
-                            DENRC = process_space_real(IP3)
-                            DENTC = process_space_real(IP4)
-                            TEMP20 = TEMP - 20.0
-                            TEMFAK = DENRC * DENTC ** TEMP20
-                        ENDIF
-                    ENDIF
-                    !
-                    NO3 = MAX (0.0, process_space_real(IP2))
-                    DEPTH = process_space_real(IP7)
+               !***********************************************************************
+               !**** Processes connected to the DENITRIFICATION
+               !***********************************************************************
+               !
+               !     Denitrification is assumed to take place in the sediment
+               !     Calculation of denitrification flux ( M.L-3.t-1)
 
-                    !***********************************************************************
-                    !**** Processes connected to the DENITRIFICATION
-                    !***********************************************************************
-                    !
-                    !     Denitrification is assumed to take place in the sediment
-                    !     Calculation of denitrification flux ( M.L-3.t-1)
-
-                    FL(1 + IFLUX) = (DENR + TEMFAK * NO3) / DEPTH
-                    !
-                ENDIF
-            ENDIF
-            !
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + IN1
-            IP2 = IP2 + IN2
-            IP3 = IP3 + IN3
-            IP4 = IP4 + IN4
-            IP5 = IP5 + IN5
-            IP6 = IP6 + IN6
-            IP7 = IP7 + IN7
-            !
-        end do
-        !
-        RETURN
-        !
-    END
+               FL(1 + IFLUX) = (DENR + TEMFAK * NO3) / DEPTH
+               !
+            end if
+         end if
+         !
+         IFLUX = IFLUX + NOFLUX
+         IP1 = IP1 + IN1
+         IP2 = IP2 + IN2
+         IP3 = IP3 + IN3
+         IP4 = IP4 + IN4
+         IP5 = IP5 + IN5
+         IP6 = IP6 + IN6
+         IP7 = IP7 + IN7
+         !
+      end do
+      !
+      return
+      !
+   end
 
 end module m_densed

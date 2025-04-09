@@ -21,86 +21,85 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_stox3d
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine stox3d(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !>\file
+      !>       Vertical dispersion (segment -> exchange)
 
-    subroutine stox3d (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        !>\file
-        !>       Vertical dispersion (segment -> exchange)
+      implicit none
+      !
+      !     declaration of arguments
+      !
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      !
+      !     i/o from process_space_real array
+      !
+      real(kind=real_wp) :: SPARAM ! process parameter on segment
+      real(kind=real_wp) :: FACTOR ! scaling factor
+      real(kind=real_wp) :: QPARAM ! process parameter on segment
+      !
+      !     local declarations
+      !
+      integer(kind=int_wp) :: IP1, IP2, IP3 ! index pointers in process_space_real array
+      integer(kind=int_wp) :: IN1, IN2, IN3 ! increments in process_space_real array
+      integer(kind=int_wp) :: IQ ! loop counter exchanges
+      integer(kind=int_wp) :: IFROM ! number from-segment
+      !
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
 
-        IMPLICIT NONE
-        !
-        !     declaration of arguments
-        !
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-        !
-        !     i/o from process_space_real array
-        !
-        REAL(kind = real_wp) :: SPARAM                      ! process parameter on segment
-        REAL(kind = real_wp) :: FACTOR                      ! scaling factor
-        REAL(kind = real_wp) :: QPARAM                      ! process parameter on segment
-        !
-        !     local declarations
-        !
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3               ! index pointers in process_space_real array
-        INTEGER(kind = int_wp) :: IN1, IN2, IN3               ! increments in process_space_real array
-        INTEGER(kind = int_wp) :: IQ                          ! loop counter exchanges
-        INTEGER(kind = int_wp) :: IFROM                       ! number from-segment
-        !
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
+      IN1 = INCREM(1)
+      IN2 = INCREM(2)
+      IN3 = INCREM(3)
 
-        IN1 = INCREM(1)
-        IN2 = INCREM(2)
-        IN3 = INCREM(3)
+      !     Exchange-loop over de eerste twee richtingen
 
-        !     Exchange-loop over de eerste twee richtingen
+      do IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
 
-        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
+         !        Uitvoer op exchange niveau gelijk aan nul
 
-            !        Uitvoer op exchange niveau gelijk aan nul
+         process_space_real(IP3) = 0.0
 
-            process_space_real(IP3) = 0.0
+         IP3 = IP3 + IN3
 
-            IP3 = IP3 + IN3
+      end do
 
-        ENDDO
+      !     Exchange-loop over de derde richting
 
-        !     Exchange-loop over de derde richting
+      do IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
-        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
+         IFROM = IEXPNT(1, IQ)
 
-            IFROM = IEXPNT(1, IQ)
+         if (IFROM > 0) then
 
-            IF (IFROM > 0) THEN
+            !           Invoer op segment niveau naar uitvoer op exchange niveau
 
-                !           Invoer op segment niveau naar uitvoer op exchange niveau
+            SPARAM = process_space_real(IP1 + (IFROM - 1) * IN1)
+            FACTOR = process_space_real(IP2 + (IFROM - 1) * IN2)
+            QPARAM = SPARAM * FACTOR
+         else
+            QPARAM = 0.0
+         end if
 
-                SPARAM = process_space_real(IP1 + (IFROM - 1) * IN1)
-                FACTOR = process_space_real(IP2 + (IFROM - 1) * IN2)
-                QPARAM = SPARAM * FACTOR
-            ELSE
-                QPARAM = 0.0
-            ENDIF
+         process_space_real(IP3) = QPARAM
 
-            process_space_real(IP3) = QPARAM
+         !        Ophogen pointering uitvoer op exchange niveau
 
-            !        Ophogen pointering uitvoer op exchange niveau
+         IP3 = IP3 + IN3
 
-            IP3 = IP3 + IN3
+      end do
 
-        ENDDO
-
-        RETURN
-    END
+      return
+   end
 
 end module m_stox3d

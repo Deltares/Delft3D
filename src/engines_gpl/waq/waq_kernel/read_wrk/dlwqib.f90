@@ -20,17 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwqib
-      use m_waq_precision
+module m_dlwqib
+   use m_waq_precision
 
+   implicit none
 
-      implicit none
+contains
 
-      contains
-
-
-      SUBROUTINE DLWQIB ( file_unit_list    , LUNUT  , A      , J      , MODE   , &
-                                           IISP   , IRSP   , IERR   )
+   subroutine DLWQIB(file_unit_list, LUNUT, A, J, MODE, &
+                     IISP, IRSP, IERR)
 !
 !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
 !
@@ -59,14 +57,14 @@
 !
       use timers
 
-      real(kind=real_wp) ::A(*)
-      integer(kind=int_wp) ::J(*)
-      integer(kind=int_wp) ::IISP, IRSP, IERR, MODE, file_unit_list, LUNUT
+      real(kind=real_wp) :: A(*)
+      integer(kind=int_wp) :: J(*)
+      integer(kind=int_wp) :: IISP, IRSP, IERR, MODE, file_unit_list, LUNUT
 
-      integer(kind=int_wp) ::i, ia, ij, k, time_function_type
-      integer(kind=int_wp) ::noitm, num_substances_transported, npnt, ndim, ntal, nobrk
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "dlwqib", ithandl )
+      integer(kind=int_wp) :: i, ia, ij, k, time_function_type
+      integer(kind=int_wp) :: noitm, num_substances_transported, npnt, ndim, ntal, nobrk
+      integer(kind=int_wp) :: ithandl = 0
+      if (timon) call timstrt("dlwqib", ithandl)
 !
 !         initialise the system
 !
@@ -75,59 +73,59 @@
 !
 !       Read the system dimensions
 !
-      READ ( file_unit_list , END=40 , ERR=110 )  J(IJ), J(IJ+1)
+      read (file_unit_list, end=40, ERR=110) J(IJ), J(IJ + 1)
       NOITM = J(IJ)
-      num_substances_transported = J(IJ+1)
+      num_substances_transported = J(IJ + 1)
       IJ = 3
 !
 !       Read the pointers for this block of data
 !
-   10 READ ( file_unit_list , END=40 , ERR=110 )  J(IJ), &
-                     NPNT, ( J(IJ+K) , K=2,NPNT+1 )  , & 
-                     NDIM, ( J(IJ+NPNT+2+K) , K = 1, NDIM+2 )
-      J(IJ     +1) = NPNT
-      J(IJ+NPNT+2) = NDIM
+10    read (file_unit_list, end=40, ERR=110) J(IJ), &
+         NPNT, (J(IJ + K), K=2, NPNT + 1), &
+         NDIM, (J(IJ + NPNT + 2 + K), K=1, NDIM + 2)
+      J(IJ + 1) = NPNT
+      J(IJ + NPNT + 2) = NDIM
       IJ = IJ + NPNT + NDIM + 5
 !        default for all items
-      IF ( NPNT == 0 ) NPNT = 1
+      if (NPNT == 0) NPNT = 1
 !
 !       3 and 4 are harmonics
 !
-      time_function_type = J(IJ-2)
+      time_function_type = J(IJ - 2)
       NTAL = 0
-      IF ( time_function_type == 3 .OR. time_function_type == 4 ) NTAL = 1
+      if (time_function_type == 3 .or. time_function_type == 4) NTAL = 1
 !
 !       Nr of breakpoints or harmonics
 !
-      READ ( file_unit_list , END=100 , ERR=110 ) NOBRK
+      read (file_unit_list, end=100, ERR=110) NOBRK
       J(IJ) = NOBRK
       IJ = IJ + 1
 !
-      DO I=1,NOBRK
-         READ ( file_unit_list , END=100 , ERR=110 ) J(IJ) , &
-                    ( A(IA+K) , K=0,NPNT*NDIM-1+NTAL )
+      do I = 1, NOBRK
+         read (file_unit_list, end=100, ERR=110) J(IJ), &
+            (A(IA + K), K=0, NPNT * NDIM - 1 + NTAL)
          IJ = IJ + 1
-         IA = IA + NPNT*NDIM + NTAL
+         IA = IA + NPNT * NDIM + NTAL
       end do
 !
 !       Return until finished
 !
-      GOTO 10
+      goto 10
 !
 !       Update linear pointers in array
 !
-   40 IISP = IISP + IJ-1
-      IRSP = IRSP + IA-1
-      goto 9999  !   RETURN
+40    IISP = IISP + IJ - 1
+      IRSP = IRSP + IA - 1
+      goto 9999 !   RETURN
 !
-  100 WRITE ( LUNUT , '(A,I3)' ) ' END-OF-FILE mode:',MODE
+100   write (LUNUT, '(A,I3)') ' END-OF-FILE mode:', MODE
       IERR = IERR + 1
-      goto 9999  !   RETURN
-  110 WRITE ( LUNUT , '(A,I3)' ) ' ERROR-ON-FILE mode:',MODE
+      goto 9999 !   RETURN
+110   write (LUNUT, '(A,I3)') ' ERROR-ON-FILE mode:', MODE
       IERR = IERR + 1
- 9999 if ( timon ) call timstop ( ithandl )
-      RETURN
+9999  if (timon) call timstop(ithandl)
+      return
 !
-      END
+   end
 
-      end module m_dlwqib
+end module m_dlwqib

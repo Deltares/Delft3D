@@ -22,53 +22,53 @@
 !!  rights reserved.
 
 module m_command_line_help
-    use m_waq_precision
-    use delwaq_exe_version_module
+   use m_waq_precision
+   use delwaq_exe_version_module
 
-    implicit none
+   implicit none
 
-    private
-    character(2), parameter :: separator = ': '
-    character(len=*), parameter :: param_format = '(A,t25,A,A)'
-    character(len=*), parameter :: param_format_extra_line = '(t27,A)'
+   private
+   character(2), parameter :: separator = ': '
+   character(len=*), parameter :: param_format = '(A,t25,A,A)'
+   character(len=*), parameter :: param_format_extra_line = '(t27,A)'
 
-    public :: show_command_line_help, show_command_line_version
+   public :: show_command_line_help, show_command_line_version
 
 contains
 
-    !> Shows the version information of delwaq on the console
-    subroutine show_command_line_version()
-        character(:), allocatable :: version_string
+   !> Shows the version information of delwaq on the console
+   subroutine show_command_line_version()
+      character(:), allocatable :: version_string
 
-        call get_versionstring_delwaq(version_string)
+      call get_versionstring_delwaq(version_string)
 
-        write (*, '(A)') repeat("-", 120)
-        write (*, '(A, t120, A)') '|' // version_string, '|'
-        write (*, '(A)') repeat("-", 120)
-    end subroutine
+      write (*, '(A)') repeat("-", 120)
+      write (*, '(A, t120, A)') '|'//version_string, '|'
+      write (*, '(A)') repeat("-", 120)
+   end subroutine
 
-    !> Shows help documentation on the command line
-    subroutine show_command_line_help(identification_text)
-        character(:), allocatable, intent(in) :: identification_text !< id string
+   !> Shows help documentation on the command line
+   subroutine show_command_line_help(identification_text)
+      character(:), allocatable, intent(in) :: identification_text !< id string
 
-        write (*, '(A)') repeat("-", 120)
-        write (*, '(A, t120, A)') '|' // identification_text, '|'
-        write (*, '(A)') repeat("-", 120)
-        write (*, '(A/)') 'Usage: Delwaq(.exe) <input_file_path> [-p process_definition_file_path] [optional_args]'
-        write (*, param_format) '-h, --help, /?', separator, 'Print help about Delwaq'
-        write (*, param_format) '-v, --version', separator, 'Shows version of this Delwaq executable'
-        write (*, param_format) '-a', separator, 'Only activated processes are switched on'
-        write (*, param_format) '-np', separator, 'No processes from the process definition file are switched on'
-        write (*, param_format) '-validation_mode', separator, 'Run Delwaq in validation mode. This only runs the pre-processing and'
-        write (*, param_format_extra_line) 'produces an *.lst file with the results.'
-        write (*, param_format) '-p <path>', separator, 'Path to the process definition file'
-        write (*, param_format) '-openpb <path>', separator, 'Path to open process library'
-        write (*, param_format) '-output <path>', separator, 'Path to the output folder'
-        write (*, param_format) '-threads <number>', separator, 'Will turn on parallelism, and override any setting of the number'
-        write (*, param_format_extra_line) 'of threads in the input file.'
-        write (*, param_format_extra_line) 'No value or zero for [N] will use the maximum number of available threads'
-        write (*,*)
+      write (*, '(A)') repeat("-", 120)
+      write (*, '(A, t120, A)') '|'//identification_text, '|'
+      write (*, '(A)') repeat("-", 120)
+      write (*, '(A/)') 'Usage: Delwaq(.exe) <input_file_path> [-p process_definition_file_path] [optional_args]'
+      write (*, param_format) '-h, --help, /?', separator, 'Print help about Delwaq'
+      write (*, param_format) '-v, --version', separator, 'Shows version of this Delwaq executable'
+      write (*, param_format) '-a', separator, 'Only activated processes are switched on'
+      write (*, param_format) '-np', separator, 'No processes from the process definition file are switched on'
+      write (*, param_format) '-validation_mode', separator, 'Run Delwaq in validation mode. This only runs the pre-processing and'
+      write (*, param_format_extra_line) 'produces an *.lst file with the results.'
+      write (*, param_format) '-p <path>', separator, 'Path to the process definition file'
+      write (*, param_format) '-openpb <path>', separator, 'Path to open process library'
+      write (*, param_format) '-output <path>', separator, 'Path to the output folder'
+      write (*, param_format) '-threads <number>', separator, 'Will turn on parallelism, and override any setting of the number'
+      write (*, param_format_extra_line) 'of threads in the input file.'
+      write (*, param_format_extra_line) 'No value or zero for [N] will use the maximum number of available threads'
+      write (*, *)
 
-    end subroutine show_command_line_help
+   end subroutine show_command_line_help
 
 end module m_command_line_help

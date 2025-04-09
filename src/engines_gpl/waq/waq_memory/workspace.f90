@@ -23,394 +23,394 @@
 
 module workspace
 
-    use m_waq_precision
-    use m_logger_helper, only : stop_with_error
-    USE memory_allocation, only : set_admin_array_indices, allocate_real_arrays, allocate_integer_arrays, &
-            set_character_array_indices
+   use m_waq_precision
+   use m_logger_helper, only: stop_with_error
+   use memory_allocation, only: set_admin_array_indices, allocate_real_arrays, allocate_integer_arrays, &
+                                set_character_array_indices
 
-    ! System characteristics
-    use m_waq_memory_dimensions, only : num_substances_total, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_dispersion_arrays, num_velocity_arrays, num_defaults, num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes
-    ! Timer characteristics
-    use m_timer_variables
-    ! Pointers in real array workspace
-    use m_real_array_indices
-    use m_integer_array_indices, only : IAPOI, IATYP, IABYT, IALEN, IAKND, IADM1, IADM2, IADM3, IJSIZE
-    ! Pointers in character array workspace
-    use m_character_array_indices
-    ! module for computing the pointers into the arrays
-    use m_array_manipulation, only : memory_partition
+   ! System characteristics
+   use m_waq_memory_dimensions, only: num_substances_total, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_dispersion_arrays, num_velocity_arrays, num_defaults, num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes
+   ! Timer characteristics
+   use m_timer_variables
+   ! Pointers in real array workspace
+   use m_real_array_indices
+   use m_integer_array_indices, only: IAPOI, IATYP, IABYT, IALEN, IAKND, IADM1, IADM2, IADM3, IJSIZE
+   ! Pointers in character array workspace
+   use m_character_array_indices
+   ! module for computing the pointers into the arrays
+   use m_array_manipulation, only: memory_partition
 
-    private
-    public :: set_array_indexes, initialize_variables
+   private
+   public :: set_array_indexes, initialize_variables
 
-CONTAINS
+contains
 
-    subroutine set_array_indexes(logical_unit, decclare_memory, real_array, int_array, charachter_array, &
-            max_real_arr_size, max_int_arr_size, max_char_arr_size)
+   subroutine set_array_indexes(logical_unit, decclare_memory, real_array, int_array, charachter_array, &
+                                max_real_arr_size, max_int_arr_size, max_char_arr_size)
         !! sets the array pointers in the sysa, sysi and sysc common blocks.
         !! this is the only place where these common blocks are changed.
         !! warning: the order in the common block must be the same as the order in which the
         !! pointers are set.
 
-        integer(kind = int_wp), intent(in) :: logical_unit  !! logical unitnumber output file ( monitoring output file)
-        integer(kind = int_wp), intent(inout) :: max_real_arr_size     !! maximum real array space
-        integer(kind = int_wp), intent(inout) :: max_int_arr_size      !! maximum integer array space
-        integer(kind = int_wp), intent(inout) :: max_char_arr_size     !! maximum character array space
-        logical, intent(in) :: decclare_memory       !! declare memory y/n
-        real(kind = real_wp), dimension(:), allocatable, intent(inout) :: real_array   !! real workspace array
-        integer(kind = int_wp), dimension(:), allocatable, intent(out) :: int_array  !! integer workspace array
-        character(len = *), dimension(:), allocatable, intent(out) :: charachter_array      !! character workspace array
+      integer(kind=int_wp), intent(in) :: logical_unit !! logical unitnumber output file ( monitoring output file)
+      integer(kind=int_wp), intent(inout) :: max_real_arr_size !! maximum real array space
+      integer(kind=int_wp), intent(inout) :: max_int_arr_size !! maximum integer array space
+      integer(kind=int_wp), intent(inout) :: max_char_arr_size !! maximum character array space
+      logical, intent(in) :: decclare_memory !! declare memory y/n
+      real(kind=real_wp), dimension(:), allocatable, intent(inout) :: real_array !! real workspace array
+      integer(kind=int_wp), dimension(:), allocatable, intent(out) :: int_array !! integer workspace array
+      character(len=*), dimension(:), allocatable, intent(out) :: charachter_array !! character workspace array
 
-        integer(kind = int_wp), dimension(:), allocatable :: jnew
-        character(len = len(charachter_array)), dimension(:), allocatable :: cnew
-        character(len = 20), dimension(:), allocatable :: cname
+      integer(kind=int_wp), dimension(:), allocatable :: jnew
+      character(len=len(charachter_array)), dimension(:), allocatable :: cnew
+      character(len=20), dimension(:), allocatable :: cname
 
-        integer(kind = int_wp) :: k1, k2
-        integer(kind = int64) :: itot
-        type(memory_partition) :: part
+      integer(kind=int_wp) :: k1, k2
+      integer(kind=int64) :: itot
+      type(memory_partition) :: part
 
-        ! allocate initial space
-        num_arrays = iasize + ijsize + icsize
+      ! allocate initial space
+      num_arrays = iasize + ijsize + icsize
 
-        if (allocated(int_array)) deallocate(int_array)
-        if (allocated(charachter_array)) deallocate(charachter_array)
-        if (allocated(cname)) deallocate(cname)
+      if (allocated(int_array)) deallocate (int_array)
+      if (allocated(charachter_array)) deallocate (charachter_array)
+      if (allocated(cname)) deallocate (cname)
 
-        allocate(int_array(iasize + 1 + ijsize + icsize + 1 + 8 * num_arrays))
-        allocate(charachter_array(20 * (iasize + 1 + ijsize + icsize + 1)))
-        allocate(cname (iasize + 1 + ijsize + icsize + 1))
+      allocate (int_array(iasize + 1 + ijsize + icsize + 1 + 8 * num_arrays))
+      allocate (charachter_array(20 * (iasize + 1 + ijsize + icsize + 1)))
+      allocate (cname(iasize + 1 + ijsize + icsize + 1))
 
-        int_array = 0
-        charachter_array = ' '
-        cname = ' '
+      int_array = 0
+      charachter_array = ' '
+      cname = ' '
 
-        ! total number of "separate" variables
-        num_vars = 5 + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total + num_substances_total + &
-                num_substances_total + num_dispersion_arrays + num_velocity_arrays + num_defaults + num_local_vars + num_dispersion_arrays_extra + &
-                num_velocity_arrays_extra + num_local_vars_exchange + num_fluxes
+      ! total number of "separate" variables
+      num_vars = 5 + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total + num_substances_total + &
+                 num_substances_total + num_dispersion_arrays + num_velocity_arrays + num_defaults + num_local_vars + num_dispersion_arrays_extra + &
+                 num_velocity_arrays_extra + num_local_vars_exchange + num_fluxes
 
-        ! sets the array pointers for the array administration array's.
-        call set_admin_array_indices(logical_unit, int_array, cname, part)
+      ! sets the array pointers for the array administration array's.
+      call set_admin_array_indices(logical_unit, int_array, cname, part)
 
-        ! set the real array workspace
-        call allocate_real_arrays(logical_unit, decclare_memory, int_array(iapoi:), int_array(iatyp:), &
-                int_array(iabyt:), int_array(ialen:), int_array(iaknd:), int_array(iadm1:), int_array(iadm2:), &
-                int_array(iadm3:), cname, itota, part)
+      ! set the real array workspace
+      call allocate_real_arrays(logical_unit, decclare_memory, int_array(iapoi:), int_array(iatyp:), &
+                                int_array(iabyt:), int_array(ialen:), int_array(iaknd:), int_array(iadm1:), int_array(iadm2:), &
+                                int_array(iadm3:), cname, itota, part)
 
-        ! set the integer array workspace
-        call allocate_integer_arrays(logical_unit, decclare_memory, int_array(iapoi:), int_array(iatyp:), &
-                int_array(iabyt:), int_array(ialen:), int_array(iaknd:), int_array(iadm1:), int_array(iadm2:), &
-                int_array(iadm3:), cname, itoti, part)
+      ! set the integer array workspace
+      call allocate_integer_arrays(logical_unit, decclare_memory, int_array(iapoi:), int_array(iatyp:), &
+                                   int_array(iabyt:), int_array(ialen:), int_array(iaknd:), int_array(iadm1:), int_array(iadm2:), &
+                                   int_array(iadm3:), cname, itoti, part)
 
-        ! set the character array workspace
-        call set_character_array_indices(logical_unit, decclare_memory, int_array(iapoi:), int_array(iatyp:), &
-                int_array(iabyt:), int_array(ialen:), int_array(iaknd:), int_array(iadm1:), int_array(iadm2:), &
-                int_array(iadm3:), cname, itotc, part)
+      ! set the character array workspace
+      call set_character_array_indices(logical_unit, decclare_memory, int_array(iapoi:), int_array(iatyp:), &
+                                       int_array(iabyt:), int_array(ialen:), int_array(iaknd:), int_array(iadm1:), int_array(iadm2:), &
+                                       int_array(iadm3:), cname, itotc, part)
 
-        ! messages and tests on array space
-        itot = int8(itota + itoti + itotc) * 4_2
-        write (logical_unit, 2000) itota, itoti, itotc, itot / 4, &
-                itot / 1000000000, &
-                mod(itot, 1000000000_int64) / 1000000, &
-                mod(itot, 1000000_int64) / 1000, &
-                mod(itot, 1000_int64)
-        ieflag = 0
+      ! messages and tests on array space
+      itot = int8(itota + itoti + itotc) * 4_2
+      write (logical_unit, 2000) itota, itoti, itotc, itot / 4, &
+         itot / 1000000000, &
+         mod(itot, 1000000000_int64) / 1000000, &
+         mod(itot, 1000000_int64) / 1000, &
+         mod(itot, 1000_int64)
+      ieflag = 0
 
-        if (itota > max_real_arr_size .and. max_real_arr_size /= 0 .and. decclare_memory) then
-            write (logical_unit, 2010) itota, max_real_arr_size
-            ieflag = 1
-        endif
-        if (itoti > max_int_arr_size .and. max_int_arr_size /= 0 .and. decclare_memory) then
-            write (logical_unit, 2020) itoti, max_int_arr_size
-            ieflag = 1
-        endif
-        if (itotc > max_char_arr_size .and. max_char_arr_size /= 0 .and. decclare_memory) then
-            write (logical_unit, 2030) itotc, max_char_arr_size
-            ieflag = 1
-        endif
-        if (ieflag ==    1) then
-            write (logical_unit, 2040)
+      if (itota > max_real_arr_size .and. max_real_arr_size /= 0 .and. decclare_memory) then
+         write (logical_unit, 2010) itota, max_real_arr_size
+         ieflag = 1
+      end if
+      if (itoti > max_int_arr_size .and. max_int_arr_size /= 0 .and. decclare_memory) then
+         write (logical_unit, 2020) itoti, max_int_arr_size
+         ieflag = 1
+      end if
+      if (itotc > max_char_arr_size .and. max_char_arr_size /= 0 .and. decclare_memory) then
+         write (logical_unit, 2030) itotc, max_char_arr_size
+         ieflag = 1
+      end if
+      if (ieflag == 1) then
+         write (logical_unit, 2040)
 
-            call stop_with_error()
-        endif
-        max_real_arr_size = itota
-        max_int_arr_size = itoti
-        max_char_arr_size = itotc
+         call stop_with_error()
+      end if
+      max_real_arr_size = itota
+      max_int_arr_size = itoti
+      max_char_arr_size = itotc
 
-        ! allocate the arrays, first charachter_array then int_array then real_array for least memory requirement
-        if (decclare_memory) then
-            ! it was allocated at the start
-            deallocate(real_array)
-            allocate(cnew(part%char_pointer))
-            cnew = ' '
-            do k2 = 1, size(cname)
-                do k1 = 1, 20
-                    cnew(1 + k1 + (k2 - 1) * 20) = cname(k2)(k1:k1)
-                enddo
-            enddo
-            deallocate(charachter_array)
-            charachter_array = cnew
+      ! allocate the arrays, first charachter_array then int_array then real_array for least memory requirement
+      if (decclare_memory) then
+         ! it was allocated at the start
+         deallocate (real_array)
+         allocate (cnew(part%char_pointer))
+         cnew = ' '
+         do k2 = 1, size(cname)
+            do k1 = 1, 20
+               cnew(1 + k1 + (k2 - 1) * 20) = cname(k2) (k1:k1)
+            end do
+         end do
+         deallocate (charachter_array)
+         charachter_array = cnew
 
-            allocate(jnew(part%index_pointer))
-            jnew = 0
-            jnew(1:size(int_array)) = int_array
-            deallocate(int_array)
-            int_array = jnew
+         allocate (jnew(part%index_pointer))
+         jnew = 0
+         jnew(1:size(int_array)) = int_array
+         deallocate (int_array)
+         int_array = jnew
 
-            allocate(real_array(part%alpha_pointer))
-            real_array = 0.0
-        endif
+         allocate (real_array(part%alpha_pointer))
+         real_array = 0.0
+      end if
 
-        return
+      return
 
-        2000 FORMAT (' total real      array space: ', I10, / &
-                ' total integer   array space: ', I10, / &
-                ' total character array space: ', I10, / &
-                ' grand total in 4-byte words: ', I10, &
-                ' = ', i3, '-GB ', i3, '-MB ', i3'-KB ', i3, '-Byte.')
-        2010 FORMAT (' ERROR. Real      array space exceeded !!! ', /, &
-                ' total real    array space: ', I10, ', allowed = ', I10)
-        2020 FORMAT (' ERROR. Integer   array space exceeded !!! ', /, &
-                ' total integer array space: ', I10, ', allowed = ', I10)
-        2030 FORMAT (' ERROR. Character array space exceeded !!! ', /, &
-                ' total character(len=20)  space: ', I10, ', allowed = ', I10)
-        2040 FORMAT (' EXECUTION HALTED, CONSULT YOUR SYSTEM MANAGER !!!')
+2000  format(' total real      array space: ', I10, / &
+             ' total integer   array space: ', I10, / &
+             ' total character array space: ', I10, / &
+             ' grand total in 4-byte words: ', I10, &
+             ' = ', i3, '-GB ', i3, '-MB ', i3'-KB ', i3, '-Byte.')
+2010  format(' ERROR. Real      array space exceeded !!! ', /, &
+             ' total real    array space: ', I10, ', allowed = ', I10)
+2020  format(' ERROR. Integer   array space exceeded !!! ', /, &
+             ' total integer array space: ', I10, ', allowed = ', I10)
+2030  format(' ERROR. Character array space exceeded !!! ', /, &
+             ' total character(len=20)  space: ', I10, ', allowed = ', I10)
+2040  format(' EXECUTION HALTED, CONSULT YOUR SYSTEM MANAGER !!!')
 
-    end subroutine set_array_indexes
+   end subroutine set_array_indexes
 
-    subroutine initialize_variables(logical_unit, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
-            num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
-            num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
-            nopred, num_vars, vararr, varidx, vartda, &
-            vardag, vartag, varagg, num_grids, vgrset)
+   subroutine initialize_variables(logical_unit, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+                                   num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+                                   num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
+                                   nopred, num_vars, vararr, varidx, vartda, &
+                                   vardag, vartag, varagg, num_grids, vgrset)
         !! initialisation of variables structur
 
-        use m_array_manipulation, only : initialize_integer_array
-        use timers
+      use m_array_manipulation, only: initialize_integer_array
+      use timers
 
-        integer(kind = int_wp) :: logical_unit, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
-                num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
-                num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
-                nopred, num_vars, num_grids
-        integer(kind = int_wp) :: vararr(num_vars), varidx(num_vars), &
-                vartda(num_vars), vardag(num_vars), &
-                vartag(num_vars), varagg(num_vars)
-        integer(kind = int_wp) :: vgrset(num_vars, num_grids)
+      integer(kind=int_wp) :: logical_unit, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+                              num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+                              num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
+                              nopred, num_vars, num_grids
+      integer(kind=int_wp) :: vararr(num_vars), varidx(num_vars), &
+                              vartda(num_vars), vardag(num_vars), &
+                              vartag(num_vars), varagg(num_vars)
+      integer(kind=int_wp) :: vgrset(num_vars, num_grids)
 
-        ! just take the used array's in the right order
-        integer(kind = int_wp) :: iivol = 1
-        integer(kind = int_wp) :: iiarea = 2
-        integer(kind = int_wp) :: iiflow = 3
-        integer(kind = int_wp) :: iileng = 4
-        integer(kind = int_wp) :: iidisp = 5
-        integer(kind = int_wp) :: iiconc = 6
-        integer(kind = int_wp) :: iimass = 7
-        integer(kind = int_wp) :: iiderv = 8
-        integer(kind = int_wp) :: iiboun = 9
-        integer(kind = int_wp) :: iibset = 10
-        integer(kind = int_wp) :: iibsav = 11
-        integer(kind = int_wp) :: iiwste = 12
-        integer(kind = int_wp) :: iicons = 13
-        integer(kind = int_wp) :: iiparm = 14
-        integer(kind = int_wp) :: iifunc = 15
-        integer(kind = int_wp) :: iisfun = 16
-        integer(kind = int_wp) :: iidnew = 17
-        integer(kind = int_wp) :: iidiff = 18
-        integer(kind = int_wp) :: iivnew = 19
-        integer(kind = int_wp) :: iivelo = 20
-        integer(kind = int_wp) :: iiharm = 21
-        integer(kind = int_wp) :: iifarr = 22
-        integer(kind = int_wp) :: iimas2 = 23
-        integer(kind = int_wp) :: iitimr = 24
-        integer(kind = int_wp) :: iivol2 = 25
-        integer(kind = int_wp) :: iitrac = 26
-        integer(kind = int_wp) :: iigwrk = 27
-        integer(kind = int_wp) :: iighes = 28
-        integer(kind = int_wp) :: iigsol = 29
-        integer(kind = int_wp) :: iigdia = 30
-        integer(kind = int_wp) :: iigtri = 31
-        integer(kind = int_wp) :: iismas = 32
-        integer(kind = int_wp) :: iiploc = 33
-        integer(kind = int_wp) :: iidefa = 34
-        integer(kind = int_wp) :: iiflux = 35
-        integer(kind = int_wp) :: iistoc = 36
-        integer(kind = int_wp) :: iiflxd = 37
-        integer(kind = int_wp) :: iiflxi = 38
-        integer(kind = int_wp) :: iiriob = 39
-        integer(kind = int_wp) :: iidspx = 40
-        integer(kind = int_wp) :: iivelx = 41
-        integer(kind = int_wp) :: iilocx = 42
-        integer(kind = int_wp) :: iidsto = 43
-        integer(kind = int_wp) :: iivsto = 44
-        integer(kind = int_wp) :: iidmpq = 45
-        integer(kind = int_wp) :: iidmps = 46
-        integer(kind = int_wp) :: iitrra = 47
-        integer(kind = int_wp) :: iinrsp = 48
-        integer(kind = int_wp) :: iivoll = 49
-        integer(kind = int_wp) :: iivol3 = 50
-        integer(kind = int_wp) :: iir1 = 51
-        integer(kind = int_wp) :: iiqxk = 52
-        integer(kind = int_wp) :: iiqyk = 53
-        integer(kind = int_wp) :: iiqzk = 54
-        integer(kind = int_wp) :: iidifx = 55
-        integer(kind = int_wp) :: iidify = 56
-        integer(kind = int_wp) :: iidifz = 57
-        integer(kind = int_wp) :: iivola = 58
-        integer(kind = int_wp) :: iivolb = 59
-        integer(kind = int_wp) :: iiguv = 60
-        integer(kind = int_wp) :: iigvu = 61
-        integer(kind = int_wp) :: iigzz = 62
-        integer(kind = int_wp) :: iiaak = 63
-        integer(kind = int_wp) :: iibbk = 64
-        integer(kind = int_wp) :: iicck = 65
-        integer(kind = int_wp) :: iibd3x = 66
-        integer(kind = int_wp) :: iibddx = 67
-        integer(kind = int_wp) :: iibdx = 68
-        integer(kind = int_wp) :: iibu3x = 69
-        integer(kind = int_wp) :: iibuux = 70
-        integer(kind = int_wp) :: iibux = 71
-        integer(kind = int_wp) :: iiwrk1 = 72
-        integer(kind = int_wp) :: iiwrk2 = 73
-        integer(kind = int_wp) :: iiaakl = 74
-        integer(kind = int_wp) :: iibbkl = 75
-        integer(kind = int_wp) :: iicckl = 76
-        integer(kind = int_wp) :: iiddkl = 77
+      ! just take the used array's in the right order
+      integer(kind=int_wp) :: iivol = 1
+      integer(kind=int_wp) :: iiarea = 2
+      integer(kind=int_wp) :: iiflow = 3
+      integer(kind=int_wp) :: iileng = 4
+      integer(kind=int_wp) :: iidisp = 5
+      integer(kind=int_wp) :: iiconc = 6
+      integer(kind=int_wp) :: iimass = 7
+      integer(kind=int_wp) :: iiderv = 8
+      integer(kind=int_wp) :: iiboun = 9
+      integer(kind=int_wp) :: iibset = 10
+      integer(kind=int_wp) :: iibsav = 11
+      integer(kind=int_wp) :: iiwste = 12
+      integer(kind=int_wp) :: iicons = 13
+      integer(kind=int_wp) :: iiparm = 14
+      integer(kind=int_wp) :: iifunc = 15
+      integer(kind=int_wp) :: iisfun = 16
+      integer(kind=int_wp) :: iidnew = 17
+      integer(kind=int_wp) :: iidiff = 18
+      integer(kind=int_wp) :: iivnew = 19
+      integer(kind=int_wp) :: iivelo = 20
+      integer(kind=int_wp) :: iiharm = 21
+      integer(kind=int_wp) :: iifarr = 22
+      integer(kind=int_wp) :: iimas2 = 23
+      integer(kind=int_wp) :: iitimr = 24
+      integer(kind=int_wp) :: iivol2 = 25
+      integer(kind=int_wp) :: iitrac = 26
+      integer(kind=int_wp) :: iigwrk = 27
+      integer(kind=int_wp) :: iighes = 28
+      integer(kind=int_wp) :: iigsol = 29
+      integer(kind=int_wp) :: iigdia = 30
+      integer(kind=int_wp) :: iigtri = 31
+      integer(kind=int_wp) :: iismas = 32
+      integer(kind=int_wp) :: iiploc = 33
+      integer(kind=int_wp) :: iidefa = 34
+      integer(kind=int_wp) :: iiflux = 35
+      integer(kind=int_wp) :: iistoc = 36
+      integer(kind=int_wp) :: iiflxd = 37
+      integer(kind=int_wp) :: iiflxi = 38
+      integer(kind=int_wp) :: iiriob = 39
+      integer(kind=int_wp) :: iidspx = 40
+      integer(kind=int_wp) :: iivelx = 41
+      integer(kind=int_wp) :: iilocx = 42
+      integer(kind=int_wp) :: iidsto = 43
+      integer(kind=int_wp) :: iivsto = 44
+      integer(kind=int_wp) :: iidmpq = 45
+      integer(kind=int_wp) :: iidmps = 46
+      integer(kind=int_wp) :: iitrra = 47
+      integer(kind=int_wp) :: iinrsp = 48
+      integer(kind=int_wp) :: iivoll = 49
+      integer(kind=int_wp) :: iivol3 = 50
+      integer(kind=int_wp) :: iir1 = 51
+      integer(kind=int_wp) :: iiqxk = 52
+      integer(kind=int_wp) :: iiqyk = 53
+      integer(kind=int_wp) :: iiqzk = 54
+      integer(kind=int_wp) :: iidifx = 55
+      integer(kind=int_wp) :: iidify = 56
+      integer(kind=int_wp) :: iidifz = 57
+      integer(kind=int_wp) :: iivola = 58
+      integer(kind=int_wp) :: iivolb = 59
+      integer(kind=int_wp) :: iiguv = 60
+      integer(kind=int_wp) :: iigvu = 61
+      integer(kind=int_wp) :: iigzz = 62
+      integer(kind=int_wp) :: iiaak = 63
+      integer(kind=int_wp) :: iibbk = 64
+      integer(kind=int_wp) :: iicck = 65
+      integer(kind=int_wp) :: iibd3x = 66
+      integer(kind=int_wp) :: iibddx = 67
+      integer(kind=int_wp) :: iibdx = 68
+      integer(kind=int_wp) :: iibu3x = 69
+      integer(kind=int_wp) :: iibuux = 70
+      integer(kind=int_wp) :: iibux = 71
+      integer(kind=int_wp) :: iiwrk1 = 72
+      integer(kind=int_wp) :: iiwrk2 = 73
+      integer(kind=int_wp) :: iiaakl = 74
+      integer(kind=int_wp) :: iibbkl = 75
+      integer(kind=int_wp) :: iicckl = 76
+      integer(kind=int_wp) :: iiddkl = 77
 
-        integer(kind = int_wp) :: ivvol, ivare, ivflo, ivlen, ivcns, ivpar, ivfun, ivsfu, &
-                ivcnc, ivmas, ivder, ivdsp, ivvel, ivdef, ivloc, ivdsx, &
-                ivvlx, ivlcx, ivflx
+      integer(kind=int_wp) :: ivvol, ivare, ivflo, ivlen, ivcns, ivpar, ivfun, ivsfu, &
+                              ivcnc, ivmas, ivder, ivdsp, ivvel, ivdef, ivloc, ivdsx, &
+                              ivvlx, ivlcx, ivflx
 
-        integer(kind = int_wp) :: ivar, icons, ipa, ifun, isys, isfun, idsp, ivel, iloc, &
-                idsx, ivlx, ilcx, idef, iflx
+      integer(kind=int_wp) :: ivar, icons, ipa, ifun, isys, isfun, idsp, ivel, iloc, &
+                              idsx, ivlx, ilcx, idef, iflx
 
-        integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("initialize_variables", ithandl)
+      integer(kind=int_wp) :: ithandl = 0
+      if (timon) call timstrt("initialize_variables", ithandl)
 
-        ivvol = 1
-        ivare = ivvol + 1
-        ivflo = ivare + 1
-        ivlen = ivflo + 1
-        ivcns = ivlen + 2
-        ivpar = ivcns + num_constants
-        ivfun = ivpar + num_spatial_parameters
-        ivsfu = ivfun + num_time_functions
-        ivcnc = ivsfu + num_spatial_time_fuctions
-        ivmas = ivcnc + num_substances_total
-        ivder = ivmas + num_substances_total
-        ivdsp = ivder + num_substances_total
-        ivvel = ivdsp + num_dispersion_arrays
-        ivdef = ivvel + num_velocity_arrays
-        ivloc = ivdef + num_defaults
-        ivdsx = ivloc + num_local_vars
-        ivvlx = ivdsx + num_dispersion_arrays_extra
-        ivlcx = ivvlx + num_velocity_arrays_extra
-        ivflx = ivlcx + num_local_vars_exchange
+      ivvol = 1
+      ivare = ivvol + 1
+      ivflo = ivare + 1
+      ivlen = ivflo + 1
+      ivcns = ivlen + 2
+      ivpar = ivcns + num_constants
+      ivfun = ivpar + num_spatial_parameters
+      ivsfu = ivfun + num_time_functions
+      ivcnc = ivsfu + num_spatial_time_fuctions
+      ivmas = ivcnc + num_substances_total
+      ivder = ivmas + num_substances_total
+      ivdsp = ivder + num_substances_total
+      ivvel = ivdsp + num_dispersion_arrays
+      ivdef = ivvel + num_velocity_arrays
+      ivloc = ivdef + num_defaults
+      ivdsx = ivloc + num_local_vars
+      ivvlx = ivdsx + num_dispersion_arrays_extra
+      ivlcx = ivvlx + num_velocity_arrays_extra
+      ivflx = ivlcx + num_local_vars_exchange
 
-        call initialize_integer_array(vgrset, num_vars * num_grids)
+      call initialize_integer_array(vgrset, num_vars * num_grids)
 
-        ivar = 1
-        vgrset(ivar, 1) = 1
-        ivar = ivar + 1
-        vgrset(ivar, 1) = 1
+      ivar = 1
+      vgrset(ivar, 1) = 1
+      ivar = ivar + 1
+      vgrset(ivar, 1) = 1
 
-        ! flow
-        ivar = ivar + 1
-        vgrset(ivar, 1) = 1
+      ! flow
+      ivar = ivar + 1
+      vgrset(ivar, 1) = 1
 
-        ! length , two length
-        ivar = ivar + 1
-        vgrset(ivar, 1) = 1
-        ivar = ivar + 1
-        vgrset(ivar, 1) = 1
+      ! length , two length
+      ivar = ivar + 1
+      vgrset(ivar, 1) = 1
+      ivar = ivar + 1
+      vgrset(ivar, 1) = 1
 
-        ! cons
-        do icons = 1, num_constants
-            ivar = ivar + 1
-            vgrset(ivar, 1) = 1
-        enddo
+      ! cons
+      do icons = 1, num_constants
+         ivar = ivar + 1
+         vgrset(ivar, 1) = 1
+      end do
 
-        ! param
-        do ipa = 1, num_spatial_parameters
-            ivar = ivar + 1
-            vgrset(ivar, 1) = 1
-        enddo
+      ! param
+      do ipa = 1, num_spatial_parameters
+         ivar = ivar + 1
+         vgrset(ivar, 1) = 1
+      end do
 
-        ! func
-        do ifun = 1, num_time_functions
-            ivar = ivar + 1
-            vgrset(ivar, 1) = 1
-        enddo
+      ! func
+      do ifun = 1, num_time_functions
+         ivar = ivar + 1
+         vgrset(ivar, 1) = 1
+      end do
 
-        ! seg func
-        do isfun = 1, num_spatial_time_fuctions
-            ivar = ivar + 1
-            vgrset(ivar, 1) = 1
-        enddo
+      ! seg func
+      do isfun = 1, num_spatial_time_fuctions
+         ivar = ivar + 1
+         vgrset(ivar, 1) = 1
+      end do
 
-        ! conc
-        do isys = 1, num_substances_transported
-            ivar = ivar + 1
-            vgrset(ivar, 1) = 1
-        enddo
-        do isys = num_substances_transported + 1, num_substances_total
-            ivar = ivar + 1
-            vgrset(ivar, 1) = 1
-        enddo
+      ! conc
+      do isys = 1, num_substances_transported
+         ivar = ivar + 1
+         vgrset(ivar, 1) = 1
+      end do
+      do isys = num_substances_transported + 1, num_substances_total
+         ivar = ivar + 1
+         vgrset(ivar, 1) = 1
+      end do
 
-        ! mass
-        do isys = 1, num_substances_total
-            ivar = ivar + 1
-            vgrset(ivar, 1) = 1
-        enddo
+      ! mass
+      do isys = 1, num_substances_total
+         ivar = ivar + 1
+         vgrset(ivar, 1) = 1
+      end do
 
-        do isys = 1, num_substances_total
-            ivar = ivar + 1
-        enddo
+      do isys = 1, num_substances_total
+         ivar = ivar + 1
+      end do
 
-        ! disp
-        do idsp = 1, num_dispersion_arrays
-            ivar = ivar + 1
-            vgrset(ivar, 1) = 1
-        enddo
+      ! disp
+      do idsp = 1, num_dispersion_arrays
+         ivar = ivar + 1
+         vgrset(ivar, 1) = 1
+      end do
 
-        ! velo
-        do ivel = 1, num_velocity_arrays
-            ivar = ivar + 1
-            vgrset(ivar, 1) = 1
-        enddo
+      ! velo
+      do ivel = 1, num_velocity_arrays
+         ivar = ivar + 1
+         vgrset(ivar, 1) = 1
+      end do
 
-        ! default
-        do idef = 1, num_defaults
-            ivar = ivar + 1
-            vgrset(ivar, 1) = 1
-        enddo
+      ! default
+      do idef = 1, num_defaults
+         ivar = ivar + 1
+         vgrset(ivar, 1) = 1
+      end do
 
-        do iloc = 1, num_local_vars
-            ivar = ivar + 1
-        enddo
+      do iloc = 1, num_local_vars
+         ivar = ivar + 1
+      end do
 
-        ! dspx
-        do idsx = 1, num_dispersion_arrays_extra
-            ivar = ivar + 1
-        enddo
+      ! dspx
+      do idsx = 1, num_dispersion_arrays_extra
+         ivar = ivar + 1
+      end do
 
-        ! velx
-        do ivlx = 1, num_velocity_arrays_extra
-            ivar = ivar + 1
-        enddo
+      ! velx
+      do ivlx = 1, num_velocity_arrays_extra
+         ivar = ivar + 1
+      end do
 
-        ! locx
-        do ilcx = 1, num_local_vars_exchange
-            ivar = ivar + 1
-        enddo
+      ! locx
+      do ilcx = 1, num_local_vars_exchange
+         ivar = ivar + 1
+      end do
 
-        ! flux
-        do iflx = 1, num_fluxes
-            ivar = ivar + 1
-        enddo
+      ! flux
+      do iflx = 1, num_fluxes
+         ivar = ivar + 1
+      end do
 
-        if (timon) call timstop (ithandl)
+      if (timon) call timstop(ithandl)
 
-    end subroutine initialize_variables
+   end subroutine initialize_variables
 
 end module workspace

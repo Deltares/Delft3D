@@ -21,113 +21,112 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dmvol
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine dmvol(process_space_real, fl, ipoint, increm, num_cells, &
+                    noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                    num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_extract_waq_attribute
 
-    subroutine dmvol  (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_extract_waq_attribute
+      !>\file
+      !>       Volume of dry matter in a segment
 
-        !>\file
-        !>       Volume of dry matter in a segment
+      !
+      !     Description of the module :
+      !
+      !        General water quality module for DELWAQ:
+      !
+      ! Name    T   L I/O   Description                                    Uni
+      ! ----    --- -  -    -------------------                            ---
 
-        !
-        !     Description of the module :
-        !
-        !        General water quality module for DELWAQ:
-        !
-        ! Name    T   L I/O   Description                                    Uni
-        ! ----    --- -  -    -------------------                            ---
+      !     Logical Units : -
 
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
 
-        !     Name     Type   Library
+      !     ------   -----  ------------
 
-        !     ------   -----  ------------
+      implicit real(A - H, J - Z)
+      implicit integer(I)
 
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      parameter(RHOWAT=1000000.)
 
-        PARAMETER (RHOWAT = 1000000.)
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
+      IP6 = IPOINT(6)
+      IP7 = IPOINT(7)
+      IP8 = IPOINT(8)
+      IP9 = IPOINT(9)
+      IP10 = IPOINT(10)
+      !
+      IFLUX = 0
+      do ISEG = 1, num_cells
+         call extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        IP10 = IPOINT(10)
-        !
-        IFLUX = 0
-        DO ISEG = 1, num_cells
-            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+         if (btest(IKNMRK(ISEG), 0)) then
 
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+            Surf = process_space_real(IP1)
+            Volume = process_space_real(IP2)
+            TIM = process_space_real(IP3)
+            POM = process_space_real(IP4)
+            RhoIM = process_space_real(IP5)
+            RhoOM = process_space_real(IP6)
 
-                Surf = process_space_real(IP1)
-                Volume = process_space_real(IP2)
-                TIM = process_space_real(IP3)
-                POM = process_space_real(IP4)
-                RhoIM = process_space_real(IP5)
-                RhoOM = process_space_real(IP6)
+            VolDM = (TIM / RhoIM + POM / RhoOM)
+            VolDM = min(1.0, VolDM)
+            VolDM = max(0.0, VolDM)
+            Poros = 1.0 - VolDM
+            Poros = min(0.999, Poros)
+            Poros = max(0.02, Poros)
+            VolDM = VolDM * Volume
+            Rho = (TIM + POM + Poros * RHOWAT)
 
-                VolDM = (TIM / RhoIM + POM / RhoOM)
-                VolDM = min (1.0, VolDM)
-                VolDM = max (0.0, VolDM)
-                Poros = 1.0 - VolDM
-                Poros = min(0.999, Poros)
-                Poros = max(0.02, Poros)
-                VolDM = VolDM * Volume
-                Rho = (TIM + POM + Poros * RHOWAT)
+            if (IKMRK1 == 3) then
+               ActTh = VOLUME / SURF
+            else
+               ActTh = 0.0
+            end if
 
-                IF (IKMRK1==3) THEN
-                    ActTh = VOLUME / SURF
-                ELSE
-                    ActTh = 0.0
-                ENDIF
+            process_space_real(IP7) = Poros
+            process_space_real(IP8) = Rho
+            process_space_real(IP9) = VolDM
+            process_space_real(IP10) = ActTh
 
-                process_space_real(IP7) = Poros
-                process_space_real(IP8) = Rho
-                process_space_real(IP9) = VolDM
-                process_space_real(IP10) = ActTh
-
-            ELSE
-                process_space_real(IP7) = 1.0
-                process_space_real(IP8) = RHOWAT
-                process_space_real(IP9) = 0.0
-                process_space_real(IP10) = 0.0
-            ENDIF
-            !
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + INCREM (1)
-            IP2 = IP2 + INCREM (2)
-            IP3 = IP3 + INCREM (3)
-            IP4 = IP4 + INCREM (4)
-            IP5 = IP5 + INCREM (5)
-            IP6 = IP6 + INCREM (6)
-            IP7 = IP7 + INCREM (7)
-            IP8 = IP8 + INCREM (8)
-            IP9 = IP9 + INCREM (9)
-            IP10 = IP10 + INCREM (10)
-            !
-        end do
-        !
-        RETURN
-        !
-    END
+         else
+            process_space_real(IP7) = 1.0
+            process_space_real(IP8) = RHOWAT
+            process_space_real(IP9) = 0.0
+            process_space_real(IP10) = 0.0
+         end if
+         !
+         IFLUX = IFLUX + NOFLUX
+         IP1 = IP1 + INCREM(1)
+         IP2 = IP2 + INCREM(2)
+         IP3 = IP3 + INCREM(3)
+         IP4 = IP4 + INCREM(4)
+         IP5 = IP5 + INCREM(5)
+         IP6 = IP6 + INCREM(6)
+         IP7 = IP7 + INCREM(7)
+         IP8 = IP8 + INCREM(8)
+         IP9 = IP9 + INCREM(9)
+         IP10 = IP10 + INCREM(10)
+         !
+      end do
+      !
+      return
+      !
+   end
 
 end module m_dmvol

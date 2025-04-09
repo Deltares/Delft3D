@@ -21,66 +21,65 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module waq_attribute_utils
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
-    private
-    public :: set_feature, evaluate_dimension_match
+   implicit none
+   private
+   public :: set_feature, evaluate_dimension_match
 
 contains
 
-
-    subroutine set_feature (feature_index, feature_value, update_value)
+   subroutine set_feature(feature_index, feature_value, update_value)
         !! Sets a specific feature in a multi-feature integer based on the provided index
         !!
         !! The feature is an integer with at most 9 10-base features.
         !! This routine sets a feature. Routine extract_waq_attribute is the mirror
         !! routine that reads the feature.
 
-        integer(kind = int_wp), intent(in) :: feature_index       !! Index of the feature to be set
-        integer(kind = int_wp), intent(inout) :: feature_value    !! Feature value to be modified
-        integer(kind = int_wp), intent(in) :: update_value        !! Value to update the feature with
+      integer(kind=int_wp), intent(in) :: feature_index !! Index of the feature to be set
+      integer(kind=int_wp), intent(inout) :: feature_value !! Feature value to be modified
+      integer(kind=int_wp), intent(in) :: update_value !! Value to update the feature with
 
-        integer(kind = int_wp) :: helper_value           ! to store lower order part
-        integer(kind = int_wp) :: power_ten          ! to store higher powers of 10
+      integer(kind=int_wp) :: helper_value ! to store lower order part
+      integer(kind=int_wp) :: power_ten ! to store higher powers of 10
 
-        if(feature_index == 1) then
-            feature_value = (feature_value / 10) * 10 + update_value
-        elseif (feature_index == 2) then
-            helper_value = mod(feature_value, 10)
-            feature_value = (feature_value / 100) * 100 + update_value * 10 + helper_value
-        elseif (feature_index == 3) then
-            helper_value = mod(feature_value, 100)
-            feature_value = (feature_value / 1000) * 1000 + update_value * 100 + helper_value
+      if (feature_index == 1) then
+         feature_value = (feature_value / 10) * 10 + update_value
+      elseif (feature_index == 2) then
+         helper_value = mod(feature_value, 10)
+         feature_value = (feature_value / 100) * 100 + update_value * 10 + helper_value
+      elseif (feature_index == 3) then
+         helper_value = mod(feature_value, 100)
+         feature_value = (feature_value / 1000) * 1000 + update_value * 100 + helper_value
 
-        elseif (feature_index <= 0 .or. feature_index > 9) then
-            feature_value = -999
-        else
-            power_ten = 10**feature_index + 0.5
-            helper_value = mod(feature_value, power_ten / 10)
-            feature_value = (feature_value / power_ten) * power_ten + update_value * power_ten / 10 + helper_value
-        endif
+      elseif (feature_index <= 0 .or. feature_index > 9) then
+         feature_value = -999
+      else
+         power_ten = 10**feature_index + 0.5
+         helper_value = mod(feature_value, power_ten / 10)
+         feature_value = (feature_value / power_ten) * power_ten + update_value * power_ten / 10 + helper_value
+      end if
 
-        return
-    end subroutine set_feature
+      return
+   end subroutine set_feature
 
-    subroutine evaluate_dimension_match (target_dimension, num_exchanges_3d, is_match)
+   subroutine evaluate_dimension_match(target_dimension, num_exchanges_3d, is_match)
 
-        ! utility that evaluates the TRswitch for the target model dimension
-        ! Evaluates if the target model dimension matches the number of 3D exchanges
+      ! utility that evaluates the TRswitch for the target model dimension
+      ! Evaluates if the target model dimension matches the number of 3D exchanges
 
-        integer(kind = int_wp), intent(in) :: target_dimension      !! Target dimension indicator
-        integer(kind = int_wp), intent(in) :: num_exchanges_3d      !! Number of exchanges in 3 direction.
-        logical, intent(out) :: is_match
+      integer(kind=int_wp), intent(in) :: target_dimension !! Target dimension indicator
+      integer(kind=int_wp), intent(in) :: num_exchanges_3d !! Number of exchanges in 3 direction.
+      logical, intent(out) :: is_match
 
-        is_match = .TRUE.
-        if (target_dimension == 3 .AND. num_exchanges_3d   == 0) then
-            is_match = .FALSE.
-        endif
+      is_match = .true.
+      if (target_dimension == 3 .and. num_exchanges_3d == 0) then
+         is_match = .false.
+      end if
 
-        if (target_dimension == 12 .AND. num_exchanges_3d   > 0) then
-            is_match = .FALSE.
-        end if
+      if (target_dimension == 12 .and. num_exchanges_3d > 0) then
+         is_match = .false.
+      end if
 
-    end subroutine evaluate_dimension_match
+   end subroutine evaluate_dimension_match
 end module waq_attribute_utils

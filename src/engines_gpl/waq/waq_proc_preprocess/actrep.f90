@@ -21,101 +21,100 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_actrep
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine actrep(noalg, noprot, namprot, nampact, nopralg, &
+                     nampralg, constants)
 
-    subroutine actrep(noalg, noprot, namprot, nampact, nopralg, &
-            nampralg, constants)
+      !     Deltares Software Centre
 
-        !     Deltares Software Centre
+      !>/File
+      !>      replace active proto processes with actual processes
 
-        !>/File
-        !>      replace active proto processes with actual processes
+      use m_logger_helper, only: stop_with_error, write_error_message, get_log_unit_number, write_log_message
+      use m_string_manipulation, only: upper_case
+      use m_string_manipulation, only: get_trimmed_length
+      use timers !< performance timers
+      use m_waq_data_structure !< data definitions
+      use processet !< use processet definitions
+      implicit none
 
-        use m_logger_helper, only : stop_with_error, write_error_message, get_log_unit_number, write_log_message
-        use m_string_manipulation, only : upper_case
-        use m_string_manipulation, only : get_trimmed_length
-        use timers         !< performance timers
-        use m_waq_data_structure      !< data definitions
-        use processet      !< use processet definitions
-        implicit none
+      ! decalaration of arguments
 
-        ! decalaration of arguments
+      integer(kind=int_wp), intent(in) :: noalg !< number of algae types
+      integer(kind=int_wp), intent(in) :: noprot !< number of proto processes ono to one
+      integer(kind=int_wp), intent(in) :: nopralg !< number of proto processes per algae type
+      character(len=*), intent(in) :: namprot(noprot) !< name proto processes
+      character(len=*), intent(in) :: nampact(noprot) !< name actual processes
+      character(len=*), intent(in) :: nampralg(noprot) !< name proto processes per algae type
+      type(t_waq_item), intent(inout) :: constants !< delwaq constants list
 
-        integer(kind = int_wp), intent(in) :: noalg             !< number of algae types
-        integer(kind = int_wp), intent(in) :: noprot            !< number of proto processes ono to one
-        integer(kind = int_wp), intent(in) :: nopralg           !< number of proto processes per algae type
-        character(len = *), intent(in) :: namprot(noprot)   !< name proto processes
-        character(len = *), intent(in) :: nampact(noprot)   !< name actual processes
-        character(len = *), intent(in) :: nampralg(noprot)  !< name proto processes per algae type
-        type(t_waq_item), intent(inout) :: constants         !< delwaq constants list
+      ! local decalaration
 
-        ! local decalaration
+      character(len=10) :: name1
+      character(len=20) :: name20
+      character(len=80) :: line
+      integer(kind=int_wp) :: num_constants
+      integer(kind=int_wp) :: nocon2
+      integer(kind=int_wp) :: ico
+      integer(kind=int_wp) :: ipro
+      integer(kind=int_wp) :: ilen
+      integer(kind=int_wp) :: ialg
+      integer(kind=int_wp) :: ierr2
+      integer(kind=int_wp) :: ithndl = 0
 
-        character(len=10) :: name1
-        character(len=20) :: name20
-        character(len=80) :: line
-        integer(kind = int_wp) :: num_constants
-        integer(kind = int_wp) :: nocon2
-        integer(kind = int_wp) :: ico
-        integer(kind = int_wp) :: ipro
-        integer(kind = int_wp) :: ilen
-        integer(kind = int_wp) :: ialg
-        integer(kind = int_wp) :: ierr2
-        integer(kind = int_wp) :: ithndl = 0
+      if (timon) call timstrt("actrep", ithndl)
 
-        if (timon) call timstrt("actrep", ithndl)
+      ! replace active proto processes with actual processes
 
-        ! replace active proto processes with actual processes
+      num_constants = constants%no_item
+      nocon2 = constants%no_item
+      do ico = 1, num_constants
+         call upper_case(constants%name(ico), name20, 20)
+         if (name20(1:6) == 'ACTIVE') then
 
-        num_constants = constants%no_item
-        nocon2 = constants%no_item
-        do ico = 1, num_constants
-            call upper_case(constants%name(ico), name20, 20)
-            if (name20(1:6) == 'ACTIVE') then
+            ! the one to one processes
 
-                ! the one to one processes
+            do ipro = 1, noprot
+               if (namprot(ipro) == name20(8:17)) then
+                  constants%name(ico) (8:) = nampact(ipro)
+               end if
+            end do
 
-                do ipro = 1, noprot
-                    if (namprot(ipro) == name20(8:17)) then
-                        constants%name(ico)(8:) = nampact(ipro)
-                    endif
-                enddo
+            ! the processes that need to be expanded for every algal type
 
-                ! the processes that need to be expanded for every algal type
+            do ipro = 1, nopralg
+               if (nampralg(ipro) == name20(8:17)) then
+                  name1 = nampralg(ipro)
+                  call get_trimmed_length(name1, ilen)
+                  do ialg = 1, noalg
+                     write (name1(ilen + 1:), '(i2.2)') ialg
+                     if (ialg == 1) then
+                        constants%name(ico) (8:) = name1
+                     else
+                        nocon2 = nocon2 + 1
+                        ierr2 = constants%resize(nocon2)
+                        if (ierr2 > 0) then
+                           write (line, '(a,i10)') ' ERROR: actrep resize error constants size:', nocon2
+                           call write_log_message(line)
+                           call stop_with_error()
+                        end if
+                        constants%no_item = nocon2
+                        constants%name(nocon2) = constants%name(ico)
+                        constants%name(nocon2) (8:) = name1
+                     end if
+                  end do
+               end if
+            end do
+         end if
+      end do
 
-                do ipro = 1, nopralg
-                    if (nampralg(ipro) == name20(8:17)) then
-                        name1 = nampralg(ipro)
-                        call get_trimmed_length(name1, ilen)
-                        do ialg = 1, noalg
-                            write(name1(ilen + 1:), '(i2.2)') ialg
-                            if (ialg == 1) then
-                                constants%name(ico)(8:) = name1
-                            else
-                                nocon2 = nocon2 + 1
-                                ierr2 = constants%resize(nocon2)
-                                if (ierr2 > 0) then
-                                    write(line, '(a,i10)') ' ERROR: actrep resize error constants size:', nocon2
-                                    call write_log_message(line)
-                                    call stop_with_error()
-                                endif
-                                constants%no_item = nocon2
-                                constants%name(nocon2) = constants%name(ico)
-                                constants%name(nocon2)(8:) = name1
-                            endif
-                        enddo
-                    endif
-                enddo
-            endif
-        enddo
-
-        if (timon) call timstop(ithndl)
-        return
-    end
+      if (timon) call timstop(ithndl)
+      return
+   end
 
 end module m_actrep

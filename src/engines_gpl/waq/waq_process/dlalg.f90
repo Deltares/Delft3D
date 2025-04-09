@@ -21,71 +21,70 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dlalg
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine dlalg(process_space_real, fl, ipoint, increm, num_cells, &
+                    noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                    num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_logger_helper, only: write_error_message
 
-    subroutine dlalg  (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_logger_helper, only : write_error_message
+      !>\file
+      !>       Daylength function for algae DYNAMO
 
-        !>\file
-        !>       Daylength function for algae DYNAMO
+      !
+      !     Description of the module :
+      !
+      ! Name    T   L I/O   Description                                   Unit
+      ! ----    --- -  -    -------------------                            ---
+      ! DL      R*4 1 I daylength (sunrise to sunset)                     [D]
+      ! KMDL    R*4 1 I daylength for growth saturation green-algea       [D]
 
-        !
-        !     Description of the module :
-        !
-        ! Name    T   L I/O   Description                                   Unit
-        ! ----    --- -  -    -------------------                            ---
-        ! DL      R*4 1 I daylength (sunrise to sunset)                     [D]
-        ! KMDL    R*4 1 I daylength for growth saturation green-algea       [D]
+      !     Logical Units : -
 
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
+      !     ------   -----  ------------
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
+      implicit real(A - H, J - Z)
+      implicit integer(I)
 
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      !
+      IFLUX = 0
+      do ISEG = 1, num_cells
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        !
-        IFLUX = 0
-        DO ISEG = 1, num_cells
-
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                !
-
-                DL = process_space_real(IP1)
-                KMDL = process_space_real(IP2)
-
-                IF (DL < 1E-20)  CALL write_error_message ('DL in DLALG zero')
-
-                !     Actueel licht / licht voor groei verzadiging
-                process_space_real(IP3) = MIN (DL, KMDL) / KMDL
-
-            ENDIF
+         if (btest(IKNMRK(ISEG), 0)) then
             !
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + INCREM (1)
-            IP2 = IP2 + INCREM (2)
-            IP3 = IP3 + INCREM (3)
-            !
-        end do
-        !
-        RETURN
-    END
+
+            DL = process_space_real(IP1)
+            KMDL = process_space_real(IP2)
+
+            if (DL < 1e-20) call write_error_message('DL in DLALG zero')
+
+            !     Actueel licht / licht voor groei verzadiging
+            process_space_real(IP3) = min(DL, KMDL) / KMDL
+
+         end if
+         !
+         IFLUX = IFLUX + NOFLUX
+         IP1 = IP1 + INCREM(1)
+         IP2 = IP2 + INCREM(2)
+         IP3 = IP3 + INCREM(3)
+         !
+      end do
+      !
+      return
+   end
 
 end module m_dlalg

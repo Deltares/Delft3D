@@ -21,59 +21,59 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_concentration_calculations
-    use m_waq_precision
-    use timers
+   use m_waq_precision
+   use timers
 
-    implicit none
+   implicit none
 
-    private
-    public :: calculate_concentrations_from_mass
+   private
+   public :: calculate_concentrations_from_mass
 
 contains
 
-    !> Restores concentration array after mass has changed by process routines
-    subroutine calculate_concentrations_from_mass(num_substances_transported, num_substances_total, &
-            num_substances_part, num_cells, volume, &
-            surface, amass, conc)
+   !> Restores concentration array after mass has changed by process routines
+   subroutine calculate_concentrations_from_mass(num_substances_transported, num_substances_total, &
+                                                 num_substances_part, num_cells, volume, &
+                                                 surface, amass, conc)
 
-        integer(kind = int_wp), intent(in) :: num_substances_transported          !< Number of transported substances
-        integer(kind = int_wp), intent(in) :: num_substances_total                 !< Total number of substances
-        integer(kind = int_wp), intent(in) :: num_substances_part                !< Number of particle substances
-        integer(kind = int_wp), intent(in) :: num_cells                 !< Number of computational volumes
-        real(kind = real_wp), intent(inout) :: volume(num_cells)        !< Volumes of the segments
-        real(kind = real_wp), intent(in) :: surface(num_cells)          !< Horizontal surface area
-        real(kind = real_wp), intent(inout) :: amass (num_substances_total, num_cells) !< Masses per substance per volume
-        real(kind = real_wp), intent(inout) :: conc  (num_substances_total, num_cells) !< Concentrations per substance per volume
+      integer(kind=int_wp), intent(in) :: num_substances_transported !< Number of transported substances
+      integer(kind=int_wp), intent(in) :: num_substances_total !< Total number of substances
+      integer(kind=int_wp), intent(in) :: num_substances_part !< Number of particle substances
+      integer(kind=int_wp), intent(in) :: num_cells !< Number of computational volumes
+      real(kind=real_wp), intent(inout) :: volume(num_cells) !< Volumes of the segments
+      real(kind=real_wp), intent(in) :: surface(num_cells) !< Horizontal surface area
+      real(kind=real_wp), intent(inout) :: amass(num_substances_total, num_cells) !< Masses per substance per volume
+      real(kind=real_wp), intent(inout) :: conc(num_substances_total, num_cells) !< Concentrations per substance per volume
 
-        ! Local variables
-        real(kind = real_wp) :: surf !< Horizontal surface area of the cell
-        real(kind = real_wp) :: vol  !< Auxiliary variable for this volume
+      ! Local variables
+      real(kind=real_wp) :: surf !< Horizontal surface area of the cell
+      real(kind=real_wp) :: vol !< Auxiliary variable for this volume
 
-        integer(kind = int_wp) :: substance_i !< Loop index substances
-        integer(kind = int_wp) :: cell_i !< Loop index computational volumes
+      integer(kind=int_wp) :: substance_i !< Loop index substances
+      integer(kind=int_wp) :: cell_i !< Loop index computational volumes
 
-        integer(kind = int_wp), save :: ithandl !< Timer handle
-        data       ithandl  /0/
+      integer(kind=int_wp), save :: ithandl !< Timer handle
+      data ithandl/0/
 
-        if (timon) call timstrt ("calculate_concentrations_from_mass", ithandl)
+      if (timon) call timstrt("calculate_concentrations_from_mass", ithandl)
 
-        ! loop along the number of computational volumes for the concentrations
-        do cell_i = 1, num_cells
-            ! check for positivity
-            vol = volume(cell_i)
-            surf = surface(cell_i)
-            if (abs(vol) < 1.0e-25) vol = 1.0
+      ! loop along the number of computational volumes for the concentrations
+      do cell_i = 1, num_cells
+         ! check for positivity
+         vol = volume(cell_i)
+         surf = surface(cell_i)
+         if (abs(vol) < 1.0e-25) vol = 1.0
 
-            ! transported substances first
-            do substance_i = 1, num_substances_transported
-                conc (substance_i, cell_i) = amass(substance_i, cell_i) / vol
-            end do
+         ! transported substances first
+         do substance_i = 1, num_substances_transported
+            conc(substance_i, cell_i) = amass(substance_i, cell_i) / vol
+         end do
 
-            ! then the passive substances
-            do substance_i = num_substances_transported + 1, num_substances_total - num_substances_part
-                conc(substance_i, cell_i) = amass(substance_i, cell_i) / surf
-            end do
-        end do
-        if (timon) call timstop (ithandl)
-    end subroutine calculate_concentrations_from_mass
+         ! then the passive substances
+         do substance_i = num_substances_transported + 1, num_substances_total - num_substances_part
+            conc(substance_i, cell_i) = amass(substance_i, cell_i) / surf
+         end do
+      end do
+      if (timon) call timstop(ithandl)
+   end subroutine calculate_concentrations_from_mass
 end module m_concentration_calculations

@@ -23,17 +23,17 @@
 
 module m_waq_precision
 
-    use, intrinsic :: iso_fortran_env
-    use, intrinsic :: iso_c_binding
-    implicit none
-    private
-    public :: INT16, INT64, int_wp, sp, dp, qp, real_wp, C_INTPTR_T
+   use, intrinsic :: iso_fortran_env
+   use, intrinsic :: iso_c_binding
+   implicit none
+   private
+   public :: int16, int64, int_wp, sp, dp, qp, real_wp, c_intptr_t
 
-    integer, parameter :: int_wp = INT32
+   integer, parameter :: int_wp = int32
 
-    integer, parameter :: sp = REAL32
-    integer, parameter :: real_wp = REAL32
-    integer, parameter :: dp = REAL64
-    integer, parameter :: qp = REAL128
+   integer, parameter :: sp = real32
+   integer, parameter :: real_wp = real32
+   integer, parameter :: dp = real64
+   integer, parameter :: qp = real128
 
 end module m_waq_precision

@@ -24,34 +24,34 @@
     !!  Module to help with the warning messages issued by PROTIST
 
 module m_protistlog
-    use m_logger_helper
+   use m_logger_helper
 
-    implicit none
+   implicit none
 
-    integer, private            :: message_counter = 0
-    integer, private, parameter :: max_counter     = 100
+   integer, private :: message_counter = 0
+   integer, private, parameter :: max_counter = 100
 
 contains
 
-    !> Write and count the warning
+   !> Write and count the warning
     !! But only actually write it if there are less than max_counter messages already
-    subroutine write_warning( string, cell )
-        character(len=*), intent(in)   :: string     !< String to written
-        integer, intent(in)            :: cell       !< Index of the cell (segment) that is involved
+   subroutine write_warning(string, cell)
+      character(len=*), intent(in) :: string !< String to written
+      integer, intent(in) :: cell !< Index of the cell (segment) that is involved
 
-        character(len=len(string)+10)  :: string_out
+      character(len=len(string) + 10) :: string_out
 
-        message_counter = message_counter + 1
+      message_counter = message_counter + 1
 
-        if ( message_counter <= max_counter ) then
-            write( string_out, '(a,x,i0)' ) string, cell
+      if (message_counter <= max_counter) then
+         write (string_out, '(a,x,i0)') string, cell
 
-            call write_log_message( string_out )
+         call write_log_message(string_out)
 
-            if ( message_counter == max_counter ) then
-                call write_log_message( "Maximum number of messages from PROTIST reached" )
-            endif
-        endif
-    end subroutine write_warning
+         if (message_counter == max_counter) then
+            call write_log_message("Maximum number of messages from PROTIST reached")
+         end if
+      end if
+   end subroutine write_warning
 
 end module m_protistLog

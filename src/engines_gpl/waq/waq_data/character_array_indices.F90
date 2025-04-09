@@ -22,49 +22,49 @@
 !!  rights reserved.
 
 module m_character_array_indices
-    !     Pointers in character array workspace
+   !     Pointers in character array workspace
 
-    integer :: IANAM   !    pointer to ARRNAM, array names
-    integer :: IMNAM   !    pointer to MNAME , model and run names
-    integer :: ISNAM   !    pointer to SNAME , substance names
-    integer :: IDNAM   !    pointer to DNAME , monitor station names
-    integer :: IBNID   !    pointer to BNDID , boundary ID's
-    integer :: IBNAM   !    pointer to BNAME , boundary names
-    integer :: IBTYP   !    pointer to BNTYP , boundary types
-    integer :: IWSID   !    pointer to WASTID, waste location ID's
-    integer :: IWNAM   !    pointer to WNAME , waste location names
-    integer :: IWTYP   !    pointer to WTYPE , waste location types
-    integer :: ICNAM   !    pointer to CONAM , constant names
-    integer :: IPNAM   !    pointer to PANAM , parameter names
-    integer :: IFNAM   !    pointer to FUNAM , functions names
-    integer :: ISFNA   !    pointer to SFNAM , segment functions names
-    integer :: IEDIT   !    pointer to CGRID , workspace for grid output
-    integer :: IPRNA   !    pointer to PRNAM , proces module name
-    integer :: IONAM   !    pointer to OUNAM , output variables names
-    integer :: IDINA   !    pointer to DINAM , dispersion array names
-    integer :: IVNAM   !    pointer to VENAM , velocity array names
-    integer :: IDANA   !    pointer to DANAM , dump area names
-    integer :: IRNAM   !    pointer to RANAM , transects names
-    integer :: ICBUF   !    pointer to CBUFF , character array buffer
-    integer :: ILUNT   !    pointer to LUNTX2, names of binary files
-    integer :: IOSNM   !    pointer to OUSNM , output variables standard names
-    integer :: IOUNI   !    pointer to OUUNI , output variables units
-    integer :: IODSC   !    pointer to OUDSC , output variables descriptions
-    integer :: ISSNM   !    pointer to OSSNM , substance standard names
-    integer :: ISUNI   !    pointer to OSUNI , substance units
-    integer :: ISDSC   !    pointer to OSDSC , substance descriptions
+   integer :: IANAM !    pointer to ARRNAM, array names
+   integer :: IMNAM !    pointer to MNAME , model and run names
+   integer :: ISNAM !    pointer to SNAME , substance names
+   integer :: IDNAM !    pointer to DNAME , monitor station names
+   integer :: IBNID !    pointer to BNDID , boundary ID's
+   integer :: IBNAM !    pointer to BNAME , boundary names
+   integer :: IBTYP !    pointer to BNTYP , boundary types
+   integer :: IWSID !    pointer to WASTID, waste location ID's
+   integer :: IWNAM !    pointer to WNAME , waste location names
+   integer :: IWTYP !    pointer to WTYPE , waste location types
+   integer :: ICNAM !    pointer to CONAM , constant names
+   integer :: IPNAM !    pointer to PANAM , parameter names
+   integer :: IFNAM !    pointer to FUNAM , functions names
+   integer :: ISFNA !    pointer to SFNAM , segment functions names
+   integer :: IEDIT !    pointer to CGRID , workspace for grid output
+   integer :: IPRNA !    pointer to PRNAM , proces module name
+   integer :: IONAM !    pointer to OUNAM , output variables names
+   integer :: IDINA !    pointer to DINAM , dispersion array names
+   integer :: IVNAM !    pointer to VENAM , velocity array names
+   integer :: IDANA !    pointer to DANAM , dump area names
+   integer :: IRNAM !    pointer to RANAM , transects names
+   integer :: ICBUF !    pointer to CBUFF , character array buffer
+   integer :: ILUNT !    pointer to LUNTX2, names of binary files
+   integer :: IOSNM !    pointer to OUSNM , output variables standard names
+   integer :: IOUNI !    pointer to OUUNI , output variables units
+   integer :: IODSC !    pointer to OUDSC , output variables descriptions
+   integer :: ISSNM !    pointer to OSSNM , substance standard names
+   integer :: ISUNI !    pointer to OSUNI , substance units
+   integer :: ISDSC !    pointer to OSDSC , substance descriptions
 
-    integer, parameter :: icsize = 29
+   integer, parameter :: icsize = 29
 
-    common / sysc / ianam, imnam, isnam, idnam, ibnid, &
-            ibnam, ibtyp, iwsid, iwnam, iwtyp, &
-            icnam, ipnam, ifnam, isfna, iedit, &
-            iprna, ionam, idina, ivnam, idana, &
-            irnam, icbuf, ilunt, iosnm, iouni, &
-            iodsc, issnm, isuni, isdsc
+   common / sysc / ianam, imnam, isnam, idnam, ibnid, &
+      ibnam, ibtyp, iwsid, iwnam, iwtyp, &
+      icnam, ipnam, ifnam, isfna, iedit, &
+      iprna, ionam, idina, ivnam, idana, &
+      irnam, icbuf, ilunt, iosnm, iouni, &
+      iodsc, issnm, isuni, isdsc
 
-    integer, parameter :: nr_car = icsize             ! total number of arrays
-    integer :: ip_car(nr_car)              ! help array to fill the common block / SYSA /
-    equivalence   (ianam, ip_car(1))              ! first entry equivalences with first entry common block
+   integer, parameter :: nr_car = icsize ! total number of arrays
+   integer :: ip_car(nr_car) ! help array to fill the common block / SYSA /
+   equivalence(ianam, ip_car(1)) ! first entry equivalences with first entry common block
 
 end module m_character_array_indices

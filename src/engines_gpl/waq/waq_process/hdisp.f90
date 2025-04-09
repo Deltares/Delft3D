@@ -21,130 +21,129 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_hdisp
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine hdisp(process_space_real, fl, ipoint, increm, num_cells, &
+                    noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                    num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !>\file
+      !>       (1D) Horizontal dispersion as velocity dependent reprofunction
 
-    subroutine hdisp  (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        !>\file
-        !>       (1D) Horizontal dispersion as velocity dependent reprofunction
+      !
+      !     Description of the module :
+      !
+      ! Name    T   L I/O   Description                                    Units
+      ! ----    --- -  -    -------------------                            -----
 
-        !
-        !     Description of the module :
-        !
-        ! Name    T   L I/O   Description                                    Units
-        ! ----    --- -  -    -------------------                            -----
+      !     Logical Units : -
 
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
+      !     ------   -----  ------------
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
+      implicit none
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        IMPLICIT NONE
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      integer(kind=int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7
+      integer(kind=int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7
+      real(kind=real_wp) :: VELOC, CHEZY, WIDTH, TOTDEP, alfaK, &
+                            VELOCV, CHEZYV, WIDTHV, TOTDPV, alfaKV, &
+                            VELOCN, CHEZYN, WIDTHN, TOTDPN, alfaKN, &
+                            term1, term2, g, DVAR, MAXDSP, MAXDSN, MAXDSV
+      integer(kind=int_wp) :: IVAN, INAAR, IQ
 
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7
-        INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7
-        REAL(kind = real_wp) :: VELOC, CHEZY, WIDTH, TOTDEP, alfaK, &
-                VELOCV, CHEZYV, WIDTHV, TOTDPV, alfaKV, &
-                VELOCN, CHEZYN, WIDTHN, TOTDPN, alfaKN, &
-                term1, term2, g, DVAR, MAXDSP, MAXDSN, MAXDSV
-        INTEGER(kind = int_wp) :: IVAN, INAAR, IQ
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
+      IP6 = IPOINT(6)
+      IP7 = IPOINT(7)
+      !
+      IN1 = INCREM(1)
+      IN2 = INCREM(2)
+      IN3 = INCREM(3)
+      IN4 = INCREM(4)
+      IN5 = INCREM(5)
+      IN6 = INCREM(6)
+      IN7 = INCREM(7)
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        !
-        IN1 = INCREM(1)
-        IN2 = INCREM(2)
-        IN3 = INCREM(3)
-        IN4 = INCREM(4)
-        IN5 = INCREM(5)
-        IN6 = INCREM(6)
-        IN7 = INCREM(7)
+      !.....Exchangeloop over de verticale en breedterichtingen om
+      !.....ze op 0 te zetten en over de verticale richting om deze
+      !.....te initialiseren
+      do IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
+         process_space_real(IP7) = 0.0
+         IP7 = IP7 + IN7
+      end do
 
-        !.....Exchangeloop over de verticale en breedterichtingen om
-        !.....ze op 0 te zetten en over de verticale richting om deze
-        !.....te initialiseren
-        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
-            process_space_real(IP7) = 0.0
-            IP7 = IP7 + IN7
-        ENDDO
+      !.....Exchangeloop over horizontale lengterichting
+      IP7 = IPOINT(7)
 
-        !.....Exchangeloop over horizontale lengterichting
-        IP7 = IPOINT(7)
+      do IQ = 1, num_exchanges_u_dir
 
-        DO IQ = 1, num_exchanges_u_dir
+         IVAN = IEXPNT(1, IQ)
+         INAAR = IEXPNT(2, IQ)
 
-            IVAN = IEXPNT(1, IQ)
-            INAAR = IEXPNT(2, IQ)
+         if (IVAN > 0 .or. INAAR > 0) then
 
-            IF (IVAN>0.OR.INAAR>0) THEN
+            if (IVAN <= 0) IVAN = INAAR
+            if (INAAR <= 0) INAAR = IVAN
 
-                IF (IVAN <= 0) IVAN = INAAR
-                IF (INAAR <= 0) INAAR = IVAN
+            VELOCV = process_space_real(IP1 + (IVAN - 1) * IN1)
+            WIDTHV = process_space_real(IP2 + (IVAN - 1) * IN2)
+            CHEZYV = process_space_real(IP3 + (IVAN - 1) * IN3)
+            TOTDPV = process_space_real(IP4 + (IVAN - 1) * IN4)
+            alfaKV = process_space_real(IP5 + (IVAN - 1) * IN5)
+            MAXDSV = process_space_real(IP6 + (IVAN - 1) * IN6)
 
-                VELOCV = process_space_real(IP1 + (IVAN - 1) * IN1)
-                WIDTHV = process_space_real(IP2 + (IVAN - 1) * IN2)
-                CHEZYV = process_space_real(IP3 + (IVAN - 1) * IN3)
-                TOTDPV = process_space_real(IP4 + (IVAN - 1) * IN4)
-                alfaKV = process_space_real(IP5 + (IVAN - 1) * IN5)
-                MAXDSV = process_space_real(IP6 + (IVAN - 1) * IN6)
+            VELOCN = process_space_real(IP1 + (INAAR - 1) * IN1)
+            WIDTHN = process_space_real(IP2 + (INAAR - 1) * IN2)
+            CHEZYN = process_space_real(IP3 + (INAAR - 1) * IN3)
+            TOTDPN = process_space_real(IP4 + (INAAR - 1) * IN4)
+            alfaKN = process_space_real(IP5 + (INAAR - 1) * IN5)
+            MAXDSN = process_space_real(IP6 + (INAAR - 1) * IN6)
 
-                VELOCN = process_space_real(IP1 + (INAAR - 1) * IN1)
-                WIDTHN = process_space_real(IP2 + (INAAR - 1) * IN2)
-                CHEZYN = process_space_real(IP3 + (INAAR - 1) * IN3)
-                TOTDPN = process_space_real(IP4 + (INAAR - 1) * IN4)
-                alfaKN = process_space_real(IP5 + (INAAR - 1) * IN5)
-                MAXDSN = process_space_real(IP6 + (INAAR - 1) * IN6)
+            VELOC = (VELOCV + VELOCN) / 2.
+            WIDTH = (WIDTHV + WIDTHN) / 2.
+            CHEZY = (CHEZYV + CHEZYN) / 2.
+            TOTDEP = (TOTDPV + TOTDPN) / 2.
+            alfaK = (alfaKV + alfaKN) / 2.
+            MAXDSP = (MAXDSV + MAXDSN) / 2.
 
-                VELOC = (VELOCV + VELOCN) / 2.
-                WIDTH = (WIDTHV + WIDTHN) / 2.
-                CHEZY = (CHEZYV + CHEZYN) / 2.
-                TOTDEP = (TOTDPV + TOTDPN) / 2.
-                alfaK = (alfaKV + alfaKN) / 2.
-                MAXDSP = (MAXDSV + MAXDSN) / 2.
+            g = 9.81
+            term1 = VELOC * WIDTH**2 * CHEZY
+            term2 = TOTDEP * g**0.5
+            DVAR = alfaK * term1 / term2
 
-                g = 9.81
-                term1 = VELOC * WIDTH ** 2 * CHEZY
-                term2 = TOTDEP * g ** 0.5
-                DVAR = alfaK * term1 / term2
+            !
+            ! Limit the horizontal dispersion, if the value of
+            ! MAXDSP on at least one side is positive
+            !
+            if (MAXDSV > 0.0 .and. MAXDSN > 0.0) then
+               process_space_real(IP7) = min(DVAR, MAXDSP)
+            else
+               MAXDSP = max(MAXDSV, MAXDSN)
+               if (MAXDSP > 0.0) then
+                  process_space_real(IP7) = min(DVAR, MAXDSP)
+               else
+                  process_space_real(IP7) = DVAR
+               end if
+            end if
 
-                !
-                ! Limit the horizontal dispersion, if the value of
-                ! MAXDSP on at least one side is positive
-                !
-                IF (MAXDSV > 0.0 .AND. MAXDSN > 0.0) THEN
-                    process_space_real(IP7) = MIN(DVAR, MAXDSP)
-                ELSE
-                    MAXDSP = MAX(MAXDSV, MAXDSN)
-                    IF (MAXDSP > 0.0) THEN
-                        process_space_real(IP7) = MIN(DVAR, MAXDSP)
-                    ELSE
-                        process_space_real(IP7) = DVAR
-                    ENDIF
-                ENDIF
+         end if
 
-            ENDIF
+         IP7 = IP7 + IN7
 
-            IP7 = IP7 + IN7
+      end do
 
-        ENDDO
-
-        RETURN
-    END
+      return
+   end
 
 end module m_hdisp

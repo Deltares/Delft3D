@@ -21,41 +21,40 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dhnolay
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine dhnolay(pnolay)
+      !
+      !     Deltares
+      !
+      !     created             : nov 07 by jan van beek
+      !
+      !     function            : get num_layers from /sysn/ common , system characteristics
+      !
+      !     logical unitnumbers : -
+      !
+      !     subroutines called  : -
+      !
+      !     parameters          : -
+      !
+      !     name    kind     length     funct.  description
+      !     ----    -----    ------     ------- -----------
+      !     pnolay  integer       1     output  copy of the num_layers from sysn
+      !
+      !     declarations
+      !
+      use m_waq_memory_dimensions ! System characteristics
+      integer(kind=int_wp) :: pnolay
+      !
+      !     common  /  sysn   /   system characteristics
+      !
 
-    subroutine dhnolay(pnolay)
-        !
-        !     Deltares
-        !
-        !     created             : nov 07 by jan van beek
-        !
-        !     function            : get num_layers from /sysn/ common , system characteristics
-        !
-        !     logical unitnumbers : -
-        !
-        !     subroutines called  : -
-        !
-        !     parameters          : -
-        !
-        !     name    kind     length     funct.  description
-        !     ----    -----    ------     ------- -----------
-        !     pnolay  integer       1     output  copy of the num_layers from sysn
-        !
-        !     declarations
-        !
-        use m_waq_memory_dimensions          ! System characteristics
-        integer(kind = int_wp) :: pnolay
-        !
-        !     common  /  sysn   /   system characteristics
-        !
+      pnolay = num_layers
 
-        pnolay = num_layers
-
-        return
-    end
+      return
+   end
 end module m_dhnolay

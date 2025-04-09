@@ -20,18 +20,16 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_rd_filid
-      use m_waq_precision
+module m_rd_filid
+   use m_waq_precision
 
+   implicit none
 
-      implicit none
+contains
 
-      contains
-
-
-      SUBROUTINE RD_FILID ( DEFFDS,         FFORM , VFFORM, CONTEN, & 
-                           VERSIO, SERIAL, RUNDAT, SOURCE, REMARK, & 
-                           LUNREP, IERROR)
+   subroutine RD_FILID(DEFFDS, FFORM, VFFORM, CONTEN, &
+                       VERSIO, SERIAL, RUNDAT, SOURCE, REMARK, &
+                       LUNREP, IERROR)
 !
 !     Deltares
 !
@@ -63,19 +61,19 @@
 !     IMPLICIT NONE for extra compiler checks
 !     SAVE to keep the group definition intact
 !
-      IMPLICIT NONE
-      SAVE
+      implicit none
+      save
 !
 !     declaration of arguments
 !
-      INTEGER(kind=int_wp) ::SERIAL      , LUNREP     , & 
-                   IERROR
-      INTEGER(kind=int_wp) ::DEFFDS
-      REAL(kind=real_wp) ::VFFORM      , VERSIO
-      character(len=20)  RUNDAT
-      character(len=40)  FFORM       , CONTEN     , & 
-                   SOURCE
-      character(len=40)  REMARK(4)
+      integer(kind=int_wp) :: SERIAL, LUNREP, &
+                              IERROR
+      integer(kind=int_wp) :: DEFFDS
+      real(kind=real_wp) :: VFFORM, VERSIO
+      character(len=20) RUNDAT
+      character(len=40) FFORM, CONTEN, &
+         SOURCE
+      character(len=40) REMARK(4)
 !
 !     Local variables
 !
@@ -86,38 +84,38 @@
 !     ELMDMS  INTEGER  6,NELEMS   LOCAL   dimension of elements
 !     NBYTSG  INTEGER  NELEMS     LOCAL   length of elements (bytes)
 !
-      INTEGER(kind=int_wp) ::NELEMS
-      PARAMETER   ( NELEMS = 8 )
+      integer(kind=int_wp) :: NELEMS
+      parameter(NELEMS=8)
 !
-      INTEGER(kind=int_wp) ::I               , IELM          , & 
-                   BUFLEN
-      INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
-                   UINDEX(3)
-      character(len=16)  GRPNAM
-      character(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      character(len=64)  ELMDES(NELEMS)
+      integer(kind=int_wp) :: I, IELM, &
+                              BUFLEN
+      integer(kind=int_wp) :: ELMDMS(2, NELEMS), NBYTSG(NELEMS), &
+                              UINDEX(3)
+      character(len=16) GRPNAM
+      character(len=16) ELMNMS(NELEMS), ELMTPS(NELEMS)
+      character(len=64) ELMDES(NELEMS)
 !
 !     External NEFIS Functions
 !
-      INTEGER(kind=int_wp) ::GETELS & 
-              ,GETELT
-      EXTERNAL  GETELS & 
-              ,GETELT
+      integer(kind=int_wp) :: GETELS &
+                              , GETELT
+      external GETELS &
+         , GETELT
 !
 !     element names
 !
-      DATA  GRPNAM  /'FILE_ID'/
-      DATA & 
-      (ELMNMS(I),ELMTPS(I),NBYTSG(I),ELMDMS(1,I),ELMDMS(2,I),ELMDES(I), & 
-       I = 1 , NELEMS) & 
-     /'FFORM ', 'CHARACTER', 40, 1, 1,'File Format                   ', & 
-      'VFFORM', 'REAL'     ,  4, 1, 1,'Version File Format           ', & 
-      'CONTEN', 'CHARACTER', 40, 1, 1,'File contents                 ', & 
-      'VERSIO', 'REAL'     ,  4, 1, 1,'Version number process library', & 
-      'SERIAL', 'INTEGER'  ,  4, 1, 1,'File serial number            ', & 
-      'RUNDAT', 'CHARACTER', 20, 1, 1,'Creation date                 ', & 
-      'SOURCE', 'CHARACTER', 40, 1, 1,'Source data                   ', & 
-      'REMARK', 'CHARACTER', 40, 1, 4,'Remarks                       '/
+      data GRPNAM/'FILE_ID'/
+      data &
+         (ELMNMS(I), ELMTPS(I), NBYTSG(I), ELMDMS(1, I), ELMDMS(2, I), ELMDES(I), &
+          I=1, NELEMS) &
+         /'FFORM ', 'CHARACTER', 40, 1, 1, 'File Format                   ', &
+         'VFFORM', 'REAL', 4, 1, 1, 'Version File Format           ', &
+         'CONTEN', 'CHARACTER', 40, 1, 1, 'File contents                 ', &
+         'VERSIO', 'REAL', 4, 1, 1, 'Version number process library', &
+         'SERIAL', 'INTEGER', 4, 1, 1, 'File serial number            ', &
+         'RUNDAT', 'CHARACTER', 20, 1, 1, 'Creation date                 ', &
+         'SOURCE', 'CHARACTER', 40, 1, 1, 'Source data                   ', &
+         'REMARK', 'CHARACTER', 40, 1, 4, 'Remarks                       '/
 !
 !     Read group
 !
@@ -125,97 +123,97 @@
       UINDEX(2) = 1
       UINDEX(3) = 1
 
-      BUFLEN = NBYTSG(1)*ELMDMS(2,1)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(1), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , FFORM    )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(1)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(1) * ELMDMS(2, 1)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(1), &
+                      UINDEX, 1, &
+                      BUFLEN, FFORM)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(1)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 
-      BUFLEN = NBYTSG(2)*ELMDMS(2,2)
-      IERROR = GETELT (DEFFDS , & 
-                      GRPNAM , ELMNMS(2), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , VFFORM   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(2)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(2) * ELMDMS(2, 2)
+      IERROR = GETELT(DEFFDS, &
+                      GRPNAM, ELMNMS(2), &
+                      UINDEX, 1, &
+                      BUFLEN, VFFORM)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(2)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 
-      BUFLEN = NBYTSG(3)*ELMDMS(2,3)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(3), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , CONTEN   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(3)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(3) * ELMDMS(2, 3)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(3), &
+                      UINDEX, 1, &
+                      BUFLEN, CONTEN)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(3)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 
-      BUFLEN = NBYTSG(4)*ELMDMS(2,4)
-      IERROR = GETELT (DEFFDS , & 
-                      GRPNAM , ELMNMS(4), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , VERSIO   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(4)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(4) * ELMDMS(2, 4)
+      IERROR = GETELT(DEFFDS, &
+                      GRPNAM, ELMNMS(4), &
+                      UINDEX, 1, &
+                      BUFLEN, VERSIO)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(4)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 
-      BUFLEN = NBYTSG(5)*ELMDMS(2,5)
-      IERROR = GETELT (DEFFDS , & 
-                      GRPNAM , ELMNMS(5), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , SERIAL   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(5)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(5) * ELMDMS(2, 5)
+      IERROR = GETELT(DEFFDS, &
+                      GRPNAM, ELMNMS(5), &
+                      UINDEX, 1, &
+                      BUFLEN, SERIAL)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(5)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 
-      BUFLEN = NBYTSG(6)*ELMDMS(2,6)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(6), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , RUNDAT   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(6)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(6) * ELMDMS(2, 6)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(6), &
+                      UINDEX, 1, &
+                      BUFLEN, RUNDAT)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(6)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 
-      BUFLEN = NBYTSG(7)*ELMDMS(2,7)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(7), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , SOURCE   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(7)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(7) * ELMDMS(2, 7)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(7), &
+                      UINDEX, 1, &
+                      BUFLEN, SOURCE)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(7)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 
-      BUFLEN = NBYTSG(8)*ELMDMS(2,8)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(8), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , REMARK   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(8)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(8) * ELMDMS(2, 8)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(8), &
+                      UINDEX, 1, &
+                      BUFLEN, REMARK)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(8)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 !
-  900 CONTINUE
-      RETURN
+900   continue
+      return
 !
-      END
+   end
 
-      end module m_rd_filid
+end module m_rd_filid

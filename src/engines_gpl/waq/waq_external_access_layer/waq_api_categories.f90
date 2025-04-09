@@ -22,15 +22,15 @@
 !!  rights reserved.
 
 module m_waq_api_categories
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
-    integer(kind=int_wp), parameter :: category_hydrodynamics = 1  ! Placeholder!
-    integer(kind=int_wp), parameter :: category_boundary = 2
-    integer(kind=int_wp), parameter :: category_wasteload = 3
-    integer(kind=int_wp), parameter :: category_segment = 4
-    integer(kind=int_wp), parameter :: category_monitorpoint = 5
-    integer(kind=int_wp), parameter :: category_procparam = 6
+   integer(kind=int_wp), parameter :: category_hydrodynamics = 1 ! Placeholder!
+   integer(kind=int_wp), parameter :: category_boundary = 2
+   integer(kind=int_wp), parameter :: category_wasteload = 3
+   integer(kind=int_wp), parameter :: category_segment = 4
+   integer(kind=int_wp), parameter :: category_monitorpoint = 5
+   integer(kind=int_wp), parameter :: category_procparam = 6
 
 end module m_waq_api_categories

@@ -20,19 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_rd_tabp1
-      use m_waq_precision
+module m_rd_tabp1
+   use m_waq_precision
 
+   implicit none
 
-      implicit none
+contains
 
-      contains
-
-
-      SUBROUTINE RD_TABP1 ( DEFFDS      , & 
-                           NO_SGRP_MAX , NO_SGRP     , & 
-                           SGRP_ID     , SGRP_NAME   , & 
-                           LUNREP      , IERROR      )
+   subroutine RD_TABP1(DEFFDS, &
+                       NO_SGRP_MAX, NO_SGRP, &
+                       SGRP_ID, SGRP_NAME, &
+                       LUNREP, IERROR)
 !
 !     Deltares
 !
@@ -60,16 +58,16 @@
 !     IMPLICIT NONE for extra compiler checks
 !     SAVE to keep the group definition intact
 !
-      IMPLICIT NONE
-      SAVE
+      implicit none
+      save
 !
 !     declaration of arguments
 !
-      INTEGER(kind=int_wp) ::NO_SGRP_MAX , NO_SGRP     , & 
-                   LUNREP      , IERROR
-      INTEGER(kind=int_wp) ::DEFFDS
-      character(len=30)  SGRP_ID     (NO_SGRP_MAX)
-      character(len=50)  SGRP_NAME   (NO_SGRP_MAX)
+      integer(kind=int_wp) :: NO_SGRP_MAX, NO_SGRP, &
+                              LUNREP, IERROR
+      integer(kind=int_wp) :: DEFFDS
+      character(len=30) SGRP_ID(NO_SGRP_MAX)
+      character(len=50) SGRP_NAME(NO_SGRP_MAX)
 !
 !     Local variables
 !
@@ -80,33 +78,33 @@
 !     ELMDMS  INTEGER  6,NELEMS   LOCAL   dimension of elements
 !     NBYTSG  INTEGER  NELEMS     LOCAL   length of elements (bytes)
 !
-      INTEGER(kind=int_wp) ::NELEMS
-      PARAMETER   ( NELEMS = 3 )
+      integer(kind=int_wp) :: NELEMS
+      parameter(NELEMS=3)
 !
-      INTEGER(kind=int_wp) ::I               , IELM          , & 
-                   BUFLEN
-      INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
-                   UINDEX(3)
-      character(len=16)  GRPNAM
-      character(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      character(len=64)  ELMDES(NELEMS)
+      integer(kind=int_wp) :: I, IELM, &
+                              BUFLEN
+      integer(kind=int_wp) :: ELMDMS(2, NELEMS), NBYTSG(NELEMS), &
+                              UINDEX(3)
+      character(len=16) GRPNAM
+      character(len=16) ELMNMS(NELEMS), ELMTPS(NELEMS)
+      character(len=64) ELMDES(NELEMS)
 !
 !     External NEFIS Functions
 !
-      INTEGER(kind=int_wp) ::GETELS & 
-              ,GETELT
-      EXTERNAL  GETELS & 
-              ,GETELT
+      integer(kind=int_wp) :: GETELS &
+                              , GETELT
+      external GETELS &
+         , GETELT
 !
 !     element names
 !
-      DATA  GRPNAM  /'TABLE_P1'/
-      DATA & 
-      (ELMNMS(I),ELMTPS(I),NBYTSG(I),ELMDMS(1,I),ELMDMS(2,I),ELMDES(I), & 
-       I = 1 , NELEMS) & 
-     /'NO_SGRP'  ,'INTEGER'  , 4,1,1,'number of substance groups'     , & 
-      'SGRP_ID'  ,'CHARACTER',30,1,0,'unique group identification'    , & 
-      'SGRP_NAME','CHARACTER',50,1,0,'substance group name'           /
+      data GRPNAM/'TABLE_P1'/
+      data &
+         (ELMNMS(I), ELMTPS(I), NBYTSG(I), ELMDMS(1, I), ELMDMS(2, I), ELMDES(I), &
+          I=1, NELEMS) &
+         /'NO_SGRP', 'INTEGER', 4, 1, 1, 'number of substance groups', &
+         'SGRP_ID', 'CHARACTER', 30, 1, 0, 'unique group identification', &
+         'SGRP_NAME', 'CHARACTER', 50, 1, 0, 'substance group name'/
 !
 !     Read group
 !
@@ -114,55 +112,55 @@
       UINDEX(2) = 1
       UINDEX(3) = 1
 
-      BUFLEN = NBYTSG(1)*ELMDMS(2,1)
-      IERROR = GETELT (DEFFDS , & 
-                      GRPNAM , ELMNMS(1), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , NO_SGRP  )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(1)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
-      IF ( NO_SGRP > NO_SGRP_MAX ) THEN
-         WRITE(LUNREP,*) 'ERROR reading group',GRPNAM
-         WRITE(LUNREP,*) 'Actual number of substance groups:',NO_SGRP
-         WRITE(LUNREP,*) 'greater than maximum:',NO_SGRP_MAX
+      BUFLEN = NBYTSG(1) * ELMDMS(2, 1)
+      IERROR = GETELT(DEFFDS, &
+                      GRPNAM, ELMNMS(1), &
+                      UINDEX, 1, &
+                      BUFLEN, NO_SGRP)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(1)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
+      if (NO_SGRP > NO_SGRP_MAX) then
+         write (LUNREP, *) 'ERROR reading group', GRPNAM
+         write (LUNREP, *) 'Actual number of substance groups:', NO_SGRP
+         write (LUNREP, *) 'greater than maximum:', NO_SGRP_MAX
          IERROR = 1
-         GOTO 900
-      ENDIF
+         goto 900
+      end if
 !
 !     Set dimension of table
 !
-      DO IELM = 2 , NELEMS
-         ELMDMS(2,IELM) = NO_SGRP
-      ENDDO
+      do IELM = 2, NELEMS
+         ELMDMS(2, IELM) = NO_SGRP
+      end do
 
-      BUFLEN = NBYTSG(2)*ELMDMS(2,2)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(2), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , SGRP_ID  )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(2)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(2) * ELMDMS(2, 2)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(2), &
+                      UINDEX, 1, &
+                      BUFLEN, SGRP_ID)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(2)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 
-      BUFLEN = NBYTSG(3)*ELMDMS(2,3)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(3), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , SGRP_NAME)
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(3)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(3) * ELMDMS(2, 3)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(3), &
+                      UINDEX, 1, &
+                      BUFLEN, SGRP_NAME)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(3)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 !
-  900 CONTINUE
-      RETURN
+900   continue
+      return
 !
-      END
+   end
 
-      end module m_rd_tabp1
+end module m_rd_tabp1

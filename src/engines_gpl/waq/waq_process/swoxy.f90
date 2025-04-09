@@ -21,102 +21,101 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_swoxy
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine swoxy(process_space_real, fl, ipoint, increm, num_cells, &
+                    noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                    num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !>\file
+      !>       Partitioning switch in WC, S1 and S2 based on actual and critical oxygen concentration
 
-    subroutine swoxy  (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        !>\file
-        !>       Partitioning switch in WC, S1 and S2 based on actual and critical oxygen concentration
+      !
+      !     Description of the module :
+      !
+      ! Name    T   L I/O   Description                                    Units
+      ! ----    --- -  -    -------------------                            -----
+      ! OXY     R*4 1 I     oxygen concentration                           [gO/m3]
+      ! CROXY   R*4 1 I     critical oxygen concentration                  [gO/m3]
+      ! SWITCH  R*4 1 O     switch for partitioning                        [-]
+      !     Logical Units : -
 
-        !
-        !     Description of the module :
-        !
-        ! Name    T   L I/O   Description                                    Units
-        ! ----    --- -  -    -------------------                            -----
-        ! OXY     R*4 1 I     oxygen concentration                           [gO/m3]
-        ! CROXY   R*4 1 I     critical oxygen concentration                  [gO/m3]
-        ! SWITCH  R*4 1 O     switch for partitioning                        [-]
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
+      !     ------   -----  ------------
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
+      implicit none
 
-        IMPLICIT NONE
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      integer(kind=int_wp) :: ISEG, &
+                              IP1, IP2, IP3, IP4, IP5, IP6, &
+                              IN1, IN2, IN3, IN4, IN5, IN6
 
-        INTEGER(kind = int_wp) :: ISEG, &
-                IP1, IP2, IP3, IP4, IP5, IP6, &
-                IN1, IN2, IN3, IN4, IN5, IN6
+      integer(kind=int_wp) :: ISWWK, ISWS1, ISWS2
+      real(kind=real_wp) :: OXY, CROXY, POROS
 
-        INTEGER(kind = int_wp) :: ISWWK, ISWS1, ISWS2
-        REAL(kind = real_wp) :: OXY, CROXY, POROS
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
+      IP6 = IPOINT(6)
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
+      IN1 = INCREM(1)
+      IN2 = INCREM(2)
+      IN3 = INCREM(3)
+      IN4 = INCREM(4)
+      IN5 = INCREM(5)
+      IN6 = INCREM(6)
+      !
+      do ISEG = 1, num_cells
 
-        IN1 = INCREM(1)
-        IN2 = INCREM(2)
-        IN3 = INCREM(3)
-        IN4 = INCREM(4)
-        IN5 = INCREM(5)
-        IN6 = INCREM(6)
-        !
-        DO ISEG = 1, num_cells
-
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                !
-                OXY = process_space_real(IP1)
-                CROXY = process_space_real(IP2)
-                POROS = process_space_real(IP3)
-
-                !*******************************************************************************
-                !**** if OXY > CROXY ISWOXY = 1  in Water Column and S1 (poriewater)
-                !****           else ISWOXY = 0  in Water Column and S1 (poriewater)
-                !****                ISWOXY = 0  always in S2
-                !***********************************************************************
-
-                IF (OXY / POROS<=CROXY) THEN
-                    ISWWK = 0
-                    ISWS1 = 0
-                    ISWS2 = 0
-                ELSE
-                    ISWWK = 1
-                    ISWS1 = 1
-                    ISWS2 = 0
-                ENDIF
-
-                process_space_real(IP4) = ISWWK
-                process_space_real(IP5) = ISWS1
-                process_space_real(IP6) = ISWS2
-
-            ENDIF
+         if (btest(IKNMRK(ISEG), 0)) then
             !
-            IP1 = IP1 + IN1
-            IP2 = IP2 + IN2
-            IP3 = IP3 + IN3
-            IP4 = IP4 + IN4
-            IP5 = IP5 + IN5
-            IP6 = IP6 + IN6
-            !
-        end do
-        !
-        RETURN
-        !
-    END
+            OXY = process_space_real(IP1)
+            CROXY = process_space_real(IP2)
+            POROS = process_space_real(IP3)
+
+            !*******************************************************************************
+            !**** if OXY > CROXY ISWOXY = 1  in Water Column and S1 (poriewater)
+            !****           else ISWOXY = 0  in Water Column and S1 (poriewater)
+            !****                ISWOXY = 0  always in S2
+            !***********************************************************************
+
+            if (OXY / POROS <= CROXY) then
+               ISWWK = 0
+               ISWS1 = 0
+               ISWS2 = 0
+            else
+               ISWWK = 1
+               ISWS1 = 1
+               ISWS2 = 0
+            end if
+
+            process_space_real(IP4) = ISWWK
+            process_space_real(IP5) = ISWS1
+            process_space_real(IP6) = ISWS2
+
+         end if
+         !
+         IP1 = IP1 + IN1
+         IP2 = IP2 + IN2
+         IP3 = IP3 + IN3
+         IP4 = IP4 + IN4
+         IP5 = IP5 + IN5
+         IP6 = IP6 + IN6
+         !
+      end do
+      !
+      return
+      !
+   end
 
 end module m_swoxy

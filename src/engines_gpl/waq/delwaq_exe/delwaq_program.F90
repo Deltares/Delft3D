@@ -23,62 +23,62 @@
 
 program delwaq
 
-    use m_delwaq1, only: delwaq1
-    use m_delwaq2, only: delwaq2
-    use delwaq_exe_version_module, only: get_fullversionstring_delwaq
+   use m_delwaq1, only: delwaq1
+   use m_delwaq2, only: delwaq2
+   use delwaq_exe_version_module, only: get_fullversionstring_delwaq
 
-    use m_logger_factory, only: create_logger
-    use m_logger_type, only: file
-    use m_logger, only: logger
-    use m_log_level, only: info_level
+   use m_logger_factory, only: create_logger
+   use m_logger_type, only: file
+   use m_logger, only: logger
+   use m_log_level, only: info_level
 
-    use m_command_line_help, only: show_command_line_help, show_command_line_version
-    use m_string_utils, only: join_strings
-    use m_cli_utils, only: get_arguments, store_command_arguments, is_command_arg_specified
+   use m_command_line_help, only: show_command_line_help, show_command_line_version
+   use m_string_utils, only: join_strings
+   use m_cli_utils, only: get_arguments, store_command_arguments, is_command_arg_specified
 
-    implicit none
+   implicit none
 
-    character(len=256), dimension(:), allocatable :: argv
-    character(:), allocatable :: id_str
-    character(len=10) :: log_file_path
+   character(len=256), dimension(:), allocatable :: argv
+   character(:), allocatable :: id_str
+   character(len=10) :: log_file_path
 
-    class(logger), allocatable :: log
+   class(logger), allocatable :: log
 
-    call get_fullversionstring_delwaq(id_str)
+   call get_fullversionstring_delwaq(id_str)
 
-    if (is_command_arg_specified('--help') .or. &
-        is_command_arg_specified('-h') .or. &
-        is_command_arg_specified('/?')) then
-        call show_command_line_help(id_str)
-        stop 0
-    end if
+   if (is_command_arg_specified('--help') .or. &
+       is_command_arg_specified('-h') .or. &
+       is_command_arg_specified('/?')) then
+      call show_command_line_help(id_str)
+      stop 0
+   end if
 
-    if (is_command_arg_specified('--version') .or. &
-        is_command_arg_specified('-v')) then
-        call show_command_line_version()
-        stop 0
-    end if
+   if (is_command_arg_specified('--version') .or. &
+       is_command_arg_specified('-v')) then
+      call show_command_line_version()
+      stop 0
+   end if
 
-    ! initialize logging
-    log_file_path = 'delwaq.log'
-    log = create_logger(file, info_level, log_file_path)
+   ! initialize logging
+   log_file_path = 'delwaq.log'
+   log = create_logger(file, info_level, log_file_path)
 
-    argv = get_arguments()
-    call log%log_info('Running: '//trim(id_str))
-    call log%log_info('Provided arguments: '//join_strings(argv(1:), ', '))
+   argv = get_arguments()
+   call log%log_info('Running: '//trim(id_str))
+   call log%log_info('Provided arguments: '//join_strings(argv(1:), ', '))
 
-    if (.not. delwaq1(argv)) then
-        call log%log_error('Error during delwaq pre-processing')
-        stop 1
-    end if
+   if (.not. delwaq1(argv)) then
+      call log%log_error('Error during delwaq pre-processing')
+      stop 1
+   end if
 
-    if (.not. is_command_arg_specified('-validation_mode')) then
-        if (.not. delwaq2()) then
-            call log%log_error('Error during delwaq processing')
-            stop 1
-        end if
-    end if
+   if (.not. is_command_arg_specified('-validation_mode')) then
+      if (.not. delwaq2()) then
+         call log%log_error('Error during delwaq processing')
+         stop 1
+      end if
+   end if
 
-    call log%log_info('Normal end', .true.)
-    write(*, *) 'Normal end'
+   call log%log_info('Normal end', .true.)
+   write (*, *) 'Normal end'
 end program delwaq

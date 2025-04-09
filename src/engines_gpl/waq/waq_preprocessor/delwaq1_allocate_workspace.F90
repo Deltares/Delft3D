@@ -21,52 +21,52 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq1_allocate_workspace
-    use m_waq_precision
-    use m_delwaq1_write_messages
-    use m_error_status
+   use m_waq_precision
+   use m_delwaq1_write_messages
+   use m_error_status
 
-    implicit none
+   implicit none
 
 contains
 
-    !>\file
-    !>                    delwaq1_allocate_workspace
+   !>\file
+   !>                    delwaq1_allocate_workspace
 
-    subroutine delwaq1_allocate_workspace(status)
-        use m_delwaq1_data
+   subroutine delwaq1_allocate_workspace(status)
+      use m_delwaq1_data
 
-        implicit none
+      implicit none
 
-        logical :: parsing_error
+      logical :: parsing_error
 
-        type(error_status), intent(inout) :: status !< current error status
+      type(error_status), intent(inout) :: status !< current error status
 
-        !  allocate workspace
-        imax = max_int_size
-        rmax = max_real_size
-        cmax = max_char_size
+      !  allocate workspace
+      imax = max_int_size
+      rmax = max_real_size
+      cmax = max_char_size
 
-        allocate (iar(imax), stat = ierr_alloc)
-        if (ierr_alloc /= 0) then
-            write (lunrep, '(A,I6,A,I12)') " ERROR: allocating integer work array:", ierr_alloc, " with length:", imax
-            status%ierr = 1
-            call delwaq1_write_messages(status)
-            return
-        end if
-        allocate (real_array(rmax), stat = ierr_alloc)
-        if (ierr_alloc /= 0) then
-            write (lunrep, '(A,I6,A,I12)') " ERROR: allocating real work array:", ierr_alloc, " with length:", rmax
-            status%ierr = 1
-            call delwaq1_write_messages(status)
-            return
-        end if
-        allocate (char_arr(cmax), stat = ierr_alloc)
-        if (ierr_alloc /= 0) then
-            write (lunrep, '(A,I6,A,I12)') " ERROR: allocating character work array:", ierr_alloc, " with length:", cmax
-            status%ierr = 1
-            call delwaq1_write_messages(status)
-            return
-        end if
+      allocate (iar(imax), stat=ierr_alloc)
+      if (ierr_alloc /= 0) then
+         write (lunrep, '(A,I6,A,I12)') " ERROR: allocating integer work array:", ierr_alloc, " with length:", imax
+         status%ierr = 1
+         call delwaq1_write_messages(status)
+         return
+      end if
+      allocate (real_array(rmax), stat=ierr_alloc)
+      if (ierr_alloc /= 0) then
+         write (lunrep, '(A,I6,A,I12)') " ERROR: allocating real work array:", ierr_alloc, " with length:", rmax
+         status%ierr = 1
+         call delwaq1_write_messages(status)
+         return
+      end if
+      allocate (char_arr(cmax), stat=ierr_alloc)
+      if (ierr_alloc /= 0) then
+         write (lunrep, '(A,I6,A,I12)') " ERROR: allocating character work array:", ierr_alloc, " with length:", cmax
+         status%ierr = 1
+         call delwaq1_write_messages(status)
+         return
+      end if
 
-    end subroutine delwaq1_allocate_workspace
+   end subroutine delwaq1_allocate_workspace
 end module m_delwaq1_allocate_workspace

@@ -21,93 +21,92 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_intpol
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine intpol(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !>\file
+      !>       Depth where wave is created or wind fetch from wind direction
 
-    subroutine intpol (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        !>\file
-        !>       Depth where wave is created or wind fetch from wind direction
+      !
+      !     Description of the module :
+      !
+      !        General water quality module for DELWAQ:
+      !        BLOCK INTERPOLATION
+      !
+      ! Name    T   L I/O   Description                                    Units
+      ! ----    --- -  -    -------------------                            -----
+      ! Y       R*4 8 I     dependent value pairs
+      ! X       R*4 8 I     independent value pairs
+      ! VALUE   R*4 1 I     independent value
+      ! RESULT  R*4 1 I     resulting dependent value
+      !     Logical Units : -
 
-        !
-        !     Description of the module :
-        !
-        !        General water quality module for DELWAQ:
-        !        BLOCK INTERPOLATION
-        !
-        ! Name    T   L I/O   Description                                    Units
-        ! ----    --- -  -    -------------------                            -----
-        ! Y       R*4 8 I     dependent value pairs
-        ! X       R*4 8 I     independent value pairs
-        ! VALUE   R*4 1 I     independent value
-        ! RESULT  R*4 1 I     resulting dependent value
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
+      !     ------   -----  ------------
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      integer(kind=int_wp) :: MAXPAR, NUMPAR, i, iseg
+      real(kind=real_wp) :: value, result
+      parameter(MAXPAR=8)
+      real(kind=real_wp) :: X(MAXPAR)
+      real(kind=real_wp) :: Y(MAXPAR)
+      integer(kind=int_wp) :: IP(2 * MAXPAR + 2)
 
-        INTEGER(kind = int_wp) :: MAXPAR, NUMPAR, i, iseg
-        real(kind = real_wp) :: VALUE, RESULT
-        PARAMETER (MAXPAR = 8)
-        real(kind = real_wp) :: X(MAXPAR)
-        real(kind = real_wp) :: Y(MAXPAR)
-        integer(kind = int_wp) :: IP(2 * MAXPAR + 2)
+      do I = 1, 2 * MAXPAR + 2
+         IP(I) = IPOINT(I)
+      end do
+      !
+      do ISEG = 1, num_cells
 
-        DO I = 1, 2 * MAXPAR + 2
-            IP(I) = IPOINT(I)
-        end do
-        !
-        DO ISEG = 1, num_cells
+         if (btest(IKNMRK(ISEG), 0)) then
 
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+            !     fill and count the number of classes
 
-                !     fill and count the number of classes
-
-                VALUE = process_space_real(IP(1))
-                NUMPAR = 1
-                DO I = 1, MAXPAR
-                    Y(I) = process_space_real(IP(2 * I))
-                    X(I) = process_space_real(IP(2 * I + 1))
-                    IF (X(I)< 0.0) EXIT
-                    NUMPAR = I
-                ENDDO
-
-                !*******************************************************************************
-                !**** RESULT equals the Y corresponding with the interval from the previous
-                !****        to the current X (assuming the first interval to be 0 - X(1)
-                !***********************************************************************
-
-                I = 0
-                30 I = I + 1
-                IF ((VALUE<X(I)).OR.(I==NUMPAR)) THEN
-                    RESULT = Y(I)
-                ELSE
-                    GOTO 30
-                ENDIF
-
-                process_space_real(IP(2 * MAXPAR + 2)) = RESULT
-
-            ENDIF
-            !
-            DO I = 1, 2 * MAXPAR + 2
-                IP(I) = IP(I) + INCREM (I)
+            value = process_space_real(IP(1))
+            NUMPAR = 1
+            do I = 1, MAXPAR
+               Y(I) = process_space_real(IP(2 * I))
+               X(I) = process_space_real(IP(2 * I + 1))
+               if (X(I) < 0.0) exit
+               NUMPAR = I
             end do
-            !
-        end do
-        !
-        RETURN
-        !
-    END
+
+            !*******************************************************************************
+            !**** RESULT equals the Y corresponding with the interval from the previous
+            !****        to the current X (assuming the first interval to be 0 - X(1)
+            !***********************************************************************
+
+            I = 0
+30          I = I + 1
+            if ((value < X(I)) .or. (I == NUMPAR)) then
+               result = Y(I)
+            else
+               goto 30
+            end if
+
+            process_space_real(IP(2 * MAXPAR + 2)) = result
+
+         end if
+         !
+         do I = 1, 2 * MAXPAR + 2
+            IP(I) = IP(I) + INCREM(I)
+         end do
+         !
+      end do
+      !
+      return
+      !
+   end
 
 end module m_intpol

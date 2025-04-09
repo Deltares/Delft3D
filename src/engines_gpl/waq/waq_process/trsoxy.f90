@@ -21,134 +21,133 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_trsoxy
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine TRSOXY(process_space_real, FL, IPOINT, INCREM, num_cells, &
+                     NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
 
-    SUBROUTINE TRSOXY (process_space_real, FL, IPOINT, INCREM, num_cells, &
-            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !***********************************************************************
+      !
+      !     Function : Extra rearation flux towards sediment Drying and Flooding
+      !
+      !***********************************************************************
 
-        !***********************************************************************
-        !
-        !     Function : Extra rearation flux towards sediment Drying and Flooding
-        !
-        !***********************************************************************
+      use m_advtra
+      use BottomSet !  Module with definition of the waterbottom segments
 
-        use m_advtra
-        USE BottomSet     !  Module with definition of the waterbottom segments
+      implicit none
 
-        IMPLICIT NONE
+      !     arguments
 
-        !     arguments
+      real(kind=real_wp) :: process_space_real(*) ! in/out input-output array space to be adressed with IPOINT/INCREM
+      real(kind=real_wp) :: FL(*) ! in/out flux array
+      integer(kind=int_wp) :: IPOINT(*) ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+      integer(kind=int_wp) :: INCREM(*) ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+      integer(kind=int_wp) :: num_cells ! in     number of segments
+      integer(kind=int_wp) :: NOFLUX ! in     total number of fluxes (increment in FL array)
+      integer(kind=int_wp) :: IEXPNT(4, *) ! in     exchange pointer table
+      integer(kind=int_wp) :: IKNMRK(*) ! in     segment features array
+      integer(kind=int_wp) :: num_exchanges_u_dir ! in     number of exchanges in first direction
+      integer(kind=int_wp) :: num_exchanges_v_dir ! in     number of exchanges in second direction
+      integer(kind=int_wp) :: num_exchanges_z_dir ! in     number of exchanges in third direction
+      integer(kind=int_wp) :: num_exchanges_bottom_dir ! in     number of exchanges in fourth direction
 
-        REAL(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
-        REAL(kind = real_wp) :: FL(*)              ! in/out flux array
-        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
-        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
-        INTEGER(kind = int_wp) :: num_cells              ! in     number of segments
-        INTEGER(kind = int_wp) :: NOFLUX             ! in     total number of fluxes (increment in FL array)
-        INTEGER(kind = int_wp) :: IEXPNT(4, *)        ! in     exchange pointer table
-        INTEGER(kind = int_wp) :: IKNMRK(*)          ! in     segment features array
-        INTEGER(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
-        INTEGER(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
-        INTEGER(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
-        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
+      !     from process_space_real array
 
-        !     from process_space_real array
+      integer(kind=int_wp) :: SWEMERSION ! 1  in  switch indicating submersion(0) or emersion (1)
+      real(kind=real_wp) :: OXY ! 2  in  dissolved oxygen concentration
+      real(kind=real_wp) :: OXYSAT ! 3  in  dissolved oxygen saturation concentration
+      real(kind=real_wp) :: DEPTH ! 4  in  depth of a segment
+      real(kind=real_wp) :: AUXSYS ! 5  in  auxsys conversion from system timer to day
+      real(kind=real_wp) :: VDOWN ! 6  in  downward velocity
+      real(kind=real_wp) :: CORFLX ! 7  out correction flux
 
-        INTEGER(kind = int_wp) :: SWEMERSION         ! 1  in  switch indicating submersion(0) or emersion (1)
-        REAL(kind = real_wp) :: OXY                ! 2  in  dissolved oxygen concentration
-        REAL(kind = real_wp) :: OXYSAT             ! 3  in  dissolved oxygen saturation concentration
-        REAL(kind = real_wp) :: DEPTH              ! 4  in  depth of a segment
-        REAL(kind = real_wp) :: AUXSYS             ! 5  in  auxsys conversion from system timer to day
-        REAL(kind = real_wp) :: VDOWN              ! 6  in  downward velocity
-        REAL(kind = real_wp) :: CORFLX             ! 7  out correction flux
+      !     local decalrations
 
-        !     local decalrations
+      integer(kind=int_wp) :: IP1, IP2, IP3, IP4, IP5 ! index pointer in process_space_real array
+      integer(kind=int_wp) :: IP6, IP7 ! index pointer in process_space_real array
+      integer(kind=int_wp) :: IN1, IN2, IN3, IN4, IN5 ! increment in process_space_real array
+      integer(kind=int_wp) :: IN6, IN7 ! increment in process_space_real array
+      integer(kind=int_wp) :: ISEG ! loop counter segment loop
+      integer(kind=int_wp) :: IK ! loop counter bottom columns
+      integer(kind=int_wp) :: IQ ! loop counter exchanges
+      integer(kind=int_wp) :: IWA1 ! index first water exchange
+      integer(kind=int_wp) :: IWA2 ! index last water exchange
+      integer(kind=int_wp) :: IVAN ! index from segment in exchange
+      integer(kind=int_wp) :: INAAR ! index to segment in exchange
 
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5 ! index pointer in process_space_real array
-        INTEGER(kind = int_wp) :: IP6, IP7             ! index pointer in process_space_real array
-        INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5 ! increment in process_space_real array
-        INTEGER(kind = int_wp) :: IN6, IN7             ! increment in process_space_real array
-        INTEGER(kind = int_wp) :: ISEG                ! loop counter segment loop
-        INTEGER(kind = int_wp) :: IK                  ! loop counter bottom columns
-        INTEGER(kind = int_wp) :: IQ                  ! loop counter exchanges
-        INTEGER(kind = int_wp) :: IWA1                ! index first water exchange
-        INTEGER(kind = int_wp) :: IWA2                ! index last water exchange
-        INTEGER(kind = int_wp) :: IVAN                ! index from segment in exchange
-        INTEGER(kind = int_wp) :: INAAR               ! index to segment in exchange
+      !     initialise bottom if necessary
 
-        !     initialise bottom if necessary
+      call MAKKO2(IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+                  num_exchanges_bottom_dir)
 
-        CALL MAKKO2 (IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
-                num_exchanges_bottom_dir)
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
+      IP6 = IPOINT(6)
+      IP7 = IPOINT(7)
+      !
+      IN1 = INCREM(1)
+      IN2 = INCREM(2)
+      IN3 = INCREM(3)
+      IN4 = INCREM(4)
+      IN5 = INCREM(5)
+      IN6 = INCREM(6)
+      IN7 = INCREM(7)
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        !
-        IN1 = INCREM(1)
-        IN2 = INCREM(2)
-        IN3 = INCREM(3)
-        IN4 = INCREM(4)
-        IN5 = INCREM(5)
-        IN6 = INCREM(6)
-        IN7 = INCREM(7)
+      !     zero the output
 
-        !     zero the output
+      do ISEG = 1, num_cells
+         process_space_real(IP7) = 0.0
+         IP7 = IP7 + IN7
+      end do
+      IP7 = IPOINT(7)
 
-        DO ISEG = 1, num_cells
-            process_space_real(IP7) = 0.0
-            IP7 = IP7 + IN7
-        ENDDO
-        IP7 = IPOINT(7)
+      !     Loop over kolommen
 
-        !     Loop over kolommen
+      do IK = 1, Coll%current_size
 
-        DO IK = 1, Coll%current_size
+         !        Select first column of exchanges for DOWNWARD advection, sediment water exchanges only
 
-            !        Select first column of exchanges for DOWNWARD advection, sediment water exchanges only
+         IWA1 = Coll%set(IK)%fstwatsed
+         IWA2 = Coll%set(IK)%lstwatsed
 
-            IWA1 = Coll%set(IK)%fstwatsed
-            IWA2 = Coll%set(IK)%lstwatsed
+         do IQ = IWA1, IWA2
 
-            DO IQ = IWA1, IWA2
+            IVAN = IEXPNT(1, IQ)
+            INAAR = IEXPNT(2, IQ)
 
-                IVAN = IEXPNT(1, IQ)
-                INAAR = IEXPNT(2, IQ)
+            SWEMERSION = nint(process_space_real(IP1 + (IVAN - 1) * IN1))
 
-                SWEMERSION = NINT(process_space_real(IP1 + (IVAN - 1) * IN1))
+            if (SWEMERSION == 1) then
 
-                IF (SWEMERSION == 1) THEN
+               OXY = process_space_real(IP2 + (IVAN - 1) * IN2)
+               OXYSAT = process_space_real(IP3 + (IVAN - 1) * IN3)
+               DEPTH = process_space_real(IP4 + (INAAR - 1) * IN4)
+               AUXSYS = process_space_real(IP5 + (IVAN - 1) * IN5)
+               VDOWN = process_space_real(IP6 + (IQ - 1) * IN6)
 
-                    OXY = process_space_real(IP2 + (IVAN - 1) * IN2)
-                    OXYSAT = process_space_real(IP3 + (IVAN - 1) * IN3)
-                    DEPTH = process_space_real(IP4 + (INAAR - 1) * IN4)
-                    AUXSYS = process_space_real(IP5 + (IVAN - 1) * IN5)
-                    VDOWN = process_space_real(IP6 + (IQ - 1) * IN6)
+               !              coorection flux is equal to saturated velocity flux minus actual velocity flux, scaled for time and volume
 
-                    !              coorection flux is equal to saturated velocity flux minus actual velocity flux, scaled for time and volume
+               CORFLX = VDOWN * (OXYSAT - OXY) * AUXSYS / DEPTH
 
-                    CORFLX = VDOWN * (OXYSAT - OXY) * AUXSYS / DEPTH
+               process_space_real(IP7 + (INAAR - 1) * IN7) = process_space_real(IP7 + (INAAR - 1) * IN7) + CORFLX
+               FL(1 + (INAAR - 1) * NOFLUX) = FL(1 + (INAAR - 1) * NOFLUX) + CORFLX
 
-                    process_space_real(IP7 + (INAAR - 1) * IN7) = process_space_real(IP7 + (INAAR - 1) * IN7) + CORFLX
-                    FL(1 + (INAAR - 1) * NOFLUX) = FL(1 + (INAAR - 1) * NOFLUX) + CORFLX
+            end if
 
-                ENDIF
+         end do
 
-            ENDDO
+      end do
 
-        ENDDO
-
-        RETURN
-    END
+      return
+   end
 
 end module m_trsoxy

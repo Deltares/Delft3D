@@ -22,45 +22,45 @@
 !!  rights reserved.
 
 module m_timer_variables
-    !     Timer characteristics
+   !     Timer characteristics
 
-    integer :: ITSTRT  !    Simulation start time ( scu )
-    integer :: ITSTOP  !    Simulation stop time ( scu )
-    integer :: IDT     !    Simulation time step ( scu )
-    integer :: ITFACT  !    factor between time scales
-    integer :: ISFLAG  !    flag ( 0 = no , 1 = yes )
-    integer :: INTSRT  !    Integration option
-    integer :: INTOPT  !    Special options
-    integer :: IDSTRT  !    Dump start time ( scu )
-    integer :: IDSTOP  !    Dump stop time ( scu )
-    integer :: IDSTEP  !    Dump time step ( scu )
-    integer :: IHSTRT  !    History start time ( scu )
-    integer :: IHSTOP  !    History stop time ( scu )
-    integer :: IHSTEP  !    History time step ( scu )
-    integer :: IMSTRT  !    Monitoring start time ( scu )
-    integer :: IMSTOP  !    Monitoring stop time ( scu )
-    integer :: IMSTEP  !    Monitoring time step ( scu )
-    integer :: IVFLAG  !    Computed volumes flag ( 0 = no , 1 = yes )
-    integer :: ITFLAG  !    flag ( 0 = no , 1 = yes )
-    integer :: ILFLAG  !    var. length flag ( 0 = no , 1 = yes )
-    integer :: ISFACT  !    System timer in seconds
-    integer :: ICFLAG  !    Closure error flag ( 0 = no , 1 = yes )
+   integer :: ITSTRT !    Simulation start time ( scu )
+   integer :: ITSTOP !    Simulation stop time ( scu )
+   integer :: IDT !    Simulation time step ( scu )
+   integer :: ITFACT !    factor between time scales
+   integer :: ISFLAG !    flag ( 0 = no , 1 = yes )
+   integer :: INTSRT !    Integration option
+   integer :: INTOPT !    Special options
+   integer :: IDSTRT !    Dump start time ( scu )
+   integer :: IDSTOP !    Dump stop time ( scu )
+   integer :: IDSTEP !    Dump time step ( scu )
+   integer :: IHSTRT !    History start time ( scu )
+   integer :: IHSTOP !    History stop time ( scu )
+   integer :: IHSTEP !    History time step ( scu )
+   integer :: IMSTRT !    Monitoring start time ( scu )
+   integer :: IMSTOP !    Monitoring stop time ( scu )
+   integer :: IMSTEP !    Monitoring time step ( scu )
+   integer :: IVFLAG !    Computed volumes flag ( 0 = no , 1 = yes )
+   integer :: ITFLAG !    flag ( 0 = no , 1 = yes )
+   integer :: ILFLAG !    var. length flag ( 0 = no , 1 = yes )
+   integer :: ISFACT !    System timer in seconds
+   integer :: ICFLAG !    Closure error flag ( 0 = no , 1 = yes )
 
-    real(8) :: OTIME   !    Time base in Julian time
-    real(8) :: DELTIM  !    Time base in Julian time with time delay
-    real(8) :: TSCALE  !    Scale factor between DELWAQ unit and seconds (T0-string)
+   real(8) :: OTIME !    Time base in Julian time
+   real(8) :: DELTIM !    Time base in Julian time with time delay
+   real(8) :: TSCALE !    Scale factor between DELWAQ unit and seconds (T0-string)
 
-    integer, parameter :: IISIZE = 21
+   integer, parameter :: IISIZE = 21
 
-    common  /  sysi  /  itstrt, itstop, idt, itfact, isflag, &
-            intsrt, intopt, idstrt, idstop, idstep, &
-            ihstrt, ihstop, ihstep, imstrt, imstop, &
-            imstep, ivflag, itflag, ilflag, isfact, &
-            icflag
-    common  /  sysidr / otime, deltim, tscale
+   common / sysi / itstrt, itstop, idt, itfact, isflag, &
+      intsrt, intopt, idstrt, idstop, idstep, &
+      ihstrt, ihstop, ihstep, imstrt, imstop, &
+      imstep, ivflag, itflag, ilflag, isfact, &
+      icflag
+   common / sysidr / otime, deltim, tscale
 
-    integer :: ii(iisize)
-    equivalence       (ii(1), itstrt)
+   integer :: ii(iisize)
+   equivalence(ii(1), itstrt)
 
 end module m_timer_variables
 

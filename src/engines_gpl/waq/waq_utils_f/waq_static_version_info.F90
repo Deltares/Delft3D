@@ -24,25 +24,25 @@
 #include "waq_version.h"
 
 module waq_static_version_info
-    implicit none
+   implicit none
 
-    character(*), public, parameter :: company = COMPANY_NAME
-    character(*), public, parameter :: company_url = COMPANY_URL
+   character(*), public, parameter :: company = COMPANY_NAME
+   character(*), public, parameter :: company_url = COMPANY_URL
 
-    character(*), public, parameter :: build_nr = BUILD_NR
-    character(*), public, parameter :: major = MAJOR_STR
-    character(*), public, parameter :: minor = MINOR_STR
+   character(*), public, parameter :: build_nr = BUILD_NR
+   character(*), public, parameter :: major = MAJOR_STR
+   character(*), public, parameter :: minor = MINOR_STR
 
-    character(*), public, parameter :: copyright = "Copyright (C) "//company//", 2023-2024"
-    character(*), public, parameter :: build_date_time = __DATE__//', '//__TIME__
-    character(*), public, parameter :: major_minor_buildnr = trim(major)//'.'//trim(minor)//'-'//trim(build_nr)
-    character(*), public, parameter :: major_minor_buildnr_date_time = 'Version '//major_minor_buildnr//', '//build_date_time
-    character(*), public, parameter :: company_id = '@(#)'//company
+   character(*), public, parameter :: copyright = "Copyright (C) "//company//", 2023-2024"
+   character(*), public, parameter :: build_date_time = __DATE__//', '//__TIME__
+   character(*), public, parameter :: major_minor_buildnr = trim(major)//'.'//trim(minor)//'-'//trim(build_nr)
+   character(*), public, parameter :: major_minor_buildnr_date_time = 'Version '//major_minor_buildnr//', '//build_date_time
+   character(*), public, parameter :: company_id = '@(#)'//company
 
-    ! While in principle we can use a literal constant, this allows the compiler/linker to get rid of the
-    ! literal string. Since we want that string to be present in the executable or DLL, we need to use
-    ! this trick instead. It fools the compiler into retaining the full string, so that a tool like
-    ! "strings" on Linux can extract it.
-    integer, protected, save :: offset = 5
+   ! While in principle we can use a literal constant, this allows the compiler/linker to get rid of the
+   ! literal string. Since we want that string to be present in the executable or DLL, we need to use
+   ! this trick instead. It fools the compiler into retaining the full string, so that a tool like
+   ! "strings" on Linux can extract it.
+   integer, protected, save :: offset = 5
 
 end module waq_static_version_info

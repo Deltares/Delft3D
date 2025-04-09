@@ -29,22 +29,22 @@
 
 module delwaq_version_module
 
-    use waq_static_version_info
+   use waq_static_version_info
 
-    implicit none
+   implicit none
 
-    ! The component name must be public because it is used by the BMI module
-    character(*), public, parameter :: component_name = 'DELWAQ'
+   ! The component name must be public because it is used by the BMI module
+   character(*), public, parameter :: component_name = 'DELWAQ'
 
-    character(*), public, parameter :: delwaq_version_full = company // ', ' // component_name // major_minor_buildnr
-    character(*), public, parameter :: delwaq_version_id = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
+   character(*), public, parameter :: delwaq_version_full = company//', '//component_name//major_minor_buildnr
+   character(*), public, parameter :: delwaq_version_id = company_id//', '//component_name//' '//major_minor_buildnr_date_time
 
 contains
 
-    subroutine getfullversionstring_delwaq(stringout)
-        character(*), intent(out) :: stringout
+   subroutine getfullversionstring_delwaq(stringout)
+      character(*), intent(out) :: stringout
 
-        stringout = delwaq_version_id(offset:)
-    end subroutine getfullversionstring_delwaq
+      stringout = delwaq_version_id(offset:)
+   end subroutine getfullversionstring_delwaq
 
 end module delwaq_version_module

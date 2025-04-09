@@ -22,43 +22,43 @@
 !!  rights reserved.
 
 module m_debgrz_auxiliary
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
-    private
-    public :: debgrz_auxiliary
+   private
+   public :: debgrz_auxiliary
 
-    type :: debgrz_auxiliary
-        integer(kind=int_wp), dimension(:), allocatable :: benfood  !< Benthic foods (true/false)
+   type :: debgrz_auxiliary
+      integer(kind=int_wp), dimension(:), allocatable :: benfood !< Benthic foods (true/false)
 
-        real(kind=real_wp), dimension(:), allocatable :: ccfood   !< Stoichiometry ratio of carbon to food unit
-                                                                  !< (often the food unit is expressed in carbon).
-        real(kind=real_wp), dimension(:), allocatable :: cfood    !< Carbon foods
-        real(kind=real_wp), dimension(:), allocatable :: chlcfood !< Chlorophyll foods
-        real(kind=real_wp), dimension(:), allocatable :: ncfood   !< Nitrogen foods
-        real(kind=real_wp), dimension(:), allocatable :: pcfood   !< Phosphorus foods
-        real(kind=real_wp), dimension(:), allocatable :: sicfood  !< Silicon foods
-        real(kind=real_wp), dimension(:), allocatable :: dfil     !< Daily filtration rate for each food type [gC/ind/d]
-        contains
-            procedure allocate_food_arrays
+      real(kind=real_wp), dimension(:), allocatable :: ccfood !< Stoichiometry ratio of carbon to food unit
+      !< (often the food unit is expressed in carbon).
+      real(kind=real_wp), dimension(:), allocatable :: cfood !< Carbon foods
+      real(kind=real_wp), dimension(:), allocatable :: chlcfood !< Chlorophyll foods
+      real(kind=real_wp), dimension(:), allocatable :: ncfood !< Nitrogen foods
+      real(kind=real_wp), dimension(:), allocatable :: pcfood !< Phosphorus foods
+      real(kind=real_wp), dimension(:), allocatable :: sicfood !< Silicon foods
+      real(kind=real_wp), dimension(:), allocatable :: dfil !< Daily filtration rate for each food type [gC/ind/d]
+   contains
+      procedure allocate_food_arrays
 
-    end type debgrz_auxiliary
+   end type debgrz_auxiliary
 
-    contains
+contains
 
-    subroutine allocate_food_arrays(this, food_count)
-        class(debgrz_auxiliary) :: this !< The auxiliary_variables instance
-        integer(kind=int_wp), intent(in) :: food_count
+   subroutine allocate_food_arrays(this, food_count)
+      class(debgrz_auxiliary) :: this !< The auxiliary_variables instance
+      integer(kind=int_wp), intent(in) :: food_count
 
-        allocate(this%benfood(food_count))
-        allocate(this%ccfood(food_count))
-        allocate(this%cfood(food_count))
-        allocate(this%chlcfood(food_count))
-        allocate(this%ncfood(food_count))
-        allocate(this%pcfood(food_count))
-        allocate(this%sicfood(food_count))
-        allocate(this%dfil(food_count))
+      allocate (this%benfood(food_count))
+      allocate (this%ccfood(food_count))
+      allocate (this%cfood(food_count))
+      allocate (this%chlcfood(food_count))
+      allocate (this%ncfood(food_count))
+      allocate (this%pcfood(food_count))
+      allocate (this%sicfood(food_count))
+      allocate (this%dfil(food_count))
 
-    end subroutine allocate_food_arrays
+   end subroutine allocate_food_arrays
 end module m_debgrz_auxiliary

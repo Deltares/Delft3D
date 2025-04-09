@@ -21,15 +21,15 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module m_syst      !  Logic flag time functions
+module m_syst !  Logic flag time functions
 
-    logical bndset   !  For boundaries
-    logical wstset   !  For wasteloads
-    logical funset   !  For constants parameters functions segfuns
-    logical othset   !  For others
+   logical bndset !  For boundaries
+   logical wstset !  For wasteloads
+   logical funset !  For constants parameters functions segfuns
+   logical othset !  For others
 
-    integer ibndmx
-    integer iwstmx
-    integer ifunmx
+   integer ibndmx
+   integer iwstmx
+   integer ifunmx
 
 end module m_syst

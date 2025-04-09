@@ -22,60 +22,60 @@
 !!  rights reserved.
 module m_delwaq1_init
 
-    use m_working_files, only : create_work_file_one
-    use m_waq_precision
+   use m_working_files, only: create_work_file_one
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
-    subroutine delwaq1_init()
-        !< initializes timer and values
+   subroutine delwaq1_init()
+      !< initializes timer and values
 
-        use m_delwaq1_data
-        use m_cli_utils, only : is_command_arg_specified
+      use m_delwaq1_data
+      use m_cli_utils, only: is_command_arg_specified
 
-        integer(kind = int_wp) :: arg_index
+      integer(kind=int_wp) :: arg_index
 
-        !     Special system init
+      !     Special system init
 
-        call timini() ! initializes timer
+      call timini() ! initializes timer
 
-        timon = is_command_arg_specified("-timer")
+      timon = is_command_arg_specified("-timer")
 
-        if (timon) call timstrt("delwaq1", ithndl)
+      if (timon) call timstrt("delwaq1", ithndl)
 
-        !        initialise values
+      !        initialise values
 
-        lunrep = file_unit_list(29)
-        num_file_units = num_files
-        filtype = 0
-        num_items_time_fn = noitm
-        num_output_files = nooutp
-        harmonics_arr_len = 0
-        num_harmonics = 0
-        nlines = 0
-        num_indices = 0
-        newrsp = 0
-        newisp = 0
-        ivflag = 0
-        itflag = 0
-        char_arr_buffer_len = 0
-        num_vars = 0
-        num_arrays = iasize + ijsize + icsize
-        num_unformat_files = 0
-        do i = 1, num_items_time_fn
-            nrftot(i) = 0
-            nrharm(i) = 0
-        end do
-        StatProcesDef%maxsize = 0
-        StatProcesDef%current_size = 0
-        AllItems%maxsize = 0
-        AllItems%current_size = 0
-        GridPs%current_size = 0
-        GridPs%maxsize = 0
+      lunrep = file_unit_list(29)
+      num_file_units = num_files
+      filtype = 0
+      num_items_time_fn = noitm
+      num_output_files = nooutp
+      harmonics_arr_len = 0
+      num_harmonics = 0
+      nlines = 0
+      num_indices = 0
+      newrsp = 0
+      newisp = 0
+      ivflag = 0
+      itflag = 0
+      char_arr_buffer_len = 0
+      num_vars = 0
+      num_arrays = iasize + ijsize + icsize
+      num_unformat_files = 0
+      do i = 1, num_items_time_fn
+         nrftot(i) = 0
+         nrharm(i) = 0
+      end do
+      StatProcesDef%maxsize = 0
+      StatProcesDef%current_size = 0
+      AllItems%maxsize = 0
+      AllItems%current_size = 0
+      GridPs%current_size = 0
+      GridPs%maxsize = 0
 
-        call create_work_file_one(file_unit_list, file_name_list, num_file_units, runid)
+      call create_work_file_one(file_unit_list, file_name_list, num_file_units, runid)
 
-    end subroutine delwaq1_init
+   end subroutine delwaq1_init
 end module m_delwaq1_init

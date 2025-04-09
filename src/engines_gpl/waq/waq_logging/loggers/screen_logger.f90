@@ -23,30 +23,30 @@
 
 !> module containing logic related to the screen_logger class
 module m_screen_logger
-    use m_waq_precision
-    use m_log_level
-    use m_base_logger
-    use m_logger
+   use m_waq_precision
+   use m_log_level
+   use m_base_logger
+   use m_logger
 
-    implicit none
+   implicit none
 
-    private
-    public :: screen_logger
+   private
+   public :: screen_logger
 
-    !> Type to handle logging to the screen
-    type, extends(base_logger) :: screen_logger
-    contains
-        procedure :: write_message
-    end type screen_logger
+   !> Type to handle logging to the screen
+   type, extends(base_logger) :: screen_logger
+   contains
+      procedure :: write_message
+   end type screen_logger
 
 contains
 
-    !> writes the message to screen
-    subroutine write_message(this, message)
-        class(screen_logger), intent(in) :: this  !< instance of this logger
-        character(len=*), intent(in) :: message   !< message to log
+   !> writes the message to screen
+   subroutine write_message(this, message)
+      class(screen_logger), intent(in) :: this !< instance of this logger
+      character(len=*), intent(in) :: message !< message to log
 
-        write (*, FMT='(A)') message
-    end subroutine write_message
+      write (*, FMT='(A)') message
+   end subroutine write_message
 
 end module m_screen_logger

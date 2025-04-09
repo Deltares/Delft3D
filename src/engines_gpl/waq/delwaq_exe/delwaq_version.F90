@@ -26,27 +26,27 @@
 !-------------------------------------------------------------------------------
 
 module delwaq_exe_version_module
-    use waq_static_version_info
-    use m_waq_precision
-    implicit none
+   use waq_static_version_info
+   use m_waq_precision
+   implicit none
 
-    character(*), private, parameter :: component_name = 'DELWAQ'
+   character(*), private, parameter :: component_name = 'DELWAQ'
 
-    character(*), public, parameter :: delwaq_version_full = company // ', ' // component_name // major_minor_buildnr
-    character(*), public, parameter :: delwaq_version_id = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
+   character(*), public, parameter :: delwaq_version_full = company//', '//component_name//major_minor_buildnr
+   character(*), public, parameter :: delwaq_version_id = company_id//', '//component_name//' '//major_minor_buildnr_date_time
 
 contains
 
-    subroutine get_fullversionstring_delwaq(stringout)
-        character(:), allocatable, intent(out) :: stringout
+   subroutine get_fullversionstring_delwaq(stringout)
+      character(:), allocatable, intent(out) :: stringout
 
-        stringout = delwaq_version_id(offset:)
-    end subroutine get_fullversionstring_delwaq
+      stringout = delwaq_version_id(offset:)
+   end subroutine get_fullversionstring_delwaq
 
-    subroutine get_versionstring_delwaq(stringout)
-        character(:), allocatable, intent(out) :: stringout
+   subroutine get_versionstring_delwaq(stringout)
+      character(:), allocatable, intent(out) :: stringout
 
-        stringout = company // ', ' // component_name // ' ' // major_minor_buildnr
-    end subroutine get_versionstring_delwaq
+      stringout = company//', '//component_name//' '//major_minor_buildnr
+   end subroutine get_versionstring_delwaq
 
 end module delwaq_exe_version_module

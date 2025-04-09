@@ -23,16 +23,16 @@
 
 !> module containing logic related to the logger_wrapper class
 module m_logger_wrapper
-    use m_waq_precision
-    use m_logger
+   use m_waq_precision
+   use m_logger
 
-    implicit none
+   implicit none
 
-    private
+   private
 
-    !> type used to wrap an instance of a logger, so it can be used in arrays
-    type, public :: logger_wrapper
-        class(logger), allocatable :: logger !< logger instance that is wrapped
-    end type logger_wrapper
+   !> type used to wrap an instance of a logger, so it can be used in arrays
+   type, public :: logger_wrapper
+      class(logger), allocatable :: logger !< logger instance that is wrapped
+   end type logger_wrapper
 
 end module m_logger_wrapper

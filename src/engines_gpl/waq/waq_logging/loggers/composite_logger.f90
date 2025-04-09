@@ -23,89 +23,89 @@
 
 !> module containing logic related to the composite_logger class
 module m_composite_logger
-    use m_waq_precision
-    use m_log_level
-    use m_logger_wrapper
-    use m_logger
+   use m_waq_precision
+   use m_log_level
+   use m_logger_wrapper
+   use m_logger
 
-    implicit none
+   implicit none
 
-    private
-    public :: composite_logger
+   private
+   public :: composite_logger
 
-    !> logger that is composed of multiple logger instances
+   !> logger that is composed of multiple logger instances
     !! all calls will be rerouted to all sub-loggers
-    type, extends(logger) :: composite_logger
-        class(logger_wrapper), allocatable, dimension(:) :: sub_loggers
-    contains
-        procedure :: log_error, log_warning, log_info, log_debug
+   type, extends(logger) :: composite_logger
+      class(logger_wrapper), allocatable, dimension(:) :: sub_loggers
+   contains
+      procedure :: log_error, log_warning, log_info, log_debug
 
-        procedure, private :: log_with_sub_loggers
+      procedure, private :: log_with_sub_loggers
 
-    end type composite_logger
+   end type composite_logger
 
 contains
 
-    !> Log an error message
-    subroutine log_error(this, message, add_new_line)
-        class(composite_logger), intent(in) :: this !< instance of this logger
-        character(len=*), intent(in) :: message     !< message to log
-        logical, optional, intent(in) :: add_new_line   !< add a new line before message
+   !> Log an error message
+   subroutine log_error(this, message, add_new_line)
+      class(composite_logger), intent(in) :: this !< instance of this logger
+      character(len=*), intent(in) :: message !< message to log
+      logical, optional, intent(in) :: add_new_line !< add a new line before message
 
-        call this%log_with_sub_loggers(message, error_level, add_new_line)
-    end subroutine log_error
+      call this%log_with_sub_loggers(message, error_level, add_new_line)
+   end subroutine log_error
 
-    !> Log a warning message
-    subroutine log_warning(this, message, add_new_line)
-        class(composite_logger), intent(in) :: this !< instance of this logger
-        character(len=*), intent(in) :: message     !< message to log
-        logical, optional, intent(in) :: add_new_line   !< add a new line before message
+   !> Log a warning message
+   subroutine log_warning(this, message, add_new_line)
+      class(composite_logger), intent(in) :: this !< instance of this logger
+      character(len=*), intent(in) :: message !< message to log
+      logical, optional, intent(in) :: add_new_line !< add a new line before message
 
-        call this%log_with_sub_loggers(message, warning_level, add_new_line)
-    end subroutine log_warning
+      call this%log_with_sub_loggers(message, warning_level, add_new_line)
+   end subroutine log_warning
 
-    !> Log an info message
-    subroutine log_info(this, message, add_new_line)
-        class(composite_logger), intent(in) :: this !< instance of this logger
-        character(len=*), intent(in) :: message     !< message to log
-        logical, optional, intent(in) :: add_new_line   !< add a new line before message
+   !> Log an info message
+   subroutine log_info(this, message, add_new_line)
+      class(composite_logger), intent(in) :: this !< instance of this logger
+      character(len=*), intent(in) :: message !< message to log
+      logical, optional, intent(in) :: add_new_line !< add a new line before message
 
-        call this%log_with_sub_loggers(message, info_level, add_new_line)
-    end subroutine log_info
+      call this%log_with_sub_loggers(message, info_level, add_new_line)
+   end subroutine log_info
 
-    !> Log an debug message
-    subroutine log_debug(this, message, add_new_line)
-        class(composite_logger), intent(in) :: this    !< instance of this logger
-        character(len=*), intent(in) :: message   !< message to log
-        logical, optional, intent(in) :: add_new_line !< add a new line before message
+   !> Log an debug message
+   subroutine log_debug(this, message, add_new_line)
+      class(composite_logger), intent(in) :: this !< instance of this logger
+      character(len=*), intent(in) :: message !< message to log
+      logical, optional, intent(in) :: add_new_line !< add a new line before message
 
-        call this%log_with_sub_loggers(message, debug_level, add_new_line)
-    end subroutine log_debug
+      call this%log_with_sub_loggers(message, debug_level, add_new_line)
+   end subroutine log_debug
 
-    !> Delegates the message towards all sub-loggers
-    subroutine log_with_sub_loggers(this, message, log_level, add_new_line)
-        class(composite_logger), intent(in) :: this !< instance of this logger
-        character(len=*), intent(in) :: message     !< message to log
-        integer(kind=int_wp) :: log_level           !< log level of the message
-        logical, optional, intent(in) :: add_new_line   !< add a new line before message
+   !> Delegates the message towards all sub-loggers
+   subroutine log_with_sub_loggers(this, message, log_level, add_new_line)
+      class(composite_logger), intent(in) :: this !< instance of this logger
+      character(len=*), intent(in) :: message !< message to log
+      integer(kind=int_wp) :: log_level !< log level of the message
+      logical, optional, intent(in) :: add_new_line !< add a new line before message
 
-        class(logger), allocatable :: sub_logger
-        integer(kind=int_wp) :: index
+      class(logger), allocatable :: sub_logger
+      integer(kind=int_wp) :: index
 
-        do index = 1, size(this%sub_loggers)
-            sub_logger = this%sub_loggers(index)%logger
+      do index = 1, size(this%sub_loggers)
+         sub_logger = this%sub_loggers(index)%logger
 
-            select case (log_level)
-            case (error_level)
-                call sub_logger%log_error(message, add_new_line)
-            case (warning_level)
-                call sub_logger%log_warning(message, add_new_line)
-            case (info_level)
-                call sub_logger%log_info(message, add_new_line)
-            case (debug_level)
-                call sub_logger%log_debug(message, add_new_line)
-            end select
-        end do
-    end subroutine log_with_sub_loggers
+         select case (log_level)
+         case (error_level)
+            call sub_logger%log_error(message, add_new_line)
+         case (warning_level)
+            call sub_logger%log_warning(message, add_new_line)
+         case (info_level)
+            call sub_logger%log_info(message, add_new_line)
+         case (debug_level)
+            call sub_logger%log_debug(message, add_new_line)
+         end select
+      end do
+   end subroutine log_with_sub_loggers
 
 end module m_composite_logger

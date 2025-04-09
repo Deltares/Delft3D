@@ -22,32 +22,32 @@
 !!  rights reserved.
 
 module delwaq_loads
-    implicit none
+   implicit none
 
-    private
-    public :: wasteload, IDLEN, wasteloads
+   private
+   public :: wasteload, IDLEN, wasteloads
 
-    integer, parameter :: IDLEN = 20               !! length ID strings
-    integer, parameter :: NAMELEN = 40             !! length NAME strings
+   integer, parameter :: IDLEN = 20 !! length ID strings
+   integer, parameter :: NAMELEN = 40 !! length NAME strings
 
-    type identifier
-        character(len=IDLEN) :: id              !! identification string
-        character(len=NAMELEN) :: name          !! descriptive name
-        character(len=IDLEN) :: type            !! type identification
-    end type identifier
+   type identifier
+      character(len=IDLEN) :: id !! identification string
+      character(len=NAMELEN) :: name !! descriptive name
+      character(len=IDLEN) :: type !! type identification
+   end type identifier
 
-    type location
-        integer :: segnr           !! segment number
-    end type location
+   type location
+      integer :: segnr !! segment number
+   end type location
 
-    type wasteload
-        type(identifier) :: id                ! id and name etc.
-        type(location) :: loc                  ! location
-        real :: flow              ! the actual value discharge flow
-        real, allocatable :: set_factor(:)     ! the factors by which to multiply the flow rate and concentrations (D-RTC)
-        real, pointer :: loads(:)          ! the actual value of the load for the substances
-    end type wasteload
+   type wasteload
+      type(identifier) :: id ! id and name etc.
+      type(location) :: loc ! location
+      real :: flow ! the actual value discharge flow
+      real, allocatable :: set_factor(:) ! the factors by which to multiply the flow rate and concentrations (D-RTC)
+      real, pointer :: loads(:) ! the actual value of the load for the substances
+   end type wasteload
 
-    type(wasteload), allocatable, save, target :: wasteloads(:)
+   type(wasteload), allocatable, save, target :: wasteloads(:)
 
 end module delwaq_loads

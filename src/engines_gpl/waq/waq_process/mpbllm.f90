@@ -21,213 +21,272 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_mpbllm
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine MPBLLM(process_space_real, FL, IPOINT, INCREM, num_cells, &
+                     NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !     ***********************************************************************
+      !          +----------------------------------------+
+      !          |    D E L F T   H Y D R A U L I C S     |
+      !          +----------------------------------------+
+      !     ***********************************************************************
+      !
+      !          Function     : Calculation of the light limitation function
+      !
+      !          Project      : Implementatie pilot GEM (T2087)
+      !          Formulations : NIOO-CEMO Yerseke
+      !          Programmer   : M. Bokhorst
+      !          Date         : 09-04-97           Version : 1.0
+      !
+      !          History :
+      !
+      !          Date    Programmer      Description
+      !          ------  --------------  ------------------------------------------
+      !          090497  M. Bokhorst     First version
+      !          040399  A. Blauw        Formulation completed (see TRM)
+      !          050399  J. vGils        Optional S1 mode implemented
+      !                                  Explicit declaration
+      !          110399  J. vGils        Error in ICLIM computation corrected
+      !                                  (note: GEM documentation is not correct!!)
+      !          110399  J. vGils        C-limitation removed from loop over Z
+      !          110399  J. vGils        Error in time integration removed
+      !          111103  Jan van Beek    2003 implementation
+      !     ***********************************************************************
 
-    SUBROUTINE MPBLLM (process_space_real, FL, IPOINT, INCREM, num_cells, &
-            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        !     ***********************************************************************
-        !          +----------------------------------------+
-        !          |    D E L F T   H Y D R A U L I C S     |
-        !          +----------------------------------------+
-        !     ***********************************************************************
-        !
-        !          Function     : Calculation of the light limitation function
-        !
-        !          Project      : Implementatie pilot GEM (T2087)
-        !          Formulations : NIOO-CEMO Yerseke
-        !          Programmer   : M. Bokhorst
-        !          Date         : 09-04-97           Version : 1.0
-        !
-        !          History :
-        !
-        !          Date    Programmer      Description
-        !          ------  --------------  ------------------------------------------
-        !          090497  M. Bokhorst     First version
-        !          040399  A. Blauw        Formulation completed (see TRM)
-        !          050399  J. vGils        Optional S1 mode implemented
-        !                                  Explicit declaration
-        !          110399  J. vGils        Error in ICLIM computation corrected
-        !                                  (note: GEM documentation is not correct!!)
-        !          110399  J. vGils        C-limitation removed from loop over Z
-        !          110399  J. vGils        Error in time integration removed
-        !          111103  Jan van Beek    2003 implementation
-        !     ***********************************************************************
+      use m_extract_waq_attribute
+      use m_logger_helper, only: get_log_unit_number, write_error_message_with_values
 
-        use m_extract_waq_attribute
-        use m_logger_helper, only : get_log_unit_number, write_error_message_with_values
+      implicit none
 
-        IMPLICIT NONE
+      !          arguments
 
-        !          arguments
+      real(kind=real_wp) :: process_space_real(*) ! in/out input-output array space to be adressed with IPOINT/INCREM
+      real(kind=real_wp) :: FL(*) ! in/out flux array
+      integer(kind=int_wp) :: IPOINT(*) ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+      integer(kind=int_wp) :: INCREM(*) ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+      integer(kind=int_wp) :: num_cells ! in     number of segments
+      integer(kind=int_wp) :: NOFLUX ! in     total number of fluxes (increment in FL array)
+      integer(kind=int_wp) :: IEXPNT(4, *) ! in     exchange pointer table
+      integer(kind=int_wp) :: IKNMRK(*) ! in     segment features array
+      integer(kind=int_wp) :: num_exchanges_u_dir ! in     number of exchanges in first direction
+      integer(kind=int_wp) :: num_exchanges_v_dir ! in     number of exchanges in second direction
+      integer(kind=int_wp) :: num_exchanges_z_dir ! in     number of exchanges in third direction
+      integer(kind=int_wp) :: num_exchanges_bottom_dir ! in     number of exchanges in fourth direction
 
-        REAL(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
-        REAL(kind = real_wp) :: FL(*)              ! in/out flux array
-        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
-        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
-        INTEGER(kind = int_wp) :: num_cells              ! in     number of segments
-        INTEGER(kind = int_wp) :: NOFLUX             ! in     total number of fluxes (increment in FL array)
-        INTEGER(kind = int_wp) :: IEXPNT(4, *)        ! in     exchange pointer table
-        INTEGER(kind = int_wp) :: IKNMRK(*)          ! in     segment features array
-        INTEGER(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
-        INTEGER(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
-        INTEGER(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
-        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
+      !          from process_space_real array
 
-        !          from process_space_real array
+      real(kind=real_wp) :: RADSURF !  1 in  , irradiation at the water surface            (W/m2)
+      real(kind=real_wp) :: RADTOP !  2 in  , irradiation at the segment upper-boundary   (W/m2)
+      real(kind=real_wp) :: EXTVL !  3 in  , VL extinction coefficient                    (1/m)
+      real(kind=real_wp) :: A_ENH !  4 in  , enhancement factor in radiation calculation    (-)
+      real(kind=real_wp) :: FPAR !  5 in  , fraction Photosynthetic Active Radiance        (-)
+      real(kind=real_wp) :: PM !  6 in  , MPB maximum photosynthesis           (gC/(gChl)/d)
+      real(kind=real_wp) :: RADSAT !  7 in  , MPB saturation radiation                    (W/m2)
+      integer(kind=int_wp) :: SWEMERSION !  8 in  , switch indicating submersion(0) or emersion(1) (-)
+      real(kind=real_wp) :: MIGRDEPTH1 !  9 in  , MPB migration depth 1                          (m)
+      real(kind=real_wp) :: MIGRDEPTH2 ! 10 in  , MPB migration depth 2                          (m)
+      real(kind=real_wp) :: DEPTH ! 11 in  , depth of segment                               (m)
+      real(kind=real_wp) :: LOCSEDDEPT ! 12 in  , Sediment layer depth to bottom of segment      (m)
+      integer(kind=int_wp) :: I_NRDZ ! 13 in  , Nr. of integration intervals over depth        (-)
+      integer(kind=int_wp) :: ITIME ! 14 in  , DELWAQ time                                  (scu)
+      integer(kind=int_wp) :: IDT ! 15 in  , DELWAQ timestep                              (scu)
+      integer(kind=int_wp) :: ITSTRT ! 16 in  , DELWAQ start time                            (scu)
+      integer(kind=int_wp) :: AUXSYS ! 17 in  , ratio between days and system clock        (scu/d)
+      logical :: S1_BOTTOM ! 18 in  , switch for S1 bottom approach (.true.) or DELWAQ-G approach (.false.)
+      real(kind=real_wp) :: RADBOT ! 19 in  , irradiation at the segment lower-boundary   (W/m2)
+      real(kind=real_wp) :: EXTVLS1 ! 20 in  , VL extinction coefficient in the sediment    (1/m)
+      real(kind=real_wp) :: ZSED ! 21 in  , Depth of microfytobenthos layer                (m)
+      real(kind=real_wp) :: WS1 ! 22 i/o , Workspace array 1                              (-)
+      real(kind=real_wp) :: WS2 ! 23 i/o , Workspace array 2                              (-)
+      real(kind=real_wp) :: WS3 ! 24 i/o , Workspace array 3                              (-)
+      real(kind=real_wp) :: WS4 ! 25 i/o , Workspace array 4                              (-)
+      real(kind=real_wp) :: FLT ! 26 out , MPB light limitation                           (-)
+      real(kind=real_wp) :: FLTS1 ! 27 out , MPB light limitation in sediment layer 1       (-)
 
-        REAL(kind = real_wp) :: RADSURF            !  1 in  , irradiation at the water surface            (W/m2)
-        REAL(kind = real_wp) :: RADTOP             !  2 in  , irradiation at the segment upper-boundary   (W/m2)
-        REAL(kind = real_wp) :: EXTVL              !  3 in  , VL extinction coefficient                    (1/m)
-        REAL(kind = real_wp) :: A_ENH              !  4 in  , enhancement factor in radiation calculation    (-)
-        REAL(kind = real_wp) :: FPAR               !  5 in  , fraction Photosynthetic Active Radiance        (-)
-        REAL(kind = real_wp) :: PM                 !  6 in  , MPB maximum photosynthesis           (gC/(gChl)/d)
-        REAL(kind = real_wp) :: RADSAT             !  7 in  , MPB saturation radiation                    (W/m2)
-        INTEGER(kind = int_wp) :: SWEMERSION         !  8 in  , switch indicating submersion(0) or emersion(1) (-)
-        REAL(kind = real_wp) :: MIGRDEPTH1         !  9 in  , MPB migration depth 1                          (m)
-        REAL(kind = real_wp) :: MIGRDEPTH2         ! 10 in  , MPB migration depth 2                          (m)
-        REAL(kind = real_wp) :: DEPTH              ! 11 in  , depth of segment                               (m)
-        REAL(kind = real_wp) :: LOCSEDDEPT         ! 12 in  , Sediment layer depth to bottom of segment      (m)
-        INTEGER(kind = int_wp) :: I_NRDZ             ! 13 in  , Nr. of integration intervals over depth        (-)
-        INTEGER(kind = int_wp) :: ITIME              ! 14 in  , DELWAQ time                                  (scu)
-        INTEGER(kind = int_wp) :: IDT                ! 15 in  , DELWAQ timestep                              (scu)
-        INTEGER(kind = int_wp) :: ITSTRT             ! 16 in  , DELWAQ start time                            (scu)
-        INTEGER(kind = int_wp) :: AUXSYS             ! 17 in  , ratio between days and system clock        (scu/d)
-        LOGICAL :: S1_BOTTOM          ! 18 in  , switch for S1 bottom approach (.true.) or DELWAQ-G approach (.false.)
-        REAL(kind = real_wp) :: RADBOT             ! 19 in  , irradiation at the segment lower-boundary   (W/m2)
-        REAL(kind = real_wp) :: EXTVLS1            ! 20 in  , VL extinction coefficient in the sediment    (1/m)
-        REAL(kind = real_wp) :: ZSED               ! 21 in  , Depth of microfytobenthos layer                (m)
-        REAL(kind = real_wp) :: WS1                ! 22 i/o , Workspace array 1                              (-)
-        REAL(kind = real_wp) :: WS2                ! 23 i/o , Workspace array 2                              (-)
-        REAL(kind = real_wp) :: WS3                ! 24 i/o , Workspace array 3                              (-)
-        REAL(kind = real_wp) :: WS4                ! 25 i/o , Workspace array 4                              (-)
-        REAL(kind = real_wp) :: FLT                ! 26 out , MPB light limitation                           (-)
-        REAL(kind = real_wp) :: FLTS1              ! 27 out , MPB light limitation in sediment layer 1       (-)
+      !          local
 
-        !          local
+      real(kind=real_wp), parameter :: PI = 3.1415927 ! pi
+      integer(kind=int_wp) :: ISEG ! loop counter segment loop
+      integer(kind=int_wp) :: IZ ! loop counter integration layers
+      integer(kind=int_wp) :: IKMRK1 ! first feature inactive(0)-active(1)-bottom(2) segment
+      integer(kind=int_wp) :: IKMRK2 ! second feature 2D(0)-surface(1)-middle(2)-bottom(3) segment
+      integer(kind=int_wp), parameter :: NO_POINTER = 30 ! number of input output variables in process_space_real array
+      integer(kind=int_wp) :: IP(NO_POINTER) ! index pointer in process_space_real array updated for each segment
+      real(kind=real_wp) :: ACTDEP ! actual depth
+      real(kind=real_wp) :: ACTLIM ! limitation at actual radiance
+      real(kind=real_wp) :: ACTRAD ! radiance at actual depth
+      real(kind=real_wp) :: CUMLIM ! cummulative limitation
+      real(kind=real_wp) :: DZ ! depth of integration layers
+      real(kind=real_wp) :: FRACSURF ! fraction of migrating MPB to reach surface
+      real(kind=real_wp) :: LIMSURF ! limitation with RADSURF
+      real(kind=real_wp) :: RELZ ! relative Z in migration dpeth
+      real(kind=real_wp) :: Z ! Z in total sediment layer
 
-        REAL(kind = real_wp), PARAMETER :: PI = 3.1415927 ! pi
-        INTEGER(kind = int_wp) :: ISEG               ! loop counter segment loop
-        INTEGER(kind = int_wp) :: IZ                 ! loop counter integration layers
-        INTEGER(kind = int_wp) :: IKMRK1             ! first feature inactive(0)-active(1)-bottom(2) segment
-        INTEGER(kind = int_wp) :: IKMRK2             ! second feature 2D(0)-surface(1)-middle(2)-bottom(3) segment
-        INTEGER(kind = int_wp), parameter :: NO_POINTER = 30    ! number of input output variables in process_space_real array
-        INTEGER(kind = int_wp) :: IP(NO_POINTER)     ! index pointer in process_space_real array updated for each segment
-        REAL(kind = real_wp) :: ACTDEP             ! actual depth
-        REAL(kind = real_wp) :: ACTLIM             ! limitation at actual radiance
-        REAL(kind = real_wp) :: ACTRAD             ! radiance at actual depth
-        REAL(kind = real_wp) :: CUMLIM             ! cummulative limitation
-        REAL(kind = real_wp) :: DZ                 ! depth of integration layers
-        REAL(kind = real_wp) :: FRACSURF           ! fraction of migrating MPB to reach surface
-        REAL(kind = real_wp) :: LIMSURF            ! limitation with RADSURF
-        REAL(kind = real_wp) :: RELZ               ! relative Z in migration dpeth
-        REAL(kind = real_wp) :: Z                  ! Z in total sediment layer
+      integer(kind=int_wp) :: ISTEP
+      real(kind=real_wp) :: RTIME
+      real(kind=real_wp) :: RDT
+      real(kind=real_wp) :: RTSTRT
 
-        INTEGER(kind = int_wp) :: ISTEP
-        REAL(kind = real_wp) :: RTIME
-        REAL(kind = real_wp) :: RDT
-        REAL(kind = real_wp) :: RTSTRT
+      !          initialise pointers for process_space_real and FL array
 
-        !          initialise pointers for process_space_real and FL array
+      IP = IPOINT(1:NO_POINTER)
 
-        IP = IPOINT(1:NO_POINTER)
+      !          loop over the segments
 
-        !          loop over the segments
+      do ISEG = 1, num_cells
 
-        DO ISEG = 1, num_cells
+         call extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+         call extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
 
-            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-            CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+         RADSURF = process_space_real(IP(1))
+         RADTOP = process_space_real(IP(2))
+         EXTVL = process_space_real(IP(3))
+         A_ENH = process_space_real(IP(4))
+         FPAR = process_space_real(IP(5))
+         RADSAT = process_space_real(IP(6))
+         SWEMERSION = nint(process_space_real(IP(7)))
+         MIGRDEPTH1 = process_space_real(IP(8))
+         MIGRDEPTH2 = process_space_real(IP(9))
+         DEPTH = process_space_real(IP(10))
+         LOCSEDDEPT = process_space_real(IP(11))
+         I_NRDZ = nint(process_space_real(IP(12)))
+         RTIME = process_space_real(IP(13))
+         RDT = process_space_real(IP(14))
+         RTSTRT = process_space_real(IP(15))
+         AUXSYS = nint(process_space_real(IP(16)))
+         S1_BOTTOM = nint(process_space_real(IP(17))) == 1
+         RADBOT = process_space_real(IP(18))
+         EXTVLS1 = process_space_real(IP(19))
+         ZSED = process_space_real(IP(20))
+         WS1 = process_space_real(IP(21))
+         WS2 = process_space_real(IP(22))
+         WS3 = process_space_real(IP(23))
+         WS4 = process_space_real(IP(24))
 
-            RADSURF = process_space_real(IP(1))
-            RADTOP = process_space_real(IP(2))
-            EXTVL = process_space_real(IP(3))
-            A_ENH = process_space_real(IP(4))
-            FPAR = process_space_real(IP(5))
-            RADSAT = process_space_real(IP(6))
-            SWEMERSION = NINT(process_space_real(IP(7)))
-            MIGRDEPTH1 = process_space_real(IP(8))
-            MIGRDEPTH2 = process_space_real(IP(9))
-            DEPTH = process_space_real(IP(10))
-            LOCSEDDEPT = process_space_real(IP(11))
-            I_NRDZ = NINT(process_space_real(IP(12)))
-            RTIME = process_space_real(IP(13))
-            RDT = process_space_real(IP(14))
-            RTSTRT = process_space_real(IP(15))
-            AUXSYS = NINT(process_space_real(IP(16)))
-            S1_BOTTOM = NINT(process_space_real(IP(17))) == 1
-            RADBOT = process_space_real(IP(18))
-            EXTVLS1 = process_space_real(IP(19))
-            ZSED = process_space_real(IP(20))
-            WS1 = process_space_real(IP(21))
-            WS2 = process_space_real(IP(22))
-            WS3 = process_space_real(IP(23))
-            WS4 = process_space_real(IP(24))
+         ISTEP = nint((RTIME - RTSTRT) / RDT)
+         IDT = nint(RDT)
+         ITSTRT = nint(RTSTRT)
+         ITIME = ITSTRT + ISTEP * IDT
 
-            ISTEP = NINT((RTIME - RTSTRT) / RDT)
-            IDT = NINT(RDT)
-            ITSTRT = NINT(RTSTRT)
-            ITIME = ITSTRT + ISTEP * IDT
+         !             check proces parameters
 
-            !             check proces parameters
+         if (I_NRDZ <= 0) call write_error_message_with_values('I_NRDZ', real(I_NRDZ), ISEG, 'MPBLLM')
 
-            IF (I_NRDZ<=0) CALL write_error_message_with_values('I_NRDZ', real(I_NRDZ), ISEG, 'MPBLLM')
+         !             scale all radiance to PAR, radsurf with enhancement since it is used as top of sediment layer radiation
 
-            !             scale all radiance to PAR, radsurf with enhancement since it is used as top of sediment layer radiation
+         RADSURF = RADSURF * FPAR * A_ENH
+         RADTOP = RADTOP * FPAR
+         RADBOT = RADBOT * FPAR
 
-            RADSURF = RADSURF * FPAR * A_ENH
-            RADTOP = RADTOP * FPAR
-            RADBOT = RADBOT * FPAR
+         !             Active water segments and bottom segments
 
-            !             Active water segments and bottom segments
+         !              IF ( IKMRK1.EQ.1 .OR. IKMRK1.EQ.2 ) THEN
 
-            !              IF ( IKMRK1.EQ.1 .OR. IKMRK1.EQ.2 ) THEN
+         !                for top layer thicker then euphotic depth all production in euphotic zone, so intergate only over ZSED
 
-            !                for top layer thicker then euphotic depth all production in euphotic zone, so intergate only over ZSED
+         if (IKMRK1 == 2 .and. abs(DEPTH - LOCSEDDEPT) < 1.e-20 .and. DEPTH > ZSED) then
+            DZ = ZSED / I_NRDZ
+         else
+            DZ = DEPTH / I_NRDZ
+         end if
 
-            IF (IKMRK1 == 2 .AND. ABS(DEPTH - LOCSEDDEPT) < 1.E-20 .AND. DEPTH > ZSED) THEN
-                DZ = ZSED / I_NRDZ
-            ELSE
-                DZ = DEPTH / I_NRDZ
-            ENDIF
+         CUMLIM = 0.0
 
+         !                Bereken totale lichthoeveelheid en lichtlimitatie per laagje
+
+         LIMSURF = 1.0 - exp(-RADSURF / RADSAT)
+         do IZ = 1, I_NRDZ
+            if (IZ == 1) then
+               ACTDEP = 0.5 * DZ
+            else
+               ACTDEP = ACTDEP + DZ
+            end if
+
+            !                   bereken de fractie algen die naar het sediment oppervlak zijn gemigreerd
+
+            if (IKMRK1 == 2 .and. SWEMERSION == 1) then
+               if (MIGRDEPTH2 <= 1e-20) then
+                  FRACSURF = 0.0
+               else
+                  Z = LOCSEDDEPT - DEPTH + ACTDEP
+                  RELZ = min(1.0, (max(0.0, (Z - MIGRDEPTH1) / (MIGRDEPTH2 - MIGRDEPTH1))))
+                  FRACSURF = 0.5 * cos(PI * RELZ) + 0.5
+               end if
+            else
+               FRACSURF = 0.0
+            end if
+
+            ACTRAD = RADTOP * exp(-EXTVL * ACTDEP)
+            ACTLIM = 1.0 - exp(-ACTRAD / RADSAT)
+
+            CUMLIM = CUMLIM + FRACSURF * LIMSURF + (1.0 - FRACSURF) * ACTLIM
+
+         end do
+
+         !                gemiddelde lichtlimitatie
+
+         CUMLIM = CUMLIM / I_NRDZ
+
+         !                Integratie over de dag
+
+         if (mod(ITIME - ITSTRT, AUXSYS) < IDT) then
+            if (ITIME == ITSTRT) then
+               WS2 = CUMLIM
+            else
+               WS2 = WS1 / AUXSYS
+            end if
+            WS1 = 0.0
+            process_space_real(IP(23)) = WS2
+         end if
+
+         FLT = WS2
+         WS1 = WS1 + CUMLIM * IDT
+
+         process_space_real(IP(21)) = WS1
+         process_space_real(IP(25)) = FLT
+
+         !              ENDIF
+
+         !             S1_BOTTOM
+
+         if (S1_BOTTOM .and. (IKMRK2 == 0 .or. IKMRK2 == 3)) then
+
+            DZ = ZSED / I_NRDZ
             CUMLIM = 0.0
 
             !                Bereken totale lichthoeveelheid en lichtlimitatie per laagje
 
-            LIMSURF = 1.0 - EXP(- RADSURF / RADSAT)
-            DO IZ = 1, I_NRDZ
-                IF (IZ == 1) THEN
-                    ACTDEP = 0.5 * DZ
-                ELSE
-                    ACTDEP = ACTDEP + DZ
-                ENDIF
+            LIMSURF = 1.0 - exp(-RADBOT / RADSAT)
+            do IZ = 1, I_NRDZ
+               if (IZ == 1) then
+                  ACTDEP = 0.5 * DZ
+               else
+                  ACTDEP = ACTDEP + DZ
+               end if
 
-                !                   bereken de fractie algen die naar het sediment oppervlak zijn gemigreerd
+               !                   bereken de fractie algen die naar het sediment oppervlak zijn gemigreerd
 
-                IF (IKMRK1 == 2 .AND. SWEMERSION == 1) THEN
-                    IF (MIGRDEPTH2 <= 1E-20) THEN
-                        FRACSURF = 0.0
-                    ELSE
-                        Z = LOCSEDDEPT - DEPTH + ACTDEP
-                        RELZ = MIN(1.0, (MAX(0.0, (Z - MIGRDEPTH1) / (MIGRDEPTH2 - MIGRDEPTH1))))
-                        FRACSURF = 0.5 * COS(PI * RELZ) + 0.5
-                    ENDIF
-                ELSE
-                    FRACSURF = 0.0
-                ENDIF
+               if (SWEMERSION == 1) then
+                  if (MIGRDEPTH2 <= 1e-20) then
+                     FRACSURF = 0.0
+                  else
+                     RELZ = min(1.0, (max(0.0, (ACTDEP - MIGRDEPTH1) / (MIGRDEPTH2 - MIGRDEPTH1))))
+                     FRACSURF = 0.5 * cos(PI * RELZ) + 0.5
+                  end if
+               else
+                  FRACSURF = 0.0
+               end if
 
-                ACTRAD = RADTOP * EXP (-EXTVL * ACTDEP)
-                ACTLIM = 1.0 - EXP(- ACTRAD / RADSAT)
+               ACTRAD = RADBOT * exp(-EXTVLS1 * ACTDEP)
+               ACTLIM = 1.0 - exp(-ACTRAD / RADSAT)
 
-                CUMLIM = CUMLIM + FRACSURF * LIMSURF + (1.0 - FRACSURF) * ACTLIM
-
-            ENDDO
+               CUMLIM = CUMLIM + FRACSURF * LIMSURF + (1.0 - FRACSURF) * ACTLIM
+            end do
 
             !                gemiddelde lichtlimitatie
 
@@ -235,91 +294,31 @@ contains
 
             !                Integratie over de dag
 
-            IF   (MOD(ITIME - ITSTRT, AUXSYS) < IDT)   THEN
-                IF (ITIME == ITSTRT) THEN
-                    WS2 = CUMLIM
-                ELSE
-                    WS2 = WS1 / AUXSYS
-                ENDIF
-                WS1 = 0.0
-                process_space_real(IP(23)) = WS2
-            ENDIF
+            if (mod(ITIME - ITSTRT, AUXSYS) < IDT) then
+               if (ITIME == ITSTRT) then
+                  WS4 = CUMLIM
+               else
+                  WS4 = WS3 / AUXSYS
+               end if
+               WS3 = 0.0
+               process_space_real(IP(24)) = WS4
+            end if
 
-            FLT = WS2
-            WS1 = WS1 + CUMLIM * IDT
+            FLTS1 = WS4
+            WS3 = WS3 + CUMLIM * IDT
 
-            process_space_real(IP(21)) = WS1
-            process_space_real(IP(25)) = FLT
+            process_space_real(IP(23)) = WS3
+            process_space_real(IP(26)) = FLTS1
 
-            !              ENDIF
+         end if
 
-            !             S1_BOTTOM
+         !             update pointering in process_space_real array
 
-            IF (S1_BOTTOM .AND. (IKMRK2 == 0 .OR. IKMRK2 == 3)) THEN
+         IP = IP + INCREM(1:NO_POINTER)
 
-                DZ = ZSED / I_NRDZ
-                CUMLIM = 0.0
+      end do
 
-                !                Bereken totale lichthoeveelheid en lichtlimitatie per laagje
-
-                LIMSURF = 1.0 - EXP(- RADBOT / RADSAT)
-                DO IZ = 1, I_NRDZ
-                    IF (IZ == 1) THEN
-                        ACTDEP = 0.5 * DZ
-                    ELSE
-                        ACTDEP = ACTDEP + DZ
-                    ENDIF
-
-                    !                   bereken de fractie algen die naar het sediment oppervlak zijn gemigreerd
-
-                    IF (SWEMERSION == 1) THEN
-                        IF (MIGRDEPTH2 <= 1E-20) THEN
-                            FRACSURF = 0.0
-                        ELSE
-                            RELZ = MIN(1.0, (MAX(0.0, (ACTDEP - MIGRDEPTH1) / (MIGRDEPTH2 - MIGRDEPTH1))))
-                            FRACSURF = 0.5 * COS(PI * RELZ) + 0.5
-                        ENDIF
-                    ELSE
-                        FRACSURF = 0.0
-                    ENDIF
-
-                    ACTRAD = RADBOT * EXP (-EXTVLS1 * ACTDEP)
-                    ACTLIM = 1.0 - EXP(- ACTRAD / RADSAT)
-
-                    CUMLIM = CUMLIM + FRACSURF * LIMSURF + (1.0 - FRACSURF) * ACTLIM
-                ENDDO
-
-                !                gemiddelde lichtlimitatie
-
-                CUMLIM = CUMLIM / I_NRDZ
-
-                !                Integratie over de dag
-
-                IF   (MOD(ITIME - ITSTRT, AUXSYS) < IDT)   THEN
-                    IF (ITIME == ITSTRT) THEN
-                        WS4 = CUMLIM
-                    ELSE
-                        WS4 = WS3 / AUXSYS
-                    ENDIF
-                    WS3 = 0.0
-                    process_space_real(IP(24)) = WS4
-                ENDIF
-
-                FLTS1 = WS4
-                WS3 = WS3 + CUMLIM * IDT
-
-                process_space_real(IP(23)) = WS3
-                process_space_real(IP(26)) = FLTS1
-
-            ENDIF
-
-            !             update pointering in process_space_real array
-
-            IP = IP + INCREM(1:NO_POINTER)
-
-        end do
-
-        RETURN
-    END
+      return
+   end
 
 end module m_mpbllm

@@ -21,81 +21,80 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_profld
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine PROFLD(NOFLUX, NFLUX1, NFLUXP, IGRID, NOSEG2, &
+                     num_cells, NDT, ISDMP, GRDSEG, FLUX, &
+                     VOLUME, FLXDMP)
+      !
+      !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
+      !
+      !     CREATED:            : Oct 1998 by Jan van Beek
+      !
+      !     FUNCTION            : make FLXDMP array from FLUX array
+      !
+      !     SUBROUTINES CALLED  : -
+      !
+      !     FILES               : -
+      !
+      !     COMMON BLOCKS       : -
+      !
+      !     PARAMETERS          : 12
+      !
+      !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+      !     ----    -----    ------     ------- -----------
+      !     NOFLUX  INTEGER       1     INPUT   Nr. of fluxes (total)
+      !     NFLUX1  INTEGER       1     INPUT   first flux to be dumped
+      !     NFLUXP  INTEGER       1     INPUT   number of fluxes to be dumped
+      !     IGRID   INTEGER       1     INPUT   Grid number for FLUX array
+      !     NOSEG2  INTEGER       1     INPUT   number of segments in IGRID
+      !     num_cells   INTEGER       1     INPUT   number of segments
+      !     NDT     INTEGER       1     INPUT   timestep multiplier in fractional step
+      !     ISDMP   INTEGER       *     INPUT   Segment to dumped segment pointer
+      !     GRDSEG  INTEGER       *     INPUT   Segment to sub-segment pointer for grids
+      !     FLUX    REAL          *     INPUT   fluxes at all segments
+      !     VOLUME  REAL          *     INPUT   Segment volumes
+      !     FLXDMP  REAL    NOFLUX*?    OUTPUT  fluxes at dump segments
+      !
+      !     Declaration of arguments
+      !
+      use timers
 
-    SUBROUTINE PROFLD (NOFLUX, NFLUX1, NFLUXP, IGRID, NOSEG2, &
-            num_cells, NDT, ISDMP, GRDSEG, FLUX, &
-            VOLUME, FLXDMP)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED:            : Oct 1998 by Jan van Beek
-        !
-        !     FUNCTION            : make FLXDMP array from FLUX array
-        !
-        !     SUBROUTINES CALLED  : -
-        !
-        !     FILES               : -
-        !
-        !     COMMON BLOCKS       : -
-        !
-        !     PARAMETERS          : 12
-        !
-        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-        !     ----    -----    ------     ------- -----------
-        !     NOFLUX  INTEGER       1     INPUT   Nr. of fluxes (total)
-        !     NFLUX1  INTEGER       1     INPUT   first flux to be dumped
-        !     NFLUXP  INTEGER       1     INPUT   number of fluxes to be dumped
-        !     IGRID   INTEGER       1     INPUT   Grid number for FLUX array
-        !     NOSEG2  INTEGER       1     INPUT   number of segments in IGRID
-        !     num_cells   INTEGER       1     INPUT   number of segments
-        !     NDT     INTEGER       1     INPUT   timestep multiplier in fractional step
-        !     ISDMP   INTEGER       *     INPUT   Segment to dumped segment pointer
-        !     GRDSEG  INTEGER       *     INPUT   Segment to sub-segment pointer for grids
-        !     FLUX    REAL          *     INPUT   fluxes at all segments
-        !     VOLUME  REAL          *     INPUT   Segment volumes
-        !     FLXDMP  REAL    NOFLUX*?    OUTPUT  fluxes at dump segments
-        !
-        !     Declaration of arguments
-        !
-        use timers
+      integer(kind=int_wp) :: NOFLUX, NFLUX1, NFLUXP, IGRID, NOSEG2, &
+                              num_cells, NDT
+      integer(kind=int_wp) :: ISDMP(num_cells), GRDSEG(num_cells, *)
+      real(kind=real_wp) :: FLUX(NOFLUX, NOSEG2), VOLUME(num_cells), &
+                            FLXDMP(NOFLUX, *)
 
-        INTEGER(kind = int_wp) :: NOFLUX, NFLUX1, NFLUXP, IGRID, NOSEG2, &
-                num_cells, NDT
-        INTEGER(kind = int_wp) :: ISDMP(num_cells), GRDSEG(num_cells, *)
-        REAL(kind = real_wp) :: FLUX(NOFLUX, NOSEG2), VOLUME(num_cells), &
-                FLXDMP(NOFLUX, *)
-
-        !     local
-        integer(kind = int_wp) :: cell_i, iseg2, ips, iflux
-        real(kind = real_wp) :: vol
-        integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("profld", ithandl)
-        !
-        !     We construeren nu de FLUXDUMPEN
-        !
-        DO cell_i = 1, num_cells
-            IF (ISDMP(cell_i) > 0) THEN
-                VOL = VOLUME(cell_i)
-                IPS = ISDMP(cell_i)
-                IF (IGRID /= 1) THEN
-                    ISEG2 = GRDSEG(cell_i, IGRID)
-                ELSE
-                    ISEG2 = cell_i
-                ENDIF
-                DO IFLUX = NFLUX1, NFLUX1 + NFLUXP - 1
-                    FLXDMP(IFLUX, IPS) = FLUX(IFLUX, ISEG2) * VOL * NDT
-                ENDDO
-            ENDIF
-        ENDDO
-        !
-        if (timon) call timstop (ithandl)
-        RETURN
-    END
+      !     local
+      integer(kind=int_wp) :: cell_i, iseg2, ips, iflux
+      real(kind=real_wp) :: vol
+      integer(kind=int_wp) :: ithandl = 0
+      if (timon) call timstrt("profld", ithandl)
+      !
+      !     We construeren nu de FLUXDUMPEN
+      !
+      do cell_i = 1, num_cells
+         if (ISDMP(cell_i) > 0) then
+            VOL = VOLUME(cell_i)
+            IPS = ISDMP(cell_i)
+            if (IGRID /= 1) then
+               ISEG2 = GRDSEG(cell_i, IGRID)
+            else
+               ISEG2 = cell_i
+            end if
+            do IFLUX = NFLUX1, NFLUX1 + NFLUXP - 1
+               FLXDMP(IFLUX, IPS) = FLUX(IFLUX, ISEG2) * VOL * NDT
+            end do
+         end if
+      end do
+      !
+      if (timon) call timstop(ithandl)
+      return
+   end
 
 end module m_profld

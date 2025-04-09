@@ -24,11 +24,11 @@
 !> enumeration for types of loggers that can be created by the logger_factory
 module m_logger_type
 
-    !> logger types that are supported by the logger_factory
-    enum, bind(c)
-        enumerator :: file = 1
-        enumerator :: screen = 2
-        enumerator :: file_and_screen = file + screen
-    end enum
+   !> logger types that are supported by the logger_factory
+   enum, bind(c)
+      enumerator :: file = 1
+      enumerator :: screen = 2
+      enumerator :: file_and_screen = file + screen
+   end enum
 
 end module m_logger_type

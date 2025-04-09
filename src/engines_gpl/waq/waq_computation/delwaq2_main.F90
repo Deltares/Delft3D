@@ -21,94 +21,94 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq2_main
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
-    private
-    public :: dlwqmain
+   private
+   public :: dlwqmain
 
 contains
-    !> MAIN module for DELWAQ2 , dimensioning of the work array's.
-    subroutine dlwqmain(action, dlwqd)
-        use integration_schemes, only: run_integration_schemes
-        use delwaq2_data
-        use m_actions, only: action_initialisation, action_fullcomputation
-        use m_waq_memory_dimensions
-        use m_timer_variables
+   !> MAIN module for DELWAQ2 , dimensioning of the work array's.
+   subroutine dlwqmain(action, dlwqd)
+      use integration_schemes, only: run_integration_schemes
+      use delwaq2_data
+      use m_actions, only: action_initialisation, action_fullcomputation
+      use m_waq_memory_dimensions
+      use m_timer_variables
 
-        integer(kind=int_wp), intent(in) :: action         !< Action to be taken
-        type(delwaq_data) :: dlwqd
+      integer(kind=int_wp), intent(in) :: action !< Action to be taken
+      type(delwaq_data) :: dlwqd
 
-        character(len=20) :: rundat
-        logical :: init
-        integer(kind=int_wp) :: file_unit
+      character(len=20) :: rundat
+      logical :: init
+      integer(kind=int_wp) :: file_unit
 
-        integer(kind=int_wp), save :: itota
-        integer(kind=int_wp), save :: itoti
-        integer(kind=int_wp), save :: itotc
+      integer(kind=int_wp), save :: itota
+      integer(kind=int_wp), save :: itoti
+      integer(kind=int_wp), save :: itotc
 
-        init = action == action_initialisation .or. action == action_fullcomputation
+      init = action == action_initialisation .or. action == action_fullcomputation
 
-        if (init) then
-            call delwaq2_main_init(dlwqd, itota, itoti, itotc)
-        end if
+      if (init) then
+         call delwaq2_main_init(dlwqd, itota, itoti, itotc)
+      end if
 
-        call run_integration_schemes(dlwqd%buffer, itota, itoti, itotc, init, action, dlwqd)
-        call delwaq2_main_finalise(action, file_unit, rundat)
+      call run_integration_schemes(dlwqd%buffer, itota, itoti, itotc, init, action, dlwqd)
+      call delwaq2_main_finalise(action, file_unit, rundat)
 
-    end subroutine dlwqmain
+   end subroutine dlwqmain
 
-    subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc)
+   subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc)
 
-        use delwaq2_data
-        use m_waq_memory_dimensions
-        use m_timer_variables
+      use delwaq2_data
+      use m_waq_memory_dimensions
+      use m_timer_variables
 
-        implicit none
+      implicit none
 
-        ! Arguments
-        integer(kind=int_wp) :: imaxa, imaxi, imaxc
-        type(delwaq_data), target :: dlwqd
+      ! Arguments
+      integer(kind=int_wp) :: imaxa, imaxi, imaxc
+      type(delwaq_data), target :: dlwqd
 
-        integer(kind=int_wp), intent(inout) :: itota
-        integer(kind=int_wp), intent(inout) :: itoti
-        integer(kind=int_wp), intent(inout) :: itotc
+      integer(kind=int_wp), intent(inout) :: itota
+      integer(kind=int_wp), intent(inout) :: itoti
+      integer(kind=int_wp), intent(inout) :: itotc
 
-        itota = 0
-        itoti = 0
-        itotc = 0
+      itota = 0
+      itoti = 0
+      itotc = 0
 
-        call dlwqd%buffer%intialize()
+      call dlwqd%buffer%intialize()
 
-    end subroutine delwaq2_main_init
+   end subroutine delwaq2_main_init
 
-    subroutine delwaq2_main_finalise(action, file_unit, rundat)
+   subroutine delwaq2_main_finalise(action, file_unit, rundat)
 
-        use m_actions
-        use m_date_time_utils_external, only: write_date_time
-        use m_logger_helper, only: get_log_unit_number
+      use m_actions
+      use m_date_time_utils_external, only: write_date_time
+      use m_logger_helper, only: get_log_unit_number
 
-        integer(kind=int_wp), intent(in) :: action
-        character(len=20), intent(in) :: rundat
-        integer(kind=int_wp), intent(in) :: file_unit
+      integer(kind=int_wp), intent(in) :: action
+      character(len=20), intent(in) :: rundat
+      integer(kind=int_wp), intent(in) :: file_unit
 
-        !     Finalise - only if the full computation was done
-        if ((action == action_fullcomputation) .or. (action == action_finalisation)) then
+      !     Finalise - only if the full computation was done
+      if ((action == action_fullcomputation) .or. (action == action_finalisation)) then
 
-            call get_log_unit_number(file_unit)
-            write (*, *)
-            write (*, *) ' SIMULATION ENDED '
-            write (*, *)
-            write (file_unit, *)
-            write (file_unit, '(A)') ' Simulation ended normal'
-            call write_date_time(rundat)
-            write (file_unit, '(2A)') ' Execution stop : ', rundat
+         call get_log_unit_number(file_unit)
+         write (*, *)
+         write (*, *) ' SIMULATION ENDED '
+         write (*, *)
+         write (file_unit, *)
+         write (file_unit, '(A)') ' Simulation ended normal'
+         call write_date_time(rundat)
+         write (file_unit, '(2A)') ' Execution stop : ', rundat
 
-            close (file_unit)
+         close (file_unit)
 
-        end if
+      end if
 
-    end subroutine delwaq2_main_finalise
+   end subroutine delwaq2_main_finalise
 
 end module m_delwaq2_main

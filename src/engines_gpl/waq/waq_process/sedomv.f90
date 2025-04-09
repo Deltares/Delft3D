@@ -21,181 +21,180 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_sedomv
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine sedomv(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_extract_waq_attribute
 
-    subroutine sedomv (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_extract_waq_attribute
+      !>\file
+      !>       Sedimentation flux and velocity of adsorbed organic micro pollutants
 
-        !>\file
-        !>       Sedimentation flux and velocity of adsorbed organic micro pollutants
+      !
+      !     Description of the module :
+      !
+      !        General water quality module for DELWAQ:
+      !        CALCULATES THE DERIV-CONTRIBUTION FOR SEDIMENTATION OF OMV
+      !        CALCULATES THE SEDIMENTATION VELOCITY OF OMV (DIRECTION 3)
+      !
+      ! Name    T   L I/O   Description                                    Uni
+      ! ----    --- -  -    -------------------                            ---
+      ! SFL1-2  R*4 1 I  sedimentaion flux carriers                  [gC/m2/d]
+      ! Q1-2    R*4 1 I  quality of carrier                          [gOMV/gC]
+      !     Logical Units : -
 
-        !
-        !     Description of the module :
-        !
-        !        General water quality module for DELWAQ:
-        !        CALCULATES THE DERIV-CONTRIBUTION FOR SEDIMENTATION OF OMV
-        !        CALCULATES THE SEDIMENTATION VELOCITY OF OMV (DIRECTION 3)
-        !
-        ! Name    T   L I/O   Description                                    Uni
-        ! ----    --- -  -    -------------------                            ---
-        ! SFL1-2  R*4 1 I  sedimentaion flux carriers                  [gC/m2/d]
-        ! Q1-2    R*4 1 I  quality of carrier                          [gOMV/gC]
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
+      !     ------   -----  ------------
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
+      implicit real(A - H, J - Z)
+      implicit integer(I)
 
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      integer(kind=int_wp) :: iq, iseg
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-        integer(kind = int_wp) :: iq, iseg
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
+      IP6 = IPOINT(6)
+      IP7 = IPOINT(7)
+      IP8 = IPOINT(8)
+      IP9 = IPOINT(9)
+      IP10 = IPOINT(10)
+      IP11 = IPOINT(11)
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        IP10 = IPOINT(10)
-        IP11 = IPOINT(11)
+      IN1 = INCREM(1)
+      IN2 = INCREM(2)
+      IN3 = INCREM(3)
+      IN4 = INCREM(4)
+      IN5 = INCREM(5)
+      IN6 = INCREM(6)
+      IN7 = INCREM(7)
+      IN8 = INCREM(8)
+      IN9 = INCREM(9)
+      IN10 = INCREM(10)
+      IN11 = INCREM(11)
+      !
+      IFLUX = 0
+      do ISEG = 1, num_cells
+         call extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+         if (IKMRK1 == 1) then
+            call extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+            if ((IKMRK2 == 0) .or. (IKMRK2 == 3)) then
+               !
+               SFL1 = process_space_real(IP1)
+               SFL2 = process_space_real(IP2)
+               Q1 = process_space_real(IP3)
+               Q2 = process_space_real(IP4)
+               DEPTH = process_space_real(IP5)
 
-        IN1 = INCREM(1)
-        IN2 = INCREM(2)
-        IN3 = INCREM(3)
-        IN4 = INCREM(4)
-        IN5 = INCREM(5)
-        IN6 = INCREM(6)
-        IN7 = INCREM(7)
-        IN8 = INCREM(8)
-        IN9 = INCREM(9)
-        IN10 = INCREM(10)
-        IN11 = INCREM(11)
-        !
-        IFLUX = 0
-        DO ISEG = 1, num_cells
-            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-            IF (IKMRK1==1) THEN
-                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
-                IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
-                    !
-                    SFL1 = process_space_real(IP1)
-                    SFL2 = process_space_real(IP2)
-                    Q1 = process_space_real(IP3)
-                    Q2 = process_space_real(IP4)
-                    DEPTH = process_space_real(IP5)
+               !***********************************************************************
+               !**** Processes connected to the SEDIMENTATION of OMV
+               !***********************************************************************
 
-                    !***********************************************************************
-                    !**** Processes connected to the SEDIMENTATION of OMV
-                    !***********************************************************************
+               !     SEDIMENTATION
+               FL(1 + IFLUX) = (SFL1 * Q1 + SFL2 * Q2) / DEPTH
 
-                    !     SEDIMENTATION
-                    FL(1 + IFLUX) = (SFL1 * Q1 + SFL2 * Q2) / DEPTH
+               !     SEDIMENTATION SCALED
+               process_space_real(IP10) = FL(1 + IFLUX) * DEPTH
 
-                    !     SEDIMENTATION SCALED
-                    process_space_real(IP10) = FL(1 + IFLUX) * DEPTH
+            end if
+         end if
+         !
+         IFLUX = IFLUX + NOFLUX
+         IP1 = IP1 + INCREM(1)
+         IP2 = IP2 + INCREM(2)
+         IP3 = IP3 + INCREM(3)
+         IP4 = IP4 + INCREM(4)
+         IP5 = IP5 + INCREM(5)
+         IP10 = IP10 + INCREM(10)
+         !
+      end do
+      !
+      !.....Exchangeloop over de horizontale richting
+      do IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
 
-                ENDIF
-            ENDIF
-            !
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + INCREM (1)
-            IP2 = IP2 + INCREM (2)
-            IP3 = IP3 + INCREM (3)
-            IP4 = IP4 + INCREM (4)
-            IP5 = IP5 + INCREM (5)
-            IP10 = IP10 + INCREM (10)
-            !
-        end do
-        !
-        !.....Exchangeloop over de horizontale richting
-        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
+         !........VxSedOMI op nul
+         process_space_real(IP11) = 0.0
 
-            !........VxSedOMI op nul
+         IP11 = IP11 + IN11
+
+      end do
+
+      !.....Startwaarden VxSedPOC en VxSedPhyt
+      IP8 = IP8 + (num_exchanges_u_dir + num_exchanges_v_dir) * IN8
+      IP9 = IP9 + (num_exchanges_u_dir + num_exchanges_v_dir) * IN9
+
+      !.....Exchangeloop over de verticale richting
+      do IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
+
+         IVAN = IEXPNT(1, IQ)
+         INAAR = IEXPNT(2, IQ)
+
+         if (IVAN > 0 .and. INAAR > 0) then
+
+            ! Zoek eerste kenmerk van- en naar-segmenten
+
+            call extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
+            call extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
+            if (IKMRKV == 1 .and. IKMRKN == 3) then
+
+               ! Bodem-water uitwisseling: NUL FLUX OM OOK OUDE PDF's
+
+               FL(1 + (IVAN - 1) * NOFLUX) = 0.0
+
+               FOMPOC = process_space_real(IP6 + (IVAN - 1) * IN6)
+               FOMPHY = process_space_real(IP7 + (IVAN - 1) * IN7)
+
+               VSPOC = process_space_real(IP8)
+               VSPHY = process_space_real(IP9)
+
+               VSOMI = FOMPOC * VSPOC + FOMPHY * VSPHY
+               process_space_real(IP11) = VSOMI
+
+            elseif (IKMRKV == 1 .and. IKMRKN == 1) then
+
+               ! Water-water uitwisseling
+
+               FOMPOC = process_space_real(IP6 + (IVAN - 1) * IN6)
+               FOMPHY = process_space_real(IP7 + (IVAN - 1) * IN7)
+
+               VSPOC = process_space_real(IP8)
+               VSPHY = process_space_real(IP9)
+
+               ! Berekenen VxSedOMI
+
+               VSOMI = FOMPOC * VSPOC + &
+                       FOMPHY * VSPHY
+
+               !..............VxSedOMI toekennen aan de process_space_real
+               process_space_real(IP11) = VSOMI
+
+            else
+               process_space_real(IP11) = 0.0
+            end if
+         else
             process_space_real(IP11) = 0.0
+         end if
 
-            IP11 = IP11 + IN11
+         !........Exchangepointers ophogen
+         IP8 = IP8 + IN8
+         IP9 = IP9 + IN9
+         IP11 = IP11 + IN11
 
-        end do
+      end do
 
-        !.....Startwaarden VxSedPOC en VxSedPhyt
-        IP8 = IP8 + (num_exchanges_u_dir + num_exchanges_v_dir) * IN8
-        IP9 = IP9 + (num_exchanges_u_dir + num_exchanges_v_dir) * IN9
-
-        !.....Exchangeloop over de verticale richting
-        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
-
-            IVAN = IEXPNT(1, IQ)
-            INAAR = IEXPNT(2, IQ)
-
-            IF (IVAN > 0 .AND. INAAR > 0) THEN
-
-                ! Zoek eerste kenmerk van- en naar-segmenten
-
-                CALL extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
-                CALL extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
-                IF (IKMRKV==1.AND.IKMRKN==3) THEN
-
-                    ! Bodem-water uitwisseling: NUL FLUX OM OOK OUDE PDF's
-
-                    FL(1 + (IVAN - 1) * NOFLUX) = 0.0
-
-                    FOMPOC = process_space_real(IP6 + (IVAN - 1) * IN6)
-                    FOMPHY = process_space_real(IP7 + (IVAN - 1) * IN7)
-
-                    VSPOC = process_space_real(IP8)
-                    VSPHY = process_space_real(IP9)
-
-                    VSOMI = FOMPOC * VSPOC + FOMPHY * VSPHY
-                    process_space_real(IP11) = VSOMI
-
-                ELSEIF (IKMRKV==1.AND.IKMRKN==1) THEN
-
-                    ! Water-water uitwisseling
-
-                    FOMPOC = process_space_real(IP6 + (IVAN - 1) * IN6)
-                    FOMPHY = process_space_real(IP7 + (IVAN - 1) * IN7)
-
-                    VSPOC = process_space_real(IP8)
-                    VSPHY = process_space_real(IP9)
-
-                    ! Berekenen VxSedOMI
-
-                    VSOMI = FOMPOC * VSPOC + &
-                            FOMPHY * VSPHY
-
-                    !..............VxSedOMI toekennen aan de process_space_real
-                    process_space_real(IP11) = VSOMI
-
-                ELSE
-                    process_space_real(IP11) = 0.0
-                ENDIF
-            ELSE
-                process_space_real(IP11) = 0.0
-            ENDIF
-
-            !........Exchangepointers ophogen
-            IP8 = IP8 + IN8
-            IP9 = IP9 + IN9
-            IP11 = IP11 + IN11
-
-        end do
-
-        RETURN
-    END
+      return
+   end
 
 end module m_sedomv

@@ -21,116 +21,115 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_rdbalg
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine rdbalg(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_logger_helper
 
-    subroutine rdbalg (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_logger_helper
+      !>\file
+      !>       Light efficiency function DYNAMO algae
 
-        !>\file
-        !>       Light efficiency function DYNAMO algae
+      !
+      !     Description of the module :
+      !
+      ! Name    T   L I/O   Description                                   Unit
+      ! ----    --- -  -    -------------------                            ---
+      ! DEPTH   R*4 1 I depth of the water column                            [
+      ! EFF     R*4 1 L average light efficiency green-algea                 [
+      ! ACTRAD  R*4 1 I radiation                                         [W/m
+      ! SATRAD  R*4 1 I radiation growth saturation green-algea           [W/m
 
-        !
-        !     Description of the module :
-        !
-        ! Name    T   L I/O   Description                                   Unit
-        ! ----    --- -  -    -------------------                            ---
-        ! DEPTH   R*4 1 I depth of the water column                            [
-        ! EFF     R*4 1 L average light efficiency green-algea                 [
-        ! ACTRAD  R*4 1 I radiation                                         [W/m
-        ! SATRAD  R*4 1 I radiation growth saturation green-algea           [W/m
+      !     Logical Units : -
 
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
+      !     ------   -----  ------------
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
+      implicit real(A - H, J - Z)
+      implicit integer(I)
 
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      logical LGTOPT
+      integer(kind=int_wp) :: iseg
+      !
+      IN1 = INCREM(1)
+      IN2 = INCREM(2)
+      IN3 = INCREM(3)
+      IN4 = INCREM(4)
+      IN5 = INCREM(5)
+      IN6 = INCREM(6)
+      !
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
+      IP6 = IPOINT(6)
+      !
+      if (IN2 == 0 .and. IN3 == 0 .and. IN5 == 0) then
+         ACTRAD = process_space_real(IP2)
+         SATRAD = process_space_real(IP3)
+         TFGRO = process_space_real(IP5)
+         !
+         !        Correct SATRAD for temperature using Temp function for growth
+         !
+         !        SATRAD = TFGRO * SATRAD
+         SATRAD = SATRAD
+         !     actuele straling / straling voor groei verzadiging
+         FRAD = ACTRAD / SATRAD
+         LGTOPT = .false.
+      else
+         LGTOPT = .true.
+      end if
+      !
+      IFLUX = 0
+      do ISEG = 1, num_cells
 
-        LOGICAL  LGTOPT
-        integer(kind = int_wp) :: iseg
-        !
-        IN1 = INCREM(1)
-        IN2 = INCREM(2)
-        IN3 = INCREM(3)
-        IN4 = INCREM(4)
-        IN5 = INCREM(5)
-        IN6 = INCREM(6)
-        !
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        !
-        IF (IN2 == 0 .AND. IN3 == 0 .AND. IN5 == 0) THEN
-            ACTRAD = process_space_real(IP2)
-            SATRAD = process_space_real(IP3)
-            TFGRO = process_space_real(IP5)
+         if (btest(IKNMRK(ISEG), 0)) then
             !
-            !        Correct SATRAD for temperature using Temp function for growth
+            if (LGTOPT) then
+               ACTRAD = process_space_real(IP2)
+               SATRAD = process_space_real(IP3)
+               TFGRO = process_space_real(IP5)
+               !
+               !        Correct SATRAD for temperature using Temp function for growth
+               !
+               !        SATRAD = TFGRO * SATRAD
+               SATRAD = SATRAD
+               !     actuele straling / straling voor groei verzadiging
+               FRAD = ACTRAD / SATRAD
+            end if
             !
-            !        SATRAD = TFGRO * SATRAD
-            SATRAD = SATRAD
-            !     actuele straling / straling voor groei verzadiging
-            FRAD = ACTRAD / SATRAD
-            LGTOPT = .FALSE.
-        ELSE
-            LGTOPT = .TRUE.
-        ENDIF
-        !
-        IFLUX = 0
-        DO ISEG = 1, num_cells
+            process_space_real(IP6) = max(min(FRAD, 1.0), 0.0)
+            !
+            if (SATRAD < 1e-20) call write_error_message('SATRAD in RADALG zero')
 
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                !
-                IF (LGTOPT) THEN
-                    ACTRAD = process_space_real(IP2)
-                    SATRAD = process_space_real(IP3)
-                    TFGRO = process_space_real(IP5)
-                    !
-                    !        Correct SATRAD for temperature using Temp function for growth
-                    !
-                    !        SATRAD = TFGRO * SATRAD
-                    SATRAD = SATRAD
-                    !     actuele straling / straling voor groei verzadiging
-                    FRAD = ACTRAD / SATRAD
-                ENDIF
-                !
-                process_space_real(IP6) = MAX(MIN(FRAD, 1.0), 0.0)
-                !
-                IF (SATRAD < 1E-20)  CALL write_error_message ('SATRAD in RADALG zero')
-
-                8900 CONTINUE
-                !
-            ENDIF
+8900        continue
             !
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + IN1
-            IP2 = IP2 + IN2
-            IP3 = IP3 + IN3
-            IP5 = IP5 + IN5
-            IP4 = IP4 + IN4
-            IP6 = IP6 + IN6
-            !
-        end do
-        !
-        RETURN
-        !
-    END
+         end if
+         !
+         IFLUX = IFLUX + NOFLUX
+         IP1 = IP1 + IN1
+         IP2 = IP2 + IN2
+         IP3 = IP3 + IN3
+         IP5 = IP5 + IN5
+         IP4 = IP4 + IN4
+         IP6 = IP6 + IN6
+         !
+      end do
+      !
+      return
+      !
+   end
 
 end module m_rdbalg

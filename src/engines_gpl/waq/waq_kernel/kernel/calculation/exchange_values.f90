@@ -21,72 +21,71 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_exchange_values
-    use m_waq_precision
-    use m_string_utils
-    use timers
+   use m_waq_precision
+   use m_string_utils
+   use timers
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine exchange_values(name, nosss, value, num_constants, num_spatial_parameters, &
+                              num_time_functions, num_spatial_time_fuctions, const, coname, param, &
+                              paname, funcs, funame, sfuncs, sfname, &
+                              lget, ierr)
 
-    subroutine exchange_values(name, nosss, value, num_constants, num_spatial_parameters, &
-            num_time_functions, num_spatial_time_fuctions, const, coname, param, &
-            paname, funcs, funame, sfuncs, sfname, &
-            lget, ierr)
+      character(len=20) :: name, coname(*), paname(*), funame(*), sfname(*)
+      real(kind=real_wp) :: value(nosss), const(num_constants), param(num_spatial_parameters, nosss), &
+                            funcs(num_time_functions), sfuncs(nosss, num_spatial_time_fuctions)
+      logical :: lget
+      integer(kind=int_wp) :: nosss, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, ierr
 
-        character(len = 20) :: name, coname(*), paname(*), funame(*), sfname(*)
-        real(kind = real_wp) :: value(nosss), const(num_constants), param (num_spatial_parameters, nosss), &
-                funcs(num_time_functions), sfuncs(nosss, num_spatial_time_fuctions)
-        logical :: lget
-        integer(kind = int_wp) :: nosss, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, ierr
+      ! local
+      integer(kind=int_wp) :: indx
+      integer(kind=int_wp) :: ithandl = 0
+      if (timon) call timstrt("values", ithandl)
 
-        ! local
-        integer(kind = int_wp) :: indx
-        integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("values", ithandl)
-
-        ierr = 1
-        indx = index_in_array(name, sfname(:num_spatial_time_fuctions))
-        if (indx > 0) then
-            if (lget) then
-                value(1:nosss) = sfuncs(1:nosss, indx)
-            else
-                sfuncs(1:nosss, indx) = value(1:nosss)
-            endif
+      ierr = 1
+      indx = index_in_array(name, sfname(:num_spatial_time_fuctions))
+      if (indx > 0) then
+         if (lget) then
+            value(1:nosss) = sfuncs(1:nosss, indx)
+         else
+            sfuncs(1:nosss, indx) = value(1:nosss)
+         end if
+         ierr = 0
+         goto 100
+      end if
+      indx = index_in_array(name, paname(:num_spatial_parameters))
+      if (indx > 0) then
+         if (lget) then
+            value(1:nosss) = param(indx, 1:nosss)
+         else
+            param(indx, 1:nosss) = value(1:nosss)
+         end if
+         ierr = 0
+         goto 100
+      end if
+      indx = index_in_array(name, funame(:num_time_functions))
+      if (indx > 0) then
+         if (lget) then
+            value(1:nosss) = funcs(indx)
             ierr = 0
-            goto 100
-        endif
-        indx = index_in_array(name, paname (:num_spatial_parameters))
-        if (indx > 0) then
-            if (lget) then
-                value(1:nosss) = param(indx, 1:nosss)
-            else
-                param(indx, 1:nosss) = value(1:nosss)
-            endif
+         end if
+         goto 100
+      end if
+      indx = index_in_array(name, coname(:num_constants))
+      if (indx > 0) then
+         if (lget) then
+            value(1:nosss) = const(indx)
             ierr = 0
-            goto 100
-        endif
-        indx = index_in_array(name, funame (:num_time_functions))
-        if (indx > 0) then
-            if (lget) then
-                value(1:nosss) = funcs(indx)
-                ierr = 0
-            endif
-            goto 100
-        endif
-        indx = index_in_array(name, coname (:num_constants))
-        if (indx > 0) then
-            if (lget) then
-                value(1:nosss) = const(indx)
-                ierr = 0
-            endif
-            goto 100
-        endif
+         end if
+         goto 100
+      end if
 
-        100 continue
-        if (timon) call timstop (ithandl)
+100   continue
+      if (timon) call timstop(ithandl)
 
-    end subroutine exchange_values
+   end subroutine exchange_values
 
 end module m_exchange_values

@@ -21,150 +21,149 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_maxmac
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine MAXMAC(process_space_real, FL, IPOINT, INCREM, num_cells, &
+                     NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_extract_waq_attribute
 
-    SUBROUTINE MAXMAC     (process_space_real, FL, IPOINT, INCREM, num_cells, &
-            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_extract_waq_attribute
+      !
+      !*******************************************************************************
+      !
+      implicit none
+      !
+      !     Type    Name         I/O Description
+      !
+      real(kind=real_wp) :: process_space_real(*) !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp) :: FL(*) ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp) :: IPOINT(31) ! I  Array of pointers in process_space_real to get and store the data
+      integer(kind=int_wp) :: INCREM(31) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp) :: num_cells ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp) :: NOFLUX ! I  Number of fluxes, increment in the FL array
+      integer(kind=int_wp) :: IEXPNT ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp) :: IKNMRK(*) ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp) :: num_exchanges_u_dir ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+      integer(kind=int_wp) :: num_exchanges_v_dir ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+      integer(kind=int_wp) :: num_exchanges_z_dir ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp) :: num_exchanges_bottom_dir ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp) :: IPNT(31) !    Local work array for the pointering
+      integer(kind=int_wp) :: ISEG !    Local loop counter for computational element loop
+      !
+      !*******************************************************************************
+      !
+      !     Type    Name         I/O Description                                        Unit
+      !
+      real(kind=real_wp) :: nMacrophyt ! I  number of macrophyte species                       (-)
+      real(kind=real_wp) :: HSIEM01 ! I  Habitat Suitability Index for EM01                 (-)
+      real(kind=real_wp) :: PotEM01 ! I  potential biomass for EM01                         (gC/M2)
+      real(kind=real_wp) :: HSISM01 ! I  Habitat Suitability Index for SM01                 (-)
+      real(kind=real_wp) :: PotSM01 ! I  potential biomass for SM01                         (gC/M2)
+      real(kind=real_wp) :: HSIEM02 ! I  Habitat Suitability Index for EM02                 (-)
+      real(kind=real_wp) :: PotEM02 ! I  potential biomass for EM02                         (gC/M2)
+      real(kind=real_wp) :: HSISM02 ! I  Habitat Suitability Index for SM02                 (-)
+      real(kind=real_wp) :: PotSM02 ! I  potential biomass for SM02                         (gC/M2)
+      real(kind=real_wp) :: HSIEM03 ! I  Habitat Suitability Index for EM03                 (-)
+      real(kind=real_wp) :: PotEM03 ! I  potential biomass for EM03                         (gC/M2)
+      real(kind=real_wp) :: HSISM03 ! I  Habitat Suitability Index for SM03                 (-)
+      real(kind=real_wp) :: PotSM03 ! I  potential biomass for SM03                         (gC/M2)
+      real(kind=real_wp) :: HSIEM04 ! I  Habitat Suitability Index for EM04                 (-)
+      real(kind=real_wp) :: PotEM04 ! I  potential biomass for EM04                         (gC/M2)
+      real(kind=real_wp) :: HSISM04 ! I  Habitat Suitability Index for SM04                 (-)
+      real(kind=real_wp) :: PotSM04 ! I  potential biomass for SM04                         (gC/M2)
+      real(kind=real_wp) :: HSIEM05 ! I  Habitat Suitability Index for EM05                 (-)
+      real(kind=real_wp) :: PotEM05 ! I  potential biomass for EM05                         (gC/M2)
+      real(kind=real_wp) :: HSISM05 ! I  Habitat Suitability Index for SM05                 (-)
+      real(kind=real_wp) :: PotSM05 ! I  potential biomass for SM05                         (gC/M2)
+      real(kind=real_wp) :: MaxEM01 ! O  maximum biomass for macrophyt emerged 01           (gC)
+      real(kind=real_wp) :: MaxSM01 ! O  maximum biomass for macrophyt submerged 01         (gC)
+      real(kind=real_wp) :: MaxEM02 ! O  maximum biomass for EM02                           (gC/M2)
+      real(kind=real_wp) :: MaxSM02 ! O  maximum biomass for SM02                           (gC/M2)
+      real(kind=real_wp) :: MaxEM03 ! O  maximum biomass for EM03                           (gC/M2)
+      real(kind=real_wp) :: MaxSM03 ! O  maximum biomass for SM03                           (gC/M2)
+      real(kind=real_wp) :: MaxEM04 ! O  maximum biomass for EM04                           (gC/M2)
+      real(kind=real_wp) :: MaxSM04 ! O  maximum biomass for SM04                           (gC/M2)
+      real(kind=real_wp) :: MaxEM05 ! O  maximum biomass for EM05                           (gC/M2)
+      real(kind=real_wp) :: MaxSM05 ! O  maximum biomass for SM05                           (gC/M2)
 
-        !
-        !*******************************************************************************
-        !
-        IMPLICIT NONE
-        !
-        !     Type    Name         I/O Description
-        !
-        REAL(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
-        REAL(kind = real_wp) :: FL(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        INTEGER(kind = int_wp) :: IPOINT(31) ! I  Array of pointers in process_space_real to get and store the data
-        INTEGER(kind = int_wp) :: INCREM(31) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-        INTEGER(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
-        INTEGER(kind = int_wp) :: NOFLUX      ! I  Number of fluxes, increment in the FL array
-        INTEGER(kind = int_wp) :: IEXPNT      ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-        INTEGER(kind = int_wp) :: IKNMRK(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        INTEGER(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        INTEGER(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
-        INTEGER(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-        INTEGER(kind = int_wp) :: IPNT(31)   !    Local work array for the pointering
-        INTEGER(kind = int_wp) :: ISEG        !    Local loop counter for computational element loop
-        !
-        !*******************************************************************************
-        !
-        !     Type    Name         I/O Description                                        Unit
-        !
-        REAL(kind = real_wp) :: nMacrophyt  ! I  number of macrophyte species                       (-)
-        REAL(kind = real_wp) :: HSIEM01     ! I  Habitat Suitability Index for EM01                 (-)
-        REAL(kind = real_wp) :: PotEM01     ! I  potential biomass for EM01                         (gC/M2)
-        REAL(kind = real_wp) :: HSISM01     ! I  Habitat Suitability Index for SM01                 (-)
-        REAL(kind = real_wp) :: PotSM01     ! I  potential biomass for SM01                         (gC/M2)
-        REAL(kind = real_wp) :: HSIEM02     ! I  Habitat Suitability Index for EM02                 (-)
-        REAL(kind = real_wp) :: PotEM02     ! I  potential biomass for EM02                         (gC/M2)
-        REAL(kind = real_wp) :: HSISM02     ! I  Habitat Suitability Index for SM02                 (-)
-        REAL(kind = real_wp) :: PotSM02     ! I  potential biomass for SM02                         (gC/M2)
-        REAL(kind = real_wp) :: HSIEM03     ! I  Habitat Suitability Index for EM03                 (-)
-        REAL(kind = real_wp) :: PotEM03     ! I  potential biomass for EM03                         (gC/M2)
-        REAL(kind = real_wp) :: HSISM03     ! I  Habitat Suitability Index for SM03                 (-)
-        REAL(kind = real_wp) :: PotSM03     ! I  potential biomass for SM03                         (gC/M2)
-        REAL(kind = real_wp) :: HSIEM04     ! I  Habitat Suitability Index for EM04                 (-)
-        REAL(kind = real_wp) :: PotEM04     ! I  potential biomass for EM04                         (gC/M2)
-        REAL(kind = real_wp) :: HSISM04     ! I  Habitat Suitability Index for SM04                 (-)
-        REAL(kind = real_wp) :: PotSM04     ! I  potential biomass for SM04                         (gC/M2)
-        REAL(kind = real_wp) :: HSIEM05     ! I  Habitat Suitability Index for EM05                 (-)
-        REAL(kind = real_wp) :: PotEM05     ! I  potential biomass for EM05                         (gC/M2)
-        REAL(kind = real_wp) :: HSISM05     ! I  Habitat Suitability Index for SM05                 (-)
-        REAL(kind = real_wp) :: PotSM05     ! I  potential biomass for SM05                         (gC/M2)
-        REAL(kind = real_wp) :: MaxEM01     ! O  maximum biomass for macrophyt emerged 01           (gC)
-        REAL(kind = real_wp) :: MaxSM01     ! O  maximum biomass for macrophyt submerged 01         (gC)
-        REAL(kind = real_wp) :: MaxEM02     ! O  maximum biomass for EM02                           (gC/M2)
-        REAL(kind = real_wp) :: MaxSM02     ! O  maximum biomass for SM02                           (gC/M2)
-        REAL(kind = real_wp) :: MaxEM03     ! O  maximum biomass for EM03                           (gC/M2)
-        REAL(kind = real_wp) :: MaxSM03     ! O  maximum biomass for SM03                           (gC/M2)
-        REAL(kind = real_wp) :: MaxEM04     ! O  maximum biomass for EM04                           (gC/M2)
-        REAL(kind = real_wp) :: MaxSM04     ! O  maximum biomass for SM04                           (gC/M2)
-        REAL(kind = real_wp) :: MaxEM05     ! O  maximum biomass for EM05                           (gC/M2)
-        REAL(kind = real_wp) :: MaxSM05     ! O  maximum biomass for SM05                           (gC/M2)
+      real(kind=real_wp) :: SumHSIEM
+      real(kind=real_wp) :: SumHSISM
+      integer(kind=int_wp) :: IKMRK1
+      !
+      !*******************************************************************************
+      !
+      IPNT = IPOINT
+      !
+      do ISEG = 1, num_cells
+         !
+         call extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+         if (IKMRK1 == 1) then
 
-        REAL(kind = real_wp) :: SumHSIEM
-        REAL(kind = real_wp) :: SumHSISM
-        INTEGER(kind = int_wp) :: IKMRK1
-        !
-        !*******************************************************************************
-        !
-        IPNT = IPOINT
-        !
-        DO ISEG = 1, num_cells
+            nMacrophyt = process_space_real(IPNT(1))
+            HSIEM01 = process_space_real(IPNT(2))
+            PotEM01 = process_space_real(IPNT(3))
+            HSISM01 = process_space_real(IPNT(4))
+            PotSM01 = process_space_real(IPNT(5))
+            HSIEM02 = process_space_real(IPNT(6))
+            PotEM02 = process_space_real(IPNT(7))
+            HSISM02 = process_space_real(IPNT(8))
+            PotSM02 = process_space_real(IPNT(9))
+            HSIEM03 = process_space_real(IPNT(10))
+            PotEM03 = process_space_real(IPNT(11))
+            HSISM03 = process_space_real(IPNT(12))
+            PotSM03 = process_space_real(IPNT(13))
+            HSIEM04 = process_space_real(IPNT(14))
+            PotEM04 = process_space_real(IPNT(15))
+            HSISM04 = process_space_real(IPNT(16))
+            PotSM04 = process_space_real(IPNT(17))
+            HSIEM05 = process_space_real(IPNT(18))
+            PotEM05 = process_space_real(IPNT(19))
+            HSISM05 = process_space_real(IPNT(20))
+            PotSM05 = process_space_real(IPNT(21))
             !
-            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-            IF (IKMRK1==1) THEN
-
-                nMacrophyt = process_space_real(IPNT(1))
-                HSIEM01 = process_space_real(IPNT(2))
-                PotEM01 = process_space_real(IPNT(3))
-                HSISM01 = process_space_real(IPNT(4))
-                PotSM01 = process_space_real(IPNT(5))
-                HSIEM02 = process_space_real(IPNT(6))
-                PotEM02 = process_space_real(IPNT(7))
-                HSISM02 = process_space_real(IPNT(8))
-                PotSM02 = process_space_real(IPNT(9))
-                HSIEM03 = process_space_real(IPNT(10))
-                PotEM03 = process_space_real(IPNT(11))
-                HSISM03 = process_space_real(IPNT(12))
-                PotSM03 = process_space_real(IPNT(13))
-                HSIEM04 = process_space_real(IPNT(14))
-                PotEM04 = process_space_real(IPNT(15))
-                HSISM04 = process_space_real(IPNT(16))
-                PotSM04 = process_space_real(IPNT(17))
-                HSIEM05 = process_space_real(IPNT(18))
-                PotEM05 = process_space_real(IPNT(19))
-                HSISM05 = process_space_real(IPNT(20))
-                PotSM05 = process_space_real(IPNT(21))
-                !
-                !   *****     Insert your code here  *****
-                !
-                SumHSIEM = HSIEM01 + HSIEM02 + HSIEM03 + HSIEM03 + HSIEM05
-                IF (SumHSIEM < 1.E-20) SumHSIEM = 1.0
-
-                SumHSISM = HSISM01 + HSISM02 + HSISM03 + HSISM03 + HSISM05
-                IF (SumHSISM < 1.E-20) SumHSISM = 1.0
-
-                MaxEM01 = HSIEM01 * PotEM01 / SumHSIEM
-                MaxSM01 = HSISM01 * PotSM01 / SumHSISM
-                MaxEM02 = HSIEM02 * PotEM02 / SumHSIEM
-                MaxSM02 = HSISM02 * PotSM02 / SumHSISM
-                MaxEM03 = HSIEM03 * PotEM03 / SumHSIEM
-                MaxSM03 = HSISM03 * PotSM03 / SumHSISM
-                MaxEM04 = HSIEM04 * PotEM04 / SumHSIEM
-                MaxSM04 = HSISM04 * PotSM04 / SumHSISM
-                MaxEM05 = HSIEM05 * PotEM05 / SumHSIEM
-                MaxSM05 = HSISM05 * PotSM05 / SumHSISM
-                !
-                !   *****     End of your code       *****
-                !
-                process_space_real(IPNT(22)) = MaxEM01
-                process_space_real(IPNT(23)) = MaxSM01
-                process_space_real(IPNT(24)) = MaxEM02
-                process_space_real(IPNT(25)) = MaxSM02
-                process_space_real(IPNT(26)) = MaxEM03
-                process_space_real(IPNT(27)) = MaxSM03
-                process_space_real(IPNT(28)) = MaxEM04
-                process_space_real(IPNT(29)) = MaxSM04
-                process_space_real(IPNT(30)) = MaxEM05
-                process_space_real(IPNT(31)) = MaxSM05
-
-            ENDIF
+            !   *****     Insert your code here  *****
             !
-            IPNT = IPNT + INCREM
+            SumHSIEM = HSIEM01 + HSIEM02 + HSIEM03 + HSIEM03 + HSIEM05
+            if (SumHSIEM < 1.e-20) SumHSIEM = 1.0
+
+            SumHSISM = HSISM01 + HSISM02 + HSISM03 + HSISM03 + HSISM05
+            if (SumHSISM < 1.e-20) SumHSISM = 1.0
+
+            MaxEM01 = HSIEM01 * PotEM01 / SumHSIEM
+            MaxSM01 = HSISM01 * PotSM01 / SumHSISM
+            MaxEM02 = HSIEM02 * PotEM02 / SumHSIEM
+            MaxSM02 = HSISM02 * PotSM02 / SumHSISM
+            MaxEM03 = HSIEM03 * PotEM03 / SumHSIEM
+            MaxSM03 = HSISM03 * PotSM03 / SumHSISM
+            MaxEM04 = HSIEM04 * PotEM04 / SumHSIEM
+            MaxSM04 = HSISM04 * PotSM04 / SumHSISM
+            MaxEM05 = HSIEM05 * PotEM05 / SumHSIEM
+            MaxSM05 = HSISM05 * PotSM05 / SumHSISM
             !
-        end do
-        !
-        RETURN
-    END
+            !   *****     End of your code       *****
+            !
+            process_space_real(IPNT(22)) = MaxEM01
+            process_space_real(IPNT(23)) = MaxSM01
+            process_space_real(IPNT(24)) = MaxEM02
+            process_space_real(IPNT(25)) = MaxSM02
+            process_space_real(IPNT(26)) = MaxEM03
+            process_space_real(IPNT(27)) = MaxSM03
+            process_space_real(IPNT(28)) = MaxEM04
+            process_space_real(IPNT(29)) = MaxSM04
+            process_space_real(IPNT(30)) = MaxEM05
+            process_space_real(IPNT(31)) = MaxSM05
+
+         end if
+         !
+         IPNT = IPNT + INCREM
+         !
+      end do
+      !
+      return
+   end
 
 end module m_maxmac

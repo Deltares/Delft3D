@@ -20,21 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_sedimtyr
-      use m_waq_precision
+module m_sedimtyr
+   use m_waq_precision
 
+   implicit none
 
-      implicit none
+contains
 
-      contains
-
-
-      subroutine SEDTYR    ( process_space_real  , fl    , ipoint, increm, num_cells , &
-                            noflux, iexpnt, iknmrk, num_exchanges_u_dir  , num_exchanges_v_dir  , &
-                            num_exchanges_z_dir  , num_exchanges_bottom_dir  )
+   subroutine SEDTYR(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
       use m_logger_helper
       use m_extract_waq_attribute
-
 
 !>\file
 !>       Sedimentation of the free (non-aggregated) tyre/road wear particles
@@ -70,133 +67,132 @@
 
       implicit none
 
-      real(kind=real_wp) ::process_space_real  ( * ) , fl    (*)
-      integer(kind=int_wp) ::ipoint( * ) , increm(*) , num_cells , noflux, &
-              iexpnt(4,*) , iknmrk(*) , num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      real(kind=real_wp) :: process_space_real(*), fl(*)
+      integer(kind=int_wp) :: ipoint(*), increm(*), num_cells, noflux, &
+                              iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 !
 !     local declarations
 !
 
-      integer(kind=int_wp) ::iflux, iseg, ikmrk1, ikmrk2, itel, iq, ifrom, ito
-      real(kind=real_wp) ::cwater, settling, shear_stress, critical_stress
-      real(kind=real_wp) ::depth, delt, safe_factor, depfro, depto
-      real(kind=real_wp) ::cbotsum, prob_settling, settling_flux
+      integer(kind=int_wp) :: iflux, iseg, ikmrk1, ikmrk2, itel, iq, ifrom, ito
+      real(kind=real_wp) :: cwater, settling, shear_stress, critical_stress
+      real(kind=real_wp) :: depth, delt, safe_factor, depfro, depto
+      real(kind=real_wp) :: cbotsum, prob_settling, settling_flux
 
-      integer(kind=int_wp) ::ipnt(500)
-      integer(kind=int_wp),parameter  ::ip_nTRWP = 1
-      integer(kind=int_wp),parameter  ::ip_nIM = 2
-      integer(kind=int_wp),parameter  ::ip_Tau = 3
-      integer(kind=int_wp),parameter  ::ip_Depth = 4
-      integer(kind=int_wp),parameter  ::ip_Delt = 5
-      integer(kind=int_wp),parameter  ::ip_SafeFactor = 6
-      integer(kind=int_wp),parameter  ::ip_lastsingle = 6
-      integer(kind=int_wp),parameter  ::nspmm = 6
-      real(kind=real_wp) ::cbotsp(nspmm)
-      integer(kind=int_wp) ::ntrwp, itrwp, nspm, ispm, nitem, offset
+      integer(kind=int_wp) :: ipnt(500)
+      integer(kind=int_wp), parameter :: ip_nTRWP = 1
+      integer(kind=int_wp), parameter :: ip_nIM = 2
+      integer(kind=int_wp), parameter :: ip_Tau = 3
+      integer(kind=int_wp), parameter :: ip_Depth = 4
+      integer(kind=int_wp), parameter :: ip_Delt = 5
+      integer(kind=int_wp), parameter :: ip_SafeFactor = 6
+      integer(kind=int_wp), parameter :: ip_lastsingle = 6
+      integer(kind=int_wp), parameter :: nspmm = 6
+      real(kind=real_wp) :: cbotsp(nspmm)
+      integer(kind=int_wp) :: ntrwp, itrwp, nspm, ispm, nitem, offset
 
       ntrwp = process_space_real(ipoint(ip_ntrwp))
-      nspm = process_space_real(ipoint(ip_nim  ))
-      if (nspm>nspmm) call write_error_message ('Dimension issue in SEDTYR')
-      nitem = ip_lastsingle + 3*ntrwp+nspm+2*ntrwp
-      delt           = process_space_real(ipoint(ip_Delt))
-      safe_factor    = process_space_real(ipoint(ip_SafeFactor))
-
+      nspm = process_space_real(ipoint(ip_nim))
+      if (nspm > nspmm) call write_error_message('Dimension issue in SEDTYR')
+      nitem = ip_lastsingle + 3 * ntrwp + nspm + 2 * ntrwp
+      delt = process_space_real(ipoint(ip_Delt))
+      safe_factor = process_space_real(ipoint(ip_SafeFactor))
 
       ipnt(1:nitem) = ipoint(1:nitem)
 
       iflux = 0
-      do iseg = 1 , num_cells
-          call extract_waq_attribute(1,iknmrk(iseg),ikmrk1)
-          if (ikmrk1==1) then
-          call extract_waq_attribute(2,iknmrk(iseg),ikmrk2)
-          if (ikmrk2==0.or.ikmrk2==3) then   ! surface water
+      do iseg = 1, num_cells
+         call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+         if (ikmrk1 == 1) then
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            if (ikmrk2 == 0 .or. ikmrk2 == 3) then ! surface water
 
-              ! input independentt of fractions
-              depth          = process_space_real(ipnt(ip_Depth))
-              shear_stress    = process_space_real(ipnt(ip_Tau) )
+               ! input independentt of fractions
+               depth = process_space_real(ipnt(ip_Depth))
+               shear_stress = process_space_real(ipnt(ip_Tau))
 
-              ! pick up IM in sediment for all TRWP fractions
-              cbotsum = 0.0
-              do ispm = 1,nspm
-                  cbotsp(ispm) = process_space_real(ipnt(ip_lastsingle+3*ntrwp+ispm))
+               ! pick up IM in sediment for all TRWP fractions
+               cbotsum = 0.0
+               do ispm = 1, nspm
+                  cbotsp(ispm) = process_space_real(ipnt(ip_lastsingle + 3 * ntrwp + ispm))
                   cbotsum = cbotsum + cbotsp(ispm)
-              enddo
+               end do
 
-              ! loop over active fractions, IM are inner loop
-              itel = 0
-              do itrwp = 1,ntrwp
+               ! loop over active fractions, IM are inner loop
+               itel = 0
+               do itrwp = 1, ntrwp
 
-              cwater          = process_space_real(ipnt(ip_lastsingle        +itrwp) )
-              settling        = process_space_real(ipnt(ip_lastsingle+  ntrwp+itrwp) )
-              critical_stress = process_space_real(ipnt(ip_lastsingle+2*ntrwp+itrwp) )
+                  cwater = process_space_real(ipnt(ip_lastsingle + itrwp))
+                  settling = process_space_real(ipnt(ip_lastsingle + ntrwp + itrwp))
+                  critical_stress = process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + itrwp))
 
-              !
-              ! Probability of settling
-              !
-              prob_settling = &
-                 max( 0.0, 1.0 - shear_stress / max(critical_stress,1e-6) )
+                  !
+                  ! Probability of settling
+                  !
+                  prob_settling = &
+                     max(0.0, 1.0 - shear_stress / max(critical_stress, 1e-6))
 
-              !
-              ! Flux to the bottom (limit to avoid instabilities)
-              !
-              settling_flux = min( prob_settling * settling / depth, &
-                                  safe_factor / delt ) * cwater
+                  !
+                  ! Flux to the bottom (limit to avoid instabilities)
+                  !
+                  settling_flux = min(prob_settling * settling / depth, &
+                                      safe_factor / delt) * cwater
 
-              do ispm = 1,nspm
-                  fl(iflux+itel+ispm) = settling_flux * cbotsp(ispm)  / max(cbotsum,1e-6)
-              enddo
-              itel = itel + nspm
+                  do ispm = 1, nspm
+                     fl(iflux + itel + ispm) = settling_flux * cbotsp(ispm) / max(cbotsum, 1e-6)
+                  end do
+                  itel = itel + nspm
 
-              enddo
-          endif
-          endif
+               end do
+            end if
+         end if
 
-          !
-          ! Increment the pointers
-          !
-          iflux = iflux + noflux
-          ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
+         !
+         ! Increment the pointers
+         !
+         iflux = iflux + noflux
+         ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
 !
-      enddo
+      end do
 
 !.....Exchangeloop over de horizontale richting
-      offset = 6+3*ntrwp+nspm
+      offset = 6 + 3 * ntrwp + nspm
       ipnt(1:nitem) = ipoint(1:nitem)
-      do IQ=1,num_exchanges_u_dir+num_exchanges_v_dir
-        do itrwp = 1,ntrwp
-            process_space_real(ipnt(offset+ntrwp+itrwp)) = 0.0
-        enddo
-        ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
-      enddo
+      do IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
+         do itrwp = 1, ntrwp
+            process_space_real(ipnt(offset + ntrwp + itrwp)) = 0.0
+         end do
+         ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
+      end do
 
 !.....Exchangeloop over de verticale richting
-      DO IQ = num_exchanges_u_dir+num_exchanges_v_dir+1 , num_exchanges_u_dir+num_exchanges_v_dir+num_exchanges_z_dir
+      do IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
-         ifrom = IEXPNT(1,IQ)
-         ito   = IEXPNT(2,IQ)
-         IF ( ifrom > 0 .AND. Ito > 0 ) THEN
+         ifrom = IEXPNT(1, IQ)
+         ito = IEXPNT(2, IQ)
+         if (ifrom > 0 .and. Ito > 0) then
 
 !rs             merk op: sedimentatie tussen waterlagen: geen taucr correctie,
 !rs             alleen conversie van 1/d naar 1/s. Ten overvloede:
 !rs             scu (s) en aux-timer (d) liggen dus vast!
 
-            depfro = process_space_real( ipoint(ip_depth) + (ifrom-1) * increm(ip_depth) )
-            depto  = process_space_real( ipoint(ip_depth) + (ito  -1) * increm(ip_depth) )
-            do itrwp = 1,ntrwp
-                settling = process_space_real(ipnt(offset+itrwp))
-                settling = min( settling , safe_factor * min(depfro,depto) / delt )
-                process_space_real(ipnt(offset+ntrwp+itrwp)) = settling /86400.
-            enddo
-         ELSE
-            do itrwp = 1,ntrwp
-                process_space_real(ipnt(offset+ntrwp+itrwp)) = 0.0
-            enddo
-         ENDIF
-        ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
-      enddo
+            depfro = process_space_real(ipoint(ip_depth) + (ifrom - 1) * increm(ip_depth))
+            depto = process_space_real(ipoint(ip_depth) + (ito - 1) * increm(ip_depth))
+            do itrwp = 1, ntrwp
+               settling = process_space_real(ipnt(offset + itrwp))
+               settling = min(settling, safe_factor * min(depfro, depto) / delt)
+               process_space_real(ipnt(offset + ntrwp + itrwp)) = settling / 86400.
+            end do
+         else
+            do itrwp = 1, ntrwp
+               process_space_real(ipnt(offset + ntrwp + itrwp)) = 0.0
+            end do
+         end if
+         ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
+      end do
 !
       return
 !
-      end
+   end
 
-      end module m_sedimtyr
+end module m_sedimtyr

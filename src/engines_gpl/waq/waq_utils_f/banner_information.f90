@@ -23,37 +23,37 @@
 
 !> Module containing the definition of the banner_information class
 module m_banner_information
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
-    private
+   private
 
-    !> Class for holding information related to the banner
-    type, public :: banner_information
-        character(:), allocatable :: name            !< Name of the program
-        character(:), allocatable :: description     !< Description of the program
-        character(:), allocatable :: suite_name      !< Name of the suite that the program belongs to
-        character(:), allocatable :: version_string  !< String containing the version information
-        character(:), allocatable :: built_on        !< String containing the datetime the program was built
-        character(:), allocatable :: copyright       !< String containing the copyright information
-    contains
-        procedure get_max_width
-    end type banner_information
+   !> Class for holding information related to the banner
+   type, public :: banner_information
+      character(:), allocatable :: name !< Name of the program
+      character(:), allocatable :: description !< Description of the program
+      character(:), allocatable :: suite_name !< Name of the suite that the program belongs to
+      character(:), allocatable :: version_string !< String containing the version information
+      character(:), allocatable :: built_on !< String containing the datetime the program was built
+      character(:), allocatable :: copyright !< String containing the copyright information
+   contains
+      procedure get_max_width
+   end type banner_information
 
 contains
 
-    !> Gets the maximum width of the text properties
-    function get_max_width(this) result(max_width)
-        class(banner_information), intent(in) :: this    !< Instance of this banner_information
-        integer(kind=int_wp) :: max_width   !< Max width of all string properties
+   !> Gets the maximum width of the text properties
+   function get_max_width(this) result(max_width)
+      class(banner_information), intent(in) :: this !< Instance of this banner_information
+      integer(kind=int_wp) :: max_width !< Max width of all string properties
 
-        max_width = max(len(this%name), &
-                        len(this%description), &
-                        len(this%suite_name), &
-                        len(this%version_string), &
-                        len(this%built_on), &
-                        len(this%copyright))
-    end function get_max_width
+      max_width = max(len(this%name), &
+                      len(this%description), &
+                      len(this%suite_name), &
+                      len(this%version_string), &
+                      len(this%built_on), &
+                      len(this%copyright))
+   end function get_max_width
 
 end module m_banner_information

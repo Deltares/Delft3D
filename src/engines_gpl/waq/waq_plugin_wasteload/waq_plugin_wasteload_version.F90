@@ -26,21 +26,21 @@
 !-------------------------------------------------------------------------------
 
 module waq_plugin_wasteload_version_module
-    use waq_static_version_info
+   use waq_static_version_info
 
-    implicit none
+   implicit none
 
-    character(*), private, parameter :: component_name = 'WAQ_PLUGIN_WASTELOAD'
+   character(*), private, parameter :: component_name = 'WAQ_PLUGIN_WASTELOAD'
 
-    character(*), public, parameter :: waq_plugin_wasteload_version_full = company // ', ' // component_name // major_minor_buildnr
-    character(*), public, parameter :: waq_plugin_wasteload_version_id = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
+   character(*), public, parameter :: waq_plugin_wasteload_version_full = company//', '//component_name//major_minor_buildnr
+   character(*), public, parameter :: waq_plugin_wasteload_version_id = company_id//', '//component_name//' '//major_minor_buildnr_date_time
 
 contains
 
-    subroutine getfullversionstring_waq_plugin_wasteload(stringout)
-        character(*), intent(out) :: stringout
+   subroutine getfullversionstring_waq_plugin_wasteload(stringout)
+      character(*), intent(out) :: stringout
 
-        stringout = waq_plugin_wasteload_version_id(offset:)
-    end subroutine getfullversionstring_waq_plugin_wasteload
+      stringout = waq_plugin_wasteload_version_id(offset:)
+   end subroutine getfullversionstring_waq_plugin_wasteload
 
 end module waq_plugin_wasteload_version_module

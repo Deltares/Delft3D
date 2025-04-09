@@ -21,69 +21,68 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dhnoseg
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine dhnoseg(pnoseg)
+      !
+      !     Deltares
+      !
+      !     created             : nov 07 by jan van beek
+      !
+      !     function            : get num_cells from /sysn/ common , system characteristics
+      !
+      !     logical unitnumbers : -
+      !
+      !     subroutines called  : -
+      !
+      !     parameters          : -
+      !
+      !     name    kind     length     funct.  description
+      !     ----    -----    ------     ------- -----------
+      !     pnoseg  integer       1     output  copy of the num_cells from sysn
+      !
+      !     declarations
+      use m_waq_memory_dimensions ! System characteristics
+      !
+      integer(kind=int_wp) :: pnoseg
 
-    subroutine dhnoseg(pnoseg)
-        !
-        !     Deltares
-        !
-        !     created             : nov 07 by jan van beek
-        !
-        !     function            : get num_cells from /sysn/ common , system characteristics
-        !
-        !     logical unitnumbers : -
-        !
-        !     subroutines called  : -
-        !
-        !     parameters          : -
-        !
-        !     name    kind     length     funct.  description
-        !     ----    -----    ------     ------- -----------
-        !     pnoseg  integer       1     output  copy of the num_cells from sysn
-        !
-        !     declarations
-        use m_waq_memory_dimensions          ! System characteristics
-        !
-        integer(kind = int_wp) :: pnoseg
+      pnoseg = num_cells
 
-        pnoseg = num_cells
+      return
+   end
 
-        return
-    end
+   subroutine store_noseg_nolay(nosegfm, kmx)
+      !
+      !     Deltares
+      !
+      !     created             : nov 20 by arjen markus
+      !
+      !     function            : store num_cells and num_layers in /sysn/ common , system characteristics
+      !                           used in the D-Flow FM context
+      !
+      !     logical unitnumbers : -
+      !
+      !     subroutines called  : -
+      !
+      !     parameters          : -
+      !
+      !     name     kind     length     funct.  description
+      !     ----     -----    ------     ------- -----------
+      !     nosegfm  integer        1     input   number of water segments (!)
+      !     kmx      integer        1     input   number of layers
+      !
+      !     declarations
+      use m_waq_memory_dimensions ! System characteristics
+      !
+      integer(kind=int_wp) :: pnoseg, kmx, nosegfm
 
-    subroutine store_noseg_nolay(nosegfm, kmx)
-        !
-        !     Deltares
-        !
-        !     created             : nov 20 by arjen markus
-        !
-        !     function            : store num_cells and num_layers in /sysn/ common , system characteristics
-        !                           used in the D-Flow FM context
-        !
-        !     logical unitnumbers : -
-        !
-        !     subroutines called  : -
-        !
-        !     parameters          : -
-        !
-        !     name     kind     length     funct.  description
-        !     ----     -----    ------     ------- -----------
-        !     nosegfm  integer        1     input   number of water segments (!)
-        !     kmx      integer        1     input   number of layers
-        !
-        !     declarations
-        use m_waq_memory_dimensions          ! System characteristics
-        !
-        integer(kind = int_wp) :: pnoseg, kmx, nosegfm
+      num_cells = nosegfm
+      num_layers = max(1, kmx) ! kmx may be zero, indicating a "true" 2D model
 
-        num_cells = nosegfm
-        num_layers = max(1, kmx) ! kmx may be zero, indicating a "true" 2D model
-
-        return
-    end
+      return
+   end
 end module m_dhnoseg

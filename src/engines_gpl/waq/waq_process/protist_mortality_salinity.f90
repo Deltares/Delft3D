@@ -22,144 +22,143 @@
 !!  rights reserved.
 
 module m_protist_mortality_salinity
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
-    private
-    public :: protist_mortality_salinity, calculate_process_in_segment, input_protist_mortality_salinity, output_protist_mortality_salinity
+   private
+   public :: protist_mortality_salinity, calculate_process_in_segment, input_protist_mortality_salinity, output_protist_mortality_salinity
 
-    type :: input_protist_mortality_salinity
-        real(kind=real_wp) :: salinity  !< salinity [ppt]
-        real(kind=real_wp) :: b1        !< coefficient sigmoid gradient for salinity stress function [1/ppt]
-        real(kind=real_wp) :: b2        !< coefficient sigmoid shift for salinity stress function [ppt]
-        real(kind=real_wp) :: m1        !< mortality rate for very high salinity [d-1]
-        real(kind=real_wp) :: m2        !< mortality rate for very low salinity [d-1]
-    end type input_protist_mortality_salinity
+   type :: input_protist_mortality_salinity
+      real(kind=real_wp) :: salinity !< salinity [ppt]
+      real(kind=real_wp) :: b1 !< coefficient sigmoid gradient for salinity stress function [1/ppt]
+      real(kind=real_wp) :: b2 !< coefficient sigmoid shift for salinity stress function [ppt]
+      real(kind=real_wp) :: m1 !< mortality rate for very high salinity [d-1]
+      real(kind=real_wp) :: m2 !< mortality rate for very low salinity [d-1]
+   end type input_protist_mortality_salinity
 
-    type :: output_protist_mortality_salinity
-        real(kind=real_wp) :: mortality !< resulting mortality rate [d-1]
-    end type output_protist_mortality_salinity
+   type :: output_protist_mortality_salinity
+      real(kind=real_wp) :: mortality !< resulting mortality rate [d-1]
+   end type output_protist_mortality_salinity
 
-    contains
+contains
 
-    subroutine protist_mortality_salinity(process_space_real, fl, ipoint, increm, segment_count, &
-                      noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-                      num_exchanges_z_dir, num_exchanges_bottom_dir)
-        !< Calculation of mortality for protists based on the salinity
-        !<
-        !< Remarks:
-        !< Calculates the mortality of protists as a sigmoidal function of the salinity (NIOO/CEMO, 1993).
-        !<
+   subroutine protist_mortality_salinity(process_space_real, fl, ipoint, increm, segment_count, &
+                                         noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                                         num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !< Calculation of mortality for protists based on the salinity
+      !<
+      !< Remarks:
+      !< Calculates the mortality of protists as a sigmoidal function of the salinity (NIOO/CEMO, 1993).
+      !<
 
-        implicit none
+      implicit none
 
-        ! arguments of the subroutine
-        real(kind=real_wp)    :: process_space_real(*), fl(*)
-        integer(kind=int_wp)  :: ipoint(*), increm(*), segment_count, noflux, &
-                                 iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      ! arguments of the subroutine
+      real(kind=real_wp) :: process_space_real(*), fl(*)
+      integer(kind=int_wp) :: ipoint(*), increm(*), segment_count, noflux, &
+                              iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        ! process-specific variables
-        type(input_protist_mortality_salinity)  :: input_vars  !< input for the protist_mortality_salinity process
-        type(output_protist_mortality_salinity) :: output_vars !< output for the protist_mortality_salinity process
+      ! process-specific variables
+      type(input_protist_mortality_salinity) :: input_vars !< input for the protist_mortality_salinity process
+      type(output_protist_mortality_salinity) :: output_vars !< output for the protist_mortality_salinity process
 
-        ! Other local variables
-        integer(kind=int_wp), parameter :: params_count = 6         !< Number of parameters (input (5) + output(1) variables) in this process
-        integer(kind=int_wp) :: iflux                               !< Index fluxes
-        integer(kind=int_wp) :: isegment                            !< index of current segment
-        integer(kind=int_wp), dimension(:), allocatable  :: iparray !< Array with integer pointers for parameters
+      ! Other local variables
+      integer(kind=int_wp), parameter :: params_count = 6 !< Number of parameters (input (5) + output(1) variables) in this process
+      integer(kind=int_wp) :: iflux !< Index fluxes
+      integer(kind=int_wp) :: isegment !< index of current segment
+      integer(kind=int_wp), dimension(:), allocatable :: iparray !< Array with integer pointers for parameters
 
-        call initialize_variables(params_count, ipoint, iparray, iflux)
+      call initialize_variables(params_count, ipoint, iparray, iflux)
 
-        do isegment = 1, segment_count
-            if(must_calculate_segment(iknmrk(isegment))) then
-                call assign_input_params(iparray, process_space_real, input_vars)
-                output_vars = calculate_process_in_segment(input_vars)
-                call assign_output_params(iparray, process_space_real, output_vars)
-            end if
-            call update_loop_vars(iflux, noflux, params_count, iparray, increm)
-        end do
+      do isegment = 1, segment_count
+         if (must_calculate_segment(iknmrk(isegment))) then
+            call assign_input_params(iparray, process_space_real, input_vars)
+            output_vars = calculate_process_in_segment(input_vars)
+            call assign_output_params(iparray, process_space_real, output_vars)
+         end if
+         call update_loop_vars(iflux, noflux, params_count, iparray, increm)
+      end do
 
-    end subroutine protist_mortality_salinity
+   end subroutine protist_mortality_salinity
 
-    subroutine initialize_variables(params_count, ipoint, iparray, iflux)
-        !< Initializes arrays and other variables.
-        integer(kind=int_wp), intent(in ) :: params_count
-        integer(kind=int_wp), intent(in ) :: ipoint(*)
-        integer(kind=int_wp), intent(out) :: iflux
-        integer, allocatable, intent(out) :: iparray(:)
+   subroutine initialize_variables(params_count, ipoint, iparray, iflux)
+      !< Initializes arrays and other variables.
+      integer(kind=int_wp), intent(in) :: params_count
+      integer(kind=int_wp), intent(in) :: ipoint(*)
+      integer(kind=int_wp), intent(out) :: iflux
+      integer, allocatable, intent(out) :: iparray(:)
 
-        iflux = 0
-        allocate(iparray(1:params_count))
-        iparray(:) = ipoint(1:params_count)
-    end subroutine initialize_variables
+      iflux = 0
+      allocate (iparray(1:params_count))
+      iparray(:) = ipoint(1:params_count)
+   end subroutine initialize_variables
 
-    subroutine assign_input_params(iparray, process_space_real, iv)
-        !< Transfer values from generic array to process-specific input parameters.
-        type(input_protist_mortality_salinity), intent(out) :: iv !< process specific input variables
-        real, intent(in)     :: process_space_real(*)
-        integer, intent(in)  :: iparray(*)
+   subroutine assign_input_params(iparray, process_space_real, iv)
+      !< Transfer values from generic array to process-specific input parameters.
+      type(input_protist_mortality_salinity), intent(out) :: iv !< process specific input variables
+      real, intent(in) :: process_space_real(*)
+      integer, intent(in) :: iparray(*)
 
-        iv%salinity = process_space_real(iparray(1))
-        iv%b1       = process_space_real(iparray(2))
-        iv%b2       = process_space_real(iparray(3))
-        iv%m1       = process_space_real(iparray(4))
-        iv%m2       = process_space_real(iparray(5))
-    end subroutine assign_input_params
+      iv%salinity = process_space_real(iparray(1))
+      iv%b1 = process_space_real(iparray(2))
+      iv%b2 = process_space_real(iparray(3))
+      iv%m1 = process_space_real(iparray(4))
+      iv%m2 = process_space_real(iparray(5))
+   end subroutine assign_input_params
 
-    function calculate_process_in_segment(iv) result(ov)
-        !< Carry out all process-specific calculations.
-        type(input_protist_mortality_salinity), intent(in)   :: iv !< process specific input variables
-        type(output_protist_mortality_salinity) :: ov !< process specific output variables
+   function calculate_process_in_segment(iv) result(ov)
+      !< Carry out all process-specific calculations.
+      type(input_protist_mortality_salinity), intent(in) :: iv !< process specific input variables
+      type(output_protist_mortality_salinity) :: ov !< process specific output variables
 
-        ov%mortality = compute_protist_mortality(iv%salinity, iv%b1, iv%b2, iv%m1, iv%m2)
-    end function calculate_process_in_segment
+      ov%mortality = compute_protist_mortality(iv%salinity, iv%b1, iv%b2, iv%m1, iv%m2)
+   end function calculate_process_in_segment
 
-    function compute_protist_mortality(salinity, b1, b2, m1, m2) result(mortality)
-        real(kind=real_wp), intent(in) :: salinity  !< salinity [ppt]
-        real(kind=real_wp), intent(in) :: b1        !< coefficient sigmoid gradient for salinity stress function [1/ppt]
-        real(kind=real_wp), intent(in) :: b2        !< coefficient sigmoid shift for salinity stress function [ppt]
-        real(kind=real_wp), intent(in) :: m1        !< mortality rate for very high salinity [d-1]
-        real(kind=real_wp), intent(in) :: m2        !< mortality rate for very low salinity [d-1]
-        real(kind=real_wp) :: mortality
+   function compute_protist_mortality(salinity, b1, b2, m1, m2) result(mortality)
+      real(kind=real_wp), intent(in) :: salinity !< salinity [ppt]
+      real(kind=real_wp), intent(in) :: b1 !< coefficient sigmoid gradient for salinity stress function [1/ppt]
+      real(kind=real_wp), intent(in) :: b2 !< coefficient sigmoid shift for salinity stress function [ppt]
+      real(kind=real_wp), intent(in) :: m1 !< mortality rate for very high salinity [d-1]
+      real(kind=real_wp), intent(in) :: m2 !< mortality rate for very low salinity [d-1]
+      real(kind=real_wp) :: mortality
 
-        mortality = m1 + (m2 - m1)/(1 + exp(b1 * (salinity - b2)))
-    end function
+      mortality = m1 + (m2 - m1) / (1 + exp(b1 * (salinity - b2)))
+   end function
 
-    subroutine assign_output_params(iparray, process_space_real, ov)
-        !< Transfer values from the process-specific output parameters to a generic array.
-        integer(kind=int_wp), intent(in) :: iparray(*)
-        real, intent(out) :: process_space_real(*)
-        type(output_protist_mortality_salinity), intent(in) :: ov !< process specific output variables
+   subroutine assign_output_params(iparray, process_space_real, ov)
+      !< Transfer values from the process-specific output parameters to a generic array.
+      integer(kind=int_wp), intent(in) :: iparray(*)
+      real, intent(out) :: process_space_real(*)
+      type(output_protist_mortality_salinity), intent(in) :: ov !< process specific output variables
 
-        process_space_real(iparray(6)) = ov%mortality
-    end subroutine assign_output_params
+      process_space_real(iparray(6)) = ov%mortality
+   end subroutine assign_output_params
 
-    subroutine update_loop_vars(iflux, noflux, count_params, iparray, increm)
-        !< Update all variables for the next cell (segment) iteration.
+   subroutine update_loop_vars(iflux, noflux, count_params, iparray, increm)
+      !< Update all variables for the next cell (segment) iteration.
 
-        integer, intent(in) :: noflux, count_params
-        integer, intent(inout) :: iflux, iparray(*)
-        integer, intent(in) :: increm(*)
+      integer, intent(in) :: noflux, count_params
+      integer, intent(inout) :: iflux, iparray(*)
+      integer, intent(in) :: increm(*)
 
-        iflux = iflux + noflux
-        iparray(1:count_params) = iparray(1:count_params) + increm(1:count_params)
-    end subroutine update_loop_vars
+      iflux = iflux + noflux
+      iparray(1:count_params) = iparray(1:count_params) + increm(1:count_params)
+   end subroutine update_loop_vars
 
-    logical function must_calculate_segment(segment_attribute)
-        !< Boolean indicating whether the calculation for current cell (segment) should be carried out or not.
-        !< If false, then the cell is skipped.
-        use m_extract_waq_attribute
+   logical function must_calculate_segment(segment_attribute)
+      !< Boolean indicating whether the calculation for current cell (segment) should be carried out or not.
+      !< If false, then the cell is skipped.
+      use m_extract_waq_attribute
 
-        integer, intent(in) :: segment_attribute
+      integer, intent(in) :: segment_attribute
 
-        ! locals
-        integer(kind=int_wp) :: active_attribute
+      ! locals
+      integer(kind=int_wp) :: active_attribute
 
-        call extract_waq_attribute(1, segment_attribute, active_attribute)
+      call extract_waq_attribute(1, segment_attribute, active_attribute)
 
-        must_calculate_segment = active_attribute == 1
-    end function must_calculate_segment
-
+      must_calculate_segment = active_attribute == 1
+   end function must_calculate_segment
 
 end module m_protist_mortality_salinity

@@ -21,26 +21,25 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_zerome
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine ZEROME(NAME)
+      use m_logger_helper, only: stop_with_error, get_log_unit_number
 
-    SUBROUTINE ZEROME (NAME)
-        use m_logger_helper, only : stop_with_error, get_log_unit_number
+      character(len=*) NAME
+      integer(kind=int_wp) :: LUNREP
 
-        character(len=*) NAME
-        INTEGER(kind = int_wp) :: LUNREP
-
-        CALL get_log_unit_number(LUNREP)
-        WRITE (LUNREP, *) ' Coefficient ', NAME, ' = 0'
-        WRITE (LUNREP, *) ' Please supply value not equal to zero'
-        WRITE (*, *) ' Coefficient ', NAME, ' = 0'
-        WRITE (*, *) ' Please supply value not equal to zero'
-        CALL stop_with_error()
-        RETURN
-    END
+      call get_log_unit_number(LUNREP)
+      write (LUNREP, *) ' Coefficient ', NAME, ' = 0'
+      write (LUNREP, *) ' Please supply value not equal to zero'
+      write (*, *) ' Coefficient ', NAME, ' = 0'
+      write (*, *) ' Please supply value not equal to zero'
+      call stop_with_error()
+      return
+   end
 
 end module m_zerome

@@ -21,44 +21,43 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_blfile
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine blfile(lunrep)
 
-    subroutine blfile (lunrep)
+      use m_logger_helper, only: stop_with_error
+      use bloom_data_io
 
-        use m_logger_helper, only : stop_with_error
-        use bloom_data_io
+      implicit none
 
-        implicit none
+      integer(kind=int_wp) :: lunrep ! Report file for error messages
 
-        integer(kind = int_wp) :: lunrep       ! Report file for error messages
+      character(256) filnam ! File name with extention
+      integer(kind=int_wp) :: iost ! I/O-status
 
-        character(256) filnam       ! File name with extention
-        integer(kind = int_wp) :: iost         ! I/O-status
+      !  Open statement for BLOOM II input files.
+      filnam = trim(runnam)//'.frm'
+      open (newunit=infrm, file=filnam, iostat=iost)
+      if (iost /= 0) then
+         write (*, *) 'blfile: error opening .frm file'
+         write (lunrep, *) 'blfile: error opening .frm file'
+         call stop_with_error()
+      end if
 
-        !  Open statement for BLOOM II input files.
-        filnam = trim(runnam) // '.frm'
-        open (newunit = infrm, file = filnam, iostat = iost)
-        if (iost /= 0) then
-            write (*, *) 'blfile: error opening .frm file'
-            write (lunrep, *) 'blfile: error opening .frm file'
-            call stop_with_error()
-        endif
+      ! Open statement for BLOOM II debug file.
+      filnam = trim(runnam)//'.dbg'
+      open (newunit=outdbg, file=filnam, iostat=iost)
+      if (iost /= 0) then
+         write (*, *) 'blfile: error opening .dbg file'
+         write (lunrep, *) 'blfile: error opening .dbg file'
+         call stop_with_error()
+      end if
 
-        ! Open statement for BLOOM II debug file.
-        filnam = trim(runnam) // '.dbg'
-        open (newunit = outdbg, file = filnam, iostat = iost)
-        if (iost /= 0) then
-            write (*, *) 'blfile: error opening .dbg file'
-            write (lunrep, *) 'blfile: error opening .dbg file'
-            call stop_with_error()
-        endif
-
-        return
-    end
+      return
+   end
 
 end module m_blfile

@@ -22,73 +22,72 @@
 !!  rights reserved.
 
 module partition_arrays
-    use m_logger_helper, only : stop_with_error
+   use m_logger_helper, only: stop_with_error
 
+   !     Deltares Software Centre
 
-    !     Deltares Software Centre
+   !>\file utilities to partition a large array into smaller pieces
+   !>
+   !>    The module mimicks the old FMM library, but since the actual
+   !>    allocation occurs within the SPACE routine, we only need
+   !>    to compute the pointer into the overall array.
+   !>
+   !>    As this will be called in a multithreaded context, avoid
+   !>    any local, saved, variables. This is done via the
+   !>    type(memory_partition) argument.
+   !>
+   !>    Note that the use of default initialisation eliminates the
+   !>    need to explicitly call an initialisation routine.
+   !>
 
-    !>\file utilities to partition a large array into smaller pieces
-    !>
-    !>    The module mimicks the old FMM library, but since the actual
-    !>    allocation occurs within the SPACE routine, we only need
-    !>    to compute the pointer into the overall array.
-    !>
-    !>    As this will be called in a multithreaded context, avoid
-    !>    any local, saved, variables. This is done via the
-    !>    type(memory_partition) argument.
-    !>
-    !>    Note that the use of default initialisation eliminates the
-    !>    need to explicitly call an initialisation routine.
-    !>
+   !     Created : March    2011 by Arjen Markus
 
-    !     Created : March    2011 by Arjen Markus
+   implicit none
 
-    implicit none
+   type memory_partition !< Private variables for memory partition
+      integer :: jpoint = 1
+      integer :: apoint = 1
+      integer :: cpoint = 1
+   end type memory_partition
 
-    type memory_partition            !< Private variables for memory partition
-        integer :: jpoint = 1
-        integer :: apoint = 1
-        integer :: cpoint = 1
-    end type memory_partition
-
-    ! Taken from fsm-fix.i
-    integer, parameter :: ityp = 1
-    integer, parameter :: rtyp = 2
-    integer, parameter :: dtyp = 3
-    integer, parameter :: dctyp = 4
-    integer, parameter :: ctyp = 5
-    integer, parameter :: ltyp = 6
-    integer, parameter :: chtyp = 7
+   ! Taken from fsm-fix.i
+   integer, parameter :: ityp = 1
+   integer, parameter :: rtyp = 2
+   integer, parameter :: dtyp = 3
+   integer, parameter :: dctyp = 4
+   integer, parameter :: ctyp = 5
+   integer, parameter :: ltyp = 6
+   integer, parameter :: chtyp = 7
 
 contains
 
-    !
-    ! Reimplementation of the FSM routine
-    !
-    integer function makptr(part, arrnam, vtype, number)
+   !
+   ! Reimplementation of the FSM routine
+   !
+   integer function makptr(part, arrnam, vtype, number)
 
-        type(memory_partition) :: part
-        character(len = *) :: arrnam
-        integer :: vtype
-        integer :: number
+      type(memory_partition) :: part
+      character(len=*) :: arrnam
+      integer :: vtype
+      integer :: number
 
-        select case (vtype)
-        case (ityp)
-            makptr = part%jpoint
-            part%jpoint = part%jpoint + max(number, 1)
-        case (rtyp)
-            makptr = part%apoint
-            part%apoint = part%apoint + max(number, 1)
-        case (chtyp)
-            makptr = part%cpoint
-            part%cpoint = part%cpoint + max(number, 1)
-        case default
-            write(*, *) &
-                    'Fatal error in MAKPTR: variable type not implemented: ', &
-                    vtype
-            call stop_with_error()
-        end select
+      select case (vtype)
+      case (ityp)
+         makptr = part%jpoint
+         part%jpoint = part%jpoint + max(number, 1)
+      case (rtyp)
+         makptr = part%apoint
+         part%apoint = part%apoint + max(number, 1)
+      case (chtyp)
+         makptr = part%cpoint
+         part%cpoint = part%cpoint + max(number, 1)
+      case default
+         write (*, *) &
+            'Fatal error in MAKPTR: variable type not implemented: ', &
+            vtype
+         call stop_with_error()
+      end select
 
-    end function makptr
+   end function makptr
 
 end module partition_arrays

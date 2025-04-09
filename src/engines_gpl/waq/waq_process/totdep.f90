@@ -21,226 +21,223 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_totdep
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine totdep(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !>\file
+      !>       Total depth water column
 
-    subroutine totdep (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        !>\file
-        !>       Total depth water column
+      !
+      !     Description of the module :
+      !
+      ! Name    T   L I/O   Description                                  Units
+      ! ----    --- -  -    -------------------                          -----
+      !
+      ! DEPTH               segment diepte
+      ! TDEPTH              totale diepte ( van surf tot bottom )
+      ! LDEPTH              locale diepte ( = van surf tot onderkant segment )
 
-        !
-        !     Description of the module :
-        !
-        ! Name    T   L I/O   Description                                  Units
-        ! ----    --- -  -    -------------------                          -----
-        !
-        ! DEPTH               segment diepte
-        ! TDEPTH              totale diepte ( van surf tot bottom )
-        ! LDEPTH              locale diepte ( = van surf tot onderkant segment )
+      !     Logical Units : -
 
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
+      !     ------   -----  ------------
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
+      use m_advtra
+      use m_extract_waq_attribute
+      use BottomSet !  Module with definition of the waterbottom segments
 
-        use m_advtra
-        use m_extract_waq_attribute
-        USE BottomSet     !  Module with definition of the waterbottom segments
+      implicit none
 
-        IMPLICIT NONE
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      real(kind=real_wp) :: DEPTH ! 1  in  depth of segment                                     (m)
+      real(kind=real_wp) :: SURF ! 2  in horizontal surface area                              (m2)
+      real(kind=real_wp) :: TOTALDEPTH ! 3  out total depth water column                             (m)
+      real(kind=real_wp) :: LOCALDEPTH ! 4  out depth from water surface to bottom of segment        (m)
+      real(kind=real_wp) :: LOCSEDDEPT ! 5  out Sediment layer depth to bottom of segment            (m)
+      real(kind=real_wp) :: TOTSEDDEPT ! 2  out Sediment layer depth to bottom of sediment column    (m)
 
-        REAL(kind = real_wp) :: DEPTH              ! 1  in  depth of segment                                     (m)
-        REAL(kind = real_wp) :: SURF               ! 2  in horizontal surface area                              (m2)
-        REAL(kind = real_wp) :: TOTALDEPTH         ! 3  out total depth water column                             (m)
-        REAL(kind = real_wp) :: LOCALDEPTH         ! 4  out depth from water surface to bottom of segment        (m)
-        REAL(kind = real_wp) :: LOCSEDDEPT         ! 5  out Sediment layer depth to bottom of segment            (m)
-        REAL(kind = real_wp) :: TOTSEDDEPT         ! 2  out Sediment layer depth to bottom of sediment column    (m)
+      integer(kind=int_wp) :: IP1, IP2, IP3, IP4, IP5
+      integer(kind=int_wp) :: IN1, IN2, IN3, IN4, IN5
+      integer(kind=int_wp) :: IKMRK, ISEG, IFROM, ITO
+      integer(kind=int_wp) :: IK ! loop counter bottom columns
+      integer(kind=int_wp) :: IQ ! loop counter exchanges
+      integer(kind=int_wp) :: IWA1 ! index first water exchange
+      integer(kind=int_wp) :: IWA2 ! index last water exchange
+      integer(kind=int_wp) :: ITOP ! index first bottom exhange
+      integer(kind=int_wp) :: IBOT ! index last bottom exhange
+      integer(kind=int_wp) :: IBODEM ! segment number bottom segment
+      integer(kind=int_wp) :: IWATER ! segment number water segment
+      real(kind=real_wp) :: CUMTOTDEPTH ! cummulative in averaging totaldepth
+      real(kind=real_wp) :: TOTSURF ! cummulative surf in averaging totaldepth
 
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5
-        INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5
-        INTEGER(kind = int_wp) :: IKMRK, ISEG, IFROM, ITO
-        INTEGER(kind = int_wp) :: IK                 ! loop counter bottom columns
-        INTEGER(kind = int_wp) :: IQ                 ! loop counter exchanges
-        INTEGER(kind = int_wp) :: IWA1               ! index first water exchange
-        INTEGER(kind = int_wp) :: IWA2               ! index last water exchange
-        INTEGER(kind = int_wp) :: ITOP               ! index first bottom exhange
-        INTEGER(kind = int_wp) :: IBOT               ! index last bottom exhange
-        INTEGER(kind = int_wp) :: IBODEM             ! segment number bottom segment
-        INTEGER(kind = int_wp) :: IWATER             ! segment number water segment
-        REAL(kind = real_wp) :: CUMTOTDEPTH        ! cummulative in averaging totaldepth
-        REAL(kind = real_wp) :: TOTSURF            ! cummulative surf in averaging totaldepth
+      !     initialise bottom if necessary
 
+      call MAKKO2(IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+                  num_exchanges_bottom_dir)
 
-        !     initialise bottom if necessary
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
 
-        CALL MAKKO2 (IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
-                num_exchanges_bottom_dir)
+      IN1 = INCREM(1)
+      IN2 = INCREM(2)
+      IN3 = INCREM(3)
+      IN4 = INCREM(4)
+      IN5 = INCREM(5)
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
+      !.....Zet de totale en lokale diepte initieel op de diepte
+      !.....voor actieve watersegmenten, anders 0
+      !.....zet sediment dikte to onderkant segment op 0
+      do ISEG = 1, num_cells
 
-        IN1 = INCREM(1)
-        IN2 = INCREM(2)
-        IN3 = INCREM(3)
-        IN4 = INCREM(4)
-        IN5 = INCREM(5)
+         process_space_real(IP3) = process_space_real(IP1)
+         process_space_real(IP4) = process_space_real(IP1)
+         process_space_real(IP5) = process_space_real(IP1)
 
-        !.....Zet de totale en lokale diepte initieel op de diepte
-        !.....voor actieve watersegmenten, anders 0
-        !.....zet sediment dikte to onderkant segment op 0
-        DO ISEG = 1, num_cells
+         IP1 = IP1 + IN1
+         IP3 = IP3 + IN3
+         IP4 = IP4 + IN4
+         IP5 = IP5 + IN5
 
-            process_space_real(IP3) = process_space_real(IP1)
-            process_space_real(IP4) = process_space_real(IP1)
-            process_space_real(IP5) = process_space_real(IP1)
+      end do
 
-            IP1 = IP1 + IN1
-            IP3 = IP3 + IN3
-            IP4 = IP4 + IN4
-            IP5 = IP5 + IN5
+      IP1 = IPOINT(1)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
 
-        end do
+      !.....Exchange-loop over de derde richting
+      do IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
-        IP1 = IPOINT(1)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
+         IFROM = IEXPNT(1, IQ)
+         ITO = IEXPNT(2, IQ)
 
-        !.....Exchange-loop over de derde richting
-        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
+         if (IFROM > 0 .and. ITO > 0) then
 
-            IFROM = IEXPNT(1, IQ)
-            ITO = IEXPNT(2, IQ)
+            call extract_waq_attribute(2, IKNMRK(IFROM), IKMRK)
+            if ((IKMRK == 0) .or. (IKMRK == 1)) then
 
-            IF (IFROM>0 .AND. ITO>0) THEN
+               process_space_real(IP3 + (IFROM - 1) * IN3) = &
+                  process_space_real(IP1 + (IFROM - 1) * IN1)
+               process_space_real(IP4 + (IFROM - 1) * IN4) = &
+                  process_space_real(IP1 + (IFROM - 1) * IN1)
+               process_space_real(IP5 + (IFROM - 1) * IN5) = &
+                  process_space_real(IP4 + (IFROM - 1) * IN4)
 
-                CALL extract_waq_attribute(2, IKNMRK(IFROM), IKMRK)
-                IF ((IKMRK==0).OR.(IKMRK==1)) THEN
+               process_space_real(IP3 + (ITO - 1) * IN3) = &
+                  process_space_real(IP1 + (IFROM - 1) * IN1) + &
+                  process_space_real(IP1 + (ITO - 1) * IN1)
+               process_space_real(IP4 + (ITO - 1) * IN4) = &
+                  process_space_real(IP1 + (IFROM - 1) * IN1) + &
+                  process_space_real(IP1 + (ITO - 1) * IN1)
+               process_space_real(IP5 + (ITO - 1) * IN5) = &
+                  process_space_real(IP4 + (ITO - 1) * IN4)
 
-                    process_space_real (IP3 + (IFROM - 1) * IN3) = &
-                            process_space_real (IP1 + (IFROM - 1) * IN1)
-                    process_space_real (IP4 + (IFROM - 1) * IN4) = &
-                            process_space_real (IP1 + (IFROM - 1) * IN1)
-                    process_space_real (IP5 + (IFROM - 1) * IN5) = &
-                            process_space_real (IP4 + (IFROM - 1) * IN4)
+            else
 
-                    process_space_real (IP3 + (ITO - 1) * IN3) = &
-                            process_space_real (IP1 + (IFROM - 1) * IN1) + &
-                                    process_space_real (IP1 + (ITO - 1) * IN1)
-                    process_space_real (IP4 + (ITO - 1) * IN4) = &
-                            process_space_real (IP1 + (IFROM - 1) * IN1) + &
-                                    process_space_real (IP1 + (ITO - 1) * IN1)
-                    process_space_real (IP5 + (ITO - 1) * IN5) = &
-                            process_space_real (IP4 + (ITO - 1) * IN4)
+               process_space_real(IP3 + (ITO - 1) * IN3) = &
+                  process_space_real(IP3 + (IFROM - 1) * IN3) + &
+                  process_space_real(IP1 + (ITO - 1) * IN1)
+               process_space_real(IP4 + (ITO - 1) * IN4) = &
+                  process_space_real(IP4 + (IFROM - 1) * IN4) + &
+                  process_space_real(IP1 + (ITO - 1) * IN1)
+               process_space_real(IP5 + (ITO - 1) * IN5) = &
+                  process_space_real(IP4 + (ITO - 1) * IN4)
 
-                ELSE
+            end if
+            !           ENDIF
+         end if
 
-                    process_space_real (IP3 + (ITO - 1) * IN3) = &
-                            process_space_real (IP3 + (IFROM - 1) * IN3) + &
-                                    process_space_real (IP1 + (ITO - 1) * IN1)
-                    process_space_real (IP4 + (ITO - 1) * IN4) = &
-                            process_space_real (IP4 + (IFROM - 1) * IN4) + &
-                                    process_space_real (IP1 + (ITO - 1) * IN1)
-                    process_space_real (IP5 + (ITO - 1) * IN5) = &
-                            process_space_real (IP4 + (ITO - 1) * IN4)
+      end do
 
-                ENDIF
-                !           ENDIF
-            ENDIF
+      !.....Exchange-loop over de derde richting
+      do IQ = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir, num_exchanges_u_dir + num_exchanges_v_dir + 1, -1
 
-        end do
+         IFROM = IEXPNT(1, IQ)
+         ITO = IEXPNT(2, IQ)
 
+         !........Berekende totale dieptes voor de onderste laag segmenten
+         !        toekennen aan de bovenliggende segmenten
 
-        !.....Exchange-loop over de derde richting
-        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir, num_exchanges_u_dir + num_exchanges_v_dir + 1, -1
+         if (IFROM > 0 .and. ITO > 0) then
+            call extract_waq_attribute(1, IKNMRK(ITO), IKMRK)
+            if (IKMRK == 1) then
 
-            IFROM = IEXPNT(1, IQ)
-            ITO = IEXPNT(2, IQ)
+               process_space_real(IP3 + (IFROM - 1) * IN3) = &
+                  process_space_real(IP3 + (ITO - 1) * IN3)
+            end if
+         end if
+      end do
 
-            !........Berekende totale dieptes voor de onderste laag segmenten
-            !        toekennen aan de bovenliggende segmenten
+      !     loop over the sediment columns, set sediment depth
 
-            IF (IFROM>0 .AND. ITO>0) then
-                CALL extract_waq_attribute(1, IKNMRK(ITO), IKMRK)
-                IF (IKMRK == 1) THEN
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
 
-                    process_space_real (IP3 + (IFROM - 1) * IN3) = &
-                            process_space_real (IP3 + (ITO - 1) * IN3)
-                ENDIF
-            ENDIF
-        end do
+      do IK = 1, Coll%current_size
 
-        !     loop over the sediment columns, set sediment depth
+         IWA1 = Coll%set(IK)%fstwatsed
+         IWA2 = Coll%set(IK)%lstwatsed
+         ITOP = Coll%set(IK)%topsedsed
+         IBOT = Coll%set(IK)%botsedsed
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
+         ! make average totaldepth water
 
-        DO IK = 1, Coll%current_size
+         CUMTOTDEPTH = 0.0
+         TOTSURF = 0.0
+         do IQ = IWA1, IWA2
+            IWATER = IEXPNT(1, IQ)
+            TOTALDEPTH = process_space_real(IP3 + (IWATER - 1) * IN3)
+            SURF = process_space_real(IP2 + (IWATER - 1) * IN2)
+            CUMTOTDEPTH = CUMTOTDEPTH + TOTALDEPTH * SURF
+            TOTSURF = TOTSURF + SURF
+         end do
+         if (TOTSURF > 1e-20) then
+            TOTALDEPTH = CUMTOTDEPTH / TOTSURF
+         else
+            TOTALDEPTH = 0.0
+         end if
 
-            IWA1 = Coll%set(IK)%fstwatsed
-            IWA2 = Coll%set(IK)%lstwatsed
-            ITOP = Coll%set(IK)%topsedsed
-            IBOT = Coll%set(IK)%botsedsed
+         ! accumulate depth within bottom
 
-            ! make average totaldepth water
+         LOCALDEPTH = TOTALDEPTH
+         LOCSEDDEPT = 0.0
+         do IQ = ITOP, IBOT
+            IBODEM = IEXPNT(1, IQ)
+            DEPTH = process_space_real(IP1 + (IBODEM - 1) * IN1)
+            LOCALDEPTH = LOCALDEPTH + DEPTH
+            LOCSEDDEPT = LOCSEDDEPT + DEPTH
+            process_space_real(IP4 + (IBODEM - 1) * IN4) = LOCALDEPTH
+            process_space_real(IP5 + (IBODEM - 1) * IN5) = LOCSEDDEPT
+         end do
 
-            CUMTOTDEPTH = 0.0
-            TOTSURF = 0.0
-            DO IQ = IWA1, IWA2
-                IWATER = IEXPNT(1, IQ)
-                TOTALDEPTH = process_space_real(IP3 + (IWATER - 1) * IN3)
-                SURF = process_space_real(IP2 + (IWATER - 1) * IN2)
-                CUMTOTDEPTH = CUMTOTDEPTH + TOTALDEPTH * SURF
-                TOTSURF = TOTSURF + SURF
-            ENDDO
-            IF (TOTSURF > 1E-20) THEN
-                TOTALDEPTH = CUMTOTDEPTH / TOTSURF
-            ELSE
-                TOTALDEPTH = 0.0
-            ENDIF
+         ! final is total copy back in the column
 
-            ! accumulate depth within bottom
+         TOTSEDDEPT = LOCSEDDEPT
+         do IQ = ITOP, IBOT
+            IBODEM = IEXPNT(1, IQ)
+            process_space_real(IP3 + (IBODEM - 1) * IN3) = TOTSEDDEPT
+         end do
 
-            LOCALDEPTH = TOTALDEPTH
-            LOCSEDDEPT = 0.0
-            DO IQ = ITOP, IBOT
-                IBODEM = IEXPNT(1, IQ)
-                DEPTH = process_space_real(IP1 + (IBODEM - 1) * IN1)
-                LOCALDEPTH = LOCALDEPTH + DEPTH
-                LOCSEDDEPT = LOCSEDDEPT + DEPTH
-                process_space_real(IP4 + (IBODEM - 1) * IN4) = LOCALDEPTH
-                process_space_real(IP5 + (IBODEM - 1) * IN5) = LOCSEDDEPT
-            ENDDO
+      end do
 
-            ! final is total copy back in the column
-
-            TOTSEDDEPT = LOCSEDDEPT
-            DO IQ = ITOP, IBOT
-                IBODEM = IEXPNT(1, IQ)
-                process_space_real(IP3 + (IBODEM - 1) * IN3) = TOTSEDDEPT
-            ENDDO
-
-        ENDDO
-
-        RETURN
-    END
+      return
+   end
 
 end module m_totdep

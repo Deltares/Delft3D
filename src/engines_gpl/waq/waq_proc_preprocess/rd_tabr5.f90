@@ -20,20 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_rd_tabr5
-      use m_waq_precision
+module m_rd_tabr5
+   use m_waq_precision
 
+   implicit none
 
-      implicit none
+contains
 
-      contains
-
-
-      SUBROUTINE RD_TABR5 ( DEFFDS      , & 
-                           NO_OUTF_MAX , NO_OUTF     , & 
-                           R5_PID      , R5_IID      , & 
-                           R5_NUMB     , R5_DOC      , & 
-                           LUNREP      , IERROR      )
+   subroutine RD_TABR5(DEFFDS, &
+                       NO_OUTF_MAX, NO_OUTF, &
+                       R5_PID, R5_IID, &
+                       R5_NUMB, R5_DOC, &
+                       LUNREP, IERROR)
 !
 !     Deltares
 !
@@ -63,18 +61,18 @@
 !     IMPLICIT NONE for extra compiler checks
 !     SAVE to keep the group definition intact
 !
-      IMPLICIT NONE
-      SAVE
+      implicit none
+      save
 !
 !     declaration of arguments
 !
-      INTEGER(kind=int_wp) ::NO_OUTF_MAX , NO_OUTF     , & 
-                   LUNREP      , IERROR
-      INTEGER(kind=int_wp) ::DEFFDS
-      character(len=10)  R5_PID      (NO_OUTF_MAX)
-      character(len=10)  R5_IID      (NO_OUTF_MAX)
-      INTEGER(kind=int_wp) ::R5_NUMB(NO_OUTF_MAX)
-      character(len=1)   R5_DOC (NO_OUTF_MAX)
+      integer(kind=int_wp) :: NO_OUTF_MAX, NO_OUTF, &
+                              LUNREP, IERROR
+      integer(kind=int_wp) :: DEFFDS
+      character(len=10) R5_PID(NO_OUTF_MAX)
+      character(len=10) R5_IID(NO_OUTF_MAX)
+      integer(kind=int_wp) :: R5_NUMB(NO_OUTF_MAX)
+      character(len=1) R5_DOC(NO_OUTF_MAX)
 !
 !     Local variables
 !
@@ -85,108 +83,108 @@
 !     ELMDMS  INTEGER  6,NELEMS   LOCAL   dimension of elements
 !     NBYTSG  INTEGER  NELEMS     LOCAL   length of elements (bytes)
 !
-      INTEGER(kind=int_wp) ::NELEMS
-      PARAMETER   ( NELEMS = 5 )
+      integer(kind=int_wp) :: NELEMS
+      parameter(NELEMS=5)
 !
-      INTEGER(kind=int_wp) ::I               , IELM          , & 
-                   BUFLEN
-      INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
-                   UINDEX(3)
-      character(len=16)  GRPNAM
-      character(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      character(len=64)  ELMDES(NELEMS)
+      integer(kind=int_wp) :: I, IELM, &
+                              BUFLEN
+      integer(kind=int_wp) :: ELMDMS(2, NELEMS), NBYTSG(NELEMS), &
+                              UINDEX(3)
+      character(len=16) GRPNAM
+      character(len=16) ELMNMS(NELEMS), ELMTPS(NELEMS)
+      character(len=64) ELMDES(NELEMS)
 !
 !     External NEFIS Functions
 !
-      INTEGER(kind=int_wp) ::GETELS & 
-              ,GETELT
-      EXTERNAL  GETELS & 
-              ,GETELT
+      integer(kind=int_wp) :: GETELS &
+                              , GETELT
+      external GETELS &
+         , GETELT
 !
 !     element names
 !
-      DATA  GRPNAM  /'TABLE_R5'/
-      DATA & 
-      (ELMNMS(I),ELMTPS(I),NBYTSG(I),ELMDMS(1,I),ELMDMS(2,I),ELMDES(I), & 
-       I = 1 , NELEMS) & 
-     /'NO_OUTF'  ,'INTEGER'  , 4,1,1,'number of rows  in table R5'    , & 
-      'R5_PID'   ,'CHARACTER',10,1,0,'reference to prcocess'          , & 
-      'R5_IID'   ,'CHARACTER',10,1,0,'reference to item (flux)'       , & 
-      'R5_NUMB'  ,'INTEGER'  , 4,1,0,'serial number in process'       , & 
-      'R5_DOC'   ,'CHARACTER', 1,1,0,'documneted yes/no'              /
+      data GRPNAM/'TABLE_R5'/
+      data &
+         (ELMNMS(I), ELMTPS(I), NBYTSG(I), ELMDMS(1, I), ELMDMS(2, I), ELMDES(I), &
+          I=1, NELEMS) &
+         /'NO_OUTF', 'INTEGER', 4, 1, 1, 'number of rows  in table R5', &
+         'R5_PID', 'CHARACTER', 10, 1, 0, 'reference to prcocess', &
+         'R5_IID', 'CHARACTER', 10, 1, 0, 'reference to item (flux)', &
+         'R5_NUMB', 'INTEGER', 4, 1, 0, 'serial number in process', &
+         'R5_DOC', 'CHARACTER', 1, 1, 0, 'documneted yes/no'/
 !
 !     Read group
 !
       UINDEX(1) = 1
       UINDEX(2) = 1
       UINDEX(3) = 1
-      BUFLEN = NBYTSG(1)*ELMDMS(2,1)
-      IERROR = GETELT (DEFFDS , & 
-                      GRPNAM , ELMNMS(1), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , NO_OUTF  )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(1)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
-      IF ( NO_OUTF > NO_OUTF_MAX ) THEN
-         WRITE(LUNREP,*) 'ERROR reading group',GRPNAM
-         WRITE(LUNREP,*) 'Actual number of rows in table R5:',NO_OUTF
-         WRITE(LUNREP,*) 'greater than maximum:',NO_OUTF_MAX
+      BUFLEN = NBYTSG(1) * ELMDMS(2, 1)
+      IERROR = GETELT(DEFFDS, &
+                      GRPNAM, ELMNMS(1), &
+                      UINDEX, 1, &
+                      BUFLEN, NO_OUTF)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(1)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
+      if (NO_OUTF > NO_OUTF_MAX) then
+         write (LUNREP, *) 'ERROR reading group', GRPNAM
+         write (LUNREP, *) 'Actual number of rows in table R5:', NO_OUTF
+         write (LUNREP, *) 'greater than maximum:', NO_OUTF_MAX
          IERROR = 1
-         GOTO 900
-      ENDIF
+         goto 900
+      end if
 !
 !     Set dimension of table
 !
-      DO IELM = 2 , NELEMS
-         ELMDMS(2,IELM) = NO_OUTF
-      ENDDO
-      BUFLEN = NBYTSG(2)*ELMDMS(2,2)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(2), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , R5_PID   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(2)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
-      BUFLEN = NBYTSG(3)*ELMDMS(2,3)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(3), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , R5_IID   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(3)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
-      BUFLEN = NBYTSG(4)*ELMDMS(2,4)
-      IERROR = GETELT (DEFFDS , & 
-                      GRPNAM , ELMNMS(4), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , R5_NUMB  )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(4)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
-      BUFLEN = NBYTSG(5)*ELMDMS(2,5)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(5), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , R5_DOC   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(5)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      do IELM = 2, NELEMS
+         ELMDMS(2, IELM) = NO_OUTF
+      end do
+      BUFLEN = NBYTSG(2) * ELMDMS(2, 2)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(2), &
+                      UINDEX, 1, &
+                      BUFLEN, R5_PID)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(2)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
+      BUFLEN = NBYTSG(3) * ELMDMS(2, 3)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(3), &
+                      UINDEX, 1, &
+                      BUFLEN, R5_IID)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(3)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
+      BUFLEN = NBYTSG(4) * ELMDMS(2, 4)
+      IERROR = GETELT(DEFFDS, &
+                      GRPNAM, ELMNMS(4), &
+                      UINDEX, 1, &
+                      BUFLEN, R5_NUMB)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(4)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
+      BUFLEN = NBYTSG(5) * ELMDMS(2, 5)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(5), &
+                      UINDEX, 1, &
+                      BUFLEN, R5_DOC)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(5)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 !
-  900 CONTINUE
-      RETURN
+900   continue
+      return
 !
-      END
+   end
 
-      end module m_rd_tabr5
+end module m_rd_tabr5

@@ -95,7 +95,7 @@ contains
          end if
 
          ! Output flux, temp, surtemp, heat exchage and temperature increase due to radiation
-         process_space_real(ip6) = min(max(ttemp,mintemp),maxtemp)
+         process_space_real(ip6) = min(max(ttemp, mintemp), maxtemp)
          process_space_real(ip7) = etemp
          process_space_real(ip8) = tmpnat + 1
 

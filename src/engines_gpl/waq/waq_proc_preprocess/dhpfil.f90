@@ -21,37 +21,36 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dhpfil
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine DHPFIL(LUNREP, TEKST, FILNAM)
+      !
+      !     print a filename to file
+      !
+      use timers !   performance timers
 
-    SUBROUTINE DHPFIL(LUNREP, TEKST, FILNAM)
-        !
-        !     print a filename to file
-        !
-        use timers       !   performance timers
+      integer(kind=int_wp) :: LUNREP
+      character(len=*) TEKST, FILNAM
 
-        INTEGER(kind = int_wp) :: LUNREP
-        character(len=*) TEKST, FILNAM
-
-        integer(kind = int_wp) :: i, ilen, iend
-        integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("dhpfil", ithndl)
-        !
-        ILEN = LEN(FILNAM)
-        DO I = ILEN, 1, -1
-            IEND = I
-            IF (FILNAM(I:I) /= ' ') GOTO 10
-        ENDDO
-        10 CONTINUE
-        !
-        WRITE(LUNREP, '(A,A)') TEKST, FILNAM(1:IEND)
-        !
-        if (timon) call timstop(ithndl)
-        RETURN
-    END
+      integer(kind=int_wp) :: i, ilen, iend
+      integer(kind=int_wp) :: ithndl = 0
+      if (timon) call timstrt("dhpfil", ithndl)
+      !
+      ILEN = len(FILNAM)
+      do I = ILEN, 1, -1
+         IEND = I
+         if (FILNAM(I:I) /= ' ') goto 10
+      end do
+10    continue
+      !
+      write (LUNREP, '(A,A)') TEKST, FILNAM(1:IEND)
+      !
+      if (timon) call timstop(ithndl)
+      return
+   end
 
 end module m_dhpfil

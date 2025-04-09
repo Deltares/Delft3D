@@ -21,133 +21,132 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dissi
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine dissi(process_space_real, fl, ipoint, increm, num_cells, &
+                    noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                    num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_logger_helper
 
-    subroutine dissi  (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_logger_helper
+      !>\file
+      !>       Dissolution of Si in opal
 
-        !>\file
-        !>       Dissolution of Si in opal
+      !
+      !     Description of the module :
+      !     dissolution of opal silicate
+      !
+      !
+      ! Name    T   L I/O   Description                                   Units
+      ! ----    --- -  -    -------------------                            ----
+      ! CSID    R*4 1 I     concentration dissolved silicate            [gSi/m3]
+      ! CSIDE   R*4 1 I     saturation concentration dissolved silicate [gSi/m3]
+      ! FSOL    R*4 1 O     dissolution flux                          [gSi/m3/d]
+      ! KSOL    R*4 1 I     dissolution rate                          [m3/gSi/d]
+      ! OPAL    R*4 1 I     concentration opal silicate                 [gSi/m3]
+      ! POROS   R*4 1 I     porosity                                         [-]
+      ! TC      R*4 1 I     temperature coefficient of dissolution           [-]
+      ! TEMP    R*4 1 I     temperature                                     [oC]
+      ! TEMPC   R*4 1 -     temperature function                             [-]
+      ! SWDISSI R*4 1 I     option: 0.0 2nd order diss., 1.0 1st order diss.
+      !
+      !     Logical Units : -
+      !
+      !     Modules called : -
+      !
+      !     Name     Type   Library
+      !     ------   -----  ------------
+      !
+      implicit real(A - H, J - Z)
+      implicit integer(I)
 
-        !
-        !     Description of the module :
-        !     dissolution of opal silicate
-        !
-        !
-        ! Name    T   L I/O   Description                                   Units
-        ! ----    --- -  -    -------------------                            ----
-        ! CSID    R*4 1 I     concentration dissolved silicate            [gSi/m3]
-        ! CSIDE   R*4 1 I     saturation concentration dissolved silicate [gSi/m3]
-        ! FSOL    R*4 1 O     dissolution flux                          [gSi/m3/d]
-        ! KSOL    R*4 1 I     dissolution rate                          [m3/gSi/d]
-        ! OPAL    R*4 1 I     concentration opal silicate                 [gSi/m3]
-        ! POROS   R*4 1 I     porosity                                         [-]
-        ! TC      R*4 1 I     temperature coefficient of dissolution           [-]
-        ! TEMP    R*4 1 I     temperature                                     [oC]
-        ! TEMPC   R*4 1 -     temperature function                             [-]
-        ! SWDISSI R*4 1 I     option: 0.0 2nd order diss., 1.0 1st order diss.
-        !
-        !     Logical Units : -
-        !
-        !     Modules called : -
-        !
-        !     Name     Type   Library
-        !     ------   -----  ------------
-        !
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-
-        REAL(kind = real_wp) :: KSOL, FSOL, TEMP, TEMPC, TC, CSID, OPAL, &
-                CSIDE, POROS, SWDISSI
-        INTEGER(kind = int_wp) :: LUNREP, NOWARN
-        DATA     NOWARN / 0 /
-        SAVE     NOWARN
-        !
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        !
-        IFLUX = 0
-        !
-        DO ISEG = 1, num_cells
+      real(kind=real_wp) :: KSOL, FSOL, TEMP, TEMPC, TC, CSID, OPAL, &
+                            CSIDE, POROS, SWDISSI
+      integer(kind=int_wp) :: LUNREP, NOWARN
+      data NOWARN/0/
+      save NOWARN
+      !
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
+      IP6 = IPOINT(6)
+      IP7 = IPOINT(7)
+      IP8 = IPOINT(8)
+      IP9 = IPOINT(9)
+      !
+      IFLUX = 0
+      !
+      do ISEG = 1, num_cells
+         !
+         if (btest(IKNMRK(ISEG), 0)) then
+            CSID = max(process_space_real(IP1), 0.0)
+            OPAL = max(process_space_real(IP2), 0.0)
+            CSIDE = process_space_real(IP3)
+            KSOL = process_space_real(IP4)
+            TC = process_space_real(IP5)
+            TEMP = process_space_real(IP6)
+            POROS = process_space_real(IP7)
+            SWDISSI = process_space_real(IP8)
             !
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CSID = MAX(process_space_real(IP1), 0.0)
-                OPAL = MAX(process_space_real(IP2), 0.0)
-                CSIDE = process_space_real(IP3)
-                KSOL = process_space_real(IP4)
-                TC = process_space_real(IP5)
-                TEMP = process_space_real(IP6)
-                POROS = process_space_real(IP7)
-                SWDISSI = process_space_real(IP8)
-                !
-                !     Calculation of the dissolution flux
-                !
-                FSOL = 0.0
-                !
-                IF (POROS > 0.05) THEN
-                    !
-                    TEMPC = TC**(TEMP - 20.0)
-                    !
-                    IF (NINT(SWDISSi) == 0) THEN
-                        FSOL = KSOL * TEMPC * OPAL * (CSIDE - CSID / POROS)
-                    ELSE
-                        FSOL = KSOL * TEMPC * OPAL
-                    ENDIF
-                    !
-                ELSE
-                    FSOL = 0.0
-                    NOWARN = NOWARN + 1
-                    IF (NOWARN <= 25) THEN
-                        CALL get_log_unit_number(LUNREP)
-                        write (LUNREP, *) 'warning: poros < 0.05 in process DisSi, ISEG=', ISEG, ' POROS=', POROS
-                    ELSEIF (NOWARN == 26) THEN
-                        CALL get_log_unit_number(LUNREP)
-                        write (LUNREP, *) 'number of warnings poros < 0.05 in process DisSi >25 firther messages surpressed'
-                    ENDIF
-                ENDIF
-                !
-                !     Output of module
-                !
-                FL(1 + IFLUX) = FSOL
-                process_space_real(IP9) = FSOL
-                !
-                !     End active cells block
-                !
-            ENDIF
+            !     Calculation of the dissolution flux
             !
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + INCREM (1)
-            IP2 = IP2 + INCREM (2)
-            IP3 = IP3 + INCREM (3)
-            IP4 = IP4 + INCREM (4)
-            IP5 = IP5 + INCREM (5)
-            IP6 = IP6 + INCREM (6)
-            IP7 = IP7 + INCREM (7)
-            IP8 = IP8 + INCREM (8)
-            IP9 = IP9 + INCREM (9)
+            FSOL = 0.0
             !
-        end do
-        !
-        RETURN
-        !
-    END
+            if (POROS > 0.05) then
+               !
+               TEMPC = TC**(TEMP - 20.0)
+               !
+               if (nint(SWDISSi) == 0) then
+                  FSOL = KSOL * TEMPC * OPAL * (CSIDE - CSID / POROS)
+               else
+                  FSOL = KSOL * TEMPC * OPAL
+               end if
+               !
+            else
+               FSOL = 0.0
+               NOWARN = NOWARN + 1
+               if (NOWARN <= 25) then
+                  call get_log_unit_number(LUNREP)
+                  write (LUNREP, *) 'warning: poros < 0.05 in process DisSi, ISEG=', ISEG, ' POROS=', POROS
+               elseif (NOWARN == 26) then
+                  call get_log_unit_number(LUNREP)
+                  write (LUNREP, *) 'number of warnings poros < 0.05 in process DisSi >25 firther messages surpressed'
+               end if
+            end if
+            !
+            !     Output of module
+            !
+            FL(1 + IFLUX) = FSOL
+            process_space_real(IP9) = FSOL
+            !
+            !     End active cells block
+            !
+         end if
+         !
+         IFLUX = IFLUX + NOFLUX
+         IP1 = IP1 + INCREM(1)
+         IP2 = IP2 + INCREM(2)
+         IP3 = IP3 + INCREM(3)
+         IP4 = IP4 + INCREM(4)
+         IP5 = IP5 + INCREM(5)
+         IP6 = IP6 + INCREM(6)
+         IP7 = IP7 + INCREM(7)
+         IP8 = IP8 + INCREM(8)
+         IP9 = IP9 + INCREM(9)
+         !
+      end do
+      !
+      return
+      !
+   end
 
 end module m_dissi

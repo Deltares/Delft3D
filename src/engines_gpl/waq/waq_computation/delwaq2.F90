@@ -21,24 +21,24 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq2
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
-    function delwaq2() result(success)
-        use m_delwaq2_main
-        use delwaq2_data
-        use m_actions
+   function delwaq2() result(success)
+      use m_delwaq2_main
+      use delwaq2_data
+      use m_actions
 
-        logical :: success !< if the run was successful
-        type(delwaq_data) :: dlwqd
+      logical :: success !< if the run was successful
+      type(delwaq_data) :: dlwqd
 
-        dlwqd%set_timer = .true.
+      dlwqd%set_timer = .true.
 
-        call dlwqmain(ACTION_FULLCOMPUTATION, dlwqd)
-        success = .true.
-    end function delwaq2
+      call dlwqmain(ACTION_FULLCOMPUTATION, dlwqd)
+      success = .true.
+   end function delwaq2
 
 end module m_delwaq2

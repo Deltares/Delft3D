@@ -21,105 +21,104 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_blmort
-    use m_waq_precision
-    use m_natmor
+   use m_waq_precision
+   use m_natmor
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine blmort(biomas, temp, faut, fdet, flautn, fldetn, &
+                     flooxn, flmora, deat4, tstepi, lmixo, lfixn, &
+                     lcarb, nutcon, flxcon)
 
-    subroutine blmort (biomas, temp, faut, fdet, flautn, fldetn, &
-            flooxn, flmora, deat4, tstepi, lmixo, lfixn, &
-            lcarb, nutcon, flxcon)
+      use bloom_data_dim
+      use bloom_data_size
+      use bloom_data_phyt
 
-        use bloom_data_dim
-        use bloom_data_size
-        use bloom_data_phyt
+      implicit none
 
-        implicit none
+      real(kind=real_wp) :: biomas(*) ! Biomass (gC/m3)
+      real(kind=real_wp) :: temp ! Temperature (deg.C)
+      real(kind=real_wp) :: faut(*) ! Fraction autolysis (-)
+      real(kind=real_wp) :: fdet(*) ! Fraction detritus (-)
+      real(kind=real_wp) :: flautn(*) ! Nutrient autolysis fluxes (g/m3/d)
+      real(kind=real_wp) :: fldetn(*) ! Detritus production fluxes (g/m3/d)
+      real(kind=real_wp) :: flooxn(*) ! OOX production fluxes (g/m3/d)
+      real(kind=real_wp) :: flmora(*) ! Algae mortality fluxes (gC/m3/d)
+      real(kind=real_wp) :: deat4 ! ??$Check necessity to transfer$
+      real(kind=real_wp) :: tstepi ! Time step (d)
+      logical lmixo ! Flag mixotrophy
+      logical lfixn ! Flag N-fixation
+      logical lcarb ! Flag carbon limitation
+      integer(kind=int_wp) :: nutcon(*) ! Nutrients involved in active nutrient constraints
+      integer(kind=int_wp) :: flxcon(*) ! Uptake fluxes involved in active nutrient constraints
 
-        real(kind = real_wp) :: biomas(*)  ! Biomass (gC/m3)
-        real(kind = real_wp) :: temp       ! Temperature (deg.C)
-        real(kind = real_wp) :: faut(*)    ! Fraction autolysis (-)
-        real(kind = real_wp) :: fdet(*)    ! Fraction detritus (-)
-        real(kind = real_wp) :: flautn(*)  ! Nutrient autolysis fluxes (g/m3/d)
-        real(kind = real_wp) :: fldetn(*)  ! Detritus production fluxes (g/m3/d)
-        real(kind = real_wp) :: flooxn(*)  ! OOX production fluxes (g/m3/d)
-        real(kind = real_wp) :: flmora(*)  ! Algae mortality fluxes (gC/m3/d)
-        real(kind = real_wp) :: deat4      ! ??$Check necessity to transfer$
-        real(kind = real_wp) :: tstepi     ! Time step (d)
-        logical    lmixo      ! Flag mixotrophy
-        logical    lfixn      ! Flag N-fixation
-        logical    lcarb      ! Flag carbon limitation
-        integer(kind = int_wp) :: nutcon(*)  ! Nutrients involved in active nutrient constraints
-        integer(kind = int_wp) :: flxcon(*)  ! Uptake fluxes involved in active nutrient constraints
+      !     Local variables
 
-        !     Local variables
+      real(kind=dp) :: temp8 ! Temperature (deg.C)
+      real(kind=dp) :: deat ! ??
+      real(kind=dp) :: foox ! Fraction other organic
+      real(kind=real_wp) :: cphyt ! Biomass (gC/m3)
+      real(kind=real_wp) :: cmort ! Mortality flux (gC/m3/d)
+      real(kind=real_wp) :: cmorta ! Autolysis flux (gC/m3/d)
+      real(kind=real_wp) :: cmortd ! Detritus prod. (gC/m3/d)
+      real(kind=real_wp) :: cmorto ! OOx production (gC/m3/d)
+      integer(kind=int_wp) :: i, j, k ! Counters
 
-        real(kind = dp) :: temp8      ! Temperature (deg.C)
-        real(kind = dp) :: deat       ! ??
-        real(kind = dp) :: foox       ! Fraction other organic
-        real(kind = real_wp) :: cphyt      ! Biomass (gC/m3)
-        real(kind = real_wp) :: cmort      ! Mortality flux (gC/m3/d)
-        real(kind = real_wp) :: cmorta     ! Autolysis flux (gC/m3/d)
-        real(kind = real_wp) :: cmortd     ! Detritus prod. (gC/m3/d)
-        real(kind = real_wp) :: cmorto     ! OOx production (gC/m3/d)
-        integer(kind = int_wp) :: i, j, k    ! Counters
+      !  Zero fluxes
+      do j = 1, 4
+         flautn(j) = 0.0
+         fldetn(j) = 0.0
+         flooxn(j) = 0.0
+      end do
 
-        !  Zero fluxes
-        do j = 1, 4
-            flautn(j) = 0.0
-            fldetn(j) = 0.0
-            flooxn(j) = 0.0
-        enddo
+      !  Call subroutine natmor: calculate natural mortality rate constants.
+      deat = 0d0
+      temp8 = dble(temp)
+      call natmor(deat, temp8)
+      deat4 = real(deat)
 
-        !  Call subroutine natmor: calculate natural mortality rate constants.
-        deat = 0d0
-        temp8 = dble(temp)
-        call natmor(deat, temp8)
-        deat4 = real(deat)
+      !  Mortality module.
+      !
+      !  Objective: obtain nutrient fluxes to detritus, OOx and dissolved
+      !  nutrient pools due to mortality.
+      !
+      !  Again note that nutrient fluxes are computed from BLOOM's
+      !  stochiometry matrix and hence follow from biomasses in units dry
+      !  weight. The biomass mortality flux for DLWQWQ, however, is in units
+      !  of carbon.
+      !
+      !  Loop over algae species
+      do j = 1, nuspec
+         cphyt = max(biomas(j), 0.0)
 
-        !  Mortality module.
-        !
-        !  Objective: obtain nutrient fluxes to detritus, OOx and dissolved
-        !  nutrient pools due to mortality.
-        !
-        !  Again note that nutrient fluxes are computed from BLOOM's
-        !  stochiometry matrix and hence follow from biomasses in units dry
-        !  weight. The biomass mortality flux for DLWQWQ, however, is in units
-        !  of carbon.
-        !
-        !  Loop over algae species
-        do j = 1, nuspec
-            cphyt = max(biomas(j), 0.0)
+         !  Compute total mortality for this species and store the flux
+         !  avoid undershoots leading to negative biomass
+         cmort = min(cphyt * real(rmort(j)), cphyt / tstepi)
+         flmora(j) = cmort
 
-            !  Compute total mortality for this species and store the flux
-            !  avoid undershoots leading to negative biomass
-            cmort = min(cphyt * real(rmort(j)), cphyt / tstepi)
-            flmora(j) = cmort
+         ! Partition the mortality flux over detritus(D)/OOx(O)/autolysis(A)
+         foox = (1.-faut(j) - fdet(j))
+         cmorta = cmort * faut(j)
+         cmortd = cmort * fdet(j)
+         cmorto = cmort * foox
 
-            ! Partition the mortality flux over detritus(D)/OOx(O)/autolysis(A)
-            foox = (1. - faut(j) - fdet(j))
-            cmorta = cmort * faut(j)
-            cmortd = cmort * fdet(j)
-            cmorto = cmort * foox
+         ! Detritus production for C, N, P, Si (for C including part autolysis)
+         ! Autolysis for C, N, P, Si (NOT for carbon)
+         ! OOx production for C, N, P, Si (for C including part autolysis)
+         fldetn(1) = fldetn(1) + cmortd + cmorta * fdet(j) / (fdet(j) + foox)
+         flooxn(1) = flooxn(1) + cmorto + cmorta * foox / (fdet(j) + foox)
+         do k = 1, nunuco
+            i = nutcon(k)
+            if (i <= 3) then
+               fldetn(i + 1) = fldetn(i + 1) + cmortd * real(ctodry(j) * aa(k, j))
+               flautn(i + 1) = flautn(i + 1) + cmorta * real(ctodry(j) * aa(k, j))
+               flooxn(i + 1) = flooxn(i + 1) + cmorto * real(ctodry(j) * aa(k, j))
+            end if
+         end do
+      end do
 
-            ! Detritus production for C, N, P, Si (for C including part autolysis)
-            ! Autolysis for C, N, P, Si (NOT for carbon)
-            ! OOx production for C, N, P, Si (for C including part autolysis)
-            fldetn(1) = fldetn(1) + cmortd + cmorta * fdet(j) / (fdet(j) + foox)
-            flooxn(1) = flooxn(1) + cmorto + cmorta * foox / (fdet(j) + foox)
-            do k = 1, nunuco
-                i = nutcon(k)
-                if (i<=3) then
-                    fldetn(i + 1) = fldetn(i + 1) + cmortd * real(ctodry(j) * aa(k, j))
-                    flautn(i + 1) = flautn(i + 1) + cmorta * real(ctodry(j) * aa(k, j))
-                    flooxn(i + 1) = flooxn(i + 1) + cmorto * real(ctodry(j) * aa(k, j))
-                endif
-            enddo
-        enddo
-
-        return
-    end
+      return
+   end
 end module m_blmort

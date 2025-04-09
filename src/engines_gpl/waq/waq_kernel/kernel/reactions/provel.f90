@@ -21,151 +21,150 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_provel
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine provel(velonw, num_velocity_arrays_new, ivpnew, velo, num_velocity_arrays, &
+                     ivpnt, velx, num_velocity_arrays_extra, vsto, num_substances_transported, &
+                     num_exchanges, velndt, istep)
+      !
+      !     function            : makes velonw array from velo and velx array
+      !
+      !     created:            : december 1994 by jan van beek
+      !
+      !     modified            : october  2010, jvb,  only update new velocities if needed
 
-    subroutine provel (velonw, num_velocity_arrays_new, ivpnew, velo, num_velocity_arrays, &
-            ivpnt, velx, num_velocity_arrays_extra, vsto, num_substances_transported, &
-            num_exchanges, velndt, istep)
-        !
-        !     function            : makes velonw array from velo and velx array
-        !
-        !     created:            : december 1994 by jan van beek
-        !
-        !     modified            : october  2010, jvb,  only update new velocities if needed
+      use timers
+      implicit none
 
-        use timers
-        implicit none
+      ! declaration of arguments
 
-        ! declaration of arguments
+      integer(kind=int_wp), intent(in) :: num_velocity_arrays_new
+      integer(kind=int_wp), intent(in) :: num_velocity_arrays ! number of velocities from input
+      integer(kind=int_wp), intent(in) :: num_velocity_arrays_extra ! number of velocities from processes
+      integer(kind=int_wp), intent(in) :: num_substances_transported
+      integer(kind=int_wp), intent(in) :: num_exchanges
+      real(kind=real_wp), intent(inout) :: velonw(num_velocity_arrays_new, num_exchanges) ! new velocity array
+      integer(kind=int_wp), intent(in) :: ivpnew(num_substances_transported) ! pointer to new velo array (actually only input)
+      real(kind=real_wp), intent(in) :: velo(num_velocity_arrays, num_exchanges) ! velocities from input
+      integer(kind=int_wp), intent(in) :: ivpnt(num_substances_transported) ! pointer to original velo
+      real(kind=real_wp), intent(in) :: velx(num_velocity_arrays_extra, num_exchanges) ! velocities from processes
+      real(kind=real_wp), intent(in) :: vsto(num_substances_transported, num_velocity_arrays_extra) ! factor for velocities
+      integer(kind=int_wp), intent(in) :: velndt(num_velocity_arrays_extra) ! time step size of the velocities
+      integer(kind=int_wp), intent(in) :: istep ! time step nr.
 
-        integer(kind = int_wp), intent(in) :: num_velocity_arrays_new
-        integer(kind = int_wp), intent(in) :: num_velocity_arrays               ! number of velocities from input
-        integer(kind = int_wp), intent(in) :: num_velocity_arrays_extra         ! number of velocities from processes
-        integer(kind = int_wp), intent(in) :: num_substances_transported
-        integer(kind = int_wp), intent(in) :: num_exchanges
-        real(kind = real_wp), intent(inout) :: velonw(num_velocity_arrays_new, num_exchanges)               ! new velocity array
-        integer(kind = int_wp), intent(in) :: ivpnew(num_substances_transported)                   ! pointer to new velo array (actually only input)
-        real(kind = real_wp), intent(in) :: velo(num_velocity_arrays, num_exchanges)                ! velocities from input
-        integer(kind = int_wp), intent(in) :: ivpnt(num_substances_transported)                    ! pointer to original velo
-        real(kind = real_wp), intent(in) :: velx(num_velocity_arrays_extra, num_exchanges)                 ! velocities from processes
-        real(kind = real_wp), intent(in) :: vsto(num_substances_transported, num_velocity_arrays_extra)               ! factor for velocities
-        integer(kind = int_wp), intent(in) :: velndt(num_velocity_arrays_extra)                   ! time step size of the velocities
-        integer(kind = int_wp), intent(in) :: istep                           ! time step nr.
+      ! local declarations
 
-        ! local declarations
+      integer(kind=int_wp) :: substance_i ! index substances
+      integer(kind=int_wp) :: isys2 ! index substances
+      integer(kind=int_wp) :: ivnw ! index new velocities
+      integer(kind=int_wp) :: ivx ! index velocities from process
+      integer(kind=int_wp) :: ivp ! index velocities from input
+      integer(kind=int_wp) :: iq ! index exchange
+      integer(kind=int_wp) :: ivpnew_loc(num_substances_transported) ! local copy of ivpnew
+      logical :: lfirst ! first velocity in combination of velocities
+      logical :: update ! update of the combined velocity needed
+      real(kind=real_wp) :: factor ! factor for susbtance velocity combination
+      integer(kind=int_wp), save :: ithandl = 0 ! handle in timer routines
 
-        integer(kind = int_wp) :: substance_i                            ! index substances
-        integer(kind = int_wp) :: isys2                           ! index substances
-        integer(kind = int_wp) :: ivnw                            ! index new velocities
-        integer(kind = int_wp) :: ivx                             ! index velocities from process
-        integer(kind = int_wp) :: ivp                             ! index velocities from input
-        integer(kind = int_wp) :: iq                              ! index exchange
-        integer(kind = int_wp) :: ivpnew_loc(num_substances_transported)               ! local copy of ivpnew
-        logical :: lfirst                          ! first velocity in combination of velocities
-        logical :: update                          ! update of the combined velocity needed
-        real(kind = real_wp) :: factor                          ! factor for susbtance velocity combination
-        integer(kind = int_wp), save :: ithandl = 0                     ! handle in timer routines
+      ! activate time routines
 
-        ! activate time routines
+      if (timon) call timstrt("provel", ithandl)
 
-        if (timon) call timstrt ("provel", ithandl)
+      ! local copy of ivpnew
 
-        ! local copy of ivpnew
+      ivpnew_loc = ivpnew
 
-        ivpnew_loc = ivpnew
+      ! we construeren nu de velonw
 
-        ! we construeren nu de velonw
+      do substance_i = 1, num_substances_transported
 
-        do substance_i = 1, num_substances_transported
+         do ivnw = 1, num_velocity_arrays_new
 
-            do ivnw = 1, num_velocity_arrays_new
+            if (ivpnew_loc(substance_i) == ivnw) then
 
-                if (ivpnew_loc(substance_i) == ivnw) then
+               ! check if update is needed, always from input, fractional step from processes
 
-                    ! check if update is needed, always from input, fractional step from processes
+               update = .false.
+               if (ivpnt(substance_i) /= 0) update = .true.
+               do ivx = 1, num_velocity_arrays_extra
+                  factor = vsto(substance_i, ivx)
+                  if (abs(factor) > 1.e-20) then
+                     if (mod(istep - 1, velndt(ivx)) == 0) update = .true.
+                  end if
+               end do
 
-                    update = .false.
-                    if (ivpnt(substance_i) /= 0) update = .true.
-                    do ivx = 1, num_velocity_arrays_extra
-                        factor = vsto(substance_i, ivx)
-                        if (abs(factor) > 1.e-20) then
-                            if (mod(istep - 1, velndt(ivx)) == 0) update = .true.
-                        endif
-                    enddo
+               if (update) then
 
-                    if (update) then
+                  ! look in original velo
 
-                        ! look in original velo
+                  lfirst = .true.
+                  if (ivpnt(substance_i) /= 0) then
+                     lfirst = .false.
+                     ivp = ivpnt(substance_i)
+                     do iq = 1, num_exchanges
+                        velonw(ivnw, iq) = velo(ivp, iq)
+                     end do
+                  end if
 
-                        lfirst = .true.
-                        if (ivpnt(substance_i) /= 0) then
-                            lfirst = .false.
-                            ivp = ivpnt(substance_i)
-                            do iq = 1, num_exchanges
-                                velonw(ivnw, iq) = velo(ivp, iq)
-                            enddo
-                        endif
+                  ! add the contribution of the calculated velocities.
 
-                        ! add the contribution of the calculated velocities.
-
-                        do ivx = 1, num_velocity_arrays_extra
-                            factor = vsto(substance_i, ivx)
-                            if (abs(factor) > 1.e-20) then
-                                if (lfirst) then
-                                    lfirst = .false.
-                                    if (abs(factor - 1.0) < 1.e-10) then
-                                        do iq = 1, num_exchanges
-                                            velonw(ivnw, iq) = velx(ivx, iq)
-                                        enddo
-                                    else
-                                        do iq = 1, num_exchanges
-                                            velonw(ivnw, iq) = factor * velx(ivx, iq)
-                                        enddo
-                                    endif
-                                else
-                                    if (abs(factor - 1.0) < 1.e-10) then
-                                        do iq = 1, num_exchanges
-                                            velonw(ivnw, iq) = velonw(ivnw, iq) + &
+                  do ivx = 1, num_velocity_arrays_extra
+                     factor = vsto(substance_i, ivx)
+                     if (abs(factor) > 1.e-20) then
+                        if (lfirst) then
+                           lfirst = .false.
+                           if (abs(factor - 1.0) < 1.e-10) then
+                              do iq = 1, num_exchanges
+                                 velonw(ivnw, iq) = velx(ivx, iq)
+                              end do
+                           else
+                              do iq = 1, num_exchanges
+                                 velonw(ivnw, iq) = factor * velx(ivx, iq)
+                              end do
+                           end if
+                        else
+                           if (abs(factor - 1.0) < 1.e-10) then
+                              do iq = 1, num_exchanges
+                                 velonw(ivnw, iq) = velonw(ivnw, iq) + &
                                                     velx(ivx, iq)
-                                        enddo
-                                    else
-                                        do iq = 1, num_exchanges
-                                            velonw(ivnw, iq) = velonw(ivnw, iq) + &
+                              end do
+                           else
+                              do iq = 1, num_exchanges
+                                 velonw(ivnw, iq) = velonw(ivnw, iq) + &
                                                     factor * velx(ivx, iq)
-                                        enddo
-                                    endif
-                                endif
-                            endif
-                        enddo
+                              end do
+                           end if
+                        end if
+                     end if
+                  end do
 
-                    endif
+               end if
 
-                    ! trick the other substances also pointing to this array by setting pointer negative
+               ! trick the other substances also pointing to this array by setting pointer negative
 
-                    do isys2 = substance_i + 1, num_substances_transported
-                        if (ivpnew_loc(isys2) == ivnw) then
-                            ivpnew_loc(isys2) = -ivpnew_loc(isys2)
-                        endif
-                    enddo
+               do isys2 = substance_i + 1, num_substances_transported
+                  if (ivpnew_loc(isys2) == ivnw) then
+                     ivpnew_loc(isys2) = -ivpnew_loc(isys2)
+                  end if
+               end do
 
-                    ! there can be no other new velocity for this substance so exit num_velocity_arrays_new loop
+               ! there can be no other new velocity for this substance so exit num_velocity_arrays_new loop
 
-                    exit
+               exit
 
-                endif
+            end if
 
-            enddo
+         end do
 
-        enddo
+      end do
 
-        if (timon) call timstop (ithandl)
+      if (timon) call timstop(ithandl)
 
-        return
-    end
+      return
+   end
 
 end module m_provel

@@ -20,20 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_rd_tabr8
-      use m_waq_precision
+module m_rd_tabr8
+   use m_waq_precision
 
+   implicit none
 
-      implicit none
+contains
 
-      contains
-
-
-      SUBROUTINE RD_TABR8 ( DEFFDS      , & 
-                           NO_DSTO_MAX , NO_DSTO     , & 
-                           R8_DID      , R8_SID      , & 
-                           R8_SCAL     , LUNREP      , & 
-                           IERROR      )
+   subroutine RD_TABR8(DEFFDS, &
+                       NO_DSTO_MAX, NO_DSTO, &
+                       R8_DID, R8_SID, &
+                       R8_SCAL, LUNREP, &
+                       IERROR)
 !
 !     Deltares
 !
@@ -62,17 +60,17 @@
 !     IMPLICIT NONE for extra compiler checks
 !     SAVE to keep the group definition intact
 !
-      IMPLICIT NONE
-      SAVE
+      implicit none
+      save
 !
 !     declaration of arguments
 !
-      INTEGER(kind=int_wp) ::NO_DSTO_MAX , NO_DSTO     , & 
-                   LUNREP      , IERROR
-      INTEGER(kind=int_wp) ::DEFFDS
-      character(len=10)  R8_DID      (NO_DSTO_MAX)
-      character(len=10)  R8_SID      (NO_DSTO_MAX)
-      REAL(kind=real_wp) ::R8_SCAL(NO_DSTO_MAX)
+      integer(kind=int_wp) :: NO_DSTO_MAX, NO_DSTO, &
+                              LUNREP, IERROR
+      integer(kind=int_wp) :: DEFFDS
+      character(len=10) R8_DID(NO_DSTO_MAX)
+      character(len=10) R8_SID(NO_DSTO_MAX)
+      real(kind=real_wp) :: R8_SCAL(NO_DSTO_MAX)
 !
 !     Local variables
 !
@@ -83,34 +81,34 @@
 !     ELMDMS  INTEGER  6,NELEMS   LOCAL   dimension of elements
 !     NBYTSG  INTEGER  NELEMS     LOCAL   length of elements (bytes)
 !
-      INTEGER(kind=int_wp) ::NELEMS
-      PARAMETER   ( NELEMS = 4 )
+      integer(kind=int_wp) :: NELEMS
+      parameter(NELEMS=4)
 !
-      INTEGER(kind=int_wp) ::I               , IELM          , & 
-                   BUFLEN
-      INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
-                   UINDEX(3)
-      character(len=16)  GRPNAM
-      character(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      character(len=64)  ELMDES(NELEMS)
+      integer(kind=int_wp) :: I, IELM, &
+                              BUFLEN
+      integer(kind=int_wp) :: ELMDMS(2, NELEMS), NBYTSG(NELEMS), &
+                              UINDEX(3)
+      character(len=16) GRPNAM
+      character(len=16) ELMNMS(NELEMS), ELMTPS(NELEMS)
+      character(len=64) ELMDES(NELEMS)
 !
 !     External NEFIS Functions
 !
-      INTEGER(kind=int_wp) ::GETELS & 
-              ,GETELT
-      EXTERNAL  GETELS & 
-              ,GETELT
+      integer(kind=int_wp) :: GETELS &
+                              , GETELT
+      external GETELS &
+         , GETELT
 !
 !     element names
 !
-      DATA  GRPNAM  /'TABLE_R8'/
-      DATA & 
-      (ELMNMS(I),ELMTPS(I),NBYTSG(I),ELMDMS(1,I),ELMDMS(2,I),ELMDES(I), & 
-       I = 1 , NELEMS) & 
-     /'NO_DSTO'  ,'INTEGER'  , 4,1,1,'number of rows in table R8'     , & 
-      'R8_DID'   ,'CHARACTER',10,1,0,'dispersion identification'      , & 
-      'R8_SID'   ,'CHARACTER',10,1,0,'substance identification'       , & 
-      'R8_SCAL'  ,'REAL'     , 4,1,0,'scale factor'                   /
+      data GRPNAM/'TABLE_R8'/
+      data &
+         (ELMNMS(I), ELMTPS(I), NBYTSG(I), ELMDMS(1, I), ELMDMS(2, I), ELMDES(I), &
+          I=1, NELEMS) &
+         /'NO_DSTO', 'INTEGER', 4, 1, 1, 'number of rows in table R8', &
+         'R8_DID', 'CHARACTER', 10, 1, 0, 'dispersion identification', &
+         'R8_SID', 'CHARACTER', 10, 1, 0, 'substance identification', &
+         'R8_SCAL', 'REAL', 4, 1, 0, 'scale factor'/
 !
 !     Read group
 !
@@ -118,65 +116,65 @@
       UINDEX(1) = 1
       UINDEX(2) = 1
       UINDEX(3) = 1
-      BUFLEN = NBYTSG(1)*ELMDMS(2,1)
-      IERROR = GETELT (DEFFDS , & 
-                      GRPNAM , ELMNMS(1), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , NO_DSTO  )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(1)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
-      IF ( NO_DSTO > NO_DSTO_MAX ) THEN
-         WRITE(LUNREP,*) 'ERROR reading group',GRPNAM
-         WRITE(LUNREP,*) 'Actual number of rows in table R8:',NO_DSTO
-         WRITE(LUNREP,*) 'greater than maximum:',NO_DSTO_MAX
+      BUFLEN = NBYTSG(1) * ELMDMS(2, 1)
+      IERROR = GETELT(DEFFDS, &
+                      GRPNAM, ELMNMS(1), &
+                      UINDEX, 1, &
+                      BUFLEN, NO_DSTO)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(1)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
+      if (NO_DSTO > NO_DSTO_MAX) then
+         write (LUNREP, *) 'ERROR reading group', GRPNAM
+         write (LUNREP, *) 'Actual number of rows in table R8:', NO_DSTO
+         write (LUNREP, *) 'greater than maximum:', NO_DSTO_MAX
          IERROR = 1
-         GOTO 900
-      ENDIF
+         goto 900
+      end if
 !
 !     Set dimension of table
 !
-      DO IELM = 2 , NELEMS
-         ELMDMS(2,IELM) = NO_DSTO
-      ENDDO
-      BUFLEN = NBYTSG(2)*ELMDMS(2,2)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(2), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , R8_DID   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(2)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      do IELM = 2, NELEMS
+         ELMDMS(2, IELM) = NO_DSTO
+      end do
+      BUFLEN = NBYTSG(2) * ELMDMS(2, 2)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(2), &
+                      UINDEX, 1, &
+                      BUFLEN, R8_DID)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(2)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 
-      BUFLEN = NBYTSG(3)*ELMDMS(2,3)
-      IERROR = GETELS (DEFFDS , & 
-                      GRPNAM , ELMNMS(3), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , R8_SID   )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(3)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(3) * ELMDMS(2, 3)
+      IERROR = GETELS(DEFFDS, &
+                      GRPNAM, ELMNMS(3), &
+                      UINDEX, 1, &
+                      BUFLEN, R8_SID)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(3)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 
-      BUFLEN = NBYTSG(4)*ELMDMS(2,4)
-      IERROR = GETELT (DEFFDS , & 
-                      GRPNAM , ELMNMS(4), & 
-                      UINDEX , 1        , & 
-                      BUFLEN , R8_SCAL  )
-      IF ( IERROR /= 0 ) THEN
-         WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(4)
-         WRITE(LUNREP,*) 'ERROR number:',IERROR
-         GOTO 900
-      ENDIF
+      BUFLEN = NBYTSG(4) * ELMDMS(2, 4)
+      IERROR = GETELT(DEFFDS, &
+                      GRPNAM, ELMNMS(4), &
+                      UINDEX, 1, &
+                      BUFLEN, R8_SCAL)
+      if (IERROR /= 0) then
+         write (LUNREP, *) 'ERROR reading element', ELMNMS(4)
+         write (LUNREP, *) 'ERROR number:', IERROR
+         goto 900
+      end if
 !
-  900 CONTINUE
-      RETURN
+900   continue
+      return
 !
-      END
+   end
 
-      end module m_rd_tabr8
+end module m_rd_tabr8

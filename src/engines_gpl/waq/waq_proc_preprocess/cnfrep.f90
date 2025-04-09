@@ -21,95 +21,94 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_cnfrep
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine cnfrep(noalg, noprot, namprot, nampact, nopralg, &
+                     nampralg)
 
-    subroutine cnfrep(noalg, noprot, namprot, nampact, nopralg, &
-            nampralg)
+      use m_string_manipulation, only: upper_case
+      use m_string_manipulation, only: get_trimmed_length
+      use m_process_lib_data
+      use timers !   performance timers
 
-        use m_string_manipulation, only : upper_case
-        use m_string_manipulation, only : get_trimmed_length
-        use m_process_lib_data
-        use timers       !   performance timers
+      integer(kind=int_wp) :: noalg, noprot, nopralg
+      character(len=*) namprot(noprot), nampact(noprot), &
+         nampralg(nopralg)
 
-        integer(kind = int_wp) :: noalg, noprot, nopralg
-        character(len=*)  namprot(noprot), nampact(noprot), &
-                nampralg(nopralg)
+      character(len=10) namep1
+      character(len=10) namep2
+      character(len=10) namep3
+      logical found
+      integer(kind=int_wp) :: ithndl = 0
+      integer(kind=int_wp) :: iproc, ipro, iproc2, ic, iprcnf, iprcnf2, ialg, ilen
 
-        character(len=10)   namep1
-        character(len=10)   namep2
-        character(len=10)   namep3
-        logical        found
-        integer(kind = int_wp) :: ithndl = 0
-        integer(kind = int_wp) :: iproc, ipro, iproc2, ic, iprcnf, iprcnf2, ialg, ilen
+      if (timon) call timstrt("cnfrep", ithndl)
 
-        if (timon) call timstrt("cnfrep", ithndl)
+      ! copy the license from the proto process to the process
 
-        ! copy the license from the proto process to the process
+      do iproc = 1, num_processes_activated
+         found = .false.
+         call upper_case(procid(iproc), namep1, 10)
 
-        do iproc = 1, num_processes_activated
-            found = .false.
-            call upper_case(procid(iproc), namep1, 10)
+         ! the one to one processes
 
-            ! the one to one processes
+         do ipro = 1, noprot
+            if (namep1 == nampact(ipro)) then
+               found = .true.
+               do iproc2 = 1, num_processes_activated
+                  call upper_case(procid(iproc2), namep2, 10)
+                  if (namep2 == namprot(ipro)) then
+                     do ic = 1, nconf
+                        iprcnf = (iproc - 1) * nconf + ic
+                        iprcnf2 = (iproc2 - 1) * nconf + ic
+                        if (icnpro(iprcnf2) > 0) then
+                           icnpro(iprcnf) = icnpro(iprcnf2)
+                        end if
+                     end do
+                     exit
+                  end if
+               end do
+               exit
+            end if
+         end do
 
-            do ipro = 1, noprot
-                if (namep1 == nampact(ipro)) then
-                    found = .true.
-                    do iproc2 = 1, num_processes_activated
+         ! the processes that need to be extended
+
+         if (.not. found) then
+            do ipro = 1, nopralg
+               do ialg = 1, noalg
+                  namep3 = nampralg(ipro)
+                  call get_trimmed_length(namep3, ilen)
+                  write (namep3(ilen + 1:), '(i2.2)') ialg
+                  if (namep1 == namep3) then
+                     do iproc2 = 1, num_processes_activated
                         call upper_case(procid(iproc2), namep2, 10)
                         if (namep2 == namprot(ipro)) then
-                            do ic = 1, nconf
-                                iprcnf = (iproc - 1) * nconf + ic
-                                iprcnf2 = (iproc2 - 1) * nconf + ic
-                                if (icnpro(iprcnf2)>0) then
-                                    icnpro(iprcnf) = icnpro(iprcnf2)
-                                endif
-                            enddo
-                            exit
-                        endif
-                    enddo
-                    exit
-                endif
-            enddo
+                           do ic = 1, nconf
+                              iprcnf = (iproc - 1) * nconf + ic
+                              iprcnf2 = (iproc2 - 1) * nconf + ic
+                              if (icnpro(iprcnf2) > 0) then
+                                 icnpro(iprcnf) = icnpro(iprcnf2)
+                              end if
+                           end do
+                           exit
+                        end if
+                     end do
+                     found = .true.
+                     exit
+                  end if
+               end do
+               if (found) exit
+            end do
+         end if
+      end do
 
-            ! the processes that need to be extended
-
-            if (.not. found) then
-                do ipro = 1, nopralg
-                    do ialg = 1, noalg
-                        namep3 = nampralg(ipro)
-                        call get_trimmed_length(namep3, ilen)
-                        write(namep3(ilen + 1:), '(i2.2)') ialg
-                        if (namep1 == namep3) then
-                            do iproc2 = 1, num_processes_activated
-                                call upper_case(procid(iproc2), namep2, 10)
-                                if (namep2 == namprot(ipro)) then
-                                    do ic = 1, nconf
-                                        iprcnf = (iproc - 1) * nconf + ic
-                                        iprcnf2 = (iproc2 - 1) * nconf + ic
-                                        if (icnpro(iprcnf2)>0) then
-                                            icnpro(iprcnf) = icnpro(iprcnf2)
-                                        endif
-                                    enddo
-                                    exit
-                                endif
-                            enddo
-                            found = .true.
-                            exit
-                        endif
-                    enddo
-                    if (found) exit
-                enddo
-            endif
-        enddo
-
-        if (timon) call timstop(ithndl)
-        return
-    end
+      if (timon) call timstop(ithndl)
+      return
+   end
 
 end module m_cnfrep

@@ -21,79 +21,78 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dsurf
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine dsurf(process_space_real, fl, ipoint, increm, num_cells, &
+                    noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                    num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_logger_helper
 
-    subroutine dsurf  (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_logger_helper
+      !>\file
+      !>       Dynamic calculation of the horizontal surface area from volume and depth
 
-        !>\file
-        !>       Dynamic calculation of the horizontal surface area from volume and depth
+      !
+      !     Description of the module :
+      !
+      !        General water quality module for DELWAQ:
+      !
+      ! Name    T   L I/O   Description                                    Units
+      ! ----    --- -  -    -------------------                             ----
+      ! DEPTH   R*4 1 O depth of the water column                            [m]
+      ! SURF    R*4 1 I surface area of segment                             [m2]
+      ! VOLUME  R*4 1 I volume of segment                                   [m3]
 
-        !
-        !     Description of the module :
-        !
-        !        General water quality module for DELWAQ:
-        !
-        ! Name    T   L I/O   Description                                    Units
-        ! ----    --- -  -    -------------------                             ----
-        ! DEPTH   R*4 1 O depth of the water column                            [m]
-        ! SURF    R*4 1 I surface area of segment                             [m2]
-        ! VOLUME  R*4 1 I volume of segment                                   [m3]
+      !     Logical Units : -
 
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
+      !     ------   -----  ------------
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
+      implicit real(A - H, J - Z)
+      implicit integer(I)
 
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        !
-        IFLUX = 0
-        DO ISEG = 1, num_cells
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                !
-
-                VOLUME = process_space_real(IP1)
-                DEPTH = process_space_real(IP2)
-
-                IF (DEPTH < 1E-30) CALL write_error_message ('DEPTH in DSURF zero')
-
-                !***********************************************************************
-                !**** Calculate SURF
-                !***********************************************************************
-                !
-                SURF = VOLUME / DEPTH
-                !
-                process_space_real(IP3) = SURF
-                !
-            ENDIF
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      !
+      IFLUX = 0
+      do ISEG = 1, num_cells
+         if (btest(IKNMRK(ISEG), 0)) then
             !
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + INCREM (1)
-            IP2 = IP2 + INCREM (2)
-            IP3 = IP3 + INCREM (3)
+
+            VOLUME = process_space_real(IP1)
+            DEPTH = process_space_real(IP2)
+
+            if (DEPTH < 1e-30) call write_error_message('DEPTH in DSURF zero')
+
+            !***********************************************************************
+            !**** Calculate SURF
+            !***********************************************************************
             !
-        end do
-        !
-        RETURN
-        !
-    END
+            SURF = VOLUME / DEPTH
+            !
+            process_space_real(IP3) = SURF
+            !
+         end if
+         !
+         IFLUX = IFLUX + NOFLUX
+         IP1 = IP1 + INCREM(1)
+         IP2 = IP2 + INCREM(2)
+         IP3 = IP3 + INCREM(3)
+         !
+      end do
+      !
+      return
+      !
+   end
 
 end module m_dsurf

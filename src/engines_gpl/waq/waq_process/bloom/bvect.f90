@@ -21,63 +21,62 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_bvect
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   !  *********************************************************************
+   !  *  SUBROUTINE TO SET THE MORTALITY CONSTRAINTS INTO THE B-VECTOR    *
+   !  *********************************************************************
 
-    !  *********************************************************************
-    !  *  SUBROUTINE TO SET THE MORTALITY CONSTRAINTS INTO THE B-VECTOR    *
-    !  *********************************************************************
+   subroutine bvect(x, xdef)
 
-    subroutine bvect(x, xdef)
+      use bloom_data_dim
+      use bloom_data_matrix
+      use bloom_data_phyt
 
-        use bloom_data_dim
-        use bloom_data_matrix
-        use bloom_data_phyt
+      implicit none
 
-        implicit none
+      real(kind=dp) :: x(*)
+      real(kind=dp) :: b2(ms)
+      real(kind=dp) :: xdef(*)
+      real(kind=dp) :: sumsp
+      real(kind=dp) :: dmax1
+      integer(kind=int_wp) :: i, i1, k, k1, l1, l2
 
-        real(kind = dp) :: x(*)
-        real(kind = dp) :: b2(ms)
-        real(kind = dp) :: xdef(*)
-        real(kind = dp) :: sumsp
-        real(kind = dp) :: dmax1
-        integer(kind = int_wp) :: i, i1, k, k1, l1, l2
+      ! To tell Bloom how much biomass of the living phytoplankton
+      ! species is left at the end of the time-step, the 'minimum
+      ! biomass' of each species is set in the B-vector. This value is used
+      ! as the mortality constraint (the minimum biomass to be returned
+      ! by simplex).
+      ! The new, minimum biomass levels are also stored in the original
+      ! XDEF-vector. This is to enable the program to deal with infeasible
+      ! solutions for example due to light limitation.
 
-        ! To tell Bloom how much biomass of the living phytoplankton
-        ! species is left at the end of the time-step, the 'minimum
-        ! biomass' of each species is set in the B-vector. This value is used
-        ! as the mortality constraint (the minimum biomass to be returned
-        ! by simplex).
-        ! The new, minimum biomass levels are also stored in the original
-        ! XDEF-vector. This is to enable the program to deal with infeasible
-        ! solutions for example due to light limitation.
-
-        i1 = 0
-        k1 = nurows
-        do i = 1, nuecog
-            sumsp = 0.0
-            l1 = it2(i, 1)
-            l2 = it2(i, 2)
-            do k = l1, l2
-                i1 = i1 + 1
-                k1 = k1 + 1
-                sumsp = sumsp + x(i1)
-                xdef(k1) = x(i1)
-            end do
-            b2(i) = dmax1(sumsp, 0.0d0)
-        end do
-
-        i1 = nuexro + nuecog
-        do i = 1, nuecog
+      i1 = 0
+      k1 = nurows
+      do i = 1, nuecog
+         sumsp = 0.0
+         l1 = it2(i, 1)
+         l2 = it2(i, 2)
+         do k = l1, l2
             i1 = i1 + 1
-            b(i1) = b2(i)
-        end do
+            k1 = k1 + 1
+            sumsp = sumsp + x(i1)
+            xdef(k1) = x(i1)
+         end do
+         b2(i) = dmax1(sumsp, 0.0d0)
+      end do
 
-        return
-    end
+      i1 = nuexro + nuecog
+      do i = 1, nuecog
+         i1 = i1 + 1
+         b(i1) = b2(i)
+      end do
+
+      return
+   end
 
 end module m_bvect

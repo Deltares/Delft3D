@@ -21,118 +21,117 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_phcomp
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine phcomp(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !>\file
+      !>       Composition of phytoplankton by summing algae fractions - Dynamo - GEM
 
-    subroutine phcomp (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        !>\file
-        !>       Composition of phytoplankton by summing algae fractions - Dynamo - GEM
+      !
+      !     Description of the module :
+      !
+      !     Logical Units : -
 
-        !
-        !     Description of the module :
-        !
-        !     Logical Units : -
+      !     Modules called : -
 
-        !     Modules called : -
+      !     Name     Type   Library
 
-        !     Name     Type   Library
+      !     ------   -----  ------------
 
-        !     ------   -----  ------------
+      implicit real(A - H, J - Z)
 
-        IMPLICIT REAL (A-H, J-Z)
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                              IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      integer(kind=int_wp) :: ITEL, ISEG
+      integer(kind=int_wp) :: NTYPE, ITYPE
+      real(kind=real_wp) :: PHYT, ALGN, ALGP, ALGSI, ALGDM, CHLFA, BIOMAS, &
+                            NCRAT, PCRAT, SICRAT, DMCF, CATOCL
 
-        INTEGER(kind = int_wp) :: ITEL, ISEG
-        INTEGER(kind = int_wp) :: NTYPE, ITYPE
-        REAL(kind = real_wp) :: PHYT, ALGN, ALGP, ALGSI, ALGDM, CHLFA, BIOMAS, &
-                NCRAT, PCRAT, SICRAT, DMCF, CATOCL
+      NTYPE = process_space_real(IPOINT(1))
+      !
+      do ISEG = 1, num_cells
 
-        NTYPE = process_space_real(IPOINT(1))
-        !
-        DO ISEG = 1, num_cells
+         if (btest(IKNMRK(ISEG), 0)) then
 
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+            PHYT = 0.0
+            ALGN = 0.0
+            ALGP = 0.0
+            ALGSI = 0.0
+            ALGDM = 0.0
+            CHLFA = 0.0
 
-                PHYT = 0.0
-                ALGN = 0.0
-                ALGP = 0.0
-                ALGSI = 0.0
-                ALGDM = 0.0
-                CHLFA = 0.0
+            do ITYPE = 1, NTYPE
 
-                DO ITYPE = 1, NTYPE
+               ITEL = 1 + ITYPE
+               BIOMAS = process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+               ITEL = 1 + ITYPE + NTYPE
+               NCRAT = process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+               ITEL = 1 + ITYPE + NTYPE * 2
+               PCRAT = process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+               ITEL = 1 + ITYPE + NTYPE * 3
+               SICRAT = process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+               ITEL = 1 + ITYPE + NTYPE * 4
+               DMCF = process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+               ITEL = 1 + ITYPE + NTYPE * 5
+               CATOCL = process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
 
-                    ITEL = 1 + ITYPE
-                    BIOMAS = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
-                    ITEL = 1 + ITYPE + NTYPE
-                    NCRAT = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
-                    ITEL = 1 + ITYPE + NTYPE * 2
-                    PCRAT = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
-                    ITEL = 1 + ITYPE + NTYPE * 3
-                    SICRAT = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
-                    ITEL = 1 + ITYPE + NTYPE * 4
-                    DMCF = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
-                    ITEL = 1 + ITYPE + NTYPE * 5
-                    CATOCL = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+               !***********************************************************************
+               !**** Calculations connected to the status of the algae
+               !***********************************************************************
 
-                    !***********************************************************************
-                    !**** Calculations connected to the status of the algae
-                    !***********************************************************************
+               !             Total Carbon in algae
 
-                    !             Total Carbon in algae
+               PHYT = PHYT + BIOMAS
 
-                    PHYT = PHYT + BIOMAS
+               !             Total nitrogen
 
-                    !             Total nitrogen
+               ALGN = ALGN + BIOMAS * NCRAT
 
-                    ALGN = ALGN + BIOMAS * NCRAT
+               !             Total phosphorus
 
-                    !             Total phosphorus
+               ALGP = ALGP + BIOMAS * PCRAT
 
-                    ALGP = ALGP + BIOMAS * PCRAT
+               !             Total silica
 
-                    !             Total silica
+               ALGSI = ALGSI + BIOMAS * SICRAT
 
-                    ALGSI = ALGSI + BIOMAS * SICRAT
+               !             Total dry matter
 
-                    !             Total dry matter
+               ALGDM = ALGDM + BIOMAS * DMCF
 
-                    ALGDM = ALGDM + BIOMAS * DMCF
+               !             Chlorophyll
 
-                    !             Chlorophyll
+               CHLFA = CHLFA + BIOMAS * CATOCL
 
-                    CHLFA = CHLFA + BIOMAS * CATOCL
+            end do
 
-                end do
+            ITEL = 1 + 6 * NTYPE + 1
+            process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = PHYT
+            ITEL = 1 + 6 * NTYPE + 2
+            process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGN
+            ITEL = 1 + 6 * NTYPE + 3
+            process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGP
+            ITEL = 1 + 6 * NTYPE + 4
+            process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGSI
+            ITEL = 1 + 6 * NTYPE + 5
+            process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGDM
+            ITEL = 1 + 6 * NTYPE + 6
+            process_space_real(IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = CHLFA
 
-                ITEL = 1 + 6 * NTYPE + 1
-                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = PHYT
-                ITEL = 1 + 6 * NTYPE + 2
-                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGN
-                ITEL = 1 + 6 * NTYPE + 3
-                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGP
-                ITEL = 1 + 6 * NTYPE + 4
-                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGSI
-                ITEL = 1 + 6 * NTYPE + 5
-                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGDM
-                ITEL = 1 + 6 * NTYPE + 6
-                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = CHLFA
-
-            ENDIF
-            !
-        end do
-        !
-        RETURN
-        !
-    END
+         end if
+         !
+      end do
+      !
+      return
+      !
+   end
 
 end module m_phcomp

@@ -21,53 +21,52 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_wq_processes_derivatives
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine wq_processes_derivatives(deriv, num_substances_total, noflux, stochi, nflux1, &
+                                       nfluxp, flux, num_cells, volume, ndt)
+      !
+      use timers
 
-    subroutine wq_processes_derivatives (deriv, num_substances_total, noflux, stochi, nflux1, &
-            nfluxp, flux, num_cells, volume, ndt)
-        !
-        use timers
+      implicit none
 
-        implicit none
+      integer(kind=int_wp) :: num_substances_total, noflux, nflux1, nfluxp, num_cells
+      integer isys, iflux, iseg, ndt
+      real(kind=real_wp) :: stochi(num_substances_total, noflux), flux(noflux, num_cells)
+      real(8) deriv(num_cells, num_substances_total), volume(num_cells)
+      real(kind=dp) :: st, fact
 
-        integer(kind = int_wp) :: num_substances_total, noflux, nflux1, nfluxp, num_cells
-        integer isys, iflux, iseg, ndt
-        real(kind = real_wp) :: stochi(num_substances_total, noflux), flux(noflux, num_cells)
-        real(8) deriv(num_cells, num_substances_total), volume(num_cells)
-        real(kind = dp) :: st, fact
-
-        integer(kind = int_wp), save :: ithndl = 0
-        if (timon) call timstrt("wq_processes_derivatives", ithndl)
-        !
-        !     Construct the DERIV's
-        !
-        do isys = 1, num_substances_total
-            do iflux = nflux1, nflux1 + nfluxp - 1
-                st = stochi(isys, iflux)
-                if (st /= 0.0) then
-                    fact = real(ndt) * st
-                    if (abs(fact - 1.0) < 1.e-10) then
-                        do iseg = 1, num_cells
-                            deriv(iseg, isys) = deriv(iseg, isys) + flux(iflux, iseg)
-                        enddo
-                    else
-                        do iseg = 1, num_cells
-                            deriv(iseg, isys) = deriv(iseg, isys) + flux(iflux, iseg) * fact
-                        enddo
-                    endif
-                endif
-            enddo
-        enddo
-        !
-        if (timon) call timstop(ithndl)
-        !
-        return
-        !
-    end
+      integer(kind=int_wp), save :: ithndl = 0
+      if (timon) call timstrt("wq_processes_derivatives", ithndl)
+      !
+      !     Construct the DERIV's
+      !
+      do isys = 1, num_substances_total
+         do iflux = nflux1, nflux1 + nfluxp - 1
+            st = stochi(isys, iflux)
+            if (st /= 0.0) then
+               fact = real(ndt) * st
+               if (abs(fact - 1.0) < 1.e-10) then
+                  do iseg = 1, num_cells
+                     deriv(iseg, isys) = deriv(iseg, isys) + flux(iflux, iseg)
+                  end do
+               else
+                  do iseg = 1, num_cells
+                     deriv(iseg, isys) = deriv(iseg, isys) + flux(iflux, iseg) * fact
+                  end do
+               end if
+            end if
+         end do
+      end do
+      !
+      if (timon) call timstop(ithndl)
+      !
+      return
+      !
+   end
 
 end module m_wq_processes_derivatives

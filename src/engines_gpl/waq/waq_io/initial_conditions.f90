@@ -21,157 +21,155 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module initial_conditions
-    use m_waq_precision
-    use m_error_status
+   use m_waq_precision
+   use m_error_status
 
-    implicit none
+   implicit none
 
-    private
-    public :: read_initial_conditions
+   private
+   public :: read_initial_conditions
 
 contains
 
-
-    subroutine read_initial_conditions(file_unit_list, file_name_list, filtype, inpfil, num_substances_total, &
-            syname, iwidth, output_verbose_level, gridps, num_cells, &
-            conc, ierr, status)
+   subroutine read_initial_conditions(file_unit_list, file_name_list, filtype, inpfil, num_substances_total, &
+                                      syname, iwidth, output_verbose_level, gridps, num_cells, &
+                                      conc, ierr, status)
 
         !! read block 8 of input, initial condtions keyword type of input
 
-        use m_read_block
-        use error_handling, only : check_error
-        use m_logger_helper, only : stop_with_error
-        use m_grid_utils_external          ! for the storage of contraction grids
-        use m_waq_data_structure  ! for definition and storage of data
-        use rd_token
-        use timers       !   performance timers
+      use m_read_block
+      use error_handling, only: check_error
+      use m_logger_helper, only: stop_with_error
+      use m_grid_utils_external ! for the storage of contraction grids
+      use m_waq_data_structure ! for definition and storage of data
+      use rd_token
+      use timers !   performance timers
 
-        integer(kind = int_wp), intent(inout) :: file_unit_list(*)        ! unit numbers used
-        character(len = *), intent(inout) :: file_name_list(*)     ! filenames
-        integer(kind = int_wp), intent(inout) :: filtype(*)    !< type of binary file
-        type(t_input_file), intent(inout) :: inpfil       ! input file structure with include stack and flags
-        integer(kind = int_wp), intent(in) :: num_substances_total         ! nr of substances
-        character(len = *), intent(in) :: syname(*)    ! substance names
-        integer(kind = int_wp), intent(in) :: iwidth        ! width of output
-        integer(kind = int_wp), intent(in) :: output_verbose_level        ! level of reporting to ascii output file
-        type(gridpointercoll), intent(in) :: gridps       ! collection off all grid definitions
-        integer(kind = int_wp), intent(in) :: num_cells         ! nr of segments
-        real(kind = real_wp), intent(inout) :: conc(num_substances_total, num_cells)   ! initial conditions
-        integer(kind = int_wp), intent(inout) :: ierr          !< cummulative error count
+      integer(kind=int_wp), intent(inout) :: file_unit_list(*) ! unit numbers used
+      character(len=*), intent(inout) :: file_name_list(*) ! filenames
+      integer(kind=int_wp), intent(inout) :: filtype(*) !< type of binary file
+      type(t_input_file), intent(inout) :: inpfil ! input file structure with include stack and flags
+      integer(kind=int_wp), intent(in) :: num_substances_total ! nr of substances
+      character(len=*), intent(in) :: syname(*) ! substance names
+      integer(kind=int_wp), intent(in) :: iwidth ! width of output
+      integer(kind=int_wp), intent(in) :: output_verbose_level ! level of reporting to ascii output file
+      type(gridpointercoll), intent(in) :: gridps ! collection off all grid definitions
+      integer(kind=int_wp), intent(in) :: num_cells ! nr of segments
+      real(kind=real_wp), intent(inout) :: conc(num_substances_total, num_cells) ! initial conditions
+      integer(kind=int_wp), intent(inout) :: ierr !< cummulative error count
 
-        type(error_status), intent(inout) :: status !< current error status
+      type(error_status), intent(inout) :: status !< current error status
 
-        !     local declarations
+      !     local declarations
 
-        type(t_data_column) :: initials             ! all the initial data from file
-        type(t_data_block) :: dlwqdata             ! one data block
-        type(t_waq_item) :: substances           ! delwaq substances list
-        type(t_waq_item) :: constants            ! delwaq constants list
-        type(t_waq_item) :: parameters           ! delwaq parameters list
-        type(t_waq_item) :: functions            ! delwaq functions list
-        type(t_waq_item) :: segfuncs             ! delwaq segment-functions list
-        type(t_waq_item) :: segments             ! delwaq segment name list
-        real(kind = real_wp), allocatable :: fscale(:)             ! scale factors
-        character(len = 255) :: ctoken               ! token from input
-        integer(kind = int_wp) :: idata                 ! index in collection
-        integer(kind = int_wp) :: itype                 ! type of the token
-        integer(kind = int_wp) :: ierr2                 ! error from gettoken and others
-        integer(kind = int_wp) :: ierr3                 ! error from dlwqdataevaluate
-        integer(kind = int_wp) :: itime                 ! dummy time
-        integer(kind = int_wp) :: i                     ! loop counter
-        integer(kind = int_wp) :: idummy                ! dummy
-        !integer(kind = int_wp) :: file_unit
-        real(kind = real_wp) :: rdummy                ! dummy
-        integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("read_initial_conditions", ithndl)
+      type(t_data_column) :: initials ! all the initial data from file
+      type(t_data_block) :: dlwqdata ! one data block
+      type(t_waq_item) :: substances ! delwaq substances list
+      type(t_waq_item) :: constants ! delwaq constants list
+      type(t_waq_item) :: parameters ! delwaq parameters list
+      type(t_waq_item) :: functions ! delwaq functions list
+      type(t_waq_item) :: segfuncs ! delwaq segment-functions list
+      type(t_waq_item) :: segments ! delwaq segment name list
+      real(kind=real_wp), allocatable :: fscale(:) ! scale factors
+      character(len=255) :: ctoken ! token from input
+      integer(kind=int_wp) :: idata ! index in collection
+      integer(kind=int_wp) :: itype ! type of the token
+      integer(kind=int_wp) :: ierr2 ! error from gettoken and others
+      integer(kind=int_wp) :: ierr3 ! error from dlwqdataevaluate
+      integer(kind=int_wp) :: itime ! dummy time
+      integer(kind=int_wp) :: i ! loop counter
+      integer(kind=int_wp) :: idummy ! dummy
+      !integer(kind = int_wp) :: file_unit
+      real(kind=real_wp) :: rdummy ! dummy
+      integer(kind=int_wp) :: ithndl = 0
+      if (timon) call timstrt("read_initial_conditions", ithndl)
 
+      ! read initial conditions
 
-        ! read initial conditions
+      initials%maxsize = 0
+      initials%current_size = 0
+      ierr2 = substances%initialize()
+      ierr2 = substances%resize(num_substances_total)
+      substances%no_item = num_substances_total
+      substances%name(1:num_substances_total) = syname(1:num_substances_total)
+      ierr2 = constants%initialize()
+      ierr2 = parameters%initialize()
+      ierr2 = functions%initialize()
+      ierr2 = segfuncs%initialize()
+      ierr2 = segments%initialize()
+      ierr2 = segments%resize(num_cells)
+      segments%no_item = num_cells
+      do i = 1, num_cells
+         write (segments%name(i), '(''segment '',i8)') i
+      end do
 
-        initials%maxsize = 0
-        initials%current_size = 0
-        ierr2 = substances%initialize()
-        ierr2 = substances%resize(num_substances_total)
-        substances%no_item = num_substances_total
-        substances%name(1:num_substances_total) = syname(1:num_substances_total)
-        ierr2 = constants%initialize()
-        ierr2 = parameters%initialize()
-        ierr2 = functions%initialize()
-        ierr2 = segfuncs%initialize()
-        ierr2 = segments%initialize()
-        ierr2 = segments%resize(num_cells)
-        segments%no_item = num_cells
-        do i = 1, num_cells
-            write (segments%name(i), '(''segment '',i8)') i
-        enddo
+      file_unit = file_unit_list(29)
+      ierr2 = 0
 
-        file_unit = file_unit_list(29)
-        ierr2 = 0
+      do
 
-        do
+         if (gettoken(ctoken, idummy, rdummy, itype, ierr2) /= 0) exit
 
-            if (gettoken(ctoken, idummy, rdummy, itype, ierr2) /= 0) exit
+         if (ctoken == 'INITIALS') then
 
-            if (ctoken == 'INITIALS') then
+            ! new file structure
+            push = .true.
+            call read_block(file_unit_list, file_name_list, filtype, inpfil, output_verbose_level, &
+                            iwidth, substances, constants, parameters, functions, &
+                            segfuncs, segments, gridps, dlwqdata, ierr2, &
+                            status)
+            if (ierr2 > 0) goto 30
+            if (dlwqdata%is_external) then
+               ierr = dlwqdata%read_external(file_unit)
+               if (ierr /= 0) goto 30
+               dlwqdata%is_external = .false.
+            end if
+            idata = initials%add(dlwqdata)
 
-                ! new file structure
-                push = .true.
-                call read_block(file_unit_list, file_name_list, filtype, inpfil, output_verbose_level, &
-                        iwidth, substances, constants, parameters, functions, &
-                        segfuncs, segments, gridps, dlwqdata, ierr2, &
-                        status)
-                if (ierr2 > 0) goto 30
-                if (dlwqdata%is_external) then
-                    ierr = dlwqdata%read_external(file_unit)
-                    if (ierr /= 0) goto 30
-                    dlwqdata%is_external = .false.
-                endif
-                idata = initials%add(dlwqdata)
-
+         else
+            ! unrecognised keyword
+            if (ctoken(1:1) /= '#') then
+               write (file_unit, 2050) trim(ctoken)
+               ierr = ierr + 1
+               goto 30
             else
-                ! unrecognised keyword
-                if (ctoken(1:1) /= '#') then
-                    write (file_unit, 2050) trim(ctoken)
-                    ierr = ierr + 1
-                    goto 30
-                else
-                    ierr2 = 2
-                    exit
-                endif
-            endif
+               ierr2 = 2
+               exit
+            end if
+         end if
 
-            ! jvb? first_token = .false.
+         ! jvb? first_token = .false.
 
-        enddo
+      end do
 
-        ! do not write but evaluate and pass back
-        conc = 0.0
-        itime = 0
+      ! do not write but evaluate and pass back
+      conc = 0.0
+      itime = 0
 
-        do idata = 1, initials%current_size
-            ierr3 = initials%data_block(idata)%evaluate(gridps, itime, num_substances_total, num_cells, conc)
-            if (ierr3 /= 0) then
-                write(file_unit, 2060)
-                call stop_with_error()
-            endif
-        enddo
+      do idata = 1, initials%current_size
+         ierr3 = initials%data_block(idata)%evaluate(gridps, itime, num_substances_total, num_cells, conc)
+         if (ierr3 /= 0) then
+            write (file_unit, 2060)
+            call stop_with_error()
+         end if
+      end do
 
-        !     initials opruimen ? or keep for e.g. reboot, or keep for delwaq1-delwaq2 merge
-        ierr3 = substances%cleanup()
-        ierr3 = parameters%cleanup()
-        ierr3 = functions%cleanup()
-        ierr3 = segfuncs%cleanup()
-        ierr3 = segments%cleanup()
+      !     initials opruimen ? or keep for e.g. reboot, or keep for delwaq1-delwaq2 merge
+      ierr3 = substances%cleanup()
+      ierr3 = parameters%cleanup()
+      ierr3 = functions%cleanup()
+      ierr3 = segfuncs%cleanup()
+      ierr3 = segments%cleanup()
 
-        30 continue
-        if (ierr2 > 0 .and. ierr2 /= 2) ierr = ierr + 1
-        if (ierr2 == 3) call stop_with_error()
-        call check_error(ctoken, iwidth, 8, ierr2, status)
-        if (timon) call timstop(ithndl)
-        return
+30    continue
+      if (ierr2 > 0 .and. ierr2 /= 2) ierr = ierr + 1
+      if (ierr2 == 3) call stop_with_error()
+      call check_error(ctoken, iwidth, 8, ierr2, status)
+      if (timon) call timstop(ithndl)
+      return
 
-        2050 format (/' ERROR, unrecognized token: ', A)
-        2060 format (/' ERROR: evaluating initial conditions')
-    end subroutine read_initial_conditions
+2050  format(/' ERROR, unrecognized token: ', A)
+2060  format(/' ERROR: evaluating initial conditions')
+   end subroutine read_initial_conditions
 
 end module initial_conditions

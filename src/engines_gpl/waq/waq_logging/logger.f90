@@ -23,32 +23,32 @@
 
 !> module containing the definition of the logger interface
 module m_logger
-    use m_waq_precision
-    use m_log_level
+   use m_waq_precision
+   use m_log_level
 
-    implicit none
+   implicit none
 
-    private
-    public :: logger
+   private
+   public :: logger
 
-    !> Interface for logging messages
-    type, abstract :: logger
-        integer(kind=int_wp) :: log_level = debug_level  !< level of logging (0 is no logging)
+   !> Interface for logging messages
+   type, abstract :: logger
+      integer(kind=int_wp) :: log_level = debug_level !< level of logging (0 is no logging)
 
-    contains
-        procedure(log_message_interface), deferred :: log_error, log_warning, log_info, log_debug
+   contains
+      procedure(log_message_interface), deferred :: log_error, log_warning, log_info, log_debug
 
-    end type logger
+   end type logger
 
-    abstract interface
+   abstract interface
 
-        !> signature/interface of the log_.. procedures
-        subroutine log_message_interface(this, message, add_new_line)
-            import logger
-            class(logger), intent(in) :: this         !< instance of this logger
-            character(len=*), intent(in) :: message   !< path of file to log towards
-            logical, optional, intent(in) :: add_new_line !< add a new line before message
-        end subroutine
-    end interface
+      !> signature/interface of the log_.. procedures
+      subroutine log_message_interface(this, message, add_new_line)
+         import logger
+         class(logger), intent(in) :: this !< instance of this logger
+         character(len=*), intent(in) :: message !< path of file to log towards
+         logical, optional, intent(in) :: add_new_line !< add a new line before message
+      end subroutine
+   end interface
 
 end module m_logger

@@ -21,25 +21,23 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_bloutc
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine bloutc(dump)
 
-    subroutine bloutc (dump)
+      use bloom_data_phyt
 
-        use bloom_data_phyt
+      implicit none
 
-        implicit none
+      integer(kind=int_wp) :: dump
 
-        integer(kind = int_wp) :: dump
+      idump = dump
 
-        idump = dump
-
-        return
-    end
-
+      return
+   end
 
 end module m_bloutc

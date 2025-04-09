@@ -21,43 +21,42 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module math_utils
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
-    private
-    public :: greatest_common_divisor
+   private
+   public :: greatest_common_divisor
 
 contains
 
+   subroutine greatest_common_divisor(num_elements, numbers, gcd_result)
 
-    subroutine greatest_common_divisor(num_elements, numbers, gcd_result)
+      ! calculates the greatest common divisor (gcd) (largest common denominator) for a set of numbers.
+      integer(kind=int_wp) :: num_elements, gcd_result, i, inner_index
+      integer(kind=int_wp) :: numbers(num_elements)
+      integer(kind=int_wp) :: min_number
+      logical :: divisor_found
 
-        ! calculates the greatest common divisor (gcd) (largest common denominator) for a set of numbers.
-        integer(kind = int_wp) :: num_elements, gcd_result, i, inner_index
-        integer(kind = int_wp) :: numbers(num_elements)
-        integer(kind = int_wp) :: min_number
-        logical :: divisor_found
+      min_number = numbers(1)
+      do i = 2, num_elements
+         min_number = min(numbers(i), min_number)
+      end do
 
-        min_number = numbers(1)
-        do i = 2, num_elements
-            min_number = MIN(numbers(i), min_number)
-        enddo
-
-        do i = min_number, 1, -1
-            divisor_found = .TRUE.
-            do inner_index = 1, num_elements
-                if (MOD(numbers(inner_index), i) /= 0) then
-                    divisor_found = .FALSE.
-                    exit
-                end if
-            end do
-            if (divisor_found) then
-                gcd_result = i
-                exit
+      do i = min_number, 1, -1
+         divisor_found = .true.
+         do inner_index = 1, num_elements
+            if (mod(numbers(inner_index), i) /= 0) then
+               divisor_found = .false.
+               exit
             end if
-        end do
+         end do
+         if (divisor_found) then
+            gcd_result = i
+            exit
+         end if
+      end do
 
-    end subroutine greatest_common_divisor
+   end subroutine greatest_common_divisor
 
 end module math_utils

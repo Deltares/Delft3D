@@ -21,48 +21,48 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq1
-    use m_waq_precision
-    use m_delwaq1_write_messages
-    use m_delwaq1_startup_screen
-    use m_delwaq1_read_input_data, only: delwaq1_read_input_data
-    use m_delwaq1_init
-    use m_delwaq1_close_lunfiles
-    use m_cli_utils, only: is_command_arg_specified, store_command_arguments
+   use m_waq_precision
+   use m_delwaq1_write_messages
+   use m_delwaq1_startup_screen
+   use m_delwaq1_read_input_data, only: delwaq1_read_input_data
+   use m_delwaq1_init
+   use m_delwaq1_close_lunfiles
+   use m_cli_utils, only: is_command_arg_specified, store_command_arguments
 
-    implicit none
+   implicit none
 
 contains
 
-    !> Reads the DELWAQ inputfiles and generates
+   !> Reads the DELWAQ inputfiles and generates
     !! a consistent set of binairy intermediate files.
-    function delwaq1(argv) result(success)
-        use m_delwaq1_allocate_workspace
+   function delwaq1(argv) result(success)
+      use m_delwaq1_allocate_workspace
 
-        character(len = *), intent(in), dimension(:) :: argv !< arguments as strings
-        logical :: success !< if the run was successful
+      character(len=*), intent(in), dimension(:) :: argv !< arguments as strings
+      logical :: success !< if the run was successful
 
-        type(error_status) :: status
+      type(error_status) :: status
 
-        call status%initialize(0, 0, 0)
+      call status%initialize(0, 0, 0)
 
-        call store_command_arguments(argv)
+      call store_command_arguments(argv)
 
-        ! create the lst, delwaq04.wrk, harmonic.wrk, pointers.wrk, and filenaam.wrk files
-        call delwaq1_init()
+      ! create the lst, delwaq04.wrk, harmonic.wrk, pointers.wrk, and filenaam.wrk files
+      call delwaq1_init()
 
-        call delwaq1_startup_screen()
-        call delwaq1_allocate_workspace(status)
+      call delwaq1_startup_screen()
+      call delwaq1_allocate_workspace(status)
 
-        if (status%ierr == 0) then
-            call delwaq1_read_input_data(status)
-            call delwaq1_write_messages(status)
-        end if
+      if (status%ierr == 0) then
+         call delwaq1_read_input_data(status)
+         call delwaq1_write_messages(status)
+      end if
 
-        call delwaq1_close_lunfiles()
+      call delwaq1_close_lunfiles()
 
-        success = status%ierr == 0
-        ! Delwaq1_lib should never use a stop, but must be modified to return an error code instead (0 = normal end)
+      success = status%ierr == 0
+      ! Delwaq1_lib should never use a stop, but must be modified to return an error code instead (0 = normal end)
 
-    end function delwaq1
+   end function delwaq1
 
 end module m_delwaq1

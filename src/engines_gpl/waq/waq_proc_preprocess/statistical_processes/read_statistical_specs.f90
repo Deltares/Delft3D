@@ -120,7 +120,7 @@ contains
             write (lunrep, *) 'ERROR : reading block 10'
          else
             write (lunrep, *) 'ERROR : reading statistical output file (stt-file)'
-         end if            
+         end if
          call status%increase_error_count()
          goto 500
       end if
@@ -264,7 +264,7 @@ contains
 
 300      continue
 
-         ! check if it a parameter with extra key word real-parameter, time-parameter, 
+         ! check if it a parameter with extra key word real-parameter, time-parameter,
          ! logical-parameter, ?integer-parameter
 
          ipar = index_in_array(knam, keypar)

@@ -21,137 +21,134 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_sednu2
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine sednu2(process_space_real, fl, ipoint, increm, num_cells, &
+                     noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_extract_waq_attribute
 
-    subroutine sednu2 (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_extract_waq_attribute
+      ! This version is used for developing the interaction of POX-2 with the sediment buffer model
+      !*******************************************************************************
+      !
+      implicit none
+      !
+      !     Type    Name         I/O Description
+      !
+      real(kind=real_wp) :: process_space_real(*) !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp) :: fl(*) ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp) :: ipoint(12) ! I  Array of pointers in process_space_real to get and store the data
+      integer(kind=int_wp) :: increm(12) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp) :: num_cells ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp) :: noflux ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp) :: iknmrk(*) ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp) :: num_exchanges_u_dir ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp) :: num_exchanges_v_dir ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+      integer(kind=int_wp) :: num_exchanges_z_dir ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp) :: num_exchanges_bottom_dir ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      !
+      !*******************************************************************************
+      !>\file
+      !>       Sedimentation of nutrients in the organic carbon matrix (GEM)
+      !
+      !     Description of the module :
+      !
+      ! Name    T   L I/O   Description                                    Units
+      !
+      !     Logical Units : -
 
+      integer(kind=int_wp) :: ipnt(12)
+      real(kind=real_wp) :: SFL !   R*4 1 I  sedimention flux organic                      [gX/m2/d]
+      real(kind=real_wp) :: sfl2
+      real(kind=real_wp) :: CN !   R*4 1 I  CN ratio substance                             [gC/gN]
+      real(kind=real_wp) :: CP !   R*4 1 I  CP ratio substance                             [gC/gP]
+      real(kind=real_wp) :: CS !   R*4 1 I  CS ratio substance                             [gC/gS]
+      real(kind=real_wp) :: depth
+      real(kind=real_wp) :: FSEDDN
+      real(kind=real_wp) :: FSEDDP
+      real(kind=real_wp) :: FSEDDS
+      real(kind=real_wp) :: FSEDDN2
+      real(kind=real_wp) :: FSEDDP2
+      real(kind=real_wp) :: FSEDDS2
 
+      integer(kind=int_wp) :: iflux, iseg, ikmrk2
 
-        ! This version is used for developing the interaction of POX-2 with the sediment buffer model
-        !*******************************************************************************
-        !
-        IMPLICIT NONE
-        !
-        !     Type    Name         I/O Description
-        !
-        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
-        real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(12)  ! I  Array of pointers in process_space_real to get and store the data
-        integer(kind = int_wp) :: increm(12)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
-        integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
-        integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-        integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
-        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-        !
-        !*******************************************************************************
-        !>\file
-        !>       Sedimentation of nutrients in the organic carbon matrix (GEM)
-        !
-        !     Description of the module :
-        !
-        ! Name    T   L I/O   Description                                    Units
-        !
-        !     Logical Units : -
+      ipnt = ipoint
+      !
+      iflux = 0
+      do iseg = 1, num_cells
 
-        integer(kind = int_wp) :: ipnt(12)
-        real(kind = real_wp) :: SFL  !   R*4 1 I  sedimention flux organic                      [gX/m2/d]
-        real(kind = real_wp) :: sfl2
-        real(kind = real_wp) :: CN   !   R*4 1 I  CN ratio substance                             [gC/gN]
-        real(kind = real_wp) :: CP   !   R*4 1 I  CP ratio substance                             [gC/gP]
-        real(kind = real_wp) :: CS   !   R*4 1 I  CS ratio substance                             [gC/gS]
-        real(kind = real_wp) :: depth
-        real(kind = real_wp) :: FSEDDN
-        real(kind = real_wp) :: FSEDDP
-        real(kind = real_wp) :: FSEDDS
-        real(kind = real_wp) :: FSEDDN2
-        real(kind = real_wp) :: FSEDDP2
-        real(kind = real_wp) :: FSEDDS2
+         if (btest(iknmrk(iseg), 0)) then
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            if ((ikmrk2 == 0) .or. (ikmrk2 == 3)) then
+               !
+               sfl = process_space_real(ipnt(1))
+               sfl2 = process_space_real(ipnt(2))
+               cn = process_space_real(ipnt(3))
+               cp = process_space_real(ipnt(4))
+               cs = process_space_real(ipnt(5))
+               depth = process_space_real(ipnt(6))
 
-        integer(kind = int_wp) :: iflux, iseg, ikmrk2
+               !*******************************************************************************
+               !**** Processes connected to the SEDIMENTATION of nutrients in C-Matrix
+               !***********************************************************************
 
-        ipnt = ipoint
-        !
-        iflux = 0
-        do iseg = 1, num_cells
+               !     Initialisation
+               FSEDDN = 0.0
+               FSEDDP = 0.0
+               FSEDDS = 0.0
+               FSEDDN2 = 0.0
+               FSEDDP2 = 0.0
+               FSEDDS2 = 0.0
 
-            if (btest(iknmrk(iseg), 0)) then
-                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
-                if ((ikmrk2==0).or.(ikmrk2==3)) then
-                    !
-                    sfl = process_space_real(ipnt(1))
-                    sfl2 = process_space_real(ipnt(2))
-                    cn = process_space_real(ipnt(3))
-                    cp = process_space_real(ipnt(4))
-                    cs = process_space_real(ipnt(5))
-                    depth = process_space_real(ipnt(6))
+               !     Sedimentation
 
-                    !*******************************************************************************
-                    !**** Processes connected to the SEDIMENTATION of nutrients in C-Matrix
-                    !***********************************************************************
+               if (cn > 0.1) FSEDDN = sfl / cn
+               if (cp > 0.1) FSEDDP = sfl / cp
+               if (cs > 0.1) FSEDDS = sfl / cs
+               if (cn > 0.1) FSEDDN2 = sfl2 / cn
+               if (cp > 0.1) FSEDDP2 = sfl2 / cp
+               if (cs > 0.1) FSEDDS2 = sfl2 / cs
+               !
+               process_space_real(ipnt(7)) = FSEDDN
+               process_space_real(ipnt(8)) = FSEDDP
+               process_space_real(ipnt(9)) = FSEDDS
+               process_space_real(ipnt(10)) = FSEDDN2
+               process_space_real(ipnt(11)) = FSEDDP2
+               process_space_real(IPNT(12)) = FSEDDS2
+               !
+               if (depth > 0.0) then
+                  fl(1 + iflux) = FSEDDN / depth
+                  fl(2 + iflux) = FSEDDP / depth
+                  fl(3 + iflux) = FSEDDS / depth
+                  fl(4 + iflux) = FSEDDN2 / depth
+                  fl(5 + iflux) = FSEDDP2 / depth
+                  fl(6 + iflux) = FSEDDS2 / depth
+               else
+                  fl(1 + iflux) = 0.0
+                  fl(2 + iflux) = 0.0
+                  fl(3 + iflux) = 0.0
+                  fl(4 + iflux) = 0.0
+                  fl(5 + iflux) = 0.0
+                  fl(6 + iflux) = 0.0
+               end if
+               !
+            end if
+         end if
+         !
+         iflux = iflux + noflux
+         ipnt = ipnt + increm
+         !
+      end do
 
-                    !     Initialisation
-                    FSEDDN = 0.0
-                    FSEDDP = 0.0
-                    FSEDDS = 0.0
-                    FSEDDN2 = 0.0
-                    FSEDDP2 = 0.0
-                    FSEDDS2 = 0.0
-
-                    !     Sedimentation
-
-                    if (cn > 0.1) FSEDDN = sfl / cn
-                    if (cp > 0.1) FSEDDP = sfl / cp
-                    if (cs > 0.1) FSEDDS = sfl / cs
-                    if (cn > 0.1) FSEDDN2 = sfl2 / cn
-                    if (cp > 0.1) FSEDDP2 = sfl2 / cp
-                    if (cs > 0.1) FSEDDS2 = sfl2 / cs
-                    !
-                    process_space_real (ipnt(7)) = FSEDDN
-                    process_space_real (ipnt(8)) = FSEDDP
-                    process_space_real (ipnt(9)) = FSEDDS
-                    process_space_real (ipnt(10)) = FSEDDN2
-                    process_space_real (ipnt(11)) = FSEDDP2
-                    process_space_real (IPNT(12)) = FSEDDS2
-                    !
-                    if (depth > 0.0) then
-                        fl(1 + iflux) = FSEDDN / depth
-                        fl(2 + iflux) = FSEDDP / depth
-                        fl(3 + iflux) = FSEDDS / depth
-                        fl(4 + iflux) = FSEDDN2 / depth
-                        fl(5 + iflux) = FSEDDP2 / depth
-                        fl(6 + iflux) = FSEDDS2 / depth
-                    else
-                        fl(1 + iflux) = 0.0
-                        fl(2 + iflux) = 0.0
-                        fl(3 + iflux) = 0.0
-                        fl(4 + iflux) = 0.0
-                        fl(5 + iflux) = 0.0
-                        fl(6 + iflux) = 0.0
-                    endif
-                    !
-                endif
-            endif
-            !
-            iflux = iflux + noflux
-            ipnt = ipnt + increm
-            !
-        end do
-
-        !
-        return
-        !
-    end
+      !
+      return
+      !
+   end
 
 end module m_sednu2
