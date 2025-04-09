@@ -47,7 +47,7 @@ module m_Universal_Weir
                                                                               !< The lowest value of Z is equal to 0.
       double precision                             :: crestlevel              !< Crest level.
       double precision                             :: crestlevel_actual       !< Actual crest level.
-      double precision                             :: dischargecoeff          !< Discharge loss coefficient.
+      double precision                             :: discharge_coeff          !< Discharge loss coefficient.
       integer                                      :: allowedflowdir          !< allowed flow direction.
                                                                               !< 0 all directions.
                                                                               !< 1 only positive flow.
@@ -250,7 +250,7 @@ module m_Universal_Weir
       qflow   = 0.0
 
       lowestcrestlevel = uniweir%crestlevel_actual
-      cmuoriginal      = uniweir%dischargecoeff
+      cmuoriginal      = uniweir%discharge_coeff
 
       cmuoriginal=1d0 ! jira 19171
 
@@ -310,7 +310,7 @@ module m_Universal_Weir
 
             call wetdimuni(dpt, warea, dwdd, uniweir, isect)
 
-            warea    = warea * uniweir%dischargecoeff  ! cmu correction in au, jira 19171
+            warea    = warea * uniweir%discharge_coeff  ! cmu correction in au, jira 19171
             wetaavg  = wetaavg +  warea
             dwddavg  = dwddavg + dwdd
             cmus     = cmus + mulfactor * warea

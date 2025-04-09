@@ -232,7 +232,7 @@ module Structures
 
   type GeneralWeirVars
     Integer weirType
-    Real dischargeCoeff
+    Real discharge_coeff
     Real crestLevel
     Real crestWidth
     Real powerCoeff
@@ -245,7 +245,7 @@ module Structures
     Real crestWidth ! of bottom
     Real crestLevel ! upperside bottom
     Real gateHeight
-    Real dischargeCoeff
+    Real discharge_coeff
     Integer backflowPossible
   end type GeneralGateVars
 

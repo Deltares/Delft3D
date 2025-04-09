@@ -41,7 +41,7 @@ module m_1d_structures
    use m_Universal_Weir
    use m_Bridge
    use m_hash_search
-   use m_Dambreak
+   use m_dambreak
    use iso_c_utils
 
    implicit none

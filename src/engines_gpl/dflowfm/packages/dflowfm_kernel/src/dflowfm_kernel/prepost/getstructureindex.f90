@@ -91,9 +91,9 @@ contains
             end if
          end do
       else if (trim(strtypename) == 'dambreak') then
-         do i = 1, ndambreaksignals
-            if (trim(dambreak_ids(i)) == trim(strname)) then
-               if (L2dambreaksg(i) - L1dambreaksg(i) >= 0) then
+         do i = 1, n_db_signals
+            if (trim(db_ids(i)) == trim(strname)) then
+               if (db_last_link(i) - db_first_link(i) >= 0) then
                   ! Only return this dambreak index if dambreak is active in flowgeom (i.e., at least 1 flow link associated)
                   index = i
                   exit

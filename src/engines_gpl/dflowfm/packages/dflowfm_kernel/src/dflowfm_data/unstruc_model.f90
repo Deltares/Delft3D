@@ -683,7 +683,7 @@ contains
       use m_flowgeom !,              only : wu1Duni, bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
-      use m_Dambreak, only: set_dambreak_widening_method
+      use m_dambreak, only: set_dambreak_widening_method
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind ! ,                  only : icdtyp, cdb, wdb,
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
@@ -3421,7 +3421,7 @@ contains
          call prop_set(prop_ptr, 'physics', 'Equili', jaequili, 'Equilibrium spiral flow intensity (0: no, 1: yes)')
       end if
 
-      if (ndambreaklinks > 0) then
+      if (n_db_links > 0) then
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 

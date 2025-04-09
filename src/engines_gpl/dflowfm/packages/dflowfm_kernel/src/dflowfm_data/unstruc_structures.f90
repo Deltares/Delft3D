@@ -267,7 +267,7 @@ contains
    !> Allocates and initializes all "valstruct"(:,:) arrays.
    !! Used for history output and/or restart file output for hydraulic structures.
    subroutine init_structure_hisvalues()
-      use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, ndambreaksignals
+      use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, n_db_signals
       use m_alloc
       use m_flowtimes, only: ti_rst
       use m_longculverts, only: nlongculverts
@@ -314,9 +314,9 @@ contains
          if (allocated(valweirgen)) deallocate (valweirgen)
          allocate (valweirgen(NUMVALS_WEIRGEN, nweirgen)); valweirgen = 0.0_dp
       end if
-      if (jahisdambreak > 0 .and. ndambreaksignals > 0) then
+      if (jahisdambreak > 0 .and. n_db_signals > 0) then
          if (allocated(valdambreak)) deallocate (valdambreak)
-         allocate (valdambreak(NUMVALS_DAMBREAK, ndambreaksignals)); valdambreak = 0.0_dp
+         allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals)); valdambreak = 0.0_dp
       end if
       if ((ti_rst > 0 .or. jahisorif > 0) .and. network%sts%numOrifices > 0) then
          if (allocated(valorifgen)) deallocate (valorifgen)
@@ -953,7 +953,7 @@ contains
 !> Get the total number of structures of a certain type
    function get_number_of_structures(struc_type_id) result(number_of_structures)
       use m_GlobalParameters
-      use fm_external_forcings_data, only: ncdamsg, ndambreaksignals, ngatesg
+      use fm_external_forcings_data, only: ncdamsg, n_db_signals, ngatesg
       use unstruc_channel_flow, only: network
 
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
@@ -963,7 +963,7 @@ contains
       case (ST_DAM)
          number_of_structures = ncdamsg
       case (ST_DAMBREAK)
-         number_of_structures = ndambreaksignals
+         number_of_structures = n_db_signals
       case (ST_GATE)
          number_of_structures = ngatesg
       case (ST_COMPOUND)
@@ -1721,7 +1721,7 @@ contains
 
 !> Retrieve the set of snapped flowlinks for a dambreak
    subroutine retrieve_set_of_flowlinks_dambreak(i_dambreak, links)
-      use fm_external_forcings_data, only: L1dambreaksg, L2dambreaksg, kdambreak
+      use fm_external_forcings_data, only: db_first_link, db_last_link, db_link_ids
 
       integer, intent(in) :: i_dambreak !< Index of the dambreak
       integer, dimension(:), allocatable, intent(out) :: links !< The set of flowlinks that this dambreak has been snapped to
@@ -1729,13 +1729,13 @@ contains
       integer :: n_links !< Total number of flowlinks in the set
       integer :: k, i
 
-      n_links = L2dambreaksg(i_dambreak) + 1 - L1dambreaksg(i_dambreak)
+      n_links = db_last_link(i_dambreak) + 1 - db_first_link(i_dambreak)
       allocate (links(n_links), source=-999)
 
       i = 0
-      do k = L1dambreaksg(i_dambreak), L2dambreaksg(i_dambreak)
+      do k = db_first_link(i_dambreak), db_last_link(i_dambreak)
          i = i + 1
-         links(i) = kdambreak(3, k)
+         links(i) = db_link_ids(3, k)
       end do
 
    end subroutine retrieve_set_of_flowlinks_dambreak

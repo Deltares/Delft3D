@@ -346,17 +346,17 @@ module fm_external_forcings_data
 
    ! Dambreak
    integer, allocatable :: dambreaks(:) !< store the dambreaks indexes among all structures
-   integer :: ndambreaklinks !< nr of dambreak links
-   integer :: ndambreaksignals !< nr of dambreak signals
-   integer, allocatable :: L1dambreaksg(:) !< first dambreak link for each signal
-   integer, allocatable :: L2dambreaksg(:) !< second dambreak link for each signal
-   integer, allocatable :: activeDambreakLinks(:) !< activeDambreakLinks, open dambreak links
-   integer, allocatable :: LStartBreach(:) !< the starting link, the closest to the breach point
-   integer, allocatable :: kdambreak(:, :) !< dambreak links index array
-   real(kind=dp), allocatable, target :: dambreakLevelsAndWidthsFromTable(:) !< dambreak widths and heights
-   character(len=128), allocatable, target :: dambreak_ids(:) !< the dambreak ids
-   real(kind=dp), dimension(:), allocatable, public :: dambreakLinksEffectiveLength !< dambreak maximum flow widths
-   real(kind=dp), dimension(:), allocatable, public :: dambreakLinksActualLength !< dambreak actual flow widths
+   integer :: n_db_links !< nr of dambreak links
+   integer :: n_db_signals !< nr of dambreak signals
+   integer, allocatable :: db_first_link(:) !< first dambreak link for each signal
+   integer, allocatable :: db_last_link(:) !< last dambreak link for each signal
+   integer, allocatable :: db_active_links(:) !< db_active_links, open dambreak links
+   integer, allocatable :: breach_start_link(:) !< the starting link, the closest to the breach point
+   integer, allocatable :: db_link_ids(:, :) !< dambreak links index array
+   real(kind=dp), allocatable, target :: db_levels_widths_table(:) !< dambreak widths and heights
+   character(len=128), allocatable, target :: db_ids(:) !< the dambreak ids
+   real(kind=dp), dimension(:), allocatable, public :: db_link_effective_width !< dambreak effective flow widths
+   real(kind=dp), dimension(:), allocatable, public :: db_link_actual_width !< dambreak actual flow widths
 
    type polygon
       real(kind=dp), dimension(:), allocatable :: xp, yp
@@ -485,8 +485,8 @@ contains
       ngenstru = 0 ! nr of real general structures in the generalstructure set
       npump = 0 ! npump dimension
       npumpsg = 0 ! nr of pump signals
-      ndambreaklinks = 0 ! nr of dambreak links
-      ndambreaksignals = 0 ! nr of dambreak signals
+      n_db_links = 0 ! nr of dambreak links
+      n_db_signals = 0 ! nr of dambreak signals
       nklep = 0 ! nr of kleps
       nvalv = 0 ! nr of valves
       nqbnd = 0 ! nr of q bnd's

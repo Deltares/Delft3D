@@ -40,7 +40,7 @@ module m_readstructures
    use m_Bridge
    use m_pump
    use m_General_Structure
-   use m_Dambreak
+   use m_dambreak
 
    use properties
    use m_hash_search
@@ -391,7 +391,7 @@ module m_readstructures
       integer :: ngate
       integer :: ngenstru
       integer :: nuniweir
-      integer :: ndambreaklinks
+      integer :: n_db_links
       integer :: npump
       integer,          dimension(:), pointer :: indices
       character(len=IdLen), dimension(:), pointer :: ids
@@ -432,7 +432,7 @@ module m_readstructures
       nbridge = 0
       ngate = 0
       nuniweir = 0
-      ndambreaklinks = 0
+      n_db_links = 0
       npump = 0
       do istru = 1, sts%Count
          select case (sts%struct(istru)%type)
@@ -476,8 +476,8 @@ module m_readstructures
             nuniweir = nuniweir + 1
             sts%uniWeirIndices(nuniweir) = istru
          case (ST_DAMBREAK)
-            ndambreaklinks = ndambreaklinks + 1
-            sts%dambreakIndices(ndambreaklinks) = istru
+            n_db_links = n_db_links + 1
+            sts%dambreakIndices(n_db_links) = istru
          case (ST_PUMP)
             npump = npump+1
             sts%pumpIndices(npump) = istru
@@ -527,7 +527,7 @@ module m_readstructures
       call prop_get(md_ptr, '', 'crestLevel', uniweir%crestlevel, success1)
       success = success .and. check_input_result(success1, st_id, 'crestLevel')
       
-      call prop_get(md_ptr, '', 'dischargeCoeff', uniweir%dischargecoeff, success1)
+      call prop_get(md_ptr, '', 'dischargeCoeff', uniweir%discharge_coeff, success1)
       success = success .and. check_input_result(success1, st_id, 'dischargeCoeff')
       
       txt = 'both'
@@ -852,11 +852,11 @@ module m_readstructures
 
       allocate(dambr)
 
-      call prop_get(md_ptr, 'Structure', 'StartLocationX',  dambr%startLocationX, localsuccess)
+      call prop_get(md_ptr, 'Structure', 'StartLocationX',  dambr%start_location_x, localsuccess)
       success = success .and. check_input_result(localsuccess, st_id, 'StartLocationX')
       if (.not. success) return
 
-      call prop_get(md_ptr, 'Structure', 'StartLocationY',  dambr%startLocationY, localsuccess)
+      call prop_get(md_ptr, 'Structure', 'StartLocationY',  dambr%start_location_y, localsuccess)
       success = success .and. check_input_result(localsuccess, st_id, 'StartLocationY')
       if (.not. success) return
 
@@ -864,21 +864,21 @@ module m_readstructures
       success = success .and. check_input_result(localsuccess, st_id, 'Algorithm')
       if (.not. success) return
 
-      call prop_get(md_ptr, 'Structure', 'CrestLevelIni', dambr%crestLevelIni, localsuccess)
+      call prop_get(md_ptr, 'Structure', 'CrestLevelIni', dambr%crest_level_ini, localsuccess)
       success = success .and. check_input_result(localsuccess, st_id, 'CrestLevelIni')
       if (.not. success) return
          
       if (dambr%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
          
-         call prop_get(md_ptr, 'Structure', 'BreachWidthIni', dambr%breachWidthIni, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'BreachWidthIni', dambr%breach_width_ini, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'BreachWidthIni')
          if (.not. success) return
 
-         call prop_get(md_ptr, 'Structure', 'CrestLevelMin', dambr%crestLevelMin, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'CrestLevelMin', dambr%crest_level_min, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'CrestLevelMin')
          if (.not. success) return
 
-         call prop_get(md_ptr, 'Structure', 'TimeToBreachToMaximumDepth', dambr%timeToBreachToMaximumDepth, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'TimeToBreachToMaximumDepth', dambr%time_to_breach_to_maximum_depth, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'TimeToBreachToMaximumDepth')
          if (.not. success) return
 
@@ -890,21 +890,21 @@ module m_readstructures
          success = success .and. check_input_result(localsuccess, st_id, 'F2')
          if (.not. success) return
 
-         call prop_get(md_ptr, 'Structure', 'Ucrit', dambr%ucrit, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'Ucrit', dambr%u_crit, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'Ucrit')
          if (.not. success) return
          
          ! optional extra fields
-         call prop_get(md_ptr, 'Structure', 'waterLevelUpstreamNodeId ', dambr%waterLevelUpstreamNodeId, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'waterLevelUpstreamNodeId ', dambr%water_level_upstream_node_id, localsuccess)
          if (.not. localsuccess) then
-            call prop_get(md_ptr, 'Structure', 'WaterLevelUpstreamLocationX', dambr%waterLevelUpstreamLocationX, localsuccess)
-            call prop_get(md_ptr, 'Structure', 'WaterLevelUpstreamLocationY', dambr%waterLevelUpstreamLocationY, localsuccess)
+            call prop_get(md_ptr, 'Structure', 'WaterLevelUpstreamLocationX', dambr%water_level_upstream_location_x, localsuccess)
+            call prop_get(md_ptr, 'Structure', 'WaterLevelUpstreamLocationY', dambr%water_level_upstream_location_y, localsuccess)
          end if
 
-         call prop_get(md_ptr, 'Structure', 'waterLevelDownstreamNodeId ', dambr%waterLevelDownstreamNodeId, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'waterLevelDownstreamNodeId ', dambr%water_level_downstream_node_id, localsuccess)
          if (.not. localsuccess) then
-            call prop_get(md_ptr, 'Structure', 'WaterLevelDownstreamLocationX', dambr%waterLevelDownstreamLocationX, localsuccess)
-            call prop_get(md_ptr, 'Structure', 'WaterLevelDownstreamLocationY', dambr%waterLevelDownstreamLocationY, localsuccess)
+            call prop_get(md_ptr, 'Structure', 'WaterLevelDownstreamLocationX', dambr%water_level_downstream_location_x, localsuccess)
+            call prop_get(md_ptr, 'Structure', 'WaterLevelDownstreamLocationY', dambr%water_level_downstream_location_y, localsuccess)
          end if
       endif
       
@@ -913,7 +913,7 @@ module m_readstructures
          ! UNST-3308: NOTE that only the .tim filename is read below. It is NOT added to the network%forcinglist.
          !            All time-space handling of the dambreak is still done in kernel.
          
-         call prop_get(md_ptr, 'Structure', 'DambreakLevelsAndWidths', dambr%levelsAndWidths, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'DambreakLevelsAndWidths', dambr%levels_and_widths, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'DambreakLevelsAndWidths')
          if (.not. success) return         
       endif
@@ -922,7 +922,7 @@ module m_readstructures
       success = success .and. check_input_result(localsuccess, st_id, 'T0')
       if (.not. success) return
       
-      call setCoefficents(dambr)
+      call set_dambreak_coefficents(dambr)
       
    end subroutine readDambreak
 

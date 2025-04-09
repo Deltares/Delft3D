@@ -48,7 +48,7 @@ contains
       use unstruc_shapefile
       use m_monitoring_crosssections, only: ncrs, crs
       use m_observations_data, only: numobs, kobs
-      use fm_external_forcings_data, only: nweirgen, ngategen, numsrc, ksrc, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen, ndambreaksignals, L1dambreaksg, L2dambreaksg
+      use fm_external_forcings_data, only: nweirgen, ngategen, numsrc, ksrc, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen, n_db_signals, db_first_link, db_last_link
       use m_thindams
       use m_sobekdfm, only: nbnd1d2d
       use m_fixedweirs, only: nfxw
@@ -228,9 +228,9 @@ contains
 
       ! dam break
       if (jashp_dambreak > 0) then
-         jawrite = ndambreaksignals
-         do n = 1, ndambreaksignals
-            if (L1dambreaksg(n) > L2dambreaksg(n)) then
+         jawrite = n_db_signals
+         do n = 1, n_db_signals
+            if (db_first_link(n) > db_last_link(n)) then
                jawrite = jawrite - 1
             end if
          end do
