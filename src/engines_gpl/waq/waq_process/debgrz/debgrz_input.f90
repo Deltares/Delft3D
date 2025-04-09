@@ -73,6 +73,8 @@ module m_debgrz_input
         real(kind=real_wp) :: yk                    !< Halfrate const TIM                         [gC/m3]
         real(kind=real_wp) :: rmor_ref              !< Reference mortality rate grazers              [/d]
         real(kind=real_wp) :: cmor                  !< Length-dep coefficient mortality rate         [/d]
+        real(kind=real_wp) :: ddmfk                 !< Halfrate concentration for density dependent 
+                                                    !< mortality factor                  [gC/m3 or gC/m2]
         real(kind=real_wp) :: rhrv_ref              !< Reference  harvesting rate grazers            [/d]
         real(kind=real_wp) :: chrv                  !< Length-dep coefficient harvesting rate        [/d]
         real(kind=real_wp) :: conv_j_gc             !< Conversion factor from energy into mass     [gC/J]
@@ -136,7 +138,7 @@ module m_debgrz_input
         this%rtot        =      process_space_real( iparray(13))
         this%dens_ini    =      process_space_real( iparray(14))
         this%length_ini  =      process_space_real( iparray(15))
-        this%dummy       =      process_space_real( iparray(16))
+        this%ddmfk       =      process_space_real( iparray(16))
         this%vp          =      process_space_real( iparray(17))
         this%shape       =      process_space_real( iparray(18))
         this%em_l3       =      process_space_real( iparray(19))

@@ -81,12 +81,14 @@ project {
         buildType(WindowsBuild)
         buildType(WindowsCollect)
         buildType(WindowsTest)
+        buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
             WindowsBuildEnvironment,
             WindowsBuildEnvironmentI24,
             WindowsBuild,
             WindowsCollect,
-            WindowsTest
+            WindowsTest,
+            WindowsBuildDflowfmInteracter,
         )
     }
 

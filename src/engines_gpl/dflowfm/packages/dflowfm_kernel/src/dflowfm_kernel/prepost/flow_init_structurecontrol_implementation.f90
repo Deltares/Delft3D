@@ -139,10 +139,10 @@ contains
             select case (pstru%type)
             case (ST_DAMBREAK)
                num_dambreak_links = num_dambreak_links + numgen
-               call update_counters(qid, numgen, ndambreaksignals, L1dambreaksg, L2dambreaksg, dambridx, i)
+               call update_counters(pstru%id, numgen, ndambreaksignals, L1dambreaksg, L2dambreaksg, dambridx, i)
                kedb(L1dambreaksg(ndambreaksignals):L2dambreaksg(ndambreaksignals)) = kegen(1:numgen)
             case (ST_PUMP)
-               call update_counters(qid, numgen, npumpsg, L1pumpsg, L2pumpsg, pumpidx, i)
+               call update_counters(pstru%id, numgen, npumpsg, L1pumpsg, L2pumpsg, pumpidx, i)
                kep(L1pumpsg(npumpsg):L2pumpsg(npumpsg)) = kegen(1:numgen)
                npump = l2pumpsg(npumpsg)
             end select
@@ -342,7 +342,7 @@ contains
       integer, dimension(:), allocatable, intent(inout) :: strucidx !< strucidx is the index of the structure.
       integer, intent(in) :: structure_index !< structure_index is the index of the structure.
 
-      write (msgbuf, '(a,i8,a)') trim(qid), numlinks, ' nr of dambreak links'
+      write (msgbuf, '(a,i8,a)') trim(qid), numlinks, ' nr of structure links'
       call msg_flush()
       nsignals = nsignals + 1
       strucidx(nsignals) = structure_index

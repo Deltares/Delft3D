@@ -1,0 +1,5 @@
+add_custom_target(gdal)
+set_target_properties(gdal PROPERTIES FOLDER third_party_open)
+if (WIN32)
+	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/bin/gdal.dll DESTINATION lib)
+endif(WIN32)

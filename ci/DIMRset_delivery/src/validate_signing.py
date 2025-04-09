@@ -153,7 +153,7 @@ def signing_is_valid(
 ) -> bool:
     status, issued_to = verify_signing_authority(filepath, developer_prompt)
     if expected_issued_to and issued_to != expected_issued_to:
-        print(f"file not correctly signed: {filepath}")
+        print(f"file not correctly signed: {filepath}, signed to '{issued_to}' but expexted '{expected_issued_to}'")
     elif not expected_issued_to and status == "Verified":
         print(f"file should not be signed: {filepath}")
     else:
@@ -216,12 +216,12 @@ def validate_directory_contents(
     extra_files = set(actual_files) - set(expected_files)
 
     if missing_files:
-        print("Missing files:")
+        print("\nMissing files:")
         for file in missing_files:
             print(file)
 
     if extra_files:
-        print("Extra files:")
+        print("\nExtra files:")
         for file in extra_files:
             print(file)
 

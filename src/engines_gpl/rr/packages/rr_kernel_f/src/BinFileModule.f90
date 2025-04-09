@@ -101,7 +101,7 @@ contains
     Integer     teller, iOW, iCall, in
     Integer     iNode, iKind, iNr
     Character(CharIdLength) idNode, FileName
-    Integer iDebug, iOut1, infile1, infile2, infile3, infile4, infile5, infile6
+    Integer(4) iDebug, iOut1, infile1, infile2, infile3, infile4, infile5, infile6
     Integer SetMaxTabNr, SetMaxDataNr
     Character(Len=FilCharIdLength)            :: boundCondFile
 

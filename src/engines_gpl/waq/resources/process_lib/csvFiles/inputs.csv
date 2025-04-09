@@ -13283,7 +13283,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_M  ","Mussel_R  ",  13,"Y","x",1
 "DEBGRZ_M  ","Mussel_N  ",  14,"Y","x",1
 "DEBGRZ_M  ","M_Lref    ",  15,"Y","x",1
-"DEBGRZ_M  ","M_Dummy   ",  16,"Y","x",1
+"DEBGRZ_M  ","M_ddmfk   ",  16,"Y","x",1
 "DEBGRZ_M  ","M_Vp      ",  17,"Y","x",1
 "DEBGRZ_M  ","M_shape   ",  18,"Y","x",1
 "DEBGRZ_M  ","M_Em      ",  19,"Y","x",1
@@ -13641,7 +13641,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_Z  ","Zoopl_R   ",  13,"Y","x",1
 "DEBGRZ_Z  ","Zoopl_N   ",  14,"Y","x",1
 "DEBGRZ_Z  ","Z_Lref    ",  15,"Y","x",1
-"DEBGRZ_Z  ","Z_Dummy   ",  16,"Y","x",1
+"DEBGRZ_Z  ","Z_ddmfk   ",  16,"Y","x",1
 "DEBGRZ_Z  ","Z_Vp      ",  17,"Y","x",1
 "DEBGRZ_Z  ","Z_shape   ",  18,"Y","x",1
 "DEBGRZ_Z  ","Z_Em      ",  19,"Y","x",1
@@ -13999,7 +13999,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G3 ","Grazer3_R ",  13,"Y","x",1
 "DEBGRZ_G3 ","Grazer3_N ",  14,"Y","x",1
 "DEBGRZ_G3 ","G3_Lref   ",  15,"Y","x",1
-"DEBGRZ_G3 ","G3_Dummy  ",  16,"Y","x",1
+"DEBGRZ_G3 ","G3_ddmfk  ",  16,"Y","x",1
 "DEBGRZ_G3 ","G3_Vp     ",  17,"Y","x",1
 "DEBGRZ_G3 ","G3_shape  ",  18,"Y","x",1
 "DEBGRZ_G3 ","G3_Em     ",  19,"Y","x",1
@@ -14357,7 +14357,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G4 ","Grazer4_R ",  13,"Y","x",1
 "DEBGRZ_G4 ","Grazer4_N ",  14,"Y","x",1
 "DEBGRZ_G4 ","G4_Lref   ",  15,"Y","x",1
-"DEBGRZ_G4 ","G4_Dummy  ",  16,"Y","x",1
+"DEBGRZ_G4 ","G4_ddmfk  ",  16,"Y","x",1
 "DEBGRZ_G4 ","G4_Vp     ",  17,"Y","x",1
 "DEBGRZ_G4 ","G4_shape  ",  18,"Y","x",1
 "DEBGRZ_G4 ","G4_Em     ",  19,"Y","x",1
@@ -14715,7 +14715,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G5 ","Grazer5_R ",  13,"Y","x",1
 "DEBGRZ_G5 ","Grazer5_N ",  14,"Y","x",1
 "DEBGRZ_G5 ","G5_Lref   ",  15,"Y","x",1
-"DEBGRZ_G5 ","G5_Dummy  ",  16,"Y","x",1
+"DEBGRZ_G5 ","G5_ddmfk  ",  16,"Y","x",1
 "DEBGRZ_G5 ","G5_Vp     ",  17,"Y","x",1
 "DEBGRZ_G5 ","G5_shape  ",  18,"Y","x",1
 "DEBGRZ_G5 ","G5_Em     ",  19,"Y","x",1
@@ -17994,7 +17994,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_M  ","Mussel_R  ",  13,"Y","x",1
 "DEBGRP_M  ","Mussel_N  ",  14,"Y","x",1
 "DEBGRP_M  ","M_Lref    ",  15,"Y","x",1
-"DEBGRP_M  ","M_Dummy   ",  16,"Y","x",1
+"DEBGRP_M  ","M_ddmfk   ",  16,"Y","x",1
 "DEBGRP_M  ","M_Vp      ",  17,"Y","x",1
 "DEBGRP_M  ","M_shape   ",  18,"Y","x",1
 "DEBGRP_M  ","M_Em      ",  19,"Y","x",1
@@ -18152,7 +18152,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_Z  ","Zoopl_R   ",  13,"Y","x",1
 "DEBGRP_Z  ","Zoopl_N   ",  14,"Y","x",1
 "DEBGRP_Z  ","Z_Lref    ",  15,"Y","x",1
-"DEBGRP_Z  ","Z_Dummy   ",  16,"Y","x",1
+"DEBGRP_Z  ","Z_ddmfk   ",  16,"Y","x",1
 "DEBGRP_Z  ","Z_Vp      ",  17,"Y","x",1
 "DEBGRP_Z  ","Z_shape   ",  18,"Y","x",1
 "DEBGRP_Z  ","Z_Em      ",  19,"Y","x",1
@@ -18310,7 +18310,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G3 ","Grazer3_R ",  13,"Y","x",1
 "DEBGRP_G3 ","Grazer3_N ",  14,"Y","x",1
 "DEBGRP_G3 ","G3_Lref   ",  15,"Y","x",1
-"DEBGRP_G3 ","G3_Dummy  ",  16,"Y","x",1
+"DEBGRP_G3 ","G3_ddmfk  ",  16,"Y","x",1
 "DEBGRP_G3 ","G3_Vp     ",  17,"Y","x",1
 "DEBGRP_G3 ","G3_shape  ",  18,"Y","x",1
 "DEBGRP_G3 ","G3_Em     ",  19,"Y","x",1
@@ -18468,7 +18468,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G4 ","Grazer4_R ",  13,"Y","x",1
 "DEBGRP_G4 ","Grazer4_N ",  14,"Y","x",1
 "DEBGRP_G4 ","G4_Lref   ",  15,"Y","x",1
-"DEBGRP_G4 ","G4_Dummy  ",  16,"Y","x",1
+"DEBGRP_G4 ","G4_ddmfk  ",  16,"Y","x",1
 "DEBGRP_G4 ","G4_Vp     ",  17,"Y","x",1
 "DEBGRP_G4 ","G4_shape  ",  18,"Y","x",1
 "DEBGRP_G4 ","G4_Em     ",  19,"Y","x",1
@@ -18626,7 +18626,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G5 ","Grazer5_R ",  13,"Y","x",1
 "DEBGRP_G5 ","Grazer5_N ",  14,"Y","x",1
 "DEBGRP_G5 ","G5_Lref   ",  15,"Y","x",1
-"DEBGRP_G5 ","G5_Dummy  ",  16,"Y","x",1
+"DEBGRP_G5 ","G5_ddmfk  ",  16,"Y","x",1
 "DEBGRP_G5 ","G5_Vp     ",  17,"Y","x",1
 "DEBGRP_G5 ","G5_shape  ",  18,"Y","x",1
 "DEBGRP_G5 ","G5_Em     ",  19,"Y","x",1

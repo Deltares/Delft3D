@@ -56,7 +56,7 @@ module unstruc_netcdf
    use m_debug
    use m_readyy
    use m_qnerror
-   use netcdf_utils, only: ncu_sanitize_name
+   use netcdf_utils, only: ncu_sanitize_name, ncu_ensure_data_mode, ncu_ensure_define_mode, ncu_restore_mode
 
    implicit none
 
@@ -2420,18 +2420,17 @@ contains
       character(len=8) :: cdate
       character(len=10) :: ctime
       character(len=5) :: czone
-      integer :: ierr, jaInDefine
+      integer :: ierr
+      logical :: jaInDefine
       ierr = nf90_noerr
       jaInDefine = 0
 
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) jaInDefine = 1 ! Was still in define mode.
-      if (ierr /= nf90_noerr .and. ierr /= nf90_eindefine) then
+      ierr = ncu_ensure_define_mode(ncid, jaInDefine)
+      if (ierr /= nf90_noerr) then
          write (msgbuf, '(a,i0,a,i0,a,a)') 'Could not put global attributes in NetCDF #', ncid, '. Error code ', ierr, ': ', nf90_strerror(ierr)
          call err_flush()
          return
       end if
-
       ierr = nf90_put_att(ncid, nf90_global, 'institution', trim(company))
       ierr = nf90_put_att(ncid, nf90_global, 'references', trim(company_url))
       ierr = nf90_put_att(ncid, nf90_global, 'source', &
@@ -2452,9 +2451,7 @@ contains
       end if
 
       ! Leave the dataset in the same mode as we got it.
-      if (jaInDefine == 0) then
-         ierr = nf90_enddef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, jaInDefine)
    end subroutine unc_addglobalatts
 
 ! TODO: AvD: add these  (incrementally) to map/his files:
@@ -5331,6 +5328,8 @@ contains
       character(1024) :: longname !< long, descriptive name of netCDF variable content
 
       integer :: nc_precision
+      logical :: was_in_define
+
       integer, parameter :: FIRST_ARRAY = 1
       integer, parameter :: SECOND_ARRAY = 2
 
@@ -6382,7 +6381,8 @@ contains
          !
          ! END OF DEFINITION PART
          !
-         ierr = nf90_enddef(mapids%ncid)
+         ierr = ncu_ensure_data_mode(mapids%ncid, was_in_define)
+
          if (ierr == NF90_EVARSIZE .and. unc_cmode /= NF90_NETCDF4) then
             call mess(LEVEL_ERROR, 'Error while writing map file. Probably model grid is too large for classic NetCDF format. Try setting [output] NcFormat = 4 in your MDU.')
          else if (ierr /= NF90_NOERR) then
@@ -10859,7 +10859,7 @@ contains
                  id_idomain, id_iglobal_s !< Netelem variables
       type(t_unc_netelem_ids) :: ids_netelem
       integer :: id_mesh2d
-      integer :: jaInDefine
+      logical :: jaInDefine
       integer :: k, L, nv, numbnd, maxbnd, numencparts, numencpts
       real(kind=dp), allocatable :: polc(:)
       integer, dimension(:), allocatable :: kn1write
@@ -10952,15 +10952,12 @@ contains
       end if
 
       ! Put dataset in define mode (possibly again) to add dimensions and variables.
-      jaInDefine = 0
-      ierr = nf90_redef(inetfile)
-      if (ierr == nf90_eindefine) jaInDefine = 1 ! Was still in define mode.
-      if (ierr /= nf90_noerr .and. ierr /= nf90_eindefine) then
+      ierr = ncu_ensure_define_mode(inetfile, jaInDefine)
+      if (ierr /= nf90_noerr) then
          call mess(LEVEL_ERROR, 'Could not put header in net file.')
          call check_error(ierr)
          return
       end if
-
       if (janetcell_ /= 0) then
          ! Determine max nr. of vertices in NetElems (netcells)
          nv = 0
@@ -11168,9 +11165,7 @@ contains
       end if
 
       ! Leave the dataset in the same mode as we got it.
-      if (jaInDefine == 1) then
-         ierr = nf90_redef(inetfile)
-      end if
+      ierr = ncu_restore_mode(inetfile, jaInDefine)
 
       if (allocated(ibndlink)) then
          deallocate (ibndlink)
@@ -11459,7 +11454,7 @@ contains
 
       integer :: ierr
       integer :: i, k, k1, k2, numl2d, numk1d, numk2d, nump1d, L, Lnew, nv, n1, n2, n
-      integer :: jaInDefine
+      logical :: jaInDefine
       integer :: id_zf
       real(kind=hp), allocatable :: xn(:), yn(:), zn(:), xe(:), ye(:), zf(:)
       integer :: n1dedges, n1d2dcontacts, start_index
@@ -11502,14 +11497,12 @@ contains
       end if
 
       ! Put dataset in define mode (possibly again) to add dimensions and variables.
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) jaInDefine = 1 ! Was still in define mode.
-      if (ierr /= nf90_noerr .and. ierr /= nf90_eindefine) then
+      ierr = ncu_ensure_define_mode(ncid, jaInDefine)
+      if (ierr /= nf90_noerr) then
          call mess(LEVEL_ERROR, 'Could not put header in net geometry file.')
          call check_error(ierr)
          return
       end if
-
       if (jsferic == 1) then
          crs%epsg_code = 4326
       end if
@@ -11953,9 +11946,7 @@ contains
       ! * for parallel: add 'FlowElemDomain', 'FlowLinkDomain', 'FlowElemGlobalNr'
 
       ! Leave the dataset in the same mode as we got it.
-      if (jaInDefine == 1) then
-         ierr = nf90_redef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, jaInDefine)
 
       !call readyy('Writing flow geometry data',-1d0)
       call readyy('Writing net data', -1d0)
@@ -15126,7 +15117,7 @@ contains
 
       integer :: ierr
       integer :: i, numContPts, numNodes, n, numl2d, L
-      integer :: jaInDefine
+      logical :: jaInDefine
       integer :: n1dedges, n1d2dcontacts, numk2d, start_index
       integer, allocatable :: contacttype(:)
 
@@ -15175,14 +15166,12 @@ contains
       end if
 
       ! Put dataset in define mode (possibly again) to add dimensions and variables.
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) jaInDefine = 1 ! Was still in define mode.
-      if (ierr /= nf90_noerr .and. ierr /= nf90_eindefine) then
+      ierr = ncu_ensure_define_mode(ncid, jaInDefine)
+      if (ierr /= nf90_noerr) then
          call mess(LEVEL_ERROR, 'Could not put header in flow geometry file.')
          call check_error(ierr)
          return
-      end if
-
+      end if      
       if (jsferic == 1) then
          crs%epsg_code = 4326
       end if
@@ -15432,9 +15421,7 @@ contains
       end if
 
       ! Leave the dataset in the same mode as we got it.
-      if (jaInDefine == 1) then
-         ierr = nf90_redef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, jaInDefine)
       if (timon) call timstop(handle_extra(69))
 
       !call readyy('Writing flow geometry data',-1d0)
@@ -15502,7 +15489,7 @@ contains
       integer :: i, numContPts, numNodes, n, L, k1, L1
       integer :: Li !< Index of 1D link (can be internal or boundary)
       integer :: id_flowelemcontourptsdim, id_flowelemcontourx, id_flowelemcontoury
-      integer :: jaInDefine
+      logical :: jaInDefine
       real(kind=dp), allocatable :: work2(:, :)
       integer :: n1dedges, n1d2dcontacts, numk2d, start_index
       integer, allocatable :: contacttype(:)
@@ -15566,15 +15553,12 @@ contains
          interface_zs_ => null()
       end if
 
-      ! Put dataset in define mode (possibly again) to add dimensions and variables.
-      ierr = nf90_redef(ncid)
-      if (ierr == nf90_eindefine) jaInDefine = 1 ! Was still in define mode.
-      if (ierr /= nf90_noerr .and. ierr /= nf90_eindefine) then
+      ierr = ncu_ensure_define_mode(ncid, jaInDefine)
+      if (ierr /= nf90_noerr) then
          call mess(LEVEL_ERROR, 'Could not put header in flow geometry file.')
          call check_error(ierr)
          return
       end if
-
       if (jsferic == 1) then
          crs%epsg_code = 4326
       end if
@@ -15816,9 +15800,7 @@ contains
       end if
 
       ! Leave the dataset in the same mode as we got it.
-      if (jaInDefine == 1) then
-         ierr = nf90_redef(ncid)
-      end if
+      ierr = ncu_restore_mode(ncid, jaInDefine)
       if (timon) call timstop(handle_extra(69))
 
       ierr = nf90_sync(ncid)
@@ -15861,7 +15843,7 @@ contains
          id_flowelemglobalnr
 
       integer :: i, numContPts, numNodes, n, nn, L
-      integer :: jaInDefine
+      logical :: jaInDefine
       integer :: jaghost, idmn
       integer, dimension(:), allocatable :: lne1write
       integer, dimension(:), allocatable :: lne2write
@@ -15900,15 +15882,12 @@ contains
       if (allocated(work2)) deallocate (work2)
       allocate (work2(numContPts, ndxndxi)); work2 = dmiss
 
-      ! Put dataset in define mode (possibly again) to add dimensions and variables.
-      ierr = nf90_redef(igeomfile)
-      if (ierr == nf90_eindefine) jaInDefine = 1 ! Was still in define mode.
-      if (ierr /= nf90_noerr .and. ierr /= nf90_eindefine) then
+      ierr = ncu_ensure_define_mode(igeomfile, jaInDefine)
+      if (ierr /= nf90_noerr) then
          call mess(LEVEL_ERROR, 'Could not put header in flow geometry file.')
          call check_error(ierr)
          return
       end if
-
       if (jabndnd_ == 1) then
          ierr = nf90_def_dim(igeomfile, 'nFlowElemWithBnd', ndxndxi, id_flowelemdim) ! Different name to easily show boundary nodes are included, rest of code below is generic ndx/ndxi.
       else
@@ -16142,9 +16121,7 @@ contains
       !call readyy('Writing flow geometry data',1d0)
 
       ! Leave the dataset in the same mode as we got it.
-      if (jaInDefine == 1) then
-         ierr = nf90_redef(igeomfile)
-      end if
+      ierr = ncu_restore_mode(igeomfile, jaInDefine)
 
       !call readyy('Writing flow geometry data',-1d0)
    end subroutine unc_write_flowgeom_filepointer

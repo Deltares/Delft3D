@@ -35,7 +35,7 @@ object DIMRbak : BuildType({
     }
 
     dependencies {
-        snapshot(AbsoluteId("Dimr_DimrTestbenchRelease_StatusOfDailyTestbench")) {
+        snapshot(AbsoluteId("DIMR_To_NGHS")) {
             onDependencyFailure = FailureAction.FAIL_TO_START
             onDependencyCancel = FailureAction.CANCEL
         }

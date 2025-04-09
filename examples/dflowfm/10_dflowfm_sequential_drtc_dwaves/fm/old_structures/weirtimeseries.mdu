@@ -1,0 +1,126 @@
+# Generated on 05/28/2015 11:07:21
+# Deltares, FM-Suite DFlowFM Model Version 1.0.0.0, DFlow FM Version 1.1.137.40020
+
+[model]
+Program           = D-Flow FM
+Version           = 1.1.137.40020
+GuiVersion        = 1.0.0.0
+AutoStart         = 0
+
+[geometry]
+NetFile           = dflow-fm_net.nc
+WaterLevIniFile   =
+LandBoundaryFile  =
+DryPointsFile     =
+ThinDamFile       =
+FixedWeirFile     =
+#StructureFile     = 
+ProflocFile       =
+ProfdefFile       =
+WaterLevIni       = 0
+Bedlevuni         = -5
+Bedslope          = 0
+BedlevType        = 3
+PartitionFile     =
+AngLat            = 0
+Conveyance2D      = 1
+Sillheightmin     = 0.5
+Makeorthocenters  = 0
+Dcenterinside     = 1
+Kmx               = 0
+
+[numerics]
+CFLWaveFrac       = 0.1
+AdvecType         = 3
+Limtyphu          = 0
+Limtypmom         = 4
+Limtypsa          = 4
+Icgsolver         = 4
+Maxdegree         = 6
+FixedWeirScheme   = 1
+FixedWeirContraction= 1
+Izbndpos          = 0
+Tlfsmo            = 0
+Lincontin         = 0
+Jaembed1D         = 0
+Slopedrop2D       = 0
+Chkadvd           = 0.1
+Teta0             = 0.55
+Jbasqbnddownwindhs= 0
+Maxitverticalforester= 0
+CFLMax            = 0.7
+
+[physics]
+Ag                = 9.81
+Rhomean           = 1000
+UnifFrictCoef     = 0.023
+UnifFrictType     = 1
+UnifFrictCoefLin  = 0
+Umodlin           = 1
+Vicouv            = 0
+Dicouv            = 0
+Vicoww            = 0
+Dicoww            = 0
+Smagorinsky       = 0
+Elder             = 0
+irov              = 0
+wall_ks           = 0
+TidalForcing      = 0
+Salinity          = 0
+InitialSalinity   = 0
+Temperature       = 0
+InitialTemperature= 5
+Secchidepth       = 2
+Stanton           = 0.0013
+Dalton            = 0.0013
+
+[wind]
+ICdtyp            = 2
+Cdbreakpoints     = 0.00063 0.00723
+Windspeedbreakpoints= 0 100
+Rhoair            = 1.2
+PavBnd            = 101325
+Gapres            = 101325
+
+[waves]
+Wavemodelnr       = 0
+WaveNikuradse     = 0.01
+Rouwav            = FR84
+
+[time]
+RefDate           = 20010101
+Tunit             = S
+TStart            = 454377600
+TStop             = 454399200
+DtUser            = 60
+DtMax             = 60
+DtInit            = 1
+
+[restart]
+RestartFile       =
+RestartDateTime   = 20150527
+
+[external forcing]
+ExtForceFile      =dflow-fm_old.ext
+#ExtForceFileNew   = 
+
+[output]
+OutputDir         =
+ObsFile           = dflow-fm_obs.xyn
+CrsFile           =
+HisInterval       = 60
+XLSInterval       = 
+FlowGeomFile      =
+MapInterval       = 900
+RstInterval       =
+S1incinterval     =
+WaqInterval       =
+StatsInterval     =
+TimingsInterval   =
+MapOutputTimeVector=
+
+[trachytopes]
+TrtRou            = N
+TrtDef            =
+TrtL              =
+TrtDt             = 60

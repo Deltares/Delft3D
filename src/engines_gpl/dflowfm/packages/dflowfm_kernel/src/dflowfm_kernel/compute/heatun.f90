@@ -38,26 +38,28 @@ module m_heatun
 contains
 
    subroutine heatun(n, timhr, qsno)
-      use m_flow, only: kmx, hs, epshstem, surftempsmofac, solar_radiation_factor, em, stf, albedo, sfr, &
-          zws, Secchidepth2, jamapheatflux, jahisheatflux, Qtotmap, Qsunmap, Qevamap, Qconmap, &
-          Qlongmap, Qfrevamap, Qfrconmap, Qsunav, Qlongav, Qconav, Qevaav, Qfrconav, Qfrevaav, BACKGROUND_AIR_PRESSURE, &
-          BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, dalton, stanton, ucx, ucy, ktop, jatem, fwind, rcpi, ja_solar_radiation_factor, &
-          jaSecchisp, zab, Secchisp, Soiltempthick, jadelvappos, tkelvn, ag, rhomean
-      use precision, only: dp
+      use precision, only: dp, comparereal, fp
+      use physicalconsts, only: stf
+      use m_physcoef, only: ag, rhomean, backgroundsalinity, dalton, epshstem, stanton, sfr, Soiltempthick, &
+          BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, Secchidepth2, surftempsmofac, &
+          jadelvappos, zab
+      use m_heatfluxes, only: em, albedo, cpa, tkelvn, jaSecchisp, Secchisp, jamapheatflux, rcpi, &
+          fwind, Qtotmap, Qsunmap, Qevamap, Qconmap, Qlongmap, Qfrevamap, Qfrconmap, Qsunav, Qlongav, Qconav, &
+          Qevaav, Qfrconav, Qfrevaav
+      use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
+      use m_flowparameters, only: jahisheatflux, jatem, ja_solar_radiation_factor
       use m_missing, only: dmiss
       use m_flowgeom, only: ba, nd, ln, yz, xz
       use m_sferic, only: jsferic
-      use precision, only: comparereal, fp
       use m_flowtimes, only: dts
-      use m_heatfluxes, only: cpa
       use m_transport, only: constituents, itemp, isalt
-      use m_fm_icecover, only: ja_icecover, ice_af, ice_albedo, ice_h, ice_t, snow_albedo, snow_h, snow_t, qh_air2ice, qh_ice2wat, &
-          ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
-      use m_physcoef, only: backgroundsalinity
+      use m_fm_icecover, only: ja_icecover, ice_af, ice_albedo, ice_h, ice_t, snow_albedo, snow_h, snow_t, &
+          qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_link1, only: getlink1
-      use m_wind, only: japatm, jaevap, longwave_available, relativewind, tair, wx, wy, rhum, clou, patm, heatsrc0, qrad, &
-         solrad_available, tbed, rhoair, longwave, evap, cdwcof, airdensity, ja_airdensity, ja_computed_airdensity
+      use m_wind, only: japatm, jaevap, longwave_available, relativewind, tair, wx, wy, rhum, clou, patm, &
+          heatsrc0, qrad, solrad_available, tbed, rhoair, longwave, evap, cdwcof, airdensity, ja_airdensity, &
+          ja_computed_airdensity
 
       real(kind=dp), intent(in) :: timhr, qsno
       integer, intent(in) :: n

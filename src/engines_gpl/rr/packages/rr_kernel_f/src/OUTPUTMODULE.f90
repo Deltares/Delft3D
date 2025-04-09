@@ -1455,7 +1455,6 @@ module Output
                   RemainingUnitHydComp = RemainingUnitHydComp - UnitHydComp(Inr,idum)
                Enddo
                DeltaRouting = DeltaRouting * AreaSa(Inr) * mm2m
-!              Write(*,*) FracPervious, Adimp(inr), Deltavol
                ILOC = INODE
                If (ExtendedBalanceOutput) then
                  RSLMAP8_bal(1,ILOC,1) = SacPrecip(INR) * AreaSa(Inr) * mm2m
@@ -1615,12 +1614,15 @@ module Output
                    RSLMAP19_RRRunoff(NStartHBV+15,ILOC,1) = HBV_Percolation (IRRRunoffSub)
 ! not needed       RSLMAP19_RRRunoff(NStartHBV+16,ILOC,1) = HBV_InUpperZone (IRRRunoffSub)
                elseif (RRRunoff_CompOption(Inr) .eq. 2 ) then
-                   ! simple runoff node: SCS model- curve number; use SCS rainfall, storage, qrunoff, infiltration (GreenAmpt) optional
+                   ! simple runoff node: SCS model- curve number; use SCS rainfall, storage, qrunoff, infiltration (GreenAmpt) optional. HMS linear reservoir
                    RSLMAP19_RRRunoff(1,ILOC,1) = SCS_Rainfall(IRRRunoffSub)
                    RSLMAP19_RRRunoff(4,ILOC,1) = RRRunoffNode_Outflow(INR) * timeSettings%TimestepSize / Area_RRRunoffNode(INR) / mm2m
                    RSLMAP19_RRRunoff(5,ILOC,1) = RRRunoffNode_Outflow(INR)
                    RSLMAP19_RRRunoff(NStartSCS,ILOC,1)= SCS_Storage(IRRRunoffSub)
                    RSLMAP19_RRRunoff(NStartSCS+1,ILOC,1)= SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
+                   RSLMAP19_RRRunoff(NStartSCS+2,ILOC,1)= SCS_HMSLinResInflowTot(IRRRunoffSub)
+                   RSLMAP19_RRRunoff(NStartSCS+3,ILOC,1)= SCS_HMSLinResOutflow(IRRRunoffSub)
+                   RSLMAP19_RRRunoff(NStartSCS+4,ILOC,1)= SCS_HMSLinResContent(IRRRunoffSub)
                elseif (RRRunoff_CompOption(Inr) .eq. 3 ) then
                    ! simple runoff node: NAM model
                    RSLMAP19_RRRunoff(1,ILOC,1) =  NAMRainfall(IRRRunoffSub)
@@ -1758,6 +1760,7 @@ module Output
                                  * Area_RRRunoffNode(inr) * mm2m
                elseif (RRRunoff_CompOption(Inr) .eq. 2 ) then
                   DeltaVol = ( SCS_Storage(IRRRunoffSub) - SCS_Storage0(IRRRunoffSub) ) * Area_RRRunoffNode(inr) * mm2m
+                  DeltaVol = DeltaVol + ( SCS_HMSLinResContent(IRRRunoffSub) - SCS_HMSLinResContent0(IRRRunoffSub) ) * Area_RRRunoffNode(inr) * mm2m
                elseif (RRRunoff_CompOption(Inr) .eq. 3 ) then
                  ! NAM
                   DeltaVol = (NAM_U(IRRRunoffSub) - NAM_UInitial(IRRRunoffSub) + &
@@ -2975,6 +2978,7 @@ module Output
   Character(Len=40), pointer, dimension(:)  :: locationid
   integer                             nitem, refdate, reftime
   Character(Len=40)                   VariableName
+  Character(Len=50)                   ErrorString
   Character(Len=80)                   LongVariableName
   double precision, dimension(:), allocatable       :: X1Coor, Y1Coor
 
@@ -3146,7 +3150,9 @@ module Output
                      ierr = nf90_put_var(INetCdfFile(NWRWAreaNetCdfFileNr), id_vars(NWRWAreaNetCdfFileNr,jpar), dble(NWRWAreas(jpar,i)),(/i,1/))
                      Call NetCdfCheck(' WriteNWRWArea after Putvar DioResult',ierr)
                      if (ierr .ne. nf90_noerr) then
-                        write(*,*) ' error for parameter and node index ', jpar, i
+                        ErrorString = ''
+                        write(ErrorString,'(A33,I3,1X,I10)') ' Error for parameter, node index:', jpar, i
+                        call ErrMsgStandard (999, 3, ' Error putting variable to NetCdf file NWRW output ', ErrorString)
                      endif
                   Enddo
                Enddo
@@ -3208,6 +3214,7 @@ module Output
   Character(Len=40), pointer, dimension(:)  :: locationid
   integer                             nitem, refdate, reftime
   Character(Len=40)                   VariableName
+  Character(Len=50)                   ErrorString
   Character(Len=80)                   LongVariableName
   Character(Len=8)                    unit
   double precision, dimension(:), allocatable       :: X1Coor, Y1Coor
@@ -3354,7 +3361,9 @@ module Output
                      ierr = nf90_put_var(INetCdfFile(RRStrDimNetCdfFileNr), id_vars(RRStrDimNetCdfFileNr,jpar), dble(StructData(jpar,i)),(/i,1/))
                      Call NetCdfCheck(' WriteFixedStructData after Putvar DioResult',ierr)
                      if (ierr .ne. nf90_noerr) then
-                        write(*,*) ' error for parameter and node index ', jpar, i
+                        ErrorString = ''
+                        write(ErrorString,'(A33,I3,1X,I10)') ' Error for parameter, node index:', jpar, i
+                        call ErrMsgStandard (999, 3, ' Error putting variable to NetCdf file RR-Structure output ', ErrorString)
                      endif
                   Enddo
                Enddo
@@ -3627,9 +3636,9 @@ module Output
         Do loc=1,ncboun
            ierr = nf90_put_var(INetCdfFile(BndFloTotNetCdfFileNr), id_vars(BndFloTotNetCdfFileNr,1), dble(QDyBnd(loc)), (/ loc, itmstp1/))
            Call NetCdfCheck(' OutputModule WrtHis after Putvar QDyBnd',ierr)
-           if (ierr .ne. 0)  write(*,*) ' Some error occurred'
+           if (ierr .ne. 0)  call ErrMsgStandard (999, 3, ' Error putting variable to NetCdf file RR-Boundary output ', '')
         Enddo
-        if (ierr .ne. 0)  write(*,*) ' Some error occurred'
+        if (ierr .ne. 0)  call ErrMsgStandard (999, 3, ' Some error putting variable to NetCdf file RR-Boundary output ', '')
      endif
 
     Return
@@ -4287,6 +4296,7 @@ module Output
       Logical       OutputNow, success
 
 !     voor NetCdf output
+      Character(Len=50)  ErrorString
       Integer       itmstp1
       Integer       IYear, IMo, IDay, IHour, IMin, ISec
       double precision Julian
@@ -4435,7 +4445,40 @@ module Output
                       !    ierr = nf90_put_var(INetCdfFile(imap), id_vars(imap,imsr2), DioResult(imsr2,iloc), (/iloc, itmstp1/))
                       !   Call NetCdfCheck(' OutputModule WrtHis after Putvar DioResult',ierr)
                       !Enddo
-                      if (ierr .ne. 0)  write(*,*) ' Some error occurred'
+                      ErrorString = ' unknown file'
+                      select case (imap)
+                          case (1)
+                             ErrorString = 'RR-Paved'
+                          case (2)
+                             ErrorString = 'RR-Unpaved'
+                          case (3)
+                             ErrorString = 'RR-Greenhouse'
+                          case (4)
+                             ErrorString = 'RR-OpenWater'
+                          case (5)
+                             ErrorString = 'RR-Structures'
+                          case (6)
+                             ErrorString = 'RR-Boundaries'
+                          case (7)
+                             ErrorString = 'RR-NWRW'
+                          case (8)
+                             ErrorString = 'RR-Balance'
+                          case (9)
+                             ErrorString = 'RR-Salt'
+                          case (10)
+                             ErrorString = 'RR-WWTP'
+                          case (11)
+                             ErrorString = 'RR-Industry'
+                          case (12)
+                             ErrorString = 'RR-Sacramento'
+                          case (13)
+                             ErrorString = 'RR-Links'
+                          case (14)
+                             ErrorString = 'RR-Cell'
+                          case (15)
+                             ErrorString = 'RR-runoff (HBV, SCS, LGSI, Walrus, D-NAM)'
+                      end select
+                      if (ierr .ne. 0)  call ErrMsgStandard (999, 3, ' Error putting variable to NetCdf output file', ErrorString)
                    endif
                 Enddo
              endif
@@ -4547,7 +4590,7 @@ module Output
                          ierr = nf90_put_var(INetCdfFile(imap), id_vars(imap,imsr2), dble(DioResult(imsr2,iloc)), (/ iloc, itmstp1 /))
                          Call NetCdfCheck(' OutputModule WrtHis after Putvar DioResult',ierr)
                       Enddo
-                      if (ierr .ne. 0)  write(*,*) ' Some error occurred'
+                      if (ierr .ne. 0)  call ErrMsgStandard (999, 3, ' Error putting variable to NetCdf output file', 'RR-Balance')
                    endif
                 Enddo
 
@@ -5701,8 +5744,7 @@ module Output
     if (InDataSet%Header%Vartype .eq. Dio_Plt_Real) then
        if (.not. DioPltGet(inDataSet, readRealRtcValues)) then
          If (NLOCFRtc * NHisPRtc .gt. 0) then
-            write(*,*) 'Could not read real values in DioPltGet'
-            call ErrMsgStandard (971, 0, NAME,' Could not get the values from RTC ')
+            call ErrMsgStandard (971, 0, NAME,' Could not get the values from RTC in DioPltGet')
          endif
        endif
        Success = Dh_AllocInit (NHisPRtc, NLocfRtc, ReadRtcValues, 0E0)
@@ -5938,8 +5980,7 @@ module Output
     !
     if (.not. DioPltGet(inDataSet, readValues)) then
        If (NLOCF * NPara .gt. 0) then
-          write(*,*) 'Could not read values in DioPltGet'
-          call ErrMsgStandard (971, 0, ' Could not get the values from Sobek-CF/SF',NAME)
+          call ErrMsgStandard (971, 0, ' Could not get the values from Sobek-CF/SF in DioPltGet',NAME)
        endif
     endif
 
@@ -6126,8 +6167,7 @@ module Output
     !
     if (.not. DioPltGet(inDataSet, readValues)) then
        If (NLOCF * NPara .gt. 0) then
-          write(*,*) 'Could not read values in DioPltGet'
-          call ErrMsgStandard (971, 0, ' Could not get the values from Sobek-WQ-Salt',NAME)
+          call ErrMsgStandard (971, 0, ' Could not get the values from Sobek-WQ-Salt in DioPltGet',NAME)
        endif
     endif
 

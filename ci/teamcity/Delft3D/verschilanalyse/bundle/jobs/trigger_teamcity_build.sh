@@ -1,6 +1,5 @@
 #! /bin/bash
 #SBATCH --job-name=va-trigger-teamcity-build
-#SBATCH --output=/p/devops-dsc/verschilanalyse/logs/va-trigger-teamcity-build-%j.out
 #SBATCH --time=00:10:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1

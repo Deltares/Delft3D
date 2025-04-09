@@ -34,6 +34,7 @@
 module io_netcdf
 use netcdf
 use io_ugrid
+use netcdf_utils, only: ncu_ensure_data_mode, ncu_ensure_define_mode
 use coordinate_reference_system
 use m_ug_meshgeom
 use m_ug_charinfo
@@ -451,47 +452,28 @@ end function ionc_close
 function ionc_enddef(ioncid) result(ierr)
    integer,           intent(in   ) :: ioncid    !< The io_netcdf dataset id (this is not the NetCDF ncid, which is stored in datasets(ioncid)%ncid.
    integer                          :: ierr      !< Result status (IONC_NOERR if successful).
-
+   logical                          :: jaInDefine!< Dummy logical
+   
    if (ioncid <= 0 .or. ioncid > ndatasets) then
       ierr = IONC_EBADID
-      goto 999
+      return
    end if
-   ierr = nf90_enddef(datasets(ioncid)%ncid)
-   if (ierr == nf90_enotindefine) then
-      ! Already in data mode
-      ierr = IONC_NOERR
-   end if
+   ierr = ncu_ensure_data_mode(ioncid, jaInDefine)
 
-   ! Successful
-   return
-
-999 continue
-   ! Some error (status was set earlier)
-   return
 end function ionc_enddef
 
 !> Tries to start define mode of an open io_netcdf data set.
 function ionc_redef(ioncid) result(ierr)
    integer,           intent(in   ) :: ioncid    !< The io_netcdf dataset id (this is not the NetCDF ncid, which is stored in datasets(ioncid)%ncid.
    integer                          :: ierr      !< Result status (IONC_NOERR if successful).
+   logical                          :: jaInDefine!< Dummy logical
 
    if (ioncid <= 0 .or. ioncid > ndatasets) then
       ierr = IONC_EBADID
-      goto 999
+      return
    end if
-   ierr = nf90_redef(datasets(ioncid)%ncid)
+   ierr = ncu_ensure_define_mode(ioncid, jaInDefine)
 
-   if (ierr == nf90_eindefine) then
-      ! Already in define mode
-      ierr = IONC_NOERR
-   end if
-
-   ! Successful
-   return
-
-999 continue
-   ! Some error (status was set earlier)
-   return
 end function ionc_redef
 
 
