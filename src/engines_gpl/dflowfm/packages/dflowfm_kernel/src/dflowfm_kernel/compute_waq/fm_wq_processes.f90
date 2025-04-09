@@ -49,13 +49,13 @@ contains
       use timers
       use m_string_utils, only: index_in_array
       use m_logger_helper, only: set_log_unit_number
-      use system_utils, only: split_filename
+      use system_utils, only: get_executable_directory
 
       integer :: ierr_sub !< error status
       integer :: ierr_eho !< error status
 
       character(256) :: cerr !< error message
-      character(len=1024) :: exe_fullpath, share_dir, exe_name
+      character(len=1024) :: exe_dir, share_dir
       ! Other
       integer(4) :: nosys_eho, notot_eho, nocons_eho
       integer(4) :: i
@@ -82,12 +82,8 @@ contains
       statistics_file = md_sttfile
 
       ! Get executable directory
-      call get_command_argument(0, exe_fullpath, status=ierr)
-      if (ierr /= 0) then
-         call mess(LEVEL_INFO, 'Failed to retrieve executable path, error status:', ierr)
-      end if
-      call split_filename(exe_fullpath, share_dir, exe_name)
-      share_dir = trim(share_dir)//'../share/delft3d/'
+      call get_executable_directory(exe_dir, ierr) 
+      share_dir = trim(exe_dir)//'../share/delft3d/'
 
       ! check if substance file exists
       inquire (file=substance_file, exist=Lsub)
