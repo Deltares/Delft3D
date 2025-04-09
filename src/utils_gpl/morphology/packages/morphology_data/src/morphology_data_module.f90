@@ -296,7 +296,6 @@ end type moroutputtype
 ! sediment transport and morphology numerical settings
 !
 type mornumericstype
-    logical :: block_sediment_at_structures ! block sediment at structures
     logical :: pure1d                   ! temporary switch for 1D treatment in FM
     logical :: upwindbedload            ! switch for upwind bedload in UPWBED
     logical :: laterallyaveragedbedload ! bedload transport laterally averaged in UPWBED
@@ -420,6 +419,9 @@ type morpar_type
     real(fp):: hmaxth     !  maximum depth for setting theta for erosion of dry bank
     real(fp):: bedw       !  calibration factor for wave-related bed-load sand transport (included in bed-load)
     real(fp):: factsd     !  calibration factor for 2D suspended load relaxation time
+	real(fp):: bed_general_structures ! calibration factor for bedload transport vector magnitude at general structures
+	real(fp):: bed_weirs              ! calibration factor for bedload transport vector magnitude at fixed weirs    
+    logical :: adjust_sediment_at_structures ! logical to adjust sediment at structures, true when bed_general_structures /= 1.0 or bed_weirs /= 1.0
     real(fp):: rdw
     real(fp):: rdc
     real(fp):: espir      !  factor for weighing the effect of the spiral flow intensity in 2D simulations
@@ -1398,6 +1400,9 @@ subroutine nullmorpar(morpar)
     real(fp)              , dimension(:) , pointer :: thetsd
     real(fp)                             , pointer :: thetsduni
     real(fp)                             , pointer :: susw
+    real(fp)                             , pointer :: bed_general_structures
+    real(fp)                             , pointer :: bed_weirs
+    logical                              , pointer :: adjust_sediment_at_structures
     real(fp)                             , pointer :: sedthr
     real(fp)                             , pointer :: hmaxth
     real(fp)                             , pointer :: bedw
@@ -1488,6 +1493,9 @@ subroutine nullmorpar(morpar)
     thetsd              => morpar%thetsd
     thetsduni           => morpar%thetsduni
     susw                => morpar%susw
+    bed_general_structures => morpar%bed_general_structures
+    bed_weirs           => morpar%bed_weirs
+    adjust_sediment_at_structures => morpar%adjust_sediment_at_structures
     sedthr              => morpar%sedthr
     hmaxth              => morpar%hmaxth
     bedw                => morpar%bedw
@@ -1575,7 +1583,6 @@ subroutine nullmorpar(morpar)
     !
     call initmoroutput(morpar%moroutput)
     !
-    morpar%mornum%block_sediment_at_structures = .false.
     morpar%mornum%pure1d                   = .false.
     morpar%mornum%upwindbedload            = .true.
     morpar%mornum%laterallyaveragedbedload = .false.
@@ -1613,6 +1620,9 @@ subroutine nullmorpar(morpar)
     tcmp               = 0.0_fp
     thetsduni          = 0.0_fp
     susw               = 1.0_fp
+    bed_general_structures = 1.0_fp
+    bed_weirs          = 1.0_fp
+    adjust_sediment_at_structures = .false.
     sedthr             = 0.5_fp
     hmaxth             = 1.0_fp
     bedw               = 1.0_fp

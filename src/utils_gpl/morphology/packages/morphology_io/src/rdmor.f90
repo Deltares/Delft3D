@@ -476,6 +476,17 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     call prop_get(mor_ptr, 'Morphology', 'BedW', morpar%bedw)
     !
+    ! === bed-load sediment factor at general structures
+    !
+    call prop_get(mor_ptr, 'Morphology', 'BedGeneralStructures', morpar%bed_general_structures)
+    !
+    ! === bed-load sediment factor at weirs
+    !
+    call prop_get(mor_ptr, 'Morphology', 'BedWeirs', morpar%bed_weirs)
+    if (morpar%bed_general_structures /= 1.0_fp .or. morpar%bed_weirs /= 1.0_fp) then
+        morpar%adjust_sediment_at_structures = .true.
+    end if
+    !
     ! === minimum depth for sediment calculations
     !
     call prop_get(mor_ptr, 'Morphology', 'SedThr', morpar%sedthr)
@@ -805,7 +816,6 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
         case default 
             mornum%fluxlim = FLUX_LIMITER_NONE  
     end select
-    call prop_get(mor_ptr, 'Numerics', 'BlockSedimentAtStructures', mornum%block_sediment_at_structures)
            
 end subroutine read_morphology_numerical_settings
 
@@ -1400,8 +1410,10 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: dzmaxdune
     real(fp)                               , pointer :: suscorfac
     real(fp)              , dimension(:)   , pointer :: xx
+    real(fp)                               , pointer :: bed_general_structures
+    real(fp)                               , pointer :: bed_weirs
     logical                                , pointer :: bedupd
-    logical                                , pointer :: block_sediment_at_structures
+    logical                                , pointer :: adjust_sediment_at_structures
     logical                                , pointer :: cmpupd
     logical                                , pointer :: eqmbcsand
     logical                                , pointer :: eqmbcmud
@@ -1544,7 +1556,8 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     suscorfac           => morpar%suscorfac
     upwindbedload       => mornum%upwindbedload
     pure1d_mor          => mornum%pure1d
-    block_sediment_at_structures => mornum%block_sediment_at_structures
+    bed_general_structures => morpar%bed_general_structures
+    bed_weirs => morpar%bed_weirs
     !
     ! output values to file
     !
@@ -1675,6 +1688,10 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     write (lundia, '(2a,e20.4)') txtput1, ':', susw
     txtput1 = 'wave-rel. bed-ld.sed.transp.fact.(BEDW)'
     write (lundia, '(2a,e20.4)') txtput1, ':', bedw
+    txtput1 = 'Bed load transp. multiplication factor at general structures'
+    write (lundia, '(2a,e20.4)') txtput1, ':', bed_general_structures
+    txtput1 = 'Bed load transp. multiplication factor at weirs'
+    write (lundia, '(2a,e20.4)') txtput1, ':', bed_weirs
     txtput1 = 'Min.depth for sed. calculations(SEDTHR)'
     write (lundia, '(2a,e20.4)') txtput1, ':', sedthr
     if (flsthetsd /= ' ') then
@@ -1864,12 +1881,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
        txtput2 = '                  NO'
     end if
     write (lundia, '(3a)') txtput1, ':', txtput2 
-    txtput1 = '   Block sediment at structures'
-    if (block_sediment_at_structures) then
-       txtput2 = '                 YES'
-    else
-       txtput2 = '                  NO'
-    end if
     !
     if (morpar%bermslopetransport) then
        txtput1 = 'Berm slope adjustment mechanism activated'
