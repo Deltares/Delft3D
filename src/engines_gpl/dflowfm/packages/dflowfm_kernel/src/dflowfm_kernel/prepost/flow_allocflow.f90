@@ -1241,11 +1241,11 @@ contains
 
       end if
 
-      if (idensform > 0 .and. (jaRichardsononoutput > 0 .or. Prandtl_Richardson == .true.)) then
+      if (idensform > 0 .and. (jaRichardsononoutput > 0 .or. make_prandtl_dependent_on_richardson)) then
          if (allocated(rich)) deallocate (rich)
          allocate (rich(lnkx), stat=ierr)
          call aerr('rich(lnkx)', ierr, lnkx); rich = 0d0
-         if (Prandtl_Richardson == .true.) then
+         if (make_prandtl_dependent_on_richardson) then
             allocate (richs(ndkx), stat=ierr)
             call aerr('richs(ndkx)', ierr, ndkx); richs = 0d0
          end if

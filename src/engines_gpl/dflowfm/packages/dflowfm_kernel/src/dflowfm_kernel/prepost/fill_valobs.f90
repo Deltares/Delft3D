@@ -486,7 +486,7 @@ contains
                         valobs(i, IPNT_BRUV + klay - 1) = -ag * drhodz / rhomea
                      end if
                   end if
-                  if (idensform > 0 .and. jaRichardsononoutput > 0 .and. Prandtl_Richardson == .true.) then
+                  if (idensform > 0 .and. jaRichardsononoutput > 0 .and. make_prandtl_dependent_on_richardson) then
                      valobs(i, IPNT_RICHS + klay - 1) = richs(kk)
                   end if
 

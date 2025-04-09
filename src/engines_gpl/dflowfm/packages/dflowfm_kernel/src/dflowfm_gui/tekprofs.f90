@@ -190,8 +190,8 @@ contains
 
             else if (iturbulencemodel >= 3) then
 
-               tkebot = ustbref**2 / sqcmukep
-               tkewin = ustwref**2 / sqcmukep
+               tkebot = ustbref**2 / sqrt(cmukep)
+               tkewin = ustwref**2 / sqrt(cmukep)
                tkesur = max(tkewin, ustbref**2)
                ! tkesur = 0d0
                epsbot = cewall * tkebot**1.5d0

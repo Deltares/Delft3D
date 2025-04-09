@@ -1352,7 +1352,7 @@ contains
                              nc_dim_ids=station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_DIFWWS, &
                              'Wrihis_turbulence', 'difwws', 'turbulent vertical eddy diffusivity of salinity at pressure point', &
-                             '', 'm2 s-1?', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             '', 'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_center)
 
       ! Gravity + buoyancy

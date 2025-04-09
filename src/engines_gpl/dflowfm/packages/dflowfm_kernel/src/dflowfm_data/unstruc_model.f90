@@ -1184,7 +1184,7 @@ contains
       if (c3e_unstable < 0.0d0) then
          call mess(LEVEL_ERROR, 'c3eUnstable should be >= 0')
       end if
-      call prop_get(md_ptr, 'numerics', 'Prandtl_Richardson', Prandtl_Richardson)
+      call prop_get(md_ptr, 'numerics', 'Prandtl_Richardson', make_prandtl_dependent_on_richardson)
       call prop_get(md_ptr, 'numerics', 'Prt0', Prt0)
       call prop_get(md_ptr, 'numerics', 'Ri_inf', Ri_inf)
 
@@ -3126,23 +3126,23 @@ contains
 
       if (writeall .or. kmx > 0) then
          call prop_set(prop_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel, 'Turbulence model (0: none, 1: constant, 2: algebraic, 3: k-epsilon, 4: k-tau)')
-         if (c1e /= (c2e - vonkar**2 / (sigeps * sqcmukep))) then
+         if (c1e /= (c2e - vonkar**2 / (sigeps * sqrt(cmukep)))) then
             call prop_set(prop_ptr, 'numerics', 'c1e', c1e, 'c1e')
          end if
          if (c3e_stable /= 0.0_dp) then
             call prop_set(prop_ptr, 'numerics', 'c3eStable', c3e_stable, 'c3e_stable. Default: 0.0')
          end if
-         if (c3e_unstable /= (c2e - vonkar**2 / (sigeps * sqcmukep))) then
-            call prop_set(prop_ptr, 'numerics', 'c3eUnstable', c3e_unstable, 'c3e_unstable. Default: c3eUnstable = c1e = c2e - vonkar**2 / (sigeps * sqcmukep) = 1.49...')
+         if (c3e_unstable /= (c2e - vonkar**2 / (sigeps * sqrt(cmukep)))) then
+            call prop_set(prop_ptr, 'numerics', 'c3eUnstable', c3e_unstable, 'c3e_unstable. Default: c3eUnstable = c1e = c2e - vonkar**2 / (sigeps * sqrt(cmukep)) = 1.49...')
          end if
-         if (Prandtl_Richardson /= .false.) then
-            call prop_set(prop_ptr, 'numerics', 'Prandtl_Richardson', Prandtl_Richardson, 'Make the Prandtl-Schmidt number dependent on the Richardson number in the case of stable stratification (1: yes, 0: no)')
+         if (.not. make_prandtl_dependent_on_richardson) then
+            call prop_set(prop_ptr, 'numerics', 'Prandtl_Richardson', make_prandtl_dependent_on_richardson, 'Make the Prandtl-Schmidt number dependent on the Richardson number in the case of stable stratification (1: yes, 0: no)')
          end if
          if (Prt0 /= 0.74_dp) then
-            call prop_set(prop_ptr, 'numerics', 'Prt0', Prt0, 'Used in "Prt = Prt0 * exp(richs(k) / (Prt0 * Ri_inf)) + richs(k) / Ri_inf"')
+            call prop_set(prop_ptr, 'numerics', 'Prt0', Prt0, 'Base (minimum or neutral) turbulent Prandtl number (Pr)')
          end if
          if (Ri_inf /= 0.25_dp) then
-            call prop_set(prop_ptr, 'numerics', 'Ri_inf', Ri_inf, 'Used in "Prt = Prt0 * exp(richs(k) / (Prt0 * Ri_inf)) + richs(k) / Ri_inf"')
+            call prop_set(prop_ptr, 'numerics', 'Ri_inf', Ri_inf, 'Richardson (Ri) limit for mixing (representing "infinite" stratification limit)')
          end if
       end if
 

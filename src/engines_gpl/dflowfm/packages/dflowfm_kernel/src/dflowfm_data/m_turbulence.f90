@@ -37,12 +37,11 @@ module m_turbulence
 
    ! Coefficients of k-e model:
    real(kind=dp) :: cmukep
-   real(kind=dp) :: sqcmukep
    real(kind=dp) :: cewall
    real(kind=dp) :: c1e
    real(kind=dp) :: c3e_stable
    real(kind=dp) :: c3e_unstable
-   logical :: Prandtl_Richardson = .false.
+   logical :: make_prandtl_dependent_on_richardson = .false.
    real(kind=dp) :: Prt0 = 0.74_dp
    real(kind=dp) :: Ri_inf = 0.25_dp
    real(kind=dp) :: c2e
@@ -147,12 +146,11 @@ contains
       sigrho = 0.7_dp
 
       cmukep = 0.09_dp
-      sqcmukep = sqrt(cmukep)
 
       c2e = 1.92_dp
 
       ! k-eps
-      c1e = c2e - vonkar**2 / (sigeps * sqcmukep)
+      c1e = c2e - vonkar**2 / (sigeps * sqrt(cmukep))
       c3e_stable = 0.0_dp
       c3e_unstable = c1e
 
@@ -160,7 +158,7 @@ contains
       c2t = 1.0_dp - c2e
       c3t_stable = 1.0_dp * cmukep
 
-      call calculate_derived_coefficients_turbulence_c1e
+      call calculate_derived_coefficients_turbulence_c1e()
 
       skmy = 1.96_dp
       a1ph = 0.92_dp
@@ -181,7 +179,7 @@ contains
       coefn2 = -ag / (sigrho * rhomean)
    end subroutine calculate_derived_coefficients_turbulence
 
-   !> Calculate derived coefficients for turbulence
+   !> Calculate derived coefficients for turbulence variable c1e
    subroutine calculate_derived_coefficients_turbulence_c1e()
 
       ! k-eps

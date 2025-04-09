@@ -53,7 +53,7 @@ contains
       use m_flowgeom, only: Ndxi, Ndx, ba, kfs ! static mesh information
       use m_flowtimes, only: dts
       use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
-      use m_turbulence, only: Prandtl_Richardson, Prt0, Ri_inf, Schmidt_number_salinity, Prandtl_number_temperature, richs, difwws
+      use m_turbulence, only: make_prandtl_dependent_on_richardson, Prt0, Ri_inf, Schmidt_number_salinity, Prandtl_number_temperature, richs, difwws
       use m_transportdata, only: ISALT, ITEMP
       use m_flowparameters, only: epshu, testdryflood
       use m_sediment, only: mtd, jased
@@ -176,7 +176,7 @@ contains
             do j = 1, NUMCONST
 
 !           ! diffusion
-               if ((Prandtl_Richardson == .true.) .and. (j == ISALT .or. j == ITEMP)) then
+               if ((make_prandtl_dependent_on_richardson) .and. (j == ISALT .or. j == ITEMP)) then
                   if (richs(k) > 0.0_dp) then
                      Prt = Prt0 * exp(-richs(k) / (Prt0 * Ri_inf)) + richs(k) / Ri_inf
                      sigdifi(j) = 1.0_dp / Prt

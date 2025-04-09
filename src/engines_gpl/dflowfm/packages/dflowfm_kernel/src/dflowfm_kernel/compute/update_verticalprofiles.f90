@@ -41,7 +41,7 @@ contains
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flowwithoutwaves, adve, u1, qw, &
-                        a1, vicwwu, vonkar, c2e, sqcmukep, ndkx, javakeps, turkinepsws, turkin1, tureps1, numsrc, addksources, tqcu, eqcu, sqcu, q1, tetavkeps, &
+                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinepsws, turkin1, tureps1, numsrc, addksources, tqcu, eqcu, sqcu, q1, tetavkeps, &
                         eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, turbulence_lax_factor, turbulence_lax_vertical, eps20, &
                         jarichardsononoutput, rich, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, epstke, kmxl, sigeps, &
                         c1e, c3t_unstable, c3t_stable, c1t, c2t, c9of1, eps6, epseps, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
@@ -54,7 +54,7 @@ contains
       use m_sferic, only: pi
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
-      use m_turbulence, only: cmukep, rho, coefn2, richs, Prandtl_Richardson, c3e_stable, c3e_unstable, eps_limit_method
+      use m_turbulence, only: cmukep, rho, coefn2, richs, make_prandtl_dependent_on_richardson, c3e_stable, c3e_unstable, eps_limit_method
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
       use m_wave_fillsurdis, only: wave_fillsurdis
@@ -72,7 +72,7 @@ contains
       real(kind=dp) :: hdzb, dtiL, adv, omegu, drhodz1, drhodz2
       real(kind=dp) :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
       real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax, zf
-      real(kind=dp) :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, c2esqcmukep, teps, tkin
+      real(kind=dp) :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, teps, tkin
       real(kind=dp) :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps
       real(kind=dp) :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL, prsappr
       integer :: k, ku, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
@@ -201,8 +201,6 @@ contains
 
       else if (iturbulencemodel >= 3) then ! 3=k-epsilon, 4=k-tau
 
-         c2esqcmukep = c2e * sqcmukep
-
          if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
 
             call links_to_centers(turkinepsws, turkin1, tureps1)
@@ -276,8 +274,8 @@ contains
                   advi(Lb) = advi(Lb) + cfuhi3D
                end if
 
-               tkebot = ustb(LL)**2 / sqcmukep ! this has stokes incorporated when jawave>0
-               tkesur = ustw(LL)**2 / sqcmukep ! only wind+ship contribution
+               tkebot = ustb(LL)**2 / sqrt(cmukep) ! this has stokes incorporated when jawave>0
+               tkesur = ustw(LL)**2 / sqrt(cmukep) ! only wind+ship contribution
 
                if (ieps == 3) then ! as Delft3D
                   vicwwu(Lb0) = vonkar * ustb(LL) * z00
@@ -447,7 +445,7 @@ contains
                      dijdij(k) = ((u1(Lu) - u1(L))**2 + (v(Lu) - v(L))**2) / dzw(k)**2
                   end if
 
-                  if ((Prandtl_Richardson == .true.) .or. (jarichardsononoutput > 0)) then
+                  if ((make_prandtl_dependent_on_richardson) .or. (jarichardsononoutput > 0)) then
                      rich(L) = sigrho * bruva(k) / max(1d-8, dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
                   end if
 
@@ -590,7 +588,7 @@ contains
                               wk = vk * um * um ! work done by this layer m2/s3
                               ap1 = 1.0 - diav * diav * rnv * pi * 0.25 ! Free area
                               xlveg = Clveg * sqrt(ap1 / rnv) ! typical length between plants
-                              tauinv = c2esqcmukep * (wk / xlveg**2)**r3
+                              tauinv = c2e * sqrt(cmukep) * (wk / xlveg**2)**r3
                               teps = 0.5_dp * (tureps0(L) + tureps0(L))
                               tkin = 0.5_dp * (turkin0(L) + turkin0(L))
                               if (iturbulencemodel == 3) then
@@ -834,7 +832,7 @@ contains
                end if
 
                call tridag(ak, bk, ck, dk, ek, tureps1(Lb0:Lt), kxL + 1) ! solve eps
-               if ((eps_limit_method == 2) .and. (bruva(k) > 0.d0)) then ! stable stratification
+               if ((eps_limit_method == 2) .and. (bruva(k) > 0.0_dp)) then ! stable stratification
                   tureps1(Lb0:Lt) = max((sqrt(0.045) * epstke * sqrt(bruva(k) * sigrho)), tureps1(Lb0:Lt))
                else
                   tureps1(Lb0:Lt) = max(epseps, tureps1(Lb0:Lt))
@@ -915,7 +913,7 @@ contains
       end if
 
       call links_to_centers(vicwws, vicwwu)
-      if (Prandtl_Richardson == .true.) then
+      if (make_prandtl_dependent_on_richardson) then
          call links_to_centers(richs, rich)
       end if
 
