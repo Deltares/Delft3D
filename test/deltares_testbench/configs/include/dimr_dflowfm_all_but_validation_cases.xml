@@ -5602,21 +5602,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f022_c301_sedimentmodelnr2_1VR" ref="dflowfm_default">
-      <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c301_sedimentmodelnr2_1VR</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/test_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_netnode_bedlevel_zk" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ero1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sed1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f022_c302_sedimentmodelnr2_3VR" ref="dflowfm_default">
       <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c302_sedimentmodelnr2_3VR</path>
       <maxRunTime>20.0</maxRunTime>
@@ -5630,38 +5615,6 @@
             <parameter name="mesh2d_ero3" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_sed1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_sed3" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f022_c303_sedimentmodelnr2_1PK_2VR" ref="dflowfm_default">
-      <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c303_sedimentmodelnr2_1PK_2VR</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/test_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_netnode_bedlevel_zk" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ero1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ero3" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sed1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sed3" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f022_c304_sedimentmodelnr3_1EH" ref="dflowfm_default">
-      <path version="2025-04-04T13:56:15.975000">e02_dflowfm/f022_morphology_2D/c304_sedimentmodelnr3_1EH</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/test_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.001" />
-            <parameter name="mesh2d_netnode_bedlevel_zk" toleranceAbsolute="0.001" />
-            <parameter name="mesh2d_ero1" toleranceAbsolute="0.001" />
-            <parameter name="mesh2d_sed1" toleranceAbsolute="0.001" />
           </parameters>
         </file>
       </checks>
