@@ -75,7 +75,7 @@ contains
       real(kind=dp) :: zmin, zmax
       real(kind=dp) :: h0, b0, z00, zinc, cz, ustbref, ustwref, zint, z1, dz2, zz
       real(kind=dp) :: tkebot, tkesur, tkewin
-      real(kind=dp) :: epsbot, epssur, dzkap, sqcf, ulx, sg, drhodz, rhomea, rhop0, prsappr
+      real(kind=dp) :: epsbot, epssur, dzkap, sqcf, ulx, sg, drhodz, rhomea
       real(kind=dp) :: VMAX2, VMIN2
       integer :: is, Ls, LLs, Lbs, Lts
       integer :: jabruv
@@ -304,24 +304,10 @@ contains
                call TEKFN(4, 8, 1, turkin1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'tkin1', 0, 2, 0d0, kplot + 1)
             end if
 
-            if (jasal > 0 .and. jatem > 0 .and. idensform < 0) then
-               if (idensform == DENSITY_OPTION_UNESCO83 .and. apply_thermobaricity) then
-                  do k = kb, kt
-                     rhop0 = density_at_cell(k, 0d0)
-                     dijdij(k - kb + 1) = rhop0
-                  end do
-                  call getvminmax(5, vmin, vmax, dijdij(1:km), km)
-                  call TEKFN(5, 10, 1, dijdij(1:km), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'rhopot', 1, 2, 0d0, kplot)
-               else
-                  call getvminmax(6, vmin, vmax, rho(kb:), kt - kb + 1)
-                  call TEKFN(5, 10, 1, rho(kb:kt), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'rhopot', 1, 2, 0d0, kplot)
-               end if
-            else
-               if (frcuni > 0 .and. ndraw(35) == 1) then
-                  vmin = 0d0; vmax = 0.d0; vmax = max(vmax, maxval(tureps1(Lb0:Lt)), vmin + 1d-5)
-                  if (jaref > 0) call TEKFN(5, 9, 0, teps1ref, hwref, km1, vmin, vmax, zmin, zmax, 31, 'teps1', 0, 1, 0d0, 0) ! interfaces
-                  call TEKFN(5, 10, 1, tureps1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'teps1', 0, 2, 0d0, kplot + 1)
-               end if
+            if (frcuni > 0 .and. ndraw(35) == 1) then
+               vmin = 0d0; vmax = 0.d0; vmax = max(vmax, maxval(tureps1(Lb0:Lt)), vmin + 1d-5)
+               if (jaref > 0) call TEKFN(5, 9, 0, teps1ref, hwref, km1, vmin, vmax, zmin, zmax, 31, 'teps1', 0, 1, 0d0, 0) ! interfaces
+               call TEKFN(5, 10, 1, tureps1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'teps1', 0, 2, 0d0, kplot + 1)
             end if
 
          end if
@@ -365,8 +351,7 @@ contains
 
             do k = kb, kt - 1
                kk = k - kb + 1
-               prsappr = ag * rhomean * (zws(kt) - zws(k))
-               drhodz = (density_at_cell(k + 1, prsappr) - density_at_cell(k, prsappr)) / (0.5d0 * (zws(k + 1) - zws(k - 1)))
+               drhodz = (rho(k + 1) - rho(k)) / (0.5d0 * (zws(k + 1) - zws(k - 1)))
                rhomea = 0.5d0 * (rho(k + 1) + rho(k))
                dijdij(kk) = -ag * drhodz / rhomea
             end do
