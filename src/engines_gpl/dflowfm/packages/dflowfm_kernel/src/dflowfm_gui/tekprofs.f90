@@ -304,23 +304,10 @@ contains
                call TEKFN(4, 8, 1, turkin1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'tkin1', 0, 2, 0d0, kplot + 1)
             end if
 
-            if (jasal > 0 .and. jatem > 0 .and. idensform < 0) then
-               if (idensform == DENSITY_OPTION_UNESCO83 .and. apply_thermobaricity) then
-                  do k = kb, kt
-                     dijdij(k - kb + 1) = potential_density(k)
-                  end do
-                  call getvminmax(5, vmin, vmax, dijdij(1:km), km)
-                  call TEKFN(5, 10, 1, dijdij(1:km), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'rhopot', 1, 2, 0d0, kplot)
-               else
-                  call getvminmax(6, vmin, vmax, rho(kb:), kt - kb + 1)
-                  call TEKFN(5, 10, 1, rho(kb:kt), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'rhopot', 1, 2, 0d0, kplot)
-               end if
-            else
-               if (frcuni > 0 .and. ndraw(35) == 1) then
-                  vmin = 0d0; vmax = 0.d0; vmax = max(vmax, maxval(tureps1(Lb0:Lt)), vmin + 1d-5)
-                  if (jaref > 0) call TEKFN(5, 9, 0, teps1ref, hwref, km1, vmin, vmax, zmin, zmax, 31, 'teps1', 0, 1, 0d0, 0) ! interfaces
-                  call TEKFN(5, 10, 1, tureps1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'teps1', 0, 2, 0d0, kplot + 1)
-               end if
+            if (frcuni > 0 .and. ndraw(35) == 1) then
+               vmin = 0d0; vmax = 0.d0; vmax = max(vmax, maxval(tureps1(Lb0:Lt)), vmin + 1d-5)
+               if (jaref > 0) call TEKFN(5, 9, 0, teps1ref, hwref, km1, vmin, vmax, zmin, zmax, 31, 'teps1', 0, 1, 0d0, 0) ! interfaces
+               call TEKFN(5, 10, 1, tureps1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'teps1', 0, 2, 0d0, kplot + 1)
             end if
 
          end if
