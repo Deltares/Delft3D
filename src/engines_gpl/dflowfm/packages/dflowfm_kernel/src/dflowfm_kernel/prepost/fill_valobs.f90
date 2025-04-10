@@ -340,39 +340,50 @@ contains
 
            ! time series of sediment transport/morphological parameters
             if (stm_included .and. jased > 0) then
+              ! Allocate tmp_interp as 2D array
+               call realloc(tmp_interp, ndx, keepExisting=.false., fill=0d0)
+               
                do j = IVAL_SBCX1, IVAL_SBCXN
                   ii = j - IVAL_SBCX1 + 1
-                  valobs(i, IPNT_SBCX1 + ii - 1) = sedtra%sbcx(k, ii)
+                  tmp_interp = sedtra%sbcx(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_SBCX1 + ii - 1,UNC_LOC_S)
                end do
                do j = IVAL_SBCY1, IVAL_SBCYN
                   ii = j - IVAL_SBCY1 + 1
-                  valobs(i, IPNT_SBCY1 + ii - 1) = sedtra%sbcy(k, ii)
+                  tmp_interp = sedtra%sbcy(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_SBCY1 + ii - 1,UNC_LOC_S)
                end do
                do j = IVAL_SSCX1, IVAL_SSCXN
                   ii = j - IVAL_SSCX1 + 1
-                  valobs(i, IPNT_SSCX1 + ii - 1) = sedtra%sscx(k, ii)
+                  tmp_interp = sedtra%sscx(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_SSCX1 + ii - 1,UNC_LOC_S)
                end do
                do j = IVAL_SSCY1, IVAL_SSCYN
                   ii = j - IVAL_SSCY1 + 1
-                  valobs(i, IPNT_SSCY1 + ii - 1) = sedtra%sscy(k, ii)
+                  tmp_interp = sedtra%sscy(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_SSCY1 + ii - 1,UNC_LOC_S)
                end do
                if (jawave > 0 .and. .not. flowWithoutWaves) then
                   do j = IVAL_SBWX1, IVAL_SBWXN
                      ii = j - IVAL_SBWX1 + 1
-                     valobs(i, IPNT_SBWX1 + ii - 1) = sedtra%sbwx(k, ii)
+                     tmp_interp = sedtra%sbwx(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SBWX1 + ii - 1,UNC_LOC_S)
                   end do
                   do j = IVAL_SBWY1, IVAL_SBWYN
                      ii = j - IVAL_SBWY1 + 1
-                     valobs(i, IPNT_SBWY1 + ii - 1) = sedtra%sbwy(k, ii)
+                     tmp_interp = sedtra%sbwy(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SBWY1 + ii - 1,UNC_LOC_S)
                   end do
                   do j = IVAL_SSWX1, IVAL_SSWXN
                      ii = j - IVAL_SSWX1 + 1
-                     valobs(i, IPNT_SSWX1 + ii - 1) = sedtra%sswx(k, ii)
+                     tmp_interp = sedtra%sswx(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SSWX1 + ii - 1,UNC_LOC_S)
                   end do
                   do j = IVAL_SSWY1, IVAL_SSWYN
                      ii = j - IVAL_SSWY1 + 1
-                     valobs(i, IPNT_SSWY1 + ii - 1) = sedtra%sswy(k, ii)
-                  end do
+                     tmp_interp = sedtra%sswy(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SSWY1 + ii - 1,UNC_LOC_S)
+                  end do 
                end if
                !
                valobs(i, IPNT_TAUB) = sedtra%taub(k) ! contains tausmax or Soulsby-Clarke shear stresses
