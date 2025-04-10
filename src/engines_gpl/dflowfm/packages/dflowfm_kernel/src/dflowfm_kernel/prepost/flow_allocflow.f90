@@ -41,31 +41,31 @@ module m_flow_allocflow
 contains
 
    !> initialise flow model time independent parameters
-   subroutine flow_allocflow() 
+   subroutine flow_allocflow()
       use precision, only: dp
       use m_netw, only: kn
       use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
-          limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop,&
-          kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
-          numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, jaorgFloorlevtoplaydef, dztop, dztopuniabovez, &
-          sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
-          kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
-          dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
-          uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
-          uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
-          qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, &
-          jacreep, dpbdx0, rvdn, grn, jarhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
-          workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
-          spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
-          limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, epstke, epseps, &
-          turkinepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, &
-          v, ucxu, ucyu, hu, huvli, au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, &
-          frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
-          salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
-          jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
-          rich, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
-          jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
+                        limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
+                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
+                        numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, jaorgFloorlevtoplaydef, dztop, dztopuniabovez, &
+                        sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
+                        kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
+                        dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
+                        uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
+                        uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
+                        qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, &
+                        jacreep, dpbdx0, rvdn, grn, jarhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
+                        workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
+                        spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
+                        limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, epstke, epseps, &
+                        turkinepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, &
+                        v, ucxu, ucyu, hu, huvli, au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, &
+                        frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
+                        salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
+                        jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
+                        rich, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
+                        jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
       use m_flowtimes, only: dtcell, time_wetground, ja_timestep_auto, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
@@ -85,10 +85,10 @@ contains
       use m_get_zlayer_indices_bobL, only: getzlayerindicesbobL
       use m_filez, only: oldfil
       use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, clou, rain, evap, tair, heatsrc, heatsrc0, &
-         longwave, patm, rhum, qrad, tbed, qext, qextreal, vextcum, cdwcof
+                        longwave, patm, rhum, qrad, tbed, qext, qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_tem, nudge_sal, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
-      use m_turbulence, only: potential_density, in_situ_density, difwws, make_prandtl_dependent_on_richardson, richs
+      use m_turbulence, only: potential_density, in_situ_density, difwws, richs
       use m_physcoef, only: apply_thermobaricity
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
@@ -1240,14 +1240,16 @@ contains
 
       end if
 
-      if (idensform > 0 .and. (jaRichardsononoutput > 0 .or. make_prandtl_dependent_on_richardson)) then
+      if (idensform > 0 .and. jaRichardsononoutput > 0) then
          if (allocated(rich)) deallocate (rich)
          allocate (rich(lnkx), stat=ierr)
          call aerr('rich(lnkx)', ierr, lnkx); rich = 0.0_dp
-         if (make_prandtl_dependent_on_richardson) then
-            allocate (richs(ndkx), stat=ierr)
-            call aerr('richs(ndkx)', ierr, ndkx); richs = 0.0_dp
+
+         if (allocated(richs)) then
+            deallocate (richs)
          end if
+         allocate (richs(ndkx), stat=ierr)
+         call aerr('richs(ndkx)', ierr, ndkx); richs = 0.0_dp
       else
          jaRichardsononoutput = 0
       end if

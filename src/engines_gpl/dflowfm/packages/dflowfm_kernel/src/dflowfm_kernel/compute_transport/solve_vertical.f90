@@ -53,13 +53,12 @@ contains
       use m_flowgeom, only: Ndxi, Ndx, ba, kfs ! static mesh information
       use m_flowtimes, only: dts
       use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
-      use m_turbulence, only: make_prandtl_dependent_on_richardson, Prt0, Ri_inf, Schmidt_number_salinity, Prandtl_number_temperature, richs, difwws
-      use m_transportdata, only: ISALT, ITEMP
+      use m_turbulence, only: difwws
       use m_flowparameters, only: epshu, testdryflood
       use m_sediment, only: mtd, jased
       use m_fm_erosed, only: tpsnumber
-      use sediment_basics_module
-      use timers
+      use timers, only: timon, timstrt, timstop
+      use m_transport, only: isalt
 
       implicit none
 
@@ -81,7 +80,7 @@ contains
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: sink !< sinks
       real(kind=dp), dimension(NUMCONST), intent(in) :: difsed !< scalar-specific diffusion coefficent (dicoww+difmod)
       real(kind=dp), dimension(Ndkx), intent(in) :: vicwws !< vertical eddy viscosity, NOTE: real, not double
-      real(kind=dp), dimension(NUMCONST), intent(inout) :: sigdifi !< 1/(Prandtl number) for heat, 1/(Schmidt number) for mass
+      real(kind=dp), dimension(NUMCONST), intent(in) :: sigdifi !< 1/(Prandtl number) for heat, 1/(Schmidt number) for mass
       integer, intent(in) :: nsubsteps !< number of substeps
       integer, dimension(Ndx), intent(in) :: jaupdate !< update cell (1) or not (0)
       integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of substeps
@@ -92,7 +91,6 @@ contains
 
       real(kind=dp) :: fluxfac, dvol1i, dvol2i
       real(kind=dp) :: dtbazi, dtba, ozmid, bruns
-      real(kind=dp) :: Prt
 
       integer :: kk, k, kb, kt, ktx
       integer :: j, n
@@ -114,7 +112,7 @@ contains
 
       ! construct and solve system
       !$OMP PARALLEL DO                                                 &
-      !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc,sigdifi,Prt) &
+      !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc) &
       !$OMP FIRSTPRIVATE(dt_loc)
       do kk = 1, Ndxi
          if (nsubsteps > 1) then
@@ -175,18 +173,7 @@ contains
 
             do j = 1, NUMCONST
 
-!           ! diffusion
-               if ((make_prandtl_dependent_on_richardson) .and. (j == ISALT .or. j == ITEMP)) then
-                  if (richs(k) > 0.0_dp) then
-                     Prt = Prt0 * exp(-richs(k) / (Prt0 * Ri_inf)) + richs(k) / Ri_inf
-                     sigdifi(j) = 1.0_dp / Prt
-                  elseif (j == ISALT) then
-                     sigdifi(ISALT) = 1.0_dp / Schmidt_number_salinity
-                  elseif (j == ITEMP) then
-                     sigdifi(ITEMP) = 1.0_dp / Prandtl_number_temperature
-                  end if
-               end if
-
+               ! diffusion
                if (jased > 3 .and. j >= ISED1 .and. j <= ISEDN) then ! sediment d3d
                   fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + difsed(j)) * dtbazi
                   ! i.w.  + vicwws/van rijn                              + background (dicoww)
@@ -203,7 +190,7 @@ contains
                b(n + 1, j) = b(n + 1, j) + fluxfac * dvol2i
                a(n + 1, j) = a(n + 1, j) - fluxfac * dvol2i
 
-!           advection
+               ! advection
                if (thetavert(j) > 0d0) then ! semi-implicit, use central scheme
 
                   if (jased > 0 .and. jaimplicitfallvelocity == 0) then ! explicit fallvelocity

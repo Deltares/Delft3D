@@ -1184,9 +1184,6 @@ contains
       if (c3e_unstable < 0.0d0) then
          call mess(LEVEL_ERROR, 'c3eUnstable should be >= 0')
       end if
-      call prop_get(md_ptr, 'numerics', 'Prandtl_Richardson', make_prandtl_dependent_on_richardson)
-      call prop_get(md_ptr, 'numerics', 'Prt0', Prt0)
-      call prop_get(md_ptr, 'numerics', 'Ri_inf', Ri_inf)
 
       call prop_get(md_ptr, 'numerics', 'Turbulenceadvection', javakeps)
       call prop_get(md_ptr, 'numerics', 'FacLaxTurb', turbulence_lax_factor)
@@ -1194,7 +1191,6 @@ contains
       call prop_get(md_ptr, 'numerics', 'FacLaxTurbHor', turbulence_lax_horizontal)
       call prop_get(md_ptr, 'numerics', 'EpsTKE', epstke)
       call prop_get(md_ptr, 'numerics', 'EpsEPS', epseps)
-      call prop_get(md_ptr, 'numerics', 'EpsLimitMethod', eps_limit_method)
 
       call prop_get(md_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax)
       call prop_get(md_ptr, 'numerics', 'AntiCreep', jacreep)
@@ -3135,15 +3131,6 @@ contains
          if (c3e_unstable /= (c2e - vonkar**2 / (sigeps * sqrt(cmukep)))) then
             call prop_set(prop_ptr, 'numerics', 'c3eUnstable', c3e_unstable, 'c3e_unstable. Default: c3eUnstable = c1e = c2e - vonkar**2 / (sigeps * sqrt(cmukep)) = 1.49...')
          end if
-         if (.not. make_prandtl_dependent_on_richardson) then
-            call prop_set(prop_ptr, 'numerics', 'Prandtl_Richardson', make_prandtl_dependent_on_richardson, 'Make the Prandtl-Schmidt number dependent on the Richardson number in the case of stable stratification (1: yes, 0: no)')
-         end if
-         if (Prt0 /= 0.74_dp) then
-            call prop_set(prop_ptr, 'numerics', 'Prt0', Prt0, 'Base (minimum or neutral) turbulent Prandtl number (Pr)')
-         end if
-         if (Ri_inf /= 0.25_dp) then
-            call prop_set(prop_ptr, 'numerics', 'Ri_inf', Ri_inf, 'Richardson (Ri) limit for mixing (representing "infinite" stratification limit)')
-         end if
       end if
 
       if (writeall .or. (javakeps /= 3 .and. kmx > 0)) then
@@ -3162,9 +3149,6 @@ contains
 
       if (writeall .or. (epseps > 1.0e-32_dp .and. kmx > 0)) then
          call prop_set(prop_ptr, 'numerics', 'EpsEPS', epseps, '(EPS=max(EPS,EpsEPS), default=1d-32, (or TAU))')
-      end if
-      if (eps_limit_method /= 1) then
-         call prop_set(prop_ptr, 'numerics', 'EpsLimitMethod', eps_limit_method, 'Method to limit EPS (1: EPS=max(EPS, EpsEPS), 2: EPS=max(EPS, sqrt(0.045) * epstke * sqrt(bruva * sigrho)))')
       end if
 
       if (writeall .or. Eddyviscositybedfacmax > 0 .and. kmx > 0) then

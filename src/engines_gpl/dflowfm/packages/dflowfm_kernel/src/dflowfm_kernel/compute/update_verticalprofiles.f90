@@ -54,7 +54,7 @@ contains
       use m_sferic, only: pi
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
-      use m_turbulence, only: cmukep, rho, coefn2, richs, make_prandtl_dependent_on_richardson, c3e_stable, c3e_unstable, eps_limit_method
+      use m_turbulence, only: cmukep, rho, coefn2, richs, c3e_stable, c3e_unstable
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
       use m_wave_fillsurdis, only: wave_fillsurdis
@@ -445,7 +445,7 @@ contains
                      dijdij(k) = ((u1(Lu) - u1(L))**2 + (v(Lu) - v(L))**2) / dzw(k)**2
                   end if
 
-                  if ((make_prandtl_dependent_on_richardson) .or. (jarichardsononoutput > 0)) then
+                  if (jarichardsononoutput > 0) then
                      rich(L) = sigrho * bruva(k) / max(1d-8, dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
                   end if
 
@@ -832,11 +832,7 @@ contains
                end if
 
                call tridag(ak, bk, ck, dk, ek, tureps1(Lb0:Lt), kxL + 1) ! solve eps
-               if ((eps_limit_method == 2) .and. (bruva(k) > 0.0_dp)) then ! stable stratification
-                  tureps1(Lb0:Lt) = max((sqrt(0.045) * epstke * sqrt(bruva(k) * sigrho)), tureps1(Lb0:Lt))
-               else
-                  tureps1(Lb0:Lt) = max(epseps, tureps1(Lb0:Lt))
-               end if
+               tureps1(Lb0:Lt) = max(epseps, tureps1(Lb0:Lt))
                do L = Lt + 1, Lb + kmxL(LL) - 1 ! copy to surface for z-layers
                   tureps1(L) = tureps1(Lt)
                end do
@@ -913,7 +909,7 @@ contains
       end if
 
       call links_to_centers(vicwws, vicwwu)
-      if (make_prandtl_dependent_on_richardson) then
+      if (jarichardsononoutput > 0) then
          call links_to_centers(richs, rich)
       end if
 

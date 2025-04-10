@@ -41,9 +41,6 @@ module m_turbulence
    real(kind=dp) :: c1e
    real(kind=dp) :: c3e_stable
    real(kind=dp) :: c3e_unstable
-   logical :: make_prandtl_dependent_on_richardson = .false.
-   real(kind=dp) :: Prt0 = 0.74_dp
-   real(kind=dp) :: Ri_inf = 0.25_dp
    real(kind=dp) :: c2e
    real(kind=dp) :: sigdif
    real(kind=dp) :: sigtke
@@ -94,7 +91,6 @@ module m_turbulence
 
    real(kind=dp) :: epstke = 1d-32 ! D3D: - 7, dpm: -32
    real(kind=dp) :: epseps = 1d-32 ! D3D: - 7, dpm: -32
-   integer :: eps_limit_method = 1
    real(kind=dp) :: epsd = 1d-32 ! D3D: - 7, dpm: -32
 
    real(kind=dp), allocatable, dimension(:) :: turkin0 ! k old (m2/s2)  , at layer interface at u     these will become global, rename to : turkinwu0
