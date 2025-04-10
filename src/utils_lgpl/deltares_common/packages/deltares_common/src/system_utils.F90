@@ -64,29 +64,31 @@ module system_utils
    public :: find_last_slash
    public :: get_executable_directory
 
-   contains
-   
-   subroutine get_executable_directory(exe_path, ierr) 
-        character(len=*), intent(out) :: exe_path
-        integer, intent(out) :: ierr
-        character(len=1024) :: exe_fullpath, exe_name
-        
+contains
+
+   !> Returns the directory path where the executable (dimr or dflowfm) is located
+   subroutine get_executable_directory(exe_path, ierr)
+      character(len=*), intent(out) :: exe_path !< The resulting path
+      integer, intent(out) :: ierr !< error code, 0 = success
+      character(len=1024) :: exe_fullpath, exe_name
+
       call get_command_argument(0, exe_fullpath, status=ierr)
-      if (ierr /= 0) then
+      if (ierr /= 0) then ! Retry with Linux-specific backup routine
          call get_executable_path_symlink(exe_fullpath, ierr)
          if (ierr /= 0) then
-            return
+            return ! handle error message at call site
          end if
       end if
       call split_filename(exe_fullpath, exe_path, exe_name)
    end subroutine
-   
+
+   !> Linux backup routine in case get_command_argument fails, using /proc/self/exe symlink method
    subroutine get_executable_path_symlink(exe_fullpath, ierr)
       use iso_c_binding
-      character(len=*), intent(out) :: exe_fullpath
-      integer, intent(out) :: ierr
-      character(kind=c_char) :: cbuf(1024)
-      integer(c_size_t) :: szret
+      character(len=*), intent(out) :: exe_fullpath !< The full path of the calling executable
+      integer, intent(out) :: ierr !< error code, 0 = success
+      character(kind=c_char) :: c_buffer(1024)
+      integer(c_size_t) :: path_length
       integer :: i
 
       interface
@@ -98,23 +100,22 @@ module system_utils
             integer(c_size_t) :: readlink
          end function readlink
       end interface
+
       ierr = 0
       exe_fullpath = ''
 #if (defined(__linux__))
-      szret = readlink('/proc/self/exe'//c_null_char, cbuf, size(cbuf, kind=c_size_t))
-      if (szret == -1) then
+      path_length = readlink('/proc/self/exe'//c_null_char, c_buffer, size(c_buffer, kind=c_size_t))
+      if (path_length == -1) then
          ierr = -1
          exe_fullpath = ''
-         return
+         return ! handle error at the call site
       end if
-
+      
       exe_fullpath = ''
-      do i = 1, szret
-         exe_fullpath(i:i) = cbuf(i)
+      do i = 1, path_length
+         exe_fullpath(i:i) = c_buffer(i)
       end do
-
-
-#endif      
+#endif
    end subroutine get_executable_path_symlink
 
    function cat_filename(path, file, ext) result(name)
