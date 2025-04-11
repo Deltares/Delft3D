@@ -72,7 +72,7 @@ if(UNIX)
          PkgConfig::NETCDF_FTN)
 endif(UNIX)
 
-include_directories(${mpi_include_path} ${version_include_dir})
+include_directories(${mpi_include_path} ${mpi_module_path} ${version_include_dir})
 
 if (WIN32)
     # Set linker properties

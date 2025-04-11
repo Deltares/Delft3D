@@ -1,0 +1,241 @@
+      subroutine SNESFASCreateCoarseVec(a,b,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine SNESFASCreateCoarseVec
+      subroutine SNESFASRestrict(a,b,c,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine SNESFASRestrict
+      subroutine SNESFASSetType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESFASType b ! SNESFASType
+       PetscErrorCode z
+       end subroutine SNESFASSetType
+      subroutine SNESFASGetType(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNESFASType b ! SNESFASType
+       PetscErrorCode z
+       end subroutine SNESFASGetType
+      subroutine SNESFASGetLevels(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESFASGetLevels
+      subroutine SNESFASGetCycleSNES(a,b,c,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       SNES c ! SNES
+       PetscErrorCode z
+       end subroutine SNESFASGetCycleSNES
+      subroutine SNESFASSetNumberSmoothUp(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESFASSetNumberSmoothUp
+      subroutine SNESFASSetNumberSmoothDown(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESFASSetNumberSmoothDown
+      subroutine SNESFASSetContinuation(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESFASSetContinuation
+      subroutine SNESFASSetCycles(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESFASSetCycles
+      subroutine SNESFASSetMonitor(a,b,c,z)
+       import tSNES
+       SNES a ! SNES
+       PetscViewerAndFormat b ! PetscViewerAndFormat
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESFASSetMonitor
+      subroutine SNESFASSetLog(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESFASSetLog
+      subroutine SNESFASCycleSetCycles(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine SNESFASCycleSetCycles
+      subroutine SNESFASCycleGetSmoother(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine SNESFASCycleGetSmoother
+      subroutine SNESFASCycleGetSmootherUp(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine SNESFASCycleGetSmootherUp
+      subroutine SNESFASCycleGetSmootherDown(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine SNESFASCycleGetSmootherDown
+      subroutine SNESFASCycleGetCorrection(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine SNESFASCycleGetCorrection
+      subroutine SNESFASCycleGetInterpolation(a,b,z)
+       import tSNES,tMat
+       SNES a ! SNES
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine SNESFASCycleGetInterpolation
+      subroutine SNESFASCycleGetRestriction(a,b,z)
+       import tSNES,tMat
+       SNES a ! SNES
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine SNESFASCycleGetRestriction
+      subroutine SNESFASCycleGetInjection(a,b,z)
+       import tSNES,tMat
+       SNES a ! SNES
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine SNESFASCycleGetInjection
+      subroutine SNESFASCycleGetRScale(a,b,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine SNESFASCycleGetRScale
+      subroutine SNESFASCycleIsFine(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESFASCycleIsFine
+      subroutine SNESFASSetInterpolation(a,b,c,z)
+       import tSNES,tMat
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine SNESFASSetInterpolation
+      subroutine SNESFASGetInterpolation(a,b,c,z)
+       import tSNES,tMat
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine SNESFASGetInterpolation
+      subroutine SNESFASSetRestriction(a,b,c,z)
+       import tSNES,tMat
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine SNESFASSetRestriction
+      subroutine SNESFASGetRestriction(a,b,c,z)
+       import tSNES,tMat
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine SNESFASGetRestriction
+      subroutine SNESFASSetInjection(a,b,c,z)
+       import tSNES,tMat
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine SNESFASSetInjection
+      subroutine SNESFASGetInjection(a,b,c,z)
+       import tSNES,tMat
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine SNESFASGetInjection
+      subroutine SNESFASSetRScale(a,b,c,z)
+       import tVec,tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine SNESFASSetRScale
+      subroutine SNESFASGetSmoother(a,b,c,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       SNES c ! SNES
+       PetscErrorCode z
+       end subroutine SNESFASGetSmoother
+      subroutine SNESFASGetSmootherDown(a,b,c,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       SNES c ! SNES
+       PetscErrorCode z
+       end subroutine SNESFASGetSmootherDown
+      subroutine SNESFASGetSmootherUp(a,b,c,z)
+       import tSNES
+       SNES a ! SNES
+       PetscInt b ! PetscInt
+       SNES c ! SNES
+       PetscErrorCode z
+       end subroutine SNESFASGetSmootherUp
+      subroutine SNESFASGetCoarseSolve(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine SNESFASGetCoarseSolve
+      subroutine SNESFASFullSetDownSweep(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESFASFullSetDownSweep
+      subroutine SNESFASFullSetTotal(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESFASFullSetTotal
+      subroutine SNESFASFullGetTotal(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESFASFullGetTotal
+      subroutine SNESFASGetGalerkin(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESFASGetGalerkin
+      subroutine SNESFASSetGalerkin(a,b,z)
+       import tSNES
+       SNES a ! SNES
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine SNESFASSetGalerkin

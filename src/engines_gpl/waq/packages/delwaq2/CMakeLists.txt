@@ -87,7 +87,7 @@ if(UNIX)
 endif(UNIX)
 
 if (WIN32)
-    target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir} ${mpi_include_path})
+    target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir} ${mpi_module_path} ${mpi_include_path})
 
     # Set linker properties
     message(STATUS "Setting linker properties in windows")

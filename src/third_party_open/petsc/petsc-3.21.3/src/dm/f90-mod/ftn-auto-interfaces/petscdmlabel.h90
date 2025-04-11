@@ -1,0 +1,286 @@
+      subroutine DMLabelAddStratum(a,b,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelAddStratum
+      subroutine DMLabelAddStrata(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelAddStrata
+      subroutine DMLabelAddStrataIS(a,b,z)
+       import tIS,tDMLabel
+       DMLabel a ! DMLabel
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine DMLabelAddStrataIS
+      subroutine DMLabelReset(a,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscErrorCode z
+       end subroutine DMLabelReset
+      subroutine DMLabelDestroy(a,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscErrorCode z
+       end subroutine DMLabelDestroy
+      subroutine DMLabelDuplicate(a,b,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       DMLabel b ! DMLabel
+       PetscErrorCode z
+       end subroutine DMLabelDuplicate
+      subroutine DMLabelComputeIndex(a,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscErrorCode z
+       end subroutine DMLabelComputeIndex
+      subroutine DMLabelCreateIndex(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelCreateIndex
+      subroutine DMLabelDestroyIndex(a,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscErrorCode z
+       end subroutine DMLabelDestroyIndex
+      subroutine DMLabelGetBounds(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelGetBounds
+      subroutine DMLabelHasValue(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine DMLabelHasValue
+      subroutine DMLabelHasPoint(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine DMLabelHasPoint
+      subroutine DMLabelStratumHasPoint(a,b,c,d,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscBool d ! PetscBool
+       PetscErrorCode z
+       end subroutine DMLabelStratumHasPoint
+      subroutine DMLabelGetDefaultValue(a,b,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelGetDefaultValue
+      subroutine DMLabelSetDefaultValue(a,b,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelSetDefaultValue
+      subroutine DMLabelGetValue(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelGetValue
+      subroutine DMLabelSetValue(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelSetValue
+      subroutine DMLabelClearValue(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelClearValue
+      subroutine DMLabelInsertIS(a,b,c,z)
+       import tIS,tDMLabel
+       DMLabel a ! DMLabel
+       IS b ! IS
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelInsertIS
+      subroutine DMLabelGetNumValues(a,b,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelGetNumValues
+      subroutine DMLabelGetValueIS(a,b,z)
+       import tIS,tDMLabel
+       DMLabel a ! DMLabel
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine DMLabelGetValueIS
+      subroutine DMLabelGetNonEmptyStratumValuesIS(a,b,z)
+       import tIS,tDMLabel
+       DMLabel a ! DMLabel
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine DMLabelGetNonEmptyStratumValuesIS
+      subroutine DMLabelGetValueIndex(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelGetValueIndex
+      subroutine DMLabelHasStratum(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine DMLabelHasStratum
+      subroutine DMLabelGetStratumSize(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelGetStratumSize
+      subroutine DMLabelGetStratumBounds(a,b,c,d,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelGetStratumBounds
+      subroutine DMLabelGetStratumIS(a,b,c,z)
+       import tIS,tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine DMLabelGetStratumIS
+      subroutine DMLabelSetStratumIS(a,b,c,z)
+       import tIS,tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine DMLabelSetStratumIS
+      subroutine DMLabelClearStratum(a,b,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelClearStratum
+      subroutine DMLabelSetStratumBounds(a,b,c,d,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelSetStratumBounds
+      subroutine DMLabelGetStratumPointIndex(a,b,c,d,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelGetStratumPointIndex
+      subroutine DMLabelFilter(a,b,c,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMLabelFilter
+      subroutine DMLabelPermute(a,b,c,z)
+       import tIS,tDMLabel
+       DMLabel a ! DMLabel
+       IS b ! IS
+       DMLabel c ! DMLabel
+       PetscErrorCode z
+       end subroutine DMLabelPermute
+      subroutine DMLabelDistribute(a,b,c,z)
+       import tPetscSF,tDMLabel
+       DMLabel a ! DMLabel
+       PetscSF b ! PetscSF
+       DMLabel c ! DMLabel
+       PetscErrorCode z
+       end subroutine DMLabelDistribute
+      subroutine DMLabelGather(a,b,c,z)
+       import tPetscSF,tDMLabel
+       DMLabel a ! DMLabel
+       PetscSF b ! PetscSF
+       DMLabel c ! DMLabel
+       PetscErrorCode z
+       end subroutine DMLabelGather
+      subroutine DMLabelPropagateBegin(a,b,z)
+       import tPetscSF,tDMLabel
+       DMLabel a ! DMLabel
+       PetscSF b ! PetscSF
+       PetscErrorCode z
+       end subroutine DMLabelPropagateBegin
+      subroutine DMLabelPropagateEnd(a,b,z)
+       import tPetscSF,tDMLabel
+       DMLabel a ! DMLabel
+       PetscSF b ! PetscSF
+       PetscErrorCode z
+       end subroutine DMLabelPropagateEnd
+      subroutine DMLabelConvertToSection(a,b,c,z)
+       import tPetscSection,tIS,tDMLabel
+       DMLabel a ! DMLabel
+       PetscSection b ! PetscSection
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine DMLabelConvertToSection
+      subroutine PetscSectionCreateGlobalSectionLabel(a,b,c,d,e,f,z)
+       import tPetscSF,tPetscSection,tDMLabel
+       PetscSection a ! PetscSection
+       PetscSF b ! PetscSF
+       PetscBool c ! PetscBool
+       DMLabel d ! DMLabel
+       PetscInt e ! PetscInt
+       PetscSection f ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionCreateGlobalSectionLabel
+      subroutine PetscSectionSymLabelSetLabel(a,b,z)
+       import tPetscSectionSym,tDMLabel
+       PetscSectionSym a ! PetscSectionSym
+       DMLabel b ! DMLabel
+       PetscErrorCode z
+       end subroutine PetscSectionSymLabelSetLabel
+      subroutine PetscSectionSymCreateLabel(a,b,c,z)
+       import tPetscSectionSym,tDMLabel
+       MPI_Comm a ! MPI_Comm
+       DMLabel b ! DMLabel
+       PetscSectionSym c ! PetscSectionSym
+       PetscErrorCode z
+       end subroutine PetscSectionSymCreateLabel
+      subroutine DMLabelEphemeralGetLabel(a,b,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       DMLabel b ! DMLabel
+       PetscErrorCode z
+       end subroutine DMLabelEphemeralGetLabel
+      subroutine DMLabelEphemeralSetLabel(a,b,z)
+       import tDMLabel
+       DMLabel a ! DMLabel
+       DMLabel b ! DMLabel
+       PetscErrorCode z
+       end subroutine DMLabelEphemeralSetLabel

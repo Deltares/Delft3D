@@ -1,0 +1,18 @@
+
+ sensitivity wrt initial conditions: d[y(tf)]/d[y0]  d[y(tf)]/d[z0]
+Vec Object: 1 MPI process
+  type: seq
+1.54557
+4.80704e-06
+
+ sensitivity wrt initial conditions: d[z(tf)]/d[y0]  d[z(tf)]/d[z0]
+Vec Object: 1 MPI process
+  type: seq
+2.28429
+0.000244399
+
+ sensitivity wrt parameters: d[y(tf)]/d[mu]
+-2.13118e-11
+
+ sensivitity wrt parameters: d[z(tf)]/d[mu]
+-1.29769e-10

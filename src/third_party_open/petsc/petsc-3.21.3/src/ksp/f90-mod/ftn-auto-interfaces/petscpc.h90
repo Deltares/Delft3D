@@ -1,0 +1,1757 @@
+      subroutine PCASMSetOverlap(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCASMSetOverlap
+      subroutine PCASMSetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCASMType b ! PCASMType
+       PetscErrorCode z
+       end subroutine PCASMSetType
+      subroutine PCASMGetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCASMType b ! PCASMType
+       PetscErrorCode z
+       end subroutine PCASMGetType
+      subroutine PCASMSetLocalType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCCompositeType b ! PCCompositeType
+       PetscErrorCode z
+       end subroutine PCASMSetLocalType
+      subroutine PCASMGetLocalType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCCompositeType b ! PCCompositeType
+       PetscErrorCode z
+       end subroutine PCASMGetLocalType
+      subroutine PCASMSetSortIndices(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCASMSetSortIndices
+      subroutine PCASMSetDMSubdomains(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCASMSetDMSubdomains
+      subroutine PCASMGetDMSubdomains(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCASMGetDMSubdomains
+      subroutine PCBDDCSetDiscreteGradient(a,b,c,d,e,f,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscBool e ! PetscBool
+       PetscBool f ! PetscBool
+       PetscErrorCode z
+       end subroutine PCBDDCSetDiscreteGradient
+      subroutine PCBDDCSetDivergenceMat(a,b,c,d,z)
+       import tIS,tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscBool c ! PetscBool
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCSetDivergenceMat
+      subroutine PCBDDCSetChangeOfBasisMat(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PCBDDCSetChangeOfBasisMat
+      subroutine PCBDDCSetPrimalVerticesIS(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCSetPrimalVerticesIS
+      subroutine PCBDDCGetPrimalVerticesIS(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCGetPrimalVerticesIS
+      subroutine PCBDDCSetPrimalVerticesLocalIS(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCSetPrimalVerticesLocalIS
+      subroutine PCBDDCGetPrimalVerticesLocalIS(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCGetPrimalVerticesLocalIS
+      subroutine PCBDDCSetCoarseningRatio(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCBDDCSetCoarseningRatio
+      subroutine PCBDDCSetLevels(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCBDDCSetLevels
+      subroutine PCBDDCSetDirichletBoundaries(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCSetDirichletBoundaries
+      subroutine PCBDDCSetDirichletBoundariesLocal(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCSetDirichletBoundariesLocal
+      subroutine PCBDDCSetNeumannBoundaries(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCSetNeumannBoundaries
+      subroutine PCBDDCSetNeumannBoundariesLocal(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCSetNeumannBoundariesLocal
+      subroutine PCBDDCGetDirichletBoundaries(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCGetDirichletBoundaries
+      subroutine PCBDDCGetDirichletBoundariesLocal(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCGetDirichletBoundariesLocal
+      subroutine PCBDDCGetNeumannBoundaries(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCGetNeumannBoundaries
+      subroutine PCBDDCGetNeumannBoundariesLocal(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCGetNeumannBoundariesLocal
+      subroutine PCBDDCSetLocalAdjacencyGraph(a,b,c,d,e,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscCopyMode e ! PetscCopyMode
+       PetscErrorCode z
+       end subroutine PCBDDCSetLocalAdjacencyGraph
+      subroutine PCBDDCSetDofsSplittingLocal(a,b,c,z)
+       import tIS,tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       IS c (*) ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCSetDofsSplittingLocal
+      subroutine PCBDDCSetDofsSplitting(a,b,c,z)
+       import tIS,tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       IS c (*) ! IS
+       PetscErrorCode z
+       end subroutine PCBDDCSetDofsSplitting
+      subroutine PCBDDCMatFETIDPGetRHS(a,b,c,z)
+       import tVec,tMat
+       Mat a ! Mat
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCBDDCMatFETIDPGetRHS
+      subroutine PCBDDCMatFETIDPGetSolution(a,b,c,z)
+       import tVec,tMat
+       Mat a ! Mat
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCBDDCMatFETIDPGetSolution
+      subroutine PCBJacobiSetTotalBlocks(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PCBJacobiSetTotalBlocks
+      subroutine PCBJacobiSetLocalBlocks(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PCBJacobiSetLocalBlocks
+      subroutine PCCompositeSetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCCompositeType b ! PCCompositeType
+       PetscErrorCode z
+       end subroutine PCCompositeSetType
+      subroutine PCCompositeGetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCCompositeType b ! PCCompositeType
+       PetscErrorCode z
+       end subroutine PCCompositeGetType
+      subroutine PCCompositeSpecialSetAlpha(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine PCCompositeSpecialSetAlpha
+      subroutine PCCompositeAddPC(a,b,z)
+       import tPC
+       PC a ! PC
+       PC b ! PC
+       PetscErrorCode z
+       end subroutine PCCompositeAddPC
+      subroutine PCCompositeGetNumberPC(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCCompositeGetNumberPC
+      subroutine PCCompositeGetPC(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PC c ! PC
+       PetscErrorCode z
+       end subroutine PCCompositeGetPC
+      subroutine PCDeflationSetInitOnly(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCDeflationSetInitOnly
+      subroutine PCDeflationSetLevels(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCDeflationSetLevels
+      subroutine PCDeflationSetReductionFactor(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCDeflationSetReductionFactor
+      subroutine PCDeflationSetCorrectionFactor(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine PCDeflationSetCorrectionFactor
+      subroutine PCDeflationSetSpaceToCompute(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PCDeflationSpaceType b ! PCDeflationSpaceType
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PCDeflationSetSpaceToCompute
+      subroutine PCDeflationSetSpace(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PCDeflationSetSpace
+      subroutine PCDeflationSetProjectionNullSpaceMat(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCDeflationSetProjectionNullSpaceMat
+      subroutine PCDeflationSetCoarseMat(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCDeflationSetCoarseMat
+      subroutine PCDeflationGetCoarseKSP(a,b,z)
+       import tKSP,tPC
+       PC a ! PC
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine PCDeflationGetCoarseKSP
+      subroutine PCDeflationGetPC(a,b,z)
+       import tPC
+       PC a ! PC
+       PC b ! PC
+       PetscErrorCode z
+       end subroutine PCDeflationGetPC
+      subroutine PCEisenstatSetOmega(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCEisenstatSetOmega
+      subroutine PCEisenstatSetNoDiagonalScaling(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCEisenstatSetNoDiagonalScaling
+      subroutine PCEisenstatGetOmega(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCEisenstatGetOmega
+      subroutine PCEisenstatGetNoDiagonalScaling(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCEisenstatGetNoDiagonalScaling
+      subroutine PCFactorSetUpMatSolverType(a,z)
+       import tPC
+       PC a ! PC
+       PetscErrorCode z
+       end subroutine PCFactorSetUpMatSolverType
+      subroutine PCFactorSetZeroPivot(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCFactorSetZeroPivot
+      subroutine PCFactorSetShiftType(a,b,z)
+       import tPC
+       PC a ! PC
+       MatFactorShiftType b ! MatFactorShiftType
+       PetscErrorCode z
+       end subroutine PCFactorSetShiftType
+      subroutine PCFactorSetShiftAmount(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCFactorSetShiftAmount
+      subroutine PCFactorSetDropTolerance(a,b,c,d,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PCFactorSetDropTolerance
+      subroutine PCFactorGetZeroPivot(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCFactorGetZeroPivot
+      subroutine PCFactorGetShiftAmount(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCFactorGetShiftAmount
+      subroutine PCFactorGetShiftType(a,b,z)
+       import tPC
+       PC a ! PC
+       MatFactorShiftType b ! MatFactorShiftType
+       PetscErrorCode z
+       end subroutine PCFactorGetShiftType
+      subroutine PCFactorGetLevels(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCFactorGetLevels
+      subroutine PCFactorSetLevels(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCFactorSetLevels
+      subroutine PCFactorSetAllowDiagonalFill(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFactorSetAllowDiagonalFill
+      subroutine PCFactorGetAllowDiagonalFill(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFactorGetAllowDiagonalFill
+      subroutine PCFactorReorderForNonzeroDiagonal(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCFactorReorderForNonzeroDiagonal
+      subroutine PCFactorSetFill(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCFactorSetFill
+      subroutine PCFactorSetUseInPlace(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFactorSetUseInPlace
+      subroutine PCFactorGetUseInPlace(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFactorGetUseInPlace
+      subroutine PCFactorSetColumnPivot(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCFactorSetColumnPivot
+      subroutine PCFactorSetPivotInBlocks(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFactorSetPivotInBlocks
+      subroutine PCFactorSetReuseFill(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFactorSetReuseFill
+      subroutine PCFactorSetReuseOrdering(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFactorSetReuseOrdering
+      subroutine PCFieldSplitSetDiagUseAmat(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetDiagUseAmat
+      subroutine PCFieldSplitGetDiagUseAmat(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFieldSplitGetDiagUseAmat
+      subroutine PCFieldSplitSetOffDiagUseAmat(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetOffDiagUseAmat
+      subroutine PCFieldSplitGetOffDiagUseAmat(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFieldSplitGetOffDiagUseAmat
+      subroutine PCFieldSplitSetBlockSize(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetBlockSize
+      subroutine PCFieldSplitSetSchurPre(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       PCFieldSplitSchurPreType b ! PCFieldSplitSchurPreType
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetSchurPre
+      subroutine PCFieldSplitGetSchurPre(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       PCFieldSplitSchurPreType b ! PCFieldSplitSchurPreType
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCFieldSplitGetSchurPre
+      subroutine PCFieldSplitSchurGetS(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCFieldSplitSchurGetS
+      subroutine PCFieldSplitSchurRestoreS(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCFieldSplitSchurRestoreS
+      subroutine PCFieldSplitSetSchurFactType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCFieldSplitSchurFactType b ! PCFieldSplitSchurFactType
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetSchurFactType
+      subroutine PCFieldSplitSetSchurScale(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetSchurScale
+      subroutine PCFieldSplitSetGKBTol(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetGKBTol
+      subroutine PCFieldSplitSetGKBMaxit(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetGKBMaxit
+      subroutine PCFieldSplitSetGKBDelay(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetGKBDelay
+      subroutine PCFieldSplitSetGKBNu(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetGKBNu
+      subroutine PCFieldSplitSetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCCompositeType b ! PCCompositeType
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetType
+      subroutine PCFieldSplitGetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCCompositeType b ! PCCompositeType
+       PetscErrorCode z
+       end subroutine PCFieldSplitGetType
+      subroutine PCFieldSplitSetDMSplits(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetDMSplits
+      subroutine PCFieldSplitGetDMSplits(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFieldSplitGetDMSplits
+      subroutine PCFieldSplitGetDetectSaddlePoint(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFieldSplitGetDetectSaddlePoint
+      subroutine PCFieldSplitSetDetectSaddlePoint(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCFieldSplitSetDetectSaddlePoint
+      subroutine PCGalerkinSetRestriction(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCGalerkinSetRestriction
+      subroutine PCGalerkinSetInterpolation(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCGalerkinSetInterpolation
+      subroutine PCGalerkinGetKSP(a,b,z)
+       import tKSP,tPC
+       PC a ! PC
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine PCGalerkinGetKSP
+      subroutine PCGAMGSetNSmooths(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGAMGSetNSmooths
+      subroutine PCGAMGSetAggressiveLevels(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGAMGSetAggressiveLevels
+      subroutine PCGAMGMISkSetAggressive(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGAMGMISkSetAggressive
+      subroutine PCGAMGSetAggressiveSquareGraph(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGAMGSetAggressiveSquareGraph
+      subroutine PCGAMGMISkSetMinDegreeOrdering(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGAMGMISkSetMinDegreeOrdering
+      subroutine PCGAMGSetLowMemoryFilter(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGAMGSetLowMemoryFilter
+      subroutine PCGAMGSetProcEqLim(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGAMGSetProcEqLim
+      subroutine PCGAMGSetCoarseEqLim(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGAMGSetCoarseEqLim
+      subroutine PCGAMGSetRepartition(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGAMGSetRepartition
+      subroutine PCGAMGSetUseSAEstEig(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGAMGSetUseSAEstEig
+      subroutine PCGAMGSetRecomputeEstEig(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGAMGSetRecomputeEstEig
+      subroutine PCGAMGSetEigenvalues(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine PCGAMGSetEigenvalues
+      subroutine PCGAMGSetReuseInterpolation(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGAMGSetReuseInterpolation
+      subroutine PCGAMGASMSetUseAggs(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGAMGASMSetUseAggs
+      subroutine PCGAMGSetParallelCoarseGridSolve(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGAMGSetParallelCoarseGridSolve
+      subroutine PCGAMGSetCpuPinCoarseGrids(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGAMGSetCpuPinCoarseGrids
+      subroutine PCGAMGSetCoarseGridLayoutType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCGAMGLayoutType b ! PCGAMGLayoutType
+       PetscErrorCode z
+       end subroutine PCGAMGSetCoarseGridLayoutType
+      subroutine PCGAMGSetNlevels(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGAMGSetNlevels
+      subroutine PCGAMGASMSetHEM(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGAMGASMSetHEM
+      subroutine PCGAMGSetThreshold(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscReal b (*) ! PetscReal
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGAMGSetThreshold
+      subroutine PCGAMGSetRankReductionFactors(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscInt b (*) ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGAMGSetRankReductionFactors
+      subroutine PCGAMGSetThresholdScale(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCGAMGSetThresholdScale
+      subroutine PCGAMGSetInjectionIndex(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGAMGSetInjectionIndex
+      subroutine PCGASMSetTotalSubdomains(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGASMSetTotalSubdomains
+      subroutine PCGASMSetOverlap(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGASMSetOverlap
+      subroutine PCGASMSetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCGASMType b ! PCGASMType
+       PetscErrorCode z
+       end subroutine PCGASMSetType
+      subroutine PCGASMSetSortIndices(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGASMSetSortIndices
+      subroutine PCGASMSetUseDMSubdomains(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGASMSetUseDMSubdomains
+      subroutine PCGASMGetUseDMSubdomains(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGASMGetUseDMSubdomains
+      subroutine PCHMGSetReuseInterpolation(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCHMGSetReuseInterpolation
+      subroutine PCHMGSetUseSubspaceCoarsening(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCHMGSetUseSubspaceCoarsening
+      subroutine PCHMGSetCoarseningComponent(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCHMGSetCoarseningComponent
+      subroutine PCHMGUseMatMAIJ(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCHMGUseMatMAIJ
+      subroutine PCHPDDMHasNeumannMat(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCHPDDMHasNeumannMat
+      subroutine PCHPDDMSetRHSMat(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCHPDDMSetRHSMat
+      subroutine PCHPDDMSetCoarseCorrectionType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCHPDDMCoarseCorrectionType b ! PCHPDDMCoarseCorrectionType
+       PetscErrorCode z
+       end subroutine PCHPDDMSetCoarseCorrectionType
+      subroutine PCHPDDMGetCoarseCorrectionType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCHPDDMCoarseCorrectionType b ! PCHPDDMCoarseCorrectionType
+       PetscErrorCode z
+       end subroutine PCHPDDMGetCoarseCorrectionType
+      subroutine PCHPDDMSetSTShareSubKSP(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCHPDDMSetSTShareSubKSP
+      subroutine PCHPDDMGetSTShareSubKSP(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCHPDDMGetSTShareSubKSP
+      subroutine PCHPDDMSetDeflationMat(a,b,c,z)
+       import tIS,tPC,tMat
+       PC a ! PC
+       IS b ! IS
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCHPDDMSetDeflationMat
+      subroutine PCHYPRESetDiscreteGradient(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCHYPRESetDiscreteGradient
+      subroutine PCHYPRESetDiscreteCurl(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCHYPRESetDiscreteCurl
+      subroutine PCHYPRESetInterpolations(a,b,c,d,e,f,z)
+       import tPC,tMat
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       Mat d (*) ! Mat
+       Mat e ! Mat
+       Mat f (*) ! Mat
+       PetscErrorCode z
+       end subroutine PCHYPRESetInterpolations
+      subroutine PCHYPRESetAlphaPoissonMatrix(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCHYPRESetAlphaPoissonMatrix
+      subroutine PCHYPRESetBetaPoissonMatrix(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCHYPRESetBetaPoissonMatrix
+      subroutine PCHYPRESetEdgeConstantVectors(a,b,c,d,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine PCHYPRESetEdgeConstantVectors
+      subroutine PCHYPREAMSSetInteriorNodes(a,b,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine PCHYPREAMSSetInteriorNodes
+      subroutine PCISSetUseStiffnessScaling(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCISSetUseStiffnessScaling
+      subroutine PCISSetSubdomainDiagonalScaling(a,b,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine PCISSetSubdomainDiagonalScaling
+      subroutine PCISSetSubdomainScalingFactor(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine PCISSetSubdomainScalingFactor
+      subroutine PCISSetUp(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PCISSetUp
+      subroutine PCISReset(a,z)
+       import tPC
+       PC a ! PC
+       PetscErrorCode z
+       end subroutine PCISReset
+      subroutine PCISInitialize(a,z)
+       import tPC
+       PC a ! PC
+       PetscErrorCode z
+       end subroutine PCISInitialize
+      subroutine PCISApplySchur(a,b,c,d,e,f,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       Vec f ! Vec
+       PetscErrorCode z
+       end subroutine PCISApplySchur
+      subroutine PCISScatterArrayNToVecB(a,b,c,d,e,z)
+       import tVec,tPC
+       PC a ! PC
+       PetscScalar b ! PetscScalar
+       Vec c ! Vec
+       InsertMode d ! InsertMode
+       ScatterMode e ! ScatterMode
+       PetscErrorCode z
+       end subroutine PCISScatterArrayNToVecB
+      subroutine PCISApplyInvSchur(a,b,c,d,e,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       PetscErrorCode z
+       end subroutine PCISApplyInvSchur
+      subroutine PCJacobiSetUseAbs(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCJacobiSetUseAbs
+      subroutine PCJacobiGetUseAbs(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCJacobiGetUseAbs
+      subroutine PCJacobiSetRowl1Scale(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCJacobiSetRowl1Scale
+      subroutine PCJacobiGetRowl1Scale(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCJacobiGetRowl1Scale
+      subroutine PCJacobiSetFixDiagonal(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCJacobiSetFixDiagonal
+      subroutine PCJacobiGetFixDiagonal(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCJacobiGetFixDiagonal
+      subroutine PCJacobiGetDiagonal(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCJacobiGetDiagonal
+      subroutine PCJacobiSetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCJacobiType b ! PCJacobiType
+       PetscErrorCode z
+       end subroutine PCJacobiSetType
+      subroutine PCJacobiGetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCJacobiType b ! PCJacobiType
+       PetscErrorCode z
+       end subroutine PCJacobiGetType
+      subroutine PCKSPSetKSP(a,b,z)
+       import tKSP,tPC
+       PC a ! PC
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine PCKSPSetKSP
+      subroutine PCKSPGetKSP(a,b,z)
+       import tKSP,tPC
+       PC a ! PC
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine PCKSPGetKSP
+      subroutine PCLMVMSetUpdateVec(a,b,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine PCLMVMSetUpdateVec
+      subroutine PCLMVMSetMatLMVM(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCLMVMSetMatLMVM
+      subroutine PCLMVMGetMatLMVM(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCLMVMGetMatLMVM
+      subroutine PCLMVMSetIS(a,b,z)
+       import tIS,tPC
+       PC a ! PC
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PCLMVMSetIS
+      subroutine PCLMVMClearIS(a,z)
+       import tPC
+       PC a ! PC
+       PetscErrorCode z
+       end subroutine PCLMVMClearIS
+      subroutine PCMatSetApplyOperation(a,b,z)
+       import tPC
+       PC a ! PC
+       MatOperation b ! MatOperation
+       PetscErrorCode z
+       end subroutine PCMatSetApplyOperation
+      subroutine PCMatGetApplyOperation(a,b,z)
+       import tPC
+       PC a ! PC
+       MatOperation b ! MatOperation
+       PetscErrorCode z
+       end subroutine PCMatGetApplyOperation
+      subroutine PCMGGetLevels(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCMGGetLevels
+      subroutine PCMGGetGridComplexity(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine PCMGGetGridComplexity
+      subroutine PCMGSetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCMGType b ! PCMGType
+       PetscErrorCode z
+       end subroutine PCMGSetType
+      subroutine PCMGGetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCMGType b ! PCMGType
+       PetscErrorCode z
+       end subroutine PCMGGetType
+      subroutine PCMGSetCycleType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCMGCycleType b ! PCMGCycleType
+       PetscErrorCode z
+       end subroutine PCMGSetCycleType
+      subroutine PCMGMultiplicativeSetCycles(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCMGMultiplicativeSetCycles
+      subroutine PCMGSetGalerkin(a,b,z)
+       import tPC
+       PC a ! PC
+       PCMGGalerkinType b ! PCMGGalerkinType
+       PetscErrorCode z
+       end subroutine PCMGSetGalerkin
+      subroutine PCMGGetGalerkin(a,b,z)
+       import tPC
+       PC a ! PC
+       PCMGGalerkinType b ! PCMGGalerkinType
+       PetscErrorCode z
+       end subroutine PCMGGetGalerkin
+      subroutine PCMGSetAdaptInterpolation(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCMGSetAdaptInterpolation
+      subroutine PCMGGetAdaptInterpolation(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCMGGetAdaptInterpolation
+      subroutine PCMGSetAdaptCR(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCMGSetAdaptCR
+      subroutine PCMGGetAdaptCR(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCMGGetAdaptCR
+      subroutine PCMGSetNumberSmooth(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCMGSetNumberSmooth
+      subroutine PCMGSetDistinctSmoothUp(a,z)
+       import tPC
+       PC a ! PC
+       PetscErrorCode z
+       end subroutine PCMGSetDistinctSmoothUp
+      subroutine PCMGGetCoarseSolve(a,b,z)
+       import tKSP,tPC
+       PC a ! PC
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine PCMGGetCoarseSolve
+      subroutine PCMGSetInterpolation(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCMGSetInterpolation
+      subroutine PCMGSetOperators(a,b,c,d,z)
+       import tPC,tMat
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine PCMGSetOperators
+      subroutine PCMGGetInterpolation(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCMGGetInterpolation
+      subroutine PCMGSetRestriction(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCMGSetRestriction
+      subroutine PCMGGetRestriction(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCMGGetRestriction
+      subroutine PCMGSetRScale(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCMGSetRScale
+      subroutine PCMGGetRScale(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCMGGetRScale
+      subroutine PCMGSetInjection(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCMGSetInjection
+      subroutine PCMGGetInjection(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCMGGetInjection
+      subroutine PCMGGetSmoother(a,b,c,z)
+       import tKSP,tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       KSP c ! KSP
+       PetscErrorCode z
+       end subroutine PCMGGetSmoother
+      subroutine PCMGGetSmootherUp(a,b,c,z)
+       import tKSP,tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       KSP c ! KSP
+       PetscErrorCode z
+       end subroutine PCMGGetSmootherUp
+      subroutine PCMGGetSmootherDown(a,b,c,z)
+       import tKSP,tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       KSP c ! KSP
+       PetscErrorCode z
+       end subroutine PCMGGetSmootherDown
+      subroutine PCMGSetCycleTypeOnLevel(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PCMGCycleType c ! PCMGCycleType
+       PetscErrorCode z
+       end subroutine PCMGSetCycleTypeOnLevel
+      subroutine PCMGSetRhs(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCMGSetRhs
+      subroutine PCMGSetX(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCMGSetX
+      subroutine PCMGSetR(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCMGSetR
+      subroutine PCPARMSSetGlobal(a,b,z)
+       import tPC
+       PC a ! PC
+       PCPARMSGlobalType b ! PCPARMSGlobalType
+       PetscErrorCode z
+       end subroutine PCPARMSSetGlobal
+      subroutine PCPARMSSetLocal(a,b,z)
+       import tPC
+       PC a ! PC
+       PCPARMSLocalType b ! PCPARMSLocalType
+       PetscErrorCode z
+       end subroutine PCPARMSSetLocal
+      subroutine PCPARMSSetSolveTolerances(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PCPARMSSetSolveTolerances
+      subroutine PCPARMSSetSolveRestart(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCPARMSSetSolveRestart
+      subroutine PCPARMSSetNonsymPerm(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCPARMSSetNonsymPerm
+      subroutine PCPARMSSetFill(a,b,c,d,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PCPARMSSetFill
+      subroutine PCRedistributeGetKSP(a,b,z)
+       import tKSP,tPC
+       PC a ! PC
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine PCRedistributeGetKSP
+      subroutine PCRedundantSetNumber(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCRedundantSetNumber
+      subroutine PCRedundantSetScatter(a,b,c,z)
+       import tVecScatter,tPC
+       PC a ! PC
+       VecScatter b ! VecScatter
+       VecScatter c ! VecScatter
+       PetscErrorCode z
+       end subroutine PCRedundantSetScatter
+      subroutine PCRedundantGetKSP(a,b,z)
+       import tKSP,tPC
+       PC a ! PC
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine PCRedundantGetKSP
+      subroutine PCRedundantGetOperators(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCRedundantGetOperators
+      subroutine PCSORGetSymmetric(a,b,z)
+       import tPC
+       PC a ! PC
+       MatSORType b ! MatSORType
+       PetscErrorCode z
+       end subroutine PCSORGetSymmetric
+      subroutine PCSORGetOmega(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCSORGetOmega
+      subroutine PCSORGetIterations(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PCSORGetIterations
+      subroutine PCSORSetSymmetric(a,b,z)
+       import tPC
+       PC a ! PC
+       MatSORType b ! MatSORType
+       PetscErrorCode z
+       end subroutine PCSORSetSymmetric
+      subroutine PCSORSetOmega(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCSORSetOmega
+      subroutine PCSORSetIterations(a,b,c,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PCSORSetIterations
+      subroutine PCSPAISetEpsilon(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PCSPAISetEpsilon
+      subroutine PCSPAISetNBSteps(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCSPAISetNBSteps
+      subroutine PCSPAISetMax(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCSPAISetMax
+      subroutine PCSPAISetMaxNew(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCSPAISetMaxNew
+      subroutine PCSPAISetBlockSize(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCSPAISetBlockSize
+      subroutine PCSPAISetCacheSize(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCSPAISetCacheSize
+      subroutine PCSPAISetVerbose(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCSPAISetVerbose
+      subroutine PCSPAISetSp(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCSPAISetSp
+      subroutine PCTelescopeGetKSP(a,b,z)
+       import tKSP,tPC
+       PC a ! PC
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine PCTelescopeGetKSP
+      subroutine PCTelescopeGetReductionFactor(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCTelescopeGetReductionFactor
+      subroutine PCTelescopeSetReductionFactor(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCTelescopeSetReductionFactor
+      subroutine PCTelescopeGetIgnoreDM(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCTelescopeGetIgnoreDM
+      subroutine PCTelescopeSetIgnoreDM(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCTelescopeSetIgnoreDM
+      subroutine PCTelescopeGetUseCoarseDM(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCTelescopeGetUseCoarseDM
+      subroutine PCTelescopeSetUseCoarseDM(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCTelescopeSetUseCoarseDM
+      subroutine PCTelescopeGetIgnoreKSPComputeOperators(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCTelescopeGetIgnoreKSPComputeOperators
+      subroutine PCTelescopeSetIgnoreKSPComputeOperators(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCTelescopeSetIgnoreKSPComputeOperators
+      subroutine PCTelescopeGetDM(a,b,z)
+       import tPC,tDM
+       PC a ! PC
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine PCTelescopeGetDM
+      subroutine PCTelescopeSetSubcommType(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscSubcommType b ! PetscSubcommType
+       PetscErrorCode z
+       end subroutine PCTelescopeSetSubcommType
+      subroutine PCTelescopeGetSubcommType(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscSubcommType b ! PetscSubcommType
+       PetscErrorCode z
+       end subroutine PCTelescopeGetSubcommType
+      subroutine PCExoticSetType(a,b,z)
+       import tPC
+       PC a ! PC
+       PCExoticType b ! PCExoticType
+       PetscErrorCode z
+       end subroutine PCExoticSetType
+      subroutine PCSetFromOptions(a,z)
+       import tPC
+       PC a ! PC
+       PetscErrorCode z
+       end subroutine PCSetFromOptions
+      subroutine PCSetDM(a,b,z)
+       import tPC,tDM
+       PC a ! PC
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine PCSetDM
+      subroutine PCGetDM(a,b,z)
+       import tPC,tDM
+       PC a ! PC
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine PCGetDM
+      subroutine PCReset(a,z)
+       import tPC
+       PC a ! PC
+       PetscErrorCode z
+       end subroutine PCReset
+      subroutine PCSetDiagonalScale(a,b,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine PCSetDiagonalScale
+      subroutine PCDiagonalScaleLeft(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCDiagonalScaleLeft
+      subroutine PCDiagonalScaleRight(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCDiagonalScaleRight
+      subroutine PCSetUseAmat(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCSetUseAmat
+      subroutine PCSetErrorIfFailure(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCSetErrorIfFailure
+      subroutine PCGetUseAmat(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGetUseAmat
+      subroutine PCSetKSPNestLevel(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCSetKSPNestLevel
+      subroutine PCGetKSPNestLevel(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PCGetKSPNestLevel
+      subroutine PCCreate(a,b,z)
+       import tPC
+       MPI_Comm a ! MPI_Comm
+       PC b ! PC
+       PetscErrorCode z
+       end subroutine PCCreate
+      subroutine PCApply(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCApply
+      subroutine PCMatApply(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCMatApply
+      subroutine PCApplySymmetricLeft(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCApplySymmetricLeft
+      subroutine PCApplySymmetricRight(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCApplySymmetricRight
+      subroutine PCApplyTranspose(a,b,c,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine PCApplyTranspose
+      subroutine PCApplyTransposeExists(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCApplyTransposeExists
+      subroutine PCApplyBAorAB(a,b,c,d,e,z)
+       import tVec,tPC
+       PC a ! PC
+       PCSide b ! PCSide
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       PetscErrorCode z
+       end subroutine PCApplyBAorAB
+      subroutine PCApplyBAorABTranspose(a,b,c,d,e,z)
+       import tVec,tPC
+       PC a ! PC
+       PCSide b ! PCSide
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       PetscErrorCode z
+       end subroutine PCApplyBAorABTranspose
+      subroutine PCApplyRichardsonExists(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCApplyRichardsonExists
+      subroutine PCApplyRichardson(a,b,c,d,e,f,g,h,i,j,k,z)
+       import tVec,tPC
+       PC a ! PC
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscReal g ! PetscReal
+       PetscInt h ! PetscInt
+       PetscBool i ! PetscBool
+       PetscInt j ! PetscInt
+       PCRichardsonConvergedReason k ! PCRichardsonConvergedReason
+       PetscErrorCode z
+       end subroutine PCApplyRichardson
+      subroutine PCSetFailedReason(a,b,z)
+       import tPC
+       PC a ! PC
+       PCFailedReason b ! PCFailedReason
+       PetscErrorCode z
+       end subroutine PCSetFailedReason
+      subroutine PCGetFailedReason(a,b,z)
+       import tPC
+       PC a ! PC
+       PCFailedReason b ! PCFailedReason
+       PetscErrorCode z
+       end subroutine PCGetFailedReason
+      subroutine PCGetFailedReasonRank(a,b,z)
+       import tPC
+       PC a ! PC
+       PCFailedReason b ! PCFailedReason
+       PetscErrorCode z
+       end subroutine PCGetFailedReasonRank
+      subroutine PCReduceFailedReason(a,z)
+       import tPC
+       PC a ! PC
+       PetscErrorCode z
+       end subroutine PCReduceFailedReason
+      subroutine PCSetUp(a,z)
+       import tPC
+       PC a ! PC
+       PetscErrorCode z
+       end subroutine PCSetUp
+      subroutine PCSetUpOnBlocks(a,z)
+       import tPC
+       PC a ! PC
+       PetscErrorCode z
+       end subroutine PCSetUpOnBlocks
+      subroutine PCSetOperators(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCSetOperators
+      subroutine PCSetReusePreconditioner(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCSetReusePreconditioner
+      subroutine PCGetReusePreconditioner(a,b,z)
+       import tPC
+       PC a ! PC
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PCGetReusePreconditioner
+      subroutine PCGetOperators(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PCGetOperators
+      subroutine PCFactorGetMatrix(a,b,z)
+       import tPC,tMat
+       PC a ! PC
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine PCFactorGetMatrix
+      subroutine PCPreSolve(a,b,z)
+       import tKSP,tPC
+       PC a ! PC
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine PCPreSolve
+      subroutine PCPostSolve(a,b,z)
+       import tKSP,tPC
+       PC a ! PC
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine PCPostSolve
+      subroutine PCSetCoordinates(a,b,c,d,z)
+       import tPC
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscReal d (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PCSetCoordinates
+      subroutine PCGetInterpolations(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Mat c (*) ! Mat
+       PetscErrorCode z
+       end subroutine PCGetInterpolations
+      subroutine PCGetCoarseOperators(a,b,c,z)
+       import tPC,tMat
+       PC a ! PC
+       PetscInt b ! PetscInt
+       Mat c (*) ! Mat
+       PetscErrorCode z
+       end subroutine PCGetCoarseOperators

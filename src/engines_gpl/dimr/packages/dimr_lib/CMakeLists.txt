@@ -70,6 +70,7 @@ if(WIN32)
                                PRIVATE  
                                ${header_path}
                                "${expat_include_path}"
+                               "${mpi_module_path}"
                                "${mpi_include_path}"
                                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
                                "${checkout_src_root}/third_party_open/pthreads/include/x64")

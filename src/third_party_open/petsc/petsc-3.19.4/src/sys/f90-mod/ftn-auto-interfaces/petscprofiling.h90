@@ -1,0 +1,112 @@
+      subroutine PetscInfoEnabled(a,b,z)
+       PetscClassId a ! PetscClassId
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscInfoEnabled
+      subroutine PetscInfoAllow(a,z)
+       PetscBool a ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscInfoAllow
+      subroutine PetscInfoGetInfo(a,b,c,d,e,z)
+       PetscBool a ! PetscBool
+       PetscBool b ! PetscBool
+       PetscBool c ! PetscBool
+       PetscBool d ! PetscBool
+       PetscInfoCommFlag e ! PetscInfoCommFlag
+       PetscErrorCode z
+       end subroutine PetscInfoGetInfo
+      subroutine PetscInfoSetFilterCommSelf(a,z)
+       PetscInfoCommFlag a ! PetscInfoCommFlag
+       PetscErrorCode z
+       end subroutine PetscInfoSetFilterCommSelf
+      subroutine PetscInfoSetFromOptions(a,z)
+       import tPetscOptions
+       PetscOptions a ! PetscOptions
+       PetscErrorCode z
+       end subroutine PetscInfoSetFromOptions
+      subroutine PetscInfoDestroy(z)
+       PetscErrorCode z
+       end subroutine PetscInfoDestroy
+      subroutine PetscInfoDeactivateClass(a,z)
+       PetscClassId a ! PetscClassId
+       PetscErrorCode z
+       end subroutine PetscInfoDeactivateClass
+      subroutine PetscInfoActivateClass(a,z)
+       PetscClassId a ! PetscClassId
+       PetscErrorCode z
+       end subroutine PetscInfoActivateClass
+      subroutine PetscLogActions(a,z)
+       PetscBool a ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscLogActions
+      subroutine PetscLogObjects(a,z)
+       PetscBool a ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscLogObjects
+      subroutine PetscLogStageSetActive(a,b,z)
+       PetscLogStage a ! PetscLogStage
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscLogStageSetActive
+      subroutine PetscLogStageGetActive(a,b,z)
+       PetscLogStage a ! PetscLogStage
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscLogStageGetActive
+      subroutine PetscLogStageSetVisible(a,b,z)
+       PetscLogStage a ! PetscLogStage
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscLogStageSetVisible
+      subroutine PetscLogStageGetVisible(a,b,z)
+       PetscLogStage a ! PetscLogStage
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscLogStageGetVisible
+      subroutine PetscLogEventSetCollective(a,b,z)
+       PetscLogEvent a ! PetscLogEvent
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscLogEventSetCollective
+      subroutine PetscLogEventIncludeClass(a,z)
+       PetscClassId a ! PetscClassId
+       PetscErrorCode z
+       end subroutine PetscLogEventIncludeClass
+      subroutine PetscLogEventExcludeClass(a,z)
+       PetscClassId a ! PetscClassId
+       PetscErrorCode z
+       end subroutine PetscLogEventExcludeClass
+      subroutine PetscLogEventActivate(a,z)
+       PetscLogEvent a ! PetscLogEvent
+       PetscErrorCode z
+       end subroutine PetscLogEventActivate
+      subroutine PetscLogEventDeactivate(a,z)
+       PetscLogEvent a ! PetscLogEvent
+       PetscErrorCode z
+       end subroutine PetscLogEventDeactivate
+      subroutine PetscLogEventDeactivatePush(a,z)
+       PetscLogEvent a ! PetscLogEvent
+       PetscErrorCode z
+       end subroutine PetscLogEventDeactivatePush
+      subroutine PetscLogEventDeactivatePop(a,z)
+       PetscLogEvent a ! PetscLogEvent
+       PetscErrorCode z
+       end subroutine PetscLogEventDeactivatePop
+      subroutine PetscLogEventSetActiveAll(a,b,z)
+       PetscLogEvent a ! PetscLogEvent
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscLogEventSetActiveAll
+      subroutine PetscLogEventActivateClass(a,z)
+       PetscClassId a ! PetscClassId
+       PetscErrorCode z
+       end subroutine PetscLogEventActivateClass
+      subroutine PetscLogEventDeactivateClass(a,z)
+       PetscClassId a ! PetscClassId
+       PetscErrorCode z
+       end subroutine PetscLogEventDeactivateClass
+      subroutine PetscLogSetThreshold(a,b,z)
+       PetscLogDouble a ! PetscLogDouble
+       PetscLogDouble b ! PetscLogDouble
+       PetscErrorCode z
+       end subroutine PetscLogSetThreshold

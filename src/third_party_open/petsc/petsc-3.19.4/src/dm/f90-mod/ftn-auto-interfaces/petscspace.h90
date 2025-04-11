@@ -1,0 +1,151 @@
+      subroutine PetscSpacePointSetPoints(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscQuadrature b ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscSpacePointSetPoints
+      subroutine PetscSpacePointGetPoints(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscQuadrature b ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscSpacePointGetPoints
+      subroutine PetscSpacePolynomialSetTensor(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSpacePolynomialSetTensor
+      subroutine PetscSpacePolynomialGetTensor(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSpacePolynomialGetTensor
+      subroutine PetscSpacePTrimmedSetFormDegree(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpacePTrimmedSetFormDegree
+      subroutine PetscSpacePTrimmedGetFormDegree(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpacePTrimmedGetFormDegree
+      subroutine PetscSpaceCreateSubspace(a,b,c,d,e,f,g,h,z)
+       PetscSpace a ! PetscSpace
+       PetscDualSpace b ! PetscDualSpace
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscCopyMode g ! PetscCopyMode
+       PetscSpace h ! PetscSpace
+       PetscErrorCode z
+       end subroutine PetscSpaceCreateSubspace
+      subroutine PetscSpaceSumGetNumSubspaces(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpaceSumGetNumSubspaces
+      subroutine PetscSpaceSumSetNumSubspaces(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpaceSumSetNumSubspaces
+      subroutine PetscSpaceSumGetConcatenate(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSpaceSumGetConcatenate
+      subroutine PetscSpaceSumSetConcatenate(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSpaceSumSetConcatenate
+      subroutine PetscSpaceSumGetSubspace(a,b,c,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscSpace c ! PetscSpace
+       PetscErrorCode z
+       end subroutine PetscSpaceSumGetSubspace
+      subroutine PetscSpaceSumSetSubspace(a,b,c,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscSpace c ! PetscSpace
+       PetscErrorCode z
+       end subroutine PetscSpaceSumSetSubspace
+      subroutine PetscSpaceTensorSetNumSubspaces(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpaceTensorSetNumSubspaces
+      subroutine PetscSpaceTensorGetNumSubspaces(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpaceTensorGetNumSubspaces
+      subroutine PetscSpaceTensorSetSubspace(a,b,c,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscSpace c ! PetscSpace
+       PetscErrorCode z
+       end subroutine PetscSpaceTensorSetSubspace
+      subroutine PetscSpaceTensorGetSubspace(a,b,c,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscSpace c ! PetscSpace
+       PetscErrorCode z
+       end subroutine PetscSpaceTensorGetSubspace
+      subroutine PetscSpaceSetFromOptions(a,z)
+       PetscSpace a ! PetscSpace
+       PetscErrorCode z
+       end subroutine PetscSpaceSetFromOptions
+      subroutine PetscSpaceDestroy(a,z)
+       PetscSpace a ! PetscSpace
+       PetscErrorCode z
+       end subroutine PetscSpaceDestroy
+      subroutine PetscSpaceCreate(a,b,z)
+       MPI_Comm a ! MPI_Comm
+       PetscSpace b ! PetscSpace
+       PetscErrorCode z
+       end subroutine PetscSpaceCreate
+      subroutine PetscSpaceGetDimension(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpaceGetDimension
+      subroutine PetscSpaceGetDegree(a,b,c,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpaceGetDegree
+      subroutine PetscSpaceSetDegree(a,b,c,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpaceSetDegree
+      subroutine PetscSpaceGetNumComponents(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpaceGetNumComponents
+      subroutine PetscSpaceSetNumComponents(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpaceSetNumComponents
+      subroutine PetscSpaceSetNumVariables(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpaceSetNumVariables
+      subroutine PetscSpaceGetNumVariables(a,b,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSpaceGetNumVariables
+      subroutine PetscSpaceGetHeightSubspace(a,b,c,z)
+       PetscSpace a ! PetscSpace
+       PetscInt b ! PetscInt
+       PetscSpace c ! PetscSpace
+       PetscErrorCode z
+       end subroutine PetscSpaceGetHeightSubspace

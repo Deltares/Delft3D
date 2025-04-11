@@ -1,0 +1,319 @@
+      subroutine PetscViewerASCIISetTab(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscViewerASCIISetTab
+      subroutine PetscViewerASCIIGetTab(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscViewerASCIIGetTab
+      subroutine PetscViewerASCIIAddTab(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscViewerASCIIAddTab
+      subroutine PetscViewerASCIISubtractTab(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscViewerASCIISubtractTab
+      subroutine PetscViewerASCIIUseTabs(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerASCIIUseTabs
+      subroutine PetscViewerASCIIGetStdout(a,b,z)
+       import tPetscViewer
+       MPI_Comm a ! MPI_Comm
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerASCIIGetStdout
+      subroutine PetscViewerASCIIGetStderr(a,b,z)
+       import tPetscViewer
+       MPI_Comm a ! MPI_Comm
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerASCIIGetStderr
+      subroutine PetscViewerBinarySetUseMPIIO(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerBinarySetUseMPIIO
+      subroutine PetscViewerBinaryGetUseMPIIO(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerBinaryGetUseMPIIO
+      subroutine PetscViewerBinarySetFlowControl(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscViewerBinarySetFlowControl
+      subroutine PetscViewerBinaryGetFlowControl(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscViewerBinaryGetFlowControl
+      subroutine PetscViewerBinarySkipInfo(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerBinarySkipInfo
+      subroutine PetscViewerBinarySetSkipInfo(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerBinarySetSkipInfo
+      subroutine PetscViewerBinaryGetSkipInfo(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerBinaryGetSkipInfo
+      subroutine PetscViewerBinarySetSkipOptions(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerBinarySetSkipOptions
+      subroutine PetscViewerBinaryGetSkipOptions(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerBinaryGetSkipOptions
+      subroutine PetscViewerBinarySetSkipHeader(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerBinarySetSkipHeader
+      subroutine PetscViewerBinaryGetSkipHeader(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerBinaryGetSkipHeader
+      subroutine PetscViewerDrawClear(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerDrawClear
+      subroutine PetscViewerDrawGetPause(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscViewerDrawGetPause
+      subroutine PetscViewerDrawSetPause(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscViewerDrawSetPause
+      subroutine PetscViewerDrawSetHold(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerDrawSetHold
+      subroutine PetscViewerDrawGetHold(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerDrawGetHold
+      subroutine PetscViewerDrawSetBounds(a,b,c,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscViewerDrawSetBounds
+      subroutine PetscViewerGLVisSetPrecision(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscViewerGLVisSetPrecision
+      subroutine PetscViewerGLVisSetSnapId(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscViewerGLVisSetSnapId
+      subroutine PetscViewerHDF5SetBaseDimension2(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5SetBaseDimension2
+      subroutine PetscViewerHDF5GetBaseDimension2(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5GetBaseDimension2
+      subroutine PetscViewerHDF5SetSPOutput(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5SetSPOutput
+      subroutine PetscViewerHDF5GetSPOutput(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5GetSPOutput
+      subroutine PetscViewerHDF5SetCollective(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5SetCollective
+      subroutine PetscViewerHDF5GetCollective(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5GetCollective
+      subroutine PetscViewerHDF5SetDefaultTimestepping(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5SetDefaultTimestepping
+      subroutine PetscViewerHDF5GetDefaultTimestepping(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5GetDefaultTimestepping
+      subroutine PetscViewerHDF5PopGroup(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5PopGroup
+      subroutine PetscViewerHDF5PushTimestepping(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5PushTimestepping
+      subroutine PetscViewerHDF5PopTimestepping(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5PopTimestepping
+      subroutine PetscViewerHDF5IsTimestepping(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5IsTimestepping
+      subroutine PetscViewerHDF5IncrementTimestep(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5IncrementTimestep
+      subroutine PetscViewerHDF5SetTimestep(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5SetTimestep
+      subroutine PetscViewerHDF5GetTimestep(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5GetTimestep
+      subroutine PetscViewerHDF5HasObject(a,b,c,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscObject b ! PetscObject
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerHDF5HasObject
+      subroutine PetscViewerMathematicaClearName(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerMathematicaClearName
+      subroutine PetscViewerMathematicaGetVector(a,b,z)
+       import tVec,tPetscViewer
+       PetscViewer a ! PetscViewer
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine PetscViewerMathematicaGetVector
+      subroutine PetscViewerMathematicaPutVector(a,b,z)
+       import tVec,tPetscViewer
+       PetscViewer a ! PetscViewer
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine PetscViewerMathematicaPutVector
+      subroutine PetscViewerFlush(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerFlush
+      subroutine PetscViewerDestroy(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerDestroy
+      subroutine PetscViewerSetUp(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerSetUp
+      subroutine PetscViewerReadable(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerReadable
+      subroutine PetscViewerWritable(a,b,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscViewerWritable
+      subroutine PetscViewerCheckReadable(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerCheckReadable
+      subroutine PetscViewerCheckWritable(a,z)
+       import tPetscViewer
+       PetscViewer a ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerCheckWritable
+      subroutine PetscOptionsPushGetViewerOff(a,z)
+       PetscBool a ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscOptionsPushGetViewerOff
+      subroutine PetscOptionsPopGetViewerOff(z)
+       PetscErrorCode z
+       end subroutine PetscOptionsPopGetViewerOff
+      subroutine PetscOptionsGetViewerOff(a,z)
+       PetscBool a ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscOptionsGetViewerOff
+      subroutine PetscViewerCreate(a,b,z)
+       import tPetscViewer
+       MPI_Comm a ! MPI_Comm
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscViewerCreate

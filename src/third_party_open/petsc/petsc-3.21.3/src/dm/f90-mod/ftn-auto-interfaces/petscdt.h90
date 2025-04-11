@@ -1,0 +1,720 @@
+      subroutine PetscQuadratureCreate(a,b,z)
+       MPI_Comm a ! MPI_Comm
+       PetscQuadrature b ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscQuadratureCreate
+      subroutine PetscQuadratureDuplicate(a,b,z)
+       PetscQuadrature a ! PetscQuadrature
+       PetscQuadrature b ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscQuadratureDuplicate
+      subroutine PetscQuadratureDestroy(a,z)
+       PetscQuadrature a ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscQuadratureDestroy
+      subroutine PetscQuadratureGetCellType(a,b,z)
+       PetscQuadrature a ! PetscQuadrature
+       DMPolytopeType b ! DMPolytopeType
+       PetscErrorCode z
+       end subroutine PetscQuadratureGetCellType
+      subroutine PetscQuadratureSetCellType(a,b,z)
+       PetscQuadrature a ! PetscQuadrature
+       DMPolytopeType b ! DMPolytopeType
+       PetscErrorCode z
+       end subroutine PetscQuadratureSetCellType
+      subroutine PetscQuadratureGetOrder(a,b,z)
+       PetscQuadrature a ! PetscQuadrature
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscQuadratureGetOrder
+      subroutine PetscQuadratureSetOrder(a,b,z)
+       PetscQuadrature a ! PetscQuadrature
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscQuadratureSetOrder
+      subroutine PetscQuadratureGetNumComponents(a,b,z)
+       PetscQuadrature a ! PetscQuadrature
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscQuadratureGetNumComponents
+      subroutine PetscQuadratureSetNumComponents(a,b,z)
+       PetscQuadrature a ! PetscQuadrature
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscQuadratureSetNumComponents
+      subroutine PetscQuadratureEqual(a,b,c,z)
+       PetscQuadrature a ! PetscQuadrature
+       PetscQuadrature b ! PetscQuadrature
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscQuadratureEqual
+      subroutine PetscQuadraturePushForward(a,b,c,d,e,f,g,z)
+       PetscQuadrature a ! PetscQuadrature
+       PetscInt b ! PetscInt
+       PetscReal c (*) ! PetscReal
+       PetscReal d (*) ! PetscReal
+       PetscReal e (*) ! PetscReal
+       PetscInt f ! PetscInt
+       PetscQuadrature g ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscQuadraturePushForward
+      subroutine PetscDTJacobiNorm(a,b,c,d,z)
+       PetscReal a ! PetscReal
+       PetscReal b ! PetscReal
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTJacobiNorm
+      subroutine PetscDTJacobiEvalJet(a,b,c,d,e,f,g,z)
+       PetscReal a ! PetscReal
+       PetscReal b ! PetscReal
+       PetscInt c ! PetscInt
+       PetscReal d (*) ! PetscReal
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscReal g (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTJacobiEvalJet
+      subroutine PetscDTJacobiEval(a,b,c,d,e,f,g,h,i,z)
+       PetscInt a ! PetscInt
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscReal g ! PetscReal
+       PetscReal h ! PetscReal
+       PetscReal i ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTJacobiEval
+      subroutine PetscDTLegendreEval(a,b,c,d,e,f,g,z)
+       PetscInt a ! PetscInt
+       PetscReal b ! PetscReal
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscReal g ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTLegendreEval
+      subroutine PetscDTIndexToGradedOrder(a,b,c,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDTIndexToGradedOrder
+      subroutine PetscDTGradedOrderToIndex(a,b,c,z)
+       PetscInt a ! PetscInt
+       PetscInt b (*) ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDTGradedOrderToIndex
+      subroutine PetscDTPKDEvalJet(a,b,c,d,e,f,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscReal c (*) ! PetscReal
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscReal f (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTPKDEvalJet
+      subroutine PetscDTPTrimmedSize(a,b,c,d,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDTPTrimmedSize
+      subroutine PetscDTPTrimmedEvalJet(a,b,c,d,e,f,g,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscReal c (*) ! PetscReal
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscReal g (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTPTrimmedEvalJet
+      subroutine PetscDTGaussJacobiQuadrature(a,b,c,d,e,f,g,z)
+       PetscInt a ! PetscInt
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscReal f (*) ! PetscReal
+       PetscReal g (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTGaussJacobiQuadrature
+      subroutine PetscDTGaussLobattoJacobiQuadrature(a,b,c,d,e,f,g,z)
+       PetscInt a ! PetscInt
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscReal f (*) ! PetscReal
+       PetscReal g (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTGaussLobattoJacobiQuadrature
+      subroutine PetscDTGaussQuadrature(a,b,c,d,e,z)
+       PetscInt a ! PetscInt
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTGaussQuadrature
+      subroutine PetscDTGaussTensorQuadrature(a,b,c,d,e,f,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscQuadrature f ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscDTGaussTensorQuadrature
+      subroutine PetscDTStroudConicalQuadrature(a,b,c,d,e,f,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscQuadrature f ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscDTStroudConicalQuadrature
+      subroutine PetscDTSimplexQuadrature(a,b,c,d,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscDTSimplexQuadratureType c ! PetscDTSimplexQuadratureType
+       PetscQuadrature d ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscDTSimplexQuadrature
+      subroutine PetscDTTanhSinhTensorQuadrature(a,b,c,d,e,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscQuadrature e ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscDTTanhSinhTensorQuadrature
+      subroutine PetscDTTensorQuadratureCreate(a,b,c,z)
+       PetscQuadrature a ! PetscQuadrature
+       PetscQuadrature b ! PetscQuadrature
+       PetscQuadrature c ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscDTTensorQuadratureCreate
+      subroutine PetscDTReconstructPoly(a,b,c,d,e,f,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscInt d ! PetscInt
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTReconstructPoly
+      subroutine PetscDTIndexToBary(a,b,c,d,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDTIndexToBary
+      subroutine PetscDTBaryToIndex(a,b,c,d,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDTBaryToIndex
+      subroutine PetscQuadratureComputePermutations(a,b,c,z)
+       import tIS
+       PetscQuadrature a ! PetscQuadrature
+       PetscInt b ! PetscInt
+       IS c (*) ! IS
+       PetscErrorCode z
+       end subroutine PetscQuadratureComputePermutations
+      subroutine PetscDTCreateDefaultQuadrature(a,b,c,d,z)
+       DMPolytopeType a ! DMPolytopeType
+       PetscInt b ! PetscInt
+       PetscQuadrature c ! PetscQuadrature
+       PetscQuadrature d ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscDTCreateDefaultQuadrature
+      subroutine PetscDTAltVApply(a,b,c,d,e,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTAltVApply
+      subroutine PetscDTAltVWedge(a,b,c,d,e,f,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTAltVWedge
+      subroutine PetscDTAltVWedgeMatrix(a,b,c,d,e,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTAltVWedgeMatrix
+      subroutine PetscDTAltVPullback(a,b,c,d,e,f,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscInt d ! PetscInt
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTAltVPullback
+      subroutine PetscDTAltVPullbackMatrix(a,b,c,d,e,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscInt d ! PetscInt
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTAltVPullbackMatrix
+      subroutine PetscDTAltVInterior(a,b,c,d,e,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTAltVInterior
+      subroutine PetscDTAltVInteriorMatrix(a,b,c,d,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTAltVInteriorMatrix
+      subroutine PetscDTAltVInteriorPattern(a,b,c,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDTAltVInteriorPattern
+      subroutine PetscDTAltVStar(a,b,c,d,e,z)
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDTAltVStar
+      subroutine PetscDSSetFromOptions(a,z)
+       PetscDS a ! PetscDS
+       PetscErrorCode z
+       end subroutine PetscDSSetFromOptions
+      subroutine PetscDSDestroy(a,z)
+       PetscDS a ! PetscDS
+       PetscErrorCode z
+       end subroutine PetscDSDestroy
+      subroutine PetscDSCreate(a,b,z)
+       MPI_Comm a ! MPI_Comm
+       PetscDS b ! PetscDS
+       PetscErrorCode z
+       end subroutine PetscDSCreate
+      subroutine PetscDSGetNumFields(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetNumFields
+      subroutine PetscDSGetSpatialDimension(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetSpatialDimension
+      subroutine PetscDSGetCoordinateDimension(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetCoordinateDimension
+      subroutine PetscDSSetCoordinateDimension(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSSetCoordinateDimension
+      subroutine PetscDSGetForceQuad(a,b,z)
+       PetscDS a ! PetscDS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDSGetForceQuad
+      subroutine PetscDSSetForceQuad(a,b,z)
+       PetscDS a ! PetscDS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDSSetForceQuad
+      subroutine PetscDSIsCohesive(a,b,z)
+       PetscDS a ! PetscDS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDSIsCohesive
+      subroutine PetscDSGetNumCohesive(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetNumCohesive
+      subroutine PetscDSGetCohesive(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDSGetCohesive
+      subroutine PetscDSSetCohesive(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDSSetCohesive
+      subroutine PetscDSGetTotalDimension(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetTotalDimension
+      subroutine PetscDSGetTotalComponents(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetTotalComponents
+      subroutine PetscDSGetDiscretization(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscObject c ! PetscObject
+       PetscErrorCode z
+       end subroutine PetscDSGetDiscretization
+      subroutine PetscDSSetDiscretization(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscObject c ! PetscObject
+       PetscErrorCode z
+       end subroutine PetscDSSetDiscretization
+      subroutine PetscDSGetWeakForm(a,b,z)
+       PetscDS a ! PetscDS
+       PetscWeakForm b ! PetscWeakForm
+       PetscErrorCode z
+       end subroutine PetscDSGetWeakForm
+      subroutine PetscDSSetWeakForm(a,b,z)
+       PetscDS a ! PetscDS
+       PetscWeakForm b ! PetscWeakForm
+       PetscErrorCode z
+       end subroutine PetscDSSetWeakForm
+      subroutine PetscDSAddDiscretization(a,b,z)
+       PetscDS a ! PetscDS
+       PetscObject b ! PetscObject
+       PetscErrorCode z
+       end subroutine PetscDSAddDiscretization
+      subroutine PetscDSGetQuadrature(a,b,z)
+       PetscDS a ! PetscDS
+       PetscQuadrature b ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscDSGetQuadrature
+      subroutine PetscDSGetImplicit(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDSGetImplicit
+      subroutine PetscDSSetImplicit(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDSSetImplicit
+      subroutine PetscDSGetJetDegree(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetJetDegree
+      subroutine PetscDSSetJetDegree(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSSetJetDegree
+      subroutine PetscDSHasBdJacobian(a,b,z)
+       PetscDS a ! PetscDS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDSHasBdJacobian
+      subroutine PetscDSHasBdJacobianPreconditioner(a,b,z)
+       PetscDS a ! PetscDS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDSHasBdJacobianPreconditioner
+      subroutine PetscDSGetFieldIndex(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscObject b ! PetscObject
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetFieldIndex
+      subroutine PetscDSGetFieldSize(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetFieldSize
+      subroutine PetscDSGetFieldOffset(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetFieldOffset
+      subroutine PetscDSGetFieldOffsetCohesive(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetFieldOffsetCohesive
+      subroutine PetscDSGetDimensions(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetDimensions
+      subroutine PetscDSGetComponents(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetComponents
+      subroutine PetscDSGetComponentOffset(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetComponentOffset
+      subroutine PetscDSGetComponentOffsets(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetComponentOffsets
+      subroutine PetscDSGetComponentDerivativeOffsets(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetComponentDerivativeOffsets
+      subroutine PetscDSGetComponentOffsetsCohesive(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetComponentOffsetsCohesive
+      subroutine PetscDSGetComponentDerivativeOffsetsCohesive(a,b,c,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetComponentDerivativeOffsetsCohesive
+      subroutine PetscDSGetNumBoundary(a,b,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDSGetNumBoundary
+      subroutine PetscDSUpdateBoundaryLabels(a,b,z)
+       import tDM
+       PetscDS a ! PetscDS
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine PetscDSUpdateBoundaryLabels
+      subroutine PetscDSCopyBoundary(a,b,c,d,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscDS d ! PetscDS
+       PetscErrorCode z
+       end subroutine PetscDSCopyBoundary
+      subroutine PetscDSDestroyBoundary(a,z)
+       PetscDS a ! PetscDS
+       PetscErrorCode z
+       end subroutine PetscDSDestroyBoundary
+      subroutine PetscDSSelectDiscretizations(a,b,c,d,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscDS d ! PetscDS
+       PetscErrorCode z
+       end subroutine PetscDSSelectDiscretizations
+      subroutine PetscDSSelectEquations(a,b,c,d,z)
+       PetscDS a ! PetscDS
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscDS d ! PetscDS
+       PetscErrorCode z
+       end subroutine PetscDSSelectEquations
+      subroutine PetscDSCopyEquations(a,b,z)
+       PetscDS a ! PetscDS
+       PetscDS b ! PetscDS
+       PetscErrorCode z
+       end subroutine PetscDSCopyEquations
+      subroutine PetscDSCopyConstants(a,b,z)
+       PetscDS a ! PetscDS
+       PetscDS b ! PetscDS
+       PetscErrorCode z
+       end subroutine PetscDSCopyConstants
+      subroutine PetscDSCopyExactSolutions(a,b,z)
+       PetscDS a ! PetscDS
+       PetscDS b ! PetscDS
+       PetscErrorCode z
+       end subroutine PetscDSCopyExactSolutions
+      subroutine PetscPDFMaxwellBoltzmann1D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFMaxwellBoltzmann1D
+      subroutine PetscCDFMaxwellBoltzmann1D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscCDFMaxwellBoltzmann1D
+      subroutine PetscPDFMaxwellBoltzmann2D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFMaxwellBoltzmann2D
+      subroutine PetscCDFMaxwellBoltzmann2D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscCDFMaxwellBoltzmann2D
+      subroutine PetscPDFMaxwellBoltzmann3D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFMaxwellBoltzmann3D
+      subroutine PetscCDFMaxwellBoltzmann3D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscCDFMaxwellBoltzmann3D
+      subroutine PetscPDFGaussian1D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFGaussian1D
+      subroutine PetscPDFSampleGaussian1D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFSampleGaussian1D
+      subroutine PetscPDFGaussian2D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFGaussian2D
+      subroutine PetscPDFSampleGaussian2D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFSampleGaussian2D
+      subroutine PetscPDFGaussian3D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFGaussian3D
+      subroutine PetscPDFSampleGaussian3D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFSampleGaussian3D
+      subroutine PetscPDFConstant1D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFConstant1D
+      subroutine PetscCDFConstant1D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscCDFConstant1D
+      subroutine PetscPDFSampleConstant1D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFSampleConstant1D
+      subroutine PetscPDFConstant2D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFConstant2D
+      subroutine PetscCDFConstant2D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscCDFConstant2D
+      subroutine PetscPDFSampleConstant2D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFSampleConstant2D
+      subroutine PetscPDFConstant3D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFConstant3D
+      subroutine PetscCDFConstant3D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscCDFConstant3D
+      subroutine PetscPDFSampleConstant3D(a,b,c,z)
+       PetscReal a (*) ! PetscReal
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscPDFSampleConstant3D
+      subroutine PetscWeakFormCopy(a,b,z)
+       PetscWeakForm a ! PetscWeakForm
+       PetscWeakForm b ! PetscWeakForm
+       PetscErrorCode z
+       end subroutine PetscWeakFormCopy
+      subroutine PetscWeakFormClear(a,z)
+       PetscWeakForm a ! PetscWeakForm
+       PetscErrorCode z
+       end subroutine PetscWeakFormClear
+      subroutine PetscWeakFormGetNumFields(a,b,z)
+       PetscWeakForm a ! PetscWeakForm
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscWeakFormGetNumFields
+      subroutine PetscWeakFormSetNumFields(a,b,z)
+       PetscWeakForm a ! PetscWeakForm
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscWeakFormSetNumFields
+      subroutine PetscWeakFormDestroy(a,z)
+       PetscWeakForm a ! PetscWeakForm
+       PetscErrorCode z
+       end subroutine PetscWeakFormDestroy
+      subroutine PetscWeakFormCreate(a,b,z)
+       MPI_Comm a ! MPI_Comm
+       PetscWeakForm b ! PetscWeakForm
+       PetscErrorCode z
+       end subroutine PetscWeakFormCreate

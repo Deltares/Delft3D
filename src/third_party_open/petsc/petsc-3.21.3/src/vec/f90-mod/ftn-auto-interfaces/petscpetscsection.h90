@@ -1,0 +1,473 @@
+      subroutine PetscSectionCreate(a,b,z)
+       import tPetscSection
+       MPI_Comm a ! MPI_Comm
+       PetscSection b ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionCreate
+      subroutine PetscSectionCopy(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscSection b ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionCopy
+      subroutine PetscSectionClone(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscSection b ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionClone
+      subroutine PetscSectionSetFromOptions(a,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionSetFromOptions
+      subroutine PetscSectionCompare(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscSection b ! PetscSection
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSectionCompare
+      subroutine PetscSectionGetNumFields(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetNumFields
+      subroutine PetscSectionSetNumFields(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionSetNumFields
+      subroutine PetscSectionGetFieldComponents(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetFieldComponents
+      subroutine PetscSectionSetFieldComponents(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionSetFieldComponents
+      subroutine PetscSectionGetChart(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetChart
+      subroutine PetscSectionSetChart(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionSetChart
+      subroutine PetscSectionGetPermutation(a,b,z)
+       import tPetscSection,tIS
+       PetscSection a ! PetscSection
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PetscSectionGetPermutation
+      subroutine PetscSectionSetPermutation(a,b,z)
+       import tPetscSection,tIS
+       PetscSection a ! PetscSection
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine PetscSectionSetPermutation
+      subroutine PetscSectionGetPointMajor(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSectionGetPointMajor
+      subroutine PetscSectionSetPointMajor(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSectionSetPointMajor
+      subroutine PetscSectionGetIncludesConstraints(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSectionGetIncludesConstraints
+      subroutine PetscSectionSetIncludesConstraints(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSectionSetIncludesConstraints
+      subroutine PetscSectionGetDof(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetDof
+      subroutine PetscSectionSetDof(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionSetDof
+      subroutine PetscSectionAddDof(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionAddDof
+      subroutine PetscSectionGetFieldDof(a,b,c,d,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetFieldDof
+      subroutine PetscSectionSetFieldDof(a,b,c,d,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionSetFieldDof
+      subroutine PetscSectionAddFieldDof(a,b,c,d,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionAddFieldDof
+      subroutine PetscSectionGetConstraintDof(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetConstraintDof
+      subroutine PetscSectionSetConstraintDof(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionSetConstraintDof
+      subroutine PetscSectionAddConstraintDof(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionAddConstraintDof
+      subroutine PetscSectionGetFieldConstraintDof(a,b,c,d,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetFieldConstraintDof
+      subroutine PetscSectionSetFieldConstraintDof(a,b,c,d,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionSetFieldConstraintDof
+      subroutine PetscSectionAddFieldConstraintDof(a,b,c,d,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionAddFieldConstraintDof
+      subroutine PetscSectionSetUpBC(a,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionSetUpBC
+      subroutine PetscSectionSetUp(a,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionSetUp
+      subroutine PetscSectionGetMaxDof(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetMaxDof
+      subroutine PetscSectionGetStorageSize(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetStorageSize
+      subroutine PetscSectionGetConstrainedStorageSize(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetConstrainedStorageSize
+      subroutine PetscSectionCreateGlobalSection(a,b,c,d,e,f,z)
+       import tPetscSF,tPetscSection
+       PetscSection a ! PetscSection
+       PetscSF b ! PetscSF
+       PetscBool c ! PetscBool
+       PetscBool d ! PetscBool
+       PetscBool e ! PetscBool
+       PetscSection f ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionCreateGlobalSection
+      subroutine PetscSectionCreateGlobalSectionCensored(a,b,c,d,e,f,z)
+       import tPetscSF,tPetscSection
+       PetscSection a ! PetscSection
+       PetscSF b ! PetscSF
+       PetscBool c ! PetscBool
+       PetscInt d ! PetscInt
+       PetscInt e (*) ! PetscInt
+       PetscSection f ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionCreateGlobalSectionCensored
+      subroutine PetscSectionGetPointLayout(a,b,c,z)
+       import tPetscSection
+       MPI_Comm a ! MPI_Comm
+       PetscSection b ! PetscSection
+       PetscLayout c ! PetscLayout
+       PetscErrorCode z
+       end subroutine PetscSectionGetPointLayout
+      subroutine PetscSectionGetValueLayout(a,b,c,z)
+       import tPetscSection
+       MPI_Comm a ! MPI_Comm
+       PetscSection b ! PetscSection
+       PetscLayout c ! PetscLayout
+       PetscErrorCode z
+       end subroutine PetscSectionGetValueLayout
+      subroutine PetscSectionGetOffset(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetOffset
+      subroutine PetscSectionSetOffset(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionSetOffset
+      subroutine PetscSectionGetFieldOffset(a,b,c,d,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetFieldOffset
+      subroutine PetscSectionSetFieldOffset(a,b,c,d,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionSetFieldOffset
+      subroutine PetscSectionGetFieldPointOffset(a,b,c,d,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetFieldPointOffset
+      subroutine PetscSectionGetOffsetRange(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscSectionGetOffsetRange
+      subroutine PetscSectionCreateSubsection(a,b,c,d,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscSection d ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionCreateSubsection
+      subroutine PetscSectionCreateComponentSubsection(a,b,c,d,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscSection d ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionCreateComponentSubsection
+      subroutine PetscSectionCreateSupersection(a,b,c,z)
+       import tPetscSection
+       PetscSection a (*) ! PetscSection
+       PetscInt b ! PetscInt
+       PetscSection c ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionCreateSupersection
+      subroutine PetscSectionCreateSubmeshSection(a,b,c,z)
+       import tPetscSection,tIS
+       PetscSection a ! PetscSection
+       IS b ! IS
+       PetscSection c ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionCreateSubmeshSection
+      subroutine PetscSectionCreateSubdomainSection(a,b,c,z)
+       import tPetscSection,tIS
+       PetscSection a ! PetscSection
+       IS b ! IS
+       PetscSection c ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionCreateSubdomainSection
+      subroutine PetscSectionResetClosurePermutation(a,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionResetClosurePermutation
+      subroutine PetscSectionReset(a,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionReset
+      subroutine PetscSectionDestroy(a,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionDestroy
+      subroutine PetscSectionPermute(a,b,c,z)
+       import tPetscSection,tIS
+       PetscSection a ! PetscSection
+       IS b ! IS
+       PetscSection c ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionPermute
+      subroutine PetscSectionSetClosureIndex(a,b,c,d,z)
+       import tPetscSection,tIS
+       PetscSection a ! PetscSection
+       PetscObject b ! PetscObject
+       PetscSection c ! PetscSection
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine PetscSectionSetClosureIndex
+      subroutine PetscSectionGetClosureIndex(a,b,c,d,z)
+       import tPetscSection,tIS
+       PetscSection a ! PetscSection
+       PetscObject b ! PetscObject
+       PetscSection c ! PetscSection
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine PetscSectionGetClosureIndex
+      subroutine PetscSectionSetClosurePermutation(a,b,c,d,z)
+       import tPetscSection,tIS
+       PetscSection a ! PetscSection
+       PetscObject b ! PetscObject
+       PetscInt c ! PetscInt
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine PetscSectionSetClosurePermutation
+      subroutine PetscSectionGetClosurePermutation(a,b,c,d,e,z)
+       import tPetscSection,tIS
+       PetscSection a ! PetscSection
+       PetscObject b ! PetscObject
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       IS e ! IS
+       PetscErrorCode z
+       end subroutine PetscSectionGetClosurePermutation
+      subroutine PetscSectionGetClosureInversePermutation(a,b,c,d,e,z)
+       import tPetscSection,tIS
+       PetscSection a ! PetscSection
+       PetscObject b ! PetscObject
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       IS e ! IS
+       PetscErrorCode z
+       end subroutine PetscSectionGetClosureInversePermutation
+      subroutine PetscSectionGetField(a,b,c,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscSection c ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscSectionGetField
+      subroutine PetscSectionSymCreate(a,b,z)
+       import tPetscSectionSym
+       MPI_Comm a ! MPI_Comm
+       PetscSectionSym b ! PetscSectionSym
+       PetscErrorCode z
+       end subroutine PetscSectionSymCreate
+      subroutine PetscSectionSymDestroy(a,z)
+       import tPetscSectionSym
+       PetscSectionSym a ! PetscSectionSym
+       PetscErrorCode z
+       end subroutine PetscSectionSymDestroy
+      subroutine PetscSectionSetSym(a,b,z)
+       import tPetscSection,tPetscSectionSym
+       PetscSection a ! PetscSection
+       PetscSectionSym b ! PetscSectionSym
+       PetscErrorCode z
+       end subroutine PetscSectionSetSym
+      subroutine PetscSectionGetSym(a,b,z)
+       import tPetscSection,tPetscSectionSym
+       PetscSection a ! PetscSection
+       PetscSectionSym b ! PetscSectionSym
+       PetscErrorCode z
+       end subroutine PetscSectionGetSym
+      subroutine PetscSectionSetFieldSym(a,b,c,z)
+       import tPetscSection,tPetscSectionSym
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscSectionSym c ! PetscSectionSym
+       PetscErrorCode z
+       end subroutine PetscSectionSetFieldSym
+      subroutine PetscSectionGetFieldSym(a,b,c,z)
+       import tPetscSection,tPetscSectionSym
+       PetscSection a ! PetscSection
+       PetscInt b ! PetscInt
+       PetscSectionSym c ! PetscSectionSym
+       PetscErrorCode z
+       end subroutine PetscSectionGetFieldSym
+      subroutine PetscSectionSymCopy(a,b,z)
+       import tPetscSectionSym
+       PetscSectionSym a ! PetscSectionSym
+       PetscSectionSym b ! PetscSectionSym
+       PetscErrorCode z
+       end subroutine PetscSectionSymCopy
+      subroutine PetscSectionSymDistribute(a,b,c,z)
+       import tPetscSF,tPetscSectionSym
+       PetscSectionSym a ! PetscSectionSym
+       PetscSF b ! PetscSF
+       PetscSectionSym c ! PetscSectionSym
+       PetscErrorCode z
+       end subroutine PetscSectionSymDistribute
+      subroutine PetscSectionGetUseFieldOffsets(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSectionGetUseFieldOffsets
+      subroutine PetscSectionSetUseFieldOffsets(a,b,z)
+       import tPetscSection
+       PetscSection a ! PetscSection
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscSectionSetUseFieldOffsets

@@ -86,7 +86,7 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/dfm_volume_t
 target_link_libraries(${executable_name} netcdf)
 
 if (WIN32)
-    include_directories(${mpi_include_path}
+    include_directories(${mpi_module_path} ${mpi_include_path}
                         ${tecplot_path}
 						${version_include_dir}
 						${res_path})

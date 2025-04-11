@@ -58,7 +58,7 @@ target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
 set_source_files_properties(${fortran_static_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-target_include_directories(${library_name}  PRIVATE ${mpi_include_path}/
+target_include_directories(${library_name}  PRIVATE ${mpi_module_path} ${mpi_include_path}/
                                                     "${CMAKE_CURRENT_SOURCE_DIR}/../../include"
                                                     ${version_include_dir}
                                                     ${waq_version_path})

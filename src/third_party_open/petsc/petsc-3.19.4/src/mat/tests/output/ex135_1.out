@@ -1,0 +1,38 @@
+Mat Object: 4 MPI processes
+  type: mpisbaij
+  rows=1000, cols=1000
+  total: nonzeros=1999, allocated nonzeros=2000
+  total number of mallocs used during MatSetValues calls=0
+    [0] Local rows 250 nz 500 nz alloced 500 bs 1 mem 18900.
+    [0] on-diagonal part: nz 250 
+    [0] off-diagonal part: nz 250 
+    [1] Local rows 250 nz 500 nz alloced 500 bs 1 mem 18900.
+    [1] on-diagonal part: nz 250 
+    [1] off-diagonal part: nz 250 
+    [2] Local rows 250 nz 500 nz alloced 500 bs 1 mem 18900.
+    [2] on-diagonal part: nz 250 
+    [2] off-diagonal part: nz 250 
+    [3] Local rows 250 nz 499 nz alloced 500 bs 1 mem 19398.
+    [3] on-diagonal part: nz 499 
+    [3] off-diagonal part: nz 0 
+    Information on VecScatter used in matrix-vector product: 
+    PetscSF Object: 4 MPI processes
+      type: basic
+      [0] Number of roots=250, leaves=1, remote ranks=1
+      [0] 0 <- (3,249)
+      [1] Number of roots=250, leaves=1, remote ranks=1
+      [1] 0 <- (3,249)
+      [2] Number of roots=250, leaves=1, remote ranks=1
+      [2] 0 <- (3,249)
+      [3] Number of roots=250, leaves=0, remote ranks=0
+      [0] Roots referenced by my leaves, by rank
+      [0] 3: 1 edges
+      [0]    0 <- 249
+      [1] Roots referenced by my leaves, by rank
+      [1] 3: 1 edges
+      [1]    0 <- 249
+      [2] Roots referenced by my leaves, by rank
+      [2] 3: 1 edges
+      [2]    0 <- 249
+      [3] Roots referenced by my leaves, by rank
+      MultiSF sort=rank-order

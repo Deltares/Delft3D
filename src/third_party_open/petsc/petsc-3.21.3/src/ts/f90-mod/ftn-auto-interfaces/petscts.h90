@@ -1,0 +1,1115 @@
+      subroutine TSAdaptDSPSetPID(a,b,c,d,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptDSPSetPID
+      subroutine TSAdaptHistoryGetStep(a,b,c,d,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptHistoryGetStep
+      subroutine TSAdaptHistorySetHistory(a,b,c,d,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscInt b ! PetscInt
+       PetscReal c (*) ! PetscReal
+       PetscBool d ! PetscBool
+       PetscErrorCode z
+       end subroutine TSAdaptHistorySetHistory
+      subroutine TSAdaptHistorySetTrajectory(a,b,c,z)
+       import tTSAdapt,tTSTrajectory
+       TSAdapt a ! TSAdapt
+       TSTrajectory b ! TSTrajectory
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine TSAdaptHistorySetTrajectory
+      subroutine TSAdaptReset(a,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscErrorCode z
+       end subroutine TSAdaptReset
+      subroutine TSAdaptSetMonitor(a,b,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSAdaptSetMonitor
+      subroutine TSAdaptSetAlwaysAccept(a,b,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSAdaptSetAlwaysAccept
+      subroutine TSAdaptSetSafety(a,b,c,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptSetSafety
+      subroutine TSAdaptGetSafety(a,b,c,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptGetSafety
+      subroutine TSAdaptSetMaxIgnore(a,b,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptSetMaxIgnore
+      subroutine TSAdaptGetMaxIgnore(a,b,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptGetMaxIgnore
+      subroutine TSAdaptSetClip(a,b,c,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptSetClip
+      subroutine TSAdaptGetClip(a,b,c,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptGetClip
+      subroutine TSAdaptSetScaleSolveFailed(a,b,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptSetScaleSolveFailed
+      subroutine TSAdaptGetScaleSolveFailed(a,b,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptGetScaleSolveFailed
+      subroutine TSAdaptSetStepLimits(a,b,c,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptSetStepLimits
+      subroutine TSAdaptGetStepLimits(a,b,c,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAdaptGetStepLimits
+      subroutine TSAdaptCandidatesClear(a,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscErrorCode z
+       end subroutine TSAdaptCandidatesClear
+      subroutine TSAdaptSetTimeStepIncreaseDelay(a,b,z)
+       import tTSAdapt
+       TSAdapt a ! TSAdapt
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSAdaptSetTimeStepIncreaseDelay
+      subroutine TSAdaptCheckStage(a,b,c,d,e,z)
+       import tTSAdapt,tTS,tVec
+       TSAdapt a ! TSAdapt
+       TS b ! TS
+       PetscReal c ! PetscReal
+       Vec d ! Vec
+       PetscBool e ! PetscBool
+       PetscErrorCode z
+       end subroutine TSAdaptCheckStage
+      subroutine TSAdaptCreate(a,b,z)
+       import tTSAdapt
+       MPI_Comm a ! MPI_Comm
+       TSAdapt b ! TSAdapt
+       PetscErrorCode z
+       end subroutine TSAdaptCreate
+      subroutine TSSetPostEventStep(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSetPostEventStep
+      subroutine TSSetPostEventSecondStep(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSetPostEventSecondStep
+      subroutine TSSetEventTolerances(a,b,c,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSetEventTolerances
+      subroutine TSGetNumEvents(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSGetNumEvents
+      subroutine TSARKIMEXSetFullyImplicit(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSARKIMEXSetFullyImplicit
+      subroutine TSARKIMEXGetFullyImplicit(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSARKIMEXGetFullyImplicit
+      subroutine TSBDFSetOrder(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSBDFSetOrder
+      subroutine TSBDFGetOrder(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSBDFGetOrder
+      subroutine TSRKGetOrder(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSRKGetOrder
+      subroutine TSSSPSetNumStages(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSSSPSetNumStages
+      subroutine TSSSPGetNumStages(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSSSPGetNumStages
+      subroutine TSAlphaSetRadius(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAlphaSetRadius
+      subroutine TSAlphaSetParams(a,b,c,d,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAlphaSetParams
+      subroutine TSAlphaGetParams(a,b,c,d,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAlphaGetParams
+      subroutine TSAlpha2SetRadius(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAlpha2SetRadius
+      subroutine TSAlpha2SetParams(a,b,c,d,e,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAlpha2SetParams
+      subroutine TSAlpha2GetParams(a,b,c,d,e,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine TSAlpha2GetParams
+      subroutine TSDiscGradIsGonzalez(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSDiscGradIsGonzalez
+      subroutine TSDiscGradUseGonzalez(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSDiscGradUseGonzalez
+      subroutine TSSundialsSetType(a,b,z)
+       import tTS
+       TS a ! TS
+       TSSundialsLmmType b ! TSSundialsLmmType
+       PetscErrorCode z
+       end subroutine TSSundialsSetType
+      subroutine TSSundialsSetMaxord(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSSundialsSetMaxord
+      subroutine TSSundialsSetMaxl(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSSundialsSetMaxl
+      subroutine TSSundialsSetLinearTolerance(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSundialsSetLinearTolerance
+      subroutine TSSundialsSetGramSchmidtType(a,b,z)
+       import tTS
+       TS a ! TS
+       TSSundialsGramSchmidtType b ! TSSundialsGramSchmidtType
+       PetscErrorCode z
+       end subroutine TSSundialsSetGramSchmidtType
+      subroutine TSSundialsSetTolerance(a,b,c,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSundialsSetTolerance
+      subroutine TSSundialsGetPC(a,b,z)
+       import tTS,tPC
+       TS a ! TS
+       PC b ! PC
+       PetscErrorCode z
+       end subroutine TSSundialsGetPC
+      subroutine TSSundialsSetMinTimeStep(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSundialsSetMinTimeStep
+      subroutine TSSundialsSetMaxTimeStep(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSundialsSetMaxTimeStep
+      subroutine TSSundialsMonitorInternalSteps(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSSundialsMonitorInternalSteps
+      subroutine TSSundialsSetUseDense(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSSundialsSetUseDense
+      subroutine TSThetaGetTheta(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSThetaGetTheta
+      subroutine TSThetaSetTheta(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSThetaSetTheta
+      subroutine TSThetaGetEndpoint(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSThetaGetEndpoint
+      subroutine TSThetaSetEndpoint(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSThetaSetEndpoint
+      subroutine TSPseudoVerifyTimeStep(a,b,c,d,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       PetscBool d ! PetscBool
+       PetscErrorCode z
+       end subroutine TSPseudoVerifyTimeStep
+      subroutine TSPseudoSetTimeStepIncrement(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSPseudoSetTimeStepIncrement
+      subroutine TSPseudoSetMaxTimeStep(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSPseudoSetMaxTimeStep
+      subroutine TSPseudoIncrementDtFromInitialDt(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSPseudoIncrementDtFromInitialDt
+      subroutine TSSetFromOptions(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSSetFromOptions
+      subroutine TSGetTrajectory(a,b,z)
+       import tTS,tTSTrajectory
+       TS a ! TS
+       TSTrajectory b ! TSTrajectory
+       PetscErrorCode z
+       end subroutine TSGetTrajectory
+      subroutine TSSetSaveTrajectory(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSSetSaveTrajectory
+      subroutine TSResetTrajectory(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSResetTrajectory
+      subroutine TSRemoveTrajectory(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSRemoveTrajectory
+      subroutine TSComputeRHSJacobian(a,b,c,d,e,z)
+       import tTS,tVec,tMat
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       Mat d ! Mat
+       Mat e ! Mat
+       PetscErrorCode z
+       end subroutine TSComputeRHSJacobian
+      subroutine TSComputeRHSFunction(a,b,c,d,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine TSComputeRHSFunction
+      subroutine TSComputeSolutionFunction(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSComputeSolutionFunction
+      subroutine TSComputeForcingFunction(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSComputeForcingFunction
+      subroutine TSComputeIFunction(a,b,c,d,e,f,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       PetscBool f ! PetscBool
+       PetscErrorCode z
+       end subroutine TSComputeIFunction
+      subroutine TSComputeIJacobian(a,b,c,d,e,f,g,h,z)
+       import tTS,tVec,tMat
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscReal e ! PetscReal
+       Mat f ! Mat
+       Mat g ! Mat
+       PetscBool h ! PetscBool
+       PetscErrorCode z
+       end subroutine TSComputeIJacobian
+      subroutine TSRHSJacobianSetReuse(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSRHSJacobianSetReuse
+      subroutine TSComputeI2Function(a,b,c,d,e,f,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       Vec f ! Vec
+       PetscErrorCode z
+       end subroutine TSComputeI2Function
+      subroutine TSComputeI2Jacobian(a,b,c,d,e,f,g,h,i,z)
+       import tTS,tVec,tMat
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       PetscReal f ! PetscReal
+       PetscReal g ! PetscReal
+       Mat h ! Mat
+       Mat i ! Mat
+       PetscErrorCode z
+       end subroutine TSComputeI2Jacobian
+      subroutine TSComputeTransientVariable(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSComputeTransientVariable
+      subroutine TSHasTransientVariable(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSHasTransientVariable
+      subroutine TS2SetSolution(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TS2SetSolution
+      subroutine TS2GetSolution(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TS2GetSolution
+      subroutine TSGetStepNumber(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSGetStepNumber
+      subroutine TSSetStepNumber(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSSetStepNumber
+      subroutine TSSetTimeStep(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSetTimeStep
+      subroutine TSSetExactFinalTime(a,b,z)
+       import tTS
+       TS a ! TS
+       TSExactFinalTimeOption b ! TSExactFinalTimeOption
+       PetscErrorCode z
+       end subroutine TSSetExactFinalTime
+      subroutine TSGetExactFinalTime(a,b,z)
+       import tTS
+       TS a ! TS
+       TSExactFinalTimeOption b ! TSExactFinalTimeOption
+       PetscErrorCode z
+       end subroutine TSGetExactFinalTime
+      subroutine TSGetTimeStep(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSGetTimeStep
+      subroutine TSGetSolution(a,b,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TSGetSolution
+      subroutine TSGetSolutionComponents(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSGetSolutionComponents
+      subroutine TSGetAuxSolution(a,b,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TSGetAuxSolution
+      subroutine TSGetTimeError(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSGetTimeError
+      subroutine TSSetTimeError(a,b,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TSSetTimeError
+      subroutine TSSetProblemType(a,b,z)
+       import tTS
+       TS a ! TS
+       TSProblemType b ! TSProblemType
+       PetscErrorCode z
+       end subroutine TSSetProblemType
+      subroutine TSSetUp(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSSetUp
+      subroutine TSReset(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSReset
+      subroutine TSGetSNES(a,b,z)
+       import tTS,tSNES
+       TS a ! TS
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine TSGetSNES
+      subroutine TSSetSNES(a,b,z)
+       import tTS,tSNES
+       TS a ! TS
+       SNES b ! SNES
+       PetscErrorCode z
+       end subroutine TSSetSNES
+      subroutine TSGetKSP(a,b,z)
+       import tTS,tKSP
+       TS a ! TS
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine TSGetKSP
+      subroutine TSSetMaxSteps(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSSetMaxSteps
+      subroutine TSGetMaxSteps(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSGetMaxSteps
+      subroutine TSSetMaxTime(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSetMaxTime
+      subroutine TSGetMaxTime(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSGetMaxTime
+      subroutine TSSetInitialTimeStep(a,b,c,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSetInitialTimeStep
+      subroutine TSGetDuration(a,b,c,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TSGetDuration
+      subroutine TSSetDuration(a,b,c,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSetDuration
+      subroutine TSGetTimeStepNumber(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSGetTimeStepNumber
+      subroutine TSGetTotalSteps(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSGetTotalSteps
+      subroutine TSSetSolution(a,b,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TSSetSolution
+      subroutine TSPreStep(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSPreStep
+      subroutine TSPreStage(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSPreStage
+      subroutine TSPostStage(a,b,c,d,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscInt c ! PetscInt
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine TSPostStage
+      subroutine TSPostEvaluate(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSPostEvaluate
+      subroutine TSPostStep(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSPostStep
+      subroutine TSInterpolate(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSInterpolate
+      subroutine TSStep(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSStep
+      subroutine TSEvaluateWLTE(a,b,c,d,z)
+       import tTS
+       TS a ! TS
+       NormType b ! NormType
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine TSEvaluateWLTE
+      subroutine TSEvaluateStep(a,b,c,d,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscBool d ! PetscBool
+       PetscErrorCode z
+       end subroutine TSEvaluateStep
+      subroutine TSComputeInitialCondition(a,b,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TSComputeInitialCondition
+      subroutine TSComputeExactError(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSComputeExactError
+      subroutine TSResize(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSResize
+      subroutine TSSolve(a,b,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TSSolve
+      subroutine TSGetTime(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSGetTime
+      subroutine TSGetPrevTime(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSGetPrevTime
+      subroutine TSSetTime(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSetTime
+      subroutine TSSetDM(a,b,z)
+       import tTS,tDM
+       TS a ! TS
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine TSSetDM
+      subroutine TSGetDM(a,b,z)
+       import tTS,tDM
+       TS a ! TS
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine TSGetDM
+      subroutine TSGetEquationType(a,b,z)
+       import tTS
+       TS a ! TS
+       TSEquationType b ! TSEquationType
+       PetscErrorCode z
+       end subroutine TSGetEquationType
+      subroutine TSSetEquationType(a,b,z)
+       import tTS
+       TS a ! TS
+       TSEquationType b ! TSEquationType
+       PetscErrorCode z
+       end subroutine TSSetEquationType
+      subroutine TSGetConvergedReason(a,b,z)
+       import tTS
+       TS a ! TS
+       TSConvergedReason b ! TSConvergedReason
+       PetscErrorCode z
+       end subroutine TSGetConvergedReason
+      subroutine TSSetConvergedReason(a,b,z)
+       import tTS
+       TS a ! TS
+       TSConvergedReason b ! TSConvergedReason
+       PetscErrorCode z
+       end subroutine TSSetConvergedReason
+      subroutine TSGetSolveTime(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSGetSolveTime
+      subroutine TSGetSNESIterations(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSGetSNESIterations
+      subroutine TSGetKSPIterations(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSGetKSPIterations
+      subroutine TSGetStepRejections(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSGetStepRejections
+      subroutine TSGetSNESFailures(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSGetSNESFailures
+      subroutine TSSetMaxStepRejections(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSSetMaxStepRejections
+      subroutine TSSetMaxSNESFailures(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSSetMaxSNESFailures
+      subroutine TSSetErrorIfStepFails(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSSetErrorIfStepFails
+      subroutine TSGetAdapt(a,b,z)
+       import tTSAdapt,tTS
+       TS a ! TS
+       TSAdapt b ! TSAdapt
+       PetscErrorCode z
+       end subroutine TSGetAdapt
+      subroutine TSSetTolerances(a,b,c,d,e,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       PetscReal d ! PetscReal
+       Vec e ! Vec
+       PetscErrorCode z
+       end subroutine TSSetTolerances
+      subroutine TSGetTolerances(a,b,c,d,e,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       PetscReal d ! PetscReal
+       Vec e ! Vec
+       PetscErrorCode z
+       end subroutine TSGetTolerances
+      subroutine TSErrorWeightedNorm(a,b,c,d,e,f,g,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       Vec c ! Vec
+       NormType d ! NormType
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscReal g ! PetscReal
+       PetscErrorCode z
+       end subroutine TSErrorWeightedNorm
+      subroutine TSErrorWeightedENorm(a,b,c,d,e,f,g,h,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       NormType e ! NormType
+       PetscReal f ! PetscReal
+       PetscReal g ! PetscReal
+       PetscReal h ! PetscReal
+       PetscErrorCode z
+       end subroutine TSErrorWeightedENorm
+      subroutine TSSetCFLTimeLocal(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSetCFLTimeLocal
+      subroutine TSGetCFLTime(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TSGetCFLTime
+      subroutine TSVISetVariableBounds(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSVISetVariableBounds
+      subroutine TSComputeLinearStability(a,b,c,d,e,z)
+       import tTS
+       TS a ! TS
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine TSComputeLinearStability
+      subroutine TSRestartStep(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSRestartStep
+      subroutine TSRollBack(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSRollBack
+      subroutine TSGetStepRollBack(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSGetStepRollBack
+      subroutine TSGetStages(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSGetStages
+      subroutine TSFunctionDomainError(a,b,c,d,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       PetscBool d ! PetscBool
+       PetscErrorCode z
+       end subroutine TSFunctionDomainError
+      subroutine TSRHSJacobianTest(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSRHSJacobianTest
+      subroutine TSSetUseSplitRHSFunction(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSSetUseSplitRHSFunction
+      subroutine TSGetUseSplitRHSFunction(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSGetUseSplitRHSFunction
+      subroutine TSSetMatStructure(a,b,z)
+       import tTS
+       TS a ! TS
+       MatStructure b ! MatStructure
+       PetscErrorCode z
+       end subroutine TSSetMatStructure
+      subroutine TSSetTimeSpan(a,b,c,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TSSetTimeSpan
+      subroutine TSGetTimeSpanSolutions(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSGetTimeSpanSolutions
+      subroutine TSTrajectorySet(a,b,c,d,e,z)
+       import tTS,tTSTrajectory,tVec
+       TSTrajectory a ! TSTrajectory
+       TS b ! TS
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       Vec e ! Vec
+       PetscErrorCode z
+       end subroutine TSTrajectorySet
+      subroutine TSTrajectoryGetNumSteps(a,b,z)
+       import tTSTrajectory
+       TSTrajectory a ! TSTrajectory
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSTrajectoryGetNumSteps
+      subroutine TSTrajectoryGet(a,b,c,d,z)
+       import tTS,tTSTrajectory
+       TSTrajectory a ! TSTrajectory
+       TS b ! TS
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine TSTrajectoryGet
+      subroutine TSTrajectoryGetVecs(a,b,c,d,e,f,z)
+       import tTS,tTSTrajectory,tVec
+       TSTrajectory a ! TSTrajectory
+       TS b ! TS
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       Vec e ! Vec
+       Vec f ! Vec
+       PetscErrorCode z
+       end subroutine TSTrajectoryGetVecs
+      subroutine TSTrajectoryCreate(a,b,z)
+       import tTSTrajectory
+       MPI_Comm a ! MPI_Comm
+       TSTrajectory b ! TSTrajectory
+       PetscErrorCode z
+       end subroutine TSTrajectoryCreate
+      subroutine TSTrajectoryReset(a,z)
+       import tTSTrajectory
+       TSTrajectory a ! TSTrajectory
+       PetscErrorCode z
+       end subroutine TSTrajectoryReset
+      subroutine TSTrajectoryDestroy(a,z)
+       import tTSTrajectory
+       TSTrajectory a ! TSTrajectory
+       PetscErrorCode z
+       end subroutine TSTrajectoryDestroy
+      subroutine TSTrajectorySetUseHistory(a,b,z)
+       import tTSTrajectory
+       TSTrajectory a ! TSTrajectory
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSTrajectorySetUseHistory
+      subroutine TSTrajectorySetMonitor(a,b,z)
+       import tTSTrajectory
+       TSTrajectory a ! TSTrajectory
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSTrajectorySetMonitor
+      subroutine TSTrajectorySetKeepFiles(a,b,z)
+       import tTSTrajectory
+       TSTrajectory a ! TSTrajectory
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSTrajectorySetKeepFiles
+      subroutine TSTrajectorySetFromOptions(a,b,z)
+       import tTS,tTSTrajectory
+       TSTrajectory a ! TSTrajectory
+       TS b ! TS
+       PetscErrorCode z
+       end subroutine TSTrajectorySetFromOptions
+      subroutine TSTrajectorySetUp(a,b,z)
+       import tTS,tTSTrajectory
+       TSTrajectory a ! TSTrajectory
+       TS b ! TS
+       PetscErrorCode z
+       end subroutine TSTrajectorySetUp
+      subroutine TSTrajectorySetSolutionOnly(a,b,z)
+       import tTSTrajectory
+       TSTrajectory a ! TSTrajectory
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSTrajectorySetSolutionOnly
+      subroutine TSTrajectoryGetSolutionOnly(a,b,z)
+       import tTSTrajectory
+       TSTrajectory a ! TSTrajectory
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TSTrajectoryGetSolutionOnly
+      subroutine TSTrajectoryGetUpdatedHistoryVecs(a,b,c,d,e,z)
+       import tTS,tTSTrajectory,tVec
+       TSTrajectory a ! TSTrajectory
+       TS b ! TS
+       PetscReal c ! PetscReal
+       Vec d ! Vec
+       Vec e ! Vec
+       PetscErrorCode z
+       end subroutine TSTrajectoryGetUpdatedHistoryVecs
+      subroutine TSTrajectoryRestoreUpdatedHistoryVecs(a,b,c,z)
+       import tTSTrajectory,tVec
+       TSTrajectory a ! TSTrajectory
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSTrajectoryRestoreUpdatedHistoryVecs

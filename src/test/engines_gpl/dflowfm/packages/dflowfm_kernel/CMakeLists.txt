@@ -107,7 +107,7 @@ if(WIN32)
 target_link_directories(${executable_name} PRIVATE
                         "${mpi_library_path}"
                         "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                        "${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/lib/x64/Release"
+                        "${petsc_libdir}"
                         "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                         "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
@@ -130,7 +130,7 @@ target_link_libraries(${executable_name} ${oss_dependencies}
 
 endif(WIN32)
 
-include_directories(${mpi_include_path}
+include_directories(${mpi_module_path} ${mpi_include_path}
                     ${petsc_path}
                     ${tecplot_path})
 

@@ -1,0 +1,19 @@
+-include ../../../petscdir.mk
+#
+#  All the Sparspack routines have been converted to C with the F2C
+# converter.
+#
+#  All Sparsepack routines are prepended with SPARSEPACK to reduce
+# name space pollution.
+#
+#  This code uses the original SPARSEPACK software that was released
+# into the public domain. Thus it can be used for any purpose.
+# IT IS NOT THE VERSION OF SPARSEPACK THAT REQUIRES A LICENSE
+
+LIBBASE   = libpetscmat
+DIRS      = amd metisnd
+MANSEC    = Mat
+SUBMANSEC = MatOrderings
+
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules.doc

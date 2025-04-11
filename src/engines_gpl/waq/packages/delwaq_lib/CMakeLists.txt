@@ -43,7 +43,7 @@ if (WIN32)
 
     oss_include_libraries(${library_name} oss_dependencies)
     target_link_libraries(${library_name} ${oss_dependencies})
-    target_include_directories(${library_name} PRIVATE ${mpi_include_path})
+    target_include_directories(${library_name} PRIVATE ${mpi_module_path} ${mpi_include_path})
 
     # Set linker properties
     message(STATUS "Setting linker properties in windows")

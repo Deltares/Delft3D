@@ -64,24 +64,23 @@ if (WIN32)
     # Set pthreads library
     set(pthreads_path ${checkout_src_root}/third_party_open/pthreads/include/x64) 
     
-    # Set mpi_include_path
-    if ("${OSS_MPI}" STREQUAL "IntelMPI")
-        set(mpi_include_path $ENV{I_MPI_ONEAPI_ROOT}/include)
-        set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<CONFIG>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
-        set(mpi_fortran_library "impi.lib")
-        set(mpi_c_library "impi.lib;impicxx.lib")
-    else()
-        set(mpi_include_path ${checkout_src_root}/third_party_open/mpich2/x64/include)
-        set(mpi_library_path ${checkout_src_root}/third_party_open/mpich2/x64/lib)
-        set(mpi_fortran_library "fmpich2.lib mpi.lib")
-        set(mpi_c_library "mpi.lib")
-    endif()
-    
+            message(STATUS "Using Intel 2024 folder structure.")
+            set(mpi_include_path $ENV{ONEAPI_ROOT}mpi/latest/include)
+            set(mpi_module_path  ${mpi_include_path}/mpi)
+            set(mpi_library_path $ENV{ONEAPI_ROOT}mpi/latest/lib)
+            set(mpi_fortran_library "impi.lib")
+            set(mpi_c_library "impi.lib;impicxx.lib")
+			
+    message(STATUS "mpi include path \"${mpi_include_path}\"")
+    message(STATUS "mpi module path \"${mpi_module_path}\"")
+    message(STATUS "mpi library path \"${mpi_library_path}\"")
+    message(STATUS "mpi fortran library \"${mpi_fortran_library}\"")
+    message(STATUS "mpi c library \"${mpi_c_library}\"")
     # Set the Tecplot path 
     set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
     
-    # Set the petsc path
-    set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/include)
+set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.21.3/include)
+set(petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
 
     # Set the GDAL path
     set(gisinternals_path ${checkout_src_root}/third_party_open/GISInternals/release-1911-x64/lib)

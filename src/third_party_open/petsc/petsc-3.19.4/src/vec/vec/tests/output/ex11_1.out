@@ -1,0 +1,13 @@
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+0.
+Process [1]
+1.
+2.
+----
+Vec Object: 1 MPI process
+  type: seq
+0.
+1.
+2.

@@ -1,0 +1,12 @@
+0 TS dt 0.001 time 16.
+1 TS dt 0.01 time 16.001
+2 TS dt 0.0445 time 16.011
+3 TS dt 0.0445 time 16.0555
+4 TS dt 0.1 time 16.1
+5 TS dt 0.1 time 16.2
+6 TS dt 0.1 time 16.3
+7 TS dt 0.1 time 16.4
+8 TS dt 0.1 time 16.5
+9 TS dt 0.1 time 16.6
+10 TS dt 0.238542 time 16.7
+Time Span:  16. 16.1 16.2 16.3 16.4 16.5 16.6 16.7

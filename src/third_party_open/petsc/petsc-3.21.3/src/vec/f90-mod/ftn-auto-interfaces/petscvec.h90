@@ -1,0 +1,1042 @@
+      subroutine VecGhostGetLocalForm(a,b,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine VecGhostGetLocalForm
+      subroutine VecGhostIsLocalForm(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine VecGhostIsLocalForm
+      subroutine VecGhostRestoreLocalForm(a,b,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine VecGhostRestoreLocalForm
+      subroutine VecGhostUpdateBegin(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       InsertMode b ! InsertMode
+       ScatterMode c ! ScatterMode
+       PetscErrorCode z
+       end subroutine VecGhostUpdateBegin
+      subroutine VecGhostUpdateEnd(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       InsertMode b ! InsertMode
+       ScatterMode c ! ScatterMode
+       PetscErrorCode z
+       end subroutine VecGhostUpdateEnd
+      subroutine VecGhostGetGhostIS(a,b,z)
+       import tIS,tVec
+       Vec a ! Vec
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine VecGhostGetGhostIS
+      subroutine VecCreateGhost(a,b,c,d,e,f,z)
+       import tVec
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e (*) ! PetscInt
+       Vec f ! Vec
+       PetscErrorCode z
+       end subroutine VecCreateGhost
+      subroutine VecMPISetGhost(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine VecMPISetGhost
+      subroutine VecCreateGhostBlock(a,b,c,d,e,f,g,z)
+       import tVec
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscInt f (*) ! PetscInt
+       Vec g ! Vec
+       PetscErrorCode z
+       end subroutine VecCreateGhostBlock
+      subroutine VecCreateMPI(a,b,c,d,z)
+       import tVec
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine VecCreateMPI
+      subroutine VecCreateMPICUDA(a,b,c,d,z)
+       import tVec
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine VecCreateMPICUDA
+      subroutine VecNestGetSubVec(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecNestGetSubVec
+      subroutine VecNestSetSubVec(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecNestSetSubVec
+      subroutine VecNestGetSize(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine VecNestGetSize
+      subroutine VecCreateSeq(a,b,c,z)
+       import tVec
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecCreateSeq
+      subroutine VecCreateSeqCUDA(a,b,c,z)
+       import tVec
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecCreateSeqCUDA
+      subroutine VecCreateShared(a,b,c,d,z)
+       import tVec
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine VecCreateShared
+      subroutine VecMaxPointwiseDivide(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine VecMaxPointwiseDivide
+      subroutine VecDot(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecDot
+      subroutine VecDotRealPart(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine VecDotRealPart
+      subroutine VecNorm(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       NormType b ! NormType
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine VecNorm
+      subroutine VecNormAvailable(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       NormType b ! NormType
+       PetscBool c ! PetscBool
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine VecNormAvailable
+      subroutine VecNormalize(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine VecNormalize
+      subroutine VecTDot(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecTDot
+      subroutine VecScale(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecScale
+      subroutine VecSet(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecSet
+      subroutine VecAXPY(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecAXPY
+      subroutine VecAYPX(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecAYPX
+      subroutine VecAXPBY(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       PetscScalar c ! PetscScalar
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine VecAXPBY
+      subroutine VecAXPBYPCZ(a,b,c,d,e,f,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       PetscScalar c ! PetscScalar
+       PetscScalar d ! PetscScalar
+       Vec e ! Vec
+       Vec f ! Vec
+       PetscErrorCode z
+       end subroutine VecAXPBYPCZ
+      subroutine VecWAXPY(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine VecWAXPY
+      subroutine VecSetValuesBlockedLocal(a,b,c,d,e,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscScalar d (*) ! PetscScalar
+       InsertMode e ! InsertMode
+       PetscErrorCode z
+       end subroutine VecSetValuesBlockedLocal
+      subroutine VecMTDot(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       Vec c (*) ! Vec
+       PetscScalar d (*) ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecMTDot
+      subroutine VecMDot(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       Vec c (*) ! Vec
+       PetscScalar d (*) ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecMDot
+      subroutine VecMAXPY(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscScalar c (*) ! PetscScalar
+       Vec d (*) ! Vec
+       PetscErrorCode z
+       end subroutine VecMAXPY
+      subroutine VecMAXPBY(a,b,c,d,e,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscScalar c (*) ! PetscScalar
+       PetscScalar d ! PetscScalar
+       Vec e (*) ! Vec
+       PetscErrorCode z
+       end subroutine VecMAXPBY
+      subroutine VecConcatenate(a,b,c,d,z)
+       import tIS,tVec
+       PetscInt a ! PetscInt
+       Vec b (*) ! Vec
+       Vec c ! Vec
+       IS d (*) ! IS
+       PetscErrorCode z
+       end subroutine VecConcatenate
+      subroutine VecGetSubVector(a,b,c,z)
+       import tIS,tVec
+       Vec a ! Vec
+       IS b ! IS
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecGetSubVector
+      subroutine VecRestoreSubVector(a,b,c,z)
+       import tIS,tVec
+       Vec a ! Vec
+       IS b ! IS
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecRestoreSubVector
+      subroutine VecCreateLocalVector(a,b,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine VecCreateLocalVector
+      subroutine VecGetLocalVectorRead(a,b,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine VecGetLocalVectorRead
+      subroutine VecRestoreLocalVectorRead(a,b,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine VecRestoreLocalVectorRead
+      subroutine VecGetLocalVector(a,b,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine VecGetLocalVector
+      subroutine VecRestoreLocalVector(a,b,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine VecRestoreLocalVector
+      subroutine VecPlaceArray(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b (*) ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecPlaceArray
+      subroutine VecLockGet(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine VecLockGet
+      subroutine VecLockReadPush(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecLockReadPush
+      subroutine VecLockReadPop(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecLockReadPop
+      subroutine VecLockPush(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecLockPush
+      subroutine VecLockPop(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecLockPop
+      subroutine VecCreate(a,b,z)
+       import tVec
+       MPI_Comm a ! MPI_Comm
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine VecCreate
+      subroutine VecStashGetInfo(a,b,c,d,e,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscErrorCode z
+       end subroutine VecStashGetInfo
+      subroutine VecSetLocalToGlobalMapping(a,b,z)
+       import tVec
+       Vec a ! Vec
+       ISLocalToGlobalMapping b ! ISLocalToGlobalMapping
+       PetscErrorCode z
+       end subroutine VecSetLocalToGlobalMapping
+      subroutine VecGetLocalToGlobalMapping(a,b,z)
+       import tVec
+       Vec a ! Vec
+       ISLocalToGlobalMapping b ! ISLocalToGlobalMapping
+       PetscErrorCode z
+       end subroutine VecGetLocalToGlobalMapping
+      subroutine VecAssemblyBegin(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecAssemblyBegin
+      subroutine VecAssemblyEnd(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecAssemblyEnd
+      subroutine VecSetPreallocationCOO(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscCount b ! PetscCount
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine VecSetPreallocationCOO
+      subroutine VecSetPreallocationCOOLocal(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscCount b ! PetscCount
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine VecSetPreallocationCOOLocal
+      subroutine VecSetValuesCOO(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b (*) ! PetscScalar
+       InsertMode c ! InsertMode
+       PetscErrorCode z
+       end subroutine VecSetValuesCOO
+      subroutine VecPointwiseMax(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecPointwiseMax
+      subroutine VecPointwiseMin(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecPointwiseMin
+      subroutine VecPointwiseMaxAbs(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecPointwiseMaxAbs
+      subroutine VecPointwiseDivide(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecPointwiseDivide
+      subroutine VecPointwiseMult(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine VecPointwiseMult
+      subroutine VecDuplicate(a,b,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine VecDuplicate
+      subroutine VecGetSize(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine VecGetSize
+      subroutine VecGetLocalSize(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine VecGetLocalSize
+      subroutine VecSetOption(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       VecOption b ! VecOption
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine VecSetOption
+      subroutine VecResetArray(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecResetArray
+      subroutine VecReciprocal(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecReciprocal
+      subroutine VecStashSetInitialSize(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine VecStashSetInitialSize
+      subroutine VecSetRandom(a,b,z)
+       import tVec,tPetscRandom
+       Vec a ! Vec
+       PetscRandom b ! PetscRandom
+       PetscErrorCode z
+       end subroutine VecSetRandom
+      subroutine VecZeroEntries(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecZeroEntries
+      subroutine VecSetFromOptions(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecSetFromOptions
+      subroutine VecSetSizes(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine VecSetSizes
+      subroutine VecSetBlockSize(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine VecSetBlockSize
+      subroutine VecGetBlockSize(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine VecGetBlockSize
+      subroutine VecSetUp(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecSetUp
+      subroutine VecCopy(a,b,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine VecCopy
+      subroutine VecSwap(a,b,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine VecSwap
+      subroutine VecStashView(a,b,z)
+       import tVec,tPetscViewer
+       Vec a ! Vec
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine VecStashView
+      subroutine VecGetLayout(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscLayout b ! PetscLayout
+       PetscErrorCode z
+       end subroutine VecGetLayout
+      subroutine VecSetLayout(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscLayout b ! PetscLayout
+       PetscErrorCode z
+       end subroutine VecSetLayout
+      subroutine VecBindToCPU(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine VecBindToCPU
+      subroutine VecBoundToCPU(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine VecBoundToCPU
+      subroutine VecSetBindingPropagates(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine VecSetBindingPropagates
+      subroutine VecGetBindingPropagates(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine VecGetBindingPropagates
+      subroutine VecGetOffloadMask(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscOffloadMask b ! PetscOffloadMask
+       PetscErrorCode z
+       end subroutine VecGetOffloadMask
+      subroutine VecErrorWeightedNorms(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       NormType d ! NormType
+       PetscReal e ! PetscReal
+       Vec f ! Vec
+       PetscReal g ! PetscReal
+       Vec h ! Vec
+       PetscReal i ! PetscReal
+       PetscReal j ! PetscReal
+       PetscInt k ! PetscInt
+       PetscReal l ! PetscReal
+       PetscInt m ! PetscInt
+       PetscReal n ! PetscReal
+       PetscInt o ! PetscInt
+       PetscErrorCode z
+       end subroutine VecErrorWeightedNorms
+      subroutine PetscCommSplitReductionBegin(a,z)
+       MPI_Comm a ! MPI_Comm
+       PetscErrorCode z
+       end subroutine PetscCommSplitReductionBegin
+      subroutine VecDotBegin(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecDotBegin
+      subroutine VecDotEnd(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecDotEnd
+      subroutine VecTDotBegin(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecTDotBegin
+      subroutine VecTDotEnd(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecTDotEnd
+      subroutine VecNormBegin(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       NormType b ! NormType
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine VecNormBegin
+      subroutine VecNormEnd(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       NormType b ! NormType
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine VecNormEnd
+      subroutine VecMDotBegin(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       Vec c (*) ! Vec
+       PetscScalar d (*) ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecMDotBegin
+      subroutine VecMDotEnd(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       Vec c (*) ! Vec
+       PetscScalar d (*) ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecMDotEnd
+      subroutine VecMTDotBegin(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       Vec c (*) ! Vec
+       PetscScalar d (*) ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecMTDotBegin
+      subroutine VecMTDotEnd(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       Vec c (*) ! Vec
+       PetscScalar d (*) ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecMTDotEnd
+      subroutine VecWhichEqual(a,b,c,z)
+       import tIS,tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine VecWhichEqual
+      subroutine VecWhichLessThan(a,b,c,z)
+       import tIS,tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine VecWhichLessThan
+      subroutine VecWhichGreaterThan(a,b,c,z)
+       import tIS,tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine VecWhichGreaterThan
+      subroutine VecWhichBetween(a,b,c,d,z)
+       import tIS,tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine VecWhichBetween
+      subroutine VecWhichBetweenOrEqual(a,b,c,d,z)
+       import tIS,tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine VecWhichBetweenOrEqual
+      subroutine VecWhichInactive(a,b,c,d,e,f,z)
+       import tIS,tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscBool e ! PetscBool
+       IS f ! IS
+       PetscErrorCode z
+       end subroutine VecWhichInactive
+      subroutine VecISAXPY(a,b,c,d,z)
+       import tIS,tVec
+       Vec a ! Vec
+       IS b ! IS
+       PetscScalar c ! PetscScalar
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine VecISAXPY
+      subroutine VecISCopy(a,b,c,d,z)
+       import tIS,tVec
+       Vec a ! Vec
+       IS b ! IS
+       ScatterMode c ! ScatterMode
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine VecISCopy
+      subroutine ISComplementVec(a,b,c,z)
+       import tIS,tVec
+       IS a ! IS
+       Vec b ! Vec
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine ISComplementVec
+      subroutine VecISSet(a,b,c,z)
+       import tIS,tVec
+       Vec a ! Vec
+       IS b ! IS
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecISSet
+      subroutine VecISShift(a,b,c,z)
+       import tIS,tVec
+       Vec a ! Vec
+       IS b ! IS
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecISShift
+      subroutine VecStepMaxBounded(a,b,c,d,e,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine VecStepMaxBounded
+      subroutine VecStepBoundInfo(a,b,c,d,e,f,g,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscReal g ! PetscReal
+       PetscErrorCode z
+       end subroutine VecStepBoundInfo
+      subroutine VecStepMax(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine VecStepMax
+      subroutine VecPow(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecPow
+      subroutine VecMedian(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine VecMedian
+      subroutine VecFilter(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine VecFilter
+      subroutine VecStrideSet(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecStrideSet
+      subroutine VecStrideScale(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecStrideScale
+      subroutine VecStrideNorm(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       NormType c ! NormType
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine VecStrideNorm
+      subroutine VecStrideMax(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine VecStrideMax
+      subroutine VecStrideMin(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine VecStrideMin
+      subroutine VecStrideSum(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecStrideSum
+      subroutine VecStrideScaleAll(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecStrideScaleAll
+      subroutine VecStrideNormAll(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       NormType b ! NormType
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine VecStrideNormAll
+      subroutine VecStrideMaxAll(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b (*) ! PetscInt
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine VecStrideMaxAll
+      subroutine VecStrideMinAll(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b (*) ! PetscInt
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine VecStrideMinAll
+      subroutine VecStrideSumAll(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b (*) ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecStrideSumAll
+      subroutine VecStrideGatherAll(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b (*) ! Vec
+       InsertMode c ! InsertMode
+       PetscErrorCode z
+       end subroutine VecStrideGatherAll
+      subroutine VecStrideScatterAll(a,b,c,z)
+       import tVec
+       Vec a (*) ! Vec
+       Vec b ! Vec
+       InsertMode c ! InsertMode
+       PetscErrorCode z
+       end subroutine VecStrideScatterAll
+      subroutine VecStrideGather(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       InsertMode d ! InsertMode
+       PetscErrorCode z
+       end subroutine VecStrideGather
+      subroutine VecStrideScatter(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       InsertMode d ! InsertMode
+       PetscErrorCode z
+       end subroutine VecStrideScatter
+      subroutine VecStrideSubSetGather(a,b,c,d,e,f,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscInt d (*) ! PetscInt
+       Vec e ! Vec
+       InsertMode f ! InsertMode
+       PetscErrorCode z
+       end subroutine VecStrideSubSetGather
+      subroutine VecStrideSubSetScatter(a,b,c,d,e,f,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscInt d (*) ! PetscInt
+       Vec e ! Vec
+       InsertMode f ! InsertMode
+       PetscErrorCode z
+       end subroutine VecStrideSubSetScatter
+      subroutine VecExp(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecExp
+      subroutine VecLog(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecLog
+      subroutine VecAbs(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecAbs
+      subroutine VecConjugate(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecConjugate
+      subroutine VecSqrtAbs(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecSqrtAbs
+      subroutine VecImaginaryPart(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecImaginaryPart
+      subroutine VecRealPart(a,z)
+       import tVec
+       Vec a ! Vec
+       PetscErrorCode z
+       end subroutine VecRealPart
+      subroutine VecDotNorm2(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscScalar c ! PetscScalar
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine VecDotNorm2
+      subroutine VecSum(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecSum
+      subroutine VecMean(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecMean
+      subroutine VecShift(a,b,z)
+       import tVec
+       Vec a ! Vec
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecShift
+      subroutine VecPermute(a,b,c,z)
+       import tIS,tVec
+       Vec a ! Vec
+       IS b ! IS
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine VecPermute
+      subroutine VecEqual(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine VecEqual
+      subroutine VecUniqueEntries(a,b,c,z)
+       import tVec
+       Vec a ! Vec
+       PetscInt b ! PetscInt
+       PetscScalar c ! PetscScalar
+       PetscErrorCode z
+       end subroutine VecUniqueEntries
+      subroutine PetscSectionVecView(a,b,c,z)
+       import tPetscSection,tVec,tPetscViewer
+       PetscSection a ! PetscSection
+       Vec b ! Vec
+       PetscViewer c ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscSectionVecView
+      subroutine VecTaggerDestroy(a,z)
+       import tVecTagger
+       VecTagger a ! VecTagger
+       PetscErrorCode z
+       end subroutine VecTaggerDestroy
+      subroutine VecTaggerSetUp(a,z)
+       import tVecTagger
+       VecTagger a ! VecTagger
+       PetscErrorCode z
+       end subroutine VecTaggerSetUp

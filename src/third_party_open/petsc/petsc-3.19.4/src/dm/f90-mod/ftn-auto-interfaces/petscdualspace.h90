@@ -1,0 +1,228 @@
+      subroutine PetscDualSpaceLagrangeGetContinuity(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeGetContinuity
+      subroutine PetscDualSpaceLagrangeSetContinuity(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeSetContinuity
+      subroutine PetscDualSpaceLagrangeGetTensor(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeGetTensor
+      subroutine PetscDualSpaceLagrangeSetTensor(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeSetTensor
+      subroutine PetscDualSpaceLagrangeGetTrimmed(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeGetTrimmed
+      subroutine PetscDualSpaceLagrangeSetTrimmed(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeSetTrimmed
+      subroutine PetscDualSpaceLagrangeGetNodeType(a,b,c,d,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscDTNodeType b ! PetscDTNodeType
+       PetscBool c ! PetscBool
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeGetNodeType
+      subroutine PetscDualSpaceLagrangeSetNodeType(a,b,c,d,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscDTNodeType b ! PetscDTNodeType
+       PetscBool c ! PetscBool
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeSetNodeType
+      subroutine PetscDualSpaceLagrangeGetUseMoments(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeGetUseMoments
+      subroutine PetscDualSpaceLagrangeSetUseMoments(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeSetUseMoments
+      subroutine PetscDualSpaceLagrangeGetMomentOrder(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeGetMomentOrder
+      subroutine PetscDualSpaceLagrangeSetMomentOrder(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceLagrangeSetMomentOrder
+      subroutine PetscDualSpaceRefinedSetCellSpaces(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscDualSpace b (*) ! PetscDualSpace
+       PetscErrorCode z
+       end subroutine PetscDualSpaceRefinedSetCellSpaces
+      subroutine PetscDualSpaceSimpleSetDimension(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceSimpleSetDimension
+      subroutine PetscDualSpaceSimpleSetFunctional(a,b,c,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscQuadrature c ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscDualSpaceSimpleSetFunctional
+      subroutine PetscDualSpaceView(a,b,z)
+       import tPetscViewer
+       PetscDualSpace a ! PetscDualSpace
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine PetscDualSpaceView
+      subroutine PetscDualSpaceSetFromOptions(a,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscErrorCode z
+       end subroutine PetscDualSpaceSetFromOptions
+      subroutine PetscDualSpaceSetUp(a,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscErrorCode z
+       end subroutine PetscDualSpaceSetUp
+      subroutine PetscDualSpaceDestroy(a,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscErrorCode z
+       end subroutine PetscDualSpaceDestroy
+      subroutine PetscDualSpaceCreate(a,b,z)
+       MPI_Comm a ! MPI_Comm
+       PetscDualSpace b ! PetscDualSpace
+       PetscErrorCode z
+       end subroutine PetscDualSpaceCreate
+      subroutine PetscDualSpaceDuplicate(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscDualSpace b ! PetscDualSpace
+       PetscErrorCode z
+       end subroutine PetscDualSpaceDuplicate
+      subroutine PetscDualSpaceGetDM(a,b,z)
+       import tDM
+       PetscDualSpace a ! PetscDualSpace
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetDM
+      subroutine PetscDualSpaceSetDM(a,b,z)
+       import tDM
+       PetscDualSpace a ! PetscDualSpace
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine PetscDualSpaceSetDM
+      subroutine PetscDualSpaceGetOrder(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetOrder
+      subroutine PetscDualSpaceSetOrder(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceSetOrder
+      subroutine PetscDualSpaceGetNumComponents(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetNumComponents
+      subroutine PetscDualSpaceSetNumComponents(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceSetNumComponents
+      subroutine PetscDualSpaceGetFunctional(a,b,c,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscQuadrature c ! PetscQuadrature
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetFunctional
+      subroutine PetscDualSpaceGetDimension(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetDimension
+      subroutine PetscDualSpaceGetInteriorDimension(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetInteriorDimension
+      subroutine PetscDualSpaceGetUniform(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetUniform
+      subroutine PetscDualSpaceGetSection(a,b,z)
+       import tPetscSection
+       PetscDualSpace a ! PetscDualSpace
+       PetscSection b ! PetscSection
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetSection
+      subroutine PetscDualSpaceGetAllData(a,b,c,z)
+       import tMat
+       PetscDualSpace a ! PetscDualSpace
+       PetscQuadrature b ! PetscQuadrature
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetAllData
+      subroutine PetscDualSpaceCreateAllDataDefault(a,b,c,z)
+       import tMat
+       PetscDualSpace a ! PetscDualSpace
+       PetscQuadrature b ! PetscQuadrature
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PetscDualSpaceCreateAllDataDefault
+      subroutine PetscDualSpaceGetInteriorData(a,b,c,z)
+       import tMat
+       PetscDualSpace a ! PetscDualSpace
+       PetscQuadrature b ! PetscQuadrature
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetInteriorData
+      subroutine PetscDualSpaceCreateInteriorDataDefault(a,b,c,z)
+       import tMat
+       PetscDualSpace a ! PetscDualSpace
+       PetscQuadrature b ! PetscQuadrature
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine PetscDualSpaceCreateInteriorDataDefault
+      subroutine PetscDualSpaceEqual(a,b,c,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscDualSpace b ! PetscDualSpace
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscDualSpaceEqual
+      subroutine PetscDualSpaceGetHeightSubspace(a,b,c,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscDualSpace c ! PetscDualSpace
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetHeightSubspace
+      subroutine PetscDualSpaceGetPointSubspace(a,b,c,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscDualSpace c ! PetscDualSpace
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetPointSubspace
+      subroutine PetscDualSpaceGetFormDegree(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetFormDegree
+      subroutine PetscDualSpaceSetFormDegree(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceSetFormDegree
+      subroutine PetscDualSpaceGetDeRahm(a,b,z)
+       PetscDualSpace a ! PetscDualSpace
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscDualSpaceGetDeRahm

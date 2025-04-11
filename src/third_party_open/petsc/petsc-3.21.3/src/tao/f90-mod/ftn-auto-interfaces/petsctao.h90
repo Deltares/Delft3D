@@ -1,0 +1,629 @@
+      subroutine TaoLMVMRecycle(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TaoLMVMRecycle
+      subroutine TaoLMVMSetH0(a,b,z)
+       import tTao,tMat
+       Tao a ! Tao
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine TaoLMVMSetH0
+      subroutine TaoLMVMGetH0(a,b,z)
+       import tTao,tMat
+       Tao a ! Tao
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine TaoLMVMGetH0
+      subroutine TaoLMVMGetH0KSP(a,b,z)
+       import tTao,tKSP
+       Tao a ! Tao
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine TaoLMVMGetH0KSP
+      subroutine TaoBNCGGetType(a,b,z)
+       import tTao
+       Tao a ! Tao
+       TaoBNCGType b ! TaoBNCGType
+       PetscErrorCode z
+       end subroutine TaoBNCGGetType
+      subroutine TaoBNCGSetType(a,b,z)
+       import tTao
+       Tao a ! Tao
+       TaoBNCGType b ! TaoBNCGType
+       PetscErrorCode z
+       end subroutine TaoBNCGSetType
+      subroutine TaoGetLMVMMatrix(a,b,z)
+       import tTao,tMat
+       Tao a ! Tao
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine TaoGetLMVMMatrix
+      subroutine TaoSetLMVMMatrix(a,b,z)
+       import tTao,tMat
+       Tao a ! Tao
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine TaoSetLMVMMatrix
+      subroutine TaoADMMSetMisfitHessianChangeStatus(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TaoADMMSetMisfitHessianChangeStatus
+      subroutine TaoADMMSetRegHessianChangeStatus(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TaoADMMSetRegHessianChangeStatus
+      subroutine TaoADMMSetSpectralPenalty(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoADMMSetSpectralPenalty
+      subroutine TaoADMMGetSpectralPenalty(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoADMMGetSpectralPenalty
+      subroutine TaoADMMGetMisfitSubsolver(a,b,z)
+       import tTao
+       Tao a ! Tao
+       Tao b ! Tao
+       PetscErrorCode z
+       end subroutine TaoADMMGetMisfitSubsolver
+      subroutine TaoADMMGetRegularizationSubsolver(a,b,z)
+       import tTao
+       Tao a ! Tao
+       Tao b ! Tao
+       PetscErrorCode z
+       end subroutine TaoADMMGetRegularizationSubsolver
+      subroutine TaoADMMSetConstraintVectorRHS(a,b,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TaoADMMSetConstraintVectorRHS
+      subroutine TaoADMMSetMinimumSpectralPenalty(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoADMMSetMinimumSpectralPenalty
+      subroutine TaoADMMSetRegularizerCoefficient(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoADMMSetRegularizerCoefficient
+      subroutine TaoADMMGetRegularizerCoefficient(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoADMMGetRegularizerCoefficient
+      subroutine TaoGetADMMParentTao(a,b,z)
+       import tTao
+       Tao a ! Tao
+       Tao b ! Tao
+       PetscErrorCode z
+       end subroutine TaoGetADMMParentTao
+      subroutine TaoADMMGetDualVector(a,b,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TaoADMMGetDualVector
+      subroutine TaoADMMSetRegularizerType(a,b,z)
+       import tTao
+       Tao a ! Tao
+       TaoADMMRegularizerType b ! TaoADMMRegularizerType
+       PetscErrorCode z
+       end subroutine TaoADMMSetRegularizerType
+      subroutine TaoADMMGetRegularizerType(a,b,z)
+       import tTao
+       Tao a ! Tao
+       TaoADMMRegularizerType b ! TaoADMMRegularizerType
+       PetscErrorCode z
+       end subroutine TaoADMMGetRegularizerType
+      subroutine TaoADMMSetUpdateType(a,b,z)
+       import tTao
+       Tao a ! Tao
+       TaoADMMUpdateType b ! TaoADMMUpdateType
+       PetscErrorCode z
+       end subroutine TaoADMMSetUpdateType
+      subroutine TaoADMMGetUpdateType(a,b,z)
+       import tTao
+       Tao a ! Tao
+       TaoADMMUpdateType b ! TaoADMMUpdateType
+       PetscErrorCode z
+       end subroutine TaoADMMGetUpdateType
+      subroutine TaoALMMGetType(a,b,z)
+       import tTao
+       Tao a ! Tao
+       TaoALMMType b ! TaoALMMType
+       PetscErrorCode z
+       end subroutine TaoALMMGetType
+      subroutine TaoALMMSetType(a,b,z)
+       import tTao
+       Tao a ! Tao
+       TaoALMMType b ! TaoALMMType
+       PetscErrorCode z
+       end subroutine TaoALMMSetType
+      subroutine TaoALMMGetSubsolver(a,b,z)
+       import tTao
+       Tao a ! Tao
+       Tao b ! Tao
+       PetscErrorCode z
+       end subroutine TaoALMMGetSubsolver
+      subroutine TaoALMMSetSubsolver(a,b,z)
+       import tTao
+       Tao a ! Tao
+       Tao b ! Tao
+       PetscErrorCode z
+       end subroutine TaoALMMSetSubsolver
+      subroutine TaoALMMGetMultipliers(a,b,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TaoALMMGetMultipliers
+      subroutine TaoALMMSetMultipliers(a,b,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TaoALMMSetMultipliers
+      subroutine TaoALMMGetPrimalIS(a,b,c,z)
+       import tTao,tIS
+       Tao a ! Tao
+       IS b ! IS
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine TaoALMMGetPrimalIS
+      subroutine TaoALMMGetDualIS(a,b,c,z)
+       import tTao,tIS
+       Tao a ! Tao
+       IS b ! IS
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine TaoALMMGetDualIS
+      subroutine TaoCreate(a,b,z)
+       import tTao
+       MPI_Comm a ! MPI_Comm
+       Tao b ! Tao
+       PetscErrorCode z
+       end subroutine TaoCreate
+      subroutine TaoSolve(a,z)
+       import tTao
+       Tao a ! Tao
+       PetscErrorCode z
+       end subroutine TaoSolve
+      subroutine TaoSetUp(a,z)
+       import tTao
+       Tao a ! Tao
+       PetscErrorCode z
+       end subroutine TaoSetUp
+      subroutine TaoKSPSetUseEW(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TaoKSPSetUseEW
+      subroutine TaoSetFromOptions(a,z)
+       import tTao
+       Tao a ! Tao
+       PetscErrorCode z
+       end subroutine TaoSetFromOptions
+      subroutine TaoSetRecycleHistory(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TaoSetRecycleHistory
+      subroutine TaoGetRecycleHistory(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TaoGetRecycleHistory
+      subroutine TaoSetTolerances(a,b,c,d,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoSetTolerances
+      subroutine TaoSetConstraintTolerances(a,b,c,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoSetConstraintTolerances
+      subroutine TaoGetConstraintTolerances(a,b,c,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoGetConstraintTolerances
+      subroutine TaoSetFunctionLowerBound(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoSetFunctionLowerBound
+      subroutine TaoGetFunctionLowerBound(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoGetFunctionLowerBound
+      subroutine TaoSetMaximumFunctionEvaluations(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TaoSetMaximumFunctionEvaluations
+      subroutine TaoGetMaximumFunctionEvaluations(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TaoGetMaximumFunctionEvaluations
+      subroutine TaoGetCurrentFunctionEvaluations(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TaoGetCurrentFunctionEvaluations
+      subroutine TaoSetMaximumIterations(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TaoSetMaximumIterations
+      subroutine TaoGetMaximumIterations(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TaoGetMaximumIterations
+      subroutine TaoSetInitialTrustRegionRadius(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoSetInitialTrustRegionRadius
+      subroutine TaoGetInitialTrustRegionRadius(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoGetInitialTrustRegionRadius
+      subroutine TaoGetCurrentTrustRegionRadius(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoGetCurrentTrustRegionRadius
+      subroutine TaoGetTolerances(a,b,c,d,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoGetTolerances
+      subroutine TaoGetKSP(a,b,z)
+       import tTao,tKSP
+       Tao a ! Tao
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine TaoGetKSP
+      subroutine TaoGetLinearSolveIterations(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TaoGetLinearSolveIterations
+      subroutine TaoGetLineSearch(a,b,z)
+       import tTao
+       Tao a ! Tao
+       TaoLineSearch b ! TaoLineSearch
+       PetscErrorCode z
+       end subroutine TaoGetLineSearch
+      subroutine TaoAddLineSearchCounts(a,z)
+       import tTao
+       Tao a ! Tao
+       PetscErrorCode z
+       end subroutine TaoAddLineSearchCounts
+      subroutine TaoGetSolution(a,b,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TaoGetSolution
+      subroutine TaoResetStatistics(a,z)
+       import tTao
+       Tao a ! Tao
+       PetscErrorCode z
+       end subroutine TaoResetStatistics
+      subroutine TaoMonitorCancel(a,z)
+       import tTao
+       Tao a ! Tao
+       PetscErrorCode z
+       end subroutine TaoMonitorCancel
+      subroutine TaoGetIterationNumber(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TaoGetIterationNumber
+      subroutine TaoGetResidualNorm(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoGetResidualNorm
+      subroutine TaoSetIterationNumber(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TaoSetIterationNumber
+      subroutine TaoGetTotalIterationNumber(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TaoGetTotalIterationNumber
+      subroutine TaoSetTotalIterationNumber(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TaoSetTotalIterationNumber
+      subroutine TaoSetConvergedReason(a,b,z)
+       import tTao
+       Tao a ! Tao
+       TaoConvergedReason b ! TaoConvergedReason
+       PetscErrorCode z
+       end subroutine TaoSetConvergedReason
+      subroutine TaoGetConvergedReason(a,b,z)
+       import tTao
+       Tao a ! Tao
+       TaoConvergedReason b ! TaoConvergedReason
+       PetscErrorCode z
+       end subroutine TaoGetConvergedReason
+      subroutine TaoGetSolutionStatus(a,b,c,d,e,f,g,z)
+       import tTao
+       Tao a ! Tao
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       TaoConvergedReason g ! TaoConvergedReason
+       PetscErrorCode z
+       end subroutine TaoGetSolutionStatus
+      subroutine TaoSetConvergenceHistory(a,b,c,d,e,f,g,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b (*) ! PetscReal
+       PetscReal c (*) ! PetscReal
+       PetscReal d (*) ! PetscReal
+       PetscInt e (*) ! PetscInt
+       PetscInt f ! PetscInt
+       PetscBool g ! PetscBool
+       PetscErrorCode z
+       end subroutine TaoSetConvergenceHistory
+      subroutine TaoSetGradientNorm(a,b,z)
+       import tTao,tMat
+       Tao a ! Tao
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine TaoSetGradientNorm
+      subroutine TaoGetGradientNorm(a,b,z)
+       import tTao,tMat
+       Tao a ! Tao
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine TaoGetGradientNorm
+      subroutine TaoSetVariableBounds(a,b,c,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TaoSetVariableBounds
+      subroutine TaoGetVariableBounds(a,b,c,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TaoGetVariableBounds
+      subroutine TaoSetInequalityBounds(a,b,c,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TaoSetInequalityBounds
+      subroutine TaoGetInequalityBounds(a,b,c,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TaoGetInequalityBounds
+      subroutine TaoComputeDualVariables(a,b,c,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TaoComputeDualVariables
+      subroutine TaoGetDualVariables(a,b,c,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TaoGetDualVariables
+      subroutine TaoSetSolution(a,b,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TaoSetSolution
+      subroutine TaoComputeGradient(a,b,c,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TaoComputeGradient
+      subroutine TaoComputeObjective(a,b,c,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoComputeObjective
+      subroutine TaoComputeObjectiveAndGradient(a,b,c,d,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine TaoComputeObjectiveAndGradient
+      subroutine TaoSetResidualWeights(a,b,c,d,e,f,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscReal f ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoSetResidualWeights
+      subroutine TaoComputeResidual(a,b,c,z)
+       import tTao,tVec
+       Tao a ! Tao
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TaoComputeResidual
+      subroutine TaoIsObjectiveDefined(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TaoIsObjectiveDefined
+      subroutine TaoIsGradientDefined(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TaoIsGradientDefined
+      subroutine TaoIsObjectiveAndGradientDefined(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TaoIsObjectiveAndGradientDefined
+      subroutine TaoSetStateDesignIS(a,b,c,z)
+       import tTao,tIS
+       Tao a ! Tao
+       IS b ! IS
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine TaoSetStateDesignIS
+      subroutine TaoBRGNGetSubsolver(a,b,z)
+       import tTao
+       Tao a ! Tao
+       Tao b ! Tao
+       PetscErrorCode z
+       end subroutine TaoBRGNGetSubsolver
+      subroutine TaoBRGNSetRegularizerWeight(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoBRGNSetRegularizerWeight
+      subroutine TaoBRGNSetL1SmoothEpsilon(a,b,z)
+       import tTao
+       Tao a ! Tao
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoBRGNSetL1SmoothEpsilon
+      subroutine TaoBRGNSetDictionaryMatrix(a,b,z)
+       import tTao,tMat
+       Tao a ! Tao
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine TaoBRGNSetDictionaryMatrix
+      subroutine VecFischer(a,b,c,d,e,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       PetscErrorCode z
+       end subroutine VecFischer
+      subroutine VecSFischer(a,b,c,d,e,f,z)
+       import tVec
+       Vec a ! Vec
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscReal e ! PetscReal
+       Vec f ! Vec
+       PetscErrorCode z
+       end subroutine VecSFischer
+      subroutine MatDFischer(a,b,c,d,e,f,g,h,i,z)
+       import tVec,tMat
+       Mat a ! Mat
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       Vec f ! Vec
+       Vec g ! Vec
+       Vec h ! Vec
+       Vec i ! Vec
+       PetscErrorCode z
+       end subroutine MatDFischer
+      subroutine MatDSFischer(a,b,c,d,e,f,g,h,i,j,k,z)
+       import tVec,tMat
+       Mat a ! Mat
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       PetscReal f ! PetscReal
+       Vec g ! Vec
+       Vec h ! Vec
+       Vec i ! Vec
+       Vec j ! Vec
+       Vec k ! Vec
+       PetscErrorCode z
+       end subroutine MatDSFischer
+      subroutine TaoSoftThreshold(a,b,c,d,z)
+       import tVec
+       Vec a ! Vec
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine TaoSoftThreshold

@@ -150,7 +150,7 @@ set_source_files_properties(${source}
 if (WIN32)
 
     target_include_directories(${library_name} PRIVATE  ${include_path}
-                                                        ${mpi_include_path}
+                                                        ${mpi_module_path} ${mpi_include_path}
                                                         ${petsc_path}
                                                         ${tecplot_path})
 
@@ -160,7 +160,7 @@ if (WIN32)
                             PRIVATE
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                            "${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/lib/x64/Release"
+                            "${petsc_libdir}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
