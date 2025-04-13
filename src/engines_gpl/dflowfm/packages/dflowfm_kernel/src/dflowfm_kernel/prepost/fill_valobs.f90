@@ -513,8 +513,7 @@ contains
 !                  valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
                end do
             end if
-            
-            
+    
             do kk = kb, kt
                klay = kk - kb + nlayb
 
@@ -531,47 +530,17 @@ contains
                   end if
                end if
 
-!               if (model_is_3D()) then
-!                  valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
-!               end if
-!              if (jasal > 0) then
-!                 valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
-!              end if
-!              if (jatem > 0) then
-!                 valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
-!              end if
-               if (jahistur > 0) then
-!                 valobs(i, IPNT_VIU + klay - 1) = vius(kk)
-               end if
                if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                   valobs(i, IPNT_RHOP + klay - 1) = potential_density(kk)
                   if (apply_thermobaricity) then
                      valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
                   end if
                end if
-!               if (jahisvelocity > 0) then
-!                  valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
-!               end if
-!               valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
-
-!               if (IVAL_TRA1 > 0) then
-!                  do j = IVAL_TRA1, IVAL_TRAN
-!                     ii = j - IVAL_TRA1 + 1
-!                     valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
-!                  end do
-!               end if
 
                if (IVAL_HWQ1 > 0) then
                   do j = IVAL_HWQ1, IVAL_HWQN
                      ii = j - IVAL_HWQ1 + 1
                      valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
-                  end do
-               end if
-
-               if (IVAL_WQB3D1 > 0) then
-                  do j = IVAL_WQB3D1, IVAL_WQB3DN
-                     ii = j - IVAL_WQB3D1 + 1
-                     valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
                   end do
                end if
 
