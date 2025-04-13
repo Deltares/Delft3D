@@ -489,30 +489,35 @@ contains
             end if
 
             ! Water quality parameters
-            
+            if (IVAL_TRA1 > 0) then
+                do j = IVAL_TRA1, IVAL_TRAN
+                    ii = j - IVAL_TRA1 + 1
+                    tmp_interp = constituents(ii, :)
+                    call interpolate_horizontal (tmp_interp,i,IPNT_TRA1 + (ii - 1)*kmx_const, UNC_LOC_S3D)
+
+                 end do
+            end if
+    
             if (IVAL_WQB1 > 0) then
                do j = IVAL_WQB1, IVAL_WQBN
                   ii = j - IVAL_WQB1 + 1
                   valobs(i, IPNT_WQB1 + ii - 1) = wqbot(ii, kb)
                end do
             end if
-
-!            if (model_is_3D()) then
-!               valobs(i, IPNT_UCXQ) = ucx(k)
-!               valobs(i, IPNT_UCYQ) = ucy(k)
-!            end if
-
+                        
+            if (IVAL_WQB3D1 > 0) then
+               do j = IVAL_WQB3D1, IVAL_WQB3DN
+                  ii = j - IVAL_WQB3D1 + 1
+                  tmp_interp = wqbot(ii, :)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_WQB3D1 + (ii - 1)*kmx_const, UNC_LOC_S3D)
+!                  valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
+               end do
+            end if
+            
+            
             do kk = kb, kt
                klay = kk - kb + nlayb
 
-!              if (model_is_3D()) then
-!                 valobs(i, IPNT_ZCS + klay - 1) = 0.5d0 * (zws(kk) + zws(kk - 1))
-!              end if
-
-!              if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-!                 valobs(i, IPNT_UCX + klay - 1) = ueux(kk)
-!                 valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
-!              end if
 
                if (jawave > 0 .and. .not. flowWithoutWaves) then
                   if (hs(k) > epshu) then
@@ -549,12 +554,12 @@ contains
 !               end if
 !               valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
 
-               if (IVAL_TRA1 > 0) then
-                  do j = IVAL_TRA1, IVAL_TRAN
-                     ii = j - IVAL_TRA1 + 1
-                     valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
-                  end do
-               end if
+!               if (IVAL_TRA1 > 0) then
+!                  do j = IVAL_TRA1, IVAL_TRAN
+!                     ii = j - IVAL_TRA1 + 1
+!                     valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
+!                  end do
+!               end if
 
                if (IVAL_HWQ1 > 0) then
                   do j = IVAL_HWQ1, IVAL_HWQN
