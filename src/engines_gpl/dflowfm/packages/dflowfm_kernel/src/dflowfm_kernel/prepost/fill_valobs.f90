@@ -75,7 +75,7 @@ contains
 
       implicit none
 
-      integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx
+      integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx, i_tmp, kk_tmp, kb_tmp, kt_tmp
       integer :: link_id_nearest
       integer :: kmx_const, kk_const, nlyrs
       real(kind=dp) :: wavfac
@@ -531,7 +531,21 @@ contains
                   call interpolate_horizontal (tmp_interp,i,IPNT_WQB3D1 + (ii - 1)*kmx_const, UNC_LOC_S3D)
                end do
             end if
- 
+            
+            ! Must be more elegant way of doin this
+            if (IVAL_HWQ1 > 0) then
+               do j = IVAL_HWQ1, IVAL_HWQN
+                  ii = j - IVAL_HWQ1 + 1
+                  do i_tmp = 1, 3
+                      call getkbotktop(neighbour_nodes_obs(i_tmp,i), kb_tmp, kt_tmp)
+                      do kk_tmp = kb_tmp, kt_tmp
+                         tmp_interp(kk_tmp) = waqoutputs(ii, kk_tmp - kbx + 1)
+                      end do
+                  end do
+                  call interpolate_horizontal (tmp_interp,i,IPNT_HWQ1 + (ii - 1)*kmx_const, UNC_LOC_S3D)
+               end do                                                                                   
+            end if
+            
 !           From here still to do            
             do kk = kb, kt
                klay = kk - kb + nlayb
@@ -556,12 +570,12 @@ contains
                   end if
                end if
 
-               if (IVAL_HWQ1 > 0) then
-                  do j = IVAL_HWQ1, IVAL_HWQN
-                     ii = j - IVAL_HWQ1 + 1
-                     valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
-                  end do
-               end if
+!               if (IVAL_HWQ1 > 0) then
+!                  do j = IVAL_HWQ1, IVAL_HWQN
+!                     ii = j - IVAL_HWQ1 + 1
+!                     valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
+!                  end do
+!               end if
 
 
                if (kmx == 0 .and. IVAL_WS1 > 0) then
