@@ -96,7 +96,7 @@ object WindowsBuildEnvironmentI24 : BuildType({
         schedule {
             schedulingPolicy = weekly {
                 dayOfWeek = ScheduleTrigger.DAY.Sunday
-                hour = 0
+                hour = 10
                 minute = 0
             }
             branchFilter = "+:<default>"
