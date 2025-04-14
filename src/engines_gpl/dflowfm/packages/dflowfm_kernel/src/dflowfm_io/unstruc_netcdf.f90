@@ -5989,18 +5989,18 @@ contains
             end if
             
             if (stmpar%lsedtot > 0 .and. stmpar%morpar%moroutput%sswuuvv) then
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswn, nc_precision, UNC_LOC_U, 'sswn', '', 'Suspended load transport due to waves, n-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswt, nc_precision, UNC_LOC_U, 'sswt', '', 'Suspended load transport due to waves, t-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswn, nc_precision, UNC_LOC_U, 'sswn', '', 'Suspended load transport due to waves, n-component', stmpar%morpar%moroutput%unit_transport_rate, dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswt, nc_precision, UNC_LOC_U, 'sswt', '', 'Suspended load transport due to waves, t-component', stmpar%morpar%moroutput%unit_transport_rate, dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
             end if
             
             if (stmpar%lsedtot > 0 .and. stmpar%morpar%moroutput%sbwuuvv) then
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwn, nc_precision, UNC_LOC_U, 'sbwn', '', 'Bed load transport due to waves, n-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwt, nc_precision, UNC_LOC_U, 'sbwt', '', 'Bed load transport due to waves, t-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwn, nc_precision, UNC_LOC_U, 'sbwn', '', 'Bed load transport due to waves, n-component', stmpar%morpar%moroutput%unit_transport_rate, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwt, nc_precision, UNC_LOC_U, 'sbwt', '', 'Bed load transport due to waves, t-component', stmpar%morpar%moroutput%unit_transport_rate, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
             end if
             
             if (stmpar%lsedtot > 0 .and. stmpar%morpar%moroutput%sbcuuvv) then
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbcn, nc_precision, UNC_LOC_U, 'sbcn', '', 'Bed load transport due to currents, n-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbct, nc_precision, UNC_LOC_U, 'sbct', '', 'Bed load transport due to currents, t-component', transpunit, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbcn, nc_precision, UNC_LOC_U, 'sbcn', '', 'Bed load transport due to currents, n-component', stmpar%morpar%moroutput%unit_transport_rate, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbct, nc_precision, UNC_LOC_U, 'sbct', '', 'Bed load transport due to currents, t-component', stmpar%morpar%moroutput%unit_transport_rate, dimids=[-2, mapids%id_tsp%id_sedtotdim, -1], jabndnd=jabndnd_)
             end if
 
             if (stmpar%morpar%moroutput%dzduuvv) then ! bedslope
