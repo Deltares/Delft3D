@@ -493,18 +493,34 @@ contains
                   ii = j - IVAL_SF1 + 1
                   tmp_interp =  constituents(ISED1 + ii - 1, :)
                   call interpolate_horizontal (tmp_interp,i,IPNT_SF1 + (ii - 1)*kmx_const, UNC_LOC_S3D)
-!                 valobs(i, IPNT_SF1 + (ii - 1) * kmx_const + klay - 1) = constituents(ISED1 + ii - 1, kk)
                end do
             end if
             
+            if (kmx == 0 .and. IVAL_WS1 > 0) then
+               do j = IVAL_WS1, IVAL_WSN
+                  ii = j - IVAL_WS1 + 1
+                  tmp_interp =  mtd%ws(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_WS1 + (ii - 1)*kmx_const, UNC_LOC_S3D)
+!                  valobs(i, IPNT_WS1 + (ii - 1) * kmx_const + klay - 1) = mtd%ws(kk, ii) ! 1:lsedsus
+               end do
+            end if
+ 
+            if (IVAL_WS1 > 0) then
+               do j = IVAL_WS1, IVAL_WSN
+                  ii = j - IVAL_WS1 + 1
+                  tmp_interp =  mtd%ws(:,ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_WS1 + (ii - 1)*(kmx + 1), UNC_LOC_W)
+               end do
+            end if
+          
             if (IVAL_SEDDIF1 > 0) then
                do j = IVAL_SEDDIF1, IVAL_SEDDIFN
                   ii = j - IVAL_SEDDIF1 + 1
                   tmp_interp =  mtd%seddif(ii,:)
-                  call interpolate_horizontal (tmp_interp,i,IVAL_SEDDIF1 + (ii - 1)*kmx_const, UNC_LOC_W)
-!                 valobs(i, IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%seddif(ii, kb + klay - 2)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_SEDDIF1 + (ii - 1)*(kmx + 1), UNC_LOC_W)
                end do
             end if
+            
  
             ! Water quality parameters
             if (IVAL_TRA1 > 0) then
@@ -532,7 +548,7 @@ contains
                end do
             end if
             
-            ! Must be more elegant way of doin this
+            ! Must be more elegant way of doing this
             if (IVAL_HWQ1 > 0) then
                do j = IVAL_HWQ1, IVAL_HWQN
                   ii = j - IVAL_HWQ1 + 1
@@ -546,7 +562,7 @@ contains
                end do                                                                                   
             end if
             
-!           From here still to do            
+!           From here still to do (gets messy from here on)            
             do kk = kb, kt
                klay = kk - kb + nlayb
 
@@ -568,21 +584,6 @@ contains
                   if (apply_thermobaricity) then
                      valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
                   end if
-               end if
-
-!               if (IVAL_HWQ1 > 0) then
-!                  do j = IVAL_HWQ1, IVAL_HWQN
-!                     ii = j - IVAL_HWQ1 + 1
-!                     valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
-!                  end do
-!               end if
-
-
-               if (kmx == 0 .and. IVAL_WS1 > 0) then
-                  do j = IVAL_WS1, IVAL_WSN
-                     ii = j - IVAL_WS1 + 1
-                     valobs(i, IPNT_WS1 + (ii - 1) * kmx_const + klay - 1) = mtd%ws(kk, ii) ! 1:lsedsus
-                  end do
                end if
 
                if (jased > 0 .and. .not. stm_included) then
@@ -616,7 +617,7 @@ contains
                   if (IVAL_WS1 > 0) then
                      do j = IVAL_WS1, IVAL_WSN
                         ii = j - IVAL_WS1 + 1
-                        valobs(i, IPNT_WS1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%ws(kb + klay - 2, ii)
+!                        valobs(i, IPNT_WS1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%ws(kb + klay - 2, ii)
                      end do
                   end if
                   if (IVAL_SEDDIF1 > 0) then
@@ -711,7 +712,7 @@ contains
    subroutine interpolate_horizontal (rarray,istat,IPNT,locType)
 
       ! Interpolate (horizontally, within a computational layer) to a position from 3 surrounding snapped points
-      ! earray ca be constituents or
+      ! rarray can be constituents (3D) or water levels (2D)
       !
       use precision,             only: dp
       use fm_statistical_output, only: model_is_3d
@@ -742,13 +743,14 @@ contains
               nrlay_tmp(iwght) = 1
           end if
       end do
-
+      
+      ! Values ar interfaces stored 1 below (interface 1 effectively corresponds with layer 0)
       if (LocType == UNC_LOC_W) then
           nrlay_tmp = nrlay_tmp + 1
           oneDown   = 1
       end if
 
-      ! Determine start and stop layer nr for interpolated values (for now only layers where 3 stations have a value
+      ! Determine start and stop layer nr for interpolated values 
       kstart = minval(nlayb_tmp)
       kstop  = maxval(nlayb_tmp + nrlay_tmp - 1)
 
