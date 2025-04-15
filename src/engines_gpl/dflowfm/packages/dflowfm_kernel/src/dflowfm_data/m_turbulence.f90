@@ -141,7 +141,6 @@ contains
       cmukep = 0.09_dp
 
       c2e = 1.92_dp
-      c1e = 1.44_dp
 
       skmy = 1.96_dp
       a1ph = 0.92_dp
@@ -159,6 +158,8 @@ contains
    subroutine calculate_derived_coefficients_turbulence()
       use m_physcoef, only: vonkar, rhomean, ag
       
+      c1e = c2e - vonkar**2 / (sigeps * sqcmukep)
+
       sigtkei = 1.0_dp / sigtke
       sigepsi = 1.0_dp / sigeps
       cewall = cmukep**0.75_dp / vonkar
@@ -172,7 +173,6 @@ contains
       c3tsta = 1.0_dp * cmukep
       c3tuns = (1.0_dp - c1e) * cmukep
       
-      c1e = c2e - vonkar**2 / (sigeps * sqcmukep)
       coefn2 = -ag / (sigrho * rhomean)
    end subroutine calculate_derived_coefficients_turbulence
 
