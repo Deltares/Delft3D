@@ -43,9 +43,9 @@ contains
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flowwithoutwaves, adve, u1, qw, &
                         a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinepsws, turkin1, tureps1, numsrc, addksources, tqcu, eqcu, sqcu, q1, tetavkeps, &
                         eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, turbulence_lax_factor, turbulence_lax_vertical, eps20, &
-                        jarichardsononoutput, rich, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, epstke, kmxl, sigeps, &
+                        jarichardsononoutput, rich, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, epstke, kmxl, &
                         c1e, c3t_unstable, c3t_stable, c1t, c2t, c9of1, eps6, epseps, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
-                        vicwws, kmxx, turbulence_lax_horizontal, viskin, sigtke, jawavebreakerturbulence, rhomean, idensform, bruva, buoflu, &
+                        vicwws, kmxx, turbulence_lax_horizontal, viskin, jawavebreakerturbulence, rhomean, idensform, bruva, buoflu, &
                         vicwminb, dijdij, v, eddyviscositysurfacmax, ktop
       use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
@@ -54,7 +54,7 @@ contains
       use m_sferic, only: pi
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
-      use m_turbulence, only: cmukep, rho, coefn2, richs, c3e_stable, c3e_unstable
+      use m_turbulence, only: cmukep, rho, coefn2, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
       use m_wave_fillsurdis, only: wave_fillsurdis
@@ -317,7 +317,7 @@ contains
                   end if
                end if
 
-               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) / sigtke
+               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigtkei
 
                ! Calculate turkin source from wave dissipation: preparation
                if (jawave > 0) then
@@ -337,7 +337,7 @@ contains
                         rhoLL = rhomean
                         pkwmag = fbreak * 2.0_dp * surdisLL / (rhoLL * fwavpendep * hrmsLL)
                         ! tke dirichlet boundary condition at surface
-                        tkesur = tkesur + (pkwmag * vonkar * fwavpendep * hrmsLL / (30.0_dp * cmukep**0.75_dp))**(2.0_dp / 3.0_dp)
+                        tkesur = tkesur + (pkwmag * vonkar * fwavpendep * hrmsLL / (30.0_dp * cde))**(2.0_dp / 3.0_dp)
                      else
                         pkwmag = 0.0_dp
                      end if
@@ -351,7 +351,7 @@ contains
                   Lu = L + 1
 
                   vicd = vicu
-                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) / sigtke
+                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * sigtkei
 
                   k = L - Lb + 1; ku = k + 1
 
@@ -663,13 +663,13 @@ contains
                   end if
                end if
 
-               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) / sigeps
+               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigepsi
 
                do L = Lb, Lt - 1
                   Lu = L + 1
 
                   vicd = vicu
-                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) / sigeps
+                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * sigepsi
 
                   k = L - Lb + 1; ku = k + 1
 
@@ -737,7 +737,7 @@ contains
                      gradk = gradd + gradu
                      grad = gradk - gradt ! D_kt - D_tt
 
-                     grad = -grad * cmukep / sigeps ! This is positive advection, dc/dt + wdc/dz
+                     grad = -grad * sigepsi * cmukep ! This is positive advection, dc/dt + wdc/dz
                      grad = grad / dzw(k) ! dzw is receiving volume
                      if (grad > 0.0_dp) then
                         bk(k) = bk(k) + grad

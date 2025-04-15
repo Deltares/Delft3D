@@ -38,13 +38,14 @@ module m_turbulence
    ! Coefficients of turbulence model
    real(kind=dp) :: cmukep
    real(kind=dp) :: cewall
+   real(kind=dp) :: cde
    real(kind=dp) :: c1e
    real(kind=dp) :: c3e_stable
    real(kind=dp) :: c3e_unstable
    real(kind=dp) :: c2e
    real(kind=dp) :: sigdif
-   real(kind=dp) :: sigtke
-   real(kind=dp) :: sigeps
+   real(kind=dp) :: sigtke, sigtkei
+   real(kind=dp) :: sigeps, sigepsi
    real(kind=dp) :: sigrho !< bouyancy
 
    real(kind=dp) :: c1t
@@ -122,7 +123,7 @@ module m_turbulence
 
 contains
 
-   !> Sets ALL (scalar) variables in this module to their default values.
+   !> Sets (underived) variables in this module to their default values.
    subroutine default_turbulence()
       use m_physcoef, only: vonkar
 
@@ -133,26 +134,27 @@ contains
 
       cmukep = 0.09_dp
       c2e = 1.92_dp
-
-      ! k-eps
       c1e = c2e - vonkar**2 / (sigeps * sqrt(cmukep))
+      
       c3e_stable = 0.0_dp
-      c3e_unstable = c1e ! Not a derived coefficient as it can be set by the user
-
-      ! k-tau
-      c2t = 1.0_dp - c2e
-      c3t_stable = 1.0_dp * cmukep
+      c3e_unstable = c1e ! Can be overriden by user and is therefore not a derived coefficient
+      
    end subroutine default_turbulence
 
    !> Calculates derived coefficients for turbulence
    subroutine calculate_derived_coefficients_turbulence()
       use m_physcoef, only: vonkar, rhomean, ag
 
+      sigtkei = 1.0_dp / sigtke
+      sigepsi = 1.0_dp / sigeps
+      
       cewall = cmukep**0.75_dp / vonkar
+      cde = cmukep**0.75_dp
       coefn2 = -ag / (sigrho * rhomean)
-
-      ! k-tau
+      
       c1t = (1.0_dp - c1e) * cmukep
+      c2t = 1.0_dp - c2e
+      c3t_stable = 1.0_dp * cmukep
       c3t_unstable = (1.0_dp - c1e) * cmukep
    end subroutine calculate_derived_coefficients_turbulence
 
