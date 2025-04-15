@@ -297,6 +297,16 @@ contains
                  call interpolate_horizontal (vicwws,i,IPNT_VICWWS, UNC_LOC_W)
                end if      
             end if
+            
+            ! Density (ask Jullien for test case!) 
+            if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+               call interpolate_horizontal (potential_density,i,IPNT_RHOP,UNC_LOC_S3D) 
+!              valobs(i, IPNT_RHOP + klay - 1) = potential_density(kk)
+               if (apply_thermobaricity) then
+                  call interpolate_horizontal (in_situ_density,i,IPNT_RHO,UNC_LOC_S3D) 
+!                 valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
+               end if
+            end if
 
             ! squ en sqi = ?
             tmp_interp =  0.5d0 * (squ + sqi)
@@ -493,7 +503,6 @@ contains
             if (jased > 0 .and. .not. stm_included) then
                tmp_interp = sed(1,:)
                call interpolate_horizontal (tmp_interp,i,IPNT_SED,UNC_LOC_S3D)
-!              valobs(i, IPNT_SED + klay - 1) = sed(1, kk)
             end if
                        
             if (IVAL_SF1 > 0) then
@@ -558,7 +567,7 @@ contains
                end do
             end if
             
-            ! Must be more elegant way of doing this
+            ! Must be more elegant way of doing this (create tmp_interp 3D from waqoutputs directly)
             if (IVAL_HWQ1 > 0) then
                do j = IVAL_HWQ1, IVAL_HWQN
                   ii = j - IVAL_HWQ1 + 1
@@ -641,14 +650,10 @@ contains
                end if
 
                if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
-                  valobs(i, IPNT_RHOP + klay - 1) = potential_density(kk)
+ !                 valobs(i, IPNT_RHOP + klay - 1) = potential_density(kk)
                   if (apply_thermobaricity) then
-                     valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
+ !                    valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
                   end if
-               end if
-
-               if (jased > 0 .and. .not. stm_included) then
-!                  valobs(i, IPNT_SED + klay - 1) = sed(1, kk)
                end if
                valobs(i, IPNT_CMX) = max(valobs(i, IPNT_UCX), sqrt(ucx(kk)**2 + ucy(kk)**2))
             end do
@@ -659,10 +664,7 @@ contains
                call getlayerindices(k, nlayb, nrlay)
                do kk = kb - 1, kt
                   klay = kk - kb + nlayb + 1
-!                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
-                  if (iturbulencemodel >= 2 .and. jahistur > 0) then
-!                     valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
-                  end if
+
                   if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
                         if (apply_thermobaricity) then
@@ -674,18 +676,6 @@ contains
                         rhomea = 0.5d0 * (rho(kk + 1) + rho(kk))
                         valobs(i, IPNT_BRUV + klay - 1) = -ag * drhodz / rhomea
                      end if
-                  end if
-                  if (IVAL_WS1 > 0) then
-                     do j = IVAL_WS1, IVAL_WSN
-                        ii = j - IVAL_WS1 + 1
-!                        valobs(i, IPNT_WS1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%ws(kb + klay - 2, ii)
-                     end do
-                  end if
-                  if (IVAL_SEDDIF1 > 0) then
-                     do j = IVAL_SEDDIF1, IVAL_SEDDIFN
-                        ii = j - IVAL_SEDDIF1 + 1
-!                        valobs(i, IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%seddif(ii, kb + klay - 2)
-                     end do
                   end if
                end do
 
