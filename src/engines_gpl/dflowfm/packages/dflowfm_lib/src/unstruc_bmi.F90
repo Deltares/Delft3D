@@ -755,6 +755,7 @@ contains
 
    end subroutine get_var_name
 
+   !> Returns the type of a variable, i.e. its data type.
    subroutine get_var_type(c_var_name, c_type) bind(C, name="get_var_type")
       !DEC$ ATTRIBUTES DLLEXPORT :: get_var_type
 
@@ -773,34 +774,40 @@ contains
       ! BMI_LONG            long int          int32
       ! BMI_FLOAT           float             float32
       ! BMI_DOUBLE          double            float64
+      
+      !First we check if the type is captured by the automatically generated include file.
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
       include "bmi_get_var_type.inc"
 
-      select case (var_name)
-      case ("netelemnode")
-         type_name = "int"
-      case ("flowelemnode", "flowelemnbs", "flowelemlns")
-         type_name = "int"
-      case ("flowelemcontour_x", "flowelemcontour_y")
-         type_name = "double"
-      case ("TcrEro", "TcrSed", "tem1Surf")
-         type_name = "double"
-      case ('vltb')
-         type_name = "type(t_voltable)"
-      case ('vltbOnLinks')
-         type_name = "type(t_voltable)"
-      case ('network')
-         type_name = "type(t_network)"
-      end select
-
-      ! Try to parse variable name as slash-separated id (e.g., 'laterals/sealock_A/water_discharge')
-      tmp_var_name = var_name
-      call str_token(tmp_var_name, varset_name, DELIMS='/')
-      select case (varset_name)
-      case ('pumps', 'weirs', 'orifices', 'gates', 'generalstructures', 'culverts', 'sourcesinks', 'dambreak', 'observations', 'crosssections', 'laterals')
+      !Second we check if the variable name is a compound name (e.g., `var_name='weirs/weir1/crestlevel'`)
+      !If the variable name is a compound name, the output in `varset_name` will be the first part of the name (e.g., `tmp_var_name='weirs'`).
+      !If the variable name is not a compound name, the output in `tmp_var_name` is empty.
+      tmp_var_name = var_name !e.g., `var_name='weirs/weir1/crestlevel'`
+      call str_token(tmp_var_name, varset_name, DELIMS='/') 
+      
+      select case (tmp_var_name)
+      case ("") !it is not a compund name
+         select case (var_name)
+            case ("netelemnode")
+               type_name = "int"
+            case ("flowelemnode", "flowelemnbs", "flowelemlns")
+               type_name = "int"
+            case ("flowelemcontour_x", "flowelemcontour_y")
+               type_name = "double"
+            case ("TcrEro", "TcrSed", "tem1Surf")
+               type_name = "double"
+            case ('vltb')
+               type_name = "type(t_voltable)"
+            case ('vltbOnLinks')
+               type_name = "type(t_voltable)"
+            case ('network')
+               type_name = "type(t_network)"
+         end select
+      case default !it is a compound name
           type_name = "double"
       end select
       
+      !Third we check if it a constituent name (e.g., 'salt', 'tracer1', etc.)
       if (numconst > 0) then
          iconst = find_name(const_names, var_name)
       end if
