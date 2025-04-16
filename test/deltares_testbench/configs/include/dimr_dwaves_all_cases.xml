@@ -43,7 +43,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f01_c01_wave_boundary" ref="dimr_trunk">
-            <path version="2025-04-15T15:05:40.994000">e04_wave/f01-wave_boundary/c01</path>
+            <path version="2025-04-16T17:05:00.000000">e04_wave/f01-wave_boundary/c01</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-Waves.nc" type="NETCDF">
@@ -57,7 +57,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f01_c02_wave_boundary" ref="dimr_trunk">
-            <path version="2025-04-15T15:06:14.244000">e04_wave/f01-wave_boundary/c02</path>
+            <path version="2025-04-16T17:05:00.000000">e04_wave/f01-wave_boundary/c02</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-Waves.nc" type="NETCDF">
@@ -71,7 +71,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f01_c03_wave_boundary" ref="dimr_trunk">
-            <path version="2025-04-15T15:06:36.848000">e04_wave/f01-wave_boundary/c03</path>
+            <path version="2025-04-16T17:05:00.000000">e04_wave/f01-wave_boundary/c03</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-Waves.nc" type="NETCDF">
@@ -85,7 +85,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f01_c04_wave_boundary" ref="dimr_trunk">
-            <path version="2025-04-15T15:06:56.624000">e04_wave/f01-wave_boundary/c04</path>
+            <path version="2025-04-16T17:05:00.000000">e04_wave/f01-wave_boundary/c04</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-Waves.nc" type="NETCDF">
@@ -99,7 +99,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f01_c05_wave_boundary" ref="dimr_trunk">
-            <path version="2025-04-15T15:07:13.094000">e04_wave/f01-wave_boundary/c05</path>
+            <path version="2025-04-16T17:05:00.000000">e04_wave/f01-wave_boundary/c05</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-Waves.nc" type="NETCDF">
@@ -113,7 +113,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f01_c06_wave_boundary" ref="dimr_trunk">
-            <path version="2025-04-15T15:07:38.926000">e04_wave/f01-wave_boundary/c06</path>
+            <path version="2025-04-16T17:05:00.000000">e04_wave/f01-wave_boundary/c06</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-Waves.nc" type="NETCDF">
@@ -127,7 +127,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f01_c07_wave_boundary" ref="dimr_trunk">
-            <path version="2025-04-15T15:08:08.815000">e04_wave/f01-wave_boundary/c07</path>
+            <path version="2025-04-16T17:05:00.000000">e04_wave/f01-wave_boundary/c07</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-Waves.nc" type="NETCDF">
@@ -141,7 +141,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f01_c08_wave_boundary" ref="dimr_trunk">
-            <path version="2025-04-15T15:08:28.896000">e04_wave/f01-wave_boundary/c08</path>
+            <path version="2025-04-16T17:05:00.000000">e04_wave/f01-wave_boundary/c08</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-Waves.nc" type="NETCDF">
@@ -226,7 +226,7 @@
 	
         <!-- ======================================================================== -->
         <testCase name="e04_f03_c01_windoncurvi" ref="dimr_trunk" ignore="false">
-            <path version="2025-04-15T14:37:00.714000">e04_wave/f03-windoncurvi/c01</path>
+            <path version="2025-04-16T17:05:00.000000">e04_wave/f03-windoncurvi/c01</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-Siu.nc" type="NETCDF">
@@ -324,7 +324,7 @@
         </testCase>
 		<!-- ======================================================================== -->
         <testCase name="e04_f05_c01_nest" ref="dimr_trunk">
-            <path version="2025-04-15T15:14:01.020000">e04_wave/f05-nest/c01</path>
+            <path version="2025-04-16T17:05:00.000000">e04_wave/f05-nest/c01</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-inlet-inlet.nc" type="NETCDF">
@@ -345,7 +345,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f05_c02_nest" ref="dimr_trunk">
-            <path version="2025-04-15T15:14:25.578000">e04_wave/f05-nest/c02</path>
+            <path version="2025-04-16T17:05:00.000000">e04_wave/f05-nest/c02</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="wavm-inlet-inlet.nc" type="NETCDF">
