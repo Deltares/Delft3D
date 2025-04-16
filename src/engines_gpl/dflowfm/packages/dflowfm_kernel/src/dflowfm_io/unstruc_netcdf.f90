@@ -419,6 +419,7 @@ module unstruc_netcdf
       integer :: id_bodsed(MAX_ID_VAR) = -1 !
       integer :: id_dpsed(MAX_ID_VAR) = -1 !
       integer :: id_msed(MAX_ID_VAR) = -1 !
+      integer :: id_aldiff(MAX_ID_VAR) = -1 !
       integer :: id_lyrfrac(MAX_ID_VAR) = -1 !
       integer :: id_thlyr(MAX_ID_VAR) = -1 !
       integer :: id_preload(MAX_ID_VAR) = -1 !
@@ -3012,7 +3013,7 @@ contains
          id_czs, id_E, id_thetamean, &
          id_sigmwav, &
          id_tsalbnd, id_zsalbnd, id_ttembnd, id_ztembnd, id_tsedbnd, id_zsedbnd, &
-         id_morbl, id_bodsed, id_msed, id_thlyr, id_lyrfrac, id_preload, id_poros, id_sedshort, id_dpsed, id_mfluff, id_sedtotdim, id_sedsusdim, id_nlyrdim, &
+         id_morbl, id_bodsed, id_msed, id_aldiff, id_thlyr, id_lyrfrac, id_preload, id_poros, id_sedshort, id_dpsed, id_mfluff, id_sedtotdim, id_sedsusdim, id_nlyrdim, &
          id_netelemmaxnodedim, id_netnodedim, id_flowlinkptsdim, id_netelemdim, id_netlinkdim, id_netlinkptsdim, &
          id_flowelemdomain, id_flowelemglobalnr, id_flowlink, id_netelemnode, id_netlink, &
          id_flowelemxzw, id_flowelemyzw, id_flowlinkxu, id_flowlinkyu, &
@@ -3687,6 +3688,14 @@ contains
                ierr = nf90_put_att(irstfile, id_poros, 'long_name', 'Porosity of layer of the bed in flow cell center')
                ierr = nf90_put_att(irstfile, id_poros, 'units', '-')
             end if
+            
+            if (stmpar%morlyr%settings%active_layer_diffusion > 0) then
+               ierr = nf90_def_var(irstfile, 'aldiff', nf90_double, (/id_flowlinkdim, id_timedim/), id_aldiff)
+               ierr = nf90_put_att(irstfile, id_aldiff, 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(irstfile, id_aldiff, 'long_name', 'Diffusion coefficient in the active-layer')
+               ierr = nf90_put_att(irstfile, id_aldiff, 'units', 'm s-2')
+            endif 
+            
          end select
 
          if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
@@ -4721,6 +4730,13 @@ contains
                poros = 1d0 - stmpar%morlyr%state%svfrac
                ierr = nf90_put_var(irstfile, id_poros, poros(:, 1:ndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxi, 1])
             end if
+            ! diffusion active layer
+            if (stmpar%morlyr%settings%active_layer_diffusion > 0) then
+               !V: We have to think were information is stored. DIffusion in the active layer is read at cell centres, because this is what the reader does
+               !and it is generic D3D4 and FM, but diffusion is applied at cell edges and the FM variable where this is stored is not in `stmpar`. 
+               !Furthermore, I am here storing it for all times, as maybe in the future it is time dependent. We could rethink this. 
+               ierr = nf90_put_var(irstfile, id_aldiff, aldiff_links(1,1:lnx), (/1, itim/), (/lnx, 1/))
+            end if
          end select
          ! sedshort
          if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
@@ -5298,6 +5314,7 @@ contains
 
       real(kind=dp), dimension(:), allocatable :: numlimdtdbl
       real(kind=dp), dimension(:), allocatable :: work1d, work1d2
+      real(kind=dp), dimension(:), allocatable :: work1d_links
       real(kind=dp) :: dicc
 
       real(kind=dp), dimension(:), pointer :: dens
@@ -6036,6 +6053,10 @@ contains
                end if
                !
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_preload, nc_precision, UNC_LOC_S, 'preload', '', 'Historical largest load on layer of the bed in flow cell center', 'kg', dimids=[mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
+               !
+               if (stmpar%morpar%moroutput%aldiff) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_aldiff, nc_precision, UNC_LOC_U, 'aldiff', '', 'Diffusion coefficient applied to active layer mass', 'm s-2', dimids=(/-2, -1/), jabndnd=jabndnd_)
+               endif
             end select
             if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedshort, nc_precision, UNC_LOC_S, 'sedshort', '', 'Sediment shortage of transport layer in flow cell center', 'kg m-2', dimids=[mapids%id_tsp%id_sedtotdim, -2, -1], jabndnd=jabndnd_)
@@ -7276,6 +7297,11 @@ contains
             end if
             !
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_preload, UNC_LOC_S, stmpar%morlyr%state%preload, locdim=2, jabndnd=jabndnd_)
+            if (stmpar%morpar%moroutput%aldiff) then
+               !ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_aldiff, UNC_LOC_U, aldiff_links, locdim=2, jabndnd=jabndnd_)
+                work1d_links=reshape(aldiff_links,shape=(/lnx/))
+                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_aldiff, UNC_LOC_U, work1d_links, jabndnd=jabndnd_)
+            end if 
          case default
             ! do nothing
          end select

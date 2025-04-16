@@ -112,7 +112,6 @@ contains
       integer, pointer :: nfrac
       integer, pointer :: nlalyr
       integer, pointer :: updbaselyr
-      integer, pointer :: IALDiff
       type(cmpbndtype), dimension(:), pointer :: cmpbnd
       real(fp), parameter :: EPS=0.000000001_fp !used is `comparereal`
 !
@@ -579,6 +578,7 @@ contains
                !
                txtput1 = 'Diffusion in active-layer model'
                write (lundia, '(3a)') txtput1, ':', '                  NO'   
+               morpar%moroutput%aldiff=.false. !if you request the output but there is no diffusion, we do no write it. 
             case(1)
                !
                !YES diffusion in active-layer mode    
