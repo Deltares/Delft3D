@@ -14,7 +14,9 @@ object LinuxThirdPartyLibs : BuildType({
 
     templates(
         TemplatePublishStatus,
-        TemplateMergeRequest
+        TemplateMergeRequest,
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     vcs {
@@ -103,15 +105,6 @@ object LinuxThirdPartyLibs : BuildType({
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
-            }
-        }
-    }
-
-    features {
-        perfmon {}
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
             }
         }
     }

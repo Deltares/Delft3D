@@ -17,7 +17,8 @@ object LinuxBuild : BuildType({
         TemplateDetermineProduct,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateFailureCondition
+        TemplateFailureCondition,
+        TemplateDockerRegistry
     )
 
     name = "Build"
@@ -67,19 +68,6 @@ object LinuxBuild : BuildType({
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
-        }
-    }
-
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
-            }
-        }
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
-            }
         }
     }
 

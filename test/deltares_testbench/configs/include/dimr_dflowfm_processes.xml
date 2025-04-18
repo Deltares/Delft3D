@@ -484,7 +484,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c011_frisianinlet_dynamo_restart" ref="dflowfm_platform_specific_refs_restart">
-  <path version="2024-01-11T13:10:00">e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
+  <path version="2025-04-09T15:00:00">e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_dynamo_restart_map.nc" type="netCDF">
       <parameters>

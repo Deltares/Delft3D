@@ -400,7 +400,7 @@ contains
       use m_inquire_flowgeom, only: findnode
       use fm_external_forcings_data, only: db_link_ids, breach_start_link, db_ids, db_active_links, &
                                            db_levels_widths_table, dambreaks, n_db_links, db_link_effective_width
-      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, db_breach_depth, db_breach_width, &
+      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, db_breach_depths, db_breach_widths, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, &
                                    add_averaging_upstream_signal, add_averaging_downstream_signal
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
@@ -432,8 +432,8 @@ contains
       call realloc(dambreaks, n_db_signals, fill=0)
       call realloc(breach_start_link, n_db_signals, fill=-1)
       call allocate_and_initialize_dambreak_data(n_db_signals)
-      call realloc(db_breach_depth, n_db_signals, fill=0.0_dp)
-      call realloc(db_breach_width, n_db_signals, fill=0.0_dp)
+      call realloc(db_breach_depths, n_db_signals, fill=0.0_dp)
+      call realloc(db_breach_widths, n_db_signals, fill=0.0_dp)
       call realloc(db_ids, n_db_signals)
       call realloc(db_active_links, n_db_links, fill=0)
       call realloc(db_levels_widths_table, n_db_signals * 2, fill=0.0_dp)
@@ -621,7 +621,7 @@ contains
       use m_read_property, only: read_property
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
-      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, db_breach_depth, db_breach_width, &
+      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, db_breach_depths, db_breach_widths, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
                                    add_averaging_downstream_signal
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
@@ -1772,30 +1772,30 @@ contains
          end if
          allocate (db_link_ids(3, n_db_links), stat=ierr) ! the last row stores the actual
          ! db_link_ids is an integer array? This is flow_init_structurecontrol_old so will be removed soon
-         db_link_ids = 0.0_dp
+         db_link_ids(:,:) = 0.0_dp
          if (allocated(dambreaks)) then
             deallocate (dambreaks)
          end if
          allocate (dambreaks(n_db_signals))
-         dambreaks = 0
+         dambreaks(:) = 0
 
          if (allocated(breach_start_link)) then
             deallocate (breach_start_link)
          end if
          allocate (breach_start_link(n_db_signals))
-         breach_start_link = -1
+         breach_start_link(:) = -1
 
-         if (allocated(db_breach_depth)) then
-            deallocate (db_breach_depth)
+         if (allocated(db_breach_depths)) then
+            deallocate (db_breach_depths)
          end if
-         allocate (db_breach_depth(n_db_signals))
-         db_breach_depth = 0.0_dp
+         allocate (db_breach_depths(n_db_signals))
+         db_breach_depths(:) = 0.0_dp
 
-         if (allocated(db_breach_width)) then
-            deallocate (db_breach_width)
+         if (allocated(db_breach_widths)) then
+            deallocate (db_breach_widths)
          end if
-         allocate (db_breach_width(n_db_signals))
-         db_breach_width = 0.0_dp
+         allocate (db_breach_widths(n_db_signals))
+         db_breach_widths(:) = 0.0_dp
 
          if (allocated(db_ids)) then
             deallocate (db_ids)
@@ -1806,7 +1806,7 @@ contains
             deallocate (db_active_links)
          end if
          allocate (db_active_links(n_db_links))
-         db_active_links = 0
+         db_active_links(:) = 0
 
          if (allocated(db_levels_widths_table)) then
             deallocate (db_levels_widths_table)

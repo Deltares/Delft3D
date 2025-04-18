@@ -3,11 +3,16 @@ package Delft3D.verschilanalyse
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import Delft3D.template.*
 
 object ReportVerschilanalyse: BuildType({
     name = "Report"
     description = "Report verschilanalyse outcome and send email."
     maxRunningBuilds = 1
+
+    templates(
+        TemplateDockerRegistry
+    )
 
     artifactRules = """
         report.zip
@@ -100,11 +105,6 @@ object ReportVerschilanalyse: BuildType({
         swabra {}
         provideAwsCredentials {
             awsConnectionId = "minio_verschilanalyse_connection"
-        }
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
-            }
         }
     }
 

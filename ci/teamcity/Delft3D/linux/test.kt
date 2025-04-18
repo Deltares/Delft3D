@@ -19,7 +19,8 @@ object LinuxTest : BuildType({
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     name = "Test"
@@ -66,12 +67,6 @@ object LinuxTest : BuildType({
             param("configfile", processor.activeConfigs.mapIndexed { index, config ->
                 value(config, processor.activeLabels[index])
             })
-        }
-        dockerSupport {
-            cleanupPushedImages = true
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
-            }
         }
     }
 

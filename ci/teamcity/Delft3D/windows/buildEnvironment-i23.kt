@@ -10,12 +10,13 @@ import Delft3D.step.*
 
 object WindowsBuildEnvironment : BuildType({
 
-    description = "Build-environment container image to build our Delf3D software in."
+    description = "Build-environment container image for building our Delft3D software using intel 2023."
 
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     name = "Delft3D build environment intel 2023 container"
@@ -40,7 +41,7 @@ object WindowsBuildEnvironment : BuildType({
             scriptMode = script {
                 content = """
                     # Define the source directory
-                    ${'$'}sourceDir = "\\dfs-trusted.directory.intra\dfs\Teamcity\Docker\Windows\dhydro-vs2019"
+                    ${'$'}sourceDir = "\\directory.intra\appdata\Teamcity\Docker\Windows\dhydro-vs2019"
                     
                     # Get the current working directory
                     ${'$'}destinationDir = Get-Location
@@ -93,7 +94,7 @@ object WindowsBuildEnvironment : BuildType({
         schedule {
             schedulingPolicy = weekly {
                 dayOfWeek = ScheduleTrigger.DAY.Sunday
-                hour = 0
+                hour = 10
                 minute = 0
             }
             branchFilter = "+:<default>"
@@ -107,11 +108,4 @@ object WindowsBuildEnvironment : BuildType({
         executionTimeoutMin = 360
     }
 
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
-            }
-        }
-    }
 })
