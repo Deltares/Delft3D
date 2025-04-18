@@ -679,7 +679,7 @@ contains
 
       call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
       if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', forcing_file, ''': [', group_name, &
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
             ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
@@ -956,8 +956,8 @@ contains
       character(len=INI_VALUE_LEN) :: location_file
       character(len=INI_VALUE_LEN) :: discharge_input
       character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
-      character(len=NAMLEN) :: const_name
-      character(len=INI_VALUE_LEN) :: quantity_id
+      character(len=NAMLEN) :: const_name_with_prefix
+      character(len=INI_VALUE_LEN) :: quantity_id, property_name
 
       integer :: num_coordinates
       real(kind=dp), dimension(:), allocatable :: x_coordinates
@@ -1060,28 +1060,35 @@ contains
          allocate (constituent_delta_file(NUMCONST), stat=ierr)
          do i_const = 1, NUMCONST
             is_read = .false.
-            const_name = const_names(i_const)
+            const_name_with_prefix = const_names(i_const)
             if (i_const == ISALT) then
-               const_name = 'salinity'
-               call prop_get(node_ptr, '', 'salinityDelta', constituent_delta_file(i_const), is_read)
+               ! Rename 'salt' constituent to 'salinity' for source-sink input.
+               const_name_with_prefix = 'salinity'
             else if (i_const == ITEMP) then
-               call prop_get(node_ptr, '', 'temperatureDelta', constituent_delta_file(i_const), is_read)
+               ! temperature name is correct already
+               continue
             else if (i_const == ISPIR) then
+               ! Spiral flow intensity "constituent" not relevant for source-sinks.
                cycle
             else
-               ! tracers and sediments: remove special characters from const_name before constructing the property to read.
-               call ncu_sanitize_name(const_name)
+               ! Tracers and sediments: remove special characters from constituent name before constructing the property to read.
+               call ncu_sanitize_name(const_name_with_prefix)
+
+               ! Add correct "group" prefix to constituent name.
                if (i_const >= ISED1 .and. i_const <= ISEDN) then
-                  call prop_get(node_ptr, '', 'sedFrac'//trim(const_name)//'Delta', constituent_delta_file(i_const), is_read)
+                  const_name_with_prefix = 'sedFrac'//trim(const_name_with_prefix)
                else if (i_const >= ITRA1 .and. i_const <= ITRAN) then
-                  call prop_get(node_ptr, '', 'tracer'//trim(const_name)//'Delta', constituent_delta_file(i_const), is_read)
+                  const_name_with_prefix = 'tracer'//trim(const_name_with_prefix)
                end if
             end if
 
+            property_name = trim(const_name_with_prefix)//'Delta'
+            call prop_get(node_ptr, '', property_name, constituent_delta_file(i_const), is_read)
+
             if (is_read) then
-               quantity_id = 'sourcesink_'//trim(const_name)//'Delta' ! New quantity name in .bc files
+               quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(const_name)//'Delta', trim(constituent_delta_file(i_const)), (numconst + 1) * (numsrc - 1) + 1 + i_const, &
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), (numconst + 1)*(numsrc-1) + 1 + i_const, &
                                                               1, qstss)
                continue
             end if

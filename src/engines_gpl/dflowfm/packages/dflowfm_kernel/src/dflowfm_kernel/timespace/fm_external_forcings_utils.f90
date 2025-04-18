@@ -172,8 +172,16 @@ contains
 
       if (strcmpi(original_quantity(1:index_prefix_end), 'sourcesink_') &
          .and. strcmpi(original_quantity(index_suffix_start:quantity_length), 'Delta')) then
+         ! First, remove the 'sourcesink_' and 'Delta' parts from the original quantity.
          base_quantity = 'sourcesink_constituentDelta'
          constituent_name = original_quantity(index_prefix_end + 1:index_suffix_start - 1)
+
+         ! Then, optionally remove the special constituent group name 'tracer' or 'sedFrac' part from the constituent name.
+         if (strcmpi(constituent_name(1:6), 'tracer')) then
+            constituent_name = constituent_name(7:)
+         else if (strcmpi(constituent_name(1:7), 'sedFrac')) then
+            constituent_name = constituent_name(8:)
+         end if
       end if
 
       return
