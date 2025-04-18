@@ -49,7 +49,7 @@ contains
       use m_compound
       use m_GlobalParameters
       use m_longculverts, only: nlongculverts, longculverts, newculverts
-      use m_dambreak_breach, only: db_upstream_level, db_downstream_level
+      use m_dambreak_breach, only: db_upstream_levels, db_downstream_levels
 
       integer :: i, n, L, Lf, La, ierr, k, ku, kd, istru, nlinks
       real(kind=dp) :: dir
@@ -571,8 +571,8 @@ contains
                ! TODO: UNST-5102: code below needs checking: when dambreak #n not active in current partition,
                ! most values below *are* available (based on other partitions). And in the code ahead, a call to reduce_crs
                ! assumes that all values are present and will be sum-reduced in a flowlinkwidth-weighted manner.
-               valdambreak(IVAL_S1UP, n) = db_upstream_level(n)
-               valdambreak(IVAL_S1DN, n) = db_downstream_level(n)
+               valdambreak(IVAL_S1UP, n) = db_upstream_levels(n)
+               valdambreak(IVAL_S1DN, n) = db_downstream_levels(n)
                valdambreak(IVAL_HEAD, n) = valdambreak(IVAL_S1UP, n) - valdambreak(IVAL_S1DN, n)
                valdambreak(IVAL_VEL, n) = network%sts%struct(istru)%dambreak%normal_velocity
                valdambreak(IVAL_DB_JUMP, n) = network%sts%struct(istru)%dambreak%water_level_jump
