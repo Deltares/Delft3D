@@ -34,6 +34,7 @@ module bmi
 !!--declarations----------------------------------------------------------------
   use iso_c_binding
   use dwaves_version_module
+  use wave_mpi, only: my_rank, master
 
   implicit none
 
@@ -189,6 +190,10 @@ subroutine get_start_time(t) bind(C, name="get_start_time")
   real(c_double), intent(out) :: t
   !
   ! Body
+  if (my_rank /= master) then
+      t = -999.0
+      return
+  endif
   if (wavedata%time%refdate == 0) then
       t = -999.0_hp
   else
@@ -210,6 +215,11 @@ subroutine get_end_time(t) bind(C, name="get_end_time")
   real(c_double), intent(out) :: t
   !
   ! Body
+  if (my_rank /= master) then
+      t = -999.0
+      return
+  endif
+  
   if (wave_mode == stand_alone) then
      !
      ! Return the last time specified in the mdw-file (in seconds)
@@ -245,6 +255,10 @@ subroutine get_time_step(dt) bind(C, name="get_time_step")
   real(c_double), intent(out) :: dt
   !
   ! Body
+  if (my_rank /= master) then
+      dt = -999.0
+      return
+  endif
   if (wave_mode == stand_alone) then
      !
      ! Return the last time specified in the mdw-file (in seconds), minus the start time: zero
@@ -279,6 +293,10 @@ subroutine get_current_time(t) bind(C, name="get_current_time")
   real(c_double), intent(out) :: t
   !
   ! Body
+  if (my_rank /= master) then
+      t = -999.0
+      return
+  endif
   t = wavedata%time%timsec
 end subroutine get_current_time
 !

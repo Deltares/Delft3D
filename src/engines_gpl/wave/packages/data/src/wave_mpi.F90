@@ -90,9 +90,9 @@ subroutine initialize_wave_mpi()
          mpi_initialized_by_engine = .TRUE.
 #ifdef HAVE_MPI
          call mpi_init ( ierr )
-         engine_comm_world = MPI_COMM_WORLD
 #endif
       endif
+      engine_comm_world = MPI_COMM_WORLD
       !
       if (engine_comm_world /= MPI_COMM_NULL) then
          ! * parallel wave.exe
