@@ -15,7 +15,8 @@ object WindowsBuild : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateFailureCondition
+        TemplateFailureCondition,
+        TemplateDockerRegistry
     )
  
     name = "Build"
@@ -98,12 +99,4 @@ object WindowsBuild : BuildType({
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
     }
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
-            }
-        }
-    }
-
 })
