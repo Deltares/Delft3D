@@ -62,10 +62,12 @@ project {
         buildType(LinuxCollect)
         buildType(LinuxDocker)
         buildType(LinuxTest)
+        buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
             LinuxBuild,
             LinuxCollect,
             LinuxDocker,
+            LinuxUnitTest,
             LinuxTest
         )
     }
@@ -79,6 +81,7 @@ project {
         buildType(WindowsBuild)
         buildType(WindowsCollect)
         buildType(WindowsTest)
+        buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
             WindowsBuildEnvironment,
@@ -86,6 +89,7 @@ project {
             WindowsBuild,
             WindowsCollect,
             WindowsTest,
+            WindowsUnitTest,
             WindowsBuildDflowfmInteracter,
         )
     }
