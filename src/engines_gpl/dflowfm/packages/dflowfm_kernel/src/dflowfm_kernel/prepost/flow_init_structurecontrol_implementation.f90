@@ -257,11 +257,8 @@ contains
       !
       ! dambreak
       !
-      if (n_db_signals > 0) then
+      call update_dambreak_administration(dambridx, lftopol)
 
-         call update_dambreak_administration(n_db_signals, db_first_link, db_last_link, dambridx, lftopol)
-
-      end if
       if (istat == DFM_NOERR) then
          status = .true.
       else
@@ -385,7 +382,7 @@ contains
    end subroutine update_counters
 
    !> Update dambreak administration.
-   subroutine update_dambreak_administration(n_db_signals, db_first_link, db_last_link, dambridx, lftopol)
+   subroutine update_dambreak_administration(dambridx, lftopol)
       use precision_basics, only: dp
       use messagehandling, only: IDLEN, msg_flush, msgbuf, err_flush
       use m_missing, only: dmiss, dxymis
@@ -400,17 +397,14 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use m_flowgeom, only: ln, kcu, wu, lncn, snu, csu
       use m_inquire_flowgeom, only: findnode
-      use m_dambreak_data, only: db_link_ids, breach_start_link, db_ids, &
-                                           dambreaks, n_db_links, db_link_effective_width
+      use m_dambreak_data, only: n_db_links, n_db_signals, db_link_ids, breach_start_link, db_ids, &
+                                           dambreaks, db_link_effective_width, db_first_link, db_last_link
       use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, &
                                    add_averaging_upstream_signal, add_averaging_downstream_signal
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_alloc, only: realloc
 
-      integer, intent(in) :: n_db_signals !< n_db_signals is the number of dambreak signals.
-      integer, dimension(:), intent(in) :: db_first_link !< db_first_link is the start index of the dambreak signals.
-      integer, dimension(:), intent(in) :: db_last_link !< db_last_link is the end index of the dambreak signals.
       integer, dimension(:), intent(in) :: dambridx !< dambridx is the index of the dambreak in the structure list.
       integer, dimension(:), intent(in) :: lftopol !< lftopol is the link number of the flow link.
 
@@ -427,6 +421,10 @@ contains
       real(kind=dp), dimension(1) :: xdum, ydum
 
       character(len=Idlen) :: qid
+      
+      if (n_db_signals <= 0) then
+         return
+      end if
 
       n_db_links = db_last_link(n_db_signals)
 

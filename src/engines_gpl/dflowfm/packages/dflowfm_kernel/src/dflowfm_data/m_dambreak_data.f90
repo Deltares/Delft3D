@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
+    
 module m_dambreak_data
    use precision, only: dp
 
@@ -35,8 +35,8 @@ module m_dambreak_data
    public
 
    integer, allocatable :: dambreaks(:) !< store the dambreaks indexes among all structures
-   integer :: n_db_links !< nr of dambreak links
-   integer :: n_db_signals !< nr of dambreak signals
+   integer, target :: n_db_links !< nr of dambreak links
+   integer, target :: n_db_signals !< nr of dambreak signals
    integer, allocatable :: db_first_link(:) !< first dambreak link for each signal
    integer, allocatable :: db_last_link(:) !< last dambreak link for each signal
    integer, allocatable :: db_active_links(:) !< db_active_links, open dambreak links
@@ -46,6 +46,10 @@ module m_dambreak_data
    character(len=128), allocatable, target :: db_ids(:) !< the dambreak ids
    real(kind=dp), dimension(:), allocatable, public :: db_link_effective_width !< dambreak effective flow widths
    real(kind=dp), dimension(:), allocatable, public :: db_link_actual_width !< dambreak actual flow widths
+   
+   integer, protected, pointer :: p_n_db_links => n_db_links
+   integer, protected, pointer :: p_n_db_signals => n_db_signals
+   
 
 contains
 
@@ -55,5 +59,12 @@ contains
       n_db_signals = 0 ! nr of dambreak signals
 
    end subroutine default_dambreak_data
+   
+   pure function exist_dambreak_links() result(res)
+   logical :: res 
+
+   res = n_db_links > 0
+
+   end function exist_dambreak_links
 
 end module m_dambreak_data

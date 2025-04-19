@@ -35,7 +35,7 @@ contains
       use m_flowgeom, only: lnx, bob, bob0
       use m_flowparameters, only: ChangeVelocityAtStructures
       use fm_external_forcings_data, only: ncdamsg, L1cdamsg, L2cdamsg, kcdam, ncgensg, L1cgensg, L2cgensg, kcgen
-      use m_dambreak_data, only: n_db_links, n_db_signals, dambreaks, db_first_link, db_last_link, db_link_ids
+      use m_dambreak_data, only: exist_dambreak_links, p_n_db_signals, dambreaks, db_first_link, db_last_link, db_link_ids
       use unstruc_channel_flow, only: network
       use m_GlobalParameters, only: ST_PUMP
       use array_module, only: convert_mask_to_indices
@@ -89,10 +89,9 @@ contains
          end associate
       end do
 
-      if (n_db_links > 0) then ! needed, because n_db_signals may be > 0, but n_db_links==0, and then arrays are not available.
-         do n = 1, n_db_signals
-            istru = dambreaks(n)
-            if (istru /= 0) then
+      if (exist_dambreak_links()) then
+         do n = 1, p_n_db_signals
+            if (dambreaks(n) /= 0) then
                do k = db_first_link(n), db_last_link(n)
                   L = abs(db_link_ids(3, k))
                   does_link_contain_structures(L) = .true.

@@ -2599,7 +2599,7 @@ contains
       use m_map_his_precision
       use m_datum
       use geometry_module, only: INTERNAL_NETLINKS_EDGE
-      use m_dambreak_data, only: n_db_links
+      use m_dambreak_data, only: exist_dambreak_links
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -3395,7 +3395,7 @@ contains
          call prop_set(prop_ptr, 'physics', 'Equili', jaequili, 'Equilibrium spiral flow intensity (0: no, 1: yes)')
       end if
 
-      if (n_db_links > 0) then
+      if (exist_dambreak_links()) then
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
