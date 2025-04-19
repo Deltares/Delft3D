@@ -41,7 +41,7 @@ module m_dambreak_breach
    public :: add_dambreaklocation_downstream
    public :: add_averaging_upstream_signal
    public :: add_averaging_downstream_signal
-   public :: is_not_db_active_link
+   public :: is_not_db_active_link, get_dambreak_breach_start_link, set_breach_start_link
 
    ! time varying, values can be retrieved via BMI interface
    real(kind=dp), dimension(:), allocatable, target, public :: db_breach_depths !< dambreak breach depths (as a level)
@@ -52,24 +52,23 @@ module m_dambreak_breach
    integer, parameter :: UPSTREAM = 1
    integer, parameter :: DOWNSTREAM = 2
    integer, parameter :: NUMBER_COLUMNS = 2
-   integer, dimension(2) :: n_locations !< nr of dambreak locations (upstream 1st value, downstream 2nd value) 
+   integer, dimension(2) :: n_locations !< nr of dambreak locations (upstream 1st value, downstream 2nd value)
    integer, dimension(:, :), allocatable :: locations !< store cell ids for water level (upstream in 1st row, downstream in 2nd row)
    integer, dimension(:, :), allocatable :: location_mapping !< mapping of dambreak locations (upstream in 1st row, downstream in 2nd row)
-   integer, dimension(2) :: n_averaging !< nr of dambreak signals with averaging (upstream 1st value, downstream 2nd value) 
+   integer, dimension(2) :: n_averaging !< nr of dambreak signals with averaging (upstream 1st value, downstream 2nd value)
    integer, dimension(:, :), allocatable :: averaging_mapping !< mapping of dambreak averaging (upstream in 1st row, downstream in 2nd row)
    real(kind=dp), dimension(:, :), allocatable :: db_weight_averaged_values !< (1,:) weight averaged values of waterlevel per dambreaklink
                                                                            !! (2,:) weight per dambreaklink
    real(kind=dp), allocatable, target :: levels_widths_from_table(:) !< dambreak heights and widths
    integer, dimension(:), allocatable :: db_active_links !< db_active_links, open dambreak links
-
+   integer, dimension(:), allocatable :: breach_start_link !< the starting link, the closest to the breach point
 
 contains
 
    !> allocate arrays and initialize variables
    subroutine allocate_and_initialize_dambreak_data(n_db_signals)
       use m_alloc, only: realloc
-      use m_dambreak_data, only: dambreaks, db_ids, n_db_links, breach_start_link, &
-          db_link_ids, db_upstream_link_ids, db_downstream_link_ids
+      use m_dambreak_data, only: dambreaks, db_ids, n_db_links, db_link_ids, db_upstream_link_ids, db_downstream_link_ids
 
       integer, intent(in) :: n_db_signals !< number of dambreak signals
 
@@ -101,7 +100,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_partitioninfo, only: get_average_quantity_from_links
       use m_dambreak_data, only: n_db_links, n_db_signals, dambreaks, db_first_link, db_last_link, db_link_ids, &
-          db_upstream_link_ids, db_downstream_link_ids
+                                 db_upstream_link_ids, db_downstream_link_ids
 
       real(kind=dp), intent(in) :: start_time !< start time
       real(kind=dp), intent(in) :: delta_time !< delta time
@@ -185,7 +184,7 @@ contains
    subroutine update_dambreak_water_levels(start_time, up_down, updowns_link_ids, water_levels, error)
       use m_flow, only: s1, hu
       use m_partitioninfo, only: get_average_quantity_from_links
-      use m_dambreak_data, only: n_db_links, dambreaks, breach_start_link, db_first_link, db_last_link, db_link_ids
+      use m_dambreak_data, only: n_db_links, dambreaks, db_first_link, db_last_link, db_link_ids
       use m_flowgeom, only: wu
       use m_missing, only: dmiss
       use unstruc_channel_flow, only: network
@@ -290,22 +289,22 @@ contains
 
             if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                dambreak%water_level_jump = calculate_water_level_jump(db_upstream_levels(n), &
-                                                db_downstream_levels(n), db_breach_depths(n))
+                                                                      db_downstream_levels(n), db_breach_depths(n))
             end if
          end associate
       end do
 
    end subroutine calculate_dambreak_widths
-   
+
    !> calculate the water level jump for dambreaks
    pure function calculate_water_level_jump(upstream_level, downstream_level, crest_level) result(water_level_jump)
-   
+
       real(kind=dp), intent(in) :: upstream_level !< upstream water level [m]
       real(kind=dp), intent(in) :: downstream_level !< downstream water level [m]
       real(kind=dp), intent(in) :: crest_level !< crest level [m]
 
       real(kind=dp) :: water_level_jump !< water level jump [m]
-   
+
       real(kind=dp) :: s_max, s_min, h_max, h_min
 
       s_max = max(upstream_level, downstream_level)
@@ -315,7 +314,7 @@ contains
       water_level_jump = h_max - h_min
 
    end function calculate_water_level_jump
-               
+
    !> update the crest/bed levels for dambreak breach
    subroutine adjust_bobs_on_dambreak_breach(width, max_width, crest_level, starting_link, left_link, right_link, &
                                              structure_id)
@@ -504,18 +503,17 @@ contains
       averaging_mapping(n_averaging(up_down), up_down) = n_signal
 
    end subroutine add_averaging_signal
-   
+
    subroutine adjust_bobs_for_dambreaks()
-      use m_dambreak_data, only: n_db_links, n_db_signals, dambreaks, breach_start_link, &
-                                           db_first_link, db_last_link
+      use m_dambreak_data, only: n_db_links, n_db_signals, dambreaks, db_first_link, db_last_link
       use unstruc_channel_flow, only: network
- 
+
       integer :: n !< index of the current dambreak signal
-      
+
       if (n_db_links > 0) then ! needed, because n_db_signals may be > 0, but n_db_links==0, and then arrays are not available.
          do n = 1, n_db_signals
             if (dambreaks(n) == 0 .or. db_first_link(n) > db_last_link(n)) then
-                cycle
+               cycle
             end if
             associate (dambreak => network%sts%struct(dambreaks(n))%dambreak)
                ! Update the crest/bed levels
@@ -525,15 +523,37 @@ contains
             end associate
          end do
       end if
-   end subroutine  adjust_bobs_for_dambreaks
-   
+   end subroutine adjust_bobs_for_dambreaks
+
    pure function is_not_db_active_link(link) result(res)
-   
+
       integer, intent(in) :: link !< index of the flow link
       logical :: res !< True if the link is not an active dambreak link
-   
+
       res = db_active_links(link) /= 1
-   
+
    end function is_not_db_active_link
-   
+
+   !> get the starting link of the dambreak breach
+   pure function get_dambreak_breach_start_link(n) result(n_start_link)
+      use m_dambreak_data, only: db_link_ids
+
+      integer, intent(in) :: n !< index of the current dambreak signal
+      integer :: n_start_link !< index of the starting link
+
+      n_start_link = abs(db_link_ids(breach_start_link(n)))
+
+   end function get_dambreak_breach_start_link
+
+   !> set the starting link of the dambreak breach
+   subroutine set_breach_start_link(n, Lstart)
+      use m_dambreak_data, only: db_first_link
+
+      integer, intent(in) :: n !< index of the current dambreak signal
+      integer, intent(in) :: Lstart !< index of the starting link
+
+      breach_start_link(n) = db_first_link(n) - 1 + Lstart
+
+   end subroutine set_breach_start_link
+
 end module m_dambreak_breach

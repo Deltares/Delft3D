@@ -40,7 +40,6 @@ module m_dambreak_data
    integer, dimension(:), allocatable :: dambreaks !< store the dambreaks indexes among all structures
    integer, dimension(:), allocatable :: db_first_link !< first dambreak link for each signal
    integer, dimension(:), allocatable :: db_last_link !< last dambreak link for each signal
-   integer, dimension(:), allocatable :: breach_start_link !< the starting link, the closest to the breach point
    integer, dimension(:), allocatable :: db_upstream_link_ids !< dambreak upstream links index array
    integer, dimension(:), allocatable :: db_downstream_link_ids !< dambreak downstream links index array
    integer, dimension(:), allocatable :: db_link_ids !< dambreak links index array

@@ -48,9 +48,10 @@ contains
       use m_compound
       use m_GlobalParameters
       use m_longculverts, only: nlongculverts, longculverts, newculverts
-      use m_dambreak_breach, only: db_upstream_levels, db_downstream_levels, is_not_db_active_link
+      use m_dambreak_breach, only: db_upstream_levels, db_downstream_levels, is_not_db_active_link, &
+          get_dambreak_breach_start_link
       use m_dambreak_data, only: p_n_db_signals, db_first_link, db_last_link, dambreaks, db_link_ids, db_link_actual_width, &
-          breach_start_link, db_upstream_link_ids
+          db_upstream_link_ids
 
       integer :: i, n, L, Lf, La, ierr, k, ku, kd, istru, nlinks
       real(kind=dp) :: dir
@@ -564,7 +565,7 @@ contains
                   valdambreak(IVAL_DB_CRESTH, n) = network%sts%struct(istru)%dambreak%crest_level
                else
                   valdambreak(1:NUMVALS_DAMBREAK - 1, n) = dmiss ! No breach started yet, set FillValue
-                  La = abs(db_link_ids(breach_start_link(n)))
+                  La = get_dambreak_breach_start_link(n)
                   valdambreak(IVAL_DB_CRESTH, n) = bob(1, La) ! No breach started yet, use bob as 'crest'.
                   valdambreak(IVAL_DB_CRESTW, n) = 0.0_dp ! No breach started yet, set crest width to 0
                   cycle

@@ -394,10 +394,10 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use m_flowgeom, only: ln, kcu, wu, lncn, snu, csu
       use m_inquire_flowgeom, only: findnode
-      use m_dambreak_data, only: n_db_links, n_db_signals, db_link_ids, breach_start_link, db_ids, &
-                                dambreaks, db_link_effective_width, db_first_link, db_last_link, &
+      use m_dambreak_data, only: n_db_links, n_db_signals, db_link_ids, db_ids, dambreaks, &
+                                db_link_effective_width, db_first_link, db_last_link, &
                                 db_upstream_link_ids, db_downstream_link_ids
-      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, &
+      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, set_breach_start_link, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, &
                                    add_averaging_upstream_signal, add_averaging_downstream_signal
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
@@ -550,7 +550,7 @@ contains
                                       pstru%xCoordinates, pstru%yCoordinates, pstru%numCoordinates, xl, &
                                       yl, Lstart, x_breach, y_breach, jsferic, jasfer3D, dmiss)
 
-               breach_start_link(n) = db_first_link(n) - 1 + Lstart
+               call set_breach_start_link(n, Lstart)
 
                ! compute the normal projections of the start and endpoints of the flow links
                do k = db_first_link(n), db_last_link(n)
@@ -612,10 +612,10 @@ contains
       use unstruc_messages, only: callback_msg
       use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, db_breach_depths, db_breach_widths, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
-                                   add_averaging_downstream_signal
+                                   add_averaging_downstream_signal, set_breach_start_link
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_dambreak_data, only: n_db_links, n_db_signals, db_first_link, db_last_link, db_link_effective_width, &
-          db_link_actual_width, db_link_ids, dambreaks, breach_start_link, db_ids, &
+          db_link_actual_width, db_link_ids, dambreaks, db_ids, &
           db_upstream_link_ids, db_downstream_link_ids
 
       implicit none
@@ -1939,7 +1939,7 @@ contains
                                    jasfer3D, &
                                    dmiss)
 
-            breach_start_link(n) = db_first_link(n) - 1 + Lstart
+            call set_breach_start_link(n, Lstart)
 
             ! compute the normal projections of the start and endpoints of the flow links
             do k = db_first_link(n), db_last_link(n)
