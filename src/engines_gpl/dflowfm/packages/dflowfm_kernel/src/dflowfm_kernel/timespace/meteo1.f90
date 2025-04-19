@@ -6303,7 +6303,6 @@ module m_meteo
    use m_sediment, only: stm_included, stmpar
    use m_subsidence
    use m_fm_icecover, only: ice_af, ice_h
-   use m_dambreak_data, only: db_levels_widths_table
 
    implicit none
 
@@ -6935,7 +6934,6 @@ contains
          itemPtr1 => item_damlevel
       case ('dambreakLevelsAndWidths')
          itemPtr1 => item_db_levels_widths_table
-         dataPtr1 => db_levels_widths_table
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().

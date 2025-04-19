@@ -58,14 +58,16 @@ module m_dambreak_breach
    integer, dimension(:, :), allocatable :: averaging_mapping !< mapping of dambreak averaging (upstream in 1st row, downstream in 2nd row)
    real(kind=dp), dimension(:, :), allocatable :: db_weight_averaged_values !< (1,:) weight averaged values of waterlevel per dambreaklink
                                                                            !! (2,:) weight per dambreaklink
+   real(kind=dp), allocatable, target :: levels_widths_from_table(:) !< dambreak heights and widths
+
 
 contains
 
    !> allocate arrays and initialize variables
    subroutine allocate_and_initialize_dambreak_data(n_db_signals)
       use m_alloc, only: realloc
-      use m_dambreak_data, only: dambreaks, db_ids, db_levels_widths_table, n_db_links, &
-          breach_start_link, db_active_links, db_link_ids, db_upstream_link_ids, db_downstream_link_ids
+      use m_dambreak_data, only: dambreaks, db_ids, n_db_links, breach_start_link, &
+          db_active_links, db_link_ids, db_upstream_link_ids, db_downstream_link_ids
 
       integer, intent(in) :: n_db_signals !< number of dambreak signals
 
@@ -75,7 +77,7 @@ contains
       call realloc(db_breach_widths, n_db_signals, fill=0.0_dp)
       call realloc(db_ids, n_db_signals, fill="")
       call realloc(db_active_links, n_db_links, fill=0)
-      call realloc(db_levels_widths_table, n_db_signals * 2, fill=0.0_dp)
+      call realloc(levels_widths_from_table, n_db_signals * 2, fill=0.0_dp)
       call realloc(db_upstream_levels, n_db_signals)
       call realloc(db_downstream_levels, n_db_signals)
       call realloc(db_weight_averaged_values, [NUMBER_COLUMNS, n_db_signals])
@@ -235,7 +237,7 @@ contains
       use m_dambreak, only: prepare_dambreak_calculation, BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP, &
                             BREACH_GROWTH_TIMESERIES
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_db_levels_widths_table
-      use m_dambreak_data, only: n_db_signals, dambreaks, db_levels_widths_table
+      use m_dambreak_data, only: n_db_signals, dambreaks
       use m_flowtimes, only: irefdate, tunit, tzone
 
       real(kind=dp), intent(in) :: start_time !< start_time
@@ -260,17 +262,18 @@ contains
                 start_time > dambreak%t0) then
                !Time in the tim file is relative to the start time
                success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_db_levels_widths_table, &
-                                                        irefdate, tzone, tunit, start_time - dambreak%t0)
+                                                        irefdate, tzone, tunit, start_time - dambreak%t0, &
+                                                        levels_widths_from_table)
                ! NOTE: AvD: the code above works correctly, but is dangerous:
                ! the addtimespace for dambreak has added each dambreak separately with a targetoffset.
                ! The gettimespace above, however, gets the values for *all* dambreaks, but with the relative time
                ! of the *current* dambreak #n.
-               ! This means that if t0 values for all dambreaks are different, then the db_levels_widths_table(1:n-1) have become obsolete now.
+               ! This means that if t0 values for all dambreaks are different, then the levels_widths_from_table(1:n-1) have become obsolete now.
                ! It works, because in the previous loop iterations the values that were then still correct
                ! have already been set into the %crest_level and %width values.
                if (success) then
-                  dambreak%crest_level = db_levels_widths_table((n - 1) * 2 + 1)
-                  dambreak%width = db_levels_widths_table((n - 1) * 2 + 2)
+                  dambreak%crest_level = levels_widths_from_table((n - 1) * 2 + 1)
+                  dambreak%width = levels_widths_from_table((n - 1) * 2 + 2)
                else
                   return
                end if

@@ -335,14 +335,12 @@ contains
       call realloc(widths, numl)
       call realloc(lftopol, numl)
       call realloc(db_link_effective_width, numl)
-      call realloc(db_link_actual_width, numl)
-      db_link_actual_width = 0.0_dp
+      call realloc(db_link_actual_width, numl, fill=0.0_dp)
       call realloc(pumpidx, nstr)
       call realloc(gateidx, nstr)
       call realloc(cdamidx, nstr)
       call realloc(cgenidx, nstr)
-      call realloc(dambridx, nstr)
-      dambridx = -1
+      call realloc(dambridx, nstr, fill=-1)
 
       if (allocated(dambreakPolygons)) then
          deallocate (dambreakPolygons)
