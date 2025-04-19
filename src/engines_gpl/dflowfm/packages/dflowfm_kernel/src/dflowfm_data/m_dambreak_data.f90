@@ -129,4 +129,24 @@ contains
          
    end subroutine multiply_by_dambreak_link_actual_width
    
+   !> update array of logicals indicating if the link contains dambreaks
+   pure subroutine indicate_links_that_contain_dambreaks(does_link_contain_structures)
+   
+      logical, intent(inout) :: does_link_contain_structures(:) !< array of logicals indicating if the link contains structures
+   
+      integer :: n !< loop index
+      integer :: k !< loop index
+      
+      if (exist_dambreak_links()) then
+         do n = 1, n_db_signals
+            if (dambreaks(n) /= 0) then
+               do k = db_first_link(n), db_last_link(n)
+                  does_link_contain_structures(abs(db_link_ids(k))) = .true.
+               end do
+            end if
+         end do
+      end if
+      
+   end subroutine indicate_links_that_contain_dambreaks    
+         
 end module m_dambreak_data
