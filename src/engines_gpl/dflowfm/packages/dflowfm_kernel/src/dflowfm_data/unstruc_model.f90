@@ -2599,7 +2599,7 @@ contains
       use m_map_his_precision
       use m_datum
       use geometry_module, only: INTERNAL_NETLINKS_EDGE
-      use m_dambreak_data, only: n_db_signals, n_db_links
+      use m_dambreak_data, only: n_db_links
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
