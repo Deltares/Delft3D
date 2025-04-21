@@ -3142,7 +3142,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Barocponbnd', jabarocponbnd, 'Use fix in barocp for zlaybed 0,1, 1=default)')
       end if
       if (writeall .or. max_iterations_pressure_density /= 1) then
-         call prop_set(prop_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density, 'Max nr of iterations in pressure-density coupling, only used if thermobaricity is true)')
+         call prop_set(prop_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density, 'Max nr of iterations in pressure-density coupling, only used if thermobaricity is true.')
       end if
       if (writeall .or. jarhointerfaces /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Rhointerfaces', jarhointerfaces, 'Evaluate rho at interfaces, 0=org at centers, 1=at interfaces )')
