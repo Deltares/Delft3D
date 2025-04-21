@@ -36,6 +36,7 @@ private
 ! public data types
 !
 public icecover_type
+public icecover_output_flags
 
 ! public parameters
 !
@@ -66,14 +67,27 @@ public clr_icecover
 !public update_icecover
 public update_icepress
 public ice_drag_effect
+public set_default_output_flags
+
+! ice cover output
+type icecover_output_flags
+    logical :: ice_s1   !< sea surface height of open water
+    logical :: ice_zmax !< surface height of ice/snow cover
+    logical :: ice_af   !< area fraction covered by ice
+    logical :: ice_h    !< ice thickness
+    logical :: ice_p    !< pressure of ice cover
+    logical :: ice_t    !< temperature of ice cover
+    logical :: snow_h   !< snow thickness
+    logical :: snow_t   !< temperature of snow cover
+end type icecover_output_flags
 
 ! ice cover type
 type icecover_type
     !
     ! input
     !
-    logical  :: hisout                            !< flag indicating whether ice cover should be written to history-file
-    logical  :: mapout                            !< flag indicating whether ice cover should be written to map-file
+    type(icecover_output_flags) :: hisout         !< flags indicating whether ice cover should be written to history-file
+    type(icecover_output_flags) :: mapout         !< flags indicating whether ice cover should be written to map-file
     !
     logical  :: apply_pressure                    !< flag indicating whether pressure of ice cover should be applied
     logical  :: apply_friction                    !< flag indicating whether ice cover friction should be applied
@@ -218,8 +232,8 @@ function select_icecover_model(icecover, modeltype) result(istat)
 !
     icecover%modeltype                 = modeltype
 
-    icecover%hisout                    = .false.
-    icecover%mapout                    = .false.
+    call set_default_output_flags(icecover%hisout, modeltype, .false.)
+    call set_default_output_flags(icecover%mapout, modeltype, .false.)
     
     icecover%ice_areafrac_forcing_available   = 0
     icecover%ice_thickness_forcing_available  = 0
@@ -251,6 +265,36 @@ function select_icecover_model(icecover, modeltype) result(istat)
     endif
 end function select_icecover_model
 
+subroutine set_default_output_flags(flags, modeltype, default)
+   type(icecover_output_flags), intent(inout) :: flags !< output flags
+   integer, intent(in) :: modeltype !< ice cover model type
+   logical, intent(in) :: default !< default value for output flags
+   
+   logical :: default_ !< local default value for output flags
+   
+   if (modeltype == ICECOVER_NONE) then
+      default_ = .false.
+   else
+      default_ = default
+   end if
+   
+   flags%ice_s1   = default_
+   flags%ice_zmax = default_
+   flags%ice_af   = default_
+   flags%ice_h    = default_
+   flags%ice_p    = default_
+   
+   if (modeltype == ICECOVER_SEMTNER) then
+      default_ = default
+   else
+      default_ = .false.
+   end if
+   
+   flags%ice_t    = default_
+   flags%snow_h   = default_
+   flags%snow_t   = default_
+
+end subroutine set_default_output_flags
 
 !> Allocate the arrays of an icecover data structure.
 function alloc_icecover(icecover, nmlb, nmub) result(istat)
