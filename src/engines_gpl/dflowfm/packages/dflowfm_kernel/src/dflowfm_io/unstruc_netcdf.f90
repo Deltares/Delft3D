@@ -5781,10 +5781,10 @@ contains
 
          if (ja_icecover) then
             if (ice_mapout%ice_s1) then
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_s1, nf90_double, UNC_LOC_S, 's1_open', '', 'sea surface elevation of open water', 'm', jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_s1, nf90_double, UNC_LOC_S, 'ice_open_water_level', '', 'sea surface elevation of open water', 'm', jabndnd=jabndnd_)
             end if
             if (ice_mapout%ice_zmax) then
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmax, nf90_double, UNC_LOC_S, 'z_max_ice', '', 'elevation of ice/snow surface', 'm', jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmax, nf90_double, UNC_LOC_S, 'ice_surface_height', '', 'elevation of ice/snow surface', 'm', jabndnd=jabndnd_)
             end if
             if (ice_mapout%ice_af) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_af, nf90_double, UNC_LOC_S, 'ice_af', 'sea_ice_area_fraction', 'Fraction of surface area covered by floating ice', '1', jabndnd=jabndnd_)

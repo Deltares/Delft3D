@@ -37,7 +37,7 @@ public echo_icecover
 contains
 
 !> Read ice cover parameters (Note: the meteo module should already have been initialized)
-subroutine read_icecover(icecover, md_ptr, chapter, error)
+subroutine read_icecover(icecover, md_ptr, chapter, error, jamapice)
 !!--declarations----------------------------------------------------------------
    use precision
    use icecover_module, only: icecover_type, alloc_icecover, select_icecover_model, &
@@ -59,6 +59,7 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
    type(tree_data)              , pointer       :: md_ptr   !< pointer to the input file
    character(len=*)             , intent(in)    :: chapter  !< chapter name of the ice section
    logical                      , intent(out)   :: error    !< flag indicating an execution error
+   integer, optional, intent(in) :: jamapice !< flag indicating whether ice data should be written to the map file
 !
 ! Local variables
 !
@@ -157,7 +158,11 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
    call set_default_output_flags(icecover%hisout, model, bool)
    call read_icecover_output(md_ptr, chapter, 'his', icecover%hisout)
    !
-   bool = .false.
+   if (present(jamapice)) then
+      bool = jamapice
+   else
+      bool = .false.
+   end if
    call prop_get(md_ptr, chapter, 'addIceToMap', bool)
    call set_default_output_flags(icecover%mapout, model, bool)
    call read_icecover_output(md_ptr, chapter, 'map', icecover%mapout)
