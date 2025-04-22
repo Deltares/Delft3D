@@ -232,7 +232,8 @@ contains
 
             ! Bed level
             call interpolate_horizontal (bl        ,i,IPNT_BL,UNC_LOC_S)
-
+            
+            ! What is cmxobs? (difference with smx, seem te be the same)
             valobs(i, IPNT_CMX) = cmxobs(i)
 
             ! For now here: interpolate velocities, salinity and temperature (not within loop from kb to ke, taken care of in interpolate horizontal)
@@ -255,7 +256,7 @@ contains
                call interpolate_horizontal (ucmag,i,IPNT_UMAG,UNC_LOC_S3D)
             end if
 
-            ! Depth averaged velocities (first ndx pounts of ucx/ucy array)
+            ! Depth averaged velocities (first ndx points of ucx/ucy array)
             if (model_is_3D()) then
                call interpolate_horizontal (ucx,i,IPNT_UCXQ,UNC_LOC_S)
                call interpolate_horizontal (ucy,i,IPNT_UCYQ,UNC_LOC_S)
@@ -571,12 +572,18 @@ contains
             if (IVAL_HWQ1 > 0) then
                do j = IVAL_HWQ1, IVAL_HWQN
                   ii = j - IVAL_HWQ1 + 1
-                  do i_tmp = 1, 3
-                      call getkbotktop(neighbour_nodes_obs(i_tmp,i), kb_tmp, kt_tmp)
-                      do kk_tmp = kb_tmp, kt_tmp
-                         tmp_interp(kk_tmp) = waqoutputs(ii, kk_tmp - kbx + 1)
-                      end do
-                  end do
+!                  do i_tmp = kbx, SIZE(waqoutputs,2) + kbx - 1
+!                      tmp_interp(i_tmp) = waqoutputs(ii, i_tmp - kbx + 1)
+!                  end do
+                  tmp_interp(kbx:SIZE(waqoutputs,2) + kbx - 1) = waqoutputs(ii, 1:SIZE(waqoutputs,2)) 
+                  kk_tmp = 1
+!
+!                  do i_tmp = 1, 3
+!                      call getkbotktop(neighbour_nodes_obs(i_tmp,i), kb_tmp, kt_tmp)
+!                      do kk_tmp = kb_tmp, kt_tmp
+!                         tmp_interp(kk_tmp) = waqoutputs(ii, kk_tmp - kbx + 1)
+!                      end do
+!                  end do
                   call interpolate_horizontal (tmp_interp,i,IPNT_HWQ1 + (ii - 1)*kmx_const, UNC_LOC_S3D)
                end do                                                                                   
             end if
@@ -632,7 +639,12 @@ contains
                end if
             end if
             
-!           From here still to do (gets messy from here on)            
+!           From here still to do
+!           wa (wave action?) seems to be defined by layer, not horizontally varying
+!           not sure what to do with cmx AND smx (WBI BOI?)
+!           BRUVAY, wait for Julien (who puts values in array in stead of recomputing here)
+!           leave values at links unchanged? (can do same thing as for other parameters based upon triangulation network through links)
+            
             do kk = kb, kt
                klay = kk - kb + nlayb
 
@@ -649,12 +661,6 @@ contains
                   end if
                end if
 
-               if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
- !                 valobs(i, IPNT_RHOP + klay - 1) = potential_density(kk)
-                  if (apply_thermobaricity) then
- !                    valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
-                  end if
-               end if
                valobs(i, IPNT_CMX) = max(valobs(i, IPNT_UCX), sqrt(ucx(kk)**2 + ucy(kk)**2))
             end do
             valobs(i, IPNT_SMX) = max(smxobs(i), s1(k))
