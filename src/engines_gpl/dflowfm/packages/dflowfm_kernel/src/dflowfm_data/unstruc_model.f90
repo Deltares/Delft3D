@@ -3121,15 +3121,9 @@ contains
 
       if (writeall .or. kmx > 0) then
          call prop_set(prop_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel, 'Turbulence model (0: none, 1: constant, 2: algebraic, 3: k-epsilon, 4: k-tau)')
-         if (c1e /= (c2e - vonkar**2 / (sigeps * sqrt(cmukep)))) then
-            call prop_set(prop_ptr, 'numerics', 'c1e', c1e, 'c1e coefficient in turbulence model')
-         end if
-         if (c3e_stable /= 0.0_dp) then
-            call prop_set(prop_ptr, 'numerics', 'c3eStable', c3e_stable, 'c3e coefficient (for stable stratification) in k-eps turbulence model')
-         end if
-         if (c3e_unstable /= (c2e - vonkar**2 / (sigeps * sqrt(cmukep)))) then
-            call prop_set(prop_ptr, 'numerics', 'c3eUnstable', c3e_unstable, 'c3e coefficient (for unstable stratification) in k-eps turbulence model')
-         end if
+         call prop_set(prop_ptr, 'numerics', 'c1e', c1e, 'c1e coefficient in turbulence model')
+         call prop_set(prop_ptr, 'numerics', 'c3eStable', c3e_stable, 'c3e coefficient (for stable stratification) in k-eps turbulence model')
+         call prop_set(prop_ptr, 'numerics', 'c3eUnstable', c3e_unstable, 'c3e coefficient (for unstable stratification) in k-eps turbulence model')
       end if
 
       if (writeall .or. (javakeps /= 3 .and. kmx > 0)) then

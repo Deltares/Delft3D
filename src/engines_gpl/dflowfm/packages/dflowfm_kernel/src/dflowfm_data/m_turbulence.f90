@@ -121,9 +121,9 @@ module m_turbulence
 
    integer, allocatable :: ln0(:, :) !< links in transport trimmed to minimum of ktop,ktop0 for z-layers
 
-   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_ON=1.0_dp
-   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_OFF=0.0_dp
-   
+   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_ON = 1.0_dp
+   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_OFF = 0.0_dp
+
 contains
 
    !> Sets (underived) variables in this module to their default values.
@@ -138,10 +138,10 @@ contains
       cmukep = 0.09_dp
       c2e = 1.92_dp
       c1e = c2e - vonkar**2 / (sigeps * sqrt(cmukep))
-      
+
       c3e_stable = 0.0_dp
       c3e_unstable = c1e ! Can be overriden by user and is therefore not a derived coefficient
-      
+
    end subroutine default_turbulence
 
    !> Calculates derived coefficients for turbulence
@@ -150,11 +150,11 @@ contains
 
       sigtkei = 1.0_dp / sigtke
       sigepsi = 1.0_dp / sigeps
-      
+
       cewall = cmukep**0.75_dp / vonkar
       cde = cmukep**0.75_dp
       coefn2 = -ag / (sigrho * rhomean)
-      
+
       c1t = (1.0_dp - c1e) * cmukep
       c2t = 1.0_dp - c2e
       c3t_stable = 1.0_dp * cmukep
