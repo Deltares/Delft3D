@@ -3602,9 +3602,13 @@ contains
       character(len=NF90_MAX_NAME) :: attrstring !< global attribute
       integer :: period !< period value in seconds.
       integer, dimension(2) :: dimids !< integer id's of amplitude/phase variable's dimension variables eg: phase(y,x) -> id's of y and x.
-      integer :: numids !< number of variable id's of amplitude/phase (we expect 2: y,x)
-      integer, dimension(2) :: phase_dims !< number of points in Y,X directions.
+      integer :: numids !< number of variable id's of amplitude/phase (we expect 2: y,x or x,y)
+      integer, dimension(2) :: dim_sizes !< number of points in x and y directions (note: may be swapped).
+      real(hp), dimension(:,:), allocatable :: data_block !< temporary buffer for phase data
       integer :: istat !< status of allocation operation
+      integer :: i !< loop variable
+      integer :: j !< loop variable
+      logical :: is_y_x !< file data is transposed in X <-> Y
       !
       success = .false.
       !
@@ -3650,20 +3654,51 @@ contains
       end if
 
       ! Get phase dimension sizes
-      if (.not. ecSupportNetcdfCheckError(nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(1), len=phase_dims(1)), "obtain first phase dimension length", fileReaderPtr%fileName)) return
-      if (.not. ecSupportNetcdfCheckError(nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(2), len=phase_dims(2)), "obtain second phase dimension length", fileReaderPtr%fileName)) return
-      fileReaderPtr%hframe%phase_dims = phase_dims
+      if (.not. ecSupportNetcdfCheckError(nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(1), len=dim_sizes(1)), "obtain first phase dimension length", fileReaderPtr%fileName)) return
+      if (.not. ecSupportNetcdfCheckError(nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(2), len=dim_sizes(2)), "obtain second phase dimension length", fileReaderPtr%fileName)) return
 
       ! Allocate required buffer.
-      allocate (fileReaderPtr%hframe%phases(phase_dims(1), phase_dims(2)), stat=istat)
+      allocate (data_block(dim_sizes(1), dim_sizes(2)), stat=istat)
+      if (istat /= 0) then
+         call setECMessage('ERROR: Failed to allocate phase buffer array.')
+         return
+      end if
+
+      ! Load phase data.
+      if (.not. ecSupportNetcdfCheckError(nf90_get_var(fileReaderPtr%fileHandle, phase_id, data_block, start=(/1, 1/), count=dim_sizes), "obtain phase data", fileReaderPtr%fileName)) return
+
+      if (dimids(1) == fileReaderPtr%lonx_id .and. dimids(2) == fileReaderPtr%laty_id) then
+          ! normal
+          fileReaderPtr%hframe%phase_dims = dim_sizes
+          is_y_x = .false.
+      elseif (dimids(2) == fileReaderPtr%lonx_id .and. dimids(1) == fileReaderPtr%laty_id) then
+          ! transposed
+          fileReaderPtr%hframe%phase_dims = (/ dim_sizes(2), dim_sizes(1) /)
+          is_y_x = .true.
+      else
+         call setECMessage('ERROR: Phase dimensions are not X,Y or Y,X.')
+         return
+      end if
+
+      ! Allocate phase buffer.
+      allocate (fileReaderPtr%hframe%phases(fileReaderPtr%hframe%phase_dims(1), fileReaderPtr%hframe%phase_dims(2)), stat=istat)
       if (istat /= 0) then
          call setECMessage('ERROR: Failed to allocate phase array.')
          return
       end if
 
-      ! Load phase data.
-      if (.not. ecSupportNetcdfCheckError(nf90_get_var(fileReaderPtr%fileHandle, phase_id, fileReaderPtr%hframe%phases, start=(/1, 1/), count=phase_dims), "obtain phase data", fileReaderPtr%fileName)) return
+      ! Copy buffer into phases
+      do j=1,fileReaderPtr%hframe%phase_dims(2)
+         do i=1,fileReaderPtr%hframe%phase_dims(1)
+             if (is_y_x) then
+                fileReaderPtr%hframe%phases(i,j) = data_block(j,i)
+             else
+                fileReaderPtr%hframe%phases(i,j) = data_block(i,j)
+             end if
+         end do
+      end do
 
+      deallocate(data_block)
       success = .true.
    end function ecNetcdfInitializeHarmonicsFrame
 
