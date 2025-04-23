@@ -610,7 +610,6 @@ contains
             LL = abs(nd(nod)%ln(kk))
             if (kcu(LL) == 2) then ! Only for regular 2D.
                if (iadvec /= 0 .and. direction(n) * u0(L) < 0) then
-                  iadv(LL) = 8
                   iadv(LL) = 0
                else
                   iadv(LL) = 0

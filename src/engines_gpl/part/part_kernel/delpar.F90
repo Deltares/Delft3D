@@ -115,13 +115,11 @@ contains
         alone = .true.
 
         ! read unit-numbers and file-names
-        call rdfnam (lun, ifnam, fname, nfiles, 2, 1, alone)
+        call rdfnam (lun, ifnam, fname, nfiles, 2, 1, alone, hyd)
         lunout = lun(2)
         call set_log_unit_number(lunout)
 
-        hyd%file_hyd%name = fname(18)
-        call read_hyd(hyd)
-        call read_hyd_init(hyd)
+
 
         call report_date_time (lunout)
         noth = OMP_GET_MAX_THREADS()

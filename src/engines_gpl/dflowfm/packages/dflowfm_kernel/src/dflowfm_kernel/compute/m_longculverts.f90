@@ -278,10 +278,8 @@ contains
             longculverts(nlongculverts)%bl = zpl(npl + 1:npl + numcoords)
             npl = npl + numcoords + 1 ! TODO: UNST-4328: success1 checking done later in readStructureFile().
 
+            txt = 'both'
             call prop_get(str_ptr, '', 'allowedFlowdir', txt, success)
-            if (.not. success) then
-               txt = 'both'
-            end if
             longculverts(nlongculverts)%allowed_flowdir = allowedFlowDirToInt(txt)
 
             call prop_get(str_ptr, '', 'width', longculverts(nlongculverts)%width, success)
@@ -520,10 +518,8 @@ contains
                call SetMessage(LEVEL_ERROR, 'valveRelativeOpening not found for long culvert: '//trim(st_id))
             end if
 
+            txt = 'both'
             call prop_get(str_ptr, '', 'allowedFlowdir', txt, success)
-            if (.not. success) then
-               txt = 'both'
-            end if
             longculverts(nlongculverts)%allowed_flowdir = allowedFlowDirToInt(txt)
 
             call prop_get(str_ptr, '', 'branchId', longculverts(nlongculverts)%branchId, success)
@@ -555,10 +551,8 @@ contains
                allocate (longculverts(nlongculverts)%netlinks(numcoords - 1))
                allocate (longculverts(nlongculverts)%flowlinks(numcoords - 1))
                longculverts(nlongculverts)%flowlinks = -999
+               txt = 'both'
                call prop_get(str_ptr, '', 'allowedFlowdir', txt, success)
-               if (.not. success) then
-                  txt = 'both'
-               end if
                longculverts(nlongculverts)%allowed_flowdir = allowedFlowDirToInt(txt)
 
                call prop_get(str_ptr, '', 'width', longculverts(nlongculverts)%width, success)

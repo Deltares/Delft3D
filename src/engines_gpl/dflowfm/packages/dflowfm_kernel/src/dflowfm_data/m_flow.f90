@@ -76,7 +76,6 @@ module m_flow ! flow arrays-999
 
    integer :: iturbulencemodel !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps
    integer :: ieps !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
-   integer :: jadrhodz = 1
    real(kind=dp) :: turbulence_lax_factor = 0 !< LAX-scheme factor (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
    integer :: turbulence_lax_vertical = 1 !< Vertical distribution of turbulence_lax_factor (1: linear increasing from 0.0 to 1.0 in top half only, 2: uniform 1.0 over vertical)
    integer :: turbulence_lax_horizontal = 2 !< Horizontal method of turbulence_lax_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)
@@ -222,7 +221,7 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable :: dsadx(:) !< cell center sa gradient, (ppt/m)
    real(kind=dp), allocatable :: dsady(:) !< cell center sa gradient, (ppt/m)
 
-! node related, dim = ndxi
+   ! node related, dim = ndxi
    real(kind=dp), allocatable, target :: freeboard(:) !< [m] For output purposes: freeboard at cell center, only for 1D
    real(kind=dp), allocatable, target :: hsOnGround(:) !< [m] For output purposes: waterdepth above ground level, only for 1D
    real(kind=dp), allocatable, target :: volOnGround(:) !< [m3] For output purposes: volume above ground level, only for 1D
@@ -234,7 +233,7 @@ module m_flow ! flow arrays-999
    ! link related, dim = lnx
    real(kind=dp), allocatable :: s1Gradient(:) !< [1] For output purposes: water level gradient on flow links
 
-!    Secondary Flow
+   ! Secondary Flow
    real(kind=dp), allocatable :: ducxdx(:) !< cell center gradient of x-velocity in x-dir,    (1/s)
    real(kind=dp), allocatable :: ducxdy(:) !< cell center gradient of x-velocity in y-dir,    (1/s)
    real(kind=dp), allocatable :: ducydx(:) !< cell center gradient of y-velocity in x-dir,    (1/s)

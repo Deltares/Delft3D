@@ -107,10 +107,14 @@ contains
       call admin_landboundary_segments()
 
 !  allocate arrays
-      if (allocated(cellmask)) deallocate (cellmask)
+      if (allocated(cellmask)) then
+         deallocate (cellmask)
+      end if
       allocate (nodemask(numk), linkmask(numL), cellmask(nump), klink(numk), stat=ierr)
 
-      if (allocated(lanseg_map)) deallocate (lanseg_map)
+      if (allocated(lanseg_map)) then
+         deallocate (lanseg_map)
+      end if
       allocate (lanseg_map(numk))
       lanseg_map = 0
 

@@ -234,7 +234,9 @@ contains
       end do
       !
       nmorstatqnt = i
-      if (allocated(morstatqnt)) deallocate (morstatqnt)
+      if (allocated(morstatqnt)) then
+         deallocate (morstatqnt)
+      end if
       allocate (morstatqnt(ndx, nmorstatqnt))
       morstatqnt = 0d0
       !

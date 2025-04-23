@@ -36,7 +36,7 @@ module fm_external_forcings
    use m_setwindstress, only: setwindstress
    use m_setsigmabnds, only: setsigmabnds
    use precision_basics, only: hp, dp
-   use fm_external_forcings_utils, only: get_tracername, get_sedfracname
+   use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
    use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
    implicit none
 
@@ -529,33 +529,45 @@ contains
       call aerr('kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), keg(nx), ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx) , itpenu(nx), kew(nx), ftpet(nx)', ierr, 17 * nx)
       kce = 0; ke = 0; kez = 0; keu = 0; kes = 0; ketm = 0; kesd = 0; keuxy = 0; ket = 0; ken = 0; ke1d2d = 0; keg = 0; ked = 0; kep = 0; kedb = 0; keklep = 0; kevalv = 0; kegen = 0; itpez = 0; itpenz = 0; itpeu = 0; itpenu = 0; kew = 0; ftpet = 1d6
 
-      if (allocated(ketr)) deallocate (ketr)
+      if (allocated(ketr)) then
+         deallocate (ketr)
+      end if
       allocate (ketr(nx, 1), stat=ierr)
       call aerr('ketr(nx,1)', ierr, nx)
       ketr = 0
 
-      if (allocated(nbndtr)) deallocate (nbndtr)
+      if (allocated(nbndtr)) then
+         deallocate (nbndtr)
+      end if
       allocate (nbndtr(1), stat=ierr)
       call aerr('nbndtr(1)', ierr, 1)
       nbndtr = 0
 
-      if (allocated(trnames)) deallocate (trnames)
+      if (allocated(trnames)) then
+         deallocate (trnames)
+      end if
       allocate (trnames(1), stat=ierr)
       call aerr('trnames(1)', ierr, 1)
       trnames(1) = ''
       numtracers = 0
 
-      if (allocated(kesf)) deallocate (kesf)
+      if (allocated(kesf)) then
+         deallocate (kesf)
+      end if
       allocate (kesf(1, nx), stat=ierr) ! would have been nice to have stmpar%lsedsus,
       call aerr('kesf(1,nx)', ierr, nx) ! but no can do, jammer de bammer...
       kesf = 0
 
-      if (allocated(nbndsf)) deallocate (nbndsf)
+      if (allocated(nbndsf)) then
+         deallocate (nbndsf)
+      end if
       allocate (nbndsf(1), stat=ierr)
       call aerr('nbndsf(1)', ierr, 1)
       nbndsf = 0
 
-      if (allocated(sfnames)) deallocate (sfnames)
+      if (allocated(sfnames)) then
+         deallocate (sfnames)
+      end if
       allocate (sfnames(1), stat=ierr)
       call aerr('sfnames(1)', ierr, 1)
       sfnames = ''
@@ -591,12 +603,12 @@ contains
 
       num_bc_ini_blocks = 0
       if (ext_force_bnd_used) then
-         ! first read the bc file (new file format for boundary conditions)
+         ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
          call read_location_files_from_boundary_blocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
                                                        numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       end if
 
-      do while (ja_ext_force == 1) ! read *.ext file
+      do while (ja_ext_force == 1) ! read legacy format *.ext file
 
          call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja_ext_force, varname)
          call resolvePath(filename, md_extfile_dir)
@@ -871,7 +883,9 @@ contains
       qidfm = qid
       if (qidfm == 'waterlevelbnd' .or. qidfm == 'neumannbnd' .or. qidfm == 'riemannbnd' .or. qidfm == 'outflowbnd' .or. qidfm == 'qhbnd') then
 
-         if (allocated(pliname)) deallocate (pliname)
+         if (allocated(pliname)) then
+            deallocate (pliname)
+         end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kez(nbndz + 1:nx), numz, usemask=.true., pliname=pliname) !numz=number cells found, plname=pliname
          write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numz, ' nr of open bndcells'; call msg_flush()
          nzbnd = nzbnd + 1
@@ -1257,6 +1271,7 @@ contains
    function adduniformtimerelation_objects(qid, location_file, objtype, objid, paramname, paramvalue, targetindex, vectormax, targetarray) result(success)
       !use fm_external_forcings_data, no1=>qid, no2=>filetype, no3=>operand, no4 => success
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
+      use m_transportdata, only: NAMLEN
       use string_module, only: strcmpi
       use timespace_parameters, only: uniform, bcascii, spaceandtime
 
@@ -1273,7 +1288,8 @@ contains
       logical :: success !< Return value. Whether relation was added successfully.
       real(kind=dp), intent(inout), target :: targetarray(:) !< The target array in which the value(s) will be stored. Either now with scalar, or later via ec_gettimespacevalue() calls.
 
-      character(len=256) :: valuestring, fnam
+      character(len=256) :: valuestring, fnam, qid_base
+      character(len=NAMLEN) :: const_name
       real(kind=dp) :: valuedble
       real(kind=dp) :: xdum(1), ydum(1)
       integer :: kdum(1)
@@ -1322,7 +1338,9 @@ contains
             write (msgbuf, '(a,a,a,a,a)') 'Control for ', trim(objtype), ''''//trim(objid)//''', ', paramname, ' set to REALTIME.'
             call dbg_flush()
          else
-            if (fm_ext_force_name_to_ec_item('', '', '', qid, multuniptr, intptr, intptr, intptr, dbleptr, dbleptr, dbleptr, dbleptr)) then
+            qid_base = qid
+            call get_constituent_name(qid, const_name, qid_base)
+            if (fm_ext_force_name_to_ec_item('', '', '', const_name, qid_base, multuniptr, intptr, intptr, intptr, dbleptr, dbleptr, dbleptr, dbleptr)) then
                success = .true.
             else
                success = .false.
@@ -1386,7 +1404,9 @@ contains
       num_registered_items = 0
 
       max_ext_bnd_items = 64 ! Default start size.
-      if (allocated(registered_items)) deallocate (registered_items)
+      if (allocated(registered_items)) then
+         deallocate (registered_items)
+      end if
       allocate (registered_items(max_ext_bnd_items))
 
       registered_items(1:max_ext_bnd_items) = ''
@@ -1510,12 +1530,24 @@ contains
          end if
       end do
 
-      if (allocated(thtbnds)) deallocate (thtbnds)
-      if (allocated(thzbnds)) deallocate (thzbnds)
-      if (allocated(thtbndtm)) deallocate (thtbndtm)
-      if (allocated(thzbndtm)) deallocate (thzbndtm)
-      if (allocated(thtbndsd)) deallocate (thtbndsd)
-      if (allocated(thzbndsd)) deallocate (thzbndsd)
+      if (allocated(thtbnds)) then
+         deallocate (thtbnds)
+      end if
+      if (allocated(thzbnds)) then
+         deallocate (thzbnds)
+      end if
+      if (allocated(thtbndtm)) then
+         deallocate (thtbndtm)
+      end if
+      if (allocated(thzbndtm)) then
+         deallocate (thzbndtm)
+      end if
+      if (allocated(thtbndsd)) then
+         deallocate (thtbndsd)
+      end if
+      if (allocated(thzbndsd)) then
+         deallocate (thzbndsd)
+      end if
 
       allocate (thtbnds(nbnds), thzbnds(nbnds * kmxd), thtbndtm(nbndtm), thzbndtm(nbndtm * kmxd), thtbndsd(nbndsd), thzbndsd(nbndsd * kmxd), stat=ierr)
       call aerr('thtbnds(nbnds), thzbnds(nbnds*kmxd), thtbndtm(nbndtm), thzbndtm(nbndtm*kmxd), thtbndsd(nbndsd), thzbndsd(nbndsd*kmxd)', ierr, (kmxd + 1) * (nbnds + nbndtm + nbndsd))
@@ -1719,11 +1751,19 @@ contains
 
       if (jatimespace == 0) return ! Just cleanup and close ext file.
 
-      if (allocated(ec_pwxwy_x)) deallocate (ec_pwxwy_x)
-      if (allocated(ec_pwxwy_y)) deallocate (ec_pwxwy_y)
-      if (allocated(patm)) deallocate (patm)
+      if (allocated(ec_pwxwy_x)) then
+         deallocate (ec_pwxwy_x)
+      end if
+      if (allocated(ec_pwxwy_y)) then
+         deallocate (ec_pwxwy_y)
+      end if
+      if (allocated(patm)) then
+         deallocate (patm)
+      end if
       if (allocated(kbndz)) deallocate (xbndz, ybndz, xy2bndz, zbndz, kbndz, zbndz0)
-      if (allocated(zkbndz)) deallocate (zkbndz)
+      if (allocated(zkbndz)) then
+         deallocate (zkbndz)
+      end if
       id_first_wind = huge(id_first_wind)
       id_last_wind = -huge(id_last_wind)
 
@@ -1811,10 +1851,18 @@ contains
       end if
 
       if (allocated(kbndu)) deallocate (xbndu, ybndu, xy2bndu, zbndu, kbndu, zbndu0)
-      if (allocated(zkbndu)) deallocate (zkbndu)
-      if (allocated(zbndq)) deallocate (zbndq)
-      if (allocated(sigmabndu)) deallocate (sigmabndu)
-      if (allocated(zminmaxu)) deallocate (zminmaxu)
+      if (allocated(zkbndu)) then
+         deallocate (zkbndu)
+      end if
+      if (allocated(zbndq)) then
+         deallocate (zbndq)
+      end if
+      if (allocated(sigmabndu)) then
+         deallocate (sigmabndu)
+      end if
+      if (allocated(zminmaxu)) then
+         deallocate (zminmaxu)
+      end if
 
       ! allocate the following even if not needed (for debugging purposes)
       tmp_nbndu = max(nbndu, 1)
@@ -1881,8 +1929,12 @@ contains
 
       if (allocated(kbnds)) deallocate (xbnds, ybnds, xy2bnds, zbnds, kbnds)
       if (jasal > 0) then
-         if (allocated(sigmabnds)) deallocate (sigmabnds)
-         if (allocated(zminmaxs)) deallocate (zminmaxs)
+         if (allocated(sigmabnds)) then
+            deallocate (sigmabnds)
+         end if
+         if (allocated(zminmaxs)) then
+            deallocate (zminmaxs)
+         end if
          if (nbnds > 0) then ! salinity as for waterlevel bnds, but no kcs = -1
             numnos = 0
             allocate (xbnds(nbnds), ybnds(nbnds), xy2bnds(2, nbnds), zbnds(kmxd * nbnds), kbnds(5, nbnds), kds(nbnds), stat=ierr)
@@ -1926,8 +1978,12 @@ contains
 
       if (allocated(kbndTM)) deallocate (xbndTM, ybndTM, xy2bndTM, zbndTM, kbndTM)
       if (jatem > 0) then
-         if (allocated(sigmabndTM)) deallocate (sigmabndTM)
-         if (allocated(zminmaxTM)) deallocate (zminmaxTM)
+         if (allocated(sigmabndTM)) then
+            deallocate (sigmabndTM)
+         end if
+         if (allocated(zminmaxTM)) then
+            deallocate (zminmaxTM)
+         end if
          if (nbndTM > 0) then ! salinity as for waterlevel bnds, but no kcs = -1
             numnos = 0
             allocate (xbndTM(nbndTM), ybndTM(nbndTM), xy2bndTM(2, nbndTM), zbndTM(kmxd * nbndTM), kbndTM(5, nbndTM), kdTM(nbndTM), stat=ierr)
@@ -2014,8 +2070,12 @@ contains
 ! ========================
 
       if (allocated(kbndsd)) deallocate (xbndsd, ybndsd, xy2bndsd, zbndsd, kbndsd)
-      if (allocated(sigmabndsd)) deallocate (sigmabndsd)
-      if (allocated(zminmaxsd)) deallocate (zminmaxsd)
+      if (allocated(sigmabndsd)) then
+         deallocate (sigmabndsd)
+      end if
+      if (allocated(zminmaxsd)) then
+         deallocate (zminmaxsd)
+      end if
       if (nbndsd > 0) then ! sediment bnds as for waterlevel bnds, but no kcs = -1
          numnos = 0
          allocate (xbndsd(nbndsd), ybndsd(nbndsd), xy2bndsd(2, nbndsd), zbndsd(nbndsd), kbndsd(5, nbndsd), kdsd(nbndsd), stat=ierr)
@@ -2183,8 +2243,12 @@ contains
       end if
 
       if (allocated(kbnduxy)) deallocate (xbnduxy, ybnduxy, xy2bnduxy, zbnduxy, kbnduxy)
-      if (allocated(sigmabnduxy)) deallocate (sigmabnduxy)
-      if (allocated(zminmaxuxy)) deallocate (zminmaxuxy)
+      if (allocated(sigmabnduxy)) then
+         deallocate (sigmabnduxy)
+      end if
+      if (allocated(zminmaxuxy)) then
+         deallocate (zminmaxuxy)
+      end if
       if (nbnduxy > 0) then ! Tangential velocity boundaries as u bnds
          numnos = 0
          allocate (xbnduxy(nbnduxy), ybnduxy(nbnduxy), xy2bnduxy(2, nbnduxy), zbnduxy(2 * kmxd * nbnduxy), kbnduxy(4, nbnduxy), kduxy(nbnduxy), stat=ierr)
@@ -2289,7 +2353,9 @@ contains
 
       if (kmx > 0) then
          if (jastructurelayersactive > 0) then
-            if (allocated(ff3)) deallocate (ff3)
+            if (allocated(ff3)) then
+               deallocate (ff3)
+            end if
             allocate (ff3(3, 0:kmxd)) ! and wait till similar lines appear in the %environment
          end if
       end if
@@ -2341,25 +2407,59 @@ contains
          call doclose(mext) ! close ext file
       end if
 
-      if (allocated(kdz)) deallocate (kdz)
-      if (allocated(kdu)) deallocate (kdu)
-      if (allocated(kds)) deallocate (kds)
-      if (allocated(kdTM)) deallocate (kdTM)
-      if (allocated(kdw)) deallocate (kdw)
-      if (allocated(kdsd)) deallocate (kdsd)
-      if (allocated(kdt)) deallocate (kdt)
-      if (allocated(kduxy)) deallocate (kduxy)
-      if (allocated(kdn)) deallocate (kdn)
-      if (allocated(kdg)) deallocate (kdg)
-      if (allocated(kdd)) deallocate (kdd)
-      if (allocated(kdgen)) deallocate (kdgen)
-      if (allocated(kdp)) deallocate (kdp)
+      if (allocated(kdz)) then
+         deallocate (kdz)
+      end if
+      if (allocated(kdu)) then
+         deallocate (kdu)
+      end if
+      if (allocated(kds)) then
+         deallocate (kds)
+      end if
+      if (allocated(kdTM)) then
+         deallocate (kdTM)
+      end if
+      if (allocated(kdw)) then
+         deallocate (kdw)
+      end if
+      if (allocated(kdsd)) then
+         deallocate (kdsd)
+      end if
+      if (allocated(kdt)) then
+         deallocate (kdt)
+      end if
+      if (allocated(kduxy)) then
+         deallocate (kduxy)
+      end if
+      if (allocated(kdn)) then
+         deallocate (kdn)
+      end if
+      if (allocated(kdg)) then
+         deallocate (kdg)
+      end if
+      if (allocated(kdd)) then
+         deallocate (kdd)
+      end if
+      if (allocated(kdgen)) then
+         deallocate (kdgen)
+      end if
+      if (allocated(kdp)) then
+         deallocate (kdp)
+      end if
 
-      if (allocated(xy2gate)) deallocate (xy2gate)
-      if (allocated(xy2cdam)) deallocate (xy2cdam)
-      if (allocated(xy2cgen)) deallocate (xy2cgen)
+      if (allocated(xy2gate)) then
+         deallocate (xy2gate)
+      end if
+      if (allocated(xy2cdam)) then
+         deallocate (xy2cdam)
+      end if
+      if (allocated(xy2cgen)) then
+         deallocate (xy2cgen)
+      end if
 
-      if (allocated(xy2pump)) deallocate (xy2pump)
+      if (allocated(xy2pump)) then
+         deallocate (xy2pump)
+      end if
 
       if (mxgr > 0 .and. .not. stm_included) then
          do j = 1, mxgr
@@ -2453,8 +2553,12 @@ contains
          end do
       end if
 
-      if (allocated(uxini)) deallocate (uxini)
-      if (allocated(uyini)) deallocate (uyini)
+      if (allocated(uxini)) then
+         deallocate (uxini)
+      end if
+      if (allocated(uyini)) then
+         deallocate (uyini)
+      end if
 
       if (javeg > 0) then
          call realloc(rnveg, Ndkx, keepExisting=.false., fill=0d0, stat=ierr)
@@ -2537,7 +2641,9 @@ contains
          end do
          jagrounlay = 1
       else
-         if (allocated(grounlay)) deallocate (grounlay)
+         if (allocated(grounlay)) then
+            deallocate (grounlay)
+         end if
       end if
 
       if (jampi == 1) then
@@ -2583,7 +2689,9 @@ contains
       if (jaevap == 0 .and. jarain == 0) then
          a1ini = sum(ba(1:ndxi))
       else
-         if (allocated(bare)) deallocate (bare)
+         if (allocated(bare)) then
+            deallocate (bare)
+         end if
          allocate (bare(ndxi), stat=ierr) ! base area for rainfall / evaporation
          call aerr('bare(ndxi)', ierr, ndx); 
          bare(1:ndxi) = ba(1:ndxi)

@@ -390,14 +390,22 @@ contains
          call restoresam()
          deallocate (XLLIN, XLSAM)
          if (Lnx1D > 0) then
-            if (allocated(NSBR)) deallocate (NSBR)
-            if (allocated(KBSAM)) deallocate (KBSAM)
+            if (allocated(NSBR)) then
+               deallocate (NSBR)
+            end if
+            if (allocated(KBSAM)) then
+               deallocate (KBSAM)
+            end if
          end if
          deallocate (xpr, ypr, zpr, npr)
 
          if (jampi == 1) then
-            if (allocated(distsam)) deallocate (distsam)
-            if (allocated(iconnsam)) deallocate (iconnsam)
+            if (allocated(distsam)) then
+               deallocate (distsam)
+            end if
+            if (allocated(iconnsam)) then
+               deallocate (iconnsam)
+            end if
          end if
 
       end if

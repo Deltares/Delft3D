@@ -122,8 +122,12 @@ contains
 1234  continue
 
       call dealloc_tpoly(pols)
-      if (allocated(kn)) deallocate (kn)
-      if (allocated(kc)) deallocate (kc)
+      if (allocated(kn)) then
+         deallocate (kn)
+      end if
+      if (allocated(kc)) then
+         deallocate (kc)
+      end if
 
       return
    end subroutine del_grid_outside_pol

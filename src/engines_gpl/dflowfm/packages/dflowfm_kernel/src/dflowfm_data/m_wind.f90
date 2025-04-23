@@ -57,6 +57,7 @@ module m_wind
    real(kind=dp), allocatable, target :: clou(:) !< air cloudiness        (%)
    real(kind=dp), allocatable, target :: airdensity(:) !< air density           (kg/m3)
    real(kind=dp), allocatable, target :: qrad(:) !< solar radiation       (W/m2)
+   real(kind=dp), dimension(:), allocatable :: solar_radiation !< solar radiation (W/m2) incl. albedo correction
    real(kind=dp), allocatable, target :: longwave(:) !< long wave radiation   (W/m2)
    real(kind=dp), allocatable :: heatsrc(:) !< resulting 2D or 3D heat source per cell (Km3/s)
    real(kind=dp), allocatable :: heatsrc0(:) !< resulting 2D or 3D heat source per cell, only set at timeuser (Km3/s)
@@ -106,27 +107,27 @@ contains
 !! For a reinit prior to flow computation, only call reset_wind() instead.
    subroutine default_wind()
       windsp = 0
-      winddir = 90d0 !< deg from north sailor
-      rainuni = 0d0
-      rhoair = 1.2d0
-      Pavini = 0d0
-      PavBnd = 0d0 !< default: no pressure correction on open boundaries.
+      winddir = 90.0_dp !< deg from north sailor
+      rainuni = 0.0_dp
+      rhoair = 1.2_dp
+      Pavini = 0.0_dp
+      PavBnd = 0.0_dp !< default: no pressure correction on open boundaries.
       !< choose ambient pressure on boundaries equal to overall standard ambient pressure
-      patmfac = 1d0 !< 100 if Mbar, 1 if Pascal
+      patmfac = 1.0_dp !< 100 if Mbar, 1 if Pascal
 
-      cdb(1) = 0.00063d0 !< first  wind breakpoint
+      cdb(1) = 0.00063_dp !< first  wind breakpoint
       wdb(1) = 0
-      cdb(2) = 0.00723d0 !< second wind breakpoint
+      cdb(2) = 0.00723_dp !< second wind breakpoint
       wdb(2) = 100
-      cdb(3) = 0.003d0 !< third  wind breakpoint
+      cdb(3) = 0.003_dp !< third  wind breakpoint
       wdb(3) = 30
       icdtyp = 2
-      relativewind = 0d0 !< factor for top layer speed in wind relative wind, 0=no, 1 =full top layer speed
+      relativewind = 0.0_dp !< factor for top layer speed in wind relative wind, 0=no, 1 =full top layer speed
       jawindhuorzwsbased = 0 !< default: HU-based both in 2D and 3D (and not zws-based)
       jawindpartialdry = 1 !< default: partially dry cells switched off
 
-      windxav = 0d0
-      windyav = 0d0
+      windxav = 0.0_dp
+      windyav = 0.0_dp
 
       ! Rain+qin+wind not reset every re-init, only upon new MDU load, because rain can be
       ! enabled by user in MDU (for BMI use, even without rain in external forcings file)

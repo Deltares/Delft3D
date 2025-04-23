@@ -107,7 +107,9 @@ contains
       end if
 
 !  work arrays
-      if (allocated(rhs)) deallocate (rhs)
+      if (allocated(rhs)) then
+         deallocate (rhs)
+      end if
       allocate (rhs(NUMCONST, Ndkx))
 
       if (kmx > 0) then ! 3D

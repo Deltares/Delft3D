@@ -120,7 +120,9 @@ contains
 
          if (ierror /= 0) then
 !           deallocate permutation array
-            if (allocated(iperm)) deallocate (iperm)
+            if (allocated(iperm)) then
+               deallocate (iperm)
+            end if
 
 !           deallocate kdtree
             if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
@@ -246,11 +248,15 @@ contains
 1234  continue
 
 !     deallocate
-      if (allocated(newnode)) deallocate (newnode)
+      if (allocated(newnode)) then
+         deallocate (newnode)
+      end if
 
       if (jakdtree == 1) then
 !         deallocate permutation array
-         if (allocated(iperm)) deallocate (iperm)
+         if (allocated(iperm)) then
+            deallocate (iperm)
+         end if
 
 !         deallocate kdtree
          if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)

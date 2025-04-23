@@ -54,13 +54,13 @@ contains
       use m_partitioninfo, only: jampi, idomain, my_rank, reduce_at_all, reduce_wwssav_all
       use m_timer, only: jatimer, starttimer, stoptimer, IMPIREDUCE
       use m_longculverts, only: reduceFlowAreaAtLongculverts
-      use fm_external_forcings_data, only: ndambreaksignals, L1dambreaksg, L2dambreaksg, kdambreak, &
-         ngatesg, L1gatesg, L2gatesg, kgate, zgate, ncgensg, zcgen, L1cgensg, L2cgensg, kcgen, &
+      use fm_external_forcings_data, only: ngatesg, L1gatesg, L2gatesg, kgate, zgate, ncgensg, zcgen, L1cgensg, L2cgensg, kcgen, &
          nklep, lklep, nvalv, lvalv, valv, nqbnd, L1qbnd, L2qbnd, kbndu, huqbnd, wwssav_all, japartqbnd, &
-         zbndq, qbndhutrs, at_all, dambreakLinksActualLength
+         zbndq, qbndhutrs, at_all
+      use m_dambreak_data, only: multiply_by_dambreak_link_actual_width
 
       integer :: n, nq, L, k2
-      integer :: ng, Lnu, LL, iup, k
+      integer :: ng, Lnu, LL, iup
       real(kind=dp) :: at, ssav, wwav, fac, zlu, zgaten, sup, bupmin, bup, openfact, afac, hh
       integer :: upstream_cell
       integer :: upstream_cell_index
@@ -93,12 +93,8 @@ contains
          end if
 
          ! set correct flow areas for dambreaks, using the actual flow width
-         do n = 1, ndambreaksignals
-            do k = L1dambreaksg(n), L2dambreaksg(n)
-               L = abs(kdambreak(3, k))
-               au(L) = hu(L) * dambreakLinksActualLength(k)
-            end do
-         end do
+         call multiply_by_dambreak_link_actual_width(hu, au)
+
          call reduceFlowAreaAtLongculverts()
 
       end if

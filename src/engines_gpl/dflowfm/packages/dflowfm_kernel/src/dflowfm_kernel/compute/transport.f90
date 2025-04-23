@@ -53,8 +53,8 @@ contains
       use m_flow, only: apply_thermobaricity, jasal, maxitverticalforestersal, jatem, maxitverticalforestertem, limtyptm, &
                         limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, kbndu, nbndsd, kbndsd, &
                         kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, &
-                        vol1, eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jabaroctimeint, jarhoxu, &
-                        rho0, potential_density, in_situ_density, rho, jacreep, lbot, ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx, ktop, zws
+                        vol1, eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, &
+                        potential_density, in_situ_density, rho, jacreep, lbot, ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx, ktop, zws
       use Timers, only: timstrt, timstop
       use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr
       use m_netw, only: zk
@@ -249,16 +249,6 @@ contains
             end do
          end do
          !$OMP END PARALLEL DO
-      end if
-
-      ! propagate rho
-      if (jabaroctimeint == 5) then ! rho advection
-         dts = 0.5_dp * dts
-         if (jarhoxu > 0) then
-            rho0 = rho
-         end if
-         call update_constituents(1) ! do rho only
-         dts = 2.0_dp * dts
       end if
 
       if (jarhoxu > 0 .and. jacreep == 1) then

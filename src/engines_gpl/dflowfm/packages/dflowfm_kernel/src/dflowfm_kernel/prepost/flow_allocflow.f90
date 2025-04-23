@@ -41,31 +41,31 @@ module m_flow_allocflow
 contains
 
    !> initialise flow model time independent parameters
-   subroutine flow_allocflow() 
+   subroutine flow_allocflow()
       use precision, only: dp
       use m_netw, only: kn
       use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
-          limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop,&
-          kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
-          numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, jaorgFloorlevtoplaydef, dztop, dztopuniabovez, &
-          sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
-          kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
-          dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
-          uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
-          uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
-          qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, jabaroctimeint, &
-          jacreep, dpbdx0, rho0, jabarocterm, rvdn, grn, jarhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
-          workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
-          spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
-          limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, epstke, epseps, &
-          turkinepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, &
-          v, ucxu, ucyu, hu, huvli, au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, &
-          frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
-          salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
-          jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
-          rich, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
-          jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
+                        limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
+                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
+                        numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, jaorgFloorlevtoplaydef, dztop, dztopuniabovez, &
+                        sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
+                        kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
+                        dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
+                        uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
+                        uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
+                        qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, &
+                        jacreep, dpbdx0, rvdn, grn, jarhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
+                        workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
+                        spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
+                        limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, epstke, epseps, &
+                        turkinepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, &
+                        v, ucxu, ucyu, hu, huvli, au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, &
+                        frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
+                        salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
+                        jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
+                        rich, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
+                        jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
       use m_flowtimes, only: dtcell, time_wetground, ja_timestep_auto, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
@@ -85,7 +85,7 @@ contains
       use m_get_zlayer_indices_bobL, only: getzlayerindicesbobL
       use m_filez, only: oldfil
       use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, clou, rain, evap, tair, heatsrc, heatsrc0, &
-         longwave, patm, rhum, qrad, tbed, qext, qextreal, vextcum, cdwcof
+                        longwave, patm, rhum, qrad, solar_radiation, tbed, qext, qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_tem, nudge_sal, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
       use m_turbulence, only: potential_density, in_situ_density
@@ -144,7 +144,7 @@ contains
          limitingTimestepEstimation_cum = 0
          allocate (flowCourantNumber(ndx), stat=ierr)
          call aerr('flowCourantNumber (ndx)', ierr, ndx)
-         flowCourantNumber = 0d0
+         flowCourantNumber = 0.0_dp
       end if
 
       if (allocated(kbot)) then
@@ -311,7 +311,6 @@ contains
             end if
 
             dzm = max(dzm, 1d-2)
-            ! toplayminthick = 0.01d0  ! 0.5d0*dzm
             mxlayz = mx
             kmx = mx ! repair code
             laymx(1) = mx
@@ -323,39 +322,39 @@ contains
          end do
          if (allocated(zslay)) deallocate (zslay, dzslay)
          allocate (zslay(0:mx, mxlaydefs), stat=ierr) ! nr of layer distributions
-         allocate (dzslay(0:mx, mxlaydefs), stat=ierr); dzslay = 0d0
+         allocate (dzslay(0:mx, mxlaydefs), stat=ierr); dzslay = 0.0_dp
 
          if (iStrchType == STRCH_USER) then
             do j = 1, mxlaydefs
                mx = laymx(j)
                do k = 1, mx
-                  dzslay(k, j) = laycof(k) / 100d0
+                  dzslay(k, j) = laycof(k) / 100.0_dp
                end do
             end do
 
          elseif (iStrchType == STRCH_EXPONENT) then
-            gfi = 1d0 / laycof(2)
+            gfi = 1.0_dp / laycof(2)
             gf = laycof(3)
             do j = 1, mxlaydefs
                mx = laymx(j)
                k1 = laycof(1) * mx
                gfk = gfi**k1
-               if (gfk == 1d0) then
-                  gfi = 1d0
-                  dzslay(1, j) = 1d0 / mx
+               if (gfk == 1.0_dp) then
+                  gfi = 1.0_dp
+                  dzslay(1, j) = 1.0_dp / mx
                else
-                  dzslay(1, j) = (1d0 - gfi) / (1d0 - gfk) * laycof(1)
+                  dzslay(1, j) = (1.0_dp - gfi) / (1.0_dp - gfk) * laycof(1)
                end if
                do k = 2, k1
                   dzslay(k, j) = dzslay(k - 1, j) * gfi
                end do
                gfk = gf**(kmx - k1)
                if (k1 < kmx) then
-                  if (gfk == 1d0) then
-                     gf = 1d0
-                     dzslay(k1 + 1, j) = 1d0 / mx
+                  if (gfk == 1.0_dp) then
+                     gf = 1.0_dp
+                     dzslay(k1 + 1, j) = 1.0_dp / mx
                   else
-                     dzslay(k1 + 1, j) = (1d0 - gf) / (1d0 - gfk) * (1d0 - laycof(1))
+                     dzslay(k1 + 1, j) = (1.0_dp - gf) / (1.0_dp - gfk) * (1.0_dp - laycof(1))
                   end if
                   do k = k1 + 2, mx
                      dzslay(k, j) = dzslay(k - 1, j) * gf
@@ -366,7 +365,7 @@ contains
             do j = 1, mxlaydefs
                mx = laymx(j)
                do k = 1, mx
-                  dzslay(k, j) = 1d0 / mx
+                  dzslay(k, j) = 1.0_dp / mx
                end do
             end do
          end if
@@ -375,14 +374,16 @@ contains
             mx = laymx(j)
             if (laytyp(j) == 1) then
 
-               zslay(0, j) = 0d0
+               zslay(0, j) = 0.0_dp
                do k = 1, mx
                   zslay(k, j) = zslay(k - 1, j) + dzslay(k, j)
                end do
 
             else if (laytyp(j) == 2) then
 
-               if (allocated(zslay)) deallocate (zslay)
+               if (allocated(zslay)) then
+                  deallocate (zslay)
+               end if
                allocate (zslay(0:mx, mxlaydefs), stat=ierr) ! nr of layer distributions
 
                if (iStrchType >= 0) then
@@ -610,30 +611,30 @@ contains
 
       if (stm_included .or. bfm_included .or. bfmpar%lfbedfrmrou .or. jatrt > 0) then
          allocate (ucxq_mor(1:ndkx), ucyq_mor(1:ndkx), hs_mor(1:ndkx), stat=ierr)
-         ucxq_mor = 0d0; ucyq_mor = 0d0; hs_mor = 0d0
+         ucxq_mor = 0.0_dp; ucyq_mor = 0.0_dp; hs_mor = 0.0_dp
          allocate (ucx_mor(1:ndkx), ucy_mor(1:ndkx), stat=ierr)
-         ucx_mor = 0d0; ucy_mor = 0d0
+         ucx_mor = 0.0_dp; ucy_mor = 0.0_dp
       end if
 
       if (lnxi > 0 .and. kmx == 0) then
-         call realloc(uc1D, ndx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(uc1D, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('uc1D(ndx)', ierr, ndx)
-         call realloc(u1Du, lnx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(u1Du, lnx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('u1Du(lnx)', ierr, lnx)
          if (japure1D >= 3) then
-            call realloc(alpha_mom_1D, ndx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(alpha_mom_1D, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('alpha_mom_1D', ierr, ndx)
-            call realloc(alpha_ene_1D, ndx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(alpha_ene_1D, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('alpha_ene_1D', ierr, ndx)
-            call realloc(q1D, (/2, lnx/), keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(q1D, (/2, lnx/), keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('q1D(2,lnx)', ierr, lnx)
-            call realloc(au1D, (/2, lnx/), keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(au1D, (/2, lnx/), keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('au1D(2,lnx)', ierr, lnx)
-            call realloc(wu1D, (/2, lnx/), keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(wu1D, (/2, lnx/), keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('wu1D(2,lnx)', ierr, lnx)
-            call realloc(sar1D, (/2, lnx/), keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(sar1D, (/2, lnx/), keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('sar1D(2,lnx)', ierr, lnx)
-            call realloc(volu1D, lnx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(volu1D, lnx, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('volu1D(lnx)', ierr, lnx)
          end if
       end if
@@ -643,38 +644,38 @@ contains
       end if
       if (kmx > 0) then
          allocate (dtcell(ndkx), stat=ierr)
-         call aerr('dtcell(ndkx)', ierr, ndkx); dtcell(:) = 0d0
+         call aerr('dtcell(ndkx)', ierr, ndkx); dtcell(:) = 0.0_dp
       else
          allocate (dtcell(ndx), stat=ierr)
-         call aerr('dtcell(ndx)', ierr, ndx); dtcell(:) = 0d0
+         call aerr('dtcell(ndx)', ierr, ndx); dtcell(:) = 0.0_dp
       end if
 
       ! for 1D only
       if (network%loaded) then
          ndx1d = ndxi - ndx2d
          if (ndx1d > 0) then
-            call realloc(time_wetground, ndx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(time_wetground, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('time_wetground(ndx)', ierr, ndx)
 
             call realloc(freeboard, ndx1d, keepExisting=.false., fill=dmiss, stat=ierr)
             call aerr('freeboard(ndxi-ndx2d)', ierr, ndx1d)
 
-            call realloc(hsOnGround, ndx1d, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(hsOnGround, ndx1d, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('hsOnGround(ndxi-ndx2d)', ierr, ndx1d)
 
-            call realloc(volOnGround, ndx1d, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(volOnGround, ndx1d, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('volOnGround(ndxi-ndx2d)', ierr, ndx1d)
 
-            call realloc(qCur1d2d, ndx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(qCur1d2d, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('qCur1d2d(ndx)', ierr, ndx)
 
-            call realloc(vTot1d2d, ndx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(vTot1d2d, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('vTot1d2d(ndx)', ierr, ndx)
 
-            call realloc(qCurLat, ndx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(qCurLat, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('qCurLat(ndx)', ierr, ndx)
 
-            call realloc(vTotLat, ndx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(vTotLat, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('vTotLat(ndx)', ierr, ndx)
          end if
          if (lnx1d > 0) then
@@ -684,24 +685,32 @@ contains
       end if
 
       if (kmx > 0 .and. (ja_timestep_auto == 3 .or. ja_timestep_auto == 4)) then
-         if (allocated(squ2D)) deallocate (squ2d)
+         if (allocated(squ2D)) then
+            deallocate (squ2D)
+         end if
          allocate (squ2D(ndkx), stat=ierr)
          call aerr('squ2D(ndkx)', ierr, ndkx); squ2D = 0
       end if
 
       if (ja_timestep_auto == 1 .and. ja_timestep_nostruct > 0) then
-         if (allocated(squcor)) deallocate (squcor)
+         if (allocated(squcor)) then
+            deallocate (squcor)
+         end if
          allocate (squcor(ndx), stat=ierr)
          call aerr('squcor(ndx)', ierr, ndx); squcor = 0
       end if
 
       if (icorio == 7 .or. icorio == 8 .or. icorio == 27 .or. icorio == 28) then
-         if (allocated(hus)) deallocate (hus)
+         if (allocated(hus)) then
+            deallocate (hus)
+         end if
          allocate (hus(ndkx), stat=ierr)
          call aerr('hus(ndkx)', ierr, ndkx); hus = 0
       end if
       if (kmx > 0) then
-         if (allocated(ucz)) deallocate (ucz)
+         if (allocated(ucz)) then
+            deallocate (ucz)
+         end if
          allocate (ucz(ndkx), stat=ierr)
          call aerr('ucz (ndkx)', ierr, ndkx); ucz = 0
       end if
@@ -724,39 +733,33 @@ contains
       end if
 
       if (stm_included) then
-         if (allocated(rhowat)) deallocate (rhowat)
+         if (allocated(rhowat)) then
+            deallocate (rhowat)
+         end if
          allocate (rhowat(ndkx), stat=ierr)
          call aerr('rhowat (ndkx)', ierr, ndkx); rhowat = rhomean
       end if
 
       if (jasal > 0 .or. jatem > 0 .or. jased > 0 .or. stm_included) then
-         if (abs(jabaroctimeint) >= 2) then
-            if (jacreep == 1 .or. abs(jabaroctimeint) == 3 .or. abs(jabaroctimeint) == 4) then
-               if (allocated(dpbdx0)) deallocate (dpbdx0)
-               allocate (dpbdx0(lnkx), stat=ierr)
-               call aerr('dpbdx0 (lnkx)', ierr, lnkx); dpbdx0 = 0d0
-            end if
-
-            if (jacreep /= 1 .and. abs(jabaroctimeint) == 2 .or. abs(jabaroctimeint) == 5) then
-               if (allocated(rho0)) deallocate (rho0)
-               allocate (rho0(ndkx), stat=ierr)
-               call aerr('rho0 (ndkx)', ierr, ndkx); rho0 = rhomean
-            end if
-
+         if (allocated(dpbdx0)) then
+            deallocate (dpbdx0)
          end if
+         allocate (dpbdx0(lnkx), stat=ierr)
+         call aerr('dpbdx0 (lnkx)', ierr, lnkx); dpbdx0 = 0d0
 
-         if (jabarocterm >= 4) then
-            if (allocated(rvdn)) deallocate (rvdn, grn)
-            allocate (rvdn(ndkx), grn(ndkx), stat=ierr); rvdn = 0d0; grn = 0d0
-            call aerr('rvdn(ndkx), grn(ndkx)', ierr, 2 * ndkx)
-
-            if (jarhointerfaces == 1) then
-               if (allocated(rhosww)) deallocate (rhosww)
-               allocate (rhosww(ndkx), stat=ierr)
-               call aerr('rhosww(ndkx)', ierr, ndkx); rhosww = 0d0
-            end if
+         if (allocated(rvdn)) then
+            deallocate (rvdn, grn)
          end if
+         allocate (rvdn(ndkx), grn(ndkx), stat=ierr); rvdn = 0d0; grn = 0d0
+         call aerr('rvdn(ndkx), grn(ndkx)', ierr, 2 * ndkx)
 
+         if (jarhointerfaces == 1) then
+            if (allocated(rhosww)) then
+               deallocate (rhosww)
+            end if
+            allocate (rhosww(ndkx), stat=ierr)
+            call aerr('rhosww(ndkx)', ierr, ndkx); rhosww = 0d0
+         end if
       end if
 
       if (kmx > 0) then
@@ -800,13 +803,19 @@ contains
 
 !    Secondary Flow
       if (jasecflow > 0) then
-         if (allocated(spirint)) deallocate (spirint)
+         if (allocated(spirint)) then
+            deallocate (spirint)
+         end if
          allocate (spirint(ndx), stat=ierr)
          call aerr('spirint( ndx )', ierr, ndx); spirint = 0
-         if (allocated(czusf)) deallocate (czusf)
+         if (allocated(czusf)) then
+            deallocate (czusf)
+         end if
          allocate (czusf(lnx), stat=ierr)
          call aerr('czusf  ( lnx )', ierr, lnx); czusf = 0
-         if (allocated(czssf)) deallocate (czssf)
+         if (allocated(czssf)) then
+            deallocate (czssf)
+         end if
          allocate (czssf(ndx), stat=ierr)
          call aerr('czssf  ( ndx )', ierr, ndx); czssf = 0
          if (kmx == 0) then
@@ -853,15 +862,15 @@ contains
       if (limtypmom == 6) then
          if (allocated(ducxdx)) deallocate (ducxdx, ducxdy)
          allocate (ducxdx(ndkx), stat=ierr)
-         call aerr('ducxdx (ndkx)', ierr, ndkx); ducxdx = 0d0
+         call aerr('ducxdx (ndkx)', ierr, ndkx); ducxdx = 0.0_dp
          allocate (ducxdy(ndkx), stat=ierr)
-         call aerr('ducxdy (ndkx)', ierr, ndkx); ducxdy = 0d0
+         call aerr('ducxdy (ndkx)', ierr, ndkx); ducxdy = 0.0_dp
 
          if (allocated(ducydx)) deallocate (ducydx, ducydy)
          allocate (ducydx(ndkx), stat=ierr)
-         call aerr('ducydx (ndkx)', ierr, ndkx); ducydx = 0d0
+         call aerr('ducydx (ndkx)', ierr, ndkx); ducydx = 0.0_dp
          allocate (ducydy(ndkx), stat=ierr)
-         call aerr('ducydy (ndkx)', ierr, ndkx); ducydy = 0d0
+         call aerr('ducydy (ndkx)', ierr, ndkx); ducydy = 0.0_dp
       end if
 
       if (limtypsa == 6) then
@@ -914,9 +923,15 @@ contains
       if (jsferic == 0) then
          jatidep = 0; jaselfal = 0
       else if (jatidep > 0 .or. jaselfal > 0) then
-         if (allocated(tidep)) deallocate (tidep)
-         if (allocated(tidef)) deallocate (tidef)
-         if (allocated(s1init)) deallocate (s1init)
+         if (allocated(tidep)) then
+            deallocate (tidep)
+         end if
+         if (allocated(tidef)) then
+            deallocate (tidef)
+         end if
+         if (allocated(s1init)) then
+            deallocate (s1init)
+         end if
          if (jaselfal > 0) then
 !      also store SAL potential
             allocate (tidep(2, ndx), stat=ierr)
@@ -924,7 +939,7 @@ contains
             if (jaSELFALcorrectWLwithIni == 1) then
                allocate (s1init(Ndx), stat=ierr)
                call aerr('s1init(Ndx)', ierr, Ndx)
-               s1init = 0d0
+               s1init = 0.0_dp
             end if
          else
             allocate (tidep(1, ndx), stat=ierr)
@@ -933,7 +948,7 @@ contains
 
          allocate (tidef(Lnx), stat=ierr)
          call aerr('tidef(Lnx)', ierr, Lnx)
-         tidef = 0d0
+         tidef = 0.0_dp
 
       end if
 
@@ -951,9 +966,9 @@ contains
          allocate (tureps1(Lnkx), stat=ierr)
          call aerr('tureps1  (Lnkx)', ierr, Lnkx); tureps1 = epseps
          allocate (vicwwu(Lnkx), stat=ierr)
-         call aerr('vicwwu   (Lnkx)', ierr, Lnkx); vicwwu = 0d0
+         call aerr('vicwwu   (Lnkx)', ierr, Lnkx); vicwwu = 0.0_dp
          allocate (vicwws(ndkx), stat=ierr)
-         call aerr('vicwws   (ndkx)', ierr, ndkx); vicwws = 0d0
+         call aerr('vicwws   (ndkx)', ierr, ndkx); vicwws = 0.0_dp
 
          if (allocated(turkinepsws)) then
             deallocate (turkinepsws)
@@ -976,37 +991,83 @@ contains
       call aerr('z0ucur(lnx)', ierr, lnx)
       call realloc(z0urou, lnx, stat=ierr, keepExisting=.false., fill=epsz0) ! 1d-10
       call aerr('z0urou(lnx)', ierr, lnx)
-      call realloc(taus, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(taus, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('taus    (ndx)', ierr, ndx)
-      call realloc(taubxu, lnx, stat=ierr, keepExisting=.false., fill=0d0) ! Always needs to be allocated, even if jawave == 0, used in gettau()
+      call realloc(taubxu, lnx, stat=ierr, keepExisting=.false., fill=0.0_dp) ! Always needs to be allocated, even if jawave == 0, used in gettau()
       call aerr('taubxu(lnx)', ierr, lnx)
-      call realloc(taubu, lnx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(taubu, lnx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('taubu(lnx)', ierr, lnx)
 
       ! link related
-      if (allocated(cfuhi)) deallocate (cfuhi)
-      if (allocated(frcu)) deallocate (frcu)
-      if (allocated(ifrcutp)) deallocate (ifrcutp)
-      if (allocated(u0)) deallocate (u0)
-      if (allocated(u1)) deallocate (u1)
-      if (allocated(q1)) deallocate (q1)
-      if (allocated(qa)) deallocate (qa)
-      if (allocated(map_fixed_weir_energy_loss)) deallocate (map_fixed_weir_energy_loss)
-      if (allocated(v)) deallocate (v)
-      if (allocated(ucxu)) deallocate (ucxu)
-      if (allocated(ucyu)) deallocate (ucyu)
-      if (allocated(hu)) deallocate (hu)
-      if (allocated(huvli)) deallocate (huvli)
-      if (allocated(au)) deallocate (au)
-      if (allocated(au_nostrucs)) deallocate (au_nostrucs)
-      if (allocated(viu)) deallocate (viu)
-      if (allocated(vicLu)) deallocate (vicLu)
-      if (allocated(suu)) deallocate (suu)
-      if (allocated(advi)) deallocate (advi)
-      if (allocated(adve)) deallocate (adve)
-      if (allocated(plotlin)) deallocate (plotlin)
-      if (allocated(frcu_bkp)) deallocate (frcu_bkp)
-      if (allocated(frcu_mor)) deallocate (frcu_mor)
+      if (allocated(cfuhi)) then
+         deallocate (cfuhi)
+      end if
+      if (allocated(frcu)) then
+         deallocate (frcu)
+      end if
+      if (allocated(ifrcutp)) then
+         deallocate (ifrcutp)
+      end if
+      if (allocated(u0)) then
+         deallocate (u0)
+      end if
+      if (allocated(u1)) then
+         deallocate (u1)
+      end if
+      if (allocated(q1)) then
+         deallocate (q1)
+      end if
+      if (allocated(qa)) then
+         deallocate (qa)
+      end if
+      if (allocated(map_fixed_weir_energy_loss)) then
+         deallocate (map_fixed_weir_energy_loss)
+      end if
+      if (allocated(v)) then
+         deallocate (v)
+      end if
+      if (allocated(ucxu)) then
+         deallocate (ucxu)
+      end if
+      if (allocated(ucyu)) then
+         deallocate (ucyu)
+      end if
+      if (allocated(hu)) then
+         deallocate (hu)
+      end if
+      if (allocated(huvli)) then
+         deallocate (huvli)
+      end if
+      if (allocated(au)) then
+         deallocate (au)
+      end if
+      if (allocated(au_nostrucs)) then
+         deallocate (au_nostrucs)
+      end if
+      if (allocated(viu)) then
+         deallocate (viu)
+      end if
+      if (allocated(vicLu)) then
+         deallocate (vicLu)
+      end if
+      if (allocated(suu)) then
+         deallocate (suu)
+      end if
+      if (allocated(advi)) then
+         deallocate (advi)
+      end if
+      if (allocated(adve)) then
+         deallocate (adve)
+      end if
+      if (allocated(plotlin)) then
+         deallocate (plotlin)
+      end if
+      if (allocated(frcu_bkp)) then
+         deallocate (frcu_bkp)
+      end if
+      if (allocated(frcu_mor)) then
+         deallocate (frcu_mor)
+      end if
 
       allocate (cfuhi(lnx), stat=ierr) ! hk: hier stond + 1, heb ik weggehaald
       call aerr('cfuhi(lnx)', ierr, lnx); cfuhi = 0
@@ -1059,54 +1120,70 @@ contains
       call aerr('plotlin(max(lnkx,ndkx))', ierr, lnkx); plotlin = 0
 
       if (jafrculin > 0) then
-         if (allocated(frculin)) deallocate (frculin)
+         if (allocated(frculin)) then
+            deallocate (frculin)
+         end if
          allocate (frculin(lnx), stat=ierr)
          call aerr('frculin (lnx)', ierr, ndx); frculin = dmiss
       end if
 
       if (network%loaded .or. stm_included) then
-         if (allocated(u_to_umain)) deallocate (u_to_umain)
+         if (allocated(u_to_umain)) then
+            deallocate (u_to_umain)
+         end if
          allocate (u_to_umain(lnkx), stat=ierr)
-         call aerr('u_to_umain   (lnkx)', ierr, lnkx); u_to_umain = 1d0
+         call aerr('u_to_umain   (lnkx)', ierr, lnkx); u_to_umain = 1.0_dp
 
-         if (allocated(q1_main)) deallocate (q1_main)
+         if (allocated(q1_main)) then
+            deallocate (q1_main)
+         end if
          allocate (q1_main(lnkx), stat=ierr)
          call aerr('q1_main   (lnkx)', ierr, lnkx); q1_main = 0
       end if
 
       if (jacali == 1) then
-         if (allocated(cfclval)) deallocate (cfclval)
+         if (allocated(cfclval)) then
+            deallocate (cfclval)
+         end if
          allocate (cfclval(numl), stat=ierr)
          call aerr('cfclval(numl)', ierr, numl); cfclval = 0
       end if
 
       if (jatrt == 1) then
-         if (allocated(cftrt)) deallocate (cftrt)
+         if (allocated(cftrt)) then
+            deallocate (cftrt)
+         end if
          allocate (cftrt(numl, 3), stat=ierr)
          call aerr('cftrt(numl,3)', ierr, numl); cftrt = 0
       end if
 
       if (jamap_chezy_elements > 0) then
-         if (allocated(czs)) deallocate (czs)
+         if (allocated(czs)) then
+            deallocate (czs)
+         end if
          allocate (czs(ndx), stat=ierr)
          call aerr('czs(ndx)', ierr, ndx); czs = 0
       end if
       if (jamap_chezy_links > 0) then
-         if (allocated(czu)) deallocate (czu)
+         if (allocated(czu)) then
+            deallocate (czu)
+         end if
          allocate (czu(lnx), stat=ierr)
          call aerr('czu(lnx)', ierr, lnx); czu = 0
       end if
 
       if (jarhoxu > 0 .or. jased > 0) then
-         if (allocated(rhou)) deallocate (rhou)
+         if (allocated(rhou)) then
+            deallocate (rhou)
+         end if
          allocate (rhou(lnkx), stat=ierr)
          call aerr('rhou (lnkx)', ierr, lnkx); rhou = rhomean
       end if
 
       ! m_integralstats
       if (is_numndvals > 0) then
-         call realloc(is_maxvalsnd, (/is_numndvals, ndx/), keepExisting=.false., fill=0d0)
-         call realloc(is_sumvalsnd, (/is_numndvals, ndx/), keepExisting=.false., fill=0d0)
+         call realloc(is_maxvalsnd, (/is_numndvals, ndx/), keepExisting=.false., fill=0.0_dp)
+         call realloc(is_sumvalsnd, (/is_numndvals, ndx/), keepExisting=.false., fill=0.0_dp)
          call realloc(is_valnamesnd, is_numndvals, keepExisting=.false., fill='')
       end if
 
@@ -1125,7 +1202,9 @@ contains
       call aerr('ru   (lnkx)', ierr, ndx); ru = 0
 
       if (jasal > 0 .or. kmx > 0) then
-         if (allocated(sa1)) deallocate (sa1)
+         if (allocated(sa1)) then
+            deallocate (sa1)
+         end if
          allocate (sa1(ndkx), stat=ierr)
          call aerr('sa1 (ndkx)', ierr, ndkx); sa1 = salini
 
@@ -1134,49 +1213,75 @@ contains
       end if
 
       if (ja_computed_airdensity == 1) then
-         if (allocated(patm)) deallocate (patm)
+         if (allocated(patm)) then
+            deallocate (patm)
+         end if
          allocate (patm(ndx), stat=ierr)
          call aerr('patm(ndx)', ierr, ndx)
-         patm(:) = 0d0
+         patm(:) = 0.0_dp
 
-         if (allocated(tair)) deallocate (tair)
+         if (allocated(tair)) then
+            deallocate (tair)
+         end if
          allocate (tair(ndx), stat=ierr)
          call aerr('tair(ndx)', ierr, ndx)
-         tair(:) = 0d0
+         tair(:) = 0.0_dp
 
-         if (allocated(rhum)) deallocate (rhum)
+         if (allocated(rhum)) then
+            deallocate (rhum)
+         end if
          allocate (rhum(ndx), stat=ierr)
          call aerr('rhum(ndx)', ierr, ndx)
-         rhum(:) = 0d0
+         rhum(:) = 0.0_dp
       end if
 
       if (jatem > 0) then
-         if (allocated(tem1)) deallocate (tem1)
+         if (allocated(tem1)) then
+            deallocate (tem1)
+         end if
          allocate (tem1(ndkx), stat=ierr)
          call aerr('tem1(ndkx) ', ierr, ndkx)
          tem1 = temini
          if (allocated(heatsrc)) deallocate (heatsrc, heatsrc0)
          allocate (heatsrc(ndkx), heatsrc0(ndkx), stat=ierr)
          call aerr('heatsrc(ndkx), heatsrc0(ndkx)', ierr, ndkx)
-         heatsrc = 0d0
-         heatsrc0 = 0d0
+         heatsrc = 0.0_dp
+         heatsrc0 = 0.0_dp
 
          if (jatem > 1) then ! also heat modelling involved
-            if (allocated(tair)) deallocate (tair)
-            if (allocated(rhum)) deallocate (rhum)
-            if (allocated(clou)) deallocate (clou)
+            if (allocated(tair)) then
+               deallocate (tair)
+            end if
+            if (allocated(rhum)) then
+               deallocate (rhum)
+            end if
+            if (allocated(clou)) then
+               deallocate (clou)
+            end if
             allocate (tair(ndx), rhum(ndx), clou(ndx), stat=ierr)
             call aerr('tair(ndx), rhum(ndx), clou(ndx)', ierr, 3 * ndx)
             tair = BACKGROUND_AIR_TEMPERATURE
             rhum = BACKGROUND_HUMIDITY
             clou = BACKGROUND_CLOUDINESS
-            if (allocated(qrad)) deallocate (qrad)
+            if (allocated(qrad)) then
+               deallocate (qrad)
+            end if
             allocate (qrad(ndx), stat=ierr)
             call aerr('qrad(ndx)', ierr, ndx)
-            qrad = 0d0
-            if (allocated(longwave)) deallocate (longwave)
+            qrad = 0.0_dp
+            if (allocated(solar_radiation)) then
+               deallocate (solar_radiation)
+            end if
+            allocate (solar_radiation(ndx), stat=ierr)
+            call aerr('solar_radiation(ndx)', ierr, ndx)
+            solar_radiation(:) = 0.0_dp
+            if (allocated(longwave)) then
+               deallocate (longwave)
+            end if
             if (Soiltempthick > 0) then
-               if (allocated(tbed)) deallocate (tbed)
+               if (allocated(tbed)) then
+                  deallocate (tbed)
+               end if
                allocate (tbed(ndx), stat=ierr)
                call aerr('tbed(ndx)', ierr, ndx)
                tbed = temini
@@ -1184,38 +1289,42 @@ contains
          end if
 
          if ((jamapheatflux > 0 .or. jahisheatflux > 0) .and. jatem > 1) then
-            if (allocated(Qtotmap)) deallocate (Qtotmap)
+            if (allocated(Qtotmap)) then
+               deallocate (Qtotmap)
+            end if
             allocate (Qtotmap(ndx), stat=ierr)
             call aerr('Qtotmap(ndx)', ierr, ndx)
-            Qtotmap = 0d0
+            Qtotmap = 0.0_dp
          end if
 
          if (jatem == 5) then ! save cd coeff if heat modelling also involved
-            if (allocated(cdwcof)) deallocate (cdwcof)
+            if (allocated(cdwcof)) then
+               deallocate (cdwcof)
+            end if
             allocate (cdwcof(lnx), stat=ierr)
             call aerr('cdwcof(lnx)', ierr, lnx)
-            cdwcof = 0d0
+            cdwcof = 0.0_dp
 
             if (jamapheatflux > 0 .or. jahisheatflux > 0) then ! his or map output
                if (allocated(qsunmap)) deallocate (Qsunmap, Qevamap, Qconmap, Qlongmap, Qfrevamap, Qfrconmap)
                allocate (Qsunmap(ndx), stat=ierr)
                call aerr('Qsunmap(ndx)', ierr, ndx)
-               Qsunmap = 0d0
+               Qsunmap = 0.0_dp
                allocate (Qevamap(ndx), stat=ierr)
                call aerr('Qevamap(ndx)', ierr, ndx)
-               Qevamap = 0d0
+               Qevamap = 0.0_dp
                allocate (Qconmap(ndx), stat=ierr)
                call aerr('Qconmap(ndx)', ierr, ndx)
-               Qconmap = 0d0
+               Qconmap = 0.0_dp
                allocate (Qlongmap(ndx), stat=ierr)
                call aerr('Qlongmap(ndx)', ierr, ndx)
-               Qlongmap = 0d0
+               Qlongmap = 0.0_dp
                allocate (Qfrevamap(ndx), stat=ierr)
                call aerr('Qfrevamap(ndx)', ierr, ndx)
-               Qfrevamap = 0d0
+               Qfrevamap = 0.0_dp
                allocate (Qfrconmap(ndx), stat=ierr)
                call aerr('Qfrconmap(ndx)', ierr, ndx)
-               Qfrconmap = 0d0
+               Qfrconmap = 0.0_dp
             end if
          end if
       end if
@@ -1225,56 +1334,68 @@ contains
          allocate (sed(mxgr, ndkx), stat=ierr)
          call aerr('sed (mxgr,ndkx)', ierr, ndkx * mxgr)
 
-         if (allocated(sdupq)) deallocate (sdupq)
+         if (allocated(sdupq)) then
+            deallocate (sdupq)
+         end if
          allocate (sdupq(mxgr, ndkx), stat=ierr)
          call aerr('sdupq(mxgr,ndkx)', ierr, ndkx * mxgr)
-         sdupq = 0d0
+         sdupq = 0.0_dp
 
          if (jaceneqtr == 1) then ! cell centre equilibrium transport concentration
             mxn = ndx
-            if (allocated(blinc)) deallocate (blinc)
+            if (allocated(blinc)) then
+               deallocate (blinc)
+            end if
             allocate (blinc(ndx), stat=ierr)
-            call aerr('blinc(ndx)', ierr, ndx); blinc = 0d0
+            call aerr('blinc(ndx)', ierr, ndx); blinc = 0.0_dp
          else ! cell corner equilibrium transport concentration
             mxn = numk
-            if (allocated(sedi)) deallocate (sedi)
+            if (allocated(sedi)) then
+               deallocate (sedi)
+            end if
             allocate (sedi(mxgr, ndx), stat=ierr)
-            call aerr('sedi(mxgr,ndx)', ierr, ndx * mxgr); sedi = 0d0
+            call aerr('sedi(mxgr,ndx)', ierr, ndx * mxgr); sedi = 0.0_dp
          end if
          allocate (grainlay(mxgr, mxn), stat=ierr)
-         call aerr('grainlay(mxgr,mxn)', ierr, mxgr * mxn); grainlay = 0d0
+         call aerr('grainlay(mxgr,mxn)', ierr, mxgr * mxn); grainlay = 0.0_dp
 
          if (kmx > 0 .and. jased > 0 .and. jased < 4) then
-            if (allocated(ustbc)) deallocate (ustbc)
+            if (allocated(ustbc)) then
+               deallocate (ustbc)
+            end if
             allocate (ustbc(mxn), stat=ierr)
-            call aerr('ustbc(mxn)', ierr, mxn); ustbc = 0d0
+            call aerr('ustbc(mxn)', ierr, mxn); ustbc = 0.0_dp
          end if
 
       end if
 
       if (idensform > 0 .and. jaRichardsononoutput > 0) then
-         if (allocated(rich)) deallocate (rich)
+         if (allocated(rich)) then
+            deallocate (rich)
+         end if
          allocate (rich(lnkx), stat=ierr)
-         call aerr('rich(lnkx)', ierr, lnkx); rich = 0d0
+         call aerr('rich(lnkx)', ierr, lnkx); rich = 0.0_dp
       else
          jaRichardsononoutput = 0
       end if
 
       if (ti_waq > 0) then
-         call realloc(q1waq, lnkx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(q1waq, lnkx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          if (kmx > 0) then
-            call realloc(qwwaq, ndkx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(qwwaq, ndkx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          end if
       end if
 
       if (itstep == 4) then ! explicit time-step
-         if (allocated(sqwave)) deallocate (sqwave)
+         if (allocated(sqwave)) then
+            deallocate (sqwave)
+         end if
          allocate (sqwave(ndx), stat=ierr)
          call aerr('sqwave (ndx)', ierr, ndx); sqwave = 0
       end if
 
       if (infiltrationmodel /= DFM_HYD_NOINFILT) then
-         call realloc(infilt, ndx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(infilt, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
 
          if (infiltrationmodel == DFM_HYD_INFILT_CONST) then
             call realloc(infiltcap, ndx, keepExisting=.false., fill=infiltcapuni, stat=ierr)
@@ -1284,14 +1405,14 @@ contains
       if (jagrw > 0) then
          if (allocated(sgrw0)) deallocate (sgrw0, sgrw1, pgrw, bgrw)
          allocate (sgrw0(ndx), stat=ierr)
-         call aerr('sgrw0(ndx)', ierr, ndx); sgrw0 = 0d0
+         call aerr('sgrw0(ndx)', ierr, ndx); sgrw0 = 0.0_dp
          allocate (sgrw1(ndx), stat=ierr)
-         call aerr('sgrw1(ndx)', ierr, ndx); sgrw1 = 0d0
+         call aerr('sgrw1(ndx)', ierr, ndx); sgrw1 = 0.0_dp
          allocate (pgrw(ndx), stat=ierr)
-         call aerr('pgrw (ndx)', ierr, ndx); pgrw = 0d0
+         call aerr('pgrw (ndx)', ierr, ndx); pgrw = 0.0_dp
          allocate (bgrw(ndx), stat=ierr)
          call aerr('bgrw (ndx)', ierr, ndx)
-         if (h_aquiferuni > 0d0) then
+         if (h_aquiferuni > 0.0_dp) then
             bgrw = bl - h_aquiferuni
          else
             bgrw = bgrwuni
@@ -1300,56 +1421,62 @@ contains
       end if
 
       if (jarain > 0) then
-         call realloc(rain, ndx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(rain, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
       end if
 
       if (jaevap > 0) then
-         call realloc(evap, ndx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(evap, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
       end if
 
       if (jaQext > 0) then
-         call realloc(qext, ndkx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(qext, ndkx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('qext(ndkx)', ierr, ndkx)
-         call realloc(qextreal, ndkx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(qextreal, ndkx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('qextreal(ndkx)', ierr, ndkx)
-         call realloc(vextcum, ndkx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(vextcum, ndkx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('vextcum(ndkx)', ierr, ndkx)
       end if
 
       if (nshiptxy > 0) then
-         if (allocated(zsp0)) deallocate (zsp0)
+         if (allocated(zsp0)) then
+            deallocate (zsp0)
+         end if
          allocate (zsp0(numk), stat=ierr)
-         call aerr('zsp0(numk)', ierr, numk); zsp0 = 0d0
+         call aerr('zsp0(numk)', ierr, numk); zsp0 = 0.0_dp
 
-         if (allocated(zspc)) deallocate (zspc)
+         if (allocated(zspc)) then
+            deallocate (zspc)
+         end if
          allocate (zspc(numk), stat=ierr)
-         call aerr('zspc(numk)', ierr, numk); zspc = 0d0
+         call aerr('zspc(numk)', ierr, numk); zspc = 0.0_dp
 
-         if (allocated(zspc0)) deallocate (zspc0)
-         allocate (zspc0(numk), stat=ierr); zspc0 = 0d0
+         if (allocated(zspc0)) then
+            deallocate (zspc0)
+         end if
+         allocate (zspc0(numk), stat=ierr); zspc0 = 0.0_dp
          call aerr('zspc0(numk)', ierr, numk)
 
          if (allocated(v0ship)) deallocate (v0ship, v1ship, qinship)
-         allocate (v0ship(ndx), v1ship(ndx), qinship(ndx), stat=ierr); v0ship = 0d0; v1ship = 0d0; qinship = 0d0
+         allocate (v0ship(ndx), v1ship(ndx), qinship(ndx), stat=ierr); v0ship = 0.0_dp; v1ship = 0.0_dp; qinship = 0.0_dp
          call aerr('v0ship(ndx), v1ship(ndx), qinship(ndx)', ierr, ndx)
 
-         call realloc(shL, 2, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(shL, 2, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('shL(2)', ierr, 2)
-         call realloc(shB, 2, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(shB, 2, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('shB(2)', ierr, 2)
-         call realloc(shd, 2, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(shd, 2, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('shd(2)', ierr, 2)
-         call realloc(stuw, 2, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(stuw, 2, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('stuw(2)', ierr, 2)
-         call realloc(fstuw, 2, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(fstuw, 2, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('fstuw(2)', ierr, 2)
-         call realloc(stuwmx, 2, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(stuwmx, 2, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('stuwmx(2)', ierr, 2)
-         call realloc(roer, 2, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(roer, 2, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('roer(2)', ierr, 2)
-         call realloc(froer, 2, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(froer, 2, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('froer(2)', ierr, 2)
-         call realloc(roermx, 2, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(roermx, 2, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('roermx(2)', ierr, 2)
       end if
 

@@ -47,8 +47,9 @@ contains
       use m_help
       use m_highlight_form_line
 
-      integer :: numpar, numfld, numparactual, numfldactual
-      parameter(NUMPAR=27, NUMFLD=2 * NUMPAR)
+      integer, parameter :: NUMPAR = 24
+      integer, parameter :: NUMFLD = 2 * NUMPAR
+      integer :: numparactual, numfldactual
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
       character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
@@ -59,7 +60,6 @@ contains
       NLEVEL = 4; i = 1
       OPTION(i) = 'ITURBULENCEMODEL                     ( )'; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'JAUSTARINT                           ( )'; it(2 * i) = 2; i = i + 1
-      OPTION(i) = 'jabaroctimeint                          '; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'JAVAKEPS                                '; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'IDENSFORM                               '; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'JARHOXU                                 '; it(2 * i) = 2; i = i + 1
@@ -74,7 +74,6 @@ contains
       OPTION(i) = 'Javiuplus3D                             '; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'Jaqaisq1                                '; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'Addksources                             '; it(2 * i) = 6; i = i + 1
-      OPTION(i) = 'Initialise rho, if not, first barocl = 0'; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'jaLogprofatubndin                       '; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'javau                                   '; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'jacomp                                  '; it(2 * i) = 2; i = i + 1
@@ -82,8 +81,7 @@ contains
       OPTION(i) = 'Drop3D                                  '; it(2 * i) = 6; i = i + 1
       OPTION(i) = 'jaStructurelayersactive                 '; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'jarhointerfaces                         '; it(2 * i) = 2; i = i + 1
-      OPTION(i) = 'maxitpresdens                           '; it(2 * i) = 2; i = i + 1
-      OPTION(i) = 'jabaroczlaybed, (fix for zed problem)   '; it(2 * i) = 2; i = i + 1
+      OPTION(i) = 'max_iterations_pressure_density         '; it(2 * i) = 2; i = i + 1
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -91,7 +89,6 @@ contains
       i = 1
       HELPM(i) = '0=no, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau     '; i = i + 1
       HELPM(i) = '0123                                                        '; i = i + 1
-      HELPM(i) = '1 = expl, -2; abashford, -3 = ab3, -5 = adv rho             '; i = i + 1
       HELPM(i) = '0 = NO, 3 = VERT IMPL, HOR EXPL                             '; i = i + 1
       HELPM(i) = '0 = no, 1 = eckart                                          '; i = i + 1
       HELPM(i) = '0 = no, 1 = YES                                             '; i = i + 1
@@ -106,7 +103,6 @@ contains
       HELPM(i) = '0=No, 1=Upwe, 2=Cente, 3=Upwi, 4=Centi, 5=4,3, 6=MCexpl     '; i = i + 1
       HELPM(i) = '0=no, 1 = yes                                               '; i = i + 1
       HELPM(i) = '0=no, 1 = yes                                               '; i = i + 1
-      HELPM(i) = '0=no, 1 = yes                                               '; i = i + 1
       HELPM(i) = 'at ubnd in: 0 = uniform U1, 1 = log U1, 2 = also k-eps      '; i = i + 1
       HELPM(i) = '0=no, 3 = impli upw, 5 = Quickest                           '; i = i + 1
       HELPM(i) = '0=standard, 1 = use csu snu in weights, 2 = scalarx,y banf  '; i = i + 1
@@ -115,7 +111,6 @@ contains
       HELPM(i) = '0=no, 1 = yes                                               '; i = i + 1
       HELPM(i) = '0=centers, 1 = interfaces                                   '; i = i + 1
       HELPM(i) = 'max nr of rho/pressure iterations, only for thermobaricity  '; i = i + 1
-      HELPM(i) = 'default now 1, was 0, keyword will disappear in future      '; i = i + 1
 
       call SAVEKEYS()
       NUMPARACTUAL = NUMPAR
@@ -186,7 +181,6 @@ contains
       i = 1
       call IFormPutINTEGER(2 * i, ITURBULENCEMODEL); i = i + 1
       call IFORMPUTINTEGER(2 * i, JAUSTARINT); i = i + 1
-      call IFORMPUTINTEGER(2 * i, jabaroctimeint); i = i + 1
       call IFORMPUTINTEGER(2 * i, JAVAKEPS); i = i + 1
       call IFORMPUTINTEGER(2 * i, IDENSFORM); i = i + 1
       call IFORMPUTINTEGER(2 * i, JARHOXU); i = i + 1
@@ -208,8 +202,7 @@ contains
       call IFORMPUTdouble(2 * i, drop3D, '(F7.3)'); i = i + 1
       call IFORMputINTEGER(2 * i, jastructurelayersactive); i = i + 1
       call IFORMputINTEGER(2 * i, jarhointerfaces); i = i + 1
-      call IFORMputINTEGER(2 * i, maxitpresdens); i = i + 1
-      call IFORMputINTEGER(2 * i, jabaroczlaybed); i = i + 1
+      call IFORMputINTEGER(2 * i, max_iterations_pressure_density); i = i + 1
 
       !  Display the form with numeric fields left justified
       !  and set the initial field to number 2
@@ -251,7 +244,6 @@ contains
             i = 1
             call IFORMGETINTEGER(2 * i, ITURBULENCEMODEL); i = i + 1
             call IFORMGETINTEGER(2 * i, JAUSTARINT); i = i + 1
-            call IFORMGETINTEGER(2 * i, jabaroctimeint); i = i + 1
             call IFORMGETINTEGER(2 * i, JAVAKEPS); i = i + 1
             call IFORMGETINTEGER(2 * i, IDENSFORM); i = i + 1
             call IFORMGETINTEGER(2 * i, JARHOXU); i = i + 1
@@ -273,9 +265,7 @@ contains
             call IFORMGETdouble(2 * i, Drop3D); i = i + 1
             call IFORMGETINTEGER(2 * i, jastructurelayersactive); i = i + 1
             call IFORMGETINTEGER(2 * i, jarhointerfaces); i = i + 1
-            call IFORMGetINTEGER(2 * i, maxitpresdens); i = i + 1
-            call IFORMGetINTEGER(2 * i, jabaroczlaybed); i = i + 1
-
+            call IFORMGetINTEGER(2 * i, max_iterations_pressure_density); i = i + 1
          end if
          call IWinClose(1)
          call IWinClose(1)

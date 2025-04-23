@@ -2737,10 +2737,14 @@ contains
          fileReaderPtr%standard_names(idvar) = ncstdnames(i) ! overwrite the standardname by the one required
 
          ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, idvar, ndims=ndims) ! get the number of dimensions
-         if (allocated(coordids)) deallocate (coordids) ! allocate space for the variable id's
+         if (allocated(coordids)) then
+            deallocate (coordids) ! allocate space for the variable id's
+         end if
          allocate (coordids(ndims)) ! .. representing the var's coordinates
          coordids = -1
-         if (allocated(dimids)) deallocate (dimids)
+         if (allocated(dimids)) then
+            deallocate (dimids)
+         end if
          allocate (dimids(ndims))
          ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, idvar, dimids=dimids) ! get dimension ID's
 

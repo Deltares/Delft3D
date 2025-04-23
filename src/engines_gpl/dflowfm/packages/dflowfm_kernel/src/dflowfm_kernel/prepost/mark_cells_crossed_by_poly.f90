@@ -53,7 +53,9 @@ contains
       integer :: k, kk, k1, k2, L, N, lnn_orig
 
       !  allocate node mask arrays
-      if (allocated(cellmask)) deallocate (cellmask)
+      if (allocated(cellmask)) then
+         deallocate (cellmask)
+      end if
       allocate (Lmask(numL), cellmask(nump))
 
       !  make the linkmask

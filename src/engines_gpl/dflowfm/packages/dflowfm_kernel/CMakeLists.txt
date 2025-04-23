@@ -191,6 +191,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
 # Define additional compilation flags
 
 set_source_files_properties(${fortran_version_files}
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/deprecation.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/partition.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/pressakey.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/print_timings.F90

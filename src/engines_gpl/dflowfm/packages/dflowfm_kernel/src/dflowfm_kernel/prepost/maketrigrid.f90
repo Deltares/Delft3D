@@ -164,8 +164,12 @@ contains
          end do
 
 !      deallocate
-         if (allocated(x)) deallocate (x)
-         if (allocated(y)) deallocate (y)
+         if (allocated(x)) then
+            deallocate (x)
+         end if
+         if (allocated(y)) then
+            deallocate (y)
+         end if
 
 !      plot grid
          call tekgrid(i)

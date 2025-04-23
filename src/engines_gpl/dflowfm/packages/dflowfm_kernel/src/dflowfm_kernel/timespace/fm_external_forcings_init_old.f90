@@ -40,7 +40,7 @@ contains
       use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
       use m_setinitialverticalprofile, only: setinitialverticalprofile
       use precision, only: dp
-      use m_addsorsin, only: addsorsin
+      use m_addsorsin, only: addsorsin_from_polyline_file
       use m_add_tracer, only: add_tracer
       use m_setzcs, only: setzcs
       use m_getkbotktopmax
@@ -170,12 +170,16 @@ contains
 
             else if (qid == 'internaltidesfrictioncoefficient') then
                if (jaFrcInternalTides2D /= 1) then ! not added yet
-                  if (allocated(frcInternalTides2D)) deallocate (frcInternalTides2D)
+                  if (allocated(frcInternalTides2D)) then
+                     deallocate (frcInternalTides2D)
+                  end if
                   allocate (frcInternalTides2D(Ndx), stat=ierr)
                   call aerr('frcInternalTides2D(Ndx)', ierr, Ndx)
                   frcInternalTides2D = DMISS
 
-                  if (allocated(DissInternalTidesPerArea)) deallocate (DissInternalTidesPerArea)
+                  if (allocated(DissInternalTidesPerArea)) then
+                     deallocate (DissInternalTidesPerArea)
+                  end if
                   allocate (DissInternalTidesPerArea(Ndx), stat=ierr)
                   call aerr(' DissInternalTidesPerArea(Ndx)', ierr, Ndx)
                   DissInternalTidesPerArea = 0d0
@@ -187,7 +191,9 @@ contains
             else if (qid == 'horizontaleddyviscositycoefficient') then
 
                if (javiusp == 0) then
-                  if (allocated(viusp)) deallocate (viusp)
+                  if (allocated(viusp)) then
+                     deallocate (viusp)
+                  end if
                   allocate (viusp(lnx), stat=ierr)
                   call aerr('viusp(lnx)', ierr, lnx)
                   viusp = dmiss
@@ -199,7 +205,9 @@ contains
             else if (qid == 'horizontaleddydiffusivitycoefficient') then
 
                if (jadiusp == 0) then
-                  if (allocated(diusp)) deallocate (diusp)
+                  if (allocated(diusp)) then
+                     deallocate (diusp)
+                  end if
                   allocate (diusp(lnx), stat=ierr)
                   call aerr('diusp(lnx)', ierr, lnx)
                   diusp = dmiss
@@ -211,7 +219,9 @@ contains
             else if (qid == 'windstresscoefficient') then
 
                if (jaCdwusp == 0) then
-                  if (allocated(Cdwusp)) deallocate (Cdwusp)
+                  if (allocated(Cdwusp)) then
+                     deallocate (Cdwusp)
+                  end if
                   allocate (Cdwusp(lnx), stat=ierr)
                   call aerr('Cdwusp(lnx)', ierr, lnx)
                   Cdwusp = dmiss
@@ -224,7 +234,9 @@ contains
             else if (qid == 'windspeedfactor') then
 
                if (ja_wind_speed_factor == 0) then
-                  if (allocated(wind_speed_factor)) deallocate (wind_speed_factor)
+                  if (allocated(wind_speed_factor)) then
+                     deallocate (wind_speed_factor)
+                  end if
                   allocate (wind_speed_factor(lnx), stat=ierr)
                   call aerr('wind_speed_factor(lnx)', ierr, lnx)
                   wind_speed_factor(:) = dmiss
@@ -236,7 +248,9 @@ contains
             else if (qid == 'solarradiationfactor') then
 
                if (ja_solar_radiation_factor == 0) then
-                  if (allocated(solar_radiation_factor)) deallocate (solar_radiation_factor)
+                  if (allocated(solar_radiation_factor)) then
+                     deallocate (solar_radiation_factor)
+                  end if
                   allocate (solar_radiation_factor(ndx), stat=ierr)
                   call aerr('solar_radiation_factor(ndx)', ierr, lnx)
                   solar_radiation_factor(:) = dmiss
@@ -248,7 +262,9 @@ contains
             else if (qid == 'secchidepth') then
 
                if (jaSecchisp == 0) then
-                  if (allocated(Secchisp)) deallocate (Secchisp)
+                  if (allocated(Secchisp)) then
+                     deallocate (Secchisp)
+                  end if
                   allocate (Secchisp(ndx), stat=ierr)
                   call aerr('Secchisp(ndx)', ierr, lnx)
                   Secchisp = dmiss
@@ -271,7 +287,9 @@ contains
                   cycle
                end if
 
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx))
 
                ! NOTE: we intentionally re-use the lateral coding here for selection of 1D and/or 2D flow nodes
@@ -462,7 +480,9 @@ contains
                   iconst = find_name(const_names, sfnam)
                end if
                if (iconst > 0) then
-                  if (allocated(viuh)) deallocate (viuh)
+                  if (allocated(viuh)) then
+                     deallocate (viuh)
+                  end if
                   allocate (viuh(Ndkx))
 
                   !          copy existing values (if they existed) in temp array
@@ -532,7 +552,9 @@ contains
                end if
                iconst = itrac2const(itrac)
 
-               if (allocated(viuh)) deallocate (viuh)
+               if (allocated(viuh)) then
+                  deallocate (viuh)
+               end if
                allocate (viuh(Ndkx))
 
                ! copy existing tracer values (if they existed) in temp array
@@ -548,7 +570,9 @@ contains
                   kx = 1
                   pkbot => kbot
                   pktop => ktop
-                  if (allocated(mask)) deallocate (mask)
+                  if (allocated(mask)) then
+                     deallocate (mask)
+                  end if
                   allocate (mask(ndx), source=1)
                   ec_item = ec_undef_int
                   call setzcs()
@@ -597,7 +621,9 @@ contains
                   end if
                end if
 
-               if (allocated(viuh)) deallocate (viuh)
+               if (allocated(viuh)) then
+                  deallocate (viuh)
+               end if
                allocate (viuh(Ndxi))
 
                ! copy existing tracer values (if they existed) in temp array
@@ -721,7 +747,9 @@ contains
 
                call allocatewindarrays()
 
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(lnx), source=1)
 
                jawindstressgiven = merge(1, 0, qid(1:6) == 'stress') ! if (index(qid,'str') > 0) jawindstressgiven = 1
@@ -737,7 +765,9 @@ contains
                end if
 
             else if (qid == 'friction_coefficient_time_dependent') then
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(lnx), source=1)
 
                if (len_trim(sourcemask) > 0) then
@@ -760,7 +790,9 @@ contains
 
                call allocatewindarrays()
 
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
 
                jawindstressgiven = merge(1, 0, qid == 'airpressure_stressx_stressy')
@@ -816,7 +848,9 @@ contains
 
                ! Meteo1
                kx = 3; itempforcingtyp = 1
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax=3
@@ -825,7 +859,9 @@ contains
 
                ! Meteo1
                kx = 3; itempforcingtyp = 3
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 3
@@ -838,7 +874,9 @@ contains
 
                ! Meteo1
                kx = 4; itempforcingtyp = 2
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
@@ -851,7 +889,9 @@ contains
 
                ! Meteo1
                kx = 4; itempforcingtyp = 4
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
@@ -866,7 +906,9 @@ contains
                pkbot => kbot
                pktop => ktop
 
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, z=zcs, pkbot=pkbot, pktop=pktop, varname=varname)
 
@@ -1129,7 +1171,7 @@ contains
             else if (qid == 'discharge_salinity_temperature_sorsin') then
 
                ! 1. Prepare source-sink location (will increment numsrc, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
-               call addsorsin(filename, transformcoef(4), ierr)
+               call addsorsin_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
                if (ierr /= DFM_NOERR) then
                   success = .false.
                else
@@ -1222,7 +1264,9 @@ contains
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand)
 
                case (2)
-                  if (allocated(mask)) deallocate (mask)
+                  if (allocated(mask)) then
+                     deallocate (mask)
+                  end if
                   allocate (mask(lnx), source=1, stat=ierr)
                   call aerr('mask(lnx)', ierr, lnx)
                   allocate (subsupl(lnx), stat=ierr)
@@ -1240,7 +1284,9 @@ contains
                   success = ec_addtimespacerelation(qid, xu, yu, mask, kx, filename, filetype, method, operand, varname=varname)
 
                case (3, 4, 5, 6)
-                  if (allocated(mask)) deallocate (mask)
+                  if (allocated(mask)) then
+                     deallocate (mask)
+                  end if
                   allocate (mask(numk), source=1, stat=ierr)
                   call aerr('mask(numk)', ierr, numk)
                   allocate (subsupl(numk), stat=ierr)
@@ -1367,7 +1413,7 @@ contains
    !> Initialization of all extra quantities not covered by initialize_ext_old, such as structures and laterals. Only called as part of fm_initexternalforcings
    module subroutine init_misc(iresult)
       use precision, only: dp
-      use m_flowgeom, only: ln, xz, yz, iadv, ba, wu
+      use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, IADV_SUBGRID_WEIR, IADV_GENERAL_STRUCTURE
       use unstruc_model, only: md_extfile_dir
       use timespace, only: uniform, spaceandtime, readprovider
       use m_structures, only: jaoldstr
@@ -1415,16 +1461,26 @@ contains
       end if
 
       if (jaoldstr > 0) then
-         if (allocated(kgate)) deallocate (kgate)
-         if (allocated(xgate)) deallocate (xgate)
-         if (allocated(ygate)) deallocate (ygate)
-         if (allocated(zgate)) deallocate (zgate)
+         if (allocated(kgate)) then
+            deallocate (kgate)
+         end if
+         if (allocated(xgate)) then
+            deallocate (xgate)
+         end if
+         if (allocated(ygate)) then
+            deallocate (ygate)
+         end if
+         if (allocated(zgate)) then
+            deallocate (zgate)
+         end if
 
          allocate (xgate(ngatesg), ygate(ngatesg), zgate(ngatesg), xy2gate(2, ngatesg), kgate(3, ngate), kdg(ngatesg), stat=ierr)
          call aerr('xgate(ngatesg), ygate(ngatesg), zgate(ngatesg), xy2gate(2,ngatesg), kgate(3,ngate), kdg(ngatesg)', ierr, ngate * 10)
          kgate = 0d0; zgate = 1d10; kdg = 1
 
-         if (allocated(gate_ids)) deallocate (gate_ids)
+         if (allocated(gate_ids)) then
+            deallocate (gate_ids)
+         end if
          allocate (gate_ids(ngatesg))
 
          do n = 1, ngatesg
@@ -1477,15 +1533,25 @@ contains
       end if
 
       if (jaoldstr > 0 .and. ncdamsg > 0) then
-         if (allocated(xcdam)) deallocate (xcdam)
-         if (allocated(ycdam)) deallocate (ycdam)
-         if (allocated(zcdam)) deallocate (zcdam)
-         if (allocated(kcdam)) deallocate (kcdam)
+         if (allocated(xcdam)) then
+            deallocate (xcdam)
+         end if
+         if (allocated(ycdam)) then
+            deallocate (ycdam)
+         end if
+         if (allocated(zcdam)) then
+            deallocate (zcdam)
+         end if
+         if (allocated(kcdam)) then
+            deallocate (kcdam)
+         end if
          allocate (xcdam(ncdamsg), ycdam(ncdamsg), zcdam(ncdamsg), xy2cdam(2, ncdamsg), kcdam(3, ncdam), kdd(ncdamsg), stat=ierr)
          call aerr('xcdam(ncdamsg), ycdam(ncdamsg), zcdam(ncdamsg), xy2cdam(2,ncdamsg), kcdam(3,ncdam), kdd(ncdamsg)', ierr, ncdam * 10)
          kcdam = 0d0; zcdam = 1d10; kdd = 1
 
-         if (allocated(cdam_ids)) deallocate (cdam_ids)
+         if (allocated(cdam_ids)) then
+            deallocate (cdam_ids)
+         end if
          allocate (cdam_ids(ncdamsg))
 
          do n = 1, ncdamsg
@@ -1502,7 +1568,7 @@ contains
                xy2cdam(1, n) = xz(kbi)
                xy2cdam(2, n) = yz(kbi)
 
-               iadv(Lf) = 21
+               iadv(Lf) = IADV_SUBGRID_WEIR
                call setfixedweirscheme3onlink(Lf)
             end do
          end do
@@ -1584,23 +1650,35 @@ contains
                end if
             end if
          end do
-         if (allocated(kclat)) deallocate (kclat)
+         if (allocated(kclat)) then
+            deallocate (kclat)
+         end if
       end if
 
       if (jaoldstr > 0 .and. ncgensg > 0) then
          if (allocated(xcgen)) deallocate (xcgen, ycgen, zcgen)
-         if (allocated(kcgen)) deallocate (kcgen)
+         if (allocated(kcgen)) then
+            deallocate (kcgen)
+         end if
          kx = 3
          allocate (xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg * kx), xy2cgen(2, ncgensg), kcgen(4, ncgen), kdgen(ncgensg), stat=ierr)
          call aerr('xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg*kx), xy2cgen(2,ncgensg), kcgen(4,ncgen), kdgen(ncgensg)', ierr, ncgen * 10)
          kcgen = 0d0; zcgen = 1d10; kdgen = 1
 
-         if (allocated(fusav)) deallocate (fusav)
-         if (allocated(rusav)) deallocate (rusav)
-         if (allocated(ausav)) deallocate (ausav)
+         if (allocated(fusav)) then
+            deallocate (fusav)
+         end if
+         if (allocated(rusav)) then
+            deallocate (rusav)
+         end if
+         if (allocated(ausav)) then
+            deallocate (ausav)
+         end if
          allocate (Fusav(3, ncgen), Rusav(3, ncgen), Ausav(3, ncgen), stat=ierr); Fusav = 0d0; Rusav = 0d0; ausav = 0d0
 
-         if (allocated(cgen_ids)) deallocate (cgen_ids)
+         if (allocated(cgen_ids)) then
+            deallocate (cgen_ids)
+         end if
          allocate (cgen_ids(ncgensg))
 
          ! Temp array width wu(L) values for all links under a single general structure
@@ -1628,7 +1706,7 @@ contains
                xy2cgen(1, n) = xz(kbi)
                xy2cgen(2, n) = yz(kbi)
 
-               iadv(Lf) = 22 ! iadv = general
+               iadv(Lf) = IADV_GENERAL_STRUCTURE ! iadv = general
                call setfixedweirscheme3onlink(Lf)
             end do
          end do
@@ -1664,9 +1742,13 @@ contains
             end if
          end do
 
-         if (allocated(generalstruc)) deallocate (generalstruc)
+         if (allocated(generalstruc)) then
+            deallocate (generalstruc)
+         end if
          allocate (generalstruc(ncgensg))
-         if (allocated(cgen_type)) deallocate (cgen_type)
+         if (allocated(cgen_type)) then
+            deallocate (cgen_type)
+         end if
          allocate (cgen_type(ncgensg))
          cgen_type(1:ncgensg) = ICGENTP_GENSTRU ! We only have true fully parameterized general structures from old ext file
 
@@ -1683,16 +1765,28 @@ contains
       end if
 
       if (jaoldstr > 0 .and. npump > 0) then
-         if (allocated(xpump)) deallocate (xpump)
-         if (allocated(ypump)) deallocate (ypump)
-         if (allocated(qpump)) deallocate (qpump)
-         if (allocated(kpump)) deallocate (kpump)
-         if (allocated(pumponoff)) deallocate (pumponoff)
+         if (allocated(xpump)) then
+            deallocate (xpump)
+         end if
+         if (allocated(ypump)) then
+            deallocate (ypump)
+         end if
+         if (allocated(qpump)) then
+            deallocate (qpump)
+         end if
+         if (allocated(kpump)) then
+            deallocate (kpump)
+         end if
+         if (allocated(pumponoff)) then
+            deallocate (pumponoff)
+         end if
          allocate (xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2, npumpsg), kpump(3, npump), kdp(npumpsg), stat=ierr)
          call aerr('xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2,npumpsg), kpump(3,npump), kdp(npumpsg)', ierr, npump * 10)
          kpump = 0; qpump = 0d0; kdp = 1
 
-         if (allocated(pump_ids)) deallocate (pump_ids)
+         if (allocated(pump_ids)) then
+            deallocate (pump_ids)
+         end if
          allocate (pump_ids(npumpsg)) ! TODO: names are not stored here yet (they are in init_structure_control, but not for old ext file)
          allocate (pumponoff(5, npumpsg)); pumponoff = dmiss
 

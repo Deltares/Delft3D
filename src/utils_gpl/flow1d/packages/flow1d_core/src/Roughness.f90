@@ -241,7 +241,7 @@ contains
       case (R_MANNING)
          frictionTypeIntegerToString = 'Manning'
       case (R_WALL_LAW_NIKURADSE)
-         frictionTypeIntegerToString = 'WallLawNikuradse'
+         frictionTypeIntegerToString = 'wallLawNikuradse'
       case (R_WHITE_COLEBROOK)
          frictionTypeIntegerToString = 'WhiteColebrook'
       case (R_NIKURADSE)
@@ -249,7 +249,7 @@ contains
       case (R_STRICKLER)
          frictionTypeIntegerToString = 'Strickler'
       case (R_BOS_BIJKERK)
-         frictionTypeIntegerToString = 'deBosBijkerk'
+         frictionTypeIntegerToString = 'DeBosBijkerk'
       case default
          frictionTypeIntegerToString = 'unknown'
       end select

@@ -185,7 +185,7 @@ module RRRunoff
 ! SCS input parameters
   REAL, Pointer, SAVE ::         SCS_Slope(:), SCS_Length(:)
   Integer, Pointer, SAVE ::      SCS_UHChosen(:), SCS_AMC(:)
-  Real   , Pointer, SAVE ::      SCS_CurveNumber(:)
+  Real   , Pointer, SAVE ::      SCS_CurveNumber(:), SCS_HMSLinResR(:), SCS_HMSC1(:), SCS_HMSC2(:)
   Real, Pointer, SAVE ::         SCS_CN1(:), SCS_CN2(:), SCS_CN3(:)
 
   REAL, Pointer, SAVE ::         SCS_MaxRetention(:), SCS_Tlag(:), SCS_Tc(:),  &
@@ -193,6 +193,8 @@ module RRRunoff
                                  SCS_Paccum0(:), SCS_PExcess0(:), &
                                  SCS_Storage(:), SCS_Storage0(:), SCS_Rainfall(:), &
                                  SCS_UnitHydComp(:,:), SCS_AvailableRunoff(:,:)
+
+Real   , Pointer, SAVE ::        SCS_HMSLinResInflow(:), SCS_HMSLinResInflowTot(:), SCS_HMSLinResOutflow0(:), SCS_HMSLinResOutflow(:), SCS_HMSLinResContent(:), SCS_HMSLinResContent0(:)
 
 REAL   , Pointer, SAVE :: SCS_Snyder_Cp(:)                      ! Snyder Peaking Factor
 REAL   , Pointer, SAVE :: SCS_Snyder_UH_decay_rate(:)           ! Decay rate (1/hour) of exponential part of Snyder UH
@@ -556,6 +558,14 @@ contains
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UHChosen, 0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_AMC, 2)    ! default AMC 2 = average
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_MaxRetention, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResR, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSC1, 1E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSC2, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResContent, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResContent0, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResInflowTot, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResOutflow0, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResOutflow, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_TLag, -999.9E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Tc, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_PAccum, 0E0)
@@ -1117,8 +1127,7 @@ contains
         FileName = ConfFil_get_namFil(44)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,3)  ! Sacrmnto.3b   ! maybe already existing (updating Sacr. input, append mode)
-        Write(*,*) ' Cleaning Sacrmnto.3b for RRrunoff input to file:', FileName
-        Write(iout1,*) ' Cleaning Sacrmnto.3b for RRrunoff input to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Sacrmnto.3b for RRrunoff input to file', FileName)
    endif
 ! *********************************************************************
 ! Read RRRunoffNode.3B file   (=Sacrmnto.3b file!)
@@ -1458,6 +1467,12 @@ contains
                NodeId = Id_Nod(inod)
                call ErrMsgStandard (977, 0, ' Basin Time Lag is required for Snyder UH SCS Runoff node ',trim(NodeId))
             endif
+            ! optional reservoir coefficient for HEC-HMS formulation
+            allow = .true.
+            found = .false.
+            Retval = RetVal + GetVAR2(STRING,' r ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                         CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+            if (found) SCS_HMSLinResR(IRRRunoffSub) = RDUM(1)
             ! optional antecedent moisture conditions: amc 1,2,3
             allow = .true.
             found = .false.
@@ -2490,8 +2505,7 @@ contains
            IF (ENDFIL) GOTO 2112
            Success = GetStringFromBuffer (KeepBufString)
            IF (.not. Success .and. CleanRRFiles)   then
-               Write(*,*) 'local buffer RRRunoffModule too small, NAMS record'
-               Write(iout1,*) 'local buffer RRRunoffModule too small, NAMS record'
+               Call ErrMsgStandard (999, 3, ' Local buffer RRRunoffmodule NAMS record D-NAM too small', ' Input skipped')
                GOTO 2112
            Endif
            Success = Success .and. GetStringFromBuffer (String)
@@ -2534,8 +2548,8 @@ contains
                      write(Iounit,'(A)') KeepBufString (1:ipos+4)
                      KeepBufString(1:) = KeepBufString(ipos+5:)
                   else
-                     ! warning: no TBLE found
-                       call SetMessage(LEVEL_WARN, 'NAMS optional table definitions capt TBLE and/or pert TBLE not found')
+                     ! warning/error: no TBLE found
+                       call SetMessage(LEVEL_ERROR, 'NAMS optional table definitions capt TBLE and/or pert TBLE not found')
                        goto 1032
                   endif
  1031             continue
@@ -3280,8 +3294,7 @@ contains
                IF (ENDFIL) GOTO 3113
                Success = GetStringFromBuffer (KeepBufString)
                IF (.not. Success .and. CleanRRFiles)   then
-                   Write(*,*) 'local buffer RRRunoffModule too small, NAMG record'
-                   Write(iout1,*) 'local buffer RRRunoffModule too small, NAMG record'
+                   Call ErrMsgStandard (999, 3, ' Local buffer RRRunoffmodule NAMG record D-NAM too small', ' Input skipped')
                    GOTO 3113
                Endif
                Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -4364,8 +4377,7 @@ contains
           IF (.not. success) GOTO 6115
            Success = GetStringFromBuffer (KeepBufString)
            IF (.not. Success .and. CleanRRFiles)   then
-               Write(*,*) 'local buffer RRRunoffModule too small, HSTT record'
-               Write(iout1,*) 'local buffer RRRunoffModule too small, HSTT record'
+               Call ErrMsgStandard (999, 3, ' Local buffer RRRunoffmodule HSTT record WALRUS too small', ' Input skipped')
                GOTO 6115
            Endif
           If (TabYesNo .and. TableName .ne. '') Then
@@ -5622,6 +5634,11 @@ contains
      ! convert Tc to computation timesteps
      ! SCS_Tlag = ceiling ( SCS_Tlag * 3600. / timeSettings%TimestepSize)
      SCS_Tc = ( SCS_Tc * 3600. / timeSettings%TimestepSize)
+     SCS_HMSLinResR = ( SCS_HMSLinResR * 3600. / timeSettings%TimestepSize)  ! R linear reservoir coefficient from hours to nr. timesteps
+     Do IRRRunoffSub=1,NcRRRunoffSCS
+        If (SCS_HMSLinResR(IRRRunoffSub) .gt. 0) SCS_HMSC1(IRRRunoffSub) = ( 1.0E0 / (SCS_HMSLinResR(IRRRunoffSub) + 0.5 ) )
+     Enddo
+     SCS_HMSC2   = 1.0E0 - SCS_HMSC1
      SCS_PAccum  = 0.0
      SCS_PExcess = 0.0
      SCS_Storage = 0.0
@@ -5636,8 +5653,10 @@ contains
            If (SCS_UHChosen(iRRRunoffSub) .eq. 0) then
                ! HEC-HMS
                MaxTc = max (MaxTc, Ceiling(SCS_Tc(iRRRunoffSub)) + 1 )
+                ! with linear reservoir: take into account further attenuation/extension of SCS_TC with factor 5
+               if (SCS_HMSLinResR(iRRRunoffSub) .gt. 0) MaxTc = max (MaxTc, 5*Ceiling(SCS_Tc(iRRRunoffSub)) + 1 )
            else If (SCS_UHChosen(iRRRunoffSub) .eq. 1) then
-               ! SCS dimensionless; first convert Timelag to nr of computation timesteps!
+               ! SCS dimensionless; first convert Timelag to nr of computation timesteps! The factor 5 is related to time-lage (< Tc) as specified in SCS method
                MaxTc = max (MaxTc, 1 + Ceiling (5* (SCS_Tlag(iRRRunoffSub) * 3600./timeSettings%TimestepSize + 0.5)))
            else if (SCS_UHChosen(iRRRunoffSub) .eq. 2) then ! Snyder
                SCS_Tc(iRRRunoffSub) = (SHG_set%SHG(iRRRunoffSub)%time_array(7) * 3600./timeSettings%TimestepSize)
@@ -5663,6 +5682,7 @@ contains
 
    if (Ievent .eq. 1 .and. FirstCall .and. NcRRRunoffSCS .gt. 0) then
        Success = Dh_AllocInit (MaxTc, NcRRRunoff, SCS_UnitHydComp, 0E0)
+       Success = Dh_AllocInit (MaxTc, SCS_HMSLinResInflow, 0E0)
        Success = Success .and. Dh_AllocInit (NcRRRunoff, MaxTc, SCS_AvailableRunoff, 0E0)
        If (.not. success) call ErrMsgStandard (981, 0, ' Error allocating arrays in subroutine ', ' RRRunoffNode_Init1' )
        Call ComputeSCSUnitHydrographComponents
@@ -5906,6 +5926,7 @@ contains
      if (RRRunoff_CompOption(IRRRunoff) .eq. 2) then
         if (SCS_UHChosen(IRRRunoffSub) .eq. 0) then
            ! HEC-HMS unit hydrograph, as used in Jakarta Floods 2007
+           ! time-area diagram g
            Do j=1,ceiling(SCS_Tc(IRRRunoffSub))
               if (j .le. 0.5*SCS_TC(IRRRunoffSub))  then
                  SCS_UnitHydComp(j,IRRRunoffSub) = 1.414 * ( (j / SCS_Tc(IRRRunoffSub)) ** 1.5)
@@ -5964,12 +5985,18 @@ contains
 
    if (NcRRRunoffSCS .gt. 0) then
       SCS_Storage0           =  SCS_Storage
+      SCS_HMSLinResContent0  =  SCS_HMSLinResContent
       SCS_PAccum0            =  SCS_PAccum
       SCS_PExcess0           =  SCS_PExcess
       ! SCSbaseflow extensions
       SCS_GwAct0            =  SCS_GwAct
-      SCS_SubSurfAct0       =  SCS_SubSurfAct0
-      SCS_SurfAct0          =  SCS_SurfAct0
+      SCS_SubSurfAct0       =  SCS_SubSurfAct
+      SCS_SurfAct0          =  SCS_SurfAct
+      ! HMS lin.res
+      SCS_HMSLinResOutflow0 =  SCS_HMSLinResOutflow
+      SCS_HMSLinResOutflow  =  0.0
+      SCS_HMSLinResInflow   =  0.0
+      SCS_HMSLinResInflowTot=  0.0
    endif
 
    if (NcRRRunoffLGSI .gt. 0) then
@@ -6548,7 +6575,7 @@ contains
          SnowFall, Rainfall, PotSnowMelt, PotRefreezing, Refreezing, Snowmelt, &
          MaxFreeWater, InSoil, DirectRunoff, NetInSoil, Seepage, InUpperZone, &
          Percolation, BaseFlow, InterFlow, QuickFlow, HBVRunoff
-    Real SCS_Runoff, PAcc, SMax
+    Real SCS_Runoff, PAcc, SMax, SCS_RunoffHMS
 
 ! additional local variables for NAM
     double precision NamAlfa, Lalfa, Infcap, DLMax, GPotMax, GMax, AdInf, OFDt1, OFDt2
@@ -6827,6 +6854,35 @@ contains
                   Do j=1,Ceiling (SCS_Tc(IRRRunoffSub)) + 1
                      SCS_Runoff = SCS_Runoff + SCS_UnitHydComp(j,IRRRunoffSub) * SCS_AvailableRunoff(IRRRunoffSub,j)
                   Enddo
+                  SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
+                  QF2 = SCS_Runoff * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
+
+                  ! adjustment in case of use HMS UH with linear reservoir (so far only the time-area diagram is taken into account)
+                  if (SCS_UHChosen(IRRRunoffSub) .eq. 0  .and. SCS_HMSLinResR(iRRRunoffSub) .gt. 0) then
+                      if (idebug .ne. 0) then
+                         Write(Idebug,*) ' HMS LinResR', SCS_HMSLinResR(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_AvailableRunoff', (SCS_AvailableRunoff(IRRRunoffSub,j),j=1,MaxTc)
+                         Write(Idebug,*) ' SCS_UnitHydComp', (SCS_UnitHydComp(j,IRRRunoffSub),j=1,Ceiling (SCS_Tc(IRRRunoffSub)) + 1)
+                         Write(Idebug,*) ' SCSRunoff     ', SCS_Runoff
+                         Write(Idebug,*) ' SCS_HMSC1     ', SCS_HMSC1(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSC2     ', SCS_HMSC2(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSLinResContent0 ', SCS_HMSLinResContent0(IRRRunoffSub)
+                      Endif
+                      Do j=1,Ceiling (SCS_Tc(IRRRunoffSub)) + 1
+                         SCS_HMSLinResInflow(j) = SCS_UnitHydComp(j,IRRRunoffSub) * SCS_AvailableRunoff(IRRRunoffSub,j)
+                         SCS_HMSLinResInflowTot(IRRRunoffSub) = SCS_HMSLinResInflowTot(IRRRunoffSub) + SCS_HMSLinResInflow(j)
+                         SCS_HMSLinResOutflow(IRRRunoffSub)= SCS_HMSLinResOutflow(IRRRunoffSub) + SCS_HMSC1(IRRRunoffSub) * SCS_HMSLinResInflow(j)
+                      Enddo
+                      SCS_HMSLinResOutflow(IRRRunoffSub)= SCS_HMSLinResOutflow(IRRRunoffSub) + SCS_HMSC2(IRRRunoffSub) * SCS_HMSLinResOutflow0(IRRRunoffSub)
+                      SCS_HMSLinResContent(IRRRunoffSub)= SCS_HMSLinResContent(IRRRunoffSub) + SCS_HMSLinResInflowTot(IRRRunoffSub) - SCS_HMSLinResOutflow(IRRRunoffSub)
+                      if (idebug .ne. 0) then
+                         Write(Idebug,*) ' SCS_HMSLinResInflowTot    ', SCS_HMSLinResInflowTot(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSLinResOutflow      ', SCS_HMSLinResOutflow(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSLinResContentFinal ', SCS_HMSLinResContent(IRRRunoffSub)
+                      Endif
+                      SCS_RunoffHMS = SCS_HMSLinResOutflow(IRRRunoffSub)
+                      QF2 = SCS_RunoffHMS * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
+                  endif
                else If (SCS_UHChosen(IRRRunoffSub) .eq. 1) then
                  ! routing using SCS dimensionless unit hydrograph
                   Tp = SCS_Tlag(iRRRunoffSub) + (TimeSettings%TimestepSize /2. / 3600.)
@@ -6843,14 +6899,15 @@ contains
                      endif
                   Enddo
                   SCS_Runoff = QF2 / Area_RRRunoffNode(IRRRunoff) / mm2m * TimeSettings%TimeStepSize
+                  SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
                endif
 
              ! storage balance and outflow
-               SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
+! already above
+!              SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
                if (SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)) then
                   SCS_Storage(IRRRUnoffSub) = SCS_Storage(IRRRUnoffSub) - SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
                endif
-               QF2 = SCS_Runoff * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
                RRRunoffNode_Outflow(iRRRunoff) = QF2
 
             else
@@ -9186,7 +9243,8 @@ contains
           Wagmod_PEF(IRRRunoffSub) = -Wagmod_CAP(IRRRunoffSub)
           Wagmod_SM(IRRRunoffSub) = Wagmod_SM(IRRRunoffSub) + Wagmod_CAP(IRRRunoffSub)
       Else
-          write(*,*) ' Negative Soil Moisture in WagMod'
+!         write(*,*) ' Negative Soil Moisture in WagMod'
+          Call ErrMsgStandard (999, 2, ' Negative Soil Moisture in WagMod', ' Soil Moisture is reset to zero')
           Wagmod_PEF(IRRRunoffSub) = Wagmod_SM(IRRRunoffSub)
           Wagmod_SM(IRRRunoffSub) = 0.0
       Endif

@@ -31,7 +31,6 @@
 !
 
 module m_addbaroclinicpressure
-   use m_addbarocn, only: addbarocn, addbarocnorg, addbarocnrho_w
 
    implicit none
 
@@ -42,18 +41,19 @@ module m_addbaroclinicpressure
 contains
 
    subroutine addbaroclinicpressure()
-      use m_addbarocl, only: addbarocL, addbarocLorg, addbarocLrho_w
-      use m_addbaroc2, only: addbaroc2
+      use precision, only: dp
+      use m_addbarocl, only: addbarocL, addbarocLrho_w
+      use m_addbarocn, only: addbarocn, addbarocnrho_w
       use m_addbaroc, only: addbaroc
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: lnxi, lnx, ndx
+      use m_flow, only: hu, kmx
+      use m_turbulence, only: rvdn, grn
       use m_flowtimes
       use m_get_Lbot_Ltop
+      use m_physcoef, only: jabarocponbnd, jarhointerfaces
 
       implicit none
       integer :: LL, Lb, Lt, n, lnxbc
-
-      if (jabarocterm == 0) return
 
       if (jabarocponbnd == 0) then
          lnxbc = lnxi
@@ -61,111 +61,65 @@ contains
          lnxbc = lnx
       end if
 
-      if (jabarocterm == 1) then
-
-         !$OMP PARALLEL DO       &
-         !$OMP PRIVATE(LL,Lb,Lt)
-
+      if (kmx == 0) then
+         !$OMP PARALLEL DO &
+         !$OMP PRIVATE(LL)
          do LL = 1, lnxbc
-            if (hu(LL) == 0d0) cycle
-            call getLbotLtop(LL, Lb, Lt)
-            if (Lt < Lb) then
+            if (hu(LL) == 0.0_dp) then
                cycle
             end if
-            call addbaroc(LL, Lb, Lt)
-         end do
-
-         !$OMP END PARALLEL DO
-
-      else if (jabarocterm == 2 .or. jabarocterm == 3 .or. kmx == 0) then
-
-         !$OMP PARALLEL DO       &
-         !$OMP PRIVATE(LL,Lb,Lt)
-         do LL = 1, lnxbc
-            if (hu(LL) == 0d0) cycle
-            call getLbotLtop(LL, Lb, Lt)
-            if (Lt < Lb) then
-               cycle
-            end if
-            call addbaroc2(LL, Lb, Lt)
+            call addbaroc(LL)
          end do
          !$OMP END PARALLEL DO
-
       else
 
-         rvdn = 0d0; grn = 0d0
+         rvdn = 0.0_dp
+         grn = 0.0_dp
 
-         if (jabaroczlaybed == 0) then ! org now back for full backward compat.
-
-            !$OMP PARALLEL DO       &
+         if (jarhointerfaces == 1) then
+            !$OMP PARALLEL DO &
             !$OMP PRIVATE(n)
             do n = 1, ndx
-               call addbarocnorg(n)
+               call addbarocnrho_w(n)
             end do
             !$OMP END PARALLEL DO
 
-            !$OMP PARALLEL DO       &
+            !$OMP PARALLEL DO &
             !$OMP PRIVATE(LL,Lb,Lt)
             do LL = 1, lnxbc
-               if (hu(LL) == 0d0) cycle
+               if (hu(LL) == 0.0_dp) then
+                  cycle
+               end if
                call getLbotLtop(LL, Lb, Lt)
                if (Lt < Lb) then
                   cycle
                end if
-               call addbarocLorg(LL, Lb, Lt)
+               call addbarocLrho_w(LL, Lb, Lt)
+            end do
+            !$OMP END PARALLEL DO
+         else
+
+            !$OMP PARALLEL DO &
+            !$OMP PRIVATE(n)
+            do n = 1, ndx
+               call addbarocn(n)
             end do
             !$OMP END PARALLEL DO
 
-         else ! these are the routines we want to keep if all ink is dry
-
-            if (jarhointerfaces == 1) then
-
-               !$OMP PARALLEL DO       &
-               !$OMP PRIVATE(n)
-               do n = 1, ndx
-                  call addbarocnrho_w(n)
-               end do
-               !$OMP END PARALLEL DO
-
-               !$OMP PARALLEL DO       &
-               !$OMP PRIVATE(LL,Lb,Lt)
-               do LL = 1, lnxbc
-                  if (hu(LL) == 0d0) cycle
-                  call getLbotLtop(LL, Lb, Lt)
-                  if (Lt < Lb) then
-                     cycle
-                  end if
-                  call addbarocLrho_w(LL, Lb, Lt)
-               end do
-               !$OMP END PARALLEL DO
-
-            else
-
-               !$OMP PARALLEL DO       &
-               !$OMP PRIVATE(n)
-               do n = 1, ndx
-                  call addbarocn(n)
-               end do
-               !$OMP END PARALLEL DO
-
-               !$OMP PARALLEL DO       &
-               !$OMP PRIVATE(LL,Lb,Lt)
-               do LL = 1, lnxbc
-                  if (hu(LL) == 0d0) cycle
-                  call getLbotLtop(LL, Lb, Lt)
-                  if (Lt < Lb) then
-                     cycle
-                  end if
-                  call addbarocL(LL, Lb, Lt)
-               end do
-               !$OMP END PARALLEL DO
-
-            end if
-
+            !$OMP PARALLEL DO &
+            !$OMP PRIVATE(LL,Lb,Lt)
+            do LL = 1, lnxbc
+               if (hu(LL) == 0.0_dp) then
+                  cycle
+               end if
+               call getLbotLtop(LL, Lb, Lt)
+               if (Lt < Lb) then
+                  cycle
+               end if
+               call addbarocL(LL, Lb, Lt)
+            end do
+            !$OMP END PARALLEL DO
          end if
-
       end if
-
    end subroutine addbaroclinicpressure
-
 end module m_addbaroclinicpressure

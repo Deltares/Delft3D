@@ -111,7 +111,9 @@ contains
          return
       end if
 
-      if (allocated(nambnd)) deallocate (nambnd)
+      if (allocated(nambnd)) then
+         deallocate (nambnd)
+      end if
       allocate (nambnd(nopenbndsect))
       do k = 1, nopenbndsect
          nambnd(k) = openbndname(k)
@@ -316,8 +318,12 @@ contains
       !
       ! Array for transport.f90
       mxgr = stmpar%lsedsus
-      if (allocated(sed)) deallocate (sed)
-      if (allocated(ssccum)) deallocate (ssccum)
+      if (allocated(sed)) then
+         deallocate (sed)
+      end if
+      if (allocated(ssccum)) then
+         deallocate (ssccum)
+      end if
       if (stmpar%lsedsus > 0) then
          allocate (sed(stmpar%lsedsus, Ndkx))
          allocate (ssccum(stmpar%lsedsus, Ndkx))
@@ -341,7 +347,9 @@ contains
       !
       !   for boundary conditions: map suspended fractions index to total fraction index
       !
-      if (allocated(sedtot2sedsus)) deallocate (sedtot2sedsus)
+      if (allocated(sedtot2sedsus)) then
+         deallocate (sedtot2sedsus)
+      end if
       allocate (sedtot2sedsus(stmpar%lsedsus))
       sedtot2sedsus = 0
       isus = 1
@@ -490,7 +498,9 @@ contains
          ! do all cells
          kcsmor = 1
       else
-         if (allocated(kp)) deallocate (kp)
+         if (allocated(kp)) then
+            deallocate (kp)
+         end if
          allocate (kp(1:ndx))
          kp = 0
          ! find cells inside polygon

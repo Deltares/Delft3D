@@ -227,25 +227,63 @@ contains
 1234  continue
 
 !  deallocate
-      if (allocated(A)) deallocate (A)
-      if (allocated(xf)) deallocate (xf)
-      if (allocated(yf)) deallocate (yf)
-      if (allocated(xb)) deallocate (xb)
-      if (allocated(yb)) deallocate (yb)
-      if (allocated(AtWxb)) deallocate (AtWxb)
-      if (allocated(AtWyb)) deallocate (AtWyb)
-      if (allocated(AtWA)) deallocate (AtWA)
-      if (allocated(AtWAi)) deallocate (AtWAi)
-      if (allocated(rhsx)) deallocate (rhsx)
-      if (allocated(rhsy)) deallocate (rhsy)
-      if (allocated(B)) deallocate (B)
-      if (allocated(C)) deallocate (C)
-      if (allocated(d)) deallocate (d)
-      if (allocated(lambda)) deallocate (lambda)
-      if (allocated(E)) deallocate (E)
-      if (allocated(xspp)) deallocate (xspp)
-      if (allocated(yspp)) deallocate (yspp)
-      if (allocated(w)) deallocate (w)
+      if (allocated(A)) then
+         deallocate (A)
+      end if
+      if (allocated(xf)) then
+         deallocate (xf)
+      end if
+      if (allocated(yf)) then
+         deallocate (yf)
+      end if
+      if (allocated(xb)) then
+         deallocate (xb)
+      end if
+      if (allocated(yb)) then
+         deallocate (yb)
+      end if
+      if (allocated(AtWxb)) then
+         deallocate (AtWxb)
+      end if
+      if (allocated(AtWyb)) then
+         deallocate (AtWyb)
+      end if
+      if (allocated(AtWA)) then
+         deallocate (AtWA)
+      end if
+      if (allocated(AtWAi)) then
+         deallocate (AtWAi)
+      end if
+      if (allocated(rhsx)) then
+         deallocate (rhsx)
+      end if
+      if (allocated(rhsy)) then
+         deallocate (rhsy)
+      end if
+      if (allocated(B)) then
+         deallocate (B)
+      end if
+      if (allocated(C)) then
+         deallocate (C)
+      end if
+      if (allocated(d)) then
+         deallocate (d)
+      end if
+      if (allocated(lambda)) then
+         deallocate (lambda)
+      end if
+      if (allocated(E)) then
+         deallocate (E)
+      end if
+      if (allocated(xspp)) then
+         deallocate (xspp)
+      end if
+      if (allocated(yspp)) then
+         deallocate (yspp)
+      end if
+      if (allocated(w)) then
+         deallocate (w)
+      end if
 
       return
    end subroutine snap_spline

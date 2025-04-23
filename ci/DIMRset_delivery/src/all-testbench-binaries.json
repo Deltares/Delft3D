@@ -1,0 +1,559 @@
+{
+    "signed": [
+        {
+            "file": "bin\\agrhyd.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\ddcouple.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\delpar.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\delwaq.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\dflowfm-cli.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\dfmoutput.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\dimr.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\mormerge.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\swan_mpi.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\swan_omp.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\waqmerge.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\waqpb_export.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\waqpb_import.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\wave.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\ESMF_RegridWeightGen.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\maptonetcdf.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\delwaq.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\dflowfm.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\dimr.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\ec_module.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\FBCTools_BMI.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\waq_plugin_wasteload.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\wave.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\rr_dll.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cosumo_bmi.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\gridgeom.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\io_netcdf.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\plugin_culvert.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\plugin_delftflow_traform.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\mpiexec.exe",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "bin\\cpuinfo.exe",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "bin\\hydra_bstrap_proxy.exe",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "bin\\hydra_pmi_proxy.exe",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "bin\\hydra_service.exe",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "bin\\IMB-MPI1.exe",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "bin\\IMB-NBC.exe",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "bin\\IMB-RMA.exe",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "bin\\impi_info.exe",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "bin\\rr.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\FBCTools.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\nesthd1.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\nesthd2.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\lint.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\dfm_volume_tool.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\rtc.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\kubint.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\d_hydro.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\datsel.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\impi.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libiomp5md_db.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libfabric.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libicaf.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libifcoremd.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libifcoremdd.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libifcorert.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libifcorertd.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libifportmd.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libiomp5md.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libiompstubs5md.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libirngmd.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libmmd.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libmmdd.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\libmpi_ilp64.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_avx2.2.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_avx512.2.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_core.2.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_def.2.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_intel_thread.2.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\mkl_sequential.2.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\svml_dispmd.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "lib\\msvcp140.dll",
+            "issuedTo": "Microsoft Windows Software Compatibility Publisher"
+        },
+        {
+            "file": "lib\\msvcp90.dll",
+            "issuedTo": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\msvcr100.dll",
+            "issuedTo": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\msvcr90.dll",
+            "issuedTo": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\vcruntime140.dll",
+            "issuedTo": "Microsoft Windows Software Compatibility Publisher"
+        },
+        {
+            "file": "lib\\cygaec-0.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygbrotlicommon-1.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygbrotlidec-1.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygbz2-1.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygcom_err-2.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygcrypto-1.0.0.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygcrypto-1.1.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygcrypto-3.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygcurl-4.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygdf-0.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cyggcc_s-seh-1.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cyggcrypt-20.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cyggfortran-5.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cyggomp-1.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cyggpg-error-0.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cyggsasl-18.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cyggssapi_krb5-2.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cyghdf5-310.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cyghdf5_hl-310.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygiconv-2.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygidn-12.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygidn2-0.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygintl-8.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygjpeg-8.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygk5crypto-3.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygkrb5-3.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygkrb5support-0.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cyglber-2.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygldap-2.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cyglzma-5.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygmfhdf-0.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygnetcdf-19.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygnetcdff-7.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygnghttp2-14.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygntlm-0.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygpsl-5.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygquadmath-0.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygsasl2-3.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygssh2-1.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygssl-3.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygstdc++-6.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygsz-2.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygunistring-5.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygwin1.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygxml2-2.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygz.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygzip-5.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\cygzstd-1.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\hdf5.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\hdf5_hl.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\libexpat.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\libcurl.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\libpetsc.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\pthreadGC2.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\pthreadVC2.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\tecio.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\xerces-c_3_1.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\netcdf.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\vcruntime140_1.dll",
+            "issuedTo": "Microsoft Windows Software Compatibility Publisher"
+        },
+        {
+            "file": "lib\\msvcp140_1.dll",
+            "issuedTo": "Microsoft Windows Software Compatibility Publisher"
+        },
+        {
+            "file": "lib\\zlib.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\gdal.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\flow2d3d.dll",
+            "issuedTo": "Stichting Deltares"
+        }
+    ],
+    "notSigned": [
+        "bin\\tclkitsh852.exe"
+    ]
+}

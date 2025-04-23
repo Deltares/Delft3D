@@ -195,7 +195,7 @@ module m_flowtimes
 
    real(kind=dp) :: tlfsmo = 0.0_dp !< fourier bnd smoothing times
    real(kind=dp) :: alfsmo = 1.0_dp !< fourier bnd smoothing weight factor
-   integer :: keepstbndonoutflow = 0 !< keep them on outflow = 1
+   integer :: keepstbndonoutflow = 1 !< keep them on outflow = 1
 
    real(kind=dp) :: t_spinup_turb_log_prof = 0.0_dp !< From Tstart to Tstart+t_spinup_turb_log_prof, Turbulent profiles based on log profiles (<= 0: No)
    real(kind=dp) :: alfaspin
@@ -268,7 +268,9 @@ contains
       ti_classmaps = 0.0_dp !< Start class map output (s)
       ti_classmape = 0.0_dp !< End   class map output (s)
       map_classes_ucdirstep = -999.0_dp !< default no step size given for classes of flow direction
-      if (allocated(map_classes_ucdir)) deallocate (map_classes_ucdir)
+      if (allocated(map_classes_ucdir)) then
+         deallocate (map_classes_ucdir)
+      end if
 
       tmini = -1d9 !< initial time for updating the 4 above
 

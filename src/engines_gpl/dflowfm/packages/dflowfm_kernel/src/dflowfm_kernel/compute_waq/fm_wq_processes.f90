@@ -49,11 +49,13 @@ contains
       use timers
       use m_string_utils, only: index_in_array
       use m_logger_helper, only: set_log_unit_number
+      use system_utils, only: get_executable_directory
 
       integer :: ierr_sub !< error status
       integer :: ierr_eho !< error status
-      character(256) :: cerr !< error message
 
+      character(256) :: cerr !< error message
+      character(len=1024) :: exe_dir, share_dir
       ! Other
       integer(4) :: nosys_eho, notot_eho, nocons_eho
       integer(4) :: i
@@ -79,6 +81,10 @@ contains
       bloom_file = md_blmfile
       statistics_file = md_sttfile
 
+      ! Get executable directory
+      call get_executable_directory(exe_dir, ierr) 
+      share_dir = trim(exe_dir)//'../share/delft3d/'
+
       ! check if substance file exists
       inquire (file=substance_file, exist=Lsub)
       if (.not. Lsub) then
@@ -103,14 +109,20 @@ contains
          end if
       end if
 
-      !     check if proc_def file exists
+      ! check if proc_def file exists
       if (proc_def_file /= ' ') then
          inquire (file=proc_def_file, exist=Lpdf)
          if (.not. Lpdf) then
-            call mess(LEVEL_ERROR, 'Process library file does not exist: ', trim(proc_def_file))
+            call mess(LEVEL_ERROR, 'Specified process library file does not exist: ', trim(proc_def_file))
          end if
       else
-         call mess(LEVEL_ERROR, 'No process library file specified. Use commandline argument --processlibrary "<path>/<name>"')
+         proc_def_file = trim(share_dir)//'proc_def.dat'
+         inquire (file=proc_def_file, exist=Lpdf)
+         if (Lpdf) then
+            call mess(LEVEL_INFO, 'Using default Process library file: ', trim(proc_def_file))
+         else
+            call mess(LEVEL_ERROR, 'Default process library file does not exist: ', trim(proc_def_file))
+         end if
       end if
 
       ! check if open process dll/so file exists
@@ -125,7 +137,15 @@ contains
       if (bloom_file /= ' ') then
          inquire (file=bloom_file, exist=Lblm)
          if (.not. Lblm) then
-            call mess(LEVEL_ERROR, 'BLOOM species definition file specified, but does not exist: ', trim(bloom_file))
+            call mess(LEVEL_ERROR, 'Specified BLOOM species definition file does not exist: ', trim(bloom_file))
+         end if
+      else
+         bloom_file = trim(share_dir)//'bloom.spe'
+         inquire (file=bloom_file, exist=Lblm)
+         if (Lblm) then
+            call mess(LEVEL_INFO, 'Using default BLOOM species definition file: ', trim(bloom_file))
+         else
+            call mess(LEVEL_ERROR, 'Default BLOOM species definition file does not exist: ', trim(bloom_file))
          end if
       end if
 
@@ -1553,7 +1573,7 @@ contains
          do kk = 1, Ndxi
             call getkbotktopmax(kk, kb, kt, ktmax)
             call getkbotktop(kk, kb, kt)
-            process_space_real(ipoiradsurf + kb - kbx:ipoiradsurf + ktmax - kbx) = qrad(kk)
+            process_space_real(ipoiradsurf + kb - kbx:ipoiradsurf + ktmax - kbx) = solar_radiation(kk)
          end do
       end if
 

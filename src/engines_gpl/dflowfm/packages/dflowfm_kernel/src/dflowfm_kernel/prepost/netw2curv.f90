@@ -89,7 +89,9 @@ contains
          call realloc(cellmask, numP)
 
 ! allocate and initialize ijc array
-         if (allocated(ijc)) deallocate (ijc)
+         if (allocated(ijc)) then
+            deallocate (ijc)
+         end if
          call realloc(ijc, (/3, 3/), (/0, 0/), fill=IMISS)
 
 !---------------------------------------------------------

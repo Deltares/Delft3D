@@ -48,7 +48,9 @@ contains
 
       integer :: L, k1, k2
 
-      if (allocated(kdryarea)) deallocate (kdryarea)
+      if (allocated(kdryarea)) then
+         deallocate (kdryarea)
+      end if
       allocate (kdryarea(numl)); kdryarea = 0
 
       nDryLinks = 0

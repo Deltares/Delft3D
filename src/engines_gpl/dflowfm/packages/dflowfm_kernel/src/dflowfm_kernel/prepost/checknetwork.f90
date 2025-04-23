@@ -65,7 +65,9 @@ contains
 
 ! Allocate/reset linkcross array
       ncrossmax = max(1, int(numl * 0.01))
-      if (allocated(linkcross)) deallocate (linkcross)
+      if (allocated(linkcross)) then
+         deallocate (linkcross)
+      end if
       allocate (linkcross(2, ncrossmax))
       linkcross = 0
       nlinkcross = 0

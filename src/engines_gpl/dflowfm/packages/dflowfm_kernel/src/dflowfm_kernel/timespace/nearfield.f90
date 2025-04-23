@@ -662,7 +662,7 @@ contains
                nf_entr_end(idif) = nf_entr_end(idif) + 1
                nf_entr_max = max(nf_entr_max, nf_entr_end(idif) - nf_entr_start(idif) + 1)
             end if
-            call reallocsrc(numsrc)
+            call reallocsrc(numsrc, 2)
             !
             ! Name
             write (srcname(numsrc), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
@@ -760,7 +760,7 @@ contains
          if (nf_sour_n(idif, isour) == 0) exit
          numsrc_nf = numsrc_nf + 1
          numsrc = numsrc + 1
-         call reallocsrc(numsrc)
+         call reallocsrc(numsrc, 2)
          if (nf_numsour == 1) then
             sourId = nf_numsour
          else
@@ -852,7 +852,7 @@ contains
          if (nf_intake_n(idif, iintake) == 0) exit
          numsrc_nf = numsrc_nf + 1
          numsrc = numsrc + 1
-         call reallocsrc(numsrc)
+         call reallocsrc(numsrc, 2)
          !
          ! Name
          write (srcname(numsrc), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake

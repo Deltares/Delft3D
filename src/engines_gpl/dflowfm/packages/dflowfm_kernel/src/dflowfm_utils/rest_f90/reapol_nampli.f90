@@ -168,8 +168,12 @@ contains
                DZR(NPL) = DZ2
             else if (jakol45 == 2) then
                if (.not. allocated(IWEIRT)) then
-                  if (allocated(DZL)) deallocate (DZL)
-                  if (allocated(DZR)) deallocate (DZR)
+                  if (allocated(DZL)) then
+                     deallocate (DZL)
+                  end if
+                  if (allocated(DZR)) then
+                     deallocate (DZR)
+                  end if
                   allocate (DZL(MAXPOL), DZR(MAXPOL), DCREST(MAXPOL), DTL(MAXPOL), DTR(MAXPOL), DVEG(MAXPOL), IWEIRT(MAXPOL))
                   IWEIRT = dmiss
                end if

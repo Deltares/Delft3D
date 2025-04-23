@@ -58,8 +58,12 @@ contains
 
       real(kind=dp), parameter :: dtol = 1d-8
 
-      if (allocated(csbn)) deallocate (csbn)
-      if (allocated(snbn)) deallocate (snbn)
+      if (allocated(csbn)) then
+         deallocate (csbn)
+      end if
+      if (allocated(snbn)) then
+         deallocate (snbn)
+      end if
 
       if (jsferic == 0 .or. jasfer3D == 0) return
 

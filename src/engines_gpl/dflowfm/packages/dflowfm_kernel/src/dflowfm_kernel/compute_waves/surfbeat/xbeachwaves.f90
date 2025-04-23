@@ -494,13 +494,19 @@ contains
       end if
 
       ! map boundary types to each other's positions
-      if (allocated(kbndu2kbndw)) deallocate (kbndu2kbndw)
+      if (allocated(kbndu2kbndw)) then
+         deallocate (kbndu2kbndw)
+      end if
       allocate (kbndu2kbndw(nbndu))
 
-      if (allocated(kbndw2kbndu)) deallocate (kbndw2kbndu)
+      if (allocated(kbndw2kbndu)) then
+         deallocate (kbndw2kbndu)
+      end if
       allocate (kbndw2kbndu(nbndw))
 
-      if (allocated(kbndz2kbndw)) deallocate (kbndz2kbndw)
+      if (allocated(kbndz2kbndw)) then
+         deallocate (kbndz2kbndw)
+      end if
       allocate (kbndz2kbndw(nbndz))
 
       allocate (idum(Lnx))
@@ -563,7 +569,9 @@ contains
       if (trim(instat) == 'stat' .or. trim(instat) == 'stat_table' .or. single_dir > 0) then
          !
          if (.not. allocated(nb)) then
-            if (allocated(kcstore)) deallocate (kcstore)
+            if (allocated(kcstore)) then
+               deallocate (kcstore)
+            end if
             allocate (kcstore(numk))
             kcstore = kc
             kc = 1
@@ -579,14 +587,18 @@ contains
          ! set thetabin according to functionality
          if (single_dir > 0) then
             nthetalocal = ntheta_s
-            if (allocated(thetalocal)) deallocate (thetalocal)
+            if (allocated(thetalocal)) then
+               deallocate (thetalocal)
+            end if
             allocate (thetalocal(ntheta_s, numk), stat=ierror)
             do k = 1, numk
                thetalocal(:, k) = thetabin_s
             end do
          else
             nthetalocal = ntheta
-            if (allocated(thetalocal)) deallocate (thetalocal)
+            if (allocated(thetalocal)) then
+               deallocate (thetalocal)
+            end if
             allocate (thetalocal(ntheta, numk), stat=ierror)
             do k = 1, numk
                thetalocal(:, k) = thetabin
@@ -613,7 +625,9 @@ contains
          newstatbc = 0 !to check if needed
       end if
 
-      if (allocated(idum)) deallocate (idum)
+      if (allocated(idum)) then
+         deallocate (idum)
+      end if
 
       return
    end subroutine xbeach_wave_init
@@ -3213,7 +3227,7 @@ contains
       use network_data
       use geometry_module
       use m_wind, only: jawind
-      
+
       implicit none
 
       integer :: ierror
@@ -4218,7 +4232,9 @@ contains
          dthetalocal = dtheta_s
       end select
       !
-      if (allocated(eebc)) deallocate (eebc)
+      if (allocated(eebc)) then
+         deallocate (eebc)
+      end if
       allocate (eebc(1:nthetalocal, 1:numk), stat=ierr)
       eebc = 0d0
       !
@@ -5230,7 +5246,9 @@ contains
       end do
 
       no_connected_nodes = no_connected_nodes + 1 ! possible ghost node
-      if (allocated(connected_nodes)) deallocate (connected_nodes)
+      if (allocated(connected_nodes)) then
+         deallocate (connected_nodes)
+      end if
       allocate (connected_nodes(nump, no_connected_nodes))
       connected_nodes = 0
 
@@ -5304,7 +5322,9 @@ contains
       end do
       !
       ! allocate seapts array and fill
-      if (allocated(seapts)) deallocate (seapts)
+      if (allocated(seapts)) then
+         deallocate (seapts)
+      end if
       allocate (seapts(noseapts))
       cnt = 0
       do k = 1, numk
@@ -5762,15 +5782,16 @@ contains
 
       integer :: ierr
       integer :: itheta, k
-      integer :: ntheta_local
+      integer :: ntheta_local, callType_wave_velocities
       real(kind=dp) :: dtheta_local
       real(kind=dp), allocatable, save :: hhwlocal(:)
       real(kind=dp), allocatable, save :: ee_local(:, :)
-
+      real(kind=dp), dimension(:, :), pointer :: theta_pointer
+      real(kind=dp), dimension(:), pointer :: ucx_pointer, ucy_pointer
       ierr = 0
-
+      
       ! directional bin size
-      select case (callType)
+      select case (callType) 
       case (callTypeStationary)
          ntheta_local = ntheta
       case (callTypeDirections)
@@ -5782,15 +5803,24 @@ contains
          allocate (hhwlocal(1:ndx), ee_local(1:ntheta_local, 1:ndx), stat=ierr)
       end if
 
+      ! set local variables depending on callType
       select case (callType)
       case (callTypeStationary)
+         theta_pointer => thet
+         callType_wave_velocities = 0
          hhwlocal = hhw
          ee_local = ee1
          dtheta_local = dtheta
+         ucx_pointer => ucx
+         ucy_pointer => ucy
       case (callTypeDirections)
+         theta_pointer => thet_s
+         callType_wave_velocities = 2
          hhwlocal = hhws
          ee_local = ee_s
          dtheta_local = dtheta_s
+         ucx_pointer => ucxws
+         ucy_pointer => ucyws
       end select
 
       ! Set slope of the water depth
@@ -5800,28 +5830,22 @@ contains
 
       ! Set slope of the velocities if needed
       if (wci > 0) then
-         select case (callType)
-         case (callTypeStationary)
-            call getcellcentergradients(ucx, xbducxdx, xbducxdy)
-            call getcellcentergradients(ucy, xbducydx, xbducydy)
-         case (callTypeDirections)
-            call getcellcentergradients(ucxws, xbducxdx, xbducxdy)
-            call getcellcentergradients(ucyws, xbducydx, xbducydy)
-         end select
+         call getcellcentergradients(ucx_pointer, xbducxdx, xbducxdy)
+         call getcellcentergradients(ucy_pointer, xbducydx, xbducydy)
       else
          xbducxdx = 0.d0
          xbducxdy = 0.d0
          xbducydx = 0.d0
          xbducydy = 0.d0
       end if
-      !
+      
       ! Calculate sinh(2kh)
       where (hhwlocal > epshu .and. 2d0 * hhwlocal * kwav <= 3000.d0) ! to check: hhwlocal or hs
          sinh2kh = sinh(min(2d0 * kwav * hhwlocal, 10.0d0))
       elsewhere
          sinh2kh = 3000.d0
       end where
-      !
+
       ! all dry cells have zero energy
       do itheta = 1, ntheta_local
          where (hhwlocal <= epshu)
@@ -5832,36 +5856,19 @@ contains
          E = 0.d0
          H = 0.d0
       end where
-      !
+
       ! wave directions
-      select case (callType)
-      case (callTypeStationary)
-         do concurrent(k=1:ndx, hhwlocal(k) > epshu)
-            thetamean(k) = (sum(ee_local(:, k) * thet(:, k)) / ntheta_local) / &
-                           (max(sum(ee_local(:, k)), 0.00001d0) / ntheta_local)
-         end do
-      case (callTypeDirections)
-         do concurrent(k=1:ndx, hhwlocal(k) > epshu)
-            thetamean(k) = (sum(ee_local(:, k) * thet_s(:, k)) / ntheta_local) / &
-                           (max(sum(ee_local(:, k)), 0.00001d0) / ntheta_local)
-         end do
-      end select
-      !
+      do concurrent(k=1:ndx, hhwlocal(k) > epshu)
+         thetamean(k) = (sum(ee_local(:, k) * theta_pointer(:, k)) / ntheta_local) / &
+                        (max(sum(ee_local(:, k)), 0.00001d0) / ntheta_local)
+      end do
+
       ! Compute wave velocities
-      select case (callType)
-      case (callTypeStationary)
-         call xbeach_compute_wave_velocities(0, dhsdx, dhsdy, xbducxdx, xbducxdy, xbducydx, xbducydy, sinh2kh)
-      case (callTypeDirections)
-         call xbeach_compute_wave_velocities(2, dhsdx, dhsdy, xbducxdx, xbducxdy, xbducydx, xbducydy, sinh2kh)
-      end select
-      !
-      ! Solve wave energy balance, and potentially roller balance
+      call xbeach_compute_wave_velocities(callType_wave_velocities, dhsdx, dhsdy, xbducxdx, xbducxdy, xbducydx, xbducydy, sinh2kh)
+
       call xbeach_solve_wave_stationary(callType, ierr)
 
-1234  continue
-      return
-
-   end subroutine ! xbeach_wave_stationary
+   end subroutine xbeach_wave_stationary
 
 ! Determine surface forces and body forces for 3D applications
    subroutine xbeach_wave_compute_flowforcing3D()

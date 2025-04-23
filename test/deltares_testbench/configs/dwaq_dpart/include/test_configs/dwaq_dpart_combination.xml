@@ -1,7 +1,7 @@
 <!-- Test cases for WAQ/PART combined runs -->
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e03_f18_c01_sigma_layers" ref="dwaq_default">
-        <path version="2025-02-18T18:00:00">e03_waq/f18_waq_part_combined_run/c01_sigma_layers</path>
+        <path version="2025-04-07T22:00:00">e03_waq/f18_waq_part_combined_run/c01_sigma_layers</path>
         <maxRunTime>3000.0</maxRunTime>
         <checks>
             <!-- NOTE: no relative tolerance! The combination does not give the right insight at the moment -->
@@ -59,7 +59,7 @@
     </testCase>
 
     <testCase name="e03_f18_c01a_sigma_layers_track_vs_alone" ref="dwaq_default">
-        <path version="2025-02-18T18:00:00">e03_waq/f18_waq_part_combined_run/c01a_sigma_layers_track_vs_alone</path>
+        <path version="2025-04-07T22:00:00">e03_waq/f18_waq_part_combined_run/c01a_sigma_layers_track_vs_alone</path>
         <maxRunTime>3000.0</maxRunTime>
         <checks>
             <!-- NOTE: the reference here is a run with delpar alone, delwaq takeover time was increased beyond the time of the run -->
@@ -72,7 +72,7 @@
     </testCase>
 
     <testCase name="e03_f18_c02_z_layers" ref="dwaq_default">
-        <path version="2024-06-27T00:00:00">e03_waq/f18_waq_part_combined_run/c02_z_layers</path>
+        <path version="2025-04-07T22:00:00">e03_waq/f18_waq_part_combined_run/c02_z_layers</path>
         <maxRunTime>3000.0</maxRunTime>
         <checks>
             <!-- NOTE: no relative tolerance! The combination does not give the right insight at the moment -->
@@ -101,7 +101,7 @@
     </testCase>
 
     <testCase name="e03_f18_c02a_z_layers_track_vs_alone" ref="dwaq_default">
-        <path version="2024-06-27T00:00:00">e03_waq/f18_waq_part_combined_run/c02a_z_layers_track_vs_alone</path>
+        <path version="2025-04-07T22:00:00">e03_waq/f18_waq_part_combined_run/c02a_z_layers_track_vs_alone</path>
         <maxRunTime>3000.0</maxRunTime>
         <checks>
             <!-- NOTE: the reference here is a run with delpar alone, delwaq takeover time was increased beyond the time of the run -->

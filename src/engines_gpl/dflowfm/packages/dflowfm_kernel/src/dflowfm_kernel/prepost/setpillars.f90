@@ -60,14 +60,18 @@ contains
       type(tcrspath), dimension(:), allocatable :: Path
       integer, dimension(:), allocatable :: idum
 
-      if (allocated(Cpil)) deallocate (Cpil)
+      if (allocated(Cpil)) then
+         deallocate (Cpil)
+      end if
       if (japillar == 1) then
          allocate (Cpil(ndx))
       else if (japillar == 3) then
          allocate (Cpil(lnx))
       end if
 
-      if (allocated(idum)) deallocate (idum)
+      if (allocated(idum)) then
+         deallocate (idum)
+      end if
       allocate (idum(1))
       idum = 0
 

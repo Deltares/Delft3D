@@ -482,7 +482,7 @@ contains
 
       Lweir = 0
       do L = 1, lnx
-         if (iadv(L) == 21 .or. iadv(L) >= 23 .and. iadv(L) <= 25) then
+         if (iadv(L) == IADV_SUBGRID_WEIR .or. iadv(L) >= IADV_RAJARATNAM_WEIR .and. iadv(L) <= IADV_VILLEMONTE_WEIR) then
             crestlev = min(bob(1, L), bob(2, L))
             Lweir = L; exit
          end if
@@ -1039,10 +1039,18 @@ contains
       end if ! if time0.gt.time2write
 
 ! deallocate
-      if (allocated(dcrs)) deallocate (dcrs)
-      if (allocated(perm)) deallocate (perm)
-      if (allocated(var)) deallocate (var)
-      if (allocated(var1)) deallocate (var1)
+      if (allocated(dcrs)) then
+         deallocate (dcrs)
+      end if
+      if (allocated(perm)) then
+         deallocate (perm)
+      end if
+      if (allocated(var)) then
+         deallocate (var)
+      end if
+      if (allocated(var1)) then
+         deallocate (var1)
+      end if
 
    end subroutine poiseuille
 

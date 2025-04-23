@@ -46,7 +46,7 @@ module m_turbulence
    real(kind=dp) :: sigdif
    real(kind=dp) :: sigtke, sigtkei
    real(kind=dp) :: sigeps, sigepsi
-   real(kind=dp) :: sigrho  !< bouyancy
+   real(kind=dp) :: sigrho !< bouyancy
 
    real(kind=dp) :: c1t
    real(kind=dp) :: c2t
@@ -103,15 +103,14 @@ module m_turbulence
    real(kind=dp), allocatable :: vicwwu(:) ! vertical eddy viscosity (m2/s) at layer interface at u point
    real(kind=dp), allocatable, target :: vicwws(:) !< [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
 
-   real(kind=dp), allocatable, dimension(:), target :: in_situ_density !< Pressure dependent water density at cell centres (kg/m3)
-   real(kind=dp), allocatable, dimension(:), target :: potential_density !< Potential water density at cell centres (kg/m3)
-   real(kind=dp), dimension(:), pointer :: rho !< Water density at cell centres (kg/m3)
-   real(kind=dp), allocatable, dimension(:) :: rho0 !< Water density at cell centres (kg/m3), previous time step
-   real(kind=dp), allocatable, dimension(:) :: rhosww !< deviatoric density at vertical interfaces, w points (kg/m3)
-   real(kind=dp), allocatable, dimension(:) :: rhowat !< density at cell centres (kg/m3), only salt and temp
-   real(kind=dp), allocatable, dimension(:) :: dpbdx0 !< previous step baroclinic pressure gradient, at u points
-   real(kind=dp), allocatable, dimension(:) :: rvdn !< help integral of (rho-rhomean)*deltaz at pressure points (kg/m2)
-   real(kind=dp), allocatable, dimension(:) :: grn !< help integral of vertical baroclinic pressure integral at pressure points  (kg/m)
+   real(kind=dp), allocatable, dimension(:), target :: in_situ_density ! Pressure dependent water density at cell centres (kg/m3)
+   real(kind=dp), allocatable, dimension(:), target :: potential_density ! Potential water density at cell centres (kg/m3)
+   real(kind=dp), dimension(:), pointer :: rho ! Water density at cell centres (kg/m3)
+   real(kind=dp), allocatable, dimension(:) :: rhosww ! deviatoric density at vertical interfaces, w points (kg/m3)
+   real(kind=dp), allocatable, dimension(:) :: rhowat ! density at cell centres (kg/m3), only salt and temp
+   real(kind=dp), allocatable, dimension(:) :: dpbdx0 ! previous step baroclinic pressure gradient, at u points
+   real(kind=dp), allocatable, dimension(:) :: rvdn ! help integral of (rho-rhomean)*deltaz at pressure points (kg/m2)
+   real(kind=dp), allocatable, dimension(:) :: grn ! help integral of vertical baroclinic pressure integral at pressure points  (kg/m)
 
    real(kind=dp), allocatable, dimension(:) :: rhou !< density at flow links (kg/m3)
 
@@ -129,6 +128,9 @@ module m_turbulence
 
    integer, allocatable :: ln0(:, :) !< links in transport trimmed to minimum of ktop,ktop0 for z-layers
 
+   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_ON=1.0_dp
+   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_OFF=0.0_dp
+   
 contains
 !> Sets ALL (scalar) variables in this module to their default values.
    subroutine default_turbulence()
@@ -142,7 +144,6 @@ contains
       cmukep = 0.09_dp
 
       c2e = 1.92_dp
-      c1e = 1.44_dp
 
       skmy = 1.96_dp
       a1ph = 0.92_dp
@@ -155,27 +156,26 @@ contains
       ghmin = -0.280_dp
       ghmax = 0.0233_dp
    end subroutine default_turbulence
-   
-!> calculate derived coefficients for turbulence   
+
+!> calculate derived coefficients for turbulence
    subroutine calculate_derived_coefficients_turbulence()
       use m_physcoef, only: vonkar, rhomean, ag
-      
+
       sigtkei = 1.0_dp / sigtke
       sigepsi = 1.0_dp / sigeps
       cewall = cmukep**0.75_dp / vonkar
       sqcmukep = sqrt(cmukep)
       sqcmukepi = 1.0_dp / sqcmukep
       cde = cmukep**0.75_dp
-      
+
+      c1e = c2e - vonkar**2 / (sigeps * sqcmukep)
       c1t = (1.0_dp - c1e) * cmukep
 
       c2t = 1.0_dp - c2e
       c3tsta = 1.0_dp * cmukep
       c3tuns = (1.0_dp - c1e) * cmukep
-      
-      c1e = c2e - vonkar**2 / (sigeps * sqcmukep)
+
       coefn2 = -ag / (sigrho * rhomean)
    end subroutine calculate_derived_coefficients_turbulence
-
 
 end module m_turbulence

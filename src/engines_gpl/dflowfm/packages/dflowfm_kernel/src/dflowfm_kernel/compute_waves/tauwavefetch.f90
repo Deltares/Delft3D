@@ -80,10 +80,14 @@ contains
          nwf = 13
          call timstrt('Ext.forcings fetch', handle_fetch)
 
-         if (allocated(fetch)) deallocate (fetch)
+         if (allocated(fetch)) then
+            deallocate (fetch)
+         end if
          allocate (fetch(nwf, ndx), stat=error)
          call aerr('fetch(nwf, ndx)', error, ndx * nwf)
-         if (allocated(fetdp)) deallocate (fetdp)
+         if (allocated(fetdp)) then
+            deallocate (fetdp)
+         end if
          allocate (fetdp(nwf, ndx), stat=error)
          call aerr('fetdp(nwf, ndx)', error, ndx * nwf)
 

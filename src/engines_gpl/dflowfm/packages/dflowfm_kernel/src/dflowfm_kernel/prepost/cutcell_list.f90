@@ -282,7 +282,9 @@ contains
             end if
          end do
          call remove_masked_netcells()
-         if (allocated(cellmask)) deallocate (cellmask)
+         if (allocated(cellmask)) then
+            deallocate (cellmask)
+         end if
       end if
 
       ! call restorepol() ! initial SAVEPOL no longer valid due to CUTCELWU call
@@ -333,13 +335,13 @@ contains
 
          real(kind=dp), dimension(:), allocatable :: x, y
 
-         real(kind=dp), dimension(:), allocatable :: dsL
-         integer, dimension(:), allocatable :: iLink, iPol
+         real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
+         integer, dimension(:), allocatable :: crossed_links, polygon_nodes
          integer, dimension(:), allocatable :: numcrossed
          integer, dimension(:), allocatable :: polynum
          integer, dimension(:), allocatable :: polysec
 
-         integer :: numcrossedlinks
+         integer :: intersection_count
          integer :: i, j, L, num
          integer :: ierror
          real(kind=dp) :: t0, t1
@@ -351,9 +353,9 @@ contains
          end do
 
 !       allocate
-         allocate (iLink(numL))
-         allocate (iPol(numL))
-         allocate (dSL(numL))
+         allocate (crossed_links(numL))
+         allocate (polygon_nodes(numL))
+         allocate (polygon_segment_weights(numL))
          allocate (x(num))
          allocate (y(num))
          allocate (polynum(num))
@@ -390,20 +392,20 @@ contains
          end do
 
 !       find crossed links
-         call find_crossed_links_kdtree2(kdtree, num, x, y, 3, numL, 1, numcrossedlinks, iLink, iPol, dsL, ierror)
+         call find_crossed_links_kdtree2(kdtree, num, x, y, ITYPE_NETLINK, numL, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
          deallocate (x, y)
          if (ierror /= 0) goto 1234
 
 !       (re)alloc
          call realloc(idxL, numL + 1, keepExisting=.false., fill=0)
-         call realloc(jdxL, numcrossedlinks + 1, keepExisting=.false., fill=0)
-         call realloc(pdxL, numcrossedlinks + 1, keepExisting=.false., fill=0)
+         call realloc(jdxL, intersection_count + 1, keepExisting=.false., fill=0)
+         call realloc(pdxL, intersection_count + 1, keepExisting=.false., fill=0)
 
 !       count number of intersections per netlink
          allocate (numcrossed(numL))
          numcrossed = 0
-         do i = 1, numcrossedlinks
-            L = iLink(i)
+         do i = 1, intersection_count
+            L = crossed_links(i)
             numcrossed(L) = numcrossed(L) + 1
          end do
 
@@ -414,10 +416,10 @@ contains
          end do
 
          numcrossed = 0
-         do i = 1, numcrossedlinks
-            L = iLink(i)
+         do i = 1, intersection_count
+            L = crossed_links(i)
             num = idxL(L) + numcrossed(L)
-            j = iPol(i)
+            j = polygon_nodes(i)
             jdxL(num) = polysec(j)
             pdxL(num) = polynum(j)
             numcrossed(L) = numcrossed(L) + 1
@@ -429,12 +431,24 @@ contains
          write (mesg, "('cutcell with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
          call mess(LEVEL_INFO, trim(mesg))
 !       deallocate
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(iPol)) deallocate (iPol)
-         if (allocated(dsL)) deallocate (dsL)
-         if (allocated(numcrossed)) deallocate (numcrossed)
-         if (allocated(polynum)) deallocate (polynum)
-         if (allocated(polysec)) deallocate (polysec)
+         if (allocated(crossed_links)) then
+            deallocate (crossed_links)
+         end if
+         if (allocated(polygon_nodes)) then
+            deallocate (polygon_nodes)
+         end if
+         if (allocated(polygon_segment_weights)) then
+            deallocate (polygon_segment_weights)
+         end if
+         if (allocated(numcrossed)) then
+            deallocate (numcrossed)
+         end if
+         if (allocated(polynum)) then
+            deallocate (polynum)
+         end if
+         if (allocated(polysec)) then
+            deallocate (polysec)
+         end if
 
          return
       end subroutine find_intersecting_polysections

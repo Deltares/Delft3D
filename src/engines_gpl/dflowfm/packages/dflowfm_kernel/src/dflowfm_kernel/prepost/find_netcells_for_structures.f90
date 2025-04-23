@@ -54,7 +54,7 @@ contains
       use network_data, only: numl, lne, maxpoly
       use timespace, only: read1polylin
       use kdtree2Factory, only: treeglob
-      use m_find_crossed_links_kdtree2, only: find_crossed_links_kdtree2
+      use m_find_crossed_links_kdtree2, only: find_crossed_links_kdtree2, ITYPE_NETLINK, BOUNDARY_ALL
       use m_filez, only: oldfil
 
       integer, intent(in) :: size_istrucells !< size of istrucells array
@@ -65,8 +65,8 @@ contains
       type(TREE_DATA), pointer :: str_ptr
       logical :: success
       character(len=:), allocatable :: str_buf
-      integer, allocatable :: istrulinks(:), ipol_tmp(:)
-      real(kind=dp), allocatable :: xpl_tmp(:), ypl_tmp(:), DSL_tmp(:)
+      integer, allocatable :: istrulinks(:), polygon_nodes_tmp(:)
+      real(kind=dp), allocatable :: xpl_tmp(:), ypl_tmp(:), polygon_segment_weights_tmp(:)
       integer :: i, L, k, ii, nstr, loc_spec_type, nstrulinks, &
                  npl_tmp, minp_tmp, ierror, nstru_read1, nstru_read2
 
@@ -82,13 +82,13 @@ contains
       allocate (xpl_tmp(MAXPOLY))
       allocate (ypl_tmp(MAXPOLY))
       allocate (istrulinks(numl))
-      allocate (ipol_tmp(numl))
-      allocate (dSL_tmp(numl))
+      allocate (polygon_nodes_tmp(numl))
+      allocate (polygon_segment_weights_tmp(numl))
       xpl_tmp = 0d0
       ypl_tmp = 0d0
       istrulinks = 0
-      ipol_tmp = 0
-      dSL_tmp = 0d0
+      polygon_nodes_tmp = 0
+      polygon_segment_weights_tmp = 0d0
       minp_tmp = 0
       npl_tmp = 0
       nstrulinks = 0
@@ -136,7 +136,7 @@ contains
          end if
          nstru_read2 = nstru_read2 + 1
 
-         call find_crossed_links_kdtree2(treeglob, npl_tmp, xpl_tmp, ypl_tmp, 3, numL, 1, nstrulinks, istrulinks, iPol_tmp, dSL_tmp, ierror)
+         call find_crossed_links_kdtree2(treeglob, npl_tmp, xpl_tmp, ypl_tmp, ITYPE_NETLINK, numL, BOUNDARY_ALL, nstrulinks, istrulinks, polygon_nodes_tmp, polygon_segment_weights_tmp, ierror)
          if (ierror /= 0) then
             write (msgbuf, '(a, a, a)') 'Error occurs when finding crossed polyline of structure ''', trim(strid), '''.'
             call warn_flush()

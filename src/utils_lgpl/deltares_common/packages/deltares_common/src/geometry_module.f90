@@ -106,16 +106,16 @@ contains
 
    !> projects a point to a polyline and finds the closest link.
    !! "Closest" is based on the intersection location of each flow link with the input polyline.
-   subroutine comp_breach_point(startLocationX, startLocationY, xp, yp, np, xl, yl, Lstart, x_breach, y_breach, jsferic, jasfer3D, dmiss)
+   subroutine comp_breach_point(start_location_x, start_location_y, xp, yp, np, xl, yl, Lstart, x_breach, y_breach, jsferic, jasfer3D, dmiss)
 
       implicit none
 
       !input
-      double precision, intent(in) :: startLocationX, startLocationY !< Input coordinates of the start location of the breach.
+      double precision, intent(in) :: start_location_x, start_location_y !< Input coordinates of the start location of the breach.
       double precision, intent(in) :: xp(:), yp(:) !< Dambreak polyline points.
       integer, intent(in) :: np !< Number of input polyline points.
       double precision, intent(in) :: xl(:, :), yl(:, :) !< (2,nlinks) Start-end points of the intersected flow links, used for selecting the nearest link to the start location.
-      integer, intent(out) :: Lstart !< Resulting index of the flow link closest to the startlocationX,Y.
+      integer, intent(out) :: Lstart !< Resulting index of the flow link closest to the start_location_x,Y.
       double precision, intent(out) :: x_breach, y_breach !< Snapped x,y coordinates of the selected flow link's intersection with the polyline.
       double precision, intent(in) :: dmiss !< Missing value used in the input polyline arrays.
       integer, intent(in) :: jsferic, jasfer3D !< Input coordinate type (sferic=1, cartesian=0)
@@ -131,7 +131,7 @@ contains
       yn = dmiss
       dis = huge(dmiss)
       do k = 1, np - 1
-         call dlinedis(startLocationX, startLocationY, xp(k), yp(k), xp(k + 1), yp(k + 1), ja, distemp, xntempa, yntempa, jsferic, jasfer3D, dmiss)
+         call dlinedis(start_location_x, start_location_y, xp(k), yp(k), xp(k + 1), yp(k + 1), ja, distemp, xntempa, yntempa, jsferic, jasfer3D, dmiss)
          if (distemp <= dis) then
             xn = xntempa
             yn = yntempa

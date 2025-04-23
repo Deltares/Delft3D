@@ -95,8 +95,12 @@ contains
 1234  continue
 
 !  deallocate
-      if (allocated(xh2)) deallocate (xh2)
-      if (allocated(yh2)) deallocate (yh2)
+      if (allocated(xh2)) then
+         deallocate (xh2)
+      end if
+      if (allocated(yh2)) then
+         deallocate (yh2)
+      end if
 
       return
    end subroutine sample_spline

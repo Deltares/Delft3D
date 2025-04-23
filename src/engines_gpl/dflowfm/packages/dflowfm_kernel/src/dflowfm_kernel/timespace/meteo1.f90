@@ -836,8 +836,12 @@ contains
                jakdtree = 0
             end if
 
-            if (allocated(xx)) deallocate (xx)
-            if (allocated(yy)) deallocate (yy)
+            if (allocated(xx)) then
+               deallocate (xx)
+            end if
+            if (allocated(yy)) then
+               deallocate (yy)
+            end if
          end if
 
          if (jampi == 0) then ! sequential
@@ -860,10 +864,14 @@ contains
             end do
          else
 !        allocate work arrays
-            if (allocated(workin)) deallocate (workin)
+            if (allocated(workin)) then
+               deallocate (workin)
+            end if
             allocate (workin(2, Ni, Nj))
             workin = 0d0
-            if (allocated(workout)) deallocate (workout)
+            if (allocated(workout)) then
+               deallocate (workout)
+            end if
             allocate (workout(2, Ni, Nj))
 
             do j = j1, j2
@@ -919,7 +927,9 @@ contains
          ini = 1
       end if
 
-      if (allocated(kk)) deallocate (kk)
+      if (allocated(kk)) then
+         deallocate (kk)
+      end if
 
       jasea = 1
 
@@ -5709,8 +5719,12 @@ contains
       end if
 
       if (npl > 0 .and. present(xps)) then
-         if (allocated(xps)) deallocate (xps)
-         if (allocated(yps)) deallocate (yps)
+         if (allocated(xps)) then
+            deallocate (xps)
+         end if
+         if (allocated(yps)) then
+            deallocate (yps)
+         end if
          call realloc(xps, 100000)
          call realloc(yps, 100000)
          xps = xpl ! doubles a bit with xpl for polygon file
@@ -6168,7 +6182,9 @@ contains
          call doclose(mout)
       end if
 
-      if (allocated(zh)) deallocate (zh)
+      if (allocated(zh)) then
+         deallocate (zh)
+      end if
 
    end function timespaceinitialfield
 
@@ -6277,6 +6293,7 @@ module m_meteo
    use m_wind
    use m_nudge
    use m_flow
+   use m_transportdata, only: numconst, const_names, ISALT
    use m_waves
    use m_ship
    use fm_external_forcings_data
@@ -6338,6 +6355,9 @@ module m_meteo
    integer, target :: item_weir_crestLevel !< Unique Item id of the structure file's 'weir crestLevel' quantity
    integer, target :: item_orifice_crestLevel !< Unique Item id of the structure file's 'orifice crestLevel' quantity
    integer, target :: item_orifice_gateLowerEdgeLevel !< Unique Item id of the structure file's 'orifice gateLowerEdgeLevel' quantity
+   integer, target :: item_gate_crestLevel !< Unique Item id of the structure file's 'gate crestLevel' quantity
+   integer, target :: item_gate_gateLowerEdgeLevel !< Unique Item id of the structure file's 'gate gateLowerEdgeLevel' quantity
+   integer, target :: item_gate_gateOpeningWidth !< Unique Item id of the structure file's 'gate gateOpeningWidth' quantity
    integer, target :: item_general_structure_crestLevel !< Unique Item id of the structure file's 'general structure crestLevel' quantity
    integer, target :: item_general_structure_gateLowerEdgeLevel !< Unique Item id of the structure file's 'general structure gateLowerEdgeLevel' quantity
    integer, target :: item_general_structure_crestWidth !< Unique Item id of the structure file's 'general structure crestWidth' quantity
@@ -6376,6 +6396,9 @@ module m_meteo
    integer, target :: item_longwaveradiation !< 'longwaveradiation' quantity
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
+   integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
+   integer, allocatable, dimension(:), target :: item_sourcesink_constituent_delta !< Unique Item id of the new ext-file's '[SourceSink] salinityDelta/temperatureDelta/<other constituents>Delta' quantity
+
    integer, target :: item_hrms !< Unique Item id of the ext-file's 'item_hrms' quantity
    integer, target :: item_tp !< Unique Item id of the ext-file's 'item_tp' quantity
    integer, target :: item_dir !< Unique Item id of the ext-file's 'item_dir' quantity
@@ -6392,7 +6415,7 @@ module m_meteo
 
    integer, target :: item_nudge_tem !< 3D temperature for nudging
    integer, target :: item_nudge_sal !< 3D salinity for nudging
-   integer, target :: item_dambreakLevelsAndWidthsFromTable !< Dambreak heights and widths
+   integer, target :: item_db_levels_widths_table !< Dambreak levels and widths
 
    integer, target :: item_subsiduplift
    integer, target :: item_ice_cover !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
@@ -6505,6 +6528,9 @@ contains
       item_weir_crestLevel = ec_undef_int
       item_orifice_crestLevel = ec_undef_int
       item_orifice_gateLowerEdgeLevel = ec_undef_int
+      item_gate_crestLevel = ec_undef_int
+      item_gate_gateLowerEdgeLevel = ec_undef_int
+      item_gate_gateOpeningWidth = ec_undef_int
       item_general_structure_crestLevel = ec_undef_int
       item_general_structure_gateLowerEdgeLevel = ec_undef_int
       item_general_structure_crestWidth = ec_undef_int
@@ -6538,6 +6564,7 @@ contains
       item_nudge_tem = ec_undef_int
       item_nudge_sal = ec_undef_int
       item_discharge_salinity_temperature_sorsin = ec_undef_int
+      item_sourcesink_discharge = ec_undef_int
       item_hrms = ec_undef_int
       item_tp = ec_undef_int
       item_dir = ec_undef_int
@@ -6551,28 +6578,40 @@ contains
       item_diswcap = ec_undef_int
       item_distot = ec_undef_int
       item_ubot = ec_undef_int
-      item_dambreakLevelsAndWidthsFromTable = ec_undef_int
+      item_db_levels_widths_table = ec_undef_int
       item_subsiduplift = ec_undef_int
       !
       n_qhbnd = 0
       !
       ! tracers
-      if (allocated(item_tracerbnd)) deallocate (item_tracerbnd)
+      if (allocated(item_tracerbnd)) then
+         deallocate (item_tracerbnd)
+      end if
       allocate (item_tracerbnd(numtracers))
       item_tracerbnd = ec_undef_int
       !
-      if (allocated(item_sedfracbnd)) deallocate (item_sedfracbnd)
+      if (allocated(item_sedfracbnd)) then
+         deallocate (item_sedfracbnd)
+      end if
       allocate (item_sedfracbnd(numfracs))
       item_sedfracbnd = ec_undef_int
       ! TO ADD: initial concentration field?
 
-      if (allocated(item_waqfun)) deallocate (item_waqfun)
+      if (allocated(item_waqfun)) then
+         deallocate (item_waqfun)
+      end if
       allocate (item_waqfun(num_time_functions))
       item_waqfun = ec_undef_int
 
-      if (allocated(item_waqsfun)) deallocate (item_waqsfun)
+      if (allocated(item_waqsfun)) then
+         deallocate (item_waqsfun)
+      end if
       allocate (item_waqsfun(nosfunext))
       item_waqsfun = ec_undef_int
+
+      if (allocated(item_sourcesink_constituent_delta)) deallocate (item_sourcesink_constituent_delta)
+      allocate (item_sourcesink_constituent_delta(numconst))
+      item_sourcesink_constituent_delta = ec_undef_int
 
    end subroutine init_variables
 
@@ -6718,21 +6757,24 @@ contains
 
    !> Translate EC's ext.force-file's item name to the integer EC item handle and to
    !> the data pointer(s), i.e. the array that will contain the values of the target item
-   function fm_ext_force_name_to_ec_item(trname, sfname, waqinput, qidname, &
+   function fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
                                          itemPtr1, itemPtr2, itemPtr3, itemPtr4, &
                                          dataPtr1, dataPtr2, dataPtr3, dataPtr4) result(success)
       use m_find_name, only: find_name
 
       logical :: success
-      character(len=*), intent(in) :: trname, sfname, waqinput
+      character(len=*), intent(in) :: trname !< Tracer name (if applicatable)
+      character(len=*), intent(in) :: sfname !< Sediment fraction name (if applicatable)
+      character(len=*), intent(in) :: waqinput !< Water quality input name (if applicatable)
+      character(len=*), intent(in) :: constituent_name !< Constituent name (if applicatable)
 
-      character(len=*), intent(in) :: qidname
+      character(len=*), intent(in) :: qidname !< Quantity ID (the base quantity if combined with a tracer/sedfrac/constituent name)
 
       integer, pointer :: itemPtr1, itemPtr2, itemPtr3, itemPtr4
       real(kind=dp), dimension(:), pointer :: dataPtr1, dataPtr2, dataPtr3, dataPtr4
 
-      ! for tracers:
-      integer :: itrac, isf, ifun, isfun
+      ! for tracers, sediment fractions, water quality functions and constituents:
+      integer :: itrac, isf, ifun, isfun, iconst
 
       success = .true.
 
@@ -6863,6 +6905,15 @@ contains
       case ('orifice_gateLowerEdgeLevel') ! flow1d orifice
          itemPtr1 => item_orifice_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('gate_crestLevel') ! flow1d gate
+         itemPtr1 => item_gate_crestLevel
+         !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('gate_gateLowerEdgeLevel') ! flow1d gate
+         itemPtr1 => item_gate_gateLowerEdgeLevel
+         !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('gate_gateOpeningWidth') ! flow1d gate
+         itemPtr1 => item_gate_gateOpeningWidth
+         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_crestLevel') ! flow1d general structure
          itemPtr1 => item_general_structure_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
@@ -6882,8 +6933,7 @@ contains
       case ('damlevel')
          itemPtr1 => item_damlevel
       case ('dambreakLevelsAndWidths')
-         itemPtr1 => item_dambreakLevelsAndWidthsFromTable
-         dataPtr1 => dambreakLevelsAndWidthsFromTable
+         itemPtr1 => item_db_levels_widths_table
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
@@ -6950,6 +7000,23 @@ contains
          dataPtr1 => nudge_tem
       case ('discharge_salinity_temperature_sorsin')
          itemPtr1 => item_discharge_salinity_temperature_sorsin
+         ! Do not point to array qstss here.
+         ! qstss might be reallocated after initialization (when coupled to Cosumo)
+         ! and must be an argument when calling ec_gettimespacevalue.
+         nullify (dataPtr1)
+      case ('sourcesink_discharge')
+         itemPtr1 => item_sourcesink_discharge
+         ! Do not point to array qstss here.
+         ! qstss might be reallocated after initialization (when coupled to Cosumo)
+         ! and must be an argument when calling ec_gettimespacevalue.
+         nullify (dataPtr1)
+      case ('sourcesink_constituentDelta')
+         if (strcmpi(constituent_name, 'salinity')) then
+            iconst = ISALT
+         else
+            iconst = find_name(const_names, constituent_name)
+         end if
+         itemPtr1 => item_sourcesink_constituent_delta(iconst)
          ! Do not point to array qstss here.
          ! qstss might be reallocated after initialization (when coupled to Cosumo)
          ! and must be an argument when calling ec_gettimespacevalue.
@@ -7192,7 +7259,9 @@ contains
       it = 0
 
       nt = ceiling((t1 - t0) / dt) + 1
-      if (allocated(target_array)) deallocate (target_array)
+      if (allocated(target_array)) then
+         deallocate (target_array)
+      end if
       allocate (target_array(nt * blksize))
       arr1dPtr => ecItemGetArr1DPtr(instancePtr, itemId, 2)
       blksize = size(arr1dPtr)

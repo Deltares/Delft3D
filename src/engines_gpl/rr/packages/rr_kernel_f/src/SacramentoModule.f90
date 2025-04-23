@@ -282,8 +282,7 @@ contains
         FileName = ConfFil_get_namFil(44)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !sacrmnto.3b
-        Write(*,*) ' Cleaning sacrmnto.3b to file:', FileName
-        Write(iout1,*) ' Cleaning sacrmnto.3b to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning sacrmnto.3b for RR-Sacramento input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -918,7 +917,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' UZTWC ',2, ' SACR-ReadAscii',' OPENDA file',IOUT1, &
                                               CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found Sacramento id and UZTWC ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found Sacramento id and UZTWC ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    UZTWCInit(isacr) = Rdum(1)
                    RSLMAP17_Sacr(1,isacr,1) = UZTWCInit(isacr)
                    SACR_Tnul(1,isacr) = RSLMAP17_sacr(1,isacr,1)
@@ -928,7 +927,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' UZFWC ',2, ' SACR-ReadAscii',' OPENDA file',IOUT1, &
                                               CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found Sacramento id and UZFWC ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found Sacramento id and UZFWC ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    UZFWCInit(isacr) = Rdum(1)
                    RSLMAP17_Sacr(2,isacr,1) = UZFWCInit(isacr)
                    SACR_Tnul(2,isacr) = RSLMAP17_sacr(2,isacr,1)
@@ -938,7 +937,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' LZTWC ',2, ' SACR-ReadAscii',' OPENDA file',IOUT1, &
                                               CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found Sacramento id and LZTWC ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found Sacramento id and LZTWC ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    LZTWCInit(isacr) = Rdum(1)
                    RSLMAP17_Sacr(3,isacr,1) = LZTWCInit(isacr)
                    SACR_Tnul(3,isacr) = RSLMAP17_sacr(3,isacr,1)
@@ -948,7 +947,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' LZFPC ',2, ' SACR-ReadAscii',' OPENDA file',IOUT1, &
                                               CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found Sacramento id and LZFPC ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found Sacramento id and LZFPC ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    LZFPCInit(isacr) = Rdum(1)
                    RSLMAP17_Sacr(4,isacr,1) = LZFPCInit(isacr)
                    SACR_Tnul(4,isacr) = RSLMAP17_sacr(4,isacr,1)
@@ -958,7 +957,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' LZFSC ',2, ' SACR-ReadAscii',' OPENDA file',IOUT1, &
                                               CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found Sacramento id and LZFSC ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found Sacramento id and LZFSC ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    LZFSCInit(isacr) = Rdum(1)
                    RSLMAP17_Sacr(5,isacr,1) = LZFSCInit(isacr)
                    SACR_Tnul(5,isacr) = RSLMAP17_sacr(5,isacr,1)

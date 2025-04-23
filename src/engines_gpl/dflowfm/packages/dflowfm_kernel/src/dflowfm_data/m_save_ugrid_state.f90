@@ -63,13 +63,23 @@ contains
       contactname = 'contacts'
       numMesh1dBeforeMerging = 0
 
-      if (allocated(mesh1dNodeIds)) deallocate (mesh1dNodeIds)
-      if (allocated(mesh1dUnmergedToMerged)) deallocate (mesh1dUnmergedToMerged)
+      if (allocated(mesh1dNodeIds)) then
+         deallocate (mesh1dNodeIds)
+      end if
+      if (allocated(mesh1dUnmergedToMerged)) then
+         deallocate (mesh1dUnmergedToMerged)
+      end if
       !if (allocated(mesh1dMergedToUnMerged)) deallocate(mesh1dMergedToUnMerged)
 
-      if (allocated(contactnetlinks)) deallocate (contactnetlinks)
-      if (allocated(netlink2contact)) deallocate (netlink2contact)
-      if (allocated(contact1d2didx)) deallocate (contact1d2didx)
+      if (allocated(contactnetlinks)) then
+         deallocate (contactnetlinks)
+      end if
+      if (allocated(netlink2contact)) then
+         deallocate (netlink2contact)
+      end if
+      if (allocated(contact1d2didx)) then
+         deallocate (contact1d2didx)
+      end if
       contactnlinks = 0
       call dealloc(hashlist_contactids)
 

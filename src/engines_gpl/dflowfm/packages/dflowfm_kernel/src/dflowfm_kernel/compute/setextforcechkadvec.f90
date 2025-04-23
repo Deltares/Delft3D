@@ -268,20 +268,8 @@ contains
                   call anticreep(L)
                end if
             end do
-
          else
-
             call addbaroclinicpressure()
-
-            if (abs(jabaroctimeint) == 2) then
-               rho0 = rho ! save rho
-            else if (abs(jabaroctimeint) == 5) then
-               if (jarhoxu > 0) then
-                  rho = rho0 ! restore rho
-               end if
-            end if
-            jabaroctimeint = abs(jabaroctimeint) ! flag as initialised
-
          end if
       end if
 

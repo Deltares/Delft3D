@@ -306,7 +306,7 @@ contains
          water_height_no_weir = max(upstream_water_level - blu(link), water_height)
          ucx_up = ucx(upstream_cell)
          ucy_up = ucy(upstream_cell)
-         u_in = abs(u1(link))
+         u_in = u1(link)
 
       end subroutine calculate_u_in_and_upstream_ucx_ucy
 
@@ -343,6 +343,8 @@ contains
          real(kind=dp) :: dtefri
          real(kind=dp) :: vbov
          real(kind=dp) :: agwdxi
+         real(kind=dp) :: slope_upstream
+         real(kind=dp) :: slope_downstream
 
          nfw = nfxwL(link)
          wsbov = upstream_water_level
@@ -352,8 +354,12 @@ contains
          ! determine sill height downstream of weir
          if (u_in >= 0d0) then
             d1 = shrxw(nfw)
+            slope_upstream = taludlxw(nfw)
+            slope_downstream = taludrxw(nfw)
          else
             d1 = shlxw(nfw)
+            slope_upstream = taludrxw(nfw)
+            slope_downstream = taludlxw(nfw)
          end if
 
          vhei = 0.5d0 * u_in * u_in / ag
@@ -384,7 +390,7 @@ contains
          dtefri = 0.0d0
          call enloss(ag, d1, energy_height_upstream, hkru_in, qunit, qvolk, toest, vov, &
                      energy_height_downstream, wsbov, wsben, weirdte(nfw), dtefri, iadv(link), crestlxw(nfw), &
-                     taludlxw(nfw), taludrxw(nfw), vegxw(nfw), testfixedweirs)
+                     slope_upstream, slope_downstream, vegxw(nfw), testfixedweirs)
          weirdte(nfw) = (1d0 - waquaweirthetaw) * weirdte(nfw) + waquaweirthetaw * dte0
 
          ! attention total waterdepth instead of water above crest

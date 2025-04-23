@@ -394,8 +394,7 @@ contains
         FileName = ConfFil_get_namFil(49)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !paved.3b_cleaned
-        Write(*,*) ' Cleaning openwate.3b to file:', FileName
-        Write(iout1,*) ' Cleaning openwate.3b to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Openwate.3b for RR-open water input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -533,8 +532,7 @@ contains
         FileName = ConfFil_get_namFil(50)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !openwate.sep_cleaned
-        Write(*,*) ' Cleaning Openwate.sep to file:', FileName
-        Write(iout1,*) ' Cleaning Openwate.sep to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Openwate.sep for RR-open water input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -620,8 +618,7 @@ contains
              IF (ENDFIL) GOTO 211
              Success = GetStringFromBuffer (KeepBufString)
              IF (.not. Success .and. CleanRRFiles)   then
-                 Write(*,*) 'local buffer OpenwaterModule too small, OW_T record'
-                 Write(iout1,*) 'local buffer OpenwaterModule too small, OW_T record'
+                 Call ErrMsgStandard (999, 3, ' Local buffer RR-Openwatermodule OW_T record too small', ' Input skipped')
                  GOTO 211
              Endif
              Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -761,8 +758,7 @@ contains
         FileName = ConfFil_get_namFil(51)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !openwate.tbl_cleaned
-        Write(*,*) ' Cleaning Openwate.tbl to file:', FileName
-        Write(iout1,*) ' Cleaning Openwate.tbl to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Openwate.tbl for RR-open water input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -782,8 +778,7 @@ contains
        IF (ENDFIL) GOTO 3111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer OpenwaterModule too small, OW_T record'
-           Write(iout1,*) 'local buffer OpenwaterModule too small, OW_T record'
+           Call ErrMsgStandard (999, 3, ' Local buffer RR-Openwatermodule OW_T record too small', ' Input skipped')
            GOTO 3111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -862,8 +857,7 @@ contains
        IF (ENDFIL) GOTO 4111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer OpenwaterModule too small, H0_T record'
-           Write(iout1,*) 'local buffer OpenwaterModule too small, H0_T record'
+           Call ErrMsgStandard (999, 3, ' Local buffer RR-Openwatermodule H0_T record too small', ' Input skipped')
            GOTO 4111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -935,8 +929,7 @@ contains
        IF (ENDFIL) GOTO 5111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer OpenwaterModule too small, SPCO record'
-           Write(iout1,*) 'local buffer OpenwaterModule too small, SPCO record'
+           Call ErrMsgStandard (999, 3, ' Local buffer RR-Openwatermodule SPCO record too small', ' Input skipped')
            GOTO 5111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -1088,8 +1081,7 @@ contains
         FileName = ConfFil_get_namFil(49)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,3)  !openwate.3b_cleaned      ! in append mode, since already used by openwater nodes
-        Write(*,*) ' Cleaning openwate.3b to file:', FileName
-        Write(iout1,*) ' Cleaning openwate.3b to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Openwate.3b for RR-open water precipitation input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -1368,7 +1360,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' openwaterlevel ',2, ' OPWA-ReadAscii',' OPENDA file',IOUT1, &
                                               CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found open water id and water level ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found open water id and water level ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    LVLOW(iow) = Rdum(1)
                    ! determine corresponding volume (double precision), area, volume inundated at paved/unpaved
                    Do i=1,NVal

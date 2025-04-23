@@ -41,11 +41,11 @@ contains
       use precision, only: dp, comparereal, fp
       use physicalconsts, only: stf
       use m_physcoef, only: ag, rhomean, backgroundsalinity, dalton, epshstem, stanton, sfr, Soiltempthick, &
-          BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, Secchidepth2, surftempsmofac, &
-          jadelvappos, zab
+                            BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, Secchidepth2, surftempsmofac, &
+                            jadelvappos, zab
       use m_heatfluxes, only: em, albedo, cpa, tkelvn, jaSecchisp, Secchisp, jamapheatflux, rcpi, &
-          fwind, Qtotmap, Qsunmap, Qevamap, Qconmap, Qlongmap, Qfrevamap, Qfrconmap, Qsunav, Qlongav, Qconav, &
-          Qevaav, Qfrconav, Qfrevaav
+                              fwind, Qtotmap, Qsunmap, Qevamap, Qconmap, Qlongmap, Qfrevamap, Qfrconmap, Qsunav, Qlongav, Qconav, &
+                              Qevaav, Qfrconav, Qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
       use m_flowparameters, only: jahisheatflux, jatem, ja_solar_radiation_factor
       use m_missing, only: dmiss
@@ -54,12 +54,11 @@ contains
       use m_flowtimes, only: dts
       use m_transport, only: constituents, itemp, isalt
       use m_fm_icecover, only: ja_icecover, ice_af, ice_albedo, ice_h, ice_t, snow_albedo, snow_h, snow_t, &
-          qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
+                               qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_link1, only: getlink1
-      use m_wind, only: japatm, jaevap, longwave_available, relativewind, tair, wx, wy, rhum, clou, patm, &
-          heatsrc0, qrad, solrad_available, tbed, rhoair, longwave, evap, cdwcof, airdensity, ja_airdensity, &
-          ja_computed_airdensity
+      use m_wind, only: japatm, jaevap, longwave_available, relativewind, tair, wx, wy, rhum, clou, patm, heatsrc0, qrad, &
+                        solar_radiation, solrad_available, tbed, rhoair, longwave, evap, cdwcof, airdensity, ja_airdensity, ja_computed_airdensity
 
       real(kind=dp), intent(in) :: timhr, qsno
       integer, intent(in) :: n
@@ -175,13 +174,9 @@ contains
          if (japatm > 0) then
             presn = 1d-2 * patm(n)
          end if
+
          ! Solar radiation restricted by presence of clouds and reflection of water surface (albedo)
          if (solrad_available) then
-            if (ja_solar_radiation_factor > 0) then
-               if (comparereal(solar_radiation_factor(n), dmiss) /= 0) then
-                  qrad(n) = qrad(n) * solar_radiation_factor(n) ! qrad is adjusted (and not qsun) as it is used in fm_wq_processes
-               end if
-            end if
             qsun = qrad(n) * (1.0_dp - albedo)
          else ! Calculate solar radiation from cloud coverage specified in file
             if (jsferic == 1) then
@@ -193,6 +188,13 @@ contains
                qsun = 0.0_dp
             end if
          end if
+
+         if (ja_solar_radiation_factor > 0) then
+            if (comparereal(solar_radiation_factor(n), dmiss) /= 0) then
+               qsun = qsun * solar_radiation_factor(n)
+            end if
+         end if
+         solar_radiation(n) = qsun ! solar_radiation is passed on to fm_wq_processes
 
          rcpiba = rcpi * ba(n)
          qsn = qsun * rcpiba
@@ -288,7 +290,7 @@ contains
                ch = 0.00232_dp
             end if
          end if
-         
+
          if (ja_airdensity > 0 .or. ja_computed_airdensity > 0) then
             air_density = airdensity(n)
          else

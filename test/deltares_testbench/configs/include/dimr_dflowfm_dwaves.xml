@@ -55,7 +55,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c00" ref="dimr_trunk">
-        <path version="2024-01-12T07:30:00">e100_dflowfm-dwaves/f02_delft3d_cases/c00-test0_smallclosedbasin/dfm</path>
+        <path version="2025-03-27T14:52:43.954000">e100_dflowfm-dwaves/f02_delft3d_cases/c00-test0_smallclosedbasin/dfm</path>
         <maxRunTime>40.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/dflowfmoutput/te0_map.nc" type="NETCDF">
@@ -160,7 +160,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c06" ref="dimr_trunk">
-        <path version="2024-01-12T07:30:00">e100_dflowfm-dwaves/f02_delft3d_cases/c06-loosdrecht/dfm</path>
+        <path version="2025-03-27T15:18:27.051000">e100_dflowfm-dwaves/f02_delft3d_cases/c06-loosdrecht/dfm</path>
         <maxRunTime>1800.0</maxRunTime> <!-- seconds -->
          <checks>
             <file name="fm/dflowfmoutput/loo_map.nc" type="NETCDF">
@@ -181,7 +181,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c07" ref="dimr_trunk">
-        <path version="2024-01-12T07:30:00">e100_dflowfm-dwaves/f02_delft3d_cases/c07-unstructuredInterpolation/dfm_0500</path>
+        <path version="2025-03-27T15:28:50.819000">e100_dflowfm-dwaves/f02_delft3d_cases/c07-unstructuredInterpolation/dfm_0500</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/dflowfmoutput/uns_map.nc" type="NETCDF">

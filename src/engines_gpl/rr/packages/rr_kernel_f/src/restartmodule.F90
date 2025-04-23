@@ -1,31 +1,31 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
- 
+
 module Restart
 
   !use
@@ -1465,7 +1465,7 @@ module Restart
                          NAM_GWSDInitial(IRRRunoffSub) = min (NAM_GWSDMAX(IRRRUnoffSub), NAM_GWSDInitial(IRRRunoffSub))
                       endif
                    else
-                      write(*,*) ' Using D-NAM requires a new restart file; regenerate your restart file'
+                      write(iout,*) ' Using D-NAM requires a new restart file; regenerate your restart file'
                       call ErrMsgStandard(972, 0,'  Rdrest',' NEW D-NAM version requires new restart file')
                    endif
                 elseif (RRRunoff_CompOption(i) .eq. 4) then  ! LGSI
@@ -1560,7 +1560,7 @@ module Restart
 ! unformatted restart files created in 2.05 with MS Powerstation will cause read error in 2.07 Digital version
 ! with conversion tool ConvRestart205 the original restart file can be converted to ASCII
 ! 207 will default first try to read the file unformatted, if that files is will try to read it as ASCII
-      write(*,*) ' Error reading Restart file RR'
+!     write(*,*) ' Error reading Restart file RR'
       write(iout,*) ' Error reading Restart file RR: premature end of restart file'
       write(iout,*) '  First generate a new restart file'
       Call CloseGP (Inrest)
@@ -1697,7 +1697,7 @@ module Restart
                Read (InRest) (RRRunoff_Tnul(j,i),j=1,MaxSeriesPerMap(15))
             else
                write(iout,'(A)') ' Because of changed dimensions and output variables, RRRunoff_output at Tnul not read from restart file'
-               Write(*,*) ' Because of changed dimensions and output variables, RRRunoff_output at Tnul not read from restart'
+               Call ErrMsgStandard (999, 1, ' Because of changed dimensions and output variables, RRRunoff_output at Tnul not read from restart', '')
             endif
          Enddo
       Endif

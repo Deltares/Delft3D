@@ -34,7 +34,10 @@ module m_get_Lbot_Ltop
 contains
    subroutine getLbotLtop(LL, Lb, Lt)
       use m_flow, only: kmx, hu, ltop, lbot
-      integer :: LL, Lb, Lt
+      integer, intent(in) :: LL
+      integer, intent(out) :: Lb
+      integer, intent(out) :: Lt
+
       if (kmx == 0) then
          Lb = LL
          if (hu(LL) > 0) then
@@ -43,7 +46,8 @@ contains
             Lt = 0
          end if
       else
-         Lb = Lbot(LL); Lt = Ltop(LL)
+         Lb = Lbot(LL)
+         Lt = Ltop(LL)
       end if
    end subroutine getLbotLtop
 end module m_get_Lbot_Ltop

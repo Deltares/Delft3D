@@ -376,11 +376,21 @@ contains
          end if
       end do
 
-      if (allocated(branchIdx_tmp)) deallocate (branchIdx_tmp)
-      if (allocated(Chainage_tmp)) deallocate (Chainage_tmp)
-      if (allocated(ibrch2crs)) deallocate (ibrch2crs)
-      if (allocated(xx_tmp)) deallocate (xx_tmp)
-      if (allocated(yy_tmp)) deallocate (yy_tmp)
+      if (allocated(branchIdx_tmp)) then
+         deallocate (branchIdx_tmp)
+      end if
+      if (allocated(Chainage_tmp)) then
+         deallocate (Chainage_tmp)
+      end if
+      if (allocated(ibrch2crs)) then
+         deallocate (ibrch2crs)
+      end if
+      if (allocated(xx_tmp)) then
+         deallocate (xx_tmp)
+      end if
+      if (allocated(yy_tmp)) then
+         deallocate (yy_tmp)
+      end if
 
    end subroutine addObservCrsFromIni
 

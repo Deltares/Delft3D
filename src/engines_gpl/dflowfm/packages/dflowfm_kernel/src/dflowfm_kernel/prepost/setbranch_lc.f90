@@ -45,7 +45,11 @@ contains
 
       call setnodadm(0)
 
-      if (allocated(NMK0)) deallocate (NMK0); allocate (NMK0(NUMK)); NMK0 = 0
+      if (allocated(NMK0)) then
+         deallocate (NMK0)
+      end if
+      allocate (NMK0(NUMK))
+      NMK0 = 0
 
       LC = 0; NRL1D = 0; NRL1D6 = 0
       do L = 1, NUML
@@ -110,7 +114,9 @@ contains
 
       IBX = IBR; MXNETBR = IBR
 
-      if (allocated(NETBR)) deallocate (NETBR)
+      if (allocated(NETBR)) then
+         deallocate (NETBR)
+      end if
       allocate (NETBR(IBX), STAT=IERR)
       call AERR('NETBR(IBX)', IERR, NUML)
 

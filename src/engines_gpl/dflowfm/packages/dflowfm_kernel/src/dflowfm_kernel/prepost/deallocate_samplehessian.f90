@@ -45,7 +45,9 @@ contains
       use m_samples
       use m_samples_refine
 
-      if (allocated(zss)) deallocate (zss)
+      if (allocated(zss)) then
+         deallocate (zss)
+      end if
 
       iHesstat = iHesstat_DIRTY
 

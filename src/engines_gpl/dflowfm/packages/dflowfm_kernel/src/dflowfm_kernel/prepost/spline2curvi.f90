@@ -284,7 +284,9 @@ contains
 
 !  deallocate
       if (allocated(edgevel)) deallocate (edgevel, nfac1, dgrow1, nlist)
-      if (allocated(ifront)) deallocate (ifront)
+      if (allocated(ifront)) then
+         deallocate (ifront)
+      end if
       if (allocated(xg1)) deallocate (xg1, yg1, sg1)
       call deallocate_splineprops()
 

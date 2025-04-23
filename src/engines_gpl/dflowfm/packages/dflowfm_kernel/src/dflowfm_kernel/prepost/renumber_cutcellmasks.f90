@@ -92,10 +92,18 @@ contains
       end do
 
 !    deallocate
-      if (allocated(idxL_bak)) deallocate (idxL_bak)
-      if (allocated(xdxL_bak)) deallocate (xdxL_bak)
-      if (allocated(ydxL_bak)) deallocate (ydxL_bak)
-      if (allocated(pdxL_bak)) deallocate (pdxL_bak)
+      if (allocated(idxL_bak)) then
+         deallocate (idxL_bak)
+      end if
+      if (allocated(xdxL_bak)) then
+         deallocate (xdxL_bak)
+      end if
+      if (allocated(ydxL_bak)) then
+         deallocate (ydxL_bak)
+      end if
+      if (allocated(pdxL_bak)) then
+         deallocate (pdxL_bak)
+      end if
 
       return
    end subroutine renumber_cutcellmasks

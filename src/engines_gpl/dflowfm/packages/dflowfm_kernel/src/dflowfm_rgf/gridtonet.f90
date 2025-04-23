@@ -86,7 +86,9 @@ contains
 
       call READYY('Arranging curvilinear grid-in network', 0d0)
 
-      if (allocated(mn)) deallocate (mn)
+      if (allocated(mn)) then
+         deallocate (mn)
+      end if
       allocate (mn(mc, nc), stat=ierr); mn = 0
       call aerr('mn(mc,nc)', ierr, mc * nc)
 

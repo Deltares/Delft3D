@@ -48,7 +48,9 @@ contains
 
       integer :: i, in, k, kk, n, nn, num
 
-      if (allocated(cellmask)) deallocate (cellmask)
+      if (allocated(cellmask)) then
+         deallocate (cellmask)
+      end if
       allocate (cellmask(nump1d2d)); cellmask = 0
 
       zs(1:ns) = 1

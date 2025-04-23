@@ -58,12 +58,12 @@ contains
       integer :: ic, icmod
 
       real(kind=dp), dimension(:), allocatable :: xx, yy
-      real(kind=dp), dimension(:), allocatable :: dSL
-      integer, dimension(:), allocatable :: iLink, ipol, istartcrs, numlist
+      real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
+      integer, dimension(:), allocatable :: crossed_links, polygon_nodes, istartcrs, numlist
       integer, dimension(:, :), allocatable :: linklist
       integer, dimension(:), allocatable :: idum
 
-      integer :: i, num, numcrossedlinks, ierror
+      integer :: i, num, intersection_count, ierror
       integer :: istart, iend
 
       integer :: jakdtree = 1
@@ -72,7 +72,7 @@ contains
 
       if (num_rugs < 1) return
 
-      numcrossedlinks = 0
+      intersection_count = 0
 
 !   allocate
       allocate (istartcrs(num_rugs + 1))
@@ -85,10 +85,10 @@ contains
          call wall_clock_time(t0)
 
          ! to do: chaching
-         !call copy_cached_cross_sections( iLink, ipol, success )
+         !call copy_cached_cross_sections( crossed_links, polygon_nodes, success )
 
          !if ( success ) then
-         !    numcrossedlinks = size(iLink)
+         !    intersection_count = size(crossed_links)
          !    ierror          = 0
          !else
          num = 0
@@ -116,33 +116,33 @@ contains
          end do
 
 !           allocate
-         allocate (iLink(Lnx))
-         iLink = 0
-         allocate (ipol(Lnx))
-         ipol = 0
-         allocate (dSL(Lnx))
-         dSL = 0d0
+         allocate (crossed_links(Lnx))
+         crossed_links = 0
+         allocate (polygon_nodes(Lnx))
+         polygon_nodes = 0
+         allocate (polygon_segment_weights(Lnx))
+         polygon_segment_weights = 0d0
          ! use itype 3, as we want crossing the edge, not the connection between adjoint cells
-         call find_crossed_links_kdtree2(treeglob, num, xx, yy, 3, Lnx, 1, numcrossedlinks, iLink, ipol, dSL, ierror)
+         call find_crossed_links_kdtree2(treeglob, num, xx, yy, ITYPE_NETLINK, Lnx, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
 
-         !call save_link_list( numcrossedlinks, iLink, ipol )   to do caching
+         !call save_link_list( intersection_count, crossed_links, polygon_nodes )   to do caching
          !endif
 
-         if (ierror == 0 .and. numcrossedlinks > 0) then
+         if (ierror == 0 .and. intersection_count > 0) then
 
 !          determine crossed links per cross-section
             allocate (numlist(num_rugs))
             numlist = 0
-            allocate (linklist(numcrossedlinks, num_rugs))
+            allocate (linklist(intersection_count, num_rugs))
             linklist = 0
 
-            do i = 1, numcrossedlinks
+            do i = 1, intersection_count
                do ic = 1, num_rugs
                   istart = istartcrs(ic)
                   iend = istartcrs(ic + 1) - 1
-                  if (ipol(i) >= istart .and. ipol(i) <= iend) then
+                  if (polygon_nodes(i) >= istart .and. polygon_nodes(i) <= iend) then
                      numlist(ic) = numlist(ic) + 1
-                     linklist(numlist(ic), ic) = abs(lne2ln(iLink(i)))
+                     linklist(numlist(ic), ic) = abs(lne2ln(crossed_links(i)))
                   end if
                end do
             end do
@@ -152,13 +152,21 @@ contains
             jakdtree = 0
 
 !          deallocate
-            if (allocated(iLink)) deallocate (iLink)
-            if (allocated(ipol)) deallocate (ipol)
-            if (allocated(dSL)) deallocate (dSL)
+            if (allocated(crossed_links)) then
+               deallocate (crossed_links)
+            end if
+            if (allocated(polygon_nodes)) then
+               deallocate (polygon_nodes)
+            end if
+            if (allocated(polygon_segment_weights)) then
+               deallocate (polygon_segment_weights)
+            end if
          end if
 
 !       deallocate
-         if (allocated(istartcrs)) deallocate (istartcrs)
+         if (allocated(istartcrs)) then
+            deallocate (istartcrs)
+         end if
          if (allocated(xx)) deallocate (xx, yy)
 
          call wall_clock_time(t1)
@@ -169,10 +177,10 @@ contains
       icMOD = max(1, num_rugs / 100)
 
       call realloc(numlist, num_rugs, keepExisting=.true., fill=0) ! In case pli-based cross sections have not allocated this yet.
-      call realloc(linklist, (/max(numcrossedlinks, 1), num_rugs/), keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
+      call realloc(linklist, (/max(intersection_count, 1), num_rugs/), keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
 
       ! todo: caching
-      !call copy_cached_cross_sections( iLink, ipol, success )
+      !call copy_cached_cross_sections( crossed_links, polygon_nodes, success )
 
       call READYY('Enabling runup gauges on grid', 0d0)
       do ic = 1, num_rugs
@@ -195,14 +203,26 @@ contains
 
 !   deallocate
       if (jakdtree == 1) then
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(iPol)) deallocate (iPol)
-         if (allocated(dSL)) deallocate (dSL)
-         if (allocated(numlist)) deallocate (numlist)
-         if (allocated(linklist)) deallocate (linklist)
+         if (allocated(crossed_links)) then
+            deallocate (crossed_links)
+         end if
+         if (allocated(polygon_nodes)) then
+            deallocate (polygon_nodes)
+         end if
+         if (allocated(polygon_segment_weights)) then
+            deallocate (polygon_segment_weights)
+         end if
+         if (allocated(numlist)) then
+            deallocate (numlist)
+         end if
+         if (allocated(linklist)) then
+            deallocate (linklist)
+         end if
       end if
 
-      if (allocated(idum)) deallocate (idum)
+      if (allocated(idum)) then
+         deallocate (idum)
+      end if
 
       return
    end subroutine runupgauges_on_flowgeom

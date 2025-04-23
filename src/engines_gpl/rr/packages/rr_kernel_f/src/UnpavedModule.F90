@@ -840,8 +840,7 @@ contains
         FileName = ConfFil_get_namFil(15)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !unpaved.3b_cleaned
-        Write(*,*) ' Cleaning unpaved.3b to file:', FileName
-        Write(iout1,*) ' Cleaning unpaved.3b to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.3b for RR-unpaved input to file', FileName)
    endif
 ! *********************************************************************
 ! Read unpaved.3B file
@@ -1182,8 +1181,7 @@ contains
         FileName = ConfFil_get_namFil(16)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !unpaved.sto_cleaned
-        Write(*,*) ' Cleaning unpaved.sto to file:', FileName
-        Write(iout1,*) ' Cleaning unpaved.sto to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.sto for RR-unpaved input to file', FileName)
    endif
 ! *********************************************************************
 ! Read Unpaved.Sto file
@@ -1261,8 +1259,7 @@ contains
         FileName = ConfFil_get_namFil(21)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !unpaved.alf_cleaned
-        Write(*,*) ' Cleaning unpaved.alf to file:', FileName
-        Write(iout1,*) ' Cleaning unpaved.alf to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.alf for RR-unpaved input to file', FileName)
    endif
 ! *********************************************************************
 ! ** Read Unpaved.Alf file
@@ -1443,8 +1440,7 @@ contains
         FileName = ConfFil_get_namFil(31)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !unpaved.inf_cleaned
-        Write(*,*) ' Cleaning unpaved.inf to file:', FileName
-        Write(iout1,*) ' Cleaning unpaved.inf to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.inf for RR-unpaved input to file', FileName)
    endif
 ! *********************************************************************
 ! Read Unpaved.Inf file
@@ -1517,8 +1513,7 @@ contains
         FileName = ConfFil_get_namFil(33)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !unpaved.sep_cleaned
-        Write(*,*) ' Cleaning unpaved.sep file:', FileName
-        Write(iout1,*) ' Cleaning unpaved.sep file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.sep for RR-unpaved input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -1672,8 +1667,7 @@ contains
        IF (ENDFIL) GOTO 4611
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer UnpavedModule too small, SEEP record'
-           Write(iout1,*) 'local buffer UnpavedModule too small, SEEP record'
+           Call ErrMsgStandard (999, 3, ' Local buffer Unpavedmodule SEEP record too small', ' Input skipped')
            GOTO 4611
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -1756,8 +1750,7 @@ contains
         FileName = ConfFil_get_namFil(34)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !unpaved.tbl_cleaned
-        Write(*,*) ' Cleaning unpaved.tbl file:', FileName
-        Write(iout1,*) ' Cleaning unpaved.tbl file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.tbl for RR-unpaved input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -1777,8 +1770,7 @@ contains
        IF (ENDFIL) GOTO 5111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer UnpavedModule too small, IG_T record'
-           Write(iout1,*) 'local buffer UnpavedModule too small, IG_T record'
+           Call ErrMsgStandard (999, 3, ' Local buffer Unpavedmodule, IG_T record too small', ' Input skipped')
            GOTO 5111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -1851,8 +1843,7 @@ contains
        IF (ENDFIL) GOTO 5611
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer UnpavedModule too small, H0_T record'
-           Write(iout1,*) 'local buffer UnpavedModule too small, H0_T record'
+           Call ErrMsgStandard (999, 3, ' Local buffer Unpavedmodule, H0_T record too small', ' Input skipped')
            GOTO 5611
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -1926,8 +1917,7 @@ contains
        IF (ENDFIL) GOTO 5711
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer UnpavedModule too small, SPCO record'
-           Write(iout1,*) 'local buffer UnpavedModule too small, SPCO record'
+           Call ErrMsgStandard (999, 3, ' Local buffer Unpavedmodule, SPCO record too small', ' Input skipped')
            GOTO 5711
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -2001,8 +1991,7 @@ contains
        IF (ENDFIL) GOTO 6111
        Success = GetStringFromBuffer (KeepBufString)
        IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer UnpavedModule too small, SC_T record'
-           Write(iout1,*) 'local buffer UnpavedModule too small, SC_T record'
+           Call ErrMsgStandard (999, 3, ' Local buffer Unpavedmodule, SP_T record too small', ' Input skipped')
            GOTO 6111
        Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', if table defined
@@ -2546,7 +2535,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' gwvolume ',2, ' UNPV-ReadAscii',' OPENDA file',IOUT1, &
                                               CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found unpaved id and gwvolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                  write(*,*) ' found unpaved id and gwvolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    V_In = Rdum(1) - BOBD (iovh)
                    BOBD (iovh)   = Rdum(1)
                    BINIBD (iovh) = Rdum(1)
@@ -2579,7 +2568,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' onvzonevolume ',2,' UNPV-ReadAscii',' OPENDA file',IOUT1, &
                                              CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found .and. UnsatZoneOption .ge. 1) then  ! found and CapsimUsed, so variable is relevant
-                   write(*,*) ' found unpaved id and onvzonevolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found unpaved id and onvzonevolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    VOnvZoneOld = OnvZone(iovh)%Actual_Volume
                    OnvZone(iovh)%Actual_Volume = Rdum(1)
                    OnvZone(IOVH)%Actual_mm     = OnvZone(IOVH)%Actual_Volume / AREAOH(IOVH) / mm2m
@@ -2606,7 +2595,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' bergingland ',2,' UNPV-ReadAscii',' OPENDA file',IOUT1, &
                                              CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found unpaved id and bergingland ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found unpaved id and bergingland ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    BOLND(iovh)   = Rdum(1)
                    BINIOL(iovh) = Rdum(1)
                    RSLMAP2_OVH(13,iovh,1) = BOLND(iovh) / AreaOH(iovh) * 1000.
@@ -4578,7 +4567,7 @@ contains
 !         open (Debug_unit,file=CapsimDbgFile,status='unknown')
          Call CloseGP (Message_unit)
          Call CloseGP (Debug_unit)
-         write(*,*) ' Simulation using Capsim'
+         Call ErrMsgStandard (999, 1, ' Simulation using Capsim', '')
 !         write(*,*) ' CapsimMsgFile =', CapsimMsgFile(1:132)
 !         write(*,*) ' CapsimDbgFile =', CapsimDbgFile(1:132)
          IStatus = 0
@@ -4594,7 +4583,7 @@ contains
          call ReadRoot (File_unit, CapSimFileName, message_unit,CapSimMsgFile, &
                         debug_unit,CapSimDbgFile, IStatus,&
                         nxspun, nxte,  dprz, frev)
-         if (IStatus .ne. 0) call ErrMsgStandard (969, 0, ' Sobek_RR', ' Error in Alterra-routine ReadRoot')
+         if (IStatus .ne. 0) call ErrMsgStandard (969, IStatus, ' Sobek_RR', ' Error in Alterra-routine ReadRoot')
          IStatus = 0
          CapSimFileName = ConfFil_get_NAMFIL(94)
          Call OpenFl (File_Unit, CapsimFileName, 1,2)
@@ -4605,8 +4594,7 @@ contains
                         dpgwun, dprzun,  nudpun)
          Debug_unit = 0
          if (IStatus .ne. 0) then
-            Write(*,*) ' IStatus returned from ReadUnsa=', IStatus
-            call ErrMsgStandard (969, 0, ' Sobek_RR', ' Error in Alterra-routine ReadUnsa')
+            call ErrMsgStandard (969, IStatus, ' Sobek_RR', ' Error in Alterra-routine ReadUnsa')
          endif
 !
 ! Set Actual maxima for Internal use
@@ -4645,8 +4633,7 @@ contains
              Call OpenFl (File_Unit, CapsimFileName, 1,2)
              Call ReadUnsa2 (File_unit, iStatus)
              if (IStatus .ne. 0) then
-                Write(*,*) ' IStatus returned from ReadUnsa=', IStatus
-                call ErrMsgStandard (969, 0, ' Sobek_RR', ' Error in routine ReadUnsa2')
+                call ErrMsgStandard (969, IStatus, ' Sobek_RR', ' Error in routine ReadUnsa2')
              endif
          endif
 
@@ -5335,7 +5322,7 @@ contains
        ! Set DpIn=initial groundwater level in meters below surface
          DpIn   = LVLOH(iovh) - GWL0 (iovh)
        ! Initial unsat. soil moisture content in m
-         VmRzIn  = OnvZone(Iovh)%Init_mm * mm2m
+         VmRzIn = OnvZone(Iovh)%Init_mm * mm2m
        ! DpIn1 and VmRzIn1 already defined above
        ! call WL-SobekCapsim routine
          if (Idebug .gt.0) call DebugWL_Capsim (Idebug, Nt, Ns, DpIn, DpRootZ, Dt, Pn, VmRzIn, FmEvPt)
@@ -7351,7 +7338,11 @@ contains
 
 !          OnvZone(IOVH)%Max_mm  = 240
 !          OnvZone(IOVH)%Min_mm  = 50
-           If (UnSatZoneOption .eq. 3) then   ! try out simple option, before option=2
+!           UnSatZoneOption = 0 no unsaturated zone, no Capsim (UnSatZone MaxVolume=MinVolume)
+!           UnSatZoneOption = 1 Capsim
+!           UnSatZoneOption = 2 Capsim+  (not in GUI/doc; with additional check on Ksat and not including flag LikeSobek213))
+!           UnSatZoneOption = 3 only for programmers testing (not in GUI/doc)
+           If (UnSatZoneOption .eq. 3) then   ! try out simple option, before option=2; this UnsatZoneOption=3 is only for programmers testing and not available in GUI nor documentation, so write(*,*) is not an issue
               write(*,*) ' Set data for IOVH:',IOVH
               write(*,*) ' Set Max. Volume Unsaturated Zone in mm:'
               read (*,*)  rdum

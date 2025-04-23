@@ -2058,7 +2058,10 @@ contains
       use sediment_basics_module, only: has_bedload
       use m_alloc, only: realloc
       use m_sediment, only: aldiff_links
+      use m_turbulence, only: BACKGROUND_DIFFUSION_OFF
       
+      real(kind=dp), dimension(1), parameter :: ACTIVE_LAYER_BACKGROUND_DIFFUSION_FACTOR=[BACKGROUND_DIFFUSION_OFF] !< background diffusion factor [-]. It cannot be a `parameter` because it is `inout` in `comp_fluxhor3D` because it is optional. 
+      integer, parameter :: LIMITER_TYPE=4 !< It should be made equal to a parameter inside, for instance, `m_flowparameters`. 
    !!
    !! I/O
    !!
@@ -2087,8 +2090,8 @@ contains
       call realloc(sink, ndx, keepExisting=.false., fill=0.0_dp)
       
       do l = 1, lsedtot
-         if (has_bedload(tratyp(l))) then
-            call fm_advec_diff_2d(stmpar%morlyr%state%msed(l,1,:), uadv, qadv, sour, sink, aldiff_links, 4, ierror)   
+         if (has_bedload(tratyp(l))) then      
+            call fm_advec_diff_2d(stmpar%morlyr%state%msed(l,1,:), uadv, qadv, sour, sink, aldiff_links, ACTIVE_LAYER_BACKGROUND_DIFFUSION_FACTOR, LIMITER_TYPE, ierror)   
          end if
       end do
       

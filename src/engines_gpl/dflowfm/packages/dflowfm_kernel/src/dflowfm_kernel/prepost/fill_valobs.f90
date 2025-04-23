@@ -114,7 +114,9 @@ contains
          else
             wavfac = sqrt(2d0)
          end if
-         if (allocated(wa)) deallocate (wa)
+         if (allocated(wa)) then
+            deallocate (wa)
+         end if
          allocate (wa(1:2, 1:max(kmx, 1)))
       end if
 
@@ -151,10 +153,14 @@ contains
       !
       if (stm_included .and. jased > 0) then
          if (stmpar%morlyr%settings%iunderlyr == 2) then
-            if (allocated(frac)) deallocate (frac)
+            if (allocated(frac)) then
+               deallocate (frac)
+            end if
             allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr))
             frac = dmiss
-            if (allocated(poros)) deallocate (poros)
+            if (allocated(poros)) then
+               deallocate (poros)
+            end if
             allocate (poros(1:stmpar%morlyr%settings%nlyr))
             poros = dmiss
          end if
@@ -711,7 +717,9 @@ contains
 
 !  No need to copy empty layers from top anymore, they have been filled with dmiss
 
-      if (allocated(wa)) deallocate (wa)
+      if (allocated(wa)) then
+         deallocate (wa)
+      end if
 
       if (timon) call timstop(handle_extra(55))
       return

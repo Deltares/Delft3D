@@ -306,12 +306,16 @@ contains
 !  deallocate
       if (allocated(hL)) deallocate (hL, hR)
       if (allocated(hL2)) deallocate (hL2, hR2)
-      if (allocated(sc)) deallocate (sc)
+      if (allocated(sc)) then
+         deallocate (sc)
+      end if
       if (allocated(hgL)) deallocate (hgL, hgR)
       if (allocated(hgL_loc)) deallocate (hgL_loc, hgR_loc)
       if (allocated(xlist)) deallocate (xlist, ylist, hlist, nlistL, nlistR, nlist_loc)
       if (allocated(ics)) deallocate (ics, idx)
-      if (allocated(t)) deallocate (t)
+      if (allocated(t)) then
+         deallocate (t)
+      end if
 
       return
 

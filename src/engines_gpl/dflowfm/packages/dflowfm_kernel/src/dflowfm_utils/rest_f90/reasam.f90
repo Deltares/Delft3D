@@ -77,7 +77,9 @@ contains
       if (allocated(XS)) deallocate (XS, YS, ZS)
       allocate (XS(NSMAX), YS(NSMAX), ZS(NSMAX), STAT=IERR)
       call AERR('XS(NSMAX),YS(NSMAX),ZS(NSMAX)', IERR, NSMAX)
-      if (allocated(ipsam)) deallocate (ipsam)
+      if (allocated(ipsam)) then
+         deallocate (ipsam)
+      end if
       allocate (ipsam(NSMAX), stat=ierr)
       call aerr('ipsam(NSMAX)', ierr, NSMAX)
       call READYY(' ', -1d0)

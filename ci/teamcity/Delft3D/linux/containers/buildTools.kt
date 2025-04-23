@@ -14,7 +14,9 @@ object LinuxBuildTools : BuildType({
 
     templates(
         TemplatePublishStatus,
-        TemplateMergeRequest
+        TemplateMergeRequest,
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     vcs {
@@ -74,15 +76,6 @@ object LinuxBuildTools : BuildType({
             commandType = other {
                 subCommand = "builder"
                 commandArgs = "prune --force --filter type=exec.cachemount"
-            }
-        }
-    }
-
-    features {
-        perfmon {}
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
             }
         }
     }

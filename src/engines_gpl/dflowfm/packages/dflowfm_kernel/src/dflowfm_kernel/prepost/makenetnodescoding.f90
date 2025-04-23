@@ -48,7 +48,9 @@ contains
       integer :: k2
       integer :: L, LL
 
-      if (allocated(NB)) deallocate (NB)
+      if (allocated(NB)) then
+         deallocate (NB)
+      end if
       allocate (NB(NUMK)); NB = 0
 
       do L = 1, NUML ! NODE BOUNDARY ADMINISTRATION

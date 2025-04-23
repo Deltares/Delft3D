@@ -263,17 +263,37 @@ contains
 
       integer :: i
 
-      if (allocated(xk_st)) deallocate (xk_st)
-      if (allocated(yk_st)) deallocate (yk_st)
-      if (allocated(nmk_st)) deallocate (nmk_st)
-      if (allocated(nb_st)) deallocate (nb_st)
-      if (allocated(ik_st)) deallocate (ik_st)
-      if (allocated(ip_st)) deallocate (ip_st)
-      if (allocated(iL_st)) deallocate (iL_st)
+      if (allocated(xk_st)) then
+         deallocate (xk_st)
+      end if
+      if (allocated(yk_st)) then
+         deallocate (yk_st)
+      end if
+      if (allocated(nmk_st)) then
+         deallocate (nmk_st)
+      end if
+      if (allocated(nb_st)) then
+         deallocate (nb_st)
+      end if
+      if (allocated(ik_st)) then
+         deallocate (ik_st)
+      end if
+      if (allocated(ip_st)) then
+         deallocate (ip_st)
+      end if
+      if (allocated(iL_st)) then
+         deallocate (iL_st)
+      end if
 
-      if (allocated(lnn_st)) deallocate (lnn_st)
-      if (allocated(lne_st)) deallocate (lne_st)
-      if (allocated(kn_st)) deallocate (kn_st)
+      if (allocated(lnn_st)) then
+         deallocate (lnn_st)
+      end if
+      if (allocated(lne_st)) then
+         deallocate (lne_st)
+      end if
+      if (allocated(kn_st)) then
+         deallocate (kn_st)
+      end if
 
       if (allocated(netcell_st)) then
          do i = 1, ubound(netcell_st, 1)

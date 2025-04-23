@@ -93,7 +93,9 @@ contains
          ymns = minval(yk(1:numk)) + 20d0
 
          javiusp = 1
-         if (allocated(viusp)) deallocate (viusp)
+         if (allocated(viusp)) then
+            deallocate (viusp)
+         end if
          allocate (viusp(lnx), stat=ierr); viusp = 0d0
 
          shu = 0d0

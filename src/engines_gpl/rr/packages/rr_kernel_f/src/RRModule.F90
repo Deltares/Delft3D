@@ -567,7 +567,7 @@
   Endif
 
   If (CleanRRFiles) then
-     write(*,*) 'End of CleanRRFiles'
+     call SetMessage(LEVEL_INFO, 'End of CleanRRFiles')
      stop
   endif
 
@@ -1109,7 +1109,7 @@
       IDEBUG = 0
 
       IF (NEVENT .LE. 0) THEN
-         Write(*,*) ' No simulation computations'
+         call SetMessage(LEVEL_INFO, ' No simulation computations since no Events defined; NEVENT <= 0')
       ELSE
 
 ! Modflow wordt on-line gebruikt als het door unpaved en/of RR open water gebruikt wordt
@@ -3115,8 +3115,8 @@
          OpenDAFileName = ConfFil_get_NamFil(123)
          if (OpenDAFileName .ne. '' .and. UseOpenDAFile) then
              Call OpenFl (OpenDAFileUnit, OpenDAFileName, 1,2)
-             Call WriteOpenDAPaved (OpenDAFileUnit)
-             Call WriteOpenDAUnpaved (OpenDAFileUnit)
+             Call WriteOpenDAPaved      (OpenDAFileUnit)
+             Call WriteOpenDAUnpaved    (OpenDAFileUnit)
              Call WriteOpenDAGreenhouse (OpenDAFileUnit)
              Call WriteOpenDAOpenWater  (OpenDAFileUnit)
              Call WriteOpenDASacramento (OpenDAFileUnit)
@@ -3127,7 +3127,7 @@
 !            Call WriteOpenDALGSI       (OpenDAFileUnit)
              Call WriteOpenDAWalrus     (OpenDAFileUnit)
              Call CloseGP(OpenDAFileUnit)
-             write(*,*) ' OpenDafile generated'
+             call SetMessage(LEVEL_INFO, ' OpenDAFiles generated')
          endif
        Endif
 

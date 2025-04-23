@@ -102,7 +102,7 @@ endif(WIN32)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${sources} ${fortran_version_file})
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/dfmoutput)
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/runscripts/run_dfmoutput.${platform_extension}         DESTINATION bin)
 
 # Set post-build step
 set(install_dir ${CMAKE_BINARY_DIR})

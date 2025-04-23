@@ -70,7 +70,9 @@ contains
       logical :: Lisclose
 
 !  allocate
-      if (allocated(lanseg_startend)) deallocate (lanseg_startend)
+      if (allocated(lanseg_startend)) then
+         deallocate (lanseg_startend)
+      end if
 
       allocate (lanseg_startend(2, 1))
 

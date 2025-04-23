@@ -148,7 +148,7 @@
 !
 #endif
 
-!      write(*,*) 'Opening ', iunit, Name
+!     write(*,*) 'Opening ', iunit, Name
 
       if (iunit .ne. 0) then
          maxFileUnitNumber = max(maxFileUnitNumber, iunit)

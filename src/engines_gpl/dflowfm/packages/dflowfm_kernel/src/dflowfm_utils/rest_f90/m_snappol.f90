@@ -64,8 +64,8 @@ contains
 
       integer :: NumLinks, NDIM
 
-      real(kind=dp), dimension(:), allocatable :: dSL
-      integer, dimension(:), allocatable :: iLink, ipol
+      real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
+      integer, dimension(:), allocatable :: crossed_links, polygon_nodes
       integer, dimension(:), allocatable :: ipolnr, indx
 
       integer :: i, ii, ipL, ipolsec, k1, k2, L, numpols
@@ -78,12 +78,12 @@ contains
       call savepol()
 
 !    allocate
-      allocate (iLink(Lnx))
-      iLink = 0
-      allocate (ipol(Lnx))
-      ipol = 0
-      allocate (dSL(Lnx))
-      dSL = 0d0
+      allocate (crossed_links(Lnx))
+      crossed_links = 0
+      allocate (polygon_nodes(Lnx))
+      polygon_nodes = 0
+      allocate (polygon_segment_weights(Lnx))
+      polygon_segment_weights = 0d0
       allocate (ipolnr(Nin))
       ipolnr = 999
 
@@ -135,24 +135,24 @@ contains
       end do
 
 !    snap polygon (note: xout and yout are temporary arrays)
-      call find_crossed_links_kdtree2(treeglob, Nin, xout, yout, itype, Lnx, 1, NumLinks, iLink, iPol, dSL, ierror)
+      call find_crossed_links_kdtree2(treeglob, Nin, xout, yout, itype, Lnx, BOUNDARY_ALL, NumLinks, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
       if (ierror /= 0 .or. NumLinks == 0) goto 1234
 
 !    sort crossed flowlinks in increasing polyline order
       allocate (indx(numLinks))
-      call sort_index(iPol(1:numLinks), indx)
+      call sort_index(polygon_nodes(1:numLinks), indx)
 
 !    increase polygon array
       call increasepol(3 * NumLinks, 0)
 
-      ii = 1 ! pointer in indx array, sorted in increasing polygon number (iPol)
+      ii = 1 ! pointer in indx array, sorted in increasing polygon number (polygon_nodes)
 
       do ipL = 1, numpols
 !       fill polygon with sections
          i = 0
 
 !       advance pointer
-         do while (ipolnr(iPol(ii)) < ipL)
+         do while (ipolnr(polygon_nodes(ii)) < ipL)
             ii = ii + 1
          end do
 
@@ -160,10 +160,10 @@ contains
             exit
          end if
 
-         do while (ipolnr(iPol(ii)) == ipL)
-            L = iLink(indx(ii))
+         do while (ipolnr(polygon_nodes(ii)) == ipL)
+            L = crossed_links(indx(ii))
 !          check for matching polygon section
-            ipolsec = iPol(ii)
+            ipolsec = polygon_nodes(ii)
             if (ipolsec < 1 .or. ipolsec >= Nin) then ! should not happen
                continue
                exit
@@ -228,10 +228,18 @@ contains
       ierror = 0
 1234  continue
 
-      if (allocated(ipolnr)) deallocate (ipolnr)
-      if (allocated(iLink)) deallocate (iLink)
-      if (allocated(iPol)) deallocate (iPol)
-      if (allocated(dSL)) deallocate (dSL)
+      if (allocated(ipolnr)) then
+         deallocate (ipolnr)
+      end if
+      if (allocated(crossed_links)) then
+         deallocate (crossed_links)
+      end if
+      if (allocated(polygon_nodes)) then
+         deallocate (polygon_nodes)
+      end if
+      if (allocated(polygon_segment_weights)) then
+         deallocate (polygon_segment_weights)
+      end if
 
       call restorepol()
 
@@ -312,8 +320,12 @@ contains
 1234  continue
 
 !    deallocate
-      if (allocated(namobs)) deallocate (namobs)
-      if (allocated(kobs)) deallocate (kobs)
+      if (allocated(namobs)) then
+         deallocate (namobs)
+      end if
+      if (allocated(kobs)) then
+         deallocate (kobs)
+      end if
 
       return
    end subroutine snappnt
@@ -645,16 +657,36 @@ contains
 1234  continue
 
 !    deallocate
-      if (allocated(xe)) deallocate (xe)
-      if (allocated(ye)) deallocate (ye)
-      if (allocated(xyen)) deallocate (xyen)
-      if (allocated(kce)) deallocate (kce)
-      if (allocated(ke)) deallocate (ke)
-      if (allocated(ki)) deallocate (ki)
-      if (allocated(kcs)) deallocate (kcs)
-      if (allocated(xdum)) deallocate (xdum)
-      if (allocated(ydum)) deallocate (ydum)
-      if (allocated(idx)) deallocate (idx)
+      if (allocated(xe)) then
+         deallocate (xe)
+      end if
+      if (allocated(ye)) then
+         deallocate (ye)
+      end if
+      if (allocated(xyen)) then
+         deallocate (xyen)
+      end if
+      if (allocated(kce)) then
+         deallocate (kce)
+      end if
+      if (allocated(ke)) then
+         deallocate (ke)
+      end if
+      if (allocated(ki)) then
+         deallocate (ki)
+      end if
+      if (allocated(kcs)) then
+         deallocate (kcs)
+      end if
+      if (allocated(xdum)) then
+         deallocate (xdum)
+      end if
+      if (allocated(ydum)) then
+         deallocate (ydum)
+      end if
+      if (allocated(idx)) then
+         deallocate (idx)
+      end if
 
       call restorepol()
 

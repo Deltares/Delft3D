@@ -72,7 +72,9 @@ contains
 
          mxprof = nproflocs
 
-         if (allocated(profiles1D)) deallocate (profiles1D)
+         if (allocated(profiles1D)) then
+            deallocate (profiles1D)
+         end if
          allocate (profiles1D(mxprof), stat=ierr)
          call aerr('profiles1D(mxprof)', ierr, 40 * nprofdefs)
 

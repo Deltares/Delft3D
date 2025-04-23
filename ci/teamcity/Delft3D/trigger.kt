@@ -129,6 +129,78 @@ object Trigger : BuildType({
                 fi
             """.trimIndent()
         }
+
+        script {
+            name = "Start Linux Unit Tests"
+
+            conditions {
+                doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
+
+            scriptContent = """
+                curl --fail --silent --show-error \
+                     -u %teamcity_user%:%teamcity_pass% \
+                     -X POST \
+                     -H "Content-Type: application/xml" \
+                     -d '<build branchName="%teamcity.build.branch%" replace="true">
+                            <buildType id="${LinuxUnitTest.id}"/>
+                            <revisions>
+                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
+                                    <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
+                                </revision>
+                            </revisions>
+                            <properties>
+                                <property name="product" value="%product%"/>
+                            </properties>
+                            <snapshot-dependencies>
+                                <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
+                            </snapshot-dependencies>
+                         </build>' \
+                     "%teamcity.serverUrl%/app/rest/buildQueue"
+                if (test $? -ne 0)
+                then
+                    echo Start Linux Testbench through TC API failed.
+                    exit 1
+                fi
+            """.trimIndent()
+        }
+
+        script {
+            name = "Start Windows Unit Tests"
+
+            conditions {
+                doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
+
+            scriptContent = """
+                curl --fail --silent --show-error \
+                     -u %teamcity_user%:%teamcity_pass% \
+                     -X POST \
+                     -H "Content-Type: application/xml" \
+                     -d '<build branchName="%teamcity.build.branch%" replace="true">
+                            <buildType id="${WindowsUnitTest.id}"/>
+                            <revisions>
+                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
+                                    <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
+                                </revision>
+                            </revisions>
+                            <properties>
+                                <property name="product" value="%product%"/>
+                            </properties>
+                            <snapshot-dependencies>
+                                <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
+                            </snapshot-dependencies>
+                         </build>' \
+                     "%teamcity.serverUrl%/app/rest/buildQueue"
+                if (test $? -ne 0)
+                then
+                    echo Start Linux Testbench through TC API failed.
+                    exit 1
+                fi
+            """.trimIndent()
+        }
     }
 
     if (DslContext.getParameter("environment") == "production") {

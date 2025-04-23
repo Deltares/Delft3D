@@ -218,7 +218,9 @@ contains
             end if
 
 !       deallocate permutation array
-            if (allocated(iperm)) deallocate (iperm)
+            if (allocated(iperm)) then
+               deallocate (iperm)
+            end if
 
 !       deallocate kdtree
             if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)

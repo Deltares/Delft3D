@@ -54,7 +54,9 @@ contains
       integer :: in, k, KMOD
       integer :: num
 
-      if (allocated(cellmask)) deallocate (cellmask)
+      if (allocated(cellmask)) then
+         deallocate (cellmask)
+      end if
       allocate (cellmask(nump1d2d))
       cellmask = 0
 

@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<treeVectorFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.openda.org" xsi:schemaLocation="http://www.openda.org ../../../xsd/treeVector.xsd">
+  <treeVector>
+    <treeVectorLeaf id="input_ObservationPoint01_water_level">
+      <vector>NaN</vector>
+    </treeVectorLeaf>
+    <treeVectorLeaf id="output_weir_crest_level">
+      <vector>20</vector>
+    </treeVectorLeaf>
+  </treeVector>
+</treeVectorFile>

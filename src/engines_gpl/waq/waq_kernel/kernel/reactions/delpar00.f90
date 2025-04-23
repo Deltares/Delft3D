@@ -62,6 +62,7 @@ contains
     use m_part_regular
     use m_part_modeltypes
     use m_copy_delwaq_data_to_delpar, only: copy_delwaq_volumes_flows
+    use rd_token
 
     ! Particle tracking
     integer  (kind = int_wp), intent(in) :: outmon                  !< monitoring file
@@ -90,13 +91,15 @@ contains
     if (timon) call timstrt ("delpar00", ithandl)
 
     alone = .true.
+    ilun(1) = 0
+    lch(1)  = ' '
 
     if (mdpfile /= ' ') then
         call norm_init()
         alone = .false.
         close( lunitp(2) )
         file_unit = outmon
-        call rdfnam (lunitp, mdpfile, fnamep, nfilesp, 2, 1, .false.)
+        call rdfnam (lunitp, mdpfile, fnamep, nfilesp, 2, 1, .false., hyd)
         lunout = lunitp(2)
         hyd%file_hyd%name = fnamep(18)
         call read_hyd(hyd)

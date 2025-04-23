@@ -766,11 +766,21 @@ contains
          call addObservation(pOPnt%x, pOPnt%y, pOPnt%name, loctype=pOPnt%locationtype, iOP=i)
       end do
 
-      if (allocated(branchIdx_tmp)) deallocate (branchIdx_tmp)
-      if (allocated(Chainage_tmp)) deallocate (Chainage_tmp)
-      if (allocated(ibrch2obs)) deallocate (ibrch2obs)
-      if (allocated(xx_tmp)) deallocate (xx_tmp)
-      if (allocated(yy_tmp)) deallocate (yy_tmp)
+      if (allocated(branchIdx_tmp)) then
+         deallocate (branchIdx_tmp)
+      end if
+      if (allocated(Chainage_tmp)) then
+         deallocate (Chainage_tmp)
+      end if
+      if (allocated(ibrch2obs)) then
+         deallocate (ibrch2obs)
+      end if
+      if (allocated(xx_tmp)) then
+         deallocate (xx_tmp)
+      end if
+      if (allocated(yy_tmp)) then
+         deallocate (yy_tmp)
+      end if
 
    end subroutine addObservation_from_ini
 

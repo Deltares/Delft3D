@@ -155,7 +155,7 @@ contains
                         LL = abs(nd(k)%ln(kk)) ! see testcase transport harbour
                         k2 = ln(1, LL) + ln(2, LL) - k
                         if (k2 == ku) then
-                           if (iadv(LL) == 6 .or. iadv(LL) == 8) then
+                           if (iadv(LL) == 6 .or. iadv(LL) == IADV_ORIGINAL_LATERAL_OVERFLOW) then
                               klnup(1 + 3 * (k12 - 1), L) = 0
                            end if
                         end if
@@ -194,7 +194,7 @@ contains
                         LL = abs(nd(k)%ln(kk)) ! see testcase transport harbour
                         k2 = ln(1, LL) + ln(2, LL) - k
                         if (k2 == ku .or. k2 == ku2) then
-                           if (iadv(LL) == 6 .or. iadv(LL) == 8) then
+                           if (iadv(LL) == 6 .or. iadv(LL) == IADV_ORIGINAL_LATERAL_OVERFLOW) then
                               ku = 0; ku2 = 0
                            end if
                         end if

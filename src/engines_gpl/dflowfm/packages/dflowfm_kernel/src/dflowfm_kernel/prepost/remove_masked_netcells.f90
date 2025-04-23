@@ -191,7 +191,9 @@ contains
 1234  continue
 
 !     deallocate
-      if (allocated(numnew)) deallocate (numnew)
+      if (allocated(numnew)) then
+         deallocate (numnew)
+      end if
 
       return
    end subroutine remove_masked_netcells

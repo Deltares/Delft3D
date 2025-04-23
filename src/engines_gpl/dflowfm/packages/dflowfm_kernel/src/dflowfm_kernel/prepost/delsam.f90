@@ -61,7 +61,9 @@ contains
          if (nsmax > 0) then
             nsmax = 0; ns = 0
             if (allocated(xs)) deallocate (xs, ys, zs)
-            if (allocated(ipsam)) deallocate (ipsam)
+            if (allocated(ipsam)) then
+               deallocate (ipsam)
+            end if
          end if
          return
       end if

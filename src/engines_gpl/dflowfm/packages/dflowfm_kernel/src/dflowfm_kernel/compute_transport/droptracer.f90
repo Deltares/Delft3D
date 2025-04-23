@@ -111,7 +111,9 @@ contains
       call tekflowstuff(ja)
 
 !  deallocate
-      if (allocated(icelllist)) deallocate (icelllist)
+      if (allocated(icelllist)) then
+         deallocate (icelllist)
+      end if
 
       return
    end subroutine droptracer

@@ -289,7 +289,9 @@ contains
 1234  continue ! error handling
 
 !  deallocate
-      if (allocated(inodemask)) deallocate (inodemask)
+      if (allocated(inodemask)) then
+         deallocate (inodemask)
+      end if
 !   write(lunfil, "('];')")
 !   close(lunfil)
 

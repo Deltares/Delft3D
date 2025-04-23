@@ -186,8 +186,12 @@ contains
 1234  continue
 
 !  deallocate
-      if (allocated(xx)) deallocate (xx)
-      if (allocated(yy)) deallocate (yy)
+      if (allocated(xx)) then
+         deallocate (xx)
+      end if
+      if (allocated(yy)) then
+         deallocate (yy)
+      end if
 
       return
    end subroutine create_samples_in_triangle

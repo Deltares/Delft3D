@@ -309,8 +309,7 @@
         FileName = ConfFil_get_namFil(35)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !greenhse.3b_cleaned
-        Write(*,*) ' Cleaning greenhse.3b to file:', FileName
-        Write(iout1,*) ' Cleaning greenhse.3b to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Greenhse.3b for RR-greenhouse input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -417,8 +416,7 @@
         FileName = ConfFil_get_namFil(36)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !greenhse.rf_cleaned
-        Write(*,*) ' Cleaning Greenhse.rf to file:', FileName
-        Write(iout1,*) ' Cleaning Greenhse.rf to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Greenhse.rf for RR-greenhouse input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -485,8 +483,7 @@
         FileName = ConfFil_get_namFil(48)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !greenhse.sil_cleaned
-        Write(*,*) ' Cleaning Greenhse.sil to file:', FileName
-        Write(iout1,*) ' Cleaning Greenhse.sil to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning Greenhse.sil for RR-greenhouse input to file', FileName)
    endif
 
 ! *********************************************************************
@@ -1061,7 +1058,7 @@
          Enddo
       Else
 !       New format KasInit file, find selected KasInitDef and read table in INIT records
-        Write(*,*) ' RdKasInit New format, look for KasInitDefinition:', KasInitDef(1:Len_trim(KasInitDef))
+!       Write(*,*) ' RdKasInit New format, look for KasInitDefinition:', KasInitDef(1:Len_trim(KasInitDef))
         CALL SKPCOM (INKini, ENDFIL, 'ODS ')
         Allow = .false.
         Found = .false.
@@ -1306,14 +1303,14 @@
                 Retval = Retval + GetVAR2 (STRING,' roofvolume ',2, ' GRHS-ReadAscii',' OPENDA file',IOUT1, &
                                               CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found greenhouse id and roofvolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found greenhouse id and roofvolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    BKASD(ikas) = Rdum(1)
                 endif
                 allow = .true.
                 Retval = RetVal + GetVRS2 (STRING,' basinvolumes ',2,' GRHS-ReadAscii',' OPENDA file', IOUT1, &
                                              CDUM(1), RDUM(1), IDUM(1), Nckkl, IflRtn)
                 if (found) then
-                   write(*,*) ' found greenhouse id and basinvolumes ', Id_nod(inod)(1:len_trim(id_nod(inod))), (rdum(ikkl), ikkl=1,nckkl)
+!                   write(*,*) ' found greenhouse id and basinvolumes ', Id_nod(inod)(1:len_trim(id_nod(inod))), (rdum(ikkl), ikkl=1,nckkl)
                    Do ikkl =1, NCkkl
                       Bkas(ikas,ikkl) = Rdum(ikkl)
                    enddo
@@ -1322,7 +1319,7 @@
                 Retval = Retval + GetVAR2 (STRING,' silovolume ',2,' GRHS-ReadAscii',' OPENDA file',IOUT1, &
                                              CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found greenhouse id and silovolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found greenhouse id and silovolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    SiloB(ikas) = Rdum(1)
                 endif
 

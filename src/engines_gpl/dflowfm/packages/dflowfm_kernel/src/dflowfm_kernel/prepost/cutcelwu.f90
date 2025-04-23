@@ -420,12 +420,20 @@ contains
 
 !  write(6,"('cutcelwu:', I4)") 9
 
-      if (allocated(knp)) deallocate (KNP)
+      if (allocated(knp)) then
+         deallocate (knp)
+      end if
 
       if (jamasks == 1) then
-         if (allocated(Lmask)) deallocate (Lmask)
-         if (allocated(xmL)) deallocate (xmL)
-         if (allocated(ymL)) deallocate (ymL)
+         if (allocated(Lmask)) then
+            deallocate (Lmask)
+         end if
+         if (allocated(xmL)) then
+            deallocate (xmL)
+         end if
+         if (allocated(ymL)) then
+            deallocate (ymL)
+         end if
       end if
 
       call READYY('CUTCELWU', -1d0)

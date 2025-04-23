@@ -102,26 +102,26 @@ contains
       real(kind=dp) :: zz1, zz2, xz1, xz2
       real(kind=dp) :: xmn, xmx, ymx, zmx, zmx2, bot, top, xx, yy, bup, xxu, zzu
       real(kind=dp) :: xp(4), yp(4), zp(4), xxmn, xxmx, zn, dlay, dl, xp1, yp1, qsrck
-      integer :: mx, kb, kt, Lb, Lt, LL, kplotfrombedorsurfacesav, ierror, numcrossedlinks, japol = 0
+      integer :: mx, kb, kt, Lb, Lt, LL, kplotfrombedorsurfacesav, ierror, intersection_count, japol = 0
 
       real(kind=dp), allocatable :: plotlin2(:)
       integer, allocatable :: ip(:), ip2(:)
 
-      integer, allocatable :: iLink(:), iPol(:)
-      real(kind=dp), allocatable :: dSL(:)
+      integer, allocatable :: crossed_links(:), polygon_nodes(:)
+      real(kind=dp), allocatable :: polygon_segment_weights(:)
 
       if (ndx < 1) return
 
       if (npl > 1) then
          if (japol == 0) then
             kc = 0
-            allocate (iLink(Lnx), ipol(Lnx), dSL(Lnx))
-            call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, 4, Lnx, 1, numcrossedLinks, iLink, iPol, dSL, ierror)
-            do LL = 1, numcrossedlinks
-               L = ilink(LL)
+            allocate (crossed_links(Lnx), polygon_nodes(Lnx), polygon_segment_weights(Lnx))
+            call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK_1D_DUAL, Lnx, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
+            do LL = 1, intersection_count
+               L = crossed_links(LL)
                kc(ln(1, L)) = 1; kc(ln(2, L)) = 1
             end do
-            deallocate (iLink, ipol, dSL)
+            deallocate (crossed_links, polygon_nodes, polygon_segment_weights)
             japol = 1
          end if
       else

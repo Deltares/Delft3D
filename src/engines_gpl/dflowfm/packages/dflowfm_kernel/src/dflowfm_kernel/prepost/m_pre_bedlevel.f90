@@ -107,8 +107,12 @@ contains
       end do
 
 !deallocate
-      if (allocated(dzdx)) deallocate (dzdx)
-      if (allocated(dzdy)) deallocate (dzdy)
+      if (allocated(dzdx)) then
+         deallocate (dzdx)
+      end if
+      if (allocated(dzdy)) then
+         deallocate (dzdy)
+      end if
 
    end subroutine extrapolate_bedlevel_at_boundaries
 

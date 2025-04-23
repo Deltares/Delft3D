@@ -81,7 +81,7 @@ contains
                if (ja_timestep_nostruct > 0) then !< Exclude (structure) links without advection from the time step limitation
                   squcor(1:ndx) = squ(1:ndx) ! Start with already computed squ.
                   do L = 1, lnx1d
-                     if (iadv(L) /= 0 .and. iadv(L) /= 22) then
+                     if (iadv(L) /= 0 .and. iadv(L) /= IADV_GENERAL_STRUCTURE) then
                         cycle ! Do NOT exclude this link
                      end if
                      k1 = ln(1, L); k2 = ln(2, L)

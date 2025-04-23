@@ -59,44 +59,39 @@
 
 !! \li \b More: see file list
 program unstruc
-   use M_GRID
-   use M_POLYGON
-   use M_LANDBOUNDARY
-   use M_BOAT
-   use m_netw
-   use unstruc_startup
-   use unstruc_model
-   use netcdf
-   use properties
-   use m_observations_data
-   use unstruc_netcdf
-   use messagehandling, only: warn_flush, msgbuf
-   use UNSTRUC_DISPLAY
-   use M_WEARELT
-   use m_flowparameters
-   use unstruc_api
-   use dfm_error
-   use gridoperations
-   use m_commandline_option
+   use m_grid, only: nmax, mmax
+   use m_boat, only: maxboat
+   use m_netw, only: kmax, knx, mxb, lmax, maxlan, maxpol, imake1d2dtype, i1d2dtp_1to1, netflow
+   use unstruc_model, only: md_jaopengl, md_pressakey, md_jatest, md_nruns, md_soltest, md_cfl, md_icgsolver, md_maxmatvecs, md_epsdiff, &
+                            md_epscg, md_convnetcells, md_netfile, md_jasavenet, md_jamake1d2dlinks, md_japartition, md_partugrid, md_ident, md_ndomains, &
+                            md_jacontiguous, md_pmethod, md_genpolygon, md_partseed, md_restartfile, md_mapfile, md_classmap_file, md_flowgeomfile, md_partitionfile, &
+                            md_jagridgen, md_jarefine, md_cutcells, md_cfgfile, md_convertlongculverts, md_jaautostart
+   use unstruc_netcdf, only: unc_conv_ugrid, level_info, unc_write_net
+   use unstruc_api, only: flow
+   use messagehandling, only: warn_flush, msgbuf, mess, msg_flush
+   use unstruc_display, only: jagui, ntek
+   use m_flowparameters, only: ibedlevtyp
+   use dfm_error, only: dfm_noerr, dfm_exit, dfm_sigint
+   use m_timer, only: initimer, gettimer, IAXPY
+   use gridoperations, only: make1d2dinternalnetlinks, findcells
+   use m_commandline_option, only: iarg_outfile, iarg_dobatch
    use unstruc_channel_flow, only: network
    use m_find1dcells, only: find1dcells
-   use m_partitioninfo
-   use check_mpi_env
-#ifdef HAVE_MPI
-   use mpi
-#endif
-   use m_modenow
-   use m_qnrgf
-   use m_wall_clock_time
-   use m_draw_nu
-   use m_editgrid
-   use m_editgridlineblok
-   use m_editflow
-   use m_editgridblok
-   use m_editpol
-   use m_editsplines
-   use m_editsam
-   use m_editnetw
+   use m_wall_clock_time, only: wall_clock_time
+   use m_draw_nu, only: drawnu
+   use m_editgrid, only: editgrid
+   use m_editgridlineblok, only: editgridlineblok
+   use m_editflow, only: editflow
+   use m_editgridblok, only: editgridblok
+   use m_editpol, only: editpol
+   use m_editsplines, only: editsplines
+   use m_editsam, only: editsam
+   use m_editnetw, only: editnetw
+   use m_partitioninfo, only: jampi, numranks, my_rank, ja_mpi_init_by_fm, sdmn, ndomains
+   use precision, only: dp
+   use check_mpi_env, only: running_in_mpi_environment
+   use m_modenow, only: mode, nfld
+   use m_qnrgf, only: jqn
    use m_read_commandline, only: read_commandline
    use m_flow_modelinit, only: flow_modelinit
    use m_makelongculverts_commandline, only: makelongculverts_commandline
@@ -112,7 +107,14 @@ program unstruc
    use m_fetch_operation_utils, only: set_mpi_environment_wwo_fetch_proc, finish_fetch_proc
    use m_solve_petsc, only: startpetsc
    use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP
-
+   use unstruc_display, only: load_displaysettings
+   use m_gridtonet, only: gridtonet
+   use m_partitioninfo, only: partition_finalize
+   use m_cutcell_list, only: cutcell_list
+   use m_inidat, only: inidat
+   use m_iset_jaopengl, only: iset_jaopengl
+   use m_resetb, only: resetb
+   
    implicit none
 
    integer :: KEY
@@ -314,7 +316,6 @@ program unstruc
       if (len_trim(md_ident) > 0) then ! partitionmduparse
          call partition_from_commandline(md_netfile, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
          L = index(md_netfile, '_net') - 1
-         md_mdu = md_ident
          if (len_trim(md_restartfile) > 0) then ! If there is a restart file
             L_merge = index(md_restartfile, '_merged')
             if (L_merge > 0) then
@@ -357,7 +358,7 @@ program unstruc
             if (len_trim(md_classmapfile_base) > 0) then
                md_classmap_file = md_classmapfile_base(1:index(md_classmapfile_base, '.nc', back=.true.) - 1)//'_'//sdmn_loc//".nc"
             end if
-            call generatePartitionMDUFile(trim(md_ident)//'.mdu', trim(md_mdu)//'_'//sdmn_loc//'.mdu')
+            call generatePartitionMDUFile(trim(md_ident)//'.mdu', trim(md_ident)//'_'//sdmn_loc//'.mdu')
          end do
       else
          call partition_from_commandline(md_netfile, md_ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)

@@ -106,30 +106,72 @@ contains
 
       cache_success = .false.
 
-      if (allocated(cache_xobs)) deallocate (cache_xobs)
-      if (allocated(cache_yobs)) deallocate (cache_yobs)
-      if (allocated(cache_xpl_fixed)) deallocate (cache_xpl_fixed)
-      if (allocated(cache_ypl_fixed)) deallocate (cache_ypl_fixed)
-      if (allocated(cache_dsl_fixed)) deallocate (cache_dsl_fixed)
-      if (allocated(cache_locTpObs)) deallocate (cache_locTpObs)
-      if (allocated(cache_kobs)) deallocate (cache_kobs)
-      if (allocated(cache_lobs)) deallocate (cache_lobs)
-      if (allocated(cache_ilink_fixed)) deallocate (cache_ilink_fixed)
-      if (allocated(cache_ipol_fixed)) deallocate (cache_ipol_fixed)
-      if (allocated(cache_linklist)) deallocate (cache_linklist)
-      if (allocated(cache_ipol)) deallocate (cache_ipol)
-      if (allocated(cached_lne_dry)) deallocate (cached_lne_dry)
-      if (allocated(cached_lnn_dry)) deallocate (cached_lnn_dry)
-      if (allocated(cached_xzw_dry)) deallocate (cached_xzw_dry)
-      if (allocated(cached_yzw_dry)) deallocate (cached_yzw_dry)
-      if (allocated(cached_bottom_area_dry)) deallocate (cached_bottom_area_dry)
-      if (allocated(cached_xz_dry)) deallocate (cached_xz_dry)
-      if (allocated(cached_yz_dry)) deallocate (cached_yz_dry)
-      if (allocated(cached_netcell_dry)) deallocate (cached_netcell_dry)
+      if (allocated(cache_xobs)) then
+         deallocate (cache_xobs)
+      end if
+      if (allocated(cache_yobs)) then
+         deallocate (cache_yobs)
+      end if
+      if (allocated(cache_xpl_fixed)) then
+         deallocate (cache_xpl_fixed)
+      end if
+      if (allocated(cache_ypl_fixed)) then
+         deallocate (cache_ypl_fixed)
+      end if
+      if (allocated(cache_dsl_fixed)) then
+         deallocate (cache_dsl_fixed)
+      end if
+      if (allocated(cache_locTpObs)) then
+         deallocate (cache_locTpObs)
+      end if
+      if (allocated(cache_kobs)) then
+         deallocate (cache_kobs)
+      end if
+      if (allocated(cache_lobs)) then
+         deallocate (cache_lobs)
+      end if
+      if (allocated(cache_ilink_fixed)) then
+         deallocate (cache_ilink_fixed)
+      end if
+      if (allocated(cache_ipol_fixed)) then
+         deallocate (cache_ipol_fixed)
+      end if
+      if (allocated(cache_linklist)) then
+         deallocate (cache_linklist)
+      end if
+      if (allocated(cache_ipol)) then
+         deallocate (cache_ipol)
+      end if
+      if (allocated(cached_lne_dry)) then
+         deallocate (cached_lne_dry)
+      end if
+      if (allocated(cached_lnn_dry)) then
+         deallocate (cached_lnn_dry)
+      end if
+      if (allocated(cached_xzw_dry)) then
+         deallocate (cached_xzw_dry)
+      end if
+      if (allocated(cached_yzw_dry)) then
+         deallocate (cached_yzw_dry)
+      end if
+      if (allocated(cached_bottom_area_dry)) then
+         deallocate (cached_bottom_area_dry)
+      end if
+      if (allocated(cached_xz_dry)) then
+         deallocate (cached_xz_dry)
+      end if
+      if (allocated(cached_yz_dry)) then
+         deallocate (cached_yz_dry)
+      end if
+      if (allocated(cached_netcell_dry)) then
+         deallocate (cached_netcell_dry)
+      end if
 
       if (allocated(cache_cross_sections)) call deallocCrossSections(cache_cross_sections)
 
-      if (allocated(cached_thin_dams)) deallocate (cached_thin_dams)
+      if (allocated(cached_thin_dams)) then
+         deallocate (cached_thin_dams)
+      end if
 
       md5current = ''
 

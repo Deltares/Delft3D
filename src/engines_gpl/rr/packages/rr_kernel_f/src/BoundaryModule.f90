@@ -283,8 +283,7 @@ contains
         FileName = ConfFil_get_namFil(56)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !bound3b.3b_cleaned
-        Write(*,*) ' Cleaning bound3b.3b to file:', FileName
-        Write(iout1,*) ' Cleaning bound3b.3b to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning bound3b.3b for RR-boundary input to file:', FileName)
    endif
 
 ! *********************************************************************
@@ -395,9 +394,8 @@ contains
    if (CleanRRFiles) then
         FileName = ConfFil_get_namFil(57)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
-        Call Openfl (iounit, FileName,1,2)  !unpaved.sto_cleaned
-        Write(*,*) ' Cleaning bound3b.tbl to file:', FileName
-        Write(iout1,*) ' Cleaning bound3b.tbl to file:', FileName
+        Call Openfl (iounit, FileName,1,2)  !bound3b.tbl_cleaned
+        Call ErrMsgStandard (999, 1, ' Cleaning bound3b.tbl for RR-boundary input to file:', FileName)
    endif
 ! *********************************************************************
 ! read Bound3b.tbl
@@ -406,14 +404,15 @@ contains
 ! BN_T records, alleen als BndTable = .true.
      endfil = .not. BndTable
      if (.not. endfil) call SetMessage(LEVEL_DEBUG, 'Read Bound3B.Tbl file')
-     Call SKPCOM (Infile2, ENDFIL,'ODS')
+     if (.not. Endfil) Call SKPCOM (Infile2, ENDFIL,'ODS')
      Do while (.not. endfil)
         Success = GetRecord(Infile2, 'BN_T', Endfil, idebug, Iout1)  ! get record van keyword BN_T tot bn_t, zet in buffer
         IF (ENDFIL .or. .not. Success) GOTO 3111
         Success = GetStringFromBuffer (KeepBufString)
         IF (.not. Success .and. CleanRRFiles)   then
-           Write(*,*) 'local buffer BoundaryModule to small'
-           Write(iout1,*) 'local buffer BoundaryModule to small'
+!           Write(*,*) 'local buffer BoundaryModule to small'
+!           Write(iout1,*) 'local buffer BoundaryModule to small'
+           Call ErrMsgStandard (999, 3, ' Local buffer Boundarymodule BN_T record too small', ' Input skipped')
            GOTO 3111
         Endif
         Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
@@ -555,8 +554,7 @@ contains
         if (FileName == ' ') FileName = 'BoundaryConditions.bc'
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,2)  !BoundaryConditions.bc_cleaned
-        Write(*,*) ' Cleaning BoundaryConditions.bc to file:', FileName
-        Write(iout1,*) ' Cleaning BoundaryConditions.bc to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning BoundaryCondition.bc for RR-boundary input to file:', FileName)
    endif
 
 ! *********************************************************************

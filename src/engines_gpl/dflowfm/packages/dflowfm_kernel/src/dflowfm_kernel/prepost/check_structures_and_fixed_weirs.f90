@@ -97,8 +97,12 @@ contains
       end if
 
 !  deallocate
-      if (allocated(links_used_by_structures)) deallocate (links_used_by_structures)
-      if (allocated(links_used_by_weirs)) deallocate (links_used_by_weirs)
+      if (allocated(links_used_by_structures)) then
+         deallocate (links_used_by_structures)
+      end if
+      if (allocated(links_used_by_weirs)) then
+         deallocate (links_used_by_weirs)
+      end if
 
       return
    end subroutine check_structures_and_fixed_weirs

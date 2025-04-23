@@ -5,9 +5,7 @@
         <createdBy>Deltares, Coupling team</createdBy>
         <creationDate>2015-05-20T07:56:32+01:00</creationDate>
     </documentation>
-
-<!--    <waitFile>debug.txt</waitFile>  -->
-
+    
     <control>
         <parallel>
             <startGroup>
@@ -28,18 +26,18 @@
         <library>dflowfm</library>
         <process>0 1 2</process>
         <mpiCommunicator>DFM_COMM_DFMWORLD</mpiCommunicator>
-        <workingDir>dflowfm</workingDir>
+        <workingDir>fm</workingDir>
         <inputFile>weirtimeseries.mdu</inputFile>
     </component>
     <component name="myNameWave">
         <library>wave</library>
-        <workingDir>dwaves</workingDir>
+        <workingDir>wave</workingDir>
         <!-- component specific -->
         <inputFile>weir.mdw</inputFile>
     </component>
     <component name="myNameRTC">
         <library>FBCTools_BMI</library>
-        <workingDir>drtc</workingDir>
+        <workingDir>rtc</workingDir>
         <!-- component specific -->
         <inputFile>.</inputFile>
     </component>
@@ -57,7 +55,7 @@
         <targetComponent>myNameDFlowFM</targetComponent>
         <item>
             <sourceName>output_weir_crest_level</sourceName>
-            <targetName>weirs/weir01/crest_level</targetName>
+            <targetName>weirs/weir01/crestlevel</targetName>
         </item>
     </coupler>
 </dimrConfig>

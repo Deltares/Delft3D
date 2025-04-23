@@ -161,8 +161,7 @@ contains
         FileName = ConfFil_get_namFil(44)
         FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
         Call Openfl (iounit, FileName,1,3)  !sacrmnto.3b cleand in append mode !
-        Write(*,*) ' Cleaning sacrmnto.3b to file:', FileName
-        Write(iout1,*) ' Cleaning sacrmnto.3b to file:', FileName
+        Call ErrMsgStandard (999, 1, ' Cleaning sacrmnto.3b for RR-connection node input to file', FileName)
    endif
 
 ! *********************************************************************
