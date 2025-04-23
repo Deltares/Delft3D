@@ -25,13 +25,7 @@ target_link_libraries(${executable_name} ${oss_dependencies})
 
 
 if (WIN32)
-    # Set linker properties
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name}
-                          "netcdf.lib")
+    target_link_libraries(${executable_name} netCDF::netcdf)
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
