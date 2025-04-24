@@ -40,7 +40,6 @@ module m_readstructures
    use m_Bridge
    use m_pump
    use m_General_Structure
-   use m_dambreak
 
    use properties
    use m_hash_search
@@ -839,8 +838,8 @@ module m_readstructures
    !> Read the dambreak specific data for a dambreak structure.
    !! The common fields for the structure (e.g. x/yCoordinates) must have been read elsewhere.
    subroutine readDambreak(dambr, md_ptr, st_id, forcinglist, success)
-      use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
-   
+      use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES, t_dambreak, set_dambreak_coefficients
+
       type(t_dambreak), pointer,    intent(inout) :: dambr       !< Dambreak structure to be read into.
       type(tree_data), pointer,     intent(in   ) :: md_ptr      !< ini tree pointer with user input.
       character(IdLen),             intent(in   ) :: st_id       !< Structure character Id.
@@ -922,7 +921,7 @@ module m_readstructures
       success = success .and. check_input_result(localsuccess, st_id, 'T0')
       if (.not. success) return
       
-      call set_dambreak_coefficents(dambr)
+      call set_dambreak_coefficients(dambr)
       
    end subroutine readDambreak
 

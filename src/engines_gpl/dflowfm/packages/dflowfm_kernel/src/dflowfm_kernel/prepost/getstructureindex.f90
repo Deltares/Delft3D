@@ -50,6 +50,7 @@ contains
       use m_hash_search, only: hashsearch
       use unstruc_channel_flow, only: network
       use m_longculverts
+      use m_dambreak_data, only: get_active_dambreak_index
 
       character(len=*), intent(in) :: strtypename !< the type of the structure: 'pumps', 'weirs', 'gates', ...
       character(len=*), intent(in) :: strname !< Id/name of the requested structure, e.g. 'Pump01'
@@ -91,15 +92,7 @@ contains
             end if
          end do
       else if (trim(strtypename) == 'dambreak') then
-         do i = 1, n_db_signals
-            if (trim(db_ids(i)) == trim(strname)) then
-               if (db_last_link(i) - db_first_link(i) >= 0) then
-                  ! Only return this dambreak index if dambreak is active in flowgeom (i.e., at least 1 flow link associated)
-                  index = i
-                  exit
-               end if
-            end if
-         end do
+         index = get_active_dambreak_index(strname)
       else if (trim(strtypename) == 'longculverts') then
          do i = 1, nlongculverts
             if (trim(longculverts(i)%id) == trim(strname)) then

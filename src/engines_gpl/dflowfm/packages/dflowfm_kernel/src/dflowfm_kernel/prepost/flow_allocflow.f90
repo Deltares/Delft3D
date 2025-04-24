@@ -64,7 +64,7 @@ contains
                         frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
                         salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
                         jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
-                        rich, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
+                        q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
                         jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
       use m_flowtimes, only: dtcell, time_wetground, ja_timestep_auto, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
@@ -88,7 +88,7 @@ contains
                         longwave, patm, rhum, qrad, solar_radiation, tbed, qext, qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_tem, nudge_sal, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
-      use m_turbulence, only: potential_density, in_situ_density
+      use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
       use m_physcoef, only: apply_thermobaricity
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
@@ -745,12 +745,12 @@ contains
             deallocate (dpbdx0)
          end if
          allocate (dpbdx0(lnkx), stat=ierr)
-         call aerr('dpbdx0 (lnkx)', ierr, lnkx); dpbdx0 = 0d0
+         call aerr('dpbdx0 (lnkx)', ierr, lnkx); dpbdx0 = 0.0_dp
 
          if (allocated(rvdn)) then
             deallocate (rvdn, grn)
          end if
-         allocate (rvdn(ndkx), grn(ndkx), stat=ierr); rvdn = 0d0; grn = 0d0
+         allocate (rvdn(ndkx), grn(ndkx), stat=ierr); rvdn = 0.0_dp; grn = 0.0_dp
          call aerr('rvdn(ndkx), grn(ndkx)', ierr, 2 * ndkx)
 
          if (jarhointerfaces == 1) then
@@ -758,7 +758,7 @@ contains
                deallocate (rhosww)
             end if
             allocate (rhosww(ndkx), stat=ierr)
-            call aerr('rhosww(ndkx)', ierr, ndkx); rhosww = 0d0
+            call aerr('rhosww(ndkx)', ierr, ndkx); rhosww = 0.0_dp
          end if
       end if
 
@@ -952,7 +952,7 @@ contains
 
       end if
 
-      if (kmx > 0) then ! 7 turbulence arrays (0:kmx)
+      if (kmx > 0) then ! turbulence arrays
          if (allocated(turkin0)) then
             deallocate (turkin0, turkin1, tureps0, tureps1, vicwwu, vicwws)
          end if
@@ -969,6 +969,10 @@ contains
          call aerr('vicwwu   (Lnkx)', ierr, Lnkx); vicwwu = 0.0_dp
          allocate (vicwws(ndkx), stat=ierr)
          call aerr('vicwws   (ndkx)', ierr, ndkx); vicwws = 0.0_dp
+         allocate (difwws(ndkx), stat=ierr)
+         call aerr('difwws   (ndkx)', ierr, ndkx); difwws = 0.0_dp
+         allocate (drhodz(ndkx), stat=ierr)
+         call aerr('drhodz   (ndkx)', ierr, ndkx); drhodz = 0.0_dp
 
          if (allocated(turkinepsws)) then
             deallocate (turkinepsws)
@@ -1375,6 +1379,12 @@ contains
          end if
          allocate (rich(lnkx), stat=ierr)
          call aerr('rich(lnkx)', ierr, lnkx); rich = 0.0_dp
+
+         if (allocated(richs)) then
+            deallocate (richs)
+         end if
+         allocate (richs(ndkx), stat=ierr)
+         call aerr('richs(ndkx)', ierr, ndkx); richs = 0.0_dp
       else
          jaRichardsononoutput = 0
       end if

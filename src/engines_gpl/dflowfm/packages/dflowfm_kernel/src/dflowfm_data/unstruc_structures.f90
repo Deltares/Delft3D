@@ -267,10 +267,11 @@ contains
    !> Allocates and initializes all "valstruct"(:,:) arrays.
    !! Used for history output and/or restart file output for hydraulic structures.
    subroutine init_structure_hisvalues()
-      use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, n_db_signals
+      use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen
       use m_alloc
       use m_flowtimes, only: ti_rst
       use m_longculverts, only: nlongculverts
+      use m_dambreak_data, only: n_db_signals_protected
       implicit none
 
       if ((ti_rst > 0 .or. jahispump > 0) .and. npumpsg > 0) then
@@ -328,11 +329,11 @@ contains
          end if
          allocate (valweirgen(NUMVALS_WEIRGEN, nweirgen)); valweirgen = 0.0_dp
       end if
-      if (jahisdambreak > 0 .and. n_db_signals > 0) then
+      if (jahisdambreak > 0 .and. n_db_signals_protected > 0) then
          if (allocated(valdambreak)) then
             deallocate (valdambreak)
          end if
-         allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals)); valdambreak = 0.0_dp
+         allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals_protected)); valdambreak = 0.0_dp
       end if
       if ((ti_rst > 0 .or. jahisorif > 0) .and. network%sts%numOrifices > 0) then
          if (allocated(valorifgen)) then
@@ -983,8 +984,9 @@ contains
 !> Get the total number of structures of a certain type
    function get_number_of_structures(struc_type_id) result(number_of_structures)
       use m_GlobalParameters
-      use fm_external_forcings_data, only: ncdamsg, n_db_signals, ngatesg
+      use fm_external_forcings_data, only: ncdamsg, ngatesg
       use unstruc_channel_flow, only: network
+      use m_dambreak_data, only: n_db_signals_protected
 
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
       integer :: number_of_structures
@@ -993,7 +995,7 @@ contains
       case (ST_DAM)
          number_of_structures = ncdamsg
       case (ST_DAMBREAK)
-         number_of_structures = n_db_signals
+         number_of_structures = n_db_signals_protected
       case (ST_GATE)
          number_of_structures = ngatesg
       case (ST_COMPOUND)
@@ -1673,6 +1675,7 @@ contains
    subroutine retrieve_set_of_flowlinks_for_polyline_structure(struc_type_id, i_struc, links)
       use MessageHandling, only: mess, LEVEL_ERROR
       use m_GlobalParameters
+      use m_dambreak_data, only: retrieve_set_of_flowlinks_dambreak
 
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
       integer, intent(in) :: i_struc !< Index of the structure of this type
@@ -1688,7 +1691,7 @@ contains
       case (ST_DAM)
          call retrieve_set_of_flowlinks_dam(i_struc, links)
       case (ST_DAMBREAK)
-         call retrieve_set_of_flowlinks_dambreak(i_struc, links)
+         links = retrieve_set_of_flowlinks_dambreak(i_struc)
       case (ST_GATE)
          call retrieve_set_of_flowlinks_gate(i_struc, links)
       case (ST_COMPOUND)
@@ -1754,27 +1757,6 @@ contains
       end do
 
    end subroutine retrieve_set_of_flowlinks_dam
-
-!> Retrieve the set of snapped flowlinks for a dambreak
-   subroutine retrieve_set_of_flowlinks_dambreak(i_dambreak, links)
-      use fm_external_forcings_data, only: db_first_link, db_last_link, db_link_ids
-
-      integer, intent(in) :: i_dambreak !< Index of the dambreak
-      integer, dimension(:), allocatable, intent(out) :: links !< The set of flowlinks that this dambreak has been snapped to
-
-      integer :: n_links !< Total number of flowlinks in the set
-      integer :: k, i
-
-      n_links = db_last_link(i_dambreak) + 1 - db_first_link(i_dambreak)
-      allocate (links(n_links), source=-999)
-
-      i = 0
-      do k = db_first_link(i_dambreak), db_last_link(i_dambreak)
-         i = i + 1
-         links(i) = db_link_ids(3, k)
-      end do
-
-   end subroutine retrieve_set_of_flowlinks_dambreak
 
 !> Retrieve the set of snapped flowlinks for a gate
    subroutine retrieve_set_of_flowlinks_gate(i_gate, links)

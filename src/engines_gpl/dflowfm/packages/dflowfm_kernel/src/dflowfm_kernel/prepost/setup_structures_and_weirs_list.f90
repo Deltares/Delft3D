@@ -34,14 +34,14 @@ contains
    pure function build_structures_and_weirs_list() result(links_with_structures_or_weirs)
       use m_flowgeom, only: lnx, bob, bob0
       use m_flowparameters, only: ChangeVelocityAtStructures
-      use fm_external_forcings_data, only: ncdamsg, L1cdamsg, L2cdamsg, kcdam, ncgensg, L1cgensg, L2cgensg, kcgen, &
-                                           n_db_links, n_db_signals, dambreaks, db_first_link, db_last_link, db_link_ids
+      use fm_external_forcings_data, only: ncdamsg, L1cdamsg, L2cdamsg, kcdam, ncgensg, L1cgensg, L2cgensg, kcgen
+      use m_dambreak_data, only: indicate_links_that_contain_dambreaks
       use unstruc_channel_flow, only: network
       use m_GlobalParameters, only: ST_PUMP
       use array_module, only: convert_mask_to_indices
 
       integer, allocatable, dimension(:) :: links_with_structures_or_weirs !< List of indices of the flow links that contain structures or weirs
-      integer :: L, L0, ng, istru, k, n
+      integer :: L, L0, ng, istru, n
       logical, allocatable, dimension(:) :: does_link_contain_structures
 
       if (.not. ChangeVelocityAtStructures) then
@@ -89,17 +89,8 @@ contains
          end associate
       end do
 
-      if (n_db_links > 0) then ! needed, because n_db_signals may be > 0, but n_db_links==0, and then arrays are not available.
-         do n = 1, n_db_signals
-            istru = dambreaks(n)
-            if (istru /= 0) then
-               do k = db_first_link(n), db_last_link(n)
-                  L = abs(db_link_ids(3, k))
-                  does_link_contain_structures(L) = .true.
-               end do
-            end if
-         end do
-      end if
+      call indicate_links_that_contain_dambreaks(does_link_contain_structures)
+
       ! Convert mask to array of indices
       links_with_structures_or_weirs = convert_mask_to_indices(does_link_contain_structures)
    end function build_structures_and_weirs_list

@@ -127,6 +127,7 @@ contains
       use MessageHandling, only: err, mess, LEVEL_WARN, LEVEL_ERROR
       use m_ug_nc_attribute, only: ug_nc_attribute
       use unstruc_channel_flow, only: network
+      use m_dambreak_data, only: n_db_links_protected, n_db_signals_protected
 
       implicit none
 
@@ -215,7 +216,7 @@ contains
          ! Possibly a different model, so make valobs transpose at correct size again.
          maxlocT = max(size(valobs, 2), npumpsg, network%sts%numPumps, ngatesg, ncdamsg, ncgensg, ngategen, &
                        nweirgen, network%sts%numWeirs, ngenstru, network%sts%numGeneralStructures, &
-                       n_db_links, network%sts%numOrifices, network%sts%numBridges, network%sts%numculverts, &
+                       n_db_links_protected, network%sts%numOrifices, network%sts%numBridges, network%sts%numculverts, &
                        network%sts%numuniweirs, network%cmps%count, nlongculverts)
          maxvalT = max(size(valobs, 1), NUMVALS_PUMP, NUMVALS_GATE, NUMVALS_CDAM, NUMVALS_CGEN, NUMVALS_GATEGEN, &
                        NUMVALS_WEIRGEN, NUMVALS_GENSTRU, &
@@ -447,7 +448,7 @@ contains
                                                   id_poly_xmid=id_culvert_xmid, id_poly_ymid=id_culvert_ymid)
 
          ! Dambreak
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAMBREAK, jahisdambreak, n_db_signals, 'none', 0, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAMBREAK, jahisdambreak, n_db_signals_protected, 'none', 0, id_strlendim, &
                                                   id_dambreakdim, id_dambreak_id)
 
          ! Universal weir
@@ -1453,7 +1454,8 @@ contains
 
    !> Write static data such as names, coordintates, and geometry of structures to the history file
    subroutine unc_put_his_structure_static_vars(ncid)
-      use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, ngatesg, ncgensg, genstru2cgen, ngenstru, db_ids, n_db_signals, cdam_ids, ncdamsg, srcname, numsrc, gate2cgen, ngategen
+      use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, srcname, numsrc, gate2cgen, ngategen
+      use m_dambreak_data, only: db_ids, n_db_signals_protected
       use unstruc_channel_flow, only: network
       use m_flowparameters, only: jahisweir, jahisorif, jahispump, jahisgate, jahiscgen, jahisuniweir, jahisdambreak, jahisculv, jahisbridge, jahiscmpstru, jahislongculv, jahiscdam, jahissourcesink, jahislateral
       use m_longculverts, only: longculverts, nlongculverts
@@ -1506,7 +1508,7 @@ contains
       structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numuniweirs)]
       call unc_put_his_structure_names(ncid, jahisuniweir, id_uniweir_id, structure_names)
 
-      structure_names = [(db_ids(i), integer :: i=1, n_db_signals)]
+      structure_names = [(db_ids(i), integer :: i=1, n_db_signals_protected)]
       call unc_put_his_structure_names(ncid, jahisdambreak, id_dambreak_id, structure_names)
 
       indices = [(network%sts%culvertIndices(i), integer :: i=1, network%sts%numCulverts)]

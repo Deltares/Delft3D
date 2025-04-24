@@ -29,7 +29,7 @@
 module fm_external_forcings_data
    use precision, only: dp
    use m_bnd, only: bndtype
-   
+
    implicit none
 
    logical :: success !< want je wil maar liever succes
@@ -344,20 +344,6 @@ module fm_external_forcings_data
    integer, allocatable :: pumpsWithLevels(:) !< -1 = legacy, not 1 = new pump
    character(len=128), allocatable, target :: pump_ids(:) !< the pumps ids
 
-   ! Dambreak
-   integer, allocatable :: dambreaks(:) !< store the dambreaks indexes among all structures
-   integer :: n_db_links !< nr of dambreak links
-   integer :: n_db_signals !< nr of dambreak signals
-   integer, allocatable :: db_first_link(:) !< first dambreak link for each signal
-   integer, allocatable :: db_last_link(:) !< last dambreak link for each signal
-   integer, allocatable :: db_active_links(:) !< db_active_links, open dambreak links
-   integer, allocatable :: breach_start_link(:) !< the starting link, the closest to the breach point
-   integer, allocatable :: db_link_ids(:, :) !< dambreak links index array
-   real(kind=dp), allocatable, target :: db_levels_widths_table(:) !< dambreak widths and heights
-   character(len=128), allocatable, target :: db_ids(:) !< the dambreak ids
-   real(kind=dp), dimension(:), allocatable, public :: db_link_effective_width !< dambreak effective flow widths
-   real(kind=dp), dimension(:), allocatable, public :: db_link_actual_width !< dambreak actual flow widths
-
    type polygon
       real(kind=dp), dimension(:), allocatable :: xp, yp
       integer :: np
@@ -456,6 +442,9 @@ contains
 !> Resets external forcing variables intended for a restart of flow simulation.
 !! For external forcings it is equivalent with reset_flowexternalforcings().
    subroutine default_fm_external_forcing_data()
+
+      use m_dambreak_data, only: reset_dambreak_counters
+
       jatimespace = 0 ! doen ja/nee 1/0
       mhis = 0 ! unit nr external forcings history *.exthis
       numbnp = 0 ! total nr of open boundary cells for network extension
@@ -485,8 +474,7 @@ contains
       ngenstru = 0 ! nr of real general structures in the generalstructure set
       npump = 0 ! npump dimension
       npumpsg = 0 ! nr of pump signals
-      n_db_links = 0 ! nr of dambreak links
-      n_db_signals = 0 ! nr of dambreak signals
+      call reset_dambreak_counters()
       nklep = 0 ! nr of kleps
       nvalv = 0 ! nr of valves
       nqbnd = 0 ! nr of q bnd's
@@ -502,7 +490,7 @@ contains
    !! The underlying new external forcings file must have been read before calling this function.
    pure function have_laterals_in_external_forcings_file() result(have_laterals)
       logical :: have_laterals
-      
+
       have_laterals = num_lat_ini_blocks > 0
    end function have_laterals_in_external_forcings_file
 

@@ -1581,7 +1581,7 @@ contains
 
 !> Write a shape file for dam breaks
    subroutine unc_write_shp_dambreak()
-      use fm_external_forcings_data, only: n_db_signals, db_ids, db_first_link, db_last_link, db_link_ids
+      use m_dambreak_data, only: n_db_signals_protected, db_ids, db_first_link, db_last_link, db_link_ids
       use network_data, only: kn, xk, yk
       use m_flowgeom, only: ln2lne
       implicit none
@@ -1623,13 +1623,13 @@ contains
          return
       end if
 
-      do n = 1, n_db_signals
+      do n = 1, n_db_signals_protected
 
       !! add shapes
          i = 0
          do L = db_first_link(n), db_last_link(n)
             ! create a shape object with the "simple" method, for each shape 2 components are added x, y
-            Lf = db_link_ids(3, L)
+            Lf = db_link_ids(L)
             if (Lf == 0) cycle
 
             write (lenobj_loc, '(I4.4)') i

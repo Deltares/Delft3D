@@ -37,7 +37,7 @@ module m_dambreak
    private
 
    public prepare_dambreak_calculation
-   public set_dambreak_coefficents
+   public set_dambreak_coefficients
    public set_dambreak_widening_method
 
    integer, parameter, public :: BREACH_GROWTH_VDKNAAP = 1
@@ -175,7 +175,7 @@ contains
          dambreak%water_level_jump = water_level_jump_dambreak
       end if
 
-      ! in vdKnaap(2000) the maximum allowed branch width is limited (see sobek manual and set_dambreak_coefficents subroutine below)
+      ! in vdKnaap(2000) the maximum allowed branch width is limited (see sobek manual and set_dambreak_coefficients subroutine below)
       if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
          actual_maximum_width = min(dambreak%maximum_allowed_width, dambreak%maximum_width)
       else
@@ -189,7 +189,7 @@ contains
 
    end subroutine prepare_dambreak_calculation
 
-   subroutine set_dambreak_coefficents(dambreak)
+   subroutine set_dambreak_coefficients(dambreak)
 
       type(t_dambreak), pointer, intent(inout) :: dambreak
 
@@ -209,7 +209,7 @@ contains
          dambreak%end_time_first_phase = dambreak%t0 + dambreak%time_to_breach_to_maximum_depth
       end if
 
-   end subroutine set_dambreak_coefficents
+   end subroutine set_dambreak_coefficients
 
    !< set variable dambreak_widening, returns string with the method name
    subroutine set_dambreak_widening_method(method_string)

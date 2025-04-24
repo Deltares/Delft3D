@@ -62,6 +62,7 @@ contains
       use m_partitioninfo, only: jampi
       use string_module, only: strcmpi
       use messagehandling, only: IDLEN
+      use m_dambreak_data, only: n_db_signals, db_first_link, db_last_link
 
       implicit none
       logical :: status
@@ -168,7 +169,6 @@ contains
          istat = max(istat, initialize_compounds(network%cmps, network%sts))
       end if
       npumpsg = network%sts%numPumps
-      n_db_links = 0
 
       allocate (xdum(1), ydum(1), kdum(1), stat=ierr)
       call aerr('xdum(1), ydum(1), kdum(1)', ierr, 3)
@@ -256,11 +256,8 @@ contains
       !
       ! dambreak
       !
-      if (n_db_signals > 0) then
+      call update_dambreak_administration(dambridx, lftopol)
 
-         call update_dambreak_administration(n_db_signals, db_first_link, db_last_link, dambridx, lftopol)
-
-      end if
       if (istat == DFM_NOERR) then
          status = .true.
       else
@@ -322,7 +319,8 @@ contains
    subroutine allocate_structure_arrays(nstr, widths, lftopol, pumpidx, gateidx, cdamidx, cgenidx, dambridx)
       use precision_basics, only: dp
       use m_alloc, only: realloc
-      use fm_external_forcings_data, only: dambreakPolygons, db_link_effective_width, db_link_actual_width
+      use fm_external_forcings_data, only: dambreakPolygons
+      use m_dambreak_data, only: db_link_effective_width, db_link_actual_width
       use network_data, only: numl
 
       integer, intent(in) :: nstr !< nstr is the number of (potential) structures
@@ -337,14 +335,12 @@ contains
       call realloc(widths, numl)
       call realloc(lftopol, numl)
       call realloc(db_link_effective_width, numl)
-      call realloc(db_link_actual_width, numl)
-      db_link_actual_width = 0.0_dp
+      call realloc(db_link_actual_width, numl, fill=0.0_dp)
       call realloc(pumpidx, nstr)
       call realloc(gateidx, nstr)
       call realloc(cdamidx, nstr)
       call realloc(cgenidx, nstr)
-      call realloc(dambridx, nstr)
-      dambridx = -1
+      call realloc(dambridx, nstr, fill=-1)
 
       if (allocated(dambreakPolygons)) then
          deallocate (dambreakPolygons)
@@ -383,7 +379,7 @@ contains
    end subroutine update_counters
 
    !> Update dambreak administration.
-   subroutine update_dambreak_administration(n_db_signals, db_first_link, db_last_link, dambridx, lftopol)
+   subroutine update_dambreak_administration(dambridx, lftopol)
       use precision_basics, only: dp
       use messagehandling, only: IDLEN, msg_flush, msgbuf, err_flush
       use m_missing, only: dmiss, dxymis
@@ -398,17 +394,15 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use m_flowgeom, only: ln, kcu, wu, lncn, snu, csu
       use m_inquire_flowgeom, only: findnode
-      use fm_external_forcings_data, only: db_link_ids, breach_start_link, db_ids, db_active_links, &
-                                           db_levels_widths_table, dambreaks, n_db_links, db_link_effective_width
-      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, db_breach_depths, db_breach_widths, &
+      use m_dambreak_data, only: n_db_links, n_db_signals, db_link_ids, db_ids, dambreaks, &
+                                db_link_effective_width, db_first_link, db_last_link
+      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, set_breach_start_link, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, &
-                                   add_averaging_upstream_signal, add_averaging_downstream_signal
+                                   add_averaging_upstream_signal, add_averaging_downstream_signal, &
+                                   db_upstream_link_ids, db_downstream_link_ids
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_alloc, only: realloc
 
-      integer, intent(in) :: n_db_signals !< n_db_signals is the number of dambreak signals.
-      integer, dimension(:), intent(in) :: db_first_link !< db_first_link is the start index of the dambreak signals.
-      integer, dimension(:), intent(in) :: db_last_link !< db_last_link is the end index of the dambreak signals.
       integer, dimension(:), intent(in) :: dambridx !< dambridx is the index of the dambreak in the structure list.
       integer, dimension(:), intent(in) :: lftopol !< lftopol is the link number of the flow link.
 
@@ -425,18 +419,16 @@ contains
       real(kind=dp), dimension(1) :: xdum, ydum
 
       character(len=Idlen) :: qid
+      
+      n_db_links = 0
+
+      if (n_db_signals <= 0) then
+         return
+      end if
 
       n_db_links = db_last_link(n_db_signals)
 
-      call realloc(db_link_ids, [3, n_db_links], fill=0)
-      call realloc(dambreaks, n_db_signals, fill=0)
-      call realloc(breach_start_link, n_db_signals, fill=-1)
       call allocate_and_initialize_dambreak_data(n_db_signals)
-      call realloc(db_breach_depths, n_db_signals, fill=0.0_dp)
-      call realloc(db_breach_widths, n_db_signals, fill=0.0_dp)
-      call realloc(db_ids, n_db_signals)
-      call realloc(db_active_links, n_db_links, fill=0)
-      call realloc(db_levels_widths_table, n_db_signals * 2, fill=0.0_dp)
 
       do n = 1, n_db_signals
          associate (pstru => network%sts%struct(dambridx(n)))
@@ -450,18 +442,15 @@ contains
                   kb = ln(2, Lf)
                   kbi = ln(1, Lf)
                end if
-               ! db_link_ids
-               db_link_ids(1, k) = kb
-               db_link_ids(2, k) = kbi
-               db_link_ids(3, k) = L
+               db_upstream_link_ids(k) = kb
+               db_downstream_link_ids(k) = kbi
+               db_link_ids(k) = L
             end do
          end associate
       end do
 
       ! number of columns in the dambreak heights and widths tim file
       do n = 1, n_db_signals
-
-         !The index of the structure
          index_in_structure = dambridx(n)
          if (index_in_structure == -1) then
             cycle
@@ -547,7 +536,7 @@ contains
                do k = db_first_link(n), db_last_link(n)
                   indexLink = indexLink + 1
                   ! compute the mid point
-                  Lf = abs(db_link_ids(3, k))
+                  Lf = abs(db_link_ids(k))
                   k1 = ln(1, Lf)
                   k2 = ln(2, Lf)
                   xl(indexLink, 1) = xz(k1)
@@ -561,11 +550,11 @@ contains
                                       pstru%xCoordinates, pstru%yCoordinates, pstru%numCoordinates, xl, &
                                       yl, Lstart, x_breach, y_breach, jsferic, jasfer3D, dmiss)
 
-               breach_start_link(n) = db_first_link(n) - 1 + Lstart
+               call set_breach_start_link(n, Lstart)
 
                ! compute the normal projections of the start and endpoints of the flow links
                do k = db_first_link(n), db_last_link(n)
-                  Lf = abs(db_link_ids(3, k))
+                  Lf = abs(db_link_ids(k))
                   if (kcu(Lf) == 3) then ! 1d2d flow link
                      db_link_effective_width(k) = wu(Lf)
                   else
@@ -623,9 +612,11 @@ contains
       use unstruc_messages, only: callback_msg
       use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, db_breach_depths, db_breach_widths, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
-                                   add_averaging_downstream_signal
+                                   add_averaging_downstream_signal, set_breach_start_link, &
+                                   db_upstream_link_ids, db_downstream_link_ids
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
-      use fm_external_forcings_data, only: db_link_effective_width, db_link_actual_width
+      use m_dambreak_data, only: n_db_links, n_db_signals, db_first_link, db_last_link, db_link_effective_width, &
+          db_link_actual_width, db_link_ids, dambreaks, db_ids
 
       implicit none
       logical :: status
@@ -1767,53 +1758,6 @@ contains
 
          call allocate_and_initialize_dambreak_data(n_db_links)
 
-         if (allocated(db_link_ids)) then
-            deallocate (db_link_ids)
-         end if
-         allocate (db_link_ids(3, n_db_links), stat=ierr) ! the last row stores the actual
-         ! db_link_ids is an integer array? This is flow_init_structurecontrol_old so will be removed soon
-         db_link_ids(:,:) = 0.0_dp
-         if (allocated(dambreaks)) then
-            deallocate (dambreaks)
-         end if
-         allocate (dambreaks(n_db_signals))
-         dambreaks(:) = 0
-
-         if (allocated(breach_start_link)) then
-            deallocate (breach_start_link)
-         end if
-         allocate (breach_start_link(n_db_signals))
-         breach_start_link(:) = -1
-
-         if (allocated(db_breach_depths)) then
-            deallocate (db_breach_depths)
-         end if
-         allocate (db_breach_depths(n_db_signals))
-         db_breach_depths(:) = 0.0_dp
-
-         if (allocated(db_breach_widths)) then
-            deallocate (db_breach_widths)
-         end if
-         allocate (db_breach_widths(n_db_signals))
-         db_breach_widths(:) = 0.0_dp
-
-         if (allocated(db_ids)) then
-            deallocate (db_ids)
-         end if
-         allocate (db_ids(n_db_signals))
-
-         if (allocated(db_active_links)) then
-            deallocate (db_active_links)
-         end if
-         allocate (db_active_links(n_db_links))
-         db_active_links(:) = 0
-
-         if (allocated(db_levels_widths_table)) then
-            deallocate (db_levels_widths_table)
-         end if
-         allocate (db_levels_widths_table(n_db_signals * 2))
-         db_levels_widths_table = 0.0_dp
-
          do n = 1, n_db_signals
             do k = db_first_link(n), db_last_link(n)
                L = kedb(k)
@@ -1825,10 +1769,9 @@ contains
                   kb = ln(2, Lf)
                   kbi = ln(1, Lf)
                end if
-               ! db_link_ids
-               db_link_ids(1, k) = kb
-               db_link_ids(2, k) = kbi
-               db_link_ids(3, k) = L
+               db_upstream_link_ids(k) = kb
+               db_downstream_link_ids(k) = kbi
+               db_link_ids(k) = L
             end do
          end do
 
@@ -1863,9 +1806,9 @@ contains
                if (db_last_link(n) >= db_first_link(n)) then
                   ! structure is active in current grid on one or more flow links: just use the first link of the the structure (the network%sts%struct(istrtmp)%link_number is not used in computations)
                   k = db_first_link(n)
-                  k1 = db_link_ids(1, k)
-                  k2 = db_link_ids(2, k)
-                  Lf = abs(db_link_ids(3, k))
+                  k1 = db_upstream_link_ids(k)
+                  k2 = db_downstream_link_ids(k)
+                  Lf = abs(db_link_ids(k))
                else
                   ! Structure is not active in current grid: use dummy calc points and flow links, not used in computations.
                   k1 = 0
@@ -1972,7 +1915,7 @@ contains
             do k = db_first_link(n), db_last_link(n)
                indexLink = indexLink + 1
                ! compute the mid point
-               Lf = abs(db_link_ids(3, k))
+               Lf = abs(db_link_ids(k))
                k1 = ln(1, Lf)
                k2 = ln(2, Lf)
                xl(indexLink, 1) = xz(k1)
@@ -1996,11 +1939,11 @@ contains
                                    jasfer3D, &
                                    dmiss)
 
-            breach_start_link(n) = db_first_link(n) - 1 + Lstart
+            call set_breach_start_link(n, Lstart)
 
             ! compute the normal projections of the start and endpoints of the flow links
             do k = db_first_link(n), db_last_link(n)
-               Lf = abs(db_link_ids(3, k))
+               Lf = abs(db_link_ids(k))
                if (kcu(Lf) == 3) then ! 1d2d flow link
                   db_link_effective_width(k) = wu(Lf)
                else
