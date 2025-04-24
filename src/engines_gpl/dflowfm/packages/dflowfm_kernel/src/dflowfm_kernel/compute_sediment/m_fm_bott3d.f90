@@ -190,7 +190,7 @@ contains
 
          call fm_bed_boundary_conditions(timhr)
 
-         if (stmpar%morpar%adjust_sediment_at_structures) then
+         if (stmpar%morpar%adjust_sediment_at_links) then
             call fm_adjust_bedload_at_structures()
          end if 
 
@@ -1824,25 +1824,24 @@ contains
    !> Block sediment at structures 
    subroutine fm_adjust_bedload_at_structures()
       use precision, only: dp
-      use m_flowgeom, only: iadv, lnx
       use m_flow, only: q1
       use m_fm_erosed, only: lsedtot, e_sbn
       use m_sediment, only: stmpar
       
       integer Lf ! flow link 
       integer lsed ! sediment counter
+      integer nbl 
       
-      do Lf = 1, lnx
-         if (iadv(Lf) == 22) then 
-            if (abs(q1(Lf)) >= stmpar%morpar%bed_general_structures_above_discharge) then 
-               do lsed = 1, lsedtot
-                  e_sbn(Lf, lsed) = e_sbn(Lf, lsed)*stmpar%morpar%bed_general_structures
-               end do 
-            else
-               do lsed = 1, lsedtot
-                  e_sbn(Lf, lsed) = 0.0_fp
-               end do 
-            end if 
+      do nbl = 1, stmpar%morpar%n_bed_link
+         Lf = stmpar%morpar%bed_link(nbl)
+         if (abs(q1(Lf)) >= stmpar%morpar%bed_link_active_above_discharge(nbl) ) then 
+            do lsed = 1, lsedtot
+               e_sbn(Lf, lsed) = e_sbn(Lf, lsed)*stmpar%morpar%bed_link_factor(nbl)
+            end do 
+         else
+            do lsed = 1, lsedtot
+               e_sbn(Lf, lsed) = 0.0_fp
+            end do 
          end if 
       end do   
    end subroutine fm_adjust_bedload_at_structures

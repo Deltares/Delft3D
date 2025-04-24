@@ -187,7 +187,6 @@ contains
             if (set_hu) then
                hu(link) = water_height
             end if
-
          else
             hu(link) = 0d0
             au(link) = 0d0

@@ -419,9 +419,7 @@ type morpar_type
     real(fp):: hmaxth     !  maximum depth for setting theta for erosion of dry bank
     real(fp):: bedw       !  calibration factor for wave-related bed-load sand transport (included in bed-load)
     real(fp):: factsd     !  calibration factor for 2D suspended load relaxation time
-	real(fp):: bed_general_structures ! calibration factor for bedload transport vector magnitude at general structures
-	real(fp):: bed_general_structures_above_discharge ! bedload transport possible above discharge at general structures
-    logical :: adjust_sediment_at_structures ! logical to adjust sediment at structures, true when bed_general_structures /= 1.0 or bed_general_structures_above_discharge > 0.0
+    logical :: adjust_sediment_at_links ! logical to adjust sediment at links
     real(fp):: rdw
     real(fp):: rdc
     real(fp):: espir      !  factor for weighing the effect of the spiral flow intensity in 2D simulations
@@ -486,7 +484,7 @@ type morpar_type
                            !  3: 
     integer :: telform     !  switch for thickness of exchange layer
                            !  1: fixed (user-spec.) thickness
-    
+    integer :: n_bed_link  ! number of links with adjusted sediment transport
     !
     ! pointers
     !
@@ -500,6 +498,9 @@ type morpar_type
     real(hp)              , dimension(:), pointer :: mergebuf   ! buffer array for communcation with mormerge
     real(fp)              , dimension(:), pointer :: xx         ! percentile xx (dxx stored in erosed.ig*)
     real(fp)              , dimension(:), pointer :: thetsd     ! global dry bank erosion factor
+	integer(fp)           , dimension(:), pointer :: bed_link   ! calibration factor for bedload transport vector magnitude at user specified links
+	real(fp)              , dimension(:), pointer :: bed_link_factor ! calibration factor for bedload transport vector magnitude at user specified links
+	real(fp)              , dimension(:), pointer :: bed_link_active_above_discharge ! bedload transport possible above discharge at general structures
     ! 
     ! logicals
     !
@@ -1400,9 +1401,10 @@ subroutine nullmorpar(morpar)
     real(fp)              , dimension(:) , pointer :: thetsd
     real(fp)                             , pointer :: thetsduni
     real(fp)                             , pointer :: susw
-    real(fp)                             , pointer :: bed_general_structures
-    real(fp)                             , pointer :: bed_general_structures_above_discharge
-    logical                              , pointer :: adjust_sediment_at_structures
+    integer(fp)           , dimension(:) , pointer :: bed_link
+    real(fp)              , dimension(:) , pointer :: bed_link_factor
+    real(fp)              , dimension(:) , pointer :: bed_link_active_above_discharge
+    logical                              , pointer :: adjust_sediment_at_links
     real(fp)                             , pointer :: sedthr
     real(fp)                             , pointer :: hmaxth
     real(fp)                             , pointer :: bedw
@@ -1493,9 +1495,10 @@ subroutine nullmorpar(morpar)
     thetsd              => morpar%thetsd
     thetsduni           => morpar%thetsduni
     susw                => morpar%susw
-    bed_general_structures => morpar%bed_general_structures
-    bed_general_structures_above_discharge => morpar%bed_general_structures_above_discharge
-    adjust_sediment_at_structures => morpar%adjust_sediment_at_structures
+    bed_link            => morpar%bed_link
+    bed_link_factor     => morpar%bed_link_factor
+    bed_link_active_above_discharge => morpar%bed_link_active_above_discharge
+    adjust_sediment_at_links => morpar%adjust_sediment_at_links
     sedthr              => morpar%sedthr
     hmaxth              => morpar%hmaxth
     bedw                => morpar%bedw
@@ -1620,9 +1623,7 @@ subroutine nullmorpar(morpar)
     tcmp               = 0.0_fp
     thetsduni          = 0.0_fp
     susw               = 1.0_fp
-    bed_general_structures = 1.0_fp
-    bed_general_structures_above_discharge = 0.0_fp
-    adjust_sediment_at_structures = .false.
+    adjust_sediment_at_links = .false.
     sedthr             = 0.5_fp
     hmaxth             = 1.0_fp
     bedw               = 1.0_fp
@@ -1908,6 +1909,9 @@ subroutine clrmorpar(istat, morpar)
         deallocate(morpar%flufflyr, STAT = istat)
     endif
     if (associated(morpar%thetsd))    deallocate(morpar%thetsd,    STAT = istat)
+    if (associated(morpar%bed_link))    deallocate(morpar%bed_link,    STAT = istat)
+    if (associated(morpar%bed_link_factor))    deallocate(morpar%bed_link_factor,    STAT = istat)
+    if (associated(morpar%bed_link_active_above_discharge))    deallocate(morpar%bed_link_active_above_discharge,    STAT = istat)
     !
 end subroutine clrmorpar
 
