@@ -1255,6 +1255,8 @@ contains
       call process_hydrological_quantities(qid_base, inifilename, target_location_type, target_array)
       if (associated(target_array)) then
          ! Hydrological quantity found, no continuation by the select case below needed.
+         call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)//''' found in file '''//trim(inifilename) & 
+            //''' as an [Initial] block should be a [Parameter] block in future releases. Please update your input file.')
          return
       end if
       
