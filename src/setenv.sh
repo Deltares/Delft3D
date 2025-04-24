@@ -1,11 +1,11 @@
 #!/bin/bash
 ###############################################
-### load your build environment for Deltares 
+### load your build environment for Deltares
 #   Linux systems (H7/Teamcity)
 #
 # Usage:
 #   source setenv.sh $COMPILER_TOOLCHAIN
-# Depending on what is specified for 
+# Depending on what is specified for
 # $COMPILER_TOOLCHAIN different modules are loaded.
 #
 # Options are:
@@ -22,7 +22,6 @@ if [[ "$1" == intel24* ]]; then
      module load cmake/3.30.0_intel2024.0.0
      module load intel/2024.2.0
      module load intelmpi/2021.13.0
-     module load netcdf/4.9.2_4.6.1_intel2024.2.0_standalone
      module load gdal/3.6.3_intel2023.1.0_standalone
      module load proj/9.2.0_intel2024.0.0
      module load tiff/4.5.0rc3_intel2024.0.0
@@ -37,7 +36,6 @@ elif [ "$1" == "gnu" ]; then
      module load cmake/3.30.0_intel2024.0.0
      module load gcc/12.2.0_gcc12.2.0
      module load openmpi/4.1.5_gcc12.2.0
-     module load netcdf/4.9.2_4.6.1_gcc12.2.0
      module load gdal/3.6.3_gcc12.2.0
      module load proj/9.2.0_gcc12.2.0
      module load tiff/4.5.0rc3_gcc12.2.0
@@ -51,7 +49,6 @@ else
      module load cmake/3.30.0_intel2024.0.0
      module load intel/2023.1.0
      module load intelmpi/2021.10.0
-     module load netcdf/4.9.2_4.6.1_intel2023.1.0_standalone
      module load gdal/3.6.3_intel2023.1.0
      module load patchelf/0.17.2_intel2023.1.0
      module load ninja/1.11.1_native
@@ -72,7 +69,7 @@ else
      elif [ "$1" == "intel23" ]; then
           export CXX=mpicxx
           export CC=mpiicc
-     else 
+     else
           export CXX=mpiicpx
           export CC=mpiicx
      fi
