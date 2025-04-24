@@ -14,7 +14,8 @@ object LinuxDocker : BuildType({
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     name = "Docker Build"
@@ -66,6 +67,12 @@ object LinuxDocker : BuildType({
                 chmod a+x intel/mpi/bin/*
             """.trimIndent()
         }
+        script {
+            name = "Copy example to docker directory"
+            scriptContent = """
+                mkdir ./example && cp -r examples/dflowfm/08_dflowfm_sequential_dwaves/* ./example
+            """.trimIndent()
+        }
         dockerCommand {
             name = "Docker build DIMRset image"
             commandType = build {
@@ -108,13 +115,6 @@ object LinuxDocker : BuildType({
                     containers.deltares.nl/delft3d/delft3dfm:alma8-%build.vcs.number%
                     containers.deltares.nl/delft3d/test/delft3dfm:alma8-%build.vcs.number%
                 """.trimIndent()
-            }
-        }
-    }
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
             }
         }
     }

@@ -4,8 +4,8 @@
         {
             "name": "ijvd",
             "his_config": {
-                "his_1": "/p/devops-dsc/verschilanalyse/reference/ijvd/dflowfm2d-ym_ijvd_rd-j19_6-v2a/computations/test/bo2_2024.02/results/YM_IJVD_RD_0000_his.nc",
-                "his_2": "/p/devops-dsc/verschilanalyse/input/ijvd/dflowfm2d-ym_ijvd_rd-j19_6-v2a/computations/test/bo2_2024.02/results/YM_IJVD_RD_0000_his.nc",
+                "his_1": "/data/reference/ijvd/dflowfm2d-ym_ijvd_rd-j19_6-v2a/computations/test/bo2_2024.02/results/YM_IJVD_RD_0000_his.nc",
+                "his_2": "/data/input/ijvd/dflowfm2d-ym_ijvd_rd-j19_6-v2a/computations/test/bo2_2024.02/results/YM_IJVD_RD_0000_his.nc",
                 "his_variable_list": [
                     "waterlevel",
                     "velocity_magnitude"
@@ -15,8 +15,8 @@
                 "his_save_plots_for_every_station": false
             },
             "map_config": {
-                "map_1": "/p/devops-dsc/verschilanalyse/reference/ijvd/dflowfm2d-ym_ijvd_rd-j19_6-v2a/computations/test/bo2_2024.02/results/YM_IJVD_RD_0*_map.nc",
-                "map_2": "/p/devops-dsc/verschilanalyse/input/ijvd/dflowfm2d-ym_ijvd_rd-j19_6-v2a/computations/test/bo2_2024.02/results/YM_IJVD_RD_0*_map.nc",
+                "map_1": "/data/reference/ijvd/dflowfm2d-ym_ijvd_rd-j19_6-v2a/computations/test/bo2_2024.02/results/YM_IJVD_RD_0*_map.nc",
+                "map_2": "/data/input/ijvd/dflowfm2d-ym_ijvd_rd-j19_6-v2a/computations/test/bo2_2024.02/results/YM_IJVD_RD_0*_map.nc",
                 "map_variable_list": [
                     "mesh2d_s1",
                     "mesh2d_ucmag"

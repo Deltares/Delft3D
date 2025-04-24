@@ -39,19 +39,19 @@ def auto_generate_functionality_latex_files(engine_folder: str) -> None:
             if os.path.exists(funtionality_case_file):
                 write_file_with_auto_generated_header(funtionality_case_file)
                 append_table_of_contents(functionality_overview_file, folder_name)
+
+                case_names = os.listdir(folder_name)
+                for case_name in case_names:
+                    if case_name.find("cxx") != -1 or case_name[0] != "c":
+                        print(f"Do not generate documentation for {case_name} in {folder_name} folder.")
+                        continue  # do not generate documentation
+
+                    if os.path.isdir(os.path.join(os.getcwd(), folder_name, case_name)):
+                        print(f"\t{case_name}")
+                        append_case_to_functionality_file(funtionality_case_file, case_name)
+                        append_case_to_overview_file(functionality_overview_file, folder_name, case_name)
             else:
-                print(f"ERROR: {funtionality_case_file} does not exist; skipped.")
-
-            case_names = os.listdir(folder_name)
-            for case_name in case_names:
-                if case_name.find("cxx") != -1 or case_name[0] != "c":
-                    print(f"Do not generate documentation for {case_name} in {folder_name} folder.")
-                    continue  # do not generate documentation
-
-                if os.path.isdir(os.path.join(os.getcwd(), folder_name, case_name)):
-                    print(f"\t{case_name}")
-                    append_case_to_functionality_file(funtionality_case_file, case_name)
-                    append_case_to_overview_file(functionality_overview_file, folder_name, case_name)
+                print(f"Do not generate documentation for {folder_name} as {funtionality_case_file} does not exist.")
 
 
 def append_table_of_contents(functionality_overview_file: str, folder_name: str) -> None:

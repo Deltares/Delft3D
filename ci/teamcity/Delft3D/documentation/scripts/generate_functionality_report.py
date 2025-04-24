@@ -63,8 +63,11 @@ if __name__ == "__main__":
         if f_name.find("fxx") == -1:
             if f_name[0] == "f":
                 um_dir = os.path.join(engine_dir, f_name, "doc")
-                error = gdoc.generate_pdf(um_dir, "functionality_report", executables)
-                error_funcdoc = max(error_funcdoc, error)
+                if os.path.exists(os.path.join(um_dir, "functionality_report.tex")):
+                    error = gdoc.generate_pdf(um_dir, "functionality_report", executables)
+                    error_funcdoc = max(error_funcdoc, error)
+                else:
+                    print(f"Do not generate documentation for {f_name} as {um_dir} does not exist.")
 
     max(error_funcdoc, error_funcs_doc)
 

@@ -68,32 +68,40 @@ else
     MODEL_REGEX="^.*\\(${MODEL_FILTER//,/\\|}\\).*\$"
 fi
 
-
 export OUTPUT_PREFIX
 export REFERENCE_PREFIX
 export MODEL_REGEX
 export BUCKET='s3://devops-test-verschilanalyse'
-export VAHOME='/p/devops-dsc/verschilanalyse'
+export BUILDS_DIR='/p/devops-dsc/verschilanalyse/builds'
+export VAHOME="${BUILDS_DIR}/${BUILD_ID:-latest}"
 export REPORT_DIR="${VAHOME}/report"
 
 DELFT3D_SIF="${HOME}/.cache/verschilanalyse/delft3dfm.sif"
 
+# Create new build directory and remove old build directories to clear space.
+mkdir -p "$VAHOME"
+find "$BUILDS_DIR" -maxdepth 1 -type d -mtime +7 -execdir rm -rf {} +
+
 module purge
 module load apptainer/1.2.5
 
-# Clean-up report dir
-rm -rf "$REPORT_DIR"
-mkdir -p "${REPORT_DIR}/logs"
+# Create report dir and input dir.
+mkdir -p "${REPORT_DIR}/logs" "${VAHOME}/input"
 
 # Get latest input data from MinIO.
-srun --nodes=1 --ntasks=1 --cpus-per-task=4 --partition=4vcpu \
+srun --nodes=1 --ntasks=1 --cpus-per-task=16 --partition=16vcpu_spot \
+    --account=verschilanalyse --qos=verschilanalyse \
     docker run --rm --volume="${HOME}/.aws:/root/.aws:ro" --volume="${VAHOME}/input:/data" \
     docker.io/amazon/aws-cli:2.22.7 \
     --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
     s3 sync --delete --no-progress "${BUCKET}/input/" /data
 
 # Download reference output data.
-SYNC_REFS_JOB_ID=$(sbatch --parsable ./jobs/sync_model_references.sh)
+SYNC_REFS_JOB_ID=$( \
+    sbatch --parsable \
+        --output="${REPORT_DIR}/logs/va-sync-refs-%j.out" \
+        ./jobs/sync_model_references.sh \
+)
 
 # Pull apptainer from Harbor and store it as a `.sif` in the home directory.
 apptainer remote login \
@@ -109,7 +117,7 @@ for SCRIPT in $SUBMIT_SCRIPTS; do
     MODEL_DIR=$(realpath -s --relative-to="${VAHOME}/input" "$SCRIPT" | cut -d'/' -f1)
     JOB_ID=$( \
         sbatch --parsable --chdir="$(dirname "$SCRIPT")" --output="${REPORT_DIR}/logs/va-${MODEL_DIR}-%j.out" \
-            "$SCRIPT" --apptainer "$DELFT3D_SIF" --model-dir "${VAHOME}/input/${MODEL_DIR}" \
+            "$SCRIPT" --apptainer="$DELFT3D_SIF" --model-dir="${VAHOME}/input/${MODEL_DIR}" \
     )
     JOB_IDS+=("$JOB_ID")
 done
@@ -118,11 +126,17 @@ done
 JOB_ID_LIST=$(IFS=':'; echo "${JOB_IDS[*]}")
 
 # Archive and upload new output.
-UPLOAD_OUTPUT_JOB_ID=$(sbatch --parsable --dependency="afterany:${JOB_ID_LIST}" ./jobs/upload_output.sh)
+UPLOAD_OUTPUT_JOB_ID=$( \
+    sbatch --parsable \
+        --output="${REPORT_DIR}/logs/va-upload-output-%j.out" \
+        --dependency="afterany:${JOB_ID_LIST}" \
+        ./jobs/upload_output.sh \
+)
 
 # Generate report.
 GEN_REPORT_JOB_ID=$( \
     sbatch --parsable \
+        --output="va-gen-report-%j.out" \
         --dependency="afterany:${SYNC_REFS_JOB_ID}:${UPLOAD_OUTPUT_JOB_ID}" \
         ./jobs/generate_report.sh \
 )

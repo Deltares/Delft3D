@@ -1,11 +1,12 @@
 #! /bin/bash
 #SBATCH --job-name=va-sync-refs
-#SBATCH --output=/p/devops-dsc/verschilanalyse/report/logs/va-sync-refs-%j.out
 #SBATCH --time=04:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --partition=16vcpu
 #SBATCH --cpus-per-task=16
+#SBATCH --partition=16vcpu_spot
+#SBATCH --account=verschilanalyse
+#SBATCH --qos=verschilanalyse
 
 set -eo pipefail
 

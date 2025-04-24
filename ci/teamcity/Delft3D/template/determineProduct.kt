@@ -19,7 +19,10 @@ object TemplateDetermineProduct : Template({
                 content="""
                     if "%product%" == "auto-select":
                         if "merge-request" in "%teamcity.build.branch%":
-                            product = "%teamcity.pullRequest.source.branch%".split("/")[0]
+                            if "%teamcity.pullRequest.source.branch%".startswith("revert-"):
+                                product = "all"
+                            else:
+                                product = "%teamcity.pullRequest.source.branch%".split("/")[0]
                         else:
                             product = "%teamcity.build.branch%".split("/")[0]
                         if "%teamcity.build.branch.is_default%" == "true":

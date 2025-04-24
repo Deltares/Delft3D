@@ -153,7 +153,43 @@
             "issuedTo": "Intel Corporation"
         },
         {
+            "file": "bin\\rr.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\FBCTools.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\nesthd1.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\nesthd2.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\lint.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
             "file": "bin\\dfm_volume_tool.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\rtc.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\kubint.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\d_hydro.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\datsel.exe",
             "issuedTo": "Stichting Deltares"
         },
         {
@@ -511,8 +547,11 @@
         {
             "file": "lib\\gdal.dll",
             "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\flow2d3d.dll",
+            "issuedTo": "Stichting Deltares"
         }
-
     ],
     "notSigned": [
         "bin\\tclkitsh852.exe"
