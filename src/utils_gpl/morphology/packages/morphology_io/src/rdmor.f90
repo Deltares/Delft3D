@@ -1554,6 +1554,7 @@ contains
       integer :: j
       integer :: l
       integer :: nval
+      integer :: nbl
       character(20) :: parname
       character(60) :: txtput1
       character(20) :: txtput2
@@ -1652,7 +1653,7 @@ contains
       n_bed_link => morpar%n_bed_link
       bed_link => morpar%bed_link
       bed_link_factor => morpar%bed_link_factor
-      bed_link_active_above_discharge => bed_link_active_above_discharge
+      bed_link_active_above_discharge => morpar%bed_link_active_above_discharge
       !
       ! output values to file
       !
@@ -2204,6 +2205,22 @@ contains
             end if
          end if
       end do
+
+      txtput1 = 'Requested BedLinks'
+      do nbl = 1, n_bed_link
+         write (lundia, '(2a,i5)') txtput1, ':', bed_link(nbl)
+         txtput1 = ' '
+      end do      
+      txtput1 = 'Requested BedLinkFactors'
+      do nbl = 1, n_bed_link
+         write (lundia, '(2a,f20.4)') txtput1, ':', bed_link_factor(nbl)
+         txtput1 = ' '
+      end do      
+      txtput1 = 'Requested BedLinkActiveAboveDischarge'
+      do nbl = 1, n_bed_link
+         write (lundia, '(2a,f20.4)') txtput1, ':', bed_link_active_above_discharge(nbl)
+         txtput1 = ' '
+      end do      
       !
       write (lundia, '(a)') '*** End    of morphological input'
       write (lundia, *)
