@@ -21,28 +21,16 @@ add_executable(${executable_name} ${sources} ${rc_version_file})
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-
-    set(oss_dependencies deltares_common
-                         gridgeom
-                         io_netcdf
-                         io_netcdf_data
-                         FLAP
-                         netcdff)
-
-    target_link_libraries(${executable_name}
-                          ${oss_dependencies})
 endif(UNIX)
 
-if (WIN32)
-    set(oss_dependencies deltares_common
-                         gridgeom
-                         io_netcdf
-                         io_netcdf_data
-                         FLAP
-                         netcdff)
+set(oss_dependencies deltares_common
+                    gridgeom
+                    io_netcdf
+                    io_netcdf_data
+                    FLAP
+                    netcdf-fortran::netcdf-fortran)
 
-    target_link_libraries(${executable_name} ${oss_dependencies})
-endif(WIN32)
+target_link_libraries(${executable_name} ${oss_dependencies})
 
 if(UNIX)
     message(STATUS "Setting target_compile_definitions in Unix")
@@ -59,7 +47,6 @@ endif(WIN32)
 set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-#target_link_libraries(${executable_name} netcdf)
 
 if (WIN32)
     include_directories(${tecplot_path}
@@ -71,7 +58,6 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
@@ -84,7 +70,6 @@ if (WIN32)
                           "Shlwapi.lib"
                           "Gdi32.lib"
                           "Winspool.lib"
-                          "netcdf.lib"
                           "pthreadVC2.lib"
                           "${mpi_fortran_library}"
                           "tecio.lib")

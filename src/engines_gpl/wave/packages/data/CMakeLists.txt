@@ -23,17 +23,18 @@ set_source_files_properties(${fortran_version_files}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set dependencies
-if (WIN32)
-    set(oss_dependencies    delftio
-                            deltares_common
-                            ec_module
-                            gridgeom
-                            io_netcdf
-                            io_netcdf_data
-                            nefis
-                            netcdff)
-    target_link_libraries(${library_name} ${oss_dependencies})
+set(oss_dependencies    delftio
+                        deltares_common
+                        ec_module
+                        gridgeom
+                        io_netcdf
+                        io_netcdf_data
+                        nefis
+                        netcdf-fortran::netcdf-fortran)
 
+target_link_libraries(${library_name} ${oss_dependencies})
+
+if (WIN32)
     include_directories(${mpi_module_path}
                         ${version_include_dir}
                         ${wave_version_path})
@@ -44,18 +45,6 @@ if (WIN32)
 endif(WIN32)
 
 if (UNIX)
-    set(oss_dependencies    delftio
-                            deltares_common
-                            ec_module
-                            gridgeom
-                            io_netcdf
-                            io_netcdf_data
-                            nefis
-                            netcdff
-    )
-
-    target_link_libraries(${library_name} ${oss_dependencies})
-
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${mpi_module_path}
                         ${version_include_dir}

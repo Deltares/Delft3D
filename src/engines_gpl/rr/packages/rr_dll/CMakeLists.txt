@@ -16,7 +16,7 @@ include_directories(${version_include_dir} ${rr_version_header_path})
 # Define library
 set(library_name rr_dll)
 add_library(${library_name} SHARED  ${source_files}
-                                    ${rc_version_file} 
+                                    ${rc_version_file}
                                     ${fortran_version_file})
 
 set_source_files_properties(
@@ -24,40 +24,31 @@ set_source_files_properties(
                     src/rr_dll.F90
                     ${fortran_version_file}
                     PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
-                   
+
 target_compile_definitions(${library_name} PRIVATE "X64")
 
-set(oss_dependencies_general control_lib
-                            delftio
-                            deltares_common
-                            deltares_common_c
-                            ec_module
-                            gridgeom
-                            io_netcdf
-                            flow1d_core
-                            kdtree2
-                            kdtree_wrapper
-                            rr_kernel_f
-                            rr_rtc_tools
-                            wl_openmi_support
-                            esmfsm)
-                             
+set(oss_dependencies control_lib
+                    delftio
+                    deltares_common
+                    deltares_common_c
+                    ec_module
+                    gridgeom
+                    io_netcdf
+                    netcdf-fortran::netcdf-fortran
+                    flow1d_core
+                    kdtree2
+                    kdtree_wrapper
+                    rr_kernel_f
+                    rr_rtc_tools
+                    wl_openmi_support
+                    esmfsm)
+
 # Add dependencies
 if (UNIX)
-    set(oss_dependencies ${oss_dependencies_general} netcdff)
-
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-    )
-    add_definitions(-DHAVE_CONFIG_H)   
+    add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
-if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
 
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(WIN32)
-
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})

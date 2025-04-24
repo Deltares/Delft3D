@@ -26,28 +26,20 @@ set_source_files_properties(
 target_compile_definitions(${library_name} PRIVATE "X64")
 
 
-set(oss_dependencies_general delftio
+set(oss_dependencies delftio
                             delftio_shm
                             deltares_common
                             rr_rtc_tools
+                            netcdf-fortran::netcdf-fortran
                             wl_openmi_support)
-                             
-                             
+
+
 # Add dependencies
+target_link_libraries(${library_name} ${oss_dependencies})
+
 if (UNIX)
-    set(oss_dependencies ${oss_dependencies_general})
-
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-    )
-    add_definitions(-DHAVE_CONFIG_H)    
+    add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
-
-if (WIN32)
-    target_link_libraries(${library_name} ${oss_dependencies_general}
-                                            netcdff)
-endif(WIN32)
-
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})

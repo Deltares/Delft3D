@@ -31,21 +31,12 @@ add_executable(${executable_name}   ${headers}
 target_link_libraries(${executable_name} PRIVATE no_compiler_warnings)
 
 # Set dependencies
+set(exe_dependencies netcdf-fortran::netcdf-fortran)
+target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
+
 if (WIN32)
-    set(exe_dependencies netcdff)
-
-    target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
-
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir})
-    # Set linker properties
-    message(STATUS "Setting linker properties in windows")
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name} PRIVATE
-                            "netcdf.lib")
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
@@ -54,9 +45,6 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
-    target_link_libraries(${executable_name} PRIVATE
-         netcdff)
-
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir}
                         ${CMAKE_BINARY_DIR}/fortran_module_dir)

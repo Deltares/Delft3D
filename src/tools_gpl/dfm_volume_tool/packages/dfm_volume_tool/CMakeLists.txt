@@ -20,36 +20,20 @@ add_executable(${executable_name} ${sources} ${rc_version_file})
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         dflowfm_kernel
-                         gridgeom
-                         flow1d_core
-                         io_netcdf
-                         io_netcdf_data
-                         FLAP
-                         netcdff
-                         dfm_api_access)
-
-    target_link_libraries(${executable_name}
-         ${oss_dependencies})
 endif(UNIX)
 
-if (WIN32)
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         dflowfm_kernel
-                         gridgeom
-                         flow1d_core
-                         io_netcdf
-                         io_netcdf_data
-                         FLAP
-                         netcdff
-                         dfm_api_access)
+set(oss_dependencies deltares_common
+                    deltares_common_c
+                    dflowfm_kernel
+                    gridgeom
+                    flow1d_core
+                    io_netcdf
+                    io_netcdf_data
+                    FLAP
+                    netcdf-fortran::netcdf-fortran
+                    dfm_api_access)
 
-    target_link_libraries(${executable_name} ${oss_dependencies})
-endif(WIN32)
+target_link_libraries(${executable_name} ${oss_dependencies})
 
 if(UNIX)
     message(STATUS "Setting target_compile_definitions in Unix")
@@ -80,7 +64,6 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
@@ -93,7 +76,6 @@ if (WIN32)
                           "Shlwapi.lib"
                           "Gdi32.lib"
                           "Winspool.lib"
-                          "netcdf.lib"
                           "pthreadVC2.lib"
                           "${mpi_fortran_library}"
                           "tecio.lib")

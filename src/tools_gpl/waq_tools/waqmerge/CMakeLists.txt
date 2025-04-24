@@ -13,51 +13,22 @@ create_target(
 
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${version_include_dir})
-if (UNIX)
 
-    set(oss_dependencies deltares_common
-                         io_netcdf
-                         io_netcdf_data
-                         io_hyd
-                         waq_hyd_data
-                         waq_utils_f)
+set(oss_dependencies deltares_common
+                     deltares_common_c
+                     io_netcdf
+                     io_netcdf_data
+                     io_hyd
+                     waq_hyd_data
+                     netcdf-fortran::netcdf-fortran
+                     waq_utils_f)
 
-
-    target_link_libraries(${executable_name}
-         ${oss_dependencies}
-         netcdff)
-endif(UNIX)
+                     target_link_libraries(${executable_name} ${oss_dependencies})
 
 if (WIN32)
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         io_netcdf
-                         io_netcdf_data
-                         io_hyd
-                         waq_hyd_data
-                         netcdff
-                         waq_utils_f)
-
-    target_link_libraries(${executable_name} ${oss_dependencies})
-endif(WIN32)
-
-if (WIN32)
-   target_compile_definitions(${executable_name} PRIVATE WIN64)
-endif(WIN32)
-
-target_link_libraries(${executable_name} netcdf)
-
-if (WIN32)
-    # Set linker properties
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name}
-                          "netcdf.lib")
+    target_compile_definitions(${executable_name} PRIVATE WIN64)
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
-
 
 # Define how the files should be structured within Visual Studio
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/waqmerge)

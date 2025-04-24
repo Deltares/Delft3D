@@ -7,19 +7,14 @@ add_executable(${executable_name} ${source})
 set(oss_dependencies    fortrangis
                         ftnunit
                         io_netcdf
+                        netCDF::netcdf
 )
 
+target_link_libraries(${executable_name} ${oss_dependencies})
+
 if (UNIX)
-    target_link_libraries(${executable_name} ${oss_dependencies})
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
-
-if (WIN32)
-    target_link_directories(${executable_name} PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name} ${oss_dependencies} "netcdf.lib")
-endif(WIN32)
 
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})

@@ -9,43 +9,22 @@ set(library_name cosumo_bmi)
 add_library(${library_name} SHARED  ${source_files})
 
 # Set dependencies on windows
-if (WIN32)
-    set(library_dependencies    ec_module
-                                deltares_common
-                                deltares_common_c
-                                gridgeom
-                                kdtree_wrapper
-                                kdtree2
-                                io_netcdf
-                                io_netcdf_data
-                                netcdff
-                                )
+set(library_dependencies    ec_module
+                            deltares_common
+                            deltares_common_c
+                            gridgeom
+                            kdtree_wrapper
+                            kdtree2
+                            io_netcdf
+                            io_netcdf_data
+                            netcdf-fortran::netcdf-fortran
+                            )
 
-    target_link_libraries(${library_name} ${library_dependencies})
+target_link_libraries(${library_name} ${library_dependencies})
 
-    # Set linker properties
-    message(STATUS "Setting linker properties in windows")
 
-endif(WIN32)
-
-# Set dependencies on linux
 if(UNIX)
-    set(library_dependencies    ec_module
-                                deltares_common
-                                deltares_common_c
-                                gridgeom
-                                kdtree_wrapper
-                                kdtree2
-                                io_netcdf
-                                io_netcdf_data
-                                )
-
-    target_link_libraries(${library_name} ${library_dependencies})
-
-
-    #target_link_options(${library_name} PRIVATE ${openmp_flag})
     set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
-
 endif(UNIX)
 
 # Define how the files should be structured within Visual Studio

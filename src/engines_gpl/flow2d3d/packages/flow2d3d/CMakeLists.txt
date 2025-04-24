@@ -86,61 +86,50 @@ set_source_files_properties(${fortran_version_files}
 
 # Set dependencies
 # WARNING: the order is important: first the call, then the definition
-set(oss_dependencies_general flow2d3d_manager
-                             flow2d3d_io
-                             flow2d3d_io_dol_f
-                             flow2d3d_kernel
-                             flow2d3d_kernel_dd_f
-                             flow2d3d_plugin_culvert_c
-                             flow2d3d_plugin_user
-                             flow2d3d_data
-                             morphology_io
-                             morphology_kernel
-                             morphology_plugins_c
-                             morphology_data
-                             gridgeom
-                             ec_module
-                             delftio
-                             delftio_shm
-                             d_hydro_lib
-                             esmfsm
-                             esmfsm_c
-                             esmfsm_version_number
-                             io_netcdf
-                             io_netcdf_data
-                             io_hyd
-                             waq_hyd_data
-                             solvesaphe
-                             waq_utils_f
-                             waq_process
-                             nefis
-                             deltares_common_mpi
-                             deltares_common
-                             deltares_common_c
-                             kdtree_wrapper
-                             kdtree2)
+set(oss_dependencies    flow2d3d_manager
+                        flow2d3d_io
+                        flow2d3d_io_dol_f
+                        flow2d3d_kernel
+                        flow2d3d_kernel_dd_f
+                        flow2d3d_plugin_culvert_c
+                        flow2d3d_plugin_user
+                        flow2d3d_data
+                        morphology_io
+                        morphology_kernel
+                        morphology_plugins_c
+                        morphology_data
+                        gridgeom
+                        ec_module
+                        delftio
+                        delftio_shm
+                        d_hydro_lib
+                        esmfsm
+                        esmfsm_c
+                        esmfsm_version_number
+                        io_netcdf
+                        io_netcdf_data
+                        io_hyd
+                        netcdf-fortran::netcdf-fortran
+                        waq_hyd_data
+                        solvesaphe
+                        waq_utils_f
+                        waq_process
+                        nefis
+                        deltares_common_mpi
+                        deltares_common
+                        deltares_common_c
+                        kdtree_wrapper
+                        kdtree2)
+
+
 # Add dependencies
-if (UNIX)
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdff)
-
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-    )
-endif(UNIX)
-if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
-
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(WIN32)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 if (WIN32)
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
     target_link_directories(${library_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${mpi_library_path}"
                             "${expat_library_path_win}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
@@ -156,8 +145,7 @@ if (WIN32)
                             "advapi32.lib"
                             "comdlg32.lib"
                             "gdi32.lib"
-                            "winspool.lib"
-                            "netcdf.lib")
+                            "winspool.lib")
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
@@ -180,7 +168,7 @@ install(TARGETS ${library_name} RUNTIME DESTINATION lib)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d.sh                DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d.sh                          DESTINATION bin)
-    
+
     # Add scripts for running coupled Delft3D4 - C-SUMO computations. These .sh scripts make sure that C-SUMO is started in the background
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d_AL8_csumo.sh                DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d_AL8_csumo.sh      DESTINATION bin)

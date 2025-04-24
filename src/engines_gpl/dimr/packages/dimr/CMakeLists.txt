@@ -6,7 +6,7 @@ set(header_path include)
 set(dimr_lib_path "${CMAKE_CURRENT_SOURCE_DIR}/../dimr_lib/")
 
 # Set version file variables
-set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
+set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}")
 set(rc_version_file "${absolute_header_path}/dimr_exe_version.rc")
 set(header_version_file "${absolute_header_path}/dimr_exe_version.h")
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
@@ -25,11 +25,11 @@ set(dimr_lib_sources "${dimr_src_path}/clock.cpp"
 set(executable_name dimr)
 add_executable(${executable_name}   ${source}
                                     ${dimr_lib_sources}
-                                    ${rc_version_file} 
+                                    ${rc_version_file}
                                     ${header_version_file})
 
 # Common UNIX and WIN32 link library dependency
-target_link_libraries(${executable_name} netcdf)
+target_link_libraries(${executable_name} netCDF::netcdf)
 
 if(UNIX)
    add_definitions(-DD3D_PLUGIN_EXT=".so")
@@ -39,8 +39,8 @@ if(UNIX)
                            expat)
 
    target_compile_definitions(${executable_name} PRIVATE LINUX64)
-   target_include_directories(${executable_name} 
-                               PRIVATE  
+   target_include_directories(${executable_name}
+                               PRIVATE
                                ${header_path}
                               "${dimr_lib_path}/include"
                               "${expat_include_path}")
@@ -57,24 +57,22 @@ endif(UNIX)
 if (WIN32)
 
    set(oss_dependencies    deltares_common_c
-                           dimr_lib) 
+                           dimr_lib)
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
     target_compile_definitions(${executable_name} PRIVATE $<$<CONFIG:DEBUG>:_DEBUG>)
-    
-    target_include_directories(${executable_name} 
-                                PRIVATE  
+
+    target_include_directories(${executable_name}
+                                PRIVATE
                                 ${header_path}
                                 "${dimr_lib_path}/include"
                                 "${expat_include_path}"
                                 "${mpi_include_path}"
-                                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
                                 "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
     # Set the linker properties
     target_link_directories(${executable_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")

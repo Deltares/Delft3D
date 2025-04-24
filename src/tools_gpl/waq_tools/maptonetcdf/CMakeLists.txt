@@ -7,22 +7,20 @@ set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 create_target(${executable_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir . resource_files ${rc_version_file} target_type "executable")
 
-set(oss_dependencies_general waq_definition waq_kernel)
+set(oss_dependencies waq_definition
+                     waq_kernel
+                     netcdf-fortran::netcdf-fortran)
 
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})
-if (UNIX)
-    set(oss_dependencies ${oss_dependencies_general})
 
+if (UNIX)
     target_link_libraries(${executable_name}
          ${oss_dependencies}
          uuid)
 endif(UNIX)
 
 if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdff)
-
     target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 
@@ -31,19 +29,7 @@ target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 if (WIN32)
    target_compile_definitions(${executable_name} PRIVATE WIN64)
-endif(WIN32)
-
-target_link_libraries(${executable_name} netcdf)
-if (WIN32)
-    # Set linker properties
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name}
-                          "netcdf.lib")
-
-    configure_visual_studio_user_file(${executable_name})
+   configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
 # Define how the files should be structured within Visual Studio

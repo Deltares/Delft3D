@@ -17,15 +17,13 @@ set(library_name ec_module)
 add_library(${library_name} ${meteo_sources} ${sources})
 
 # Add dependencies
-
-
-    set(oss_dependencies deltares_common
-                         gridgeom
-                         kdtree2
-                         kdtree_wrapper
-                         io_netcdf
-                         io_netcdf_data
-                         netcdff)
+set(oss_dependencies deltares_common
+                        gridgeom
+                        kdtree2
+                        kdtree_wrapper
+                        io_netcdf
+                        io_netcdf_data
+                        netcdf-fortran::netcdf-fortran)
 
 
 target_link_libraries(${library_name} ${oss_dependencies})

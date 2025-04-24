@@ -76,34 +76,27 @@ set_source_files_properties(${fortran_version_files}
                      PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set dependencies
-set(oss_dependencies_general    delftio
-                                delftio_shm
-                                deltares_common
-                                deltares_common_c
-                                deltares_common_mpi
-                                ec_module
-                                gridgeom
-                                io_netcdf
-                                io_netcdf_data
-                                kdtree2
-                                kdtree_wrapper
-                                morphology_data
-                                morphology_kernel
-                                morphology_plugins_c)
+set(oss_dependencies    delftio
+                        delftio_shm
+                        deltares_common
+                        deltares_common_c
+                        deltares_common_mpi
+                        ec_module
+                        gridgeom
+                        io_netcdf
+                        io_netcdf_data
+                        netcdf-fortran::netcdf-fortran
+                        kdtree2
+                        kdtree_wrapper
+                        morphology_data
+                        morphology_kernel
+                        morphology_plugins_c)
 # Add dependencies
-if (UNIX)
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdff)
+target_link_libraries(${library_name} ${oss_dependencies})
 
-    target_link_libraries(${library_name} ${oss_dependencies})
+if (UNIX)
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
-if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
-endif(WIN32)
-
-target_link_libraries(${library_name} ${oss_dependencies})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${include_files}

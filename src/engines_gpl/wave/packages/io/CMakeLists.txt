@@ -11,7 +11,7 @@ add_library(${library_name} ${source_files})
 # Set dependencies
 set(oss_dependencies    wave_data
                         deltares_common
-                        netcdff) 
+                        netcdf-fortran::netcdf-fortran)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(${library_name} ${oss_dependencies})

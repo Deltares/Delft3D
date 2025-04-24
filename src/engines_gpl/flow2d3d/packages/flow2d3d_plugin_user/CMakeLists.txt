@@ -27,42 +27,29 @@ get_fortran_source_files(${src_path} source_files)
 add_library(${library_name} ${source_files})
 
 # Set dependencies
-set(oss_dependencies_general    delftio
-                                delftio_shm
-                                deltares_common
-                                deltares_common_c
-                                deltares_common_mpi
-                                ec_module
-                                flow2d3d_data
-                                fortranc
-                                fortrangis
-                                gridgeom
-                                io_netcdf
-                                io_netcdf_data
-                                kdtree2
-                                kdtree_wrapper
-                                morphology_data
-                                morphology_kernel
-                                morphology_plugins_c)
+set(oss_dependencies    delftio
+                        delftio_shm
+                        deltares_common
+                        deltares_common_c
+                        deltares_common_mpi
+                        ec_module
+                        flow2d3d_data
+                        fortranc
+                        fortrangis
+                        gridgeom
+                        io_netcdf
+                        io_netcdf_data
+                        kdtree2
+                        kdtree_wrapper
+                        morphology_data
+                        morphology_kernel
+                        morphology_plugins_c)
 
 if(UNIX)
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdff)
-
-    target_link_libraries(${library_name}
-        ${oss_dependencies}
-    )
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
-if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
-
-
-endif(WIN32)
 
 target_link_libraries(${library_name} ${oss_dependencies})
-
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})

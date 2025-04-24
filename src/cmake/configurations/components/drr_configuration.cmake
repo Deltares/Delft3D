@@ -36,7 +36,7 @@ if(NOT TARGET delftio)
     add_subdirectory(${checkout_src_root}/${delftio_module} delftio)
 endif()
 
-if(NOT TARGET deltares_common) 
+if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()
 
@@ -99,12 +99,6 @@ endif()
 # ===========
 if(NOT TARGET triangle_c)
     add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
-endif()
-
-if(WIN32)
-    if(NOT TARGET netcdff)
-        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-    endif()
 endif()
 
 if(NOT TARGET kdtree2)

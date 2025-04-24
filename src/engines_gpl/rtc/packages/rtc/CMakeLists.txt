@@ -21,7 +21,7 @@ set(fortran_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/rtc_version.F90)
 include_directories(${version_include_dir} ${rtc_version_header_path})
 
 add_executable(${executable_name} ${source_files}
-                                ${rc_version_file} 
+                                ${rc_version_file}
                                 ${fortran_version_file})
 
 set_source_files_properties(
@@ -29,42 +29,31 @@ set_source_files_properties(
                     src/rtcmodule.F90
                     ${fortran_version_file}
                     PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
-                   
+
 target_compile_definitions(${executable_name} PRIVATE "X64")
 
-set(oss_dependencies_general control_lib
-                            delftio
-                            delftio_shm
-                            deltares_common
-                            deltares_common_c
-                            io_netcdf
-                            rtc_plugin_c
-                            rtc_kernel
-                            rr_rtc_tools
-                            wl_openmi_support
-                            esmfsm
-                            )
-                             
-                             
-# Add dependencies
-if (UNIX)
-    set(oss_dependencies ${oss_dependencies_general})
+set(oss_dependencies    control_lib
+                        delftio
+                        delftio_shm
+                        deltares_common
+                        deltares_common_c
+                        io_netcdf
+                        netcdf-fortran::netcdf-fortran
+                        rtc_plugin_c
+                        rtc_kernel
+                        rr_rtc_tools
+                        wl_openmi_support
+                        esmfsm
+                        )
 
-    target_link_libraries(${executable_name}
-         ${oss_dependencies}
-    )
-         
+
+# Add dependencies
+target_link_libraries(${executable_name} ${oss_dependencies})
+
+if (UNIX)
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
-
-if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
-
-    target_link_libraries(${executable_name} ${oss_dependencies})
-endif(WIN32)
-
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})

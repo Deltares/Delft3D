@@ -29,10 +29,6 @@ if(UNIX)
 endif(UNIX)
 
 if (WIN32)
-    target_link_directories(${library_name}
-            INTERFACE
-            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
     # Add dependency
     set(oss_dependencies deltares_common
                         fortrangis

@@ -32,31 +32,18 @@ get_fortran_source_files(${src_path} source_files)
 add_library(${library_name} ${source_files})
 
 # Set dependencies
-set(oss_dependencies_general    deltares_common
-                                deltares_common_mpi
-                                ec_module
-                                flow2d3d_data
-                                io_hyd
-                                waq_hyd_data
-                                io_netcdf
-                                io_netcdf_data
-                                morphology_io
-                                morphology_kernel)
+set(oss_dependencies    deltares_common
+                        deltares_common_mpi
+                        ec_module
+                        flow2d3d_data
+                        io_hyd
+                        waq_hyd_data
+                        io_netcdf
+                        io_netcdf_data
+                        netcdf-fortran::netcdf-fortran
+                        morphology_io
+                        morphology_kernel)
 # Add dependencies
-if (UNIX)
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdff)
-
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-    )
-endif(UNIX)
-if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
-
-endif(WIN32)
-
 target_link_libraries(${library_name} ${oss_dependencies})
 
 # Define how the files should be structured within Visual Studio

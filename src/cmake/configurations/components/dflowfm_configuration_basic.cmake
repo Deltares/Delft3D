@@ -166,13 +166,6 @@ if(WIN32)
     endif()
 endif(WIN32)
 
-# netcdf
-if(WIN32)
-    if(NOT TARGET netcdff)
-        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-    endif()
-endif(WIN32)
-
 # io_netcdf
 if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
@@ -234,11 +227,11 @@ if(NOT WITH_INTERACTER)
     if(NOT TARGET test_dflowfm_kernel)
         add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
     endif()
-    
+
     if(NOT TARGET test_deltares_common)
         add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)
     endif()
-    
+
     if(NOT TARGET test_ec_module)
         add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
     endif()

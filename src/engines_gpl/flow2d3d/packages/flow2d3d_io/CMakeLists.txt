@@ -43,37 +43,27 @@ add_library(${library_name} ${input_files}
                             ${preprocessor_files})
 
 # Set dependencies
-set(oss_dependencies_general    deltares_common
-                                deltares_common_c
-                                deltares_common_mpi
-                                delftio
-                                delftio_shm
-                                ec_module
-                                flow2d3d_data
-                                io_hyd
-                                io_netcdf
-                                io_netcdf_data
-                                morphology_data
-                                morphology_io
-                                morphology_kernel
-                                morphology_plugins_c)
+set(oss_dependencies    deltares_common
+                        deltares_common_c
+                        deltares_common_mpi
+                        delftio
+                        delftio_shm
+                        ec_module
+                        flow2d3d_data
+                        io_hyd
+                        io_netcdf
+                        io_netcdf_data
+                        netcdf-fortran::netcdf-fortran
+                        morphology_data
+                        morphology_io
+                        morphology_kernel
+                        morphology_plugins_c)
 # Add dependencies
-if (UNIX)
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdff)
+target_link_libraries(${library_name} ${oss_dependencies})
 
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-    )
-endif(UNIX)
 if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
-
     add_definitions(-DHAVE_FC_FORM_BINARY)
 endif(WIN32)
-
-target_link_libraries(${library_name} ${oss_dependencies})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${input_files}

@@ -13,7 +13,7 @@ set(oss_dependencies deltares_common
         io_hyd
         io_netcdf
         waq_hyd_data
-        netcdff
+        netcdf-fortran::netcdf-fortran
 )
 
 target_link_libraries(${library_name} ${oss_dependencies})
