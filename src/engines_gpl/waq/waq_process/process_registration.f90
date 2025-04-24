@@ -205,6 +205,14 @@ module process_registration
     use m_ssedph
     use m_phcarb
     use m_protist_mortality_salinity, only : protist_mortality_salinity
+    use m_sedcom_2lb
+    use m_caltaucm
+    use m_calpowfl
+    use m_resdm_2lb
+    use m_sedim_2lb
+    use m_burial_2lb
+    use m_updwat_2lb
+    use m_s12tim_2lb
 
     implicit none
 
@@ -440,7 +448,15 @@ contains
                             process_routine_info('PHPROT', PHPROT), &
                             process_routine_info('FLOCSD', FLOCSD), &
                             process_routine_info('AGECAR', AGECART), &
-                            process_routine_info( 'PRTMRT', protist_mortality_salinity) &
+                            process_routine_info('PRTMRT', protist_mortality_salinity), &
+                            process_routine_info('SEDC2L', SEDCOM_2LB), &
+                            process_routine_info('CALTCM', CALTAUCM), &
+                            process_routine_info('CALPOW', CALPOWFL), &
+                            process_routine_info('RES2LB', RESDM_2LB), &
+                            process_routine_info('SED2LB', SEDIM_2LB), &
+                            process_routine_info('BUR2LB', BURIAL_2LB), &
+                            process_routine_info('UPW2LB', UPDWAT_2LB), &
+                            process_routine_info('S12TLB', S12TIM_2LB) &
                     ]
 
             max_processes = size(process_routine)

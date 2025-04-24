@@ -5381,3 +5381,74 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRP_G5 ","G5_Nbal   ",  21,"x",1
 "DEBGRP_G5 ","G5_Pbal   ",  22,"x",1
 "DEBGRP_G5 ","G5_DoSpawn",  23,"x",1
+"S1_Comp2LB","DMS1      ",   1,"x",1
+"S1_Comp2LB","RHOS1     ",   2,"x",1
+"S1_Comp2LB","ActThS1   ",   3,"x",1
+"S1_Comp2LB","MatThS1   ",   4,"x",1
+"S1_Comp2LB","WatThS1   ",   5,"x",1
+"S1_Comp2LB","FrIM1S1   ",   6,"x",1
+"S1_Comp2LB","FrIM2S1   ",   7,"x",1
+"S1_Comp2LB","FrIM3S1   ",   8,"x",1
+"S1_Comp2LB","VolFrIM1S1",   9,"x",1
+"S1_Comp2LB","VolFrIM2S1",  10,"x",1
+"S1_Comp2LB","VolFrIM3S1",  11,"x",1
+"S1_Comp2LB","PORS1     ",  12,"x",1
+"S1_Comp2LB","ISBEDS1   ",  13,"x",1
+"S2_Comp2LB","DMS2      ",   1,"x",1
+"S2_Comp2LB","RHOS2     ",   2,"x",1
+"S2_Comp2LB","ActThS2   ",   3,"x",1
+"S2_Comp2LB","MatThS2   ",   4,"x",1
+"S2_Comp2LB","WatThS2   ",   5,"x",1
+"S2_Comp2LB","FrIM1S2   ",   6,"x",1
+"S2_Comp2LB","FrIM2S2   ",   7,"x",1
+"S2_Comp2LB","FrIM3S2   ",   8,"x",1
+"S2_Comp2LB","VolFrIM1S2",   9,"x",1
+"S2_Comp2LB","VolFrIM2S2",  10,"x",1
+"S2_Comp2LB","VolFrIM3S2",  11,"x",1
+"S2_Comp2LB","PORS2     ",  12,"x",1
+"S2_Comp2LB","ISBEDS2   ",  13,"x",1
+"Cal_TauC_M","TauCritS1 ",   1,"x",1
+"Cal_TauC_M","MEroS1    ",   2,"x",1
+"Cal_TauC_M","TauCritS2 ",   3,"x",1
+"Cal_TauC_M","MEroS2    ",   4,"x",1
+"Cal_PowFL ","fPOWS1    ",   1,"x",1
+"Cal_PowFL ","fPOWS2    ",   2,"x",1
+"Cal_PowFL ","PES1      ",   3,"x",1
+"Cal_PowFL ","PES2      ",   4,"x",1
+"Res_DM_2LB","fResS1DM  ",   1,"x",1
+"Res_DM_2LB","fResS2DM  ",   2,"x",1
+"Res_DM_2LB","PResS1DM  ",   3,"x",1
+"Res_DM_2LB","PResS2DM  ",   4,"x",1
+"Res_DM_2LB","fSedTot   ",   5,"x",1
+"Sed2LB_IM1","PSedIM1   ",   1,"x",1
+"Sed2LB_IM1","fSedIM1   ",   2,"x",1
+"Sed2LB_IM1","fSedIM1S2 ",   3," ",1
+"Sed2LB_IM1","VxSedIM1  ",   4,"x",0
+"Sed2LB_IM2","PSedIM2   ",   1,"x",1
+"Sed2LB_IM2","fSedIM2   ",   2,"x",1
+"Sed2LB_IM2","fSedIM2S2 ",   3," ",1
+"Sed2LB_IM2","VxSedIM2  ",   4,"x",0
+"Sed2LB_IM3","PSedIM3   ",   1,"x",1
+"Sed2LB_IM3","fSedIM3   ",   2,"x",1
+"Sed2LB_IM3","fSedIM3S2 ",   3," ",1
+"Sed2LB_IM3","VxSedIM3  ",   4,"x",0
+"Burial_2LB","fBurS1DM  ",   1,"x",1
+"Burial_2LB","fBurS2DM  ",   2,"x",1
+"S12Tra2IM1","fResS1IM1 ",   1,"x",1
+"S12Tra2IM1","fResS2IM1 ",   2,"x",1
+"S12Tra2IM1","fBurS1IM1 ",   3,"x",1
+"S12Tra2IM1","fBurS2IM1 ",   4,"x",1
+"S12Tra2IM2","fResS1IM2 ",   1,"x",1
+"S12Tra2IM2","fResS2IM2 ",   2,"x",1
+"S12Tra2IM2","fBurS1IM2 ",   3,"x",1
+"S12Tra2IM2","fBurS2IM2 ",   4,"x",1
+"S12Tra2IM3","fResS1IM3 ",   1,"x",1
+"S12Tra2IM3","fResS2IM3 ",   2,"x",1
+"S12Tra2IM3","fBurS1IM3 ",   3,"x",1
+"S12Tra2IM3","fBurS2IM3 ",   4,"x",1
+"UpdWat_2LB","fWATS1_Sed",   1,"x",1
+"UpdWat_2LB","fWATS1_Res",   2,"x",1
+"UpdWat_2LB","fWATS2_Bur",   3,"x",1
+"UpdWat_2LB","fWATS2_Res",   4,"x",1
+"UpdWat_2LB","fWATS1    ",   5,"x",1
+"UpdWat_2LB","fWATS2    ",   6,"x",1
