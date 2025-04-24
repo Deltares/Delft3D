@@ -131,7 +131,9 @@ contains
       call restorepol()
       call restorecells()
 
-      if (allocated(kc_sav)) deallocate (kc_sav)
+      if (allocated(kc_sav)) then
+         deallocate (kc_sav)
+      end if
 
       return
    end subroutine write_illegal_cells_to_pol

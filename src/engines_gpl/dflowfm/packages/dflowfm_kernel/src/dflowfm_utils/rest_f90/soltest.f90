@@ -230,8 +230,12 @@ contains
 
 1234  continue
 
-      if (allocated(sex)) deallocate (sex)
-      if (allocated(dmask)) deallocate (dmask)
+      if (allocated(sex)) then
+         deallocate (sex)
+      end if
+      if (allocated(dmask)) then
+         deallocate (dmask)
+      end if
 
       return
    end subroutine soltest

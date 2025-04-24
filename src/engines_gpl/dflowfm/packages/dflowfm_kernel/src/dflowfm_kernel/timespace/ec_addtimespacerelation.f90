@@ -481,7 +481,9 @@ contains
          if (present(srcmaskfile)) then
             if (allocated(srcmask%msk)) deallocate (srcmask%msk)
             allocate (srcmask%msk(ndx))
-            if (allocated(transformcoef)) deallocate (transformcoef)
+            if (allocated(transformcoef)) then
+               deallocate (transformcoef)
+            end if
             allocate (transformcoef(1))
             if (present(targetMaskSelect)) then
                if (targetMaskSelect == 'i') then
@@ -512,7 +514,9 @@ contains
                return
             end if
             if (allocated(srcmask%msk)) deallocate (srcmask%msk)
-            if (allocated(transformcoef)) deallocate (transformcoef)
+            if (allocated(transformcoef)) then
+               deallocate (transformcoef)
+            end if
          else
             success = initializeConverter(ecInstancePtr, converterId, ec_convtype, ec_operand, ec_method)
          end if

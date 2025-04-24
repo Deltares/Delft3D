@@ -252,7 +252,7 @@ contains
 
                 if (gettoken(cdummy, ierr2) > 0) goto 30          ! get the input file name for particles
                 file_name_list(45) = cdummy
-                call rdfnam (lunitp, cdummy, fnamep, nfilesp, 2, 1, .false.)
+                call rdfnam (lunitp, cdummy, fnamep, nfilesp, 2, 1, .false., hyd)
                 call report_date_time  (lunitp(2))
                 call rdlgri (nfilesp, lunitp, fnamep)
                 call rdccol (nmaxp, mmaxp, lunitp(5), fnamep(5), &

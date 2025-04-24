@@ -59,14 +59,14 @@ echo Working directory: %workdir%
     rem
 set D3D_HOME=%~dp0..
 echo D3D_HOME         : %D3D_HOME%
-set exedir=%D3D_HOME%\bin
+set exedir=%~dp0
 set sharedir=%D3D_HOME%\share
 set libdir=%D3D_HOME%\lib
 
     rem Run
 set PATH=%sharedir%;%libdir%
-echo executing: "%exedir%\dflowfm-cli.exe" --autostartstop --processlibrary "%sharedir%\delft3d\proc_def.dat" --bloomspecies "%sharedir%\delft3d\bloom.spe" %*
-                "%exedir%\dflowfm-cli.exe" --autostartstop --processlibrary "%sharedir%\delft3d\proc_def.dat" --bloomspecies "%sharedir%\delft3d\bloom.spe" %*
+echo executing: "%exedir%dflowfm-cli.exe" --autostartstop %*
+                "%exedir%dflowfm-cli.exe" --autostartstop %*
 
 goto end
 

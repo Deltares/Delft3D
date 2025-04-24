@@ -90,10 +90,18 @@ contains
 1234  continue
 
 !  deallocate
-      if (allocated(xloc)) deallocate (xloc)
-      if (allocated(yloc)) deallocate (yloc)
-      if (allocated(xf)) deallocate (xf)
-      if (allocated(yf)) deallocate (yf)
+      if (allocated(xloc)) then
+         deallocate (xloc)
+      end if
+      if (allocated(yloc)) then
+         deallocate (yloc)
+      end if
+      if (allocated(xf)) then
+         deallocate (xf)
+      end if
+      if (allocated(yf)) then
+         deallocate (yf)
+      end if
       return
    end subroutine comp_Afinespline
 

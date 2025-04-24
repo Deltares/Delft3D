@@ -64,7 +64,9 @@ contains
       end do
 
       ! set up thin dam structure
-      if (allocated(thindam)) deallocate (thindam)
+      if (allocated(thindam)) then
+         deallocate (thindam)
+      end if
       allocate (thindam(6, nthd), stat=ierr)
       call aerr('thindam(6,nthd)', ierr, 6 * nthd)
 

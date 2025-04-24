@@ -112,12 +112,24 @@ contains
       flnmD90 => bfmpar%flnmD90
       lfbedfrmrou => bfmpar%lfbedfrmrou
       !
-      if (allocated(sig)) deallocate (sig)
-      if (allocated(umag)) deallocate (umag)
-      if (allocated(z0rou)) deallocate (z0rou)
-      if (allocated(dx_trt)) deallocate (dx_trt)
-      if (allocated(hu_trt)) deallocate (hu_trt)
-      if (allocated(kcu_trt)) deallocate (kcu_trt)
+      if (allocated(sig)) then
+         deallocate (sig)
+      end if
+      if (allocated(umag)) then
+         deallocate (umag)
+      end if
+      if (allocated(z0rou)) then
+         deallocate (z0rou)
+      end if
+      if (allocated(dx_trt)) then
+         deallocate (dx_trt)
+      end if
+      if (allocated(hu_trt)) then
+         deallocate (hu_trt)
+      end if
+      if (allocated(kcu_trt)) then
+         deallocate (kcu_trt)
+      end if
 
       kmaxtrt = max(kmx, 1)
       allocate (sig(kmaxtrt)); sig = 0d0
@@ -363,8 +375,12 @@ contains
          end if
       end do
 
-      if (allocated(xuL)) deallocate (xuL)
-      if (allocated(yuL)) deallocate (yuL)
+      if (allocated(xuL)) then
+         deallocate (xuL)
+      end if
+      if (allocated(yuL)) then
+         deallocate (yuL)
+      end if
       threshold_abort = threshold_abort_current
 
    end subroutine flow_trachyinit

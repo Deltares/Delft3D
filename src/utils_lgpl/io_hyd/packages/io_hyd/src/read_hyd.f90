@@ -601,6 +601,9 @@
          endif
       endif
 
+      call hyd%file_hyd%close()
+      ilun = 0
+
       return
  900  continue
       call write_error_message('error reading hyd file ('//trim(ctoken)//')')

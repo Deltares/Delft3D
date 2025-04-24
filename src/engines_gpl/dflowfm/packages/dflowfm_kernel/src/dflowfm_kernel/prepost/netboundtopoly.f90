@@ -204,7 +204,9 @@ contains
       ierror = 0
 1234  continue
 
-      if (allocated(klist)) deallocate (klist)
+      if (allocated(klist)) then
+         deallocate (klist)
+      end if
 
       return
    end subroutine netboundtopoly

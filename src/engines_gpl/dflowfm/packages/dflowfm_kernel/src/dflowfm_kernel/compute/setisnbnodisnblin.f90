@@ -43,8 +43,12 @@ contains
 
       integer :: L, LL, LLL, LLLa, L1, L2, L1a, L2a, n, nx, ja1D
 
-      if (allocated(isnbnod)) deallocate (isnbnod)
-      if (allocated(isnblin)) deallocate (isnblin)
+      if (allocated(isnbnod)) then
+         deallocate (isnbnod)
+      end if
+      if (allocated(isnblin)) then
+         deallocate (isnblin)
+      end if
       allocate (isnbnod(2, lnx), isnblin(2, lnx))
 
       if (kmx == 0 .and. lnx1D > 0) then ! setuc

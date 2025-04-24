@@ -158,6 +158,7 @@ module m_flowgeom
    real(kind=dp), dimension(:), allocatable :: wcny3 !< link weights (lnx) for corner velocities k3
    real(kind=dp), dimension(:), allocatable :: wcnx4 !< link weights (lnx) for corner velocities k4
    real(kind=dp), dimension(:), allocatable :: wcny4 !< link weights (lnx) for corner velocities k4
+   real(kind=dp), dimension(:, :), allocatable :: wcxy !< center weight factors (2,ndx) , only for normalising
 
    real(kind=dp), dimension(:, :), allocatable :: csb !< cosine orientation from left/right neighboring flownode to flowlink, left/right as ln
    real(kind=dp), dimension(:, :), allocatable :: snb !< sine   orientation from left/right neighboring flownode to flowlink, left/right as ln
@@ -280,6 +281,15 @@ module m_flowgeom
    integer :: cmd_icgsolver = 4 !< save commandline icgsolver
 
    integer, dimension(:), allocatable :: structuresAndWeirsList !< List containing flow links on which a structure or fixed weir is located.
+
+   integer, parameter :: IADV_ORIGINAL_LATERAL_OVERFLOW = 8
+   integer, parameter :: IADV_SUBGRID_WEIR = 21
+   integer, parameter :: IADV_GENERAL_STRUCTURE = 22
+   integer, parameter :: IADV_RAJARATNAM_WEIR = 23
+   integer, parameter :: IADV_TABELLENBOEK_WEIR = 24
+   integer, parameter :: IADV_VILLEMONTE_WEIR = 25
+   integer, parameter :: IADV_PURE1D_FM = 103
+   integer, parameter :: IADV_PURE1D_SOBEK = 104
 
 contains
 !> Sets ALL (scalar) variables in this module to their default values.

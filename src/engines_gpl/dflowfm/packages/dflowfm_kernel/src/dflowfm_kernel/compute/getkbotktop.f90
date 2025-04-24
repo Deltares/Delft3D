@@ -32,7 +32,7 @@
 module m_get_kbot_ktop
    implicit none
 contains
-   subroutine getkbotktop(n, kb, kt)
+   pure subroutine getkbotktop(n, kb, kt)
       use m_flow, only: kmx, ktop, kbot
       integer, intent(in) :: n
       integer, intent(out) :: kb, kt

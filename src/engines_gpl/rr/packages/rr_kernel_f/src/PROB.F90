@@ -3400,7 +3400,7 @@ subroutine beta_cdf_inv ( cdf, a, b, x )
 
   real ( kind = 8 ) a
   real ( kind = 8 ) b
-  real ( kind = 8 ) bcoeff
+  real ( kind = 8 ) b_coeff
   real ( kind = 8 ) cdf
   real ( kind = 8 ) cdf_x
   real ( kind = 8 ) d(2:maxk,0:maxk-2)
@@ -3468,11 +3468,11 @@ subroutine beta_cdf_inv ( cdf, a, b, x )
 !
       do i = 3, k-1
         sum2 = d(2,0) * d(i-1,k-i)
-        bcoeff = 1.0D+00
+        b_coeff = 1.0D+00
         do j = 1, k-i
-          bcoeff = ( bcoeff * real ( k - i - j + 1, kind = 8 ) ) &
+          b_coeff = ( b_coeff * real ( k - i - j + 1, kind = 8 ) ) &
             / real ( j, kind = 8 )
-          sum2 = sum2 + bcoeff * d(2,j) * d(i-1,k-i-j)
+          sum2 = sum2 + b_coeff * d(2,j) * d(i-1,k-i-j)
         end do
         d(i,k-i) = sum2 + d(i-1,k-i+1) / real ( i - 1, kind = 8 )
       end do

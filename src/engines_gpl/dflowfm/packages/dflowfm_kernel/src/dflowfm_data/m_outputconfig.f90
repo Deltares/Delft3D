@@ -213,11 +213,13 @@ module m_output_config
 
    integer, public :: IDX_HIS_VIU
    integer, public :: IDX_HIS_VICWWS
+   integer, public :: IDX_HIS_DIFWWS
    integer, public :: IDX_HIS_VICWWU
    integer, public :: IDX_HIS_TKIN
    integer, public :: IDX_HIS_EPS
    integer, public :: IDX_HIS_TAU
    integer, public :: IDX_HIS_RICH
+   integer, public :: IDX_HIS_RICHS
    integer, public :: IDX_HIS_SALINITY
    integer, public :: IDX_HIS_TEMPERATURE
    integer, public :: IDX_HIS_POTENTIAL_DENSITY

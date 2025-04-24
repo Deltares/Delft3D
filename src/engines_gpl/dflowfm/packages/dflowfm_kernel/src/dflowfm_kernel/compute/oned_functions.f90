@@ -288,11 +288,21 @@ contains
             end if
          end do
 
-         if (allocated(k_tmp)) deallocate (k_tmp)
-         if (allocated(x_tmp)) deallocate (x_tmp)
-         if (allocated(y_tmp)) deallocate (y_tmp)
-         if (allocated(ixy2stor)) deallocate (ixy2stor)
-         if (allocated(name_tmp)) deallocate (name_tmp)
+         if (allocated(k_tmp)) then
+            deallocate (k_tmp)
+         end if
+         if (allocated(x_tmp)) then
+            deallocate (x_tmp)
+         end if
+         if (allocated(y_tmp)) then
+            deallocate (y_tmp)
+         end if
+         if (allocated(ixy2stor)) then
+            deallocate (ixy2stor)
+         end if
+         if (allocated(name_tmp)) then
+            deallocate (name_tmp)
+         end if
       end if
 
    end subroutine set_node_numbers_for_storage_nodes
@@ -348,7 +358,9 @@ contains
       ! cross section)
       line2cross => network%adm%line2cross
       if ((jased > 0 .and. stm_included) .or. (flow_solver == FLOW_SOLVER_SRE)) then
-         if (allocated(gridpoint2cross)) deallocate (gridpoint2cross)
+         if (allocated(gridpoint2cross)) then
+            deallocate (gridpoint2cross)
+         end if
          allocate (gridpoint2cross(ndxi))
          do i = 1, ndxi
             gridpoint2cross(i)%num_cross_sections = 0

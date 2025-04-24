@@ -245,19 +245,27 @@ contains
       if (ndim == 0) then
          if (mapclass_time_buffer_size > 1) then
             if (nclasses_s1 > 0) then
-               if (allocated(buffer_s1)) deallocate (buffer_s1)
+               if (allocated(buffer_s1)) then
+                  deallocate (buffer_s1)
+               end if
                allocate (buffer_s1(ndx, mapclass_time_buffer_size))
             end if
             if (nclasses_hs > 0) then
-               if (allocated(buffer_hs)) deallocate (buffer_hs)
+               if (allocated(buffer_hs)) then
+                  deallocate (buffer_hs)
+               end if
                allocate (buffer_hs(ndx, mapclass_time_buffer_size))
             end if
             if (nclasses_ucmag > 0 .and. kmx == 0) then
-               if (allocated(buffer_ucmag)) deallocate (buffer_ucmag)
+               if (allocated(buffer_ucmag)) then
+                  deallocate (buffer_ucmag)
+               end if
                allocate (buffer_ucmag(ndx, mapclass_time_buffer_size))
             end if
             if (nclasses_ucdir > 0 .and. kmx == 0) then
-               if (allocated(buffer_ucdir)) deallocate (buffer_ucdir)
+               if (allocated(buffer_ucdir)) then
+                  deallocate (buffer_ucdir)
+               end if
                allocate (buffer_ucdir(ndx, mapclass_time_buffer_size))
             end if
          end if
@@ -338,10 +346,18 @@ contains
          if (associated(previous_hs)) deallocate (previous_hs)
          if (associated(previous_ucmag)) deallocate (previous_ucmag)
          if (associated(previous_ucdir)) deallocate (previous_ucdir)
-         if (allocated(buffer_s1)) deallocate (buffer_s1)
-         if (allocated(buffer_hs)) deallocate (buffer_hs)
-         if (allocated(buffer_ucmag)) deallocate (buffer_ucmag)
-         if (allocated(buffer_ucdir)) deallocate (buffer_ucdir)
+         if (allocated(buffer_s1)) then
+            deallocate (buffer_s1)
+         end if
+         if (allocated(buffer_hs)) then
+            deallocate (buffer_hs)
+         end if
+         if (allocated(buffer_ucmag)) then
+            deallocate (buffer_ucmag)
+         end if
+         if (allocated(buffer_ucdir)) then
+            deallocate (buffer_ucdir)
+         end if
       else
          if (ierr == nf90_noerr .and. need_flush .and. unc_noforcedflush == 0) then
             ierr = nf90_sync(incids%ncid) ! flush output to file

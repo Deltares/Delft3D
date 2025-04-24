@@ -258,15 +258,33 @@ contains
       end if
 
 !  deallocate
-      if (allocated(xietak)) deallocate (xietak)
-      if (allocated(xietas)) deallocate (xietas)
-      if (allocated(xietac)) deallocate (xietac)
-      if (allocated(xik)) deallocate (xik)
-      if (allocated(etak)) deallocate (etak)
-      if (allocated(xis)) deallocate (xis)
-      if (allocated(etas)) deallocate (etas)
-      if (allocated(imaskk)) deallocate (imaskk)
-      if (allocated(imasks)) deallocate (imasks)
+      if (allocated(xietak)) then
+         deallocate (xietak)
+      end if
+      if (allocated(xietas)) then
+         deallocate (xietas)
+      end if
+      if (allocated(xietac)) then
+         deallocate (xietac)
+      end if
+      if (allocated(xik)) then
+         deallocate (xik)
+      end if
+      if (allocated(etak)) then
+         deallocate (etak)
+      end if
+      if (allocated(xis)) then
+         deallocate (xis)
+      end if
+      if (allocated(etas)) then
+         deallocate (etas)
+      end if
+      if (allocated(imaskk)) then
+         deallocate (imaskk)
+      end if
+      if (allocated(imasks)) then
+         deallocate (imasks)
+      end if
 
       return
    end subroutine sam2net_curvi

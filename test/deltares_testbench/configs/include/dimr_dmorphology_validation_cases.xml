@@ -47,7 +47,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c03_concentration_buildup_channel_algebraic_10lyrs" ref="dflowfm_default">
-      <path version="2024-09-25T16:30:00">e02_dflowfm/f039_morphology_3d/c03_concentration_buildup_channel_algebraic_10lyrs</path>
+      <path version="2025-04-04T13:58:34.314000">e02_dflowfm/f039_morphology_3d/c03_concentration_buildup_channel_algebraic_10lyrs</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/slope_his.nc" type="netCDF">
@@ -60,7 +60,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c04_sediment_bc_3d_t3d_varying" ref="dflowfm_default">
-      <path version="2024-09-26T07:54:00">e02_dflowfm/f039_morphology_3d/c04_sediment_bc_3d_t3d_varying</path>
+      <path version="2025-04-04T13:58:52.968000">e02_dflowfm/f039_morphology_3d/c04_sediment_bc_3d_t3d_varying</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/channel_his.nc" type="netCDF">
@@ -73,7 +73,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c05_sediment_bc_3d_t3d_step_constant" ref="dflowfm_default">
-      <path version="2024-09-26T07:54:00">e02_dflowfm/f039_morphology_3d/c05_sediment_bc_3d_t3d_step_constant</path>
+      <path version="2025-04-04T13:59:10.342000">e02_dflowfm/f039_morphology_3d/c05_sediment_bc_3d_t3d_step_constant</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/channel_his.nc" type="netCDF">
@@ -86,7 +86,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c06_sediment_bc_3d_bc_varying" ref="dflowfm_default">
-      <path version="2024-09-25T07:10:00">e02_dflowfm/f039_morphology_3d/c06_sediment_bc_3d_bc_varying</path>
+      <path version="2025-04-04T13:59:28.929000">e02_dflowfm/f039_morphology_3d/c06_sediment_bc_3d_bc_varying</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/channel_his.nc" type="netCDF">
@@ -151,7 +151,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c11_rouse_algebraic_30lyrs" ref="dflowfm_default">
-      <path version="2024-09-25T07:13:00">e02_dflowfm/f039_morphology_3d/c11_rouse_algebraic_30lyrs</path>
+      <path version="2025-04-04T13:59:45.212000">e02_dflowfm/f039_morphology_3d/c11_rouse_algebraic_30lyrs</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/rouse_his.nc" type="netCDF">

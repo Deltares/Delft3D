@@ -130,6 +130,7 @@ class TestComparisonRunner:
     def test_run_without_test_cases_logs_no_results(self, mocker: MockerFixture) -> None:
         # Arrange
         settings = TestBenchSettings()
+        settings.config_file = "some.xml"
         settings.local_paths = LocalPaths()
         settings.parallel = False
         # settings.filter = "testcase=e02_f102_c02e_1d-precipitation123"
@@ -138,10 +139,14 @@ class TestComparisonRunner:
         runner = ComparisonRunner(settings, logger)
 
         # Act
-        runner.run()
+        with pytest.raises(ValueError):
+            runner.run()
 
         # Assert
-        assert call("No testcases were loaded from the xml.") in logger.warning.call_args_list
+        assert (
+            call(f"There are no test cases in '{settings.config_file}' with applied filter '{settings.filter}'.")
+            in logger.error.call_args_list
+        )
 
     def test_run_without_test_cases_due_to_filter_logs_no_results_with_filter_suggestion(
         self, mocker: MockerFixture
@@ -150,6 +155,7 @@ class TestComparisonRunner:
         settings = TestBenchSettings()
         config1 = TestComparisonRunner.create_test_case_config("Banana_1", True)
         config2 = TestComparisonRunner.create_test_case_config("Banana_2", False)
+        settings.config_file = "some.xml"
         settings.configs_from_xml = [config1, config2]
         settings.local_paths = LocalPaths()
         settings.parallel = False
@@ -162,12 +168,13 @@ class TestComparisonRunner:
         if settings.filter != "":
             settings.configs_to_run = XmlConfigParser.filter_configs(settings.configs_from_xml, settings.filter, logger)
 
-        runner.run()
+        with pytest.raises(ValueError):
+            runner.run()
 
         # Assert
         assert (
-            call(f"No testcases where found to run after applying the filter: {settings.filter}.")
-            in logger.warning.call_args_list
+            call(f"There are no test cases in '{settings.config_file}' with applied filter '{settings.filter}'.")
+            in logger.error.call_args_list
         )
 
     @staticmethod

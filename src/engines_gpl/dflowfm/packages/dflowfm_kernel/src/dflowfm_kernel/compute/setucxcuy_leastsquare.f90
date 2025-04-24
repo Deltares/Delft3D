@@ -28,11 +28,17 @@ contains
       integer, dimension(lnx) :: LDone
       integer, dimension(mxwalls) :: LwDone
 
-      if (allocated(AtWAiAtW)) deallocate (AtWAiAtW)
+      if (allocated(AtWAiAtW)) then
+         deallocate (AtWAiAtW)
+      end if
       allocate (AtWAiAtW(9, mmax, lnx), stat=ierr); AtWAiAtW = 0d0
-      if (allocated(ireconstu)) deallocate (ireconstu)
+      if (allocated(ireconstu)) then
+         deallocate (ireconstu)
+      end if
       allocate (ireconstu(lnx)); ireconstu = 0
-      if (allocated(ireconstz)) deallocate (ireconstz)
+      if (allocated(ireconstz)) then
+         deallocate (ireconstz)
+      end if
       allocate (ireconstz(ndx)); ireconstz = 0
 
       scale = 1d0

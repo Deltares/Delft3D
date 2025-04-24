@@ -89,7 +89,9 @@ contains
       end if
 
 !  deallocate
-      if (allocated(jacopy)) deallocate (jacopy)
+      if (allocated(jacopy)) then
+         deallocate (jacopy)
+      end if
 
       return
    end subroutine copysamtopol

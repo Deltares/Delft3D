@@ -318,7 +318,9 @@ contains
             istart = nopenbndlin(i)
          end do
          call restorepol()
-         if (allocated(kdum)) deallocate (kdum)
+         if (allocated(kdum)) then
+            deallocate (kdum)
+         end if
       end if ! nbnd1d2d > 0
    end subroutine addexternalboundarypoints
 

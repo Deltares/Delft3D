@@ -109,9 +109,15 @@ contains
 
       end do ! do k=1,Ndx
 
-      if (allocated(linnrs)) deallocate (linnrs)
-      if (allocated(arglin)) deallocate (arglin)
-      if (allocated(inn)) deallocate (inn)
+      if (allocated(linnrs)) then
+         deallocate (linnrs)
+      end if
+      if (allocated(arglin)) then
+         deallocate (arglin)
+      end if
+      if (allocated(inn)) then
+         deallocate (inn)
+      end if
 
       return
    end subroutine sort_flowlinks_ccw

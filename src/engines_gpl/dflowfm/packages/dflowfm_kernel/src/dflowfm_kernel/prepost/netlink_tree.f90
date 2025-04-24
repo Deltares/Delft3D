@@ -70,8 +70,12 @@ contains
          call build_kdtree(treeglob, numL, xuL, yuL, ierror, jsferic, dmiss)
          call realloc_results_kdtree(treeglob, 1) ! safety
 
-         if (allocated(xuL)) deallocate (xuL)
-         if (allocated(yuL)) deallocate (yuL)
+         if (allocated(xuL)) then
+            deallocate (xuL)
+         end if
+         if (allocated(yuL)) then
+            deallocate (yuL)
+         end if
 
       end if
 

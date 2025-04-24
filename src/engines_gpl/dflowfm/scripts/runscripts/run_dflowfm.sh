@@ -53,34 +53,10 @@ function set_omp_threads {
 }
 
 # Analyse the options
-
-while [[ $# -ge 1 ]]
-do
-key="$1"
-shift
-case $key in
-    -h|--help)
+# Analyse the options
+if [ "$1" == "--help" ]; then
     print_usage_info
-    ;;
-    -p|--processlibrary)
-    userprocfile="$1"
-    shift
-    ;;
-    -eco|--bloomspecies)
-    eco=true
-    if [[ $# -ge 1 ]]
-        then
-        userspefile="$1" ## using only -eco would result in using the default spe-file in $D3D_HOME/share/delft3d/
-        shift
-    else
-        userspefile=none
-    fi
-    ;;
-    *)
-    dfmoptions="$dfmoptions $key"
-    ;;
-esac
-done
+fi
 
 scriptdirname=`readlink \-f \$0`
 scriptdir=`dirname $scriptdirname`
@@ -98,44 +74,10 @@ if [ -f "/opt/apps/deltares/.nl" ]; then
     [ ! -z "$FI_PROVIDER" ] && echo "FI_PROVIDER is already defined" || export FI_PROVIDER=tcp
 fi
 
-
-# Fill in default options
-
-if [ ! "$userprocfile" == "" ]
-    then
-    procfile=$userprocfile
-else
-    procfile=$D3D_HOME/share/delft3d/proc_def.dat
-fi
-
-if [ ! -f $procfile ]; then
-    if [ ! -f $procfile.dat ]; then
-        echo "ERROR: procfile $procfile does not exist"
-        print_usage_info
-    fi
-fi
-
-spefile=$D3D_HOME/share/delft3d/bloom.spe
-if [ "$eco" == "true" ]
-   then
-   if [ ! -f $userspefile ]; then
-       if [ ! -f $spefile ]; then
-          echo "ERROR: default bloom.spe $spefile does not exist"
-          echo "ERROR: the optional specified bloom.spe $userspefile does not exist either"
-          print_usage_info
-       else
-          echo "Using default bloom.spe"
-       fi
-   else
-       echo "Using specified bloom.spe $userspefile"
-       spefile=$userspefile
-   fi
-fi
-
 set_omp_threads
 
-echo "$D3D_HOME/bin/dflowfm --nodisplay --autostartstop --processlibrary $procfile --bloomspecies $spefile $dfmoptions"
+echo "$D3D_HOME/bin/dflowfm --nodisplay --autostartstop  $@"
 #ldd $D3D_HOME/bin/dflowfm
-$D3D_HOME/bin/dflowfm --nodisplay --autostartstop --processlibrary $procfile --bloomspecies $spefile $dfmoptions
+$D3D_HOME/bin/dflowfm --nodisplay --autostartstop  $@
 
 

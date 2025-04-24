@@ -14,7 +14,8 @@ object LinuxDocker : BuildType({
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     name = "Docker Build"
@@ -114,13 +115,6 @@ object LinuxDocker : BuildType({
                     containers.deltares.nl/delft3d/delft3dfm:alma8-%build.vcs.number%
                     containers.deltares.nl/delft3d/test/delft3dfm:alma8-%build.vcs.number%
                 """.trimIndent()
-            }
-        }
-    }
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
             }
         }
     }

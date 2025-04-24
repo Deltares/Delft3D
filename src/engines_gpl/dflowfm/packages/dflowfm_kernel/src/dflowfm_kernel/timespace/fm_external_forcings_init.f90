@@ -180,8 +180,12 @@ contains
       end do
       threshold_abort = initial_threshold_abort
 
-      if (allocated(itpenzr)) deallocate (itpenzr)
-      if (allocated(itpenur)) deallocate (itpenur)
+      if (allocated(itpenzr)) then
+         deallocate (itpenzr)
+      end if
+      if (allocated(itpenur)) then
+         deallocate (itpenur)
+      end if
       if (numlatsg > 0) then
          do n = 1, numlatsg
             balat(n) = 0d0
@@ -238,7 +242,7 @@ contains
       integer, dimension(:), intent(in) :: itpenur !< boundary condition nr in openbndsect for u
       integer, intent(inout) :: ib !< block counter for boundaries
       integer, intent(inout) :: ibqh !< block counter for qh boundaries
-      logical :: res 
+      logical :: res
 
       integer, dimension(1) :: target_index
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
@@ -249,7 +253,7 @@ contains
       integer :: method, num_items_in_block, j
 
       res = .true.
-      
+
       ! First check for required input:
       call prop_get(node_ptr, '', 'quantity', quantity, is_successful)
       if (.not. is_successful) then
@@ -675,7 +679,7 @@ contains
 
       call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
       if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', forcing_file, ''': [', group_name, &
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
             ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
@@ -952,8 +956,8 @@ contains
       character(len=INI_VALUE_LEN) :: location_file
       character(len=INI_VALUE_LEN) :: discharge_input
       character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
-      character(len=NAMLEN) :: const_name
-      character(len=INI_VALUE_LEN) :: quantity_id
+      character(len=NAMLEN) :: const_name_with_prefix
+      character(len=INI_VALUE_LEN) :: quantity_id, property_name
 
       integer :: num_coordinates
       real(kind=dp), dimension(:), allocatable :: x_coordinates
@@ -1027,24 +1031,24 @@ contains
          call addsorsin_from_polyline_file(location_file, sourcesink_id, z_range_source, z_range_sink, area, ierr)
       else
          call addsorsin(sourcesink_id, x_coordinates, y_coordinates, &
-                     z_range_source, z_range_sink, area, ierr)
+                        z_range_source, z_range_sink, area, ierr)
       end if
-      
+
       if (ierr /= DFM_NOERR) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            // 'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
+            //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
          call err_flush()
          return
       end if
 
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
-      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1)*(numsrc-1) + 1, &
-                                               1, qstss)
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
+                                                     1, qstss)
 
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            // 'Could not initialize discharge data in ''', trim(discharge_input), ''' for source sink with id='//trim(sourcesink_id)//'.'
+            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for source sink with id='//trim(sourcesink_id)//'.'
          call err_flush()
          return
       end if
@@ -1056,29 +1060,36 @@ contains
          allocate (constituent_delta_file(NUMCONST), stat=ierr)
          do i_const = 1, NUMCONST
             is_read = .false.
-            const_name = const_names(i_const)
+            const_name_with_prefix = const_names(i_const)
             if (i_const == ISALT) then
-               const_name = 'salinity'
-               call prop_get(node_ptr, '', 'salinityDelta', constituent_delta_file(i_const), is_read)
+               ! Rename 'salt' constituent to 'salinity' for source-sink input.
+               const_name_with_prefix = 'salinity'
             else if (i_const == ITEMP) then
-               call prop_get(node_ptr, '', 'temperatureDelta', constituent_delta_file(i_const), is_read)
+               ! temperature name is correct already
+               continue
             else if (i_const == ISPIR) then
+               ! Spiral flow intensity "constituent" not relevant for source-sinks.
                cycle
             else
-               ! tracers and sediments: remove special characters from const_name before constructing the property to read.
-               call ncu_sanitize_name(const_name)
+               ! Tracers and sediments: remove special characters from constituent name before constructing the property to read.
+               call ncu_sanitize_name(const_name_with_prefix)
+
+               ! Add correct "group" prefix to constituent name.
                if (i_const >= ISED1 .and. i_const <= ISEDN) then
-                  call prop_get(node_ptr, '', 'sedFrac'//trim(const_name)//'Delta', constituent_delta_file(i_const), is_read)
+                  const_name_with_prefix = 'sedFrac'//trim(const_name_with_prefix)
                else if (i_const >= ITRA1 .and. i_const <= ITRAN) then
-                  call prop_get(node_ptr, '', 'tracer'//trim(const_name)//'Delta', constituent_delta_file(i_const), is_read)
+                  const_name_with_prefix = 'tracer'//trim(const_name_with_prefix)
                end if
             end if
-            
+
+            property_name = trim(const_name_with_prefix)//'Delta'
+            call prop_get(node_ptr, '', property_name, constituent_delta_file(i_const), is_read)
+
             if (is_read) then
-               quantity_id = 'sourcesink_' // trim(const_name) // 'Delta'  ! New quantity name in .bc files
+               quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), TRIM(const_name)//'Delta', trim(constituent_delta_file(i_const)), (numconst + 1)*(numsrc-1) + 1 + i_const, &
-                                                        1, qstss)
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), (numconst + 1)*(numsrc-1) + 1 + i_const, &
+                                                              1, qstss)
                continue
             end if
          end do

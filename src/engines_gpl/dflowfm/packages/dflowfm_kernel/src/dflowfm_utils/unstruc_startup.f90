@@ -187,7 +187,7 @@ contains
       use m_drawthis
       use m_startdir
       use m_initscreen
-      use system_utils, only: split_filename
+      use system_utils, only: get_executable_directory
       use unstruc_files, only: mhlp
       use m_filez, only: oldfil
 
@@ -210,7 +210,8 @@ contains
 
       character(len=76) :: filnam
       character(len=180) :: inifilename
-      character(len=256) :: exe_fullpath, exe_dir, exe_name 
+      character(len=1024) :: exe_dir
+      character(len=1024) :: interacter_share_dir
       character(:), allocatable :: full_path
 
       type(tree_data), pointer :: ini_ptr !< Unstruc.ini settings in tree_data
@@ -227,14 +228,13 @@ contains
          end if
       end if
       ! Get executable directory
-      call get_command_argument(0, exe_fullpath, status=istat)
-      call split_filename(exe_fullpath, exe_dir, exe_name)
-      exe_dir = trim(exe_dir)//'../share/interacter/'
+      call get_executable_directory(exe_dir, ISTAT)
+      interacter_share_dir = trim(exe_dir)//'../share/interacter/'
       
       call readIniFile(inifilename, ini_ptr, errmsg=msgbuf, istat=istat)
       if (istat /= 0) then
          ! try reading unstruc.ini from install directory
-         full_path = trim(exe_dir)//trim(inifilename)
+         full_path = trim(interacter_share_dir)//trim(inifilename)
          call readIniFile(full_path, ini_ptr, errmsg=msgbuf, istat=istat)
          if (istat /= 0) then
             ! make default unstruc.ini, try again
@@ -316,7 +316,7 @@ contains
       inquire (file=trim(coltabfile), exist=jawel)
       if (.not. jawel) then
          ! try reading unstruc.ini from install directory
-         coltabfile = trim(exe_dir)//'ISOCOLOUR.hls'
+         coltabfile = trim(interacter_share_dir)//'ISOCOLOUR.hls'
          inquire (file=trim(coltabfile), exist=jawel)
          if (.not. jawel) then !set back to default
             coltabfile = 'ISOCOLOUR.hls'
@@ -519,7 +519,7 @@ contains
       if (jawel) then
          call oldfil(mhlp, filnam)
       else
-         full_path = trim(exe_dir)//trim(filnam)
+         full_path = trim(interacter_share_dir)//trim(filnam)
          inquire (file=full_path, exist=jawel)    
          if (jawel) then
             call oldfil(mhlp, full_path)

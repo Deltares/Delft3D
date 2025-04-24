@@ -83,7 +83,9 @@ contains
       ierror = 0
 1234  continue
 
-      if (allocated(imask)) deallocate (imask)
+      if (allocated(imask)) then
+         deallocate (imask)
+      end if
 
       return
    end subroutine disable_invalid_ghostcells_with_wu

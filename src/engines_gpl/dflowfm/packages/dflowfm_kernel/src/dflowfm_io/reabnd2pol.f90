@@ -57,7 +57,9 @@ contains
 
       allocate (ma(mmx), na(mmx), mb(mmx), nb(mmx))
 
-      if (allocated(ijyes)) deallocate (ijyes)
+      if (allocated(ijyes)) then
+         deallocate (ijyes)
+      end if
       allocate (ijyes(mc + 1, nc + 1)); ijyes = 0
 
       do I = 2, MC ! set up flow oriented ijyes array, sorry for the inconvenience

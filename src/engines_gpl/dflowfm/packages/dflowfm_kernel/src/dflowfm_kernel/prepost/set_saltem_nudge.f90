@@ -42,12 +42,12 @@ contains
 
    !> fill initial salinity and temperature with nudge variables
    subroutine set_saltem_nudge()
-      use m_flowgeom
-      use m_flow ! , only: sa1, tem1, kmxn, layertype, keepzlayeringatbed, jabaroczlaybed, zws, zslay, numtopsig
-      use m_transport
-      use m_nudge
-      use m_missing
-      use m_get_kbot_ktop
+      use m_flowgeom, only: ndx
+      use m_flow, only: tem1, sa1, kmxn
+      use m_transport, only: itemp, isalt
+      use m_nudge, only: nudge_tem, nudge_sal
+      use m_missing, only: DMISS
+      use m_get_kbot_ktop, only: getkbotktop
 
       integer :: k, kk, KB, KT
 

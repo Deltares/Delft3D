@@ -83,7 +83,6 @@ module m_flow_flowinit
    integer, parameter :: LATERAL_1D2D_LINK = 3
    integer, parameter :: STREET_INLET_1D2D_LINK = 5
    integer, parameter :: ROOF_GUTTER_1D2D_LINK = 7
-   integer, parameter :: ORIGINAL_LATERAL_OVERFLOW_ADVECTION = 8
    integer, parameter :: BOUNDARY_1D = -1
    integer, parameter :: SET_ZWS0 = 1
    logical, parameter :: INITIALIZATION_PHASE = .true.
@@ -165,9 +164,9 @@ contains
          jaselfal = OFF
       end if
 
-      if (ti_waq > 0d0 .and. max(limtypmom, limtypsa, limtypTM) <= 0) then
+      if (ti_waq > 0.0_dp .and. max(limtypmom, limtypsa, limtypTM) <= 0) then
          call qnerror('DELWAQ requires at least one limiter (Numerical Parameters). DELWAQ output disabled for now.', ' ', ' ')
-         ti_waq = 0d0
+         ti_waq = 0.0_dp
       end if
 
       call initialize_water_level()
@@ -181,7 +180,7 @@ contains
          idensform = DENSITY_OPTION_UNIFORM
       end if
 
-      volerror(:) = 0d0
+      volerror(:) = 0.0_dp
       squ(:) = 0
       sqi(:) = 0
 
@@ -334,7 +333,7 @@ contains
 
       if (jaselfal > OFF) then
          !  with hs available: recompute SAL potential
-         call flow_settidepotential(tstart_user / 60d0)
+         call flow_settidepotential(tstart_user / 60.0_dp)
       end if
 
       call include_ground_water()
@@ -379,10 +378,6 @@ contains
       end if
 
       call initialise_density_at_cell_centres()
-
-      if (allocated(rho0)) then
-         rho0(:) = rho(:)
-      end if
 
       if (jaFlowNetChanged == ON .or. nodtot /= ndx .or. lintot /= lnx) then
          call reducept(Ndx, Lnx) ! also alloc arrays for reduce
@@ -461,10 +456,12 @@ contains
       integer :: error
 
       if (Corioadamsbashfordfac > OFF) then
-         if (allocated(fvcoro)) deallocate (fvcoro)
+         if (allocated(fvcoro)) then
+            deallocate (fvcoro)
+         end if
          allocate (fvcoro(lnkx), stat=error)
          call aerr('fvcoro(lnkx)', error, lnkx)
-         fvcoro(:) = 0d0
+         fvcoro(:) = 0.0_dp
       end if
 
    end subroutine initialize_for_coriolis_Adams_Bashforth
@@ -613,18 +610,18 @@ contains
 !> set advection type for slope large than Slopedrop2D
    subroutine set_advection_type_for_slope_large_than_Slopedrop2D()
       use m_flowparameters, only: Slopedrop2D
-      use m_flowgeom, only: lnx1D, lnxi, ln, iadv, dxi, bl
+      use m_flowgeom, only: lnx1D, lnxi, ln, iadv, dxi, bl, IADV_SUBGRID_WEIR, IADV_VILLEMONTE_WEIR, IADV_ORIGINAL_LATERAL_OVERFLOW
 
       implicit none
 
       integer :: link
 
-      if (Slopedrop2D > 0d0) then !todo, uitsluitende test maken
+      if (Slopedrop2D > 0.0_dp) then !todo, uitsluitende test maken
          do link = lnx1D + 1, lnxi
             if (iadv(link) /= OFF .and. &
-                .not. (iadv(link) >= 21 .and. iadv(link) <= 25) .and. &
+                .not. (iadv(link) >= IADV_SUBGRID_WEIR .and. iadv(link) <= IADV_VILLEMONTE_WEIR) .and. &
                 dxi(link) * abs(bl(ln(1, link)) - bl(ln(2, link))) > Slopedrop2D) then ! Not for fixed weirs itself.
-               iadv(link) = ORIGINAL_LATERAL_OVERFLOW_ADVECTION
+               iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
             end if
          end do
       end if
@@ -634,7 +631,7 @@ contains
 !> set advection type for slope large than Slopedrop2D
    subroutine set_advection_type_for_lateral_flow_and_pipes()
       use m_flowparameters, only: iadveccorr1D2D
-      use m_flowgeom, only: lnxi, iadv, kcu
+      use m_flowgeom, only: lnxi, iadv, kcu, IADV_ORIGINAL_LATERAL_OVERFLOW
 
       implicit none
 
@@ -646,10 +643,10 @@ contains
                if (iadveccorr1D2D == 2) then
                   iadv(link) = OFF
                else
-                  iadv(link) = ORIGINAL_LATERAL_OVERFLOW_ADVECTION
+                  iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
                end if
             else if (kcu(link) == STREET_INLET_1D2D_LINK .or. kcu(link) == ROOF_GUTTER_1D2D_LINK) then
-               iadv(link) = ORIGINAL_LATERAL_OVERFLOW_ADVECTION
+               iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
             end if
          end if
       end do
@@ -769,7 +766,7 @@ contains
       if (jaFrcInternalTides2D == USE_INTERNAL_TIDES_FRICTION) then
          do cell = 1, Ndx
             if (frcInternalTides2D(cell) == dmiss) then
-               frcInternalTides2D(cell) = 0d0
+               frcInternalTides2D(cell) = 0.0_dp
             end if
          end do
       end if
@@ -892,7 +889,7 @@ contains
 
       if (jased > OFF .and. stm_included) then
          if (stmpar%morpar%morft < eps10) then
-            stmpar%morpar%morft = tstart_user / 86400d0
+            stmpar%morpar%morft = tstart_user / 86400.0_dp
             stmpar%morpar%morft0 = stmpar%morpar%morft
          end if
       end if
@@ -944,7 +941,7 @@ contains
 
       do discharge_boundary = 1, nqbnd
          dry = .true.
-         bob_global_min = huge(1d0)
+         bob_global_min = huge(1.0_dp)
          do point = L1qbnd(discharge_boundary), L2qbnd(discharge_boundary)
             flow_link = kbndu(3, point)
             bob_local_min = min(bob(1, flow_link), bob(2, flow_link))
@@ -957,7 +954,7 @@ contains
          do point = L1qbnd(discharge_boundary), L2qbnd(discharge_boundary)
             if (dry) then
                !   boundary is dry: add 1 cm of water above lowest bed level
-               s1(kbndu(2, point)) = max(s1(kbndu(2, point)), bob_global_min + 0.01d0)
+               s1(kbndu(2, point)) = max(s1(kbndu(2, point)), bob_global_min + 0.01_dp)
             end if
             s1(kbndu(1, point)) = s1(kbndu(2, point))
          end do
@@ -996,7 +993,7 @@ contains
       implicit none
 
       if (lnx > lnxi) then
-         teta(lnxi + 1:lnx) = 1d0
+         teta(lnxi + 1:lnx) = 1.0_dp
       end if
 
    end subroutine set_boundaries_implicit
@@ -1020,10 +1017,10 @@ contains
       if (nonlin1d == CLOSED_PIPE .or. nonlin1d == 3 .or. nonlin2D == 2) then
          do link1D = 1, lnx1D
             if (abs(prof1d(3, link1D)) == CIRCLE) then
-               teta(link1D) = 1d0 ! closed pipes always implicit
+               teta(link1D) = 1.0_dp ! closed pipes always implicit
             else if (abs(prof1d(3, link1D)) == RECTANGLE .or. abs(prof1d(3, link1D)) == RECTANGLE2) then
                if (prof1d(2, link1D) /= dmiss) then
-                  teta(link1D) = 1d0
+                  teta(link1D) = 1.0_dp
                end if
             end if
          end do
@@ -1031,10 +1028,10 @@ contains
             if (kcu(boundary_link) == BOUNDARY_1D) then
                link1D = lbnd1d(boundary_link)
                if (abs(prof1d(3, link1D)) == CIRCLE) then
-                  teta(boundary_link) = 1d0 ! closed pipes always implicit
+                  teta(boundary_link) = 1.0_dp ! closed pipes always implicit
                else if (abs(prof1d(3, link1D)) == RECTANGLE .or. abs(prof1d(3, link1D)) == RECTANGLE2) then
                   if (prof1D(2, link1D) /= dmiss) then
-                     teta(link1D) = 1d0
+                     teta(link1D) = 1.0_dp
                   end if
                end if
             end if
@@ -1060,7 +1057,7 @@ contains
          pstru => network%sts%struct(structure_number)
          do link_index = 1, pstru%numlinks
             link = abs(pstru%linknumbers(link_index))
-            teta(link) = 1d0
+            teta(link) = 1.0_dp
          end do
       end do
 
@@ -1076,7 +1073,7 @@ contains
 
       implicit none
 
-      real(kind=dp), parameter :: ZERO_AMBIENT_PRESSURE = 0d0
+      real(kind=dp), parameter :: ZERO_AMBIENT_PRESSURE = 0.0_dp
 
       integer :: cell
       real(kind=dp) :: ds
@@ -1174,7 +1171,7 @@ contains
                sgrw1(cell) = bl(cell) - h_unsat(cell)
             else if (infiltrationmodel == ON) then
                sgrw1(cell) = bl(cell) - Hinterceptionlayer
-            else if (h_unsatini > 0d0) then
+            else if (h_unsatini > 0.0_dp) then
                sgrw1(cell) = bl(cell) - h_unsatini
             else
                sgrw1(cell) = sgrwini
@@ -1183,12 +1180,14 @@ contains
          sgrw1(cell) = min(bl(cell), sgrw1(cell))
          bgrw(cell) = min(bl(cell), bgrw(cell))
          hunsat = bl(cell) - sgrw1(cell)
-         fac = min(1d0, max(0d0, hunsat / h_transfer)) ! 0 at bed, 1 at sgrw
-         pgrw(cell) = sgrw1(cell) * fac + s1(cell) * (1d0 - fac)
+         fac = min(1.0_dp, max(0.0_dp, hunsat / h_transfer)) ! 0 at bed, 1 at sgrw
+         pgrw(cell) = sgrw1(cell) * fac + s1(cell) * (1.0_dp - fac)
 
       end do
 
-      if (allocated(h_unsat)) deallocate (h_unsat)
+      if (allocated(h_unsat)) then
+         deallocate (h_unsat)
+      end if
       sgrw0(:) = sgrw1(:)
 
    end subroutine include_ground_water
@@ -1245,7 +1244,7 @@ contains
          do link = 1, lnx
             if (abs(kcu(link)) == link_1D) then
                call addlink1D(link, 1)
-               if (hu(link) > 0d0) then
+               if (hu(link) > 0.0_dp) then
                   wu(link) = au(link) / hu(link)
                end if
             end if
@@ -1309,7 +1308,7 @@ contains
 
       if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flowWithoutWaves) then
          ! Normal situation: use wave info in FLOW
-         hs = max(hs, 0d0)
+         hs = max(hs, 0.0_dp)
          if (jawave >= SWAN_NETCDF) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
@@ -1353,7 +1352,7 @@ contains
       end if
 
       if (jawave == CONST .and. .not. flowWithoutWaves) then
-         hs = max(hs, 0d0)
+         hs = max(hs, 0.0_dp)
          hwav = min(hwavcom, gammax * hs)
          call wave_uorbrlabda()
          if (kmx == 0) then
@@ -1362,8 +1361,8 @@ contains
                   left_node = ln(1, link)
                   right_node = ln(2, link)
                   hh = hu(link)
-                  hw = 0.5d0 * (hwav(left_node) + hwav(right_node))
-                  tw = 0.5d0 * (twav(left_node) + twav(right_node))
+                  hw = 0.5_dp * (hwav(left_node) + hwav(right_node))
+                  tw = 0.5_dp * (twav(left_node) + twav(right_node))
                   csw = 0.5 * (cosd(phiwav(left_node)) + cosd(phiwav(right_node)))
                   snw = 0.5 * (sind(phiwav(left_node)) + sind(phiwav(right_node)))
                   call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
@@ -1410,15 +1409,15 @@ contains
             if (inisal2D == SALINITY_TOP) then
                do cell3D = bottom_cell, top_cell
                   if (top_cell == bottom_cell) then
-                     rr = 1d0
+                     rr = 1.0_dp
                   else
                      rr = dble(cell3D - bottom_cell) / dble(top_cell - bottom_cell)
                   end if
-                  sa1(cell3D) = (1d0 - rr) * sa1(bottom_cell) + rr * satop(cell)
+                  sa1(cell3D) = (1.0_dp - rr) * sa1(bottom_cell) + rr * satop(cell)
                end do
             else if (inisal2D == SALINITY_BOT) then ! uniform below is specified
                do cell3D = bottom_cell, top_cell
-                  zz = 0.5d0 * (zws(cell3D) + zws(cell3D - 1))
+                  zz = 0.5_dp * (zws(cell3D) + zws(cell3D - 1))
                   if (zz < uniformsalinitybelowz .and. sabot(cell) /= dmiss) then
                      sa1(cell3D) = sabot(cell)
                   else
@@ -1439,8 +1438,8 @@ contains
          end if
       end if
 
-      where (sa1 < 0d0)
-         sa1 = 0d0
+      where (sa1 < 0.0_dp)
+         sa1 = 0.0_dp
       end where
 
       if (Sal0abovezlev /= dmiss) then
@@ -1448,7 +1447,7 @@ contains
             call getkbotktop(cell, bottom_cell, top_cell)
             do cell3D = bottom_cell, top_cell
                if (zws(cell3D) > Sal0abovezlev) then
-                  sa1(cell3D) = 0d0
+                  sa1(cell3D) = 0.0_dp
                end if
             end do
          end do
@@ -1514,41 +1513,63 @@ contains
 
    end subroutine initialize_sediment_3D
 
-!> initialize salinity, temperature, sediment on boundary
+!> Initialize salinity and temperature on boundaries
    subroutine initialize_salinity_temperature_on_boundary()
+      use m_flowtimes, only: keepstbndonoutflow
       use m_flowparameters, only: jasal, jatem
-      use m_flowgeom, only: ln, lnx, lnxi
-      use m_flow, only: sa1, q1, tem1
-      use m_get_Lbot_Ltop
+      use m_flowgeom, only: ln
+      use m_flow, only: sa1, q1, tem1, kbnds, kbndtm, kmxd, nbnds, nbndtm, zbnds, zbndtm
+      use m_get_Lbot_Ltop, only: getlbotltop
 
       implicit none
 
       integer :: link
       integer :: bottom_link
       integer :: top_link
-      integer :: link3D
+      integer :: link_3D
 
-      integer :: boundary_cell
-      integer :: internal_cell
+      integer :: boundary_cell, internal_cell
+      integer :: i_boundary, i_zbnd
 
-      do link = lnxi + 1, lnx ! copy on outflow
-         call getLbotLtop(link, bottom_link, top_link)
-         if (top_link < bottom_link) then
-            cycle
-         end if
-         do link3D = bottom_link, top_link
-            if (q1(link3D) <= 0d0) then
-               boundary_cell = ln(1, link3D)
-               internal_cell = ln(2, link3D)
-               if (jasal > OFF) then
+      if (jasal /= OFF) then
+         do i_boundary = 1, nbnds
+            link = kbnds(3, i_boundary)
+            call getLbotLtop(link, bottom_link, top_link)
+            if (top_link < bottom_link) then
+               cycle
+            end if
+            do link_3D = bottom_link, top_link
+               boundary_cell = ln(1, link_3D)
+               internal_cell = ln(2, link_3D)
+               if (q1(link_3D) >= 0.0_dp .or. keepstbndonoutflow == 1) then
+                  i_zbnd = kmxd * (i_boundary - 1) + link_3D - bottom_link + 1
+                  sa1(boundary_cell) = zbnds(i_zbnd)
+               else
                   sa1(boundary_cell) = sa1(internal_cell)
                end if
-               if (jatem > OFF) then
+            end do
+         end do
+      end if ! jasal
+
+      if (jatem /= OFF) then
+         do i_boundary = 1, nbndtm
+            link = kbndtm(3, i_boundary)
+            call getLbotLtop(link, bottom_link, top_link)
+            if (top_link < bottom_link) then
+               cycle
+            end if
+            do link_3D = bottom_link, top_link
+               boundary_cell = ln(1, link_3D)
+               internal_cell = ln(2, link_3D)
+               if (q1(link_3D) >= 0.0_dp .or. keepstbndonoutflow == 1) then
+                  i_zbnd = kmxd * (i_boundary - 1) + link_3D - bottom_link + 1
+                  tem1(boundary_cell) = zbndtm(i_zbnd)
+               else
                   tem1(boundary_cell) = tem1(internal_cell)
                end if
-            end if
+            end do
          end do
-      end do
+      end if ! jatem
 
    end subroutine initialize_salinity_temperature_on_boundary
 
@@ -1582,7 +1603,7 @@ contains
       integer :: node3D
 
       do node3D = 1, ndkx
-         constituents(isalt, node3D) = max(0d0, sa1(node3D))
+         constituents(isalt, node3D) = max(0.0_dp, sa1(node3D))
       end do
 
    end subroutine fill_constituents_with_salinity
@@ -1686,8 +1707,8 @@ contains
          end if
 
          do k = 1, ndx
-            if (xz(k) <= 0.5d0 * (xzmin + xzmax)) then
-               s1(k) = bl(k) + 2d0
+            if (xz(k) <= 0.5_dp * (xzmin + xzmax)) then
+               s1(k) = bl(k) + 2.0_dp
             else if (jw == ON) then
                s1(k) = bl(k) + hwetbed
             else
@@ -1699,10 +1720,10 @@ contains
             call setkbotktop(1) ! wetbed
             if (jasal /= OFF) then
                do k = 1, ndx
-                  if (xz(k) <= 0.5d0 * (xzmin + xzmax)) then
+                  if (xz(k) <= 0.5_dp * (xzmin + xzmax)) then
                      call getkbotktop(k, kb, kt)
                      do kk = kb, kt
-                        sa1(kk) = 2d0
+                        sa1(kk) = 2.0_dp
                      end do
                   end if
                end do
@@ -1711,15 +1732,15 @@ contains
 
       else if (md_IDENT(1:7) == 'barocin') then ! baroclinic instability
 
-         xx1 = 0.5d0 * (xzmin + xzmax); yy1 = 0.5d0 * (xzmin + xzmax)
+         xx1 = 0.5_dp * (xzmin + xzmax); yy1 = 0.5_dp * (xzmin + xzmax)
          call setkbotktop(1) ! barocin
 
          do k = 1, ndx
             rr = dbdistance(xx1, yy1, xz(k), yz(k), jsferic, jasfer3D, dmiss)
-            if (rr < 3000d0) then
+            if (rr < 3000.0_dp) then
                call getkbotktop(k, kb, kt)
                do kk = kb + kmx / 2, kt
-                  sa1(kk) = 1.1d0 * (rr / 3000d0)**8 + 33.75d0
+                  sa1(kk) = 1.1_dp * (rr / 3000.0_dp)**8 + 33.75_dp
                end do
             end if
          end do
@@ -1727,32 +1748,32 @@ contains
       else if (md_IDENT(1:16) == 'internalseichexx') then ! internal seiche hofmeister 2010
 
          call setkbotktop(1) ! internalseichexx
-         salup = 0d0; saldo = 30d0
+         salup = 0.0_dp; saldo = 30.0_dp
          do k = 1, ndx
-            zi = -10d0 * (1d0 - 0.2d0 * sin(pi * xz(k) / (xkmax - xkmin))); ziup = zi + 2d0; zido = zi - 2d0
+            zi = -10.0_dp * (1.0_dp - 0.2_dp * sin(pi * xz(k) / (xkmax - xkmin))); ziup = zi + 2.0_dp; zido = zi - 2.0_dp
             call getkbotktop(k, kb, kt)
             do kk = kb, kt
-               zz = 0.5d0 * (zws(kk) + zws(kk - 1))
+               zz = 0.5_dp * (zws(kk) + zws(kk - 1))
                if (zz > ziup) then
                   sa1(kk) = salup
                else if (zz < zido) then
                   sa1(kk) = saldo
                else
                   rr = (zz - zido) / (ziup - zido)
-                  sa1(kk) = saldo * (1d0 - rr) + salup * rr
+                  sa1(kk) = saldo * (1.0_dp - rr) + salup * rr
                end if
             end do
          end do
 
       else if (md_IDENT == 'hump' .or. md_IDENT == 'humpc') then
 
-         xx1 = 5000d0; yy1 = 5000d0
-         var = 1d0; dmu = 0d0
+         xx1 = 5000.0_dp; yy1 = 5000.0_dp
+         var = 1.0_dp; dmu = 0.0_dp
          do k = 1, numk
             dis = dbdistance(xk(k), yk(k), xx1, yy1, jsferic, jasfer3D, dmiss)
             if (dis < 5d3) then
-               xx = dis / 1000d0
-               yy = 5d0 * 1d0 * sqrt(twopi * var) / sqrt(twopi * var) * exp(-(xx - dmu)**2 / (2d0 * var))
+               xx = dis / 1000.0_dp
+               yy = 5.0_dp * 1.0_dp * sqrt(twopi * var) / sqrt(twopi * var) * exp(-(xx - dmu)**2 / (2.0_dp * var))
                zk(k) = zk(k) + yy
             end if
          end do
@@ -1760,21 +1781,21 @@ contains
 
       else if (md_IDENT == 'twohump') then
 
-         xx1 = 5000d0; yy1 = 5000d0
-         var = 1d0; dmu = 0d0
+         xx1 = 5000.0_dp; yy1 = 5000.0_dp
+         var = 1.0_dp; dmu = 0.0_dp
 
          do kk = 1, 2
             if (kk == 1) then
-               xx1 = 5000d0; yy1 = 6500d0
+               xx1 = 5000.0_dp; yy1 = 6500.0_dp
             else
-               xx1 = 5000d0; yy1 = 3500d0
+               xx1 = 5000.0_dp; yy1 = 3500.0_dp
             end if
 
             do k = 1, numk
                dis = dbdistance(xk(k), yk(k), xx1, yy1, jsferic, jasfer3D, dmiss)
                if (dis < 5d3) then
-                  xx = dis / 1000d0
-                  yy = 11d0 * 1d0 * sqrt(twopi * var) / sqrt(twopi * var) * exp(-(xx - dmu)**2 / (2d0 * var))
+                  xx = dis / 1000.0_dp
+                  yy = 11.0_dp * 1.0_dp * sqrt(twopi * var) / sqrt(twopi * var) * exp(-(xx - dmu)**2 / (2.0_dp * var))
                   zk(k) = zk(k) + yy
                end if
             end do
@@ -1784,28 +1805,28 @@ contains
 
       else if (md_IDENT == '21') then
 
-         s1(1) = s1(1) + 1d0
+         s1(1) = s1(1) + 1.0_dp
 
       else if (md_netfile(1:4) == 'rivs') then
 
          do k = 1, ndx
-            if (xz(k) < 4.5d0) then
-               s1(k) = s1(k) + 1d0
+            if (xz(k) < 4.5_dp) then
+               s1(k) = s1(k) + 1.0_dp
             end if
          end do
          nplot = 450
 
       else if (md_netfile(1:4) == 'goot') then
 
-         slope = 1d0 / 3004d0
+         slope = 1.0_dp / 3004.0_dp
 
          do k = 1, ndx
-            s1(k) = -slope * (xz(k) - 1d0)
+            s1(k) = -slope * (xz(k) - 1.0_dp)
          end do
 
       else if (md_netfile(1:7) == 'evenaar') then
 
-         bl = -5d0; s1 = 0
+         bl = -5.0_dp; s1 = 0
          ibedlevtyp = 1; call setbobs()
 
       else if (index(md_ident, 'saltwedge') > 0) then !
@@ -1816,11 +1837,11 @@ contains
             if (xz(k) < 0.5 * (xzmin + xzmax)) then
                call getkbotktop(k, kb, kt)
                do kk = kb, kt
-                  sa1(kk) = 10d0
+                  sa1(kk) = 10.0_dp
                   rho1 = calculate_density_eckart(sa1(kk), backgroundwatertemperature)
                end do
             else
-               !s1(k) = bl(k) + 0.5d0*( s1(k)-bl(k) )*sqrt(rho1/998.200)   ! rho = 1020 etc
+               !s1(k) = bl(k) + 0.5_dp*( s1(k)-bl(k) )*sqrt(rho1/998.200)   ! rho = 1020 etc
             end if
          end do
 
@@ -1830,7 +1851,7 @@ contains
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
             do kk = kb, kt
-               sa1(kk) = max(0d0, abs(0.5d0 * (zws(kk) + zws(kk - 1))))
+               sa1(kk) = max(0.0_dp, abs(0.5_dp * (zws(kk) + zws(kk - 1))))
             end do
          end do
 
@@ -1843,9 +1864,9 @@ contains
             call getkbotktop(k, kb, kt)
             do kk = kb, kt
                if (xz(k) > 0.5 * (xzmin + xzmax)) then
-                  sa1(kk) = 6.5d0
+                  sa1(kk) = 6.5_dp
                else
-                  sa1(kk) = 5.0d0
+                  sa1(kk) = 5.0_dp
                end if
             end do
          end do
@@ -1861,14 +1882,14 @@ contains
          if (index(md_ident, 'locxxfix') > 0) then
             kplot = kmx - 1
             do k = 1, ndx
-               if (xz(k) < 0.5d0 * (xzmin + xzmax)) then
-                  s1(k) = s1(k) - 6d0
+               if (xz(k) < 0.5_dp * (xzmin + xzmax)) then
+                  s1(k) = s1(k) - 6.0_dp
                end if
             end do
          else
             do k = 1, ndx
-               if (xz(k) > 0.5d0 * (xzmin + xzmax)) then
-                  s1(k) = s1(k) + hs(k)*.004d0 * 0.5d0
+               if (xz(k) > 0.5_dp * (xzmin + xzmax)) then
+                  s1(k) = s1(k) + hs(k)*.004_dp * 0.5_dp
                end if
             end do
          end if
@@ -1881,20 +1902,20 @@ contains
             do kk = kb, kt
                if (index(md_ident, 'locxxfix') > 0) then
                   if (kk == kb) then
-                     sa1(kk) = 1d0
+                     sa1(kk) = 1.0_dp
                   else
-                     sa1(kk) = 1d0
+                     sa1(kk) = 1.0_dp
                   end if
                else
-                  if (xz(k) > 0.5d0 * (xzmin + xzmax) .and. (kk - kb + 1) <= locsaltlev * kmx) then
+                  if (xz(k) > 0.5_dp * (xzmin + xzmax) .and. (kk - kb + 1) <= locsaltlev * kmx) then
                      sa1(kk) = locsaltmax
                      if (jatem > 0) then
-                        tem1(kk) = 5d0
+                        tem1(kk) = 5.0_dp
                      end if
                   else
                      sa1(kk) = locsaltmin
                      if (jatem > 0) then
-                        tem1(kk) = 10d0
+                        tem1(kk) = 10.0_dp
                      end if
                   end if
                end if
@@ -1919,8 +1940,8 @@ contains
 
             call getkbotktop(k, kb, kt)
             do kk = kb, kt
-               if (zws(kk) < -5d0) then
-                  sa1(kk) = 10d0
+               if (zws(kk) < -5.0_dp) then
+                  sa1(kk) = 10.0_dp
                end if
             end do
 
@@ -1934,7 +1955,7 @@ contains
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
             do kk = kb, kt
-               sa1(kk) = 0.001d0 * xz(k) - (0.5d0 * (zws(kk) + zws(kk - 1)) - zws(kb - 1)) + 11d0
+               sa1(kk) = 0.001_dp * xz(k) - (0.5_dp * (zws(kk) + zws(kk - 1)) - zws(kb - 1)) + 11.0_dp
             end do
          end do
 
@@ -1942,9 +1963,9 @@ contains
 
          call dminmax(xz, ndx, xzmin, xzmax, ndx)
          call setkbotktop(1) ! inisaltwedge
-         sa1 = 5d0
+         sa1 = 5.0_dp
 
-         s1 = bl + 2d0
+         s1 = bl + 2.0_dp
 
       else if (index(md_ident, 'huump3d') > 0) then !
 
@@ -1955,39 +1976,39 @@ contains
             if (xz(k) < 0.5 * (xzmin + xzmax)) then
                call getkbotktop(k, kb, kt)
                do kk = kb, kt
-                  sa1(kk) = 10d0
+                  sa1(kk) = 10.0_dp
                end do
             else
-               ! s1(k) = -10d0 + 10d0*sqrt(1005.750/998.200)   ! rho = 1020 etc
+               ! s1(k) = -10.0_dp + 10.0_dp*sqrt(1005.750/998.200)   ! rho = 1020 etc
             end if
          end do
 
       else if (index(md_ident, 'thacker1d') > 0) then ! parab300.net
 
-         call thacker1d(1, xz, yz, s1, bl, ndx, 0d0)
+         call thacker1d(1, xz, yz, s1, bl, ndx, 0.0_dp)
 
          if (kmx > 0) then
             call setkbotktop(1) ! inisaltwedge
 
             do k = 1, ndx
-               if (s1(k) > 0.5d0) then
+               if (s1(k) > 0.5_dp) then
                   call getkbotktop(k, kb, kt)
                   do kk = kb, kt
-                     sa1(kk) = 30d0
+                     sa1(kk) = 30.0_dp
                   end do
                end if
             end do
          end if
 
       else if (md_IDENT(1:12) == 'coriolistilt') then
-         call coriolistilt(0d0)
+         call coriolistilt(0.0_dp)
       else if (md_IDENT(1:14) == 'corioliskelvin') then
-         call corioliskelvin(0d0)
+         call corioliskelvin(0.0_dp)
       else if (md_IDENT(1:9) == 'oceaneddy') then
-         call oceaneddy(0d0)
+         call oceaneddy(0.0_dp)
       else if (index(md_ident, 'checkerboard') > 0) then ! v40.net, v100.net
 
-         bl = 0d0
+         bl = 0.0_dp
          ibedlevtyp = 1; call setbobs()
 
          call dminmax(xk, numk, xkmin, xkmax, numk)
@@ -1996,16 +2017,16 @@ contains
          if (index(md_ident, '4') > 0) n = 4
          if (index(md_ident, '8') > 0) n = 8
 
-         xli = 1d0 / (xkmax - xkmin)
-         amp = .01d0
-         dep = .01d0
+         xli = 1.0_dp / (xkmax - xkmin)
+         amp = .01_dp
+         dep = .01_dp
 
          pin = n * pi
          do L = 1, lnx
             k1 = ln(1, L); k2 = ln(2, L)
-            xx = 0.5d0 * (xz(k1) + xz(k2)) * xli
-            yy = 0.5d0 * (yz(k1) + yz(k2)) * xli
-            ux = 0d0; uy = 0d0
+            xx = 0.5_dp * (xz(k1) + xz(k2)) * xli
+            yy = 0.5_dp * (yz(k1) + yz(k2)) * xli
+            ux = 0.0_dp; uy = 0.0_dp
             ux = ux + amp * sin(pin * xx) * cos(pin * yy) ! poisson
             uy = uy - amp * cos(pin * xx) * sin(pin * yy)
             u1(L) = csu(L) * ux + snu(L) * uy
@@ -2021,10 +2042,10 @@ contains
          end do
 
          do j = 1, 300
-            fout = 0d0
+            fout = 0.0_dp
             call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0, SET_HU) ! was just call sethu()
             do k = 1, ndx
-               sq(k) = 0d0
+               sq(k) = 0.0_dp
                do kk = 1, nd(k)%lnx
                   L = nd(k)%ln(kk)
                   La = abs(L)
@@ -2051,19 +2072,19 @@ contains
 
          end do
 
-         chkadvd = 0.0d0
+         chkadvd = 0.0_dp
          s1(ndx / 2) = s1(ndx / 2) + 1d-5
 
       else if (index(md_netfile, 'kelvin') > 0) then
 
          call dminmax(xz, ndx, xzmin, xzmax, ndx)
          call dminmax(yz, ndx, yzmin, yzmax, ndx)
-         r0 = 0.5d0 * (xzmax - xzmin)
-         x0 = 0.5d0 * (xzmax + xzmin)
-         y0 = 0.5d0 * (yzmax + yzmin)
+         r0 = 0.5_dp * (xzmax - xzmin)
+         x0 = 0.5_dp * (xzmax + xzmin)
+         y0 = 0.5_dp * (yzmax + yzmin)
 
-         amp = 0.05d0
-         dep = 10d0
+         amp = 0.05_dp
+         dep = 10.0_dp
          call inisferic()
          Rossby = sqrt(ag * dep) / fcorio
 
@@ -2083,8 +2104,8 @@ contains
 
          do l = 1, lnx
             k1 = ln(1, L); k2 = ln(2, L)
-            ux = acl(L) * ucx(k1) + (1d0 - acl(L)) * ucx(k2)
-            uy = acl(L) * ucy(k1) + (1d0 - acl(L)) * ucy(k2)
+            ux = acl(L) * ucx(k1) + (1.0_dp - acl(L)) * ucx(k2)
+            uy = acl(L) * ucy(k1) + (1.0_dp - acl(L)) * ucy(k2)
             u1(L) = ux * csu(L) + uy * snu(L)
          end do
       else if (index(md_netfile, 'thacker2d') > 0) then
@@ -2096,7 +2117,7 @@ contains
          bl = -5.d0; ibedlevtyp = 1; call setbobs()
          s1 = 0.d0
 
-         sa1(275:375) = 5d0
+         sa1(275:375) = 5.0_dp
 
       else if (md_netfile == '640x480.net') then
 
@@ -2106,30 +2127,30 @@ contains
       else if (md_netfile == 'rec10x10.net') then
 
          do n = 1, ndx
-            if (xz(n) < 1) s1(n) = s1(n) + 1d0
+            if (xz(n) < 1) s1(n) = s1(n) + 1.0_dp
          end do
 
       else if (md_netfile == 'g04.net') then
 
          !   bl = -20.0
-         s1 = max(0d0, bl)
+         s1 = max(0.0_dp, bl)
 
       else if (md_netfile == 'sqhex.net' .or. md_netfile == 'sqquad.net' .or. &
                md_netfile == 'sqtri.net' .or. md_netfile(1:6) == 'sqcurv') then ! sqhex.net
 
          itest = 1
          if (itest == 1) then
-            r0 = 250000d0 ! basin width
-            dep = 5d0 ! depth
+            r0 = 250000.0_dp ! basin width
+            dep = 5.0_dp ! depth
 
             x0 = -180; y0 = 0; rmx = 350
             do k = 1, ndx
                s1(k) = dep
                dxx = xz(k) - x0; dyy = yz(k) - y0
                rr = sqrt(dxx * dxx + dyy * dyy)
-               if (rr < 0.5d0 * rmx) then
-                  !sa1(k) = 5d0 + 5d0*cos(twopi*rr/rmx)
-                  sa1(k) = 10d0
+               if (rr < 0.5_dp * rmx) then
+                  !sa1(k) = 5.0_dp + 5.0_dp*cos(twopi*rr/rmx)
+                  sa1(k) = 10.0_dp
                end if
             end do
 
@@ -2142,12 +2163,12 @@ contains
 
                call normalout(xx1, yy1, xx2, yy2, csl, snl, jsferic, jasfer3D, dmiss, dxymis)
 
-               ux = 0.5d0 * (ux1 + ux2)
-               uy = 0.5d0 * (uy1 + uy2)
+               ux = 0.5_dp * (ux1 + ux2)
+               uy = 0.5_dp * (uy1 + uy2)
 
                k1 = ln(1, L); k2 = ln(2, L)
-               xx = 0.5d0 * (xz(k1) + xz(k2))
-               yy = 0.5d0 * (yz(k1) + yz(k2))
+               xx = 0.5_dp * (xz(k1) + xz(k2))
+               yy = 0.5_dp * (yz(k1) + yz(k2))
                ux = yy
                uy = -xx
 
@@ -2166,8 +2187,8 @@ contains
 
             ux2 = yy2; uy2 = -xx2
 
-            ux = 0.5d0 * (ux1 + ux2) / 64d0
-            uy = 0.5d0 * (uy1 + uy2) / 64d0
+            ux = 0.5_dp * (ux1 + ux2) / 64.0_dp
+            uy = 0.5_dp * (uy1 + uy2) / 64.0_dp
             u1(L) = ux * csu(L) + uy * snu(L)
          end do
          u0 = u1
@@ -2175,10 +2196,10 @@ contains
          call dminmax(xk, numk, xkmin, xkmax, numk)
          call dminmax(yk, numk, ykmin, ykmax, numk)
 
-         x0 = 0.50d0
-         y0 = 0.75d0
-         rmx = 0.15d0
-         sa1 = 0d0
+         x0 = 0.50_dp
+         y0 = 0.75_dp
+         rmx = 0.15_dp
+         sa1 = 0.0_dp
          do k = 1, ndx
             xx = (xz(k) - xkmin) / (xkmax - xkmin)
             yy = (yz(k) - ykmin) / (ykmax - ykmin)
@@ -2186,8 +2207,8 @@ contains
             dyy = yy - y0
             rr = sqrt(dxx * dxx + dyy * dyy)
 
-            if (xx > 0.4d0 .and. xx < 0.6d0 .and. yy > 0.7d0 .and. yy < 0.9d0) then
-               sa1(k) = 10d0
+            if (xx > 0.4_dp .and. xx < 0.6_dp .and. yy > 0.7_dp .and. yy < 0.9_dp) then
+               sa1(k) = 10.0_dp
             end if
 
          end do
@@ -2200,7 +2221,7 @@ contains
 
          call half(xkmin, ykmin, xkmax, ykmin, xx1, yy1, jsferic, jasfer3D)
          call half(xkmin, ykmax, xkmax, ykmax, xx2, yy2, jsferic, jasfer3D)
-         rmx = 0.5d0 * dbdistance(xx1, yy1, xx2, yy2, jsferic, jasfer3D, dmiss)
+         rmx = 0.5_dp * dbdistance(xx1, yy1, xx2, yy2, jsferic, jasfer3D, dmiss)
          call half(xx1, yy1, xx2, yy2, x0, y0, jsferic, jasfer3D)
 
          do L = 1, lnx
@@ -2210,8 +2231,8 @@ contains
             xx2 = xk(k2) - x0; yy2 = yk(k2) - y0
             ux2 = yy2; uy2 = -xx2
 
-            ux = 0.5d0 * (ux1 + ux2) / rmx
-            uy = 0.5d0 * (uy1 + uy2) / rmx
+            ux = 0.5_dp * (ux1 + ux2) / rmx
+            uy = 0.5_dp * (uy1 + uy2) / rmx
 
             u1(L) = ux * csu(L) + uy * snu(L)
             do LL = Lbot(L), Lbot(L) + kmxL(L) - 1
@@ -2222,11 +2243,11 @@ contains
 
          do k = 1, numk
             rr = dbdistance(xk(k), yk(k), x0, y0, jsferic, jasfer3D, dmiss)
-            ux = min(1d0, rr / rmx)
-            zk(k) = zkuni * sqrt(1d0 - ux**2)
+            ux = min(1.0_dp, rr / rmx)
+            zk(k) = zkuni * sqrt(1.0_dp - ux**2)
          end do
 
-         npl = 401; dphi = 1d0 / (npl - 1); phi = 0d0; k = 0
+         npl = 401; dphi = 1.0_dp / (npl - 1); phi = 0.0_dp; k = 0
          k = k + 1; xpl(k) = x0 + 1.1 * rmx; ypl(k) = y0
          do L = 1, npl
             k = k + 1
@@ -2252,12 +2273,12 @@ contains
          end if
 
          call setbobs()
-         s1 = xz * bedslope ! bl + 10d0
+         s1 = xz * bedslope ! bl + 10.0_dp
 
          call Poiseuille(1)
 
          do L = 1, -Lnx ! Lnx
-            u1(L) = 3d0 * csu(L)
+            u1(L) = 3.0_dp * csu(L)
          end do
 
       else if (index(md_ident, 'slope') > 0) then
@@ -2265,46 +2286,46 @@ contains
          call setkbotktop(1)
          do LL = 1, Lnx
             Ltop(LL) = lbot(LL) + max(kmx, 1) - 1
-            hu(LL) = 5d0; frcu(LL) = frcuni
+            hu(LL) = 5.0_dp; frcu(LL) = frcuni
             call getczz0(hu(LL), frcu(LL), ifrcutp(LL), cz, z00)
-            ustb(LL) = sqrt(ag * 5d0 * 5d-5)
+            ustb(LL) = sqrt(ag * 5.0_dp * 5d-5)
             cs = csu(LL)
             Lb = Lbot(LL); Lt = Ltop(LL)
             do L = Lb, Lt
-               zz = 5d0 * dble(L - Lb + 1 - 0.5d0) / dble(Lt - Lb + 1)
+               zz = 5.0_dp * dble(L - Lb + 1 - 0.5_dp) / dble(Lt - Lb + 1)
                u1(L) = cs * ustb(LL) * log(c9of1 + zz / z00) / vonkar
             end do
          end do
 
       else if (md_ident == 'equator1d') then
 
-         call equatorial(0d0)
+         call equatorial(0.0_dp)
 
       else if (md_ident == 'tank_1d') then
 
-         bl = 0d0; s1 = -10d0
+         bl = 0.0_dp; s1 = -10.0_dp
          do k = 1, ndx
-            if (xz(k) < 0.2d0) then ! linkerwand
-               bl(k) = 50d0
-            else if (xz(k) < 20d0) then
-               s1(k) = 30d0
-               if (xz(k) > 19.8d0) then
+            if (xz(k) < 0.2_dp) then ! linkerwand
+               bl(k) = 50.0_dp
+            else if (xz(k) < 20.0_dp) then
+               s1(k) = 30.0_dp
+               if (xz(k) > 19.8_dp) then
                   bl(k) = bl(k) + 0.01
                end if
-            else if (xz(k) > 25d0 .and. xz(k) < 25.2d0 + 2) then
+            else if (xz(k) > 25.0_dp .and. xz(k) < 25.2_dp + 2) then
                bl(k) = 3.0
-            else if (xz(k) > 30d0) then
-               bl(k) = -20d0
-               s1(k) = -4d0
+            else if (xz(k) > 30.0_dp) then
+               bl(k) = -20.0_dp
+               s1(k) = -4.0_dp
             end if
          end do
          ibedlevtyp = 1; call setbobs()
       else if (md_ident(1:3) == 'lts') then
          if (md_ident(4:6) == 'rot') then
-            xkmin = huge(1d0)
-            xkmax = -huge(1d0)
-            ykmin = huge(1d0)
-            ykmax = -huge(1d0)
+            xkmin = huge(1.0_dp)
+            xkmax = -huge(1.0_dp)
+            ykmin = huge(1.0_dp)
+            ykmax = -huge(1.0_dp)
             do k = 1, numk
                xkmin = min(xkmin, xk(k))
                xkmax = max(xkmax, xk(k))
@@ -2319,9 +2340,9 @@ contains
                call reduce_double_min(ykmin)
             end if
 
-            xm = 0.5d0 * (xkmin + xkmax)
-            ym = 0.5d0 * (ykmin + ykmax)
-            R = 0.5d0 * max(xkmax - xkmin, ykmax - ykmin)
+            xm = 0.5_dp * (xkmin + xkmax)
+            ym = 0.5_dp * (ykmin + ykmax)
+            R = 0.5_dp * max(xkmax - xkmin, ykmax - ykmin)
             if (kmx == 0) then
                do L = 1, Lnx
                   u1(L) = (-(yu(L) - ym) * csu(L) + (xu(L) - xm) * snu(L)) / R
@@ -2383,7 +2404,7 @@ contains
          end if
 !  restore correct discharge values
          do i_q1_0 = 1, lnx
-            q1(i_q1_0) = 0d0
+            q1(i_q1_0) = 0.0_dp
             do i_q1_v = Lbot(i_q1_0), Lbot(i_q1_0) - 1 + kmxL(i_q1_0)
                q1(i_q1_0) = q1(i_q1_0) + q1(i_q1_v) ! depth integrated result
             end do

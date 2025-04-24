@@ -145,9 +145,15 @@ contains
 1234  continue
 
 !  deallocate
-      if (allocated(wfromLeft)) deallocate (wfromLeft)
-      if (allocated(iLeft)) deallocate (iLeft)
-      if (allocated(iRight)) deallocate (iRight)
+      if (allocated(wfromLeft)) then
+         deallocate (wfromLeft)
+      end if
+      if (allocated(iLeft)) then
+         deallocate (iLeft)
+      end if
+      if (allocated(iRight)) then
+         deallocate (iRight)
+      end if
 
       return
    end subroutine interpolate_zpl_in_polylines

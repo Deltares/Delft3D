@@ -189,7 +189,9 @@ contains
 1234  continue ! error handling
 
 !  deallocate
-      if (allocated(newnodes)) deallocate (newnodes)
+      if (allocated(newnodes)) then
+         deallocate (newnodes)
+      end if
 
 !  set network status
       netstat = NETSTAT_CELLS_DIRTY
@@ -606,7 +608,9 @@ contains
 1234     continue
 
 !     deallocate
-         if (allocated(linkmask)) deallocate (linkmask)
+         if (allocated(linkmask)) then
+            deallocate (linkmask)
+         end if
 
       end subroutine makenodes_directional
 

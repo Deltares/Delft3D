@@ -290,6 +290,7 @@ type moroutputtype
     logical :: blave
     logical :: bamor
     logical :: wumor
+    logical :: aldiff
 end type moroutputtype
 
 !
@@ -1774,6 +1775,7 @@ subroutine initmoroutput(moroutput, def)
     moroutput%blave         = no
     moroutput%bamor         = no
     moroutput%wumor         = no
+    moroutput%aldiff        = no
 end subroutine initmoroutput
 
 

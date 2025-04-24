@@ -324,7 +324,9 @@ contains
 
                call reallocP(target_array, ndkx, keepExisting=.false., fill=dmiss)
                kx = 1
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
                ec_item = ec_undef_int
                call setzcs()
@@ -1120,11 +1122,21 @@ contains
                             enum_field6D = 6
 
       kx = 1
-      if (allocated(subsupl)) deallocate (subsupl)
-      if (allocated(subsupl_t0)) deallocate (subsupl_t0)
-      if (allocated(subsupl_tp)) deallocate (subsupl_tp)
-      if (allocated(subsout)) deallocate (subsout)
-      if (allocated(sdu_blp)) deallocate (sdu_blp)
+      if (allocated(subsupl)) then
+         deallocate (subsupl)
+      end if
+      if (allocated(subsupl_t0)) then
+         deallocate (subsupl_t0)
+      end if
+      if (allocated(subsupl_tp)) then
+         deallocate (subsupl_tp)
+      end if
+      if (allocated(subsout)) then
+         deallocate (subsout)
+      end if
+      if (allocated(sdu_blp)) then
+         deallocate (sdu_blp)
+      end if
 
       select case (ibedlevtyp)
       case (enum_field1D) ! Cell centers
@@ -1142,7 +1154,9 @@ contains
          subsout = 0.0_dp
 
       case (enum_field2D) ! u-points
-         if (allocated(mask)) deallocate (mask)
+         if (allocated(mask)) then
+            deallocate (mask)
+         end if
          allocate (mask(lnx), source=1, stat=ierr)
          call aerr('mask(lnx)', ierr, lnx)
          allocate (subsupl(lnx), stat=ierr)
@@ -1159,7 +1173,9 @@ contains
          subsout = 0.0_dp
 
       case (enum_field3D, enum_field4D, enum_field5D, enum_field6D) ! Cell corners / net nodes
-         if (allocated(mask)) deallocate (mask)
+         if (allocated(mask)) then
+            deallocate (mask)
+         end if
          allocate (mask(numk), source=1, stat=ierr)
          call aerr('mask(numk)', ierr, numk)
          allocate (subsupl(numk), stat=ierr)
@@ -1444,7 +1460,7 @@ contains
          target_array_3d => wqbot
          indx = iwqbot
          target_location_type = UNC_LOC_S3D
- 
+
       case ('initialwaterlevel')
          target_array => s1
          target_location_type = UNC_LOC_S
@@ -1589,7 +1605,9 @@ contains
       case ('horizontaleddyviscositycoefficient')
 
          if (javiusp == 0) then
-            if (allocated(viusp)) deallocate (viusp)
+            if (allocated(viusp)) then
+               deallocate (viusp)
+            end if
             allocate (viusp(lnx), stat=ierr)
             call aerr('viusp(lnx)', ierr, lnx)
             viusp = dmiss
@@ -1601,7 +1619,9 @@ contains
       case ('horizontaleddydiffusivitycoefficient')
 
          if (jadiusp == 0) then
-            if (allocated(diusp)) deallocate (diusp)
+            if (allocated(diusp)) then
+               deallocate (diusp)
+            end if
             allocate (diusp(lnx), stat=ierr)
             call aerr('diusp(lnx)', ierr, lnx)
             diusp = dmiss
@@ -1617,12 +1637,16 @@ contains
       case ('internaltidesfrictioncoefficient')
 
          if (jaFrcInternalTides2D /= 1) then ! not added yet
-            if (allocated(frcInternalTides2D)) deallocate (frcInternalTides2D)
+            if (allocated(frcInternalTides2D)) then
+               deallocate (frcInternalTides2D)
+            end if
             allocate (frcInternalTides2D(Ndx), stat=ierr)
             call aerr('frcInternalTides2D(Ndx)', ierr, Ndx)
             frcInternalTides2D = DMISS
 
-            if (allocated(DissInternalTidesPerArea)) deallocate (DissInternalTidesPerArea)
+            if (allocated(DissInternalTidesPerArea)) then
+               deallocate (DissInternalTidesPerArea)
+            end if
             allocate (DissInternalTidesPerArea(Ndx), stat=ierr)
             call aerr(' DissInternalTidesPerArea(Ndx)', ierr, Ndx)
             DissInternalTidesPerArea = 0.0_dp
@@ -1682,7 +1706,9 @@ contains
       case ('windstresscoefficient')
 
          if (jaCdwusp == 0) then
-            if (allocated(Cdwusp)) deallocate (Cdwusp)
+            if (allocated(Cdwusp)) then
+               deallocate (Cdwusp)
+            end if
             allocate (Cdwusp(lnx), stat=ierr)
             call aerr('Cdwusp(lnx)', ierr, lnx)
             Cdwusp = dmiss

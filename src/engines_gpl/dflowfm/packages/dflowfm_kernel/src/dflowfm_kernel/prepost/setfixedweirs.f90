@@ -66,6 +66,7 @@ contains
       use m_wall_clock_time
       use m_find_crossed_links_kdtree2
       use m_filez, only: oldfil, doclose, newfil
+      use precision_basics, only: comparereal
 
       integer :: k, kk, n1, n2, n, L, LL, jacros, minp, kint, ierr, nh, nhh, i, Lf
       integer :: jaweir, Lastfoundk, kf, kL, Lnt, nna, nnb, k3, k4
@@ -75,16 +76,16 @@ contains
       integer, allocatable :: iweirtyp(:)
       integer, allocatable :: ifirstweir(:)
 
-      real(kind=dp), dimension(:), allocatable :: dSL
-      integer, dimension(:), allocatable :: iLink
+      real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
+      integer, dimension(:), allocatable :: crossed_links
       integer, dimension(:), allocatable :: iLcr ! link crossed yes no
-      integer, dimension(:), allocatable :: iPol
+      integer, dimension(:), allocatable :: polygon_nodes
 
-      integer :: iL, numcrossedLinks, ii, LLL, LLLa, nx
+      integer :: iL, intersection_count, ii, LLL, LLLa, nx
       integer :: mout, jatabellenboekorvillemonte
       integer :: ierror
+      integer :: num_intersections
 
-      integer :: jakdtree = 1
       character(len=5) :: sd
       character(len=200), allocatable :: fnames(:)
       integer, allocatable :: start_npl_for_files(:)
@@ -94,6 +95,7 @@ contains
 
       integer, parameter :: KEEP_PLI_NAMES = 1
       integer :: number_of_plis
+      logical :: include_fixed_weir_below_bob ! Tabellenboek or Villemonte weirs add weirs with a minimal height of 0.1 m even if they lie below the bob levels
 
       if (len_trim(md_fixedweirfile) == 0) then
          ifixedweirscheme = 0
@@ -103,6 +105,8 @@ contains
       jatabellenboekorvillemonte = 0
       if (ifixedweirscheme == 8) jatabellenboekorvillemonte = 1
       if (ifixedweirscheme == 9) jatabellenboekorvillemonte = 2
+
+      include_fixed_weir_below_bob = (jatabellenboekorvillemonte > 0)
 
       call readyy('Setfixedweirs', 0d0)
 
@@ -153,7 +157,7 @@ contains
             end if
             if (jawriteDFMinterpretedvalues > 0) then
                call newfil(mout, trim(getoutputdir())//'DFM_interpreted_fxwvalues_'//fnames(ifil) (n1 + 1:n2)//trim(sd)//'.xyz')
-               write (mout, '(a)') '* xu yu crest(bob) width(wu) xk3 yk3 xk4 yk4'
+               write (mout, '(a)') '* xu yu crest width xk3 yk3 xk4 yk4 crestlevxw shlxw shrxw crestlxw taludlxw taludrxw vegxw iweirtxw csu snu L bob1 bob2 u1'
             end if
             call reapol_nampli(minp, jadoorladen, KEEP_PLI_NAMES, number_of_plis)
             jadoorladen = 1
@@ -171,31 +175,32 @@ contains
       end if
 
       kint = max(lnxi / 1000, 1)
+      num_intersections = max(NPL, lnx)
 
       call wall_clock_time(t_extra(1, 3))
-      allocate (iLink(Lnx))
-      allocate (iLcr(Lnx)); Ilcr = 0
-      allocate (ipol(Lnx))
-      allocate (dSL(Lnx))
+      allocate (crossed_links(num_intersections))
+      allocate (iLcr(num_intersections)); Ilcr = 0
+      allocate (polygon_nodes(num_intersections))
+      allocate (polygon_segment_weights(num_intersections))
       if (cache_retrieved()) then
          ierror = 0
-         call copy_cached_fixed_weirs(npl, xpl, ypl, numcrossedLinks, iLink, iPol, dSL, success)
+         call copy_cached_fixed_weirs(npl, xpl, ypl, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, success)
       else
          success = .false.
       end if
       if (.not. success) then
-         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, 2, Lnx, 2, numcrossedLinks, iLink, iPol, dSL, ierror)
-         call cache_fixed_weirs(npl, xpl, ypl, numcrossedLinks, iLink, iPol, dSL)
+         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, num_intersections, BOUNDARY_2D, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
+         call cache_fixed_weirs(npl, xpl, ypl, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights)
       end if
       call wall_clock_time(t_extra(2, 3))
 
       call wall_clock_time(t_extra(1, 4))
-      if (ierror == 0) then
-         do iL = 1, numcrossedlinks
-            L = iLink(il)
+      if (ierror == 0) then ! find_crossed_links_kdtree2 succeeded
+         do iL = 1, intersection_count
+            L = crossed_links(il)
             iLcr(L) = 1
          end do
-      else
+      else ! find_crossed_links_kdtree2 did not succeed
          n = 0; Lastfoundk = 0
          do L = 1, lnxi
 
@@ -228,9 +233,9 @@ contains
                      if (jacros == 1) then
                         Lastfoundk = k
                         n = n + 1
-                        ilink(n) = L
-                        ipol(n) = k
-                        dsl(n) = SL
+                        crossed_links(n) = L
+                        polygon_nodes(n) = k
+                        polygon_segment_weights(n) = SL
                         iLcr(L) = 1
                         exit iloop
                      end if
@@ -240,7 +245,8 @@ contains
             end do iloop
 
          end do
-         numcrossedlinks = n
+         intersection_count = n
+         call sort_crossed_links(crossed_links, polygon_nodes, polygon_segment_weights, Lnx, intersection_count)
       end if
       call wall_clock_time(t_extra(2, 4))
 
@@ -257,11 +263,11 @@ contains
       call mess(LEVEL_INFO, trim(mesg))
 
       nh = 0
-      do iL = 1, numcrossedlinks
+      do iL = 1, intersection_count
 
-         L = ilink(iL)
-         k = ipol(iL)
-         SL = dsl(iL)
+         L = crossed_links(iL)
+         k = polygon_nodes(iL)
+         SL = polygon_segment_weights(iL)
          n1 = ln(1, L); n2 = ln(2, L)
 
          if (kcu(L) == 1 .or. kcu(L) == 5) then
@@ -276,9 +282,7 @@ contains
             bobL = max(bob(1, L), bob(2, L))
          end if
 
-         ! if ( (zc > bobL .and. zc > zcrest(L)) .or. ( (ifixedweirscheme == 8 .or. ifixedweirscheme == 9) .and. ifirstweir(L) == 1) ) then   ! For Villemonte and Tabellenboek fixed weirs under bed level are also possible
-
-         if ((zc > bobL .and. zc > zcrest(L)) .or. ifirstweir(L) == 1) then ! For Villemonte and Tabellenboek fixed weirs under bed level are also possible
+         if (((zc > bobL .or. include_fixed_weir_below_bob) .and. zc > zcrest(L)) .or. ifirstweir(L) == 1) then ! For Villemonte and Tabellenboek fixed weirs under bed level are also possible
 
             ! Set whether this is the first time that for this link weir values are set:
             ! As a result, only the first fixed weir under the bed level is used
@@ -391,11 +395,11 @@ contains
                   vegetat(L) = (1d0 - sl) * dveg(k) + sl * dveg(k + 1) ! vegetation on fixed weir
                   iweirtyp(L) = iweirt(k) ! type of weir
                   if (iweirt(k) == 1) then
-                     iadv(L) = 24; jatabellenboekorvillemonte = 1 !  Tabellenboek
+                     iadv(L) = IADV_TABELLENBOEK_WEIR; jatabellenboekorvillemonte = 1 !  Tabellenboek
                   else if (iweirt(k) == 2) then
-                     iadv(L) = 25; jatabellenboekorvillemonte = 1 !  Villemonte
+                     iadv(L) = IADV_VILLEMONTE_WEIR; jatabellenboekorvillemonte = 1 !  Villemonte
                   else
-                     iadv(L) = 21 !  Subgrid, ifixedweirscheme = 6 or 7
+                     iadv(L) = IADV_SUBGRID_WEIR !  Subgrid, ifixedweirscheme = 6 or 7
                   end if
                   !
                   ! If link is reversed, exchange ground height levels and taluds
@@ -415,31 +419,20 @@ contains
                      ztoed(L) = zc - zhd
                      dzsilld(L) = zcrest(L) - ztoed(L)
                   end if
-             !! write (msgbuf,'(a,2i5,7f10.3)') 'Projected fixed weir', L, iweirtyp(L), zc, bobL, dzsillu(L), dzsilld(L),crestlen(L),taludu(L),taludd(L); call msg_flush()
                else ! use global type definition
                   if (ifixedweirscheme == 7) then
-                     iadv(L) = 23 !  Rajaratnam
+                     iadv(L) = IADV_RAJARATNAM_WEIR !  Rajaratnam
                   else if (ifixedweirscheme == 8) then
-                     iadv(L) = 24 !  Tabellenboek
+                     iadv(L) = IADV_TABELLENBOEK_WEIR !  Tabellenboek
                      dzsillu(L) = max(0.0d0, zc - blu(L)); dzsilld(L) = max(0.0d0, zc - blu(L)) ! if not specified then estimate
                      zcrest(L) = zc
                   else if (ifixedweirscheme == 9) then
-                     iadv(L) = 25 !  Villemonte
+                     iadv(L) = IADV_VILLEMONTE_WEIR !  Villemonte
                      dzsillu(L) = max(0.0d0, zc - blu(L)); dzsilld(L) = max(0.0d0, zc - blu(L)) ! if not specified then estimate
                      zcrest(L) = zc
                   else
-                     iadv(L) = 21 !  Ifixedweirscheme 6
+                     iadv(L) = IADV_SUBGRID_WEIR !  Ifixedweirscheme 6
                   end if
-               end if
-
-               ! 21 = Ifixedweirscheme 6
-               ! 22 = General structure
-               ! 23 = Rajaratnam
-               ! 24 = Tabellenboek
-               ! 25 = Villemonte
-
-               if (jawriteDFMinterpretedvalues > 0) then
-                  write (mout, '(8(f24.4))') xu(L), yu(L), bob(1, L), fixedweircontraction * wu(L), xk(k3), yk(k3), xk(k4), yk(k4)
                end if
             else
                nh = nh + 1 ! just raised bobs
@@ -453,7 +446,6 @@ contains
                !
                if (zc > zcrest(L)) then
                   zcrest(L) = zc
-             !! write (msgbuf,'(a,i5,f10.3)') 'Higher crest level: ', L,  zcrest(L); call msg_flush()
                end if
                if (jakol45 /= 0) then
                   call normalout(XPL(k), YPL(k), XPL(k + 1), YPL(k + 1), xn, yn, jsferic, jasfer3D, dmiss, dxymis) ! test EdG
@@ -469,22 +461,16 @@ contains
                   if (zc - zhu < ztoeu(L) .and. zhu > 0.01) then
                      ztoeu(L) = zc - zhu
                      dzsillu(L) = zcrest(L) - ztoeu(L)
-            !! write (msgbuf,'(a,i5,f10.3)') 'Larger sill up:     ', L,  dzsillu(L); call msg_flush()
                   end if
                   if (zc - zhd < ztoed(L) .and. zhd > 0.01) then
                      ztoed(L) = zc - zhd
                      dzsilld(L) = zcrest(L) - ztoed(L)
-            !! write (msgbuf,'(a,i5,f10.3)') 'Larger sill down:   ', L, dzsilld(L); call msg_flush()
                   end if
                end if
             end if
          end if
-    !! write (msgbuf,'(a,2i5,7f10.3)') 'Projected fixed weir', L, iweirtyp(L), zcrest(L), ztoeu(L), dzsillu(L),ztoed(L),dzsilld(L),taludu(L),taludd(L); call msg_flush()
 
       end do
-      if (jawriteDFMinterpretedvalues > 0) then
-         call doclose(mout)
-      end if
 
       if (jakol45 == 2 .and. sillheightmin > 0d0) then ! when a minimum threshold is specified
          ! and toe heights are known, and agreed upon
@@ -526,7 +512,7 @@ contains
             if (ihu(L) > 0 .and. (dzsillu(L) < sillheightmin .or. dzsilld(L) < sillheightmin)) then
                ihu(L) = 0; iadv(L) = iadvec
                if (slopedrop2D > 0d0) then
-                  iadv(L) = 8
+                  iadv(L) = IADV_ORIGINAL_LATERAL_OVERFLOW
                end if
             end if
             BLmn = min(bob(1, L), bob(2, L)) ! and reset BL to lowest attached link
@@ -542,10 +528,10 @@ contains
          if (ihu(L) > 0) then
             nfxw = nfxw + 1 ! TODO: HK: incorrect/inconsistent use of nfxw: upon reading the pliz file it is nr of polylines, now it becomes the total number of flow links crossed by a fixed weir.
 
-            if (iadv(L) == 21) then
+            if (iadv(L) == IADV_SUBGRID_WEIR) then
                call setfixedweirscheme3onlink(L)
                if (ifixedweirscheme == 7) then
-                  iadv(L) = 23
+                  iadv(L) = IADV_RAJARATNAM_WEIR
                end if
             end if
 
@@ -554,7 +540,9 @@ contains
 
       if (nfxw > 0) then
          if (allocated(lnfxw)) deallocate (nfxwL, lnfxw)
-         if (allocated(weirdte)) deallocate (weirdte)
+         if (allocated(weirdte)) then
+            deallocate (weirdte)
+         end if
          if (allocated(shlxw)) deallocate (shlxw, shrxw, crestlevxw, crestlxw, taludlxw, taludrxw, vegxw, iweirtxw)
          allocate (nfxwL(Lnx), stat=ierr)
          call aerr('nfxwL(Lnx)', ierr, lnx)
@@ -604,17 +592,23 @@ contains
          end if
       end do
 
+      if (jawriteDFMinterpretedvalues > 0) then
+         do i = 1, nfxw
+            L = lnfxw(i)
+            k3 = lncn(1, L); k4 = lncn(2, L)
+            if (L > 0) then
+               write (mout, '(18(f24.4), i6, 3(f24.4))') xu(L), yu(L), bob(1, L), wu(L), xk(k3), yk(k3), xk(k4), yk(k4), crestlevxw(i), shlxw(i), shrxw(i), crestlxw(i), taludlxw(i), taludrxw(i), vegxw(i), iweirtxw(i), csu(L), snu(L), L, bob(1, L), bob(2, L), u1(L)
+            end if
+         end do
+         call doclose(mout)
+      end if
+
+      call apply_fixed_weir_contraction()
+
       deallocate (ihu, csh, snh, zcrest, dzsillu, dzsilld, crestlen, taludu, taludd, vegetat, iweirtyp, ztoeu, ztoed)
       if (jatabellenboekorvillemonte == 0 .and. jashp_fxw == 0 .and. allocated(shlxw)) then
          deallocate (shlxw, shrxw, crestlevxw, crestlxw, taludlxw, taludrxw, vegxw, iweirtxw)
       end if
-
-      do i = 1, nfxw
-         L = lnfxw(i)
-         if (L > 0) then
-            wu(L) = wu(L) * fixedweircontraction ! TODO: EdG/HK: this will be wrong if MULTIPLE fixed weirs are snapped onto the same flow link (repeated multiplication by fixedweircontraction)
-         end if
-      end do
 
       call doclose(minp)
 
@@ -628,16 +622,18 @@ contains
       call readyy(' ', -1d0)
 
       if (ifixedweirscheme1D2D > 0) then
-         call find_1d2d_fixedweirs(iLink, numcrossedLinks)
+         call find_1d2d_fixedweirs(crossed_links, intersection_count)
       end if
 
-1234  continue
-
 ! deallocate
-      if (jakdtree == 1) then
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(iPol)) deallocate (iPol)
-         if (allocated(dSL)) deallocate (dSL)
+      if (allocated(crossed_links)) then
+         deallocate (crossed_links)
+      end if
+      if (allocated(polygon_nodes)) then
+         deallocate (polygon_nodes)
+      end if
+      if (allocated(polygon_segment_weights)) then
+         deallocate (polygon_segment_weights)
       end if
 
    contains
@@ -752,6 +748,15 @@ contains
          end if
 
       end function is_value_inside_limits
+
+      !< apply fixedweircontraction to the width of the link
+      subroutine apply_fixed_weir_contraction()
+         do L = 1, lnxi
+            if (ihu(L) > 0) then
+               wu(L) = wu(L) * fixedweircontraction
+            end if
+         end do
+      end subroutine apply_fixed_weir_contraction
 
    end subroutine setfixedweirs
 

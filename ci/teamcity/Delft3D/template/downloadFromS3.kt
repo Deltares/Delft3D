@@ -13,8 +13,14 @@ object TemplateDownloadFromS3 : Template({
 
     params {
         // Environment variables that are overwritten in the build.
-        param("env.TIME_ISO_8601", "")
-        param("GIT_HEAD_TIME", "")
+        text(
+            "env.TIME_ISO_8601",
+            "",
+            description = "When empty; get timestamp from latest Git commit. Override with format: 2025-04-03 14:25:08 +0000",
+            display = ParameterDisplay.PROMPT,
+            regex = """^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}$""",
+            validationMessage = "format: 2025-04-03 14:25:08 +0000"
+        )
     }
 
     steps {
@@ -25,6 +31,9 @@ object TemplateDownloadFromS3 : Template({
         script {
             name = "Set time variable step"
             scriptContent = """call ci/teamcity/Delft3D/windows/scripts/setTimeParam.bat""".trimIndent()
+            conditions {
+                doesNotContain("env.TIME_ISO_8601", ":")
+            }
         }
         python {
             name = "Checkout Testbench cases from MinIO"

@@ -281,7 +281,9 @@ contains
          end do
          if (allocated(xin)) deallocate (xin, yin)
          if (allocated(xout)) deallocate (xout, yout)
-         if (allocated(ipoLout)) deallocate (ipoLout)
+         if (allocated(ipoLout)) then
+            deallocate (ipoLout)
+         end if
 
       else if (key >= 49 .and. key <= 57) then ! keypad, for moving around
          call moveprobe(key - 48, kk, xp, yp)

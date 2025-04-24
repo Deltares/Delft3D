@@ -41,7 +41,7 @@ module m_setzcs
 contains
 
    subroutine setzcs()
-      use m_flow, only: zcs, ndkx, zws, jabaroczlaybed, layertype, keepzlayeringatbed, zslay
+      use m_flow, only: zcs, ndkx, zws, layertype, keepzlayeringatbed, zslay
       use m_flowgeom, only: ndx
       use m_get_kbot_ktop
       use m_get_zlayer_indices
@@ -58,7 +58,7 @@ contains
          do k = kb, kt
             zcs(k) = 0.5d0 * (zws(k) + zws(k - 1))
          end do
-         if (layertype == 2 .and. keepzlayeringatbed /= 1 .and. jabaroczlaybed == 1) then
+         if (layertype == 2 .and. keepzlayeringatbed /= 1) then
             call getzlayerindices(kk, nlayb, nrlay)
             zcs(kb) = 0.5d0 * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
             if (kt > kb .and. keepzlayeringatbed == 2) then ! only 2

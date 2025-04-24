@@ -21,97 +21,87 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module test_MDU_File_Version
-    use ftnunit
-    use precision
+   use ftnunit
+   use precision
 
-    implicit none
-    real(fp), parameter :: eps = 1.0e-6_fp
+   implicit none
+   real(fp), parameter :: eps = 1.0e-6_fp
 
 contains
 !
 !
 !==============================================================================
-subroutine tests_MDU_fileversion
-    call test( test_MDU_fileversion_model, 'Tests checking MDU file version (old ~model~ block).' )
-    call test( test_MDU_fileversion_general, 'Tests checking MDU file version (new ~General~ block).' )
-    call test( test_read_stretch_coef, 'Tests reading stretch coefficients from MDU file.' )
-end subroutine tests_MDU_fileversion
+   subroutine tests_MDU_fileversion
+      call test(test_MDU_fileversion_model, 'Tests checking MDU file version (old ~model~ block).')
+      call test(test_MDU_fileversion_general, 'Tests checking MDU file version (new ~General~ block).')
+      call test(test_read_stretch_coef, 'Tests reading stretch coefficients from MDU file.')
+   end subroutine tests_MDU_fileversion
 !
 !
 !==============================================================================
-subroutine test_MDU_fileversion_model
-    use unstruc_model
-    use dfm_error
-    use m_partitioninfo, only: jampi
-    use unstruc_files
-    use ifport
-    ! Locals 
-    integer                   :: ierr
-    logical                   :: success
-    
-    !
-    ! Body
-    jampi = 0
-    !
-    success = CHANGEDIRQQ("MDUversion")
-    ! read MDU
-    call readMDUFile('old_model.mdu', ierr)
-    success = CHANGEDIRQQ("..")
-        
-    call assert_equal(ierr, DFM_NOERR, 'Error when reading old MDU file version with [model] block.' ) 
- 
+   subroutine test_MDU_fileversion_model
+      use unstruc_model, only: readMDUFile
+      use dfm_error, only: DFM_NOERR
+      use m_partitioninfo, only: jampi
+      use ifport, only: CHANGEDIRQQ
+      use m_resetfullflowmodel, only: resetFullFlowModel
 
-end subroutine test_MDU_fileversion_model
+      integer :: ierr
 
-subroutine test_MDU_fileversion_general
-    use unstruc_model
-    use dfm_error
-    use m_partitioninfo, only: jampi
-    use unstruc_files
-    use ifport
-    ! Locals 
-    integer                   :: ierr
-    logical                   :: success
+      jampi = 0
+      call resetFullFlowModel()
 
-    !
-    ! Body
-    jampi = 0
-    !
-    success = CHANGEDIRQQ("MDUversion")
-    ! read MDU
-    call readMDUFile('new_general.mdu', ierr)
-    success = CHANGEDIRQQ("..")
+      call assert_equal(CHANGEDIRQQ('MDUversion'), .true., '')
+      ! read MDU
+      call readMDUFile('old_model.mdu', ierr)
+      call assert_equal(CHANGEDIRQQ('..'), .true., '')
 
-    call assert_equal(ierr, DFM_NOERR, 'Error when reading new MDU file version with [General] block.' ) 
+      call assert_equal(ierr, DFM_NOERR, 'Error when reading old MDU file version with [model] block.')
+   end subroutine test_MDU_fileversion_model
 
-end subroutine test_MDU_fileversion_general
+   subroutine test_MDU_fileversion_general
+      use unstruc_model, only: readMDUFile
+      use dfm_error, only: DFM_NOERR
+      use m_partitioninfo, only: jampi
+      use ifport, only: CHANGEDIRQQ
+      use m_resetfullflowmodel, only: resetFullFlowModel
 
-subroutine test_read_stretch_coef
-    use unstruc_model
-    use dfm_error
-    use m_partitioninfo, only: jampi
-    use m_flow, only: laycof
-    use unstruc_files
-    use ifport
-    ! Locals
-    integer       :: ierr
-    logical       :: success
-    real(kind=hp) :: sumlaycof
+      integer :: ierr
 
-    !
-    ! Body
-    jampi = 0
-    !
-    success = CHANGEDIRQQ("MDUversion")
-    ! read MDU
-    call readMDUFile('stretch_example.mdu', ierr)
-    success = CHANGEDIRQQ("..")
+      jampi = 0
+      call resetFullFlowModel()
 
-    call assert_equal(ierr, DFM_NOERR, 'Error when reading MDU file with stretch coeff.' )
-    call assert_equal(size(laycof), 18, "Difference in dimension of laycof")
-    sumlaycof = sum(laycof)
-    call assert_comparable(sumlaycof, 100d0, 1d-12, "Difference in sum of laycof for all layers")
+      call assert_equal(CHANGEDIRQQ("MDUversion"), .true., '')
+      ! read MDU
+      call readMDUFile('new_general.mdu', ierr)
+      call assert_equal(CHANGEDIRQQ(".."), .true., '')
 
-end subroutine test_read_stretch_coef
+      call assert_equal(ierr, DFM_NOERR, 'Error when reading new MDU file version with [General] block.')
+   end subroutine test_MDU_fileversion_general
 
+   subroutine test_read_stretch_coef
+      use unstruc_model, only: readMDUFile
+      use dfm_error, only: DFM_NOERR
+      use m_partitioninfo, only: jampi
+      use ifport, only: CHANGEDIRQQ
+      use m_resetfullflowmodel, only: resetFullFlowModel
+      use m_flow, only: laycof
+      use precision, only: dp
+
+      integer :: ierr
+      real(kind=hp) :: sumlaycof
+
+      jampi = 0
+      call resetFullFlowModel()
+
+      call assert_equal(CHANGEDIRQQ("MDUversion"), .true., '')
+      ! read MDU
+      call readMDUFile('stretch_example.mdu', ierr)
+      call assert_equal(CHANGEDIRQQ(".."), .true., '')
+
+      call assert_equal(ierr, DFM_NOERR, 'Error when reading MDU file with stretch coeff.')
+      call assert_equal(size(laycof), 18, "Difference in dimension of laycof")
+      sumlaycof = sum(laycof)
+      call assert_comparable(sumlaycof, 100.0_dp, 1e-12_dp, "Difference in sum of laycof for all layers")
+   end subroutine test_read_stretch_coef
 end module test_MDU_File_Version

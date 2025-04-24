@@ -67,9 +67,15 @@ contains
       mfacmax = mfac ! from grid settings
 
 !  allocate
-      if (allocated(xg1)) deallocate (xg1)
-      if (allocated(yg1)) deallocate (yg1)
-      if (allocated(sg1)) deallocate (sg1)
+      if (allocated(xg1)) then
+         deallocate (xg1)
+      end if
+      if (allocated(yg1)) then
+         deallocate (yg1)
+      end if
+      if (allocated(sg1)) then
+         deallocate (sg1)
+      end if
       Nmaxsize = 2 * mfacmax + 1
       allocate (xg1(Nmaxsize), yg1(Nmaxsize), sg1(Nmaxsize))
       allocate (xlist(1), ylist(1))

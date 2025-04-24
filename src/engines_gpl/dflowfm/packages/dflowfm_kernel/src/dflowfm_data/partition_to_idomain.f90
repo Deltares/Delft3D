@@ -115,7 +115,9 @@ contains
          end if
       end if
 
-      if (allocated(numndx)) deallocate (numndx)
+      if (allocated(numndx)) then
+         deallocate (numndx)
+      end if
       allocate (numndx(0:ndomains - 1))
 
 !     count and output number of cells

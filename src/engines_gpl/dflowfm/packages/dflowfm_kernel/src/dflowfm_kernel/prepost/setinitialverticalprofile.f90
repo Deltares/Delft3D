@@ -67,7 +67,7 @@ contains
             xx(k - kb + 1) = 0.5d0 * (zws(k) + zws(k - 1))
          end do
          ktx = kt - kb + 1
-         if (layertype == 2 .and. keepzlayeringatbed /= 1 .and. jabaroczlaybed == 1) then
+         if (layertype == 2 .and. keepzlayeringatbed /= 1) then
             call getzlayerindices(n, nlayb, nrlay)
             xx(1) = 0.5d0 * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
             if (kt > kb .and. keepzlayeringatbed == 2) then ! only 2

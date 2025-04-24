@@ -4476,11 +4476,11 @@ contains
       return
    end subroutine
 
-   !> Generic function for weighted average on a quantities defined on cells or links, also applying optional filters
+   !> Generic function for weighted average on quantities defined on cells or links, also applying optional filters
    !> optional firstFilter is defined on a global weights array [1, ncells/nlinks]
    !> optional secondFilter is defined on a local array [1,size(secondFilter)]
    !> works also across multiple MPI ranks
-   function getAverageQuantityFromLinks(startLinks, endLinks, weights, indsWeight, quantity, indsQuantity, results, quantityType, &
+   function get_average_quantity_from_links(startLinks, endLinks, weights, indsWeight, quantity, indsQuantity, results, quantityType, &
                                         firstFilter, firstFilterValue, secondFilter, secondFilterValue) result(ierr)
 
       use mpi, only: MPI_DOUBLE_PRECISION, MPI_SUM
@@ -4578,7 +4578,7 @@ contains
          if (jatimer == 1) call stoptimer(IMPIREDUCE)
       end if
 
-   end function getAverageQuantityFromLinks
+   end function get_average_quantity_from_links
 
    !> generate partitioning polygons
    ! Moved to module because of optional argument

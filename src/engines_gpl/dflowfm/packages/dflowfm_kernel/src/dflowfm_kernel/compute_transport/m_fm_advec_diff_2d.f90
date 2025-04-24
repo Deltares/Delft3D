@@ -43,7 +43,7 @@ module m_fm_advec_diff_2d
     !> 2D advection-diffusion equation solver with sources and sinks of one constituent.
     !  It reworks the input to use the 3D computation of the fluxes, which is made for a  
     !  several constituents.
-    subroutine fm_advec_diff_2d(variable, advection_velocity, advection_discharge, source, sink, diffusion, limiter_type, ierror)
+    subroutine fm_advec_diff_2d(variable, advection_velocity, advection_discharge, source, sink, diffusion, background_diffusion_factor, limiter_type, ierror)
       use m_transport, only: dxiau
       use m_flowgeom, only: ndx, lnx, ln, ba 
       use m_flow, only: ndkx, lnkx, kbot, ktop, lbot, ltop, kmxn, kmxL
@@ -62,14 +62,15 @@ module m_fm_advec_diff_2d
       integer, parameter, dimension(NUMCONST) :: JAUPDATECONST = 1 !< flag for updating constituent (1) or not (0)
       
       !input/output
-      real(kind=dp), dimension(ndx),    intent(inout) :: variable  !< variable to be tranported [unit]
-      real(kind=dp), dimension(lnx),    intent(in)    :: advection_velocity !< flow-field face-normal velocities (`u1`) [m/s]
-      real(kind=dp), dimension(lnx),    intent(in)    :: advection_discharge !< flow-field discharges (`q1`) [m^2/s]
-      real(kind=dp), dimension(ndx),    intent(in)    :: source !< variable source [unit/s]
-      real(kind=dp), dimension(ndx),    intent(in)    :: sink !< variable linear-term sink [1/s]
-      real(kind=dp), dimension(lnx),    intent(in)    :: diffusion !< diffusion coefficient [m/s^2]
-      integer, intent(in) :: limiter_type !< flag for limiter type (>0) or upwind (0)
-      integer, intent(out) :: ierror !< flag for error (1) or not (0)
+      real(kind=dp), dimension(ndx),      intent(inout) :: variable  !< variable to be tranported [unit]
+      real(kind=dp), dimension(lnx),      intent(in)    :: advection_velocity !< flow-field face-normal velocities (`u1`) [m/s]
+      real(kind=dp), dimension(lnx),      intent(in)    :: advection_discharge !< flow-field discharges (`q1`) [m^2/s]
+      real(kind=dp), dimension(ndx),      intent(in)    :: source !< variable source [unit/s]
+      real(kind=dp), dimension(ndx),      intent(in)    :: sink !< variable linear-term sink [1/s]
+      real(kind=dp), dimension(lnx),      intent(in)    :: diffusion !< diffusion coefficient [m/s^2]
+      real(kind=dp), dimension(NUMCONST), intent(in)    :: background_diffusion_factor !< factor applied to the background diffusion (`divouv`) [-]. It is `inout` because it is optional in `comp_fluxhor3d`.
+      integer                           , intent(in)    :: limiter_type !< flag for limiter type (>0) or upwind (0)
+      integer                           , intent(out)   :: ierror !< flag for error (1) or not (0)
 
       !local: counters
       integer :: k1, k2, l
@@ -134,7 +135,7 @@ module m_fm_advec_diff_2d
       constituent_diffusion=RESHAPE(diffusion,shape=(/1, lnx/))
       
       call comp_dxiAu()
-      call comp_fluxhor3d(NUMCONST, limiter_type, ndx, lnx, advection_velocity, advection_discharge, sum_flux_out, ba, kbot, lbot, ltop, kmxn, kmxL, constituent_variable, dummy, dummy, dummy_link, NSUBSTEPS, jahorupdate, ndeltasteps, jaupdateconst, horizontal_flux, dummy_ndx, dummy_ndx, 1, dxiAu, difsedsp=constituent_diffusion)
+      call comp_fluxhor3d(NUMCONST, limiter_type, ndx, lnx, advection_velocity, advection_discharge, sum_flux_out, ba, kbot, lbot, ltop, kmxn, kmxL, constituent_variable, dummy, dummy, dummy_link, NSUBSTEPS, jahorupdate, ndeltasteps, jaupdateconst, horizontal_flux, dummy_ndx, dummy_ndx, 1, dxiAu, difsedsp=constituent_diffusion, background_diffusion_factor=background_diffusion_factor)
       call comp_sumhorflux(1, 0, lnkx, ndkx, lbot, ltop, horizontal_flux, sum_horizontal_flux)
       call solve_2D(1, ndx, ba, kbot, ktop, sum_horizontal_flux, vertical_flux, constituent_source, constituent_sink, 1, jaupdate, ndeltasteps, constituent_variable, right_hand_side)
 

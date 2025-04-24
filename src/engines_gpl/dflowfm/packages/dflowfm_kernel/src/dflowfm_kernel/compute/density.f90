@@ -42,8 +42,8 @@ module m_density
       module procedure calculate_density_from_salinity_temperature_and_pressure
    end interface
 
-   public :: set_potential_density, set_pressure_dependent_density, density_at_cell, salinity_and_temperature_at_cell
-   public :: calculate_density
+   public :: calculate_density, set_potential_density, set_pressure_dependent_density
+   public :: salinity_and_temperature_at_cell, density_at_cell_given_pressure, add_sediment_effect_to_density
 
 contains
 
@@ -90,7 +90,7 @@ contains
       case (DENSITY_OPTION_UNESCO83)
          density = calculate_density_unesco83(salinity, temperature, pressure)
       case default
-         call mess(LEVEL_ERROR, 'Unknown pressure-dependent (thermobaricity = on) density formula. Found idensform = ', idensform)
+         call mess(LEVEL_ERROR, 'Unknown pressure-dependent density formula. Found idensform = ', idensform)
       end select
    end function calculate_density_from_salinity_temperature_and_pressure
 
@@ -123,14 +123,13 @@ contains
       do cell_index_3d = k_top + 1, k_bot + kmxn(cell_index_2d) - 1
          potential_density(cell_index_3d) = potential_density(k_top)
       end do
-
    end subroutine set_potential_density
 
    !> Fill in-situ density of one column
    subroutine set_pressure_dependent_density(in_situ_density, cell_index_2d)
       use m_flow, only: kmxn, zws
       use m_get_kbot_ktop, only: getkbotktop
-      use m_physcoef, only: Maxitpresdens, ag
+      use m_physcoef, only: max_iterations_pressure_density, ag
 
       real(kind=dp), dimension(:), intent(out) :: in_situ_density !< Pressure dependent density of fluid
       integer, intent(in) :: cell_index_2d !< Horizontal cell index (1:ndx)
@@ -148,7 +147,7 @@ contains
       do cell_index_3d = k_top, k_bot, -1
          call salinity_and_temperature_at_cell(cell_index_3d, salinity, temperature)
          dz = zws(cell_index_3d) - zws(cell_index_3d - 1)
-         do i = 1, Maxitpresdens
+         do i = 1, max_iterations_pressure_density
             cell_pressure_lower_interface = cell_pressure_upper_interface + ag * dz * in_situ_density(cell_index_3d)
             in_situ_density(cell_index_3d) = calculate_density(salinity, temperature, 0.5_dp * (cell_pressure_lower_interface + cell_pressure_upper_interface))
          end do
@@ -164,28 +163,13 @@ contains
       end do
    end subroutine set_pressure_dependent_density
 
-   function density_at_cell(cell_index_3d, pressure) result(density)
-      integer, intent(in) :: cell_index_3d !< cell number
-      real(kind=dp), intent(in) :: pressure !< some given pressure
-      real(kind=dp) :: density
-
-      real(kind=dp) :: salinity, temperature
-
-      call salinity_and_temperature_at_cell(cell_index_3d, salinity, temperature)
-
-      density = calculate_density(salinity, temperature, pressure)
-
-      call add_sediment_effect_to_density(density_at_cell, cell_index_3d)
-   end function density_at_cell
-
-   subroutine salinity_and_temperature_at_cell(cell_index_3d, salinity, temperature)
+   pure subroutine salinity_and_temperature_at_cell(cell_index_3d, salinity, temperature)
       use m_flow, only: jasal, jatem, backgroundsalinity, backgroundwatertemperature
-      use m_transport, only: isalt, itemp, constituents
-
-      implicit none
+      use m_transportdata, only: isalt, itemp, constituents
 
       integer, intent(in) :: cell_index_3d !< cell index
-      real(kind=dp), intent(out) :: salinity, temperature
+      real(kind=dp), intent(out) :: salinity !< salinity at cell
+      real(kind=dp), intent(out) :: temperature !< temperature at cell
 
       if (jasal > 0) then
          salinity = max(0.0_dp, constituents(isalt, cell_index_3d))
@@ -199,6 +183,18 @@ contains
          temperature = backgroundwatertemperature
       end if
    end subroutine salinity_and_temperature_at_cell
+
+   !> Function to calculate density based on a cell_index and pressure
+   function density_at_cell_given_pressure(cell_index, pressure) result(density)
+      integer, intent(in) :: cell_index !< Cell index
+      real(kind=dp), intent(in) :: pressure !< Pressure (Pa)
+
+      real(kind=dp) :: density, salinity, temperature
+
+      call salinity_and_temperature_at_cell(cell_index, salinity, temperature)
+      density = calculate_density(salinity, temperature, pressure)
+      call add_sediment_effect_to_density(density, cell_index)
+   end function density_at_cell_given_pressure
 
    !> Adds the effect of sediment on the density of a cell
    subroutine add_sediment_effect_to_density(rho, cell)

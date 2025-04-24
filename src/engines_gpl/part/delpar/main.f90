@@ -60,9 +60,9 @@ program delpar_main
             imdp = index(runid, ".mdp")
             iinp = index(runid, ".inp")
             if (imdp == 0 .and. iinp == 0) then
-                filename = trim(runid) // ".mdp"
-            else if (iinp /= 0) then
-                filename = runid(1:iinp - 1) // ".mdp"
+                filename = trim(runid)//".inp"
+            else if (imdp /= 0) then
+                filename = runid(1:imdp - 1)//".inp"
             else
                 filename = trim(runid)
             end if
@@ -86,9 +86,9 @@ program delpar_main
         imdp = index(filename, ".mdp")
         iinp = index(filename, ".inp")
         if (imdp == 0 .and. iinp == 0) then
-            filename = trim(filename) // ".mdp"
-        else if (iinp /= 0) then
-            filename = filename(1:iinp - 1) // ".mdp"
+         filename = trim(filename)//".inp"
+        else if (imdp /= 0) then
+         filename = filename(1:imdp - 1)//".inp"
         end if
         inquire (file = filename, exist = exi)
         if (.not. exi) then

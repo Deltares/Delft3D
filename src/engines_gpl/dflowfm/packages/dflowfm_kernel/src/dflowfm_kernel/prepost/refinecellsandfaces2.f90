@@ -322,9 +322,15 @@ contains
 1234  continue
 
 !  deallocate
-      if (allocated(jarefine)) deallocate (jarefine)
-      if (allocated(jalink)) deallocate (jalink)
-      if (allocated(linkbrother)) deallocate (linkbrother)
+      if (allocated(jarefine)) then
+         deallocate (jarefine)
+      end if
+      if (allocated(jalink)) then
+         deallocate (jalink)
+      end if
+      if (allocated(linkbrother)) then
+         deallocate (linkbrother)
+      end if
       if (allocated(zss)) then
          call deallocate_sampleHessian()
          iHesstat = iHesstat_DIRTY
@@ -346,7 +352,9 @@ contains
 
          integer :: k
 
-         if (allocated(kc_sav)) deallocate (kc_sav)
+         if (allocated(kc_sav)) then
+            deallocate (kc_sav)
+         end if
 
          if (numk < 1) goto 1234
 
@@ -949,7 +957,9 @@ contains
 
 !     deallocate
 !      if ( allocated(janode) ) deallocate(janode)
-         if (allocated(jalin)) deallocate (jalin)
+         if (allocated(jalin)) then
+            deallocate (jalin)
+         end if
 
          return
       end subroutine smooth_jarefine

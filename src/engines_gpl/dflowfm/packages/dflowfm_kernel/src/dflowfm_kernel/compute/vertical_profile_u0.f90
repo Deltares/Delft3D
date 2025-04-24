@@ -254,7 +254,7 @@ contains
 
       slopec = 0d0
       if (drop3D > 0d0) then
-         if (.not. (iadv(LL) == 21 .or. iadv(LL) >= 23 .and. iadv(LL) <= 25)) then ! don't do this for weirs
+         if (.not. (iadv(LL) == IADV_SUBGRID_WEIR .or. iadv(LL) >= IADV_RAJARATNAM_WEIR .and. iadv(LL) <= IADV_VILLEMONTE_WEIR)) then ! don't do this for weirs
             hup = s0(k2) - (min(bob(1, LL), bob(2, LL)) + drop3D * twot * hu(LL))
             if (hup < 0) then
                slopec = hup

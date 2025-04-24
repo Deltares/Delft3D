@@ -687,18 +687,36 @@ contains
 !   deallocate(atpf_nodes)
 
       if (allocated(ops)) call orthonet_dealloc_ops(ops)
-      if (allocated(ops)) deallocate (ops)
-      if (allocated(nmk2)) deallocate (nmk2)
-      if (allocated(kk2)) deallocate (kk2)
-      if (allocated(ww2)) deallocate (ww2)
+      if (allocated(ops)) then
+         deallocate (ops)
+      end if
+      if (allocated(nmk2)) then
+         deallocate (nmk2)
+      end if
+      if (allocated(kk2)) then
+         deallocate (kk2)
+      end if
+      if (allocated(ww2)) then
+         deallocate (ww2)
+      end if
       if (allocated(ww2x)) deallocate (ww2x, ww2y)
 
-      if (allocated(ic)) deallocate (ic)
-      if (allocated(jc)) deallocate (jc)
+      if (allocated(ic)) then
+         deallocate (ic)
+      end if
+      if (allocated(jc)) then
+         deallocate (jc)
+      end if
 
-      if (allocated(iloc)) deallocate (iloc)
-      if (allocated(xloc)) deallocate (xloc)
-      if (allocated(yloc)) deallocate (yloc)
+      if (allocated(iloc)) then
+         deallocate (iloc)
+      end if
+      if (allocated(xloc)) then
+         deallocate (xloc)
+      end if
+      if (allocated(yloc)) then
+         deallocate (yloc)
+      end if
 
 !-------------------------------------------------
 !  restore original settings
@@ -791,8 +809,12 @@ contains
 
          end do
 
-         if (allocated(xx)) deallocate (xx)
-         if (allocated(yy)) deallocate (yy)
+         if (allocated(xx)) then
+            deallocate (xx)
+         end if
+         if (allocated(yy)) then
+            deallocate (yy)
+         end if
 
          return
       end subroutine comp_local_coords
@@ -1489,8 +1511,12 @@ contains
          else
             continue
          end if
-         if (allocated(Ginv)) deallocate (Ginv)
-         if (allocated(J)) deallocate (J)
+         if (allocated(Ginv)) then
+            deallocate (Ginv)
+         end if
+         if (allocated(J)) then
+            deallocate (J)
+         end if
 
          ierror = ierror_
 
@@ -1790,7 +1816,9 @@ contains
          !  deallocate arrays
          if (allocated(adm%icell)) deallocate (adm%icell, adm%kk2, adm%kkc)
          if (allocated(xi)) deallocate (xi, eta)
-         if (allocated(lnewtopo)) deallocate (lnewtopo)
+         if (allocated(lnewtopo)) then
+            deallocate (lnewtopo)
+         end if
 
       end subroutine orthonet_comp_ops
 

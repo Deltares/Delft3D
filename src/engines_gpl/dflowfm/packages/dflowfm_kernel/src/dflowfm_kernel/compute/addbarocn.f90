@@ -27,26 +27,23 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_addbarocn
-
    implicit none
 
    private
 
-   public :: addbarocn, addbarocnorg, addbarocnrho_w
+   public :: addbarocn, addbarocnrho_w
 
 contains
 
    subroutine addbarocn(n) ! rho at cell centers
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_get_kbot_ktop
+      use m_turbulence, only: rho, grn, rvdn
+      use m_flowparameters, only: epshu
+      use m_flow, only: zws
+      use m_physcoef, only: rhomean
+      use m_get_kbot_ktop, only: getkbotktop
 
-      implicit none
       integer, intent(in) :: n
 
       integer :: k, kb, kt
@@ -54,16 +51,15 @@ contains
       real(kind=dp) :: fuu, fud, fdu, fdd, dzu, dzd, roup, rodo, rvk
 
       call getkbotktop(n, kb, kt)
-      ! if (kt < kb) return
       if (zws(kt) - zws(kb - 1) < epshu) then
-         grn(kb:kt) = 0d0
-         rvdn(kb:kt) = 1d-10
+         grn(kb:kt) = 0.0_dp
+         rvdn(kb:kt) = 1e-10_dp
          return
       end if
 
-      grn(kt) = 0d0
-      rvdn(kt) = 0d0
-      pd = 0d0
+      grn(kt) = 0.0_dp
+      rvdn(kt) = 0.0_dp
+      pd = 0.0_dp
       do k = kt, kb, -1
          dzz = zws(k) - zws(k - 1)
          if (kb == kt) then
@@ -72,26 +68,26 @@ contains
          else if (k > kb .and. k < kt) then
             dzu = zws(k + 1) - zws(k)
             dzd = zws(k - 1) - zws(k - 2)
-            fuu = dzu / (dzu + dzz); fud = 1d0 - fuu
-            fdu = dzz / (dzd + dzz); fdd = 1d0 - fdu
+            fuu = dzu / (dzu + dzz); fud = 1.0_dp - fuu
+            fdu = dzz / (dzd + dzz); fdd = 1.0_dp - fdu
             roup = fuu * rho(k + 1) + fud * rho(k) - rhomean
             rodo = fdu * rho(k) + fdd * rho(k - 1) - rhomean
          else if (k == kb) then
             dzu = zws(k + 1) - zws(k)
-            fuu = dzu / (dzu + dzz); fud = 1d0 - fuu
+            fuu = dzu / (dzu + dzz); fud = 1.0_dp - fuu
             roup = fuu * rho(k + 1) + fud * rho(k) - rhomean
-            rodo = 2d0 * (rho(k) - rhomean) - roup
+            rodo = 2.0_dp * (rho(k) - rhomean) - roup
          else if (k == kt) then
             dzd = zws(k - 1) - zws(k - 2)
-            fdu = dzz / (dzd + dzz); fdd = 1d0 - fdu
+            fdu = dzz / (dzd + dzz); fdd = 1.0_dp - fdu
             rodo = fdu * rho(k) + fdd * rho(k - 1) - rhomean
-            roup = 2d0 * (rho(k) - rhomean) - rodo
+            roup = 2.0_dp * (rho(k) - rhomean) - rodo
          end if
-         rvk = 0.5d0 * (roup + rodo) * dzz
+         rvk = 0.5_dp * (roup + rodo) * dzz
          pu = pd
          pd = pu + rvk
          rvdn(k) = pd
-         gr = pu * dzz + 0.5d0 * ((2d0 * roup + rodo) / 3d0) * dzz * dzz ! your left  wall
+         gr = pu * dzz + 0.5_dp * ((2.0_dp * roup + rodo) / 3.0_dp) * dzz * dzz ! your left  wall
          grn(k) = gr
 
       end do
@@ -100,14 +96,14 @@ contains
 
    subroutine addbarocnrho_w(n) ! rho at interfaces (w points)
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
+      use m_turbulence, only: grn, rvdn, kmxx, rhosww, rho
+      use m_flowparameters, only: epshu
+      use m_flow, only: zws
       use m_transport, only: ISALT, ITEMP, constituents
-      use m_physcoef, only: rhomean
-      use m_get_kbot_ktop
+      use m_physcoef, only: rhomean, max_iterations_pressure_density, apply_thermobaricity, ag
+      use m_get_kbot_ktop, only: getkbotktop
       use m_density, only: calculate_density
 
-      implicit none
       integer, intent(in) :: n
 
       integer :: k, kb, kt, i
@@ -117,21 +113,21 @@ contains
       call getkbotktop(n, kb, kt)
       ! if (kt < kb) return
       if (zws(kt) - zws(kb - 1) < epshu) then
-         grn(kb:kt) = 0d0
-         rvdn(kb:kt) = 1d-10
+         grn(kb:kt) = 0.0_dp
+         rvdn(kb:kt) = 1e-10_dp
          return
       end if
 
       if (kt > kb) then
          do k = kb, kt - 1
-            fzu = (zws(k + 1) - zws(k)) / (zws(k + 1) - zws(k - 1)); fzd = 1d0 - fzu
+            fzu = (zws(k + 1) - zws(k)) / (zws(k + 1) - zws(k - 1)); fzd = 1.0_dp - fzu
             saw(k - kb + 1) = fzu * constituents(isalt, k + 1) + fzd * constituents(isalt, k)
             tmw(k - kb + 1) = fzu * constituents(itemp, k + 1) + fzd * constituents(itemp, k)
          end do
-         saw(0) = 2d0 * constituents(isalt, kb) - saw(1)
-         tmw(0) = 2d0 * constituents(itemp, kb) - tmw(1)
-         saw(kt - kb + 1) = 2d0 * constituents(isalt, kt) - saw(kt - kb)
-         tmw(kt - kb + 1) = 2d0 * constituents(itemp, kt) - tmw(kt - kb)
+         saw(0) = 2.0_dp * constituents(isalt, kb) - saw(1)
+         tmw(0) = 2.0_dp * constituents(itemp, kb) - tmw(1)
+         saw(kt - kb + 1) = 2.0_dp * constituents(isalt, kt) - saw(kt - kb)
+         tmw(kt - kb + 1) = 2.0_dp * constituents(itemp, kt) - tmw(kt - kb)
       else
          saw(0) = constituents(isalt, kb)
          tmw(0) = constituents(itemp, kb)
@@ -139,10 +135,10 @@ contains
          tmw(1) = tmw(0)
       end if
 
-      pd = 0d0 ! baroclinic pressure/ag
-      pdb = 0d0 ! barotropic pressure/ag
+      pd = 0.0_dp ! baroclinic pressure/ag
+      pdb = 0.0_dp ! barotropic pressure/ag
 
-      rhosww(kt) = calculate_density(saw(kt - kb + 1), tmw(kt - kb + 1), pd) - rhomean ! rho at interface
+      rhosww(kt) = calculate_density(saw(kt - kb + 1), tmw(kt - kb + 1)) - rhomean ! rho at interface
 
       do k = kt, kb, -1
          dzz = zws(k) - zws(k - 1)
@@ -151,69 +147,17 @@ contains
             rhosww(k - 1) = calculate_density(saw(k - kb), tmw(k - kb)) - rhomean
          else
             pdb = pdb + rhomean * dzz
-            do i = 1, maxitpresdens
-               pd = pu + 0.5d0 * (rhosww(k) + rhosww(k - 1)) * dzz ! start with previous step estimate
+            do i = 1, max_iterations_pressure_density
+               pd = pu + 0.5_dp * (rhosww(k) + rhosww(k - 1)) * dzz ! start with previous step estimate
                p0d = ag * (pd + pdb) ! total pressure
                rhosww(k - 1) = calculate_density(saw(k - kb), tmw(k - kb), p0d) - rhomean
             end do
          end if
-         rhosk = 0.5d0 * (rhosww(k) + rhosww(k - 1))
+         rhosk = 0.5_dp * (rhosww(k) + rhosww(k - 1))
          rho(k) = rhomean + rhosk ! instead of setrho
          pd = pu + dzz * rhosk
          rvdn(k) = pd
-         grn(k) = (pu + 0.5d0 * dzz * (2d0 * rhosww(k) + rhosww(k - 1)) / 3d0) * dzz ! wall contribution
+         grn(k) = (pu + 0.5_dp * dzz * (2.0_dp * rhosww(k) + rhosww(k - 1)) / 3.0_dp) * dzz ! wall contribution
       end do
-
    end subroutine addbarocnrho_w
-
-   subroutine addbarocnorg(n)
-      use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_get_kbot_ktop
-
-      implicit none
-      integer, intent(in) :: n
-
-      integer :: k, kb, kt
-      real(kind=dp) :: rhosw(0:kmxx) ! rho at pressure point layer interfaces
-      real(kind=dp) :: fzu, fzd, alf, pu, pd, gr, dzz, rvn
-
-      call getkbotktop(n, kb, kt)
-      ! if (kt < kb) return
-      if (zws(kt) - zws(kb - 1) < epshu) then
-         grn(kb:kt) = 0d0
-         rvdn(kb:kt) = 1d-10
-         return
-      end if
-
-      if (kt > kb) then
-         do k = kb, kt - 1
-            fzu = (zws(k + 1) - zws(k)) / (zws(k + 1) - zws(k - 1)); fzd = 1d0 - fzu
-            rhosw(k - kb + 1) = fzu * rho(k + 1) + fzd * rho(k) - rhomean
-         end do
-         rhosw(0) = 2d0 * (rho(kb) - rhomean) - rhosw(1)
-         rhosw(kt - kb + 1) = 2d0 * (rho(kt) - rhomean) - rhosw(kt - kb)
-      else
-         rhosw(0) = rho(kb) - rhomean
-         rhosw(1) = rhosw(0)
-      end if
-
-      grn(kt) = 0d0
-      rvdn(kt) = 0d0
-      pd = 0d0
-      rvn = 0d0
-      do k = kt, kb, -1
-         dzz = zws(k) - zws(k - 1)
-         rvn = rvn + 0.5d0 * (rhosw(k - kb + 1) + rhosw(k - kb)) * dzz
-         rvdn(k) = rvn
-         alf = rhosw(k - kb) - rhosw(k - kb + 1)
-         pu = pd
-         pd = pu + rhosw(k - kb + 1) * dzz + 0.5d0 * alf * dzz
-         gr = pu * dzz + 0.5d0 * rhosw(k - kb + 1) * dzz * dzz + alf * dzz * dzz / 6d0 ! your left  wall
-         grn(k) = gr
-      end do
-
-   end subroutine addbarocnorg
-
 end module m_addbarocn

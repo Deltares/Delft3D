@@ -71,6 +71,15 @@ class TestSetRunner(ABC):
         """Run test cases to generate reference data."""
         start_time = datetime.now()
 
+        if len(self.settings.configs_from_xml) == 0:
+            logline = f"There are no test cases in '{self.settings.config_file}' with applied filter '{self.settings.filter}'."
+            self.__logger.error(logline)
+            raise ValueError(logline)
+        elif len(self.settings.configs_to_run) == 0:
+            logline = f"There are no test cases in '{self.settings.config_file}' with applied filter '{self.settings.filter}'."
+            self.__logger.error(logline)
+            raise ValueError(logline)
+
         try:
             self.programs = list(self.__update_programs())
         except Exception:
@@ -90,10 +99,8 @@ class TestSetRunner(ABC):
                 self.show_summary(results, self.__logger)
             else:
                 self.__logger.info("No summary, because postprocessing is skipped due to argument.")
-        elif len(self.settings.configs_from_xml) == 0:
-            self.__logger.warning("No testcases were loaded from the xml.")
-        elif len(self.settings.configs_to_run) == 0 and self.settings.filter:
-            self.__logger.warning(f"No testcases where found to run after applying the filter: {self.settings.filter}.")
+        else:
+            raise ValueError("ERROR: There are no results, which is unexpected.")
 
         self.__duration = datetime.now() - start_time
 
@@ -131,10 +138,6 @@ class TestSetRunner(ABC):
             List of test results.
         """
         n_testcases = len(self.__settings.configs_to_run)
-
-        if n_testcases < 1:
-            self.__logger.error("There are no test cases to run.")
-            raise ValueError("ERROR: There are no test cases to run in the XML.")
 
         config_process_count = sum(config.process_count for config in self.__settings.configs_to_run)
         max_processes = min(config_process_count, multiprocessing.cpu_count())

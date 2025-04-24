@@ -159,7 +159,9 @@ contains
 1234  continue
 
 ! deallocate
-      if (allocated(ipsub)) deallocate (ipsub)
+      if (allocated(ipsub)) then
+         deallocate (ipsub)
+      end if
 
       return
    end subroutine make_samplepath

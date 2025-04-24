@@ -112,7 +112,7 @@ contains
 
       if (ifixedweirscheme >= 3 .and. ifixedweirscheme <= 5) then
          do L = 1, lnxi
-            if (iadv(L) == 21) then
+            if (iadv(L) == IADV_SUBGRID_WEIR) then
                if (u0(L) > 0) then
                   kd = ln(2, L); ku = ln(1, L)
                else
@@ -448,7 +448,7 @@ contains
                      advel = (qu1 + qu2) / volu ! dimension: ((m4/s2) / m3) =   (m/s2)
                   end if
 
-               else if (iadvL == 103) then
+               else if (iadvL == IADV_PURE1D_FM) then
                   ! Pure1D consistent with default FM implementation, just less bend losses
 
                   if (jaPure1D == 1) then
@@ -476,7 +476,7 @@ contains
                      advel = (qu1 + qu2) / volu ! dimension: ((m4/s2) / m3) =   (m/s2)
                   end if
 
-               else if (iadvL == 104) then
+               else if (iadvL == IADV_PURE1D_SOBEK) then
                   ! Pure1D implementation SOBEK style
 
                   advel = 0d0
@@ -665,7 +665,7 @@ contains
                else if (iadvL >= 7 .and. iadvL <= 12) then ! Piaczek fully implicit
 
                   iad = 3
-                  if (iadvL == 8 .or. iadvL == 10 .or. iadvL == 12) then
+                  if (iadvL == IADV_ORIGINAL_LATERAL_OVERFLOW .or. iadvL == 10 .or. iadvL == 12) then
                      iad = 4
                   end if
 

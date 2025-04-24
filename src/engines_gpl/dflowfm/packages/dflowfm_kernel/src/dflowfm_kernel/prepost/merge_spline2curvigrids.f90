@@ -151,8 +151,12 @@ contains
       yc(1:mc, 1:nc) = ycnew
 
 !  deallocate
-      if (allocated(xcnew)) deallocate (xcnew)
-      if (allocated(ycnew)) deallocate (ycnew)
+      if (allocated(xcnew)) then
+         deallocate (xcnew)
+      end if
+      if (allocated(ycnew)) then
+         deallocate (ycnew)
+      end if
 
       return
    end subroutine merge_spline2curvigrids

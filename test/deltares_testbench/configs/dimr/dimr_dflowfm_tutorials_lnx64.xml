@@ -93,8 +93,8 @@
     -->
    <testCases>
       <!-- ======================================================================== -->
-      <testCase name="c01_harlingen" ref="dimr_trunk">
-         <path version="2024-10-28T13:10:00">e02_dflowfm/f092_tutorial_course_models/c01_harlingen</path>
+      <testCase name="e02_f092_c01_harlingen" ref="dimr_trunk">
+         <path version="2025-04-08T11:38:11.430000">e02_dflowfm/f092_tutorial_course_models/c01_harlingen</path>
          <maxRunTime>60.0</maxRunTime> <!-- seconds -->
          <checks>
             <file name="dflowfmoutput/001_map.nc" type="NETCDF">
@@ -109,8 +109,8 @@
             </file>
          </checks>
       </testCase>
-      <testCase name="c08_exer_12_2d_bend_course_model" ref="dimr_trunk">
-         <path version="2024-01-11T13:10:00">e02_dflowfm/f092_tutorial_course_models/c08_exer_12_2d_bend_course_model</path>
+      <testCase name="e02_f092_c08_exer_12_2d_bend_course_model" ref="dimr_trunk">
+         <path version="2025-04-08T11:38:53.188000">e02_dflowfm/f092_tutorial_course_models/c08_exer_12_2d_bend_course_model</path>
          <maxRunTime>60.0</maxRunTime> <!-- seconds -->
          <checks>
             <file name="dflowfmoutput/cb_2d_map.nc" type="NETCDF">
@@ -125,13 +125,14 @@
             </file>
          </checks>
       </testCase>
-      <testCase name="c09_exer_12_3d_bend_course_model" ref="dimr_trunk">
-         <path version="2024-01-11T13:10:00">e02_dflowfm/f092_tutorial_course_models/c09_exer_12_3d_bend_course_model</path>
+      <testCase name="e02_f092_c09_exer_12_3d_bend_course_model" ref="dimr_trunk">
+         <path version="2025-04-08T11:36:31.620000">e02_dflowfm/f092_tutorial_course_models/c09_exer_12_3d_bend_course_model</path>
          <maxRunTime>60.0</maxRunTime> <!-- seconds -->
          <checks>
             <file name="dflowfmoutput/cb_3d_map.nc" type="NETCDF">
                <parameters>
-                  <parameter name="mesh2d_s1" toleranceAbsolute="0.05" />
+                  <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                  <parameter name="mesh2d_u1" toleranceAbsolute="0.003" />
                </parameters>
             </file>
             <file name="dflowfmoutput/cb_3d_his.nc" type="NETCDF">
@@ -141,7 +142,7 @@
             </file>
          </checks>
       </testCase>
-      <testCase name="c10_exer_13_r01_vlissingen_course_model" ref="dimr_trunk">
+      <testCase name="e02_f092_c10_exer_13_r01_vlissingen_course_model" ref="dimr_trunk">
          <path version="2024-01-11T13:10:00">e02_dflowfm/f092_tutorial_course_models/c10_exer_13_r01_vlissingen_course_model</path>
          <maxRunTime>60.0</maxRunTime> <!-- seconds -->
          <checks>
@@ -157,7 +158,7 @@
             </file>
          </checks>
       </testCase>
-      <testCase name="c11_exer_13_r02_vlissingen_course_model" ref="dimr_trunk">
+      <testCase name="e02_f092_c11_exer_13_r02_vlissingen_course_model" ref="dimr_trunk">
          <path version="2024-01-11T13:10:00">e02_dflowfm/f092_tutorial_course_models/c11_exer_13_r02_vlissingen_course_model</path>
          <maxRunTime>60.0</maxRunTime> <!-- seconds -->
          <checks>

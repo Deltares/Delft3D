@@ -246,10 +246,18 @@ contains
       ierror = 0
 1234  continue
 
-      if (allocated(xh)) deallocate (xh)
-      if (allocated(yh)) deallocate (yh)
-      if (allocated(xg)) deallocate (xg)
-      if (allocated(yg)) deallocate (yg)
+      if (allocated(xh)) then
+         deallocate (xh)
+      end if
+      if (allocated(yh)) then
+         deallocate (yh)
+      end if
+      if (allocated(xg)) then
+         deallocate (xg)
+      end if
+      if (allocated(yg)) then
+         deallocate (yg)
+      end if
 
       return
    end subroutine pol2curvi_tri

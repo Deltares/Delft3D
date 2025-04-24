@@ -128,7 +128,9 @@ contains
 1234  continue
 
 !  deallocate
-      if (allocated(zsdum)) deallocate (zsdum)
+      if (allocated(zsdum)) then
+         deallocate (zsdum)
+      end if
 
       return
    end subroutine smooth_samples

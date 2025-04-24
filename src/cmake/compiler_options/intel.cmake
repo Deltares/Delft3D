@@ -95,7 +95,7 @@ if (UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
     # Set debug flags:
-    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${check_pointers_flag} ${floating_point_exception_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${check_pointers_flag} ${floating_point_exception_flag}")
 endif(UNIX)
 
 set(qauto_threaded_flags "SHELL:${automatic_local_variable_storage_flag}" "SHELL:${generate_reentrancy_threaded_flag}")

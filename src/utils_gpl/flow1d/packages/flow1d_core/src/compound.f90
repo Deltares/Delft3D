@@ -41,7 +41,6 @@ module m_compound
    use m_Universal_Weir
    use m_Bridge
    use m_hash_search
-   use m_Dambreak
    use iso_c_utils
 
    implicit none

@@ -185,7 +185,9 @@ contains
       write (mesg, "('done in ', F12.5, ' sec.')") t1 - t0
       call mess(LEVEL_INFO, trim(mesg))
 
-      if (allocated(fnames)) deallocate (fnames)
+      if (allocated(fnames)) then
+         deallocate (fnames)
+      end if
 
 1234  continue
 

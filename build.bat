@@ -197,6 +197,10 @@ rem =================================
         set oneapi=24
         echo Found: Intel Fortran 2024
     )
+    if NOT "%IFORT_COMPILER25%" == "" (
+        set oneapi=25
+        echo Found: Intel Fortran 2025
+    )
 
     if "!oneapi!" == "" (
         echo Warning: Could not find Intel OneAPI version in environment.

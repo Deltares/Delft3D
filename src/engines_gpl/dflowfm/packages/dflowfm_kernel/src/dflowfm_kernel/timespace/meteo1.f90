@@ -836,8 +836,12 @@ contains
                jakdtree = 0
             end if
 
-            if (allocated(xx)) deallocate (xx)
-            if (allocated(yy)) deallocate (yy)
+            if (allocated(xx)) then
+               deallocate (xx)
+            end if
+            if (allocated(yy)) then
+               deallocate (yy)
+            end if
          end if
 
          if (jampi == 0) then ! sequential
@@ -860,10 +864,14 @@ contains
             end do
          else
 !        allocate work arrays
-            if (allocated(workin)) deallocate (workin)
+            if (allocated(workin)) then
+               deallocate (workin)
+            end if
             allocate (workin(2, Ni, Nj))
             workin = 0d0
-            if (allocated(workout)) deallocate (workout)
+            if (allocated(workout)) then
+               deallocate (workout)
+            end if
             allocate (workout(2, Ni, Nj))
 
             do j = j1, j2
@@ -919,7 +927,9 @@ contains
          ini = 1
       end if
 
-      if (allocated(kk)) deallocate (kk)
+      if (allocated(kk)) then
+         deallocate (kk)
+      end if
 
       jasea = 1
 
@@ -5709,8 +5719,12 @@ contains
       end if
 
       if (npl > 0 .and. present(xps)) then
-         if (allocated(xps)) deallocate (xps)
-         if (allocated(yps)) deallocate (yps)
+         if (allocated(xps)) then
+            deallocate (xps)
+         end if
+         if (allocated(yps)) then
+            deallocate (yps)
+         end if
          call realloc(xps, 100000)
          call realloc(yps, 100000)
          xps = xpl ! doubles a bit with xpl for polygon file
@@ -6168,7 +6182,9 @@ contains
          call doclose(mout)
       end if
 
-      if (allocated(zh)) deallocate (zh)
+      if (allocated(zh)) then
+         deallocate (zh)
+      end if
 
    end function timespaceinitialfield
 
@@ -6399,7 +6415,7 @@ module m_meteo
 
    integer, target :: item_nudge_tem !< 3D temperature for nudging
    integer, target :: item_nudge_sal !< 3D salinity for nudging
-   integer, target :: item_dambreakLevelsAndWidthsFromTable !< Dambreak heights and widths
+   integer, target :: item_db_levels_widths_table !< Dambreak levels and widths
 
    integer, target :: item_subsiduplift
    integer, target :: item_ice_cover !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
@@ -6562,26 +6578,34 @@ contains
       item_diswcap = ec_undef_int
       item_distot = ec_undef_int
       item_ubot = ec_undef_int
-      item_dambreakLevelsAndWidthsFromTable = ec_undef_int
+      item_db_levels_widths_table = ec_undef_int
       item_subsiduplift = ec_undef_int
       !
       n_qhbnd = 0
       !
       ! tracers
-      if (allocated(item_tracerbnd)) deallocate (item_tracerbnd)
+      if (allocated(item_tracerbnd)) then
+         deallocate (item_tracerbnd)
+      end if
       allocate (item_tracerbnd(numtracers))
       item_tracerbnd = ec_undef_int
       !
-      if (allocated(item_sedfracbnd)) deallocate (item_sedfracbnd)
+      if (allocated(item_sedfracbnd)) then
+         deallocate (item_sedfracbnd)
+      end if
       allocate (item_sedfracbnd(numfracs))
       item_sedfracbnd = ec_undef_int
       ! TO ADD: initial concentration field?
 
-      if (allocated(item_waqfun)) deallocate (item_waqfun)
+      if (allocated(item_waqfun)) then
+         deallocate (item_waqfun)
+      end if
       allocate (item_waqfun(num_time_functions))
       item_waqfun = ec_undef_int
 
-      if (allocated(item_waqsfun)) deallocate (item_waqsfun)
+      if (allocated(item_waqsfun)) then
+         deallocate (item_waqsfun)
+      end if
       allocate (item_waqsfun(nosfunext))
       item_waqsfun = ec_undef_int
 
@@ -6909,8 +6933,7 @@ contains
       case ('damlevel')
          itemPtr1 => item_damlevel
       case ('dambreakLevelsAndWidths')
-         itemPtr1 => item_dambreakLevelsAndWidthsFromTable
-         dataPtr1 => dambreakLevelsAndWidthsFromTable
+         itemPtr1 => item_db_levels_widths_table
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
@@ -7236,7 +7259,9 @@ contains
       it = 0
 
       nt = ceiling((t1 - t0) / dt) + 1
-      if (allocated(target_array)) deallocate (target_array)
+      if (allocated(target_array)) then
+         deallocate (target_array)
+      end if
       allocate (target_array(nt * blksize))
       arr1dPtr => ecItemGetArr1DPtr(instancePtr, itemId, 2)
       blksize = size(arr1dPtr)

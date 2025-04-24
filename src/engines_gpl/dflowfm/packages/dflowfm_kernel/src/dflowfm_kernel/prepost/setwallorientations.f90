@@ -55,11 +55,19 @@ contains
 
       integer :: ierr
 
-      if (allocated(csbw)) deallocate (csbw)
-      if (allocated(snbw)) deallocate (snbw)
+      if (allocated(csbw)) then
+         deallocate (csbw)
+      end if
+      if (allocated(snbw)) then
+         deallocate (snbw)
+      end if
 
-      if (allocated(csbwn)) deallocate (csbwn)
-      if (allocated(snbwn)) deallocate (snbwn)
+      if (allocated(csbwn)) then
+         deallocate (csbwn)
+      end if
+      if (allocated(snbwn)) then
+         deallocate (snbwn)
+      end if
 
       if (jsferic == 0 .or. jasfer3D == 0) return
 

@@ -196,8 +196,12 @@ contains
       end if
 
 !  deallocate
-      if (allocated(xh)) deallocate (xh)
-      if (allocated(yh)) deallocate (yh)
+      if (allocated(xh)) then
+         deallocate (xh)
+      end if
+      if (allocated(yh)) then
+         deallocate (yh)
+      end if
 
       return
    end subroutine pol2curvi

@@ -99,7 +99,9 @@ contains
          end do
 
 !        deallocate
-         if (allocated(imask)) deallocate (imask)
+         if (allocated(imask)) then
+            deallocate (imask)
+         end if
       end if
 
       if (jampi == 1) then

@@ -97,7 +97,9 @@ contains
          end if
       end do
 
-      if (allocated(dum)) deallocate (dum)
+      if (allocated(dum)) then
+         deallocate (dum)
+      end if
       allocate (dum(1, Lnx))
 
 !  kmxL: filly dummy array
@@ -162,7 +164,9 @@ contains
       end if
 
 1234  continue
-      if (allocated(dum)) deallocate (dum)
+      if (allocated(dum)) then
+         deallocate (dum)
+      end if
 
       return
    end subroutine update_vertadmin

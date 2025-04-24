@@ -148,7 +148,9 @@ contains
       end if
 
       if (vicuship /= 0d0) then
-         if (allocated(vicushp)) deallocate (vicushp)
+         if (allocated(vicushp)) then
+            deallocate (vicushp)
+         end if
          allocate (vicushp(lnx), stat=ierr); vicushp = 0d0
          call aerr('vicushp(lnx)', ierr, lnx)
       end if

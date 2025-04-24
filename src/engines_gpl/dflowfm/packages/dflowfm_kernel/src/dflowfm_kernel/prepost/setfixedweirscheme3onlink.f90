@@ -48,12 +48,12 @@ contains
 
       teta(L) = 1d0
 
-      if (iadv(L) /= 24 .and. iadv(L) /= 25) then ! no change in advection for Tabellenboek and Villemonte
+      if (iadv(L) /= IADV_TABELLENBOEK_WEIR .and. iadv(L) /= IADV_VILLEMONTE_WEIR) then ! no change in advection for Tabellenboek and Villemonte
          do nn = 1, 2
             n12 = ln(nn, L)
             do kk = 1, nd(n12)%lnx ! and flag non-21 links to perot incoming only
                LL = abs(nd(n12)%ln(kk))
-               if (iadv(LL) < 21 .or. iadv(LL) > 25) then
+               if (iadv(LL) < IADV_SUBGRID_WEIR .or. iadv(LL) > IADV_VILLEMONTE_WEIR) then
                   iadv(LL) = 4
                end if
                teta(LL) = 1d0

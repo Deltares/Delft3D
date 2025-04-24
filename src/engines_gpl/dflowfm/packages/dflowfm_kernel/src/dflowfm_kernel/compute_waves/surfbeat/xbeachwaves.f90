@@ -494,13 +494,19 @@ contains
       end if
 
       ! map boundary types to each other's positions
-      if (allocated(kbndu2kbndw)) deallocate (kbndu2kbndw)
+      if (allocated(kbndu2kbndw)) then
+         deallocate (kbndu2kbndw)
+      end if
       allocate (kbndu2kbndw(nbndu))
 
-      if (allocated(kbndw2kbndu)) deallocate (kbndw2kbndu)
+      if (allocated(kbndw2kbndu)) then
+         deallocate (kbndw2kbndu)
+      end if
       allocate (kbndw2kbndu(nbndw))
 
-      if (allocated(kbndz2kbndw)) deallocate (kbndz2kbndw)
+      if (allocated(kbndz2kbndw)) then
+         deallocate (kbndz2kbndw)
+      end if
       allocate (kbndz2kbndw(nbndz))
 
       allocate (idum(Lnx))
@@ -563,7 +569,9 @@ contains
       if (trim(instat) == 'stat' .or. trim(instat) == 'stat_table' .or. single_dir > 0) then
          !
          if (.not. allocated(nb)) then
-            if (allocated(kcstore)) deallocate (kcstore)
+            if (allocated(kcstore)) then
+               deallocate (kcstore)
+            end if
             allocate (kcstore(numk))
             kcstore = kc
             kc = 1
@@ -579,14 +587,18 @@ contains
          ! set thetabin according to functionality
          if (single_dir > 0) then
             nthetalocal = ntheta_s
-            if (allocated(thetalocal)) deallocate (thetalocal)
+            if (allocated(thetalocal)) then
+               deallocate (thetalocal)
+            end if
             allocate (thetalocal(ntheta_s, numk), stat=ierror)
             do k = 1, numk
                thetalocal(:, k) = thetabin_s
             end do
          else
             nthetalocal = ntheta
-            if (allocated(thetalocal)) deallocate (thetalocal)
+            if (allocated(thetalocal)) then
+               deallocate (thetalocal)
+            end if
             allocate (thetalocal(ntheta, numk), stat=ierror)
             do k = 1, numk
                thetalocal(:, k) = thetabin
@@ -613,7 +625,9 @@ contains
          newstatbc = 0 !to check if needed
       end if
 
-      if (allocated(idum)) deallocate (idum)
+      if (allocated(idum)) then
+         deallocate (idum)
+      end if
 
       return
    end subroutine xbeach_wave_init
@@ -4218,7 +4232,9 @@ contains
          dthetalocal = dtheta_s
       end select
       !
-      if (allocated(eebc)) deallocate (eebc)
+      if (allocated(eebc)) then
+         deallocate (eebc)
+      end if
       allocate (eebc(1:nthetalocal, 1:numk), stat=ierr)
       eebc = 0d0
       !
@@ -5230,7 +5246,9 @@ contains
       end do
 
       no_connected_nodes = no_connected_nodes + 1 ! possible ghost node
-      if (allocated(connected_nodes)) deallocate (connected_nodes)
+      if (allocated(connected_nodes)) then
+         deallocate (connected_nodes)
+      end if
       allocate (connected_nodes(nump, no_connected_nodes))
       connected_nodes = 0
 
@@ -5304,7 +5322,9 @@ contains
       end do
       !
       ! allocate seapts array and fill
-      if (allocated(seapts)) deallocate (seapts)
+      if (allocated(seapts)) then
+         deallocate (seapts)
+      end if
       allocate (seapts(noseapts))
       cnt = 0
       do k = 1, numk
