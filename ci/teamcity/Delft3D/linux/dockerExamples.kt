@@ -41,7 +41,7 @@ object LinuxRunAllDockerExamples : BuildType({
     }
 
     dependencies {
-        dependency(LinuxDocker) {
+        dependency(LinuxRuntimeContainers) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
