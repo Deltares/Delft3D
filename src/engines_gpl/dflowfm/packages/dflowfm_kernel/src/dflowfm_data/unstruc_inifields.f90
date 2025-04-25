@@ -1251,6 +1251,15 @@ contains
 
       call split_qid(qid, qid_base, qid_specific)
 
+      ! UNST-8840: temporarily support hydrological quanties either as [Parameter] or [Initial] blocks.
+      call process_hydrological_quantities(qid_base, inifilename, target_location_type, target_array)
+      if (associated(target_array)) then
+         ! Hydrological quantity found, no continuation by the select case below needed.
+         call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)//''' found in file '''//trim(inifilename) & 
+            //''' as an [Initial] block should be a [Parameter] block in future releases. Please update your input file.')
+         return
+      end if
+      
       select case (str_tolower(qid_base))
       case ('waterlevel')
          target_location_type = UNC_LOC_S
@@ -1471,25 +1480,16 @@ contains
       use m_missing, only: dmiss
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave
-      use m_flow, only: frcu, h_unsat
+      use m_flow, only: frcu
       use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use fm_external_forcings_data, only: success
-      use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
-                                  HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
-                                  InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
-                                  PotEvap, InterceptHs
-      use m_hydrology_data, only: infiltcap, infiltrationmodel
       use m_wind, only: ICdtyp
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemdiam, stemdens, stemheight
       use unstruc_model, only: md_extfile
-      use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
-                                  HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
-                                  InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
-                                  PotEvap, InterceptHs
       use string_module, only: str_tolower
 
       implicit none
@@ -1509,44 +1509,17 @@ contains
       target_array_integer => null()
       time_dependent_array = .false.
 
+      ! UNST-8840: temporarily support hydrological quanties either as [Parameter] or [Initial] blocks.
+      call process_hydrological_quantities(qid, inifilename, target_location_type, target_array)
+      if (associated(target_array)) then
+         ! Hydrological quantity found, no continuation by the select case below needed.
+         return
+      end if
+      
       select case (str_tolower(qid))
       case ('frictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frcu
-      case ('hortonmininfcap')
-         target_location_type = UNC_LOC_S
-         target_array => HortonMinInfCap
-      case ('hortonmaxinfcap')
-         target_location_type = UNC_LOC_S
-         target_array => HortonMaxInfCap
-      case ('hortondecreaserate')
-         target_location_type = UNC_LOC_S
-         target_array => HortonDecreaseRate
-      case ('hortonrecoveryrate')
-         target_location_type = UNC_LOC_S
-         target_array => HortonRecoveryRate
-      case ('interceptionlayerthickness')
-         target_location_type = UNC_LOC_S
-         call realloc(InterceptHs, ndx, keepExisting=.true., fill=0.0_dp)
-         call realloc(h_unsat, ndx, keepExisting=.true., fill=0.0_dp)
-         call realloc(InterceptThickness, ndx, keepExisting=.false.)
-         target_array => InterceptThickness
-         interceptionmodel = DFM_HYD_INTERCEPT_LAYER
-         jadhyd = 1
-      case ('infiltrationcapacity')
-         if (infiltrationmodel /= DFM_HYD_INFILT_CONST) then
-            write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(qid) &
-               //'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_CONST, ''' in the MDU file (constant).'
-            call warn_flush()
-            success = .false.
-            return
-         end if
-         target_location_type = UNC_LOC_S
-         target_array => infiltcap
-      case ('potentialevaporation')
-         target_location_type = UNC_LOC_S
-         call realloc(potEvap, ndx, keepExisting=.true., fill=0.0_dp)
-         target_array => PotEvap
       case ('advectiontype')
          target_location_type = UNC_LOC_U
          target_array_integer => iadv
@@ -1708,6 +1681,72 @@ contains
       end select
 
    end subroutine process_parameter_block
+
+   !> Helper routine to process several hydrological quantities that could either be in a [Parameter]
+   !! or [Initial] block (this latter for backwards compatibility).
+   !! This is a temporary solution until the frontend supports [Parameter].
+   !!
+   !! TODO: Probably this code fragment can be moved back to process_parameter_block() again once FM1D2D-2932
+   !! is done.
+   subroutine process_hydrological_quantities(qid, inifilename, target_location_type, target_array)
+      use messageHandling
+      use m_alloc, only: realloc, aerr
+      use fm_location_types, only: UNC_LOC_S
+      use m_flow, only: h_unsat
+      use m_flowgeom, only: ndx
+      use fm_external_forcings_data, only: success
+      use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
+                                  HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
+                                  InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
+                                  PotEvap, InterceptHs, &
+                                  infiltcap, infiltrationmodel
+      use string_module, only: str_tolower
+
+      implicit none
+
+      character(len=*), intent(in) :: qid !< Name of the quantity.
+      character(len=*), intent(in) :: inifilename !< Name of the ini file.
+      integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U.
+      real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< pointer to the array that corresponds to the quantity (real(kind=dp)).
+
+      select case (str_tolower(qid))
+      case ('hortonmininfcap')
+         target_location_type = UNC_LOC_S
+         target_array => HortonMinInfCap
+      case ('hortonmaxinfcap')
+         target_location_type = UNC_LOC_S
+         target_array => HortonMaxInfCap
+      case ('hortondecreaserate')
+         target_location_type = UNC_LOC_S
+         target_array => HortonDecreaseRate
+      case ('hortonrecoveryrate')
+         target_location_type = UNC_LOC_S
+         target_array => HortonRecoveryRate
+      case ('interceptionlayerthickness')
+         target_location_type = UNC_LOC_S
+         call realloc(InterceptHs, ndx, keepExisting=.true., fill=0.0_dp)
+         call realloc(h_unsat, ndx, keepExisting=.true., fill=0.0_dp)
+         call realloc(InterceptThickness, ndx, keepExisting=.false.)
+         target_array => InterceptThickness
+         interceptionmodel = DFM_HYD_INTERCEPT_LAYER
+         jadhyd = 1
+      case ('infiltrationcapacity')
+         if (infiltrationmodel /= DFM_HYD_INFILT_CONST) then
+            write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(qid) &
+               //'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_CONST, ''' in the MDU file (constant).'
+            call warn_flush()
+            success = .false.
+            return
+         end if
+         target_location_type = UNC_LOC_S
+         target_array => infiltcap
+      case ('potentialevaporation')
+         target_location_type = UNC_LOC_S
+         call realloc(potEvap, ndx, keepExisting=.true., fill=0.0_dp)
+         target_array => PotEvap
+      end select
+   end subroutine process_hydrological_quantities
+
 
    !> Perform finalization after reading the input file.
    subroutine finish_initialization(qid)
