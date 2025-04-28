@@ -108,8 +108,8 @@ contains
    !> set correct flow areas for dambreaks, using the actual flow width
    subroutine multiply_by_dambreak_link_actual_width(hu, au)
 
-      real(kind=dp), intent(in) :: hu(:) !< source
-      real(kind=dp), intent(inout) :: au(:) !< results
+      real(kind=dp), dimension(:), intent(in) :: hu !< source
+      real(kind=dp), dimension(:), intent(inout) :: au !< results
 
       integer :: n !< loop index
       integer :: k !< loop index

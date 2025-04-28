@@ -610,10 +610,9 @@ contains
       use m_read_property, only: read_property
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
-      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, db_breach_depths, db_breach_widths, &
+      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, set_breach_start_link, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
-                                   add_averaging_downstream_signal, set_breach_start_link, &
-                                   db_upstream_link_ids, db_downstream_link_ids
+                                   add_averaging_downstream_signal, db_upstream_link_ids, db_downstream_link_ids
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_dambreak_data, only: n_db_links, n_db_signals, db_first_link, db_last_link, db_link_effective_width, &
           db_link_actual_width, db_link_ids, dambreaks, db_ids

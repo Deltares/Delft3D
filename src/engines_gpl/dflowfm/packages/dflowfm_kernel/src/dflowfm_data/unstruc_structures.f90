@@ -36,56 +36,12 @@ module m_structures
    use unstruc_channel_flow, only: network
    use MessageHandling
    use m_flowparameters, only: jahiscgen, jahispump, jahisgate, jahiscdam, jahisweir, jahisdambreak, jahisorif, jahisculv, jahisuniweir, jahiscmpstru, jahislongculv, jahisbridge
-
+   use m_structures_indices ! all of these indices are used in the module
+   
    implicit none
 
    type(tree_data), pointer, public :: strs_ptr !< A property list with all input structure specifications of the current model. Not the actual structure set.
    integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and from structure-input files. Use one or the other.
-
-! COMMON indices for all structure types:
-   integer, parameter :: NUMVALS_COMMON = 11 !< Number of common variables for all structure types except for pump and gate (new)
-   integer, parameter :: IVAL_WIDTH = 1 !< Index of total width
-   integer, parameter :: IVAL_WIDTHWET = 2 !< Index of total width of wet links
-   integer, parameter :: IVAL_WIDTHUP = 3 !< Index of wet flow link width on upstream side
-   integer, parameter :: IVAL_WIDTHDN = 4 !< Index of wet flow link width on downstream side
-   integer, parameter :: IVAL_WIDTHUPDN = 5 !< Index of width of wet flow links that have both upstream and downstream nodes wet
-   integer, parameter :: IVAL_DIS = 6 !< Index of discharge
-   integer, parameter :: IVAL_S1UP = 7 !< Index of water level at upstream
-   integer, parameter :: IVAL_S1DN = 8 !< Index of water level at downstream
-   integer, parameter :: IVAL_HEAD = 9 !< Index of head of the structure
-   integer, parameter :: IVAL_AREA = 10 !< Index of flow area of the structure
-   integer, parameter :: IVAL_VEL = 11 !< Index of flow velocity
-
- !! For general structure, weir, orifice, because they share some common output variables
-   ! Followings are extra variables for general structure, weir and orifice:
-   integer, parameter :: IVAL_S1ONCREST = NUMVALS_COMMON + 1 !< Index of water level on crest
-   integer, parameter :: IVAL_CRESTL = NUMVALS_COMMON + 2 !< Index of crest level
-   integer, parameter :: IVAL_CRESTW = NUMVALS_COMMON + 3 !< Index of crest width
-   integer, parameter :: IVAL_STATE = NUMVALS_COMMON + 4 !< Index of state (0: closed, 1: free weir, 2: drowned/submerged weir)
-   integer, parameter :: IVAL_FORCEDIF = NUMVALS_COMMON + 5 !< Index of force difference per unit width
-   ! Followings are extra variables for general structure and orifice:
-   integer, parameter :: IVAL_OPENW = NUMVALS_COMMON + 6 !< Index of gate opening width
-   integer, parameter :: IVAL_EDGEL = NUMVALS_COMMON + 7 !< Index of gate lower edge level
-   integer, parameter :: IVAL_OPENH = NUMVALS_COMMON + 8 !< Index of gate opening height
-   ! Followings are extra variables only for general structure:
-   integer, parameter :: IVAL_UPPL = NUMVALS_COMMON + 9 !< Index of gate upper edge level
-   integer, parameter :: IVAL_DIS_OPEN = NUMVALS_COMMON + 10 !< Index of discharge through gate opening
-   integer, parameter :: IVAL_DIS_OVER = NUMVALS_COMMON + 11 !< Index of discharge over gate
-   integer, parameter :: IVAL_DIS_UNDER = NUMVALS_COMMON + 12 !< Index of discharge under gate
-   integer, parameter :: IVAL_AREA_OPEN = NUMVALS_COMMON + 13 !< Index of flow area through gate opening
-   integer, parameter :: IVAL_AREA_OVER = NUMVALS_COMMON + 14 !< Index of flow area over gate
-   integer, parameter :: IVAL_AREA_UNDER = NUMVALS_COMMON + 15 !< Index of flow area under gate
-   integer, parameter :: IVAL_VEL_OPEN = NUMVALS_COMMON + 16 !< Index of velocity through gate opening
-   integer, parameter :: IVAL_VEL_OVER = NUMVALS_COMMON + 17 !< Index of velocity over gate
-   integer, parameter :: IVAL_VEL_UNDER = NUMVALS_COMMON + 18 !< Index of velocity under gate
-   integer, parameter :: IVAL_COUNT = NUMVALS_COMMON + 19 !< Index of counters of partitions for parallel
-
-   integer, parameter :: NUMEXTVALS_GENSTRU = 19 ! Number of extra variables for general structure, including last one as a counter
-   integer, parameter :: NUMEXTVALS_WEIRGEN = 6 ! Number of extra variables for weir, including last one as a counter
-   integer, parameter :: NUMEXTVALS_ORIFGEN = 9 ! Number of extra variables for orifice, including last one as a counter
-   integer, parameter :: NUMVALS_GENSTRU = NUMVALS_COMMON + NUMEXTVALS_GENSTRU !< Total number of variables for general structure (new exe file)
-   integer, parameter :: NUMVALS_WEIRGEN = NUMVALS_COMMON + NUMEXTVALS_WEIRGEN !< Total number of variables for weir
-   integer, parameter :: NUMVALS_ORIFGEN = NUMVALS_COMMON + NUMEXTVALS_ORIFGEN !< Total number of variables for orifice
 
    real(kind=dp), dimension(:, :), allocatable, target :: valgenstru !< Array for general structure, (1:NUMVALS_GENSTRU,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
    !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
@@ -99,83 +55,30 @@ module m_structures
    real(kind=dp), dimension(:, :), allocatable, target :: valorifgen !< Array for orifice, (1:NUMVALS_ORIFGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
    !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
    !<                                   IVAL_FORCEDIF, IVAL_OPENW, IVAL_EDGEL, IVAL_OPENH, the last one NUMVALS_ORIFGEN is the counter
-   ! Bridge, extra variables:
-   integer, parameter :: IVAL_BLUP = NUMVALS_COMMON + 1 !< Index of bed level up
-   integer, parameter :: IVAL_BLDN = NUMVALS_COMMON + 2 !< Index of bed level down
-   integer, parameter :: IVAL_BLACTUAL = NUMVALS_COMMON + 3 !< Index of actual bed level (crest)
-   integer, parameter :: NUMEXTVALS_BRIDGE = 3 !< Number of extra variables for bridge
-   integer, parameter :: NUMVALS_BRIDGE = NUMVALS_COMMON + NUMEXTVALS_BRIDGE !< Total number of variables for bridge
+   
    real(kind=dp), dimension(:, :), allocatable, target :: valbridge !< Array for bridge(1:NUMVALS_BRIDGE,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and NUMEXTVALS_BRIDGE extra variables here.
-
-   ! Dambreak, extra variables:
-   integer, parameter :: IVAL_DB_CRESTH = NUMVALS_COMMON + 1 !< Index of crest level for dambreak
-   integer, parameter :: IVAL_DB_CRESTW = NUMVALS_COMMON + 2 !< Index of crest width for dambreak
-   integer, parameter :: IVAL_DB_JUMP = NUMVALS_COMMON + 3 !< Index of water level jump for dambreak
-   integer, parameter :: IVAL_DB_TIMEDIV = NUMVALS_COMMON + 4 !< Index of breach width time derivative for dambreak
-   integer, parameter :: IVAL_DB_DISCUM = NUMVALS_COMMON + 5 !< Index of cumulative discharge for dambreak
-   integer, parameter :: NUMEXTVALS_DAMBREAK = 5 !< Number of extra variables for dambreak
-   integer, parameter :: NUMVALS_DAMBREAK = NUMVALS_COMMON + NUMEXTVALS_DAMBREAK !< Total number of variables for dambreak
+      
    real(kind=dp), dimension(:, :), allocatable, target :: valdambreak !< Array for dambreak, (1:NUMVALS_DAMBREAK,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and NUMEXTVALS_DAMBREAK extra variables here.
-   ! Culvert, extra variables:
-   integer, parameter :: IVAL_CL_CRESTL = NUMVALS_COMMON + 1 !< Index of culvert crest level
-   integer, parameter :: IVAL_CL_STATE = NUMVALS_COMMON + 2 !< Index of culvert state (0: closed, 1: free weir, 2: drowned/submerged weir)
-   integer, parameter :: IVAL_CL_EDGEL = NUMVALS_COMMON + 3 !< Index of culvert gate lower edge level
-   integer, parameter :: IVAL_CL_OPENH = NUMVALS_COMMON + 4 !< Index of culvert gate opening height
-   integer, parameter :: NUMEXTVALS_CULVERT = 4 !< Number of extra variables for culvertt
-   integer, parameter :: NUMVALS_CULVERT = NUMVALS_COMMON + NUMEXTVALS_CULVERT !< Total number of variables for culvert
+
    real(kind=dp), dimension(:, :), allocatable, target :: valculvert !< Array for culvert(1:NUMVALS_CULVERT,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and above extra variables.
-
-   ! Univeral weir, extra variables:
-   integer, parameter :: IVAL_UW_CRESTL = NUMVALS_COMMON + 1 !< Index of universal weir crest level
-   integer, parameter :: NUMEXTVALS_UNIWEIR = 1 !< Number of extra variables for universal weir
-   integer, parameter :: NUMVALS_UNIWEIR = NUMVALS_COMMON + NUMEXTVALS_UNIWEIR !< Total number of variables for universal weir
+   
    real(kind=dp), dimension(:, :), allocatable, target :: valuniweir !< Array for universal weir(1:NUMVALS_UNIWEIR,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and above extra variables.
-
-   ! gate (new),  extra variables:
-   integer, parameter :: NUMVALS_COMMON_GATE = 8 !< Number of common variables shared by gate
-   integer, parameter :: IVAL_GATE_FLOWH = NUMVALS_COMMON_GATE + 1 !< Upstream average water level
-   integer, parameter :: IVAL_GATE_COUNT = NUMVALS_COMMON_GATE + 2 !< Counter
-   integer, parameter :: IVAL_GATE_OPENW = NUMVALS_COMMON_GATE + 3 !< Gate opening width
-   integer, parameter :: IVAL_GATE_EDGEL = NUMVALS_COMMON_GATE + 4 !< Gate lower edge level
-   integer, parameter :: IVAL_GATE_SILLH = NUMVALS_COMMON_GATE + 5 !< Gate crest level (via general structure)
-   integer, parameter :: IVAL_GATE_WIDTHWET = NUMVALS_COMMON_GATE + 6 !< Width of wet links at upstream (used for IVAL_GATE_FLOWH)
-   integer, parameter :: NUMEXTVALS_GATE = 6 !< Number of extra variables for gate
-   integer, parameter :: NUMVALS_GATEGEN = NUMVALS_COMMON_GATE + NUMEXTVALS_GATE !< Total number of variables for gate
+   
    real(kind=dp), dimension(:, :), allocatable, target :: valgategen !< Array for (new) gate (1:NUMVALS_GATEGEN,:), the first dimension of this array contains
    !< NUMVALS_COMMON_GATE common variables (see definitation at top) and NUMEXTVALS_GATE extra variables.
-
-   ! Compound structure
-   integer, parameter :: NUMVALS_CMPSTRU = NUMVALS_COMMON !< Total number of variables for compound structure, no extra variables.
+   
    real(kind=dp), dimension(:, :), allocatable, target :: valcmpstru !< Array for compound structure(1:NUMVALS_CMPSTRU,:)
 
-   ! Pump shares the first 9 indices in common indices, extra variables are as follows:
-   integer, parameter :: NUMVALS_COMMON_PUMP = 9 !< Number of common variables shared by pump
-   integer, parameter :: IVAL_PP_CAP = NUMVALS_COMMON_PUMP + 1 !< Pump capacity
-   integer, parameter :: IVAL_PP_STAG = NUMVALS_COMMON_PUMP + 2 !< Actual pump stage
-   integer, parameter :: IVAL_PP_HEAD = NUMVALS_COMMON_PUMP + 3 !< Pump head
-   integer, parameter :: IVAL_PP_RED = NUMVALS_COMMON_PUMP + 4 !< Pump reduction factor
-   integer, parameter :: IVAL_PP_S1DEL = NUMVALS_COMMON_PUMP + 5 !< Pump water level at delivery side
-   integer, parameter :: IVAL_PP_S1SUC = NUMVALS_COMMON_PUMP + 6 !< Pump water level at suction side
-   integer, parameter :: IVAL_PP_DISDIR = NUMVALS_COMMON_PUMP + 7 !< Pump discharge w.r.t. pumping orientation (same sign as capacity)
-   integer, parameter :: NUMEXTVALS_PUMP = 7 !< Number of extra variables for pump
-   integer, parameter :: NUMVALS_PUMP = NUMVALS_COMMON_PUMP + NUMEXTVALS_PUMP !< Total number of variables for pump
-   real(kind=dp), dimension(:, :), allocatable, target :: valpump !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
+    real(kind=dp), dimension(:, :), allocatable, target :: valpump !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
    !< NUMVALS_COMMON_PUMP common variables (see definitation at top) and NUMEXTVALS_PUMP extra variables.
-
-   ! Long culvert
-   integer, parameter :: IVAL_LC_VALVE = NUMVALS_COMMON + 1 !< long culvert valve relative opening
-   integer, parameter :: NUMEXTVALS_LONGCULV = 1 !< Number of extra variables for long culvert
-   integer, parameter :: NUMVALS_LONGCULVERT = NUMVALS_COMMON + NUMEXTVALS_LONGCULV !< Number of variables for long culvert
+    
    real(kind=dp), dimension(:, :), allocatable, target :: vallongculvert !< Array for long culvert, (1:NUMVALS_LONGCULVERT,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top)and above extra variables.
-   ! For old stype structures
-   integer :: NUMVALS_GATE = 5 !< Number of variables for gate
-   integer :: NUMVALS_CDAM = 4 !< Number of variables for controble dam
-   integer :: NUMVALS_CGEN = 4 !< Number of variables for general structure (old ext file)
+   
    real(kind=dp), dimension(:, :), allocatable, target :: valgate !< Array for gate;      (1,:) discharge through gate
    real(kind=dp), dimension(:, :), allocatable, target :: valcdam !< Array for cdam;      (1,:) discharge through controlable dam
    !<                      (2,:) Upstream average water levels
@@ -929,7 +832,8 @@ contains
       use m_1d_structures
       use m_longculverts
       use m_GlobalParameters, only: ST_LONGCULVERT
-      use m_partitioninfo, only: my_rank, jampi, idomain, link_ghostdata
+      use m_partitioninfo, only: my_rank, jampi, idomain
+      use m_link_ghostdata, only: link_ghostdata
       use m_flowgeom, only: ln
       implicit none
       integer, intent(in) :: istrtypein !< The type of the structure. May differ from the struct%type, for example:
@@ -1015,7 +919,8 @@ contains
       use network_data, only: xk, yk
       use m_longculverts
       use m_GlobalParameters, only: ST_LONGCULVERT
-      use m_partitioninfo, only: jampi, idomain, my_rank, link_ghostdata
+      use m_partitioninfo, only: jampi, idomain, my_rank
+      use m_link_ghostdata, only: link_ghostdata
       use m_flowgeom, only: ln
       implicit none
       integer, intent(in) :: istrtypein !< The type of the structure. May differ from the struct%type, for example:
