@@ -51,7 +51,7 @@ contains
       use MessageHandling, only: mess, LEVEL_ERROR, LEVEL_WARN
       use string_module, only: str_tolower
 
-      character(len=*), value, intent(in) :: circumcenter_method_string !< Description of the circumcenter method
+      character(len=*), intent(in) :: circumcenter_method_string !< Description of the circumcenter method
 
       integer :: circumcenter_method !< Circumcenter method as used by the kernel
 
