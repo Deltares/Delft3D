@@ -2815,8 +2815,8 @@ contains
       if (writeall .or. (circumcenter_method /= INTERNAL_NETLINKS_EDGE)) then
          call prop_set(prop_ptr, 'geometry', 'circumcenterMethod', trim(md_circumcenter_method), 'Circumcenter computation method (iterate each edge: internalNetlinksEdge; iterate each loop: internalNetlinksLoop or allNetlinksLoop)')
       end if
-      if (writeall .or. (circumcenter_tolerance /= 1.0e-4_dp)) then
-         call prop_set(prop_ptr, 'geometry', 'circumcenterTolerance', circumcenter_tolerance, 'Tolerance for convergence of circumcenter method (m) (default: 1.0e-4')
+      if (writeall .or. (circumcenter_tolerance /= 1.0e-3_dp)) then
+         call prop_set(prop_ptr, 'geometry', 'circumcenterTolerance', circumcenter_tolerance, 'Tolerance for convergence of circumcenter method (m) (default: 1.0e-3')
       end if
       if (writeall .or. (bamin > 1.0e-6_dp)) then
          call prop_set(prop_ptr, 'geometry', 'Bamin', Bamin, 'Minimum grid cell area, in combination with cut cells')
