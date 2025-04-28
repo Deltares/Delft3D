@@ -32,7 +32,7 @@ module m_addbarocl
 
    private
 
-   public :: addbarocL, addbarocLrho_w
+   public :: addbarocL, addbarocLrho_w, addbarocL_use_rho_directly
 
 contains
 
@@ -283,6 +283,109 @@ contains
       call barocLtimeint(gradpu, rhovol, LL, Lb, Lt)
    end subroutine addbarocLrho_w
 
+   subroutine addbarocL_use_rho_directly(LL, Lb, Lt)
+      use precision, only: dp
+      use m_turbulence, only: kmxx, rho, rhou, rvdn, grn
+      use m_flowgeom, only: ln, dx
+      use m_flow, only: zws, numtopsig, kmxn, ktop
+      use m_flowparameters, only: jarhoxu
+      use m_physcoef, only: rhomean
+
+      integer, intent(in) :: LL, Lb, Lt
+
+      integer :: L, k1, k2, k1t, k2t, k, kt, kz, ktz, insigpart, morelayersleft
+      real(kind=dp) :: gradpu(kmxx), rhovol(kmxx), gr3
+      real(kind=dp) :: rv1, rv2, gr1, gr2, rvk, grk, dzz
+
+      gradpu(1:Lt - Lb + 1) = 0.0_dp
+
+      if (zws(ln(1, Lt)) - zws(ln(1, Lb)) < 0.1_dp .or. zws(ln(2, Lt)) - zws(ln(2, Lb)) < 0.1_dp) then
+         return ! no baroclinic pressure in thin water layers
+      end if
+
+      insigpart = 0
+      if (numtopsig > 0) then
+         if (kmxn(ln(1, LL)) <= numtopsig .or. kmxn(ln(2, LL)) <= numtopsig) then
+            insigpart = 1 ! one of the nodes is in the sigma part
+         end if
+      end if
+
+      if (kmxn(ln(1, LL)) > kmxn(ln(2, LL))) then
+         morelayersleft = 1
+      else if (kmxn(ln(1, LL)) < kmxn(ln(2, LL))) then
+         morelayersleft = 2
+      else
+         morelayersleft = 0
+      end if
+
+      do L = Lt, Lb, -1
+         k1 = ln(1, L); k1t = k1
+         k2 = ln(2, L); k2t = k2
+         if (L == Lt) then
+            k1t = ktop(ln(1, LL)); k2t = ktop(ln(2, LL))
+         end if
+
+         rhovol(L - Lb + 1) = 0.5_dp * ((zws(k1t) - zws(k1 - 1)) * rho(k1) + (zws(k2t) - zws(k2 - 1)) * rho(k2))
+         if (jarhoxu > 0) then
+            rhou(L) = rhovol(L - Lb + 1) / (0.5_dp * (zws(k1t) - zws(k1 - 1) + zws(k2t) - zws(k2 - 1)))
+         end if
+         rhovol(L - Lb + 1) = rhovol(L - Lb + 1) * dx(LL)
+
+         rv1 = rvdn(k1)
+         rv2 = rvdn(k2)
+         gr1 = grn(k1)
+         gr2 = grn(k2)
+
+         if (L == Lb .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
+
+            if (morelayersleft == 1) then ! k=deep side, kz=shallow side
+               k = k1; kt = ktop(ln(1, LL))
+               kz = k2; ktz = ktop(ln(2, LL))
+            else
+               k = k2; kt = ktop(ln(2, LL))
+               kz = k1; ktz = ktop(ln(1, LL))
+            end if
+
+            if (insigpart == 0) then
+               dzz = zws(kz) - zws(kz - 1) ! shallow side
+
+               rhovol(1) = dzz * 0.5_dp * (rho(k) + rho(kz)) * dx(LL)
+               if (jarhoxu > 0) then
+                  rhou(L) = 0.5_dp * (rho(k) + rho(kz))
+               end if
+
+            else
+               dzz = zws(k) - zws(k - 1) ! deep side
+            end if
+
+            rvk = rvdn(k + 1) + dzz * (rho(k) - rhomean)
+            grk = (rvdn(k + 1) + dzz * (rho(k) - rhomean)) * dzz
+
+            if (morelayersleft == 1) then ! k1=deepest
+               rv1 = rvk; gr1 = grk
+            else
+               rv2 = rvk; gr2 = grk
+            end if
+
+            if (insigpart == 0) then
+               gr3 = 0.0_dp ! no skewness for zlay jump at bed
+            else
+               gr3 = 0.5_dp * (rv1 + rv2) * (zws(k1 - 1) - zws(k2 - 1))
+            end if
+
+         else
+            gr3 = 0.5_dp * (rv1 + rv2) * (zws(k1 - 1) - zws(k2 - 1))
+         end if
+
+         gradpu(L - Lb + 1) = gradpu(L - Lb + 1) + gr1 - gr2 + gr3
+         if (L > Lb) then
+            gradpu(L - Lb) = gradpu(L - Lb) - gr3 ! ceiling of ff# downstairs neighbours
+         end if
+      end do
+
+      call barocLtimeint(gradpu, rhovol, LL, Lb, Lt)
+   end subroutine addbarocL_use_rho_directly
+   
    subroutine barocLtimeint(gradpu, rhovol, LL, Lb, Lt)
       use precision, only: dp
       use m_flow, only: adve, kmxL

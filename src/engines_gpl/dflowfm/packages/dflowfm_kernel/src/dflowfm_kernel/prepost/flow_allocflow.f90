@@ -55,7 +55,7 @@ contains
                         uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
                         uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
                         qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, &
-                        jacreep, dpbdx0, rvdn, grn, jarhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
+                        jacreep, dpbdx0, rvdn, grn, rhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
                         workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
                         spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
                         limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, epstke, epseps, &
@@ -753,7 +753,7 @@ contains
          allocate (rvdn(ndkx), grn(ndkx), stat=ierr); rvdn = 0.0_dp; grn = 0.0_dp
          call aerr('rvdn(ndkx), grn(ndkx)', ierr, 2 * ndkx)
 
-         if (jarhointerfaces == 1) then
+         if (rhointerfaces == 1) then
             if (allocated(rhosww)) then
                deallocate (rhosww)
             end if

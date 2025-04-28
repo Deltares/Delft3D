@@ -1196,7 +1196,7 @@ contains
 
       call prop_get(md_ptr, 'numerics', 'Barocponbnd', jaBarocponbnd)
       call prop_get(md_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density)
-      call prop_get(md_ptr, 'numerics', 'Rhointerfaces', jarhointerfaces)
+      call prop_get(md_ptr, 'numerics', 'Rhointerfaces', rhointerfaces)
 
       call prop_get(md_ptr, 'numerics', 'EnableJRE', jajre)
 
@@ -3159,8 +3159,8 @@ contains
       if (writeall .or. max_iterations_pressure_density /= 1) then
          call prop_set(prop_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density, 'Max nr of iterations in pressure-density coupling, only used if thermobaricity is true.')
       end if
-      if (writeall .or. jarhointerfaces /= 0) then
-         call prop_set(prop_ptr, 'numerics', 'Rhointerfaces', jarhointerfaces, 'Evaluate rho at interfaces, 0=org at centers, 1=at interfaces )')
+      if (writeall .or. rhointerfaces /= 0) then
+         call prop_set(prop_ptr, 'numerics', 'Rhointerfaces', rhointerfaces, 'Evaluate rho at interfaces: 0 = linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.')
       end if
 
       if (icgsolver == 8) then ! for parms solver

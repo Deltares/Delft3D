@@ -42,15 +42,15 @@ contains
 
    subroutine addbaroclinicpressure()
       use precision, only: dp
-      use m_addbarocl, only: addbarocL, addbarocLrho_w
-      use m_addbarocn, only: addbarocn, addbarocnrho_w
+      use m_addbarocl, only: addbarocL, addbarocLrho_w, addbarocL_use_rho_directly
+      use m_addbarocn, only: addbarocn, addbarocnrho_w, addbarocn_use_rho_directly
       use m_addbaroc, only: addbaroc
       use m_flowgeom, only: lnxi, lnx, ndx
       use m_flow, only: hu, kmx
       use m_turbulence, only: rvdn, grn
       use m_flowtimes
       use m_get_Lbot_Ltop
-      use m_physcoef, only: jabarocponbnd, jarhointerfaces
+      use m_physcoef, only: jabarocponbnd, rhointerfaces
 
       implicit none
       integer :: LL, Lb, Lt, n, lnxbc
@@ -76,28 +76,7 @@ contains
          rvdn = 0.0_dp
          grn = 0.0_dp
 
-         if (jarhointerfaces == 1) then
-            !$OMP PARALLEL DO &
-            !$OMP PRIVATE(n)
-            do n = 1, ndx
-               call addbarocnrho_w(n)
-            end do
-            !$OMP END PARALLEL DO
-
-            !$OMP PARALLEL DO &
-            !$OMP PRIVATE(LL,Lb,Lt)
-            do LL = 1, lnxbc
-               if (hu(LL) == 0.0_dp) then
-                  cycle
-               end if
-               call getLbotLtop(LL, Lb, Lt)
-               if (Lt < Lb) then
-                  cycle
-               end if
-               call addbarocLrho_w(LL, Lb, Lt)
-            end do
-            !$OMP END PARALLEL DO
-         else
+         if (rhointerfaces == 0) then
 
             !$OMP PARALLEL DO &
             !$OMP PRIVATE(n)
@@ -119,6 +98,53 @@ contains
                call addbarocL(LL, Lb, Lt)
             end do
             !$OMP END PARALLEL DO
+
+         elseif (rhointerfaces == 1) then
+
+            !$OMP PARALLEL DO &
+            !$OMP PRIVATE(n)
+            do n = 1, ndx
+               call addbarocnrho_w(n)
+            end do
+            !$OMP END PARALLEL DO
+
+            !$OMP PARALLEL DO &
+            !$OMP PRIVATE(LL,Lb,Lt)
+            do LL = 1, lnxbc
+               if (hu(LL) == 0.0_dp) then
+                  cycle
+               end if
+               call getLbotLtop(LL, Lb, Lt)
+               if (Lt < Lb) then
+                  cycle
+               end if
+               call addbarocLrho_w(LL, Lb, Lt)
+            end do
+            !$OMP END PARALLEL DO
+
+         elseif (rhointerfaces == 2) then
+
+            !$OMP PARALLEL DO &
+            !$OMP PRIVATE(n)
+            do n = 1, ndx
+               call addbarocn_use_rho_directly(n)
+            end do
+            !$OMP END PARALLEL DO
+
+            !$OMP PARALLEL DO &
+            !$OMP PRIVATE(LL,Lb,Lt)
+            do LL = 1, lnxbc
+               if (hu(LL) == 0.0_dp) then
+                  cycle
+               end if
+               call getLbotLtop(LL, Lb, Lt)
+               if (Lt < Lb) then
+                  cycle
+               end if
+               call addbarocL_use_rho_directly(LL, Lb, Lt)
+            end do
+            !$OMP END PARALLEL DO
+
          end if
       end if
    end subroutine addbaroclinicpressure

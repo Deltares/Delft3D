@@ -32,7 +32,7 @@ module m_addbarocn
 
    private
 
-   public :: addbarocn, addbarocnrho_w
+   public :: addbarocn, addbarocnrho_w, addbarocn_use_rho_directly
 
 contains
 
@@ -89,9 +89,7 @@ contains
          rvdn(k) = pd
          gr = pu * dzz + 0.5_dp * ((2.0_dp * roup + rodo) / 3.0_dp) * dzz * dzz ! your left  wall
          grn(k) = gr
-
       end do
-
    end subroutine addbarocn
 
    subroutine addbarocnrho_w(n) ! rho at interfaces (w points)
@@ -154,10 +152,45 @@ contains
             end do
          end if
          rhosk = 0.5_dp * (rhosww(k) + rhosww(k - 1))
-         rho(k) = rhomean + rhosk ! instead of setrho
+         rho(k) = rhomean + rhosk
          pd = pu + dzz * rhosk
          rvdn(k) = pd
          grn(k) = (pu + 0.5_dp * dzz * (2.0_dp * rhosww(k) + rhosww(k - 1)) / 3.0_dp) * dzz ! wall contribution
       end do
    end subroutine addbarocnrho_w
+
+   subroutine addbarocn_use_rho_directly(n)
+      use precision, only: dp
+      use m_turbulence, only: rho, grn, rvdn
+      use m_flowparameters, only: epshu
+      use m_flow, only: zws
+      use m_physcoef, only: rhomean
+      use m_get_kbot_ktop, only: getkbotktop
+
+      integer, intent(in) :: n
+
+      integer :: k, kb, kt
+      real(kind=dp) :: pu, pd, gr, dzz, rvk
+
+      call getkbotktop(n, kb, kt)
+      if (zws(kt) - zws(kb - 1) < epshu) then
+         grn(kb:kt) = 0.0_dp
+         rvdn(kb:kt) = 1e-10_dp
+         return
+      end if
+
+      grn(kt) = 0.0_dp
+      rvdn(kt) = 0.0_dp
+      pd = 0.0_dp
+      do k = kt, kb, -1
+         dzz = zws(k) - zws(k - 1)
+         rvk = (rho(k) - rhomean) * dzz
+         pu = pd
+         pd = pu + rvk
+         rvdn(k) = pd
+         gr = pu * dzz + 0.5_dp * (rho(k) - rhomean) * dzz * dzz ! your left  wall
+         grn(k) = gr
+      end do
+   end subroutine addbarocn_use_rho_directly
+
 end module m_addbarocn
