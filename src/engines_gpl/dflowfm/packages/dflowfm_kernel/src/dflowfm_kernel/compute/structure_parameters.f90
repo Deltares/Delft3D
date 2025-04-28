@@ -48,8 +48,7 @@ contains
       use m_compound
       use m_GlobalParameters
       use m_longculverts, only: nlongculverts, longculverts, newculverts
-      use m_dambreak_breach, only: fill_dambreak_values
-      use m_dambreak_data, only: n_db_signals_protected
+      use m_dambreak_breach, only: fill_dambreak_values, n_db_signals_protected
       use m_link_ghostdata, only: link_ghostdata
 
       integer :: i, n, L, Lf, La, ierr, k, ku, kd, istru, nlinks

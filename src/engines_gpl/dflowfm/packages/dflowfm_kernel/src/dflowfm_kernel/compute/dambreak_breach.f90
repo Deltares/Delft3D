@@ -27,27 +27,10 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_dambreak_breach
+submodule(m_dambreak_breach) sub_dambreak_breach
    use precision, only: dp
 
    implicit none
-
-   private
-
-   public :: adjust_bobs_for_dambreaks, allocate_and_initialize_dambreak_data, update_dambreak_breach
-   public :: add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal
-   public :: add_averaging_downstream_signal
-   public :: is_not_db_active_link, get_dambreak_breach_start_link, set_breach_start_link
-   public :: fill_dambreak_values
-
-   ! time varying, values can be retrieved via BMI interface
-   real(kind=dp), dimension(:), allocatable, target, public :: db_breach_depths !< dambreak breach depths (as a level)
-   real(kind=dp), dimension(:), allocatable, target, public :: db_breach_widths !< dambreak breach widths (as a level)
-   real(kind=dp), dimension(:), allocatable, target, public :: db_upstream_levels !< upstream water levels computed each time step
-   real(kind=dp), dimension(:), allocatable, target, public :: db_downstream_levels !< downstream water levels computed each time step
-
-   integer, dimension(:), allocatable, public :: db_upstream_link_ids !< dambreak upstream links index array
-   integer, dimension(:), allocatable, public :: db_downstream_link_ids !< dambreak downstream links index array
 
    integer, parameter :: UPSTREAM = 1
    integer, parameter :: DOWNSTREAM = 2
@@ -63,12 +46,24 @@ module m_dambreak_breach
    integer, dimension(:), allocatable :: db_active_links !< db_active_links, open dambreak links
    integer, dimension(:), allocatable :: breach_start_link !< the starting link, the closest to the breach point
 
+   procedure(calculate_dambreak_widening_any), pointer :: calculate_dambreak_widening
+
+   abstract interface
+      subroutine calculate_dambreak_widening_any(remainder, left_side, right_side, left_breach_width, right_breach_width)
+         use precision, only: dp
+         real(kind=dp), intent(in) :: remainder !< remaining width
+         real(kind=dp), intent(in) :: left_side !< left side of the breach
+         real(kind=dp), intent(in) :: right_side !< right side of the breach
+         real(kind=dp), intent(inout) :: left_breach_width !< left breach width
+         real(kind=dp), intent(inout) :: right_breach_width !< right breach width
+      end subroutine
+   end interface
+
 contains
 
    !> allocate arrays and initialize variables
-   subroutine allocate_and_initialize_dambreak_data(n_db_signals)
+   module subroutine allocate_and_initialize_dambreak_data(n_db_signals)
       use m_alloc, only: realloc
-      use m_dambreak_data, only: dambreaks, db_ids, n_db_links, db_link_ids
 
       integer, intent(in) :: n_db_signals !< number of dambreak signals
 
@@ -94,22 +89,21 @@ contains
    end subroutine allocate_and_initialize_dambreak_data
 
    !> updates dambreak breach by updating water levels upstream and downstream and calculating dambreak widths
-   function update_dambreak_breach(start_time, delta_time) result(error)
+   module function update_dambreak_breach(start_time, delta_time) result(error)
       use m_flow, only: hu, au, u1
       use m_missing, only: dmiss
       use unstruc_channel_flow, only: network
       use m_partitioninfo, only: get_average_quantity_from_links
-      use m_dambreak_data, only: n_db_links, n_db_signals, dambreaks, db_first_link, db_last_link, db_link_ids
 
       real(kind=dp), intent(in) :: start_time !< start time
       real(kind=dp), intent(in) :: delta_time !< delta time
       integer :: error !< error code
-      
+
       integer :: n !< index of the current dambreak signal
       integer :: i_structure !< index of the structure
 
       error = 0
-      
+
       if (n_db_signals <= 0) then
          return
       end if
@@ -156,7 +150,6 @@ contains
 
    !> reset dambreak variables like water levels, averaged values etc.
    subroutine reset_dambreak_variables(n_db_signals)
-      use m_dambreak_data, only: dambreaks
       use unstruc_channel_flow, only: network
 
       integer, intent(in) :: n_db_signals !< number of dambreak signals
@@ -182,7 +175,6 @@ contains
    subroutine update_dambreak_water_levels(start_time, up_down, link_ids, water_levels, error)
       use m_flow, only: s1, hu
       use m_partitioninfo, only: get_average_quantity_from_links
-      use m_dambreak_data, only: n_db_links, dambreaks, db_first_link, db_last_link, db_link_ids
       use m_flowgeom, only: wu
       use m_missing, only: dmiss
       use unstruc_channel_flow, only: network
@@ -234,7 +226,6 @@ contains
       use unstruc_channel_flow, only: network
       use m_dambreak, only: BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_db_levels_widths_table
-      use m_dambreak_data, only: n_db_signals, dambreaks
       use m_flowtimes, only: irefdate, tunit, tzone
 
       real(kind=dp), intent(in) :: start_time !< start_time
@@ -411,8 +402,6 @@ contains
    subroutine adjust_bobs_on_dambreak_breach(width, max_width, crest_level, starting_link, left_link, right_link, &
                                              structure_id)
       use m_flowgeom, only: bob, bob0
-      use m_dambreak_data, only: db_link_ids, db_link_effective_width, db_link_actual_width
-      use m_dambreak, only: dambreak_widening, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM
       use messagehandling, only: msgbuf, LEVEL_WARN, SetMessage
 
       real(kind=dp), intent(in) :: width !< new width of breach [m]
@@ -425,9 +414,7 @@ contains
 
       integer :: k !< index of the dambreak flow link (range left_link to right_link)
       integer :: flow_link !< index of flow link
-      real(kind=dp) :: h_remainder !< half of the remaining breach width [m]
       real(kind=dp) :: left_breach_width !< width of the breach on the "left" [m]
-      real(kind=dp) :: left_frac !< fraction of structure width on the "left" [-]
       real(kind=dp) :: left_side !< total dambreak structure width on the "left" [m]
       real(kind=dp) :: remainder !< remaining breach width [m]
       real(kind=dp) :: right_breach_width !< width of the breach on the "right" [m]
@@ -456,31 +443,7 @@ contains
          left_side = sum(db_link_effective_width(left_link:starting_link - 1))
          right_side = sum(db_link_effective_width(starting_link + 1:right_link))
          remainder = width - db_link_effective_width(starting_link)
-         select case (dambreak_widening)
-         case (DBW_SYMM)
-            ! original implementation which triggers a breach too wide error be
-            h_remainder = 0.5_dp * remainder
-            left_breach_width = h_remainder
-            right_breach_width = h_remainder
-         case (DBW_PROP)
-            ! proportional
-            left_frac = left_side / (left_side + right_side)
-            left_breach_width = left_frac * remainder
-            right_breach_width = (1.0_dp - left_frac) * remainder
-         case (DBW_SYMM_ASYMM)
-            ! first symmetric, then asymmetric
-            h_remainder = 0.5_dp * remainder
-            if (h_remainder < min(left_side, right_side)) then
-               left_breach_width = h_remainder
-               right_breach_width = h_remainder
-            elseif (left_side <= right_side) then
-               left_breach_width = left_side
-               right_breach_width = remainder - left_side
-            else
-               right_breach_width = right_side
-               left_breach_width = remainder - right_side
-            end if
-         end select
+         call calculate_dambreak_widening(remainder, left_side, right_side, left_breach_width, right_breach_width)
       end if
 
       ! process dam "left" of initial breach segment
@@ -536,7 +499,7 @@ contains
    end subroutine adjust_bobs_on_dambreak_breach
 
    !< store upstream dambreak information
-   subroutine add_dambreaklocation_upstream(n_signal, node)
+   module subroutine add_dambreaklocation_upstream(n_signal, node)
 
       integer, intent(in) :: n_signal !< number of current dambreak signal
       integer, intent(in) :: node !< node number for current dambreak
@@ -546,7 +509,7 @@ contains
    end subroutine add_dambreaklocation_upstream
 
    !> store downstream dambreak information
-   subroutine add_dambreaklocation_downstream(n_signal, node)
+   module subroutine add_dambreaklocation_downstream(n_signal, node)
 
       integer, intent(in) :: n_signal !< number of current dambreak signal
       integer, intent(in) :: node !< node number for current dambreak
@@ -568,7 +531,7 @@ contains
    end subroutine add_dambreak_location
 
    !> add upstream signal for averaging
-   subroutine add_averaging_upstream_signal(n_signal)
+   module subroutine add_averaging_upstream_signal(n_signal)
 
       integer, intent(in) :: n_signal !< number of current dambreak signal
 
@@ -577,7 +540,7 @@ contains
    end subroutine add_averaging_upstream_signal
 
    !> add downstream signal for averaging
-   subroutine add_averaging_downstream_signal(n_signal)
+   module subroutine add_averaging_downstream_signal(n_signal)
 
       integer, intent(in) :: n_signal !< number of current dambreak signal
 
@@ -596,8 +559,7 @@ contains
 
    end subroutine add_averaging_signal
 
-   subroutine adjust_bobs_for_dambreaks()
-      use m_dambreak_data, only: n_db_links, n_db_signals, dambreaks, db_first_link, db_last_link
+   module subroutine adjust_bobs_for_dambreaks()
       use unstruc_channel_flow, only: network
 
       integer :: n !< index of the current dambreak signal
@@ -628,7 +590,6 @@ contains
 
    !> get the starting link of the dambreak breach
    pure function get_dambreak_breach_start_link(n) result(n_start_link)
-      use m_dambreak_data, only: db_link_ids
 
       integer, intent(in) :: n !< index of the current dambreak signal
       integer :: n_start_link !< index of the starting link
@@ -638,8 +599,7 @@ contains
    end function get_dambreak_breach_start_link
 
    !> set the starting link of the dambreak breach
-   subroutine set_breach_start_link(n, Lstart)
-      use m_dambreak_data, only: db_first_link
+   module subroutine set_breach_start_link(n, Lstart)
 
       integer, intent(in) :: n !< index of the current dambreak signal
       integer, intent(in) :: Lstart !< index of the starting link
@@ -649,19 +609,17 @@ contains
    end subroutine set_breach_start_link
 
    !> fill dambreak values into valdambreak array
-   subroutine fill_dambreak_values(time_step, values)
+   module subroutine fill_dambreak_values(time_step, values)
       use m_flow, only: hu, au, q1
       use m_flowgeom, only: bob, ln
       use m_flowparameters, only: epshu
       use m_missing, only: dmiss
       use unstruc_channel_flow, only: network
       use m_link_ghostdata, only: link_ghostdata
-      use m_dambreak_data, only: n_db_signals_protected, dambreaks, db_first_link, db_last_link, db_link_ids, &
-                                 db_link_actual_width
       use unstruc_channel_flow, only: network
       use m_partitioninfo, only: jampi, my_rank, idomain
       use m_structures_indices, only: NUMVALS_DAMBREAK, IVAL_WIDTH, IVAL_DB_CRESTW, IVAL_WIDTHWET, IVAL_DIS, IVAL_AREA, IVAL_DB_DISCUM, &
-              IVAL_DB_CRESTH, IVAL_S1UP, IVAL_S1DN, IVAL_HEAD, IVAL_VEL, IVAL_DB_JUMP, IVAL_DB_TIMEDIV
+                                      IVAL_DB_CRESTH, IVAL_S1UP, IVAL_S1DN, IVAL_HEAD, IVAL_VEL, IVAL_DB_JUMP, IVAL_DB_TIMEDIV
 
       real(kind=dp), intent(in) :: time_step !< time step
       real(kind=dp), dimension(:, :), intent(inout) :: values !< dambreak values, (1:NUMVALS_DAMBREAK,:), the first dimension of this array contains
@@ -686,7 +644,7 @@ contains
             flow_link = abs(db_link_ids(link))
             if (jampi > 0) then
                call link_ghostdata(my_rank, idomain(ln(1, flow_link)), idomain(ln(2, flow_link)), &
-                                                    is_ghost_link, link_domain_number)
+                                   is_ghost_link, link_domain_number)
                if (is_ghost_link == 1) cycle
             end if
             values(IVAL_WIDTH, n) = values(IVAL_WIDTH, n) + db_link_actual_width(link)
@@ -730,4 +688,81 @@ contains
 
    end subroutine fill_dambreak_values
 
-end module m_dambreak_breach
+   !< set dambreak widening method and returns the string with the method name, in case no correct method is specified
+   module subroutine set_dambreak_widening_method(method_string)
+      use messagehandling, only: mess, LEVEL_ERROR
+
+      character(len=*), intent(inout) :: method_string !< method for dambreak widening
+
+      select case (method_string)
+      case ('symmetric')
+         calculate_dambreak_widening => calculate_dambreak_widening_symmetric
+      case ('proportional')
+         calculate_dambreak_widening => calculate_dambreak_widening_proportional
+      case ('symmetric-asymmetric')
+         calculate_dambreak_widening => calculate_dambreak_widening_symmetric_asymmetric
+      case default
+         ! default settings if no method is specified
+         calculate_dambreak_widening => calculate_dambreak_widening_symmetric_asymmetric
+         method_string = 'symmetric-asymmetric'
+      end select
+
+   end subroutine set_dambreak_widening_method
+
+   !> original implementation of dambreak widening which triggers a breach too wide error be
+   subroutine calculate_dambreak_widening_symmetric(remainder, left_side, right_side, left_breach_width, right_breach_width)
+      use precision, only: dp
+      real(kind=dp), intent(in) :: remainder !< remaining width
+      real(kind=dp), intent(in) :: left_side !< left side of the breach
+      real(kind=dp), intent(in) :: right_side !< right side of the breach
+      real(kind=dp), intent(inout) :: left_breach_width !< left breach width
+      real(kind=dp), intent(inout) :: right_breach_width !< right breach width
+      
+      associate(left_side=>left_side, right_side => right_side)
+      end associate
+
+      left_breach_width = 0.5_dp * remainder
+      right_breach_width = 0.5_dp * remainder
+   end subroutine
+
+   !> proportional implementation of dambreak widening
+   subroutine calculate_dambreak_widening_proportional(remainder, left_side, right_side, left_breach_width, right_breach_width)
+      use precision, only: dp
+      real(kind=dp), intent(in) :: remainder !< remaining width
+      real(kind=dp), intent(in) :: left_side !< left side of the breach
+      real(kind=dp), intent(in) :: right_side !< right side of the breach
+      real(kind=dp), intent(inout) :: left_breach_width !< left breach width
+      real(kind=dp), intent(inout) :: right_breach_width !< right breach width
+
+      real(kind=dp) :: left_frac !< fraction of structure width on the "left" [-]
+
+      left_frac = left_side / (left_side + right_side)
+      left_breach_width = left_frac * remainder
+      right_breach_width = (1.0_dp - left_frac) * remainder
+   end subroutine
+
+   !> symmetric/asymmetric implementation of dambreak widening
+   subroutine calculate_dambreak_widening_symmetric_asymmetric(remainder, left_side, right_side, left_breach_width, right_breach_width)
+      use precision, only: dp
+      real(kind=dp), intent(in) :: remainder !< remaining width
+      real(kind=dp), intent(in) :: left_side !< left side of the breach
+      real(kind=dp), intent(in) :: right_side !< right side of the breach
+      real(kind=dp), intent(inout) :: left_breach_width !< left breach width
+      real(kind=dp), intent(inout) :: right_breach_width !< right breach width
+
+      real(kind=dp) :: h_remainder !< half of the remaining breach width [m]
+
+      h_remainder = 0.5_dp * remainder
+      if (h_remainder < min(left_side, right_side)) then
+         left_breach_width = h_remainder
+         right_breach_width = h_remainder
+      elseif (left_side <= right_side) then
+         left_breach_width = left_side
+         right_breach_width = remainder - left_side
+      else
+         right_breach_width = right_side
+         left_breach_width = remainder - right_side
+      end if
+   end subroutine
+
+end submodule sub_dambreak_breach

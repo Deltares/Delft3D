@@ -1581,7 +1581,7 @@ contains
 
 !> Write a shape file for dam breaks
    subroutine unc_write_shp_dambreak()
-      use m_dambreak_data, only: n_db_signals_protected, db_ids, db_first_link, db_last_link, db_link_ids
+      use m_dambreak_breach, only: n_db_signals_protected, db_ids, db_first_link, db_last_link, db_link_ids
       use network_data, only: kn, xk, yk
       use m_flowgeom, only: ln2lne
       implicit none

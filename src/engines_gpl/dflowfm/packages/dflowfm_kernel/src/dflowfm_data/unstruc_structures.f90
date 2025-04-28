@@ -174,7 +174,7 @@ contains
       use m_alloc
       use m_flowtimes, only: ti_rst
       use m_longculverts, only: nlongculverts
-      use m_dambreak_data, only: n_db_signals_protected
+      use m_dambreak_breach, only: n_db_signals_protected
       implicit none
 
       if ((ti_rst > 0 .or. jahispump > 0) .and. npumpsg > 0) then
@@ -890,7 +890,7 @@ contains
       use m_GlobalParameters
       use fm_external_forcings_data, only: ncdamsg, ngatesg
       use unstruc_channel_flow, only: network
-      use m_dambreak_data, only: n_db_signals_protected
+      use m_dambreak_breach, only: n_db_signals_protected
 
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
       integer :: number_of_structures
@@ -1580,7 +1580,7 @@ contains
    subroutine retrieve_set_of_flowlinks_for_polyline_structure(struc_type_id, i_struc, links)
       use MessageHandling, only: mess, LEVEL_ERROR
       use m_GlobalParameters
-      use m_dambreak_data, only: retrieve_set_of_flowlinks_dambreak
+      use m_dambreak_breach, only: retrieve_set_of_flowlinks_dambreak
 
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
       integer, intent(in) :: i_struc !< Index of the structure of this type

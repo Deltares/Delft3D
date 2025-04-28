@@ -50,7 +50,7 @@ contains
       use m_hash_search, only: hashsearch
       use unstruc_channel_flow, only: network
       use m_longculverts
-      use m_dambreak_data, only: get_active_dambreak_index
+      use m_dambreak_breach, only: get_active_dambreak_index
 
       character(len=*), intent(in) :: strtypename !< the type of the structure: 'pumps', 'weirs', 'gates', ...
       character(len=*), intent(in) :: strname !< Id/name of the requested structure, e.g. 'Pump01'

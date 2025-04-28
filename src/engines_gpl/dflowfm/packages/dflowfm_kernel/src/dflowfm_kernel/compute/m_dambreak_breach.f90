@@ -28,7 +28,7 @@
 !-------------------------------------------------------------------------------
 
 !> Module for handling dambreak data in the model
-module m_dambreak_data
+module m_dambreak_breach
    use precision, only: dp
 
    implicit none
@@ -42,13 +42,74 @@ module m_dambreak_data
    integer, dimension(:), allocatable :: db_last_link !< last dambreak link for each signal
    integer, dimension(:), allocatable :: db_link_ids !< dambreak links index array
    character(len=128), dimension(:), allocatable, target :: db_ids !< the dambreak ids
-   real(kind=dp), dimension(:), allocatable, public :: db_link_effective_width !< dambreak effective flow widths
-   real(kind=dp), dimension(:), allocatable, public :: db_link_actual_width !< dambreak actual flow widths
+   real(kind=dp), dimension(:), allocatable :: db_link_effective_width !< dambreak effective flow widths
+   real(kind=dp), dimension(:), allocatable :: db_link_actual_width !< dambreak actual flow widths
 
-   ! the following pointers allow one to use n_db_links and n_db_signals values but do not allow to overwrite these values. 
-   ! so the pointers act like getter functions. 
+   ! the following pointers allow one to use n_db_links and n_db_signals values but do not allow to overwrite these values.
+   ! so the pointers act like getter functions.
    integer, protected, pointer :: n_db_links_protected => n_db_links
    integer, protected, pointer :: n_db_signals_protected => n_db_signals
+
+   ! time varying, values can be retrieved via BMI interface
+   real(kind=dp), dimension(:), allocatable, target :: db_breach_depths !< dambreak breach depths (as a level)
+   real(kind=dp), dimension(:), allocatable, target :: db_breach_widths !< dambreak breach widths (as a level)
+   real(kind=dp), dimension(:), allocatable, target :: db_upstream_levels !< upstream water levels computed each time step
+   real(kind=dp), dimension(:), allocatable, target :: db_downstream_levels !< downstream water levels computed each time step
+
+   integer, dimension(:), allocatable :: db_upstream_link_ids !< dambreak upstream links index array
+   integer, dimension(:), allocatable :: db_downstream_link_ids !< dambreak downstream links index array
+
+   public :: adjust_bobs_for_dambreaks, allocate_and_initialize_dambreak_data, update_dambreak_breach, &
+             add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
+             add_averaging_downstream_signal, fill_dambreak_values, set_dambreak_widening_method, &
+             set_breach_start_link
+
+   interface
+      module subroutine adjust_bobs_for_dambreaks()
+      end subroutine adjust_bobs_for_dambreaks
+
+      module subroutine allocate_and_initialize_dambreak_data(n_db_signals)
+         integer, intent(in) :: n_db_signals !< number of dambreak signals
+      end subroutine allocate_and_initialize_dambreak_data
+
+      module function update_dambreak_breach(start_time, delta_time) result(error)
+         real(kind=dp), intent(in) :: start_time !< start time
+         real(kind=dp), intent(in) :: delta_time !< delta time
+         integer :: error !< error code
+      end function update_dambreak_breach
+
+      module subroutine add_dambreaklocation_upstream(n_signal, node)
+         integer, intent(in) :: n_signal !< number of current dambreak signal
+         integer, intent(in) :: node !< node number for current dambreak
+      end subroutine add_dambreaklocation_upstream
+
+      module subroutine add_dambreaklocation_downstream(n_signal, node)
+         integer, intent(in) :: n_signal !< number of current dambreak signal
+         integer, intent(in) :: node !< node number for current dambreak
+      end subroutine add_dambreaklocation_downstream
+
+      module subroutine add_averaging_upstream_signal(n_signal)
+         integer, intent(in) :: n_signal !< number of current dambreak signal
+      end subroutine add_averaging_upstream_signal
+
+      module subroutine add_averaging_downstream_signal(n_signal)
+         integer, intent(in) :: n_signal !< number of current dambreak signal
+      end subroutine add_averaging_downstream_signal
+
+      module subroutine set_breach_start_link(n, Lstart)
+         integer, intent(in) :: n !< index of the current dambreak signal
+         integer, intent(in) :: Lstart !< index of the starting link
+      end subroutine set_breach_start_link
+
+      module subroutine fill_dambreak_values(time_step, values)
+         real(kind=dp), intent(in) :: time_step !< time step
+         real(kind=dp), dimension(:, :), intent(inout) :: values !< dambreak values
+      end subroutine fill_dambreak_values
+
+      module subroutine set_dambreak_widening_method(method_string)
+         character(len=*), intent(inout) :: method_string !< method for dambreak widening
+      end subroutine set_dambreak_widening_method
+   end interface
 
 contains
 
@@ -163,4 +224,12 @@ contains
       end do
    end function get_active_dambreak_index
 
-end module m_dambreak_data
+   !> provides dambreak names
+   function get_dambreak_names() result(names)
+      character(len=128), dimension(n_db_signals) :: names !< the dambreak names
+
+      names = db_ids(1:n_db_signals)
+
+   end function get_dambreak_names
+
+end module m_dambreak_breach

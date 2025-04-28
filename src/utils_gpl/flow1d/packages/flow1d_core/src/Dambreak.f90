@@ -37,16 +37,10 @@ module m_dambreak
    private
 
    public set_dambreak_coefficients
-   public set_dambreak_widening_method
 
    integer, parameter, public :: BREACH_GROWTH_VDKNAAP = 1
    integer, parameter, public :: BREACH_GROWTH_VERHEIJVDKNAAP = 2
    integer, parameter, public :: BREACH_GROWTH_TIMESERIES = 3
-
-   integer, parameter, public :: DBW_SYMM = 1 !< symmetrical dambreak widening (limited width in case of asymmetric starting link placement)
-   integer, parameter, public :: DBW_PROP = 2 !< dambreak wideining proportional to left/right dam length
-   integer, parameter, public :: DBW_SYMM_ASYMM = 3 !< symmetrical dambreak widening until left/right runs out of space then continues one sided
-   integer, public :: dambreak_widening = DBW_SYMM_ASYMM !< method for dambreak widening
 
    type, public :: t_dambreak
       real(kind=dp) :: start_location_x
@@ -108,27 +102,6 @@ contains
       end if
 
    end subroutine set_dambreak_coefficients
-
-   !< set variable dambreak_widening, returns string with the method name
-   subroutine set_dambreak_widening_method(method_string)
-      use messagehandling, only: mess, LEVEL_ERROR
-
-      character(len=*), intent(inout) :: method_string !< method for dambreak widening
-
-      select case (method_string)
-      case ('symmetric')
-         dambreak_widening = DBW_SYMM
-      case ('proportional')
-         dambreak_widening = DBW_PROP
-      case ('symmetric-asymmetric')
-         dambreak_widening = DBW_SYMM_ASYMM
-      case default
-         ! default settings if no method is specified
-         dambreak_widening = DBW_SYMM_ASYMM
-         method_string = 'symmetric-asymmetric'
-      end select
-
-   end subroutine set_dambreak_widening_method
 
 end module m_dambreak
 

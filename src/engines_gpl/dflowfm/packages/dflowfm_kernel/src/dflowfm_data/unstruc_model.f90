@@ -685,7 +685,7 @@ contains
       use m_flowgeom !,              only : wu1Duni, bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
-      use m_dambreak, only: set_dambreak_widening_method
+      use m_dambreak_breach, only: set_dambreak_widening_method
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind ! ,                  only : icdtyp, cdb, wdb,
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
@@ -2610,7 +2610,7 @@ contains
       use m_map_his_precision
       use m_datum
       use geometry_module, only: INTERNAL_NETLINKS_EDGE
-      use m_dambreak_data, only: exist_dambreak_links
+      use m_dambreak_breach, only: exist_dambreak_links
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values

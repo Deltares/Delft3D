@@ -443,7 +443,7 @@ contains
 !! For external forcings it is equivalent with reset_flowexternalforcings().
    subroutine default_fm_external_forcing_data()
 
-      use m_dambreak_data, only: reset_dambreak_counters
+      use m_dambreak_breach, only: reset_dambreak_counters
 
       jatimespace = 0 ! doen ja/nee 1/0
       mhis = 0 ! unit nr external forcings history *.exthis

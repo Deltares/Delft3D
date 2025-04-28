@@ -62,7 +62,7 @@ contains
       use m_partitioninfo, only: jampi
       use string_module, only: strcmpi
       use messagehandling, only: IDLEN
-      use m_dambreak_data, only: n_db_signals, db_first_link, db_last_link
+      use m_dambreak_breach, only: n_db_signals, db_first_link, db_last_link
 
       implicit none
       logical :: status
@@ -320,7 +320,7 @@ contains
       use precision_basics, only: dp
       use m_alloc, only: realloc
       use fm_external_forcings_data, only: dambreakPolygons
-      use m_dambreak_data, only: db_link_effective_width, db_link_actual_width
+      use m_dambreak_breach, only: db_link_effective_width, db_link_actual_width
       use network_data, only: numl
 
       integer, intent(in) :: nstr !< nstr is the number of (potential) structures
@@ -394,9 +394,9 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use m_flowgeom, only: ln, kcu, wu, lncn, snu, csu
       use m_inquire_flowgeom, only: findnode
-      use m_dambreak_data, only: n_db_links, n_db_signals, db_link_ids, db_ids, dambreaks, &
-                                db_link_effective_width, db_first_link, db_last_link
-      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, set_breach_start_link, &
+      use m_dambreak_breach, only: n_db_links, n_db_signals, db_link_ids, db_ids, dambreaks, &
+                                   db_link_effective_width, db_first_link, db_last_link, &
+                                   allocate_and_initialize_dambreak_data, set_breach_start_link, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, &
                                    add_averaging_upstream_signal, add_averaging_downstream_signal, &
                                    db_upstream_link_ids, db_downstream_link_ids
@@ -612,10 +612,10 @@ contains
       use unstruc_messages, only: callback_msg
       use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, set_breach_start_link, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
-                                   add_averaging_downstream_signal, db_upstream_link_ids, db_downstream_link_ids
+                                   add_averaging_downstream_signal, db_upstream_link_ids, db_downstream_link_ids, &
+                                   n_db_links, n_db_signals, db_first_link, db_last_link, db_link_effective_width, &
+                                   db_link_actual_width, db_link_ids, dambreaks, db_ids
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
-      use m_dambreak_data, only: n_db_links, n_db_signals, db_first_link, db_last_link, db_link_effective_width, &
-          db_link_actual_width, db_link_ids, dambreaks, db_ids
 
       implicit none
       logical :: status
