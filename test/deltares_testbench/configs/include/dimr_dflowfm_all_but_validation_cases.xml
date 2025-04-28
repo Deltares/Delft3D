@@ -2160,7 +2160,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f008_c051_maas_circumcenter1" ref="dflowfm_default">
-      <path version="2025-04-28T07:55:02.255000">e02_dflowfm/f008_network/c051_maas_circumcenter1</path>
+      <path version="2025-04-28T10:20:55.440000">e02_dflowfm/f008_network/c051_maas_circumcenter1</path>
       <maxRunTime>2.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/maas_map.nc" type="netCDF">
@@ -2232,7 +2232,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f008_c061_diamond_circumcenter1" ref="dflowfm_default">
-      <path version="2025-04-28T07:55:26.006000">e02_dflowfm/f008_network/c061_diamond_circumcenter1</path>
+      <path version="2025-04-28T10:20:42.759000">e02_dflowfm/f008_network/c061_diamond_circumcenter1</path>
       <maxRunTime>2.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/diamond_map.nc" type="netCDF">

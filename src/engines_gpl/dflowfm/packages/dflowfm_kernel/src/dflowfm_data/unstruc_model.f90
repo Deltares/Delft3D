@@ -2813,7 +2813,7 @@ contains
          call prop_set(prop_ptr, 'geometry', 'Dcenterinside', Dcenterinside, 'Limit cell center (1.0: in cell, 0.0: on c/g)')
       end if
       if (writeall .or. (circumcenter_method /= INTERNAL_NETLINKS_EDGE)) then
-         call prop_set(prop_ptr, 'geometry', 'circumcenterMethod', trim(md_circumcenter_method), 'Circumcenter computation method (iterate each edge - 1=internal netlinks; iterate each loop - 2=internal netlinks, 3=all netlinks)')
+         call prop_set(prop_ptr, 'geometry', 'circumcenterMethod', trim(md_circumcenter_method), 'Circumcenter computation method (iterate each edge: internalNetlinksEdge; iterate each loop: internalNetlinksLoop or allNetlinksLoop)')
       end if
       if (writeall .or. (circumcenter_tolerance /= 1.0e-4_dp)) then
          call prop_set(prop_ptr, 'geometry', 'circumcenterTolerance', circumcenter_tolerance, 'Tolerance for convergence of circumcenter method (m) (default: 1.0e-4')
