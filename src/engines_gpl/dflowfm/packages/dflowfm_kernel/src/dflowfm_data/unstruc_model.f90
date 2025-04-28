@@ -1367,14 +1367,21 @@ contains
       call prop_get(md_ptr, 'physics', 'idensform', idensform)
       call prop_get(md_ptr, 'physics', 'thermobaricity', apply_thermobaricity)
       call prop_get(md_ptr, 'physics', 'thermobaricityInBruntVaisala', thermobaricity_in_brunt_vaisala_frequency, success, value_parsed)
-      if ((.not. apply_thermobaricity) .and. thermobaricity_in_brunt_vaisala_frequency .and. value_parsed) then
-         call mess(LEVEL_ERROR, 'thermobaricityInBruntVaisala is only available for thermobaricity = 1.')
+      if (.not. apply_thermobaricity) then
+         if (value_parsed .and. thermobaricity_in_brunt_vaisala_frequency) then
+            call mess(LEVEL_ERROR, 'thermobaricityInBruntVaisala is only available for thermobaricity = 1.')
+         else
+            thermobaricity_in_brunt_vaisala_frequency = .false.
+         end if
       end if
       call prop_get(md_ptr, 'physics', 'thermobaricityInBaroclinicPressureGradient', thermobaricity_in_baroclinic_pressure_gradient, success, value_parsed)
       if ((.not. apply_thermobaricity) .and. thermobaricity_in_baroclinic_pressure_gradient .and. value_parsed) then
          call mess(LEVEL_ERROR, 'thermobaricityInBaroclinicPressureGradient is only available for thermobaricity = 1.')
       end if
-      call validate_density_settings(idensform, apply_thermobaricity, thermobaricity_in_brunt_vaisala_frequency, thermobaricity_in_baroclinic_pressure_gradient)
+      if (apply_thermobaricity .and. (.not. thermobaricity_in_brunt_vaisala_frequency) .and. (.not. thermobaricity_in_baroclinic_pressure_gradient)) then
+         call mess(LEVEL_ERROR, 'When thermobaricity = 1, either thermobaricityInBruntVaisala or thermobaricityInBaroclinicPressureGradient should be set to 1.')
+      end if
+      call validate_density_settings(idensform, apply_thermobaricity)
 
       call prop_get(md_ptr, 'physics', 'Temperature', jatem)
       call prop_get(md_ptr, 'physics', 'InitialTemperature', temini)
@@ -4254,18 +4261,12 @@ contains
    end subroutine set_output_time_vector
 
    !> Validate the user input for the density formula
-   subroutine validate_density_settings(idensform, apply_thermobaricity, thermobaricity_in_brunt_vaisala_frequency, thermobaricity_in_baroclinic_pressure_gradient)
+   subroutine validate_density_settings(idensform, apply_thermobaricity)
       use m_density_formulas, only: DENSITY_OPTION_UNIFORM, DENSITY_OPTION_ECKART, DENSITY_OPTION_UNESCO, DENSITY_OPTION_UNESCO83
       integer, intent(in) :: idensform !< Density formula identifier
       logical, intent(in) :: apply_thermobaricity !< Whether the density formula are pressure dependent
-      logical, intent(in) :: thermobaricity_in_brunt_vaisala_frequency !< Whether thermobaricity is applied in computing the Brunt-Vaisala frequency
-      logical, intent(in) :: thermobaricity_in_baroclinic_pressure_gradient !< Whether thermobaricity is applied in computing the baroclinic pressure gradient
 
       if (apply_thermobaricity) then
-         if ((.not. thermobaricity_in_brunt_vaisala_frequency) .and. (.not. thermobaricity_in_baroclinic_pressure_gradient)) then
-            call mess(LEVEL_ERROR, 'When thermobaricity = 1, either thermobaricityInBruntVaisala or thermobaricityInBaroclinicPressureGradient should be set to 1.')
-         end if
-
          select case (idensform)
          case (DENSITY_OPTION_UNESCO83)
             return
