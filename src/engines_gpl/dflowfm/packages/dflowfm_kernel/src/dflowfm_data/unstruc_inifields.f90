@@ -27,9 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> Reading + initializing of initial and parameter fields.
 !! The IniFieldFile from the MDU is the successor of the old
 !! *.ext file for quantities such as initialwaterlevel,
@@ -44,29 +41,24 @@ module unstruc_inifields
    use precision_basics, only: dp
 
    implicit none
-   private ! Prevent used modules from being exported
+   private
 
    public :: init1dField, initialize_initial_fields, spaceInit1dField, readIniFieldProvider, checkIniFieldFileVersion, &
              set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D
 
-!> The file version number of the IniFieldFile format: d.dd, [config_major].[config_minor], e.g., 1.03
-!!
-!! Note: read config_minor as a 2 digit-number, i.e., 1.1 > 1.02 (since .1 === .10 > .02).
-!! Convention for format version changes:
-!! * if a new format is backwards compatible with old files, only
-!!   the minor version number is incremented.
-!! * if a new format is not backwards compatible (i.e., old files
-!!   need to be converted/updated by user), then the major version number
-!!   is incremented.
+   !> The file version number of the IniFieldFile format: d.dd, [config_major].[config_minor], e.g., 1.03
+   !!
+   !! Note: read config_minor as a 2 digit-number, i.e., 1.1 > 1.02 (since .1 === .10 > .02).
+   !! Convention for format version changes:
+   !! * if a new format is backwards compatible with old files, only
+   !!   the minor version number is incremented.
+   !! * if a new format is not backwards compatible (i.e., old files
+   !!   need to be converted/updated by user), then the major version number
+   !!   is incremented.
 
-! IniFieldFile current version: 2.00
+   ! IniFieldFile current version: 2.00
    integer, parameter :: IniFieldMajorVersion = 2
    integer, parameter :: IniFieldMinorVersion = 0
-
-! History IniFieldFile versions:
-
-! 2.00 (2019-06-18): Added LocationType and changed ExtrapolationMethod to yes/no value.
-! 1.01 (2019-03-12): First version of *.ini type initial fields and parameters file.
 
 contains
 
@@ -93,8 +85,8 @@ contains
       end if
    end function checkIniFieldFileVersion
 
-!> Set all the unset values of the array with the global value.
-!> The negative_mask is false for those elements of array that have not been set yet.
+   !> Set all the unset values of the array with the global value.
+   !> The negative_mask is false for those elements of array that have not been set yet.
    subroutine set_global_values(array, negative_mask, value)
       use stdlib_kinds, only: c_bool
       real(kind=dp), intent(inout) :: array(:) !< Array to be changed
@@ -110,8 +102,8 @@ contains
       end do
    end subroutine set_global_values
 
-!> Set the unset values of the water levels/water depths with the specified global value.
-!> The global_quantity specifies which of the two quantities (depth or level) is represented by the global value.
+   !> Set the unset values of the water levels/water depths with the specified global value.
+   !> The global_quantity specifies which of the two quantities (depth or level) is represented by the global value.
    subroutine set_global_water_values(bed_levels, water_depths, water_levels, negative_mask, &
                                       global_quantity, global_value, ini_file_name)
       use stdlib_kinds, only: c_bool
@@ -156,10 +148,10 @@ contains
       end select
    end subroutine set_global_water_values
 
-!> Reads and initializes an initial field file.
-!! The IniFieldFile can contain multiple [Initial] and [Parameter] blocks
-!! that specify the data provider details for initial conditions and
-!! model parameters/coefficients.
+   !> Reads and initializes an initial field file.
+   !! The IniFieldFile can contain multiple [Initial] and [Parameter] blocks
+   !! that specify the data provider details for initial conditions and
+   !! model parameters/coefficients.
    function initialize_initial_fields(inifilename) result(ierr)
       use stdlib_kinds, only: c_bool
       use tree_data_types
@@ -254,11 +246,11 @@ contains
       end if
 
       ib = 0
-   !! Now loop on each block
+      !! Now loop on each block
       do i = 1, num_items_in_file
 
          node_ptr => inifield_ptr%child_nodes(i)%node_ptr
-      !! Step 1: Read each block
+         !! Step 1: Read each block
          call readIniFieldProvider(inifilename, node_ptr, groupname, qid, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
          if (ja == 1) then
@@ -270,7 +262,7 @@ contains
             cycle
          end if
 
-      !! Step 2: operation for each block
+         !! Step 2: operation for each block
          if (filetype == field1D) then
             ierr_loc = init1dField(filename, inifilename, qid, specified_indices, global_value, global_value_provided)
             if (ierr_loc /= DFM_NOERR) then
@@ -393,8 +385,8 @@ contains
 
    end function initialize_initial_fields
 
-!> Reads all key values for a data provider from an IniFieldFile block.
-!! All returned values will typically be used for a call to timespaceinitialfield().
+   !> Reads all key values for a data provider from an IniFieldFile block.
+   !! All returned values will typically be used for a call to timespaceinitialfield().
    subroutine readIniFieldProvider(inifilename, node_ptr, groupname, quantity, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
       use timespace_parameters
@@ -638,7 +630,7 @@ contains
 
    end subroutine readIniFieldProvider
 
-!> Read the global section of the 1dField file
+   !> Read the global section of the 1dField file
    subroutine init_1d_field_read_global(field_ptr, ini_field_file_name, ini_file_name, intended_quantity, value, value_provided, &
                                         num_errors)
       use tree_data_types, only: tree_data
@@ -710,7 +702,7 @@ contains
       value_provided = success
    end subroutine init_1d_field_read_global
 
-!> Set the water levels for the indices where mask is true
+   !> Set the water levels for the indices where mask is true
    subroutine set_water_level_from_depth(bed_levels, water_depths, water_levels, mask)
       use stdlib_kinds, only: c_bool
       real(kind=dp), intent(in) :: bed_levels(:) !< Bed levels
@@ -726,7 +718,7 @@ contains
       end do
    end subroutine set_water_level_from_depth
 
-!> Set the water depths for the indices where mask is true
+   !> Set the water depths for the indices where mask is true
    subroutine set_water_depth_from_level(bed_levels, water_depths, water_levels, mask)
       use stdlib_kinds, only: c_bool
       real(kind=dp), intent(in) :: bed_levels(:) !< Bed levels
@@ -742,7 +734,7 @@ contains
       end do
    end subroutine set_water_depth_from_level
 
-!> Reads and initializes a 1d Field file (*.ini).
+   !> Reads and initializes a 1d Field file (*.ini).
    function init1dField(filename, inifieldfilename, quant, specified_indices, global_value, global_value_provided) result(ierr)
       use stdlib_kinds, only: c_bool
       use tree_data_types
@@ -925,8 +917,8 @@ contains
 
    end function init1dField
 
-!> Converts averaging type string to an integer value.
-!! Returns -1 when an invalid type string is given.
+   !> Converts averaging type string to an integer value.
+   !! Returns -1 when an invalid type string is given.
    subroutine averagingTypeStringToInteger(sAveragingType, iAveragingType)
       use m_ec_interpolationsettings
       use string_module, only: str_tolower
@@ -957,19 +949,19 @@ contains
 
    end subroutine averagingTypeStringToInteger
 
-!> Interpolate 1D spatial initial fields, from input samples to flow state arrays.
-!! The method is:
-!! 1) When one sample value is given:
-!!    if it is from a [Global] block, then this value will be set on all branches.
-!!    if it is from a [Branch] block, then this value will be set on a this branch.
-!! 2) if more than one sample values are given, then on this branch:
-!!          *
-!!         / \
-!!        /   *----
-!!   ----*
-!! between two samples use linear interpolation,
-!! on the left side of the most left sample, use constant value of this sample,
-!! on the right side of the most right sample, use constant value of this sample.
+   !> Interpolate 1D spatial initial fields, from input samples to flow state arrays.
+   !! The method is:
+   !! 1) When one sample value is given:
+   !!    if it is from a [Global] block, then this value will be set on all branches.
+   !!    if it is from a [Branch] block, then this value will be set on a this branch.
+   !! 2) if more than one sample values are given, then on this branch:
+   !!          *
+   !!         / \
+   !!        /   *----
+   !!   ----*
+   !! between two samples use linear interpolation,
+   !! on the left side of the most left sample, use constant value of this sample,
+   !! on the right side of the most right sample, use constant value of this sample.
    subroutine spaceInit1dField(sBranchId, sChainages, sValues, ipos, res, modified_elements)
       use stdlib_kinds, only: c_bool
       use m_alloc
@@ -1079,7 +1071,7 @@ contains
       end if
    end subroutine spaceInit1dField
 
-!> set  friction type (ifrcutp) values
+   !> set  friction type (ifrcutp) values
    subroutine set_friction_type_values()
 
       use precision_basics, only: dp
@@ -1266,6 +1258,15 @@ contains
       target_location_type = 0
 
       call split_qid(qid, qid_base, qid_specific)
+
+      ! UNST-8840: temporarily support hydrological quanties either as [Parameter] or [Initial] blocks.
+      call process_hydrological_quantities(qid_base, inifilename, target_location_type, target_array)
+      if (associated(target_array)) then
+         ! Hydrological quantity found, no continuation by the select case below needed.
+         call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)//''' found in file '''//trim(inifilename) &
+                   //''' as an [Initial] block should be a [Parameter] block in future releases. Please update your input file.')
+         return
+      end if
 
       select case (str_tolower(qid_base))
       case ('waterlevel')
@@ -1487,25 +1488,16 @@ contains
       use m_missing, only: dmiss
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave
-      use m_flow, only: frcu, h_unsat
+      use m_flow, only: frcu
       use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use fm_external_forcings_data, only: success
-      use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
-                                  HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
-                                  InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
-                                  PotEvap, InterceptHs
-      use m_hydrology_data, only: infiltcap, infiltrationmodel
       use m_wind, only: ICdtyp
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemdiam, stemdens, stemheight
       use unstruc_model, only: md_extfile
-      use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
-                                  HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
-                                  InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
-                                  PotEvap, InterceptHs
       use string_module, only: str_tolower
 
       implicit none
@@ -1525,44 +1517,17 @@ contains
       target_array_integer => null()
       time_dependent_array = .false.
 
+      ! UNST-8840: temporarily support hydrological quanties either as [Parameter] or [Initial] blocks.
+      call process_hydrological_quantities(qid, inifilename, target_location_type, target_array)
+      if (associated(target_array)) then
+         ! Hydrological quantity found, no continuation by the select case below needed.
+         return
+      end if
+
       select case (str_tolower(qid))
       case ('frictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frcu
-      case ('hortonmininfcap')
-         target_location_type = UNC_LOC_S
-         target_array => HortonMinInfCap
-      case ('hortonmaxinfcap')
-         target_location_type = UNC_LOC_S
-         target_array => HortonMaxInfCap
-      case ('hortondecreaserate')
-         target_location_type = UNC_LOC_S
-         target_array => HortonDecreaseRate
-      case ('hortonrecoveryrate')
-         target_location_type = UNC_LOC_S
-         target_array => HortonRecoveryRate
-      case ('interceptionlayerthickness')
-         target_location_type = UNC_LOC_S
-         call realloc(InterceptHs, ndx, keepExisting=.true., fill=0.0_dp)
-         call realloc(h_unsat, ndx, keepExisting=.true., fill=0.0_dp)
-         call realloc(InterceptThickness, ndx, keepExisting=.false.)
-         target_array => InterceptThickness
-         interceptionmodel = DFM_HYD_INTERCEPT_LAYER
-         jadhyd = 1
-      case ('infiltrationcapacity')
-         if (infiltrationmodel /= DFM_HYD_INFILT_CONST) then
-            write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(qid) &
-               //'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_CONST, ''' in the MDU file (constant).'
-            call warn_flush()
-            success = .false.
-            return
-         end if
-         target_location_type = UNC_LOC_S
-         target_array => infiltcap
-      case ('potentialevaporation')
-         target_location_type = UNC_LOC_S
-         call realloc(potEvap, ndx, keepExisting=.true., fill=0.0_dp)
-         target_array => PotEvap
       case ('advectiontype')
          target_location_type = UNC_LOC_U
          target_array_integer => iadv
@@ -1662,7 +1627,7 @@ contains
          jafrculin = 1
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
 
-! if ice properties not yet read before, initialize ...
+         ! if ice properties not yet read before, initialize ...
          if (.not. (ja_ice_area_fraction_read /= 0 .or. ja_ice_thickness_read /= 0)) then
             call fm_ice_activate_by_ext_forces(ndx)
          end if
@@ -1734,6 +1699,71 @@ contains
       end select
 
    end subroutine process_parameter_block
+
+   !> Helper routine to process several hydrological quantities that could either be in a [Parameter]
+   !! or [Initial] block (this latter for backwards compatibility).
+   !! This is a temporary solution until the frontend supports [Parameter].
+   !!
+   !! TODO: Probably this code fragment can be moved back to process_parameter_block() again once FM1D2D-2932
+   !! is done.
+   subroutine process_hydrological_quantities(qid, inifilename, target_location_type, target_array)
+      use messageHandling
+      use m_alloc, only: realloc, aerr
+      use fm_location_types, only: UNC_LOC_S
+      use m_flow, only: h_unsat
+      use m_flowgeom, only: ndx
+      use fm_external_forcings_data, only: success
+      use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
+                                  HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
+                                  InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
+                                  PotEvap, InterceptHs, &
+                                  infiltcap, infiltrationmodel
+      use string_module, only: str_tolower
+
+      implicit none
+
+      character(len=*), intent(in) :: qid !< Name of the quantity.
+      character(len=*), intent(in) :: inifilename !< Name of the ini file.
+      integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U.
+      real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< pointer to the array that corresponds to the quantity (real(kind=dp)).
+
+      select case (str_tolower(qid))
+      case ('hortonmininfcap')
+         target_location_type = UNC_LOC_S
+         target_array => HortonMinInfCap
+      case ('hortonmaxinfcap')
+         target_location_type = UNC_LOC_S
+         target_array => HortonMaxInfCap
+      case ('hortondecreaserate')
+         target_location_type = UNC_LOC_S
+         target_array => HortonDecreaseRate
+      case ('hortonrecoveryrate')
+         target_location_type = UNC_LOC_S
+         target_array => HortonRecoveryRate
+      case ('interceptionlayerthickness')
+         target_location_type = UNC_LOC_S
+         call realloc(InterceptHs, ndx, keepExisting=.true., fill=0.0_dp)
+         call realloc(h_unsat, ndx, keepExisting=.true., fill=0.0_dp)
+         call realloc(InterceptThickness, ndx, keepExisting=.false.)
+         target_array => InterceptThickness
+         interceptionmodel = DFM_HYD_INTERCEPT_LAYER
+         jadhyd = 1
+      case ('infiltrationcapacity')
+         if (infiltrationmodel /= DFM_HYD_INFILT_CONST) then
+            write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(qid) &
+               //'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_CONST, ''' in the MDU file (constant).'
+            call warn_flush()
+            success = .false.
+            return
+         end if
+         target_location_type = UNC_LOC_S
+         target_array => infiltcap
+      case ('potentialevaporation')
+         target_location_type = UNC_LOC_S
+         call realloc(potEvap, ndx, keepExisting=.true., fill=0.0_dp)
+         target_array => PotEvap
+      end select
+   end subroutine process_hydrological_quantities
 
    !> Perform finalization after reading the input file.
    subroutine finish_initialization(qid)
@@ -1972,5 +2002,4 @@ contains
          end if
       end do
    end subroutine initialfield2Dto3D_dbl_indx
-
 end module unstruc_inifields
