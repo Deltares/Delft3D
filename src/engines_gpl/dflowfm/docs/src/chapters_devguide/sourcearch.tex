@@ -1,0 +1,36 @@
+\svnid{$Id$}
+
+\chapter{Source tree architecture of \DFLOWFM{}\label{chap:sourcearch}}
+
+\section{Introduction}
+This chapter contains a description of the source tree architecture of \DFLOWFM{}, and the development/build environments that can be used on Windows and Linux.
+
+\section{Source builds on Windows: Intel, MS Visual Studio and MSBuild}
+Recommended tools:
+\begin{itemize}
+\item Intel Fortran Composer XE
+\item Microsoft Visual Studio (with MS Visual C++)
+\end{itemize}
+
+Regular development and manual builds are done within Visual Studio. Batch-mode build on Windows is done via an MSBuild file \file{dflowfm.proj}. Both depend on the solution file \file{dflowfm.sln} discussed in the next section.
+
+\subsection{Solution file, templates and project files}
+The list below summarizes the relevant build configuration files, and which settings are where.
+\begin{description}
+\item \texttt{dflowfm.sln} \\ When making changes to this file, make sure to copy them also into the leading template file \texttt{scripts/template/dflowfm\_template.sln}
+%
+\item \texttt{scripts/template/dflowfm\_template.sln} \\ The leading solution template file, that is used to produce the actual solution file \texttt{rootdir/dflowfm.sln}
+%
+\item \texttt{src/*.f90} \\ The majority of all \DFLOWFM{} source files.
+\item \texttt{src/dflowfm\_kernel/dflowfm\_kernel.vfproj} \\ The Visual Fortran project file for the kernel as a static library.
+\end{description}
+
+The solution file \texttt{dflowfm.sln} is based on a template, such that it can be generated for various combinations of versions of Visual Studio and the Intel Fortran compiler. To generate the actual solution file, in the root dir run:
+\begin{Verbatim}[frame=single, framesep=6pt]
+python prepare_sln.py
+\end{Verbatim}
+
+\section{Source builds on Linux: Intel or GNU, automake and autoconf}
+[yet empty]
+
+See \url{http://publicwiki.deltares.nl/display/DFLOWFM/Building+on+Linux}

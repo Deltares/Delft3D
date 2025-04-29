@@ -9,7 +9,3 @@ The structure for developer documentation per project:
 
 
 ..\result_doc -> Doxygen output directory per project. Not part of git.
-
-
-
-Starting with Doxygen -> https://www.doxygen.nl/manual/starting.html
