@@ -41,7 +41,7 @@ module m_circumcenter_method
    integer, parameter, public :: ALL_NETLINKS_LOOP = 3
 
    character(len=128), public :: md_circumcenter_method = 'internalNetlinksEdge' !< Circumcenter method ('internalNetlinksEdge', 'internalNetlinksLoop' or 'allNetlinksLoop')
-   integer, public :: circumcenter_method !< Circumcenter computation method (INTERNAL_NETLINKS_EDGE=iterate over each internal netlink; INTERNAL_NETLINKS_LOOP=iterate over each internal netlink loop, ALL_NETLINKS_LOOP=iterate over each netlink loop)
+   integer, public :: circumcenter_method !< Circumcenter computation method (INTERNAL_NETLINKS_EDGE=iterate over each internal netlink; INTERNAL_NETLINKS_LOOP=iterate over each internal netlink loop; ALL_NETLINKS_LOOP=iterate over each netlink loop)
    real(kind=dp), public :: circumcenter_tolerance = 1e-3_dp !< Tolerance for convergence of circumcenter [m]
 
 contains
