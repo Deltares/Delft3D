@@ -47,22 +47,22 @@ module m_circumcenter_method
 contains
 
    !> Extract the circumcenter method from the user provided string.
-   function extract_circumcenter_method(circumcenter_method_string) result(circumcenter_method)
+   function extract_circumcenter_method(circumcenter_method_string) result(circumcenter_method_)
       use MessageHandling, only: mess, LEVEL_ERROR, LEVEL_WARN
       use string_module, only: str_tolower
 
       character(len=*), intent(in) :: circumcenter_method_string !< Description of the circumcenter method
 
-      integer :: circumcenter_method !< Circumcenter method as used by the kernel
+      integer :: circumcenter_method_ !< Local function variable for circumcenter method
 
       select case (trim(str_tolower(circumcenter_method_string)))
       case ('internalnetlinksedge')
-         circumcenter_method = INTERNAL_NETLINKS_EDGE
+         circumcenter_method_ = INTERNAL_NETLINKS_EDGE
          call mess(LEVEL_WARN, '"[geometry] circumcenterMethod = internalNetlinksEdge" will be deprecated and will be removed in future. Please update this in your model. "circumcenterMethod = internalNetlinksLoop" is the improved current inplementation using internal net links only. "circumcenterMethod = allNetlinksLoop" is a stricter implemention considering also the net links on the outline of the grid. The new options may require an update of your grid.')
       case ('internalnetlinksloop')
-         circumcenter_method = INTERNAL_NETLINKS_LOOP
+         circumcenter_method_ = INTERNAL_NETLINKS_LOOP
       case ('allnetlinksloop')
-         circumcenter_method = ALL_NETLINKS_LOOP
+         circumcenter_method_ = ALL_NETLINKS_LOOP
       case default
          call mess(LEVEL_ERROR, 'Did not recognise circumcenterMethod '//trim(circumcenter_method_string)//'. It must be internalNetlinksEdge, internalNetlinksLoop or allNetlinksLoop.')
       end select
