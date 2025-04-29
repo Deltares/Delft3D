@@ -41,7 +41,7 @@ module m_addbaroclinicpressure
 contains
 
    subroutine addbaroclinicpressure()
-      use precision, only: dp
+      use precision, only: dp, comparereal
       use m_addbarocl, only: addbarocL, addbarocLrho_w, addbarocL_use_rho_directly
       use m_addbarocn, only: addbarocn, addbarocnrho_w, addbarocn_use_rho_directly
       use m_addbaroc, only: addbaroc
@@ -65,7 +65,7 @@ contains
          !$OMP PARALLEL DO &
          !$OMP PRIVATE(LL)
          do LL = 1, lnxbc
-            if (hu(LL) == 0.0_dp) then
+            if (comparereal(hu(LL), 0.0_dp) == 0) then
                cycle
             end if
             call addbaroc(LL)
@@ -88,7 +88,7 @@ contains
             !$OMP PARALLEL DO &
             !$OMP PRIVATE(LL,Lb,Lt)
             do LL = 1, lnxbc
-               if (hu(LL) == 0.0_dp) then
+               if (comparereal(hu(LL), 0.0_dp) == 0) then
                   cycle
                end if
                call getLbotLtop(LL, Lb, Lt)
@@ -111,7 +111,7 @@ contains
             !$OMP PARALLEL DO &
             !$OMP PRIVATE(LL,Lb,Lt)
             do LL = 1, lnxbc
-               if (hu(LL) == 0.0_dp) then
+               if (comparereal(hu(LL), 0.0_dp) == 0) then
                   cycle
                end if
                call getLbotLtop(LL, Lb, Lt)
@@ -134,7 +134,7 @@ contains
             !$OMP PARALLEL DO &
             !$OMP PRIVATE(LL,Lb,Lt)
             do LL = 1, lnxbc
-               if (hu(LL) == 0.0_dp) then
+               if (comparereal(hu(LL), 0.0_dp) == 0) then
                   cycle
                end if
                call getLbotLtop(LL, Lb, Lt)
