@@ -30,7 +30,7 @@
 !
 !> Stores values related to circumcenter method
 module m_circumcenter_method
-   use precision
+   use precision, only: dp
 
    implicit none
    private
