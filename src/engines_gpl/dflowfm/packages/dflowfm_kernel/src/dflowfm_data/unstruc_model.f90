@@ -143,7 +143,7 @@ implicit none
     character(len=255) :: md_structurefile = ' ' !< Structure file, (e.g., *.ini)
     character(len=255) :: md_structurefile_dir = ' ' !< Directory containing the structure file (e.g., *.ini) (relative to MDU/current working dir).
 
-    character(len=255) :: md_wavefile      = ' ' !< File containing wave input (e.g., *_wave.nc)
+    character(len=255) :: md_wavefile      = ' ' !< File containing wave input (e.g., *_com.nc)
     character(len=255) :: md_surfbeatfile      = ' ' !< File containing surfbeat input (e.g., params.txt)
 
     character(len=255) :: md_sedfile       = ' ' !< File containing sediment characteristics (e.g., *.sed)
@@ -152,6 +152,7 @@ implicit none
     character(len=255) :: md_bedformfile   = ' ' !< File containing bedform settings (e.g., *.bfm)
     character(len=255) :: md_morphopol     = ' ' !< File containing boundaries of morphologic change extent (e.g., *.pol)
     character(len=255) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
+    character(len=255) :: md_dynvegpol = ' ' !< File containing extent of dynymic vegetation application
 
     character(len=1024):: md_obsfile       = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)
     integer            :: md_delete_observation_points_outside_grid   !< 0 - do not delete, 1 - delete
@@ -337,6 +338,7 @@ use m_fm_icecover, only: fm_ice_null
     md_bedformfile = ' '
     md_morphopol = ' '
     md_sedtrailsfile = ' '
+    md_dynvegpol = ' '
 
     md_obsfile = ' '
     md_delete_observation_points_outside_grid = 0
@@ -1271,6 +1273,17 @@ subroutine readMDUFile(filename, istat)
     if (frcunilin > 0) then
        jafrculin = 1
     end if
+    
+    ! Additions for dynamic roughness for storm impacts with morphology
+    call prop_get_integer(md_ptr, 'physics', 'DynRoughVeg'  , dynroughveg)
+    if (dynroughveg > 0 .and. ifrctypuni /=1) then
+       call mess(LEVEL_WARN, 'Dynamic vegetation roughness only implemented for Manning roughness.')
+       dynroughveg = 0
+    endif
+    call prop_get_double(md_ptr, 'physics', 'droot'  , droot)  ! default 0.5 [0-100]
+    call prop_get_double(md_ptr, 'physics', 'dstem'  , dstem)  ! default 0.5 [0-100]
+    call prop_get_double(md_ptr, 'physics', 'nmanmin'  , frcumin)  ! default 0.023
+    call prop_get_string(md_ptr, 'physics', 'dynvegpol', md_dynvegpol, success)
 
     call prop_get_double (md_ptr, 'physics', 'Umodlin'        , umodlin)
     call prop_get_double (md_ptr, 'physics', 'Vicouv'         , vicouv)
@@ -1416,6 +1429,11 @@ subroutine readMDUFile(filename, istat)
     if (jased == 4 .and. .not. stm_included) then
        call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Sedimentmodelnr=4, but no *.sed or no *.mor file specified.')
     endif
+    
+    if (dynroughveg==1 .and. .not. stm_included) then
+       call mess(LEVEL_WARN, 'Dynamic vegetation is only implemented for morphodynamic runs. DynRoughVeg set to 0.')
+       dynroughveg = 0
+    end if
 
     call prop_get_string (md_ptr, 'sediment', 'DredgeFile',           md_dredgefile, success)
     call prop_get_integer(md_ptr, 'sediment', 'BndTreatment',         jabndtreatment, success)           ! separate treatment boundary links in upwinding transports
@@ -3417,6 +3435,11 @@ endif
     if (writeall) then
        call prop_set(prop_ptr, 'physics', 'Umodlin',       umodlin,      'Linear friction umod, for ifrctyp=4,5,6')
     end if
+    call prop_set(prop_ptr, 'physics', 'DynRoughVeg'  , dynroughveg,'Switch for dynamic vegetation rougness. Default 0.')
+    call prop_set(prop_ptr, 'physics', 'droot'  , droot,'Root depth. Default 0.5m')  ! default 0.5 [0-100]
+    call prop_set(prop_ptr, 'physics', 'dstem'  , dstem,'Stem height. Default 0.5m')  ! default 0.5 [0-100]
+    call prop_set(prop_ptr, 'physics', 'nmanmin'  , frcumin,'Base friction Manning value. Default 0.023')  ! default 0.023
+    call prop_set(prop_ptr, 'physics', 'dynvegpol', md_dynvegpol, 'Area to apply dynamic vegetation roughness. If empty, no roughness update.')
     call prop_set(prop_ptr, 'physics', 'Vicouv',           vicouv,       'Uniform horizontal eddy viscosity (m2/s)')
     call prop_set(prop_ptr, 'physics', 'Dicouv',           dicouv,       'Uniform horizontal eddy diffusivity (m2/s)')
     if (writeall .or. (kmx > 0)) then

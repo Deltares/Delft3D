@@ -171,8 +171,8 @@ subroutine update_constituents(jarhoonly)
             do LL=1,Lnx
                call getLbotLtop(LL,Lb,Lt)                         ! prefer this, as Ltop gets messed around with in hk specials
                do L=Lb,Lt
-                  u1sed(L) = u1(L)!+mtd%uau(LL)                    ! JRE to do, discuss with Dano
-                  q1sed(L) = q1(L)!+mtd%uau(LL)*Au(L)
+                  u1sed(L) = u1(L)
+                  q1sed(L) = q1(L)
                end do
             end do
          else if (jatranspvel .eq. 2) then                        ! Eulerian approach
@@ -180,8 +180,8 @@ subroutine update_constituents(jarhoonly)
             do LL=1,Lnx
                call getLbotLtop(LL,Lb,Lt)
                do L=Lb,Lt
-                  u1sed(L) = u1(L)-ustokes(L)       !+mtd%uau(LL)
-                  q1sed(L) = q1(L)-ustokes(L)*Au(L) !+mtd%uau(LL)*Au(L)
+                  u1sed(L) = u1(L)-ustokes(L)       
+                  q1sed(L) = q1(L)-ustokes(L)*Au(L)
                end do
             end do
          end if

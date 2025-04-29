@@ -130,6 +130,10 @@
     end if
  end if
 
+ ! Adapt roughness according to burial/erosion
+ if (dynroughveg > 0) then
+    call update_dynveg()
+ end if
 
  call timstrt('Set conveyance       ', handle_extra(44)) ! Start cfuhi
  call setcfuhi()                                     ! set current related frictioncoefficient
