@@ -47,18 +47,23 @@ module m_circumcenter_method
 contains
 
    !> Extract the circumcenter method from the user provided string.
-   function extract_circumcenter_method(circumcenter_method_string) result(circumcenter_method_)
+   function extract_circumcenter_method(circumcenter_method_string, circumcenter_method_read) result(circumcenter_method_)
       use MessageHandling, only: mess, LEVEL_ERROR, LEVEL_WARN
       use string_module, only: str_tolower
 
       character(len=*), intent(in) :: circumcenter_method_string !< Description of the circumcenter method
+      logical, optional, intent(in) :: circumcenter_method_read !< Whether circumcenter_method_string was read
 
       integer :: circumcenter_method_ !< Local function variable for circumcenter method
 
       select case (trim(str_tolower(circumcenter_method_string)))
       case ('internalnetlinksedge')
          circumcenter_method_ = INTERNAL_NETLINKS_EDGE
-         call mess(LEVEL_WARN, '"[geometry] circumcenterMethod = internalNetlinksEdge" will be deprecated and will be removed in future. Please update this in your model. "circumcenterMethod = internalNetlinksLoop" is the improved current implementation using internal net links only. "circumcenterMethod = allNetlinksLoop" is a stricter implementation considering also the net links on the outline of the grid. The new options may require an update of your grid.')
+         if (present(circumcenter_method_read)) then
+            if (circumcenter_method_read) then
+               call mess(LEVEL_WARN, '"[geometry] circumcenterMethod = internalNetlinksEdge" will be deprecated and will be removed in future. Please update this in your model. "circumcenterMethod = internalNetlinksLoop" is the improved current implementation using internal net links only. "circumcenterMethod = allNetlinksLoop" is a stricter implementation considering also the net links on the outline of the grid. The new options may require an update of your grid.')
+            end if
+         end if
       case ('internalnetlinksloop')
          circumcenter_method_ = INTERNAL_NETLINKS_LOOP
       case ('allnetlinksloop')

@@ -995,7 +995,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'stripMesh', strip_mesh)
       call prop_get(md_ptr, 'geometry', 'Dcenterinside', Dcenterinside)
       call prop_get(md_ptr, 'geometry', 'circumcenterMethod', md_circumcenter_method, success)
-      circumcenter_method = extract_circumcenter_method(md_circumcenter_method)
+      circumcenter_method = extract_circumcenter_method(md_circumcenter_method, success)
       call prop_get(md_ptr, 'geometry', 'circumcenterTolerance', circumcenter_tolerance, success)
 
       call prop_get(md_ptr, 'geometry', 'PartitionFile', md_partitionfile, success)
