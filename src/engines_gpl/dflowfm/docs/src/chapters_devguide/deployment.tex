@@ -1,0 +1,56 @@
+\svnid{$Id$}
+
+\chapter{Deployment of \DFLOWFM{}\label{chap:deployment}}
+
+\section{Introduction}
+This chapter contains descriptions of the various ways how \DFLOWFM{} can be installed on various platforms, and how the source and binary distributions can be built.
+
+\section{TeamCity specifics}
+[yet empty]
+
+\section{Deployment on Windows platforms}
+[yet empty]
+
+\section{Deployment on Linux platforms}
+\subsection{Source distribution for Linux}
+\DFLOWFM can be shipped as a source distribution \verb|dflowfm-1.1.xxx.tar.gz|. The target audience for this format is users that are no developers (hence, no SVN-access), but who want to build on their own specific system with specific libraries or compilers. The goal is that they do not need any autotools packages per se (because \verb|configure| and all \verb|Makefile.in|s are in the \verb|.tar.gz|. This works well on CentOS, but on Ubuntu sometimes Automake and/or Libtool is still required on the user's machine. \todo{sort out Ubuntu issues}.
+
+\subsection{Subversion distribution for Linux}
+When building from an SVN working copy, run \verb|./autogen.sh| once. Next, follow the normal source build steps. Make sure recent enough versions of automake, autoconf and libtool are in your path (e.g., run \verb|module load automake|, etc.)
+
+\subsection{Binary distribution for Linux}
+Binary distributions including third-party dependencies has its drawbacks, and RPM packages may be preferred, but sometimes it is necessary. \DFLOWFM is then shipped with its \verb|lib/| directory filled with all known dependency libraries (\verb|.so|s).
+
+Dependencies are listed via:
+\begin{Verbatim}[frame=single, framesep=12pt]
+ldd dflowfm
+\end{Verbatim}
+
+\subsubsection{Known possible issues with binary distributions}
+\begin{enumerate}\setlength{\itemsep}{1.4em}
+\item \textbf{Issue}: error 'cannot open shared object file'. \\
+\begin{Verbatim}[frame=single, framesep=12pt]
+dflowfm: error while loading shared libraries: libXXX.so: cannot open
+shared object file: No such file or directory
+\end{Verbatim}
+\textbf{Answer} \\
+Not all required libraries can be found, make sure the \verb|.so| is in the \verb|LD_LIBRARY_PATH| (either \verb|export| it, or use \verb|module load|).
+
+%
+\item \textbf{Issue}: opal help file error. \\
+\begin{Verbatim}[frame=single, framesep=6pt, fontsize=\scriptsize]
+couldn't open the help file:
+    /opt/openmpi/1.8.1_intel_14.0.3/share/openmpi/help-opal-runtime.txt:
+    No such file of directory.  Sorry!
+\end{Verbatim}
+\textbf{Answer} \\
+This error may occur when \DFLOWFM call \verb|mpi_init|. OpenMPI has the problem that the binary libraries contain a hard path to its help files, e.g., as it was built on our systems. No doubt, the user uses different locations, so we should not ship OpenMPI ourselves.\\
+Solution: advise user RPM/debpkg/self-built OpenMPI. Or fallback: OpenMPI offers environment variable \verb|OPAL_PREFIX|, we could set it to \verb|dflowfm-cli-location/dflowfm/somedir|, but then we would need to ship the OpenMPI help files. Undesirable.
+
+%
+\item \textbf{Issue}: double \verb|-l -l| error \\
+\todo{include actual error here}
+
+\textbf{Answer} \\
+Caused by a combination of the MPI compiler and some version of libtool. A call to \verb|mpif90 -gen-dep| produces whitespace between \verb|-l| and the libname, which libtool parses incorrectly. More info on \url{https://issuetracker.deltares.nl/browse/UNST-732}
+\end{enumerate}
