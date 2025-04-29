@@ -1,0 +1,89 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: fig2dev Version 3.2 Patchlevel 5d -->
+<!-- CreationDate: Fri May 24 09:24:23 2013 -->
+<!-- Magnification: 1.000 -->
+<svg	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	width="18.8in" height="6.9in"
+	viewBox="-12 -1184 22524 8225">
+<g style="stroke-width:.025in; fill:none">
+<!-- Image -->
+<image xlink:href="file:///cygdrive/d/pijl/ds_doc_svn/user_manuals/dflowfm/pdffig/par_subdomain1.png" preserveAspectRatio="none"
+x="7953" y="1833" width="6705" height="4320" />
+<!-- Image -->
+<image xlink:href="file:///cygdrive/d/pijl/ds_doc_svn/user_manuals/dflowfm/pdffig/par_subdomain2.png" preserveAspectRatio="none"
+x="15615" y="-45" width="6705" height="4320" />
+<!-- Image -->
+<image xlink:href="file:///cygdrive/d/pijl/ds_doc_svn/user_manuals/dflowfm/pdffig/seq_subdomain1_2.png" preserveAspectRatio="none"
+x="346" y="-43" width="6705" height="6180" />
+<!-- Image -->
+<image xlink:href="file:///cygdrive/d/pijl/ds_doc_svn/user_manuals/dflowfm/pdffig/ghosts.png" preserveAspectRatio="none"
+x="10905" y="1935" width="990" height="990" />
+<!-- Image -->
+<image xlink:href="file:///cygdrive/d/pijl/ds_doc_svn/user_manuals/dflowfm/pdffig/ghosts.png" preserveAspectRatio="none"
+x="18585" y="3135" width="990" height="990" />
+<!-- Line -->
+<polyline points="15600,2400
+14939,2400
+" style="stroke:#000000;stroke-width:60;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 15600 2400 - 14625 2400-->
+<polygon points="14935 2280
+14695 2400
+14935 2520
+14935 2280
+
+" style="stroke:#000000;stroke-width:60;stroke-miterlimit:8;
+fill:#000000;"/>
+<!-- Line -->
+<polyline points="14700,3600
+15360,3600
+" style="stroke:#000000;stroke-width:60;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 14700 3600 - 15675 3600-->
+<polygon points="15365 3720
+15605 3600
+15365 3480
+15365 3720
+
+" style="stroke:#000000;stroke-width:60;stroke-miterlimit:8;
+fill:#000000;"/>
+<!-- Text -->
+<text xml:space="preserve" x="15300" y="6900" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="336" text-anchor="middle">parallel</text>
+<!-- Text -->
+<text xml:space="preserve" x="3900" y="1800" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="336" text-anchor="middle">subdomain 1</text>
+<!-- Text -->
+<text xml:space="preserve" x="3900" y="4500" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="336" text-anchor="middle">subdomain 0</text>
+<!-- Text -->
+<text xml:space="preserve" x="19200" y="1800" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="336" text-anchor="middle">subdomain 1</text>
+<!-- Text -->
+<text xml:space="preserve" x="11550" y="4500" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="336" text-anchor="middle">subdomain 0</text>
+<!-- Text -->
+<g transform="translate(15300,1800) rotate(-90.00021046)" >
+<text xml:space="preserve" x="0" y="0" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="336" text-anchor="start">communication</text>
+</g><!-- Line -->
+<polyline points="7500,-600
+7500,6900
+" style="stroke:#000000;stroke-width:15;
+stroke-linejoin:miter; stroke-linecap:butt;
+stroke-dasharray:80 80;"/>
+<!-- Text -->
+<text xml:space="preserve" x="3900" y="6900" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="336" text-anchor="middle">sequential</text>
+<!-- Line -->
+<polyline points="7800,3000
+22500,3000
+" style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+stroke-dasharray:40 40;"/>
+<!-- Line -->
+<polyline points="0,3000
+7200,3000
+" style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+stroke-dasharray:40 40;"/>
+</g>
+</svg>

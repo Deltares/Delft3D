@@ -1,0 +1,99 @@
+\documentclass[svn]{deltares_manual}
+
+\svnid{$Id: dflowfm_devguide.tex 78359 2023-04-24 19:39:23Z mooiman $}
+
+\input{../common/program_names}
+
+\usepackage{float}
+\usepackage{alltt}
+
+\makeatletter
+\InputIfFileExists{dflowfm_manual.aux}{}{}
+\InputIfFileExists{dflowfm_techref.aux}{}{}
+\makeatother
+
+%------------------------------------------------------------------------------
+\makeatletter
+\version{1.2.0}
+\hypersetup
+{
+    pdfinfo={
+        Author   = {Deltares},
+        Title    = {\DFLOWFMfull\ Developer's Guide},
+        Keywords = {Deltares Developer's Guide \DFLOWFMfull}
+        Creator  = {LaTeX hyperref},
+        Suite    = {\@version},
+        Revision = {\@svn@rev}
+    }
+}
+\makeatother
+
+%------------------------------------------------------------------------------
+%
+\renewcommand\BackgroundPicChapter{
+    \put(0,0){
+    \parbox[b][\paperheight]{\paperwidth}{%
+        \vspace{4\baselineskip}
+        \hspace{220mm}
+        \includegraphics[width=15mm]{cover/dhydro-chapter-ribbon.jpg}%
+        \vfill
+        }
+    }
+}
+%\renewcommand{\subsubsection}[1]{\subsubsection{#1}}
+
+
+
+
+\makeindex
+
+
+%------------------------------------------------------------------------------
+%
+\begin{document}
+\pagestyle{empty}
+\includepdf[pages=1, offset=72 -70]{cover/dhydro-cover-dflowfm-developers-guide.pdf} % links-rechts past precies
+\cleardoublepage
+\title{\DFLOWFMfull}
+\subtitle{}
+\manualtype{Developer's Guide}
+\author{ }
+\deltarestitle
+%
+
+\include{chapters_devguide/guide}
+%\include{chapters_devguide/introduction}
+
+\include{chapters_devguide/sourcearch}
+
+\include{chapters_devguide/bmi}
+
+\include{chapters_devguide/parallel}
+
+\include{chapters_devguide/deployment}
+
+\include{chapters_devguide/misc}
+
+\include{chapters_devguide/testbench}
+
+%-------------------------------------------------------------------------------
+\nocite{NO_CITE}
+%\nonumchapter{References}
+\bibliography{../common/deltares_manual}
+%-------------------------------------------------------------------------------
+
+\appendix
+
+%\include{chapters_devguide/example}
+
+\index{sleutelwoord}Sleutelwoord
+\cleardoublepage
+\printindex
+\cleardoublepage
+
+\pagestyle{empty}
+\cleardoublepage
+\mbox{}
+\includepdf[pages=2, offset=-72 -70]{cover/dhydro-cover-dflowfm-developers-guide.pdf} % links-rechts past precies
+\end{document}
+

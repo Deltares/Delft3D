@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Creator: fig2dev Version 3.2 Patchlevel 5d -->
+
+<!-- CreationDate: Fri May 24 09:21:46 2013 -->
+
+<!-- Magnification: 1.000 -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="167.50691mm"
+   height="153.50522mm"
+   viewBox="3619 1308 7972.4659 7276.1804"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="smooth_vol_D.svg">
+  <metadata
+     id="metadata54">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs52" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1028"
+     id="namedview50"
+     showgrid="true"
+     units="mm"
+     fit-margin-left="3"
+     fit-margin-top="3"
+     fit-margin-right="3"
+     fit-margin-bottom="3"
+     inkscape:zoom="1.8084291"
+     inkscape:cx="246.36279"
+     inkscape:cy="439.68635"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g4"
+     inkscape:snap-global="false">
+    <inkscape:grid
+       type="xygrid"
+       id="grid4156"
+       originx="471.80058"
+       originy="-313.49099" />
+  </sodipodi:namedview>
+  <g
+     style="fill:none;stroke-width:0.025in"
+     id="g4"
+     transform="translate(610.08516,483.21469)">
+    <!-- Line -->
+    <polygon
+       points="8389,3493 8389,3493 5906,2697 4386,4797 5926,6907 8389,6113 "
+       style="fill:#e8e8e8;fill-opacity:1;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter"
+       id="polygon6"
+       transform="matrix(0.95143044,-0.30786381,0.30786375,0.95143044,-1119.0221,2458.7415)" />
+    <!-- Text -->
+    <!-- Line -->
+    <polyline
+       points="6600,4800 3687,6916 "
+       style="stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter"
+       id="polyline10"
+       transform="matrix(0.95143044,-0.30786381,0.30786375,0.95143044,-1119.0221,2458.7415)" />
+    <!-- Line -->
+    <polyline
+       points="6600,4800 3687,2683 "
+       style="stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter"
+       id="polyline12"
+       transform="matrix(0.95143044,-0.30786381,0.30786375,0.95143044,-1119.0221,2458.7415)" />
+    <!-- Line -->
+    <polygon
+       points="10200,4800 10200,4800 6600,4800 7713,1375 "
+       style="stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter"
+       id="polygon14"
+       transform="matrix(0.95143044,-0.30786381,0.30786375,0.95143044,-1119.0221,2458.7415)" />
+    <!-- Line -->
+    <polyline
+       points="6600,4800 7712,8224 "
+       style="stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter"
+       id="polyline16"
+       transform="matrix(0.95143044,-0.30786381,0.30786375,0.95143044,-1119.0221,2458.7415)" />
+    <!-- Line -->
+    <polyline
+       points="8388,3492 8392,6101 "
+       style="fill:#bfbfbf;stroke:#000000;stroke-width:7;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:40, 40"
+       id="polyline18"
+       transform="matrix(0.95143044,-0.30786381,0.30786375,0.95143044,-1119.0221,2458.7415)" />
+    <!-- Line -->
+    <polyline
+       points="7713,1374 3687,2683 3686,6918 7710,8218 10200,4800 "
+       style="stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter"
+       id="polyline20"
+       transform="matrix(0.95143044,-0.30786381,0.30786375,0.95143044,-1119.0221,2458.7415)" />
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="8740.332"
+       y="4543.9907"
+       font-style="normal"
+       font-weight="normal"
+       font-size="288"
+       id="text22"
+       style="font-style:normal;font-weight:normal;font-size:288px;font-family:Times;text-anchor:start;fill:#000000"
+       transform="matrix(0.99998342,0.0057584,-0.00575839,0.99998342,0,0)">$j$</text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:13.43232346;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:13.43232403, 40.29697208;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 4535.7686,5681.1008 2088.374,-683.4237"
+       id="path4158-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="6426.3174"
+       y="5152.4941"
+       font-style="normal"
+       font-weight="normal"
+       font-size="288"
+       id="text24"
+       style="font-style:normal;font-weight:normal;font-size:288px;font-family:Times;text-anchor:end;fill:#000000"
+       transform="matrix(0.99999843,0.00177279,-0.00177279,0.99999843,0,0)">$\xio$</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="10185.872"
+       y="3850.3252"
+       font-style="normal"
+       font-weight="normal"
+       font-size="288"
+       id="text26"
+       style="font-style:normal;font-weight:normal;font-size:288px;font-family:Times;text-anchor:start;fill:#000000"
+       transform="matrix(0.99999927,0.00120992,-0.00120991,0.99999927,0,0)"
+       inkscape:transform-center-x="70.023047"
+       inkscape:transform-center-y="197.23422">$\xil$</text>
+    <!-- Text -->
+    <!-- Circle -->
+    <circle
+       cx="5890.3711"
+       cy="3370.8152"
+       r="60"
+       style="fill:#ffffff;stroke:#000000;stroke-width:7"
+       id="circle30"
+       transform="matrix(0.95143043,-0.30786381,0.30786375,0.95143045,0,0)" />
+    <!-- Circle -->
+    <circle
+       cx="1865.371"
+       cy="8911.8145"
+       r="60"
+       style="fill:#ffffff;stroke:#000000;stroke-width:7"
+       id="circle32"
+       transform="matrix(0.95143043,-0.30786381,0.30786375,0.95143045,0,0)" />
+    <!-- Circle -->
+    <circle
+       cx="5891.3711"
+       cy="10219.814"
+       r="60"
+       style="fill:#ffffff;stroke:#000000;stroke-width:7"
+       id="circle34"
+       transform="matrix(0.95143043,-0.30786381,0.30786375,0.95143045,0,0)" />
+    <!-- Circle -->
+    <!-- Circle -->
+    <!-- Circle -->
+    <!-- Circle -->
+    <!-- Circle -->
+    <!-- Circle -->
+    <circle
+       cx="8378.3711"
+       cy="6794.8145"
+       r="60"
+       style="fill:#ffffff;stroke:#000000;stroke-width:7"
+       id="circle46"
+       transform="matrix(0.95143043,-0.30786381,0.30786375,0.95143045,0,0)" />
+    <!-- Circle -->
+    <circle
+       cx="1865.371"
+       cy="4678.8145"
+       r="60"
+       style="fill:#ffffff;stroke:#000000;stroke-width:7"
+       id="circle48"
+       transform="matrix(0.95143043,-0.30786381,0.30786375,0.95143045,0,0)" />
+    <text
+       xml:space="preserve"
+       x="6892.0508"
+       y="1071.6125"
+       font-style="normal"
+       font-weight="normal"
+       font-size="288"
+       id="text26-0"
+       style="font-style:normal;font-weight:normal;font-size:288px;font-family:Times;text-align:center;text-anchor:middle;fill:#000000;stroke-width:0.025in"
+       transform="matrix(0.99999939,0.00110425,-0.00110425,0.99999939,0,0)">$\vec{\xi}_{1_{j+1}}$</text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:13.43232441;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:13.43232456, 40.29697369;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 6638.1267,4992.3631 7937.1486,3196.18"
+       id="path4158"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:13.43232346;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:13.43232403, 40.29697208;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 6637.0063,4990.9808 5338.3749,3211.323"
+       id="path4158-8"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:13.43232346;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:13.43232403, 40.29697208;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 6644.67,7207.5077 -7.0963,-2214.539"
+       id="path4158-7"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:13.43232346;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:13.43232403, 40.29697208;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 8743.8236,5680.9074 6637.6278,4991.5776"
+       id="path4158-26"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <circle
+       cx="6567.8037"
+       cy="8092.8145"
+       r="60"
+       style="fill:#bfbfbf;stroke:#000000;stroke-width:7"
+       id="circle36"
+       transform="matrix(0.95143043,-0.30786381,0.30786375,0.95143045,0,0)" />
+    <circle
+       cx="6567.3711"
+       cy="5487.8145"
+       r="60"
+       style="fill:#bfbfbf;stroke:#000000;stroke-width:7"
+       id="circle44"
+       transform="matrix(0.95143043,-0.30786381,0.30786375,0.95143045,0,0)" />
+    <circle
+       cx="4088.3708"
+       cy="4688.8145"
+       r="60"
+       style="fill:#bfbfbf;stroke:#000000;stroke-width:7"
+       id="circle42"
+       transform="matrix(0.95143043,-0.30786381,0.30786375,0.95143045,0,0)" />
+    <circle
+       cx="2562.3708"
+       cy="6800.8145"
+       r="60"
+       style="fill:#bfbfbf;stroke:#000000;stroke-width:7"
+       id="circle40"
+       transform="matrix(0.95143043,-0.30786381,0.30786375,0.95143045,0,0)" />
+    <circle
+       cx="4099.3711"
+       cy="8903.8145"
+       r="60"
+       style="fill:#bfbfbf;stroke:#000000;stroke-width:7"
+       id="circle38"
+       transform="matrix(0.95143043,-0.30786381,0.30786375,0.95143045,0,0)" />
+    <text
+       xml:space="preserve"
+       x="8972.375"
+       y="5702.4443"
+       font-style="normal"
+       font-weight="normal"
+       font-size="288"
+       id="text8"
+       style="font-style:normal;font-weight:normal;font-size:288px;font-family:Times;text-align:start;text-anchor:start;fill:#000000"
+       transform="matrix(0.99992959,0.01186615,-0.01186615,0.9999296,0,0)">$\xiR$</text>
+    <text
+       xml:space="preserve"
+       x="8121.1636"
+       y="2993.0061"
+       font-style="normal"
+       font-weight="normal"
+       font-size="288"
+       id="text28"
+       style="font-style:normal;font-weight:normal;font-size:288px;font-family:Times;text-anchor:middle;fill:#000000"
+       transform="matrix(0.99998457,-0.00555442,0.00555442,0.99998457,0,0)">$\xiL$</text>
+  </g>
+</svg>

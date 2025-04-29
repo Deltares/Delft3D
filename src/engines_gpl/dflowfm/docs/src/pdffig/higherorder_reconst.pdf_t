@@ -1,0 +1,29 @@
+\begin{picture}(0,0)%
+\includegraphics{pdffig/higherorder_reconst.pdf}%
+\end{picture}%
+\setlength{\unitlength}{3947sp}%
+%
+\begingroup\makeatletter\ifx\SetFigFont\undefined%
+\gdef\SetFigFont#1#2#3#4#5{%
+  \reset@font\fontsize{#1}{#2pt}%
+  \fontfamily{#3}\fontseries{#4}\fontshape{#5}%
+  \selectfont}%
+\fi\endgroup%
+\begin{picture}(9532,10201)(1318,-10218)
+\put(1801,-5986){\makebox(0,0)[rb]{\smash{{\SetFigFont{20}{24.0}{\rmdefault}{\mddefault}{\updefault}{\color[rgb]{0,0,0}${{R_L}_2}_j$}%
+}}}}
+\put(6001,-5011){\makebox(0,0)[b]{\smash{{\SetFigFont{20}{24.0}{\rmdefault}{\mddefault}{\updefault}{\color[rgb]{0,0,0}$L(j)$}%
+}}}}
+\put(8401,-5011){\makebox(0,0)[b]{\smash{{\SetFigFont{20}{24.0}{\rmdefault}{\mddefault}{\updefault}{\color[rgb]{0,0,0}$R(j)$}%
+}}}}
+\put(7501,-4711){\makebox(0,0)[b]{\smash{{\SetFigFont{20}{24.0}{\rmdefault}{\mddefault}{\updefault}{\color[rgb]{0,0,0}$\vec{n}_j$}%
+}}}}
+\put(4501,-5011){\makebox(0,0)[b]{\smash{{\SetFigFont{20}{24.0}{\rmdefault}{\mddefault}{\updefault}{\color[rgb]{0,0,0}${C_L}_j$}%
+}}}}
+\put(3954,-8604){\makebox(0,0)[b]{\smash{{\SetFigFont{20}{24.0}{\rmdefault}{\mddefault}{\updefault}{\color[rgb]{0,0,0}${{k_L}_2}_j$}%
+}}}}
+\put(4764,-1654){\makebox(0,0)[b]{\smash{{\SetFigFont{20}{24.0}{\rmdefault}{\mddefault}{\updefault}{\color[rgb]{0,0,0}${{k_L}_1}_j$}%
+}}}}
+\put(1801,-3211){\makebox(0,0)[rb]{\smash{{\SetFigFont{20}{24.0}{\rmdefault}{\mddefault}{\updefault}{\color[rgb]{0,0,0}${{R_L}_1}_j$}%
+}}}}
+\end{picture}%
