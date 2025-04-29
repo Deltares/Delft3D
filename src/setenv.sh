@@ -85,6 +85,7 @@ else
   
      module load intel/2023.1.0
      module load intelmpi/2021.10.0
+	 module load intelmkl/2023.1.0
      module load netcdf/4.9.2_4.6.1_intel2023.1.0
      module load gdal/3.6.3_intel2023.1.0
      module load gcc/12.2.0_gcc12.2.0
