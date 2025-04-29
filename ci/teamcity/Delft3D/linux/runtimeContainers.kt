@@ -18,7 +18,7 @@ object LinuxRuntimeContainers : BuildType({
         TemplateDockerRegistry
     )
 
-    name = "Runtime-environment Containers"
+    name = "Runtime Containers"
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
     vcs {
@@ -73,16 +73,16 @@ object LinuxRuntimeContainers : BuildType({
             """.trimIndent()
         }
         dockerCommand {
-            name = "Docker build runtime-environment image"
+            name = "Docker build Delft3D runtime image"
             commandType = build {
                 source = file {
-                    path = "ci/teamcity/Delft3D/linux/docker/runtimeEnvironment.Dockerfile"
+                    path = "ci/teamcity/Delft3D/linux/docker/runtimeContainer.Dockerfile"
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
                 namesAndTags = """
-                    runtime-environment
-                    containers.deltares.nl/delft3d/delft3d-runtime-environment:alma8-%build.vcs.number%
+                    runtime-container
+                    containers.deltares.nl/delft3d/delft3d-runtime-container:alma8-%build.vcs.number%
                 """.trimIndent()
                 commandArgs = """
                     --pull
@@ -94,14 +94,14 @@ object LinuxRuntimeContainers : BuildType({
             }
         }
         dockerCommand {
-            name = "Docker build testbench-environment image"
+            name = "Docker build testbench container image"
             commandType = build {
                 source = file {
-                    path = "ci/teamcity/Delft3D/linux/docker/testEnvironment.Dockerfile"
+                    path = "ci/teamcity/Delft3D/linux/docker/testContainer.Dockerfile"
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
-                namesAndTags = "containers.deltares.nl/delft3d/test/delft3d-test-environment:alma8-%build.vcs.number%"
+                namesAndTags = "containers.deltares.nl/delft3d/test/delft3d-test-container:alma8-%build.vcs.number%"
                 commandArgs = """
                     --build-arg GIT_COMMIT=%build.vcs.number%
                     --build-arg GIT_BRANCH=%teamcity.build.branch%
@@ -112,8 +112,8 @@ object LinuxRuntimeContainers : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d/delft3d-runtime-environment:alma8-%build.vcs.number%
-                    containers.deltares.nl/delft3d/test/delft3d-test-environment:alma8-%build.vcs.number%
+                    containers.deltares.nl/delft3d/delft3d-runtime-container:alma8-%build.vcs.number%
+                    containers.deltares.nl/delft3d/test/delft3d-test-container:alma8-%build.vcs.number%
                 """.trimIndent()
             }
         }
