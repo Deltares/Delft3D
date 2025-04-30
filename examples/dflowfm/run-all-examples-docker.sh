@@ -18,7 +18,7 @@ for dir in */ ; do
     if [ -f "$dir/run_docker.sh" ]; then
         echo "Found run_docker.sh in $dir. Executing..."
         # Run the script
-        (cd "$dir" && ./run_docker.sh --image "$image")
+        ${dir}/run_docker.sh --image "$image"
     else
         echo "No run_docker.sh found in $dir."
     fi
