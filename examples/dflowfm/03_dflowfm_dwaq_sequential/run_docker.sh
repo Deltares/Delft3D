@@ -16,4 +16,4 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Run the Docker command with the image parameter
-docker run --rm --mount $mount_cmd --workdir $work_dir $image $example_script
+docker run --user $(id -u) --rm --mount $mount_cmd --workdir $work_dir $image $example_script
