@@ -50,19 +50,17 @@ module m_dambreak_breach
    integer, protected, pointer :: n_db_links_protected => n_db_links
    integer, protected, pointer :: n_db_signals_protected => n_db_signals
 
-   ! time varying, values can be retrieved via BMI interface
-   real(kind=dp), dimension(:), allocatable, target :: db_breach_depths !< dambreak breach depths (as a level)
-   real(kind=dp), dimension(:), allocatable, target :: db_breach_widths !< dambreak breach widths (as a level)
-   real(kind=dp), dimension(:), allocatable, target :: db_upstream_levels !< upstream water levels computed each time step
-   real(kind=dp), dimension(:), allocatable, target :: db_downstream_levels !< downstream water levels computed each time step
-
    integer, dimension(:), allocatable :: db_upstream_link_ids !< dambreak upstream links index array
    integer, dimension(:), allocatable :: db_downstream_link_ids !< dambreak downstream links index array
 
+   ! This module holds pulic functions/subroutines after contains
+   ! They uses 1) only basic modules, 2) only data from the module, and 3) they are small!
+   
    public :: adjust_bobs_for_dambreaks, allocate_and_initialize_dambreak_data, update_dambreak_breach, &
              add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
              add_averaging_downstream_signal, fill_dambreak_values, set_dambreak_widening_method, &
-             set_breach_start_link
+             set_breach_start_link, get_dambreak_depth_c_loc, get_dambreak_breach_width_c_loc, &
+             get_dambreak_upstream_level_c_loc, get_dambreak_downstream_level_c_loc
 
    interface
       module subroutine adjust_bobs_for_dambreaks()
@@ -109,6 +107,31 @@ module m_dambreak_breach
       module subroutine set_dambreak_widening_method(method_string)
          character(len=*), intent(inout) :: method_string !< method for dambreak widening
       end subroutine set_dambreak_widening_method
+
+      module function get_dambreak_depth_c_loc(item_index) result(res)
+         use iso_c_binding, only: c_ptr
+         integer, intent(in) :: item_index
+         type(c_ptr) :: res
+      end function get_dambreak_depth_c_loc
+
+      module function get_dambreak_breach_width_c_loc(item_index) result(res)
+         use iso_c_binding, only: c_ptr
+         integer, intent(in) :: item_index
+         type(c_ptr) :: res
+      end function get_dambreak_breach_width_c_loc
+
+      module function get_dambreak_upstream_level_c_loc(item_index) result(res)
+         use iso_c_binding, only: c_ptr
+         integer, intent(in) :: item_index
+         type(c_ptr) :: res
+      end function get_dambreak_upstream_level_c_loc
+
+      module function get_dambreak_downstream_level_c_loc(item_index) result(res)
+         use iso_c_binding, only: c_ptr
+         integer, intent(in) :: item_index
+         type(c_ptr) :: res
+      end function get_dambreak_downstream_level_c_loc
+
    end interface
 
 contains
@@ -227,7 +250,7 @@ contains
    !> provides dambreak names
    function get_dambreak_names() result(names)
       character(len=128), dimension(:), allocatable :: names !< the dambreak names
-            
+
       names = [(db_ids(i), integer :: i=1, n_db_signals)]
 
    end function get_dambreak_names
