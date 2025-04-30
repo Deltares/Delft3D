@@ -1379,7 +1379,7 @@ contains
          call mess(LEVEL_ERROR, 'thermobaricityInBaroclinicPressureGradient is only available for thermobaricity = 1.')
       end if
       if (apply_thermobaricity .and. (.not. thermobaricity_in_brunt_vaisala_frequency) .and. (.not. thermobaricity_in_baroclinic_pressure_gradient)) then
-         call mess(LEVEL_ERROR, 'When thermobaricity = 1, either thermobaricityInBruntVaisala or thermobaricityInBaroclinicPressureGradient should be set to 1.')
+         call mess(LEVEL_WARN, 'When thermobaricity = 1, it is strongly recommended to either set thermobaricityInBruntVaisala or thermobaricityInBaroclinicPressureGradient to 1.')
       end if
       call validate_density_settings(idensform, apply_thermobaricity)
 
