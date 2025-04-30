@@ -1920,7 +1920,7 @@ contains
 ! April 2010: subset max nr days from evap file <= nr days (eventduration(.,1) +2
            EventDuration(Ievent,5) = Min (LASTT * NRSecsRAI / NRSDAY + 2, EventDuration(ievent,1)+2,EventDuration(Ievent,5))
 ! Issue evap end of file
-           if (EventStartDateTime(Ievent,4) .eq. 0) then
+           if (EventStartDateTime(Ievent,2) .eq. 0) then
               if (EventDuration(Ievent,5) .gt. 1) EventDuration(Ievent,5) = EventDuration(Ievent,5)-1
            else
               EventDuration(Ievent,5) = Int (JulianSubDateEnd -0.5D0) - Int (JulianSubDateStart -0.5D0) + 1
