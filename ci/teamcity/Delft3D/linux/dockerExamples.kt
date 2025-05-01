@@ -6,13 +6,21 @@ import jetbrains.buildServer.configs.kotlin.failureConditions.*
 import Delft3D.linux.*
 import Delft3D.template.*
 
+import Trigger
+
 object LinuxRunAllDockerExamples : BuildType({
-    name = "Run all docker examples"
+
+    description = "Run all Docker example cases for fm/ and all/ merge-requests."
 
     templates(
+        TemplateMergeRequest,
         TemplateDockerRegistry,
+        TemplatePublishStatus,
         TemplateMonitorPerformance
     )
+
+    name = "Run all docker examples"
+    buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
     vcs {
         root(DslContext.settingsRoot)
@@ -24,7 +32,7 @@ object LinuxRunAllDockerExamples : BuildType({
             name = "Execute run_all_examples_docker.sh"
             scriptContent = """
                 cd ./examples/dflowfm/
-                ./run-all-examples-docker.sh --image "containers.deltares.nl/delft3d/delft3dfm:alma8-%build.vcs.number%"
+                ./run-all-examples-docker.sh --image "containers.deltares.nl/delft3d/delft3d-runtime-container:alma8-%build.vcs.number%"
             """.trimIndent()
         }
     }
@@ -41,6 +49,11 @@ object LinuxRunAllDockerExamples : BuildType({
     }
 
     dependencies {
+        dependency(Trigger) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+            }
+        }
         dependency(LinuxRuntimeContainers) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START

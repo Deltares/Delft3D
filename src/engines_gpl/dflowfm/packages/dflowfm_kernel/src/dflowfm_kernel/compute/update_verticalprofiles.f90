@@ -54,7 +54,7 @@ contains
       use m_sferic, only: pi
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
-      use m_turbulence, only: cmukep, rho, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
+      use m_turbulence, only: cmukep, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
                               c3t_stable, c3t_unstable
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
@@ -200,7 +200,7 @@ contains
 
       else if (iturbulencemodel >= 3) then ! 3=k-epsilon, 4=k-tau
 
-         call calculate_drhodz(rho, zws, drhodz)
+         call calculate_drhodz(zws, drhodz)
 
          if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
 
@@ -893,14 +893,14 @@ contains
    end subroutine update_verticalprofiles
 
    !> Calculates vertical density gradient for Brunt-Vaisala frequency
-   subroutine calculate_drhodz(rho, zws, drhodz)
+   subroutine calculate_drhodz(zws, drhodz)
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowgeom, only: ndx
-      use m_physcoef, only: ag, rhomean, apply_thermobaricity
+      use m_physcoef, only: ag, rhomean, apply_thermobaricity, thermobaricity_in_brunt_vaisala_frequency
       use m_density, only: density_at_cell_given_pressure
+      use m_turbulence, only: potential_density
       use precision, only: dp
 
-      real(kind=dp), dimension(:), intent(in) :: rho !< Water density at cell centres (kg/m3)
       real(kind=dp), dimension(:), intent(in) :: zws !< z levels  (m) of interfaces (w-points) at cell centres (s-points)
       real(kind=dp), dimension(:), intent(out) :: drhodz !< Vertical density gradient (in horizontal cell centers)
 
@@ -909,7 +909,7 @@ contains
 
       drhodz(:) = 0.0_dp
 
-      if (.not. apply_thermobaricity) then
+      if ((.not. apply_thermobaricity) .or. (.not. thermobaricity_in_brunt_vaisala_frequency)) then
          !$OMP PARALLEL DO &
          !$OMP PRIVATE(cell_index_2d, cell_index_3d, k_bot, k_top, dz)
          do cell_index_2d = 1, ndx
@@ -917,7 +917,7 @@ contains
             do cell_index_3d = k_bot, k_top - 1
                dz = 0.5_dp * (zws(cell_index_3d + 1) - zws(cell_index_3d - 1)) ! Vertical distance between cell centers
                if (dz > 0.0_dp) then
-                  drhodz(cell_index_3d) = (rho(cell_index_3d + 1) - rho(cell_index_3d)) / dz
+                  drhodz(cell_index_3d) = (potential_density(cell_index_3d + 1) - potential_density(cell_index_3d)) / dz
                end if
             end do
          end do

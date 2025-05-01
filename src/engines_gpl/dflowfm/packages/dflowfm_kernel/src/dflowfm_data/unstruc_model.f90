@@ -1364,6 +1364,21 @@ contains
 
       call prop_get(md_ptr, 'physics', 'idensform', idensform)
       call prop_get(md_ptr, 'physics', 'thermobaricity', apply_thermobaricity)
+      call prop_get(md_ptr, 'physics', 'thermobaricityInBruntVaisala', thermobaricity_in_brunt_vaisala_frequency, success, value_parsed)
+      if (.not. apply_thermobaricity) then
+         if (value_parsed .and. thermobaricity_in_brunt_vaisala_frequency) then
+            call mess(LEVEL_ERROR, 'thermobaricityInBruntVaisala is only available for thermobaricity = 1.')
+         else
+            thermobaricity_in_brunt_vaisala_frequency = .false.
+         end if
+      end if
+      call prop_get(md_ptr, 'physics', 'thermobaricityInBaroclinicPressureGradient', thermobaricity_in_baroclinic_pressure_gradient, success, value_parsed)
+      if ((.not. apply_thermobaricity) .and. thermobaricity_in_baroclinic_pressure_gradient .and. value_parsed) then
+         call mess(LEVEL_ERROR, 'thermobaricityInBaroclinicPressureGradient is only available for thermobaricity = 1.')
+      end if
+      if (apply_thermobaricity .and. (.not. thermobaricity_in_brunt_vaisala_frequency) .and. (.not. thermobaricity_in_baroclinic_pressure_gradient)) then
+         call mess(LEVEL_WARN, 'When thermobaricity = 1, it is strongly recommended to either set thermobaricityInBruntVaisala or thermobaricityInBaroclinicPressureGradient to 1.')
+      end if
       call validate_density_settings(idensform, apply_thermobaricity)
 
       call prop_get(md_ptr, 'physics', 'Temperature', jatem)
@@ -3318,6 +3333,8 @@ contains
 
       call prop_set(prop_ptr, 'physics', 'Idensform', idensform, 'Density calulation (0: uniform, 1: Eckart, 2: UNESCO, 3: UNESCO83)')
       call prop_set(prop_ptr, 'physics', 'thermobaricity', apply_thermobaricity, 'Include pressure effects on water density. Only works for idensform = 3 (UNESCO83).')
+      call prop_set(prop_ptr, 'physics', 'thermobaricityInBruntVaisala', thermobaricity_in_brunt_vaisala_frequency, 'Apply thermobaricity in computing the Brunt-Vaisala frequency (0 = no, 1 = yes).')
+      call prop_set(prop_ptr, 'physics', 'thermobaricityInBaroclinicPressureGradient', thermobaricity_in_baroclinic_pressure_gradient, 'Apply thermobaricity in computing the baroclinic pressure gradient (0 = no, 1 = yes).')
 
       call prop_set(prop_ptr, 'physics', 'Ag', ag, 'Gravitational acceleration')
       call prop_set(prop_ptr, 'physics', 'TidalForcing', jatidep, 'Tidal forcing, if jsferic=1 (0: no, 1: yes)')
