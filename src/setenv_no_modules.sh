@@ -34,12 +34,6 @@ fi
 export PATH=/opt/apps/gcc/7.3.0/bin:/opt/apps/gcc/7.3.0/include:$PATH
 export LD_LIBRARY_PATH=/opt/apps/7.3.0/lib64:$LD_LIBRARY_PATH
  
-# proj:
-export PKG_CONFIG_PATH=/opt/apps/proj/7.1.0_gcc7.3.0/lib/pkgconfig:$PKG_CONFIG_PATH
-
-# gdal:
-export PKG_CONFIG_PATH=/opt/apps/gdal/3.1.2_gcc7.3.0/lib/pkgconfig:$PKG_CONFIG_PATH
-
 # svn:
 export PATH=/opt/apps/svn/1.9.12serf_gcc7.3.0/bin:$PATH
 export LD_LIBRARY_PATH=/opt/apps/serf/1.3.9_gcc7.3.0/lib:$LD_LIBRARY_PATH

@@ -177,14 +177,14 @@ INTERFACE
   TYPE(c_ptr) :: shpcreate_orig
   END FUNCTION shpcreate_orig
 
-  SUBROUTINE shpcomputeextents_int(psobject, ftnobject) BIND(C,name='SHPComputeExtentsInt')
+  SUBROUTINE shpcomputeextents_int(psobject, ftnobject) BIND(C,name='SHPComputeExtents')
   IMPORT
   TYPE(c_ptr),VALUE :: psobject
   TYPE(c_ptr),VALUE :: ftnobject
   END SUBROUTINE shpcomputeextents_int
 
   FUNCTION shpcreateobject_int(nshptype, nshapeid, nparts, panpartstart, panparttype, &
-   nvertices, padfx, padfy, padfz, padfm, ftnobject) BIND(C,name='SHPCreateObjectInt')
+   nvertices, padfx, padfy, padfz, padfm, ftnobject) BIND(C,name='SHPCreateObject')
   IMPORT
   INTEGER(kind=c_int),VALUE :: nshptype
   INTEGER(kind=c_int),VALUE :: nshapeid
@@ -200,7 +200,7 @@ INTERFACE
   INTEGER(kind=c_int) :: shpcreateobject_int
   END FUNCTION shpcreateobject_int
 
-  FUNCTION shpcreatesimpleobject_int(nshptype, nvertices, padfx, padfy, padfz, ftnobject) BIND(C,name='SHPCreateSimpleObjectInt')
+  FUNCTION shpcreatesimpleobject_int(nshptype, nvertices, padfx, padfy, padfz, ftnobject) BIND(C,name='SHPCreateSimpleObject')
   IMPORT
   INTEGER(kind=c_int),VALUE :: nshptype
   INTEGER(kind=c_int),VALUE :: nvertices
@@ -219,7 +219,7 @@ INTERFACE
   INTEGER(kind=c_int) :: shpwriteobject_orig
   END FUNCTION shpwriteobject_orig
 
-  FUNCTION shpreadobject_int(psshp, hentity, ftnobject) BIND(C,name='SHPReadObjectInt')
+  FUNCTION shpreadobject_int(psshp, hentity, ftnobject) BIND(C,name='SHPReadObject')
   IMPORT
   TYPE(c_ptr),VALUE :: psshp
   INTEGER(kind=c_int),VALUE :: hentity
@@ -233,7 +233,7 @@ INTERFACE
   END SUBROUTINE shpdestroyobject_orig
 
 #ifndef SHAPELIB_PRE10
-  FUNCTION shprewindobject_int(hshp, psobject, ftnobject) BIND(C,name='SHPRewindObjectInt')
+  FUNCTION shprewindobject_int(hshp, psobject, ftnobject) BIND(C,name='SHPRewindObject')
   IMPORT
   TYPE(c_ptr),VALUE :: hshp
   TYPE(c_ptr),VALUE :: psobject
@@ -606,7 +606,7 @@ INTEGER :: ishape !< shapeid to be recorded with this shape
 INTEGER :: nparts !< number of parts
 INTEGER :: nvertices !< number of vertices
 INTEGER :: panpartstart(nparts) !< start indices of each part
-INTEGER :: panparttype(nparts) !< type of each of the parts, this is only meaningful for \a MULTIPATCH files, for all other cases it will be assumed to be \a SHPP_RING 
+INTEGER :: panparttype(nparts) !< type of each of the parts, this is only meaningful for \a MULTIPATCH files, for all other cases it will be assumed to be \a SHPP_RING
 REAL(kind=c_double) :: padfx(nvertices) !< x coordinates
 REAL(kind=c_double) :: padfy(nvertices) !< y coordinates
 REAL(kind=c_double),OPTIONAL :: padfz(nvertices) !< z coordinates, it can be skipped
@@ -924,7 +924,7 @@ INTEGER(kind=c_int) :: nshapeid ! Shape Number (-1 is unknown/unassigned)
 INTEGER(kind=c_int) :: nparts ! # of Parts (0 implies single part with no info)
 INTEGER(kind=c_int),TARGET :: panpartstart(nparts), & ! Start Vertex of part
  panparttype(nparts) ! Part Type (SHPP_RING if not SHPT_MULTIPATCH)
-INTEGER(kind=c_int) :: nvertices ! Vertex list 
+INTEGER(kind=c_int) :: nvertices ! Vertex list
 REAL(kind=c_double),TARGET ::  padfx(nvertices), padfy(nvertices), &
  padfz(nvertices), padfm(nvertices) ! (all zero if not provided)
 REAL(kind=c_double) :: & ! Bounds in X, Y, Z and M dimensions

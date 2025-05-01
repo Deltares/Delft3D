@@ -48,22 +48,11 @@ endif()
 if(NOT TARGET esmfsm)
     add_subdirectory(${checkout_src_root}/${esmfsm_module} esmfsm)
 endif()
-if(NOT TARGET shp)
-    add_subdirectory(${checkout_src_root}/${shp_module} shp)
-endif()
 
 # fortrangis
 if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
 endif()
-
-# proj
-if(WIN32)
-    if(NOT TARGET proj)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/proj_configuration.cmake)
-    endif()
-endif(WIN32)
-
 
 # Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
 project(rtc)

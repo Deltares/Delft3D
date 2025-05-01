@@ -76,17 +76,6 @@ if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
 endif()
 
-if(NOT TARGET shp)
-    add_subdirectory(${checkout_src_root}/${shp_module} shp)
-endif()
-
-# proj
-if(WIN32)
-    if(NOT TARGET proj)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/proj_configuration.cmake)
-    endif()
-endif(WIN32)
-
 # io_netcdf
 if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)

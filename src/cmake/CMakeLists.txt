@@ -134,9 +134,6 @@ if (UNIX)
 
     # Petsc
     pkg_check_modules(PETSC REQUIRED PETSc)
-
-    # Proj
-    pkg_check_modules(proj REQUIRED proj)
 endif(UNIX)
 
 if (UNIX)

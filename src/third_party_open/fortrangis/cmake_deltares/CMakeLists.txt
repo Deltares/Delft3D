@@ -7,7 +7,7 @@ set(fortranc_path ${src_path}/libfortranc)
 set(fortranc_sources ${fortranc_path}/fortranc.F90
                         ${fortranc_path}/iso_varying_string.F90)
 
-                        
+
 configure_file(${src_path}/cmake_config.h.in ${fortranc_path}/config.h)
 set(configFile ${fortranc_path}/config.h)
 
@@ -24,7 +24,6 @@ source_group("${visual_studio_source_group_name}" FILES ${fortranc_sources})
 # Create the folder structure in vfproj
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${fortranc_sources})
 set_target_properties(${fortranc_library_name} PROPERTIES FOLDER third_party_open/fortrangis)
-
 
 # Define the fortrangis library
 set(fortrangis_path ${src_path}/libfortrangis)
@@ -47,22 +46,10 @@ target_link_libraries(${fortrangis_library_name} PRIVATE ${fortranc_library_name
 
 # shp intentionally comes first here: otherwise on Windows, the precompiled gdal_i.lib
 # will introduce a duplicate definition of Shp* API functions.
-target_link_libraries(${fortrangis_library_name} INTERFACE shp)
-
-if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PROJ REQUIRED IMPORTED_TARGET proj)
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(GDAL REQUIRED IMPORTED_TARGET gdal)
-
-    target_link_libraries(${fortrangis_library_name} INTERFACE PkgConfig::PROJ PkgConfig::GDAL)
-endif(UNIX)
-if (WIN32)
-   target_link_libraries(${fortrangis_library_name} PRIVATE PROJ::proj)
-   find_package(gdal REQUIRED HINTS "${src_path}/../gdal")
-   target_link_libraries(${fortrangis_library_name} PRIVATE GDAL::GDAL)
-endif(WIN32)
+# find_package(shapelib REQUIRED)
+target_link_libraries(${fortrangis_library_name} PUBLIC shapelib::shp)
+target_link_libraries(${fortrangis_library_name} PRIVATE PROJ::proj)
+target_link_libraries(${fortrangis_library_name} PRIVATE GDAL::GDAL)
 
 # Propagate preprocessor variable definitions to any other package that uses fortrangis.
 target_compile_definitions(${fortrangis_library_name} INTERFACE HAVE_PROJ)
