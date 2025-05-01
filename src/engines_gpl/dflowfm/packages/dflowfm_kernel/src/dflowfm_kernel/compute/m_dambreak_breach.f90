@@ -54,7 +54,7 @@ module m_dambreak_breach
    integer, dimension(:), allocatable :: db_downstream_link_ids !< dambreak downstream links index array
 
    ! This module holds pulic functions/subroutines after contains
-   ! They uses 1) only basic modules, 2) only data from the module, and 3) they are small!
+   ! They use 1) only basic modules, 2) only data from the module, and 3) they are small!
    
    public :: adjust_bobs_for_dambreaks, allocate_and_initialize_dambreak_data, update_dambreak_breach, &
              add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
@@ -152,26 +152,6 @@ contains
 
    end function exist_dambreak_links
 
-   !> Retrieve the set of snapped flowlinks for a dambreak
-   pure function retrieve_set_of_flowlinks_dambreak(i_dambreak) result(links)
-
-      integer, intent(in) :: i_dambreak !< Index of the dambreak
-      integer, dimension(:), allocatable :: links !< The set of flowlinks that this dambreak has been snapped to
-
-      integer :: n_links !< Total number of flowlinks in the set
-      integer :: k, i
-
-      n_links = db_last_link(i_dambreak) + 1 - db_first_link(i_dambreak)
-      allocate (links(n_links), source=-999)
-
-      i = 0
-      do k = db_first_link(i_dambreak), db_last_link(i_dambreak)
-         i = i + 1
-         links(i) = db_link_ids(k)
-      end do
-
-   end function retrieve_set_of_flowlinks_dambreak
-
    pure function should_write_dambreaks() result(res)
 
       logical :: res
@@ -248,11 +228,29 @@ contains
    end function get_active_dambreak_index
 
    !> provides dambreak names
-   function get_dambreak_names() result(names)
+   pure function get_dambreak_names() result(names)
       character(len=128), dimension(:), allocatable :: names !< the dambreak names
 
       names = [(db_ids(i), integer :: i=1, n_db_signals)]
 
    end function get_dambreak_names
+   
+   !> Get the dambreak links for a given dambreak index
+   function retrieve_set_of_flowlinks_dambreak(index) result(res)
+      use messagehandling, only: msgbuf, LEVEL_ERROR, SetMessage
+      integer, intent(in) :: index !< index of the dambreak
+      integer, dimension(:), allocatable :: res !< the dambreak links
+      
+      if (index < 1 .or. index > n_db_signals) then
+         write (msgbuf, *) 'get_dambreak_links: the index ', index, &
+            ' is out of range. The range is 1 to ', n_db_signals
+         call SetMessage(LEVEL_ERROR, msgbuf)
+         allocate(res(0))
+      else
+         res = [(db_link_ids(i), integer :: i = db_first_link(index), db_last_link(index))]
+      end if
+      
+   end function retrieve_set_of_flowlinks_dambreak
+   
 
 end module m_dambreak_breach
