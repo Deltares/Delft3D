@@ -1217,6 +1217,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'Velocitywarn', u01warn)
       call prop_get(md_ptr, 'numerics', 'Velmagnwarn', umagwarn)
       call prop_get(md_ptr, 'numerics', 'MinTimestepBreak', dtminbreak)
+      call prop_get(md_ptr, 'numerics', 'MinFlowAreaMainBreak', min_flow_area_main_break)
       call prop_get(md_ptr, 'numerics', 'MaxSSC', sscmax)
       call prop_get(md_ptr, 'numerics', 'Epshu', epshu)
       call prop_get(md_ptr, 'numerics', 'Epsz0', epsz0)
@@ -3200,6 +3201,10 @@ contains
          call prop_set(prop_ptr, 'numerics', 'MinTimestepBreak', dtminbreak, 'smallest allowed timestep (in s), checked on a sliding average of several timesteps. Run will abort when violated.')
       end if
 
+      if (writeall .or. (min_flow_area_main_break > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'MinFlowAreaMainBreak', min_flow_area_main_break, 'Minimum allowed flow area at main width. Run will abort when violated.')
+      end if
+      
       if ((writeall .or. (sscmax > 0.0_dp)) .and. jased == 4) then
          call prop_set(prop_ptr, 'numerics', 'MaxSSC', sscmax, 'upper bound (in kg/m3) on SSC (<= 0: no bounds). Run will abort when violated.')
       end if

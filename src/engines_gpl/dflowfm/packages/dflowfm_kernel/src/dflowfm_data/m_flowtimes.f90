@@ -65,6 +65,7 @@ module m_flowtimes
    real(kind=dp) :: dtmin !< dt < dtmin : surely crashed
    real(kind=dp) :: dtminbreak !< smallest allowed timestep (in s), checked on a sliding average of several timesteps in validation routine.
    real(kind=dp) :: dtminhis !< smallest timestep within most recent his interval
+   real(kind=dp) :: min_flow_area_main_break !< Minimum flow area in main channel for morphodynamic update
    real(kind=dp) :: tfac !< time unit in seconds
    real(kind=dp), allocatable :: tvalswindow(:) !< (NUMDTWINDOWSIZE) Time1 values in a moving time window to compute sliding average dt
    integer, parameter :: NUMDTWINDOWSIZE = 100 !< Number of time steps to include in the sliding average, don't set this too optimistic to avoid too fast simulation breaks.
@@ -215,6 +216,7 @@ contains
       dt_max = 30.0_dp !< Computational timestep limit by user.
       dtmin = 1d-4 !< dt < dtmin : surely crashed
       dtminbreak = 0.0_dp !< smallest allowed timestep, otherwise break: off
+      min_flow_area_main_break = 0.0_dp !< minimum channel flow area at main width (m2)
       dtminhis = 9d9 !< smallest timestep within most recent his interval
       dt_init = 1.0_dp
       dt_trach = 1200.0_dp !< User specified DtTrt Trachytope roughness update time interval (s)

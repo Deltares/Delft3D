@@ -33,7 +33,7 @@
 !> Validates the current flow state and returns whether simulation should be aborted.
 !! Moreover, a final snapshot is written into the output files before aborting.
 !!
-!! Validity is determined by s01max, u01max, umagmax and dtminbreak.
+!! Validity is determined by s01max, u01max, umagmax, dtminbreak and min_flow_area_main.
 !! Also print a warning if water level or velocity > s01warn, u01warn, umagwarn
 module m_flow_validatestate
 
@@ -56,6 +56,7 @@ contains
       use m_transport
       use dfm_error
       use m_get_ucx_ucy_eul_mag
+      use m_crosssections, only : min_flow_area_main
 
       integer, intent(out) :: iresult ! validation result status
       real(kind=dp) :: dtavgwindow
@@ -158,6 +159,14 @@ contains
                   end if
                end do
             end do
+         end if
+      end if
+      
+      if (min_flow_area_main_break > 0d0) then 
+         if (min_flow_area_main < min_flow_area_main_break) then 
+               write (msgbuf, '(a,e11.4,a,e11.4,a)') 'Flow area below main ', min_flow_area_main, ' is smaller than minFlowAreaMainBreak ', min_flow_area_main_break, '.'
+               call warn_flush() 
+               q = 1
          end if
       end if
 

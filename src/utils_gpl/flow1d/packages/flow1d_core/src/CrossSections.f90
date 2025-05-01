@@ -37,6 +37,7 @@ module m_CrossSections
    use m_GlobalParameters
    use m_hash_search
    use string_module
+   use precision, only : dp
 
    implicit none
 
@@ -62,6 +63,7 @@ module m_CrossSections
    public getHighest1dLevel
    public getSummerDikeData
    double precision, public :: default_width
+   real(kind=dp), public :: min_flow_area_main
 
    interface fill_hashtable
       module procedure fill_hashtable_csdef

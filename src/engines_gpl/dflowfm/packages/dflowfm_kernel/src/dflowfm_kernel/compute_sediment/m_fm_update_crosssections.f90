@@ -43,7 +43,7 @@ contains
       use m_flowgeom, only: bl, ndx, ndx2d
       use m_oned_functions, only: gridpoint2cross
       use unstruc_channel_flow, only: network, t_node, nt_LinkNode
-      use m_CrossSections, only: t_CSType, CS_TABULATED
+      use m_CrossSections, only: t_CSType, CS_TABULATED, min_flow_area_main
       use MessageHandling
       use m_fm_erosed, only: ndxi_mor, ndx_mor, e_sbn, nd_mor, lsedtot
       use m_f1dimp, only: f1dimppar
@@ -73,6 +73,8 @@ contains
       type(t_CSType), pointer :: cdef
       type(t_node), pointer :: pnod
       !
+      min_flow_area_main = 1e9 ! large value 
+      !
       ! upon entry blchg contains the bed level change averaged over the total cell area
       !
       do nm = ndx2D + 1, ndxi_mor ! only for internal 1D nodes
@@ -97,6 +99,7 @@ contains
                do i = 2, iref
                   aref = aref + (cdef%flowWidth(i) + cdef%flowWidth(i - 1)) * (cdef%height(i) - cdef%height(i - 1)) * 0.5d0
                end do
+               min_flow_area_main = min(min_flow_area_main, aref)
                href = cdef%height(iref)
                w_active = cdef%flowWidth(iref)
                !
