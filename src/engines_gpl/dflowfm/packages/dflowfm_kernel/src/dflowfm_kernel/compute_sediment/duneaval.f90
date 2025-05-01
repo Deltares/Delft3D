@@ -55,6 +55,9 @@ subroutine duneaval(error)
       ac1 = acL(L); ac2=1d0-ac1
       if (hs(k1)>hswitch .or. hs(k2)> hswitch) then
          slpmax = wetslope
+		 if (bermslopetransport .and. bermslopeindex(L)) then
+            slpmax = bermslope
+         end if
       else
          slpmax = dryslope
       end if
