@@ -441,10 +441,10 @@ subroutine flow_sedmorinit()
        call realloc(avalflux,(/lnx,stmpar%lsedtot/),stat=ierr,fill=0d0, keepExisting=.false.)
        !
        ! Warn user if default wetslope is still 10.0 when using dune avalanching. Reset default to reasonable 1.0 in that case.
-       if (comparereal(stmpar%morpar%wetslope, 10d0)== 0) then
-          call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Dune avalanching is switched on. Default wetslope reset to 0.1 from 10.0')
-          stmpar%morpar%wetslope = 1d-1
-       endif
+       !if (comparereal(stmpar%morpar%wetslope, 10d0)== 0) then
+       !   call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Dune avalanching is switched on. Default wetslope reset to 0.1 from 10.0')
+       !   stmpar%morpar%wetslope = 1d-1
+       !endif
        !
        ! Warn user if upperlimitssc is set icm with avalanching. This effectively removes sedimentation of the avalanching flux if set too strictly.
        if (comparereal(upperlimitssc,1d6)/=0) then
