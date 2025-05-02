@@ -1,6 +1,5 @@
-/** \mainpage D-FlowFM Developer Guide
+\mainpage D-FlowFM Developer Guide
 
-This is test group
 This documentation is intended for developers working with the D-FlowFM source code.
 
 There exists a developer's guide which can be dound here: 
@@ -13,5 +12,3 @@ Below is an overview of the D-FlowFM Kernel.
 D-FlowFM Kernel can be run from command line which follows the path defined in \ref Unstruc
 
 The more appropriate way to run D-Flow FM is via the BMI interface, which can be found \ref BMI_Unstruc
-
-*/
