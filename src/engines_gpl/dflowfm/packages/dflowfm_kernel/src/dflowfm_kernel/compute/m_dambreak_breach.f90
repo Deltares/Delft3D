@@ -60,7 +60,8 @@ module m_dambreak_breach
              add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
              add_averaging_downstream_signal, fill_dambreak_values, set_dambreak_widening_method, &
              set_breach_start_link, get_dambreak_depth_c_loc, get_dambreak_breach_width_c_loc, &
-             get_dambreak_upstream_level_c_loc, get_dambreak_downstream_level_c_loc
+             get_dambreak_upstream_level_c_loc, get_dambreak_downstream_level_c_loc, &
+             update_dambreak_administration
 
    interface
       module subroutine adjust_bobs_for_dambreaks()
@@ -131,7 +132,13 @@ module m_dambreak_breach
          integer, intent(in) :: item_index
          type(c_ptr) :: res
       end function get_dambreak_downstream_level_c_loc
-
+    
+      module subroutine update_dambreak_administration(dambridx, lftopol)
+         integer, dimension(:), intent(in) :: dambridx !< dambridx is the index of the dambreak in the structure list.
+         integer, dimension(:), intent(in) :: lftopol !< lftopol is the link number of the flow link.
+      end subroutine update_dambreak_administration
+         
+         
    end interface
 
 contains
@@ -252,5 +259,18 @@ contains
       
    end function retrieve_set_of_flowlinks_dambreak
    
+   subroutine update_counters_for_dambreaks(id, numgen, dambridx, i, kedb, kegen)
+      use m_update_counters_for_structures, only: update_counters_for_dambreak_or_pump
+      character(len=*), intent(in) :: id !< the id of the structure.
+      integer, intent(in) :: numgen !< the number of flow links.
+      integer, dimension(:), allocatable, intent(inout) :: dambridx !< the index of the structure.
+      integer, intent(in) :: i !< the index of the structure.
+      integer, dimension(:), allocatable, intent(inout) :: kedb !< edge oriented dambreak??? Do we need this array?
+      integer, dimension(:), allocatable, intent(in) :: kegen !< placeholder for the link snapping of all structure types.
+
+      call update_counters_for_dambreak_or_pump(id, numgen, n_db_signals, db_first_link, db_last_link, dambridx, i)
+      kedb(db_first_link(n_db_signals):db_last_link(n_db_signals)) = kegen(1:numgen)
+      
+   end subroutine update_counters_for_dambreaks
 
 end module m_dambreak_breach
