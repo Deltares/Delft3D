@@ -34,4 +34,5 @@ class Delft3DRecipe(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.user_presets_path = 'src/cmake/CMakePresets.json'
         tc.generate()
