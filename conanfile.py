@@ -16,7 +16,7 @@ class Delft3DRecipe(ConanFile):
 
     def configure(self):
         self.options["gdal"].with_proj = True
-        self.options["gdal"].with_shapelib = True
+        self.options["gdal"].with_shapelib = False
         self.options["gdal"].with_geos = False
 
         self.options["gdal"].with_arrow = False
@@ -29,7 +29,9 @@ class Delft3DRecipe(ConanFile):
         self.options["gdal"].with_openssl = False
         self.options["gdal"].with_lerc = False
 
+        self.options["gdal"].with_curl = False
+        self.options["proj"].with_curl = False
+
     def generate(self):
         tc = CMakeToolchain(self)
-        tc.user_presets_path = 'src/cmake/CMakePresets.json'
         tc.generate()
