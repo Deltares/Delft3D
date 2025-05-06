@@ -206,18 +206,18 @@ contains
          return
       end if
 
-      insigpart = 0
-      if (numtopsig > 0) then
-         if (kmxn(ln(1, link_index_2d)) <= numtopsig .or. kmxn(ln(2, link_index_2d)) <= numtopsig) then
-            insigpart = 1 ! one of the nodes is in the sigma part
-         end if
-      end if
-
       ! Associate density with the potential density or in-situ density
       if (thermobaricity_in_baroclinic_pressure_gradient) then
          density => in_situ_density
       else
          density => potential_density
+      end if
+
+      insigpart = 0
+      if (numtopsig > 0) then
+         if (kmxn(ln(1, link_index_2d)) <= numtopsig .or. kmxn(ln(2, link_index_2d)) <= numtopsig) then
+            insigpart = 1 ! one of the nodes is in the sigma part
+         end if
       end if
 
       if (kmxn(ln(1, link_index_2d)) > kmxn(ln(2, link_index_2d))) then
