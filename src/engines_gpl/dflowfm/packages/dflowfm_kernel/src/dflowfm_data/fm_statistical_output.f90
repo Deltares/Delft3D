@@ -2194,7 +2194,7 @@ contains
       use m_laterals, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
       use m_sferic, only: jsferic
       use m_wind, only: japatm, jawind, jarain, ja_airdensity, ja_computed_airdensity, clou, rhum
-      use m_dambreak_breach, only: n_db_signals_protected
+      use m_dambreak_breach, only: n_db_signals
       use, intrinsic :: iso_c_binding
 
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.
@@ -2407,18 +2407,18 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_VELOCITY), valculvert(IVAL_VEL, 1:network%sts%numCulverts))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_STATE), valculvert(IVAL_CL_STATE, 1:network%sts%numCulverts))
       end if
-      if (jahisdambreak > 0 .and. n_db_signals_protected > 0) then
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_S1UP), valdambreak(IVAL_S1UP, 1:n_db_signals_protected))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_S1DN), valdambreak(IVAL_S1DN, 1:n_db_signals_protected))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_DISCHARGE), valdambreak(IVAL_DIS, 1:n_db_signals_protected))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_CUMULATIVE_DISCHARGE), valdambreak(IVAL_DB_DISCUM, 1:n_db_signals_protected))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_VELOCITY), valdambreak(IVAL_VEL, 1:n_db_signals_protected))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_HEAD), valdambreak(IVAL_HEAD, 1:n_db_signals_protected))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_FLOW_AREA), valdambreak(IVAL_AREA, 1:n_db_signals_protected))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_CREST_LEVEL), valdambreak(IVAL_DB_CRESTH, 1:n_db_signals_protected))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_CREST_WIDTH), valdambreak(IVAL_DB_CRESTW, 1:n_db_signals_protected))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_BREACH_WIDTH_TIME_DERIVATIVE), valdambreak(IVAL_DB_TIMEDIV, 1:n_db_signals_protected))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_WATER_LEVEL_JUMP), valdambreak(IVAL_DB_JUMP, 1:n_db_signals_protected))
+      if (jahisdambreak > 0 .and. n_db_signals > 0) then
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_S1UP), valdambreak(IVAL_S1UP, 1:n_db_signals))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_S1DN), valdambreak(IVAL_S1DN, 1:n_db_signals))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_DISCHARGE), valdambreak(IVAL_DIS, 1:n_db_signals))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_CUMULATIVE_DISCHARGE), valdambreak(IVAL_DB_DISCUM, 1:n_db_signals))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_VELOCITY), valdambreak(IVAL_VEL, 1:n_db_signals))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_HEAD), valdambreak(IVAL_HEAD, 1:n_db_signals))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_FLOW_AREA), valdambreak(IVAL_AREA, 1:n_db_signals))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_CREST_LEVEL), valdambreak(IVAL_DB_CRESTH, 1:n_db_signals))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_CREST_WIDTH), valdambreak(IVAL_DB_CRESTW, 1:n_db_signals))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_BREACH_WIDTH_TIME_DERIVATIVE), valdambreak(IVAL_DB_TIMEDIV, 1:n_db_signals))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_WATER_LEVEL_JUMP), valdambreak(IVAL_DB_JUMP, 1:n_db_signals))
       end if
       if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UNIWEIR_DISCHARGE), valuniweir(IVAL_DIS, 1:network%sts%numuniweirs))

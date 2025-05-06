@@ -33,72 +33,40 @@ module m_dambreak_breach
 
    implicit none
 
-   public
+   private
 
-   integer, target :: n_db_links !< nr of dambreak links
-   integer, target :: n_db_signals !< nr of dambreak signals
-   integer, dimension(:), allocatable :: dambreaks !< store the dambreaks indexes among all structures
-   integer, dimension(:), allocatable :: db_first_link !< first dambreak link for each signal
-   integer, dimension(:), allocatable :: db_last_link !< last dambreak link for each signal
-   integer, dimension(:), allocatable :: db_link_ids !< dambreak links index array
-   character(len=128), dimension(:), allocatable, target :: db_ids !< the dambreak ids
-   real(kind=dp), dimension(:), allocatable :: db_link_effective_width !< dambreak effective flow widths
-   real(kind=dp), dimension(:), allocatable :: db_link_actual_width !< dambreak actual flow widths
+   integer, public, protected :: n_db_links !< number of dambreak links
+   integer, public, protected :: n_db_signals !< number of dambreak signals
+   integer, dimension(:), allocatable :: dambreak_structure !< dambreak indices in structures
+   integer, dimension(:), allocatable :: first_link !< first dambreak link for each signal
+   integer, dimension(:), allocatable :: last_link !< last dambreak link for each signal
+   integer, dimension(:), allocatable :: link_index !< dambreak links index array
+   real(kind=dp), dimension(:), allocatable :: link_effective_width !< dambreak effective flow widths
+   real(kind=dp), dimension(:), allocatable :: link_actual_width !< dambreak actual flow widths
+   character(len=128), dimension(:), allocatable :: dambreak_names !< dambreak names
 
-   ! the following pointers allow one to use n_db_links and n_db_signals values but do not allow to overwrite these values.
-   ! so the pointers act like getter functions.
-   integer, protected, pointer :: n_db_links_protected => n_db_links
-   integer, protected, pointer :: n_db_signals_protected => n_db_signals
-
-   integer, dimension(:), allocatable :: db_upstream_link_ids !< dambreak upstream links index array
-   integer, dimension(:), allocatable :: db_downstream_link_ids !< dambreak downstream links index array
-
-   ! This module holds pulic functions/subroutines after contains
+   ! This module also holds pulic functions/subroutines after contains
    ! They use 1) only basic modules, 2) only data from the module, and 3) they are small!
    
-   public :: adjust_bobs_for_dambreaks, allocate_and_initialize_dambreak_data, update_dambreak_breach, &
-             add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
-             add_averaging_downstream_signal, fill_dambreak_values, set_dambreak_widening_method, &
-             set_breach_start_link, get_dambreak_depth_c_loc, get_dambreak_breach_width_c_loc, &
-             get_dambreak_upstream_level_c_loc, get_dambreak_downstream_level_c_loc, &
-             update_dambreak_administration
+   public :: adjust_bobs_for_dambreaks, update_dambreak_breach, fill_dambreak_values, &
+       set_dambreak_widening_method, get_dambreak_depth_c_loc, &
+       get_dambreak_breach_width_c_loc, get_dambreak_upstream_level_c_loc, &
+       get_dambreak_downstream_level_c_loc, update_dambreak_administration, &
+       update_dambreak_administration_old, reset_dambreak_counters, &
+       exist_dambreak_links, should_write_dambreaks, multiply_by_dambreak_link_actual_width, &
+       indicate_links_that_contain_dambreaks, get_active_dambreak_index, &
+       get_dambreak_names, retrieve_set_of_flowlinks_dambreak, &
+       update_counters_for_dambreaks, allocate_dambreak_width_arrays, add_dambreak_signal
 
    interface
       module subroutine adjust_bobs_for_dambreaks()
       end subroutine adjust_bobs_for_dambreaks
-
-      module subroutine allocate_and_initialize_dambreak_data(n_db_signals)
-         integer, intent(in) :: n_db_signals !< number of dambreak signals
-      end subroutine allocate_and_initialize_dambreak_data
 
       module function update_dambreak_breach(start_time, delta_time) result(error)
          real(kind=dp), intent(in) :: start_time !< start time
          real(kind=dp), intent(in) :: delta_time !< delta time
          integer :: error !< error code
       end function update_dambreak_breach
-
-      module subroutine add_dambreaklocation_upstream(n_signal, node)
-         integer, intent(in) :: n_signal !< number of current dambreak signal
-         integer, intent(in) :: node !< node number for current dambreak
-      end subroutine add_dambreaklocation_upstream
-
-      module subroutine add_dambreaklocation_downstream(n_signal, node)
-         integer, intent(in) :: n_signal !< number of current dambreak signal
-         integer, intent(in) :: node !< node number for current dambreak
-      end subroutine add_dambreaklocation_downstream
-
-      module subroutine add_averaging_upstream_signal(n_signal)
-         integer, intent(in) :: n_signal !< number of current dambreak signal
-      end subroutine add_averaging_upstream_signal
-
-      module subroutine add_averaging_downstream_signal(n_signal)
-         integer, intent(in) :: n_signal !< number of current dambreak signal
-      end subroutine add_averaging_downstream_signal
-
-      module subroutine set_breach_start_link(n, Lstart)
-         integer, intent(in) :: n !< index of the current dambreak signal
-         integer, intent(in) :: Lstart !< index of the starting link
-      end subroutine set_breach_start_link
 
       module subroutine fill_dambreak_values(time_step, values)
          real(kind=dp), intent(in) :: time_step !< time step
@@ -134,11 +102,15 @@ module m_dambreak_breach
       end function get_dambreak_downstream_level_c_loc
     
       module subroutine update_dambreak_administration(dambridx, lftopol)
-         integer, dimension(:), intent(in) :: dambridx !< dambridx is the index of the dambreak in the structure list.
-         integer, dimension(:), intent(in) :: lftopol !< lftopol is the link number of the flow link.
+         integer, dimension(:), intent(in) :: dambridx !< the index of the dambreak in the structure list.
+         integer, dimension(:), intent(in) :: lftopol !< the link number of the flow link.
       end subroutine update_dambreak_administration
          
-         
+      module subroutine update_dambreak_administration_old(dambridx, lftopol)
+         integer, dimension(:), intent(in) :: dambridx !< the index of the dambreak in the structure list.
+         integer, dimension(:), intent(in) :: lftopol !< the link number of the flow link.
+      end subroutine update_dambreak_administration_old
+    
    end interface
 
 contains
@@ -168,7 +140,7 @@ contains
       ! Count the number of active links for each signal
       objects = n_db_signals
       do n = 1, n_db_signals
-         if (db_first_link(n) > db_last_link(n)) then
+         if (first_link(n) > last_link(n)) then
             objects = objects - 1
          end if
       end do
@@ -187,9 +159,9 @@ contains
       integer :: link !< link index
 
       do n = 1, n_db_signals
-         do k = db_first_link(n), db_last_link(n)
-            link = abs(db_link_ids(k))
-            au(link) = hu(link) * db_link_actual_width(k)
+         do k = first_link(n), last_link(n)
+            link = abs(link_index(k))
+            au(link) = hu(link) * link_actual_width(k)
          end do
       end do
 
@@ -205,9 +177,9 @@ contains
 
       if (exist_dambreak_links()) then
          do n = 1, n_db_signals
-            if (dambreaks(n) /= 0) then
-               do k = db_first_link(n), db_last_link(n)
-                  does_link_contain_structures(abs(db_link_ids(k))) = .true.
+            if (dambreak_structure(n) /= 0) then
+               do k = first_link(n), last_link(n)
+                  does_link_contain_structures(abs(link_index(k))) = .true.
                end do
             end if
          end do
@@ -224,8 +196,8 @@ contains
 
       index = -1
       do i = 1, n_db_signals
-         if (trim(db_ids(i)) == trim(dambreak_name)) then
-            if (db_last_link(i) - db_first_link(i) >= 0) then
+         if (trim(dambreak_names(i)) == trim(dambreak_name)) then
+            if (last_link(i) - first_link(i) >= 0) then
                ! Only return this dambreak index if dambreak is active in flowgeom (i.e., at least 1 flow link associated)
                index = i
                exit
@@ -238,7 +210,7 @@ contains
    pure function get_dambreak_names() result(names)
       character(len=128), dimension(:), allocatable :: names !< the dambreak names
 
-      names = [(db_ids(i), integer :: i=1, n_db_signals)]
+      names = [(dambreak_names(i), integer :: i=1, n_db_signals)]
 
    end function get_dambreak_names
    
@@ -254,7 +226,7 @@ contains
          call SetMessage(LEVEL_ERROR, msgbuf)
          allocate(res(0))
       else
-         res = [(db_link_ids(i), integer :: i = db_first_link(index), db_last_link(index))]
+         res = [(link_index(i), integer :: i = first_link(index), last_link(index))]
       end if
       
    end function retrieve_set_of_flowlinks_dambreak
@@ -268,9 +240,44 @@ contains
       integer, dimension(:), allocatable, intent(inout) :: kedb !< edge oriented dambreak??? Do we need this array?
       integer, dimension(:), allocatable, intent(in) :: kegen !< placeholder for the link snapping of all structure types.
 
-      call update_counters_for_dambreak_or_pump(id, numgen, n_db_signals, db_first_link, db_last_link, dambridx, i)
-      kedb(db_first_link(n_db_signals):db_last_link(n_db_signals)) = kegen(1:numgen)
+      call update_counters_for_dambreak_or_pump(id, numgen, n_db_signals, first_link, last_link, dambridx, i)
+      kedb(first_link(n_db_signals):last_link(n_db_signals)) = kegen(1:numgen)
       
    end subroutine update_counters_for_dambreaks
 
+   !> allocate and intialize dambreak link arrays 
+   subroutine allocate_dambreak_width_arrays(numl)
+      use m_alloc, only: realloc
+
+      integer, intent(in) :: numl !< number of links
+      
+      call realloc(link_effective_width, numl)
+      call realloc(link_actual_width, numl, fill=0.0_dp)
+      
+   end subroutine allocate_dambreak_width_arrays
+   
+   subroutine add_dambreak_signal(index_in_structure, dambridx, n_dambreak_links, n_current_dambreak_links)
+      use messagehandling, only: msgbuf, LEVEL_ERROR, SetMessage
+      use m_alloc, only: realloc
+
+      integer, intent(in) :: index_in_structure !< the index of the structure in the structure list.
+      integer, dimension(:), intent(inout) :: dambridx !< the index of the dambreak in the structure list.
+      integer, intent(inout) :: n_dambreak_links !< the total number of flow links for dambreaks.
+      integer, intent(in) :: n_current_dambreak_links !< the number of flow links for the current dambreak signal.
+      
+      if (n_dambreak_links /= n_db_links) then
+         write (msgbuf, '(a,i8,a,i8)') 'n_dambreak_links = ', n_dambreak_links, ' /= n_db_links = ', n_db_links
+         call SetMessage(LEVEL_ERROR, msgbuf)
+      end if
+      n_db_signals = n_db_signals + 1
+      dambridx(n_db_signals) = index_in_structure
+      call realloc(first_link, n_db_signals)
+      first_link(n_db_signals) = n_dambreak_links + 1
+      call realloc(last_link, n_db_signals)
+      last_link(n_db_signals) = n_dambreak_links + n_current_dambreak_links
+      n_dambreak_links = n_dambreak_links + n_current_dambreak_links
+      n_db_links = n_dambreak_links
+      
+   end subroutine add_dambreak_signal
+   
 end module m_dambreak_breach

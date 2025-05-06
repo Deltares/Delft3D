@@ -48,7 +48,7 @@ contains
       use m_compound
       use m_GlobalParameters
       use m_longculverts, only: nlongculverts, longculverts, newculverts
-      use m_dambreak_breach, only: fill_dambreak_values, n_db_signals_protected
+      use m_dambreak_breach, only: fill_dambreak_values, n_db_signals
       use m_link_ghostdata, only: link_ghostdata
 
       integer :: i, n, L, Lf, La, ierr, k, ku, kd, istru, nlinks
@@ -63,7 +63,7 @@ contains
          if (.not. allocated(reducebuf)) then
             nreducebuf = npumpsg * NUMVALS_PUMP + ngatesg * NUMVALS_GATE + ncdamsg * NUMVALS_CDAM + ncgensg * NUMVALS_CGEN &
                          + ngategen * NUMVALS_GATEGEN + nweirgen * NUMVALS_WEIRGEN + ngenstru * NUMVALS_GENSTRU + ngenstru * NUMVALS_GENSTRU &
-                         + n_db_signals_protected * NUMVALS_DAMBREAK + network%sts%numUniWeirs * NUMVALS_UNIWEIR + network%sts%numOrifices * NUMVALS_ORIFGEN &
+                         + n_db_signals * NUMVALS_DAMBREAK + network%sts%numUniWeirs * NUMVALS_UNIWEIR + network%sts%numOrifices * NUMVALS_ORIFGEN &
                          + network%sts%numCulverts * NUMVALS_CULVERT + network%sts%numBridges * NUMVALS_BRIDGE + network%cmps%count * NUMVALS_CMPSTRU &
                          + nlongculverts * NUMVALS_LONGCULVERT
             allocate (reducebuf(nreducebuf), stat=ierr)
@@ -668,8 +668,8 @@ contains
             call fill_reduce_buffer(valgenstru, ngenstru * NUMVALS_GENSTRU)
             n = 1
          end if
-         if (n_db_signals_protected > 0 .and. allocated(valdambreak)) then
-            call fill_reduce_buffer(valdambreak, n_db_signals_protected * NUMVALS_DAMBREAK)
+         if (n_db_signals > 0 .and. allocated(valdambreak)) then
+            call fill_reduce_buffer(valdambreak, n_db_signals * NUMVALS_DAMBREAK)
             n = 1
          end if
          if (allocated(valuniweir) .and. network%sts%numUniWeirs > 0) then
@@ -776,8 +776,8 @@ contains
 
       ! === Dambreak
       if (jampi > 0 .and. ti_his > 0) then
-         if (n_db_signals_protected > 0 .and. allocated(valdambreak)) then
-            call substitute_reduce_buffer(valdambreak, n_db_signals_protected * NUMVALS_DAMBREAK)
+         if (n_db_signals > 0 .and. allocated(valdambreak)) then
+            call substitute_reduce_buffer(valdambreak, n_db_signals * NUMVALS_DAMBREAK)
          end if
       end if
 

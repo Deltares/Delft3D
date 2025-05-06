@@ -127,7 +127,7 @@ contains
       use MessageHandling, only: err, mess, LEVEL_WARN, LEVEL_ERROR
       use m_ug_nc_attribute, only: ug_nc_attribute
       use unstruc_channel_flow, only: network
-      use m_dambreak_breach, only: n_db_links_protected, n_db_signals_protected
+      use m_dambreak_breach, only: n_db_links, n_db_signals
 
       implicit none
 
@@ -216,7 +216,7 @@ contains
          ! Possibly a different model, so make valobs transpose at correct size again.
          maxlocT = max(size(valobs, 2), npumpsg, network%sts%numPumps, ngatesg, ncdamsg, ncgensg, ngategen, &
                        nweirgen, network%sts%numWeirs, ngenstru, network%sts%numGeneralStructures, &
-                       n_db_links_protected, network%sts%numOrifices, network%sts%numBridges, network%sts%numculverts, &
+                       n_db_links, network%sts%numOrifices, network%sts%numBridges, network%sts%numculverts, &
                        network%sts%numuniweirs, network%cmps%count, nlongculverts)
          maxvalT = max(size(valobs, 1), NUMVALS_PUMP, NUMVALS_GATE, NUMVALS_CDAM, NUMVALS_CGEN, NUMVALS_GATEGEN, &
                        NUMVALS_WEIRGEN, NUMVALS_GENSTRU, &
@@ -448,7 +448,7 @@ contains
                                                   id_poly_xmid=id_culvert_xmid, id_poly_ymid=id_culvert_ymid)
 
          ! Dambreak
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAMBREAK, jahisdambreak, n_db_signals_protected, 'none', 0, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAMBREAK, jahisdambreak, n_db_signals, 'none', 0, id_strlendim, &
                                                   id_dambreakdim, id_dambreak_id)
 
          ! Universal weir

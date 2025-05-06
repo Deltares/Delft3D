@@ -174,7 +174,7 @@ contains
       use m_alloc
       use m_flowtimes, only: ti_rst
       use m_longculverts, only: nlongculverts
-      use m_dambreak_breach, only: n_db_signals_protected
+      use m_dambreak_breach, only: n_db_signals
       implicit none
 
       if ((ti_rst > 0 .or. jahispump > 0) .and. npumpsg > 0) then
@@ -232,11 +232,11 @@ contains
          end if
          allocate (valweirgen(NUMVALS_WEIRGEN, nweirgen)); valweirgen = 0.0_dp
       end if
-      if (jahisdambreak > 0 .and. n_db_signals_protected > 0) then
+      if (jahisdambreak > 0 .and. n_db_signals > 0) then
          if (allocated(valdambreak)) then
             deallocate (valdambreak)
          end if
-         allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals_protected)); valdambreak = 0.0_dp
+         allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals), source = 0.0_dp)
       end if
       if ((ti_rst > 0 .or. jahisorif > 0) .and. network%sts%numOrifices > 0) then
          if (allocated(valorifgen)) then
@@ -890,7 +890,7 @@ contains
       use m_GlobalParameters
       use fm_external_forcings_data, only: ncdamsg, ngatesg
       use unstruc_channel_flow, only: network
-      use m_dambreak_breach, only: n_db_signals_protected
+      use m_dambreak_breach, only: n_db_signals
 
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
       integer :: number_of_structures
@@ -899,7 +899,7 @@ contains
       case (ST_DAM)
          number_of_structures = ncdamsg
       case (ST_DAMBREAK)
-         number_of_structures = n_db_signals_protected
+         number_of_structures = n_db_signals
       case (ST_GATE)
          number_of_structures = ngatesg
       case (ST_COMPOUND)
