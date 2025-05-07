@@ -10,8 +10,8 @@
 
 set -eo pipefail
 
-if [[ -z "$BUCKET" || -z "$OUTPUT_PREFIX" || -z "$VAHOME" ]]; then
-    >&2 echo "Environment variables BUCKET, OUTPUT_PREFIX or VAHOME not set."
+if ! util.check_vars_are_set BUCKET CURRENT_PREFIX VAHOME ; then
+    >&2 echo "Abort"
     exit 1
 fi
 
@@ -48,6 +48,6 @@ docker run --rm \
     --volume="${HOME}/.aws:/root/.aws:ro" --volume="${TMP_ARCHIVE_DIR}:/data:ro" \
     docker.io/amazon/aws-cli:2.22.7 \
     --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
-    s3 sync --delete --no-progress /data "${BUCKET}/${OUTPUT_PREFIX}/output"
+    s3 sync --delete --no-progress /data "${BUCKET}/${CURRENT_PREFIX}/output"
 
 rm -rf "$TMP_ARCHIVE_DIR"

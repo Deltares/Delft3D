@@ -171,7 +171,7 @@ contains
             call msg_flush()
          end if
          if (idebug > 0) then
-            write (msgbuf, '(a,F25.10)') 'time debug            (s)  :', gettimer(1, IDEBUG)
+            write (msgbuf, '(a,F25.10)') 'time debug             (s)  :', gettimer(1, IDEBUG)
             call msg_flush()
          end if
          if (jafilter > 0) then

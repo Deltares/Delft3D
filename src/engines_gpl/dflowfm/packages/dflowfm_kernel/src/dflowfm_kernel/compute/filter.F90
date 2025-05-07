@@ -57,7 +57,6 @@ contains
       use m_makenetnodescoding
       use m_saadf, only: amub_countonly, amub
       use m_saad, only: allocSolver
-      implicit none
 
       integer, intent(in) :: jafilter !< explicit (1), implicit (2), or no filter (0)
       integer, intent(in) :: filterorder !< filter order
@@ -806,10 +805,10 @@ contains
       use m_flowgeom, only: Lnx, Dx, wu, ba, ln
       use m_flow, only: qw, kmx, Lbot, Ltop
       use m_turbulence, only: ln0
-      use m_filter_data
-      use m_partitioninfo
-      use m_get_Lbot_Ltop
-      implicit none
+      use m_filter_data, only: checkmonitor, workin, workout
+      use m_partitioninfo, only: jampi, idomain, my_rank, reduce_double_sum
+      use m_get_Lbot_Ltop, only: getLbotLtop
+      use m_link_ghostdata, only: link_ghostdata
 
       real(kind=dp) :: area
       integer :: kk1, kk2, k1, k2

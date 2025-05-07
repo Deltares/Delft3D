@@ -14301,7 +14301,8 @@ contains
       use m_alloc, only: realloc
       use m_samples, only: Ns
       use dfm_error, only: DFM_GENERICERROR
-      use m_partitioninfo, only: jampi, my_rank, idomain, ighostlev, sdmn, link_ghostdata, reduce_key, reduce_int_sum
+      use m_partitioninfo, only: jampi, my_rank, idomain, ighostlev, sdmn, reduce_key, reduce_int_sum
+      use m_link_ghostdata, only: link_ghostdata
       use m_flowgeom, only: ndxi, lnx, ln, ndx
       use fm_external_forcings_data, only: ibnd_own, kbndz, ndxbnd_own, jaoldrstfile
       use m_wrisam
@@ -15856,8 +15857,10 @@ contains
       use m_sferic
       use m_missing
       use netcdf
-      use m_partitioninfo
+      use m_partitioninfo, only: jampi, idomain, my_rank, iglobal_s
       use m_flowparameters, only: jafullgridoutput
+      use m_link_ghostdata, only: link_ghostdata
+
       integer, intent(in) :: igeomfile
       integer, optional, intent(in) :: jabndnd !< Whether to include boundary nodes (1) or not (0). Default: no.
 

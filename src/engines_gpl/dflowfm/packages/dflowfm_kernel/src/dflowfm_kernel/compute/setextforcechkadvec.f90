@@ -44,7 +44,7 @@ contains
       use m_comp_gravinput, only: comp_GravInput
       use m_anticreep, only: anticreep
       use m_add_internaltidesfrictionforces, only: add_InternalTidesFrictionForces
-      use m_addbaroclinicpressure, only: addbaroclinicpressure
+      use m_add_baroclinic_pressure, only: add_baroclinic_pressure
       use m_flow
       use m_flowparameters, only: trshcorio
       use m_flowgeom
@@ -269,7 +269,7 @@ contains
                end if
             end do
          else
-            call addbaroclinicpressure()
+            call add_baroclinic_pressure()
          end if
       end if
 

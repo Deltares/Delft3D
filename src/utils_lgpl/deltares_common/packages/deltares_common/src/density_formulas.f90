@@ -38,10 +38,8 @@ module m_density_formulas
    integer, parameter, public :: DENSITY_OPTION_ECKART = 1 !< Carl Henry Eckart, 1958
    integer, parameter, public :: DENSITY_OPTION_UNESCO = 2 !< Unesco org
    integer, parameter, public :: DENSITY_OPTION_UNESCO83 = 3 !< Unesco83
-   integer, parameter, public :: DENSITY_OPTION_BAROCLINIC = 5 !< Baroclinic instability
-   integer, parameter, public :: DENSITY_OPTION_DELTARES_FLUME = 6 !< For Deltares flume experiment IJmuiden, Kees Kuipers saco code 1
 
-   public :: calculate_density_unesco83, calculate_density_eckart, calculate_density_unesco, calculate_density_nacl, calculate_density_baroclinic
+   public :: calculate_density_unesco83, calculate_density_eckart, calculate_density_unesco
    public :: derivative_density_to_salinity_eckart, derivative_density_to_temperature_eckart
 contains
 
@@ -274,23 +272,4 @@ contains
 
       density = rhwa + (asal + bsal * square_root_salinity + csal * salinity) * salinity
    end function calculate_density_unesco
-
-   !> Computes water density from temperature and salinity using equation of state (rhowat).
-   !! Method used: Equation of state following Millero/Delft Hydraulics, valid for NaCl solutions
-   pure function calculate_density_nacl(salinity, temperature) result(density)
-      real(kind=dp), intent(in) :: salinity
-      real(kind=dp), intent(in) :: temperature
-      real(kind=dp) :: density
-
-      density = 999.904_dp + 4.8292e-2_dp * temperature - 7.2312e-3_dp * temperature**2 + &
-                2.9963e-5_dp * temperature**3 + 7.6427e-1_dp * salinity - &
-                3.1490e-3_dp * salinity * temperature + 3.1273e-5_dp * salinity * temperature**2
-   end function calculate_density_nacl
-
-   !> Baroclinic instability
-   pure function calculate_density_baroclinic(salinity) result(density)
-      real(kind=dp), intent(in) :: salinity
-      real(kind=dp) :: density
-      density = 1025.0_dp + 0.78_dp * (salinity - 33.73_dp)
-   end function calculate_density_baroclinic
 end module m_density_formulas

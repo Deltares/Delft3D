@@ -149,8 +149,10 @@ contains
       IVAL_TEPS = 0
       IVAL_VIU = 0
       IVAL_VICWWS = 0
+      IVAL_DIFWWS = 0
       IVAL_VICWWU = 0
       IVAL_RICH = 0
+      IVAL_RICHS = 0
       IVAL_WS1 = 0
       IVAL_WSN = 0
       IVAL_SEDDIF1 = 0
@@ -389,10 +391,12 @@ contains
             i = i + 1; IVAL_TKIN = i
             i = i + 1; IVAL_TEPS = i
             i = i + 1; IVAL_VICWWS = i
+            i = i + 1; IVAL_DIFWWS = i
             i = i + 1; IVAL_VICWWU = i
          end if
          if (idensform > 0) then
             i = i + 1; IVAL_RICH = i
+            i = i + 1; IVAL_RICHS = i
          end if
          if (jased > 0 .and. stm_included .and. ISED1 > 0) then
             i = i + 1; IVAL_SEDDIF1 = i
@@ -463,8 +467,10 @@ contains
       IPNT_TEPS = ivalpoint(IVAL_TEPS, kmx, nlyrs)
       IPNT_VIU = ivalpoint(IVAL_VIU, kmx, nlyrs)
       IPNT_VICWWS = ivalpoint(IVAL_VICWWS, kmx, nlyrs)
+      IPNT_DIFWWS = ivalpoint(IVAL_DIFWWS, kmx, nlyrs)
       IPNT_VICWWU = ivalpoint(IVAL_VICWWU, kmx, nlyrs)
       IPNT_RICH = ivalpoint(IVAL_RICH, kmx, nlyrs)
+      IPNT_RICHS = ivalpoint(IVAL_RICHS, kmx, nlyrs)
       IPNT_RHOP = ivalpoint(IVAL_RHOP, kmx, nlyrs)
       IPNT_RHO = ivalpoint(IVAL_RHO, kmx, nlyrs)
       IPNT_WS1 = ivalpoint(IVAL_WS1, kmx, nlyrs)

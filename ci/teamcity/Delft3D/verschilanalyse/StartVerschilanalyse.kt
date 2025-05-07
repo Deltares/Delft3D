@@ -38,7 +38,7 @@ object StartVerschilanalyse : BuildType({
             checked = "true", 
             unchecked = "false",
         )
-        param("output_prefix", "output/weekly/latest")
+        param("current_prefix", "output/weekly/latest")
         param("model_filter", "")
     }
 
@@ -63,7 +63,7 @@ object StartVerschilanalyse : BuildType({
                     name=harbor_webhook.project::template=${'$'}{harbor_webhook.project}::regex=${DslContext.getParameter("va_harbor_project")}
                     name=harbor_webhook.repository::template=${'$'}{harbor_webhook.repository}::regex=${DslContext.getParameter("va_harbor_repository")}
                     name=harbor_webhook.image.tag::template=${'$'}{harbor_webhook.image.tag}::regex=${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
-                    name=output_prefix::template=output/weekly/${'$'}{harbor_webhook.image.tag}::regex=output/weekly/${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
+                    name=current_prefix::template=output/weekly/${'$'}{harbor_webhook.image.tag}::regex=output/weekly/${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
                 """.trimIndent())
                 param("webhook.build.trigger.include.payload", "true")
             }
@@ -120,8 +120,8 @@ object StartVerschilanalyse : BuildType({
                 pushd bundle
                 ./start_verschilanalyse.sh \
                     --apptainer='oras://%harbor_webhook.image.url%' \
+                    --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
-                    --output-prefix='%output_prefix%' \
                     --model-filter='%model_filter%'
                 popd
             """.trimIndent()

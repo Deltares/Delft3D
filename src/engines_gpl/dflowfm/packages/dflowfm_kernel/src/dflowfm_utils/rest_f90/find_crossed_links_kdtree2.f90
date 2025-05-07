@@ -274,13 +274,16 @@ contains
       integer, intent(in) :: n_links_polyline_nodes !< array_size e.g. number of links ( Lnx for flowlinks, numL for netlinks) or npl for number of polyline nodes
       integer, intent(in) :: intersection_count !< number of link intersections
 
-      integer, dimension(n_links_polyline_nodes) :: new_index !< index of sorted polygon_nodes
-      real(kind=dp), dimension(n_links_polyline_nodes) :: polygon_segment_weights_copy !< copy of intersection length polygon_segment_weights
+      integer, dimension(:), allocatable :: new_index !< index of sorted polygon_nodes
+      real(kind=dp), dimension(:), allocatable :: polygon_segment_weights_copy !< copy of intersection length polygon_segment_weights
 
       integer :: k
       integer :: n
       integer :: n_start
       integer :: n_end
+
+      allocate(new_index(n_links_polyline_nodes))
+      allocate(polygon_segment_weights_copy(n_links_polyline_nodes))
 
       polygon_segment_weights_copy = polygon_segment_weights
       ! The following loop finds the n_start and n_end of which have the same crossed_link value
@@ -300,6 +303,7 @@ contains
             exit ! if n_start exceeds the intersection_count then the loop is complete
          end if
       end do
+
    end subroutine
 
 end module m_find_crossed_links_kdtree2

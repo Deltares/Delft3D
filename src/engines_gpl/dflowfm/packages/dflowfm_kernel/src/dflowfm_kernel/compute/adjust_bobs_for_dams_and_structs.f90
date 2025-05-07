@@ -27,12 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_adjust_bobs_for_dams_and_structs
-   use m_switchiadvnearlink, only: switchiadvnearlink
-   use m_dambreak_breach, only: adjust_bobs_on_dambreak_breach
 
    implicit none
 
@@ -45,18 +40,17 @@ contains
    !> adjust bobs and iadvec for dams and structs
    subroutine adjust_bobs_for_dams_and_structs()
       use precision, only: dp
-      use m_alloc
-      use m_flowgeom
-      use m_flowparameters
-      use m_flow
-      use m_netw
-      use m_fixedweirs
-      use unstruc_channel_flow
-      use m_1d_structures
-      use m_compound
+      use m_flowgeom, only: bl, bob, bob0, ln, iadv, iadv_general_structure
+      use fm_external_forcings_data, only: ncdamsg, zcdam, l1cdamsg, l2cdamsg, kcdam, ncgensg, l1cgensg, l2cgensg, kcgen, zcgen
+      use m_flowparameters, only: ifixedweirscheme1D2D
+      use unstruc_channel_flow, only: network, st_culvert
+      use m_1d_structures, only: t_structure, get_crest_level
+      use m_compound, only: t_compound
       use m_1d2d_fixedweirs, only: set_iadvec
-      use messagehandling, only: warn_flush
-
+      use messagehandling, only: msgbuf, warn_flush
+      use m_switchiadvnearlink, only: switchiadvnearlink
+      use m_dambreak_breach, only: adjust_bobs_for_dambreaks
+   
       real(kind=dp) :: zcdamn, minzcdamn, blmx
       type(t_structure), pointer :: pstru
       type(t_compound), pointer :: pcompound
@@ -162,22 +156,8 @@ contains
       end do
 
       ! Adjust bobs for dambreak
-      if (n_db_links > 0) then ! needed, because n_db_signals may be > 0, but n_db_links==0, and then arrays are not available.
-         do n = 1, n_db_signals
-            istru = dambreaks(n)
-            if (istru /= 0 .and. db_first_link(n) <= db_last_link(n)) then
-               ! Update the crest/bed levels
-               call adjust_bobs_on_dambreak_breach(network%sts%struct(istru)%dambreak%width, &
-                                                 & network%sts%struct(istru)%dambreak%maximum_width, &
-                                                 & network%sts%struct(istru)%dambreak%crest_level, &
-                                                 & breach_start_link(n), &
-                                                 & db_first_link(n), &
-                                                 & db_last_link(n), &
-                                                 & network%sts%struct(istru)%id)
-            end if
-         end do
-      end if
-
+      call adjust_bobs_for_dambreaks()
+      
       if (ifixedweirscheme1D2D == 1) then
          call set_iadvec()
       end if

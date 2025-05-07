@@ -69,7 +69,6 @@ module m_heatfluxes
    real(kind=dp), allocatable :: Qfrconmap(:)
    real(kind=dp), allocatable :: Qtotmap(:)
 
-   real(kind=dp), allocatable :: Rich(:)
    real(kind=dp), allocatable :: Secchisp(:)
 
 contains

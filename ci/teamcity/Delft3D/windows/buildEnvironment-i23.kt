@@ -15,7 +15,8 @@ object WindowsBuildEnvironment : BuildType({
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     name = "Delft3D build environment intel 2023 container"
@@ -107,11 +108,4 @@ object WindowsBuildEnvironment : BuildType({
         executionTimeoutMin = 360
     }
 
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
-            }
-        }
-    }
 })

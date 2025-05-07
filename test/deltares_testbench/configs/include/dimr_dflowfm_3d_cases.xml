@@ -1854,5 +1854,22 @@
         <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
-	
+    <testCase name="e02_f210_c001_basic_thermobaricity_densities" ref="dflowfm_default">
+      <path version="2025-04-23T20:00:00">e02_dflowfm/f210_3D_thermobaricity/c001_basic_thermobaricity_densities</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/thermobaricity_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="potential_density" toleranceAbsolute="0.0005" />
+            <parameter name="density" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/thermobaricity_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_rho" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_density" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
   </testCases>

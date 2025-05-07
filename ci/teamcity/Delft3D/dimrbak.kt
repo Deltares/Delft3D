@@ -34,10 +34,12 @@ object DIMRbak : BuildType({
         }
     }
 
-    dependencies {
-        snapshot(AbsoluteId("DIMR_To_NGHS")) {
-            onDependencyFailure = FailureAction.FAIL_TO_START
-            onDependencyCancel = FailureAction.CANCEL
+    if (DslContext.getParameter("environment") == "production") {
+        dependencies {
+            snapshot(AbsoluteId("DIMR_To_NGHS")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
         }
     }
 

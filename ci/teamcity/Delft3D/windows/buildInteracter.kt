@@ -15,7 +15,8 @@ object WindowsBuildDflowfmInteracter : BuildType({
     templates(
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateFailureCondition
+        TemplateFailureCondition,
+        TemplateDockerRegistry
     )
     allowExternalStatus = true
     artifactRules = """
@@ -82,13 +83,6 @@ object WindowsBuildDflowfmInteracter : BuildType({
                 branchFilter = "+:<default>"
                 triggerBuild = always()
                 withPendingChangesOnly = false
-            }
-        }
-    }
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
             }
         }
     }
