@@ -1,6 +1,9 @@
 \mainpage D-FlowFM Developer Guide
 
 This documentation is intended for developers working with the D-FlowFM source code.
+This guide currently documents two sections:
+- \subpage Unstruc
+- \subpage BMI_Unstruc
 
 There exists a developer's guide which can be dound here: 
 <a href="https://content.oss.deltares.nl/delft3dfm2d3d/D-Flow_FM_Developers_Guide.pdf" target=""><b>Developer Guide</b></a>
@@ -14,7 +17,7 @@ For a full list of all available functionalities and modules, see the [modules l
 
 Module                  | Functionality
 ------------------------|--------------
-\ref m_flowgoem.f90  | This module contains numbering assumptions in our model state
+m_flowgeom  | This module contains numbering assumptions in our model state
 
 D-FlowFM Kernel can be run from command line which follows the path defined in \ref Unstruc
 

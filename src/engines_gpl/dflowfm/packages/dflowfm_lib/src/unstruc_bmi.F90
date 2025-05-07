@@ -28,6 +28,12 @@
 !> \page BMI_Unstruc Unstruc BMI docs
 !! Below is the flow structure of the unstructured grid flow solver when called from the BMI interface
 !! \image html inc\BMI_Logical_Call_sequence.svg
+!! For command line execution check \ref Unstruc
+!!
+!! As an example of subroutine documentation \see get_var_name
+!!
+!! An example of external documentation reference provided the documentation is built is
+!! \ref Dimr::scanConfigFile
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
