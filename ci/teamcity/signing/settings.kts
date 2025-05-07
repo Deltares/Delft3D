@@ -2,7 +2,7 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.projectFeatures.*
 import Sign
 
-version = "2024.12"
+version = "2025.03"
 
 project {
 

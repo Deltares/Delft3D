@@ -1784,7 +1784,7 @@ contains
       Double Precision  Julian
       Double Precision  JulianSubDateStart, JulianSubDateEnd, JulianEventStart, SubSetDuration
 
-      Real              DaysAfterStartEvent, DaysInEvent, DaysInSubset, Rshift, RLASTT
+      Real              DaysAfterStartEvent, DaysInEvent, DaysInSubset, Rshift, RLASTT, RDum
 
       iDebug = ConfFil_get_iDebug()
       if (idebug .ne. 0) WRITE (IDEBUG,1)
@@ -1920,10 +1920,16 @@ contains
 ! April 2010: subset max nr days from evap file <= nr days (eventduration(.,1) +2
            EventDuration(Ievent,5) = Min (LASTT * NRSecsRAI / NRSDAY + 2, EventDuration(ievent,1)+2,EventDuration(Ievent,5))
 ! Issue evap end of file
+           Rdum   = Float(LASTT) * Float(NRSecsRAI) / Float(NRSDAY)
+           If (EventDuration(Ievent,5) .lt. Rdum) EventDuration(Ievent,5) = EventDuration(Ievent,5) + 1
+
+           
            if (EventStartDateTime(Ievent,4) .eq. 0) then
-              if (EventDuration(Ievent,5) .gt. 1) EventDuration(Ievent,5) = EventDuration(Ievent,5)-1
+              ! do nothing 
+           elseif (Rdum - EventDuration(Ievent,5) + EventStartDateTime(Ievent,3)/24. +EventStartDateTime(Ievent,4)/60. .lt. 1.0) then 
+              if (EventDuration(Ievent,5) .gt. 1) EventDuration(Ievent,5) = EventDuration(Ievent,5) - 1
            else
-              EventDuration(Ievent,5) = Int (JulianSubDateEnd -0.5D0) - Int (JulianSubDateStart -0.5D0) + 1
+              EventDuration(Ievent,5) = Int (JulianSubDateEnd -0.5D0) - Int (JulianSubDateStart -0.5D0) -1
            endif
 !
            EventDuration(Ievent,6) = LASTT +1

@@ -55,7 +55,7 @@ contains
                         uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
                         uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
                         qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, &
-                        jacreep, dpbdx0, rvdn, grn, jarhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
+                        jacreep, baroclinic_force_prev, baroclinic_pressures, integrated_baroclinic_pressures, rhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
                         workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
                         spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
                         limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, epstke, epseps, &
@@ -741,19 +741,19 @@ contains
       end if
 
       if (jasal > 0 .or. jatem > 0 .or. jased > 0 .or. stm_included) then
-         if (allocated(dpbdx0)) then
-            deallocate (dpbdx0)
+         if (allocated(baroclinic_force_prev)) then
+            deallocate (baroclinic_force_prev)
          end if
-         allocate (dpbdx0(lnkx), stat=ierr)
-         call aerr('dpbdx0 (lnkx)', ierr, lnkx); dpbdx0 = 0.0_dp
+         allocate (baroclinic_force_prev(lnkx), stat=ierr)
+         call aerr('baroclinic_force_prev (lnkx)', ierr, lnkx); baroclinic_force_prev = 0.0_dp
 
-         if (allocated(rvdn)) then
-            deallocate (rvdn, grn)
+         if (allocated(baroclinic_pressures)) then
+            deallocate (baroclinic_pressures, integrated_baroclinic_pressures)
          end if
-         allocate (rvdn(ndkx), grn(ndkx), stat=ierr); rvdn = 0.0_dp; grn = 0.0_dp
-         call aerr('rvdn(ndkx), grn(ndkx)', ierr, 2 * ndkx)
+         allocate (baroclinic_pressures(ndkx), integrated_baroclinic_pressures(ndkx), stat=ierr); baroclinic_pressures = 0.0_dp; integrated_baroclinic_pressures = 0.0_dp
+         call aerr('baroclinic_pressures(ndkx), integrated_baroclinic_pressures(ndkx)', ierr, 2 * ndkx)
 
-         if (jarhointerfaces == 1) then
+         if (rhointerfaces == 1) then
             if (allocated(rhosww)) then
                deallocate (rhosww)
             end if
@@ -1184,7 +1184,7 @@ contains
          call aerr('rhou (lnkx)', ierr, lnkx); rhou = rhomean
       end if
 
-      ! m_integralstats
+      ! m_dzstats
       if (is_numndvals > 0) then
          call realloc(is_maxvalsnd, (/is_numndvals, ndx/), keepExisting=.false., fill=0.0_dp)
          call realloc(is_sumvalsnd, (/is_numndvals, ndx/), keepExisting=.false., fill=0.0_dp)

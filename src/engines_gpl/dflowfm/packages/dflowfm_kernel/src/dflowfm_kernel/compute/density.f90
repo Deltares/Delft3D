@@ -51,8 +51,8 @@ contains
       use m_physcoef, only: rhomean
       use m_flow, only: idensform
       use MessageHandling, only: LEVEL_ERROR, mess
-      use m_density_formulas, only: calculate_density_eckart, calculate_density_unesco, calculate_density_unesco83, calculate_density_baroclinic, calculate_density_nacl, &
-                                    DENSITY_OPTION_UNIFORM, DENSITY_OPTION_ECKART, DENSITY_OPTION_UNESCO, DENSITY_OPTION_UNESCO83, DENSITY_OPTION_BAROCLINIC, DENSITY_OPTION_DELTARES_FLUME
+      use m_density_formulas, only: calculate_density_eckart, calculate_density_unesco, calculate_density_unesco83, &
+                                    DENSITY_OPTION_UNIFORM, DENSITY_OPTION_ECKART, DENSITY_OPTION_UNESCO, DENSITY_OPTION_UNESCO83
 
       real(kind=dp), intent(in) :: salinity
       real(kind=dp), intent(in) :: temperature
@@ -67,10 +67,6 @@ contains
          density = calculate_density_unesco(salinity, temperature)
       case (DENSITY_OPTION_UNESCO83) ! Unesco83 at surface, call with 0.0_dp for early exit
          density = calculate_density_unesco83(salinity, temperature, 0.0_dp)
-      case (DENSITY_OPTION_BAROCLINIC) ! baroclinic instability
-         density = calculate_density_baroclinic(salinity)
-      case (DENSITY_OPTION_DELTARES_FLUME) ! For Deltares flume experiment IJmuiden , Kees Kuipers saco code 1
-         density = calculate_density_nacl(salinity, temperature)
       case default
          call mess(LEVEL_ERROR, 'Unknown density formula. Found idensform = ', idensform)
       end select

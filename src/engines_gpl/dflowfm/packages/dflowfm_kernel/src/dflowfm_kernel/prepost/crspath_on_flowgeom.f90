@@ -46,11 +46,12 @@ contains
       use m_flowgeom
       use network_data
       use m_sferic
-      use m_partitioninfo
+      use m_partitioninfo, only: jampi, idomain, ighostlev, my_rank
       use stdlib_sorting, only: sort_index
       use geometry_module, only: dbdistance, normalout
       use m_missing, only: dmiss, dxymis
       use m_alloc
+      use m_link_ghostdata, only: link_ghostdata
 
       type(tcrspath), intent(inout) :: path !< Cross section path that must be imposed on flow geometry.
       integer, intent(in) :: includeghosts !< include ghost links in path (1) or not (0)

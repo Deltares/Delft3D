@@ -12,8 +12,8 @@ PREFIX = "output/weekly"
 
 
 @dataclass
-class VerschilAnalyseReport:
-    """Weekly verschilanalyse report from the bucket."""
+class VerschilAnalyseRun:
+    """Weekly verschilanalyse run from the bucket."""
 
     tag: str
     model_names: list[str]
@@ -22,56 +22,56 @@ class VerschilAnalyseReport:
 
 
 class VerschilAnalyseReporter:
-    """Finds weekly verschilanalyse reports in the bucket."""
+    """Finds weekly verschilanalyse runs in the bucket."""
 
-    def __init__(self, minio: minio.Minio, bucket_name: str, output_prefix: str) -> None:
+    def __init__(self, minio: minio.Minio, bucket_name: str, prefix: str) -> None:
         self._minio = minio
         self._bucket_name = bucket_name
-        self._prefix = f"{output_prefix.rstrip('/')}/"
+        self._prefix = f"{prefix.rstrip('/')}/"
 
-    def find_weekly_reports(self) -> list[VerschilAnalyseReport]:
-        """Find all the weekly reports in the bucket with at least one model output."""
-        reports: dict[str, tuple[str, datetime]] = {}
+    def find_weekly_runs(self) -> list[VerschilAnalyseRun]:
+        """Find all the weekly verschilanalyse runs in the bucket with at least one model output."""
+        logs: dict[str, tuple[str, datetime]] = {}
         models: defaultdict[str, list[str]] = defaultdict(list)
 
         for obj in self._minio.list_objects(bucket_name=self._bucket_name, prefix=self._prefix, recursive=True):
             suffix = obj.object_name.removeprefix(self._prefix)
             match suffix.split("/", maxsplit=2):
-                case [tag, "report", _]:
+                case [tag, "logs", _]:
                     if "weekly" in tag:
-                        reports[tag] = (obj.object_name, obj.last_modified)
+                        logs[tag] = (obj.object_name, obj.last_modified)
                 case [tag, "output", postfix]:
                     if "weekly" in tag and postfix.endswith(".zip"):
                         models[tag].append(postfix.removesuffix(".zip"))
 
         return [
-            VerschilAnalyseReport(
+            VerschilAnalyseRun(
                 tag=tag,
                 model_names=models[tag],
                 key=key,
                 timestamp=timestamp,
             )
-            for tag, (key, timestamp) in reports.items()
+            for tag, (key, timestamp) in logs.items()
             if models[tag]
         ]
 
-    def get_latest_report(self) -> VerschilAnalyseReport | None:
-        """Get the latest successful report."""
-        reports = self.find_weekly_reports()
-        if not reports:
+    def get_latest_run(self) -> VerschilAnalyseRun | None:
+        """Get the latest successful verschilanalyse run."""
+        runs = self.find_weekly_runs()
+        if not runs:
             return None
-        return max(reports, key=lambda report: report.timestamp)
+        return max(runs, key=lambda run: run.timestamp)
 
 
 if __name__ == "__main__":
-    """Command line program to find the latest weekly verschilanalyse output and report.
+    """Command line program to find the latest weekly verschilanalyse output and logs.
 
     Used in TeamCity pipeline to set the `reference_prefix` parameter.
     """
     client = minio.Minio(endpoint=ENDPOINT, credentials=AWSConfigProvider())
-    reporter = VerschilAnalyseReporter(minio=client, bucket_name=BUCKET_NAME, output_prefix=PREFIX)
+    reporter = VerschilAnalyseReporter(minio=client, bucket_name=BUCKET_NAME, prefix=PREFIX)
 
-    report = reporter.get_latest_report()
+    report = reporter.get_latest_run()
     if report is None:
         print("No weekly reports found.", file=sys.stderr)
         exit(1)
@@ -85,5 +85,5 @@ if __name__ == "__main__":
 
     # Override the TeamCity `reference_prefix` parameter using a TeamCity service message.
     # See: https://www.jetbrains.com/help/teamcity/service-messages.html
-    reference_prefix = f"output/weekly/{report.tag}/output"
+    reference_prefix = f"output/weekly/{report.tag}"
     print(f"##teamcity[setParameter name='reference_prefix' value='{reference_prefix}']")

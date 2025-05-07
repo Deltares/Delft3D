@@ -2700,12 +2700,15 @@ contains
          integer, intent(in) :: ITAPSM !< number of smoothing iterations
          real(kind=dp), dimension(:), intent(out) :: u_smooth !< smoothed node-based solution
 
-         real(kind=dp), dimension(nmkx2) :: ww2
-         real(kind=dp), dimension(numk) :: u_temp
+         real(kind=dp), dimension(:), allocatable :: ww2
+         real(kind=dp), dimension(:), allocatable :: u_temp
          integer :: iter, k0
 
          real(kind=dp) :: alpha, alpha1
 
+         allocate(ww2(nmkx2))
+         allocate(u_temp(numk))
+         
          alpha = 0.5d0
 
          alpha1 = 1d0 - alpha

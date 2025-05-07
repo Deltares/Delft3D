@@ -1453,62 +1453,6 @@ contains
       return
    end subroutine partition_get_ghosts
 
-!> determine if flow link is ghost link, flow link domain number and ghost level
-!>
-!>   a flow link is owned by the adjacent cell with the smallest domain number
-!>   thus, a link is a ghost link if:
-!>                it connects two ghost cells, or
-!> ACTIVATED ->   it connects only one ghost cell, and the other domain number is smaller than the own domain number, or
-!                 it connects connects a cell in the own subdomain with ghostlevel >0 (at the boundary)
-   subroutine link_ghostdata(idmn, idmnL, idmnR, jaghost, idmn_link, ighostlevL, ighostlevR, iglev)
-      use m_flowgeom
-      implicit none
-
-      integer, intent(in) :: idmn !< domain number based on which the ghost-checking is done (typically my_rank)
-      integer, intent(in) :: idmnL !< domain number of left neighboring cell
-      integer, intent(in) :: idmnR !< domain number of right neighboring cell
-      integer, intent(out) :: jaghost !< flow link is ghost link (1) or not (0)
-      integer, intent(out) :: idmn_link !< flow link domain number
-      integer, intent(in), optional :: ighostlevL !< ghost level of left neighboring cell
-      integer, intent(in), optional :: ighostlevR !< ghost level of right neighboring cell
-      integer, intent(out), optional :: iglev !< flow link ghost level (if ghostlevels specified, otherwise 0)
-
-      jaghost = 0
-      idmn_link = idmn
-      if (present(iglev)) then
-         iglev = 0
-      end if
-
-      if ((idmnL /= idmn .and. idmnR /= idmn) .or. &
-          (idmnL == idmn .and. idmnR < idmn) .or. &
-          (idmnL < idmn .and. idmnR == idmn) &
-          ) then
-         jaghost = 1
-      else if (present(ighostlevL) .and. present(ighostlevR)) then
-         if ((idmnL == idmn .and. ighostlevL > 0) .or. &
-             (idmnR == idmn .and. ighostlevR > 0) &
-             ) then
-            jaghost = 1
-         end if
-      end if
-
-      if (jaghost == 1) then
-
-         if (present(ighostlevL) .and. present(ighostlevR) .and. present(iglev)) then
-            idmn_link = min(idmnL, idmnR) ! a choice
-
-!           ghost domain cannot be own domain
-            if (idmn_link == idmn) idmn_link = idmnL + idmnR - idmn
-            iglev = min(ighostlevL, ighostlevR)
-
-!           ghost level may be zero
-            if (iglev == 0) iglev = max(ighostlevL, ighostlevR)
-         end if
-      end if
-
-      return
-   end subroutine link_ghostdata
-
    !> Tells whether a particular flow node is a ghost node in the current domain.
    !! In sequential models, result is always .false.
    pure function is_ghost_node(k) result(is_ghost)
@@ -4950,6 +4894,7 @@ contains
    subroutine get_ghost_links(domain_number, min_ghost_level, max_ghost_level, ghost_type, ghost_list)
       use m_flowgeom, only: Lnx, ln
       use m_alloc
+      use m_link_ghostdata, only: link_ghostdata
 
       implicit none
       integer, intent(in) :: domain_number

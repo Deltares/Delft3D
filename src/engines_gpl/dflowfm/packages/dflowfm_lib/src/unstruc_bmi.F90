@@ -1908,8 +1908,8 @@ contains
       use iso_c_binding, only: c_double, c_char, c_loc
       use iso_c_utils
       use fm_external_forcings_data
-      use m_dambreak_breach, only: db_upstream_levels, db_downstream_levels, &
-            db_breach_depths, db_breach_widths
+      use m_dambreak_breach, only: get_dambreak_depth_c_loc, get_dambreak_breach_width_c_loc, &
+                                   get_dambreak_upstream_level_c_loc, get_dambreak_downstream_level_c_loc
       use m_observations
       use m_monitoring_crosssections
       use m_strucs
@@ -2176,16 +2176,16 @@ contains
          end if
          select case (field_name)
          case ("dambreak_s1up")
-            x = c_loc(db_upstream_levels(item_index))
+            x = get_dambreak_upstream_level_c_loc(item_index)
             return
          case ("dambreak_s1dn")
-            x = c_loc(db_downstream_levels(item_index))
+            x = get_dambreak_downstream_level_c_loc(item_index)
             return
          case ("dambreak_breach_depth")
-            x = c_loc(db_breach_depths(item_index))
+            x = get_dambreak_depth_c_loc(item_index)
             return
          case ("dambreak_breach_width")
-            x = c_loc(db_breach_widths(item_index))
+            x = get_dambreak_breach_width_c_loc(item_index)
             return
          case ("dambreak_instantaneous_discharge")
             x = c_loc(valdambreak(1, item_index))

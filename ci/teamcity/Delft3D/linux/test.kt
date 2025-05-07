@@ -92,7 +92,7 @@ object LinuxTest : BuildType({
                     --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
                 """.trimIndent()
             }
-            dockerImage = "containers.deltares.nl/delft3d/test/delft3dfm:alma8-%build.vcs.number%"
+            dockerImage = "containers.deltares.nl/delft3d/test/delft3d-test-container:alma8-%build.vcs.number%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
             dockerPull = true
             dockerRunParameters = """
@@ -106,7 +106,7 @@ object LinuxTest : BuildType({
             executionMode = BuildStep.ExecutionMode.ALWAYS
             commandType = other {
                 subCommand = "rmi"
-                commandArgs = "containers.deltares.nl/delft3d/test/delft3dfm:alma8-%build.vcs.number%"
+                commandArgs = "containers.deltares.nl/delft3d/test/delft3d-test-container:alma8-%build.vcs.number%"
             }
         }
         dockerCommand {
@@ -132,7 +132,7 @@ object LinuxTest : BuildType({
                 onDependencyFailure = FailureAction.FAIL_TO_START
             }
         }
-        dependency(LinuxDocker) {
+        dependency(LinuxRuntimeContainers) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL

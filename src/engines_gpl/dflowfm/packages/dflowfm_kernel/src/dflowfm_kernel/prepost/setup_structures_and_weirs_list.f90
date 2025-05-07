@@ -35,7 +35,7 @@ contains
       use m_flowgeom, only: lnx, bob, bob0
       use m_flowparameters, only: ChangeVelocityAtStructures
       use fm_external_forcings_data, only: ncdamsg, L1cdamsg, L2cdamsg, kcdam, ncgensg, L1cgensg, L2cgensg, kcgen
-      use m_dambreak_data, only: indicate_links_that_contain_dambreaks
+      use m_dambreak_breach, only: indicate_links_that_contain_dambreaks
       use unstruc_channel_flow, only: network
       use m_GlobalParameters, only: ST_PUMP
       use array_module, only: convert_mask_to_indices

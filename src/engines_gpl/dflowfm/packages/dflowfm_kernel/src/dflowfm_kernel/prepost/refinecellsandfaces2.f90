@@ -972,7 +972,8 @@ contains
          use geometry_module, only: getcircumcenter
          use m_find_common_node
          use m_new_link
-         use network_data, only: kn3typ, kn, xk, yk, lnn, dcenterinside, circumcenter_method, xzw, yzw
+         use network_data, only: kn3typ, kn, xk, yk, lnn, dcenterinside, xzw, yzw
+         use m_circumcenter_method, only: circumcenter_method
 
          implicit none
 

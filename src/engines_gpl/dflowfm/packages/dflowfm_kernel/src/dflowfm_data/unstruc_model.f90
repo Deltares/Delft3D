@@ -685,10 +685,11 @@ contains
       use m_flowgeom !,              only : wu1Duni, bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
-      use m_dambreak, only: set_dambreak_widening_method
+      use m_dambreak_breach, only: set_dambreak_widening_method
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind ! ,                  only : icdtyp, cdb, wdb,
-      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
+      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
+      use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jasfer3D
       use m_alloc
       use m_equatorial
@@ -727,7 +728,7 @@ contains
       use m_map_his_precision
       use m_qnerror
       use messagehandling, only: msgbuf, err_flush, warn_flush
-      use geometry_module, only: INTERNAL_NETLINKS_EDGE, ALL_NETLINKS_LOOP
+      use m_circumcenter_method, only: md_circumcenter_method, circumcenter_method, extract_circumcenter_method, circumcenter_tolerance
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -993,13 +994,10 @@ contains
       call prop_get(md_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters)
       call prop_get(md_ptr, 'geometry', 'stripMesh', strip_mesh)
       call prop_get(md_ptr, 'geometry', 'Dcenterinside', Dcenterinside)
-      call prop_get(md_ptr, 'geometry', 'Circumcenter', circumcenter_method)
-      if (circumcenter_method < INTERNAL_NETLINKS_EDGE .or. circumcenter_method > ALL_NETLINKS_LOOP) then
-         call mess(LEVEL_ERROR, '"[geometry] Circumcenter" expects an integer between 1 and 3.')
-      end if
-      if (circumcenter_method == INTERNAL_NETLINKS_EDGE) then
-         call mess(LEVEL_WARN, '"[geometry] Circumcenter = 1" will be deprecated and will be removed in future. Please update this in your model. "Circumcenter = 2" is the improved current inplementation using internal net links only. "Circumcenter = 3" is a stricter implemention considering also the net links on the outline of the grid. The new options may require an update of your grid.')
-      end if
+      call prop_get(md_ptr, 'geometry', 'circumcenterMethod', md_circumcenter_method, success)
+      circumcenter_method = extract_circumcenter_method(md_circumcenter_method, success)
+      call prop_get(md_ptr, 'geometry', 'circumcenterTolerance', circumcenter_tolerance, success)
+
       call prop_get(md_ptr, 'geometry', 'PartitionFile', md_partitionfile, success)
       if (jampi == 1 .and. md_japartition /= 1) then
          if (len_trim(md_partitionfile) < 1) then
@@ -1196,7 +1194,7 @@ contains
 
       call prop_get(md_ptr, 'numerics', 'Barocponbnd', jaBarocponbnd)
       call prop_get(md_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density)
-      call prop_get(md_ptr, 'numerics', 'Rhointerfaces', jarhointerfaces)
+      call prop_get(md_ptr, 'numerics', 'Rhointerfaces', rhointerfaces)
 
       call prop_get(md_ptr, 'numerics', 'EnableJRE', jajre)
 
@@ -1366,6 +1364,21 @@ contains
 
       call prop_get(md_ptr, 'physics', 'idensform', idensform)
       call prop_get(md_ptr, 'physics', 'thermobaricity', apply_thermobaricity)
+      call prop_get(md_ptr, 'physics', 'thermobaricityInBruntVaisala', thermobaricity_in_brunt_vaisala_frequency, success, value_parsed)
+      if (.not. apply_thermobaricity) then
+         if (value_parsed .and. thermobaricity_in_brunt_vaisala_frequency) then
+            call mess(LEVEL_ERROR, 'thermobaricityInBruntVaisala is only available for thermobaricity = 1.')
+         else
+            thermobaricity_in_brunt_vaisala_frequency = .false.
+         end if
+      end if
+      call prop_get(md_ptr, 'physics', 'thermobaricityInBaroclinicPressureGradient', thermobaricity_in_baroclinic_pressure_gradient, success, value_parsed)
+      if ((.not. apply_thermobaricity) .and. thermobaricity_in_baroclinic_pressure_gradient .and. value_parsed) then
+         call mess(LEVEL_ERROR, 'thermobaricityInBaroclinicPressureGradient is only available for thermobaricity = 1.')
+      end if
+      if (apply_thermobaricity .and. (.not. thermobaricity_in_brunt_vaisala_frequency) .and. (.not. thermobaricity_in_baroclinic_pressure_gradient)) then
+         call mess(LEVEL_WARN, 'When thermobaricity = 1, it is strongly recommended to either set thermobaricityInBruntVaisala or thermobaricityInBaroclinicPressureGradient to 1.')
+      end if
       call validate_density_settings(idensform, apply_thermobaricity)
 
       call prop_get(md_ptr, 'physics', 'Temperature', jatem)
@@ -2584,7 +2597,8 @@ contains
       use m_flowtimes
       use m_flowparameters
       use m_wind
-      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
+      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
+      use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
       use m_physcoef, only: apply_thermobaricity
       use unstruc_netcdf, only: unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
@@ -2609,8 +2623,8 @@ contains
       use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
       use m_map_his_precision
       use m_datum
-      use geometry_module, only: INTERNAL_NETLINKS_EDGE
-      use m_dambreak_data, only: exist_dambreak_links
+      use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
+      use m_dambreak_breach, only: exist_dambreak_links
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -2814,7 +2828,10 @@ contains
          call prop_set(prop_ptr, 'geometry', 'Dcenterinside', Dcenterinside, 'Limit cell center (1.0: in cell, 0.0: on c/g)')
       end if
       if (writeall .or. (circumcenter_method /= INTERNAL_NETLINKS_EDGE)) then
-         call prop_set(prop_ptr, 'geometry', 'Circumcenter', circumcenter_method, 'Computation of circumcenter (iterate each edge - 1=internal netlinks; iterate each loop - 2=internal netlinks, 3=all netlinks)')
+         call prop_set(prop_ptr, 'geometry', 'circumcenterMethod', trim(md_circumcenter_method), 'Circumcenter computation method (iterate each edge: internalNetlinksEdge; iterate each loop: internalNetlinksLoop or allNetlinksLoop)')
+      end if
+      if (writeall .or. (circumcenter_tolerance /= 1.0e-3_dp)) then
+         call prop_set(prop_ptr, 'geometry', 'circumcenterTolerance', circumcenter_tolerance, 'Tolerance for convergence of circumcenter method (m) (default: 1.0e-3')
       end if
       if (writeall .or. (bamin > 1.0e-6_dp)) then
          call prop_set(prop_ptr, 'geometry', 'Bamin', Bamin, 'Minimum grid cell area, in combination with cut cells')
@@ -3159,8 +3176,8 @@ contains
       if (writeall .or. max_iterations_pressure_density /= 1) then
          call prop_set(prop_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density, 'Max nr of iterations in pressure-density coupling, only used if thermobaricity is true.')
       end if
-      if (writeall .or. jarhointerfaces /= 0) then
-         call prop_set(prop_ptr, 'numerics', 'Rhointerfaces', jarhointerfaces, 'Evaluate rho at interfaces, 0=org at centers, 1=at interfaces )')
+      if (writeall .or. rhointerfaces /= 0) then
+         call prop_set(prop_ptr, 'numerics', 'Rhointerfaces', rhointerfaces, 'Evaluate rho at interfaces: 0 = linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.')
       end if
 
       if (icgsolver == 8) then ! for parms solver
@@ -3316,6 +3333,8 @@ contains
 
       call prop_set(prop_ptr, 'physics', 'Idensform', idensform, 'Density calulation (0: uniform, 1: Eckart, 2: UNESCO, 3: UNESCO83)')
       call prop_set(prop_ptr, 'physics', 'thermobaricity', apply_thermobaricity, 'Include pressure effects on water density. Only works for idensform = 3 (UNESCO83).')
+      call prop_set(prop_ptr, 'physics', 'thermobaricityInBruntVaisala', thermobaricity_in_brunt_vaisala_frequency, 'Apply thermobaricity in computing the Brunt-Vaisala frequency (0 = no, 1 = yes).')
+      call prop_set(prop_ptr, 'physics', 'thermobaricityInBaroclinicPressureGradient', thermobaricity_in_baroclinic_pressure_gradient, 'Apply thermobaricity in computing the baroclinic pressure gradient (0 = no, 1 = yes).')
 
       call prop_set(prop_ptr, 'physics', 'Ag', ag, 'Gravitational acceleration')
       call prop_set(prop_ptr, 'physics', 'TidalForcing', jatidep, 'Tidal forcing, if jsferic=1 (0: no, 1: yes)')
@@ -4245,8 +4264,7 @@ contains
 
    !> Validate the user input for the density formula
    subroutine validate_density_settings(idensform, apply_thermobaricity)
-      use m_density_formulas, only: DENSITY_OPTION_UNIFORM, DENSITY_OPTION_ECKART, DENSITY_OPTION_UNESCO, &
-                                    DENSITY_OPTION_UNESCO83, DENSITY_OPTION_BAROCLINIC, DENSITY_OPTION_DELTARES_FLUME
+      use m_density_formulas, only: DENSITY_OPTION_UNIFORM, DENSITY_OPTION_ECKART, DENSITY_OPTION_UNESCO, DENSITY_OPTION_UNESCO83
       integer, intent(in) :: idensform !< Density formula identifier
       logical, intent(in) :: apply_thermobaricity !< Whether the density formula are pressure dependent
 
@@ -4260,8 +4278,7 @@ contains
       end if
       ! No thermobaricity
       select case (idensform)
-      case (DENSITY_OPTION_UNIFORM, DENSITY_OPTION_ECKART, DENSITY_OPTION_UNESCO, &
-            DENSITY_OPTION_UNESCO83, DENSITY_OPTION_BAROCLINIC, DENSITY_OPTION_DELTARES_FLUME)
+      case (DENSITY_OPTION_UNIFORM, DENSITY_OPTION_ECKART, DENSITY_OPTION_UNESCO, DENSITY_OPTION_UNESCO83)
          return
       case default
          call mess(LEVEL_ERROR, 'Unsupported value for keyword "idensform", see manual or .dia file for supported values.')

@@ -50,7 +50,10 @@ contains
       integer, parameter :: MAXOP = 64
       character(len=40) :: OPTION(MAXOP)
       integer :: NUMK, KEY
-      real(kind=dp) :: XK(NUMK), YK(NUMK), ZK(NUMK), EA(NUMK)
+      real(kind=dp), dimension(numk), intent(in) :: XK
+      real(kind=dp), dimension(numk), intent(in) :: YK
+      real(kind=dp), dimension(numk), intent(in) :: ZK
+      real(kind=dp), dimension(numk), intent(out) :: EA
       real(kind=dp) :: XI, YI, ZI, DA, AF, RD
 
       integer :: ichange, inhul, ja, k, maxopt, nwhat
@@ -148,7 +151,7 @@ contains
       end do
       call READYY('CHANGE FIELD VALUES', -1d0)
       KEY = 3
-      return
+            
    end subroutine PLUSABSD
 
 end module m_plusabsd

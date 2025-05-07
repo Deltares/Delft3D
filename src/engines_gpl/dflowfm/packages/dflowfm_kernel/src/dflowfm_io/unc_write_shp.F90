@@ -49,7 +49,7 @@ contains
       use m_monitoring_crosssections, only: ncrs, crs
       use m_observations_data, only: numobs, kobs
       use fm_external_forcings_data, only: nweirgen, ngategen, numsrc, ksrc, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen
-      use m_dambreak_data, only: should_write_dambreaks
+      use m_dambreak_breach, only: should_write_dambreaks
       use m_thindams
       use m_sobekdfm, only: nbnd1d2d
       use m_fixedweirs, only: nfxw

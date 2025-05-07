@@ -16,8 +16,12 @@ object TestPythonCiTools : BuildType({
         Runs tests and quality checks on the python CI tools.
     """.trimIndent()
 
+    // The name `coverage.zip` for the pytest coverage report should not be changed.
+    // Using the name `coverage.zip` will ensure TeamCity adds the `Coverage` tab to the build.
+    // See: https://www.jetbrains.com/help/teamcity/importing-arbitrary-coverage-results-to-teamcity.html
     artifactRules = """
         +:ci/python/*.xml => report
+        +:ci/python/htmlcov/* => coverage.zip
     """.trimIndent()
 
     templates(
@@ -96,7 +100,11 @@ object TestPythonCiTools : BuildType({
             }
             command = module {
                 module = "pytest"
-                scriptArguments = "--junitxml=pytest.xml"
+                scriptArguments = """
+                    --junitxml=pytest.xml
+                    --cov-report=html
+                    --cov=.
+                """.trimIndent()
             }
         }
     }

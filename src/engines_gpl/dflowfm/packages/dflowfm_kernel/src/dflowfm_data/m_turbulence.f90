@@ -102,9 +102,9 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: drhodz !< Vertical density gradient
    real(kind=dp), allocatable, dimension(:) :: rhosww ! deviatoric density at vertical interfaces, w points (kg/m3)
    real(kind=dp), allocatable, dimension(:) :: rhowat ! density at cell centres (kg/m3), only salt and temp
-   real(kind=dp), allocatable, dimension(:) :: dpbdx0 ! previous step baroclinic pressure gradient, at u points
-   real(kind=dp), allocatable, dimension(:) :: rvdn ! help integral of (rho-rhomean)*deltaz at pressure points (kg/m2)
-   real(kind=dp), allocatable, dimension(:) :: grn ! help integral of vertical baroclinic pressure integral at pressure points  (kg/m)
+   real(kind=dp), allocatable, dimension(:) :: baroclinic_force_prev ! previous step baroclinic force, at u points
+   real(kind=dp), allocatable, dimension(:) :: baroclinic_pressures ! baroclinic pressures (/ag), at pressure points
+   real(kind=dp), allocatable, dimension(:) :: integrated_baroclinic_pressures ! depth-integrated baroclinic pressures (/ag), at pressure points
 
    real(kind=dp), allocatable, dimension(:) :: rhou !< density at flow links (kg/m3)
 
