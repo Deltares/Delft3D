@@ -83,6 +83,7 @@ module m_1d_structures
    public get_discharge_under_compound_struc
    public set_u0isu1_structures
    public set_u1q1_structure
+   public update_bedlevels_for_bridges
 
    interface fill_hashtable
       module procedure fill_hashtable_sts
@@ -1014,14 +1015,32 @@ end subroutine deallocstructure
    !! this is relevant under compound structures.
    !! This routine typically should be called once (at the end of) every timestep.
    subroutine set_u1q1_structure(pstru, L0, s1k1, s1k2, teta)
-      type (t_structure), intent(inout) :: pstru       !< structure
-      integer,            intent(in)    :: L0          !< local link index
-      double precision,   intent(in)    :: s1k1, s1k2  !< water level on nodes k1 and k2
-      double precision,   intent(in)    :: teta        !< Theta-value of theta-time-integration for this flow link. (not used yet)
+      type (t_structure), intent(inout) :: pstru !< structure
+      integer, intent(in) :: L0 !< local link index
+      double precision, intent(in) :: s1k1, s1k2  !< water level on nodes k1 and k2
+      double precision, intent(in) :: teta !< Theta-value of theta-time-integration for this flow link. (not used yet)
 
       pstru%u1(L0) = pstru%ru(L0) - pstru%fu(L0)*( s1k2 - s1k1 )
       ! NOTE: No q1 part here, since pstru%q1 does not exist.
       
    end subroutine set_u1q1_structure
 
+   !> Sets the bed level for pillar bridges in the structure set, that use the cross section definition of the channel.
+   subroutine update_bedlevels_for_bridges(sts, bobs)
+      type(t_structureSet), intent(inout) :: sts !< Structure set that must be updated.
+      double precision, dimension(:,:), intent(in) :: bobs !< The bed level at the bridge. (dimensions (2,lnx)
+
+      integer :: i, L
+
+      do i = 1, sts%numBridges
+         associate(pstru => sts%struct(sts%bridgeIndices(i)))
+            if (.not. pstru%bridge%useOwnCrossSection) then
+               L = pstru%linknumbers(1)
+               pstru%bridge%bedLevel = max(bobs(1, L), bobs(2, L))
+            end if
+         end associate
+      end do
+
+   end subroutine update_bedlevels_for_bridges
 end module m_1d_structures
+   

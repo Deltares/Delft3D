@@ -35,7 +35,7 @@ contains
 !> Initializes controllers that force structures.
    module function flow_init_structurecontrol() result(status)
       use dfm_error, only: DFM_NOERR
-      use m_flowgeom, only: lnx, wu, ln
+      use m_flowgeom, only: lnx, wu, ln, bob0
       use m_netw, only: numl
       use unstruc_channel_flow, only: initialize_compounds, initialize_structure_links, &
           update_lin2str_admin
@@ -56,7 +56,8 @@ contains
       use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration, &
           allocate_dambreak_width_arrays
       use m_update_counters_for_structures, only: update_counters_for_dambreak_or_pump
-
+      use m_1d_structures, only: update_bedlevels_for_bridges
+      
       logical :: status
       
       integer :: i, link, k, n
@@ -147,6 +148,8 @@ contains
       end do
 
       call update_lin2str_admin(network)
+      
+      call update_bedlevels_for_bridges(network%sts, bob0)      
 
       if (network%cmps%Count > 0) then
          i_status = max(i_status, initialize_compounds(network%cmps, network%sts))
