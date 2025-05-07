@@ -1,4 +1,4 @@
-## Introduction
+## DIMR Introduction
 
 Dimr is the Deltares Integrated Model Runner. Its task is to execute
 models and exchange data between them using the BMI interface.
