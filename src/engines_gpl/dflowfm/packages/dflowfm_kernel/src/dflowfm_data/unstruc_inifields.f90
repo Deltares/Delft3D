@@ -56,10 +56,15 @@ module unstruc_inifields
    !!   need to be converted/updated by user), then the major version number
    !!   is incremented.
 
-   ! IniFieldFile current version: 2.00
+   ! IniFieldFile current version: 2.02
    integer, parameter :: IniFieldMajorVersion = 2
-   integer, parameter :: IniFieldMinorVersion = 0
+   integer, parameter :: IniFieldMinorVersion = 2
 
+   ! History IniFieldVersion:
+   ! 2.02: Quantities 'waterlevel' and 'waterdepth' have been renamed to 'initialWaterLevel' and 'initialWaterDepth'.
+   ! 2.01: Added field 'frictionType'
+   ! 2.00: extrapolationMethod changed from integer to logical.
+   ! 1.01: initial implemented version
 contains
 
    function checkIniFieldFileVersion(inifilename, inifield_ptr) result(ierr)
@@ -121,13 +126,13 @@ contains
       integer :: water_specifier
       logical(kind=c_bool), allocatable :: mask(:)
 
-      if (strcmpi(global_quantity, 'waterlevel')) then
+      if (strcmpi(global_quantity, 'waterlevel') .or. strcmpi(global_quantity, 'initialWaterLevel')) then
          water_specifier = enum_water_level
-      else if (strcmpi(global_quantity, 'waterdepth')) then
+      else if (strcmpi(global_quantity, 'waterdepth') .or. strcmpi(global_quantity, 'initialWaterDepth')) then
          water_specifier = enum_water_depth
       else
          write (msgbuf, '(a)') 'File '''//trim(ini_file_name)// &
-            ''': error while setting initial field values of quantities ''waterlevel'' and ''waterdepth'';'// &
+            ''': error while setting initial field values of quantities ''initialWaterLevel'' and ''initialWaterDepth'';'// &
             ' Provided quantity name '''//trim(global_quantity)//''' is invalid.'
          call err_flush()
       end if
@@ -199,7 +204,7 @@ contains
       integer, parameter :: ini_value_len = 256
       character(len=ini_key_len) :: groupname
       character(len=ini_value_len) :: varname
-      character(len=ini_value_len) :: tracnam, qidnam
+      character(len=ini_value_len) :: tracnam, qidnam, source_quantity_name
       character(len=ini_value_len) :: global_water_level_quantity
       integer :: num_items_in_file
       character(len=255) :: fnam, filename
@@ -264,12 +269,22 @@ contains
 
          !! Step 2: operation for each block
          if (filetype == field1D) then
-            ierr_loc = init1dField(filename, inifilename, qid, specified_indices, global_value, global_value_provided)
+            call fm_quantity_name_to_source_quantity_name(qid, filetype, source_quantity_name)
+            if (source_quantity_name == '') then
+               ierr = DFM_WRONGINPUT
+               write (msgbuf, '(a)') 'File '''//trim(inifilename)//''': quantity '''//trim(qid)//''' is not supported.'// &
+                  ' Please use the correct quantity name in the IniFieldFile.'
+               call err_flush()
+               return
+            end if
+            ierr_loc = init1dField(filename, inifilename, source_quantity_name, specified_indices, global_value, global_value_provided)
             if (ierr_loc /= DFM_NOERR) then
                success = .false.
                exit ! Or, consider cycle instead, to try all remaining blocks and return with an error only at the very end.
             end if
-            if (strcmpi(qid, 'waterlevel') .or. strcmpi(qid, 'waterdepth') .or. strcmpi(qid, 'initialvelocity')) then
+            if (strcmpi(qid, 'initialwaterlevel') .or. strcmpi(qid, 'initialwaterdepth') & ! Official names
+               .or. strcmpi(qid, 'waterlevel') .or. strcmpi(qid, 'waterdepth') & ! Backwards compatible names
+               .or. strcmpi(qid, 'initialvelocity')) then
                specified_water_levels = specified_water_levels .or. specified_indices
                if (global_value_provided) then
                   water_level_global_value_provided = .true.
@@ -385,6 +400,32 @@ contains
 
    end function initialize_initial_fields
 
+   !> Converts a quantity name from a D-Flow FM initial fields file to its corresponding source name in the dataFile.
+   !! This source name typically depends on the data file type and may be used in subsequent calls to init1DField(),
+   !! and possibly in the future also timespaceinitialfield().
+   subroutine fm_quantity_name_to_source_quantity_name(quantity_name, file_type, source_quantity_name)
+      use string_module, only: str_tolower
+      use timespace_parameters, only: FIELD1D
+      character(len=*), intent(in) :: quantity_name          !< Input quantity name (as it appears in the IniFieldFile).
+      integer, intent(in) :: file_type                       !< Data file type (one from the enum integers in timespace_parameters).
+      character(len=*), intent(out) :: source_quantity_name  !< Source name how the quantity is referred to in the data file. Empty string if combination is not supported.
+
+      source_quantity_name = ''
+
+      if (file_type == FIELD1D) then
+         select case (str_tolower(trim(quantity_name)))
+         case ('initialwaterlevel', 'waterlevel')
+            source_quantity_name = 'waterlevel'
+         case ('initialwaterdepth', 'waterdepth')
+            source_quantity_name = 'waterdepth'
+         case ('initialvelocity')
+            source_quantity_name = 'velocity'
+         case ('frictioncoefficient')
+            source_quantity_name = 'frictioncoefficient'
+         end select
+      end if
+   end subroutine fm_quantity_name_to_source_quantity_name
+
    !> Reads all key values for a data provider from an IniFieldFile block.
    !! All returned values will typically be used for a call to timespaceinitialfield().
    subroutine readIniFieldProvider(inifilename, node_ptr, groupname, quantity, filename, filetype, method, &
@@ -399,7 +440,7 @@ contains
       character(len=*), intent(in) :: inifilename !< Name of the ini file, only used in warning messages, actual data is read from node_ptr.
       type(tree_data), pointer :: node_ptr !< The tree structure containing a single ini-file chapter/block.
       character(len=*), intent(out) :: groupname !< Identifier of the read chapter (e.g., 'Initial')
-      character(len=*), intent(out) :: quantity !< Identifier of current quantity (e.g., 'waterlevel')
+      character(len=*), intent(out) :: quantity !< Identifier of current quantity (e.g., 'initialWaterLevel')
       character(len=*), intent(out) :: filename !< Name of data file for current quantity.
       integer, intent(out) :: filetype !< File type of current quantity.
       integer, intent(out) :: method !< Time-interpolation method for current quantity.
@@ -670,7 +711,8 @@ contains
          call err_flush()
          return
       end if
-      if (.not. strcmpi(quantity, intended_quantity)) then
+      if (.not. strcmpi(quantity, intended_quantity) &
+          .and. .not. (strcmpi(quantity, 'initialvelocity') .and. strcmpi(intended_quantity, 'velocity'))) then ! Silly exception, because in earlier D-HYDRO Suite 1D2D releases, this was already called 'initialvelocity'. Will phase out in file format 3.00 later.
          num_errors = num_errors + 1
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(ini_file_name), &
             ''': [Global]. Field ''quantity'' does not match the "quantity" which is specified in iniField file ''', &
@@ -680,7 +722,9 @@ contains
       end if
       if ((.not. strcmpi(quantity, 'bedlevel')) .and. (.not. strcmpi(quantity, 'waterlevel')) .and. &
           (.not. strcmpi(quantity, 'waterdepth')) .and. (.not. strcmpi(quantity, 'frictioncoefficient')) .and. &
-          (.not. strcmpi(quantity, 'initialvelocity'))) then
+          (.not. strcmpi(quantity, 'velocity')) .and. &
+          (.not. strcmpi(quantity, 'initialvelocity')) & ! Silly exception, because in earlier D-HYDRO Suite 1D2D releases, this was already called 'initialvelocity'. Will phase out in file format 3.00 later.
+         ) then
          num_errors = num_errors + 1
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(ini_file_name), ''': [Global]. Quantity ''', trim(quantity), &
             ''' is unknown.'
@@ -795,8 +839,9 @@ contains
 
       call init_1d_field_read_global(field_ptr, inifieldfilename, filename, quant, global_value, global_value_provided, numerr)
 
+      ! TODO: future inclusion of init1dField and timespaceinitialfield into EC-module should make the location_type (UNC_LOC_S, etc.) a dummy argument.
       if (strcmpi(quant, 'waterlevel') .or. strcmpi(quant, 'waterdepth') .or. strcmpi(quant, 'bedlevel') .or. &
-          strcmpi(quant, 'initialvelocity')) then
+          strcmpi(quant, 'velocity')) then
          call realloc(specified_indices, ndxi - ndx2D, fill=.false._c_bool, keepExisting=.false.)
       else if (strcmpi(quant, 'frictioncoefficient')) then
          call realloc(specified_indices, lnx1d, fill=.false._c_bool, keepExisting=.false.)
@@ -887,7 +932,7 @@ contains
             call set_water_level_from_depth(bl(ndx2D + 1:ndxi), hs(ndx2D + 1:ndxi), s1(ndx2D + 1:ndxi), specified_indices)
          else if (strcmpi(quant, 'frictioncoefficient')) then
             call spaceInit1dfield(branchId, chainage, values, 1, frcu(1:lnx1d), specified_indices)
-         else if (strcmpi(quant, 'initialvelocity')) then
+         else if (strcmpi(quant, 'velocity')) then
             call spaceInit1dfield(branchId, chainage, values, 1, u1(1:lnx1d), specified_indices)
          else if (strcmpi(quant, 'bedlevel')) then
             numerr = numerr + 1
@@ -1269,13 +1314,21 @@ contains
       end if
 
       select case (str_tolower(qid_base))
-      case ('waterlevel')
+      case ('waterlevel', 'initialwaterlevel')
+         if (strcmpi(qid_base, 'waterlevel')) then
+            call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)//''' found in file '''//trim(inifilename) &
+                      //''' is deprecated, use ''initialWaterLevel'' instead. Please update your input file.')
+         end if
          target_location_type = UNC_LOC_S
          target_array => s1
-      case ('waterdepth')
+      case ('waterdepth', 'initialwaterdepth')
+         if (strcmpi(qid_base, 'waterdepth')) then
+            call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)//''' found in file '''//trim(inifilename) &
+                      //''' is deprecated, use ''initialWaterDepth'' instead. Please update your input file.')
+         end if
          target_location_type = UNC_LOC_S
          target_array => hs
-      case ('initial', 'bedlevel')
+      case ('bedlevel')
          ! Bed level was earlier set in setbedlevelfromextfile()
       case ('initialunsaturedzonethickness')
          call realloc(h_unsat, ndx, keepExisting=.true., fill=dmiss)
@@ -1462,9 +1515,6 @@ contains
          indx = iwqbot
          target_location_type = UNC_LOC_S3D
 
-      case ('initialwaterlevel')
-         target_array => s1
-         target_location_type = UNC_LOC_S
       case default
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), &
             ' Field ''quantity'' (='//trim(qid)//') does not match (refer to User Manual). Ignoring this block.'
