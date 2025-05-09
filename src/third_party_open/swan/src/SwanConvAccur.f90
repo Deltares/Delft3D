@@ -11,22 +11,20 @@ subroutine SwanConvAccur ( accur, hscurr, tmcurr, delhs, deltm, xytst, spcsig, a
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !   Authors
@@ -48,6 +46,7 @@ subroutine SwanConvAccur ( accur, hscurr, tmcurr, delhs, deltm, xytst, spcsig, a
     use ocpcomm4
     use swcomm3
     use swcomm4
+    use m_parall
     use SwanGriddata
     use SwanGridobjects
 !
@@ -158,12 +157,12 @@ subroutine SwanConvAccur ( accur, hscurr, tmcurr, delhs, deltm, xytst, spcsig, a
     !$omp atomic
     tmmean = tmmean + tmmeant
     !
-!PUN    ! perform global reductions in parallel run
-!PUN    !
-!PUN    call SwanSumOverNodes ( nwetp  )
-!PUN    call SwanSumOverNodes ( hsmean )
-!PUN    call SwanSumOverNodes ( tmmean )
-!PUN    !
+    ! perform global reductions in parallel run
+    !
+    call SWREDUCE(  nwetp, 1, SWREAL, SWSUM )
+    call SWREDUCE( hsmean, 1, SWREAL, SWSUM )
+    call SWREDUCE( tmmean, 1, SWREAL, SWSUM )
+    !
     !$omp barrier
     !$omp single
     hsmean = hsmean/nwetp
@@ -256,10 +255,10 @@ subroutine SwanConvAccur ( accur, hscurr, tmcurr, delhs, deltm, xytst, spcsig, a
     !$omp atomic
     npacc = npacc + npacct
     !
-!PUN    ! perform global reduction in parallel run
-!PUN    !
-!PUN    call SwanSumOverNodes ( npacc )
-!PUN    !
+    ! perform global reduction in parallel run
+    !
+    call SWREDUCE( npacc, 1, SWREAL, SWSUM )
+    !
     ! compute percentage of active vertices where required accuracy has been reached
     !
     !$omp barrier

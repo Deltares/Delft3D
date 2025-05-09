@@ -97,7 +97,7 @@ program waqpb_import
         write (*,*)
         write (io_mes,'(''Loading database......'')')
         ! Read the existing tables
-        call readdb(io_inp, io_mes)
+        call readdb(io_inp, io_mes, "")
         ! Store R1 in relational way
         ncnpr = 0
         do iproc = 1,nproc

@@ -40,7 +40,6 @@ module m_readstructures
    use m_Bridge
    use m_pump
    use m_General_Structure
-   use m_dambreak
 
    use properties
    use m_hash_search
@@ -391,7 +390,7 @@ module m_readstructures
       integer :: ngate
       integer :: ngenstru
       integer :: nuniweir
-      integer :: n_db_links
+      integer :: n_dambreak_links
       integer :: npump
       integer,          dimension(:), pointer :: indices
       character(len=IdLen), dimension(:), pointer :: ids
@@ -432,7 +431,7 @@ module m_readstructures
       nbridge = 0
       ngate = 0
       nuniweir = 0
-      n_db_links = 0
+      n_dambreak_links = 0
       npump = 0
       do istru = 1, sts%Count
          select case (sts%struct(istru)%type)
@@ -476,8 +475,8 @@ module m_readstructures
             nuniweir = nuniweir + 1
             sts%uniWeirIndices(nuniweir) = istru
          case (ST_DAMBREAK)
-            n_db_links = n_db_links + 1
-            sts%dambreakIndices(n_db_links) = istru
+            n_dambreak_links = n_dambreak_links + 1
+            sts%dambreakIndices(n_dambreak_links) = istru
          case (ST_PUMP)
             npump = npump+1
             sts%pumpIndices(npump) = istru
@@ -839,8 +838,8 @@ module m_readstructures
    !> Read the dambreak specific data for a dambreak structure.
    !! The common fields for the structure (e.g. x/yCoordinates) must have been read elsewhere.
    subroutine readDambreak(dambr, md_ptr, st_id, forcinglist, success)
-      use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
-   
+      use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES, t_dambreak, set_dambreak_coefficients
+
       type(t_dambreak), pointer,    intent(inout) :: dambr       !< Dambreak structure to be read into.
       type(tree_data), pointer,     intent(in   ) :: md_ptr      !< ini tree pointer with user input.
       character(IdLen),             intent(in   ) :: st_id       !< Structure character Id.
@@ -922,7 +921,7 @@ module m_readstructures
       success = success .and. check_input_result(localsuccess, st_id, 'T0')
       if (.not. success) return
       
-      call set_dambreak_coefficents(dambr)
+      call set_dambreak_coefficients(dambr)
       
    end subroutine readDambreak
 

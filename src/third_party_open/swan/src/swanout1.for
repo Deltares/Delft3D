@@ -33,13 +33,12 @@
       USE OUTP_DATA                                                       40.31
       USE M_PARALL                                                        40.31
       USE SwanGriddata                                                    40.80
-!PUN      USE SIZES, ONLY: MNPROC
-!
+      USE SwanIEM, ONLY: ntf, dfiem, Ebig                                 41.85
 !
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -48,22 +47,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -83,6 +80,7 @@
 !     40.80: Marcel Zijlema
 !     40.86: Nico Booij
 !     40.90: Nico Booij
+!     41.85: Ad Reniers
 !
 !  1. Updates
 !
@@ -112,6 +110,7 @@
 !                     to prevent interpolation over obstacles
 !     40.90, June 08: arguments added to call of subroutine SWSPEC
 !                     to prevent interpolation over obstacles
+!     41.85, June 19: implementation of IEM (surfbeat model)
 !
 !  2. Purpose
 !
@@ -218,7 +217,7 @@
 !         Call SWOEXA (compute action density and related quant.)
 !         Call SWOEXF (compute wave-driven force)
 !         ------------------------------------------------------------
-!         If RTYPE = 'BLKP', 'BLKD' or 'BLKL' then
+!         If RTYPE = 'BLKP', 'BLKD' or 'BLKV' then
 !                     call SWBLOK for block output
 !         If RTYPE = 'TABP' or 'TABD' then call SWTABP for output in
 !                     table
@@ -238,6 +237,10 @@
       LOGICAL, ALLOCATABLE :: CROSS(:,:) ! true if obstacle is between    40.86
                                          ! output point and computational 40.86
                                          ! grid point                     40.86
+!
+      INTEGER INDX, ID, IS, ITMP1, ISTAT, IDLEN
+      REAL DF, FREQS(ntf)
+      REAL, ALLOCATABLE :: EBLOC(:,:,:)
 !
       INTEGER, ALLOCATABLE :: IONOD(:)                                    40.51
       REAL, ALLOCATABLE :: ACLOC(:), AUX1(:), VOQ(:)                      40.31
@@ -262,6 +265,20 @@
       ENDIF
       IF (ITEST.GE.10) WRITE (PRINTF, 12) NREOQ
   12  FORMAT (1X, I3, ' output requests')
+!
+      IF (LSRFB) THEN
+         IF (.NOT.ALLOCATED(EBLOC)) THEN
+            ALLOCATE(EBLOC(MDC,ntf,MCGRD),STAT=ISTAT)
+         END IF
+         IF ( ISTAT.NE.0 ) THEN
+            CALL MSGERR ( 4, 'Allocation problem: array EBLOC' )
+            WRITE(PRINTF,*) 'return code is ',ISTAT
+            RETURN
+         END IF
+         EBLOC = 0.
+      ELSE
+         IF(.NOT.ALLOCATED(EBLOC)) ALLOCATE(EBLOC(0,0,0))
+      ENDIF
 !
 !     Repeat for all output requests:
 !
@@ -312,6 +329,7 @@
 !
         STYPE = CUOPS%PSTYPE                                              40.31
         MIP   = CUOPS%MIP                                                 40.31
+        IDLEN = SIZE(CUOPS%ID)
         CALL SWODDC (CUOPS%OPI, CUOPS%OPR, SNAME, STYPE, MIP, MXK,        40.31
      &               MYK, XNLEN, YNLEN, MXN, MYN, XPCN, YPCN, ALPCN,
      &               XCGRID,YCGRID,RTYPE)                                 40.00
@@ -324,11 +342,16 @@
 !       assign memory to array CROSS (indicates crossing of obstacles     40.86
 !                                     in between output and grid points)  40.86
         ALLOCATE(CROSS(4,MIP))                                            40.86
+        CROSS = .FALSE.                                                   42.05
 !
 !       assign memory to array IONOD (indicates in which subdomain        40.51
 !                                     output points are located)          40.51
         ALLOCATE(IONOD(MIP))                                              40.51
-        IONOD = -999                                                      40.51
+        IF (.NOT.PARLL) THEN                                              41.95
+           IONOD = MASTER                                                 41.95
+        ELSE                                                              41.95
+           IONOD = -999                                                   40.51
+        ENDIF                                                             41.95
 !
 !       call SWOEXC to calculate quantities dependent only on coordinates
 !
@@ -355,13 +378,12 @@
 !       call SWOEXD to interpolate quantities which are computed during the
 !       SWAN computation, such as Qb, Dissipation, Ursell etc.
 !
-        CALL SWOEXD (OQPROC, MIP, VOQ(1+2*MIP),                           40.31 30.90
+        CALL SWOEXD (RTYPE, OQPROC, MIP, VOQ(1+2*MIP),                    41.95 40.31 30.90
      &               VOQ(1+3*MIP), VOQR, VOQ(1),                          40.31 30.90
      &               COMPDA, KGRPNT, FORCE, CROSS, IONOD                  40.86 40.80 40.31
-!ADC     &               ,IRQ                                                 41.36
-!PUN     &               ,IRQ                                                 41.36
+     &               ,IRQ                                                 41.36
      &              )
-!PUN        IF (STPNOW()) RETURN
+        IF (STPNOW()) RETURN
 !
         DEALLOCATE(FORCE)                                                 40.80
 !
@@ -413,14 +435,18 @@
 !
 !       ***** block output *****
         IF (RTYPE(1:3) .EQ. 'BLK') THEN
-          IF (PARLL) THEN                                                 40.31
-!PUN          IF (MNPROC>1) THEN                                              41.36
+          IF (RTYPE.EQ.'BLKV') THEN                                       41.95
+             CALL SWBLKV ( CORQ%OQI, CORQ%OQR, CORQ%IVTYP,                41.95
+     &                     MXK, MYK, VOQR, VOQ(1), STYPE,                 41.95
+     &                     SNAME, IONOD )                                 41.95
+          ELSE IF (PARLL) THEN                                            40.31
              CALL SWBLKP ( CORQ%OQI, CORQ%IVTYP, MXK, MYK, VOQR,          40.31
      &                     VOQ(1), IONOD )                                40.51 40.31
           ELSE                                                            40.31
-             CALL SWBLOK ( RTYPE, CORQ%OQI, CORQ%OQR, CORQ%IVTYP,         41.40 40.31
-     &                     CORQ%FAC, SNAME, MXK, MYK, IRQ, VOQR,          40.51 40.31
-     &                     VOQ(1) )                                       40.51 40.31
+             CALL SWBLOK ( RTYPE, CORQ%OQI, CORQ%OQR,
+     &                     CORQ%IVTYP,CORQ%FAC, SNAME, MXK, MYK, IRQ,
+     &                     VOQR, VOQ(1),
+     &                     IDLEN, CUOPS%ID )
           END IF                                                          40.31
           IF (STPNOW()) RETURN                                            34.01
           GOTO 68                                                         40.00
@@ -429,14 +455,14 @@
 !       ***** table output *****
         IF (RTYPE(1:3) .EQ. 'TAB') THEN
           IF (PARLL.AND.(RTYPE.EQ.'TABC')) THEN
-!PUN!NCF          IF (MNPROC>1.AND.(RTYPE.EQ.'TABC')) THEN
 !            --- use "block" intermediate file facility to pass data between cores
              CALL SWBLKP ( CORQ%OQI, CORQ%IVTYP, MIP, 1, VOQR,
      &                     VOQ(1), IONOD )
           ELSE
-          CALL SWTABP ( RTYPE, CORQ%OQI, CORQ%OQR, CORQ%IVTYP, SNAME,
-!NNCF         CALL SWTABP ( RTYPE, CORQ%OQI, CORQ%IVTYP, SNAME,
-     &                  MIP, VOQR, VOQ(1), IONOD )                        40.51 40.31
+             CALL SWTABP ( RTYPE, CORQ%OQI, CORQ%OQR,
+!NNCF          CALL SWTABP ( RTYPE, CORQ%OQI,
+     &                    CORQ%IVTYP, SNAME, MIP, VOQR, VOQ(1), IONOD,
+     &                    IDLEN, CUOPS%ID )
           ENDIF
           IF (STPNOW()) RETURN                                            34.01
           GOTO 68                                                         40.00
@@ -444,14 +470,42 @@
 !
 !       ***** spectral output *****
         IF (RTYPE(1:2) .EQ. 'SP') THEN                                    20.28
-          IF (RTYPE(4:4).EQ.'C') THEN
-             ALLOCATE(AUX1(MSC*MDC))                                      40.31
+          IF ( .NOT.LSRFB .OR.
+     &         (RTYPE(3:3).NE.'L' .AND. RTYPE(3:3).NE.'B') ) THEN
+            IF (RTYPE(4:4).EQ.'C') THEN
+               ALLOCATE(AUX1(MSC*MDC))                                    40.31
+            ELSE
+               ALLOCATE(AUX1(3*MSC))                                      40.31
+            ENDIF
+            CALL SWSPEC ( RTYPE, CORQ%OQI, CORQ%OQR, MIP, VOQR, VOQ(1),   41.40 40.31
+     &                    AC2, AUX1, SPCSIG, SPCDIR, COMPDA(1,JDP2),      40.90 40.31
+     &                    KGRPNT, CROSS, IONOD )                          40.31
           ELSE
-             ALLOCATE(AUX1(3*MSC))                                        40.31
+            ITMP1 = MSC
+            MSC   = ntf
+            IF (RTYPE(4:4).EQ.'C') THEN
+               ALLOCATE(AUX1(MSC*MDC))
+            ELSE
+               ALLOCATE(AUX1(3*MSC))
+            ENDIF
+            DF = PI2 * dfiem
+            FREQS(1) = DF
+            DO IS = 2, MSC
+               FREQS(IS) = FREQS(IS-1) + DF
+            ENDDO
+            DO INDX = 1, MCGRD
+               DO ID = 1, MDC
+                  DO IS = 1, MSC
+                     EBLOC(ID,IS,INDX) = Ebig(ID,IS,INDX) / FREQS(IS) /
+     &                                   ( DF * DDIR )
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL SWSPEC ( RTYPE, CORQ%OQI, CORQ%OQR, MIP, VOQR, VOQ(1),
+     &                    EBLOC, AUX1, FREQS, SPCDIR, COMPDA(1,JDP2),
+     &                    KGRPNT, CROSS, IONOD )
+            MSC = ITMP1
           ENDIF
-          CALL SWSPEC ( RTYPE, CORQ%OQI, CORQ%OQR, MIP, VOQR, VOQ(1),     41.40 40.31
-     &                  AC2, AUX1, SPCSIG, SPCDIR, COMPDA(1,JDP2),        40.90 40.31
-     &                  KGRPNT, CROSS, IONOD )                            40.31
           IF (STPNOW()) RETURN                                            34.01
           DEALLOCATE(AUX1)                                                40.31
           GOTO 68                                                         40.00
@@ -464,6 +518,7 @@
         DEALLOCATE(VOQ,CROSS,IONOD)                                       40.86 40.51 40.31
         CORQ => CORQ%NEXTORQ                                              40.31
   70  CONTINUE
+      IF (ALLOCATED(EBLOC)) DEALLOCATE(EBLOC)
 !
 !     Termination of output
 !
@@ -486,12 +541,13 @@
       USE SWCOMM4                                                         40.41
       USE OUTP_DATA                                                       41.40
       USE M_PARALL                                                        40.31
+      USE OUTP_DATA, ONLY: NTVTK                                          41.95
 !
 !
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -500,22 +556,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -639,7 +693,6 @@
            TNEXT = OUTR(1)
         ENDIF
         IF ( PARLL.AND.OURQT.EQ.-9999.) OURQT = OUTR(1)                   40.51 40.30
-!PUN        IF ( OURQT.EQ.-9999.) OURQT = OUTR(1)
         IF (ITEST.GE.60) WRITE (PRTEST, *) ' output times ', TNEXT,
      &        OUTR(2), DT, TFINC, TIMCO
         IF (ABS(DIF).LT.0.5*DT .AND. OUTR(2).LT.0.) THEN                  40.00
@@ -652,6 +705,7 @@
           LOGACT = .FALSE.
           RETURN
         ENDIF
+        IF (LOGACT) NTVTK(OUTI(2)) = NTVTK(OUTI(2)) + 1                   41.95
       ELSE
         LOGACT = .TRUE.                                                   30.00
       ENDIF                                                               30.00
@@ -851,7 +905,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -860,22 +914,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1120,7 +1172,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1129,22 +1181,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1413,25 +1463,19 @@
   70  CONTINUE
   63  FORMAT (' SWOEXC, PROBLEM  COORD:', 2(1X,F12.4),/,
      &        '         COMPUT   COORD:', 2(1X,F12.4))
-!
-!     find crossings of obstacles between output and grid points          40.86
-!
-  85  IF (OPTG.NE.5)
-     &   CALL SWOBSTO (XCGRID,YCGRID,XP,YP,XC,YC,KGRPNT,CROSS,MIP)        40.86
+  85  CONTINUE                                                            42.05
 !
       RETURN
       END
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SWOEXD (OQPROC, MIP, XC, YC, VOQR, VOQ, COMPDA ,KGRPNT,  30.21
-     &                   FORCE, CROSS, IONOD                              40.86 40.80 40.31
-!ADC     &                   ,IRQ                                             41.36
-!PUN     &                   ,IRQ                                             41.36
+      SUBROUTINE SWOEXD (RTYPE, OQPROC, MIP, XC, YC, VOQR, VOQ, COMPDA ,  41.95 30.21
+     &                   KGRPNT, FORCE, CROSS, IONOD                      40.86 40.80 40.31
+     &                   ,IRQ                                             41.36
      &                  )
 !                                                                      *
 !***********************************************************************
 !
-!PUN      USE OCPCOMM2
       USE OCPCOMM4                                                        40.41
       USE SWCOMM1                                                         40.41
       USE SWCOMM2                                                         40.41
@@ -1443,14 +1487,14 @@
       USE OUTP_DATA
       USE SwanGriddata                                                    40.80
       USE SwanGridobjects                                                 40.91
-!PUN      USE SIZES
+!METIS      USE SwanParallel
 !
       IMPLICIT NONE
 !
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1459,22 +1503,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1554,19 +1596,21 @@
       REAL       FORCE(nverts,2)                                          40.80
       INTEGER    VOQR(*), KGRPNT(MXC,MYC)
       INTEGER    IONOD(*)                                                 40.31
-!ADC      INTEGER    IRQ                                                      41.36
-!PUN      INTEGER    IRQ                                                      41.36
-!PUN      INTEGER    IVERTP, NOWNV
-!PUN      INTEGER    NREF, IOSTAT
+      INTEGER    IRQ                                                      41.36
+      INTEGER    IVERTP, NOWNV
+      INTEGER    NREF, IOSTAT
       INTEGER, ALLOCATABLE :: KVERT(:)                                    41.07
+      CHARACTER  RTYPE*4                                                  41.95
       LOGICAL    OQPROC(*), EQREAL                                        30.72
-!PUN      LOGICAL    STPNOW
+      LOGICAL    STPNOW
       LOGICAL    CROSS(4,MIP)                                             40.86
       LOGICAL, ALLOCATABLE :: LTMP(:)                                     40.91
 !
       INTEGER MIP,IENT,JJ,IVXP,IVYP,IVDIST,IP,JVQX,JVQY,
-     &        KK, IXB, IXE, IYB, IYE, IX, IY
+     &        KK, IXB, IXE, IYB, IYE, IX, IY, IHLX, IHLY
+      INTEGER ILPOS                                                       41.36
       REAL UXLOC,UYLOC,RDIST,RDX,RDY,RR,UBLOC,F1,RTMP,XP1,YP1
+      REAL RVAL1, RVAL2
 !
       INTEGER IVTYPE ! temporary counter for NMOVAR, used in VOQR,
                      ! OQPROC, OVKEYW, etc.
@@ -1947,7 +1991,7 @@
       IVTYPE=76
       JCOMPDA=JDSXI ! give J-name here, JDSXI/JAICE2/JHICE2
 !     begin block of code that is identical for all new variables
-      IF (OQPROC(IVTYPE)) THEN                                                41.75
+      IF (OQPROC(IVTYPE)) THEN                                            41.75
         IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) IVTYPE,
      &  VOQR(IVTYPE), JCOMPDA
         IF (JCOMPDA.GT.1) THEN
@@ -1973,11 +2017,11 @@
 !
       IVTYPE=77
       JCOMPDA=JAICE2 ! give J-name here, JDSXI/JAICE2/JHICE2
-!     begin block of code that is identical for all new variables
-      IF (OQPROC(IVTYPE)) THEN                                                41.75
+!     note special use of VARAICE and PICE
+      IF (OQPROC(IVTYPE)) THEN                                            41.75
         IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) IVTYPE,
      &  VOQR(IVTYPE), JCOMPDA
-        IF (JCOMPDA.GT.1) THEN
+        IF (VARAICE) THEN
            IF (OPTG.NE.5) THEN
               CALL SWIPOL(COMPDA(1,JCOMPDA),OVEXCV(IVTYPE),XC,YC, MIP,
      &                CROSS,VOQ(1,VOQR(IVTYPE)) ,KGRPNT, COMPDA(1,JDP2))
@@ -1987,21 +2031,22 @@
      &                                     MIP, KVERT, OVEXCV(IVTYPE) )
            ENDIF
         ELSE
+           F1 = PICE(1)
            DO IP = 1, MIP
-             VOQ(IP,VOQR(IVTYPE)) = OVEXCV(IVTYPE)
-           ENDDO
+              IF (.NOT.EQREAL(F1,OVEXCV(IVTYPE)))
+     &                                         VOQ(IP,VOQR(IVTYPE)) = F1
+           END DO
         ENDIF
       ENDIF
       IVTYPE=-999
       JCOMPDA=-999
-!     end block of code that is identical for all new variables
 !
 !     ice thickness (in meters)
 !
       IVTYPE=78
       JCOMPDA=JHICE2 ! give J-name here, JDSXI/JAICE2/JHICE2
-!     begin block of code that is identical for all new variables
-      IF (OQPROC(IVTYPE)) THEN                                                41.75
+!     note special use of PICE
+      IF (OQPROC(IVTYPE)) THEN                                            41.75
         IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) IVTYPE,
      &  VOQR(IVTYPE), JCOMPDA
         IF (JCOMPDA.GT.1) THEN
@@ -2015,13 +2060,12 @@
            ENDIF
         ELSE
            DO IP = 1, MIP
-             VOQ(IP,VOQR(IVTYPE)) = OVEXCV(IVTYPE)
+             VOQ(IP,VOQR(IVTYPE)) =  PICE(2)
            ENDDO
         ENDIF
       ENDIF
       IVTYPE=-999
       JCOMPDA=-999
-!     end block of code that is identical for all new variables
 !
 !     energy generation
 !
@@ -2154,6 +2198,60 @@
           DO IP = 1, MIP
             F1 = VOQ(IP,VOQR(64))
             IF (.NOT.EQREAL(F1,OVEXCV(64))) VOQ(IP,VOQR(64))=F1*RHO*GRAV
+          END DO
+        ENDIF
+      ENDIF
+!
+!     total absolute Bragg scattering
+!
+      IF (OQPROC(79)) THEN                                                41.80
+        IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) 79,
+     &  VOQR(79), JRSXB
+        IF (JRSXB.GT.1) THEN
+           IF (OPTG.NE.5) THEN
+              CALL SWIPOL(COMPDA(1,JRSXB),OVEXCV(79),XC, YC, MIP, CROSS,
+     &                    VOQ(1,VOQR(79)) ,KGRPNT, COMPDA(1,JDP2))
+           ELSE
+              CALL SwanInterpolateOutput ( VOQ(1,VOQR(79)), VOQ(1,1),
+     &                                     VOQ(1,2), COMPDA(1,JRSXB),
+     &                                     MIP, KVERT, OVEXCV(79) )
+           ENDIF
+        ELSE
+           DO IP = 1, MIP
+             VOQ(IP,VOQR(79)) = OVEXCV(79)
+           ENDDO
+        ENDIF
+        IF (INRHOG.EQ.1) THEN
+          DO IP = 1, MIP
+            F1 = VOQ(IP,VOQR(79))
+            IF (.NOT.EQREAL(F1,OVEXCV(79))) VOQ(IP,VOQR(79))=F1*RHO*GRAV
+          END DO
+        ENDIF
+      ENDIF
+!
+!     total absolute QC scattering
+!
+      IF (OQPROC(80)) THEN                                                41.90
+        IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) 80,
+     &  VOQR(80), JRSXC
+        IF (JRSXC.GT.1) THEN
+           IF (OPTG.NE.5) THEN
+              CALL SWIPOL(COMPDA(1,JRSXC),OVEXCV(80),XC, YC, MIP, CROSS,
+     &                    VOQ(1,VOQR(80)) ,KGRPNT, COMPDA(1,JDP2))
+           ELSE
+              CALL SwanInterpolateOutput ( VOQ(1,VOQR(80)), VOQ(1,1),
+     &                                     VOQ(1,2), COMPDA(1,JRSXC),
+     &                                     MIP, KVERT, OVEXCV(80) )
+           ENDIF
+        ELSE
+           DO IP = 1, MIP
+             VOQ(IP,VOQR(80)) = OVEXCV(80)
+           ENDDO
+        ENDIF
+        IF (INRHOG.EQ.1) THEN
+          DO IP = 1, MIP
+            F1 = VOQ(IP,VOQR(80))
+            IF (.NOT.EQREAL(F1,OVEXCV(80))) VOQ(IP,VOQR(80))=F1*RHO*GRAV
           END DO
         ENDIF
       ENDIF
@@ -2339,7 +2437,7 @@
 !
       IF (OQPROC(8)) THEN
         IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) 8,
-     &  VOQR(8)
+     &  VOQR(8), JQB
         IF (OPTG.NE.5) THEN                                               40.80
            CALL SWIPOL (COMPDA(1,JQB), OVEXCV(8), XC, YC, MIP, CROSS,     40.86
      &                  VOQ(1,VOQR(8)) ,KGRPNT, COMPDA(1,JDP2))           30.21
@@ -2350,13 +2448,34 @@
         ENDIF                                                             40.80
       ENDIF
 !
+!     breaker index                                                       41.96
+!
+      IF (OQPROC(82)) THEN
+        IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) 82,
+     &  VOQR(82), JGAMMA
+        IF (JGAMMA.GT.1) THEN
+          IF (OPTG.NE.5) THEN
+             CALL SWIPOL(COMPDA(1,JGAMMA),OVEXCV(82),XC, YC, MIP, CROSS,
+     &                   VOQ(1,VOQR(82)) ,KGRPNT, COMPDA(1,JDP2))
+          ELSE
+             CALL SwanInterpolateOutput ( VOQ(1,VOQR(82)), VOQ(1,1),
+     &                                    VOQ(1,2), COMPDA(1,JGAMMA),
+     &                                    MIP, KVERT, OVEXCV(82) )
+          ENDIF
+        ELSE
+          DO IP = 1, MIP
+            VOQ(IP,VOQR(82)) = PSURF(2)
+          ENDDO
+        ENDIF
+      ENDIF
+!
 !     wind velocity                                                       10.07
 !
       IF (OQPROC(26)) THEN
         JVQX = VOQR(26)
         JVQY = JVQX+1
         IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) 26,
-     &  VOQR(26)
+     &  VOQR(26), JWX2
         IF (VARWI) THEN
           IF (OPTG.NE.5) THEN                                             40.80
              CALL SWIPOL (COMPDA(1,JWX2), OVEXCV(26),XC, YC, MIP, CROSS,  40.86
@@ -2547,7 +2666,7 @@
 !
       IF (OQPROC(20).AND.OPTG.EQ.5) THEN                                  40.80
         IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) 20,      40.80
-     &  VOQR(20)                                                          40.80
+     &  VOQR(20), 0                                                       40.80
         CALL SwanInterpolateOutput ( VOQ(1,VOQR(20)), VOQ(1,1),           40.80
      &                               VOQ(1,2), FORCE(1,1),                40.80
      &                               MIP, KVERT, OVEXCV(20) )             40.80
@@ -2560,7 +2679,7 @@
 !
       IF (OQPROC(45)) THEN
         IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) 45,      40.03
-     &  VOQR(45)
+     &  VOQR(45), JURSEL
         IF (OPTG.NE.5) THEN                                               40.80
            CALL SWIPOL (COMPDA(1,JURSEL), OVEXCV(45),XC, YC, MIP, CROSS,  40.86
      &                  VOQ(1,VOQR(45)) ,KGRPNT, COMPDA(1,JDP2))          40.03
@@ -2569,6 +2688,25 @@
      &                                  VOQ(1,2), COMPDA(1,JURSEL),       40.80
      &                                  MIP, KVERT, OVEXCV(45) )          40.80
         ENDIF                                                             40.80
+      ENDIF
+!
+!     biphase
+!
+      IF (OQPROC(83)) THEN                                                41.97
+        IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) 83,
+     &  VOQR(83), JBIPH
+        IF (OPTG.NE.5) THEN
+           CALL SWIPOL (COMPDA(1,JBIPH), OVEXCV(83),XC, YC, MIP, CROSS,
+     &                  VOQ(1,VOQR(83)) ,KGRPNT, COMPDA(1,JDP2))
+        ELSE
+           CALL SwanInterpolateOutput ( VOQ(1,VOQR(83)), VOQ(1,1),
+     &                                  VOQ(1,2), COMPDA(1,JBIPH),
+     &                                  MIP, KVERT, OVEXCV(83) )
+        ENDIF
+        DO IP = 1, MIP
+           F1 = VOQ(IP,VOQR(83))
+           IF (.NOT.EQREAL(F1,OVEXCV(83))) VOQ(IP,VOQR(83))=F1*180./PI
+        ENDDO
       ENDIF
 !
 !     Air-Sea temperature difference
@@ -2597,7 +2735,7 @@
       IF (OQPROC(49)) THEN
         IF (IDIFFR.EQ.1) THEN
           IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) 49,    40.21
-     &    VOQR(49)
+     &    VOQR(49), 0
           IF (OPTG.NE.5) THEN                                             40.80
              CALL SWIPOL (DIFPARAM(:), OVEXCV(49), XC, YC, MIP, CROSS,    40.86 40.21
      &                    VOQ(1,VOQR(49)) ,KGRPNT, COMPDA(1,JDP2))        40.21
@@ -2625,7 +2763,7 @@
 !
       IF (OQPROC(27)) THEN
          IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) 27,
-     &   VOQR(27)
+     &   VOQR(27), JFRC2
          IF (VARFR) THEN
             IF (OPTG.NE.5) THEN                                           40.80
 !              interpolation done in all active and non-active points
@@ -2661,7 +2799,7 @@
 !
       IF (OQPROC(51)) THEN                                                40.51
         IF (ITEST.GE.50 .OR. IOUTES .GE. 10) WRITE (PRTEST, 121) 51,
-     &  VOQR(51)
+     &  VOQR(51), JWLV2
         IF (VARWLV) THEN
            IF (OPTG.NE.5) THEN                                            40.80
 !             interpolation done in all active and non-active points
@@ -2728,57 +2866,77 @@
      &        VOQ(IP,IVYP) = YP1 + YOFFS
       ENDDO
 !
+      IF (.NOT.PARLL) GOTO 900
+!
 !     --- in case of parallel run, mark location points inside own        40.31
 !         subdomain                                                       40.31
 
-      IF ( PARLL ) THEN                                                   40.31
-         IXB = 1+IHALOX                                                   40.31
+      IF ( OPTG.NE.5 ) THEN                                               40.31
+         IF (RTYPE.NE.'BLKV') THEN                                        41.95
+            IHLX = IHALOX                                                 41.95
+            IHLY = IHALOY                                                 41.95
+         ELSE                                                             41.95
+            IHLX = 2                                                      41.95
+            IHLY = 2                                                      41.95
+         ENDIF                                                            41.95
+         IXB = 1+IHLX                                                     40.31
          IF ( LMXF ) IXB = 1                                              40.41 40.31
-         IXE = MXC-IHALOX                                                 40.31
+         IXE = MXC-IHLX                                                   40.31
          IF ( LMXL ) IXE = MXC                                            40.41 40.31
-         IYB = 1+IHALOY                                                   40.31
+         IYB = 1+IHLY                                                     40.31
          IF ( LMYF ) IYB = 1                                              40.41 40.31
-         IYE = MYC-IHALOY                                                 40.31
+         IYE = MYC-IHLY                                                   40.31
          IF ( LMYL ) IYE = MYC                                            40.41 40.31
          DO IP = 1, MIP                                                   40.31
-            IX = NINT(XC(IP)+100.) - 99                                   41.07 40.31
-            IY = NINT(YC(IP)+100.) - 99                                   41.07 40.31
+            IX = INT(XC(IP))                                              41.07 40.31
+            IY = INT(YC(IP))                                              41.07 40.31
+            RVAL1 = FLOAT(IX)
+            RVAL2 = FLOAT(IY)
+            IF ( .NOT.EQREAL(XC(IP),RVAL1) .OR. EQREAL(XC(IP),0.) .OR.
+     &           RTYPE.EQ.'BLKV' ) IX = IX + 1
+            IF ( .NOT.EQREAL(YC(IP),RVAL2) .OR. EQREAL(YC(IP),0.) .OR.
+     &           RTYPE.EQ.'BLKV' ) IY = IY + 1
             IF ( IX.GE.IXB .AND. IX.LE.IXE .AND.                          40.31
      &           IY.GE.IYB .AND. IY.LE.IYE ) IONOD(IP) = INODE            40.31
          END DO                                                           40.31
-      END IF                                                              40.31
-!ADC!
-!ADC      IF (IRQ.EQ.-999) GOTO 900
-!PUN!
-!PUN      IF (MNPROC.EQ.1) GOTO 900
-!PUN!
-!PUN      NOWNV = 0
-!PUN      DO IP = 1, MIP
-!PUN         IF ( KVERT(IP).GT.0 ) THEN
-!PUN            IVERTP = ivertg(KVERT(IP))
-!PUN            IF ( IVERTP.GT.0 ) THEN
-!PUN               NOWNV = NOWNV + 1
-!PUN               IONOD(IP) = MYPROC
-!PUN            ENDIF
-!PUN         ENDIF
-!PUN      ENDDO
-!PUN!
-!PUN      IF (.NOT.LCOMPGRD) THEN
-!PUN         NREF   =  0
-!PUN         IOSTAT = -1
-!PUN         FILENM = TRIM(LOCALDIR)//DIRCH2//'output.set'
-!PUN         CALL FOR (NREF, FILENM, 'UU', IOSTAT)
-!PUN         IF (STPNOW()) RETURN
-!PUN         WRITE(NREF) IRQ, NOWNV
-!PUN         DO IP = 1, MIP
-!PUN            IF ( KVERT(IP).GT.0 ) THEN
-!PUN               IVERTP = ivertg(KVERT(IP))
-!PUN            ELSE
-!PUN               IVERTP = -1
-!PUN            ENDIF
-!PUN            IF ( IONOD(IP).EQ.MYPROC ) WRITE(NREF) IP, IVERTP
-!PUN         ENDDO
-!PUN      ENDIF
+      ELSE
+         IF ( .NOT.LCOMPGRD .OR. RTYPE.NE.'BLKV' ) THEN
+            NOWNV = 0
+            DO IP = 1, MIP
+               IF ( KVERT(IP).GT.0 ) THEN
+!                 excludes ghost nodes
+!METIS                  IF ( vres(KVERT(IP)) ) THEN
+!METIS                     NOWNV = NOWNV + 1
+!METIS                     IONOD(IP) = INODE
+!METIS                  ENDIF
+               ENDIF
+            ENDDO
+         ELSE
+!           this includes ghost nodes as required by Paraview
+            IONOD(1:MIP) = INODE
+         ENDIF
+!
+         IF (.NOT.LCOMPGRD) THEN
+            NREF   =  0
+            IOSTAT = -1
+            FILENM = 'output.set'
+!           append node number to FILENM
+            ILPOS = INDEX ( FILENM, ' ' )-1
+            WRITE(FILENM(ILPOS+1:ILPOS+4),33) INODE
+  33        FORMAT('-',I3.3)
+            CALL FOR (NREF, FILENM, 'UU', IOSTAT)
+            IF (STPNOW()) RETURN
+            WRITE(NREF) IRQ, NOWNV
+            DO IP = 1, MIP
+               IF ( KVERT(IP).GT.0 ) THEN
+                  IVERTP = ivertg(KVERT(IP))
+               ELSE
+                  IVERTP = -1
+               ENDIF
+               IF ( IONOD(IP).EQ.INODE ) WRITE(NREF) IP, IVERTP
+            ENDDO
+         ENDIF
+      ENDIF
 !
  900  IF (ALLOCATED(KVERT)) DEALLOCATE(KVERT)                             41.07
 !
@@ -2798,7 +2956,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -2807,22 +2965,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -3060,11 +3216,12 @@
       USE OUTP_DATA
       USE SWPARTMD                                                        41.62
       USE W3ODATMD, ONLY: WSCUT                                           41.72
+      USE SwanIEM, ONLY: ntf, Ebig                                        41.85
 !
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -3073,22 +3230,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -3106,6 +3261,7 @@
 !     40.87: Marcel Zijlema
 !     41.62: Andre van der Westhuysen
 !     41.72: Henrique Rapizo
+!     41.85: Ad Reniers
 !
 !  1. Updates
 !
@@ -3136,6 +3292,7 @@
 !     41.62, Nov. 15: included interface for computing wave partitions
 !     41.72, Nov. 19: accommodate option for number of swells in output partitions and
 !                     swell partitions starting always from second index
+!     41.85, Feb. 19: implementation of IEM (surfbeat model)
 !
 !  2. Purpose
 !
@@ -3208,7 +3365,7 @@
 !
 ! 13. Source text
 !
-      PARAMETER  (NVOTP=99)                                               41.62 41.15 40.64 40.51 40.41 40.00
+      PARAMETER  (NVOTP=100)                                              41.62 41.15 40.64 40.51 40.41 40.00
       REAL       XC(MIP)        ,YC(MIP)       ,AC2(MDC,MSC,MCGRD),
      &           VOQ(MIP,*)     ,
      &           WK(*)          ,
@@ -3220,10 +3377,12 @@
      &           KGRPNT(MXC,MYC)                                          30.21
 !
       INTEGER    NP             ,DIMXPT                                   41.62
+      INTEGER    ITMP1
       REAL       UABS           ,UDIR                                     41.62
       REAL, ALLOCATABLE :: XPT(:,:)                                       41.62
 !
       REAL, ALLOCATABLE :: FLUX(:,:,:), FLOC(:,:)
+      REAL, ALLOCATABLE :: EBLOC(:,:)
 !
       LOGICAL    OQPROC(*), EQREAL                                        30.72
       LOGICAL :: EXCPT     ! if true value in point is undefined          40.86
@@ -3238,7 +3397,7 @@
      &            140, 141, 142, 143, 144, 145, 146, 147, 148, 149,       41.62
      &            150, 151, 152, 153, 154, 155, 156, 157, 158, 159,       41.62
      &            160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 171,  41.62
-     &            42, 43, 44, 47, 48, 53, 58, 59, 71, 76, 77, 78,         41.15 40.64 40.51 40.41 40.00
+     &            42, 43, 44, 47, 48, 53, 58, 59, 71, 76, 77, 78, 81,     41.85 41.15 40.64 40.51 40.41 40.00
      &            POS_FHSWE, POS_FTM01, POS_FDIR /
       CALL STRACE (IENT, 'SWOEXA')
 !
@@ -3256,6 +3415,10 @@
             ENDDO
          ENDDO
       ENDIF
+!
+!     in case of surfbeat, allocate help array for interpolation of bound infragravity energy
+!
+      IF(OQPROC(81).AND..NOT.ALLOCATED(EBLOC)) ALLOCATE(EBLOC(MDC,ntf))
 !
 !     loop over all output points
 !
@@ -3284,6 +3447,13 @@
            IF (OQPROC(15).OR.OQPROC(19))
      &        CALL SWOINA (XC(IP), YC(IP), FLUX, FLOC, KGRPNT, DEPXY,
      &                     CROSS(1,IP), EXCPT)
+           IF (LSRFB.AND.OQPROC(81)) THEN                                 41.85
+              ITMP1 = MSC
+              MSC   = ntf
+              CALL SWOINA (XC(IP), YC(IP), Ebig, EBLOC, KGRPNT, DEPXY,
+     &                     CROSS(1,IP), EXCPT)
+              MSC = ITMP1
+           ENDIF
         ELSE                                                              40.80
            IF (.NOT.LCOMPGRD) THEN
               IF (.NOT.EQREAL(VOQ(IP,1),OVEXCV(1))) XP=VOQ(IP,1)-XOFFS    40.80
@@ -3297,6 +3467,16 @@
               EXCPT = .FALSE.
            ENDIF
         ENDIF                                                             40.80
+!       check variance on negativity in case of QCM
+        IF (IQCM.NE.0) THEN                                               41.90
+           ETOT = 0.
+           DO IS = 1, MSC
+              DO ID = 1, MDC
+                 ETOT = ETOT + SPCSIG(IS)**2 * ACLOC(ID,IS)
+              ENDDO
+           ENDDO
+           IF (ETOT.LT.0.) EXCPT = .TRUE.
+        ENDIF
         IF (EXCPT) GOTO 700                                               40.86
 !
 !       coefficient for high frequency tail
@@ -3918,6 +4098,27 @@
            ENDIF
         ENDIF
 !
+!       bound infragravity wave height                                    41.85
+!
+        IVTYPE = 81
+        IF (OQPROC(IVTYPE)) THEN
+!          integration over infragravity frequencies
+           ETOT = 0.
+           DO ID=1, MDC
+              DO IS=1, ntf
+                 ETOT = ETOT + EBLOC(ID,IS)
+              ENDDO
+           ENDDO
+           IF (ETOT .GE. 0.) THEN
+              VOQ(IP,VOQR(IVTYPE)) = 4.*SQRT(ETOT)
+           ELSE
+              VOQ(IP,VOQR(IVTYPE)) = 0.
+           ENDIF
+           IF (ITEST.GE.100) THEN
+             WRITE(PRINTF, 222) IP, OVSNAM(IVTYPE), VOQ(IP,VOQR(IVTYPE))
+           ENDIF
+        ENDIF
+!
         IF (BKC.EQ.1) GOTO 800
 !
 !       compute k and Cg
@@ -4245,6 +4446,62 @@
            ENDIF
         ENDIF
 !
+!       absolute swell wave height. Added in the Deltares version 27-02-2025
+!
+        IVTYPE = 84
+        IF (OQPROC(IVTYPE)) THEN
+          ! Get velocity when simulation with currents
+          if (ICUR.GT.0) THEN
+              UXLOC = VOQ(IP,VOQR(5))
+              UYLOC = VOQ(IP,VOQR(5)+1)
+          endif
+          ! Total energy
+          ETOT = 0.
+          ! fcutoff frequency
+          FSWELL = PI2 * OUTPAR(5)
+          ! loop over directions
+          DO ID = 1, MDC 
+              ! get velocity
+              if (ICUR.GT.0) THEN
+                  THETA = SPCDIR(ID,1) + ALCQ
+                  UXD = UXLOC*COS(THETA) + UYLOC*SIN(THETA)
+              else
+                  UXD = 0
+              endif
+              ! loop over frequencies
+              DO IS = 2, MSC
+                DS = SPCSIG(IS)-SPCSIG(IS-1)
+                OMEG = (SPCSIG(IS)+ WK(IS) * UXD)
+                IF (OMEG.LE.FSWELL) THEN
+                  CIA = 0.5 * (SPCSIG(IS-1)+ WK(IS) * UXD) * DS * DDIR
+                  CIB = 0.5 * (SPCSIG(IS  )+ WK(IS) * UXD) * DS * DDIR
+                ELSE
+                  DSSW = FSWELL-(SPCSIG(IS-1)+ WK(IS) * UXD)
+                  CIB = 0.5 * FSWELL * DDIR * DSSW**2 / DS
+                  OMEG = (SPCSIG(IS-1)+ WK(IS) * UXD)
+                  CIA = 0.5 * (OMEG+FSWELL) * DSSW * DDIR - CIB
+                ENDIF
+                ! trapezoidal rule is applied
+                EAD = CIA * ACLOC(ID,IS-1) + CIB * ACLOC(ID,IS)
+                ! update Etot
+                ETOT = ETOT + EAD
+                OMEG = (SPCSIG(IS)+ WK(IS) * UXD)
+                IF (OMEG.GT.FSWELL) EXIT
+            ENDDO
+          ENDDO
+          IF (ETOT .GE. 0.) THEN
+            VOQ(IP,VOQR(IVTYPE)) = 4.*SQRT(ETOT)
+          ELSE
+            VOQ(IP,VOQR(IVTYPE)) = 0.
+          ENDIF
+          IF (ITEST.GE.100) THEN
+            WRITE(PRINTF, 222) IP, OVSNAM(IVTYPE), VOQ(IP,VOQR(IVTYPE))
+ 232        FORMAT(' SWOEXA: POINT ', I5, 2X, A, 1X, E12.4)
+          ENDIF
+        ENDIF
+
+        
+      
 !       average absolute period (case with current)                       10.09
 !
         IVTYPE = 42                                                       40.00
@@ -4737,6 +4994,9 @@
 !
       IF (ALLOCATED(FLUX)) DEALLOCATE(FLUX)
       IF (ALLOCATED(FLOC)) DEALLOCATE(FLOC)
+!
+      IF (ALLOCATED(EBLOC)) DEALLOCATE(EBLOC)
+!
       RETURN
 !     end of subroutine SWOEXA
       END
@@ -4753,7 +5013,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -4762,22 +5022,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. AUTHORS
@@ -4973,7 +5231,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -4982,22 +5240,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -5157,7 +5413,6 @@
      &            IND8, IND9, IP, IS, IVTYPE, JX, JXLO, JXUP, JY,
      &            JYLO, JYUP
       LOGICAL     ONX, ONY
-      REAL        AC2LOC(MCGRD)                                           40.31
 !
 !  7. Common blocks used
 !
@@ -5226,23 +5481,6 @@
       CALL STRACE (IENT, 'SWOEXF')
 !
       IVTYPE = 20
-!
-!     --- exchange action densities at subdomain interfaces               40.31
-!         within distributed-memory environment                           40.31
-!
-      IF (PARLL) THEN                                                     40.41
-!TIMG         CALL SWTSTA(213)                                                 40.31
-         DO ID = 1, MDC                                                   40.31
-            DO IS = 1, MSC                                                40.31
-               AC2LOC(:) = AC2(ID,IS,:)                                   40.31
-               CALL SWEXCHG( AC2LOC, KGRPNT )                             40.31
-!JAC               CALL SWEXCHG( AC2LOC, 0, KGRPNT )                          40.31
-               AC2(ID,IS,:) = AC2LOC(:)                                   40.31
-            END DO                                                        40.31
-         END DO                                                           40.31
-!TIMG         CALL SWTSTO(213)                                                 40.31
-         IF (STPNOW()) RETURN                                             40.31
-      END IF
 !
 !     loop over all output points
 !

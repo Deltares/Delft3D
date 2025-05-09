@@ -5,6 +5,7 @@
 !     SWBLOK
 !     SBLKPT
 !     SWBLKP
+!     SWBLKV
 !     SRAWPT
 !     SWTABP
 !     SUHEAD
@@ -14,8 +15,9 @@
 !
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SWBLOK ( RTYPE, OQI , OQR , IVTYP, FAC, PSNAME,          41.40
-     &                    MXK  , MYK , IRQ , VOQR , VOQ        )          40.51 40.31
+      SUBROUTINE SWBLOK ( RTYPE, OQI , OQR , IVTYP, FAC,
+     &                    PSNAME, MXK  , MYK , IRQ , VOQR , VOQ,
+     &                    IDLEN, ID )
 !                                                                      *
 !***********************************************************************
 !
@@ -31,7 +33,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -40,22 +42,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -87,7 +87,7 @@
 !  2. PURPOSE
 !
 !       Preparing output in the form of a block that is printed by
-!         subroutine SBLKPT
+!       subroutine SBLKPT
 !
 !  3. METHOD
 !
@@ -97,8 +97,8 @@
 !
 !       RTYPE   ch*4   input    type of output request:
 !                               'BLKP' for output on paper,
-!                               'BLKD' and 'BLKL' for output to datafile
-!       PSNAME  ch*8   input    name of outpu frame
+!                               'BLKD' and 'BLKV' for output to datafile
+!       PSNAME  ch*8   input    name of output frame
 !       MXK     int    input    number of grid points in x-direction
 !       MYK     int    input    number of grid points in y-direction
 !       VOQR
@@ -139,7 +139,7 @@
 !       ----------------------------------------------------------------
 !
 ! 10. SOURCE TEXT
-!                                                                             30.81
+!
       CHARACTER (LEN=8) :: PSNAME       ! name of output locations        40.13
       CHARACTER (LEN=4) :: RTYPE        ! output type                     40.13
       INTEGER   VOQR(*), IPD
@@ -155,7 +155,8 @@
       CHARACTER (LEN=20) :: CTIM                                          40.41
       CHARACTER (LEN=30) :: NAMVAR                                        40.41
       CHARACTER (LEN=80) :: HTXT(3)                                       41.62
-
+      INTEGER IDLEN
+      CHARACTER (LEN=80), INTENT(IN) :: ID(IDLEN)
       INTEGER, SAVE :: IENT=0                                             40.13
       IF (LTRACE) CALL STRACE (IENT,'SWBLOK')
 !
@@ -224,6 +225,7 @@
         OQI(1) = NREF
         CALL swn_outnc_openblockfile(FILENM, MYK, MXK,
      &                               OVLNAM, OQI, OQR, IVTYP, IRQ,
+     &                               IDLEN, ID,
      &                               VOQ(:,VOQR(1)),VOQ(:,VOQR(2)))
       ENDIF
       IDLA = OQI(4)                                                       40.31 30.00
@@ -357,7 +359,7 @@
 !***********************************************************************
 !                                                                      *
       SUBROUTINE SBLKPT (IPD, NREF, DFAC, PSNAME, QUNIT,
-     &                    MXK, MYK, IDLA, STRING, OQVALS)
+     &                   MXK, MYK, IDLA, STRING, OQVALS)
 !                                                                      *
 !***********************************************************************
 
@@ -371,7 +373,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -380,22 +382,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -591,7 +591,6 @@
       USE SWCOMM1                                                         40.41
       USE OUTP_DATA
       USE M_PARALL                                                        40.51
-!PUN      USE SIZES, ONLY: MYPROC
 !
       IMPLICIT NONE
 !
@@ -607,22 +606,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -706,7 +703,6 @@
       NVAR = OQI(3)
 
       IPROC = INODE
-!PUN      IPROC = MYPROC
 
       DO JVAR = 1, NVAR
          IVTYPE = IVTYP(JVAR)
@@ -730,6 +726,259 @@
 
       RETURN
       END
+!
+!****************************************************************
+!
+      SUBROUTINE SWBLKV ( OQI, OQR, IVTYP, MXK, MYK, VOQR, VOQ,
+     &                    PSTYPE, PSNAME, IONOD )
+!
+!****************************************************************
+!
+      USE OCPCOMM4
+      USE SWCOMM2, ONLY: OPTG
+      USE M_PARALL
+      USE OUTP_DATA
+!
+      IMPLICIT NONE
+!
+!
+!   --|-----------------------------------------------------------|--
+!     | Delft University of Technology                            |
+!     | Faculty of Civil Engineering and Geosciences              |
+!     | Environmental Fluid Mechanics Section                     |
+!     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
+!     |                                                           |
+!     | Programmer: Marcel Zijlema                                |
+!   --|-----------------------------------------------------------|--
+!
+!
+!     SWAN (Simulating WAves Nearshore); a third generation wave model
+!     Copyright (C) 1993-2024  Delft University of Technology
+!
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
+!
+!     This program is distributed in the hope that it will be useful,
+!     but WITHOUT ANY WARRANTY; without even the implied warranty of
+!     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+!     GNU General Public License for more details.
+!
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!
+!
+!  0. Authors
+!
+!     41.95: Marcel Zijlema
+!
+!  1. Updates
+!
+!     41.95, Jul. 22: New subroutine
+!
+!  2. Purpose
+!
+!     Writes block output to VTK files
+!
+!  4. Argument variables
+!
+      INTEGER                       :: MXK    ! number of grid points in x-direction
+      INTEGER                       :: MYK    ! number of grid points in y-direction
+      INTEGER, DIMENSION(4)         :: OQI    ! integer coefficients (e.g. number of
+                                              ! output variables)
+      INTEGER, DIMENSION(*)         :: IONOD  ! array indicating in which subdomain
+                                              ! output points are located
+      INTEGER, DIMENSION(*)         :: IVTYP  ! types of output variable
+      INTEGER, DIMENSION(*)         :: VOQR   ! pointer in list of variables
+
+      REAL*8 , DIMENSION(2)         :: OQR    ! real coefficients (e.g. time and
+                                              ! time step)
+      REAL   , DIMENSION(MXK*MYK,*) :: VOQ    ! output variables
+
+      CHARACTER (LEN=8)             :: PSNAME ! name of output frame
+      CHARACTER (LEN=1)             :: PSTYPE ! type of output point set
+!
+!  6. Local variables
+!
+      INTEGER IF, IL, ILPOS, ILPOS2, IP, IVAL(2), LEN, NVAR
+      INTEGER UPVD, UPVT, UVTK
+      INTEGER IXK, IYK, MXKF, MXKL, MYKF, MYKL, MXE, MYE
+      INTEGER IOSTAT, IENT
+      INTEGER IPRC, IARRL(4), IARRC(4,0:NPROC-1)
+      LOGICAL LC, STPNOW
+      CHARACTER (LEN=4) :: PNUM
+      CHARACTER (LEN=20) :: CTIM, NUMSTR
+      CHARACTER (LEN=1024) :: PVDLINE
+      CHARACTER (LEN=LENFNM) :: CDIR, VDIR, PVDFNM, PVTFIL, VTKFIL
+!
+! 13. Source text
+!
+      SAVE IENT
+      DATA IENT/0/
+      IF (LTRACE) CALL STRACE (IENT,'SWBLKV')
+
+!     broadcast the necessary data, if desired
+      UPVD=UPVDF(OQI(2))
+      VDIR=TRIM(VTKDIR(OQI(2)))
+      IF (IAMMASTER) THEN
+         IVAL(1)=UPVD
+         CDIR=VDIR
+         IVAL(2)=LEN_TRIM(CDIR)
+      ENDIF
+      CALL SWBROADC (IVAL,2,SWINT)
+      CALL SWBROADC (CDIR(1:IVAL(2)),IVAL(2),SWCHAR)
+      IF (STPNOW()) RETURN
+
+      IPRC = INODE
+
+!     check file extension and add time counter
+      FILENM=OUTP_FILES(OQI(2))
+      LC=.FALSE.
+      ILPOS=INDEX( FILENM, '.VT' )
+      IF (ILPOS.EQ.0) THEN
+         LC=.TRUE.
+         ILPOS=INDEX( FILENM, '.vt' )
+      ENDIF
+      ILPOS=ILPOS-1
+      IF (IVAL(1).GT.0) THEN
+         WRITE(CTIM(1:20),'(I20)') NTVTK(OQI(2))
+         CALL TXPBLA(CTIM,IF,IL)
+         WRITE(FILENM(ILPOS+1:ILPOS+IL-IF+2),'(A)') '_'//CTIM(IF:IL)
+         ILPOS=ILPOS+IL-IF+2
+      ENDIF
+      IF (PARLL) THEN
+         ILPOS2 = ILPOS
+         PVTFIL = FILENM
+         WRITE(FILENM(ILPOS+1:ILPOS+4),25) IPRC
+         ILPOS=ILPOS+4
+  25     FORMAT('_',I3.3)
+      ENDIF
+      IF (PSTYPE.EQ.'F' .OR. PSTYPE.EQ.'H') THEN
+!        output grid is structured
+         IF (LC) THEN
+            WRITE(FILENM(ILPOS+1:ILPOS+4),35) '.vts'
+            IF (PARLL) WRITE(PVTFIL(ILPOS2+1:ILPOS2+5),40) '.pvts'
+         ELSE
+            WRITE(FILENM(ILPOS+1:ILPOS+4),35) '.VTS'
+            IF (PARLL) WRITE(PVTFIL(ILPOS2+1:ILPOS2+5),40) '.PVTS'
+         ENDIF
+      ELSEIF (PSTYPE.EQ.'U') THEN
+!        output grid is unstructured
+         IF (LC) THEN
+            WRITE(FILENM(ILPOS+1:ILPOS+4),35) '.vtu'
+            IF (PARLL) WRITE(PVTFIL(ILPOS2+1:ILPOS2+5),40) '.pvtu'
+         ELSE
+            WRITE(FILENM(ILPOS+1:ILPOS+4),35) '.VTU'
+            IF (PARLL) WRITE(PVTFIL(ILPOS2+1:ILPOS2+5),40) '.PVTU'
+         ENDIF
+      ENDIF
+  35  FORMAT(A4)
+  40  FORMAT(A5)
+      VTKFIL = FILENM
+
+!     update collection file
+      IF (IVAL(1).GT.0) THEN
+         IF (.NOT.PARLL) THEN
+            VTKFIL = VDIR(1:IVAL(2))//DIRCH2//FILENM
+            PVDFNM = VTKFIL
+         ELSE
+            IF (LC) THEN
+               WRITE(PNUM(1:4),45) 'p',IPRC
+            ELSE
+               WRITE(PNUM(1:4),45) 'P',IPRC
+            ENDIF
+            VTKFIL = CDIR(1:IVAL(2))//DIRCH2//PNUM//DIRCH2//FILENM
+            PVTFIL = CDIR(1:IVAL(2))//DIRCH2//PVTFIL
+            PVDFNM = PVTFIL
+         ENDIF
+  45     FORMAT(A1,I3.3)
+!        write timestep and VTK filename to collection file
+         IF (IAMMASTER) THEN
+            CTIM=NUMSTR(INAN,REAL(OQR(1)-OQR(2)),'(F15.5)')
+            CALL TXPBLA(CTIM,IF,IL)
+            PVDLINE = '    <DataSet timestep="'//CTIM(IF:IL)//
+     &                '" part="0" file="'//PVDFNM(1:LEN_TRIM(PVDFNM))//
+     &                '"/>'
+            WRITE(UPVD,'(A)') TRIM(PVDLINE)
+         ENDIF
+      ENDIF
+
+!     determine size of piece of output data
+      IF (.NOT.PARLL) THEN
+         MXKF = 1
+         MXKL = MXK
+         MYKF = 1
+         MYKL = MYK
+         IARRC= 0
+      ELSE
+         MXKF = MXK + 1
+         MXKL = 0
+         MYKF = MYK + 1
+         MYKL = 0
+         DO IYK = 1, MYK
+            IP = (IYK-1)*MXK
+            DO IXK = 1, MXK
+               IF ( IONOD(IP+IXK).EQ.INODE ) THEN
+                  MXKF = MIN(IXK,MXKF)
+                  MXKL = MAX(IXK,MXKL)
+                  MYKF = MIN(IYK,MYKF)
+                  MYKL = MAX(IYK,MYKL)
+               ENDIF
+            ENDDO
+         ENDDO
+         IF (MXKF.GE.MXKL-1 .OR. (OPTG.NE.5 .AND. MYKF.GE.MYKL-1)) THEN
+            MXKF = 1
+            MXKL = 0
+            MYKF = 1
+            MYKL = 0
+         ENDIF
+         IARRL(1) = MXKF
+         IARRL(2) = MXKL
+         IARRL(3) = MYKF
+         IARRL(4) = MYKL
+         CALL SWGATHER (IARRC, 4*NPROC, IARRL, 4, SWINT )
+         IF (STPNOW()) RETURN
+      ENDIF
+      LEN=(MXKL - MXKF + 1)*(MYKL - MYKF + 1)
+
+!     set number of output variables
+      NVAR = OQI(3)
+
+!     create a parallel VTK file
+      IF (PARLL.AND.IAMMASTER) THEN
+!        reserve free unit number for PVT file
+         UPVT   =  0
+         IOSTAT = -1
+         CALL FOR (UPVT, PVTFIL, 'UF', IOSTAT)
+         IF (STPNOW()) RETURN
+         MXE = MAXVAL(IARRC(2,:))
+         MYE = MAXVAL(IARRC(4,:))
+!        write references to pieces of output data
+         CALL SwanVTKPDataSets ( UPVT, PSTYPE, NVAR, IVTYP, MXE, MYE,
+     &                           FILENM, UPVD, PSNAME, IARRC )
+      ENDIF
+
+!     reserve free unit number for VTK file
+      UVTK   =  0
+      IOSTAT = -1
+      CALL FOR (UVTK, VTKFIL, 'UF', IOSTAT)
+      IF (STPNOW()) RETURN
+
+!     open VTK file and write header
+      CLOSE(UVTK)
+!     note: stream access is a Fortran 2003 standard
+      OPEN(UNIT=UVTK, FILE=VTKFIL, FORM='UNFORMATTED',
+     &     STATUS='REPLACE', ACCESS='STREAM')
+      CALL SwanVTKWriteHeader ( UVTK, PSTYPE, NVAR, IVTYP,
+     &                          MXKF, MXKL  , MYKF, MYKL )
+
+!     write appended data to VTK file
+      CALL SwanVTKWriteData ( UVTK, PSTYPE, NVAR, IVTYP, VOQR, VOQ,
+     &                        LEN , MXK   , MYK , IONOD)
+
+      RETURN
+      END
 !****************************************************************
 !
       SUBROUTINE SRAWPT ( NREF, VOQR, VOQ, MXK, MYK )
@@ -746,7 +995,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -755,22 +1004,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -922,9 +1169,10 @@
       END
 !***********************************************************************
 !                                                                      *
-      SUBROUTINE SWTABP (RTYPE , OQI  , OQR , IVTYP, PSNAME, MIP, VOQR,
-!NNCF      SUBROUTINE SWTABP (RTYPE , OQI  , IVTYP, PSNAME, MIP, VOQR,         40.31
-     &                   VOQ, IONOD)                                      40.51
+      SUBROUTINE SWTABP (RTYPE , OQI  , OQR , IVTYP,
+!NNCF      SUBROUTINE SWTABP (RTYPE , OQI  , IVTYP,
+     &                     PSNAME, MIP, VOQR, VOQ, IONOD,
+     &                     IDLEN, ID)
 !                                                                      *
 !***********************************************************************
 
@@ -940,12 +1188,11 @@
       USE swn_outnc, only: swn_outnc_openblockfile,
      &                     swn_outnc_appendblock,
      &                     swn_outnc_close_on_end
-!PUN      USE SIZES, ONLY: MYPROC, MNPROC
 !
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -954,22 +1201,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1055,6 +1300,9 @@
       INTEGER MXOUTL
 !
       PARAMETER (MXOUTL=720)
+      INTEGER IDLEN
+      CHARACTER (LEN=80), INTENT(IN) :: ID(IDLEN)
+
 !
 !  6. Local variables
 !
@@ -1151,6 +1399,7 @@
             IF (.NOT.EXIST) CLOSE(NREF, STATUS='DELETE')
             CALL swn_outnc_openblockfile(FILENM, 1, MIP,
      &                                   OVLNAM, OQI, OQR, IVTYP,OQI(2),
+     &                                   IDLEN, ID,
      &                                   VOQ(:,VOQR(1)),VOQ(:,VOQR(2)))
           ENDIF
         END IF                                                            30.82
@@ -1310,7 +1559,6 @@
       ENDIF
       DO 70 IP = 1, MIP
        IF ( .NOT.PARLL .OR. IONOD(IP).EQ.INODE ) THEN                     40.51
-!PUN       IF ( MNPROC.EQ.1 .OR. IONOD(IP).EQ.MYPROC ) THEN                   41.36
         LINKAR = 1
         OUTLIN = '    '
         IF (RTYPE.EQ.'TABI') THEN
@@ -1390,7 +1638,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1399,22 +1647,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  1. UPDATE
@@ -1508,13 +1754,12 @@
       USE OUTP_DATA                                                       40.13
       USE M_PARALL                                                        40.31
       USE swn_outnc, only: swn_outnc_spec                                 41.40
-!PUN      USE SIZES, ONLY: MYPROC, MNPROC
-!PUN      use SwanGriddata, only: ivertg
+      use SwanGriddata, only: ivertg
 !
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1523,22 +1768,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1705,14 +1948,14 @@
      &                    'locations in spherical coordinates'            33.09 nb!
           CRFORM = '(2F12.6)'                                             40.13
         ENDIF                                                             33.09 NB!
-!PUN        IF ( MNPROC.EQ.1 .OR. .NOT.LCOMPGRD ) THEN
-        WRITE (NREF, 103) MIP, 'number of locations'
-        DO 110 IP = 1, MIP
-          WRITE (NREF, FMT=CRFORM) DBLE(VOQ(IP,VOQR(1))),                 40.13
-     &                             DBLE(VOQ(IP,VOQR(2)))                  40.13
- 110    CONTINUE
-!PUN        ENDIF
-        IF (RTYPE(3:3) .EQ. 'R') THEN
+        IF ( .NOT.PARLL .OR. .NOT.LCOMPGRD ) THEN
+           WRITE (NREF, 103) MIP, 'number of locations'
+           DO 110 IP = 1, MIP
+             WRITE (NREF, FMT=CRFORM) DBLE(VOQ(IP,VOQR(1))),              40.13
+     &                                DBLE(VOQ(IP,VOQR(2)))               40.13
+ 110       CONTINUE
+        ENDIF
+        IF (RTYPE(3:3).EQ.'R' .OR. RTYPE(3:3).EQ.'L') THEN                41.85
           WRITE (NREF, 102) 'RFREQ', 'relative frequencies in Hz'         40.00
         ELSE
           WRITE (NREF, 102) 'AFREQ', 'absolute frequencies in Hz'         40.00
@@ -1813,13 +2056,11 @@
         DEP = VOQ(IP,VOQR(4))
         IF (DEP.LE.0. .OR. EQREAL(DEP,OVEXCV(4))) THEN
           IF ( .NOT.PARLL .OR. IONOD(IP).EQ.INODE )                       40.51
-!PUN          IF ( MNPROC.EQ.1 .OR. IONOD(IP).EQ.MYPROC )                     41.36
      &       WRITE (NREF, 220) 'NODATA'                                   40.00
  220      FORMAT (A6)
           GOTO 290
         ENDIF
         IF ( PARLL .AND. IONOD(IP).NE.INODE ) GOTO 290                    40.51
-!PUN        IF ( MNPROC.GT.1 .AND. IONOD(IP).NE.MYPROC ) GOTO 290             41.36
         IF (ICUR.GT.0) THEN
           UX = VOQ(IP,VOQR(5))
           UY = VOQ(IP,VOQR(5)+1)
@@ -1842,12 +2083,11 @@
             CALL WRSPEC (NREF, ACLOC)
           ELSE
 !           write 1d spectrum
-            WRITE (NREF, 115) IP
-!PUN            IF ( MNPROC.GT.1 .AND. LCOMPGRD ) THEN
-!PUN               WRITE (NREF, 115) ivertg(IP)
-!PUN            ELSE
-!PUN               WRITE (NREF, 115) IP
-!PUN            ENDIF
+            IF ( OPTG.NE.5 .OR. .NOT.PARLL .OR. .NOT.LCOMPGRD ) THEN
+               WRITE (NREF, 115) IP
+            ELSE
+               WRITE (NREF, 115) ivertg(IP)
+            ENDIF
  115        FORMAT ('LOCATION', I6)                                       40.03
             DO IFR = 1, MSC
 !             write frequency spectra to file
@@ -1880,7 +2120,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1889,22 +2129,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1916,6 +2154,7 @@
 !     40.41: Marcel Zijlema
 !     40.80: Marcel Zijlema
 !     40.90: Nico Booij
+!     41.90: Gal Akrish, Pieter Smit and Marcel Zijlema
 !
 !  1. Updates
 !
@@ -1934,6 +2173,7 @@
 !     40.41, Oct. 04: common blocks replaced by modules, include files removed
 !     40.80, Sep. 07: extension to unstructured grids
 !     40.90, June 08: interpolation near obstacles improved
+!     41.90, Dec. 21: allow negative 1D spectrum for QCM
 !
 !  2. Purpose
 !
@@ -2169,7 +2409,7 @@
  250      CONTINUE
         ENDIF
         DO 270 IOM = 1, MSC
-          IF (ACLOC(IOM).GT.1.E-12) THEN                                  40.41
+          IF (ACLOC(IOM).GT.1.E-12.OR.IQCM.NE.0) THEN                     41.90 40.41
             EX = ACLOC(IOM+MSC) / ACLOC(IOM)
             EY = ACLOC(IOM+2*MSC) / ACLOC(IOM)
             ACLOC(IOM+MSC) = DEGCNV (ATAN2(EY,EX) * 180./PI)
@@ -2223,22 +2463,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !MatL4!
 !MatL4!  0. Authors
@@ -2521,22 +2759,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -2562,7 +2798,7 @@
 !        statement:
 !
 !        OPEN(UNIT=IOUTMA, FILE=BINFIL, FORM='UNFORMATTED',
-!             ACCESS='DIRECT', RECL=4)
+!             ACCESS='DIRECT', RECL=1)
 !
 !        Furthermore, initialize record counter to IREC = 1
 !

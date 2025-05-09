@@ -25,8 +25,11 @@ contains
       real(kind=dp), dimension(mmax, 9) :: Amat
       real(kind=dp), dimension(mmax) :: Wmat
       real(kind=dp), dimension(9) :: svec
-      integer, dimension(lnx) :: LDone
-      integer, dimension(mxwalls) :: LwDone
+      integer, dimension(:), allocatable :: LDone
+      integer, dimension(:), allocatable :: LwDone
+      
+      allocate(LDone(lnx))
+      allocate(LwDone(mxwalls))
 
       if (allocated(AtWAiAtW)) then
          deallocate (AtWAiAtW)
@@ -285,7 +288,7 @@ contains
             end do
          end do
       end do
-
+      
    end subroutine reconst2ndini
 
    ! ==============================================================================================

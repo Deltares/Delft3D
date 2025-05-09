@@ -40,6 +40,7 @@ contains
    subroutine changenetworkPARAMETERS()
       use m_sferic, only: jamidlat
       use network_data
+      use m_circumcenter_method, only: circumcenter_method, circumcenter_tolerance
       use unstruc_colors
       use unstruc_display_data
       use m_missing
@@ -71,7 +72,7 @@ contains
       integer :: iselect, minp
       character(len=128) select(3)
 
-      integer, parameter :: NUMPAR = 23, NUMFLD = 2 * NUMPAR
+      integer, parameter :: NUMPAR = 24, NUMFLD = 2 * NUMPAR
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
       character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
@@ -108,7 +109,8 @@ contains
       OPTION(20) = '1D2D link generation algorithm          '; IT(20 * 2) = 2
       OPTION(21) = 'Lateral algorithm search radius         '; IT(21 * 2) = 6
       OPTION(22) = 'Use middle latitude (1/0)               '; IT(22 * 2) = 2
-      OPTION(23) = 'Circumcenter (1/2/3)                    '; IT(23 * 2) = 2
+      OPTION(23) = 'Circumcenter method (1/2/3)             '; IT(23 * 2) = 2
+      OPTION(24) = 'Circumcenter tolerance                  '; IT(24 * 2) = 6
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -158,7 +160,9 @@ contains
       HELPM(22) = &
          '1 = yes, 0 = no                                             '
       HELPM(23) = &
-         'iterate per 1=edge, 2=loop, 3=loop incl. outline            '
+         'iterate per 1=edge, 2=loop, 3=loop incl. boundary           '
+      HELPM(24) = &
+         'tolerance for circumcenter convergence (m)                  '
 
       call SAVEKEYS()
       NUMPARACTUAL = NUMPAR
@@ -247,6 +251,7 @@ contains
       call IFormputDouble(2 * 21, searchRadius1D2DLateral, '(F7.3)')
       call IFormputinteger(2 * 22, jamidlat)
       call IFormputinteger(2 * 23, circumcenter_method)
+      call IFormputDouble(2 * 24, circumcenter_tolerance, '(e10.5)')
 
       ! Display the form with numeric fields left justified and set the initial field to number 2
       call IOUTJUSTIFYNUM('L')
@@ -321,6 +326,7 @@ contains
             call IFormGetDouble(2 * 21, searchRadius1D2DLateral)
             call IFormGetinteger(2 * 22, jamidlat)
             call IFormGetinteger(2 * 23, circumcenter_method)
+            call IFormGetDouble(2 * 24, circumcenter_tolerance)
 
          end if
          call IWinClose(1)

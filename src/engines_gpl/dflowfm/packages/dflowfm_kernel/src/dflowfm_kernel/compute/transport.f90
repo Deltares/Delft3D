@@ -49,12 +49,12 @@ contains
       use precision, only: dp
       use m_density, only: set_potential_density, set_pressure_dependent_density
       use m_getverticallyaveraged
-      use m_flowgeom, only: ln, ndxi, lnxi, ndx, lnx, ba, mxban, nban, banf, ban, xz
+      use m_flowgeom, only: ln, ndxi, lnxi, ndx, lnx, ba, mxban, nban, banf, ban
       use m_flow, only: apply_thermobaricity, jasal, maxitverticalforestersal, jatem, maxitverticalforestertem, limtyptm, &
                         limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, kbndu, nbndsd, kbndsd, &
                         kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, &
                         vol1, eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, &
-                        potential_density, in_situ_density, rho, jacreep, lbot, ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx, ktop, zws
+                        potential_density, in_situ_density, rho, jacreep, lbot, ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
       use Timers, only: timstrt, timstop
       use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr
       use m_netw, only: zk
@@ -189,7 +189,7 @@ contains
          sam1tot = 0.0_dp
 
          !$OMP PARALLEL DO &
-         !$OMP PRIVATE(cell_index_3d,kb,kt,km,k) &
+         !$OMP PRIVATE(cell_index_3d,kb,kt,km) &
          !$OMP REDUCTION(+:sam1tot)
          do cell_index_2d = 1, ndxi
             call getkbotktop(cell_index_2d, kb, kt)
@@ -241,7 +241,7 @@ contains
 
       if (stm_included) then
          !$OMP PARALLEL DO &
-         !$OMP PRIVATE(cell_index_2d,kb,kt,k)
+         !$OMP PRIVATE(cell_index_2d,kb,kt,cell_index_3d)
          do cell_index_2d = 1, ndx
             call getkbotktop(cell_index_2d, kb, kt)
             do cell_index_3d = kt + 1, kb + kmxn(cell_index_2d) - 1
@@ -413,18 +413,6 @@ contains
             call getverticallyaveraged(sa1, ndkx)
          end if
       end if
-
-      do k = 1, 0 !  ndxi ! for test selectiveZ.mdu
-         if (xz(k) > 270) then
-            do cell_index_3d = kbot(k), ktop(k)
-               if (zws(cell_index_3d) < -5.0_dp) then
-                  constituents(isalt, cell_index_3d) = 30.0_dp
-               else
-                  constituents(isalt, cell_index_3d) = 0.0_dp
-               end if
-            end do
-         end if
-      end do
 
       if (numconst > 0 .and. apply_transport_is_used) then
          call average_concentrations_for_laterals(numconst, kmx, kmxn, vol1, constituents, dts)

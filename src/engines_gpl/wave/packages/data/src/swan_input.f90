@@ -3060,8 +3060,6 @@ contains
          line(ind + 11:ind + 14) = 'FREE'
          line(ind + 15:79) = ' '
          write (luninp, '(1X,A)') trim(line)
-         ! The WU drag formulation is used to be backwards compatible
-         write (luninp, '(1X,A)') 'WIND DRAG WU'
          line(1:79) = ' '
       end if
       line(1:2) = '$ '
@@ -3079,10 +3077,6 @@ contains
             write (line(11:20), '(F10.2)') wvel
             line(21:25) = ' DIR='
             write (line(26:35), '(F10.2)') wdir
-            !line(36:37)   = ' '
-
-            line(36:) = ' DRAG WU'
-
             write (luninp, '(1X,A)') line
          else
          end if
@@ -3347,8 +3341,10 @@ contains
          if (sr%whitecap == 2) then
             line = 'GEN3 WESTH'
          else
-            line(1:8) = 'GEN3 '
+            line = 'GEN3 KOMEN'
          end if
+         ! Always add (wind related) drag formula. It doesn't harm if there is no wind.
+         line = trim(line) // ' DRAG WU'
       else
       end if
       write (luninp, '(1X,A)') line
@@ -3388,9 +3384,9 @@ contains
               & ' nu=', sr%viscmud
       end if
       if (sr%triads) then
-         line(1:6) = 'TRIAD '
-         write (line(15:41), '(a,F7.4,a,F7.4)') 'trfac=', sr%cftriad1, ' cutfr=', sr%cftriad2
-         line(44:66) = ' urcrit=0.2 urslim=0.01'
+         line(1:16) = 'TRIAD itriad=11 '
+         write (line(17:43), '(a,F7.4,a,F7.4)') 'trfac=', sr%cftriad1, ' cutfr=', sr%cftriad2
+         line(46:68) = ' urcrit=0.2 urslim=0.01'
          write (luninp, '(1X,A)') line
          line = ' '
       end if

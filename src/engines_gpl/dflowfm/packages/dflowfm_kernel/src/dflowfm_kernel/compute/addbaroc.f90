@@ -27,16 +27,17 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_addbaroc
+module m_add_baroclinic_pressure_2d
    implicit none
 
    private
 
-   public :: addbaroc
+   public :: add_baroclinic_pressure_2d
 
 contains
 
-   subroutine addbaroc(LL)
+   !> Computes and adds the baroclinic pressure gradient (2D-model) contributions to the momentum equations
+   subroutine add_baroclinic_pressure_2d(link_index_2d)
       use precision, only: dp
       use m_flowgeom, only: ln, dxi
       use m_flow, only: hu, adve
@@ -44,16 +45,16 @@ contains
       use m_turbulence, only: rho, rhou
       use m_flowparameters, only: jarhoxu
 
-      integer, intent(in) :: LL
+      integer, intent(in) :: link_index_2d !< Horizontal link index
 
-      real(kind=dp) :: barocl
+      real(kind=dp) :: baroclinic_force
       integer :: k1, k2
 
-      k1 = ln(1, LL); k2 = ln(2, LL)
-      barocl = ag * (rho(k1) - rho(k2)) * hu(LL) * dxi(LL) / ((rho(k2) + rho(k1)))
+      k1 = ln(1, link_index_2d); k2 = ln(2, link_index_2d)
+      baroclinic_force = ag * (rho(k1) - rho(k2)) * hu(link_index_2d) * dxi(link_index_2d) / ((rho(k2) + rho(k1)))
       if (jarhoxu > 0) then
-         rhou(LL) = 0.5_dp * (rho(k2) + rho(k1))
+         rhou(link_index_2d) = 0.5_dp * (rho(k2) + rho(k1))
       end if
-      adve(LL) = adve(LL) - barocL
-   end subroutine addbaroc
-end module m_addbaroc
+      adve(link_index_2d) = adve(link_index_2d) - baroclinic_force
+   end subroutine add_baroclinic_pressure_2d
+end module m_add_baroclinic_pressure_2d
