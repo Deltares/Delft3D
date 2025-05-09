@@ -73,8 +73,8 @@ public set_default_output_flags
 type icecover_output_flags
     logical :: default  !< default flag for output writing
     logical :: ice_s1   !< sea surface height of open water
-    logical :: ice_zmax !< surface height of ice/snow cover
     logical :: ice_zmin !< lower surface height of ice/snow cover
+    logical :: ice_zmax !< upper surface height of ice/snow cover
     logical :: ice_af   !< area fraction covered by ice
     logical :: ice_h    !< ice thickness
     logical :: ice_p    !< pressure of ice cover
@@ -283,8 +283,8 @@ subroutine set_default_output_flags(flags, modeltype, default)
    end if
    
    flags%ice_s1   = default_
-   flags%ice_zmax = default_
    flags%ice_zmin = default_
+   flags%ice_zmax = default_
    flags%ice_af   = default_
    flags%ice_h    = default_
    flags%ice_p    = default_

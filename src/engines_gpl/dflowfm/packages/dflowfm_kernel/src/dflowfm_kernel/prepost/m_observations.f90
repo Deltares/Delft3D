@@ -169,8 +169,8 @@ contains
       IVAL_QFRC = 0
       IVAL_QTOT = 0
       IVAL_ICE_S1 = 0
-      IVAL_ICE_ZMAX = 0
       IVAL_ICE_ZMIN = 0
+      IVAL_ICE_ZMAX = 0
       IVAL_ICE_AF = 0
       IVAL_ICE_H = 0
       IVAL_ICE_P = 0
@@ -275,8 +275,8 @@ contains
       end if
       if (ja_icecover /= ICECOVER_NONE) then
          i = i + 1; IVAL_ICE_S1 = i
-         i = i + 1; IVAL_ICE_ZMAX = i
          i = i + 1; IVAL_ICE_ZMIN = i
+         i = i + 1; IVAL_ICE_ZMAX = i
          i = i + 1; IVAL_ICE_AF = i
          i = i + 1; IVAL_ICE_H = i
          i = i + 1; IVAL_ICE_P = i
@@ -518,8 +518,8 @@ contains
       IPNT_QFRC = ivalpoint(IVAL_QFRC, kmx, nlyrs)
       IPNT_QTOT = ivalpoint(IVAL_QTOT, kmx, nlyrs)
       IPNT_ICE_S1 = ivalpoint(IVAL_ICE_S1, kmx, nlyrs)
-      IPNT_ICE_ZMAX = ivalpoint(IVAL_ICE_ZMAX, kmx, nlyrs)
       IPNT_ICE_ZMIN = ivalpoint(IVAL_ICE_ZMIN, kmx, nlyrs)
+      IPNT_ICE_ZMAX = ivalpoint(IVAL_ICE_ZMAX, kmx, nlyrs)
       IPNT_ICE_AF = ivalpoint(IVAL_ICE_AF, kmx, nlyrs)
       IPNT_ICE_H = ivalpoint(IVAL_ICE_H, kmx, nlyrs)
       IPNT_ICE_P = ivalpoint(IVAL_ICE_P, kmx, nlyrs)

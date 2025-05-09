@@ -292,8 +292,8 @@ module unstruc_netcdf
       integer :: id_wind(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_patm(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_ice_s1(MAX_ID_VAR) = -1 !< Variable ID for water level of open water (in between ice floes)
-      integer :: id_ice_zmax(MAX_ID_VAR) = -1 !< Variable ID for surface of ice
       integer :: id_ice_zmin(MAX_ID_VAR) = -1 !< Variable ID for lower surface of ice
+      integer :: id_ice_zmax(MAX_ID_VAR) = -1 !< Variable ID for surface of ice
       integer :: id_ice_af(MAX_ID_VAR) = -1 !< Variable ID for sea_ice_area_fraction
       integer :: id_ice_h(MAX_ID_VAR) = -1 !< Variable ID for sea_ice_thickness
       integer :: id_ice_p(MAX_ID_VAR) = -1 !< Variable ID for the pressure exerted by the sea ice cover
@@ -5275,7 +5275,7 @@ contains
       use Timers
       use fm_location_types
       use m_map_his_precision
-      use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ja_icecover, ice_density, ICECOVER_NONE, ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -5784,11 +5784,11 @@ contains
             if (ice_mapout%ice_s1) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_s1, nf90_double, UNC_LOC_S, 'ice_open_water_level', '', 'Sea surface height of open water', 'm', jabndnd=jabndnd_)
             end if
-            if (ice_mapout%ice_zmax) then
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmax, nf90_double, UNC_LOC_S, 'ice_surface_height', '', 'Upper surface height of ice cover', 'm', jabndnd=jabndnd_)
-            end if
             if (ice_mapout%ice_zmin) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmin, nf90_double, UNC_LOC_S, 'ice_lower_surface_height', '', 'Lower surface height of ice cover', 'm', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%ice_zmax) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmax, nf90_double, UNC_LOC_S, 'ice_surface_height', '', 'Upper surface height of ice cover', 'm', jabndnd=jabndnd_)
             end if
             if (ice_mapout%ice_af) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_af, nf90_double, UNC_LOC_S, 'ice_af', 'sea_ice_area_fraction', 'Fraction of surface area covered by floating ice', '1', jabndnd=jabndnd_)
@@ -7503,21 +7503,26 @@ contains
 
       if (ja_icecover /= ICECOVER_NONE) then
          call realloc(work1d, ndx, keepExisting=.false.)
+         work1d = s1
+         do n = 1, ndx
+             call getkbotktop(n, kb, kt)
+             work1d(n) = s1(n) + real(ice_p(n), dp) / rho(kt) / ag
+         end do
          if (ice_mapout%ice_s1) then
-            work1d = s1
-            do n = 1, ndx
-                call getkbotktop(n, kb, kt)
-                work1d(n) = s1(n) + real(ice_p(n), dp) / rho(kt) / ag
-            end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_s1, UNC_LOC_S, work1d, jabndnd=jabndnd_)
          end if
-         if (ice_mapout%ice_zmax) then
-            work1d = s1 + real(ice_af * ice_h, dp)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmax, UNC_LOC_S, work1d, jabndnd=jabndnd_)
-         end if
+         do n = 1, ndx
+             call getkbotktop(n, kb, kt)
+             work1d(n) = work1d(n) - real(ice_h(n) * ice_density, dp) / rho(kt)
+         end do
          if (ice_mapout%ice_zmin) then
-            work1d = s1 - real((1.0_fp - ice_af) * ice_h, dp)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmin, UNC_LOC_S, work1d, jabndnd=jabndnd_)
+         end if
+         do n = 1, ndx
+             work1d(n) = work1d(n) + real(ice_h(n), dp)
+         end do
+         if (ice_mapout%ice_zmax) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmax, UNC_LOC_S, work1d, jabndnd=jabndnd_)
          end if
          if (ice_mapout%ice_af) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_af, UNC_LOC_S, ice_af, jabndnd=jabndnd_)
@@ -8068,7 +8073,7 @@ contains
       use m_missing
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_append_atts
-      use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ja_icecover, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ice_density, ja_icecover, ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -9333,11 +9338,11 @@ contains
             if (ice_mapout%ice_s1) then
                call definencvar(imapfile, id_ice_s1(iid), nf90_double, idims, 'ice_s1', 'Sea surface height of open water', 'm', 'FlowElem_xcc FlowElem_ycc')
             end if
-            if (ice_mapout%ice_zmax) then
-               call definencvar(imapfile, id_ice_zmax(iid), nf90_double, idims, 'ice_zmax', 'Upper surface height of ice cover', 'm', 'FlowElem_xcc FlowElem_ycc')
-            end if
             if (ice_mapout%ice_zmin) then
                call definencvar(imapfile, id_ice_zmin(iid), nf90_double, idims, 'ice_zmin', 'Lower surface height of ice cover', 'm', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%ice_zmax) then
+               call definencvar(imapfile, id_ice_zmax(iid), nf90_double, idims, 'ice_zmax', 'Upper surface height of ice cover', 'm', 'FlowElem_xcc FlowElem_ycc')
             end if
             if (ice_mapout%ice_af) then
                call definencvar(imapfile, id_ice_af(iid), nf90_double, idims, 'ice_af', 'Fraction of the surface area covered by floating ice', '1', 'FlowElem_xcc FlowElem_ycc')
@@ -10792,21 +10797,26 @@ contains
       if (ja_icecover) then
          ! prepare arrays for ndx, writer may only use ndxi
          call realloc(work1d, ndx, keepExisting=.false.)
+         work1d = s1
+         do n = 1, ndx
+             call getkbotktop(n, kb, kt)
+             work1d(n) = s1(n) + real(ice_p(n), dp) / rho(kt) / ag
+         end do
          if (ice_mapout%ice_s1) then
-            work1d = s1
-            do n = 1, ndx
-                call getkbotktop(n, kb, kt)
-                work1d(n) = s1(n) + real(ice_p(n), dp) / rho(kt) / ag
-            end do
             ierr = nf90_put_var(imapfile, id_ice_s1(iid), work1d, [1, itim], [ndxndxi, 1])
          end if
-         if (ice_mapout%ice_zmax) then
-            work1d = s1 + real(ice_af * ice_h, dp)
-            ierr = nf90_put_var(imapfile, id_ice_zmax(iid), work1d, [1, itim], [ndxndxi, 1])
-         end if
+         do n = 1, ndx
+             call getkbotktop(n, kb, kt)
+             work1d(n) = work1d(n) - real(ice_h(n) * ice_density, dp) / rho(kt)
+         end do
          if (ice_mapout%ice_zmin) then
-            work1d = s1 - real((1.0_fp - ice_af) * ice_h, dp)
             ierr = nf90_put_var(imapfile, id_ice_zmin(iid), work1d, [1, itim], [ndxndxi, 1])
+         end if
+         do n = 1, ndx
+             work1d(n) = work1d(n) + real(ice_h(n), dp)
+         end do
+         if (ice_mapout%ice_zmax) then
+            ierr = nf90_put_var(imapfile, id_ice_zmax(iid), work1d, [1, itim], [ndxndxi, 1])
          end if
          if (ice_mapout%ice_af) then
             ierr = nf90_put_var(imapfile, id_ice_af(iid), ice_af, [1, itim], [ndxndxi, 1])

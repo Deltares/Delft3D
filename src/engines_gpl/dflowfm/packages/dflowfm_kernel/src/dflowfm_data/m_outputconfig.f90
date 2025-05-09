@@ -260,8 +260,8 @@ module m_output_config
    integer, public :: IDX_HIS_QTOT
 
    integer, public :: IDX_HIS_ICE_S1
-   integer, public :: IDX_HIS_ICE_ZMAX
    integer, public :: IDX_HIS_ICE_ZMIN
+   integer, public :: IDX_HIS_ICE_ZMAX
    integer, public :: IDX_HIS_ICE_AF
    integer, public :: IDX_HIS_ICE_H
    integer, public :: IDX_HIS_ICE_P

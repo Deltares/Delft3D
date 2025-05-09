@@ -128,8 +128,8 @@ module m_observations_data
    integer :: IVAL_QFRC
    integer :: IVAL_QTOT
    integer :: IVAL_ICE_S1
-   integer :: IVAL_ICE_ZMAX
    integer :: IVAL_ICE_ZMIN
+   integer :: IVAL_ICE_ZMAX
    integer :: IVAL_ICE_AF
    integer :: IVAL_ICE_H
    integer :: IVAL_ICE_P
@@ -242,8 +242,8 @@ module m_observations_data
    integer :: IPNT_QFRC
    integer :: IPNT_QTOT
    integer :: IPNT_ICE_S1
-   integer :: IPNT_ICE_ZMAX
    integer :: IPNT_ICE_ZMIN
+   integer :: IPNT_ICE_ZMAX
    integer :: IPNT_ICE_AF
    integer :: IPNT_ICE_H
    integer :: IPNT_ICE_P

@@ -312,8 +312,8 @@ subroutine read_icecover_output(md_ptr, chapter, prefix, outflags)
 !
    prefix_ = prefix//'_'
    call prop_get(md_ptr, chapter, prefix//'open_water_level', outflags%ice_s1)
-   call prop_get(md_ptr, chapter, prefix//'ice_surface_height', outflags%ice_zmax)
    call prop_get(md_ptr, chapter, prefix//'ice_lower_surface_height', outflags%ice_zmin)
+   call prop_get(md_ptr, chapter, prefix//'ice_surface_height', outflags%ice_zmax)
    call prop_get(md_ptr, chapter, prefix//'ice_area_fraction', outflags%ice_af)
    call prop_get(md_ptr, chapter, prefix//'ice_thickness', outflags%ice_h)
    call prop_get(md_ptr, chapter, prefix//'ice_pressure', outflags%ice_p)
@@ -339,11 +339,11 @@ subroutine echo_icecover_output(lundia, outflags)
    if (outflags%ice_s1) then
       write (lundia, '(2a)') '  * ', 'sea surface height of open water'
    end if
-   if (outflags%ice_zmax) then
-      write (lundia, '(2a)') '  * ', 'surface height of ice/snow cover'
-   end if
    if (outflags%ice_zmin) then
-      write (lundia, '(2a)') '  * ', 'lower surface height of ice/snow cover'
+      write (lundia, '(2a)') '  * ', 'lower surface height of ice cover'
+   end if
+   if (outflags%ice_zmax) then
+      write (lundia, '(2a)') '  * ', 'upper surface height of ice cover'
    end if
    if (outflags%ice_af) then
       write (lundia, '(2a)') '  * ', 'area fraction covered by ice'

@@ -71,7 +71,7 @@ contains
       use m_density, only: density_at_cell
       use m_wind, only: wx, wy, jawind, japatm, patm, jarain, rain, airdensity, tair, rhum, clou
       use m_turbulence, only: in_situ_density, potential_density
-      use m_fm_icecover, only: ja_icecover, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ICECOVER_NONE, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ice_density, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
 
       implicit none
 
@@ -235,8 +235,8 @@ contains
             
             if (ja_icecover /= ICECOVER_NONE) then
                valobs(i, IPNT_ICE_S1) = s1(k) + real(ice_p(k), dp) / rho(kt) / ag
-               valobs(i, IPNT_ICE_ZMAX) = s1(k) + real(ice_af(k) * ice_h(k), dp)
-               valobs(i, IPNT_ICE_ZMIN) = s1(k) - real((1.0_fp - ice_af(k)) * ice_h(k), dp)
+               valobs(i, IPNT_ICE_ZMIN) = valobs(i, IPNT_ICE_S1) - real(ice_h(k) * ice_density, dp) / rho(kt)
+               valobs(i, IPNT_ICE_ZMAX) = valobs(i, IPNT_ICE_ZMIN) + real(ice_h(k), dp)
                valobs(i, IPNT_ICE_AF) = ice_af(k)
                valobs(i, IPNT_ICE_H) = ice_h(k)
                valobs(i, IPNT_ICE_P) = ice_p(k)
