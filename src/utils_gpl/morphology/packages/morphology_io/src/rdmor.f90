@@ -1,8 +1,3 @@
-!! This is essentially morphology_data_module.f90 in version
-!! 65936, but with the insertion of all the pieces pertaining to "repose"
-!! from the University of Ottawa version.
-!! Guglielmo Stecca and Richard Measures, NIWA, October 2024
-module m_rdmor
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2024.                                
@@ -2008,7 +2003,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     !
     ! errortrap using THETSD and REPOSE
     !
-    if (repose > 0.0_fp .and. thetsd > 0.0_fp) then
+    if (repose > 0.0_fp .and. any(thetsd > 0.0_fp)) then
        error  = .true.
        errmsg = 'THETSD and REPOSE should not be used simultaneously'
        call write_error(errmsg, unit=lundia)
