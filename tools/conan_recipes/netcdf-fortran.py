@@ -38,7 +38,7 @@ class netcdf_fortranRecipe(ConanFile):
 
     def source(self):
         git = Git(self)
-        git.clone(url="https://github.com/Unidata/netcdf-fortran.git", target=".", args=["--branch", "v4.5.4", "--depth", "1"])
+        git.clone(url="https://github.com/Unidata/netcdf-fortran.git", target=".", args=["--branch", "v4.6.2", "--depth", "1"])
 
     def generate(self):
         deps = CMakeDeps(self)
