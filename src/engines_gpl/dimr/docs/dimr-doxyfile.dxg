@@ -992,16 +992,16 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = ../packages \
-                         inc \
-                         hdr \
-                         src \
+                         include \
+                         header \
+                         source \
                          . \
                          ../packages/dimr \
                          ../packages/dimr_lib \
                          ../packages/dimr_lib_tests \
                          ../packages/dimr_testcomponent \
-                         src/dimr-mainpage.dox \
-                         src/DIMRAndBMIDesign.md
+                         source/dimr-mainpage.dox \
+                         source/DIMRAndBMIDesign.md
 
 # This tag can be used to specify the character encoding of the source files
 # that Doxygen parses. Internally Doxygen uses the UTF-8 encoding. Doxygen uses
@@ -1130,7 +1130,7 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = src
+EXAMPLE_PATH           = source
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -1150,7 +1150,7 @@ EXAMPLE_RECURSIVE      = YES
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             = inc
+IMAGE_PATH             = include
 
 # The INPUT_FILTER tag can be used to specify a program that Doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
