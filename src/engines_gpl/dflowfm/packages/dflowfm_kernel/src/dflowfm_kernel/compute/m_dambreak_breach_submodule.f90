@@ -954,7 +954,7 @@ contains
          end if
 
          associate (pstru => network%sts%struct(dambridx(n)))
-            associate (dambreak => pstru%dambreak)
+            associate (dambreak_settings => pstru%dambreak)
                dambreaks(n)%name = network%sts%struct(index_in_structure)%id
 
                ! mapping
@@ -963,17 +963,18 @@ contains
                dambreaks(n)%phase = 0
                dambreaks(n)%width = 0.0_dp
                dambreaks(n)%maximum_width = 0.0_dp
-               dambreaks(n)%crest_level = dambreak%crest_level_ini
-               dambreaks(n)%crest_level_ini = dambreak%crest_level_ini
-               if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
+               dambreaks(n)%crest_level = dambreak_settings%crest_level_ini
+               dambreaks(n)%crest_level_ini = dambreak_settings%crest_level_ini
+               if (dambreak_settings%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in levels_widths_from_table((n-1)*kx+1) when calling ec_gettimespacevalue.
-                  if (index(trim(dambreak%levels_and_widths)//'|', '.tim|') > 0) then
+                  if (index(trim(dambreak_settings%levels_and_widths)//'|', '.tim|') > 0) then
                      qid = 'dambreakLevelsAndWidths'
                      xdum = 1.0_dp
                      ydum = 1.0_dp
                      kdum = 1
                      kx = 2
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, dambreak%levels_and_widths, uniform, spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has kx
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, dambreak_settings%levels_and_widths, uniform, &
+                               spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has kx
                      if (.not. success) then
                         write (msgbuf, '(5a)') 'Cannot process a tim file for ''', qid, ''' for the dambreak ''', trim(dambreaks(n)%name), '''.'
                         call err_flush()
@@ -982,14 +983,15 @@ contains
                end if
 
                ! inquire if the water level upstream has to be taken from a location or be a result of averaging
-               if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
-                   .or. dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
-                  xla = dambreak%water_level_upstream_location_x
-                  yla = dambreak%water_level_upstream_location_y
-                  if (dambreak%water_level_upstream_node_id /= '') then
-                     ierr = findnode(dambreak%water_level_upstream_node_id, k)
+               if (dambreak_settings%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
+                   .or. dambreak_settings%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
+                  xla = dambreak_settings%water_level_upstream_location_x
+                  yla = dambreak_settings%water_level_upstream_location_y
+                  if (dambreak_settings%water_level_upstream_node_id /= '') then
+                     ierr = findnode(dambreak_settings%water_level_upstream_node_id, k)
                      if (ierr /= DFM_NOERR .or. k <= 0) then
-                        write (msgbuf, '(a,a,a,a,a)') 'Cannot find the node for water_level_upstream_node_id = ''', trim(dambreak%water_level_upstream_node_id), &
+                        write (msgbuf, '(a,a,a,a,a)') 'Cannot find the node for water_level_upstream_node_id = ''', &
+                            trim(dambreak_settings%water_level_upstream_node_id), &
                            ''' in dambreak ''', trim(dambreaks(n)%name), '''.'
                         call err_flush()
                      else
@@ -1006,14 +1008,15 @@ contains
                end if
 
                ! inquire if the water level downstream has to be taken from a location or be a result of averaging
-               if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
-                   .or. dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
-                  xla = dambreak%water_level_downstream_location_x
-                  yla = dambreak%water_level_downstream_location_y
-                  if (dambreak%water_level_downstream_node_id /= '') then
-                     ierr = findnode(dambreak%water_level_downstream_node_id, k)
+               if (dambreak_settings%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
+                   .or. dambreak_settings%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
+                  xla = dambreak_settings%water_level_downstream_location_x
+                  yla = dambreak_settings%water_level_downstream_location_y
+                  if (dambreak_settings%water_level_downstream_node_id /= '') then
+                     ierr = findnode(dambreak_settings%water_level_downstream_node_id, k)
                      if (ierr /= DFM_NOERR .or. k <= 0) then
-                        write (msgbuf, '(5a)') 'Cannot find the node for water_level_downstream_node_id = ''', trim(dambreak%water_level_downstream_node_id), &
+                        write (msgbuf, '(5a)') 'Cannot find the node for water_level_downstream_node_id = ''', &
+                            trim(dambreak_settings%water_level_downstream_node_id), &
                            ''' in dambreak ''', trim(dambreaks(n)%name), '''.'
                         call err_flush()
                      else
@@ -1048,7 +1051,7 @@ contains
                end do
 
                ! comp_breach_point takes plain arrays to compute the breach point (also used in unstruct_bmi)
-               call comp_breach_point(dambreak%start_location_x, dambreak%start_location_y, &
+               call comp_breach_point(dambreak_settings%start_location_x, dambreak_settings%start_location_y, &
                                       pstru%xCoordinates, pstru%yCoordinates, pstru%numCoordinates, xl, &
                                       yl, Lstart, x_breach, y_breach, jsferic, jasfer3D, dmiss)
 
