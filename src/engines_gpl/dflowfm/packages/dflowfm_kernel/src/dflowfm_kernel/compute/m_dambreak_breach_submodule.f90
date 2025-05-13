@@ -398,7 +398,7 @@ contains
             delta_level = (gravity * water_level_jump_dambreak)**1.5d0
             time_from_first_phase = time - dambreak%end_time_first_phase
 
-            if (signal%width < dambreak%maximum_width .and. (.not. ieee_is_nan(signal%normal_velocity)) &
+            if (signal%width < signal%maximum_width .and. (.not. ieee_is_nan(signal%normal_velocity)) &
                 .and. dabs(signal%normal_velocity) > dambreak%u_crit) then
                breach_width_derivative = (dambreak%f1 * dambreak%f2 / log(10D0)) * &
                                          (delta_level / (dambreak%u_crit * dambreak%u_crit)) * &
@@ -416,9 +416,9 @@ contains
 
       ! in vdKnaap(2000) the maximum allowed branch width is limited (see sobek manual and set_dambreak_coefficients subroutine below)
       if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
-         actual_maximum_width = min(dambreak%maximum_allowed_width, dambreak%maximum_width)
+         actual_maximum_width = min(dambreak%maximum_allowed_width, signal%maximum_width)
       else
-         actual_maximum_width = dambreak%maximum_width
+         actual_maximum_width = signal%maximum_width
       end if
 
       !width cannot exceed the width of the snapped polyline
@@ -618,7 +618,7 @@ contains
             end if
             associate (dambreak => network%sts%struct(dambreak_signals(n)%index_structure)%dambreak)
                ! Update the crest/bed levels
-               call adjust_bobs_on_dambreak_breach(dambreak_signals(n)%width, dambreak%maximum_width, dambreak%crest_level, &
+               call adjust_bobs_on_dambreak_breach(dambreak_signals(n)%width, dambreak_signals(n)%maximum_width, dambreak%crest_level, &
                                                  & breach_start_link(n), first_link(n), last_link(n), &
                                                  & network%sts%struct(dambreak_signals(n)%index_structure)%id)
             end associate
@@ -963,7 +963,7 @@ contains
                ! set initial phase, width, crest level, coefficents if algorithm is 1
                dambreak_signals(n)%phase = 0
                dambreak_signals(n)%width = 0.0_dp
-               dambreak%maximum_width = 0.0_dp
+               dambreak_signals(n)%maximum_width = 0.0_dp
                dambreak%crest_level = dambreak%crest_level_ini
                if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in levels_widths_from_table((n-1)*kx+1) when calling ec_gettimespacevalue.
@@ -1077,7 +1077,7 @@ contains
                   end if
 
                   ! Sum the length of the intersected flow links (required to bound maximum breach width)
-                  dambreak%maximum_width = dambreak%maximum_width + link_effective_width(k)
+                  dambreak_signals(n)%maximum_width = dambreak_signals(n)%maximum_width + link_effective_width(k)
                end do
 
                ! Now we can deallocate the polygon
@@ -1196,7 +1196,7 @@ contains
                ! set initial phase, width, crest level, coefficents if algorithm is 1
                dambreak_signals(n)%phase = 0
                dambreak_signals(n)%width = 0.0_dp
-               network%sts%struct(istrtmp)%dambreak%maximum_width = 0.0_dp
+               dambreak_signals(n)%maximum_width = 0.0_dp
                network%sts%struct(istrtmp)%dambreak%crest_level = network%sts%struct(istrtmp)%dambreak%crest_level_ini
                if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
@@ -1325,7 +1325,7 @@ contains
                end if
 
                ! Sum the length of the intersected flow links (required to bound maximum breach width)
-               network%sts%struct(istrtmp)%dambreak%maximum_width = network%sts%struct(istrtmp)%dambreak%maximum_width + link_effective_width(k)
+               dambreak_signals(n)%maximum_width = dambreak_signals(n)%maximum_width + link_effective_width(k)
             end do
 
             ! Now we can deallocate the polygon

@@ -65,8 +65,6 @@ module m_dambreak
       character(IdLen) :: water_level_downstream_node_id = ''
       character(IdLen) :: levels_and_widths = ''
 
-      ! State variables
-      real(kind=dp) :: maximum_width ! the maximum dambreak width (from pli file)
       real(kind=dp) :: maximum_allowed_width = -1.0d0 ! only relevant for breach growth algorithm BREACH_GROWTH_VDKNAAP
       real(kind=dp) :: crest_level
       real(kind=dp) :: a_coeff
