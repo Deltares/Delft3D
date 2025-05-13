@@ -1207,7 +1207,7 @@ subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     real(fp), intent(out)    :: thresh !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: tmor !  Description and declaration in morpar.igs
     
-    integer :: ios
+    integer :: iost
 !
 !
 !! executable statements -------------------------------------------------------
@@ -1250,17 +1250,19 @@ subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     ! maximum depth for variable dry cell erosion factor
     read (ilun, *) hmaxth
     ! factor for adjusting intensity of energy dissipation in wave boundary layer
-    read (ilun, *, IOSTAT=ios) fwfac
-    if (IS_IOSTAT_END (ios)) then
-       ! repose slope for slope based bank erosion
-       read (ilun, *) repose
-       ! repose slope for slope based bank erosion in dry areas
-       read (ilun, *) dryrepose
-       ! repose reduction factor for slope for slope based bank erosion. Default value 16
-       read (ilun, *) reposeredfac
-       ! repose max bed change in 1 (half) time step per cell face. Default value 0.01m
-       read (ilun, *) reposemaxdz
-    end if
+    read (ilun, *) fwfac
+    !
+    ! IOSTAT to prevent problems if variables are not given
+    !
+    ! repose slope for slope based bank erosion
+    read (ilun, *, iostat=iost) repose
+    ! repose slope for slope based bank erosion in dry areas
+    read (ilun, *, iostat=iost) dryrepose
+    ! repose reduction factor for slope for slope based bank erosion. Default value 16
+    read (ilun, *, iostat=iost) reposeredfac
+    ! repose max bed change in 1 (half) time step per cell face. Default value 0.01m
+    read (ilun, *, iostat=iost) reposemaxdz
+    !
 end subroutine rdmor0
 
 
@@ -1358,21 +1360,22 @@ subroutine rdmor1(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     read (ilun, *) thetsd
     ! maximum depth for variable dry cell erosion factor
     read (ilun, *) hmaxth
-    ! repose slope for slope based bank erosion
-    read (ilun, *) repose
-    ! repose slope for slope based bank erosion in dry areas
-    read (ilun, *) dryrepose
-   ! repose reduction factor for slope for slope based bank erosion. Default value 16
-    read (ilun, *) reposeredfac
-    ! repose max bed change in 1 (half) time step per cell face. Default value 0.01m
-    read (ilun, *) reposemaxdz
     ! factor for adjusting intensity of energy dissipation in wave boundary layer
     read (ilun, *) fwfac
     ! flag for parametric epsilon distribution in case of K-Eps model
     read (ilun, *) epspar
     !
-    read (ilun, *, iostat = iost) iopkcw, rdc, rdw
-    ! IOSTAT to prevent problems if rdc and rdw are not given
+    ! IOSTAT to prevent problems if variables are not given
+    !
+    read (ilun, *, iostat = iost) iopkcw, rdc, rdw 
+    ! repose slope for slope based bank erosion
+    read (ilun, *, iostat = iost) repose
+    ! repose slope for slope based bank erosion in dry areas
+    read (ilun, *, iostat = iost) dryrepose
+   ! repose reduction factor for slope for slope based bank erosion. Default value 16
+    read (ilun, *, iostat = iost) reposeredfac
+    ! repose max bed change in 1 (half) time step per cell face. Default value 0.01m
+    read (ilun, *, iostat = iost) reposemaxdz
 end subroutine rdmor1
 
 
