@@ -306,7 +306,7 @@ contains
                ! have already been set into the %crest_level and %width values.
                if (success) then
                   dambreak%crest_level = levels_widths_from_table((n - 1) * 2 + 1)
-                  dambreak%width = levels_widths_from_table((n - 1) * 2 + 2)
+                  dambreak_signals(n)%width = levels_widths_from_table((n - 1) * 2 + 2)
                else
                   return
                end if
@@ -314,10 +314,10 @@ contains
 
             if (dambreak%algorithm /= BREACH_GROWTH_VERHEIJVDKNAAP) then
                dambreak_signals(n)%breach_width_derivative = &
-                  (dambreak%width - dambreak_signals(n)%breach_width) / delta_time
+                  (dambreak_signals(n)%width - dambreak_signals(n)%breach_width) / delta_time
             end if
 
-            dambreak_signals(n)%breach_width = dambreak%width
+            dambreak_signals(n)%breach_width = dambreak_signals(n)%width
             dambreak_signals(n)%breach_depth = dambreak%crest_level
 
             if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
@@ -377,8 +377,8 @@ contains
          end if
 
          ! breach width must increase monotonically
-         if (breach_width > dambreak%width) then
-            dambreak%width = breach_width
+         if (breach_width > signal%width) then
+            signal%width = breach_width
          end if
 
          ! Verheij-vdKnaap(2002) formula
@@ -388,7 +388,7 @@ contains
             ! phase 1: lowering
             dambreak%crest_level = dambreak%crest_level_ini - &
                                    time_from_breaching / dambreak%time_to_breach_to_maximum_depth * (dambreak%crest_level_ini - dambreak%crest_level_min)
-            dambreak%width = dambreak%breach_width_ini
+            signal%width = dambreak%breach_width_ini
             signal%phase = 1
          else
             ! phase 2: widening
@@ -398,7 +398,7 @@ contains
             delta_level = (gravity * water_level_jump_dambreak)**1.5d0
             time_from_first_phase = time - dambreak%end_time_first_phase
 
-            if (dambreak%width < dambreak%maximum_width .and. (.not. ieee_is_nan(signal%normal_velocity)) &
+            if (signal%width < dambreak%maximum_width .and. (.not. ieee_is_nan(signal%normal_velocity)) &
                 .and. dabs(signal%normal_velocity) > dambreak%u_crit) then
                breach_width_derivative = (dambreak%f1 * dambreak%f2 / log(10D0)) * &
                                          (delta_level / (dambreak%u_crit * dambreak%u_crit)) * &
@@ -406,7 +406,7 @@ contains
                width_increment = breach_width_derivative * (time_step / SECONDS_IN_HOUR)
                !ensure monotonically increasing dambreak%width
                if (width_increment > 0) then
-                  dambreak%width = dambreak%width + width_increment
+                  signal%width = signal%width + width_increment
                end if
             end if
          end if
@@ -422,8 +422,8 @@ contains
       end if
 
       !width cannot exceed the width of the snapped polyline
-      if (dambreak%width >= actual_maximum_width) then
-         dambreak%width = actual_maximum_width
+      if (signal%width >= actual_maximum_width) then
+         signal%width = actual_maximum_width
       end if
 
    end subroutine prepare_dambreak_calculation
@@ -618,7 +618,7 @@ contains
             end if
             associate (dambreak => network%sts%struct(dambreak_signals(n)%index_structure)%dambreak)
                ! Update the crest/bed levels
-               call adjust_bobs_on_dambreak_breach(dambreak%width, dambreak%maximum_width, dambreak%crest_level, &
+               call adjust_bobs_on_dambreak_breach(dambreak_signals(n)%width, dambreak%maximum_width, dambreak%crest_level, &
                                                  & breach_start_link(n), first_link(n), last_link(n), &
                                                  & network%sts%struct(dambreak_signals(n)%index_structure)%id)
             end associate
@@ -711,7 +711,7 @@ contains
             ! not contribute to the cumulative discharge in the coming mpi communication so we set it to 0.
             values(IVAL_DB_DISCUM, n) = 0.0_dp
          else
-            if (network%sts%struct(index_structure)%dambreak%width > 0.0_dp) then
+            if (dambreak_signals(n)%width > 0.0_dp) then
                values(IVAL_DB_CRESTH, n) = network%sts%struct(index_structure)%dambreak%crest_level
             else
                values(1:NUMVALS_DAMBREAK - 1, n) = dmiss ! No breach started yet, set FillValue
@@ -962,7 +962,7 @@ contains
                dambreak_signals(n)%index_structure = index_in_structure
                ! set initial phase, width, crest level, coefficents if algorithm is 1
                dambreak_signals(n)%phase = 0
-               dambreak%width = 0.0_dp
+               dambreak_signals(n)%width = 0.0_dp
                dambreak%maximum_width = 0.0_dp
                dambreak%crest_level = dambreak%crest_level_ini
                if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
@@ -1195,7 +1195,7 @@ contains
                dambreak_signals(n)%index_structure = istrtmp
                ! set initial phase, width, crest level, coefficents if algorithm is 1
                dambreak_signals(n)%phase = 0
-               network%sts%struct(istrtmp)%dambreak%width = 0.0_dp
+               dambreak_signals(n)%width = 0.0_dp
                network%sts%struct(istrtmp)%dambreak%maximum_width = 0.0_dp
                network%sts%struct(istrtmp)%dambreak%crest_level = network%sts%struct(istrtmp)%dambreak%crest_level_ini
                if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
