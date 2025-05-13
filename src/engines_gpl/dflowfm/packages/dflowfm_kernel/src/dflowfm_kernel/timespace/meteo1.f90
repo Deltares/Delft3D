@@ -357,7 +357,7 @@ contains
    !
    subroutine readTransformcoefficients(minp, transformcoef)
       use m_filez, only: readerror, zoekopt
-      
+
       integer, intent(in) :: minp
       real(kind=dp), intent(out) :: transformcoef(:)
 
