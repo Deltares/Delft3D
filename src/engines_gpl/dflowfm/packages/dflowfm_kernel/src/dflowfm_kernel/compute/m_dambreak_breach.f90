@@ -37,7 +37,6 @@ module m_dambreak_breach
 
    integer, public, protected :: n_db_links !< number of dambreak links
    integer, public, protected :: n_db_signals !< number of dambreak signals
-   integer, dimension(:), allocatable :: dambreak_structure !< dambreak indices in structures
    integer, dimension(:), allocatable :: first_link !< first dambreak link for each signal
    integer, dimension(:), allocatable :: last_link !< last dambreak link for each signal
    integer, dimension(:), allocatable :: link_index !< dambreak links index array
@@ -109,8 +108,11 @@ module m_dambreak_breach
       module subroutine update_dambreak_administration_old(dambridx, lftopol)
          integer, dimension(:), intent(in) :: dambridx !< the index of the dambreak in the structure list.
          integer, dimension(:), intent(in) :: lftopol !< the link number of the flow link.
-      end subroutine update_dambreak_administration_old
+     end subroutine update_dambreak_administration_old
     
+     pure module subroutine indicate_links_that_contain_dambreaks(does_link_contain_structures)
+        logical, intent(inout) :: does_link_contain_structures(:) !< array of logicals indicating if the link contains structures
+     end subroutine indicate_links_that_contain_dambreaks
    end interface
 
 contains
@@ -166,26 +168,6 @@ contains
       end do
 
    end subroutine multiply_by_dambreak_link_actual_width
-
-   !> update array of logicals indicating if the link contains dambreaks
-   pure subroutine indicate_links_that_contain_dambreaks(does_link_contain_structures)
-
-      logical, intent(inout) :: does_link_contain_structures(:) !< array of logicals indicating if the link contains structures
-
-      integer :: n !< loop index
-      integer :: k !< loop index
-
-      if (exist_dambreak_links()) then
-         do n = 1, n_db_signals
-            if (dambreak_structure(n) /= 0) then
-               do k = first_link(n), last_link(n)
-                  does_link_contain_structures(abs(link_index(k))) = .true.
-               end do
-            end if
-         end do
-      end if
-
-   end subroutine indicate_links_that_contain_dambreaks
 
    !> Get the index of the active dambreak for a given dambreak name
    pure function get_active_dambreak_index(dambreak_name) result(index)

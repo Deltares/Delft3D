@@ -99,7 +99,6 @@ contains
 
       allocate(dambreak_signals(n_db_signals))
       
-      call realloc(dambreak_structure, n_db_signals, fill=0)
       call realloc(breach_start_link, n_db_signals, fill=-1)
       call realloc(dambreak_names, n_db_signals, fill="")
       call realloc(active_links, n_db_links, fill=0)
@@ -165,7 +164,7 @@ contains
 
       if (n_db_links > 0) then
          do n = 1, n_db_signals
-            i_structure = dambreak_structure(n)
+            i_structure = dambreak_signals(n)%index_structure
             if (i_structure /= 0 .and. weight_averaged_values(2, n) > 0.0_dp) then
                network%sts%struct(i_structure)%dambreak%normal_velocity = &
                   weight_averaged_values(1, n) / weight_averaged_values(2, n)
@@ -191,7 +190,7 @@ contains
       upstream_levels(:) = 0.0_dp
       downstream_levels(:) = 0.0_dp
       do n = 1, n_db_signals
-         i_structure = dambreak_structure(n)
+         i_structure = dambreak_signals(n)%index_structure
          if (i_structure <= 0) then
             continue
          end if
@@ -239,7 +238,7 @@ contains
                   water_levels(averaging_mapping(n, up_down)) = &
                      weight_averaged_values(1, n) / weight_averaged_values(2, n)
                else if (abs(start_time - &
-                            network%sts%struct(dambreak_structure(averaging_mapping(n, up_down)))%dambreak%T0) < 1e-10_dp) then
+                            network%sts%struct(dambreak_signals(averaging_mapping(n, up_down))%index_structure)%dambreak%T0) < 1e-10_dp) then
                   water_levels(averaging_mapping(n, up_down)) = &
                      s1(link_index(breach_start_link(averaging_mapping(n, up_down))))
                else
@@ -266,7 +265,7 @@ contains
       logical :: success !< success flag
 
       do n = 1, n_db_signals
-         i_structure = dambreak_structure(n)
+         i_structure = dambreak_signals(n)%index_structure
          if (i_structure == 0) then
             continue
          end if
@@ -596,14 +595,14 @@ contains
 
       if (n_db_links > 0) then ! needed, because n_db_signals may be > 0, but n_db_links==0, and then arrays are not available.
          do n = 1, n_db_signals
-            if (dambreak_structure(n) == 0 .or. first_link(n) > last_link(n)) then
+            if (dambreak_signals(n)%index_structure == 0 .or. first_link(n) > last_link(n)) then
                cycle
             end if
-            associate (dambreak => network%sts%struct(dambreak_structure(n))%dambreak)
+            associate (dambreak => network%sts%struct(dambreak_signals(n)%index_structure)%dambreak)
                ! Update the crest/bed levels
                call adjust_bobs_on_dambreak_breach(dambreak%width, dambreak%maximum_width, dambreak%crest_level, &
                                                  & breach_start_link(n), first_link(n), last_link(n), &
-                                                 & network%sts%struct(dambreak_structure(n))%id)
+                                                 & network%sts%struct(dambreak_signals(n)%index_structure)%id)
             end associate
          end do
       end if
@@ -665,7 +664,7 @@ contains
       do n = 1, n_db_signals
          ! values(NUMVALS_DAMBREAK,n) is the cumulative over time, we do not reset it to 0
          values(1:NUMVALS_DAMBREAK - 1, n) = 0.0_dp
-         index_structure = dambreak_structure(n)
+         index_structure = dambreak_signals(n)%index_structure
          do link = first_link(n), last_link(n)
             if (is_not_db_active_link(link)) then
                cycle
@@ -941,7 +940,7 @@ contains
                dambreak_names(n) = network%sts%struct(index_in_structure)%id
 
                ! mapping
-               dambreak_structure(n) = index_in_structure
+               dambreak_signals(n)%index_structure = index_in_structure
                ! set initial phase, width, crest level, coefficents if algorithm is 1
                dambreak%phase = 0
                dambreak%width = 0.0_dp
@@ -1173,7 +1172,7 @@ contains
                write (msgbuf, '(a,a,a)') 'Dambreak ''', trim(strid), ''' set to new format.'
                call msg_flush()
                ! mapping
-               dambreak_structure(n) = istrtmp
+               dambreak_signals(n)%index_structure = istrtmp
                ! set initial phase, width, crest level, coefficents if algorithm is 1
                network%sts%struct(istrtmp)%dambreak%phase = 0
                network%sts%struct(istrtmp)%dambreak%width = 0.0_dp
@@ -1316,5 +1315,25 @@ contains
       end if
          
    end subroutine update_dambreak_administration_old
+
+   !> update array of logicals indicating if the link contains dambreaks
+   pure module subroutine indicate_links_that_contain_dambreaks(does_link_contain_structures)
+
+      logical, intent(inout) :: does_link_contain_structures(:) !< array of logicals indicating if the link contains structures
+
+      integer :: n !< loop index
+      integer :: k !< loop index
+
+      if (exist_dambreak_links()) then
+         do n = 1, n_db_signals
+            if (dambreak_signals(n)%index_structure /= 0) then
+               do k = first_link(n), last_link(n)
+                  does_link_contain_structures(abs(link_index(k))) = .true.
+               end do
+            end if
+         end do
+      end if
+
+   end subroutine indicate_links_that_contain_dambreaks
 
 end submodule m_dambreak_breach_submodule
