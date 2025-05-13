@@ -122,7 +122,7 @@ contains
 
    !> updates dambreak breach by updating water levels upstream and downstream and calculating dambreak widths
    module function update_dambreak_breach(start_time, delta_time) result(error)
-      use m_flow, only: hu, au, u1
+      use m_flow, only: s1, hu, au, u1
       use m_missing, only: dmiss
       use unstruc_channel_flow, only: network
       use m_partitioninfo, only: get_average_quantity_from_links
@@ -147,12 +147,19 @@ contains
 
       call reset_dambreak_variables(n_db_signals)
 
-      call update_dambreak_water_levels(start_time, UPSTREAM, upstream_link_ids, upstream_levels, error)
+      do n = 1, n_locations(UPSTREAM)
+         upstream_levels(location_mapping(n, UPSTREAM)) = s1(locations(n, UPSTREAM))
+      end do
+      do n = 1, n_locations(DOWNSTREAM)
+         downstream_levels(location_mapping(n, DOWNSTREAM)) = s1(locations(n, DOWNSTREAM))
+      end do
+      
+      call update_water_levels_with_averaging(start_time, UPSTREAM, upstream_link_ids, upstream_levels, error)
       if (error /= 0) then
          return
       end if
 
-      call update_dambreak_water_levels(start_time, DOWNSTREAM, downstream_link_ids, downstream_levels, error)
+      call update_water_levels_with_averaging(start_time, DOWNSTREAM, downstream_link_ids, downstream_levels, error)
       if (error /= 0) then
          return
       end if
@@ -203,8 +210,8 @@ contains
       end do
    end subroutine reset_dambreak_variables
 
-   !> update water levels for dambreaks
-   subroutine update_dambreak_water_levels(start_time, up_down, link_index, water_levels, error)
+   !> update water levels using averaging
+   subroutine update_water_levels_with_averaging(start_time, up_down, link_index, water_levels, error)
       use m_flow, only: s1, hu
       use m_partitioninfo, only: get_average_quantity_from_links
       use m_flowgeom, only: wu
@@ -217,16 +224,15 @@ contains
       real(kind=dp), dimension(:), intent(inout) :: water_levels !< water levels
       integer, intent(out) :: error !< error code
 
-      integer :: n !< index of the current dambreak signal
-      integer :: signal
+      integer :: n !< loop index
+      integer :: signal !< current dambreak signal
 
       error = 0
 
-      do n = 1, n_locations(up_down)
-         water_levels(location_mapping(n, up_down)) = s1(locations(n, up_down))
-      end do
+      if (n_averaging(up_down) == 0) then
+          return
+      end if
 
-      !call this code only if something has to be averaged
       do n = 1, n_averaging(up_down)
          signal = averaging_mapping(n, up_down)
          error = get_average_quantity_from_links(first_link(signal:signal), &
@@ -238,7 +244,7 @@ contains
          end if
       end do
 
-      if (n_averaging(up_down) > 0 .and. n_db_links > 0) then
+      if (n_db_links > 0) then
          do n = 1, n_averaging(up_down)
             if (weight_averaged_values(2, n) > 0.0_dp) then
                water_levels(averaging_mapping(n, up_down)) = &
@@ -253,7 +259,7 @@ contains
          end do
       end if
 
-   end subroutine update_dambreak_water_levels
+   end subroutine update_water_levels_with_averaging
 
    !> calculate dambreak widths
    subroutine calculate_dambreak_widths(start_time, delta_time)
