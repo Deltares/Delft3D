@@ -66,7 +66,7 @@ contains
         DOUBLE PRECISION :: LATITUDE           ! 3  in  latitude of study area                   (degrees)
         REAL(kind = real_wp) :: REFDAY             ! 4  in  daynumber of reference day simulation          (d)
         REAL(kind = real_wp) :: AUXSYS             ! 5  in  ratio between days and system clock        (scu/d)
-        REAL(kind = real_wp) :: RedSurfAve         ! 6  out average irradiance over the day              (W/m2)
+        REAL(kind = real_wp) :: RadSurfAve         ! 6  out average irradiance over the day              (W/m2)
         DOUBLE PRECISION :: RadAve             ! 7  out average irradiance                           (W/m2)
         DOUBLE PRECISION :: RADTIME            ! 8  out average irradiance                           (W/m2)
 
