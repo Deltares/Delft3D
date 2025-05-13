@@ -71,7 +71,7 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       integer, dimension(:), allocatable :: upstream_link_indices
       integer, dimension(:), allocatable :: downstream_link_indices
       integer :: algorithm = 0
-      real(kind=dp) :: phase = 0
+      integer :: phase = 0
       real(kind=dp) :: width = 0.0_dp
       real(kind=dp) :: maximum_width = 0.0_dp
       real(kind=dp) :: crest_level
@@ -389,7 +389,7 @@ contains
             dambreak%crest_level = dambreak%crest_level_ini - &
                                    time_from_breaching / dambreak%time_to_breach_to_maximum_depth * (dambreak%crest_level_ini - dambreak%crest_level_min)
             dambreak%width = dambreak%breach_width_ini
-            dambreak%phase = 1
+            signal%phase = 1
          else
             ! phase 2: widening
             dambreak%crest_level = dambreak%crest_level_min
@@ -961,7 +961,7 @@ contains
                ! mapping
                dambreak_signals(n)%index_structure = index_in_structure
                ! set initial phase, width, crest level, coefficents if algorithm is 1
-               dambreak%phase = 0
+               dambreak_signals(n)%phase = 0
                dambreak%width = 0.0_dp
                dambreak%maximum_width = 0.0_dp
                dambreak%crest_level = dambreak%crest_level_ini
@@ -1194,7 +1194,7 @@ contains
                ! mapping
                dambreak_signals(n)%index_structure = istrtmp
                ! set initial phase, width, crest level, coefficents if algorithm is 1
-               network%sts%struct(istrtmp)%dambreak%phase = 0
+               dambreak_signals(n)%phase = 0
                network%sts%struct(istrtmp)%dambreak%width = 0.0_dp
                network%sts%struct(istrtmp)%dambreak%maximum_width = 0.0_dp
                network%sts%struct(istrtmp)%dambreak%crest_level = network%sts%struct(istrtmp)%dambreak%crest_level_ini
