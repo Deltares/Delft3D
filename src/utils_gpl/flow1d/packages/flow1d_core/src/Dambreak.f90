@@ -57,9 +57,6 @@ module m_dambreak
       real(kind=dp) :: t0
       integer :: material_type = 1 !for algorithm BREACH_GROWTH_VDKNAAP, default material type is clay
       real(kind=dp) :: end_time_first_phase
-      real(kind=dp) :: breach_width_derivative
-      real(kind=dp) :: water_level_jump
-      real(kind=dp) :: normal_velocity
       real(kind=dp) :: water_level_upstream_location_x = -999d0
       real(kind=dp) :: water_level_upstream_location_y = -999d0
       real(kind=dp) :: water_level_downstream_location_x = -999d0

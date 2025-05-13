@@ -76,6 +76,9 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       real(kind=dp) :: maximum_width = 0.0_dp
       real(kind=dp) :: crest_level
       real(kind=dp) :: crest_level_ini
+      real(kind=dp) :: normal_velocity
+      real(kind=dp) :: breach_width_derivative
+      real(kind=dp) :: water_level_jump
    end type
 
    type(t_dambreak_signal), target, dimension(:), allocatable :: dambreak_signals(:) !< array of dambreak signals
@@ -132,7 +135,6 @@ contains
    module function update_dambreak_breach(start_time, delta_time) result(error)
       use m_flow, only: s1, hu, au, u1
       use m_missing, only: dmiss
-      use unstruc_channel_flow, only: network
       use m_partitioninfo, only: get_average_quantity_from_links
 
       real(kind=dp), intent(in) :: start_time !< start time
@@ -140,7 +142,6 @@ contains
       integer :: error !< error code
 
       integer :: n !< index of the current dambreak signal
-      integer :: i_structure !< index of the structure
 
       error = 0
 
@@ -182,9 +183,8 @@ contains
 
       if (n_db_links > 0) then
          do n = 1, n_db_signals
-            i_structure = dambreak_signals(n)%index_structure
-            if (i_structure /= 0 .and. weight_averaged_values(2, n) > 0.0_dp) then
-               network%sts%struct(i_structure)%dambreak%normal_velocity = &
+            if (dambreak_signals(n)%index_structure /= 0 .and. weight_averaged_values(2, n) > 0.0_dp) then
+               dambreak_signals(n)%normal_velocity = &
                   weight_averaged_values(1, n) / weight_averaged_values(2, n)
             end if
          end do
@@ -197,24 +197,21 @@ contains
 
    !> reset dambreak variables like water levels, averaged values etc.
    subroutine reset_dambreak_variables(n_db_signals)
-      use unstruc_channel_flow, only: network
 
       integer, intent(in) :: n_db_signals !< number of dambreak signals
 
       integer :: n !< index of the current dambreak signal
-      integer :: i_structure !< index of the structure
 
       weight_averaged_values(:, :) = 0.0_dp
       upstream_levels(:) = 0.0_dp
       downstream_levels(:) = 0.0_dp
       do n = 1, n_db_signals
-         i_structure = dambreak_signals(n)%index_structure
-         if (i_structure <= 0) then
+         if (dambreak_signals(n)%index_structure <= 0) then
             continue
          end if
-         network%sts%struct(i_structure)%dambreak%normal_velocity = 0.0_dp
-         network%sts%struct(i_structure)%dambreak%breach_width_derivative = 0.0_dp
-         network%sts%struct(i_structure)%dambreak%water_level_jump = 0.0_dp
+         dambreak_signals(n)%normal_velocity = 0.0_dp
+         dambreak_signals(n)%breach_width_derivative = 0.0_dp
+         dambreak_signals(n)%water_level_jump = 0.0_dp
       end do
    end subroutine reset_dambreak_variables
 
@@ -291,8 +288,8 @@ contains
          associate (dambreak => network%sts%struct(i_structure)%dambreak)
             if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP .or. &
                 dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
-               call prepare_dambreak_calculation(network%sts%struct(i_structure)%dambreak, upstream_levels(n), &
-                                                 downstream_levels(n), start_time, delta_time)
+               call prepare_dambreak_calculation(network%sts%struct(i_structure)%dambreak, dambreak_signals(n), &
+                   upstream_levels(n), downstream_levels(n), start_time, delta_time)
             end if
             if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES .and. &
                 start_time > dambreak%t0) then
@@ -316,7 +313,7 @@ contains
             end if
 
             if (dambreak%algorithm /= BREACH_GROWTH_VERHEIJVDKNAAP) then
-               dambreak%breach_width_derivative = &
+               dambreak_signals(n)%breach_width_derivative = &
                   (dambreak%width - dambreak_signals(n)%breach_width) / delta_time
             end if
 
@@ -324,7 +321,7 @@ contains
             dambreak_signals(n)%breach_depth = dambreak%crest_level
 
             if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
-               dambreak%water_level_jump = calculate_water_level_jump(upstream_levels(n), &
+               dambreak_signals(n)%water_level_jump = calculate_water_level_jump(upstream_levels(n), &
                                                                       downstream_levels(n), dambreak_signals(n)%breach_depth)
             end if
          end associate
@@ -334,12 +331,14 @@ contains
 
    !> This routine sets dambreak%crest_level and dambreak%width, these varuables are needed
    !! in the actual dambreak computation in dflowfm_kernel
-   subroutine prepare_dambreak_calculation(dambreak, upstream_water_level, downstream_water_level, time, time_step)
+   subroutine prepare_dambreak_calculation(dambreak, signal, upstream_water_level, downstream_water_level, &
+       time, time_step)
       use ieee_arithmetic, only: ieee_is_nan
       use m_dambreak, only: t_dambreak, BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP
       use m_physcoef, only: gravity => ag
 
       type(t_dambreak), pointer, intent(inout) :: dambreak !< dambreak settings for a single dambreak
+      type(t_dambreak_signal), intent(inout) :: signal !< dambreak settings for a single dambreak
       real(kind=dp), intent(in) :: upstream_water_level !< waterlevel at upstream link from dambreak position
       real(kind=dp), intent(in) :: downstream_water_level !< waterlevel at downstream link from dambreak position
       real(kind=dp), intent(in) :: time !< current time
@@ -399,8 +398,8 @@ contains
             delta_level = (gravity * water_level_jump_dambreak)**1.5d0
             time_from_first_phase = time - dambreak%end_time_first_phase
 
-            if (dambreak%width < dambreak%maximum_width .and. (.not. ieee_is_nan(dambreak%normal_velocity)) &
-                .and. dabs(dambreak%normal_velocity) > dambreak%u_crit) then
+            if (dambreak%width < dambreak%maximum_width .and. (.not. ieee_is_nan(signal%normal_velocity)) &
+                .and. dabs(signal%normal_velocity) > dambreak%u_crit) then
                breach_width_derivative = (dambreak%f1 * dambreak%f2 / log(10D0)) * &
                                          (delta_level / (dambreak%u_crit * dambreak%u_crit)) * &
                                          (1.0 / (1.0 + (dambreak%f2 * gravity * time_from_first_phase / (dambreak%u_crit * SECONDS_IN_HOUR))))
@@ -411,8 +410,8 @@ contains
                end if
             end if
          end if
-         dambreak%breach_width_derivative = breach_width_derivative
-         dambreak%water_level_jump = water_level_jump_dambreak
+         signal%breach_width_derivative = breach_width_derivative
+         signal%water_level_jump = water_level_jump_dambreak
       end if
 
       ! in vdKnaap(2000) the maximum allowed branch width is limited (see sobek manual and set_dambreak_coefficients subroutine below)
@@ -727,9 +726,9 @@ contains
             values(IVAL_S1UP, n) = upstream_levels(n)
             values(IVAL_S1DN, n) = downstream_levels(n)
             values(IVAL_HEAD, n) = values(IVAL_S1UP, n) - values(IVAL_S1DN, n)
-            values(IVAL_VEL, n) = network%sts%struct(index_structure)%dambreak%normal_velocity
-            values(IVAL_DB_JUMP, n) = network%sts%struct(index_structure)%dambreak%water_level_jump
-            values(IVAL_DB_TIMEDIV, n) = network%sts%struct(index_structure)%dambreak%breach_width_derivative
+            values(IVAL_VEL, n) = dambreak_signals(n)%normal_velocity
+            values(IVAL_DB_JUMP, n) = dambreak_signals(n)%water_level_jump
+            values(IVAL_DB_TIMEDIV, n) = dambreak_signals(n)%breach_width_derivative
             values(IVAL_DB_DISCUM, n) = values(IVAL_DB_DISCUM, n) + values(IVAL_DIS, n) * time_step ! cumulative discharge
          end if
       end do
