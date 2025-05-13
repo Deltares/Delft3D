@@ -1168,6 +1168,8 @@ subroutine copy_and_sort_percentiles(morpar, nxxuser, nxxprog, xxprog, max_nuser
 end subroutine copy_and_sort_percentiles
 
 !> Reads morphology input version 0 (or no version number found)
+!! Inputs until `fwfac` are compulsory. Inputs for the repose angle functionality
+!! are optional, but either all or none are specified. 
 subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
                 & eqmbc     ,densin    ,aksfac    ,rwave     ,rouse     , &
                 & alfabs    ,alfabn    ,sus       ,bed       ,susw      , &
@@ -1204,6 +1206,8 @@ subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     real(fp), intent(out)    :: thetsd !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: thresh !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: tmor !  Description and declaration in morpar.igs
+    
+    integer :: ios
 !
 !
 !! executable statements -------------------------------------------------------
@@ -1245,16 +1249,18 @@ subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     read (ilun, *) thetsd
     ! maximum depth for variable dry cell erosion factor
     read (ilun, *) hmaxth
-    ! repose slope for slope based bank erosion
-    read (ilun, *) repose
-    ! repose slope for slope based bank erosion in dry areas
-    read (ilun, *) dryrepose
-    ! repose reduction factor for slope for slope based bank erosion. Default value 16
-    read (ilun, *) reposeredfac
-    ! repose max bed change in 1 (half) time step per cell face. Default value 0.01m
-    read (ilun, *) reposemaxdz
     ! factor for adjusting intensity of energy dissipation in wave boundary layer
-    read (ilun, *) fwfac
+    read (ilun, *, IOSTAT=ios) fwfac
+    if (IS_IOSTAT_END (ios)) then
+       ! repose slope for slope based bank erosion
+       read (ilun, *) repose
+       ! repose slope for slope based bank erosion in dry areas
+       read (ilun, *) dryrepose
+       ! repose reduction factor for slope for slope based bank erosion. Default value 16
+       read (ilun, *) reposeredfac
+       ! repose max bed change in 1 (half) time step per cell face. Default value 0.01m
+       read (ilun, *) reposemaxdz
+    end if
 end subroutine rdmor0
 
 
