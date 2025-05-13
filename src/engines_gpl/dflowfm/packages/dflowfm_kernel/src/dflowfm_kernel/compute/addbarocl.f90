@@ -128,8 +128,8 @@ contains
             end if
 
             if (ktz - kz > 0) then ! shallow side extrapolates, coeffs based on shallow side:
-               weight_up = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1))
-               weight_down = 1.0_dp - weight_up
+               weight_down = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1))
+               weight_up = 1.0_dp - weight_down
                rho_up = weight_up * density(cell_index_3d + 1) + weight_down * density(cell_index_3d)
                rho_down = 2.0_dp * density(cell_index_3d) - rho_up
             else ! one layer
@@ -264,8 +264,8 @@ contains
             end if
 
             if (ktz - kz > 0) then ! shallow side extrapolates, coeffs based on shallow side:
-               weight_up = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1))
-               weight_down = 1.0_dp - weight_up
+               weight_down = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1))
+               weight_up = 1.0_dp - weight_down
                rho_up = weight_up * density(cell_index_3d + 1) + weight_down * density(cell_index_3d)
                rho_down = 2.0_dp * density(cell_index_3d) - rho_up
             else ! one layer

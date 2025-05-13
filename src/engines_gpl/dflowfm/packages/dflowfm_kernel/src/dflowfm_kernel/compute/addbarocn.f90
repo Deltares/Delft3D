@@ -87,22 +87,22 @@ contains
          else if (cell_index_3d > k_bot .and. cell_index_3d < k_top) then
             delta_z_up = zws(cell_index_3d + 1) - zws(cell_index_3d)
             delta_z_down = zws(cell_index_3d - 1) - zws(cell_index_3d - 2)
-            rho_up_weight_up = delta_z_up / (delta_z_up + delta_z)
-            rho_up_weight_down = 1.0_dp - rho_up_weight_up
-            rho_down_weight_up = delta_z / (delta_z_down + delta_z)
-            rho_down_weight_down = 1.0_dp - rho_down_weight_up
+            rho_up_weight_down = delta_z_up / (delta_z_up + delta_z)
+            rho_up_weight_up = 1.0_dp - rho_up_weight_down
+            rho_down_weight_down = delta_z / (delta_z_down + delta_z)
+            rho_down_weight_up = 1.0_dp - rho_down_weight_down
             rho_up = rho_up_weight_up * density(cell_index_3d + 1) + rho_up_weight_down * density(cell_index_3d) - rhomean
             rho_down = rho_down_weight_up * density(cell_index_3d) + rho_down_weight_down * density(cell_index_3d - 1) - rhomean
          else if (cell_index_3d == k_bot) then
             delta_z_up = zws(cell_index_3d + 1) - zws(cell_index_3d)
-            rho_up_weight_up = delta_z_up / (delta_z_up + delta_z)
-            rho_up_weight_down = 1.0_dp - rho_up_weight_up
+            rho_up_weight_down = delta_z_up / (delta_z_up + delta_z)
+            rho_up_weight_up = 1.0_dp - rho_up_weight_down
             rho_up = rho_up_weight_up * density(cell_index_3d + 1) + rho_up_weight_down * density(cell_index_3d) - rhomean
             rho_down = 2.0_dp * (density(cell_index_3d) - rhomean) - rho_up
          else if (cell_index_3d == k_top) then
             delta_z_down = zws(cell_index_3d - 1) - zws(cell_index_3d - 2)
-            rho_down_weight_up = delta_z / (delta_z_down + delta_z)
-            rho_down_weight_down = 1.0_dp - rho_down_weight_up
+            rho_down_weight_down = delta_z / (delta_z_down + delta_z)
+            rho_down_weight_up = 1.0_dp - rho_down_weight_down
             rho_down = rho_down_weight_up * density(cell_index_3d) + rho_down_weight_down * density(cell_index_3d - 1) - rhomean
             rho_up = 2.0_dp * (density(cell_index_3d) - rhomean) - rho_down
          end if
@@ -141,8 +141,8 @@ contains
 
       if (k_top > k_bot) then
          do cell_index_3d = k_bot, k_top - 1
-            weight_up = (zws(cell_index_3d + 1) - zws(cell_index_3d)) / (zws(cell_index_3d + 1) - zws(cell_index_3d - 1))
-            weight_down = 1.0_dp - weight_up
+            weight_down = (zws(cell_index_3d + 1) - zws(cell_index_3d)) / (zws(cell_index_3d + 1) - zws(cell_index_3d - 1))
+            weight_up = 1.0_dp - weight_down
             salinity_at_interface(cell_index_3d - k_bot + 1) = weight_up * constituents(isalt, cell_index_3d + 1) + weight_down * constituents(isalt, cell_index_3d)
             temperature_at_interface(cell_index_3d - k_bot + 1) = weight_up * constituents(itemp, cell_index_3d + 1) + weight_down * constituents(itemp, cell_index_3d)
          end do
