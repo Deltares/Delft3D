@@ -234,7 +234,10 @@ module m_ec_netcdf_timeseries
                 tslen = ncptr%dimlen(dimids_tsid(1))                                        ! timeseries ID length 
                 nTims = ncptr%dimlen(dimids_tsid(2))                                        ! number of timeseries IDs  
                 ncptr%nTims = nTims
-                allocate (ncptr%tsid(nTims))
+                if (.not. allocated(ncptr%tsid)) then
+                   allocate (ncptr%tsid(nTims))
+                end if
+             
                 tslen = min(tslen,len(ncptr%tsid(1)))
                 ncptr%tsid = ''
                 do iTims=1,nTims
@@ -265,7 +268,10 @@ module m_ec_netcdf_timeseries
           ncptr%layervarid = iVars
           ncptr%layerdimid = var_dimids(1,iVars)                                          ! For convenience also store the dimension ID explicitly 
           ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
-          allocate(ncptr%vp(ncptr%nLayer))
+          if (.not. allocated(ncptr%vp)) then 
+             allocate(ncptr%vp(ncptr%nLayer))
+        end if
+       
           ierr = nf90_get_var(ncptr%ncid,ncptr%layervarid,ncptr%vp,(/1/),(/ncptr%nLayer/))
           ierr = ncu_get_att(ncptr%ncid,iVars,'units',zunits)
           if (strcmpi(zunits,'m')) then
