@@ -52,7 +52,6 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
    real(kind=dp), dimension(:), allocatable, target :: breach_widths !< dambreak breach widths (as a level)
    real(kind=dp), dimension(:), allocatable, target :: upstream_levels !< upstream water levels computed each time step
    real(kind=dp), dimension(:), allocatable, target :: downstream_levels !< downstream water levels computed each time step
-   real(kind=dp), dimension(:), allocatable, target :: breach_depths !< dambreak breach depths (as a level)
    
    type :: t_dambreak_signal !< dambreak signal data
       integer :: index_structure = 0
@@ -76,7 +75,7 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       real(kind=dp) :: crest_level_ini
    end type
    
-   type(t_dambreak_signal), dimension(:), allocatable :: dambreak_signals(:) !< array of dambreak signals
+   type(t_dambreak_signal), target, dimension(:), allocatable :: dambreak_signals(:) !< array of dambreak signals
    
    procedure(calculate_dambreak_widening_any), pointer :: calculate_dambreak_widening
 
@@ -103,7 +102,6 @@ contains
       
       call realloc(dambreak_structure, n_db_signals, fill=0)
       call realloc(breach_start_link, n_db_signals, fill=-1)
-      call realloc(breach_depths, n_db_signals, fill=0.0_dp)
       call realloc(breach_widths, n_db_signals, fill=0.0_dp)
       call realloc(dambreak_names, n_db_signals, fill="")
       call realloc(active_links, n_db_links, fill=0)
@@ -307,11 +305,11 @@ contains
             end if
 
             breach_widths(n) = dambreak%width
-            breach_depths(n) = dambreak%crest_level
+            dambreak_signals(n)%breach_depth = dambreak%crest_level
 
             if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                dambreak%water_level_jump = calculate_water_level_jump(upstream_levels(n), &
-                                                                      downstream_levels(n), breach_depths(n))
+                             downstream_levels(n), dambreak_signals(n)%breach_depth)
             end if
          end associate
       end do
@@ -813,7 +811,7 @@ contains
          call SetMessage(LEVEL_ERROR, msgbuf)
          res = c_null_ptr
       else
-         res = c_loc(breach_depths(item_index))
+         res = c_loc(dambreak_signals(item_index)%breach_depth)
       end if
 
    end function get_dambreak_depth_c_loc
