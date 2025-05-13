@@ -305,7 +305,7 @@ contains
                ! It works, because in the previous loop iterations the values that were then still correct
                ! have already been set into the %crest_level and %width values.
                if (success) then
-                  dambreak%crest_level = levels_widths_from_table((n - 1) * 2 + 1)
+                  dambreak_signals(n)%crest_level = levels_widths_from_table((n - 1) * 2 + 1)
                   dambreak_signals(n)%width = levels_widths_from_table((n - 1) * 2 + 2)
                else
                   return
@@ -318,7 +318,7 @@ contains
             end if
 
             dambreak_signals(n)%breach_width = dambreak_signals(n)%width
-            dambreak_signals(n)%breach_depth = dambreak%crest_level
+            dambreak_signals(n)%breach_depth = dambreak_signals(n)%crest_level
 
             if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                dambreak_signals(n)%water_level_jump = calculate_water_level_jump(upstream_levels(n), &
@@ -368,7 +368,7 @@ contains
 
          ! The linear part
          if (time_from_breaching < dambreak%time_to_breach_to_maximum_depth) then
-            dambreak%crest_level = dambreak%crest_level_ini - &
+            signal%crest_level = dambreak%crest_level_ini - &
                                    time_from_breaching / dambreak%time_to_breach_to_maximum_depth * (dambreak%crest_level_ini - dambreak%crest_level_min)
             breach_width = dambreak%breach_width_ini
          else
@@ -386,15 +386,15 @@ contains
 
          if (time <= dambreak%end_time_first_phase) then
             ! phase 1: lowering
-            dambreak%crest_level = dambreak%crest_level_ini - &
+            signal%crest_level = dambreak%crest_level_ini - &
                                    time_from_breaching / dambreak%time_to_breach_to_maximum_depth * (dambreak%crest_level_ini - dambreak%crest_level_min)
             signal%width = dambreak%breach_width_ini
             signal%phase = 1
          else
             ! phase 2: widening
-            dambreak%crest_level = dambreak%crest_level_min
+            signal%crest_level = dambreak%crest_level_min
             water_level_jump_dambreak = calculate_water_level_jump(upstream_water_level, downstream_water_level, &
-                                                                   dambreak%crest_level)
+                                                                   signal%crest_level)
             delta_level = (gravity * water_level_jump_dambreak)**1.5d0
             time_from_first_phase = time - dambreak%end_time_first_phase
 
@@ -618,8 +618,8 @@ contains
             end if
             associate (dambreak => network%sts%struct(dambreak_signals(n)%index_structure)%dambreak)
                ! Update the crest/bed levels
-               call adjust_bobs_on_dambreak_breach(dambreak_signals(n)%width, dambreak_signals(n)%maximum_width, dambreak%crest_level, &
-                                                 & breach_start_link(n), first_link(n), last_link(n), &
+               call adjust_bobs_on_dambreak_breach(dambreak_signals(n)%width, dambreak_signals(n)%maximum_width, &
+                          dambreak_signals(n)%crest_level, breach_start_link(n), first_link(n), last_link(n), &
                                                  & network%sts%struct(dambreak_signals(n)%index_structure)%id)
             end associate
          end do
@@ -661,9 +661,7 @@ contains
       use m_flowgeom, only: bob, ln
       use m_flowparameters, only: epshu
       use m_missing, only: dmiss
-      use unstruc_channel_flow, only: network
       use m_link_ghostdata, only: link_ghostdata
-      use unstruc_channel_flow, only: network
       use m_partitioninfo, only: jampi, my_rank, idomain
       use m_structures_indices, only: NUMVALS_DAMBREAK, IVAL_WIDTH, IVAL_DB_CRESTW, IVAL_WIDTHWET, IVAL_DIS, IVAL_AREA, IVAL_DB_DISCUM, &
                                       IVAL_DB_CRESTH, IVAL_S1UP, IVAL_S1DN, IVAL_HEAD, IVAL_VEL, IVAL_DB_JUMP, IVAL_DB_TIMEDIV
@@ -712,7 +710,7 @@ contains
             values(IVAL_DB_DISCUM, n) = 0.0_dp
          else
             if (dambreak_signals(n)%width > 0.0_dp) then
-               values(IVAL_DB_CRESTH, n) = network%sts%struct(index_structure)%dambreak%crest_level
+               values(IVAL_DB_CRESTH, n) = dambreak_signals(n)%crest_level
             else
                values(1:NUMVALS_DAMBREAK - 1, n) = dmiss ! No breach started yet, set FillValue
                flow_link = get_dambreak_breach_start_link(n)
@@ -964,7 +962,7 @@ contains
                dambreak_signals(n)%phase = 0
                dambreak_signals(n)%width = 0.0_dp
                dambreak_signals(n)%maximum_width = 0.0_dp
-               dambreak%crest_level = dambreak%crest_level_ini
+               dambreak_signals(n)%crest_level = dambreak%crest_level_ini
                if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in levels_widths_from_table((n-1)*kx+1) when calling ec_gettimespacevalue.
                   if (index(trim(dambreak%levels_and_widths)//'|', '.tim|') > 0) then
@@ -1197,7 +1195,7 @@ contains
                dambreak_signals(n)%phase = 0
                dambreak_signals(n)%width = 0.0_dp
                dambreak_signals(n)%maximum_width = 0.0_dp
-               network%sts%struct(istrtmp)%dambreak%crest_level = network%sts%struct(istrtmp)%dambreak%crest_level_ini
+               dambreak_signals(n)%crest_level = network%sts%struct(istrtmp)%dambreak%crest_level_ini
                if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                   network%sts%struct(istrtmp)%dambreak%levels_and_widths = trim(network%sts%struct(istrtmp)%dambreak%levels_and_widths)

@@ -66,7 +66,6 @@ module m_dambreak
       character(IdLen) :: levels_and_widths = ''
 
       real(kind=dp) :: maximum_allowed_width = -1.0d0 ! only relevant for breach growth algorithm BREACH_GROWTH_VDKNAAP
-      real(kind=dp) :: crest_level
       real(kind=dp) :: a_coeff
       real(kind=dp) :: b_coeff
 
