@@ -219,7 +219,7 @@ contains
    end subroutine reset_dambreak_variables
 
    !> update water levels using averaging
-   subroutine update_water_levels_with_averaging(start_time, up_down, link_index, water_levels, error)
+   subroutine update_water_levels_with_averaging(start_time, up_down, link_ids, water_levels, error)
       use m_flow, only: s1, hu
       use m_partitioninfo, only: get_average_quantity_from_links
       use m_flowgeom, only: wu
@@ -228,7 +228,7 @@ contains
 
       real(kind=dp), intent(in) :: start_time !< start time
       integer, intent(in) :: up_down !< 1 - upstream, 2 - downstream
-      integer, dimension(:), intent(in) :: link_index !< upstream or downstream link ids
+      integer, dimension(:), intent(in) :: link_ids !< upstream or downstream link ids
       real(kind=dp), dimension(:), intent(inout) :: water_levels !< water levels
       integer, intent(out) :: error !< error code
 
@@ -245,7 +245,7 @@ contains
          signal = averaging_mapping(n, up_down)
          error = get_average_quantity_from_links(first_link(signal:signal), &
                                                  last_link(signal:signal), wu, &
-                                                 link_index, s1, link_index, weight_averaged_values, &
+                                                 link_ids, s1, link_ids, weight_averaged_values, &
                                                  0, hu, dmiss, active_links, 0)
          if (error /= 0) then
             return
@@ -260,7 +260,7 @@ contains
             else if (abs(start_time - &
                          network%sts%struct(dambreak_signals(averaging_mapping(n, up_down))%index_structure)%dambreak%T0) < 1e-10_dp) then
                water_levels(averaging_mapping(n, up_down)) = &
-                  s1(link_index(breach_start_link(averaging_mapping(n, up_down))))
+                  s1(link_ids(breach_start_link(averaging_mapping(n, up_down))))
             else
                continue
             end if
