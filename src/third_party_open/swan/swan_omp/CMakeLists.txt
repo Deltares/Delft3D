@@ -76,14 +76,26 @@ set_source_files_properties(${checkout_src_root}/third_party_open/swan/src/ocpid
 
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${executable_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+if (WIN32)
+    target_compile_options(${executable_name} PRIVATE
+                                                  "${avx2_flag}"
+                                                  "${traceback_flag}"
+                                                  "${heap_arrays_20_flag}"
+                                                  "${automatic_local_variable_storage_flag}"
+                                                  "${floating_point_source_flag}"
+                                                  "${floating_point_speculation_safe_flag}"
+                                                  "${flush_to_zero_flag}")
+endif(WIN32)
 
 # Define preprocessor definitions
 if (WIN32)
     target_compile_definitions(${executable_name} PRIVATE "WIN32;SWANEXE")
+    remove_definitions(-DHAVE_MPI=1)
 endif(WIN32)
 
 if (UNIX)
     target_compile_definitions(${executable_name} PRIVATE "SWANEXE")
+    remove_definitions(-DHAVE_MPI)
 endif(UNIX)
 
 # Define how the files should be structured within Visual Studio

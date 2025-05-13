@@ -18,6 +18,7 @@ if (WIN32)
     set(file_preprocessor_flag                /fpp)
     set(automatic_local_variable_storage_flag /auto)
     set(heap_arrays_one_flag                  /heap-arrays:1)
+    set(heap_arrays_20_flag                   /heap-arrays:20)
     set(heap_arrays_100_flag                  /heap-arrays:100)
     set(real_size_64_flag                     /real-size:64)
 
@@ -29,8 +30,12 @@ if (WIN32)
     set(check_uninit_flag                     /check:uninit)
     set(check_stack_flag                      /check:stack)
     set(openmp_flag                           /Qopenmp)   # To disable: set to /Qopenmp-stubs
+    set(avx2_flag                             /arch:CORE-AVX2)   # To disable: set to /Qopenmp-stubs
     set(generate_reentrancy_threaded_flag     /reentrancy:threaded)
     set(floating_point_exception_flag         /fpe:0)
+    set(floating_point_source_flag            /fp:source)
+    set(floating_point_speculation_safe_flag  /Qfp-speculation:safe)
+    set(flush_to_zero_flag                    /Qftz)
     set(traceback_flag                        /traceback)
 
     set(codecov_flag                          /Qcov-gen)
