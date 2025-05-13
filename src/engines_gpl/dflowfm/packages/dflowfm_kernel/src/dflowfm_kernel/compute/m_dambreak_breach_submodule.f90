@@ -53,7 +53,31 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
    real(kind=dp), dimension(:), allocatable, target :: upstream_levels !< upstream water levels computed each time step
    real(kind=dp), dimension(:), allocatable, target :: downstream_levels !< downstream water levels computed each time step
    real(kind=dp), dimension(:), allocatable, target :: breach_depths !< dambreak breach depths (as a level)
-
+   
+   type :: t_dambreak_signal !< dambreak signal data
+      integer :: index_structure = 0
+      integer :: breach_starting_link = -1
+      real(kind=dp) :: breach_depth = 0.0_dp
+      real(kind=dp) :: breach_width = 0.0_dp
+      character(len=128) :: dambreak_name = ""
+      real(kind=dp) :: level_from_table = 0.0_dp
+      real(kind=dp) :: width_from_table = 0.0_dp
+      real(kind=dp) :: upstream_level
+      real(kind=dp) :: downstream_level
+      integer :: shift_global_link = 0
+      integer, dimension(:), allocatable :: link_indices
+      integer, dimension(:), allocatable :: upstream_link_indices
+      integer, dimension(:), allocatable :: downstream_link_indices
+      integer :: algorithm = 0
+      real(kind=dp) :: phase = 0
+      real(kind=dp) :: width = 0.0_dp
+      real(kind=dp) :: maximum_width = 0.0_dp
+      real(kind=dp) :: crest_level
+      real(kind=dp) :: crest_level_ini
+   end type
+   
+   type(t_dambreak_signal), dimension(:), allocatable :: dambreak_signals(:) !< array of dambreak signals
+   
    procedure(calculate_dambreak_widening_any), pointer :: calculate_dambreak_widening
 
    abstract interface
@@ -75,6 +99,8 @@ contains
 
       integer, intent(in) :: n_db_signals !< number of dambreak signals
 
+      allocate(dambreak_signals(n_db_signals))
+      
       call realloc(dambreak_structure, n_db_signals, fill=0)
       call realloc(breach_start_link, n_db_signals, fill=-1)
       call realloc(breach_depths, n_db_signals, fill=0.0_dp)
