@@ -65,7 +65,8 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       real(kind=dp) :: width_from_table = 0.0_dp
       real(kind=dp) :: upstream_level
       real(kind=dp) :: downstream_level
-      integer :: shift_global_link = 0
+      integer :: shift_in_link_array = 0
+      integer :: number_of_links = 0
       integer, dimension(:), allocatable :: link_indices
       integer, dimension(:), allocatable :: upstream_link_indices
       integer, dimension(:), allocatable :: downstream_link_indices
@@ -95,12 +96,20 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
 contains
 
    !> allocate arrays and initialize variables
-   subroutine allocate_and_initialize_dambreak_data(n_db_signals)
+   subroutine allocate_and_initialize_dambreak_data()
       use m_alloc, only: realloc
 
-      integer, intent(in) :: n_db_signals !< number of dambreak signals
-
+      integer :: n !< loop index
       allocate (dambreak_signals(n_db_signals))
+      do n = 1, n_db_signals
+          dambreak_signals(n)%shift_in_link_array = first_link(n) - 1
+          if(first_link(n) > last_link(n)) then
+             allocate (dambreak_signals(n)%link_indices(0))
+          else
+             allocate (dambreak_signals(n)%link_indices(last_link(n)-first_link(n)+1))
+          end if
+          dambreak_signals(n)%number_of_links = size(dambreak_signals(n)%link_indices)
+      end do
 
       call realloc(breach_start_link, n_db_signals, fill=-1)
       call realloc(dambreak_names, n_db_signals, fill="")
@@ -606,7 +615,7 @@ contains
 
       if (n_db_links > 0) then ! needed, because n_db_signals may be > 0, but n_db_links==0, and then arrays are not available.
          do n = 1, n_db_signals
-            if (dambreak_signals(n)%index_structure == 0 .or. first_link(n) > last_link(n)) then
+            if (dambreak_signals(n)%index_structure == 0 .or. dambreak_signals(n)%number_of_links == 0) then
                cycle
             end if
             associate (dambreak => network%sts%struct(dambreak_signals(n)%index_structure)%dambreak)
@@ -644,7 +653,7 @@ contains
       integer, intent(in) :: n !< index of the current dambreak signal
       integer, intent(in) :: Lstart !< index of the starting link
 
-      breach_start_link(n) = first_link(n) - 1 + Lstart
+      breach_start_link(n) = dambreak_signals(n)%shift_in_link_array + Lstart
 
    end subroutine set_breach_start_link
 
@@ -699,7 +708,7 @@ contains
                values(IVAL_AREA, n) = values(IVAL_AREA, n) + au(flow_link) ! flow area
             end if
          end do
-         if (last_link(n) < first_link(n)) then ! NOTE: values(IVAL_DB_DISCUM,n) in a parallel simulation already gets values after mpi communication
+         if (dambreak_signals(n)%number_of_links == 0) then ! NOTE: values(IVAL_DB_DISCUM,n) in a parallel simulation already gets values after mpi communication
             ! from the previous timestep. In the case that the dambreak does not exist on the current domain, it should
             ! not contribute to the cumulative discharge in the coming mpi communication so we set it to 0.
             values(IVAL_DB_DISCUM, n) = 0.0_dp
@@ -923,7 +932,7 @@ contains
       end if
 
       n_db_links = last_link(n_db_signals)
-      call allocate_and_initialize_dambreak_data(n_db_signals)
+      call allocate_and_initialize_dambreak_data()
 
       do n = 1, n_db_signals
          do k = first_link(n), last_link(n)
@@ -937,6 +946,7 @@ contains
                downstream_link_ids(k) = ln(1, link)
             end if
          end do
+         dambreak_signals(n)%link_indices = link_index(first_link(n):last_link(n))
       end do
 
       ! number of columns in the dambreak heights and widths tim file
@@ -1026,7 +1036,7 @@ contains
                if (.not. associated(pstru%yCoordinates)) cycle
 
                ! Create the array with the coordinates of the flow links
-               nDambreakCoordinates = last_link(n) - first_link(n) + 1
+               nDambreakCoordinates = dambreak_signals(n)%number_of_links
                call realloc(xl, [nDambreakCoordinates, 2])
                call realloc(yl, [nDambreakCoordinates, 2])
                indexLink = 0
@@ -1115,7 +1125,7 @@ contains
 
       if (n_db_signals > 0) then
 
-         call allocate_and_initialize_dambreak_data(n_db_links)
+         call allocate_and_initialize_dambreak_data()
 
          do n = 1, n_db_signals
             do k = first_link(n), last_link(n)
@@ -1132,6 +1142,7 @@ contains
                downstream_link_ids(k) = kbi
                link_index(k) = L
             end do
+            dambreak_signals(n)%link_indices = link_index(first_link(n):last_link(n))
          end do
 
          ! number of columns in the dambreak hights and widths tim file
@@ -1161,7 +1172,7 @@ contains
                call prop_get(str_ptr, '', 'type', strtype, success)
                istrtype = getStructype_from_string(strtype)
                ! flow1d_io library: add and read SOBEK dambreak
-               if (last_link(n) >= first_link(n)) then
+               if (dambreak_signals(n)%number_of_links > 0) then
                   ! structure is active in current grid on one or more flow links: just use the first link of the the structure (the network%sts%struct(istrtmp)%link_number is not used in computations)
                   k = first_link(n)
                   k1 = upstream_link_ids(k)
@@ -1270,7 +1281,7 @@ contains
             if (allocated(yl)) then
                deallocate (yl)
             end if
-            nDambreakCoordinates = last_link(n) - first_link(n) + 1
+            nDambreakCoordinates = dambreak_signals(n)%number_of_links
             allocate (xl(nDambreakCoordinates, 2))
             allocate (yl(nDambreakCoordinates, 2))
             indexLink = 0
@@ -1357,7 +1368,7 @@ contains
       ! Count the number of active links for each signal
       objects = n_db_signals
       do n = 1, n_db_signals
-         if (first_link(n) > last_link(n)) then
+         if (dambreak_signals(n)%number_of_links == 0) then
             objects = objects - 1
          end if
       end do
@@ -1394,7 +1405,7 @@ contains
       index = -1
       do i = 1, n_db_signals
          if (trim(dambreak_names(i)) == trim(dambreak_name)) then
-            if (last_link(i) - first_link(i) >= 0) then
+            if (dambreak_signals(i)%number_of_links > 0) then
                ! Only return this dambreak index if dambreak is active in flowgeom (i.e., at least 1 flow link associated)
                index = i
                exit
@@ -1415,7 +1426,7 @@ contains
          call SetMessage(LEVEL_ERROR, msgbuf)
          allocate (res(0))
       else
-         res = [(link_index(i), integer :: i=first_link(index), last_link(index))]
+         res = dambreak_signals(index)%link_indices
       end if
 
    end function retrieve_set_of_flowlinks_dambreak
