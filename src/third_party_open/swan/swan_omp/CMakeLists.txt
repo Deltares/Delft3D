@@ -76,6 +76,8 @@ set_source_files_properties(${checkout_src_root}/third_party_open/swan/src/ocpid
 
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${executable_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+
+# Set additional compilation flags to match with Deltares-SWAN outside Delft3D
 if (WIN32)
     target_compile_options(${executable_name} PRIVATE
                                                   "${avx2_flag}"
@@ -86,6 +88,11 @@ if (WIN32)
                                                   "${floating_point_speculation_safe_flag}"
                                                   "${flush_to_zero_flag}")
 endif(WIN32)
+if (UNIX)
+    target_compile_options(${executable_name} PRIVATE
+                                                  ${avx2_flag}
+                                                  ${flush_to_zero_flag})
+endif(UNIX)
 
 # Define preprocessor definitions
 if (WIN32)
