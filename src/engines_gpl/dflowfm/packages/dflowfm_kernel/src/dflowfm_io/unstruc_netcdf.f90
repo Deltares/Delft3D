@@ -3340,7 +3340,7 @@ contains
          ierr = nf90_put_att(irstfile, id_squ, 'units', 'm3 s-1')
 
          ! Flow depth at links
-         ierr = nf90_def_var(irstfile, 'hu', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_hu)
+         ierr = nf90_def_var(irstfile, 'hu', nf90_double, [id_laydim, id_flowlinkdim, id_timedim], id_hu)
          ierr = nf90_put_att(irstfile, id_hu, 'coordinates', 'FlowLink_xu FlowLink_yu')
          ierr = nf90_put_att(irstfile, id_hu, 'long_name', 'flow depth at link')
          ierr = nf90_put_att(irstfile, id_hu, 'units', 'm')
@@ -13353,7 +13353,7 @@ contains
       call readyy('Reading map data', 0.50d0)
 
       ! Read upwinded flow depth (flow link)
-      ierr = get_var_and_shift(imapfile, 'hu', hu, tmpvar1, UNC_LOC_U, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
+      ierr = get_var_and_shift(imapfile, 'hu', hu, tmpvar1, UNC_LOC_U3D, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
                                um%ilink_own, um%ilink_merge)
 
       ! Read qa (flow link), optional: only from rst file, so no error check
