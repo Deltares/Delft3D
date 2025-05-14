@@ -35,8 +35,9 @@ object CopyExamples : BuildType({
             command = module {
                 module = "ci_tools.example_utils.copy_examples"
                 scriptArguments = """
-                    "%DEST_DIR% 
-                    --tc_logging"
+                    --dest_dir
+                    %DEST_DIR% 
+                    --tc_logging
                 """.trimIndent()
             }
         }

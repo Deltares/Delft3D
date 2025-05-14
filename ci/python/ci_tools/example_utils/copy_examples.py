@@ -21,7 +21,7 @@ def parse_arguments() -> Namespace:
         "If the destination directory does not exist, it will be created."
         "If the destination directory exists, its contents will be cleared before copying."
     )
-    parser.add_argument("dest_dir", help="The destination directory where examples will be copied.")
+    parser.add_argument("--dest_dir", help="The destination directory where examples will be copied.")
     parser.add_argument("--tc_logging", help="Add additional logging for TeamCity.", action="store_true")
     arguments = parser.parse_args()
 
