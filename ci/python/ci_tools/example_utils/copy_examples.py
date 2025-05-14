@@ -136,9 +136,8 @@ def get_base_directory_ci_python_scripts(relative_path: str) -> Path:
         Path: returns the base directory of the repository
     """
     full_file_path = Path(relative_path).resolve()
-    module_file_path = Path(relative_path)
-    remove_part = "\\ci\\python\\" + str(module_file_path)
-    base_dir = Path(str(full_file_path).replace(remove_part, ""))
+    # Split the path on 'ci/python' and take the left-hand part
+    base_dir = Path(str(full_file_path).split("\\ci\\python")[0])
     return base_dir
 
 
