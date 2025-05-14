@@ -28,16 +28,20 @@ def parse_arguments() -> Namespace:
     return arguments
 
 
-def create_destination_directory(dest_dir: Path, logger: Logger) -> int:
-    """Create_destination_directory, if the directory is already there then make sure it is empty.
+def create_destination_directory(dest_dir: Path, logger: Logger) -> bool:
+    """Create the destination directory.
+
+    If the directory does not exist, it will be created. If the directory already exists, its contents will be deleted.
 
     Returns
     -------
-        int: 1 if error, 0 if success
+        bool: True if successful, False if there were errors
     """
     if not dest_dir:
         logger.log("DEST_DIR is not defined.", LogLevel.ERROR)
-        return 1
+        return False
+
+    success = True
 
     if not dest_dir.exists():
         logger.log("Directory does not exist, creating...")
@@ -45,21 +49,22 @@ def create_destination_directory(dest_dir: Path, logger: Logger) -> int:
             dest_dir.mkdir(parents=True, exist_ok=True)
         except OSError:
             logger.log(f"Unable to create directory - {dest_dir}", LogLevel.ERROR)
-            return 1
+            success = False
     else:
-        logger.log("Directory exists, deleting contents...", LogLevel.WARNING)
-        try:
-            for item in dest_dir.iterdir():
+        logger.log("Directory exists, deleting contents...", LogLevel.NORMAL)
+        for item in dest_dir.iterdir():
+            try:
                 if item.is_file():
                     logger.log(f"Removing: {item}")
                     item.unlink()
                 elif item.is_dir():
                     logger.log(f"Removing: {item}")
                     shutil.rmtree(item)
-        except OSError as e:
-            logger.log(f"Failed to delete contents of directory - {dest_dir}: {e}", LogLevel.ERROR)
-            return 1
-    return 0
+            except (PermissionError, OSError) as e:
+                logger.log(f"Error deleting {item}: {e}", LogLevel.ERROR)
+                success = False
+
+    return success
 
 
 def copy_examples(example_directory: Path, apptainer_directory: Path, dest_dir: Path, logger: Logger) -> int:
@@ -129,7 +134,7 @@ if __name__ == "__main__":
     apptainer_dir = base_dir / APPTAINER_RELATIVE_DIR
 
     logger.log("Create destination directory.")
-    if create_destination_directory(dest_dir, logger):
+    if not create_destination_directory(dest_dir, logger):
         sys.exit(1)
 
     logger.log("Copy files from the examples directory to the destination.")
