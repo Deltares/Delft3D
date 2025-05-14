@@ -368,6 +368,7 @@ module m_ec_typedefs
       integer                                       :: lonx_id
       integer                                       :: laty_id
       logical                                       :: one_time_field = .false.      !< TRUE: input file contains single time field
+      logical                                       :: is_transposed_field = .false. !< TRUE: input file contains X/Y ordered data instead of Y/X
    end type tEcFileReader
 
    type tEcFileReaderPtr

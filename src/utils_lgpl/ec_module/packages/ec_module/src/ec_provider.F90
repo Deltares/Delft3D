@@ -2979,18 +2979,13 @@ contains
                nrow = 1
                nlay = crd_dimlen(1, 3)
             else
-               ! EM: THE CODE BELOW IS WRONG; IF THE ORDER IN THE FILE IS NOT Y,X
-               !     THERE IS NO REQUIRED RELATION BETWEEN Rows/Columns and X and Y.
-               !     NOTE: Once upon a time all files were (Y,X,T), but this is no
-               !           longer the case. (e.g. for periodic forcing)
-               ! Inputs: lonx_id, laty_id, dimids(order), dim_length(dim_id)
-               !ncol = fileReaderPtr%dim_length(fileReaderPtr%lonx_id)
-               ncol = fileReaderPtr%dim_length(dimids(1))
+               ncol = fileReaderPtr%dim_length(fileReaderPtr%lonx_id)
                nrow = 1
                nlay = 0
                if (size(dimids) >= 2) then
-                  !nrow = fileReaderPtr%dim_length(fileReaderPtr%laty_id)
-                  nrow = fileReaderPtr%dim_length(dimids(2))
+                  nrow = fileReaderPtr%dim_length(fileReaderPtr%laty_id)
+                  ! flag files that are stored (X,Y) instead of (Y,X), so make sure the values are oriented row,column after reading.
+                  fileReaderPtr%is_transposed_field = (dimids(2) == fileReaderPtr%lonx_id .and. dimids(1) == fileReaderPtr%laty_id)
                   if (size(dimids) > 3 + dim_offset) then
                      nlay = fileReaderPtr%dim_length(dimids(3 + dim_offset))
                   end if
@@ -3614,9 +3609,10 @@ contains
       integer :: istat !< status of allocation operation
       integer :: i !< column index loop variable
       integer :: j !< row index loop variable
-      logical :: is_y_x !< file data is transposed in X <-> Y
+      logical :: is_transposed !< file data is transposed (X,Y) instead of (Y,X)
       !
       success = .false.
+      is_transposed = .false.
       !
       ! Find the required 'phase' variable.
       phase_id = ecNetcdfFindVariableId(fileReaderPtr, 'PHASE')
@@ -3673,19 +3669,14 @@ contains
       ! Load phase data.
       if (.not. ecSupportNetcdfCheckError(nf90_get_var(fileReaderPtr%fileHandle, phase_id, data_block, start=(/1, 1/), count=dim_sizes), "obtain phase data", fileReaderPtr%fileName)) return
 
+      is_transposed = (dimids(2) == fileReaderPtr%lonx_id .and. dimids(1) == fileReaderPtr%laty_id)
+      !fileReaderPtr%is_transposed_field = is_transposed
       
-      !if (dimids(1) == fileReaderPtr%lonx_id .and. dimids(2) == fileReaderPtr%laty_id) then
-          ! normal
+      if (is_transposed) then
+          fileReaderPtr%hframe%phase_dims = (/ dim_sizes(2), dim_sizes(1) /)
+      else
           fileReaderPtr%hframe%phase_dims = dim_sizes
-          is_y_x = .false.
-      !elseif (dimids(2) == fileReaderPtr%lonx_id .and. dimids(1) == fileReaderPtr%laty_id) then
-          ! transposed
-          !fileReaderPtr%hframe%phase_dims = (/ dim_sizes(2), dim_sizes(1) /)
-          !is_y_x = .true.
-      !else
-         !call setECMessage('ERROR: Phase dimensions are not X,Y or Y,X.')
-         !return
-      !end if
+      end if
 
       ! Allocate phase buffer.
       allocate (fileReaderPtr%hframe%phases(fileReaderPtr%hframe%phase_dims(1), fileReaderPtr%hframe%phase_dims(2)), stat=istat)
@@ -3695,15 +3686,11 @@ contains
       end if
 
       ! Copy temporary buffer into hframe phases
-      do j=1,fileReaderPtr%hframe%phase_dims(2)
-         do i=1,fileReaderPtr%hframe%phase_dims(1)
-             if (is_y_x) then
-                fileReaderPtr%hframe%phases(i,j) = data_block(j,i)
-             else
-                fileReaderPtr%hframe%phases(i,j) = data_block(i,j)
-             end if
-         end do
-      end do
+      if (is_transposed) then
+         fileReaderPtr%hframe%phases = transpose(data_block)
+      else
+         fileReaderPtr%hframe%phases = data_block
+      end if
 
       deallocate(data_block)
       success = .true.
