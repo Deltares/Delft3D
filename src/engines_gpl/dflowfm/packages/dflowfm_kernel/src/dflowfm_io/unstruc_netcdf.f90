@@ -7494,9 +7494,9 @@ contains
       ! Heat flux models
       if (jamapheatflux > 0 .and. jatem > 1) then ! here less verbose
 
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tair, UNC_LOC_S, Tair, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rhum, UNC_LOC_S, Rhum, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_clou, UNC_LOC_S, Clou, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tair, UNC_LOC_S, airtemperature, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rhum, UNC_LOC_S, relative_humidity, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_clou, UNC_LOC_S, cloudiness, jabndnd=jabndnd_)
 
          if (jatem == 5) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun, UNC_LOC_S, Qsunmap, jabndnd=jabndnd_)
@@ -10731,9 +10731,9 @@ contains
       end if
 
       if (jamapheatflux > 0 .and. jatem > 1) then ! Heat modelling only
-         ierr = nf90_put_var(imapfile, id_tair(iid), Tair, [1, itim], [ndxndxi, 1])
-         ierr = nf90_put_var(imapfile, id_rhum(iid), Rhum, [1, itim], [ndxndxi, 1])
-         ierr = nf90_put_var(imapfile, id_clou(iid), Clou, [1, itim], [ndxndxi, 1])
+         ierr = nf90_put_var(imapfile, id_tair(iid), airtemperature, [1, itim], [ndxndxi, 1])
+         ierr = nf90_put_var(imapfile, id_rhum(iid), relative_humidity, [1, itim], [ndxndxi, 1])
+         ierr = nf90_put_var(imapfile, id_clou(iid), cloudiness, [1, itim], [ndxndxi, 1])
 
          if (jatem == 5) then
             ierr = nf90_put_var(imapfile, id_qsun(iid), Qsunmap, [1, itim], [ndxndxi, 1])

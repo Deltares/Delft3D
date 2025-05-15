@@ -2193,7 +2193,7 @@ contains
       use m_dad, only: dad_included, dadpar
       use m_laterals, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
       use m_sferic, only: jsferic
-      use m_wind, only: japatm, jawind, jarain, ja_airdensity, ja_computed_airdensity, clou, rhum
+      use m_wind, only: japatm, jawind, jarain, ja_airdensity, ja_computed_airdensity, cloudiness, relative_humidity
       use m_dambreak_breach, only: n_db_signals
       use, intrinsic :: iso_c_binding
 
@@ -2639,7 +2639,7 @@ contains
          if (jatem > 1 .and. jahisheatflux > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WIND), valobs(:, IPNT_WIND))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))
-            if (jatem == 5 .and. allocated(Rhum) .and. allocated(Clou)) then
+            if (jatem == 5 .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RHUM), valobs(:, IPNT_RHUM))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CLOU), valobs(:, IPNT_CLOU))
             end if

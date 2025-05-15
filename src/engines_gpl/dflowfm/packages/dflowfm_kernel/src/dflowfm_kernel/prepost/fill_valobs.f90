@@ -68,7 +68,7 @@ contains
       use m_get_ucx_ucy_eul_mag
       use m_get_link1
       use m_links_to_centers, only: links_to_centers
-      use m_wind, only: wx, wy, jawind, japatm, patm, jarain, rain, airdensity, tair, rhum, clou
+      use m_wind, only: wx, wy, jawind, japatm, patm, jarain, rain, airdensity, airtemperature, relative_humidity, cloudiness
       use m_turbulence, only: in_situ_density, potential_density, rich, richs
 
       implicit none
@@ -549,12 +549,12 @@ contains
                end if
 
                if (jatem > 1) then ! also heat modelling involved
-                  valobs(i, IPNT_TAIR) = Tair(k)
+                  valobs(i, IPNT_TAIR) = airtemperature(k)
                end if
 
-               if (jatem == 5 .and. allocated(Rhum) .and. allocated(Clou)) then
-                  valobs(i, IPNT_RHUM) = Rhum(k)
-                  valobs(i, IPNT_CLOU) = Clou(k)
+               if (jatem == 5 .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
+                  valobs(i, IPNT_RHUM) = relative_humidity(k)
+                  valobs(i, IPNT_CLOU) = cloudiness(k)
                end if
 
                if (jatem == 5) then

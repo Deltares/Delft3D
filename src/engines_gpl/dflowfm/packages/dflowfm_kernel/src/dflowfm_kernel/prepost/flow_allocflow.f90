@@ -84,8 +84,8 @@ contains
       use m_get_zlayer_indices, only: getzlayerindices
       use m_get_zlayer_indices_bobL, only: getzlayerindicesbobL
       use m_filez, only: oldfil
-      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, clou, rain, evap, tair, heatsrc, heatsrc0, &
-                        longwave, patm, rhum, qrad, solar_radiation, tbed, qext, qextreal, vextcum, cdwcof
+      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, cloudiness, rain, evap, airtemperature, heatsrc, heatsrc0, &
+                        longwave, patm, dewpoint, relative_humidity, qrad, solar_radiation, tbed, qext, qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_tem, nudge_sal, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
       use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
@@ -200,7 +200,7 @@ contains
 
       if (kmx > 0) then
 
-         numkmin = int(1d8); numkmax = -numkmin
+         numkmin = int(1e8_dp); numkmax = -numkmin
          do Lf = Lnx1D + 1, Lnx ! we only need netnode nrs in 2D, todo: trim to numkmin
             L = ln2lne(Lf)
             if (kn(3, L) == 2) then
@@ -1224,19 +1224,19 @@ contains
          call aerr('patm(ndx)', ierr, ndx)
          patm(:) = 0.0_dp
 
-         if (allocated(tair)) then
-            deallocate (tair)
+         if (allocated(airtemperature)) then
+            deallocate (airtemperature)
          end if
-         allocate (tair(ndx), stat=ierr)
-         call aerr('tair(ndx)', ierr, ndx)
-         tair(:) = 0.0_dp
+         allocate (airtemperature(ndx), stat=ierr)
+         call aerr('airtemperature(ndx)', ierr, ndx)
+         airtemperature(:) = 0.0_dp
 
-         if (allocated(rhum)) then
-            deallocate (rhum)
+         if (allocated(dewpoint)) then
+            deallocate (dewpoint)
          end if
-         allocate (rhum(ndx), stat=ierr)
-         call aerr('rhum(ndx)', ierr, ndx)
-         rhum(:) = 0.0_dp
+         allocate (dewpoint(ndx), stat=ierr)
+         call aerr('dewpoint(ndx)', ierr, ndx)
+         dewpoint(:) = 0.0_dp
       end if
 
       if (jatem > 0) then
@@ -1253,20 +1253,20 @@ contains
          heatsrc0 = 0.0_dp
 
          if (jatem > 1) then ! also heat modelling involved
-            if (allocated(tair)) then
-               deallocate (tair)
+            if (allocated(airtemperature)) then
+               deallocate (airtemperature)
             end if
-            if (allocated(rhum)) then
-               deallocate (rhum)
+            if (allocated(relative_humidity)) then
+               deallocate (relative_humidity)
             end if
-            if (allocated(clou)) then
-               deallocate (clou)
+            if (allocated(cloudiness)) then
+               deallocate (cloudiness)
             end if
-            allocate (tair(ndx), rhum(ndx), clou(ndx), stat=ierr)
-            call aerr('tair(ndx), rhum(ndx), clou(ndx)', ierr, 3 * ndx)
-            tair = BACKGROUND_AIR_TEMPERATURE
-            rhum = BACKGROUND_HUMIDITY
-            clou = BACKGROUND_CLOUDINESS
+            allocate (airtemperature(ndx), relative_humidity(ndx), cloudiness(ndx), stat=ierr)
+            call aerr('airtemperature(ndx), relative_humidity(ndx), cloudiness(ndx)', ierr, 3 * ndx)
+            airtemperature = BACKGROUND_AIR_TEMPERATURE
+            relative_humidity = BACKGROUND_HUMIDITY
+            cloudiness = BACKGROUND_CLOUDINESS
             if (allocated(qrad)) then
                deallocate (qrad)
             end if

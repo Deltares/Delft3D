@@ -49,7 +49,7 @@ contains
       use m_transportdata
       use m_observations_data
       use m_flowparameters, only: ispirparopt
-      use m_wind, only: japatm, patm, rain, rhum, tbed, tair, clou, qrad
+      use m_wind, only: japatm, patm, rain, relative_humidity, tbed, airtemperature, cloudiness, qrad
       use unstruc_display_data, only: grwhydopt
       use m_drawthis
       use m_get_equilibrium_transport_rates
@@ -228,11 +228,11 @@ contains
          znod = rain(kk)
 
       else if (nodval == 41 .and. jatem > 0) then
-         znod = rhum(kk)
+         znod = relative_humidity(kk)
       else if (nodval == 42 .and. jatem > 0) then
-         znod = tair(kk)
+         znod = airtemperature(kk)
       else if (nodval == 43 .and. jatem > 0) then
-         znod = clou(kk)
+         znod = cloudiness(kk)
       else if (nodval == 44 .and. jatem > 0 .and. allocated(qrad)) then
          znod = qrad(kk)
       else if (nodval == 45 .and. NUMCONST > 0) then

@@ -57,7 +57,7 @@ contains
       use m_hydrology_data, only: jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
       use m_mass_balance_areas
       use m_partitioninfo
-      use m_wind, only: jaqin, jaqext, jaevap, jarain, heatsrc, heatsrc0, rain, rainuni, evap, tair, qextreal
+      use m_wind, only: jaqin, jaqext, jaevap, jarain, heatsrc, heatsrc0, rain, rainuni, evap, airtemperature, qextreal
       use m_laterals, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
                             apply_transport
   
@@ -251,7 +251,7 @@ contains
                if (jatem >= 1) then
                   if (qin(kt) > 0) then
                      if (jatem > 1) then
-                        heatsrc(kt) = heatsrc(kt) + qin(kt) * tair(k) ! rain has temp of air time varying specified
+                        heatsrc(kt) = heatsrc(kt) + qin(kt) * airtemperature(k) ! rain has temp of air time varying specified
                      else if (jatem == 1) then
                         heatsrc(kt) = heatsrc(kt) + qin(kt) * BACKGROUND_AIR_TEMPERATURE ! or constant
                      end if

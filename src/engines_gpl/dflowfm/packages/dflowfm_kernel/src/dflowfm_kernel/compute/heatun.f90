@@ -57,7 +57,7 @@ contains
                                qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_link1, only: getlink1
-      use m_wind, only: japatm, jaevap, longwave_available, relativewind, tair, wx, wy, rhum, clou, patm, heatsrc0, qrad, &
+      use m_wind, only: japatm, jaevap, longwave_available, relativewind, airtemperature, wx, wy, relative_humidity, cloudiness, patm, heatsrc0, qrad, &
                         solar_radiation, solrad_available, tbed, rhoair, longwave, evap, cdwcof, airdensity, ja_airdensity, ja_computed_airdensity
 
       real(kind=dp), intent(in) :: timhr, qsno
@@ -128,7 +128,7 @@ contains
          end if
       end if
 
-      tairn = tair(n)
+      tairn = airtemperature(n)
 
       if (jatem == 3) then ! excess
 
@@ -168,8 +168,8 @@ contains
             tsurf = twatn
          end if
 
-         rhumn = min(1.0_dp, max(0.0_dp, 1.0e-2_dp * rhum(n)))
-         cloun = min(1.0_dp, max(0.0_dp, 1.0e-2_dp * clou(n)))
+         rhumn = min(1.0_dp, max(0.0_dp, 1.0e-2_dp * relative_humidity(n)))
+         cloun = min(1.0_dp, max(0.0_dp, 1.0e-2_dp * cloudiness(n)))
 
          if (japatm > 0) then
             presn = 1d-2 * patm(n)
@@ -259,7 +259,7 @@ contains
          end if
 
          ! PVTWMX = PVapour at TWater and MaX relative humidity
-         ! PVTAMX = PVapour at TAir   and MaX relative humidity
+         ! PVTAMX = PVapour at airtemperature   and MaX relative humidity
          pvtamx = saturation_pressure(tairn) ! saturation pressure of water vapour in air remote (ewl)
          pvtwmx = saturation_pressure(tsurf) ! and near water surface (ew); eq.(A.12):
 
@@ -331,7 +331,7 @@ contains
          ! In case of ice preprocessing of ice quantities
          !
          if (ja_icecover == ICECOVER_SEMTNER) then
-            if (ice_h(n) > MIN_THICK .or. (twatn < 0.1_fp .and. tair(n) < 0.0_fp)) then
+            if (ice_h(n) > MIN_THICK .or. (twatn < 0.1_fp .and. airtemperature(n) < 0.0_fp)) then
                !
                ! Compute Qlong_ice (NB. Delft3D-FLOW definition is used, with opposite sign, so that
                ! algorithm in preprocess_icecover remains identical to the one for Delft3D-FLOW
@@ -381,7 +381,7 @@ contains
          b = ba(n) ! Spatially averaged time series output :
          atot = atot + b ! Total area
          w(1) = timhr / 24.0_dp ! Time in days
-         w(2) = w(2) + b * tairn ! tair
+         w(2) = w(2) + b * tairn ! airtemperature
          w(3) = w(3) + b * constituents(itemp, kt) ! Twatn, SST
          if (soiltempthick > 0.0_dp) then
             w(4) = w(4) + b * tbed(n) ! tbed
@@ -394,8 +394,8 @@ contains
          w(10) = w(10) + b * Qfrcon ! Qfreecon
          w(11) = w(11) + b * Qfreva ! Qfree
          w(12) = w(12) + b * windn ! wind
-         w(13) = w(13) + b * rhumn ! rhum
-         w(14) = w(14) + b * cloun ! clou
+         w(13) = w(13) + b * rhumn ! relative_humidity
+         w(14) = w(14) + b * cloun ! cloudiness
          w(15) = w(15) + b * presn ! pres
 
          ncols = 15

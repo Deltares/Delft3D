@@ -126,6 +126,7 @@ module m_flowparameters
 
    logical :: btempforcingtypA !< Forcing parameter Air temperature is given as a separate field or not
    logical :: btempforcingtypC !< Forcing parameter Cloudiness given as a separate field or not
+   logical :: btempforcingtypD !< Forcing parameter Dewpoint given as a separate field or not
    logical :: btempforcingtypH !< Forcing parameter Humidity given as a separate field or not
    logical :: btempforcingtypS !< Forcing parameter Solarradiation given as a separate field or not
    logical :: btempforcingtypL !< Forcing parameter Long wave radiation given as a separate field or not

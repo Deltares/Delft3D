@@ -52,9 +52,10 @@ module m_wind
    real(kind=dp), allocatable, target :: qextreal(:) !< [m3/s] Realized external discharge per cell {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, target :: vextcum(:) !< [m3] Cumulative realized volume through qext {"location": "face", "shape": ["ndkx"]}
 
-   real(kind=dp), allocatable, target :: tair(:) !< air temperature       (degC)
-   real(kind=dp), allocatable, target :: rhum(:) !< air relative humidity (%)
-   real(kind=dp), allocatable, target :: clou(:) !< air cloudiness        (%)
+   real(kind=dp), allocatable, target :: airtemperature(:) !< air temperature       (degC)
+   real(kind=dp), allocatable, target :: dewpoint(:) !< dewpoint temperature (degC)
+   real(kind=dp), allocatable, target :: relative_humidity(:) !< air relative humidity (%)
+   real(kind=dp), allocatable, target :: cloudiness(:) !< air cloudiness        (%)
    real(kind=dp), allocatable, target :: airdensity(:) !< air density           (kg/m3)
    real(kind=dp), allocatable, target :: qrad(:) !< solar radiation       (W/m2)
    real(kind=dp), dimension(:), allocatable :: solar_radiation !< solar radiation (W/m2) incl. albedo correction
@@ -74,8 +75,6 @@ module m_wind
    integer :: jarain !< use rain yes or no
    integer :: jaevap !< use evap yes or no
    integer :: jatair !< use air temperature   yes or no
-   integer :: jarhum !< use relative humidity yes or no
-   integer :: jaclou !< use cloudiness        yes or no
    integer :: ja_airdensity !< use variabele air density yes or no
    logical :: solrad_available = .false. !< solar radiation provided by user
    logical :: longwave_available = .false. !< longwave radiation provided by user
