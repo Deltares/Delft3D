@@ -5,7 +5,7 @@ from conan.tools.scm import Git
 
 class netcdf_fortranRecipe(ConanFile):
     name = "netcdf-fortran"
-    version = "4.5.4"
+    version = "4.6.2"
     package_type = "library"
 
     # Optional metadata
