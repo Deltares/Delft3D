@@ -63,7 +63,7 @@ subroutine read_icecover(icecover, md_ptr, chapter, error, jamapice)
 !
 ! Local variables
 !
-   logical                                      :: bool  !< local logical
+   logical                                      :: default_mapout  !< local logical
    integer                                      :: istat !< reading status flag
    integer                                      :: model !< local ice cover model
    character(256)                               :: tmp   !< temporary string for input processing
@@ -154,12 +154,12 @@ subroutine read_icecover(icecover, md_ptr, chapter, error, jamapice)
    ! Output flags
    !
    if (present(jamapice)) then
-      bool = jamapice /= 0
+      default_mapout = jamapice /= 0
    else
-      bool = .false.
+      default_mapout = .false.
    end if
-   call prop_get(md_ptr, chapter, 'addIceToMap', bool)
-   call set_default_output_flags(icecover%mapout, model, bool)
+   call prop_get(md_ptr, chapter, 'addIceToMap', default_mapout)
+   call set_default_output_flags(icecover%mapout, model, default_mapout)
    call read_icecover_output(md_ptr, 'output', 'wrimap', icecover%mapout)
 end subroutine read_icecover
 
