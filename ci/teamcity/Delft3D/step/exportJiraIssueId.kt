@@ -26,17 +26,20 @@ class ExportJiraIssueId : ScriptBuildStep {
     constructor(init: ExportJiraIssueId.() -> Unit) {
         init()
 
-        conditions {
-            exists("teamcity.build.branch")
-            equals("teamcity.build.branch.is_default", "false")
+        if (DslContext.getParameter("environment") == "production") {
+            conditions {
+                exists("teamcity.build.branch")
+                equals("teamcity.build.branch.is_default", "false")
+            }
         }
+
         name = "Export the Jira issue id"
 
         val script = File(DslContext.baseDir, "linux/scripts/exportJiraIssueIdSetParam.sh")
         scriptContent = Util.readScript(script).replace("%param_name%", paramName)
     }
 }
-  
+
 fun BuildSteps.exportJiraIssueId(init: ExportJiraIssueId.() -> Unit): BuildStep {
     val result = ExportJiraIssueId(init)
     step(result)

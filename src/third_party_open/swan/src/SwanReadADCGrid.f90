@@ -11,35 +11,33 @@ subroutine SwanReadADCGrid
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !   Authors
 !
 !   40.80: Marcel Zijlema
-!   40.95: Marcel Zijlema
 !   41.07: Casey Dietrich
+!   42.08: Casey Dietrich
 !
 !   Updates
 !
 !   40.80, December 2007: New subroutine
-!   40.95,     June 2008: parallelization of unSWAN using MESSENGER of ADCIRC
 !   41.07,   August 2009: use ADCIRC boundary info to mark all boundary vertices
+!   42.08, December 2023: use global-to-local tables from ADCIRC
 !
 !   Purpose
 !
@@ -58,8 +56,7 @@ subroutine SwanReadADCGrid
     use ocpcomm4
     use m_genarr
     use SwanGriddata
-!PUN    use SIZES
-!PUN    use MESSENGER
+!ADC    use HASHTABLE
 !
     implicit none
 !
@@ -78,11 +75,13 @@ subroutine SwanReadADCGrid
     integer                 :: k        ! loop counter
     integer                 :: n1       ! auxiliary integer
     integer                 :: n2       ! another auxiliary integer
+!ADC    integer                 :: n3       ! yet another auxiliary integer
     integer                 :: ndsd     ! unit reference number of file
     integer                 :: nopbc    ! number of open boundaries in ADCIRC
     integer                 :: vm       ! boundary marker
     character(80)           :: line     ! auxiliary textline
     logical                 :: stpnow   ! indicate whether program must be terminated or not
+!ADC    type(ipair),allocatable :: node_dict(:) ! node hashtable dictionary
 !
 !   Structure
 !
@@ -97,7 +96,6 @@ subroutine SwanReadADCGrid
     ndsd   = 0
     iostat = 0
     grdfil = 'fort.14'
-!PUN    grdfil = trim(INPUTDIR)//DIRCH2//trim(grdfil)
     call for (ndsd, grdfil, 'OF', iostat)
     if (stpnow()) goto 900
     !
@@ -116,6 +114,7 @@ subroutine SwanReadADCGrid
     if ( istat == 0 ) then
        if(.not.allocated(DEPTH)) allocate (DEPTH(nverts), stat = istat)
     endif
+!ADC    call dict(node_dict,nverts)
     if ( istat /= 0 ) then
        call msgerr ( 4, 'Allocation problem in SwanReadADCGrid: array xcugrd, ycugrd or depth ' )
        goto 900
@@ -124,8 +123,10 @@ subroutine SwanReadADCGrid
     ! read coordinates of vertices and bottom topography
     !
     do j = 1, nverts
-       read(ndsd, *, end=950, err=910) ii, xcugrd(ii), ycugrd(ii), DEPTH(ii)
-       if ( ii/=j ) call msgerr ( 1, 'numbering of vertices is not sequential in grid file fort.14 ' )
+!NADC       read(ndsd, *, end=950, err=910) ii, xcugrd(ii), ycugrd(ii), DEPTH(ii)
+!NADC       if ( ii/=j ) call msgerr ( 1, 'numbering of vertices is not sequential in grid file fort.14 ' )
+!ADC       read(ndsd, *, end=950, err=910) ii, xcugrd(j), ycugrd(j), DEPTH(j)
+!ADC       call add_ipair(node_dict,ii,j)
     enddo
     !
     if(.not.allocated(kvertc)) allocate (kvertc(3,ncells), stat = istat)
@@ -137,8 +138,12 @@ subroutine SwanReadADCGrid
     ! read vertices of triangles
     !
     do j = 1, ncells
-       read(ndsd, *, end=950, err=910) ii, idum, kvertc(1,ii), kvertc(2,ii), kvertc(3,ii)
-       if ( ii/=j ) call msgerr ( 1, 'numbering of triangles is not sequential in grid file fort.14 ' )
+!NADC       read(ndsd, *, end=950, err=910) ii, idum, kvertc(1,ii), kvertc(2,ii), kvertc(3,ii)
+!NADC       if ( ii/=j ) call msgerr ( 1, 'numbering of triangles is not sequential in grid file fort.14 ' )
+!ADC       read(ndsd, *, end=950, err=910) ii, idum, n1, n2, n3
+!ADC       kvertc(1,ii) = find(node_dict,n1)
+!ADC       kvertc(2,ii) = find(node_dict,n2)
+!ADC       kvertc(3,ii) = find(node_dict,n3)
     enddo
     !
     if(.not.allocated(vmark)) allocate (vmark(nverts), stat = istat)
@@ -153,37 +158,33 @@ subroutine SwanReadADCGrid
     read(ndsd, *, end=950, err=910) nopbc
     read(ndsd, *, end=950, err=910) idum
     do j = 1, nopbc
-!PUN       if ( MNPROC==1 ) then
-          vm = j
-          read(ndsd, *, end=950, err=910) n2
-!PUN       else
-!PUN          read(ndsd, *, end=950, err=910) n2, vm
-!PUN       endif
+       vm = j
+       read(ndsd, *, end=950, err=910) n2
        do k = 1, n2
            read(ndsd, *, end=950, err=910) ivert
-           vmark(ivert) = vm
+!NADC           vmark(ivert) = vm
+!ADC           vmark(find(node_dict,ivert)) = vm
        enddo
     enddo
     !
     read(ndsd, *, end=950, err=910) n1
     read(ndsd, *, end=950, err=910) idum
     do j = 1, n1
-!PUN       if ( MNPROC==1 ) then
-          vm = nopbc + j
-          read(ndsd, *, end=950, err=910) n2, itype
-!PUN       else
-!PUN          read(ndsd, *, end=950, err=910) n2, itype, vm
-!PUN       endif
+       vm = nopbc + j
+       read(ndsd, *, end=950, err=910) n2, itype
        if ( itype /= 4 .and. itype /= 24 ) then
           do k = 1, n2
              read(ndsd, *, end=950, err=910) ivert
-             vmark(ivert) = vm
+!NADC             vmark(ivert) = vm
+!ADC             vmark(find(node_dict,ivert)) = vm
           enddo
        else
           do k = 1, n2
              read(ndsd, *, end=950, err=910) ivert, ivert1
-             vmark(ivert ) = vm
-             vmark(ivert1) = vm
+!NADC             vmark(ivert ) = vm
+!NADC             vmark(ivert1) = vm
+!ADC             vmark(find(node_dict,ivert )) = vm
+!ADC             vmark(find(node_dict,ivert1)) = vm
           enddo
        endif
     enddo
@@ -191,16 +192,8 @@ subroutine SwanReadADCGrid
     ! close file fort.14
     !
     close(ndsd)
+!ADC    call close_dict(node_dict)
     !
-!PUN       ! ghost vertices are marked with +999
-!PUN       !
-!PUN       do j = 1, NEIGHPROC
-!PUN          do k = 1, NNODRECV(j)
-!PUN             ivert = IRECVLOC(k,j)
-!PUN             vmark(ivert) = 999
-!PUN          enddo
-!PUN       enddo
-!PUN       !
  900 return
     !
  910 call msgerr (4, 'error reading data from grid file fort.14' )

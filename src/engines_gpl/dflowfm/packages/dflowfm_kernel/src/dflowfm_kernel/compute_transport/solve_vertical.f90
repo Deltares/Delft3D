@@ -53,11 +53,12 @@ contains
       use m_flowgeom, only: Ndxi, Ndx, ba, kfs ! static mesh information
       use m_flowtimes, only: dts
       use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
+      use m_turbulence, only: difwws
       use m_flowparameters, only: epshu, testdryflood
       use m_sediment, only: mtd, jased
       use m_fm_erosed, only: tpsnumber
-      use sediment_basics_module
-      use timers
+      use timers, only: timon, timstrt, timstop
+      use m_transport, only: isalt
 
       implicit none
 
@@ -172,17 +173,16 @@ contains
 
             do j = 1, NUMCONST
 
-!           ! diffusion
+               ! diffusion
                if (jased > 3 .and. j >= ISED1 .and. j <= ISEDN) then ! sediment d3d
                   fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + difsed(j)) * dtbazi
                   ! i.w.  + vicwws/van rijn                              + background (dicoww)
                else
                   fluxfac = (sigdifi(j) * vicwws(k) + difsed(j) + ozmid) * dtbazi
+                  if (j == ISALT) then
+                     difwws(k) = (sigdifi(j) * vicwws(k) + difsed(j) + ozmid)
+                  end if
                end if
-
-!           BEGIN DEBUG
-!            fluxfac = dt_loc * (difsed(j)) *ba(kk) / ( 0.5d0*(zws(k+1) - zws(k-1)) )  ! m3
-!           END DEBUG
 
                b(n, j) = b(n, j) + fluxfac * dvol1i
                c(n, j) = c(n, j) - fluxfac * dvol1i
@@ -190,11 +190,8 @@ contains
                b(n + 1, j) = b(n + 1, j) + fluxfac * dvol2i
                a(n + 1, j) = a(n + 1, j) - fluxfac * dvol2i
 
-!           advection
+               ! advection
                if (thetavert(j) > 0d0) then ! semi-implicit, use central scheme
-                  ! BEGIN DEBUG
-                  ! if ( .false. .and. thetavert(j).gt.0d0 ) then ! semi-implicit, use central scheme
-                  ! END DEBUG
 
                   if (jased > 0 .and. jaimplicitfallvelocity == 0) then ! explicit fallvelocity
                      if (jased < 4) then
@@ -242,29 +239,11 @@ contains
 
 !     solve system(s)
          do j = 1, NUMCONST
-!         if ( kk.eq.2 .and. j.eq.1 ) then
-!            do k=kb,kt
-!               n = k-kb+1
-!               write(6,*) n, a(n,j), b(n,j), c(n,j), d(n,j)
-!            end do
-!         end if
 
             call tridag(a(1, j), b(1, j), c(1, j), d(1, j), e, sol, kt - kb + 1)
 
             sed(j, kb:kt) = sol(1:kt - kb + 1)
             sed(j, kt + 1:ktx) = sed(j, kt)
-
-!        BEGIN DEBUG
-!         do k=kb,kt
-!            if ( j.eq.1 .and. ( sed(j,k).gt.30.0001 .or. sed(j,k).lt.-0.0001 ) ) then
-!               continue
-!               write(6,*) 'kk=', kk, 'lay=', k-kb+1
-!               write(6,*) 'rhs=', rhs(j,k)
-!               write(6,*) 'sed=', sed(j,k)
-!               call qnerror(' ', ' ', ' ')
-!            end if
-!         end do
-!        END DEBUG
 
          end do
 

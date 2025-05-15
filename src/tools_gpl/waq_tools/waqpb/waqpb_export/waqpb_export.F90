@@ -24,10 +24,6 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
-
-!
 !     Program to compose a PROCES.ASC file from tables
 !
 !     This program consists of the following parts:
@@ -41,6 +37,10 @@
 program waqpb_export
     use m_obtain_number_decimals
     use m_string_utils
+    use m_waqpb_export_helper
+    use m_cli_utils
+
+    implicit none
 
     include 'data_ff.inc'
     include 'pdf_ff.inc'
@@ -48,43 +48,65 @@ program waqpb_export
                 ioutf , isubs , naanta, ioffse, ioffs2, ivelo , &
                 istoc , iconf , naant2, serial, &
                 ierror, icnsb , imodv , i
-    logical      itmswi(nitemm)
-    logical      generate_latex_tables
+    logical :: itmswi(nitemm)
+    logical :: generate_latex_tables
+    logical :: status
     character(len=10) c10, num_decimals_version_char
     character(len=20) c20
     character(len=50) adduni
-    character(len=255) argument
+    character(:), allocatable :: proc_def_folder
+    character(:), allocatable :: argument
+    character(:), allocatable :: proc_def_file_path
+    character(:), allocatable :: csv_folder    
     real         actdef, version
-    integer      lu_inp, lu_mes, status, lunfil, num_decimals_version
+    integer      lu_inp, lu_mes, lunfil, num_decimals_version
 
-!     Defaults for command line arguments
+    call store_command_arguments()
+    
+    if (is_command_arg_specified('--help') .or. &
+        is_command_arg_specified('-h') .or. &
+        is_command_arg_specified('--usage')) then
+        call show_help()
+        stop
+    end if
 
-    version = 999
-    serial = 999
-    generate_latex_tables = .false.
+    proc_def_folder = ''
 
-    do i=1,command_argument_count()
-        call get_command_argument(i,argument)
-        if (argument(:8) == '-version') then
-            read(argument(9:), '(f20.0)', iostat=status) version
-        endif
-        if (argument(:7)=='-serial') then
-            read(argument(8:), '(i20)',iostat=status) serial
-        endif
-        if (trim(argument) == '-latex') generate_latex_tables = .true.
-    enddo
+    ! first positional argument is the process definition folder
+    if (get_argument_by_index(1, argument)) then
+        if (argument(:1) /= '-') then
+            proc_def_file_path = trim(argument) //'/proc_def.def'
+            inquire(file=proc_def_file_path, exist=status)
+            if (.not. status) then
+                write(*,'(A,A,A)') 'Error: "', trim(proc_def_file_path), '" is not a valid path for the process definition folder.'
+                stop 1
+            endif
+            proc_def_folder = trim(argument) // "/"
+        end if
+    end if
 
+    if (.not. get_command_argument_by_name('--version', version)) then
+        version = generate_version()
+    end if
+
+    if (.not. get_command_argument_by_name('--serial', serial)) then
+        serial = generate_serial()
+    end if    
+    
+    write(*,*) "Running with version ", version, " and serial ", serial
+    
+    generate_latex_tables = is_command_arg_specified('--latex')
 
     itmswi = .false.
-    open ( newunit=lu_mes , file = 'waqpb_export.log' )
+    open ( newunit=lu_mes , file = (proc_def_folder // 'waqpb_export.log' ))
 
     write (*,'('' Reading data......'')')
 
 !----------------------------------------------------------------------c
 !     READ DATABASE
 !----------------------------------------------------------------------c
-
-    call readdb ( lu_inp, lu_mes )
+    csv_folder = proc_def_folder // 'csvFiles/'
+    call readdb ( lu_inp, lu_mes, csv_folder)
 
 !     Check validity of table R9
 
@@ -136,7 +158,7 @@ program waqpb_export
 
     write (lu_mes,'(''Writing NEFIS process definition file'')')
     call makind()
-    call pdfnef(lu_mes    , serial, version, ierror, generate_latex_tables)
+    call pdfnef(lu_mes    , serial, version, proc_def_folder, ierror, generate_latex_tables)
     if ( ierror .ne. 0 ) then
         write (lu_mes,'(''ERROR writing NEFIS file'')')
         write (*,'(''ERROR writing NEFIS file, see report file'')')
@@ -148,7 +170,7 @@ program waqpb_export
 
     write (*,'('' Making PROCES.ASC......'')')
     write (*,*)
-    open ( newunit=lunfil , file = 'procesm.asc' )
+    open ( newunit=lunfil , file = (proc_def_folder // 'procesm.asc' ))
 
     ! obtain number of decimals of version number
     num_decimals_version = obtain_num_decimals_version(version)
@@ -475,3 +497,4 @@ end program waqpb_export
 
       return
     end function adduni
+

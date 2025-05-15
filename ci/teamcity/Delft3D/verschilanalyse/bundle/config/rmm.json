@@ -1,5 +1,5 @@
 {
-    "output_directory": "verschillentool_output",
+    "output_directory": "/data/verschillentool",
     "models": [
         {
             "name": "rmm",

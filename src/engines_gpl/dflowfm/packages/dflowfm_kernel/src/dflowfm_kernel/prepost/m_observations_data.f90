@@ -109,12 +109,14 @@ module m_observations_data
    integer :: IVAL_TEPS
    integer :: IVAL_VIU
    integer :: IVAL_VICWWS
+   integer :: IVAL_DIFWWS
    integer :: IVAL_VICWWU
    integer :: IVAL_WS1
    integer :: IVAL_WSN
    integer :: IVAL_SEDDIF1
    integer :: IVAL_SEDDIFN
    integer :: IVAL_RICH
+   integer :: IVAL_RICHS
    integer :: IVAL_TAIR
    integer :: IVAL_WIND
    integer :: IVAL_RHUM
@@ -215,11 +217,13 @@ module m_observations_data
    integer :: IPNT_TEPS
    integer :: IPNT_VIU
    integer :: IPNT_VICWWS
+   integer :: IPNT_DIFWWS
    integer :: IPNT_VICWWU
    integer :: IPNT_WS1
    integer :: IPNT_WSN
    integer :: IPNT_SEDDIF1
    integer :: IPNT_RICH
+   integer :: IPNT_RICHS
    integer :: IPNT_TAIR
    integer :: IPNT_WIND
    integer :: IPNT_RHUM

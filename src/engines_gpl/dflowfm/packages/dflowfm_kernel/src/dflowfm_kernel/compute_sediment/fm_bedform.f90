@@ -31,15 +31,12 @@
 !
 
 module m_calbedform
-   use m_solve_2d, only: solve_2d
-   use m_comp_sumhorflux, only: comp_sumhorflux
-   use m_comp_fluxhor3d, only: comp_fluxhor3d
-   use m_comp_dxiau, only: comp_dxiau
-   use m_setucxucy_mor, only: setucxucy_mor
 
    implicit none
+   
+   private
 
-   public fm_calbf
+   public fm_calbf, fm_calksc
 
 contains
 
@@ -63,8 +60,7 @@ contains
       use m_waves
       use m_get_kbot_ktop
       use m_get_chezy, only: get_chezy
-      !
-      implicit none
+      use m_setucxucy_mor, only: setucxucy_mor
       !
       ! The following list of pointer parameters is used to point inside the data structures
       !
@@ -305,13 +301,15 @@ contains
       use message_module
       use m_get_Lbot_Ltop
       use m_fm_advec_diff_2d, only: fm_advec_diff_2d
-      !
-      implicit none
+      use m_turbulence, only: BACKGROUND_DIFFUSION_ON
       !
       ! Global variables
       !
       real(fp), dimension(:), allocatable :: sink
       real(fp), dimension(:), allocatable :: sour
+      !
+      real(kind=dp), dimension(1), parameter :: BEDFORM_BACKGROUND_DIFFUSION_FACTOR=[BACKGROUND_DIFFUSION_ON] !< background diffusion factor [-]. For backward compatibility, it is set to 1.0`, although it would most probably make more sense to be 0. It cannot be a `parameter` because it is `inout` in `comp_fluxhor3D` because it is optional. 
+      integer, parameter :: LIMITER_TYPE=4 !< It should be made equal to a parameter inside, for instance, `m_flowparameters`. 
       !
       !Local parameters
       !
@@ -638,7 +636,7 @@ contains
             kb = ln(1, L); ki = ln(2, L)
             dh(kb) = dh(ki)
          end do
-         call fm_advec_diff_2d(dh, ubedformu, qbedformn, sour, sink, diff, 4, ierror)
+         call fm_advec_diff_2d(dh, ubedformu, qbedformn, sour, sink, diff, BEDFORM_BACKGROUND_DIFFUSION_FACTOR, LIMITER_TYPE, ierror)
       end do
       !
       dts = dtsori
@@ -663,8 +661,7 @@ contains
       use m_rdtrt
       use m_waves
       use m_get_kbot_ktop
-      !
-      implicit none
+      use m_setucxucy_mor, only: setucxucy_mor
       !
       logical, pointer :: spatial_bedform
       real(fp), dimension(:), pointer :: sedd50

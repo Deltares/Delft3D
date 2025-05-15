@@ -259,14 +259,9 @@ contains
          success = success .and. ec_gettimespacevalue(ecInstancePtr, item_gateloweredgelevel, irefdate, tzone, tunit, time, zgate)
       end if
 
-      !dambreak
-      if (n_db_signals > 0) then
-         ! Variable n_db_signals is >0 for all partitions if there is a dambreak, even if it is outside of a partition.
-         ! In a parallel simulation, we need to call this subroutine even in a special situation that there is no dambreak
-         ! on the current subdomain (i.e. n_db_links == 0), because this subroutine calls function
-         ! getAverageQuantityFromLinks, which involves mpi communication among all subdomains. However, in this special situation,
-         ! all the necessary variables will be set to 0 and will not participate the dambreak related computation in this subroutine.
-         call update_dambreak_breach(time, dts)
+      if( update_dambreak_breach(time, dts) /= 0 ) then
+          success = .false.
+          goto 888
       end if
 
       if (network%rgs%timeseries_defined) then

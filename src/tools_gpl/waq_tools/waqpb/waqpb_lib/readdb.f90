@@ -27,13 +27,14 @@
 !
 !
 
-subroutine readdb(lu_inp, lu_mes)
+subroutine readdb(lu_inp, lu_mes, csv_folder)
     use m_validate_input, only: validate_names, validate_units
     use m_waqpb_data
     use m_string_utils, only: index_in_array, string_equals
 
     integer  :: lu_inp  !< Logical unit number for input
     integer  :: lu_mes  !< Logical unit number for messages (logging)
+    character(len=*), intent(in) :: csv_folder !< Folder containing the CSV files
 
     character(len=255) c255
     character(len=10) chkcnf(nconfm),c10
@@ -44,7 +45,7 @@ subroutine readdb(lu_inp, lu_mes)
     !Read database containing Processes Library
 
     !Read Table P1
-    open(newunit = lu_inp, file='grpsub.csv')
+    open(newunit = lu_inp, file=(csv_folder//'grpsub.csv'))
     read(lu_inp, *)
     nsgrp = 0
   5 if (nsgrp+1>nsgrpm) stop 'dimension NSGRPM'
@@ -56,7 +57,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read Table P2
-    open(newunit=lu_inp, file='items.csv')
+    open(newunit=lu_inp, file=(csv_folder//'items.csv'))
     read(lu_inp, *)
     nitem = 0
  10 if (nitem+1>nitemm) stop 'dimension NITEMM'
@@ -74,7 +75,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read Table P3
-    open(newunit=lu_inp, file='fortran.csv')
+    open(newunit=lu_inp, file=(csv_folder//'fortran.csv'))
     read(lu_inp, *)
     nfort = 0
  15 if (nfort+1>nfortm) stop 'dimension NFORTM'
@@ -89,7 +90,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read Table P4
-    open(newunit=lu_inp, file='proces.csv')
+    open(newunit=lu_inp, file=(csv_folder//'proces.csv'))
     read(lu_inp, *)
     nproc = 0
  20 if (nproc+1>nprocm) stop 'dimension NprocM'
@@ -105,7 +106,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table P5
-    open(newunit=lu_inp, file='config.csv')
+    open(newunit=lu_inp, file=(csv_folder//'config.csv'))
     read(lu_inp, *)
     nconf = 0
 100 if (nconf+1>nconfm) stop 'dimension NconfM'
@@ -119,7 +120,7 @@ subroutine readdb(lu_inp, lu_mes)
 
     !Read table R1
     write(lu_mes,'(5x,'' processing file CON_PRO.CSV ...'')')
-    open(newunit=lu_inp, file='con_pro.csv')
+    open(newunit=lu_inp, file=(csv_folder//'con_pro.csv'))
     read(lu_inp, *) c10,(chkcnf(iconf),iconf=1,nconf)
     !Check consistency beween Config and Con_pro files
     do 110 iconf = 1,nconf
@@ -167,7 +168,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R2
-    open(newunit=lu_inp, file='con_sub.csv')
+    open(newunit=lu_inp, file=(csv_folder//'con_sub.csv'))
     read(lu_inp, *)
     ncnsb = 0
 130 if (ncnsb+1>ncnsbm) stop 'dimension ncnsb'
@@ -180,7 +181,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R3
-    open(newunit=lu_inp, file='inputs.csv')
+    open(newunit=lu_inp, file=(csv_folder//'inputs.csv'))
     read(lu_inp, *)
     ninpu = 0
  40 if (ninpu+1>ninpum) stop 'dimension NinpuM'
@@ -199,7 +200,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R4
-    open(newunit=lu_inp, file='outputs.csv')
+    open(newunit=lu_inp, file=(csv_folder//'outputs.csv'))
     read(lu_inp, *)
     noutp = 0
  50 if (noutp+1>noutpm) stop 'dimension NoutpM'
@@ -218,7 +219,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R5
-    open(newunit=lu_inp, file='outpflx.csv')
+    open(newunit=lu_inp, file=(csv_folder//'outpflx.csv'))
     read(lu_inp, *)
     noutf = 0
  60 if (noutf+1>noutfm) stop 'dimension NoutfM'
@@ -237,7 +238,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R6
-    open(newunit=lu_inp, file='stochi.csv')
+    open(newunit=lu_inp, file=(csv_folder//'stochi.csv'))
     read(lu_inp, *)
     nstoc = 0
  70 if (nstoc+1>nstocm) stop 'dimension NstocM'
@@ -254,7 +255,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R7
-    open(newunit=lu_inp, file='velocs.csv')
+    open(newunit=lu_inp, file=(csv_folder//'velocs.csv'))
     read(lu_inp, *)
     nvelo = 0
  90 if (nvelo+1>nvelom) stop 'dimension NveloM'
@@ -271,7 +272,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R8
-    open(newunit=lu_inp, file='disps.csv')
+    open(newunit=lu_inp, file=(csv_folder//'disps.csv'))
     read(lu_inp, *)
     ndisp = 0
  80 if (ndisp+1>ndispm) stop 'dimension NdispM'
@@ -288,7 +289,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R9
-    open(newunit=lu_inp, file='table5.csv')
+    open(newunit=lu_inp, file=(csv_folder//'table5.csv'))
     read(lu_inp, * , end = 202)
     nmodv = 0
 200 if (nmodv+1>nmodvm) stop 'dimension NmodvM'
@@ -300,7 +301,7 @@ subroutine readdb(lu_inp, lu_mes)
     write(lu_mes,'(i5,'' lines read from TABLE5.CSV'')') nmodv
 202 continue
     !Table old_items
-    open(newunit=lu_inp, file='old_items.csv')
+    open(newunit=lu_inp, file=(csv_folder//'old_items.csv'))
     read(lu_inp, * , end = 302)
     n_old_items = 0
 300 if (n_old_items+1>n_old_items_max) stop 'dimension n_old_items_max'

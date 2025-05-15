@@ -503,20 +503,23 @@ contains
          ! Compute ice growth or melt or melting of snow
          do n = 1, ndx
             if (tair(n) < 0.0_fp .or. ice_h(n) > 0.001_fp) then
-               if (qh_air2ice(n) > 0.0_fp) then
+               if (qh_air2ice(n) > qh_ice2wat(n)) then
+                  ! Melting of ice or snow
+                  ! 
                   if (snow_h(n) < 0.001_fp) then
-                     ! melting of ice
+                     ! melting of ice because there is no snow on top of the ice
                      !
-                     ice_h(n) = ice_h(n) + dts * (-qh_air2ice(n) + qh_ice2wat(n)) / ice_latentheat
+                     ice_h(n) = max(0.0_fp, ice_h(n) + dts * (-qh_air2ice(n) + qh_ice2wat(n)) / ice_latentheat)
                   else
-                     ! melting of snow
+                     ! melting of snow due to heat exchange with air and melting of ice due to heat exchange with water
                      !
-                     snow_h(n) = snow_h(n) + dts * (0.0_fp - qh_air2ice(n)) / snow_latentheat
+                     snow_h(n) = max(0.0_fp, snow_h(n) + dts * (-qh_air2ice(n) + 0.0_fp) / snow_latentheat)
+                     ice_h(n) = max(0.0_fp, ice_h(n)   + dts * (0.0_fp  + qh_ice2wat(n)) / ice_latentheat)
                   end if
                else
                   ! freezing of ice
                   !
-                  ice_h(n) = ice_h(n) + dts * (-qh_air2ice(n) + qh_ice2wat(n)) / ice_latentheat
+                  ice_h(n) = max(0.0_fp, ice_h(n) + dts * (-qh_air2ice(n) + qh_ice2wat(n)) / ice_latentheat)
                end if
             end if
          end do

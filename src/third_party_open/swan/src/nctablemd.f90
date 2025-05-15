@@ -42,7 +42,7 @@
             integer                                  :: varid
         end type nctable_record
 
-        type (nctable_record)                        :: nctable(60)
+        type (nctable_record)                        :: nctable(77)
 
         data nctable(1) / nctable_record("depth",&
                             "sea_floor_depth_below_sea_level",&
@@ -78,12 +78,12 @@
                             "m", NF90_SHORT, 0., 50., variddum) /, &
              nctable(9) / nctable_record("L",&
                             "none",&
-                            "L", &
-                            "m", NF90_SHORT, 0, 0, variddum) /, &
+                            "average wave length", &
+                            "m", NF90_SHORT, 0., 1000., variddum) /, &
              nctable(10) / nctable_record("theta0",&
                             "sea_surface_wave_from_direction",&
                             "theta0", &
-                            "degrees", NF90_SHORT, 0., 360., variddum) /, &
+                            "degree", NF90_SHORT, 0., 360., variddum) /, &
              nctable(11) / nctable_record("tmm10",&
                             "sea_surface_wave_mean_period_from_variance_spectral_density_inverse_frequency_moment",&
                             "tm-10", &
@@ -159,7 +159,7 @@
              nctable(29) / nctable_record("landmask",&
                             "land_binary_mask",&
                             "land cover (1=land, 0=sea)", &
-                            "m", nf90_byte, 0, 0, variddum) /, &
+                            "1", nf90_byte, 0, 0, variddum) /, &
              nctable(30) / nctable_record("tm02",&
                             "sea_surface_wave_mean_period_from_variance_spectral_density_second_frequency_moment", &
                             "tm02", &
@@ -218,72 +218,141 @@
                             "m", NF90_SHORT, 0., 50., variddum) /, &
              nctable(44) / nctable_record("phs1",&
                             "sea_surface_primary_swell_wave_significant_height",&
-                            "sea surface primary_swell wave significant height", &
+                            "sea surface primary swell wave significant height", &
                             "m", NF90_SHORT, 0., 50., variddum) /, &
              nctable(45) / nctable_record("phs2",&
                             "sea_surface_secondary_swell_wave_significant_height",&
-                            "sea surface secondary_swell wave significant height", &
+                            "sea surface secondary swell wave significant height", &
                             "m", NF90_SHORT, 0., 50., variddum) /, &
              nctable(46) / nctable_record("phs3",&
                             "sea_surface_tertiary_swell_wave_significant_height",&
-                            "sea surface tertiary_swell wave significant height", &
+                            "sea surface tertiary swell wave significant height", &
                             "m", NF90_SHORT, 0., 50., variddum) /, &
              nctable(47) / nctable_record("phs4",&
                             "sea_surface_quaternary_swell_wave_significant_height",&
-                            "sea surface quaternary_swell wave significant height", &
+                            "sea surface quaternary swell wave significant height", &
                             "m", NF90_SHORT, 0., 50., variddum) /, &
              nctable(48) / nctable_record("phs5",&
                             "sea_surface_quinary_swell_wave_significant_height",&
-                            "sea surface quinary_swell wave significant height", &
+                            "sea surface quinary swell wave significant height", &
                             "m", NF90_SHORT, 0., 50., variddum) /, &
-             nctable(49) / nctable_record("ptp0",&                                                                      ! not in official SWAN
+             nctable(49) / nctable_record("ptp0",&
                             "sea_surface_wind_wave_period_at_variance_spectral_density_maximum",&
                             "sea surface wind wave period at variance spectral density maximum", &
                             "s", NF90_SHORT, 0., 50., variddum) /, &
-             nctable(50) / nctable_record("ptp1",&                                                                      ! not in official SWAN
+             nctable(50) / nctable_record("ptp1",&
                             "sea_surface_primary_swell_wave_period_at_variance_spectral_density_maximum",&
                             "sea surface primary swell wave period at variance spectral density maximum", &
                             "s", NF90_SHORT, 0., 50., variddum) /, &
-             nctable(51) / nctable_record("ptp2",&                                                                      ! not in official SWAN
+             nctable(51) / nctable_record("ptp2",&
                             "sea_surface_secondary_swell_wave_period_at_variance_spectral_density_maximum",&
                             "sea surface secondary swell wave period at variance spectral density maximum", &
                             "s", NF90_SHORT, 0., 50., variddum) /, &
-             nctable(52) / nctable_record("ptp3",&                                                                      ! not in official SWAN
+             nctable(52) / nctable_record("ptp3",&
                             "sea_surface_tertiary_swell_wave_period_at_variance_spectral_density_maximum",&
                             "sea surface tertiary swell wave period at variance spectral density maximum", &
                             "s", NF90_SHORT, 0., 50., variddum) /, &
-             nctable(53) / nctable_record("ptp4",&                                                                      ! not in official SWAN
+             nctable(53) / nctable_record("ptp4",&
                             "sea_surface_quaternary_swell_wave_period_at_variance_spectral_density_maximum",&
                             "sea surface quaternary swell wave period at variance spectral density maximum", &
                             "s", NF90_SHORT, 0., 50., variddum) /, &
-             nctable(54) / nctable_record("ptp5",&                                                                      ! not in official SWAN
+             nctable(54) / nctable_record("ptp5",&
                             "sea_surface_quinary_swell_wave_period_at_variance_spectral_density_maximum",&
                             "sea surface quinary swell wave period at variance spectral density maximum", &
                             "s", NF90_SHORT, 0., 50., variddum) /, &
-             nctable(55) / nctable_record("pdir0",&                                                                      ! not in official SWAN
+             nctable(55) / nctable_record("pdir0",&
                             "sea_surface_wind_wave_mean_from_direction",&
                             "sea surface wind wave mean from direction", &
                             "degree", NF90_SHORT, 0., 360., variddum) /, &
-             nctable(56) / nctable_record("pdir1",&                                                                      ! not in official SWAN
+             nctable(56) / nctable_record("pdir1",&
                             "sea_surface_primary_swell_wave_mean_from_direction",&
                             "sea surface primary swell wave mean from direction", &
                             "degree", NF90_SHORT, 0., 360., variddum) /, &
-             nctable(57) / nctable_record("pdir2",&                                                                      ! not in official SWAN
+             nctable(57) / nctable_record("pdir2",&
                             "sea_surface_secondary_swell_wave_mean_from_direction",&
                             "sea surface secondary swell wave mean from direction", &
                             "degree", NF90_SHORT, 0., 360., variddum) /, &
-             nctable(58) / nctable_record("pdir3",&                                                                      ! not in official SWAN
+             nctable(58) / nctable_record("pdir3",&
                             "sea_surface_tertiary_swell_wave_mean_from_direction",&
                             "sea surface tertiary swell wave mean from direction", &
                             "degree", NF90_SHORT, 0., 360., variddum) /, &
-             nctable(59) / nctable_record("pdir4",&                                                                      ! not in official SWAN
+             nctable(59) / nctable_record("pdir4",&
                             "sea_surface_quaternary_swell_wave_mean_from_direction",&
                             "sea surface quaternary swell wave mean from direction", &
                             "degree", NF90_SHORT, 0., 360., variddum) /, &
-             nctable(60) / nctable_record("pdir5",&                                                                      ! not in official SWAN
+             nctable(60) / nctable_record("pdir5",&
                             "sea_surface_quinary_swell_wave_mean_from_direction",&
                             "sea surface quinary swell wave mean from direction", &
-                            "degree", NF90_SHORT, 0., 360., variddum) /
+                            "degree", NF90_SHORT, 0., 360., variddum) /, &
+             nctable(61) / nctable_record("pspr0",&
+                            "none",&
+                            "directional spread of partition", &
+                            "degree", NF90_SHORT, 0., 81., variddum) /, &
+             nctable(62) / nctable_record("pspr1",&
+                            "none",&
+                            "directional spread of partition", &
+                            "degree", NF90_SHORT, 0., 81., variddum) /, &
+             nctable(63) / nctable_record("pspr2",&
+                            "none",&
+                            "directional spread of partition", &
+                            "degree", NF90_SHORT, 0., 81., variddum) /, &
+             nctable(64) / nctable_record("pspr3",&
+                            "none",&
+                            "directional spread of partition", &
+                            "degree", NF90_SHORT, 0., 81., variddum) /, &
+             nctable(65) / nctable_record("pspr4",&
+                            "none",&
+                            "directional spread of partition", &
+                            "degree", NF90_SHORT, 0., 81., variddum) /, &
+             nctable(66) / nctable_record("pspr5",&
+                            "none",&
+                            "directional spread of partition", &
+                            "degree", NF90_SHORT, 0., 81., variddum) /, &
+             nctable(67) / nctable_record("fdir",&
+                            "sea_surface_wave_from_direction_from_selected_freq_domain",&
+                            "fdir", &
+                            "degree", NF90_SHORT, 0., 360., variddum) /, &
+             nctable(68) / nctable_record("absHswell",&
+                            "absolute_sea_surface_swell_wave_significant_height",&
+                            "absHswell", &
+                            "m", NF90_SHORT, 0., 50., variddum) /, &
+             nctable(69) / nctable_record("fx",&
+                            "eastward_wave_force",&
+                            "x component of wave force", &
+                            "kg m s-2", NF90_SHORT, -1.E5, 1.E5, variddum) /, &
+             nctable(70) / nctable_record("fy",&
+                            "northward_wave_force",&
+                            "y component of wave force", &
+                            "kg m s-2", NF90_SHORT, -1.E5, 1.E5, variddum) /, &
+             nctable(71) / nctable_record("transpx",&
+                            "eastward_wave_energy_transport",&
+                            "x component of wave energy transport", &
+                            "m3 s-1", NF90_SHORT, -100., 100., variddum) /, &
+             nctable(72) / nctable_record("transpy",&
+                            "northward_wave_energy_transport",&
+                            "y component of wave energy transport", &
+                            "m3 s-1", NF90_SHORT, -100., 100., variddum) /, &
+             nctable(73) / nctable_record("disbot",&
+                            "wave_energy_dissipation_due_to_bottom_friction",&
+                            "wave energy dissipation due to bottom friction", &
+                            "m2 s-1", NF90_SHORT, 0., 1000., variddum) /, &
+             nctable(74) / nctable_record("dissip",&
+                            "total_wave_energy_dissipation",&
+                            "total wave energy dissipation", &
+                            "m2 s-1", NF90_SHORT, 0., 1000., variddum) /, &
+             nctable(75) / nctable_record("dissurf",&
+                            "wave_energy_dissipation_due_to_surf_breaking",&
+                            "wave energy dissipation due to surf breaking", &
+                            "m2 s-1", NF90_SHORT, 0., 1000., variddum) /, &
+             nctable(76) / nctable_record("diswcap",&
+                            "wave_energy_dissipation_due_to_white_capping",&
+                            "wave energy dissipation due to white capping", &
+                            "m2 s-1", NF90_SHORT, 0., 1000., variddum) /, &
+             nctable(77) / nctable_record("disveg",&
+                            "wave_energy_dissipation_due_to_vegetation",&
+                            "wave energy dissipation due to vegetation", &
+                            "m2 s-1", NF90_SHORT, 0., 1000., variddum) /
+
 
     contains
         subroutine get_nctable_record(varname, trecord, found)

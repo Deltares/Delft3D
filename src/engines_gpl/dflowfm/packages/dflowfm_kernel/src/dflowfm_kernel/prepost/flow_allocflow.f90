@@ -55,7 +55,7 @@ contains
                         uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
                         uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
                         qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, &
-                        jacreep, dpbdx0, rvdn, grn, jarhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
+                        jacreep, baroclinic_force_prev, baroclinic_pressures, integrated_baroclinic_pressures, rhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
                         workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
                         spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
                         limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, epstke, epseps, &
@@ -64,7 +64,7 @@ contains
                         frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
                         salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
                         jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
-                        rich, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
+                        q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
                         jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
       use m_flowtimes, only: dtcell, time_wetground, ja_timestep_auto, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
@@ -88,7 +88,7 @@ contains
                         longwave, patm, rhum, qrad, solar_radiation, tbed, qext, qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_tem, nudge_sal, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
-      use m_turbulence, only: potential_density, in_situ_density
+      use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
       use m_physcoef, only: apply_thermobaricity
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
@@ -741,24 +741,24 @@ contains
       end if
 
       if (jasal > 0 .or. jatem > 0 .or. jased > 0 .or. stm_included) then
-         if (allocated(dpbdx0)) then
-            deallocate (dpbdx0)
+         if (allocated(baroclinic_force_prev)) then
+            deallocate (baroclinic_force_prev)
          end if
-         allocate (dpbdx0(lnkx), stat=ierr)
-         call aerr('dpbdx0 (lnkx)', ierr, lnkx); dpbdx0 = 0d0
+         allocate (baroclinic_force_prev(lnkx), stat=ierr)
+         call aerr('baroclinic_force_prev (lnkx)', ierr, lnkx); baroclinic_force_prev = 0.0_dp
 
-         if (allocated(rvdn)) then
-            deallocate (rvdn, grn)
+         if (allocated(baroclinic_pressures)) then
+            deallocate (baroclinic_pressures, integrated_baroclinic_pressures)
          end if
-         allocate (rvdn(ndkx), grn(ndkx), stat=ierr); rvdn = 0d0; grn = 0d0
-         call aerr('rvdn(ndkx), grn(ndkx)', ierr, 2 * ndkx)
+         allocate (baroclinic_pressures(ndkx), integrated_baroclinic_pressures(ndkx), stat=ierr); baroclinic_pressures = 0.0_dp; integrated_baroclinic_pressures = 0.0_dp
+         call aerr('baroclinic_pressures(ndkx), integrated_baroclinic_pressures(ndkx)', ierr, 2 * ndkx)
 
-         if (jarhointerfaces == 1) then
+         if (rhointerfaces == 1) then
             if (allocated(rhosww)) then
                deallocate (rhosww)
             end if
             allocate (rhosww(ndkx), stat=ierr)
-            call aerr('rhosww(ndkx)', ierr, ndkx); rhosww = 0d0
+            call aerr('rhosww(ndkx)', ierr, ndkx); rhosww = 0.0_dp
          end if
       end if
 
@@ -952,7 +952,7 @@ contains
 
       end if
 
-      if (kmx > 0) then ! 7 turbulence arrays (0:kmx)
+      if (kmx > 0) then ! turbulence arrays
          if (allocated(turkin0)) then
             deallocate (turkin0, turkin1, tureps0, tureps1, vicwwu, vicwws)
          end if
@@ -969,6 +969,10 @@ contains
          call aerr('vicwwu   (Lnkx)', ierr, Lnkx); vicwwu = 0.0_dp
          allocate (vicwws(ndkx), stat=ierr)
          call aerr('vicwws   (ndkx)', ierr, ndkx); vicwws = 0.0_dp
+         allocate (difwws(ndkx), stat=ierr)
+         call aerr('difwws   (ndkx)', ierr, ndkx); difwws = 0.0_dp
+         allocate (drhodz(ndkx), stat=ierr)
+         call aerr('drhodz   (ndkx)', ierr, ndkx); drhodz = 0.0_dp
 
          if (allocated(turkinepsws)) then
             deallocate (turkinepsws)
@@ -1180,7 +1184,7 @@ contains
          call aerr('rhou (lnkx)', ierr, lnkx); rhou = rhomean
       end if
 
-      ! m_integralstats
+      ! m_dzstats
       if (is_numndvals > 0) then
          call realloc(is_maxvalsnd, (/is_numndvals, ndx/), keepExisting=.false., fill=0.0_dp)
          call realloc(is_sumvalsnd, (/is_numndvals, ndx/), keepExisting=.false., fill=0.0_dp)
@@ -1375,6 +1379,12 @@ contains
          end if
          allocate (rich(lnkx), stat=ierr)
          call aerr('rich(lnkx)', ierr, lnkx); rich = 0.0_dp
+
+         if (allocated(richs)) then
+            deallocate (richs)
+         end if
+         allocate (richs(ndkx), stat=ierr)
+         call aerr('richs(ndkx)', ierr, ndkx); richs = 0.0_dp
       else
          jaRichardsononoutput = 0
       end if

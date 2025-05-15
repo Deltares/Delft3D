@@ -1413,7 +1413,7 @@ contains
    !> Initialization of all extra quantities not covered by initialize_ext_old, such as structures and laterals. Only called as part of fm_initexternalforcings
    module subroutine init_misc(iresult)
       use precision, only: dp
-      use m_flowgeom, only: ln, xz, yz, iadv, ba, wu
+      use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, IADV_SUBGRID_WEIR, IADV_GENERAL_STRUCTURE
       use unstruc_model, only: md_extfile_dir
       use timespace, only: uniform, spaceandtime, readprovider
       use m_structures, only: jaoldstr
@@ -1568,7 +1568,7 @@ contains
                xy2cdam(1, n) = xz(kbi)
                xy2cdam(2, n) = yz(kbi)
 
-               iadv(Lf) = 21
+               iadv(Lf) = IADV_SUBGRID_WEIR
                call setfixedweirscheme3onlink(Lf)
             end do
          end do
@@ -1706,7 +1706,7 @@ contains
                xy2cgen(1, n) = xz(kbi)
                xy2cgen(2, n) = yz(kbi)
 
-               iadv(Lf) = 22 ! iadv = general
+               iadv(Lf) = IADV_GENERAL_STRUCTURE ! iadv = general
                call setfixedweirscheme3onlink(Lf)
             end do
          end do

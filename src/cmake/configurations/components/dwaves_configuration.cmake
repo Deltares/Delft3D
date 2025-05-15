@@ -54,6 +54,18 @@ if(NOT TARGET nefis)
     add_subdirectory(${checkout_src_root}/${nefis_module} nefis)
 endif()
 
+# esmfsm
+if(NOT TARGET esmfsm_version_number)
+    add_subdirectory(${checkout_src_root}/${esmfsm_version_number_module} esmfsm_version_number)
+endif()
+if(NOT TARGET esmfsm_c)
+    add_subdirectory(${checkout_src_root}/${esmfsm_c_module} esmfsm_c)
+endif()
+if(NOT TARGET esmfsm)
+    add_subdirectory(${checkout_src_root}/${esmfsm_module} esmfsm)
+endif()
+
+
 
 # Third party
 # ===========

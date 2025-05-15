@@ -90,10 +90,6 @@ module geometry_module
    public :: dotp ! line 18843
    public :: circumcenter3 ! line 18851
    public :: comp_breach_point
-   !circumcenter_methods
-   integer, parameter, public :: INTERNAL_NETLINKS_EDGE = 1 ! current default - to be deprecated (WO 22.01.2025)
-   integer, parameter, public :: INTERNAL_NETLINKS_LOOP = 2
-   integer, parameter, public :: ALL_NETLINKS_LOOP = 3
 
    integer, public :: ipolyfound
 
@@ -2587,9 +2583,10 @@ contains
    !> circumcenter of a polygon defined by set of vertices.
       !! See also getcellcircumcenter
    subroutine GETCIRCUMCENTER(nn, xv, yv, lnnl, xz, yz, jsferic, jasfer3D, jglobe, jins, dmiss, dxymis, dcenterinside, circumcenter_method_dummy)
-
+      use precision, only: hp
       use mathconsts, only: degrad_hp, raddeg_hp
       use physicalconsts, only: earth_radius
+      use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, ALL_NETLINKS_LOOP, circumcenter_tolerance
 
       implicit none
       integer, intent(in) :: nn !< Nr. of vertices
@@ -2616,17 +2613,18 @@ contains
       double precision :: xh(num_columns), yh(num_columns)
       double precision :: SL, SM, XCR, YCR, CRP
       double precision :: xcc3, ycc3, xf, xmx, xmn
-      double precision :: eps = 1d-3
+      double precision :: eps
       double precision :: dfac
       integer :: jacros, in, m2, nintlinks ! nr of internal links = connected edges
 
-      ! integer,          parameter     :: N6=6
-      ! double precision, dimension(N6) :: xhalf, yhalf
-
-      double precision, parameter :: dtol = 1d-4
+      ! set tolerance for convergence
+      if (jsferic == 1) then
+         eps = 0.1_hp * circumcenter_tolerance / earth_radius / degrad_hp ! Convert metres to equivalent degrees
+      else
+         eps = circumcenter_tolerance
+      end if
 
       xzw = 0d0; yzw = 0d0
-
       if (jsferic == 1) then ! jglobe                 ! regularise sferic coordinates
          xmx = maxval(xv(1:nn))
          xmn = minval(xv(1:nn))
@@ -2663,10 +2661,6 @@ contains
       if (nn == 3 .and. jglobe == 0) then ! for triangles
          call circumcenter3(nn, xv, yv, xz, yz, jsferic)
       else
-         ! default case
-         if (jsferic == 1) then
-            eps = 9d-10 ! 111km = 0-e digit.
-         end if
 
          xccf = xzw
          yccf = yzw

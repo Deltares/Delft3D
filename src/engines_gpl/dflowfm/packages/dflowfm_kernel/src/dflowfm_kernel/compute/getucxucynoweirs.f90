@@ -54,7 +54,7 @@ contains
 
       do LL = 1, nd(ku)%lnx
          Ls = nd(ku)%ln(LL); L = abs(Ls)
-         if (iadv(L) < 21 .or. iadv(L) > 29) then ! .ne. structures
+         if (iadv(L) < IADV_SUBGRID_WEIR .or. iadv(L) > 29) then ! .ne. structures
             hunoweir = hunoweir + wu(L) * hu(L)
             wlno = wlno + wu(L)
          end if
@@ -73,7 +73,7 @@ contains
          ww = ac1 * dx(L) * wu(L)
          cs = ww * csu(L); sn = ww * snu(L)
          at = at + ww
-         if (iadv(L) < 21 .or. iadv(L) > 29) then ! .ne. structures
+         if (iadv(L) < IADV_SUBGRID_WEIR .or. iadv(L) > 29) then ! .ne. structures
             if (jasfer3D == 0) then
                ucxku = ucxku + cs * u0(L)
                ucyku = ucyku + sn * u0(L)

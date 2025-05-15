@@ -875,7 +875,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f203_c02_Waal_trachytopes_3D_sigma" ref="platform_specific">
-      <path version="2024-04-19T13:27:00">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
+      <path version="2025-04-07T12:49:12.968000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_sigma_map.nc" type="netCDF">
@@ -888,7 +888,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f203_c04_Waal_trachytopes_3D_zsigma" ref="dflowfm_default">
-      <path version="2024-04-17T08:05:51">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
+      <path version="2025-04-07T12:23:32.975000">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_zsigma_map.nc" type="netCDF">
@@ -1854,5 +1854,22 @@
         <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
-	
+    <testCase name="e02_f210_c001_basic_thermobaricity_densities" ref="dflowfm_default">
+      <path version="2025-04-23T20:00:00">e02_dflowfm/f210_3D_thermobaricity/c001_basic_thermobaricity_densities</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/thermobaricity_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="potential_density" toleranceAbsolute="0.0005" />
+            <parameter name="density" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/thermobaricity_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_rho" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_density" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
   </testCases>

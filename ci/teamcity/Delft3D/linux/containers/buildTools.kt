@@ -14,7 +14,9 @@ object LinuxBuildTools : BuildType({
 
     templates(
         TemplatePublishStatus,
-        TemplateMergeRequest
+        TemplateMergeRequest,
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     vcs {
@@ -59,13 +61,11 @@ object LinuxBuildTools : BuildType({
                 """.trimIndent()
             }
         }
-        if (DslContext.getParameter("environment") == "production") {
-            dockerCommand {
-                name = "Push"
-                commandType = push {
-                    namesAndTags = "%harbor_repo%:%env.IMAGE_TAG%"
-                    removeImageAfterPush = true
-                }
+        dockerCommand {
+            name = "Push"
+            commandType = push {
+                namesAndTags = "%harbor_repo%:%env.IMAGE_TAG%"
+                removeImageAfterPush = true
             }
         }
         dockerCommand {
@@ -74,15 +74,6 @@ object LinuxBuildTools : BuildType({
             commandType = other {
                 subCommand = "builder"
                 commandArgs = "prune --force --filter type=exec.cachemount"
-            }
-        }
-    }
-
-    features {
-        perfmon {}
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
             }
         }
     }

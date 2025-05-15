@@ -3,7 +3,6 @@ import jetbrains.buildServer.configs.kotlin.projectFeatures.*
 
 import Delft3D.*
 import Delft3D.linux.*
-import Delft3D.linux.thirdParty.*
 import Delft3D.linux.containers.*
 import Delft3D.windows.*
 import Delft3D.template.*
@@ -18,11 +17,8 @@ project {
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
     params {
-        param("delft3d-user", "robot${'$'}delft3d+delft3d-push-pull")
-        password("delft3d-secret", "credentialsJSON:eb73cbd9-d17e-4bbe-ab3e-fdabe1eeddb0")
-
-        param("delft3d-dev-user", "robot${'$'}delft3d-dev+push-pull")
-        password("delft3d-dev-secret", "credentialsJSON:75eb18ff-a859-4d78-aa74-206d10865c2e")
+        param("delft3d-user", "robot${'$'}delft3d")
+        password("delft3d-secret", "credentialsJSON:1dee1a48-252e-42fd-b600-6bf52d940513")
 
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
@@ -38,18 +34,11 @@ project {
     template(TemplateValidationDocumentation)
     template(TemplateFunctionalityDocumentation)
     template(TemplateDownloadFromS3)
+    template(TemplateDockerRegistry)
 
     subProject {
         id("Linux")
         name = "Linux"
-        subProject {
-            id("LinuxThirdParty")
-            name = "Third Party"
-            buildType(LinuxThirdPartyDownloadIntelMpi)
-            buildTypesOrder = arrayListOf(
-                LinuxThirdPartyDownloadIntelMpi
-            )
-        }
         subProject {
             id("BuildContainers")
             name = "Build-environment Containers"
@@ -62,12 +51,16 @@ project {
         }
         buildType(LinuxBuild)
         buildType(LinuxCollect)
-        buildType(LinuxDocker)
+        buildType(LinuxRuntimeContainers)
+        buildType(LinuxRunAllDockerExamples)
         buildType(LinuxTest)
+        buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
             LinuxBuild,
             LinuxCollect,
-            LinuxDocker,
+            LinuxRuntimeContainers,
+            LinuxRunAllDockerExamples,
+            LinuxUnitTest,
             LinuxTest
         )
     }
@@ -81,6 +74,7 @@ project {
         buildType(WindowsBuild)
         buildType(WindowsCollect)
         buildType(WindowsTest)
+        buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
             WindowsBuildEnvironment,
@@ -88,6 +82,7 @@ project {
             WindowsBuild,
             WindowsCollect,
             WindowsTest,
+            WindowsUnitTest,
             WindowsBuildDflowfmInteracter,
         )
     }
@@ -127,25 +122,20 @@ project {
 
     buildType(Trigger)
     buildType(DIMRbak)
+    buildType(Publish)
     buildTypesOrder = arrayListOf(
         Trigger,
-        DIMRbak
+        DIMRbak,
+        Publish
     )
 
     features {
         dockerRegistry {
             id = "DOCKER_REGISTRY_DELFT3D"
             name = "Docker Registry Delft3d"
-            url = "https://containers.deltares.nl/harbor/projects/9/repositories"
+            url = "https://containers.deltares.nl/"
             userName = "%delft3d-user%"
             password = "%delft3d-secret%"
-        }
-        dockerRegistry {
-            id = "DOCKER_REGISTRY_DELFT3D_DEV"
-            name = "Docker Registry Delft3d-dev"
-            url = "https://containers.deltares.nl/harbor/projects/21/repositories"
-            userName = "%delft3d-dev-user%"
-            password = "%delft3d-dev-secret%"
         }
         awsConnection {
             id = "doc_download_connection"

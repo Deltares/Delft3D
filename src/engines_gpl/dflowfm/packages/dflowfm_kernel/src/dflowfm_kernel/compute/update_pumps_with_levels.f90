@@ -63,7 +63,7 @@ contains
 
          ! Compute sumQuantitiesByWeight and sumWeights for the suction side
          !LC: TODO, do the average only over open links
-         ierr = getAverageQuantityFromLinks(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(1, :), pumpAveraging, 0)
+         ierr = get_average_quantity_from_links(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(1, :), pumpAveraging, 0)
          if (ierr /= 0) success = .false.
 
          do n = 1, npumpsg
@@ -73,7 +73,7 @@ contains
          end do
 
          ! Compute sumQuantitiesByWeight and sumWeights for the delivery side
-         ierr = getAverageQuantityFromLinks(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(2, :), pumpAveraging, 0)
+         ierr = get_average_quantity_from_links(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(2, :), pumpAveraging, 0)
          if (ierr /= 0) success = .false.
 
          do n = 1, npumpsg

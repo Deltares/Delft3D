@@ -7293,6 +7293,58 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e03_f10_c08_dredging" ref="dwaq_default">
+        <path version="2025-04-24T02:00:00">e03_waq/f10_additional_modules/c08_dredging</path>
+        <checks>
+            <file name="deltashell_his.nc" type="netCDF">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="IM1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="IM2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="IM3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="IM1S1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="IM1S2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="IM2S1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="IM2S2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="IM3S1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="IM3S2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="Depth" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="ActThS1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="ActThS2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="TIMS1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="TIMS2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="basin_no" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="no_basin" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s01IM1\*IM1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s02IM1\*IM1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s03IM1\*IM1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s04IM1\*IM1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s01IM2\*IM2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s02IM2\*IM2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s03IM2\*IM2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s04IM2\*IM2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s01IM3\*IM3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s02IM3\*IM3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s03IM3\*IM3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="s04IM3\*IM3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>			
+                </parameters>
+            </file>
+            <file name="deltashell_map.nc" type="netCDF">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="mesh2d_2d_IM1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_IM2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_IM3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_IM1S1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_IM1S2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_IM2S1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_IM2S2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_IM3S1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_IM3S2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_ActThS1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_ActThS2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e03_f11_c01_netcdf_output" ref="dwaq_default">
         <path version="2024-01-11T13:20:00">e03_waq/f11_netcdf_output/c01_netcdf_output</path>
         <checks>
