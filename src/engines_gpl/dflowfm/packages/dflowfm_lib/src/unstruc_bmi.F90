@@ -780,11 +780,11 @@ contains
 
       type_name = "" !initially the type name is empty
 
-      !We are not returning if it is found, because at the end we convert to a c-type string. 
-      !We are not checking if it is still empty because we assume (`case default`) that it is a double
-      !if it is a compount type. 
+      !We are not returning if it is found because at the end we convert to a c-type string. 
+      !We cannot 
       
       !First we check if the type is captured by the automatically generated include file.
+      !Ideally we would `return` if the type is found. 
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
       include "bmi_get_var_type.inc"
 
@@ -812,10 +812,14 @@ contains
            type_name = "type(t_voltable)"
         case ('network')
            type_name = "type(t_network)"
-        case default !for now, if it is a compound name, we assume it is a double
-           type_name = "double"
      end select          
 
+     !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double. 
+     !It cannot be as `case default` because otherwise whatever result from the `include` will be overwritten.
+     if (last_token > 1) then
+         type_name = "double"
+     end if
+        
      !Third we check if it a constituent name (e.g., 'salt', 'tracer1', etc.)
      if (numconst > 0) then
         iconst = find_name(const_names, var_name)
@@ -884,11 +888,9 @@ contains
       rank = 0 !initially 0
 
       !First we check if the rank is captured by the automatically generated include file.
+      !Ideally we would `return` if the rank is found. 
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
       include "bmi_get_var_rank.inc"
-      if (rank /= 0) then 
-          return
-      endif 
           
       !Second we check if it is of a special case. It can be a compound name (e.g., 'weirs/weir1/crestlevel').
       !If it is a compound name, we check on the last token (e.g., 'crestlevel'), as this has the information of the type. 
@@ -914,11 +916,15 @@ contains
          case ("tem1Surf")
             rank = 1
             return
-         case default !for now, if it is a compound name, we assume it has rank 1
-            rank = 1    
-            return
       end select
       
+      !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double. 
+      !It cannot be as `case default` because otherwise whatever result from the `include` will be overwritten.
+      if (last_token > 1) then
+         rank = 1    
+         return
+      end if
+     
       !Third we check if it a constituent name (e.g., 'salt', 'tracer1', etc.)
       if (numconst > 0) then
          iconst = find_name(const_names, var_name)
@@ -961,6 +967,7 @@ contains
       shape = [0, 0, 0, 0, 0, 0] !initialize
       
       !First we check if the shape is captured by the automatically generated include file.
+      !Ideally we would `return` if the shape is found. 
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
       include "bmi_get_var_shape.inc"
   
@@ -1064,13 +1071,15 @@ contains
          shape(1) = 1
          shape(2) = len_trim(md_ident)
          return
-         
-      ! Compounds (e.g., 'weirs/weir1/crestlevel')
-      case default !for now, if it is a compound name, we assume it has shape 1
+      end select
+      
+      !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double. 
+      !It cannot be as `case default` because otherwise whatever result from the `include` will be overwritten.
+      if (last_token > 1) then
          shape(1) = 1
          return
-      end select
-
+      end if
+      
       if (numconst > 0) then
          iconst = find_name(const_names, var_name)
       end if
