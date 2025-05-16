@@ -434,6 +434,11 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub) :: uuu
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub) :: vvv
     
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, 0) , target :: wrk
+    real(fp), dimension(gdp%d%lsedtot) , target :: wrk2
+    real(fp), dimension(:,:)             , pointer :: dxx_tmp => NULL()
+    real(fp), dimension(:)             , pointer :: rhosol_tmp => NULL()
+
     logical                 :: assoc_dxx
     logical, parameter :: TRACHY_WAQ = .false. !do trachytopes from WAQ
 !
@@ -775,14 +780,15 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     icy     = 0
     nmaxddb = nmax + 2*gdp%d%ddbound
     assoc_dxx=associated(gdp%gderosed%dxx)
-    nxx=0
     if (assoc_dxx) then
         nxx=SIZE(gdp%gderosed%dxx,2)
-        dxx_tmp=dxx;
+        dxx_tmp=>dxx
+        rhosol_tmp=>rhosol
     else
         !real(fp), dimension(nmlbc:nmubc, nxx)
-        wrk=real(fp), dimension(nmlbc:nmubc, nxx)
+        nxx=0
         dxx_tmp=>wrk
+        rhosol_tmp=>wrk2
     endif
 
     allocate(kcucopy(nmlb:nmub))
@@ -1141,8 +1147,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
                     & rhow      ,ag        ,vonkar    ,vicmol    , & 
                     & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
                     & rksr      ,rksmr     ,rksd      ,error, & 
-                    & assoc_dxx ,nxx       ,lsedtot   ,dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
-                    & rhosol        )
+                    & assoc_dxx ,nxx       ,lsedtot   ,dxx_tmp       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                    & rhosol_tmp        )
        !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
        !          & r(cfurou) ,rouflo    ,.true.    ,r(guu)    ,r(gvu)    , &
        !          & r(hu)     ,i(kcu)    ,r(u1)     ,r(v1)     ,r(sig)    , &
@@ -1156,8 +1162,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
                     & rhow      ,ag        ,vonkar    ,vicmol    , & 
                     & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
                     & rksr      ,rksmr     ,rksd      ,error, & 
-                    & assoc_dxx ,nxx       ,lsedtot   ,gdp%gderosed%dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
-                    & rhosol        )
+                    & assoc_dxx ,nxx       ,lsedtot   ,dxx_tmp       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                    & rhosol_tmp        )
        !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
        !          & r(cfvrou) ,rouflo    ,.true.    ,r(gvv)    ,r(guv)    , &
        !          & r(hv)     ,i(kcv)    ,r(v1)     ,r(u1)     ,r(sig)    , &
