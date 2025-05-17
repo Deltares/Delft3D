@@ -223,19 +223,10 @@ end function late_activation_ext_force_icecover
 
 !> set default values for selected ice cover model and allocate
 function select_icecover_model(icecover, modeltype) result(istat)
-    !
-    ! Function/routine arguments
-    !
-    type (icecover_type)                       , intent(inout) :: icecover  !< data structure containing ice cover data
-    integer                                    , intent(in)    :: modeltype !< desired ice cover type
-    integer                                                    :: istat     !< status flag for allocation
-    !
-    ! Local variables
-    !
-    ! None
-!
-!! executable statements -------------------------------------------------------
-!
+    type (icecover_type), intent(inout) :: icecover !< data structure containing ice cover data
+    integer, intent(in) :: modeltype !< desired ice cover type
+    integer :: istat !< status flag for allocation
+
     icecover%modeltype                 = modeltype
 
     call set_default_output_flags(icecover%mapout, modeltype, .false.)
@@ -270,6 +261,7 @@ function select_icecover_model(icecover, modeltype) result(istat)
     endif
 end function select_icecover_model
 
+!> set default values for output flags
 subroutine set_default_output_flags(flags, modeltype, default)
    type(icecover_output_flags), intent(inout) :: flags !< output flags
    integer, intent(in) :: modeltype !< ice cover model type
@@ -300,29 +292,18 @@ subroutine set_default_output_flags(flags, modeltype, default)
    flags%ice_temperature = default_
    flags%snow_thickness = default_
    flags%snow_temperature = default_
-
 end subroutine set_default_output_flags
 
 !> Allocate the arrays of an icecover data structure.
 function alloc_icecover(icecover, nmlb, nmub) result(istat)
-    !
-    ! Function/routine arguments
-    !
-    type (icecover_type)                       , intent(inout) :: icecover  !< data structure containing ice cover data
-    integer                                    , intent(in)    :: nmlb      !< lower bound index for spatial data arrays
-    integer                                    , intent(in)    :: nmub      !< upper bound index for spatial data arrays
-    integer                                                    :: istat     !< status flag for allocation
-    !
-    ! Local variables
-    !
-    ! NONE
-!
-!! executable statements -------------------------------------------------------
-!
+    type (icecover_type), intent(inout) :: icecover !< data structure containing ice cover data
+    integer, intent(in) :: nmlb !< lower bound index for spatial data arrays
+    integer, intent(in) :: nmub !< upper bound index for spatial data arrays
+    integer :: istat !< status flag for allocation
+
     istat = 0
-    !
-    ! state
-    !
+
+    ! state variables
     if (icecover%modeltype /= ICECOVER_NONE) then
        if (istat==0) allocate(icecover%ice_area_fraction(nmlb:nmub), STAT = istat)
        if (istat==0) allocate(icecover%ice_thickness(nmlb:nmub), STAT = istat)
@@ -340,9 +321,8 @@ function alloc_icecover(icecover, nmlb, nmub) result(istat)
              icecover%snow_temperature = 0.0_fp
           endif
        endif
-       !
-       ! extra
-       !
+
+       ! other variables
        if (istat==0) allocate(icecover%qh_air2ice(nmlb:nmub), STAT = istat)
        if (istat==0) allocate(icecover%qh_ice2wat(nmlb:nmub), STAT = istat)
        if (istat==0) allocate(icecover%pressure(nmlb:nmub), STAT = istat)
@@ -363,30 +343,19 @@ end function alloc_icecover
 
 !> Clear the arrays of sedtra_type data structure.
 function clr_icecover(icecover) result (istat)
-    !
-    ! Function/routine arguments
-    !
-    type (icecover_type)                       , intent(inout) :: icecover  !< data structure containing ice cover data
-    integer                                                    :: istat     !< status flag for deallocation
-    !
-    ! Local variables
-    !
-    ! NONE
-!
-!! executable statements -------------------------------------------------------
-!
+    type (icecover_type), intent(inout) :: icecover !< data structure containing ice cover data
+    integer :: istat !< status flag for deallocation
+
     istat = 0
-    !
-    ! state
-    !
+
+    ! state variables
     if (associated(icecover%ice_area_fraction)) deallocate(icecover%ice_area_fraction, STAT = istat)
     if (associated(icecover%ice_thickness)) deallocate(icecover%ice_thickness, STAT = istat)
     if (associated(icecover%ice_temperature)) deallocate(icecover%ice_temperature, STAT = istat)
     if (associated(icecover%snow_thickness)) deallocate(icecover%snow_thickness, STAT = istat)
     if (associated(icecover%snow_temperature)) deallocate(icecover%snow_temperature, STAT = istat)
-    !
-    ! extra
-    !
+
+    ! other variables
     if (associated(icecover%qh_air2ice)) deallocate(icecover%qh_air2ice, STAT = istat)
     if (associated(icecover%qh_ice2wat)) deallocate(icecover%qh_ice2wat, STAT = istat)
     if (associated(icecover%pressure)) deallocate(icecover%pressure, STAT = istat)
@@ -400,17 +369,9 @@ end function clr_icecover
 !> Update the ice pressure array. I hope that we can extract the initial update_icecover from m_fm_icecover to here ...
 !subroutine update_icecover(icecover, nm)
 !!!--declarations----------------------------------------------------------------
-!    !
-!    ! Function/routine arguments
-!    !
-!    type (icecover_type)                       , intent(inout) :: icecover  !< data structure containing ice cover data
-!    integer                                    , intent(in)    :: nm        !< Spatial index
-!    !
-!    ! Local variables
-!    !
-!!
-!!! executable statements -------------------------------------------------------
-!!
+!    type (icecover_type), intent(inout) :: icecover !< data structure containing ice cover data
+!    integer, intent(in) :: nm !< Spatial index
+!
 !    select case (icecover%modeltype)
 !    case (ICECOVER_SEMTNER)
 !        ! follow Semtner (1975)
@@ -422,22 +383,15 @@ end function clr_icecover
 
 !> Update the ice pressure array.
 subroutine update_icepress(icecover, ag)
-    !
-    ! Function/routine arguments
-    !
-    type (icecover_type)                       , intent(inout) :: icecover  !< data structure containing ice cover data
-    real(fp)                                   , intent(in)    :: ag        !< gravitational accelaration (m/s2)
-    !
-    ! Local variables
-    !
-    integer                         :: nm            !< Spatial loop index
-    real(fp)                        :: density       !< Local variable for ice density
-    real(fp), dimension(:), pointer :: areafrac      !< Pointer to ice area fraction array
-    real(fp), dimension(:), pointer :: pressure      !< Pointer to ice pressure array
-    real(fp), dimension(:), pointer :: thickness     !< Pointer to ice thickness array
-!
-!! executable statements -------------------------------------------------------
-!
+    type (icecover_type), intent(inout) :: icecover !< data structure containing ice cover data
+    real(fp), intent(in) :: ag !< gravitational accelaration (m/s2)
+
+    integer :: nm !< Spatial loop index
+    real(fp) :: density !< Local variable for ice density
+    real(fp), dimension(:), pointer :: areafrac !< Pointer to ice area fraction array
+    real(fp), dimension(:), pointer :: pressure !< Pointer to ice pressure array
+    real(fp), dimension(:), pointer :: thickness !< Pointer to ice thickness array
+
     areafrac  => icecover%ice_area_fraction
     pressure  => icecover%pressure
     thickness => icecover%ice_thickness
@@ -451,16 +405,11 @@ end subroutine update_icepress
 
 !> determine effective drag coefficient when ice may be present
 pure function ice_drag_effect(icecover, ice_area_fraction, cdw_open) result (cdw_eff)
-    !
-    ! Function/routine arguments
-    !
-    type (icecover_type)                       , intent(in)    :: icecover  !< data structure containing ice cover data
-    real(fp)                                   , intent(in)    :: ice_area_fraction    !< area fraction covered by ice (-) 
-    real(fp)                                   , intent(in)    :: cdw_open  !< wind drag exerted via open water (N m-2)
-    real(fp)                                                   :: cdw_eff   !< effective wind drag coefficient (N m-2)
-    !
-    ! Local variables
-    !
+    type (icecover_type), intent(in) :: icecover !< data structure containing ice cover data
+    real(fp), intent(in) :: ice_area_fraction !< area fraction covered by ice (-) 
+    real(fp), intent(in) :: cdw_open  !< wind drag exerted via open water (N m-2)
+    real(fp) :: cdw_eff !< effective wind drag coefficient (N m-2)
+
     real(fp) :: c0 !< constant coefficient of cubic drag formula (N m-2)
     real(fp) :: c1 !< linear coefficient of cubic drag formula (N m-2)
     real(fp) :: c2 !< quadratic coefficient of cubic drag formula (N m-2)
@@ -471,9 +420,7 @@ pure function ice_drag_effect(icecover, ice_area_fraction, cdw_open) result (cdw
     real(fp) :: water_area_fraction !< open water area fraction (-)
     real(fp) :: num !< numerator
     real(fp) :: den !< denominator
-!
-!! executable statements -------------------------------------------------------
-!
+
     water_area_fraction = 1.0_fp - ice_area_fraction
     
     select case (icecover%modify_winddrag)
@@ -545,13 +492,12 @@ pure function ice_drag_effect(icecover, ice_area_fraction, cdw_open) result (cdw
 end function ice_drag_effect
 
 
-   
 !> compute the icecover quantities that are only needed for output
 subroutine icecover_prepare_output(icecover, water_level, water_density, ag)
-    type (icecover_type), intent(inout) :: icecover  !< data structure containing ice cover data
-    real(fp), dimension(:) :: water_level  !< water level (m+REF)
-    real(fp), dimension(:) :: water_density  !< water density (kg m-3)
-    real(fp) :: ag  !< gravitational acceleration (m/s2)
+    type (icecover_type), intent(inout) :: icecover !< data structure containing ice cover data
+    real(fp), dimension(:) :: water_level !< water level (m+REF)
+    real(fp), dimension(:) :: water_density !< water density (kg m-3)
+    real(fp) :: ag !< gravitational acceleration (m/s2)
     
     integer :: ndx !< number of spatial points
     integer :: n !< loop index

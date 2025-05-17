@@ -30,6 +30,7 @@ use icecover_module, only: icecover_type
 use properties, only: tree_data, prop_get
 use MessageHandling, only: mess, LEVEL_ERROR
 use string_module, only: str_lower
+implicit none
 
 private
 
@@ -43,11 +44,6 @@ contains
 
 !> Read ice cover settings (Note: the meteo module should already have been initialized)
 subroutine read_icecover(icecover, md_ptr, chapter, error)
-!!--declarations----------------------------------------------------------------
-   use precision
-
-   implicit none
-
    type (icecover_type), intent(inout) :: icecover !< ice cover data structure containing the data read
    type(tree_data), pointer :: md_ptr !< pointer to the input file
    character(len=*), intent(in) :: chapter !< chapter name of the ice section
@@ -55,7 +51,7 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
 
    integer :: model !< local ice cover model
 
-   call determine_icecover_model(icecover, md_ptr, chapter, model, error)
+   call determine_icecover_model(icecover, md_ptr, chapter, error)
    if (error) return
 
    call read_icecover_parameters(icecover, md_ptr, chapter, error)
@@ -66,16 +62,16 @@ end subroutine read_icecover
 
 
 !> Support routine to determine which icecover model has been selected
-subroutine determine_icecover_model(icecover, md_ptr, chapter, model, error)
-   use icecover_module, only: select_icecover_model
+subroutine determine_icecover_model(icecover, md_ptr, chapter, error)
+   use icecover_module, only: select_icecover_model, ICECOVER_NONE, ICECOVER_EXT, ICECOVER_SEMTNER
 
    type (icecover_type), intent(inout) :: icecover !< ice cover data structure containing the data read
    type(tree_data), pointer :: md_ptr !< pointer to the input file
    character(len=*), intent(in) :: chapter !< chapter name of the ice section
-   integer, intent(out) :: model !< local ice cover model
    logical, intent(out) :: error !< flag indicating an execution error
 
    integer :: istat !< reading status flag
+   integer :: model !< local ice cover model
    character(256) :: tmp !< temporary string for input processing
 
    error = .false.
@@ -102,13 +98,10 @@ end subroutine determine_icecover_model
 
 !> Support routine to read ice cover parameters
 subroutine read_icecover_parameters(icecover, md_ptr, chapter, error)
-   use precision
-   use icecover_module, only: ICECOVER_NONE, ICECOVER_EXT, ICECOVER_SEMTNER
+   use icecover_module, only: ICECOVER_EXT
    use icecover_module, only: FRICT_AS_DRAG_COEFF
    use icecover_module, only: ICE_WINDDRAG_NONE, ICE_WINDDRAG_CUBIC, ICE_WINDDRAG_LB05, &
       & ICE_WINDDRAG_AN10, ICE_WINDDRAG_LINEAR, ICE_WINDDRAG_RAYS, ICE_WINDDRAG_JOYCE19
-   !
-   implicit none
    !
    type (icecover_type)         , intent(inout) :: icecover !< ice cover data structure containing the data read
    type(tree_data)              , pointer       :: md_ptr   !< pointer to the input file
@@ -215,7 +208,6 @@ function echo_icecover(icecover, lundia) result (error)
        & ICE_WINDDRAG_LINEAR, ICE_WINDDRAG_RAYS, ICE_WINDDRAG_JOYCE19
    use MessageHandling, only: mess, LEVEL_ERROR
    !
-   implicit none
 
    type (icecover_type)         , intent(inout) :: icecover !< ice cover data structure containing the data read
    integer                      , intent(in)    :: lundia   !< unit number of diagnostics file
