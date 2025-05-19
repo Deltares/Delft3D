@@ -87,7 +87,7 @@ done
 EOF
 
 # ninja is required for building cmake
-RUN --mount=type=cache,target=/var/cache/src/,id=cmake-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
+RUN <<"EOF"
 set -eo pipefail
 wget https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip
 unzip ninja-linux.zip
