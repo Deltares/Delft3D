@@ -33,15 +33,6 @@ contains
             num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
-
-        !***********************************************************************
-        !
-        !     Function : Computes irradiance over the day from daily average irradiance
-        !                from "Zonnestraling in Nederland",
-        !                C.A.Velds, Thieme/KNMI, 1992, 1st imp., ISBN 90-5210-140-X
-        !
-        !***********************************************************************
-
         IMPLICIT NONE
 
         !     arguments
@@ -61,47 +52,33 @@ contains
 
         !     from process_space_real array
 
-        REAL(kind = real_wp) :: RADSURF            ! 1  in  actual irradiation at the water surface            (W/m2)
-        REAL(kind = real_wp) :: TIME               ! 2  in  DELWAQ time                                  (scu)
-        DOUBLE PRECISION :: LATITUDE           ! 3  in  latitude of study area                   (degrees)
-        REAL(kind = real_wp) :: REFDAY             ! 4  in  daynumber of reference day simulation          (d)
-        REAL(kind = real_wp) :: AUXSYS             ! 5  in  ratio between days and system clock        (scu/d)
-        REAL(kind = real_wp) :: RadSurfAve         ! 6  out average irradiance over the day              (W/m2)
-        DOUBLE PRECISION :: RadAve             ! 7  out average irradiance                           (W/m2)
-        DOUBLE PRECISION :: RADTIME            ! 8  out average irradiance                           (W/m2)
+        !REAL(kind = real_wp) :: RADSURF            ! 1  in  actual irradiation at the water surface            (W/m2)
+        !REAL(kind = real_wp) :: TINIT              ! 2  in  DELWAQ time                                  (scu)
+        !REAL(kind = real_wp) :: PERIOD             ! 3  in  Period of the periodic average                ()
+        !REAL(kind = real_wp) :: TIME               ! 4  in  Time in calculation          (d)
+        !REAL(kind = real_wp) :: DELT               ! 5  in  Timestep          (scu/d)
+        !REAL(kind = real_wp) :: Sum_AVERAD         ! 6  in/out Work array for summing over time
+        !INTEGER(kind = int_wp) :: TCOUNT           ! 7  in/out
+        !REAL(kind = real_wp) :: RadSurfAve         ! 7  out average irradiance over the day              (W/m2)
+        !DOUBLE PRECISION ::                  ! 8  out average irradiance                           (W/m2)
+        !DOUBLE PRECISION :: RADTIME                ! 9  out average irradiance                           (W/m2)
 
-        !     local decalrations
+        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, &
+                IP6, IP7, IP8, IP9, IP10, &
+                IN1, IN2, IN3, IN4, IN5, &
+                IN6, IN7, IN8, IN9, IN10 
+        INTEGER(kind = int_wp) :: IKMRK, ISEG
+        INTEGER(kind = int_wp) :: IACTION, lunrep
+        INTEGER(kind = int_wp) :: ATTRIB
+        REAL(kind = real_wp) :: TINIT, PERIOD, TIME, DELT, TCOUNT
 
-        DOUBLE PRECISION, PARAMETER :: SIN50M = -1.454389765D-2
-        DOUBLE PRECISION, PARAMETER :: E = 1.721420632D-2
-        DOUBLE PRECISION, PARAMETER :: PI = 3.141592654D0
-        DOUBLE PRECISION, PARAMETER :: I0 = 1367.D0
-        DOUBLE PRECISION :: DAYNR
-        DOUBLE PRECISION :: HOUR
-        DOUBLE PRECISION :: RDIST
-        DOUBLE PRECISION :: OMEGA
-        DOUBLE PRECISION :: DECLIN
-        DOUBLE PRECISION :: OMEGA0
-        DOUBLE PRECISION :: SIN_DECLIN
-        DOUBLE PRECISION :: SIN_LATITU
-        DOUBLE PRECISION :: SIN_OMEGA0
-        DOUBLE PRECISION :: COS_DECLIN
-        DOUBLE PRECISION :: COS_LATITU
-        DOUBLE PRECISION :: COS_OMEGA
-        LOGICAL :: VARFLG
-        INTEGER(kind = int_wp) :: ISEG
-        INTEGER(kind = int_wp) :: IKMRK1
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8
-        INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8
+        INTEGER(kind = int_wp), PARAMETER :: MAXWARN = 50
+        INTEGER(kind = int_wp), SAVE :: NOWARN = 0
 
-        IN1 = INCREM(1)
-        IN2 = INCREM(2)
-        IN3 = INCREM(3)
-        IN4 = INCREM(4)
-        IN5 = INCREM(5)
-        IN6 = INCREM(6)
-        IN7 = INCREM(7)
-        IN8 = INCREM(8)
+        call get_log_unit_number(lunrep)
+        
+        !     IACTION is in 3 parts. 0, 2, 3.
+
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -111,110 +88,119 @@ contains
         IP6 = IPOINT(6)
         IP7 = IPOINT(7)
         IP8 = IPOINT(8)
+        IP9 = IPOINT(9)
+        IP10 = IPOINT(10)
+
+
+        IN1 = INCREM(1)
+        IN2 = INCREM(2)
+        IN3 = INCREM(3)
+        IN4 = INCREM(4)
+        IN5 = INCREM(5)
+        IN6 = INCREM(6)
+        IN7 = INCREM(7)
+        IN8 = INCREM(8)
+        IN9 = INCREM(9)
+        IN10 = INCREM(10)
+
+        TINIT = process_space_real(IP2)
+        PERIOD = process_space_real(IP3)
+        TIME = process_space_real(IP4)
+        DELT = process_space_real(IP5)
+        !Sum_AVERAD = process_space_real(IP6)        ! Work array for summing over time
+        !TCOUNT_AVERAD = process_space_real(IP7)      ! time
 
         !
-        VARFLG = .TRUE.
-        IF (IN2 == 0 .AND. IN3 == 0 .AND. IN4 == 0 .AND. &
-                IN5 == 0) THEN
-            !
-            VARFLG = .FALSE.
-            !
-            TIME = process_space_real(IP2)
-            !        Conversion Latitude to rads
-            LATITUDE = process_space_real(IP3) / 360 * 2 * PI
-            REFDAY = process_space_real(IP4)
-            AUXSYS = process_space_real(IP5)
-
-            !        Conversion time to daynumbers relative to refday
-            DAYNR = MOD (TIME / AUXSYS + REFDAY, 365.)
-            HOUR = MOD (TIME / AUXSYS + REFDAY, 1.) * 24.
-            RDIST = 1.D0 + .033 * COS(E * DAYNR)
-            OMEGA = ABS(12.D0 - HOUR) * PI / 12.D0
-
-            DECLIN = 6.918D-3 - &
-                    3.99912D-1 * cos (E * DAYNR) - &
-                    6.758D-3 * cos (2.0D0 * E * DAYNR) - &
-                    2.697D-3 * cos (3.0D0 * E * DAYNR) + &
-                    7.0257D-2 * sin (E * DAYNR) + &
-                    9.07D-4 * sin (2.0D0 * E * DAYNR) + &
-                    1.480D-3 * sin (3.0D0 * E * DAYNR)
-
-            !        compute actual irradiance
-
-            OMEGA0 = ACOS(-TAN(DECLIN) * TAN(LATITUDE))
-            SIN_DECLIN = SIN(DECLIN)
-            SIN_LATITU = SIN(LATITUDE)
-            SIN_OMEGA0 = SIN(OMEGA0)
-            COS_DECLIN = COS(DECLIN)
-            COS_LATITU = COS(LATITUDE)
-            COS_OMEGA = COS(OMEGA)
-            RADTIME = I0 * RDIST * (SIN_DECLIN * SIN_LATITU + COS_DECLIN * COS_LATITU * COS_OMEGA)
-            RADTIME = MAX(0.0D0, RADTIME)
-            RadAve = I0 / PI * RDIST * (OMEGA0 * SIN_DECLIN * SIN_LATITU + COS_DECLIN * COS_LATITU * SIN_OMEGA0)
-        ENDIF
+        !      Start and stop criteria are somewhat involved:
+        !      - The first time for the first period is special, as this
+        !        is the only time there is no previous period.
+        !      - If there is a previous period, update the averages
+        !        for that period and reset the accumulative values
+        !        for the next
         !
-        DO ISEG = 1, num_cells
-            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-
-            RADSURF = process_space_real(IP1)
-
-            IF (VARFLG) THEN
-                !
-                TIME = process_space_real(IP2)
-                !              Conversion Latitude to rads
-                LATITUDE = process_space_real(IP3) / 360 * 2 * PI
-                REFDAY = process_space_real(IP4)
-                AUXSYS = process_space_real(IP5)
-
-                !              Conversion time to daynumbers relative to refday
-                DAYNR = MOD (TIME / AUXSYS + REFDAY, 365.)
-                HOUR = MOD (TIME / AUXSYS + REFDAY, 1.) * 24.
-                RDIST = 1.D0 + .033 * COS(E * DAYNR)
-                OMEGA = ABS(12.D0 - HOUR) * PI / 12.D0
-
-                DECLIN = 6.918D-3 - &
-                        3.99912D-1 * cos (E * DAYNR) - &
-                        6.758D-3 * cos (2.0D0 * E * DAYNR) - &
-                        2.697D-3 * cos (3.0D0 * E * DAYNR) + &
-                        7.0257D-2 * sin (E * DAYNR) + &
-                        9.07D-4 * sin (2.0D0 * E * DAYNR) + &
-                        1.480D-3 * sin (3.0D0 * E * DAYNR)
-
-                !              compute actual irradiance
-
-                OMEGA0 = ACOS(-TAN(DECLIN) * TAN(LATITUDE))
-                SIN_DECLIN = SIN(DECLIN)
-                SIN_LATITU = SIN(LATITUDE)
-                SIN_OMEGA0 = SIN(OMEGA0)
-                COS_DECLIN = COS(DECLIN)
-                COS_LATITU = COS(LATITUDE)
-                COS_OMEGA = COS(OMEGA)
-                RADTIME = I0 * RDIST * (SIN_DECLIN * SIN_LATITU + COS_DECLIN * COS_LATITU * COS_OMEGA)
-                RADTIME = MAX(0.0D0, RADTIME)
-                RadAve = I0 / PI * RDIST * (OMEGA0 * SIN_DECLIN * SIN_LATITU + COS_DECLIN * COS_LATITU * SIN_OMEGA0)
+        !      To formulate the ideas more clearly:
+        !      - The first period is a closed interval
+        !      - All other periods are half-open intervals (the last time
+        !        of the previous period should not be reused.)
+        !
+        IACTION = 0
+        IF (TIME >= TINIT - 0.5 * DELT) THEN
+            IACTION = 2
+            IF (TIME <= TINIT + 0.5 * DELT) THEN
+                DO ISEG = 1, num_cells
+                    IP8 = IPOINT(8) + (ISEG - 1) * INCREM(8)
+                    IP9 = IPOINT(9) + (ISEG - 1) * INCREM(9)
+                    process_space_real(IP8) = 0.0
+                    process_space_real(IP9) = 0.0
+                ENDDO
             ENDIF
-            !
-            RadSurfAve = RADTIME * RADSURF / RadAve
+        ENDIF
 
-            process_space_real (IP6) = RadSurfAve
-            process_space_real (IP7) = RADTIME
-            process_space_real (IP8) = RadAve
+        IF (TIME >= TINIT + PERIOD - 0.5 * DELT .AND. TIME <= TINIT + PERIOD + 0.5 * DELT) THEN
+            IACTION = 3
+        ENDIF
+
+        IF (IACTION == 0) RETURN
+
+        IP8 = IPOINT(8)
+        IP9 = IPOINT(9)
+        DO ISEG = 1, num_cells
+                !
+                !           Keep track of the time within the current quantile specification
+                !           that each segment is active
+                !
+                TCOUNT = process_space_real(IP7) + DELT
+                process_space_real(IP9) = TCOUNT
+
+                process_space_real(IP8) = process_space_real(IP6) + process_space_real(IP1) * DELT
+
             !
-            !        ENDIF
+            !        Always do the final processing whether the segment is active at this moment or not
             !
+
+            IF (IACTION == 3) THEN
+                IF (TCOUNT > 0.0) THEN
+                    process_space_real(IP10) = process_space_real(IP8) / TCOUNT
+                ELSE
+                    process_space_real(IP10) = 0.0
+
+                    IF (NOWARN < MAXWARN) THEN
+                        CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
+                        IF (ATTRIB /= 0) THEN
+                            NOWARN = NOWARN + 1
+                            WRITE(lunrep, '(a,i0)') 'Periodic average of RadSurf could not be determined for segment ', ISEG
+                            WRITE(lunrep, '(a)')    '    - division by zero. Average set to zero'
+
+                            IF (NOWARN == MAXWARN) THEN
+                                WRITE(lunrep, '(a)') '(Further messages suppressed)'
+                            ENDIF
+                        ENDIF
+                    ENDIF
+                ENDIF
+
+                !
+                !           Reset for the next round
+                !
+                process_space_real(IP8) = 0.0
+                process_space_real(IP9) = 0.0
+
+            ENDIF
+
             IP1 = IP1 + IN1
-            IP2 = IP2 + IN2
-            IP3 = IP3 + IN3
-            IP4 = IP4 + IN4
-            IP5 = IP5 + IN5
             IP6 = IP6 + IN6
             IP7 = IP7 + IN7
             IP8 = IP8 + IN8
-            !
-        ENDDO
+            IP9 = IP9 + IN9
+            IP10 = IP10 + IN10
+        end do
+        !
+        !     Be sure to also reset the initial time, so that we can restart the
+        !     averaging for the next period
+        !
+        IF (IACTION == 3) THEN
+            process_space_real(IP2) = TINIT + PERIOD
+        ENDIF
 
         RETURN
-        !
     END
-
 end module m_averad
