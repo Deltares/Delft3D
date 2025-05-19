@@ -205,11 +205,13 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Coverage  ","PotEM05   ",  12,"Y","x",1
 "Coverage  ","IBotSeg   ",  13,"N","x",1
 "Coverage  ","RadMacrop ",  14,"N","x",1
-"AveRad    ","RadSurf   ",   1,"Y","x",1
-"AveRad    ","ITIME     ",   2,"N"," ",1
-"AveRad    ","Latitude  ",   3,"Y","x",1
-"AveRad    ","RefDay    ",   4,"Y","x",1
-"AveRad    ","AuxSys    ",   5,"Y"," ",1
+"AveRadSurf","RadSurf   ",   1,"Y","x",1
+"AveRadSurf","AveRadTIni",   2,"N","x",1
+"AveRadSurf","AveRadPeri",   3,"Y","x",1
+"AveRadSurf","ITIME     ",   4,"Y","x",1
+"AveRadSurf","DELT      ",   5,"N"," ",1
+"AveRadSurf","SumAveRad ",   6,"N"," ",1
+"AveRadSurf","SumAveRadT",   7,"N"," ",1
 "TempMode  ","ModTemp   ",   1,"N","x",1
 "TempMode  ","NatTemp   ",   2,"Y","x",1
 "TempMode  ","SwitchTemp",   3,"Y","x",1
@@ -228,7 +230,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Temperatur","SwEmersion",  11,"Y","x",1
 "Temperatur","LocSedDept",  12,"Y","x",1
 "Temperatur","ThSedDT   ",  13,"Y","x",1
-"Temperatur","RadSurf",  14,"Y","x",1
+"Temperatur","RadSurf   ",  14,"Y","x",1
 "Temperatur","RadMax    ",  15,"Y","x",1
 "Temperatur","RTradmax  ",  16,"Y","x",1
 "Temperatur","DelTradmax",  17,"Y","x",1

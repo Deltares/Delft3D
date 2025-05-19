@@ -10,7 +10,7 @@ procid,procco,procfo,procnm
 "SelfCool  ",123,"HDISS     ","Calculation of specific heat dissipation rate     "
 "MaxMacro  ",123,"MAXMAC    ","maximum biomass macrophytes                       "
 "Coverage  ",123,"COVMAC    ","coverage by macrophytes                           "
-"AveRad    ",123,"AVERAD    ","Irradiance over the day                           "
+"AveRadSurf",123,"AVERAD    ","Irradiance over the day                           "
 "TempMode  ",123,"TMODE     ","Modelled temperature conversion and limitation    "
 "Temperatur",123,"TEMPER    ","Temperature and heat exchange                     "
 "Salinchlor",123,"SALCHL    ","Conversion of chloride into salinity              "

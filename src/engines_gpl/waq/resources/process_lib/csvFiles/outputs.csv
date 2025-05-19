@@ -65,7 +65,9 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Coverage  ","CoverEM05 ",   6,"x",1
 "Coverage  ","IBotSeg   ",   7,"x",1
 "Coverage  ","RadSurf   ",   8,"x",1
-"AveRad    ","RadSurfAve",   1,"x",1
+"AveRadSurf","SumAveRad ",   1,"x",1
+"AveRadSurf","SumAveRadT",   2,"x",1
+"AveRadSurf","RadSurfAve",   3,"x",1
 "TempMode  ","Temp      ",   1,"x",1
 "TempMode  ","SurTemp   ",   2,"x",1
 "TempMode  ","NatTempp1 ",   3,"x",1

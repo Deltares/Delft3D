@@ -51,17 +51,18 @@ contains
         INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
 
         !     from process_space_real array
+        
+        !     7 inputs, 3 outputs.
 
         !REAL(kind = real_wp) :: RADSURF            ! 1  in  actual irradiation at the water surface            (W/m2)
-        !REAL(kind = real_wp) :: TINIT              ! 2  in  DELWAQ time                                  (scu)
-        !REAL(kind = real_wp) :: PERIOD             ! 3  in  Period of the periodic average                ()
-        !REAL(kind = real_wp) :: TIME               ! 4  in  Time in calculation          (d)
+        !REAL(kind = real_wp) :: AveRadTIni         ! 2  in  Initial time (reset at end period)     TINIT             ()
+        !REAL(kind = real_wp) :: AveRadPeri         ! 3  in  Period of the periodic average    PERIOD            ()
+        !REAL(kind = real_wp) :: ITIME              ! 4  in  DELWAQ time                         (d)
         !REAL(kind = real_wp) :: DELT               ! 5  in  Timestep          (scu/d)
-        !REAL(kind = real_wp) :: Sum_AVERAD         ! 6  in/out Work array for summing over time
-        !INTEGER(kind = int_wp) :: TCOUNT           ! 7  in/out
-        !REAL(kind = real_wp) :: RadSurfAve         ! 7  out average irradiance over the day              (W/m2)
-        !DOUBLE PRECISION ::                  ! 8  out average irradiance                           (W/m2)
-        !DOUBLE PRECISION :: RADTIME                ! 9  out average irradiance                           (W/m2)
+        !REAL(kind = real_wp) :: SumAveRad          ! 6/8  in/out Work array for summing over time
+        !REAL(kind = real_wp) :: SumAveRadT         ! 7/9  in/out Count of times   TCOUNT
+        !REAL(kind = real_wp) :: RadSurfAve         ! 10  out average irradiance over the day              (W/m2)
+
 
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, &
                 IP6, IP7, IP8, IP9, IP10, &
