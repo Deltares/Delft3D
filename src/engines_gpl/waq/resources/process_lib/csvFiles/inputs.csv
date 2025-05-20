@@ -208,10 +208,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "AveRadSurf","RadSurf   ",   1,"Y","x",1
 "AveRadSurf","AveRadTIni",   2,"Y","x",1
 "AveRadSurf","AveRadPeri",   3,"Y","x",1
-"AveRadSurf","ITIME     ",   4,"N","x",1
+"AveRadSurf","ITIME     ",   4,"N"," ",1
 "AveRadSurf","DELT      ",   5,"N"," ",1
-"AveRadSurf","SumAveRad ",   6,"N","x",1
-"AveRadSurf","SumAveRadT",   7,"N","x",1
+"AveRadSurf","SumAveRad ",   6,"N"," ",1
+"AveRadSurf","SumAveRadT",   7,"N"," ",1
 "TempMode  ","ModTemp   ",   1,"N","x",1
 "TempMode  ","NatTemp   ",   2,"Y","x",1
 "TempMode  ","SwitchTemp",   3,"Y","x",1
