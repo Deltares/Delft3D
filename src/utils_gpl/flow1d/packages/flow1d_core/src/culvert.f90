@@ -138,7 +138,6 @@ contains
       real(kind=dp)               :: valveOpening
       real(kind=dp)               :: chezyCulvert
       real(kind=dp)               :: chezyValve
-      real(kind=dp)               :: wArea               !< upstream wet area (no valve)
       real(kind=dp)               :: wPerimiter          !< upstream wet perimeter  (no valve)
       real(kind=dp)               :: wWidth              !< upstream wet surface width (no valve)
       real(kind=dp)               :: valveArea           !< upstream wet area
@@ -172,7 +171,6 @@ contains
          inflowCrest  = culvert%rightlevel
       endif
       culvertCrest = max(outflowCrest, inflowCrest) 
-      qm = aum * u1m
       ! Check on Flow Direction
       allowedFlowDir = culvert%allowedflowdir
       if ((smax <= culvertCrest) .or. (allowedFlowDir == 3) .or. &
@@ -189,7 +187,16 @@ contains
       CrossSection = culvert%pcross
       gl_thickness = getGroundLayer(CrossSection)
 
-      ! Check on Valve
+
+      ! Calculate cross-section values in culvert
+      dpt = smax - inflowCrest
+      if (culvert%isInvertedSiphon) then
+         ! When flowing, always assume that the (lower lying) inverted siphon is fully filled.
+         dpt = max(CrossSection%charHeight, dpt)
+      endif
+      call GetCSParsFlow(CrossSection, dpt, aum, wPerimiter, wWidth)
+      qm = aum * u1m
+            ! Check on Valve
       !     First find out the critical depth that can be used in free flow equations
       !     pjo, 13-04-2000, ars 4952, when flow direction changes, critical
       !     depth is taken as zero.
@@ -201,15 +208,7 @@ contains
       endif
 
 
-      ! Calculate cross-section values in culvert
-      dpt = smax - inflowCrest
-      if (culvert%isInvertedSiphon) then
-         ! When flowing, always assume that the (lower lying) inverted siphon is fully filled.
-         dpt = max(CrossSection%charHeight, dpt)
-      endif
-      call GetCSParsFlow(CrossSection, dpt, wArea, wPerimiter, wWidth)
-
-      if (abs(wArea) < eps10 .or. (culvert%has_valve .and. abs(culvert%valveOpening) < eps10)) then
+      if (abs(aum) < eps10 .or. (culvert%has_valve .and. abs(culvert%valveOpening) < eps10)) then
          fum   = 0.0d0
          rum   = 0.0d0
          u1m   = 0.0d0
@@ -217,7 +216,7 @@ contains
          culvert%state = 0
          return
       endif
-      chezyCulvert = getchezy(CrossSection%frictionTypePos(1), CrossSection%frictionValuePos(1), warea/wPerimiter, dpt, 1d0)
+      chezyCulvert = getchezy(CrossSection%frictionTypePos(1), CrossSection%frictionValuePos(1), aum/wPerimiter, dpt, 1d0)
                   
       ! Valve Loss
       if (culvert%has_valve .and. (culvert%valveOpening < dpt)) then
@@ -231,8 +230,8 @@ contains
       endif
       
       if (openingfac >= 1.0d0) then
-         hydrRadius  = wArea / wPerimiter
-         culvertArea  = wArea
+         hydrRadius  = aum / wPerimiter
+         culvertArea  = aum
          valveloss = 0.0d0
       else
          valveloss = interpolate(culvert%lossCoeff, openingfac)
