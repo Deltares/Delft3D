@@ -204,7 +204,7 @@ subroutine calculateDeadStorage(wl_deadstorage, network, bndvalues, inslevtube, 
    integer :: istru
    integer :: suctionSideNode
    integer :: nstages
-   type(t_structure), pointer, dimension(:)  :: structs
+   type(t_structurepointer), pointer, dimension(:)  :: structs
    integer, pointer, dimension(:)            :: indices
    type(t_pump), pointer                     :: pump
 
@@ -228,8 +228,8 @@ subroutine calculateDeadStorage(wl_deadstorage, network, bndvalues, inslevtube, 
       indices => Network%sts%pumpIndices
       do i = 1, Network%sts%numPumps
          istru = indices(i)
-         pump => structs(istru)%pump
-         L = structs(istru)%linknumbers(1)
+         pump => structs(istru)%p%pump
+         L = structs(istru)%p%linknumbers(1)
          if (pump%direction * pump%capacity(1) > 0) then
             suctionsideNode = ln2nd(1,L)
          else
