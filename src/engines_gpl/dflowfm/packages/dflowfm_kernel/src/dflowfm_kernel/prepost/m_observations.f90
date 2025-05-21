@@ -559,16 +559,17 @@ contains
    end subroutine init_valobs_pointers
 
    !> increment the current index and returns it
-   integer function next_index(current_index, increment)
+   pure function next_index(current_index, increment) result(res)
       integer, intent(inout) :: current_index !< current index
       integer, optional, intent(in) :: increment !< increment value
+      integer :: res
       
       if (present(increment)) then
          current_index = current_index + increment
       else
          current_index = current_index + 1
       end if
-      next_index = current_index
+      res = current_index
    end function next_index
 
    !> pointer of variable in valobs work array

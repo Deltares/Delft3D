@@ -65,11 +65,10 @@ public select_icecover_model
 public late_activation_ext_force_icecover
 public alloc_icecover
 public clr_icecover
-!public update_icecover
-public update_icepress
-public ice_drag_effect
-public set_default_output_flags
-public icecover_prepare_output
+public :: update_icepress
+public :: ice_drag_effect
+public :: set_default_output_flags
+public :: icecover_prepare_output
 
 ! ice cover output
 type icecover_output_flags
