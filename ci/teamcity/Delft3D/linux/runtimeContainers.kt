@@ -60,12 +60,14 @@ object LinuxRuntimeContainers : BuildType({
                     libzstd.so.*
             """.trimIndent()
         }
+        //
         script {
             name = "Set execute rights"
             scriptContent = """
                 chmod a+x dimrset/bin/*
             """.trimIndent()
         }
+        // TODO download example 01
         script {
             name = "Copy example and readme.txt"
             scriptContent = """

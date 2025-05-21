@@ -124,6 +124,7 @@ object Publish : BuildType({
                 """.trimIndent()
             }
         }
+        // TODO download all examples
         script {
             name = "Replace default image in run_docker.sh scripts"
             workingDir = "examples/dflowfm"
