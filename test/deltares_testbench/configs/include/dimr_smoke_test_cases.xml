@@ -145,4 +145,24 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e100_f00_c00" ref="dimr_trunk_win64">
+    <path version="2024-01-12T07:30:00">e100_dflowfm-dwaves/f00_general/c00-FriesianInlet_schematic_nonstat</path>
+    <maxRunTime>300.0</maxRunTime> <!-- seconds -->
+    <checks>
+        <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
+            <parameters>
+                <parameter name="s1" toleranceAbsolute="0.1" />
+                <parameter name="unorm" toleranceAbsolute="0.1" />
+            </parameters>
+        </file>
+        <file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
+            <parameters>
+                <parameter name="hrms" toleranceAbsolute="0.1" />
+                <parameter name="tp" toleranceAbsolute="1.0" />
+                <parameter name="dir" toleranceAbsolute="400.0" />
+                <parameter name="distot" toleranceAbsolute="0.1" />
+            </parameters>
+        </file>
+    </checks>
+</testCase>
 </testCases>
