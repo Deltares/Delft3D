@@ -94,6 +94,8 @@ switch expType
         % assumptions: 2D, one timestep
         % morsys field file: NVal=1
         ext='dep';
+    case {'waqview xyz file'}
+        ext='xyz';
     case 'polygon file'
         ext='pol';
     case 'tekal file'
@@ -636,6 +638,14 @@ for f=1:ntim
                 case 'simona box file'
                     boxfile('write',filename,expdata.Data);
             end
+        case {'waqview xyz file'}
+            mmax = size(data.Val, 1);
+            nmax = size(data.Val, 2);
+            [M, N] = ndgrid(1:mmax, 1:nmax);
+            id = reshape(1:(mmax*nmax), [mmax, nmax]);
+            xyz = [data.X(:), data.Y(:), data.Val(:), M(:), N(:), id(:)]';
+            xyz = xyz(:, none(isnan(xyz), 1));
+            samples('write', filename, 'format', '%f, %f, %f, %i, %i, %i', 'header', 'x,y,z,m,n,id', xyz)
         case {'tekal file','spline','landboundary file'}
             cmnt = cell(nVar,1);
             for i = 1:nVar

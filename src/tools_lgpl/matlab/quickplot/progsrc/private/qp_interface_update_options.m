@@ -1856,6 +1856,7 @@ if nval>=0
         if nval==1
             ExpTypes{end+1}='SIMONA box file';
             ExpTypes{end+1}='-SIMONA box file';
+            ExpTypes{end+1}='Waqview xyz file';
         end
     end
     if (multiple(M_) && (multiple(N_) || unstructured || strcmp(geometry,'sSEG'))) && ~multiple(K_) && ~multiple(T_)
