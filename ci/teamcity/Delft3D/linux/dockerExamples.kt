@@ -40,7 +40,7 @@ object LinuxRunAllDockerExamples : BuildType({
                     --username "%s3_dsctestbench_accesskey%"
                     --password "%s3_dsctestbench_secret%"
                     --reference
-                    --config "configs/singularity/dimr/dimr_smoke_test_lnx64.xml"
+                    --config "configs/singularity/dimr/dimr_smoke_test_win64.xml"
                     --filter "testcase=e100_f00_c00"
                     --skip-run
                     --skip-post-processing

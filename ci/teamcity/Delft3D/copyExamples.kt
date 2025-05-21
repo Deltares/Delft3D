@@ -21,6 +21,13 @@ object CopyExamples : BuildType({
         root(DslContext.settingsRoot)
     }
 
+    dependencies {
+        snapshot(AbsoluteId("LinuxRunAllDockerExamples")) {
+            onDependencyFailure = FailureAction.FAIL_TO_START
+            onDependencyCancel = FailureAction.CANCEL
+        }
+    }
+
     params {
         param("DEST_DIR", """\\directory.intra\PROJECT\d-hydro\dimrset\examples""")
     }
@@ -37,9 +44,9 @@ object CopyExamples : BuildType({
                 scriptArguments = """
                     --username "%s3_dsctestbench_accesskey%"
                     --password "%s3_dsctestbench_secret%"
-                    --reference
-                    --config "configs/singularity/dimr/dimr_smoke_test_lnx64.xml"
-                    --filter "testcase=e02_f014_c001,e109_f01_c010,e112_f01_c11"
+                    --reference,
+                    --config "configs\\dimr\\dimr_smoke_test_cases_win64.xml"
+                    --filter "testcase=e100_f00_c00"
                     --skip-run
                     --skip-post-processing
                     --log-level DEBUG
