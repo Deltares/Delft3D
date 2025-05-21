@@ -14,7 +14,8 @@ object CopyExamples : BuildType({
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDownloadExamples
     )
 
     vcs {
@@ -33,34 +34,6 @@ object CopyExamples : BuildType({
     }
 
     steps {
-        python {
-            name = "Download examples using TestBench.py"
-            workingDir = "test/deltares_testbench/"
-            environment = venv {
-                requirementsFile = "pip/win-requirements.txt"
-            }
-            command = file {
-                filename = "TestBench.py"
-                scriptArguments = """
-                    --username "%s3_dsctestbench_accesskey%"
-                    --password "%s3_dsctestbench_secret%"
-                    --reference
-                    --config "configs/dimr/dimr_smoke_test_cases_win64.xml"
-                    --filter "testcase=e100_f00_c00"
-                    --skip-run
-                    --skip-post-processing
-                    --log-level DEBUG
-                    --parallel
-                    --teamcity
-                """.trimIndent()
-            }
-        }
-        script {
-            name = "Move examples to the right location and rename"
-            scriptContent = """
-                mv -v test/deltares_testbench/data/cases/e100_f00_c00/* ./examples/dflowfm/08_dflowfm_sequential_dwaves
-            """.trimIndent()
-        }
         python {
             name = "Copy example files to P drive"
             environment = venv {
