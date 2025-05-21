@@ -619,6 +619,20 @@ end
 
 
 % -----------------------------------------------------------------------------
+function [TZshift,TZstr]=gettimezone(FI,domain,Props)
+if ~isfield(FI,'DiffDomain') || isempty(FI.DiffDomain)
+    domain1 = 1;
+else
+    domain1 = FI.DiffDomain(1);
+end
+[success,TZshift,TZstr] = qp_getdata(FI.Files(1),domain1,Props.Q1,'timezone');
+if ~success
+    error(lasterr)
+end
+% -----------------------------------------------------------------------------
+
+
+% -----------------------------------------------------------------------------
 function S=readsts(FI,domain,Props,t)
 if ~isfield(FI,'DiffDomain') || isempty(FI.DiffDomain)
     domain1 = 1;
