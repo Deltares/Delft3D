@@ -10,7 +10,8 @@ object Publish : BuildType({
 
     templates(
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateDownloadExamples
     )
 
     name = "Publish Container"
@@ -124,7 +125,6 @@ object Publish : BuildType({
                 """.trimIndent()
             }
         }
-        // TODO download all examples
         script {
             name = "Replace default image in run_docker.sh scripts"
             workingDir = "examples/dflowfm"

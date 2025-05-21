@@ -15,7 +15,8 @@ object LinuxRuntimeContainers : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateDownloadExamples
     )
 
     name = "Runtime Containers"
@@ -67,7 +68,6 @@ object LinuxRuntimeContainers : BuildType({
                 chmod a+x dimrset/bin/*
             """.trimIndent()
         }
-        // TODO download example 01
         script {
             name = "Copy example and readme.txt"
             scriptContent = """

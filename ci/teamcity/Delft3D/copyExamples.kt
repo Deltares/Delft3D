@@ -22,13 +22,6 @@ object CopyExamples : BuildType({
         root(DslContext.settingsRoot)
     }
 
-    // dependencies {
-    //     dependency(LinuxRunAllDockerExamples) {
-    //         onDependencyFailure = FailureAction.FAIL_TO_START
-    //         onDependencyCancel = FailureAction.CANCEL
-    //     }
-    // }
-
     params {
         param("DEST_DIR", """\\directory.intra\PROJECT\d-hydro\dimrset\examples-test""")
     }
