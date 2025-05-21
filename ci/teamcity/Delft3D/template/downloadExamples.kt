@@ -22,7 +22,6 @@ object TemplateDownloadExamples : Template({
                     --password "%s3_dsctestbench_secret%"
                     --reference
                     --config "configs/dimr/dimr_smoke_test_cases_win64.xml"
-                    --filter "testcase=e100_f00_c00,e109_f01_c010_weir_timeseries"
                     --skip-run
                     --skip-post-processing
                     --log-level DEBUG
@@ -34,6 +33,7 @@ object TemplateDownloadExamples : Template({
         script {
             name = "Move examples to the right location and rename"
             scriptContent = """
+                mv -v test/deltares_testbench/data/cases/e02_f041_c01_FriesianInlet_schematic/* ./examples/dflowfm/01_dflowfm_sequential
                 mv -v test/deltares_testbench/data/cases/e100_f00_c00/* ./examples/dflowfm/08_dflowfm_sequential_dwaves
                 mv -v test/deltares_testbench/data/cases/e109_f01_c010_weir_timeseries/* ./examples/dflowfm/09_dflowfm_parallel_dwaves
             """.trimIndent()

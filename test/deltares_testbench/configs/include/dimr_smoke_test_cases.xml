@@ -165,4 +165,15 @@
         </file>
     </checks>
 </testCase>
+<testCase name="e02_f041_c01_FriesianInlet_schematic" ref="dflowfm_swantau_to_waq_default">
+  <path version="2024-02-22T14:40:00">e02_dflowfm/f041_SWAN-tau_to_WAQ/c01_FriesianInlet_schematic</path>
+  <checks>
+    <file name="dflowfm/dflowfmoutput/f34_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_water_quality_output_6" toleranceAbsolute="0.0001" />
+        <parameter name="mesh2d_hwav" toleranceAbsolute="0.0001" />
+      </parameters>
+    </file>
+  </checks>
+</testCase>
 </testCases>
