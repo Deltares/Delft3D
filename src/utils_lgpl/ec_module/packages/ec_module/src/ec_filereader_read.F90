@@ -711,13 +711,13 @@ contains
       integer :: n_cols, n_rows
       logical :: has_time ! flag if we (should) have a time axis
       logical :: has_harmonics ! flag if we have harmonics
-      logical :: is_transposed ! data in file is ordered X,Y instead of Y,X
+      logical :: is_column_major ! data in file is ordered X,Y instead of Y,X
       !
       success = .false.
       fieldPtr => null()
       has_time = (fileReaderPtr%tframe%nr_timesteps > 0)
       has_harmonics = associated(fileReaderPtr%hframe)
-      is_transposed = fileReaderPtr%is_transposed_field
+      is_column_major = fileReaderPtr%is_column_major
 
       dmiss_nc = item%quantityPtr%fillvalue
       varid = item%quantityPtr%ncid
@@ -816,7 +816,7 @@ contains
             valid_field = .false.
             !
             if (issparse /= 1) then
-               if (is_transposed) then
+               if (is_column_major) then
                   allocate (data_block(nrow, ncol), stat=istat)
                else
                   allocate (data_block(ncol, nrow), stat=istat)
@@ -832,7 +832,7 @@ contains
             if (item%elementSetPtr%nCoordinates > 0) then
                if (issparse == 1) then
                   call read_data_sparse(fileReaderPtr%fileHandle, varid, n_cols, n_rows, item%elementSetPtr%n_layers, &
-                                        timesndx, is_transposed, fileReaderPtr%relndx, ia, ja, Ndatasize, fieldPtr%arr1dPtr, ierror)
+                                        timesndx, is_column_major, fileReaderPtr%relndx, ia, ja, Ndatasize, fieldPtr%arr1dPtr, ierror)
                   if (ecSupportNetcdfCheckError(ierror, 'Error reading quantity '//trim(item%quantityptr%name)//' from sparse data. ', fileReaderPtr%filename)) then
                      valid_field = .true.
                   else
@@ -848,7 +848,7 @@ contains
                         end if
                      else
                         if (has_harmonics) then
-                           if (is_transposed) then
+                           if (is_column_major) then
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=(/row0, col0/), count=(/nrow, ncol/))
                            else
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=(/col0, row0/), count=(/ncol, nrow/))
@@ -877,7 +877,7 @@ contains
                      ! copy data to source Field's 1D array, store (X1Y1, X1Y2, ..., X1Yn_rows, X2Y1, XYy2, ..., Xn_colsY1, ...)
                      do i = 1, nrow
                         do j = 1, ncol
-                           if (is_transposed) then
+                           if (is_column_major) then
                               fieldPtr%arr1dPtr((i - 1) * ncol + j) = data_block(i, j)
                            else
                               fieldPtr%arr1dPtr((i - 1) * ncol + j) = data_block(j, i)
@@ -889,13 +889,13 @@ contains
                      ! copy data to source Field's 1D array, store (X1Y1, X1Y2, ..., X1Yn_rows, X2Y1, XYy2, ..., Xn_colsY1, ...)
                      do k = 1, item%elementSetPtr%n_layers
                         if (has_harmonics) then
-                           if (is_transposed) then
+                           if (is_column_major) then
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=(/row0, col0, k/), count=(/nrow, ncol, 1/))
                            else
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=(/col0, row0, k/), count=(/ncol, nrow, 1/))
                            end if
                         else
-                           if (is_transposed) then
+                           if (is_column_major) then
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=(/row0, col0, k, timesndx/), count=(/nrow, ncol, 1, 1/))
                            else
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=(/col0, row0, k, timesndx/), count=(/ncol, nrow, 1, 1/))
@@ -903,7 +903,7 @@ contains
                         end if
                         do i = 1, nrow
                            do j = 1, ncol
-                              if (is_transposed) then
+                              if (is_column_major) then
                                  fieldPtr%arr1dPtr((k - 1) * ncol * nrow + (i - 1) * ncol + j) = data_block(i, j)
                               else
                                  fieldPtr%arr1dPtr((k - 1) * ncol * nrow + (i - 1) * ncol + j) = data_block(j, i)
@@ -2168,7 +2168,7 @@ contains
    end subroutine strip_comment
 
 !     read data and store in CRS format
-   subroutine read_data_sparse(filehandle, varid, n_cols, n_rows, n_layers, timesndx, is_transposed, relndx, ia, ja, Ndatasize, arr1d, ierror)
+   subroutine read_data_sparse(filehandle, varid, n_cols, n_rows, n_layers, timesndx, is_column_major, relndx, ia, ja, Ndatasize, arr1d, ierror)
       use netcdf
       use netcdf_utils, only: ncu_get_att
       use io_ugrid
@@ -2181,7 +2181,7 @@ contains
       integer, intent(in) :: n_rows !< number of rows in input
       integer, intent(in) :: n_layers !< number of layers in input
       integer, intent(in) :: timesndx !< time index
-      logical, intent(in) :: is_transposed !< rows and columns are transposed in the file
+      logical, intent(in) :: is_column_major !< rows and columns are transposed in the file
       integer, intent(in) :: relndx !< realization index in an ensemble
       integer, dimension(:), intent(in) :: ia !< CRS sparsity pattern, startpointers
       integer, dimension(:), intent(in) :: ja !< CRS sparsity pattern, column numbers
@@ -2256,7 +2256,7 @@ contains
 
             if (mcolmax(j) >= mcolmin(j)) then
 !                 read data
-               if (is_transposed) then
+               if (is_column_major) then
                   start(1:2) = (/nrowmin, mcolmin(j)/)
                   cnt(1:2) = (/nrowmax(j) - nrowmin + 1, mcolmax(j) - mcolmin(j) + 1/)
                else
@@ -2290,7 +2290,7 @@ contains
                do nrow = nrowmin, nrowmax(j)
                   do i = ia(nrow), ia(nrow + 1) - 1
                      mcol = ja(i)
-                     if (is_transposed) then
+                     if (is_column_major) then
                         arr1d(i + (k - 1) * Ndatasize) = data_block((nrow - nrowmin + 1) + (nrowmax(j) - nrowmin + 1) * (mcol - mcolmin(j)))
                      else
                         arr1d(i + (k - 1) * Ndatasize) = data_block((mcol - mcolmin(j) + 1) + (mcolmax(j) - mcolmin(j) + 1) * (nrow - nrowmin))
