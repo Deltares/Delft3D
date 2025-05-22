@@ -8028,6 +8028,7 @@ contains
       use m_get_ucx_ucy_eul_mag
       use m_get_chezy, only: get_chezy
       use m_turbulence, only: in_situ_density, potential_density
+      use m_waves, only: uorb
 
       implicit none
 

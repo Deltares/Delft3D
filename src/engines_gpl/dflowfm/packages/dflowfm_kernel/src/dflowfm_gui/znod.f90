@@ -55,6 +55,7 @@ contains
       use m_get_equilibrium_transport_rates
       use m_get_tau
       use m_nudge, only: nudge_rate
+      use m_waves, only: waveparopt, hwav, rlabda, twav , uorb, fwav_mag,ust_mag, sxwav, numoptwav, sywav, sbxwav, sbywav, ustx_cc, usty_cc, phiwav, fetch
       
       implicit none
 

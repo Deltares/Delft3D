@@ -63,7 +63,7 @@ contains
       use m_depmax2, only: vmax => vmax2, vmin => vmin2
       use m_get_kbot_ktop
       use m_get_czz0
-      use m_physcoef, only: apply_thermobaricity, idensform
+      use m_density_parameters, only: apply_thermobaricity, idensform
       use m_density_formulas, only: DENSITY_OPTION_UNESCO83
 
       implicit none

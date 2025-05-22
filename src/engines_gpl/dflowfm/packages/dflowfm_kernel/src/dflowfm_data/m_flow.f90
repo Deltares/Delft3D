@@ -35,6 +35,7 @@ module m_flow ! flow arrays-999
    use fm_external_forcings_data
    use m_flowoutput
    use m_physcoef
+   use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
    use m_turbulence
    use m_grw
    use m_heatfluxes

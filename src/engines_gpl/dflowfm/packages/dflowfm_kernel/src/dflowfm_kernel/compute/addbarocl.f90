@@ -33,7 +33,7 @@
 
 module m_add_baroclinic_pressure_link
    use precision, only: dp
-   use m_physcoef, only: thermobaricity_in_pressure_gradient
+   use m_density_parameters, only: thermobaricity_in_pressure_gradient
    use m_turbulence, only: in_situ_density, potential_density
 
    implicit none
@@ -43,9 +43,57 @@ module m_add_baroclinic_pressure_link
    real(kind=dp), parameter :: MIN_LAYER_THICKNESS = 0.1_dp ! Minimum layer thickness for baroclinic pressure calculation
    real(kind=dp), dimension(:), pointer :: density ! local pointer
 
-   public :: add_baroclinic_pressure_link, add_baroclinic_pressure_link_interface, add_baroclinic_pressure_link_use_rho_directly
+   public :: add_baroclinic_pressure_link_original, add_baroclinic_pressure_link, &
+             add_baroclinic_pressure_link_interface, add_baroclinic_pressure_link_use_rho_directly
 
 contains
+
+   !> Computes baroclinic pressure gradients across layers for a horizontal link.
+   !! Original method that was used when Baroczlaybed was set to 0.
+   subroutine add_baroclinic_pressure_link_original(link_index_2d, l_bot, l_top)
+      use m_turbulence, only: kmxx, rhou, baroclinic_pressures, integrated_baroclinic_pressures
+      use m_flowgeom, only: ln, dx
+      use m_flow, only: zws, ktop
+      use m_flowparameters, only: jarhoxu
+
+      integer, intent(in) :: link_index_2d !< Horizontal link index
+      integer, intent(in) :: l_bot !< bottom link
+      integer, intent(in) :: l_top !< top link
+
+      integer :: link_index_3d, k1, k2, k1t, k2t
+      real(kind=dp) :: baroclinic_pressure_gradients(kmxx), volume_averaged_density(kmxx), baroclinic_pressure3
+
+      ! Associate density with the potential density or in-situ density
+      if (thermobaricity_in_pressure_gradient) then
+         density => in_situ_density
+      else
+         density => potential_density
+      end if
+
+      do link_index_3d = l_bot, l_top
+         k1 = ln(1, link_index_3d)
+         k1t = k1
+         k2 = ln(2, link_index_3d)
+         k2t = k2
+         if (link_index_3d == l_top) then
+            k1t = ktop(ln(1, link_index_2d))
+            k2t = ktop(ln(2, link_index_2d))
+         end if
+
+         volume_averaged_density(link_index_3d - l_bot + 1) = 0.5_dp * (zws(k1t) - zws(k1 - 1) + zws(k2t) - zws(k2 - 1)) * dx(link_index_2d) * 0.5_dp * (density(k1) + density(k2))
+         if (jarhoxu > 0) then
+            rhou(link_index_3d) = 0.5_dp * (density(k1) + density(k2))
+         end if
+
+         baroclinic_pressure3 = 0.5_dp * (baroclinic_pressures(k1) + baroclinic_pressures(k2)) * (zws(k1 - 1) - zws(k2 - 1))
+         baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = integrated_baroclinic_pressures(k1) - integrated_baroclinic_pressures(k2) + baroclinic_pressure3
+         if (link_index_3d > l_bot) then
+            baroclinic_pressure_gradients(link_index_3d - l_bot) = baroclinic_pressure_gradients(link_index_3d - l_bot) - baroclinic_pressure3 ! ceiling of cell below
+         end if
+      end do
+
+      call baroclinic_pressure_link_time_integration(baroclinic_pressure_gradients, volume_averaged_density, link_index_2d, l_bot, l_top)
+   end subroutine add_baroclinic_pressure_link_original
 
    !> Computes baroclinic pressure gradients across layers for a horizontal link.
    !! Density is based on linear interpolation of density at vertical interfaces.
@@ -174,7 +222,7 @@ contains
 
          baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = baroclinic_pressure_gradients(link_index_3d - l_bot + 1) + integrated_baroclinic_pressure1 - integrated_baroclinic_pressure2 + baroclinic_pressure3
          if (link_index_3d > l_bot) then
-            baroclinic_pressure_gradients(link_index_3d - l_bot) = baroclinic_pressure_gradients(link_index_3d - l_bot) - baroclinic_pressure3 ! ceiling of ff# downstairs neighbours
+            baroclinic_pressure_gradients(link_index_3d - l_bot) = baroclinic_pressure_gradients(link_index_3d - l_bot) - baroclinic_pressure3 ! ceiling of cell below
          end if
       end do
 
@@ -189,7 +237,8 @@ contains
       use m_flow, only: zws, numtopsig, kmxn, ktop
       use m_flowparameters, only: jarhoxu
       use m_transport, only: ISALT, ITEMP, constituents
-      use m_physcoef, only: rhomean, max_iterations_pressure_density, ag, apply_thermobaricity
+      use m_physcoef, only: rhomean, ag
+      use m_density_parameters, only: max_iterations_pressure_density, apply_thermobaricity
       use m_density, only: calculate_density
 
       integer, intent(in) :: link_index_2d !< Horizontal link index
@@ -327,7 +376,7 @@ contains
 
          baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = baroclinic_pressure_gradients(link_index_3d - l_bot + 1) + integrated_baroclinic_pressure1 - integrated_baroclinic_pressure2 + baroclinic_pressure3
          if (link_index_3d > l_bot) then
-            baroclinic_pressure_gradients(link_index_3d - l_bot) = baroclinic_pressure_gradients(link_index_3d - l_bot) - baroclinic_pressure3 ! ceiling of ff# downstairs neighbours
+            baroclinic_pressure_gradients(link_index_3d - l_bot) = baroclinic_pressure_gradients(link_index_3d - l_bot) - baroclinic_pressure3 ! ceiling of cell below
          end if
       end do
 

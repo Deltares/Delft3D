@@ -54,10 +54,9 @@ contains
 !! based on Hurdle, Stive formulae, tauwave based on Swart, taus = taubmx = taucur + tauwave, as in Delwaq
    subroutine tauwavefetch(tim)
       use precision, only: dp
-      use m_sediment, only: rlabda
       use m_flowgeom, only: ndx, ndxi, ndx2d
       use m_flow
-      use m_waves, only: fetch, nwf, fetdp, uorb, twav, hwav
+      use m_waves, only: fetch, nwf, fetdp, uorb, twav, hwav, rlabda
       use m_flowtimes
       use m_partitioninfo
       use timers

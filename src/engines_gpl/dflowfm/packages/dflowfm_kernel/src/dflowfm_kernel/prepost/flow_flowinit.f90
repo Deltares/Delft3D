@@ -1631,7 +1631,7 @@ contains
       use m_turbulence, only: rhowat, potential_density, in_situ_density
       use m_get_kbot_ktop, only: getkbotktop
       use m_density, only: set_potential_density, set_pressure_dependent_density
-      use m_physcoef, only: apply_thermobaricity
+      use m_density_parameters, only: apply_thermobaricity
 
       implicit none
 

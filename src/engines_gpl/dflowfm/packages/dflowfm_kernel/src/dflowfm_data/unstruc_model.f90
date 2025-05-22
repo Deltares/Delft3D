@@ -729,6 +729,8 @@ contains
       use m_qnerror
       use messagehandling, only: msgbuf, err_flush, warn_flush
       use m_circumcenter_method, only: md_circumcenter_method, circumcenter_method, extract_circumcenter_method, circumcenter_tolerance
+      use m_check_positive_value, only: check_positive_value
+      use m_add_baroclinic_pressure, only: rhointerfaces
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -2591,7 +2593,7 @@ contains
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
-      use m_physcoef, only: apply_thermobaricity
+      use m_density_parameters, only: apply_thermobaricity
       use unstruc_netcdf, only: unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
       use dflowfm_version_module
       use m_equatorial
@@ -2616,6 +2618,7 @@ contains
       use m_datum
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
+      use m_add_baroclinic_pressure, only: DENSITY_TO_INTERFACES, rhointerfaces
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -3167,8 +3170,8 @@ contains
       if (writeall .or. max_iterations_pressure_density /= 1) then
          call prop_set(prop_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density, 'Max nr of iterations in pressure-density coupling, only used if thermobaricity is true.')
       end if
-      if (writeall .or. rhointerfaces /= 0) then
-         call prop_set(prop_ptr, 'numerics', 'Rhointerfaces', rhointerfaces, 'Evaluate rho at interfaces: 0 = linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.')
+      if (writeall .or. rhointerfaces /= DENSITY_TO_INTERFACES) then
+         call prop_set(prop_ptr, 'numerics', 'Rhointerfaces', rhointerfaces, 'Baroclinic pressure gradient method: -1 = original method. Evaluate rho at interfaces: 0 = linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.')
       end if
 
       if (icgsolver == 8) then ! for parms solver
@@ -4159,19 +4162,6 @@ contains
       end if
 
    end function is_not_multiple
-
-!> Raise an error when provided value is not positive (also to avoid division by zero)
-   subroutine check_positive_value(mdu_keyword, value)
-      use m_flowparameters, only: eps10
-      implicit none
-
-      character(*), intent(in) :: mdu_keyword !< Keyword in the mdu-file
-      real(kind=dp), intent(in) :: value !< Corresponding value
-
-      if (value < eps10) then
-         call mess(LEVEL_ERROR, trim(mdu_keyword), ' should be larger than 0.')
-      end if
-   end subroutine check_positive_value
 
    subroutine set_output_time_vector(md_tvfil, ti_tv, ti_tv_rel)
 

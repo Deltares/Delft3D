@@ -3346,7 +3346,7 @@ contains
       do k = 1, ns - 1
          crp = 0.0_hp
          call CROSS(xe, ye, xen, yen, xs(k), ys(k), xs(k + 1), ys(k + 1), JACROS, SL, SM, XCR, YCR, CRP)
-         if (SL >= 0.0_hp .and. SL <= 1.0_hp .and. SM > -DEPS .and. SM < 1.0_hp + DEPS) then ! instead of jacros==1, solves firmijn's problem
+         if (SL >= 0.0_hp .and. SL <= 1.0_hp .and. SM > -DEPS .and. SM < 1.0_hp + DEPS) then ! instead of jacros==1
             DIS = DBDISTANCE(XE, YE, XCR, YCR)
             if (DIS < DISM) then ! Found a better intersection point
                DISM = DIS
