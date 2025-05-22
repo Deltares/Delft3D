@@ -1,6 +1,7 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.failureConditions.*
 
 object Sign : BuildType({
 
@@ -91,4 +92,13 @@ object Sign : BuildType({
         }
     }
 
+    failureConditions {
+        failOnText {
+            conditionType = BuildFailureOnText.ConditionType.CONTAINS
+            pattern = "SignTool Error"
+            failureMessage = "Signtool failed, terminating..."
+            reverse = false
+            stopBuildOnFailure = true
+        }
+    }
 })
