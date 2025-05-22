@@ -69,7 +69,8 @@ module string_module
    public :: GetLine
    public :: int2str
    public :: get_version_major_minor_integer
-
+   public :: str_split 
+   
    interface strip_quotes
       module procedure strip_quotes1
       module procedure strip_quotes2
@@ -1038,4 +1039,47 @@ contains
       success = .true.
    end subroutine get_version_major_minor_integer
 
+   !> Split a string into its tokens separated by a delimiter. 
+   !! The string is split into tokens, which are stored in the words array.
+   !! The `last_token` variable indicates the number of tokens found.
+   !! The subroutine allocates the words array, so it should be deallocated after use.
+   subroutine str_split(words,last_token,string, token, quote, delims)
+   
+   use m_alloc, only: realloc
+      !
+      ! Arguments
+      !
+   character(*), intent(inout) :: string
+   character(*), intent(out) :: token
+   character(:), allocatable, intent(out) :: words(:)
+   integer, intent(out) :: last_token
+   character(1), optional, intent(in) :: quote
+   character(*), optional, intent(in) :: delims
+
+   
+   integer :: i
+   integer, parameter :: MAXTOKENS=3 !< Maximum number of tokens to split
+   integer, parameter :: MAXLENGTH=25 !< Maximum length of each token
+   allocate(character(len=MAXLENGTH) :: words(MAXTOKENS)) !<array containing the tokens
+   
+   ! Fill the array with empty strings
+   do i = 1, MAXTOKENS
+      words(i) = ""  
+   end do
+
+   ! Loop on the string to find the tokens
+   do i=1,MAXTOKENS
+      call str_token(string, token, quote, delims)
+      if (len_trim(token) == 0) then
+          last_token=i-1
+          return  ! Exit when no more tokens are found
+      end if
+      
+      words(i) = token
+   end do
+   
+   last_token=MAXTOKENS
+   
+   end subroutine str_split
+   
 end module string_module

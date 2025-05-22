@@ -400,7 +400,7 @@ contains
       use unstruc_files
       use m_flowtimes
       use timers
-      use m_wind, only: jawind, jarain, solrad_available
+      use m_wind, only: jawind, jarain, solar_radiation_available
       use date_time_utils, only: compute_reference_day
       use m_logger_helper, only: set_log_unit_number
 
@@ -653,7 +653,7 @@ contains
 
       icon = index_in_array(cirradiation, coname_sub)
       isfradsurf = 0
-      if (solrad_available .and. jatem > 1) then
+      if (solar_radiation_available .and. jatem > 1) then
          if (icon > 0) then
             num_spatial_time_fuctions = num_spatial_time_fuctions + 1
             isfradsurf = num_spatial_time_fuctions
@@ -1573,7 +1573,7 @@ contains
          do kk = 1, Ndxi
             call getkbotktopmax(kk, kb, kt, ktmax)
             call getkbotktop(kk, kb, kt)
-            process_space_real(ipoiradsurf + kb - kbx:ipoiradsurf + ktmax - kbx) = solar_radiation(kk)
+            process_space_real(ipoiradsurf + kb - kbx:ipoiradsurf + ktmax - kbx) = net_solar_radiation(kk)
          end do
       end if
 

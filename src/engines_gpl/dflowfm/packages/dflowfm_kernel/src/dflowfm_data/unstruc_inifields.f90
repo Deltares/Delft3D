@@ -1732,13 +1732,14 @@ contains
          target_location_type = UNC_LOC_U
          target_array => Cdwusp
          iCdtyp = 1 ! only 1 coeff
+         !
       case ('wavesignificantheight')
-         if (jawave == 6 .or. jawave == 7) then
+         if (jawave == 7) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
          else
             call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7')
+                      ''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 7')
             success = .false.
          end if
       case default

@@ -405,7 +405,7 @@ contains
          end if
       end if
       if (associated(targetItemPtr4)) then
-         ! fourth field (e.g. for 'humidity_airtemperatur_cloudiness_solarradiation'
+         ! fourth field (e.g. for 'humidity_airtemperature_cloudiness_solarradiation'
          fieldId_4 = ecCreateField(ecInstancePtr)
          if (success) success = ecSetField1dArray(ecInstancePtr, fieldId_4, dataPtr4)
          if (success) success = ecSetFieldMissingValue(ecInstancePtr, fieldId_4, dmiss)
@@ -914,10 +914,10 @@ contains
                if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
             end if
             if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_humidity)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_airtemperature)
+            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_air_temperature)
             if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_cloudiness)
             if (success) success = ecAddItemConnection(ecInstancePtr, item_hac_humidity, connectionId)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_hac_airtemperature, connectionId)
+            if (success) success = ecAddItemConnection(ecInstancePtr, item_hac_air_temperature, connectionId)
             if (success) success = ecAddItemConnection(ecInstancePtr, item_hac_cloudiness, connectionId)
             if (.not. success) then
                goto 1234
@@ -961,14 +961,14 @@ contains
             return
          end if
 
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hacs_humidity)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hacs_airtemperature)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hacs_relative_humidity)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hacs_air_temperature)
          if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hacs_cloudiness)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hacs_solarradiation)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_hacs_humidity, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_hacs_airtemperature, connectionId)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hacs_solar_radiation)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_hacs_relative_humidity, connectionId)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_hacs_air_temperature, connectionId)
          if (success) success = ecAddItemConnection(ecInstancePtr, item_hacs_cloudiness, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_hacs_solarradiation, connectionId)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_hacs_solar_radiation, connectionId)
          if (.not. success) then
             goto 1234
          end if
@@ -989,11 +989,11 @@ contains
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
             return
          end if
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dac_dewpoint)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dac_airtemperature)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dac_dew_point_temperature)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dac_air_temperature)
          if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dac_cloudiness)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dac_dewpoint, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dac_airtemperature, connectionId)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_dac_dew_point_temperature, connectionId)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_dac_air_temperature, connectionId)
          if (success) success = ecAddItemConnection(ecInstancePtr, item_dac_cloudiness, connectionId)
       case ('dewpoint_airtemperature_cloudiness_solarradiation')
          if (ec_filetype == provFile_netcdf) then
@@ -1013,14 +1013,14 @@ contains
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
             return
          end if
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dacs_dewpoint)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dacs_airtemperature)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dacs_dew_point_temperature)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dacs_air_temperature)
          if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dacs_cloudiness)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dacs_solarradiation)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_dewpoint, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_airtemperature, connectionId)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dacs_solar_radiation)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_dew_point_temperature, connectionId)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_air_temperature, connectionId)
          if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_cloudiness, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_solarradiation, connectionId)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_solar_radiation, connectionId)
       case ('humidity')
          sourceItemName = 'relative_humidity'
       case ('dewpoint')
@@ -1032,13 +1032,13 @@ contains
                goto 1234
             end if
             success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_airtemperature)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_airtemperature, connectionId)
+            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_air_temperature)
+            if (success) success = ecAddItemConnection(ecInstancePtr, item_air_temperature, connectionId)
          elseif (ec_filetype == provFile_netcdf) then
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
             success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_airtemperature)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_airtemperature, connectionId)
+            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_air_temperature)
+            if (success) success = ecAddItemConnection(ecInstancePtr, item_air_temperature, connectionId)
             if (.not. success) then
                goto 1234
             end if
@@ -1059,8 +1059,8 @@ contains
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
             return
          end if
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_airdensity)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_airdensity, connectionId)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_air_density)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_air_density, connectionId)
       case ('solarradiation')
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'surface_net_downward_shortwave_flux'
@@ -1079,10 +1079,10 @@ contains
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
             return
          end if
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_nudge_tem)
-         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_nudge_sal)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_nudge_tem, connectionId)
-         if (success) success = ecAddItemConnection(ecInstancePtr, item_nudge_sal, connectionId)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_nudge_temperature)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_nudge_salinity)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_nudge_temperature, connectionId)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_nudge_salinity, connectionId)
       case ('waqfunction')
          if (.not. checkFileType(ec_filetype, provFile_uniform, target_name)) then
             return

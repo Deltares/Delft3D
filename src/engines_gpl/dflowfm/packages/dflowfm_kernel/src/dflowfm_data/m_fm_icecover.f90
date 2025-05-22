@@ -283,7 +283,7 @@ contains
       use m_physcoef, only: vonkar
       use physicalconsts, only: CtoKelvin
       use m_heatfluxes, only: cpw
-      use m_wind, only: airtemperature
+      use m_wind, only: air_temperature
       use ieee_arithmetic, only: ieee_is_nan
       !
       ! Function/routine arguments
@@ -354,7 +354,7 @@ contains
             tsi = snow_temperature(n)
          end if
          !
-         ! Compute longwave radiation flux from ice surface according to Eq. (7) in (Wang, 2005)
+         ! Compute long wave radiation radiation flux from ice surface according to Eq. (7) in (Wang, 2005)
          ! including an iteration proces
          !
          do iter = 1, 5
@@ -394,13 +394,13 @@ contains
                !
                ! no freezing in case of air temperatures above zero
                !
-               if (airtemperature(n) > 0.0_fp .and. qh_air2ice(n) < 0.0_fp) then
+               if (air_temperature(n) > 0.0_fp .and. qh_air2ice(n) < 0.0_fp) then
                   qh_air2ice(n) = 0.0_fp
                end if
                !
                ! no melting in case of air temperatures below zero
                !
-               if (airtemperature(n) < 0.0_fp .and. qh_air2ice(n) > 0.0_fp) then
+               if (air_temperature(n) < 0.0_fp .and. qh_air2ice(n) > 0.0_fp) then
                   qh_air2ice(n) = 0.0_fp
                end if
                exit ! jump out of the iteration loop
@@ -454,7 +454,7 @@ contains
       use precision, only: dp
       use m_flowgeom, only: ndx
       use m_flowtimes, only: dts
-      use m_wind, only: airtemperature, rain, jarain
+      use m_wind, only: air_temperature, rain, jarain
       !
       ! Function/routine arguments
       !
@@ -476,7 +476,7 @@ contains
          ! Compute snow growth (NB. presence of ice is required)
          if (jarain == 1) then ! check whether rainfall input is prescribed
             do n = 1, ndx
-               if (airtemperature(n) < 0.0_fp .and. ice_thickness(n) > 0.01_fp .and. rain(n) > 0.0_fp) then
+               if (air_temperature(n) < 0.0_fp .and. ice_thickness(n) > 0.01_fp .and. rain(n) > 0.0_fp) then
                   snow_thickness(n) = snow_thickness(n) + dts * rain(n) * conv_factor
                end if
             end do
@@ -484,7 +484,7 @@ contains
 
          ! Compute ice growth or melt or melting of snow
          do n = 1, ndx
-            if (airtemperature(n) < 0.0_fp .or. ice_thickness(n) > 0.001_fp) then
+            if (air_temperature(n) < 0.0_fp .or. ice_thickness(n) > 0.001_fp) then
                if (qh_air2ice(n) > qh_ice2wat(n)) then
                   ! Melting of ice or snow
                   ! 

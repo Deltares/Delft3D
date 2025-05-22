@@ -44,7 +44,7 @@ object WindowsBuildDflowfmInteracter : BuildType({
         root(AbsoluteId("ReposDsRoot"), "+:trunk/src/third_party/interacter => ./src/third_party/interacter")
 
         cleanCheckout = true
-        checkoutDir = "ossbuild-lnx64"
+        checkoutDir = "ossbuild-win"
     }
 
     steps {

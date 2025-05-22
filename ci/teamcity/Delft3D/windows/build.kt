@@ -42,7 +42,7 @@ object WindowsBuild : BuildType({
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
-        checkoutDir = "ossbuild-lnx64"
+        checkoutDir = "ossbuild-win"
     }
 
     steps {

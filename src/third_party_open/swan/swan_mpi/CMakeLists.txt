@@ -49,12 +49,6 @@ if (WIN32)
                           "${mpi_fortran_library}"
                           "netcdf.lib")
 
-    # disable OpenMP
-    string(REPLACE "/MP" "" TEMP "${CMAKE_Fortran_FLAGS}")
-    set(CMAKE_Fortran_FLAGS ${TEMP})
-    string(REPLACE "/MP" "" TEMP "${CMAKE_Fortran_FLAGS_DEBUG}")
-    set(CMAKE_Fortran_FLAGS_DEBUG ${TEMP})
-
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
@@ -81,6 +75,21 @@ set_source_files_properties(${checkout_src_root}/third_party_open/swan/src/ocpid
 
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${executable_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+
+# Set additional compilation flags to match with Deltares-SWAN outside Delft3D
+if (WIN32)
+    target_compile_options(${executable_name} PRIVATE
+                                                  "${avx2_flag}"
+                                                  "${traceback_flag}"
+                                                  "${heap_arrays_20_flag}"
+                                                  "${automatic_local_variable_storage_flag}"
+                                                  "${floating_point_source_flag}"
+                                                  "${floating_point_speculation_safe_flag}")
+endif(WIN32)
+if (UNIX)
+    target_compile_options(${executable_name} PRIVATE
+                                                  "SHELL:${avx2_flag}")
+endif(UNIX)
 
 # Define preprocessor definitions
 if (WIN32)

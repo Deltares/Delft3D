@@ -68,7 +68,7 @@ contains
       use m_get_ucx_ucy_eul_mag
       use m_get_link1
       use m_links_to_centers, only: links_to_centers
-      use m_wind, only: wx, wy, jawind, japatm, patm, jarain, rain, airdensity, airtemperature, relative_humidity, cloudiness
+      use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness
       use m_turbulence, only: in_situ_density, potential_density, rich, richs
       use m_fm_icecover, only: ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
 
@@ -224,8 +224,8 @@ contains
                   valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
                end do
             end if
-            if (jaPATM > 0 .and. allocated(patm)) then
-               valobs(i, IPNT_PATM) = PATM(k)
+            if (air_pressure_available > 0 .and. allocated(air_pressure)) then
+               valobs(i, IPNT_PATM) = air_pressure(k)
             end if
 
             if (jawave == 4 .and. allocated(R)) then
@@ -542,8 +542,8 @@ contains
                valobs(i, IPNT_RAIN) = rain(k)
             end if
 
-            if (allocated(airdensity) .and. jahis_airdensity > 0) then
-               valobs(i, IPNT_AIRDENSITY) = airdensity(k)
+            if (allocated(air_density) .and. jahis_airdensity > 0) then
+               valobs(i, IPNT_AIRDENSITY) = air_density(k)
             end if
 
 !        Infiltration
@@ -564,7 +564,7 @@ contains
                end if
 
                if (jatem > 1) then ! also heat modelling involved
-                  valobs(i, IPNT_TAIR) = airtemperature(k)
+                  valobs(i, IPNT_TAIR) = air_temperature(k)
                end if
 
                if (jatem == 5 .and. allocated(relative_humidity) .and. allocated(cloudiness)) then

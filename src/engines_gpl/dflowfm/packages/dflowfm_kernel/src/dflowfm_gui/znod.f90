@@ -49,7 +49,7 @@ contains
       use m_transportdata
       use m_observations_data
       use m_flowparameters, only: ispirparopt
-      use m_wind, only: japatm, patm, rain, relative_humidity, tbed, airtemperature, cloudiness, qrad
+      use m_wind, only: air_pressure_available, air_pressure, rain, relative_humidity, tbed, air_temperature, cloudiness, solar_radiation
       use unstruc_display_data, only: grwhydopt
       use m_drawthis
       use m_get_equilibrium_transport_rates
@@ -177,7 +177,7 @@ contains
             znod = min(znod, vol1(k) / max(squ(k), eps10))
          end do
       else if (nodval == 31) then
-         if (japatm > 0) znod = patm(kk)
+         if (air_pressure_available > 0) znod = air_pressure(kk)
       else if (nodval == 32) then
          if (numlimdt(kk) > 0) znod = numlimdt(kk)
       else if (nodval == 33) then
@@ -230,11 +230,11 @@ contains
       else if (nodval == 41 .and. jatem > 0) then
          znod = relative_humidity(kk)
       else if (nodval == 42 .and. jatem > 0) then
-         znod = airtemperature(kk)
+         znod = air_temperature(kk)
       else if (nodval == 43 .and. jatem > 0) then
          znod = cloudiness(kk)
-      else if (nodval == 44 .and. jatem > 0 .and. allocated(qrad)) then
-         znod = qrad(kk)
+      else if (nodval == 44 .and. jatem > 0 .and. allocated(solar_radiation)) then
+         znod = solar_radiation(kk)
       else if (nodval == 45 .and. NUMCONST > 0) then
          if (iconst_cur > 0 .and. iconst_cur <= NUMCONST) then
             znod = constituents(iconst_cur, k)

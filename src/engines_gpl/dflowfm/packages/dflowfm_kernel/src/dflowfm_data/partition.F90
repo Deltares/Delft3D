@@ -775,7 +775,7 @@ contains
          !            This subroutine only deals with edge-ordering and partition-to-global mapping (i.e., no netnode remapping).
          ic_p = nump + i_p
          ic_g = iglobal_s(ic_p)
-         i_g = ic_g - nump0  ! mesh1d node number derived from netcell number.
+         i_g = ic_g - nump0 ! mesh1d node number derived from netcell number.
          nodeids_p(i_p) = nodeids_g(i_g)
          nbranchids_p(i_p) = nodebranchidx_g(i_g)
          nodeoffsets_p(i_p) = nodeoffsets_g(i_g)
@@ -3372,10 +3372,13 @@ contains
 !>   reduce: take global cell with lowest dist
    subroutine reduce_kobs(N, kobs, xobs, yobs, jaoutside)
       use m_flowgeom, only: xz, yz, nd
-      use messagehandling, only: LEVEL_ERROR, mess
+      use messagehandling, only: LEVEL_ERROR, LEVEL_WARN, mess
       use geometry_module, only: pinpok, dbdistance
       use m_missing, only: jins, dmiss
       use m_sferic, only: jsferic, jasfer3D
+      use m_observations_data, only: namobs
+      use precision_basics, only: comparereal
+
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -3433,29 +3436,6 @@ contains
          end if
       end do
 
-!      BEGIN DEBUG
-!       call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       do idmn=0,ndomains-1
-!          if ( idmn.eq.my_rank) then
-!             open(newunit=lunfil,file='deleteme.txt', access='append')
-!
-!             if ( my_rank.eq.0 ) then
-!                write(lunfil,"('reduce_kobs')")
-!                write(lunfil,"('before reduce')")
-!             end if
-!
-!             write(lunfil,"('my_rank=',I0)") idmn
-!             do i=1,N
-!                write(lunfil,"(I4, I8, E17.4)") i, kobs(i), dist(i)
-!             end do
-!
-!             close(lunfil)
-!          end if
-!
-!          call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       end do
-!      END DEBUG
-
 !     globally reduce
       call mpi_allgather(dist, N, MPI_DOUBLE_PRECISION, dist_all, N, MPI_DOUBLE_PRECISION, DFM_COMM_DFMWORLD, ierror)
 
@@ -3491,38 +3471,17 @@ contains
       end do
       call mpi_allreduce(dist, dist_all, N, MPI_DOUBLE_PRECISION, MPI_SUM, DFM_COMM_DFMWORLD, ierror) ! re-use (part of) dist_all
       do i = 1, N
-         if (dist_all(i, 0) > 1d0) then
+         if (comparereal(dist_all(i, 0), 1d0) == 1) then
             call mess(LEVEL_ERROR, 'reduce_kobs: non-unique observation station(s)')
+         end if
+         if (comparereal(dist_all(i, 0), 0d0) == 0) then
+            call mess(LEVEL_WARN, 'reduce_kobs: observation station '//trim(namobs(i))//' was not snapped to a valid flownode on any partition.')
          end if
       end do
 
-!      BEGIN DEBUG
-!       call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       do idmn=0,ndomains-1
-!          if ( idmn.eq.my_rank) then
-!             open(newunit=lunfil,file='deleteme.txt', access='append')
-!
-!             if ( my_rank.eq.0 ) then
-!                write(lunfil,"('after reduce')")
-!             end if
-!
-!             write(lunfil,"('my_rank=',I0)") idmn
-!             do i=1,N
-!                write(lunfil,"(I4, I8, 2E17.4)") i, kobs(i), dist(i), dist_all(i)
-!             end do
-!
-!             close(lunfil)
-!          end if
-!
-!          call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       end do
-!      END DEBUG
-
       if (allocated(dist)) deallocate (dist)
       if (allocated(dist_all)) deallocate (dist_all)
-
 #endif
-      return
    end subroutine reduce_kobs
 
 !> reduce outputted values at observation stations

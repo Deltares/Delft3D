@@ -3510,7 +3510,7 @@ contains
          return
       end if
       !
-      if (jawave == 3 .or. jawave == 6) then
+      if (jawave == 3 .or. jawave == 7) then
          cw = rlabda(k) / max(1d-1, twav(k))
          rol = 9d-1 * rhomean * ag * sin(1d-1) * hwav(k)**2 ! Martins 2018
          disrol = 2d-1 * ag * rol / cw ! 2.0*beta = 2d-1

@@ -16,10 +16,22 @@ class Logger:
     def __init__(self, run_on_teamcity: bool = False) -> None:
         self.run_on_teamcity = run_on_teamcity
 
+    def _escape_teamcity(self, text: str) -> str:
+        """Escape special characters for TeamCity service messages."""
+        return (
+            text.replace("|", "||")
+            .replace("'", "|'")
+            .replace("\n", "|n")
+            .replace("\r", "|r")
+            .replace("[", "|[")
+            .replace("]", "|]")
+        )
+
     def log(self, message: str, severity: LogLevel = LogLevel.NORMAL) -> None:
         """Log a message with a severity level."""
         if self.run_on_teamcity:
-            print(f"##teamcity[message text='{message}' status='{severity.name}']")
+            escaped_message = self._escape_teamcity(message)
+            print(f"##teamcity[message text='{escaped_message}' status='{severity.name}']")
         else:
             if severity == LogLevel.NORMAL:
                 print(message)

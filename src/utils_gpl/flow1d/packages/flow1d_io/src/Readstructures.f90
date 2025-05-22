@@ -838,9 +838,9 @@ module m_readstructures
    !> Read the dambreak specific data for a dambreak structure.
    !! The common fields for the structure (e.g. x/yCoordinates) must have been read elsewhere.
    subroutine readDambreak(dambr, md_ptr, st_id, forcinglist, success)
-      use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES, t_dambreak, set_dambreak_coefficients
+      use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES, t_dambreak_settings, set_dambreak_coefficients
 
-      type(t_dambreak), pointer,    intent(inout) :: dambr       !< Dambreak structure to be read into.
+      type(t_dambreak_settings), pointer,    intent(inout) :: dambr       !< Dambreak structure to be read into.
       type(tree_data), pointer,     intent(in   ) :: md_ptr      !< ini tree pointer with user input.
       character(IdLen),             intent(in   ) :: st_id       !< Structure character Id.
       type(t_forcinglist),          intent(inout) :: forcinglist !< List of all (structure) forcing parameters. (only for uniform interface now, later: to which dambreak forcing will be added if needed.)

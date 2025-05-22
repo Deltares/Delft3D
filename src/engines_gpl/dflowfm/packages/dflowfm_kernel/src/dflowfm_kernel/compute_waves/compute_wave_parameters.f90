@@ -90,8 +90,8 @@ contains
       end if
 
       ! SWAN
-      if ((jawave == 3 .or. jawave >= 6) .and. .not. flowWithoutWaves) then
-         if (jawave == 6 .or. jawave == 7) then
+      if ((jawave == 3 .or. jawave == 7) .and. .not. flowWithoutWaves) then
+         if (jawave == 7) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
@@ -118,11 +118,11 @@ contains
          end if
       end if
       !
-      if ((jawave == 3 .or. jawave >= 6) .and. flowWithoutWaves) then
+      if ((jawave == 3 .or. jawave == 7) .and. flowWithoutWaves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
-         if (jawave == 6 .or. jawave == 7) then
+         if (jawave == 7) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else

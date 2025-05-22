@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f012_c0322" ref="sif_dimr">
-        <path version="2024-01-11T13:10:00">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
+        <path version="2024-08-23T16:40:00">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
         <programs>
           <program ref="execute_singularity">
             <arguments>
@@ -61,7 +61,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f012_c0325" ref="sif_dimr">
-        <path version="2024-01-11T13:10:00">e02_dflowfm/f012_inout/c0325_alloutrealistic_f12_e02_3dom_classmap</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0325_alloutrealistic_f12_e02_3dom_classmap</path>
         <programs>
           <program ref="execute_singularity">
             <arguments>
@@ -149,7 +149,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f014_c001_trench_EH_par_crs" ref="sif_dimr">
-      <path version="2024-01-11T13:10:00">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
+      <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
       <programs>
         <program ref="execute_singularity" seq="1">
           <arguments>
@@ -184,7 +184,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f014_c041_westerscheldt_structures" ref="sif_dimr">
-      <path version="2024-01-11T13:10:00">e02_dflowfm/f014_parallel/c041_westerscheldt_structures</path>
+      <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c041_westerscheldt_structures</path>
       <programs>
         <program ref="execute_singularity" seq="1">
           <arguments>
@@ -295,7 +295,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f014_c120" ref="sif_dimr">
-        <path version="2024-01-11T13:10:00">e02_dflowfm/f014_parallel/c120_trachytopes_discharge_dependent</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c120_trachytopes_discharge_dependent</path>
         <programs>
           <program ref="execute_singularity">
             <arguments>
@@ -342,7 +342,7 @@
          </checks>
     </testCase>
     <testCase name="e02_f014_c201" ref="sif_dimr">
-        <path version="2024-01-11T13:10:00">e02_dflowfm/f014_parallel/c201_genstruc_partition</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c201_genstruc_partition</path>
         <programs>
           <program ref="execute_singularity">
             <arguments>

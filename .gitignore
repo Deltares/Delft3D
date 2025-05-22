@@ -3,6 +3,9 @@ bin*/**
 build_*/**
 install_*/**
 
+# Documentation result directories
+**/result_doc/**
+
 # editor files
 .vscode
 .idea/*
@@ -48,3 +51,5 @@ src/**/FortranCInterface.h
 /doxy_output
 /ci/DIMRset_delivery/venv/**
 /ci/teamcity/Delft3D/target/**
+result_doc
+/src/engines_gpl/dflowfm/result_doc_dot

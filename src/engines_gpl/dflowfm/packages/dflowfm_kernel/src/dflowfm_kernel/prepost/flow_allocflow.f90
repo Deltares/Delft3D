@@ -84,9 +84,9 @@ contains
       use m_get_zlayer_indices, only: getzlayerindices
       use m_get_zlayer_indices_bobL, only: getzlayerindicesbobL
       use m_filez, only: oldfil
-      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, cloudiness, rain, evap, airtemperature, heatsrc, heatsrc0, &
-                        longwave, patm, dewpoint, relative_humidity, qrad, solar_radiation, tbed, qext, qextreal, vextcum, cdwcof
-      use m_nudge, only: nudge_tem, nudge_sal, nudge_time, nudge_rate
+      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, cloudiness, rain, evap, air_temperature, heatsrc, heatsrc0, &
+                        long_wave_radiation, air_pressure, dew_point_temperature, relative_humidity, solar_radiation, net_solar_radiation, tbed, qext, qextreal, vextcum, cdwcof
+      use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
       use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
       use m_physcoef, only: apply_thermobaricity
@@ -1217,26 +1217,26 @@ contains
       end if
 
       if (ja_computed_airdensity == 1) then
-         if (allocated(patm)) then
-            deallocate (patm)
+         if (allocated(air_pressure)) then
+            deallocate (air_pressure)
          end if
-         allocate (patm(ndx), stat=ierr)
-         call aerr('patm(ndx)', ierr, ndx)
-         patm(:) = 0.0_dp
+         allocate (air_pressure(ndx), stat=ierr)
+         call aerr('air_pressure(ndx)', ierr, ndx)
+         air_pressure(:) = 0.0_dp
 
-         if (allocated(airtemperature)) then
-            deallocate (airtemperature)
+         if (allocated(air_temperature)) then
+            deallocate (air_temperature)
          end if
-         allocate (airtemperature(ndx), stat=ierr)
-         call aerr('airtemperature(ndx)', ierr, ndx)
-         airtemperature(:) = 0.0_dp
+         allocate (air_temperature(ndx), stat=ierr)
+         call aerr('air_temperature(ndx)', ierr, ndx)
+         air_temperature(:) = 0.0_dp
 
-         if (allocated(dewpoint)) then
-            deallocate (dewpoint)
+         if (allocated(dew_point_temperature)) then
+            deallocate (dew_point_temperature)
          end if
-         allocate (dewpoint(ndx), stat=ierr)
-         call aerr('dewpoint(ndx)', ierr, ndx)
-         dewpoint(:) = 0.0_dp
+         allocate (dew_point_temperature(ndx), stat=ierr)
+         call aerr('dew_point_temperature(ndx)', ierr, ndx)
+         dew_point_temperature(:) = 0.0_dp
       end if
 
       if (jatem > 0) then
@@ -1253,34 +1253,40 @@ contains
          heatsrc0 = 0.0_dp
 
          if (jatem > 1) then ! also heat modelling involved
-            if (allocated(airtemperature)) then
-               deallocate (airtemperature)
+            if (allocated(air_temperature)) then
+               deallocate (air_temperature)
             end if
+            call realloc(air_temperature, ndx, stat=ierr, fill=BACKGROUND_AIR_TEMPERATURE, keepexisting=.false.)
+            call aerr('air_temperature(ndx)', ierr, ndx)
             if (allocated(relative_humidity)) then
                deallocate (relative_humidity)
             end if
+            call realloc(relative_humidity, ndx, stat=ierr, fill=BACKGROUND_HUMIDITY, keepexisting=.false.)
+            call aerr('relative_humidity(ndx)', ierr, ndx)
             if (allocated(cloudiness)) then
                deallocate (cloudiness)
             end if
-            allocate (airtemperature(ndx), relative_humidity(ndx), cloudiness(ndx), stat=ierr)
-            call aerr('airtemperature(ndx), relative_humidity(ndx), cloudiness(ndx)', ierr, 3 * ndx)
-            airtemperature = BACKGROUND_AIR_TEMPERATURE
-            relative_humidity = BACKGROUND_HUMIDITY
-            cloudiness = BACKGROUND_CLOUDINESS
-            if (allocated(qrad)) then
-               deallocate (qrad)
+            call realloc(cloudiness, ndx, stat=ierr, fill=BACKGROUND_CLOUDINESS, keepexisting=.false.)
+            call aerr('cloudiness(ndx)', ierr, ndx)
+            if (allocated(dew_point_temperature)) then
+               deallocate (dew_point_temperature)
             end if
-            allocate (qrad(ndx), stat=ierr)
-            call aerr('qrad(ndx)', ierr, ndx)
-            qrad = 0.0_dp
+            call realloc(dew_point_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+            call aerr('dew_point_temperature(ndx)', ierr, ndx)
             if (allocated(solar_radiation)) then
                deallocate (solar_radiation)
             end if
             allocate (solar_radiation(ndx), stat=ierr)
             call aerr('solar_radiation(ndx)', ierr, ndx)
             solar_radiation(:) = 0.0_dp
-            if (allocated(longwave)) then
-               deallocate (longwave)
+            if (allocated(net_solar_radiation)) then
+               deallocate (net_solar_radiation)
+            end if
+            allocate (net_solar_radiation(ndx), stat=ierr)
+            call aerr('net_solar_radiation(ndx)', ierr, ndx)
+            net_solar_radiation(:) = 0.0_dp
+            if (allocated(long_wave_radiation)) then
+               deallocate (long_wave_radiation)
             end if
             if (Soiltempthick > 0) then
                if (allocated(tbed)) then
@@ -1491,8 +1497,8 @@ contains
       end if
 
       if (janudge == 1) then
-         call realloc(nudge_tem, Ndkx, fill=DMISS)
-         call realloc(nudge_sal, Ndkx, fill=DMISS)
+         call realloc(nudge_temperature, Ndkx, fill=DMISS)
+         call realloc(nudge_salinity, Ndkx, fill=DMISS)
          call realloc(zcs, Ndkx)
          call realloc(nudge_time, Ndx, fill=DMISS)
          call realloc(nudge_rate, Ndx, fill=DMISS)

@@ -31,12 +31,12 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use timers, only: timstrt, timstop
    use m_flowtimes, only: handle_ext, irefdate, tunit, time1
    use m_flowgeom, only: ndx
-   use m_meteo, only: ec_gettimespacevalue, ecgetvalues, twav, success, patm, pavbnd, ja_airdensity, item_airdensity, airdensity, ja_computed_airdensity, item_atmosphericpressure, &
-                      item_airtemperature, airtemperature, item_dewpoint, dewpoint, update_wind_stress_each_time_step, jatem, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
+   use m_meteo, only: ec_gettimespacevalue, ecgetvalues, twav, success, air_pressure, pavbnd, ja_airdensity, item_air_density, air_density, ja_computed_airdensity, item_atmosphericpressure, &
+                      item_air_temperature, air_temperature, item_dew_point_temperature, dew_point_temperature, update_wind_stress_each_time_step, jatem, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
                       ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, item_pump, qpump, item_longculvert_valve_relative_opening, &
                       nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, item_lateraldischarge, npumpswithlevels, numsrc, item_discharge_salinity_temperature_sorsin, qstss, item_sourcesink_discharge, &
-                      item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, jased, item_nudge_tem, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, &
-                      item_humidity, btempforcingtypa, btempforcingtyps, item_solarradiation, btempforcingtypc, item_cloudiness, btempforcingtypl, item_longwaveradiation, btempforcingtypd, &
+                      item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, &
+                      item_relative_humidity, btempforcingtypa, btempforcingtyps, item_solar_radiation, btempforcingtypc, item_cloudiness, btempforcingtypl, item_long_wave_radiation, btempforcingtypd, &
                       relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, dumpecmessagestack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, &
                       dwcap, mxwav, mywav, hs, epshu, twavcom, flowwithoutwaves, nbndu, kbndu, nbndz, kbndz, nbndn, kbndn, item_hrms, ecgetvalues, item_tp, item_dir, item_fx, item_fy, item_wsbu, &
                       item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, ecgetvalues, item_sea_ice_area_fraction, item_sea_ice_thickness, jarain, item_rainfall, &
@@ -82,13 +82,14 @@ contains
       use precision, only: dp
       use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
       use m_update_pumps_with_levels, only: update_pumps_with_levels
-      use m_heatu
-      use m_flow_trachyupdate
-      use m_flow_trachy_needs_update
-      use m_set_frcu_mor
+      use m_heatu, only: heatu
+      use m_flow_trachyupdate, only: flow_trachyupdate
+      use m_flow_trachy_needs_update, only: flow_trachy_needs_update
+      use m_set_frcu_mor, only: set_frcu_mor
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use m_transportdata, only: numconst
       use m_calbedform, only: fm_calbf, fm_calksc
+      use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature
 
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
@@ -100,27 +101,41 @@ contains
 
       success = .true.
 
-      if (allocated(patm)) then
+      if (allocated(air_pressure)) then
          ! Set the initial value to PavBnd (if provided by user) or BACKGROUND_AIR_PRESSURE with each update.
          ! An initial/reference value is required since .spw files may contain pressure drops/differences.
-         ! patm may later be overridden by spatially varying air pressure values.
+         ! air_pressure may later be overridden by spatially varying air pressure values.
          if (PavBnd > 0) then
-            patm(:) = PavBnd
+            air_pressure(:) = PavBnd
          else
-            patm(:) = BACKGROUND_AIR_PRESSURE
+            air_pressure(:) = BACKGROUND_AIR_PRESSURE
          end if
       end if
 
       call retrieve_icecover(time_in_seconds)
 
       if (ja_airdensity > 0) then
-         call get_timespace_value_by_item_array_consider_success_value(item_airdensity, airdensity, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_air_density, time_in_seconds)
       end if
       if (ja_computed_airdensity == 1) then
-         call get_timespace_value_by_item_array_consider_success_value(item_atmosphericpressure, patm, time_in_seconds)
-         call get_timespace_value_by_item_array_consider_success_value(item_airtemperature, airtemperature, time_in_seconds)
-         call get_timespace_value_by_item_array_consider_success_value(item_dewpoint, dewpoint, time_in_seconds)
-         call get_airdensity(patm, airtemperature, dewpoint, airdensity, iresult)
+         ! air pressure items
+         call get_timespace_value_by_item_and_consider_success_value(item_apwxwy_p, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_atmosphericpressure, time_in_seconds)
+
+         ! air temperature items
+         call get_timespace_value_by_item_and_consider_success_value(item_hac_air_temperature, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_hacs_air_temperature, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_dac_air_temperature, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_dacs_air_temperature, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_air_temperature, time_in_seconds)
+
+         ! dew point temperature items
+         call get_timespace_value_by_item_and_consider_success_value(item_dac_dew_point_temperature, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_dacs_dew_point_temperature, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_dew_point_temperature, time_in_seconds)
+
+         ! Compute air_density based on air_pressure, air_temperature and dew_point_temperature
+         call get_airdensity(air_pressure, air_temperature, dew_point_temperature, air_density, iresult)
       end if
 
       if (update_wind_stress_each_time_step == 0) then ! Update wind in set_external_forcing (each user timestep)
@@ -248,25 +263,13 @@ contains
       end if
 
       ! Update nudging temperature (and salinity)
-      if (item_nudge_tem /= ec_undef_int .and. janudge > 0) then
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_nudge_tem, irefdate, tzone, tunit, time_in_seconds)
+      if (item_nudge_temperature /= ec_undef_int .and. janudge > 0) then
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_nudge_temperature, irefdate, tzone, tunit, time_in_seconds)
       end if
 
       iresult = DFM_NOERR
 
    end subroutine set_external_forcings
-
-!> get_timespace_value_by_item_and_array_and_consider_success_value
-   subroutine get_timespace_value_by_item_array_consider_success_value(item, array, time_in_seconds)
-      use precision, only: dp
-
-      integer, intent(in) :: item !< Item for getting values
-      real(kind=dp), intent(inout) :: array(:) !< Array that stores the values
-      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
-
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
-
-   end subroutine get_timespace_value_by_item_array_consider_success_value
 
 !> set_temperature_models
    subroutine set_temperature_models(time_in_seconds)
@@ -275,7 +278,7 @@ contains
 
       logical :: foundtempforcing
 
-      ! Update arrays relative_humidity, airtemperature and cloudiness in a single method call.
+      ! Update arrays relative_humidity, air_temperature and cloudiness in a single method call.
       ! Nothing happens in case quantity 'humidity_airtemperature_cloudiness' has never been added through ec_addtimespacerelation.
       select case (itempforcingtyp)
       case (HUMIDITY_AIRTEMPERATURE_CLOUDINESS)
@@ -291,15 +294,15 @@ contains
       foundtempforcing = (itempforcingtyp >= 1 .and. itempforcingtyp <= 4)
 
       if (btempforcingtypH) then
-         call get_timespace_value_by_item_and_consider_success_value(item_humidity, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_relative_humidity, time_in_seconds)
          foundtempforcing = .true.
       end if
       if (btempforcingtypA) then
-         call get_timespace_value_by_item_and_consider_success_value(item_airtemperature, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_air_temperature, time_in_seconds)
          foundtempforcing = .true.
       end if
       if (btempforcingtypS) then
-         call get_timespace_value_by_item_and_consider_success_value(item_solarradiation, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_solar_radiation, time_in_seconds)
          foundtempforcing = .true.
       end if
       if (btempforcingtypC) then
@@ -307,14 +310,14 @@ contains
          foundtempforcing = .true.
       end if
       if (btempforcingtypL) then
-         call get_timespace_value_by_item_and_consider_success_value(item_longwaveradiation, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_long_wave_radiation, time_in_seconds)
          foundtempforcing = .true.
       end if
       if (btempforcingtypD) then
-         call get_timespace_value_by_item_and_consider_success_value(item_dewpoint, time_in_seconds)
+         call get_timespace_value_by_item_and_consider_success_value(item_dew_point_temperature, time_in_seconds)
          foundtempforcing = .true.
-         ! Conversion to relative humidity is required for heatun.f90. The dewpoint and airtemperature arrays have just been updated.
-         relative_humidity = calculate_relative_humidity(dewpoint, airtemperature)
+         ! Conversion to relative humidity is required for heatun.f90. The dew_point_temperature and air_temperature arrays have just been updated.
+         relative_humidity = calculate_relative_humidity(dew_point_temperature, air_temperature)
       end if
 
       if (.not. foundtempforcing) then
@@ -345,6 +348,18 @@ contains
       success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
 
    end subroutine get_timespace_value_by_item_and_consider_success_value
+
+   !> get_timespace_value_by_item_array_consider_success_value
+   subroutine get_timespace_value_by_item_array_consider_success_value(item, array, time_in_seconds)
+      use precision, only: dp
+
+      integer, intent(in) :: item !< Item for getting values
+      real(kind=dp), intent(inout) :: array(:) !< Array that stores the values
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
+
+      success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
+
+   end subroutine get_timespace_value_by_item_array_consider_success_value
 
    !> get_timespace_value_by_item_and_array
    subroutine get_timespace_value_by_item_and_array(item, array, time_in_seconds)
@@ -382,7 +397,7 @@ contains
 
       integer :: k
 
-      if (jawave == 3 .or. jawave == 6 .or. jawave == 7) then
+      if (jawave == 3 .or. jawave == 7) then
 
          if (.not. initialization) then
             !
@@ -520,15 +535,15 @@ contains
 
    end subroutine set_wave_parameters
 
-   subroutine get_values_and_consider_jawave6(item)
+   subroutine get_values_and_consider_fww(item)
 
       integer, intent(in) :: item
 
       success_copy = success
       success = success .and. ecGetValues(ecInstancePtr, item, ecTime)
-      if (jawave == 6) success = success_copy
+      if (flowwithoutwaves) success = success_copy           ! used to be jawave=6, but this is only real use case
 
-   end subroutine get_values_and_consider_jawave6
+   end subroutine get_values_and_consider_fww
 
 !> set wave parameters for jawave==3 (online wave coupling) and jawave==6 (SWAN data for D-WAQ)
    subroutine set_all_wave_parameters()
@@ -545,34 +560,34 @@ contains
          success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
       end if
       if (allocated(phiwav)) then
-         call get_values_and_consider_jawave6(item_dir)
+         call get_values_and_consider_fww(item_dir)
       end if
       if (allocated(sxwav)) then
-         call get_values_and_consider_jawave6(item_fx)
+         call get_values_and_consider_fww(item_fx)
       end if
       if (allocated(sywav)) then
-         call get_values_and_consider_jawave6(item_fy)
+         call get_values_and_consider_fww(item_fy)
       end if
       if (allocated(sbxwav)) then
-         call get_values_and_consider_jawave6(item_wsbu)
+         call get_values_and_consider_fww(item_wsbu)
       end if
       if (allocated(sbywav)) then
-         call get_values_and_consider_jawave6(item_wsbv)
+         call get_values_and_consider_fww(item_wsbv)
       end if
       if (allocated(mxwav)) then
-         call get_values_and_consider_jawave6(item_mx)
+         call get_values_and_consider_fww(item_mx)
       end if
       if (allocated(mywav)) then
-         call get_values_and_consider_jawave6(item_my)
+         call get_values_and_consider_fww(item_my)
       end if
       if (allocated(uorbwav)) then
-         call get_values_and_consider_jawave6(item_ubot)
+         call get_values_and_consider_fww(item_ubot)
       end if
       if (allocated(dsurf)) then
-         call get_values_and_consider_jawave6(item_dissurf)
+         call get_values_and_consider_fww(item_dissurf)
       end if
       if (allocated(dwcap)) then
-         call get_values_and_consider_jawave6(item_diswcap)
+         call get_values_and_consider_fww(item_diswcap)
       end if
 
    end subroutine set_all_wave_parameters

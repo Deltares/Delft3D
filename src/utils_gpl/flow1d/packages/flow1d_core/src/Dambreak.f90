@@ -42,48 +42,37 @@ module m_dambreak
    integer, parameter, public :: BREACH_GROWTH_VERHEIJVDKNAAP = 2
    integer, parameter, public :: BREACH_GROWTH_TIMESERIES = 3
 
-   type, public :: t_dambreak
+   type, public :: t_dambreak_settings
+      integer :: algorithm
+      integer :: material_type = 1 !for algorithm BREACH_GROWTH_VDKNAAP, default material type is clay
       real(kind=dp) :: start_location_x
       real(kind=dp) :: start_location_y
-      integer :: algorithm
       real(kind=dp) :: crest_level_ini
       real(kind=dp) :: breach_width_ini
       real(kind=dp) :: crest_level_min
       real(kind=dp) :: time_to_breach_to_maximum_depth
-      real(kind=dp) :: discharge_coeff
       real(kind=dp) :: f1
       real(kind=dp) :: f2
       real(kind=dp) :: u_crit
       real(kind=dp) :: t0
-      integer :: material_type = 1 !for algorithm BREACH_GROWTH_VDKNAAP, default material type is clay
       real(kind=dp) :: end_time_first_phase
-      real(kind=dp) :: breach_width_derivative
-      real(kind=dp) :: water_level_jump
-      real(kind=dp) :: normal_velocity
       real(kind=dp) :: water_level_upstream_location_x = -999d0
       real(kind=dp) :: water_level_upstream_location_y = -999d0
       real(kind=dp) :: water_level_downstream_location_x = -999d0
       real(kind=dp) :: water_level_downstream_location_y = -999d0
+      real(kind=dp) :: maximum_allowed_width = -1.0d0 ! only relevant for breach growth algorithm BREACH_GROWTH_VDKNAAP
+      real(kind=dp) :: a_coeff
+      real(kind=dp) :: b_coeff
       character(IdLen) :: water_level_upstream_node_id = ''
       character(IdLen) :: water_level_downstream_node_id = ''
       character(IdLen) :: levels_and_widths = ''
-
-      ! State variables
-      integer :: phase
-      real(kind=dp) :: width
-      real(kind=dp) :: maximum_width ! the maximum dambreak width (from pli file)
-      real(kind=dp) :: maximum_allowed_width = -1.0d0 ! only relevant for breach growth algorithm BREACH_GROWTH_VDKNAAP
-      real(kind=dp) :: crest_level
-      real(kind=dp) :: a_coeff
-      real(kind=dp) :: b_coeff
-
    end type
 
 contains
 
    subroutine set_dambreak_coefficients(dambreak)
 
-      type(t_dambreak), pointer, intent(inout) :: dambreak
+      type(t_dambreak_settings), pointer, intent(inout) :: dambreak
 
       if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
          ! clay

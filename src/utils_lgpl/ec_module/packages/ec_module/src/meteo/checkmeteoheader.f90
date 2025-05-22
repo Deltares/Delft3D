@@ -546,7 +546,7 @@ function checkmeteoheader(meteoitem) result(success)
        return
     endif
     !
-    ! Convert the read quantities to windu, windv, patm, relhum, cloud and airtemp
+    ! Convert the read quantities to windu, windv, air_pressure, relhum, cloud and airtemp
     !
     if (       meteoitem%quantities(1) == 'x_wind'              &
         &.or.  meteoitem%quantities(1) == 'wind_speed'           ) then

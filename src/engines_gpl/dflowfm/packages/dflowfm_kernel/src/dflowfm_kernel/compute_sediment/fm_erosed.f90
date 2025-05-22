@@ -295,7 +295,7 @@ contains
       call setucxqucyq_mor(u1_tmp, ucxq_tmp, ucyq_tmp)
 
       if (jawave > 2) then
-         if ((.not. (jawave == 4 .or. jawave == 3 .or. jawave == 6)) .or. flowWithoutWaves) then
+         if ((.not. (jawave == 4 .or. jawave == 3 .or. jawave == 7)) .or. flowWithoutWaves) then
             ktb = 0d0 ! no roller turbulence
          else
             do k = 1, ndx

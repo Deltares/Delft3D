@@ -1014,7 +1014,7 @@ contains
                success = .false.
             end if
          else if (index(lc_filename, '.amt') /= 0) then
-            ! ===== quantity: airtemperature
+            ! ===== quantity: air_temperature
             quantityId = ecInstanceCreateQuantity(instancePtr)
             if (.not. (ecQuantitySet(instancePtr, quantityId, name='air_temperature', &
                                      units=trim(ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'unit1'))))) then
@@ -2552,7 +2552,7 @@ contains
          ncvarnames(1) = 'msl' ! mean sea-level pressure
          ncstdnames(1) = 'air_pressure'
       case ('airdensity')
-         ! UNST-6593: airdensity has variable name p140209 and no standard_name, will be changed in the future according to ECMWF.
+         ! UNST-6593: air_density has variable name p140209 and no standard_name, will be changed in the future according to ECMWF.
          ncvarnames(1) = 'p140209' ! air density above sea
          ncstdnames(1) = 'air_density'
       case ('airpressure_windx_windy')

@@ -167,8 +167,14 @@ contains
       integer, allocatable, dimension(:) :: indices !< Resulting indices where mask is true
 
       integer :: i
+      integer, allocatable, dimension(:) :: temp_array
 
-      indices = pack([(i, i=1, size(mask))], mask)
+      allocate(temp_array(size(mask)))
+      do i = 1, size(mask)
+         temp_array(i) = i
+      end do
+ 
+      indices = pack(temp_array, mask)
    end function convert_mask_to_indices
 
 end module array_module

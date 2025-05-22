@@ -42,7 +42,7 @@ module m_wind
    real(kind=dp), allocatable, target :: ec_charnock(:) !< Temporary array, for comparing EC-module to Meteo1.
    real(kind=dp), allocatable, target :: wcharnock(:) !< space var charnock (-) at u point {"location": "edge", "shape": ["lnx"]}
 
-   real(kind=dp), allocatable, target :: patm(:) !< atmospheric pressure user specified in (N/m2), internally reworked to (m2/s2)
+   real(kind=dp), allocatable, target :: air_pressure(:) !< atmospheric pressure user specified in (N/m2), internally reworked to (m2/s2)
                                                       !! so that it can be merged with tidep later and difpatm/dx = m/s2, saves 1 array , using mode = 'add'
    real(kind=dp), allocatable, target :: rain(:) !< [mm/day] rain at xz,yz {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: evap(:) !< [m/s] evaporation at xz,yz {"location": "face", "shape": ["ndx"]}
@@ -52,32 +52,31 @@ module m_wind
    real(kind=dp), allocatable, target :: qextreal(:) !< [m3/s] Realized external discharge per cell {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, target :: vextcum(:) !< [m3] Cumulative realized volume through qext {"location": "face", "shape": ["ndkx"]}
 
-   real(kind=dp), allocatable, target :: airtemperature(:) !< air temperature       (degC)
-   real(kind=dp), allocatable, target :: dewpoint(:) !< dewpoint temperature (degC)
+   real(kind=dp), allocatable, target :: air_temperature(:) !< air temperature (degC)
+   real(kind=dp), allocatable, target :: dew_point_temperature(:) !< dew_point_temperature temperature (degC)
    real(kind=dp), allocatable, target :: relative_humidity(:) !< air relative humidity (%)
-   real(kind=dp), allocatable, target :: cloudiness(:) !< air cloudiness        (%)
-   real(kind=dp), allocatable, target :: airdensity(:) !< air density           (kg/m3)
-   real(kind=dp), allocatable, target :: qrad(:) !< solar radiation       (W/m2)
-   real(kind=dp), dimension(:), allocatable :: solar_radiation !< solar radiation (W/m2) incl. albedo correction
-   real(kind=dp), allocatable, target :: longwave(:) !< long wave radiation   (W/m2)
+   real(kind=dp), allocatable, target :: cloudiness(:) !< air cloudiness (%)
+   real(kind=dp), allocatable, target :: air_density(:) !< air density (kg/m3)
+   real(kind=dp), allocatable, target :: solar_radiation(:) !< solar radiation (W/m2)
+   real(kind=dp), dimension(:), allocatable :: net_solar_radiation !< solar radiation (W/m2) incl. albedo correction
+   real(kind=dp), allocatable, target :: long_wave_radiation(:) !< long wave radiation (W/m2)
    real(kind=dp), allocatable :: heatsrc(:) !< resulting 2D or 3D heat source per cell (Km3/s)
    real(kind=dp), allocatable :: heatsrc0(:) !< resulting 2D or 3D heat source per cell, only set at timeuser (Km3/s)
-   real(kind=dp), allocatable :: tbed(:) !< bed temperature       (degC)
+   real(kind=dp), allocatable :: tbed(:) !< bed temperature (degC)
 
    real(kind=dp), allocatable :: cdwcof(:) !< wind stress cd coefficient () , only if jatemp ==5
 
    integer :: jawind !< use wind yes or no
-   integer :: japatm !< use patm yes or no
+   integer :: air_pressure_available !< use air_pressure yes or no
    integer :: jaspacevarcharn !< use space and time varying Charnock coefficients yes or no
    integer :: jawindstressgiven !< wind given as stress, no conversion needed
    integer :: jastresstowind !< if jawindstressgiven==1, convert stress to wind yes/no 1/0
-   integer :: ja_computed_airdensity !< compute airdensity yes/no 1/0
+   integer :: ja_computed_airdensity !< compute air_density yes/no 1/0
    integer :: jarain !< use rain yes or no
    integer :: jaevap !< use evap yes or no
-   integer :: jatair !< use air temperature   yes or no
    integer :: ja_airdensity !< use variabele air density yes or no
-   logical :: solrad_available = .false. !< solar radiation provided by user
-   logical :: longwave_available = .false. !< longwave radiation provided by user
+   logical :: solar_radiation_available = .false. !< solar radiation provided by user
+   logical :: long_wave_radiation_available = .false. !< long wave radiation provided by user
    integer :: jaheat_eachstep = 0 !< if 1, do it each step, else in externalforcings (default)
    integer :: jaQext !< use Qin externally provided yes or no
    integer :: jaqin !< use qin , sum of all in fluxes
@@ -144,10 +143,9 @@ contains
    !> Resets only wind variables intended for a restart of flow simulation.
    !! Upon loading of new model/MDU, call default_wind() instead.
    subroutine reset_wind()
-      japatm = 0 !< use patm yes or no
+      air_pressure_available = 0 !< use air_pressure yes or no
       jaspacevarcharn = 0 !< use space varying Charnock coefficients
       jawindstressgiven = 0 !< wind stress given in meteo file
-      jatair = 0
       ja_airdensity = 0
    end subroutine reset_wind
 end module m_wind

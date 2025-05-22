@@ -428,7 +428,6 @@ module fm_external_forcings_data
    integer, private :: num_lat_ini_blocks !< Number of [Lateral] blocks in a loaded new external forcings file.
    public :: have_laterals_in_external_forcings_file, set_lateral_count_in_external_forcings_file
 
-   logical :: tair_available, dewpoint_available
    real(kind=dp), allocatable, target :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
    integer :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
 

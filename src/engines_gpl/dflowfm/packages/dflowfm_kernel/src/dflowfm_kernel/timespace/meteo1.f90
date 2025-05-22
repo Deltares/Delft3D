@@ -5378,10 +5378,10 @@ module timespace
 !
 ! Read time series in five possible formats:
 ! uniform       : Delft3D-FLOW format: time, uniform windspeed, direction and pressure
-! space varying : Delft3D-FLOW format: time and fields of patm, windx, windy
+! space varying : Delft3D-FLOW format: time and fields of air_pressure, windx, windy
 !                 on Delft3D-FLOW m,n grid
 ! arcinfo       : time and fields on own equidistant grid
-! spiderweb     : time and fields of patm, windspeed, direction op spiderweb grid
+! spiderweb     : time and fields of air_pressure, windspeed, direction op spiderweb grid
 ! curvi         : time and fields on own curvilinear grid
 !
 ! Main calls from Delft3D-FLOW:
@@ -5573,7 +5573,7 @@ contains
       use m_polygon
       use m_reapol
       use m_filez, only: oldfil
-      use network_data, only: LINK_1D, LINK_2D,LINK_1D2D_INTERNAL,LINK_1D2D_LONGITUDINAL,LINK_1D2D_STREETINLET,LINK_1D_MAINBRANCH,LINK_1D2D_ROOF,LINK_ALL
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF, LINK_ALL
 
       implicit none
 
@@ -6346,7 +6346,7 @@ module m_meteo
    integer, target :: item_normalvelocitybnd !< Unique Item id of the ext-file's 'normalvelocitybnd' quantity
    integer, target :: item_rainfall !< Unique Item id of the ext-file's 'rainfall' quantity
    integer, target :: item_rainfall_rate !< Unique Item id of the ext-file's 'rainfall_rate' quantity
-   integer, target :: item_airdensity !< Unique Item id of the ext-file's 'airdensity' quantity
+   integer, target :: item_air_density !< Unique Item id of the ext-file's 'airdensity' quantity
    integer, target :: item_qhbnd !< Unique Item id of the ext-file's 'qhbnd' quantity
    integer, target :: item_shiptxy !< Unique Item id of the ext-file's 'shiptxy' quantity
    integer, target :: item_movingstationtxy !< Unique Item id of the ext-file's 'movingstationtxy' quantity
@@ -6372,30 +6372,30 @@ module m_meteo
    integer, target :: item_generalstructure !< Unique Item id of the ext-file's 'generalstructure' quantity
    integer, target :: item_lateraldischarge !< Unique Item id of the ext-file's 'generalstructure' quantity
 
-   integer, target :: item_dacs_dewpoint !< Unique Item id of the ext-file's 'dewpoint' quantity
-   integer, target :: item_dacs_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_dacs_dew_point_temperature !< Unique Item id of the ext-file's 'dewpoint' quantity
+   integer, target :: item_dacs_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_dacs_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
-   integer, target :: item_dacs_solarradiation !< Unique Item id of the ext-file's 'solarradiation' quantity
+   integer, target :: item_dacs_solar_radiation !< Unique Item id of the ext-file's 'solarradiation' quantity
 
-   integer, target :: item_dac_dewpoint !< Unique Item id of the ext-file's 'dewpoint' quantity
-   integer, target :: item_dac_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_dac_dew_point_temperature !< Unique Item id of the ext-file's 'dewpoint' quantity
+   integer, target :: item_dac_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_dac_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
 
-   integer, target :: item_hacs_humidity !< Unique Item id of the ext-file's 'humidity' quantity
-   integer, target :: item_hacs_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_hacs_relative_humidity !< Unique Item id of the ext-file's 'humidity' quantity
+   integer, target :: item_hacs_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_hacs_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
-   integer, target :: item_hacs_solarradiation !< Unique Item id of the ext-file's 'solarradiation' quantity
+   integer, target :: item_hacs_solar_radiation !< Unique Item id of the ext-file's 'solarradiation' quantity
 
    integer, target :: item_hac_humidity !< Unique Item id of the ext-file's 'humidity' quantity
-   integer, target :: item_hac_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_hac_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_hac_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
 
-   integer, target :: item_dewpoint !< 'dewpoint' quantity
-   integer, target :: item_humidity !< 'humidity' quantity
-   integer, target :: item_airtemperature !< 'airtemperature' quantity
+   integer, target :: item_dew_point_temperature !< 'dewpoint' quantity
+   integer, target :: item_relative_humidity !< 'humidity' quantity
+   integer, target :: item_air_temperature !< 'airtemperature' quantity
    integer, target :: item_cloudiness !< 'cloudiness' quantity
-   integer, target :: item_solarradiation !< 'solarradiation' quantity
-   integer, target :: item_longwaveradiation !< 'longwaveradiation' quantity
+   integer, target :: item_solar_radiation !< 'solarradiation' quantity
+   integer, target :: item_long_wave_radiation !< 'longwaveradiation' quantity
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
    integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
@@ -6415,8 +6415,8 @@ module m_meteo
    integer, target :: item_distot !< Unique Item id of the ext-file's 'item_distot'  quantity
    integer, target :: item_ubot !< Unique Item id of the ext-file's 'item_ubot' quantity
 
-   integer, target :: item_nudge_tem !< 3D temperature for nudging
-   integer, target :: item_nudge_sal !< 3D salinity for nudging
+   integer, target :: item_nudge_temperature !< 3D temperature for nudging
+   integer, target :: item_nudge_salinity !< 3D salinity for nudging
    integer, target :: item_db_levels_widths_table !< Dambreak levels and widths
 
    integer, target :: item_subsiduplift
@@ -6520,7 +6520,7 @@ contains
       item_normalvelocitybnd = ec_undef_int
       item_rainfall = ec_undef_int
       item_rainfall_rate = ec_undef_int
-      item_airdensity = ec_undef_int
+      item_air_density = ec_undef_int
       item_qhbnd = ec_undef_int
       item_shiptxy = ec_undef_int
       item_movingstationtxy = ec_undef_int
@@ -6544,28 +6544,28 @@ contains
       item_damlevel = ec_undef_int
       item_gateloweredgelevel = ec_undef_int
       item_generalstructure = ec_undef_int
-      item_dacs_dewpoint = ec_undef_int
-      item_dacs_airtemperature = ec_undef_int
+      item_dacs_dew_point_temperature = ec_undef_int
+      item_dacs_air_temperature = ec_undef_int
       item_dac_cloudiness = ec_undef_int
-      item_dac_dewpoint = ec_undef_int
-      item_dac_airtemperature = ec_undef_int
+      item_dac_dew_point_temperature = ec_undef_int
+      item_dac_air_temperature = ec_undef_int
       item_dac_cloudiness = ec_undef_int
-      item_dacs_solarradiation = ec_undef_int
-      item_hacs_humidity = ec_undef_int
-      item_hacs_airtemperature = ec_undef_int
+      item_dacs_solar_radiation = ec_undef_int
+      item_hacs_relative_humidity = ec_undef_int
+      item_hacs_air_temperature = ec_undef_int
       item_hacs_cloudiness = ec_undef_int
-      item_hacs_solarradiation = ec_undef_int
-      item_dewpoint = ec_undef_int
-      item_humidity = ec_undef_int
-      item_airtemperature = ec_undef_int
+      item_hacs_solar_radiation = ec_undef_int
+      item_dew_point_temperature = ec_undef_int
+      item_relative_humidity = ec_undef_int
+      item_air_temperature = ec_undef_int
       item_cloudiness = ec_undef_int
-      item_solarradiation = ec_undef_int
-      item_longwaveradiation = ec_undef_int
+      item_solar_radiation = ec_undef_int
+      item_long_wave_radiation = ec_undef_int
       item_hac_humidity = ec_undef_int
-      item_hac_airtemperature = ec_undef_int
+      item_hac_air_temperature = ec_undef_int
       item_hac_cloudiness = ec_undef_int
-      item_nudge_tem = ec_undef_int
-      item_nudge_sal = ec_undef_int
+      item_nudge_temperature = ec_undef_int
+      item_nudge_salinity = ec_undef_int
       item_discharge_salinity_temperature_sorsin = ec_undef_int
       item_sourcesink_discharge = ec_undef_int
       item_hrms = ec_undef_int
@@ -6823,14 +6823,14 @@ contains
          dataPtr1 => frcu
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')
          itemPtr1 => item_apwxwy_p
-         dataPtr1 => patm
+         dataPtr1 => air_pressure
          itemPtr2 => item_apwxwy_x
          dataPtr2 => ec_pwxwy_x
          itemPtr3 => item_apwxwy_y
          dataPtr3 => ec_pwxwy_y
       case ('airpressure_windx_windy_charnock')
          itemPtr1 => item_apwxwy_p
-         dataPtr1 => patm
+         dataPtr1 => air_pressure
          itemPtr2 => item_apwxwy_x
          dataPtr2 => ec_pwxwy_x
          itemPtr3 => item_apwxwy_y
@@ -6869,7 +6869,7 @@ contains
          dataPtr1 => zbndn
       case ('airpressure', 'atmosphericpressure')
          itemPtr1 => item_atmosphericpressure
-         dataPtr1 => patm
+         dataPtr1 => air_pressure
       case ('rainfall')
          itemPtr1 => item_rainfall
          dataPtr1 => rain
@@ -6877,8 +6877,8 @@ contains
          itemPtr1 => item_rainfall_rate
          dataPtr1 => rain
       case ('airdensity')
-         itemPtr1 => item_airdensity
-         dataPtr1 => airdensity
+         itemPtr1 => item_air_density
+         dataPtr1 => air_density
       case ('qhbnd')
          itemPtr1 => item_qhbnd
          dataPtr1 => qhbndz
@@ -6949,58 +6949,58 @@ contains
       case ('humidity_airtemperature_cloudiness')
          itemPtr1 => item_hac_humidity
          dataPtr1 => relative_humidity
-         itemPtr2 => item_hac_airtemperature
-         dataPtr2 => airtemperature
+         itemPtr2 => item_hac_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_hac_cloudiness
          dataPtr3 => cloudiness
       case ('humidity_airtemperature_cloudiness_solarradiation')
-         itemPtr1 => item_hacs_humidity
+         itemPtr1 => item_hacs_relative_humidity
          dataPtr1 => relative_humidity
-         itemPtr2 => item_hacs_airtemperature
-         dataPtr2 => airtemperature
+         itemPtr2 => item_hacs_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_hacs_cloudiness
          dataPtr3 => cloudiness
-         itemPtr4 => item_hacs_solarradiation
-         dataPtr4 => qrad
+         itemPtr4 => item_hacs_solar_radiation
+         dataPtr4 => solar_radiation
       case ('dewpoint_airtemperature_cloudiness')
-         itemPtr1 => item_dac_dewpoint
-         dataPtr1 => dewpoint
-         itemPtr2 => item_dac_airtemperature
-         dataPtr2 => airtemperature
+         itemPtr1 => item_dac_dew_point_temperature
+         dataPtr1 => dew_point_temperature
+         itemPtr2 => item_dac_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_dac_cloudiness
          dataPtr3 => cloudiness
       case ('dewpoint_airtemperature_cloudiness_solarradiation')
-         itemPtr1 => item_dacs_dewpoint
-         dataPtr1 => dewpoint
-         itemPtr2 => item_dacs_airtemperature
-         dataPtr2 => airtemperature
+         itemPtr1 => item_dacs_dew_point_temperature
+         dataPtr1 => dew_point_temperature
+         itemPtr2 => item_dacs_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_dacs_cloudiness
          dataPtr3 => cloudiness
-         itemPtr4 => item_dacs_solarradiation
-         dataPtr4 => qrad
+         itemPtr4 => item_dacs_solar_radiation
+         dataPtr4 => solar_radiation
       case ('humidity')
-         itemPtr1 => item_humidity
+         itemPtr1 => item_relative_humidity
          dataPtr1 => relative_humidity
       case ('dewpoint')
-         itemPtr1 => item_dewpoint
-         dataPtr1 => dewpoint
+         itemPtr1 => item_dew_point_temperature
+         dataPtr1 => dew_point_temperature
       case ('airtemperature')
-         itemPtr1 => item_airtemperature
-         dataPtr1 => airtemperature
+         itemPtr1 => item_air_temperature
+         dataPtr1 => air_temperature
       case ('cloudiness')
          itemPtr1 => item_cloudiness
          dataPtr1 => cloudiness
       case ('solarradiation')
-         itemPtr1 => item_solarradiation
-         dataPtr1 => qrad
+         itemPtr1 => item_solar_radiation
+         dataPtr1 => solar_radiation
       case ('longwaveradiation')
-         itemPtr1 => item_longwaveradiation
-         dataPtr1 => longwave
+         itemPtr1 => item_long_wave_radiation
+         dataPtr1 => long_wave_radiation
       case ('nudge_salinity_temperature')
-         itemPtr2 => item_nudge_sal
-         dataPtr2 => nudge_sal
-         itemPtr1 => item_nudge_tem
-         dataPtr1 => nudge_tem
+         itemPtr2 => item_nudge_salinity
+         dataPtr2 => nudge_salinity
+         itemPtr1 => item_nudge_temperature
+         dataPtr1 => nudge_temperature
       case ('discharge_salinity_temperature_sorsin')
          itemPtr1 => item_discharge_salinity_temperature_sorsin
          ! Do not point to array qstss here.
@@ -7299,33 +7299,33 @@ contains
          if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_rainfall_rate, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'airdensity') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_airdensity, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_air_density, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'humidity_airtemperature_cloudiness') then
          if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hac_humidity, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'humidity_airtemperature_cloudiness_solarradiation') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hacs_humidity, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hacs_relative_humidity, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'dewpoint_airtemperature_cloudiness') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dac_dewpoint, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dac_dew_point_temperature, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dacs_dewpoint, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dacs_dew_point_temperature, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'dewpoint') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dewpoint, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dew_point_temperature, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'airtemperature') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_airtemperature, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_air_temperature, irefdate, tzone, tunit, timesteps)) return
       end if
 
-      if ((trim(group_name) == 'dewpoint_airtemperature_cloudiness' .and. item_dac_dewpoint /= ec_undef_int) &
+      if ((trim(group_name) == 'dewpoint_airtemperature_cloudiness' .and. item_dac_dew_point_temperature /= ec_undef_int) &
           .or. &
-          (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation' .and. item_dacs_dewpoint /= ec_undef_int) &
+          (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation' .and. item_dacs_dew_point_temperature /= ec_undef_int) &
           .or. &
-          (trim(group_name) == 'dewpoint' .and. item_dewpoint /= ec_undef_int)) then
-         relative_humidity = calculate_relative_humidity(dewpoint, airtemperature)
+          (trim(group_name) == 'dewpoint' .and. item_dew_point_temperature /= ec_undef_int)) then
+         relative_humidity = calculate_relative_humidity(dew_point_temperature, air_temperature)
       end if
 
       if (index(group_name, 'airpressure_windx_windy') == 1) then
@@ -7344,7 +7344,7 @@ contains
    pure elemental function calculate_relative_humidity(td, tm) result(rh)
       use physicalconsts, only: CtoKelvin
 
-      real(kind=dp), intent(in) :: td !< dewpoint temperature (K)
+      real(kind=dp), intent(in) :: td !< dew point temperature temperature (K)
       real(kind=dp), intent(in) :: tm !< air temperature (K)
       real(kind=dp) :: rh !< relative humidity (%)
 

@@ -32,7 +32,9 @@
 //  Irv.Elshoff@Deltares.NL
 //  29 jun 12
 //------------------------------------------------------------------------------
-
+/*
+* @include{doc} dimr-mainpage.dox
+*/
 
 #pragma once
 

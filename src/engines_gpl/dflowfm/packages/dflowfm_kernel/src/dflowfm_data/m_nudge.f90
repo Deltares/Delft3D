@@ -32,8 +32,8 @@
 
 module m_nudge
    use precision, only: dp
-   real(kind=dp), allocatable, target :: nudge_tem(:) !< 3D temperature for nudging
-   real(kind=dp), allocatable, target :: nudge_sal(:) !< 3D salinity for nudging
+   real(kind=dp), allocatable, target :: nudge_temperature(:) !< 3D temperature for nudging
+   real(kind=dp), allocatable, target :: nudge_salinity(:) !< 3D salinity for nudging
    real(kind=dp), allocatable :: nudge_time(:) !< nudge relaxation time
    real(kind=dp), allocatable :: nudge_rate(:) !< nudge relaxation time, 1/days
    real(kind=dp), parameter :: NUDGE_RATE_UNIT_TO_SECI = 1d0 / (24d0 * 3600d0)

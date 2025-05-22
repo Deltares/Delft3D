@@ -620,11 +620,11 @@ contains
       use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
                            update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
                            convert_file_type_string_to_integer
-      use fm_external_forcings_data, only: filetype, transformcoef, kx, tair_available, dewpoint_available
+      use fm_external_forcings_data, only: filetype, transformcoef, kx
       use fm_external_forcings, only: allocatewindarrays
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
-      use m_wind, only: airdensity, jawindstressgiven, jaspacevarcharn, ja_airdensity, japatm, jawind, jarain, &
-                        jaqin, jaqext, jatair, solrad_available, longwave_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, &
+      use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
+                        jaqin, jaqext, solar_radiation_available, long_wave_radiation_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, &
                         ec_charnock, wcharnock, rain, qext
       use m_flowgeom, only: ndx, lnx, xz, yz
       use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
@@ -742,9 +742,9 @@ contains
          select case (quantity)
          case ('airdensity')
             kx = 1
-            if (.not. allocated(airdensity)) then
-               allocate (airdensity(ndx), stat=ierr, source=0.0_dp)
-               call aerr('airdensity(ndx)', ierr, ndx)
+            if (.not. allocated(air_density)) then
+               allocate (air_density(ndx), stat=ierr, source=0.0_dp)
+               call aerr('air_density(ndx)', ierr, ndx)
             end if
          case ('airpressure', 'atmosphericpressure')
             kx = 1
@@ -872,15 +872,15 @@ contains
       if (is_successful) then
          select case (quantity)
          case ('airdensity')
-            call mess(LEVEL_INFO, 'Enabled variable airdensity for windstress while reading external forcings.')
+            call mess(LEVEL_INFO, 'Enabled variable air_density for windstress while reading external forcings.')
             ja_airdensity = 1
 
          case ('airpressure', 'atmosphericpressure')
-            japatm = 1
+            air_pressure_available = 1
 
          case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
             jawind = 1
-            japatm = 1
+            air_pressure_available = 1
 
          case ('charnock')
             jaspacevarcharn = 1
@@ -892,38 +892,30 @@ contains
          case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
             jawind = 1
          case ('airtemperature')
-            jatair = 1
             btempforcingtypA = .true.
-            tair_available = .true.
          case ('cloudiness')
             btempforcingtypC = .true.
          case ('humidity')
             btempforcingtypH = .true.
          case ('dewpoint')
             itempforcingtyp = 5
-            dewpoint_available = .true.
             btempforcingtypD = .true.
          case ('solarradiation')
             btempforcingtypS = .true.
-            solrad_available = .true.
+            solar_radiation_available = .true.
          case ('longwaveradiation')
             btempforcingtypL = .true.
-            longwave_available = .true.
+            long_wave_radiation_available = .true.
          case ('humidity_airtemperature_cloudiness')
             itempforcingtyp = 1
          case ('dewpoint_airtemperature_cloudiness')
             itempforcingtyp = 3
-            dewpoint_available = .true.
-            tair_available = .true.
          case ('humidity_airtemperature_cloudiness_solarradiation')
             itempforcingtyp = 2
-            tair_available = .true.
-            solrad_available = .true.
+            solar_radiation_available = .true.
          case ('dewpoint_airtemperature_cloudiness_solarradiation')
             itempforcingtyp = 4
-            dewpoint_available = .true.
-            tair_available = .true.
-            solrad_available = .true.
+            solar_radiation_available = .true.
          end select
 
          res = .true.
@@ -1187,7 +1179,7 @@ contains
 
    !> Scan the quantity name for heat relatede quantities.
    function scan_for_heat_quantities(quantity, kx) result(success)
-      use m_wind, only: airtemperature, cloudiness, dewpoint, relative_humidity, qrad, longwave
+      use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation
       use m_flowgeom, only: ndx
       use m_alloc, only: aerr, realloc
 
@@ -1203,8 +1195,8 @@ contains
       select case (quantity)
 
       case ('airtemperature')
-         call realloc(airtemperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('airtemperature(ndx)', ierr, ndx)
+         call realloc(air_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('air_temperature(ndx)', ierr, ndx)
       case ('cloudiness')
          call realloc(cloudiness, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('cloudiness(ndx)', ierr, ndx)
@@ -1212,14 +1204,14 @@ contains
          call realloc(relative_humidity, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('relative_humidity(ndx)', ierr, ndx)
       case ('dewpoint')
-         call realloc(dewpoint, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('dewpoint(ndx)', ierr, ndx)
+         call realloc(dew_point_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('dew_point_temperature(ndx)', ierr, ndx)
       case ('solarradiation')
-         call realloc(qrad, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('qrad(ndx)', ierr, ndx)
+         call realloc(solar_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('solar_radiation(ndx)', ierr, ndx)
       case ('longwaveradiation')
-         call realloc(longwave, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('longwave(ndx)', ierr, ndx)
+         call realloc(long_wave_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('long_wave_radiation(ndx)', ierr, ndx)
       case ('humidity_airtemperature_cloudiness')
          kx = 3
       case ('dewpoint_airtemperature_cloudiness')

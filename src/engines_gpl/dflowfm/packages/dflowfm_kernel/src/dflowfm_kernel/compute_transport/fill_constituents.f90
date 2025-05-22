@@ -48,7 +48,7 @@ contains
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
       use m_physcoef, only: dicouv, dicoww, difmolsal, difmoltem, difmoltracer, Jaallowcoolingbelowzero, ag, vonkar
-      use m_nudge, only: nudge_rate, nudge_tem, nudge_sal
+      use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
       use fm_external_forcings_data, only: wstracers, numsrc, ksrc, qsrc, ccsrc
       use m_sediment, only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
@@ -202,13 +202,13 @@ contains
 
 !        nudging
             if (Trefi > 0.0_dp) then
-               if (ITEMP > 0 .and. nudge_tem(k) /= DMISS) then
-                  const_sour(ITEMP, k) = const_sour(ITEMP, k) + nudge_tem(k) * Trefi
+               if (ITEMP > 0 .and. nudge_temperature(k) /= DMISS) then
+                  const_sour(ITEMP, k) = const_sour(ITEMP, k) + nudge_temperature(k) * Trefi
                   const_sink(ITEMP, k) = const_sink(ITEMP, k) + Trefi
                end if
 
-               if (ISALT > 0 .and. nudge_sal(k) /= DMISS) then
-                  const_sour(ISALT, k) = const_sour(ISALT, k) + nudge_sal(k) * Trefi
+               if (ISALT > 0 .and. nudge_salinity(k) /= DMISS) then
+                  const_sour(ISALT, k) = const_sour(ISALT, k) + nudge_salinity(k) * Trefi
                   const_sink(ISALT, k) = const_sink(ISALT, k) + Trefi
                end if
             end if
