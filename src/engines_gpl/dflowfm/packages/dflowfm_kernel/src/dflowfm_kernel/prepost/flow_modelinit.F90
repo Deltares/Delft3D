@@ -387,7 +387,6 @@ contains
       call timstop(handle_extra(19)) ! end transport module
 
       call timstrt('Observations init   ', handle_extra(21)) ! observations init
-      call flow_obsinit() ! initialise stations and cross sections on flow grid + structure his (1st call required for call to flow_trachy_update)
       if (ncrs > 0) then
          call fill_geometry_arrays_crs()
       end if
@@ -403,6 +402,7 @@ contains
          goto 1234
       end if
       call timstop(handle_extra(23)) ! end flow init
+      call flow_obsinit() ! initialise stations and cross sections on flow grid + structure his (1st call required for call to flow_trachy_update)
 
       ! report on final configuration of ice module; needs to happen after flow_flowinit where external forcings are initialized
       call timstrt('Ice init', handle_extra(84)) ! ice
@@ -489,11 +489,6 @@ contains
          call set_frcu_mor(2)
       end if
       call timstop(handle_extra(31)) ! end set fcru mor
-
-! Initialise debug array
-      !if (jawritedebug) then
-      !  call init_debugarr(lnx,stmpar%lsedtot)
-      !endif
 
       if (nfxw > 0) then
          allocate (weirdte_save(nfxw), STAT=ierr)

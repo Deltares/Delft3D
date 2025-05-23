@@ -152,8 +152,6 @@ contains
       end if
       allocate (kbot(ndx), stat=ierr)
       call aerr('kbot (ndx)', ierr, ndx)
-      allocate (ktop(ndx), stat=ierr)
-      call aerr('ktop (ndx)', ierr, ndx)
       allocate (ktop0(ndx), stat=ierr)
       call aerr('ktop0(ndx)', ierr, ndx)
       allocate (kmxn(ndx), stat=ierr)
@@ -189,7 +187,6 @@ contains
 
       do k = 1, Ndx
          kbot(k) = k
-         ktop(k) = k
          kmxn(k) = 1
       end do
       do L = 1, Lnx
@@ -218,7 +215,7 @@ contains
          allocate (kmxc(numkmax), stat=ierr)
          call aerr('kmxc (numkmax)', ierr, numkmax)
 
-         kbot = 1; ktop = 1; kmxn = 1
+         kbot = 1; kmxn = 1
          Lbot = 1; Ltop = 1; kmxL = 1
          kbotc = 1; kmxc = 1
 
