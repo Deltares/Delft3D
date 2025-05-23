@@ -2081,7 +2081,9 @@ contains
       ycg = 0.0_dp
       jacounterclockwise = 1
 
-      if (N < 1) goto 1234
+      if (N < 1) then
+         return
+      end if
 
       x = xin
 
@@ -2153,9 +2155,6 @@ contains
       !  fix for inward normals (clockwise oriented cells)
       area = abs(area)
 
-1234  continue
-
-      return
    end subroutine comp_masscenter2D
 
    !> compute area and mass center of polygon
@@ -2173,23 +2172,20 @@ contains
       integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
       real(kind=dp), intent(in) :: dmiss
-
-      !   real(kind=dp), dimension(N)                :: x  ! Copy of xin, with possibly periodic fixes.
-
-      real(kind=dp), dimension(N) :: xx, yy, zz ! 3D coordinates
-
-      real(kind=dp), dimension(4, 4) :: A
-      real(kind=dp), dimension(4) :: rhs
-
-      real(kind=dp), dimension(N) :: DvolDx, DvolDy, DvolDz
-
-      real(kind=dp) :: xx0, yy0, zz0, qq0, xx00, yy00, zz00
-      real(kind=dp) :: xxcg, yycg, zzcg
-      real(kind=dp) :: dvol, vol, voli
-      real(kind=dp) :: Jx, Jy, Jz
+      
+      real(kind=dp), dimension(N) :: xx, yy, zz !< 3D coordinates
+      real(kind=dp), dimension(4, 4) :: A !< Jacobian matrix of the system, including the constraint that the center lies on the sphere.
+      real(kind=dp), dimension(4) :: rhs !< Right hand side of linear system, residuals.
+      real(kind=dp), dimension(N) :: DvolDx, DvolDy, DvolDz !< Partial derivatives of the volume with respect to xx0, yy0, and zz0 for triangle i.
+      real(kind=dp) :: xx0, yy0, zz0 !< Coordinates of the current estimate of the mass center (centroid).
+      real(kind=dp) :: qq0 !< Lagrange multiplier enforcing the constraint that the center lies on the sphere.
+      real(kind=dp) :: xx00, yy00, zz00 !< backup of mass center coordinates
+      real(kind=dp) :: xxcg, yycg, zzcg !< Coordinates of the centroid of the tetrahedron formed by the center point and triangle i.
+      real(kind=dp) :: vol, voli, dvol !< Accumulated volume of the polyhedral region formed by the polygon and the center point, inverse and increment.
+      real(kind=dp) :: Jx, Jy, Jz !< Accumulated first moments in each dimension (used in centroid computation).
+      
       real(kind=dp) :: Rai, scaled_diff
       real(kind=dp) :: sx, sy, sz
-
       integer :: i, ip1, iter
 
       integer, parameter :: MAXITER = 100
@@ -2201,11 +2197,13 @@ contains
       ycg = 0.0_dp
       jacounterclockwise = 1
 
-      if (N < 1) goto 1234
+      if (N < 1) then
+         return
+      end if
 
       if (N == 2) then
          call half(x(1), y(1), x(2), y(2), xcg, ycg, jsferic, jasfer3D)
-         goto 1234
+         return
       end if
 
       do i = 1, N
@@ -2298,6 +2296,7 @@ contains
          A(1, 4) = -xx0
          A(2, 4) = -yy0
          A(3, 4) = -zz0
+         
          A(4, 1) = A(1, 4)
          A(4, 2) = A(2, 4)
          A(4, 3) = A(3, 4)
@@ -2306,23 +2305,19 @@ contains
          rhs(1) = -Jx
          rhs(2) = -Jy
          rhs(3) = -Jz
-         scaled_diff = 1 - (xx0**2 + yy0**2 + zz0**2) * Rai**2
+         scaled_diff = 1 - (xx0**2 + yy0**2 + zz0**2) * Rai**2 ! avoid substracting two huge numbers
          rhs(4) = -0.5 * scaled_diff * earth_radius**2
-
          !     solve system
          call gaussj(A, 4, 4, rhs, 1, 1) ! rhs contains solution
-
          !     update coordinates of centerpoint
          xx0 = xx0 + rhs(1)
          yy0 = yy0 + rhs(2)
          zz0 = zz0 + rhs(3)
          qq0 = qq0 + rhs(4)
-
          !     check convergence
          if (rhs(1)**2 + rhs(2)**2 + rhs(3)**2 + rhs(4)**2 < dtol) then
             exit
          end if
-
       end do
 
       !  check convergence
@@ -2344,10 +2339,7 @@ contains
          sz = 0.5_dp * ((xx(i) - xx0) * (yy(ip1) - yy0) - (yy(i) - yy0) * (xx(ip1) - xx0))
 
          Area = Area + sqrt(sx**2 + sy**2 + sz**2)
-
       end do
-
-      !   write(6,*) Area*(Ra/3_dp*voli)
 
       call Cart3Dtospher(xx0, yy0, zz0, xcg, ycg, maxval(x(1:N)))
 
@@ -2358,12 +2350,6 @@ contains
          jacounterclockwise = 0
       end if
 
-      !!  fix for inward normals (clockwise oriented cells)
-      !   area = abs(area)
-
-1234  continue
-
-      return
    end subroutine comp_masscenter3D
 
    !
@@ -2630,19 +2616,6 @@ contains
       xzw = xzw / nn
       yzw = yzw / nn
 
-      !--------------------------
-      ! test
-      ! if ( nn > N6 ) then
-      !    call qnerror('getcircumcenter: nn>N6', ' ', ' ')
-      !    stop
-      ! end if
-      ! xhalf(1:nn) = 0.5_dp*(xv(1:nn)+(/ xv(2:nn), xv(1) /))
-      ! yhalf(1:nn) = 0.5_dp*(yv(1:nn)+(/ yv(2:nn), yv(1) /))
-      ! call comp_circumcenter(nn, xv, yv, xhalf, yhalf, xz, yz)
-      ! goto 1234
-      ! end test
-      !--------------------------
-      ! if (nn == 333) then
       if (nn == 3 .and. jglobe == 0) then ! for triangles
          call circumcenter3(nn, xv, yv, xz, yz, jsferic)
       else
