@@ -127,6 +127,7 @@ contains
       use m_init_openmp, only: init_openmp
       use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
       use m_tauwavefetch, only: tauwavefetch
+      use m_flow_trachy_needs_update, only: flow_trachy_needs_update
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -400,6 +401,11 @@ contains
       call flow_obsinit() ! initialise stations and cross sections on flow grid + structure his (1st call required for call to flow_trachy_update)
       call fill_geometry_arrays_crs()
       call timstop(handle_extra(21)) ! end observations init
+      
+      !> separate trachy update which can only be performed after obsinit
+      if (jatrt == 1 .and. flow_trachy_needs_update(time1)) then
+         call flow_trachyupdate() ! perform a trachy update step
+      end if
 
       ! report on final configuration of ice module; needs to happen after flow_flowinit where external forcings are initialized
       call timstrt('Ice init', handle_extra(84)) ! ice

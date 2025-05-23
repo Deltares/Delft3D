@@ -229,7 +229,9 @@ contains
 
       if (jatrt == 1) then
          if (flow_trachy_needs_update(time1)) then
-            call flow_trachyupdate() ! perform a trachy update step
+            if(.not. initialization) then
+               call flow_trachyupdate() ! perform a trachy update step
+            end if
             l_set_frcu_mor = .true.
          end if
       end if
