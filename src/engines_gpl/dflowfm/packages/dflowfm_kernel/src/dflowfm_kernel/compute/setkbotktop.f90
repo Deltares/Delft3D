@@ -54,9 +54,7 @@ contains
       integer :: numbd, numtp, j
       real(kind=dp) :: drhok, a, aa, h00, zsl, aaa, sig, dsig, dsig0
 
-      if (.not. allocated(ktop)) then
-         allocate(ktop(ndx),source=1)
-      end if
+      call realloc(ktop, ndx, keepExisting = .true., fill = 1) ! allocate ktop the first time this routine is called
       
       if (kmx == 0) return
 
