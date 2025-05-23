@@ -46,6 +46,7 @@ contains
       use m_restore_keys
       use m_help
       use m_highlight_form_line
+      use m_add_baroclinic_pressure, only: rhointerfaces
 
       integer, parameter :: NUMPAR = 24
       integer, parameter :: NUMFLD = 2 * NUMPAR

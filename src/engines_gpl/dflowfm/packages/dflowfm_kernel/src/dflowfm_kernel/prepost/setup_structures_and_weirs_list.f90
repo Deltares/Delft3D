@@ -77,12 +77,7 @@ contains
 
       do istru = 1, network%sts%count
          associate (p_structure => network%sts%struct(istru))
-            if (p_structure%type == ST_PUMP) then
-               ! skip pump structures
-               cycle
-            end if
-
-            do L0 = 1, p_structure%numlinks
+            do L0 = 1, p_structure%numlinks 
                L = abs(p_structure%linknumbers(L0))
                does_link_contain_structures(L) = .true.
             end do

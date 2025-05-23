@@ -896,7 +896,8 @@ contains
    subroutine calculate_drhodz(zws, drhodz)
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowgeom, only: ndx
-      use m_physcoef, only: ag, rhomean, apply_thermobaricity
+      use m_physcoef, only: ag, rhomean
+      use m_density_parameters, only: apply_thermobaricity
       use m_density, only: density_at_cell_given_pressure
       use m_turbulence, only: rho
       use precision, only: dp

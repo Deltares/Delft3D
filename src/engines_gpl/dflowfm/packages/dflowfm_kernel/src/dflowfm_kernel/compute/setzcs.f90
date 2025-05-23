@@ -38,37 +38,37 @@ module m_setzcs
 
    public :: setzcs
 
-contains
+    contains
 
+    !> Sets array zsc (z levels at layer mid-points, only for nudging)
    subroutine setzcs()
       use m_flow, only: zcs, ndkx, zws, layertype, keepzlayeringatbed, zslay
       use m_flowgeom, only: ndx
-      use m_get_kbot_ktop
-      use m_get_zlayer_indices
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_zlayer_indices, only: getzlayerindices
       use m_alloc, only: realloc
+      use precision, only: dp
+      use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
 
       integer :: kk, k, kb, kt, nlayb, nrlay
 
       if (.not. allocated(zcs)) then
-         call realloc(zcs, Ndkx)
+         call realloc(zcs, ndkx)
       end if
 
       do kk = 1, Ndx
          call getkbotktop(kk, kb, kt)
          do k = kb, kt
-            zcs(k) = 0.5d0 * (zws(k) + zws(k - 1))
+            zcs(k) = 0.5_dp * (zws(k) + zws(k - 1))
          end do
-         if (layertype == 2 .and. keepzlayeringatbed /= 1) then
+         if (layertype == 2 .and. keepzlayeringatbed /= 1 .and. rhointerfaces /= BAROC_ORIGINAL) then
             call getzlayerindices(kk, nlayb, nrlay)
-            zcs(kb) = 0.5d0 * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
-            if (kt > kb .and. keepzlayeringatbed == 2) then ! only 2
-               zcs(kb + 1) = 0.5d0 * (zslay(nlayb + 1, 1) + zslay(nlayb, 1))
+            zcs(kb) = 0.5_dp * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
+            if (kt > kb .and. keepzlayeringatbed == 2) then
+               zcs(kb + 1) = 0.5_dp * (zslay(nlayb + 1, 1) + zslay(nlayb, 1))
             end if
          end if
-
       end do
-
-      return
    end subroutine setzcs
 
 end module m_setzcs

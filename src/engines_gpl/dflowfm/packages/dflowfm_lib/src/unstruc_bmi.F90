@@ -783,7 +783,7 @@ contains
       character(len=strlen(c_var_name)) :: tmp_var_name
       character(len=strlen(c_var_name)) :: varset_name !< For parsing compound variable names.
       integer :: last_token
-      character(:), allocatable :: words(:)
+      character(:), dimension(:), allocatable :: words
       integer :: i
       
       ! Use one of the following types
@@ -899,7 +899,7 @@ contains
       character(len=strlen(c_var_name)) :: var_name
       character(len=strlen(c_var_name)) :: varset_name !< For parsing compound variable names.
       integer :: last_token
-      character(:), allocatable :: words(:)
+      character(:), dimension(:), allocatable :: words
       
       rank = 0 !initially 0
 
@@ -978,7 +978,7 @@ contains
       character(len=strlen(c_var_name)) :: var_name
       character(len=strlen(c_var_name)) :: varset_name !< For parsing compound variable names.
       integer :: last_token
-      character(:), allocatable :: words(:)
+      character(:), dimension(:), allocatable :: words
       
       shape = [0, 0, 0, 0, 0, 0] !initialize
       

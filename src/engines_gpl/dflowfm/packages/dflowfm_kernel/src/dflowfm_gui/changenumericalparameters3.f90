@@ -50,6 +50,7 @@ contains
       use m_help
       use m_highlight_form_line
       use m_wind, only: jaqin, jaevap, evap
+      use m_waves, only: hwavuni, twavuni, phiwavuni, hwav, twav, phiwav
       
       integer :: numpar, numfld, numparactual, numfldactual
       parameter(NUMPAR=22, NUMFLD=2 * NUMPAR)

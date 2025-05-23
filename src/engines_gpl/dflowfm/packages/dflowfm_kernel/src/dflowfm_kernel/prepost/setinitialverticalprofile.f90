@@ -40,21 +40,23 @@ module m_setinitialverticalprofile
 
 contains
 
-   subroutine setinitialverticalprofile(yy, ny, filename) ! polyfil
+   !> Sets initial vertical profile of e.g., salinity and temperature
+   subroutine setinitialverticalprofile(target_array, ndkx, filename)
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_polygon
-      use m_reapol
-      use m_get_kbot_ktop
-      use m_get_zlayer_indices
+      use m_flowgeom, only: ndxi
+      use m_flow, only: zws, layertype, keepzlayeringatbed, zslay, kmxx
+      use m_polygon, only: xpl, ypl, npl, savepol, restorepol
+      use m_reapol, only: reapol
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_zlayer_indices, only: getzlayerindices
       use m_filez, only: oldfil
+      use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
 
-      integer :: ny
-      real(kind=dp) :: xx(kmxx)
-      real(kind=dp) :: yy(ny)
-      character(*), intent(in) :: filename ! file name for polygonfile
+      real(kind=dp), intent(in), dimension(ndkx) :: target_array !< Target array - e.g., sa1 (salinity) or tem1 (temperature)
+      integer, intent(in) :: ndkx !< Dimension of 3d flow nodes (internal + boundary)
+      character(len=*), intent(in) :: filename !< Filename of polygonfile
 
+      real(kind=dp) :: z_center(kmxx)
       integer :: minp0, n, k, kb, kt, ktx, nlayb, nrlay
 
       call oldfil(minp0, filename)
@@ -64,48 +66,21 @@ contains
       do n = 1, ndxi
          call getkbotktop(n, kb, kt)
          do k = kb, kt
-            xx(k - kb + 1) = 0.5d0 * (zws(k) + zws(k - 1))
+            z_center(k - kb + 1) = 0.5_dp * (zws(k) + zws(k - 1))
          end do
          ktx = kt - kb + 1
-         if (layertype == 2 .and. keepzlayeringatbed /= 1) then
+         if (layertype == 2 .and. keepzlayeringatbed /= 1 .and. rhointerfaces /= BAROC_ORIGINAL) then
             call getzlayerindices(n, nlayb, nrlay)
-            xx(1) = 0.5d0 * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
-            if (kt > kb .and. keepzlayeringatbed == 2) then ! only 2
-               xx(2) = 0.5d0 * (zslay(nlayb + 1, 1) + zslay(nlayb, 1))
+            z_center(1) = 0.5_dp * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
+            if (kt > kb .and. keepzlayeringatbed == 2) then
+               z_center(2) = 0.5_dp * (zslay(nlayb + 1, 1) + zslay(nlayb, 1))
             end if
          end if
-         call lineinterp(xx, yy(kb:), ktx, xpl, ypl, npl)
+         call lineinterp(z_center, target_array(kb:), ktx, xpl, ypl, npl)
       end do
 
       call restorepol()
 
    end subroutine setinitialverticalprofile
-
-   ! 2 subroutines in 1 file, yes we can !
-
-   subroutine keepzlayering()
-      use m_flowgeom
-      use m_flow
-      use m_get_kbot_ktop
-      use m_get_zlayer_indices
-      implicit none
-
-      integer :: n, kb, kt, nlayb, nrlay, Ltn
-
-      do n = 1, ndxi
-         call getkbotktop(n, kb, kt)
-         call getzlayerindices(n, nlayb, nrlay)
-         Ltn = laydefnr(n)
-         zws(kb) = zslay(nlayb, Ltn)
-         if (nlayb == 1) then
-            zws(kb - 1) = 2 * zslay(nlayb, Ltn) - zslay(nlayb + 1, Ltn)
-         else
-            zws(kb - 1) = zslay(nlayb - 1, Ltn)
-         end if
-         if (keepzlayeringatbed == 2) then
-            zws(kb) = zslay(nlayb, Ltn)
-         end if
-      end do
-   end subroutine keepzlayering
 
 end module m_setinitialverticalprofile
