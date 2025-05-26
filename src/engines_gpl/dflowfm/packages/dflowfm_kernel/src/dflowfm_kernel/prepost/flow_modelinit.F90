@@ -98,6 +98,7 @@ contains
       use m_fm_update_crosssections, only: fm_update_mor_width_area, fm_update_mor_width_mean_bedlevel
       use unstruc_netcdf_map_class
       use unstruc_caching
+      use m_monitoring_crosssections, only: ncrs
       use m_setucxcuy_leastsquare, only: reconst2ndini
       use fm_external_forcings_data, only: nwbnd
       use m_sedtrails_network
@@ -127,7 +128,6 @@ contains
       use m_init_openmp, only: init_openmp
       use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
       use m_tauwavefetch, only: tauwavefetch
-      use m_flow_trachy_needs_update, only: flow_trachy_needs_update
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -386,6 +386,13 @@ contains
       call ini_transport()
       call timstop(handle_extra(19)) ! end transport module
 
+      call timstrt('Observations init   ', handle_extra(21)) ! observations init
+      call flow_obsinit() ! initialise stations and cross sections on flow grid + structure his (1st call required for call to flow_trachy_update)
+      if (ncrs > 0) then
+         call fill_geometry_arrays_crs()
+      end if
+      call timstop(handle_extra(21)) ! end observations init
+
       call timstrt('Ice init', handle_extra(84)) ! ice
       call fm_ice_alloc(ndx) ! needs to happen after flow_geominit to know ndx, but before flow_flowinit where we need the arrays for the external forcings
       call timstop(handle_extra(84)) ! End ice
@@ -396,16 +403,6 @@ contains
          goto 1234
       end if
       call timstop(handle_extra(23)) ! end flow init
-      
-      call timstrt('Observations init   ', handle_extra(21)) ! observations init
-      call flow_obsinit() ! initialise stations and cross sections on flow grid + structure his (1st call required for call to flow_trachy_update)
-      call fill_geometry_arrays_crs()
-      call timstop(handle_extra(21)) ! end observations init
-      
-      !> separate trachy update which can only be performed after obsinit
-      if (jatrt == 1 .and. flow_trachy_needs_update(time1)) then
-         call flow_trachyupdate() ! perform a trachy update step
-      end if
 
       ! report on final configuration of ice module; needs to happen after flow_flowinit where external forcings are initialized
       call timstrt('Ice init', handle_extra(84)) ! ice
@@ -492,6 +489,11 @@ contains
          call set_frcu_mor(2)
       end if
       call timstop(handle_extra(31)) ! end set fcru mor
+
+! Initialise debug array
+      !if (jawritedebug) then
+      !  call init_debugarr(lnx,stmpar%lsedtot)
+      !endif
 
       if (nfxw > 0) then
          allocate (weirdte_save(nfxw), STAT=ierr)
