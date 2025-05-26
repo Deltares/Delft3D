@@ -361,6 +361,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     ! locate 'DtTrt' record for update time step
     !
     rtimtt = dt
+    call prop_get(mdfile_ptr, '*', 'TrtDt', rtimtt) !D3D4 compatibility. 
     call prop_get(mdfile_ptr, '*', 'DtTrt', rtimtt)
     dttrt = rtimtt
     !
