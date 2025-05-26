@@ -172,7 +172,7 @@ contains
          end if
       end if
 
-      if ((jasal > 0 .and. maxitverticalforestersal > 0 .or. jatem > 0 .and. maxitverticalforestertem > 0) .and. kmx > 0) then
+      if (jasal > 0 .and. maxitverticalforestersal > 0 .or. jatem > 0 .and. maxitverticalforestertem > 0) then
          call doforester()
       end if
       !

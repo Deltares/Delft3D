@@ -1494,10 +1494,7 @@ contains
          call realloc(nudge_time, Ndx, fill=DMISS)
          call realloc(nudge_rate, Ndx, fill=DMISS)
       end if
-      if (allocated(kbot)) then
-         deallocate (kbot)
-      end if
-      
+
    end subroutine flow_allocflow
 
 end module m_flow_allocflow

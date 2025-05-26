@@ -55,7 +55,6 @@ contains
       real(kind=dp) :: drhok, a, aa, h00, zsl, aaa, sig, dsig, dsig0
 
       call realloc(ktop, ndx, keepExisting = .true., fill = 1) ! allocate ktop the first time this routine is called
-      call realloc(kbot, ndx, keepExisting = .true., fill = 1) ! allocate kbot the first time this routine is called
       
       if (kmx == 0) return
 
@@ -64,14 +63,7 @@ contains
       vol1 = 0d0
       nL = 1
       nR = 2
-      
-      kk = Ndx
-      do n = 1, ndx
-         kk = kk + 1
-         kbot(n) = kk
-         kk = kk + (kmxn(n))
-      end do
-      
+
       if (Layertype == 1) then ! sigma only
          do n = 1, ndx
             kb = kbot(n)
