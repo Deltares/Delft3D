@@ -264,7 +264,9 @@ type gd_r_i_ch
        integer(pntrsize) :: uorb       !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: ubot       !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: ubcom      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: umod       !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: usus       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: uuu        !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: uvdist     !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: uwtypu     !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: uwtypv     !  Description and declaration in esm_alloc_real.f90
@@ -283,6 +285,7 @@ type gd_r_i_ch
        integer(pntrsize) :: volum1     !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: vortic     !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: vsus       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vvv        !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: w1         !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: w10mag     !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: wenf       !  Description and declaration in esm_alloc_real.f90

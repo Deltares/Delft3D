@@ -74,9 +74,9 @@ real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: deltav !  Des
 real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: u
 real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: v
 real(fp)  , dimension(kmax)                       , intent(in)  :: sig   !  Description and declaration in esm_alloc_real.f90
-real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: umod
-real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: uuu
-real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: vvv
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: umod  !  Description and declaration in esm_alloc_real.f90
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: uuu   !  Description and declaration in esm_alloc_real.f90
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: vvv   !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !

@@ -45,6 +45,7 @@ subroutine gdp_dealloc(gdp)
     use globaldata
     use dfparall
     use dredge_data_module, only: clrdredge
+    use trachytopes_data_module, only: clrtrachy !it is actually exposed by `globaldata`, but it should not. 
     !
     implicit none
     !
