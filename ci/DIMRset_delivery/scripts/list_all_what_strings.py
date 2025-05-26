@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 import string
 import sys
 from datetime import datetime
@@ -35,25 +36,28 @@ def extract_printable_strings(filename, min_length=4):
 
 
 def list_what_strings(file_path: str, log_file) -> None:
+    # Determine the minimum length needed for the search strings
+    min_len = 7  # Minimum length of the search strings "@(#)Deltares" and "HeadURL"
     try:
-        string_list = list(extract_printable_strings(file_path))
+        string_list = list(extract_printable_strings(file_path, min_length=min_len))
     except Exception as e:
-        log_file.write(f"\t[Unreadable file] {file_path}: {e}\n")
+        log_file.write(f"\t[Unreadable file] {file_path}: {type(e).__name__} - {e}\n")
         return
 
     what_strings = []
-    for s in string_list:
-        if "@(#)Deltares" in s:
-            what_strings.append(s[s.find("@(#)Deltares") :])
-        if "HeadURL" in s:
-            what_strings.append(s[s.find("HeadURL") :])
+    for str in string_list:
+        if "@(#)Deltares" in str:
+            what_strings.append(str[str.find("@(#)Deltares") :])
+        if "HeadURL" in str:
+            what_strings.append(str[str.find("HeadURL") :])
+
     if what_strings:
         log_file.write(f"\t{file_path}\n")
-        for s in what_strings:
-            if s.startswith("@(#)"):
-                log_file.write(f"\t\t{s[4:]}\n")
-            elif s.startswith("HeadURL"):
-                log_file.write(f"\t\t{s[9:]}\n")
+        for what_string in what_strings:
+            if what_string.startswith("@(#)"):
+                log_file.write(f"\t\t{what_string[4:]}\n")
+            elif what_string.startswith("HeadURL"):
+                log_file.write(f"\t\t{what_string[9:]}\n")
 
 
 def walk_and_list_what_strings(root_folder, log_file):
@@ -92,7 +96,7 @@ if __name__ == "__main__":
     start_dir = os.getcwd()
     src_dir = os.path.normpath(os.path.join(start_dir, src_dir))
     if not os.path.exists(src_dir):
-        print("Given directory does not exist: %s" % src_dir)
+        print(f"Given directory does not exist: {src_dir}")
         sys.exit(1)
 
     if args.out_put:
@@ -100,21 +104,21 @@ if __name__ == "__main__":
     if os.path.exists(out_put):
         os.remove(out_put)
 
-    print("Start: %s\n" % start_time)
-    print("%s\n" % sys.version)
-    print("Listing is written to: %s" % out_put)
-    print("Root Directory: %s" % src_dir)
+    print(f"Start: {start_time}\n")
+    print(f"{sys.version}\n")
+    print(f"Listing is written to: {out_put}")
+    print(f"Root Directory: {src_dir}")
 
     with open(out_put, "a") as log_file:
-        log_file.write("Start: %s\n" % start_time)
-        log_file.write("Root Directory: %s\n" % src_dir)
+        log_file.write(f"Start: {start_time}\n")
+        log_file.write(f"Root Directory: {src_dir}\n")
         walk_and_list_what_strings(src_dir, log_file)
         log_file.write("Processing done\n")
-        log_file.write("\nStart: %s\n" % start_time)
-        log_file.write("End  : %s\n" % datetime.now())
+        log_file.write(f"\nStart: {start_time}\n")
+        log_file.write(f"End  : {datetime.now()}\n")
         log_file.write("Klaar\n")
 
     print("Processing done")
-    print("\nStart: %s" % start_time)
-    print("End  : %s" % datetime.now())
+    print(f"\nStart: {start_time}")
+    print(f"End  : {datetime.now()}")
     print("Klaar")
